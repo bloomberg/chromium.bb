@@ -8,17 +8,7 @@
 
 #include "ash/launcher/launcher_types.h"
 #include "base/basictypes.h"
-#include "chrome/browser/ui/views/ash/launcher/shelf_auto_hide_menu.h"
 #include "ui/base/models/simple_menu_model.h"
-
-namespace gfx {
-class Point;
-}
-
-namespace views {
-class MenuRunner;
-class View;
-}
 
 class ChromeLauncherDelegate;
 
@@ -59,7 +49,6 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
 
   ChromeLauncherDelegate* delegate_;
   ash::LauncherItem item_;
-  ShelfAutoHideMenu shelf_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };

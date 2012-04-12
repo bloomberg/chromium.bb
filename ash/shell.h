@@ -235,6 +235,9 @@ class ASH_EXPORT Shell {
   // Returns the size of the grid.
   int GetGridSize() const;
 
+  // Returns true if in maximized or fullscreen mode.
+  bool IsInMaximizedMode() const;
+
   static void set_initially_hide_cursor(bool hide) {
     initially_hide_cursor_ = hide;
   }

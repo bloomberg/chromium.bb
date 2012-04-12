@@ -894,6 +894,10 @@ int Shell::GetGridSize() const {
   return workspace_controller_->workspace_manager()->grid_size();
 }
 
+bool Shell::IsInMaximizedMode() const {
+  return workspace_controller_->workspace_manager()->IsInMaximizedMode();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 

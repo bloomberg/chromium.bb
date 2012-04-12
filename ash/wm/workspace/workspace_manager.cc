@@ -33,13 +33,6 @@
 
 namespace {
 
-// The horizontal margein between workspaces in pixels.
-const int kWorkspaceHorizontalMargin = 50;
-
-// Minimum/maximum scale for overview mode.
-const float kMaxOverviewScale = 0.9f;
-const float kMinOverviewScale = 0.3f;
-
 // Returns a list of all the windows with layers in |result|.
 void BuildWindowList(const std::vector<aura::Window*>& windows,
                      std::vector<aura::Window*>* result) {
@@ -70,7 +63,6 @@ namespace internal {
 WorkspaceManager::WorkspaceManager(aura::Window* contents_view)
     : contents_view_(contents_view),
       active_workspace_(NULL),
-      is_overview_(false),
       ignored_window_(NULL),
       grid_size_(0),
       shelf_(NULL) {
@@ -90,6 +82,11 @@ bool WorkspaceManager::IsManagedWindow(aura::Window* window) const {
 
 bool WorkspaceManager::IsManagingWindow(aura::Window* window) const {
   return FindBy(window) != NULL;
+}
+
+bool WorkspaceManager::IsInMaximizedMode() const {
+  return active_workspace_ &&
+      active_workspace_->type() == Workspace::TYPE_MAXIMIZED;
 }
 
 void WorkspaceManager::AddWindow(aura::Window* window) {
@@ -144,12 +141,6 @@ void WorkspaceManager::SetActiveWorkspaceByWindow(aura::Window* window) {
   Workspace* workspace = FindBy(window);
   if (workspace)
     workspace->Activate();
-}
-
-void WorkspaceManager::SetOverview(bool overview) {
-  if (is_overview_ == overview)
-    return;
-  NOTIMPLEMENTED();
 }
 
 gfx::Rect WorkspaceManager::AlignBoundsToGrid(const gfx::Rect& bounds) {
@@ -296,8 +287,6 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace) {
                                     last_active ? ANIMATE : DONT_ANIMATE, true);
     UpdateShelfVisibility();
   }
-
-  is_overview_ = false;
 }
 
 // Returns the index of the workspace that contains the |window|.

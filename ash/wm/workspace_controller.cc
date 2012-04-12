@@ -45,10 +45,6 @@ WorkspaceController::~WorkspaceController() {
     viewport_->SetLayoutManager(NULL);
 }
 
-void WorkspaceController::ToggleOverview() {
-  workspace_manager_->SetOverview(!workspace_manager_->is_overview());
-}
-
 void WorkspaceController::SetGridSize(int grid_size) {
   workspace_manager_->set_grid_size(grid_size);
   event_filter_->set_grid_size(grid_size);

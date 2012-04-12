@@ -55,6 +55,9 @@ class ASH_EXPORT WorkspaceManager {
   // Returns true if the |window| is managed by the WorkspaceManager.
   bool IsManagingWindow(aura::Window* window) const;
 
+  // Returns true if in maximized or fullscreen mode.
+  bool IsInMaximizedMode() const;
+
   // Adds/removes a window creating/destroying workspace as necessary.
   void AddWindow(aura::Window* window);
   void RemoveWindow(aura::Window* window);
@@ -72,10 +75,6 @@ class ASH_EXPORT WorkspaceManager {
 
   // Returns the bounds in which a window can be moved/resized.
   gfx::Rect GetDragAreaBounds();
-
-  // Turn on/off overview mode.
-  void SetOverview(bool overview);
-  bool is_overview() const { return is_overview_; }
 
   // Returns the window the layout manager should allow the size to be set for.
   // TODO: maybe this should be set on WorkspaceLayoutManager.
@@ -165,9 +164,6 @@ class ASH_EXPORT WorkspaceManager {
   Workspace* active_workspace_;
 
   std::vector<Workspace*> workspaces_;
-
-  // True if the workspace manager is in overview mode.
-  bool is_overview_;
 
   // The window that WorkspaceManager does not set the bounds on.
   aura::Window* ignored_window_;

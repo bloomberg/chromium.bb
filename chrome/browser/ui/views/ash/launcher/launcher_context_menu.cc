@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/ash/launcher/launcher_context_menu.h"
 
+#include "ash/launcher/launcher_context_menu.h"
+#include "ash/shell.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -12,8 +14,7 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherDelegate* delegate,
                                          const ash::LauncherItem* item)
     : ui::SimpleMenuModel(NULL),
       delegate_(delegate),
-      item_(item ? *item : ash::LauncherItem()),
-      shelf_menu_(delegate) {
+      item_(item ? *item : ash::LauncherItem()) {
   set_delegate(this);
 
   if (is_valid_item()) {
@@ -37,9 +38,8 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherDelegate* delegate,
     }
     AddSeparator();
   }
-  AddSubMenuWithStringId(MENU_AUTO_HIDE,
-                         IDS_LAUNCHER_CONTEXT_MENU_LAUNCHER_VISIBILITY,
-                         &shelf_menu_);
+  AddCheckItemWithStringId(
+      MENU_AUTO_HIDE, ash::LauncherContextMenu::GetAutoHideResourceStringId());
 }
 
 LauncherContextMenu::~LauncherContextMenu() {
@@ -53,6 +53,8 @@ bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
     case LAUNCH_TYPE_WINDOW:
       return delegate_->GetAppType(item_.id) ==
           ChromeLauncherDelegate::APP_TYPE_WINDOW;
+    case MENU_AUTO_HIDE:
+      return ash::LauncherContextMenu::IsAutoHideMenuHideChecked();
     default:
       return false;
   }
@@ -86,6 +88,6 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
       delegate_->SetAppType(item_.id, ChromeLauncherDelegate::APP_TYPE_WINDOW);
       break;
     case MENU_AUTO_HIDE:
-      break;
+      return ash::LauncherContextMenu::ToggleAutoHideMenu();
   }
 }

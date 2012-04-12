@@ -3229,8 +3229,6 @@
         'browser/ui/views/ash/launcher/launcher_favicon_loader.h',
         'browser/ui/views/ash/launcher/launcher_updater.cc',
         'browser/ui/views/ash/launcher/launcher_updater.h',
-        'browser/ui/views/ash/launcher/shelf_auto_hide_menu.cc',
-        'browser/ui/views/ash/launcher/shelf_auto_hide_menu.h',
         'browser/ui/views/ash/panel_view_aura.cc',
         'browser/ui/views/ash/panel_view_aura.h',
         'browser/ui/views/ash/screen_orientation_listener.cc',

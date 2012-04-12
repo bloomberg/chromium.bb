@@ -4,6 +4,7 @@
 
 #include "ash/shell/launcher_delegate_impl.h"
 
+#include "ash/launcher/launcher_context_menu.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/wm/window_util.h"
@@ -52,7 +53,7 @@ ui::MenuModel* LauncherDelegateImpl::CreateContextMenu(
 }
 
 ui::MenuModel* LauncherDelegateImpl::CreateContextMenuForLauncher() {
-  return NULL;
+  return new LauncherContextMenu;
 }
 
 ash::LauncherID LauncherDelegateImpl::GetIDByWindow(aura::Window* window) {

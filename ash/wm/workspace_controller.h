@@ -32,8 +32,6 @@ class ASH_EXPORT WorkspaceController :
   explicit WorkspaceController(aura::Window* viewport);
   virtual ~WorkspaceController();
 
-  void ToggleOverview();
-
   // Returns the workspace manager that this controller owns.
   WorkspaceManager* workspace_manager() {
     return workspace_manager_.get();
