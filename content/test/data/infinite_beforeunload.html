@@ -1,0 +1,17 @@
+<html>
+<head>
+  <title>Infinite beforeunload</title>
+</head>
+
+<body>
+<script>
+  window.onbeforeunload = function(e) {
+      while(true){}
+  }
+</script>
+
+Infinite beforeunload handler.
+
+</body>
+
+</html>
