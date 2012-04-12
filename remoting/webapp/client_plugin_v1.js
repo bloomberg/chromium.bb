@@ -249,3 +249,14 @@ remoting.ClientPluginV1.prototype.injectKeyEvent =
     function(usbKeycode, pressed) {
   return;
 };
+
+/**
+ * Remap one USB keycode to another in all subsequent key events.
+ *
+ * @param {number} fromKeycode The USB-style code of the key to remap.
+ * @param {number} toKeycode The USB-style code to remap the key to.
+ */
+remoting.ClientPluginV1.prototype.remapKey =
+    function(fromKeycode, toKeycode) {
+  return;
+};

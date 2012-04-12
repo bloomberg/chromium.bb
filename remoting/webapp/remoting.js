@@ -165,6 +165,15 @@ remoting.signOut = function() {
 };
 
 /**
+ * Returns whether the app is running on ChromeOS.
+ *
+ * @return {boolean} True if the app is running on ChromeOS.
+ */
+remoting.runningOnChromeOS = function() {
+  return !!navigator.userAgent.match(/\bCrOS\b/);
+}
+
+/**
  * Callback function called when the browser window gets a paste operation.
  *
  * @param {Event} eventUncast
@@ -252,7 +261,7 @@ function getAppStartupMode_() {
  */
 function isHostModeSupported_() {
   // Currently, sharing on Chromebooks is not supported.
-  return !navigator.userAgent.match(/\bCrOS\b/);
+  return !remoting.runningOnChromeOS();
 }
 
 /**

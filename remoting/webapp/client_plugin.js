@@ -49,6 +49,7 @@ remoting.ClientPlugin.prototype.isSupportedVersion = function() {};
 remoting.ClientPlugin.Feature = {
   HIGH_QUALITY_SCALING: 'highQualityScaling',
   INJECT_KEY_EVENT: 'injectKeyEvent',
+  REMAP_KEY: 'remapKey',
   SEND_CLIPBOARD_ITEM: 'sendClipboardItem'
 };
 
@@ -109,6 +110,15 @@ remoting.ClientPlugin.prototype.releaseAllKeys = function() {};
  */
 remoting.ClientPlugin.prototype.injectKeyEvent =
     function(usbKeycode, pressed) {};
+
+/**
+ * Remap one USB keycode to another in all subsequent key events.
+ *
+ * @param {number} fromKeycode The USB-style code of the key to remap.
+ * @param {number} toKeycode The USB-style code to remap the key to.
+ */
+remoting.ClientPlugin.prototype.remapKey =
+    function(fromKeycode, toKeycode) {};
 
 /**
  * Returns an associative array with a set of stats for this connection.

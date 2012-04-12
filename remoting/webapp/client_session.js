@@ -277,12 +277,21 @@ remoting.ClientSession.prototype.onPluginInitialized_ =
     return;
   }
 
+  // Show the Send Keys menu and Ctrl-Alt-Del button only in Me2Me mode, and
+  // only if the plugin has the injectKeyEvent feature.
   if (!this.plugin.hasFeature(remoting.ClientPlugin.Feature.INJECT_KEY_EVENT) ||
       this.mode != remoting.ClientSession.Mode.ME2ME) {
     var sendCadElement = document.getElementById('send-ctrl-alt-del');
     sendCadElement.hidden = true;
     var sendKeysElement = document.getElementById('send-keys-menu');
     sendKeysElement.hidden = true;
+  }
+
+  // Remap the right Control key to the right Win / Cmd key on ChromeOS
+  // platforms, if the plugin has the remapKey feature.
+  if (this.plugin.hasFeature(remoting.ClientPlugin.Feature.REMAP_KEY) &&
+      remoting.runningOnChromeOS()) {
+    this.plugin.remapKey(0x0700e4, 0x0700e7);
   }
 
   // Enable scale-to-fit if and only if the plugin is new enough for

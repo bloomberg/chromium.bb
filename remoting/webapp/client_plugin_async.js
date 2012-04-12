@@ -319,6 +319,21 @@ remoting.ClientPluginAsync.prototype.injectKeyEvent =
 };
 
 /**
+ * Remap one USB keycode to another in all subsequent key events.
+ *
+ * @param {number} fromKeycode The USB-style code of the key to remap.
+ * @param {number} toKeycode The USB-style code to remap the key to.
+ */
+remoting.ClientPluginAsync.prototype.remapKey =
+    function(fromKeycode, toKeycode) {
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'remapKey', data: {
+          'fromKeycode': fromKeycode,
+          'toKeycode': toKeycode}
+      }));
+};
+
+/**
  * Returns an associative array with a set of stats for this connecton.
  *
  * @return {remoting.ClientSession.PerfStats} The connection statistics.
