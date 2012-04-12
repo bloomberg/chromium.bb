@@ -753,7 +753,7 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
 #if !defined(OS_CHROMEOS)
     const base::FieldTrial::Probability kSpdyDivisor = 100;
     base::FieldTrial::Probability npnhttp_probability = 5;
-    base::FieldTrial::Probability spdy3_probability = 0;
+    base::FieldTrial::Probability spdy3_probability = 10;
 
     // After June 30, 2013 builds, it will always be in default group.
     scoped_refptr<base::FieldTrial> trial(
