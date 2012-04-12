@@ -196,6 +196,37 @@
       ],
     },
     {
+      'target_name': 'gl_tests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/angle/src/build_angle.gyp:translator_glsl',
+        '../ui/gfx/gl/gl.gyp:gl',
+        '../ui/ui.gyp:ui',
+        'command_buffer/command_buffer.gyp:gles2_utils',
+        'command_buffer_client',
+        'command_buffer_common',
+        'command_buffer_service',
+        'gpu',
+        'gpu_unittest_utils',
+        'gles2_implementation_client_side_arrays',
+        'gles2_cmd_helper',
+      ],
+      'defines': [
+        'GLES2_C_LIB_IMPLEMENTATION',
+      ],
+      'sources': [
+        '<@(gles2_c_lib_source_files)',
+        'command_buffer/tests/gl_tests_main.cc',
+        'command_buffer/tests/gl_manager.cc',
+        'command_buffer/tests/gl_manager.h',
+        'command_buffer/tests/gl_unittests.cc',
+      ],
+    },
+    {
       'target_name': 'gpu_unittest_utils',
       'type': 'static_library',
       'dependencies': [
