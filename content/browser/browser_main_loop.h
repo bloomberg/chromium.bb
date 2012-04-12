@@ -42,7 +42,7 @@ class MediaDeviceNotificationsLinux;
 class ResourceDispatcherHostImpl;
 class WebKitThread;
 
-// Implements the main browser loop stages called from |BrowserMain()|.
+// Implements the main browser loop stages called from BrowserMainRunner.
 // See comments in browser_main_parts.h for additional info.
 // All functions are to be called only on the UI thread unless otherwise noted.
 class BrowserMainLoop {
