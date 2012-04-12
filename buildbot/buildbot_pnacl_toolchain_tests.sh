@@ -22,7 +22,9 @@ export PNACL_BUILDBOT=true
 clobber() {
   echo @@@BUILD_STEP clobber@@@
   rm -rf scons-out
-  rm -rf toolchain/pnacl*
+  # Don't clobber toolchain/pnacl_translator; these bots currently don't build
+  # it, but they use the DEPSed-in version
+  rm -rf toolchain/pnacl_linux* toolchain/pnacl_mac* toolchain/pnacl_win*
   # Try to clobber /tmp/ contents to clear temporary chrome files.
   rm -rf /tmp/.org.chromium.Chromium.*
 }
