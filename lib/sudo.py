@@ -5,6 +5,7 @@
 import os
 import sys
 import errno
+import signal
 import subprocess
 import cros_build_lib
 
@@ -95,8 +96,15 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     # Anything other than a timeout results in us shutting down.
     cmd = ('while :; do read -t %i; [ $? -le 128 ] && exit; %s; done' %
            (repeat_interval, cmd))
+
+    def ignore_sigint():
+      # We don't want our sudo process shutdown till we shut it down;
+      # since it's part of the session group it however gets SIGINT.
+      # Thus suppress it (which bash then inherits).
+      signal.signal(signal.SIGINT, signal.SIG_IGN)
+
     self._proc = subprocess.Popen(['bash', '-c', cmd], shell=False,
-                                  close_fds=True,
+                                  close_fds=True, preexec_fn=ignore_sigint,
                                   stdin=subprocess.PIPE)
 
     os.environ["CROS_SUDO_KEEP_ALIVE"] = start_for_tty
@@ -106,8 +114,12 @@ class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
     if self._proc is None:
       return
 
-    self._proc.terminate()
-    self._proc.wait()
+    try:
+      self._proc.terminate()
+      self._proc.wait()
+    except EnvironmentError, e:
+      if e.errno != errno.ESRCH:
+        raise
 
     os.environ.pop("CROS_SUDO_KEEP_ALIVE", None)
 
