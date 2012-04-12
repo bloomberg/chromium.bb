@@ -232,9 +232,9 @@ void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
   panel->SetAutoResizable(false);
 }
 
-void PanelManager::SetPanelBounds(Panel* panel,
-                                  const gfx::Rect& new_bounds) {
-  panel->panel_strip()->SetPanelBounds(panel, new_bounds);
+void PanelManager::OnPanelResizedByMouse(Panel* panel,
+                                         const gfx::Rect& new_bounds) {
+  panel->panel_strip()->OnPanelResizedByMouse(panel, new_bounds);
   panel->SetAutoResizable(false);
 
 }

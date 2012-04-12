@@ -39,6 +39,9 @@ class OverflowPanelStrip : public PanelStrip,
   virtual void ResizePanelWindow(
       Panel* panel,
       const gfx::Size& preferred_window_size) OVERRIDE;
+  virtual bool CanResizePanel(const Panel* panel) const OVERRIDE;
+  virtual void OnPanelResizedByMouse(Panel* panel,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnPanelAttentionStateChanged(Panel* panel) OVERRIDE;
   virtual void OnPanelTitlebarClicked(Panel* panel,
                                       panel::ClickModifier modifier) OVERRIDE;
@@ -57,9 +60,6 @@ class OverflowPanelStrip : public PanelStrip,
                                     int delta_y) OVERRIDE;
   virtual void EndDraggingPanelWithinStrip(Panel* panel,
                                            bool aborted) OVERRIDE;
-  virtual bool CanResizePanel(const Panel* panel) const OVERRIDE;
-  virtual void SetPanelBounds(Panel* panel,
-                              const gfx::Rect& new_bounds) OVERRIDE;
 
   virtual void UpdatePanelOnStripChange(Panel* panel) OVERRIDE;
 

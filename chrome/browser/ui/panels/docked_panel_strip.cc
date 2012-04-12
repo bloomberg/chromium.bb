@@ -448,8 +448,8 @@ bool DockedPanelStrip::CanResizePanel(const Panel* panel) const {
   return false;
 }
 
-void DockedPanelStrip::SetPanelBounds(Panel* panel,
-                                      const gfx::Rect& new_bounds) {
+void DockedPanelStrip::OnPanelResizedByMouse(Panel* panel,
+                                             const gfx::Rect& new_bounds) {
   DCHECK_EQ(this, panel->panel_strip());
   NOTREACHED();
 }

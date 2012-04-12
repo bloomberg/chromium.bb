@@ -57,8 +57,8 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver {
   void ResizeByMouse(const gfx::Point& mouse_location);
   void EndResizingByMouse(bool cancelled);
 
-  // Invoked when a panel's expansion state changes.
-  void OnPanelExpansionStateChanged(Panel* panel);
+  // Resizes the panel and sets the origin.
+  void OnPanelResizedByMouse(Panel* panel, const gfx::Rect& new_bounds);
 
   // Invoked when the preferred window size of the given panel might need to
   // get changed.
@@ -69,8 +69,8 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver {
   // for panels that are auto-sized.
   void ResizePanel(Panel* panel, const gfx::Size& new_size);
 
-  // Resizes the panel and sets the origin.
-  void SetPanelBounds(Panel* panel, const gfx::Rect& new_bounds);
+  // Invoked when a panel's expansion state changes.
+  void OnPanelExpansionStateChanged(Panel* panel);
 
   // Moves the |panel| to a different type of panel strip.
   void MovePanelToStrip(Panel* panel,
