@@ -243,3 +243,11 @@
   fun:base::::MultipleThreadMain::ThreadMain
   fun:base::::ThreadFunc
 }
+{
+  bug_123112
+  ThreadSanitizer:Race
+  fun:media::AUAudioOutputStream::Stop
+  fun:media::AudioOutputProxy::Stop
+  fun:media::AudioOutputController::DoStopCloseAndClearStream
+  fun:media::AudioOutputController::DoClose
+}
