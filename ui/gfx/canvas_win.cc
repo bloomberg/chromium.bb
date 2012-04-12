@@ -16,6 +16,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/shadow_value.h"
 
 namespace {
 
