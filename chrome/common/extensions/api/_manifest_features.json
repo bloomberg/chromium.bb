@@ -4,194 +4,194 @@
 
 {
   "app": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["packaged_app", "hosted_app", "platform_app"]
   },
   "background": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
   "background_page": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ],
     "max_manifest_version": 1
   },
   "browser_action": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension"]
   },
   "chrome_url_overrides": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
   "commands": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": "all",
     "min_manifest_version": 2
   },
   "content_security_policy": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },
   "content_scripts": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
   "converted_from_user_script": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ],
     "no_doc": true
   },
   "current_locale": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": "all"
   },
   "default_locale": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": "all"
   },
   "description": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": "all"
   },
   "devtools_page": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
   "file_browser_handlers": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
   "homepage_url": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
   "icons": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": "all"
   },
   "incognito": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },
   "input_components": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
   "intents": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
   "key": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": "all"
   },
   "manifest_version": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": "all"
   },
   "minimum_chrome_version": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
   "nacl_modules": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
   "name": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": "all"
   },
   "offline_enabled": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
   "omnibox": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
   "optional_permissions": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
   "options_page": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
   "oauth2": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["platform_app"]
   },
   "page_action": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension"]
   },
   "page_actions": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension"],
     "max_manifest_version": 1
   },
   "permissions": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
   "platform_app": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["platform_app"],
     "min_manifest_version": 2
   },
   "plugins": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app", "hosted_app"]
   },
   "requirements": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
   "signature": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": "all"
   },
   "theme": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["theme"]
   },
   "tts_engine": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
   "update_url": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": "all"
   },
   "version": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": "all"
   },
   "web_accessible_resources": {
-    "supported_channel": "stable",
+    "channel": "stable",
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]

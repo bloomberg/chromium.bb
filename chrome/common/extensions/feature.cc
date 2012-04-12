@@ -50,8 +50,19 @@ struct Mappings {
 
 static base::LazyInstance<Mappings> g_mappings = LAZY_INSTANCE_INITIALIZER;
 
+std::string GetChannelName(VersionInfo::Channel channel) {
+  typedef std::map<std::string, VersionInfo::Channel> ChannelsMap;
+  ChannelsMap channels = g_mappings.Get().channels;
+  for (ChannelsMap::iterator i = channels.begin(); i != channels.end(); ++i) {
+    if (i->second == channel)
+      return i->first;
+  }
+  NOTREACHED();
+  return "unknown";
+}
+
 struct Channel {
-  Channel() : channel(chrome::VersionInfo::GetChannel()) {}
+  Channel() : channel(VersionInfo::GetChannel()) {}
 
   chrome::VersionInfo::Channel channel;
 };
@@ -137,7 +148,7 @@ Feature::Feature()
     platform_(UNSPECIFIED_PLATFORM),
     min_manifest_version_(0),
     max_manifest_version_(0),
-    supported_channel_(VersionInfo::CHANNEL_UNKNOWN) {
+    channel_(VersionInfo::CHANNEL_UNKNOWN) {
 }
 
 Feature::Feature(const Feature& other)
@@ -148,7 +159,7 @@ Feature::Feature(const Feature& other)
       platform_(other.platform_),
       min_manifest_version_(other.min_manifest_version_),
       max_manifest_version_(other.max_manifest_version_),
-      supported_channel_(other.supported_channel_) {
+      channel_(other.channel_) {
 }
 
 Feature::~Feature() {
@@ -162,7 +173,7 @@ bool Feature::Equals(const Feature& other) const {
       platform_ == other.platform_ &&
       min_manifest_version_ == other.min_manifest_version_ &&
       max_manifest_version_ == other.max_manifest_version_ &&
-      supported_channel_ == other.supported_channel_;
+      channel_ == other.channel_;
 }
 
 // static
@@ -195,7 +206,7 @@ void Feature::Parse(const DictionaryValue* value) {
   value->GetInteger("min_manifest_version", &min_manifest_version_);
   value->GetInteger("max_manifest_version", &max_manifest_version_);
   ParseEnum<VersionInfo::Channel>(
-      value, "supported_channel", &supported_channel_,
+      value, "channel", &channel_,
       g_mappings.Get().channels);
 }
 
@@ -223,8 +234,10 @@ std::string Feature::GetErrorMessage(Feature::Availability result) {
     case NOT_PRESENT:
       return "Requires a different Feature that is not present.";
     case UNSUPPORTED_CHANNEL:
-      return base::StringPrintf("Channel %d is unsupported.",
-                                supported_channel_);
+      return base::StringPrintf(
+          "Google Chrome %s channel or newer is required, but current is %s.",
+          GetChannelName(channel_).c_str(),
+          GetChannelName(g_channel.Get().channel).c_str());
   }
 
   return "";
@@ -273,7 +286,7 @@ Feature::Availability Feature::IsAvailableToManifest(
   if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
     return INVALID_MAX_MANIFEST_VERSION;
 
-  if (supported_channel_ < g_channel.Get().channel)
+  if (channel_ < g_channel.Get().channel)
     return UNSUPPORTED_CHANNEL;
 
   return IS_AVAILABLE;

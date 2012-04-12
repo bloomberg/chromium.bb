@@ -416,13 +416,13 @@ TEST(ExtensionFeatureTest, Equals) {
 }
 
 Feature::Availability IsAvailableInChannel(
-    const std::string& supported_channel, VersionInfo::Channel channel) {
-  Feature::SetChannelForTesting(channel);
+    const std::string& channel, VersionInfo::Channel channel_for_testing) {
+  Feature::SetChannelForTesting(channel_for_testing);
 
   Feature feature;
-  if (!supported_channel.empty()) {
+  if (!channel.empty()) {
     DictionaryValue feature_value;
-    feature_value.SetString("supported_channel", supported_channel);
+    feature_value.SetString("channel", channel);
     feature.Parse(&feature_value);
   }
 

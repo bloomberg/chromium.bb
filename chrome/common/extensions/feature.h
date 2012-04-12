@@ -153,7 +153,7 @@ class Feature {
   Platform platform_;  // we only care about chromeos/not-chromeos now
   int min_manifest_version_;
   int max_manifest_version_;
-  chrome::VersionInfo::Channel supported_channel_;
+  chrome::VersionInfo::Channel channel_;
 };
 
 }  // namespace extensions
