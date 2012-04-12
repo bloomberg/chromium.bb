@@ -9,6 +9,13 @@
     'conditions': [
       [ 'branding == "Chrome"', {
         'conditions': [
+          [ 'OS == "linux" and target_arch == "ia32"', {
+            'flapper_version_h_file%': 'symbols/ppapi/linux/flapper_version.h',
+            'flapper_binary_files%': [
+              'binaries/ppapi/linux/libpepflashplayer.so',
+              'binaries/ppapi/linux/manifest.json',
+            ],
+          }],
           [ 'OS == "linux" and target_arch == "x64"', {
             'flapper_version_h_file%': 'symbols/ppapi/linux_x64/flapper_version.h',
             'flapper_binary_files%': [
@@ -16,11 +23,11 @@
               'binaries/ppapi/linux_x64/manifest.json',
             ],
           }],
-          [ 'OS == "linux" and target_arch == "ia32"', {
-            'flapper_version_h_file%': 'symbols/ppapi/linux/flapper_version.h',
+          [ 'OS == "win"', {
+            'flapper_version_h_file%': 'symbols/ppapi/win/flapper_version.h',
             'flapper_binary_files%': [
-              'binaries/ppapi/linux/libpepflashplayer.so',
-              'binaries/ppapi/linux/manifest.json',
+              'binaries/ppapi/win/pepflashplayer.dll',
+              'binaries/ppapi/win/manifest.json',
             ],
           }],
         ],
