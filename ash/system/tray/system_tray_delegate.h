@@ -236,6 +236,9 @@ class SystemTrayDelegate {
 
   // Shows UI for changing proxy settings.
   virtual void ChangeProxySettings() = 0;
+
+  // Called when the tray is destroyed.
+  virtual void OnTrayDestroyed() = 0;
 };
 
 }  // namespace ash
