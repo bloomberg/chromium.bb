@@ -255,6 +255,8 @@
         '../third_party/skia/src/core/SkMath.cpp',
         '../third_party/skia/src/core/SkMatrix.cpp',
         '../third_party/skia/src/core/SkMetaData.cpp',
+        '../third_party/skia/src/core/SkOrderedReadBuffer.cpp',
+        '../third_party/skia/src/core/SkOrderedWriteBuffer.cpp',
         '../third_party/skia/src/core/SkPackBits.cpp',
         '../third_party/skia/src/core/SkPaint.cpp',
         '../third_party/skia/src/core/SkPath.cpp',
