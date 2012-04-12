@@ -10,6 +10,7 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/snap_sizer.h"
 #include "base/message_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -20,7 +21,14 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/screen.h"
+
+namespace {
+const double kMinHorizVelocityForWindowSwipe = 1100;
+const double kMinVertVelocityForWindowMinimize = 1000;
+}
 
 namespace ash {
 
@@ -142,7 +150,40 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
     case ui::ET_GESTURE_SCROLL_END: {
       if (!in_gesture_resize_)
         return ui::GESTURE_STATUS_UNKNOWN;
-      CompleteDrag(DRAG_COMPLETE);
+      DefaultWindowResizer* default_resizer =
+          static_cast<DefaultWindowResizer*>(window_resizer_.get());
+      bool changed_size =
+          default_resizer ?  default_resizer->changed_size() : false;
+      aura::Window* window =
+          default_resizer ?  default_resizer->target_window() : NULL;
+      bool drag_done = false;
+
+      if (window && !changed_size) {
+        if (fabs(event->delta_y()) > kMinVertVelocityForWindowMinimize) {
+          // Minimize/maximize.
+          window->SetProperty(aura::client::kShowStateKey,
+              event->delta_y() > 0 ? ui::SHOW_STATE_MINIMIZED :
+                                     ui::SHOW_STATE_MAXIMIZED);
+          drag_done = true;
+        } else if (fabs(event->delta_x()) > kMinHorizVelocityForWindowSwipe) {
+          // Snap left/right.
+          internal::SnapSizer sizer(window,
+              gfx::Point(),
+              event->delta_x() < 0 ? internal::SnapSizer::LEFT_EDGE :
+              internal::SnapSizer::RIGHT_EDGE,
+              Shell::GetInstance()->GetGridSize());
+
+          ui::ScopedLayerAnimationSettings scoped_setter(
+              window->layer()->GetAnimator());
+          scoped_setter.SetPreemptionStrategy(
+              ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+          window->SetBounds(sizer.target_bounds());
+          drag_done = true;
+        }
+      }
+
+      if (!drag_done)
+        CompleteDrag(DRAG_COMPLETE);
       in_gesture_resize_ = false;
       break;
     }

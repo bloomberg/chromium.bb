@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,7 +37,7 @@ double Tween::CalculateValue(Tween::Type type, double state) {
 
     case EASE_OUT_SNAP:
       state = 0.95 * (1.0 - pow(1.0 - state, 2));
-      break;
+      return state;
 
     case EASE_OUT:
       return 1.0 - pow(1.0 - state, 2);
