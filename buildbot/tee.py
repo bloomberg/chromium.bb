@@ -83,17 +83,19 @@ class _TeeProcess(multiprocessing.Process):
     for filename in self._output_filenames:
       output_files.append(open(filename, 'w', 0))
 
-    # Read all lines from input_file and write to output_files.
-    _tee(input_file, output_files, self._complain)
+    try:
+      # Read all lines from input_file and write to output_files.
+      _tee(input_file, output_files, self._complain)
 
-    # Close input file.
-    input_file.close()
+    finally:
+      # Close input file.
+      input_file.close()
 
-    # Finally, kill ourself.
-    # Specifically do it in a fashion that ensures no inherited
-    # cleanup code from our parent process is ran- leave that to
-    # the parent.
-    os._exit(0)
+      # Finally, kill ourself.
+      # Specifically do it in a fashion that ensures no inherited
+      # cleanup code from our parent process is ran- leave that to
+      # the parent.
+      os._exit(0)
 
 
 class Tee(cros_build_lib.MasterPidContextManager):
@@ -154,4 +156,8 @@ class Tee(cros_build_lib.MasterPidContextManager):
     self.start()
 
   def _exit(self, exc_type, exc, traceback):
-    self.stop()
+    try:
+      self.stop()
+    finally:
+      if self._tee is not None:
+        self._tee.terminate()
