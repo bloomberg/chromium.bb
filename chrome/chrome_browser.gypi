@@ -1303,6 +1303,8 @@
         'browser/media/media_internals.h',
         'browser/media/media_stream_devices_menu_model.cc',
         'browser/media/media_stream_devices_menu_model.h',
+        'browser/media_gallery/media_device_notifications_linux.cc',
+        'browser/media_gallery/media_device_notifications_linux.h',
         'browser/media_gallery/media_gallery_database.cc',
         'browser/media_gallery/media_gallery_database.h',
         'browser/media_gallery/media_gallery_database_types.cc',

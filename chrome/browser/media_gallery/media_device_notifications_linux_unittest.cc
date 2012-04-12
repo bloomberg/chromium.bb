@@ -4,7 +4,7 @@
 
 // MediaDeviceNotificationsLinux unit tests.
 
-#include "content/browser/media_device_notifications_linux.h"
+#include "chrome/browser/media_gallery/media_device_notifications_linux.h"
 
 #include <mntent.h>
 #include <stdio.h>
@@ -18,10 +18,10 @@
 #include "base/scoped_temp_dir.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
-#include "content/browser/browser_thread_impl.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace chrome {
 
 namespace {
 
@@ -95,7 +95,7 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
 
   MediaDeviceNotificationsLinuxTest()
       : message_loop_(MessageLoop::TYPE_IO),
-        file_thread_(BrowserThread::FILE, &message_loop_) {
+        file_thread_(content::BrowserThread::FILE, &message_loop_) {
   }
   virtual ~MediaDeviceNotificationsLinuxTest() {}
 
@@ -217,7 +217,7 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
 
   // The message loop and file thread to run tests on.
   MessageLoop message_loop_;
-  BrowserThreadImpl file_thread_;
+  content::TestBrowserThread file_thread_;
 
   // SystemMonitor and DevicesChangedObserver to hook together to test.
   base::SystemMonitor system_monitor_;
@@ -393,4 +393,4 @@ TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesOneMountPoint) {
 
 }  // namespace
 
-}  // namespace content
+}  // namespace chrome

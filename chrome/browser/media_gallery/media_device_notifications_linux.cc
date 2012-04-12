@@ -4,7 +4,7 @@
 
 // MediaDeviceNotificationsLinux implementation.
 
-#include "content/browser/media_device_notifications_linux.h"
+#include "chrome/browser/media_gallery/media_device_notifications_linux.h"
 
 #include <mntent.h>
 #include <stdio.h>
@@ -38,9 +38,10 @@ const char* const kKnownFileSystems[] = {
 
 }  // namespace
 
-namespace content {
+namespace chrome {
 
 using base::SystemMonitor;
+using content::BrowserThread;
 
 // A simple pass-through class. MediaDeviceNotificationsLinux cannot directly
 // inherit from FilePathWatcher::Delegate due to multiple inheritance.
@@ -275,4 +276,4 @@ void MediaDeviceNotificationsLinux::RemoveOldDevice(
   system_monitor->ProcessMediaDeviceDetached(device_id);
 }
 
-}  // namespace content
+}  // namespace chrome

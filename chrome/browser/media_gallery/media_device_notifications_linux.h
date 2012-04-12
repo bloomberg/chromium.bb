@@ -5,8 +5,8 @@
 // MediaDeviceNotificationsLinux listens for mount point changes and notifies
 // the SystemMonitor about the addition and deletion of media devices.
 
-#ifndef CONTENT_BROWSER_MEDIA_DEVICE_NOTIFICATIONS_LINUX_H_
-#define CONTENT_BROWSER_MEDIA_DEVICE_NOTIFICATIONS_LINUX_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERY_MEDIA_DEVICE_NOTIFICATIONS_LINUX_H_
+#define CHROME_BROWSER_MEDIA_GALLERY_MEDIA_DEVICE_NOTIFICATIONS_LINUX_H_
 #pragma once
 
 #include <map>
@@ -19,13 +19,12 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
 #include "base/system_monitor/system_monitor.h"
-#include "content/common/content_export.h"
 
 class FilePath;
 
-namespace content {
+namespace chrome {
 
-class CONTENT_EXPORT MediaDeviceNotificationsLinux
+class MediaDeviceNotificationsLinux
     : public base::RefCountedThreadSafe<MediaDeviceNotificationsLinux> {
  public:
   explicit MediaDeviceNotificationsLinux(const FilePath& path);
@@ -101,6 +100,6 @@ class CONTENT_EXPORT MediaDeviceNotificationsLinux
   DISALLOW_COPY_AND_ASSIGN(MediaDeviceNotificationsLinux);
 };
 
-}  // namespace content
+}  // namespace chrome
 
-#endif  // CONTENT_BROWSER_MEDIA_DEVICE_NOTIFICATIONS_LINUX_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERY_MEDIA_DEVICE_NOTIFICATIONS_LINUX_H_

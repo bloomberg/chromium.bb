@@ -231,7 +231,6 @@
         'browser/intents/intent_injector_unittest.cc',
         'browser/intents/internal_web_intents_dispatcher_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
-        'browser/media_device_notifications_linux_unittest.cc',
         'browser/notification_service_impl_unittest.cc',
         'browser/plugin_loader_posix_unittest.cc',
         'browser/renderer_host/accelerated_plugin_view_mac_unittest.mm',

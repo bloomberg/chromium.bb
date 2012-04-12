@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chrome_browser_main_linux.h"
 
+#include "chrome/browser/media_gallery/media_device_notifications_linux.h"
+
 #if defined(USE_LINUX_BREAKPAD)
 #include <stdlib.h>
 
@@ -70,6 +72,9 @@ ChromeBrowserMainPartsLinux::ChromeBrowserMainPartsLinux(
     : ChromeBrowserMainPartsPosix(parameters) {
 }
 
+ChromeBrowserMainPartsLinux::~ChromeBrowserMainPartsLinux() {
+}
+
 void ChromeBrowserMainPartsLinux::PreProfileInit() {
 #if defined(USE_LINUX_BREAKPAD)
   // Needs to be called after we have chrome::DIR_USER_DATA and
@@ -81,6 +86,11 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   if (IsCrashReportingEnabled(local_state()))
     InitCrashReporter();
 #endif
+
+  const FilePath kDefaultMtabPath("/etc/mtab");
+  media_device_notifications_linux_ =
+      new chrome::MediaDeviceNotificationsLinux(kDefaultMtabPath);
+  media_device_notifications_linux_->Init();
 
   ChromeBrowserMainPartsPosix::PreProfileInit();
 }

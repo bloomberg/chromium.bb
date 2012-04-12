@@ -9,17 +9,26 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/chrome_browser_main_posix.h"
+
+namespace chrome {
+class MediaDeviceNotificationsLinux;
+}
 
 class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
  public:
   explicit ChromeBrowserMainPartsLinux(
       const content::MainFunctionParams& parameters);
+  virtual ~ChromeBrowserMainPartsLinux();
 
   // ChromeBrowserMainParts overrides.
   virtual void PreProfileInit() OVERRIDE;
 
  private:
+  scoped_refptr<chrome::MediaDeviceNotificationsLinux>
+      media_device_notifications_linux_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsLinux);
 };
 
