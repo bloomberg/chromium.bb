@@ -74,12 +74,15 @@ void PPB_TCPSocket_Private_Impl::SendConnectWithNetAddress(
 
 void PPB_TCPSocket_Private_Impl::SendSSLHandshake(
     const std::string& server_name,
-    uint16_t server_port) {
+    uint16_t server_port,
+    const std::vector<std::vector<char> >& trusted_certs,
+    const std::vector<std::vector<char> >& untrusted_certs) {
   PluginDelegate* plugin_delegate = ResourceHelper::GetPluginDelegate(this);
   if (!plugin_delegate)
     return;
 
-  plugin_delegate->TCPSocketSSLHandshake(socket_id_, server_name, server_port);
+  plugin_delegate->TCPSocketSSLHandshake(socket_id_, server_name, server_port,
+                                         trusted_certs, untrusted_certs);
 }
 
 void PPB_TCPSocket_Private_Impl::SendRead(int32_t bytes_to_read) {

@@ -104,8 +104,11 @@ void PepperTCPSocket::ConnectWithNetAddress(
   StartConnect(address_list_);
 }
 
-void PepperTCPSocket::SSLHandshake(const std::string& server_name,
-                                   uint16_t server_port) {
+void PepperTCPSocket::SSLHandshake(
+    const std::string& server_name,
+    uint16_t server_port,
+    const std::vector<std::vector<char> >& trusted_certs,
+    const std::vector<std::vector<char> >& untrusted_certs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Allow to do SSL handshake only if currently the socket has been connected
@@ -119,6 +122,8 @@ void PepperTCPSocket::SSLHandshake(const std::string& server_name,
   }
 
   connection_state_ = SSL_HANDSHAKE_IN_PROGRESS;
+  // TODO(raymes,rsleevi): Use trusted/untrusted certificates when connecting.
+
   net::ClientSocketHandle* handle = new net::ClientSocketHandle();
   handle->set_socket(socket_.release());
   net::ClientSocketFactory* factory =
@@ -275,8 +280,22 @@ void PepperTCPSocket::SendWriteACKError() {
 }
 
 void PepperTCPSocket::SendSSLHandshakeACK(bool succeeded) {
+  ppapi::PPB_X509Certificate_Fields certificate_fields;
+  if (succeeded) {
+    // Our socket is guaranteed to be an SSL socket if we get here.
+    net::SSLClientSocket* ssl_socket =
+        static_cast<net::SSLClientSocket*>(socket_.get());
+    net::SSLInfo ssl_info;
+    ssl_socket->GetSSLInfo(&ssl_info);
+    if (ssl_info.cert.get())
+      GetCertificateFields(*ssl_info.cert, &certificate_fields);
+  }
   manager_->Send(new PpapiMsg_PPBTCPSocket_SSLHandshakeACK(
-      routing_id_, plugin_dispatcher_id_, socket_id_, succeeded));
+      routing_id_,
+      plugin_dispatcher_id_,
+      socket_id_,
+      succeeded,
+      certificate_fields));
 }
 
 void PepperTCPSocket::OnResolveCompleted(int result) {

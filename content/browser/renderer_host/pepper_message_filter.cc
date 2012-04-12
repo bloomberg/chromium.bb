@@ -288,16 +288,20 @@ void PepperMessageFilter::DoTCPConnectWithNetAddress(
     iter->second->SendConnectACKError();
 }
 
-void PepperMessageFilter::OnTCPSSLHandshake(uint32 socket_id,
-                                            const std::string& server_name,
-                                            uint16_t server_port) {
+void PepperMessageFilter::OnTCPSSLHandshake(
+    uint32 socket_id,
+    const std::string& server_name,
+    uint16_t server_port,
+    const std::vector<std::vector<char> >& trusted_certs,
+    const std::vector<std::vector<char> >& untrusted_certs) {
   TCPSocketMap::iterator iter = tcp_sockets_.find(socket_id);
   if (iter == tcp_sockets_.end()) {
     NOTREACHED();
     return;
   }
 
-  iter->second->SSLHandshake(server_name, server_port);
+  iter->second->SSLHandshake(server_name, server_port, trusted_certs,
+                             untrusted_certs);
 }
 
 void PepperMessageFilter::OnTCPRead(uint32 socket_id, int32_t bytes_to_read) {

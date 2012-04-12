@@ -469,9 +469,12 @@ class PluginDelegate {
       PPB_TCPSocket_Private_Impl* socket,
       uint32 socket_id,
       const PP_NetAddress_Private& addr) = 0;
-  virtual void TCPSocketSSLHandshake(uint32 socket_id,
-                                     const std::string& server_name,
-                                     uint16_t server_port) = 0;
+  virtual void TCPSocketSSLHandshake(
+      uint32 socket_id,
+      const std::string& server_name,
+      uint16_t server_port,
+      const std::vector<std::vector<char> >& trusted_certs,
+      const std::vector<std::vector<char> >& untrusted_certs) = 0;
   virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read) = 0;
   virtual void TCPSocketWrite(uint32 socket_id, const std::string& buffer) = 0;
   virtual void TCPSocketDisconnect(uint32 socket_id) = 0;

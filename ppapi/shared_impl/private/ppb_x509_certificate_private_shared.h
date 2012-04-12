@@ -22,6 +22,9 @@ namespace ppapi {
 
 class PPAPI_SHARED_EXPORT PPB_X509Certificate_Fields {
  public:
+  PPB_X509Certificate_Fields();
+  PPB_X509Certificate_Fields(const PPB_X509Certificate_Fields& fields);
+
   // Takes ownership of |value|.
   void SetField(PP_X509Certificate_Private_Field field, base::Value* value);
   PP_Var GetFieldAsPPVar(PP_X509Certificate_Private_Field field) const;
@@ -42,10 +45,10 @@ class PPAPI_SHARED_EXPORT PPB_X509Certificate_Private_Shared
   PPB_X509Certificate_Private_Shared(ResourceObjectType type,
                                      PP_Instance instance);
   // Used by tcp_socket_shared_impl to construct a certificate resource from a
-  // server certificate. This object owns the pointer passed in.
+  // server certificate.
   PPB_X509Certificate_Private_Shared(ResourceObjectType type,
                                      PP_Instance instance,
-                                     PPB_X509Certificate_Fields* fields);
+                                     const PPB_X509Certificate_Fields& fields);
   virtual ~PPB_X509Certificate_Private_Shared();
 
   // Resource overrides.

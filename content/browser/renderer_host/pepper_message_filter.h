@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
@@ -133,9 +134,12 @@ class PepperMessageFilter
   void OnTCPConnectWithNetAddress(int32 routing_id,
                                   uint32 socket_id,
                                   const PP_NetAddress_Private& net_addr);
-  void OnTCPSSLHandshake(uint32 socket_id,
-                         const std::string& server_name,
-                         uint16_t server_port);
+  void OnTCPSSLHandshake(
+      uint32 socket_id,
+      const std::string& server_name,
+      uint16_t server_port,
+      const std::vector<std::vector<char> >& trusted_certs,
+      const std::vector<std::vector<char> >& untrusted_certs);
   void OnTCPRead(uint32 socket_id, int32_t bytes_to_read);
   void OnTCPWrite(uint32 socket_id, const std::string& data);
   void OnTCPDisconnect(uint32 socket_id);

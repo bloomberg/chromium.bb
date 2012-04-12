@@ -13,12 +13,12 @@ namespace pp {
 
 class Var;
 
-class X509Certificate : public Resource {
+class X509CertificatePrivate : public Resource {
  public:
   // Creates an is_null() object.
-  X509Certificate();
-  explicit X509Certificate(PP_Resource resource);
-  explicit X509Certificate(const InstanceHandle& instance);
+  X509CertificatePrivate();
+  X509CertificatePrivate(PassRef, PP_Resource resource);
+  explicit X509CertificatePrivate(const InstanceHandle& instance);
 
   // Returns true if the required interface is available.
   static bool IsAvailable();

@@ -51,7 +51,11 @@ class PepperTCPSocket {
 
   void Connect(const std::string& host, uint16_t port);
   void ConnectWithNetAddress(const PP_NetAddress_Private& net_addr);
-  void SSLHandshake(const std::string& server_name, uint16_t server_port);
+  void SSLHandshake(
+      const std::string& server_name,
+      uint16_t server_port,
+      const std::vector<std::vector<char> >& trusted_certs,
+      const std::vector<std::vector<char> >& untrusted_certs);
   void Read(int32 bytes_to_read);
   void Write(const std::string& data);
 

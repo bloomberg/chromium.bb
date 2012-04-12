@@ -8,7 +8,8 @@
  */
 
 label Chrome {
-  M17 = 0.3
+  M17 = 0.3,
+  M20 = 0.4
 };
 
 /**
@@ -75,6 +76,28 @@ interface PPB_TCPSocket_Private {
                        [in] str_t server_name,
                        [in] uint16_t server_port,
                        [in] PP_CompletionCallback callback);
+
+  /**
+   * Returns the server's <code>PPB_X509Certificate_Private</code> for a socket
+   * connection if an SSL connection has been established using
+   * <code>SSLHandshake</code>. If no SSL connection has been established, a
+   * null resource is returned.
+   */
+  [version=0.4]
+  PP_Resource GetServerCertificate([in] PP_Resource tcp_socket);
+
+  /**
+   * NOTE: This function is not implemented and will return
+   * <code>PP_FALSE</code>.
+   * Adds a trusted/untrusted chain building certificate to be used for this
+   * connection. The <code>certificate</code> must be a
+   * <code>PPB_X509Certificate_Private<code>. <code>PP_TRUE</code> is returned
+   * upon success.
+   */
+  [version=0.4]
+  PP_Bool AddChainBuildingCertificate([in] PP_Resource tcp_socket,
+                                      [in] PP_Resource certificate,
+                                      [in] PP_Bool is_trusted);
 
   /**
    * Reads data from the socket. The size of |buffer| must be at least as large

@@ -5,6 +5,8 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_TCP_SOCKET_PRIVATE_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_TCP_SOCKET_PRIVATE_IMPL_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 
@@ -25,8 +27,11 @@ class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl {
   virtual void SendConnect(const std::string& host, uint16_t port) OVERRIDE;
   virtual void SendConnectWithNetAddress(
       const PP_NetAddress_Private& addr) OVERRIDE;
-  virtual void SendSSLHandshake(const std::string& server_name,
-                                uint16_t server_port) OVERRIDE;
+  virtual void SendSSLHandshake(
+      const std::string& server_name,
+      uint16_t server_port,
+      const std::vector<std::vector<char> >& trusted_certs,
+      const std::vector<std::vector<char> >& untrusted_certs) OVERRIDE;
   virtual void SendRead(int32_t bytes_to_read) OVERRIDE;
   virtual void SendWrite(const std::string& buffer) OVERRIDE;
   virtual void SendDisconnect() OVERRIDE;

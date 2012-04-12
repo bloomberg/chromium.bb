@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,8 @@ namespace ppapi_proxy {
 // Implements the untrusted side of the PPB_TCPSocket_Private interface.
 class PluginTCPSocketPrivate {
  public:
-  static const PPB_TCPSocket_Private* GetInterface();
+  static const PPB_TCPSocket_Private_0_3* GetInterface0_3();
+  static const PPB_TCPSocket_Private_0_4* GetInterface0_4();
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginTCPSocketPrivate);

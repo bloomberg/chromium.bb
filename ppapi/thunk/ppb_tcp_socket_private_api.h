@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,6 +25,9 @@ class PPAPI_THUNK_EXPORT PPB_TCPSocket_Private_API {
   virtual int32_t SSLHandshake(const char* server_name,
                                uint16_t server_port,
                                PP_CompletionCallback callback) = 0;
+  virtual PP_Resource GetServerCertificate() = 0;
+  virtual PP_Bool AddChainBuildingCertificate(PP_Resource certificate,
+                                              PP_Bool trusted) = 0;
   virtual int32_t Read(char* buffer,
                        int32_t bytes_to_read,
                        PP_CompletionCallback callback) = 0;

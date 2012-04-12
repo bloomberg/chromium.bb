@@ -341,10 +341,11 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBTCPSocket_ConnectACK,
                     bool /* succeeded */,
                     PP_NetAddress_Private /* local_addr */,
                     PP_NetAddress_Private /* remote_addr */)
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPBTCPSocket_SSLHandshakeACK,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPSocket_SSLHandshakeACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
-                    bool /* succeeded */)
+                    bool /* succeeded */,
+                    ppapi::PPB_X509Certificate_Fields /* certificate_fields */)
 IPC_MESSAGE_ROUTED4(PpapiMsg_PPBTCPSocket_ReadACK,
                     uint32 /* plugin_dispatcher_id */,
                     uint32 /* socket_id */,
@@ -1257,10 +1258,12 @@ IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_ConnectWithNetAddress,
                      int32 /* routing_id */,
                      uint32 /* socket_id */,
                      PP_NetAddress_Private /* net_addr */)
-IPC_MESSAGE_CONTROL3(PpapiHostMsg_PPBTCPSocket_SSLHandshake,
+IPC_MESSAGE_CONTROL5(PpapiHostMsg_PPBTCPSocket_SSLHandshake,
                      uint32 /* socket_id */,
                      std::string /* server_name */,
-                     uint16_t /* server_port */)
+                     uint16_t /* server_port */,
+                     std::vector<std::vector<char> > /* trusted_certs */,
+                     std::vector<std::vector<char> > /* untrusted_certs */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_PPBTCPSocket_Read,
                      uint32 /* socket_id */,
                      int32_t /* bytes_to_read */)

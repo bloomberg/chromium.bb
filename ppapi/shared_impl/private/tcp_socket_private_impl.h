@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define PPAPI_SHARED_IMPL_PRIVATE_TCP_SOCKET_PRIVATE_IMPL_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "ppapi/shared_impl/resource.h"
@@ -13,6 +14,9 @@
 #include "ppapi/thunk/ppb_tcp_socket_private_api.h"
 
 namespace ppapi {
+
+class PPB_X509Certificate_Fields;
+class PPB_X509Certificate_Private_Shared;
 
 // This class provides the shared implementation of a
 // PPB_TCPSocket_Private.  The functions that actually send messages
@@ -51,6 +55,9 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
   virtual int32_t SSLHandshake(const char* server_name,
                               uint16_t server_port,
                               PP_CompletionCallback callback) OVERRIDE;
+  virtual PP_Resource GetServerCertificate() OVERRIDE;
+  virtual PP_Bool AddChainBuildingCertificate(PP_Resource certificate,
+                                              PP_Bool trusted) OVERRIDE;
   virtual int32_t Read(char* buffer,
                       int32_t bytes_to_read,
                       PP_CompletionCallback callback) OVERRIDE;
@@ -63,7 +70,9 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
   void OnConnectCompleted(bool succeeded,
                           const PP_NetAddress_Private& local_addr,
                           const PP_NetAddress_Private& remote_addr);
-  void OnSSLHandshakeCompleted(bool succeeded);
+  void OnSSLHandshakeCompleted(
+      bool succeeded,
+      const PPB_X509Certificate_Fields& certificate_fields);
   void OnReadCompleted(bool succeeded, const std::string& data);
   void OnWriteCompleted(bool succeeded, int32_t bytes_written);
 
@@ -71,8 +80,11 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
   // proxied and non-proxied derived classes.
   virtual void SendConnect(const std::string& host, uint16_t port) = 0;
   virtual void SendConnectWithNetAddress(const PP_NetAddress_Private& addr) = 0;
-  virtual void SendSSLHandshake(const std::string& server_name,
-                                uint16_t server_port) = 0;
+  virtual void SendSSLHandshake(
+      const std::string& server_name,
+      uint16_t server_port,
+      const std::vector<std::vector<char> >& trusted_certs,
+      const std::vector<std::vector<char> >& untrusted_certs) = 0;
   virtual void SendRead(int32_t bytes_to_read) = 0;
   virtual void SendWrite(const std::string& buffer) = 0;
   virtual void SendDisconnect() = 0;
@@ -95,6 +107,8 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
   bool IsConnected() const;
   void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);
 
+  ResourceObjectType resource_type_;
+
   uint32 socket_id_;
   ConnectionState connection_state_;
 
@@ -108,6 +122,11 @@ class PPAPI_SHARED_EXPORT TCPSocketPrivateImpl
 
   PP_NetAddress_Private local_addr_;
   PP_NetAddress_Private remote_addr_;
+
+  scoped_refptr<PPB_X509Certificate_Private_Shared> server_certificate_;
+
+  std::vector<std::vector<char> > trusted_certificates_;
+  std::vector<std::vector<char> > untrusted_certificates_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPSocketPrivateImpl);
 };

@@ -193,6 +193,18 @@ int32_t SSLHandshake(PP_Resource tcp_socket,
   return MayForceCallback(callback, pp_error);
 }
 
+PP_Resource GetServerCertificate(PP_Resource tcp_socket) {
+  // TODO(raymes): Not implemented.
+  return 0;
+}
+
+PP_Bool AddChainBuildingCertificate(PP_Resource tcp_socket,
+                                    PP_Resource certificate,
+                                    PP_Bool is_trusted) {
+  // TODO(raymes): Not implemented.
+  return PP_FALSE;
+}
+
 int32_t Read(PP_Resource tcp_socket,
              char* buffer,
              int32_t bytes_to_read,
@@ -274,7 +286,23 @@ void Disconnect(PP_Resource tcp_socket) {
 
 }  // namespace
 
-const PPB_TCPSocket_Private* PluginTCPSocketPrivate::GetInterface() {
+const PPB_TCPSocket_Private_0_3* PluginTCPSocketPrivate::GetInterface0_3() {
+  static const PPB_TCPSocket_Private_0_3 tcpsocket_private_interface = {
+    Create,
+    IsTCPSocket,
+    Connect,
+    ConnectWithNetAddress,
+    GetLocalAddress,
+    GetRemoteAddress,
+    SSLHandshake,
+    Read,
+    Write,
+    Disconnect,
+  };
+  return &tcpsocket_private_interface;
+}
+
+const PPB_TCPSocket_Private_0_4* PluginTCPSocketPrivate::GetInterface0_4() {
   static const PPB_TCPSocket_Private tcpsocket_private_interface = {
     Create,
     IsTCPSocket,
@@ -283,6 +311,8 @@ const PPB_TCPSocket_Private* PluginTCPSocketPrivate::GetInterface() {
     GetLocalAddress,
     GetRemoteAddress,
     SSLHandshake,
+    GetServerCertificate,
+    AddChainBuildingCertificate,
     Read,
     Write,
     Disconnect,

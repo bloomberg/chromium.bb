@@ -15,15 +15,22 @@ namespace pp {
 
 namespace {
 
-template <> const char* interface_name<PPB_TCPSocket_Private>() {
-  return PPB_TCPSOCKET_PRIVATE_INTERFACE;
+template <> const char* interface_name<PPB_TCPSocket_Private_0_4>() {
+  return PPB_TCPSOCKET_PRIVATE_INTERFACE_0_4;
+}
+
+template <> const char* interface_name<PPB_TCPSocket_Private_0_3>() {
+  return PPB_TCPSOCKET_PRIVATE_INTERFACE_0_3;
 }
 
 }  // namespace
 
 TCPSocketPrivate::TCPSocketPrivate(const InstanceHandle& instance) {
-  if (has_interface<PPB_TCPSocket_Private>()) {
-    PassRefFromConstructor(get_interface<PPB_TCPSocket_Private>()->Create(
+  if (has_interface<PPB_TCPSocket_Private_0_4>()) {
+    PassRefFromConstructor(get_interface<PPB_TCPSocket_Private_0_4>()->Create(
+        instance.pp_instance()));
+  } else if (has_interface<PPB_TCPSocket_Private_0_3>()) {
+    PassRefFromConstructor(get_interface<PPB_TCPSocket_Private_0_3>()->Create(
         instance.pp_instance()));
   }
 }
@@ -34,76 +41,143 @@ TCPSocketPrivate::TCPSocketPrivate(PassRef, PP_Resource resource)
 
 // static
 bool TCPSocketPrivate::IsAvailable() {
-  return has_interface<PPB_TCPSocket_Private>();
+  return has_interface<PPB_TCPSocket_Private_0_4>() ||
+      has_interface<PPB_TCPSocket_Private_0_3>();
 }
 
 int32_t TCPSocketPrivate::Connect(const char* host,
                                   uint16_t port,
                                   const CompletionCallback& callback) {
-  if (!has_interface<PPB_TCPSocket_Private>())
-    return callback.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_TCPSocket_Private>()->Connect(
-      pp_resource(), host, port, callback.pp_completion_callback());
+  if (has_interface<PPB_TCPSocket_Private_0_4>()) {
+    return get_interface<PPB_TCPSocket_Private_0_4>()->Connect(
+        pp_resource(), host, port, callback.pp_completion_callback());
+  }
+  if (has_interface<PPB_TCPSocket_Private_0_3>()) {
+    return get_interface<PPB_TCPSocket_Private_0_3>()->Connect(
+        pp_resource(), host, port, callback.pp_completion_callback());
+  }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
 int32_t TCPSocketPrivate::ConnectWithNetAddress(
     const PP_NetAddress_Private* addr,
     const CompletionCallback& callback) {
-  if (!has_interface<PPB_TCPSocket_Private>())
-    return callback.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_TCPSocket_Private>()->ConnectWithNetAddress(
-      pp_resource(), addr, callback.pp_completion_callback());
+  if (has_interface<PPB_TCPSocket_Private_0_4>()) {
+    return get_interface<PPB_TCPSocket_Private_0_4>()->ConnectWithNetAddress(
+        pp_resource(), addr, callback.pp_completion_callback());
+  }
+  if (has_interface<PPB_TCPSocket_Private_0_3>()) {
+    return get_interface<PPB_TCPSocket_Private_0_3>()->ConnectWithNetAddress(
+        pp_resource(), addr, callback.pp_completion_callback());
+  }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
 bool TCPSocketPrivate::GetLocalAddress(PP_NetAddress_Private* local_addr) {
-  if (!has_interface<PPB_TCPSocket_Private>())
-    return false;
-
-  PP_Bool result = get_interface<PPB_TCPSocket_Private>()->GetLocalAddress(
-      pp_resource(), local_addr);
-  return PP_ToBool(result);
+  if (has_interface<PPB_TCPSocket_Private_0_4>()) {
+    PP_Bool result = get_interface<PPB_TCPSocket_Private_0_4>()->
+        GetLocalAddress(pp_resource(), local_addr);
+    return PP_ToBool(result);
+  }
+  if (has_interface<PPB_TCPSocket_Private_0_3>()) {
+    PP_Bool result = get_interface<PPB_TCPSocket_Private_0_3>()->
+        GetLocalAddress(pp_resource(), local_addr);
+    return PP_ToBool(result);
+  }
+  return false;
 }
 
 bool TCPSocketPrivate::GetRemoteAddress(PP_NetAddress_Private* remote_addr) {
-  if (!has_interface<PPB_TCPSocket_Private>())
-    return false;
-  PP_Bool result = get_interface<PPB_TCPSocket_Private>()->GetRemoteAddress(
-      pp_resource(), remote_addr);
-  return PP_ToBool(result);
+  if (has_interface<PPB_TCPSocket_Private_0_4>()) {
+    PP_Bool result = get_interface<PPB_TCPSocket_Private_0_4>()->
+        GetRemoteAddress(pp_resource(), remote_addr);
+    return PP_ToBool(result);
+  }
+  if (has_interface<PPB_TCPSocket_Private_0_3>()) {
+    PP_Bool result = get_interface<PPB_TCPSocket_Private_0_3>()->
+        GetRemoteAddress(pp_resource(), remote_addr);
+    return PP_ToBool(result);
+  }
+  return false;
 }
 
 int32_t TCPSocketPrivate::SSLHandshake(const char* server_name,
                                        uint16_t server_port,
                                        const CompletionCallback& callback) {
-  if (!has_interface<PPB_TCPSocket_Private>())
-    return callback.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_TCPSocket_Private>()->SSLHandshake(
-      pp_resource(), server_name, server_port,
-      callback.pp_completion_callback());
+  if (has_interface<PPB_TCPSocket_Private_0_4>()) {
+    return get_interface<PPB_TCPSocket_Private_0_4>()->SSLHandshake(
+        pp_resource(), server_name, server_port,
+        callback.pp_completion_callback());
+  }
+  if (has_interface<PPB_TCPSocket_Private_0_3>()) {
+    return get_interface<PPB_TCPSocket_Private_0_3>()->SSLHandshake(
+        pp_resource(), server_name, server_port,
+        callback.pp_completion_callback());
+  }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
+}
+
+X509CertificatePrivate TCPSocketPrivate::GetServerCertificate() {
+  if (has_interface<PPB_TCPSocket_Private_0_4>()) {
+    return X509CertificatePrivate(PASS_REF,
+        get_interface<PPB_TCPSocket_Private_0_4>()->GetServerCertificate(
+            pp_resource()));
+  }
+  return X509CertificatePrivate();
+}
+
+bool TCPSocketPrivate::AddChainBuildingCertificate(
+    const X509CertificatePrivate& cert,
+    bool trusted) {
+  if (has_interface<PPB_TCPSocket_Private_0_4>()) {
+    return PP_ToBool(get_interface<PPB_TCPSocket_Private_0_4>()->
+        AddChainBuildingCertificate(pp_resource(), cert.pp_resource(),
+                                    PP_FromBool(trusted)));
+  }
+  return false;
 }
 
 int32_t TCPSocketPrivate::Read(char* buffer,
                                int32_t bytes_to_read,
                                const CompletionCallback& callback) {
-  if (!has_interface<PPB_TCPSocket_Private>())
-    return callback.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_TCPSocket_Private>()->Read(
-      pp_resource(), buffer, bytes_to_read, callback.pp_completion_callback());
+  if (has_interface<PPB_TCPSocket_Private_0_4>()) {
+    return get_interface<PPB_TCPSocket_Private_0_4>()->Read(
+        pp_resource(), buffer, bytes_to_read,
+        callback.pp_completion_callback());
+  }
+  if (has_interface<PPB_TCPSocket_Private_0_3>()) {
+    return get_interface<PPB_TCPSocket_Private_0_3>()->Read(
+        pp_resource(), buffer, bytes_to_read,
+        callback.pp_completion_callback());
+  }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
 int32_t TCPSocketPrivate::Write(const char* buffer,
                                 int32_t bytes_to_write,
                                 const CompletionCallback& callback) {
-  if (!has_interface<PPB_TCPSocket_Private>())
-    return callback.MayForce(PP_ERROR_NOINTERFACE);
-  return get_interface<PPB_TCPSocket_Private>()->Write(
-      pp_resource(), buffer, bytes_to_write, callback.pp_completion_callback());
+  if (has_interface<PPB_TCPSocket_Private_0_4>()) {
+    return get_interface<PPB_TCPSocket_Private_0_4>()->Write(
+        pp_resource(), buffer, bytes_to_write,
+        callback.pp_completion_callback());
+  }
+  if (has_interface<PPB_TCPSocket_Private_0_3>()) {
+    return get_interface<PPB_TCPSocket_Private_0_3>()->Write(
+        pp_resource(), buffer, bytes_to_write,
+        callback.pp_completion_callback());
+  }
+  return callback.MayForce(PP_ERROR_NOINTERFACE);
 }
 
 void TCPSocketPrivate::Disconnect() {
-  if (!has_interface<PPB_TCPSocket_Private>())
-    return;
-  return get_interface<PPB_TCPSocket_Private>()->Disconnect(pp_resource());
+  if (has_interface<PPB_TCPSocket_Private_0_4>()) {
+    return get_interface<PPB_TCPSocket_Private_0_4>()->Disconnect(
+        pp_resource());
+  }
+  if (has_interface<PPB_TCPSocket_Private_0_3>()) {
+    return get_interface<PPB_TCPSocket_Private_0_3>()->Disconnect(
+        pp_resource());
+  }
 }
 
 }  // namespace pp

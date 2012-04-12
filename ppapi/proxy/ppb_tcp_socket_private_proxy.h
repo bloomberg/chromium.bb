@@ -15,6 +15,9 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
 namespace ppapi {
+
+class PPB_X509Certificate_Fields;
+
 namespace proxy {
 
 class PPB_TCPSocket_Private_Proxy : public InterfaceProxy {
@@ -41,9 +44,11 @@ class PPB_TCPSocket_Private_Proxy : public InterfaceProxy {
                        bool succeeded,
                        const PP_NetAddress_Private& local_addr,
                        const PP_NetAddress_Private& remote_addr);
-  void OnMsgSSLHandshakeACK(uint32 plugin_dispatcher_id,
-                            uint32 socket_id,
-                            bool succeeded);
+  void OnMsgSSLHandshakeACK(
+      uint32 plugin_dispatcher_id,
+      uint32 socket_id,
+      bool succeeded,
+      const PPB_X509Certificate_Fields& certificate_fields);
   void OnMsgReadACK(uint32 plugin_dispatcher_id,
                     uint32 socket_id,
                     bool succeeded,

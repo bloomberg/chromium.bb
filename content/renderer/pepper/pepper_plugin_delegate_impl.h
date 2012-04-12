@@ -270,9 +270,12 @@ class PepperPluginDelegateImpl
       webkit::ppapi::PPB_TCPSocket_Private_Impl* socket,
       uint32 socket_id,
       const PP_NetAddress_Private& addr) OVERRIDE;
-  virtual void TCPSocketSSLHandshake(uint32 socket_id,
-                                     const std::string& server_name,
-                                     uint16_t server_port) OVERRIDE;
+  virtual void TCPSocketSSLHandshake(
+      uint32 socket_id,
+      const std::string& server_name,
+      uint16_t server_port,
+      const std::vector<std::vector<char> >& trusted_certs,
+      const std::vector<std::vector<char> >& untrusted_certs) OVERRIDE;
   virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read) OVERRIDE;
   virtual void TCPSocketWrite(uint32 socket_id,
                               const std::string& buffer) OVERRIDE;
@@ -373,9 +376,11 @@ class PepperPluginDelegateImpl
                              bool succeeded,
                              const PP_NetAddress_Private& local_addr,
                              const PP_NetAddress_Private& remote_addr);
-  void OnTCPSocketSSLHandshakeACK(uint32 plugin_dispatcher_id,
-                                  uint32 socket_id,
-                                  bool succeeded);
+  void OnTCPSocketSSLHandshakeACK(
+      uint32 plugin_dispatcher_id,
+      uint32 socket_id,
+      bool succeeded,
+      const ppapi::PPB_X509Certificate_Fields& certificate_fields);
   void OnTCPSocketReadACK(uint32 plugin_dispatcher_id,
                           uint32 socket_id,
                           bool succeeded,

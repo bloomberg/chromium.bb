@@ -250,9 +250,12 @@ void MockPluginDelegate::TCPSocketConnectWithNetAddress(
     const PP_NetAddress_Private& addr) {
 }
 
-void MockPluginDelegate::TCPSocketSSLHandshake(uint32 socket_id,
-                                               const std::string& server_name,
-                                               uint16_t server_port) {
+void MockPluginDelegate::TCPSocketSSLHandshake(
+    uint32 socket_id,
+    const std::string& server_name,
+    uint16_t server_port,
+    const std::vector<std::vector<char> >& trusted_certs,
+    const std::vector<std::vector<char> >& untrusted_certs) {
 }
 
 void MockPluginDelegate::TCPSocketRead(uint32 socket_id,

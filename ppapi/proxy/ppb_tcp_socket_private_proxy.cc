@@ -12,6 +12,7 @@
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 #include "ppapi/shared_impl/private/tcp_socket_private_impl.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/thunk.h"
@@ -38,8 +39,11 @@ class TCPSocket : public TCPSocketPrivateImpl {
   virtual void SendConnect(const std::string& host, uint16_t port) OVERRIDE;
   virtual void SendConnectWithNetAddress(
       const PP_NetAddress_Private& addr) OVERRIDE;
-  virtual void SendSSLHandshake(const std::string& server_name,
-                                uint16_t server_port) OVERRIDE;
+  virtual void SendSSLHandshake(
+      const std::string& server_name,
+      uint16_t server_port,
+      const std::vector<std::vector<char> >& trusted_certs,
+      const std::vector<std::vector<char> >& untrusted_certs) OVERRIDE;
   virtual void SendRead(int32_t bytes_to_read) OVERRIDE;
   virtual void SendWrite(const std::string& buffer) OVERRIDE;
   virtual void SendDisconnect() OVERRIDE;
@@ -88,10 +92,13 @@ void TCPSocket::SendConnectWithNetAddress(const PP_NetAddress_Private& addr) {
       API_ID_PPB_TCPSOCKET_PRIVATE, socket_id_, addr));
 }
 
-void TCPSocket::SendSSLHandshake(const std::string& server_name,
-                                 uint16_t server_port) {
+void TCPSocket::SendSSLHandshake(
+    const std::string& server_name,
+    uint16_t server_port,
+    const std::vector<std::vector<char> >& trusted_certs,
+    const std::vector<std::vector<char> >& untrusted_certs) {
   SendToBrowser(new PpapiHostMsg_PPBTCPSocket_SSLHandshake(
-      socket_id_, server_name, server_port));
+      socket_id_, server_name, server_port, trusted_certs, untrusted_certs));
 }
 
 void TCPSocket::SendRead(int32_t bytes_to_read) {
@@ -188,7 +195,8 @@ void PPB_TCPSocket_Private_Proxy::OnMsgConnectACK(
 void PPB_TCPSocket_Private_Proxy::OnMsgSSLHandshakeACK(
     uint32 /* plugin_dispatcher_id */,
     uint32 socket_id,
-    bool succeeded) {
+    bool succeeded,
+    const PPB_X509Certificate_Fields& certificate_fields) {
   if (!g_id_to_socket) {
     NOTREACHED();
     return;
@@ -196,7 +204,7 @@ void PPB_TCPSocket_Private_Proxy::OnMsgSSLHandshakeACK(
   IDToSocketMap::iterator iter = g_id_to_socket->find(socket_id);
   if (iter == g_id_to_socket->end())
     return;
-  iter->second->OnSSLHandshakeCompleted(succeeded);
+  iter->second->OnSSLHandshakeCompleted(succeeded, certificate_fields);
 }
 
 void PPB_TCPSocket_Private_Proxy::OnMsgReadACK(

@@ -17,7 +17,7 @@ REGISTER_TEST_CASE(X509CertificatePrivate);
 namespace {
 
 bool FieldMatchesString(
-    const pp::X509Certificate& certificate,
+    const pp::X509CertificatePrivate& certificate,
     PP_X509Certificate_Private_Field field,
     const std::string& expected) {
   pp::Var field_value = certificate.GetField(field);
@@ -27,7 +27,7 @@ bool FieldMatchesString(
 }
 
 bool FieldMatchesDouble(
-    const pp::X509Certificate& certificate,
+    const pp::X509CertificatePrivate& certificate,
     PP_X509Certificate_Private_Field field,
     double expected) {
   pp::Var field_value = certificate.GetField(field);
@@ -38,7 +38,7 @@ bool FieldMatchesDouble(
 }
 
 bool FieldMatchesBuffer(
-    const pp::X509Certificate& certificate,
+    const pp::X509CertificatePrivate& certificate,
     PP_X509Certificate_Private_Field field,
     const char* expected,
     uint32_t expected_length) {
@@ -54,7 +54,7 @@ bool FieldMatchesBuffer(
 }
 
 bool FieldIsNull(
-    const pp::X509Certificate& certificate,
+    const pp::X509CertificatePrivate& certificate,
     PP_X509Certificate_Private_Field field) {
   return certificate.GetField(field).is_null();
 }
@@ -139,7 +139,7 @@ TestX509CertificatePrivate::TestX509CertificatePrivate(
 }
 
 bool TestX509CertificatePrivate::Init() {
-  if (!pp::X509Certificate::IsAvailable())
+  if (!pp::X509CertificatePrivate::IsAvailable())
     return false;
 
   return true;
@@ -151,7 +151,7 @@ void TestX509CertificatePrivate::RunTests(const std::string& filter) {
 }
 
 std::string TestX509CertificatePrivate::TestValidCertificate() {
-  pp::X509Certificate certificate(instance_);
+  pp::X509CertificatePrivate certificate(instance_);
   bool successful = certificate.Initialize(
       reinterpret_cast<const char*>(kGoogleDer), sizeof(kGoogleDer));
   ASSERT_TRUE(successful);
@@ -212,11 +212,11 @@ std::string TestX509CertificatePrivate::TestValidCertificate() {
 
 std::string TestX509CertificatePrivate::TestInvalidCertificate() {
   bool successful;
-  pp::X509Certificate null_certificate(instance_);
+  pp::X509CertificatePrivate null_certificate(instance_);
   successful = null_certificate.Initialize(NULL, 0);
   ASSERT_FALSE(successful);
 
-  pp::X509Certificate bad_certificate(instance_);
+  pp::X509CertificatePrivate bad_certificate(instance_);
   successful = bad_certificate.Initialize("acbde", 0);
   ASSERT_FALSE(successful);
 

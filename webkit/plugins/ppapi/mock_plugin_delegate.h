@@ -114,9 +114,12 @@ class MockPluginDelegate : public PluginDelegate {
       PPB_TCPSocket_Private_Impl* socket,
       uint32 socket_id,
       const PP_NetAddress_Private& addr);
-  virtual void TCPSocketSSLHandshake(uint32 socket_id,
-                                     const std::string& server_name,
-                                     uint16_t server_port);
+  virtual void TCPSocketSSLHandshake(
+      uint32 socket_id,
+      const std::string& server_name,
+      uint16_t server_port,
+      const std::vector<std::vector<char> >& trusted_certs,
+      const std::vector<std::vector<char> >& untrusted_certs);
   virtual void TCPSocketRead(uint32 socket_id, int32_t bytes_to_read);
   virtual void TCPSocketWrite(uint32 socket_id, const std::string& buffer);
   virtual void TCPSocketDisconnect(uint32 socket_id);

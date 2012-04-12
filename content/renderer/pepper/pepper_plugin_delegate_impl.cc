@@ -955,10 +955,12 @@ void PepperPluginDelegateImpl::TCPSocketConnectWithNetAddress(
 void PepperPluginDelegateImpl::TCPSocketSSLHandshake(
     uint32 socket_id,
     const std::string& server_name,
-    uint16_t server_port) {
+    uint16_t server_port,
+    const std::vector<std::vector<char> >& trusted_certs,
+    const std::vector<std::vector<char> >& untrusted_certs) {
   DCHECK(tcp_sockets_.Lookup(socket_id));
   render_view_->Send(new PpapiHostMsg_PPBTCPSocket_SSLHandshake(
-      socket_id, server_name, server_port));
+      socket_id, server_name, server_port, trusted_certs, untrusted_certs));
 }
 
 void PepperPluginDelegateImpl::TCPSocketRead(uint32 socket_id,
@@ -1410,11 +1412,12 @@ void PepperPluginDelegateImpl::OnTCPSocketConnectACK(
 void PepperPluginDelegateImpl::OnTCPSocketSSLHandshakeACK(
     uint32 plugin_dispatcher_id,
     uint32 socket_id,
-    bool succeeded) {
+    bool succeeded,
+    const ppapi::PPB_X509Certificate_Fields& certificate_fields) {
   webkit::ppapi::PPB_TCPSocket_Private_Impl* socket =
       tcp_sockets_.Lookup(socket_id);
   if (socket)
-    socket->OnSSLHandshakeCompleted(succeeded);
+    socket->OnSSLHandshakeCompleted(succeeded, certificate_fields);
 }
 
 void PepperPluginDelegateImpl::OnTCPSocketReadACK(uint32 plugin_dispatcher_id,

@@ -75,6 +75,22 @@ int32_t SSLHandshake(PP_Resource tcp_socket,
                                                       callback));
 }
 
+PP_Resource GetServerCertificate(PP_Resource tcp_socket) {
+  EnterTCP enter(tcp_socket, true);
+  if (enter.failed())
+    return 0;
+  return enter.object()->GetServerCertificate();
+}
+
+PP_Bool AddChainBuildingCertificate(PP_Resource tcp_socket,
+                                    PP_Resource certificate,
+                                    PP_Bool trusted) {
+  EnterTCP enter(tcp_socket, true);
+  if (enter.failed())
+    return PP_FALSE;
+  return enter.object()->AddChainBuildingCertificate(certificate, trusted);
+}
+
 int32_t Read(PP_Resource tcp_socket,
              char* buffer,
              int32_t bytes_to_read,
@@ -102,7 +118,7 @@ void Disconnect(PP_Resource tcp_socket) {
     enter.object()->Disconnect();
 }
 
-const PPB_TCPSocket_Private g_ppb_tcp_socket_thunk = {
+const PPB_TCPSocket_Private_0_3 g_ppb_tcp_socket_thunk_0_3 = {
   &Create,
   &IsTCPSocket,
   &Connect,
@@ -115,10 +131,29 @@ const PPB_TCPSocket_Private g_ppb_tcp_socket_thunk = {
   &Disconnect
 };
 
+const PPB_TCPSocket_Private g_ppb_tcp_socket_thunk_0_4 = {
+  &Create,
+  &IsTCPSocket,
+  &Connect,
+  &ConnectWithNetAddress,
+  &GetLocalAddress,
+  &GetRemoteAddress,
+  &SSLHandshake,
+  &GetServerCertificate,
+  &AddChainBuildingCertificate,
+  &Read,
+  &Write,
+  &Disconnect
+};
+
 }  // namespace
 
 const PPB_TCPSocket_Private_0_3* GetPPB_TCPSocket_Private_0_3_Thunk() {
-  return &g_ppb_tcp_socket_thunk;
+  return &g_ppb_tcp_socket_thunk_0_3;
+}
+
+const PPB_TCPSocket_Private_0_4* GetPPB_TCPSocket_Private_0_4_Thunk() {
+  return &g_ppb_tcp_socket_thunk_0_4;
 }
 
 }  // namespace thunk

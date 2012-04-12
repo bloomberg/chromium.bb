@@ -5,6 +5,7 @@
 #include "ppapi/cpp/private/x509_certificate_private.h"
 
 #include "ppapi/cpp/module_impl.h"
+#include "ppapi/cpp/pass_ref.h"
 #include "ppapi/cpp/var.h"
 
 namespace pp {
@@ -17,13 +18,13 @@ template <> const char* interface_name<PPB_X509Certificate_Private_0_1>() {
 
 }  // namespace
 
-X509Certificate::X509Certificate() : Resource() {
+X509CertificatePrivate::X509CertificatePrivate() : Resource() {}
+
+X509CertificatePrivate::X509CertificatePrivate(PassRef, PP_Resource resource)
+    : Resource(PASS_REF, resource) {
 }
 
-X509Certificate::X509Certificate(PP_Resource resource) : Resource(resource) {
-}
-
-X509Certificate::X509Certificate(const InstanceHandle& instance) {
+X509CertificatePrivate::X509CertificatePrivate(const InstanceHandle& instance) {
   if (has_interface<PPB_X509Certificate_Private_0_1>()) {
     PassRefFromConstructor(get_interface<PPB_X509Certificate_Private_0_1>()->
         Create(instance.pp_instance()));
@@ -31,11 +32,11 @@ X509Certificate::X509Certificate(const InstanceHandle& instance) {
 }
 
 // static
-bool X509Certificate::IsAvailable() {
+bool X509CertificatePrivate::IsAvailable() {
   return has_interface<PPB_X509Certificate_Private_0_1>();
 }
 
-bool X509Certificate::Initialize(const char* bytes, uint32_t length) {
+bool X509CertificatePrivate::Initialize(const char* bytes, uint32_t length) {
   if (!has_interface<PPB_X509Certificate_Private_0_1>())
     return false;
   PP_Bool result = get_interface<PPB_X509Certificate_Private_0_1>()->Initialize(
@@ -45,7 +46,8 @@ bool X509Certificate::Initialize(const char* bytes, uint32_t length) {
   return PP_ToBool(result);
 }
 
-Var X509Certificate::GetField(PP_X509Certificate_Private_Field field) const {
+Var X509CertificatePrivate::GetField(
+    PP_X509Certificate_Private_Field field) const {
   if (!has_interface<PPB_X509Certificate_Private_0_1>())
     return Var();
   return Var(PassRef(),

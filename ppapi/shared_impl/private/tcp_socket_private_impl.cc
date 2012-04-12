@@ -14,6 +14,12 @@
 #include "base/message_loop.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
+#include "ppapi/shared_impl/var_tracker.h"
+#include "ppapi/shared_impl/var.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_x509_certificate_private_api.h"
 
 namespace ppapi {
 
@@ -22,13 +28,15 @@ const int32_t TCPSocketPrivateImpl::kMaxWriteSize = 1024 * 1024;
 
 TCPSocketPrivateImpl::TCPSocketPrivateImpl(PP_Instance instance,
                                            uint32 socket_id)
-    : Resource(OBJECT_IS_IMPL, instance) {
+    : Resource(OBJECT_IS_IMPL, instance),
+      resource_type_(OBJECT_IS_IMPL) {
   Init(socket_id);
 }
 
 TCPSocketPrivateImpl::TCPSocketPrivateImpl(const HostResource& resource,
                                            uint32 socket_id)
-    : Resource(OBJECT_IS_PROXY, resource) {
+    : Resource(OBJECT_IS_PROXY, resource),
+      resource_type_(OBJECT_IS_PROXY) {
   Init(socket_id);
 }
 
@@ -112,8 +120,46 @@ int32_t TCPSocketPrivateImpl::SSLHandshake(const char* server_name,
   ssl_handshake_callback_ = new TrackedCallback(this, callback);
 
   // Send the request, the browser will call us back via SSLHandshakeACK.
-  SendSSLHandshake(server_name, server_port);
+  SendSSLHandshake(server_name, server_port, trusted_certificates_,
+      untrusted_certificates_);
   return PP_OK_COMPLETIONPENDING;
+}
+
+PP_Resource TCPSocketPrivateImpl::GetServerCertificate() {
+  if (!server_certificate_.get())
+    return 0;
+  return server_certificate_->GetReference();
+}
+
+PP_Bool TCPSocketPrivateImpl::AddChainBuildingCertificate(
+    PP_Resource certificate,
+    PP_Bool trusted) {
+  // TODO(raymes): The plumbing for this functionality is implemented but the
+  // certificates aren't yet used for the connection, so just return false for
+  // now.
+  return PP_FALSE;
+
+  thunk::EnterResourceNoLock<thunk::PPB_X509Certificate_Private_API>
+  enter_cert(certificate, true);
+  if (enter_cert.failed())
+    return PP_FALSE;
+
+  PP_Var der_var = enter_cert.object()->GetField(
+      PP_X509CERTIFICATE_PRIVATE_RAW);
+  ArrayBufferVar* der_array_buffer = ArrayBufferVar::FromPPVar(der_var);
+  PP_Bool success = PP_FALSE;
+  if (der_array_buffer) {
+    const char* der_bytes = static_cast<const char*>(der_array_buffer->Map());
+    uint32_t der_length = der_array_buffer->ByteLength();
+    std::vector<char> der(der_bytes, der_bytes + der_length);
+    if (PP_ToBool(trusted))
+      trusted_certificates_.push_back(der);
+    else
+      untrusted_certificates_.push_back(der);
+    success = PP_TRUE;
+  }
+  PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(der_var);
+  return success;
 }
 
 int32_t TCPSocketPrivateImpl::Read(char* buffer,
@@ -179,6 +225,7 @@ void TCPSocketPrivateImpl::Disconnect() {
   PostAbortIfNecessary(&write_callback_);
   read_buffer_ = NULL;
   bytes_to_read_ = -1;
+  server_certificate_ = NULL;
 }
 
 void TCPSocketPrivateImpl::OnConnectCompleted(
@@ -200,7 +247,9 @@ void TCPSocketPrivateImpl::OnConnectCompleted(
                                succeeded ? PP_OK : PP_ERROR_FAILED);
 }
 
-void TCPSocketPrivateImpl::OnSSLHandshakeCompleted(bool succeeded) {
+void TCPSocketPrivateImpl::OnSSLHandshakeCompleted(
+    bool succeeded,
+    const PPB_X509Certificate_Fields& certificate_fields) {
   if (connection_state_ != CONNECTED ||
       !TrackedCallback::IsPending(ssl_handshake_callback_)) {
     NOTREACHED();
@@ -209,6 +258,10 @@ void TCPSocketPrivateImpl::OnSSLHandshakeCompleted(bool succeeded) {
 
   if (succeeded) {
     connection_state_ = SSL_CONNECTED;
+    server_certificate_ = new PPB_X509Certificate_Private_Shared(
+        resource_type_,
+        pp_instance(),
+        certificate_fields);
     TrackedCallback::ClearAndRun(&ssl_handshake_callback_, PP_OK);
   } else {
     TrackedCallback::ClearAndRun(&ssl_handshake_callback_, PP_ERROR_FAILED);
