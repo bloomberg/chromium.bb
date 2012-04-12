@@ -140,12 +140,10 @@ class Configs(object):
     self.per_os.update(dict((name, OSSettings(name, {})) for name in oses))
 
   def union(self, rhs):
-    out = Configs(list(set(self.per_os.keys() + rhs.per_os.keys())))
-    for value in self.per_os.itervalues():
-      # TODO(maruel): FAIL
-      out = out.union(value)
-    for value in rhs.per_os.itervalues():
-      out = out.union(value)
+    items = list(set(self.per_os.keys() + rhs.per_os.keys()))
+    out = Configs(items)
+    for key in items:
+      out.per_os[key] = union(self.per_os.get(key), rhs.per_os.get(key))
     return out
 
   def add_globals(self, values):
@@ -234,6 +232,12 @@ def reduce_inputs(values, oses):
           out[key][item] = set([None])
         else:
           out[key][item] = set(item_oses)
+  else:
+    for key in KEYS:
+      for item, item_oses in values.get(key, {}).iteritems():
+        # Converts all oses.difference('foo') to '!foo'.
+        assert None not in item_oses, item_oses
+        out[key][item] = set(item_oses)
   return out, oses
 
 
@@ -260,13 +264,13 @@ def convert_map_to_gyp(values, oses):
           # One-off for read_only.
           variables[key] = item
         else:
-          if isinstance(item, tuple):
+          if isinstance(item, tuple) and item:
             # One-off for command.
             # Do not merge lists and do not sort!
             # Note that item is a tuple.
             assert key not in variables
             variables[key] = list(item)
-          else:
+          elif item:
             # The list of items (files or dirs). Append the new item and keep
             # the list sorted.
             l = variables.setdefault(key, [])
@@ -354,7 +358,11 @@ def load_gyps(items):
     """
   configs = Configs([])
   for item in items:
-    configs = configs.union(load_gyp(eval_content(open(item, 'rb').read())))
+    logging.debug('loading %s' % item)
+    new_config = load_gyp(eval_content(open(item, 'rb').read()))
+    logging.debug('has OSes: %s' % ','.join(k for k in new_config.per_os if k))
+    configs = union(configs, new_config)
+  logging.debug('Total OSes: %s' % ','.join(k for k in configs.per_os if k))
   return configs
 
 

@@ -326,6 +326,168 @@ class MergeGyp(unittest.TestCase):
     }
     self.assertEquals(expected, merge_isolate.convert_map_to_gyp(values, oses))
 
+  def test_merge_two_empty(self):
+    # Flat stay flat. Pylint is confused about union() return type.
+    # pylint: disable=E1103
+    actual = merge_isolate.union(
+        merge_isolate.union(
+          merge_isolate.Configs([]),
+          merge_isolate.load_gyp({})),
+        merge_isolate.load_gyp({})).flatten()
+    self.assertEquals({}, actual)
+
+  def test_merge_empty(self):
+    actual = merge_isolate.convert_map_to_gyp(*merge_isolate.reduce_inputs(
+        *merge_isolate.invert_map({})))
+    self.assertEquals({}, actual)
+
+  def test_load_two_conditions(self):
+    linux = {
+      'conditions': [
+        ['OS=="linux"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_linux',
+              'file_common',
+            ],
+          },
+        }],
+      ],
+    }
+    mac = {
+      'conditions': [
+        ['OS=="mac"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_mac',
+              'file_common',
+            ],
+          },
+        }],
+      ],
+    }
+    expected = {
+      'linux': {
+        'isolate_dependency_tracked': ['file_common', 'file_linux'],
+      },
+      'mac': {
+        'isolate_dependency_tracked': ['file_common', 'file_mac'],
+      },
+    }
+    # Pylint is confused about union() return type.
+    # pylint: disable=E1103
+    configs = merge_isolate.union(
+        merge_isolate.union(
+          merge_isolate.Configs([]),
+          merge_isolate.load_gyp(linux)),
+        merge_isolate.load_gyp(mac)).flatten()
+    self.assertEquals(expected, configs)
+
+  def test_load_three_conditions(self):
+    linux = {
+      'conditions': [
+        ['OS=="linux"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_linux',
+              'file_common',
+            ],
+          },
+        }],
+      ],
+    }
+    mac = {
+      'conditions': [
+        ['OS=="mac"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_mac',
+              'file_common',
+            ],
+          },
+        }],
+      ],
+    }
+    win = {
+      'conditions': [
+        ['OS=="win"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_win',
+              'file_common',
+            ],
+          },
+        }],
+      ],
+    }
+    expected = {
+      'linux': {
+        'isolate_dependency_tracked': ['file_common', 'file_linux'],
+      },
+      'mac': {
+        'isolate_dependency_tracked': ['file_common', 'file_mac'],
+      },
+      'win': {
+        'isolate_dependency_tracked': ['file_common', 'file_win'],
+      },
+    }
+    # Pylint is confused about union() return type.
+    # pylint: disable=E1103
+    configs = merge_isolate.union(
+        merge_isolate.union(
+          merge_isolate.union(
+            merge_isolate.Configs([]),
+            merge_isolate.load_gyp(linux)),
+          merge_isolate.load_gyp(mac)),
+        merge_isolate.load_gyp(win)).flatten()
+    self.assertEquals(expected, configs)
+
+  def test_merge_three_conditions(self):
+    values = {
+      'linux': {
+        'isolate_dependency_tracked': ['file_common', 'file_linux'],
+      },
+      'mac': {
+        'isolate_dependency_tracked': ['file_common', 'file_mac'],
+      },
+      'win': {
+        'isolate_dependency_tracked': ['file_common', 'file_win'],
+      },
+    }
+    expected = {
+      'variables': {
+        'isolate_dependency_tracked': [
+          'file_common',
+        ],
+      },
+      'conditions': [
+        ['OS=="linux"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_linux',
+            ],
+          },
+        }],
+        ['OS=="mac"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_mac',
+            ],
+          },
+        }],
+        ['OS=="win"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_win',
+            ],
+          },
+        }],
+      ],
+    }
+    actual = merge_isolate.convert_map_to_gyp(*merge_isolate.reduce_inputs(
+      *merge_isolate.invert_map(values)))
+    self.assertEquals(expected, actual)
+
 
 if __name__ == '__main__':
   unittest.main()
