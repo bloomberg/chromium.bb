@@ -24,10 +24,15 @@
 
 namespace gdata {
 
-class GDataDirectory;
 class GDataFile;
-class GDataFileSystem;
+class GDataDirectory;
 class GDataRootDirectory;
+class GDataFileSystem;
+
+class GDataFileBaseProto;
+class GDataFileProto;
+class GDataDirectoryProto;
+class GDataRootDirectoryProto;
 
 // Callback for GetCacheState operation.
 typedef base::Callback<void(base::PlatformFileError error,
@@ -67,6 +72,10 @@ class GDataFileBase {
   static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
                                           DocumentEntry* doc,
                                           GDataRootDirectory* root);
+
+  // Convert to/from proto.
+  void FromProto(const GDataFileBaseProto& proto);
+  void ToProto(GDataFileBaseProto* proto) const;
 
   // Escapes forward slashes from file names with magic unicode character
   // \u2215 pretty much looks the same in UI.
@@ -157,6 +166,10 @@ class GDataFile : public GDataFileBase {
                                           DocumentEntry* doc,
                                           GDataRootDirectory* root);
 
+  // Convert to/from proto.
+  void FromProto(const GDataFileProto& proto);
+  void ToProto(GDataFileProto* proto) const;
+
   static bool IsCachePresent(int cache_state) {
     return cache_state & CACHE_STATE_PRESENT;
   }
@@ -229,6 +242,10 @@ class GDataDirectory : public GDataFileBase {
                                           DocumentEntry* doc,
                                           GDataRootDirectory* root);
 
+  // Convert to/from proto.
+  void FromProto(const GDataDirectoryProto& proto);
+  void ToProto(GDataDirectoryProto* proto) const;
+
   // Adds child file to the directory and takes over the ownership of |file|
   // object. The method will also do name de-duplication to ensure that the
   // exposed presentation path does not have naming conflicts. Two files with
@@ -282,10 +299,12 @@ class GDataDirectory : public GDataFileBase {
   // Upload url, corresponds to resumable-create-media link for feed
   // representing this directory.
   GURL upload_url_;
-  // Collection of children GDataFileBase items.
-  GDataFileCollection children_;
+
   // Directory content origin.
   ContentOrigin origin_;
+
+  // Collection of children GDataFileBase items.
+  GDataFileCollection children_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataDirectory);
 };
@@ -396,6 +415,14 @@ class GDataRootDirectory : public GDataDirectory {
 
   // Remove temporary files (files in CACHE_TYPE_TMP) from the cache map.
   void RemoveTemporaryFilesFromCacheMap();
+
+  // Serialize/Parse to/from string via proto classes.
+  void SerializeToString(std::string* serialized_proto) const;
+  bool ParseFromString(const std::string& serialized_proto);
+
+  // Convert to/from proto.
+  void FromProto(const GDataRootDirectoryProto& proto);
+  void ToProto(GDataRootDirectoryProto* proto) const;
 
  private:
   ResourceMap resource_map_;

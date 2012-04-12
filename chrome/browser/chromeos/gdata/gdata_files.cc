@@ -10,6 +10,7 @@
 #include "base/platform_file.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 
@@ -519,6 +520,139 @@ void GDataRootDirectory::RemoveTemporaryFilesFromCacheMap() {
       ++iter;
     }
   }
+}
+
+// Convert to/from proto.
+
+void GDataFileBase::FromProto(const GDataFileBaseProto& proto) {
+  file_info_.size = proto.file_info().size();
+  file_info_.is_directory = proto.file_info().is_directory();
+  file_info_.is_symbolic_link = proto.file_info().is_symbolic_link();
+  file_info_.last_modified = base::Time::FromInternalValue(
+      proto.file_info().last_modified());
+  file_info_.last_accessed = base::Time::FromInternalValue(
+      proto.file_info().last_accessed());
+  file_info_.creation_time = base::Time::FromInternalValue(
+      proto.file_info().creation_time());
+
+  file_name_ = proto.file_name();
+  title_ = proto.title();
+  resource_id_ = proto.resource_id();
+  self_url_ = GURL(proto.self_url());
+  content_url_ = GURL(proto.content_url());
+}
+
+void GDataFileBase::ToProto(GDataFileBaseProto* proto) const {
+  PlatformFileInfoProto* proto_file_info = proto->mutable_file_info();
+  proto_file_info->set_size(file_info_.size);
+  proto_file_info->set_is_directory(file_info_.is_directory);
+  proto_file_info->set_is_symbolic_link(file_info_.is_symbolic_link);
+  proto_file_info->set_last_modified(
+      file_info_.last_modified.ToInternalValue());
+  proto_file_info->set_last_accessed(
+      file_info_.last_accessed.ToInternalValue());
+  proto_file_info->set_creation_time(
+      file_info_.creation_time.ToInternalValue());
+
+  proto->set_file_name(file_name_);
+  proto->set_title(title_);
+  proto->set_resource_id(resource_id_);
+  proto->set_self_url(self_url_.spec());
+  proto->set_content_url(content_url_.spec());
+}
+
+void GDataFile::FromProto(const GDataFileProto& proto) {
+  GDataFileBase::FromProto(proto.gdata_file_base());
+  kind_ = DocumentEntry::EntryKind(proto.kind());
+  thumbnail_url_ = GURL(proto.thumbnail_url());
+  edit_url_ = GURL(proto.edit_url());
+  content_mime_type_ = proto.content_mime_type();
+  etag_ = proto.etag();
+  id_ = proto.id();
+  file_md5_ = proto.file_md5();
+  document_extension_ = proto.document_extension();
+  is_hosted_document_ = proto.is_hosted_document();
+}
+
+void GDataFile::ToProto(GDataFileProto* proto) const {
+  GDataFileBase::ToProto(proto->mutable_gdata_file_base());
+  proto->set_kind(kind_);
+  proto->set_thumbnail_url(thumbnail_url_.spec());
+  proto->set_edit_url(edit_url_.spec());
+  proto->set_content_mime_type(content_mime_type_);
+  proto->set_etag(etag_);
+  proto->set_id(id_);
+  proto->set_file_md5(file_md5_);
+  proto->set_document_extension(document_extension_);
+  proto->set_is_hosted_document(is_hosted_document_);
+}
+
+void GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
+  GDataFileBase::FromProto(proto.gdata_file_base());
+  refresh_time_ = base::Time::FromInternalValue(proto.refresh_time());
+  start_feed_url_ = GURL(proto.start_feed_url());
+  next_feed_url_ = GURL(proto.next_feed_url());
+  upload_url_ = GURL(proto.upload_url());
+  origin_ = ContentOrigin(proto.origin());
+  for (int i = 0; i < proto.child_files_size(); ++i) {
+    scoped_ptr<GDataFile> file(new GDataFile(this, root_));
+    file->FromProto(proto.child_files(i));
+    AddFile(file.release());
+  }
+  for (int i = 0; i < proto.child_directories_size(); ++i) {
+    scoped_ptr<GDataDirectory> dir(new GDataDirectory(this, root_));
+    dir->FromProto(proto.child_directories(i));
+    AddFile(dir.release());
+  }
+}
+
+void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
+  GDataFileBase::ToProto(proto->mutable_gdata_file_base());
+  proto->set_refresh_time(refresh_time_.ToInternalValue());
+  proto->set_start_feed_url(start_feed_url_.spec());
+  proto->set_next_feed_url(next_feed_url_.spec());
+  proto->set_upload_url(upload_url_.spec());
+  proto->set_origin(origin_);
+  for (GDataFileCollection::const_iterator iter = children_.begin();
+       iter != children_.end(); ++iter) {
+    GDataFile* file = iter->second->AsGDataFile();
+    GDataDirectory* dir = iter->second->AsGDataDirectory();
+    if (file)
+      file->ToProto(proto->add_child_files());
+    if (dir)
+      dir->ToProto(proto->add_child_directories());
+  }
+}
+
+void GDataRootDirectory::FromProto(const GDataRootDirectoryProto& proto) {
+  root_ = this;
+  GDataDirectory::FromProto(proto.gdata_directory());
+  largest_changestamp_ = proto.largest_changestamp();
+}
+
+void GDataRootDirectory::ToProto(GDataRootDirectoryProto* proto) const {
+  GDataDirectory::ToProto(proto->mutable_gdata_directory());
+  proto->set_largest_changestamp(largest_changestamp_);
+}
+
+void GDataRootDirectory::SerializeToString(std::string* proto_string) const {
+  scoped_ptr<GDataRootDirectoryProto> proto(
+      new GDataRootDirectoryProto());
+  ToProto(proto.get());
+  const bool ok = proto->SerializeToString(proto_string);
+  DCHECK(ok);
+}
+
+bool GDataRootDirectory::ParseFromString(const std::string& proto_string) {
+  scoped_ptr<GDataRootDirectoryProto> proto(
+      new GDataRootDirectoryProto());
+  bool ok = proto->ParseFromString(proto_string);
+  if (ok) {
+    FromProto(*proto.get());
+    set_origin(FROM_CACHE);
+    set_refresh_time(base::Time::Now());
+  }
+  return ok;
 }
 
 }  // namespace gdata

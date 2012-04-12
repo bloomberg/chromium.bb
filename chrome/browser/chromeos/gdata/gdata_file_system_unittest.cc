@@ -21,6 +21,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_documents_service.h"
@@ -224,11 +225,9 @@ class GDataFileSystemTest : public testing::Test {
   // |value|.
   bool UpdateContent(ListValue* list) {
     GURL unused;
-    const bool should_record_statistics = false;
     return file_system_->UpdateDirectoryWithDocumentFeed(
         list,
         FROM_SERVER,
-        should_record_statistics,
         0) == base::PLATFORM_FILE_OK;
   }
 
@@ -801,17 +800,9 @@ class GDataFileSystemTest : public testing::Test {
     message_loop_.RunAllPending();
   }
 
-  void TestLoadMetadataFromCache(const FilePath::StringType& feeds_path,
-                                 const FilePath& meta_cache_path) {
-    FilePath file_path = GetTestFilePath(feeds_path);
-    // Move test file into the correct cache location first.
-    FilePath cache_dir_path = profile_->GetPath();
-    cache_dir_path = cache_dir_path.Append(meta_cache_path).DirName();
-    ASSERT_TRUE(file_util::CreateDirectory(cache_dir_path));
-    ASSERT_TRUE(file_util::CopyFile(file_path,
-        cache_dir_path.Append(meta_cache_path.BaseName())));
-
-    ReadOnlyFindFileDelegate delegate;
+  // Loads serialized proto file from GCache, and makes sure the root
+  // filesystem has a root at 'gdata'
+  void TestLoadMetadataFromCache() {
     file_system_->LoadRootFeedFromCache(
         GDataFileSystem::FEED_CHUNK_INITIAL,
         0,
@@ -855,6 +846,69 @@ class GDataFileSystemTest : public testing::Test {
     EXPECT_TRUE(file_util::PathExists(path)) <<
         "Couldn't find " << path.value();
     return path;
+  }
+
+  // Creates a proto file representing a filesystem with directories:
+  // gdata, gdata/Dir1, gdata/Dir1/SubDir2
+  // and files
+  // gdata/File1, gdata/Dir1/File2, gdata/Dir1/SubDir2/File3
+  void SaveTestFileSystem() {
+    GDataRootDirectoryProto root;
+    GDataDirectoryProto* root_dir = root.mutable_gdata_directory();
+    GDataFileBaseProto* file_base = root_dir->mutable_gdata_file_base();
+    PlatformFileInfoProto* platform_info = file_base->mutable_file_info();
+    file_base->set_file_name("gdata");
+    platform_info->set_is_directory(true);
+
+    // gdata/File1
+    GDataFileProto* file = root_dir->add_child_files();
+    file_base = file->mutable_gdata_file_base();
+    platform_info = file_base->mutable_file_info();
+    file_base->set_file_name("File1");
+    platform_info->set_is_directory(false);
+    platform_info->set_size(1048576);
+
+    // gdata/Dir1
+    GDataDirectoryProto* dir1 = root_dir->add_child_directories();
+    file_base = dir1->mutable_gdata_file_base();
+    platform_info = file_base->mutable_file_info();
+    file_base->set_file_name("Dir1");
+    platform_info->set_is_directory(true);
+
+    // gdata/Dir1/File2
+    file = dir1->add_child_files();
+    file_base = file->mutable_gdata_file_base();
+    platform_info = file_base->mutable_file_info();
+    file_base->set_file_name("File2");
+    platform_info->set_is_directory(false);
+    platform_info->set_size(555);
+
+    // gdata/Dir1/SubDir2
+    GDataDirectoryProto* dir2 = dir1->add_child_directories();
+    file_base = dir2->mutable_gdata_file_base();
+    platform_info = file_base->mutable_file_info();
+    file_base->set_file_name("SubDir2");
+    platform_info->set_is_directory(true);
+
+    // gdata/Dir1/SubDir2/File3
+    file = dir2->add_child_files();
+    file_base = file->mutable_gdata_file_base();
+    platform_info = file_base->mutable_file_info();
+    file_base->set_file_name("File3");
+    platform_info->set_is_directory(false);
+    platform_info->set_size(12345);
+
+    // Write this proto out to GCache/vi/meta/file_system.pb
+    std::string serialized_proto;
+    ASSERT_TRUE(root.SerializeToString(&serialized_proto));
+    ASSERT_TRUE(!serialized_proto.empty());
+
+    FilePath cache_dir_path = profile_->GetPath().Append(
+        FILE_PATH_LITERAL("GCache/v1/meta/"));
+    ASSERT_TRUE(file_util::CreateDirectory(cache_dir_path));
+    const int file_size = static_cast<int>(serialized_proto.length());
+    ASSERT_EQ(file_util::WriteFile(cache_dir_path.Append("file_system.pb"),
+        serialized_proto.data(), file_size), file_size);
   }
 
   // This is used as a helper for registering callbacks that need to be
@@ -1132,25 +1186,14 @@ TEST_F(GDataFileSystemTest, FilePathTests) {
 }
 
 TEST_F(GDataFileSystemTest, CachedFeedLoading) {
-  TestLoadMetadataFromCache(FILE_PATH_LITERAL("cached_feeds.json"),
-      FilePath(FILE_PATH_LITERAL("GCache/v1/meta/last_feed.json")));
+  SaveTestFileSystem();
+  TestLoadMetadataFromCache();
 
-  // Test first feed elements.
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Feed 1 File.txt")));
-  FindAndTestFilePath(
-      FilePath(FILE_PATH_LITERAL(
-          "gdata/Directory 1/Feed 1 SubDirectory File.txt")));
-
-  // Test second feed elements.
-  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Feed 2 File.txt")));
-  FindAndTestFilePath(
-      FilePath(FILE_PATH_LITERAL(
-          "gdata/Directory 1/Sub Directory Folder/Feed 2 Directory")));
-
-  // Make sure orphaned files didn't make into the file system.
-  ASSERT_FALSE(FindFileByResourceId("file:orphan_file_resource_id"));
-  ASSERT_FALSE(FindFileByResourceId("folder:orphan_feed_folder_resouce_id"));
-  ASSERT_FALSE(FindFileByResourceId("file:orphan_subfolder_file_resource_id"));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/File1")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Dir1")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Dir1/File2")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Dir1/SubDir2")));
+  FindAndTestFilePath(FilePath(FILE_PATH_LITERAL("gdata/Dir1/SubDir2/File3")));
 }
 
 TEST_F(GDataFileSystemTest, CopyNotExistingFile) {

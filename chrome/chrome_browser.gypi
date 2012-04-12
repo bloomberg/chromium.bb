@@ -31,6 +31,7 @@
         'syncapi_core',
         'syncapi_service',
         'feedback_proto',
+        'gdata_proto',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../content/content.gyp:content_browser',
         '../crypto/crypto.gyp:crypto',
@@ -5213,6 +5214,17 @@
       'variables': {
         'proto_in_dir': 'browser/history',
         'proto_out_dir': 'chrome/browser/history',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for the GData protocol buffer.
+      'target_name': 'gdata_proto',
+      'type': 'static_library',
+      'sources': [ 'browser/chromeos/gdata/gdata.proto' ],
+      'variables': {
+        'proto_in_dir': 'browser/chromeos/gdata',
+        'proto_out_dir': 'chrome/browser/chromeos/gdata',
       },
       'includes': [ '../build/protoc.gypi' ]
     },

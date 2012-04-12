@@ -68,10 +68,11 @@ const FilePath::CharType kGDataCacheTmpDownloadsDir[] =
     FILE_PATH_LITERAL("tmp/downloads");
 const FilePath::CharType kGDataCacheTmpDocumentsDir[] =
     FILE_PATH_LITERAL("tmp/documents");
-const FilePath::CharType kLastFeedFile[] = FILE_PATH_LITERAL("last_feed.json");
 const char kGDataFileSystemToken[] = "GDataFileSystemToken";
 const FilePath::CharType kAccountMetadataFile[] =
     FILE_PATH_LITERAL("account_metadata.json");
+const FilePath::CharType kFilesystemProtoFile[] =
+    FILE_PATH_LITERAL("file_system.pb");
 const FilePath::CharType kSymLinkToDevNull[] = FILE_PATH_LITERAL("/dev/null");
 
 // Returns the home directory path, or an empty string if the home directory
@@ -420,6 +421,32 @@ class InitialLoadObserver : public GDataFileSystemInterface::Observer {
   GDataFileSystemInterface* file_system_;
   base::Closure callback_;
 };
+
+// Saves the string |serialized_proto| to a file at |path| on a blocking thread.
+void SaveProtoOnIOThreadPool(const FilePath& path,
+                             scoped_ptr<std::string> serialized_proto) {
+  const int file_size = static_cast<int>(serialized_proto->length());
+  if (file_util::WriteFile(path, serialized_proto->data(), file_size) !=
+      file_size) {
+    LOG(WARNING) << "GData proto file can't be stored at "
+                 << path.value();
+    if (!file_util::Delete(path, true)) {
+      LOG(WARNING) << "GData proto file can't be deleted at "
+                   << path.value();
+    }
+  }
+}
+
+// Loads the file at |path| into the string |serialized_proto| on a blocking
+// thread.
+void LoadProtoOnIOThreadPool(const FilePath& path,
+                             std::string* serialized_proto,
+    base::PlatformFileError* error) {
+  if (!file_util::ReadFileToString(path, serialized_proto)) {
+    LOG(WARNING) << "Proto file not found at " << path.value();
+    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  }
+}
 
 }  // namespace
 
@@ -2073,7 +2100,6 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
 
   error = UpdateDirectoryWithDocumentFeed(params->feed_list.get(),
                                           FROM_SERVER,
-                                          true,  // should_record_statistics
                                           params->largest_changestamp);
   if (error != base::PLATFORM_FILE_OK) {
     if (!params->callback.is_null()) {
@@ -2084,8 +2110,8 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
     return;
   }
 
-  scoped_ptr<base::Value> feed_list_value(params->feed_list.release());
-  SaveFeed(feed_list_value.Pass(), FilePath(kLastFeedFile));
+  // Save serialized filesystem to disk.
+  SaveFileSystemAsProto();
 
   // If we had someone to report this too, then this retrieval was done in a
   // context of search... so continue search.
@@ -2146,73 +2172,58 @@ void GDataFileSystem::LoadRootFeedFromCache(
     const FilePath& search_file_path,
     bool should_load_from_server,
     const FindFileCallback& callback) {
+  const FilePath path =
+      cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
+          kFilesystemProtoFile);
+  std::string* serialized_proto(new std::string());
   base::PlatformFileError* error =
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  Value* feed_list = new ListValue();
-
-  // Post a task without the sequence token, as this doesn't have to be
-  // sequenced with other tasks, and can take long if the feed is large.
-  // Note that it's OK to do this before the cache is initialized.
-  BrowserThread::GetBlockingPool()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::LoadJsonFileOnIOThreadPool,
-                 cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
-                     kLastFeedFile),
-                 error,
-                 feed_list),
-      base::Bind(&GDataFileSystem::OnLoadRootFeed,
+  BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
+      base::Bind(&LoadProtoOnIOThreadPool, path, serialized_proto, error),
+      base::Bind(&GDataFileSystem::OnProtoLoaded,
                  GetWeakPtrForCurrentThread(),
-                 base::Owned(
-                     new LoadRootFeedParams(
-                         search_file_path,
-                         chunk_type,
-                         largest_changestamp,
-                         should_load_from_server,
-                         callback)),
+                 LoadRootFeedParams(search_file_path,
+                                    chunk_type,
+                                    largest_changestamp,
+                                    should_load_from_server,
+                                    callback),
                  base::Owned(error),
-                 base::Owned(feed_list)));
+                 base::Owned(serialized_proto)));
 }
 
-void GDataFileSystem::OnLoadRootFeed(
-    LoadRootFeedParams* params,
-    base::PlatformFileError* error,
-    base::Value* feed_list_value) {
-  DCHECK(error);
-  DCHECK(feed_list_value);
-  base::ListValue* feed_list = NULL;
-  if (!feed_list_value->GetAsList(&feed_list))
-    *error = base::PLATFORM_FILE_ERROR_FAILED;
-
+void GDataFileSystem::OnProtoLoaded(const LoadRootFeedParams& params,
+                                    base::PlatformFileError* error,
+                                    std::string* proto) {
   {
     base::AutoLock lock(lock_);
     // If we have already received updates from the server, bail out.
     if (root_->origin() == FROM_SERVER)
       return;
   }
-
   // Update directory structure only if everything is OK and we haven't yet
   // received the feed from the server yet.
   if (*error == base::PLATFORM_FILE_OK) {
-    *error = UpdateDirectoryWithDocumentFeed(
-        feed_list,
-        FROM_CACHE,
-        // We don't record statistics from the feed from the cache, as we do
-        // it from the feed from the server.
-        false,
-        params->largest_changestamp);
+    DVLOG(1) << "ParseFromString";
+    base::AutoLock lock(lock_);  // To access root_.
+    if (root_->ParseFromString(*proto)) {
+      NotifyInitialLoadFinished();
+    } else {
+      *error = base::PLATFORM_FILE_ERROR_FAILED;
+      LOG(WARNING) << "Parse of cached proto file failed";
+    }
   }
 
-  FindFileCallback callback = params->callback;
+  FindFileCallback callback = params.callback;
   // If we got feed content from cache, try search over it.
-  if (!params->should_load_from_server ||
+  if (!params.should_load_from_server ||
       (*error == base::PLATFORM_FILE_OK && !callback.is_null())) {
     // Continue file content search operation if the delegate hasn't terminated
     // this search branch already.
-    FindFileByPathOnCallingThread(params->search_file_path, callback);
+    FindFileByPathOnCallingThread(params.search_file_path, callback);
     callback.Reset();
   }
 
-  if (!params->should_load_from_server)
+  if (!params.should_load_from_server)
     return;
 
   {
@@ -2224,7 +2235,21 @@ void GDataFileSystem::OnLoadRootFeed(
   // Kick of the retrieval of the feed from server. If we have previously
   // |reported| to the original callback, then we just need to refresh the
   // content without continuing search upon operation completion.
-  ReloadFeedFromServerIfNeeded(params->search_file_path, FROM_CACHE, callback);
+  ReloadFeedFromServerIfNeeded(params.search_file_path, FROM_CACHE, callback);
+}
+
+void GDataFileSystem::SaveFileSystemAsProto() {
+  base::AutoLock lock(lock_);  // To access root_.
+
+  DVLOG(1) << "SaveFileSystemAsProto";
+  const FilePath path =
+      cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
+          kFilesystemProtoFile);
+  scoped_ptr<std::string> serialized_proto(new std::string());
+  root_->SerializeToString(serialized_proto.get());
+  PostBlockingPoolSequencedTask(kGDataFileSystemToken, FROM_HERE,
+      base::Bind(&SaveProtoOnIOThreadPool, path,
+                 base::Passed(serialized_proto.Pass())));
 }
 
 // static.
@@ -2613,7 +2638,6 @@ DocumentFeed* GDataFileSystem::ParseDocumentFeed(base::Value* feed_data) {
 base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
     ListValue* feed_list,
     ContentOrigin origin,
-    bool should_record_statistics,
     int largest_changestamp) {
   DVLOG(1) << "Updating directory with feed from "
            << (origin == FROM_CACHE ? "cache" : "web server");
@@ -2709,6 +2733,7 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
     return error;
   }
 
+  // Resolve all parent links. Some files will be orphaned.
   scoped_ptr<GDataRootDirectory> orphaned_files(new GDataRootDirectory(NULL));
   for (UrlToFileAndParentMap::iterator it = file_by_url.begin();
        it != file_by_url.end(); ++it) {
@@ -2742,13 +2767,11 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   if (should_notify_initial_load)
     NotifyInitialLoadFinished();
 
-  if (should_record_statistics) {
-    const int num_total_files = num_hosted_documents + num_regular_files;
-    UMA_HISTOGRAM_COUNTS("GData.NumberOfRegularFiles", num_regular_files);
-    UMA_HISTOGRAM_COUNTS("GData.NumberOfHostedDocuments",
-                         num_hosted_documents);
-    UMA_HISTOGRAM_COUNTS("GData.NumberOfTotalFiles", num_total_files);
-  }
+  const int num_total_files = num_hosted_documents + num_regular_files;
+  UMA_HISTOGRAM_COUNTS("GData.NumberOfRegularFiles", num_regular_files);
+  UMA_HISTOGRAM_COUNTS("GData.NumberOfHostedDocuments",
+                       num_hosted_documents);
+  UMA_HISTOGRAM_COUNTS("GData.NumberOfTotalFiles", num_total_files);
 
   return base::PLATFORM_FILE_OK;
 }

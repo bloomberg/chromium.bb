@@ -862,11 +862,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Updates whole directory structure feeds collected in |feed_list|.
   // On success, returns PLATFORM_FILE_OK. Record file statistics as UMA
-  // histograms if |should_record_statistics| is true.
+  // histograms.
   base::PlatformFileError UpdateDirectoryWithDocumentFeed(
       base::ListValue* feed_list,
       ContentOrigin origin,
-      bool should_record_statistics,
       int largest_changestamp);
 
   // Converts |entry_value| into GFileDocument instance and adds it
@@ -918,9 +917,12 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                          base::Value* result);
 
   // Callback for handling root directory refresh from the cache.
-  void OnLoadRootFeed(LoadRootFeedParams* params,
-                      base::PlatformFileError* error,
-                      base::Value* feed_list_value);
+  void OnProtoLoaded(const LoadRootFeedParams& params,
+                     base::PlatformFileError* error,
+                     std::string* proto);
+
+  // Save filesystem as proto file.
+  void SaveFileSystemAsProto();
 
   // Saves a collected feed in GCache directory under
   // <user_profile_dir>/GCache/v1/meta/|name| for later reloading when offline.
