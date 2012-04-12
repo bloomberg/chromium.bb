@@ -10,6 +10,19 @@
 </head>
 
 <style type="text/css">
+embed {
+  position: absolute;
+}
+#box0 {
+  background-color: #cccccc;
+  line-height: 200px;
+  padding: 0px;
+  position: absolute;
+  text-align: center;
+  width: 2000px;
+  height: 2000px;
+  z-index: -2;
+}
 #box1 {
   background-color: #ffff00;
   line-height: 200px;
@@ -29,6 +42,17 @@
   width: 200px;
   height: 200px;
   z-index: 1;
+}
+#box3 {
+  background-color: #000000;
+  line-height: 200px;
+  padding: 0px;
+  position: absolute;
+  text-align: center;
+  width: 2000px;
+  height: 2000px;
+  z-index: 2;
+  visibility: hidden;
 }
 </style>
 
@@ -63,12 +87,17 @@ function onMouseUp(event) {
 }
 </script>
 
-<div id="box1" style="left:0px;top:0px;"
+<div id="box0" style="left:0px;top:0px;"
+     onmousedown="onMouseDown(event)">Box #0</div>
+<div id="box1" style="left:100px;top:400px;"
      onmousedown="onMouseDown(event)">Box #1</div>
 <embed id="plugin" type="application/x-ppapi-example-flash-topmost"
-       width="400" height="400"/>
-<div id="box2" style="left:0px;top:100px;"
+     width="400" height="400"
+     style="left:200px;top:400px;" />
+<div id="box2" style="left:200px;top:500px;"
      onmousedown="onMouseDown(event)">Box #2</div>
+<div id="box3" style="left:0px;top:0px;"
+     onmousedown="onMouseDown(event)">Box #3</div>
 
 </body>
 </html>
