@@ -258,7 +258,7 @@ class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
       if (!network || !network->connected() || network->restricted_pool()) {
         BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
             base::Bind(&OAuthLoginVerifier::ContinueVerification, AsWeakPtr()),
-            kOAuthVerificationRestartDelay);
+            base::TimeDelta::FromMilliseconds(kOAuthVerificationRestartDelay));
         return;
       }
     }
@@ -299,7 +299,7 @@ class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
       if (verification_count_ < kMaxOAuthTokenVerificationAttemptCount) {
         BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
             base::Bind(&OAuthLoginVerifier::ContinueVerification, AsWeakPtr()),
-            kOAuthVerificationRestartDelay);
+            base::TimeDelta::FromMilliseconds(kOAuthVerificationRestartDelay));
         return true;
       }
     }

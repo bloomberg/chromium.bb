@@ -395,7 +395,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
           base::Bind(&UserManagerImpl::DownloadProfileImage,
                      base::Unretained(this),
                      kProfileDownloadReasonLoggedIn),
-          kProfileImageDownloadDelayMs);
+          base::TimeDelta::FromMilliseconds(kProfileImageDownloadDelayMs));
     }
 
     int histogram_index = image_index;

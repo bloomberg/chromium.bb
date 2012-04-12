@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -175,7 +175,7 @@ void Camera::Initialize(
   PostCameraTaskWithDelay(
       FROM_HERE,
       base::Bind(&Camera::DoInitialize, this, desired_width, desired_height),
-      delay_in_ms);
+      base::TimeDelta::FromMilliseconds(delay_in_ms));
 }
 
 void Camera::DoInitialize(int desired_width, int desired_height) {
@@ -579,18 +579,18 @@ bool Camera::IsOnCameraThread() const {
 
 void Camera::PostCameraTask(const tracked_objects::Location& from_here,
                             const base::Closure& task) {
-  PostCameraTaskWithDelay(from_here, task, 0);
+  PostCameraTaskWithDelay(from_here, task, base::TimeDelta());
 }
 
 void Camera::PostCameraTaskWithDelay(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
-    int64 delay_in_ms) {
+    base::TimeDelta delay) {
   base::AutoLock lock(thread_lock_);
   if (!thread_)
     return;
   DCHECK(thread_->IsRunning());
-  thread_->message_loop()->PostDelayedTask(from_here, task, delay_in_ms);
+  thread_->message_loop()->PostDelayedTask(from_here, task, delay);
 }
 
 }  // namespace chromeos

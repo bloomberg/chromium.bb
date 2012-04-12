@@ -157,7 +157,7 @@ void OnlineAttempt::TryClientLogin() {
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&OnlineAttempt::CancelClientLogin, weak_factory_.GetWeakPtr()),
-      kClientLoginTimeoutMs);
+      base::TimeDelta::FromMilliseconds(kClientLoginTimeoutMs));
 
   if (using_oauth_) {
     if (!attempt_->oauth1_access_token().length() ||

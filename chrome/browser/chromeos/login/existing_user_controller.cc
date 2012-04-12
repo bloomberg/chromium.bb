@@ -235,7 +235,7 @@ void ExistingUserController::Observe(
         base::Bind(&TransferContextAuthenticationsOnIOThread,
                    default_profile_context_getter,
                    browser_process_context_getter),
-        kAuthCacheTransferDelayMs);
+        base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
   }
   if (type != chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED)
     return;
@@ -471,7 +471,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
         base::Bind(&SessionManagerClient::StopSession,
                    base::Unretained(DBusThreadManager::Get()->
                                     GetSessionManagerClient())),
-        kSafeModeRestartUiDelayMs);
+        base::TimeDelta::FromMilliseconds(kSafeModeRestartUiDelayMs));
   } else if (!online_succeeded_for_.empty()) {
     ShowGaiaPasswordChanged(online_succeeded_for_);
   } else {

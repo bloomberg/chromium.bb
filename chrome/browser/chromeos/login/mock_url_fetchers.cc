@@ -37,7 +37,7 @@ void ExpectCanceledFetcher::Start() {
       FROM_HERE,
       base::Bind(&ExpectCanceledFetcher::CompleteFetch,
                  weak_factory_.GetWeakPtr()),
-      100);
+      base::TimeDelta::FromMilliseconds(100));
 }
 
 void ExpectCanceledFetcher::CompleteFetch() {
