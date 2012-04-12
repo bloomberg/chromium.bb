@@ -35,9 +35,17 @@ template<typename A> struct IsSame<A, A> {
   static bool const value = true;
 };
 template<typename Base, typename Derived> struct IsBaseOf {
+ private:
+  // This class doesn't work correctly with forward declarations.
+  // Because sizeof cannot be applied to incomplete types, this line prevents us
+  // from passing in forward declarations.
+  typedef char (*EnsureTypesAreComplete)[sizeof(Base) + sizeof(Derived)];
+
   static Derived* CreateDerived();
   static char (&Check(Base*))[1];
   static char (&Check(...))[2];
+
+ public:
   static bool const value = sizeof Check(CreateDerived()) == 1 &&
                             !IsSame<Base const, void const>::value;
 };

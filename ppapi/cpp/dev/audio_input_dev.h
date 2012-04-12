@@ -59,11 +59,6 @@ class AudioInput_Dev : public Resource {
   /// struct.
   const AudioConfig& config() const { return config_; }
 
-  // TODO(yzshen, brettw): If we forward declare DeviceRef_Dev (as opposed to
-  // including its .h file), it still compiles. However, it is not recognized as
-  // a derived class of Resource and does the wrong thing!
-  // This is due to the limitation of IsBaseOf in ppapi/cpp/output_traits.h. We
-  // need to figure out a way to overcome this problem.
   int32_t EnumerateDevices(
       const CompletionCallbackWithOutput<std::vector<DeviceRef_Dev> >&
           callback);
