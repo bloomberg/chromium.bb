@@ -124,6 +124,8 @@ class WebDragData;
 class WebGeolocationClient;
 class WebIconURL;
 class WebImage;
+class WebPeerConnection00Handler;
+class WebPeerConnection00HandlerClient;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMouseEvent;
@@ -233,6 +235,8 @@ class RenderViewImpl : public RenderWidget,
 
   WebKit::WebPeerConnectionHandler* CreatePeerConnectionHandler(
       WebKit::WebPeerConnectionHandlerClient* client);
+  WebKit::WebPeerConnection00Handler* CreatePeerConnectionHandlerJsep(
+      WebKit::WebPeerConnection00HandlerClient* client);
 
   // Functions to add and remove observers for this object.
   void AddObserver(content::RenderViewObserver* observer);

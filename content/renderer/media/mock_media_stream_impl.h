@@ -17,7 +17,8 @@ class MockMediaStreamImpl : public MediaStreamImpl {
 
   virtual WebKit::WebPeerConnectionHandler* CreatePeerConnectionHandler(
       WebKit::WebPeerConnectionHandlerClient* client) OVERRIDE;
-  virtual void ClosePeerConnection() OVERRIDE;
+  virtual void ClosePeerConnection(
+      PeerConnectionHandlerBase* pc_handler) OVERRIDE;
   virtual webrtc::MediaStreamTrackInterface* GetLocalMediaStreamTrack(
       const std::string& label) OVERRIDE;
 

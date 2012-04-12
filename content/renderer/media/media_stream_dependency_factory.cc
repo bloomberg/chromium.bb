@@ -137,3 +137,14 @@ MediaStreamDependencyFactory::CreateLocalAudioTrack(
     webrtc::AudioDeviceModule* audio_device) {
   return pc_factory_->CreateLocalAudioTrack(label, audio_device);
 }
+
+webrtc::SessionDescriptionInterface*
+MediaStreamDependencyFactory::CreateSessionDescription(const std::string& sdp) {
+  return webrtc::CreateSessionDescription(sdp);
+}
+
+webrtc::IceCandidateInterface* MediaStreamDependencyFactory::CreateIceCandidate(
+    const std::string& label,
+    const std::string& sdp) {
+  return webrtc::CreateIceCandidate(label, sdp);
+}

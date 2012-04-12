@@ -38,6 +38,12 @@ class CONTENT_EXPORT MediaStreamCenter
   virtual void didConstructMediaStream(
       const WebKit::WebMediaStreamDescriptor& stream) OVERRIDE;
 
+  virtual WebKit::WebString constructSDP(
+      const WebKit::WebICECandidateDescriptor& candidate) OVERRIDE;
+
+  virtual WebKit::WebString constructSDP(
+      const WebKit::WebSessionDescriptionDescriptor& description) OVERRIDE;
+
  private:
   // Weak pointer, owned by WebKit.
   WebKit::WebMediaStreamCenterClient* client_;
