@@ -935,6 +935,18 @@ TEST(ExtensionTest, OnlyDisplayAppsInLauncher) {
   EXPECT_TRUE(app->ShouldDisplayInLauncher());
 }
 
+TEST(ExtensionTest, OnlySyncInternal) {
+  scoped_refptr<Extension> extension_internal(
+      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
+                            Extension::INTERNAL, 0, FilePath()));
+  EXPECT_TRUE(extension_internal->IsSyncable());
+
+  scoped_refptr<Extension> extension_noninternal(
+      MakeSyncTestExtension(EXTENSION, GURL(), GURL(),
+                            Extension::COMPONENT, 0, FilePath()));
+  EXPECT_FALSE(extension_noninternal->IsSyncable());
+}
+
 TEST(ExtensionTest, ExtensionKeybindingParsing) {
   const ui::Accelerator None = ui::Accelerator();
   const ui::Accelerator ShiftF =

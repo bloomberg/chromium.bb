@@ -3659,10 +3659,9 @@ Extension::SyncType Extension::GetSyncType() const {
 bool Extension::IsSyncable() const {
   // TODO(akalin): Figure out if we need to allow some other types.
 
-  // We want to sync any extensions that are shown in the launcher because
-  // their positions should sync.
+  // We want to sync any extensions that are internal and the chrome web store.
   return location() == Extension::INTERNAL ||
-      ShouldDisplayInLauncher();
+      id() == extension_misc::kWebStoreAppId;
 }
 
 bool Extension::ShouldDisplayInLauncher() const {
