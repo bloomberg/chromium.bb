@@ -272,11 +272,11 @@ FcStrCmp (const FcChar8 *s1, const FcChar8 *s2)
     return (int) c1 - (int) c2;
 }
 
+#ifdef USE_REGEX
 static FcBool
 _FcStrRegexCmp (const FcChar8 *s, const FcChar8 *regex, int cflags, int eflags)
 {
     int ret = -1;
-#if defined (HAVE_REGCOMP) && defined (HAVE_REGERROR) && defined (HAVE_REGEXEC) && defined (HAVE_REGFREE)
     regex_t reg;
 
     if ((ret = regcomp (&reg, (const char *)regex, cflags)) != 0)
@@ -302,10 +302,12 @@ _FcStrRegexCmp (const FcChar8 *s, const FcChar8 *regex, int cflags, int eflags)
 	}
     }
     regfree (&reg);
-#endif
 
     return ret == 0 ? FcTrue : FcFalse;
 }
+#else
+#  define _FcStrRegexCmp(_s_, _regex_)	(FcFalse)
+#endif
 
 FcBool
 FcStrRegexCmp (const FcChar8 *s, const FcChar8 *regex)

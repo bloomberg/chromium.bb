@@ -136,6 +136,15 @@ AC_FUNC_MMAP
 AC_CHECK_FUNCS([geteuid getuid link memmove memset mkstemp strchr strrchr strtol getopt getopt_long sysconf ftruncate chsize rand random lrand48 random_r rand_r regcomp regerror regexec regfree])
 
 #
+# regex
+#
+use_regex=0
+if test "x$ac_cv_func_regcomp" = "xyes" -a "x$ac_cv_func_regerror" = "xyes" -a "x$ac_cv_func_regexec" = "xyes" -a "x$ac_cv_func_regfree"; then
+	use_regex=1
+fi
+AC_DEFINE_UNQUOTED(USE_REGEX,$use_regex,[Use regex.])
+
+#
 # Checks for iconv
 #
 AC_ARG_WITH(libiconv,
