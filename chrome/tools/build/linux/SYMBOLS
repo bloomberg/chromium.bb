@@ -1,4 +1,0 @@
-chrome.breakpad.ia32
-chrome.breakpad.x64
-libremoting_host_plugin.ia32.so.breakpad.ia32
-libremoting_host_plugin.x64.so.breakpad.x64
