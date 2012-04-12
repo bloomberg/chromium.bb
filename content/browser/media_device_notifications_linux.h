@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// MediaDeviceNotificationsLinux listens for mount point changes and notifies
+// the SystemMonitor about the addition and deletion of media devices.
+
 #ifndef CONTENT_BROWSER_MEDIA_DEVICE_NOTIFICATIONS_LINUX_H_
 #define CONTENT_BROWSER_MEDIA_DEVICE_NOTIFICATIONS_LINUX_H_
 #pragma once
@@ -13,11 +16,12 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
 #include "base/system_monitor/system_monitor.h"
 #include "content/common/content_export.h"
+
+class FilePath;
 
 namespace content {
 
@@ -30,6 +34,10 @@ class CONTENT_EXPORT MediaDeviceNotificationsLinux
   void Init();
 
  protected:
+  // Avoids code deleting the object while there are references to it.
+  // Aside from the base::RefCountedThreadSafe friend class, and derived
+  // classes, any attempts to call this dtor will result in a compile-time
+  // error.
   virtual ~MediaDeviceNotificationsLinux();
 
   virtual void OnFilePathChanged(const FilePath& path);
@@ -37,29 +45,13 @@ class CONTENT_EXPORT MediaDeviceNotificationsLinux
  private:
   friend class base::RefCountedThreadSafe<MediaDeviceNotificationsLinux>;
 
-  typedef std::string MountDevice;
-  typedef std::string MountPoint;
-  typedef std::pair<MountDevice,
+  class WatcherDelegate;
+
+  // (mount device, device id)
+  typedef std::pair<std::string,
                     base::SystemMonitor::DeviceIdType> MountDeviceAndId;
-  typedef std::map<MountPoint, MountDeviceAndId> MountMap;
-
-  // A simple pass-through class. MediaDeviceNotificationsLinux cannot directly
-  // inherit from FilePathWatcher::Delegate due to multiple inheritance.
-  class WatcherDelegate : public base::files::FilePathWatcher::Delegate {
-   public:
-    explicit WatcherDelegate(MediaDeviceNotificationsLinux* notifier);
-
-    // base::files::FilePathWatcher::Delegate implementation.
-    virtual void OnFilePathChanged(const FilePath& path) OVERRIDE;
-
-   private:
-    friend class base::RefCountedThreadSafe<WatcherDelegate>;
-
-    virtual ~WatcherDelegate();
-    MediaDeviceNotificationsLinux* notifier_;
-
-    DISALLOW_COPY_AND_ASSIGN(WatcherDelegate);
-  };
+  // Mapping of mount points to MountDeviceAndId.
+  typedef std::map<std::string, MountDeviceAndId> MountMap;
 
   void InitOnFileThread();
 
@@ -74,12 +66,12 @@ class CONTENT_EXPORT MediaDeviceNotificationsLinux
   // If it is a media device, return true, otherwise return false.
   // Mac OS X behaves similarly, but this is not the only heuristic it uses.
   // TODO(vandebo) Try to figure out how Mac OS X decides this.
-  bool IsMediaDevice(const MountPoint& mount_point);
+  bool IsMediaDevice(const std::string& mount_point);
 
   // Add a media device with a given device and mount device. Assign it a device
   // id as well.
-  void AddNewDevice(const MountDevice& mount_device,
-                    const MountPoint& mount_point,
+  void AddNewDevice(const std::string& mount_device,
+                    const std::string& mount_point,
                     base::SystemMonitor::DeviceIdType* device_id);
 
   // Remove a media device with a given device id.

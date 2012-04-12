@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// MediaDeviceNotificationsLinux unit tests.
+
+#include "content/browser/media_device_notifications_linux.h"
+
 #include <mntent.h>
 #include <stdio.h>
-#include <string.h>
+
+#include <string>
 
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -14,28 +19,38 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/media_device_notifications_linux.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
+namespace content {
 
 namespace {
 
-const char* kValidFS = "vfat";
-const char* kInvalidFS = "invalidfs";
+using testing::_;
 
-const char* kInvalidPath = "invalid path does not exist";
+const char kValidFS[] = "vfat";
+const char kInvalidFS[] = "invalidfs";
 
-const char* kDevice1 = "d1";
-const char* kDevice2 = "d2";
-const char* kDevice3 = "d3";
+const char kInvalidPath[] = "invalid path does not exist";
 
-const char* kMountPointA = "mnt_a";
-const char* kMountPointB = "mnt_b";
+const char kDevice1[] = "d1";
+const char kDevice2[] = "d2";
+const char kDevice3[] = "d3";
 
-}  // namespace
+const char kMountPointA[] = "mnt_a";
+const char kMountPointB[] = "mnt_b";
 
-namespace content {
+// TODO(thestig) Move this into base/string_util.h, or replace this with
+// strndup_with_new() if we find more uses for it.
+// Duplicate the content of |str| into a new char array. Caller takes ownership
+// of the allocated array. Unlike std::string::c_str(), this returns a char*
+// instead of a const char*.
+char* copy_string(const std::string& str) {
+  const size_t len = str.length();
+  char* ret = new char[len + 1];
+  str.copy(ret, len, 0);
+  ret[len] = '\0';
+  return ret;
+}
 
 class MediaDeviceNotificationsLinuxTestWrapper
     : public MediaDeviceNotificationsLinux {
@@ -46,7 +61,10 @@ class MediaDeviceNotificationsLinuxTestWrapper
         message_loop_(message_loop) {
   }
 
- protected:
+ private:
+  // Avoids code deleting the object while there are references to it.
+  // Aside from the base::RefCountedThreadSafe friend class, any attempts to
+  // call this dtor will result in a compile-time error.
   ~MediaDeviceNotificationsLinuxTestWrapper() {}
 
   virtual void OnFilePathChanged(const FilePath& path) {
@@ -54,7 +72,6 @@ class MediaDeviceNotificationsLinuxTestWrapper
     message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
- private:
   MessageLoop* message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaDeviceNotificationsLinuxTestWrapper);
@@ -63,30 +80,29 @@ class MediaDeviceNotificationsLinuxTestWrapper
 class MediaDeviceNotificationsLinuxTest : public testing::Test {
  public:
   struct MtabTestData {
-    MtabTestData(const char* mount_device,
-                 const char* mount_point,
-                 const char* mount_type)
+    MtabTestData(const std::string& mount_device,
+                 const std::string& mount_point,
+                 const std::string& mount_type)
         : mount_device(mount_device),
           mount_point(mount_point),
           mount_type(mount_type) {
     }
 
-    const char* mount_device;
-    const char* mount_point;
-    const char* mount_type;
+    const std::string mount_device;
+    const std::string mount_point;
+    const std::string mount_type;
   };
 
   MediaDeviceNotificationsLinuxTest()
       : message_loop_(MessageLoop::TYPE_IO),
         file_thread_(BrowserThread::FILE, &message_loop_) {
-    system_monitor_.reset(new base::SystemMonitor());
   }
   virtual ~MediaDeviceNotificationsLinuxTest() {}
 
  protected:
   virtual void SetUp() {
     mock_devices_changed_observer_.reset(new base::MockDevicesChangedObserver);
-    system_monitor_->AddDevicesChangedObserver(
+    system_monitor_.AddDevicesChangedObserver(
         mock_devices_changed_observer_.get());
 
     // Create and set up a temp dir with files for the test.
@@ -94,10 +110,12 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
     FilePath test_dir = scoped_temp_dir_.path().AppendASCII("test_etc");
     ASSERT_TRUE(file_util::CreateDirectory(test_dir));
     mtab_file_ = test_dir.AppendASCII("test_mtab");
-    struct MtabTestData initial_test_data[] = {
+    MtabTestData initial_test_data[] = {
       MtabTestData("dummydevice", "dummydir", kInvalidFS),
     };
-    WriteToMtab(initial_test_data, arraysize(initial_test_data), true);
+    WriteToMtab(initial_test_data,
+                arraysize(initial_test_data),
+                true  /* overwrite */);
 
     // Initialize the test subject.
     notifications_ =
@@ -110,26 +128,56 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
   virtual void TearDown() {
     message_loop_.RunAllPending();
     notifications_ = NULL;
-    system_monitor_->RemoveDevicesChangedObserver(
+    system_monitor_.RemoveDevicesChangedObserver(
         mock_devices_changed_observer_.get());
   }
 
-  // Used to run tests. When the mtab file gets modified, the message loop
-  // needs to run in order to react to the file modification.
-  // See WriteToMtab for parameters.
-  void WriteToMtabAndRunLoop(struct MtabTestData* data,
-                             size_t data_size,
-                             bool overwrite) {
-    WriteToMtab(data, data_size, overwrite);
+  // Append mtab entries from the |data| array of size |data_size| to the mtab
+  // file, and run the message loop.
+  void AppendToMtabAndRunLoop(const MtabTestData* data, size_t data_size) {
+    WriteToMtab(data, data_size, false  /* do not overwrite */);
     message_loop_.Run();
   }
 
+  // Overwrite the mtab file with mtab entries from the |data| array of size
+  // |data_size|, and run the message loop.
+  void OverwriteMtabAndRunLoop(const MtabTestData* data, size_t data_size) {
+    WriteToMtab(data, data_size, true  /* overwrite */);
+    message_loop_.Run();
+  }
+
+  // Simplied version of OverwriteMtabAndRunLoop() that just deletes all the
+  // entries in the mtab file.
+  void WriteEmptyMtabAndRunLoop() {
+    OverwriteMtabAndRunLoop(NULL,  // No data.
+                            0);    // No data length.
+  }
+
+  // Create a directory named |dir| relative to the test directory.
+  // It has a DCIM directory, so MediaDeviceNotificationsLinux recognizes it as
+  // a media directory.
+  FilePath CreateMountPointWithDCIMDir(const std::string& dir) {
+    return CreateMountPoint(dir, true  /* create DCIM dir */);
+  }
+
+  // Create a directory named |dir| relative to the test directory.
+  // It does not have a DCIM directory, so MediaDeviceNotificationsLinux does
+  // not recognizes it as a media directory.
+  FilePath CreateMountPointWithoutDCIMDir(const std::string& dir) {
+    return CreateMountPoint(dir, false  /* do not create DCIM dir */);
+  }
+
+  base::MockDevicesChangedObserver& observer() {
+    return *mock_devices_changed_observer_;
+  }
+
+ private:
   // Create a directory named |dir| relative to the test directory.
   // Set |with_dcim_dir| to true if the created directory will have a "DCIM"
   // subdirectory.
   // Returns the full path to the created directory on success, or an empty
   // path on failure.
-  FilePath CreateMountPoint(const char* dir, bool with_dcim_dir) {
+  FilePath CreateMountPoint(const std::string& dir, bool with_dcim_dir) {
     FilePath return_path(scoped_temp_dir_.path());
     return_path = return_path.AppendASCII(dir);
     FilePath path(return_path);
@@ -140,38 +188,31 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
     return return_path;
   }
 
-  base::MockDevicesChangedObserver& observer() {
-    return *mock_devices_changed_observer_;
-  }
-
- private:
   // Write the test mtab data to |mtab_file_|.
   // |data| is an array of mtab entries.
   // |data_size| is the array size of |data|.
   // |overwrite| specifies whether to overwrite |mtab_file_|.
-  void WriteToMtab(struct MtabTestData* data,
+  void WriteToMtab(const MtabTestData* data,
                    size_t data_size,
                    bool overwrite) {
     FILE* file = setmntent(mtab_file_.value().c_str(), overwrite ? "w" : "a");
     ASSERT_TRUE(file);
 
-    struct mntent entry;
-    entry.mnt_opts = strdup("rw");
+    mntent entry;
+    scoped_array<char> mount_opts(copy_string("rw"));
+    entry.mnt_opts = mount_opts.get();
     entry.mnt_freq = 0;
     entry.mnt_passno = 0;
     for (size_t i = 0; i < data_size; ++i) {
-      entry.mnt_fsname = strdup(data[i].mount_device);
-      entry.mnt_dir = strdup(data[i].mount_point);
-      entry.mnt_type = strdup(data[i].mount_type);
-      int add_result = addmntent(file, &entry);
-      ASSERT_EQ(0, add_result);
-      free(entry.mnt_fsname);
-      free(entry.mnt_dir);
-      free(entry.mnt_type);
+      scoped_array<char> mount_device(copy_string(data[i].mount_device));
+      scoped_array<char> mount_point(copy_string(data[i].mount_point));
+      scoped_array<char> mount_type(copy_string(data[i].mount_type));
+      entry.mnt_fsname = mount_device.get();
+      entry.mnt_dir = mount_point.get();
+      entry.mnt_type = mount_type.get();
+      ASSERT_EQ(0, addmntent(file, &entry));
     }
-    free(entry.mnt_opts);
-    int end_result = endmntent(file);
-    ASSERT_EQ(1, end_result);
+    ASSERT_EQ(1, endmntent(file));
   }
 
   // The message loop and file thread to run tests on.
@@ -179,7 +220,7 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
   BrowserThreadImpl file_thread_;
 
   // SystemMonitor and DevicesChangedObserver to hook together to test.
-  scoped_ptr<base::SystemMonitor> system_monitor_;
+  base::SystemMonitor system_monitor_;
   scoped_ptr<base::MockDevicesChangedObserver> mock_devices_changed_observer_;
 
   // Temporary directory for created test data.
@@ -192,61 +233,68 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MediaDeviceNotificationsLinuxTest);
 };
 
+// Simple test case where we attach and detach a media device.
 TEST_F(MediaDeviceNotificationsLinuxTest, BasicAttachDetach) {
   testing::Sequence mock_sequence;
-  FilePath test_path = CreateMountPoint(kMountPointA, true);
+  FilePath test_path = CreateMountPointWithDCIMDir(kMountPointA);
   ASSERT_FALSE(test_path.empty());
-  struct MtabTestData test_data[] = {
+  MtabTestData test_data[] = {
     MtabTestData(kDevice1, kInvalidPath, kValidFS),
-    MtabTestData(kDevice2, test_path.value().c_str(), kValidFS),
+    MtabTestData(kDevice2, test_path.value(), kValidFS),
   };
+  // Only |kDevice2| should be attached, since |kDevice1| has a bad path.
   EXPECT_CALL(observer(), OnMediaDeviceAttached(0, kDevice2, test_path))
       .InSequence(mock_sequence);
-  WriteToMtabAndRunLoop(test_data, arraysize(test_data), false);
+  AppendToMtabAndRunLoop(test_data, arraysize(test_data));
 
+  // |kDevice2| should be detached here.
   EXPECT_CALL(observer(), OnMediaDeviceDetached(0)).InSequence(mock_sequence);
-  WriteToMtabAndRunLoop(NULL, 0, true);
+  WriteEmptyMtabAndRunLoop();
 }
 
 // Only mount points with DCIM directories are recognized.
 TEST_F(MediaDeviceNotificationsLinuxTest, DCIM) {
   testing::Sequence mock_sequence;
-  FilePath test_pathA = CreateMountPoint(kMountPointA, true);
-  ASSERT_FALSE(test_pathA.empty());
-  struct MtabTestData test_data1[] = {
-    MtabTestData(kDevice1, test_pathA.value().c_str(), kValidFS),
+  FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
+  ASSERT_FALSE(test_path_a.empty());
+  MtabTestData test_data1[] = {
+    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
   };
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(0, kDevice1, test_pathA))
+  // |kDevice1| should be attached as expected.
+  EXPECT_CALL(observer(), OnMediaDeviceAttached(0, kDevice1, test_path_a))
       .InSequence(mock_sequence);
-  WriteToMtabAndRunLoop(test_data1, arraysize(test_data1), false);
+  AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
-  FilePath test_pathB = CreateMountPoint(kMountPointB, false);
-  ASSERT_FALSE(test_pathB.empty());
-  struct MtabTestData test_data2[] = {
-    MtabTestData(kDevice2, test_pathB.value().c_str(), kValidFS),
+  // This should do nothing, since |kMountPointB| does not have a DCIM dir.
+  FilePath test_path_b = CreateMountPointWithoutDCIMDir(kMountPointB);
+  ASSERT_FALSE(test_path_b.empty());
+  MtabTestData test_data2[] = {
+    MtabTestData(kDevice2, test_path_b.value(), kValidFS),
   };
-  WriteToMtabAndRunLoop(test_data2, arraysize(test_data2), false);
+  AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
+  // |kDevice1| should be detached as expected.
   EXPECT_CALL(observer(), OnMediaDeviceDetached(0)).InSequence(mock_sequence);
-  WriteToMtabAndRunLoop(NULL, 0, true);
+  WriteEmptyMtabAndRunLoop();
 }
 
+// More complicated test case with multiple devices on multiple mount points.
 TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesMultiMountPoints) {
-  FilePath test_pathA = CreateMountPoint(kMountPointA, true);
-  FilePath test_pathB = CreateMountPoint(kMountPointB, true);
-  ASSERT_FALSE(test_pathA.empty());
-  ASSERT_FALSE(test_pathB.empty());
+  FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
+  FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
+  ASSERT_FALSE(test_path_a.empty());
+  ASSERT_FALSE(test_path_b.empty());
 
   // Attach two devices.
   // kDevice1 -> kMountPointA
   // kDevice2 -> kMountPointB
-  struct MtabTestData test_data1[] = {
-    MtabTestData(kDevice1, test_pathA.value().c_str(), kValidFS),
-    MtabTestData(kDevice2, test_pathB.value().c_str(), kValidFS),
+  MtabTestData test_data1[] = {
+    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
+    MtabTestData(kDevice2, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(2);
   EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(0);
-  WriteToMtabAndRunLoop(test_data1, arraysize(test_data1), false);
+  AppendToMtabAndRunLoop(test_data1, arraysize(test_data1));
 
   // Attach |kDevice1| to |kMountPointB|.
   // |kDevice2| is inaccessible, so it is detached. |kDevice1| has been
@@ -254,71 +302,72 @@ TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesMultiMountPoints) {
   // kDevice1 -> kMountPointA
   // kDevice2 -> kMountPointB
   // kDevice1 -> kMountPointB
-  struct MtabTestData test_data2[] = {
-    MtabTestData(kDevice1, test_pathB.value().c_str(), kValidFS),
+  MtabTestData test_data2[] = {
+    MtabTestData(kDevice1, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(1);
   EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(2);
-  WriteToMtabAndRunLoop(test_data2, arraysize(test_data2), false);
+  AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
   // Attach |kDevice2| to |kMountPointA|.
   // kDevice1 -> kMountPointA
   // kDevice2 -> kMountPointB
   // kDevice1 -> kMountPointB
   // kDevice2 -> kMountPointA
-  struct MtabTestData test_data3[] = {
-    MtabTestData(kDevice2, test_pathA.value().c_str(), kValidFS),
+  MtabTestData test_data3[] = {
+    MtabTestData(kDevice2, test_path_a.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(1);
   EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(0);
-  WriteToMtabAndRunLoop(test_data3, arraysize(test_data3), false);
+  AppendToMtabAndRunLoop(test_data3, arraysize(test_data3));
 
   // Detach |kDevice2| from |kMountPointA|.
   // kDevice1 -> kMountPointA
   // kDevice2 -> kMountPointB
   // kDevice1 -> kMountPointB
-  struct MtabTestData test_data4[] = {
-    MtabTestData(kDevice1, test_pathA.value().c_str(), kValidFS),
-    MtabTestData(kDevice2, test_pathB.value().c_str(), kValidFS),
-    MtabTestData(kDevice1, test_pathB.value().c_str(), kValidFS),
+  MtabTestData test_data4[] = {
+    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
+    MtabTestData(kDevice2, test_path_b.value(), kValidFS),
+    MtabTestData(kDevice1, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(0);
   EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(1);
-  WriteToMtabAndRunLoop(test_data4, arraysize(test_data4), true);
+  OverwriteMtabAndRunLoop(test_data4, arraysize(test_data4));
 
   // Detach |kDevice1| from |kMountPointB|.
   // kDevice1 -> kMountPointA
   // kDevice2 -> kMountPointB
   EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(2);
   EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(1);
-  WriteToMtabAndRunLoop(test_data1, arraysize(test_data1), true);
+  OverwriteMtabAndRunLoop(test_data1, arraysize(test_data1));
 
   // Detach all devices.
   EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(0);
   EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(2);
-  WriteToMtabAndRunLoop(NULL, 0, true);
+  WriteEmptyMtabAndRunLoop();
 }
 
+// More complicated test case with multiple devices on one mount point.
 TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesOneMountPoint) {
   testing::Sequence mock_sequence;
-  FilePath test_pathA = CreateMountPoint(kMountPointA, true);
-  FilePath test_pathB = CreateMountPoint(kMountPointB, true);
-  ASSERT_FALSE(test_pathA.empty());
-  ASSERT_FALSE(test_pathB.empty());
+  FilePath test_path_a = CreateMountPointWithDCIMDir(kMountPointA);
+  FilePath test_path_b = CreateMountPointWithDCIMDir(kMountPointB);
+  ASSERT_FALSE(test_path_a.empty());
+  ASSERT_FALSE(test_path_b.empty());
 
   // |kDevice1| is most recently mounted at |kMountPointB|.
   // kDevice1 -> kMountPointA
   // kDevice2 -> kMountPointB
   // kDevice1 -> kMountPointB
-  struct MtabTestData test_data1[] = {
-    MtabTestData(kDevice1, test_pathA.value().c_str(), kValidFS),
-    MtabTestData(kDevice2, test_pathB.value().c_str(), kValidFS),
-    MtabTestData(kDevice1, test_pathB.value().c_str(), kValidFS),
+  MtabTestData test_data1[] = {
+    MtabTestData(kDevice1, test_path_a.value(), kValidFS),
+    MtabTestData(kDevice2, test_path_b.value(), kValidFS),
+    MtabTestData(kDevice1, test_path_b.value(), kValidFS),
   };
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(0, kDevice1, test_pathB))
+  EXPECT_CALL(observer(), OnMediaDeviceAttached(0, kDevice1, test_path_b))
       .Times(1);
   EXPECT_CALL(observer(), OnMediaDeviceDetached(_)).Times(0);
-  WriteToMtabAndRunLoop(test_data1, arraysize(test_data1), true);
+  OverwriteMtabAndRunLoop(test_data1, arraysize(test_data1));
 
   // Attach |kDevice3| to |kMountPointB|.
   // |kDevice1| is inaccessible at its most recent mount point, so it is
@@ -328,18 +377,20 @@ TEST_F(MediaDeviceNotificationsLinuxTest, MultiDevicesOneMountPoint) {
   // kDevice2 -> kMountPointB
   // kDevice1 -> kMountPointB
   // kDevice3 -> kMountPointB
-  struct MtabTestData test_data2[] = {
-    MtabTestData(kDevice3, test_pathB.value().c_str(), kValidFS),
+  MtabTestData test_data2[] = {
+    MtabTestData(kDevice3, test_path_b.value(), kValidFS),
   };
   EXPECT_CALL(observer(), OnMediaDeviceDetached(0)).Times(1);
-  EXPECT_CALL(observer(), OnMediaDeviceAttached(1, kDevice3, test_pathB))
+  EXPECT_CALL(observer(), OnMediaDeviceAttached(1, kDevice3, test_path_b))
       .Times(1);
-  WriteToMtabAndRunLoop(test_data2, arraysize(test_data2), false);
+  AppendToMtabAndRunLoop(test_data2, arraysize(test_data2));
 
   // Detach all devices.
   EXPECT_CALL(observer(), OnMediaDeviceAttached(_, _, _)).Times(0);
   EXPECT_CALL(observer(), OnMediaDeviceDetached(1)).Times(1);
-  WriteToMtabAndRunLoop(NULL, 0, true);
+  WriteEmptyMtabAndRunLoop();
 }
+
+}  // namespace
 
 }  // namespace content
