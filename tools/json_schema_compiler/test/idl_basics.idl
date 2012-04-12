@@ -17,6 +17,7 @@ namespace idl_basics {
   callback Callback1 = void();
   callback Callback2 = void(long x);
   callback Callback3 = void(MyType1 arg);
+  callback Callback4 = void(MyType2[] arg);
 
   interface Functions {
     static void function1();
@@ -30,6 +31,11 @@ namespace idl_basics {
     static void function7(optional long arg);
     static void function8(long arg1, optional DOMString arg2);
     static void function9(optional MyType1 arg);
+
+    static void function10(long x, long[] y);
+    static void function11(MyType1[] arg);
+
+    static void function12(Callback4 cb);
   };
 
   interface Events {

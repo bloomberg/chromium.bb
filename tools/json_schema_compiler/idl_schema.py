@@ -108,9 +108,19 @@ class Typeref(object):
 
   def process(self, refs):
     properties = self.additional_properties
+    result = properties
 
     if self.parent.GetProperty('OPTIONAL', False):
       properties['optional'] = True
+
+    # The IDL parser denotes array types by adding a child 'Array' node onto
+    # the Param node in the Callspec.
+    for sibling in self.parent.GetChildren():
+      if sibling.cls == 'Array' and sibling.GetName() == self.parent.GetName():
+        properties['type'] = 'array'
+        properties['items'] = {}
+        properties = properties['items']
+        break
 
     if self.typeref == 'DOMString':
       properties['type'] = 'string'
@@ -132,10 +142,11 @@ class Typeref(object):
       properties['type'] = 'function'
     else:
       try:
-        properties = refs[self.typeref]
+        result = refs[self.typeref]
       except KeyError, e:
         properties['$ref'] = self.typeref
-    return properties
+
+    return result
 
 class Namespace(object):
   '''

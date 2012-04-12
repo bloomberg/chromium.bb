@@ -21,6 +21,8 @@ namespace Function6 = test::api::idl_basics::Function6;
 namespace Function7 = test::api::idl_basics::Function7;
 namespace Function8 = test::api::idl_basics::Function8;
 namespace Function9 = test::api::idl_basics::Function9;
+namespace Function10 = test::api::idl_basics::Function10;
+namespace Function11 = test::api::idl_basics::Function11;
 namespace ObjectFunction1 = test::api::idl_object_types::ObjectFunction1;
 
 TEST(IdlCompiler, Basics) {
@@ -66,7 +68,7 @@ TEST(IdlCompiler, Basics) {
 }
 
 TEST(IdlCompiler, OptionalArguments) {
-  // Test a function that takes one optional argument, but without and with
+  // Test a function that takes one optional argument, both without and with
   // that argument.
   ListValue list;
   scoped_ptr<Function7::Params> f7_params = Function7::Params::Create(list);
@@ -101,6 +103,52 @@ TEST(IdlCompiler, OptionalArguments) {
   MyType1* t1 = f9_params->arg.get();
   EXPECT_EQ(17, t1->x);
   EXPECT_EQ("hello", t1->y);
+}
+
+TEST(IdlCompiler, ArrayTypes) {
+  // Tests of a function that takes an integer and an array of integers. First
+  // use an empty array.
+  ListValue list;
+  list.Append(Value::CreateIntegerValue(33));
+  list.Append(new ListValue);
+  scoped_ptr<Function10::Params> f10_params = Function10::Params::Create(list);
+  ASSERT_TRUE(f10_params != NULL);
+  EXPECT_EQ(33, f10_params->x);
+  EXPECT_TRUE(f10_params->y.empty());
+
+  // Same function, but this time with 2 values in the array.
+  list.Clear();
+  list.Append(Value::CreateIntegerValue(33));
+  ListValue* sublist = new ListValue;
+  sublist->Append(Value::CreateIntegerValue(34));
+  sublist->Append(Value::CreateIntegerValue(35));
+  list.Append(sublist);
+  f10_params = Function10::Params::Create(list);
+  ASSERT_TRUE(f10_params != NULL);
+  EXPECT_EQ(33, f10_params->x);
+  ASSERT_EQ(2u, f10_params->y.size());
+  EXPECT_EQ(34, f10_params->y[0]);
+  EXPECT_EQ(35, f10_params->y[1]);
+
+  // Now test a function which takes an array of a defined type.
+  list.Clear();
+  MyType1 a;
+  MyType1 b;
+  a.x = 5;
+  b.x = 6;
+  a.y = std::string("foo");
+  b.y = std::string("bar");
+  ListValue* sublist2 = new ListValue;
+  sublist2->Append(a.ToValue().release());
+  sublist2->Append(b.ToValue().release());
+  list.Append(sublist2);
+  scoped_ptr<Function11::Params> f11_params = Function11::Params::Create(list);
+  ASSERT_TRUE(f11_params != NULL);
+  ASSERT_EQ(2u, f11_params->arg.size());
+  EXPECT_EQ(5, f11_params->arg[0]->x);
+  EXPECT_EQ("foo", f11_params->arg[0]->y);
+  EXPECT_EQ(6, f11_params->arg[1]->x);
+  EXPECT_EQ("bar", f11_params->arg[1]->y);
 }
 
 TEST(IdlCompiler, ObjectTypes) {
