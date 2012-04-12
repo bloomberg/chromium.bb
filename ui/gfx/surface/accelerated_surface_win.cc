@@ -629,7 +629,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
       hr = present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
 
       if (hr == S_FALSE)
-        Sleep(0);
+        Sleep(1);
     } while (hr == S_FALSE);
   }
 
