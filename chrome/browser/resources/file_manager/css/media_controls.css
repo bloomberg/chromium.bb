@@ -158,7 +158,7 @@
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-transition: height 150ms ease;
+  -webkit-transition: opacity 150ms ease;
   background: #202020;
   border-top-left-radius: 2px;
   border-top-right-radius: 2px;
@@ -166,14 +166,15 @@
   color: white;
   display: -webkit-box;
   font-size: 13px;
-  height: 0;
+  height: 15px;
   left: 0;
+  opacity: 0;
   overflow: hidden;
   position: absolute;
 }
 
 .custom-slider > .bar > .seek-mark.visible > .seek-label {
-  height: 15px;
+  opacity: 1;
 }
 
 /* Media controls in order of appearance. */
@@ -276,12 +277,12 @@
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
-  bottom: 0;
   color: white;
   display: -webkit-box;
+  height: 100%;
   position: absolute;
   right: 0;
-  top: 0;
+  top: -1px;
 }
 
 /* Volume controls: sound button and volume slider */
@@ -299,7 +300,6 @@
 .media-button.sound {
   background-position: -2px center;
   margin-left: -4px;
-  margin-right: -2px;
 }
 
 .media-button.sound[level='0'] > .normal {
