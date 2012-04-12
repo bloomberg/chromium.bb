@@ -827,13 +827,6 @@ class TestingAutomationProvider : public AutomationProvider,
                   base::DictionaryValue* args,
                   IPC::Message* reply_message);
 
-  // Moves a thumbnail in the NTP's Most Visited sites section to a different
-  // index.
-  // Uses the JSON interface for input/output.
-  void MoveNTPMostVisitedThumbnail(Browser* browser,
-                                   base::DictionaryValue* args,
-                                   IPC::Message* reply_message);
-
   // Removes a thumbnail from the NTP's Most Visited sites section.
   // Uses the JSON interface for input/output.
   void RemoveNTPMostVisitedThumbnail(Browser* browser,

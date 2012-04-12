@@ -101,16 +101,6 @@ class NTPTest(pyauto.PyUITest):
     self.assertEqual(self.PAGES[1]['url'], thumbnail['url'])
     self.assertEqual(self.PAGES[1]['title'], thumbnail['title'])
 
-  def testMoveThumbnailBasic(self):
-    """Tests moving a thumbnail to a different index"""
-    self.RemoveNTPDefaultThumbnails()
-    self.NavigateToURL(self.PAGES[0]['url'])
-    self.NavigateToURL(self.PAGES[1]['url'])
-    thumbnails = self.GetNTPThumbnails()
-    self.MoveNTPThumbnail(thumbnails[0], 1)
-    self.assertEqual(self.PAGES[0]['url'], self.GetNTPThumbnails()[1]['url'])
-    self.assertEqual(1, self.GetNTPThumbnailIndex(thumbnails[0]))
-
   def testRemoveThumbnail(self):
     """Tests removing a thumbnail works"""
     self.RemoveNTPDefaultThumbnails()
@@ -146,9 +136,6 @@ class NTPTest(pyauto.PyUITest):
     for page in self.PAGES:
       self.AppendTab(pyauto.GURL(page['url']))
     thumbnails = self.GetNTPThumbnails()
-    self.MoveNTPThumbnail(thumbnails[0], 1)
-    thumbnails = self.GetNTPThumbnails()
-
     self.RestartBrowser(clear_profile=False)
     self.assertEqual(thumbnails, self.GetNTPThumbnails())
 

@@ -3350,30 +3350,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         return i
     return -1
 
-  def MoveNTPThumbnail(self, thumbnail, new_index):
-    """Moves the given thumbnail to a new index. The indices in the NTP Most
-    Visited sites section look like:
-      0  1  2  3
-      4  5  6  7
-
-    Args:
-      thumbnail: a thumbnail dict received from |GetNTPThumbnails|
-      new_index: the index to be moved to in the Most Visited sites section
-
-    Raises:
-      IndexError if there is no thumbnail at the index
-    """
-    if new_index < 0 or new_index >= len(self.GetNTPThumbnails()):
-      raise IndexError()
-    self._CheckNTPThumbnailShown(thumbnail)
-    cmd_dict = {
-      'command': 'MoveNTPMostVisitedThumbnail',
-      'url': thumbnail['url'],
-      'index': new_index,
-      'old_index': self.GetNTPThumbnailIndex(thumbnail)
-    }
-    self._GetResultFromJSONRequest(cmd_dict)
-
   def RemoveNTPThumbnail(self, thumbnail):
     """Removes the NTP thumbnail and returns true on success.
 
