@@ -59,10 +59,8 @@ const char kUploadContentLength[] = "X-Upload-Content-Length: ";
 // Use smaller 'page' size while debugging to ensure we hit feed reload
 // almost always. Be careful not to use something too small on account that
 // have many items because server side 503 error might kick in.
-const int kMaxDocumentsPerFirstFeed = 200;
 const int kMaxDocumentsPerFeed = 1000;
 #else
-const int kMaxDocumentsPerFirstFeed = 200;
 const int kMaxDocumentsPerFeed = 1000;
 #endif
 
@@ -458,7 +456,7 @@ GURL GetDocumentsOperation::GetURL() const {
   if (!override_url_.is_empty())
     return AddFeedUrlParams(override_url_, kMaxDocumentsPerFeed);
 
-  return AddFeedUrlParams(GURL(kGetDocumentListURL), kMaxDocumentsPerFirstFeed);
+  return AddFeedUrlParams(GURL(kGetDocumentListURL), kMaxDocumentsPerFeed);
 }
 
 //========================= GetAccountMetadataOperation ========================
