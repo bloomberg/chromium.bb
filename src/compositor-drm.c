@@ -190,8 +190,8 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 	output->pending_scanout_buffer = es->buffer;
 	output->pending_scanout_buffer->busy_count++;
 
-	wl_list_insert(output->pending_scanout_buffer->resource.destroy_listener_list.prev,
-		       &output->pending_scanout_buffer_destroy_listener.link);
+	wl_signal_add(&output->pending_scanout_buffer->resource.destroy_signal,
+		      &output->pending_scanout_buffer_destroy_listener);
 
 	pixman_region32_fini(&es->damage);
 	pixman_region32_init(&es->damage);
@@ -335,8 +335,8 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 
 	if (s->pending_surface) {
 		wl_list_remove(&s->pending_destroy_listener.link);
-		wl_list_insert(s->pending_surface->buffer->resource.destroy_listener_list.prev,
-			       &s->destroy_listener.link);
+		wl_signal_add(&s->pending_surface->buffer->resource.destroy_signal,
+			      &s->destroy_listener);
 		s->surface = s->pending_surface;
 		s->pending_surface = NULL;
 		s->fb_id = s->pending_fb_id;
@@ -373,8 +373,8 @@ page_flip_handler(int fd, unsigned int frame,
 	if (output->pending_scanout_buffer) {
 		output->scanout_buffer = output->pending_scanout_buffer;
 		wl_list_remove(&output->pending_scanout_buffer_destroy_listener.link);
-		wl_list_insert(output->scanout_buffer->resource.destroy_listener_list.prev,
-			       &output->scanout_buffer_destroy_listener.link);
+		wl_signal_add(&output->scanout_buffer->resource.destroy_signal,
+			      &output->scanout_buffer_destroy_listener);
 		output->pending_scanout_buffer = NULL;
 	}
 	msecs = sec * 1000 + usec / 1000;
@@ -561,8 +561,8 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	s->src_h = (box->y2 - box->y1) << 16;
 	pixman_region32_fini(&src_rect);
 
-	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
-		       &s->pending_destroy_listener.link);
+	wl_signal_add(&es->buffer->resource.destroy_signal,
+		      &s->pending_destroy_listener);
 	return 0;
 }
 
@@ -916,8 +916,7 @@ drm_subpixel_to_wayland(int drm_value)
 }
 
 static void
-output_handle_scanout_buffer_destroy(struct wl_listener *listener,
-				     struct wl_resource *resource)
+output_handle_scanout_buffer_destroy(struct wl_listener *listener, void *data)
 {
 	struct drm_output *output =
 		container_of(listener, struct drm_output,
@@ -931,7 +930,7 @@ output_handle_scanout_buffer_destroy(struct wl_listener *listener,
 
 static void
 output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
-					     struct wl_resource *resource)
+					     void *data)
 {
 	struct drm_output *output =
 		container_of(listener, struct drm_output,
@@ -943,8 +942,7 @@ output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
 }
 
 static void
-sprite_handle_buffer_destroy(struct wl_listener *listener,
-			     struct wl_resource *resource)
+sprite_handle_buffer_destroy(struct wl_listener *listener, void *data)
 {
 	struct drm_sprite *sprite =
 		container_of(listener, struct drm_sprite,
@@ -954,8 +952,7 @@ sprite_handle_buffer_destroy(struct wl_listener *listener,
 }
 
 static void
-sprite_handle_pending_buffer_destroy(struct wl_listener *listener,
-				     struct wl_resource *resource)
+sprite_handle_pending_buffer_destroy(struct wl_listener *listener, void *data)
 {
 	struct drm_sprite *sprite =
 		container_of(listener, struct drm_sprite,
@@ -1157,9 +1154,9 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 
-	output->scanout_buffer_destroy_listener.func =
+	output->scanout_buffer_destroy_listener.notify =
 		output_handle_scanout_buffer_destroy;
-	output->pending_scanout_buffer_destroy_listener.func =
+	output->pending_scanout_buffer_destroy_listener.notify =
 		output_handle_pending_scanout_buffer_destroy;
 
 	output->next_fb_id = 0;
@@ -1226,8 +1223,8 @@ create_sprites(struct drm_compositor *ec)
 		sprite->pending_surface = NULL;
 		sprite->fb_id = 0;
 		sprite->pending_fb_id = 0;
-		sprite->destroy_listener.func = sprite_handle_buffer_destroy;
-		sprite->pending_destroy_listener.func =
+		sprite->destroy_listener.notify = sprite_handle_buffer_destroy;
+		sprite->pending_destroy_listener.notify =
 			sprite_handle_pending_buffer_destroy;
 		sprite->compositor = ec;
 		sprite->count_formats = plane->count_formats;

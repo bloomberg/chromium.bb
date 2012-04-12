@@ -151,8 +151,7 @@ struct rotate_grab {
 };
 
 static void
-destroy_shell_grab_shsurf(struct wl_listener *listener,
-			  struct wl_resource *resource)
+destroy_shell_grab_shsurf(struct wl_listener *listener, void *data)
 {
 	struct shell_grab *grab;
 
@@ -169,9 +168,9 @@ shell_grab_init(struct shell_grab *grab,
 {
 	grab->grab.interface = interface;
 	grab->shsurf = shsurf;
-	grab->shsurf_destroy_listener.func = destroy_shell_grab_shsurf;
-	wl_list_insert(shsurf->resource.destroy_listener_list.prev,
-		       &grab->shsurf_destroy_listener.link);
+	grab->shsurf_destroy_listener.notify = destroy_shell_grab_shsurf;
+	wl_signal_add(&shsurf->resource.destroy_signal,
+		      &grab->shsurf_destroy_listener);
 
 }
 
@@ -852,8 +851,7 @@ destroy_shell_surface(struct wl_resource *resource)
 }
 
 static void
-shell_handle_surface_destroy(struct wl_listener *listener,
-			     struct wl_resource *resource)
+shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct shell_surface *shsurf = container_of(listener,
 						    struct shell_surface,
@@ -866,16 +864,13 @@ shell_handle_surface_destroy(struct wl_listener *listener,
 static struct shell_surface *
 get_shell_surface(struct weston_surface *surface)
 {
-	struct wl_list *lst = &surface->surface.resource.destroy_listener_list;
 	struct wl_listener *listener;
 
-	/* search the destroy listener list for our callback */
-	wl_list_for_each(listener, lst, link) {
-		if (listener->func == shell_handle_surface_destroy) {
-			return container_of(listener, struct shell_surface,
-					    surface_destroy_listener);
-		}
-	}
+	listener = wl_signal_get(&surface->surface.resource.destroy_signal,
+				 shell_handle_surface_destroy);
+	if (listener)
+		return container_of(listener, struct shell_surface,
+				    surface_destroy_listener);
 
 	return NULL;
 }
@@ -928,9 +923,9 @@ shell_get_shell_surface(struct wl_client *client,
 	shsurf->fullscreen.black_surface = NULL;
 	wl_list_init(&shsurf->fullscreen.transform.link);
 
-	shsurf->surface_destroy_listener.func = shell_handle_surface_destroy;
-	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
-		       &shsurf->surface_destroy_listener.link);
+	shsurf->surface_destroy_listener.notify = shell_handle_surface_destroy;
+	wl_signal_add(&surface->surface.resource.destroy_signal,
+		      &shsurf->surface_destroy_listener);
 
 	/* init link so its safe to always remove it in destroy_shell_surface */
 	wl_list_init(&shsurf->link);
@@ -1082,8 +1077,7 @@ desktop_shell_set_panel(struct wl_client *client,
 }
 
 static void
-handle_lock_surface_destroy(struct wl_listener *listener,
-			    struct wl_resource *resource)
+handle_lock_surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct wl_shell *shell =
 		container_of(listener, struct wl_shell, lock_surface_listener);
@@ -1110,9 +1104,9 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 
 	shell->lock_surface = surface;
 
-	shell->lock_surface_listener.func = handle_lock_surface_destroy;
-	wl_list_insert(&surface_resource->destroy_listener_list,
-		       &shell->lock_surface_listener.link);
+	shell->lock_surface_listener.notify = handle_lock_surface_destroy;
+	wl_signal_add(&surface_resource->destroy_signal,
+		      &shell->lock_surface_listener);
 
 	shell->lock_surface->type = SHELL_SURFACE_LOCK;
 }
@@ -2026,8 +2020,8 @@ switcher_next(struct switcher *switcher)
 		return;
 
 	wl_list_remove(&switcher->listener.link);
-	wl_list_insert(next->surface.resource.destroy_listener_list.prev,
-		       &switcher->listener.link);
+	wl_signal_add(&next->surface.resource.destroy_signal,
+		      &switcher->listener);
 
 	switcher->current = next;
 	next->alpha = 255;
@@ -2038,8 +2032,7 @@ switcher_next(struct switcher *switcher)
 }
 
 static void
-switcher_handle_surface_destroy(struct wl_listener *listener,
-				struct wl_resource *resource)
+switcher_handle_surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct switcher *switcher =
 		container_of(listener, struct switcher, listener);
@@ -2097,7 +2090,7 @@ switcher_binding(struct wl_input_device *device, uint32_t time,
 	switcher = malloc(sizeof *switcher);
 	switcher->compositor = compositor;
 	switcher->current = NULL;
-	switcher->listener.func = switcher_handle_surface_destroy;
+	switcher->listener.notify = switcher_handle_surface_destroy;
 	wl_list_init(&switcher->listener.link);
 
 	switcher->grab.interface = &switcher_grab;

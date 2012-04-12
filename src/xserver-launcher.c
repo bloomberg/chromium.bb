@@ -82,7 +82,7 @@ struct weston_wm {
 	xcb_timestamp_t selection_timestamp;
 	int selection_property_set;
 	int flush_property_on_delete;
-	struct wl_selection_listener selection_listener;
+	struct wl_listener selection_listener;
 
 	struct {
 		xcb_atom_t		 wm_protocols;
@@ -319,7 +319,7 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 	if (source == NULL)
 		return;
 
-	wl_list_init(&source->resource.destroy_listener_list);
+	wl_signal_init(&source->resource.destroy_signal);
 	source->offer_interface = &data_offer_interface;
 	source->cancel = data_source_cancel;
 	source->resource.data = wm;
@@ -451,9 +451,9 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 }
 
 static void
-weston_wm_set_selection(struct wl_selection_listener *listener,
-			struct wl_input_device *device)
+weston_wm_set_selection(struct wl_listener *listener, void *data)
 {
+	struct wl_input_device *device = data;
 	struct weston_wm *wm =
 		container_of(listener, struct weston_wm, selection_listener);
 	struct wl_data_source *source = device->selection_data_source;
@@ -1348,9 +1348,8 @@ weston_wm_create(struct weston_xserver *wxs)
 	xcb_flush(wm->conn);
 
 	device = wxs->compositor->input_device;
-	wm->selection_listener.func = weston_wm_set_selection;
-	wl_list_insert(&device->selection_listener_list,
-		       &wm->selection_listener.link);
+	wm->selection_listener.notify = weston_wm_set_selection;
+	wl_signal_add(&device->selection_signal, &wm->selection_listener);
 
 	fprintf(stderr, "created wm\n");
 
@@ -1480,7 +1479,7 @@ weston_xserver_cleanup(struct weston_process *process, int status)
 }
 
 static void
-surface_destroy(struct wl_listener *listener, struct wl_resource *resource)
+surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct weston_wm_window *window =
 		container_of(listener,
@@ -1495,12 +1494,10 @@ get_wm_window(struct weston_surface *surface)
 	struct wl_resource *resource = &surface->surface.resource;
 	struct wl_listener *listener;
 
-	wl_list_for_each(listener, &resource->destroy_listener_list, link) {
-		if (listener->func == surface_destroy)
-			return container_of(listener,
-					    struct weston_wm_window,
-					    surface_destroy_listener);
-	}
+	listener = wl_signal_get(&resource->destroy_signal, surface_destroy);
+	if (listener)
+		return container_of(listener, struct weston_wm_window,
+				    surface_destroy_listener);
 
 	return NULL;
 }
@@ -1526,9 +1523,9 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 	fprintf(stderr, "set_window_id %d for surface %p\n", id, surface);
 
 	window->surface = (struct weston_surface *) surface;
-	window->surface_destroy_listener.func = surface_destroy;
-	wl_list_insert(surface->resource.destroy_listener_list.prev,
-		       &window->surface_destroy_listener.link);
+	window->surface_destroy_listener.notify = surface_destroy;
+	wl_signal_add(&surface->resource.destroy_signal,
+		      &window->surface_destroy_listener);
 }
 
 static const struct xserver_interface xserver_implementation = {

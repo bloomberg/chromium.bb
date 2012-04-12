@@ -109,8 +109,7 @@ weston_zoom_destroy(struct weston_zoom *zoom)
 }
 
 static void
-handle_zoom_surface_destroy(struct wl_listener *listener,
-			    struct wl_resource *resource)
+handle_zoom_surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct weston_zoom *zoom =
 		container_of(listener, struct weston_zoom, listener);
@@ -176,9 +175,9 @@ weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
 	zoom->animation.frame = weston_zoom_frame;
 	weston_zoom_frame(&zoom->animation, NULL, zoom->spring.timestamp);
 
-	zoom->listener.func = handle_zoom_surface_destroy;
-	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
-		       &zoom->listener.link);
+	zoom->listener.notify = handle_zoom_surface_destroy;
+	wl_signal_add(&surface->surface.resource.destroy_signal,
+		      &zoom->listener);
 
 	wl_list_insert(&surface->compositor->animation_list,
 		       &zoom->animation.link);

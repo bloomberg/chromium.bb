@@ -150,8 +150,7 @@ tablet_shell_surface_configure(struct weston_surface *surface,
 }
 
 static void
-handle_lockscreen_surface_destroy(struct wl_listener *listener,
-				  struct wl_resource *resource)
+handle_lockscreen_surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct tablet_shell *shell =
 		container_of(listener,
@@ -172,14 +171,13 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 	weston_surface_set_position(es, 0, 0);
 	shell->lockscreen_surface = es;
 	shell->lockscreen_surface->configure = tablet_shell_surface_configure;
-	shell->lockscreen_listener.func = handle_lockscreen_surface_destroy;
-	wl_list_insert(es->surface.resource.destroy_listener_list.prev,
-		       &shell->lockscreen_listener.link);
+	shell->lockscreen_listener.notify = handle_lockscreen_surface_destroy;
+	wl_signal_add(&es->surface.resource.destroy_signal,
+		      &shell->lockscreen_listener);
 }
 
 static void
-handle_switcher_surface_destroy(struct wl_listener *listener,
-				struct wl_resource *resource)
+handle_switcher_surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct tablet_shell *shell =
 		container_of(listener,
@@ -205,9 +203,9 @@ tablet_shell_set_switcher(struct wl_client *client,
 	shell->switcher_surface = es;
 	weston_surface_set_position(shell->switcher_surface, 0, 0);
 
-	shell->switcher_listener.func = handle_switcher_surface_destroy;
-	wl_list_insert(es->surface.resource.destroy_listener_list.prev,
-		       &shell->switcher_listener.link);
+	shell->switcher_listener.notify = handle_switcher_surface_destroy;
+	wl_signal_add(&es->surface.resource.destroy_signal,
+		      &shell->switcher_listener);
 }
 
 static void

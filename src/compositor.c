@@ -165,8 +165,7 @@ weston_client_launch(struct weston_compositor *compositor,
 }
 
 static void
-surface_handle_buffer_destroy(struct wl_listener *listener,
-			      struct wl_resource *resource)
+surface_handle_buffer_destroy(struct wl_listener *listener, void *data)
 {
 	struct weston_surface *es =
 		container_of(listener, struct weston_surface, 
@@ -208,7 +207,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	if (surface == NULL)
 		return NULL;
 
-	wl_list_init(&surface->surface.resource.destroy_listener_list);
+	wl_signal_init(&surface->surface.resource.destroy_signal);
 
 	wl_list_init(&surface->link);
 	wl_list_init(&surface->layer_link);
@@ -230,7 +229,7 @@ weston_surface_create(struct weston_compositor *compositor)
 	pixman_region32_init(&surface->transform.opaque);
 	wl_list_init(&surface->frame_callback_list);
 
-	surface->buffer_destroy_listener.func = surface_handle_buffer_destroy;
+	surface->buffer_destroy_listener.notify = surface_handle_buffer_destroy;
 
 	wl_list_init(&surface->geometry.transformation_list);
 	wl_list_insert(&surface->geometry.transformation_list,
@@ -686,8 +685,8 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 	}
 
 	buffer->busy_count++;
-	wl_list_insert(es->buffer->resource.destroy_listener_list.prev,
-		       &es->buffer_destroy_listener.link);
+	wl_signal_add(&es->buffer->resource.destroy_signal,
+		      &es->buffer_destroy_listener);
 
 	if (es->geometry.width != buffer->width ||
 	    es->geometry.height != buffer->height) {
@@ -1660,8 +1659,7 @@ notify_pointer_focus(struct wl_input_device *device,
 }
 
 static void
-destroy_device_saved_kbd_focus(struct wl_listener *listener,
-			       struct wl_resource *resource)
+destroy_device_saved_kbd_focus(struct wl_listener *listener, void *data)
 {
 	struct weston_input_device *wd;
 
@@ -1706,10 +1704,10 @@ notify_keyboard_focus(struct wl_input_device *device, struct wl_array *keys)
 
 		if (surface) {
 			wd->saved_kbd_focus = surface;
-			wd->saved_kbd_focus_listener.func =
+			wd->saved_kbd_focus_listener.notify =
 				destroy_device_saved_kbd_focus;
-			wl_list_insert(surface->resource.destroy_listener_list.prev,
-				       &wd->saved_kbd_focus_listener.link);
+			wl_signal_add(&surface->resource.destroy_signal,
+				      &wd->saved_kbd_focus_listener);
 		}
 
 		wl_input_device_set_keyboard_focus(&wd->input_device, NULL);
@@ -1738,8 +1736,7 @@ find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
 }
 
 static void
-lose_touch_focus_resource(struct wl_listener *listener,
-			  struct wl_resource *resource)
+lose_touch_focus_resource(struct wl_listener *listener, void *data)
 {
 	struct weston_input_device *device =
 		container_of(listener, struct weston_input_device,
@@ -1749,8 +1746,7 @@ lose_touch_focus_resource(struct wl_listener *listener,
 }
 
 static void
-lose_touch_focus(struct wl_listener *listener,
-		 struct wl_resource *resource)
+lose_touch_focus(struct wl_listener *listener, void *data)
 {
 	struct weston_input_device *device =
 		container_of(listener, struct weston_input_device,
@@ -1778,13 +1774,13 @@ touch_set_focus(struct weston_input_device *device,
 			return;
 		}
 
-		device->touch_focus_resource_listener.func =
+		device->touch_focus_resource_listener.notify =
 			lose_touch_focus_resource;
-		wl_list_insert(resource->destroy_listener_list.prev,
-			       &device->touch_focus_resource_listener.link);
-		device->touch_focus_listener.func = lose_touch_focus;
-		wl_list_insert(surface->resource.destroy_listener_list.prev,
-			       &device->touch_focus_listener.link);
+		wl_signal_add(&resource->destroy_signal,
+			      &device->touch_focus_resource_listener);
+		device->touch_focus_listener.notify = lose_touch_focus;
+		wl_signal_add(&surface->resource.destroy_signal,
+			       &device->touch_focus_listener);
 
 		device->touch_focus = surface;
 		device->touch_focus_resource = resource;
@@ -1909,8 +1905,7 @@ static const struct wl_input_device_interface input_device_interface = {
 };
 
 static void
-handle_drag_surface_destroy(struct wl_listener *listener,
-			    struct wl_resource *resource)
+handle_drag_surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct weston_input_device *device;
 
@@ -1940,8 +1935,7 @@ bind_input_device(struct wl_client *client,
 }
 
 static void
-device_handle_new_drag_icon(struct wl_listener *listener,
-			    struct wl_resource *resource)
+device_handle_new_drag_icon(struct wl_listener *listener, void *data)
 {
 	struct weston_input_device *device;
 
@@ -1969,13 +1963,14 @@ weston_input_device_init(struct weston_input_device *device,
 	device->modifier_state = 0;
 	device->num_tp = 0;
 
-	device->drag_surface_destroy_listener.func = handle_drag_surface_destroy;
+	device->drag_surface_destroy_listener.notify =
+		handle_drag_surface_destroy;
 
 	wl_list_insert(ec->input_device_list.prev, &device->link);
 
-	device->new_drag_icon_listener.func = device_handle_new_drag_icon;
-	wl_list_insert(device->input_device.drag_icon_listener_list.prev,
-		       &device->new_drag_icon_listener.link);
+	device->new_drag_icon_listener.notify = device_handle_new_drag_icon;
+	wl_signal_add(&device->input_device.drag_icon_signal,
+		      &device->new_drag_icon_listener);
 }
 
 WL_EXPORT void
@@ -2018,8 +2013,8 @@ device_setup_new_drag_surface(struct weston_input_device *device,
 
 	surface->configure = drag_surface_configure;
 
-	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
-		       &device->drag_surface_destroy_listener.link);
+	wl_signal_add(&surface->surface.resource.destroy_signal,
+		       &device->drag_surface_destroy_listener);
 
 	return 1;
 }
