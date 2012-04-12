@@ -444,6 +444,8 @@
         'browser/extensions/settings/settings_storage_factory.h',
         'browser/extensions/settings/settings_storage_quota_enforcer.cc',
         'browser/extensions/settings/settings_storage_quota_enforcer.h',
+        'browser/extensions/settings/settings_sync_processor.cc',
+        'browser/extensions/settings/settings_sync_processor.h',
         'browser/extensions/settings/settings_sync_util.cc',
         'browser/extensions/settings/settings_sync_util.h',
         'browser/extensions/settings/syncable_settings_storage.cc',

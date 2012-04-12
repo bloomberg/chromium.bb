@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/settings/failing_settings_storage.h"
 #include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_storage_quota_enforcer.h"
+#include "chrome/browser/extensions/settings/settings_sync_processor.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
@@ -73,12 +74,11 @@ SyncableSettingsStorage* SettingsBackend::GetOrCreateStorageWithSyncData(
 
   if (sync_processor_.get()) {
     SyncError error =
-        syncable_storage->StartSyncing(sync_type_,
-                                       sync_data,
-                                       sync_processor_.get());
-    if (error.IsSet()) {
+        syncable_storage->StartSyncing(
+            sync_data,
+            CreateSettingsSyncProcessor(extension_id).Pass());
+    if (error.IsSet())
       syncable_storage.get()->StopSyncing();
-    }
   }
 
   return syncable_storage.get();
@@ -208,15 +208,17 @@ SyncError SettingsBackend::MergeDataAndStartSyncing(
     SyncError error;
     if (maybe_sync_data != grouped_sync_data.end()) {
       error = it->second->StartSyncing(
-          type, *maybe_sync_data->second, sync_processor_.get());
+          *maybe_sync_data->second,
+          CreateSettingsSyncProcessor(it->first).Pass());
       grouped_sync_data.erase(it->first);
     } else {
       DictionaryValue empty;
-      error = it->second->StartSyncing(type, empty, sync_processor_.get());
+      error = it->second->StartSyncing(
+          empty,
+          CreateSettingsSyncProcessor(it->first).Pass());
     }
-    if (error.IsSet()) {
+    if (error.IsSet())
       it->second->StopSyncing();
-    }
   }
 
   // Eagerly create and init the rest of the storage areas that have sync data.
@@ -273,6 +275,15 @@ void SettingsBackend::StopSyncing(syncable::ModelType type) {
 
   sync_type_ = syncable::UNSPECIFIED;
   sync_processor_.reset();
+}
+
+scoped_ptr<SettingsSyncProcessor> SettingsBackend::CreateSettingsSyncProcessor(
+    const std::string& extension_id) const {
+  CHECK(sync_processor_.get());
+  return scoped_ptr<SettingsSyncProcessor>(
+      new SettingsSyncProcessor(extension_id,
+                                sync_type_,
+                                sync_processor_.get()));
 }
 
 }  // namespace extensions

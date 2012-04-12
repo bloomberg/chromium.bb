@@ -65,6 +65,10 @@ class SettingsBackend : public SyncableService {
   // installed extensions.
   std::set<std::string> GetKnownExtensionIDs() const;
 
+  // Creates a new SettingsSyncProcessor for an extension.
+  scoped_ptr<SettingsSyncProcessor> CreateSettingsSyncProcessor(
+      const std::string& extension_id) const;
+
   // The Factory to use for creating leveldb storage areas.
   const scoped_refptr<SettingsStorageFactory> storage_factory_;
 

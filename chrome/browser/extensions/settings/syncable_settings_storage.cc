@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/settings/settings_namespace.h"
+#include "chrome/browser/extensions/settings/settings_sync_processor.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 #include "chrome/browser/sync/api/sync_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,9 +23,7 @@ SyncableSettingsStorage::SyncableSettingsStorage(
     SettingsStorage* delegate)
     : observers_(observers),
       extension_id_(extension_id),
-      delegate_(delegate),
-      sync_type_(syncable::UNSPECIFIED),
-      sync_processor_(NULL) {
+      delegate_(delegate) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
@@ -72,9 +71,7 @@ SettingsStorage::WriteResult SyncableSettingsStorage::Set(
   if (result.HasError()) {
     return result;
   }
-  if (sync_processor_ && !result.changes().empty()) {
-    SendChangesToSync(result.changes());
-  }
+  SyncResultIfEnabled(result);
   return result;
 }
 
@@ -85,9 +82,7 @@ SettingsStorage::WriteResult SyncableSettingsStorage::Set(
   if (result.HasError()) {
     return result;
   }
-  if (sync_processor_ && !result.changes().empty()) {
-    SendChangesToSync(result.changes());
-  }
+  SyncResultIfEnabled(result);
   return result;
 }
 
@@ -98,9 +93,7 @@ SettingsStorage::WriteResult SyncableSettingsStorage::Remove(
   if (result.HasError()) {
     return result;
   }
-  if (sync_processor_ && !result.changes().empty()) {
-    SendChangesToSync(result.changes());
-  }
+  SyncResultIfEnabled(result);
   return result;
 }
 
@@ -111,9 +104,7 @@ SettingsStorage::WriteResult SyncableSettingsStorage::Remove(
   if (result.HasError()) {
     return result;
   }
-  if (sync_processor_ && !result.changes().empty()) {
-    SendChangesToSync(result.changes());
-  }
+  SyncResultIfEnabled(result);
   return result;
 }
 
@@ -123,69 +114,62 @@ SettingsStorage::WriteResult SyncableSettingsStorage::Clear() {
   if (result.HasError()) {
     return result;
   }
-  if (sync_processor_ && !result.changes().empty()) {
-    SendChangesToSync(result.changes());
-  }
+  SyncResultIfEnabled(result);
   return result;
+}
+
+void SyncableSettingsStorage::SyncResultIfEnabled(
+    SettingsStorage::WriteResult result) {
+  if (sync_processor_.get() && !result.changes().empty()) {
+    SyncError error = sync_processor_->SendChanges(result.changes());
+    if (error.IsSet())
+      StopSyncing();
+  }
 }
 
 // Sync-related methods.
 
 SyncError SyncableSettingsStorage::StartSyncing(
-    syncable::ModelType type,
     const DictionaryValue& sync_state,
-    SyncChangeProcessor* sync_processor) {
+    scoped_ptr<SettingsSyncProcessor> sync_processor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(type == syncable::EXTENSION_SETTINGS ||
-         type == syncable::APP_SETTINGS);
-  DCHECK_EQ(sync_type_, syncable::UNSPECIFIED);
-  DCHECK(!sync_processor_);
-  DCHECK(sync_processor);
-  DCHECK(synced_keys_.empty());
+  DCHECK(!sync_processor_.get());
 
-  sync_type_ = type;
-  sync_processor_ = sync_processor;
+  sync_processor_ = sync_processor.Pass();
+  sync_processor_->Init(sync_state);
 
   ReadResult maybe_settings = delegate_->Get();
   if (maybe_settings.HasError()) {
     return SyncError(
         FROM_HERE,
         std::string("Failed to get settings: ") + maybe_settings.error(),
-        type);
+        sync_processor_->type());
   }
 
-  if (sync_state.empty()) {
-    return SendLocalSettingsToSync(maybe_settings.settings());
-  }
-  return OverwriteLocalSettingsWithSync(sync_state, maybe_settings.settings());
+  const DictionaryValue& settings = maybe_settings.settings();
+  if (sync_state.empty())
+    return SendLocalSettingsToSync(settings);
+  else
+    return OverwriteLocalSettingsWithSync(sync_state, settings);
 }
 
 SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
     const DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(sync_processor_);
 
-  SyncChangeList changes;
-  for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
-    changes.push_back(settings_sync_util::CreateAdd(
-        extension_id_, it.key(), it.value(), sync_type_));
+  SettingChangeList changes;
+  for (DictionaryValue::Iterator i(settings); i.HasNext(); i.Advance()) {
+    changes.push_back(SettingChange(i.key(), NULL, i.value().DeepCopy()));
   }
 
-  if (changes.empty()) {
+  if (changes.empty())
     return SyncError();
-  }
 
-  SyncError error = sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
-  if (error.IsSet()) {
+  SyncError error = sync_processor_->SendChanges(changes);
+  if (error.IsSet())
     StopSyncing();
-    return error;
-  }
 
-  for (DictionaryValue::key_iterator it = settings.begin_keys();
-      it != settings.end_keys(); ++it) {
-    synced_keys_.insert(*it);
-  }
-  return SyncError();
+  return error;
 }
 
 SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
@@ -203,7 +187,6 @@ SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
       scoped_ptr<Value> sync_value(orphaned_sync_value);
       if (sync_value->Equals(&it.value())) {
         // Sync and local values are the same, no changes to send.
-        synced_keys_.insert(it.key());
       } else {
         // Sync value is different, update local setting with new value.
         changes.push_back(
@@ -237,20 +220,15 @@ SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
             scoped_ptr<Value>(value)));
   }
 
-  if (changes.empty()) {
+  if (changes.empty())
     return SyncError();
-  }
+
   return ProcessSyncChanges(changes);
 }
 
 void SyncableSettingsStorage::StopSyncing() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  // Stop syncing is allowed to be called multiple times without StartSyncing,
-  // so don't DCHECK that these values aren't already disabled.
-  sync_type_ = syncable::UNSPECIFIED;
-  sync_processor_ = NULL;
-  synced_keys_.clear();
+  sync_processor_.reset();
 }
 
 SyncError SyncableSettingsStorage::ProcessSyncChanges(
@@ -258,11 +236,11 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!sync_changes.empty()) << "No sync changes for " << extension_id_;
 
-  if (!sync_processor_) {
+  if (!sync_processor_.get()) {
     return SyncError(
         FROM_HERE,
         std::string("Sync is inactive for ") + extension_id_,
-        sync_type_);
+        syncable::UNSPECIFIED);
   }
 
   std::vector<SyncError> errors;
@@ -283,7 +261,7 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
             FROM_HERE,
             std::string("Error getting current sync state for ") +
                 extension_id_ + "/" + key + ": " + maybe_settings.error(),
-            sync_type_));
+            sync_processor_->type()));
         continue;
       }
       Value* value = NULL;
@@ -339,6 +317,8 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
     }
   }
 
+  sync_processor_->NotifyChanges(changes);
+
   observers_->Notify(
       &SettingsObserver::OnSettingsChanged,
       extension_id_,
@@ -349,74 +329,18 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
   return errors.empty() ? SyncError() : errors[0];
 }
 
-void SyncableSettingsStorage::SendChangesToSync(
-    const SettingChangeList& changes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(sync_processor_);
-  DCHECK(!changes.empty());
-
-  SyncChangeList sync_changes;
-  std::set<std::string> added_keys;
-  std::set<std::string> deleted_keys;
-
-  for (SettingChangeList::const_iterator it = changes.begin();
-      it != changes.end(); ++it) {
-    const std::string& key = it->key();
-    const Value* value = it->new_value();
-    if (value) {
-      if (synced_keys_.count(key)) {
-        // New value, key is synced; send ACTION_UPDATE.
-        sync_changes.push_back(settings_sync_util::CreateUpdate(
-            extension_id_, key, *value, sync_type_));
-      } else {
-        // New value, key is not synced; send ACTION_ADD.
-        sync_changes.push_back(settings_sync_util::CreateAdd(
-            extension_id_, key, *value, sync_type_));
-        added_keys.insert(key);
-      }
-    } else {
-      if (synced_keys_.count(key)) {
-        // Clearing value, key is synced; send ACTION_DELETE.
-        sync_changes.push_back(settings_sync_util::CreateDelete(
-            extension_id_, key, sync_type_));
-        deleted_keys.insert(key);
-      } else {
-        LOG(WARNING) << "Deleted " << key << " but not in synced_keys_";
-      }
-    }
-  }
-
-  if (sync_changes.empty()) {
-    return;
-  }
-
-  SyncError error =
-      sync_processor_->ProcessSyncChanges(FROM_HERE, sync_changes);
-  if (error.IsSet()) {
-    StopSyncing();
-    return;
-  }
-
-  synced_keys_.insert(added_keys.begin(), added_keys.end());
-  for (std::set<std::string>::iterator it = deleted_keys.begin();
-      it != deleted_keys.end(); ++it) {
-    synced_keys_.erase(*it);
-  }
-}
-
 SyncError SyncableSettingsStorage::OnSyncAdd(
     const std::string& key,
     Value* new_value,
     SettingChangeList* changes) {
   DCHECK(new_value);
-  synced_keys_.insert(key);
   WriteResult result = delegate_->Set(IGNORE_QUOTA, key, *new_value);
   if (result.HasError()) {
     return SyncError(
         FROM_HERE,
         std::string("Error pushing sync add to local settings: ") +
             result.error(),
-        sync_type_);
+        sync_processor_->type());
   }
   changes->push_back(SettingChange(key, NULL, new_value));
   return SyncError();
@@ -435,7 +359,7 @@ SyncError SyncableSettingsStorage::OnSyncUpdate(
         FROM_HERE,
         std::string("Error pushing sync update to local settings: ") +
             result.error(),
-        sync_type_);
+        sync_processor_->type());
   }
   changes->push_back(SettingChange(key, old_value, new_value));
   return SyncError();
@@ -446,14 +370,13 @@ SyncError SyncableSettingsStorage::OnSyncDelete(
     Value* old_value,
     SettingChangeList* changes) {
   DCHECK(old_value);
-  synced_keys_.erase(key);
   WriteResult result = delegate_->Remove(key);
   if (result.HasError()) {
     return SyncError(
         FROM_HERE,
         std::string("Error pushing sync remove to local settings: ") +
             result.error(),
-        sync_type_);
+        sync_processor_->type());
   }
   changes->push_back(SettingChange(key, old_value, NULL));
   return SyncError();
