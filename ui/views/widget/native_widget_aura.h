@@ -17,6 +17,7 @@
 #include "ui/views/widget/native_widget_private.h"
 
 namespace aura {
+class Monitor;
 class RootWindow;
 class Window;
 }
@@ -174,6 +175,19 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   class ActiveWindowObserver;
 
   void SetInitialFocus();
+
+#if defined(ENABLE_DIP)
+  // Returns the monitor in which this widget is placed.
+  aura::Monitor* GetMonitor() const;
+
+  // Utility functions that convert point/size/rect between
+  // the monitor's coordinate system and the widget's coordinate system.
+  gfx::Point ConvertPointFromMonitor(const gfx::Point& point) const;
+  gfx::Size ConvertSizeFromMonitor(const gfx::Size& size) const;
+  gfx::Rect ConvertRectFromMonitor(const gfx::Rect& rect) const;
+  gfx::Size ConvertSizeToMonitor(const gfx::Size& size) const;
+  gfx::Rect ConvertRectToMonitor(const gfx::Rect& rect) const;
+#endif
 
   internal::NativeWidgetDelegate* delegate_;
 

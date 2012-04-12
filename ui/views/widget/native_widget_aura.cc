@@ -41,6 +41,11 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #endif
 
+#if defined(ENABLE_DIP)
+#include "ui/aura/monitor.h"
+#include "ui/aura/monitor_manager.h"
+#endif
+
 namespace views {
 
 bool NativeWidgetAura::g_aura_desktop_hax = false;
@@ -430,13 +435,21 @@ void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
 }
 
 gfx::Rect NativeWidgetAura::GetWindowScreenBounds() const {
+#if defined(ENABLE_DIP)
+  return ConvertRectFromMonitor(window_->GetScreenBounds());
+#else
   return window_->GetScreenBounds();
+#endif
 }
 
 gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
   // View-to-screen coordinate system transformations depend on this returning
   // the full window bounds, for example View::ConvertPointToScreen().
+#if defined(ENABLE_DIP)
+  return ConvertRectFromMonitor(window_->GetScreenBounds());
+#else
   return window_->GetScreenBounds();
+#endif
 }
 
 gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
@@ -447,7 +460,12 @@ gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
     return window_->bounds();
   gfx::Rect* restore_bounds =
       window_->GetProperty(aura::client::kRestoreBoundsKey);
+#if defined(ENABLE_DIP)
+  return ConvertRectFromMonitor(
+      restore_bounds ? *restore_bounds : window_->bounds());
+#else
   return restore_bounds ? *restore_bounds : window_->bounds();
+#endif
 }
 
 void NativeWidgetAura::SetBounds(const gfx::Rect& in_bounds) {
@@ -458,12 +476,19 @@ void NativeWidgetAura::SetBounds(const gfx::Rect& in_bounds) {
     bounds.set_x(0);
     bounds.set_y(0);
   }
-
+#if defined(ENABLE_DIP)
+  bounds = ConvertRectToMonitor(bounds);
+#endif
   window_->SetBounds(bounds);
 }
 
 void NativeWidgetAura::SetSize(const gfx::Size& size) {
+#if defined(ENABLE_DIP)
+  gfx::Size monitor_size = ConvertSizeToMonitor(size);
+  window_->SetBounds(gfx::Rect(window_->bounds().origin(), monitor_size));
+#else
   window_->SetBounds(gfx::Rect(window_->bounds().origin(), size));
+#endif
 }
 
 void NativeWidgetAura::StackAbove(gfx::NativeView native_view) {
@@ -519,7 +544,11 @@ void NativeWidgetAura::Hide() {
 
 void NativeWidgetAura::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
+#if defined(ENABLE_DIP)
+  SetRestoreBounds(window_, ConvertRectToMonitor(restored_bounds));
+#else
   SetRestoreBounds(window_, restored_bounds);
+#endif
   ShowWithWindowState(ui::SHOW_STATE_MAXIMIZED);
 }
 
@@ -631,8 +660,13 @@ void NativeWidgetAura::RunShellDrag(View* view,
 }
 
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (window_)
+  if (window_) {
+#if defined(ENABLE_DIP)
+    window_->SchedulePaintInRect(ConvertRectToMonitor(rect));
+#else
     window_->SchedulePaintInRect(rect);
+#endif
+  }
 }
 
 void NativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
@@ -705,8 +739,14 @@ void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds) {
   if (old_bounds.origin() != new_bounds.origin())
     GetWidget()->widget_delegate()->OnWidgetMove();
-  if (old_bounds.size() != new_bounds.size())
+  if (old_bounds.size() != new_bounds.size()) {
+#if defined(ENABLE_DIP)
+    delegate_->OnNativeWidgetSizeChanged(
+        ConvertSizeFromMonitor(new_bounds.size()));
+#else
     delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
+#endif
+  }
 }
 
 void NativeWidgetAura::OnFocus() {
@@ -765,7 +805,16 @@ bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
     MouseWheelEvent wheel_event(scroll_event);
     return delegate_->OnMouseEvent(wheel_event);
   }
+#if defined(ENABLE_DIP)
+  aura::MouseEvent translated_event(
+      event->type(),
+      ConvertPointFromMonitor(event->location()),
+      ConvertPointFromMonitor(event->root_location()),
+      event->flags());
+  MouseEvent mouse_event(&translated_event);
+#else
   MouseEvent mouse_event(event);
+#endif
   if (tooltip_manager_.get())
     tooltip_manager_->UpdateTooltip();
   return delegate_->OnMouseEvent(mouse_event);
@@ -792,7 +841,16 @@ void NativeWidgetAura::OnCaptureLost() {
 }
 
 void NativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
+#if defined(ENABLE_DIP)
+  aura::Monitor* monitor = GetMonitor();
+  canvas->Save();
+  float scale = monitor->GetDeviceScaleFactor();
+  canvas->sk_canvas()->scale(SkFloatToScalar(scale), SkFloatToScalar(scale));
+#endif
   delegate_->OnNativeWidgetPaint(canvas);
+#if defined(ENABLE_DIP)
+  canvas->Restore();
+#endif
 }
 
 void NativeWidgetAura::OnWindowDestroying() {
@@ -889,6 +947,38 @@ void NativeWidgetAura::SetInitialFocus() {
   if (!GetWidget()->SetInitialFocus())
     window_->Focus();
 }
+
+#if defined(ENABLE_DIP)
+aura::Monitor* NativeWidgetAura::GetMonitor() const {
+  return aura::Env::GetInstance()->monitor_manager()->
+      GetMonitorNearestWindow(window_);
+}
+
+gfx::Point NativeWidgetAura::ConvertPointFromMonitor(
+    const gfx::Point& point) const {
+  return point.Scale(1.0f / GetMonitor()->GetDeviceScaleFactor());
+}
+
+gfx::Size NativeWidgetAura::ConvertSizeFromMonitor(
+    const gfx::Size& size) const {
+  return size.Scale(1.0f / GetMonitor()->GetDeviceScaleFactor());
+}
+
+gfx::Rect NativeWidgetAura::ConvertRectFromMonitor(
+    const gfx::Rect& rect) const {
+  float scale = 1.0f / GetMonitor()->GetDeviceScaleFactor();
+  return gfx::Rect(rect.origin().Scale(scale), rect.size().Scale(scale));
+}
+
+gfx::Size NativeWidgetAura::ConvertSizeToMonitor(const gfx::Size& size) const {
+  return size.Scale(GetMonitor()->GetDeviceScaleFactor());
+}
+
+gfx::Rect NativeWidgetAura::ConvertRectToMonitor(const gfx::Rect& rect) const {
+  float scale = GetMonitor()->GetDeviceScaleFactor();
+  return gfx::Rect(rect.origin().Scale(scale), rect.size().Scale(scale));
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:

@@ -41,6 +41,7 @@ Monitor* MonitorManager::CreateMonitorFromSpec(const std::string& spec) {
   }
   Monitor* monitor = new Monitor();
   monitor->set_bounds(bounds);
+  monitor->set_device_scale_factor(scale);
   VLOG(1) << "Monitor bounds=" << bounds.ToString() << ", scale=" << scale;
   return monitor;
 }

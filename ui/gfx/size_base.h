@@ -32,6 +32,15 @@ class UI_EXPORT SizeBase {
     set_height(height_ + height);
   }
 
+  Class Scale(float scale) const {
+    return Scale(scale, scale);
+  }
+
+  Class Scale(float x_scale, float y_scale) const {
+    return Class(static_cast<Type>(width_ * x_scale),
+                 static_cast<Type>(height_ * y_scale));
+  }
+
   void set_width(Type width);
   void set_height(Type height);
 

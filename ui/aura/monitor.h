@@ -13,6 +13,13 @@
 
 namespace aura {
 
+// Note: The screen and monitor currently uses pixels coordinate
+// system.  ENABLE_DIP macro (which is enabled with enable_dip=1 gyp
+// flag) will make this inconsistent with views' coordinate system
+// because views will use DIP coordinate system, which uses
+// (1.0/device_scale_factor) scale of the pixel coordinate system.
+// TODO(oshima): Change aura/screen to DIP coordinate system and
+// update this comment.
 class AURA_EXPORT Monitor {
  public:
   Monitor();
@@ -40,6 +47,10 @@ class AURA_EXPORT Monitor {
   // other platforms.
   float GetDeviceScaleFactor() const {
     return device_scale_factor_;
+  }
+
+  void set_device_scale_factor(float scale) {
+    device_scale_factor_ = scale;
   }
 
   // Returns the monitor's work area.
