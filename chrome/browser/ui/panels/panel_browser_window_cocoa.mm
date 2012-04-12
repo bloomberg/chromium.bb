@@ -385,7 +385,7 @@ void NativePanelTestingCocoa::PressLeftMouseButtonTitlebar(
   // coordinates because PanelTitlebarViewCocoa method takes Cocoa's screen
   // coordinates.
   int modifierFlags =
-      (modifier == panel::APPLY_TO_ALL ? NSAlternateKeyMask : 0);
+      (modifier == panel::APPLY_TO_ALL ? NSShiftKeyMask : 0);
   [titlebar() pressLeftMouseButtonTitlebar:
       cocoa_utils::ConvertPointToCocoaCoordinates(mouse_location)
            modifiers:modifierFlags];
@@ -394,7 +394,7 @@ void NativePanelTestingCocoa::PressLeftMouseButtonTitlebar(
 void NativePanelTestingCocoa::ReleaseMouseButtonTitlebar(
     panel::ClickModifier modifier) {
   int modifierFlags =
-      (modifier == panel::APPLY_TO_ALL ? NSAlternateKeyMask : 0);
+      (modifier == panel::APPLY_TO_ALL ? NSShiftKeyMask : 0);
   [titlebar() releaseLeftMouseButtonTitlebar:modifierFlags];
 }
 

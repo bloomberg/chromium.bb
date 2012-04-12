@@ -910,7 +910,7 @@ enum {
 
 - (void)onTitlebarMouseClicked:(int)modifierFlags {
   Panel* panel = windowShim_->panel();
-  if (modifierFlags & NSAlternateKeyMask) {
+  if (modifierFlags & NSShiftKeyMask) {
     panel->OnTitlebarClicked(panel::APPLY_TO_ALL);
     return;
   }
