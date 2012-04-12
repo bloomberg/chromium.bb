@@ -68,28 +68,6 @@ div.disabled {
   position: fixed;
 }
 
-/* For touch-optimized UI, make the radio/checkbox input boxes in
- * options/preference pages easier to touch.
- * TODO(rbyers): We need to solve this more generally for all web pages
- * (crbug.com/99981), and perhaps temporarily for all WebUI (crbug.com/102482).
- */
-html[touch-optimized] div.radio > label > span,
-html[touch-optimized] div.checkbox > label > span {
-  -webkit-padding-start: 5px;
-}
-
-html[touch-optimized] label > input[type=checkbox],
-html[touch-optimized] label > input[type=radio] {
-  -webkit-transform: scale(1.4);
-}
-
-/* Override the font-size rule in shared_options.css file.
- * 16 px font-size proved to be more touch friendly. It increases the touchable
- * area for buttons and input boxes. */
-html[touch-optimized] body {
-  font-size: 100%;
-}
-
 #overlay-container-1 {
   z-index: 11;
 }

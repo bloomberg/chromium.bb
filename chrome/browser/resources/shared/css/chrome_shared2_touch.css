@@ -8,10 +8,28 @@
 
 <include src="chrome_shared2.css">
 
-html input[type='search'] {
-  font-size: 1.1em;
+/* TODO(kevers): Add [type='input'] and [type='password']. */
+input[type='search'] {
+  padding-bottom: 6px;
+  padding-top: 6px;
 }
 
-input[type='search']::-webkit-search-cancel-button {
-  -webkit-transform: scale(1.5);
+/* Additional padding to disambiguate controls on neighboring rows.
+ * Ideally, the margin belongs on input[type=radio|checkbox] to be a more
+ * general fix; however, this creates baseline problems as webkit is not
+ * currently able to reconcile the baseline of a text-free inline box
+ * containing a margin and fixed dimensions with neighboring content.
+ * TODO(kevers): Reinvestigate once the baseline adjustment properties in
+ * CSS3 are supported. */
+.checkbox,
+.radio {
+  margin: 12px 0;
+}
+
+button:not(.custom-appearance):not(.link-button),
+input[type=button]:not(.custom-appearance),
+input[type=submit]:not(.custom-appearance),
+select {
+  margin-bottom: 6px;
+  margin-top: 6px;
 }

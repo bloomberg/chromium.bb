@@ -98,8 +98,9 @@ input:not([type]) {
   box-sizing: border-box;
   color: #444;
   font: inherit;
-  height: 2em;
   margin: 0;
+  /* Use min-height to accommodate addditional padding for touch as needed. */
+  min-height: 2em;
   padding: 3px;
 <if expr="is_win or is_macosx">
   /* For better alignment between adjacent buttons and inputs. */
