@@ -34,6 +34,7 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
       grid *= 2;
   }
   popup_position_offset_from_screen_corner_x = grid;
+  popup_position_offset_from_screen_corner_y = grid;
   if (!pop_position_offset_increment_x) {
     // When the popup position increment is , the last popup position
     // was not yet initialized.
@@ -73,7 +74,9 @@ gfx::Rect WindowPositioner::NormalPopupPosition(
   if (last_popup_position_y_ + h > work_area.height() ||
       last_popup_position_x_ + w > work_area.width()) {
     // Popup does not fit on screen. Reset to next diagonal row.
-    last_popup_position_x_ -= last_popup_position_y_;
+    last_popup_position_x_ -= last_popup_position_y_ -
+                              popup_position_offset_from_screen_corner_x -
+                              pop_position_offset_increment_x;
     last_popup_position_y_ = popup_position_offset_from_screen_corner_y;
     reset = true;
   }
@@ -142,7 +145,7 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
     // origin.
     for (; x_increment > 0 ? (x < x_end) : (x > x_end); x += x_increment) {
       int y = 0;
-      while (y + h < work_area.height()) {
+      while (y + h <= work_area.height()) {
         size_t i;
         for (i = 0; i < regions.size(); i++) {
           if (regions[i]->Intersects(gfx::Rect(x + work_area.x(),

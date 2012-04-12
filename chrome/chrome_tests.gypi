@@ -1947,6 +1947,7 @@
         'browser/ui/views/ash/app_list/app_list_model_builder_unittest.cc',
         'browser/ui/views/ash/key_rewriter_unittest.cc',
         'browser/ui/views/ash/launcher/launcher_updater_unittest.cc',
+        'browser/ui/views/ash/window_positioner_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_context_menu_test.cc',
         'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
         'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
