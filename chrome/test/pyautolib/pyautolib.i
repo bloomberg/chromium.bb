@@ -191,24 +191,6 @@ class TabProxy {
     }
   };
 
-  // HTTP Auth
-  %feature("docstring",
-      "Checks if this tab has a login prompt waiting for auth.  This will be "
-      "true if a navigation results in a login prompt, and if an attempted "
-      "login fails. "
-      "Note that this is only valid if you've done a navigation on this same "
-      "object; different TabProxy objects can refer to the same Tab.  Calls "
-      "that can set this are NavigateToURL, GoBack, and GoForward. ")
-      NeedsAuth;
-  bool NeedsAuth() const;
-  %feature("docstring", "Supply authentication to a login prompt. "
-           "Blocks until navigation completes or another login prompt appears "
-           "in the case of failed auth.") SetAuth;
-  bool SetAuth(const std::wstring& username, const std::wstring& password);
-  %feature("docstring", "Cancel authentication to a login prompt. ")
-      CancelAuth;
-  bool CancelAuth();
-
 };
 
 class PyUITestSuiteBase {

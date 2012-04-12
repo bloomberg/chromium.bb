@@ -113,10 +113,6 @@ class TestingAutomationProvider : public AutomationProvider,
                                       WindowOpenDisposition disposition,
                                       bool* status);
   void Reload(int handle, IPC::Message* reply_message);
-  void SetAuth(int tab_handle, const std::wstring& username,
-               const std::wstring& password, IPC::Message* reply_message);
-  void CancelAuth(int tab_handle, IPC::Message* reply_message);
-  void NeedsAuth(int tab_handle, bool* needs_auth);
   void GetRedirectsFrom(int tab_handle,
                         const GURL& source_url,
                         IPC::Message* reply_message);

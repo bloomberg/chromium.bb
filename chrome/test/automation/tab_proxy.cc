@@ -123,37 +123,6 @@ AutomationMsg_NavigationResponseValues
   return navigate_response;
 }
 
-bool TabProxy::SetAuth(const std::wstring& username,
-                       const std::wstring& password) {
-  if (!is_valid())
-    return false;
-
-  AutomationMsg_NavigationResponseValues navigate_response =
-      AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_SetAuth(handle_, username, password,
-                                          &navigate_response));
-  return navigate_response == AUTOMATION_MSG_NAVIGATION_SUCCESS;
-}
-
-bool TabProxy::CancelAuth() {
-  if (!is_valid())
-    return false;
-
-  AutomationMsg_NavigationResponseValues navigate_response =
-      AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_CancelAuth(handle_, &navigate_response));
-  return navigate_response == AUTOMATION_MSG_NAVIGATION_SUCCESS;
-}
-
-bool TabProxy::NeedsAuth() const {
-  if (!is_valid())
-    return false;
-
-  bool needs_auth = false;
-  sender_->Send(new AutomationMsg_NeedsAuth(handle_, &needs_auth));
-  return needs_auth;
-}
-
 AutomationMsg_NavigationResponseValues TabProxy::GoBack() {
   return GoBackBlockUntilNavigationsComplete(1);
 }

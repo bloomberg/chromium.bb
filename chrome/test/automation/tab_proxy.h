@@ -167,24 +167,6 @@ class TabProxy : public AutomationResourceProxy,
   // the process_id is 0.
   bool GetProcessID(int* process_id) const WARN_UNUSED_RESULT;
 
-  // Supply or cancel authentication to a login prompt.  These are synchronous
-  // calls and hence block until the load finishes (or another login prompt
-  // appears, in the case of invalid login info).
-  bool SetAuth(const std::wstring& username,
-               const std::wstring& password) WARN_UNUSED_RESULT;
-  bool CancelAuth() WARN_UNUSED_RESULT;
-
-  // Checks if this tab has a login prompt waiting for auth.  This will be
-  // true if a navigation results in a login prompt, and if an attempted login
-  // fails.
-  // Note that this is only valid if you've done a navigation on this same
-  // object; different TabProxy objects can refer to the same Tab.  Calls
-  // that can set this are NavigateToURL, GoBack, and GoForward.
-  // TODO(mpcomplete): we have no way of knowing if auth is needed after either
-  // NavigateToURLAsync, or after appending a tab with an URL that triggers
-  // auth.
-  bool NeedsAuth() const WARN_UNUSED_RESULT;
-
   // Starts a search within the current tab. The parameter |search_string|
   // specifies what string to search for, |forward| specifies whether to search
   // in forward direction, and |match_case| specifies case sensitivity

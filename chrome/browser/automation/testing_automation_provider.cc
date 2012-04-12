@@ -349,9 +349,6 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsyncWithDisposition,
                         NavigationAsyncWithDisposition)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_Reload, Reload)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_SetAuth, SetAuth)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CancelAuth, CancelAuth)
-    IPC_MESSAGE_HANDLER(AutomationMsg_NeedsAuth, NeedsAuth)
     IPC_MESSAGE_HANDLER(AutomationMsg_BrowserWindowCount, GetBrowserWindowCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_NormalBrowserWindowCount,
                         GetNormalBrowserWindowCount)
@@ -754,66 +751,6 @@ void TestingAutomationProvider::Reload(int handle,
   AutomationMsg_Reload::WriteReplyParams(
       reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
   Send(reply_message);
-}
-
-void TestingAutomationProvider::SetAuth(int tab_handle,
-                                        const std::wstring& username,
-                                        const std::wstring& password,
-                                        IPC::Message* reply_message) {
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
-    LoginHandlerMap::iterator iter = login_handler_map_.find(tab);
-
-    if (iter != login_handler_map_.end()) {
-      // If auth is needed again after this, assume login has failed.  This is
-      // not strictly correct, because a navigation can require both proxy and
-      // server auth, but it should be OK for now.
-      LoginHandler* handler = iter->second;
-      new NavigationNotificationObserver(
-          tab, this, reply_message, 1, false, false);
-      handler->SetAuth(WideToUTF16Hack(username), WideToUTF16Hack(password));
-      return;
-    }
-  }
-
-  AutomationMsg_SetAuth::WriteReplyParams(
-      reply_message, AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED);
-  Send(reply_message);
-}
-
-void TestingAutomationProvider::CancelAuth(int tab_handle,
-                                           IPC::Message* reply_message) {
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
-    LoginHandlerMap::iterator iter = login_handler_map_.find(tab);
-
-    if (iter != login_handler_map_.end()) {
-      // If auth is needed again after this, something is screwy.
-      LoginHandler* handler = iter->second;
-      new NavigationNotificationObserver(
-          tab, this, reply_message, 1, false, false);
-      handler->CancelAuth();
-      return;
-    }
-  }
-
-  AutomationMsg_CancelAuth::WriteReplyParams(
-      reply_message, AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED);
-  Send(reply_message);
-}
-
-void TestingAutomationProvider::NeedsAuth(int tab_handle, bool* needs_auth) {
-  *needs_auth = false;
-
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
-    LoginHandlerMap::iterator iter = login_handler_map_.find(tab);
-
-    if (iter != login_handler_map_.end()) {
-      // The LoginHandler will be in our map IFF the tab needs auth.
-      *needs_auth = true;
-    }
-  }
 }
 
 void TestingAutomationProvider::GetBrowserWindowCount(int* window_count) {

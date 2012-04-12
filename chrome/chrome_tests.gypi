@@ -766,7 +766,6 @@
         'browser/process_singleton_uitest.cc',
         'browser/session_history_uitest.cc',
         'browser/sessions/session_restore_uitest.cc',
-        'browser/ui/login/login_prompt_uitest.cc',
         'browser/ui/tests/browser_uitest.cc',
         'browser/ui/views/find_bar_host_uitest.cc',
         'browser/ui/webui/bookmarks_ui_uitest.cc',

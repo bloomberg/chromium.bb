@@ -159,7 +159,7 @@ IPC_MESSAGE_CONTROL1(AutomationMsg_HandleUnused,
 // This message tells the AutomationProvider to provide the given
 // authentication data to the specified tab, in response to an HTTP/FTP
 // authentication challenge.
-IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetAuth,
+IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_DEPRECATED_SetAuth,
                             int /* tab handle */,
                             std::wstring /* username */,
                             std::wstring /* password */,
@@ -167,7 +167,7 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_SetAuth,
 
 // This message tells the AutomationProvider to cancel the login in the
 // specified tab.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_CancelAuth,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_CancelAuth,
                             int /* tab handle */,
                             AutomationMsg_NavigationResponseValues /* status */)
 
@@ -184,7 +184,7 @@ IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_DEPRECATED_RedirectsFrom,
 
 // This message asks the AutomationProvider whether a tab is waiting for
 // login info.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_NeedsAuth,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_NeedsAuth,
                             int /* tab handle */,
                             bool /* status */)
 

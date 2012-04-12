@@ -132,16 +132,6 @@ class AutomationProvider
       const content::NavigationController* controller,
       const Browser* parent) const;
 
-  // Add or remove a non-owning reference to a tab's LoginHandler.  This is for
-  // when a login prompt is shown for HTTP/FTP authentication.
-  // TODO(mpcomplete): The login handling is a fairly special purpose feature.
-  // Eventually we'll probably want ways to interact with the ChromeView of the
-  // login window in a generic manner, such that it can be used for anything,
-  // not just logins.
-  void AddLoginHandler(content::NavigationController* tab,
-                       LoginHandler* handler);
-  void RemoveLoginHandler(content::NavigationController* tab);
-
   // IPC::Channel::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
@@ -205,10 +195,6 @@ class AutomationProvider
   scoped_ptr<NavigationControllerRestoredObserver> restore_tracker_;
   scoped_ptr<AutomationTabTracker> tab_tracker_;
   scoped_ptr<AutomationWindowTracker> window_tracker_;
-
-  typedef std::map<content::NavigationController*, LoginHandler*>
-      LoginHandlerMap;
-  LoginHandlerMap login_handler_map_;
 
   Profile* profile_;
 

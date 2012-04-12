@@ -306,16 +306,6 @@ void AutomationProvider::DisableInitialLoadObservers() {
   OnLoginWebuiReady();
 }
 
-void AutomationProvider::AddLoginHandler(NavigationController* tab,
-                                         LoginHandler* handler) {
-  login_handler_map_[tab] = handler;
-}
-
-void AutomationProvider::RemoveLoginHandler(NavigationController* tab) {
-  DCHECK(login_handler_map_[tab]);
-  login_handler_map_.erase(tab);
-}
-
 int AutomationProvider::GetIndexForNavigationController(
     const NavigationController* controller, const Browser* parent) const {
   DCHECK(parent);

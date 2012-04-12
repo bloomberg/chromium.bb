@@ -333,20 +333,10 @@ void NavigationNotificationObserver::Observe(
     }
   } else if (type == chrome::NOTIFICATION_AUTH_SUPPLIED ||
              type == chrome::NOTIFICATION_AUTH_CANCELLED) {
-    // The LoginHandler for this tab is no longer valid.
-    automation_->RemoveLoginHandler(controller_);
-
     // Treat this as if navigation started again, since load start/stop don't
     // occur while authentication is ongoing.
     navigation_started_ = true;
   } else if (type == chrome::NOTIFICATION_AUTH_NEEDED) {
-    // Remember the login handler that wants authentication.
-    // We do this in all cases (not just when navigation_started_ == true) so
-    // tests can still wait for auth dialogs outside of navigation.
-    LoginHandler* handler =
-        content::Details<LoginNotificationDetails>(details)->handler();
-    automation_->AddLoginHandler(controller_, handler);
-
     // Respond that authentication is needed.
     navigation_started_ = false;
     ConditionMet(AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED);
