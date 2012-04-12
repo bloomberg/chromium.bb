@@ -30,6 +30,7 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner)
   AddChildView(label_);
 
   more_ = new views::ImageView;
+  more_->EnableCanvasFlippingForRTLUI(true);
   more_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_AURA_UBER_TRAY_MORE).ToSkBitmap());
   AddChildView(more_);

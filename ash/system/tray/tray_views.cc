@@ -184,6 +184,7 @@ views::View* CreateDetailedHeaderEntry(int string_id,
       views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
   views::ImageView* back =
       new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
+  back->EnableCanvasFlippingForRTLUI(true);
   back->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_LESS).ToSkBitmap());
   container->AddChildView(back);
   views::Label* header = new views::Label(rb.GetLocalizedString(string_id));

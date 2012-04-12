@@ -14,8 +14,9 @@
 #include "ash/wm/shadow_types.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
-#include "base/message_loop.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
@@ -224,7 +225,8 @@ class SystemTrayBubbleBorder : public views::Border {
 
     if (Shell::GetInstance()->shelf()->IsVisible()) {
       // Draw the arrow.
-      int left_base_x = owner_->width() - kArrowPaddingFromRight - kArrowWidth;
+      int left_base_x = base::i18n::IsRTL() ? kArrowWidth :
+          owner_->width() - kArrowPaddingFromRight - kArrowWidth;
       int left_base_y = y;
       int tip_x = left_base_x + kArrowWidth / 2;
       int tip_y = left_base_y + kArrowHeight;
@@ -356,12 +358,15 @@ class SystemTrayBubble : public views::BubbleDelegateView {
     views::Widget* widget = tray_->GetWidget();
     if (widget->IsVisible()) {
       gfx::Rect rect = widget->GetWindowScreenBounds();
-      rect.Inset(0, 0, kPaddingFromRightEdgeOfScreen,
+      rect.Inset(
+          base::i18n::IsRTL() ? kPaddingFromRightEdgeOfScreen : 0, 0,
+          base::i18n::IsRTL() ? 0 : kPaddingFromRightEdgeOfScreen,
           kPaddingFromBottomOfScreen);
       return rect;
     }
     gfx::Rect rect = gfx::Screen::GetPrimaryMonitorBounds();
-    return gfx::Rect(rect.width() - kPaddingFromRightEdgeOfScreen,
+    return gfx::Rect(base::i18n::IsRTL() ? kPaddingFromRightEdgeOfScreen :
+                        rect.width() - kPaddingFromRightEdgeOfScreen,
                      rect.height() - kPaddingFromBottomOfScreen,
                      0, 0);
   }

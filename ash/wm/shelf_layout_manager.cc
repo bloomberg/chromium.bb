@@ -12,6 +12,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "base/auto_reset.h"
+#include "base/i18n/rtl.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
@@ -353,7 +354,8 @@ void ShelfLayoutManager::CalculateTargetBounds(
   gfx::Rect status_bounds(status_->GetWindowScreenBounds());
   // The status widget should extend to the bottom and right edges.
   target_bounds->status_bounds = gfx::Rect(
-      available_bounds.right() - status_bounds.width(),
+      base::i18n::IsRTL() ? available_bounds.x() :
+                            available_bounds.right() - status_bounds.width(),
       y + shelf_height_ - status_bounds.height(),
       status_bounds.width(), status_bounds.height());
   if (launcher_widget()) {
@@ -364,6 +366,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
         available_bounds.width(),
         launcher_bounds.height());
   }
+
   target_bounds->opacity =
       (state.visibility_state == VISIBLE ||
        state.visibility_state == AUTO_HIDE) ? 1.0f : 0.0f;
