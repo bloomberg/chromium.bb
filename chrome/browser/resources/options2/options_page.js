@@ -298,6 +298,8 @@ cr.define('options', function() {
    * Cancels (closes) the overlay, due to the user pressing <Esc>.
    */
   OptionsPage.cancelOverlay = function() {
+    // Blur the active element to ensure any changed pref value is saved.
+    document.activeElement.blur();
     var overlay = this.getVisibleOverlay_();
     // Let the overlay handle the <Esc> if it wants to.
     if (overlay.handleCancel)
