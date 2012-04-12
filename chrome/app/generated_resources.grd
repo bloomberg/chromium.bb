@@ -10115,6 +10115,9 @@ The following application will be launched if you accept this request:
       <message name="IDS_SAVE_PAGE_DESC_COMPLETE" desc="In the Save Page dialog, the description of saving both the HTML and all shown resources.">
         Webpage, Complete
       </message>
+      <message name="IDS_SAVE_PAGE_DESC_COMPLETE_SINGLE_FILE" desc="In the Save Page dialog, the description of saving both the HTML and all shown resources into a single MHTML file.">
+        Webpage, Complete, Single File
+      </message>
       <message name="IDS_SAVE_PAGE_STATUS_COMPLETED" desc="Save page status: completed">
         Completed
       </message>
