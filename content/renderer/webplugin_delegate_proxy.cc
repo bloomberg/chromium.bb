@@ -49,6 +49,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/sad_plugin.h"
 
 #if defined(OS_POSIX)
@@ -549,10 +550,11 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
   // window_rect becomes either a window in native windowing system
   // coords, or a backing buffer.  In either case things will go bad
   // if the rectangle is very large.
-  if (window_rect.width() < 0  || window_rect.width() > (1<<15) ||
-      window_rect.height() < 0 || window_rect.height() > (1<<15) ||
-      // Clip to 8m pixels; we know this won't overflow due to above checks.
-      window_rect.width() * window_rect.height() > (8<<20)) {
+  if (window_rect.width() < 0  || window_rect.width() > kMaxPluginSideLength ||
+      window_rect.height() < 0 || window_rect.height() > kMaxPluginSideLength ||
+      // We know this won't overflow due to above checks.
+      static_cast<uint32>(window_rect.width()) *
+          static_cast<uint32>(window_rect.height()) > kMaxPluginSize) {
     return;
   }
 

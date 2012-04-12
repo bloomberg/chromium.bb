@@ -57,6 +57,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/range/range.h"
+#include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/event_conversion.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
@@ -1074,6 +1075,16 @@ void PluginInstance::SendDidChangeView(const ViewData& previous_view) {
   if (suppress_did_change_view_ ||
       (sent_initial_did_change_view_ && previous_view.Equals(view_data_)))
     return;  // Nothing to update.
+
+  const PP_Size& size = view_data_.rect.size;
+  // Avoid sending a notification with a huge rectangle.
+  if (size.width < 0  || size.width > kMaxPluginSideLength ||
+      size.height < 0 || size.height > kMaxPluginSideLength ||
+      // We know this won't overflow due to above checks.
+      static_cast<uint32>(size.width) * static_cast<uint32>(size.height) >
+          kMaxPluginSize) {
+    return;
+  }
 
   sent_initial_did_change_view_ = true;
   ScopedPPResource resource(
