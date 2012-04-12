@@ -2801,7 +2801,7 @@
         'browser/extensions/extension_info_private_apitest_chromeos.cc',
         'browser/extensions/extension_input_apitest.cc',
         'browser/extensions/extension_input_ime_apitest_chromeos.cc',
-        'browser/extensions/extension_input_method_apitest.cc',
+        'browser/extensions/extension_input_method_apitest_chromeos.cc',
         'browser/extensions/extension_input_ui_apitest.cc',
         'browser/extensions/extension_install_ui_browsertest.cc',
         'browser/extensions/extension_javascript_url_apitest.cc',
@@ -3112,7 +3112,6 @@
             ['exclude', '^browser/chromeos'],
           ],
           'sources!': [
-            'browser/extensions/extension_input_method_apitest.cc',
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
             'browser/oom_priority_manager_browsertest.cc',
             'test/data/webui/certificate_viewer_dialog_test.js',

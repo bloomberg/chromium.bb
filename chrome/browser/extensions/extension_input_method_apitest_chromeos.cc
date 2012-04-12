@@ -18,6 +18,8 @@
 
 namespace {
 
+const char kLoginScreenUILanguage[] = "ru";
+const char kInitialInputMethodOnLoginScreen[] = "xkb:us::eng";
 const char kNewInputMethod[] = "ru::rus";
 const char kSetInputMethodMessage[] = "setInputMethod";
 const char kSetInputMethodDone[] = "done";
@@ -30,6 +32,8 @@ class SetInputMethodListener : public content::NotificationObserver {
   explicit SetInputMethodListener(int count) : count_(count) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
                    content::NotificationService::AllSources());
+    chromeos::input_method::InputMethodManager::GetInstance()->
+        EnableLayouts(kLoginScreenUILanguage, kInitialInputMethodOnLoginScreen);
   }
 
   virtual ~SetInputMethodListener() {
