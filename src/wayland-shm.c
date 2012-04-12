@@ -73,7 +73,7 @@ destroy_buffer(struct wl_resource *resource)
 static void
 shm_buffer_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, 0);
+	wl_resource_destroy(resource);
 }
 
 static const struct wl_buffer_interface shm_buffer_interface = {
@@ -147,7 +147,7 @@ destroy_pool(struct wl_resource *resource)
 static void
 shm_pool_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, 0);
+	wl_resource_destroy(resource);
 }
 
 struct wl_shm_pool_interface shm_pool_interface = {

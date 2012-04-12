@@ -72,6 +72,7 @@ struct wl_display {
 	int run;
 
 	uint32_t id;
+	uint32_t serial;
 
 	struct wl_list global_list;
 	struct wl_list socket_list;
@@ -382,23 +383,22 @@ destroy_resource(void *element, void *data)
 {
 	struct wl_resource *resource = element;
  	struct wl_listener *l, *next;
-	uint32_t *time = data;
 
 	wl_list_for_each_safe(l, next, &resource->destroy_listener_list, link)
-		l->func(l, resource, *time);
+		l->func(l, resource);
 
 	if (resource->destroy)
 		resource->destroy(resource);
 }
 
 WL_EXPORT void
-wl_resource_destroy(struct wl_resource *resource, uint32_t time)
+wl_resource_destroy(struct wl_resource *resource)
 {
 	struct wl_client *client = resource->client;
 	uint32_t id;
 
 	id = resource->object.id;
-	destroy_resource(resource, &time);
+	destroy_resource(resource, NULL);
 
 	if (id < WL_SERVER_ID_START) {
 		if (client->display_resource) {
@@ -414,12 +414,12 @@ wl_resource_destroy(struct wl_resource *resource, uint32_t time)
 WL_EXPORT void
 wl_client_destroy(struct wl_client *client)
 {
-	uint32_t time = 0;
+	uint32_t serial = 0;
 	
 	printf("disconnect from client %p\n", client);
 
 	wl_client_flush(client);
-	wl_map_for_each(&client->objects, destroy_resource, &time);
+	wl_map_for_each(&client->objects, destroy_resource, &serial);
 	wl_map_release(&client->objects);
 	wl_event_source_remove(client->source);
 	wl_connection_destroy(client->connection);
@@ -429,7 +429,7 @@ wl_client_destroy(struct wl_client *client)
 
 static void
 lose_pointer_focus(struct wl_listener *listener,
-		   struct wl_resource *resource, uint32_t time)
+		   struct wl_resource *resource)
 {
 	struct wl_input_device *device =
 		container_of(listener, struct wl_input_device,
@@ -440,7 +440,7 @@ lose_pointer_focus(struct wl_listener *listener,
 
 static void
 lose_keyboard_focus(struct wl_listener *listener,
-		    struct wl_resource *resource, uint32_t time)
+		    struct wl_resource *resource)
 {
 	struct wl_input_device *device =
 		container_of(listener, struct wl_input_device,
@@ -450,7 +450,7 @@ lose_keyboard_focus(struct wl_listener *listener,
 }
 
 static void
-default_grab_focus(struct wl_pointer_grab *grab, uint32_t time,
+default_grab_focus(struct wl_pointer_grab *grab,
 		   struct wl_surface *surface, int32_t x, int32_t y)
 {
 	struct wl_input_device *device = grab->input_device;
@@ -458,7 +458,7 @@ default_grab_focus(struct wl_pointer_grab *grab, uint32_t time,
 	if (device->button_count > 0)
 		return;
 
-	wl_input_device_set_pointer_focus(device, surface, time, x, y);
+	wl_input_device_set_pointer_focus(device, surface, x, y);
 }
 
 static void
@@ -478,14 +478,18 @@ default_grab_button(struct wl_pointer_grab *grab,
 {
 	struct wl_input_device *device = grab->input_device;
 	struct wl_resource *resource;
+	uint32_t serial;
 
 	resource = device->pointer_focus_resource;
-	if (resource)
-		wl_input_device_send_button(resource, time, button, state);
+	if (resource) {
+		serial = wl_display_next_serial(resource->client->display);
+		wl_input_device_send_button(resource, serial, time,
+					    button, state);
+	}
 
 	if (device->button_count == 0 && state == 0)
 		wl_input_device_set_pointer_focus(device,
-						  device->current, time,
+						  device->current,
 						  device->current_x,
 						  device->current_y);
 }
@@ -499,14 +503,17 @@ static const struct wl_pointer_grab_interface
 
 static void
 default_grab_key(struct wl_keyboard_grab *grab,
-		    uint32_t time, uint32_t key, int32_t state)
+		 uint32_t time, uint32_t key, int32_t state)
 {
 	struct wl_input_device *device = grab->input_device;
 	struct wl_resource *resource;
+	uint32_t serial;
 
 	resource = device->keyboard_focus_resource;
-	if (resource)
-		wl_input_device_send_key(resource, time, key, state);
+	if (resource) {
+		serial = wl_display_next_serial(resource->client->display);
+		wl_input_device_send_key(resource, serial, time, key, state);
+	}
 }
 
 static const struct wl_keyboard_grab_interface
@@ -574,70 +581,75 @@ find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
 WL_EXPORT void
 wl_input_device_set_pointer_focus(struct wl_input_device *device,
 				  struct wl_surface *surface,
-				  uint32_t time,
 				  int32_t sx, int32_t sy)
 {
 	struct wl_resource *resource;
+	uint32_t serial;
 
 	if (device->pointer_focus == surface)
 		return;
 
-	if (device->pointer_focus_resource) {
-		wl_input_device_send_pointer_leave(
-			device->pointer_focus_resource,
-			time, &device->pointer_focus->resource);
+	resource = device->pointer_focus_resource;
+	if (resource) {
+		serial = wl_display_next_serial(resource->client->display);
+		wl_input_device_send_pointer_leave(resource, serial,
+			&device->pointer_focus->resource);
 		wl_list_remove(&device->pointer_focus_listener.link);
 	}
 
+
 	resource = find_resource_for_surface(&device->resource_list, surface);
 	if (resource) {
-		wl_input_device_send_pointer_enter(resource, time,
+		serial = wl_display_next_serial(resource->client->display);
+		wl_input_device_send_pointer_enter(resource, serial,
 						   &surface->resource,
 						   sx, sy);
 		wl_list_insert(resource->destroy_listener_list.prev,
 			       &device->pointer_focus_listener.link);
+		device->pointer_focus_serial = serial;
 	}
 
 	device->pointer_focus_resource = resource;
 	device->pointer_focus = surface;
-	device->pointer_focus_time = time;
 	device->default_pointer_grab.focus = surface;
 }
 
 WL_EXPORT void
 wl_input_device_set_keyboard_focus(struct wl_input_device *device,
-				   struct wl_surface *surface,
-				   uint32_t time)
+				   struct wl_surface *surface)
 {
 	struct wl_resource *resource;
+	uint32_t serial;
 
 	if (device->keyboard_focus == surface)
 		return;
 
 	if (device->keyboard_focus_resource) {
-		wl_input_device_send_keyboard_leave(
-			device->keyboard_focus_resource,
-			time, &device->keyboard_focus->resource);
+		resource = device->keyboard_focus_resource;
+		serial = wl_display_next_serial(resource->client->display);
+		wl_input_device_send_keyboard_leave(resource, serial,
+						    &device->keyboard_focus->resource);
 		wl_list_remove(&device->keyboard_focus_listener.link);
 	}
 
 	resource = find_resource_for_surface(&device->resource_list, surface);
 	if (resource) {
-		wl_input_device_send_keyboard_enter(resource, time,
+		serial = wl_display_next_serial(resource->client->display);
+		wl_input_device_send_keyboard_enter(resource, serial,
 						    &surface->resource,
 						    &device->keys);
 		wl_list_insert(resource->destroy_listener_list.prev,
 			       &device->keyboard_focus_listener.link);
+		device->keyboard_focus_serial = serial;
 	}
 
 	device->keyboard_focus_resource = resource;
 	device->keyboard_focus = surface;
-	device->keyboard_focus_time = time;
 }
 
 WL_EXPORT void
 wl_input_device_start_keyboard_grab(struct wl_input_device *device,
-			   struct wl_keyboard_grab *grab, uint32_t time)
+				    struct wl_keyboard_grab *grab)
 {
 	device->keyboard_grab = grab;
 	grab->input_device = device;
@@ -645,14 +657,14 @@ wl_input_device_start_keyboard_grab(struct wl_input_device *device,
 }
 
 WL_EXPORT void
-wl_input_device_end_keyboard_grab(struct wl_input_device *device, uint32_t time)
+wl_input_device_end_keyboard_grab(struct wl_input_device *device)
 {
 	device->keyboard_grab = &device->default_keyboard_grab;
 }
 
 WL_EXPORT void
 wl_input_device_start_pointer_grab(struct wl_input_device *device,
-			   struct wl_pointer_grab *grab, uint32_t time)
+				   struct wl_pointer_grab *grab)
 {
 	const struct wl_pointer_grab_interface *interface;
 
@@ -661,18 +673,18 @@ wl_input_device_start_pointer_grab(struct wl_input_device *device,
 	grab->input_device = device;
 
 	if (device->current)
-		interface->focus(device->pointer_grab, time, device->current,
+		interface->focus(device->pointer_grab, device->current,
 				 device->current_x, device->current_y);
 }
 
 WL_EXPORT void
-wl_input_device_end_pointer_grab(struct wl_input_device *device, uint32_t time)
+wl_input_device_end_pointer_grab(struct wl_input_device *device)
 {
 	const struct wl_pointer_grab_interface *interface;
 
 	device->pointer_grab = &device->default_pointer_grab;
 	interface = device->pointer_grab->interface;
-	interface->focus(device->pointer_grab, time, device->current,
+	interface->focus(device->pointer_grab, device->current,
 			 device->current_x, device->current_y);
 }
 
@@ -701,11 +713,13 @@ display_sync(struct wl_client *client,
 	     struct wl_resource *resource, uint32_t id)
 {
 	struct wl_resource *callback;
+	uint32_t serial;
 
 	callback = wl_client_add_object(client,
 					&wl_callback_interface, NULL, id, NULL);
-	wl_callback_send_done(callback, 0);
-	wl_resource_destroy(callback, 0);
+	serial = wl_display_get_serial(client->display);
+	wl_callback_send_done(callback, serial);
+	wl_resource_destroy(callback);
 }
 
 struct wl_display_interface display_interface = {
@@ -828,6 +842,20 @@ wl_display_remove_global(struct wl_display *display, struct wl_global *global)
 				       WL_DISPLAY_GLOBAL_REMOVE, global->name);
 	wl_list_remove(&global->link);
 	free(global);
+}
+
+WL_EXPORT uint32_t
+wl_display_get_serial(struct wl_display *display)
+{
+	return display->serial;
+}
+
+WL_EXPORT uint32_t
+wl_display_next_serial(struct wl_display *display)
+{
+	display->serial++;
+
+	return display->serial;
 }
 
 WL_EXPORT struct wl_event_loop *

@@ -109,7 +109,7 @@
 
   <interface name="wl_callback" version="1">
     <event name="done">
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
     </event>
   </interface>
 
@@ -239,7 +239,7 @@
 	NULL for not accepted.  Use for feedback during drag and drop.
       </description>
 
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
       <arg name="type" type="string"/>
     </request>
 
@@ -311,7 +311,7 @@
 	data source that provides the data for the eventual data
 	transfer.  The origin surface is the surface where the drag
 	originates and the client must have an active implicit grab
-	that matches the timestamp.  The icon surface is an optional
+	that matches the serial.  The icon surface is an optional
 	(can be nil) surface that provides an icon to be moved around
 	with the cursor.  Initially, the top-left corner of the icon
 	surface is placed at the cursor hotspot, but subsequent
@@ -320,12 +320,12 @@
       <arg name="source" type="object" interface="wl_data_source"/>
       <arg name="origin" type="object" interface="wl_surface"/>
       <arg name="icon" type="object" interface="wl_surface"/>
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
     </request>
 
     <request name="set_selection">
       <arg name="source" type="object" interface="wl_data_source"/>
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
     </request>
 
     <event name="data_offer">
@@ -343,7 +343,7 @@
     </event>
 
     <event name="enter">
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
@@ -405,7 +405,7 @@
 
     <request name="move">
       <arg name="input_device" type="object" interface="wl_input_device"/>
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
     </request>
 
     <enum name="resize">
@@ -422,7 +422,7 @@
 
     <request name="resize">
       <arg name="input_device" type="object" interface="wl_input_device"/>
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
       <arg name="edges" type="uint"/>
     </request>
 
@@ -517,7 +517,7 @@
       </description>
 
       <arg name="input_device" type="object" interface="wl_input_device"/>
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
       <arg name="parent" type="object" interface="wl_shell_surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
@@ -547,7 +547,6 @@
 	received.
       </description>
 
-      <arg name="time" type="uint"/>
       <arg name="edges" type="uint"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
@@ -663,7 +662,7 @@
 	clients surfaces.
       </description>
 
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
       <arg name="buffer" type="object" interface="wl_buffer"/>
       <arg name="hotspot_x" type="int"/>
       <arg name="hotspot_y" type="int"/>
@@ -686,6 +685,7 @@
 	of the click is given by the last motion or pointer_focus event.
       </description>
 
+      <arg name="serial" type="uint"/>
       <arg name="time" type="uint"/>
       <arg name="button" type="uint"/>
       <arg name="state" type="uint"/>
@@ -712,6 +712,7 @@
 	A key was pressed or released.
       </description>
 
+      <arg name="serial" type="uint"/>
       <arg name="time" type="uint"/>
       <arg name="key" type="uint"/>
       <arg name="state" type="uint"/>
@@ -725,7 +726,7 @@
 	event by setting an appropriate pointer image.
       </description>
 
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="surface_x" type="int"/>
       <arg name="surface_y" type="int"/>
@@ -734,22 +735,23 @@
     <event name="pointer_leave">
       <description summary="pointer leave event">
       </description>
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </event>
 
     <event name="keyboard_enter">
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="keys" type="array"/>
     </event>
 
     <event name="keyboard_leave">
-      <arg name="time" type="uint"/>
+      <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </event>
 
     <event name="touch_down">
+      <arg name="serial" type="uint"/>
       <arg name="time" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="id" type="int" />
@@ -758,6 +760,7 @@
     </event>
 
     <event name="touch_up">
+      <arg name="serial" type="uint"/>
       <arg name="time" type="uint"/>
       <arg name="id" type="int" />
     </event>

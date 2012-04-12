@@ -29,7 +29,7 @@
 
 static void
 data_offer_accept(struct wl_client *client, struct wl_resource *resource,
-		  uint32_t time, const char *mime_type)
+		  uint32_t serial, const char *mime_type)
 {
 	struct wl_data_offer *offer = resource->data;
 
@@ -58,7 +58,7 @@ data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 static void
 data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, 0);
+	wl_resource_destroy(resource);
 }
 
 static void
@@ -78,7 +78,7 @@ static const struct wl_data_offer_interface data_offer_interface = {
 
 static void
 destroy_offer_data_source(struct wl_listener *listener,
-			  struct wl_resource *resource, uint32_t time)
+			  struct wl_resource *resource)
 {
 	struct wl_data_offer *offer;
 
@@ -146,7 +146,7 @@ data_source_offer(struct wl_client *client,
 static void
 data_source_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, 0);
+	wl_resource_destroy(resource);
 }
 
 static struct wl_data_source_interface data_source_interface = {
@@ -169,7 +169,7 @@ find_resource(struct wl_list *list, struct wl_client *client)
 
 static void
 destroy_drag_focus(struct wl_listener *listener,
-		   struct wl_resource *resource, uint32_t time)
+		   struct wl_resource *resource)
 {
 	struct wl_input_device *device =
 		container_of(listener, struct wl_input_device,
@@ -179,12 +179,14 @@ destroy_drag_focus(struct wl_listener *listener,
 }
 
 static void
-drag_grab_focus(struct wl_pointer_grab *grab, uint32_t time,
+drag_grab_focus(struct wl_pointer_grab *grab,
 		struct wl_surface *surface, int32_t x, int32_t y)
 {
 	struct wl_input_device *device =
 		container_of(grab, struct wl_input_device, drag_grab);
 	struct wl_resource *resource, *offer;
+	struct wl_display *display;
+	uint32_t serial;
 
 	if (device->drag_focus_resource) {
 		wl_data_device_send_leave(device->drag_focus_resource);
@@ -197,10 +199,13 @@ drag_grab_focus(struct wl_pointer_grab *grab, uint32_t time,
 		resource = find_resource(&device->drag_resource_list, 
 					 surface->resource.client);
 	if (surface && resource) {
+		display = wl_client_get_display(resource->client);
+		serial = wl_display_next_serial(display);
+
 		offer = wl_data_source_send_offer(device->drag_data_source,
 						  resource);
 
-		wl_data_device_send_enter(resource, time, &surface->resource,
+		wl_data_device_send_enter(resource, serial, &surface->resource,
 					  x, y, offer);
 
 		device->drag_focus = surface;
@@ -225,7 +230,7 @@ drag_grab_motion(struct wl_pointer_grab *grab,
 }
 
 static void
-data_device_end_drag_grab(struct wl_input_device *device, uint32_t time)
+data_device_end_drag_grab(struct wl_input_device *device)
 {
 	struct wl_resource *surface_resource;
 	struct wl_surface_interface *implementation;
@@ -240,7 +245,7 @@ data_device_end_drag_grab(struct wl_input_device *device, uint32_t time)
 		wl_list_remove(&device->drag_icon_listener.link);
 	}
 
-	wl_input_device_end_pointer_grab(device, time);
+	wl_input_device_end_pointer_grab(device);
 
 	device->drag_data_source = NULL;
 	device->drag_surface = NULL;
@@ -258,7 +263,7 @@ drag_grab_button(struct wl_pointer_grab *grab,
 		wl_data_device_send_drop(device->drag_focus_resource);
 
 	if (device->button_count == 0 && state == 0) {
-		data_device_end_drag_grab(device, time);
+		data_device_end_drag_grab(device);
 		wl_list_remove(&device->drag_data_source_listener.link);
 	}
 }
@@ -271,19 +276,19 @@ static const struct wl_pointer_grab_interface drag_grab_interface = {
 
 static void
 destroy_data_device_source(struct wl_listener *listener,
-			   struct wl_resource *resource, uint32_t time)
+			   struct wl_resource *resource)
 {
 	struct wl_input_device *device;
 
 	device = container_of(listener, struct wl_input_device,
 			      drag_data_source_listener);
 
-	data_device_end_drag_grab(device, time);
+	data_device_end_drag_grab(device);
 }
 
 static void
 destroy_data_device_icon(struct wl_listener *listener,
-			 struct wl_resource *resource, uint32_t time)
+			 struct wl_resource *resource)
 {
 	struct wl_input_device *device;
 
@@ -297,7 +302,7 @@ static void
 data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		       struct wl_resource *source_resource,
 		       struct wl_resource *origin_resource,
-		       struct wl_resource *icon_resource, uint32_t time)
+		       struct wl_resource *icon_resource, uint32_t serial)
 {
 	struct wl_input_device *device = resource->data;
 	struct wl_listener *listener, *tmp;
@@ -322,15 +327,15 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 
 		wl_list_for_each_safe(listener, tmp,
 				      &device->drag_icon_listener_list, link)
-			listener->func(listener, icon_resource, time);
+			listener->func(listener, icon_resource);
 	}
 
-	wl_input_device_start_pointer_grab(device, &device->drag_grab, time);
+	wl_input_device_start_pointer_grab(device, &device->drag_grab);
 }
 
 static void
 destroy_selection_data_source(struct wl_listener *listener,
-			      struct wl_resource *resource, uint32_t time)
+			      struct wl_resource *resource)
 {
 	struct wl_input_device *device =
 		container_of(listener, struct wl_input_device,
@@ -349,7 +354,7 @@ destroy_selection_data_source(struct wl_listener *listener,
 
 WL_EXPORT void
 wl_input_device_set_selection(struct wl_input_device *device,
-			      struct wl_data_source *source, uint32_t time)
+			      struct wl_data_source *source)
 {
 	struct wl_resource *data_device, *focus, *offer;
 	struct wl_selection_listener *listener, *next;
@@ -386,13 +391,13 @@ wl_input_device_set_selection(struct wl_input_device *device,
 static void
 data_device_set_selection(struct wl_client *client,
 			  struct wl_resource *resource,
-			  struct wl_resource *source_resource, uint32_t time)
+			  struct wl_resource *source_resource, uint32_t serial)
 {
 	if (!source_resource)
 		return;
 
-	wl_input_device_set_selection(resource->data,
-				      source_resource->data, time);
+	/* FIXME: Store serial and check against incoming serial here. */
+	wl_input_device_set_selection(resource->data, source_resource->data);
 }
 
 static const struct wl_data_device_interface data_device_interface = {

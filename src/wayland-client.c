@@ -433,7 +433,7 @@ wl_display_get_fd(struct wl_display *display,
 }
 
 static void
-sync_callback(void *data, struct wl_callback *callback, uint32_t time)
+sync_callback(void *data, struct wl_callback *callback, uint32_t serial)
 {
    int *done = data;
 
