@@ -546,9 +546,11 @@ cr.define('tracing', function() {
         }
         if (!found) {
           var subRow = [];
-          for (var k = 0; k < slice.subSlices.length; k++)
-            subRow.push(slice.subSlices[k]);
-          subRows.push(subRow);
+          if (slice.subSlices !== undefined) {
+            for (var k = 0; k < slice.subSlices.length; k++)
+              subRow.push(slice.subSlices[k]);
+            subRows.push(subRow);
+          }
         }
       }
       this.subRows_ = subRows;
