@@ -807,7 +807,8 @@ static bool EnterSandbox() {
 
 static bool EnterSandbox() {
   PreSandboxInit();
-  SkiaFontConfigUseIPCImplementation(kMagicSandboxIPCDescriptor);
+  SkiaFontConfigSetImplementation(
+      new FontConfigIPC(kMagicSandboxIPCDescriptor));
   return true;
 }
 
