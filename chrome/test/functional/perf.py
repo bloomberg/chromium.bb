@@ -807,7 +807,7 @@ class NetflixPerfTest(BasePerfTest, NetflixTestHelper):
 
   def tearDown(self):
     self._SignOut()
-    pyauto.PyUITest.tearDown(self) 
+    pyauto.PyUITest.tearDown(self)
 
   def testNetflixDroppedFrames(self):
     """Measures the Netflix video dropped frames/second. Runs for 60 secs."""
@@ -902,7 +902,7 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
 
   def testYoutubeDroppedFrames(self):
     """Measures the Youtube video dropped frames/second. Runs for 60 secs.
-       
+
     This test measures Youtube video dropped frames for three different types
     of videos like slow, normal and fast motion.
     """
@@ -918,7 +918,7 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
       dropped_fps = []
       for iteration in xrange(60):
         frames = self.GetVideoDroppedFrames() - init_dropped_frames
-        current_dropped_frames = frames - total_dropped_frames 
+        current_dropped_frames = frames - total_dropped_frames
         dropped_fps.append(current_dropped_frames)
         logging.info('Iteration %d of %d: %f dropped frames in the last '
                      'second', iteration + 1, 60, current_dropped_frames)
@@ -1074,6 +1074,167 @@ class WebGLTest(BasePerfTest):
         self.GetFileURLForDataPath('pyauto_private', 'webgl', 'spacerocks',
                                    'spacerocks.html'),
         'WebGLSpaceRocks', 'webgl_demo')
+
+
+class GPUPerfTest(BasePerfTest):
+  """Tests for GPU performance."""
+
+  def setUp(self):
+    """Performs necessary setup work before running each test in this class."""
+    self._gpu_info_dict = self.EvalDataFrom(os.path.join(self.DataDir(),
+                                            'gpu', 'gpuperf.txt'))
+    self._demo_name_url_dict = self._gpu_info_dict['demo_info']
+    pyauto.PyUITest.setUp(self)
+
+  def _MeasureFpsOverTime(self, tab_index=0):
+    """Measures FPS using a specified demo.
+
+    This function assumes that the demo is already loaded in the specified tab
+    index.
+
+    Args:
+      tab_index: The tab index, default is 0.
+    """
+    # Let the experiment run for 5 seconds before we start collecting FPS
+    # values.
+    time.sleep(5)
+
+    # Collect the current FPS value each second for the next 10 seconds.
+    # Then return the average FPS value from among those collected.
+    fps_vals = []
+    for iteration in xrange(10):
+      fps = self.GetFPS(tab_index=tab_index)
+      fps_vals.append(fps['fps'])
+      time.sleep(1)
+    avg_fps, _ = self._AvgAndStdDev(fps_vals)
+    return avg_fps
+
+  def _GetStdAvgAndCompare(self, avg_fps, description, ref_dict):
+    """Computes the average and compare set of values with reference data.
+
+    Args:
+      avg_fps: Average fps value.
+      description: A string description for this demo, used as a performance
+                   value description.
+      ref_dict: Dictionary which contains reference data for this test case.
+
+    Returns:
+      True, if the actual FPS value is within 10% of the reference FPS value,
+      or False, otherwise.
+    """
+    std_fps = 0
+    status = True
+    # Load reference data according to platform.
+    platform_ref_dict = None
+    if self.IsWin():
+      platform_ref_dict = ref_dict['win']
+    elif self.IsMac():
+      platform_ref_dict = ref_dict['mac']
+    elif self.IsLinux():
+      platform_ref_dict = ref_dict['linux']
+    else:
+      self.assertFail(msg='This platform is unsupported.')
+    std_fps = platform_ref_dict[description]
+    # Compare reference data to average fps.
+    # We allow the average FPS value to be within 10% of the reference
+    # FPS value.
+    if avg_fps < (0.9 * std_fps):
+      logging.info('FPS difference exceeds threshold for: %s', description)
+      logging.info('  Average: %f fps', avg_fps)
+      logging.info('Reference Average: %f fps', std_fps)
+      status = False
+    else:
+      logging.info('Average FPS is actually greater than 10 percent '
+                   'more than the reference FPS for: %s', description)
+      logging.info('  Average: %f fps', avg_fps)
+      logging.info('  Reference Average: %f fps', std_fps)
+    return status
+
+  def testLaunchDemosParallelInSeparateTabs(self):
+    """Measures performance of demos in different tabs in same browser."""
+    # Launch all the demos parallel in separate tabs
+    counter = 0
+    all_demos_passed = True
+    ref_dict = self._gpu_info_dict['separate_tab_ref_data']
+    # Iterate through dictionary and append all url to browser
+    for url in self._demo_name_url_dict.iterkeys():
+      self.assertTrue(
+          self.AppendTab(pyauto.GURL(self._demo_name_url_dict[url])),
+          msg='Failed to append tab for %s.' % url)
+      counter += 1
+      # Assert number of tab count is equal to number of tabs appended.
+      self.assertEqual(self.GetTabCount(), counter + 1)
+      # Measures performance using different demos and compare it golden
+      # reference.
+    for url in self._demo_name_url_dict.iterkeys():
+      avg_fps = self._MeasureFpsOverTime(tab_index=counter)
+      # Get the reference value of fps and compare the results
+      if not self._GetStdAvgAndCompare(avg_fps, url, ref_dict):
+        all_demos_passed = False
+      counter -= 1
+    self.assertTrue(
+        all_demos_passed,
+        msg='One or more demos failed to yield an acceptable FPS value')
+
+  def testLaunchDemosInSeparateBrowser(self):
+    """Measures performance by launching each demo in a separate tab."""
+    # Launch demos in the browser
+    ref_dict = self._gpu_info_dict['separate_browser_ref_data']
+    all_demos_passed = True
+    for url in self._demo_name_url_dict.iterkeys():
+      self.NavigateToURL(self._demo_name_url_dict[url])
+      # Measures performance using different demos.
+      avg_fps = self._MeasureFpsOverTime()
+      self.RestartBrowser()
+      # Get the standard value of fps and compare the rseults
+      if not self._GetStdAvgAndCompare(avg_fps, url, ref_dict):
+        all_demos_passed = False
+    self.assertTrue(
+        all_demos_passed,
+        msg='One or more demos failed to yield an acceptable FPS value')
+
+  def testLaunchDemosBrowseForwardBackward(self):
+    """Measures performance of various demos in browser going back and forth."""
+    ref_dict = self._gpu_info_dict['browse_back_forward_ref_data']
+    url_array = []
+    desc_array = []
+    all_demos_passed = True
+    # Get URL/Description from dictionary and put in individual array
+    for url in self._demo_name_url_dict.iterkeys():
+      url_array.append(self._demo_name_url_dict[url])
+      desc_array.append(url)
+    for index in range(len(url_array) - 1):
+      # Launch demo in the Browser
+      if index == 0:
+        self.NavigateToURL(url_array[index])
+        # Measures performance using the first demo.
+        avg_fps = self._MeasureFpsOverTime()
+        status1 = self._GetStdAvgAndCompare(avg_fps, desc_array[index],
+                                            ref_dict)
+      # Measures performance using the second demo.
+      self.NavigateToURL(url_array[index + 1])
+      avg_fps = self._MeasureFpsOverTime()
+      status2 = self._GetStdAvgAndCompare(avg_fps, desc_array[index + 1],
+                                          ref_dict)
+      # Go Back to previous demo
+      self.GetBrowserWindow(0).GetTab(0).GoBack();
+      # Measures performance for first demo when moved back
+      avg_fps = self._MeasureFpsOverTime()
+      status3 = self._GetStdAvgAndCompare(
+          avg_fps, desc_array[index] + '_backward',
+          ref_dict)
+      # Go Forward to previous demo
+      self.GetBrowserWindow(0).GetTab(0).GoForward();
+      # Measures performance for second demo when moved forward
+      avg_fps = self._MeasureFpsOverTime()
+      status4 = self._GetStdAvgAndCompare(
+          avg_fps, desc_array[index + 1] + '_forward',
+          ref_dict)
+      if not all([status1, status2, status3, status4]):
+        all_demos_passed = False
+    self.assertTrue(
+        all_demos_passed,
+        msg='One or more demos failed to yield an acceptable FPS value')
 
 
 class HTML5BenchmarkTest(BasePerfTest):
