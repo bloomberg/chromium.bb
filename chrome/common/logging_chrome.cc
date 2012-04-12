@@ -164,20 +164,6 @@ LoggingDestination DetermineLogMode(const CommandLine& command_line) {
 
 #if defined(OS_CHROMEOS)
 namespace {
-FilePath GenerateTimestampedName(const FilePath& base_path,
-                                 base::Time timestamp) {
-  base::Time::Exploded time_deets;
-  timestamp.LocalExplode(&time_deets);
-  std::string suffix = base::StringPrintf("_%02d%02d%02d-%02d%02d%02d",
-                                          time_deets.year,
-                                          time_deets.month,
-                                          time_deets.day_of_month,
-                                          time_deets.hour,
-                                          time_deets.minute,
-                                          time_deets.second);
-  return base_path.InsertBeforeExtension(suffix);
-}
-
 FilePath SetUpSymlinkIfNeeded(const FilePath& symlink_path, bool new_log) {
   DCHECK(!symlink_path.empty());
 
@@ -471,5 +457,19 @@ void SetDumpWithoutCrashingFunction(void (*function)()) {
   dump_without_crashing_function_ = function;
 }
 #endif
+
+FilePath GenerateTimestampedName(const FilePath& base_path,
+                                 base::Time timestamp) {
+  base::Time::Exploded time_deets;
+  timestamp.LocalExplode(&time_deets);
+  std::string suffix = base::StringPrintf("_%02d%02d%02d-%02d%02d%02d",
+                                          time_deets.year,
+                                          time_deets.month,
+                                          time_deets.day_of_month,
+                                          time_deets.hour,
+                                          time_deets.minute,
+                                          time_deets.second);
+  return base_path.InsertBeforeExtensionASCII(suffix);
+}
 
 }  // namespace logging
