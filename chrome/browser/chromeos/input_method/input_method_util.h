@@ -14,7 +14,9 @@
 #include "base/string16.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+// TODO(yusukes): Do not include ibus_controller.h.
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
+#include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 
 namespace chromeos {
 namespace input_method {
@@ -128,6 +130,9 @@ class InputMethodUtil {
 
   // Sets an input method ID of the hardware keyboard for testing.
   void SetHardwareInputMethodIdForTesting(const std::string& input_method_id);
+
+  // Returns true if the given input method id is supported.
+  bool IsValidInputMethodId(const std::string& input_method_id) const;
 
   // Returns true if the given input method id is for a keyboard layout.
   static bool IsKeyboardLayout(const std::string& input_method_id);

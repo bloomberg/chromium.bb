@@ -332,6 +332,11 @@ bool InputMethodUtil::StringIsSupported(
   return TranslateStringInternal(english_string, &localized_string);
 }
 
+bool InputMethodUtil::IsValidInputMethodId(
+    const std::string& input_method_id) const {
+  return GetInputMethodDescriptorFromId(input_method_id) != NULL;
+}
+
 // static
 bool InputMethodUtil::IsKeyboardLayout(const std::string& input_method_id) {
   const bool kCaseInsensitive = false;
