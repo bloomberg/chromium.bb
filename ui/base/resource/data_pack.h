@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "ui/base/ui_export.h"
+#include "ui/base/resource/resource_handle.h"
 
 class FilePath;
 class RefCountedStaticMemory;
@@ -26,30 +27,13 @@ class MemoryMappedFile;
 
 namespace ui {
 
-class UI_EXPORT DataPack {
+class UI_EXPORT DataPack : public ResourceHandle {
  public:
-  // What type of encoding the text resources use.
-  enum TextEncodingType {
-    BINARY,
-    UTF8,
-    UTF16
-  };
-
   DataPack();
-  ~DataPack();
+  virtual ~DataPack();
 
   // Load a pack file from |path|, returning false on error.
   bool Load(const FilePath& path);
-
-  // Get resource by id |resource_id|, filling in |data|.
-  // The data is owned by the DataPack object and should not be modified.
-  // Returns false if the resource id isn't found.
-  bool GetStringPiece(uint16 resource_id, base::StringPiece* data) const;
-
-  // Like GetStringPiece(), but returns a reference to memory. This interface
-  // is used for image data, while the StringPiece interface is usually used
-  // for localization strings.
-  RefCountedStaticMemory* GetStaticMemory(uint16 resource_id) const;
 
   // Writes a pack file containing |resources| to |path|. If there are any
   // text resources to be written, their encoding must already agree to the
@@ -59,8 +43,12 @@ class UI_EXPORT DataPack {
                         const std::map<uint16, base::StringPiece>& resources,
                         TextEncodingType textEncodingType);
 
-  // Get the encoding type of text resources.
-  TextEncodingType GetTextEncodingType() const { return text_encoding_type_; }
+  // ResourceHandle implementation:
+  virtual bool GetStringPiece(uint16 resource_id,
+                              base::StringPiece* data) const OVERRIDE;
+  virtual RefCountedStaticMemory* GetStaticMemory(
+      uint16 resource_id) const OVERRIDE;
+  virtual TextEncodingType GetTextEncodingType() const OVERRIDE;
 
  private:
   // The memory-mapped data.

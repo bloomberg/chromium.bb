@@ -34,7 +34,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
@@ -47,6 +46,7 @@
 #include "policy/policy_constants.h"
 #include "sandbox/src/sandbox.h"
 #include "tools/memory_watcher/memory_watcher.h"
+#include "ui/base/resource/resource_bundle_win.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -604,7 +604,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
 
 #if defined(OS_WIN)
   // TODO(darin): Kill this once http://crbug.com/52609 is fixed.
-  ResourceBundle::SetResourcesDataDLL(_AtlBaseModule.GetResourceInstance());
+  ui::SetResourcesDataDLL(_AtlBaseModule.GetResourceInstance());
 #endif
 
   if (SubprocessNeedsResourceBundle(process_type)) {

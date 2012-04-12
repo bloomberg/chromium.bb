@@ -560,10 +560,12 @@ GtkWidget* WebIntentPickerGtk::CreateStarsWidget(double rating) {
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   for (int i = 0; i < 5; ++i) {
+    const gfx::Image& image = rb.GetNativeImageNamed(
+        WebIntentPicker::GetNthStarImageIdFromCWSRating(rating, i),
+        ui::ResourceBundle::RTL_ENABLED);
     gtk_box_pack_start(
         GTK_BOX(hbox),
-        gtk_image_new_from_pixbuf(rb.GetRTLEnabledPixbufNamed(
-            WebIntentPicker::GetNthStarImageIdFromCWSRating(rating, i))),
+        gtk_image_new_from_pixbuf(image.ToGdkPixbuf()),
         FALSE, FALSE, 0);
   }
 

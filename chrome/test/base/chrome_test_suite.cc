@@ -192,7 +192,7 @@ void ChromeTestSuite::Initialize() {
   PathService::Get(base::DIR_MODULE, &resources_pack_path);
   resources_pack_path =
       resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
-  ResourceBundle::AddDataPackToSharedInstance(resources_pack_path);
+  ResourceBundle::GetSharedInstance().AddDataPack(resources_pack_path);
 
   // Mock out the compositor on platforms that use it.
   ui::SetupTestCompositor();

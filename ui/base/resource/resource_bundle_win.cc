@@ -1,19 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_bundle_win.h"
 
-#include "base/debug/stack_trace.h"
 #include "base/logging.h"
-#include "base/path_service.h"
-#include "base/stl_util.h"
-#include "base/string_piece.h"
-#include "base/synchronization/lock.h"
-#include "base/win/resource_util.h"
-#include "base/win/windows_version.h"
-#include "ui/base/resource/data_pack.h"
-#include "ui/gfx/font.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_data_dll_win.h"
 
 namespace ui {
 
@@ -21,33 +14,17 @@ namespace {
 
 HINSTANCE resources_data_dll;
 
-// Returns the flags that should be passed to LoadLibraryEx.
-DWORD GetDataDllLoadFlags() {
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    return LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE | LOAD_LIBRARY_AS_IMAGE_RESOURCE;
-
-  return DONT_RESOLVE_DLL_REFERENCES;
+HINSTANCE GetCurrentResourceDLL() {
+  if (resources_data_dll)
+    return resources_data_dll;
+  return GetModuleHandle(NULL);
 }
 
 }  // end anonymous namespace
 
-ResourceBundle::~ResourceBundle() {
-  FreeImages();
-  UnloadLocaleResources();
-  STLDeleteContainerPointers(data_packs_.begin(),
-                             data_packs_.end());
-  resources_data_ = NULL;
-}
-
 void ResourceBundle::LoadCommonResources() {
-  // As a convenience, set resources_data_ to the current resource module.
-  DCHECK(NULL == resources_data_) << "common resources already loaded";
-
-  if (resources_data_dll) {
-    resources_data_ = resources_data_dll;
-  } else {
-    resources_data_ = GetModuleHandle(NULL);
-  }
+  // As a convenience, add the current resource module as a data packs.
+  data_packs_.push_back(new ResourceDataDLL(GetCurrentResourceDLL()));
 }
 
 void ResourceBundle::LoadTestResources(const FilePath& path) {
@@ -55,60 +32,21 @@ void ResourceBundle::LoadTestResources(const FilePath& path) {
   // itself.
 }
 
-// static
-RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
-    DataHandle module, int resource_id) {
-  void* data_ptr;
-  size_t data_size;
-  if (base::win::GetDataResourceFromModule(module, resource_id, &data_ptr,
-                                           &data_size)) {
-    return new RefCountedStaticMemory(
-        reinterpret_cast<const unsigned char*>(data_ptr), data_size);
-  } else {
-    return NULL;
-  }
+gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
+  // Flipped image is not used on Windows.
+  DCHECK_EQ(rtl, RTL_DISABLED);
+
+  // Windows only uses SkBitmap for gfx::Image, so this is the same as
+  // GetImageNamed.
+  return GetImageNamed(resource_id);
 }
 
-// static
-void ResourceBundle::SetResourcesDataDLL(HINSTANCE handle) {
+void SetResourcesDataDLL(HINSTANCE handle) {
   resources_data_dll = handle;
 }
 
-HICON ResourceBundle::LoadThemeIcon(int icon_id) {
-  return ::LoadIcon(resources_data_, MAKEINTRESOURCE(icon_id));
-}
-
-base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
-  void* data_ptr;
-  size_t data_size;
-  base::StringPiece data;
-  if (base::win::GetDataResourceFromModule(resources_data_,
-                                           resource_id,
-                                           &data_ptr,
-                                           &data_size)) {
-    return base::StringPiece(static_cast<const char*>(data_ptr), data_size);
-  } else if (locale_resources_data_.get() &&
-             locale_resources_data_->GetStringPiece(resource_id, &data)) {
-    return data;
-  }
-
-  for (size_t i = 0; i < data_packs_.size(); ++i) {
-    if (data_packs_[i]->GetStringPiece(resource_id, &data))
-      return data;
-  }
-
-  return base::StringPiece();
-}
-
-// Loads and returns a cursor from the current module.
-HCURSOR ResourceBundle::LoadCursor(int cursor_id) {
-  return ::LoadCursor(resources_data_, MAKEINTRESOURCE(cursor_id));
-}
-
-// Windows only uses SkBitmap for gfx::Image, so this is the same as
-// GetImageNamed.
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
-  return GetImageNamed(resource_id);
+HICON LoadThemeIconFromResourcesDataDLL(int icon_id) {
+  return ::LoadIcon(GetCurrentResourceDLL(), MAKEINTRESOURCE(icon_id));
 }
 
 }  // namespace ui;

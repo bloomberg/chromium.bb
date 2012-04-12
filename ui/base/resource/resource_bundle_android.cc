@@ -14,22 +14,18 @@
 
 namespace ui {
 
-// static
-FilePath ResourceBundle::GetResourcesFilePath() {
+void ResourceBundle::LoadCommonResources() {
   FilePath data_path;
   PathService::Get(base::DIR_ANDROID_APP_DATA, &data_path);
   DCHECK(!data_path.empty());
-  return data_path.Append(FILE_PATH_LITERAL("paks/chrome.pak"));
+  data_path = data_path.AppendASCII("paks").AppendASCII("chrome.pak");
+  AddDataPack(data_path);
 }
 
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
+gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
+  // Flipped image is not used on Android.
+  DCHECK_EQ(rtl, RTL_DISABLED);
   return GetImageNamed(resource_id);
-}
-
-// static
-FilePath ResourceBundle::GetLargeIconResourcesFilePath() {
-  // Not supported.
-  return FilePath();
 }
 
 }

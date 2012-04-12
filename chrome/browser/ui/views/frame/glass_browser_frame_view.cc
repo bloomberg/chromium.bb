@@ -23,7 +23,7 @@
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/resource/resource_bundle_win.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/icon_util.h"
@@ -491,9 +491,9 @@ void GlassBrowserFrameView::Observe(
 void GlassBrowserFrameView::InitThrobberIcons() {
   static bool initialized = false;
   if (!initialized) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     for (int i = 0; i < kThrobberIconCount; ++i) {
-      throbber_icons_[i] = rb.LoadThemeIcon(IDI_THROBBER_01 + i);
+      throbber_icons_[i] =
+          ui::LoadThemeIconFromResourcesDataDLL(IDI_THROBBER_01 + i);
       DCHECK(throbber_icons_[i]);
     }
     initialized = true;

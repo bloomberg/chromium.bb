@@ -564,10 +564,15 @@ void BookmarkBarGtk::SetOverflowButtonAppearance() {
   if (former_child)
     gtk_widget_destroy(former_child);
 
-  GtkWidget* new_child = theme_service_->UsingNativeTheme() ?
-      gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE) :
-      gtk_image_new_from_pixbuf(ui::ResourceBundle::GetSharedInstance().
-          GetRTLEnabledPixbufNamed(IDR_BOOKMARK_BAR_CHEVRONS));
+  GtkWidget* new_child;
+  if (theme_service_->UsingNativeTheme()) {
+    new_child = gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE);
+  } else {
+    const gfx::Image& image = ui::ResourceBundle::GetSharedInstance().
+        GetNativeImageNamed(IDR_BOOKMARK_BAR_CHEVRONS,
+                            ui::ResourceBundle::RTL_ENABLED);
+    new_child = gtk_image_new_from_pixbuf(image.ToGdkPixbuf());
+  }
 
   gtk_container_add(GTK_CONTAINER(overflow_button_), new_child);
   SetChevronState();

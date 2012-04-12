@@ -50,25 +50,21 @@ GdkPixbuf* LoadPixbuf(RefCountedStaticMemory* data, bool rtl_enabled) {
 
 }  // namespace
 
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
-  return *GetPixbufImpl(resource_id, false);
-}
-
-gfx::Image* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {
+gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
   // Use the negative |resource_id| for the key for BIDI-aware images.
-  int key = rtl_enabled ? -resource_id : resource_id;
+  int key = rtl == RTL_ENABLED ? -resource_id : resource_id;
 
   // Check to see if the image is already in the cache.
   {
     base::AutoLock lock_scope(*images_and_fonts_lock_);
     ImageMap::const_iterator found = images_.find(key);
     if (found != images_.end())
-      return found->second;
+      return *found->second;
   }
 
   scoped_refptr<RefCountedStaticMemory> data(
       LoadDataResourceBytes(resource_id));
-  GdkPixbuf* pixbuf = LoadPixbuf(data.get(), rtl_enabled);
+  GdkPixbuf* pixbuf = LoadPixbuf(data.get(), rtl == RTL_ENABLED);
 
   // The load was successful, so cache the image.
   if (pixbuf) {
@@ -77,25 +73,17 @@ gfx::Image* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {
     // Another thread raced the load and has already cached the image.
     if (images_.count(key)) {
       g_object_unref(pixbuf);
-      return images_[key];
+      return *images_[key];
     }
 
     gfx::Image* image = new gfx::Image(pixbuf);  // Takes ownership.
     images_[key] = image;
-    return image;
+    return *image;
   }
 
   LOG(WARNING) << "Unable to pixbuf with id " << resource_id;
   NOTREACHED();  // Want to assert in debug mode.
-  return GetEmptyImage();
-}
-
-GdkPixbuf* ResourceBundle::GetRTLEnabledPixbufNamed(int resource_id) {
-  return GetPixbufImpl(resource_id, true)->ToGdkPixbuf();
-}
-
-gfx::Image& ResourceBundle::GetRTLEnabledImageNamed(int resource_id) {
-  return *GetPixbufImpl(resource_id, true);
+  return *GetEmptyImage();
 }
 
 }  // namespace ui

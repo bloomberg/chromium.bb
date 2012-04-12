@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,6 @@
 #include "base/win/windows_version.h"
 #include "chrome_frame/policy_settings.h"
 #include "ui/base/resource/data_pack.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -206,15 +205,16 @@ bool SimpleResourceLoader::LoadLocalePack(
 
     if (file_util::PathExists(resource_pack_path) &&
         file_util::PathExists(dll_path)) {
-      *data_pack = ui::ResourceBundle::LoadResourcesDataPak(resource_pack_path);
-      if (!*data_pack) {
+      scoped_ptr<ui::DataPack> cur_data_pack(new ui::DataPack());
+      if (!cur_data_pack->Load(resource_pack_path))
         continue;
-      }
+
       HMODULE locale_dll_handle = LoadLibraryEx(dll_path.value().c_str(), NULL,
                                                 load_flags);
       if (locale_dll_handle) {
         *dll_handle = locale_dll_handle;
         *language = dll_path.BaseName().RemoveExtension().value();
+        *data_pack = cur_data_pack.release();
         found_pack = true;
         break;
       } else {

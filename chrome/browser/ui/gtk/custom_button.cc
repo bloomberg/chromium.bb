@@ -17,7 +17,19 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/image/cairo_cached_surface.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/skbitmap_operations.h"
+
+namespace {
+
+GdkPixbuf* GetImage(int resource_id) {
+  if (!resource_id)
+    return NULL;
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+    resource_id, ui::ResourceBundle::RTL_ENABLED).ToGdkPixbuf();
+}
+
+}  // namespace
 
 CustomDrawButtonBase::CustomDrawButtonBase(ThemeServiceGtk* theme_provider,
                                            int normal_id,
@@ -46,16 +58,11 @@ CustomDrawButtonBase::CustomDrawButtonBase(ThemeServiceGtk* theme_provider,
                    content::Source<ThemeService>(theme_provider));
   } else {
     // Load the button images from the resource bundle.
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    surfaces_[GTK_STATE_NORMAL]->UsePixbuf(
-        normal_id_ ? rb.GetRTLEnabledPixbufNamed(normal_id_) : NULL);
-    surfaces_[GTK_STATE_ACTIVE]->UsePixbuf(
-        pressed_id_ ? rb.GetRTLEnabledPixbufNamed(pressed_id_) : NULL);
-    surfaces_[GTK_STATE_PRELIGHT]->UsePixbuf(
-        hover_id_ ? rb.GetRTLEnabledPixbufNamed(hover_id_) : NULL);
+    surfaces_[GTK_STATE_NORMAL]->UsePixbuf(GetImage(normal_id_));
+    surfaces_[GTK_STATE_ACTIVE]->UsePixbuf(GetImage(pressed_id_));
+    surfaces_[GTK_STATE_PRELIGHT]->UsePixbuf(GetImage(hover_id_));
     surfaces_[GTK_STATE_SELECTED]->UsePixbuf(NULL);
-    surfaces_[GTK_STATE_INSENSITIVE]->UsePixbuf(
-        disabled_id_ ? rb.GetRTLEnabledPixbufNamed(disabled_id_) : NULL);
+    surfaces_[GTK_STATE_INSENSITIVE]->UsePixbuf(GetImage(disabled_id_));
   }
 }
 

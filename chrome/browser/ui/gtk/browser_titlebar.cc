@@ -116,7 +116,8 @@ GdkPixbuf* GetOTRAvatar() {
   static GdkPixbuf* otr_avatar = NULL;
   if (!otr_avatar) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    otr_avatar = rb.GetRTLEnabledPixbufNamed(IDR_OTR_ICON);
+    otr_avatar = rb.GetNativeImageNamed(
+        IDR_OTR_ICON, ui::ResourceBundle::RTL_ENABLED).ToGdkPixbuf();
   }
   return otr_avatar;
 }
@@ -376,8 +377,8 @@ void BrowserTitlebar::Init() {
     // We use the app logo as a placeholder image so the title doesn't jump
     // around.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    app_mode_favicon_ = gtk_image_new_from_pixbuf(
-        rb.GetRTLEnabledPixbufNamed(IDR_PRODUCT_LOGO_16));
+    app_mode_favicon_ = gtk_image_new_from_pixbuf(rb.GetNativeImageNamed(
+        IDR_PRODUCT_LOGO_16, ui::ResourceBundle::RTL_ENABLED).ToGdkPixbuf());
     g_object_set_data(G_OBJECT(app_mode_favicon_), "left-align-popup",
                       reinterpret_cast<void*>(true));
     gtk_container_add(GTK_CONTAINER(favicon_event_box), app_mode_favicon_);

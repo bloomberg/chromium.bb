@@ -4,6 +4,8 @@
 
 #include "ui/base/resource/resource_bundle.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -62,23 +64,6 @@ void ResourceBundle::InitSharedInstanceWithPakFile(const FilePath& path) {
 }
 
 // static
-DataPack* ResourceBundle::LoadResourcesDataPak(const FilePath& path) {
-  DataPack* datapack = new DataPack;
-  bool success = datapack->Load(path);
-  if (!success) {
-    delete datapack;
-    datapack = NULL;
-  }
-  return datapack;
-}
-
-// static
-void ResourceBundle::AddDataPackToSharedInstance(const FilePath& path) {
-  DCHECK(g_shared_instance_ != NULL) << "ResourceBundle not initialized";
-  g_shared_instance_->data_packs_.push_back(new LoadedDataPack(path));
-}
-
-// static
 void ResourceBundle::CleanupSharedInstance() {
   if (g_shared_instance_) {
     delete g_shared_instance_;
@@ -101,6 +86,16 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
 // static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   return !GetLocaleFilePath(locale).empty();
+}
+
+void ResourceBundle::AddDataPack(const FilePath& path) {
+  scoped_ptr<DataPack> data_pack(new DataPack());
+  if (data_pack->Load(path)) {
+    data_packs_.push_back(data_pack.release());
+  } else {
+    LOG(ERROR) << "Failed to load " << path.value()
+               << "\nSome features may not be available.";
+  }
 }
 
 #if !defined(OS_MACOSX)
@@ -138,18 +133,22 @@ std::string ResourceBundle::LoadLocaleResources(
       locale_file_path = GetLocaleFilePath(app_locale);
     }
   }
+
   if (locale_file_path.empty()) {
     // It's possible that there is no locale.pak.
     NOTREACHED();
     return std::string();
   }
-  locale_resources_data_.reset(LoadResourcesDataPak(locale_file_path));
-  if (!locale_resources_data_.get()) {
+
+  scoped_ptr<DataPack> data_pack(new DataPack());
+  if (!data_pack->Load(locale_file_path)) {
     UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
                               logging::GetLastSystemErrorCode(), 16000);
     NOTREACHED() << "failed to load locale.pak";
     return std::string();
   }
+
+  locale_resources_data_.reset(data_pack.release());
   return app_locale;
 }
 
@@ -181,16 +180,17 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   }
 
   // Strings should not be loaded from a data pack that contains binary data.
-  DCHECK(locale_resources_data_->GetTextEncodingType() == DataPack::UTF16 ||
-         locale_resources_data_->GetTextEncodingType() == DataPack::UTF8)
+  ResourceHandle::TextEncodingType encoding =
+      locale_resources_data_->GetTextEncodingType();
+  DCHECK(encoding == ResourceHandle::UTF16 || encoding == ResourceHandle::UTF8)
       << "requested localized string from binary pack file";
 
   // Data pack encodes strings as either UTF8 or UTF16.
   string16 msg;
-  if (locale_resources_data_->GetTextEncodingType() == DataPack::UTF16) {
+  if (encoding == ResourceHandle::UTF16) {
     msg = string16(reinterpret_cast<const char16*>(data.data()),
                    data.length() / 2);
-  } else if (locale_resources_data_->GetTextEncodingType() == DataPack::UTF8) {
+  } else if (encoding == ResourceHandle::UTF8) {
     msg = UTF8ToUTF16(data);
   }
   return msg;
@@ -225,49 +225,64 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
       return *found->second;
   }
 
-  DCHECK(resources_data_) << "Missing call to SetResourcesDataDLL?";
-  scoped_ptr<SkBitmap> bitmap(LoadBitmap(resources_data_, resource_id));
-  if (bitmap.get()) {
-    // Check if there's a large version of the image as well.
-    scoped_ptr<SkBitmap> large_bitmap;
-    if (large_icon_resources_data_)
-      large_bitmap.reset(LoadBitmap(large_icon_resources_data_, resource_id));
-
-    // The load was successful, so cache the image.
-    base::AutoLock lock_scope(*images_and_fonts_lock_);
-
-    // Another thread raced the load and has already cached the image.
-    if (images_.count(resource_id))
-      return *images_[resource_id];
-
-    std::vector<const SkBitmap*> bitmaps;
-    bitmaps.push_back(bitmap.release());
-    if (large_bitmap.get())
-      bitmaps.push_back(large_bitmap.release());
-    gfx::Image* image = new gfx::Image(bitmaps);
-    images_[resource_id] = image;
-    return *image;
+  DCHECK(!data_packs_.empty()) << "Missing call to SetResourcesDataDLL?";
+  ScopedVector<const SkBitmap> bitmaps;
+  for (size_t i = 0; i < data_packs_.size(); ++i) {
+    SkBitmap* bitmap = LoadBitmap(*data_packs_[i], resource_id);
+    if (bitmap)
+      bitmaps.push_back(bitmap);
   }
 
-  // The load failed to retrieve the image; show a debugging red square.
-  LOG(WARNING) << "Unable to load image with id " << resource_id;
-  NOTREACHED();  // Want to assert in debug mode.
-  return *GetEmptyImage();
+  if (bitmaps.empty()) {
+    LOG(WARNING) << "Unable to load image with id " << resource_id;
+    NOTREACHED();  // Want to assert in debug mode.
+    // The load failed to retrieve the image; show a debugging red square.
+    return *GetEmptyImage();
+  }
+
+  // The load was successful, so cache the image.
+  base::AutoLock lock_scope(*images_and_fonts_lock_);
+
+  // Another thread raced the load and has already cached the image.
+  if (images_.count(resource_id))
+    return *images_[resource_id];
+
+  std::vector<const SkBitmap*> tmp_bitmaps;
+  bitmaps.release(&tmp_bitmaps);
+  // Takes ownership of bitmaps.
+  gfx::Image* image = new gfx::Image(tmp_bitmaps);
+  images_[resource_id] = image;
+  return *image;
+}
+
+gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
+  return GetNativeImageNamed(resource_id, RTL_DISABLED);
 }
 
 RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
     int resource_id) const {
-  RefCountedStaticMemory* bytes =
-      LoadResourceBytes(resources_data_, resource_id);
-
-  // Check all our additional data packs for the resources if it wasn't loaded
-  // from our main source.
-  for (std::vector<LoadedDataPack*>::const_iterator it = data_packs_.begin();
-       !bytes && it != data_packs_.end(); ++it) {
-    bytes = (*it)->GetStaticMemory(resource_id);
+  for (size_t i = 0; i < data_packs_.size(); ++i) {
+    RefCountedStaticMemory* bytes =
+        data_packs_[i]->GetStaticMemory(resource_id);
+    if (bytes)
+      return bytes;
   }
 
-  return bytes;
+  return NULL;
+}
+
+base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
+  DCHECK(locale_resources_data_.get());
+  base::StringPiece data;
+  if (locale_resources_data_->GetStringPiece(resource_id, &data))
+    return data;
+
+  for (size_t i = 0; i < data_packs_.size(); ++i) {
+    if (data_packs_[i]->GetStringPiece(resource_id, &data))
+      return data;
+  }
+
+  return base::StringPiece();
 }
 
 const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
@@ -301,9 +316,12 @@ void ResourceBundle::ReloadFonts() {
 
 ResourceBundle::ResourceBundle()
     : images_and_fonts_lock_(new base::Lock),
-      locale_resources_data_lock_(new base::Lock),
-      resources_data_(NULL),
-      large_icon_resources_data_(NULL) {
+      locale_resources_data_lock_(new base::Lock) {
+}
+
+ResourceBundle::~ResourceBundle() {
+  FreeImages();
+  UnloadLocaleResources();
 }
 
 void ResourceBundle::FreeImages() {
@@ -342,10 +360,10 @@ void ResourceBundle::LoadFontsIfNecessary() {
   }
 }
 
-// static
-SkBitmap* ResourceBundle::LoadBitmap(DataHandle data_handle, int resource_id) {
+SkBitmap* ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
+                                     int resource_id) {
   scoped_refptr<RefCountedMemory> memory(
-      LoadResourceBytes(data_handle, resource_id));
+      data_handle.GetStaticMemory(resource_id));
   if (!memory)
     return NULL;
 
@@ -377,41 +395,6 @@ gfx::Image* ResourceBundle::GetEmptyImage() {
     empty_image = new gfx::Image(bitmap);
   }
   return empty_image;
-}
-
-// LoadedDataPack -------------------------------------------------------------
-
-ResourceBundle::LoadedDataPack::LoadedDataPack(const FilePath& path)
-    : path_(path) {
-  // Always preload the data packs so we can maintain constness.
-  Load();
-}
-
-ResourceBundle::LoadedDataPack::~LoadedDataPack() {
-}
-
-void ResourceBundle::LoadedDataPack::Load() {
-  DCHECK(!data_pack_.get());
-  data_pack_.reset(new ui::DataPack);
-  bool success = data_pack_->Load(path_);
-  LOG_IF(ERROR, !success) << "Failed to load " << path_.value()
-      << "\nSome features may not be available.";
-  if (!success)
-    data_pack_.reset();
-}
-
-bool ResourceBundle::LoadedDataPack::GetStringPiece(
-    int resource_id, base::StringPiece* data) const {
-  if (!data_pack_.get())
-    return false;
-  return data_pack_->GetStringPiece(static_cast<uint32>(resource_id), data);
-}
-
-RefCountedStaticMemory* ResourceBundle::LoadedDataPack::GetStaticMemory(
-    int resource_id) const {
-  if (!data_pack_.get())
-    return NULL;
-  return data_pack_->GetStaticMemory(resource_id);
 }
 
 }  // namespace ui

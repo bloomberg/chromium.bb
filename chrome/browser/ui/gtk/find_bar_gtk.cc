@@ -908,8 +908,10 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
 
     // Blit the left part of the background image once on the left.
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    gfx::CairoCachedSurface* background_left =
-        rb.GetRTLEnabledImageNamed(IDR_FIND_BOX_BACKGROUND_LEFT).ToCairo();
+
+    gfx::CairoCachedSurface* background_left = rb.GetNativeImageNamed(
+        IDR_FIND_BOX_BACKGROUND_LEFT,
+        ui::ResourceBundle::RTL_ENABLED).ToCairo();
     background_left->SetSource(cr, widget,
                                border_allocation.x, border_allocation.y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);

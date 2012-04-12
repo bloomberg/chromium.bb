@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,17 +9,10 @@
 
 namespace ui {
 
-// static
-FilePath ResourceBundle::GetResourcesFilePath() {
-  FilePath resources_file_path;
-  PathService::Get(ui::FILE_RESOURCES_PAK, &resources_file_path);
-  return resources_file_path;
-}
-
-// static
-FilePath ResourceBundle::GetLargeIconResourcesFilePath() {
-  // Not supported.
-  return FilePath();
+void ResourceBundle::LoadCommonResources() {
+  FilePath path;
+  PathService::Get(ui::FILE_RESOURCES_PAK, &path);
+  AddDataPack(path);
 }
 
 }  // namespace ui

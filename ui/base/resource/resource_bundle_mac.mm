@@ -13,6 +13,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_string_conversions.h"
+#include "ui/base/resource/resource_handle.h"
 #include "ui/gfx/image/image.h"
 
 namespace ui {
@@ -41,18 +42,10 @@ FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 
 }  // namespace
 
-// static
-FilePath ResourceBundle::GetResourcesFilePath() {
-  return GetResourcesPakFilePath(@"chrome", nil);
-}
-
-// static
-FilePath ResourceBundle::GetLargeIconResourcesFilePath() {
-  // Only load the large resource pak when running on 10.7 or later.
+void ResourceBundle::LoadCommonResources() {
+  AddDataPack(GetResourcesPakFilePath(@"chrome", nil));
   if (base::mac::IsOSLionOrLater())
-    return GetResourcesPakFilePath(@"theme_resources_2x", nil);
-  else
-    return FilePath();
+    AddDataPack(GetResourcesPakFilePath(@"theme_resources_2x", nil));
 }
 
 // static
@@ -70,7 +63,10 @@ FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   return GetResourcesPakFilePath(@"locale", mac_locale);
 }
 
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
+gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
+  // Flipped images are not used on Mac.
+  DCHECK_EQ(rtl, RTL_DISABLED);
+
   // Check to see if the image is already in the cache.
   {
     base::AutoLock lock(*images_and_fonts_lock_);
@@ -86,49 +82,41 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
     }
   }
 
-  // Load the raw data from the resource pack.
-  scoped_refptr<RefCountedStaticMemory> data(
-      LoadDataResourceBytes(resource_id));
+  scoped_nsobject<NSImage> ns_image;
+  for (size_t i = 0; i < data_packs_.size(); ++i) {
+    scoped_refptr<RefCountedStaticMemory> data(
+        data_packs_[i]->GetStaticMemory(resource_id));
+    if (!data.get())
+      continue;
 
-  // Create a data object from the raw bytes.
-  scoped_nsobject<NSData> ns_data([[NSData alloc] initWithBytes:data->front()
-                                                         length:data->size()]);
-
-  // Create the image from the data. The gfx::Image will take ownership of this.
-  scoped_nsobject<NSImage> ns_image([[NSImage alloc] initWithData:ns_data]);
-
-  // Cache the converted image.
-  if (ns_image.get()) {
-    // Load a high resolution version of the icon if available.
-    if (large_icon_resources_data_) {
-      scoped_refptr<RefCountedStaticMemory> large_data(
-          LoadResourceBytes(large_icon_resources_data_, resource_id));
-      if (large_data.get()) {
-        scoped_nsobject<NSData> ns_large_data(
-            [[NSData alloc] initWithBytes:large_data->front()
-                                   length:large_data->size()]);
-        NSImageRep* image_rep =
-            [NSBitmapImageRep imageRepWithData:ns_large_data];
-        if (image_rep)
-          [ns_image addRepresentation:image_rep];
-      }
+    scoped_nsobject<NSData> ns_data(
+        [[NSData alloc] initWithBytes:data->front()
+                               length:data->size()]);
+    if (!ns_image.get()) {
+      ns_image.reset([[NSImage alloc] initWithData:ns_data]);
+    } else {
+      NSImageRep* image_rep = [NSBitmapImageRep imageRepWithData:ns_data];
+      if (image_rep)
+        [ns_image addRepresentation:image_rep];
     }
-
-    base::AutoLock lock(*images_and_fonts_lock_);
-
-    // Another thread raced the load and has already cached the image.
-    if (images_.count(resource_id)) {
-      return *images_[resource_id];
-    }
-
-    gfx::Image* image = new gfx::Image(ns_image.release());
-    images_[resource_id] = image;
-    return *image;
   }
 
-  LOG(WARNING) << "Unable to load image with id " << resource_id;
-  NOTREACHED();  // Want to assert in debug mode.
-  return *GetEmptyImage();
+  if (!ns_image.get()) {
+    LOG(WARNING) << "Unable to load image with id " << resource_id;
+    NOTREACHED();  // Want to assert in debug mode.
+    return *GetEmptyImage();
+  }
+
+  base::AutoLock lock(*images_and_fonts_lock_);
+
+  // Another thread raced the load and has already cached the image.
+  if (images_.count(resource_id)) {
+    return *images_[resource_id];
+  }
+
+  gfx::Image* image = new gfx::Image(ns_image.release());
+  images_[resource_id] = image;
+  return *image;
 }
 
 }  // namespace ui
