@@ -9,10 +9,14 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/declarative/url_matcher.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_helpers.h"
 #include "net/url_request/url_request.h"
+
+namespace helpers = extensions::declarative_webrequest_helpers;
 
 namespace {
 static extensions::URLMatcherConditionSet::ID g_next_id = 0;
@@ -24,9 +28,11 @@ const char kExpectedDictionary[] = "A condition has to be a dictionary.";
 const char kConditionWithoutInstanceType[] = "A condition had no instanceType";
 const char kExpectedOtherConditionType[] = "Expected a condition of type "
     "experimental.webRequest.RequestMatcher";
-const char kUnknownConditionAttribute[] = "UnKnown condition attribute '%s'";
+const char kUnknownConditionAttribute[] = "Unknown condition attribute '%s'";
 const char kConditionExpectedString[] =
     "Condition '%s' expected a string value";
+const char kVectorOfStringsExpected[] =
+    "Attribute '%s' expected a vector of strings";
 
 // String literals from the JavaScript API:
 const char kHostContainsKey[] = "host_contains";
@@ -172,6 +178,7 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
 
   WebRequestConditionAttributes attributes;
   URLMatcherConditionSet::Conditions url_matcher_conditions;
+  scoped_ptr<URLMatcherSchemeFilter> url_matcher_schema_filter;
 
   for (base::DictionaryValue::Iterator iter(*condition_dict);
        iter.HasNext(); iter.Advance()) {
@@ -189,6 +196,11 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
       if (!error->empty())
         return scoped_ptr<WebRequestCondition>(NULL);
       url_matcher_conditions.insert(url_matcher_condition);
+    } else if (condition_attribute_name == keys::kSchemesKey) {
+      url_matcher_schema_filter = CreateURLMatcherScheme(
+          &condition_attribute_value, error);
+      if (!error->empty())
+        return scoped_ptr<WebRequestCondition>(NULL);
     } else if (WebRequestConditionAttribute::IsKnownType(
         condition_attribute_name)) {
       scoped_ptr<WebRequestConditionAttribute> attribute =
@@ -216,7 +228,8 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
   }
 
   scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set(
-      new URLMatcherConditionSet(++g_next_id, url_matcher_conditions));
+      new URLMatcherConditionSet(++g_next_id, url_matcher_conditions,
+          url_matcher_schema_filter.Pass()));
   return scoped_ptr<WebRequestCondition>(
       new WebRequestCondition(url_matcher_condition_set, attributes));
 }
@@ -244,6 +257,18 @@ URLMatcherCondition WebRequestCondition::CreateURLMatcherCondition(
       url_matcher_condition_factory, condition_attribute_name, str_value);
 }
 
+// static
+scoped_ptr<URLMatcherSchemeFilter> WebRequestCondition::CreateURLMatcherScheme(
+    const base::Value* value,
+    std::string* error) {
+  std::vector<std::string> schemas;
+  if (!helpers::GetAsStringVector(value, &schemas)) {
+    *error = base::StringPrintf(kVectorOfStringsExpected, keys::kSchemesKey);
+    return scoped_ptr<URLMatcherSchemeFilter>(NULL);
+  }
+  return scoped_ptr<URLMatcherSchemeFilter>(
+      new URLMatcherSchemeFilter(schemas));
+}
 
 //
 // WebRequestConditionSet

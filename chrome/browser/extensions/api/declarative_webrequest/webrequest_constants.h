@@ -17,7 +17,8 @@ extern const char kOnRequest[];
 // Keys of dictionaries.
 extern const char kInstanceTypeKey[];
 extern const char kRedirectUrlKey[];
-extern const char kSchemeKey[];
+extern const char kResourceTypeKey[];
+extern const char kSchemesKey[];
 
 // Values of dictionaries, in particular instance types
 extern const char kCancelRequestType[];

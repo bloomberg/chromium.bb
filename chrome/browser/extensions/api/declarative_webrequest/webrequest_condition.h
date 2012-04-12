@@ -80,6 +80,9 @@ class WebRequestCondition {
       const base::Value* value,
       std::string* error);
 
+  static scoped_ptr<URLMatcherSchemeFilter> CreateURLMatcherScheme(
+      const base::Value* value, std::string* error);
+
   scoped_refptr<URLMatcherConditionSet> url_matcher_conditions_;
   WebRequestConditionAttributes condition_attributes_;
 

@@ -70,39 +70,6 @@ static const char* const kWebRequestEvents[] = {
   keys::kOnHeadersReceived,
 };
 
-static const char* kResourceTypeStrings[] = {
-  "main_frame",
-  "sub_frame",
-  "stylesheet",
-  "script",
-  "image",
-  "object",
-  "xmlhttprequest",
-  "other",
-  "other",
-};
-
-static ResourceType::Type kResourceTypeValues[] = {
-  ResourceType::MAIN_FRAME,
-  ResourceType::SUB_FRAME,
-  ResourceType::STYLESHEET,
-  ResourceType::SCRIPT,
-  ResourceType::IMAGE,
-  ResourceType::OBJECT,
-  ResourceType::XHR,
-  ResourceType::LAST_TYPE,  // represents "other"
-  // TODO(jochen): We duplicate the last entry, so the array's size is not a
-  // power of two. If it is, this triggers a bug in gcc 4.4 in Release builds
-  // (http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43949). Once we use a version
-  // of gcc with this bug fixed, or the array is changed so this duplicate
-  // entry is no longer required, this should be removed.
-  ResourceType::LAST_TYPE,
-};
-
-COMPILE_ASSERT(
-    arraysize(kResourceTypeStrings) == arraysize(kResourceTypeValues),
-    keep_resource_types_in_sync);
-
 #define ARRAYEND(array) (array + arraysize(array))
 
 // Returns the frame ID as it will be passed to the extension:
@@ -144,25 +111,6 @@ bool CanExtensionAccessURL(const Extension* extension, const GURL& url) {
           url.GetOrigin() == extension->url());
 }
 
-const char* ResourceTypeToString(ResourceType::Type type) {
-  ResourceType::Type* iter =
-      std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues), type);
-  if (iter == ARRAYEND(kResourceTypeValues))
-    return "other";
-
-  return kResourceTypeStrings[iter - kResourceTypeValues];
-}
-
-bool ParseResourceType(const std::string& type_str,
-                       ResourceType::Type* type) {
-  const char** iter =
-      std::find(kResourceTypeStrings, ARRAYEND(kResourceTypeStrings), type_str);
-  if (iter == ARRAYEND(kResourceTypeStrings))
-    return false;
-  *type = kResourceTypeValues[iter - kResourceTypeStrings];
-  return true;
-}
-
 void ExtractRequestInfoDetails(net::URLRequest* request,
                                bool* is_main_frame,
                                int64* frame_id,
@@ -183,11 +131,10 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
   *parent_is_main_frame = info->ParentIsMainFrame();
 
   // Restrict the resource type to the values we care about.
-  ResourceType::Type* iter =
-      std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues),
-                info->GetResourceType());
-  *resource_type = (iter != ARRAYEND(kResourceTypeValues)) ?
-      *iter : ResourceType::LAST_TYPE;
+  if (helpers::IsRelevantResourceType(info->GetResourceType()))
+    *resource_type = info->GetResourceType();
+  else
+    *resource_type = ResourceType::LAST_TYPE;
 }
 
 // Extracts from |request| information for the keys requestId, url, method,
@@ -217,7 +164,7 @@ void ExtractRequestInfo(net::URLRequest* request, DictionaryValue* out) {
   out->SetInteger(keys::kFrameIdKey, frame_id_for_extension);
   out->SetInteger(keys::kParentFrameIdKey, parent_frame_id_for_extension);
   out->SetInteger(keys::kTabIdKey, tab_id);
-  out->SetString(keys::kTypeKey, ResourceTypeToString(resource_type));
+  out->SetString(keys::kTypeKey, helpers::ResourceTypeToString(resource_type));
   out->SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
 }
 
@@ -434,7 +381,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         std::string type_str;
         ResourceType::Type type;
         if (!types_value->GetString(i, &type_str) ||
-            !ParseResourceType(type_str, &type))
+            !helpers::ParseResourceType(type_str, &type))
           return false;
         types.push_back(type);
       }

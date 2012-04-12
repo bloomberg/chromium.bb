@@ -24,7 +24,10 @@ runTests([
       [ ["onCompleted"] ]);
 
     onRequest.addRules(
-      [ {'conditions': [new RequestMatcher({'path_suffix': ".html"})],
+      [ {'conditions': [
+           new RequestMatcher({'path_suffix': ".html",
+                               'resourceType': ["main_frame"],
+                               'schemes': ["chrome-extension"]})],
          'actions': [new CancelRequest()]}
       ],
       function() {navigateAndWait(getURL("simpleLoad/a.html"));}

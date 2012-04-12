@@ -383,6 +383,26 @@ bool URLMatcherConditionFactory::SubstringPatternPointerCompare::operator()(
 }
 
 //
+// URLMatcherSchemeFilter
+//
+
+URLMatcherSchemeFilter::URLMatcherSchemeFilter(const std::string& filter)
+    : filters_(1) {
+  filters_.push_back(filter);
+}
+
+URLMatcherSchemeFilter::URLMatcherSchemeFilter(
+    const std::vector<std::string>& filters)
+    : filters_(filters) {}
+
+URLMatcherSchemeFilter::~URLMatcherSchemeFilter() {}
+
+bool URLMatcherSchemeFilter::IsMatch(const GURL& url) const {
+  return std::find(filters_.begin(), filters_.end(), url.scheme()) !=
+      filters_.end();
+}
+
+//
 // URLMatcherConditionSet
 //
 
@@ -394,6 +414,14 @@ URLMatcherConditionSet::URLMatcherConditionSet(
     : id_(id),
       conditions_(conditions) {}
 
+URLMatcherConditionSet::URLMatcherConditionSet(
+    ID id,
+    const Conditions& conditions,
+    scoped_ptr<URLMatcherSchemeFilter> scheme_filter)
+    : id_(id),
+      conditions_(conditions),
+      scheme_filter_(scheme_filter.Pass()) {}
+
 bool URLMatcherConditionSet::IsMatch(
     const std::set<SubstringPattern::ID>& matching_substring_patterns,
     const GURL& url) const {
@@ -402,6 +430,8 @@ bool URLMatcherConditionSet::IsMatch(
     if (!i->IsMatch(matching_substring_patterns, url))
       return false;
   }
+  if (scheme_filter_.get() && !scheme_filter_->IsMatch(url))
+    return false;
   return true;
 }
 

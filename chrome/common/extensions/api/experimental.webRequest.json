@@ -86,10 +86,17 @@
             "description": "Matches if the URL ends with a specified string.",
             "optional": true
           },
-          "scheme": {
-            "type": "string",
-            "description": "Matches if the scheme of the URL is equal to a specified string (TODO: this will be expanded to an array).",
-            "optional": true
+          "schemes": {
+            "type": "array",
+            "description": "Matches if the scheme of the URL is equal to any of the schemes specified in the array.",
+            "optional": true,
+            "items": { "type": "string" }
+          },
+          "resourceType": {
+            "type": "array",
+            "optional": true,
+            "description": "Matches if the request type of a request is contained in the list. Requests that cannot match any of the types will be filtered out.",
+            "items": { "type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"] }
           },
           "instanceType": { "type": "string", "enum": ["experimental.webRequest.RequestMatcher"] }
         }

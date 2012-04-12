@@ -635,7 +635,7 @@ version of the WebRequest API. Please ignore this until we give notice.
               </div><div>
                 <div>
           <dt>
-            <var>scheme</var>
+            <var>schemes</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -643,14 +643,51 @@ version of the WebRequest API. Please ignore this until we give notice.
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
+                        <span>
+                          array of <span><span>
+                      <span>
                         <span>string</span>
+                      </span>
+                    </span></span>
+                        </span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Matches if the scheme of the URL is equal to a specified string (TODO: this will be expanded to an array).</dd>
+          <dd>Matches if the scheme of the URL is equal to any of the schemes specified in the array.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>resourceType</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <span>string</span>
+                        <span>["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "xmlhttprequest", "other"]</span>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Matches if the request type of a request is contained in the list. Requests that cannot match any of the types will be filtered out.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

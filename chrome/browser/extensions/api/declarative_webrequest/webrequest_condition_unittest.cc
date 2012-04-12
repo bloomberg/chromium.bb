@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,8 +36,10 @@ TEST(WebRequestConditionTest, CreateCondition) {
   invalid_condition2.SetString(keys::kInstanceTypeKey,
                                keys::kRequestMatcherType);
 
+  ListValue* resource_type_list = new ListValue();
+  resource_type_list->Append(Value::CreateStringValue("main_frame"));
   DictionaryValue valid_condition;
-  valid_condition.SetString("scheme", "http");
+  valid_condition.Set(keys::kResourceTypeKey, resource_type_list);
   valid_condition.SetString("host_suffix", "example.com");
   valid_condition.SetString(keys::kInstanceTypeKey,
                             keys::kRequestMatcherType);
@@ -59,14 +62,18 @@ TEST(WebRequestConditionTest, CreateCondition) {
   error.clear();
   result = WebRequestCondition::Create(matcher.condition_factory(),
                                        valid_condition, &error);
-  EXPECT_TRUE(error.empty());
+  EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
 
   TestURLRequest match_request(GURL("http://www.example.com"), NULL);
+  content::ResourceRequestInfo::AllocateForTesting(&match_request,
+      ResourceType::MAIN_FRAME, NULL);
   EXPECT_TRUE(result->IsFulfilled(&match_request, ON_BEFORE_REQUEST));
 
-  TestURLRequest wrong_scheme(GURL("https://www.example.com"), NULL);
-  EXPECT_FALSE(result->IsFulfilled(&wrong_scheme, ON_BEFORE_REQUEST));
+  TestURLRequest wrong_resource_type(GURL("https://www.example.com"), NULL);
+  content::ResourceRequestInfo::AllocateForTesting(&wrong_resource_type,
+      ResourceType::SUB_FRAME, NULL);
+  EXPECT_FALSE(result->IsFulfilled(&wrong_resource_type, ON_BEFORE_REQUEST));
 }
 
 TEST(WebRequestConditionTest, CreateConditionSet) {
@@ -74,13 +81,17 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   MessageLoop message_loop(MessageLoop::TYPE_IO);
   URLMatcher matcher;
 
+  ListValue* http_scheme_list = new ListValue();
+  http_scheme_list->Append(Value::CreateStringValue("http"));
   DictionaryValue http_condition;
-  http_condition.SetString("scheme", "http");
+  http_condition.Set(keys::kSchemesKey, http_scheme_list);
   http_condition.SetString("host_suffix", "example.com");
   http_condition.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
+  ListValue* https_scheme_list = new ListValue();
+  https_scheme_list->Append(Value::CreateStringValue("https"));
   DictionaryValue https_condition;
-  https_condition.SetString("scheme", "https");
+  https_condition.Set(keys::kSchemesKey, https_scheme_list);
   https_condition.SetString("host_suffix", "example.com");
   https_condition.SetString("host_prefix", "www");
   https_condition.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
@@ -102,7 +113,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   scoped_ptr<WebRequestConditionSet> result =
       WebRequestConditionSet::Create(matcher.condition_factory(),
                                      conditions, &error);
-  EXPECT_TRUE(error.empty());
+  EXPECT_EQ("", error);
   ASSERT_TRUE(result.get());
   EXPECT_EQ(2u, result->conditions().size());
 

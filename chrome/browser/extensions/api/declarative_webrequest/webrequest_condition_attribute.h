@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/common/extensions/api/experimental.declarative.h"
+#include "webkit/glue/resource_type.h"
 
 namespace base {
 class Value;
@@ -30,7 +31,7 @@ namespace extensions {
 class WebRequestConditionAttribute {
  public:
   enum Type {
-    CONDITION_HAS_SCHEME
+    CONDITION_RESOURCE_TYPE
   };
 
   WebRequestConditionAttribute();
@@ -71,13 +72,11 @@ typedef std::vector<linked_ptr<WebRequestConditionAttribute> >
 // The following are concrete condition attributes.
 //
 
-// Condition that checks whether a URL has a specific scheme.
-// TODO(battre): Generalize this to allow checking for multiple schemes.
-// TODO(battre): Alternatively, move the scheme check into the URLMatcher.
-class WebRequestConditionAttributeHasScheme
+// Condition that checks whether a request is for a specific resource type.
+class WebRequestConditionAttributeResourceType
     : public WebRequestConditionAttribute {
  public:
-  virtual ~WebRequestConditionAttributeHasScheme();
+  virtual ~WebRequestConditionAttributeResourceType();
 
   static bool IsMatchingType(const std::string& instance_type);
 
@@ -94,11 +93,12 @@ class WebRequestConditionAttributeHasScheme
   virtual Type GetType() const OVERRIDE;
 
  private:
-  explicit WebRequestConditionAttributeHasScheme(const std::string& pattern);
+  explicit WebRequestConditionAttributeResourceType(
+      const std::vector<ResourceType::Type>& types);
 
-  std::string pattern_;
+  std::vector<ResourceType::Type> types_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeHasScheme);
+  DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeResourceType);
 };
 
 }  // namespace extensions

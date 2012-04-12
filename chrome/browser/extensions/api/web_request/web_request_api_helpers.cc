@@ -13,6 +13,43 @@
 
 namespace extension_web_request_api_helpers {
 
+namespace {
+
+static const char* kResourceTypeStrings[] = {
+  "main_frame",
+  "sub_frame",
+  "stylesheet",
+  "script",
+  "image",
+  "object",
+  "xmlhttprequest",
+  "other",
+  "other",
+};
+
+static ResourceType::Type kResourceTypeValues[] = {
+  ResourceType::MAIN_FRAME,
+  ResourceType::SUB_FRAME,
+  ResourceType::STYLESHEET,
+  ResourceType::SCRIPT,
+  ResourceType::IMAGE,
+  ResourceType::OBJECT,
+  ResourceType::XHR,
+  ResourceType::LAST_TYPE,  // represents "other"
+  // TODO(jochen): We duplicate the last entry, so the array's size is not a
+  // power of two. If it is, this triggers a bug in gcc 4.4 in Release builds
+  // (http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43949). Once we use a version
+  // of gcc with this bug fixed, or the array is changed so this duplicate
+  // entry is no longer required, this should be removed.
+  ResourceType::LAST_TYPE,
+};
+
+COMPILE_ASSERT(
+    arraysize(kResourceTypeStrings) == arraysize(kResourceTypeValues),
+    keep_resource_types_in_sync);
+
+}  // namespace
+
 
 EventResponseDelta::EventResponseDelta(
     const std::string& extension_id, const base::Time& extension_install_time)
@@ -593,6 +630,33 @@ bool HasWebRequestScheme(const GURL& url) {
 
 bool HideRequestForURL(const GURL& url) {
   return IsSensitiveURL(url) || !HasWebRequestScheme(url);
+}
+
+#define ARRAYEND(array) (array + arraysize(array))
+
+bool IsRelevantResourceType(ResourceType::Type type) {
+  ResourceType::Type* iter =
+      std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues), type);
+  return iter != ARRAYEND(kResourceTypeValues);
+}
+
+const char* ResourceTypeToString(ResourceType::Type type) {
+  ResourceType::Type* iter =
+      std::find(kResourceTypeValues, ARRAYEND(kResourceTypeValues), type);
+  if (iter == ARRAYEND(kResourceTypeValues))
+    return "other";
+
+  return kResourceTypeStrings[iter - kResourceTypeValues];
+}
+
+bool ParseResourceType(const std::string& type_str,
+                       ResourceType::Type* type) {
+  const char** iter =
+      std::find(kResourceTypeStrings, ARRAYEND(kResourceTypeStrings), type_str);
+  if (iter == ARRAYEND(kResourceTypeStrings))
+    return false;
+  *type = kResourceTypeValues[iter - kResourceTypeStrings];
+  return true;
 }
 
 }  // namespace extension_web_request_api_helpers

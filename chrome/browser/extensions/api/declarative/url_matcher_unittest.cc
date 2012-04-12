@@ -30,6 +30,21 @@ TEST(URLMatcherConditionTest, Constructors) {
   EXPECT_EQ(&pattern, m3.substring_pattern());
 }
 
+TEST(URLMatcherSchemeFilter, TestMatching) {
+  URLMatcherSchemeFilter filter1("https");
+  std::vector<std::string> filter2_content;
+  filter2_content.push_back("http");
+  filter2_content.push_back("https");
+  URLMatcherSchemeFilter filter2(filter2_content);
+
+  GURL matching_url("https://www.foobar.com");
+  GURL non_matching_url("http://www.foobar.com");
+  EXPECT_TRUE(filter1.IsMatch(matching_url));
+  EXPECT_FALSE(filter1.IsMatch(non_matching_url));
+  EXPECT_TRUE(filter2.IsMatch(matching_url));
+  EXPECT_TRUE(filter2.IsMatch(non_matching_url));
+}
+
 TEST(URLMatcherConditionTest, IsFullURLCondition) {
   SubstringPattern pattern("example.com", 1);
   EXPECT_FALSE(URLMatcherCondition(URLMatcherCondition::HOST_SUFFIX,
@@ -323,6 +338,19 @@ TEST(URLMatcherConditionSetTest, Matching) {
   matching_substring_patterns.insert(m2.substring_pattern()->id());
   EXPECT_TRUE(condition_set->IsMatch(matching_substring_patterns, url1));
   EXPECT_FALSE(condition_set->IsMatch(matching_substring_patterns, url2));
+
+
+  // Test scheme filters.
+  scoped_refptr<URLMatcherConditionSet> condition_set2(
+      new URLMatcherConditionSet(1, conditions,
+          scoped_ptr<URLMatcherSchemeFilter>(
+              new URLMatcherSchemeFilter("https"))));
+  EXPECT_FALSE(condition_set2->IsMatch(matching_substring_patterns, url1));
+  scoped_refptr<URLMatcherConditionSet> condition_set3(
+      new URLMatcherConditionSet(1, conditions,
+          scoped_ptr<URLMatcherSchemeFilter>(
+              new URLMatcherSchemeFilter("http"))));
+  EXPECT_TRUE(condition_set3->IsMatch(matching_substring_patterns, url1));
 }
 
 

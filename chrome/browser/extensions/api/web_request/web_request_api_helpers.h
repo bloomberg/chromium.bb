@@ -21,6 +21,7 @@
 #include "net/base/net_log.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "webkit/glue/resource_type.h"
 
 namespace base {
 class ListValue;
@@ -180,6 +181,20 @@ bool MergeOnAuthRequiredResponses(
 
 // Returns true if requests for |url| shall not be reported to extensions.
 bool HideRequestForURL(const GURL& url);
+
+// Returns whether |type| is a ResourceType that is handled by the web request
+// API.
+bool IsRelevantResourceType(ResourceType::Type type);
+
+// Returns a string representation of |type| or |other| if |type| is not handled
+// by the web request API.
+const char* ResourceTypeToString(ResourceType::Type type);
+
+// Stores a |ResourceType::Type| representation in |type| if |type_str| is
+// a resource type handled by the web request API. Returns true in case of
+// success.
+bool ParseResourceType(const std::string& type_str,
+                       ResourceType::Type* type);
 
 }  // namespace extension_web_request_api_helpers
 

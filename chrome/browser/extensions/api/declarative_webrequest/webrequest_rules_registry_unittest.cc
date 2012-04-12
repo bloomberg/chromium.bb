@@ -43,14 +43,18 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // Returns a rule that roughly matches http://*.example.com and
   // https://www.example.com and cancels it
   linked_ptr<RulesRegistry::Rule> CreateRule1() {
+    ListValue* scheme_http = new ListValue();
+    scheme_http->Append(Value::CreateStringValue("http"));
     DictionaryValue http_condition_dict;
-    http_condition_dict.SetString("scheme", "http");
+    http_condition_dict.Set(keys::kSchemesKey, scheme_http);
     http_condition_dict.SetString("host_suffix", "example.com");
     http_condition_dict.SetString(keys::kInstanceTypeKey,
                                   keys::kRequestMatcherType);
 
+    ListValue* scheme_https = new ListValue();
+    scheme_http->Append(Value::CreateStringValue("https"));
     DictionaryValue https_condition_dict;
-    https_condition_dict.SetString("scheme", "https");
+    https_condition_dict.Set(keys::kSchemesKey, scheme_https);
     https_condition_dict.SetString("host_suffix", "example.com");
     https_condition_dict.SetString("host_prefix", "www");
     https_condition_dict.SetString(keys::kInstanceTypeKey,
@@ -121,7 +125,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   rules.push_back(CreateRule2());
 
   error = registry->AddRules(kExtensionId, rules);
-  EXPECT_TRUE(error.empty());
+  EXPECT_EQ("", error);
 
   std::set<WebRequestRule::GlobalRuleId> matches;
 
@@ -151,7 +155,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
   rules_to_add.push_back(CreateRule1());
   rules_to_add.push_back(CreateRule2());
   error = registry->AddRules(kExtensionId, rules_to_add);
-  EXPECT_TRUE(error.empty());
+  EXPECT_EQ("", error);
 
   // Verify initial state.
   std::vector<linked_ptr<RulesRegistry::Rule> > registered_rules;
@@ -162,7 +166,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
   std::vector<std::string> rules_to_remove;
   rules_to_remove.push_back(kRuleId1);
   error = registry->RemoveRules(kExtensionId, rules_to_remove);
-  EXPECT_TRUE(error.empty());
+  EXPECT_EQ("", error);
 
   // Verify that only one rule is left.
   registered_rules.clear();
@@ -173,7 +177,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
   // the rules registry anymore. Effectively we only remove the second rule.
   rules_to_remove.push_back(kRuleId2);
   error = registry->RemoveRules(kExtensionId, rules_to_remove);
-  EXPECT_TRUE(error.empty());
+  EXPECT_EQ("", error);
 
   // Verify that everything is gone.
   registered_rules.clear();
@@ -191,11 +195,11 @@ TEST_F(WebRequestRulesRegistryTest, RemoveAllRulesImpl) {
   std::vector<linked_ptr<RulesRegistry::Rule> > rules_to_add(1);
   rules_to_add[0] = CreateRule1();
   error = registry->AddRules(kExtensionId, rules_to_add);
-  EXPECT_TRUE(error.empty());
+  EXPECT_EQ("", error);
 
   rules_to_add[0] = CreateRule2();
   error = registry->AddRules(kExtensionId2, rules_to_add);
-  EXPECT_TRUE(error.empty());
+  EXPECT_EQ("", error);
 
   // Verify initial state.
   std::vector<linked_ptr<RulesRegistry::Rule> > registered_rules;
@@ -207,7 +211,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveAllRulesImpl) {
 
   // Remove rule of first extension.
   error = registry->RemoveAllRules(kExtensionId);
-  EXPECT_TRUE(error.empty());
+  EXPECT_EQ("", error);
 
   // Verify that only the first rule is deleted.
   registered_rules.clear();
@@ -219,11 +223,11 @@ TEST_F(WebRequestRulesRegistryTest, RemoveAllRulesImpl) {
 
   // Test removing rules if none exist.
   error = registry->RemoveAllRules(kExtensionId);
-  EXPECT_TRUE(error.empty());
+  EXPECT_EQ("", error);
 
   // Remove rule from second extension.
   error = registry->RemoveAllRules(kExtensionId2);
-  EXPECT_TRUE(error.empty());
+  EXPECT_EQ("", error);
 
   EXPECT_TRUE(registry->IsEmpty());
 }

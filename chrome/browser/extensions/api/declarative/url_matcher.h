@@ -179,6 +179,21 @@ class URLMatcherConditionFactory {
   DISALLOW_COPY_AND_ASSIGN(URLMatcherConditionFactory);
 };
 
+// This class represents a filter for the URL scheme to be hooked up into a
+// URLMatcherConditionSet.
+class URLMatcherSchemeFilter {
+ public:
+  explicit URLMatcherSchemeFilter(const std::string& filter);
+  explicit URLMatcherSchemeFilter(const std::vector<std::string>& filters);
+  ~URLMatcherSchemeFilter();
+  bool IsMatch(const GURL& url) const;
+
+ private:
+  std::vector<std::string> filters_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLMatcherSchemeFilter);
+};
+
 // This class represents a set of conditions that all need to match on a
 // given URL in order to be considered a match.
 class URLMatcherConditionSet : public base::RefCounted<URLMatcherConditionSet> {
@@ -187,7 +202,14 @@ class URLMatcherConditionSet : public base::RefCounted<URLMatcherConditionSet> {
   typedef std::set<URLMatcherCondition> Conditions;
   typedef std::vector<scoped_refptr<URLMatcherConditionSet> > Vector;
 
+  // Matches if all conditions in |conditions| are fulfilled.
   URLMatcherConditionSet(ID id, const Conditions& conditions);
+
+  // Matches if all conditions in |conditions| and |scheme_filter| are
+  // fulfilled. |scheme_filter| may be NULL, in which case, no restrictions
+  // are imposed on the scheme of a URL.
+  URLMatcherConditionSet(ID id, const Conditions& conditions,
+                         scoped_ptr<URLMatcherSchemeFilter> scheme_filter);
 
   ID id() const { return id_; }
   const Conditions& conditions() const { return conditions_; }
@@ -201,6 +223,7 @@ class URLMatcherConditionSet : public base::RefCounted<URLMatcherConditionSet> {
   ~URLMatcherConditionSet();
   ID id_;
   Conditions conditions_;
+  scoped_ptr<URLMatcherSchemeFilter> scheme_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(URLMatcherConditionSet);
 };
