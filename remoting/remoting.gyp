@@ -1009,6 +1009,8 @@
         'host/branding.cc',
         'host/branding.h',
         'host/host_event_logger.h',
+	'host/sighup_listener_mac.cc',
+	'host/sighup_listener_mac.h',
         'host/remoting_me2me_host.cc',
       ],
       'conditions': [

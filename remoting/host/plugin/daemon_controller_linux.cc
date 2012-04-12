@@ -224,14 +224,16 @@ void DaemonControllerLinux::DoUpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
   JsonHostConfig config_file(GetConfigPath());
-  if (!config_file.Read())
+  if (!config_file.Read()) {
     done_callback.Run(RESULT_FAILED);
+  }
 
   for (DictionaryValue::key_iterator key(config->begin_keys());
        key != config->end_keys(); ++key) {
     std::string value;
     if (!config->GetString(*key, &value)) {
-      LOG(WARNING) << "Skipping " << *key << " because it is not a string.";
+      LOG(ERROR) << *key << " is not a string.";
+      done_callback.Run(RESULT_FAILED);
     }
     config_file.SetString(*key, value);
   }

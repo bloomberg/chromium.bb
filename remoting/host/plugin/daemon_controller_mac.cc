@@ -68,6 +68,8 @@ class DaemonControllerMac : public remoting::DaemonController {
   void DoGetConfig(const GetConfigCallback& callback);
   void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
                            const CompletionCallback& done_callback);
+  void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
+                      const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
   void NotifyWhenStopped(const CompletionCallback& done_callback,
                          int tries_remaining,
@@ -132,8 +134,9 @@ void DaemonControllerMac::SetConfigAndStart(
 void DaemonControllerMac::UpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
-  NOTIMPLEMENTED();
-  done_callback.Run(RESULT_FAILED);
+  auth_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &DaemonControllerMac::DoUpdateConfig, base::Unretained(this),
+      base::Passed(&config), done_callback));
 }
 
 void DaemonControllerMac::Stop(const CompletionCallback& done_callback) {
@@ -181,6 +184,31 @@ void DaemonControllerMac::DoSetConfigAndStart(
   // extra step performed in DoStop() is not necessary here.
   bool result = RunToolScriptAsRoot("--enable");
   done_callback.Run(result ? RESULT_OK : RESULT_FAILED);
+}
+
+void DaemonControllerMac::DoUpdateConfig(
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
+  FilePath config_file_path(kHostConfigFile);
+  JsonHostConfig config_file(config_file_path);
+  if (!config_file.Read()) {
+    done_callback.Run(RESULT_FAILED);
+  }
+  for (DictionaryValue::key_iterator key(config->begin_keys());
+       key != config->end_keys(); ++key) {
+    std::string value;
+    if (!config->GetString(*key, &value)) {
+      LOG(ERROR) << *key << " is not a string.";
+      done_callback.Run(RESULT_FAILED);
+    }
+    config_file.SetString(*key, value);
+  }
+  bool success = config_file.Save();
+  done_callback.Run(success ? RESULT_OK : RESULT_FAILED);
+  pid_t job_pid = base::mac::PIDForJob(kServiceName);
+  if (job_pid > 0) {
+    kill(job_pid, SIGHUP);
+  }
 }
 
 void DaemonControllerMac::DoStop(const CompletionCallback& done_callback) {

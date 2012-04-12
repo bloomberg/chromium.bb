@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file implements a standalone host process for Me2Me, which is currently
-// used for the Linux-only Virtual Me2Me build.
+// This file implements a standalone host process for Me2Me.
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -42,6 +41,9 @@
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
+#if defined(OS_MACOSX)
+#include "remoting/host/sighup_listener_mac.h"
+#endif
 #if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"
 #endif
@@ -104,6 +106,35 @@ class HostProcess : public OAuthClient::Delegate {
 #endif
   }
 
+  void ConfigUpdated() {
+    // The auth tokens can't be updated once the host is running, so we don't
+    // need to check the pending state, but it's a required parameter.
+    bool tokens_pending;
+    if (LoadConfig(file_io_thread_.message_loop_proxy(), &tokens_pending)) {
+      context_->network_message_loop()->PostTask(
+          FROM_HERE,
+          base::Bind(&HostProcess::CreateAuthenticatorFactory,
+                     base::Unretained(this)));
+    } else {
+      LOG(ERROR) << "Invalid configuration.";
+    }
+  }
+
+#if defined(OS_MACOSX)
+  void ListenForConfigChanges() {
+    remoting::RegisterHupSignalHandler(
+        base::Bind(&HostProcess::ConfigUpdated, base::Unretained(this)));
+  }
+#endif
+
+  void CreateAuthenticatorFactory() {
+    scoped_ptr<protocol::AuthenticatorFactory> factory(
+        new protocol::Me2MeHostAuthenticatorFactory(
+            xmpp_login_, key_pair_.GenerateCertificate(),
+            *key_pair_.private_key(), host_secret_hash_));
+    host_->SetAuthenticatorFactory(factory.Pass());
+  }
+
   int Run() {
     bool tokens_pending = false;
     if (!LoadConfig(file_io_thread_.message_loop_proxy(), &tokens_pending)) {
@@ -120,6 +151,12 @@ class HostProcess : public OAuthClient::Delegate {
       StartWatchingNatPolicy();
     }
 
+#if defined(OS_MACOSX)
+    file_io_thread_.message_loop_proxy()->PostTask(
+        FROM_HERE,
+        base::Bind(&HostProcess::ListenForConfigChanges,
+                   base::Unretained(this)));
+#endif
     message_loop_.Run();
 
     return 0;
@@ -270,12 +307,7 @@ class HostProcess : public OAuthClient::Delegate {
 
     host_->Start();
 
-    // Create authenticator factory.
-    scoped_ptr<protocol::AuthenticatorFactory> factory(
-        new protocol::Me2MeHostAuthenticatorFactory(
-            xmpp_login_, key_pair_.GenerateCertificate(),
-            *key_pair_.private_key(), host_secret_hash_));
-    host_->SetAuthenticatorFactory(factory.Pass());
+    CreateAuthenticatorFactory();
   }
 
   void RestartHost() {
