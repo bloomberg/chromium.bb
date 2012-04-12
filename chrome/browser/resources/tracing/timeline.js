@@ -234,7 +234,7 @@ cr.define('tracing', function() {
    * @constructor
    * @extends {HTMLDivElement}
    */
-  Timeline = cr.ui.define('div');
+  var Timeline = cr.ui.define('div');
 
   Timeline.prototype = {
     __proto__: HTMLDivElement.prototype,
@@ -745,23 +745,25 @@ cr.define('tracing', function() {
         var hiWX = this.viewport_.xViewToWorld(hiX - canv.offsetLeft);
 
         // Figure out what has been hit.
-        var selection = [];
-        function addHit(type, track, slice) {
-          selection.push({track: track, slice: slice});
-        }
-        for (i = 0; i < this.tracks_.children.length; i++) {
-          var track = this.tracks_.children[i];
-
-          // Only check tracks that insersect the rect.
-          var trackClientRect = track.getBoundingClientRect();
-          var a = Math.max(loY, trackClientRect.top);
-          var b = Math.min(hiY, trackClientRect.bottom);
-          if (a <= b) {
-            track.pickRange(loWX, hiWX, loY, hiY, addHit);
+        (function() {
+          var selection = [];
+          function addHit(type, track, slice) {
+            selection.push({track: track, slice: slice});
           }
-        }
-        // Activate the new selection.
-        this.selection = selection;
+          for (i = 0; i < this.tracks_.children.length; i++) {
+            var track = this.tracks_.children[i];
+
+            // Only check tracks that insersect the rect.
+            var trackClientRect = track.getBoundingClientRect();
+            var a = Math.max(loY, trackClientRect.top);
+            var b = Math.min(hiY, trackClientRect.bottom);
+            if (a <= b) {
+              track.pickRange(loWX, hiWX, loY, hiY, addHit);
+            }
+          }
+          // Activate the new selection.
+          this.selection = selection;
+        }).call(this);
       }
     },
 
