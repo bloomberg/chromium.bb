@@ -49,6 +49,9 @@ class ShelfLayoutManager::AutoHideEventFilter : public aura::EventFilter {
   explicit AutoHideEventFilter(ShelfLayoutManager* shelf);
   virtual ~AutoHideEventFilter();
 
+  // Returns true if the last mouse event was a mouse drag.
+  bool in_mouse_drag() const { return in_mouse_drag_; }
+
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,
                                  aura::KeyEvent* event) OVERRIDE;
@@ -62,13 +65,15 @@ class ShelfLayoutManager::AutoHideEventFilter : public aura::EventFilter {
 
  private:
   ShelfLayoutManager* shelf_;
+  bool in_mouse_drag_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoHideEventFilter);
 };
 
 ShelfLayoutManager::AutoHideEventFilter::AutoHideEventFilter(
     ShelfLayoutManager* shelf)
-    : shelf_(shelf) {
+    : shelf_(shelf),
+      in_mouse_drag_(false) {
   Shell::GetInstance()->AddRootWindowEventFilter(this);
 }
 
@@ -85,6 +90,12 @@ bool ShelfLayoutManager::AutoHideEventFilter::PreHandleKeyEvent(
 bool ShelfLayoutManager::AutoHideEventFilter::PreHandleMouseEvent(
     aura::Window* target,
     aura::MouseEvent* event) {
+  // This also checks IsShelfWindow() to make sure we don't attempt to hide the
+  // shelf if the mouse down occurs on the shelf.
+  in_mouse_drag_ = (event->type() == ui::ET_MOUSE_DRAGGED ||
+                    (in_mouse_drag_ && event->type() != ui::ET_MOUSE_RELEASED &&
+                     event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)) &&
+      !shelf_->IsShelfWindow(target);
   if (event->type() == ui::ET_MOUSE_MOVED)
     shelf_->UpdateAutoHideState();
   return false;  // Not handled.
@@ -417,6 +428,10 @@ ShelfLayoutManager::AutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (launcher_widget()->IsActive() || status_->IsActive())
     return AUTO_HIDE_SHOWN;
 
+  // Don't show if the user is dragging the mouse.
+  if (event_filter_.get() && event_filter_->in_mouse_drag())
+    return AUTO_HIDE_HIDDEN;
+
   aura::RootWindow* root = launcher_widget()->GetNativeView()->GetRootWindow();
   bool mouse_over_launcher =
       launcher_widget()->GetWindowScreenBounds().Contains(
@@ -437,6 +452,14 @@ void ShelfLayoutManager::UpdateHitTestBounds() {
     launcher_widget()->GetNativeWindow()->set_hit_test_bounds_override_outer(
         insets);
   status_->GetNativeWindow()->set_hit_test_bounds_override_outer(insets);
+}
+
+bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
+  if (!window)
+    return false;
+  return (launcher_widget() &&
+          launcher_widget()->GetNativeWindow()->Contains(window)) ||
+      (status_ && status_->GetNativeWindow()->Contains(window));
 }
 
 }  // namespace internal

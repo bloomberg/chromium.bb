@@ -53,6 +53,10 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
     shelf->SetState(state);
   }
 
+  void UpdateAutoHideStateNow() {
+    GetShelfLayoutManager()->UpdateAutoHideStateNow();
+  }
+
   aura::Window* CreateTestWindow() {
     aura::Window* window = new aura::Window(NULL);
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
@@ -228,6 +232,21 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
   shelf->LayoutShelf();
   EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideHeight,
             shelf->launcher_widget()->GetWindowScreenBounds().y());
+
+  // Drag mouse to bottom of screen.
+  generator.PressLeftButton();
+  generator.MoveMouseTo(0, root->bounds().bottom() - 1);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+
+  generator.ReleaseLeftButton();
+  generator.MoveMouseTo(1, root->bounds().bottom() - 1);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  generator.PressLeftButton();
+  generator.MoveMouseTo(1, root->bounds().bottom() - 1);
+  UpdateAutoHideStateNow();
+  EXPECT_EQ(ShelfLayoutManager::AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 }
 
 // Assertions around the lock screen showing.

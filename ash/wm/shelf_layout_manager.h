@@ -195,6 +195,9 @@ class ASH_EXPORT ShelfLayoutManager : public aura::LayoutManager,
   // Updates the hit test bounds override for launcher and status area.
   void UpdateHitTestBounds();
 
+  // Returns true if |window| is a descendant of the shelf.
+  bool IsShelfWindow(aura::Window* window);
+
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being
   // deleted too.
