@@ -34,6 +34,10 @@
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
+
 using content::BrowserThread;
 using content::PluginService;
 
@@ -76,13 +80,15 @@ const FilePath::CharType kPepperFlashBaseDirectory[] =
 const char kNullVersion[] = "0.0.0.0";
 
 // True if Pepper Flash should be enabled by default. Aura builds for any OS
-// and part of Windows canary have it enabled by default.
+// Windows 8 metro mode and part of Windows canary have it enabled by default.
 bool IsPepperFlashEnabledByDefault() {
 #if defined(USE_AURA)
   return true;
 #elif !defined(OS_WIN)
   return false;
 #else
+  if (base::win::GetMetroModule())
+    return true;
   if (!PepperFlashFieldTrial::InEnableByDefaultGroup())
     return false;
 
