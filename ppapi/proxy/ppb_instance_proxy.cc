@@ -114,6 +114,9 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgLockMouse)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_UnlockMouse,
                         OnHostMsgUnlockMouse)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetCursor,
+                        OnHostMsgSetCursor)
+#if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ResolveRelativeToDocument,
                         OnHostMsgResolveRelativeToDocument)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DocumentCanRequest,
@@ -124,8 +127,7 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgGetDocumentURL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetPluginInstanceURL,
                         OnHostMsgGetPluginInstanceURL)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetCursor,
-                        OnHostMsgSetCursor)
+#endif  // !defined(OS_NACL)
 
     // Host -> Plugin messages.
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBInstance_MouseLockComplete,
@@ -345,6 +347,7 @@ void PPB_Instance_Proxy::ZoomLimitsChanged(PP_Instance instance,
   NOTIMPLEMENTED();
 }
 
+#if !defined(OS_NACL)
 PP_Var PPB_Instance_Proxy::ResolveRelativeToDocument(
     PP_Instance instance,
     PP_Var relative,
@@ -397,6 +400,7 @@ PP_Var PPB_Instance_Proxy::GetPluginInstanceURL(
       result.Return(dispatcher()),
       components);
 }
+#endif  // !defined(OS_NACL)
 
 void PPB_Instance_Proxy::PostMessage(PP_Instance instance,
                                      PP_Var message) {
@@ -615,6 +619,7 @@ void PPB_Instance_Proxy::OnHostMsgUnlockMouse(PP_Instance instance) {
     enter.functions()->UnlockMouse(instance);
 }
 
+#if !defined(OS_NACL)
 void PPB_Instance_Proxy::OnHostMsgResolveRelativeToDocument(
     PP_Instance instance,
     SerializedVarReceiveInput relative,
@@ -664,6 +669,7 @@ void PPB_Instance_Proxy::OnHostMsgGetPluginInstanceURL(
                   enter.functions()->GetPluginInstanceURL(instance, NULL));
   }
 }
+#endif  // !defined(OS_NACL)
 
 void  PPB_Instance_Proxy::OnHostMsgSetCursor(
     PP_Instance instance,

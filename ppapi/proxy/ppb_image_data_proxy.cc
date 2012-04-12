@@ -37,7 +37,7 @@ ImageData::ImageData(const HostResource& resource,
 #if defined(OS_NACL)
   // TODO(brettw) implement NaCl ImageData. This will involve just
   // memory-mapping the handle as raw memory rather than as a transport DIB.
-  #error Implement this.
+  NOTIMPLEMENTED();
 #elif defined(OS_WIN)
   transport_dib_.reset(TransportDIB::CreateWithHandle(handle));
 #else
@@ -59,7 +59,7 @@ PP_Bool ImageData::Describe(PP_ImageDataDesc* desc) {
 
 void* ImageData::Map() {
 #if defined(OS_NACL)
-  #error Implement this.
+  NOTIMPLEMENTED();
 #else
   if (!mapped_canvas_.get()) {
     mapped_canvas_.reset(transport_dib_->GetPlatformCanvas(desc_.size.width,
@@ -77,7 +77,7 @@ void* ImageData::Map() {
 
 void ImageData::Unmap() {
 #if defined(OS_NACL)
-  #error Implement this.
+  NOTIMPLEMENTED();
 #else
   // TODO(brettw) have a way to unmap a TransportDIB. Currently this isn't
   // possible since deleting the TransportDIB also frees all the handles.

@@ -87,6 +87,16 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
                                  double maximium_factor) OVERRIDE;
+  virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
+  virtual PP_Bool SetCursor(PP_Instance instance,
+                            PP_MouseCursor_Type type,
+                            PP_Resource image,
+                            const PP_Point* hot_spot) OVERRIDE;
+  virtual int32_t LockMouse(PP_Instance instance,
+                            PP_CompletionCallback callback) OVERRIDE;
+  virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
+
+#if !defined(OS_NACL)
   virtual PP_Var ResolveRelativeToDocument(
       PP_Instance instance,
       PP_Var relative,
@@ -99,14 +109,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Var GetPluginInstanceURL(
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
-  virtual void PostMessage(PP_Instance instance, PP_Var message) OVERRIDE;
-  virtual PP_Bool SetCursor(PP_Instance instance,
-                            PP_MouseCursor_Type type,
-                            PP_Resource image,
-                            const PP_Point* hot_spot) OVERRIDE;
-  virtual int32_t LockMouse(PP_Instance instance,
-                            PP_CompletionCallback callback) OVERRIDE;
-  virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
+#endif  // !defined(OS_NACL)
 
   static const ApiID kApiID = API_ID_PPB_INSTANCE;
 
@@ -153,6 +156,11 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                             SerializedVarReceiveInput message);
   void OnHostMsgLockMouse(PP_Instance instance);
   void OnHostMsgUnlockMouse(PP_Instance instance);
+  void OnHostMsgSetCursor(PP_Instance instance,
+                          int32_t type,
+                          const ppapi::HostResource& custom_image,
+                          const PP_Point& hot_spot);
+#if !defined(OS_NACL)
   void OnHostMsgResolveRelativeToDocument(PP_Instance instance,
                                           SerializedVarReceiveInput relative,
                                           SerializedVarReturnValue result);
@@ -166,10 +174,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                SerializedVarReturnValue result);
   void OnHostMsgGetPluginInstanceURL(PP_Instance instance,
                                      SerializedVarReturnValue result);
-  void OnHostMsgSetCursor(PP_Instance instance,
-                          int32_t type,
-                          const ppapi::HostResource& custom_image,
-                          const PP_Point& hot_spot);
+#endif  // !defined(OS_NACL)
 
   // Host -> Plugin message handlers.
   void OnPluginMsgMouseLockComplete(PP_Instance instance, int32_t result);

@@ -116,7 +116,7 @@ class PPB_Instance_FunctionAPI {
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
                                  double maximium_factor) = 0;
-
+#if !defined(OS_NACL)
   // URLUtil.
   virtual PP_Var ResolveRelativeToDocument(
       PP_Instance instance,
@@ -129,6 +129,7 @@ class PPB_Instance_FunctionAPI {
                                 PP_URLComponents_Dev* components) = 0;
   virtual PP_Var GetPluginInstanceURL(PP_Instance instance,
                                       PP_URLComponents_Dev* components) = 0;
+#endif  // !defined(OS_NACL)
 
   static const ApiID kApiID = API_ID_PPB_INSTANCE;
 };
