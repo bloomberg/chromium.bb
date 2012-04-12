@@ -151,7 +151,10 @@ gfx::Rect ShelfLayoutManager::GetUnmaximizedWorkAreaBounds(
     aura::Window* window) const {
   // TODO: needs to be multi-mon aware.
   gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
-  bounds.set_height(bounds.height() - shelf_height_);
+  if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
+    bounds.set_height(bounds.height() - kAutoHideHeight);
+  else
+    bounds.set_height(bounds.height() - shelf_height_);
   return bounds;
 }
 
