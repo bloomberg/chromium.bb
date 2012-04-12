@@ -33,6 +33,7 @@ const char kConditionExpectedString[] =
     "Condition '%s' expected a string value";
 const char kVectorOfStringsExpected[] =
     "Attribute '%s' expected a vector of strings";
+const char kInvalidPortRanges[] = "Invalid port ranges";
 
 // String literals from the JavaScript API:
 const char kHostContainsKey[] = "host_contains";
@@ -179,6 +180,7 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
   WebRequestConditionAttributes attributes;
   URLMatcherConditionSet::Conditions url_matcher_conditions;
   scoped_ptr<URLMatcherSchemeFilter> url_matcher_schema_filter;
+  scoped_ptr<URLMatcherPortFilter> url_matcher_port_filter;
 
   for (base::DictionaryValue::Iterator iter(*condition_dict);
        iter.HasNext(); iter.Advance()) {
@@ -198,6 +200,11 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
       url_matcher_conditions.insert(url_matcher_condition);
     } else if (condition_attribute_name == keys::kSchemesKey) {
       url_matcher_schema_filter = CreateURLMatcherScheme(
+          &condition_attribute_value, error);
+      if (!error->empty())
+        return scoped_ptr<WebRequestCondition>(NULL);
+    } else if (condition_attribute_name == keys::kPortsKey) {
+      url_matcher_port_filter = CreateURLMatcherPorts(
           &condition_attribute_value, error);
       if (!error->empty())
         return scoped_ptr<WebRequestCondition>(NULL);
@@ -229,7 +236,7 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
 
   scoped_refptr<URLMatcherConditionSet> url_matcher_condition_set(
       new URLMatcherConditionSet(++g_next_id, url_matcher_conditions,
-          url_matcher_schema_filter.Pass()));
+          url_matcher_schema_filter.Pass(), url_matcher_port_filter.Pass()));
   return scoped_ptr<WebRequestCondition>(
       new WebRequestCondition(url_matcher_condition_set, attributes));
 }
@@ -268,6 +275,42 @@ scoped_ptr<URLMatcherSchemeFilter> WebRequestCondition::CreateURLMatcherScheme(
   }
   return scoped_ptr<URLMatcherSchemeFilter>(
       new URLMatcherSchemeFilter(schemas));
+}
+
+// static
+scoped_ptr<URLMatcherPortFilter> WebRequestCondition::CreateURLMatcherPorts(
+    const base::Value* value,
+    std::string* error) {
+  std::vector<URLMatcherPortFilter::Range> ranges;
+  const base::ListValue* value_list = NULL;
+  if (!value->GetAsList(&value_list)) {
+    *error = kInvalidPortRanges;
+    return scoped_ptr<URLMatcherPortFilter>(NULL);
+  }
+
+  for (ListValue::const_iterator i = value_list->begin();
+       i != value_list->end(); ++i) {
+    Value* entry = *i;
+    int port = 0;
+    base::ListValue* range = NULL;
+    if (entry->GetAsInteger(&port)) {
+      ranges.push_back(URLMatcherPortFilter::CreateRange(port));
+    } else if (entry->GetAsList(&range)) {
+      int from = 0, to = 0;
+      if (range->GetSize() != 2u ||
+          !range->GetInteger(0, &from) ||
+          !range->GetInteger(1, &to)) {
+        *error = kInvalidPortRanges;
+        return scoped_ptr<URLMatcherPortFilter>(NULL);
+      }
+      ranges.push_back(URLMatcherPortFilter::CreateRange(from, to));
+    } else {
+      *error = kInvalidPortRanges;
+      return scoped_ptr<URLMatcherPortFilter>(NULL);
+    }
+  }
+
+  return scoped_ptr<URLMatcherPortFilter>(new URLMatcherPortFilter(ranges));
 }
 
 //

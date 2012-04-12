@@ -12,6 +12,7 @@ const char kOnRequest[] = "experimental.webRequest.onRequest";
 
 // Keys of dictionaries.
 const char kInstanceTypeKey[] = "instanceType";
+const char kPortsKey[] = "ports";
 const char kRedirectUrlKey[] = "redirectUrl";
 const char kResourceTypeKey[] = "resourceType";
 const char kSchemesKey[] = "schemes";

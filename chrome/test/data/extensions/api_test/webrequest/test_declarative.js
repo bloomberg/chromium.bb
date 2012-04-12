@@ -7,6 +7,15 @@ var RequestMatcher = chrome.experimental.webRequest.RequestMatcher;
 var CancelRequest = chrome.experimental.webRequest.CancelRequest;
 var RedirectRequest = chrome.experimental.webRequest.RedirectRequest;
 
+function getURLHttpSimple() {
+  return getServerURL("files/extensions/api_test/webrequest/simpleLoad/a.html");
+}
+
+function getURLHttpComplex() {
+  return getServerURL(
+      "files/extensions/api_test/webrequest/complexLoad/a.html");
+}
+
 runTests([
   function testCancelRequest() {
     ignoreUnexpected = true;
@@ -15,22 +24,22 @@ runTests([
         { label: "onErrorOccurred",
           event: "onErrorOccurred",
           details: {
-            url: getURL("simpleLoad/a.html"),
+            url: getURLHttpSimple(),
             fromCache: false,
             error: "net::ERR_BLOCKED_BY_CLIENT"
           }
         },
       ],
       [ ["onCompleted"] ]);
-
     onRequest.addRules(
       [ {'conditions': [
            new RequestMatcher({'path_suffix': ".html",
                                'resourceType': ["main_frame"],
-                               'schemes': ["chrome-extension"]})],
+                               'schemes': ["http"],
+                               'ports': [testServerPort, [1000, 2000]]})],
          'actions': [new CancelRequest()]}
       ],
-      function() {navigateAndWait(getURL("simpleLoad/a.html"));}
+      function() {navigateAndWait(getURLHttpSimple());}
     );
   },
 
@@ -42,15 +51,15 @@ runTests([
           event: "onBeforeRequest",
           details: {
             type: "main_frame",
-            url: getURL("complexLoad/a.html"),
-            frameUrl: getURL("complexLoad/a.html")
+            url: getURLHttpComplex(),
+            frameUrl: getURLHttpComplex()
           },
         },
         { label: "onBeforeRedirect",
           event: "onBeforeRedirect",
           details: {
-            url: getURL("complexLoad/a.html"),
-            redirectUrl: getURL("simpleLoad/a.html"),
+            url: getURLHttpComplex(),
+            redirectUrl: getURLHttpSimple(),
             statusLine: "",
             statusCode: -1,
             fromCache: false,
@@ -60,17 +69,18 @@ runTests([
           event: "onBeforeRequest",
           details: {
             type: "main_frame",
-            url: getURL("simpleLoad/a.html"),
-            frameUrl: getURL("simpleLoad/a.html"),
+            url: getURLHttpSimple(),
+            frameUrl: getURLHttpSimple(),
           },
         },
         { label: "onCompleted",
           event: "onCompleted",
           details: {
-            url: getURL("simpleLoad/a.html"),
+            ip: "127.0.0.1",
+            url: getURLHttpSimple(),
             fromCache: false,
             statusCode: 200,
-            statusLine: "HTTP/1.1 200 OK",
+            statusLine: "HTTP/1.0 200 OK",
           }
         },
       ],
@@ -80,9 +90,9 @@ runTests([
     onRequest.addRules(
       [ {'conditions': [new RequestMatcher({'path_suffix': ".html"})],
          'actions': [
-             new RedirectRequest({'redirectUrl': getURL("simpleLoad/a.html")})]}
+             new RedirectRequest({'redirectUrl': getURLHttpSimple()})]}
       ],
-      function() {navigateAndWait(getURL("complexLoad/a.html"));}
+      function() {navigateAndWait(getURLHttpComplex());}
     );
   },
   ]);

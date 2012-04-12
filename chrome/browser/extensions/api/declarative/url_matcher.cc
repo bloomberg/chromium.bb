@@ -403,6 +403,37 @@ bool URLMatcherSchemeFilter::IsMatch(const GURL& url) const {
 }
 
 //
+// URLMatcherPortFilter
+//
+
+URLMatcherPortFilter::URLMatcherPortFilter(
+    const std::vector<URLMatcherPortFilter::Range>& ranges)
+    : ranges_(ranges) {}
+
+URLMatcherPortFilter::~URLMatcherPortFilter() {}
+
+bool URLMatcherPortFilter::IsMatch(const GURL& url) const {
+  int port = url.EffectiveIntPort();
+  for (std::vector<Range>::const_iterator i = ranges_.begin();
+       i != ranges_.end(); ++i) {
+    if (i->first <= port && port <= i->second)
+      return true;
+  }
+  return false;
+}
+
+// static
+URLMatcherPortFilter::Range URLMatcherPortFilter::CreateRange(int from,
+                                                              int to) {
+  return Range(from, to);
+}
+
+// static
+URLMatcherPortFilter::Range URLMatcherPortFilter::CreateRange(int port) {
+  return Range(port, port);
+}
+
+//
 // URLMatcherConditionSet
 //
 
@@ -417,10 +448,12 @@ URLMatcherConditionSet::URLMatcherConditionSet(
 URLMatcherConditionSet::URLMatcherConditionSet(
     ID id,
     const Conditions& conditions,
-    scoped_ptr<URLMatcherSchemeFilter> scheme_filter)
+    scoped_ptr<URLMatcherSchemeFilter> scheme_filter,
+    scoped_ptr<URLMatcherPortFilter> port_filter)
     : id_(id),
       conditions_(conditions),
-      scheme_filter_(scheme_filter.Pass()) {}
+      scheme_filter_(scheme_filter.Pass()),
+      port_filter_(port_filter.Pass()) {}
 
 bool URLMatcherConditionSet::IsMatch(
     const std::set<SubstringPattern::ID>& matching_substring_patterns,
@@ -431,6 +464,8 @@ bool URLMatcherConditionSet::IsMatch(
       return false;
   }
   if (scheme_filter_.get() && !scheme_filter_->IsMatch(url))
+    return false;
+  if (port_filter_.get() && !port_filter_->IsMatch(url))
     return false;
   return true;
 }

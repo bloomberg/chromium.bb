@@ -194,6 +194,27 @@ class URLMatcherSchemeFilter {
   DISALLOW_COPY_AND_ASSIGN(URLMatcherSchemeFilter);
 };
 
+// This class represents a filter for port numbers to be hooked up into a
+// URLMatcherConditionSet.
+class URLMatcherPortFilter {
+ public:
+  // Boundaries of a port range (both ends are included).
+  typedef std::pair<int, int> Range;
+  explicit URLMatcherPortFilter(const std::vector<Range>& ranges);
+  ~URLMatcherPortFilter();
+  bool IsMatch(const GURL& url) const;
+
+  // Creates a port range [from, to]; both ends are included.
+  static Range CreateRange(int from, int to);
+  // Creates a port range containing a single port.
+  static Range CreateRange(int port);
+
+ private:
+  std::vector<Range> ranges_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLMatcherPortFilter);
+};
+
 // This class represents a set of conditions that all need to match on a
 // given URL in order to be considered a match.
 class URLMatcherConditionSet : public base::RefCounted<URLMatcherConditionSet> {
@@ -205,11 +226,12 @@ class URLMatcherConditionSet : public base::RefCounted<URLMatcherConditionSet> {
   // Matches if all conditions in |conditions| are fulfilled.
   URLMatcherConditionSet(ID id, const Conditions& conditions);
 
-  // Matches if all conditions in |conditions| and |scheme_filter| are
-  // fulfilled. |scheme_filter| may be NULL, in which case, no restrictions
-  // are imposed on the scheme of a URL.
+  // Matches if all conditions in |conditions|, |scheme_filter| and
+  // |port_filter| are fulfilled. |scheme_filter| and |port_filter| may be NULL,
+  // in which case, no restrictions are imposed on the scheme/port of a URL.
   URLMatcherConditionSet(ID id, const Conditions& conditions,
-                         scoped_ptr<URLMatcherSchemeFilter> scheme_filter);
+                         scoped_ptr<URLMatcherSchemeFilter> scheme_filter,
+                         scoped_ptr<URLMatcherPortFilter> port_filter);
 
   ID id() const { return id_; }
   const Conditions& conditions() const { return conditions_; }
@@ -224,6 +246,7 @@ class URLMatcherConditionSet : public base::RefCounted<URLMatcherConditionSet> {
   ID id_;
   Conditions conditions_;
   scoped_ptr<URLMatcherSchemeFilter> scheme_filter_;
+  scoped_ptr<URLMatcherPortFilter> port_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(URLMatcherConditionSet);
 };

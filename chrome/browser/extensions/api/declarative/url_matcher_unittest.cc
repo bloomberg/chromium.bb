@@ -45,6 +45,21 @@ TEST(URLMatcherSchemeFilter, TestMatching) {
   EXPECT_TRUE(filter2.IsMatch(non_matching_url));
 }
 
+TEST(URLMatcherPortFilter, TestMatching) {
+  std::vector<URLMatcherPortFilter::Range> ranges;
+  ranges.push_back(URLMatcherPortFilter::CreateRange(80, 90));
+  ranges.push_back(URLMatcherPortFilter::CreateRange(8080));
+  URLMatcherPortFilter filter(ranges);
+  EXPECT_TRUE(filter.IsMatch(GURL("http://www.example.com")));
+  EXPECT_TRUE(filter.IsMatch(GURL("http://www.example.com:80")));
+  EXPECT_TRUE(filter.IsMatch(GURL("http://www.example.com:81")));
+  EXPECT_TRUE(filter.IsMatch(GURL("http://www.example.com:90")));
+  EXPECT_TRUE(filter.IsMatch(GURL("http://www.example.com:8080")));
+  EXPECT_FALSE(filter.IsMatch(GURL("http://www.example.com:79")));
+  EXPECT_FALSE(filter.IsMatch(GURL("http://www.example.com:91")));
+  EXPECT_FALSE(filter.IsMatch(GURL("https://www.example.com")));
+}
+
 TEST(URLMatcherConditionTest, IsFullURLCondition) {
   SubstringPattern pattern("example.com", 1);
   EXPECT_FALSE(URLMatcherCondition(URLMatcherCondition::HOST_SUFFIX,
@@ -317,6 +332,8 @@ TEST(URLMatcherConditionSetTest, Constructor) {
 TEST(URLMatcherConditionSetTest, Matching) {
   GURL url1("http://www.example.com/foo?bar=1");
   GURL url2("http://foo.example.com/index.html");
+  GURL url3("http://www.example.com:80/foo?bar=1");
+  GURL url4("http://www.example.com:8080/foo?bar=1");
 
   URLMatcherConditionFactory factory;
   URLMatcherCondition m1 = factory.CreateHostSuffixCondition("example.com");
@@ -339,18 +356,30 @@ TEST(URLMatcherConditionSetTest, Matching) {
   EXPECT_TRUE(condition_set->IsMatch(matching_substring_patterns, url1));
   EXPECT_FALSE(condition_set->IsMatch(matching_substring_patterns, url2));
 
-
   // Test scheme filters.
   scoped_refptr<URLMatcherConditionSet> condition_set2(
       new URLMatcherConditionSet(1, conditions,
           scoped_ptr<URLMatcherSchemeFilter>(
-              new URLMatcherSchemeFilter("https"))));
+              new URLMatcherSchemeFilter("https")),
+          scoped_ptr<URLMatcherPortFilter>(NULL)));
   EXPECT_FALSE(condition_set2->IsMatch(matching_substring_patterns, url1));
   scoped_refptr<URLMatcherConditionSet> condition_set3(
       new URLMatcherConditionSet(1, conditions,
           scoped_ptr<URLMatcherSchemeFilter>(
-              new URLMatcherSchemeFilter("http"))));
+              new URLMatcherSchemeFilter("http")),
+          scoped_ptr<URLMatcherPortFilter>(NULL)));
   EXPECT_TRUE(condition_set3->IsMatch(matching_substring_patterns, url1));
+
+  // Test port filters.
+  std::vector<URLMatcherPortFilter::Range> ranges;
+  ranges.push_back(URLMatcherPortFilter::CreateRange(80));
+  scoped_ptr<URLMatcherPortFilter> filter(new URLMatcherPortFilter(ranges));
+  scoped_refptr<URLMatcherConditionSet> condition_set4(
+      new URLMatcherConditionSet(1, conditions,
+          scoped_ptr<URLMatcherSchemeFilter>(NULL), filter.Pass()));
+  EXPECT_TRUE(condition_set4->IsMatch(matching_substring_patterns, url1));
+  EXPECT_TRUE(condition_set4->IsMatch(matching_substring_patterns, url3));
+  EXPECT_FALSE(condition_set4->IsMatch(matching_substring_patterns, url4));
 }
 
 

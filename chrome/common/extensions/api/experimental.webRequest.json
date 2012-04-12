@@ -92,6 +92,17 @@
             "optional": true,
             "items": { "type": "string" }
           },
+          "ports": {
+            "type": "array",
+            "description": "Matches if the port of the URL is contained in any of the specified port lists. For example <code>[80, 443, [1000, 1200]]</code> matches all requests on port 80, 443 and in the range 1000-1200.",
+            "optional": true,
+            "items": {
+              "choices": [
+                {"type": "integer", "description": "A specific port."},
+                {"type": "array", "items": {"type": "integer"}, "description": "A pair of integers identiying the start and end (both inclusive) of a port range."}
+              ]
+            }
+          },
           "resourceType": {
             "type": "array",
             "optional": true,

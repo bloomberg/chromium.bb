@@ -161,4 +161,66 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   EXPECT_EQ(0, number_matches);
 }
 
+TEST(WebRequestConditionTest, TestPortFilter) {
+  // Necessary for TestURLRequest.
+  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  URLMatcher matcher;
+
+  // Allow 80;1000-1010.
+  ListValue* port_range = new ListValue();
+  port_range->Append(Value::CreateIntegerValue(1000));
+  port_range->Append(Value::CreateIntegerValue(1010));
+  ListValue* port_ranges = new ListValue();
+  port_ranges->Append(Value::CreateIntegerValue(80));
+  port_ranges->Append(port_range);
+
+  DictionaryValue condition;
+  condition.Set(keys::kPortsKey, port_ranges);
+  condition.SetString("host_suffix", "example.com");
+  condition.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
+
+  linked_ptr<json_schema_compiler::any::Any> any_condition =
+      make_linked_ptr(new json_schema_compiler::any::Any);
+  any_condition->Init(condition);
+  WebRequestConditionSet::AnyVector conditions;
+  conditions.push_back(any_condition);
+
+  // Test insertion
+  std::string error;
+  scoped_ptr<WebRequestConditionSet> result =
+      WebRequestConditionSet::Create(matcher.condition_factory(),
+                                     conditions, &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(result.get());
+  EXPECT_EQ(1u, result->conditions().size());
+
+  // Tell the URLMatcher about our shiny new patterns.
+  URLMatcherConditionSet::Vector url_matcher_condition_set;
+  result->GetURLMatcherConditionSets(&url_matcher_condition_set);
+  matcher.AddConditionSets(url_matcher_condition_set);
+
+  std::set<URLMatcherConditionSet::ID> url_match_ids;
+
+  // Test various URLs.
+  GURL http_url("http://www.example.com");
+  TestURLRequest http_request(http_url, NULL);
+  url_match_ids = matcher.MatchURL(http_url);
+  ASSERT_EQ(1u, url_match_ids.size());
+
+  GURL http_url_80("http://www.example.com:80");
+  TestURLRequest http_request_80(http_url_80, NULL);
+  url_match_ids = matcher.MatchURL(http_url_80);
+  ASSERT_EQ(1u, url_match_ids.size());
+
+  GURL http_url_1000("http://www.example.com:1000");
+  TestURLRequest http_request_1000(http_url_1000, NULL);
+  url_match_ids = matcher.MatchURL(http_url_1000);
+  ASSERT_EQ(1u, url_match_ids.size());
+
+  GURL http_url_2000("http://www.example.com:2000");
+  TestURLRequest http_request_2000(http_url_2000, NULL);
+  url_match_ids = matcher.MatchURL(http_url_2000);
+  ASSERT_EQ(0u, url_match_ids.size());
+}
+
 }  // namespace extensions
