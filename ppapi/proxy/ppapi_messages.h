@@ -973,8 +973,6 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBTextInput_UpdateCaretPosition,
                     PP_Rect /* bounding_box */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBTextInput_CancelCompositionText,
                     PP_Instance /* instance */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBTextInput_SelectionChanged,
-                    PP_Instance /* instance */)
 IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBTextInput_UpdateSurroundingText,
                     PP_Instance /* instance */,
                     std::string /* text */,

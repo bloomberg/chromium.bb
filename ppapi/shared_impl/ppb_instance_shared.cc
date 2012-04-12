@@ -16,6 +16,9 @@
 
 namespace ppapi {
 
+// static
+const int PPB_Instance_Shared::kExtraCharsForTextInput = 100;
+
 PPB_Instance_Shared::~PPB_Instance_Shared() {
 }
 

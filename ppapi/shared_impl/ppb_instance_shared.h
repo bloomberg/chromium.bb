@@ -33,6 +33,11 @@ class PPAPI_SHARED_EXPORT PPB_Instance_Shared
   bool ValidateSetCursorParams(PP_MouseCursor_Type type,
                                PP_Resource image,
                                const PP_Point* hot_spot);
+
+  // The length of text to request as a surrounding context of selection.
+  // For now, the value is copied from the one with render_view_impl.cc.
+  // TODO(kinaba) implement a way to dynamically sync the requirement.
+  static const int kExtraCharsForTextInput;
 };
 
 }  // namespace ppapi

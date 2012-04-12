@@ -51,7 +51,6 @@ class PPB_TextInput_Proxy
                                 PP_Rect caret,
                                 PP_Rect bounding_box);
   void OnMsgCancelCompositionText(PP_Instance instance);
-  void OnMsgSelectionChanged(PP_Instance instance);
   void OnMsgUpdateSurroundingText(PP_Instance instance,
                                   const std::string& text,
                                   uint32_t caret,

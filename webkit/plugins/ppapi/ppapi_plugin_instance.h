@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_cursor_type_dev.h"
@@ -90,6 +91,7 @@ class PPB_URLRequestInfo_Impl;
 // ResourceTracker.
 class WEBKIT_PLUGINS_EXPORT PluginInstance :
     public base::RefCounted<PluginInstance>,
+    public base::SupportsWeakPtr<PluginInstance>,
     public ::ppapi::FunctionGroupBase,
     public ::ppapi::PPB_Instance_Shared {
  public:
@@ -221,7 +223,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   string16 GetSelectedText(bool html);
   string16 GetLinkAtPosition(const gfx::Point& point);
-  bool RequestSurroundingText(size_t desired_number_of_characters);
+  void RequestSurroundingText(size_t desired_number_of_characters);
   void Zoom(double factor, bool text_only);
   bool StartFind(const string16& search_text,
                  bool case_sensitive,

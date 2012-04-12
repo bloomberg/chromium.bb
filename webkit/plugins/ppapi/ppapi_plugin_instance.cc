@@ -158,11 +158,6 @@ namespace {
 // that they don't accept texts.
 const ui::TextInputType kPluginDefaultTextInputType = ui::TEXT_INPUT_TYPE_TEXT;
 
-// The length of text to request as a surrounding context of selection.
-// For now, the value is copied from the one with render_view_impl.cc.
-// TODO(kinaba) implement a way to dynamically sync the requirement.
-static const size_t kExtraCharsBeforeAndAfterSelection = 100;
-
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, np_name) \
     COMPILE_ASSERT(static_cast<int>(WebCursorInfo::webkit_name) \
                        == static_cast<int>(np_name), \
@@ -611,7 +606,15 @@ void PluginInstance::SelectionChanged() {
   // TODO(kinaba): currently the browser always calls RequestSurroundingText.
   // It can be optimized so that it won't call it back until the information
   // is really needed.
-  RequestSurroundingText(kExtraCharsBeforeAndAfterSelection);
+
+  // Avoid calling in nested context or else this will reenter the plugin. This
+  // uses a weak pointer rather than exploiting the fact that this class is
+  // refcounted because we don't actually want this operation to affect the
+  // lifetime of the instance.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&PluginInstance::RequestSurroundingText,
+                 AsWeakPtr(),
+                 static_cast<size_t>(kExtraCharsForTextInput)));
 }
 
 void PluginInstance::UpdateSurroundingText(const std::string& text,
@@ -900,15 +903,14 @@ string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
   return link;
 }
 
-bool PluginInstance::RequestSurroundingText(
+void PluginInstance::RequestSurroundingText(
     size_t desired_number_of_characters) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PluginInstance> ref(this);
   if (!LoadTextInputInterface())
-    return false;
+    return;
   plugin_textinput_interface_->RequestSurroundingText(
       pp_instance(), desired_number_of_characters);
-  return true;
 }
 
 void PluginInstance::Zoom(double factor, bool text_only) {
