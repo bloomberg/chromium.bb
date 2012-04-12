@@ -1013,6 +1013,13 @@
             'host/host_event_logger_posix.cc',
           ],
         }],
+        ['OS=="mac"', {
+          'xcode_settings': {
+            'OTHER_LDFLAGS': [
+              '-Wl,-sectcreate,__TEXT,__info_plist,host/remoting_me2me_host-Info.plist'
+            ],
+          },
+        }],
         ['OS=="win"', {
           'dependencies': [
             '../ipc/ipc.gyp:ipc',
