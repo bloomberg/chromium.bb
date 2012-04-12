@@ -73,8 +73,9 @@ bool DiscardTabById(int64 target_web_contents_id) {
       WebContents* web_contents = model->GetTabContentsAt(idx)->web_contents();
       int64 web_contents_id = IdFromTabContents(web_contents);
       if (web_contents_id == target_web_contents_id) {
+        LOG(WARNING) << "Discarding tab " << idx
+            << " id " << target_web_contents_id;
         model->DiscardTabContentsAt(idx);
-        LOG(WARNING) << "Discarded tab with id: " << target_web_contents_id;
         return true;
       }
     }
@@ -91,6 +92,7 @@ OomPriorityManager::TabStats::TabStats()
   : is_pinned(false),
     is_selected(false),
     renderer_handle(0),
+    sudden_termination_allowed(false),
     tab_contents_id(0) {
 }
 
@@ -140,7 +142,8 @@ std::vector<string16> OomPriorityManager::GetTabTitles() {
     str += ASCIIToUTF16(" (");
     int score = pid_to_oom_score_[it->renderer_handle];
     str += base::IntToString16(score);
-    str += ASCIIToUTF16(")");
+    str += ASCIIToUTF16(") ");
+    str += ASCIIToUTF16(it->sudden_termination_allowed ? "*" : "-");
     titles.push_back(str);
   }
   return titles;
@@ -175,6 +178,13 @@ bool OomPriorityManager::CompareTabStats(TabStats first,
   // Being pinned is second most important.
   if (first.is_pinned != second.is_pinned)
     return first.is_pinned == true;
+
+  // TODO(jamescook): Incorporate sudden_termination_allowed into the sort
+  // order.  We don't do this now because pages with unload handlers set
+  // sudden_termination_allowed false, and that covers too many common pages
+  // with ad networks and statistics scripts.  Ideally we would like to check
+  // for beforeUnload handlers, which are likely to present a dialog asking
+  // if the user wants to discard state.  crbug.com/123049
 
   // Being more recently selected is more important.
   return first.last_selected > second.last_selected;
@@ -278,10 +288,12 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
       WebContents* contents = model->GetTabContentsAt(i)->web_contents();
       if (!contents->IsCrashed()) {
         TabStats stats;
-        stats.last_selected = contents->GetLastSelectedTime();
-        stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = model->IsTabSelected(i);
+        stats.last_selected = contents->GetLastSelectedTime();
+        stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
+        stats.sudden_termination_allowed =
+            contents->GetRenderProcessHost()->SuddenTerminationAllowed();
         stats.title = contents->GetTitle();
         stats.tab_contents_id = IdFromTabContents(contents);
         stats_list.push_back(stats);

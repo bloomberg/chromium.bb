@@ -2064,6 +2064,41 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   EXPECT_EQ(url2, controller.GetActiveEntry()->GetURL());
 }
 
+// Test CopyStateFrom with 2 urls, the first selected and nothing in the target.
+TEST_F(NavigationControllerTest, CopyStateFrom) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+  controller.GoBack();
+  contents()->CommitPendingNavigation();
+
+  scoped_ptr<TestWebContents> other_contents(
+      static_cast<TestWebContents*>(CreateTestWebContents()));
+  NavigationControllerImpl& other_controller =
+      other_contents->GetControllerImpl();
+  other_controller.CopyStateFrom(controller);
+
+  // other_controller should now contain 2 urls.
+  ASSERT_EQ(2, other_controller.GetEntryCount());
+  // We should be looking at the first one.
+  ASSERT_EQ(0, other_controller.GetCurrentEntryIndex());
+
+  EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(0)->GetPageID());
+  EXPECT_EQ(url2, other_controller.GetEntryAtIndex(1)->GetURL());
+  // This is a different site than url1, so the IDs start again at 0.
+  EXPECT_EQ(0, other_controller.GetEntryAtIndex(1)->GetPageID());
+
+  // The max page ID map should be copied over and updated with the max page ID
+  // from the current tab.
+  SiteInstance* instance1 =
+      GetSiteInstanceFromEntry(other_controller.GetEntryAtIndex(0));
+  EXPECT_EQ(0, other_contents->GetMaxPageIDForSiteInstance(instance1));
+}
+
 // Tests CopyStateFromAndPrune with 2 urls in source, 1 in dest.
 TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   NavigationControllerImpl& controller = controller_impl();

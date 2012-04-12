@@ -60,6 +60,7 @@ class OomPriorityManager : public content::NotificationObserver {
     bool is_selected;
     base::TimeTicks last_selected;
     base::ProcessHandle renderer_handle;
+    bool sudden_termination_allowed;
     string16 title;
     int64 tab_contents_id;  // unique ID per TabContents
   };
