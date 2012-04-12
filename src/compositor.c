@@ -2509,8 +2509,9 @@ int main(int argc, char *argv[])
 	struct wl_event_source *signals[4];
 	struct wl_event_loop *loop;
 	struct sigaction segv_action;
-	void *shell_module, *backend_module;
+	void *shell_module, *backend_module, *xserver_module;
 	int (*shell_init)(struct weston_compositor *ec);
+	int (*xserver_init)(struct weston_compositor *ec);
 	struct weston_compositor
 		*(*backend_init)(struct wl_display *display,
 				 int argc, char *argv[]);
@@ -2600,13 +2601,16 @@ int main(int argc, char *argv[])
 	ec->option_idle_time = idle_time;
 	ec->idle_time = idle_time;
 
-#ifdef BUILD_XSERVER_LAUNCHER
-	if (xserver)
-		weston_xserver_init(ec);
-#endif
-
 	if (shell_init(ec) < 0)
 		exit(EXIT_FAILURE);
+
+	xserver_init = NULL;
+	if (xserver)
+		xserver_init = load_module("xserver-launcher.so",
+					   "weston_xserver_init",
+					   &xserver_module);
+	if (xserver_init)
+		xserver_init(ec);
 
 	if (wl_display_add_socket(display, socket_name)) {
 		fprintf(stderr, "failed to add socket: %m\n");
