@@ -17,6 +17,7 @@
 #include "base/scoped_native_library.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/metro.h"
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_util_win.h"
@@ -161,6 +162,12 @@ int DoUninstallTasks(bool chrome_still_running) {
 ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     const content::MainFunctionParams& parameters)
     : ChromeBrowserMainParts(parameters) {
+  if (base::win::GetMetroModule()) {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kForceRendererAccessibility);
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableTouchEvents);
+  }
 }
 
 void ChromeBrowserMainPartsWin::ToolkitInitialized() {
