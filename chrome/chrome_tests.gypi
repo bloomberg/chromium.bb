@@ -2832,6 +2832,7 @@
         'browser/extensions/extension_webstore_private_apitest.cc',
         'browser/extensions/isolated_app_browsertest.cc',
         'browser/extensions/lazy_background_page_apitest.cc',
+        'browser/extensions/mutation_observers_apitest.cc',
         'browser/extensions/notifications_apitest.cc',
         'browser/extensions/platform_app_browsertest.cc',
         'browser/extensions/process_management_browsertest.cc',
