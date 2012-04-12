@@ -679,6 +679,10 @@ ui::GestureStatus RootWindow::ProcessGestureEvent(Window* target,
               *type == ui::ET_MOUSE_PRESSED)
             flags |= ui::EF_IS_DOUBLE_CLICK;
 
+          // It is necessary to set this explicitly when using XI2.2. When using
+          // XI < 2.2, this is always set anyway.
+          flags |= ui::EF_LEFT_MOUSE_BUTTON;
+
           MouseEvent synth(
               *type, event->location(), event->root_location(), flags);
           if (ProcessMouseEvent(target, &synth))
