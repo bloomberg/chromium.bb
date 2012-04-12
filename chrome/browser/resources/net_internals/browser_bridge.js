@@ -26,6 +26,7 @@ var BrowserBridge = (function() {
     this.httpThrottlingObservers_ = [];
     this.constantsObservers_ = [];
     this.crosONCFileParseObservers_ = [];
+    this.storeDebugLogsObservers_ = [];
 
     this.pollableDataHelpers_ = {};
     this.pollableDataHelpers_.proxySettings =
@@ -233,6 +234,10 @@ var BrowserBridge = (function() {
       this.send('importONCFile', [fileContent, passcode]);
     },
 
+    storeDebugLogs: function() {
+      this.send('storeDebugLogs');
+    },
+
     sendGetHttpPipeliningStatus: function() {
       this.send('getHttpPipeliningStatus');
     },
@@ -323,6 +328,11 @@ var BrowserBridge = (function() {
     receivedONCFileParse: function(error) {
       for (var i = 0; i < this.crosONCFileParseObservers_.length; i++)
         this.crosONCFileParseObservers_[i].onONCFileParse(error);
+    },
+
+    receivedStoreDebugLogs: function(status) {
+      for (var i = 0; i < this.storeDebugLogsObservers_.length; i++)
+        this.storeDebugLogsObservers_[i].onStoreDebugLogs(status);
     },
 
     receivedHttpCacheInfo: function(info) {
@@ -518,6 +528,16 @@ var BrowserBridge = (function() {
      */
     addCrosONCFileParseObserver: function(observer) {
       this.crosONCFileParseObservers_.push(observer);
+    },
+
+    /**
+     * Adds a listener for storing log file status. The observer will be called
+     * back with:
+     *
+     *   observer.onStoreDebugLogs(status);
+     */
+    addStoreDebugLogsObserver: function(observer) {
+      this.storeDebugLogsObservers_.push(observer);
     },
 
     /**

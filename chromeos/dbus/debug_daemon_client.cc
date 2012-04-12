@@ -150,6 +150,22 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   virtual ~DebugDaemonClientImpl() {}
 
   // DebugDaemonClient override.
+  virtual void GetDebugLogs(base::PlatformFile file,
+                            const GetDebugLogsCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(
+        debugd::kDebugdInterface,
+        debugd::kGetDebugLogs);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendFileDescriptor(dbus::FileDescriptor(file));
+
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetDebugLogs,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
   virtual void StartSystemTracing() OVERRIDE {
     dbus::MethodCall method_call(
         debugd::kDebugdInterface,
@@ -209,6 +225,16 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
  private:
+  void OnGetDebugLogs(const GetDebugLogsCallback& callback,
+                      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to get debug logs";
+      callback.Run(false);
+      return;
+    }
+    callback.Run(true);
+  }
+
   // Called when a response for StartSystemTracing() is received.
   void OnStartSystemTracing(dbus::Response* response) {
     if (!response) {
@@ -244,6 +270,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 // which does nothing.
 class DebugDaemonClientStubImpl : public DebugDaemonClient {
   // DebugDaemonClient overrides.
+  virtual void GetDebugLogs(base::PlatformFile file,
+                            const GetDebugLogsCallback& callback) OVERRIDE {
+    callback.Run(false);
+  }
   virtual void StartSystemTracing() OVERRIDE {}
   virtual bool RequestStopSystemTracing(const StopSystemTracingCallback&
       callback) OVERRIDE {
