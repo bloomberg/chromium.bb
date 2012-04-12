@@ -228,6 +228,26 @@ STDMETHODIMP ElevatedControllerWin::StartDaemon() {
     return hr;
   }
 
+  // Change the service start type to 'auto'.
+  if (!::ChangeServiceConfigW(service,
+                              SERVICE_NO_CHANGE,
+                              SERVICE_AUTO_START,
+                              SERVICE_NO_CHANGE,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL)) {
+    DWORD error = GetLastError();
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to change the '" << kWindowsServiceName
+        << "'service start type to 'auto'";
+    return HRESULT_FROM_WIN32(error);
+  }
+
+  // Start the service.
   if (!StartService(service, 0, NULL)) {
     DWORD error = GetLastError();
     if (error != ERROR_SERVICE_ALREADY_RUNNING) {
@@ -248,6 +268,26 @@ STDMETHODIMP ElevatedControllerWin::StopDaemon() {
     return hr;
   }
 
+  // Change the service start type to 'manual'.
+  if (!::ChangeServiceConfigW(service,
+                              SERVICE_NO_CHANGE,
+                              SERVICE_DEMAND_START,
+                              SERVICE_NO_CHANGE,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL,
+                              NULL)) {
+    DWORD error = GetLastError();
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to change the '" << kWindowsServiceName
+        << "'service start type to 'manual'";
+    return HRESULT_FROM_WIN32(error);
+  }
+
+  // Stop the service.
   SERVICE_STATUS status;
   if (!ControlService(service, SERVICE_CONTROL_STOP, &status)) {
     DWORD error = GetLastError();
@@ -279,9 +319,11 @@ HRESULT ElevatedControllerWin::OpenService(ScopedScHandle* service_out) {
     return HRESULT_FROM_WIN32(error);
   }
 
+  DWORD desired_access = SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS |
+                         SERVICE_START | SERVICE_STOP;
   ScopedScHandle service(
       ::OpenServiceW(scmanager, UTF8ToUTF16(kWindowsServiceName).c_str(),
-                     SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP));
+                     desired_access));
   if (!service.IsValid()) {
     error = GetLastError();
     LOG_GETLASTERROR(ERROR)

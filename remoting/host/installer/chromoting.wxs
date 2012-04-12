@@ -108,7 +108,7 @@
                         DisplayName="@[#remoting_service.exe],-101"
                         Description="@[#remoting_service.exe],-102"
                         Arguments="--host-binary=&quot;[#remoting_me2me_host.exe]&quot; --auth-config=&quot;[config_files]host.json&quot; --host-config=&quot;[config_files]host.json&quot;"
-                        Start="auto"
+                        Start="demand"
                         Account="LocalSystem"
                         ErrorControl="ignore"
                         Interactive="no" />
@@ -287,6 +287,35 @@
       </Component>
     </DirectoryRef>
 
+    <!-- The service is always installed in the stopped state with start type
+         set to 'manual'. This becomes a problem when upgrading an existing
+         installation that is configured to start the service automatically.
+
+         Here we check the startup type before making any changes, then restart
+         the service and change its startup type as needed once the installation
+         is finished. -->
+    <Property Id="CHROMOTING_SERVICE_START_TYPE">
+      <RegistrySearch Id="chromoting_service_start_type"
+                      Root="HKLM"
+                      Key="SYSTEM\CurrentControlSet\services\$(var.ServiceName)"
+                      Name="Start"
+                      Type="raw" />
+    </Property>
+
+    <CustomAction Id="query_auto_start_service"
+                  Property="auto_start_service"
+                  Value="[CHROMOTING_SERVICE_START_TYPE]" />
+
+    <CustomAction Id="set_auto_start_service"
+                  Impersonate="no"
+                  Execute="deferred"
+                  Script="jscript">
+      <![CDATA[
+        var controller = new ActiveXObject("$(var.ControllerProgid)");
+        controller.StartDaemon();
+      ]]>
+    </CustomAction>
+
     <UIRef Id="WixUI_ErrorProgressText" />
 
     <Feature Id="chromoting_host" Level="1" Title="$(var.ChromotingHost)">
@@ -295,6 +324,13 @@
       <ComponentRef Id="sas.dll"/>
       <ComponentRef Id="service_controller"/>
     </Feature>
+
+  <InstallExecuteSequence>
+    <Custom Action="query_auto_start_service" Before="InstallInitialize"/>
+    <Custom Action="set_auto_start_service" After="StartServices">
+      <![CDATA[NOT REMOVE AND (auto_start_service = "#2")]]>
+    </Custom>
+  </InstallExecuteSequence>
 
   </Product>
 </Wix>

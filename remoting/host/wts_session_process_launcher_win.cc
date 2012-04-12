@@ -11,13 +11,15 @@
 #include <sddl.h>
 #include <limits>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/string16.h"
 #include "base/stringprintf.h"
-#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
@@ -33,6 +35,10 @@ using base::win::ScopedHandle;
 using base::TimeDelta;
 
 namespace {
+
+// The exit code returned by the host process when its configuration is not
+// valid.
+const int kInvalidHostConfigurationExitCode = 1;
 
 // The minimum and maximum delays between attempts to inject host process into
 // a session.
@@ -247,9 +253,11 @@ namespace remoting {
 WtsSessionProcessLauncher::WtsSessionProcessLauncher(
     WtsConsoleMonitor* monitor,
     const FilePath& host_binary,
-    base::Thread* io_thread)
+    scoped_refptr<base::MessageLoopProxy> main_message_loop,
+    scoped_refptr<base::MessageLoopProxy> ipc_message_loop)
     : host_binary_(host_binary),
-      io_thread_(io_thread),
+      main_message_loop_(main_message_loop),
+      ipc_message_loop_(ipc_message_loop),
       monitor_(monitor),
       state_(StateDetached) {
   monitor_->AddWtsConsoleObserver(this);
@@ -261,11 +269,13 @@ WtsSessionProcessLauncher::~WtsSessionProcessLauncher() {
   DCHECK(process_.handle() == NULL);
   DCHECK(process_watcher_.GetWatchedObject() == NULL);
   DCHECK(chromoting_channel_.get() == NULL);
-
-  monitor_->RemoveWtsConsoleObserver(this);
+  if (monitor_ != NULL) {
+    monitor_->RemoveWtsConsoleObserver(this);
+  }
 }
 
 void WtsSessionProcessLauncher::LaunchProcess() {
+  DCHECK(main_message_loop_->BelongsToCurrentThread());
   DCHECK(state_ == StateStarting);
   DCHECK(!timer_.IsRunning());
   DCHECK(process_.handle() == NULL);
@@ -282,7 +292,7 @@ void WtsSessionProcessLauncher::LaunchProcess() {
         IPC::ChannelHandle(pipe.Get()),
         IPC::Channel::MODE_SERVER,
         this,
-        io_thread_->message_loop_proxy().get()));
+        ipc_message_loop_));
 
     // Create the host process command line passing the name of the IPC channel
     // to use and copying known switches from the service's command line.
@@ -320,16 +330,46 @@ void WtsSessionProcessLauncher::LaunchProcess() {
 }
 
 void WtsSessionProcessLauncher::OnObjectSignaled(HANDLE object) {
-  DCHECK(state_ == StateAttached);
+  if (!main_message_loop_->BelongsToCurrentThread()) {
+    main_message_loop_->PostTask(
+        FROM_HERE, base::Bind(&WtsSessionProcessLauncher::OnObjectSignaled,
+                              base::Unretained(this), object));
+    return;
+  }
+
+  // It is possible that OnObjectSignaled() task will be queued by another
+  // thread right before |process_watcher_| was stopped. It such a case it is
+  // safe to ignore this notification.
+  if (state_ != StateAttached) {
+    return;
+  }
+
   DCHECK(!timer_.IsRunning());
   DCHECK(process_.handle() != NULL);
   DCHECK(process_watcher_.GetWatchedObject() == NULL);
   DCHECK(chromoting_channel_.get() != NULL);
 
+  // Stop trying to restart the host if its process exited due to
+  // misconfiguration.
+  DWORD exit_code;
+  bool stop_trying = GetExitCodeProcess(process_.handle(), &exit_code) &&
+                     exit_code == kInvalidHostConfigurationExitCode;
+
   // The host process has been terminated for some reason. The handle can now be
   // closed.
   process_.Close();
   chromoting_channel_.reset();
+  state_ = StateStarting;
+
+  if (stop_trying) {
+    OnSessionDetached();
+
+    // N.B. The service will stop once the last observer is removed from
+    // the list.
+    monitor_->RemoveWtsConsoleObserver(this);
+    monitor_ = NULL;
+    return;
+  }
 
   // Expand the backoff interval if the process has died quickly or reset it if
   // it was up longer than the maximum backoff delay.
@@ -345,7 +385,6 @@ void WtsSessionProcessLauncher::OnObjectSignaled(HANDLE object) {
   }
 
   // Try to restart the host.
-  state_ = StateStarting;
   timer_.Start(FROM_HERE, launch_backoff_,
                this, &WtsSessionProcessLauncher::LaunchProcess);
 }
@@ -361,6 +400,13 @@ bool WtsSessionProcessLauncher::OnMessageReceived(const IPC::Message& message) {
 }
 
 void WtsSessionProcessLauncher::OnSendSasToConsole() {
+  if (!main_message_loop_->BelongsToCurrentThread()) {
+    main_message_loop_->PostTask(
+        FROM_HERE, base::Bind(&WtsSessionProcessLauncher::OnSendSasToConsole,
+                              base::Unretained(this)));
+    return;
+  }
+
   if (state_ == StateAttached) {
     if (sas_injector_.get() == NULL) {
       sas_injector_ = SasInjector::Create();
@@ -373,6 +419,7 @@ void WtsSessionProcessLauncher::OnSendSasToConsole() {
 }
 
 void WtsSessionProcessLauncher::OnSessionAttached(uint32 session_id) {
+  DCHECK(main_message_loop_->BelongsToCurrentThread());
   DCHECK(state_ == StateDetached);
   DCHECK(!timer_.IsRunning());
   DCHECK(process_.handle() == NULL);
@@ -410,6 +457,7 @@ void WtsSessionProcessLauncher::OnSessionAttached(uint32 session_id) {
 }
 
 void WtsSessionProcessLauncher::OnSessionDetached() {
+  DCHECK(main_message_loop_->BelongsToCurrentThread());
   DCHECK(state_ == StateDetached ||
          state_ == StateStarting ||
          state_ == StateAttached);
@@ -423,7 +471,6 @@ void WtsSessionProcessLauncher::OnSessionDetached() {
       break;
 
     case StateStarting:
-      DCHECK(timer_.IsRunning());
       DCHECK(process_.handle() == NULL);
       DCHECK(process_watcher_.GetWatchedObject() == NULL);
       DCHECK(chromoting_channel_.get() == NULL);

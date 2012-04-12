@@ -112,11 +112,20 @@ HostService::~HostService() {
 }
 
 void HostService::AddWtsConsoleObserver(WtsConsoleObserver* observer) {
+  DCHECK(message_loop_->message_loop_proxy()->BelongsToCurrentThread());
+
   console_observers_.AddObserver(observer);
 }
 
 void HostService::RemoveWtsConsoleObserver(WtsConsoleObserver* observer) {
+  DCHECK(message_loop_->message_loop_proxy()->BelongsToCurrentThread());
+
   console_observers_.RemoveObserver(observer);
+
+  // Stop the service if there are no more observers.
+  if (!console_observers_.might_have_observers()) {
+    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  }
 }
 
 void HostService::OnSessionChange() {
@@ -357,12 +366,15 @@ void HostService::RunMessageLoop() {
   base::Thread io_thread(kIoThreadName);
   base::Thread::Options io_thread_options(MessageLoop::TYPE_IO, 0);
   if (!io_thread.StartWithOptions(io_thread_options)) {
+    LOG(FATAL) << "Failed to start the I/O thread";
     shutting_down_ = true;
     stopped_event_.Signal();
     return;
   }
 
-  WtsSessionProcessLauncher launcher(this, host_binary_, &io_thread);
+  WtsSessionProcessLauncher launcher(this, host_binary_,
+                                     message_loop_->message_loop_proxy(),
+                                     io_thread.message_loop_proxy());
 
   // Run the service.
   message_loop_->Run();

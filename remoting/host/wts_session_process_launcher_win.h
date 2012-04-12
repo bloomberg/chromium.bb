@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -20,16 +22,12 @@
 #include "remoting/host/wts_console_observer_win.h"
 
 namespace base {
-
-class Thread;
-
+class MessageLoopProxy;
 } // namespace base
 
 namespace IPC {
-
 class ChannelProxy;
 class Message;
-
 } // namespace IPC
 
 namespace remoting {
@@ -42,12 +40,15 @@ class WtsSessionProcessLauncher
       public IPC::Channel::Listener,
       public WtsConsoleObserver {
  public:
-  // Constructs a WtsSessionProcessLauncher object. |monitor| and |io_thread|
-  // must outlive this object. |host_binary| is the name of the executable to
-  // be launched in the console session.
-  WtsSessionProcessLauncher(WtsConsoleMonitor* monitor,
-                            const FilePath& host_binary,
-                            base::Thread* io_thread);
+  // Constructs a WtsSessionProcessLauncher object. |host_binary| is the name of
+  // the executable to be launched in the console session. All interaction with
+  // |monitor| should happen on |main_message_loop|. |ipc_message_loop| has
+  // to be an I/O message loop.
+  WtsSessionProcessLauncher(
+      WtsConsoleMonitor* monitor,
+      const FilePath& host_binary,
+      scoped_refptr<base::MessageLoopProxy> main_message_loop,
+      scoped_refptr<base::MessageLoopProxy> ipc_message_loop);
 
   virtual ~WtsSessionProcessLauncher();
 
@@ -83,9 +84,11 @@ class WtsSessionProcessLauncher
   // Timer used to schedule the next attempt to launch the process.
   base::OneShotTimer<WtsSessionProcessLauncher> timer_;
 
-  // The I/O thread hosts the Chromoting IPC channel and any other code
-  // requiring an I/O message loop.
-  base::Thread* io_thread_;
+  // The main service message loop.
+  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
+
+  // Message loop used by the IPC channel.
+  scoped_refptr<base::MessageLoopProxy> ipc_message_loop_;
 
   // This pointer is used to unsubscribe from session attach and detach events.
   WtsConsoleMonitor* monitor_;

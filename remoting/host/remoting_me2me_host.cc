@@ -50,6 +50,9 @@
 
 namespace {
 
+const int kSuccessExitCode = 0;
+const int kInvalidHostConfigurationExitCode = 1;
+
 // This is used for tagging system event logs.
 const char kApplicationName[] = "chromoting";
 
@@ -138,7 +141,7 @@ class HostProcess : public OAuthClient::Delegate {
   int Run() {
     bool tokens_pending = false;
     if (!LoadConfig(file_io_thread_.message_loop_proxy(), &tokens_pending)) {
-      return 1;
+      return kInvalidHostConfigurationExitCode;
     }
     if (tokens_pending) {
       // If we have an OAuth refresh token, then XmppSignalStrategy can't
@@ -159,7 +162,7 @@ class HostProcess : public OAuthClient::Delegate {
 #endif
     message_loop_.Run();
 
-    return 0;
+    return kSuccessExitCode;
   }
 
   // Overridden from OAuthClient::Delegate

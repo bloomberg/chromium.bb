@@ -98,9 +98,6 @@ class HostService : public WtsConsoleMonitor {
   // The service name.
   string16 service_name_;
 
-  // The service status structure.
-  SERVICE_STATUS service_status_;
-
   // The service status handle.
   SERVICE_STATUS_HANDLE service_status_handle_;
 
