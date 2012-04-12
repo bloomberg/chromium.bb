@@ -4618,7 +4618,7 @@ FileManager.prototype = {
       msg = str('ERROR_WHITESPACE_NAME');
     } else if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name)) {
       msg = str('ERROR_RESERVED_NAME');
-    } else if (this.filterFiles_ && name[0] == '.') {
+    } else if (this.directoryModel_.filterHidden && name[0] == '.') {
       msg = str('ERROR_HIDDEN_NAME');
     }
 
