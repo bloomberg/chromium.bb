@@ -1,14 +1,21 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 cd "$(dirname $0)"/..
 readonly base=$PWD
 
+readonly bitsplatform=$1
+
+if [ "$bitsplatform" != 32 ] && [ "$bitsplatform" != 64 ]; then
+  echo -n "Usage: $0 <32|64>"
+  exit 1;
+fi
+
 readonly proxy_bin="$base"/glibc-tests/bin
-readonly bld_old="$base"/BUILD/build-glibc64
-readonly bld="$base"/glibc-tests/build-glibc64
+readonly bld_old="$base"/BUILD/build-glibc"$bitsplatform"
+readonly bld="$base"/glibc-tests/build-glibc"$bitsplatform"
 readonly base_timestamp="$bld"/base-timestamp
 readonly logfile=/tmp/$(basename $0).$$.log
 

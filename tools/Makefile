@@ -1056,7 +1056,15 @@ glibc-check: $(SEL_LDR)
 	GLIBC_TST_STATIC_LDSCRIPT="$(DESTDIR)$(PREFIX)/$(CROSSARCH)"/lib/ldscripts/elf64_nacl.x.static \
 	GLIBC_TST_NACL_LOADER="$(SEL_LDR)" \
 	GLIBC_TST_NACL_LIBDIR="$(DESTDIR)$(PREFIX)/$(CROSSARCH)"/lib \
-	  glibc-tests/run_tests.sh
+	  glibc-tests/run_tests.sh $(BITSPLATFORM)
+
+.PHONY: glibc-check32
+glibc-check32: $(SEL_LDR)
+	GLIBC_TST_COLLECT2="$(PREGCC_PREFIX)/libexec/gcc/$(CROSSARCH)/$(GCC_VERSION)/collect2" \
+	GLIBC_TST_STATIC_LDSCRIPT="$(DESTDIR)$(PREFIX)/$(CROSSARCH)"/lib/ldscripts/elf_nacl.x.static \
+	GLIBC_TST_NACL_LOADER="$(SEL_LDR)" \
+	GLIBC_TST_NACL_LIBDIR="$(DESTDIR)$(PREFIX)/$(CROSSARCH)"/lib32 \
+	  glibc-tests/run_tests.sh $(BITSPLATFORM)
 
 
 ##################################################################
