@@ -288,6 +288,11 @@ void BufferedDataSource::SetBitrateTask(int bitrate) {
 BufferedResourceLoader::DeferStrategy
 BufferedDataSource::ChooseDeferStrategy() {
   DCHECK(MessageLoop::current() == render_loop_);
+  // We never cache 200 responses, and don't want to get too far ahead of the
+  // read-head (and thus require a restart), so keep to the thresholds.
+  if (loader_.get() && !loader_->range_supported())
+    return BufferedResourceLoader::kThresholdDefer;
+
   // If the page indicated preload=metadata, then load exactly what is needed
   // needed for starting playback.
   if (!media_has_played_ && preload_ == METADATA)
