@@ -562,6 +562,10 @@ void ThumbnailGenerator::AsyncUpdateThumbnailFinish(
     skia::PlatformCanvas* temp_canvas,
     bool succeeded) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // The weak pointer can be invalidated by the subsequent AsyncUpdateThumbnail.
+  if (!web_contents.get())
+    return;
+
   if (!succeeded)
     return;
 
