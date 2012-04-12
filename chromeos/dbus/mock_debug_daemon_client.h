@@ -15,8 +15,6 @@ class MockDebugDaemonClient : public DebugDaemonClient {
   MockDebugDaemonClient();
   virtual ~MockDebugDaemonClient();
 
-  MOCK_METHOD2(GetDebugLogs, void(base::PlatformFile,
-                                  const GetDebugLogsCallback&));
   MOCK_METHOD1(RequestStopSystemTracing,
       bool(const StopSystemTracingCallback&));
   MOCK_METHOD0(StartSystemTracing, void());

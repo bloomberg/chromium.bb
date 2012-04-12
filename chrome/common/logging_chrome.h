@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/time.h"
 
 class CommandLine;
 class FilePath;
@@ -72,10 +71,6 @@ void DumpWithoutCrashing();
 void SetDumpWithoutCrashingFunction(void (*function)());
 #endif
 
-// Inserts timestamp before file extension in the format
-// "_yymmdd-hhmmss".
-FilePath GenerateTimestampedName(const FilePath& base_path,
-                                 base::Time timestamp);
 }  // namespace logging
 
 #endif  // CHROME_COMMON_LOGGING_CHROME_H_

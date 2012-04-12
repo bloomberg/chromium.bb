@@ -125,17 +125,7 @@ var CrosView = (function() {
   }
 
   /**
-   *  Set storing debug logs status.
-   *
-   *  @private
-   */
-  function setStoreDebugLogsStatus_(status) {
-    $(CrosView.STORE_DEBUG_LOGS_STATUS_ID).innerText = status;
-  }
-
-  /**
-   *  Add event listeners for the file selection, passcode input
-   *  fields and for the button for debug logs storing.
+   *  Add event listeners for the file selection and passcode input fields.
    *
    *  @private
    */
@@ -146,11 +136,6 @@ var CrosView = (function() {
 
     $(CrosView.PASSCODE_INPUT_ID).addEventListener('change', function(event) {
       setPasscode_(this.value);
-    }, false);
-
-    $(CrosView.STORE_DEBUG_LOGS_ID).addEventListener('click', function(event) {
-      $(CrosView.STORE_DEBUG_LOGS_STATUS_ID).innerText = '';
-      g_browser.storeDebugLogs();
     }, false);
   }
 
@@ -176,7 +161,6 @@ var CrosView = (function() {
     DivView.call(this, CrosView.MAIN_BOX_ID);
 
     g_browser.addCrosONCFileParseObserver(this);
-    g_browser.addStoreDebugLogsObserver(this);
     addEventListeners_();
   }
 
@@ -189,8 +173,6 @@ var CrosView = (function() {
   CrosView.PASSCODE_ID = 'chromeos-view-password-div';
   CrosView.PASSCODE_INPUT_ID = 'chromeos-view-onc-password';
   CrosView.PARSE_STATUS_ID = 'chromeos-view-parse-status';
-  CrosView.STORE_DEBUG_LOGS_ID = 'chromeos-view-store-debug-logs';
-  CrosView.STORE_DEBUG_LOGS_STATUS_ID = 'chromeos-view-store-debug-logs-status';
 
   cr.addSingletonGetter(CrosView);
 
@@ -199,7 +181,6 @@ var CrosView = (function() {
     __proto__: DivView.prototype,
 
     onONCFileParse: setParseStatus_,
-    onStoreDebugLogs: setStoreDebugLogsStatus_,
   };
 
   return CrosView;

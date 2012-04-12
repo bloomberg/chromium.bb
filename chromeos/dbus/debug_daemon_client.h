@@ -6,7 +6,6 @@
 #define CHROMEOS_DBUS_DEBUG_DAEMON_CLIENT_H_
 
 #include "base/callback.h"
-#include "base/platform_file.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
@@ -21,15 +20,6 @@ namespace chromeos {
 class CHROMEOS_EXPORT DebugDaemonClient {
  public:
   virtual ~DebugDaemonClient();
-
-  // Called once GetDebugLogs() is complete. Takes one parameter:
-  // - succeeded: was the logs stored successfully.
-  typedef base::Callback<void(bool succeeded)> GetDebugLogsCallback;
-
-  // Requests to store debug logs into |file| and calls |callback|
-  // when completed. Debug logs will be stored in the .tgz format.
-  virtual void GetDebugLogs(base::PlatformFile file,
-                            const GetDebugLogsCallback& callback) = 0;
 
   // Requests to start system/kernel tracing.
   virtual void StartSystemTracing() = 0;

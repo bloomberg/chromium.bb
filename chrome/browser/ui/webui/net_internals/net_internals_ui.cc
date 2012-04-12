@@ -14,14 +14,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/message_loop_helpers.h"
 #include "base/path_service.h"
-#include "base/platform_file.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_split.h"
@@ -43,7 +39,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -77,15 +72,11 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/debug_daemon_client.h"
 #endif
 #ifdef OS_WIN
 #include "chrome/browser/net/service_providers_win.h"
 #endif
 
-using base::PlatformFile;
-using base::PlatformFileError;
 using content::BrowserThread;
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -157,84 +148,6 @@ ChromeWebUIDataSource* CreateNetInternalsHTMLSource() {
   return source;
 }
 
-#ifdef OS_CHROMEOS
-// Following functions are used for getting debug logs. Logs are
-// fetched from /var/log/* and put on the fileshelf.
-
-// Called once StoreDebugLogs is complete. Takes two parameters:
-// - log_path: where the log file was saved in the case of success;
-// - succeeded: was the log file saved successfully.
-typedef base::Callback<void(const FilePath& log_path,
-                            bool succeded)> StoreDebugLogsCallback;
-
-// Called once creation of the debug log file is completed. If
-// creation failed, deletes the file by |log_path|. So, this function
-// should be called on the FILE thread. After all, calls |callback| on
-// the UI thread.
-void CreateDebugLogFileCompleted(const StoreDebugLogsCallback& callback,
-                                 const FilePath& log_path,
-                                 bool succeeded) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  if (!succeeded)
-    file_util::Delete(log_path, false);
-
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, log_path, succeeded));
-}
-
-// Retrieves debug logs from DebugDaemon and puts them on the
-// fileshelf directory into .tgz archive. So, this function should be
-// called on the FILE thread. Calls CreateDebugLogFileCompleted on the
-// FILE thread when creation of archive is completed.
-void CreateDebugLogFile(const StoreDebugLogsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  const FilePath::CharType kLogFileName[] = FILE_PATH_LITERAL("debug-log.tgz");
-
-  FilePath fileshelf_dir;
-  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &fileshelf_dir)) {
-    LOG(ERROR) << "Can't get fileshelf dir";
-    CreateDebugLogFileCompleted(callback, FilePath(), false);
-    return;
-  }
-
-  FilePath log_path = fileshelf_dir.Append(kLogFileName);
-  log_path = logging::GenerateTimestampedName(log_path, base::Time::Now());
-
-  int flags = base::PLATFORM_FILE_CREATE_ALWAYS |
-      base::PLATFORM_FILE_WRITE;
-  bool created;
-  PlatformFileError error;
-  PlatformFile log_file = base::CreatePlatformFile(
-      log_path, flags, &created, &error);
-
-  if (!created) {
-    LOG(ERROR) <<
-        "Can't create log file: " << log_path.AsUTF8Unsafe() << ", " <<
-        "error: " << error;
-    CreateDebugLogFileCompleted(callback, log_path, false);
-    return;
-  }
-  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
-      GetDebugLogs(log_file,
-                   base::Bind(&CreateDebugLogFileCompleted,
-                              callback, log_path));
-}
-
-// Delegates the job of saving debug logs on the fileshelf to
-// CreateDebugLogsFile on the FILE thread. Calls |callback| on the UI
-// thread when saving is completed. This function should be called on
-// the UI thread.
-void StoreDebugLogs(const StoreDebugLogsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateDebugLogFile, callback));
-}
-#endif  // OS_CHROMEOS
-
 // This class receives javascript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of
 // this class's methods are expected to run on the UI thread.
@@ -274,8 +187,6 @@ class NetInternalsMessageHandler
   void OnRefreshSystemLogs(const ListValue* list);
   void OnGetSystemLog(const ListValue* list);
   void OnImportONCFile(const ListValue* list);
-  void OnStoreDebugLogs(const ListValue* list);
-  void OnStoreDebugLogsCompleted(const FilePath& log_path, bool succeeded);
 #endif
 
  private:
@@ -644,10 +555,6 @@ void NetInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "importONCFile",
       base::Bind(&NetInternalsMessageHandler::OnImportONCFile,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "storeDebugLogs",
-      base::Bind(&NetInternalsMessageHandler::OnStoreDebugLogs,
                  base::Unretained(this)));
 #endif
 }
@@ -1361,24 +1268,6 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
   SendJavascriptCommand("receivedONCFileParse",
                         Value::CreateStringValue(error));
 }
-
-void NetInternalsMessageHandler::OnStoreDebugLogs(const ListValue* list) {
-  StoreDebugLogs(
-      base::Bind(&NetInternalsMessageHandler::OnStoreDebugLogsCompleted,
-                 AsWeakPtr()));
-}
-
-void NetInternalsMessageHandler::OnStoreDebugLogsCompleted(
-    const FilePath& log_path, bool succeeded) {
-  std::string status;
-  if (succeeded)
-    status = "Created log file: " + log_path.BaseName().AsUTF8Unsafe();
-  else
-    status = "Failed to create log file";
-  SendJavascriptCommand("receivedStoreDebugLogs",
-                        Value::CreateStringValue(status));
-}
-
 #endif
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpPipeliningStatus(
