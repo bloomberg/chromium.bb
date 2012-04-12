@@ -26,6 +26,7 @@ enum ModifierLockStatus {
   kDontChange,
 };
 
+// TODO(yusukes): Remove this enum when crbug.com/115112 is implemented.
 enum ModifierKey {
   kSearchKey = 0,  // Customizable.
   kLeftControlKey,  // Customizable.
@@ -37,6 +38,7 @@ enum ModifierKey {
   kNumModifierKeys,
 };
 
+// TODO(yusukes): Remove this struct when crbug.com/115112 is implemented.
 struct ModifierKeyPair {
   ModifierKeyPair(ModifierKey in_original, ModifierKey in_replacement)
       : original(in_original), replacement(in_replacement) {}
@@ -63,6 +65,7 @@ class XKeyboard {
   // Remaps modifier keys. This function does not change the current keyboard
   // layout. Returns true on success. For now, you can't remap Left Control and
   // Left Alt keys to caps lock.
+  // TODO(yusukes): Remove this method when crbug.com/115112 is implemented.
   virtual bool RemapModifierKeys(const ModifierMap& modifier_map) = 0;
 
   // Sets the current keyboard layout again. We have to call the function every
@@ -107,6 +110,7 @@ class XKeyboard {
   // from modifier key mapping and |layout_name|, such as "us", "us(dvorak)",
   // and "gb(extd)". Returns an empty string on error. Do not call this function
   // directly: it is public for testability.
+  // TODO(yusukes): Remove this method from the interface class.
   virtual std::string CreateFullXkbLayoutName(
       const std::string& layout_name,
       const ModifierMap& modifire_map) = 0;

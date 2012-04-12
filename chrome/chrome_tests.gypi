@@ -95,6 +95,8 @@
         'browser/chromeos/cros/mock_network_library.h',
         'browser/chromeos/cryptohome/mock_async_method_caller.cc',
         'browser/chromeos/cryptohome/mock_async_method_caller.h',
+        'browser/chromeos/input_method/mock_xkeyboard.cc',
+        'browser/chromeos/input_method/mock_xkeyboard.h',
         'browser/chromeos/login/mock_login_status_consumer.cc',
         'browser/chromeos/login/mock_login_status_consumer.h',
         'browser/chromeos/login/mock_login_utils.cc',
