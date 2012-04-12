@@ -2380,6 +2380,11 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 		(void *) eglGetProcAddress("eglUnbindWaylandDisplayWL");
 
 	extensions = (const char *) glGetString(GL_EXTENSIONS);
+	if (!extensions) {
+		fprintf(stderr, "Retrieving GL extension string failed.\n");
+		return -1;
+	}
+
 	if (!strstr(extensions, "GL_EXT_texture_format_BGRA8888")) {
 		fprintf(stderr,
 			"GL_EXT_texture_format_BGRA8888 not available\n");
@@ -2396,6 +2401,11 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 
 	extensions =
 		(const char *) eglQueryString(ec->display, EGL_EXTENSIONS);
+	if (!extensions) {
+		fprintf(stderr, "Retrieving EGL extension string failed.\n");
+		return -1;
+	}
+
 	if (strstr(extensions, "EGL_WL_bind_wayland_display"))
 		ec->has_bind_display = 1;
 	if (ec->has_bind_display)
