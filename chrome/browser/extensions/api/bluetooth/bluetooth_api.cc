@@ -25,36 +25,30 @@ namespace extensions {
 namespace api {
 
 #if defined(OS_CHROMEOS)
-BluetoothExtensionFunction::BluetoothExtensionFunction() : adapter_(
-    profile()->GetExtensionService()->bluetooth_event_router()->adapter()) {
+const chromeos::BluetoothAdapter* BluetoothExtensionFunction::adapter() const {
+  return profile()->GetExtensionService()->bluetooth_event_router()->adapter();
 }
 
 bool BluetoothIsAvailableFunction::RunImpl() {
-  const BluetoothAdapter *adapter =
-      profile()->GetExtensionService()->bluetooth_event_router()->adapter();
-  result_.reset(Value::CreateBooleanValue(adapter->IsPresent()));
+  result_.reset(Value::CreateBooleanValue(adapter()->IsPresent()));
   return true;
 }
 
 bool BluetoothIsPoweredFunction::RunImpl() {
-  const BluetoothAdapter *adapter =
-      profile()->GetExtensionService()->bluetooth_event_router()->adapter();
-  result_.reset(Value::CreateBooleanValue(adapter->IsPowered()));
+  result_.reset(Value::CreateBooleanValue(adapter()->IsPowered()));
   return true;
 }
 
 bool BluetoothGetAddressFunction::RunImpl() {
-  const chromeos::BluetoothAdapter *adapter =
-      profile()->GetExtensionService()->bluetooth_event_router()->adapter();
-  result_.reset(Value::CreateStringValue(adapter->address()));
-  return false;
+  result_.reset(Value::CreateStringValue(adapter()->address()));
+  return true;
 }
 
 bool BluetoothGetDevicesWithServiceFunction::RunImpl() {
   scoped_ptr<GetDevicesWithService::Params> params(
       GetDevicesWithService::Params::Create(*args_));
 
-  BluetoothAdapter::ConstDeviceList devices = adapter_->GetDevices();
+  BluetoothAdapter::ConstDeviceList devices = adapter()->GetDevices();
 
   ListValue* matches = new ListValue();
   for (BluetoothAdapter::ConstDeviceList::const_iterator i =
@@ -76,8 +70,6 @@ bool BluetoothGetDevicesWithServiceFunction::RunImpl() {
 }
 
 #else
-
-BluetoothExtensionFunction::BluetoothExtensionFunction() {}
 
 // -----------------------------------------------------------------------------
 // NIY stubs

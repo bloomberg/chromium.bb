@@ -9,19 +9,20 @@
 #include "chrome/browser/extensions/extension_function.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+namespace chromeos {
+
+class BluetoothAdapter;
+
+}  // namespace chromeos
 #endif
 
 namespace extensions {
 namespace api {
 
 class BluetoothExtensionFunction : public SyncExtensionFunction {
- public:
-  BluetoothExtensionFunction();
-
  protected:
 #if defined(OS_CHROMEOS)
-  const chromeos::BluetoothAdapter* adapter_;
+  const chromeos::BluetoothAdapter* adapter() const;
 #endif
 };
 
