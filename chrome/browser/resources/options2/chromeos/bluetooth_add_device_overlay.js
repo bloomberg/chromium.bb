@@ -80,9 +80,8 @@ cr.define('options', function() {
    */
   BluetoothOptions.updateDiscovery = function() {
     var page = BluetoothOptions.getInstance();
-    if (page && page.visible) {
+    if (page && page.visible)
       chrome.send('findBluetoothDevices');
-    }
   }
 
   // Export
