@@ -205,6 +205,7 @@ class ProfileSyncServiceSessionTest
 
   virtual void TearDown() {
     sync_service_.reset();
+    MessageLoop::current()->RunAllPending();
     profile()->ResetRequestContext();
 
     // We need to destroy the profile before shutting down the threads, because
@@ -328,8 +329,7 @@ TEST_F(ProfileSyncServiceSessionTest, WriteSessionToNode) {
 
 // Test that we can fill this machine's session, write it to a node,
 // and then retrieve it.
-// Disabled because this test fails occasionally: http://crbug.com/81104
-TEST_F(ProfileSyncServiceSessionTest, DISABLED_WriteFilledSessionToNode) {
+TEST_F(ProfileSyncServiceSessionTest, WriteFilledSessionToNode) {
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
@@ -726,9 +726,8 @@ TEST_F(ProfileSyncServiceSessionTest, TabNodePoolEmpty) {
   ASSERT_TRUE(model_associator_->tab_pool_.full());
 }
 
-// TODO(jhorwich): Re-enable when crbug.com/121487 addressed
 // Test the TabNodePool when it starts off with nodes
-TEST_F(ProfileSyncServiceSessionTest, DISABLED_TabNodePoolNonEmpty) {
+TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
@@ -922,8 +921,7 @@ TEST_F(ProfileSyncServiceSessionTest, StaleSessionRefresh) {
 
 // Test that tabs with nothing but "chrome://*" and "file://*" navigations are
 // not be synced.
-// This test is crashing occasionally: http://crbug.com/116097
-TEST_F(ProfileSyncServiceSessionTest, DISABLED_ValidTabs) {
+TEST_F(ProfileSyncServiceSessionTest, ValidTabs) {
   CreateRootHelper create_root(this);
   ASSERT_TRUE(StartSyncService(create_root.callback(), false));
   ASSERT_TRUE(create_root.success());
@@ -965,8 +963,7 @@ TEST_F(ProfileSyncServiceSessionTest, SessionsRefresh) {
 }
 
 // Ensure model association associates the pre-existing tabs.
-// TODO(jhorwich): Fix the test so that it doesn't crash (crbug.com/121487)
-TEST_F(ProfileSyncServiceSessionTest, DISABLED_ExistingTabs) {
+TEST_F(ProfileSyncServiceSessionTest, ExistingTabs) {
   AddTab(browser(), GURL("http://foo1"));
   NavigateAndCommitActiveTab(GURL("http://foo2"));
   AddTab(browser(), GURL("http://bar1"));
@@ -1008,8 +1005,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_ExistingTabs) {
       GetEntryAtIndex(1)->GetVirtualURL());
 }
 
-// TODO(jhorwich): Re-enable when crbug.com/121487 addressed
-TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingHeaderAndTab) {
+TEST_F(ProfileSyncServiceSessionTest, MissingHeaderAndTab) {
   AddTab(browser(), GURL("http://foo1"));
   NavigateAndCommitActiveTab(GURL("http://foo2"));
   AddTab(browser(), GURL("http://bar1"));
@@ -1038,8 +1034,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingHeaderAndTab) {
   ASSERT_FALSE(error.IsSet());
 }
 
-// TODO(jhorwich): Re-enable when crbug.com/121487 addressed
-TEST_F(ProfileSyncServiceSessionTest, DISABLED_MultipleHeaders) {
+TEST_F(ProfileSyncServiceSessionTest, MultipleHeaders) {
   AddTab(browser(), GURL("http://foo1"));
   NavigateAndCommitActiveTab(GURL("http://foo2"));
   AddTab(browser(), GURL("http://bar1"));
@@ -1068,8 +1063,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_MultipleHeaders) {
   ASSERT_FALSE(error.IsSet());
 }
 
-// TODO(jhorwich): Re-enable when crbug.com/121487 addressed
-TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedForeign) {
+TEST_F(ProfileSyncServiceSessionTest, CorruptedForeign) {
   AddTab(browser(), GURL("http://foo1"));
   NavigateAndCommitActiveTab(GURL("http://foo2"));
   AddTab(browser(), GURL("http://bar1"));
@@ -1098,8 +1092,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_CorruptedForeign) {
   ASSERT_FALSE(error.IsSet());
 }
 
-// TODO(jhorwich): Re-enable when crbug.com/121487 addressed
-TEST_F(ProfileSyncServiceSessionTest, DISABLED_MissingLocalTabNode) {
+TEST_F(ProfileSyncServiceSessionTest, MissingLocalTabNode) {
   AddTab(browser(), GURL("http://foo1"));
   NavigateAndCommitActiveTab(GURL("http://foo2"));
   AddTab(browser(), GURL("http://bar1"));
