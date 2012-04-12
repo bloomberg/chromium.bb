@@ -90,6 +90,32 @@ const AcceleratorData kAcceleratorData[] = {
     SELECT_WIN_7 },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_9, false, false, true,
     SELECT_LAST_WIN },
+
+  // We need the number keys with and without shift since the French keyboard
+  // does not have explicit number keys. Instead they have to press
+  // 'Shift' + .. to access the keys. If we ever have an overlap of
+  // functionality, we should think about either assembling this table
+  // dynamically - or by decoding the keys properly (which is of course in
+  // conflict with other keyboards since the Shift+ is missing then).
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_1, true, false, true,
+    SELECT_WIN_0 },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_2, true, false, true,
+    SELECT_WIN_1 },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_3, true, false, true,
+    SELECT_WIN_2 },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_4, true, false, true,
+    SELECT_WIN_3 },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_5, true, false, true,
+    SELECT_WIN_4 },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_6, true, false, true,
+    SELECT_WIN_5 },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_7, true, false, true,
+    SELECT_WIN_6 },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_8, true, false, true,
+    SELECT_WIN_7 },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_9, true, false, true,
+    SELECT_LAST_WIN },
+
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F3, true, true, true,
     ROTATE_WINDOWS },
 #if !defined(NDEBUG)
