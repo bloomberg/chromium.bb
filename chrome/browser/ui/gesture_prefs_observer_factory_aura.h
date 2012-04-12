@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_GESTURE_PREFS_OBSERVER_FACTORY_AURA_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_GESTURE_PREFS_OBSERVER_FACTORY_AURA_H_
+#ifndef CHROME_BROWSER_UI_GESTURE_PREFS_OBSERVER_FACTORY_AURA_H_
+#define CHROME_BROWSER_UI_GESTURE_PREFS_OBSERVER_FACTORY_AURA_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -35,4 +35,4 @@ class GesturePrefsObserverFactoryAura : public ProfileKeyedServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(GesturePrefsObserverFactoryAura);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_GESTURE_PREFS_OBSERVER_FACTORY_AURA_H_
+#endif  // CHROME_BROWSER_UI_GESTURE_PREFS_OBSERVER_FACTORY_AURA_H_

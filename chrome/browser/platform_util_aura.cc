@@ -4,9 +4,12 @@
 
 #include "chrome/browser/platform_util.h"
 
-#include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "ui/aura/window.h"
+
+#if defined(USE_ASH)
+#include "ash/wm/window_util.h"
+#endif
 
 namespace platform_util {
 
@@ -19,11 +22,20 @@ gfx::NativeView GetParent(gfx::NativeView view) {
 }
 
 bool IsWindowActive(gfx::NativeWindow window) {
+#if defined(USE_ASH)
   return ash::wm::IsActiveWindow(window);
+#else
+  NOTIMPLEMENTED();
+  return false;
+#endif
 }
 
 void ActivateWindow(gfx::NativeWindow window) {
+#if defined(USE_ASH)
   ash::wm::ActivateWindow(window);
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 bool IsVisible(gfx::NativeView view) {

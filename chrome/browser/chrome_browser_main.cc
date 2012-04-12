@@ -179,8 +179,11 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ash/shell.h"
 #include "ui/aura/root_window.h"
+#endif
+
+#if defined(USE_ASH)
+#include "ash/shell.h"
 #endif
 
 using content::BrowserThread;
@@ -1782,7 +1785,9 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   RecordBrowserStartupTime();
 
 #if defined(USE_AURA)
+#if defined(USE_ASH)
   ash::Shell::GetRootWindow()->ShowRootWindow();
+#endif
   MessageLoopForUI::current()->Run();
 #elif defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler accelerator_handler;

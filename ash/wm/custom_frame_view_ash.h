@@ -25,7 +25,7 @@ class Widget;
 namespace ash {
 
 // A NonClientFrameView used for dialogs and other non-browser windows.
-// See also views::CustomFrameView and BrowserNonClientFrameViewAura.
+// See also views::CustomFrameView and BrowserNonClientFrameViewAsh.
 class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
                                       public views::ButtonListener {
  public:

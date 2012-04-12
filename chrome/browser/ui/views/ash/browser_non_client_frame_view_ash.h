@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_AURA_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_AURA_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_ASH_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_
+#define CHROME_BROWSER_UI_VIEWS_ASH_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
@@ -18,12 +18,12 @@ namespace views {
 class ImageButton;
 }
 
-class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
-                                      public views::ButtonListener,
-                                      public TabIconView::TabIconViewModel {
+class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
+                                     public views::ButtonListener,
+                                     public TabIconView::TabIconViewModel {
  public:
-  BrowserNonClientFrameViewAura(BrowserFrame* frame, BrowserView* browser_view);
-  virtual ~BrowserNonClientFrameViewAura();
+  BrowserNonClientFrameViewAsh(BrowserFrame* frame, BrowserView* browser_view);
+  virtual ~BrowserNonClientFrameViewAsh();
 
   void Init();
 
@@ -92,7 +92,7 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   // maximized and restored.
   bool size_button_minimizes_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAura);
+  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAsh);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_AURA_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_ASH_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_

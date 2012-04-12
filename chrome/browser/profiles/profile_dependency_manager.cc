@@ -40,7 +40,7 @@
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 
 #if defined(USE_AURA)
-#include "chrome/browser/ui/views/ash/gesture_prefs_observer_factory_aura.h"
+#include "chrome/browser/ui/gesture_prefs_observer_factory_aura.h"
 #endif
 
 #ifndef NDEBUG

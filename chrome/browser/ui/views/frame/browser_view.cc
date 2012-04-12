@@ -102,19 +102,22 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
-#include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/ash/launcher/launcher_updater.h"
 #include "chrome/browser/ui/views/ash/window_positioner.h"
-#include "ui/gfx/screen.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
 #include "ui/views/widget/native_widget_win.h"
+#endif
+
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/accelerator_table.h"
+#include "ui/gfx/screen.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -356,7 +359,7 @@ BrowserView::BrowserView(Browser* browser)
 }
 
 BrowserView::~BrowserView() {
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   // Destroy LauncherUpdater early on as it listens to the TabstripModel, which
   // is destroyed by the browser.
   icon_updater_.reset();
@@ -991,11 +994,11 @@ void BrowserView::RotatePaneFocus(bool forwards) {
       index = ((index - 1) + count) % count;
 
     if (index == special_index) {
-#if defined(OS_CHROMEOS) && defined(USE_AURA)
+#if defined(USE_ASH)
       ash::Shell::GetInstance()->RotateFocus(
           forwards ? ash::Shell::FORWARD : ash::Shell::BACKWARD);
-      break;
 #endif
+      break;
     } else if (index < pane_count) {
       if (accessible_panes[index]->SetPaneFocusAndFocusDefault())
         break;
@@ -1612,7 +1615,7 @@ views::ClientView* BrowserView::CreateClientView(views::Widget* widget) {
 
 void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   if (icon_updater_.get())
     icon_updater_->BrowserActivationStateChanged();
 #endif
@@ -2446,7 +2449,7 @@ void BrowserView::SetToolbar(ToolbarView* toolbar) {
 }
 
 void BrowserView::CreateLauncherIcon() {
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   if (!icon_updater_.get())
     icon_updater_.reset(LauncherUpdater::Create(browser_.get()));
 #endif  // defined(USE_AURA)

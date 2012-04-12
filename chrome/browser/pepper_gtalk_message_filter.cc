@@ -11,7 +11,7 @@
 #include "ppapi/shared_impl/api_id.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ui/aura/window.h"
@@ -44,7 +44,7 @@ void PepperGtalkMessageFilter::OnTalkGetPermission(uint32 plugin_dispatcher_id,
                                                    PP_Resource resource) {
 
   bool user_response = false;
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   string16 title = l10n_util::GetStringUTF16(
       IDS_GTALK_SCREEN_SHARE_DIALOG_TITLE);
   string16 message = l10n_util::GetStringUTF16(
@@ -53,6 +53,8 @@ void PepperGtalkMessageFilter::OnTalkGetPermission(uint32 plugin_dispatcher_id,
   aura::Window* parent = ash::Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_SystemModalContainer);
   user_response = browser::ShowYesNoBox(parent, title, message);
+#else
+  NOTIMPLEMENTED();
 #endif
   Send(new PpapiMsg_PPBTalk_GetPermissionACK(ppapi::API_ID_PPB_TALK,
                                              plugin_dispatcher_id,

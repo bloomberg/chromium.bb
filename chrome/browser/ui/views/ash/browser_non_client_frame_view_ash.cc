@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_aura.h"
+#include "chrome/browser/ui/views/ash/browser_non_client_frame_view_ash.h"
 
 #include "ash/wm/frame_painter.h"
 #include "ash/wm/workspace/frame_maximize_button.h"
@@ -56,9 +56,9 @@ const int kContentShadowHeight = 1;
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserNonClientFrameViewAura, public:
+// BrowserNonClientFrameViewAsh, public:
 
-BrowserNonClientFrameViewAura::BrowserNonClientFrameViewAura(
+BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     BrowserFrame* frame, BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       size_button_(NULL),
@@ -68,10 +68,10 @@ BrowserNonClientFrameViewAura::BrowserNonClientFrameViewAura(
       size_button_minimizes_(false) {
 }
 
-BrowserNonClientFrameViewAura::~BrowserNonClientFrameViewAura() {
+BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
 }
 
-void BrowserNonClientFrameViewAura::Init() {
+void BrowserNonClientFrameViewAsh::Init() {
   // Panels only minimize.
   ash::FramePainter::SizeButtonBehavior size_button_behavior;
   if (browser_view()->browser()->is_type_panel() &&
@@ -110,7 +110,7 @@ void BrowserNonClientFrameViewAura::Init() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameView overrides:
 
-gfx::Rect BrowserNonClientFrameViewAura::GetBoundsForTabStrip(
+gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   if (!tabstrip)
     return gfx::Rect();
@@ -126,12 +126,12 @@ gfx::Rect BrowserNonClientFrameViewAura::GetBoundsForTabStrip(
                    tabstrip->GetPreferredSize().height());
 }
 
-int BrowserNonClientFrameViewAura::GetHorizontalTabStripVerticalOffset(
+int BrowserNonClientFrameViewAsh::GetHorizontalTabStripVerticalOffset(
     bool force_restored) const {
   return NonClientTopBorderHeight(force_restored);
 }
 
-void BrowserNonClientFrameViewAura::UpdateThrobber(bool running) {
+void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
   if (window_icon_)
     window_icon_->Update();
 }
@@ -139,19 +139,19 @@ void BrowserNonClientFrameViewAura::UpdateThrobber(bool running) {
 ///////////////////////////////////////////////////////////////////////////////
 // views::NonClientFrameView overrides:
 
-gfx::Rect BrowserNonClientFrameViewAura::GetBoundsForClientView() const {
+gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForClientView() const {
   int top_height = NonClientTopBorderHeight(false);
   return frame_painter_->GetBoundsForClientView(top_height, bounds());
 }
 
-gfx::Rect BrowserNonClientFrameViewAura::GetWindowBoundsForClientBounds(
+gfx::Rect BrowserNonClientFrameViewAsh::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   int top_height = NonClientTopBorderHeight(false);
   return frame_painter_->GetWindowBoundsForClientBounds(top_height,
                                                         client_bounds);
 }
 
-int BrowserNonClientFrameViewAura::NonClientHitTest(const gfx::Point& point) {
+int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
   int hit_test = frame_painter_->NonClientHitTest(this, point);
   // When the window is restored we want a large click target above the tabs
   // to drag the window, so redirect clicks in the tab's shadow to caption.
@@ -167,17 +167,17 @@ int BrowserNonClientFrameViewAura::NonClientHitTest(const gfx::Point& point) {
   return hit_test;
 }
 
-void BrowserNonClientFrameViewAura::GetWindowMask(const gfx::Size& size,
+void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
                                                   gfx::Path* window_mask) {
   // Aura does not use window masks.
 }
 
-void BrowserNonClientFrameViewAura::ResetWindowControls() {
+void BrowserNonClientFrameViewAsh::ResetWindowControls() {
   size_button_->SetState(views::CustomButton::BS_NORMAL);
   // The close button isn't affected by this constraint.
 }
 
-void BrowserNonClientFrameViewAura::UpdateWindowIcon() {
+void BrowserNonClientFrameViewAsh::UpdateWindowIcon() {
   if (window_icon_)
     window_icon_->SchedulePaint();
 }
@@ -185,7 +185,7 @@ void BrowserNonClientFrameViewAura::UpdateWindowIcon() {
 ///////////////////////////////////////////////////////////////////////////////
 // views::View overrides:
 
-void BrowserNonClientFrameViewAura::OnPaint(gfx::Canvas* canvas) {
+void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   if (frame()->IsFullscreen())
     return;  // Nothing visible, don't paint.
   // The primary header image changes based on window activation state and
@@ -205,7 +205,7 @@ void BrowserNonClientFrameViewAura::OnPaint(gfx::Canvas* canvas) {
     PaintContentEdge(canvas);
 }
 
-void BrowserNonClientFrameViewAura::Layout() {
+void BrowserNonClientFrameViewAsh::Layout() {
   // Maximized windows and app/popup windows use shorter buttons.
   bool maximized_layout =
       frame()->IsMaximized() || !browser_view()->IsBrowserTypeNormal();
@@ -215,7 +215,7 @@ void BrowserNonClientFrameViewAura::Layout() {
   BrowserNonClientFrameView::Layout();
 }
 
-bool BrowserNonClientFrameViewAura::HitTest(const gfx::Point& l) const {
+bool BrowserNonClientFrameViewAsh::HitTest(const gfx::Point& l) const {
   // If the point is outside the bounds of the client area, claim it.
   if (NonClientFrameView::HitTest(l))
     return true;
@@ -238,19 +238,19 @@ bool BrowserNonClientFrameViewAura::HitTest(const gfx::Point& l) const {
   return browser_view()->IsPositionInWindowCaption(browser_view_point);
 }
 
-void BrowserNonClientFrameViewAura::GetAccessibleState(
+void BrowserNonClientFrameViewAsh::GetAccessibleState(
     ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_TITLEBAR;
 }
 
-gfx::Size BrowserNonClientFrameViewAura::GetMinimumSize() {
+gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() {
   return frame_painter_->GetMinimumSize(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener overrides:
 
-void BrowserNonClientFrameViewAura::ButtonPressed(views::Button* sender,
+void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
                                                   const views::Event& event) {
   if (sender == size_button_) {
     // The maximize button may move out from under the cursor.
@@ -270,7 +270,7 @@ void BrowserNonClientFrameViewAura::ButtonPressed(views::Button* sender,
 ///////////////////////////////////////////////////////////////////////////////
 // TabIconView::TabIconViewModel overrides:
 
-bool BrowserNonClientFrameViewAura::ShouldTabIconViewAnimate() const {
+bool BrowserNonClientFrameViewAsh::ShouldTabIconViewAnimate() const {
   // This function is queried during the creation of the window as the
   // TabIconView we host is initialized, so we need to NULL check the selected
   // WebContents because in this condition there is not yet a selected tab.
@@ -278,7 +278,7 @@ bool BrowserNonClientFrameViewAura::ShouldTabIconViewAnimate() const {
   return current_tab ? current_tab->IsLoading() : false;
 }
 
-SkBitmap BrowserNonClientFrameViewAura::GetFaviconForTabIconView() {
+SkBitmap BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   if (!delegate)
     return SkBitmap();
@@ -286,10 +286,10 @@ SkBitmap BrowserNonClientFrameViewAura::GetFaviconForTabIconView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserNonClientFrameViewAura, private:
+// BrowserNonClientFrameViewAsh, private:
 
 
-int BrowserNonClientFrameViewAura::NonClientTopBorderHeight(
+int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight(
     bool force_restored) const {
   if (force_restored)
     return kTabstripTopSpacingRestored;
@@ -306,7 +306,7 @@ int BrowserNonClientFrameViewAura::NonClientTopBorderHeight(
   return close_button_->bounds().bottom() + kClientEdgeThickness;
 }
 
-void BrowserNonClientFrameViewAura::LayoutAvatar() {
+void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   DCHECK(avatar_button());
   SkBitmap incognito_icon = browser_view()->GetOTRAvatarIcon();
 
@@ -323,7 +323,7 @@ void BrowserNonClientFrameViewAura::LayoutAvatar() {
   avatar_button()->SetBoundsRect(avatar_bounds);
 }
 
-void BrowserNonClientFrameViewAura::PaintToolbarBackground(
+void BrowserNonClientFrameViewAsh::PaintToolbarBackground(
     gfx::Canvas* canvas) {
   gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
   if (toolbar_bounds.IsEmpty())
@@ -393,13 +393,13 @@ void BrowserNonClientFrameViewAura::PaintToolbarBackground(
       ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
 }
 
-void BrowserNonClientFrameViewAura::PaintContentEdge(gfx::Canvas* canvas) {
+void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {
   canvas->FillRect(gfx::Rect(0, close_button_->bounds().bottom(),
                              width(), kClientEdgeThickness),
       ThemeService::GetDefaultColor(ThemeService::COLOR_TOOLBAR_SEPARATOR));
 }
 
-int BrowserNonClientFrameViewAura::GetThemeFrameBitmapId() const {
+int BrowserNonClientFrameViewAsh::GetThemeFrameBitmapId() const {
   bool is_incognito = browser_view()->IsOffTheRecord();
   int resource_id;
   if (browser_view()->IsBrowserTypeNormal()) {
@@ -440,7 +440,7 @@ int BrowserNonClientFrameViewAura::GetThemeFrameBitmapId() const {
 }
 
 const SkBitmap*
-BrowserNonClientFrameViewAura::GetThemeFrameOverlayBitmap() const {
+BrowserNonClientFrameViewAsh::GetThemeFrameOverlayBitmap() const {
   ui::ThemeProvider* tp = GetThemeProvider();
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       browser_view()->IsBrowserTypeNormal() &&

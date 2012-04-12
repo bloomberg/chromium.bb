@@ -215,7 +215,7 @@ class BrowserView : public BrowserWindow,
     move_observer_ = observer;
   }
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   LauncherUpdater* icon_updater() const { return icon_updater_.get(); }
 #endif
 
@@ -671,7 +671,7 @@ class BrowserView : public BrowserWindow,
   scoped_ptr<AeroPeekManager> aeropeek_manager_;
 #endif
 
-#if defined(USE_AURA)
+#if defined(USE_ASH)
   scoped_ptr<LauncherUpdater> icon_updater_;
 #endif
 

@@ -4,18 +4,25 @@
 
 #include "chrome/browser/automation/testing_automation_provider.h"
 
-#include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
+#if defined(USE_ASH)
+#include "ash/wm/window_util.h"
+#endif
+
 void TestingAutomationProvider::ActivateWindow(int handle) {
+#if defined(USE_ASH)
   aura::Window* window = window_tracker_->GetResource(handle);
   if (window) {
     ash::wm::ActivateWindow(window);
   }
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 void TestingAutomationProvider::IsWindowMaximized(int handle,
