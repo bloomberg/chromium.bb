@@ -173,11 +173,12 @@ class CppTypeGenerator(object):
     for namespace, types in sorted(self._NamespaceTypeDependencies().items()):
       c.Append('namespace %s {' % namespace.name)
       for type_ in types:
-        c.Append('struct %s;' % type_)
+        if namespace.types[type_].type_ != PropertyType.ARRAY:
+          c.Append('struct %s;' % type_)
       c.Append('}')
     c.Concat(self.GetNamespaceStart())
     for (name, type_) in self._namespace.types.items():
-      if not type_.functions:
+      if not type_.functions and type_.type_ != PropertyType.ARRAY:
         c.Append('struct %s;' % name)
     c.Concat(self.GetNamespaceEnd())
     return c
@@ -191,9 +192,6 @@ class CppTypeGenerator(object):
             dependency.source_file_dir,
             self._cpp_namespaces[dependency]))
     return c
-
-  def _QualifyName(self, namespace, name):
-    return '.'.join([namespace.name, name])
 
   def _ResolveTypeNamespace(self, ref_type):
     """Resolves a type name to its enclosing namespace.
@@ -214,6 +212,20 @@ class CppTypeGenerator(object):
         return namespace
 
     return None
+
+  def GetReferencedProperty(self, prop):
+    """Returns the property a property of type REF is referring to.
+
+    If the property passed in is not of type PropertyType.REF, it will be
+    returned unchanged.
+    """
+    if prop.type_ != PropertyType.REF:
+      return prop
+    return self._ResolveTypeNamespace(prop.ref_type).types.get(prop.ref_type,
+        None)
+
+  def _QualifyName(self, namespace, name):
+    return '.'.join([namespace.name, name])
 
   def _NamespaceTypeDependencies(self):
     """Returns a dict containing a mapping of model.Namespace to the C++ type

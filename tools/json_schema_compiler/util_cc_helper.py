@@ -35,7 +35,7 @@ class UtilCCHelper(object):
 
     return val % sub
 
-  def PopulateArrayFromList(self, array_prop, src, dst):
+  def PopulateArrayFromList(self, array_prop, src, dst, optional):
     """Generates code to get an array from src into dst.
 
     src: ListValue*
@@ -49,14 +49,14 @@ class UtilCCHelper(object):
         'type': self._type_manager.GetType(prop),
     }
 
-    if array_prop.optional:
+    if optional:
       val = '%(namespace)s::PopulateOptionalArrayFromList(*%(src)s, &%(dst)s)'
     else:
       val = '%(namespace)s::PopulateArrayFromList(*%(src)s, &%(dst)s)'
 
     return val % sub
 
-  def CreateValueFromArray(self, array_prop, src):
+  def CreateValueFromArray(self, array_prop, src, optional):
     """Generates code to create a scoped_pt<Value> from the array at src.
 
     src: std::vector or scoped_ptr<std::vector>
@@ -68,7 +68,7 @@ class UtilCCHelper(object):
         'type': self._type_manager.GetType(prop),
     }
 
-    if array_prop.optional:
+    if optional:
       val = '%(namespace)s::CreateValueFromOptionalArray(%(src)s)'
     else:
       val = '%(namespace)s::CreateValueFromArray(%(src)s)'

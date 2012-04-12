@@ -70,13 +70,22 @@ class Type(object):
   - |from_json| indicates that instances of the Type can originate from the
     JSON (as described by the schema), such as top-level types and function
     parameters
+  - |type_| the PropertyType of this Type
+  - |item_type| if this is an array, the type of items in the array
   """
   def __init__(self, parent, name, json):
-    if not (
-        'properties' in json or
-        'additionalProperties' in json or
-        'functions' in json):
-      raise ParseException(name + " has no properties or functions")
+    if json.get('type') == 'array':
+      self.type_ = PropertyType.ARRAY
+      self.item_type = Property(self, name + "Element", json['items'],
+                                from_json=True,
+                                from_client=True)
+    else:
+      if not (
+          'properties' in json or
+          'additionalProperties' in json or
+          'functions' in json):
+        raise ParseException(name + " has no properties or functions")
+      self.type_ = PropertyType.OBJECT
     self.name = name
     self.description = json.get('description')
     self.from_json = True

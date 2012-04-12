@@ -98,7 +98,7 @@ class CCGenerator(object):
                 function))
           .Append()
         )
-    else:
+    elif type_.type_ == PropertyType.OBJECT:
       (c.Concat(self._GeneratePropertyFunctions(
           cpp_namespace, type_.properties.values()))
         .Sblock('%(namespace)s::%(classname)s()')
@@ -321,7 +321,7 @@ class CCGenerator(object):
       # for reference.
       raise NotImplementedError(
           'Conversion of CHOICES to Value not implemented')
-    if prop.type_ in (PropertyType.REF, PropertyType.OBJECT):
+    if self._IsObjectOrObjectRef(prop):
       if prop.optional:
         return '%s->ToValue().release()' % var
       else:
@@ -332,9 +332,10 @@ class CCGenerator(object):
       return '%s.DeepCopy()' % var
     elif prop.type_ == PropertyType.ENUM:
       return 'CreateEnumValue(%s).release()' % var
-    elif prop.type_ == PropertyType.ARRAY:
+    elif self._IsArrayOrArrayRef(prop):
       return '%s.release()' % self._util_cc_helper.CreateValueFromArray(
-          prop, var)
+          self._cpp_type_generator.GetReferencedProperty(prop), var,
+          prop.optional)
     elif prop.type_.is_fundamental:
       if prop.optional:
         var = '*' + var
@@ -455,7 +456,7 @@ class CCGenerator(object):
                 prop, value_var, '&%s->%s' % (dst, prop.unix_name)))
           .Append('return %(failure_value)s;')
         )
-    elif prop.type_ in (PropertyType.OBJECT, PropertyType.REF):
+    elif self._IsObjectOrObjectRef(prop):
       if prop.optional:
         (c.Append('DictionaryValue* dictionary = NULL;')
           .Append('if (!%(value_var)s->GetAsDictionary(&dictionary))')
@@ -477,20 +478,22 @@ class CCGenerator(object):
       if prop.optional:
         c.Append('%(dst)s->%(name)s.reset(new Any());')
       c.Append(self._any_helper.Init(prop, value_var, dst) + ';')
-    elif prop.type_ == PropertyType.ARRAY:
+    elif self._IsArrayOrArrayRef(prop):
       # util_cc_helper deals with optional and required arrays
       (c.Append('ListValue* list = NULL;')
         .Append('if (!%(value_var)s->GetAsList(&list))')
         .Append('  return %(failure_value)s;')
         .Append('if (!%s)' % self._util_cc_helper.PopulateArrayFromList(
-            prop, 'list', dst + '->' + prop.unix_name))
+            self._cpp_type_generator.GetReferencedProperty(prop), 'list',
+            dst + '->' + prop.unix_name, prop.optional))
         .Append('  return %(failure_value)s;')
       )
     elif prop.type_ == PropertyType.CHOICES:
       type_var = '%(dst)s->%(name)s_type'
       c.Sblock('switch (%(value_var)s->GetType()) {')
       for choice in self._cpp_type_generator.GetExpandedChoicesInParams([prop]):
-        (c.Sblock('case %s: {' % cpp_util.GetValueType(choice))
+        (c.Sblock('case %s: {' % cpp_util.GetValueType(
+            self._cpp_type_generator.GetReferencedProperty(choice).type_))
             .Concat(self._GeneratePopulatePropertyFromValue(
                 choice, value_var, dst, failure_value, check_type=False))
             .Append('%s = %s;' %
@@ -532,7 +535,8 @@ class CCGenerator(object):
     }
     if prop.type_ not in (PropertyType.CHOICES, PropertyType.ANY):
       sub['ctype'] = self._cpp_type_generator.GetType(prop)
-      sub['value_type'] = cpp_util.GetValueType(prop)
+      sub['value_type'] = cpp_util.GetValueType(self._cpp_type_generator
+          .GetReferencedProperty(prop).type_)
     c.Substitute(sub)
     return c
 
@@ -616,3 +620,15 @@ class CCGenerator(object):
           prop_name,
           self._cpp_type_generator.GetEnumNoneValue(prop)))
     return c
+
+  def _IsObjectOrObjectRef(self, prop):
+    """Determines if this property is an Object or is a ref to an Object.
+    """
+    return (self._cpp_type_generator.GetReferencedProperty(prop).type_ ==
+        PropertyType.OBJECT)
+
+  def _IsArrayOrArrayRef(self, prop):
+    """Determines if this property is an Array or is a ref to an Array.
+    """
+    return (self._cpp_type_generator.GetReferencedProperty(prop).type_ ==
+        PropertyType.ARRAY)

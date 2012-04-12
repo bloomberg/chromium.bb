@@ -45,7 +45,7 @@ def GetAsFundamentalValue(prop, src, dst):
       PropertyType.DOUBLE: '%s->GetAsDouble(%s)',
   }[prop.type_] % (src, dst)
 
-def GetValueType(prop):
+def GetValueType(type_):
   """Returns the Value::Type corresponding to the model.PropertyType.
   """
   return {
@@ -54,10 +54,9 @@ def GetValueType(prop):
       PropertyType.BOOLEAN: 'Value::TYPE_BOOLEAN',
       PropertyType.DOUBLE: 'Value::TYPE_DOUBLE',
       PropertyType.ENUM: 'Value::TYPE_STRING',
-      PropertyType.REF: 'Value::TYPE_DICTIONARY',
       PropertyType.OBJECT: 'Value::TYPE_DICTIONARY',
       PropertyType.ARRAY: 'Value::TYPE_LIST',
-  }[prop.type_]
+  }[type_]
 
 def GetParameterDeclaration(param, type_):
   """Gets a parameter declaration of a given model.Property and its C++

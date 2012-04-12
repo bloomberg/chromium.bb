@@ -23,6 +23,10 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.model.AddNamespace(self.tabs_json[0],
         'path/to/tabs.json')
     self.tabs = self.model.namespaces.get('tabs')
+    self.browser_action_json = CachedLoad('test/browserAction.json')
+    self.model.AddNamespace(self.browser_action_json[0],
+        'path/to/browserAction.json')
+    self.browser_action = self.model.namespaces.get('browserAction')
 
   def testGenerateIncludesAndForwardDeclarations(self):
     manager = CppTypeGenerator('', self.windows, self.windows.unix_name)
@@ -88,6 +92,13 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.assertEquals('bool',
         manager.GetType(
         self.tabs.types['Tab'].properties['selected']))
+
+  def testArrayAsType(self):
+    manager = CppTypeGenerator('', self.browser_action,
+                               self.browser_action.unix_name)
+    self.assertEquals('std::vector<int>',
+        manager.GetType(
+        self.browser_action.types['ColorArray']))
 
   def testGetTypeArray(self):
     manager = CppTypeGenerator('', self.windows, self.windows.unix_name)

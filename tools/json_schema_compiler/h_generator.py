@@ -160,6 +160,13 @@ class HGenerator(object):
           .Append()
         )
       c.Eblock('}')
+    elif type_.type_ == PropertyType.ARRAY:
+      if type_.description:
+        c.Comment(type_.description)
+      c.Append('typedef std::vector<%(item_type)s> %(classname)s;')
+      c.Substitute({'classname': classname, 'item_type':
+          self._cpp_type_generator.GetType(type_.item_type,
+                                           wrap_optional=True)})
     else:
       if type_.description:
         c.Comment(type_.description)

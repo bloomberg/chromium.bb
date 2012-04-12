@@ -18,6 +18,7 @@
       'variables': {
         'chromium_code': 1,
         'json_schema_files': [
+          'browserAction.json',
           'experimental.alarms.json',
           'experimental.declarative.json',
           'permissions.json',
