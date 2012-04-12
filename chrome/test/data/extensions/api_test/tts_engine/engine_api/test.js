@@ -20,5 +20,6 @@ chrome.test.runTests([
     chrome.ttsEngine.onSpeak.addListener(speakListener);
     chrome.ttsEngine.onStop.addListener(stopListener);
     chrome.test.assertNoLastError();
+    chrome.test.succeed();
   }
 ]);

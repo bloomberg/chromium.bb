@@ -14,9 +14,11 @@ var lazyBG = requireNative('lazy_background_page');
 chromeHidden.registerCustomHook('tts', function(api) {
   var apiFunctions = api.apiFunctions;
 
-  chromeHidden.tts = {};
-  chromeHidden.tts.handlers = {};
-  chrome.tts.onEvent.addListener(function(event) {
+  chromeHidden.tts = {
+    handlers: {}
+  };
+
+  function ttsEventListener(event) {
     var eventHandler = chromeHidden.tts.handlers[event.srcId];
     if (eventHandler) {
       eventHandler({
@@ -30,7 +32,15 @@ chromeHidden.registerCustomHook('tts', function(api) {
         lazyBG.DecrementKeepaliveCount();
       }
     }
-  });
+  }
+
+  // This file will get run if an extension needs the ttsEngine permission, but
+  // it doesn't necessarily have the tts permission. If it doesn't, trying to
+  // add a listener to chrome.tts.onEvent will fail.
+  // See http://crbug.com/122474.
+  try {
+    chrome.tts.onEvent.addListener(ttsEventListener);
+  } catch (e) {}
 
   apiFunctions.setHandleRequest('speak', function() {
     var args = arguments;

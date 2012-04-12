@@ -299,6 +299,6 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, EngineWordCallbacks) {
 }
 
 // http://crbug.com/122474
-IN_PROC_BROWSER_TEST_F(TtsApiTest, DISABLED_EngineApi) {
+IN_PROC_BROWSER_TEST_F(TtsApiTest, EngineApi) {
   ASSERT_TRUE(RunExtensionTest("tts_engine/engine_api")) << message_;
 }
