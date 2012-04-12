@@ -53,6 +53,9 @@ void TestingPrefStore::RemoveValue(const std::string& key) {
     NotifyPrefValueChanged(key);
 }
 
+void TestingPrefStore::MarkNeedsEmptyValue(const std::string& key) {
+}
+
 bool TestingPrefStore::ReadOnly() const {
   return read_only_;
 }

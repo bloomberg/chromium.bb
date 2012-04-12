@@ -6,6 +6,7 @@
 #define CHROME_COMMON_JSON_PREF_STORE_H_
 #pragma once
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -49,6 +50,7 @@ class JsonPrefStore : public PersistentPrefStore,
   virtual void SetValueSilently(const std::string& key,
                                 base::Value* value) OVERRIDE;
   virtual void RemoveValue(const std::string& key) OVERRIDE;
+  virtual void MarkNeedsEmptyValue(const std::string& key) OVERRIDE;
   virtual bool ReadOnly() const OVERRIDE;
   virtual PrefReadError GetReadError() const OVERRIDE;
   virtual PrefReadError ReadPrefs() OVERRIDE;
@@ -82,6 +84,8 @@ class JsonPrefStore : public PersistentPrefStore,
 
   bool initialized_;
   PrefReadError read_error_;
+
+  std::set<std::string> keys_need_empty_value_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonPrefStore);
 };

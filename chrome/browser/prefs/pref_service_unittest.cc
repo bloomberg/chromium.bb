@@ -5,7 +5,10 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
@@ -16,9 +19,11 @@
 #include "chrome/browser/prefs/pref_observer_mock.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -180,6 +185,82 @@ TEST(PrefServiceTest, UpdateCommandLinePrefStore) {
   actual_bool_value = false;
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
   EXPECT_TRUE(actual_bool_value);
+}
+
+class PrefServiceUserFilePrefsTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_dir_));
+    data_dir_ = data_dir_.AppendASCII("pref_service");
+    ASSERT_TRUE(file_util::PathExists(data_dir_));
+  }
+
+  void ClearListValue(PrefService* prefs, const char* key) {
+    ListPrefUpdate updater(prefs, key);
+    updater->Clear();
+  }
+
+  void ClearDictionaryValue(PrefService* prefs, const char* key) {
+    DictionaryPrefUpdate updater(prefs, key);
+    updater->Clear();
+  }
+
+  // The path to temporary directory used to contain the test operations.
+  ScopedTempDir temp_dir_;
+  // The path to the directory where the test data is stored.
+  FilePath data_dir_;
+  // A message loop that we can use as the file thread message loop.
+  MessageLoop message_loop_;
+};
+
+// Verifies that ListValue and DictionaryValue pref with non emtpy default
+// preserves its empty value.
+TEST_F(PrefServiceUserFilePrefsTest, PreserveEmptyValue) {
+  FilePath pref_file = temp_dir_.path().AppendASCII("write.json");
+
+  ASSERT_TRUE(file_util::CopyFile(
+      data_dir_.AppendASCII("read.need_empty_value.json"),
+      pref_file));
+
+  PrefServiceMockBuilder builder;
+  builder.WithUserFilePrefs(pref_file, base::MessageLoopProxy::current());
+  scoped_ptr<PrefService> prefs(builder.Create());
+
+  // Register testing prefs.
+  prefs->RegisterListPref("list",
+                          PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDictionaryPref("dict",
+                                PrefService::UNSYNCABLE_PREF);
+
+  base::ListValue* non_empty_list = new base::ListValue;
+  non_empty_list->Append(base::Value::CreateStringValue("test"));
+  prefs->RegisterListPref("list_needs_empty_value",
+                          non_empty_list,
+                          PrefService::UNSYNCABLE_PREF);
+
+  base::DictionaryValue* non_empty_dict = new base::DictionaryValue;
+  non_empty_dict->SetString("dummy", "whatever");
+  prefs->RegisterDictionaryPref("dict_needs_empty_value",
+                                non_empty_dict,
+                                PrefService::UNSYNCABLE_PREF);
+
+  // Set all testing prefs to empty.
+  ClearListValue(prefs.get(), "list");
+  ClearListValue(prefs.get(), "list_needs_empty_value");
+  ClearDictionaryValue(prefs.get(), "dict");
+  ClearDictionaryValue(prefs.get(), "dict_needs_empty_value");
+
+  // Write to file.
+  prefs->CommitPendingWrite();
+  MessageLoop::current()->RunAllPending();
+
+  // Compare to expected output.
+  FilePath golden_output_file =
+      data_dir_.AppendASCII("write.golden.need_empty_value.json");
+  ASSERT_TRUE(file_util::PathExists(golden_output_file));
+  EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, pref_file));
 }
 
 class PrefServiceSetValueTest : public testing::Test {

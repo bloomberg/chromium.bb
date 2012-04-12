@@ -77,10 +77,16 @@ PrefServiceMockBuilder::WithCommandLine(CommandLine* command_line) {
 
 PrefServiceMockBuilder&
 PrefServiceMockBuilder::WithUserFilePrefs(const FilePath& prefs_file) {
-  user_prefs_ =
-      new JsonPrefStore(prefs_file,
-                        BrowserThread::GetMessageLoopProxyForThread(
-                            BrowserThread::FILE));
+  return WithUserFilePrefs(prefs_file,
+                           BrowserThread::GetMessageLoopProxyForThread(
+                               BrowserThread::FILE));
+}
+
+PrefServiceMockBuilder&
+PrefServiceMockBuilder::WithUserFilePrefs(
+    const FilePath& prefs_file,
+    base::MessageLoopProxy* message_loop_proxy) {
+  user_prefs_ = new JsonPrefStore(prefs_file, message_loop_proxy);
   return *this;
 }
 

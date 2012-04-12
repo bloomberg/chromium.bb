@@ -727,6 +727,23 @@ void PrefService::RegisterPreference(const char* path,
   DCHECK(orig_type != Value::TYPE_NULL && orig_type != Value::TYPE_BINARY) <<
          "invalid preference type: " << orig_type;
 
+  // For ListValue and DictionaryValue with non empty default, empty value
+  // for |path| needs to be persisted in |user_pref_store_|. So that
+  // non empty default is not used when user sets an empty ListValue or
+  // DictionaryValue.
+  bool needs_empty_value = false;
+  if (orig_type == base::Value::TYPE_LIST) {
+    const base::ListValue* list = NULL;
+    if (default_value->GetAsList(&list) && !list->empty())
+      needs_empty_value = true;
+  } else if (orig_type == base::Value::TYPE_DICTIONARY) {
+    const base::DictionaryValue* dict = NULL;
+    if (default_value->GetAsDictionary(&dict) && !dict->empty())
+      needs_empty_value = true;
+  }
+  if (needs_empty_value)
+    user_pref_store_->MarkNeedsEmptyValue(path);
+
   // Hand off ownership.
   default_store_->SetDefaultValue(path, scoped_value.release());
 

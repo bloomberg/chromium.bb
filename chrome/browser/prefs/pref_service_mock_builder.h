@@ -15,6 +15,10 @@ class CommandLine;
 class FilePath;
 class PrefService;
 
+namespace base {
+class MessageLoopProxy;
+}
+
 namespace policy {
 class PolicyService;
 }
@@ -46,6 +50,9 @@ class PrefServiceMockBuilder {
 
   // Specifies to use an actual file-backed user pref store.
   PrefServiceMockBuilder& WithUserFilePrefs(const FilePath& prefs_file);
+  PrefServiceMockBuilder& WithUserFilePrefs(
+      const FilePath& prefs_file,
+      base::MessageLoopProxy* message_loop_proxy);
 
   // Creates the PrefService, invalidating the entire builder configuration.
   PrefService* Create();

@@ -212,6 +212,10 @@ void JsonPrefStore::RemoveValue(const std::string& key) {
     ReportValueChanged(key);
 }
 
+void JsonPrefStore::MarkNeedsEmptyValue(const std::string& key) {
+  keys_need_empty_value_.insert(key);
+}
+
 bool JsonPrefStore::ReadOnly() const {
   return read_only_;
 }
@@ -310,5 +314,29 @@ bool JsonPrefStore::SerializeData(std::string* output) {
   JSONStringValueSerializer serializer(output);
   serializer.set_pretty_print(true);
   scoped_ptr<DictionaryValue> copy(prefs_->DeepCopyWithoutEmptyChildren());
+
+  // Iterates |keys_need_empty_value_| and if the key exists in |prefs_|,
+  // ensure its empty ListValue or DictonaryValue is preserved.
+  for (std::set<std::string>::const_iterator
+       it = keys_need_empty_value_.begin();
+       it != keys_need_empty_value_.end();
+       ++it) {
+    const std::string& key = *it;
+
+    base::Value* value = NULL;
+    if (!prefs_->Get(key, &value))
+      continue;
+
+    if (value->IsType(base::Value::TYPE_LIST)) {
+      const base::ListValue* list = NULL;
+      if (value->GetAsList(&list) && list->empty())
+        copy->Set(key, new base::ListValue);
+    } else if (value->IsType(base::Value::TYPE_DICTIONARY)) {
+      const base::DictionaryValue* dict = NULL;
+      if (value->GetAsDictionary(&dict) && dict->empty())
+        copy->Set(key, new base::DictionaryValue);
+    }
+  }
+
   return serializer.Serialize(*(copy.get()));
 }

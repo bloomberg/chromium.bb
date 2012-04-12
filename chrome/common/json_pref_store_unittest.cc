@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -243,4 +243,51 @@ TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
   pref_store->RemoveObserver(&mock_observer);
 
   EXPECT_FALSE(pref_store->ReadOnly());
+}
+
+TEST_F(JsonPrefStoreTest, NeedsEmptyValue) {
+  FilePath pref_file = temp_dir_.path().AppendASCII("write.json");
+
+  ASSERT_TRUE(file_util::CopyFile(
+      data_dir_.AppendASCII("read.need_empty_value.json"),
+      pref_file));
+
+  // Test that the persistent value can be loaded.
+  ASSERT_TRUE(file_util::PathExists(pref_file));
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(pref_file, message_loop_proxy_.get());
+  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
+  ASSERT_FALSE(pref_store->ReadOnly());
+
+  // The JSON file looks like this:
+  // {
+  //   "list": [ 1 ],
+  //   "list_needs_empty_value": [ 2 ],
+  //   "dict": {
+  //     "dummy": true,
+  //   },
+  //   "dict_needs_empty_value": {
+  //     "dummy": true,
+  //   },
+  // }
+
+  // Set flag to preserve empty values for the following keys.
+  pref_store->MarkNeedsEmptyValue("list_needs_empty_value");
+  pref_store->MarkNeedsEmptyValue("dict_needs_empty_value");
+
+  // Set all keys to empty values.
+  pref_store->SetValue("list", new base::ListValue);
+  pref_store->SetValue("list_needs_empty_value", new base::ListValue);
+  pref_store->SetValue("dict", new base::DictionaryValue);
+  pref_store->SetValue("dict_needs_empty_value", new base::DictionaryValue);
+
+  // Write to file.
+  pref_store->CommitPendingWrite();
+  MessageLoop::current()->RunAllPending();
+
+  // Compare to expected output.
+  FilePath golden_output_file =
+      data_dir_.AppendASCII("write.golden.need_empty_value.json");
+  ASSERT_TRUE(file_util::PathExists(golden_output_file));
+  EXPECT_TRUE(file_util::TextContentsEqual(golden_output_file, pref_file));
 }

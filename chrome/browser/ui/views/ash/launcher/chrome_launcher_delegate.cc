@@ -140,19 +140,31 @@ ChromeLauncherDelegate::~ChromeLauncherDelegate() {
 }
 
 void ChromeLauncherDelegate::Init() {
-  const base::ListValue* pinned_apps =
-      profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
-
-  // Use default pinned apps only when current pinned apps list is empty and
-  // kUseDefaultPinnedApps is true.
-  // TODO(xiyuan): Remove this after http://crbug.com/122679 is resolved.
-  scoped_ptr<base::ListValue> default_pinned_apps;
-  if (pinned_apps->empty() &&
-      profile_->GetPrefs()->GetBoolean(prefs::kUseDefaultPinnedApps)) {
-    default_pinned_apps.reset(CreateDefaultPinnedAppsList());
-    pinned_apps = default_pinned_apps.get();
+  // TODO(xiyuan): Remove migration code and kUseDefaultPinnedApp after M20.
+  // Migration cases:
+  // - Users that unpin all apps:
+  //   - have default pinned apps
+  //   - kUseDefaultPinnedApps set to false
+  //   Migrate them by setting an empty list for kPinnedLauncherApps.
+  //
+  // - Users that have customized pinned apps:
+  //   - have non-default non-empty pinned apps list
+  //   - kUseDefaultPinnedApps set to false
+  //   Nothing needs to be done because customized pref overrides default.
+  //
+  // - Users that have default apps (i.e. new user or never pin/unpin):
+  //   - have default pinned apps
+  //   - kUseDefaultPinnedApps is still true
+  //   Nothing needs to be done because they should get the default.
+  if (profile_->GetPrefs()->FindPreference(
+          prefs::kPinnedLauncherApps)->IsDefaultValue() &&
+      !profile_->GetPrefs()->GetBoolean(prefs::kUseDefaultPinnedApps)) {
+    ListPrefUpdate updater(profile_->GetPrefs(), prefs::kPinnedLauncherApps);
+    updater.Get()->Clear();
   }
 
+  const base::ListValue* pinned_apps =
+      profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
   for (size_t i = 0; i < pinned_apps->GetSize(); ++i) {
     DictionaryValue* app = NULL;
     if (pinned_apps->GetDictionary(i, &app)) {
@@ -201,6 +213,7 @@ void ChromeLauncherDelegate::RegisterUserPrefs(PrefService* user_prefs) {
                                   true,
                                   PrefService::SYNCABLE_PREF);
   user_prefs->RegisterListPref(prefs::kPinnedLauncherApps,
+                               CreateDefaultPinnedAppsList(),
                                PrefService::SYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kShelfAutoHideBehavior,
                                  kShelfAutoHideBehaviorDefault,
@@ -573,7 +586,7 @@ void ChromeLauncherDelegate::PersistPinnedState() {
   profile_->GetPrefs()->SetBoolean(prefs::kUseDefaultPinnedApps, false);
 
   ListPrefUpdate updater(profile_->GetPrefs(), prefs::kPinnedLauncherApps);
-  updater.Get()->Clear();
+  updater->Clear();
   for (size_t i = 0; i < model_->items().size(); ++i) {
     if (model_->items()[i].type == ash::TYPE_APP_SHORTCUT) {
       ash::LauncherID id = model_->items()[i].id;
@@ -583,7 +596,7 @@ void ChromeLauncherDelegate::PersistPinnedState() {
             id_to_item_map_[id].app_id,
             id_to_item_map_[id].app_type);
         if (app_value)
-          updater.Get()->Append(app_value);
+          updater->Append(app_value);
       }
     }
   }
