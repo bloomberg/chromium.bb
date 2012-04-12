@@ -20,6 +20,7 @@
 #include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/threading/thread.h"
+#include "base/time.h"
 #include "base/values.h"
 #include "remoting/host/json_host_config.h"
 
@@ -46,6 +47,9 @@ const char kStartStopTool[] = kConfigDir kServiceName ".me2me.sh";
 // knowledge of which keys belong in which files.
 const char kHostConfigFile[] = kConfigDir kServiceName ".json";
 
+const int kStopWaitRetryLimit = 20;
+const int kStopWaitTimeout = 500;
+
 class DaemonControllerMac : public remoting::DaemonController {
  public:
   DaemonControllerMac();
@@ -65,6 +69,9 @@ class DaemonControllerMac : public remoting::DaemonController {
   void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
                            const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
+  void NotifyWhenStopped(const CompletionCallback& done_callback,
+                         int tries_remaining,
+                         const base::TimeDelta& sleep);
 
   bool RunToolScriptAsRoot(const char* command);
   bool StopService();
@@ -186,8 +193,36 @@ void DaemonControllerMac::DoStop(const CompletionCallback& done_callback) {
   // Since the service is running for the local user's desktop (not as root),
   // it has to be stopped for that user.  This cannot easily be done in the
   // shell-script running as root, so it is done here instead.
-  bool result = StopService();
-  done_callback.Run(result ? RESULT_OK : RESULT_FAILED);
+  if (!StopService()) {
+    done_callback.Run(RESULT_FAILED);
+    return;
+  }
+
+  // StopService does not wait for the stop to take effect, so we can't return
+  // immediately. Instead, we wait up to 10s.
+  NotifyWhenStopped(done_callback,
+                    kStopWaitRetryLimit,
+                    base::TimeDelta::FromMilliseconds(kStopWaitTimeout));
+}
+
+void DaemonControllerMac::NotifyWhenStopped(
+    const CompletionCallback& done_callback,
+    int tries_remaining,
+    const base::TimeDelta& sleep) {
+  if (GetState() == DaemonController::STATE_STOPPED) {
+    done_callback.Run(RESULT_OK);
+  } else if (tries_remaining == 0) {
+    done_callback.Run(RESULT_FAILED);
+  } else {
+    auth_thread_.message_loop_proxy()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&DaemonControllerMac::NotifyWhenStopped,
+                   base::Unretained(this),
+                   done_callback,
+                   tries_remaining - 1,
+                   sleep),
+        sleep);
+  }
 }
 
 bool DaemonControllerMac::RunToolScriptAsRoot(const char* command) {
