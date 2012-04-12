@@ -218,7 +218,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   GtkWidget* text_column = gtk_vbox_new(FALSE, kTextColumnVerticalSpacing);
   gtk_box_pack_start(GTK_BOX(bubble_content), text_column, FALSE, FALSE, 0);
 
-  // Heading label
+  // Heading label.
   GtkWidget* heading_label = gtk_label_new(NULL);
   string16 extension_name = UTF8ToUTF16(extension_->name());
   base::i18n::AdjustStringForLocaleDirection(&extension_name);
@@ -232,15 +232,45 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   gtk_util::SetLabelWidth(heading_label, kTextColumnWidth);
   gtk_box_pack_start(GTK_BOX(text_column), heading_label, FALSE, FALSE, 0);
 
-  // Page action label
-  if (type_ == PAGE_ACTION) {
-    GtkWidget* info_label = gtk_label_new(l10n_util::GetStringUTF8(
-        IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO).c_str());
+  bool has_keybinding = false;
+
+  // Browser action label.
+  if (type_ == BROWSER_ACTION) {
+    const Extension::ExtensionKeybinding* browser_action_command =
+        extension_->browser_action_command();
+    GtkWidget* info_label;
+    if (!browser_action_command) {
+      info_label = gtk_label_new(l10n_util::GetStringUTF8(
+          IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO).c_str());
+    } else {
+      info_label = gtk_label_new(l10n_util::GetStringFUTF8(
+          IDS_EXTENSION_INSTALLED_BROWSER_ACTION_INFO_WITH_SHORTCUT,
+          browser_action_command->accelerator().GetShortcutText()).c_str());
+      has_keybinding = true;
+    }
     gtk_util::SetLabelWidth(info_label, kTextColumnWidth);
     gtk_box_pack_start(GTK_BOX(text_column), info_label, FALSE, FALSE, 0);
   }
 
-  // Omnibox keyword label
+  // Page action label.
+  if (type_ == PAGE_ACTION) {
+    const Extension::ExtensionKeybinding* page_action_command =
+        extension_->page_action_command();
+    GtkWidget* info_label;
+    if (!page_action_command) {
+      info_label = gtk_label_new(l10n_util::GetStringUTF8(
+          IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO).c_str());
+    } else {
+      info_label = gtk_label_new(l10n_util::GetStringFUTF8(
+          IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO_WITH_SHORTCUT,
+          page_action_command->accelerator().GetShortcutText()).c_str());
+      has_keybinding = true;
+    }
+    gtk_util::SetLabelWidth(info_label, kTextColumnWidth);
+    gtk_box_pack_start(GTK_BOX(text_column), info_label, FALSE, FALSE, 0);
+  }
+
+  // Omnibox keyword label.
   if (type_ == OMNIBOX_KEYWORD) {
     GtkWidget* info_label = gtk_label_new(l10n_util::GetStringFUTF8(
         IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO,
@@ -249,11 +279,15 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
     gtk_box_pack_start(GTK_BOX(text_column), info_label, FALSE, FALSE, 0);
   }
 
-  // Manage label
-  GtkWidget* manage_label = gtk_label_new(
-      l10n_util::GetStringUTF8(IDS_EXTENSION_INSTALLED_MANAGE_INFO).c_str());
-  gtk_util::SetLabelWidth(manage_label, kTextColumnWidth);
-  gtk_box_pack_start(GTK_BOX(text_column), manage_label, FALSE, FALSE, 0);
+  if (has_keybinding) {
+    // TODO(finnur): Show the shortcut link.
+  } else {
+    // Manage label.
+    GtkWidget* manage_label = gtk_label_new(
+        l10n_util::GetStringUTF8(IDS_EXTENSION_INSTALLED_MANAGE_INFO).c_str());
+    gtk_util::SetLabelWidth(manage_label, kTextColumnWidth);
+    gtk_box_pack_start(GTK_BOX(text_column), manage_label, FALSE, FALSE, 0);
+  }
 
   // Create and pack the close button.
   GtkWidget* close_column = gtk_vbox_new(FALSE, 0);
