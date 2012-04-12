@@ -888,7 +888,8 @@ TEST_F(VectorCanvasTest, ClippingClean) {
   LoadPngFileToSkBitmap(test_file(L"..\\bitmaps\\bitmap_opaque.png"), &bitmap,
                         true);
   {
-    SkRegion old_region(pcanvas_->getTotalClip());
+    SkAutoCanvasRestore acrv(vcanvas_, true);
+    SkAutoCanvasRestore acrp(pcanvas_, true);
     SkRect rect;
     rect.fLeft = 2;
     rect.fTop = 2;
@@ -900,8 +901,6 @@ TEST_F(VectorCanvasTest, ClippingClean) {
     vcanvas_->drawBitmap(bitmap, 15, 3, NULL);
     pcanvas_->drawBitmap(bitmap, 15, 3, NULL);
     EXPECT_EQ(0., ProcessImage(FILE_PATH_LITERAL("clipped")));
-    vcanvas_->clipRegion(old_region, SkRegion::kReplace_Op);
-    pcanvas_->clipRegion(old_region, SkRegion::kReplace_Op);
   }
   {
     // Verify that the clipping region has been fixed back.
