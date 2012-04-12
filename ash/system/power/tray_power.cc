@@ -9,6 +9,7 @@
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_views.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -25,6 +26,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "unicode/fieldpos.h"
@@ -39,6 +41,8 @@ const int kBatteryImageHeight = 25;
 const int kBatteryImageWidth = 25;
 // Number of different power states.
 const int kNumPowerImages = 15;
+// Top/bottom padding of the text items.
+const int kPaddingVertical = 10;
 }
 
 namespace tray {
@@ -181,23 +185,37 @@ views::View* TrayPower::CreateTrayView(user::LoginStatus status) {
 
 views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
   date_.reset(new tray::DateView(tray::DateView::DATE));
-  if (status != user::LOGGED_IN_NONE && status != user::LOGGED_IN_LOCKED)
-    date_->SetActionable(true);
 
   views::View* container = new views::View;
   views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
-      kTrayPopupPaddingHorizontal, 10, 0);
+      0, 0, 0);
+
   layout->set_spread_blank_space(true);
   container->SetLayoutManager(layout);
   container->set_background(views::Background::CreateSolidBackground(
-      SkColorSetRGB(0xf1, 0xf1, 0xf1)));
-  container->AddChildView(date_.get());
+      kHeaderBackgroundColor));
+  HoverHighlightView* view = new HoverHighlightView(NULL);
+  view->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
+        kTrayPopupPaddingHorizontal, kPaddingVertical, 0));
+  view->AddChildView(date_.get());
+  container->AddChildView(view);
+
+  if (status != user::LOGGED_IN_NONE && status != user::LOGGED_IN_LOCKED) {
+    date_->SetActionable(true);
+    view->set_highlight_color(kHeaderHoverBackgroundColor);
+  } else {
+    view->set_highlight_color(SkColorSetARGB(0, 0, 0, 0));
+  }
 
   PowerSupplyStatus power_status =
       ash::Shell::GetInstance()->tray_delegate()->GetPowerSupplyStatus();
   if (power_status.battery_is_present) {
     power_.reset(new tray::PowerPopupView());
     power_->UpdatePowerStatus(power_status);
+    power_->set_border(views::Border::CreateSolidSidedBorder(
+        kPaddingVertical, kTrayPopupPaddingHorizontal,
+        kPaddingVertical, kTrayPopupPaddingHorizontal,
+        SkColorSetARGB(0, 0, 0, 0)));
     container->AddChildView(power_.get());
   }
   return container;

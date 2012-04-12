@@ -20,6 +20,9 @@ const int kTrayRoundedBorderRadius = 2;
 const SkColor kBackgroundColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 const SkColor kHoverBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 
+const SkColor kHeaderBackgroundColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
+const SkColor kHeaderHoverBackgroundColor = SkColorSetRGB(0xe1, 0xe1, 0xe1);
+
 const SkColor kBorderDarkColor = SkColorSetARGB(51, 0, 0, 0);
 const SkColor kBorderLightColor = SkColorSetRGB(0xeb, 0xeb, 0xeb);
 

@@ -13,6 +13,7 @@
 #include "ui/views/view.h"
 
 class SkBitmap;
+typedef unsigned int SkColor;
 
 namespace views {
 class Label;
@@ -84,6 +85,9 @@ class HoverHighlightView : public ActionableView {
   // Set the accessible name.  Should be used if this doesn't match the label.
   void SetAccessibleName(const string16& name);
 
+  void set_highlight_color(SkColor color) { highlight_color_ = color; }
+  void set_default_color(SkColor color) { default_color_ = color; }
+
  private:
   // Overridden from ActionableView.
   virtual bool PerformAction(const views::Event& event) OVERRIDE;
@@ -92,9 +96,13 @@ class HoverHighlightView : public ActionableView {
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
   ViewClickListener* listener_;
   string16 accessible_name_;
+  SkColor highlight_color_;
+  SkColor default_color_;
+  bool hover_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);
 };

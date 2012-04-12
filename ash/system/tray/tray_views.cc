@@ -10,6 +10,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -68,7 +69,10 @@ bool ActionableView::OnMousePressed(const views::MouseEvent& event) {
 // HoverHighlightView
 
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
-    : listener_(listener) {
+    : listener_(listener),
+      highlight_color_(kHoverBackgroundColor),
+      default_color_(0),
+      hover_(false) {
   set_notify_enter_exit_on_child(true);
 }
 
@@ -117,19 +121,22 @@ bool HoverHighlightView::PerformAction(const views::Event& event) {
 }
 
 void HoverHighlightView::OnMouseEntered(const views::MouseEvent& event) {
-  set_background(views::Background::CreateSolidBackground(
-      ash::kHoverBackgroundColor));
+  hover_ = true;
   SchedulePaint();
 }
 
 void HoverHighlightView::OnMouseExited(const views::MouseEvent& event) {
-  set_background(NULL);
+  hover_ = false;
   SchedulePaint();
 }
 
 void HoverHighlightView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
   state->name = accessible_name_;
+}
+
+void HoverHighlightView::OnPaintBackground(gfx::Canvas* canvas) {
+  canvas->DrawColor(hover_ ? highlight_color_ : default_color_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -185,6 +192,8 @@ views::View* CreateDetailedHeaderEntry(int string_id,
   container->AddChildView(header);
   container->SetAccessibleName(
       rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));
+  container->set_highlight_color(kHeaderHoverBackgroundColor);
+  container->set_default_color(kHeaderBackgroundColor);
   return container;
 }
 

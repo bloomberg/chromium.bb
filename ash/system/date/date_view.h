@@ -44,8 +44,6 @@ class DateView : public ActionableView {
   virtual bool PerformAction(const views::Event& event) OVERRIDE;
 
   // Overridden from views::View.
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual void OnLocaleChanged() OVERRIDE;
 
   base::OneShotTimer<DateView> timer_;

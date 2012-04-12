@@ -125,24 +125,6 @@ bool DateView::PerformAction(const views::Event& event) {
   return true;
 }
 
-void DateView::OnMouseEntered(const views::MouseEvent& event) {
-  if (!actionable_)
-    return;
-  gfx::Font font = label_->font();
-  label_->SetFont(font.DeriveFont(0,
-        font.GetStyle() | gfx::Font::UNDERLINED));
-  SchedulePaint();
-}
-
-void DateView::OnMouseExited(const views::MouseEvent& event) {
-  if (!actionable_)
-    return;
-  gfx::Font font = label_->font();
-  label_->SetFont(font.DeriveFont(0,
-        font.GetStyle() & ~gfx::Font::UNDERLINED));
-  SchedulePaint();
-}
-
 void DateView::OnLocaleChanged() {
   UpdateText();
 }

@@ -22,6 +22,9 @@ extern const int kTrayRoundedBorderRadius;
 extern const SkColor kBackgroundColor;
 extern const SkColor kHoverBackgroundColor;
 
+extern const SkColor kHeaderBackgroundColor;
+extern const SkColor kHeaderHoverBackgroundColor;
+
 extern const SkColor kBorderDarkColor;
 extern const SkColor kBorderLightColor;
 

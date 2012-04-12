@@ -60,7 +60,7 @@ class BluetoothDetailedView : public views::View,
         add_device_(NULL),
         toggle_bluetooth_(NULL) {
     SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kVertical, 1, 1, 1));
+        views::BoxLayout::kVertical, 0, 0, 0));
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
     BluetoothDeviceList list;
