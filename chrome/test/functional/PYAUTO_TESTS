@@ -491,8 +491,6 @@
       # ==================================================
       # Disable app tests until r125069 reaches Google Chrome.
       '-apptest',
-      # Disable until QA bots get a build later than 20.0.1097.0
-      '-fullscreen_mouselock',
       # This test fails due to crbug.com/35485
       '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
       # This test fails due to crbug.com/50706
