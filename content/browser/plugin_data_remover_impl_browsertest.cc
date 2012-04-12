@@ -11,6 +11,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 
+namespace content {
+
 namespace {
 const char* kNPAPITestPluginMimeType = "application/vnd.npapi-test";
 }
@@ -35,7 +37,7 @@ class PluginDataRemoverTest : public InProcessBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_F(PluginDataRemoverTest, RemoveData) {
-  PluginDataRemoverImpl plugin_data_remover(GetResourceContext());
+  PluginDataRemoverImpl plugin_data_remover(GetBrowserContext());
   plugin_data_remover.set_mime_type(kNPAPITestPluginMimeType);
   base::WaitableEventWatcher watcher;
   base::WaitableEvent* event =
@@ -43,3 +45,5 @@ IN_PROC_BROWSER_TEST_F(PluginDataRemoverTest, RemoveData) {
   watcher.StartWatching(event, this);
   ui_test_utils::RunMessageLoop();
 }
+
+}  // namespace content

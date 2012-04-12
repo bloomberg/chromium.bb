@@ -10,6 +10,7 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
@@ -22,6 +23,7 @@
 #include "ppapi/c/dev/ppp_network_state_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
+#include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/interface_list.h"
@@ -83,6 +85,8 @@ bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiThread, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_LoadPlugin, OnMsgLoadPlugin)
     IPC_MESSAGE_HANDLER(PpapiMsg_CreateChannel, OnMsgCreateChannel)
+    IPC_MESSAGE_HANDLER(PpapiMsg_ClearSiteData, OnMsgClearSiteData)
+
     IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPServerSocket_ListenACK,
                                 OnPluginDispatcherMessageReceived(msg))
     IPC_MESSAGE_HANDLER_GENERIC(PpapiMsg_PPBTCPServerSocket_AcceptACK,
@@ -255,6 +259,14 @@ void PpapiThread::OnMsgCreateChannel(base::ProcessHandle host_process_handle,
   Send(new PpapiHostMsg_ChannelCreated(channel_handle));
 }
 
+void PpapiThread::OnMsgClearSiteData(const FilePath& plugin_data_path,
+                                     const std::string& site,
+                                     uint64 flags,
+                                     uint64 max_age) {
+  Send(new PpapiHostMsg_ClearSiteDataResult(
+      ClearSiteData(plugin_data_path, site, flags, max_age)));
+}
+
 void PpapiThread::OnMsgSetNetworkState(bool online) {
   if (!get_plugin_interface_)
     return;
@@ -276,6 +288,31 @@ void PpapiThread::OnPluginDispatcherMessageReceived(const IPC::Message& msg) {
       plugin_dispatchers_.find(id);
   if (dispatcher != plugin_dispatchers_.end())
     dispatcher->second->OnMessageReceived(msg);
+}
+
+bool PpapiThread::ClearSiteData(const FilePath& plugin_data_path,
+                                const std::string& site,
+                                uint64 flags,
+                                uint64 max_age) {
+  if (!get_plugin_interface_)
+    return false;
+  const PPP_Flash_BrowserOperations_1_0* browser_interface =
+      static_cast<const PPP_Flash_BrowserOperations_1_0*>(
+          get_plugin_interface_(PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_0));
+  if (!browser_interface)
+    return false;
+
+  // The string is always 8-bit, convert on Windows.
+#if defined(OS_WIN)
+  std::string data_str = WideToUTF8(plugin_data_path.value());
+#else
+  std::string data_str = plugin_data_path.value();
+#endif
+
+  browser_interface->ClearSiteData(data_str.c_str(),
+                                   site.empty() ? NULL : site.c_str(),
+                                   flags, max_age);
+  return true;
 }
 
 bool PpapiThread::SetupRendererChannel(base::ProcessHandle host_process_handle,

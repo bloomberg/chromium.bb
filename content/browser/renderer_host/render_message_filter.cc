@@ -124,14 +124,14 @@ class OpenChannelToPpapiPluginCallback
         context_(context) {
   }
 
-  virtual void GetChannelInfo(base::ProcessHandle* renderer_handle,
-                              int* renderer_id) {
+  virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
+                                   int* renderer_id) {
     *renderer_handle = filter()->peer_handle();
     *renderer_id = filter()->render_process_id();
   }
 
-  virtual void OnChannelOpened(base::ProcessHandle plugin_process_handle,
-                               const IPC::ChannelHandle& channel_handle) {
+  virtual void OnPpapiChannelOpened(base::ProcessHandle plugin_process_handle,
+                                    const IPC::ChannelHandle& channel_handle) {
     ViewHostMsg_OpenChannelToPepperPlugin::WriteReplyParams(
         reply_msg(), plugin_process_handle, channel_handle);
     SendReplyAndDeleteThis();
@@ -158,14 +158,14 @@ class OpenChannelToPpapiBrokerCallback
 
   virtual ~OpenChannelToPpapiBrokerCallback() {}
 
-  virtual void GetChannelInfo(base::ProcessHandle* renderer_handle,
-                              int* renderer_id) {
+  virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
+                                   int* renderer_id) {
     *renderer_handle = filter_->peer_handle();
     *renderer_id = filter_->render_process_id();
   }
 
-  virtual void OnChannelOpened(base::ProcessHandle broker_process_handle,
-                               const IPC::ChannelHandle& channel_handle) {
+  virtual void OnPpapiChannelOpened(base::ProcessHandle broker_process_handle,
+                                    const IPC::ChannelHandle& channel_handle) {
     filter_->Send(new ViewMsg_PpapiBrokerChannelCreated(routing_id_,
                                                         request_id_,
                                                         broker_process_handle,

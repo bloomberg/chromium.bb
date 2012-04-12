@@ -203,6 +203,10 @@ void InProcessBrowserTest::TearDown() {
   BrowserTestBase::TearDown();
 }
 
+content::BrowserContext* InProcessBrowserTest::GetBrowserContext() {
+  return browser_->profile();
+}
+
 content::ResourceContext* InProcessBrowserTest::GetResourceContext() {
   return browser_->profile()->GetResourceContext();
 }

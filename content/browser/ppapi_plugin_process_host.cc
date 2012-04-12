@@ -200,17 +200,19 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
 void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
   base::ProcessHandle process_handle;
   int renderer_id;
-  client->GetChannelInfo(&process_handle, &renderer_id);
+  client->GetPpapiChannelInfo(&process_handle, &renderer_id);
 
   // We can't send any sync messages from the browser because it might lead to
   // a hang. See the similar code in PluginProcessHost for more description.
   PpapiMsg_CreateChannel* msg = new PpapiMsg_CreateChannel(process_handle,
                                                            renderer_id);
   msg->set_unblock(true);
-  if (Send(msg))
+  if (Send(msg)) {
     sent_requests_.push(client);
-  else
-    client->OnChannelOpened(base::kNullProcessHandle, IPC::ChannelHandle());
+  } else {
+    client->OnPpapiChannelOpened(base::kNullProcessHandle,
+                                 IPC::ChannelHandle());
+  }
 }
 
 void PpapiPluginProcessHost::OnProcessLaunched() {
@@ -256,14 +258,14 @@ void PpapiPluginProcessHost::CancelRequests() {
   DVLOG(1) << "PpapiPluginProcessHost" << (is_broker_ ? "[broker]" : "")
            << "CancelRequests()";
   for (size_t i = 0; i < pending_requests_.size(); i++) {
-    pending_requests_[i]->OnChannelOpened(base::kNullProcessHandle,
-                                          IPC::ChannelHandle());
+    pending_requests_[i]->OnPpapiChannelOpened(base::kNullProcessHandle,
+                                               IPC::ChannelHandle());
   }
   pending_requests_.clear();
 
   while (!sent_requests_.empty()) {
-    sent_requests_.front()->OnChannelOpened(base::kNullProcessHandle,
-                                            IPC::ChannelHandle());
+    sent_requests_.front()->OnPpapiChannelOpened(base::kNullProcessHandle,
+                                                 IPC::ChannelHandle());
     sent_requests_.pop();
   }
 }
@@ -284,7 +286,7 @@ void PpapiPluginProcessHost::OnRendererPluginChannelCreated(
 #if defined(OS_WIN)
   base::ProcessHandle renderer_process;
   int renderer_id;
-  client->GetChannelInfo(&renderer_process, &renderer_id);
+  client->GetPpapiChannelInfo(&renderer_process, &renderer_id);
 
   base::ProcessHandle renderers_plugin_handle = NULL;
   ::DuplicateHandle(::GetCurrentProcess(), plugin_process,
@@ -295,5 +297,5 @@ void PpapiPluginProcessHost::OnRendererPluginChannelCreated(
   base::ProcessHandle renderers_plugin_handle = plugin_process;
 #endif
 
-  client->OnChannelOpened(renderers_plugin_handle, channel_handle);
+  client->OnPpapiChannelOpened(renderers_plugin_handle, channel_handle);
 }

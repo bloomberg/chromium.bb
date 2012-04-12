@@ -244,8 +244,18 @@ IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_SupportsInterface,
                             std::string /* interface_name */,
                             bool /* result */)
 
-// Broker Process.
+// Instructs the plugin to clear data for the given site & time. The plugin
+// process will respond with PpapiHostMsg_ClearSiteDataResult. This is used
+// for Flash.
+IPC_MESSAGE_CONTROL4(PpapiMsg_ClearSiteData,
+                     FilePath /* plugin_data_path */,
+                     std::string /* site */,
+                     uint64 /* flags */,
+                     uint64 /* max_age */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_ClearSiteDataResult,
+                     bool /* success */)
 
+// Broker Process.
 IPC_SYNC_MESSAGE_CONTROL2_1(PpapiMsg_ConnectToPlugin,
                             PP_Instance /* instance */,
                             IPC::PlatformFileForTransit /* handle */,

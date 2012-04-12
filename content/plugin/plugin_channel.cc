@@ -258,7 +258,7 @@ int PluginChannel::GenerateRouteID() {
 
 void PluginChannel::OnClearSiteData(const std::string& site,
                                     uint64 flags,
-                                    base::Time begin_time) {
+                                    uint64 max_age) {
   bool success = false;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   FilePath path = command_line->GetSwitchValuePath(switches::kPluginPath);
@@ -268,13 +268,6 @@ void PluginChannel::OnClearSiteData(const std::string& site,
     NPError err = plugin_lib->NP_Initialize();
     if (err == NPERR_NO_ERROR) {
       const char* site_str = site.empty() ? NULL : site.c_str();
-      uint64 max_age;
-      if (begin_time > base::Time()) {
-        base::TimeDelta delta = base::Time::Now() - begin_time;
-        max_age = delta.InSeconds();
-      } else {
-        max_age = kuint64max;
-      }
       err = plugin_lib->NP_ClearSiteData(site_str, flags, max_age);
       std::string site_name =
           site.empty() ? "NULL"

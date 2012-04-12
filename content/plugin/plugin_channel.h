@@ -84,7 +84,7 @@ class PluginChannel : public NPChannelBase {
   void OnGenerateRouteID(int* route_id);
   void OnClearSiteData(const std::string& site,
                        uint64 flags,
-                       base::Time begin_time);
+                       uint64 max_age);
 
   std::vector<scoped_refptr<WebPluginDelegateStub> > plugin_stubs_;
 

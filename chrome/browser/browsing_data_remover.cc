@@ -325,10 +325,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     content::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
 
     waiting_for_clear_plugin_data_ = true;
-    if (!plugin_data_remover_.get()) {
-      plugin_data_remover_.reset(
-          content::PluginDataRemover::Create(profile_->GetResourceContext()));
-    }
+    if (!plugin_data_remover_.get())
+      plugin_data_remover_.reset(content::PluginDataRemover::Create(profile_));
     base::WaitableEvent* event =
         plugin_data_remover_->StartRemoving(delete_begin_);
     watcher_.StartWatching(event, this);

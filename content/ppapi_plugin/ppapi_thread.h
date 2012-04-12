@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -55,8 +56,18 @@ class PpapiThread : public ChildThread,
   void OnMsgLoadPlugin(const FilePath& path);
   void OnMsgCreateChannel(base::ProcessHandle host_process_handle,
                           int renderer_id);
+  void OnMsgClearSiteData(const FilePath& plugin_data_path,
+                          const std::string& site,
+                          uint64 flags,
+                          uint64 max_age);
   void OnMsgSetNetworkState(bool online);
   void OnPluginDispatcherMessageReceived(const IPC::Message& msg);
+
+  // Requests that the plugin clear data, returning true on success.
+  bool ClearSiteData(const FilePath& plugin_data_path,
+                     const std::string& site,
+                     uint64 flags,
+                     uint64 max_age);
 
   // Sets up the channel to the given renderer. On success, returns true and
   // fills the given ChannelHandle with the information from the new channel.

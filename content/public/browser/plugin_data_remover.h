@@ -13,19 +13,17 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace content {
-class ResourceContext;
-}
-
 namespace webkit {
 struct WebPluginInfo;
 }
 
 namespace content {
 
+class BrowserContext;
+
 class CONTENT_EXPORT PluginDataRemover {
  public:
-  static PluginDataRemover* Create(content::ResourceContext* resource_context);
+  static PluginDataRemover* Create(content::BrowserContext* browser_context);
   virtual ~PluginDataRemover() {}
 
   // Starts removing plug-in data stored since |begin_time|.

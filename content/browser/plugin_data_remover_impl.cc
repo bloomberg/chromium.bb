@@ -7,16 +7,20 @@
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
+#include "content/browser/renderer_host/pepper_file_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/plugin_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/pepper_plugin_info.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
-using content::BrowserThread;
-using content::ChildProcessHostImpl;
+namespace content {
 
 namespace {
 
@@ -28,12 +32,9 @@ const uint64 kClearAllData = 0;
 
 }  // namespace
 
-namespace content {
-
 // static
-PluginDataRemover* PluginDataRemover::Create(
-    content::ResourceContext* resource_context) {
-  return new PluginDataRemoverImpl(resource_context);
+PluginDataRemover* PluginDataRemover::Create(BrowserContext* browser_context) {
+  return new PluginDataRemoverImpl(browser_context);
 }
 
 // static
@@ -55,21 +56,21 @@ bool PluginDataRemover::IsSupported(webkit::WebPluginInfo* plugin) {
   return rv;
 }
 
-}
-
 class PluginDataRemoverImpl::Context
     : public PluginProcessHost::Client,
+      public PpapiPluginProcessHost::BrokerClient,
       public IPC::Channel::Listener,
       public base::RefCountedThreadSafe<Context,
                                         BrowserThread::DeleteOnIOThread> {
  public:
-  Context(base::Time begin_time,
-          content::ResourceContext* resource_context)
+  Context(base::Time begin_time, BrowserContext* browser_context)
       : event_(new base::WaitableEvent(true, false)),
         begin_time_(begin_time),
         is_removing_(false),
-        resource_context_(resource_context),
+        browser_context_path_(browser_context->GetPath()),
+        resource_context_(browser_context->GetResourceContext()),
         channel_(NULL) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
   virtual ~Context() {
@@ -87,16 +88,33 @@ class PluginDataRemoverImpl::Context
         base::TimeDelta::FromMilliseconds(kRemovalTimeoutMs));
   }
 
-  // Initialize on the IO thread.
   void InitOnIOThread(const std::string& mime_type) {
+    PluginServiceImpl* plugin_service = PluginServiceImpl::GetInstance();
+
+    // Get the plugin file path.
+    std::vector<webkit::WebPluginInfo> plugins;
+    plugin_service->GetPluginInfoArray(
+        GURL(), mime_type, false, &plugins, NULL);
+    FilePath plugin_path;
+    if (!plugins.empty())  // May be empty for some tests.
+      plugin_path = plugins[0].path;
+
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     remove_start_time_ = base::Time::Now();
     is_removing_ = true;
-    // Balanced in OnChannelOpened or OnError. Exactly one them will eventually
-    // be called, so we need to keep this object around until then.
+    // Balanced in On[Ppapi]ChannelOpened or OnError. Exactly one them will
+    // eventually be called, so we need to keep this object around until then.
     AddRef();
-    PluginServiceImpl::GetInstance()->OpenChannelToNpapiPlugin(
-        0, 0, GURL(), GURL(), mime_type, this);
+
+    PepperPluginInfo* pepper_info =
+        plugin_service->GetRegisteredPpapiPluginInfo(plugin_path);
+    if (pepper_info) {
+      // Use the broker since we run this function outside the sandbox.
+      plugin_service->OpenChannelToPpapiBroker(plugin_path, this);
+    } else {
+      plugin_service->OpenChannelToNpapiPlugin(
+          0, 0, GURL(), GURL(), mime_type, this);
+    }
   }
 
   // Called when a timeout happens in order not to block the client
@@ -116,7 +134,7 @@ class PluginDataRemoverImpl::Context
     return false;
   }
 
-  virtual content::ResourceContext* GetResourceContext() OVERRIDE {
+  virtual ResourceContext* GetResourceContext() OVERRIDE {
     return resource_context_;
   }
 
@@ -130,7 +148,7 @@ class PluginDataRemoverImpl::Context
   }
 
   virtual void OnChannelOpened(const IPC::ChannelHandle& handle) OVERRIDE {
-    ConnectToChannel(handle);
+    ConnectToChannel(handle, false);
     // Balancing the AddRef call.
     Release();
   }
@@ -142,10 +160,28 @@ class PluginDataRemoverImpl::Context
     Release();
   }
 
+  // PpapiPluginProcessHost::BrokerClient implementation.
+  virtual void GetPpapiChannelInfo(base::ProcessHandle* renderer_handle,
+                                   int* renderer_id) OVERRIDE {
+    *renderer_id = 0;
+  }
+
+  virtual void OnPpapiChannelOpened(
+      base::ProcessHandle plugin_process_handle,
+      const IPC::ChannelHandle& channel_handle) OVERRIDE {
+    if (plugin_process_handle != base::kNullProcessHandle)
+      ConnectToChannel(channel_handle, true);
+
+    // Balancing the AddRef call.
+    Release();
+  }
+
   // IPC::Channel::Listener methods.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     IPC_BEGIN_MESSAGE_MAP(Context, message)
       IPC_MESSAGE_HANDLER(PluginHostMsg_ClearSiteDataResult,
+                          OnClearSiteDataResult)
+      IPC_MESSAGE_HANDLER(PpapiHostMsg_ClearSiteDataResult,
                           OnClearSiteDataResult)
       IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP()
@@ -164,7 +200,7 @@ class PluginDataRemoverImpl::Context
 
  private:
   // Connects the client side of a newly opened plug-in channel.
-  void ConnectToChannel(const IPC::ChannelHandle& handle) {
+  void ConnectToChannel(const IPC::ChannelHandle& handle, bool is_ppapi) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     // If we timed out, don't bother connecting.
@@ -179,16 +215,33 @@ class PluginDataRemoverImpl::Context
       return;
     }
 
-    if (!channel_->Send(new PluginMsg_ClearSiteData(std::string(),
-                                                    kClearAllData,
-                                                    begin_time_))) {
+    uint64 max_age = begin_time_.is_null() ?
+        std::numeric_limits<uint64>::max() :
+        (base::Time::Now() - begin_time_).InSeconds();
+
+    IPC::Message* msg;
+    if (is_ppapi) {
+      // Pass the path as 8-bit on all platforms.
+      FilePath profile_path =
+          PepperFileMessageFilter::GetDataDirName(browser_context_path_);
+#if defined(OS_WIN)
+      std::string path_utf8 = UTF16ToUTF8(profile_path.value());
+#else
+      const std::string& path_utf8 = profile_path.value();
+#endif
+      msg = new PpapiMsg_ClearSiteData(profile_path, path_utf8,
+                                       kClearAllData, max_age);
+    } else {
+      msg = new PluginMsg_ClearSiteData(std::string(), kClearAllData, max_age);
+    }
+    if (!channel_->Send(msg)) {
       NOTREACHED() << "Couldn't send ClearSiteData message";
       SignalDone();
       return;
     }
   }
 
-  // Handles the PluginHostMsg_ClearSiteDataResult message.
+  // Handles the *HostMsg_ClearSiteDataResult message.
   void OnClearSiteDataResult(bool success) {
     LOG_IF(ERROR, !success) << "ClearSiteData returned error";
     UMA_HISTOGRAM_TIMES("ClearPluginData.time",
@@ -213,8 +266,12 @@ class PluginDataRemoverImpl::Context
   base::Time begin_time_;
   bool is_removing_;
 
-  // The resource context for the profile.
-  content::ResourceContext* resource_context_;
+  // Path for the current profile. Must be retrieved on the UI thread from the
+  // browser context when we start so we can use it later on the I/O thread.
+  FilePath browser_context_path_;
+
+  // The resource context for the profile. Use only on the I/O thread.
+  ResourceContext* resource_context_;
 
   // The channel is NULL until we have opened a connection to the plug-in
   // process.
@@ -222,10 +279,9 @@ class PluginDataRemoverImpl::Context
 };
 
 
-PluginDataRemoverImpl::PluginDataRemoverImpl(
-    content::ResourceContext* resource_context)
+PluginDataRemoverImpl::PluginDataRemoverImpl(BrowserContext* browser_context)
     : mime_type_(kFlashMimeType),
-      resource_context_(resource_context) {
+      browser_context_(browser_context) {
 }
 
 PluginDataRemoverImpl::~PluginDataRemoverImpl() {
@@ -234,7 +290,9 @@ PluginDataRemoverImpl::~PluginDataRemoverImpl() {
 base::WaitableEvent* PluginDataRemoverImpl::StartRemoving(
     base::Time begin_time) {
   DCHECK(!context_.get());
-  context_ = new Context(begin_time, resource_context_);
+  context_ = new Context(begin_time, browser_context_);
   context_->Init(mime_type_);
   return context_->event();
 }
+
+}  // namespace content

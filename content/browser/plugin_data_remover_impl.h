@@ -10,14 +10,17 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/time.h"
 #include "content/public/browser/plugin_data_remover.h"
 
-class CONTENT_EXPORT PluginDataRemoverImpl : public content::PluginDataRemover {
+namespace content {
+
+class CONTENT_EXPORT PluginDataRemoverImpl : public PluginDataRemover {
  public:
-  explicit PluginDataRemoverImpl(content::ResourceContext* resource_context);
+  explicit PluginDataRemoverImpl(BrowserContext* browser_context);
   virtual ~PluginDataRemoverImpl();
 
-  // content::PluginDataRemover implementation:
+  // PluginDataRemover implementation:
   virtual base::WaitableEvent* StartRemoving(base::Time begin_time) OVERRIDE;
 
   // The plug-in whose data should be removed (usually Flash) is specified via
@@ -29,8 +32,9 @@ class CONTENT_EXPORT PluginDataRemoverImpl : public content::PluginDataRemover {
   class Context;
 
   std::string mime_type_;
-  // The resource context for the profile.
-  content::ResourceContext* resource_context_;
+
+  // The browser context for the profile.
+  BrowserContext* browser_context_;
 
   // This allows this object to be deleted on the UI thread while it's still
   // being used on the IO thread.
@@ -38,5 +42,7 @@ class CONTENT_EXPORT PluginDataRemoverImpl : public content::PluginDataRemover {
 
   DISALLOW_COPY_AND_ASSIGN(PluginDataRemoverImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_PLUGIN_DATA_REMOVER_IMPL_H_

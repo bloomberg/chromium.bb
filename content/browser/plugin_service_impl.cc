@@ -337,20 +337,26 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
     PpapiPluginProcessHost::PluginClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
       path, client);
-  if (plugin_host)
+  if (plugin_host) {
     plugin_host->OpenChannelToPlugin(client);
-  else  // Send error.
-    client->OnChannelOpened(base::kNullProcessHandle, IPC::ChannelHandle());
+  } else {
+    // Send error.
+    client->OnPpapiChannelOpened(base::kNullProcessHandle,
+                                 IPC::ChannelHandle());
+  }
 }
 
 void PluginServiceImpl::OpenChannelToPpapiBroker(
     const FilePath& path,
     PpapiPluginProcessHost::BrokerClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiBrokerProcess(path);
-  if (plugin_host)
+  if (plugin_host) {
     plugin_host->OpenChannelToPlugin(client);
-  else  // Send error.
-    client->OnChannelOpened(base::kNullProcessHandle, IPC::ChannelHandle());
+  } else {
+    // Send error.
+    client->OnPpapiChannelOpened(base::kNullProcessHandle,
+                                 IPC::ChannelHandle());
+  }
 }
 
 void PluginServiceImpl::CancelOpenChannelToNpapiPlugin(

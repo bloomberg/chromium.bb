@@ -41,8 +41,7 @@ PepperFileMessageFilter::PepperFileMessageFilter(
     int child_id, content::BrowserContext* browser_context)
         : child_id_(child_id),
           channel_(NULL) {
-  pepper_path_ =
-      browser_context->GetPath().Append(FILE_PATH_LITERAL("Pepper Data"));
+  pepper_path_ = GetDataDirName(browser_context->GetPath());
 }
 
 PepperFileMessageFilter::~PepperFileMessageFilter() {
@@ -74,6 +73,11 @@ bool PepperFileMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 void PepperFileMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
+}
+
+// static
+FilePath PepperFileMessageFilter::GetDataDirName(const FilePath& profile_path) {
+  return profile_path.Append(FILE_PATH_LITERAL("Pepper Data"));
 }
 
 // Called on the FILE thread:
