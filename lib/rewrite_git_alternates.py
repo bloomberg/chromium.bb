@@ -14,11 +14,16 @@ us to access the same repo from inside and outside a chroot at the same time
 
 __all__ = ('RebuildRepoCheckout',)
 
+import sys
 import os
 import shutil
 import errno
 
-import cros_build_lib
+path = os.path.realpath(__file__)
+path = os.path.normpath(os.path.join(os.path.dirname(path), '..', '..'))
+sys.path.insert(0, path)
+
+from chromite.lib import cros_build_lib
 
 _CACHE_NAME = '.cros_projects.list'
 
