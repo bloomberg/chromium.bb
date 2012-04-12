@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ class MHTMLGenerationManager {
     base::PlatformFile browser_file;
     IPC::PlatformFileForTransit renderer_file;
 
-    // The IDs mapping to a specific tab.
+    // The IDs mapping to a specific contents.
     int process_id;
     int routing_id;
 

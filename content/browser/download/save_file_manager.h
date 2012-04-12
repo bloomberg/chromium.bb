@@ -43,17 +43,17 @@
 //    |           |      file_thread (close file)
 //    |           |---------------------> cancel command ---->|
 //    |                                               io_thread (stops net IO
-// ui_thread (user close tab)                                    for saving)
+// ui_thread (user close contents)                               for saving)
 //    |----> cancel command ---->|
 //                            Render process(stop serializing DOM and sending
 //                                           data)
 //
 //
-// The SaveFileManager tracks saving requests, mapping from a save ID
-// (unique integer created in the IO thread) to the SavePackage for the
-// tab where the saving job was initiated. In the event of a tab closure
-// during saving, the SavePackage will notice the SaveFileManage to
-// cancel all SaveFile job.
+// The SaveFileManager tracks saving requests, mapping from a save ID (unique
+// integer created in the IO thread) to the SavePackage for the contents where
+// the saving job was initiated. In the event of a contents closure during
+// saving, the SavePackage will notify the SaveFileManage to cancel all SaveFile
+// jobs.
 
 #ifndef CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H_
 #define CONTENT_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H_
@@ -152,7 +152,7 @@ class SaveFileManager
   // A cleanup helper that runs on the file thread.
   void OnShutdown();
 
-  // Called only on UI thread to get the SavePackage for a tab's browser
+  // Called only on UI thread to get the SavePackage for a contents's browser
   // context.
   static SavePackage* GetSavePackageFromRenderIds(int render_process_id,
                                                   int review_view_id);
@@ -164,7 +164,7 @@ class SaveFileManager
   // Unregister a start request according save URL, disassociate
   // the save URL and SavePackage.
   SavePackage* UnregisterStartingRequest(const GURL& save_url,
-                                         int tab_id);
+                                         int contents_id);
 
   // Look up the SavePackage according to save id.
   SavePackage* LookupPackage(int save_id);
@@ -178,7 +178,7 @@ class SaveFileManager
 
   // Notifications sent from the file thread and run on the UI thread.
 
-  // Lookup the SaveManager for this TabContents' saving browser context and
+  // Lookup the SaveManager for this WebContents' saving browser context and
   // inform it the saving job has been started.
   void OnStartSave(const SaveFileCreateInfo* info);
   // Update the SavePackage with the current state of a started saving job.
@@ -191,7 +191,7 @@ class SaveFileManager
   void OnSaveFinished(int save_id, int64 bytes_so_far, bool is_success);
   // For those requests that do not have valid save id, use
   // map:(url, SavePackage) to find the request and remove it.
-  void OnErrorFinished(const GURL& save_url, int tab_id);
+  void OnErrorFinished(const GURL& save_url, int contents_id);
   // Notifies SavePackage that the whole page saving job is finished.
   void OnFinishSavePageJob(int render_process_id,
                            int render_view_id,
@@ -234,13 +234,14 @@ class SaveFileManager
   // calls SaveFinished with save id -1 for network error. We name the requests
   // as starting requests. For tracking those starting requests, we need to
   // have some data structure.
-  // First we use a hashmap to map the request URL to SavePackage, then we
-  // use a hashmap to map the tab id (we actually use render_process_id) to the
-  // hashmap since it is possible to save same URL in different tab at
+  // First we use a hashmap to map the request URL to SavePackage, then we use a
+  // hashmap to map the contents id (we actually use render_process_id) to the
+  // hashmap since it is possible to save the same URL in different contents at
   // same time.
   typedef base::hash_map<std::string, SavePackage*> StartingRequestsMap;
-  typedef base::hash_map<int, StartingRequestsMap> TabToStartingRequestsMap;
-  TabToStartingRequestsMap tab_starting_requests_;
+  typedef base::hash_map<int, StartingRequestsMap>
+      ContentsToStartingRequestsMap;
+  ContentsToStartingRequestsMap contents_starting_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveFileManager);
 };

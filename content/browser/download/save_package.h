@@ -45,7 +45,7 @@ class WebContents;
 // Each page saving job may include one or multiple files which need to be
 // saved. Each file is represented by a SaveItem, and all SaveItems are owned
 // by the SavePackage. SaveItems are created when a user initiates a page
-// saving job, and exist for the duration of one tab's life time.
+// saving job, and exist for the duration of one contents's life time.
 class CONTENT_EXPORT SavePackage
     : public base::RefCountedThreadSafe<SavePackage>,
       public content::WebContentsObserver,
@@ -74,7 +74,7 @@ class CONTENT_EXPORT SavePackage
   // Constructor for user initiated page saving. This constructor results in a
   // SavePackage that will generate and sanitize a suggested name for the user
   // in the "Save As" dialog box.
-  explicit SavePackage(content::WebContents* tab_contents);
+  explicit SavePackage(content::WebContents* web_contents);
 
   // This contructor is used only for testing. We can bypass the file and
   // directory name generation / sanitization by providing well known paths
@@ -109,7 +109,7 @@ class CONTENT_EXPORT SavePackage
   bool canceled() const { return user_canceled_ || disk_error_occurred_; }
   bool finished() const { return finished_; }
   content::SavePageType save_type() const { return save_type_; }
-  int tab_id() const { return tab_id_; }
+  int contents_id() const { return contents_id_; }
   int id() const { return unique_id_; }
   content::WebContents* web_contents() const;
 
@@ -294,9 +294,9 @@ class CONTENT_EXPORT SavePackage
   // from outside.
   WaitState wait_state_;
 
-  // Since for one tab, it can only have one SavePackage in same time.
-  // Now we actually use render_process_id as tab's unique id.
-  const int tab_id_;
+  // Since for one contents, it can only have one SavePackage in same time.
+  // Now we actually use render_process_id as the contents's unique id.
+  const int contents_id_;
 
   // Unique ID for this SavePackage.
   const int unique_id_;

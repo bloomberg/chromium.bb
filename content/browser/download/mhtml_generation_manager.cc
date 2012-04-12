@@ -107,7 +107,7 @@ void MHTMLGenerationManager::FileCreated(int job_id,
   RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(
       job.process_id, job.routing_id);
   if (!rvh) {
-    // The tab went away.
+    // The contents went away.
     JobFinished(job_id, -1);
     return;
   }

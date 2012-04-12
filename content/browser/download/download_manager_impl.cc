@@ -1045,12 +1045,12 @@ void DownloadManagerImpl::OnDownloadItemAddedToPersistentStore(
 }
 
 void DownloadManagerImpl::ShowDownloadInBrowser(DownloadItem* download) {
-  // The 'contents' may no longer exist if the user closed the tab before we
-  // get this start completion event.
+  // The 'contents' may no longer exist if the user closed the contents before
+  // we get this start completion event.
   WebContents* content = download->GetWebContents();
 
   // If the contents no longer exists, we ask the embedder to suggest another
-  // tab.
+  // contents.
   if (!content)
     content = delegate_->GetAlternativeWebContentsToNotifyForDownload();
 

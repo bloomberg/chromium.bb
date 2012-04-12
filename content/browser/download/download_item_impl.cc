@@ -848,7 +848,7 @@ DownloadPersistentStoreInfo DownloadItemImpl::GetPersistentStoreInfo() const {
 }
 
 WebContents* DownloadItemImpl::GetWebContents() const {
-  // TODO(rdsmith): Remove null check after removing GetTabContents() from
+  // TODO(rdsmith): Remove null check after removing GetWebContents() from
   // paths that might be used by DownloadItems created from history import.
   // Currently such items have null request_handle_s, where other items
   // (regular and SavePackage downloads) have actual objects off the pointer.

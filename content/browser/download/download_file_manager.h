@@ -31,10 +31,10 @@
 //
 // The DownloadFileManager tracks download requests, mapping from a download
 // ID (unique integer created in the IO thread) to the DownloadManager for the
-// tab (profile) where the download was initiated. In the event of a tab closure
-// during a download, the DownloadFileManager will continue to route data to the
-// appropriate DownloadManager. In progress downloads are cancelled for a
-// DownloadManager that exits (such as when closing a profile).
+// contents (profile) where the download was initiated. In the event of a
+// contents closure during a download, the DownloadFileManager will continue to
+// route data to the appropriate DownloadManager. In progress downloads are
+// cancelled for a DownloadManager that exits (such as when closing a profile).
 
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_MANAGER_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_MANAGER_H_

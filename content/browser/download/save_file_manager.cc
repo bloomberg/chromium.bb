@@ -69,22 +69,24 @@ void SaveFileManager::RegisterStartingRequest(const GURL& save_url,
                                               SavePackage* save_package) {
   // Make sure it runs in the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  int tab_id = save_package->tab_id();
+  int contents_id = save_package->contents_id();
 
   // Register this starting request.
-  StartingRequestsMap& starting_requests = tab_starting_requests_[tab_id];
+  StartingRequestsMap& starting_requests =
+      contents_starting_requests_[contents_id];
   bool never_present = starting_requests.insert(
       StartingRequestsMap::value_type(save_url.spec(), save_package)).second;
   DCHECK(never_present);
 }
 
 SavePackage* SaveFileManager::UnregisterStartingRequest(
-    const GURL& save_url, int tab_id) {
+    const GURL& save_url, int contents_id) {
   // Make sure it runs in UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  TabToStartingRequestsMap::iterator it = tab_starting_requests_.find(tab_id);
-  if (it != tab_starting_requests_.end()) {
+  ContentsToStartingRequestsMap::iterator it =
+      contents_starting_requests_.find(contents_id);
+  if (it != contents_starting_requests_.end()) {
     StartingRequestsMap& requests = it->second;
     StartingRequestsMap::iterator sit = requests.find(save_url.spec());
     if (sit == requests.end())
@@ -95,7 +97,7 @@ SavePackage* SaveFileManager::UnregisterStartingRequest(
     requests.erase(sit);
     // If there is no element in requests, remove it
     if (requests.empty())
-      tab_starting_requests_.erase(it);
+      contents_starting_requests_.erase(it);
     return save_package;
   }
 
@@ -163,8 +165,8 @@ void SaveFileManager::RemoveSaveFile(int save_id, const GURL& save_url,
   // A save page job (SavePackage) can only have one manager,
   // so remove it if it exists.
   if (save_id == -1) {
-    SavePackage* old_package = UnregisterStartingRequest(save_url,
-                                                         package->tab_id());
+    SavePackage* old_package =
+        UnregisterStartingRequest(save_url, package->contents_id());
     DCHECK_EQ(old_package, package);
   } else {
     SavePackageMap::iterator it = packages_.find(save_id);
@@ -181,12 +183,12 @@ SavePackage* SaveFileManager::GetSavePackageFromRenderIds(
   if (!render_view_host)
     return NULL;
 
-  TabContents* tab = static_cast<TabContents*>(
+  WebContentsImpl* contents = static_cast<WebContentsImpl*>(
       render_view_host->GetDelegate()->GetAsWebContents());
-  if (!tab)
+  if (!contents)
     return NULL;
 
-  return tab->save_package();
+  return contents->save_package();
 }
 
 void SaveFileManager::DeleteDirectoryOrFile(const FilePath& full_path,
@@ -342,9 +344,9 @@ void SaveFileManager::OnSaveFinished(int save_id,
     package->SaveFinished(save_id, bytes_so_far, is_success);
 }
 
-void SaveFileManager::OnErrorFinished(const GURL& save_url, int tab_id) {
+void SaveFileManager::OnErrorFinished(const GURL& save_url, int contents_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SavePackage* save_package = UnregisterStartingRequest(save_url, tab_id);
+  SavePackage* save_package = UnregisterStartingRequest(save_url, contents_id);
   if (save_package)
     save_package->SaveFailed(save_url);
 }

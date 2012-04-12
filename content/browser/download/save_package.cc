@@ -136,7 +136,7 @@ SavePackage::SavePackage(WebContents* web_contents,
       save_type_(save_type),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(web_contents->GetRenderProcessHost()->GetID()),
+      contents_id_(web_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++),
       wrote_to_completed_file_(false),
       wrote_to_failed_file_(false) {
@@ -164,7 +164,7 @@ SavePackage::SavePackage(WebContents* web_contents)
       save_type_(content::SAVE_PAGE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(web_contents->GetRenderProcessHost()->GetID()),
+      contents_id_(web_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++),
       wrote_to_completed_file_(false),
       wrote_to_failed_file_(false) {
@@ -191,7 +191,7 @@ SavePackage::SavePackage(WebContents* web_contents,
       save_type_(content::SAVE_PAGE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(0),
+      contents_id_(0),
       unique_id_(g_save_package_id++),
       wrote_to_completed_file_(false),
       wrote_to_failed_file_(false) {
@@ -226,10 +226,9 @@ SavePackage::~SavePackage() {
 }
 
 GURL SavePackage::GetUrlToBeSaved() {
-  // Instead of using tab_contents_.GetURL here, we use url()
-  // (which is the "real" url of the page)
-  // from the NavigationEntry because it reflects its' origin
-  // rather than the displayed one (returned by GetURL) which may be
+  // Instead of using web_contents_.GetURL here, we use url() (which is the
+  // "real" url of the page) from the NavigationEntry because it reflects its
+  // origin rather than the displayed one (returned by GetURL) which may be
   // different (like having "view-source:" on the front).
   NavigationEntry* active_entry =
       web_contents()->GetController().GetActiveEntry();
@@ -525,7 +524,7 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
                    file_manager_,
                    save_item->url(),
                    save_item->save_id(),
-                   tab_id()));
+                   contents_id()));
     return;
   }
 
@@ -960,7 +959,7 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
   if (wait_state_ != HTML_DATA)
     return;
 
-  int id = tab_id();
+  int id = contents_id();
   // If the all frames are finished saving, we need to close the
   // remaining SaveItems.
   if (flag == WebPageSerializerClient::AllFramesAreFinished) {
@@ -1194,7 +1193,7 @@ WebContents* SavePackage::web_contents() const {
 }
 
 void SavePackage::GetSaveInfo() {
-  // Can't use tab_contents_ in the file thread, so get the data that we need
+  // Can't use web_contents_ in the file thread, so get the data that we need
   // before calling to it.
   FilePath website_save_dir, download_save_dir;
   DCHECK(download_manager_);
