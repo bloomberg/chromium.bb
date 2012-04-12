@@ -50,7 +50,7 @@ bool BluetoothGetDevicesWithServiceFunction::RunImpl() {
 
   BluetoothAdapter::ConstDeviceList devices = adapter()->GetDevices();
 
-  ListValue* matches = new ListValue();
+  ListValue* matches = new ListValue;
   for (BluetoothAdapter::ConstDeviceList::const_iterator i =
       devices.begin(); i != devices.end(); ++i) {
     const BluetoothDevice::ServiceList& services = (*i)->GetServices();
@@ -60,7 +60,7 @@ bool BluetoothGetDevicesWithServiceFunction::RunImpl() {
         experimental_bluetooth::Device device;
         device.name = UTF16ToUTF8((*i)->GetName());
         device.address = (*i)->address();
-        matches->Append(device.ToValue().get());
+        matches->Append(device.ToValue().release());
       }
     }
   }
