@@ -28,8 +28,8 @@ function onLoad() {
   tracingController = new tracing.TracingController();
 
   profilingView = $('profiling-view');
-  profilingView.tracingController = tracingController;
   cr.ui.decorate(profilingView, tracing.ProfilingView);
+  profilingView.tracingController = tracingController;
 }
 
 document.addEventListener('DOMContentLoaded', onLoad);
