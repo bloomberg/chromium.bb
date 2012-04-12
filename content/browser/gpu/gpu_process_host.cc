@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
@@ -61,9 +60,10 @@ enum GPUProcessLifetimeEvent {
   GPU_PROCESS_LIFETIME_EVENT_MAX
 };
 
-// A global map from GPU process host ID to GpuProcessHost.
-static base::LazyInstance<IDMap<GpuProcessHost> > g_hosts_by_id =
-    LAZY_INSTANCE_INITIALIZER;
+// Indexed by GpuProcessKind. There is one of each kind maximum. This array may
+// only be accessed from the IO thread.
+static GpuProcessHost *g_gpu_process_hosts[
+    GpuProcessHost::GPU_PROCESS_KIND_COUNT];
 
 // Number of times the gpu process has crashed in the current browser session.
 static int g_gpu_crash_count = 0;
@@ -221,21 +221,8 @@ GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind,
   if (gpu_data_manager != NULL && !gpu_data_manager->GpuAccessAllowed())
     return NULL;
 
-  // TODO(apatrick): This is a mess. There are only two GpuProcessHosts that
-  // can legitimately be returned by this function: the sandboxed one or the
-  // unsandboxed one. There should be no need for a map indexed by host ID.
-  // Historical note: there was once a command line switch to launch one GPU
-  // process per renderer process and this is its legacy.
-  for (IDMap<GpuProcessHost>::iterator it(g_hosts_by_id.Pointer());
-       !it.IsAtEnd(); it.Advance()) {
-    GpuProcessHost* host = it.GetCurrentValue();
-
-    if (host->kind() != kind)
-      continue;
-
-    if (HostIsValid(host))
-      return host;
-  }
+  if (g_gpu_process_hosts[kind] && HostIsValid(g_gpu_process_hosts[kind]))
+    return g_gpu_process_hosts[kind];
 
   if (cause == content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH)
     return NULL;
@@ -269,12 +256,11 @@ void GpuProcessHost::SendOnIO(GpuProcessKind kind,
 GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (host_id == 0)
-    return NULL;
-
-  GpuProcessHost* host = g_hosts_by_id.Pointer()->Lookup(host_id);
-  if (HostIsValid(host))
-    return host;
+  for (int i = 0; i < GPU_PROCESS_KIND_COUNT; ++i) {
+    GpuProcessHost* host = g_gpu_process_hosts[i];
+    if (host && host->host_id_ == host_id && HostIsValid(host))
+      return host;
+  }
 
   return NULL;
 }
@@ -292,9 +278,9 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
 
   // If the 'single GPU process' policy ever changes, we still want to maintain
   // it for 'gpu thread' mode and only create one instance of host and thread.
-  DCHECK(!in_process_ || g_hosts_by_id.Pointer()->IsEmpty());
+  DCHECK(!in_process_ || g_gpu_process_hosts[kind] == NULL);
 
-  g_hosts_by_id.Pointer()->AddWithID(this, host_id_);
+  g_gpu_process_hosts[kind] = this;
 
   // Post a task to create the corresponding GpuProcessHostUIShim.  The
   // GpuProcessHostUIShim will be destroyed if either the browser exits,
@@ -363,7 +349,10 @@ GpuProcessHost::~GpuProcessHost() {
     queued_messages_.pop();
   }
 
-  g_hosts_by_id.Pointer()->Remove(host_id_);
+  // This is only called on the IO thread so no race against the constructor
+  // for another GpuProcessHost.
+  if (g_gpu_process_hosts[kind_] == this)
+    g_gpu_process_hosts[kind_] = NULL;
 
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
@@ -670,7 +659,11 @@ GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {
 }
 
 void GpuProcessHost::ForceShutdown() {
-  g_hosts_by_id.Pointer()->Remove(host_id_);
+  // This is only called on the IO thread so no race against the constructor
+  // for another GpuProcessHost.
+  if (g_gpu_process_hosts[kind_] == this)
+    g_gpu_process_hosts[kind_] = NULL;
+
   process_->ForceShutdown();
 }
 

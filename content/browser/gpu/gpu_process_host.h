@@ -36,7 +36,8 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
  public:
   enum GpuProcessKind {
     GPU_PROCESS_KIND_UNSANDBOXED,
-    GPU_PROCESS_KIND_SANDBOXED
+    GPU_PROCESS_KIND_SANDBOXED,
+    GPU_PROCESS_KIND_COUNT
   };
 
   typedef base::Callback<void(const IPC::ChannelHandle&,
