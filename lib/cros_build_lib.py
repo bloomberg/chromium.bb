@@ -16,7 +16,10 @@ import xml.sax
 import functools
 import contextlib
 
-from chromite.lib import signals
+# TODO(build, ferringb): Fix this.
+# This should be absolute import, but that requires fixing all
+# relative imports first.
+import signals
 
 STRICT_SUDO = False
 
