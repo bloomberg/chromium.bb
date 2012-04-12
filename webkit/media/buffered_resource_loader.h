@@ -286,7 +286,7 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // read has completed or failed.
   ReadCB read_cb_;
   int64 read_position_;
-  size_t read_size_;
+  int read_size_;
   uint8* read_buffer_;
 
   // Offsets of the requested first byte and last byte in |buffer_|. They are

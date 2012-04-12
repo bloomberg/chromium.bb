@@ -33,17 +33,17 @@ static const int kHttpOK = 200;
 static const int kHttpPartialContent = 206;
 
 // Define the number of bytes in a megabyte.
-static const size_t kMegabyte = 1024 * 1024;
+static const int kMegabyte = 1024 * 1024;
 
 // Minimum capacity of the buffer in forward or backward direction.
 //
 // 2MB is an arbitrary limit; it just seems to be "good enough" in practice.
-static const size_t kMinBufferCapacity = 2 * kMegabyte;
+static const int kMinBufferCapacity = 2 * kMegabyte;
 
 // Maximum capacity of the buffer in forward or backward direction. This is
 // effectively the largest single read the code path can handle.
 // 20MB is an arbitrary limit; it just seems to be "good enough" in practice.
-static const size_t kMaxBufferCapacity = 20 * kMegabyte;
+static const int kMaxBufferCapacity = 20 * kMegabyte;
 
 // Maximum number of bytes outside the buffer we will wait for in order to
 // fulfill a read. If a read starts more than 2MB away from the data we
@@ -55,18 +55,18 @@ static const int kForwardWaitThreshold = 2 * kMegabyte;
 // if one wants to play at |playback_rate| * the natural playback speed.
 // Use a value of 0 for |bitrate| if it is unknown.
 static void ComputeTargetBufferWindow(float playback_rate, int bitrate,
-                                      size_t* out_backward_capacity,
-                                      size_t* out_forward_capacity) {
-  static const size_t kDefaultBitrate = 200 * 1024 * 8;  // 200 Kbps.
-  static const size_t kMaxBitrate = 20 * kMegabyte * 8;  // 20 Mbps.
+                                      int* out_backward_capacity,
+                                      int* out_forward_capacity) {
+  static const int kDefaultBitrate = 200 * 1024 * 8;  // 200 Kbps.
+  static const int kMaxBitrate = 20 * kMegabyte * 8;  // 20 Mbps.
   static const float kMaxPlaybackRate = 25.0;
-  static const size_t kTargetSecondsBufferedAhead = 10;
-  static const size_t kTargetSecondsBufferedBehind = 2;
+  static const int kTargetSecondsBufferedAhead = 10;
+  static const int kTargetSecondsBufferedBehind = 2;
 
   // Use a default bit rate if unknown and clamp to prevent overflow.
   if (bitrate <= 0)
     bitrate = kDefaultBitrate;
-  bitrate = std::min(static_cast<size_t>(bitrate), kMaxBitrate);
+  bitrate = std::min(bitrate, kMaxBitrate);
 
   // Only scale the buffer window for playback rates greater than 1.0 in
   // magnitude and clamp to prevent overflow.
@@ -79,7 +79,7 @@ static void ComputeTargetBufferWindow(float playback_rate, int bitrate,
   playback_rate = std::max(playback_rate, 1.0f);
   playback_rate = std::min(playback_rate, kMaxPlaybackRate);
 
-  size_t bytes_per_second = static_cast<size_t>(playback_rate * bitrate / 8.0);
+  int bytes_per_second = (bitrate / 8.0) * playback_rate;
 
   // Clamp between kMinBufferCapacity and kMaxBufferCapacity.
   *out_forward_capacity = std::max(
@@ -121,8 +121,8 @@ BufferedResourceLoader::BufferedResourceLoader(
       playback_rate_(playback_rate),
       media_log_(media_log) {
 
-  size_t backward_capacity;
-  size_t forward_capacity;
+  int backward_capacity;
+  int forward_capacity;
   ComputeTargetBufferWindow(
       playback_rate_, bitrate_, &backward_capacity, &forward_capacity);
   buffer_.reset(new media::SeekableBuffer(backward_capacity, forward_capacity));
@@ -250,7 +250,7 @@ void BufferedResourceLoader::Read(
   }
 
   // Prepare the parameters.
-  first_offset_ = static_cast<int>(read_position_ - offset_);
+  first_offset_ = read_position_ - offset_;
   last_offset_ = first_offset_ + read_size_;
 
   // If we can serve the request now, do the actual read.
@@ -264,8 +264,7 @@ void BufferedResourceLoader::Read(
   // necessary and disable deferring.
   if (WillFulfillRead()) {
     // Advance offset as much as possible to create additional capacity.
-    int advance = std::min(first_offset_,
-                           static_cast<int>(buffer_->forward_bytes()));
+    int advance = std::min(first_offset_, buffer_->forward_bytes());
     bool ret = buffer_->Seek(advance);
     DCHECK(ret);
 
@@ -278,7 +277,7 @@ void BufferedResourceLoader::Read(
     //
     // This can happen when reading in a large seek index or when the
     // first byte of a read request falls within kForwardWaitThreshold.
-    if (last_offset_ > static_cast<int>(buffer_->forward_capacity())) {
+    if (last_offset_ > buffer_->forward_capacity()) {
       saved_forward_capacity_ = buffer_->forward_capacity();
       buffer_->set_forward_capacity(last_offset_);
     }
@@ -299,7 +298,7 @@ void BufferedResourceLoader::Read(
 
 int64 BufferedResourceLoader::GetBufferedPosition() {
   if (buffer_.get())
-    return offset_ + static_cast<int>(buffer_->forward_bytes()) - 1;
+    return offset_ + buffer_->forward_bytes() - 1;
   return kPositionNotSpecified;
 }
 
@@ -445,7 +444,7 @@ void BufferedResourceLoader::didReceiveData(
 
   // Consume excess bytes from our in-memory buffer if necessary.
   if (buffer_->forward_bytes() > buffer_->forward_capacity()) {
-    size_t excess = buffer_->forward_bytes() - buffer_->forward_capacity();
+    int excess = buffer_->forward_bytes() - buffer_->forward_capacity();
     bool success = buffer_->Seek(excess);
     DCHECK(success);
     offset_ += first_offset_ + excess;
@@ -571,8 +570,8 @@ void BufferedResourceLoader::UpdateBufferWindow() {
   if (!buffer_.get())
     return;
 
-  size_t backward_capacity;
-  size_t forward_capacity;
+  int backward_capacity;
+  int forward_capacity;
   ComputeTargetBufferWindow(
       playback_rate_, bitrate_, &backward_capacity, &forward_capacity);
 
@@ -633,14 +632,13 @@ bool BufferedResourceLoader::ShouldDisableDefer() const {
     // We have an outstanding read request, and we have not buffered enough
     // yet to fulfill the request; disable defer to get more data.
     case kReadThenDefer:
-      return !read_cb_.is_null() &&
-          last_offset_ > static_cast<int>(buffer_->forward_bytes());
+      return !read_cb_.is_null() && last_offset_ > buffer_->forward_bytes();
 
     // We have less than half the capacity of our threshold, so
     // disable defer to get more data.
     case kThresholdDefer: {
-      size_t amount_buffered = buffer_->forward_bytes();
-      size_t half_capacity = buffer_->forward_capacity() / 2;
+      int amount_buffered = buffer_->forward_bytes();
+      int half_capacity = buffer_->forward_capacity() / 2;
       return amount_buffered < half_capacity;
     }
   }
@@ -651,12 +649,11 @@ bool BufferedResourceLoader::ShouldDisableDefer() const {
 
 bool BufferedResourceLoader::CanFulfillRead() const {
   // If we are reading too far in the backward direction.
-  if (first_offset_ < 0 &&
-      first_offset_ + static_cast<int>(buffer_->backward_bytes()) < 0)
+  if (first_offset_ < 0 && (first_offset_ + buffer_->backward_bytes()) < 0)
     return false;
 
   // If the start offset is too far ahead.
-  if (first_offset_ >= static_cast<int>(buffer_->forward_bytes()))
+  if (first_offset_ >= buffer_->forward_bytes())
     return false;
 
   // At the point, we verified that first byte requested is within the buffer.
@@ -666,7 +663,7 @@ bool BufferedResourceLoader::CanFulfillRead() const {
 
   // If the resource request is still active, make sure the whole requested
   // range is covered.
-  if (last_offset_ > static_cast<int>(buffer_->forward_bytes()))
+  if (last_offset_ > buffer_->forward_bytes())
     return false;
 
   return true;
@@ -674,13 +671,11 @@ bool BufferedResourceLoader::CanFulfillRead() const {
 
 bool BufferedResourceLoader::WillFulfillRead() const {
   // Trying to read too far behind.
-  if (first_offset_ < 0 &&
-      first_offset_ + static_cast<int>(buffer_->backward_bytes()) < 0)
+  if (first_offset_ < 0 && (first_offset_ + buffer_->backward_bytes()) < 0)
     return false;
 
   // Trying to read too far ahead.
-  if (first_offset_ - static_cast<int>(buffer_->forward_bytes()) >=
-      kForwardWaitThreshold)
+  if ((first_offset_ - buffer_->forward_bytes()) >= kForwardWaitThreshold)
     return false;
 
   // The resource request has completed, there's no way we can fulfill the
@@ -697,7 +692,7 @@ void BufferedResourceLoader::ReadInternal() {
   DCHECK(ret);
 
   // Then do the read.
-  int read = static_cast<int>(buffer_->Read(read_buffer_, read_size_));
+  int read = buffer_->Read(read_buffer_, read_size_);
   offset_ += first_offset_ + read;
 
   // And report with what we have read.
