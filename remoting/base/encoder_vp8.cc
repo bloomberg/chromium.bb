@@ -64,12 +64,32 @@ bool EncoderVp8::Init(const SkISize& size) {
   image_->d_h = size.height();
   image_->h = size.height();
 
+  // Initialize active map.
+  active_map_width_ = (size.width() + kMacroBlockSize - 1) / kMacroBlockSize;
+  active_map_height_ = (size.height() + kMacroBlockSize - 1) / kMacroBlockSize;
+  active_map_.reset(new uint8[active_map_width_ * active_map_height_]);
+
   // YUV image size is 1.5 times of a plane. Multiplication is performed first
   // to avoid rounding error.
-  const int plane_size = size.width() * size.height();
-  const int yuv_image_size = plane_size * 3 / 2;
+  const int y_plane_size = size.width() * size.height();
+  const int uv_width = (size.width() + 1) / 2;
+  const int uv_height = (size.height() + 1) / 2;
+  const int uv_plane_size = uv_width * uv_height;
+  const int yuv_image_size = y_plane_size + uv_plane_size * 2;
 
-  yuv_image_.reset(new uint8[yuv_image_size]);
+  // libvpx may try to access memory after the buffer (it still
+  // doesn't use it) - it copies the data in 16x16 blocks:
+  // crbug.com/119633 . Here we workaround that problem by adding
+  // padding at the end of the buffer. Overreading to U and V buffers
+  // is safe so the padding is necessary only at the end.
+  //
+  // TODO(sergeyu): Remove this padding when the bug is fixed in libvpx.
+  const int active_map_area = active_map_width_ * kMacroBlockSize *
+      active_map_height_ * kMacroBlockSize;
+  const int padding_size = active_map_area - y_plane_size;
+  const int buffer_size = yuv_image_size + padding_size;
+
+  yuv_image_.reset(new uint8[buffer_size]);
 
   // Reset image value to 128 so we just need to fill in the y plane.
   memset(yuv_image_.get(), 128, yuv_image_size);
@@ -77,10 +97,8 @@ bool EncoderVp8::Init(const SkISize& size) {
   // Fill in the information for |image_|.
   unsigned char* image = reinterpret_cast<unsigned char*>(yuv_image_.get());
   image_->planes[0] = image;
-  image_->planes[1] = image + plane_size;
-
-  // The V plane starts from 1.25 of the plane size.
-  image_->planes[2] = image + plane_size + plane_size / 4;
+  image_->planes[1] = image + y_plane_size;
+  image_->planes[2] = image + y_plane_size + uv_plane_size;
 
   // In YV12 Y plane has full width, UV plane has half width because of
   // subsampling.
@@ -94,11 +112,6 @@ bool EncoderVp8::Init(const SkISize& size) {
   vpx_codec_err_t ret = vpx_codec_enc_config_default(algo, &config, 0);
   if (ret != VPX_CODEC_OK)
     return false;
-
-  // Initialize active map.
-  active_map_width_ = (size.width() + kMacroBlockSize - 1) / kMacroBlockSize;
-  active_map_height_ = (size.height() + kMacroBlockSize - 1) / kMacroBlockSize;
-  active_map_.reset(new uint8[active_map_width_ * active_map_height_]);
 
   config.rc_target_bitrate = size.width() * size.height() *
       config.rc_target_bitrate / config.g_w / config.g_h;
@@ -174,17 +187,10 @@ bool EncoderVp8::PrepareImage(scoped_refptr<CaptureData> capture_data,
     if (!rect.isEmpty())
       updated_rects->push_back(rect);
 
-    ConvertRGB32ToYUVWithRect(in,
-                              y_out,
-                              u_out,
-                              v_out,
-                              rect.fLeft,
-                              rect.fTop,
-                              rect.width(),
-                              rect.height(),
-                              in_stride,
-                              y_stride,
-                              uv_stride);
+    ConvertRGB32ToYUVWithRect(
+        in, y_out, u_out, v_out,
+        rect.fLeft, rect.fTop, rect.width(), rect.height(),
+        in_stride, y_stride, uv_stride);
   }
   return true;
 }
@@ -220,7 +226,7 @@ void EncoderVp8::Encode(scoped_refptr<CaptureData> capture_data,
   if (!initialized_ || (capture_data->size() != size_)) {
     bool ret = Init(capture_data->size());
     // TODO(hclam): Handle error better.
-    DCHECK(ret) << "Initialization of encoder failed";
+    CHECK(ret) << "Initialization of encoder failed";
     initialized_ = ret;
   }
 
