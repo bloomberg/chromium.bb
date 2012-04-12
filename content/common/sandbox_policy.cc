@@ -42,6 +42,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"cmcsyshk.dll",                // CMC Internet Security.
   L"cooliris.dll",                // CoolIris.
   L"dockshellhook.dll",           // Stardock Objectdock.
+  L"easyhook32.dll",              // GDIPP and others.
   L"googledesktopnetwork3.dll",   // Google Desktop Search v5.
   L"fwhook.dll",                  // PC Tools Firewall Plus.
   L"hookprocesscreation.dll",     // Blumentals Program protector.
