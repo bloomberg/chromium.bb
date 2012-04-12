@@ -21,4 +21,5 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
 int main(int argc, const char** argv) {
   views::examples::ExamplesMainDelegate delegate;
   return content::ContentMain(argc, argv, &delegate);
+}
 #endif

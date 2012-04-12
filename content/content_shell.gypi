@@ -53,6 +53,7 @@
         'shell/paths_mac.mm',
         'shell/shell.cc',
         'shell/shell.h',
+        'shell/shell_aura.cc',
         'shell/shell_gtk.cc',
         'shell/shell_mac.mm',
         'shell/shell_win.cc',
@@ -137,6 +138,12 @@
             },
           },
         }],  # OS=="win"
+        ['use_aura==1', {
+          'sources/': [
+            ['exclude', 'shell/shell_gtk.cc'],
+            ['exclude', 'shell/shell_win.cc'],
+          ],
+        }],
       ],
     },
     {

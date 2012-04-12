@@ -1,0 +1,77 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef ASH_SHELL_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
+#define ASH_SHELL_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_
+#pragma once
+
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "content/public/browser/browser_main_parts.h"
+
+namespace base {
+class Thread;
+}
+
+namespace ui {
+class Clipboard;
+}
+
+namespace content {
+class ShellBrowserContext;
+class ShellDevToolsDelegate;
+struct MainFunctionParams;
+}
+
+namespace views {
+class ViewsDelegate;
+}
+
+namespace ash {
+namespace shell {
+
+class WindowWatcher;
+
+class ShellBrowserMainParts : public content::BrowserMainParts {
+ public:
+  explicit ShellBrowserMainParts(
+      const content::MainFunctionParams& parameters);
+  virtual ~ShellBrowserMainParts();
+
+  // Overridden from content::BrowserMainParts:
+  virtual void PreEarlyInitialization() OVERRIDE {}
+  virtual void PostEarlyInitialization() OVERRIDE {}
+  virtual void PreMainMessageLoopStart() OVERRIDE;
+  virtual void PostMainMessageLoopStart() OVERRIDE {}
+  virtual void ToolkitInitialized() OVERRIDE {}
+  virtual int PreCreateThreads() OVERRIDE;
+  virtual void PreMainMessageLoopRun() OVERRIDE;
+  virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
+  virtual void PostMainMessageLoopRun() OVERRIDE;
+  virtual void PostDestroyThreads() OVERRIDE {}
+
+  ui::Clipboard* GetClipboard();
+  content::ShellDevToolsDelegate* devtools_delegate() {
+    return devtools_delegate_;
+  }
+
+  content::ShellBrowserContext* browser_context() {
+    return browser_context_.get();
+  }
+
+ private:
+  scoped_ptr<content::ShellBrowserContext> browser_context_;
+
+  scoped_ptr<ui::Clipboard> clipboard_;
+  content::ShellDevToolsDelegate* devtools_delegate_;
+  scoped_ptr<views::ViewsDelegate> views_delegate_;
+  scoped_ptr<ash::shell::WindowWatcher> window_watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
+};
+
+}  // namespace shell
+}  // namespace ash
+
+#endif  // ASH_SHELL_CONTENT_CLIENT_EXAMPLES_BROWSER_MAIN_PARTS_H_

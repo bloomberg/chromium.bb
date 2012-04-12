@@ -421,6 +421,8 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../chrome/chrome_resources.gyp:packed_resources',
+        '../content/content.gyp:content_shell_lib',
+        '../content/content.gyp:content',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -438,6 +440,12 @@
       'sources': [
         'shell/app_list.cc',
         'shell/bubble.cc',
+        'shell/content_client/shell_browser_main_parts.cc',
+        'shell/content_client/shell_browser_main_parts.h',
+        'shell/content_client/shell_content_browser_client.cc',
+        'shell/content_client/shell_content_browser_client.h',
+        'shell/content_client/shell_main_delegate.cc',
+        'shell/content_client/shell_main_delegate.h',
         'shell/example_factory.h',
         'shell/launcher_delegate_impl.cc',
         'shell/launcher_delegate_impl.h',
@@ -460,9 +468,20 @@
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
+        '../content/app/startup_helper_win.cc',
         '../ui/views/test/test_views_delegate.cc',
       ],
       'conditions': [
+        ['OS=="win"', {
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
+            },
+          },
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox',
+          ],          
+        }],
         ['OS=="mac"', {
           'product_name': 'AuraShell',
           'mac_bundle': 1,

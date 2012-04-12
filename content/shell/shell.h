@@ -16,7 +16,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_GTK)
 #include <gtk/gtk.h>
 #include "ui/base/gtk/gtk_signal.h"
 
@@ -107,7 +107,7 @@ class Shell : public WebContentsDelegate,
   // Sets whether the spinner is spinning.
   void PlatformSetIsLoading(bool loading);
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if (defined(OS_WIN) && !defined(USE_AURA)) || defined(TOOLKIT_GTK)
   // Resizes the main window to the given dimensions.
   void SizeTo(int width, int height);
 #endif
@@ -132,11 +132,11 @@ class Shell : public WebContentsDelegate,
                              const GURL& validated_url,
                              bool is_main_frame) OVERRIDE;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   static ATOM RegisterWindowClass();
   static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
   static LRESULT CALLBACK EditWndProc(HWND, UINT, WPARAM, LPARAM);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_GTK)
   CHROMEGTK_CALLBACK_0(Shell, void, OnBackButtonClicked);
   CHROMEGTK_CALLBACK_0(Shell, void, OnForwardButtonClicked);
   CHROMEGTK_CALLBACK_0(Shell, void, OnReloadButtonClicked);
@@ -160,10 +160,10 @@ class Shell : public WebContentsDelegate,
   gfx::NativeWindow window_;
   gfx::NativeEditView url_edit_view_;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   WNDPROC default_edit_wnd_proc_;
   static HINSTANCE instance_handle_;
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_GTK)
   GtkWidget* vbox_;
 
   GtkToolItem* back_button_;

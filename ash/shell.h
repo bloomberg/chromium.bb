@@ -28,6 +28,10 @@ class Monitor;
 class RootWindow;
 class Window;
 }
+namespace content {
+class BrowserContext;
+}
+
 namespace gfx {
 class Point;
 class Rect;
@@ -251,6 +255,11 @@ class ASH_EXPORT Shell {
     return shadow_controller_.get();
   }
 
+  content::BrowserContext* browser_context() { return browser_context_; }
+  void set_browser_context(content::BrowserContext* browser_context) {
+    browser_context_ = browser_context;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(RootWindowEventFilterTest, TransformActivate);
@@ -347,6 +356,9 @@ class ASH_EXPORT Shell {
   // System tray with clock, Wi-Fi signal, etc. (a replacement in progress for
   // |status_widget_|).
   scoped_ptr<SystemTray> tray_;
+
+  // Used by ash/shell.
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

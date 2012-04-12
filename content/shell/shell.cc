@@ -32,7 +32,7 @@ Shell::Shell(WebContents* web_contents)
       wait_until_done_(false),
       window_(NULL),
       url_edit_view_(NULL)
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
       , default_edit_wnd_proc_(0)
 #endif
   {
