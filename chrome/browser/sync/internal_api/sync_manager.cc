@@ -1126,7 +1126,8 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
         device_information->set_name(session_name);
         device_information->set_chrome_version(chrome_version);
       }
-      node.SetNigoriSpecifics(nigori);
+      // Disabled to avoid nigori races. TODO(zea): re-enable. crbug.com/122837
+      // node.SetNigoriSpecifics(nigori);
 
       // Make sure the nigori node has the up to date encryption info.
       UpdateNigoriEncryptionState(cryptographer, &node);
