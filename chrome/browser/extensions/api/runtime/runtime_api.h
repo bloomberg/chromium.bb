@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_API_RUNTIME_RUNTIME_API_H_
 #pragma once
 
+#include "chrome/browser/extensions/extension_function.h"
+
 class Extension;
+class ExtensionHost;
 class Profile;
 
 namespace extensions {
@@ -16,6 +19,14 @@ class RuntimeEventRouter {
   // Dispatches the onInstalled event to the given extension.
   static void DispatchOnInstalledEvent(Profile* profile,
                                        const Extension* extension);
+};
+
+class RuntimeGetBackgroundPageFunction : public AsyncExtensionFunction {
+ protected:
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.runtime.getBackgroundPage");
+ private:
+  void OnPageLoaded(ExtensionHost*);
 };
 
 }  // namespace extensions

@@ -141,6 +141,7 @@
         'renderer/resources/extensions/event.js',
         'renderer/resources/extensions/experimental.declarative_custom_bindings.js',
         'renderer/resources/extensions/experimental.offscreenTabs_custom_bindings.js',
+        'renderer/resources/extensions/experimental.runtime_custom_bindings.js',
         'renderer/resources/extensions/experimental.socket_custom_bindings.js',
         'renderer/resources/extensions/experimental.webrequest_custom_bindings.js',
         'renderer/resources/extensions/extension_custom_bindings.js',

@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_api.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
+#include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/serial/serial_api.h"
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
@@ -504,6 +505,9 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // Identity
   RegisterFunction<extensions::GetAuthTokenFunction>();
+
+  // Runtime
+  RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();
 
   // Generated APIs
   extensions::api::GeneratedFunctionRegistry::RegisterAll(this);

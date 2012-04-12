@@ -6,12 +6,17 @@
 
 #include "chrome/common/extensions/extension.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/profiles/profile.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
 
 const char kOnInstalledEvent[] = "experimental.runtime.onInstalled";
+const char kNoBackgroundPageError[] = "You do not have a background page.";
 
 }
 
@@ -29,6 +34,30 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
   router->AddLazyEventListener(kOnInstalledEvent, extension->id());
   router->DispatchEventToExtension(
       extension->id(), kOnInstalledEvent, "[]", NULL, GURL());
+}
+
+bool RuntimeGetBackgroundPageFunction::RunImpl() {
+  ExtensionHost* host =
+      ExtensionSystem::Get(profile())->process_manager()->
+          GetBackgroundHostForExtension(extension_id());
+  if (host) {
+    OnPageLoaded(host);
+  } else if (GetExtension()->has_lazy_background_page()) {
+    ExtensionSystem::Get(profile())->lazy_background_task_queue()->
+        AddPendingTask(
+           profile(), extension_id(),
+           base::Bind(&RuntimeGetBackgroundPageFunction::OnPageLoaded,
+                      this));
+  } else {
+    error_ = kNoBackgroundPageError;
+    return false;
+  }
+
+  return true;
+}
+
+void RuntimeGetBackgroundPageFunction::OnPageLoaded(ExtensionHost*) {
+  SendResponse(true);
 }
 
 }   // namespace extensions

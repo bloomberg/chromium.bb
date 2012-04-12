@@ -129,6 +129,7 @@
     "chrome.experimental.offscreenTabs.sendMouseEvent": "experimental.offscreenTabs.html#method-sendMouseEvent",
     "chrome.experimental.offscreenTabs.toDataUrl": "experimental.offscreenTabs.html#method-toDataUrl",
     "chrome.experimental.offscreenTabs.update": "experimental.offscreenTabs.html#method-update",
+    "chrome.experimental.runtime.getBackgroundPage": "experimental.runtime.html#method-getBackgroundPage",
     "chrome.experimental.runtime.onBackgroundPageUnloadingSoon": "experimental.runtime.html#event-onBackgroundPageUnloadingSoon",
     "chrome.experimental.runtime.onInstalled": "experimental.runtime.html#event-onInstalled",
     "chrome.experimental.speechInput.isRecording": "experimental.speechInput.html#method-isRecording",
