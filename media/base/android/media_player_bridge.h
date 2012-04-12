@@ -33,6 +33,7 @@ class MediaPlayerBridge {
     MEDIA_ERROR_UNKNOWN,
     MEDIA_ERROR_SERVER_DIED,
     MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK,
+    MEDIA_ERROR_INVALID_CODE,
   };
 
   // Info types for MediaInfoCB.
@@ -62,7 +63,9 @@ class MediaPlayerBridge {
   ~MediaPlayerBridge();
 
   typedef std::map<std::string, std::string> HeadersMap;
-  void SetDataSource(const std::string& url, const HeadersMap& headers);
+  void SetDataSource(const std::string& url,
+                     const std::string& cookies,
+                     bool hide_url_log);
 
   void SetVideoSurface(jobject surface);
 

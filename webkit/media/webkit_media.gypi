@@ -14,11 +14,11 @@
         '<(DEPTH)/skia/skia.gyp:skia',
       ],
       'sources': [
+        'android/audio_decoder_android.cc',
         'active_loader.cc',
         'active_loader.h',
         'audio_decoder.cc',
         'audio_decoder.h',
-        'audio_decoder_android.cc',
         'buffered_data_source.cc',
         'buffered_data_source.h',
         'buffered_resource_loader.cc',

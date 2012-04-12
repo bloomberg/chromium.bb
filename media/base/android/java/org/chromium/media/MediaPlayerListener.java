@@ -22,6 +22,7 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
     private static final int MEDIA_ERROR_UNKNOWN = 0;
     private static final int MEDIA_ERROR_SERVER_DIED = 1;
     private static final int MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK = 2;
+    private static final int MEDIA_ERROR_INVALID_CODE = 3;
 
     private static final int MEDIA_INFO_UNKNOWN = 0;
     private static final int MEDIA_INFO_VIDEO_TRACK_LAGGING = 1;
@@ -85,7 +86,11 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
                 errorType = MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK;
                 break;
             default:
-                errorType = MEDIA_ERROR_UNKNOWN;
+                // There are some undocumented error codes for android media player.
+                // For example, when surfaceTexture got deleted before we setVideoSuface
+                // to NULL, mediaplayer will report error -38. These errors should be ignored
+                // and not be treated as an error to webkit.
+                errorType = MEDIA_ERROR_INVALID_CODE;
                 break;
         }
         nativeOnMediaError(mNativeMediaPlayerBridge, errorType);

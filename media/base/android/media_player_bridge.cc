@@ -81,7 +81,8 @@ MediaPlayerBridge::~MediaPlayerBridge() {
 
 void MediaPlayerBridge::SetDataSource(
     const std::string& url,
-    const std::map<std::string, std::string>& headers) {
+    const std::string& cookies,
+    bool hide_url_log) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
@@ -102,6 +103,15 @@ void MediaPlayerBridge::SetDataSource(
       env->NewObject(cls.obj(), constructor));
   jmethodID put_method = GetMethodID(env, cls, "put",
       "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+  // Construct headers that needs to be sent with the url.
+  HeadersMap headers;
+  // For incognito mode, we need a header to hide url log.
+  if (hide_url_log)
+    headers.insert(std::make_pair("x-hide-urls-from-log", "true"));
+  // If cookies are present, add them in the header.
+  if (!cookies.empty())
+    headers.insert(std::make_pair("Cookie", cookies));
 
   // Fill the Map with the headers.
   for (HeadersMap::const_iterator iter = headers.begin();
@@ -194,7 +204,11 @@ void MediaPlayerBridge::SeekTo(base::TimeDelta time,
 
   jmethodID method = GetMethodID(env, j_media_player_class_, "seekTo", "(I)V");
   DCHECK(method);
-  env->CallVoidMethod(j_media_player_.obj(), method, time.InMilliseconds());
+  int time_msec = static_cast<int>(time.InMilliseconds());
+  DCHECK_EQ(time.InMilliseconds(), static_cast<int64>(time_msec));
+  env->CallVoidMethod(j_media_player_.obj(),
+                      method,
+                      time_msec);
   CheckException(env);
 }
 
