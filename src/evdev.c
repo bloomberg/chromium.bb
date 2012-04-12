@@ -590,8 +590,7 @@ evdev_notify_keyboard_focus(struct evdev_input *input)
 		}
 	}
 
-	notify_keyboard_focus(&input->base.input_device,
-			      weston_compositor_get_time(), &keys);
+	notify_keyboard_focus(&input->base.input_device, &keys);
 
 	wl_array_release(&keys);
 }
@@ -758,8 +757,7 @@ evdev_remove_devices(struct weston_input_device *input_base)
 	wl_list_for_each_safe(device, next, &input->devices_list, link)
 		device_removed(device);
 
-	notify_keyboard_focus(&input->base.input_device,
-			      weston_compositor_get_time(), NULL);
+	notify_keyboard_focus(&input->base.input_device, NULL);
 }
 
 void

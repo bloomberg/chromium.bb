@@ -366,7 +366,7 @@ weston_spring_done(struct weston_spring *spring);
 
 void
 weston_surface_activate(struct weston_surface *surface,
-			struct weston_input_device *device, uint32_t time);
+			struct weston_input_device *device);
 void
 weston_surface_draw(struct weston_surface *es,
 		    struct weston_output *output, pixman_region32_t *damage);
@@ -386,13 +386,11 @@ notify_key(struct wl_input_device *device,
 
 void
 notify_pointer_focus(struct wl_input_device *device,
-		     uint32_t time,
 		     struct weston_output *output,
 		     int32_t x, int32_t y);
 
 void
-notify_keyboard_focus(struct wl_input_device *device,
-		      uint32_t time, struct wl_array *keys);
+notify_keyboard_focus(struct wl_input_device *device, struct wl_array *keys);
 
 void
 notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,

@@ -372,6 +372,7 @@ dnd_button_handler(struct widget *widget,
 	struct wl_compositor *compositor;
 	struct wl_buffer *buffer;
 	unsigned int i;
+	uint32_t serial;
 
 	widget_get_allocation(dnd->widget, &allocation);
 	input_get_position(input, &x, &y);
@@ -397,6 +398,7 @@ dnd_button_handler(struct widget *widget,
 
 		display = window_get_display(dnd->window);
 		compositor = display_get_compositor(display);
+		serial = display_get_serial(display);
 		dnd_drag->drag_surface =
 			wl_compositor_create_surface(compositor);
 
@@ -413,7 +415,7 @@ dnd_button_handler(struct widget *widget,
 					  dnd_drag->data_source,
 					  window_get_wl_surface(dnd->window),
 					  dnd_drag->drag_surface,
-					  time);
+					  serial);
 
 		input_set_pointer_image(input, time, POINTER_DRAGGING);
 
@@ -446,8 +448,7 @@ lookup_cursor(struct dnd *dnd, int x, int y)
 
 static int
 dnd_enter_handler(struct widget *widget,
-		  struct input *input, uint32_t time,
-		  int32_t x, int32_t y, void *data)
+		  struct input *input, int32_t x, int32_t y, void *data)
 {
 	return lookup_cursor(data, x, y);
 }
@@ -462,15 +463,15 @@ dnd_motion_handler(struct widget *widget,
 
 static void
 dnd_data_handler(struct window *window,
-		 struct input *input, uint32_t time,
+		 struct input *input,
 		 int32_t x, int32_t y, const char **types, void *data)
 {
 	struct dnd *dnd = data;
 
 	if (!dnd_get_item(dnd, x, y)) {
-		input_accept(input, time, types[0]);
+		input_accept(input, types[0]);
 	} else {
-		input_accept(input, time, NULL);
+		input_accept(input, NULL);
 	}
 }
 

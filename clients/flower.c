@@ -149,7 +149,8 @@ button_handler(struct widget *widget,
 	switch (button) {
 	case BTN_LEFT:
 		if (state)
-			window_move(flower->window, input, time);
+			window_move(flower->window, input,
+				    display_get_serial(flower->display));
 		break;
 	case BTN_MIDDLE:
 		if (state)

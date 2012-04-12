@@ -50,8 +50,7 @@ struct desktop {
 struct surface {
 	void (*configure)(void *data,
 			  struct desktop_shell *desktop_shell,
-			  uint32_t time, uint32_t edges,
-			  struct window *window,
+			  uint32_t edges, struct window *window,
 			  int32_t width, int32_t height);
 };
 
@@ -234,7 +233,7 @@ panel_redraw_handler(struct widget *widget, void *data)
 
 static int
 panel_launcher_enter_handler(struct widget *widget, struct input *input,
-			     uint32_t time, int32_t x, int32_t y, void *data)
+			     int32_t x, int32_t y, void *data)
 {
 	struct panel_launcher *launcher = data;
 
@@ -300,8 +299,7 @@ panel_resize_handler(struct widget *widget,
 static void
 panel_configure(void *data,
 		struct desktop_shell *desktop_shell,
-		uint32_t time, uint32_t edges,
-		struct window *window,
+		uint32_t edges, struct window *window,
 		int32_t width, int32_t height)
 {
 	struct surface *surface = window_get_user_data(window);
@@ -424,8 +422,7 @@ background_draw(struct widget *widget, void *data)
 static void
 background_configure(void *data,
 		     struct desktop_shell *desktop_shell,
-		     uint32_t time, uint32_t edges,
-		     struct window *window,
+		     uint32_t edges, struct window *window,
 		     int32_t width, int32_t height)
 {
 	struct background *background =
@@ -506,7 +503,7 @@ unlock_dialog_keyboard_focus_handler(struct window *window,
 
 static int
 unlock_dialog_widget_enter_handler(struct widget *widget,
-				   struct input *input, uint32_t time,
+				   struct input *input,
 				   int32_t x, int32_t y, void *data)
 {
 	struct unlock_dialog *dialog = data;
@@ -585,14 +582,14 @@ unlock_dialog_finish(struct task *task, uint32_t events)
 static void
 desktop_shell_configure(void *data,
 			struct desktop_shell *desktop_shell,
-			uint32_t time, uint32_t edges,
+			uint32_t edges,
 			struct wl_shell_surface *shell_surface,
 			int32_t width, int32_t height)
 {
 	struct window *window = wl_shell_surface_get_user_data(shell_surface);
 	struct surface *s = window_get_user_data(window);
 
-	s->configure(data, desktop_shell, time, edges, window, width, height);
+	s->configure(data, desktop_shell, edges, window, width, height);
 }
 
 static void

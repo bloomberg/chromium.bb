@@ -74,6 +74,7 @@ struct display {
 	EGLConfig argb_config;
 	EGLContext argb_ctx;
 	cairo_device_t *argb_device;
+	uint32_t serial;
 
 	int display_fd;
 	uint32_t mask;
@@ -172,6 +173,7 @@ struct input {
 	struct window *keyboard_focus;
 	int current_pointer_image;
 	uint32_t modifiers;
+	uint32_t pointer_enter_serial;
 	int32_t sx, sy;
 	struct wl_list link;
 
@@ -1170,8 +1172,7 @@ window_show_frame_menu(struct window *window,
 
 static int
 frame_enter_handler(struct widget *widget,
-		    struct input *input, uint32_t time,
-		    int32_t x, int32_t y, void *data)
+		    struct input *input, int32_t x, int32_t y, void *data)
 {
 	return frame_get_pointer_image_for_location(data, input);
 }
@@ -1203,10 +1204,10 @@ frame_button_handler(struct widget *widget,
 			if (!window->shell_surface)
 				break;
 			input_set_pointer_image(input, time, POINTER_DRAGGING);
-			input_ungrab(input, time);
+			input_ungrab(input);
 			wl_shell_surface_move(window->shell_surface,
 					      input_get_input_device(input),
-					      time);
+					      display->serial);
 			break;
 		case WINDOW_RESIZING_TOP:
 		case WINDOW_RESIZING_BOTTOM:
@@ -1218,7 +1219,7 @@ frame_button_handler(struct widget *widget,
 		case WINDOW_RESIZING_BOTTOM_RIGHT:
 			if (!window->shell_surface)
 				break;
-			input_ungrab(input, time);
+			input_ungrab(input);
 
 			if (!display->dpy) {
 				/* If we're using shm, allocate a big
@@ -1233,7 +1234,7 @@ frame_button_handler(struct widget *widget,
 
 			wl_shell_surface_resize(window->shell_surface,
 						input_get_input_device(input),
-						time, location);
+						display->serial, location);
 			break;
 		}
 	} else if (button == BTN_RIGHT && state == 1) {
@@ -1276,7 +1277,7 @@ frame_destroy(struct frame *frame)
 
 static void
 input_set_focus_widget(struct input *input, struct widget *focus,
-		       uint32_t time, int32_t x, int32_t y)
+		       int32_t x, int32_t y)
 {
 	struct widget *old, *widget;
 	int pointer = POINTER_LEFT_PTR;
@@ -1299,12 +1300,12 @@ input_set_focus_widget(struct input *input, struct widget *focus,
 		if (input->grab)
 			widget = input->grab;
 		if (widget->enter_handler)
-			pointer = widget->enter_handler(focus, input, time,
-							x, y,
+			pointer = widget->enter_handler(focus, input, x, y,
 							widget->user_data);
 		input->focus_widget = focus;
 
-		input_set_pointer_image(input, time, pointer);
+		input_set_pointer_image(input, input->pointer_enter_serial,
+					pointer);
 	}
 }
 
@@ -1322,7 +1323,7 @@ input_handle_motion(void *data, struct wl_input_device *input_device,
 
 	if (!(input->grab && input->grab_button)) {
 		widget = widget_find_widget(window->widget, sx, sy);
-		input_set_focus_widget(input, widget, time, sx, sy);
+		input_set_focus_widget(input, widget, sx, sy);
 	}
 
 	if (input->grab)
@@ -1345,7 +1346,7 @@ input_grab(struct input *input, struct widget *widget, uint32_t button)
 }
 
 void
-input_ungrab(struct input *input, uint32_t time)
+input_ungrab(struct input *input)
 {
 	struct widget *widget;
 
@@ -1353,19 +1354,19 @@ input_ungrab(struct input *input, uint32_t time)
 	if (input->pointer_focus) {
 		widget = widget_find_widget(input->pointer_focus->widget,
 					    input->sx, input->sy);
-		input_set_focus_widget(input, widget,
-				       time, input->sx, input->sy);
+		input_set_focus_widget(input, widget, input->sx, input->sy);
 	}
 }
 
 static void
 input_handle_button(void *data,
-		    struct wl_input_device *input_device,
+		    struct wl_input_device *input_device, uint32_t serial,
 		    uint32_t time, uint32_t button, uint32_t state)
 {
 	struct input *input = data;
 	struct widget *widget;
 
+	input->display->serial = serial;
 	if (input->focus_widget && input->grab == NULL && state)
 		input_grab(input, input->focus_widget, button);
 
@@ -1377,7 +1378,7 @@ input_handle_button(void *data,
 					  input->grab->user_data);
 
 	if (input->grab && input->grab_button == button && !state)
-		input_ungrab(input, time);
+		input_ungrab(input);
 }
 
 static void
@@ -1389,13 +1390,14 @@ input_handle_axis(void *data,
 
 static void
 input_handle_key(void *data, struct wl_input_device *input_device,
-		 uint32_t time, uint32_t key, uint32_t state)
+		 uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
 {
 	struct input *input = data;
 	struct window *window = input->keyboard_focus;
 	struct display *d = input->display;
 	uint32_t code, sym, level;
 
+	input->display->serial = serial;
 	code = key + 8;
 	if (!window || window->keyboard_device != input)
 		return;
@@ -1423,14 +1425,14 @@ input_handle_key(void *data, struct wl_input_device *input_device,
 }
 
 static void
-input_remove_pointer_focus(struct input *input, uint32_t time)
+input_remove_pointer_focus(struct input *input)
 {
 	struct window *window = input->pointer_focus;
 
 	if (!window)
 		return;
 
-	input_set_focus_widget(input, NULL, 0, 0, 0);
+	input_set_focus_widget(input, NULL, 0, 0);
 
 	input->pointer_focus = NULL;
 	input->current_pointer_image = POINTER_UNSET;
@@ -1439,13 +1441,15 @@ input_remove_pointer_focus(struct input *input, uint32_t time)
 static void
 input_handle_pointer_enter(void *data,
 			   struct wl_input_device *input_device,
-			   uint32_t time, struct wl_surface *surface,
+			   uint32_t serial, struct wl_surface *surface,
 			   int32_t sx, int32_t sy)
 {
 	struct input *input = data;
 	struct window *window;
 	struct widget *widget;
 
+	input->display->serial = serial;
+	input->pointer_enter_serial = serial;
 	input->pointer_focus = wl_surface_get_user_data(surface);
 	window = input->pointer_focus;
 
@@ -1461,17 +1465,18 @@ input_handle_pointer_enter(void *data,
 	input->sy = sy;
 
 	widget = widget_find_widget(window->widget, sx, sy);
-	input_set_focus_widget(input, widget, time, sx, sy);
+	input_set_focus_widget(input, widget, sx, sy);
 }
 
 static void
 input_handle_pointer_leave(void *data,
 			   struct wl_input_device *input_device,
-			   uint32_t time, struct wl_surface *surface)
+			   uint32_t serial, struct wl_surface *surface)
 {
 	struct input *input = data;
 
-	input_remove_pointer_focus(input, time);
+	input->display->serial = serial;
+	input_remove_pointer_focus(input);
 }
 
 static void
@@ -1493,7 +1498,7 @@ input_remove_keyboard_focus(struct input *input)
 static void
 input_handle_keyboard_enter(void *data,
 			    struct wl_input_device *input_device,
-			    uint32_t time,
+			    uint32_t serial,
 			    struct wl_surface *surface,
 			    struct wl_array *keys)
 {
@@ -1502,6 +1507,7 @@ input_handle_keyboard_enter(void *data,
 	struct display *d = input->display;
 	uint32_t *k, *end;
 
+	input->display->serial = serial;
 	input->keyboard_focus = wl_surface_get_user_data(surface);
 
 	end = keys->data + keys->size;
@@ -1520,18 +1526,20 @@ input_handle_keyboard_enter(void *data,
 static void
 input_handle_keyboard_leave(void *data,
 			    struct wl_input_device *input_device,
-			    uint32_t time,
+			    uint32_t serial,
 			    struct wl_surface *surface)
 {
 	struct input *input = data;
 
+	input->display->serial = serial;
 	input_remove_keyboard_focus(input);
 }
 
 static void
 input_handle_touch_down(void *data,
 			struct wl_input_device *wl_input_device,
-			uint32_t time, struct wl_surface *surface,
+			uint32_t serial, uint32_t time,
+			struct wl_surface *surface,
 			int32_t id, int32_t x, int32_t y)
 {
 }
@@ -1539,7 +1547,7 @@ input_handle_touch_down(void *data,
 static void
 input_handle_touch_up(void *data,
 		      struct wl_input_device *wl_input_device,
-		      uint32_t time, int32_t id)
+		      uint32_t serial, uint32_t time, int32_t id)
 {
 }
 
@@ -1668,13 +1676,14 @@ data_device_data_offer(void *data,
 
 static void
 data_device_enter(void *data, struct wl_data_device *data_device,
-		  uint32_t time, struct wl_surface *surface,
+		  uint32_t serial, struct wl_surface *surface,
 		  int32_t x, int32_t y, struct wl_data_offer *offer)
 {
 	struct input *input = data;
 	struct window *window;
 	char **p;
 
+	input->pointer_enter_serial = serial;
 	input->drag_offer = wl_data_offer_get_user_data(offer);
 	window = wl_surface_get_user_data(surface);
 	input->pointer_focus = window;
@@ -1684,7 +1693,7 @@ data_device_enter(void *data, struct wl_data_device *data_device,
 
 	window = input->pointer_focus;
 	if (window->data_handler)
-		window->data_handler(window, input, time, x, y,
+		window->data_handler(window, input, x, y,
 				     input->drag_offer->types.data,
 				     window->user_data);
 }
@@ -1709,7 +1718,7 @@ data_device_motion(void *data, struct wl_data_device *data_device,
 	input->sy = y;
 
 	if (window->data_handler)
-		window->data_handler(window, input, time, x, y,
+		window->data_handler(window, input, x, y,
 				     input->drag_offer->types.data,
 				     window->user_data);
 }
@@ -1788,9 +1797,10 @@ input_set_selection(struct input *input,
 }
 
 void
-input_accept(struct input *input, uint32_t time, const char *type)
+input_accept(struct input *input, const char *type)
 {
-	wl_data_offer_accept(input->drag_offer->offer, time, type);
+	wl_data_offer_accept(input->drag_offer->offer,
+			     input->pointer_enter_serial, type);
 }
 
 static void
@@ -1873,13 +1883,13 @@ input_receive_selection_data_to_fd(struct input *input,
 }
 
 void
-window_move(struct window *window, struct input *input, uint32_t time)
+window_move(struct window *window, struct input *input, uint32_t serial)
 {
 	if (!window->shell_surface)
 		return;
 
 	wl_shell_surface_move(window->shell_surface,
-			      input->input_device, time);
+			      input->input_device, serial);
 }
 
 static void
@@ -1938,8 +1948,7 @@ widget_schedule_resize(struct widget *widget, int32_t width, int32_t height)
 
 static void
 handle_configure(void *data, struct wl_shell_surface *shell_surface,
-		 uint32_t time, uint32_t edges,
-		 int32_t width, int32_t height)
+		 uint32_t edges, int32_t width, int32_t height)
 {
 	struct window *window = data;
 
@@ -1970,7 +1979,7 @@ handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
 	 * time. */
 
 	menu->func(window->parent, menu->current, window->parent->user_data);
-	input_ungrab(menu->input, 0);
+	input_ungrab(menu->input);
 	menu_destroy(menu);
 }
 
@@ -2272,8 +2281,7 @@ menu_motion_handler(struct widget *widget,
 
 static int
 menu_enter_handler(struct widget *widget,
-		   struct input *input, uint32_t time,
-		   int32_t x, int32_t y, void *data)
+		   struct input *input, int32_t x, int32_t y, void *data)
 {
 	struct menu *menu = data;
 
@@ -2305,7 +2313,7 @@ menu_button_handler(struct widget *widget,
 		 * click-motion-click. */
 		menu->func(menu->window->parent, 
 			   menu->current, menu->window->parent->user_data);
-		input_ungrab(input, time);
+		input_ungrab(input);
 		menu_destroy(menu);
 	}
 }
@@ -2552,7 +2560,7 @@ static void
 input_destroy(struct input *input)
 {
 	input_remove_keyboard_focus(input);
-	input_remove_pointer_focus(input, 0);
+	input_remove_pointer_focus(input);
 
 	if (input->drag_offer)
 		data_offer_destroy(input->drag_offer);
@@ -2909,6 +2917,12 @@ struct wl_compositor *
 display_get_compositor(struct display *display)
 {
 	return display->compositor;
+}
+
+uint32_t
+display_get_serial(struct display *display)
+{
+	return display->serial;
 }
 
 EGLDisplay

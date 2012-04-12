@@ -151,7 +151,7 @@ tablet_shell_surface_configure(struct weston_surface *surface,
 
 static void
 handle_lockscreen_surface_destroy(struct wl_listener *listener,
-				  struct wl_resource *resource, uint32_t time)
+				  struct wl_resource *resource)
 {
 	struct tablet_shell *shell =
 		container_of(listener,
@@ -179,7 +179,7 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 
 static void
 handle_switcher_surface_destroy(struct wl_listener *listener,
-				struct wl_resource *resource, uint32_t time)
+				struct wl_resource *resource)
 {
 	struct tablet_shell *shell =
 		container_of(listener,
@@ -231,8 +231,7 @@ minimize_zoom_done(struct weston_zoom *zoom, void *data)
 	struct weston_input_device *device =
 		(struct weston_input_device *) compositor->input_device;
 
-	weston_surface_activate(shell->home_surface,
-			      device, weston_compositor_get_time());
+	weston_surface_activate(shell->home_surface, device);
 }
 
 static void
@@ -259,8 +258,7 @@ tablet_shell_switch_to(struct tablet_shell *shell,
 		}
 	} else {
 		fprintf(stderr, "switch to %p\n", surface);
-		weston_surface_activate(surface, device,
-				      weston_compositor_get_time());
+		weston_surface_activate(surface, device);
 		tablet_shell_set_state(shell, STATE_TASK);
 		weston_zoom_run(surface, 0.3, 1.0, NULL, NULL);
 	}
@@ -302,7 +300,7 @@ static void
 tablet_client_destroy(struct wl_client *client,
 		      struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, weston_compositor_get_time());
+	wl_resource_destroy(resource);
 }
 
 static void
@@ -423,8 +421,7 @@ go_home(struct tablet_shell *shell)
 	if (shell->state == STATE_SWITCHER)
 		tablet_shell_send_hide_switcher(&shell->resource);
 
-	weston_surface_activate(shell->home_surface, device,
-			      weston_compositor_get_time());
+	weston_surface_activate(shell->home_surface, device);
 
 	tablet_shell_set_state(shell, STATE_HOME);
 }

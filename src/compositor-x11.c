@@ -613,9 +613,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			}
 
 			output = x11_compositor_find_output(c, focus_in->event);
-			notify_keyboard_focus(c->base.input_device,
-					      weston_compositor_get_time(),
-					      &c->keys);
+			notify_keyboard_focus(c->base.input_device, &c->keys);
 
 			free(prev);
 			prev = NULL;
@@ -664,7 +662,6 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 				break;
 			output = x11_compositor_find_output(c, enter_notify->event);
 			notify_pointer_focus(c->base.input_device,
-					     weston_compositor_get_time(),
 					     &output->base,
 					     output->base.x + enter_notify->event_x,
 					     output->base.y + enter_notify->event_y);
@@ -675,9 +672,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			if (enter_notify->state >= Button1Mask)
 				break;
 			output = x11_compositor_find_output(c, enter_notify->event);
-			notify_pointer_focus(c->base.input_device,
-					     weston_compositor_get_time(),
-					     NULL,
+			notify_pointer_focus(c->base.input_device, NULL,
 					     output->base.x + enter_notify->event_x,
 					     output->base.y + enter_notify->event_y);
 			break;
@@ -702,9 +697,7 @@ x11_compositor_handle_event(int fd, uint32_t mask, void *data)
 			if (focus_in->mode == XCB_NOTIFY_MODE_WHILE_GRABBED ||
 			    focus_in->mode == XCB_NOTIFY_MODE_UNGRAB)
 				break;
-			notify_keyboard_focus(c->base.input_device,
-					      weston_compositor_get_time(),
-					      NULL);
+			notify_keyboard_focus(c->base.input_device, NULL);
 			break;
 
 		default:

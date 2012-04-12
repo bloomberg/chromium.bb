@@ -917,8 +917,7 @@ drm_subpixel_to_wayland(int drm_value)
 
 static void
 output_handle_scanout_buffer_destroy(struct wl_listener *listener,
-				     struct wl_resource *resource,
-				     uint32_t time)
+				     struct wl_resource *resource)
 {
 	struct drm_output *output =
 		container_of(listener, struct drm_output,
@@ -932,8 +931,7 @@ output_handle_scanout_buffer_destroy(struct wl_listener *listener,
 
 static void
 output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
-					     struct wl_resource *resource,
-					     uint32_t time)
+					     struct wl_resource *resource)
 {
 	struct drm_output *output =
 		container_of(listener, struct drm_output,
@@ -946,8 +944,7 @@ output_handle_pending_scanout_buffer_destroy(struct wl_listener *listener,
 
 static void
 sprite_handle_buffer_destroy(struct wl_listener *listener,
-			     struct wl_resource *resource,
-			     uint32_t time)
+			     struct wl_resource *resource)
 {
 	struct drm_sprite *sprite =
 		container_of(listener, struct drm_sprite,
@@ -958,8 +955,7 @@ sprite_handle_buffer_destroy(struct wl_listener *listener,
 
 static void
 sprite_handle_pending_buffer_destroy(struct wl_listener *listener,
-				     struct wl_resource *resource,
-				     uint32_t time)
+				     struct wl_resource *resource)
 {
 	struct drm_sprite *sprite =
 		container_of(listener, struct drm_sprite,

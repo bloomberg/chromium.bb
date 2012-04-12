@@ -110,7 +110,7 @@ weston_zoom_destroy(struct weston_zoom *zoom)
 
 static void
 handle_zoom_surface_destroy(struct wl_listener *listener,
-			    struct wl_resource *resource, uint32_t time)
+			    struct wl_resource *resource)
 {
 	struct weston_zoom *zoom =
 		container_of(listener, struct weston_zoom, listener);
@@ -246,16 +246,20 @@ binding_key(struct wl_keyboard_grab *grab,
 	struct binding_keyboard_grab *b =
 		container_of(grab, struct binding_keyboard_grab, grab);
 	struct wl_resource *resource;
+	struct wl_display *display;
+	uint32_t serial;
 
 	resource = grab->input_device->keyboard_focus_resource;
 	if (key == b->key) {
 		if (!state) {
-			wl_input_device_end_keyboard_grab(grab->input_device,
-							  time);
+			wl_input_device_end_keyboard_grab(grab->input_device);
 			free(b);
 		}
-	} else if (resource)
-		wl_input_device_send_key(resource, time, key, state);
+	} else if (resource) {
+		display = wl_client_get_display(resource->client);
+		serial = wl_display_next_serial(display);
+		wl_input_device_send_key(resource, serial, time, key, state);
+	}
 }
 
 static const struct wl_keyboard_grab_interface binding_grab = {
@@ -271,7 +275,7 @@ install_binding_grab(struct wl_input_device *device,
 	grab = malloc(sizeof *grab);
 	grab->key = key;
 	grab->grab.interface = &binding_grab;
-	wl_input_device_start_keyboard_grab(device, &grab->grab, time);
+	wl_input_device_start_keyboard_grab(device, &grab->grab);
 }
 
 WL_EXPORT void

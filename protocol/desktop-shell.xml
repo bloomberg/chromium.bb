@@ -20,7 +20,6 @@
     <!-- We'll fold most of wl_shell into this interface and then
          they'll share the configure event.  -->
     <event name="configure">
-      <arg name="time" type="uint"/>
       <arg name="edges" type="uint"/>
       <arg name="surface" type="object" interface="wl_shell_surface"/>
       <arg name="width" type="int"/>

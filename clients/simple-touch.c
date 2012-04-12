@@ -110,7 +110,8 @@ input_device_handle_motion(void *data, struct wl_input_device *input_device,
 static void
 input_device_handle_button(void *data,
 			   struct wl_input_device *input_device,
-			   uint32_t time, uint32_t button, uint32_t state)
+			   uint32_t serial, uint32_t time,
+			   uint32_t button, uint32_t state)
 {
 }
 
@@ -122,14 +123,15 @@ input_device_handle_axis(void *data, struct wl_input_device *input_device,
 
 static void
 input_device_handle_key(void *data, struct wl_input_device *input_device,
-			uint32_t time, uint32_t key, uint32_t state)
+			uint32_t serial, uint32_t time,
+			uint32_t key, uint32_t state)
 {
 }
 
 static void
 input_device_handle_pointer_enter(void *data,
 				  struct wl_input_device *input_device,
-				  uint32_t time, struct wl_surface *surface,
+				  uint32_t serial, struct wl_surface *surface,
 				  int32_t sx, int32_t sy)
 {
 }
@@ -137,14 +139,14 @@ input_device_handle_pointer_enter(void *data,
 static void
 input_device_handle_pointer_leave(void *data,
 				  struct wl_input_device *input_device,
-				  uint32_t time, struct wl_surface *surface)
+				  uint32_t serial, struct wl_surface *surface)
 {
 }
 
 static void
 input_device_handle_keyboard_enter(void *data,
 				   struct wl_input_device *input_device,
-				   uint32_t time,
+				   uint32_t serial,
 				   struct wl_surface *surface,
 				   struct wl_array *keys)
 {
@@ -153,7 +155,7 @@ input_device_handle_keyboard_enter(void *data,
 static void
 input_device_handle_keyboard_leave(void *data,
 				   struct wl_input_device *input_device,
-				   uint32_t time,
+				   uint32_t serial,
 				   struct wl_surface *surface)
 {
 }
@@ -193,7 +195,8 @@ touch_paint(struct touch *touch, int32_t x, int32_t y, int32_t id)
 static void
 input_device_handle_touch_down(void *data,
 			       struct wl_input_device *wl_input_device,
-			       uint32_t time, struct wl_surface *surface,
+			       uint32_t serial, uint32_t time,
+			       struct wl_surface *surface,
 			       int32_t id, int32_t x, int32_t y)
 {
 	struct touch *touch = data;
@@ -204,7 +207,7 @@ input_device_handle_touch_down(void *data,
 static void
 input_device_handle_touch_up(void *data,
 			     struct wl_input_device *wl_input_device,
-			     uint32_t time, int32_t id)
+			     uint32_t serial, uint32_t time, int32_t id)
 {
 }
 

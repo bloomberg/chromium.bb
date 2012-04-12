@@ -273,7 +273,7 @@ data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 static void
 data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, weston_compositor_get_time());
+	wl_resource_destroy(resource);
 }
 
 static const struct wl_data_offer_interface data_offer_interface = {
@@ -335,8 +335,7 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 	}
 
 	device = wm->server->compositor->input_device;
-	wl_input_device_set_selection(device, source,
-				      weston_compositor_get_time());
+	wl_input_device_set_selection(device, source);
 
 	free(reply);
 }
@@ -1481,8 +1480,7 @@ weston_xserver_cleanup(struct weston_process *process, int status)
 }
 
 static void
-surface_destroy(struct wl_listener *listener,
-		struct wl_resource *resource, uint32_t time)
+surface_destroy(struct wl_listener *listener, struct wl_resource *resource)
 {
 	struct weston_wm_window *window =
 		container_of(listener,

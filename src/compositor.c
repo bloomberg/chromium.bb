@@ -166,7 +166,7 @@ weston_client_launch(struct weston_compositor *compositor,
 
 static void
 surface_handle_buffer_destroy(struct wl_listener *listener,
-			      struct wl_resource *resource, uint32_t time)
+			      struct wl_resource *resource)
 {
 	struct weston_surface *es =
 		container_of(listener, struct weston_surface, 
@@ -548,11 +548,11 @@ weston_surface_is_mapped(struct weston_surface *surface)
 WL_EXPORT uint32_t
 weston_compositor_get_time(void)
 {
-	struct timeval tv;
+       struct timeval tv;
 
-	gettimeofday(&tv, NULL);
+       gettimeofday(&tv, NULL);
 
-	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+       return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
 static struct weston_surface *
@@ -572,7 +572,7 @@ weston_compositor_pick_surface(struct weston_compositor *compositor,
 }
 
 static void
-weston_device_repick(struct wl_input_device *device, uint32_t time)
+weston_device_repick(struct wl_input_device *device)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	const struct wl_pointer_grab_interface *interface;
@@ -585,7 +585,7 @@ weston_device_repick(struct wl_input_device *device, uint32_t time)
 
 	if (&surface->surface != device->current) {
 		interface = device->pointer_grab->interface;
-		interface->focus(device->pointer_grab, time, &surface->surface,
+		interface->focus(device->pointer_grab, &surface->surface,
 				 device->current_x, device->current_y);
 		device->current = &surface->surface;
 	}
@@ -600,14 +600,12 @@ WL_EXPORT void
 weston_compositor_repick(struct weston_compositor *compositor)
 {
 	struct weston_input_device *device;
-	uint32_t time;
 
 	if (!compositor->focus)
 		return;
 
-	time = weston_compositor_get_time();
 	wl_list_for_each(device, &compositor->input_device_list, link)
-		weston_device_repick(&device->input_device, time);
+		weston_device_repick(&device->input_device);
 }
 
 static void
@@ -621,11 +619,9 @@ weston_surface_unmap(struct weston_surface *surface)
 	wl_list_remove(&surface->layer_link);
 
 	if (device->keyboard_focus == &surface->surface)
-		wl_input_device_set_keyboard_focus(device, NULL,
-						   weston_compositor_get_time());
+		wl_input_device_set_keyboard_focus(device, NULL);
 	if (device->pointer_focus == &surface->surface)
-		wl_input_device_set_pointer_focus(device, NULL, 0, 0,
-						  weston_compositor_get_time());
+		wl_input_device_set_pointer_focus(device, NULL, 0, 0);
 
 	weston_compositor_schedule_repaint(surface->compositor);
 }
@@ -998,7 +994,7 @@ weston_output_repaint(struct weston_output *output, int msecs)
 
 	wl_list_for_each_safe(cb, cnext, &output->frame_callback_list, link) {
 		wl_callback_send_done(&cb->resource, msecs);
-		wl_resource_destroy(&cb->resource, 0);
+		wl_resource_destroy(&cb->resource);
 	}
 
 	wl_list_for_each_safe(animation, next, &ec->animation_list, link)
@@ -1113,7 +1109,7 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 static void
 surface_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, weston_compositor_get_time());
+	wl_resource_destroy(resource);
 }
 
 WL_EXPORT void
@@ -1322,7 +1318,7 @@ destroy_region(struct wl_resource *resource)
 static void
 region_destroy(struct wl_client *client, struct wl_resource *resource)
 {
-	wl_resource_destroy(resource, weston_compositor_get_time());
+	wl_resource_destroy(resource);
 }
 
 static void
@@ -1500,7 +1496,7 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 		    pixman_region32_contains_point(&output->region, x, y, NULL))
 			weston_output_update_zoom(output, x, y);
 
-	weston_device_repick(device, time);
+	weston_device_repick(device);
 	interface = device->pointer_grab->interface;
 	interface->motion(device->pointer_grab, time,
 			  device->pointer_grab->x, device->pointer_grab->y);
@@ -1516,10 +1512,10 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 
 WL_EXPORT void
 weston_surface_activate(struct weston_surface *surface,
-			struct weston_input_device *device, uint32_t time)
+			struct weston_input_device *device)
 {
 	wl_input_device_set_keyboard_focus(&device->input_device,
-					   &surface->surface, time);
+					   &surface->surface);
 	wl_data_device_set_keyboard_focus(&device->input_device);
 }
 
@@ -1548,6 +1544,9 @@ notify_button(struct wl_input_device *device,
 
 	device->pointer_grab->interface->button(device->pointer_grab, time, button, state);
 
+	if (device->button_count == 1)
+		device->grab_serial =
+			wl_display_get_serial(compositor->wl_display);
 }
 
 WL_EXPORT void
@@ -1641,8 +1640,7 @@ notify_key(struct wl_input_device *device,
 
 WL_EXPORT void
 notify_pointer_focus(struct wl_input_device *device,
-		     uint32_t time, struct weston_output *output,
-		     int32_t x, int32_t y)
+		     struct weston_output *output, int32_t x, int32_t y)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
 	struct weston_compositor *compositor = wd->compositor;
@@ -1663,7 +1661,7 @@ notify_pointer_focus(struct wl_input_device *device,
 
 static void
 destroy_device_saved_kbd_focus(struct wl_listener *listener,
-			       struct wl_resource *resource, uint32_t time)
+			       struct wl_resource *resource)
 {
 	struct weston_input_device *wd;
 
@@ -1674,8 +1672,7 @@ destroy_device_saved_kbd_focus(struct wl_listener *listener,
 }
 
 WL_EXPORT void
-notify_keyboard_focus(struct wl_input_device *device,
-		      uint32_t time, struct wl_array *keys)
+notify_keyboard_focus(struct wl_input_device *device, struct wl_array *keys)
 {
 	struct weston_input_device *wd =
 		(struct weston_input_device *) device;
@@ -1696,7 +1693,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 		if (surface) {
 			wl_list_remove(&wd->saved_kbd_focus_listener.link);
 			wl_input_device_set_keyboard_focus(&wd->input_device,
-							   surface, time);
+							   surface);
 			wd->saved_kbd_focus = NULL;
 		}
 	} else {
@@ -1715,12 +1712,11 @@ notify_keyboard_focus(struct wl_input_device *device,
 				       &wd->saved_kbd_focus_listener.link);
 		}
 
-		wl_input_device_set_keyboard_focus(&wd->input_device,
-						   NULL, time);
+		wl_input_device_set_keyboard_focus(&wd->input_device, NULL);
 		/* FIXME: We really need keyboard grab cancel here to
 		 * let the grab shut down properly.  As it is we leak
 		 * the grab data. */
-		wl_input_device_end_keyboard_grab(&wd->input_device, time);
+		wl_input_device_end_keyboard_grab(&wd->input_device);
 	}
 }
 
@@ -1743,7 +1739,7 @@ find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
 
 static void
 lose_touch_focus_resource(struct wl_listener *listener,
-			  struct wl_resource *resource, uint32_t time)
+			  struct wl_resource *resource)
 {
 	struct weston_input_device *device =
 		container_of(listener, struct weston_input_device,
@@ -1754,7 +1750,7 @@ lose_touch_focus_resource(struct wl_listener *listener,
 
 static void
 lose_touch_focus(struct wl_listener *listener,
-		 struct wl_resource *resource, uint32_t time)
+		 struct wl_resource *resource)
 {
 	struct weston_input_device *device =
 		container_of(listener, struct weston_input_device,
@@ -1765,7 +1761,7 @@ lose_touch_focus(struct wl_listener *listener,
 
 static void
 touch_set_focus(struct weston_input_device *device,
-		struct wl_surface *surface, uint32_t time)
+		struct wl_surface *surface)
 {
 	struct wl_input_device *input_device = &device->input_device;
 	struct wl_resource *resource;
@@ -1818,6 +1814,7 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 	struct weston_compositor *ec = wd->compositor;
 	struct weston_surface *es;
 	int32_t sx, sy;
+	uint32_t serial = 0;
 
 	switch (touch_type) {
 	case WL_INPUT_DEVICE_TOUCH_DOWN:
@@ -1830,7 +1827,7 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 		 * until all touch points are up again. */
 		if (wd->num_tp == 1) {
 			es = weston_compositor_pick_surface(ec, x, y, &sx, &sy);
-			touch_set_focus(wd, &es->surface, time);
+			touch_set_focus(wd, &es->surface);
 		} else if (wd->touch_focus) {
 			es = (struct weston_surface *) wd->touch_focus;
 			weston_surface_from_global(es, x, y, &sx, &sy);
@@ -1838,7 +1835,7 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 
 		if (wd->touch_focus_resource && wd->touch_focus)
 			wl_input_device_send_touch_down(wd->touch_focus_resource,
-							time, &wd->touch_focus->resource,
+							serial, time, &wd->touch_focus->resource,
 							touch_id, sx, sy);
 		break;
 	case WL_INPUT_DEVICE_TOUCH_MOTION:
@@ -1857,9 +1854,9 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 
 		if (wd->touch_focus_resource)
 			wl_input_device_send_touch_up(wd->touch_focus_resource,
-						      time, touch_id);
+						      serial, time, touch_id);
 		if (wd->num_tp == 0)
-			touch_set_focus(wd, NULL, time);
+			touch_set_focus(wd, NULL);
 		break;
 	}
 }
@@ -1867,14 +1864,14 @@ notify_touch(struct wl_input_device *device, uint32_t time, int touch_id,
 static void
 input_device_attach(struct wl_client *client,
 		    struct wl_resource *resource,
-		    uint32_t time,
+		    uint32_t serial,
 		    struct wl_resource *buffer_resource, int32_t x, int32_t y)
 {
 	struct weston_input_device *device = resource->data;
 	struct weston_compositor *compositor = device->compositor;
 	struct wl_buffer *buffer = NULL;
 
-	if (time < device->input_device.pointer_focus_time)
+	if (serial < device->input_device.pointer_focus_serial)
 		return;
 	if (device->input_device.pointer_focus == NULL)
 		return;
@@ -1913,7 +1910,7 @@ static const struct wl_input_device_interface input_device_interface = {
 
 static void
 handle_drag_surface_destroy(struct wl_listener *listener,
-			    struct wl_resource *resource, uint32_t time)
+			    struct wl_resource *resource)
 {
 	struct weston_input_device *device;
 
@@ -1944,7 +1941,7 @@ bind_input_device(struct wl_client *client,
 
 static void
 device_handle_new_drag_icon(struct wl_listener *listener,
-			    struct wl_resource *resource, uint32_t time)
+			    struct wl_resource *resource)
 {
 	struct weston_input_device *device;
 
