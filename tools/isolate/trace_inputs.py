@@ -24,6 +24,9 @@ import sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
 
+KEY_TRACKED = 'isolate_dependency_tracked'
+KEY_UNTRACKED = 'isolate_dependency_untracked'
+
 
 if sys.platform == 'win32':
   from ctypes.wintypes import create_unicode_buffer
@@ -117,6 +120,16 @@ def get_flavor():
 
 def isEnabledFor(level):
   return logging.getLogger().isEnabledFor(level)
+
+
+def fix_python_path(cmd):
+  """Returns the fixed command line to call the right python executable."""
+  out = cmd[:]
+  if out[0] == 'python':
+    out[0] = sys.executable
+  elif out[0].endswith('.py'):
+    out.insert(0, sys.executable)
+  return out
 
 
 class Strace(object):
@@ -1161,11 +1174,13 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
   # It is important to have unambiguous path.
   assert os.path.isabs(root_dir), root_dir
   assert os.path.isabs(logfile), logfile
+  assert not cwd_dir or not os.path.isabs(cwd_dir), cwd_dir
+  assert not product_dir or not os.path.isabs(product_dir), product_dir
+
+  cmd = fix_python_path(cmd)
   assert (
       (os.path.isfile(logfile) and not force_trace) or os.path.isabs(cmd[0])
       ), cmd[0]
-  assert not cwd_dir or not os.path.isabs(cwd_dir), cwd_dir
-  assert not product_dir or not os.path.isabs(product_dir), product_dir
 
   # Resolve any symlink
   root_dir = os.path.realpath(root_dir)
@@ -1268,9 +1283,9 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
     dirs = [f for f in corrected if f.endswith('/')]
     variables = {}
     if files:
-      variables['isolate_files'] = files
+      variables[KEY_TRACKED] = files
     if dirs:
-      variables['isolate_dirs'] = dirs
+      variables[KEY_UNTRACKED] = dirs
     value = {
       'conditions': [
         ['OS=="%s"' % flavor, {

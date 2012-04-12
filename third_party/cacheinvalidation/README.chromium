@@ -8,3 +8,6 @@ Security Critical: no
 
 Description:
 This is the API to talk to the Google Cache Invalidation service.
+
+Local Modifications:
+None.

@@ -102,11 +102,11 @@ class TraceInputs(unittest.TestCase):
       'conditions': [
         ['OS=="%s"' % trace_inputs.get_flavor(), {
           'variables': {
-            'isolate_files': [
+            'isolate_dependency_tracked': [
               '<(DEPTH)/trace_inputs.py',
               '<(DEPTH)/%s' % FILENAME,
             ],
-            'isolate_dirs': [
+            'isolate_dependency_untracked': [
               'trace_inputs/',
             ],
           },

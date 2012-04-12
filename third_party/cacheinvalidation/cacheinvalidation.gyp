@@ -215,22 +215,28 @@
       'dependencies': [
         'cacheinvalidation_unittests',
       ],
+      'includes': [
+        'cacheinvalidation_unittests.isolate',
+      ],
       'actions': [
         {
           'action_name': 'isolate',
           'inputs': [
-            '<(PRODUCT_DIR)/cacheinvalidation_unittests<(EXECUTABLE_SUFFIX)',
+            'cacheinvalidation_unittests.isolate',
+            '<@(isolate_dependency_tracked)',
           ],
           'outputs': [
             '<(PRODUCT_DIR)/cacheinvalidation_unittests.results',
           ],
           'action': [
             'python',
-            '<(DEPTH)/tools/isolate/isolate.py',
-            '--mode=<(tests_run)',
-            '--root', '<(DEPTH)',
+            '../../tools/isolate/isolate.py',
+            '--mode', '<(tests_run)',
+            '--variable', 'DEPTH=<(DEPTH)',
+            '--variable', 'PRODUCT_DIR=<(PRODUCT_DIR)',
+            '--variable', 'OS=<(OS)',
             '--result', '<@(_outputs)',
-            '<@(_inputs)',
+            'cacheinvalidation_unittests.isolate',
           ],
         },
       ],

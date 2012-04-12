@@ -18,6 +18,8 @@ import re
 import sys
 
 import trace_inputs
+# Create shortcuts.
+from trace_inputs import KEY_TRACKED, KEY_UNTRACKED
 
 
 def union(lhs, rhs):
@@ -28,41 +30,15 @@ def union(lhs, rhs):
   if rhs is None:
     return copy.deepcopy(lhs)
   assert type(lhs) == type(rhs), (lhs, rhs)
+  if hasattr(lhs, 'union'):
+    # Includes set, OSSettings and Configs.
+    return lhs.union(rhs)
   if isinstance(lhs, dict):
     return dict((k, union(lhs.get(k), rhs.get(k))) for k in set(lhs).union(rhs))
-  elif isinstance(lhs, set):
-    # Do not go inside the set.
-    return lhs.union(rhs)
   elif isinstance(lhs, list):
     # Do not go inside the list.
     return lhs + rhs
   assert False, type(lhs)
-
-
-def process_variables(for_os, variables):
-  """Extracts files and dirs from the |variables| dict.
-
-  Returns a list of exactly two items. Each item is a dict that maps a string
-  to a set (of strings).
-
-  In the first item, the keys are file names, and the values are sets of OS
-  names, like "win" or "mac". In the second item, the keys are directory names,
-  and the values are sets of OS names too.
-  """
-  VALID_VARIABLES = ['isolate_files', 'isolate_dirs']
-
-  # Verify strictness.
-  assert isinstance(variables, dict), variables
-  assert set(VALID_VARIABLES).issuperset(set(variables)), variables.keys()
-  for items in variables.itervalues():
-    assert isinstance(items, list), items
-    assert all(isinstance(i, basestring) for i in items), items
-
-  # Returns [files, dirs]
-  return [
-    dict((name, set([for_os])) for name in variables.get(var, []))
-    for var in VALID_VARIABLES
-  ]
 
 
 def eval_content(content):
@@ -75,194 +51,227 @@ def eval_content(content):
   return value
 
 
-def _process_inner(for_os, inner, old_files, old_dirs, old_os):
-  """Processes the variables inside a condition.
-
-  Only meant to be called by parse_gyp_dict().
-
-  Args:
-  - for_os: OS where the references are tracked for.
-  - inner: Inner dictionary to process.
-  - old_files: Previous list of files to union with.
-  - old_dirs: Previous list of directories to union with.
-  - old_os: Previous list of OSes referenced to union with.
-
-  Returns:
-  - A tuple of (files, dirs, os) where each list is a union of the new
-    dependencies found for this OS, as referenced by for_os, and the previous
-    list.
-  """
-  assert isinstance(inner, dict), inner
-  assert set(['variables']).issuperset(set(inner)), inner.keys()
-  new_files, new_dirs = process_variables(for_os, inner.get('variables', {}))
-  if new_files or new_dirs:
-    old_os = old_os.union([for_os.lstrip('!')])
-  return union(old_files, new_files), union(old_dirs, new_dirs), old_os
+def verify_variables(variables):
+  """Verifies the |variables| dictionary is in the expected format."""
+  VALID_VARIABLES = [
+    KEY_TRACKED,
+    KEY_UNTRACKED,
+    'command',
+    'read_only',
+  ]
+  assert isinstance(variables, dict), variables
+  assert set(VALID_VARIABLES).issuperset(set(variables)), variables.keys()
+  for name, value in variables.iteritems():
+    if name == 'read_only':
+      assert value in (True, False, None), value
+    else:
+      assert isinstance(value, list), value
+      assert all(isinstance(i, basestring) for i in value), value
 
 
-def parse_gyp_dict(value):
-  """Parses a gyp dict as returned by eval_content().
+def verify_condition(condition):
+  """Verifies the |condition| dictionary is in the expected format."""
+  VALID_INSIDE_CONDITION = ['variables']
+  assert isinstance(condition, list), condition
+  assert 2 <= len(condition) <= 3, condition
+  assert re.match(r'OS==\"([a-z]+)\"', condition[0]), condition[0]
+  for c in condition[1:]:
+    assert isinstance(c, dict), c
+    assert set(VALID_INSIDE_CONDITION).issuperset(set(c)), c.keys()
+    verify_variables(c.get('variables', {}))
 
-  |value| is the loaded dictionary that was defined in the gyp file.
 
-  Returns a 3-tuple, where the first two items are the same as the items
-  returned by process_variable() in the same order, and the last item is a set
-  of strings of all OSs seen in the input dict.
-
-  The expected format is strict, anything diverting from the format below will
-  fail:
-  {
-    'variables': {
-      'isolate_files': [
-        ...
-      ],
-      'isolate_dirs: [
-        ...
-      ],
-    },
-    'conditions': [
-      ['OS=="<os>"', {
-        'variables': {
-          ...
-        },
-      }, {  # else
-        'variables': {
-          ...
-        },
-      }],
-      ...
-    ],
-  }
-  """
-  assert isinstance(value, dict), value
+def verify_root(value):
   VALID_ROOTS = ['variables', 'conditions']
+  assert isinstance(value, dict), value
   assert set(VALID_ROOTS).issuperset(set(value)), value.keys()
+  verify_variables(value.get('variables', {}))
 
-  # Global level variables.
-  oses = set()
-  files, dirs = process_variables(None, value.get('variables', {}))
-
-  # OS specific variables.
   conditions = value.get('conditions', [])
   assert isinstance(conditions, list), conditions
   for condition in conditions:
-    assert isinstance(condition, list), condition
-    assert 2 <= len(condition) <= 3, condition
-    m = re.match(r'OS==\"([a-z]+)\"', condition[0])
-    assert m, condition[0]
-    condition_os = m.group(1)
-
-    files, dirs, oses = _process_inner(
-        condition_os, condition[1], files, dirs, oses)
-
-    if len(condition) == 3:
-      files, dirs, oses = _process_inner(
-          '!' + condition_os, condition[2], files, dirs, oses)
-
-  # TODO(maruel): _expand_negative() should be called here, because otherwise
-  # the OSes the negative condition represents is lost once the gyps are merged.
-  # This cause an invalid expansion in reduce_inputs() call.
-  return files, dirs, oses
+    verify_condition(condition)
 
 
-def parse_gyp_dicts(gyps):
-  """Parses each gyp file and returns the merged results.
+class OSSettings(object):
+  """Represents the dependencies for an OS. The structure is immutable."""
+  def __init__(self, name, values):
+    self.name = name
+    verify_variables(values)
+    self.tracked = sorted(values.get(KEY_TRACKED, []))
+    self.untracked = sorted(values.get(KEY_UNTRACKED, []))
+    self.command = values.get('command', [])[:]
+    self.read_only = values.get('read_only')
 
-  It only loads what parse_gyp_dict() can process.
+  def union(self, rhs):
+    assert self.name == rhs.name
+    assert not (self.command and rhs.command)
+    var = {
+      KEY_TRACKED: sorted(self.tracked + rhs.tracked),
+      KEY_UNTRACKED: sorted(self.untracked + rhs.untracked),
+      'command': self.command or rhs.command,
+      'read_only': rhs.read_only if self.read_only is None else self.read_only,
+    }
+    return OSSettings(self.name, var)
 
-  Return values:
-    files: dict(filename, set(OS where this filename is a dependency))
-    dirs:  dict(dirame, set(OS where this dirname is a dependency))
-    oses:  set(all the OSes referenced)
-    """
-  files = {}
-  dirs = {}
-  oses = set()
-  for gyp in gyps:
-    with open(gyp, 'rb') as gyp_file:
-      content = gyp_file.read()
-    gyp_files, gyp_dirs, gyp_oses = parse_gyp_dict(eval_content(content))
-    files = union(gyp_files, files)
-    dirs = union(gyp_dirs, dirs)
-    oses |= gyp_oses
-  return files, dirs, oses
-
-
-def _expand_negative(items, oses):
-  """Converts all '!foo' value in the set by oses.difference('foo')."""
-  assert None not in oses and len(oses) >= 2, oses
-  for name in items:
-    if None in items[name]:
-      # Shortcut any item having None in their set. An item listed in None means
-      # the item is a dependency on all OSes. As such, there is no need to list
-      # any OS.
-      items[name] = set([None])
-      continue
-    for neg in [o for o in items[name] if o.startswith('!')]:
-      # Replace it with the inverse.
-      items[name] = items[name].union(oses.difference([neg[1:]]))
-      items[name].remove(neg)
-    if items[name] == oses:
-      items[name] = set([None])
+  def flatten(self):
+    out = {}
+    if self.command:
+      out['command'] = self.command
+    if self.tracked:
+      out[KEY_TRACKED] = self.tracked
+    if self.untracked:
+      out[KEY_UNTRACKED] = self.untracked
+    if self.read_only is not None:
+      out['read_only'] = self.read_only
+    return out
 
 
-def _compact_negative(items, oses):
-  """Converts all oses.difference('foo') to '!foo'.
+class Configs(object):
+  """Represents all the OS-specific configurations.
 
-  It is doing the reverse of _expand_negative().
+  The self.per_os[None] member contains all the 'else' clauses plus the default
+  values. It is not included in the flatten() result.
   """
-  assert None not in oses and len(oses) >= 3, oses
-  for name in items:
-    missing = oses.difference(items[name])
-    if len(missing) == 1:
-      # Replace it with a negative.
-      items[name] = set(['!' + tuple(missing)[0]])
+  def __init__(self, oses):
+    self.per_os = {
+        None: OSSettings(None, {}),
+    }
+    self.per_os.update(dict((name, OSSettings(name, {})) for name in oses))
+
+  def union(self, rhs):
+    out = Configs(list(set(self.per_os.keys() + rhs.per_os.keys())))
+    for value in self.per_os.itervalues():
+      # TODO(maruel): FAIL
+      out = out.union(value)
+    for value in rhs.per_os.itervalues():
+      out = out.union(value)
+    return out
+
+  def add_globals(self, values):
+    for key in self.per_os:
+      self.per_os[key] = self.per_os[key].union(OSSettings(key, values))
+
+  def add_values(self, for_os, values):
+    self.per_os[for_os] = self.per_os[for_os].union(OSSettings(for_os, values))
+
+  def add_negative_values(self, for_os, values):
+    """Includes the variables to all OSes except |for_os|.
+
+    This includes 'None' so unknown OSes gets it too.
+    """
+    for key in self.per_os:
+      if key != for_os:
+        self.per_os[key] = self.per_os[key].union(OSSettings(key, values))
+
+  def flatten(self):
+    """Returns a flat dictionary representation of the configuration.
+
+    Skips None pseudo-OS.
+    """
+    return dict(
+        (k, v.flatten()) for k, v in self.per_os.iteritems() if k is not None)
 
 
-def reduce_inputs(files, dirs, oses):
-  """Reduces the variables to their strictest minimum."""
-  # Construct the inverse map first.
-  # Look at each individual file and directory, map where they are used and
-  # reconstruct the inverse dictionary.
-  # First, expands all '!' builders into the reverse.
-  # TODO(maruel): This is too late to call _expand_negative(). The exact list
-  # negative OSes condition it represents is lost at that point.
-  _expand_negative(files, oses)
-  _expand_negative(dirs, oses)
+def invert_map(variables):
+  """Converts a dict(OS, dict(deptype, list(dependencies)) to a flattened view.
 
-  # Do not convert back to negative if only 2 OSes were merged. It is easier to
-  # read this way.
+  Returns a tuple of:
+    1. dict(deptype, dict(dependency, set(OSes)) for easier processing.
+    2. All the OSes found as a set.
+  """
+  KEYS = (
+    KEY_TRACKED,
+    KEY_UNTRACKED,
+    'command',
+    'read_only',
+  )
+  out = dict((key, {}) for key in KEYS)
+  for os_name, values in variables.iteritems():
+    for key in (KEY_TRACKED, KEY_UNTRACKED):
+      for item in values.get(key, []):
+        out[key].setdefault(item, set()).add(os_name)
+
+    # command needs special handling.
+    command = tuple(values.get('command', []))
+    out['command'].setdefault(command, set()).add(os_name)
+
+    # read_only needs special handling.
+    out['read_only'].setdefault(values.get('read_only'), set()).add(os_name)
+  return out, set(variables)
+
+
+def reduce_inputs(values, oses):
+  """Reduces the invert_map() output to the strictest minimum list.
+
+  1. Construct the inverse map first.
+  2. Look at each individual file and directory, map where they are used and
+     reconstruct the inverse dictionary.
+  3. Do not convert back to negative if only 2 OSes were merged.
+
+  Returns a tuple of:
+    1. the minimized dictionary
+    2. oses passed through as-is.
+  """
+  KEYS = (
+    KEY_TRACKED,
+    KEY_UNTRACKED,
+    'command',
+    'read_only',
+  )
+  out = dict((key, {}) for key in KEYS)
+  assert all(oses), oses
   if len(oses) > 2:
-    _compact_negative(files, oses)
-    _compact_negative(dirs, oses)
+    for key in KEYS:
+      for item, item_oses in values.get(key, {}).iteritems():
+        # Converts all oses.difference('foo') to '!foo'.
+        assert all(item_oses), item_oses
+        missing = oses.difference(item_oses)
+        if len(missing) == 1:
+          # Replace it with a negative.
+          out[key][item] = set(['!' + tuple(missing)[0]])
+        elif not missing:
+          out[key][item] = set([None])
+        else:
+          out[key][item] = set(item_oses)
+  return out, oses
 
-  return files, dirs
 
-
-def convert_to_gyp(files, dirs):
+def convert_map_to_gyp(values, oses):
   """Regenerates back a gyp-like configuration dict from files and dirs
-  mappings.
-
-  Sort the lists.
+  mappings generated from reduce_inputs().
   """
   # First, inverse the mapping to make it dict first.
   config = {}
-  def to_cond(items, name):
-    for item, oses in items.iteritems():
+  for key in values:
+    for item, oses in values[key].iteritems():
+      if item is None:
+        # For read_only default.
+        continue
       for cond_os in oses:
-        condition_values = config.setdefault(
-            None if cond_os is None else cond_os.lstrip('!'),
-            [{}, {}])
+        cond_key = None if cond_os is None else cond_os.lstrip('!')
+        # Insert the if/else dicts.
+        condition_values = config.setdefault(cond_key, [{}, {}])
         # If condition is negative, use index 1, else use index 0.
-        condition_value = condition_values[int((cond_os or '').startswith('!'))]
-        # The list of items (files or dirs). Append the new item and keep the
-        # list sorted.
-        l = condition_value.setdefault('variables', {}).setdefault(name, [])
-        l.append(item)
-        l.sort()
+        cond_value = condition_values[int((cond_os or '').startswith('!'))]
+        variables = cond_value.setdefault('variables', {})
 
-  to_cond(files, 'isolate_files')
-  to_cond(dirs, 'isolate_dirs')
+        if item in (True, False):
+          # One-off for read_only.
+          variables[key] = item
+        else:
+          if isinstance(item, tuple):
+            # One-off for command.
+            # Do not merge lists and do not sort!
+            # Note that item is a tuple.
+            assert key not in variables
+            variables[key] = list(item)
+          else:
+            # The list of items (files or dirs). Append the new item and keep
+            # the list sorted.
+            l = variables.setdefault(key, [])
+            l.append(item)
+            l.sort()
 
   out = {}
   for o in sorted(config):
@@ -279,20 +288,93 @@ def convert_to_gyp(files, dirs):
   return out
 
 
-def main():
+def load_gyp(value):
+  """Parses one gyp skeleton and returns a Configs() instance.
+
+  |value| is the loaded dictionary that was defined in the gyp file.
+
+  The expected format is strict, anything diverting from the format below will
+  throw an assert:
+  {
+    'variables': {
+      'command': [
+        ...
+      ],
+      'isolate_dependency_tracked': [
+        ...
+      ],
+      'isolate_dependency_untracked': [
+        ...
+      ],
+      'read_only': False,
+    },
+    'conditions': [
+      ['OS=="<os>"', {
+        'variables': {
+          ...
+        },
+      }, {  # else
+        'variables': {
+          ...
+        },
+      }],
+      ...
+    ],
+  }
+  """
+  verify_root(value)
+
+  # Scan to get the list of OSes.
+  conditions = value.get('conditions', [])
+  oses = set(re.match(r'OS==\"([a-z]+)\"', c[0]).group(1) for c in conditions)
+  configs = Configs(oses)
+
+  # Global level variables.
+  configs.add_globals(value.get('variables', {}))
+
+  # OS specific variables.
+  for condition in conditions:
+    condition_os = re.match(r'OS==\"([a-z]+)\"', condition[0]).group(1)
+    configs.add_values(condition_os, condition[1].get('variables', {}))
+    if len(condition) > 2:
+      configs.add_negative_values(
+          condition_os, condition[2].get('variables', {}))
+  return configs
+
+
+def load_gyps(items):
+  """Parses each gyp file and returns the merged results.
+
+  It only loads what load_gyp() can process.
+
+  Return values:
+    files: dict(filename, set(OS where this filename is a dependency))
+    dirs:  dict(dirame, set(OS where this dirname is a dependency))
+    oses:  set(all the OSes referenced)
+    """
+  configs = Configs([])
+  for item in items:
+    configs = configs.union(load_gyp(eval_content(open(item, 'rb').read())))
+  return configs
+
+
+def main(args=None):
   parser = optparse.OptionParser(
       usage='%prog <options> [file1] [file2] ...')
   parser.add_option(
       '-v', '--verbose', action='count', default=0, help='Use multiple times')
 
-  options, args = parser.parse_args()
+  options, args = parser.parse_args(args)
   level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
   logging.basicConfig(
         level=level,
         format='%(levelname)5s %(module)15s(%(lineno)3d):%(message)s')
 
   trace_inputs.pretty_print(
-      convert_to_gyp(*reduce_inputs(*parse_gyp_dicts(args))),
+      convert_map_to_gyp(
+          *reduce_inputs(
+              *invert_map(
+                  load_gyps(args).flatten()))),
       sys.stdout)
   return 0
 

@@ -6,182 +6,325 @@
 import unittest
 
 import merge_isolate
+# Create shortcuts.
+from merge_isolate import KEY_TRACKED, KEY_UNTRACKED
 
 
 class MergeGyp(unittest.TestCase):
   def test_unknown_key(self):
     try:
-      merge_isolate.process_variables(None, {'foo': [],})
+      merge_isolate.verify_variables({'foo': [],})
       self.fail()
     except AssertionError:
       pass
 
   def test_unknown_var(self):
     try:
-      merge_isolate.process_variables(None, {'variables': {'foo': [],}})
+      merge_isolate.verify_condition({'variables': {'foo': [],}})
       self.fail()
     except AssertionError:
       pass
 
-  def test_parse_gyp_dict_empty(self):
-    f, d, o = merge_isolate.parse_gyp_dict({})
-    self.assertEquals({}, f)
-    self.assertEquals({}, d)
-    self.assertEquals(set(), o)
+  def test_union(self):
+    value1 = {
+      'a': set(['A']),
+      'b': ['B', 'C'],
+      'c': 'C',
+    }
+    value2 = {
+      'a': set(['B', 'C']),
+      'b': [],
+      'd': set(),
+    }
+    expected = {
+      'a': set(['A', 'B', 'C']),
+      'b': ['B', 'C'],
+      'c': 'C',
+      'd': set(),
+    }
+    self.assertEquals(expected, merge_isolate.union(value1, value2))
 
-  def test_parse_gyp_dict(self):
+  def test_eval_content(self):
+    try:
+      # Intrinsics are not available.
+      merge_isolate.eval_content('map(str, [1, 2])')
+      self.fail()
+    except NameError:
+      pass
+
+  def test_load_gyp_empty(self):
+    self.assertEquals({}, merge_isolate.load_gyp({}).flatten())
+
+  def test_load_gyp(self):
     value = {
       'variables': {
-        'isolate_files': [
-          'a',
-        ],
-        'isolate_dirs': [
-          'b',
-        ],
+        KEY_TRACKED: ['a'],
+        KEY_UNTRACKED: ['b'],
       },
       'conditions': [
         ['OS=="atari"', {
           'variables': {
-            'isolate_files': [
-              'c',
-              'x',
-            ],
-            'isolate_dirs': [
-              'd',
-            ],
+            KEY_TRACKED: ['c', 'x'],
+            KEY_UNTRACKED: ['d'],
+            'command': ['echo', 'Hello World'],
+            'read_only': True,
           },
         }, {  # else
           'variables': {
-            'isolate_files': [
-              'e',
-              'x',
-            ],
-            'isolate_dirs': [
-              'f',
-            ],
+            KEY_TRACKED: ['e', 'x'],
+            KEY_UNTRACKED: ['f'],
+            'command': ['echo', 'You should get an Atari'],
           },
         }],
         ['OS=="amiga"', {
           'variables': {
-            'isolate_files': [
-              'g',
-            ],
+            KEY_TRACKED: ['g'],
+            'read_only': False,
           },
         }],
-        ['OS=="inexistent"', {
+        ['OS=="dendy"', {
         }],
         ['OS=="coleco"', {
         }, {  # else
           'variables': {
-            'isolate_dirs': [
-              'h',
-            ],
+            KEY_UNTRACKED: ['h'],
+            'read_only': None,
           },
         }],
       ],
     }
-    expected_files = {
-      'a': set([None]),
-      'c': set(['atari']),
-      'e': set(['!atari']),
-      'g': set(['amiga']),
-      'x': set(['!atari', 'atari']),  # potential for reduction
+    expected = {
+      'amiga': {
+        'command': ['echo', 'You should get an Atari'],
+        KEY_TRACKED: ['a', 'e', 'g', 'x'],
+        KEY_UNTRACKED: ['b', 'f', 'h'],
+        'read_only': False,
+      },
+      'atari': {
+        'command': ['echo', 'Hello World'],
+        KEY_TRACKED: ['a', 'c', 'x'],
+        KEY_UNTRACKED: ['b', 'd', 'h'],
+        'read_only': True,
+      },
+      'coleco': {
+        'command': ['echo', 'You should get an Atari'],
+        KEY_TRACKED: ['a', 'e', 'x'],
+        KEY_UNTRACKED: ['b', 'f'],
+      },
+      'dendy': {
+        'command': ['echo', 'You should get an Atari'],
+        KEY_TRACKED: ['a', 'e', 'x'],
+        KEY_UNTRACKED: ['b', 'f', 'h'],
+      },
     }
-    expected_dirs = {
-      'b': set([None]),
-      'd': set(['atari']),
-      'f': set(['!atari']),
-      'h': set(['!coleco']),
+    self.assertEquals(expected, merge_isolate.load_gyp(value).flatten())
+
+  def test_load_gyp_duplicate_command(self):
+    value = {
+      'variables': {
+        'command': ['rm', '-rf', '/'],
+      },
+      'conditions': [
+        ['OS=="atari"', {
+          'variables': {
+            'command': ['echo', 'Hello World'],
+          },
+        }],
+      ],
     }
-    # coleco is included even if only negative.
-    expected_oses = set(['atari', 'amiga', 'coleco'])
-    actual_files, actual_dirs, actual_oses = merge_isolate.parse_gyp_dict(value)
-    self.assertEquals(expected_files, actual_files)
-    self.assertEquals(expected_dirs, actual_dirs)
+    try:
+      merge_isolate.load_gyp(value)
+      self.fail()
+    except AssertionError:
+      pass
+
+  def test_load_gyp_no_condition(self):
+    value = {
+      'variables': {
+        KEY_TRACKED: ['a'],
+        KEY_UNTRACKED: ['b'],
+      },
+    }
+    expected = {
+      KEY_TRACKED: ['a'],
+      KEY_UNTRACKED: ['b'],
+    }
+    actual = merge_isolate.load_gyp(value)
+    # Flattening the whole config will discard 'None'.
+    self.assertEquals({}, actual.flatten())
+    self.assertEquals([None], actual.per_os.keys())
+    # But the 'None' value is still available as a backup.
+    self.assertEquals(expected, actual.per_os[None].flatten())
+
+  def test_invert_map(self):
+    value = {
+      'amiga': {
+        'command': ['echo', 'You should get an Atari'],
+        KEY_TRACKED: ['a', 'e', 'g', 'x'],
+        KEY_UNTRACKED: ['b', 'f', 'h'],
+        'read_only': False,
+      },
+      'atari': {
+        'command': ['echo', 'Hello World'],
+        KEY_TRACKED: ['a', 'c', 'x'],
+        KEY_UNTRACKED: ['b', 'd', 'h'],
+        'read_only': True,
+      },
+      'coleco': {
+        'command': ['echo', 'You should get an Atari'],
+        KEY_TRACKED: ['a', 'e', 'x'],
+        KEY_UNTRACKED: ['b', 'f'],
+      },
+      'dendy': {
+        'command': ['echo', 'You should get an Atari'],
+        KEY_TRACKED: ['a', 'e', 'x'],
+        KEY_UNTRACKED: ['b', 'f', 'h'],
+      },
+    }
+    expected_values = {
+      'command': {
+        ('echo', 'Hello World'): set(['atari']),
+        ('echo', 'You should get an Atari'): set(['amiga', 'coleco', 'dendy']),
+      },
+      KEY_TRACKED: {
+        'a': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'c': set(['atari']),
+        'e': set(['amiga', 'coleco', 'dendy']),
+        'g': set(['amiga']),
+        'x': set(['amiga', 'atari', 'coleco', 'dendy']),
+      },
+      KEY_UNTRACKED: {
+        'b': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'd': set(['atari']),
+        'f': set(['amiga', 'coleco', 'dendy']),
+        'h': set(['amiga', 'atari', 'dendy']),
+      },
+      'read_only': {
+        None: set(['coleco', 'dendy']),
+        False: set(['amiga']),
+        True: set(['atari']),
+      },
+    }
+    expected_oses = set(['amiga', 'atari', 'coleco', 'dendy'])
+    actual_values, actual_oses = merge_isolate.invert_map(value)
+    self.assertEquals(expected_values, actual_values)
     self.assertEquals(expected_oses, actual_oses)
 
   def test_reduce_inputs(self):
-    value_files = {
-      'a': set([None]),
-      'c': set(['atari']),
-      'e': set(['!atari']),
-      'g': set(['amiga']),
-      'x': set(['!atari', 'atari']),
+    values = {
+      'command': {
+        ('echo', 'Hello World'): set(['atari']),
+        ('echo', 'You should get an Atari'): set(['amiga', 'coleco', 'dendy']),
+      },
+      KEY_TRACKED: {
+        'a': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'c': set(['atari']),
+        'e': set(['amiga', 'coleco', 'dendy']),
+        'g': set(['amiga']),
+        'x': set(['amiga', 'atari', 'coleco', 'dendy']),
+      },
+      KEY_UNTRACKED: {
+        'b': set(['amiga', 'atari', 'coleco', 'dendy']),
+        'd': set(['atari']),
+        'f': set(['amiga', 'coleco', 'dendy']),
+        'h': set(['amiga', 'atari', 'dendy']),
+      },
+      'read_only': {
+        None: set(['coleco', 'dendy']),
+        False: set(['amiga']),
+        True: set(['atari']),
+      },
     }
-    value_dirs = {
-      'b': set([None]),
-      'd': set(['atari']),
-      'f': set(['!atari']),
-      'h': set(['!coleco']),
+    oses = set(['amiga', 'atari', 'coleco', 'dendy'])
+    expected_values = {
+      'command': {
+        ('echo', 'Hello World'): set(['atari']),
+        ('echo', 'You should get an Atari'): set(['!atari']),
+      },
+      KEY_TRACKED: {
+        'a': set([None]),
+        'c': set(['atari']),
+        'e': set(['!atari']),
+        'g': set(['amiga']),
+        'x': set([None]),
+      },
+      KEY_UNTRACKED: {
+        'b': set([None]),
+        'd': set(['atari']),
+        'f': set(['!atari']),
+        'h': set(['!coleco']),
+      },
+      'read_only': {
+        None: set(['coleco', 'dendy']),
+        False: set(['amiga']),
+        True: set(['atari']),
+      },
     }
-    value_oses = set(['atari', 'amiga', 'coleco'])
-    expected_files = {
-      'a': set([None]),
-      'c': set(['atari']),
-      'e': set(['!atari']),
-      'g': set(['amiga']),
-      'x': set([None]),  # Reduced.
-    }
-    expected_dirs = {
-      'b': set([None]),
-      'd': set(['atari']),
-      'f': set(['!atari']),
-      'h': set(['!coleco']),
-    }
-    actual_files, actual_dirs = merge_isolate.reduce_inputs(
-        value_files, value_dirs, value_oses)
-    self.assertEquals(expected_files, actual_files)
-    self.assertEquals(expected_dirs, actual_dirs)
+    actual_values, actual_oses = merge_isolate.reduce_inputs(values, oses)
+    self.assertEquals(expected_values, actual_values)
+    self.assertEquals(oses, actual_oses)
 
-  def test_convert_to_gyp(self):
-    files = {
-      'a': set([None]),
-      'x': set([None]),
-
-      'g': set(['amiga']),
-
-      'c': set(['atari']),
-      'e': set(['!atari']),
+  def test_convert_map_to_gyp(self):
+    values = {
+      'command': {
+        ('echo', 'Hello World'): set(['atari']),
+        ('echo', 'You should get an Atari'): set(['!atari']),
+      },
+      KEY_TRACKED: {
+        'a': set([None]),
+        'c': set(['atari']),
+        'e': set(['!atari']),
+        'g': set(['amiga']),
+        'x': set([None]),
+      },
+      KEY_UNTRACKED: {
+        'b': set([None]),
+        'd': set(['atari']),
+        'f': set(['!atari']),
+        'h': set(['!coleco']),
+      },
+      'read_only': {
+        None: set(['coleco', 'dendy']),
+        False: set(['amiga']),
+        True: set(['atari']),
+      },
     }
-    dirs = {
-      'b': set([None]),
-
-      'd': set(['atari']),
-      'f': set(['!atari']),
-
-      'h': set(['!coleco']),
-    }
+    oses = set(['amiga', 'atari', 'coleco', 'dendy'])
     expected = {
       'variables': {
-        'isolate_dirs': ['b'],
-        'isolate_files': ['a', 'x'],
+        KEY_TRACKED: ['a', 'x'],
+        KEY_UNTRACKED: ['b'],
       },
       'conditions': [
         ['OS=="amiga"', {
           'variables': {
-            'isolate_files': ['g'],
+            KEY_TRACKED: ['g'],
+            'read_only': False,
           },
         }],
         ['OS=="atari"', {
           'variables': {
-            'isolate_dirs': ['d'],
-            'isolate_files': ['c'],
+            'command': ['echo', 'Hello World'],
+            KEY_TRACKED: ['c'],
+            KEY_UNTRACKED: ['d'],
+            'read_only': True,
           },
         }, {
           'variables': {
-            'isolate_dirs': ['f'],
-            'isolate_files': ['e'],
+            'command': ['echo', 'You should get an Atari'],
+            KEY_TRACKED: ['e'],
+            KEY_UNTRACKED: ['f'],
           },
         }],
         ['OS=="coleco"', {
         }, {
           'variables': {
-            'isolate_dirs': ['h'],
+            KEY_UNTRACKED: ['h'],
           },
         }],
       ],
     }
-    self.assertEquals(expected, merge_isolate.convert_to_gyp(files, dirs))
+    self.assertEquals(expected, merge_isolate.convert_map_to_gyp(values, oses))
 
 
 if __name__ == '__main__':
