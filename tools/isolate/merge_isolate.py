@@ -359,7 +359,7 @@ def load_gyps(items):
   configs = Configs([])
   for item in items:
     logging.debug('loading %s' % item)
-    new_config = load_gyp(eval_content(open(item, 'rb').read()))
+    new_config = load_gyp(eval_content(open(item, 'r').read()))
     logging.debug('has OSes: %s' % ','.join(k for k in new_config.per_os if k))
     configs = union(configs, new_config)
   logging.debug('Total OSes: %s' % ','.join(k for k in configs.per_os if k))

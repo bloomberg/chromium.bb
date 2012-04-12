@@ -347,6 +347,9 @@ def MODEremap(
     outdir, indir, dictfiles, read_only, _cmd, _relative_cwd, _resultfile):
   if not outdir:
     outdir = tempfile.mkdtemp(prefix='isolate')
+  else:
+    if not os.path.isdir(outdir):
+      os.makedirs(outdir)
   print 'Remapping into %s' % outdir
   if len(os.listdir(outdir)):
     print 'Can\'t remap in a non-empty directory'
