@@ -348,6 +348,7 @@ void HttpPipeliningCompatibilityClient::StartTestRequests() {
 
 void HttpPipeliningCompatibilityClient::OnCanaryFinished(
     internal::PipelineTestRequest::Status status) {
+  canary_request_.reset();
   bool success = (status == internal::PipelineTestRequest::STATUS_SUCCESS);
   UMA_HISTOGRAM_BOOLEAN("NetConnectivity.Pipeline.CanarySuccess", success);
   if (success) {
@@ -467,14 +468,13 @@ void CollectPipeliningCapabilityStatsOnIOThread(
   if (trial) {
     return;
   }
-  // After April 14, 2012, the trial will disable itself.
+  // After April 21, 2012, the trial will disable itself.
   trial = base::FieldTrialList::FactoryGetFieldTrial(
-      kTrialName, kDivisor, "disable_test", 2012, 4, 14, NULL);
+      kTrialName, kDivisor, "disable_test", 2012, 4, 21, NULL);
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
-    // TODO(simonjam): Re-enable this when crash is fixed.
-    probability_to_run_test = 0;
+    probability_to_run_test = 100;
   }
 
   int collect_stats_group = trial->AppendGroup("enable_test",
