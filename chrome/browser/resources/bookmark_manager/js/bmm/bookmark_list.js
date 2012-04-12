@@ -20,7 +20,6 @@ cr.define('bmm', function() {
    * @extends {ArrayDataModel}
    */
   function BookmarksArrayDataModel(items) {
-    this.bookmarksArrayDataModelArray_ = items;
     ArrayDataModel.call(this, items);
   }
 
@@ -33,10 +32,8 @@ cr.define('bmm', function() {
      * @return {number} The index of the found node or -1 if not found.
      */
     findIndexById: function(id) {
-      var arr = this.bookmarksArrayDataModelArray_;
-      var length = arr.length
-      for (var i = 0; i < length; i++) {
-        if (arr[i].id == id)
+      for (var i = 0; i < this.length; i++) {
+        if (this.item(i).id == id)
           return i;
       }
       return -1;
@@ -247,7 +244,7 @@ cr.define('bmm', function() {
         // We create a new data model with updated items in the right order.
         var dataModel = this.dataModel;
         var items = {};
-        for (var i = this.dataModel.length -1 ; i >= 0; i--) {
+        for (var i = this.dataModel.length - 1; i >= 0; i--) {
           var bookmarkNode = dataModel.item(i);
           items[bookmarkNode.id] = bookmarkNode;
         }
