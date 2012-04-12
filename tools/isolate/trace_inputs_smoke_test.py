@@ -55,11 +55,11 @@ class TraceInputs(unittest.TestCase):
     if is_gyp:
       # When the gyp argument is specified, the command is started from --cwd
       # directory. In this case, 'data'.
-      cmd.extend([os.path.join('..', FILENAME), '--child-gyp'])
+      cmd.extend([os.path.join('trace_inputs', 'child1.py'), '--child-gyp'])
     else:
       # When the gyp argument is not specified, the command is started from
       # --root-dir directory.
-      cmd.extend([FILENAME, '--child'])
+      cmd.extend([os.path.join('data', 'trace_inputs', 'child1.py'), '--child'])
 
     # The current directory doesn't matter, the traced process will be called
     # from the correct cwd.
@@ -76,7 +76,7 @@ class TraceInputs(unittest.TestCase):
 
   def test_trace(self):
     expected_end = [
-      'Interesting: 4 reduced to 3',
+      'Interesting: 5 reduced to 3',
       '  data/trace_inputs/'.replace('/', os.path.sep),
       '  trace_inputs.py',
       '  %s' % FILENAME,
@@ -120,48 +120,7 @@ class TraceInputs(unittest.TestCase):
     self.assertEquals(expected_buffer.getvalue(), actual)
 
 
-def child():
-  """When the gyp argument is not specified, the command is started from
-  --root-dir directory.
-  """
-  print 'child from %s' % os.getcwd()
-  # Force file opening with a non-normalized path.
-  open(os.path.join('data', '..', 'trace_inputs.py'), 'rb').close()
-  # Do not wait for the child to exit.
-  # Use relative directory.
-  subprocess.Popen(
-      ['python', 'child2.py'], cwd=os.path.join('data', 'trace_inputs'))
-  return 0
-
-
-def child_gyp():
-  """When the gyp argument is specified, the command is started from --cwd
-  directory.
-  """
-  print 'child_gyp from %s' % os.getcwd()
-  # Force file opening.
-  open(os.path.join('..', 'trace_inputs.py'), 'rb').close()
-  # Do not wait for the child to exit.
-  # Use relative directory.
-  subprocess.Popen(['python', 'child2.py'], cwd='trace_inputs')
-  return 0
-
-
-def main():
-  global VERBOSE
-  VERBOSE = '-v' in sys.argv
-  level = logging.DEBUG if VERBOSE else logging.ERROR
-  logging.basicConfig(level=level)
-  if len(sys.argv) == 1:
-    unittest.main()
-
-  if sys.argv[1] == '--child':
-    return child()
-  if sys.argv[1] == '--child-gyp':
-    return child_gyp()
-
-  unittest.main()
-
-
 if __name__ == '__main__':
-  sys.exit(main())
+  VERBOSE = '-v' in sys.argv
+  logging.basicConfig(level=logging.DEBUG if VERBOSE else logging.ERROR)
+  unittest.main()

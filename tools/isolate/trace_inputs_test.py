@@ -29,10 +29,17 @@ class TraceInputs(unittest.TestCase):
       'conditions': [
         ['OS=\"foo\"', {
           'variables': {
-            'isolate': [
+            trace_inputs.KEY_UNTRACKED: [
               'dir1',
               'dir2',
             ],
+            trace_inputs.KEY_TRACKED: [
+              'file4',
+              'file3',
+            ],
+            'command': ['python', '-c', 'print "H\\i\'"'],
+            'read_only': True,
+            'relative_cwd': 'isol\'at\\e',
           },
         }],
         ['OS=\"bar\"', {
@@ -53,7 +60,18 @@ class TraceInputs(unittest.TestCase):
         "  'conditions': [\n"
         "    ['OS=\"foo\"', {\n"
         "      'variables': {\n"
-        "        'isolate': [\n"
+        "        'command': [\n"
+        "          'python',\n"
+        "          '-c',\n"
+        "          'print \"H\\i\'\"',\n"
+        "        ],\n"
+        "        'relative_cwd': 'isol\\'at\\\\e',\n"
+        "        'read_only': True\n"
+        "        'isolate_dependency_tracked': [\n"
+        "          'file4',\n"
+        "          'file3',\n"
+        "        ],\n"
+        "        'isolate_dependency_untracked': [\n"
         "          'dir1',\n"
         "          'dir2',\n"
         "        ],\n"

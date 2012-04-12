@@ -1098,8 +1098,20 @@ def extract_directories(files, root):
 
 
 def pretty_print(variables, stdout):
-  """Outputs a gyp compatible list from the decoded variables."""
-  # Similar to pprint.print() but with NIH syndrome.
+  """Outputs a gyp compatible list from the decoded variables.
+
+  Similar to pprint.print() but with NIH syndrome.
+  """
+  # Order the dictionary keys by these keys in priority.
+  ORDER = (
+      'variables', 'condition', 'command', 'relative_cwd', 'read_only',
+      KEY_TRACKED, KEY_UNTRACKED)
+
+  def sorting_key(x):
+    """Gives priority to 'most important' keys before the others."""
+    if x in ORDER:
+      return str(ORDER.index(x))
+    return x
 
   def loop_list(indent, items):
     for item in items:
@@ -1114,7 +1126,8 @@ def pretty_print(variables, stdout):
         stdout.write('%s[' % indent)
         for index, i in enumerate(item):
           if isinstance(i, basestring):
-            stdout.write('\'%s\', ' % i)
+            stdout.write(
+                '\'%s\', ' % i.replace('\\', '\\\\').replace('\'', '\\\''))
           elif isinstance(i, dict):
             stdout.write('{\n')
             loop_dict(indent + '  ', i)
@@ -1130,8 +1143,7 @@ def pretty_print(variables, stdout):
         assert False
 
   def loop_dict(indent, items):
-    # Use reversed sorting since it happens we always want it that way.
-    for key in sorted(items, reverse=True):
+    for key in sorted(items, key=sorting_key):
       item = items[key]
       stdout.write("%s'%s': " % (indent, key))
       if isinstance(item, dict):
@@ -1142,8 +1154,13 @@ def pretty_print(variables, stdout):
         stdout.write('[\n')
         loop_list(indent + '  ', item)
         stdout.write(indent + '],\n')
+      elif isinstance(item, basestring):
+        stdout.write(
+            '\'%s\',\n' % item.replace('\\', '\\\\').replace('\'', '\\\''))
+      elif item in (True, False, None):
+        stdout.write('%s\n' % item)
       else:
-        assert False
+        assert False, item
 
   stdout.write('{\n')
   loop_dict('  ', variables)
@@ -1222,9 +1239,15 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
     if returncode and not force_trace:
       return returncode
 
+  git_path = os.path.sep + '.git' + os.path.sep
+  svn_path = os.path.sep + '.svn' + os.path.sep
   def blacklist(f):
     """Strips ignored paths."""
-    return f.startswith(api.IGNORED) or f.endswith('.pyc')
+    return (
+        f.startswith(api.IGNORED) or
+        f.endswith('.pyc') or
+        git_path in f or
+        svn_path in f)
 
   print_if('Loading traces... %s' % logfile)
   files, non_existent = api.parse_log(logfile, blacklist)
@@ -1279,13 +1302,13 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
         return '<(DEPTH)/%s' % f
 
     corrected = [fix(f) for f in simplified]
-    files = [f for f in corrected if not f.endswith('/')]
-    dirs = [f for f in corrected if f.endswith('/')]
+    tracked = [f for f in corrected if not f.endswith('/') and ' ' not in f]
+    untracked = [f for f in corrected if f.endswith('/') or ' ' in f]
     variables = {}
-    if files:
-      variables[KEY_TRACKED] = files
-    if dirs:
-      variables[KEY_UNTRACKED] = dirs
+    if tracked:
+      variables[KEY_TRACKED] = tracked
+    if untracked:
+      variables[KEY_UNTRACKED] = untracked
     value = {
       'conditions': [
         ['OS=="%s"' % flavor, {
