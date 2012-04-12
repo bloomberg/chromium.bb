@@ -489,9 +489,6 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void ChangeProxySettings() OVERRIDE {
   }
 
-  virtual void OnTrayDestroyed() OVERRIDE {
-  }
-
   bool muted_;
   bool wifi_enabled_;
   bool cellular_enabled_;
@@ -570,7 +567,6 @@ Shell::~Shell() {
 
   // The system tray needs to be reset before all the windows are destroyed.
   tray_.reset();
-  tray_delegate_->OnTrayDestroyed();
 
   // Desroy secondary monitor's widgets before all the windows are destroyed.
   monitor_controller_.reset();
@@ -593,7 +589,6 @@ Shell::~Shell() {
   window_cycle_controller_.reset();
   event_client_.reset();
   monitor_controller_.reset();
-  tooltip_controller_.reset();
 
   // Launcher widget has a InputMethodBridge that references to
   // input_method_filter_'s input_method_. So explicitly release launcher_
