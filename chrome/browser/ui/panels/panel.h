@@ -241,7 +241,10 @@ class Panel : public BrowserWindow,
   NativePanel* native_panel() { return native_panel_; }
   Browser* browser() const { return browser_; }
 
-  // May be NULL if panel is newly created and has not been positioned yet.
+  // May be NULL if:
+  // * panel is newly created and has not been positioned yet.
+  // * panel is being closed asynchronously.
+  // Please use it with caution.
   PanelStrip* panel_strip() const { return panel_strip_; }
 
   // Sets the current panel strip that contains this panel.

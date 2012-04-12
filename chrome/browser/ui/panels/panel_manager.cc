@@ -220,11 +220,15 @@ void PanelManager::OnWindowAutoResized(Panel* panel,
 }
 
 void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
+  PanelStrip* panel_strip = panel->panel_strip();
+  if (!panel_strip)
+    return;
+
   // See the comment in OnWindowAutoResized()
-  if (panel->panel_strip() == overflow_strip_.get())
+  if (panel_strip == overflow_strip_.get())
     docked_strip_->ResizePanelWindow(panel, new_size);
   else
-    panel->panel_strip()->ResizePanelWindow(panel, new_size);
+    panel_strip->ResizePanelWindow(panel, new_size);
   panel->SetAutoResizable(false);
 }
 
