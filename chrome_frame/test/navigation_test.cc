@@ -599,7 +599,8 @@ class NavigationTest : public MockIEEventSinkTest, public testing::Test {
 };
 
 // Test navigation to a disallowed gcf: url with file scheme.
-TEST_F(NavigationTest, GcfProtocol1) {
+// Times out sporadically; http://crbug.com/119718.
+TEST_F(NavigationTest, FLAKY_GcfProtocol1) {
   // Make sure that we are not accidently enabling gcf protocol.
   SetConfigBool(kAllowUnsafeURLs, false);
   TestDisAllowedUrl(L"gcf:file:///C:/");
