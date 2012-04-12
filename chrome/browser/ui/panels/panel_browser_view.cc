@@ -248,10 +248,7 @@ void PanelBrowserView::Observe(
 }
 
 void PanelBrowserView::AnimationEnded(const ui::Animation* animation) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-      content::Source<Panel>(panel()),
-      content::NotificationService::NoDetails());
+  panel_->manager()->OnPanelAnimationEnded(panel_.get());
 }
 
 void PanelBrowserView::AnimationProgressed(const ui::Animation* animation) {
@@ -287,10 +284,16 @@ void PanelBrowserView::OnWindowEndUserBoundsChange() {
 
 void PanelBrowserView::ShowPanel() {
   Show();
+  // No animation is used for initial creation of a panel on Win.
+  // Signal immediately that pending actions can be performed.
+  panel_->manager()->OnPanelAnimationEnded(panel_.get());
 }
 
 void PanelBrowserView::ShowPanelInactive() {
   ShowInactive();
+  // No animation is used for initial creation of a panel on Win.
+  // Signal immediately that pending actions can be performed.
+  panel_->manager()->OnPanelAnimationEnded(panel_.get());
 }
 
 gfx::Rect PanelBrowserView::GetPanelBounds() const {

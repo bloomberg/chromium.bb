@@ -270,7 +270,12 @@ void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   if (!panel_testing->IsAnimatingBounds())
     return;
   signal.Wait();
-  EXPECT_TRUE(!panel_testing->IsAnimatingBounds());
+  // TODO(dimich) This fires when animations are sequential, and the end of one
+  // starts another. In this case, since the Wait() does not exit the loop
+  // immediately, the next anumation may start before the Wait() actually exits.
+  // Either figure out the best way for tests to wait on 'end of animations' or
+  // remove this check.
+  // EXPECT_TRUE(!panel_testing->IsAnimatingBounds());
 }
 
 void BasePanelBrowserTest::WaitForLayoutModeChanged(

@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -37,8 +39,11 @@ const int kPanelStripRightMargin = 24;
 // Height of panel strip is based on the factor of the working area.
 const double kPanelStripHeightFactor = 0.5;
 
-static const int kFullScreenModeCheckIntervalMs = 1000;
+const int kFullScreenModeCheckIntervalMs = 1000;
 
+// New panels that cannot fit in the panel strip are moved to overflow
+// after a brief delay.
+const int kMoveNewPanelToOverflowDelayMs = 1500;  // arbitrary
 }  // namespace
 
 // static
@@ -360,3 +365,24 @@ int PanelManager::overflow_strip_width() const {
 void PanelManager::SetMouseWatcher(PanelMouseWatcher* watcher) {
   panel_mouse_watcher_.reset(watcher);
 }
+
+void PanelManager::OnPanelAnimationEnded(Panel* panel) {
+  if (panel->has_temporary_layout()) {
+    DCHECK(panel->panel_strip());
+    DCHECK_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
+
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&DockedPanelStrip::DelayedMovePanelToOverflow,
+                   base::Unretained(docked_strip()),
+                   panel),
+        base::TimeDelta::FromMilliseconds(PanelManager::AdjustTimeInterval(
+            kMoveNewPanelToOverflowDelayMs)));
+  }
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+      content::Source<Panel>(panel),
+      content::NotificationService::NoDetails());
+}
+

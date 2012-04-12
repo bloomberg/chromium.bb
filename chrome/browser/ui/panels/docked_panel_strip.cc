@@ -34,10 +34,6 @@ const double kPanelMaxWidthFactor = 0.80;
 const double kPanelMaxWidthFactor = 0.35;
 #endif
 
-// New panels that cannot fit in the panel strip are moved to overflow
-// after a brief delay.
-const int kMoveNewPanelToOverflowDelayMs = 1500;  // arbitrary
-
 // Occasionally some system, like Windows, might not bring up or down the bottom
 // bar when the mouse enters or leaves the bottom screen area. This is the
 // maximum time we will wait for the bottom bar visibility change notification.
@@ -142,17 +138,11 @@ void DockedPanelStrip::InsertNewlyCreatedPanel(Panel* panel) {
   int y = display_area_.bottom() - height;
 
   // Keep panel visible in the strip even if overlap would occur.
-  // Panel is moved to overflow from the strip after a delay.
+  // The panel will be moved into overflow strip after its initial animation
+  // is completed. See PanelManager::OnPanelAnimationEnded().
   if (x < display_area_.x()) {
     x = display_area_.x();
     panel->set_has_temporary_layout(true);
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&DockedPanelStrip::DelayedMovePanelToOverflow,
-                   base::Unretained(this),
-                   panel),
-        base::TimeDelta::FromMilliseconds(PanelManager::AdjustTimeInterval(
-            kMoveNewPanelToOverflowDelayMs)));
   }
   panel->Initialize(gfx::Rect(x, y, width, height));
 

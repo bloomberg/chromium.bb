@@ -107,6 +107,13 @@ class DockedPanelStrip : public PanelStrip,
   // Returns |true| if panel can fit in the dock strip.
   bool CanFitPanel(const Panel* panel) const;
 
+  // Called by PanelManager after a delay to move a newly created panel from
+  // the panel strip to overflow because the panel could not fit
+  // within the bounds of the panel strip. New panels are first displayed
+  // in the panel strip, then moved to overflow so that all created
+  // panels are (at least briefly) visible before entering overflow.
+  void DelayedMovePanelToOverflow(Panel* panel);
+
 #ifdef UNIT_TEST
   int num_temporary_layout_panels() const {
     return panels_in_temporary_layout_.size();
@@ -169,13 +176,6 @@ class DockedPanelStrip : public PanelStrip,
   // Returns x position where a panel of |width| wide can fit.
   // |width| is in screen coordinates.
   int FitPanelWithWidth(int width);
-
-  // Called by AddPanel() after a delay to move a newly created panel from
-  // the panel strip to overflow because the panel could not fit
-  // within the bounds of the panel strip. New panels are first displayed
-  // in the panel strip, then moved to overflow so that all created
-  // panels are (at least briefly) visible before entering overflow.
-  void DelayedMovePanelToOverflow(Panel* panel);
 
   PanelManager* panel_manager_;  // Weak, owns us.
 

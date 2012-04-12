@@ -553,9 +553,9 @@ enum {
   // RWHV may be NULL in unit tests.
   if (web_contents && web_contents->GetRenderWidgetHostView())
     web_contents->GetRenderWidgetHostView()->SetActive(false);
-  [window setFrame:frame display:YES animate:YES];
 
-  [self enableTabContentsViewAutosizing];
+  // This will re-enable the content resizing after it finishes.
+  [self setPanelFrame:frame animate:YES];
 }
 
 - (void)updateTitleBar {
@@ -877,18 +877,19 @@ enum {
 
 - (void)cleanupAfterAnimation {
   playingMinimizeAnimation_ = NO;
-  Panel* panel = windowShim_->panel();
-  if (!panel->IsMinimized())
+  if (!windowShim_->panel()->IsMinimized())
     [self enableTabContentsViewAutosizing];
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-      content::Source<Panel>(panel),
-      content::NotificationService::NoDetails());
 }
 
 - (void)animationDidEnd:(NSAnimation*)animation {
   [self cleanupAfterAnimation];
+
+  // Only invoke this callback from animationDidEnd, since animationDidStop can
+  // be called when we interrupt/restart animation which is in progress.
+  // We only need this notification when animation indeed finished moving
+  // the panel bounds.
+  Panel* panel = windowShim_->panel();
+  panel->manager()->OnPanelAnimationEnded(panel);
 }
 
 - (void)animationDidStop:(NSAnimation*)animation {

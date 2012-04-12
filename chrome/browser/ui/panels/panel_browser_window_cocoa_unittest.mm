@@ -66,6 +66,8 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
         static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
     EXPECT_EQ(panel, native_window->panel_);  // Back pointer initialized.
 
+    PanelAnimatedBoundsObserver bounds_observer(panel);
+
     // Window should not load before Show().
     // Note: Loading the wnidow causes Cocoa to autorelease a few objects.
     // This is the reason we do this within the scope of the
@@ -74,6 +76,9 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
     panel->Show();
     EXPECT_TRUE([native_window->controller_ isWindowLoaded]);
     EXPECT_TRUE([native_window->controller_ window]);
+
+    // Wait until bounds animate to their specified values.
+    bounds_observer.Wait();
 
     return panel;
   }

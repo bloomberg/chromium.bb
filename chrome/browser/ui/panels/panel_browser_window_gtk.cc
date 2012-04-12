@@ -575,10 +575,7 @@ void PanelBrowserWindowGtk::AnimationEnded(const ui::Animation* animation) {
   if (!bounds_.width() || !bounds_.height())
     gtk_widget_hide(GTK_WIDGET(window()));
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
-      content::Source<Panel>(panel_.get()),
-      content::NotificationService::NoDetails());
+  panel_->manager()->OnPanelAnimationEnded(panel_.get());
 }
 
 void PanelBrowserWindowGtk::AnimationProgressed(

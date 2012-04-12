@@ -146,6 +146,11 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver {
     return auto_sizing_enabled_;
   }
 
+  // Called from native level when panel animation ends. This may trigger
+  // other pending actions - for example, moving the panel into the overflow
+  // strip after finishing initial bounds animation.
+  void OnPanelAnimationEnded(Panel* panel);
+
 #ifdef UNIT_TEST
   static void shorten_time_intervals_for_testing() {
     shorten_time_intervals_ = true;
