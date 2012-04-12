@@ -700,18 +700,11 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
 // chrome://help-frame
 //==============================
 
-// http://crbug.com/118477
-#if defined(OS_CHROMEOS) || (defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD))
-#define MAYBE_TestHelpFrame DISABLED_TestHelpFrame
-#else
-#define MAYBE_TestHelpFrame TestHelpFrame
-#endif  // defined(OS_CHROMEOS)
-
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestHelpFrame) {
   RunBidiCheckerOnPage(chrome::kChromeUIHelpFrameURL);
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, MAYBE_TestHelpFrame) {
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestHelpFrame) {
   RunBidiCheckerOnPage(chrome::kChromeUIHelpFrameURL);
 }
 
