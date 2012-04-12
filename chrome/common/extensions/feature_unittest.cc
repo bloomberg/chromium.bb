@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+using chrome::VersionInfo;
 using extensions::Feature;
 
 namespace {
@@ -18,8 +19,6 @@ struct IsAvailableTestData {
   int manifest_version;
   Feature::Availability expected_result;
 };
-
-}  // namespace
 
 TEST(ExtensionFeatureTest, IsAvailableNullCase) {
   const IsAvailableTestData tests[] = {
@@ -415,3 +414,99 @@ TEST(ExtensionFeatureTest, Equals) {
   feature2.set_max_manifest_version(0);
   EXPECT_FALSE(feature2.Equals(feature));
 }
+
+Feature::Availability IsAvailableInChannel(
+    const std::string& supported_channel, VersionInfo::Channel channel) {
+  Feature::SetChannelForTesting(channel);
+
+  Feature feature;
+  if (!supported_channel.empty()) {
+    DictionaryValue feature_value;
+    feature_value.SetString("supported_channel", supported_channel);
+    feature.Parse(&feature_value);
+  }
+
+  return feature.IsAvailableToManifest(
+      "random-extension",
+      Extension::TYPE_UNKNOWN,
+      Feature::UNSPECIFIED_LOCATION,
+      -1);
+}
+
+TEST(ExtensionFeatureTest, SupportedChannel) {
+  // stable supported.
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("stable", VersionInfo::CHANNEL_UNKNOWN));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("stable", VersionInfo::CHANNEL_CANARY));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("stable", VersionInfo::CHANNEL_DEV));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("stable", VersionInfo::CHANNEL_BETA));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("stable", VersionInfo::CHANNEL_STABLE));
+
+  // beta supported.
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("beta", VersionInfo::CHANNEL_UNKNOWN));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("beta", VersionInfo::CHANNEL_CANARY));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("beta", VersionInfo::CHANNEL_DEV));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("beta", VersionInfo::CHANNEL_BETA));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("beta", VersionInfo::CHANNEL_STABLE));
+
+  // dev supported.
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("dev", VersionInfo::CHANNEL_UNKNOWN));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("dev", VersionInfo::CHANNEL_CANARY));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("dev", VersionInfo::CHANNEL_DEV));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("dev", VersionInfo::CHANNEL_BETA));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("dev", VersionInfo::CHANNEL_STABLE));
+
+  // canary supported.
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("canary", VersionInfo::CHANNEL_UNKNOWN));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("canary", VersionInfo::CHANNEL_CANARY));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("canary", VersionInfo::CHANNEL_DEV));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("canary", VersionInfo::CHANNEL_BETA));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("canary", VersionInfo::CHANNEL_STABLE));
+
+  // trunk supported.
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("trunk", VersionInfo::CHANNEL_UNKNOWN));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("trunk", VersionInfo::CHANNEL_CANARY));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("trunk", VersionInfo::CHANNEL_DEV));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("trunk", VersionInfo::CHANNEL_BETA));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("trunk", VersionInfo::CHANNEL_STABLE));
+
+  // Default supported channel (trunk).
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+      IsAvailableInChannel("", VersionInfo::CHANNEL_UNKNOWN));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("", VersionInfo::CHANNEL_CANARY));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("", VersionInfo::CHANNEL_DEV));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("", VersionInfo::CHANNEL_BETA));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+      IsAvailableInChannel("", VersionInfo::CHANNEL_STABLE));
+
+  Feature::SetChannelForTesting(VersionInfo::CHANNEL_UNKNOWN);
+}
+
+}  // namespace

@@ -11,6 +11,8 @@
 #include "base/stringprintf.h"
 #include "chrome/common/chrome_switches.h"
 
+using chrome::VersionInfo;
+
 namespace {
 
 struct Mappings {
@@ -31,16 +33,30 @@ struct Mappings {
     locations["component"] = extensions::Feature::COMPONENT_LOCATION;
 
     platforms["chromeos"] = extensions::Feature::CHROMEOS_PLATFORM;
+
+    channels["trunk"] = VersionInfo::CHANNEL_UNKNOWN;
+    channels["canary"] = VersionInfo::CHANNEL_CANARY;
+    channels["dev"] = VersionInfo::CHANNEL_DEV;
+    channels["beta"] = VersionInfo::CHANNEL_BETA;
+    channels["stable"] = VersionInfo::CHANNEL_STABLE;
   }
 
   std::map<std::string, Extension::Type> extension_types;
   std::map<std::string, extensions::Feature::Context> contexts;
   std::map<std::string, extensions::Feature::Location> locations;
   std::map<std::string, extensions::Feature::Platform> platforms;
+  std::map<std::string, VersionInfo::Channel> channels;
 };
 
-static base::LazyInstance<Mappings> g_mappings =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<Mappings> g_mappings = LAZY_INSTANCE_INITIALIZER;
+
+struct Channel {
+  Channel() : channel(chrome::VersionInfo::GetChannel()) {}
+
+  chrome::VersionInfo::Channel channel;
+};
+
+static base::LazyInstance<Channel> g_channel = LAZY_INSTANCE_INITIALIZER;
 
 // TODO(aa): Can we replace all this manual parsing with JSON schema stuff?
 
@@ -120,7 +136,8 @@ Feature::Feature()
   : location_(UNSPECIFIED_LOCATION),
     platform_(UNSPECIFIED_PLATFORM),
     min_manifest_version_(0),
-    max_manifest_version_(0) {
+    max_manifest_version_(0),
+    supported_channel_(VersionInfo::CHANNEL_UNKNOWN) {
 }
 
 Feature::Feature(const Feature& other)
@@ -130,7 +147,8 @@ Feature::Feature(const Feature& other)
       location_(other.location_),
       platform_(other.platform_),
       min_manifest_version_(other.min_manifest_version_),
-      max_manifest_version_(other.max_manifest_version_) {
+      max_manifest_version_(other.max_manifest_version_),
+      supported_channel_(other.supported_channel_) {
 }
 
 Feature::~Feature() {
@@ -143,7 +161,8 @@ bool Feature::Equals(const Feature& other) const {
       location_ == other.location_ &&
       platform_ == other.platform_ &&
       min_manifest_version_ == other.min_manifest_version_ &&
-      max_manifest_version_ == other.max_manifest_version_;
+      max_manifest_version_ == other.max_manifest_version_ &&
+      supported_channel_ == other.supported_channel_;
 }
 
 // static
@@ -175,6 +194,9 @@ void Feature::Parse(const DictionaryValue* value) {
                       g_mappings.Get().platforms);
   value->GetInteger("min_manifest_version", &min_manifest_version_);
   value->GetInteger("max_manifest_version", &max_manifest_version_);
+  ParseEnum<VersionInfo::Channel>(
+      value, "supported_channel", &supported_channel_,
+      g_mappings.Get().channels);
 }
 
 std::string Feature::GetErrorMessage(Feature::Availability result) {
@@ -198,10 +220,14 @@ std::string Feature::GetErrorMessage(Feature::Availability result) {
     case INVALID_MAX_MANIFEST_VERSION:
       return base::StringPrintf("Requires manifest version of %d or lower.",
                                 max_manifest_version_);
-    default:
-      CHECK(false);
-      return "";
+    case NOT_PRESENT:
+      return "Requires a different Feature that is not present.";
+    case UNSUPPORTED_CHANNEL:
+      return base::StringPrintf("Channel %d is unsupported.",
+                                supported_channel_);
   }
+
+  return "";
 }
 
 Feature::Availability Feature::IsAvailableToManifest(
@@ -247,6 +273,9 @@ Feature::Availability Feature::IsAvailableToManifest(
   if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
     return INVALID_MAX_MANIFEST_VERSION;
 
+  if (supported_channel_ < g_channel.Get().channel)
+    return UNSUPPORTED_CHANNEL;
+
   return IS_AVAILABLE;
 }
 
@@ -269,6 +298,11 @@ Feature::Availability Feature::IsAvailableToContext(
   }
 
   return IS_AVAILABLE;
+}
+
+// static
+void Feature::SetChannelForTesting(VersionInfo::Channel channel) {
+  g_channel.Get().channel = channel;
 }
 
 }  // namespace

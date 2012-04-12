@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 
 namespace extensions {
@@ -62,12 +63,16 @@ class Feature {
     INVALID_MIN_MANIFEST_VERSION,
     INVALID_MAX_MANIFEST_VERSION,
     NOT_PRESENT,
-    DEPENDENCY_NOT_PRESENT
+    UNSUPPORTED_CHANNEL,
   };
 
   Feature();
   Feature(const Feature& other);
   virtual ~Feature();
+
+  // Sets the Channel to for all Features to compare against. This is usually
+  // chrome::VersionInfo::GetChannel(), but for tests all this to be overridden.
+  static void SetChannelForTesting(chrome::VersionInfo::Channel channel);
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
@@ -148,6 +153,7 @@ class Feature {
   Platform platform_;  // we only care about chromeos/not-chromeos now
   int min_manifest_version_;
   int max_manifest_version_;
+  chrome::VersionInfo::Channel supported_channel_;
 };
 
 }  // namespace extensions

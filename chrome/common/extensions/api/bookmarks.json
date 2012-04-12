@@ -6,6 +6,7 @@
   {
     "namespace": "bookmarks",
     "uses_feature_system": true,
+    "supported_channel": "stable",
     "dependencies": ["permission:bookmarks"],
     "contexts": ["blessed_extension"],
     "types": [
