@@ -21,8 +21,7 @@ MockMediaStreamImpl::CreatePeerConnectionHandler(
   return NULL;
 }
 
-void MockMediaStreamImpl::ClosePeerConnection(
-    PeerConnectionHandlerBase* pc_handler) {
+void MockMediaStreamImpl::ClosePeerConnection() {
 }
 
 webrtc::MediaStreamTrackInterface*

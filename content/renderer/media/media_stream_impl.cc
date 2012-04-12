@@ -14,7 +14,6 @@
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/peer_connection_handler.h"
-#include "content/renderer/media/peer_connection_handler_jsep.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_module_impl.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
@@ -82,13 +81,15 @@ MediaStreamImpl::MediaStreamImpl(
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
       network_manager_(NULL),
       vc_manager_(vc_manager),
+      peer_connection_handler_(NULL),
+      message_loop_proxy_(base::MessageLoopProxy::current()),
       signaling_thread_(NULL),
       worker_thread_(NULL),
       chrome_worker_thread_("Chrome_libJingle_WorkerThread") {
 }
 
 MediaStreamImpl::~MediaStreamImpl() {
-  DCHECK(peer_connection_handlers_.empty());
+  DCHECK(!peer_connection_handler_);
   if (dependency_factory_.get())
     dependency_factory_->ReleasePeerConnectionFactory();
   if (network_manager_) {
@@ -111,46 +112,30 @@ MediaStreamImpl::~MediaStreamImpl() {
 WebKit::WebPeerConnectionHandler* MediaStreamImpl::CreatePeerConnectionHandler(
     WebKit::WebPeerConnectionHandlerClient* client) {
   DCHECK(CalledOnValidThread());
-  if (!EnsurePeerConnectionFactory())
+  if (peer_connection_handler_) {
+    DVLOG(1) << "A PeerConnection already exists";
     return NULL;
-
-  PeerConnectionHandler* pc_handler = new PeerConnectionHandler(
-      client,
-      this,
-      dependency_factory_.get());
-  peer_connection_handlers_.push_back(pc_handler);
-
-  return pc_handler;
-}
-
-WebKit::WebPeerConnection00Handler*
-MediaStreamImpl::CreatePeerConnectionHandlerJsep(
-    WebKit::WebPeerConnection00HandlerClient* client) {
-  DCHECK(CalledOnValidThread());
-  if (!EnsurePeerConnectionFactory())
-    return NULL;
-
-  PeerConnectionHandlerJsep* pc_handler = new PeerConnectionHandlerJsep(
-      client,
-      this,
-      dependency_factory_.get());
-  peer_connection_handlers_.push_back(pc_handler);
-
-  return pc_handler;
-}
-
-void MediaStreamImpl::ClosePeerConnection(
-    PeerConnectionHandlerBase* pc_handler) {
-  DCHECK(CalledOnValidThread());
-  VideoRendererMap::iterator vr_it = video_renderers_.begin();
-  while (vr_it != video_renderers_.end()) {
-    if (vr_it->second.second == pc_handler) {
-      video_renderers_.erase(vr_it++);
-    } else {
-      ++vr_it;
-    }
   }
-  peer_connection_handlers_.remove(pc_handler);
+  if (!EnsurePeerConnectionFactory())
+    return NULL;
+
+  peer_connection_handler_ = new PeerConnectionHandler(
+      client,
+      this,
+      dependency_factory_.get());
+
+  return peer_connection_handler_;
+}
+
+void MediaStreamImpl::ClosePeerConnection() {
+  DCHECK(CalledOnValidThread());
+  video_renderer_ = NULL;
+  peer_connection_handler_ = NULL;
+  // TODO(grunell): This is a temporary workaround for an error in native
+  // PeerConnection where added live tracks are not seen on the remote side.
+  MediaStreamTrackPtrMap::const_iterator it = local_tracks_.begin();
+  for (; it != local_tracks_.end(); ++it)
+    it->second->set_state(webrtc::MediaStreamTrackInterface::kEnded);
 }
 
 webrtc::MediaStreamTrackInterface* MediaStreamImpl::GetLocalMediaStreamTrack(
@@ -159,8 +144,8 @@ webrtc::MediaStreamTrackInterface* MediaStreamImpl::GetLocalMediaStreamTrack(
   MediaStreamTrackPtrMap::iterator it = local_tracks_.find(label);
   if (it == local_tracks_.end())
     return NULL;
-  MediaStreamTrackPtr track = it->second;
-  return track.get();
+  MediaStreamTrackPtr stream = it->second;
+  return stream.get();
 }
 
 void MediaStreamImpl::requestUserMedia(
@@ -251,34 +236,27 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
         capability);
   } else {
     // It's a remote stream.
-    std::string desc_label = UTF16ToUTF8(descriptor.label());
-    PeerConnectionHandlerBase* pc_handler = NULL;
-    std::list<PeerConnectionHandlerBase*>::iterator it;
-    for (it = peer_connection_handlers_.begin();
-         it != peer_connection_handlers_.end(); ++it) {
-      if ((*it)->HasStream(desc_label)) {
-        pc_handler = *it;
-        break;
+    if (!video_renderer_.get())
+      video_renderer_ = new talk_base::RefCountedObject<VideoRendererWrapper>();
+    if (video_renderer_->renderer()) {
+      // The renderer is used by PeerConnection, release it first.
+      if (peer_connection_handler_) {
+        peer_connection_handler_->SetVideoRenderer(
+            UTF16ToUTF8(descriptor.label()),
+            NULL);
       }
+      video_renderer_->SetVideoDecoder(NULL);
     }
-    DCHECK(it != peer_connection_handlers_.end());
-    // TODO(grunell): We are not informed when a renderer should be deleted.
-    // When this has been fixed, ensure we delete it. For now, we hold on
-    // to all renderers until a PeerConnectionHandler is closed or we are
-    // deleted (then all renderers are deleted), so it sort of leaks.
-    // TODO(grunell): There is no support for multiple decoders per stream, this
-    // code will need to be updated when that is supported.
-    talk_base::scoped_refptr<VideoRendererWrapper> video_renderer =
-        new talk_base::RefCountedObject<VideoRendererWrapper>();
     RTCVideoDecoder* rtc_video_decoder = new RTCVideoDecoder(
         message_loop_factory->GetMessageLoop("RtcVideoDecoderThread"),
         url.spec());
     decoder = rtc_video_decoder;
-    video_renderer->SetVideoDecoder(rtc_video_decoder);
-    pc_handler->SetVideoRenderer(desc_label, video_renderer);
-    video_renderers_.erase(desc_label);  // Remove old renderer if exists.
-    video_renderers_.insert(
-        std::make_pair(desc_label, std::make_pair(video_renderer, pc_handler)));
+    video_renderer_->SetVideoDecoder(rtc_video_decoder);
+    if (peer_connection_handler_) {
+      peer_connection_handler_->SetVideoRenderer(
+          UTF16ToUTF8(descriptor.label()),
+          video_renderer_);
+    }
   }
   return decoder;
 }

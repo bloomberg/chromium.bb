@@ -137,8 +137,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebImage.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnection00Handler.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnection00HandlerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandler.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
@@ -230,10 +228,6 @@ using WebKit::WebNavigationType;
 using WebKit::WebNode;
 using WebKit::WebPageSerializer;
 using WebKit::WebPageSerializerClient;
-using WebKit::WebPeerConnection00Handler;
-using WebKit::WebPeerConnection00HandlerClient;
-using WebKit::WebPeerConnectionHandler;
-using WebKit::WebPeerConnectionHandlerClient;
 using WebKit::WebPlugin;
 using WebKit::WebPluginAction;
 using WebKit::WebPluginContainer;
@@ -650,20 +644,15 @@ RenderViewImpl* RenderViewImpl::Create(
       guest);
 }
 
-WebPeerConnectionHandler* RenderViewImpl::CreatePeerConnectionHandler(
-    WebPeerConnectionHandlerClient* client) {
+WebKit::WebPeerConnectionHandler* RenderViewImpl::CreatePeerConnectionHandler(
+    WebKit::WebPeerConnectionHandlerClient* client) {
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kEnableMediaStream))
+    return NULL;
   EnsureMediaStreamImpl();
   if (!media_stream_impl_.get())
     return NULL;
   return media_stream_impl_->CreatePeerConnectionHandler(client);
-}
-
-WebPeerConnection00Handler* RenderViewImpl::CreatePeerConnectionHandlerJsep(
-    WebPeerConnection00HandlerClient* client) {
-  EnsureMediaStreamImpl();
-  if (!media_stream_impl_.get())
-    return NULL;
-  return media_stream_impl_->CreatePeerConnectionHandlerJsep(client);
 }
 
 void RenderViewImpl::AddObserver(RenderViewObserver* observer) {
@@ -3287,10 +3276,6 @@ void RenderViewImpl::CheckPreferredSize() {
 }
 
 void RenderViewImpl::EnsureMediaStreamImpl() {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kEnableMediaStream))
-    return;
-
 #if defined(ENABLE_P2P_APIS)
   if (!p2p_socket_dispatcher_)
     p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
@@ -5159,6 +5144,9 @@ WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {
 }
 
 WebKit::WebUserMediaClient* RenderViewImpl::userMediaClient() {
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kEnableMediaStream))
+    return NULL;
   EnsureMediaStreamImpl();
   return media_stream_impl_;
 }

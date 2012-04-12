@@ -74,12 +74,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory {
       CreateLocalAudioTrack(const std::string& label,
                             webrtc::AudioDeviceModule* audio_device);
 
-  virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
-      const std::string& sdp);
-  virtual webrtc::IceCandidateInterface* CreateIceCandidate(
-      const std::string& label,
-      const std::string& sdp);
-
  private:
   talk_base::scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
 

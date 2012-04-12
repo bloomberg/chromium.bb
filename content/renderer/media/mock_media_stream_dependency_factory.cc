@@ -123,65 +123,6 @@ void MockLocalVideoTrack::UnregisterObserver(ObserverInterface* observer) {
   NOTIMPLEMENTED();
 }
 
-class MockSessionDescription : public SessionDescriptionInterface {
- public:
-  MockSessionDescription(const std::string& sdp)
-      : sdp_(sdp) {
-  }
-  virtual ~MockSessionDescription() {}
-  virtual const cricket::SessionDescription* description() const OVERRIDE {
-    NOTIMPLEMENTED();
-    return NULL;
-  }
-  virtual bool AddCandidate(const IceCandidateInterface* candidate) OVERRIDE {
-    NOTIMPLEMENTED();
-    return false;
-  }
-  virtual size_t number_of_mediasections() const OVERRIDE {
-    NOTIMPLEMENTED();
-    return 0;
-  }
-  virtual const IceCandidateColletion* candidates(
-      size_t mediasection_index) const OVERRIDE {
-    NOTIMPLEMENTED();
-    return NULL;
-  }
-  virtual bool ToString(std::string* out) const OVERRIDE {
-    *out = sdp_;
-    return true;
-  }
-
- private:
-  std::string sdp_;
-};
-
-class MockIceCandidate : public IceCandidateInterface {
- public:
-  MockIceCandidate(const std::string& label, const std::string& sdp)
-      : label_(label),
-        sdp_(sdp) {
-  }
-  virtual ~MockIceCandidate() {}
-  virtual std::string label() const OVERRIDE {
-    return label_;
-  }
-  virtual const cricket::Candidate& candidate() const OVERRIDE {
-    // This function should never be called. It will intentionally crash. The
-    // base class forces us to return a reference.
-    NOTREACHED();
-    cricket::Candidate* candidate = NULL;
-    return *candidate;
-  }
-  virtual bool ToString(std::string* out) const OVERRIDE {
-    *out = sdp_;
-    return true;
-  }
-
- private:
-  std::string label_;
-  std::string sdp_;
-};
-
 }  // namespace webrtc
 
 MockMediaStreamDependencyFactory::MockMediaStreamDependencyFactory()
@@ -213,7 +154,7 @@ MockMediaStreamDependencyFactory::CreatePeerConnection(
     const std::string& config,
     webrtc::PeerConnectionObserver* observer) {
   DCHECK(mock_pc_factory_created_);
-  return new talk_base::RefCountedObject<webrtc::MockPeerConnectionImpl>(this);
+  return new talk_base::RefCountedObject<webrtc::MockPeerConnectionImpl>();
 }
 
 talk_base::scoped_refptr<webrtc::PeerConnectionInterface>
@@ -221,7 +162,7 @@ MockMediaStreamDependencyFactory::CreateRoapPeerConnection(
     const std::string& config,
     webrtc::PeerConnectionObserver* observer) {
   DCHECK(mock_pc_factory_created_);
-  return new talk_base::RefCountedObject<webrtc::MockPeerConnectionImpl>(this);
+  return new talk_base::RefCountedObject<webrtc::MockPeerConnectionImpl>();
 }
 
 talk_base::scoped_refptr<webrtc::LocalMediaStreamInterface>
@@ -247,17 +188,4 @@ MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
     webrtc::AudioDeviceModule* audio_device) {
   NOTIMPLEMENTED();
   return NULL;
-}
-
-webrtc::SessionDescriptionInterface*
-MockMediaStreamDependencyFactory::CreateSessionDescription(
-    const std::string& sdp) {
-  return new webrtc::MockSessionDescription(sdp);
-}
-
-webrtc::IceCandidateInterface*
-MockMediaStreamDependencyFactory::CreateIceCandidate(
-    const std::string& label,
-    const std::string& sdp) {
-  return new webrtc::MockIceCandidate(label, sdp);
 }

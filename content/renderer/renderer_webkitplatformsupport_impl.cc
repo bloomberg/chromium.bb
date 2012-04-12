@@ -89,8 +89,6 @@ using WebKit::WebIDBKeyPath;
 using WebKit::WebKitPlatformSupport;
 using WebKit::WebMediaStreamCenter;
 using WebKit::WebMediaStreamCenterClient;
-using WebKit::WebPeerConnection00Handler;
-using WebKit::WebPeerConnection00HandlerClient;
 using WebKit::WebPeerConnectionHandler;
 using WebKit::WebPeerConnectionHandlerClient;
 using WebKit::WebSerializedScriptValue;
@@ -726,18 +724,6 @@ RendererWebKitPlatformSupportImpl::createPeerConnectionHandler(
   if (!render_view)
     return NULL;
   return render_view->CreatePeerConnectionHandler(client);
-}
-
-WebPeerConnection00Handler*
-RendererWebKitPlatformSupportImpl::createPeerConnection00Handler(
-    WebPeerConnection00HandlerClient* client) {
-  WebFrame* web_frame = WebFrame::frameForCurrentContext();
-  if (!web_frame)
-    return NULL;
-  RenderViewImpl* render_view = RenderViewImpl::FromWebView(web_frame->view());
-  if (!render_view)
-    return NULL;
-  return render_view->CreatePeerConnectionHandlerJsep(client);
 }
 
 //------------------------------------------------------------------------------

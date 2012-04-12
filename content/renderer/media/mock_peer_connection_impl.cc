@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
 
 #include <vector>
@@ -37,19 +36,10 @@ class MockStreamCollection : public StreamCollectionInterface {
   std::vector<talk_base::scoped_refptr<MediaStreamInterface> > streams_;
 };
 
-const char MockPeerConnectionImpl::kDummyOffer[] = "dummy offer";
-
-MockPeerConnectionImpl::MockPeerConnectionImpl(
-    MockMediaStreamDependencyFactory* factory)
-    : dependency_factory_(factory),
-      stream_changes_committed_(false),
+MockPeerConnectionImpl::MockPeerConnectionImpl()
+    : stream_changes_committed_(false),
       local_streams_(new talk_base::RefCountedObject<MockStreamCollection>),
-      remote_streams_(new talk_base::RefCountedObject<MockStreamCollection>),
-      hint_audio_(false),
-      hint_video_(false),
-      action_(kAnswer),
-      ice_options_(kOnlyRelay),
-      ready_state_(kNew) {
+      remote_streams_(new talk_base::RefCountedObject<MockStreamCollection>) {
 }
 
 MockPeerConnectionImpl::~MockPeerConnectionImpl() {}
@@ -95,7 +85,8 @@ void MockPeerConnectionImpl::Close() {
 }
 
 MockPeerConnectionImpl::ReadyState MockPeerConnectionImpl::ready_state() {
-  return ready_state_;
+  NOTIMPLEMENTED();
+  return kNew;
 }
 
 MockPeerConnectionImpl::SdpState MockPeerConnectionImpl::sdp_state() {
@@ -104,54 +95,53 @@ MockPeerConnectionImpl::SdpState MockPeerConnectionImpl::sdp_state() {
 }
 
 bool MockPeerConnectionImpl::StartIce(IceOptions options) {
-  ice_options_ = options;
-  return true;
+  NOTIMPLEMENTED();
+  return false;
 }
 
 webrtc::SessionDescriptionInterface* MockPeerConnectionImpl::CreateOffer(
     const webrtc::MediaHints& hints) {
-  hint_audio_ = hints.has_audio();
-  hint_video_ = hints.has_video();
-  return dependency_factory_->CreateSessionDescription(kDummyOffer);
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 webrtc::SessionDescriptionInterface* MockPeerConnectionImpl::CreateAnswer(
     const webrtc::MediaHints& hints,
     const webrtc::SessionDescriptionInterface* offer) {
-  hint_audio_ = hints.has_audio();
-  hint_video_ = hints.has_video();
-  offer->ToString(&description_sdp_);
-  return dependency_factory_->CreateSessionDescription(description_sdp_);
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 bool MockPeerConnectionImpl::SetLocalDescription(
     Action action,
     webrtc::SessionDescriptionInterface* desc) {
-  action_ = action;
-  return desc->ToString(&description_sdp_);
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool MockPeerConnectionImpl::SetRemoteDescription(
     Action action,
     webrtc::SessionDescriptionInterface* desc) {
-  action_ = action;
-  return desc->ToString(&description_sdp_);
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool MockPeerConnectionImpl::ProcessIceMessage(
     const webrtc::IceCandidateInterface* ice_candidate) {
-  ice_label_ = ice_candidate->label();
-  return ice_candidate->ToString(&ice_sdp_);
+  NOTIMPLEMENTED();
+  return false;
 }
 
 const webrtc::SessionDescriptionInterface*
 MockPeerConnectionImpl::local_description() const {
-  return dependency_factory_->CreateSessionDescription(description_sdp_);
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 const webrtc::SessionDescriptionInterface*
 MockPeerConnectionImpl::remote_description() const {
-  return dependency_factory_->CreateSessionDescription(description_sdp_);
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 void MockPeerConnectionImpl::AddRemoteStream(MediaStreamInterface* stream) {

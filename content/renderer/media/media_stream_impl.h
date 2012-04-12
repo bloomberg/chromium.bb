@@ -8,7 +8,6 @@
 #include <list>
 #include <map>
 #include <string>
-#include <utility>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -43,15 +42,13 @@ class Thread;
 }
 
 namespace WebKit {
-class WebPeerConnection00Handler;
-class WebPeerConnection00HandlerClient;
 class WebPeerConnectionHandler;
 class WebPeerConnectionHandlerClient;
 }
 
 class MediaStreamDispatcher;
 class MediaStreamDependencyFactory;
-class PeerConnectionHandlerBase;
+class PeerConnectionHandler;
 class VideoCaptureImplManager;
 class RTCVideoDecoder;
 
@@ -77,9 +74,7 @@ class CONTENT_EXPORT MediaStreamImpl
 
   virtual WebKit::WebPeerConnectionHandler* CreatePeerConnectionHandler(
       WebKit::WebPeerConnectionHandlerClient* client);
-  virtual WebKit::WebPeerConnection00Handler* CreatePeerConnectionHandlerJsep(
-      WebKit::WebPeerConnection00HandlerClient* client);
-  virtual void ClosePeerConnection(PeerConnectionHandlerBase* pc_handler);
+  virtual void ClosePeerConnection();
   virtual webrtc::MediaStreamTrackInterface* GetLocalMediaStreamTrack(
       const std::string& label);
 
@@ -122,7 +117,6 @@ class CONTENT_EXPORT MediaStreamImpl
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(MediaStreamImplTest, MultiplePeerConnections);
 
   class VideoRendererWrapper : public webrtc::VideoRendererWrapperInterface {
    public:
@@ -165,10 +159,10 @@ class CONTENT_EXPORT MediaStreamImpl
 
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
 
-  // peer_connection_handlers_ contains raw references, owned by WebKit. A
-  // pointer is valid until stop is called on the object (which will call
-  // ClosePeerConnection on us and we remove the pointer).
-  std::list<PeerConnectionHandlerBase*> peer_connection_handlers_;
+  // peer_connection_handler_ is a weak reference, owned by WebKit. It's valid
+  // until stop is called on it (which will call ClosePeerConnection on us).
+  // TODO(grunell): Support several PeerConnectionsHandlers.
+  PeerConnectionHandler* peer_connection_handler_;
 
   // We keep a list of the generated local tracks, so that we can add capture
   // devices when generated and also use them for recording.
@@ -177,14 +171,8 @@ class CONTENT_EXPORT MediaStreamImpl
   typedef std::map<std::string, MediaStreamTrackPtr> MediaStreamTrackPtrMap;
   MediaStreamTrackPtrMap local_tracks_;
 
-  // Native PeerConnection only supports 1:1 mapping between MediaStream and
-  // video tag/renderer, so we restrict to this too.  The key in
-  // VideoRendererMap is the stream label.
-  typedef talk_base::scoped_refptr<VideoRendererWrapper> VideoRendererPtr;
-  typedef std::pair<VideoRendererPtr, PeerConnectionHandlerBase*>
-      VideoRendererPair;
-  typedef std::map<std::string, VideoRendererPair> VideoRendererMap;
-  VideoRendererMap video_renderers_;
+  talk_base::scoped_refptr<VideoRendererWrapper> video_renderer_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   // PeerConnection threads. signaling_thread_ is created from the
   // "current" chrome thread.
