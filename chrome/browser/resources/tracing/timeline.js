@@ -618,6 +618,7 @@ cr.define('tracing', function() {
 
     set selection(selection) {
       // Clear old selection.
+      var i;
       for (i = 0; i < this.selection_.length; i++)
         this.selection_[i].slice.selected = false;
 
