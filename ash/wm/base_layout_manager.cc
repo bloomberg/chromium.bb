@@ -8,12 +8,17 @@
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/screen.h"
+
+DECLARE_WINDOW_PROPERTY_TYPE(ui::WindowShowState)
 
 namespace {
 
@@ -35,6 +40,10 @@ gfx::Rect BoundsWithScreenEdgeVisible(aura::Window* window,
     return max_bounds;
   return restore_bounds;
 }
+
+// Used to remember the show state before the window was minimized.
+DEFINE_WINDOW_PROPERTY_KEY(
+    ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);
 
 }  // namespace
 
@@ -82,7 +91,13 @@ void BaseLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 }
 
 void BaseLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
-                                                       bool visibile) {
+                                                       bool visible) {
+  if (visible && wm::IsWindowMinimized(child)) {
+    // Attempting to show a minimized window. Unminimize it.
+    child->SetProperty(aura::client::kShowStateKey,
+                       child->GetProperty(kRestoreShowStateKey));
+    child->ClearProperty(kRestoreShowStateKey);
+  }
 }
 
 void BaseLayoutManager::SetChildBounds(aura::Window* child,
@@ -118,8 +133,10 @@ void BaseLayoutManager::OnMonitorWorkAreaInsetsChanged() {
 void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                 const void* key,
                                                 intptr_t old) {
-  if (key == aura::client::kShowStateKey)
+  if (key == aura::client::kShowStateKey) {
     UpdateBoundsFromShowState(window);
+    ShowStateChanged(window, static_cast<ui::WindowShowState>(old));
+  }
 }
 
 void BaseLayoutManager::OnWindowDestroying(aura::Window* window) {
@@ -131,6 +148,28 @@ void BaseLayoutManager::OnWindowDestroying(aura::Window* window) {
 
 //////////////////////////////////////////////////////////////////////////////
 // BaseLayoutManager, private:
+
+void BaseLayoutManager::ShowStateChanged(aura::Window* window,
+                                         ui::WindowShowState last_show_state) {
+  if (wm::IsWindowMinimized(window)) {
+    // Save the previous show state so that we can correctly restore it.
+    window->SetProperty(kRestoreShowStateKey, last_show_state);
+    SetWindowVisibilityAnimationType(
+        window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+
+    // Hide the window.
+    window->Hide();
+    // Activate another window.
+    if (wm::IsActiveWindow(window))
+      wm::DeactivateWindow(window);
+  } else if ((window->TargetVisibility() ||
+              last_show_state == ui::SHOW_STATE_MINIMIZED) &&
+             !window->layer()->visible()) {
+    // The layer may be hidden if the window was previously minimized. Make
+    // sure it's visible.
+    window->Show();
+  }
+}
 
 void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window) {
   switch (window->GetProperty(aura::client::kShowStateKey)) {

@@ -12,12 +12,19 @@
 #include "ui/gfx/rect.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(bool)
+DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowPersistsAcrossAllWorkspacesType)
 
 namespace ash {
 
 namespace {
 
-const aura::WindowProperty<bool> kWindowTrackedByWorkspaceSplitProp = {true};
+const aura::WindowProperty<bool> kWindowTrackedByWorkspaceProp = {true};
+
+const aura::WindowProperty<WindowPersistsAcrossAllWorkspacesType>
+    kWindowPersistsAcrossAllWorkspacesProp =
+    {WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT};
+
+bool g_default_windows_persist_across_all_workspaces = false;
 
 }  // namespace
 
@@ -45,14 +52,40 @@ void ToggleMaximizedState(aura::Window* window) {
 }
 
 const aura::WindowProperty<bool>* const
-    kWindowTrackedByWorkspaceSplitPropKey = &kWindowTrackedByWorkspaceSplitProp;
+    kWindowTrackedByWorkspacePropKey = &kWindowTrackedByWorkspaceProp;
+
+const aura::WindowProperty<WindowPersistsAcrossAllWorkspacesType>* const
+    kWindowPersistsAcrossAllWorkspacesPropKey =
+    &kWindowPersistsAcrossAllWorkspacesProp;
 
 void SetTrackedByWorkspace(aura::Window* window, bool value) {
-  window->SetProperty(kWindowTrackedByWorkspaceSplitPropKey, value);
+  window->SetProperty(kWindowTrackedByWorkspacePropKey, value);
 }
 
 bool GetTrackedByWorkspace(aura::Window* window) {
-  return window->GetProperty(kWindowTrackedByWorkspaceSplitPropKey);
+  return window->GetProperty(kWindowTrackedByWorkspacePropKey);
+}
+
+void SetPersistsAcrossAllWorkspaces(
+    aura::Window* window,
+    WindowPersistsAcrossAllWorkspacesType type) {
+  window->SetProperty(kWindowPersistsAcrossAllWorkspacesPropKey, type);
+}
+
+bool GetPersistsAcrossAllWorkspaces(aura::Window* window) {
+  switch (window->GetProperty(kWindowPersistsAcrossAllWorkspacesPropKey)) {
+    case WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES:
+      return true;
+    case WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO:
+      return false;
+    case WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT:
+      return g_default_windows_persist_across_all_workspaces;
+  }
+  return false;
+}
+
+void SetDefaultPersistsAcrossAllWorkspaces(bool value) {
+  g_default_windows_persist_across_all_workspaces = value;
 }
 
 }

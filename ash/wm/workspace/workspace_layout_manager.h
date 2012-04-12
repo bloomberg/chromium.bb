@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/ui_base_types.h"
 
 namespace aura {
 class MouseEvent;
@@ -53,12 +52,11 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
+ protected:
+  virtual void ShowStateChanged(aura::Window* window,
+                                ui::WindowShowState last_show_state) OVERRIDE;
 
  private:
-  void ShowStateChanged(
-      aura::Window* window,
-      ui::WindowShowState last_show_state);
-
   // Owned by WorkspaceController.
   WorkspaceManager* workspace_manager_;
 

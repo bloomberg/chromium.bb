@@ -96,13 +96,5 @@ void RestoreWindow(aura::Window* window) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }
 
-void SetOpenWindowSplit(aura::Window* window, bool value) {
-  window->SetProperty(kOpenWindowSplitKey, value);
-}
-
-bool GetOpenWindowSplit(aura::Window* window) {
-  return window->GetProperty(kOpenWindowSplitKey);
-}
-
 }  // namespace wm
 }  // namespace ash

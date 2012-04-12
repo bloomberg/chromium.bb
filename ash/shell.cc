@@ -65,7 +65,6 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/always_on_top_layout_manager.h"
 #include "ash/wm/workspace/workspace_event_filter.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace/workspace_manager.h"
@@ -925,7 +924,7 @@ void Shell::InitLayoutManagers() {
   aura::Window* always_on_top_container =
       GetContainer(internal::kShellWindowId_AlwaysOnTopContainer);
   always_on_top_container->SetLayoutManager(
-      new internal::AlwaysOnTopLayoutManager(
+      new internal::BaseLayoutManager(
           always_on_top_container->GetRootWindow()));
 
   // Create desktop background widget.

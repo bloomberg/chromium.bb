@@ -8,6 +8,7 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/key_rewriter_event_filter.h"
+#include "ash/wm/property_util.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -47,6 +48,10 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       ash::Shell::set_initially_hide_cursor(true);
   }
 #endif
+
+  // Its easier to mark all windows as persisting and exclude the ones we care
+  // about (browser windows), rather than explicitly excluding certain windows.
+  ash::SetDefaultPersistsAcrossAllWorkspaces(true);
 
   // Shell takes ownership of ChromeShellDelegate.
   ash::Shell* shell = ash::Shell::CreateInstance(new ChromeShellDelegate);

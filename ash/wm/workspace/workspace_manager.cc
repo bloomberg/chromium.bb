@@ -84,7 +84,8 @@ WorkspaceManager::~WorkspaceManager() {
 
 bool WorkspaceManager::IsManagedWindow(aura::Window* window) const {
   return window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-         !window->transient_parent() && ash::GetTrackedByWorkspace(window);
+         !window->transient_parent() && ash::GetTrackedByWorkspace(window) &&
+         !ash::GetPersistsAcrossAllWorkspaces(window);
 }
 
 bool WorkspaceManager::IsManagingWindow(aura::Window* window) const {
@@ -329,7 +330,6 @@ void WorkspaceManager::OnTypeOfWorkspacedNeededChanged(aura::Window* window) {
     new_workspace->AddWindowAfter(window, NULL);
   } else {
     // Maximized -> unmaximized; move window to unmaximized workspace.
-    wm::SetOpenWindowSplit(window, false);
     new_workspace = GetManagedWorkspace();
     current_workspace->RemoveWindow(window);
     if (!new_workspace)

@@ -468,7 +468,6 @@ void ChromeLauncherDelegate::CreateNewTab() {
 }
 
 void ChromeLauncherDelegate::CreateNewWindow() {
-  printf("ChromeLauncherDelegate::CreateNewWindow\n");
   Browser::NewEmptyWindow(GetProfileForNewWindows());
 }
 

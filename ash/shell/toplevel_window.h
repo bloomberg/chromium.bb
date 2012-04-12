@@ -18,6 +18,7 @@ class ToplevelWindow : public views::WidgetDelegateView {
 
     bool can_resize;
     bool can_maximize;
+    bool persist_across_all_workspaces;
   };
   static void CreateToplevelWindow(const CreateParams& params);
 

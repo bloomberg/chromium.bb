@@ -20,6 +20,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/examples/examples_window.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
 using views::MenuItemView;
@@ -164,6 +165,12 @@ class NonModalTransient : public views::WidgetDelegateView {
 // static
 views::Widget* NonModalTransient::non_modal_transient_ = NULL;
 
+void AddViewToLayout(views::GridLayout* layout, views::View* view) {
+  layout->StartRow(0, 0);
+  layout->AddView(view);
+  layout->AddPaddingRow(0, 5);
+}
+
 }  // namespace
 
 void InitWindowTypeLauncher() {
@@ -179,6 +186,9 @@ void InitWindowTypeLauncher() {
 WindowTypeLauncher::WindowTypeLauncher()
     : ALLOW_THIS_IN_INITIALIZER_LIST(create_button_(
           new views::NativeTextButton(this, ASCIIToUTF16("Create Window")))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(create_persistant_button_(
+          new views::NativeTextButton(
+              this, ASCIIToUTF16("Create Persistant Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(panel_button_(
           new views::NativeTextButton(this, ASCIIToUTF16("Create Panel")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(create_nonresizable_button_(
@@ -207,17 +217,28 @@ WindowTypeLauncher::WindowTypeLauncher()
       ALLOW_THIS_IN_INITIALIZER_LIST(show_hide_window_button_(
           new views::NativeTextButton(
               this, ASCIIToUTF16("Show/Hide a Window")))) {
-  AddChildView(create_button_);
-  AddChildView(panel_button_);
-  AddChildView(create_nonresizable_button_);
-  AddChildView(bubble_button_);
-  AddChildView(lock_button_);
-  AddChildView(widgets_button_);
-  AddChildView(system_modal_button_);
-  AddChildView(window_modal_button_);
-  AddChildView(transient_button_);
-  AddChildView(examples_button_);
-  AddChildView(show_hide_window_button_);
+  views::GridLayout* layout = new views::GridLayout(this);
+  layout->SetInsets(5, 5, 5, 5);
+  SetLayoutManager(layout);
+  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::CENTER,
+                        0,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+  AddViewToLayout(layout, create_button_);
+  AddViewToLayout(layout, create_persistant_button_);
+  AddViewToLayout(layout, panel_button_);
+  AddViewToLayout(layout, create_nonresizable_button_);
+  AddViewToLayout(layout, bubble_button_);
+  AddViewToLayout(layout, lock_button_);
+  AddViewToLayout(layout, widgets_button_);
+  AddViewToLayout(layout, system_modal_button_);
+  AddViewToLayout(layout, window_modal_button_);
+  AddViewToLayout(layout, transient_button_);
+  AddViewToLayout(layout, examples_button_);
+  AddViewToLayout(layout, show_hide_window_button_);
 #if !defined(OS_MACOSX)
   set_context_menu_controller(this);
 #endif
@@ -228,66 +249,6 @@ WindowTypeLauncher::~WindowTypeLauncher() {
 
 void WindowTypeLauncher::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetLocalBounds(), SK_ColorWHITE);
-}
-
-void WindowTypeLauncher::Layout() {
-  gfx::Size create_button_ps = create_button_->GetPreferredSize();
-  gfx::Rect local_bounds = GetLocalBounds();
-  create_button_->SetBounds(
-      5, local_bounds.bottom() - create_button_ps.height() - 5,
-      create_button_ps.width(), create_button_ps.height());
-
-  gfx::Size panel_button_ps = panel_button_->GetPreferredSize();
-  panel_button_->SetBounds(
-      5, create_button_->y() - panel_button_ps.height() - 5,
-      panel_button_ps.width(), panel_button_ps.height());
-
-  gfx::Size bubble_button_ps = bubble_button_->GetPreferredSize();
-  bubble_button_->SetBounds(
-      5, panel_button_->y() - bubble_button_ps.height() - 5,
-      bubble_button_ps.width(), bubble_button_ps.height());
-
-  gfx::Size create_nr_button_ps =
-      create_nonresizable_button_->GetPreferredSize();
-  create_nonresizable_button_->SetBounds(
-      5, bubble_button_->y() - create_nr_button_ps.height() - 5,
-      create_nr_button_ps.width(), create_nr_button_ps.height());
-
-  gfx::Size lock_ps = lock_button_->GetPreferredSize();
-  lock_button_->SetBounds(
-      5, create_nonresizable_button_->y() - lock_ps.height() - 5,
-      lock_ps.width(), lock_ps.height());
-
-  gfx::Size widgets_ps = widgets_button_->GetPreferredSize();
-  widgets_button_->SetBounds(
-      5, lock_button_->y() - widgets_ps.height() - 5,
-      widgets_ps.width(), widgets_ps.height());
-
-  gfx::Size system_modal_ps = system_modal_button_->GetPreferredSize();
-  system_modal_button_->SetBounds(
-      5, widgets_button_->y() - system_modal_ps.height() - 5,
-      system_modal_ps.width(), system_modal_ps.height());
-
-  gfx::Size window_modal_ps = window_modal_button_->GetPreferredSize();
-  window_modal_button_->SetBounds(
-      5, system_modal_button_->y() - window_modal_ps.height() - 5,
-      window_modal_ps.width(), window_modal_ps.height());
-
-  gfx::Size transient_ps = transient_button_->GetPreferredSize();
-  transient_button_->SetBounds(
-      5, window_modal_button_->y() - transient_ps.height() - 5,
-      transient_ps.width(), transient_ps.height());
-
-  gfx::Size examples_ps = examples_button_->GetPreferredSize();
-  examples_button_->SetBounds(
-      5, transient_button_->y() - examples_ps.height() - 5,
-      examples_ps.width(), examples_ps.height());
-
-  gfx::Size show_hide_window_ps =
-      show_hide_window_button_->GetPreferredSize();
-  show_hide_window_button_->SetBounds(
-      5, examples_button_->y() - show_hide_window_ps.height() - 5,
-      show_hide_window_ps.width(), show_hide_window_ps.height());
 }
 
 bool WindowTypeLauncher::OnMousePressed(const views::MouseEvent& event) {
@@ -317,6 +278,12 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     ToplevelWindow::CreateParams params;
     params.can_resize = true;
     params.can_maximize = true;
+    ToplevelWindow::CreateToplevelWindow(params);
+  } else if (sender == create_persistant_button_) {
+    ToplevelWindow::CreateParams params;
+    params.can_resize = true;
+    params.can_maximize = true;
+    params.persist_across_all_workspaces = true;
     ToplevelWindow::CreateToplevelWindow(params);
   } else if (sender == panel_button_) {
     PanelWindow::CreatePanelWindow(gfx::Rect());

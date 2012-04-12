@@ -518,5 +518,70 @@ TEST_F(WorkspaceManagerTest, ShelfStateUpdated) {
             w2->bounds().ToString());
 }
 
+// Verifies persist across all workspaces.
+TEST_F(WorkspaceManagerTest, PersistAcrossAllWorkspaces) {
+  // Create a maximized window.
+  scoped_ptr<Window> w1(CreateTestWindow());
+  w1->Show();
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_TRUE(w1->layer()->IsDrawn());
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, active_workspace()->type());
+
+  // Create a window that persists across all workspaces, it should be visible
+  // even while in a maximized workspace.
+  scoped_ptr<Window> w2(CreateTestWindow());
+  SetPersistsAcrossAllWorkspaces(
+      w2.get(),
+      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
+  w2->Show();
+  wm::ActivateWindow(w2.get());
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, active_workspace()->type());
+  EXPECT_TRUE(std::find(active_workspace()->windows().begin(),
+                        active_workspace()->windows().end(), w2.get()) ==
+              active_workspace()->windows().end());
+  EXPECT_TRUE(w1->layer()->IsDrawn());
+  EXPECT_TRUE(w2->layer()->IsDrawn());
+
+  // Activate the maximized window, w1, ensure w2 is still visible.
+  wm::ActivateWindow(w1.get());
+  EXPECT_EQ(Workspace::TYPE_MAXIMIZED, active_workspace()->type());
+  EXPECT_TRUE(w1->layer()->IsDrawn());
+  EXPECT_TRUE(w2->layer()->IsDrawn());
+
+  // Create another window (normal) and show/activate it. w1 (maximized window)
+  // should hide, but w2 should still be visible since it persists across all
+  // windows.
+  scoped_ptr<Window> w3(CreateTestWindow());
+  w3->Show();
+  wm::ActivateWindow(w3.get());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, active_workspace()->type());
+  EXPECT_FALSE(w1->layer()->IsDrawn());
+  EXPECT_TRUE(w2->layer()->IsDrawn());
+  EXPECT_TRUE(w3->layer()->IsDrawn());
+
+  // Activate w2 again, shouldn't switch workspaces.
+  wm::ActivateWindow(w2.get());
+  EXPECT_EQ(Workspace::TYPE_MANAGED, active_workspace()->type());
+  EXPECT_FALSE(w1->layer()->IsDrawn());
+  EXPECT_TRUE(w2->layer()->IsDrawn());
+  EXPECT_TRUE(w3->layer()->IsDrawn());
+}
+
+// Verifies Show()ing a minimized window that persists across all workspaces
+// unminimizes thew indow.
+TEST_F(WorkspaceManagerTest, ShowMinimizedPersistWindow) {
+  // Create a window that persists across all workspaces.
+  scoped_ptr<Window> w1(CreateTestWindow());
+  SetPersistsAcrossAllWorkspaces(
+      w1.get(),
+      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+  EXPECT_FALSE(w1->IsVisible());
+  w1->Show();
+  EXPECT_TRUE(w1->IsVisible());
+}
+
 }  // namespace internal
 }  // namespace ash

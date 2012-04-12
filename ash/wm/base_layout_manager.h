@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/root_window_observer.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {
@@ -62,6 +63,11 @@ class ASH_EXPORT BaseLayoutManager : public aura::LayoutManager,
                                        const void* key,
                                        intptr_t old) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+
+ protected:
+  // Invoked from OnWindowPropertyChanged() if |kShowStateKey| changes.
+  virtual void ShowStateChanged(aura::Window* window,
+                                ui::WindowShowState last_show_state);
 
  private:
   // Update window bounds based on a change in show state.

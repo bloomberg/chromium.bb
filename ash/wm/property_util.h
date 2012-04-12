@@ -40,7 +40,17 @@ ASH_EXPORT void ClearRestoreBounds(aura::Window* window);
 ASH_EXPORT void ToggleMaximizedState(aura::Window* window);
 
 ASH_EXPORT extern const aura::WindowProperty<bool>* const
-    kWindowTrackedByWorkspaceSplitPropKey;
+    kWindowTrackedByWorkspacePropKey;
+
+enum WindowPersistsAcrossAllWorkspacesType {
+  WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT,
+  WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO,
+  WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES,
+};
+
+ASH_EXPORT extern const
+    aura::WindowProperty<WindowPersistsAcrossAllWorkspacesType>* const
+    kWindowPersistsAcrossAllWorkspacesPropKey;
 
 // Sets whether the specified window is tracked by workspace code. Default is
 // true. If set to false the workspace does not switch the current workspace,
@@ -48,6 +58,17 @@ ASH_EXPORT extern const aura::WindowProperty<bool>* const
 // is intended for tab dragging.
 ASH_EXPORT void SetTrackedByWorkspace(aura::Window* window, bool value);
 ASH_EXPORT bool GetTrackedByWorkspace(aura::Window* window);
+
+// Makes |window| persist across all workspaces. The default is controlled
+// by SetDefaultPersistsAcrossAllWorkspaces().
+ASH_EXPORT void SetPersistsAcrossAllWorkspaces(
+    aura::Window* window,
+    WindowPersistsAcrossAllWorkspacesType type);
+ASH_EXPORT bool GetPersistsAcrossAllWorkspaces(aura::Window* window);
+
+// Sets the default value for whether windows persist across all workspaces.
+// The default is false.
+ASH_EXPORT void SetDefaultPersistsAcrossAllWorkspaces(bool value);
 
 }
 

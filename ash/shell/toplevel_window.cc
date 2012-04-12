@@ -4,6 +4,7 @@
 
 #include "ash/shell/toplevel_window.h"
 
+#include "ash/wm/property_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -14,7 +15,8 @@ namespace shell {
 
 ToplevelWindow::CreateParams::CreateParams()
     : can_resize(false),
-      can_maximize(false) {
+      can_maximize(false),
+      persist_across_all_workspaces(false) {
 }
 
 // static
@@ -26,6 +28,11 @@ void ToplevelWindow::CreateToplevelWindow(const CreateParams& params) {
       views::Widget::CreateWindowWithBounds(new ToplevelWindow(params),
                                             gfx::Rect(x, 150, 300, 300));
   widget->GetNativeView()->SetName("Examples:ToplevelWindow");
+  if (params.persist_across_all_workspaces) {
+    SetPersistsAcrossAllWorkspaces(
+        widget->GetNativeView(),
+        WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
+  }
   widget->Show();
 }
 
@@ -40,7 +47,9 @@ void ToplevelWindow::OnPaint(gfx::Canvas* canvas) {
 }
 
 string16 ToplevelWindow::GetWindowTitle() const {
-  return ASCIIToUTF16("Examples: Toplevel Window");
+  return params_.persist_across_all_workspaces ?
+      ASCIIToUTF16("Examples: Toplevel Window (P)") :
+      ASCIIToUTF16("Examples: Toplevel Window");
 }
 
 views::View* ToplevelWindow::GetContentsView() {

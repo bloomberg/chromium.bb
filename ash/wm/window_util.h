@@ -50,11 +50,6 @@ ASH_EXPORT void MinimizeWindow(aura::Window* window);
 // Restores |window|, which must not be NULL.
 ASH_EXPORT void RestoreWindow(aura::Window* window);
 
-// Sets whether the window should be open in a split mode. Only applicable when
-// workspaces are used.
-ASH_EXPORT void SetOpenWindowSplit(aura::Window* window, bool value);
-ASH_EXPORT bool GetOpenWindowSplit(aura::Window* window);
-
 }  // namespace wm
 }  // namespace ash
 

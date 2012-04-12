@@ -31,8 +31,6 @@ enum DialogStyle {
   STYLE_FLUSH_CONTENT = 1 << 3,
 
 #endif
-
-  STYLE_ALWAYS_ON_TOP = 1 << 4
 };
 
 #endif  // CHROME_BROWSER_UI_DIALOG_STYLE_H_
