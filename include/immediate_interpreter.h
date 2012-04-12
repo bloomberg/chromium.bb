@@ -56,7 +56,10 @@ class TapRecord {
   set<short, kMaxTapFingers> released_;
   // At least one finger must meet the minimum pressure requirement during a
   // tap. This set contains the fingers that have.
-  set<short, kMaxTapFingers> min_pressure_met_;
+  set<short, kMaxTapFingers> min_tap_pressure_met_;
+  // All fingers must meet the cotap pressure, which is half of the min tap
+  // pressure.
+  set<short, kMaxTapFingers> min_cotap_pressure_met_;
   // Used to fetch properties
   const ImmediateInterpreter* immediate_interpreter_;
   // T5R2: For these pads, we try to track individual IDs, but if we get an

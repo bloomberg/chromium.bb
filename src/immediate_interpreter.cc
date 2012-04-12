@@ -68,7 +68,8 @@ void TapRecord::NoteRelease(short the_id) {
 }
 
 void TapRecord::Remove(short the_id) {
-  min_pressure_met_.erase(the_id);
+  min_tap_pressure_met_.erase(the_id);
+  min_cotap_pressure_met_.erase(the_id);
   touched_.erase(the_id);
   released_.erase(the_id);
 }
@@ -110,19 +111,26 @@ void TapRecord::Update(const HardwareState& hwstate,
     NoteTouch(*it, *hwstate.GetFingerState(*it));
   for_each(removed.begin(), removed.end(),
            bind1st(mem_fun(&TapRecord::NoteRelease), this));
-  // Check if min pressure met yet
+  // Check if min tap/cotap pressure met yet
+  const float cotap_min_pressure =
+      immediate_interpreter_->tap_min_pressure() * 0.5;
   for (map<short, FingerState, kMaxTapFingers>::iterator it =
            touched_.begin(), e = touched_.end();
        it != e; ++it) {
     const FingerState* fs = hwstate.GetFingerState((*it).first);
-    if (fs && fs->pressure >= immediate_interpreter_->tap_min_pressure())
-      min_pressure_met_.insert(fs->tracking_id);
+    if (fs) {
+      if (fs->pressure >= immediate_interpreter_->tap_min_pressure())
+        min_tap_pressure_met_.insert(fs->tracking_id);
+      if (fs->pressure >= cotap_min_pressure)
+        min_cotap_pressure_met_.insert(fs->tracking_id);
+    }
   }
   Log("Done Updating TapRecord.");
 }
 
 void TapRecord::Clear() {
-  min_pressure_met_.clear();
+  min_tap_pressure_met_.clear();
+  min_cotap_pressure_met_.clear();
   t5r2_ = false;
   t5r2_touched_size_ = 0;
   t5r2_released_size_ = 0;
@@ -174,12 +182,13 @@ bool TapRecord::TapComplete() const {
 
 bool TapRecord::MinTapPressureMet() const {
   // True if any touching finger met minimum pressure
-  return t5r2_ || !min_pressure_met_.empty();
+  return t5r2_ || !min_tap_pressure_met_.empty();
 }
 
 int TapRecord::TapType() const {
   // TODO(adlr): use better logic here
-  size_t touched_size = t5r2_ ? t5r2_touched_size_ : touched_.size();
+  size_t touched_size =
+      t5r2_ ? t5r2_touched_size_ : min_cotap_pressure_met_.size();
   return touched_size > 1 ? GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
 }
 

@@ -1192,7 +1192,17 @@ TEST(ImmediateInterpreterTest, TapRecordTest) {
   tr.Update(hw[2], hw[1], MkSet(), MkSet(kF1), MkSet());
 }
 
+namespace {
+
+enum HWStateFlag {
+  S,  // Start
+  C,  // Continue
+  D,  // Start; also start of slow double tap test
+  T,  // Start; also start of T5R2 tests
+};
+
 struct HWStateGs {
+  HWStateFlag flag;
   HardwareState hws;
   stime_t callback_now;
   set<short, kMaxGesturingFingers> gs;
@@ -1201,6 +1211,15 @@ struct HWStateGs {
   ImmediateInterpreter::TapToClickState expected_state;
   bool timeout;
 };
+
+size_t NonT5R2States(const HWStateGs* states, size_t length) {
+  for (size_t i = 0; i < length; i++)
+    if (states[i].flag == T)
+      return i;
+  return length;
+}
+
+}  // namespace {}
 
 // Shorter names so that HWStateGs defs take only 1 line each
 typedef ImmediateInterpreter::TapToClickState TapState;
@@ -1259,242 +1278,249 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
 
     {0, 0, 0, 0, 50, 0, 8.0, 4, 95, 0},  // 19; very close together fingers:
     {0, 0, 0, 0, 50, 0, 8.1, 4, 96, 0},
-    {0, 0, 0, 0, 10, 0, 9.5, 4, 95, 0},  // very light pressure
-    {0, 0, 0, 0, 10, 0, 11,  4, 96, 0},
+    {0, 0, 0, 0, 15, 0, 9.5, 4, 95, 0},  // very light pressure
+    {0, 0, 0, 0, 15, 0, 11,  4, 96, 0},
 
     {0, 0, 0, 0, 50, 0, 20, 4, 95, 0},  // 23; Two fingers very far apart
     {0, 0, 0, 0, 50, 0, 90, 4, 96, 0},
 
     {0, 0, 0, 0, 50, 0, 50, 40, 95, 0},  // 25
-    {0, 0, 0, 0, 10, 0, 70, 40, 96, 0},  // very light pressure
+    {0, 0, 0, 0, 15, 0, 70, 40, 96, 0},  // very light pressure
+
+    {0, 0, 0, 0, 50, 0, 4, 1, 97, 0},  // 27
+    {0, 0, 0, 0,  3, 0, 9, 1, 98, 0},
   };
   HWStateGs hwsgs[] = {
     // Simple 1-finger tap
-    {{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
-    {{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
-    {{ 0.07, 0, 0, 0, NULL   }, .07, MkSet(),   kBL, kBL, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.07, 0, 0, 0, NULL   }, .07, MkSet(),   kBL, kBL, kIdl, false },
     // 1-finger tap with click
-    {{ 0.00, kBL, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kIdl, false },  // 3
-    {{ 0.01,   0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kIdl, false },
-    {{ 0.07,   0, 0, 0, NULL   }, .07, MkSet(),     0,   0, kIdl, false },
+    {S,{ 0.00, kBL, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kIdl, false },
+    {C,{ 0.01,   0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kIdl, false },
+    {C,{ 0.07,   0, 0, 0, NULL   }, .07, MkSet(),     0,   0, kIdl, false },
     // 1-finger swipe
-    {{ 0.00, 0, 1, 1, &fs[4] }, -1, MkSet(95),   0,   0, kFTB, false },  // 6
-    {{ 0.01, 0, 1, 1, &fs[5] }, -1, MkSet(95),   0,   0, kIdl, false },
-    {{ 0.02, 0, 1, 1, &fs[6] }, -1, MkSet(95),   0,   0, kIdl, false },
-    {{ 0.03, 0, 0, 0, NULL   }, -1, MkSet(),     0,   0, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[4] }, -1, MkSet(95),   0,   0, kFTB, false },
+    {C,{ 0.01, 0, 1, 1, &fs[5] }, -1, MkSet(95),   0,   0, kIdl, false },
+    {C,{ 0.02, 0, 1, 1, &fs[6] }, -1, MkSet(95),   0,   0, kIdl, false },
+    {C,{ 0.03, 0, 0, 0, NULL   }, -1, MkSet(),     0,   0, kIdl, false },
     // Double 1-finger tap
-    {{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },  // 10
-    {{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
-    {{ 0.02, 0, 1, 1, &fs[2] }, -1,  MkSet(93), kBL,   0, kSTB, false },
-    {{ 0.03, 0, 0, 0, NULL   }, -1,  MkSet(),     0, kBL, kTpC, true },
-    {{ 0.09, 0, 0, 0, NULL   }, .09, MkSet(),   kBL, kBL, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.02, 0, 1, 1, &fs[2] }, -1,  MkSet(93), kBL,   0, kSTB, false },
+    {C,{ 0.03, 0, 0, 0, NULL   }, -1,  MkSet(),     0, kBL, kTpC, true },
+    {C,{ 0.09, 0, 0, 0, NULL   }, .09, MkSet(),   kBL, kBL, kIdl, false },
     // Triple 1-finger tap
-    {{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },  // 15
-    {{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
-    {{ 0.02, 0, 1, 1, &fs[2] }, -1,  MkSet(93), kBL,   0, kSTB, false },
-    {{ 0.03, 0, 0, 0, NULL   }, -1,  MkSet(),     0, kBL, kTpC, true },
-    {{ 0.04, 0, 1, 1, &fs[3] }, -1,  MkSet(94), kBL,   0, kSTB, false },
-    {{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),     0, kBL, kTpC, true },
-    {{ 0.11, 0, 0, 0, NULL   }, .11, MkSet(),   kBL, kBL, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.02, 0, 1, 1, &fs[2] }, -1,  MkSet(93), kBL,   0, kSTB, false },
+    {C,{ 0.03, 0, 0, 0, NULL   }, -1,  MkSet(),     0, kBL, kTpC, true },
+    {C,{ 0.04, 0, 1, 1, &fs[3] }, -1,  MkSet(94), kBL,   0, kSTB, false },
+    {C,{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),     0, kBL, kTpC, true },
+    {C,{ 0.11, 0, 0, 0, NULL   }, .11, MkSet(),   kBL, kBL, kIdl, false },
     // 1-finger tap + move
-    {{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },  // 22
-    {{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
-    {{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95), kBL,   0, kSTB, false },
-    {{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),   0,   0, kDrg, false },
-    {{ 0.04, 0, 1, 1, &fs[6] }, -1,  MkSet(95),   0,   0, kDrg, false },
-    {{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
-    {{ 0.11, 0, 0, 0, NULL   }, .11, MkSet(),     0, kBL, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95), kBL,   0, kSTB, false },
+    {C,{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),   0,   0, kDrg, false },
+    {C,{ 0.04, 0, 1, 1, &fs[6] }, -1,  MkSet(95),   0,   0, kDrg, false },
+    {C,{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {C,{ 0.11, 0, 0, 0, NULL   }, .11, MkSet(),     0, kBL, kIdl, false },
     // 1-finger tap, move, release, move again (drag lock)
-    {{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },  // 29
-    {{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
-    {{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95), kBL,   0, kSTB, false },
-    {{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),   0,   0, kDrg, false },
-    {{ 0.04, 0, 1, 1, &fs[6] }, -1,  MkSet(95),   0,   0, kDrg, false },
-    {{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
-    {{ 0.06, 0, 1, 1, &fs[7] }, -1,  MkSet(96),   0,   0, kDRt, false },
-    {{ 0.07, 0, 1, 1, &fs[8] }, -1,  MkSet(96),   0,   0, kDrg, false },
-    {{ 0.08, 0, 1, 1, &fs[9] }, -1,  MkSet(96),   0,   0, kDrg, false },
-    {{ 0.09, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
-    {{ 0.15, 0, 0, 0, NULL   }, .15, MkSet(),     0, kBL, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95), kBL,   0, kSTB, false },
+    {C,{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),   0,   0, kDrg, false },
+    {C,{ 0.04, 0, 1, 1, &fs[6] }, -1,  MkSet(95),   0,   0, kDrg, false },
+    {C,{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {C,{ 0.06, 0, 1, 1, &fs[7] }, -1,  MkSet(96),   0,   0, kDRt, false },
+    {C,{ 0.07, 0, 1, 1, &fs[8] }, -1,  MkSet(96),   0,   0, kDrg, false },
+    {C,{ 0.08, 0, 1, 1, &fs[9] }, -1,  MkSet(96),   0,   0, kDrg, false },
+    {C,{ 0.09, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {C,{ 0.15, 0, 0, 0, NULL   }, .15, MkSet(),     0, kBL, kIdl, false },
     // 1-finger long press
-    {{ 0.00, 0, 1, 1, &fs[0] }, -1, MkSet(91),   0,   0, kFTB, false },  // 40
-    {{ 0.02, 0, 1, 1, &fs[0] }, -1, MkSet(91),   0,   0, kFTB, false },
-    {{ 0.04, 0, 1, 1, &fs[0] }, -1, MkSet(91),   0,   0, kFTB, false },
-    {{ 0.06, 0, 1, 1, &fs[0] }, -1, MkSet(91),   0,   0, kIdl, false },
-    {{ 0.07, 0, 0, 0, NULL   }, -1, MkSet(),     0,   0, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] }, -1, MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.02, 0, 1, 1, &fs[0] }, -1, MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.04, 0, 1, 1, &fs[0] }, -1, MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.06, 0, 1, 1, &fs[0] }, -1, MkSet(91),   0,   0, kIdl, false },
+    {C,{ 0.07, 0, 0, 0, NULL   }, -1, MkSet(),     0,   0, kIdl, false },
     // 1-finger tap then long press
-    {{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },  // 45
-    {{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
-    {{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95), kBL,   0, kSTB, false },
-    {{ 0.04, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kSTB, false },
-    {{ 0.06, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kSTB, false },
-    {{ 0.08, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kDrg, false },
-    {{ 0.09, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
-    {{ 0.15, 0, 0, 0, NULL   }, .15, MkSet(),     0, kBL, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95), kBL,   0, kSTB, false },
+    {C,{ 0.04, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kSTB, false },
+    {C,{ 0.06, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kSTB, false },
+    {C,{ 0.08, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   0,   0, kDrg, false },
+    {C,{ 0.09, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {C,{ 0.15, 0, 0, 0, NULL   }, .15, MkSet(),     0, kBL, kIdl, false },
     // 2-finger tap (right click)
-    {{ 0.00, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98), 0, 0, kFTB, false },  // 53
-    {{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),       kBR, kBR, kIdl, false },
-    {{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),         0,   0, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {C,{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),         0,   0, kIdl, false },
+    // 2-finger tap, but one finger is very very light, so left tap
+    {S,{ 0.00, 0, 2, 2, &fs[27] }, -1,  MkSet(97, 98), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),   kBL, kBL, kIdl, false },
     // 2-finger scroll
-    {{ 0.00, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98),  0, 0, kFTB, false },  // 56
-    {{ 0.01, 0, 2, 2, &fs[12] }, -1, MkSet(97, 98),   0,   0, kIdl, false },
-    {{ 0.02, 0, 2, 2, &fs[14] }, -1, MkSet(97, 98),   0,   0, kIdl, false },
-    {{ 0.03, 0, 0, 0, NULL    }, -1, MkSet(),         0,   0, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98),  0, 0, kFTB, false },
+    {C,{ 0.01, 0, 2, 2, &fs[12] }, -1, MkSet(97, 98),   0,   0, kIdl, false },
+    {C,{ 0.02, 0, 2, 2, &fs[14] }, -1, MkSet(97, 98),   0,   0, kIdl, false },
+    {C,{ 0.03, 0, 0, 0, NULL    }, -1, MkSet(),         0,   0, kIdl, false },
     // left tap, right tap
-    {{ 0.00, 0, 1, 1, &fs[0] },  -1,  MkSet(91),     0, 0, kFTB, false },  // 60
-    {{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
-    {{ 0.02, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98), kBL,   0, kSTB, false },
-    {{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),         0, kBL, kTpC, true },
-    {{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),       kBR, kBR, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] },  -1,  MkSet(91),     0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
+    {C,{ 0.02, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98), kBL,   0, kSTB, false },
+    {C,{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),         0, kBL, kTpC, true },
+    {C,{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),       kBR, kBR, kIdl, false },
     // left tap, multi-frame right tap
-    {{ 0.00, 0, 1, 1, &fs[0] },  -1,  MkSet(91),   0,   0, kFTB, false },  // 65
-    {{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),     0,   0, kTpC, true },
-    {{ 0.02, 0, 1, 1, &fs[10] }, -1,  MkSet(97), kBL,   0, kSTB, false },
-    {{ 0.03, 0, 1, 1, &fs[11] }, -1,  MkSet(98),   0,   0, kSTB, false },
-    {{ 0.04, 0, 0, 0, NULL   },  -1,  MkSet(),     0, kBL, kTpC, true },
-    {{ 0.10, 0, 0, 0, NULL    }, .10, MkSet(),   kBR, kBR, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] },  -1,  MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.02, 0, 1, 1, &fs[10] }, -1,  MkSet(97), kBL,   0, kSTB, false },
+    {C,{ 0.03, 0, 1, 1, &fs[11] }, -1,  MkSet(98),   0,   0, kSTB, false },
+    {C,{ 0.04, 0, 0, 0, NULL   },  -1,  MkSet(),     0, kBL, kTpC, true },
+    {C,{ 0.10, 0, 0, 0, NULL    }, .10, MkSet(),   kBR, kBR, kIdl, false },
     // right tap, left tap
-    {{ 0.00, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98),  0, 0, kFTB, false }, // 71
-    {{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
-    {{ 0.02, 0, 1, 1, &fs[0] },  -1,  MkSet(91),       0,   0, kFTB, false },
-    {{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
-    {{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),       kBL, kBL, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98),  0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {C,{ 0.02, 0, 1, 1, &fs[0] },  -1,  MkSet(91),       0,   0, kFTB, false },
+    {C,{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
+    {C,{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),       kBL, kBL, kIdl, false },
     // right double-tap
-    {{ 0.00, 0, 2, 2, &fs[6] },  -1,  MkSet(95, 96),  0, 0, kFTB, false }, // 76
-    {{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
-    {{ 0.02, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98),   0,   0, kFTB, false },
-    {{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
-    {{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),         0,   0, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[6] },  -1,  MkSet(95, 96),  0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {C,{ 0.02, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98),   0,   0, kFTB, false },
+    {C,{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {C,{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),         0,   0, kIdl, false },
     // left tap, right-drag
-    {{ 0.00, 0, 1, 1, &fs[0] },  -1, MkSet(91),       0, 0, kFTB, false }, // 81
-    {{ 0.01, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kTpC, true },
-    {{ 0.02, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98), kBL,   0, kSTB, false },
-    {{ 0.03, 0, 2, 2, &fs[12] }, -1, MkSet(97, 98),   0, kBL, kIdl, false },
-    {{ 0.04, 0, 2, 2, &fs[14] }, -1, MkSet(97, 98),   0,   0, kIdl, false },
-    {{ 0.05, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] },  -1, MkSet(91),       0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kTpC, true },
+    {C,{ 0.02, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98), kBL,   0, kSTB, false },
+    {C,{ 0.03, 0, 2, 2, &fs[12] }, -1, MkSet(97, 98),   0, kBL, kIdl, false },
+    {C,{ 0.04, 0, 2, 2, &fs[14] }, -1, MkSet(97, 98),   0,   0, kIdl, false },
+    {C,{ 0.05, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kIdl, false },
     // left tap, right multi-frame join + drag
-    {{ 0.00, 0, 1, 1, &fs[0] },  -1, MkSet(91),       0, 0, kFTB, false }, // 87
-    {{ 0.01, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kTpC, true },
-    {{ 0.02, 0, 1, 1, &fs[10] }, -1, MkSet(97),     kBL,   0, kSTB, false },
-    {{ 0.03, 0, 1, 1, &fs[12] }, -1, MkSet(97),       0,   0, kDrg, false },
-    {{ 0.04, 0, 2, 2, &fs[14] }, -1, MkSet(97, 98),   0, kBL, kIdl, false },
-    {{ 0.05, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] },  -1, MkSet(91),       0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kTpC, true },
+    {C,{ 0.02, 0, 1, 1, &fs[10] }, -1, MkSet(97),     kBL,   0, kSTB, false },
+    {C,{ 0.03, 0, 1, 1, &fs[12] }, -1, MkSet(97),       0,   0, kDrg, false },
+    {C,{ 0.04, 0, 2, 2, &fs[14] }, -1, MkSet(97, 98),   0, kBL, kIdl, false },
+    {C,{ 0.05, 0, 0, 0, NULL   },  -1, MkSet(),         0,   0, kIdl, false },
     // right tap, left-drag
-    {{ 0.00, 0, 2, 2, &fs[14] }, -1, MkSet(97, 98),  0, 0, kFTB, false },  // 93
-    {{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),       kBR, kBR, kIdl, false },
-    {{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95),       0,   0, kFTB, false },
-    {{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),       0,   0, kIdl, false },
-    {{ 0.04, 0, 1, 1, &fs[6] }, -1,  MkSet(95),       0,   0, kIdl, false },
-    {{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),         0,   0, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[14] }, -1, MkSet(97, 98),  0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95),       0,   0, kFTB, false },
+    {C,{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),       0,   0, kIdl, false },
+    {C,{ 0.04, 0, 1, 1, &fs[6] }, -1,  MkSet(95),       0,   0, kIdl, false },
+    {C,{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),         0,   0, kIdl, false },
     // right tap, right-drag
-    {{ 0.00, 0, 2, 2, &fs[6] },  -1,  MkSet(95, 96),  0, 0, kFTB, false }, // 99
-    {{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
-    {{ 0.02, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98),   0,   0, kFTB, false },
-    {{ 0.03, 0, 2, 2, &fs[12] }, -1,  MkSet(97, 98),   0,   0, kIdl, false },
-    {{ 0.04, 0, 2, 2, &fs[14] }, -1,  MkSet(97, 98),   0,   0, kIdl, false },
-    {{ 0.05, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[6] },  -1,  MkSet(95, 96),  0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {C,{ 0.02, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98),   0,   0, kFTB, false },
+    {C,{ 0.03, 0, 2, 2, &fs[12] }, -1,  MkSet(97, 98),   0,   0, kIdl, false },
+    {C,{ 0.04, 0, 2, 2, &fs[14] }, -1,  MkSet(97, 98),   0,   0, kIdl, false },
+    {C,{ 0.05, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kIdl, false },
     // drag then right-tap
-    {{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),     0,  0, kFTB, false }, // 105
-    {{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),       0,   0, kTpC, true },
-    {{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   kBL,   0, kSTB, false },
-    {{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),     0,   0, kDrg, false },
-    {{ 0.04, 0, 1, 1, &fs[6] }, -1,  MkSet(95),     0,   0, kDrg, false },
-    {{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),       0,   0, kDRl, true },
-    {{ 0.06, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98), 0,   0, kDRt, false },
-    {{ 0.07, 0, 0, 0, NULL   }, -1,  MkSet(),       0, kBL, kTpC, true },
-    {{ 0.13, 0, 0, 0, NULL   }, .13, MkSet(),     kBR, kBR, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),     0,  0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),       0,   0, kTpC, true },
+    {C,{ 0.02, 0, 1, 1, &fs[4] }, -1,  MkSet(95),   kBL,   0, kSTB, false },
+    {C,{ 0.03, 0, 1, 1, &fs[5] }, -1,  MkSet(95),     0,   0, kDrg, false },
+    {C,{ 0.04, 0, 1, 1, &fs[6] }, -1,  MkSet(95),     0,   0, kDrg, false },
+    {C,{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),       0,   0, kDRl, true },
+    {C,{ 0.06, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98), 0,   0, kDRt, false },
+    {C,{ 0.07, 0, 0, 0, NULL   }, -1,  MkSet(),       0, kBL, kTpC, true },
+    {C,{ 0.13, 0, 0, 0, NULL   }, .13, MkSet(),     kBR, kBR, kIdl, false },
     // slow double tap
-    {{ 0.00, 0, 1, 1, &fs[0] }, -1, MkSet(91),   0,   0, kFTB, false },  // 114
-    {{ 0.10, 0, 0, 0, NULL   }, -1, MkSet(),     0,   0, kTpC, true },
-    {{ 0.12, 0, 1, 1, &fs[2] }, -1, MkSet(93), kBL,   0, kSTB, false },
-    {{ 0.22, 0, 0, 0, NULL   }, -1, MkSet(),     0, kBL, kTpC, true },
-    {{ 0.90, 0, 0, 0, NULL   }, .9, MkSet(),   kBL, kBL, kIdl, false },
+    {D,{ 0.00, 0, 1, 1, &fs[0] }, -1, MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.10, 0, 0, 0, NULL   }, -1, MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.12, 0, 1, 1, &fs[2] }, -1, MkSet(93), kBL,   0, kSTB, false },
+    {C,{ 0.22, 0, 0, 0, NULL   }, -1, MkSet(),     0, kBL, kTpC, true },
+    {C,{ 0.90, 0, 0, 0, NULL   }, .9, MkSet(),   kBL, kBL, kIdl, false },
     // right tap, very close fingers - shouldn't tap
-    {{ 0.00, 0, 2, 2, &fs[19] }, -1, MkSet(95, 96), 0, 0, kIdl, false },  // 119
-    {{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),       0, 0, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[19] }, -1, MkSet(95, 96), 0, 0, kIdl, false },
+    {C,{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),       0, 0, kIdl, false },
     // very light left tap - shouldn't tap
-    {{ 0.00, 0, 1, 1, &fs[21] }, -1, MkSet(95), 0, 0, kFTB, false },  // 121
-    {{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),   0, 0, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[21] }, -1, MkSet(95), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),   0, 0, kIdl, false },
     // very light right tap - shouldn't tap
-    {{ 0.00, 0, 2, 2, &fs[21] }, -1, MkSet(95, 96), 0, 0, kFTB, false },  // 123
-    {{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),       0, 0, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[21] }, -1, MkSet(95, 96), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),       0, 0, kIdl, false },
     // half very light right tap - should tap
-    {{ 0.00, 0, 2, 2, &fs[20] }, -1, MkSet(95, 96), 0, 0, kFTB, false },  // 125
-    {{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),   kBR, kBR, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[20] }, -1, MkSet(95, 96), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL    }, -1, MkSet(),   kBR, kBR, kIdl, false },
     // Right tap, w/ fingers too far apart - shouldn't right tap
-    {{ 0.00, 0, 2, 2, &fs[23] }, -1,  MkSet(95, 96), 0, 0, kFTB, false }, // 127
-    {{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),       0, 0, kTpC, true },
-    {{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),   kBL, kBL, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[23] }, -1,  MkSet(95, 96), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),       0, 0, kTpC, true },
+    {C,{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),   kBL, kBL, kIdl, false },
     // Two fingers merge into one, then leave - shouldn't tap
-    {{ 0.00, 0, 2, 2, &fs[6] },  -1, MkSet(95, 96), 0, 0, kFTB, false },  // 130
-    {{ 1.00, 0, 2, 2, &fs[6] },  -1, MkSet(95, 96), 0, 0, kIdl, false },
-    {{ 1.01, 0, 1, 1, &fs[17] }, -1, MkSet(91),     0, 0, kIdl, false },
-    {{ 1.02, 0, 0, 0, NULL },    -1, MkSet(),       0, 0, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[6] },  -1, MkSet(95, 96), 0, 0, kFTB, false },
+    {C,{ 1.00, 0, 2, 2, &fs[6] },  -1, MkSet(95, 96), 0, 0, kIdl, false },
+    {C,{ 1.01, 0, 1, 1, &fs[17] }, -1, MkSet(91),     0, 0, kIdl, false },
+    {C,{ 1.02, 0, 0, 0, NULL },    -1, MkSet(),       0, 0, kIdl, false },
     // Two fingers seem to tap, the bigger of which is the only one that
     // meets the minimum pressure threshold. Then that higher pressure finger
     // is no longer gesturing (e.g., it gets classified as a thumb).
     // There should be no tap b/c the one remaining finger didn't meet the
     // minimum pressure threshold.
-    {{ 0.00, 0, 2, 2, &fs[25] }, -1, MkSet(95, 96), 0, 0, kFTB, false },  // 134
-    {{ 0.01, 0, 2, 2, &fs[25] }, -1, MkSet(96),     0, 0, kFTB, false },
-    {{ 0.02, 0, 0, 0, NULL },    -1, MkSet(),       0, 0, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[25] }, -1, MkSet(95, 96), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 2, 2, &fs[25] }, -1, MkSet(96),     0, 0, kFTB, false },
+    {C,{ 0.02, 0, 0, 0, NULL },    -1, MkSet(),       0, 0, kIdl, false },
     // 2f click - shouldn't tap
-    {{ 0.00, 0, 2, 2, &fs[0] }, -1, MkSet(91, 92), 0, 0, kFTB, false },  // 137
-    {{ 0.01, 1, 2, 2, &fs[0] }, -1, MkSet(91, 92), 0, 0, kIdl, false },
-    {{ 0.02, 0, 2, 2, &fs[0] }, -1, MkSet(91, 92), 0, 0, kIdl, false },
-    {{ 0.03, 0, 0, 0, NULL   }, -1, MkSet(),       0, 0, kIdl, false },
+    {S,{ 0.00, 0, 2, 2, &fs[0] }, -1, MkSet(91, 92), 0, 0, kFTB, false },
+    {C,{ 0.01, 1, 2, 2, &fs[0] }, -1, MkSet(91, 92), 0, 0, kIdl, false },
+    {C,{ 0.02, 0, 2, 2, &fs[0] }, -1, MkSet(91, 92), 0, 0, kIdl, false },
+    {C,{ 0.03, 0, 0, 0, NULL   }, -1, MkSet(),       0, 0, kIdl, false },
     // T5R2 tap tests:
     // (1f and 2f tap w/o resting thumb and 1f w/ resting thumb are the same as
     // above)
     // 2f tap w/ resting thumb
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 141
-    {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
-    {{ 1.01, 0, 1, 3, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
-    {{ 1.02, 0, 2, 3, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
-    {{ 1.03, 0, 0, 2, NULL    }, -1, MkSet(),     0,   0, kFTB, false },
-    {{ 1.04, 0, 1, 1, &fs[18] }, -1, MkSet(71), kBR, kBR, kIdl, false },
+    {T,{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {C,{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
+    {C,{ 1.01, 0, 1, 3, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {C,{ 1.02, 0, 2, 3, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
+    {C,{ 1.03, 0, 0, 2, NULL    }, -1, MkSet(),     0,   0, kFTB, false },
+    {C,{ 1.04, 0, 1, 1, &fs[18] }, -1, MkSet(71), kBR, kBR, kIdl, false },
     // 3f tap w/o resting thumb
-    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 147
-    {{ 0.01, 0, 0, 1, NULL   }, -1,  MkSet(),       0, 0, kFTB, false },
-    {{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
+    {S,{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 1, NULL   }, -1,  MkSet(),       0, 0, kFTB, false },
+    {C,{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
     // 3f tap w/o resting thumb (slightly different)
-    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 150
-    {{ 0.01, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
-    {{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
+    {S,{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
+    {C,{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
     // 3f tap w/ resting thumb
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 153
-    {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
-    {{ 1.01, 0, 1, 4, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
-    {{ 1.02, 0, 2, 4, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
-    {{ 1.03, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {C,{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
+    {C,{ 1.01, 0, 1, 4, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {C,{ 1.02, 0, 2, 4, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
+    {C,{ 1.03, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
     // 4f tap w/o resting thumb
-    {{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },  // 158
-    {{ 0.01, 0, 1, 4, &fs[0] }, -1,  MkSet(91),     0, 0, kFTB, false },
-    {{ 0.02, 0, 2, 4, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
-    {{ 0.03, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
+    {S,{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 1, 4, &fs[0] }, -1,  MkSet(91),     0, 0, kFTB, false },
+    {C,{ 0.02, 0, 2, 4, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
+    {C,{ 0.03, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
     // 4f tap w/ resting thumb
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 162
-    {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
-    {{ 1.01, 0, 1, 5, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
-    {{ 1.02, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {C,{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
+    {C,{ 1.01, 0, 1, 5, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {C,{ 1.02, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
     // 4f tap w/ resting thumb (slightly different)
-    {{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },  // 166
-    {{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
-    {{ 1.01, 0, 1, 5, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
-    {{ 1.02, 0, 2, 5, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
-    {{ 1.03, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
+    {S,{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {C,{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
+    {C,{ 1.01, 0, 1, 5, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
+    {C,{ 1.02, 0, 2, 5, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
+    {C,{ 1.03, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
     // 3f letting go, shouldn't tap at all
-    {{ 0.00, 0, 2, 3, &fs[0] },  -1, MkSet(91, 92), 0, 0, kFTB, false },  // 171
-    {{ 1.01, 0, 2, 3, &fs[0] },  -1, MkSet(91, 92), 0, 0, kIdl, false },
-    {{ 1.02, 0, 0, 2, NULL   },  -1, MkSet(),       0, 0, kIdl, false },
-    {{ 1.03, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98), 0, 0, kIdl, false },
-    {{ 1.04, 0, 0, 0, NULL   },  -1, MkSet(),       0, 0, kIdl, false },
+    {S,{ 0.00, 0, 2, 3, &fs[0] },  -1, MkSet(91, 92), 0, 0, kFTB, false },
+    {C,{ 1.01, 0, 2, 3, &fs[0] },  -1, MkSet(91, 92), 0, 0, kIdl, false },
+    {C,{ 1.02, 0, 0, 2, NULL   },  -1, MkSet(),       0, 0, kIdl, false },
+    {C,{ 1.03, 0, 2, 2, &fs[10] }, -1, MkSet(97, 98), 0, 0, kIdl, false },
+    {C,{ 1.04, 0, 0, 0, NULL   },  -1, MkSet(),       0, 0, kIdl, false },
   };
-  const size_t kSlowDoubleTapStartIndex = 114;
-  const size_t kT5R2TestFirstIndex = 141;
+  const size_t kT5R2TestFirstIndex = NonT5R2States(hwsgs, arraysize(hwsgs));
 
   // Algorithmically add a resting thumb to a copy of all above cases
-  HWStateGs hwsgs_full[arraysize(hwsgs) + kT5R2TestFirstIndex];
+  const size_t hwsgs_full_size = arraysize(hwsgs) + kT5R2TestFirstIndex;
+  HWStateGs hwsgs_full[hwsgs_full_size];
   std::copy(hwsgs, hwsgs + arraysize(hwsgs), hwsgs_full);
   std::copy(hwsgs, hwsgs + kT5R2TestFirstIndex, hwsgs_full + arraysize(hwsgs));
 
@@ -1515,7 +1541,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     hs->touch_cnt++;
   }
 
-  for (size_t i = 0; i < arraysize(hwsgs_full); ++i) {
+  for (size_t i = 0; i < hwsgs_full_size; ++i) {
     string desc;
     if (i < arraysize(hwsgs))
       desc = StringPrintf("State %zu", i);
@@ -1547,7 +1573,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       ii->tap_move_dist_.val_ = 1.0;
       ii->tap_timeout_.val_ = ii->inter_tap_timeout_.val_ = 0.05;
       // For the slow tap case, we need to make tap_timeout_ bigger
-      if (i % arraysize(hwsgs) == kSlowDoubleTapStartIndex)
+      if (hwsgs_full[i].flag == D)
         ii->tap_timeout_.val_ = 0.11;
       EXPECT_EQ(kIdl, ii->tap_to_click_state_);
     } else {
@@ -1672,17 +1698,17 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
 
   HWStateGs hwsgs_list[] = {
     // 1-finger tap, move, release, move again (drag lock)
-    {{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
-    {{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
-    {{ 0.02, 0, 1, 1, &fs[1] }, -1,  MkSet(92), kBL,   0, kSTB, false },
-    {{ 0.03, 0, 1, 1, &fs[2] }, -1,  MkSet(92),   0,   0, kDrg, false },
-    {{ 0.04, 0, 1, 1, &fs[3] }, -1,  MkSet(92),   0,   0, kDrg, false },
-    {{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
-    {{ 0.06, 0, 1, 1, &fs[4] }, -1,  MkSet(93),   0,   0, kDRt, false },
-    {{ 0.07, 0, 1, 1, &fs[5] }, -1,  MkSet(93),   0,   0, kDrg, false },
-    {{ 0.08, 0, 1, 1, &fs[6] }, -1,  MkSet(93),   0,   0, kDrg, false },
-    {{ 0.09, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
-    {{ 0.15, 0, 0, 0, NULL   }, .15, MkSet(),     0, kBL, kIdl, false }
+    {S,{ 0.00, 0, 1, 1, &fs[0] }, -1,  MkSet(91),   0,   0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kTpC, true },
+    {C,{ 0.02, 0, 1, 1, &fs[1] }, -1,  MkSet(92), kBL,   0, kSTB, false },
+    {C,{ 0.03, 0, 1, 1, &fs[2] }, -1,  MkSet(92),   0,   0, kDrg, false },
+    {C,{ 0.04, 0, 1, 1, &fs[3] }, -1,  MkSet(92),   0,   0, kDrg, false },
+    {C,{ 0.05, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {C,{ 0.06, 0, 1, 1, &fs[4] }, -1,  MkSet(93),   0,   0, kDRt, false },
+    {C,{ 0.07, 0, 1, 1, &fs[5] }, -1,  MkSet(93),   0,   0, kDrg, false },
+    {C,{ 0.08, 0, 1, 1, &fs[6] }, -1,  MkSet(93),   0,   0, kDrg, false },
+    {C,{ 0.09, 0, 0, 0, NULL   }, -1,  MkSet(),     0,   0, kDRl, true },
+    {C,{ 0.15, 0, 0, 0, NULL   }, .15, MkSet(),     0, kBL, kIdl, false }
   };
 
   for (int iter = 0; iter < 3; ++iter) {
