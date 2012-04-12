@@ -46,7 +46,9 @@ enum {
 struct tablet_shell {
 	struct wl_resource resource;
 
-	struct weston_shell shell;
+	struct wl_listener lock_listener;
+	struct wl_listener unlock_listener;
+	struct wl_listener destroy_listener;
 
 	struct weston_compositor *compositor;
 	struct weston_process process;
@@ -81,6 +83,21 @@ struct tablet_client {
 };
 
 static void
+tablet_shell_destroy(struct wl_listener *listener, void *data);
+
+static struct tablet_shell *
+get_shell(struct weston_compositor *compositor)
+{
+	struct wl_listener *l;
+
+	l = wl_signal_get(&compositor->destroy_signal, tablet_shell_destroy);
+	if (l)
+		return container_of(l, struct tablet_shell, destroy_listener);
+
+	return NULL;
+}
+
+static void
 tablet_shell_sigchld(struct weston_process *process, int status)
 {
 	struct tablet_shell *shell =
@@ -109,9 +126,7 @@ static void
 tablet_shell_surface_configure(struct weston_surface *surface,
 			       int32_t sx, int32_t sy)
 {
-	struct tablet_shell *shell =
-		container_of(surface->compositor->shell,
-			     struct tablet_shell, shell);
+	struct tablet_shell *shell = get_shell(surface->compositor);
 	int32_t width, height;
 
 	if (weston_surface_is_mapped(surface))
@@ -387,10 +402,10 @@ toggle_switcher(struct tablet_shell *shell)
 }
 
 static void
-tablet_shell_lock(struct weston_shell *base)
+tablet_shell_lock(struct wl_listener *listener, void *data)
 {
 	struct tablet_shell *shell =
-		container_of(base, struct tablet_shell, shell);
+		container_of(listener, struct tablet_shell, lock_listener);
 
 	if (shell->state == STATE_LOCKED)
 		return;
@@ -402,10 +417,10 @@ tablet_shell_lock(struct weston_shell *base)
 }
 
 static void
-tablet_shell_unlock(struct weston_shell *base)
+tablet_shell_unlock(struct wl_listener *listener, void *data)
 {
 	struct tablet_shell *shell =
-		container_of(base, struct tablet_shell, shell);
+		container_of(listener, struct tablet_shell, lock_listener);
 
 	weston_compositor_wake(shell->compositor);
 }
@@ -505,10 +520,10 @@ bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 }
 
 static void
-tablet_shell_destroy(struct weston_shell *base)
+tablet_shell_destroy(struct wl_listener *listener, void *data)
 {
 	struct tablet_shell *shell =
-		container_of(base, struct tablet_shell, shell);
+		container_of(listener, struct tablet_shell, destroy_listener);
 
 	if (shell->home_surface)
 		shell->home_surface->configure = NULL;
@@ -536,6 +551,13 @@ shell_init(struct weston_compositor *compositor)
 	memset(shell, 0, sizeof *shell);
 	shell->compositor = compositor;
 
+	shell->destroy_listener.notify = tablet_shell_destroy;
+	wl_signal_add(&compositor->destroy_signal, &shell->destroy_listener);
+	shell->lock_listener.notify = tablet_shell_lock;
+	wl_signal_add(&compositor->lock_signal, &shell->lock_listener);
+	shell->unlock_listener.notify = tablet_shell_unlock;
+	wl_signal_add(&compositor->unlock_signal, &shell->unlock_listener);
+
 	/* FIXME: This will make the object available to all clients. */
 	wl_display_add_global(compositor->wl_display,
 			      &tablet_shell_interface, shell, bind_shell);
@@ -554,12 +576,6 @@ shell_init(struct weston_compositor *compositor)
 				    MODIFIER_SUPER, home_key_binding, shell);
 	weston_compositor_add_binding(compositor, KEY_COMPOSE, 0, 0, 0,
 				    menu_key_binding, shell);
-
-	compositor->shell = &shell->shell;
-
-	shell->shell.lock = tablet_shell_lock;
-	shell->shell.unlock = tablet_shell_unlock;
-	shell->shell.destroy = tablet_shell_destroy;
 
 	weston_layer_init(&shell->homescreen_layer,
 			  &compositor->cursor_layer.link);

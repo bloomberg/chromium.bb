@@ -40,7 +40,10 @@ struct shell_surface;
 
 struct wl_shell {
 	struct weston_compositor *compositor;
-	struct weston_shell shell;
+
+	struct wl_listener lock_listener;
+	struct wl_listener unlock_listener;
+	struct wl_listener destroy_listener;
 
 	struct weston_layer fullscreen_layer;
 	struct weston_layer panel_layer;
@@ -98,6 +101,7 @@ struct shell_surface {
 	struct weston_surface *surface;
 	struct wl_listener surface_destroy_listener;
 	struct shell_surface *parent;
+	struct wl_shell *shell;
 
 	enum shell_surface_type type;
 	int32_t saved_x, saved_y;
@@ -514,10 +518,7 @@ shell_surface_set_transient(struct wl_client *client,
 static struct wl_shell *
 shell_surface_get_shell(struct shell_surface *shsurf)
 {
-	struct weston_surface *es = shsurf->surface;
-	struct weston_shell *shell = es->compositor->shell;
-
-	return (struct wl_shell *)container_of(shell, struct wl_shell, shell);
+	return shsurf->shell;
 }
 
 static int
@@ -916,6 +917,7 @@ shell_get_shell_surface(struct wl_client *client,
 		(void (**)(void)) &shell_surface_implementation;
 	shsurf->resource.data = shsurf;
 
+	shsurf->shell = resource->data;
 	shsurf->saved_position_valid = false;
 	shsurf->surface = surface;
 	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
@@ -1469,17 +1471,12 @@ rotate_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
-activate(struct weston_shell *base, struct weston_surface *es,
+activate(struct wl_shell *shell, struct weston_surface *es,
 	 struct weston_input_device *device)
 {
-	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
-	struct weston_compositor *compositor = shell->compositor;
 	struct weston_surface *surf, *prev;
 
 	weston_surface_activate(es, device);
-
-	if (compositor->wxs)
-		weston_xserver_surface_activate(es);
 
 	switch (get_shell_surface_type(es)) {
 	case SHELL_SURFACE_BACKGROUND:
@@ -1537,7 +1534,7 @@ click_to_activate_binding(struct wl_input_device *device,
 			  uint32_t button, uint32_t axis, int32_t state, void *data)
 {
 	struct weston_input_device *wd = (struct weston_input_device *) device;
-	struct weston_compositor *compositor = data;
+	struct wl_shell *shell = data;
 	struct weston_surface *focus;
 	struct weston_surface *upper;
 
@@ -1549,13 +1546,14 @@ click_to_activate_binding(struct wl_input_device *device,
 		focus = upper;
 
 	if (state && device->pointer_grab == &device->default_pointer_grab)
-		activate(compositor->shell, focus, wd);
+		activate(shell, focus, wd);
 }
 
 static void
-lock(struct weston_shell *base)
+lock(struct wl_listener *listener, void *data)
 {
-	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
+	struct wl_shell *shell =
+		container_of(listener, struct wl_shell, lock_listener);
 	struct weston_input_device *device;
 	struct shell_surface *shsurf;
 	struct weston_output *output;
@@ -1606,9 +1604,10 @@ lock(struct weston_shell *base)
 }
 
 static void
-unlock(struct weston_shell *base)
+unlock(struct wl_listener *listener, void *data)
 {
-	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
+	struct wl_shell *shell =
+		container_of(listener, struct wl_shell, unlock_listener);
 
 	if (!shell->locked || shell->lock_surface) {
 		weston_compositor_wake(shell->compositor);
@@ -1639,10 +1638,9 @@ center_on_output(struct weston_surface *surface, struct weston_output *output)
 }
 
 static void
-map(struct weston_shell *base, struct weston_surface *surface,
+map(struct wl_shell *shell, struct weston_surface *surface,
     int32_t width, int32_t height, int32_t sx, int32_t sy)
 {
-	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct weston_compositor *compositor = shell->compositor;
 	struct shell_surface *shsurf;
 	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
@@ -1743,7 +1741,7 @@ map(struct weston_shell *base, struct weston_surface *surface,
 	case SHELL_SURFACE_FULLSCREEN:
 	case SHELL_SURFACE_MAXIMIZED:
 		if (!shell->locked)
-			activate(base, surface,
+			activate(shell, surface,
 				 (struct weston_input_device *)
 				 compositor->input_device);
 		break;
@@ -1756,10 +1754,9 @@ map(struct weston_shell *base, struct weston_surface *surface,
 }
 
 static void
-configure(struct weston_shell *base, struct weston_surface *surface,
+configure(struct wl_shell *shell, struct weston_surface *surface,
 	  GLfloat x, GLfloat y, int32_t width, int32_t height)
 {
-	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
 	enum shell_surface_type prev_surface_type = SHELL_SURFACE_NONE;
 	struct shell_surface *shsurf;
@@ -1809,8 +1806,8 @@ configure(struct weston_shell *base, struct weston_surface *surface,
 static void
 shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 {
-	struct weston_shell *shell = es->compositor->shell;
 	struct shell_surface *shsurf = get_shell_surface(es);
+	struct wl_shell *shell = shsurf->shell;
 
 	if (!weston_surface_is_mapped(es)) {
 		map(shell, es, es->buffer->width, es->buffer->height, sx, sy);
@@ -1974,7 +1971,7 @@ bind_screensaver(struct wl_client *client,
 }
 
 struct switcher {
-	struct weston_compositor *compositor;
+	struct wl_shell *shell;
 	struct weston_surface *current;
 	struct wl_listener listener;
 	struct wl_keyboard_grab grab;
@@ -1983,7 +1980,7 @@ struct switcher {
 static void
 switcher_next(struct switcher *switcher)
 {
-	struct weston_compositor *compositor = switcher->compositor;
+	struct weston_compositor *compositor = switcher->shell->compositor;
 	struct weston_surface *surface;
 	struct weston_surface *first = NULL, *prev = NULL, *next = NULL;
 	struct shell_surface *shsurf;
@@ -2043,7 +2040,7 @@ switcher_handle_surface_destroy(struct wl_listener *listener, void *data)
 static void
 switcher_destroy(struct switcher *switcher, uint32_t time)
 {
-	struct weston_compositor *compositor = switcher->compositor;
+	struct weston_compositor *compositor = switcher->shell->compositor;
 	struct weston_surface *surface;
 	struct weston_input_device *device =
 		(struct weston_input_device *) switcher->grab.input_device;
@@ -2054,7 +2051,7 @@ switcher_destroy(struct switcher *switcher, uint32_t time)
 	}
 
 	if (switcher->current)
-		activate(compositor->shell, switcher->current, device);
+		activate(switcher->shell, switcher->current, device);
 	wl_list_remove(&switcher->listener.link);
 	wl_input_device_end_keyboard_grab(&device->input_device);
 	free(switcher);
@@ -2084,11 +2081,11 @@ switcher_binding(struct wl_input_device *device, uint32_t time,
 		 uint32_t key, uint32_t button, uint32_t axis,
 		 int32_t state, void *data)
 {
-	struct weston_compositor *compositor = data;
+	struct wl_shell *shell = data;
 	struct switcher *switcher;
 
 	switcher = malloc(sizeof *switcher);
-	switcher->compositor = compositor;
+	switcher->shell = shell;
 	switcher->current = NULL;
 	switcher->listener.notify = switcher_handle_surface_destroy;
 	wl_list_init(&switcher->listener.link);
@@ -2136,9 +2133,8 @@ static void
 debug_repaint_binding(struct wl_input_device *device, uint32_t time,
 		      uint32_t key, uint32_t button, uint32_t axis, int32_t state, void *data)
 {
-	struct weston_compositor *compositor = data;
-	struct wl_shell *shell =
-		container_of(compositor->shell, struct wl_shell, shell);
+	struct wl_shell *shell = data;
+	struct weston_compositor *compositor = shell->compositor;
 	struct weston_surface *surface;
 
 	if (shell->debug_repaint_surface) {
@@ -2168,9 +2164,10 @@ debug_repaint_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
-shell_destroy(struct weston_shell *base)
+shell_destroy(struct wl_listener *listener, void *data)
 {
-	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
+	struct wl_shell *shell =
+		container_of(listener, struct wl_shell, destroy_listener);
 
 	if (shell->child.client)
 		wl_client_destroy(shell->child.client);
@@ -2193,9 +2190,13 @@ shell_init(struct weston_compositor *ec)
 
 	memset(shell, 0, sizeof *shell);
 	shell->compositor = ec;
-	shell->shell.lock = lock;
-	shell->shell.unlock = unlock;
-	shell->shell.destroy = shell_destroy;
+
+	shell->destroy_listener.notify = shell_destroy;
+	wl_signal_add(&ec->destroy_signal, &shell->destroy_listener);
+	shell->lock_listener.notify = lock;
+	wl_signal_add(&ec->lock_signal, &shell->lock_listener);
+	shell->unlock_listener.notify = unlock;
+	wl_signal_add(&ec->unlock_signal, &shell->unlock_listener);
 
 	wl_list_init(&shell->backgrounds);
 	wl_list_init(&shell->panels);
@@ -2235,7 +2236,7 @@ shell_init(struct weston_compositor *ec)
 					MODIFIER_CTRL | MODIFIER_ALT,
 					terminate_binding, ec);
 	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, 0,
-					click_to_activate_binding, ec);
+					click_to_activate_binding, shell);
 	weston_compositor_add_binding(ec, 0, 0, WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL,
 					MODIFIER_SUPER | MODIFIER_ALT,
 					surface_opacity_binding, NULL);
@@ -2245,7 +2246,7 @@ shell_init(struct weston_compositor *ec)
 					MODIFIER_SUPER | MODIFIER_ALT,
 					rotate_binding, NULL);
 	weston_compositor_add_binding(ec, KEY_TAB, 0, 0, MODIFIER_SUPER,
-					switcher_binding, ec);
+					switcher_binding, shell);
 
 	/* brightness */
 	weston_compositor_add_binding(ec, KEY_F9, 0, 0, MODIFIER_CTRL,
@@ -2258,9 +2259,7 @@ shell_init(struct weston_compositor *ec)
 					backlight_binding, ec);
 
 	weston_compositor_add_binding(ec, KEY_SPACE, 0, 0, MODIFIER_SUPER,
-					debug_repaint_binding, ec);
-
-	ec->shell = &shell->shell;
+					debug_repaint_binding, shell);
 
 	return 0;
 }

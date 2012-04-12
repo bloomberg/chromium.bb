@@ -59,6 +59,8 @@ struct weston_xserver {
 	struct wl_client *client;
 	struct weston_compositor *compositor;
 	struct weston_wm *wm;
+	struct wl_listener activate_listener;
+	struct wl_listener destroy_listener;
 };
 
 struct weston_wm {
@@ -555,11 +557,14 @@ weston_wm_activate(struct weston_wm *wm,
 			     XCB_INPUT_FOCUS_POINTER_ROOT, window->id, time);
 }
 
-WL_EXPORT void
-weston_xserver_surface_activate(struct weston_surface *surface)
+static void
+weston_xserver_surface_activate(struct wl_listener *listener, void *data)
 {
+	struct weston_surface *surface = data;
 	struct weston_wm_window *window = get_wm_window(surface);
-	struct weston_xserver *wxs = surface->compositor->wxs;
+	struct weston_xserver *wxs =
+		container_of(listener,
+			     struct weston_xserver, activate_listener);
 
 	if (window)
 		weston_wm_activate(wxs->wm, window, XCB_TIME_CURRENT_TIME);
@@ -1681,6 +1686,21 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 	return 0;
 }
 
+static void
+weston_xserver_destroy(struct wl_listener *l, void *data)
+{
+	struct weston_xserver *wxs =
+		container_of(l, struct weston_xserver, destroy_listener);
+
+	if (!wxs)
+		return;
+
+	if (wxs->loop)
+		weston_xserver_shutdown(wxs);
+
+	free(wxs);
+}
+
 int
 weston_xserver_init(struct weston_compositor *compositor)
 {
@@ -1741,21 +1761,12 @@ weston_xserver_init(struct weston_compositor *compositor)
 
 	wl_display_add_global(display, &xserver_interface, mxs, bind_xserver);
 
-	compositor->wxs = mxs;
+	mxs->destroy_listener.notify = weston_xserver_destroy;
+	wl_signal_add(&compositor->destroy_signal, &mxs->destroy_listener);
+
+
+	mxs->activate_listener.notify = weston_xserver_surface_activate;
+	wl_signal_add(&compositor->activate_signal, &mxs->activate_listener);
 
 	return 0;
-}
-
-void
-weston_xserver_destroy(struct weston_compositor *compositor)
-{
-	struct weston_xserver *wxs = compositor->wxs;
-
-	if (!wxs)
-		return;
-
-	if (wxs->loop)
-		weston_xserver_shutdown(wxs);
-
-	free(wxs);
 }

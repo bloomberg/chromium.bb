@@ -229,7 +229,8 @@ weston_surface_create(struct weston_compositor *compositor)
 	pixman_region32_init(&surface->transform.opaque);
 	wl_list_init(&surface->frame_callback_list);
 
-	surface->buffer_destroy_listener.notify = surface_handle_buffer_destroy;
+	surface->buffer_destroy_listener.notify =
+		surface_handle_buffer_destroy;
 
 	wl_list_init(&surface->geometry.transformation_list);
 	wl_list_insert(&surface->geometry.transformation_list,
@@ -908,7 +909,7 @@ fade_frame(struct weston_animation *animation,
 			compositor->fade.surface = NULL;
 		} else if (compositor->fade.spring.current > 0.999) {
 			compositor->state = WESTON_COMPOSITOR_SLEEPING;
-			compositor->shell->lock(compositor->shell);
+			wl_signal_emit(&compositor->lock_signal, compositor);
 		}
 	}
 }
@@ -1405,7 +1406,7 @@ weston_compositor_activity(struct weston_compositor *compositor)
 		weston_compositor_wake(compositor);
 	} else {
 		weston_compositor_dpms_on(compositor);
-		compositor->shell->unlock(compositor->shell);
+		wl_signal_emit(&compositor->unlock_signal, compositor);
 	}
 }
 
@@ -1513,9 +1514,13 @@ WL_EXPORT void
 weston_surface_activate(struct weston_surface *surface,
 			struct weston_input_device *device)
 {
+	struct weston_compositor *compositor = device->compositor;
+
 	wl_input_device_set_keyboard_focus(&device->input_device,
 					   &surface->surface);
 	wl_data_device_set_keyboard_focus(&device->input_device);
+
+	wl_signal_emit(&compositor->activate_signal, surface);
 }
 
 WL_EXPORT void
@@ -2332,6 +2337,10 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	const char *extensions;
 
 	ec->wl_display = display;
+	wl_signal_init(&ec->destroy_signal);
+	wl_signal_init(&ec->activate_signal);
+	wl_signal_init(&ec->lock_signal);
+	wl_signal_init(&ec->unlock_signal);
 	ec->launcher_sock = weston_environment_get_fd("WESTON_LAUNCHER_SOCK");
 
 	if (!wl_display_add_global(display, &wl_compositor_interface,
@@ -2388,7 +2397,7 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	weston_layer_init(&ec->fade_layer, &ec->layer_list);
 	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
 
-	ec->screenshooter = screenshooter_create(ec);
+	screenshooter_create(ec);
 
 	wl_data_device_manager_init(ec->wl_display);
 
@@ -2420,9 +2429,6 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	wl_event_source_remove(ec->idle_source);
 	if (ec->input_loop_source)
 		wl_event_source_remove(ec->input_loop_source);
-
-	if (ec->screenshooter)
-		screenshooter_destroy(ec->screenshooter);
 
 	/* Destroy all outputs associated with this compositor */
 	wl_list_for_each_safe(output, next, &ec->output_list, link)
@@ -2615,12 +2621,7 @@ int main(int argc, char *argv[])
 	/* prevent further rendering while shutting down */
 	ec->state = WESTON_COMPOSITOR_SLEEPING;
 
-#ifdef BUILD_XSERVER_LAUNCHER
-	if (xserver)
-		weston_xserver_destroy(ec);
-#endif
-
-	ec->shell->destroy(ec->shell);
+	wl_signal_emit(&ec->destroy_signal, ec);
 
 	if (ec->has_bind_display)
 		ec->unbind_display(ec->display, display);

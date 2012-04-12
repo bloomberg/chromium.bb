@@ -152,12 +152,6 @@ struct weston_spring {
 	uint32_t timestamp;
 };
 
-struct weston_shell {
-	void (*lock)(struct weston_shell *shell);
-	void (*unlock)(struct weston_shell *shell);
-	void (*destroy)(struct weston_shell *shell);
-};
-
 enum {
 	WESTON_COMPOSITOR_ACTIVE,
 	WESTON_COMPOSITOR_IDLE,		/* shell->unlock called on activity */
@@ -173,7 +167,7 @@ struct weston_layer {
 
 struct weston_compositor {
 	struct wl_shm *shm;
-	struct weston_xserver *wxs;
+	struct wl_signal destroy_signal;
 
 	EGLDisplay display;
 	EGLContext context;
@@ -184,7 +178,9 @@ struct weston_compositor {
 	struct weston_shader *current_shader;
 	struct wl_display *wl_display;
 
-	struct weston_shell *shell;
+	struct wl_signal activate_signal;
+	struct wl_signal lock_signal;
+	struct wl_signal unlock_signal;
 
 	struct wl_event_loop *input_loop;
 	struct wl_event_source *input_loop_source;
@@ -520,11 +516,8 @@ tty_destroy(struct tty *tty);
 int
 tty_activate_vt(struct tty *tty, int vt);
 
-struct screenshooter *
-screenshooter_create(struct weston_compositor *ec);
-
 void
-screenshooter_destroy(struct screenshooter *s);
+screenshooter_create(struct weston_compositor *ec);
 
 struct weston_process;
 typedef void (*weston_process_cleanup_func_t)(struct weston_process *process,
@@ -547,12 +540,6 @@ weston_watch_process(struct weston_process *process);
 
 int
 weston_xserver_init(struct weston_compositor *compositor);
-void
-weston_xserver_destroy(struct weston_compositor *compositor);
-void
-weston_xserver_surface_activate(struct weston_surface *surface);
-void
-weston_xserver_set_selection(struct weston_input_device *device);
 
 struct weston_zoom;
 typedef	void (*weston_zoom_done_func_t)(struct weston_zoom *zoom, void *data);

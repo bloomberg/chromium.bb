@@ -33,6 +33,7 @@ struct screenshooter {
 	struct wl_global *global;
 	struct wl_client *client;
 	struct weston_process process;
+	struct wl_listener destroy_listener;
 };
 
 static void
@@ -121,14 +122,24 @@ screenshooter_binding(struct wl_input_device *device, uint32_t time,
 					screenshooter_exe, screenshooter_sigchld);
 }
 
-struct screenshooter *
+static void
+screenshooter_destroy(struct wl_listener *listener, void *data)
+{
+	struct screenshooter *shooter =
+		container_of(listener, struct screenshooter, destroy_listener);
+
+	wl_display_remove_global(shooter->ec->wl_display, shooter->global);
+	free(shooter);
+}
+
+void
 screenshooter_create(struct weston_compositor *ec)
 {
 	struct screenshooter *shooter;
 
 	shooter = malloc(sizeof *shooter);
 	if (shooter == NULL)
-		return NULL;
+		return;
 
 	shooter->base.interface = &screenshooter_interface;
 	shooter->base.implementation =
@@ -142,12 +153,6 @@ screenshooter_create(struct weston_compositor *ec)
 	weston_compositor_add_binding(ec, KEY_S, 0, 0, MODIFIER_SUPER,
 					screenshooter_binding, shooter);
 
-	return shooter;
-}
-
-void
-screenshooter_destroy(struct screenshooter *shooter)
-{
-	wl_display_remove_global(shooter->ec->wl_display, shooter->global);
-	free(shooter);
+	shooter->destroy_listener.notify = screenshooter_destroy;
+	wl_signal_add(&ec->destroy_signal, &shooter->destroy_listener);
 }
