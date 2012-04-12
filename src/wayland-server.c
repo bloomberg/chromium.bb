@@ -368,7 +368,7 @@ wl_client_add_resource(struct wl_client *client,
 				 resource->object.id, resource);
 
 	resource->client = client;
-	wl_list_init(&resource->destroy_listener_list);
+	wl_signal_init(&resource->destroy_signal);
 }
 
 WL_EXPORT void
@@ -382,10 +382,8 @@ static void
 destroy_resource(void *element, void *data)
 {
 	struct wl_resource *resource = element;
- 	struct wl_listener *l, *next;
 
-	wl_list_for_each_safe(l, next, &resource->destroy_listener_list, link)
-		l->func(l, resource);
+	wl_signal_emit(&resource->destroy_signal, resource);
 
 	if (resource->destroy)
 		resource->destroy(resource);
@@ -428,8 +426,7 @@ wl_client_destroy(struct wl_client *client)
 }
 
 static void
-lose_pointer_focus(struct wl_listener *listener,
-		   struct wl_resource *resource)
+lose_pointer_focus(struct wl_listener *listener, void *data)
 {
 	struct wl_input_device *device =
 		container_of(listener, struct wl_input_device,
@@ -439,8 +436,7 @@ lose_pointer_focus(struct wl_listener *listener,
 }
 
 static void
-lose_keyboard_focus(struct wl_listener *listener,
-		    struct wl_resource *resource)
+lose_keyboard_focus(struct wl_listener *listener, void *data)
 {
 	struct wl_input_device *device =
 		container_of(listener, struct wl_input_device,
@@ -527,8 +523,8 @@ wl_input_device_init(struct wl_input_device *device)
 	memset(device, 0, sizeof *device);
 	wl_list_init(&device->resource_list);
 	wl_array_init(&device->keys);
-	device->pointer_focus_listener.func = lose_pointer_focus;
-	device->keyboard_focus_listener.func = lose_keyboard_focus;
+	device->pointer_focus_listener.notify = lose_pointer_focus;
+	device->keyboard_focus_listener.notify = lose_keyboard_focus;
 
 	device->default_pointer_grab.interface = &default_pointer_grab_interface;
 	device->default_pointer_grab.input_device = device;
@@ -540,9 +536,8 @@ wl_input_device_init(struct wl_input_device *device)
 
 	wl_list_init(&device->drag_resource_list);
 	device->selection_data_source = NULL;
-	wl_list_init(&device->selection_listener_list);
-
-	wl_list_init(&device->drag_icon_listener_list);
+	wl_signal_init(&device->selection_signal);
+	wl_signal_init(&device->drag_icon_signal);
 
 	device->x = 100;
 	device->y = 100;
@@ -604,8 +599,8 @@ wl_input_device_set_pointer_focus(struct wl_input_device *device,
 		wl_input_device_send_pointer_enter(resource, serial,
 						   &surface->resource,
 						   sx, sy);
-		wl_list_insert(resource->destroy_listener_list.prev,
-			       &device->pointer_focus_listener.link);
+		wl_signal_add(&resource->destroy_signal,
+			      &device->pointer_focus_listener);
 		device->pointer_focus_serial = serial;
 	}
 
@@ -638,8 +633,8 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 		wl_input_device_send_keyboard_enter(resource, serial,
 						    &surface->resource,
 						    &device->keys);
-		wl_list_insert(resource->destroy_listener_list.prev,
-			       &device->keyboard_focus_listener.link);
+		wl_signal_add(&resource->destroy_signal,
+			      &device->keyboard_focus_listener);
 		device->keyboard_focus_serial = serial;
 	}
 
@@ -1036,7 +1031,7 @@ wl_client_add_object(struct wl_client *client,
 	resource->client = client;
 	resource->data = data;
 	resource->destroy = (void *) free;
-	wl_list_init(&resource->destroy_listener_list);
+	wl_signal_init(&resource->destroy_signal);
 
 	if (wl_map_insert_at(&client->objects, resource->object.id, resource) < 0) {
 		wl_resource_post_no_memory(client->display_resource);

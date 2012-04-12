@@ -77,8 +77,7 @@ static const struct wl_data_offer_interface data_offer_interface = {
 };
 
 static void
-destroy_offer_data_source(struct wl_listener *listener,
-			  struct wl_resource *resource)
+destroy_offer_data_source(struct wl_listener *listener, void *data)
 {
 	struct wl_data_offer *offer;
 
@@ -111,12 +110,12 @@ wl_data_source_send_offer(struct wl_data_source *source,
 	offer->resource.object.implementation =
 		(void (**)(void)) source->offer_interface;
 	offer->resource.data = offer;
-	wl_list_init(&offer->resource.destroy_listener_list);
+	wl_signal_init(&offer->resource.destroy_signal);
 
 	offer->source = source;
-	offer->source_destroy_listener.func = destroy_offer_data_source;
-	wl_list_insert(&source->resource.destroy_listener_list,
-		       &offer->source_destroy_listener.link);
+	offer->source_destroy_listener.notify = destroy_offer_data_source;
+	wl_signal_add(&source->resource.destroy_signal,
+		      &offer->source_destroy_listener);
 
 	wl_client_add_resource(target->client, &offer->resource);
 
@@ -168,8 +167,7 @@ find_resource(struct wl_list *list, struct wl_client *client)
 }
 
 static void
-destroy_drag_focus(struct wl_listener *listener,
-		   struct wl_resource *resource)
+destroy_drag_focus(struct wl_listener *listener, void *data)
 {
 	struct wl_input_device *device =
 		container_of(listener, struct wl_input_device,
@@ -209,9 +207,9 @@ drag_grab_focus(struct wl_pointer_grab *grab,
 					  x, y, offer);
 
 		device->drag_focus = surface;
-		device->drag_focus_listener.func = destroy_drag_focus;
-		wl_list_insert(resource->destroy_listener_list.prev,
-			       &device->drag_focus_listener.link);
+		device->drag_focus_listener.notify = destroy_drag_focus;
+		wl_signal_add(&resource->destroy_signal,
+			      &device->drag_focus_listener);
 		device->drag_focus_resource = resource;
 		grab->focus = surface;
 	}
@@ -275,8 +273,7 @@ static const struct wl_pointer_grab_interface drag_grab_interface = {
 };
 
 static void
-destroy_data_device_source(struct wl_listener *listener,
-			   struct wl_resource *resource)
+destroy_data_device_source(struct wl_listener *listener, void *data)
 {
 	struct wl_input_device *device;
 
@@ -287,8 +284,7 @@ destroy_data_device_source(struct wl_listener *listener,
 }
 
 static void
-destroy_data_device_icon(struct wl_listener *listener,
-			 struct wl_resource *resource)
+destroy_data_device_icon(struct wl_listener *listener, void *data)
 {
 	struct wl_input_device *device;
 
@@ -305,7 +301,6 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		       struct wl_resource *icon_resource, uint32_t serial)
 {
 	struct wl_input_device *device = resource->data;
-	struct wl_listener *listener, *tmp;
 
 	/* FIXME: Check that client has implicit grab on the origin
 	 * surface that matches the given time. */
@@ -315,27 +310,23 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 	device->drag_grab.interface = &drag_grab_interface;
 
 	device->drag_data_source = source_resource->data;
-	device->drag_data_source_listener.func = destroy_data_device_source;
-	wl_list_insert(source_resource->destroy_listener_list.prev,
-		       &device->drag_data_source_listener.link);
+	device->drag_data_source_listener.notify = destroy_data_device_source;
+	wl_signal_add(&source_resource->destroy_signal,
+		      &device->drag_data_source_listener);
 
 	if (icon_resource) {
 		device->drag_surface = icon_resource->data;
-		device->drag_icon_listener.func = destroy_data_device_icon;
-		wl_list_insert(icon_resource->destroy_listener_list.prev,
-			       &device->drag_icon_listener.link);
-
-		wl_list_for_each_safe(listener, tmp,
-				      &device->drag_icon_listener_list, link)
-			listener->func(listener, icon_resource);
+		device->drag_icon_listener.notify = destroy_data_device_icon;
+		wl_signal_add(&icon_resource->destroy_signal,
+			      &device->drag_icon_listener);
+		wl_signal_emit(&device->drag_icon_signal, icon_resource);
 	}
 
 	wl_input_device_start_pointer_grab(device, &device->drag_grab);
 }
 
 static void
-destroy_selection_data_source(struct wl_listener *listener,
-			      struct wl_resource *resource)
+destroy_selection_data_source(struct wl_listener *listener, void *data)
 {
 	struct wl_input_device *device =
 		container_of(listener, struct wl_input_device,
@@ -357,7 +348,6 @@ wl_input_device_set_selection(struct wl_input_device *device,
 			      struct wl_data_source *source)
 {
 	struct wl_resource *data_device, *focus, *offer;
-	struct wl_selection_listener *listener, *next;
 
 	if (device->selection_data_source) {
 		device->selection_data_source->cancel(device->selection_data_source);
@@ -378,14 +368,12 @@ wl_input_device_set_selection(struct wl_input_device *device,
 		}
 	}
 
-	wl_list_for_each_safe(listener, next,
-			      &device->selection_listener_list, link)
-		listener->func(listener, device);
+	wl_signal_emit(&device->selection_signal, device);
 
-	device->selection_data_source_listener.func =
+	device->selection_data_source_listener.notify =
 		destroy_selection_data_source;
-	wl_list_insert(source->resource.destroy_listener_list.prev,
-		       &device->selection_data_source_listener.link);
+	wl_signal_add(&source->resource.destroy_signal,
+		      &device->selection_data_source_listener);
 }
 
 static void
@@ -438,7 +426,7 @@ create_data_source(struct wl_client *client,
 	source->resource.object.implementation =
 		(void (**)(void)) &data_source_interface;
 	source->resource.data = source;
-	wl_list_init(&source->resource.destroy_listener_list);
+	wl_signal_init(&source->resource.destroy_signal);
 
 	source->offer_interface = &data_offer_interface;
 	source->cancel = data_source_cancel;

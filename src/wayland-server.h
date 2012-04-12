@@ -114,11 +114,53 @@ wl_client_new_object(struct wl_client *client,
 		     const struct wl_interface *interface,
 		     const void *implementation, void *data);
 
+struct wl_listener {
+	struct wl_list link;
+	void (*notify)(struct wl_listener *listener, void *data);
+};
+
+struct wl_signal {
+	struct wl_list listener_list;
+};
+
+static inline void
+wl_signal_init(struct wl_signal *signal)
+{
+	wl_list_init(&signal->listener_list);
+}
+
+static inline void
+wl_signal_add(struct wl_signal *signal, struct wl_listener *listener)
+{
+	wl_list_insert(signal->listener_list.prev, &listener->link);
+}
+
+static inline struct wl_listener *
+wl_signal_get(struct wl_signal *signal, void *notify)
+{
+	struct wl_listener *l;
+
+	wl_list_for_each(l, &signal->listener_list, link)
+		if (l->notify == notify)
+			return l;
+
+	return NULL;
+}
+
+static inline void
+wl_signal_emit(struct wl_signal *signal, void *data)
+{
+	struct wl_listener *l, *next;
+
+	wl_list_for_each_safe(l, next, &signal->listener_list, link)
+		l->notify(l, data);
+}
+
 struct wl_resource {
 	struct wl_object object;
 	void (*destroy)(struct wl_resource *resource);
 	struct wl_list link;
-	struct wl_list destroy_listener_list;
+	struct wl_signal destroy_signal;
 	struct wl_client *client;
 	void *data;
 };
@@ -127,12 +169,6 @@ struct wl_buffer {
 	struct wl_resource resource;
 	int32_t width, height;
 	uint32_t busy_count;
-};
-
-struct wl_listener {
-	struct wl_list link;
-	void (*func)(struct wl_listener *listener,
-		     struct wl_resource *resource);
 };
 
 struct wl_surface {
@@ -183,12 +219,6 @@ struct wl_data_source {
 	void (*cancel)(struct wl_data_source *source);
 };
 
-struct wl_selection_listener {
-	void (*func)(struct wl_selection_listener *listener,
-		     struct wl_input_device *device);
-	struct wl_list link;
-};
-
 struct wl_input_device {
 	struct wl_list resource_list;
 	struct wl_resource *pointer_focus_resource;
@@ -226,11 +256,11 @@ struct wl_input_device {
 	struct wl_pointer_grab drag_grab;
 	struct wl_surface *drag_surface;
 	struct wl_listener drag_icon_listener;
-	struct wl_list drag_icon_listener_list;
+	struct wl_signal drag_icon_signal;
 
 	struct wl_data_source *selection_data_source;
 	struct wl_listener selection_data_source_listener;
-	struct wl_list selection_listener_list;
+	struct wl_signal selection_signal;
 
 };
 
