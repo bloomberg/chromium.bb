@@ -25,22 +25,6 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_MESSAGE_ROUTED0(SpellCheckMsg_ToggleSpellCheck)
 
-IPC_MESSAGE_ROUTED1(SpellCheckMsg_ToggleSpellPanel,
-                    bool)
-
-#if defined(OS_MACOSX)
-// Sends when NSSpellChecker finishes checking text received by a preceeding
-// SpellCheckHostMsg_RequestTextCheck message.
-IPC_MESSAGE_ROUTED3(SpellCheckMsg_RespondTextCheck,
-                    int        /* request identifier given by WebKit */,
-                    int        /* document tag */,
-                    std::vector<SpellCheckResult>)
-#endif
-
-// This message tells the renderer to advance to the next misspelling. It is
-// sent when the user clicks the "Find Next" button on the spelling panel.
-IPC_MESSAGE_ROUTED0(SpellCheckMsg_AdvanceToNextMisspelling)
-
 // Passes some initialization params to the renderer's spellchecker. This can
 // be called directly after startup or in (async) response to a
 // RequestDictionary ViewHost message.
@@ -64,8 +48,24 @@ IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableAutoSpellCorrect,
 // checking text reveived by a SpellCheckHostMsg_CallSpellingService message.
 IPC_MESSAGE_ROUTED3(SpellCheckMsg_RespondSpellingService,
                     int        /* request identifier given by WebKit */,
+                    int        /* offset */,
+                    std::vector<SpellCheckResult>)
+#endif
+
+#if defined(OS_MACOSX)
+// This message tells the renderer to advance to the next misspelling. It is
+// sent when the user clicks the "Find Next" button on the spelling panel.
+IPC_MESSAGE_ROUTED0(SpellCheckMsg_AdvanceToNextMisspelling)
+
+// Sends when NSSpellChecker finishes checking text received by a preceeding
+// SpellCheckHostMsg_RequestTextCheck message.
+IPC_MESSAGE_ROUTED3(SpellCheckMsg_RespondTextCheck,
+                    int        /* request identifier given by WebKit */,
                     int        /* document tag */,
                     std::vector<SpellCheckResult>)
+
+IPC_MESSAGE_ROUTED1(SpellCheckMsg_ToggleSpellPanel,
+                    bool)
 #endif
 
 // Messages sent from the renderer to the browser.
@@ -87,7 +87,7 @@ IPC_MESSAGE_ROUTED2(SpellCheckHostMsg_NotifyChecked,
 IPC_MESSAGE_CONTROL4(SpellCheckHostMsg_CallSpellingService,
                      int /* route_id for response */,
                      int /* request identifier given by WebKit */,
-                     int /* document tag */,
+                     int /* offset */,
                      string16 /* sentence */)
 #endif
 

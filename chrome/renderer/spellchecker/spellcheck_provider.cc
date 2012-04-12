@@ -43,14 +43,16 @@ COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeShowCorrectionPanel) ==
                int(SpellCheckResult::SHOWCORRECTIONPANEL), mismatching_enums);
 
 namespace {
+
 void ToWebResultList(
+    int offset,
     const std::vector<SpellCheckResult>& results,
     WebVector<WebTextCheckingResult>* web_results) {
   WebVector<WebTextCheckingResult> list(results.size());
   for (size_t i = 0; i < results.size(); ++i) {
     list[i] = WebTextCheckingResult(
         static_cast<WebTextCheckingType>(results[i].type),
-        results[i].location,
+        results[i].location + offset,
         results[i].length,
         results[i].replacement);
   }
@@ -59,11 +61,13 @@ void ToWebResultList(
 }
 
 WebVector<WebTextCheckingResult> ToWebResultList(
+    int offset,
     const std::vector<SpellCheckResult>& results) {
   WebVector<WebTextCheckingResult> web_results;
-  ToWebResultList(results, &web_results);
+  ToWebResultList(offset, results, &web_results);
   return web_results;
 }
+
 } // namespace
 
 SpellCheckProvider::SpellCheckProvider(
@@ -108,31 +112,34 @@ void SpellCheckProvider::RequestTextChecking(
   // Send this text to a browser. A browser checks the user profile and send
   // this text to the Spelling service only if a user enables this feature.
   // TODO(hbono) Implement a cache to avoid sending IPC messages.
-  if (text.isEmpty()) {
+  string16 line;
+  int offset = -1;
+  if (!GetRequestLine(text, &line, &offset)) {
     completion->didFinishCheckingText(std::vector<WebTextCheckingResult>());
     return;
   }
+  last_line_ = line;
   Send(new SpellCheckHostMsg_CallSpellingService(
       routing_id(),
       text_check_completions_.Add(completion),
-      document_tag,
-      text));
+      offset,
+      line));
 #endif  // !OS_MACOSX
 }
 
 bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SpellCheckProvider, message)
-    IPC_MESSAGE_HANDLER(SpellCheckMsg_AdvanceToNextMisspelling,
-                        OnAdvanceToNextMisspelling)
 #if !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondSpellingService,
                         OnRespondSpellingService)
 #endif
 #if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(SpellCheckMsg_AdvanceToNextMisspelling,
+                        OnAdvanceToNextMisspelling)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondTextCheck, OnRespondTextCheck)
-#endif
     IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellPanel, OnToggleSpellPanel)
+#endif
     IPC_MESSAGE_HANDLER(SpellCheckMsg_ToggleSpellCheck, OnToggleSpellCheck)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -205,7 +212,7 @@ void SpellCheckProvider::checkTextOfParagraph(
       string16(text),
       document_tag_,
       &tmp_results);
-  ToWebResultList(tmp_results, results);
+  ToWebResultList(0, tmp_results, results);
 #endif
 }
 
@@ -246,6 +253,73 @@ void SpellCheckProvider::updateSpellingUIWithMisspelledWord(
 #endif
 }
 
+#if !defined(OS_MACOSX)
+void SpellCheckProvider::OnRespondSpellingService(
+    int identifier,
+    int offset,
+    const std::vector<SpellCheckResult>& results) {
+  WebTextCheckingCompletion* completion =
+      text_check_completions_.Lookup(identifier);
+  if (!completion)
+    return;
+  text_check_completions_.Remove(identifier);
+  completion->didFinishCheckingText(ToWebResultList(offset, results));
+}
+
+bool SpellCheckProvider::HasWordCharacters(const string16& text,
+                                           int index) const {
+  const char16* data = text.c_str();
+  int length = text.length();
+  while (index < length) {
+    uint32 code = 0;
+    U16_NEXT(data, index, length, code);
+    UErrorCode err = U_ZERO_ERROR;
+    if (uscript_getScript(code, &err) == USCRIPT_LATIN)
+      return true;
+  }
+  return false;
+}
+
+bool SpellCheckProvider::GetRequestLine(const string16& text,
+                                        string16* line,
+                                        int* offset) const {
+  // WebKit sends the line being edited by a user to this class. (It also sends
+  // the previous line when the user is typing its first word.) We send the line
+  // being edited by a user when the input text satisfies all conditions listed
+  // below.
+  // * There is a non-word character at the end of of the input line so this
+  //   class can send a request only when a user finishes typing a word.
+  // * There are word characters in the input line.
+  // * There are word characters in the difference between the input line and
+  //   the previously-spellchecked line.
+  if (text.empty())
+    return false;
+  UErrorCode err = U_ZERO_ERROR;
+  if (uscript_getScript(*(text.rbegin()), &err) != USCRIPT_COMMON)
+    return false;
+  size_t input_offset = text.find('\n');
+  string16 input_line;
+  if (input_offset != string16::npos && HasWordCharacters(text, input_offset)) {
+    ++input_offset;
+    *offset = static_cast<int>(input_offset);
+    input_line = text.substr(input_offset);
+  } else {
+    if (!HasWordCharacters(text, 0))
+      return false;
+    *offset = 0;
+    input_line = text;
+  }
+  size_t length = last_line_.length();
+  if (length > 0 && !input_line.compare(0, length, last_line_)) {
+    if (!HasWordCharacters(input_line, static_cast<int>(length)))
+      return false;
+  }
+  line->assign(input_line);
+  return true;
+}
+#endif
+
+#if defined(OS_MACOSX)
 void SpellCheckProvider::OnAdvanceToNextMisspelling() {
   if (!render_view()->GetWebView())
     return;
@@ -253,21 +327,6 @@ void SpellCheckProvider::OnAdvanceToNextMisspelling() {
       WebString::fromUTF8("AdvanceToNextMisspelling"));
 }
 
-#if !defined(OS_MACOSX)
-void SpellCheckProvider::OnRespondSpellingService(
-    int identifier,
-    int tag,
-    const std::vector<SpellCheckResult>& results) {
-  WebTextCheckingCompletion* completion =
-      text_check_completions_.Lookup(identifier);
-  if (!completion)
-    return;
-  text_check_completions_.Remove(identifier);
-  completion->didFinishCheckingText(ToWebResultList(results));
-}
-#endif
-
-#if defined(OS_MACOSX)
 void SpellCheckProvider::OnRespondTextCheck(
     int identifier,
     int tag,
@@ -277,9 +336,8 @@ void SpellCheckProvider::OnRespondTextCheck(
   if (!completion)
     return;
   text_check_completions_.Remove(identifier);
-  completion->didFinishCheckingText(ToWebResultList(results));
+  completion->didFinishCheckingText(ToWebResultList(0, results));
 }
-#endif
 
 void SpellCheckProvider::OnToggleSpellPanel(bool is_currently_visible) {
   if (!render_view()->GetWebView())
@@ -290,6 +348,7 @@ void SpellCheckProvider::OnToggleSpellPanel(bool is_currently_visible) {
   render_view()->GetWebView()->focusedFrame()->executeCommand(
       WebString::fromUTF8("ToggleSpellPanel"));
 }
+#endif
 
 void SpellCheckProvider::OnToggleSpellCheck() {
   if (!render_view()->GetWebView())

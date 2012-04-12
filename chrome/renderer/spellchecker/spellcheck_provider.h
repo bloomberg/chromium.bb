@@ -77,27 +77,41 @@ class SpellCheckProvider : public content::RenderViewObserver,
   virtual void updateSpellingUIWithMisspelledWord(
       const WebKit::WebString& word) OVERRIDE;
 
-  void OnAdvanceToNextMisspelling();
 #if !defined(OS_MACOSX)
   void OnRespondSpellingService(
       int identifier,
-      int tag,
+      int offset,
       const std::vector<SpellCheckResult>& results);
+
+  // Returns whether |text| has word characters after |index|, i.e. whether a
+  // spellchecker needs to check this text.
+  bool HasWordCharacters(const string16& text, int index) const;
+
+  // Returns a line that should be sent to a browser to spellcheck it.
+  bool GetRequestLine(const string16& text,
+                      string16* request,
+                      int* offset) const;
 #endif
 #if defined(OS_MACOSX)
+  void OnAdvanceToNextMisspelling();
   void OnRespondTextCheck(
       int identifier,
       int tag,
       const std::vector<SpellCheckResult>& results);
+  void OnToggleSpellPanel(bool is_currently_visible);
 #endif
   void OnToggleSpellCheck();
-  void OnToggleSpellPanel(bool is_currently_visible);
 
   // Initializes the document_tag_ member if necessary.
   void EnsureDocumentTag();
 
   // Holds ongoing spellchecking operations, assigns IDs for the IPC routing.
   WebTextCheckCompletions text_check_completions_;
+
+#if !defined(OS_MACOSX)
+  // The last line sent to the browser process to spellcheck it.
+  string16 last_line_;
+#endif
 
 #if defined(OS_MACOSX)
   // True if the current RenderView has been assigned a document tag.
