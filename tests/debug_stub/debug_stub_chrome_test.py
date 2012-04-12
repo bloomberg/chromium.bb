@@ -17,8 +17,8 @@ import re
 import thread
 import time
 
-# Import debug_stub_test for RSP connectivity
-import debug_stub_test
+import gdb_rsp
+
 
 class NaClTest(pyauto.PyUITest):
   """Tests for NaCl."""
@@ -32,7 +32,7 @@ class NaClTest(pyauto.PyUITest):
     # load.
     def listen():
       print 'About to open GdbRsp connection'
-      connection = debug_stub_test.GdbRspConnection()
+      connection = gdb_rsp.GdbRspConnection()
       print 'Opened debug connection'
       self.debug_socket_opened = True
       # Query the debug_stub for architecture string
