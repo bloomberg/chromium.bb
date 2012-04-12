@@ -1,0 +1,4 @@
+#!/bin/sh
+
+../src/weston --module=$abs_builddir/.libs/${1/.la/.so}
+

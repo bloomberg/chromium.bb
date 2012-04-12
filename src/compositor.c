@@ -2630,14 +2630,14 @@ int main(int argc, char *argv[])
 	struct wl_event_loop *loop;
 	struct sigaction segv_action;
 	void *shell_module, *backend_module, *xserver_module;
-	int (*shell_init)(struct weston_compositor *ec);
-	int (*xserver_init)(struct weston_compositor *ec);
+	int (*module_init)(struct weston_compositor *ec);
 	struct weston_compositor
 		*(*backend_init)(struct wl_display *display,
 				 int argc, char *argv[]);
 	int i;
 	char *backend = NULL;
 	char *shell = NULL;
+	char *module = NULL;
 	int32_t idle_time = 300;
 	int32_t xserver;
 	char *socket_name = NULL;
@@ -2657,6 +2657,7 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_STRING, "socket", 'S', &socket_name },
 		{ WESTON_OPTION_INTEGER, "idle-time", 'i', &idle_time },
 		{ WESTON_OPTION_BOOLEAN, "xserver", 0, &xserver },
+		{ WESTON_OPTION_STRING, "module", 0, &module },
 	};
 
 	argc = parse_options(core_options,
@@ -2696,15 +2697,8 @@ int main(int argc, char *argv[])
 	parse_config_file(config_file, cs, ARRAY_LENGTH(cs), shell);
 	free(config_file);
 
-	if (!shell)
-		shell = "desktop-shell.so";
-
 	backend_init = load_module(backend, "backend_init", &backend_module);
 	if (!backend_init)
-		exit(EXIT_FAILURE);
-
-	shell_init = load_module(shell, "shell_init", &shell_module);
-	if (!shell_init)
 		exit(EXIT_FAILURE);
 
 	ec = backend_init(display, argc, argv);
@@ -2721,15 +2715,25 @@ int main(int argc, char *argv[])
 	ec->option_idle_time = idle_time;
 	ec->idle_time = idle_time;
 
-	xserver_init = NULL;
+	module_init = NULL;
 	if (xserver)
-		xserver_init = load_module("xserver-launcher.so",
-					   "weston_xserver_init",
-					   &xserver_module);
-	if (xserver_init)
-		xserver_init(ec);
+		module_init = load_module("xserver-launcher.so",
+					  "weston_xserver_init",
+					  &xserver_module);
+	if (module_init && module_init(ec) < 0)
+		exit(EXIT_FAILURE);
 
-	if (shell_init(ec) < 0)
+	if (!shell)
+		shell = "desktop-shell.so";
+	module_init = load_module(shell, "shell_init", &shell_module);
+	if (!module_init || module_init(ec) < 0)
+		exit(EXIT_FAILURE);
+
+
+	module_init = NULL;
+	if (module)
+		module_init = load_module(module, "module_init", NULL);
+	if (module_init && module_init(ec) < 0)
 		exit(EXIT_FAILURE);
 
 	if (wl_display_add_socket(display, socket_name)) {

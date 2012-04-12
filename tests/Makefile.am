@@ -1,11 +1,23 @@
-TESTS = $(check_PROGRAMS)
+TESTS = surface-test.la
 
-check_PROGRAMS = matrix-test
+TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tests/weston-test
 
-noinst_PROGRAMS = setbacklight
+export abs_builddir
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir)/src -DUNIT_TEST $(COMPOSITOR_CFLAGS)
+
+
+check_LTLIBRARIES = $(TESTS)
+
+AM_LDFLAGS = -module -avoid-version -rpath $(libdir)
+
+test_runner_src = test-runner.c test-runner.h
+
+surface_test_la_SOURCES = surface-test.c $(test_runner_src)
+
+
+noinst_PROGRAMS = setbacklight matrix-test
 
 matrix_test_SOURCES =				\
 	matrix-test.c				\
