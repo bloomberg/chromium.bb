@@ -38,13 +38,15 @@ static void (*sys_free)(void*);
 
 extern const struct test __start_test_section, __stop_test_section;
 
-void* malloc(size_t size)
+__attribute__ ((visibility("default"))) void *
+malloc(size_t size)
 {
 	num_alloc++;
 	return sys_malloc(size);
 }
 
-void free(void* mem)
+__attribute__ ((visibility("default"))) void
+free(void* mem)
 {
 	if (mem != NULL)
 		num_alloc--;
