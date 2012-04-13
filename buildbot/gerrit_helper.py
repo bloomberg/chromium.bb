@@ -393,9 +393,9 @@ def GetGerritPatchInfo(patches):
 
   if internal_patches:
     # feed it id's w/ * stripped off, but bind them back
-    # so that we can return patches in the supplied ordering
-    # while this may seem silly; we do this to preclude the potential
-    # of a conflict between gerrit instances; since change-id is
+    # so that we can return patches in the supplied ordering.
+    # while this may seem silly, we do this to preclude the potential
+    # of a conflict between gerrit instances.  Since change-id is
     # effectively user controlled, better safe than sorry.
     helper = GerritHelper(True)
     raw_ids = [x[1:] for x in internal_patches]

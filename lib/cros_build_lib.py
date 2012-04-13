@@ -1204,13 +1204,13 @@ def SubCommandTimeout(max_run_time):
 
 @contextlib.contextmanager
 def Timeout(max_run_time):
-  """ContextManager that alarms if code is ran for too long.
+  """ContextManager that alarms if code is run for too long.
 
   This implementation is fairly simple, thus multiple timeouts
   cannot be active at the same time.
 
   Additionally, if the timout has elapsed, it'll trigger a SystemExit
-  exception w/in the invoking code, ultimately propagating that passed
+  exception w/in the invoking code, ultimately propagating that past
   itself.  If the underlying code tries to suppress the SystemExit, once
   a minute it'll retrigger SystemExit until control is returned to this
   manager.

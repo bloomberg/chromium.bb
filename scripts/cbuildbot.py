@@ -117,7 +117,7 @@ def _PreProcessPatches(gerrit_patches, local_patches):
 
   Returns:
     A tuple containing a list of cros_patch.GerritPatch and a list of
-    cros_patch.LocalPatch objects.
+    cros_patch.LocalGitRepoPatch objects.
   """
   gerrit_patch_info = []
   local_patch_info = []
@@ -724,7 +724,7 @@ def _CreateParser():
                     help="Don't run archive stage.")
   group.add_option('--nobuild', action='store_false', dest='build',
                     default=True,
-                    help="Don't actually build (for cbuildbot dev")
+                    help="Don't actually build (for cbuildbot dev)")
   group.add_option('--noclean', action='store_false', dest='clean',
                     default=True,
                     help="Don't clean the buildroot")
@@ -975,6 +975,7 @@ def main(argv):
   if not options.buildroot:
     if options.buildbot:
       parser.error('Please specify a buildroot with the --buildroot option.')
+
     options.buildroot = _DetermineDefaultBuildRoot(build_config['internal'])
     # We use a marker file in the buildroot to indicate the user has
     # consented to using this directory.

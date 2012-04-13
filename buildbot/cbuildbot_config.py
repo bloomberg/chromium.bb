@@ -79,13 +79,13 @@ def GetManifestVersionsRepoUrl(internal_build, read_only=False):
 
 
 def IsPFQType(b_type):
-  """Returns true whether this build type is of a PFQ."""
+  """Returns True if this build type is a PFQ."""
   return b_type in (constants.PFQ_TYPE, constants.PALADIN_TYPE,
                     constants.CHROME_PFQ_TYPE)
 
 
 def IsCQType(b_type):
-  """Returns true whether this build type is of a Commit Queue."""
+  """Returns True if this build type is a Commit Queue."""
   return b_type in (constants.COMMIT_QUEUE_TYPE, constants.PALADIN_TYPE)
 
 

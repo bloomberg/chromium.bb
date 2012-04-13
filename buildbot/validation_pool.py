@@ -419,12 +419,14 @@ class ValidationPool(object):
             continue
           elif change in changes_that_failed_to_apply_to_tot:
             break
+
           # If we're in dryrun mode, then 3way is always allowed.
           # Otherwise, allow 3way only if the gerrit project allows it.
           if self.dryrun:
             trivial = False
           else:
             trivial = change.project not in self.ContentMergingProjects
+
           change.Apply(buildroot, trivial=trivial)
 
         except cros_patch.ApplyPatchException as e:
