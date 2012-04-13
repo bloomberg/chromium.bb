@@ -18,7 +18,6 @@ namespace gfx {
 class UI_EXPORT PlatformFontWin : public PlatformFont {
  public:
   PlatformFontWin();
-  explicit PlatformFontWin(const Font& other);
   explicit PlatformFontWin(NativeFont native_font);
   PlatformFontWin(const std::string& font_name, int font_size);
 

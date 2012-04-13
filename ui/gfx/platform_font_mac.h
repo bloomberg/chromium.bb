@@ -14,7 +14,6 @@ namespace gfx {
 class PlatformFontMac : public PlatformFont {
  public:
   PlatformFontMac();
-  explicit PlatformFontMac(const Font& other);
   explicit PlatformFontMac(NativeFont native_font);
   PlatformFontMac(const std::string& font_name,
                   int font_size);

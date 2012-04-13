@@ -19,7 +19,6 @@ namespace gfx {
 class UI_EXPORT PlatformFontPango : public PlatformFont {
  public:
   PlatformFontPango();
-  explicit PlatformFontPango(const Font& other);
   explicit PlatformFontPango(NativeFont native_font);
   PlatformFontPango(const std::string& font_name, int font_size);
 

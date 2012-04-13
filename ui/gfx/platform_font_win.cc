@@ -66,10 +66,6 @@ PlatformFontWin::GetMinimumFontSizeCallback
 PlatformFontWin::PlatformFontWin() : font_ref_(GetBaseFontRef()) {
 }
 
-PlatformFontWin::PlatformFontWin(const Font& other) {
-  InitWithCopyOfHFONT(other.GetNativeFont());
-}
-
 PlatformFontWin::PlatformFontWin(NativeFont native_font) {
   InitWithCopyOfHFONT(native_font);
 }
@@ -266,11 +262,6 @@ PlatformFontWin::HFontRef::~HFontRef() {
 // static
 PlatformFont* PlatformFont::CreateDefault() {
   return new PlatformFontWin;
-}
-
-// static
-PlatformFont* PlatformFont::CreateFromFont(const Font& other) {
-  return new PlatformFontWin(other);
 }
 
 // static

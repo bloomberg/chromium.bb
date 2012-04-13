@@ -15,12 +15,6 @@ PlatformFont* PlatformFont::CreateDefault() {
 }
 
 // static
-PlatformFont* PlatformFont::CreateFromFont(const Font& other) {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-// static
 PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont native_font) {
   NOTIMPLEMENTED();
   return NULL;

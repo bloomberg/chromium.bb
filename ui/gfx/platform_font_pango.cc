@@ -110,11 +110,6 @@ PlatformFontPango::PlatformFontPango() {
       static_cast<PlatformFontPango*>(default_font_->platform_font()));
 }
 
-PlatformFontPango::PlatformFontPango(const Font& other) {
-  InitFromPlatformFont(
-      static_cast<PlatformFontPango*>(other.platform_font()));
-}
-
 PlatformFontPango::PlatformFontPango(NativeFont native_font) {
   std::vector<std::string> family_names;
   base::SplitString(pango_font_description_get_family(native_font), ',',
@@ -388,11 +383,6 @@ double PlatformFontPango::GetAverageWidth() const {
 // static
 PlatformFont* PlatformFont::CreateDefault() {
   return new PlatformFontPango;
-}
-
-// static
-PlatformFont* PlatformFont::CreateFromFont(const Font& other) {
-  return new PlatformFontPango(other);
 }
 
 // static

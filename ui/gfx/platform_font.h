@@ -21,7 +21,6 @@ class UI_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
  public:
   // Creates an appropriate PlatformFont implementation.
   static PlatformFont* CreateDefault();
-  static PlatformFont* CreateFromFont(const Font& other);
   static PlatformFont* CreateFromNativeFont(NativeFont native_font);
   // Creates a PlatformFont implementation with the specified |font_name|
   // (encoded in UTF-8) and |font_size| in pixels.
