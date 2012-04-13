@@ -271,7 +271,8 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
 
 // Tests closing the browser with a beforeunload handler and clicking
 // CANCEL in the beforeunload confirm dialog.
-IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
+// Test has been flakily timing-out: http://crbug.com/123110
+IN_PROC_BROWSER_TEST_F(UnloadTest, DISABLED_BrowserCloseBeforeUnloadCancel) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
   browser()->CloseWindow();
   ClickModalDialogButton(false);
