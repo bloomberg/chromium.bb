@@ -45,7 +45,7 @@ class RenderWidgetHostImpl;
 //
 // This object communicates back and forth with the RenderProcess object
 // running in the renderer process. Each RenderProcessHost and RenderProcess
-// keeps a list of RenderView (renderer) and TabContents (browser) which
+// keeps a list of RenderView (renderer) and WebContentsImpl (browser) which
 // are correlated with IDs. This way, the Views and the corresponding ViewHosts
 // communicate through the two process objects.
 class CONTENT_EXPORT RenderProcessHostImpl
@@ -250,8 +250,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // sure that all the RenderViews in the process can be shutdown suddenly.  If
   // it's false, then specific RenderViews might still be allowed to be shutdown
   // suddenly by checking their SuddenTerminationAllowed() flag.  This can occur
-  // if one tab has an unload event listener but another tab in the same process
-  // doesn't.
+  // if one WebContents has an unload event listener but another WebContents in
+  // the same process doesn't.
   bool sudden_termination_allowed_;
 
   // Set to true if we shouldn't send input events.  We actually do the

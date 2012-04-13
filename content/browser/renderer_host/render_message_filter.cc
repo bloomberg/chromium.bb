@@ -905,7 +905,7 @@ void RenderMessageFilter::CheckPolicyForCookies(
     const net::CookieList& cookie_list) {
   net::URLRequestContext* context = GetRequestContextForURL(url);
   // Check the policy for get cookies, and pass cookie_list to the
-  // TabSpecificContentSetting for logging purose.
+  // TabSpecificContentSetting for logging purpose.
   if (content::GetContentClient()->browser()->AllowGetCookie(
           url, first_party_for_cookies, cookie_list, resource_context_,
           render_process_id_, reply_msg->routing_id())) {

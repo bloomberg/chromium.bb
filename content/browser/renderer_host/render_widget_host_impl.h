@@ -314,8 +314,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
       int acc_obj_id, gfx::Rect subfocus);
 
   // Relay a request from assistive technology to move a given object
-  // to a specific location, in the tab content area coordinate space, i.e.
-  // (0, 0) is the top-left corner of the tab contents.
+  // to a specific location, in the WebContents area coordinate space, i.e.
+  // (0, 0) is the top-left corner of the WebContents.
   void AccessibilityScrollToPoint(int acc_obj_id, gfx::Point point);
 
   // Relay a request from assistive technology to set text selection.

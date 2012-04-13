@@ -15,7 +15,7 @@
 #include "content/test/test_renderer_host.h"
 
 // This file provides a testing framework for mocking out the RenderProcessHost
-// layer. It allows you to test RenderViewHost, TabContents,
+// layer. It allows you to test RenderViewHost, WebContentsImpl,
 // NavigationController, and other layers above that without running an actual
 // renderer process.
 //
@@ -181,8 +181,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 // TestRenderViewHost ----------------------------------------------------------
 
 // TODO(brettw) this should use a TestWebContents which should be generalized
-// from the TabContents test. We will probably also need that class' version of
-// CreateRenderViewForRenderManager when more complicate tests start using this.
+// from the WebContentsImpl test. We will probably also need that class' version
+// of CreateRenderViewForRenderManager when more complicated tests start using
+// this.
 //
 // Note that users outside of content must use this class by getting
 // the separate content::RenderViewHostTester interface via

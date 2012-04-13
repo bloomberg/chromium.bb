@@ -252,7 +252,8 @@ class RenderMessageFilter : public content::BrowserMessageFilter {
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 
-  // Whether this process is used for incognito tabs.
+  // Whether this process is used for incognito contents.
+  // This doesn't belong here; http://crbug.com/89628
   bool incognito_;
 
   // Initialized to 0, accessed on FILE thread only.

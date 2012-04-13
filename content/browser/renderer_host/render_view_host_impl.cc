@@ -74,7 +74,8 @@ using WebKit::WebPluginAction;
 
 namespace {
 
-// Delay to wait on closing the tab for a beforeunload/unload handler to fire.
+// Delay to wait on closing the WebContents for a beforeunload/unload handler to
+// fire.
 const int kUnloadTimeoutMS = 1000;
 
 // Translate a WebKit text direction into a base::i18n one.
@@ -287,7 +288,7 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
   if (navigations_suspended_) {
     // Shouldn't be possible to have a second navigation while suspended, since
     // navigations will only be suspended during a cross-site request.  If a
-    // second navigation occurs, TabContents will cancel this pending RVH
+    // second navigation occurs, WebContentsImpl will cancel this pending RVH
     // create a new pending RVH.
     DCHECK(!suspended_nav_message_.get());
     suspended_nav_message_.reset(nav_message);
@@ -1478,7 +1479,7 @@ void RenderViewHostImpl::SetAltErrorPageURL(const GURL& url) {
 
 void RenderViewHostImpl::ExitFullscreen() {
   RejectMouseLockOrUnlockIfNecessary();
-  // We need to notify the tab that its fullscreen state has changed. This
+  // We need to notify the contents that its fullscreen state has changed. This
   // is done as part of the resize message.
   WasResized();
 }

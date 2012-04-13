@@ -697,8 +697,8 @@ void ResourceDispatcherHostImpl::OnRequestResource(
 
 // Begins a resource request with the given params on behalf of the specified
 // child process.  Responses will be dispatched through the given receiver. The
-// process ID is used to lookup TabContents from routing_id's in the case of a
-// request from a renderer.  request_context is the cookie/cache context to be
+// process ID is used to lookup WebContentsImpl from routing_id's in the case of
+// a request from a renderer.  request_context is the cookie/cache context to be
 // used for this request.
 //
 // If sync_result is non-null, then a SyncLoad reply will be generated, else

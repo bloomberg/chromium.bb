@@ -36,7 +36,8 @@ TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
 
 // Makes sure that RenderViewHost::is_waiting_for_unload_ack_ is false when
 // reloading a page. If is_waiting_for_unload_ack_ is not false when reloading
-// the tab may get closed out even though the user pressed the reload button.
+// the contents may get closed out even though the user pressed the reload
+// button.
 TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
@@ -51,7 +52,7 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   // . click stop before the page has been commited.
   // . click reload.
   //   . is_waiting_for_unload_ack_ is still true, and the if the hang monitor
-  //     fires the tab gets closed.
+  //     fires the contents gets closed.
 
   NavigateAndCommit(url1);
   controller().LoadURL(
@@ -68,7 +69,7 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
 // Ensure we do not grant bindings to a process shared with unprivileged views.
 TEST_F(RenderViewHostTest, DontGrantBindingsToSharedProcess) {
   // Create another view in the same process.
-  scoped_ptr<TestWebContents> new_tab(
+  scoped_ptr<TestWebContents> new_web_contents(
       new TestWebContents(browser_context(), rvh()->GetSiteInstance()));
 
   rvh()->AllowBindings(content::BINDINGS_POLICY_WEB_UI);

@@ -77,7 +77,7 @@ struct ViewMsg_SwapOut_Params;
 //   is restored, it can be momentarily without a backingstore.  (Restoring a
 //   RenderWidgetHost results in a WasRestored message being sent to the
 //   RenderWidget, which triggers a full UpdateRect message.)  This can lead to
-//   an observed rendering glitch as the TabContents will just have to fill
+//   an observed rendering glitch as the WebContentsImpl will just have to fill
 //   white overtop the RenderWidgetHost until the RenderWidgetHost receives a
 //   UpdateRect message to refresh its backingstore.
 //

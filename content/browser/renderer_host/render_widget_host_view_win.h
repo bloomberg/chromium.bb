@@ -195,7 +195,7 @@ class RenderWidgetHostViewWin
       const std::vector<gfx::Rect>& copy_rects) OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status,
                               int error_code) OVERRIDE;
-  // called by TabContents before DestroyWindow
+  // called by WebContentsImpl before DestroyWindow
   virtual void WillWmDestroy() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
@@ -507,7 +507,7 @@ class RenderWidgetHostViewWin
   base::TimeTicks whiteout_start_time_;
 
   // The time it took after this view was selected for it to be fully painted.
-  base::TimeTicks tab_switch_paint_time_;
+  base::TimeTicks web_contents_switch_paint_time_;
 
   // Registrar so we can listen to RENDERER_PROCESS_TERMINATED events.
   content::NotificationRegistrar registrar_;

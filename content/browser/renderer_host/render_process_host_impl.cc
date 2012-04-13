@@ -230,7 +230,7 @@ size_t content::RenderProcessHost::GetMaxRendererProcessCount() {
   // Defines the maximum number of renderer processes according to the
   // amount of installed memory as reported by the OS. The calculation
   // assumes that you want the renderers to use half of the installed
-  // RAM and assuming that each tab uses ~40MB.
+  // RAM and assuming that each WebContents uses ~40MB.
   // If you modify this assumption, you need to adjust the
   // ThirtyFourTabs test to match the expected number of processes.
   //
@@ -245,14 +245,14 @@ size_t content::RenderProcessHost::GetMaxRendererProcessCount() {
 
   static size_t max_count = 0;
   if (!max_count) {
-    const size_t kEstimatedTabMemoryUsage =
+    const size_t kEstimatedWebContentsMemoryUsage =
 #if defined(ARCH_CPU_64_BITS)
         60;  // In MB
 #else
         40;  // In MB
 #endif
     max_count = base::SysInfo::AmountOfPhysicalMemoryMB() / 2;
-    max_count /= kEstimatedTabMemoryUsage;
+    max_count /= kEstimatedWebContentsMemoryUsage;
 
     const size_t kMinRendererProcessCount = 3;
     max_count = std::max(max_count, kMinRendererProcessCount);
@@ -1264,8 +1264,8 @@ void RenderProcessHostImpl::OnShutdownRequest() {
   if (pending_views_ || render_widget_hosts_.size() > 1)
     return;
 
-  // Notify any tabs that might have swapped out renderers from this process.
-  // They should not attempt to swap them back in.
+  // Notify any contents that might have swapped out renderers from this
+  // process. They should not attempt to swap them back in.
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CLOSING,
       content::Source<RenderProcessHost>(this),

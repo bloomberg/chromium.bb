@@ -185,7 +185,8 @@ uint64 ResourceRequestInfoImpl::GetUploadSize() const {
 bool ResourceRequestInfoImpl::GetAssociatedRenderView(
     int* render_process_id,
     int* render_view_id) const {
-  // If the request is from the worker process, find a tab that owns the worker.
+  // If the request is from the worker process, find a content that owns the
+  // worker.
   if (process_type_ == PROCESS_TYPE_WORKER) {
     // Need to display some related UI for this network request - pick an
     // arbitrary parent to do so.

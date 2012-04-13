@@ -368,7 +368,7 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
   base::TimeTicks whiteout_start_time_;
 
   // The time it took after this view was selected for it to be fully painted.
-  base::TimeTicks tab_switch_paint_time_;
+  base::TimeTicks web_contents_switch_paint_time_;
 
   // Current text input type.
   ui::TextInputType text_input_type_;

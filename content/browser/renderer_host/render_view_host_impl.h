@@ -102,16 +102,16 @@ class ExecuteNotificationObserver : public NotificationObserver {
 // embedders of content, and adds things only visible to content.
 //
 // The exact API of this object needs to be more thoroughly designed. Right
-// now it mimics what TabContents exposed, which is a fairly large API and may
-// contain things that are not relevant to a common subset of views. See also
-// the comment in render_view_host_delegate.h about the size and scope of the
-// delegate API.
+// now it mimics what WebContentsImpl exposed, which is a fairly large API and
+// may contain things that are not relevant to a common subset of views. See
+// also the comment in render_view_host_delegate.h about the size and scope of
+// the delegate API.
 //
 // Right now, the concept of page navigation (both top level and frame) exists
-// in the TabContents still, so if you instantiate one of these elsewhere, you
-// will not be able to traverse pages back and forward. We need to determine
-// if we want to bring that and other functionality down into this object so
-// it can be shared by others.
+// in the WebContentsImpl still, so if you instantiate one of these elsewhere,
+// you will not be able to traverse pages back and forward. We need to determine
+// if we want to bring that and other functionality down into this object so it
+// can be shared by others.
 class CONTENT_EXPORT RenderViewHostImpl
     : public RenderViewHost,
       public RenderWidgetHostImpl {
@@ -123,9 +123,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // which case RenderWidgetHost will create a new one.
   //
   // The session storage namespace parameter allows multiple render views and
-  // tab contentses to share the same session storage (part of the WebStorage
-  // spec) space. This is useful when restoring tabs, but most callers should
-  // pass in NULL which will cause a new SessionStorageNamespace to be created.
+  // WebContentses to share the same session storage (part of the WebStorage
+  // spec) space. This is useful when restoring contentses, but most callers
+  // should pass in NULL which will cause a new SessionStorageNamespace to be
+  // created.
   RenderViewHostImpl(
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
@@ -558,9 +559,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool navigations_suspended_;
 
   // We only buffer a suspended navigation message while we a pending RVH for a
-  // TabContents.  There will only ever be one suspended navigation, because
-  // TabContents will destroy the pending RVH and create a new one if a second
-  // navigation occurs.
+  // WebContentsImpl.  There will only ever be one suspended navigation, because
+  // WebContentsImpl will destroy the pending RVH and create a new one if a
+  // second navigation occurs.
   scoped_ptr<ViewMsg_Navigate> suspended_nav_message_;
 
   // Whether this RenderViewHost is currently swapped out, such that the view is

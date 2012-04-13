@@ -354,8 +354,8 @@ void RenderWidgetHostViewMac::DidBecomeSelected() {
   if (!is_hidden_)
     return;
 
-  if (tab_switch_paint_time_.is_null())
-    tab_switch_paint_time_ = base::TimeTicks::Now();
+  if (web_contents_switch_paint_time_.is_null())
+    web_contents_switch_paint_time_ = base::TimeTicks::Now();
   is_hidden_ = false;
   render_widget_host_->WasRestored();
 
@@ -401,12 +401,12 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
     return;
 
   // During the initial creation of the RenderWidgetHostView in
-  // TabContents::CreateRenderViewForRenderManager, SetSize is called with an
-  // empty size. In the Windows code flow, it is not ignored because subsequent
-  // sizing calls from the OS flow through TCVW::WasSized which calls SetSize()
-  // again. On Cocoa, we rely on the Cocoa view struture and resizer flags to
-  // keep things sized properly. On the other hand, if the size is not empty
-  // then this is a valid request for a pop-up.
+  // WebContentsImpl::CreateRenderViewForRenderManager, SetSize is called with
+  // an empty size. In the Windows code flow, it is not ignored because
+  // subsequent sizing calls from the OS flow through TCVW::WasSized which calls
+  // SetSize() again. On Cocoa, we rely on the Cocoa view struture and resizer
+  // flags to keep things sized properly. On the other hand, if the size is not
+  // empty then this is a valid request for a pop-up.
   if (rect.size().IsEmpty())
     return;
 
@@ -1944,14 +1944,16 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       // time the backing store is NULL...
       renderWidgetHostView_->whiteout_start_time_ = base::TimeTicks();
     }
-    if (!renderWidgetHostView_->tab_switch_paint_time_.is_null()) {
-      base::TimeDelta tab_switch_paint_duration = base::TimeTicks::Now() -
-          renderWidgetHostView_->tab_switch_paint_time_;
+    if (!renderWidgetHostView_->web_contents_switch_paint_time_.is_null()) {
+      base::TimeDelta web_contents_switch_paint_duration =
+          base::TimeTicks::Now() -
+              renderWidgetHostView_->web_contents_switch_paint_time_;
       UMA_HISTOGRAM_TIMES("MPArch.RWH_TabSwitchPaintDuration",
-          tab_switch_paint_duration);
-      // Reset tab_switch_paint_time_ to 0 so future tab selections are
+          web_contents_switch_paint_duration);
+      // Reset contents_switch_paint_time_ to 0 so future tab selections are
       // recorded.
-      renderWidgetHostView_->tab_switch_paint_time_ = base::TimeTicks();
+      renderWidgetHostView_->web_contents_switch_paint_time_ =
+          base::TimeTicks();
     }
   } else {
     [[NSColor whiteColor] set];

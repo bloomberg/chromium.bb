@@ -71,7 +71,7 @@ void JavaBridgeDispatcherHostManager::RenderViewDeleted(
 
 void JavaBridgeDispatcherHostManager::WebContentsDestroyed(
     content::WebContents* web_contents) {
-  // When the tab is shutting down, the WebContents clears its observers before
+  // When a WebContents is shutting down, it clears its observers before
   // it kills all of its RenderViewHosts, so we won't get a call to
   // RenderViewDeleted() for all RenderViewHosts.
   instances_.clear();

@@ -331,7 +331,7 @@ bool RenderWidgetHostImpl::Send(IPC::Message* msg) {
 void RenderWidgetHostImpl::WasHidden() {
   is_hidden_ = true;
 
-  // Don't bother reporting hung state when we aren't the active tab.
+  // Don't bother reporting hung state when we aren't active.
   StopHangMonitorTimeout();
 
   // If we have a renderer, then inform it that we are being hidden so it can

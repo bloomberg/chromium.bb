@@ -144,7 +144,7 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
 }
 
 // We can now send the response to the new renderer, which will cause
-// TabContents to swap in the new renderer and destroy the old one.
+// WebContentsImpl to swap in the new renderer and destroy the old one.
 void CrossSiteResourceHandler::ResumeResponse() {
   DCHECK(request_id_ != -1);
   DCHECK(in_cross_site_transition_);
@@ -214,8 +214,8 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
   // OnResponseCompleted after a failure.  We don't need to pause, because
   // there will be no reads.
 
-  // Tell the tab responsible for this request that a cross-site response is
-  // starting, so that it can tell its old renderer to run its onunload
+  // Tell the contents responsible for this request that a cross-site response
+  // is starting, so that it can tell its old renderer to run its onunload
   // handler now.  We will wait to hear the corresponding ClosePage_ACK.
   BrowserThread::PostTask(
       BrowserThread::UI,

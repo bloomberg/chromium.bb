@@ -39,7 +39,7 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
                                    const std::string& security_info) OVERRIDE;
 
   // We can now send the response to the new renderer, which will cause
-  // TabContents to swap in the new renderer and destroy the old one.
+  // WebContentsImpl to swap in the new renderer and destroy the old one.
   void ResumeResponse();
 
  private:
