@@ -2442,6 +2442,8 @@
           ],
         }],
         ['OS=="android"', {
+          # TODO(yfriedman): Remove once unit_tests can link for Android.
+          'type': '<(android_unit_test_target_type)',
           'sources!': [
             # Bookmark export/import are handled via the BookmarkColumns
             # ContentProvider.
