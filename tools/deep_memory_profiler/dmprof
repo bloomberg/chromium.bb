@@ -45,6 +45,11 @@ DUMP_DEEP_2 = 'DUMP_DEEP_2'
 # They should be processed by POLICY_DEEP_2.
 DUMP_DEEP_3 = 'DUMP_DEEP_3'
 
+# DUMP_DEEP_4 adds some features to DUMP_DEEP_3:
+# 1. Support comments starting with '#'
+# 2. Support additional global stats: e.g. nonprofiled-*.
+DUMP_DEEP_4 = 'DUMP_DEEP_4'
+
 # Heap Profile Policy versions
 
 # POLICY_DEEP_1 DOES NOT include allocation_type columns.
@@ -109,8 +114,8 @@ class Log(object):
   """A class representing one dumped log data."""
   def __init__(self, log_path, buckets):
     self.log_path = log_path
-    with open(self.log_path, mode='r') as log_f:
-      self.log_lines = log_f.readlines()
+    self.log_lines = [
+        l for l in open(self.log_path, 'r') if l and not l.startswith('#')]
     self.log_version = ''
     sys.stderr.write('parsing a log file:%s\n' % log_path)
     self.mmap_stacktrace_lines = []
@@ -282,28 +287,30 @@ class Log(object):
         return line_number
     return line_number
 
-  def parse_stacktraces_while_valid(self, buckets, log_lines, ln):
+  def parse_stacktraces_while_valid(self, buckets, log_lines, line_number):
     """Parses stacktrace lines while the lines are valid.
 
     Args:
         buckets: A dict mapping bucket ids and their corresponding Bucket
             objects.
         log_lines: A list of lines to be parsed.
-        ln: An integer representing the starting line number in log_lines.
+        line_number: An integer representing the starting line number in
+            log_lines.
 
     Returns:
         A pair of a list of valid lines and an integer representing the last
         line number in log_lines.
     """
-    ln = self.skip_lines_while(
-        ln, len(log_lines), lambda n: not log_lines[n].split()[0].isdigit())
-    stacktrace_lines_start = ln
-    ln = self.skip_lines_while(
-        ln, len(log_lines),
+    line_number = self.skip_lines_while(
+        line_number, len(log_lines),
+        lambda n: not log_lines[n].split()[0].isdigit())
+    stacktrace_lines_start = line_number
+    line_number = self.skip_lines_while(
+        line_number, len(log_lines),
         lambda n: self.check_stacktrace_line(log_lines[n], buckets))
-    return (log_lines[stacktrace_lines_start:ln], ln)
+    return (log_lines[stacktrace_lines_start:line_number], line_number)
 
-  def parse_stacktraces(self, buckets):
+  def parse_stacktraces(self, buckets, line_number):
     """Parses lines in self.log_lines as stacktrace.
 
     Valid stacktrace lines are stored into self.mmap_stacktrace_lines and
@@ -312,10 +319,81 @@ class Log(object):
     Args:
         buckets: A dict mapping bucket ids and their corresponding Bucket
             objects.
+        line_number: An integer representing the starting line number in
+            log_lines.
+
+    Raises:
+        RuntimeException for invalid dump versions.
+    """
+    sys.stderr.write('  heap profile dump version: %s\n' % self.log_version)
+
+    if self.log_version in (DUMP_DEEP_3, DUMP_DEEP_4):
+      (self.mmap_stacktrace_lines, line_number) = (
+          self.parse_stacktraces_while_valid(
+              buckets, self.log_lines, line_number))
+      line_number = self.skip_lines_while(
+          line_number, len(self.log_lines),
+          lambda n: self.log_lines[n] != 'MALLOC_STACKTRACES:\n')
+      (self.malloc_stacktrace_lines, line_number) = (
+          self.parse_stacktraces_while_valid(
+              buckets, self.log_lines, line_number))
+
+    elif self.log_version == DUMP_DEEP_2:
+      (self.mmap_stacktrace_lines, line_number) = (
+          self.parse_stacktraces_while_valid(
+              buckets, self.log_lines, line_number))
+      line_number = self.skip_lines_while(
+          line_number, len(self.log_lines),
+          lambda n: self.log_lines[n] != 'MALLOC_STACKTRACES:\n')
+      (self.malloc_stacktrace_lines, line_number) = (
+          self.parse_stacktraces_while_valid(
+              buckets, self.log_lines, line_number))
+      self.malloc_stacktrace_lines.extend(self.mmap_stacktrace_lines)
+      self.mmap_stacktrace_lines = []
+
+    elif self.log_version == DUMP_DEEP_1:
+      (self.malloc_stacktrace_lines, line_number) = (
+          self.parse_stacktraces_while_valid(
+              buckets, self.log_lines, line_number))
+
+    else:
+      raise RuntimeError('invalid heap profile dump version: %s' % (
+          self.log_version))
+
+  def parse_global_stats(self):
+    """Parses lines in self.log_lines as global stats."""
+    ln = self.skip_lines_while(
+        0, len(self.log_lines),
+        lambda n: self.log_lines[n] != 'GLOBAL_STATS:\n')
+
+    if self.log_version == DUMP_DEEP_4:
+      global_stat_names = [
+          'total', 'file-exec', 'file-nonexec', 'anonymous', 'stack', 'other',
+          'nonprofiled-absent', 'nonprofiled-anonymous',
+          'nonprofiled-file-exec', 'nonprofiled-file-nonexec',
+          'nonprofiled-stack', 'nonprofiled-other',
+          'profiled-mmap', 'profiled-malloc']
+    else:
+      global_stat_names = [
+          'total', 'file', 'anonymous', 'other', 'mmap', 'tcmalloc']
+
+    for prefix in global_stat_names:
+      ln = self.skip_lines_while(
+          ln, len(self.log_lines),
+          lambda n: self.log_lines[n].split()[0] != prefix)
+      words = self.log_lines[ln].split()
+      self.counters[prefix + '_virtual'] = int(words[-2])
+      self.counters[prefix + '_committed'] = int(words[-1])
+
+  def parse_version(self):
+    """Parses a version string in self.log_lines.
 
     Returns:
-        A string representing a version of the stacktrace dump.  '' for invalid
-        dump.
+        A pair of (a string representing a version of the stacktrace dump,
+        and an integer indicating a line number next to the version string).
+
+    Raises:
+        RuntimeException for invalid dump versions.
     """
     version = ''
 
@@ -328,69 +406,24 @@ class Log(object):
     # Identify a version.
     if self.log_lines[ln].startswith('heap profile: '):
       version = self.log_lines[ln][13:].strip()
-      if version == DUMP_DEEP_2 or version == DUMP_DEEP_3:
+      if (version == DUMP_DEEP_2 or version == DUMP_DEEP_3 or
+          version == DUMP_DEEP_4):
         ln = self.skip_lines_while(
             ln, len(self.log_lines),
             lambda n: self.log_lines[n] != 'MMAP_STACKTRACES:\n')
       else:
-        sys.stderr.write('  invalid heap profile dump version:%s\n' % version)
-        return ''
+        raise RuntimeError('invalid heap profile dump version: %s' % version)
     elif self.log_lines[ln] == 'STACKTRACES:\n':
       version = DUMP_DEEP_1
     elif self.log_lines[ln] == 'MMAP_STACKTRACES:\n':
       version = DUMP_DEEP_2
 
-    if version == DUMP_DEEP_3:
-      sys.stderr.write('  heap profile dump version: %s\n' % version)
-      (self.mmap_stacktrace_lines, ln) = self.parse_stacktraces_while_valid(
-          buckets, self.log_lines, ln)
-      ln = self.skip_lines_while(
-          ln, len(self.log_lines),
-          lambda n: self.log_lines[n] != 'MALLOC_STACKTRACES:\n')
-      (self.malloc_stacktrace_lines, ln) = self.parse_stacktraces_while_valid(
-          buckets, self.log_lines, ln)
-      return version
-
-    elif version == DUMP_DEEP_2:
-      sys.stderr.write('  heap profile dump version: %s\n' % version)
-      (self.mmap_stacktrace_lines, ln) = self.parse_stacktraces_while_valid(
-          buckets, self.log_lines, ln)
-      ln = self.skip_lines_while(
-          ln, len(self.log_lines),
-          lambda n: self.log_lines[n] != 'MALLOC_STACKTRACES:\n')
-      (self.malloc_stacktrace_lines, ln) = self.parse_stacktraces_while_valid(
-          buckets, self.log_lines, ln)
-      self.malloc_stacktrace_lines.extend(self.mmap_stacktrace_lines)
-      self.mmap_stacktrace_lines = []
-      return version
-
-    elif version == DUMP_DEEP_1:
-      sys.stderr.write('  heap profile dump version: %s\n' % version)
-      (self.malloc_stacktrace_lines, ln) = self.parse_stacktraces_while_valid(
-          buckets, self.log_lines, ln)
-      return version
-
-    else:
-      sys.stderr.write('  invalid heap profile dump version:%s\n' % version)
-      return ''
-
-  def parse_global_stats(self):
-    """Parses lines in self.log_lines as global stats."""
-    ln = self.skip_lines_while(
-        0, len(self.log_lines),
-        lambda n: self.log_lines[n] != 'GLOBAL_STATS:\n')
-
-    for prefix in ['total', 'file', 'anonymous', 'other', 'mmap', 'tcmalloc']:
-      ln = self.skip_lines_while(
-          ln, len(self.log_lines),
-          lambda n: self.log_lines[n].split()[0] != prefix)
-      words = self.log_lines[ln].split()
-      self.counters[prefix + '_virtual'] = int(words[-2])
-      self.counters[prefix + '_committed'] = int(words[-1])
+    return (version, ln)
 
   def parse_log(self, buckets):
+    self.log_version, ln = self.parse_version()
     self.parse_global_stats()
-    self.log_version = self.parse_stacktraces(buckets)
+    self.parse_stacktraces(buckets, ln)
 
   @staticmethod
   def accumulate_size_for_policy(stacktrace_lines,
@@ -434,35 +467,61 @@ class Log(object):
     self.accumulate_size_for_policy(self.malloc_stacktrace_lines,
                                     policy_list, buckets, sizes, False)
 
-    sizes['mmap-no-log'] = self.counters['mmap_committed'] - sizes[
-        'mmap-total-log']
-    sizes['mmap-total-record'] = self.counters['mmap_committed']
-    sizes['mmap-total-record-vm'] = self.counters['mmap_virtual']
+    if self.log_version == DUMP_DEEP_4:
+      mmap_prefix = 'profiled-mmap'
+      malloc_prefix = 'profiled-malloc'
+    else:
+      mmap_prefix = 'mmap'
+      malloc_prefix = 'tcmalloc'
 
-    sizes['tc-no-log'] = self.counters['tcmalloc_committed'] - sizes[
-        'tc-total-log']
-    sizes['tc-total-record'] = self.counters['tcmalloc_committed']
-    sizes['tc-unused'] = sizes['mmap-tcmalloc'] - self.counters[
-        'tcmalloc_committed']
+    sizes['mmap-no-log'] = (
+        self.counters['%s_committed' % mmap_prefix] - sizes['mmap-total-log'])
+    sizes['mmap-total-record'] = self.counters['%s_committed' % mmap_prefix]
+    sizes['mmap-total-record-vm'] = self.counters['%s_virtual' % mmap_prefix]
+
+    sizes['tc-no-log'] = (
+        self.counters['%s_committed' % malloc_prefix] - sizes['tc-total-log'])
+    sizes['tc-total-record'] = self.counters['%s_committed' % malloc_prefix]
+    sizes['tc-unused'] = (
+        sizes['mmap-tcmalloc'] - self.counters['%s_committed' % malloc_prefix])
     sizes['tc-total'] = sizes['mmap-tcmalloc']
 
-    for key, value in { 'total': 'total_committed',
-                        'filemapped': 'file_committed',
-                        'anonymous': 'anonymous_committed',
-                        'other': 'other_committed',
-                        'total-vm': 'total_virtual',
-                        'filemapped-vm': 'file_virtual',
-                        'anonymous-vm': 'anonymous_virtual',
-                        'other-vm': 'other_virtual' }.items():
+    for key, value in {
+        'total': 'total_committed',
+        'filemapped': 'file_committed',
+        'file-exec': 'file-exec_committed',
+        'file-nonexec': 'file-nonexec_committed',
+        'anonymous': 'anonymous_committed',
+        'stack': 'stack_committed',
+        'other': 'other_committed',
+        'nonprofiled-absent': 'nonprofiled-absent_committed',
+        'nonprofiled-anonymous': 'nonprofiled-anonymous_committed',
+        'nonprofiled-file-exec': 'nonprofiled-file-exec_committed',
+        'nonprofiled-file-nonexec': 'nonprofiled-file-nonexec_committed',
+        'nonprofiled-stack': 'nonprofiled-stack_committed',
+        'nonprofiled-other': 'nonprofiled-other_committed',
+        'total-vm': 'total_virtual',
+        'filemapped-vm': 'file_virtual',
+        'anonymous-vm': 'anonymous_virtual',
+        'other-vm': 'other_virtual' }.iteritems():
       if key in sizes:
         sizes[key] = self.counters[value]
 
-    if 'unknown' in sizes:
-      sizes['unknown'] = self.counters['total_committed'] - self.counters[
-          'mmap_committed']
+    if 'mustbezero' in sizes:
+      removed = (
+          '%s_committed' % mmap_prefix,
+          'nonprofiled-absent_committed',
+          'nonprofiled-anonymous_committed',
+          'nonprofiled-file-exec_committed',
+          'nonprofiled-file-nonexec_committed',
+          'nonprofiled-stack_committed',
+          'nonprofiled-other_committed')
+      sizes['mustbezero'] = (
+          self.counters['total_committed'] -
+          sum(self.counters[i] for i in removed))
     if 'total-exclude-profiler' in sizes:
-      sizes['total-exclude-profiler'] = self.counters[
-          'total_committed'] - sizes['mmap-profiler']
+      sizes['total-exclude-profiler'] = (
+          self.counters['total_committed'] - sizes['mmap-profiler'])
     if 'hour' in sizes:
       sizes['hour'] = (self.log_time - first_log_time) / 60.0 / 60.0
     if 'minute' in sizes:
@@ -481,7 +540,7 @@ class Log(object):
       component_match = get_component(policy_list, bucket, mmap)
       if component_match == component_name:
         stacktrace_sequence = ''
-        for address in bucket.stacktrace[1 : min(len(bucket.stacktrace),
+        for address in bucket.stacktrace[0 : min(len(bucket.stacktrace),
                                                  1 + depth)]:
           stacktrace_sequence += address_symbol_dict[address] + ' '
         if not stacktrace_sequence in sizes:

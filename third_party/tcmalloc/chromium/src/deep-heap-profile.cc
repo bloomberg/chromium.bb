@@ -10,6 +10,7 @@
 #include "deep-heap-profile.h"
 
 #ifdef DEEP_HEAP_PROFILE
+#include <algorithm>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -28,7 +29,7 @@ static const uint64 MAX_ADDRESS = kuint64max;
 
 // Header strings of the dumped heap profile.
 static const char kProfileHeader[] = "heap profile: ";
-static const char kProfileVersion[] = "DUMP_DEEP_3";
+static const char kProfileVersion[] = "DUMP_DEEP_4";
 static const char kGlobalStatsHeader[] = "GLOBAL_STATS:\n";
 static const char kMMapStacktraceHeader[] = "MMAP_STACKTRACES:\n";
 static const char kAllocStacktraceHeader[] = "MALLOC_STACKTRACES:\n";
@@ -89,8 +90,23 @@ int DeepHeapProfile::FillOrderedProfile(char buffer[], int buffer_size) {
   ResetCommittedSize(heap_profile_->alloc_table_);
   ResetCommittedSize(heap_profile_->mmap_table_);
 
-  SnapshotGlobalStatsWithoutMalloc(pagemap_fd_, &stats_);
-  size_t anonymous_committed = stats_.anonymous.committed_bytes();
+  // Allocate a list for mmap'ed regions.
+  num_mmap_allocations_ = 0;
+  heap_profile_->mmap_address_map_->Iterate(CountMMap, this);
+  mmap_list_length_ = 0;
+  mmap_list_ = reinterpret_cast<MMapListEntry*>(heap_profile_->alloc_(
+      sizeof(MMapListEntry) * num_mmap_allocations_));
+
+  // Touch all the allocated pages.  Touching is required to avoid new page
+  // commitment while filling the list in SnapshotGlobalStatsWithoutMalloc.
+  for (int i = 0;
+       i < num_mmap_allocations_;
+       i += getpagesize() / 2 / sizeof(MMapListEntry))
+    mmap_list_[i].first_address = 0;
+  mmap_list_[num_mmap_allocations_ - 1].last_address = 0;
+
+  SnapshotGlobalStatsWithoutMalloc(pagemap_fd_, &stats_, NULL, 0);
+  size_t anonymous_committed = stats_.all[ANONYMOUS].committed_bytes();
 
   // Note: Try to minimize the number of calls to malloc in the following
   // region, up until we call WriteBucketsToBucketFile(), near the end of this
@@ -106,10 +122,11 @@ int DeepHeapProfile::FillOrderedProfile(char buffer[], int buffer_size) {
   SnapshotAllAllocsWithoutMalloc();
 
   // Check if committed bytes changed during SnapshotAllAllocsWithoutMalloc.
-  SnapshotGlobalStatsWithoutMalloc(pagemap_fd_, &stats_);
+  SnapshotGlobalStatsWithoutMalloc(pagemap_fd_, &stats_,
+                                   mmap_list_, mmap_list_length_);
 #ifndef NDEBUG
   size_t committed_difference =
-      stats_.anonymous.committed_bytes() - anonymous_committed;
+      stats_.all[ANONYMOUS].committed_bytes() - anonymous_committed;
   if (committed_difference != 0) {
     RAW_LOG(0, "Difference in committed size: %ld", committed_difference);
   }
@@ -178,6 +195,9 @@ int DeepHeapProfile::FillOrderedProfile(char buffer[], int buffer_size) {
   RAW_DCHECK(used_in_buffer < buffer_size, "");
 
   // Note: Memory snapshots are complete, and malloc may again be used freely.
+
+  heap_profile_->dealloc_(mmap_list_);
+  mmap_list_ = NULL;
 
   // Write the bucket listing into a .bucket file.
   WriteBucketsToBucketFile();
@@ -276,6 +296,7 @@ size_t DeepHeapProfile::GetCommittedSize(
   while (page_address <= last_address) {
     // Read corresponding physical page.
     PageState state;
+    // TODO(dmikurube): Read pagemap in bulk for speed.
     if (ReadProcPagemap(pagemap_fd, &state) == false) {
       // We can't read the last region (e.g vsyscall).
 #ifndef NDEBUG
@@ -334,18 +355,22 @@ void DeepHeapProfile::WriteMapsToFile(const char* filename_prefix,
 // ProcMapsIterator uses snprintf internally in construction.
 // static
 void DeepHeapProfile::SnapshotGlobalStatsWithoutMalloc(int pagemap_fd,
-                                                       GlobalStats* stats) {
+                                                       GlobalStats* stats,
+                                                       MMapListEntry* mmap_list,
+                                                       int mmap_list_length) {
   ProcMapsIterator::Buffer iterator_buffer;
   ProcMapsIterator iterator(0, &iterator_buffer);
   uint64 first_address, last_address, offset;
   int64 unused_inode;
   char* flags;
   char* filename;
+  int mmap_list_index = 0;
+  enum MapsRegionType type;
 
-  stats->total.Initialize();
-  stats->file_mapped.Initialize();
-  stats->anonymous.Initialize();
-  stats->other.Initialize();
+  for (int i = 0; i < NUMBER_OF_MAPS_REGION_TYPES; ++i) {
+    stats->all[i].Initialize();
+    stats->nonprofiled[i].Initialize();
+  }
 
   while (iterator.Next(&first_address, &last_address,
                        &flags, &offset, &unused_inode, &filename)) {
@@ -355,14 +380,53 @@ void DeepHeapProfile::SnapshotGlobalStatsWithoutMalloc(int pagemap_fd,
       continue;  // Reading pagemap will fail in [vsyscall].
     }
 
-    stats->total.Record(pagemap_fd, first_address, last_address);
-
+    type = ABSENT;
     if (filename[0] == '/') {
-      stats->file_mapped.Record(pagemap_fd, first_address, last_address);
+      if (flags[2] == 'x')
+        type = FILE_EXEC;
+      else
+        type = FILE_NONEXEC;
     } else if (filename[0] == '\0' || filename[0] == '\n') {
-      stats->anonymous.Record(pagemap_fd, first_address, last_address);
+      type = ANONYMOUS;
+    } else if (strcmp(filename, "[stack]") == 0) {
+      type = STACK;
     } else {
-      stats->other.Record(pagemap_fd, first_address, last_address);
+      type = OTHER;
+    }
+    stats->all[type].Record(pagemap_fd, first_address, last_address);
+
+    // TODO(dmikurube): Avoid double-counting of pagemap.
+    // Counts nonprofiled memory regions in /proc/<pid>/maps.
+    if (mmap_list != NULL) {
+      // It assumes that every mmap'ed region is included in one maps line.
+      uint64 cursor = first_address;
+      bool first = true;
+
+      do {
+        if (!first) {
+          mmap_list[mmap_list_index].type = type;
+          cursor = mmap_list[mmap_list_index].last_address + 1;
+          ++mmap_list_index;
+        }
+        first = false;
+
+        uint64 last_address_of_nonprofiled;
+        // If the next mmap entry is away from the current maps line.
+        if (mmap_list_index >= mmap_list_length ||
+            mmap_list[mmap_list_index].first_address > last_address) {
+          last_address_of_nonprofiled = last_address;
+        } else {
+          last_address_of_nonprofiled =
+              mmap_list[mmap_list_index].first_address - 1;
+        }
+
+        if (last_address_of_nonprofiled + 1 > cursor) {
+          stats->nonprofiled[type].Record(
+              pagemap_fd, cursor, last_address_of_nonprofiled);
+          cursor = last_address_of_nonprofiled + 1;
+        }
+      } while (mmap_list_index < mmap_list_length &&
+               mmap_list[mmap_list_index].last_address <= last_address);
     }
   }
 }
@@ -412,6 +476,19 @@ int DeepHeapProfile::SnapshotBucketTableWithoutMalloc(Bucket** bucket_table,
   return used_in_buffer;
 }
 
+// static
+bool DeepHeapProfile::ByFirstAddress(const MMapListEntry& a,
+                                     const MMapListEntry& b) {
+  return a.first_address < b.first_address;
+}
+
+// static
+void DeepHeapProfile::CountMMap(const void* pointer,
+                                AllocValue* alloc_value,
+                                DeepHeapProfile* deep_profile) {
+  ++deep_profile->num_mmap_allocations_;
+}
+
 void DeepHeapProfile::RecordAlloc(const void* pointer,
                                   AllocValue* alloc_value,
                                   DeepHeapProfile* deep_profile) {
@@ -421,8 +498,8 @@ void DeepHeapProfile::RecordAlloc(const void* pointer,
 
   DeepBucket* deep_bucket = deep_profile->GetDeepBucket(alloc_value->bucket());
   deep_bucket->committed_size += committed;
-  deep_profile->stats_.record_malloc.AddToVirtualBytes(alloc_value->bytes);
-  deep_profile->stats_.record_malloc.AddToCommittedBytes(committed);
+  deep_profile->stats_.profiled_malloc.AddToVirtualBytes(alloc_value->bytes);
+  deep_profile->stats_.profiled_malloc.AddToCommittedBytes(committed);
 }
 
 void DeepHeapProfile::RecordMMap(const void* pointer,
@@ -434,19 +511,33 @@ void DeepHeapProfile::RecordMMap(const void* pointer,
 
   DeepBucket* deep_bucket = deep_profile->GetDeepBucket(alloc_value->bucket());
   deep_bucket->committed_size += committed;
-  deep_profile->stats_.record_mmap.AddToVirtualBytes(alloc_value->bytes);
-  deep_profile->stats_.record_mmap.AddToCommittedBytes(committed);
+  deep_profile->stats_.profiled_mmap.AddToVirtualBytes(alloc_value->bytes);
+  deep_profile->stats_.profiled_mmap.AddToCommittedBytes(committed);
+
+  if (deep_profile->mmap_list_length_ < deep_profile->num_mmap_allocations_) {
+    deep_profile->mmap_list_[deep_profile->mmap_list_length_].first_address =
+        address;
+    deep_profile->mmap_list_[deep_profile->mmap_list_length_].last_address =
+        address - 1 + alloc_value->bytes;
+    deep_profile->mmap_list_[deep_profile->mmap_list_length_].type = ABSENT;
+    ++deep_profile->mmap_list_length_;
+  } else {
+    RAW_LOG(0, "Unexpected number of mmap entries: %d/%d",
+            deep_profile->mmap_list_length_,
+            deep_profile->num_mmap_allocations_);
+  }
 }
 
 void DeepHeapProfile::SnapshotAllAllocsWithoutMalloc() {
-  stats_.record_mmap.Initialize();
-  stats_.record_malloc.Initialize();
+  stats_.profiled_mmap.Initialize();
+  stats_.profiled_malloc.Initialize();
 
   // malloc allocations.
   heap_profile_->alloc_address_map_->Iterate(RecordAlloc, this);
 
   // mmap allocations.
   heap_profile_->mmap_address_map_->Iterate(RecordMMap, this);
+  std::sort(mmap_list_, mmap_list_ + mmap_list_length_, ByFirstAddress);
 }
 
 int DeepHeapProfile::FillBucketForBucketFile(const DeepBucket* deep_bucket,
@@ -559,7 +650,7 @@ int DeepHeapProfile::UnparseRegionStats(const RegionStats* stats,
                                         int buffer_size,
                                         char* buffer) {
   int printed = snprintf(buffer + used_in_buffer, buffer_size - used_in_buffer,
-                         "%15s %10ld %10ld\n",
+                         "%25s %12ld %12ld\n",
                          name, stats->virtual_bytes(),
                          stats->committed_bytes());
   if (IsPrintedStringValid(printed, buffer_size, used_in_buffer)) {
@@ -573,26 +664,64 @@ int DeepHeapProfile::UnparseRegionStats(const RegionStats* stats,
 int DeepHeapProfile::UnparseGlobalStats(int used_in_buffer,
                                         int buffer_size,
                                         char* buffer) {
-  int printed = snprintf(buffer + used_in_buffer, buffer_size - used_in_buffer,
-                         "%15s %10s %10s\n", "",
+  RegionStats all_total;
+  RegionStats nonprofiled_total;
+  for (int i = 0; i < NUMBER_OF_MAPS_REGION_TYPES; ++i) {
+    all_total.AddAnotherRegionStat(stats_.all[i]);
+    nonprofiled_total.AddAnotherRegionStat(stats_.nonprofiled[i]);
+  }
+  int printed = snprintf(
+      buffer + used_in_buffer, buffer_size - used_in_buffer,
+      "# total (%lu) %c= profiled-mmap (%lu) + nonprofiled-* (%lu)\n",
+      all_total.committed_bytes(),
+      all_total.committed_bytes() ==
+          stats_.profiled_mmap.committed_bytes() +
+          nonprofiled_total.committed_bytes() ? '=' : '!',
+      stats_.profiled_mmap.committed_bytes(),
+      nonprofiled_total.committed_bytes());
+  if (IsPrintedStringValid(printed, buffer_size, used_in_buffer)) {
+    return used_in_buffer;
+  }
+  used_in_buffer += printed;
+
+  printed = snprintf(buffer + used_in_buffer, buffer_size - used_in_buffer,
+                         "%25s %12s %12s\n", "",
                          kVirtualLabel, kCommittedLabel);
   if (IsPrintedStringValid(printed, buffer_size, used_in_buffer)) {
     return used_in_buffer;
   }
   used_in_buffer += printed;
 
-  used_in_buffer = UnparseRegionStats(&(stats_.total), "total",
-      used_in_buffer, buffer_size, buffer);
-  used_in_buffer = UnparseRegionStats(&(stats_.file_mapped), "file mapped",
-      used_in_buffer, buffer_size, buffer);
-  used_in_buffer = UnparseRegionStats(&(stats_.anonymous), "anonymous",
-      used_in_buffer, buffer_size, buffer);
-  used_in_buffer = UnparseRegionStats(&(stats_.other), "other",
-      used_in_buffer, buffer_size, buffer);
-  used_in_buffer = UnparseRegionStats(&(stats_.record_mmap), "mmap",
-      used_in_buffer, buffer_size, buffer);
-  used_in_buffer = UnparseRegionStats(&(stats_.record_malloc), "tcmalloc",
-      used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(all_total),
+      "total", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.all[FILE_EXEC]),
+      "file-exec", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.all[FILE_NONEXEC]),
+      "file-nonexec", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.all[ANONYMOUS]),
+      "anonymous", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.all[STACK]),
+      "stack", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.all[OTHER]),
+      "other", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(nonprofiled_total),
+      "nonprofiled-total", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.nonprofiled[ABSENT]),
+      "nonprofiled-absent", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.nonprofiled[ANONYMOUS]),
+      "nonprofiled-anonymous", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.nonprofiled[FILE_EXEC]),
+      "nonprofiled-file-exec", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.nonprofiled[FILE_NONEXEC]),
+      "nonprofiled-file-nonexec", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.nonprofiled[STACK]),
+      "nonprofiled-stack", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.nonprofiled[OTHER]),
+      "nonprofiled-other", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.profiled_mmap),
+      "profiled-mmap", used_in_buffer, buffer_size, buffer);
+  used_in_buffer = UnparseRegionStats(&(stats_.profiled_malloc),
+      "profiled-malloc", used_in_buffer, buffer_size, buffer);
   return used_in_buffer;
 }
 #else  // DEEP_HEAP_PROFILE
