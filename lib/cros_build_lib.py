@@ -755,7 +755,8 @@ def GetCurrentBranch(cwd):
   """Returns current branch of a repo, and None if repo is on detached HEAD."""
   try:
     current_branch = RunCommand(['git', 'symbolic-ref', '-q', 'HEAD'], cwd=cwd,
-                                redirect_stdout=True).output.strip()
+                                redirect_stdout=True,
+                                print_cmd=False).output.strip()
     current_branch = current_branch.replace('refs/heads/', '')
   except RunCommandError:
     return None
