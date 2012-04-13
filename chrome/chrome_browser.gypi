@@ -3900,6 +3900,7 @@
         'browser/ui/webui/web_ui_util.h',
         'browser/ui/window_sizer.cc',
         'browser/ui/window_sizer.h',
+        'browser/ui/window_sizer_ash.cc',
         'browser/ui/window_sizer_aura.cc',
         'browser/ui/window_sizer_gtk.cc',
         'browser/ui/window_sizer_mac.mm',

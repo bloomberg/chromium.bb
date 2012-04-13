@@ -13,11 +13,14 @@
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/single_monitor_manager.h"
-#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
+
+#if defined(USE_ASH)
+#include "ui/aura/test/test_screen.h"
+#endif
 
 namespace views {
 namespace {
@@ -41,7 +44,9 @@ class NativeWidgetAuraTest : public testing::Test {
         new aura::test::SingleMonitorManager);
     root_window_.reset(
         aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
+#if defined(USE_ASH)
     gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
+#endif
     root_window_->SetBounds(gfx::Rect(0, 0, 640, 480));
     root_window_->SetHostSize(gfx::Size(640, 480));
     test_stacking_client_.reset(

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_aura.h"
 
-#include "ash/wm/property_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/system_menu_model_delegate.h"
@@ -20,6 +19,10 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
+
+#if defined(USE_ASH)
+#include "ash/wm/property_util.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAura::WindowPropertyWatcher
@@ -60,9 +63,11 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
       window_property_watcher_(new WindowPropertyWatcher(this, browser_frame)) {
   GetNativeWindow()->SetName("BrowserFrameAura");
   GetNativeWindow()->AddObserver(window_property_watcher_.get());
+#if defined(USE_ASH)
   ash::SetPersistsAcrossAllWorkspaces(
       GetNativeWindow(),
       ash::WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_NO);
+#endif
 }
 
 BrowserFrameAura::~BrowserFrameAura() {

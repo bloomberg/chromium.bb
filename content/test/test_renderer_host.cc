@@ -13,12 +13,15 @@
 #include "content/test/mock_render_process_host.h"
 #include "content/test/test_browser_context.h"
 
+#if defined(USE_ASH)
+#include "ui/aura/test/test_screen.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/single_monitor_manager.h"
-#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #endif
 
@@ -195,10 +198,12 @@ void RenderViewHostTestHarness::SetUp() {
   aura::Env::GetInstance()->SetMonitorManager(
       new aura::test::SingleMonitorManager);
   root_window_.reset(aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
+#if defined(USE_ASH)
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
+#endif  // USE_ASH
   test_stacking_client_.reset(
       new aura::test::TestStackingClient(root_window_.get()));
-#endif
+#endif  // USE_AURA
   SetContents(CreateTestWebContents());
 }
 

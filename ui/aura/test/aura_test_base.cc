@@ -8,11 +8,14 @@
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/single_monitor_manager.h"
-#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/base/gestures/gesture_configuration.h"
 #include "ui/ui_controls/ui_controls.h"
+
+#if defined(USE_ASH)
+#include "ui/aura/test/test_screen.h"
+#endif
 
 namespace aura {
 namespace test {
@@ -50,7 +53,9 @@ void AuraTestBase::SetUp() {
   Env::GetInstance()->SetMonitorManager(new SingleMonitorManager);
   root_window_.reset(Env::GetInstance()->monitor_manager()->
                      CreateRootWindowForPrimaryMonitor());
+#if defined(USE_ASH)
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
+#endif
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
   helper_.InitRootWindow(root_window());
   helper_.SetUp();

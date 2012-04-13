@@ -4,6 +4,10 @@
 
 #include "ui/views/test/views_test_base.h"
 
+#if defined(USE_ASH)
+#include "ui/aura/test/test_screen.h"
+#endif
+
 #if defined(USE_AURA)
 #include "base/compiler_specific.h"
 #include "ui/aura/client/aura_constants.h"
@@ -12,7 +16,6 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/single_monitor_manager.h"
 #include "ui/aura/test/test_activation_client.h"
-#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/base/ime/input_method.h"
 
@@ -83,7 +86,9 @@ void ViewsTestBase::SetUp() {
   aura::Env::GetInstance()->SetMonitorManager(
       new aura::test::SingleMonitorManager);
   root_window_.reset(aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
+#if defined(USE_ASH)
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
+#endif  // USE_ASH
   root_window_->SetProperty(
       aura::client::kRootWindowInputMethodKey,
       test_input_method_.get());
@@ -91,7 +96,7 @@ void ViewsTestBase::SetUp() {
       new aura::test::TestActivationClient(root_window_.get()));
   test_stacking_client_.reset(
       new aura::test::TestStackingClient(root_window_.get()));
-#endif
+#endif  // USE_AURA
 }
 
 void ViewsTestBase::TearDown() {

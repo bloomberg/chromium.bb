@@ -132,10 +132,12 @@ class AccessibilityEventRouterViewsTest
         new aura::test::SingleMonitorManager);
     root_window_.reset(
         aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
+#if defined(USE_ASH)
     gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
+#endif  // USE_ASH
     test_stacking_client_.reset(
         new aura::test::TestStackingClient(root_window_.get()));
-#endif
+#endif  // USE_AURA
   }
 
   virtual void TearDown() {
