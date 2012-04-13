@@ -80,7 +80,7 @@ bool SimpleMessageBoxViews::ShowYesNoBox(gfx::NativeWindow parent_window,
 // SimpleMessageBoxViews, private:
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
-  if (type_ == DIALOG_ERROR)
+  if (dialog_type_ == DIALOG_ERROR)
     return ui::DIALOG_BUTTON_OK;
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
@@ -102,7 +102,7 @@ bool SimpleMessageBoxViews::Accept() {
 }
 
 string16 SimpleMessageBoxViews::GetWindowTitle() const {
-  return message_box_title_;
+  return window_title_;
 }
 
 void SimpleMessageBoxViews::DeleteDelegate() {
@@ -126,16 +126,14 @@ const views::Widget* SimpleMessageBoxViews::GetWidget() const {
 }
 
 SimpleMessageBoxViews::SimpleMessageBoxViews(gfx::NativeWindow parent_window,
-                                             DialogType type,
+                                             DialogType dialog_type,
                                              const string16& title,
                                              const string16& message)
-    : type_(type),
-      disposition_(DISPOSITION_UNKNOWN) {
-  message_box_title_ = title;
-  message_box_view_ = new views::MessageBoxView(
-      views::MessageBoxView::NO_OPTIONS,
-      message,
-      string16());
+    : dialog_type_(dialog_type),
+      disposition_(DISPOSITION_UNKNOWN),
+      window_title_(title),
+      message_box_view_(new views::MessageBoxView(
+          views::MessageBoxView::NO_OPTIONS, message, string16())) {
   views::Widget::CreateWindowWithParent(this, parent_window)->Show();
 
   // Add reference to be released in DeleteDelegate().

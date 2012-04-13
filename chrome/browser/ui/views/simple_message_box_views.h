@@ -61,7 +61,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
   SimpleMessageBoxViews(gfx::NativeWindow parent_window,
-                        DialogType type,
+                        DialogType dialog_type,
                         const string16& title,
                         const string16& message);
   virtual ~SimpleMessageBoxViews();
@@ -71,10 +71,10 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   // if the message is such that the menu should be closed.
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
-  const DialogType type_;
-  string16 message_box_title_;
-  views::MessageBoxView* message_box_view_;
+  const DialogType dialog_type_;
   DispositionType disposition_;
+  const string16 window_title_;
+  views::MessageBoxView* message_box_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMessageBoxViews);
 };
