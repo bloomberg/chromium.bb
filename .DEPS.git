@@ -30,7 +30,7 @@ deps = {
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@c74bced333e3bd4c244923661cccdbca5ef7d424',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@8753072287feafcf7c6a5b7dd832566304c51597',
+        Var('git_url') + '/native_client/src/native_client.git@7c16616da67a5ecd07ff5a72139c93ac30f8d31d',
     'src/native_client_sdk/src/site_scons':
         Var('git_url') + '/native_client/src/native_client/site_scons.git@a8f97296b1f9f684952595a200dbba25f3377fc1',
     'src/sdch/open-vcdiff':
@@ -182,6 +182,8 @@ deps_os = {
             Var('git_url') + '/external/rlz.git@250c68f222a879d1beef487596f465455ddc77ce',
         'src/third_party/cygwin':
             Var('git_url') + '/chromium/deps/cygwin.git@06a117a90c15174436bfa20ceebbfdf43b7eb820',
+        'src/third_party/gnu_binutils':
+            Var('git_url') + '/native_client/deps/third_party/gnu_binutils.git@f4003433b61b25666565690caf3d7a7a1a4ec436',
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@856e79c6109d4f0abe93c01d4c22419e33c9bee7',
         'src/third_party/mingw-w64/mingw/bin':
