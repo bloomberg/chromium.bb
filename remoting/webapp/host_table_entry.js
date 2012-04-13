@@ -53,8 +53,8 @@ remoting.HostTableEntry = function() {
   this.onConfirmDeleteReference_ = function() {};
   /** @type {function():void} @private */
   this.onCancelDeleteReference_ = function() {};
-  /** @type {function():void} @private */
-  this.onConnectReference_ = function() {};
+  /** @type {function():void?} @private */
+  this.onConnectReference_ = null;
 };
 
 /**
@@ -145,10 +145,6 @@ remoting.HostTableEntry.prototype.init = function(
     };
     opt_deleteButton.addEventListener('click', confirmDelete, false);
   }
-  var hostUrl = chrome.extension.getURL('main.html') +
-      '?mode=me2me&hostId=' + encodeURIComponent(host.hostId);
-  this.onConnectReference_ = function() { window.location.assign(hostUrl); };
-
   this.updateStatus();
 };
 
@@ -163,12 +159,25 @@ remoting.HostTableEntry.prototype.init = function(
 remoting.HostTableEntry.prototype.updateStatus = function(opt_forEdit) {
   var clickToConnect = this.host.status == 'ONLINE' && !opt_forEdit;
   if (clickToConnect) {
-    this.tableRow.addEventListener('click', this.onConnectReference_, false);
+    if (!this.onConnectReference_) {
+      /** @type {remoting.HostTableEntry} */
+      var that = this;
+      this.onConnectReference_ = function() {
+        var hostUrl = chrome.extension.getURL('main.html') +
+            '?mode=me2me&hostId=' + encodeURIComponent(that.host.hostId);
+        window.location.assign(hostUrl);
+      };
+      this.tableRow.addEventListener('click', this.onConnectReference_, false);
+    }
     this.tableRow.classList.add('clickable');
     this.tableRow.title = chrome.i18n.getMessage(
         /*i18n-content*/'TOOLTIP_CONNECT', this.host.hostName);
   } else {
-    this.tableRow.removeEventListener('click', this.onConnectReference_, false);
+    if (this.onConnectReference_) {
+      this.tableRow.removeEventListener('click', this.onConnectReference_,
+                                        false);
+      this.onConnectReference_ = null;
+    }
     this.tableRow.classList.remove('clickable');
     this.tableRow.title = '';
   }

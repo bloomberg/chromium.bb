@@ -279,13 +279,21 @@ remoting.HostController.prototype.setHost = function(host) {
       remoting.hostList.renameHost(host);
       that.setTooltips();
     };
-    /** @type {remoting.HostTableEntry} @private */
-    this.hostTableEntry_ = new remoting.HostTableEntry();
-    this.hostTableEntry_.init(host,
-                              document.getElementById('this-host-connect'),
-                              document.getElementById('this-host-name'),
-                              document.getElementById('this-host-rename'),
-                              renameHost);
+    if (!this.hostTableEntry_) {
+      /** @type {remoting.HostTableEntry} @private */
+      this.hostTableEntry_ = new remoting.HostTableEntry();
+      this.hostTableEntry_.init(host,
+                                document.getElementById('this-host-connect'),
+                                document.getElementById('this-host-name'),
+                                document.getElementById('this-host-rename'),
+                                renameHost);
+    } else {
+      // TODO(jamiewalch): This is hack to prevent multiple click handlers being
+      // registered for the same DOM elements if this method is called more than
+      // once. A better solution would be to let HostTable create the daemon row
+      // like it creates the rows for non-local hosts.
+      this.hostTableEntry_.host = host;
+    }
   } else {
     this.hostTableEntry_ = null;
   }
