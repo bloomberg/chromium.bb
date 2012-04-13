@@ -233,9 +233,12 @@ enum {
     // be big enough to hold all locks that'll ever be needed.
     barVisibilityLocks_.reset([[NSMutableSet setWithCapacity:10] retain]);
 
-    // Sets the window to not have rounded corners, which prevents
-    // the resize control from being inset slightly and looking ugly.
-    if ([window respondsToSelector:@selector(setBottomCornerRounded:)])
+    // Set the window to not have rounded corners, which prevents the resize
+    // control from being inset slightly and looking ugly. Only bother to do
+    // this on Snow Leopard and earlier; on Lion and later all windows have
+    // rounded bottom corners, and this won't work anyway.
+    if (base::mac::IsOSSnowLeopardOrEarlier() &&
+        [window respondsToSelector:@selector(setBottomCornerRounded:)])
       [window setBottomCornerRounded:NO];
 
     // Lion will attempt to automagically save and restore the UI. This

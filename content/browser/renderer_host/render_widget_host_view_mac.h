@@ -133,10 +133,6 @@ class RenderWidgetHostImpl;
 
   // recursive globalFrameDidChange protection:
   BOOL handlingGlobalFrameDidChange_;
-
-  // Set to YES once a GL context is attached to this NSView; never set back to
-  // NO.
-  BOOL hasGLContext_;
 }
 
 @property(nonatomic, readonly) NSRange selectedRange;
@@ -158,9 +154,6 @@ class RenderWidgetHostImpl;
 // Evaluates the event in the context of plugin IME, if plugin IME is enabled.
 // Returns YES if the event was handled.
 - (BOOL)postProcessEventForPluginIme:(NSEvent*)event;
-// Tell the view that a GL context was created and accelerated rendering may
-// ensue.
-- (void)addedGLContext;
 
 @end
 

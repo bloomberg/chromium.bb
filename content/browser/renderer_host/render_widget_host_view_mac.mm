@@ -955,7 +955,6 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
                                                     int32 gpu_host_id) {
   pending_swap_buffers_acks_.push_back(std::make_pair(route_id, gpu_host_id));
   if (!compositing_iosurface_.get() && !is_hidden_) {
-    [cocoa_view_ addedGLContext];
     compositing_iosurface_.reset(CompositingIOSurfaceMac::Create());
   }
 
@@ -1227,7 +1226,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
     // OpenGL support:
     handlingGlobalFrameDidChange_ = NO;
-    hasGLContext_ = NO;
     [[NSNotificationCenter defaultCenter]
          addObserver:self
             selector:@selector(globalFrameDidChange:)
@@ -1764,35 +1762,13 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 }
 
-// OpenGL support
-- (void)addedGLContext {
-  hasGLContext_ = YES;
-  if (![self isHiddenOrHasHiddenAncestor]) {
-    // Intentionally leak underlaySurface count so that the window never changes
-    // back to opaque. This is to prevent black/transparent flashing that
-    // appears during tab switching otherwise.
-    // TODO(jbates) Remove the underlaySurfaceAdded feature completely from
-    // ChromeBrowserWindow when the subtle gray line corner bug is fixed. Then
-    // the window can be permanently set to non-opaque. crbug.com/56154
-    if ([[self window] respondsToSelector:@selector(underlaySurfaceAdded)])
-      [static_cast<id>([self window]) underlaySurfaceAdded];
-  }
-}
-
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
-  if (![self isHiddenOrHasHiddenAncestor]) {
-    // Intentionally leak underlaySurface count (see comment in addedGLContext).
-    if (hasGLContext_ &&
-        [newWindow respondsToSelector:@selector(underlaySurfaceAdded)])
-      [static_cast<id>(newWindow) underlaySurfaceAdded];
-  }
-
   // We're messing with the window, so do this to ensure no flashes. This one
   // prevents a flash when the current tab is closed.
   [[self window] disableScreenUpdatesUntilFlush];
 }
 
-- (void) globalFrameDidChange:(NSNotification*)notification {
+- (void)globalFrameDidChange:(NSNotification*)notification {
   if (handlingGlobalFrameDidChange_)
     return;
 
