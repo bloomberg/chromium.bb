@@ -19,6 +19,9 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     : manifest(extension->manifest()->value()->DeepCopy()),
       location(extension->location()),
       path(extension->path()),
+      apis(extension->GetActivePermissions()->apis()),
+      explicit_hosts(extension->GetActivePermissions()->explicit_hosts()),
+      scriptable_hosts(extension->GetActivePermissions()->scriptable_hosts()),
       id(extension->id()),
       creation_flags(extension->creation_flags()) {
 }
@@ -30,9 +33,13 @@ scoped_refptr<Extension>
   scoped_refptr<Extension> extension(
       Extension::Create(path, location, *manifest, creation_flags,
                         &error));
-  if (!extension.get())
+  if (!extension.get()) {
     DLOG(ERROR) << "Error deserializing extension: " << error;
+    return extension;
+  }
 
+  extension->SetActivePermissions(
+        new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts));
   return extension;
 }
 
@@ -133,6 +140,9 @@ void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,
   WriteParam(m, p.path);
   WriteParam(m, *(p.manifest));
   WriteParam(m, p.creation_flags);
+  WriteParam(m, p.apis);
+  WriteParam(m, p.explicit_hosts);
+  WriteParam(m, p.scriptable_hosts);
 }
 
 bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const Message* m,
@@ -142,7 +152,10 @@ bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const Message* m,
   return ReadParam(m, iter, &p->location) &&
          ReadParam(m, iter, &p->path) &&
          ReadParam(m, iter, p->manifest.get()) &&
-         ReadParam(m, iter, &p->creation_flags);
+         ReadParam(m, iter, &p->creation_flags) &&
+         ReadParam(m, iter, &p->apis) &&
+         ReadParam(m, iter, &p->explicit_hosts) &&
+         ReadParam(m, iter, &p->scriptable_hosts);
 }
 
 void ParamTraits<ExtensionMsg_Loaded_Params>::Log(const param_type& p,

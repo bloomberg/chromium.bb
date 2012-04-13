@@ -118,6 +118,11 @@ struct ExtensionMsg_Loaded_Params {
   // to generate the extension ID for extensions that are loaded unpacked.
   FilePath path;
 
+  // The extension's active permissions.
+  ExtensionAPIPermissionSet apis;
+  URLPatternSet explicit_hosts;
+  URLPatternSet scriptable_hosts;
+
   // We keep this separate so that it can be used in logging.
   std::string id;
 
