@@ -95,7 +95,7 @@ check_translation(const char *tableList, const char *str,
 }
 
 int
-check_outpos(const char *str, const int *expected_poslist)
+check_outpos(const char *tableList, const char *str, const int *expected_poslist)
 {
   widechar *inbuf;
   widechar *outbuf;
@@ -114,7 +114,7 @@ check_outpos(const char *str, const int *expected_poslist)
     {
       inbuf[i] = str[i];
     }
-  lou_translate(TRANSLATION_TABLE, inbuf, &inlen, outbuf, &outlen,
+  lou_translate(tableList, inbuf, &inlen, outbuf, &outlen,
 		NULL, NULL, outpos, inpos, NULL, 0);
   for (i = 0; i < outlen; i++)
     {
