@@ -22,22 +22,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace {
-
-ChromeLauncherDelegate::AppType GetDelegateType(LauncherUpdater::Type type) {
-  switch (type) {
-    case LauncherUpdater::TYPE_APP_PANEL:
-      return ChromeLauncherDelegate::APP_TYPE_APP_PANEL;
-    case LauncherUpdater::TYPE_EXTENSION_PANEL:
-      return ChromeLauncherDelegate::APP_TYPE_EXTENSION_PANEL;
-    case LauncherUpdater::TYPE_TABBED:
-      NOTREACHED();
-  }
-  return ChromeLauncherDelegate::APP_TYPE_WINDOW;
-}
-
-}  // namespace
-
 LauncherUpdater::LauncherUpdater(aura::Window* window,
                                  TabStripModel* tab_model,
                                  ChromeLauncherDelegate* delegate,
@@ -65,14 +49,13 @@ void LauncherUpdater::Init() {
       ash::wm::IsActiveWindow(window_) ?
           ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
   if (type_ != TYPE_TABBED) {
-    ChromeLauncherDelegate::AppType app_type = GetDelegateType(type_);
     item_id_ = launcher_delegate_->CreateAppLauncherItem(
-        this, app_id_, app_type, app_status);
+        this, app_id_, app_status);
   } else {
     item_id_ = launcher_delegate_->CreateTabbedLauncherItem(
         this,
         is_incognito_ ? ChromeLauncherDelegate::STATE_INCOGNITO :
-                       ChromeLauncherDelegate::STATE_NOT_INCOGNITO,
+                        ChromeLauncherDelegate::STATE_NOT_INCOGNITO,
         app_status);
   }
   // In testing scenarios we can get tab strips with no active contents.

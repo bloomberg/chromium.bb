@@ -120,25 +120,8 @@ bool IsAppPinned(const std::string& extension_id) {
   return ChromeLauncherDelegate::instance()->IsAppPinned(extension_id);
 }
 
-void PinApp(const std::string& extension_id,
-            ExtensionPrefs::LaunchType launch_type) {
-  ChromeLauncherDelegate::AppType app_type =
-      ChromeLauncherDelegate::APP_TYPE_TAB;
-  switch (launch_type) {
-    case ExtensionPrefs::LAUNCH_PINNED:
-    case ExtensionPrefs::LAUNCH_REGULAR:
-      app_type = ChromeLauncherDelegate::APP_TYPE_TAB;
-      break;
-    case ExtensionPrefs::LAUNCH_FULLSCREEN:
-    case ExtensionPrefs::LAUNCH_WINDOW:
-      app_type = ChromeLauncherDelegate::APP_TYPE_WINDOW;
-      break;
-    default:
-      NOTREACHED() << "Unknown launch_type=" << launch_type;
-      break;
-  }
-
-  ChromeLauncherDelegate::instance()->PinAppWithID(extension_id, app_type);
+void PinApp(const std::string& extension_id) {
+  ChromeLauncherDelegate::instance()->PinAppWithID(extension_id);
 }
 
 void UnpinApp(const std::string& extension_id) {
@@ -295,12 +278,10 @@ void ExtensionAppItem::ExecuteCommand(int command_id) {
   if (command_id == LAUNCH) {
     Activate(0);
   } else if (command_id == TOGGLE_PIN) {
-    if (IsAppPinned(extension_id_)) {
+    if (IsAppPinned(extension_id_))
       UnpinApp(extension_id_);
-    } else {
-      PinApp(extension_id_,
-             GetExtensionLaunchType(profile_, extension_id_));
-    }
+    else
+      PinApp(extension_id_);
   } else if (command_id >= LAUNCH_TYPE_START &&
              command_id < LAUNCH_TYPE_LAST) {
     SetExtensionLaunchType(profile_,
@@ -340,7 +321,7 @@ void ExtensionAppItem::Activate(int event_flags) {
     // is set, launch as a regular tab.
     extension_misc::LaunchContainer launch_container =
         profile_->GetExtensionService()->extension_prefs()->GetLaunchContainer(
-            extension, ExtensionPrefs::LAUNCH_REGULAR);
+            extension, ExtensionPrefs::LAUNCH_DEFAULT);
 
     Browser::OpenApplication(
         profile_, extension, launch_container, GURL(url),

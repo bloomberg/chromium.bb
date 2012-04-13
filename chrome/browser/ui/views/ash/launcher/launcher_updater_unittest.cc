@@ -243,9 +243,6 @@ TEST_F(LauncherUpdaterTest, PanelItem) {
     updater.Init();
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
     EXPECT_EQ(ash::TYPE_APP_PANEL, GetItem(&updater).type);
-    ash::LauncherID id = GetItem(&updater).id;
-    EXPECT_EQ(ChromeLauncherDelegate::APP_TYPE_APP_PANEL,
-              launcher_delegate_->GetAppType(id));
     EXPECT_EQ(static_cast<void*>(NULL), updater.favicon_loader_.get());
   }
 
@@ -263,9 +260,6 @@ TEST_F(LauncherUpdaterTest, PanelItem) {
     updater.Init();
     ASSERT_EQ(initial_size + 1, launcher_model_->items().size());
     EXPECT_EQ(ash::TYPE_APP_PANEL, GetItem(&updater).type);
-    ash::LauncherID id = GetItem(&updater).id;
-    EXPECT_EQ(ChromeLauncherDelegate::APP_TYPE_EXTENSION_PANEL,
-              launcher_delegate_->GetAppType(id));
     EXPECT_NE(static_cast<void*>(NULL), updater.favicon_loader_.get());
   }
 }
@@ -278,8 +272,7 @@ TEST_F(LauncherUpdaterTest, PersistPinned) {
   app_icon_loader_->SetAppID(&tab1, "1");
 
   app_icon_loader_->GetAndClearFetchCount();
-  launcher_delegate_->PinAppWithID("1",
-                                   ChromeLauncherDelegate::APP_TYPE_WINDOW);
+  launcher_delegate_->PinAppWithID("1");
   EXPECT_GT(app_icon_loader_->GetAndClearFetchCount(), 0);
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT,
             launcher_model_->items()[1].type);

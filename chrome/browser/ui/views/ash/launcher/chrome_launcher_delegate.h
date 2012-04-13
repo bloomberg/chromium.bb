@@ -17,6 +17,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -38,14 +39,6 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
                                public ash::LauncherModelObserver,
                                public content::NotificationObserver {
  public:
-  // Indicates what should happen when the app is launched.
-  enum AppType {
-    APP_TYPE_WINDOW,
-    APP_TYPE_APP_PANEL,  // Panel opened from the app list.
-    APP_TYPE_EXTENSION_PANEL,  // Panel opened by an extension.
-    APP_TYPE_TAB
-  };
-
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
     STATE_INCOGNITO,
@@ -92,7 +85,6 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // existing pinned app that isn't running on the launcher, its id is returned.
   ash::LauncherID CreateAppLauncherItem(LauncherUpdater* updater,
                                         const std::string& app_id,
-                                        AppType app_type,
                                         ash::LauncherItemStatus status);
 
   // Updates the running status of an item.
@@ -123,8 +115,8 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // Returns true if the specified item is open.
   bool IsOpen(ash::LauncherID id);
 
-  // Returns the type of app for the specified id.
-  AppType GetAppType(ash::LauncherID id);
+  // Returns the launch type of app for the specified id.
+  ExtensionPrefs::LaunchType GetLaunchType(ash::LauncherID id);
 
   // Returns the id of the app for the specified tab.
   std::string GetAppID(TabContentsWrapper* tab);
@@ -138,11 +130,12 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
 
   // Pins an app with |app_id| to launcher. If there is a running instance in
   // launcher, the running instance is pinned. If there is no running instance,
-  // a new launcher item is created with |app_type| and pinned.
-  void PinAppWithID(const std::string& app_id, AppType app_type);
+  // a new launcher item is created and pinned.
+  void PinAppWithID(const std::string& app_id);
 
-  // Modifies an app shortcut to open with the new |app_type|.
-  void SetAppType(ash::LauncherID id, AppType app_type);
+  // Updates the launche type of the app for the specified id to |launch_type|.
+  void SetLaunchType(ash::LauncherID id,
+                     ExtensionPrefs::LaunchType launch_type);
 
   // Unpins any app items whose id is |app_id|.
   void UnpinAppsWithID(const std::string& app_id);
@@ -194,9 +187,6 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
     // Type of item.
     ItemType item_type;
 
-    // If |item_type| is |TYPE_APP|, this identifies how the app is launched.
-    AppType app_type;
-
     // ID of the app.
     std::string app_id;
 
@@ -208,8 +198,7 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
 
   // Updates the pinned pref state. The pinned state consists of a list pref.
   // Each item of the list is a dictionary. The key |kAppIDPath| gives the
-  // id of the app. |kAppTypePath| is one of |kAppTypeTab| or |kAppTypeWindow|
-  // and indicates how the app is opened.
+  // id of the app.
   void PersistPinnedState();
 
   // Sets the AppIconLoader, taking ownership of |loader|. This is intended for

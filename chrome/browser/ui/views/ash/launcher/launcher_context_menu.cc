@@ -6,6 +6,7 @@
 
 #include "ash/launcher/launcher_context_menu.h"
 #include "ash/shell.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -23,12 +24,19 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherDelegate* delegate,
       AddItem(
           MENU_PIN,
           l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_UNPIN));
+      AddSeparator();
       AddCheckItemWithStringId(
           LAUNCH_TYPE_REGULAR_TAB,
           IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
       AddCheckItemWithStringId(
+          LAUNCH_TYPE_PINNED_TAB,
+          IDS_APP_CONTEXT_MENU_OPEN_PINNED);
+      AddCheckItemWithStringId(
           LAUNCH_TYPE_WINDOW,
           IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+      AddCheckItemWithStringId(
+          LAUNCH_TYPE_FULLSCREEN,
+          IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN);
     } else {
       AddItem(MENU_OPEN, delegate->GetTitle(item_));
       if (delegate->IsOpen(item_.id)) {
@@ -47,12 +55,18 @@ LauncherContextMenu::~LauncherContextMenu() {
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
+    case LAUNCH_TYPE_PINNED_TAB:
+      return delegate_->GetLaunchType(item_.id) ==
+          ExtensionPrefs::LAUNCH_PINNED;
     case LAUNCH_TYPE_REGULAR_TAB:
-      return delegate_->GetAppType(item_.id) ==
-          ChromeLauncherDelegate::APP_TYPE_TAB;
+      return delegate_->GetLaunchType(item_.id) ==
+          ExtensionPrefs::LAUNCH_REGULAR;
     case LAUNCH_TYPE_WINDOW:
-      return delegate_->GetAppType(item_.id) ==
-          ChromeLauncherDelegate::APP_TYPE_WINDOW;
+      return delegate_->GetLaunchType(item_.id) ==
+          ExtensionPrefs::LAUNCH_WINDOW;
+    case LAUNCH_TYPE_FULLSCREEN:
+      return delegate_->GetLaunchType(item_.id) ==
+          ExtensionPrefs::LAUNCH_FULLSCREEN;
     case MENU_AUTO_HIDE:
       return ash::LauncherContextMenu::IsAutoHideMenuHideChecked();
     default:
@@ -81,11 +95,17 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
     case MENU_PIN:
       delegate_->TogglePinned(item_.id);
       break;
+    case LAUNCH_TYPE_PINNED_TAB:
+      delegate_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_PINNED);
+      break;
     case LAUNCH_TYPE_REGULAR_TAB:
-      delegate_->SetAppType(item_.id, ChromeLauncherDelegate::APP_TYPE_TAB);
+      delegate_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_REGULAR);
       break;
     case LAUNCH_TYPE_WINDOW:
-      delegate_->SetAppType(item_.id, ChromeLauncherDelegate::APP_TYPE_WINDOW);
+      delegate_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_WINDOW);
+      break;
+    case LAUNCH_TYPE_FULLSCREEN:
+      delegate_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_FULLSCREEN);
       break;
     case MENU_AUTO_HIDE:
       return ash::LauncherContextMenu::ToggleAutoHideMenu();
