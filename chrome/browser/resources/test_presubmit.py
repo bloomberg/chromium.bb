@@ -318,13 +318,17 @@ blah /* hey! */
     self.VerifyContentsProducesOutput("""
 div:not(.class):not([attr=5]), /* We should not catch this. */
 div:not(.class):not([attr]) /* Nor this. */ {
+  background: url(data:image/jpeg,asdfasdfsadf); /* Ignore this. */
   background: -webkit-linear-gradient(left, red,
                                       80% blah blee blar);
   color: red;
   display:block;
 }""", """
 - Colons (:) should have a space after them.
-    display:block;""")
+    display:block;
+
+- Don't use data URIs in source files. Use grit instead.
+    background: url(data:image/jpeg,asdfasdfsadf);""")
 
   def testCssFavorSingleQuotes(self):
     self.VerifyContentsProducesOutput("""
@@ -371,6 +375,16 @@ html[dir=ltr] body /* TODO(dbeam): Require '' around rtl in future? */ {
 - Use milliseconds for time measurements under 1 second.
     transform: one 0.2s; (replace with 200ms)
     transform: two .1s; (replace with 100ms)""")
+
+  def testCssNoDataUrisInSourceFiles(self):
+    self.VerifyContentsProducesOutput("""
+img {
+  background: url( data:image/jpeg,4\/\/350|\/|3|2 );
+  background: url('data:image/jpeg,4\/\/350|\/|3|2');
+}""", """
+- Don't use data URIs in source files. Use grit instead.
+    background: url( data:image/jpeg,4\/\/350|\/|3|2 );
+    background: url('data:image/jpeg,4\/\/350|\/|3|2');""")
 
   def testCssOneRulePerLine(self):
     self.VerifyContentsProducesOutput("""
