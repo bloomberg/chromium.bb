@@ -118,6 +118,7 @@
 #include "chrome/browser/ui/global_error.h"
 #include "chrome/browser/ui/global_error_service.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
+#include "chrome/browser/ui/hung_plugin_tab_helper.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -2918,22 +2919,14 @@ void Browser::CrashedPluginHelper(WebContents* tab,
   if (!tcw)
     return;
 
+  // Tell the hung plugin infobars about this crash so they can close any
+  // related ones.
+  tcw->hung_plugin_tab_helper()->PluginCrashed(plugin_path);
+
   DCHECK(!plugin_path.value().empty());
 
-  string16 plugin_name = plugin_path.LossyDisplayName();
-  webkit::WebPluginInfo plugin_info;
-  if (PluginService::GetInstance()->GetPluginInfoByPath(
-          plugin_path, &plugin_info) &&
-      !plugin_info.name.empty()) {
-    plugin_name = plugin_info.name;
-#if defined(OS_MACOSX)
-    // Many plugins on the Mac have .plugin in the actual name, which looks
-    // terrible, so look for that and strip it off if present.
-    const std::string kPluginExtension = ".plugin";
-    if (EndsWith(plugin_name, ASCIIToUTF16(kPluginExtension), true))
-      plugin_name.erase(plugin_name.length() - kPluginExtension.length());
-#endif  // OS_MACOSX
-  }
+  string16 plugin_name =
+      PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
   gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
   InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
@@ -4282,6 +4275,16 @@ void Browser::FindReply(WebContents* tab,
 
 void Browser::CrashedPlugin(WebContents* tab, const FilePath& plugin_path) {
   CrashedPluginHelper(tab, plugin_path);
+}
+
+void Browser::PluginHungStatusChanged(WebContents* tab,
+                                      int plugin_child_id,
+                                      const FilePath& plugin_path,
+                                      bool is_hung) {
+  TabContentsWrapper* tcw =
+      TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  tcw->hung_plugin_tab_helper()->PluginHungStatusChanged(
+      plugin_child_id, plugin_path, is_hung);
 }
 
 void Browser::UpdatePreferredSize(WebContents* source,

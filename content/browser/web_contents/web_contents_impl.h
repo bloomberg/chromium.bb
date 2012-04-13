@@ -461,6 +461,9 @@ class CONTENT_EXPORT WebContentsImpl
   void OnEndColorChooser(int color_chooser_id);
   void OnSetSelectedColorInColorChooser(int color_chooser_id,
                                         const SkColor& color);
+  void OnPepperPluginHung(int plugin_child_id,
+                          const FilePath& path,
+                          bool is_hung);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished

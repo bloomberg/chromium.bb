@@ -107,7 +107,7 @@ ProcessData& ProcessData::operator=(const ProcessData& rhs) {
 //
 // This operation will hit no fewer than 3 threads.
 //
-// The ChildProcessInfo::Iterator can only be accessed from the IO thread.
+// The BrowserChildProcessHostIterator can only be accessed from the IO thread.
 //
 // The RenderProcessHostIterator can only be accessed from the UI thread.
 //

@@ -3038,6 +3038,8 @@
         'browser/ui/gtk/web_intent_picker_gtk.h',
         'browser/ui/gtk/website_settings_popup_gtk.cc',
         'browser/ui/gtk/website_settings_popup_gtk.h',
+        'browser/ui/hung_plugin_tab_helper.cc',
+        'browser/ui/hung_plugin_tab_helper.h',
         'browser/ui/intents/web_intent_inline_disposition_delegate.cc',
         'browser/ui/intents/web_intent_inline_disposition_delegate.h',
         'browser/ui/intents/web_intent_picker.cc',

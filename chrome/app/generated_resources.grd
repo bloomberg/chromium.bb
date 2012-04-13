@@ -6098,6 +6098,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_BROWSER_HANGMONITOR_RENDERER_END" desc="The label of the 'kill' button">
         Kill pages
       </message>
+      <message name="IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR" desc="The text of the infobar notifying the user that a plugin has hung">
+        A plug-in (<ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>) isn't responding.
+      </message>
+      <message name="IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR_KILLBUTTON" desc="The button on the hung plugin infobar (...PLUGIN_INFOBAR above) to terminate the plugin">
+        Stop plug-in
+      </message>
 
       <!-- Passwords and Exceptions Dialog -->
       <message name="IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE" desc="Title for 'Passwords and exceptions dialog'">

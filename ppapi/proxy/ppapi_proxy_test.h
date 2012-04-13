@@ -198,9 +198,13 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
   };
 
  private:
+  class MockSyncMessageStatusReceiver;
+
   ppapi::TestGlobals host_globals_;
   scoped_ptr<HostDispatcher> host_dispatcher_;
   DelegateMock delegate_mock_;
+
+  scoped_ptr<MockSyncMessageStatusReceiver> status_receiver_;
 };
 
 class HostProxyTest : public HostProxyTestHarness, public testing::Test {

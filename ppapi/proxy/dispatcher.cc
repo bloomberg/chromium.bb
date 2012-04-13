@@ -50,6 +50,9 @@ base::MessageLoopProxy* Dispatcher::GetIPCMessageLoop() {
 
 void Dispatcher::AddIOThreadMessageFilter(
     IPC::ChannelProxy::MessageFilter* filter) {
+  // Our filter is refcounted. The channel will call the destruct method on the
+  // filter when the channel is done with it, so the corresponding Release()
+  // happens there.
   channel()->AddFilter(filter);
 }
 

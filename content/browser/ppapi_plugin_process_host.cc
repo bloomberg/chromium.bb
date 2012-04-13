@@ -111,16 +111,14 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(net::HostResolver* host_resolver)
     : filter_(new PepperMessageFilter(PepperMessageFilter::PLUGIN,
                                       host_resolver)),
       network_observer_(new PluginNetworkObserver(this)),
-      is_broker_(false),
-      process_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()) {
+      is_broker_(false) {
   process_.reset(new BrowserChildProcessHostImpl(
       content::PROCESS_TYPE_PPAPI_PLUGIN, this));
   process_->GetHost()->AddFilter(filter_.get());
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()
-    : is_broker_(true),
-      process_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()) {
+    : is_broker_(true) {
   process_.reset(new BrowserChildProcessHostImpl(
       content::PROCESS_TYPE_PPAPI_BROKER, this));
 }
@@ -211,7 +209,7 @@ void PpapiPluginProcessHost::RequestPluginChannel(Client* client) {
     sent_requests_.push(client);
   } else {
     client->OnPpapiChannelOpened(base::kNullProcessHandle,
-                                 IPC::ChannelHandle());
+                                 IPC::ChannelHandle(), 0);
   }
 }
 
@@ -259,13 +257,13 @@ void PpapiPluginProcessHost::CancelRequests() {
            << "CancelRequests()";
   for (size_t i = 0; i < pending_requests_.size(); i++) {
     pending_requests_[i]->OnPpapiChannelOpened(base::kNullProcessHandle,
-                                               IPC::ChannelHandle());
+                                               IPC::ChannelHandle(), 0);
   }
   pending_requests_.clear();
 
   while (!sent_requests_.empty()) {
     sent_requests_.front()->OnPpapiChannelOpened(base::kNullProcessHandle,
-                                                 IPC::ChannelHandle());
+                                                 IPC::ChannelHandle(), 0);
     sent_requests_.pop();
   }
 }
@@ -297,5 +295,6 @@ void PpapiPluginProcessHost::OnRendererPluginChannelCreated(
   base::ProcessHandle renderers_plugin_handle = plugin_process;
 #endif
 
-  client->OnPpapiChannelOpened(renderers_plugin_handle, channel_handle);
+  client->OnPpapiChannelOpened(renderers_plugin_handle, channel_handle,
+                               process_->GetData().id);
 }

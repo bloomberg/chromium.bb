@@ -342,7 +342,7 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
   } else {
     // Send error.
     client->OnPpapiChannelOpened(base::kNullProcessHandle,
-                                 IPC::ChannelHandle());
+                                 IPC::ChannelHandle(), 0);
   }
 }
 
@@ -355,7 +355,7 @@ void PluginServiceImpl::OpenChannelToPpapiBroker(
   } else {
     // Send error.
     client->OnPpapiChannelOpened(base::kNullProcessHandle,
-                                 IPC::ChannelHandle());
+                                 IPC::ChannelHandle(), 0);
   }
 }
 
@@ -481,6 +481,23 @@ bool PluginServiceImpl::GetPluginInfoByPath(const FilePath& plugin_path,
   }
 
   return false;
+}
+
+string16 PluginServiceImpl::GetPluginDisplayNameByPath(const FilePath& path) {
+  string16 plugin_name = path.LossyDisplayName();
+  webkit::WebPluginInfo info;
+  if (PluginService::GetInstance()->GetPluginInfoByPath(path, &info) &&
+      !info.name.empty()) {
+    plugin_name = info.name;
+#if defined(OS_MACOSX)
+    // Many plugins on the Mac have .plugin in the actual name, which looks
+    // terrible, so look for that and strip it off if present.
+    const std::string kPluginExtension = ".plugin";
+    if (EndsWith(plugin_name, ASCIIToUTF16(kPluginExtension), true))
+      plugin_name.erase(plugin_name.length() - kPluginExtension.length());
+#endif  // OS_MACOSX
+  }
+  return plugin_name;
 }
 
 void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {

@@ -574,6 +574,7 @@ bool WebContentsImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_EndColorChooser, OnEndColorChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetSelectedColorInColorChooser,
                         OnSetSelectedColorInColorChooser)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PepperPluginHung, OnPepperPluginHung)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1767,6 +1768,13 @@ void WebContentsImpl::OnSetSelectedColorInColorChooser(int color_chooser_id,
   if (color_chooser_ &&
       color_chooser_id == color_chooser_->identifier())
     color_chooser_->SetSelectedColor(color);
+}
+
+void TabContents::OnPepperPluginHung(int plugin_child_id,
+                                     const FilePath& path,
+                                     bool is_hung) {
+  if (delegate_)
+    delegate_->PluginHungStatusChanged(this, plugin_child_id, path, is_hung);
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

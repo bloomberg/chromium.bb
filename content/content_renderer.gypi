@@ -123,6 +123,8 @@
     'renderer/pepper/pepper_broker_impl.h',
     'renderer/pepper/pepper_device_enumeration_event_handler.cc',
     'renderer/pepper/pepper_device_enumeration_event_handler.h',
+    'renderer/pepper/pepper_hung_plugin_filter.cc',
+    'renderer/pepper/pepper_hung_plugin_filter.h',
     'renderer/pepper/pepper_parent_context_provider.cc',
     'renderer/pepper/pepper_parent_context_provider.h',
     'renderer/pepper/pepper_platform_audio_input_impl.cc',

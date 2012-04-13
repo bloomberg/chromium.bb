@@ -63,8 +63,10 @@ class BoolRestorer {
 
 HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
                                PP_Module module,
-                               GetInterfaceFunc local_get_interface)
+                               GetInterfaceFunc local_get_interface,
+                               SyncMessageStatusReceiver* sync_status)
     : Dispatcher(remote_process_handle, local_get_interface),
+      sync_status_(sync_status),
       pp_module_(module),
       ppb_proxy_(NULL),
       allow_plugin_reentrancy_(false) {
@@ -92,6 +94,8 @@ bool HostDispatcher::InitHostWithChannel(
     const ppapi::Preferences& preferences) {
   if (!Dispatcher::InitWithChannel(delegate, channel_handle, is_client))
     return false;
+  AddIOThreadMessageFilter(sync_status_.get());
+
   Send(new PpapiMsg_SetPreferences(preferences));
   return true;
 }
@@ -152,7 +156,12 @@ bool HostDispatcher::Send(IPC::Message* msg) {
     // waiting for the reply, dispatches an incoming ExecuteScript call which
     // destroys the plugin module and in turn the dispatcher.
     ScopedModuleReference scoped_ref(this);
-    return Dispatcher::Send(msg);
+
+    sync_status_->BeginBlockOnSyncMessage();
+    bool result = Dispatcher::Send(msg);
+    sync_status_->EndBlockOnSyncMessage();
+
+    return result;
   } else {
     // We don't want to have a scoped ref for async message cases since since
     // async messages are sent during module desruction. In this case, the

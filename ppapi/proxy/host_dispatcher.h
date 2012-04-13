@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/proxy/dispatcher.h"
 #include "ppapi/shared_impl/function_group_base.h"
@@ -25,12 +27,31 @@ namespace proxy {
 
 class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
  public:
-  // Constructor for the renderer side.
+  // This interface receives notifications about sync messages being sent by
+  // the dispatcher to the plugin process. It is used to detect a hung plugin.
+  //
+  // Note that there can be nested sync messages, so the begin/end status
+  // actually represents a stack of blocking messages.
+  class SyncMessageStatusReceiver : public IPC::ChannelProxy::MessageFilter {
+   public:
+    virtual ~SyncMessageStatusReceiver() {}
+
+    // Notification that a sync message is about to be sent out.
+    virtual void BeginBlockOnSyncMessage() = 0;
+
+    // Notification that a sync message reply was received and the dispatcher
+    // is no longer blocked on a sync message.
+    virtual void EndBlockOnSyncMessage() = 0;
+  };
+
+  // Constructor for the renderer side. This will take a reference to the
+  // SyncMessageStatusReceiver.
   //
   // You must call InitHostWithChannel after the constructor.
   HostDispatcher(base::ProcessHandle host_process_handle,
                  PP_Module module,
-                 GetInterfaceFunc local_get_interface);
+                 GetInterfaceFunc local_get_interface,
+                 SyncMessageStatusReceiver* sync_status);
   ~HostDispatcher();
 
   // You must call this function before anything else. Returns true on success.
@@ -89,6 +110,8 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
                               int int_log_level,
                               const std::string& source,
                               const std::string& value);
+
+  scoped_refptr<SyncMessageStatusReceiver> sync_status_;
 
   PP_Module pp_module_;
 

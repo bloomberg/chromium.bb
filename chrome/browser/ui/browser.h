@@ -1085,6 +1085,10 @@ class Browser : public TabHandlerDelegate,
 
   virtual void CrashedPlugin(content::WebContents* tab,
                              const FilePath& plugin_path) OVERRIDE;
+  virtual void PluginHungStatusChanged(content::WebContents* tab,
+                                       int plugin_child_id,
+                                       const FilePath& plugin_path,
+                                       bool is_hung) OVERRIDE;
 
   virtual void RequestToLockMouse(content::WebContents* tab) OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;

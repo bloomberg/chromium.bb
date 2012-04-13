@@ -5,6 +5,7 @@
 #include "ppapi/proxy/ppapi_proxy_test.h"
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/message_loop_proxy.h"
 #include "base/observer_list.h"
 #include "ipc/ipc_sync_channel.h"
@@ -240,8 +241,16 @@ void PluginProxyTest::TearDown() {
 
 // HostProxyTestHarness --------------------------------------------------------
 
+class HostProxyTestHarness::MockSyncMessageStatusReceiver
+    : public HostDispatcher::SyncMessageStatusReceiver {
+ public:
+  virtual void BeginBlockOnSyncMessage() OVERRIDE {}
+  virtual void EndBlockOnSyncMessage() OVERRIDE {}
+};
+
 HostProxyTestHarness::HostProxyTestHarness()
-    : host_globals_(PpapiGlobals::ForTest()) {
+    : host_globals_(PpapiGlobals::ForTest()),
+      status_receiver_(new MockSyncMessageStatusReceiver) {
 }
 
 HostProxyTestHarness::~HostProxyTestHarness() {
@@ -257,7 +266,8 @@ void HostProxyTestHarness::SetUpHarness() {
   host_dispatcher_.reset(new HostDispatcher(
       base::Process::Current().handle(),
       pp_module(),
-      &MockGetInterface));
+      &MockGetInterface,
+      status_receiver_.get()));
   host_dispatcher_->InitWithTestSink(&sink());
   HostDispatcher::SetForInstance(pp_instance(), host_dispatcher_.get());
 }
@@ -274,7 +284,8 @@ void HostProxyTestHarness::SetUpHarnessWithChannel(
   host_dispatcher_.reset(new HostDispatcher(
       base::Process::Current().handle(),
       pp_module(),
-      &MockGetInterface));
+      &MockGetInterface,
+      status_receiver_.get()));
   ppapi::Preferences preferences;
   host_dispatcher_->InitHostWithChannel(&delegate_mock_, channel_handle,
                                         is_client, preferences);

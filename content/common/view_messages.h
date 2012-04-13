@@ -1175,7 +1175,12 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SavePageAsMHTML,
 IPC_MESSAGE_CONTROL1(ViewMsg_TempCrashWithData,
                      GURL /* data */)
 
+// Enable or disable inverting of web content pixels, for users who prefer
+// white-on-black.
+IPC_MESSAGE_ROUTED1(ViewMsg_InvertWebContent,
+                    bool /* invert */)
 
+// -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
 // Sent by the renderer when it is creating a new window.  The browser creates
@@ -1642,14 +1647,21 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,
                     std::string  /* message */,
                     base::ListValue /* args */)
 
-// A renderer sends this to the browser process when it wants to
-// create a ppapi plugin.  The browser will create the plugin process if
-// necessary, and will return a handle to the channel on success.
-// On error an empty string is returned.
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_OpenChannelToPepperPlugin,
+// A renderer sends this to the browser process when it wants to create a ppapi
+// plugin.  The browser will create the plugin process if necessary, and will
+// return a handle to the channel on success.
+//
+// The plugin_child_id is the ChildProcessHost ID assigned in the browser
+// process. This ID is valid only in the context of the browser process and is
+// used to identify the proper process when the renderer notifies it that the
+// plugin is hung.
+//
+// On error an empty string and null handles are returned.
+IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_OpenChannelToPepperPlugin,
                             FilePath /* path */,
                             base::ProcessHandle /* plugin_process_handle */,
-                            IPC::ChannelHandle /* handle to channel */)
+                            IPC::ChannelHandle /* handle to channel */,
+                            int /* plugin_child_id */)
 
 // A renderer sends this to the browser process when it wants to
 // create a ppapi broker.  The browser will create the broker process
@@ -1992,7 +2004,11 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DomOperationResponse,
                     std::string  /* json_string */,
                     int  /* automation_id */)
 
-// Enable or disable inverting of web content pixels, for users who prefer
-// white-on-black.
-IPC_MESSAGE_ROUTED1(ViewMsg_InvertWebContent,
-                    bool /* invert */)
+// Sent to the browser when the renderer detects it is blocked on a pepper
+// plugin message for too long. This is also sent when it becomes unhung
+// (according to the value of is_hung). The browser can give the user the
+// option of killing the plugin.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_PepperPluginHung,
+                    int /* plugin_child_id */,
+                    FilePath /* path */,
+                    bool /* is_hung */)

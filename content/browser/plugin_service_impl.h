@@ -97,6 +97,7 @@ class CONTENT_EXPORT PluginServiceImpl
                              std::string* actual_mime_type) OVERRIDE;
   virtual bool GetPluginInfoByPath(const FilePath& plugin_path,
                                    webkit::WebPluginInfo* info) OVERRIDE;
+  virtual string16 GetPluginDisplayNameByPath(const FilePath& path) OVERRIDE;
   virtual void GetPlugins(const GetPluginsCallback& callback) OVERRIDE;
   virtual void GetPluginGroups(
       const GetPluginGroupsCallback& callback) OVERRIDE;

@@ -41,6 +41,7 @@
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/pepper/pepper_broker_impl.h"
 #include "content/renderer/pepper/pepper_device_enumeration_event_handler.h"
+#include "content/renderer/pepper/pepper_hung_plugin_filter.h"
 #include "content/renderer/pepper/pepper_platform_audio_input_impl.h"
 #include "content/renderer/pepper/pepper_platform_audio_output_impl.h"
 #include "content/renderer/pepper/pepper_platform_context_3d_impl.h"
@@ -105,7 +106,8 @@ class HostDispatcherWrapper
             const IPC::ChannelHandle& channel_handle,
             PP_Module pp_module,
             ppapi::proxy::Dispatcher::GetInterfaceFunc local_get_interface,
-            const ppapi::Preferences& preferences) {
+            const ppapi::Preferences& preferences,
+            PepperHungPluginFilter* filter) {
     if (channel_handle.name.empty())
       return false;
 
@@ -117,7 +119,7 @@ class HostDispatcherWrapper
 
     dispatcher_delegate_.reset(new PepperProxyChannelDelegateImpl);
     dispatcher_.reset(new ppapi::proxy::HostDispatcher(
-        plugin_process_handle, pp_module, local_get_interface));
+        plugin_process_handle, pp_module, local_get_interface, filter));
 
     if (!dispatcher_->InitHostWithChannel(dispatcher_delegate_.get(),
                                           channel_handle,
@@ -234,12 +236,17 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
   // Out of process: have the browser start the plugin process for us.
   base::ProcessHandle plugin_process_handle = base::kNullProcessHandle;
   IPC::ChannelHandle channel_handle;
+  int plugin_child_id = 0;
   render_view_->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
-      path, &plugin_process_handle, &channel_handle));
+      path, &plugin_process_handle, &channel_handle, &plugin_child_id));
   if (channel_handle.name.empty()) {
     // Couldn't be initialized.
     return scoped_refptr<webkit::ppapi::PluginModule>();
   }
+
+  scoped_refptr<PepperHungPluginFilter> hung_filter(
+      new PepperHungPluginFilter(path, render_view_->routing_id(),
+                                 plugin_child_id));
 
   // Create a new HostDispatcher for the proxying, and hook it to a new
   // PluginModule. Note that AddLiveModule must be called before any early
@@ -253,7 +260,8 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
           channel_handle,
           module->pp_module(),
           webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
-          GetPreferences()))
+          GetPreferences(),
+          hung_filter.get()))
     return scoped_refptr<webkit::ppapi::PluginModule>();
   module->InitAsProxied(dispatcher.release());
   return module;

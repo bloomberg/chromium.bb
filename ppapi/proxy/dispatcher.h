@@ -68,9 +68,6 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   base::MessageLoopProxy* GetIPCMessageLoop();
 
   // Adds the given filter to the IO thread. Takes ownership of the pointer.
-  // TODO(brettw) remove this. It's a hack to support the Flash
-  // ModuleLocalThreadAdapter. When the thread stuff is sorted out, this
-  // implementation detail should be hidden.
   void AddIOThreadMessageFilter(IPC::ChannelProxy::MessageFilter* filter);
 
   // TODO(brettw): What is this comment referring to?
