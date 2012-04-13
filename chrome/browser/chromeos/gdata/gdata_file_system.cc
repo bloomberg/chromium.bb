@@ -194,11 +194,9 @@ base::PlatformFileError CreateCacheDirectories(
     if (!file_util::CreateDirectory(paths_to_create[i])) {
       // Error creating this directory, record error and proceed with next one.
       error = SystemToPlatformError(errno);
-      LOG(ERROR) << "Error creating dir " << paths_to_create[i].value()
-                 << ": \"" << strerror(errno)
-                 << "\", " << error;
+      PLOG(ERROR) << "Error creating directory " << paths_to_create[i].value();
     } else {
-      DVLOG(1) << "Created dir " << paths_to_create[i].value();
+      DVLOG(1) << "Created directory " << paths_to_create[i].value();
     }
   }
 
@@ -243,13 +241,12 @@ base::PlatformFileError ModifyCacheState(
       success = file_util::CopyFile(source_path, dest_path);
     if (!success) {
       base::PlatformFileError error = SystemToPlatformError(errno);
-      LOG(ERROR) << "Error "
-                 << (file_operation_type ==
-                     GDataFileSystem::FILE_OPERATION_MOVE ?
-                     "moving " : "copying ")
-                 << source_path.value()
-                 << " to " << dest_path.value()
-                 << ": " << strerror(errno);
+      PLOG(ERROR) << "Error "
+                  << (file_operation_type ==
+                      GDataFileSystem::FILE_OPERATION_MOVE ?
+                      "moving " : "copying ")
+                  << source_path.value()
+                  << " to " << dest_path.value();
       return error;
     } else {
       DVLOG(1) << (file_operation_type ==
@@ -296,10 +293,8 @@ base::PlatformFileError ModifyCacheState(
   } else {
     // Since we didn't check if symlink exists before deleting it, don't log
     // if symlink doesn't exist.
-    if (errno != ENOENT) {
-      LOG(WARNING) << "Error deleting symlink " << symlink_path.value()
-                   << ": " << strerror(errno);
-    }
+    if (errno != ENOENT)
+      PLOG(WARNING) << "Error deleting symlink " << symlink_path.value();
   }
 
   if (!create_symlink)
@@ -308,9 +303,8 @@ base::PlatformFileError ModifyCacheState(
   // Create new symlink to |dest_path|.
   if (!file_util::CreateSymbolicLink(dest_path, symlink_path)) {
     base::PlatformFileError error = SystemToPlatformError(errno);
-    LOG(ERROR) << "Error creating symlink " << symlink_path.value()
-               << " for " << dest_path.value()
-               << ": " << strerror(errno);
+    PLOG(ERROR) << "Error creating symlink " << symlink_path.value()
+                << " for " << dest_path.value();
     return error;
   } else {
     DVLOG(1) << "Created symlink " << symlink_path.value()
