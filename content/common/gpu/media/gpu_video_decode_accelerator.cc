@@ -116,8 +116,7 @@ void GpuVideoDecodeAccelerator::NotifyError(
 
 void GpuVideoDecodeAccelerator::Initialize(
     const media::VideoCodecProfile profile,
-    IPC::Message* init_done_msg,
-    base::ProcessHandle renderer_process) {
+    IPC::Message* init_done_msg) {
   DCHECK(!video_decode_accelerator_.get());
   DCHECK(!init_done_msg_);
   DCHECK(init_done_msg);
@@ -133,7 +132,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   }
   DLOG(INFO) << "Initializing DXVA HW decoder for windows.";
   DXVAVideoDecodeAccelerator* video_decoder =
-      new DXVAVideoDecodeAccelerator(this, renderer_process);
+      new DXVAVideoDecodeAccelerator(this);
 #else  // OS_WIN
   OmxVideoDecodeAccelerator* video_decoder =
       new OmxVideoDecodeAccelerator(this);

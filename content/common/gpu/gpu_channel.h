@@ -62,14 +62,11 @@ class GpuChannel : public IPC::Channel::Listener,
   int TakeRendererFileDescriptor();
 #endif  // defined(OS_POSIX)
 
-  base::ProcessHandle renderer_process() const {
-    return renderer_process_;
-  }
+  base::ProcessId renderer_pid() const { return channel_->peer_pid(); }
 
   // IPC::Channel::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
-  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -119,7 +116,6 @@ class GpuChannel : public IPC::Channel::Listener,
   void ScheduleDelayedWork(GpuCommandBufferStub *stub, int64 delay);
 
   // Message handlers.
-  void OnInitialize(base::ProcessHandle renderer_process);
   void OnCreateOffscreenCommandBuffer(
       const gfx::Size& size,
       const GPUCreateCommandBufferConfig& init_params,
@@ -148,12 +144,6 @@ class GpuChannel : public IPC::Channel::Listener,
 
   // Uniquely identifies the channel within this GPU process.
   std::string channel_id_;
-
-  // Handle to the renderer process that is on the other side of the channel.
-  base::ProcessHandle renderer_process_;
-
-  // The process id of the renderer process.
-  base::ProcessId renderer_pid_;
 
   // Used to implement message routing functionality to CommandBuffer objects
   MessageRouter router_;

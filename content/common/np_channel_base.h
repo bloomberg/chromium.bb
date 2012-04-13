@@ -12,6 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process.h"
 #include "content/common/message_router.h"
 #include "content/common/npobject_base.h"
 #include "ipc/ipc_channel_handle.h"
@@ -75,7 +76,7 @@ class NPChannelBase : public IPC::Channel::Listener,
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  int peer_pid() { return peer_pid_; }
+  base::ProcessId peer_pid() { return channel_->peer_pid(); }
   IPC::ChannelHandle channel_handle() const { return channel_handle_; }
 
   // Returns the number of open NPObject channels in this process.

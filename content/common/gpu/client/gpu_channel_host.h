@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/process.h"
 #include "base/process_util.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
@@ -83,13 +84,12 @@ class GpuChannelHost : public IPC::Message::Sender,
 
   // Called on the render thread
   GpuChannelHost(GpuChannelHostFactory* factory,
-                 int gpu_process_id,
+                 int gpu_host_id,
                  int client_id);
   virtual ~GpuChannelHost();
 
   // Connect to GPU process channel.
-  void Connect(const IPC::ChannelHandle& channel_handle,
-               base::ProcessHandle client_process_for_gpu);
+  void Connect(const IPC::ChannelHandle& channel_handle);
 
   State state() const { return state_; }
 
@@ -152,7 +152,8 @@ class GpuChannelHost : public IPC::Message::Sender,
   void ForciblyCloseChannel();
 
   GpuChannelHostFactory* factory() const { return factory_; }
-  int gpu_process_id() const { return gpu_process_id_; }
+  int gpu_host_id() const { return gpu_host_id_; }
+  base::ProcessId gpu_pid() const { return channel_->peer_pid(); }
   int client_id() const { return client_id_; }
 
  private:
@@ -180,8 +181,8 @@ class GpuChannelHost : public IPC::Message::Sender,
   };
 
   GpuChannelHostFactory* factory_;
-  int gpu_process_id_;
   int client_id_;
+  int gpu_host_id_;
 
   State state_;
 

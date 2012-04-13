@@ -267,7 +267,6 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
 
 GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
     : host_id_(host_id),
-      gpu_process_(base::kNullProcessHandle),
       in_process_(false),
       software_rendering_(false),
       kind_(kind),
@@ -337,11 +336,6 @@ GpuProcessHost::~GpuProcessHost() {
                               exit_code,
                               content::RESULT_CODE_LAST_CODE);
   }
-
-#if defined(OS_WIN)
-  if (gpu_process_)
-    CloseHandle(gpu_process_);
-#endif
 
   // In case we never started, clean up.
   while (!queued_messages_.empty()) {
@@ -498,10 +492,6 @@ void GpuProcessHost::CreateViewCommandBuffer(
 
 void GpuProcessHost::OnChannelEstablished(
     const IPC::ChannelHandle& channel_handle) {
-  // The GPU process should have launched at this point and this object should
-  // have been notified of its process handle.
-  DCHECK(gpu_process_);
-
   EstablishChannelCallback callback = channel_requests_.front();
   channel_requests_.pop();
 
@@ -521,7 +511,7 @@ void GpuProcessHost::OnChannelEstablished(
     return;
   }
 
-  callback.Run(channel_handle, gpu_process_,
+  callback.Run(channel_handle,
                GpuDataManagerImpl::GetInstance()->GetGPUInfo());
 }
 
@@ -623,25 +613,6 @@ void GpuProcessHost::OnAcceleratedSurfaceRelease(
 #endif  // OS_WIN && !USE_AURA
 
 void GpuProcessHost::OnProcessLaunched() {
-  // Send the GPU process handle to the UI thread before it has to
-  // respond to any requests to establish a GPU channel. The response
-  // to such requests require that the GPU process handle be known.
-
-  base::ProcessHandle child_handle = in_process_ ?
-      base::GetCurrentProcessHandle() : process_->GetData().handle;
-
-#if defined(OS_WIN)
-  DuplicateHandle(base::GetCurrentProcessHandle(),
-                  child_handle,
-                  base::GetCurrentProcessHandle(),
-                  &gpu_process_,
-                  PROCESS_DUP_HANDLE,
-                  FALSE,
-                  0);
-#else
-  gpu_process_ = child_handle;
-#endif
-
   UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",
                       base::TimeTicks::Now() - init_start_time_);
 }
@@ -774,7 +745,7 @@ void GpuProcessHost::EstablishChannelError(
     const IPC::ChannelHandle& channel_handle,
     base::ProcessHandle renderer_process_for_gpu,
     const content::GPUInfo& gpu_info) {
-  callback.Run(channel_handle, renderer_process_for_gpu, gpu_info);
+  callback.Run(channel_handle, gpu_info);
 }
 
 void GpuProcessHost::CreateCommandBufferError(
