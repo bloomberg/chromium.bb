@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "ui/base/cocoa/window_size_constants.h"
 
 using content::RenderViewHost;
 
@@ -129,7 +130,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
            devMode:(BOOL)devMode {
   scoped_nsobject<InfoBubbleWindow> window(
       [[InfoBubbleWindow alloc]
-          initWithContentRect:NSZeroRect
+          initWithContentRect:ui::kWindowSizeDeterminedLater
                     styleMask:NSBorderlessWindowMask
                       backing:NSBackingStoreBuffered
                         defer:YES]);

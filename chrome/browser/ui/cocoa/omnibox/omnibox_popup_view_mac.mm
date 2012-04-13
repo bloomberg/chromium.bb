@@ -22,6 +22,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
+#include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/rect.h"
@@ -322,10 +323,11 @@ bool OmniboxPopupViewMac::IsOpen() const {
 
 void OmniboxPopupViewMac::CreatePopupIfNeeded() {
   if (!popup_) {
-    popup_.reset([[NSWindow alloc] initWithContentRect:NSZeroRect
-                                             styleMask:NSBorderlessWindowMask
-                                               backing:NSBackingStoreBuffered
-                                                 defer:YES]);
+    popup_.reset(
+        [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
+                                    styleMask:NSBorderlessWindowMask
+                                      backing:NSBackingStoreBuffered
+                                        defer:YES]);
     [popup_ setMovableByWindowBackground:NO];
     // The window shape is determined by the content view (OmniboxPopupView).
     [popup_ setAlphaValue:1.0];

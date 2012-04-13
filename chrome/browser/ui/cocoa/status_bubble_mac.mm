@@ -18,6 +18,7 @@
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
+#include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/point.h"
 
@@ -359,7 +360,7 @@ void StatusBubbleMac::UpdateDownloadShelfVisibility(bool visible) {
 void StatusBubbleMac::Create() {
   DCHECK(!window_);
 
-  window_ = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 1, 1)
+  window_ = [[NSWindow alloc] initWithContentRect:ui::kWindowSizeDeterminedLater
                                         styleMask:NSBorderlessWindowMask
                                           backing:NSBackingStoreBuffered
                                             defer:YES];
