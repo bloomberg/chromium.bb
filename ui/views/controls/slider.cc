@@ -78,6 +78,19 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
   }
 }
 
+void Slider::MoveButtonTo(const gfx::Point& point) {
+  gfx::Insets inset = GetInsets();
+  if (orientation_ == HORIZONTAL) {
+    int amount = base::i18n::IsRTL() ? width() - inset.left() - point.x() :
+                                       point.x() - inset.left();
+    SetValueInternal(static_cast<float>(amount) / (width() - inset.width()),
+                     VALUE_CHANGED_BY_USER);
+  } else {
+    SetValueInternal(1.0f - static_cast<float>(point.y()) / height(),
+                     VALUE_CHANGED_BY_USER);
+  }
+}
+
 void Slider::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
 }
@@ -145,20 +158,12 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
 bool Slider::OnMousePressed(const views::MouseEvent& event) {
   if (listener_)
     listener_->SliderDragStarted(this);
-  return OnMouseDragged(event);
+  MoveButtonTo(event.location());
+  return true;
 }
 
 bool Slider::OnMouseDragged(const views::MouseEvent& event) {
-  gfx::Insets inset = GetInsets();
-  if (orientation_ == HORIZONTAL) {
-    int amount = base::i18n::IsRTL() ? width() - inset.left() - event.x() :
-                                       event.x() - inset.left();
-    SetValueInternal(static_cast<float>(amount) / (width() - inset.width()),
-                     VALUE_CHANGED_BY_USER);
-  } else {
-    SetValueInternal(1.0f - static_cast<float>(event.y()) / height(),
-                     VALUE_CHANGED_BY_USER);
-  }
+  MoveButtonTo(event.location());
   return true;
 }
 
@@ -186,6 +191,15 @@ bool Slider::OnKeyPressed(const views::KeyEvent& event) {
     }
   }
   return false;
+}
+
+ui::GestureStatus Slider::OnGestureEvent(const views::GestureEvent& event) {
+  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
+      event.type() == ui::ET_GESTURE_TAP_DOWN) {
+    MoveButtonTo(event.location());
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+  return ui::GESTURE_STATUS_UNKNOWN;
 }
 
 void Slider::AnimationProgressed(const ui::Animation* animation) {
