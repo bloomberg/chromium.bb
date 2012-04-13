@@ -548,13 +548,21 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
     canvas->restore();
   }
 
+  SkBitmap image;
+  // Copy to device independent bitmap when target canvas doesn't support
+  // platform paint.
+  if (!skia::SupportsPlatformPaint(canvas))
+    backing_bitmap.copyTo(&image, SkBitmap::kARGB_8888_Config);
+  else
+    image = backing_bitmap;
+
   SkPaint paint;
   if (is_always_opaque_) {
     // When we know the device is opaque, we can disable blending for slightly
     // more optimized painting.
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
   }
-  canvas->drawBitmap(backing_bitmap,
+  canvas->drawBitmap(image,
                      SkIntToScalar(plugin_rect.x()),
                      SkIntToScalar(plugin_rect.y()),
                      &paint);
