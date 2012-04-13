@@ -39,9 +39,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "net/base/mime_util.h"
-#include "webkit/fileapi/file_system_file_util_proxy.h"
-#include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/file_system_util.h"
 
 using content::BrowserThread;
 

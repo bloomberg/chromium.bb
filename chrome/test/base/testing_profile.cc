@@ -56,11 +56,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "webkit/database/database_tracker.h"
-#include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_options.h"
-#include "webkit/quota/mock_quota_manager.h"
-#include "webkit/quota/quota_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"

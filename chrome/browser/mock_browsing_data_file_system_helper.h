@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/browsing_data_file_system_helper.h"
-#include "webkit/fileapi/file_system_types.h"
 
 // Mock for BrowsingDataFileSystemHelper.
 // Use AddFileSystemSamples() or add directly to response_ list, then call
