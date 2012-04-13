@@ -10,6 +10,7 @@
 
 #include "base/environment.h"
 #include "base/message_loop.h"
+#include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_com_initializer.h"
@@ -35,6 +36,10 @@
 
 #if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "content/public/common/sandbox_init.h"
 #endif
 
 // Main function for starting the Gpu process.
@@ -100,15 +105,19 @@ int GpuMain(const content::MainFunctionParams& parameters) {
     dead_on_arrival = true;
   }
 
+  // Warm up the random subsystem, which needs to done pre-sandbox on all
+  // platforms.
+  (void) base::RandUint64();
+
+#if defined(OS_LINUX)
+  content::InitializeSandbox();
+#endif
+
   base::win::ScopedCOMInitializer com_initializer;
 
 #if defined(OS_WIN)
   // Preload this DLL because the sandbox prevents it from loading.
   LoadLibrary(L"setupapi.dll");
-
-  // Cause advapi32 to load before the sandbox is turned on.
-  unsigned int dummy_rand;
-  rand_s(&dummy_rand);
 
   sandbox::TargetServices* target_services =
       parameters.sandbox_info->target_services;

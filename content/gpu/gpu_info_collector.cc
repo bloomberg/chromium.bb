@@ -101,6 +101,10 @@ bool CollectGraphicsInfoGL(content::GPUInfo* gpu_info) {
   bool validVideoCardInfo = CollectVideoCardInfo(gpu_info);
   bool validDriverInfo = CollectDriverInfoGL(gpu_info);
 
+  // TODO(kbr): remove once the destruction of a current context automatically
+  // clears the current context.
+  context->ReleaseCurrent(surface.get());
+
   return (validGLVersionInfo && validVideoCardInfo && validDriverInfo);
 }
 

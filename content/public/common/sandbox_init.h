@@ -46,6 +46,8 @@ CONTENT_EXPORT bool InitializeSandbox(
 // taken and true is always returned.
 CONTENT_EXPORT bool InitializeSandbox(int sandbox_type,
                                       const FilePath& allowed_path);
+#elif defined(OS_LINUX)
+CONTENT_EXPORT void InitializeSandbox();
 #endif
 
 }  // namespace content
