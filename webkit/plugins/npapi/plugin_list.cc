@@ -83,12 +83,13 @@ static const VersionRangeDefinition kSilverlightVersionRange[] = {
 // Similarly, try and share the group definition for plug-ins that are
 // very consistent across OS'es.
 #define kFlashDefinition { \
-    "adobe-flash-player", "Flash", "Shockwave Flash", kFlashVersionRange,\
+    "adobe-flash-player", "Flash", "Shockwave Flash", kFlashVersionRange, \
     arraysize(kFlashVersionRange) }
 
 #define kShockwaveDefinition { \
-    "shockwave", PluginGroup::kShockwaveGroupName, "Shockwave for Director", \
-    kShockwaveVersionRange, arraysize(kShockwaveVersionRange) }
+    "adobe-shockwave", PluginGroup::kShockwaveGroupName, \
+    "Shockwave for Director", kShockwaveVersionRange, \
+    arraysize(kShockwaveVersionRange) }
 
 #define kSilverlightDefinition { \
     "silverlight", PluginGroup::kSilverlightGroupName, "Silverlight", \
@@ -494,6 +495,10 @@ void PluginList::GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths) {
 #if defined(OS_WIN)
   GetPluginPathsFromRegistry(plugin_paths);
 #endif
+}
+
+const std::vector<PluginGroup*>& PluginList::GetHardcodedPluginGroups() const {
+  return hardcoded_plugin_groups_.get();
 }
 
 void PluginList::SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins) {

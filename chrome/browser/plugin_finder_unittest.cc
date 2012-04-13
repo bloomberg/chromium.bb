@@ -6,8 +6,11 @@
 
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 using base::DictionaryValue;
+using webkit::npapi::PluginGroup;
+using webkit::npapi::PluginList;
 
 TEST(PluginFinderTest, JsonSyntax) {
   scoped_ptr<DictionaryValue> plugin_list(PluginFinder::LoadPluginList());
@@ -33,5 +36,20 @@ TEST(PluginFinderTest, JsonSyntax) {
          mime_type_it != mime_types->end(); ++mime_type_it) {
       EXPECT_TRUE((*mime_type_it)->GetAsString(&dummy_str));
     }
+  }
+}
+
+TEST(PluginFinderTest, PluginGroups) {
+  PluginFinder plugin_finder;
+  PluginList* plugin_list = PluginList::Singleton();
+  const std::vector<PluginGroup*>& plugin_groups =
+      plugin_list->GetHardcodedPluginGroups();
+  for (std::vector<PluginGroup*>::const_iterator it = plugin_groups.begin();
+       it != plugin_groups.end(); ++it) {
+    if ((*it)->version_ranges().empty())
+      continue;
+    std::string identifier = (*it)->identifier();
+    EXPECT_TRUE(plugin_finder.FindPluginWithIdentifier(identifier)) <<
+        "Couldn't find PluginInstaller for '" << identifier << "'";
   }
 }

@@ -63,7 +63,7 @@
     "requires_authorization": false,
     "displayurl": true
   },
-  "shockwave": {
+  "adobe-shockwave": {
     "mime_types": [
       "application/x-director"
     ],

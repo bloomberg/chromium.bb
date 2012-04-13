@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/string16.h"
@@ -25,10 +26,6 @@ class PluginFinder {
  public:
   static void Get(const base::Callback<void(PluginFinder*)>& cb);
 
-  // Loads the plug-in information from the browser resources and parses it.
-  // Returns NULL if the plug-in list couldn't be parsed.
-  static scoped_ptr<base::DictionaryValue> LoadPluginList();
-
   // Finds a plug-in for the given MIME type and language (specified as an IETF
   // language tag, i.e. en-US) and returns the PluginInstaller for the plug-in,
   // or NULL if no plug-in is found.
@@ -41,13 +38,17 @@ class PluginFinder {
  private:
   friend struct DefaultSingletonTraits<PluginFinder>;
   friend class Singleton<PluginFinder>;
+  FRIEND_TEST_ALL_PREFIXES(PluginFinderTest, JsonSyntax);
+  FRIEND_TEST_ALL_PREFIXES(PluginFinderTest, PluginGroups);
 
   static PluginFinder* GetInstance();
 
   PluginFinder();
   ~PluginFinder();
 
-  static base::DictionaryValue* LoadPluginListInternal();
+  // Loads the plug-in information from the browser resources and parses it.
+  // Returns NULL if the plug-in list couldn't be parsed.
+  static base::DictionaryValue* LoadPluginList();
 
   PluginInstaller* CreateInstaller(const std::string& identifier,
                                    const base::DictionaryValue* plugin_dict);

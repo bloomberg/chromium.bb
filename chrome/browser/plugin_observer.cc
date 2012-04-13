@@ -218,9 +218,8 @@ void PluginObserver::FindPluginToUpdate(int placeholder_id,
                                         PluginFinder* plugin_finder) {
   PluginInstaller* installer =
       plugin_finder->FindPluginWithIdentifier(identifier);
-  // TODO(bauerb): Remove this CHECK once http://crbug.com/121657 is fixed.
-  CHECK(installer) << "Couldn't find PluginInstaller for identifier "
-                   << identifier;
+  DCHECK(installer) << "Couldn't find PluginInstaller for identifier "
+                    << identifier;
   plugin_placeholders_[placeholder_id] =
       new PluginPlaceholderHost(this, placeholder_id, installer);
   InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();

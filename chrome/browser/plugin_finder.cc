@@ -35,18 +35,12 @@ PluginFinder* PluginFinder::GetInstance() {
 }
 
 PluginFinder::PluginFinder() : plugin_list_(LoadPluginList()) {
-  if (!plugin_list_.get()) {
-    NOTREACHED();
+  if (!plugin_list_.get())
     plugin_list_.reset(new DictionaryValue());
-  }
 }
 
 // static
-scoped_ptr<DictionaryValue> PluginFinder::LoadPluginList() {
-  return scoped_ptr<DictionaryValue>(LoadPluginListInternal());
-}
-
-DictionaryValue* PluginFinder::LoadPluginListInternal() {
+DictionaryValue* PluginFinder::LoadPluginList() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   base::StringPiece json_resource(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

@@ -174,6 +174,9 @@ class WEBKIT_PLUGINS_EXPORT PluginList {
   // Computes a list of all plugins to potentially load from all sources.
   void GetPluginPathsToLoad(std::vector<FilePath>* plugin_paths);
 
+  // Returns the list of hardcoded plug-in groups for testing.
+  const std::vector<PluginGroup*>& GetHardcodedPluginGroups() const;
+
   // Clears the internal list of PluginGroups and copies them from the vector.
   void SetPlugins(const std::vector<webkit::WebPluginInfo>& plugins);
 

@@ -133,6 +133,10 @@ class WEBKIT_PLUGINS_EXPORT PluginGroup {
     return web_plugin_infos_;
   }
 
+  const std::vector<VersionRange>& version_ranges() const {
+    return version_ranges_;
+  }
+
  private:
   friend class MockPluginList;
   friend class PluginGroupTest;
