@@ -8,6 +8,16 @@ cr.define('ntp', function() {
   var TilePage = ntp.TilePage;
 
   /**
+   * See description for these values in suggestions_page_handler.h.
+   * @enum {number}
+   */
+  var SuggestedSitesAction = {
+    CLICKED_SUGGESTED_TILE: 11,
+    CLICKED_OTHER_NTP_PANE: 12,
+    OTHER: 13
+  };
+
+  /**
    * A counter for generating unique tile IDs.
    */
   var tileID = 0;
@@ -134,6 +144,8 @@ cr.define('ntp', function() {
         // Records the index of this tile.
         chrome.send('metricsHandler:recordInHistogram',
                     ['NewTabPage.SuggestedSite', this.index, 8]);
+        chrome.send('suggestedSitesAction',
+                    [SuggestedSitesAction.CLICKED_SUGGESTED_TILE]);
       }
     },
 
@@ -286,6 +298,9 @@ cr.define('ntp', function() {
       this.classList.add('suggestions-page');
       this.data_ = null;
       this.suggestionsTiles_ = this.getElementsByClassName('suggestions real');
+
+      this.addEventListener('carddeselected', this.handleCardDeselected_);
+      this.addEventListener('cardselected', this.handleCardSelected_);
     },
 
     /**
@@ -311,6 +326,25 @@ cr.define('ntp', function() {
         else
           tile.updateForData(page);
       }
+    },
+
+    /**
+     * Handles the 'card deselected' event (i.e. the user clicked to another
+     * pane).
+     * @param {Event} e The CardChanged event.
+     */
+    handleCardDeselected_: function(e) {
+      chrome.send('suggestedSitesAction',
+                  [SuggestedSitesAction.CLICKED_OTHER_NTP_PANE]);
+    },
+
+    /**
+     * Handles the 'card selected' event (i.e. the user clicked to select the
+     * Suggested pane).
+     * @param {Event} e The CardChanged event.
+     */
+    handleCardSelected_: function(e) {
+      chrome.send('suggestedSitesSelected');
     },
 
     /**

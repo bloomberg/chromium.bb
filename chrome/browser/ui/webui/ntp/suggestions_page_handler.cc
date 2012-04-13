@@ -11,6 +11,7 @@
 #include "base/md5.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
@@ -27,18 +28,62 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 
 using content::UserMetricsAction;
 
+namespace {
+
+// Those values are defined in histograms.xml. These represent the action that
+// the user has taken to leave the Suggested pane, given that they have viewed
+// that pane on the NTP.
+enum SuggestedSitesActions {
+  // Values 0 to 10 are the core values from PageTransition (see
+  // page_transition_types.h).
+
+  // The user has clicked on a Suggested tile.
+  SUGGESTED_SITES_ACTION_CLICKED_SUGGESTED_TILE = 11,
+  // The user has moved to another pane within the NTP.
+  SUGGESTED_SITES_ACTION_CLICKED_OTHER_NTP_PANE,
+  // Any action other than what is listed here (e.g. closing the tab, etc.).
+  SUGGESTED_SITES_ACTION_OTHER,
+  // The number of suggested sites actions that we log.
+  NUM_SUGGESTED_SITES_ACTIONS
+};
+
+}  // namespace
+
 SuggestionsHandler::SuggestionsHandler()
-    : got_first_suggestions_request_(false) {
+    : got_first_suggestions_request_(false),
+      suggestions_viewed_(false),
+      user_action_logged_(false) {
 }
 
 SuggestionsHandler::~SuggestionsHandler() {
+  // TODO(macourteau): ensure that |suggestions_viewed_| gets set correctly,
+  // once the Suggestions pane gets statically included into the NTP (e.g.,
+  // if the Suggestions pane is the one shown by default, the
+  // |suggestions_viewed_| flag might not get set).
+  if (!user_action_logged_ && suggestions_viewed_) {
+    const GURL ntp_url = GURL(chrome::kChromeUINewTabURL);
+    int action_id = SUGGESTED_SITES_ACTION_OTHER;
+    content::NavigationEntry* entry =
+        web_ui()->GetWebContents()->GetController().GetActiveEntry();
+    if (entry && (entry->GetURL() != ntp_url)) {
+      action_id =
+          content::PageTransitionStripQualifier(entry->GetTransitionType());
+    }
+
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestedSitesAction", action_id,
+                              NUM_SUGGESTED_SITES_ACTIONS);
+  }
 }
 
 void SuggestionsHandler::RegisterMessages() {
@@ -80,6 +125,12 @@ void SuggestionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("clearSuggestionsURLsBlacklist",
       base::Bind(&SuggestionsHandler::HandleClearBlacklist,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("suggestedSitesAction",
+      base::Bind(&SuggestionsHandler::HandleSuggestedSitesAction,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("suggestedSitesSelected",
+      base::Bind(&SuggestionsHandler::HandleSuggestedSitesSelected,
                  base::Unretained(this)));
 }
 
@@ -133,6 +184,26 @@ void SuggestionsHandler::HandleRemoveURLsFromBlacklist(const ListValue* args) {
 
 void SuggestionsHandler::HandleClearBlacklist(const ListValue* args) {
   // TODO(georgey) clear blacklist.
+}
+
+void SuggestionsHandler::HandleSuggestedSitesAction(
+    const base::ListValue* args) {
+  DCHECK(args);
+
+  double action_id;
+  if (!args->GetDouble(0, &action_id))
+    NOTREACHED();
+
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestedSitesAction",
+                            static_cast<int>(action_id),
+                            NUM_SUGGESTED_SITES_ACTIONS);
+  suggestions_viewed_ = true;
+  user_action_logged_ = true;
+}
+
+void SuggestionsHandler::HandleSuggestedSitesSelected(
+    const base::ListValue* args) {
+  suggestions_viewed_ = true;
 }
 
 void SuggestionsHandler::SetPagesValueFromTopSites(

@@ -33,7 +33,6 @@ class Value;
 class SuggestionsHandler : public content::WebUIMessageHandler,
                            public content::NotificationObserver {
  public:
-
   SuggestionsHandler();
   virtual ~SuggestionsHandler();
 
@@ -51,6 +50,12 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
 
   // Callback for the "clearSuggestionsURLsBlacklist" message.
   void HandleClearBlacklist(const base::ListValue* args);
+
+  // Callback for the "suggestedSitesAction" message.
+  void HandleSuggestedSitesAction(const base::ListValue* args);
+
+  // Callback for the "suggestedSitesSelected" message.
+  void HandleSuggestedSitesSelected(const base::ListValue* args);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -94,6 +99,12 @@ class SuggestionsHandler : public content::WebUIMessageHandler,
 
   // Keep the results of the db query here.
   scoped_ptr<base::ListValue> pages_value_;
+
+  // Whether the user has viewed the 'suggested' pane.
+  bool suggestions_viewed_;
+
+  // Whether the user has performed a "tracked" action to leave the page or not.
+  bool user_action_logged_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsHandler);
 };
