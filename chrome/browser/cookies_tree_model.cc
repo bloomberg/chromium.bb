@@ -697,7 +697,7 @@ CookiesTreeModel::CookiesTreeModel(
   if (server_bound_cert_helper_) {
     server_bound_cert_helper_->StartFetching(
         base::Bind(&CookiesTreeModel::OnServerBoundCertModelInfoLoaded,
-                   base::Unretained(this)));
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
