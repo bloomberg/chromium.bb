@@ -3783,8 +3783,11 @@ FileManager.prototype = {
     // an object with 'path' and 'date' properties.
     this.lastLabelClick_ = null;
 
-    var dirEntry = event.newDirEntry;
-    this.updateLocation_(event.initial, dirEntry.fullPath);
+    // Sometimes we rescan the same directory (when mounting GData lazily first,
+    // then for real). Do not update the location then.
+    if (event.newDirEntry.fullPath != event.previousDirEntry.fullPath) {
+      this.updateLocation_(event.initial, event.newDirEntry.fullPath);
+    }
 
     this.checkFreeSpace_(this.getCurrentDirectory());
 
