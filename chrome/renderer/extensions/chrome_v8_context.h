@@ -39,7 +39,7 @@ class ChromeV8Context {
   }
 
   const Extension* extension() const {
-    return extension_;
+    return extension_.get();
   }
 
   WebKit::WebFrame* web_frame() const {
@@ -114,7 +114,7 @@ class ChromeV8Context {
 
   // The extension associated with this context, or NULL if there is none. This
   // might be a hosted app in the case that this context is hosting a web URL.
-  const Extension* extension_;
+  scoped_refptr<const Extension> extension_;
 
   // The type of context.
   extensions::Feature::Context context_type_;
