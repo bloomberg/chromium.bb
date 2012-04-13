@@ -276,21 +276,21 @@ class NetworkDetailedView : public views::View,
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    if (delegate->GetWifiEnabled()) {
-      HoverHighlightView* container = new HoverHighlightView(this);
-      container->AddLabel(rb.GetLocalizedString(
+    HoverHighlightView* container = new HoverHighlightView(this);
+    container->AddLabel(rb.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_OTHER_WIFI), gfx::Font::NORMAL);
-      AddChildView(container);
-      other_wifi_ = container;
-    }
+    AddChildView(container);
+    other_wifi_ = container;
+    other_wifi_->SetEnabled(delegate->GetWifiEnabled());
 
-    if (delegate->GetCellularEnabled()) {
+    if (delegate->GetCellularAvailable()) {
       if (delegate->GetCellularScanSupported()) {
         HoverHighlightView* container = new HoverHighlightView(this);
         container->AddLabel(rb.GetLocalizedString(
             IDS_ASH_STATUS_TRAY_OTHER_MOBILE), gfx::Font::NORMAL);
         AddChildView(container);
         other_mobile_ = container;
+        other_mobile_->SetEnabled(delegate->GetCellularEnabled());
       }
     }
   }

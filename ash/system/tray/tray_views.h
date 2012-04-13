@@ -98,6 +98,7 @@ class HoverHighlightView : public ActionableView {
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
   ViewClickListener* listener_;

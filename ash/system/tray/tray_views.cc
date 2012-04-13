@@ -111,6 +111,7 @@ void HoverHighlightView::AddLabel(const string16& text,
       5, kTrayPopupDetailsIconWidth + kIconPaddingLeft, 5, 0));
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label->SetFont(label->font().DeriveFont(0, style));
+  label->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
   AddChildView(label);
 
   accessible_name_ = text;
@@ -140,6 +141,11 @@ void HoverHighlightView::OnMouseExited(const views::MouseEvent& event) {
 void HoverHighlightView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
   state->name = accessible_name_;
+}
+
+void HoverHighlightView::OnEnabledChanged() {
+  for (int i = 0; i < child_count(); ++i)
+    child_at(i)->SetEnabled(enabled());
 }
 
 void HoverHighlightView::OnPaintBackground(gfx::Canvas* canvas) {
