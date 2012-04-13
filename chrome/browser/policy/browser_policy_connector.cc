@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/policy/app_pack_updater.h"
+#include "chrome/browser/policy/cros_user_policy_cache.h"
 #include "chrome/browser/policy/device_policy_cache.h"
 #include "chrome/browser/policy/network_configuration_updater.h"
 #endif
@@ -311,32 +313,43 @@ void BrowserPolicyConnector::InitializeUserPolicy(
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  FilePath policy_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &policy_dir);
-#if defined(OS_CHROMEOS)
-  policy_dir = policy_dir.Append(
-      command_line->GetSwitchValuePath(switches::kLoginProfile));
-#endif
-
   if (command_line->HasSwitch(switches::kDeviceManagementUrl)) {
-    FilePath policy_cache_dir = policy_dir.Append(kPolicyDir);
-
-    UserPolicyCache* user_policy_cache =
-        new UserPolicyCache(policy_cache_dir.Append(kPolicyCacheFile),
-                            wait_for_policy_fetch);
     user_data_store_.reset(CloudPolicyDataStore::CreateForUserPolicies());
+
+    FilePath profile_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
+#if defined(OS_CHROMEOS)
+    profile_dir = profile_dir.Append(
+        command_line->GetSwitchValuePath(switches::kLoginProfile));
+#endif
+    const FilePath policy_dir = profile_dir.Append(kPolicyDir);
+    const FilePath policy_cache_file = policy_dir.Append(kPolicyCacheFile);
+    const FilePath token_cache_file = policy_dir.Append(kTokenCacheFile);
+    CloudPolicyCacheBase* user_policy_cache = NULL;
+
+#if defined(OS_CHROMEOS)
+    user_policy_cache =
+        new CrosUserPolicyCache(
+            chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
+            user_data_store_.get(),
+            wait_for_policy_fetch,
+            token_cache_file,
+            policy_cache_file);
+#else
+    user_policy_cache = new UserPolicyCache(policy_cache_file,
+                                            wait_for_policy_fetch);
     user_policy_token_cache_.reset(
-        new UserPolicyTokenCache(user_data_store_.get(),
-                                 policy_cache_dir.Append(kTokenCacheFile)));
+        new UserPolicyTokenCache(user_data_store_.get(), token_cache_file));
+
+    // Initiate the DM-Token load.
+    user_policy_token_cache_->Load();
+#endif
 
     managed_cloud_provider_->SetUserPolicyCache(user_policy_cache);
     recommended_cloud_provider_->SetUserPolicyCache(user_policy_cache);
     user_cloud_policy_subsystem_.reset(new CloudPolicySubsystem(
         user_data_store_.get(),
         user_policy_cache));
-
-    // Initiate the DM-Token load.
-    user_policy_token_cache_->Load();
 
     user_data_store_->set_user_name(user_name);
     user_data_store_->set_user_affiliation(GetUserAffiliation(user_name));

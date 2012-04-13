@@ -300,6 +300,9 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("chromeos"));
       cur = cur.Append(FILE_PATH_LITERAL("libcros.so"));
       break;
+    case chrome::DIR_USER_POLICY:
+      cur = FilePath(FILE_PATH_LITERAL("/home/chronos/root/enterprise"));
+      break;
 #endif
     // The following are only valid in the development environment, and
     // will fail if executed from an installed executable (because the

@@ -49,6 +49,7 @@ namespace em = enterprise_management;
 
 using ::testing::DoAll;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::_;
 using content::BrowserThread;
@@ -79,8 +80,12 @@ const char kDMPolicyRequest[] =
 
 const char kDMToken[] = "1234";
 
-ACTION_P(MockSessionManagerClientPolicyCallback, policy) {
-  arg0.Run(policy);
+ACTION_P(MockSessionManagerClientRetrievePolicyCallback, policy) {
+  arg0.Run(*policy);
+}
+
+ACTION_P(MockSessionManagerClientStorePolicyCallback, success) {
+  arg1.Run(success);
 }
 
 template<typename TESTBASE>
@@ -111,9 +116,6 @@ class LoginUtilsTestBase : public TESTBASE,
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    // BrowserPolicyConnector makes the UserPolicyCache read relative to this
-    // path. Make sure it's in a clean state.
-    PathService::Override(chrome::DIR_USER_DATA, scoped_temp_dir_.path());
 
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(switches::kEnableDevicePolicy);
@@ -132,7 +134,15 @@ class LoginUtilsTestBase : public TESTBASE,
     MockSessionManagerClient* session_managed_client =
         mock_dbus_thread_manager_.mock_session_manager_client();
     EXPECT_CALL(*session_managed_client, RetrieveDevicePolicy(_))
-        .WillRepeatedly(MockSessionManagerClientPolicyCallback(""));
+        .WillRepeatedly(
+            MockSessionManagerClientRetrievePolicyCallback(&device_policy_));
+    EXPECT_CALL(*session_managed_client, RetrieveUserPolicy(_))
+        .WillRepeatedly(
+            MockSessionManagerClientRetrievePolicyCallback(&user_policy_));
+    EXPECT_CALL(*session_managed_client, StoreUserPolicy(_, _))
+        .WillRepeatedly(
+            DoAll(SaveArg<0>(&user_policy_),
+                  MockSessionManagerClientStorePolicyCallback(true)));
 
     mock_async_method_caller_ = new cryptohome::MockAsyncMethodCaller;
     cryptohome::AsyncMethodCaller::InitializeForTesting(
@@ -363,6 +373,9 @@ class LoginUtilsTestBase : public TESTBASE,
 
  private:
   ScopedTempDir scoped_temp_dir_;
+
+  std::string device_policy_;
+  std::string user_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsTestBase);
 };

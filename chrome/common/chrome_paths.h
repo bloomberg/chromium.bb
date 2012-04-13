@@ -52,6 +52,8 @@ enum {
                                  // on Chrome Mac.  On Chrome OS, this path is
                                  // used for OEM customization.
                                  // Getting this path does not create it.
+  DIR_USER_POLICY,              // Root-owned per-user private enterprise
+                                // directory.
 #endif
 
   DIR_EXTERNAL_EXTENSIONS,      // Directory where installer places .crx files.
