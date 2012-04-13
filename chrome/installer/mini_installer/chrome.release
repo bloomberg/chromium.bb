@@ -35,3 +35,5 @@ gcswf32.dll: %(VersionDir)s\
 plugin.vch: %(VersionDir)s\
 FlashPlayerCPLApp.cpl: %(VersionDir)s\
 FlashPlayerApp.exe: %(VersionDir)s\
+pepflashplayer.dll: %(VersionDir)s\PepperFlash\
+manifest.json: %(VersionDir)s\PepperFlash\
