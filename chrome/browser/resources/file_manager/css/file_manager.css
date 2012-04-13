@@ -170,6 +170,7 @@ input[type='submit'][disabled]:hover {
   -webkit-box-align: stretch;
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
+  background-color: white;  /* Makes #drag-image-container invisible. */
   display: -webkit-box;
   overflow: hidden;
   position: relative;
