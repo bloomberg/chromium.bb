@@ -153,8 +153,8 @@ class Profile : public content::BrowserContext {
   // time.
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Create a new profile given a path. If |async| is true then the profile is
-  // initialized asynchronously.
+  // Create a new profile given a path. If |create_mode| is
+  // CREATE_MODE_ASYNCHRONOUS then the profile is initialized asynchronously.
   static Profile* CreateProfile(const FilePath& path,
                                 Delegate* delegate,
                                 CreateMode create_mode);
