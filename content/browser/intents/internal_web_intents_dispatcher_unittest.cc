@@ -33,7 +33,6 @@ class InternalWebIntentsDispatcherTest
   int replied_;
   string16 notified_data_;
   webkit_glue::WebIntentReplyType notified_reply_type_;
-  scoped_ptr<content::WebContents> tab_contents_;
 };
 
 // Tests that the internal dispatcher correctly notifies

@@ -322,7 +322,7 @@ void WebIntentPickerController::OnCancelled() {
 
   if (service_tab_) {
     intents_dispatcher_->SendReplyMessage(
-        webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED, string16());
+        webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED, string16());
   } else {
     intents_dispatcher_->SendReplyMessage(
         webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16());
@@ -363,7 +363,7 @@ void WebIntentPickerController::OnSendReturnMessage(
   ClosePicker();
 
   if (service_tab_ &&
-      reply_type != webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED) {
+      reply_type != webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED) {
     int index = TabStripModel::kNoTab;
     Browser* browser = Browser::GetBrowserForController(
         &service_tab_->GetController(), &index);

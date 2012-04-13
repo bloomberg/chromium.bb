@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,8 @@ enum WebIntentReplyType {
   // Sent if the picker is cancelled without a selection being made.
   WEB_INTENT_PICKER_CANCELLED,
 
-  // Sent if the service tab is closed without any response being sent.
-  WEB_INTENT_SERVICE_TAB_CLOSED,
+  // Sent if the service contents is closed without any response being sent.
+  WEB_INTENT_SERVICE_CONTENTS_CLOSED,
 };
 
 }  // namespace webkit_glue

@@ -38,9 +38,10 @@ const webkit_glue::WebIntentData& WebIntentsDispatcherImpl::GetIntent() {
   return intent_;
 }
 
-void WebIntentsDispatcherImpl::DispatchIntent(WebContents* destination_tab) {
+void WebIntentsDispatcherImpl::DispatchIntent(
+    WebContents* destination_contents) {
   DCHECK(!intent_injector_);
-  intent_injector_ = new IntentInjector(destination_tab);
+  intent_injector_ = new IntentInjector(destination_contents);
   intent_injector_->SetIntent(this, intent_);
 }
 
@@ -67,9 +68,9 @@ void WebIntentsDispatcherImpl::RegisterReplyNotification(
   reply_notifiers_.push_back(closure);
 }
 
-void WebIntentsDispatcherImpl::WebContentsDestroyed(WebContents* tab) {
+void WebIntentsDispatcherImpl::WebContentsDestroyed(WebContents* contents) {
   if (intent_injector_)
-    intent_injector_->SourceWebContentsDestroyed(tab);
+    intent_injector_->SourceWebContentsDestroyed(contents);
 
   intent_injector_ = NULL;
 }

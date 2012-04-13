@@ -22,11 +22,11 @@ namespace webkit_glue {
 struct WebIntentData;
 }
 
-// Injects an intent into the renderer of a TabContents. The intent dispatch
+// Injects an intent into the renderer of a WebContents. The intent dispatch
 // logic will create one of these to take care of passing intent data down into
-// the context of the service, which will be running in the TabContents on which
-// this class is an observer. Attaches to the service tab and deletes itself
-// when that TabContents is closed.
+// the context of the service, which will be running in the WebContents on which
+// this class is an observer. Attaches to the service contents and deletes
+// itself when that WebContents is closed.
 //
 // This object should be attached to the new WebContents very early: before the
 // RenderView is created. It will then send the intent data down to the renderer
@@ -42,17 +42,16 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
 
-  // Used to notify the object that the source tab has been destroyed.
-  void SourceWebContentsDestroyed(content::WebContents* tab);
+  // Used to notify the object that the source contents has been destroyed.
+  void SourceWebContentsDestroyed(content::WebContents* contents);
 
   // Sets the intent data to be injected. Call after the user has selected a
-  // service to pass the intent data to that service.
-  // |intents_dispatcher| is a sender to use to communicate to the source tab.
-  // The caller must ensure that SourceTabContentsDestroyed is called when this
-  // object becomes unusable.
-  // |intent| is the intent data from the source
+  // service to pass the intent data to that service. |intents_dispatcher| is a
+  // sender to use to communicate to the source contents. The caller must
+  // ensure that SourceWebContentsDestroyed is called when this object becomes
+  // unusable. |intent| is the intent data from the source.
   void SetIntent(content::WebIntentsDispatcher* intents_dispatcher,
                  const webkit_glue::WebIntentData& intent);
 
@@ -67,7 +66,7 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
   // Source intent data provided by caller.
   scoped_ptr<webkit_glue::WebIntentData> source_intent_;
 
-  // Weak pointer to the message forwarder to the tab invoking the intent.
+  // Weak pointer to the message forwarder to the contents invoking the intent.
   content::WebIntentsDispatcher* intents_dispatcher_;
 
   // Remember the initial delivery url for origin restriction.

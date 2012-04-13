@@ -29,10 +29,10 @@ const webkit_glue::WebIntentData& InternalWebIntentsDispatcher::GetIntent() {
 }
 
 void InternalWebIntentsDispatcher::DispatchIntent(
-    WebContents* destination_tab) {
-  DCHECK(destination_tab);
+    WebContents* destination_contents) {
+  DCHECK(destination_contents);
   DCHECK(!intent_injector_);
-  intent_injector_ = new IntentInjector(destination_tab);
+  intent_injector_ = new IntentInjector(destination_contents);
   intent_injector_->SetIntent(this, intent_);
 }
 

@@ -41,7 +41,8 @@ class CONTENT_EXPORT InternalWebIntentsDispatcher
 
   // WebIntentsDispatcher implementation.
   virtual const webkit_glue::WebIntentData& GetIntent() OVERRIDE;
-  virtual void DispatchIntent(content::WebContents* destination_tab) OVERRIDE;
+  virtual void DispatchIntent(
+      content::WebContents* destination_contents) OVERRIDE;
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE;
   virtual void RegisterReplyNotification(
@@ -52,8 +53,8 @@ class CONTENT_EXPORT InternalWebIntentsDispatcher
   webkit_glue::WebIntentData intent_;
 
   // Weak pointer to the internal object which delivers the intent to the
-  // newly-created service tab contents. This object is self-deleting
-  // (connected to the service TabContents).
+  // newly-created service WebContents. This object is self-deleting
+  // (connected to the service WebContents).
   IntentInjector* intent_injector_;
 
   // Callbacks to be notified when SendReplyMessage is called.

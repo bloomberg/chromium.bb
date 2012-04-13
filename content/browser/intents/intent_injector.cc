@@ -30,16 +30,16 @@ IntentInjector::IntentInjector(WebContents* web_contents)
 IntentInjector::~IntentInjector() {
 }
 
-void IntentInjector::WebContentsDestroyed(content::WebContents* tab) {
+void IntentInjector::WebContentsDestroyed(content::WebContents* contents) {
   if (intents_dispatcher_) {
     intents_dispatcher_->SendReplyMessage(
-        webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED, string16());
+        webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED, string16());
   }
 
   delete this;
 }
 
-void IntentInjector::SourceWebContentsDestroyed(WebContents* tab) {
+void IntentInjector::SourceWebContentsDestroyed(WebContents* contents) {
   intents_dispatcher_ = NULL;
 }
 

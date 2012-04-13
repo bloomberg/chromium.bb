@@ -15,14 +15,14 @@
 class IntentInjector;
 
 // Implements the coordinator object interface for Web Intents.
-// Observes the source (client) tab to make sure messages sent back by the
+// Observes the source (client) contents to make sure messages sent back by the
 // service can be delivered. Keeps a copy of triggering intent data to
 // be delivered to the service and serves as a forwarder for sending reply
 // messages back to the client page.
 class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
                                  public content::WebContentsObserver {
  public:
-  // |source_tab| is the page which triggered the web intent.
+  // |source_contents| is the page which triggered the web intent.
   // |intent| is the intent payload created by that page.
   // |intent_id| is the identifier assigned by WebKit to direct replies back to
   // the correct Javascript callback.
@@ -33,14 +33,15 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
 
   // WebIntentsDispatcher implementation.
   virtual const webkit_glue::WebIntentData& GetIntent() OVERRIDE;
-  virtual void DispatchIntent(content::WebContents* destination_tab) OVERRIDE;
+  virtual void DispatchIntent(
+      content::WebContents* destination_contents) OVERRIDE;
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE;
   virtual void RegisterReplyNotification(
       const content::WebIntentsDispatcher::ReplyNotification& closure) OVERRIDE;
 
   // content::WebContentsObserver implementation.
-  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
 
  private:
   webkit_glue::WebIntentData intent_;
@@ -48,8 +49,8 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
   int intent_id_;
 
   // Weak pointer to the internal object which provides the intent to the
-  // newly-created service tab contents. This object is self-deleting
-  // (connected to the service TabContents).
+  // newly-created service WebContents. This object is self-deleting
+  // (connected to the service WebContents).
   IntentInjector* intent_injector_;
 
   // Callbacks to be notified when SendReplyMessage is called.
