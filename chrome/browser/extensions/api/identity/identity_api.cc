@@ -43,10 +43,16 @@ bool GetAuthTokenFunction::RunImpl() {
 
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
 
-  flow_.reset(
-      new OAuth2MintTokenFlow(profile()->GetRequestContext(), this));
-  flow_->Start(token_service->GetOAuth2LoginRefreshToken(),
-               extension->id(), oauth2_info.client_id, oauth2_info.scopes);
+  flow_.reset(new OAuth2MintTokenFlow(
+      profile()->GetRequestContext(),
+      this,
+      OAuth2MintTokenFlow::Parameters(
+          token_service->GetOAuth2LoginRefreshToken(),
+          extension->id(),
+          oauth2_info.client_id,
+          oauth2_info.scopes,
+          OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE)));
+  flow_->Start();
 
   return true;
 }

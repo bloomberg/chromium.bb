@@ -7,28 +7,119 @@
 #include <string>
 #include <vector>
 
+#include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/net/gaia/gaia_urls.h"
+#include "base/values.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
-#include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
-#include "chrome/common/net/gaia/oauth2_mint_token_consumer.h"
-#include "chrome/common/net/gaia/oauth2_mint_token_fetcher.h"
 #include "chrome/common/net/gaia/oauth2_mint_token_flow.h"
+#include "content/test/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::URLFetcher;
+using net::URLRequestStatus;
 using testing::_;
-using testing::Return;
+using testing::StrictMock;
 
 namespace {
+
+static const char kValidTokenResponse[] =
+    "{"
+    "  \"token\": \"at1\","
+    "  \"issueAdvice\": \"Auto\""
+    "}";
+static const char kTokenResponseNoAccessToken[] =
+    "{"
+    "  \"issueAdvice\": \"Auto\""
+    "}";
+
+static const char kValidIssueAdviceResponse[] =
+    "{"
+    "  \"issueAdvice\": \"consent\","
+    "  \"consent\": {"
+    "    \"oauthClient\": {"
+    "      \"name\": \"Test app\","
+    "      \"iconUri\": \"\","
+    "      \"developerEmail\": \"munjal@chromium.org\""
+    "    },"
+    "    \"scopes\": ["
+    "      {"
+    "        \"description\": \"Manage your calendars\","
+    "        \"detail\": \"\nView and manage your calendars\n\""
+    "      },"
+    "      {"
+    "        \"description\": \"Manage your documents\","
+    "        \"detail\": \"\nView your documents\nUpload new documents\n\""
+    "      }"
+    "    ]"
+    "  }"
+    "}";
+
+static const char kIssueAdviceResponseNoDescription[] =
+    "{"
+    "  \"issueAdvice\": \"consent\","
+    "  \"consent\": {"
+    "    \"oauthClient\": {"
+    "      \"name\": \"Test app\","
+    "      \"iconUri\": \"\","
+    "      \"developerEmail\": \"munjal@chromium.org\""
+    "    },"
+    "    \"scopes\": ["
+    "      {"
+    "        \"description\": \"Manage your calendars\","
+    "        \"detail\": \"\nView and manage your calendars\n\""
+    "      },"
+    "      {"
+    "        \"detail\": \"\nView your documents\nUpload new documents\n\""
+    "      }"
+    "    ]"
+    "  }"
+    "}";
+
+static const char kIssueAdviceResponseNoDetail[] =
+    "{"
+    "  \"issueAdvice\": \"consent\","
+    "  \"consent\": {"
+    "    \"oauthClient\": {"
+    "      \"name\": \"Test app\","
+    "      \"iconUri\": \"\","
+    "      \"developerEmail\": \"munjal@chromium.org\""
+    "    },"
+    "    \"scopes\": ["
+    "      {"
+    "        \"description\": \"Manage your calendars\","
+    "        \"detail\": \"\nView and manage your calendars\n\""
+    "      },"
+    "      {"
+    "        \"description\": \"Manage your documents\""
+    "      }"
+    "    ]"
+    "  }"
+    "}";
+
 std::vector<std::string> CreateTestScopes() {
   std::vector<std::string> scopes;
-  scopes.push_back("scope1");
-  scopes.push_back("scope2");
+  scopes.push_back("http://scope1");
+  scopes.push_back("http://scope2");
   return scopes;
 }
+
+static IssueAdviceInfo CreateIssueAdvice() {
+  IssueAdviceInfo ia;
+  IssueAdviceInfoEntry e1;
+  e1.description = "Manage your calendars";
+  e1.details.push_back("View and manage your calendars");
+  ia.push_back(e1);
+  IssueAdviceInfoEntry e2;
+  e2.description = "Manage your documents";
+  e2.details.push_back("View your documents");
+  e2.details.push_back("Upload new documents");
+  ia.push_back(e2);
+  return ia;
 }
+
+}  // namespace
 
 class MockDelegate : public OAuth2MintTokenFlow::Delegate {
  public:
@@ -36,43 +127,18 @@ class MockDelegate : public OAuth2MintTokenFlow::Delegate {
   ~MockDelegate() {}
 
   MOCK_METHOD1(OnMintTokenSuccess, void(const std::string& access_token));
+  MOCK_METHOD1(OnIssueAdviceSuccess,
+               void (const IssueAdviceInfo& issue_advice));
   MOCK_METHOD1(OnMintTokenFailure,
                void(const GoogleServiceAuthError& error));
 };
 
-class MockOAuth2AccessTokenFetcher : public OAuth2AccessTokenFetcher {
+class MockMintTokenFlow : public OAuth2MintTokenFlow {
  public:
-  MockOAuth2AccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
-                               net::URLRequestContextGetter* getter)
-      : OAuth2AccessTokenFetcher(consumer, getter) {}
-  ~MockOAuth2AccessTokenFetcher() {}
-
-  MOCK_METHOD4(Start,
-               void (const std::string& client_id,
-                     const std::string& client_secret,
-                     const std::string& refresh_token,
-                     const std::vector<std::string>& scopes));
-};
-
-class MockOAuth2MintTokenFetcher : public OAuth2MintTokenFetcher {
- public:
-   MockOAuth2MintTokenFetcher(OAuth2MintTokenConsumer* consumer,
-                              net::URLRequestContextGetter* getter)
-      : OAuth2MintTokenFetcher(consumer, getter, "test") {}
-  ~MockOAuth2MintTokenFetcher() {}
-
-  MOCK_METHOD4(Start,
-               void (const std::string& oauth_login_access_token,
-                     const std::string& client_id,
-                     const std::vector<std::string>& scopes,
-                     const std::string& origin));
-};
-
-class MockOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
- public:
-  explicit MockOAuth2MintTokenFlow(MockDelegate* delegate)
-      : OAuth2MintTokenFlow(NULL, delegate) {}
-  ~MockOAuth2MintTokenFlow() {}
+  explicit MockMintTokenFlow(MockDelegate* delegate,
+    const OAuth2MintTokenFlow::Parameters& parameters )
+      : OAuth2MintTokenFlow(NULL, delegate, parameters) {}
+  ~MockMintTokenFlow() {}
 
   MOCK_METHOD0(CreateAccessTokenFetcher, OAuth2AccessTokenFetcher*());
   MOCK_METHOD0(CreateMintTokenFetcher, OAuth2MintTokenFetcher*());
@@ -80,116 +146,212 @@ class MockOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
 
 class OAuth2MintTokenFlowTest : public testing::Test {
  public:
-  OAuth2MintTokenFlowTest() {
-    flow_.reset(new MockOAuth2MintTokenFlow(&delegate_));
-    access_token_fetcher_.reset(new MockOAuth2AccessTokenFetcher(
-        flow_.get(), NULL));
-    mint_token_fetcher_.reset(new MockOAuth2MintTokenFetcher(
-        flow_.get(), NULL));
-  }
-
+  OAuth2MintTokenFlowTest() {}
   virtual ~OAuth2MintTokenFlowTest() { }
 
  protected:
-  void SetAccessTokenFetcherFailure(const std::string& rt,
-                                    const GoogleServiceAuthError& error) {
-    EXPECT_CALL(*access_token_fetcher_,
-        Start(GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-              GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-              rt, std::vector<std::string>()))
-        .Times(1);
-    EXPECT_CALL(*flow_, CreateAccessTokenFetcher())
-        .WillOnce(Return(access_token_fetcher_.release()));
-    EXPECT_CALL(delegate_, OnMintTokenFailure(error))
-        .Times(1);
+  void CreateFlow(OAuth2MintTokenFlow::Mode mode) {
+    return CreateFlow(&delegate_, mode);
   }
 
-  void SetAccessTokenFetcherSuccess(const std::string& rt) {
-    EXPECT_CALL(*access_token_fetcher_,
-        Start(GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
-              GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-              rt, std::vector<std::string>()))
-        .Times(1);
-    EXPECT_CALL(*flow_, CreateAccessTokenFetcher())
-        .WillOnce(Return(access_token_fetcher_.release()));
+  void CreateFlow(MockDelegate* delegate,
+                  OAuth2MintTokenFlow::Mode mode) {
+    std::string rt = "refresh_token";
+    std::string ext_id = "ext1";
+    std::string client_id = "client1";
+    std::vector<std::string> scopes(CreateTestScopes());
+    flow_.reset(new MockMintTokenFlow(
+        delegate,
+        OAuth2MintTokenFlow::Parameters(rt, ext_id, client_id, scopes, mode)));
   }
 
-  void SetMintTokenFetcherFailure(const std::string& rt,
-                                  const std::string& ext_id,
-                                  const std::string& client_id,
-                                  const std::vector<std::string>& scopes,
-                                  const GoogleServiceAuthError& error) {
-    EXPECT_CALL(*mint_token_fetcher_,
-        Start(rt, client_id, scopes, ext_id))
-        .Times(1);
-    EXPECT_CALL(*flow_, CreateMintTokenFetcher())
-        .WillOnce(Return(mint_token_fetcher_.release()));
-    EXPECT_CALL(delegate_, OnMintTokenFailure(error))
-        .Times(1);
+  // Helper to parse the given string to DictionaryValue.
+  static base::DictionaryValue* ParseJson(const std::string& str) {
+    base::JSONReader reader;
+    scoped_ptr<Value> value(reader.Read(str, false));
+    EXPECT_TRUE(value.get());
+    EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
+    return static_cast<base::DictionaryValue*>(value.release());
   }
 
-  void SetMintTokenFetcherSuccess(const std::string& rt,
-                                  const std::string& ext_id,
-                                  const std::string& client_id,
-                                  const std::vector<std::string>& scopes,
-                                  const std::string& at) {
-    EXPECT_CALL(*mint_token_fetcher_,
-        Start(rt, client_id, scopes, ext_id))
-        .Times(1);
-    EXPECT_CALL(*flow_, CreateMintTokenFetcher())
-        .WillOnce(Return(mint_token_fetcher_.release()));
-    EXPECT_CALL(delegate_, OnMintTokenSuccess(at))
-        .Times(1);
-  }
-
-  scoped_ptr<MockOAuth2MintTokenFlow> flow_;
-  scoped_ptr<MockOAuth2AccessTokenFetcher> access_token_fetcher_;
-  scoped_ptr<MockOAuth2MintTokenFetcher> mint_token_fetcher_;
-  MockDelegate delegate_;
+  scoped_ptr<MockMintTokenFlow> flow_;
+  StrictMock<MockDelegate> delegate_;
 };
 
-TEST_F(OAuth2MintTokenFlowTest, LoginAccessTokenFailure) {
-  std::string rt = "refresh_token";
-  std::string ext_id = "ext1";
-  std::string client_id = "client1";
-  std::vector<std::string> scopes(CreateTestScopes());
-  std::string at = "access_token";
-  GoogleServiceAuthError err(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-
-  SetAccessTokenFetcherFailure(rt, err);
-
-  flow_->Start(rt, ext_id, client_id, scopes);
-  flow_->OnGetTokenFailure(err);
+TEST_F(OAuth2MintTokenFlowTest, CreateApiCallBody) {
+  {  // Issue advice mode.
+    CreateFlow(OAuth2MintTokenFlow::MODE_ISSUE_ADVICE);
+    std::string body = flow_->CreateApiCallBody();
+    std::string expected_body(
+          "force=false"
+          "&response_type=none"
+          "&scope=http://scope1+http://scope2"
+          "&client_id=client1"
+          "&origin=ext1");
+    EXPECT_EQ(expected_body, body);
+  }
+  {  // Record grant mode.
+    CreateFlow(OAuth2MintTokenFlow::MODE_RECORD_GRANT);
+    std::string body = flow_->CreateApiCallBody();
+    std::string expected_body(
+        "force=true"
+        "&response_type=none"
+        "&scope=http://scope1+http://scope2"
+        "&client_id=client1"
+        "&origin=ext1");
+    EXPECT_EQ(expected_body, body);
+  }
+  {  // Mint token no force mode.
+    CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    std::string body = flow_->CreateApiCallBody();
+    std::string expected_body(
+        "force=false"
+        "&response_type=token"
+        "&scope=http://scope1+http://scope2"
+        "&client_id=client1"
+        "&origin=ext1");
+    EXPECT_EQ(expected_body, body);
+  }
+  {  // Mint token force mode.
+    CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE);
+    std::string body = flow_->CreateApiCallBody();
+    std::string expected_body(
+        "force=true"
+        "&response_type=token"
+        "&scope=http://scope1+http://scope2"
+        "&client_id=client1"
+        "&origin=ext1");
+    EXPECT_EQ(expected_body, body);
+  }
 }
 
-TEST_F(OAuth2MintTokenFlowTest, MintAccessTokenFailure) {
-  std::string rt = "refresh_token";
-  std::string ext_id = "ext1";
-  std::string client_id = "client1";
-  std::vector<std::string> scopes(CreateTestScopes());
-  std::string at = "access_token";
-  GoogleServiceAuthError err(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-
-  SetAccessTokenFetcherSuccess(rt);
-  SetMintTokenFetcherFailure(at, ext_id, client_id, scopes, err);
-
-  flow_->Start(rt, ext_id, client_id, scopes);
-  flow_->OnGetTokenSuccess(at);
-  flow_->OnMintTokenFailure(err);
+TEST_F(OAuth2MintTokenFlowTest, ParseMintTokenResponse) {
+  {  // Access token missing.
+    scoped_ptr<base::DictionaryValue> json(
+        ParseJson(kTokenResponseNoAccessToken));
+    std::string at;
+    EXPECT_FALSE(OAuth2MintTokenFlow::ParseMintTokenResponse(json.get(), &at));
+    EXPECT_TRUE(at.empty());
+  }
+  {  // All good.
+    scoped_ptr<base::DictionaryValue> json(ParseJson(kValidTokenResponse));
+    std::string at;
+    EXPECT_TRUE(OAuth2MintTokenFlow::ParseMintTokenResponse(json.get(), &at));
+    EXPECT_EQ("at1", at);
+  }
 }
 
-TEST_F(OAuth2MintTokenFlowTest, Success) {
-  std::string rt = "refresh_token";
-  std::string ext_id = "ext1";
-  std::string client_id = "client1";
-  std::vector<std::string> scopes(CreateTestScopes());
-  std::string at = "access_token";
-  std::string result = "app_access_token";
+TEST_F(OAuth2MintTokenFlowTest, ParseIssueAdviceResponse) {
+  {  // Description missing.
+    scoped_ptr<base::DictionaryValue> json(
+        ParseJson(kIssueAdviceResponseNoDescription));
+    IssueAdviceInfo ia;
+    EXPECT_FALSE(OAuth2MintTokenFlow::ParseIssueAdviceResponse(
+        json.get(), &ia));
+    EXPECT_TRUE(ia.empty());
+  }
+  {  // Detail missing.
+    scoped_ptr<base::DictionaryValue> json(
+        ParseJson(kIssueAdviceResponseNoDetail));
+    IssueAdviceInfo ia;
+    EXPECT_FALSE(OAuth2MintTokenFlow::ParseIssueAdviceResponse(
+        json.get(), &ia));
+    EXPECT_TRUE(ia.empty());
+  }
+  {  // All good.
+    scoped_ptr<base::DictionaryValue> json(
+        ParseJson(kValidIssueAdviceResponse));
+    IssueAdviceInfo ia;
+    EXPECT_TRUE(OAuth2MintTokenFlow::ParseIssueAdviceResponse(
+        json.get(), &ia));
+    IssueAdviceInfo ia_expected(CreateIssueAdvice());
+    EXPECT_EQ(ia_expected, ia);
+  }
+}
 
-  SetAccessTokenFetcherSuccess(rt);
-  SetMintTokenFetcherSuccess(at, ext_id, client_id, scopes, result);
+TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallSuccess) {
+  {  // No body.
+    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
+    url_fetcher.SetResponseString("");
+    CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    EXPECT_CALL(delegate_, OnMintTokenFailure(_));
+    flow_->ProcessApiCallSuccess(&url_fetcher);
+  }
+  {  // Bad json.
+    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
+    url_fetcher.SetResponseString("foo");
+    CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    EXPECT_CALL(delegate_, OnMintTokenFailure(_));
+    flow_->ProcessApiCallSuccess(&url_fetcher);
+  }
+  {  // Valid json: no access token.
+    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
+    url_fetcher.SetResponseString(kTokenResponseNoAccessToken);
+    CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    EXPECT_CALL(delegate_, OnMintTokenFailure(_));
+    flow_->ProcessApiCallSuccess(&url_fetcher);
+  }
+  {  // Valid json: good token response.
+    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
+    url_fetcher.SetResponseString(kValidTokenResponse);
+    CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    EXPECT_CALL(delegate_, OnMintTokenSuccess("at1"));
+    flow_->ProcessApiCallSuccess(&url_fetcher);
+  }
+  {  // Valid json: no description.
+    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
+    url_fetcher.SetResponseString(kIssueAdviceResponseNoDescription);
+    CreateFlow(OAuth2MintTokenFlow::MODE_ISSUE_ADVICE);
+    EXPECT_CALL(delegate_, OnMintTokenFailure(_));
+    flow_->ProcessApiCallSuccess(&url_fetcher);
+  }
+  {  // Valid json: no detail.
+    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
+    url_fetcher.SetResponseString(kIssueAdviceResponseNoDetail);
+    CreateFlow(OAuth2MintTokenFlow::MODE_ISSUE_ADVICE);
+    EXPECT_CALL(delegate_, OnMintTokenFailure(_));
+    flow_->ProcessApiCallSuccess(&url_fetcher);
+  }
+  {  // Valid json: good issue advice response.
+    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
+    url_fetcher.SetResponseString(kValidIssueAdviceResponse);
+    CreateFlow(OAuth2MintTokenFlow::MODE_ISSUE_ADVICE);
+    IssueAdviceInfo ia(CreateIssueAdvice());
+    EXPECT_CALL(delegate_, OnIssueAdviceSuccess(ia));
+    flow_->ProcessApiCallSuccess(&url_fetcher);
+  }
+}
 
-  flow_->Start(rt, ext_id, client_id, scopes);
-  flow_->OnGetTokenSuccess(at);
-  flow_->OnMintTokenSuccess(result);
+TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallFailure) {
+  {  // Null delegate should work fine.
+    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
+    url_fetcher.set_status(URLRequestStatus(URLRequestStatus::FAILED, 101));
+    CreateFlow(NULL, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    flow_->ProcessApiCallFailure(&url_fetcher);
+  }
+
+  {  // Non-null delegate.
+    TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
+    url_fetcher.set_status(URLRequestStatus(URLRequestStatus::FAILED, 101));
+    CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    EXPECT_CALL(delegate_, OnMintTokenFailure(_));
+    flow_->ProcessApiCallFailure(&url_fetcher);
+  }
+}
+
+TEST_F(OAuth2MintTokenFlowTest, ProcessMintAccessTokenFailure) {
+  {  // Null delegate should work fine.
+    GoogleServiceAuthError error(
+        GoogleServiceAuthError::FromConnectionError(101));
+    CreateFlow(NULL, OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    flow_->ProcessMintAccessTokenFailure(error);
+  }
+
+  {  // Non-null delegate.
+    GoogleServiceAuthError error(
+        GoogleServiceAuthError::FromConnectionError(101));
+    CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+    EXPECT_CALL(delegate_, OnMintTokenFailure(error));
+    flow_->ProcessMintAccessTokenFailure(error);
+  }
 }

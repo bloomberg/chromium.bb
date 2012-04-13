@@ -6,33 +6,93 @@
 #define CHROME_COMMON_NET_GAIA_OAUTH2_MINT_TOKEN_FLOW_H_
 
 #include <string>
+#include <vector>
 
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
-#include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
-#include "chrome/common/net/gaia/oauth2_mint_token_consumer.h"
-#include "chrome/common/net/gaia/oauth2_mint_token_fetcher.h"
+#include "chrome/common/net/gaia/oauth2_api_call_flow.h"
 
 class GoogleServiceAuthError;
 class OAuth2MintTokenFlowTest;
+
+namespace base {
+class DictionaryValue;
+}
+
+namespace content {
+class URLFetcher;
+}
 
 namespace net {
 class URLRequestContextGetter;
 }
 
+// IssueAdvice: messages to show to the user to get a user's approval.
+// The structure is as follows:
+// * Descritpion 1
+//   - Detail 1.1
+//   - Details 1.2
+// * Description 2
+//   - Detail 2.1
+//   - Detail 2.2
+//   - Detail 2.3
+// * Description 3
+//   - Detail 3.1
+struct IssueAdviceInfoEntry {
+ public:
+  IssueAdviceInfoEntry();
+  ~IssueAdviceInfoEntry();
+
+  std::string description;
+  std::vector<std::string> details;
+
+  bool operator==(const IssueAdviceInfoEntry& rhs) const;
+};
+
+typedef std::vector<IssueAdviceInfoEntry> IssueAdviceInfo;
+
 // This class implements the OAuth2 flow to Google to mint an OAuth2
 // token for the given client and the given set of scopes from the
 // OAuthLogin scoped "master" OAuth2 token for the user logged in to
 // Chrome.
-class OAuth2MintTokenFlow
-    : public OAuth2AccessTokenConsumer,
-      public OAuth2MintTokenConsumer {
+class OAuth2MintTokenFlow : public OAuth2ApiCallFlow {
  public:
+  // There are four differnt modes when minting a token to grant
+  // access to third-party app for a user.
+  enum Mode {
+    // Get the messages to display to the user without minting a token.
+    MODE_ISSUE_ADVICE,
+    // Record a grant but do not get a token back.
+    MODE_RECORD_GRANT,
+    // Mint a token for an existing grant.
+    MODE_MINT_TOKEN_NO_FORCE,
+    // Mint a token forcefully even if there is no existing grant.
+    MODE_MINT_TOKEN_FORCE,
+  };
+
+  // Parameters needed to mint a token.
+  struct Parameters {
+   public:
+    Parameters();
+    Parameters(const std::string& rt,
+               const std::string& eid,
+               const std::string& cid,
+               const std::vector<std::string>& scopes_arg,
+               Mode mode_arg);
+    ~Parameters();
+
+    std::string login_refresh_token;
+    std::string extension_id;
+    std::string client_id;
+    std::vector<std::string> scopes;
+    Mode mode;
+  };
+
   class Delegate {
    public:
-    virtual void OnMintTokenSuccess(const std::string& access_token) { }
-    virtual void OnMintTokenFailure(const GoogleServiceAuthError& error) { }
+    Delegate() {}
+    virtual ~Delegate() {}
+    virtual void OnMintTokenSuccess(const std::string& access_token) {}
+    virtual void OnIssueAdviceSuccess(const IssueAdviceInfo& issue_advice)  {}
+    virtual void OnMintTokenFailure(const GoogleServiceAuthError& error) {}
   };
 
   // An interceptor for tests.
@@ -47,89 +107,47 @@ class OAuth2MintTokenFlow
   static void SetInterceptorForTests(InterceptorForTests* interceptor);
 
   OAuth2MintTokenFlow(net::URLRequestContextGetter* context,
-                      Delegate* delegate);
+                      Delegate* delegate,
+                      const Parameters& parameters);
   virtual ~OAuth2MintTokenFlow();
 
-  // Start the process to mint a token.
-  void Start(const std::string& login_refresh_token,
-             const std::string& extension_id,
-             const std::string& client_id,
-             const std::vector<std::string>& scopes);
-
-  // OAuth2AccessTokenConsumer implementation.
-  virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
-  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
-  // OAuth2MintTokenConsumer implementation.
-  virtual void OnMintTokenSuccess(const std::string& access_token) OVERRIDE;
-  virtual void OnMintTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
-
-  // Getters for various members.
-  const std::string& extension_id() const { return extension_id_; }
-  const std::string& client_id() const { return client_id_; }
+  virtual void Start() OVERRIDE;
 
  protected:
-  // Helper to create an instance of access token fetcher.
-  // Caller owns the returned instance.
-  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher();
+  // Implementation of template methods in OAuth2ApiCallFlow.
+  virtual GURL CreateApiCallUrl() OVERRIDE;
+  virtual std::string CreateApiCallBody() OVERRIDE;
 
-  // Helper to create an instance of mint token fetcher.
-  // Caller owns the returned instance.
-  virtual OAuth2MintTokenFetcher* CreateMintTokenFetcher();
+  virtual void ProcessApiCallSuccess(
+      const content::URLFetcher* source) OVERRIDE;
+  virtual void ProcessApiCallFailure(
+      const content::URLFetcher* source) OVERRIDE;
+  virtual void ProcessNewAccessToken(const std::string& access_token) OVERRIDE;
+  virtual void ProcessMintAccessTokenFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
-  // The steps this class performs are:
-  // 1. Create a login scoped access token from login scoped refresh token.
-  // 2. Use login scoped access token to call the API to mint an access token
-  //    for the app.
-  enum State {
-    INITIAL,
-    FETCH_LOGIN_ACCESS_TOKEN_STARTED,
-    FETCH_LOGIN_ACCESS_TOKEN_DONE,
-    MINT_ACCESS_TOKEN_STARTED,
-    MINT_ACCESS_TOKEN_DONE,
-    ERROR_STATE
-  };
-
-  enum SetupError {
-    NONE,
-    AUTH_ERROR,
-    INTERNAL_ERROR,
-    USER_CANCELLED,
-
-    // This is used for histograms, and should always be the last value.
-    SETUP_ERROR_BOUNDARY
-  };
-
   friend class OAuth2MintTokenFlowTest;
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, CreateApiCallBody);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ParseIssueAdviceResponse);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ParseMintTokenResponse);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ProcessApiCallSuccess);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest, ProcessApiCallFailure);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2MintTokenFlowTest,
+      ProcessMintAccessTokenFailure);
 
-  // Creates an instance of URLFetcher that does not send or save cookies.
-  // The URLFether's method will be GET if body is empty, POST otherwise.
-  // Caller owns the returned instance.
-  content::URLFetcher* CreateURLFetcher(
-      const GURL& url, const std::string& body, const std::string& auth_token);
-  void BeginGetLoginAccessToken();
-  void EndGetLoginAccessToken(const GoogleServiceAuthError* error);
-  void BeginMintAccessToken();
-  void EndMintAccessToken(const GoogleServiceAuthError* error);
-
-  void ReportSuccess();
+  void ReportSuccess(const std::string& access_token);
+  void ReportSuccess(const IssueAdviceInfo& issue_advice);
   void ReportFailure(const GoogleServiceAuthError& error);
 
-  static std::string GetErrorString(SetupError error);
+  static bool ParseIssueAdviceResponse(
+      const base::DictionaryValue* dict, IssueAdviceInfo* issue_advice);
+  static bool ParseMintTokenResponse(
+      const base::DictionaryValue* dict, std::string* access_token);
 
   net::URLRequestContextGetter* context_;
   Delegate* delegate_;
-  State state_;
-
-  std::string login_refresh_token_;
-  std::string extension_id_;
-  std::string client_id_;
-  std::vector<std::string> scopes_;
-
-  scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
-  scoped_ptr<OAuth2MintTokenFetcher> oauth2_mint_token_fetcher_;
-  std::string login_access_token_;
-  std::string app_access_token_;
+  Parameters parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2MintTokenFlow);
 };

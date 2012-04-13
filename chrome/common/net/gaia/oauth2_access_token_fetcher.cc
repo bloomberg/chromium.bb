@@ -42,20 +42,6 @@ static const char kGetAccessTokenBodyWithScopeFormat[] =
 
 static const char kAccessTokenKey[] = "access_token";
 
-static bool GetStringFromDictionary(const DictionaryValue* dict,
-                                    const std::string& key,
-                                    std::string* value) {
-  Value* json_value;
-  if (!dict->Get(key, &json_value))
-    return false;
-  if (json_value->GetType() != base::Value::TYPE_STRING)
-    return false;
-
-  StringValue* json_str_value = static_cast<StringValue*>(json_value);
-  json_str_value->GetAsString(value);
-  return true;
-}
-
 static GoogleServiceAuthError CreateAuthError(URLRequestStatus status) {
   CHECK(!status.is_success());
   if (status.status() == URLRequestStatus::CANCELED) {
@@ -210,5 +196,5 @@ bool OAuth2AccessTokenFetcher::ParseGetAccessTokenResponse(
     return false;
 
   DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
-  return GetStringFromDictionary(dict, kAccessTokenKey, access_token);
+  return dict->GetString(kAccessTokenKey, access_token);
 }

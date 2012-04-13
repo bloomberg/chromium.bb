@@ -50,7 +50,7 @@ class OAuth2ApiCallFlow
   virtual ~OAuth2ApiCallFlow();
 
   // Start the flow.
-  void Start();
+  virtual void Start();
 
   // OAuth2AccessTokenFetcher implementation.
   virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
