@@ -1,11 +1,11 @@
 ROLE_SYSTEM_DOCUMENT name='' state=FOCUSED,READONLY,FOCUSABLE
     ROLE_SYSTEM_LIST name='' state=READONLY
         ROLE_SYSTEM_LISTITEM name='' state=READONLY
-            ROLE_SYSTEM_TEXT name='' state=READONLY
+            ROLE_SYSTEM_TEXT name='•' state=READONLY
             ROLE_SYSTEM_TEXT name='Item 1' state=READONLY
         ROLE_SYSTEM_LISTITEM name='' state=READONLY
-            ROLE_SYSTEM_TEXT name='' state=READONLY
+            ROLE_SYSTEM_TEXT name='•' state=READONLY
             ROLE_SYSTEM_TEXT name='Item 2' state=READONLY
         ROLE_SYSTEM_LISTITEM name='' state=READONLY
-            ROLE_SYSTEM_TEXT name='' state=READONLY
+            ROLE_SYSTEM_TEXT name='•' state=READONLY
             ROLE_SYSTEM_TEXT name='Item 3' state=READONLY

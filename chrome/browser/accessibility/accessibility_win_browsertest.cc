@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   tree_updated_observer1.Wait();
 
   // Check the browser's copy of the renderer accessibility tree.
-  AccessibleChecker list_marker_checker(L"", ROLE_SYSTEM_TEXT, L"\x2022");
+  AccessibleChecker list_marker_checker(L"\x2022", ROLE_SYSTEM_TEXT, L"");
   AccessibleChecker static_text_checker(L"li", ROLE_SYSTEM_TEXT, L"");
   AccessibleChecker list_item_checker(L"", ROLE_SYSTEM_LISTITEM, L"");
   list_item_checker.SetExpectedState(

@@ -2713,7 +2713,8 @@ void BrowserAccessibilityWin::PreInitialize() {
 
   if (name_.empty() &&
       (role_ == WebAccessibility::ROLE_LISTBOX_OPTION ||
-       role_ == WebAccessibility::ROLE_STATIC_TEXT)) {
+       role_ == WebAccessibility::ROLE_STATIC_TEXT ||
+       role_ == WebAccessibility::ROLE_LIST_MARKER)) {
     name_.swap(value_);
   }
 

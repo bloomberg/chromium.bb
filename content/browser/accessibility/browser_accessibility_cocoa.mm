@@ -138,7 +138,7 @@ RoleMap BuildRoleMap() {
     { WebAccessibility::ROLE_LINK, NSAccessibilityLinkRole },
     { WebAccessibility::ROLE_LIST, NSAccessibilityListRole },
     { WebAccessibility::ROLE_LIST_ITEM, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_LIST_MARKER, NSAccessibilityGroupRole },
+    { WebAccessibility::ROLE_LIST_MARKER, @"AXListMarker" },
     { WebAccessibility::ROLE_LISTBOX, NSAccessibilityListRole },
     { WebAccessibility::ROLE_LISTBOX_OPTION, NSAccessibilityGroupRole },
     { WebAccessibility::ROLE_LOG, NSAccessibilityGroupRole },
