@@ -75,6 +75,8 @@ int wl_event_loop_get_fd(struct wl_event_loop *loop);
 struct wl_client;
 struct wl_display;
 struct wl_input_device;
+struct wl_listener;
+typedef void (*wl_notify_func_t)(struct wl_listener *listener, void *data);
 
 struct wl_display *wl_display_create(void);
 void wl_display_destroy(struct wl_display *display);
@@ -106,6 +108,11 @@ void wl_client_flush(struct wl_client *client);
 void wl_client_get_credentials(struct wl_client *client,
 			       pid_t *pid, uid_t *uid, gid_t *gid);
 
+void wl_client_add_destroy_listener(struct wl_client *client,
+				    struct wl_listener *listener);
+struct wl_listener *wl_client_get_destroy_listener(struct wl_client *client,
+						   wl_notify_func_t notify);
+
 struct wl_resource *
 wl_client_add_object(struct wl_client *client,
 		     const struct wl_interface *interface,
@@ -117,7 +124,7 @@ wl_client_new_object(struct wl_client *client,
 
 struct wl_listener {
 	struct wl_list link;
-	void (*notify)(struct wl_listener *listener, void *data);
+	wl_notify_func_t notify;
 };
 
 struct wl_signal {

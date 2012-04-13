@@ -63,6 +63,7 @@ struct wl_client {
 	uint32_t mask;
 	struct wl_list link;
 	struct wl_map objects;
+	struct wl_signal destroy_signal;
 	struct ucred ucred;
 	int error;
 };
@@ -336,6 +337,7 @@ wl_client_create(struct wl_display *display, int fd)
 		return NULL;
 	}
 
+	wl_signal_init(&client->destroy_signal);
 	bind_display(client, display, 1, 1);
 
 	wl_list_insert(display->client_list.prev, &client->link);
@@ -410,11 +412,27 @@ wl_resource_destroy(struct wl_resource *resource)
 }
 
 WL_EXPORT void
+wl_client_add_destroy_listener(struct wl_client *client,
+			       struct wl_listener *listener)
+{
+	wl_signal_add(&client->destroy_signal, listener);
+}
+
+WL_EXPORT struct wl_listener *
+wl_client_get_destroy_listener(struct wl_client *client,
+			       wl_notify_func_t notify)
+{
+	return wl_signal_get(&client->destroy_signal, notify);
+}
+
+WL_EXPORT void
 wl_client_destroy(struct wl_client *client)
 {
 	uint32_t serial = 0;
 	
 	printf("disconnect from client %p\n", client);
+
+	wl_signal_emit(&client->destroy_signal, client);
 
 	wl_client_flush(client);
 	wl_map_for_each(&client->objects, destroy_resource, &serial);
