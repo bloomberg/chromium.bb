@@ -7,6 +7,7 @@
 #endif
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/net/url_request_mock_util.h"
@@ -20,6 +21,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -132,6 +134,14 @@ class UnloadTest : public InProcessBrowserTest {
                          const char* expected_title) {
     ui_test_utils::NavigateToURL(browser(),
                                  GURL("data:text/html," + html_content));
+    content::RenderProcessHost* process =
+        browser()->GetSelectedWebContents()->GetRenderProcessHost();
+    if (html_content.find("unload=") != std::string::npos &&
+        process->SuddenTerminationAllowed()) {
+      LOG(INFO) << "Explicitly unsetting sudden termination because IPC didn't "
+                   "arrive yet";
+      process->SetSuddenTerminationAllowed(false);
+    }
     CheckTitle(expected_title);
   }
 
