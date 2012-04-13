@@ -114,10 +114,11 @@ struct shell_surface {
 
 	struct {
 		struct wl_pointer_grab grab;
-		uint32_t time;
 		int32_t x, y;
 		struct weston_transform parent_transform;
 		int32_t initial_up;
+		struct wl_input_device *device;
+		uint32_t serial;
 	} popup;
 
 	struct {
@@ -752,7 +753,7 @@ popup_grab_button(struct wl_pointer_grab *grab,
 					    time, button, state);
 	} else if (state == 0 &&
 		   (shsurf->popup.initial_up ||
-		    time - shsurf->popup.time > 500)) {
+		    time - shsurf->popup.device->grab_time > 500)) {
 		wl_shell_surface_send_popup_done(&shsurf->resource);
 		wl_input_device_end_pointer_grab(grab->input_device);
 		shsurf->popup.grab.input_device = NULL;
@@ -769,16 +770,14 @@ static const struct wl_pointer_grab_interface popup_grab_interface = {
 };
 
 static void
-shell_map_popup(struct shell_surface *shsurf, uint32_t serial)
+shell_map_popup(struct shell_surface *shsurf)
 {
-	struct wl_input_device *device;
+	struct wl_input_device *device = shsurf->popup.device;
 	struct weston_surface *es = shsurf->surface;
 	struct weston_surface *parent = shsurf->parent->surface;
 
 	es->output = parent->output;
-
 	shsurf->popup.grab.interface = &popup_grab_interface;
-	device = es->compositor->input_device;
 
 	weston_surface_update_transform(parent);
 	if (parent->transform.enabled) {
@@ -796,19 +795,23 @@ shell_map_popup(struct shell_surface *shsurf, uint32_t serial)
 		       &shsurf->popup.parent_transform.link);
 	weston_surface_set_position(es, shsurf->popup.x, shsurf->popup.y);
 
-	shsurf->popup.grab.input_device = device;
-	shsurf->popup.time = device->grab_time;
 	shsurf->popup.initial_up = 0;
 
-	wl_input_device_start_pointer_grab(shsurf->popup.grab.input_device,
-					   &shsurf->popup.grab);
+	/* We don't require the grab to still be active, but if another
+	 * grab has started in the meantime, we end the popup now. */
+	if (device->grab_serial == shsurf->popup.serial) {
+		wl_input_device_start_pointer_grab(device,
+						   &shsurf->popup.grab);
+	} else {
+		wl_shell_surface_send_popup_done(&shsurf->resource);
+	}
 }
 
 static void
 shell_surface_set_popup(struct wl_client *client,
 			struct wl_resource *resource,
 			struct wl_resource *input_device_resource,
-			uint32_t time,
+			uint32_t serial,
 			struct wl_resource *parent_resource,
 			int32_t x, int32_t y, uint32_t flags)
 {
@@ -816,6 +819,8 @@ shell_surface_set_popup(struct wl_client *client,
 
 	shsurf->type = SHELL_SURFACE_POPUP;
 	shsurf->parent = parent_resource->data;
+	shsurf->popup.device = input_device_resource->data;
+	shsurf->popup.serial = serial;
 	shsurf->popup.x = x;
 	shsurf->popup.y = y;
 }
@@ -1677,7 +1682,7 @@ map(struct wl_shell *shell, struct weston_surface *surface,
 		center_on_output(surface, get_default_output(compositor));
 		break;
 	case SHELL_SURFACE_POPUP:
-		shell_map_popup(shsurf, shsurf->popup.time);
+		shell_map_popup(shsurf);
 	case SHELL_SURFACE_NONE:
 		weston_surface_set_position(surface,
 					    surface->geometry.x + sx,
