@@ -36,6 +36,10 @@
 #include "chrome/browser/chromeos/input_method/candidate_window.h"
 #endif
 
+#if defined(HAVE_IBUS)
+#include <ibus.h>
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -772,6 +776,11 @@ class InputMethodManagerImpl : public InputMethodManager,
           std::rotate(value.string_list_value.begin(),
                       engine_iter,  // this becomes the new first element
                       value.string_list_value.end());
+#if defined(HAVE_IBUS)
+#if IBUS_CHECK_VERSION(1, 4, 99)
+          ibus_controller_->ChangeInputMethod(value.string_list_value[0]);
+#endif
+#endif
         } else {
           LOG(WARNING) << tentative_current_input_method_id_
                        << " is not in preload_engines: " << value.ToString();
