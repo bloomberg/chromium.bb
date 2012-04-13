@@ -57,7 +57,7 @@ class BLOB_EXPORT LocalFileReader {
   // Returns the number of bytes available to read from the beginning of
   // the file (or initial_offset) until the end of the file (rv >= 0 cases).
   // Otherwise, a negative error code is returned (rv < 0 cases).
-  int GetLength(const net::CompletionCallback& callback);
+  int GetLength(const net::Int64CompletionCallback& callback);
 
  private:
   class OpenFileStreamHelper;

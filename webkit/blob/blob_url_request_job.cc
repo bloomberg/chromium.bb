@@ -222,7 +222,7 @@ void BlobURLRequestJob::DidCountSize(int error) {
   NotifySuccess();
 }
 
-void BlobURLRequestJob::DidGetFileItemLength(size_t index, int result) {
+void BlobURLRequestJob::DidGetFileItemLength(size_t index, int64 result) {
   // Do nothing if we have encountered an error.
   if (error_)
     return;

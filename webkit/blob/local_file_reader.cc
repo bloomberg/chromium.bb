@@ -42,7 +42,7 @@ bool VerifySnapshotTime(const base::Time& expected_modification_time,
              file_info.last_modified.ToTimeT();
 }
 
-void DidGetFileInfoForGetLength(const net::CompletionCallback& callback,
+void DidGetFileInfoForGetLength(const net::Int64CompletionCallback& callback,
                                 const base::Time& expected_modification_time,
                                 int64 initial_offset,
                                 base::PlatformFileError error,
@@ -169,7 +169,7 @@ int LocalFileReader::Read(net::IOBuffer* buf, int buf_len,
                          make_scoped_refptr(buf), buf_len, callback));
 }
 
-int LocalFileReader::GetLength(const net::CompletionCallback& callback) {
+int LocalFileReader::GetLength(const net::Int64CompletionCallback& callback) {
   const bool posted = base::FileUtilProxy::GetFileInfo(
       file_thread_proxy_, file_path_,
       base::Bind(&DidGetFileInfoForGetLength, callback,

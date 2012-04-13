@@ -55,7 +55,7 @@ class BLOB_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   void DidStart();
   void CountSize();
   void DidCountSize(int error);
-  void DidGetFileItemLength(size_t index, int result);
+  void DidGetFileItemLength(size_t index, int64 result);
   void Seek(int64 offset);
 
   // For reading the blob.
