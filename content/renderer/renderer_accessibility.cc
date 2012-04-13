@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "content/common/accessibility_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_accessibility.h"
@@ -84,18 +83,19 @@ bool WebAccessibilityNotificationToAccessibilityNotification(
   return true;
 }
 
-RendererAccessibility::RendererAccessibility(RenderViewImpl* render_view)
+RendererAccessibility::RendererAccessibility(RenderViewImpl* render_view,
+                                             AccessibilityMode mode)
     : content::RenderViewObserver(render_view),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       browser_root_(NULL),
       last_scroll_offset_(gfx::Size()),
+      mode_(AccessibilityModeOff),
       ack_pending_(false),
       logging_(false) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableAccessibility))
-    WebAccessibilityObject::enableAccessibility();
   if (command_line.HasSwitch(switches::kEnableAccessibilityLogging))
     logging_ = true;
+  OnSetMode(mode);
 }
 
 RendererAccessibility::~RendererAccessibility() {
@@ -104,7 +104,7 @@ RendererAccessibility::~RendererAccessibility() {
 bool RendererAccessibility::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RendererAccessibility, message)
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_Enable, OnEnable)
+    IPC_MESSAGE_HANDLER(AccessibilityMsg_SetMode, OnSetMode)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_DoDefaultAction,
                         OnDoDefaultAction)
@@ -303,11 +303,11 @@ void RendererAccessibility::SendPendingAccessibilityNotifications() {
     }
 
     AccessibilityHostMsg_NotificationParams notification_msg;
+    BuildAccessibilityTree(obj, includes_children, &notification_msg.acc_tree);
     WebAccessibilityNotificationToAccessibilityNotification(
         notification.type, &notification_msg.notification_type);
     notification_msg.id = notification.id;
     notification_msg.includes_children = includes_children;
-    notification_msg.acc_tree = WebAccessibility(obj, includes_children);
     if (obj.axID() == root_id) {
       DCHECK_EQ(notification_msg.acc_tree.role,
                 WebAccessibility::ROLE_WEB_AREA);
@@ -486,9 +486,17 @@ void RendererAccessibility::OnNotificationsAck() {
   SendPendingAccessibilityNotifications();
 }
 
-void RendererAccessibility::OnEnable() {
-  if (WebAccessibilityObject::accessibilityEnabled())
+void RendererAccessibility::OnSetMode(AccessibilityMode mode) {
+  if (mode_ == mode) {
     return;
+  }
+
+  mode_ = mode;
+  if (mode_ == AccessibilityModeOff) {
+    // Note: should we have a way to turn off WebKit accessibility?
+    // Right now it's a one-way switch.
+    return;
+  }
 
   WebAccessibilityObject::enableAccessibility();
 
@@ -560,4 +568,55 @@ WebDocument RendererAccessibility::GetMainDocument() {
     return main_frame->document();
   else
     return WebDocument();
+}
+
+bool RendererAccessibility::IsEditableText(const WebAccessibilityObject& obj) {
+  return (obj.roleValue() == WebKit::WebAccessibilityRoleTextArea ||
+          obj.roleValue() == WebKit::WebAccessibilityRoleTextField);
+}
+
+void RendererAccessibility::RecursiveAddEditableTextNodesToTree(
+    const WebAccessibilityObject& src,
+    WebAccessibility* dst) {
+  if (IsEditableText(src)) {
+    dst->children.push_back(WebAccessibility(src, false));
+  } else {
+    int child_count = src.childCount();
+    std::set<int32> child_ids;
+    for (int i = 0; i < child_count; ++i) {
+      WebAccessibilityObject child = src.childAt(i);
+      if (!child.isValid())
+        continue;
+      RecursiveAddEditableTextNodesToTree(child, dst);
+    }
+  }
+}
+
+void RendererAccessibility::BuildAccessibilityTree(
+    const WebAccessibilityObject& src,
+    bool include_children,
+    WebAccessibility* dst) {
+  if (mode_ == AccessibilityModeComplete) {
+    dst->Init(src, include_children);
+    return;
+  }
+
+  // In Editable Text mode, we send a "collapsed" tree of only editable
+  // text nodes as direct descendants of the root.
+  CHECK_EQ(mode_, AccessibilityModeEditableTextOnly);
+  if (IsEditableText(src)) {
+    dst->Init(src, false);
+    return;
+  }
+
+  // If it's not an editable text node, it must be the root, because
+  // BuildAccessibilityTree will never be called on a non-root node
+  // that isn't already in the browser's tree.
+  CHECK_EQ(src.axID(), GetMainDocument().accessibilityObject().axID());
+
+  // Initialize the main document node, but don't add any children.
+  dst->Init(src, false);
+
+  // Find all editable text nodes and add them as children.
+  RecursiveAddEditableTextNodesToTree(src, dst);
 }

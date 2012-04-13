@@ -4,9 +4,11 @@
 
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 
+#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/timer.h"
+#include "content/public/common/content_switches.h"
 #include "ui/gfx/sys_color_change_listener.h"
 
 // Update the accessibility histogram 45 seconds after initialization.
@@ -26,6 +28,10 @@ BrowserAccessibilityStateImpl* BrowserAccessibilityStateImpl::GetInstance() {
 BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
     : BrowserAccessibilityState(),
       accessibility_enabled_(false) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceRendererAccessibility)) {
+    OnAccessibilityEnabledManually();
+  }
   update_histogram_timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromSeconds(kAccessibilityHistogramDelaySecs),
@@ -37,6 +43,10 @@ BrowserAccessibilityStateImpl::~BrowserAccessibilityStateImpl() {
 }
 
 void BrowserAccessibilityStateImpl::OnScreenReaderDetected() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableRendererAccessibility)) {
+    return;
+  }
   accessibility_enabled_ = true;
 }
 

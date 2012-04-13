@@ -648,6 +648,9 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // Indicates whether this newly created RenderView will be hosted by another
   // RenderView.
   IPC_STRUCT_MEMBER(bool, guest)
+
+  // The accessibility mode of the renderer.
+  IPC_STRUCT_MEMBER(AccessibilityMode, accessibility_mode)
 IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.

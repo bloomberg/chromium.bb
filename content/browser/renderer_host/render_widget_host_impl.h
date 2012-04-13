@@ -19,6 +19,7 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "build/build_config.h"
+#include "content/common/view_message_enums.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/ime/text_input_type.h"
@@ -94,7 +95,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual bool CopyFromBackingStoreToCGContext(const CGRect& dest_rect,
                                                CGContextRef target) OVERRIDE;
 #endif
-  virtual void EnableRendererAccessibility() OVERRIDE;
+  virtual void EnableFullAccessibilityMode() OVERRIDE;
   virtual void ForwardMouseEvent(
       const WebKit::WebMouseEvent& mouse_event) OVERRIDE;
   virtual void ForwardWheelEvent(
@@ -123,7 +124,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void SetView(RenderWidgetHostView* view);
 
   int surface_id() const { return surface_id_; }
-  bool renderer_accessible() { return renderer_accessible_; }
 
   bool empty() const { return current_size_.IsEmpty(); }
 
@@ -297,6 +297,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // pre-defined edit commands
   void SetEditCommandsForNextKeyEvent(
       const std::vector<EditCommand>& commands);
+
+  // Send a message to the renderer process to change the accessibility mode.
+  void SetAccessibilityMode(AccessibilityMode mode);
 
   // Relay a request from assistive technology to perform the default action
   // on a given node.
@@ -549,10 +552,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
 
   // The ID of the corresponding object in the Renderer Instance.
   int routing_id_;
-
-  // True if renderer accessibility is enabled. This should only be set when a
-  // screenreader is detected as it can potentially slow down Chrome.
-  bool renderer_accessible_;
 
   // Stores random bits of data for others to associate with this object.
   base::PropertyBag property_bag_;

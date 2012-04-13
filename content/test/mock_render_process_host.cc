@@ -42,7 +42,7 @@ MockRenderProcessHost::~MockRenderProcessHost() {
 void MockRenderProcessHost::EnableSendQueue() {
 }
 
-bool MockRenderProcessHost::Init(bool is_accessibility_enabled) {
+bool MockRenderProcessHost::Init() {
   return true;
 }
 

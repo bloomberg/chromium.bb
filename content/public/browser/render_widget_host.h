@@ -208,9 +208,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
                                                CGContextRef target) = 0;
 #endif
 
-  // Enable renderer accessibility. This should only be called when a
-  // screenreader is detected.
-  virtual void EnableRendererAccessibility() = 0;
+  // Send a command to the renderer to turn on full accessibility.
+  virtual void EnableFullAccessibilityMode() = 0;
 
   // Forwards the given message to the renderer. These are called by
   // the view when it has received a message.

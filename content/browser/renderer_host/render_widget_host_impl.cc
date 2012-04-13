@@ -28,7 +28,6 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
-#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -106,7 +105,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderProcessHost* process,
       hung_renderer_delay_ms_(kHungRendererDelayMs),
       process_(process),
       routing_id_(routing_id),
-      renderer_accessible_(false),
       surface_id_(0),
       is_loading_(false),
       is_hidden_(false),
@@ -154,16 +152,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderProcessHost* process,
   // Because the widget initializes as is_hidden_ == false,
   // tell the process host that we're alive.
   process_->WidgetRestored();
-
-  // Enable accessibility if it was manually specified or if it was
-  // auto-detected.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceRendererAccessibility)) {
-    BrowserAccessibilityState::GetInstance()->OnAccessibilityEnabledManually();
-    EnableRendererAccessibility();
-  } else if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
-    EnableRendererAccessibility();
-  }
 }
 
 RenderWidgetHostImpl::~RenderWidgetHostImpl() {
@@ -699,6 +687,10 @@ void RenderWidgetHostImpl::StopHangMonitorTimeout() {
   RendererIsResponsive();
   // We do not bother to stop the hung_renderer_timer_ here in case it will be
   // started again shortly, which happens to be the common use case.
+}
+
+void RenderWidgetHostImpl::EnableFullAccessibilityMode() {
+  SetAccessibilityMode(AccessibilityModeComplete);
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
@@ -1519,23 +1511,6 @@ void RenderWidgetHostImpl::Replace(const string16& word) {
   Send(new ViewMsg_Replace(routing_id_, word));
 }
 
-void RenderWidgetHostImpl::EnableRendererAccessibility() {
-  if (renderer_accessible_)
-    return;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableRendererAccessibility)) {
-    return;
-  }
-
-  renderer_accessible_ = true;
-
-  if (process_->HasConnection()) {
-    // Renderer accessibility wasn't enabled on process launch. Enable it now.
-    Send(new AccessibilityMsg_Enable(GetRoutingID()));
-  }
-}
-
 void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
   ignore_input_events_ = ignore_input_events;
 }
@@ -1609,6 +1584,10 @@ void RenderWidgetHostImpl::SetBackground(const SkBitmap& background) {
 void RenderWidgetHostImpl::SetEditCommandsForNextKeyEvent(
     const std::vector<EditCommand>& commands) {
   Send(new ViewMsg_SetEditCommandsForNextKeyEvent(GetRoutingID(), commands));
+}
+
+void RenderWidgetHostImpl::SetAccessibilityMode(AccessibilityMode mode) {
+  Send(new AccessibilityMsg_SetMode(routing_id_, mode));
 }
 
 void RenderWidgetHostImpl::AccessibilityDoDefaultAction(int object_id) {

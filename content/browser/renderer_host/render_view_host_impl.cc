@@ -18,6 +18,9 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
@@ -33,6 +36,7 @@
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/content_browser_client.h"
@@ -205,7 +209,7 @@ bool RenderViewHostImpl::CreateRenderView(const string16& frame_name,
   // initialized it) or may not (we have our own process or the old process
   // crashed) have been initialized. Calling Init multiple times will be
   // ignored, so this is safe.
-  if (!GetProcess()->Init(renderer_accessible()))
+  if (!GetProcess()->Init())
     return false;
   DCHECK(GetProcess()->HasConnection());
   DCHECK(GetProcess()->GetBrowserContext());
@@ -245,6 +249,19 @@ bool RenderViewHostImpl::CreateRenderView(const string16& frame_name,
           gfx::NativeViewFromId(GetNativeViewId()));
 #endif
   params.guest = guest_;
+  params.accessibility_mode =
+      BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser() ?
+          AccessibilityModeComplete :
+          AccessibilityModeOff;
+
+#if defined(OS_WIN)
+  // On Windows 8, always enable accessibility for editable text controls
+  // so we can show the virtual keyboard when one is enabled.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+      params.accessibility_mode == AccessibilityModeOff) {
+    params.accessibility_mode = AccessibilityModeEditableTextOnly;
+  }
+#endif
 
   Send(new ViewMsg_New(params));
 

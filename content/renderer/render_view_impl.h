@@ -24,6 +24,7 @@
 #include "content/common/edit_command.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/navigation_gesture.h"
+#include "content/common/view_message_enums.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
@@ -194,7 +195,8 @@ class RenderViewImpl : public RenderWidget,
       const string16& frame_name,
       int32 next_page_id,
       const WebKit::WebScreenInfo& screen_info,
-      bool guest);
+      bool guest,
+      AccessibilityMode accessibility_mode);
 
   // Returns the RenderViewImpl containing the given WebView.
   CONTENT_EXPORT static RenderViewImpl* FromWebView(WebKit::WebView* webview);
@@ -742,7 +744,8 @@ class RenderViewImpl : public RenderWidget,
                  const string16& frame_name,
                  int32 next_page_id,
                  const WebKit::WebScreenInfo& screen_info,
-                 bool guest);
+                 bool guest,
+                 AccessibilityMode accessibility_mode);
 
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderViewImpl();
@@ -1314,6 +1317,9 @@ class RenderViewImpl : public RenderWidget,
 
   // Indicates whether this RenderView is a guest of another RenderView.
   bool guest_;
+
+  // The accessibility mode.
+  AccessibilityMode accessibility_mode_;
 
   // NOTE: pepper_delegate_ should be last member because its constructor calls
   // AddObservers method of RenderViewImpl from c-tor.

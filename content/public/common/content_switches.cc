@@ -217,9 +217,6 @@ const char kEnableAcceleratedPainting[]     = "enable-accelerated-painting";
 // Enable gpu-accelerated SVG/W3C filters.
 const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";
 
-// Enables WebKit accessibility within the renderer process.
-const char kEnableAccessibility[]           = "enable-accessibility";
-
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 

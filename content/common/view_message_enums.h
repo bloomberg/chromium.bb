@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_VIEW_MESSAGES_ENUMS_H_
 #define CONTENT_COMMON_VIEW_MESSAGES_ENUMS_H_
 
+#include "ipc/ipc_message_macros.h"
+
 // Values that may be OR'd together to form the 'flags' parameter of a
 // ViewHostMsg_UpdateRect_Params structure.
 struct ViewHostMsg_UpdateRect_Flags {
@@ -46,6 +48,21 @@ struct ViewMsg_Navigate_Type {
     // Navigation type not categorized by the other types.
     NORMAL
   };
+};
+
+enum AccessibilityMode {
+  // WebKit accessibility is off and no accessibility information is
+  // sent from the renderer to the browser process.
+  AccessibilityModeOff,
+
+  // WebKit accessibility is on, but only limited information about
+  // editable text nodes is sent to the browser process. Useful for
+  // implementing limited UIA on tablets.
+  AccessibilityModeEditableTextOnly,
+
+  // WebKit accessibility is on, and the full accessibility tree is synced
+  // to the browser process. Useful for screen readers and magnifiers.
+  AccessibilityModeComplete,
 };
 
 #endif  // CONTENT_COMMON_VIEW_MESSAGES_ENUMS_H_

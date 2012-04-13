@@ -279,7 +279,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
                 FROM_HERE, base::TimeDelta::FromSeconds(5),
                 this, &RenderProcessHostImpl::ClearTransportDIBCache)),
-          accessibility_enabled_(false),
           is_initialized_(false),
           id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
           browser_context_(browser_context),
@@ -353,13 +352,11 @@ void RenderProcessHostImpl::EnableSendQueue() {
   is_initialized_ = false;
 }
 
-bool RenderProcessHostImpl::Init(bool is_accessibility_enabled) {
+bool RenderProcessHostImpl::Init() {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases
   if (channel_.get())
     return true;
-
-  accessibility_enabled_ = is_accessibility_enabled;
 
   CommandLine::StringType renderer_prefix;
 #if defined(OS_POSIX)
@@ -614,9 +611,6 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   // Pass the process type first, so it shows first in process listings.
   command_line->AppendSwitchASCII(switches::kProcessType,
                                   switches::kRendererProcess);
-
-  if (accessibility_enabled_)
-    command_line->AppendSwitch(switches::kEnableAccessibility);
 
   // Now send any options from our own command line we want to propagate.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();

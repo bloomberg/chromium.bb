@@ -435,7 +435,8 @@ RenderViewImpl::RenderViewImpl(
     const string16& frame_name,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
-    bool guest)
+    bool guest,
+    AccessibilityMode accessibility_mode)
     : RenderWidget(WebKit::WebPopupTypeNone, screen_info),
       webkit_preferences_(webkit_prefs),
       send_content_state_immediately_(false),
@@ -474,6 +475,7 @@ RenderViewImpl::RenderViewImpl(
       focused_plugin_id_(-1),
 #endif
       guest_(guest),
+      accessibility_mode_(accessibility_mode),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)) {
   routing_id_ = routing_id;
   surface_id_ = surface_id;
@@ -544,7 +546,7 @@ RenderViewImpl::RenderViewImpl(
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.
   devtools_agent_ = new DevToolsAgent(this);
-  renderer_accessibility_ = new RendererAccessibility(this);
+  renderer_accessibility_ = new RendererAccessibility(this, accessibility_mode);
   mouse_lock_dispatcher_ = new MouseLockDispatcher(this);
   intents_host_ = new WebIntentsHost(this);
 
@@ -634,7 +636,8 @@ RenderViewImpl* RenderViewImpl::Create(
     const string16& frame_name,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
-    bool guest) {
+    bool guest,
+    AccessibilityMode accessibility_mode) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   return new RenderViewImpl(
       parent_hwnd,
@@ -648,7 +651,8 @@ RenderViewImpl* RenderViewImpl::Create(
       frame_name,
       next_page_id,
       screen_info,
-      guest);
+      guest,
+      accessibility_mode);
 }
 
 WebPeerConnectionHandler* RenderViewImpl::CreatePeerConnectionHandler(
@@ -1512,7 +1516,8 @@ WebView* RenderViewImpl::createView(
       frame_name,
       1,
       screen_info_,
-      guest_);
+      guest_,
+      accessibility_mode_);
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.

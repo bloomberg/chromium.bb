@@ -10,6 +10,7 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/accessibility_messages.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
 
@@ -32,7 +33,8 @@ struct WebAccessibility;
 // nodes in the tree (e.g., change focus, or click on a button).
 class RendererAccessibility : public content::RenderViewObserver {
  public:
-  RendererAccessibility(RenderViewImpl* render_view);
+  RendererAccessibility(RenderViewImpl* render_view,
+                        AccessibilityMode accessibility_mode);
   virtual ~RendererAccessibility();
 
   // RenderView::Observer implementation.
@@ -85,7 +87,7 @@ class RendererAccessibility : public content::RenderViewObserver {
   void OnChangeScrollPosition(int acc_obj_id, int scroll_x, int scroll_y);
   void OnScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus);
   void OnScrollToPoint(int acc_obj_id, gfx::Point point);
-  void OnEnable();
+  void OnSetMode(AccessibilityMode mode);
   void OnSetFocus(int acc_obj_id);
 
   void OnSetTextSelection(int acc_obj_id, int start_offset, int end_offset);
@@ -97,6 +99,23 @@ class RendererAccessibility : public content::RenderViewObserver {
   // Returns the main top-level document for this page, or NULL if there's
   // no view or frame.
   WebKit::WebDocument GetMainDocument();
+
+  // Checks if a WebKit accessibility object is an editable text node.
+  bool IsEditableText(const WebKit::WebAccessibilityObject& node);
+
+  // Recursively explore the tree of WebKit accessibility objects rooted
+  // at |src|, and for each editable text node encountered, add a
+  // corresponding WebAccessibility node as a child of |dst|.
+  void RecursiveAddEditableTextNodesToTree(
+      const WebKit::WebAccessibilityObject& src,
+      webkit_glue::WebAccessibility* dst);
+
+  // Build a tree of serializable WebAccessibility nodes to send to the
+  // browser process, given a WebAccessibilityObject node from WebKit.
+  // Modifies |dst| in-place, it's assumed to be empty.
+  void BuildAccessibilityTree(const WebKit::WebAccessibilityObject& src,
+                              bool include_children,
+                              webkit_glue::WebAccessibility* dst);
 
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RendererAccessibility> weak_factory_;
@@ -115,6 +134,9 @@ class RendererAccessibility : public content::RenderViewObserver {
   // TODO(dmazzoni): remove once https://bugs.webkit.org/show_bug.cgi?id=73460
   // is fixed.
   gfx::Size last_scroll_offset_;
+
+  // The current accessibility mode.
+  AccessibilityMode mode_;
 
   // Set if we are waiting for an accessibility notification ack.
   bool ack_pending_;

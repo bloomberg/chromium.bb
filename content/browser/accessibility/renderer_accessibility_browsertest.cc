@@ -35,7 +35,8 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
 
   // Tell the renderer to send an accessibility tree, then wait for the
   // notification that it's been received.
-  const WebAccessibility& GetWebAccessibilityTree() {
+  const WebAccessibility& GetWebAccessibilityTree(
+      AccessibilityMode accessibility_mode = AccessibilityModeComplete) {
     ui_test_utils::WindowedNotificationObserver tree_updated_observer(
         content::NOTIFICATION_RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
         content::NotificationService::AllSources());
@@ -45,7 +46,7 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
         RenderWidgetHostImpl::From(host_view->GetRenderWidgetHost());
     RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(host);
     view_host->set_save_accessibility_tree_for_testing(true);
-    view_host->EnableRendererAccessibility();
+    view_host->SetAccessibilityMode(accessibility_mode);
     tree_updated_observer.Wait();
     return view_host->accessibility_tree_for_testing();
   }
@@ -461,6 +462,53 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
 
   EXPECT_EQ(
       true, GetBoolAttr(textbox, WebAccessibility::ATTR_CAN_SET_VALUE));
+}
+
+IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
+                       CrossPlatformEditableTextOnlyMode) {
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<h1>Heading</h1>"
+      "<input type=text value=text0>"
+      "<textarea>text1</textarea>"
+      "<div role=textbox>text2</div>"
+      "<ul>"
+      "  <li><input type=text value=text3>"
+      "  <li><textarea>text4</textarea>"
+      "  <li><div role=textbox>text5</div>"
+      "  <li><button>button</button>"
+      "</ul>";
+
+  GURL url(url_str);
+  browser()->OpenURL(OpenURLParams(
+      url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+  const WebAccessibility& tree = GetWebAccessibilityTree(
+      AccessibilityModeEditableTextOnly);
+
+  const WebAccessibility& text0 = tree.children[0];
+  EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text0.role);
+  EXPECT_STREQ("text0", UTF16ToUTF8(text0.value).c_str());
+
+  const WebAccessibility& text1 = tree.children[1];
+  EXPECT_EQ(WebAccessibility::ROLE_TEXTAREA, text1.role);
+  EXPECT_STREQ("text1", UTF16ToUTF8(text1.value).c_str());
+
+  const WebAccessibility& text2 = tree.children[2];
+  EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text2.role);
+  EXPECT_STREQ("text2", UTF16ToUTF8(text2.value).c_str());
+
+  const WebAccessibility& text3 = tree.children[3];
+  EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text3.role);
+  EXPECT_STREQ("text3", UTF16ToUTF8(text3.value).c_str());
+
+  const WebAccessibility& text4 = tree.children[4];
+  EXPECT_EQ(WebAccessibility::ROLE_TEXTAREA, text4.role);
+  EXPECT_STREQ("text4", UTF16ToUTF8(text4.value).c_str());
+
+  const WebAccessibility& text5 = tree.children[5];
+  EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text5.role);
+  EXPECT_STREQ("text5", UTF16ToUTF8(text5.value).c_str());
 }
 
 }  // namespace

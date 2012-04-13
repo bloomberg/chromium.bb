@@ -58,7 +58,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // RenderProcessHost implementation (public portion).
   virtual void EnableSendQueue() OVERRIDE;
-  virtual bool Init(bool is_accessibility_enabled) OVERRIDE;
+  virtual bool Init() OVERRIDE;
   virtual int GetNextRoutingID() OVERRIDE;
   virtual void CancelResourceRequests(int render_widget_id) OVERRIDE;
   virtual void CrossSiteSwapOutACK(const ViewMsg_SwapOut_Params& params)
@@ -219,9 +219,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Used in single-process mode.
   scoped_ptr<RendererMainThread> in_process_renderer_;
-
-  // True if this prcoess should have accessibility enabled;
-  bool accessibility_enabled_;
 
   // True after Init() has been called. We can't just check channel_ because we
   // also reset that in the case of process termination.

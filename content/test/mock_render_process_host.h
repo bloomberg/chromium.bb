@@ -34,7 +34,7 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   // RenderProcessHost implementation (public portion).
   virtual void EnableSendQueue() OVERRIDE;
-  virtual bool Init(bool is_accessibility_enabled) OVERRIDE;
+  virtual bool Init() OVERRIDE;
   virtual int GetNextRoutingID() OVERRIDE;
   virtual void CancelResourceRequests(int render_widget_id) OVERRIDE;
   virtual void CrossSiteSwapOutACK(

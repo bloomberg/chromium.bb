@@ -259,6 +259,10 @@ struct WEBKIT_GLUE_EXPORT WebAccessibility {
 
   ~WebAccessibility();
 
+  // Initialize an already-created struct, same as the constructor above.
+  void Init(const WebKit::WebAccessibilityObject& src,
+            bool include_children);
+
 #ifndef NDEBUG
   std::string DebugString(bool recursive,
                           int render_routing_id,
@@ -266,10 +270,6 @@ struct WEBKIT_GLUE_EXPORT WebAccessibility {
 #endif
 
  private:
-  // Initialize an already-created struct, same as the constructor above.
-  void Init(const WebKit::WebAccessibilityObject& src,
-            bool include_children);
-
   // Returns true if |ancestor| is the first unignored parent of |child|,
   // which means that when walking up the parent chain from |child|,
   // |ancestor| is the *first* ancestor that isn't marked as

@@ -464,7 +464,8 @@ gfx::NativeViewId RenderWidgetHostViewWin::GetNativeViewId() const {
 
 gfx::NativeViewAccessible
 RenderWidgetHostViewWin::GetNativeViewAccessible() {
-  if (render_widget_host_ && !render_widget_host_->renderer_accessible()) {
+  if (render_widget_host_ &&
+      !BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
     // Attempt to detect screen readers by sending an event with our custom id.
     NotifyWinEvent(EVENT_SYSTEM_ALERT, m_hWnd, kIdCustom, CHILDID_SELF);
   }
@@ -2289,7 +2290,8 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
     // An MSAA client requestes our custom id. Assume that we have detected an
     // active windows screen reader.
     BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-    render_widget_host_->EnableRendererAccessibility();
+    if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser())
+      render_widget_host_->SetAccessibilityMode(AccessibilityModeComplete);
 
     // Return with failure.
     return static_cast<LRESULT>(0L);

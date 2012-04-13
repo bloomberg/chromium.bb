@@ -61,7 +61,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Message::Sender,
   // be called once before the object can be used, but can be called after
   // that with no effect. Therefore, if the caller isn't sure about whether
   // the process has been created, it should just call Init().
-  virtual bool Init(bool is_accessibility_enabled) = 0;
+  virtual bool Init() = 0;
 
   // Gets the next available routing id.
   virtual int GetNextRoutingID() = 0;
@@ -242,4 +242,3 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Message::Sender,
 }  // namespace content.
 
 #endif  // CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_H_
-

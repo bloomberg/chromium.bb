@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RenderViewHostImpl* view_host =
       static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(host));
   view_host->set_save_accessibility_tree_for_testing(true);
-  view_host->EnableRendererAccessibility();
+  view_host->SetAccessibilityMode(AccessibilityModeComplete);
 
   // Setup test paths.
   FilePath dir_test_data;
@@ -199,4 +199,3 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
     }
   } while (!(html_file = file_enumerator.Next()).empty());
 }
-
