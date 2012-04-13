@@ -62,9 +62,9 @@ class TempParent : public ui::WindowImpl {
 
 }  // namespace namespace
 
-WebContentsViewWin::WebContentsViewWin(TabContents* tab_contents,
+WebContentsViewWin::WebContentsViewWin(WebContentsImpl* web_contents,
                                        WebContentsViewDelegate* delegate)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       view_(NULL),
       delegate_(delegate),
       close_tab_after_drag_ends_(false) {
@@ -84,7 +84,7 @@ void WebContentsViewWin::CreateView(const gfx::Size& initial_size) {
 
   // Remove the root view drop target so we can register our own.
   RevokeDragDrop(GetNativeView());
-  drag_dest_ = new WebDragDest(hwnd(), tab_contents_);
+  drag_dest_ = new WebDragDest(hwnd(), web_contents_);
   if (delegate_.get()) {
     content::WebDragDestDelegate* delegate = delegate_->GetDragDestDelegate();
     if (delegate)
@@ -117,7 +117,7 @@ gfx::NativeView WebContentsViewWin::GetNativeView() const {
 }
 
 gfx::NativeView WebContentsViewWin::GetContentNativeView() const {
-  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   return rwhv ? rwhv->GetNativeView() : NULL;
 }
 
@@ -156,9 +156,9 @@ void WebContentsViewWin::SizeContents(const gfx::Size& size) {
   } else {
     // Our size matches what we want but the renderers size may not match.
     // Pretend we were resized so that the renderers size is updated too.
-    if (tab_contents_->GetInterstitialPage())
-      tab_contents_->GetInterstitialPage()->SetSize(size);
-    RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
+    if (web_contents_->GetInterstitialPage())
+      web_contents_->GetInterstitialPage()->SetSize(size);
+    RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
     if (rwhv)
       rwhv->SetSize(size);
   }
@@ -168,22 +168,22 @@ void WebContentsViewWin::RenderViewCreated(RenderViewHost* host) {
 }
 
 void WebContentsViewWin::Focus() {
-  if (tab_contents_->GetInterstitialPage()) {
-    tab_contents_->GetInterstitialPage()->Focus();
+  if (web_contents_->GetInterstitialPage()) {
+    web_contents_->GetInterstitialPage()->Focus();
     return;
   }
 
   if (delegate_.get() && delegate_->Focus())
     return;
 
-  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->Focus();
 }
 
 void WebContentsViewWin::SetInitialFocus() {
-  if (tab_contents_->FocusLocationBarByDefault())
-    tab_contents_->SetFocusToLocationBar(false);
+  if (web_contents_->FocusLocationBarByDefault())
+    web_contents_->SetFocusToLocationBar(false);
   else
     Focus();
 }
@@ -227,19 +227,19 @@ void WebContentsViewWin::GetViewBounds(gfx::Rect* out) const {
 void WebContentsViewWin::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  web_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
+  web_contents_view_helper_.CreateNewWindow(web_contents_, route_id, params);
 }
 
 void WebContentsViewWin::CreateNewWidget(int route_id,
                                          WebKit::WebPopupType popup_type) {
-  web_contents_view_helper_.CreateNewWidget(tab_contents_,
+  web_contents_view_helper_.CreateNewWidget(web_contents_,
                                             route_id,
                                             false,
                                             popup_type);
 }
 
 void WebContentsViewWin::CreateNewFullscreenWidget(int route_id) {
-  web_contents_view_helper_.CreateNewWidget(tab_contents_,
+  web_contents_view_helper_.CreateNewWidget(web_contents_,
                                             route_id,
                                             true,
                                             WebKit::WebPopupTypeNone);
@@ -250,19 +250,19 @@ void WebContentsViewWin::ShowCreatedWindow(int route_id,
                                            const gfx::Rect& initial_pos,
                                            bool user_gesture) {
   web_contents_view_helper_.ShowCreatedWindow(
-      tab_contents_, route_id, disposition, initial_pos, user_gesture);
+      web_contents_, route_id, disposition, initial_pos, user_gesture);
 }
 
 void WebContentsViewWin::ShowCreatedWidget(int route_id,
                                            const gfx::Rect& initial_pos) {
-  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                               route_id,
                                               false,
                                               initial_pos);
 }
 
 void WebContentsViewWin::ShowCreatedFullscreenWidget(int route_id) {
-  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                               route_id,
                                               true,
                                               gfx::Rect());
@@ -271,8 +271,8 @@ void WebContentsViewWin::ShowCreatedFullscreenWidget(int route_id) {
 void WebContentsViewWin::ShowContextMenu(
     const content::ContextMenuParams& params) {
   // Allow WebContentsDelegates to handle the context menu operation first.
-  if (tab_contents_->GetDelegate() &&
-      tab_contents_->GetDelegate()->HandleContextMenu(params)) {
+  if (web_contents_->GetDelegate() &&
+      web_contents_->GetDelegate()->HandleContextMenu(params)) {
     return;
   }
 
@@ -296,7 +296,7 @@ void WebContentsViewWin::StartDragging(const WebDropData& drop_data,
                                        const gfx::Point& image_offset) {
   drag_handler_ = new WebContentsDragWin(
       GetNativeView(),
-      tab_contents_,
+      web_contents_,
       drag_dest_,
       base::Bind(&WebContentsViewWin::EndDragging, base::Unretained(this)));
   drag_handler_->StartDragging(drop_data, operations, image, image_offset);
@@ -307,13 +307,13 @@ void WebContentsViewWin::UpdateDragCursor(WebKit::WebDragOperation operation) {
 }
 
 void WebContentsViewWin::GotFocus() {
-  if (tab_contents_->GetDelegate())
-    tab_contents_->GetDelegate()->WebContentsFocused(tab_contents_);
+  if (web_contents_->GetDelegate())
+    web_contents_->GetDelegate()->WebContentsFocused(web_contents_);
 }
 
 void WebContentsViewWin::TakeFocus(bool reverse) {
-  if (tab_contents_->GetDelegate() &&
-      !tab_contents_->GetDelegate()->TakeFocus(reverse) &&
+  if (web_contents_->GetDelegate() &&
+      !web_contents_->GetDelegate()->TakeFocus(reverse) &&
       delegate_.get()) {
     delegate_->TakeFocus(reverse);
   }
@@ -325,11 +325,11 @@ void WebContentsViewWin::EndDragging() {
     close_tab_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(0),
                            this, &WebContentsViewWin::CloseTab);
   }
-  tab_contents_->SystemDragEnded();
+  web_contents_->SystemDragEnded();
 }
 
 void WebContentsViewWin::CloseTab() {
-  RenderViewHost* rvh = tab_contents_->GetRenderViewHost();
+  RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   rvh->GetDelegate()->Close(rvh);
 }
 
@@ -346,14 +346,14 @@ LRESULT WebContentsViewWin::OnWindowPosChanged(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   WINDOWPOS* window_pos = reinterpret_cast<WINDOWPOS*>(lparam);
   if (window_pos->flags & SWP_HIDEWINDOW) {
-    tab_contents_->HideContents();
+    web_contents_->HideContents();
     return 0;
   }
 
-  // The TabContents was shown by a means other than the user selecting a
+  // The WebContents was shown by a means other than the user selecting a
   // Tab, e.g. the window was minimized then restored.
   if (window_pos->flags & SWP_SHOWWINDOW)
-    tab_contents_->ShowContents();
+    web_contents_->ShowContents();
 
   // Unless we were specifically told not to size, cause the renderer to be
   // sized to the new bounds, which forces a repaint. Not required for the
@@ -363,9 +363,9 @@ LRESULT WebContentsViewWin::OnWindowPosChanged(
     return 0;
 
   gfx::Size size(window_pos->cx, window_pos->cy);
-  if (tab_contents_->GetInterstitialPage())
-    tab_contents_->GetInterstitialPage()->SetSize(size);
-  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
+  if (web_contents_->GetInterstitialPage())
+    web_contents_->GetInterstitialPage()->SetSize(size);
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
 
@@ -377,9 +377,9 @@ LRESULT WebContentsViewWin::OnWindowPosChanged(
 
 LRESULT WebContentsViewWin::OnMouseDown(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
-  // Make sure this TabContents is activated when it is clicked on.
-  if (tab_contents_->GetDelegate())
-    tab_contents_->GetDelegate()->ActivateContents(tab_contents_);
+  // Make sure this WebContents is activated when it is clicked on.
+  if (web_contents_->GetDelegate())
+    web_contents_->GetDelegate()->ActivateContents(web_contents_);
   return 0;
 }
 
@@ -387,9 +387,9 @@ LRESULT WebContentsViewWin::OnMouseMove(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   // Let our delegate know that the mouse moved (useful for resetting status
   // bubble state).
-  if (tab_contents_->GetDelegate()) {
-    tab_contents_->GetDelegate()->ContentsMouseEvent(
-        tab_contents_, gfx::Screen::GetCursorScreenPoint(), true);
+  if (web_contents_->GetDelegate()) {
+    web_contents_->GetDelegate()->ContentsMouseEvent(
+        web_contents_, gfx::Screen::GetCursorScreenPoint(), true);
   }
   return 0;
 }
@@ -401,7 +401,7 @@ LRESULT WebContentsViewWin::OnReflectedMessage(
     case WM_MOUSEWHEEL:
       // This message is reflected from the view() to this window.
       if (GET_KEYSTATE_WPARAM(message->wParam) & MK_CONTROL) {
-        tab_contents_->GetDelegate()->ContentsZoomChange(
+        web_contents_->GetDelegate()->ContentsZoomChange(
             GET_WHEEL_DELTA_WPARAM(message->wParam) > 0);
         return 1;
       }
@@ -449,7 +449,7 @@ LRESULT WebContentsViewWin::OnScroll(
         break;
     }
 
-    tab_contents_->GetDelegate()->ContentsZoomChange(distance > 0);
+    web_contents_->GetDelegate()->ContentsZoomChange(distance > 0);
     return 0;
   }
 

@@ -122,7 +122,7 @@ class CONTENT_EXPORT WebContentsViewAura
   scoped_ptr<aura::Window> window_;
 
   // The WebContentsImpl whose contents we display.
-  WebContentsImpl* tab_contents_;
+  WebContentsImpl* web_contents_;
 
   content::RenderWidgetHostView* view_;
 

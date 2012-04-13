@@ -37,31 +37,31 @@ namespace {
 
 // Called when the mouse leaves the widget. We notify our delegate.
 gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event,
-                       TabContents* tab_contents) {
-  if (tab_contents->GetDelegate())
-    tab_contents->GetDelegate()->ContentsMouseEvent(
-        tab_contents, gfx::Point(event->x_root, event->y_root), false);
+                       WebContentsImpl* web_contents) {
+  if (web_contents->GetDelegate())
+    web_contents->GetDelegate()->ContentsMouseEvent(
+        web_contents, gfx::Point(event->x_root, event->y_root), false);
   return FALSE;
 }
 
 // Called when the mouse moves within the widget. We notify our delegate.
 gboolean OnMouseMove(GtkWidget* widget, GdkEventMotion* event,
-                     TabContents* tab_contents) {
-  if (tab_contents->GetDelegate())
-    tab_contents->GetDelegate()->ContentsMouseEvent(
-        tab_contents, gfx::Point(event->x_root, event->y_root), true);
+                     WebContentsImpl* web_contents) {
+  if (web_contents->GetDelegate())
+    web_contents->GetDelegate()->ContentsMouseEvent(
+        web_contents, gfx::Point(event->x_root, event->y_root), true);
   return FALSE;
 }
 
 // See tab_contents_view_views.cc for discussion of mouse scroll zooming.
 gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
-                       TabContents* tab_contents) {
+                       WebContentsImpl* web_contents) {
   if ((event->state & gtk_accelerator_get_default_mod_mask()) !=
       GDK_CONTROL_MASK) {
     return FALSE;
   }
 
-  content::WebContentsDelegate* delegate = tab_contents->GetDelegate();
+  content::WebContentsDelegate* delegate = web_contents->GetDelegate();
   if (!delegate)
     return FALSE;
 
@@ -79,9 +79,9 @@ gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
 namespace content {
 
 WebContentsViewGtk::WebContentsViewGtk(
-    TabContents* tab_contents,
+    WebContentsImpl* web_contents,
     content::WebContentsViewDelegate* delegate)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       expanded_(gtk_expanded_container_new()),
       delegate_(delegate) {
   gtk_widget_set_name(expanded_.get(), "chrome-tab-contents-view");
@@ -91,7 +91,7 @@ WebContentsViewGtk::WebContentsViewGtk(
                    G_CALLBACK(OnChildSizeRequestThunk), this);
 
   gtk_widget_show(expanded_.get());
-  drag_source_.reset(new content::WebDragSourceGtk(tab_contents));
+  drag_source_.reset(new content::WebDragSourceGtk(web_contents));
 
   if (delegate_.get())
     delegate_->Initialize(expanded_.get(), &focus_store_);
@@ -123,17 +123,17 @@ RenderWidgetHostView* WebContentsViewGtk::CreateViewForWidget(
   gfx::NativeView content_view = view->GetNativeView();
   g_signal_connect(content_view, "focus", G_CALLBACK(OnFocusThunk), this);
   g_signal_connect(content_view, "leave-notify-event",
-                   G_CALLBACK(OnLeaveNotify), tab_contents_);
+                   G_CALLBACK(OnLeaveNotify), web_contents_);
   g_signal_connect(content_view, "motion-notify-event",
-                   G_CALLBACK(OnMouseMove), tab_contents_);
+                   G_CALLBACK(OnMouseMove), web_contents_);
   g_signal_connect(content_view, "scroll-event",
-                   G_CALLBACK(OnMouseScroll), tab_contents_);
+                   G_CALLBACK(OnMouseScroll), web_contents_);
   gtk_widget_add_events(content_view, GDK_LEAVE_NOTIFY_MASK |
                         GDK_POINTER_MOTION_MASK);
   InsertIntoContentArea(content_view);
 
   // Renderer target DnD.
-  drag_dest_.reset(new content::WebDragDestGtk(tab_contents_, content_view));
+  drag_dest_.reset(new content::WebDragDestGtk(web_contents_, content_view));
 
   if (delegate_.get())
     drag_dest_->set_delegate(delegate_->GetDragDestDelegate());
@@ -149,7 +149,7 @@ gfx::NativeView WebContentsViewGtk::GetNativeView() const {
 }
 
 gfx::NativeView WebContentsViewGtk::GetContentNativeView() const {
-  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (!rwhv)
     return NULL;
   return rwhv->GetNativeView();
@@ -198,7 +198,7 @@ void WebContentsViewGtk::SizeContents(const gfx::Size& size) {
   // need to pass the sizing information on to the RWHV which will pass the
   // sizing information on to the renderer.
   requested_size_ = size;
-  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
 }
@@ -207,16 +207,16 @@ void WebContentsViewGtk::RenderViewCreated(content::RenderViewHost* host) {
 }
 
 void WebContentsViewGtk::Focus() {
-  if (tab_contents_->ShowingInterstitialPage()) {
-    tab_contents_->GetInterstitialPage()->Focus();
+  if (web_contents_->ShowingInterstitialPage()) {
+    web_contents_->GetInterstitialPage()->Focus();
   } else if (delegate_.get()) {
     delegate_->Focus();
   }
 }
 
 void WebContentsViewGtk::SetInitialFocus() {
-  if (tab_contents_->FocusLocationBarByDefault())
-    tab_contents_->SetFocusToLocationBar(false);
+  if (web_contents_->FocusLocationBarByDefault())
+    web_contents_->SetFocusToLocationBar(false);
   else
     Focus();
 }
@@ -258,7 +258,7 @@ void WebContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
 }
 
 WebContents* WebContentsViewGtk::web_contents() {
-  return tab_contents_;
+  return web_contents_;
 }
 
 void WebContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {
@@ -273,9 +273,9 @@ void WebContentsViewGtk::GotFocus() {
 // This is called when the renderer asks us to take focus back (i.e., it has
 // iterated past the last focusable element on the page).
 void WebContentsViewGtk::TakeFocus(bool reverse) {
-  if (!tab_contents_->GetDelegate())
+  if (!web_contents_->GetDelegate())
     return;
-  if (!tab_contents_->GetDelegate()->TakeFocus(reverse)) {
+  if (!web_contents_->GetDelegate()->TakeFocus(reverse)) {
     gtk_widget_child_focus(GTK_WIDGET(GetTopLevelNativeWindow()),
         reverse ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
   }
@@ -307,26 +307,26 @@ gboolean WebContentsViewGtk::OnFocus(GtkWidget* widget,
 
   gtk_widget_grab_focus(widget);
   bool reverse = focus == GTK_DIR_TAB_BACKWARD;
-  tab_contents_->FocusThroughTabTraversal(reverse);
+  web_contents_->FocusThroughTabTraversal(reverse);
   return TRUE;
 }
 
 void WebContentsViewGtk::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  web_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
+  web_contents_view_helper_.CreateNewWindow(web_contents_, route_id, params);
 }
 
 void WebContentsViewGtk::CreateNewWidget(
     int route_id, WebKit::WebPopupType popup_type) {
-  web_contents_view_helper_.CreateNewWidget(tab_contents_,
+  web_contents_view_helper_.CreateNewWidget(web_contents_,
                                             route_id,
                                             false,
                                             popup_type);
 }
 
 void WebContentsViewGtk::CreateNewFullscreenWidget(int route_id) {
-  web_contents_view_helper_.CreateNewWidget(tab_contents_,
+  web_contents_view_helper_.CreateNewWidget(web_contents_,
                                             route_id,
                                             true,
                                             WebKit::WebPopupTypeNone);
@@ -337,19 +337,19 @@ void WebContentsViewGtk::ShowCreatedWindow(int route_id,
                                            const gfx::Rect& initial_pos,
                                            bool user_gesture) {
   web_contents_view_helper_.ShowCreatedWindow(
-      tab_contents_, route_id, disposition, initial_pos, user_gesture);
+      web_contents_, route_id, disposition, initial_pos, user_gesture);
 }
 
 void WebContentsViewGtk::ShowCreatedWidget(
     int route_id, const gfx::Rect& initial_pos) {
-  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                               route_id,
                                               false,
                                               initial_pos);
 }
 
 void WebContentsViewGtk::ShowCreatedFullscreenWidget(int route_id) {
-  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                               route_id,
                                               true,
                                               gfx::Rect());
@@ -389,7 +389,7 @@ void WebContentsViewGtk::StartDragging(const WebDropData& drop_data,
   DCHECK(GetContentNativeView());
 
   RenderWidgetHostViewGtk* view_gtk = static_cast<RenderWidgetHostViewGtk*>(
-      tab_contents_->GetRenderWidgetHostView());
+      web_contents_->GetRenderWidgetHostView());
   if (!view_gtk || !view_gtk->GetLastMouseDown())
     return;
 
@@ -402,9 +402,9 @@ void WebContentsViewGtk::StartDragging(const WebDropData& drop_data,
 void WebContentsViewGtk::OnChildSizeRequest(GtkWidget* widget,
                                             GtkWidget* child,
                                             GtkRequisition* requisition) {
-  if (tab_contents_->GetDelegate()) {
+  if (web_contents_->GetDelegate()) {
     requisition->height +=
-        tab_contents_->GetDelegate()->GetExtraRenderViewHeight();
+        web_contents_->GetDelegate()->GetExtraRenderViewHeight();
   }
 }
 
@@ -413,18 +413,18 @@ void WebContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
   int width = allocation->width;
   int height = allocation->height;
   // |delegate()| can be NULL here during browser teardown.
-  if (tab_contents_->GetDelegate())
-    height += tab_contents_->GetDelegate()->GetExtraRenderViewHeight();
+  if (web_contents_->GetDelegate())
+    height += web_contents_->GetDelegate()->GetExtraRenderViewHeight();
   gfx::Size size(width, height);
   requested_size_ = size;
 
   // We manually tell our RWHV to resize the renderer content.  This avoids
   // spurious resizes from GTK+.
-  RenderWidgetHostView* rwhv = tab_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
-  if (tab_contents_->GetInterstitialPage())
-    tab_contents_->GetInterstitialPage()->SetSize(size);
+  if (web_contents_->GetInterstitialPage())
+    web_contents_->GetInterstitialPage()->SetSize(size);
 }
 
 }  // namespace content

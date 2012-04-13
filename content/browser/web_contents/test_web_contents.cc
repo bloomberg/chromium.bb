@@ -21,7 +21,7 @@ namespace content {
 
 TestWebContents::TestWebContents(BrowserContext* browser_context,
                                  SiteInstance* instance)
-    : TabContents(browser_context, instance, MSG_ROUTING_NONE, NULL, NULL),
+    : WebContentsImpl(browser_context, instance, MSG_ROUTING_NONE, NULL, NULL),
       transition_cross_site(false),
       delegate_view_override_(NULL),
       expect_set_history_length_and_prune_(false),
@@ -91,11 +91,11 @@ bool TestWebContents::CreateRenderViewForRenderManager(
 }
 
 WebContents* TestWebContents::Clone() {
-  TabContents* tc = new TestWebContents(
+  WebContentsImpl* contents = new TestWebContents(
       GetBrowserContext(),
       SiteInstance::Create(GetBrowserContext()));
-  tc->GetControllerImpl().CopyStateFrom(controller_);
-  return tc;
+  contents->GetControllerImpl().CopyStateFrom(controller_);
+  return contents;
 }
 
 void TestWebContents::NavigateAndCommit(const GURL& url) {
@@ -153,7 +153,7 @@ void TestWebContents::ProceedWithCrossSiteNavigation() {
 RenderViewHostDelegate::View* TestWebContents::GetViewDelegate() {
   if (delegate_view_override_)
     return delegate_view_override_;
-  return TabContents::GetViewDelegate();
+  return WebContentsImpl::GetViewDelegate();
 }
 
 void TestWebContents::ExpectSetHistoryLengthAndPrune(

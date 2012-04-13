@@ -218,7 +218,7 @@ class TestInterstitialPage : public InterstitialPageImpl {
  protected:
   virtual content::RenderViewHost* CreateRenderViewHost() OVERRIDE {
     return new TestRenderViewHost(
-        SiteInstance::Create(tab()->GetBrowserContext()),
+        SiteInstance::Create(web_contents()->GetBrowserContext()),
         this, MSG_ROUTING_NONE);
   }
 

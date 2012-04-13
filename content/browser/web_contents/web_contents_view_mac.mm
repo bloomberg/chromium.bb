@@ -51,16 +51,16 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
                         image:(NSImage*)image
                        offset:(NSPoint)offset;
 - (void)cancelDeferredClose;
-- (void)clearTabContentsView;
+- (void)clearWebContentsView;
 - (void)closeTabAfterEvent;
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
 @end
 
 namespace web_contents_view_mac {
 content::WebContentsView* CreateWebContentsView(
-    TabContents* tab_contents,
+    WebContentsImpl* web_contents,
     content::WebContentsViewDelegate* delegate) {
-  return new WebContentsViewMac(tab_contents, delegate);
+  return new WebContentsViewMac(web_contents, delegate);
 }
 }
 
@@ -77,7 +77,7 @@ WebContentsViewMac::~WebContentsViewMac() {
   // close.  In that case, the Cocoa view outlives the
   // WebContentsViewMac instance due to Cocoa retain count.
   [cocoa_view_ cancelDeferredClose];
-  [cocoa_view_ clearTabContentsView];
+  [cocoa_view_ clearWebContentsView];
 }
 
 void WebContentsViewMac::CreateView(const gfx::Size& initial_size) {
@@ -557,7 +557,7 @@ void WebContentsViewMac::CloseTab() {
                                              object:nil];
 }
 
-- (void)clearTabContentsView {
+- (void)clearWebContentsView {
   webContentsView_ = NULL;
 }
 

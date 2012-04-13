@@ -1542,7 +1542,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   entry->SetTitle(ASCIIToUTF16("Title"));
   entry->SetContentState("state");
   entries.push_back(entry);
-  TabContents our_contents(
+  WebContentsImpl our_contents(
       browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   NavigationControllerImpl& our_controller = our_contents.GetControllerImpl();
   our_controller.Restore(0, true, &entries);
@@ -1609,7 +1609,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   entry->SetTitle(ASCIIToUTF16("Title"));
   entry->SetContentState("state");
   entries.push_back(entry);
-  TabContents our_contents(
+  WebContentsImpl our_contents(
       browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   NavigationControllerImpl& our_controller = our_contents.GetControllerImpl();
   our_controller.Restore(0, true, &entries);
@@ -1990,7 +1990,8 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
 }
 
-// Make sure that on cloning a tabcontents and going back needs_reload is false.
+// Make sure that on cloning a WebContentsImpl and going back needs_reload is
+// false.
 TEST_F(NavigationControllerTest, CloneAndGoBack) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
@@ -2008,7 +2009,7 @@ TEST_F(NavigationControllerTest, CloneAndGoBack) {
   EXPECT_FALSE(clone->GetController().NeedsReload());
 }
 
-// Make sure that cloning a tabcontents doesn't copy interstitials.
+// Make sure that cloning a WebContentsImpl doesn't copy interstitials.
 TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");

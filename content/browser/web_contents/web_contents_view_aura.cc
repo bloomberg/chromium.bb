@@ -34,7 +34,7 @@ namespace {
 // the renderer.
 class WebDragSourceAura : public MessageLoopForUI::Observer {
  public:
-  explicit WebDragSourceAura(TabContents* contents)
+  explicit WebDragSourceAura(WebContentsImpl* contents)
       : contents_(contents) {
     MessageLoopForUI::current()->AddObserver(this);
   }
@@ -71,7 +71,7 @@ class WebDragSourceAura : public MessageLoopForUI::Observer {
 
 
  private:
-  TabContents* contents_;
+  WebContentsImpl* contents_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragSourceAura);
 };
@@ -163,9 +163,9 @@ WebKit::WebDragOperationsMask ConvertToWeb(int drag_op) {
 // WebContentsViewAura, public:
 
 WebContentsViewAura::WebContentsViewAura(
-    TabContents* tab_contents,
+    WebContentsImpl* web_contents,
     content::WebContentsViewDelegate* delegate)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       view_(NULL),
       delegate_(delegate),
       current_drag_op_(WebKit::WebDragOperationNone),
@@ -179,10 +179,10 @@ WebContentsViewAura::~WebContentsViewAura() {
 // WebContentsViewAura, private:
 
 void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
-  if (tab_contents_->GetInterstitialPage())
-    tab_contents_->GetInterstitialPage()->SetSize(size);
+  if (web_contents_->GetInterstitialPage())
+    web_contents_->GetInterstitialPage()->SetSize(size);
   content::RenderWidgetHostView* rwhv =
-      tab_contents_->GetRenderWidgetHostView();
+      web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
 }
@@ -191,7 +191,7 @@ void WebContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
   aura::RootWindow* root_window = GetNativeView()->GetRootWindow();
   gfx::Point screen_loc = root_window->last_mouse_location();
   gfx::Point client_loc = screen_loc;
-  content::RenderViewHost* rvh = tab_contents_->GetRenderViewHost();
+  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   aura::Window* window = rvh->GetView()->GetNativeView();
   aura::Window::ConvertPointToWindow(root_window, window, &client_loc);
   rvh->DragSourceEndedAt(client_loc.x(), client_loc.y(), screen_loc.x(),
@@ -285,8 +285,8 @@ void WebContentsViewAura::RenderViewCreated(content::RenderViewHost* host) {
 }
 
 void WebContentsViewAura::Focus() {
-  if (tab_contents_->GetInterstitialPage()) {
-    tab_contents_->GetInterstitialPage()->Focus();
+  if (web_contents_->GetInterstitialPage()) {
+    web_contents_->GetInterstitialPage()->Focus();
     return;
   }
 
@@ -294,14 +294,14 @@ void WebContentsViewAura::Focus() {
     return;
 
   content::RenderWidgetHostView* rwhv =
-      tab_contents_->GetRenderWidgetHostView();
+      web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->Focus();
 }
 
 void WebContentsViewAura::SetInitialFocus() {
-  if (tab_contents_->FocusLocationBarByDefault())
-    tab_contents_->SetFocusToLocationBar(false);
+  if (web_contents_->FocusLocationBarByDefault())
+    web_contents_->SetFocusToLocationBar(false);
   else
     Focus();
 }
@@ -352,19 +352,19 @@ void WebContentsViewAura::GetViewBounds(gfx::Rect* out) const {
 void WebContentsViewAura::CreateNewWindow(
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
-  web_contents_view_helper_.CreateNewWindow(tab_contents_, route_id, params);
+  web_contents_view_helper_.CreateNewWindow(web_contents_, route_id, params);
 }
 
 void WebContentsViewAura::CreateNewWidget(int route_id,
                                           WebKit::WebPopupType popup_type) {
-  web_contents_view_helper_.CreateNewWidget(tab_contents_,
+  web_contents_view_helper_.CreateNewWidget(web_contents_,
                                             route_id,
                                             false,
                                             popup_type);
 }
 
 void WebContentsViewAura::CreateNewFullscreenWidget(int route_id) {
-  web_contents_view_helper_.CreateNewWidget(tab_contents_,
+  web_contents_view_helper_.CreateNewWidget(web_contents_,
                                             route_id,
                                             true,
                                             WebKit::WebPopupTypeNone);
@@ -375,19 +375,19 @@ void WebContentsViewAura::ShowCreatedWindow(int route_id,
                                             const gfx::Rect& initial_pos,
                                             bool user_gesture) {
   web_contents_view_helper_.ShowCreatedWindow(
-      tab_contents_, route_id, disposition, initial_pos, user_gesture);
+      web_contents_, route_id, disposition, initial_pos, user_gesture);
 }
 
 void WebContentsViewAura::ShowCreatedWidget(int route_id,
                                             const gfx::Rect& initial_pos) {
-  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                               route_id,
                                               false,
                                               initial_pos);
 }
 
 void WebContentsViewAura::ShowCreatedFullscreenWidget(int route_id) {
-  web_contents_view_helper_.ShowCreatedWidget(tab_contents_,
+  web_contents_view_helper_.ShowCreatedWidget(web_contents_,
                                               route_id,
                                               true,
                                               gfx::Rect());
@@ -396,8 +396,8 @@ void WebContentsViewAura::ShowCreatedFullscreenWidget(int route_id) {
 void WebContentsViewAura::ShowContextMenu(
     const content::ContextMenuParams& params) {
   // Allow WebContentsDelegates to handle the context menu operation first.
-  if (tab_contents_->GetDelegate() &&
-      tab_contents_->GetDelegate()->HandleContextMenu(params)) {
+  if (web_contents_->GetDelegate() &&
+      web_contents_->GetDelegate()->HandleContextMenu(params)) {
     return;
   }
 
@@ -431,7 +431,7 @@ void WebContentsViewAura::StartDragging(
   ui::OSExchangeData data(provider);  // takes ownership of |provider|.
 
   scoped_ptr<WebDragSourceAura> drag_source(
-      new WebDragSourceAura(tab_contents_));
+      new WebDragSourceAura(web_contents_));
 
   // We need to enable recursive tasks on the message loop so we can get
   // updates while in the system DoDragDrop loop.
@@ -449,20 +449,20 @@ void WebContentsViewAura::StartDragging(
   }
 
   EndDrag(ConvertToWeb(result_op));
-  tab_contents_->GetRenderViewHost()->DragSourceSystemDragEnded();}
+  web_contents_->GetRenderViewHost()->DragSourceSystemDragEnded();}
 
 void WebContentsViewAura::UpdateDragCursor(WebKit::WebDragOperation operation) {
   current_drag_op_ = operation;
 }
 
 void WebContentsViewAura::GotFocus() {
-  if (tab_contents_->GetDelegate())
-    tab_contents_->GetDelegate()->WebContentsFocused(tab_contents_);
+  if (web_contents_->GetDelegate())
+    web_contents_->GetDelegate()->WebContentsFocused(web_contents_);
 }
 
 void WebContentsViewAura::TakeFocus(bool reverse) {
-  if (tab_contents_->GetDelegate() &&
-      !tab_contents_->GetDelegate()->TakeFocus(reverse) &&
+  if (web_contents_->GetDelegate() &&
+      !web_contents_->GetDelegate()->TakeFocus(reverse) &&
       delegate_.get()) {
     delegate_->TakeFocus(reverse);
   }
@@ -501,16 +501,16 @@ int WebContentsViewAura::GetNonClientComponent(const gfx::Point& point) const {
 }
 
 bool WebContentsViewAura::OnMouseEvent(aura::MouseEvent* event) {
-  if (!tab_contents_->GetDelegate())
+  if (!web_contents_->GetDelegate())
     return false;
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
-      tab_contents_->GetDelegate()->ActivateContents(tab_contents_);
+      web_contents_->GetDelegate()->ActivateContents(web_contents_);
       break;
     case ui::ET_MOUSE_MOVED:
-      tab_contents_->GetDelegate()->ContentsMouseEvent(
-          tab_contents_, gfx::Screen::GetCursorScreenPoint(), true);
+      web_contents_->GetDelegate()->ContentsMouseEvent(
+          web_contents_, gfx::Screen::GetCursorScreenPoint(), true);
       break;
     default:
       break;
@@ -545,16 +545,16 @@ void WebContentsViewAura::OnWindowDestroyed() {
 
 void WebContentsViewAura::OnWindowVisibilityChanged(bool visible) {
   if (visible)
-    tab_contents_->ShowContents();
+    web_contents_->ShowContents();
   else
-    tab_contents_->HideContents();
+    web_contents_->HideContents();
 }
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, aura::client::DragDropDelegate implementation:
 
 void WebContentsViewAura::OnDragEntered(const aura::DropTargetEvent& event) {
   if (GetDragDestDelegate())
-    GetDragDestDelegate()->DragInitialize(tab_contents_);
+    GetDragDestDelegate()->DragInitialize(web_contents_);
 
   WebDropData drop_data;
   PrepareWebDropData(&drop_data, event.data());
@@ -562,7 +562,7 @@ void WebContentsViewAura::OnDragEntered(const aura::DropTargetEvent& event) {
 
   gfx::Point screen_pt =
       GetNativeView()->GetRootWindow()->last_mouse_location();
-  tab_contents_->GetRenderViewHost()->DragTargetDragEnter(
+  web_contents_->GetRenderViewHost()->DragTargetDragEnter(
       drop_data, event.location(), screen_pt, op);
 
   if (GetDragDestDelegate()) {
@@ -575,7 +575,7 @@ int WebContentsViewAura::OnDragUpdated(const aura::DropTargetEvent& event) {
   WebKit::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
   gfx::Point screen_pt =
       GetNativeView()->GetRootWindow()->last_mouse_location();
-  tab_contents_->GetRenderViewHost()->DragTargetDragOver(
+  web_contents_->GetRenderViewHost()->DragTargetDragOver(
       event.location(), screen_pt, op);
 
   if (GetDragDestDelegate())
@@ -585,13 +585,13 @@ int WebContentsViewAura::OnDragUpdated(const aura::DropTargetEvent& event) {
 }
 
 void WebContentsViewAura::OnDragExited() {
-  tab_contents_->GetRenderViewHost()->DragTargetDragLeave();
+  web_contents_->GetRenderViewHost()->DragTargetDragLeave();
   if (GetDragDestDelegate())
     GetDragDestDelegate()->OnDragLeave();
 }
 
 int WebContentsViewAura::OnPerformDrop(const aura::DropTargetEvent& event) {
-  tab_contents_->GetRenderViewHost()->DragTargetDrop(
+  web_contents_->GetRenderViewHost()->DragTargetDrop(
       event.location(),
       GetNativeView()->GetRootWindow()->last_mouse_location());
   if (GetDragDestDelegate())

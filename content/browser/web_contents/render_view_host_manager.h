@@ -29,7 +29,7 @@ class RenderWidgetHostView;
 class TestWebContents;
 }
 
-// Manages RenderViewHosts for a TabContents. Normally there is only one and
+// Manages RenderViewHosts for a WebContentsImpl. Normally there is only one and
 // it is easy to do. But we can also have transitions of processes (and hence
 // RenderViewHosts) that can get complex.
 class CONTENT_EXPORT RenderViewHostManager
@@ -38,18 +38,18 @@ class CONTENT_EXPORT RenderViewHostManager
  public:
   // Functions implemented by our owner that we need.
   //
-  // TODO(brettw) Clean this up! These are all the functions in TabContents that
-  // are required to run this class. The design should probably be better such
-  // that these are more clear.
+  // TODO(brettw) Clean this up! These are all the functions in WebContentsImpl
+  // that are required to run this class. The design should probably be better
+  // such that these are more clear.
   //
   // There is additional complexity that some of the functions we need in
-  // TabContents are inherited and non-virtual. These are named with
+  // WebContentsImpl are inherited and non-virtual. These are named with
   // "RenderManager" so that the duplicate implementation of them will be clear.
   class CONTENT_EXPORT Delegate {
    public:
     // Initializes the given renderer if necessary and creates the view ID
     // corresponding to this view host. If this method is not called and the
-    // process is not shared, then the TabContents will act as though the
+    // process is not shared, then the WebContentsImpl will act as though the
     // renderer is not running (i.e., it will render "sad tab"). This method is
     // automatically called from LoadURL.
     //
@@ -101,7 +101,7 @@ class CONTENT_EXPORT RenderViewHostManager
                         Delegate* delegate);
   virtual ~RenderViewHostManager();
 
-  // For arguments, see TabContents constructor.
+  // For arguments, see WebContentsImpl constructor.
   void Init(content::BrowserContext* browser_context,
             content::SiteInstance* site_instance,
             int routing_id);

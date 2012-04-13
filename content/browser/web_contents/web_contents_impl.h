@@ -376,9 +376,10 @@ class CONTENT_EXPORT WebContentsImpl
  private:
   friend class NavigationControllerImpl;
 
-  FRIEND_TEST_ALL_PREFIXES(TabContentsTest, NoJSMessageOnInterstitials);
-  FRIEND_TEST_ALL_PREFIXES(TabContentsTest, UpdateTitle);
-  FRIEND_TEST_ALL_PREFIXES(TabContentsTest, CrossSiteCantPreemptAfterUnload);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, NoJSMessageOnInterstitials);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, UpdateTitle);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest,
+                           CrossSiteCantPreemptAfterUnload);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostManagerTest, PageDoesBackAndReload);

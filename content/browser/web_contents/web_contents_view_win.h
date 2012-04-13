@@ -99,7 +99,7 @@ class CONTENT_EXPORT WebContentsViewWin : public content::WebContentsView,
   virtual void GotFocus() OVERRIDE;
   virtual void TakeFocus(bool reverse) OVERRIDE;
 
-  WebContentsImpl* tab_contents() const { return tab_contents_; }
+  WebContentsImpl* web_contents() const { return web_contents_; }
 
  private:
   void EndDragging();
@@ -125,7 +125,7 @@ class CONTENT_EXPORT WebContentsViewWin : public content::WebContentsView,
   gfx::Size initial_size_;
 
   // The WebContentsImpl whose contents we display.
-  WebContentsImpl* tab_contents_;
+  WebContentsImpl* web_contents_;
 
   RenderWidgetHostViewWin* view_;
 

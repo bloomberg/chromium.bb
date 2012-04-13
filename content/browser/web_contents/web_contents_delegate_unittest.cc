@@ -21,10 +21,16 @@ TEST(WebContentsDelegateTest, UnregisterInDestructor) {
   MessageLoop loop(MessageLoop::TYPE_UI);
   TestBrowserContext browser_context;
 
-  scoped_ptr<TabContents> contents_a(
-      new TabContents(&browser_context, NULL, MSG_ROUTING_NONE, NULL, NULL));
-  scoped_ptr<TabContents> contents_b(
-      new TabContents(&browser_context, NULL, MSG_ROUTING_NONE, NULL, NULL));
+  scoped_ptr<WebContentsImpl> contents_a(new WebContentsImpl(&browser_context,
+                                                             NULL,
+                                                             MSG_ROUTING_NONE,
+                                                             NULL,
+                                                             NULL));
+  scoped_ptr<WebContentsImpl> contents_b(new WebContentsImpl(&browser_context,
+                                                             NULL,
+                                                             MSG_ROUTING_NONE,
+                                                             NULL,
+                                                             NULL));
   EXPECT_TRUE(contents_a->GetDelegate() == NULL);
   EXPECT_TRUE(contents_b->GetDelegate() == NULL);
 
@@ -35,7 +41,7 @@ TEST(WebContentsDelegateTest, UnregisterInDestructor) {
   EXPECT_EQ(delegate.get(), contents_a->GetDelegate());
   EXPECT_TRUE(contents_b->GetDelegate() == NULL);
 
-  // A delegate can be a delegate to multiple TabContents.
+  // A delegate can be a delegate to multiple WebContentsImpl.
   contents_b->SetDelegate(delegate.get());
   EXPECT_EQ(delegate.get(), contents_a->GetDelegate());
   EXPECT_EQ(delegate.get(), contents_b->GetDelegate());
@@ -51,7 +57,7 @@ TEST(WebContentsDelegateTest, UnregisterInDestructor) {
   EXPECT_TRUE(contents_b->GetDelegate() == NULL);
 
   // Destroying the delegate while it is still the delegate
-  // for a TabContents should unregister it.
+  // for a WebContentsImpl should unregister it.
   contents_b->SetDelegate(delegate.get());
   EXPECT_EQ(delegate.get(), contents_a->GetDelegate());
   EXPECT_EQ(delegate.get(), contents_b->GetDelegate());

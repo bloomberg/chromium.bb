@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,10 @@ class RenderViewHost;
 class WebContents;
 }
 
-// An IDropSource implementation for a TabContents. Handles notifications sent
-// by an active drag-drop operation as the user mouses over other drop targets
-// on their system. This object tells Windows whether or not the drag should
-// continue, and supplies the appropriate cursors.
+// An IDropSource implementation for a WebContentsImpl. Handles notifications
+// sent by an active drag-drop operation as the user mouses over other drop
+// targets on their system. This object tells Windows whether or not the drag
+// should continue, and supplies the appropriate cursors.
 class WebDragSource : public ui::DragSource,
                       public content::NotificationObserver {
  public:

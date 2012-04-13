@@ -42,7 +42,7 @@ class CONTENT_EXPORT InterstitialPageImpl
     DONT_PROCEED_ACTION  // "Don't proceed" was selected.
   };
 
-  InterstitialPageImpl(content::WebContents* tab,
+  InterstitialPageImpl(content::WebContents* web_contents,
                        bool new_navigation,
                        const GURL& url,
                        content::InterstitialPageDelegate* delegate);
@@ -104,7 +104,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
 
   bool enabled() const { return enabled_; }
-  content::WebContents* tab() const;
+  content::WebContents* web_contents() const;
   const GURL& url() const { return url_; }
 
   // Creates the RenderViewHost containing the interstitial content.
@@ -132,7 +132,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   void TakeActionOnResourceDispatcher(ResourceRequestAction action);
 
   // The contents in which we are displayed.
-  WebContentsImpl* tab_;
+  WebContentsImpl* web_contents_;
 
   // The URL that is shown when the interstitial is showing.
   GURL url_;
@@ -166,21 +166,21 @@ class CONTENT_EXPORT InterstitialPageImpl
   int original_child_id_;
   int original_rvh_id_;
 
-  // Whether or not we should change the title of the tab when hidden (to revert
-  // it to its original value).
-  bool should_revert_tab_title_;
+  // Whether or not we should change the title of the contents when hidden (to
+  // revert it to its original value).
+  bool should_revert_web_contents_title_;
 
-  // Whether or not the tab was loading resources when the interstitial was
+  // Whether or not the contents was loading resources when the interstitial was
   // shown.  We restore this state if the user proceeds from the interstitial.
-  bool tab_was_loading_;
+  bool web_contents_was_loading_;
 
   // Whether the ResourceDispatcherHost has been notified to cancel/resume the
   // resource requests blocked for the RenderViewHost.
   bool resource_dispatcher_host_notified_;
 
-  // The original title of the tab that should be reverted to when the
+  // The original title of the contents that should be reverted to when the
   // interstitial is hidden.
-  string16 original_tab_title_;
+  string16 original_web_contents_title_;
 
   // Our RenderViewHostViewDelegate, necessary for accelerators to work.
   scoped_ptr<InterstitialPageRVHViewDelegate> rvh_view_delegate_;

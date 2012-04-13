@@ -28,7 +28,7 @@ namespace gfx {
 class Rect;
 }
 
-// TODO(avi): Once all the TabContentsViews implementations are in content (I'm
+// TODO(avi): Once all the WebContentsViews implementations are in content (I'm
 // looking at you, TabContentsViewViews...) then change the parameters to take
 // WebContentsImpl rather than WebContents.
 

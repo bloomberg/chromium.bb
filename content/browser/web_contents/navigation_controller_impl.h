@@ -28,7 +28,7 @@ class CONTENT_EXPORT NavigationControllerImpl
     : public NON_EXPORTED_BASE(content::NavigationController) {
  public:
   NavigationControllerImpl(
-      WebContentsImpl* tab_contents,
+      WebContentsImpl* web_contents,
       content::BrowserContext* browser_context,
       SessionStorageNamespaceImpl* session_storage_namespace);
   virtual ~NavigationControllerImpl();
@@ -124,10 +124,8 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // WebContentsImpl -----------------------------------------------------------
 
-  WebContentsImpl* tab_contents() const {
-    // This currently returns the active tab contents which should be renamed to
-    // tab_contents.
-    return tab_contents_;
+  WebContentsImpl* web_contents() const {
+    return web_contents_;
   }
 
   // Called when a document has been loaded in a frame.
@@ -298,9 +296,9 @@ class CONTENT_EXPORT NavigationControllerImpl
   // after the transient entry will become invalid if you navigate forward.
   int transient_entry_index_;
 
-  // The tab contents associated with the controller. Possibly NULL during
+  // The WebContents associated with the controller. Possibly NULL during
   // setup.
-  WebContentsImpl* tab_contents_;
+  WebContentsImpl* web_contents_;
 
   // The max restored page ID in this controller, if it was restored.  We must
   // store this so that WebContentsImpl can tell any renderer in charge of one

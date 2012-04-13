@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@ class WebContents;
 class WebDragDestDelegate;
 }
 
-// A helper object that provides drop capabilities to a TabContents. The
+// A helper object that provides drop capabilities to a WebContentsImpl. The
 // DropTarget handles drags that enter the region of the WebContents by
 // passing on the events to the renderer.
 class CONTENT_EXPORT WebDragDest : public ui::DropTarget {

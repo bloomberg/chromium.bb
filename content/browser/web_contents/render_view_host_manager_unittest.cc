@@ -364,7 +364,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   EXPECT_TRUE(kUrl == controller().GetLastCommittedEntry()->GetURL());
   EXPECT_FALSE(controller().GetPendingEntry());
   // Because we're using TestWebContents and TestRenderViewHost in this
-  // unittest, no one calls TabContents::RenderViewCreated(). So, we see no
+  // unittest, no one calls WebContentsImpl::RenderViewCreated(). So, we see no
   // EnableViewSourceMode message, here.
 
   // Clear queued messages before load.

@@ -58,7 +58,7 @@ int WebContentsObserver::routing_id() const {
   return web_contents_->GetRenderViewHost()->GetRoutingID();
 }
 
-void WebContentsObserver::TabContentsDestroyed() {
+void WebContentsObserver::WebContentsImplDestroyed() {
   // Do cleanup so that 'this' can safely be deleted from WebContentsDestroyed.
   web_contents_->RemoveObserver(this);
   WebContentsImpl* contents = web_contents_;

@@ -350,7 +350,9 @@ WebContentsImpl::~WebContentsImpl() {
         base::TimeTicks::Now() - tab_close_start_time_);
   }
 
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_, TabContentsDestroyed());
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    WebContentsImplDestroyed());
 
   SetDelegate(NULL);
 }

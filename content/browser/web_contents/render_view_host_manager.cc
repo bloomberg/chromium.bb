@@ -241,7 +241,7 @@ void RenderViewHostManager::RendererAbortedProvisionalLoad(
     RenderViewHost* render_view_host) {
   // We used to cancel the pending renderer here for cross-site downloads.
   // However, it's not safe to do that because the download logic repeatedly
-  // looks for this TabContents based on a render view ID.  Instead, we just
+  // looks for this WebContents based on a render view ID.  Instead, we just
   // leave the pending renderer around until the next navigation event
   // (Navigate, DidNavigate, etc), which will clean it up properly.
   // TODO(creis): All of this will go away when we move the cross-site logic

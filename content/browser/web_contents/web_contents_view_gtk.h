@@ -27,7 +27,7 @@ class WebDragSourceGtk;
 
 class CONTENT_EXPORT WebContentsViewGtk : public WebContentsView {
  public:
-  // The corresponding TabContents is passed in the constructor, and manages
+  // The corresponding WebContentsImpl is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split. We optionally take
   // |wrapper| which creates an intermediary widget layer for features from the
@@ -116,7 +116,7 @@ class CONTENT_EXPORT WebContentsViewGtk : public WebContentsView {
                        GtkAllocation*);
 
   // The WebContentsImpl whose contents we display.
-  WebContentsImpl* tab_contents_;
+  WebContentsImpl* web_contents_;
 
   // Common implementations of some WebContentsView methods.
   WebContentsViewHelper web_contents_view_helper_;

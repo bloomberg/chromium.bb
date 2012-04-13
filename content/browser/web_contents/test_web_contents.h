@@ -19,9 +19,9 @@ class RenderViewHost;
 class TestRenderViewHost;
 class WebContentsTester;
 
-// Subclass TabContents to ensure it creates TestRenderViewHosts
+// Subclass WebContentsImpl to ensure it creates TestRenderViewHosts
 // and does not do anything involving views.
-class TestWebContents : public TabContents, public WebContentsTester {
+class TestWebContents : public WebContentsImpl, public WebContentsTester {
  public:
   TestWebContents(BrowserContext* browser_context, SiteInstance* instance);
   virtual ~TestWebContents();
@@ -50,8 +50,8 @@ class TestWebContents : public TabContents, public WebContentsTester {
     return render_manager_.cross_navigation_pending_;
   }
 
-  // Overrides TabContents::ShouldTransitionCrossSite so that we can test both
-  // alternatives without using command-line switches.
+  // Overrides WebContentsImpl::ShouldTransitionCrossSite so that we can test
+  // both alternatives without using command-line switches.
   bool ShouldTransitionCrossSite() { return transition_cross_site; }
 
   // Prevent interaction with views.

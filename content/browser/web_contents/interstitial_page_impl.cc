@@ -127,13 +127,13 @@ class InterstitialPageImpl::InterstitialPageRVHViewDelegate
 // We keep a map of the various blocking pages shown as the UI tests need to
 // be able to retrieve them.
 typedef std::map<WebContents*, InterstitialPageImpl*> InterstitialPageMap;
-static InterstitialPageMap* g_tab_to_interstitial_page;
+static InterstitialPageMap* g_web_contents_to_interstitial_page;
 
-// Initializes g_tab_to_interstitial_page in a thread-safe manner.
-// Should be called before accessing g_tab_to_interstitial_page.
+// Initializes g_web_contents_to_interstitial_page in a thread-safe manner.
+// Should be called before accessing g_web_contents_to_interstitial_page.
 static void InitInterstitialPageMap() {
-  if (!g_tab_to_interstitial_page)
-    g_tab_to_interstitial_page = new InterstitialPageMap;
+  if (!g_web_contents_to_interstitial_page)
+    g_web_contents_to_interstitial_page = new InterstitialPageMap;
 }
 
 namespace content {
@@ -149,8 +149,8 @@ InterstitialPage* InterstitialPage::GetInterstitialPage(
     WebContents* web_contents) {
   InitInterstitialPageMap();
   InterstitialPageMap::const_iterator iter =
-      g_tab_to_interstitial_page->find(web_contents);
-  if (iter == g_tab_to_interstitial_page->end())
+      g_web_contents_to_interstitial_page->find(web_contents);
+  if (iter == g_web_contents_to_interstitial_page->end())
     return NULL;
 
   return iter->second;
@@ -158,11 +158,11 @@ InterstitialPage* InterstitialPage::GetInterstitialPage(
 
 }  // namespace content
 
-InterstitialPageImpl::InterstitialPageImpl(WebContents* tab,
+InterstitialPageImpl::InterstitialPageImpl(WebContents* web_contents,
                                            bool new_navigation,
                                            const GURL& url,
                                            InterstitialPageDelegate* delegate)
-    : tab_(static_cast<TabContents*>(tab)),
+    : web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       url_(url),
       new_navigation_(new_navigation),
       should_discard_pending_nav_entry_(new_navigation),
@@ -170,10 +170,10 @@ InterstitialPageImpl::InterstitialPageImpl(WebContents* tab,
       enabled_(true),
       action_taken_(NO_ACTION),
       render_view_host_(NULL),
-      original_child_id_(tab->GetRenderProcessHost()->GetID()),
-      original_rvh_id_(tab->GetRenderViewHost()->GetRoutingID()),
-      should_revert_tab_title_(false),
-      tab_was_loading_(false),
+      original_child_id_(web_contents->GetRenderProcessHost()->GetID()),
+      original_rvh_id_(web_contents->GetRenderViewHost()->GetRoutingID()),
+      should_revert_web_contents_title_(false),
+      web_contents_was_loading_(false),
       resource_dispatcher_host_notified_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(rvh_view_delegate_(
           new InterstitialPageRVHViewDelegate(this))),
@@ -184,7 +184,7 @@ InterstitialPageImpl::InterstitialPageImpl(WebContents* tab,
   // (which is the case when the interstitial was triggered by a sub-resource on
   // a page) when we have a pending entry (in the process of loading a new top
   // frame).
-  DCHECK(new_navigation || !tab->GetController().GetPendingEntry());
+  DCHECK(new_navigation || !web_contents->GetController().GetPendingEntry());
 }
 
 InterstitialPageImpl::~InterstitialPageImpl() {
@@ -195,8 +195,8 @@ void InterstitialPageImpl::Show() {
   // showing the new one.
   // Be careful not to take an action on the old interstitial more than once.
   InterstitialPageMap::const_iterator iter =
-      g_tab_to_interstitial_page->find(tab_);
-  if (iter != g_tab_to_interstitial_page->end()) {
+      g_web_contents_to_interstitial_page->find(web_contents_);
+  if (iter != g_web_contents_to_interstitial_page->end()) {
     InterstitialPageImpl* interstitial = iter->second;
     if (interstitial->action_taken_ != NO_ACTION) {
       interstitial->Hide();
@@ -218,16 +218,16 @@ void InterstitialPageImpl::Show() {
   TakeActionOnResourceDispatcher(BLOCK);
   // We need to be notified when the RenderViewHost is destroyed so we can
   // cancel the blocked requests.  We cannot do that on
-  // NOTIFY_TAB_CONTENTS_DESTROYED as at that point the RenderViewHost has
+  // NOTIFY_WEB_CONTENTS_DESTROYED as at that point the RenderViewHost has
   // already been destroyed.
   notification_registrar_.Add(
       this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
-      content::Source<RenderWidgetHost>(tab_->GetRenderViewHost()));
+      content::Source<RenderWidgetHost>(web_contents_->GetRenderViewHost()));
 
-  // Update the g_tab_to_interstitial_page map.
-  iter = g_tab_to_interstitial_page->find(tab_);
-  DCHECK(iter == g_tab_to_interstitial_page->end());
-  (*g_tab_to_interstitial_page)[tab_] = this;
+  // Update the g_web_contents_to_interstitial_page map.
+  iter = g_web_contents_to_interstitial_page->find(web_contents_);
+  DCHECK(iter == g_web_contents_to_interstitial_page->end());
+  (*g_web_contents_to_interstitial_page)[web_contents_] = this;
 
   if (new_navigation_) {
     NavigationEntryImpl* entry = new NavigationEntryImpl;
@@ -238,7 +238,7 @@ void InterstitialPageImpl::Show() {
     // Give delegates a chance to set some states on the navigation entry.
     delegate_->OverrideEntry(entry);
 
-    tab_->GetControllerImpl().AddTransientEntry(entry);
+    web_contents_->GetControllerImpl().AddTransientEntry(entry);
   }
 
   DCHECK(!render_view_host_);
@@ -251,19 +251,20 @@ void InterstitialPageImpl::Show() {
 
   notification_registrar_.Add(this,
                               content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                              content::Source<WebContents>(tab_));
+                              content::Source<WebContents>(web_contents_));
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::Source<NavigationController>(&tab_->GetController()));
+      content::Source<NavigationController>(&web_contents_->GetController()));
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
-      content::Source<NavigationController>(&tab_->GetController()));
+      content::Source<NavigationController>(&web_contents_->GetController()));
   notification_registrar_.Add(
       this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
       content::Source<RenderViewHost>(render_view_host_));
 }
 
 void InterstitialPageImpl::Hide() {
-  RenderWidgetHostView* old_view = tab_->GetRenderViewHost()->GetView();
-  if (tab_->GetInterstitialPage() == this &&
+  RenderWidgetHostView* old_view =
+      web_contents_->GetRenderViewHost()->GetView();
+  if (web_contents_->GetInterstitialPage() == this &&
       old_view && !old_view->IsShowing()) {
     // Show the original RVH since we're going away.  Note it might not exist if
     // the renderer crashed while the interstitial was showing.
@@ -277,31 +278,32 @@ void InterstitialPageImpl::Hide() {
   // (Note that in unit-tests the RVH may not have a view).
   if (render_view_host_->GetView() &&
       render_view_host_->GetView()->HasFocus() &&
-      tab_->GetRenderViewHost()->GetView()) {
+      web_contents_->GetRenderViewHost()->GetView()) {
     RenderWidgetHostViewPort::FromRWHV(
-        tab_->GetRenderViewHost()->GetView())->Focus();
+        web_contents_->GetRenderViewHost()->GetView())->Focus();
   }
 
   render_view_host_->Shutdown();
   render_view_host_ = NULL;
-  if (tab_->GetInterstitialPage())
-    tab_->remove_interstitial_page();
+  if (web_contents_->GetInterstitialPage())
+    web_contents_->remove_interstitial_page();
   // Let's revert to the original title if necessary.
-  NavigationEntry* entry = tab_->GetController().GetActiveEntry();
-  if (!new_navigation_ && should_revert_tab_title_) {
-    entry->SetTitle(original_tab_title_);
-    tab_->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
+  NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
+  if (!new_navigation_ && should_revert_web_contents_title_) {
+    entry->SetTitle(original_web_contents_title_);
+    web_contents_->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
   }
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_INTERSTITIAL_DETACHED,
-      content::Source<WebContents>(tab_),
+      content::Source<WebContents>(web_contents_),
       content::NotificationService::NoDetails());
 
-  InterstitialPageMap::iterator iter = g_tab_to_interstitial_page->find(tab_);
-  DCHECK(iter != g_tab_to_interstitial_page->end());
-  if (iter != g_tab_to_interstitial_page->end())
-    g_tab_to_interstitial_page->erase(iter);
+  InterstitialPageMap::iterator iter =
+      g_web_contents_to_interstitial_page->find(web_contents_);
+  DCHECK(iter != g_web_contents_to_interstitial_page->end());
+  if (iter != g_web_contents_to_interstitial_page->end())
+    g_web_contents_to_interstitial_page->erase(iter);
 }
 
 void InterstitialPageImpl::Observe(
@@ -395,18 +397,19 @@ void InterstitialPageImpl::DidNavigate(
 
   // The RenderViewHost has loaded its contents, we can show it now.
   render_view_host_->GetView()->Show();
-  tab_->set_interstitial_page(this);
+  web_contents_->set_interstitial_page(this);
 
   // This notification hides the bookmark bar. Note that this has to happen
-  // after the interstitial page was registered with |tab_|, since there will be
-  // a callback to |tab_| testing if an interstitial page is showing before
-  // hiding the bookmark bar.
+  // after the interstitial page was registered with |web_contents_|, since
+  // there will be a callback to |web_contents_| testing if an interstitial page
+  // is showing before hiding the bookmark bar.
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_INTERSTITIAL_ATTACHED,
-      content::Source<WebContents>(tab_),
+      content::Source<WebContents>(web_contents_),
       content::NotificationService::NoDetails());
 
-  RenderWidgetHostView* rwh_view = tab_->GetRenderViewHost()->GetView();
+  RenderWidgetHostView* rwh_view =
+      web_contents_->GetRenderViewHost()->GetView();
 
   // The RenderViewHost may already have crashed before we even get here.
   if (rwh_view) {
@@ -423,8 +426,8 @@ void InterstitialPageImpl::DidNavigate(
   // by the UI tests) expects to consider a navigation as complete. Without
   // this, navigating in a UI test to a URL that triggers an interstitial would
   // hang.
-  tab_was_loading_ = tab_->IsLoading();
-  tab_->SetIsLoading(false, NULL);
+  web_contents_was_loading_ = web_contents_->IsLoading();
+  web_contents_->SetIsLoading(false, NULL);
 }
 
 void InterstitialPageImpl::UpdateTitle(
@@ -433,7 +436,7 @@ void InterstitialPageImpl::UpdateTitle(
     const string16& title,
     base::i18n::TextDirection title_direction) {
   DCHECK(render_view_host == render_view_host_);
-  NavigationEntry* entry = tab_->GetController().GetActiveEntry();
+  NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
   if (!entry) {
     // Crash reports from the field indicate this can be NULL.
     // This is unexpected as InterstitialPages constructed with the
@@ -449,14 +452,14 @@ void InterstitialPageImpl::UpdateTitle(
 
   // If this interstitial is shown on an existing navigation entry, we'll need
   // to remember its title so we can revert to it when hidden.
-  if (!new_navigation_ && !should_revert_tab_title_) {
-    original_tab_title_ = entry->GetTitle();
-    should_revert_tab_title_ = true;
+  if (!new_navigation_ && !should_revert_web_contents_title_) {
+    original_web_contents_title_ = entry->GetTitle();
+    should_revert_web_contents_title_ = true;
   }
   // TODO(evan): make use of title_direction.
   // http://code.google.com/p/chromium/issues/detail?id=27094
   entry->SetTitle(title);
-  tab_->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
+  web_contents_->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
 }
 
 content::RendererPreferences InterstitialPageImpl::GetRendererPrefs(
@@ -466,27 +469,27 @@ content::RendererPreferences InterstitialPageImpl::GetRendererPrefs(
 }
 
 WebPreferences InterstitialPageImpl::GetWebkitPrefs() {
-  return TabContents::GetWebkitPrefs(render_view_host_, url_);
+  return WebContentsImpl::GetWebkitPrefs(render_view_host_, url_);
 }
 
 bool InterstitialPageImpl::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {
-  return tab_->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+  return web_contents_->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
 }
 
 void InterstitialPageImpl::HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) {
-  return tab_->HandleKeyboardEvent(event);
+  return web_contents_->HandleKeyboardEvent(event);
 }
 
-WebContents* InterstitialPageImpl::tab() const {
-  return tab_;
+WebContents* InterstitialPageImpl::web_contents() const {
+  return web_contents_;
 }
 
 RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
   RenderViewHostImpl* render_view_host = new RenderViewHostImpl(
-      SiteInstance::Create(tab()->GetBrowserContext()),
+      SiteInstance::Create(web_contents()->GetBrowserContext()),
       this, MSG_ROUTING_NONE, dom_storage::kInvalidSessionStorageNamespaceId);
   return render_view_host;
 }
@@ -494,14 +497,14 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
 WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
   if (!create_view_)
     return NULL;
-  WebContentsView* web_contents_view = tab()->GetView();
+  WebContentsView* web_contents_view = web_contents()->GetView();
   RenderWidgetHostView* view =
       web_contents_view->CreateViewForWidget(render_view_host_);
   render_view_host_->SetView(view);
   render_view_host_->AllowBindings(content::BINDINGS_POLICY_DOM_AUTOMATION);
 
-  int32 max_page_id =
-      tab()->GetMaxPageIDForSiteInstance(render_view_host_->GetSiteInstance());
+  int32 max_page_id = web_contents()->
+      GetMaxPageIDForSiteInstance(render_view_host_->GetSiteInstance());
   render_view_host_->CreateRenderView(string16(), max_page_id);
   view->SetSize(web_contents_view->GetContainerSize());
   // Don't show the interstitial until we have navigated to it.
@@ -518,8 +521,8 @@ void InterstitialPageImpl::Proceed() {
   action_taken_ = PROCEED_ACTION;
 
   // Resumes the throbber, if applicable.
-  if (tab_was_loading_)
-    tab_->SetIsLoading(true, NULL);
+  if (web_contents_was_loading_)
+    web_contents_->SetIsLoading(true, NULL);
 
   // If this is a new navigation, the old page is going away, so we cancel any
   // blocked requests for it.  If it is not a new navigation, then it means the
@@ -563,11 +566,11 @@ void InterstitialPageImpl::DontProceed() {
     // explicitely.  Note that by calling DiscardNonCommittedEntries() we also
     // discard the pending entry, which is what we want, since the navigation is
     // cancelled.
-    tab_->GetController().DiscardNonCommittedEntries();
+    web_contents_->GetController().DiscardNonCommittedEntries();
   }
 
   if (reload_on_dont_proceed_)
-    tab_->GetController().Reload(true);
+    web_contents_->GetController().Reload(true);
 
   Hide();
   delegate_->OnDontProceed();
@@ -735,13 +738,14 @@ void InterstitialPageImpl::InterstitialPageRVHViewDelegate::GotFocus() {
 
 void InterstitialPageImpl::InterstitialPageRVHViewDelegate::TakeFocus(
     bool reverse) {
-  if (!interstitial_page_->tab())
+  if (!interstitial_page_->web_contents())
     return;
-  TabContents* tab = static_cast<TabContents*>(interstitial_page_->tab());
-  if (!tab->GetViewDelegate())
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(interstitial_page_->web_contents());
+  if (!web_contents->GetViewDelegate())
     return;
 
-  tab->GetViewDelegate()->TakeFocus(reverse);
+  web_contents->GetViewDelegate()->TakeFocus(reverse);
 }
 
 void InterstitialPageImpl::InterstitialPageRVHViewDelegate::OnFindReply(

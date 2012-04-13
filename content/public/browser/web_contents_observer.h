@@ -125,9 +125,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
  private:
   friend class ::WebContentsImpl;
 
-  // Invoked from WebContentsImpl. Invokes TabContentsDestroyed and NULL out
-  // |tab_contents_|.
-  void TabContentsDestroyed();
+  // Invoked from WebContentsImpl. Invokes WebContentsDestroyed and NULL out
+  // |web_contents_|.
+  void WebContentsImplDestroyed();
 
   WebContentsImpl* web_contents_;
 

@@ -46,7 +46,7 @@ void WebContentsViewHelper::Observe(
   }
 }
 
-TabContents* WebContentsViewHelper::CreateNewWindow(
+WebContentsImpl* WebContentsViewHelper::CreateNewWindow(
     WebContents* web_contents,
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
@@ -74,12 +74,12 @@ TabContents* WebContentsViewHelper::CreateNewWindow(
 
   // Create the new web contents. This will automatically create the new
   // WebContentsView. In the future, we may want to create the view separately.
-  TabContents* new_contents =
-      new TabContents(web_contents->GetBrowserContext(),
-                      site_instance,
-                      route_id,
-                      static_cast<TabContents*>(web_contents),
-                      NULL);
+  WebContentsImpl* new_contents =
+      new WebContentsImpl(web_contents->GetBrowserContext(),
+                          site_instance,
+                          route_id,
+                          static_cast<WebContentsImpl*>(web_contents),
+                          NULL);
   new_contents->set_opener_web_ui_type(
       web_contents->GetWebUITypeForCurrentState());
   new_contents->set_has_opener(!params.opener_url.is_empty());
@@ -141,7 +141,7 @@ RenderWidgetHostView* WebContentsViewHelper::CreateNewWidget(
   return widget_view;
 }
 
-TabContents* WebContentsViewHelper::GetCreatedWindow(int route_id) {
+WebContentsImpl* WebContentsViewHelper::GetCreatedWindow(int route_id) {
   PendingContents::iterator iter = pending_contents_.find(route_id);
 
   // Certain systems can block the creation of new windows. If we didn't succeed
@@ -150,7 +150,7 @@ TabContents* WebContentsViewHelper::GetCreatedWindow(int route_id) {
     return NULL;
   }
 
-  TabContents* new_contents = iter->second;
+  WebContentsImpl* new_contents = iter->second;
   pending_contents_.erase(route_id);
 
   if (!new_contents->GetRenderProcessHost()->HasConnection() ||
@@ -181,13 +181,13 @@ RenderWidgetHostView* WebContentsViewHelper::GetCreatedWidget(int route_id) {
   return widget_host_view;
 }
 
-TabContents* WebContentsViewHelper::ShowCreatedWindow(
+WebContentsImpl* WebContentsViewHelper::ShowCreatedWindow(
     WebContents* web_contents,
     int route_id,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_pos,
     bool user_gesture) {
-  TabContents* contents = GetCreatedWindow(route_id);
+  WebContentsImpl* contents = GetCreatedWindow(route_id);
   if (contents) {
     web_contents->AddNewContents(contents,
                                  disposition,
