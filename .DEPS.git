@@ -28,7 +28,7 @@ deps = {
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@a2965825b1953c7b8ad292f726eb5c3f2659d5d3',
     'third_party':
-        Var('git_url') + '/native_client/src/third_party.git@ae0b8b1279a15208d7f2142caada87ecd1d69647',
+        Var('git_url') + '/native_client/src/third_party.git@3b443384dac8fcd9113cf265e4d6bd8cab63a400',
     'third_party/asan':
         Var('git_url') + '/chromium/deps/asan.git@245a68a0347562da54e3e5881010f55a994c783f',
     'third_party/gles2_book':
@@ -68,6 +68,8 @@ deps_os = {
     {
         'third_party/NSIS':
             Var('git_url') + '/native_client/deps/third_party/NSIS.git@21b6ad22daa7bfc04b9f1c1805a34622e2607a93',
+        'third_party/gnu_binutils':
+            Var('git_url') + '/native_client/deps/third_party/gnu_binutils.git@f4003433b61b25666565690caf3d7a7a1a4ec436',
         'third_party/mingw-w64/mingw/bin':
             Var('git_url') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git@3cc8b140b883a9fe4986d12cfd46c16a093d3527',
         'third_party/python_26':
