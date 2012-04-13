@@ -682,10 +682,10 @@ void TopSites::Observe(int type,
       backend_->ResetDatabase();
     } else {
       std::set<size_t> indices_to_delete;  // Indices into top_sites_.
-      for (std::set<GURL>::iterator i = deleted_details->urls.begin();
-           i != deleted_details->urls.end(); ++i) {
-        if (cache_->IsKnownURL(*i))
-          indices_to_delete.insert(cache_->GetURLIndex(*i));
+      for (URLRows::const_iterator i = deleted_details->rows.begin();
+           i != deleted_details->rows.end(); ++i) {
+        if (cache_->IsKnownURL(i->url()))
+          indices_to_delete.insert(cache_->GetURLIndex(i->url()));
       }
 
       if (indices_to_delete.empty())

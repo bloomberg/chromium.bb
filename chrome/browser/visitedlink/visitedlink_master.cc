@@ -289,10 +289,10 @@ void VisitedLinkMaster::DeleteAllURLs() {
   listener_->Reset();
 }
 
-void VisitedLinkMaster::DeleteURLs(const std::set<GURL>& urls) {
+void VisitedLinkMaster::DeleteURLs(const history::URLRows& rows) {
   typedef std::set<GURL>::const_iterator SetIterator;
 
-  if (urls.empty())
+  if (rows.empty())
     return;
 
   listener_->Reset();
@@ -300,12 +300,14 @@ void VisitedLinkMaster::DeleteURLs(const std::set<GURL>& urls) {
   if (table_builder_) {
     // A rebuild is in progress, save this deletion in the temporary list so
     // it can be added once rebuild is complete.
-    for (SetIterator i = urls.begin(); i != urls.end(); ++i) {
-      if (!i->is_valid())
+    for (history::URLRows::const_iterator i = rows.begin(); i != rows.end();
+         ++i) {
+      const GURL& url(i->url());
+      if (!url.is_valid())
         continue;
 
       Fingerprint fingerprint =
-          ComputeURLFingerprint(i->spec().data(), i->spec().size(), salt_);
+          ComputeURLFingerprint(url.spec().data(), url.spec().size(), salt_);
       deleted_since_rebuild_.insert(fingerprint);
 
       // If the URL was just added and now we're deleting it, it may be in the
@@ -324,11 +326,13 @@ void VisitedLinkMaster::DeleteURLs(const std::set<GURL>& urls) {
 
   // Compute the deleted URLs' fingerprints and delete them
   std::set<Fingerprint> deleted_fingerprints;
-  for (SetIterator i = urls.begin(); i != urls.end(); ++i) {
-    if (!i->is_valid())
+  for (history::URLRows::const_iterator i = rows.begin(); i != rows.end();
+       ++i) {
+    const GURL& url(i->url());
+    if (!url.is_valid())
       continue;
     deleted_fingerprints.insert(
-        ComputeURLFingerprint(i->spec().data(), i->spec().size(), salt_));
+        ComputeURLFingerprint(url.spec().data(), url.spec().size(), salt_));
   }
   DeleteFingerprintsFromCurrentTable(deleted_fingerprints);
 }

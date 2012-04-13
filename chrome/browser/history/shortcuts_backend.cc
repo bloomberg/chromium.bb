@@ -227,13 +227,15 @@ void ShortcutsBackend::Observe(int type,
             all_history) {
       DeleteAllShortcuts();
     }
-    const std::set<GURL>& urls =
-        content::Details<const history::URLsDeletedDetails>(details)->urls;
+    const URLRows& rows(
+        content::Details<const history::URLsDeletedDetails>(details)->rows);
     std::vector<std::string> shortcut_ids;
 
     for (GuidToShortcutsIteratorMap::iterator it = guid_map_.begin();
          it != guid_map_.end(); ++it) {
-      if (urls.find(it->second->second.url) != urls.end())
+      if (std::find_if(rows.begin(), rows.end(),
+                       URLRow::URLRowHasURL(it->second->second.url)) !=
+          rows.end())
         shortcut_ids.push_back(it->first);
     }
     DeleteShortcutsWithIds(shortcut_ids);

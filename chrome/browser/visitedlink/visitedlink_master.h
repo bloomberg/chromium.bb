@@ -19,6 +19,7 @@
 #include "base/shared_memory.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/common/visitedlink_common.h"
 
 class GURL;
@@ -89,8 +90,8 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // Adds a set of URLs to the table.
   void AddURLs(const std::vector<GURL>& url);
 
-  // Deletes the specified URLs from the table.
-  void DeleteURLs(const std::set<GURL>& urls);
+  // Deletes the specified URLs from |rows| from the table.
+  void DeleteURLs(const history::URLRows& rows);
 
   // Clears the visited links table by deleting the file from disk. Used as
   // part of history clearing.

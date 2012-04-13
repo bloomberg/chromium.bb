@@ -17,10 +17,14 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/url_index_private_data.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 #include "sql/transaction.h"
@@ -129,6 +133,9 @@ class InMemoryURLIndexTest : public testing::Test {
   bool GetCacheFilePath(FilePath* file_path) const;
   void PostRestoreFromCacheFileTask();
   void PostSaveToCacheFileTask();
+  void Observe(int notification_type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details);
   const std::set<std::string>& scheme_whitelist();
 
 
@@ -184,6 +191,13 @@ void InMemoryURLIndexTest::PostRestoreFromCacheFileTask() {
 
 void InMemoryURLIndexTest::PostSaveToCacheFileTask() {
   url_index_->PostSaveToCacheFileTask();
+}
+
+void InMemoryURLIndexTest::Observe(
+    int notification_type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  url_index_->Observe(notification_type, source, details);
 }
 
 const std::set<std::string>& InMemoryURLIndexTest::scheme_whitelist() {
@@ -831,7 +845,7 @@ TEST_F(InMemoryURLIndexTest, DeleteRows) {
       url_index_->HistoryItemsForTerms(ASCIIToUTF16("DrudgeReport"));
   ASSERT_EQ(1U, matches.size());
 
-  // Determine the row id for that result, delete that id, then search again.
+  // Delete the URL for then search again.
   EXPECT_TRUE(DeleteURL(matches[0].url_info.url()));
   EXPECT_TRUE(url_index_->HistoryItemsForTerms(
       ASCIIToUTF16("DrudgeReport")).empty());
@@ -839,6 +853,23 @@ TEST_F(InMemoryURLIndexTest, DeleteRows) {
   // Make up an URL that does not exist in the database and delete it.
   GURL url("http://www.hokeypokey.com/putyourrightfootin.html");
   EXPECT_FALSE(DeleteURL(url));
+}
+
+TEST_F(InMemoryURLIndexTest, ExpireRow) {
+  ScoredHistoryMatches matches =
+      url_index_->HistoryItemsForTerms(ASCIIToUTF16("DrudgeReport"));
+  ASSERT_EQ(1U, matches.size());
+
+  // Determine the row id for the result, remember that id, broadcast a
+  // delete notification, then ensure that the row has been deleted.
+  URLsDeletedDetails* deleted_details = new URLsDeletedDetails;
+  deleted_details->all_history = false;
+  deleted_details->rows.push_back(matches[0].url_info);
+  Observe(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+          content::Source<InMemoryURLIndexTest>(this),
+          content::Details<history::HistoryDetails>(deleted_details));
+  EXPECT_TRUE(url_index_->HistoryItemsForTerms(
+      ASCIIToUTF16("DrudgeReport")).empty());
 }
 
 TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {

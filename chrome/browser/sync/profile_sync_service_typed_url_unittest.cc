@@ -714,7 +714,7 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
 
   history::URLsDeletedDetails changes;
   changes.all_history = false;
-  changes.urls.insert(GURL("http://mine.com"));
+  changes.rows.push_back(history::URLRow(GURL("http://mine.com")));
   scoped_refptr<ThreadNotifier> notifier(new ThreadNotifier(&history_thread_));
   notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                    content::Source<Profile>(&profile_),

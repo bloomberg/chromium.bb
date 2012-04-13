@@ -202,7 +202,7 @@ void NetworkActionPredictor::Observe(
       if (urls_deleted_details->all_history)
         DeleteAllRows();
       else
-        DeleteRowsWithURLs(urls_deleted_details->urls);
+        DeleteRowsWithURLs(urls_deleted_details->rows);
       break;
     }
 
@@ -465,14 +465,15 @@ void NetworkActionPredictor::DeleteAllRows() {
                             DATABASE_ACTION_DELETE_ALL, DATABASE_ACTION_COUNT);
 }
 
-void NetworkActionPredictor::DeleteRowsWithURLs(const std::set<GURL>& urls) {
+void NetworkActionPredictor::DeleteRowsWithURLs(const history::URLRows& rows) {
   if (!initialized_)
     return;
 
   std::vector<NetworkActionPredictorDatabase::Row::Id> id_list;
 
   for (DBCacheMap::iterator it = db_cache_.begin(); it != db_cache_.end();) {
-    if (urls.find(it->first.url) != urls.end()) {
+    if (std::find_if(rows.begin(), rows.end(),
+        history::URLRow::URLRowHasURL(it->first.url)) != rows.end()) {
       const DBIdCacheMap::iterator id_it = db_id_cache_.find(it->first);
       DCHECK(id_it != db_id_cache_.end());
       id_list.push_back(id_it->second);

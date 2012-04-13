@@ -429,6 +429,20 @@ history::QueryOptions BrowsingHistoryHandler::CreateMonthQueryOptions(
   return options;
 }
 
+// Helper function for Observe that determines if there are any differences
+// between the URLs noticed for deletion and the ones we are expecting.
+static bool DeletionsDiffer(const history::URLRows& deleted_rows,
+                            const std::set<GURL>& urls_to_be_deleted) {
+  if (deleted_rows.size() != urls_to_be_deleted.size())
+    return true;
+  for (history::URLRows::const_iterator i = deleted_rows.begin();
+       i != deleted_rows.end(); ++i) {
+    if (urls_to_be_deleted.find(i->url()) == urls_to_be_deleted.end())
+      return true;
+  }
+  return false;
+}
+
 void BrowsingHistoryHandler::Observe(
     int type,
     const content::NotificationSource& source,
@@ -439,11 +453,9 @@ void BrowsingHistoryHandler::Observe(
   }
   history::URLsDeletedDetails* deletedDetails =
       content::Details<history::URLsDeletedDetails>(details).ptr();
-  if (deletedDetails->urls != urls_to_be_deleted_ ||
-      deletedDetails->all_history) {
-    // Notify the page that someone else deleted from the history.
+  if (deletedDetails->all_history ||
+      DeletionsDiffer(deletedDetails->rows, urls_to_be_deleted_))
     web_ui()->CallJavascriptFunction("historyDeleted");
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
