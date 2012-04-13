@@ -597,7 +597,6 @@ void RenderTextWin::LayoutVisualText() {
     bool tried_fallback = false;
     size_t linked_font_index = 0;
     const std::vector<Font>* linked_fonts = NULL;
-    const int font_size = run->font.GetFontSize();
 
     // Select the font desired for glyph generation.
     SelectObject(cached_hdc_, run->font.GetNativeFont());
@@ -612,6 +611,7 @@ void RenderTextWin::LayoutVisualText() {
     // Max glyph guess: http://msdn.microsoft.com/en-us/library/dd368564.aspx
     size_t max_glyphs = static_cast<size_t>(1.5 * run_length + 16);
     while (max_glyphs < kMaxGlyphs) {
+      bool glyphs_missing = false;
       run->glyphs.reset(new WORD[max_glyphs]);
       run->visible_attributes.reset(new SCRIPT_VISATTR[max_glyphs]);
       hr = ScriptShape(cached_hdc_,
@@ -626,66 +626,62 @@ void RenderTextWin::LayoutVisualText() {
                        &(run->glyph_count));
       if (hr == E_OUTOFMEMORY) {
         max_glyphs *= 2;
+        continue;
+      } else if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
+        glyphs_missing = true;
       } else if (hr == S_OK) {
         // If |hr| is S_OK, there could still be missing glyphs in the output,
         // see: http://msdn.microsoft.com/en-us/library/windows/desktop/dd368564.aspx
-        //
-        // If there are missing glyphs, use font linking to try to find a
-        // matching font.
-        bool glyphs_missing = false;
-        for (int i = 0; i < run->glyph_count; i++) {
+        for (int i = 0; i < run->glyph_count; ++i) {
           if (run->glyphs[i] == font_properties.wgDefault) {
             glyphs_missing = true;
             break;
           }
         }
-        // No glyphs missing - good to go.
-        if (!glyphs_missing)
-          break;
+      }
 
-        // First time through, get the linked fonts list.
-        if (linked_fonts == NULL)
-          linked_fonts = GetLinkedFonts(run->font);
+      // Skip font substitution if there are no missing glyphs.
+      if (!glyphs_missing)
+        break;
 
-        // None of the linked fonts worked - break out of the loop.
-        if (linked_font_index == linked_fonts->size())
-          break;
-
-        // Try the next linked font.
-        run->font = linked_fonts->at(linked_font_index++);
-        DeriveFontIfNecessary(font_size, run->font_style, &run->font);
-        ScriptFreeCache(&run->script_cache);
-        SelectObject(cached_hdc_, run->font.GetNativeFont());
-      } else if (hr == USP_E_SCRIPT_NOT_IN_FONT) {
-        // Only try font fallback if it hasn't yet been attempted for this run.
-        if (tried_fallback) {
-          // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can
-          //            crash on certain surrogate pairs with SCRIPT_UNDEFINED.
-          //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
-          //            And http://maxradi.us/documents/uniscribe/
-          run->script_analysis.eScript = SCRIPT_UNDEFINED;
-          // Reset |hr| to 0 to not trigger the DCHECK() below when a font is
-          // not found that can display the text. This is expected behavior
-          // under Windows XP without additional language packs installed and
-          // may also happen on newer versions when trying to display text in
-          // an obscure script that the system doesn't have the right font for.
-          hr = 0;
-          break;
-        }
-
-        // The run's font doesn't contain the required glyphs, use an alternate.
-        // TODO(msw): support RenderText's font_list().
-        if (ChooseFallbackFont(cached_hdc_, run->font, run_text, run_length,
-                               &run->font)) {
-          DeriveFontIfNecessary(font_size, run->font_style, &run->font);
-          ScriptFreeCache(&run->script_cache);
-          SelectObject(cached_hdc_, run->font.GetNativeFont());
-        }
-
+      // If there are missing glyphs, first try finding a fallback font using a
+      // meta file, if it hasn't yet been attempted for this run.
+      // TODO(msw|asvitkine): Support RenderText's font_list()?
+      // TODO(msw|asvitkine): Cache previous successful replacement fonts?
+      if (!tried_fallback) {
         tried_fallback = true;
-      } else {
+
+        Font fallback_font;
+        if (ChooseFallbackFont(cached_hdc_, run->font, run_text, run_length,
+                               &fallback_font)) {
+          ApplySubstituteFont(run, fallback_font);
+          continue;
+        }
+      }
+
+      // The meta file approach did not yield a replacement font, try to find
+      // one using font linking. First time through, get the linked fonts list.
+      if (linked_fonts == NULL)
+        linked_fonts = GetLinkedFonts(run->font);
+
+      // None of the linked fonts worked, break out of the loop.
+      if (linked_font_index == linked_fonts->size()) {
+        // TODO(msw): Don't use SCRIPT_UNDEFINED. Apparently Uniscribe can
+        //            crash on certain surrogate pairs with SCRIPT_UNDEFINED.
+        //            See https://bugzilla.mozilla.org/show_bug.cgi?id=341500
+        //            And http://maxradi.us/documents/uniscribe/
+        run->script_analysis.eScript = SCRIPT_UNDEFINED;
+        // Reset |hr| to 0 to not trigger the DCHECK() below when a font is
+        // not found that can display the text. This is expected behavior
+        // under Windows XP without additional language packs installed and
+        // may also happen on newer versions when trying to display text in
+        // an obscure script that the system doesn't have the right font for.
+        hr = 0;
         break;
       }
+
+      // Try the next linked font.
+      ApplySubstituteFont(run, linked_fonts->at(linked_font_index++));
     }
     DCHECK(SUCCEEDED(hr));
     string_size_.set_height(std::max(string_size_.height(),
@@ -732,6 +728,15 @@ void RenderTextWin::LayoutVisualText() {
     preceding_run_widths += run->width;
   }
   string_size_.set_width(preceding_run_widths);
+}
+
+void RenderTextWin::ApplySubstituteFont(internal::TextRun* run,
+                                        const Font& font) {
+  const int font_size = run->font.GetFontSize();
+  run->font = font;
+  DeriveFontIfNecessary(font_size, run->font_style, &run->font);
+  ScriptFreeCache(&run->script_cache);
+  SelectObject(cached_hdc_, run->font.GetNativeFont());
 }
 
 const std::vector<Font>* RenderTextWin::GetLinkedFonts(const Font& font) const {

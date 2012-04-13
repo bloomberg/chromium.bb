@@ -95,6 +95,9 @@ class RenderTextWin : public RenderText {
   void ItemizeLogicalText();
   void LayoutVisualText();
 
+  // Helper function to update the font on a text run after font substitution.
+  void ApplySubstituteFont(internal::TextRun* run, const Font& font);
+
   // Returns a vector of linked fonts corresponding to |font|.
   const std::vector<Font>* GetLinkedFonts(const Font& font) const;
 
