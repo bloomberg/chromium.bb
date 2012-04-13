@@ -293,7 +293,7 @@ static void
 weston_wm_get_selection_targets(struct weston_wm *wm)
 {
 	struct wl_data_source *source;
-	struct wl_input_device *device;
+	struct weston_compositor *compositor;
 	xcb_get_property_cookie_t cookie;
 	xcb_get_property_reply_t *reply;
 	xcb_atom_t *value;
@@ -336,8 +336,9 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 		}
 	}
 
-	device = wm->server->compositor->input_device;
-	wl_input_device_set_selection(device, source);
+	compositor = wm->server->compositor;
+	wl_input_device_set_selection(compositor->input_device, source,
+				      wl_display_next_serial(compositor->wl_display));
 
 	free(reply);
 }
