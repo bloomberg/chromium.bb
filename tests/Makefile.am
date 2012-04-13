@@ -14,9 +14,9 @@ capitalized_word_SOURCES =	\
 	brl_checks.h		\
 	capitalized_word.c
 
-capitalized_with_sentance_SOURCES =	\
-	brl_checks.c            \
-	brl_checks.h            \
+capitalized_with_sentance_SOURCES =		\
+	brl_checks.c				\
+	brl_checks.h				\
 	capitalized_with_sentance.c
 
 inpos_compbrl_SOURCES =		\
@@ -34,29 +34,35 @@ en_gb_g1_italics_SOURCES =	\
 	brl_checks.h            \
 	en_gb_g1_italics.c	
 
-pass2_SOURCES =					\
-	brl_checks.c				\
-	brl_checks.h				\
+pass2_SOURCES =			\
+	brl_checks.c		\
+	brl_checks.h		\
 	pass2.c	
 
-letterDefTest_SOURCES = 			\
-	brl_checks.c				\
-	brl_checks.h				\
+pass2_outpos_SOURCES =		\
+	brl_checks.c		\
+	brl_checks.h		\
+	pass2_outpos.c	
+
+letterDefTest_SOURCES = 	\
+	brl_checks.c		\
+	brl_checks.h		\
 	letterDefTest.c
 
-check_PROGRAMS =				\
-	pass2					\
-	present_progressive			\
-	capitalized_word			\
-	capitalized_with_sentance		\
-	inpos_compbrl				\
-	lastworditalafter			\
-	en_gb_g1_italics \
+check_PROGRAMS =			\
+	pass2				\
+	pass2_outpos			\
+	present_progressive		\
+	capitalized_word		\
+	capitalized_with_sentance	\
+	inpos_compbrl			\
+	lastworditalafter		\
+	en_gb_g1_italics		\
 	letterDefTest
 
-dist_check_SCRIPTS = \
-	check_all_tables.pl \
-	check_endless_loop.pl \
+dist_check_SCRIPTS =		\
+	check_all_tables.pl	\
+	check_endless_loop.pl	\
 	multiple_table_path.pl
 
 # if we have Python and liblouis is configured with ucs4 then we can
@@ -72,20 +78,20 @@ endif
 # The present_progressive should not really fail but for the moment
 # the issue doesn't seem to be critical enough that anybody has enough
 # interest to fix it.
-XFAIL_TESTS = \
-	present_progressive 	\
+XFAIL_TESTS =			\
+	present_progressive	\
 	lastworditalafter	\
 	en_gb_g1_italics
 
-TESTS =	\
-	$(check_PROGRAMS) \
+TESTS =				\
+	$(check_PROGRAMS)	\
 	$(dist_check_SCRIPTS)
 
 HARNESS_DIR = $(top_srcdir)/tests/harness
 
-TESTS_ENVIRONMENT = \
-	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables \
-	PYTHONPATH=$(HARNESS_DIR):$(top_srcdir)/python:$$PYTHONPATH \
-	HARNESS_DIR=$(HARNESS_DIR) \
-	LD_LIBRARY_PATH=$(top_srcdir)/liblouis/.libs:$$LD_LIBRARY_PATH \
+TESTS_ENVIRONMENT =							\
+	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables	\
+	PYTHONPATH=$(HARNESS_DIR):$(top_srcdir)/python:$$PYTHONPATH	\
+	HARNESS_DIR=$(HARNESS_DIR)					\
+	LD_LIBRARY_PATH=$(top_srcdir)/liblouis/.libs:$$LD_LIBRARY_PATH	\
 	PATH=$(top_srcdir)/tools:$$PATH

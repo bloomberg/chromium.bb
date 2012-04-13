@@ -1,5 +1,9 @@
 2012-04-13  Christian Egli  <christian.egli@sbs.ch>
 
+	* tests/Makefile.am:
+	* tests/tables/pass2.ctb:
+	* tests/pass2_outpos.c: Add a test for the problem with pass2 and outpos.
+
 	* tests/brl_checks.h:
 	* tests/brl_checks.c (check_outpos):
 	* tests/inpos_compbrl.c (main): Enhance so that output position
