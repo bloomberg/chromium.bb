@@ -16,6 +16,7 @@ import csv
 import logging
 import optparse
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -129,6 +130,14 @@ def fix_python_path(cmd):
     out[0] = sys.executable
   elif out[0].endswith('.py'):
     out.insert(0, sys.executable)
+  return out
+
+
+def posix_relpath(path, root):
+  """posix.relpath() that keeps trailing slash."""
+  out = posixpath.relpath(path, root)
+  if path.endswith('/'):
+    out += '/'
   return out
 
 
@@ -1294,12 +1303,10 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
 
       if product_dir and f.startswith(product_dir):
         return '<(PRODUCT_DIR)/%s' % f[len(product_dir):]
-      elif cwd_dir and f.startswith(cwd_dir):
+      else:
         # cwd_dir is usually the directory containing the gyp file. It may be
         # empty if the whole directory containing the gyp file is needed.
-        return f[len(cwd_dir):] or './'
-      else:
-        return '<(DEPTH)/%s' % f
+        return posix_relpath(f, cwd_dir) or './'
 
     corrected = [fix(f) for f in simplified]
     tracked = [f for f in corrected if not f.endswith('/') and ' ' not in f]
