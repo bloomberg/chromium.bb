@@ -149,6 +149,11 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // updates changed_time_ to |now|.
   void ResetSameFingersState(stime_t now);
 
+  // Returns true if the two fingers are near each other enough to do a multi
+  // finger gesture together.
+  bool FingersCloseEnoughToGesture(const FingerState& finger_a,
+                                   const FingerState& finger_b) const;
+
   // Part of palm detection. Returns true if the finger indicated by
   // |finger_idx| is near another finger, which must not be a palm, in the
   // hwstate.
@@ -356,8 +361,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty palm_edge_width_;
   // Palms in edge are allowed to point if they move fast enough
   DoubleProperty palm_edge_point_speed_;
-  // Fingers within this distance of each other aren't palms
-  DoubleProperty palm_min_distance_;
   // Distance [mm] a finger must move after fingers change to count as real
   // motion
   DoubleProperty change_move_distance_;
@@ -380,8 +383,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // as thumb to be classified as non-thumb.
   DoubleProperty thumb_eval_timeout_;
   // Maximum distance [mm] two fingers may be separated and still be eligible
-  // for a two-finger gesture (e.g., scroll / tap / click)
-  DoubleProperty two_finger_close_distance_thresh_;
+  // for a two-finger gesture (e.g., scroll / tap / click). These define an
+  // ellipse with horizontal and vertical axes lengths (think: radii).
+  DoubleProperty two_finger_close_horizontal_distance_thresh_;
+  DoubleProperty two_finger_close_vertical_distance_thresh_;
   // Consider scroll vs pointing if finger moves at least this distance [mm]
   DoubleProperty two_finger_scroll_distance_thresh_;
   // Maximum distance [mm] between the outermost fingers while performing a

@@ -1824,6 +1824,9 @@ TEST(ImmediateInterpreterTest, ClickTest) {
     // Fingers very close together - shouldn't right click
     {0, 0, 0, 0, 10, 0, 50, 50, 1, 0},
     {0, 0, 0, 0, 10, 0, 55, 50, 2, 0},
+    // Large vertical dist - shouldn't right click
+    {0, 0, 0, 0, 10, 0,  8.4, 94, 1, 0},
+    {0, 0, 0, 0, 10, 0, 51.2, 70, 2, 0},
   };
   ClickTestHardwareStateAndExpectations records[] = {
     { { 0,    0, 0, 0, NULL },              0, 0 },
@@ -1837,6 +1840,10 @@ TEST(ImmediateInterpreterTest, ClickTest) {
     { { 7.01, 1, 2, 2, &finger_states[2] }, 0, 0 },
     { { 7.05, 1, 2, 2, &finger_states[2] }, GESTURES_BUTTON_LEFT, 0 },
     { { 8,    0, 0, 0, NULL },              0, GESTURES_BUTTON_LEFT },
+    { { 9,    0, 0, 0, NULL },              0, 0 },
+    { { 9.01, 1, 2, 2, &finger_states[4] }, 0, 0 },
+    { { 9.05, 1, 2, 2, &finger_states[4] }, GESTURES_BUTTON_LEFT, 0 },
+    { { 10,   0, 0, 0, NULL },              0, GESTURES_BUTTON_LEFT },
   };
 
   for (size_t i = 0; i < arraysize(records); ++i) {

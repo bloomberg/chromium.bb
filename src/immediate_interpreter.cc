@@ -45,13 +45,11 @@ void TapRecord::NoteTouch(short the_id, const FingerState& fs) {
   // New finger must be close enough to an existing finger
   if (!touched_.empty()) {
     bool reject_new_finger = true;
-    const float kMaxSeparationDistSq =
-        immediate_interpreter_->two_finger_close_distance_thresh_.val_ *
-        immediate_interpreter_->two_finger_close_distance_thresh_.val_;
     for (map<short, FingerState, kMaxTapFingers>::const_iterator it =
              touched_.begin(), e = touched_.end(); it != e; ++it) {
       const FingerState& existing_fs = (*it).second;
-      if (DistSq(existing_fs, fs) <= kMaxSeparationDistSq) {
+      if (immediate_interpreter_->FingersCloseEnoughToGesture(existing_fs,
+                                                              fs)) {
         reject_new_finger = false;
         break;
       }
@@ -246,7 +244,6 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 8.0),
       palm_edge_width_(prop_reg, "Palm Edge Zone Width", 14.0),
       palm_edge_point_speed_(prop_reg, "Palm Edge Zone Min Point Speed", 100.0),
-      palm_min_distance_(prop_reg, "Palm Min Distance", 50.0),
       change_move_distance_(prop_reg, "Change Min Move Distance", 3.0),
       change_timeout_(prop_reg, "Change Timeout", 0.04),
       evaluation_timeout_(prop_reg, "Evaluation Timeout", 0.2),
@@ -261,9 +258,14 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
                                        1.65),
       thumb_movement_factor_(prop_reg, "Thumb Movement Factor", 0.5),
       thumb_eval_timeout_(prop_reg, "Thumb Evaluation Timeout", 0.06),
-      two_finger_close_distance_thresh_(prop_reg,
-                                        "Two Finger Close Distance Thresh",
-                                        50.0),
+      two_finger_close_horizontal_distance_thresh_(
+          prop_reg,
+          "Two Finger Horizontal Close Distance Thresh",
+          50.0),
+      two_finger_close_vertical_distance_thresh_(
+          prop_reg,
+          "Two Finger Vertical Close Distance Thresh",
+          30.0),
       two_finger_scroll_distance_thresh_(prop_reg,
                                          "Two Finger Scroll Distance Thresh",
                                          2.0),
@@ -359,6 +361,25 @@ void ImmediateInterpreter::ResetSameFingersState(stime_t now) {
   changed_time_ = now;
 }
 
+bool ImmediateInterpreter::FingersCloseEnoughToGesture(
+    const FingerState& finger_a,
+    const FingerState& finger_b) const {
+  float horiz_axis_sq = two_finger_close_horizontal_distance_thresh_.val_ *
+      two_finger_close_horizontal_distance_thresh_.val_;
+  float vert_axis_sq = two_finger_close_vertical_distance_thresh_.val_ *
+      two_finger_close_vertical_distance_thresh_.val_;
+  float dx = finger_b.position_x - finger_a.position_x;
+  float dy = finger_b.position_y - finger_a.position_y;
+  // Equation of ellipse:
+  //    ,.--+--..
+  //  ,'   V|    `.   x^2   y^2
+  // |      +------|  --- + --- < 1
+  //  \        H  /   H^2   V^2
+  //   `-..__,,.-'
+  return vert_axis_sq * dx * dx + horiz_axis_sq * dy * dy <
+      vert_axis_sq * horiz_axis_sq;
+}
+
 bool ImmediateInterpreter::FingerNearOtherFinger(const HardwareState& hwstate,
                                                  size_t finger_idx) {
   const FingerState& fs = hwstate.fingers[finger_idx];
@@ -366,11 +387,8 @@ bool ImmediateInterpreter::FingerNearOtherFinger(const HardwareState& hwstate,
     const FingerState& other_fs = hwstate.fingers[i];
     if (other_fs.tracking_id == fs.tracking_id)
       continue;
-    float dx = fs.position_x - other_fs.position_x;
-    float dy = fs.position_y - other_fs.position_y;
     bool too_close_to_other_finger =
-        (dx * dx + dy * dy) < (palm_min_distance_.val_ *
-                               palm_min_distance_.val_) &&
+        FingersCloseEnoughToGesture(fs, other_fs) &&
         !SetContainsValue(palm_, other_fs.tracking_id);
     if (too_close_to_other_finger)
       return true;
@@ -608,14 +626,12 @@ bool ImmediateInterpreter::TwoFingersGesturing(
     return false;
 
   // Next, make sure distance between fingers isn't too great
-  const float kMax2fDistThreshSq = two_finger_close_distance_thresh_.val_ *
-      two_finger_close_distance_thresh_.val_;
-  float dist_sq = xdist * xdist + ydist * ydist;
-  if (dist_sq > kMax2fDistThreshSq)
+  if (!FingersCloseEnoughToGesture(finger1, finger2))
     return false;
 
   const float kMin2fDistThreshSq = tapping_finger_min_separation_.val_ *
       tapping_finger_min_separation_.val_;
+  float dist_sq = xdist * xdist + ydist * ydist;
   // Make sure distance between fingers isn't too small
   if (dist_sq < kMin2fDistThreshSq)
     return false;
