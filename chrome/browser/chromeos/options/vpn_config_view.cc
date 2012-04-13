@@ -54,87 +54,128 @@ string16 ProviderTypeToString(chromeos::ProviderType type) {
 
 namespace chromeos {
 
+namespace internal {
+
 class ProviderTypeComboboxModel : public ui::ComboboxModel {
  public:
-  ProviderTypeComboboxModel() {}
-  virtual ~ProviderTypeComboboxModel() {}
+  ProviderTypeComboboxModel();
+  virtual ~ProviderTypeComboboxModel();
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE {
-    return chromeos::PROVIDER_TYPE_MAX;
-  }
-  virtual string16 GetItemAt(int index) OVERRIDE {
-    ProviderType type = static_cast<ProviderType>(index);
-    return ProviderTypeToString(type);
-  }
+  virtual int GetItemCount() const OVERRIDE;
+  virtual string16 GetItemAt(int index) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProviderTypeComboboxModel);
 };
 
-class ServerCACertComboboxModel : public ui::ComboboxModel {
+class VpnServerCACertComboboxModel : public ui::ComboboxModel {
  public:
-  explicit ServerCACertComboboxModel(CertLibrary* cert_library)
-      : cert_library_(cert_library) {
-  }
-  virtual ~ServerCACertComboboxModel() {}
+  explicit VpnServerCACertComboboxModel(CertLibrary* cert_library);
+  virtual ~VpnServerCACertComboboxModel();
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE {
-    if (cert_library_->CertificatesLoading())
-      return 1;  // "Loading"
-    // "Default" + certs.
-    return cert_library_->GetCACertificates().Size() + 1;
-  }
-  virtual string16 GetItemAt(int index) OVERRIDE {
-    if (cert_library_->CertificatesLoading())
-      return l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
-    if (index == 0)
-      return l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA_DEFAULT);
-    int cert_index = index - 1;
-    return cert_library_->GetCACertificates().GetDisplayStringAt(cert_index);
-  }
+  virtual int GetItemCount() const OVERRIDE;
+  virtual string16 GetItemAt(int index) OVERRIDE;
 
  private:
   CertLibrary* cert_library_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServerCACertComboboxModel);
+  DISALLOW_COPY_AND_ASSIGN(VpnServerCACertComboboxModel);
 };
 
-class UserCertComboboxModel : public ui::ComboboxModel {
+class VpnUserCertComboboxModel : public ui::ComboboxModel {
  public:
-  explicit UserCertComboboxModel(CertLibrary* cert_library)
-      : cert_library_(cert_library) {
-  }
-  virtual ~UserCertComboboxModel() {}
+  explicit VpnUserCertComboboxModel(CertLibrary* cert_library);
+  virtual ~VpnUserCertComboboxModel();
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount() const OVERRIDE {
-    if (cert_library_->CertificatesLoading())
-      return 1;  // "Loading"
-    int num_certs = cert_library_->GetUserCertificates().Size();
-    if (num_certs == 0)
-      return 1;  // "None installed"
-    return num_certs;
-  }
-  virtual string16 GetItemAt(int index) OVERRIDE {
-    if (cert_library_->CertificatesLoading()) {
-      return l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
-    }
-    if (cert_library_->GetUserCertificates().Size() == 0) {
-      return l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED);
-    }
-    return cert_library_->GetUserCertificates().GetDisplayStringAt(index);
-  }
+  virtual int GetItemCount() const OVERRIDE;
+  virtual string16 GetItemAt(int index) OVERRIDE;
 
  private:
   CertLibrary* cert_library_;
-  DISALLOW_COPY_AND_ASSIGN(UserCertComboboxModel);
+
+  DISALLOW_COPY_AND_ASSIGN(VpnUserCertComboboxModel);
 };
+
+// ProviderTypeComboboxModel ---------------------------------------------------
+
+ProviderTypeComboboxModel::ProviderTypeComboboxModel() {
+}
+
+ProviderTypeComboboxModel::~ProviderTypeComboboxModel() {
+}
+
+int ProviderTypeComboboxModel::GetItemCount() const {
+  return PROVIDER_TYPE_MAX;
+}
+
+string16 ProviderTypeComboboxModel::GetItemAt(int index) {
+  ProviderType type = static_cast<ProviderType>(index);
+  return ProviderTypeToString(type);
+}
+
+// VpnServerCACertComboboxModel ------------------------------------------------
+
+VpnServerCACertComboboxModel::VpnServerCACertComboboxModel(
+    CertLibrary* cert_library)
+    : cert_library_(cert_library) {
+}
+
+VpnServerCACertComboboxModel::~VpnServerCACertComboboxModel() {
+}
+
+int VpnServerCACertComboboxModel::GetItemCount() const {
+  if (cert_library_->CertificatesLoading())
+    return 1;  // "Loading"
+  // "Default" + certs.
+  return cert_library_->GetCACertificates().Size() + 1;
+}
+
+string16 VpnServerCACertComboboxModel::GetItemAt(int index) {
+  if (cert_library_->CertificatesLoading())
+    return l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
+  if (index == 0)
+    return l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA_DEFAULT);
+  int cert_index = index - 1;
+  return cert_library_->GetCACertificates().GetDisplayStringAt(cert_index);
+}
+
+// VpnUserCertComboboxModel ----------------------------------------------------
+
+VpnUserCertComboboxModel::VpnUserCertComboboxModel(
+    CertLibrary* cert_library)
+    : cert_library_(cert_library) {
+}
+
+VpnUserCertComboboxModel::~VpnUserCertComboboxModel() {
+}
+
+int VpnUserCertComboboxModel::GetItemCount() const {
+  if (cert_library_->CertificatesLoading())
+    return 1;  // "Loading"
+  int num_certs = cert_library_->GetUserCertificates().Size();
+  if (num_certs == 0)
+    return 1;  // "None installed"
+  return num_certs;
+}
+
+string16 VpnUserCertComboboxModel::GetItemAt(int index) {
+  if (cert_library_->CertificatesLoading()) {
+    return l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
+  }
+  if (cert_library_->GetUserCertificates().Size() == 0) {
+    return l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USER_CERT_NONE_INSTALLED);
+  }
+  return cert_library_->GetUserCertificates().GetDisplayStringAt(index);
+}
+
+}  // namespace internal
 
 VPNConfigView::VPNConfigView(NetworkConfigView* parent, VirtualNetwork* vpn)
     : ChildNetworkConfigView(parent, vpn),
@@ -403,7 +444,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   SetLayoutManager(layout);
 
   // VPN may require certificates, so always set the library and observe.
-  cert_library_ = chromeos::CrosLibrary::Get()->GetCertLibrary();
+  cert_library_ = CrosLibrary::Get()->GetCertLibrary();
 
   // Setup a callback if certificates are yet to be loaded.
   if (!cert_library_->CertificatesLoaded())
@@ -433,7 +474,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     UpdateControlsToEnable();
   } else {
     // Set the default provider type.
-    provider_type_ = chromeos::PROVIDER_TYPE_L2TP_IPSEC_PSK;
+    provider_type_ = PROVIDER_TYPE_L2TP_IPSEC_PSK;
     // Provider Type is user selectable, so enable all controls during init.
     enable_psk_passphrase_ = true;
     enable_user_cert_ = true;
@@ -478,8 +519,10 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   layout->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_TYPE)));
   if (!vpn) {
-    provider_type_combobox_ =
-        new views::Combobox(new ProviderTypeComboboxModel());
+    provider_type_combobox_model_.reset(
+        new internal::ProviderTypeComboboxModel);
+    provider_type_combobox_ = new views::Combobox(
+        provider_type_combobox_model_.get());
     provider_type_combobox_->set_listener(this);
     layout->AddView(provider_type_combobox_);
     provider_type_text_label_ = NULL;
@@ -518,9 +561,10 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
         new views::Label(l10n_util::GetStringUTF16(
             IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_SERVER_CA));
     layout->AddView(server_ca_cert_label_);
-    ServerCACertComboboxModel* server_ca_cert_model =
-        new ServerCACertComboboxModel(cert_library_);
-    server_ca_cert_combobox_ = new views::Combobox(server_ca_cert_model);
+    server_ca_cert_combobox_model_.reset(
+        new internal::VpnServerCACertComboboxModel(cert_library_));
+    server_ca_cert_combobox_ = new views::Combobox(
+        server_ca_cert_combobox_model_.get());
     layout->AddView(server_ca_cert_combobox_);
     layout->AddView(new ControlledSettingIndicatorView(ca_cert_ui_data_));
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -535,9 +579,9 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     user_cert_label_ = new views::Label(l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USER_CERT));
     layout->AddView(user_cert_label_);
-    UserCertComboboxModel* user_cert_model =
-        new UserCertComboboxModel(cert_library_);
-    user_cert_combobox_ = new views::Combobox(user_cert_model);
+    user_cert_combobox_model_.reset(
+        new internal::VpnUserCertComboboxModel(cert_library_));
+    user_cert_combobox_ = new views::Combobox(user_cert_combobox_model_.get());
     user_cert_combobox_->set_listener(this);
     layout->AddView(user_cert_combobox_);
     layout->AddView(new ControlledSettingIndicatorView(user_cert_ui_data_));
