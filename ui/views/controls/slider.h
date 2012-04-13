@@ -10,6 +10,8 @@
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
+typedef unsigned int SkColor;
+
 namespace ui {
 class SlideAnimation;
 }
@@ -58,6 +60,8 @@ class VIEWS_EXPORT Slider : public View,
 
   void SetAccessibleName(const string16& name);
 
+  void set_focus_border_color(SkColor color) { focus_border_color_ = color; }
+
  private:
   void SetValueInternal(float value, SliderChangeReason reason);
 
@@ -74,6 +78,7 @@ class VIEWS_EXPORT Slider : public View,
       const views::GestureEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // ui::AnimationDelegate overrides:
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -88,6 +93,7 @@ class VIEWS_EXPORT Slider : public View,
   float animating_value_;
   bool value_is_valid_;
   string16 accessible_name_;
+  SkColor focus_border_color_;
 
   DISALLOW_COPY_AND_ASSIGN(Slider);
 };

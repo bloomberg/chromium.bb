@@ -65,6 +65,13 @@ bool ActionableView::OnMousePressed(const views::MouseEvent& event) {
   return PerformAction(event);
 }
 
+void ActionableView::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+    canvas->DrawRect(gfx::Rect(1, 1, width() - 3, height() - 3),
+                     kFocusBorderColor);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HoverHighlightView
 

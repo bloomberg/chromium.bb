@@ -10,6 +10,7 @@
 #include "ui/gfx/size.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/slider.h"
 #include "ui/views/view.h"
 
 class SkBitmap;
@@ -55,6 +56,7 @@ class ActionableView : public views::View {
   // Overridden from views::View.
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ActionableView);

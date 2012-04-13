@@ -26,6 +26,8 @@ const SkColor kHeaderHoverBackgroundColor = SkColorSetRGB(0xe1, 0xe1, 0xe1);
 const SkColor kBorderDarkColor = SkColorSetARGB(51, 0, 0, 0);
 const SkColor kBorderLightColor = SkColorSetRGB(0xeb, 0xeb, 0xeb);
 
+const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
+
 const int kTrayPopupWidth = 300;
 
 }  // namespace ash

@@ -195,10 +195,14 @@ views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
   container->set_background(views::Background::CreateSolidBackground(
       kHeaderBackgroundColor));
   HoverHighlightView* view = new HoverHighlightView(NULL);
-  view->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-        kTrayPopupPaddingHorizontal, kPaddingVertical, 0));
+  view->SetLayoutManager(new views::FillLayout);
   view->AddChildView(date_.get());
+  date_->set_border(views::Border::CreateEmptyBorder(kPaddingVertical,
+      kTrayPopupPaddingHorizontal,
+      kPaddingVertical,
+      kTrayPopupPaddingHorizontal));
   container->AddChildView(view);
+  view->set_focusable(false);
 
   if (status != user::LOGGED_IN_NONE && status != user::LOGGED_IN_LOCKED) {
     date_->SetActionable(true);

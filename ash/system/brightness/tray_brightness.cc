@@ -56,6 +56,7 @@ class BrightnessView : public views::View,
     AddChildView(icon);
 
     slider_ = new views::Slider(this, views::Slider::HORIZONTAL);
+    slider_->set_focus_border_color(kFocusBorderColor);
     slider_->SetValue(static_cast<float>(initial_percent / 100.0));
     slider_->SetAccessibleName(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(

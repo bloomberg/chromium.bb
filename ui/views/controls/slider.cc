@@ -30,7 +30,8 @@ Slider::Slider(SliderListener* listener, Orientation orientation)
       value_(0.f),
       keyboard_increment_(0.1f),
       animating_value_(0.f),
-      value_is_valid_(false) {
+      value_is_valid_(false),
+      focus_border_color_(0) {
   EnableCanvasFlippingForRTLUI(true);
   set_focusable(true);
 }
@@ -212,6 +213,15 @@ void Slider::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = accessible_name_;
   state->value = UTF8ToUTF16(
       base::StringPrintf("%d%%", (int)(value_ * 100 + 0.5)));
+}
+
+void Slider::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  if (!focus_border_color_) {
+    View::OnPaintFocusBorder(canvas);
+  } else if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+    canvas->DrawRect(gfx::Rect(1, 1, width() - 3, height() - 3),
+                     focus_border_color_);
+  }
 }
 
 }  // namespace views

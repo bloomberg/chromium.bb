@@ -87,6 +87,13 @@ class TrayButton : public views::TextButton {
       views::TextButton::OnPaintBorder(canvas);
   }
 
+  void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE {
+    if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+      canvas->DrawRect(gfx::Rect(1, 1, width() - 3, height() - 3),
+                       ash::kFocusBorderColor);
+    }
+  }
+
   bool hover_;
   scoped_ptr<views::Background> hover_bg_;
   scoped_ptr<views::Border> hover_border_;

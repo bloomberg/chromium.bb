@@ -28,6 +28,8 @@ extern const SkColor kHeaderHoverBackgroundColor;
 extern const SkColor kBorderDarkColor;
 extern const SkColor kBorderLightColor;
 
+extern const SkColor kFocusBorderColor;
+
 extern const int kTrayPopupWidth;
 
 }  // namespace ash
