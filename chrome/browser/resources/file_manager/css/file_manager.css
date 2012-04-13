@@ -648,6 +648,12 @@ div.img-container > img {
   border-color: rgb(242, 246, 250);
 }
 
+.list-container.nohover list > :not([selected]):hover,
+.list-container.nohover grid > :not([selected]):hover {
+  background-color: transparent;
+  border-color: transparent;
+}
+
 .table-row-cell .filename-label,
 .thumbnail-item .filename-label,
 /* Show ellipsis in cells. The name column has different structure and overrides

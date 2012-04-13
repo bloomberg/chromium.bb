@@ -677,9 +677,14 @@ FileManager.prototype = {
     this.filenameInput_.addEventListener(
         'focus', this.onFilenameInputFocus_.bind(this));
 
-    var listContainer = this.dialogDom_.querySelector('.list-container');
-    listContainer.addEventListener('keydown', this.onListKeyDown_.bind(this));
-    listContainer.addEventListener('keypress', this.onListKeyPress_.bind(this));
+    this.listContainer_ = this.dialogDom_.querySelector('.list-container');
+    this.listContainer_.addEventListener(
+        'keydown', this.onListKeyDown_.bind(this));
+    this.listContainer_.addEventListener(
+        'keypress', this.onListKeyPress_.bind(this));
+    this.listContainer_.addEventListener(
+        'mousemove', this.onListMouseMove_.bind(this));
+
     this.okButton_.addEventListener('click', this.onOk_.bind(this));
     this.cancelButton_.addEventListener('click', this.onCancel_.bind(this));
 
@@ -4279,6 +4284,19 @@ FileManager.prototype = {
         handleCommand('delete');
         break;
     }
+
+    switch (event.keyIdentifier) {
+      case 'Home':
+      case 'End':
+      case 'Up':
+      case 'Down':
+      case 'Left':
+      case 'Right':
+        // When navigating with keyboard we hide the distracting mouse hover
+        // highlighting until the user moves the mouse again.
+        this.listContainer_.classList.add('nohover');
+        break;
+    }
   };
 
   /**
@@ -4300,6 +4318,14 @@ FileManager.prototype = {
     this.textSearchState_ = {text: text + char, date: now};
 
     this.doTextSearch_();
+  };
+
+  /**
+   * Mousemove event handler for the div.list-container element.
+   */
+  FileManager.prototype.onListMouseMove_ = function(event) {
+    // The user grabbed the mouse, restore the hover highlighting.
+    this.listContainer_.classList.remove('nohover');
   };
 
   /**
