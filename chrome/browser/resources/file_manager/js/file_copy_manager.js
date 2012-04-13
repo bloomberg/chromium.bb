@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function FileCopyManager() {
+function FileCopyManager(root) {
   this.copyTasks_ = [];
   this.cancelObservers_ = [];
   this.cancelRequested_ = false;
+  this.root_ = root;
 }
 
 FileCopyManager.prototype = {
@@ -260,7 +261,7 @@ FileCopyManager.prototype.maybeCancel_ = function() {
  * Convert string in clipboard to entries and kick off pasting.
  */
 FileCopyManager.prototype.paste = function(clipboard, targetEntry,
-                                           targetOnGData, root) {
+                                           targetOnGData) {
   var self = this;
   var results = {
     sourceDirEntry: null,
@@ -314,15 +315,16 @@ FileCopyManager.prototype.paste = function(clipboard, targetEntry,
     results.isCut = (clipboard.isCut == 'true');
     results.isOnGData = (clipboard.isOnGData == 'true');
 
-    util.getDirectories(root, {create: false}, directories, onEntryFound,
+    util.getDirectories(self.root_, {create: false}, directories, onEntryFound,
                         onPathError);
-    util.getFiles(root, {create: false}, files, onEntryFound, onPathError);
+    util.getFiles(self.root_, {create: false}, files, onEntryFound,
+                  onPathError);
   }
 
-  root.getDirectory(clipboard.sourceDir,
-                    {create: false},
-                    onSourceEntryFound,
-                    onPathError);
+  self.root_.getDirectory(clipboard.sourceDir,
+                          {create: false},
+                          onSourceEntryFound,
+                          onPathError);
 }
 
 /**

@@ -42,8 +42,10 @@ function DirectoryModel(root, singleSelection, showGData) {
   // True if we should filter out files that start with a dot.
   this.filterHidden_ = true;
 
-  // Readonly status for removable volumes.
+  // Readonly status.
   this.readonly_ = false;
+  this.currentVolumeMetadata_ = {rootPath: '/'};
+  this.offline_ = false;
 }
 
 /**
@@ -136,28 +138,20 @@ DirectoryModel.prototype = {
   },
 
   /**
-   * True if current directory is read only. Value may be set
-   * for directories on a removable device.
+   * True if current directory is read only.
    * @type {boolean}
    */
   get readonly() {
-    switch (this.rootType) {
-      case DirectoryModel.RootType.REMOVABLE:
-        return this.readonly_;
-      case DirectoryModel.RootType.ARCHIVE:
-        return true;
-      case DirectoryModel.RootType.DOWNLOADS:
-        return false;
-      case DirectoryModel.RootType.GDATA:
-        return false;
-      default:
-        return true;
-    }
+    return this.readonly_;
   },
 
-  set readonly(value) {
-    if (this.rootType == DirectoryModel.RootType.REMOVABLE) {
-      this.readonly_ = !!value;
+  get offline() {
+    return this.offline_;
+  },
+  set offline(value) {
+    if (this.offline_ != value) {
+      this.offline_ = !!value;
+      this.updateReadonlyStatus_();
     }
   },
 
@@ -547,7 +541,6 @@ DirectoryModel.prototype = {
 
     if (this.unmountedGDataEntry_ &&
         DirectoryModel.getRootType(path) == DirectoryModel.RootType.GDATA) {
-      this.readonly_ = true;
       // TODO(kaznacheeev): Currently if path points to some GData subdirectory
       // and GData is not mounted we will change to the fake GData root and
       // ignore the rest of the path. Consider remembering the path and
@@ -558,7 +551,6 @@ DirectoryModel.prototype = {
       return;
     }
 
-    this.readonly_ = false;
     if (path == '/')
       return onDirectoryResolved(this.root_);
 
@@ -594,6 +586,8 @@ DirectoryModel.prototype = {
       // is loaded at this point.
       chrome.test.sendMessage('directory-change-complete');
     }
+    this.updateReadonlyStatus_();
+    this.updateVolumeMetadata_();
     this.updateRootsListSelection_();
     this.scan_(onRescanComplete);
 
@@ -936,6 +930,46 @@ DirectoryModel.prototype = {
       }
     }
     this.rootsListSelection.selectedIndex = -1;
+  },
+
+  updateReadonlyStatus_: function() {
+    switch (this.rootType) {
+      case DirectoryModel.RootType.REMOVABLE:
+        this.readonly_ = !!this.currentVolumeMetadata_.isReadOnly;
+        break;
+      case DirectoryModel.RootType.ARCHIVE:
+        this.readonly_ = true;
+        break;
+      case DirectoryModel.RootType.DOWNLOADS:
+        this.readonly_ = false;
+        break;
+      case DirectoryModel.RootType.GDATA:
+        this.readonly_ = this.offline;
+        break;
+      default:
+        this.readonly_ = true;
+        break;
+    }
+  },
+
+  updateVolumeMetadata_: function() {
+    var rootPath = this.rootPath;
+    if (this.currentVolumeMetadata_.rootPath != rootPath) {
+      var metadata = this.currentVolumeMetadata_ = {rootPath: rootPath};
+      if (DirectoryModel.getRootType(rootPath) ==
+          DirectoryModel.RootType.REMOVABLE) {
+        var self = this;
+        this.root_.getDirectory(rootPath, {}, function(entry) {
+          chrome.fileBrowserPrivate.getVolumeMetadata(entry.toURL(),
+              function(systemMetadata) {
+            if (systemMetadata) {
+              metadata.isReadOnly = systemMetadata.isReadOnly;
+              self.updateReadonlyStatus_();
+            }
+          });
+        });
+      }
+    }
   }
 };
 

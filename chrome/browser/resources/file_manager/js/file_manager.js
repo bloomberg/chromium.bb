@@ -440,8 +440,6 @@ FileManager.prototype = {
     // Add gdata mount info if present.
     if (this.gdataMounted_)
       this.mountPoints_.push(this.gdataMountInfo_);
-
-    this.updateVolumeMetadata_();
   };
 
   /**
@@ -492,7 +490,7 @@ FileManager.prototype = {
     this.initFileList_();
     this.initDialogs_();
 
-    this.copyManager_ = new FileCopyManager();
+    this.copyManager_ = new FileCopyManager(this.filesystem_.root);
     this.copyManager_.addEventListener('copy-progress',
                                        this.onCopyProgress_.bind(this));
     this.copyManager_.addEventListener('copy-operation-complete',
@@ -577,6 +575,24 @@ FileManager.prototype = {
        return self.getMetadataProvider().isInitialized();
     });
 
+    this.directoryModel_.offline = this.isOffline();
+
+    var controller = this.fileTransferController_ = new FileTransferController(
+        this.directoryModel_.fileList,
+        this.directoryModel_.fileListSelection,
+        GridItem.bind(null, this),
+        this.copyManager_,
+        this.directoryModel_);
+    controller.attachDragSource(this.table_.list);
+    controller.attachDropTarget(this.table_.list);
+    controller.attachDragSource(this.grid_);
+    controller.attachDropTarget(this.grid_);
+    controller.attachCopyPasteHandlers(this.document_);
+    controller.addEventListener('selection-copied',
+        this.blinkSelection.bind(this));
+    controller.addEventListener('selection-cut',
+        this.blinkSelection.bind(this));
+
     this.table_.endBatchUpdates();
     this.grid_.endBatchUpdates();
 
@@ -651,18 +667,9 @@ FileManager.prototype = {
     cr.ui.Grid.decorate(this.grid_);
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
-    this.document_.addEventListener('copy', this.onCopy_.bind(this));
-    this.document_.addEventListener('beforecopy',
-                                    this.onBeforeCopy_.bind(this));
     // Disable the default browser context menu.
     this.document_.addEventListener('contextmenu',
                                     function(e) { e.preventDefault() });
-
-    this.document_.addEventListener('paste', this.onPaste_.bind(this));
-    this.document_.addEventListener('beforepaste',
-                                    this.onBeforePaste_.bind(this));
-    this.document_.addEventListener('cut', this.onCut_.bind(this));
-    this.document_.addEventListener('beforecut', this.onBeforeCut_.bind(this));
 
     this.renameInput_ = this.document_.createElement('input');
     this.renameInput_.className = 'rename';
@@ -1206,13 +1213,7 @@ FileManager.prototype = {
         return this.document_.queryCommandEnabled(commandId);
 
       case 'paste':
-        // HACK(serya): return this.document_.queryCommandEnabled('paste')
-        // should be used.
-        var result;
-        this.simulateCommand_('paste', function(event) {
-          result = this.canPasteOrDrop_(event.clipboardData);
-        }.bind(this));
-        return result;
+        return this.fileTransferController_.queryPasteCommandEnabled();
 
       case 'rename':
         return (// Initialized to the point where we have a current directory
@@ -1246,19 +1247,6 @@ FileManager.prototype = {
         return entry && DirectoryModel.getRootType(entry.fullPath) ==
                         DirectoryModel.RootType.REMOVABLE;
     }
-  };
-
-  /**
-   * Allows to simulate commands to get access to clipboard.
-   * @param {string} command 'copy', 'cut' or 'paste'.
-   * @param {Function} handler Event handler.
-   */
-  FileManager.prototype.simulateCommand_ = function(command, handler) {
-    var iframe = this.document_.querySelector('#command-dispatcher');
-    var doc = iframe.contentDocument;
-    doc.addEventListener(command, handler);
-    doc.execCommand(command);
-    doc.removeEventListener(command, handler);
   };
 
   FileManager.prototype.getRootEntry_ = function(index) {
@@ -1347,7 +1335,6 @@ FileManager.prototype = {
     cr.ui.contextMenuHandler.setContextMenu(this.grid_, this.fileContextMenu_);
     this.grid_.addEventListener('mousedown',
                                 this.onGridOrTableMouseDown_.bind(this));
-    this.setupDragAndDrop_(this.grid_);
   };
 
   /**
@@ -1410,111 +1397,6 @@ FileManager.prototype = {
 
     this.table_.addEventListener('mousedown',
                                  this.onGridOrTableMouseDown_.bind(this));
-    this.setupDragAndDrop_(this.table_.list);
-  };
-
-  FileManager.prototype.setupDragAndDrop_ = function(list) {
-    list.addEventListener('dragstart', this.onDragStart_.bind(this));
-    list.addEventListener('dragend', this.onDragEnd_.bind(this));
-    list.addEventListener('drag', this.onDrag_.bind(this));
-    list.addEventListener('dragover', this.onDragOver_.bind(this));
-    list.addEventListener('dragenter', this.onDragEnter_.bind(this));
-    list.addEventListener('dragleave', this.onDragLeave_.bind(this));
-    list.addEventListener('drop', this.onDrop_.bind(this));
-  };
-
-  FileManager.prototype.onDragStart_ = function(event) {
-    var dt = event.dataTransfer;
-    var container = this.document_.querySelector('#drag-image-container');
-    var length = this.selection.dragNodes.length;
-    for (var i = 0; i < length; i++) {
-      var listItem = this.selection.dragNodes[i];
-      listItem.selected = true;
-      listItem.style.zIndex = length - i;
-      container.appendChild(listItem);
-    }
-    dt.setDragImage(container, 0, 0);
-
-    if (this.canCopyOrDrag_(dt)) {
-      if (this.canCutOrDrag_(dt))
-        this.cutOrCopyToClipboard_(dt, 'copyMove');
-      else
-        this.cutOrCopyToClipboard_(dt, 'copy');
-    } else {
-      event.preventDefault();
-    }
-  };
-
-  FileManager.prototype.onDragEnd_ = function(event) {
-    var container = this.document_.querySelector('#drag-image-container');
-    container.textContent = '';
-    this.setDropTarget_(null);
-  };
-
-  FileManager.prototype.onDrag_ = function(event) {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'copy';
-  };
-
-  FileManager.prototype.onDragOver_ = function(event) {
-    if (this.canPasteOrDrop_(event.dataTransfer)) {
-      event.preventDefault();
-    }
-  };
-
-  FileManager.prototype.onDragEnter_ = function(event) {
-    var item = this.findListItemForNode_(event.target);
-    this.dragEnterCount_++;
-
-    this.setDropTarget_(item, event.dataTransfer);
-  };
-
-  FileManager.prototype.onDragLeave_ = function(event) {
-    if (this.dragEnterCount_-- == 0)
-      this.setDropTarget_(null);
-  };
-
-  FileManager.prototype.onDrop_ = function(event) {
-    console.log('drop: ', event.dataTransfer.dropEffect);
-    var item = this.findListItemForNode_(event.target);
-    var dropTarget = item ?
-       this.directoryModel_.fileList.item(item.listIndex) : null;
-    if (dropTarget && !dropTarget.isDirectory)
-      dropTarget = null;
-    if (!this.canPasteOrDrop_(event.dataTransfer, dropTarget))
-      return;
-    event.preventDefault();
-    this.pasteFromClipboard_(event.dataTransfer, dropTarget);
-    if (this.dropTarget_) {
-      var target = this.dropTarget_;
-      this.blinkListItem_(this.dropTarget_);
-      this.setDropTarget_(null);
-    }
-  };
-
-  FileManager.prototype.setDropTarget_ = function(listItem, opt_dataTransfer) {
-    if (this.dropTarget_ == listItem)
-      return;
-
-    if (listItem) {
-      var entry = this.directoryModel_.fileList.item(listItem.listIndex);
-      if (entry.isDirectory &&
-          (!opt_dataTransfer ||
-           this.canPasteOrDrop_(opt_dataTransfer, entry))) {
-        listItem.classList.add('accepts');
-      }
-    } else {
-      this.dragEnterCount_ = 0;
-    }
-    if (this.dropTarget_ && this.dropTarget_.classList.contains('accepts')) {
-      var oldDropTarget = this.dropTarget_;
-      var self = this;
-      setTimeout(function() {
-        if (oldDropTarget != self.dropTarget_)
-          oldDropTarget.classList.remove('accepts');
-      }, 0);
-    }
-    this.dropTarget_ = listItem;
   };
 
   FileManager.prototype.initButter_ = function() {
@@ -2358,9 +2240,7 @@ FileManager.prototype = {
       bytes: 0,
       showBytes: false,
       iconType: null,
-      indexes: this.currentList_.selectionModel.selectedIndexes,
-      files: [],
-      dragNodes: []
+      indexes: this.currentList_.selectionModel.selectedIndexes
     };
 
     if (!selection.indexes.length) {
@@ -2413,12 +2293,6 @@ FileManager.prototype = {
         thumbnailCount++;
       }
 
-      // Items to drag are created in advance. Images must be loaded
-      // at the time the 'dragstart' event comes. Otherwise draggable
-      // image will be rendered without IMG tags.
-      if (selection.dragNodes.length < MAX_PREVIEW_THUMBAIL_COUNT)
-        selection.dragNodes.push(new GridItem(this, entry));
-
       selection.totalCount++;
 
       if (entry.isFile) {
@@ -2433,15 +2307,6 @@ FileManager.prototype = {
         } else {
           selection.bytes += entry.cachedSize_;
           selection.showBytes |= this.getFileType(entry).type != 'hosted';
-        }
-        // File object must be prepeared in advance for clipboard operations
-        // (copy, paste and drag). Clipboard object closes for write after
-        // returning control from that handlers so they may not have
-        // asynchronous operations.
-        if (!this.isOnGData()) {
-          entry.file(function(f) {
-            selection.files.push(f);
-          });
         }
       } else {
         selection.directoryCount += 1;
@@ -2827,6 +2692,7 @@ FileManager.prototype = {
       console.log('ONLINE');
       this.dialogContainer_.removeAttribute('offline');
     }
+    this.directoryModel_.offline = this.isOffline();
   };
 
   FileManager.prototype.isOnGDataOffline = function() {
@@ -2834,7 +2700,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.isOnReadonlyDirectory = function() {
-    return this.directoryModel_.readonly || this.isOnGDataOffline();
+    return this.directoryModel_.readonly;
   };
 
   /**
@@ -3328,163 +3194,6 @@ FileManager.prototype = {
   };
 
   /**
-   * Write the current selection to system clipboard.
-   *
-   * @param {Clipboard} clipboard Clipboard from the event.
-   * @param {string} effectAllowed Value must be valid for the
-   *     |dataTransfer.effectAllowed| property ('move', 'copy', 'copyMove').
-   */
-  FileManager.prototype.cutOrCopyToClipboard_ = function(dataTransfer,
-                                                         effectAllowed) {
-    var directories = [];
-    var files = [];
-    for (var i = 0, entry; i < this.selection.entries.length; i++) {
-      entry = this.selection.entries[i];
-      if (entry.isDirectory)
-        directories.push(entry.fullPath);
-      else
-        files.push(entry.fullPath);
-    }
-
-    // Tag to check it's filemanager data.
-    dataTransfer.setData('fs/tag', 'filemanager-data');
-
-    dataTransfer.setData('fs/isOnGData', this.isOnGData());
-    dataTransfer.setData('fs/sourceDir',
-                         this.directoryModel_.currentEntry.fullPath);
-    dataTransfer.setData('fs/directories', directories.join('\n'));
-    dataTransfer.setData('fs/files', files.join('\n'));
-    dataTransfer.effectAllowed = effectAllowed;
-    dataTransfer.setData('fs/effectallowed', effectAllowed);
-
-    var files = this.selection.files;
-    for (var i = 0; i < files.length; i++) {
-      dataTransfer.items.add(files[i]);
-    }
-  }
-
-  FileManager.prototype.onCopy_ = function(event) {
-    if (this.document_.activeElement.tagName == 'INPUT' ||
-        !this.canCopyOrDrag_()) {
-      return;
-    }
-    event.preventDefault();
-    this.cutOrCopyToClipboard_(event.clipboardData, 'copy');
-    this.blinkSelection();
-  };
-
-  FileManager.prototype.onBeforeCopy_ = function(event) {
-    // queryCommandEnabled returns true if event.returnValue is false.
-    event.returnValue = !this.canCopyOrDrag_();
-  };
-
-  FileManager.prototype.canCopyOrDrag_ = function() {
-    return this.selection && this.selection.totalCount > 0;
-  };
-
-  FileManager.prototype.onCut_ = function(event) {
-    if (this.document_.activeElement.tagName == 'INPUT' ||
-        !this.canCutOrDrag_()) {
-      return;
-    }
-    event.preventDefault();
-    this.cutOrCopyToClipboard_(event.clipboardData, 'move');
-    this.blinkSelection();
-  };
-
-  FileManager.prototype.onBeforeCut_ = function(event) {
-    // queryCommandEnabled returns true if event.returnValue is false.
-    event.returnValue = !this.canCutOrDrag_();
-  };
-
-  FileManager.prototype.canCutOrDrag_ = function() {
-    return !this.isOnReadonlyDirectory() && this.canCopyOrDrag_();
-  };
-
-  FileManager.prototype.onPaste_ = function(event) {
-    if (this.document_.activeElement.tagName == 'INPUT' ||
-        !this.canPasteOrDrop_(event.clipboardData)) {
-      return;
-    }
-    event.preventDefault();
-    var effect = this.pasteFromClipboard_(event.clipboardData);
-
-    // On cut, we clear the clipboard after the file is pasted/moved so we don't
-    // try to move/delete the original file again.
-    if (effect == 'move') {
-      this.simulateCommand_('cut', function(event) {
-        event.preventDefault();
-        event.clipboardData.setData('fs/clear', '');
-      });
-    }
-  };
-
-  FileManager.prototype.onBeforePaste_ = function(event) {
-    // queryCommandEnabled returns true if event.returnValue is false.
-    event.returnValue = !this.canPasteOrDrop_(event.clipboardData);
-  };
-
-  FileManager.prototype.canPasteOrDrop_ = function(dataTransfer, opt_entry) {
-    if (this.isOnReadonlyDirectory())
-      return false;  // assure destination entry is in the current directory.
-
-    if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') == -1)
-      return false;  // Unsupported type of content.
-    if (dataTransfer.getData('fs/tag') == '') {
-      // Data protected. Other checks are not possible but it makes sense to
-      // let the user try.
-      return true;
-    }
-
-    var directories = dataTransfer.getData('fs/directories').split('\n').
-                      filter(function(d) { return d != ''; });
-
-    var destinationPath = (opt_entry || this.directoryModel_.currentEntry).
-                          fullPath;
-    for (var i = 0; i < directories.length; i++) {
-      if (destinationPath.substr(0, directories[i].length) == directories[i])
-        return false;  // recursive paste.
-    }
-
-    return true;
-  };
-
-  /**
-   * Queue up a file copy operation based on the current system clipboard.
-   */
-  FileManager.prototype.pasteFromClipboard_ = function(dataTransfer,
-                                                       opt_destination) {
-    var destination = opt_destination || this.directoryModel_.currentEntry;
-
-    // effectAllowed set in copy/pase handlers stay uninitialized. DnD handlers
-    // work fine.
-    var effectAllowed = dataTransfer.effectAllowed != 'uninitialized' ?
-        dataTransfer.effectAllowed : dataTransfer.getData('fs/effectallowed');
-
-    var toMove = effectAllowed == 'move' ||
-        (effectAllowed == 'copyMove' && dataTransfer.dropEffect != 'copy');
-
-    var operationInfo = {
-      isCut: String(toMove),
-      isOnGData: dataTransfer.getData('fs/isOnGData'),
-      sourceDir: dataTransfer.getData('fs/sourceDir'),
-      directories: dataTransfer.getData('fs/directories'),
-      files: dataTransfer.getData('fs/files')
-    };
-
-    if (!toMove || operationInfo.sourceDir != destination.fullPath) {
-      this.copyManager_.paste(operationInfo,
-                              destination,
-                              this.isOnGData(),
-                              this.filesystem_.root);
-    } else {
-      console.log('Ignore move into the same folder');
-    }
-
-    return toMove ? 'move' : 'copy';
-  };
-
-  /**
    * Update the selection summary UI when the selection summarization completes.
    */
   FileManager.prototype.onSelectionSummarized_ = function() {
@@ -3821,8 +3530,6 @@ FileManager.prototype = {
         }.bind(this));
     }
 
-    this.updateVolumeMetadata_();
-
     if (event.newDirEntry.unmounted)
       this.dialogContainer_.setAttribute('unmounted', true);
     else
@@ -3836,26 +3543,6 @@ FileManager.prototype = {
     } else {
       this.dialogContainer_.removeAttribute('gdata');
     }
-  };
-
-  FileManager.prototype.updateVolumeMetadata_ = function() {
-    var dm = this.directoryModel_;
-    if (!dm) return;
-
-    // Only request metadata for removable devices and archives.
-    var rootType = dm.rootType;
-    if (rootType != DirectoryModel.RootType.REMOVABLE &&
-        rootType != DirectoryModel.RootType.ARCHIVE)
-      return;
-
-    dm.readonly = true;
-    var rootEntry = dm.rootEntry;
-    if (!rootEntry) return;
-    chrome.fileBrowserPrivate.getVolumeMetadata(rootEntry.toURL(),
-                                                function(metadata) {
-      if (metadata && dm.rootEntry == rootEntry)
-        dm.readonly = metadata.isReadOnly;
-    });
   };
 
   FileManager.prototype.findListItemForEvent_ = function(event) {
