@@ -109,8 +109,24 @@ bool PanelBrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
   // This method is used by the base class to detect when the cursor has
   // hit the window edge in order to change the cursor to a resize cursor
   // and to detect when to initiate a resize drag.
-  return panel_->CanResizeByMouse() ?
-    BrowserWindowGtk::GetWindowEdge(x, y, edge) : FALSE;
+  panel::Resizability resizability = panel_->CanResizeByMouse();
+  if (panel::NOT_RESIZABLE == resizability)
+    return false;
+
+  if (!BrowserWindowGtk::GetWindowEdge(x, y, edge))
+    return FALSE;
+
+  // Special handling if bottom edge is not resizable.
+  if (panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM == resizability) {
+    if (*edge == GDK_WINDOW_EDGE_SOUTH)
+      return FALSE;
+    if (*edge == GDK_WINDOW_EDGE_SOUTH_WEST)
+      *edge = GDK_WINDOW_EDGE_WEST;
+    else if (*edge == GDK_WINDOW_EDGE_SOUTH_EAST)
+      *edge = GDK_WINDOW_EDGE_EAST;
+  }
+
+  return TRUE;
 }
 
 void PanelBrowserWindowGtk::EnsureDragHelperCreated() {

@@ -85,8 +85,11 @@ bool Panel::draggable() const {
   return panel_strip_ && panel_strip_->CanDragPanel(this);
 }
 
-bool Panel::CanResizeByMouse() const {
-  return panel_strip_ && panel_strip_->CanResizePanel(this);
+panel::Resizability Panel::CanResizeByMouse() const {
+  if (!panel_strip_)
+    return panel::NOT_RESIZABLE;
+
+  return panel_strip_->GetPanelResizability(this);
 }
 
 const Extension* Panel::GetExtension() const {

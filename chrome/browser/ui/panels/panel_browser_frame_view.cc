@@ -1005,5 +1005,6 @@ bool PanelBrowserFrameView::EnsureSettingsMenuCreated() {
 }
 
 bool PanelBrowserFrameView::CanResize() const {
-  return panel_browser_view_->panel()->CanResizeByMouse();
+  return panel_browser_view_->panel()->CanResizeByMouse() !=
+      panel::NOT_RESIZABLE;
 }

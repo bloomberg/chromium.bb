@@ -172,7 +172,8 @@ enum {
 
 // |pointInWindow| is in window coordinates.
 - (panel::ResizingSides)edgeHitTest:(NSPoint)pointInWindow {
-  DCHECK(panel_->CanResizeByMouse());
+  panel::Resizability resizability = panel_->CanResizeByMouse();
+  DCHECK_NE(panel::NOT_RESIZABLE, resizability);
 
   NSPoint point = [self convertPoint:pointInWindow fromView:nil];
   BOOL flipped = [self isFlipped];
@@ -182,16 +183,20 @@ enum {
     return panel::RESIZE_RIGHT;
   if (NSMouseInRect(point, topCursorRect_, flipped))
     return panel::RESIZE_TOP;
-  if (NSMouseInRect(point, bottomCursorRect_, flipped))
-    return panel::RESIZE_BOTTOM;
   if (NSMouseInRect(point, topLeftCursorRect_, flipped))
     return panel::RESIZE_TOP_LEFT;
   if (NSMouseInRect(point, topRightCursorRect_, flipped))
     return panel::RESIZE_TOP_RIGHT;
-  if (NSMouseInRect(point, bottomLeftCursorRect_, flipped))
-    return panel::RESIZE_BOTTOM_LEFT;
-  if (NSMouseInRect(point, bottomRightCursorRect_, flipped))
-    return panel::RESIZE_BOTTOM_RIGHT;
+
+  // Bottom edge is not always resizable.
+  if (panel::RESIZABLE_ALL_SIDES == resizability) {
+    if (NSMouseInRect(point, bottomCursorRect_, flipped))
+      return panel::RESIZE_BOTTOM;
+    if (NSMouseInRect(point, bottomLeftCursorRect_, flipped))
+      return panel::RESIZE_BOTTOM_LEFT;
+    if (NSMouseInRect(point, bottomRightCursorRect_, flipped))
+      return panel::RESIZE_BOTTOM_RIGHT;
+  }
 
   return panel::RESIZE_NONE;
 }
@@ -204,7 +209,7 @@ enum {
 // |point| is in coordinate system of the parent view.
 - (NSView*)hitTest:(NSPoint)point {
   // If panel is not resizable, let the mouse events fall through.
-  if (!panel_->CanResizeByMouse())
+  if (panel::NOT_RESIZABLE == panel_->CanResizeByMouse())
     return nil;
 
   NSPoint pointInWindow = [[self superview] convertPoint:point toView:nil];
@@ -214,7 +219,7 @@ enum {
 - (void)mouseDown:(NSEvent*)event {
   // If the panel is not resizable, hitTest should have failed and no mouse
   // events should have came here.
-  DCHECK(panel_->CanResizeByMouse());
+  DCHECK_NE(panel::NOT_RESIZABLE, panel_->CanResizeByMouse());
   [self prepareForDrag:event];
 }
 
@@ -365,7 +370,8 @@ enum {
 }
 
 - (void)resetCursorRects {
-  if(!panel_->CanResizeByMouse())
+  panel::Resizability resizability = panel_->CanResizeByMouse();
+  if (panel::NOT_RESIZABLE == resizability)
     return;
 
   NSRect bounds = [self bounds];
@@ -389,11 +395,6 @@ enum {
                               kWidthOfMouseResizeArea);
   [self addCursorRect:topCursorRect_ cursor:northSouthCursor_];
 
-  // Bottom horizontal edge.
-  bottomCursorRect_ = topCursorRect_;
-  bottomCursorRect_.origin.y = NSMinY(bounds);
-  [self addCursorRect:bottomCursorRect_ cursor:northSouthCursor_];
-
   // Top left corner.
   topLeftCursorRect_ = NSMakeRect(NSMinX(bounds),
                                   NSMaxY(bounds) - kWidthOfMouseResizeArea,
@@ -405,6 +406,15 @@ enum {
   topRightCursorRect_ = topLeftCursorRect_;
   topRightCursorRect_.origin.x = NSMaxX(bounds) - kWidthOfMouseResizeArea;
   [self addCursorRect:topRightCursorRect_ cursor:northEastSouthWestCursor_];
+
+  // Bottom edge is not always resizable.
+  if (panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM == resizability)
+    return;
+
+  // Bottom horizontal edge.
+  bottomCursorRect_ = topCursorRect_;
+  bottomCursorRect_.origin.y = NSMinY(bounds);
+  [self addCursorRect:bottomCursorRect_ cursor:northSouthCursor_];
 
   // Bottom right corner.
   bottomRightCursorRect_ = topRightCursorRect_;

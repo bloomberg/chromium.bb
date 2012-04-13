@@ -231,8 +231,9 @@ void OverflowPanelStrip::EndDraggingPanelWithinStrip(Panel* panel,
   NOTREACHED();
 }
 
-bool OverflowPanelStrip::CanResizePanel(const Panel* panel) const {
-  return false;
+panel::Resizability OverflowPanelStrip::GetPanelResizability(
+    const Panel* panel) const {
+  return panel::NOT_RESIZABLE;
 }
 
 void OverflowPanelStrip::OnPanelResizedByMouse(Panel* panel,

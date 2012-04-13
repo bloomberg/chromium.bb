@@ -200,10 +200,11 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     // Test minimizing/restoring an individual panel.
     EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
     int initial_height = panel1->GetBounds().height();
-    int titlebar_height = frame_view1->NonClientTopBorderHeight();
 
     panel1->SetExpansionState(Panel::MINIMIZED);
     EXPECT_EQ(Panel::MINIMIZED, panel1->expansion_state());
+
+    int titlebar_height = frame_view1->NonClientTopBorderHeight();
     EXPECT_LT(panel1->GetBounds().height(), titlebar_height);
     EXPECT_GT(panel1->GetBounds().height(), 0);
     EXPECT_EQ(expected_bottom_on_minimized, panel1->GetBounds().bottom());

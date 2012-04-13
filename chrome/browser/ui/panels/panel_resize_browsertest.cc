@@ -27,23 +27,86 @@ class PanelResizeBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, DockedPanelsAreNotResizable) {
+IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, DockedPanelResizability) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreatePanel("Panel");
 
-  EXPECT_FALSE(panel->CanResizeByMouse());
+  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM,
+            panel->CanResizeByMouse());
 
   gfx::Rect bounds = panel->GetBounds();
 
-  // Try resizing by the top left corner; verify resize won't work.
+  // Try resizing by the top left corner.
   gfx::Point mouse_location = bounds.origin();
   panel_manager->StartResizingByMouse(panel, mouse_location,
                                       panel::RESIZE_TOP_LEFT);
-  mouse_location.Offset(-20, -20);
+  mouse_location.Offset(-20, -10);
   panel_manager->ResizeByMouse(mouse_location);
+
+  bounds.set_size(gfx::Size(bounds.width() + 20, bounds.height() + 10));
+  bounds.Offset(-20, -10);
   EXPECT_EQ(bounds, panel->GetBounds());
 
   panel_manager->EndResizingByMouse(false);
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  // Try resizing by the top.
+  mouse_location = bounds.origin().Add(gfx::Point(10, 1));
+  panel_manager->StartResizingByMouse(panel, mouse_location,
+                                      panel::RESIZE_TOP);
+  mouse_location.Offset(5, -10);
+  panel_manager->ResizeByMouse(mouse_location);
+
+  bounds.set_height(bounds.height() + 10);
+  bounds.Offset(0, -10);
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  panel_manager->EndResizingByMouse(false);
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  // Try resizing by the left side.
+  mouse_location = bounds.origin().Add(gfx::Point(1, 30));
+  panel_manager->StartResizingByMouse(panel, mouse_location,
+                                      panel::RESIZE_LEFT);
+  mouse_location.Offset(-5, 25);
+  panel_manager->ResizeByMouse(mouse_location);
+
+  bounds.set_width(bounds.width() + 5);
+  bounds.Offset(-5, 0);
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  panel_manager->EndResizingByMouse(false);
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  // Try resizing by the top right side.
+  mouse_location = bounds.origin().Add(gfx::Point(bounds.width() - 1, 2));
+  panel_manager->StartResizingByMouse(panel, mouse_location,
+                                      panel::RESIZE_TOP_RIGHT);
+  mouse_location.Offset(30, 20);
+  panel_manager->ResizeByMouse(mouse_location);
+
+  bounds.set_size(gfx::Size(bounds.width() + 30, bounds.height() - 20));
+  bounds.Offset(0, 20);
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  panel_manager->EndResizingByMouse(false);
+  WaitForBoundsAnimationFinished(panel);
+  bounds.Offset(-30, 0);  // Layout of panel adjusted in docked strip.
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  // Try resizing by the right side.
+  mouse_location = bounds.origin().Add(gfx::Point(bounds.width() - 1, 30));
+  panel_manager->StartResizingByMouse(panel, mouse_location,
+                                      panel::RESIZE_RIGHT);
+  mouse_location.Offset(5, 25);
+  panel_manager->ResizeByMouse(mouse_location);
+
+  bounds.set_width(bounds.width() + 5);
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  panel_manager->EndResizingByMouse(false);
+  WaitForBoundsAnimationFinished(panel);
+  bounds.Offset(-5, 0);  // Layout of panel adjusted in docked strip.
   EXPECT_EQ(bounds, panel->GetBounds());
 
   // Try resizing by the bottom side; verify resize won't work.
@@ -51,6 +114,17 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, DockedPanelsAreNotResizable) {
   panel_manager->StartResizingByMouse(panel, mouse_location,
                                       panel::RESIZE_BOTTOM);
   mouse_location.Offset(30, -10);
+  panel_manager->ResizeByMouse(mouse_location);
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  panel_manager->EndResizingByMouse(false);
+  EXPECT_EQ(bounds, panel->GetBounds());
+
+  // Try resizing by the bottom left corner; verify resize won't work.
+  mouse_location = bounds.origin().Add(gfx::Point(1, bounds.height() - 1));
+  panel_manager->StartResizingByMouse(panel, mouse_location,
+                                      panel::RESIZE_BOTTOM_LEFT);
+  mouse_location.Offset(-10, 15);
   panel_manager->ResizeByMouse(mouse_location);
   EXPECT_EQ(bounds, panel->GetBounds());
 
@@ -76,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
 
-  EXPECT_TRUE(panel->CanResizeByMouse());
+  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel->CanResizeByMouse());
 
   gfx::Rect bounds = panel->GetBounds();
 
@@ -143,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanelToClampSize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
 
-  EXPECT_TRUE(panel->CanResizeByMouse());
+  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel->CanResizeByMouse());
 
   gfx::Rect bounds = panel->GetBounds();
 
@@ -245,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeAndCancel) {
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
   PanelResizeController* resize_controller = panel_manager->resize_controller();
 
-  EXPECT_TRUE(panel->CanResizeByMouse());
+  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel->CanResizeByMouse());
 
   gfx::Rect original_bounds = panel->GetBounds();
 

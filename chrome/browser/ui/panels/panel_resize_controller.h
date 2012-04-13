@@ -29,7 +29,9 @@ class PanelResizeController {
                      const gfx::Point& mouse_location,
                      panel::ResizingSides sides);
   void Resize(const gfx::Point& mouse_location);
-  void EndResizing(bool cancelled);
+
+  // Returns the panel that was resized.
+  Panel* EndResizing(bool cancelled);
 
   // Asynchronous confirmation of panel having been closed.
   void OnPanelClosed(Panel* panel);

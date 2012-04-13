@@ -39,7 +39,8 @@ class OverflowPanelStrip : public PanelStrip,
   virtual void ResizePanelWindow(
       Panel* panel,
       const gfx::Size& preferred_window_size) OVERRIDE;
-  virtual bool CanResizePanel(const Panel* panel) const OVERRIDE;
+  virtual panel::Resizability GetPanelResizability(
+      const Panel* panel) const OVERRIDE;
   virtual void OnPanelResizedByMouse(Panel* panel,
                                      const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnPanelAttentionStateChanged(Panel* panel) OVERRIDE;

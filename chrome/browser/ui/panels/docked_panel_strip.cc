@@ -434,14 +434,17 @@ void DockedPanelStrip::EndDraggingPanelWithinStrip(Panel* panel, bool aborted) {
     RefreshLayout();
 }
 
-bool DockedPanelStrip::CanResizePanel(const Panel* panel) const {
-  return false;
+panel::Resizability DockedPanelStrip::GetPanelResizability(
+    const Panel* panel) const {
+  return (!panel->has_temporary_layout() &&
+          panel->expansion_state() == Panel::EXPANDED) ?
+      panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM : panel::NOT_RESIZABLE;
 }
 
 void DockedPanelStrip::OnPanelResizedByMouse(Panel* panel,
                                              const gfx::Rect& new_bounds) {
   DCHECK_EQ(this, panel->panel_strip());
-  NOTREACHED();
+  panel->SetPanelBoundsInstantly(new_bounds);
 }
 
 
@@ -886,5 +889,5 @@ void DockedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
   panel->set_attention_mode(Panel::USE_PANEL_ATTENTION);
   panel->SetAppIconVisibility(true);
   panel->SetAlwaysOnTop(true);
-  panel->EnableResizeByMouse(false);
+  panel->EnableResizeByMouse(true);
 }

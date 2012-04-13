@@ -187,7 +187,7 @@ void PanelManager::EndDragging(bool cancelled) {
 void PanelManager::StartResizingByMouse(Panel* panel,
     const gfx::Point& mouse_location,
     panel::ResizingSides sides) {
-   if (panel->panel_strip() && panel->panel_strip()->CanResizePanel(panel) &&
+  if (panel->CanResizeByMouse() != panel::NOT_RESIZABLE &&
       sides != panel::RESIZE_NONE)
     resize_controller_->StartResizing(panel, mouse_location, sides);
 }
@@ -198,8 +198,11 @@ void PanelManager::ResizeByMouse(const gfx::Point& mouse_location) {
 }
 
 void PanelManager::EndResizingByMouse(bool cancelled) {
-  if (resize_controller_->IsResizing())
-    resize_controller_->EndResizing(cancelled);
+  if (resize_controller_->IsResizing()) {
+    Panel* resized_panel = resize_controller_->EndResizing(cancelled);
+    if (!cancelled && resized_panel->panel_strip())
+      resized_panel->panel_strip()->RefreshLayout();
+  }
 }
 
 void PanelManager::OnPanelExpansionStateChanged(Panel* panel) {
@@ -239,9 +242,9 @@ void PanelManager::ResizePanel(Panel* panel, const gfx::Size& new_size) {
 
 void PanelManager::OnPanelResizedByMouse(Panel* panel,
                                          const gfx::Rect& new_bounds) {
+  panel->set_restored_size(new_bounds.size());
   panel->panel_strip()->OnPanelResizedByMouse(panel, new_bounds);
   panel->SetAutoResizable(false);
-
 }
 
 void PanelManager::MovePanelToStrip(

@@ -5,11 +5,8 @@
 #include "chrome/browser/ui/panels/panel_resize_controller.h"
 
 #include "base/logging.h"
-#include "chrome/browser/ui/panels/detached_panel_strip.h"
-#include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_strip.h"
 
 namespace {
   static bool ResizingLeft(panel::ResizingSides sides) {
@@ -47,21 +44,27 @@ void PanelResizeController::StartResizing(Panel* panel,
                                           const gfx::Point& mouse_location,
                                           panel::ResizingSides sides) {
   DCHECK(!IsResizing());
-  DCHECK(panel->panel_strip() &&
-         panel->panel_strip()->CanResizePanel(panel));
-
   DCHECK_NE(panel::RESIZE_NONE, sides);
+
+  panel::Resizability resizability = panel->CanResizeByMouse();
+  DCHECK_NE(panel::NOT_RESIZABLE, resizability);
+  if (panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM == resizability &&
+      ResizingBottom(sides)) {
+    DLOG(WARNING) << "Resizing from bottom not allowed. Is this a test?";
+    return;
+  }
 
   mouse_location_at_start_ = mouse_location;
   bounds_at_start_ = panel->GetBounds();
   sides_resized_ = sides;
   resizing_panel_ = panel;
+  resizing_panel_->SetPreviewMode(true);
 }
 
 void PanelResizeController::Resize(const gfx::Point& mouse_location) {
   DCHECK(IsResizing());
-  if (resizing_panel_->panel_strip() == NULL ||
-      !resizing_panel_->panel_strip()->CanResizePanel(resizing_panel_)) {
+  panel::Resizability resizability = resizing_panel_->CanResizeByMouse();
+  if (panel::NOT_RESIZABLE == resizability) {
     EndResizing(false);
     return;
   }
@@ -72,6 +75,7 @@ void PanelResizeController::Resize(const gfx::Point& mouse_location) {
                      mouse_location.x() - mouse_location_at_start_.x(), 0));
   }
   if (ResizingBottom(sides_resized_)) {
+    DCHECK_EQ(panel::RESIZABLE_ALL_SIDES, resizability);
     bounds.set_height(std::max(bounds_at_start_.height() +
                       mouse_location.y() - mouse_location_at_start_.y(), 0));
   }
@@ -103,7 +107,7 @@ void PanelResizeController::Resize(const gfx::Point& mouse_location) {
     panel_manager_->OnPanelResizedByMouse(resizing_panel_, bounds);
 }
 
-void PanelResizeController::EndResizing(bool cancelled) {
+Panel* PanelResizeController::EndResizing(bool cancelled) {
   DCHECK(IsResizing());
 
   if (cancelled) {
@@ -112,10 +116,13 @@ void PanelResizeController::EndResizing(bool cancelled) {
   }
 
   // Do a thorough cleanup.
+  resizing_panel_->SetPreviewMode(false);
+  Panel* resized_panel = resizing_panel_;
   resizing_panel_ = NULL;
   sides_resized_ = panel::RESIZE_NONE;
   bounds_at_start_ = gfx::Rect();
   mouse_location_at_start_ = gfx::Point();
+  return resized_panel;
 }
 
 void PanelResizeController::OnPanelClosed(Panel* panel) {

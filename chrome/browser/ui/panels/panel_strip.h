@@ -63,8 +63,10 @@ class PanelStrip {
   virtual void ResizePanelWindow(Panel* panel,
                                  const gfx::Size& preferred_window_size) = 0;
 
-  // Returns true if |panel| can be resized by the user when in this strip.
-  virtual bool CanResizePanel(const Panel* panel) const = 0;
+  // Returns the sides from which |panel| can be resized by the user
+  // if |panel| is resizable in this strip.
+  virtual panel::Resizability GetPanelResizability(
+      const Panel* panel) const = 0;
 
   // Change panel's bounds and take care of all possible side effects
   // in ths strip as a result of the panel being resized by the user.

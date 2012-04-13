@@ -29,6 +29,13 @@ namespace panel {
     RESIZE_TOP_LEFT
   };
 
+  // Ways a panel can be resized.
+  enum Resizability {
+    NOT_RESIZABLE,
+    RESIZABLE_ALL_SIDES,
+    RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM
+  };
+
 }  // namespace panel
 
 #endif  // CHROME_BROWSER_UI_PANELS_PANEL_CONSTANTS_H_

@@ -163,14 +163,14 @@ void DetachedPanelStrip::EndDraggingPanelWithinStrip(Panel* panel,
                                                      bool aborted) {
 }
 
-bool DetachedPanelStrip::CanResizePanel(const Panel* panel) const {
-  return true;
+panel::Resizability DetachedPanelStrip::GetPanelResizability(
+    const Panel* panel) const {
+  return panel::RESIZABLE_ALL_SIDES;
 }
 
 void DetachedPanelStrip::OnPanelResizedByMouse(Panel* panel,
                                                const gfx::Rect& new_bounds) {
   DCHECK_EQ(this, panel->panel_strip());
-  panel->set_restored_size(new_bounds.size());
   panel->SetPanelBoundsInstantly(new_bounds);
 }
 
