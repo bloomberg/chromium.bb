@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 
 #include <errno.h>
+#include <sys/stat.h>
 
 #include <utility>
 
@@ -199,6 +200,22 @@ base::PlatformFileError CreateCacheDirectories(
     } else {
       DVLOG(1) << "Created dir " << paths_to_create[i].value();
     }
+  }
+
+  return error;
+}
+
+// Changes the permissions of |file_path| to |permissions|.
+// Returns the platform error code of the operation.
+base::PlatformFileError ChangeFilePermissions(const FilePath& file_path,
+                                              mode_t permissions) {
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+
+  if (HANDLE_EINTR(chmod(file_path.value().c_str(), permissions)) != 0) {
+    error = SystemToPlatformError(errno);
+    PLOG(ERROR) << "Error changing permissions of " << file_path.value();
+  } else {
+    DVLOG(1) << "Changed permissions of " << file_path.value();
   }
 
   return error;
@@ -3249,7 +3266,14 @@ void GDataFileSystem::InitializeCacheIfNecessary() {
 
 void GDataFileSystem::InitializeCacheOnIOThreadPool() {
   base::PlatformFileError error = CreateCacheDirectories(cache_paths_);
+  if (error != base::PLATFORM_FILE_OK)
+    return;
 
+  // Change permissions of cache persistent directory to u+rwx,og+x in order to
+  // allow archive files in that directory to be mounted by cros-disks.
+  error = ChangeFilePermissions(
+      cache_paths_[GDataRootDirectory::CACHE_TYPE_PERSISTENT],
+      S_IRWXU | S_IXGRP | S_IXOTH);
   if (error != base::PLATFORM_FILE_OK)
     return;
 
