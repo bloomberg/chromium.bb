@@ -21,6 +21,8 @@ cros_build_lib.STRICT_SUDO = True
 
 
 DEFAULT_URL = 'https://commondatastorage.googleapis.com/chromiumos-sdk/'
+SDK_SUFFIXES = ['.tbz2', '.tar.xz']
+
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
 SDK_DIR = os.path.join(SRC_ROOT, 'sdks')
 OVERLAY_DIR = os.path.join(SRC_ROOT, 'src/third_party/chromiumos-overlay')
@@ -72,17 +74,24 @@ def GetLatestVersion():
   return buf[1].strip('"')
 
 
-def GetArchStageTarball(tarballArch, version):
+def GetArchStageTarballs(tarballArch, version):
   """Returns the URL for a given arch/version"""
   D = { 'x86_64': 'cros-sdk-' }
   try:
-    return DEFAULT_URL + D[tarballArch] + version + '.tbz2'
+    return [DEFAULT_URL + D[tarballArch] + version + x for x in SDK_SUFFIXES]
   except KeyError:
     raise SystemExit('Unsupported arch: %s' % (tarballArch,))
 
 
-def FetchRemoteTarball(url):
-  """Fetches a tarball given by url, and place it in sdk/."""
+def FetchRemoteTarballs(urls):
+  """Fetches a tarball given by url, and place it in sdk/.
+
+  Args:
+    urls: List of URLs to try to download. Download will stop on first success.
+
+  Returns:
+    Full path to the downloaded file
+  """
 
   def RunCurl(args, **kwargs):
     """Runs curl and wraps around all necessary hacks."""
@@ -100,6 +109,27 @@ def FetchRemoteTarball(url):
 
     return result
 
+  def RemoteTarballExists(url):
+    """Tests if a remote tarball exists."""
+    # We also use this for "local" tarballs using file:// urls. Those will
+    # fail the -I check, so just check the file locally instead.
+    if url.startswith('file://'):
+      return os.path.exists(url.replace('file://', ''))
+
+    result = RunCurl(['-I', url],
+                     redirect_stdout=True, redirect_stderr=True,
+                     print_cmd=False)
+    header = result.output.splitlines()[0]
+    return header.find('200 OK') != -1
+
+  url = None
+  for url in urls:
+    print 'Attempting download: %s' % url
+    if RemoteTarballExists(url):
+      break
+  else:
+    raise Exception('No valid URLs found!')
+
   tarball_name = os.path.basename(urlparse.urlparse(url).path)
   tarball_dest = os.path.join(SDK_DIR, tarball_name)
 
@@ -115,7 +145,6 @@ def FetchRemoteTarball(url):
 
   curl_opts = ['-f', '--retry', '5', '-L', '-y', '30',
                '--output', tarball_dest]
-  print 'Downloading sdk: "%s"' % url
   if not url.startswith('file://') and os.path.exists(tarball_dest):
     # Only resume for remote URLs. If the file is local, there's no
     # real speedup, and using the same filename for different files
@@ -152,7 +181,7 @@ def BootstrapChroot(chroot_path, stage_url, replace):
 
   stage = None
   if stage_url:
-    stage = FetchRemoteTarball(stage_url)
+    stage = FetchRemoteTarballs([stage_url])
 
   if stage:
     cmd.extend(['--stage3_path', stage])
@@ -173,15 +202,12 @@ def CreateChroot(sdk_url, sdk_version, chroot_path, replace):
 
   # Based on selections, fetch the tarball
   if sdk_url:
-    url = sdk_url
+    urls = [sdk_url]
   else:
     arch = GetHostArch()
-    if sdk_version:
-      url = GetArchStageTarball(arch, sdk_version)
-    else:
-      url = GetArchStageTarball(arch)
+    urls = GetArchStageTarballs(arch, sdk_version)
 
-  sdk = FetchRemoteTarball(url)
+  sdk = FetchRemoteTarballs(urls)
 
   # TODO(zbehan): Unpack and install
   # For now, we simply call make_chroot on the prebuilt chromeos-sdk.
@@ -211,11 +237,11 @@ def DeleteChroot(chroot_path):
 
 
 def _CreateLockFile(path):
-   """Create a lockfile via sudo that is writable by current user."""
-   cros_build_lib.SudoRunCommand(['touch', path], print_cmd=False)
-   cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), path],
-                                 print_cmd=False)
-   cros_build_lib.SudoRunCommand(['chmod', '644', path], print_cmd=False)
+  """Create a lockfile via sudo that is writable by current user."""
+  cros_build_lib.SudoRunCommand(['touch', path], print_cmd=False)
+  cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), path],
+                                print_cmd=False)
+  cros_build_lib.SudoRunCommand(['chmod', '644', path], print_cmd=False)
 
 
 def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
@@ -242,7 +268,7 @@ def EnterChroot(chroot_path, chrome_root, chrome_root_mount, additional_args):
 
 def main(argv):
   # TODO(ferringb): make argv required once depot_tools is fixed.
-  usage="""usage: %prog [options] [VAR1=val1 .. VARn=valn -- <args>]
+  usage = """usage: %prog [options] [VAR1=val1 .. VARn=valn -- <args>]
 
 This script manages a local CrOS SDK chroot. Depending on the flags,
 it can download, build or enter a chroot.
