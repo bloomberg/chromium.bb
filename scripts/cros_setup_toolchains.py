@@ -209,11 +209,12 @@ def GetInstalledPackageVersions(target, package):
   return versions
 
 
-def GetStablePackageVersion(target, package):
+def GetStablePackageVersion(target, package, installed):
   """Extracts the current stable version for a given package.
 
   args:
     target, package - the target/package to operate on eg. i686-pc-linux-gnu,gcc
+    installed - Whether we want installed packages or ebuilds
 
   returns a string containing the latest version.
   """
@@ -221,28 +222,33 @@ def GetStablePackageVersion(target, package):
     """Splits the output of mass_best_visible into package:version tuple."""
     # mass_best_visible returns lines of the format "package:cpv"
     split_string = entry.split(':', 1)
-    split_string[1] = portage.versions.cpv_getversion(split_string[1])
+    if split_string[1]:
+      split_string[1] = portage.versions.cpv_getversion(split_string[1])
     return split_string
 
   CACHE_ATTR = '_target_stable_map'
 
+  pkgtype = "installed" if installed else "ebuild"
+
   val = getattr(VAR_CACHE, CACHE_ATTR, {})
   if not target in val:
+    val[target] = {}
+  if not pkgtype in val[target]:
     keyword = GetPortageKeyword(target)
     extra_env = {'ACCEPT_KEYWORDS' : '-* ' + keyword}
     # Evaluate all packages for a target in one swoop, because it's much faster.
     pkgs = [GetPortagePackage(target, p) for p in GetTargetPackages(target)]
-    cmd = ['portageq', 'mass_best_visible', '/'] + pkgs
+    cmd = ['portageq', 'mass_best_visible', '/', pkgtype] + pkgs
     cpvs = cros_build_lib.RunCommand(cmd,
                                      print_cmd=False, redirect_stdout=True,
                                      extra_env=extra_env).output.splitlines()
-    val[target] = dict(map(mass_portageq_splitline, cpvs))
+    val[target][pkgtype] = dict(map(mass_portageq_splitline, cpvs))
     setattr(VAR_CACHE, CACHE_ATTR, val)
 
-  return val[target][GetPortagePackage(target, package)]
+  return val[target][pkgtype][GetPortagePackage(target, package)]
 
 
-def VersionListToNumeric(target, package, versions):
+def VersionListToNumeric(target, package, versions, installed):
   """Resolves keywords in a given version list for a particular package.
 
   Resolving means replacing PACKAGE_STABLE with the actual number.
@@ -256,7 +262,7 @@ def VersionListToNumeric(target, package, versions):
   resolved = []
   for version in versions:
     if version == PACKAGE_STABLE:
-      resolved.append(GetStablePackageVersion(target, package))
+      resolved.append(GetStablePackageVersion(target, package, installed))
     elif version != PACKAGE_NONE:
       resolved.append(version)
   return resolved
@@ -438,7 +444,7 @@ def UpdateTargets(targets, usepkg):
       pkg = GetPortagePackage(target, package)
       current = GetInstalledPackageVersions(target, package)
       desired = GetDesiredPackageVersions(target, package)
-      desired_num = VersionListToNumeric(target, package, desired)
+      desired_num = VersionListToNumeric(target, package, desired, False)
       mergemap[pkg] = set(desired_num).difference(current)
 
       # Pick the highest version for mask.
@@ -478,8 +484,10 @@ def CleanTargets(targets):
       pkg = GetPortagePackage(target, package)
       current = GetInstalledPackageVersions(target, package)
       desired = GetDesiredPackageVersions(target, package)
-      desired_num = VersionListToNumeric(target, package, desired)
-      assert set(desired).issubset(set(desired))
+      desired_num = VersionListToNumeric(target, package, desired, True)
+      if not set(desired_num).issubset(current):
+        print 'Some packages have been held back, skipping clean!'
+        return
       unmergemap[pkg] = set(current).difference(desired_num)
 
   # Cleaning doesn't care about consistency and rebuilding package.* files.
@@ -507,7 +515,7 @@ def SelectActiveToolchains(targets, suffixes):
     for target in targets:
       # Pick the first version in the numbered list as the selected one.
       desired = GetDesiredPackageVersions(target, package)
-      desired_num = VersionListToNumeric(target, package, desired)
+      desired_num = VersionListToNumeric(target, package, desired, True)
       desired = desired_num[0]
       # *-config does not play revisions, strip them, keep just PV.
       desired = portage.versions.pkgsplit('%s-%s' % (package, desired))[1]
@@ -526,7 +534,7 @@ def SelectActiveToolchains(targets, suffixes):
 
       cmd = [ package + '-config', '-c', target ]
       current = cros_build_lib.RunCommand(cmd, print_cmd=False,
-                    redirect_stdout=True).output.splitlines()[0]
+          redirect_stdout=True).output.splitlines()[0]
       # Do not gcc-config when the current is live or nothing needs to be done.
       if current != desired and current != '9999':
         cmd = [ package + '-config', desired ]
