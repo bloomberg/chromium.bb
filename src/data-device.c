@@ -243,6 +243,8 @@ data_device_end_drag_grab(struct wl_input_device *device)
 		wl_list_remove(&device->drag_icon_listener.link);
 	}
 
+	drag_grab_focus(&device->drag_grab, NULL, 0, 0);
+
 	wl_input_device_end_pointer_grab(device);
 
 	device->drag_data_source = NULL;
