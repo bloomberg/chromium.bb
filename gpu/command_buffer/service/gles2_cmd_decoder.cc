@@ -2173,9 +2173,6 @@ bool GLES2DecoderImpl::Initialize(
         vendor_str && strstr(vendor_str, "NVIDIA");
     needs_glsl_built_in_function_emulation_ =
         vendor_str && (strstr(vendor_str, "ATI") || strstr(vendor_str, "AMD"));
-#elif defined(OS_WIN)
-    if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
-      needs_glsl_built_in_function_emulation_ = true;
 #endif
   }
 
