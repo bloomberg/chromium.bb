@@ -465,8 +465,6 @@ void IOThread::CleanUp() {
   net::ShutdownNSSHttpIO();
 #endif  // defined(USE_NSS)
 
-  globals_->system_request_context->AssertNoURLRequests();
-
   system_url_request_context_getter_ = NULL;
 
   // Release objects that the net::URLRequestContext could have been pointing

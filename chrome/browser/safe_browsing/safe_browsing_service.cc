@@ -643,8 +643,6 @@ void SafeBrowsingService::InitURLRequestContextOnIOThread(
 void SafeBrowsingService::DestroyURLRequestContextOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  url_request_context_->AssertNoURLRequests();
-
   // Need to do the CheckForLeaks on IOThread instead of in ShutDown where
   // url_request_context_getter_ is cleared,  since the URLRequestContextGetter
   // will PostTask to IOTread to delete itself.
