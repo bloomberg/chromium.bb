@@ -186,7 +186,7 @@ static void
 marshal(struct marshal_data *data, const char *format, int size, ...)
 {
 	struct wl_closure *closure;
-	static const int opcode = 4444;
+	static const uint32_t opcode = 4444;
 	static struct wl_object sender = { NULL, NULL, 1234 };
 	struct wl_message message = { "test", format, NULL };
 	va_list ap;

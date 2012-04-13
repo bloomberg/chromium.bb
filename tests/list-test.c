@@ -59,7 +59,7 @@ TEST(list_iterator)
 	struct wl_list list;
 	struct element e1, e2, e3, e4, *e;
 	int reference[] = { 708090, 102030, 5588, 12 };
-	int i;
+	unsigned int i;
 
 	e1.i = 708090;
 	e2.i = 102030;

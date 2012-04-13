@@ -45,16 +45,16 @@ TEST(array_init)
 TEST(array_add)
 {
 	struct mydata {
-		int a;
-		unsigned b;
+		unsigned int a;
+		unsigned int b;
 		double c;
 		double d;
 	};
 
-	const int iterations = 1321; /* this is arbitrary */
+	const unsigned int iterations = 1321; /* this is arbitrary */
 	const int datasize = sizeof(struct mydata);
 	struct wl_array array;
-	int i;
+	size_t i;
 
 	wl_array_init(&array);
 
@@ -64,7 +64,7 @@ TEST(array_add)
 		assert((i + 1) * datasize == array.size);
 
 		ptr->a = i * 3;
-		ptr->b = -i;
+		ptr->b = 20000 - i;
 		ptr->c = (double)(i);
 		ptr->d = (double)(i / 2.);
 	}
@@ -75,7 +75,7 @@ TEST(array_add)
 		struct mydata* check = (struct mydata*)(array.data + index);
 
 		assert(check->a == i * 3);
-		assert(check->b == -i);
+		assert(check->b == 20000 - i);
 		assert(check->c == (double)(i));
 		assert(check->d == (double)(i/2.));
 	}
