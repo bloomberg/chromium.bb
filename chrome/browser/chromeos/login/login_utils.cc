@@ -202,12 +202,12 @@ class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
                      const std::string& username)
       : delegate_(delegate),
         oauth_fetcher_(this,
-            user_profile->GetOffTheRecordProfile()->GetRequestContext(),
-            user_profile->GetOffTheRecordProfile(),
-            kServiceScopeChromeOS),
+                       g_browser_process->system_request_context(),
+                       user_profile->GetOffTheRecordProfile(),
+                       kServiceScopeChromeOS),
         gaia_fetcher_(this,
-            std::string(GaiaConstants::kChromeOSSource),
-            user_profile->GetRequestContext()),
+                      std::string(GaiaConstants::kChromeOSSource),
+                      user_profile->GetRequestContext()),
         oauth1_token_(oauth1_token),
         oauth1_secret_(oauth1_secret),
         username_(username),
@@ -292,10 +292,9 @@ class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
   // to rerun the verification process if detects transient network or service
   // errors.
   bool RetryOnError(const GoogleServiceAuthError& error) {
-    // If we can't connect to GAIA due to network or service related reasons,
-    // we should attempt OAuth token verification again.
     if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
-        error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
+        error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
+        error.state() == GoogleServiceAuthError::REQUEST_CANCELED) {
       if (verification_count_ < kMaxOAuthTokenVerificationAttemptCount) {
         BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
             base::Bind(&OAuthLoginVerifier::ContinueVerification, AsWeakPtr()),
