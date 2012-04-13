@@ -379,10 +379,6 @@ struct EntryKernel {
 
   syncable::ModelType GetServerModelType() const;
 
-  // Does a case in-sensitive search for a given string, which must be
-  // lower case.
-  bool ContainsString(const std::string& lowercase_query) const;
-
   // Dumps all kernel info into a DictionaryValue and returns it.
   // Transfers ownership of the DictionaryValue to the caller.
   base::DictionaryValue* ToValue() const;

@@ -6,8 +6,12 @@
   width: 20em;
 }
 
+#sync-search-query[error] {
+  background-color: rgb(255,170,170);
+}
+
 #sync-search-status {
-  color: #333;
+  color: rgb(51,51,51);
   font-style: italic;
 }
 

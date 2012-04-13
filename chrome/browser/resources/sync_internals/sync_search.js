@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,25 +10,27 @@ cr.define('chrome.sync', function() {
   /**
    * Runs a search with the given query.
    *
-   * @param {string} query The query to do the search with.
-   * @param {Array.<{id: string, title: string, isFolder: boolean}>}
-   *     callback The callback called with the search results; not
-   *     called if doSearch() is called again while the search is
-   *     running.
+   * @param {string} query The regex to do the search with.
+   * @param {function} callback The callback called with the search results;
+   *     not called if doSearch() is called again while the search is running.
    */
   var doSearch = function(query, callback) {
     var searchId = ++currSearchId;
-    chrome.sync.findNodesContainingString(query, function(ids) {
-      if (currSearchId != searchId) {
-        return;
-      }
-      chrome.sync.getNodeSummariesById(ids, function(nodeSummaries) {
+    try {
+      var regex = new RegExp(query);
+      chrome.sync.getAllNodes(query, function(allNodes) {
         if (currSearchId != searchId) {
           return;
         }
-        callback(nodeSummaries);
+        callback(allNodes.filter(function(elem) {
+          return regex.test(JSON.stringify(elem, null, 2));
+        }), null);
       });
-    });
+    } catch (err) {
+      // Sometimes the provided regex is invalid.  This and other errors will
+      // be caught and handled here.
+      callback([], err);
+    }
   };
 
   /**
@@ -56,20 +58,28 @@ cr.define('chrome.sync', function() {
         return;
       }
       statusControl.textContent = 'Searching for ' + query + '...';
+      queryControl.removeAttribute('error');
       var timer = chrome.sync.makeTimer();
-      doSearch(query, function(nodeSummaries) {
-        statusControl.textContent =
-          'Found ' + nodeSummaries.length + ' nodes in '
-          + timer.elapsedSeconds + 's';
-        // TODO(akalin): Write a nicer list display.
-        for (var i = 0; i < nodeSummaries.length; ++i) {
-          nodeSummaries[i].toString = function() {
-            return this.title;
-          }.bind(nodeSummaries[i]);
+      doSearch(query, function(nodes, error) {
+        if (error) {
+          statusControl.textContent = 'Error: ' + error;
+          queryControl.setAttribute('error');
+        } else {
+          statusControl.textContent =
+            'Found ' + nodes.length + ' nodes in ' +
+            timer.elapsedSeconds + 's';
+          queryControl.removeAttribute('error');
+
+          // TODO(akalin): Write a nicer list display.
+          for (var i = 0; i < nodes.length; ++i) {
+            nodes[i].toString = function() {
+              return this.NON_UNIQUE_NAME;
+            };
+          }
+          resultsDataModel.push.apply(resultsDataModel, nodes);
+          // Workaround for http://crbug.com/83452 .
+          resultsControl.redraw();
         }
-        resultsDataModel.push.apply(resultsDataModel, nodeSummaries);
-        // Workaround for http://crbug.com/83452 .
-        resultsControl.redraw();
       });
     };
     queryControl.value = '';
@@ -81,13 +91,7 @@ cr.define('chrome.sync', function() {
       detailsControl.textContent = '';
       var selected = resultsControl.selectedItem;
       if (selected) {
-        chrome.sync.getNodeDetailsById([selected.id], function(nodeDetails) {
-          var selectedNodeDetails = nodeDetails[0] || null;
-          if (selectedNodeDetails) {
-            detailsControl.textContent =
-              JSON.stringify(selectedNodeDetails, null, 2);
-          }
-        });
+        detailsControl.textContent = JSON.stringify(selected, null, 2);
       }
     });
   }

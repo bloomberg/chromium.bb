@@ -1205,7 +1205,46 @@ TEST_F(SyncManagerTest, GetChildNodeIdsFailure) {
   }
 }
 
-// TODO(akalin): Add unit tests for findNodesContainingString message.
+TEST_F(SyncManagerTest, GetAllNodesTest) {
+  StrictMock<MockJsReplyHandler> reply_handler;
+  JsArgList return_args;
+
+  EXPECT_CALL(reply_handler,
+              HandleJsReply("getAllNodes", _))
+      .Times(1).WillRepeatedly(SaveArg<1>(&return_args));
+
+  {
+    ListValue args;
+    SendJsMessage("getAllNodes",
+                  JsArgList(&args), reply_handler.AsWeakHandle());
+  }
+
+  // There's not much value in verifying every attribute on every node here.
+  // Most of the value of this test has already been achieved: we've verified we
+  // can call the above function without crashing or leaking memory.
+  //
+  // Let's just check the list size and a few of its elements.  Anything more
+  // would make this test brittle without greatly increasing our chances of
+  // catching real bugs.
+
+  ListValue* node_list;
+  DictionaryValue* first_result;
+
+  // The resulting argument list should have one argument, a list of nodes.
+  ASSERT_EQ(1U, return_args.Get().GetSize());
+  ASSERT_TRUE(return_args.Get().GetList(0, &node_list));
+
+  // The database creation logic depends on the routing info.
+  // Refer to setup methods for more information.
+  ModelSafeRoutingInfo routes;
+  GetModelSafeRoutingInfo(&routes);
+  size_t directory_size = routes.size() + 1;
+
+  ASSERT_EQ(directory_size, node_list->GetSize());
+  ASSERT_TRUE(node_list->GetDictionary(0, &first_result));
+  EXPECT_TRUE(first_result->HasKey("ID"));
+  EXPECT_TRUE(first_result->HasKey("NON_UNIQUE_NAME"));
+}
 
 TEST_F(SyncManagerTest, OnNotificationStateChange) {
   InSequence dummy;

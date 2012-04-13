@@ -302,36 +302,6 @@ syncable::ModelType EntryKernel::GetServerModelType() const {
   return UNSPECIFIED;
 }
 
-bool EntryKernel::ContainsString(const std::string& lowercase_query) const {
-  // TODO(lipalani) - figure out what to do if the node is encrypted.
-  const sync_pb::EntitySpecifics& specifics = ref(SPECIFICS);
-  std::string temp;
-  // The protobuf serialized string contains the original strings. So
-  // we will just serialize it and search it.
-  specifics.SerializeToString(&temp);
-
-  // Now convert to lower case.
-  StringToLowerASCII(&temp);
-
-  if (temp.find(lowercase_query) != std::string::npos)
-    return true;
-
-  // Now go through all the string fields to see if the value is there.
-  for (int i = STRING_FIELDS_BEGIN; i < STRING_FIELDS_END; ++i) {
-    if (StringToLowerASCII(ref(static_cast<StringField>(i))).find(
-            lowercase_query) != std::string::npos)
-      return true;
-  }
-
-  for (int i = ID_FIELDS_BEGIN; i < ID_FIELDS_END; ++i) {
-    const Id& id = ref(static_cast<IdField>(i));
-    if (id.ContainsStringCaseInsensitive(lowercase_query)) {
-      return true;
-    }
-  }
-  return false;
-}
-
 namespace {
 
 // Utility function to loop through a set of enum values and add the

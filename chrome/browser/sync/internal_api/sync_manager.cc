@@ -176,11 +176,11 @@ class SyncManager::SyncInternal
         "getNodeDetailsById",
         &SyncManager::SyncInternal::GetNodeDetailsById);
     BindJsMessageHandler(
+        "getAllNodes",
+        &SyncManager::SyncInternal::GetAllNodes);
+    BindJsMessageHandler(
         "getChildNodeIds",
         &SyncManager::SyncInternal::GetChildNodeIds);
-    BindJsMessageHandler(
-        "findNodesContainingString",
-        &SyncManager::SyncInternal::FindNodesContainingString);
     BindJsMessageHandler(
         "getClientServerTraffic",
         &SyncManager::SyncInternal::GetClientServerTraffic);
@@ -526,10 +526,10 @@ class SyncManager::SyncInternal
   JsArgList GetNotificationState(const JsArgList& args);
   JsArgList GetNotificationInfo(const JsArgList& args);
   JsArgList GetRootNodeDetails(const JsArgList& args);
+  JsArgList GetAllNodes(const JsArgList& args);
   JsArgList GetNodeSummariesById(const JsArgList& args);
   JsArgList GetNodeDetailsById(const JsArgList& args);
   JsArgList GetChildNodeIds(const JsArgList& args);
-  JsArgList FindNodesContainingString(const JsArgList& args);
   JsArgList GetClientServerTraffic(const JsArgList& args);
 
   FilePath database_path_;
@@ -2291,6 +2291,25 @@ JsArgList SyncManager::SyncInternal::GetNodeDetailsById(
   return GetNodeInfoById(args, GetUserShare(), &BaseNode::GetDetailsAsValue);
 }
 
+JsArgList SyncManager::SyncInternal::GetAllNodes(
+    const JsArgList& args) {
+  ListValue return_args;
+  ListValue* result = new ListValue();
+  return_args.Append(result);
+
+  ReadTransaction trans(FROM_HERE, GetUserShare());
+  std::vector<const syncable::EntryKernel*> entry_kernels;
+  trans.GetDirectory()->GetAllEntryKernels(trans.GetWrappedTrans(),
+                                           &entry_kernels);
+
+  for (std::vector<const syncable::EntryKernel*>::const_iterator it =
+           entry_kernels.begin(); it != entry_kernels.end(); ++it) {
+    result->Append((*it)->ToValue());
+  }
+
+  return JsArgList(&return_args);
+}
+
 JsArgList SyncManager::SyncInternal::GetChildNodeIds(
     const JsArgList& args) {
   ListValue return_args;
@@ -2308,39 +2327,6 @@ JsArgList SyncManager::SyncInternal::GetChildNodeIds(
           base::Int64ToString(*it)));
     }
   }
-  return JsArgList(&return_args);
-}
-
-JsArgList SyncManager::SyncInternal::FindNodesContainingString(
-    const JsArgList& args) {
-  std::string query;
-  ListValue return_args;
-  if (!args.Get().GetString(0, &query)) {
-    return_args.Append(new ListValue());
-    return JsArgList(&return_args);
-  }
-
-  // Convert the query string to lower case to perform case insensitive
-  // searches.
-  std::string lowercase_query = query;
-  StringToLowerASCII(&lowercase_query);
-
-  ListValue* result = new ListValue();
-  return_args.Append(result);
-
-  ReadTransaction trans(FROM_HERE, GetUserShare());
-  std::vector<const syncable::EntryKernel*> entry_kernels;
-  trans.GetDirectory()->GetAllEntryKernels(trans.GetWrappedTrans(),
-                                           &entry_kernels);
-
-  for (std::vector<const syncable::EntryKernel*>::const_iterator it =
-           entry_kernels.begin(); it != entry_kernels.end(); ++it) {
-    if ((*it)->ContainsString(lowercase_query)) {
-      result->Append(new StringValue(base::Int64ToString(
-          (*it)->ref(syncable::META_HANDLE))));
-    }
-  }
-
   return JsArgList(&return_args);
 }
 

@@ -6,7 +6,6 @@
 
 #include <iosfwd>
 
-#include "base/string_util.h"
 #include "base/values.h"
 
 using std::ostream;
@@ -55,12 +54,6 @@ Id Id::GetLexicographicSuccessor() const {
   Id id = *this;
   id.s_.push_back(0);
   return id;
-}
-
-bool Id::ContainsStringCaseInsensitive(
-    const std::string& lowercase_query) const {
-  DCHECK_EQ(StringToLowerASCII(lowercase_query), lowercase_query);
-  return StringToLowerASCII(s_).find(lowercase_query) != std::string::npos;
 }
 
 // static
