@@ -144,6 +144,13 @@ class CookiesTest(pyauto.PyUITest):
 
   def testClearCookiesOnEndingSession(self):
     """Verify that cookies are cleared when the browsing session is closed."""
+
+    # This test fails on ChromeOS because kRestoreOnStartup is ignored and
+    # the startup preference is always "continue where I left off."
+    if self.IsChromeOS():
+      logging.info('Skipping testClearCookiesOnEndingSession on ChromeOS')
+      return
+
     file_url = self.GetFileURLForDataPath('setcookie.html')
     self.assertFalse(self.GetCookie(pyauto.GURL(file_url)),
                      msg='There should be no cookies on %s' % file_url)
@@ -231,9 +238,12 @@ class CookiesTest(pyauto.PyUITest):
     self.assertTrue(self.GetCookie(pyauto.GURL(http_url)),
                     msg='Cookies are not set for the exception.')
     # Restart the browser to check that the cookie doesn't persist.
-    self.RestartBrowser(clear_profile=False)
-    self.assertFalse(self.GetCookie(pyauto.GURL(http_url)),
-                     msg='Cookie persisted after restarting session.')
+    # (This fails on ChromeOS because kRestoreOnStartup is ignored and
+    # the startup preference is always "continue where I left off.")
+    if not self.IsChromeOS():
+      self.RestartBrowser(clear_profile=False)
+      self.assertFalse(self.GetCookie(pyauto.GURL(http_url)),
+                       msg='Cookie persisted after restarting session.')
 
 if __name__ == '__main__':
   pyauto_functional.Main()
