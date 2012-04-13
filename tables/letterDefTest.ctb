@@ -4,21 +4,21 @@
 ## This table is to illustrate the internal treatment of various letter definitions.
 
 ## this works.
-#uplow mm 134
-#uplow ss 234
+#uplow \x2804\x280d 134
+#uplow \x280e\x280e 234
 
 ## the following does not work.
-letter m 134
-letter s 234
+letter \x280d 134
+letter \x280e 234
 
 ## neither does this:
-#lowercase m 134
-#lowercase s 234
+#lowercase \x280d 134
+#lowercase \x280e 234
 
 ## doesnt work either:
-#uppercase m 134
-#uppercase s 234
+#uppercase \x280d 134
+#uppercase \x280e 234
 
 ## small test to show that always opcode works.
 ## tests/harness/letterDefinition_harness.py expects 'ms' to be 'sm' in braille.
-always ms 234-134
+always \x280d\x280e 234-134

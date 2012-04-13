@@ -9,7 +9,7 @@ table = 'letterDefTest.ctb'
 
 tests = [
     { # When uplow+always are used the following does not fail.
-        'txt':  'ms',
+        'txt':  u'⠍⠎',
         'brl':  u'⠎⠍',
     }, 
 ]
