@@ -4132,15 +4132,22 @@ void GDataFileSystem::PostBlockingPoolSequencedTaskAndReply(
     const tracked_objects::Location& from_here,
     const base::Closure& request_task,
     const base::Closure& reply_task) {
-  // Initiate the sequenced task. We should Reset() here rather than on the
-  // blocking thread pool, as Reset() will cause a deadlock if it's called
-  // while Wait() is being called in the destructor.
-  on_io_completed_->Reset();
-
   {
     // Note that we cannot use |lock_| as lock_ can be held before this
     // function is called (i.e. InitializeCacheIfNecessary does).
     base::AutoLock lock(num_pending_tasks_lock_);
+
+    // Initiate the sequenced task. We should Reset() here rather than on the
+    // blocking thread pool, as Reset() will cause a deadlock if it's called
+    // while Wait() is being called in the destructor.
+    //
+    // Signaling on_io_completed_ is closely coupled with number of pending
+    // tasks. We signal it when the number decreases to 0. Because of that, we
+    // should do the reset under |num_pending_tasks_lock_|. Otherwise, we could
+    // get in trouble if |num_pending_tasks_| gets decreased after the event is
+    // reset, but before we increase the number here.
+    on_io_completed_->Reset();
+
     ++num_pending_tasks_;
   }
   const bool posted = BrowserThread::PostTaskAndReply(
