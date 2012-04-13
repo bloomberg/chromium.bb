@@ -176,6 +176,7 @@ extern const wchar_t kChromeLauncherExe[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kChromeNewExe[];
 extern const wchar_t kCmdQuickEnableCf[];
+extern const wchar_t kDelegateExecuteExe[];
 extern const wchar_t kGoogleChromeInstallSubDir1[];
 extern const wchar_t kGoogleChromeInstallSubDir2[];
 extern const wchar_t kInstallBinaryDir[];
@@ -214,6 +215,15 @@ extern const wchar_t kChromeChannelCanary[];
 extern const wchar_t kChromeChannelDev[];
 extern const wchar_t kChromeChannelBeta[];
 extern const wchar_t kChromeChannelStable[];
+
+// Delegate Execute registration values.
+extern const wchar_t kCommandExecuteImplUuid[];
+extern const wchar_t kDelegateExecuteLib[];
+extern const wchar_t kDelegateExecuteLibUuid[];
+extern const wchar_t kDelegateExecuteLibVersion[];
+extern const wchar_t kICommandExecuteImpl[];
+extern const wchar_t kICommandExecuteImplUuid[];
+extern const wchar_t kPSOAInterfaceUuid[];
 
 }  // namespace installer
 

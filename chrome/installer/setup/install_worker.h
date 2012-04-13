@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -121,6 +121,16 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
                              const Version& new_version,
                              const Product& product,
                              WorkItemList* list);
+
+// Called for either installation or uninstallation. This method updates the
+// registry according to Chrome specific options for the current installation.
+// This includes handling of the delegate execute server.
+void AddChromeWorkItems(const InstallationState& original_state,
+                        const InstallerState& installer_state,
+                        const FilePath& setup_path,
+                        const Version& new_version,
+                        const Product& product,
+                        WorkItemList* list);
 
 // This method adds work items to create (or update) Chrome uninstall entry in
 // either the Control Panel->Add/Remove Programs list or in the Omaha client

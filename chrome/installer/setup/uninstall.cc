@@ -689,6 +689,19 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
   }
 }
 
+bool ProcessChromeWorkItems(const InstallationState& original_state,
+                            const InstallerState& installer_state,
+                            const FilePath& setup_path,
+                            const Product& product) {
+  if (product.is_chrome())
+    return false;
+
+  scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
+  AddChromeWorkItems(original_state, installer_state, setup_path, Version(),
+                     product, item_list.get());
+  return item_list->Do();
+}
+
 bool ProcessChromeFrameWorkItems(const InstallationState& original_state,
                                  const InstallerState& installer_state,
                                  const FilePath& setup_path,
@@ -806,7 +819,10 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
                                  suffix, installer_state.target_path(), &ret);
   }
 
-  if (!is_chrome) {
+  if (is_chrome) {
+    ProcessChromeWorkItems(original_state, installer_state, setup_path,
+                           product);
+  } else {
     ProcessChromeFrameWorkItems(original_state, installer_state, setup_path,
                                 product);
   }

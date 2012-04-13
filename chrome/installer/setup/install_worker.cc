@@ -7,6 +7,7 @@
 
 #include "chrome/installer/setup/install_worker.h"
 
+#include <oaidl.h>
 #include <shlobj.h>
 #include <time.h>
 #include <vector>
@@ -291,6 +292,9 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
     if (p.is_chrome_frame()) {
       AddChromeFrameWorkItems(original_state, installer_state, setup_path,
                               new_version, p, list);
+    } else if (p.is_chrome()) {
+      AddChromeWorkItems(original_state, installer_state, setup_path,
+                         new_version, p, list);
     }
   }
 }
@@ -1023,6 +1027,113 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
     } else {
       NOTREACHED() << "What happened to Chrome?";
     }
+  }
+}
+
+void AddChromeWorkItems(const InstallationState& original_state,
+                        const InstallerState& installer_state,
+                        const FilePath& setup_path,
+                        const Version& new_version,
+                        const Product& product,
+                        WorkItemList* list) {
+  // For the moment, this function adds work items to perform COM registration
+  // specific to the Windows 8 delegate.  If more work needs to be done in the
+  // future, pull this into its own function called by AddChromeWorkItems.
+  DCHECK(product.is_chrome());
+  HKEY root = installer_state.root_key();
+  const bool is_install =
+      (installer_state.operation() != InstallerState::UNINSTALL);
+  string16 delegate_execute_path(L"Software\\Classes\\CLSID\\");
+  delegate_execute_path.append(kCommandExecuteImplUuid);
+  string16 typelib_path(L"Software\\Classes\\TypeLib\\");
+  typelib_path.append(kDelegateExecuteLibUuid);
+  string16 interface_path(L"Software\\Classes\\Interface\\");
+  interface_path.append(kICommandExecuteImplUuid);
+
+  if (is_install) {
+    // The path to the exe (in the version directory).
+    FilePath delegate_execute(
+        installer_state.target_path().AppendASCII(new_version.GetString()));
+    delegate_execute = delegate_execute.Append(kDelegateExecuteExe);
+
+    // Command-line featuring the quoted path to the exe.
+    string16 command(1, L'"');
+    command.append(delegate_execute.value()).append(1, L'"');
+
+    // Register the CommandExecuteImpl class at
+    // Software\Classes\CLSID\{5C65F4B0-3651-4514-B207-D10CB699B14B}
+    list->AddCreateRegKeyWorkItem(root, delegate_execute_path);
+    list->AddSetRegValueWorkItem(root, delegate_execute_path, L"",
+                                 L"CommandExecuteImpl Class", true);
+    string16 subkey(delegate_execute_path);
+    subkey.append(L"\\LocalServer32");
+    list->AddCreateRegKeyWorkItem(root, subkey);
+    list->AddSetRegValueWorkItem(root, subkey, L"", command, true);
+    list->AddSetRegValueWorkItem(root, subkey, L"ServerExecutable",
+                                 delegate_execute.value(), true);
+
+    subkey.assign(delegate_execute_path).append(L"\\Programmable");
+    list->AddCreateRegKeyWorkItem(root, subkey);
+
+    subkey.assign(delegate_execute_path).append(L"\\TypeLib");
+    list->AddCreateRegKeyWorkItem(root, subkey);
+    list->AddSetRegValueWorkItem(root, subkey, L"", kDelegateExecuteLibUuid,
+                                 true);
+
+    subkey.assign(delegate_execute_path).append(L"\\Version");
+    list->AddCreateRegKeyWorkItem(root, subkey);
+    list->AddSetRegValueWorkItem(root, subkey, L"", kDelegateExecuteLibVersion,
+                                 true);
+
+    // Register the DelegateExecuteLib type library at
+    // Software\Classes\TypeLib\{4E805ED8-EBA0-4601-9681-12815A56EBFD}
+    list->AddCreateRegKeyWorkItem(root, typelib_path);
+
+    string16 version_key(typelib_path);
+    version_key.append(1, L'\\').append(kDelegateExecuteLibVersion);
+    list->AddCreateRegKeyWorkItem(root, version_key);
+    list->AddSetRegValueWorkItem(root, version_key, L"", kDelegateExecuteLib,
+                                 true);
+
+    subkey.assign(version_key).append(L"\\FLAGS");
+    const DWORD flags = LIBFLAG_FRESTRICTED | LIBFLAG_FCONTROL;
+    list->AddCreateRegKeyWorkItem(root, subkey);
+    list->AddSetRegValueWorkItem(root, subkey, L"", flags, true);
+
+    subkey.assign(version_key).append(L"\\0");
+    list->AddCreateRegKeyWorkItem(root, subkey);
+
+    subkey.append(L"\\win32");
+    list->AddCreateRegKeyWorkItem(root, subkey);
+    list->AddSetRegValueWorkItem(root, subkey, L"", delegate_execute.value(),
+                                 true);
+
+    subkey.assign(version_key).append(L"\\HELPDIR");
+    list->AddCreateRegKeyWorkItem(root, subkey);
+    list->AddSetRegValueWorkItem(root, subkey, L"",
+                                 delegate_execute.DirName().value(), true);
+
+    // Register to ICommandExecuteImpl interface at
+    // Software\Classes\Interface\{0BA0D4E9-2259-4963-B9AE-A839F7CB7544}
+    list->AddCreateRegKeyWorkItem(root, interface_path);
+    list->AddSetRegValueWorkItem(root, interface_path, L"",
+                                 kICommandExecuteImpl, true);
+
+    subkey.assign(interface_path).append(L"\\ProxyStubClsid32");
+    list->AddCreateRegKeyWorkItem(root, subkey);
+    list->AddSetRegValueWorkItem(root, subkey, L"", kPSOAInterfaceUuid, true);
+
+    subkey.assign(interface_path).append(L"\\TypeLib");
+    list->AddCreateRegKeyWorkItem(root, subkey);
+    list->AddSetRegValueWorkItem(root, subkey, L"", kDelegateExecuteLibUuid,
+                                 true);
+    list->AddSetRegValueWorkItem(root, subkey, L"Version",
+                                 kDelegateExecuteLibVersion, true);
+
+  } else {
+    list->AddDeleteRegKeyWorkItem(root, delegate_execute_path);
+    list->AddDeleteRegKeyWorkItem(root, typelib_path);
+    list->AddDeleteRegKeyWorkItem(root, interface_path);
   }
 }
 

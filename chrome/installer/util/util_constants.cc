@@ -171,6 +171,7 @@ const wchar_t kChromeLauncherExe[] = L"chrome_launcher.exe";
 const wchar_t kChromeNewExe[] = L"new_chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";
 const wchar_t kCmdQuickEnableCf[] = L"quick-enable-cf";
+const wchar_t kDelegateExecuteExe[] = L"delegate_execute.exe";
 const wchar_t kGoogleChromeInstallSubDir1[] = L"Google";
 const wchar_t kGoogleChromeInstallSubDir2[] = L"Chrome";
 const wchar_t kInstallBinaryDir[] = L"Application";
@@ -201,10 +202,22 @@ const wchar_t kOptionMultiInstall[] = L"multi-install";
 const wchar_t kOptionReadyMode[] = L"ready-mode";
 
 // Chrome channel display names.
-extern const wchar_t kChromeChannelUnknown[] = L"unknown";
-extern const wchar_t kChromeChannelCanary[] = L"canary";
-extern const wchar_t kChromeChannelDev[] = L"dev";
-extern const wchar_t kChromeChannelBeta[] = L"beta";
-extern const wchar_t kChromeChannelStable[] = L"";
+const wchar_t kChromeChannelUnknown[] = L"unknown";
+const wchar_t kChromeChannelCanary[] = L"canary";
+const wchar_t kChromeChannelDev[] = L"dev";
+const wchar_t kChromeChannelBeta[] = L"beta";
+const wchar_t kChromeChannelStable[] = L"";
+
+// See delegate_execute.idl.
+const wchar_t kCommandExecuteImplUuid[] =
+    L"{5C65F4B0-3651-4514-B207-D10CB699B14B}";
+const wchar_t kDelegateExecuteLib[] = L"DelegateExecuteLib";
+const wchar_t kDelegateExecuteLibUuid[] =
+    L"{4E805ED8-EBA0-4601-9681-12815A56EBFD}";
+const wchar_t kDelegateExecuteLibVersion[] = L"1.0";
+const wchar_t kICommandExecuteImpl[] = L"ICommandExecuteImpl";
+const wchar_t kICommandExecuteImplUuid[] =
+    L"{0BA0D4E9-2259-4963-B9AE-A839F7CB7544}";
+const wchar_t kPSOAInterfaceUuid[] = L"{00020424-0000-0000-C000-000000000046}";
 
 }  // namespace installer
