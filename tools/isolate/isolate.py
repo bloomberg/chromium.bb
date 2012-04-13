@@ -372,6 +372,9 @@ def MODErun(
       os.makedirs(cwd)
     if read_only:
       run_test_from_archive.make_writable(outdir, True)
+    if not cmd:
+      print 'No command to run'
+      return 1
     cmd = trace_inputs.fix_python_path(cmd)
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     return subprocess.call(cmd, cwd=cwd)
@@ -394,6 +397,9 @@ def MODEtrace(
       product_dir = os.path.relpath(product_dir, indir)
   else:
     product_dir = None
+  if not cmd:
+    print 'No command to run'
+    return 1
   return trace_inputs.trace_inputs(
       '%s.log' % resultfile,
       cmd,
@@ -423,7 +429,7 @@ def main():
   parser.add_option(
       '-v', '--verbose',
       action='count',
-      default=2 if 'ISOLATE_DEBUG' in os.environ else 0,
+      default=int(os.environ.get('ISOLATE_DEBUG', 0)),
       help='Use multiple times')
   parser.add_option(
       '-m', '--mode',
