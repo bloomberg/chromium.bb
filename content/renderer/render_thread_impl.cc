@@ -32,7 +32,6 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 #include "content/common/indexed_db/indexed_db_message_filter.h"
-#include "content/common/indexed_db/proxy_webidbfactory_impl.h"
 #include "content/common/npobject_util.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/resource_dispatcher.h"
@@ -210,8 +209,7 @@ void RenderThreadImpl::Init() {
   compositor_initialized_ = false;
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
-  main_thread_indexed_db_dispatcher_.reset(
-      IndexedDBDispatcher::ThreadSpecificInstance());
+  main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
 
   media_stream_center_ = NULL;
 
