@@ -324,6 +324,8 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 		wl_signal_emit(&device->drag_icon_signal, icon_resource);
 	}
 
+	wl_input_device_set_pointer_focus(device, NULL, 0, 0);
+
 	wl_input_device_start_pointer_grab(device, &device->drag_grab);
 }
 
