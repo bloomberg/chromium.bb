@@ -8,10 +8,9 @@
 #include "base/time.h"
 #include "content/common/dom_storage_messages.h"
 #include "content/renderer/render_thread_impl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 
-using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;
 
@@ -65,8 +64,7 @@ WebString RendererWebStorageAreaImpl::getItem(const WebString& key) {
 void RendererWebStorageAreaImpl::setItem(
     const WebString& key, const WebString& value, const WebURL& url,
     WebStorageArea::Result& result, WebString& old_value_webkit) {
-  const size_t kMaxKeyValueLength = WebStorageNamespace::m_localStorageQuota;
-  if (key.length() + value.length() > kMaxKeyValueLength) {
+  if (key.length() + value.length() > dom_storage::kPerAreaQuota) {
     result = ResultBlockedByQuota;
     return;
   }

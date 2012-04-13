@@ -312,11 +312,11 @@ WebStorageNamespace*
 RendererWebKitPlatformSupportImpl::createLocalStorageNamespace(
     const WebString& path, unsigned quota) {
 #ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
-  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_LOCAL);
+  return new RendererWebStorageNamespaceImpl();
 #else
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return WebStorageNamespace::createLocalStorageNamespace(path, quota);
-  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_LOCAL);
+  return new RendererWebStorageNamespaceImpl();
 #endif
 }
 

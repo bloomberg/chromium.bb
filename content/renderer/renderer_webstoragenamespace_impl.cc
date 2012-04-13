@@ -11,16 +11,14 @@ using WebKit::WebStorageArea;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 
-RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
-    DOMStorageType storage_type)
-    : namespace_id_(kLocalStorageNamespaceId) {
-  DCHECK(storage_type == DOM_STORAGE_LOCAL);
+RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl()
+    : namespace_id_(dom_storage::kLocalStorageNamespaceId) {
 }
 
 RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
-    DOMStorageType storage_type, int64 namespace_id)
+    int64 namespace_id)
     : namespace_id_(namespace_id) {
-  DCHECK(storage_type == DOM_STORAGE_SESSION);
+  DCHECK_NE(dom_storage::kInvalidSessionStorageNamespaceId, namespace_id);
 }
 
 RendererWebStorageNamespaceImpl::~RendererWebStorageNamespaceImpl() {
@@ -44,6 +42,5 @@ WebStorageNamespace* RendererWebStorageNamespaceImpl::copy() {
 }
 
 void RendererWebStorageNamespaceImpl::close() {
-  // This is called only on LocalStorage namespaces when WebKit thinks its
-  // shutting down.  This has no impact on Chromium.
+  // TOOD(michaeln): remove this deprecated method.
 }

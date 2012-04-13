@@ -19,7 +19,6 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/dom_storage_common.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,6 +33,7 @@
 #include "content/public/common/view_type.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 
 using content::BrowserThread;
 using content::DomOperationNotificationDetails;
@@ -487,7 +487,7 @@ WebContents* InterstitialPageImpl::tab() const {
 RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
   RenderViewHostImpl* render_view_host = new RenderViewHostImpl(
       SiteInstance::Create(tab()->GetBrowserContext()),
-      this, MSG_ROUTING_NONE, kInvalidSessionStorageNamespaceId);
+      this, MSG_ROUTING_NONE, dom_storage::kInvalidSessionStorageNamespaceId);
   return render_view_host;
 }
 

@@ -3,16 +3,14 @@
 // found in the LICENSE file.
 
 // Multiply-included message file, no traditional include guard.
-#include "content/common/dom_storage_common.h"
 #include "content/public/common/common_param_traits.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageArea.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 
 #define IPC_MESSAGE_START DOMStorageMsgStart
-
-IPC_ENUM_TRAITS(DOMStorageType)
 
 // Signals a storage event.
 IPC_STRUCT_BEGIN(DOMStorageMsg_Event_Params)
@@ -29,10 +27,10 @@ IPC_STRUCT_BEGIN(DOMStorageMsg_Event_Params)
   IPC_STRUCT_MEMBER(string16, origin)
 
   // The URL of the page that caused the storage event.
-  IPC_STRUCT_MEMBER(GURL, url)
+  IPC_STRUCT_MEMBER(GURL, page_url)
 
-  // The storage type of this event.
-  IPC_STRUCT_MEMBER(DOMStorageType, storage_type)
+  // The namespace_id this is associated with.
+  IPC_STRUCT_MEMBER(int64, namespace_id)
 IPC_STRUCT_END()
 
 IPC_ENUM_TRAITS(WebKit::WebStorageArea::Result)
@@ -47,51 +45,52 @@ IPC_MESSAGE_CONTROL1(DOMStorageMsg_Event,
 // DOM Storage messages sent from the renderer to the browser.
 
 // Open the storage area for a particular origin within a namespace.
+// TODO(michaeln): make this async and have the renderer send the connection_id
 IPC_SYNC_MESSAGE_CONTROL2_1(DOMStorageHostMsg_OpenStorageArea,
                             int64 /* namespace_id */,
                             string16 /* origin */,
-                            int64 /* storage_area_id */)
+                            int64 /* connection_id */)
 
 // Close a previously opened storage area.
 IPC_MESSAGE_CONTROL1(DOMStorageHostMsg_CloseStorageArea,
-                     int64 /* storage_area_id */)
+                     int64 /* connection_id */)
 
 // Get the length of a storage area.
 IPC_SYNC_MESSAGE_CONTROL1_1(DOMStorageHostMsg_Length,
-                            int64 /* storage_area_id */,
+                            int64 /* connection_id */,
                             unsigned /* length */)
 
 // Get a the ith key within a storage area.
 IPC_SYNC_MESSAGE_CONTROL2_1(DOMStorageHostMsg_Key,
-                            int64 /* storage_area_id */,
+                            int64 /* connection_id */,
                             unsigned /* index */,
                             NullableString16 /* key */)
 
 // Get a value based on a key from a storage area.
 IPC_SYNC_MESSAGE_CONTROL2_1(DOMStorageHostMsg_GetItem,
-                            int64 /* storage_area_id */,
+                            int64 /* connection_id */,
                             string16 /* key */,
                             NullableString16 /* value */)
 
 // Set a value that's associated with a key in a storage area.
 IPC_SYNC_MESSAGE_CONTROL4_2(DOMStorageHostMsg_SetItem,
-                            int64 /* storage_area_id */,
+                            int64 /* connection_id */,
                             string16 /* key */,
                             string16 /* value */,
-                            GURL /* url */,
+                            GURL /* page_url */,
                             WebKit::WebStorageArea::Result /* result */,
                             NullableString16 /* old_value */)
 
 // Remove the value associated with a key in a storage area.
 IPC_SYNC_MESSAGE_CONTROL3_1(DOMStorageHostMsg_RemoveItem,
-                            int64 /* storage_area_id */,
+                            int64 /* connection_id */,
                             string16 /* key */,
-                            GURL /* url */,
+                            GURL /* page_url */,
                             NullableString16 /* old_value */)
 
 // Clear the storage area.
 IPC_SYNC_MESSAGE_CONTROL2_1(DOMStorageHostMsg_Clear,
-                            int64 /* storage_area_id */,
-                            GURL /* url */,
+                            int64 /* connection_id */,
+                            GURL /* page_url */,
                             bool /* something_cleared */)
 

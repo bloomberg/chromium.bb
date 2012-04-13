@@ -111,6 +111,7 @@ WebStorageNamespace* SimpleDomStorageSystem::NamespaceImpl::copy() {
 }
 
 void SimpleDomStorageSystem::NamespaceImpl::close() {
+  // TODO(michaeln): remove this deprecated method.
 }
 
 // AreaImpl -----------------------------

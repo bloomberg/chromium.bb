@@ -7,11 +7,11 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/test_web_contents.h"
-#include "content/common/dom_storage_common.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/common/content_client.h"
 #include "ui/gfx/rect.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/forms/password_form.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
@@ -209,7 +209,7 @@ TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
     : RenderViewHostImpl(instance,
                          delegate,
                          routing_id,
-                         kInvalidSessionStorageNamespaceId),
+                         dom_storage::kInvalidSessionStorageNamespaceId),
       render_view_created_(false),
       delete_counter_(NULL),
       simulate_fetch_via_proxy_(false),

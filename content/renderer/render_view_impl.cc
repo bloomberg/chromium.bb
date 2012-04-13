@@ -156,6 +156,7 @@
 #include "ui/gfx/rect.h"
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/forms/form_data.h"
 #include "webkit/forms/form_field.h"
 #include "webkit/forms/password_form_dom_manager.h"
@@ -1556,15 +1557,15 @@ RenderWidgetFullscreenPepper* RenderViewImpl::CreatePepperFullscreenContainer(
 WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace(
     unsigned quota) {
 #ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
-  CHECK(session_storage_namespace_id_ != kInvalidSessionStorageNamespaceId);
-  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION,
-                                             session_storage_namespace_id_);
+  CHECK(session_storage_namespace_id_ !=
+        dom_storage::kInvalidSessionStorageNamespaceId);
+  return new RendererWebStorageNamespaceImpl(session_storage_namespace_id_);
 #else
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return WebStorageNamespace::createSessionStorageNamespace(quota);
-  CHECK(session_storage_namespace_id_ != kInvalidSessionStorageNamespaceId);
-  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION,
-                                             session_storage_namespace_id_);
+  CHECK(session_storage_namespace_id_ !=
+        dom_storage::kInvalidSessionStorageNamespaceId);
+  return new RendererWebStorageNamespaceImpl(session_storage_namespace_id_);
 #endif
 }
 

@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "content/common/dom_storage_common.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 // The above is to include the ENABLE_NEW_DOM_STORAGE_BACKEND flag
@@ -15,9 +14,10 @@
 
 class RendererWebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
  public:
-  explicit RendererWebStorageNamespaceImpl(DOMStorageType storage_type);
-  RendererWebStorageNamespaceImpl(DOMStorageType storage_type,
-                                  int64 namespace_id);
+  // The default constructor creates a local storage namespace, the second
+  // constructor should be used for session storage namepaces.
+  RendererWebStorageNamespaceImpl();
+  explicit RendererWebStorageNamespaceImpl(int64 namespace_id);
 
   // See WebStorageNamespace.h for documentation on these functions.
   virtual ~RendererWebStorageNamespaceImpl();

@@ -9,7 +9,6 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/time.h"
-#include "content/common/dom_storage_common.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/resource_response.h"
@@ -25,6 +24,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -72,7 +72,8 @@ void RenderViewFakeResourcesTest::SetUp() {
   ViewMsg_New_Params params;
   params.parent_window = 0;
   params.view_id = kViewId;
-  params.session_storage_namespace_id = kInvalidSessionStorageNamespaceId;
+  params.session_storage_namespace_id =
+      dom_storage::kInvalidSessionStorageNamespaceId;
   ASSERT_TRUE(channel_->Send(new ViewMsg_New(params)));
   message_loop_.Run();
 }

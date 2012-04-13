@@ -823,8 +823,8 @@ void RenderThreadImpl::OnDOMStorageEvent(
     dom_storage_event_dispatcher_.reset(WebStorageEventDispatcher::create());
   }
   dom_storage_event_dispatcher_->dispatchStorageEvent(params.key,
-      params.old_value, params.new_value, params.origin, params.url,
-      params.storage_type == DOM_STORAGE_LOCAL);
+      params.old_value, params.new_value, params.origin, params.page_url,
+      params.namespace_id == dom_storage::kLocalStorageNamespaceId);
 }
 
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {

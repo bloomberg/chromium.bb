@@ -26,6 +26,8 @@ const size_t kPerAreaQuota = 5 * 1024 * 1024;
 // values for sessionstorage namespaces.
 const int64 kLocalStorageNamespaceId = 0;
 
+const int64 kInvalidSessionStorageNamespaceId = kLocalStorageNamespaceId;
+
 // Value to indicate an area that not be opened.
 const int kInvalidAreaId = -1;
 
