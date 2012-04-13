@@ -74,6 +74,7 @@
         'include_dirs': ['<(DEPTH)/third_party/khronos'],
       },
       'defines': [
+        'GLES2_CONFORM_SUPPORT_ONLY',
         'GTF_GLES20',
         'EGLAPI=',
         'EGLAPIENTRY=',
