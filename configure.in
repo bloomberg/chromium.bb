@@ -242,10 +242,45 @@ LIBS="$fontconfig_save_libs"
 #
 # Check expat configuration
 #
+AC_ARG_WITH(expat,
+	[AC_HELP_STRING([--with-expat=DIR],
+			[Use Expat in DIR])],
+	[expat_prefix=$withval],
+	[expat_prefix=auto])
+AC_ARG_WITH(expat-includes,
+	[AC_HELP_STRING([--with-expat-includes=DIR],
+			[Use Expat includes in DIR])],
+	[expat_includes=$withval],
+	[expat_includes=auto])
+AC_ARG_WITH(expat-lib,
+	[AC_HELP_STRING([--with-expat-lib=DIR])],
+	[expat_lib=$withval],
+	[expat_lib=auto])
+
 if test "$enable_libxml2" != "yes"; then
-	# specify EXPAT_CFLAGS and/or EXPAT_LIBS if you like the old behavior
-	# with --with-expat-includes and --with-expat-lib.
-	PKG_CHECK_MODULES(EXPAT, expat)
+	use_pkgconfig_for_expat=yes
+	if test "$expat_prefix" = "auto" -a "$expat_includes" = "auto" -a "$expat_lib" = "auto"; then
+		PKG_CHECK_MODULES(EXPAT, expat,,use_pkgconfig_for_expat=no)
+	else
+		use_pkgconfig_for_expat=no
+	fi
+	if test "x$use_pkgconfig_for_expat" = "xno"; then
+		if test "$expat_includes" != "auto" -a -r ${expat_includes}/expat.h; then
+			EXPAT_CFLAGS="-I${expat_includes}"
+		elif test "$expat_prefix" != "auto" -a -r ${expat_prefix}/include/expat.h; then
+			EXPAT_CFLAGS="-I${expat_prefix}/include"
+		else
+			EXPAT_CFLAGS=""
+		fi
+		if test "$expat_lib" != "auto"; then
+			EXPAT_LIBS="-L${expat_lib} -lexpat"
+		elif test "$expat_prefix" != "auto"; then
+			EXPAT_LIBS="-L${expat_prefix}/lib -lexpat"
+		else
+			EXPAT_LIBS="-lexpat"
+		fi
+	fi
+
 	expatsaved_CPPFLAGS="$CPPFLAGS"
 	expatsaved_LIBS="$LIBS"
 	CPPFLAGS="$CPPFLAGS $EXPAT_CFLAGS"
