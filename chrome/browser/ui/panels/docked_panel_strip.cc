@@ -61,14 +61,13 @@ DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
       delayed_titlebar_action_(NO_ACTION),
       titlebar_action_factory_(this) {
   dragging_panel_current_iterator_ = panels_.end();
-  panel_manager_->display_settings_provider()->AddDesktopBarObserver(this);
+  panel_manager_->display_settings_provider()->set_desktop_bar_observer(this);
 }
 
 DockedPanelStrip::~DockedPanelStrip() {
   DCHECK(panels_.empty());
   DCHECK(panels_in_temporary_layout_.empty());
   DCHECK_EQ(0, minimized_panel_count_);
-  panel_manager_->display_settings_provider()->RemoveDesktopBarObserver(this);
 }
 
 void DockedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {

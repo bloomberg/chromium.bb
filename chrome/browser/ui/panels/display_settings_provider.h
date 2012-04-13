@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_UI_PANELS_DISPLAY_SETTINGS_PROVIDER_H_
 #pragma once
 
-#include "base/observer_list.h"
-#include "base/timer.h"
 #include "ui/gfx/rect.h"
 
 // Encapsulates the logic to provide display settings support, including the
@@ -31,35 +29,22 @@ class DisplaySettingsProvider {
     DESKTOP_BAR_HIDDEN
   };
 
+  // Observer can listen to the event regarding the display area change.
   class DisplayAreaObserver {
    public:
     virtual void OnDisplayAreaChanged(const gfx::Rect& display_area) = 0;
   };
 
+  // Observer can listen to the event regarding the desktop bar change.
   class DesktopBarObserver {
    public:
     virtual void OnAutoHidingDesktopBarVisibilityChanged(
         DesktopBarAlignment alignment, DesktopBarVisibility visibility) = 0;
   };
 
-  class FullScreenObserver {
-   public:
-    virtual void OnFullScreenModeChanged(bool is_full_screen) = 0;
-  };
-
   static DisplaySettingsProvider* Create();
 
   virtual ~DisplaySettingsProvider();
-
-  // Subscribes/unsubscribes from the display settings change notification.
-  void AddDisplayAreaObserver(DisplayAreaObserver* observer);
-  void RemoveDisplayAreaObserver(DisplayAreaObserver* observer);
-
-  void AddDesktopBarObserver(DesktopBarObserver* observer);
-  void RemoveDesktopBarObserver(DesktopBarObserver* observer);
-
-  void AddFullScreenObserver(FullScreenObserver* observer);
-  void RemoveFullScreenObserver(FullScreenObserver* observer);
 
   // Returns the bounds of the display area.
   gfx::Rect GetDisplayArea();
@@ -85,20 +70,21 @@ class DisplaySettingsProvider {
   virtual DesktopBarVisibility GetDesktopBarVisibility(
       DesktopBarAlignment alignment) const;
 
-  ObserverList<DisplayAreaObserver>& display_area_observers() {
-    return display_area_observers_;
+  DisplayAreaObserver* display_area_observer() const {
+    return display_area_observer_;
+  }
+  void set_display_area_observer(DisplayAreaObserver* display_area_observer) {
+    display_area_observer_ = display_area_observer;
   }
 
-  ObserverList<DesktopBarObserver>& desktop_bar_observers() {
-    return desktop_bar_observers_;
+  DesktopBarObserver* desktop_bar_observer() const {
+    return desktop_bar_observer_;
   }
-
-  ObserverList<FullScreenObserver>& full_screen_observers() {
-    return full_screen_observers_;
+  void set_desktop_bar_observer(DesktopBarObserver* desktop_bar_observer) {
+    desktop_bar_observer_ = desktop_bar_observer;
   }
 
   gfx::Rect work_area() const { return work_area_; }
-  bool is_full_screen() const { return is_full_screen_; }
 
  protected:
   DisplaySettingsProvider();
@@ -108,19 +94,14 @@ class DisplaySettingsProvider {
   // testing code.
   virtual gfx::Rect GetWorkArea() const;
 
-  // Callback to perform periodic check for full screen mode changes.
-  virtual void CheckFullScreenMode();
-
   void OnAutoHidingDesktopBarChanged();
 
  private:
   // Adjusts the work area to exclude the influence of auto-hiding desktop bars.
   void AdjustWorkAreaForAutoHidingDesktopBars();
 
-  // Observers that listen to various display settings changes.
-  ObserverList<DisplayAreaObserver> display_area_observers_;
-  ObserverList<DesktopBarObserver> desktop_bar_observers_;
-  ObserverList<FullScreenObserver> full_screen_observers_;
+  DisplayAreaObserver* display_area_observer_;
+  DesktopBarObserver* desktop_bar_observer_;
 
   // The maximum work area avaialble. This area does not include the area taken
   // by the always-visible (non-auto-hiding) desktop bars.
@@ -131,14 +112,6 @@ class DisplaySettingsProvider {
   // bars (we only consider those bars that are aligned to bottom, left, and
   // right of the screen edges) when they become fully visible.
   gfx::Rect adjusted_work_area_;
-
-  // True if full screen mode or presentation mode is entered.
-  bool is_full_screen_;
-
-  // Timer used to detect full-screen mode change.
-  base::RepeatingTimer<DisplaySettingsProvider> full_screen_mode_timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplaySettingsProvider);
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_DISPLAY_SETTINGS_PROVIDER_H_

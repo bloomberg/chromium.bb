@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/panels/detached_panel_strip.h"
@@ -37,6 +38,8 @@ const int kPanelStripRightMargin = 24;
 
 // Height of panel strip is based on the factor of the working area.
 const double kPanelStripHeightFactor = 0.5;
+
+const int kFullScreenModeCheckIntervalMs = 1000;
 
 // New panels that cannot fit in the panel strip are moved to overflow
 // after a brief delay.
@@ -83,11 +86,12 @@ bool PanelManager::ShouldUsePanels(const std::string& extension_id) {
 PanelManager::PanelManager()
     : panel_mouse_watcher_(PanelMouseWatcher::Create()),
       auto_sizing_enabled_(true),
+      is_full_screen_(false),
       is_processing_overflow_(false) {
   // DisplaySettingsProvider should be created before the creation of strips
   // since some strip might depend on it.
   display_settings_provider_.reset(DisplaySettingsProvider::Create());
-  display_settings_provider_->AddDisplayAreaObserver(this);
+  display_settings_provider_->set_display_area_observer(this);
 
   detached_strip_.reset(new DetachedPanelStrip(this));
   docked_strip_.reset(new DockedPanelStrip(this));
@@ -97,7 +101,6 @@ PanelManager::PanelManager()
 }
 
 PanelManager::~PanelManager() {
-  display_settings_provider_->RemoveDisplayAreaObserver(this);
 }
 
 void PanelManager::OnDisplayAreaChanged(const gfx::Rect& display_area) {
@@ -114,11 +117,6 @@ void PanelManager::OnDisplayAreaChanged(const gfx::Rect& display_area) {
   gfx::Rect overflow_area(display_area);
   overflow_area.set_width(kOverflowStripThickness);
   overflow_strip_->SetDisplayArea(overflow_area);
-}
-
-void PanelManager::OnFullScreenModeChanged(bool is_full_screen) {
-  docked_strip_->OnFullScreenModeChanged(is_full_screen);
-  overflow_strip_->OnFullScreenModeChanged(is_full_screen);
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
@@ -142,16 +140,26 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
       content::NotificationService::NoDetails());
 
   if (num_panels() == 1) {
-    display_settings_provider_->AddFullScreenObserver(this);
+    full_screen_mode_timer_.Start(FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kFullScreenModeCheckIntervalMs),
+        this, &PanelManager::CheckFullScreenMode);
   }
 
   return panel;
 }
 
+void PanelManager::CheckFullScreenMode() {
+  bool is_full_screen_new = IsFullScreenMode();
+  if (is_full_screen_ == is_full_screen_new)
+    return;
+  is_full_screen_ = is_full_screen_new;
+  docked_strip_->OnFullScreenModeChanged(is_full_screen_);
+  overflow_strip_->OnFullScreenModeChanged(is_full_screen_);
+}
+
 void PanelManager::OnPanelClosed(Panel* panel) {
-  if (num_panels() == 1) {
-    display_settings_provider_->RemoveFullScreenObserver(this);
-  }
+  if (num_panels() == 1)
+    full_screen_mode_timer_.Stop();
 
   drag_controller_->OnPanelClosed(panel);
   resize_controller_->OnPanelClosed(panel);

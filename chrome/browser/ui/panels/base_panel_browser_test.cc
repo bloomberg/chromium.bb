@@ -89,22 +89,8 @@ MockDisplaySettingsProviderImpl::MockDisplaySettingsProviderImpl(
     PanelManager* panel_manager) {
   DisplaySettingsProvider* old_provider =
       panel_manager->display_settings_provider();
-
-  ObserverListBase<DisplaySettingsProvider::DisplayAreaObserver>::Iterator
-      display_area_observers_iter(old_provider->display_area_observers());
-  AddDisplayAreaObserver(display_area_observers_iter.GetNext());
-  DCHECK(!display_area_observers_iter.GetNext());
-
-  ObserverListBase<DisplaySettingsProvider::DesktopBarObserver>::Iterator
-      desktop_bar_observer_iter(old_provider->desktop_bar_observers());
-  AddDesktopBarObserver(desktop_bar_observer_iter.GetNext());
-  DCHECK(!desktop_bar_observer_iter.GetNext());
-
-  ObserverListBase<DisplaySettingsProvider::FullScreenObserver>::Iterator
-      full_screen_observer_iter(old_provider->full_screen_observers());
-  AddFullScreenObserver(full_screen_observer_iter.GetNext());
-  DCHECK(!full_screen_observer_iter.GetNext());
-
+  set_display_area_observer(old_provider->display_area_observer());
+  set_desktop_bar_observer(old_provider->desktop_bar_observer());
   panel_manager->set_display_settings_provider(this);
 
   memset(mock_desktop_bars, 0, sizeof(mock_desktop_bars));
