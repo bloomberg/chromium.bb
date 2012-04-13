@@ -2034,6 +2034,7 @@ idle_redraw(struct task *task, uint32_t events)
 	widget_redraw(window->widget);
 	window_flush(window);
 	window->redraw_needed = 0;
+	wl_list_init(&window->redraw_task.link);
 
 	callback = wl_surface_frame(window->surface);
 	wl_callback_add_listener(callback, &listener, window);
@@ -2206,6 +2207,7 @@ window_create_internal(struct display *display, struct window *parent)
 
 	wl_surface_set_user_data(window->surface, window);
 	wl_list_insert(display->window_list.prev, &window->link);
+	wl_list_init(&window->redraw_task.link);
 
 	if (window->shell_surface) {
 		wl_shell_surface_set_user_data(window->shell_surface, window);
