@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "base/basictypes.h"
 
 namespace switches {
 
@@ -17,5 +18,14 @@ const char kEnableGPUCommandLogging[]       = "enable-gpu-command-logging";
 
 // Turn on Calling GL Error after every command.
 const char kEnableGPUDebugging[]            = "enable-gpu-debugging";
+
+const char* kGpuSwitches[] = {
+  kCompileShaderAlwaysSucceeds,
+  kDisableGLSLTranslator,
+  kEnableGPUCommandLogging,
+  kEnableGPUDebugging,
+};
+
+const int kNumGpuSwitches = arraysize(kGpuSwitches);
 
 }  // namespace switches

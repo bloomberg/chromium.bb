@@ -700,20 +700,15 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 
   // Propagate relevant command line switches.
   static const char* const kSwitchNames[] = {
-    switches::kCompileShaderAlwaysSucceeds,
     switches::kDisableBreakpad,
     switches::kDisableGLMultisampling,
     switches::kDisableGpuDriverBugWorkarounds,
     switches::kDisableGpuSandbox,
     switches::kReduceGpuSandbox,
-    switches::kDisableGLSLTranslator,
     switches::kDisableGpuVsync,
     switches::kDisableGpuWatchdog,
     switches::kDisableImageTransportSurface,
     switches::kDisableLogging,
-    switches::kEnableGPUCommandLogging,
-    switches::kEnableGPUDebugging,
-    switches::kEnableGPUServiceLogging,
     switches::kEnableLogging,
 #if defined(OS_MACOSX)
     switches::kEnableSandboxLogging,
@@ -729,6 +724,8 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                              arraysize(kSwitchNames));
+  cmd_line->CopySwitchesFrom(
+      browser_command_line, switches::kGpuSwitches, switches::kNumGpuSwitches);
 
   content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       cmd_line, process_->GetData().id);
