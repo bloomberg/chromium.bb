@@ -69,7 +69,7 @@
           'target_name': 'ncvalidate_verbose_x86_32',
           'type': 'static_library',
           'variables': {
-            'target_base': 'ncvalidate__verbose_x86_32',
+            'target_base': 'ncvalidate_verbose_x86_32',
           },
           'dependencies': [
             'ncvalidate_x86_32',
