@@ -32,7 +32,7 @@ class MockGDataSyncClient : public GDataSyncClientInterface,
                                   const std::string& md5));
   MOCK_METHOD2(OnFileUnpinned, void(const std::string& resource_id,
                                     const std::string& md5));
-  // GDataSyncClient is not interested in OnDirectoryChanged.
+  MOCK_METHOD1(OnDirectoryChanged, void(const FilePath& directory_path));
 };
 
 }  // namespace gdata
