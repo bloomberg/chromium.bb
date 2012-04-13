@@ -305,6 +305,7 @@ extern const char kSyncInvalidateXmppLogin[];
 extern const char kSyncNotificationMethod[];
 extern const char kSyncNotificationHostPort[];
 extern const char kSyncServiceURL[];
+extern const char kSyncTabFavicons[];
 extern const char kSyncThrowUnrecoverableError[];
 extern const char kSyncTrySsltcpFirstForXmpp[];
 extern const char kTabBrowserDragging[];

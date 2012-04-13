@@ -35,7 +35,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/profile_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
@@ -361,16 +360,16 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_WriteFilledSessionToNode) {
   // Tabs are ordered by sessionid in tab_map, so should be able to traverse
   // the tree based on order of tabs created
   SessionModelAssociator::TabLinksMap::iterator iter = tab_map.begin();
-  ASSERT_EQ(2, iter->second.tab()->GetEntryCount());
-  ASSERT_EQ(GURL("http://foo/1"), iter->second.tab()->
+  ASSERT_EQ(2, iter->second->tab()->GetEntryCount());
+  ASSERT_EQ(GURL("http://foo/1"), iter->second->tab()->
           GetEntryAtIndex(0)->GetVirtualURL());
-  ASSERT_EQ(GURL("http://foo/2"), iter->second.tab()->
+  ASSERT_EQ(GURL("http://foo/2"), iter->second->tab()->
           GetEntryAtIndex(1)->GetVirtualURL());
   iter++;
-  ASSERT_EQ(2, iter->second.tab()->GetEntryCount());
-  ASSERT_EQ(GURL("http://bar/1"), iter->second.tab()->
+  ASSERT_EQ(2, iter->second->tab()->GetEntryCount());
+  ASSERT_EQ(GURL("http://bar/1"), iter->second->tab()->
       GetEntryAtIndex(0)->GetVirtualURL());
-  ASSERT_EQ(GURL("http://bar/2"), iter->second.tab()->
+  ASSERT_EQ(GURL("http://bar/2"), iter->second->tab()->
       GetEntryAtIndex(1)->GetVirtualURL());
 }
 
@@ -938,8 +937,8 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_ValidTabs) {
   SessionModelAssociator::TabLinksMap tab_map = model_associator_->tab_map_;
   ASSERT_EQ(1U, tab_map.size());
   SessionModelAssociator::TabLinksMap::iterator iter = tab_map.begin();
-  ASSERT_EQ(1, iter->second.tab()->GetEntryCount());
-  ASSERT_EQ(GURL("bla://bla"), iter->second.tab()->
+  ASSERT_EQ(1, iter->second->tab()->GetEntryCount());
+  ASSERT_EQ(GURL("bla://bla"), iter->second->tab()->
       GetEntryAtIndex(0)->GetVirtualURL());
 }
 
@@ -995,16 +994,16 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_ExistingTabs) {
   // Tabs are ordered by sessionid in tab_map, so should be able to traverse
   // the tree based on order of tabs created
   SessionModelAssociator::TabLinksMap::iterator iter = tab_map.begin();
-  ASSERT_EQ(2, iter->second.tab()->GetEntryCount());
-  ASSERT_EQ(GURL("http://foo1"), iter->second.tab()->
+  ASSERT_EQ(2, iter->second->tab()->GetEntryCount());
+  ASSERT_EQ(GURL("http://foo1"), iter->second->tab()->
           GetEntryAtIndex(0)->GetVirtualURL());
-  ASSERT_EQ(GURL("http://foo2"), iter->second.tab()->
+  ASSERT_EQ(GURL("http://foo2"), iter->second->tab()->
           GetEntryAtIndex(1)->GetVirtualURL());
   iter++;
-  ASSERT_EQ(2, iter->second.tab()->GetEntryCount());
-  ASSERT_EQ(GURL("http://bar1"), iter->second.tab()->
+  ASSERT_EQ(2, iter->second->tab()->GetEntryCount());
+  ASSERT_EQ(GURL("http://bar1"), iter->second->tab()->
       GetEntryAtIndex(0)->GetVirtualURL());
-  ASSERT_EQ(GURL("http://bar2"), iter->second.tab()->
+  ASSERT_EQ(GURL("http://bar2"), iter->second->tab()->
       GetEntryAtIndex(1)->GetVirtualURL());
 }
 

@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
@@ -91,6 +92,14 @@ void SessionChangeProcessor::Observe(
   // Track which windows and/or tabs are modified.
   std::vector<SyncedTabDelegate*> modified_tabs;
   switch (type) {
+    case chrome::NOTIFICATION_FAVICON_CHANGED: {
+      content::Details<history::FaviconChangeDetails> favicon_details(details);
+      session_model_associator_->FaviconsUpdated(favicon_details->urls);
+      // Note: we favicon notifications don't affect tab contents, so we return
+      // here instead of continuing on to reassociate tabs/windows.
+      return;
+    }
+
     case chrome::NOTIFICATION_BROWSER_OPENED: {
       Browser* browser = content::Source<Browser>(source).ptr();
       if (!browser || browser->profile() != profile_) {
@@ -350,6 +359,8 @@ void SessionChangeProcessor::StartObserving() {
   notification_registrar_.Add(this,
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllBrowserContextsAndSources());
+  notification_registrar_.Add(this, chrome::NOTIFICATION_FAVICON_CHANGED,
+      content::Source<Profile>(profile_));
 }
 
 void SessionChangeProcessor::StopObserving() {

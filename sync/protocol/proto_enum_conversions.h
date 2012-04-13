@@ -42,6 +42,9 @@ const char* GetActionString(sync_pb::SyncEnums::Action action);
 const char* GetDeviceTypeString(
     sync_pb::SessionHeader::DeviceType device_type);
 
+const char* GetFaviconTypeString(
+    sync_pb::SessionTab::FaviconType favicon_type);
+
 }  // namespace browser_sync
 
 #endif  // SYNC_PROTOCOL_PROTO_ENUM_CONVERSIONS_H_

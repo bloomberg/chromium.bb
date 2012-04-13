@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -14,11 +15,13 @@
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -206,6 +209,10 @@ class SessionModelAssociator
   // entries.
   bool ShouldSyncTab(const SyncedTabDelegate& tab) const;
 
+  // Compare |urls| against |tab_map_|'s urls to see if any tabs with
+  // outstanding favicon loads can be fulfilled.
+  void FaviconsUpdated(const std::set<GURL>& urls);
+
   // Returns the syncable model type.
   static syncable::ModelType model_type() { return syncable::SESSIONS; }
 
@@ -238,37 +245,43 @@ class SessionModelAssociator
   FRIEND_TEST_ALL_PREFIXES(SyncSessionModelAssociatorTest,
                            TabNodePool);
 
-  // Keep all the links to local tab data in one place.
-  class TabLinks {
+  // Keep all the links to local tab data in one place. A sync_id and tab must
+  // be passed at creation. The sync_id is not mutable after, although all other
+  // fields are.
+  class TabLink {
    public:
-    // To support usage as second value in maps we need default and copy
-    // constructors.
-    TabLinks()
-        : sync_id_(0),
-          session_tab_(NULL),
-          tab_(NULL) {}
+    TabLink(int64 sync_id, const SyncedTabDelegate* tab)
+      : sync_id_(sync_id),
+        tab_(tab),
+        favicon_load_handle_(0) {}
 
-    // We only ever have either a SessionTab (for foreign tabs), or a
-    // SyncedTabDelegate (for local tabs).
-    TabLinks(int64 sync_id, const SyncedTabDelegate* tab)
-      : sync_id_(sync_id),
-        session_tab_(NULL) {
-      tab_ = const_cast<SyncedTabDelegate*>(tab);
-    }
-    TabLinks(int64 sync_id, const SessionTab* session_tab)
-      : sync_id_(sync_id),
-        tab_(NULL) {
-      session_tab_ = const_cast<SessionTab*>(session_tab);
+    void set_tab(const SyncedTabDelegate* tab) { tab_ = tab; }
+    void set_url(const GURL& url) { url_ = url; }
+    void set_favicon_load_handle(FaviconService::Handle load_handle) {
+      favicon_load_handle_ = load_handle;
     }
 
     int64 sync_id() const { return sync_id_; }
-    const SessionTab* session_tab() const { return session_tab_; }
     const SyncedTabDelegate* tab() const { return tab_; }
+    const GURL& url() const { return url_; }
+    FaviconService::Handle favicon_load_handle() const {
+      return favicon_load_handle_;
+    }
 
    private:
-    int64 sync_id_;
-    SessionTab* session_tab_;
-    SyncedTabDelegate* tab_;
+    DISALLOW_COPY_AND_ASSIGN(TabLink);
+
+    // The id for the sync node this tab is stored in.
+    const int64 sync_id_;
+
+    // The tab object itself.
+    const SyncedTabDelegate* tab_;
+
+    // The currently visible url of the tab (used for syncing favicons).
+    GURL url_;
+
+    // Handle for loading favicons.
+    FaviconService::Handle favicon_load_handle_;
   };
 
   // A pool for managing free/used tab sync nodes. Performs lazy creation
@@ -349,8 +362,8 @@ class SessionModelAssociator
     DISALLOW_COPY_AND_ASSIGN(TabNodePool);
   };
 
-  // Datatypes for accessing local tab data.
-  typedef std::map<SessionID::id_type, TabLinks> TabLinksMap;
+  // Container for accessing local tab data by tab id.
+  typedef std::map<SessionID::id_type, linked_ptr<TabLink> > TabLinksMap;
 
   // Determine if a window is of a type we're interested in syncing.
   static bool ShouldSyncWindow(const SyncedWindowDelegate* window);
@@ -380,13 +393,22 @@ class SessionModelAssociator
                                        sync_api::WriteTransaction* trans,
                                        SyncError* error);
 
-  // Fills a tab sync node with data from a TabContents object.
-  // (from a local navigation event)
+  // Fills a tab sync node with data from a TabContents object. Updates
+  // |tab_link| with the current url if it's valid and triggers a favicon
+  // load if the url has changed.
   // Returns true on success, false if we need to reassociate due to corruption.
-  bool WriteTabContentsToSyncModel(const SyncedWindowDelegate& window,
-                                   const SyncedTabDelegate& tab,
-                                   const int64 sync_id,
+  bool WriteTabContentsToSyncModel(TabLink* tab_link,
                                    SyncError* error);
+
+  // Load the favicon for the tab specified by |tab_link|. Will cancel any
+  // outstanding request for this tab. OnFaviconDataAvailable(..) will be called
+  // when the load completes.
+  void LoadFaviconForTab(TabLink* tab_link);
+
+  // Callback method to store a tab's favicon into its sync node once it becomes
+  // available. Does nothing if no favicon data was available.
+  void OnFaviconDataAvailable(FaviconService::Handle handle,
+                              history::FaviconData favicon);
 
   // Used to populate a session header from the session specifics header
   // provided.
@@ -408,6 +430,10 @@ class SessionModelAssociator
   static void PopulateSessionTabFromSpecifics(const sync_pb::SessionTab& tab,
                                               const base::Time& mtime,
                                               SessionTab* session_tab);
+
+  // Helper method to take the favicon data in a foreign tab and store it
+  // into the history db.
+  void LoadForeignTabFavicon(const sync_pb::SessionTab& tab);
 
   // Used to populate a session tab from the session specifics tab provided.
   static void AppendSessionTabNavigation(
@@ -472,6 +498,10 @@ class SessionModelAssociator
   PrefService* const pref_service_;
 
   DataTypeErrorHandler* error_handler_;
+
+  // Used for loading favicons. For each outstanding favicon load, stores the
+  // SessionID for the tab whose favicon is being set.
+  CancelableRequestConsumerTSimple<SessionID::id_type> load_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionModelAssociator);
 };

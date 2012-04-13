@@ -157,6 +157,17 @@ const char* GetDeviceTypeString(
   return "";
 }
 
+const char* GetFaviconTypeString(
+    sync_pb::SessionTab::FaviconType favicon_type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SessionTab, FaviconType, TYPE_WEB_FAVICON,
+                     TYPE_WEB_FAVICON);
+  switch (favicon_type) {
+    ENUM_CASE(sync_pb::SessionTab, TYPE_WEB_FAVICON);
+  }
+  NOTREACHED();
+  return "";
+}
+
 #undef ASSERT_ENUM_BOUNDS
 #undef ENUM_CASE
 
