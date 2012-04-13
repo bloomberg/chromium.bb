@@ -10,6 +10,7 @@
 #include "ash/wm/partial_screenshot_event_filter.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/events.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
@@ -56,6 +57,9 @@ void PartialScreenshotView::StartPartialScreenshot(
   widget->GetNativeView()->SetName("PartialScreenshotView");
   widget->StackAtTop();
   widget->Show();
+  // Captures mouse events in case that context menu already captures the
+  // events.  This will close the context menu.
+  widget->GetNativeView()->SetCapture(ui::CW_LOCK_MOUSE | ui::CW_LOCK_TOUCH);
 
   view->set_window(widget->GetNativeWindow());
   Shell::GetInstance()->partial_screenshot_filter()->Activate(view);
@@ -83,6 +87,10 @@ void PartialScreenshotView::OnPaint(gfx::Canvas* canvas) {
     screenshot_rect.Inset(1, 1, 1, 1);
     canvas->DrawRect(screenshot_rect, SK_ColorWHITE);
   }
+}
+
+void PartialScreenshotView::OnMouseCaptureLost() {
+  Cancel();
 }
 
 bool PartialScreenshotView::OnMousePressed(const views::MouseEvent& event) {

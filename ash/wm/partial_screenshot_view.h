@@ -38,6 +38,7 @@ class ASH_EXPORT PartialScreenshotView : public views::WidgetDelegateView {
 
   // Overridden from View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseWheel(const views::MouseWheelEvent& event) OVERRIDE;
