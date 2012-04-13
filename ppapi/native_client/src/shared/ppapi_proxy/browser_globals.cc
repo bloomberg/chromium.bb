@@ -56,7 +56,7 @@ bool enable_3d_interfaces = true;
 
 void SetBrowserPppForInstance(PP_Instance instance, BrowserPpp* browser_ppp) {
   // If there was no map, create one.
-  if (instance_to_ppp_map == NULL) {
+  if (NULL == instance_to_ppp_map) {
     instance_to_ppp_map = new std::map<PP_Instance, BrowserPpp*>;
   }
   // Add the instance to the map.
@@ -64,7 +64,7 @@ void SetBrowserPppForInstance(PP_Instance instance, BrowserPpp* browser_ppp) {
 }
 
 void UnsetBrowserPppForInstance(PP_Instance instance) {
-  if (instance_to_ppp_map == NULL) {
+  if (NULL == instance_to_ppp_map) {
     // Something major is wrong here.  We are deleting a map entry
     // when there is no map.
     NACL_NOTREACHED();
@@ -80,7 +80,7 @@ void UnsetBrowserPppForInstance(PP_Instance instance) {
 }
 
 BrowserPpp* LookupBrowserPppForInstance(PP_Instance instance) {
-  if (instance_to_ppp_map == NULL) {
+  if (NULL == instance_to_ppp_map) {
     return NULL;
   }
   return (*instance_to_ppp_map)[instance];
@@ -88,7 +88,7 @@ BrowserPpp* LookupBrowserPppForInstance(PP_Instance instance) {
 
 void SetModuleIdForSrpcChannel(NaClSrpcChannel* channel, PP_Module module_id) {
   // If there was no map, create one.
-  if (channel_to_module_id_map == NULL) {
+  if (NULL == channel_to_module_id_map) {
     channel_to_module_id_map = new std::map<NaClSrpcChannel*, PP_Module>;
   }
   // Add the channel to the map.
@@ -97,14 +97,14 @@ void SetModuleIdForSrpcChannel(NaClSrpcChannel* channel, PP_Module module_id) {
 
 void SetInstanceIdForSrpcChannel(NaClSrpcChannel* channel,
                                  PP_Instance instance_id) {
-  if (channel_to_instance_id_map == NULL) {
+  if (NULL == channel_to_instance_id_map) {
     channel_to_instance_id_map = new std::map<NaClSrpcChannel*, PP_Instance>;
   }
   (*channel_to_instance_id_map)[channel] = instance_id;
 }
 
 void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
-  if (channel_to_module_id_map == NULL) {
+  if (NULL == channel_to_module_id_map) {
     // Something major is wrong here.  We are deleting a map entry
     // when there is no map.
     NACL_NOTREACHED();
@@ -120,7 +120,7 @@ void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
 }
 
 void UnsetInstanceIdForSrpcChannel(NaClSrpcChannel* channel) {
-  if (channel_to_instance_id_map == NULL) {
+  if (NULL == channel_to_instance_id_map) {
     NACL_NOTREACHED();
     return;
   }
@@ -132,14 +132,14 @@ void UnsetInstanceIdForSrpcChannel(NaClSrpcChannel* channel) {
 }
 
 PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
-  if (channel_to_module_id_map == NULL) {
+  if (NULL == channel_to_module_id_map) {
     return 0;
   }
   return (*channel_to_module_id_map)[channel];
 }
 
 PP_Module LookupInstanceIdForSrpcChannel(NaClSrpcChannel* channel) {
-  if (channel_to_instance_id_map == NULL) {
+  if (NULL == channel_to_instance_id_map) {
     return 0;
   }
   return (*channel_to_instance_id_map)[channel];
@@ -154,13 +154,16 @@ NaClSrpcChannel* GetMainSrpcChannel(NaClSrpcRpc* upcall_rpc) {
 }
 
 NaClSrpcChannel* GetMainSrpcChannel(PP_Instance instance) {
-  return LookupBrowserPppForInstance(instance)->main_channel();
+  BrowserPpp* proxy = LookupBrowserPppForInstance(instance);
+  if (NULL == proxy)
+    return NULL;
+  return proxy->main_channel();
 }
 
 void CleanUpAfterDeadNexe(PP_Instance instance) {
   DebugPrintf("CleanUpAfterDeadNexe\n");
   BrowserPpp* proxy = LookupBrowserPppForInstance(instance);
-  if (proxy == NULL)
+  if (NULL == proxy)
     return;
   proxy->plugin()->ReportDeadNexe();  // Shuts down and deletes the proxy.
 }
@@ -207,9 +210,9 @@ const void* GetBrowserInterface(const char* interface_name) {
 
 const void* GetBrowserInterfaceSafe(const char* interface_name) {
   const void* ppb_interface = GetBrowserInterface(interface_name);
-  if (ppb_interface == NULL)
+  if (NULL == ppb_interface)
     DebugPrintf("PPB_GetInterface: %s not found\n", interface_name);
-  CHECK(ppb_interface != NULL);
+  CHECK(NULL != ppb_interface);
   return ppb_interface;
 }
 

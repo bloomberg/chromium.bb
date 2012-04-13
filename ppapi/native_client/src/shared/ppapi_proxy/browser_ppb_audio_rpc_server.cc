@@ -104,8 +104,12 @@ void StreamCreatedCallback(void* user_data, int32_t result) {
       factory.ImportSyncSocketHandle(nacl_sync_dup_handle));
   NaClDesc *nacl_shm = shm_wrapper->desc();
   NaClDesc *nacl_socket = socket_wrapper->desc();
+  NaClSrpcChannel* nacl_srpc_channel = ppapi_proxy::GetMainSrpcChannel(
+      data->instance_id);
+  if (NULL == nacl_srpc_channel)
+    return;
   static_cast<void>(PppAudioRpcClient::PPP_Audio_StreamCreated(
-      ppapi_proxy::GetMainSrpcChannel(data->instance_id),
+      nacl_srpc_channel,
       data->audio_id,
       nacl_shm,
       shared_memory_size,
