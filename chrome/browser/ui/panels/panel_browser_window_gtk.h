@@ -14,6 +14,7 @@
 
 class Panel;
 class PanelBoundsAnimation;
+class PanelDragGtk;
 class PanelSettingsMenuModel;
 class NativePanelTestingGtk;
 
@@ -50,6 +51,10 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
       GdkEventButton* event,
       guint32 last_click_time,
       gfx::Point last_click_position) OVERRIDE;
+  virtual bool HandleWindowEdgeLeftMousePress(
+      GtkWindow* window,
+      GdkWindowEdge edge,
+      GdkEventButton* event) OVERRIDE;
   virtual void SaveWindowPosition() OVERRIDE;
   virtual void SetGeometryHints() OVERRIDE;
   virtual bool UseCustomFrame() OVERRIDE;
@@ -125,6 +130,9 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   void EndDrag(bool canceled);
   void CleanupDragDrop();
 
+  // Creates helper for handling drags if not already created.
+  void EnsureDragHelperCreated();
+
   void SetBoundsInternal(const gfx::Rect& bounds, bool animate);
   void ResizeWindow(int width, int height);
 
@@ -185,6 +193,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   scoped_ptr<PanelSettingsMenuModel> settings_menu_model_;
   scoped_ptr<MenuGtk> settings_menu_;
+
+  scoped_ptr<PanelDragGtk> drag_helper_;
 
   // Size of window frame. Empty until the window has been allocated and sized.
   gfx::Size frame_size_;

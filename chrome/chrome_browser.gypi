@@ -3092,6 +3092,8 @@
         'browser/ui/panels/panel_constants.h',
         'browser/ui/panels/panel_drag_controller.cc',
         'browser/ui/panels/panel_drag_controller.h',
+        'browser/ui/panels/panel_drag_gtk.cc',
+        'browser/ui/panels/panel_drag_gtk.h',
         'browser/ui/panels/panel_resize_controller.cc',
         'browser/ui/panels/panel_resize_controller.h',
         'browser/ui/panels/panel_manager.cc',

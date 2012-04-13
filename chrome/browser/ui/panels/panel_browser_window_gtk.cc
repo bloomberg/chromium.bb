@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
+#include "chrome/browser/ui/panels/panel_drag_gtk.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
@@ -41,7 +42,7 @@ const char* const kDrawAttentionTitleMarkupSuffix = "</span>";
 // size in overflow expansion state.
 const int kMinWindowWidth = 2;
 
-}
+}  // namespace
 
 NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
                                       const gfx::Rect& bounds) {
@@ -104,10 +105,21 @@ void PanelBrowserWindowGtk::Init() {
 }
 
 bool PanelBrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
-  // Since panels are not resizable or movable by the user, we should not
-  // detect the window edge for behavioral purposes.  The edge, if any,
-  // is present only for visual aspects.
-  return FALSE;
+  // Only detect the window edge when panels can be resized by the user.
+  // This method is used by the base class to detect when the cursor has
+  // hit the window edge in order to change the cursor to a resize cursor
+  // and to detect when to initiate a resize drag.
+  return panel_->CanResizeByMouse() ?
+    BrowserWindowGtk::GetWindowEdge(x, y, edge) : FALSE;
+}
+
+void PanelBrowserWindowGtk::EnsureDragHelperCreated() {
+  if (drag_helper_.get())
+    return;
+
+  drag_helper_.reset(new PanelDragGtk(panel_.get()));
+  gtk_box_pack_end(GTK_BOX(window_vbox_), drag_helper_->widget(),
+                   FALSE, FALSE, 0);
 }
 
 bool PanelBrowserWindowGtk::HandleTitleBarLeftMousePress(
@@ -119,6 +131,22 @@ bool PanelBrowserWindowGtk::HandleTitleBarLeftMousePress(
   // here because we don't want to crash if hit-testing for titlebar in window
   // button press handler in BrowserWindowGtk is off by a pixel or two.
   DLOG(WARNING) << "Hit-testing for titlebar off by a pixel or two?";
+  return TRUE;
+}
+
+bool PanelBrowserWindowGtk::HandleWindowEdgeLeftMousePress(
+    GtkWindow* window,
+    GdkWindowEdge edge,
+    GdkEventButton* event) {
+  DCHECK_EQ(1U, event->button);
+  DCHECK_EQ(GDK_BUTTON_PRESS, event->type);
+
+  EnsureDragHelperCreated();
+  // Resize cursor was set by BrowserWindowGtk when mouse moved over
+  // window edge.
+  GdkCursor* cursor =
+      gdk_window_get_cursor(gtk_widget_get_window(GTK_WIDGET(window_)));
+  drag_helper_->InitialWindowEdgeMousePress(event, cursor, edge);
   return TRUE;
 }
 
@@ -286,6 +314,10 @@ void PanelBrowserWindowGtk::Observe(
         gtk_grab_remove(drag_widget_);
         DestroyDragWidget();
       }
+
+      if (drag_helper_.get())
+        drag_helper_.reset();
+
       panel_->OnNativePanelClosed();
       break;
   }
