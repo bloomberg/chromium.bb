@@ -177,6 +177,12 @@ def CheckFile(file_path):
     return 'Failed to stat file: %s' % e
 
   if EXECUTABLE_PERMISSION & st_mode:
+    # Look if the file starts with #!/
+    with open(file_path, 'rb') as f:
+      if f.read(3) == '#!/':
+        # That's fine.
+        return None
+    # TODO(maruel): Check that non-executable file do not start with a shebang.
     error = 'Contains executable permission'
     if VERBOSE:
       return '%s: %06o' % (error, st_mode)
