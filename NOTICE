@@ -373,8 +373,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 ======================================================================
-src/third_party/gnu_binutils is licensed as follows
-  (Cf. src/third_party/gnu_binutils/LICENSE):
+../third_party/gnu_binutils is licensed as follows
+  (Cf. ../third_party/gnu_binutils/LICENSE):
 ======================================================================
 What are the licensing terms?
 

@@ -23,7 +23,7 @@ vars = {
 
   "lcov_rev": "54822",
   "python_26_rev": "53573",
-  "tools_rev": "7955",
+  "tools_rev": "8151",
 
   # These are URL prefixes rather than revision numbers, so keep them separate.
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
@@ -94,6 +94,11 @@ deps = {
 
 deps_os = {
   "win": {
+    # GNU binutils assembler for x86-32.
+    "third_party/gnu_binutils":
+      (Var("native_client_trunk") + "/deps/third_party/gnu_binutils@" +
+       Var("tools_rev")),
+    # GNU binutils assembler for x86-64.
     "third_party/mingw-w64/mingw/bin":
       (Var("native_client_trunk") + "/deps/third_party/mingw-w64/mingw/bin@" +
        Var("tools_rev")),

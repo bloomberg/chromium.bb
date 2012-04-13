@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,7 +9,7 @@ import subprocess
 import re
 import os
 
-as32 = '/native_client/src/third_party/gnu_binutils/files/as.exe'
+as32 = '/third_party/gnu_binutils/files/as.exe'
 as64 = '/third_party/mingw-w64/mingw/bin/x86_64-w64-mingw32-as.exe'
 
 def main(argv):

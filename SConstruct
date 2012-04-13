@@ -2733,7 +2733,8 @@ def MakeWindowsEnv():
   else:
     # This assembler only works for x86-32 code.
     windows_env['WINASM'] = \
-        windows_env.File('src/third_party/gnu_binutils/files/as').abspath
+        windows_env.File('$SOURCE_ROOT/third_party/gnu_binutils/files/'
+                         'as').abspath
   return windows_env
 
 (windows_debug_env,
