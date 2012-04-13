@@ -963,6 +963,25 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                                                          self.view,
                                                          self.frame_xpath)
 
+  def _GetResultFromJSONRequestDiagnostics(self):
+    """Same as _GetResultFromJSONRequest without throwing a timeout exception.
+
+    This method is used to diagnose if a command returns without causing a
+    timout exception to be thrown.  This should be used for debugging purposes
+    only.
+
+    Returns:
+      True if the request returned; False if it timed out.
+    """
+    result = self._SendJSONRequest(-1,
+             json.dumps({'command': 'GetBrowserInfo',}),
+             self.action_max_timeout_ms())
+    if not result:
+      # The diagnostic command did not complete, Chrome is probably in a bad
+      # state
+      return False
+    return True
+
   def _GetResultFromJSONRequest(self, cmd_dict, windex=0, timeout=-1):
     """Issue call over the JSON automation channel and fetch output.
 
@@ -998,14 +1017,28 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       additional_info = 'No information available.'
       # Windows does not support os.kill until Python 2.7.
       if not self.IsWin() and _BROWSER_PID:
-        additional_info = ('The browser process ID %d still exists. '
-                           'It is possible that it is hung.' % _BROWSER_PID)
+        browser_pid_exists = True
+        # Does the browser PID exist?
         try:
           # Does not actually kill the process
           os.kill(int(_BROWSER_PID), 0)
         except OSError:
-          additional_info = ('The browser process ID %d no longer exists.' %
-                             _BROWSER_PID)
+          browser_pid_exists = False
+        if browser_pid_exists:
+          if self._GetResultFromJSONRequestDiagnostics():
+            # Browser info, worked, that means this hook had a problem
+            additional_info = ('The browser process ID %d still exists. '
+                               'PyAuto was able to get obtain browser info. It '
+                               'is possible this hook is broken.'
+                               % _BROWSER_PID)
+          else:
+            additional_info = ('The browser process ID %d still exists. '
+                               'PyAuto was not able to obtain browser info. '
+                               'It is possible the browser is hung.'
+                               % _BROWSER_PID)
+        else:
+          additional_info = ('The browser process ID %d no longer exists. '
+                             'Perhaps the browser crashed.' % _BROWSER_PID)
       elif not _BROWSER_PID:
         additional_info = ('The browser PID was not obtained. Does this test '
                            'have a unique startup configuration?')
