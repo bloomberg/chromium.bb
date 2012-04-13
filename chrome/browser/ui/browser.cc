@@ -3637,7 +3637,7 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
     session_service->TabRestored(new_contents, IsTabPinned(index));
   }
 
-  content::DevToolsManager::GetInstance()->TabReplaced(
+  content::DevToolsManager::GetInstance()->ContentsReplaced(
       old_contents->web_contents(), new_contents->web_contents());
 }
 

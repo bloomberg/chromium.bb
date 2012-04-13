@@ -33,9 +33,9 @@ class DevToolsFrontendHost : public DevToolsClientHost,
 
   // DevToolsFrontendHost implementation.
   virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
-  virtual void InspectedTabClosing() OVERRIDE;
+  virtual void InspectedContentsClosing() OVERRIDE;
   virtual void FrameNavigating(const std::string& url) OVERRIDE;
-  virtual void TabReplaced(WebContents* new_tab) OVERRIDE;
+  virtual void ContentsReplaced(WebContents* new_contents) OVERRIDE;
 
   // content::RenderViewHostObserver overrides.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -52,7 +52,7 @@ class DevToolsFrontendHost : public DevToolsClientHost,
               const std::string& content,
               bool save_as);
 
-  WebContentsImpl* tab_contents_;
+  WebContentsImpl* web_contents_;
   DevToolsFrontendHostDelegate* delegate_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsFrontendHost);
 };

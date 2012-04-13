@@ -57,7 +57,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   ~DevToolsClientHostImpl() {}
 
   // DevToolsClientHost interface
-  virtual void InspectedTabClosing() {
+  virtual void InspectedContentsClosing() {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -74,7 +74,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
                    data));
   }
 
-  virtual void TabReplaced(WebContents* new_tab) {
+  virtual void ContentsReplaced(WebContents* new_contents) {
   }
 
  private:
@@ -292,7 +292,7 @@ DevToolsHttpHandlerImpl::PageList DevToolsHttpHandlerImpl::GeneratePageList() {
     RenderProcessHost* render_process_host = it.GetCurrentValue();
     DCHECK(render_process_host);
 
-    // Ignore processes that don't have a connection, such as crashed tabs.
+    // Ignore processes that don't have a connection, such as crashed contents.
     if (!render_process_host->HasConnection())
       continue;
 

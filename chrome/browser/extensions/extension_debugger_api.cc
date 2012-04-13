@@ -90,10 +90,10 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
                             Value* params);
 
   // DevToolsClientHost interface
-  virtual void InspectedTabClosing();
-  virtual void DispatchOnInspectorFrontend(const std::string& message);
-  virtual void TabReplaced(WebContents* web_contents);
-  virtual void FrameNavigating(const std::string& url) {}
+  virtual void InspectedContentsClosing() OVERRIDE;
+  virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
+  virtual void ContentsReplaced(WebContents* web_contents) OVERRIDE;
+  virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 
  private:
   void SendDetachedEvent();
@@ -212,13 +212,12 @@ bool ExtensionDevToolsClientHost::MatchesContentsAndExtensionId(
 }
 
 // DevToolsClientHost interface
-void ExtensionDevToolsClientHost::InspectedTabClosing() {
+void ExtensionDevToolsClientHost::InspectedContentsClosing() {
   SendDetachedEvent();
   delete this;
 }
 
-void ExtensionDevToolsClientHost::TabReplaced(
-    WebContents* web_contents) {
+void ExtensionDevToolsClientHost::ContentsReplaced(WebContents* web_contents) {
   web_contents_ = web_contents;
 }
 

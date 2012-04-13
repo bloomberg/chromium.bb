@@ -60,7 +60,8 @@ bool DevToolsAgentHostRegistry::IsDebuggerAttached(WebContents* web_contents) {
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
   if (!devtools_manager)
     return false;
-  RenderViewHostDelegate* delegate = static_cast<TabContents*>(web_contents);
+  RenderViewHostDelegate* delegate =
+      static_cast<WebContentsImpl*>(web_contents);
   for (Instances::iterator it = g_instances.Get().begin();
        it != g_instances.Get().end(); ++it) {
     if (it->first->GetDelegate() != delegate)

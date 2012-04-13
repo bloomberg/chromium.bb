@@ -240,7 +240,7 @@ DevToolsWindow::~DevToolsWindow() {
   instances.erase(it);
 }
 
-void DevToolsWindow::InspectedTabClosing() {
+void DevToolsWindow::InspectedContentsClosing() {
   if (docked_) {
     // Update dev tools to reflect removed dev tools window.
 
@@ -261,9 +261,9 @@ void DevToolsWindow::InspectedTabClosing() {
   }
 }
 
-void DevToolsWindow::TabReplaced(WebContents* new_tab) {
+void DevToolsWindow::ContentsReplaced(WebContents* new_contents) {
   TabContentsWrapper* new_tab_wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(new_tab);
+      TabContentsWrapper::GetCurrentWrapperForContents(new_contents);
   DCHECK(new_tab_wrapper);
   if (!new_tab_wrapper)
       return;
@@ -682,7 +682,7 @@ void DevToolsWindow::ActivateWindow() {
 void DevToolsWindow::CloseWindow() {
   DCHECK(docked_);
   DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_);
-  InspectedTabClosing();
+  InspectedContentsClosing();
 }
 
 void DevToolsWindow::MoveWindow(int x, int y) {

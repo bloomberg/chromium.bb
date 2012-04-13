@@ -100,7 +100,7 @@ void ExtensionDevToolsBridge::UnregisterAsDevToolsClientHost() {
 
 // If the tab we are looking at is going away then we fire a closing event at
 // the extension.
-void ExtensionDevToolsBridge::InspectedTabClosing() {
+void ExtensionDevToolsBridge::InspectedContentsClosing() {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   // TODO(knorton): Remove this event in favor of the standard tabs.onRemoved
@@ -122,7 +122,7 @@ void ExtensionDevToolsBridge::DispatchOnInspectorFrontend(
       on_page_event_name_, json, profile_, GURL());
 }
 
-void ExtensionDevToolsBridge::TabReplaced(WebContents* new_tab) {
+void ExtensionDevToolsBridge::ContentsReplaced(WebContents* new_contents) {
   // We don't update the tab id as it needs to remain the same so that we can
   // properly unregister.
 }

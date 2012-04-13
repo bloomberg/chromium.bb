@@ -38,7 +38,7 @@ DevToolsManagerImpl::~DevToolsManagerImpl() {
   DCHECK(agent_to_client_host_.empty());
   DCHECK(client_to_agent_host_.empty());
   // By the time we destroy devtools manager, all orphan client hosts should
-  // have been delelted, no need to notify them upon tab closing.
+  // have been deleted; no need to notify them upon contents closing.
   DCHECK(orphan_client_hosts_.empty());
 }
 
@@ -133,7 +133,7 @@ void DevToolsManagerImpl::UnregisterDevToolsClientHostFor(
   if (!client_host)
     return;
   UnbindClientHost(agent_host, client_host);
-  client_host->InspectedTabClosing();
+  client_host->InspectedContentsClosing();
 }
 
 void DevToolsManagerImpl::OnNavigatingToPendingEntry(
@@ -167,9 +167,9 @@ void DevToolsManagerImpl::OnCancelPendingNavigation(
   }
 }
 
-void DevToolsManagerImpl::TabReplaced(WebContents* old_tab,
-                                      WebContents* new_tab) {
-  RenderViewHost* old_rvh = old_tab->GetRenderViewHost();
+void DevToolsManagerImpl::ContentsReplaced(WebContents* old_contents,
+                                           WebContents* new_contents) {
+  RenderViewHost* old_rvh = old_contents->GetRenderViewHost();
   if (!DevToolsAgentHostRegistry::HasDevToolsAgentHost(old_rvh))
     return;
 
@@ -177,13 +177,13 @@ void DevToolsManagerImpl::TabReplaced(WebContents* old_tab,
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(old_rvh);
   DevToolsClientHost* client_host = GetDevToolsClientHostFor(old_agent_host);
   if (!client_host)
-    return;  // Didn't know about old_tab.
+    return;  // Didn't know about old_contents.
   int cookie = DetachClientHost(old_rvh);
   if (cookie == -1)
-    return;  // Didn't know about old_tab.
+    return;  // Didn't know about old_contents.
 
-  client_host->TabReplaced(new_tab);
-  AttachClientHost(cookie, new_tab->GetRenderViewHost());
+  client_host->ContentsReplaced(new_contents);
+  AttachClientHost(cookie, new_contents->GetRenderViewHost());
 }
 
 int DevToolsManagerImpl::DetachClientHost(RenderViewHost* from_rvh) {

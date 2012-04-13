@@ -61,7 +61,8 @@ class CONTENT_EXPORT DevToolsManagerImpl
   // DevToolsManager implementation
   virtual bool DispatchOnInspectorBackend(DevToolsClientHost* from,
                                           const std::string& message) OVERRIDE;
-  virtual void TabReplaced(WebContents* old_tab, WebContents* new_tab) OVERRIDE;
+  virtual void ContentsReplaced(WebContents* old_contents,
+                                WebContents* new_contents) OVERRIDE;
   virtual void CloseAllClientHosts() OVERRIDE;
   virtual void AttachClientHost(int client_host_cookie,
                                 DevToolsAgentHost* to_agent) OVERRIDE;
@@ -101,9 +102,9 @@ class CONTENT_EXPORT DevToolsManagerImpl
   void AttachClientHost(int client_host_cookie,
                         RenderViewHost* to_rvh);
 
-  // These two maps are for tracking dependencies between inspected tabs and
+  // These two maps are for tracking dependencies between inspected contents and
   // their DevToolsClientHosts. They are useful for routing devtools messages
-  // and allow us to have at most one devtools client host per tab.
+  // and allow us to have at most one devtools client host per contents.
   //
   // DevToolsManagerImpl starts listening to DevToolsClientHosts when they are
   // put into these maps and removes them when they are closing.

@@ -18,7 +18,7 @@ DevToolsClientHost* DevToolsClientHost::CreateDevToolsFrontendHost(
     WebContents* client_web_contents,
     DevToolsFrontendHostDelegate* delegate) {
   return new DevToolsFrontendHost(
-      static_cast<TabContents*>(client_web_contents), delegate);
+      static_cast<WebContentsImpl*>(client_web_contents), delegate);
 }
 
 // static
@@ -29,10 +29,10 @@ void DevToolsClientHost::SetupDevToolsFrontendClient(
 }
 
 DevToolsFrontendHost::DevToolsFrontendHost(
-    TabContents* tab_contents,
+    WebContentsImpl* web_contents,
     DevToolsFrontendHostDelegate* delegate)
-    : RenderViewHostObserver(tab_contents->GetRenderViewHost()),
-      tab_contents_(tab_contents),
+    : RenderViewHostObserver(web_contents->GetRenderViewHost()),
+      web_contents_(web_contents),
       delegate_(delegate) {
 }
 
@@ -42,22 +42,22 @@ DevToolsFrontendHost::~DevToolsFrontendHost() {
 void DevToolsFrontendHost::DispatchOnInspectorFrontend(
     const std::string& message) {
   RenderViewHostImpl* target_host =
-      static_cast<RenderViewHostImpl*>(tab_contents_->GetRenderViewHost());
+      static_cast<RenderViewHostImpl*>(web_contents_->GetRenderViewHost());
   target_host->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
       target_host->GetRoutingID(),
       message));
 }
 
-void DevToolsFrontendHost::InspectedTabClosing() {
-  delegate_->InspectedTabClosing();
+void DevToolsFrontendHost::InspectedContentsClosing() {
+  delegate_->InspectedContentsClosing();
 }
 
 void DevToolsFrontendHost::FrameNavigating(const std::string& url) {
   delegate_->FrameNavigating(url);
 }
 
-void DevToolsFrontendHost::TabReplaced(WebContents* new_tab) {
-  delegate_->TabReplaced(new_tab);
+void DevToolsFrontendHost::ContentsReplaced(WebContents* new_contents) {
+  delegate_->ContentsReplaced(new_contents);
 }
 
 bool DevToolsFrontendHost::OnMessageReceived(

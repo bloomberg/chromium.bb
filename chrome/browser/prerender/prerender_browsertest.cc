@@ -451,10 +451,10 @@ class FakeDevToolsClientHost : public DevToolsClientHost {
  public:
   FakeDevToolsClientHost() {}
   virtual ~FakeDevToolsClientHost() {}
-  virtual void InspectedTabClosing() OVERRIDE {}
+  virtual void InspectedContentsClosing() OVERRIDE {}
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}
   virtual void DispatchOnInspectorFrontend(const std::string& msg) OVERRIDE {}
-  virtual void TabReplaced(WebContents* new_tab) OVERRIDE {}
+  virtual void ContentsReplaced(WebContents* new_contents) OVERRIDE {}
 };
 
 class RestorePrerenderMode {
