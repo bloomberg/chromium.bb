@@ -88,13 +88,14 @@ class ModuleSystemTest : public testing::Test {
         should_assertions_be_made_(true) {
     context_->Enter();
     assert_natives_ = new AssertNatives();
-    module_system_.reset(new ModuleSystem(source_map_.get()));
+    module_system_.reset(new ModuleSystem(context_, source_map_.get()));
     module_system_->RegisterNativeHandler("assert", scoped_ptr<NativeHandler>(
         assert_natives_));
     RegisterModule("add", "exports.Add = function(x, y) { return x + y; };");
   }
 
   ~ModuleSystemTest() {
+    module_system_.reset();
     context_->Exit();
     context_.Dispose();
   }

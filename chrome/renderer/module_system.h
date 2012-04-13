@@ -51,7 +51,7 @@ class ModuleSystem : public NativeHandler {
   };
 
   // |source_map| is a weak pointer.
-  explicit ModuleSystem(SourceMap* source_map);
+  explicit ModuleSystem(v8::Handle<v8::Context> context, SourceMap* source_map);
   virtual ~ModuleSystem();
 
   // Require the specified module. This is the equivalent of calling
@@ -107,10 +107,16 @@ class ModuleSystem : public NativeHandler {
   // Throws an exception in the calling JS context.
   v8::Handle<v8::Value> ThrowException(const std::string& message);
 
+  // The context that this ModuleSystem is for.
+  v8::Persistent<v8::Context> context_;
+
   // A map from module names to the JS source for that module. GetSource()
   // performs a lookup on this map.
   SourceMap* source_map_;
+
+  // A map from native handler names to native handlers.
   NativeHandlerMap native_handler_map_;
+
   // When 0, natives are disabled, otherwise indicates how many callers have
   // pinned natives as enabled.
   int natives_enabled_;

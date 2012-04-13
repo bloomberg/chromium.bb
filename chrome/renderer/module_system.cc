@@ -12,22 +12,32 @@ namespace {
 const char* kModuleSystem = "module_system";
 const char* kModuleName = "module_name";
 const char* kModuleField = "module_field";
+const char* kModulesField = "modules";
 
 } // namespace
 
-ModuleSystem::ModuleSystem(SourceMap* source_map)
-    : source_map_(source_map),
+ModuleSystem::ModuleSystem(v8::Handle<v8::Context> context,
+                           SourceMap* source_map)
+    : context_(v8::Persistent<v8::Context>::New(context)),
+      source_map_(source_map),
       natives_enabled_(0) {
   RouteFunction("require",
       base::Bind(&ModuleSystem::RequireForJs, base::Unretained(this)));
   RouteFunction("requireNative",
       base::Bind(&ModuleSystem::GetNative, base::Unretained(this)));
 
-  v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
-  global->SetHiddenValue(v8::String::New("modules"), v8::Object::New());
+  v8::Handle<v8::Object> global(context_->Global());
+  global->SetHiddenValue(v8::String::New(kModulesField), v8::Object::New());
+  global->SetHiddenValue(v8::String::New(kModuleSystem),
+                         v8::External::New(this));
 }
 
 ModuleSystem::~ModuleSystem() {
+  v8::HandleScope handle_scope;
+  // Deleting this value here prevents future lazy field accesses from
+  // referencing ModuleSystem after it has been freed.
+  context_->Global()->DeleteHiddenValue(v8::String::New(kModuleSystem));
+  context_.Dispose();
 }
 
 ModuleSystem::NativesEnabledScope::NativesEnabledScope(
@@ -57,7 +67,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   v8::HandleScope handle_scope;
   v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
   v8::Handle<v8::Object> modules(v8::Handle<v8::Object>::Cast(
-      global->GetHiddenValue(v8::String::New("modules"))));
+      global->GetHiddenValue(v8::String::New(kModulesField))));
   v8::Handle<v8::Value> exports(modules->Get(module_name));
   if (!exports->IsUndefined())
     return handle_scope.Close(exports);
@@ -101,8 +111,13 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetter(
   CHECK(info.Data()->IsObject());
   v8::HandleScope handle_scope;
   v8::Handle<v8::Object> parameters = v8::Handle<v8::Object>::Cast(info.Data());
+  v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
   v8::Handle<v8::Value> module_system_value =
-      parameters->Get(v8::String::New(kModuleSystem));
+      global->GetHiddenValue(v8::String::New(kModuleSystem));
+  if (module_system_value->IsUndefined()) {
+    // ModuleSystem has been deleted.
+    return v8::Undefined();
+  }
   ModuleSystem* module_system = static_cast<ModuleSystem*>(
       v8::Handle<v8::External>::Cast(module_system_value)->Value());
 
@@ -129,7 +144,6 @@ void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
                   v8::String::New(module_name.c_str()));
   parameters->Set(v8::String::New(kModuleField),
                   v8::String::New(module_field.c_str()));
-  parameters->Set(v8::String::New(kModuleSystem), v8::External::New(this));
 
   object->SetAccessor(v8::String::New(field.c_str()),
                       &ModuleSystem::LazyFieldGetter,
