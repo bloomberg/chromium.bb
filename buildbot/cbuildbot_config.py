@@ -641,7 +641,7 @@ internal_paladin.add_config('mario-paladin',
 
 internal_arm_paladin.add_config('daisy-paladin',
   boards=['daisy'],
-  important=False,
+  important=True,
   paladin_builder_name='daisy paladin',
 )
 
