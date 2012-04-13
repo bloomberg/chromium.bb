@@ -28,7 +28,6 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
@@ -56,6 +55,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_page_sync_handler.h"
 #endif
 
@@ -122,8 +122,8 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
     // Android doesn't have a sync promo/username on NTP.
     if (GetProfile()->IsSyncAccessible())
       web_ui->AddMessageHandler(new NewTabPageSyncHandler());
-#endif
 
+    // Or apps.
     if (ShouldShowApps()) {
       ExtensionService* service = GetProfile()->GetExtensionService();
       // We might not have an ExtensionService (on ChromeOS when not logged in
@@ -131,6 +131,7 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
       if (service)
         web_ui->AddMessageHandler(new AppLauncherHandler(service));
     }
+#endif
 
     web_ui->AddMessageHandler(new NewTabPageHandler());
     web_ui->AddMessageHandler(new FaviconWebUIHandler());
@@ -266,7 +267,9 @@ void NewTabUI::InitializeCSSCaches() {
 // static
 void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
   NewTabPageHandler::RegisterUserPrefs(prefs);
+#if !defined(OS_ANDROID)
   AppLauncherHandler::RegisterUserPrefs(prefs);
+#endif
   MostVisitedHandler::RegisterUserPrefs(prefs);
   if (NewTabUI::IsSuggestionsPageEnabled())
     SuggestionsHandler::RegisterUserPrefs(prefs);
@@ -303,8 +306,9 @@ bool NewTabUI::ShouldShowAppInstallHint() {
 
 // static
 bool NewTabUI::ShouldShowApps() {
-#if defined(USE_ASH)
+#if defined(USE_ASH) || defined(OS_ANDROID)
   // Ash shows apps in app list thus should not show apps page in NTP4.
+  // Android does not have apps.
   return false;
 #else
   return true;

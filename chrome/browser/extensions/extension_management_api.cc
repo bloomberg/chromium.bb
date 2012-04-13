@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
@@ -32,6 +31,10 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
+#endif
 
 using base::IntToString;
 using content::BrowserThread;
@@ -338,8 +341,10 @@ bool LaunchAppFunction::RunImpl() {
           extension, ExtensionPrefs::LAUNCH_DEFAULT);
   Browser::OpenApplication(profile(), extension, launch_container, GURL(),
                            NEW_FOREGROUND_TAB);
+#if !defined(OS_ANDROID)
   AppLauncherHandler::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_EXTENSION_API);
+#endif
 
   return true;
 }

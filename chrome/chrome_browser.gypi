@@ -4493,6 +4493,8 @@
             'browser/ui/webui/plugins_ui.h',
             'browser/ui/window_sizer.cc',
             'browser/ui/window_sizer.h',
+            'browser/ui/webui/ntp/app_launcher_handler.cc',
+            'browser/ui/webui/ntp/app_launcher_handler.h',
             'browser/ui/webui/ntp/ntp_resource_cache.cc',
             'browser/upgrade_detector.cc',
             'browser/upgrade_detector.h',
