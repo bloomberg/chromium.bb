@@ -43,6 +43,10 @@ const char kHTTPRequestedRangeNotSatisfiableText[] =
     "Requested Range Not Satisfiable";
 const char kHTTPInternalErrorText[] = "Internal Server Error";
 
+const int kFileOpenFlags = base::PLATFORM_FILE_OPEN |
+                           base::PLATFORM_FILE_READ |
+                           base::PLATFORM_FILE_ASYNC;
+
 }  // namespace
 
 BlobURLRequestJob::BlobURLRequestJob(

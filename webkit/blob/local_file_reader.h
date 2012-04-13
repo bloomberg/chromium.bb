@@ -34,9 +34,7 @@ class BLOB_EXPORT LocalFileReader {
 
   // Creates a new FileReader for a local file |file_path|.
   // |initial_offset| specifies the offset in the file where the first read
-  // should start.  If the given offset is out of the file range any
-  // read operation may error out with net::ERR_REQUEST_RANGE_NOT_SATISFIABLE.
-  //
+  // should start.
   // |expected_modification_time| specifies the expected last modification
   // If the value is non-null, the reader will check the underlying file's
   // actual modification time to see if the file has been modified, and if
