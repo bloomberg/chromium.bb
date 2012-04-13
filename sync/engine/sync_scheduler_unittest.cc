@@ -996,7 +996,8 @@ TEST_F(SyncSchedulerTest, BackoffRelief) {
 
 // Test that poll failures are ignored.  They should have no effect on
 // subsequent poll attempts, nor should they trigger a backoff/retry.
-TEST_F(SyncSchedulerTest, TransientPollFailure) {
+// This test is flaky under memory tools, see http://crbug.com/118370.
+TEST_F(SyncSchedulerTest, FLAKY_TransientPollFailure) {
   SyncShareRecords r;
   const TimeDelta poll_interval(TimeDelta::FromMilliseconds(10));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll_interval);
