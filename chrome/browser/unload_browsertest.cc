@@ -21,7 +21,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/url_request/url_request_test_util.h"
@@ -38,7 +37,8 @@ const std::string UNLOAD_HTML =
 
 const std::string BEFORE_UNLOAD_HTML =
     "<html><head><title>beforeunload</title></head><body>"
-    "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
+    "<script>window.onbeforeunload=function(e){"
+    "setTimeout('document.title=\"cancelled\"', 0);return 'foo'}</script>"
     "</body></html>";
 
 const std::string INNER_FRAME_WITH_FOCUS_HTML =
@@ -134,14 +134,6 @@ class UnloadTest : public InProcessBrowserTest {
                          const char* expected_title) {
     ui_test_utils::NavigateToURL(browser(),
                                  GURL("data:text/html," + html_content));
-    content::RenderProcessHost* process =
-        browser()->GetSelectedWebContents()->GetRenderProcessHost();
-    if (html_content.find("unload=") != std::string::npos &&
-        process->SuddenTerminationAllowed()) {
-      LOG(INFO) << "Explicitly unsetting sudden termination because IPC didn't "
-                   "arrive yet";
-      process->SetSuddenTerminationAllowed(false);
-    }
     CheckTitle(expected_title);
   }
 
@@ -271,14 +263,20 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
 
 // Tests closing the browser with a beforeunload handler and clicking
 // CANCEL in the beforeunload confirm dialog.
-// Test has been flakily timing-out: http://crbug.com/123110
-IN_PROC_BROWSER_TEST_F(UnloadTest, DISABLED_BrowserCloseBeforeUnloadCancel) {
+// If this test flakes, reopen http://crbug.com/123110
+IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
   browser()->CloseWindow();
-  ClickModalDialogButton(false);
 
-  // There's no real graceful way to wait for something _not_ to happen.
-  ui_test_utils::RunAllPendingInMessageLoop();
+  // We wait for the title to change after cancelling the popup to ensure that
+  // in-flight IPCs from the renderer reach the browser. Otherwise the browser
+  // won't put up the beforeunload dialog because it's waiting for an ack from
+  // the renderer.
+  string16 expected_title = ASCIIToUTF16("cancelled");
+  ui_test_utils::TitleWatcher title_watcher(
+      browser()->GetSelectedWebContents(), expected_title);
+  ClickModalDialogButton(false);
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   ui_test_utils::WindowedNotificationObserver window_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED,
