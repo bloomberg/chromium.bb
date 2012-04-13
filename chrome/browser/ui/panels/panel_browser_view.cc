@@ -61,7 +61,7 @@ PanelBrowserView::~PanelBrowserView() {
 }
 
 void PanelBrowserView::Init() {
-  if (!panel_->manager()->is_full_screen()) {
+  if (!panel_->manager()->display_settings_provider()->is_full_screen()) {
     // TODO(prasadt): Implement this code.
     // HideThePanel.
   }

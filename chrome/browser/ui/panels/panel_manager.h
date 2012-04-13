@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/timer.h"
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
@@ -26,7 +25,8 @@ class PanelResizeController;
 class PanelMouseWatcher;
 
 // This class manages a set of panels.
-class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver {
+class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
+                     public DisplaySettingsProvider::FullScreenObserver {
  public:
   // Returns a single instance.
   static PanelManager* GetInstance();
@@ -124,7 +124,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver {
     return docked_strip_.get();
   }
 
-  bool is_full_screen() const { return is_full_screen_; }
   OverflowPanelStrip* overflow_strip() const {
     return overflow_strip_.get();
   }
@@ -179,8 +178,8 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver {
   // Overridden from DisplaySettingsProvider::DisplayAreaObserver:
   virtual void OnDisplayAreaChanged(const gfx::Rect& display_area) OVERRIDE;
 
-  // Tests if the current active app is in full screen mode.
-  void CheckFullScreenMode();
+  // Overridden from DisplaySettingsProvider::FullScreenObserver:
+  virtual void OnFullScreenModeChanged(bool is_full_screen) OVERRIDE;
 
   // Tests may want to use a mock panel mouse watcher.
   void SetMouseWatcher(PanelMouseWatcher* watcher);
@@ -206,12 +205,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver {
   // changed. The testing code could set this flag to false so that other tests
   // will not be affected.
   bool auto_sizing_enabled_;
-
-  // Timer used to track if the current active app is in full screen mode.
-  base::RepeatingTimer<PanelManager> full_screen_mode_timer_;
-
-  // True if current active app is in full screen mode.
-  bool is_full_screen_;
 
   // True only while moving panels to overflow. Used to prevent moving panels
   // out of overflow while in the process of moving panels to overflow.

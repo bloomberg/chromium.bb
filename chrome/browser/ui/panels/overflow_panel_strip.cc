@@ -99,7 +99,7 @@ void OverflowPanelStrip::AddPanel(Panel* panel,
   }
 
   if (num_panels() == 1) {
-    if (!panel_manager_->is_full_screen())
+    if (!panel_manager_->display_settings_provider()->is_full_screen())
       panel_manager_->mouse_watcher()->AddObserver(this);
     UpdateMaxVisiblePanelsOnHover();
   }
@@ -128,7 +128,8 @@ void OverflowPanelStrip::RemovePanel(Panel* panel) {
   panels_.erase(iter);
   DoRefresh(index, panels_.size() - 1);
 
-  if (panels_.empty() && !panel_manager_->is_full_screen())
+  if (panels_.empty() &&
+      !panel_manager_->display_settings_provider()->is_full_screen())
     panel_manager_->mouse_watcher()->RemoveObserver(this);
 
   // Update the overflow indicator. If the number of overflow panels fall below
@@ -342,7 +343,8 @@ void OverflowPanelStrip::OnMouseMove(const gfx::Point& mouse_position) {
 
 bool OverflowPanelStrip::ShouldShowOverflowTitles(
     const gfx::Point& mouse_position) const {
-  if (panels_.empty() || panel_manager_->is_full_screen())
+  if (panels_.empty() ||
+      panel_manager_->display_settings_provider()->is_full_screen())
     return false;
 
   Panel* top_visible_panel = num_panels() >= max_visible_panels() ?

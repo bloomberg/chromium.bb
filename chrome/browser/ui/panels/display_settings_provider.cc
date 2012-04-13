@@ -5,14 +5,59 @@
 #include "chrome/browser/ui/panels/display_settings_provider.h"
 
 #include "base/logging.h"
+#include "chrome/browser/fullscreen.h"
 #include "ui/gfx/screen.h"
 
+namespace {
+// The polling interval to check any display settings change, like full-screen
+// mode changes.
+const int kFullScreenModeCheckIntervalMs = 1000;
+}  // namespace
+
 DisplaySettingsProvider::DisplaySettingsProvider()
-    : display_area_observer_(NULL),
-      desktop_bar_observer_(NULL) {
+    : is_full_screen_(false) {
 }
 
 DisplaySettingsProvider::~DisplaySettingsProvider() {
+}
+
+void DisplaySettingsProvider::AddDisplayAreaObserver(
+    DisplayAreaObserver* observer) {
+  display_area_observers_.AddObserver(observer);
+}
+
+void DisplaySettingsProvider::RemoveDisplayAreaObserver(
+    DisplayAreaObserver* observer) {
+  display_area_observers_.RemoveObserver(observer);
+}
+
+void DisplaySettingsProvider::AddDesktopBarObserver(
+    DesktopBarObserver* observer) {
+  desktop_bar_observers_.AddObserver(observer);
+}
+
+void DisplaySettingsProvider::RemoveDesktopBarObserver(
+    DesktopBarObserver* observer) {
+  desktop_bar_observers_.RemoveObserver(observer);
+}
+
+void DisplaySettingsProvider::AddFullScreenObserver(
+    FullScreenObserver* observer) {
+  full_screen_observers_.AddObserver(observer);
+
+  if (full_screen_observers_.size() == 1) {
+    full_screen_mode_timer_.Start(FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kFullScreenModeCheckIntervalMs),
+        this, &DisplaySettingsProvider::CheckFullScreenMode);
+  }
+}
+
+void DisplaySettingsProvider::RemoveFullScreenObserver(
+    FullScreenObserver* observer) {
+  full_screen_observers_.RemoveObserver(observer);
+
+  if (full_screen_observers_.size() == 0)
+    full_screen_mode_timer_.Stop();
 }
 
 gfx::Rect DisplaySettingsProvider::GetDisplayArea() {
@@ -47,8 +92,11 @@ void DisplaySettingsProvider::OnAutoHidingDesktopBarChanged() {
   gfx::Rect old_adjusted_work_area = adjusted_work_area_;
   AdjustWorkAreaForAutoHidingDesktopBars();
 
-  if (old_adjusted_work_area != adjusted_work_area_ && display_area_observer_)
-    display_area_observer_->OnDisplayAreaChanged(adjusted_work_area_);
+  if (old_adjusted_work_area != adjusted_work_area_) {
+    FOR_EACH_OBSERVER(DisplayAreaObserver,
+                      display_area_observers_,
+                      OnDisplayAreaChanged(adjusted_work_area_));
+  }
 }
 
 bool DisplaySettingsProvider::IsAutoHidingDesktopBarEnabled(
@@ -85,6 +133,17 @@ void DisplaySettingsProvider::AdjustWorkAreaForAutoHidingDesktopBars() {
         DisplaySettingsProvider::DESKTOP_BAR_ALIGNED_RIGHT);
     adjusted_work_area_.set_width(adjusted_work_area_.width() - space);
   }
+}
+
+void DisplaySettingsProvider::CheckFullScreenMode() {
+  bool is_full_screen = IsFullScreenMode();
+  if (is_full_screen == is_full_screen_)
+    return;
+  is_full_screen_ = is_full_screen;
+
+  FOR_EACH_OBSERVER(FullScreenObserver,
+                    full_screen_observers_,
+                    OnFullScreenModeChanged(is_full_screen_));
 }
 
 #if defined(USE_AURA)
