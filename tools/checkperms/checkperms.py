@@ -79,6 +79,7 @@ WHITELIST_FILES = [
     '/third_party/lzma_sdk/executable/7za.exe',
     '/third_party/swig/linux/swig',
     '/third_party/tcmalloc/chromium/src/pprof',
+    '/tools/deep_memory_profiler/dmprof',
     '/tools/git/post-checkout',
     '/tools/git/post-merge',
     '/tools/ld_bfd/ld',
