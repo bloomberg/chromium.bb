@@ -1309,9 +1309,6 @@ TEST_F(GDataFileSystemTest, RenameFile) {
       base::Bind(&CallbackHelper::FileOperationCallback,
                  callback_helper_.get());
 
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
-
   file_system_->Move(src_file_path, dest_file_path, callback);
   message_loop_.RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
@@ -1353,12 +1350,6 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
                  callback_helper_.get());
-
-  // Expect notification for both source and destination directories.
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   message_loop_.RunAllPending();
@@ -1404,12 +1395,6 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
       base::Bind(&CallbackHelper::FileOperationCallback,
                  callback_helper_.get());
 
-  // Expect notification for both source and destination directories.
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
-
   file_system_->Move(src_file_path, dest_file_path, callback);
   message_loop_.RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
@@ -1431,9 +1416,6 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
   FilePath interim_file_path(FILE_PATH_LITERAL("gdata/Test.log"));
 
   LoadRootFeedDocument("root_feed.json");
-
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
 
   AddDirectoryFromFile(dest_parent_path, "directory_entry_atom.json");
 
@@ -1470,15 +1452,6 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
                  callback_helper_.get());
-
-  // Expect notification for both source and destination directories plus
-  // interim file path.
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/New Folder 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
   message_loop_.RunAllPending();
@@ -1606,10 +1579,6 @@ TEST_F(GDataFileSystemTest, RemoveFiles) {
   std::string file_in_subdir_resource = file->AsGDataFile()->resource_id();
   EXPECT_EQ(file, FindFileByResourceId(file_in_subdir_resource));
 
-  // Once for file in root and once for file...
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(2);
-
   // Remove first file in root.
   EXPECT_TRUE(RemoveFile(file_in_root));
   EXPECT_TRUE(FindFile(file_in_root) == NULL);
@@ -1642,17 +1611,11 @@ TEST_F(GDataFileSystemTest, RemoveFiles) {
 TEST_F(GDataFileSystemTest, CreateDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-
   // Create directory in root.
   FilePath dir_path(FILE_PATH_LITERAL("gdata/New Folder 1"));
   EXPECT_TRUE(FindFile(dir_path) == NULL);
   AddDirectoryFromFile(dir_path, "directory_entry_atom.json");
   EXPECT_TRUE(FindFile(dir_path) != NULL);
-
-  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
-      Eq(FilePath(FILE_PATH_LITERAL("gdata/New Folder 1"))))).Times(1);
 
   // Create directory in a sub dirrectory.
   FilePath subdir_path(FILE_PATH_LITERAL("gdata/New Folder 1/New Folder 2"));
