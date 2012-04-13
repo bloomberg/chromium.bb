@@ -164,16 +164,17 @@ HRESULT RegisterPortMonitor(bool install, const FilePath& install_path) {
   base::win::ScopedHandle scoped_process_handle(process_handle);
 
   DWORD exit_code = S_OK;
-  if (!GetExitCodeProcess(scoped_process_handle, &exit_code)) {
-    HRESULT result = cloud_print::GetLastHResult();
-    LOG(ERROR) << "Unable to get regsvr32.exe exit code.";
-    return result;
-  }
-  if (exit_code != 0) {
-    LOG(ERROR) << "Regsvr32.exe failed with " << exit_code;
-    return HRESULT_FROM_WIN32(exit_code);
-  }
-  if (!install) {
+  if (install) {
+    if (!GetExitCodeProcess(scoped_process_handle, &exit_code)) {
+      HRESULT result = cloud_print::GetLastHResult();
+      LOG(ERROR) << "Unable to get regsvr32.exe exit code.";
+      return result;
+    }
+    if (exit_code != 0) {
+      LOG(ERROR) << "Regsvr32.exe failed with " << exit_code;
+      return HRESULT_FROM_WIN32(exit_code);
+    }
+  } else {
     if (!file_util::Delete(target_path, false)) {
       LOG(ERROR) << "Unable to delete " << target_path.value();
       return ERROR_ACCESS_DENIED;
@@ -456,7 +457,25 @@ HRESULT InstallVirtualDriver(const FilePath& install_path) {
   return S_OK;
 }
 
-HRESULT UninstallVirtualDriver(const FilePath& install_path) {
+void GetCurrentInstallPath(FilePath* install_path) {
+  base::win::RegKey key;
+  if (key.Open(HKEY_LOCAL_MACHINE, kUninstallRegistry,
+               KEY_QUERY_VALUE) != ERROR_SUCCESS) {
+    // Not installed.
+    *install_path = FilePath();
+    return;
+  }
+  string16 install_path_value;
+  key.ReadValue(L"InstallLocation", &install_path_value);
+  *install_path = FilePath(install_path_value);
+}
+
+HRESULT UninstallVirtualDriver() {
+  FilePath install_path;
+  GetCurrentInstallPath(&install_path);
+  if (install_path.value().empty()) {
+    return S_OK;
+  }
   HRESULT result = S_OK;
   result = UninstallPrinter();
   if (!SUCCEEDED(result)) {
@@ -546,16 +565,16 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
             __in  int nCmdShow) {
   base::AtExitManager at_exit_manager;
   CommandLine::Init(0, NULL);
-
-  FilePath install_path;
-  HRESULT retval = PathService::Get(base::DIR_EXE, &install_path);
-  if (SUCCEEDED(retval)) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch("douninstall")) {
-      retval = UninstallVirtualDriver(install_path);
-    } else if (CommandLine::ForCurrentProcess()->HasSwitch("uninstall")) {
-      retval = LaunchChildForUninstall();
-    } else {
-      retval = UninstallPreviousVersion();
+  HRESULT retval = S_OK;
+  if (CommandLine::ForCurrentProcess()->HasSwitch("douninstall")) {
+    retval = UninstallVirtualDriver();
+  } else if (CommandLine::ForCurrentProcess()->HasSwitch("uninstall")) {
+    retval = LaunchChildForUninstall();
+  } else {
+    retval = UninstallPreviousVersion();
+    if (SUCCEEDED(retval)) {
+      FilePath install_path;
+      retval = PathService::Get(base::DIR_EXE, &install_path);
       if (SUCCEEDED(retval)) {
         retval = InstallVirtualDriver(install_path);
       }
