@@ -111,35 +111,6 @@
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
           ],
         },
-        # NOTE: we cannot run this on ARM since we are using a cross compiler
-        {
-          'target_name': 'run_sigpipe_test',
-          'message': 'running test run_imc_tests',
-          'type': 'none',
-          'dependencies': [
-            'sigpipe_test',
-          ],
-          'actions': [
-          {
-            'action_name': 'run_sigpipe_test',
-            'msvs_cygwin_shell': 0,
-            'inputs': [
-              '<(COMMAND_TESTER)',
-              '<(PRODUCT_DIR)/sigpipe_test',
-            ],
-            'outputs': [
-              '<(PRODUCT_DIR)/test-output/sigpipe_test.out',
-            ],
-            'action': [
-              '<@(python_exe)',
-              '<(COMMAND_TESTER)',
-              '<(PRODUCT_DIR)/sigpipe_test',
-              '>',
-              '<@(_outputs)',
-            ],
-          },
-          ]
-        },
       ],
     }],
     ['OS=="win"', {
