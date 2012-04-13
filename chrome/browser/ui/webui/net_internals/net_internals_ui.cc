@@ -276,6 +276,9 @@ class NetInternalsMessageHandler
   void OnImportONCFile(const ListValue* list);
   void OnStoreDebugLogs(const ListValue* list);
   void OnStoreDebugLogsCompleted(const FilePath& log_path, bool succeeded);
+  void OnSetNetworkDebugMode(const ListValue* list);
+  void OnSetNetworkDebugModeCompleted(const std::string& subsystem,
+                                      bool succeeded);
 #endif
 
  private:
@@ -648,6 +651,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "storeDebugLogs",
       base::Bind(&NetInternalsMessageHandler::OnStoreDebugLogs,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setNetworkDebugMode",
+      base::Bind(&NetInternalsMessageHandler::OnSetNetworkDebugMode,
                  base::Unretained(this)));
 #endif
 }
@@ -1379,6 +1386,30 @@ void NetInternalsMessageHandler::OnStoreDebugLogsCompleted(
                         Value::CreateStringValue(status));
 }
 
+void NetInternalsMessageHandler::OnSetNetworkDebugMode(const ListValue* list) {
+  std::string subsystem;
+  if (list->GetSize() != 1 || !list->GetString(0, &subsystem))
+    NOTREACHED();
+  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->
+      SetDebugMode(
+          subsystem,
+          base::Bind(
+              &NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted,
+              AsWeakPtr(),
+              subsystem));
+}
+
+void NetInternalsMessageHandler::OnSetNetworkDebugModeCompleted(
+    const std::string& subsystem,
+    bool succeeded) {
+  std::string status;
+  if (succeeded)
+    status = "Debug mode is changed to " + subsystem;
+  else
+    status = "Failed to change debug mode to " + subsystem;
+  SendJavascriptCommand("receivedSetNetworkDebugMode",
+                        Value::CreateStringValue(status));
+}
 #endif
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpPipeliningStatus(

@@ -167,6 +167,20 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
+  virtual void SetDebugMode(const std::string& subsystem,
+                            const SetDebugModeCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kSetDebugMode);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(subsystem);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnSetDebugMode,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
   virtual void StartSystemTracing() OVERRIDE {
     dbus::MethodCall method_call(
         debugd::kDebugdInterface,
@@ -226,6 +240,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
  private:
+  // Called when a response for GetDebugLogs() is received.
   void OnGetDebugLogs(const GetDebugLogsCallback& callback,
                       dbus::Response* response) {
     if (!response) {
@@ -234,6 +249,17 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       return;
     }
     callback.Run(true);
+  }
+
+  // Called when a response for SetDebugMode() is received.
+  void OnSetDebugMode(const SetDebugModeCallback& callback,
+                      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to change debug mode";
+      callback.Run(false);
+    } else {
+      callback.Run(true);
+    }
   }
 
   // Called when a response for StartSystemTracing() is received.
@@ -273,6 +299,10 @@ class DebugDaemonClientStubImpl : public DebugDaemonClient {
   // DebugDaemonClient overrides.
   virtual void GetDebugLogs(base::PlatformFile file,
                             const GetDebugLogsCallback& callback) OVERRIDE {
+    callback.Run(false);
+  }
+  virtual void SetDebugMode(const std::string& subsystem,
+                            const SetDebugModeCallback& callback) OVERRIDE {
     callback.Run(false);
   }
   virtual void StartSystemTracing() OVERRIDE {}

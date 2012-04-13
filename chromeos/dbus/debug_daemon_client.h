@@ -31,6 +31,16 @@ class CHROMEOS_EXPORT DebugDaemonClient {
   virtual void GetDebugLogs(base::PlatformFile file,
                             const GetDebugLogsCallback& callback) = 0;
 
+  // Called once SetDebugMode() is complete. Takes one parameter:
+  // - succeeded: debug mode was changed successfully.
+  typedef base::Callback<void(bool succeeded)> SetDebugModeCallback;
+
+  // Requests to change debug mode to given |subsystem| and calls
+  // |callback| when completed. |subsystem| should be one of the
+  // following: "wifi", "ethernet", "cellular" or "none".
+  virtual void SetDebugMode(const std::string& subsystem,
+                            const SetDebugModeCallback& callback) = 0;
+
   // Requests to start system/kernel tracing.
   virtual void StartSystemTracing() = 0;
 

@@ -27,6 +27,7 @@ var BrowserBridge = (function() {
     this.constantsObservers_ = [];
     this.crosONCFileParseObservers_ = [];
     this.storeDebugLogsObservers_ = [];
+    this.setNetworkDebugModeObservers_ = [];
 
     this.pollableDataHelpers_ = {};
     this.pollableDataHelpers_.proxySettings =
@@ -238,6 +239,10 @@ var BrowserBridge = (function() {
       this.send('storeDebugLogs');
     },
 
+    setNetworkDebugMode: function(subsystem) {
+      this.send('setNetworkDebugMode', [subsystem]);
+    },
+
     sendGetHttpPipeliningStatus: function() {
       this.send('getHttpPipeliningStatus');
     },
@@ -333,6 +338,11 @@ var BrowserBridge = (function() {
     receivedStoreDebugLogs: function(status) {
       for (var i = 0; i < this.storeDebugLogsObservers_.length; i++)
         this.storeDebugLogsObservers_[i].onStoreDebugLogs(status);
+    },
+
+    receivedSetNetworkDebugMode: function(status) {
+      for (var i = 0; i < this.setNetworkDebugModeObservers_.length; i++)
+        this.setNetworkDebugModeObservers_[i].onSetNetworkDebugMode(status);
     },
 
     receivedHttpCacheInfo: function(info) {
@@ -538,6 +548,16 @@ var BrowserBridge = (function() {
      */
     addStoreDebugLogsObserver: function(observer) {
       this.storeDebugLogsObservers_.push(observer);
+    },
+
+    /**
+     * Adds a listener for network debugging mode status. The observer
+     * will be called back with:
+     *
+     *   observer.onSetNetworkDebugMode(status);
+     */
+    addSetNetworkDebugModeObserver: function(observer) {
+      this.setNetworkDebugModeObservers_.push(observer);
     },
 
     /**

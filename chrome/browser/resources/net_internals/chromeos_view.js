@@ -110,6 +110,24 @@ var CrosView = (function() {
   }
 
   /**
+   *  Set storing debug logs status.
+   *
+   *  @private
+   */
+  function setStoreDebugLogsStatus_(status) {
+    $(CrosView.STORE_DEBUG_LOGS_STATUS_ID).innerText = status;
+  }
+
+  /**
+   *  Set status for current debug mode.
+   *
+   *  @private
+   */
+  function setNetworkDebugModeStatus_(status) {
+    $(CrosView.DEBUG_STATUS_ID).innerText = status;
+  }
+
+  /**
    *  An event listener for the file selection field.
    *
    *  @private
@@ -125,17 +143,9 @@ var CrosView = (function() {
   }
 
   /**
-   *  Set storing debug logs status.
-   *
-   *  @private
-   */
-  function setStoreDebugLogsStatus_(status) {
-    $(CrosView.STORE_DEBUG_LOGS_STATUS_ID).innerText = status;
-  }
-
-  /**
    *  Add event listeners for the file selection, passcode input
-   *  fields and for the button for debug logs storing.
+   *  fields, for the button for debug logs storing and for buttons
+   *  for debug mode selection.
    *
    *  @private
    */
@@ -152,6 +162,19 @@ var CrosView = (function() {
       $(CrosView.STORE_DEBUG_LOGS_STATUS_ID).innerText = '';
       g_browser.storeDebugLogs();
     }, false);
+
+    $(CrosView.DEBUG_WIFI_ID).addEventListener('click', function(event) {
+        setNetworkDebugMode_('wifi');
+    }, false);
+    $(CrosView.DEBUG_ETHERNET_ID).addEventListener('click', function(event) {
+        setNetworkDebugMode_('ethernet');
+    }, false);
+    $(CrosView.DEBUG_CELLULAR_ID).addEventListener('click', function(event) {
+        setNetworkDebugMode_('cellular');
+    }, false);
+    $(CrosView.DEBUG_NONE_ID).addEventListener('click', function(event) {
+        setNetworkDebugMode_('none');
+    }, false);
   }
 
   /**
@@ -166,6 +189,16 @@ var CrosView = (function() {
   }
 
   /**
+   *  Enables or disables debug mode for a specified subsystem.
+   *
+   *  @private
+   */
+  function setNetworkDebugMode_(subsystem) {
+    $(CrosView.DEBUG_STATUS_ID).innerText = '';
+    g_browser.setNetworkDebugMode(subsystem);
+  }
+
+  /**
    *  @constructor
    *  @extends {DivView}
    */
@@ -177,6 +210,7 @@ var CrosView = (function() {
 
     g_browser.addCrosONCFileParseObserver(this);
     g_browser.addStoreDebugLogsObserver(this);
+    g_browser.addSetNetworkDebugModeObserver(this);
     addEventListeners_();
   }
 
@@ -191,6 +225,11 @@ var CrosView = (function() {
   CrosView.PARSE_STATUS_ID = 'chromeos-view-parse-status';
   CrosView.STORE_DEBUG_LOGS_ID = 'chromeos-view-store-debug-logs';
   CrosView.STORE_DEBUG_LOGS_STATUS_ID = 'chromeos-view-store-debug-logs-status';
+  CrosView.DEBUG_WIFI_ID = 'chromeos-view-network-debugging-wifi';
+  CrosView.DEBUG_ETHERNET_ID = 'chromeos-view-network-debugging-ethernet';
+  CrosView.DEBUG_CELLULAR_ID = 'chromeos-view-network-debugging-cellular';
+  CrosView.DEBUG_NONE_ID = 'chromeos-view-network-debugging-none';
+  CrosView.DEBUG_STATUS_ID = 'chromeos-view-network-debugging-status';
 
   cr.addSingletonGetter(CrosView);
 
@@ -200,6 +239,7 @@ var CrosView = (function() {
 
     onONCFileParse: setParseStatus_,
     onStoreDebugLogs: setStoreDebugLogsStatus_,
+    onSetNetworkDebugMode: setNetworkDebugModeStatus_,
   };
 
   return CrosView;
