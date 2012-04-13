@@ -48,6 +48,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -1313,6 +1314,7 @@ bool UpdateTabFunction::UpdateURLIfPresent(DictionaryValue* update_props,
     params.extension_id = extension_id();
     params.is_javascript = true;
     params.code = url.path();
+    params.run_at = UserScript::DOCUMENT_IDLE;
     params.all_frames = false;
     params.in_main_world = true;
 

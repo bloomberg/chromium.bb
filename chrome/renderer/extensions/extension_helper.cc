@@ -19,7 +19,7 @@
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
-#include "chrome/renderer/extensions/user_script_idle_scheduler.h"
+#include "chrome/renderer/extensions/user_script_scheduler.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
@@ -41,11 +41,11 @@ using webkit_glue::ImageResourceFetcher;
 using webkit_glue::ResourceFetcher;
 
 namespace {
-// Keeps a mapping from the frame pointer to a UserScriptIdleScheduler object.
+// Keeps a mapping from the frame pointer to a UserScriptScheduler object.
 // We store this mapping per process, because a frame can jump from one
 // document to another with adoptNode, and so having the object be a
 // RenderViewObserver means it might miss some notifications after it moves.
-typedef std::map<WebFrame*, UserScriptIdleScheduler*> SchedulerMap;
+typedef std::map<WebFrame*, UserScriptScheduler*> SchedulerMap;
 static base::LazyInstance<SchedulerMap> g_schedulers =
     LAZY_INSTANCE_INITIALIZER;
 }
@@ -149,6 +149,9 @@ void ExtensionHelper::DidFinishLoad(WebKit::WebFrame* frame) {
 void ExtensionHelper::DidCreateDocumentElement(WebFrame* frame) {
   extension_dispatcher_->user_script_slave()->InjectScripts(
       frame, UserScript::DOCUMENT_START);
+  SchedulerMap::iterator i = g_schedulers.Get().find(frame);
+  if (i != g_schedulers.Get().end())
+    i->second->DidCreateDocumentElement();
 }
 
 void ExtensionHelper::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
@@ -181,7 +184,7 @@ void ExtensionHelper::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   if (g_schedulers.Get().count(frame))
     return;
 
-  g_schedulers.Get()[frame] = new UserScriptIdleScheduler(
+  g_schedulers.Get()[frame] = new UserScriptScheduler(
       frame, extension_dispatcher_);
 }
 

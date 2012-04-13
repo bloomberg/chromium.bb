@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/user_script.h"
 #include "content/public/browser/web_contents_observer.h"
 
 // Implement API call tabs.executeScript and tabs.insertCSS.
@@ -58,6 +59,9 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
   // If all_frames_ is true, script or CSS text would be injected
   // to all frames; Otherwise only injected to top main frame.
   bool all_frames_;
+
+  // The intended time to run the script.
+  UserScript::RunLocation run_at_;
 };
 
 class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {

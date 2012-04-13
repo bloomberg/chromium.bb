@@ -36,6 +36,7 @@ extern const char kOpenerTabIdKey[];
 extern const char kPinnedKey[];
 extern const char kQualityKey[];
 extern const char kHighlightedKey[];
+extern const char kRunAtKey[];
 extern const char kSelectedKey[];
 extern const char kShowStateKey[];
 extern const char kStatusKey[];

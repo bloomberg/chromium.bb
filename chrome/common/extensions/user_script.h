@@ -39,6 +39,7 @@ class UserScript {
 
   // Locations that user scripts can be run inside the document.
   enum RunLocation {
+    UNDEFINED,
     DOCUMENT_START,  // After the documentElemnet is created, but before
                      // anything else happens.
     DOCUMENT_END,  // After the entire document is parsed. Same as
@@ -47,7 +48,6 @@ class UserScript {
                     // is "idle". Currently this uses the simple heuristic of:
                     // min(DOM_CONTENT_LOADED + TIMEOUT, ONLOAD), but no
                     // particular injection point is guaranteed.
-
     RUN_LOCATION_LAST  // Leave this as the last item.
   };
 

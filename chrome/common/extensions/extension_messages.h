@@ -67,6 +67,9 @@ IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   // Whether to inject into all frames, or only the root frame.
   IPC_STRUCT_MEMBER(bool, all_frames)
 
+  // When to inject the code.
+  IPC_STRUCT_MEMBER(int, run_at)
+
   // Whether to execute code in the main world (as opposed to an isolated
   // world).
   IPC_STRUCT_MEMBER(bool, in_main_world)

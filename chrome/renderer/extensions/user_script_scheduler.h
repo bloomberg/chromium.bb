@@ -1,14 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_IDLE_SCHEDULER_H_
-#define CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_IDLE_SCHEDULER_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SCHEDULER_H_
+#define CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SCHEDULER_H_
 #pragma once
 
+#include <map>
 #include <queue>
-#include <vector>
 
+#include "chrome/common/extensions/user_script.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 
@@ -20,9 +21,12 @@ namespace WebKit {
 class WebFrame;
 }
 
-// Implements support for injecting scripts at "document idle". Currently,
-// determining idleness is simple: it is whichever of the following happens
-// first:
+// Implements support for injecting scripts at different times in the document
+// loading process. The different possible time are described in
+// UserScript::RunLocation.
+//
+// Currently, determining idleness is simple: it is whichever of the following
+// happens first:
 //
 // a) When the initial DOM for a page is complete + kUserScriptIdleTimeout,
 // b) or when the page has completely loaded including all subresources.
@@ -36,18 +40,23 @@ class WebFrame;
 // RenderViews thanks to adoptNode.  So we have each RenderView's
 // ExtensionHelper proxy these calls to the renderer process'
 // ExtensionDispatcher, which contains the mapping from WebFrame to us.
-class UserScriptIdleScheduler {
+class UserScriptScheduler {
  public:
-  UserScriptIdleScheduler(WebKit::WebFrame* frame,
+  UserScriptScheduler(WebKit::WebFrame* frame,
                           ExtensionDispatcher* extension_dispatcher);
-  ~UserScriptIdleScheduler();
+  ~UserScriptScheduler();
 
   void ExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
+  void DidCreateDocumentElement();
   void DidFinishDocumentLoad();
   void DidFinishLoad();
   void DidStartProvisionalLoad();
 
  private:
+  typedef
+    std::queue<linked_ptr<ExtensionMsg_ExecuteCode_Params> >
+    ExecutionQueue;
+
   // Run user scripts, except if they've already run for this frame, or the
   // frame has been destroyed.
   void MaybeRun();
@@ -60,19 +69,25 @@ class UserScriptIdleScheduler {
   bool GetAllChildFrames(WebKit::WebFrame* parent_frame,
                          std::vector<WebKit::WebFrame*>* frames_vector) const;
 
-  base::WeakPtrFactory<UserScriptIdleScheduler> weak_factory_;
+  // Call to signify thet the idle timeout has expired.
+  void IdleTimeout();
+
+  base::WeakPtrFactory<UserScriptScheduler> weak_factory_;
 
   // The Frame we will run scripts in.
   WebKit::WebFrame* frame_;
 
-  // Whether we have already run scripts.
-  bool has_run_;
+  // The current location in the document loading process.
+  // Will be UserScript::UNDEFINED if it is before any scripts should be run.
+  UserScript::RunLocation current_location_;
+
+  // Whether we have already run the idle scripts.
+  bool has_run_idle_;
 
   // This is only used if we're for the main frame.
-  std::queue<linked_ptr<ExtensionMsg_ExecuteCode_Params> >
-      pending_code_execution_queue_;
+  std::map<UserScript::RunLocation, ExecutionQueue> pending_execution_map_;
 
   ExtensionDispatcher* extension_dispatcher_;
 };
 
-#endif  // CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_IDLE_SCHEDULER_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_USER_SCRIPT_SCHEDULER_H_

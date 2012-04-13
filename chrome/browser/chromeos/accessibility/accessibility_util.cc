@@ -17,6 +17,7 @@
 #include "chrome/browser/speech/extension_api/tts_extension_api_platform.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -71,6 +72,7 @@ class ContentScriptLoader {
       params.extension_id = extension_id_;
       params.is_javascript = true;
       params.code = data;
+      params.run_at = UserScript::DOCUMENT_IDLE;
       params.all_frames = true;
       params.in_main_world = false;
       render_view_host_->Send(new ExtensionMsg_ExecuteCode(
@@ -110,7 +112,7 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
       profile->GetExtensionService();
   FilePath path = FilePath(extension_misc::kAccessExtensionPath)
       .AppendASCII(extension_misc::kChromeVoxDirectoryName);
-  if (enabled) { // Load ChromeVox
+  if (enabled) {  // Load ChromeVox
     const Extension* extension =
         extension_service->component_loader()->Add(IDR_CHROMEVOX_MANIFEST,
                                                    path);
@@ -125,6 +127,7 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
       params.extension_id = extension->id();
       params.is_javascript = true;
       params.code = "window.INJECTED_AFTER_LOAD = true;";
+      params.run_at = UserScript::DOCUMENT_IDLE;
       params.all_frames = true;
       params.in_main_world = false;
       render_view_host->Send(new ExtensionMsg_ExecuteCode(
@@ -147,7 +150,7 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
     }
 
     DLOG(INFO) << "ChromeVox was Loaded.";
-  } else { // Unload ChromeVox
+  } else {  // Unload ChromeVox
     extension_service->component_loader()->Remove(path);
     DLOG(INFO) << "ChromeVox was Unloaded.";
   }

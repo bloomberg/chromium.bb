@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/user_script_idle_scheduler.h"
+#include "chrome/renderer/extensions/user_script_scheduler.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -14,9 +14,9 @@
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
 namespace {
@@ -30,21 +30,28 @@ using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebView;
 
-UserScriptIdleScheduler::UserScriptIdleScheduler(
+UserScriptScheduler::UserScriptScheduler(
     WebFrame* frame, ExtensionDispatcher* extension_dispatcher)
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       frame_(frame),
-      has_run_(false),
+      current_location_(UserScript::UNDEFINED),
+      has_run_idle_(false),
       extension_dispatcher_(extension_dispatcher) {
+  for (int i = UserScript::UNDEFINED; i < UserScript::RUN_LOCATION_LAST; ++i) {
+    pending_execution_map_[static_cast<UserScript::RunLocation>(i)] =
+      std::queue<linked_ptr<ExtensionMsg_ExecuteCode_Params> >();
+  }
 }
 
-UserScriptIdleScheduler::~UserScriptIdleScheduler() {
+UserScriptScheduler::~UserScriptScheduler() {
 }
 
-void UserScriptIdleScheduler::ExecuteCode(
+void UserScriptScheduler::ExecuteCode(
     const ExtensionMsg_ExecuteCode_Params& params) {
-  if (!has_run_) {
-    pending_code_execution_queue_.push(
+  UserScript::RunLocation run_at =
+    static_cast<UserScript::RunLocation>(params.run_at);
+  if (current_location_ < run_at) {
+    pending_execution_map_[run_at].push(
         linked_ptr<ExtensionMsg_ExecuteCode_Params>(
             new ExtensionMsg_ExecuteCode_Params(params)));
     return;
@@ -53,51 +60,73 @@ void UserScriptIdleScheduler::ExecuteCode(
   ExecuteCodeImpl(params);
 }
 
-void UserScriptIdleScheduler::DidFinishDocumentLoad() {
+void UserScriptScheduler::DidCreateDocumentElement() {
+  current_location_ = UserScript::DOCUMENT_START;
+  MaybeRun();
+}
+
+void UserScriptScheduler::DidFinishDocumentLoad() {
+  current_location_ = UserScript::DOCUMENT_END;
+  MaybeRun();
+  // Schedule a run for DOCUMENT_IDLE
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(&UserScriptIdleScheduler::MaybeRun,
+      FROM_HERE, base::Bind(&UserScriptScheduler::IdleTimeout,
                             weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kUserScriptIdleTimeoutMs));
 }
 
-void UserScriptIdleScheduler::DidFinishLoad() {
+void UserScriptScheduler::DidFinishLoad() {
+  current_location_ = UserScript::DOCUMENT_IDLE;
   // Ensure that running scripts does not keep any progress UI running.
   MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&UserScriptIdleScheduler::MaybeRun,
+      FROM_HERE, base::Bind(&UserScriptScheduler::MaybeRun,
                             weak_factory_.GetWeakPtr()));
 }
 
-void UserScriptIdleScheduler::DidStartProvisionalLoad() {
+void UserScriptScheduler::DidStartProvisionalLoad() {
   // The frame is navigating, so reset the state since we'll want to inject
   // scripts once the load finishes.
-  has_run_ = false;
+  current_location_ = UserScript::UNDEFINED;
+  has_run_idle_ = false;
   weak_factory_.InvalidateWeakPtrs();
-  while (!pending_code_execution_queue_.empty())
-    pending_code_execution_queue_.pop();
-}
-
-void UserScriptIdleScheduler::MaybeRun() {
-  if (has_run_)
-    return;
-
-  // Note: we must set this before calling ExecuteCodeImpl, because that may
-  // result in a synchronous call back into MaybeRun if there is a pending task
-  // currently in the queue.
-  // http://code.google.com/p/chromium/issues/detail?id=29644
-  has_run_ = true;
-
-  extension_dispatcher_->user_script_slave()->InjectScripts(
-      frame_, UserScript::DOCUMENT_IDLE);
-
-  while (!pending_code_execution_queue_.empty()) {
-    linked_ptr<ExtensionMsg_ExecuteCode_Params>& params =
-        pending_code_execution_queue_.front();
-    ExecuteCodeImpl(*params);
-    pending_code_execution_queue_.pop();
+  std::map<UserScript::RunLocation, ExecutionQueue>::iterator itr =
+    pending_execution_map_.begin();
+  for (itr = pending_execution_map_.begin();
+       itr != pending_execution_map_.end(); ++itr) {
+    while (!itr->second.empty())
+      itr->second.pop();
   }
 }
 
-void UserScriptIdleScheduler::ExecuteCodeImpl(
+void UserScriptScheduler::IdleTimeout() {
+  current_location_ = UserScript::DOCUMENT_IDLE;
+  MaybeRun();
+}
+
+void UserScriptScheduler::MaybeRun() {
+  if (current_location_ == UserScript::UNDEFINED)
+    return;
+
+  if (!has_run_idle_ && current_location_ == UserScript::DOCUMENT_IDLE) {
+    has_run_idle_ = true;
+    extension_dispatcher_->user_script_slave()->InjectScripts(
+        frame_, UserScript::DOCUMENT_IDLE);
+  }
+
+  // Run all tasks from the current time and earlier.
+  for (int i = UserScript::DOCUMENT_START;
+       i <= current_location_; ++i) {
+    UserScript::RunLocation run_time = static_cast<UserScript::RunLocation>(i);
+    while (!pending_execution_map_[run_time].empty()) {
+      linked_ptr<ExtensionMsg_ExecuteCode_Params>& params =
+        pending_execution_map_[run_time].front();
+      ExecuteCodeImpl(*params);
+      pending_execution_map_[run_time].pop();
+    }
+  }
+}
+
+void UserScriptScheduler::ExecuteCodeImpl(
     const ExtensionMsg_ExecuteCode_Params& params) {
   const Extension* extension = extension_dispatcher_->extensions()->GetByID(
       params.extension_id);
@@ -168,7 +197,7 @@ void UserScriptIdleScheduler::ExecuteCodeImpl(
       render_view->GetRoutingID(), params.request_id, true, ""));
 }
 
-bool UserScriptIdleScheduler::GetAllChildFrames(
+bool UserScriptScheduler::GetAllChildFrames(
     WebFrame* parent_frame,
     std::vector<WebFrame*>* frames_vector) const {
   if (!parent_frame)

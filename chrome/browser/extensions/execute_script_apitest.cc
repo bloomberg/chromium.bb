@@ -72,3 +72,9 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptFrameAfterLoad) {
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("executescript/frame_after_load")) << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptRunAt) {
+  SetupDelayedHostResolver();
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunExtensionTest("executescript/run_at")) << message_;
+}
