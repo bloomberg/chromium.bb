@@ -102,7 +102,7 @@ static INLINE void NaClIntervalRangeTreePrint(
   putchar('\n');
 }
 
-#define dprintf(alist) do { if (DEBUG_THIS) printf alist; } while (0)
+#define NaCl_dprintf(alist) do { if (DEBUG_THIS) printf alist; } while (0)
 
 static void NaClIntervalRangeTreeNodeInit(
     struct NaClIntervalRangeTreeNode *node,
@@ -519,7 +519,7 @@ static struct NaClIntervalRangeTreeNode *NaClAvlTreeExtract(
   if (NULL == *treep) {
     NaClLog(LOG_FATAL, "NaClAvlTreeExtract: node not found\n");
   }
-  dprintf(("TreeExtract k->v %u, k->d %d, h %d\n",
+  NaCl_dprintf(("TreeExtract k->v %u, k->d %d, h %d\n",
            key->value, key->value_containment_delta, *height_changed));
   NaClIntervalRangeTreePrint(*treep);
   if (key->value < (*treep)->value) {
@@ -594,13 +594,13 @@ static void NaClIntervalRangeTreeRemoveVal(struct NaClIntervalRangeTree *self,
   struct NaClIntervalRangeTreeNode key;
   struct NaClIntervalRangeTreeNode *zero_ref_node;
 
-  dprintf(("RemoveVal %u %d\n", value, lr));
+  NaCl_dprintf(("RemoveVal %u %d\n", value, lr));
   NaClIntervalRangeTreeNodeInit(&key, value, lr);
   zero_ref_node = NaClIntervalRangeTreeExtract(self, &key);
   if (NULL != zero_ref_node) {
     free(zero_ref_node);
   }
-  dprintf(("result tree\n"));
+  NaCl_dprintf(("result tree\n"));
   NaClIntervalRangeTreePrint(self->root);
 }
 
@@ -630,7 +630,7 @@ static uint32_t NaClAvlTreeFindValue(
     uint32_t *gap_left) {
   uint32_t delta;
 
-  dprintf(("TreeFind ld %u lr %u v %u\n", left_delta, left_range, value));
+  NaCl_dprintf(("TreeFind ld %u lr %u v %u\n", left_delta, left_range, value));
   NaClIntervalRangeTreePrint(tree);
   if (NULL == tree) {
     *gap_left = left_range;
@@ -734,17 +734,17 @@ int NaClIntervalRangeTreeOverlapsWith(struct NaClIntervalMultiset *vself,
   uint32_t gap_left_first;
   uint32_t gap_left_last;
 
-  dprintf(("OverlapsWith [%u, %u]\n", first_val, last_val));
+  NaCl_dprintf(("OverlapsWith [%u, %u]\n", first_val, last_val));
   if (0 != NaClAvlTreeFindValue(self->root, 0, 0, first_val, &gap_left_first)) {
-    dprintf(("left not in gap\n"));
+    NaCl_dprintf(("left not in gap\n"));
     return 1;
   }
   if (0 != NaClAvlTreeFindValue(self->root, 0, 0, last_val, &gap_left_last)) {
-    dprintf(("right not in gap\n"));
+    NaCl_dprintf(("right not in gap\n"));
     return 1;
   }
 
-  dprintf(("gap first %u gap last %u\n", gap_left_first, gap_left_last));
+  NaCl_dprintf(("gap first %u gap last %u\n", gap_left_first, gap_left_last));
   if (gap_left_first == gap_left_last) {
     /*
      * Both first_val and last_val had a containment count of zero,
