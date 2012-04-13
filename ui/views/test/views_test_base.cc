@@ -14,7 +14,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/single_monitor_manager.h"
+#include "ui/aura/test/single_monitor_manager.h"
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/base/ime/input_method.h"
@@ -83,7 +83,8 @@ void ViewsTestBase::SetUp() {
   if (!views_delegate_.get())
     views_delegate_.reset(new TestViewsDelegate());
 #if defined(USE_AURA)
-  aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
+  aura::Env::GetInstance()->SetMonitorManager(
+      new aura::test::SingleMonitorManager);
   root_window_.reset(aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
 #if defined(USE_ASH)
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));

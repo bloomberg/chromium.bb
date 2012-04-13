@@ -7,7 +7,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/single_monitor_manager.h"
+#include "ui/aura/test/single_monitor_manager.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/base/gestures/gesture_configuration.h"
