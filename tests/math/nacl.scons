@@ -1,9 +1,22 @@
 # -*- python -*-
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 Import('env')
+
+# A simple test of the sincos function
+
+sincos_test_nexe = env.ComponentProgram('sincos_test', 'sincos_test.c',
+                                  EXTRA_LIBS=['${NONIRT_LIBS}', 'm'])
+node = env.CommandSelLdrTestNacl(
+    'sincos_test.out',
+    sincos_test_nexe,
+    stdout_golden=env.File('sincos_test.stdout'),
+    )
+
+env.AddNodeToTestSuite(node,
+                       ['small_tests'], 'run_sincos_test')
 
 #--- Version that tests errno conditions
 
