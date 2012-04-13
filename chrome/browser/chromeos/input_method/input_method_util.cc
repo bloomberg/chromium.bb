@@ -15,7 +15,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
@@ -434,9 +433,6 @@ string16 InputMethodUtil::GetInputMethodLongName(
   // We don't show language here.  Name of keyboard layout or input method
   // usually imply (or explicitly include) its language.
 
-  input_method::InputMethodManager* manager =
-      input_method::InputMethodManager::GetInstance();
-
   // Special case for German, French and Dutch: these languages have multiple
   // keyboard layouts and share the same layout of keyboard (Belgian). We need
   // to show explicitly the language for the layout. For Arabic, Amharic, and
@@ -445,8 +441,7 @@ string16 InputMethodUtil::GetInputMethodLongName(
       IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD);
   const std::string language_code = input_method.language_code();
 
-  string16 text =
-      manager->GetInputMethodUtil()->TranslateString(input_method.id());
+  string16 text = TranslateString(input_method.id());
   if (text == standard_input_method_text ||
              language_code == "de" ||
              language_code == "fr" ||
