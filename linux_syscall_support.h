@@ -1424,7 +1424,8 @@ struct kernel_statfs {
   #define LSS_RETURN(type, res, err)                                          \
     do {                                                                      \
       if (err) {                                                              \
-        LSS_ERRNO = (res);                                                    \
+        unsigned long __errnovalue = (res);                                   \
+        LSS_ERRNO = __errnovalue;                                             \
         res = -1;                                                             \
       }                                                                       \
       return (type) (res);                                                    \
@@ -2213,10 +2214,11 @@ struct kernel_statfs {
     #define LSS_BODY(type,name,r7,...)                                        \
           register unsigned long __v0 __asm__("$2") = __NR_##name;            \
           __asm__ __volatile__ ("syscall\n"                                   \
-                                : "=&r"(__v0), r7 (__r7)                      \
+                                : "+r"(__v0), r7 (__r7)                       \
                                 : "0"(__v0), ##__VA_ARGS__                    \
                                 : "$8", "$9", "$10", "$11", "$12",            \
-                                  "$13", "$14", "$15", "$24", "memory");      \
+                                  "$13", "$14", "$15", "$24", "$25",          \
+                                  "memory");                                  \
           LSS_RETURN(type, __v0, __r7)
     #undef _syscall0
     #define _syscall0(type, name)                                             \
@@ -2262,20 +2264,19 @@ struct kernel_statfs {
                           type5 arg5) {                                       \
         LSS_REG(4, arg1); LSS_REG(5, arg2); LSS_REG(6, arg3);                 \
         LSS_REG(7, arg4);                                                     \
-        register unsigned long __v0 __asm__("$2");                            \
+        register unsigned long __v0 __asm__("$2") = __NR_##name;              \
         __asm__ __volatile__ (".set noreorder\n"                              \
-                              "lw    $2, %6\n"                                \
                               "subu  $29, 32\n"                               \
-                              "sw    $2, 16($29)\n"                           \
-                              "li    $2, %2\n"                                \
+                              "sw    %5, 16($29)\n"                           \
                               "syscall\n"                                     \
                               "addiu $29, 32\n"                               \
                               ".set reorder\n"                                \
-                              : "=&r"(__v0), "+r" (__r7)                      \
-                              : "i" (__NR_##name), "r"(__r4), "r"(__r5),      \
-                                "r"(__r6), "m" ((unsigned long)arg5)          \
+                              : "+r"(__v0), "+r" (__r7)                       \
+                              : "r"(__r4), "r"(__r5),                         \
+                                "r"(__r6), "r" ((unsigned long)arg5)          \
                               : "$8", "$9", "$10", "$11", "$12",              \
-                                "$13", "$14", "$15", "$24", "memory");        \
+                                "$13", "$14", "$15", "$24", "$25",            \
+                                "memory");                                    \
         LSS_RETURN(type, __v0, __r7);                                         \
       }
     #else
@@ -2300,23 +2301,21 @@ struct kernel_statfs {
                           type5 arg5, type6 arg6) {                           \
         LSS_REG(4, arg1); LSS_REG(5, arg2); LSS_REG(6, arg3);                 \
         LSS_REG(7, arg4);                                                     \
-        register unsigned long __v0 __asm__("$2");                            \
+        register unsigned long __v0 __asm__("$2") = __NR_##name;              \
         __asm__ __volatile__ (".set noreorder\n"                              \
-                              "lw    $2, %6\n"                                \
-                              "lw    $8, %7\n"                                \
                               "subu  $29, 32\n"                               \
-                              "sw    $2, 16($29)\n"                           \
-                              "sw    $8, 20($29)\n"                           \
-                              "li    $2, %2\n"                                \
+                              "sw    %5, 16($29)\n"                           \
+                              "sw    %6, 20($29)\n"                           \
                               "syscall\n"                                     \
                               "addiu $29, 32\n"                               \
                               ".set reorder\n"                                \
-                              : "=&r"(__v0), "+r" (__r7)                      \
-                              : "i" (__NR_##name), "r"(__r4), "r"(__r5),      \
+                              : "+r"(__v0), "+r" (__r7)                       \
+                              : "r"(__r4), "r"(__r5),                         \
                                 "r"(__r6), "r" ((unsigned long)arg5),         \
                                 "r" ((unsigned long)arg6)                     \
                               : "$8", "$9", "$10", "$11", "$12",              \
-                                "$13", "$14", "$15", "$24", "memory");        \
+                                "$13", "$14", "$15", "$24", "$25",            \
+                                "memory");                                    \
         LSS_RETURN(type, __v0, __r7);                                         \
       }
     #else
@@ -2416,12 +2415,12 @@ struct kernel_statfs {
           #else
                              "daddu $29,16\n"
           #endif
-                             : "=&r" (__v0), "=r" (__r7)
+                             : "=&r" (__v0), "+r" (__r7)
                              : "i"(-EINVAL), "i"(__NR_clone), "i"(__NR_exit),
                                "r"(fn), "r"(__stack), "r"(__flags), "r"(arg),
                                "r"(__ptid), "r"(__r7), "r"(__ctid)
                              : "$9", "$10", "$11", "$12", "$13", "$14", "$15",
-                               "$24", "memory");
+                               "$24", "$25", "memory");
       }
       LSS_RETURN(int, __v0, __r7);
     }
@@ -3339,12 +3338,13 @@ struct kernel_statfs {
       register unsigned long __v1 __asm__("$3");
       register unsigned long __r7 __asm__("$7");
       __asm__ __volatile__ ("syscall\n"
-                            : "=&r"(__v0), "=&r"(__v1), "+r" (__r7)
+                            : "+r"(__v0), "=r"(__v1), "=r" (__r7)
                             : "0"(__v0)
                             : "$8", "$9", "$10", "$11", "$12",
-                              "$13", "$14", "$15", "$24", "memory");
+                              "$13", "$14", "$15", "$24", "$25", "memory");
       if (__r7) {
-        LSS_ERRNO = __v0;
+        unsigned long __errnovalue = __v0;
+        LSS_ERRNO = __errnovalue;
         return -1;
       } else {
         p[0] = __v0;
