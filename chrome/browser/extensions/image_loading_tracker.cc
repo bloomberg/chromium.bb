@@ -6,11 +6,15 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "grit/component_extension_resources_map.h"
+#include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -114,6 +118,28 @@ class ImageLoadingTracker::ImageLoader
     ReportBack(decoded.release(), resource, original_size, id);
   }
 
+  // Instructs the loader to load a resource on the File thread.
+  void LoadResource(const ExtensionResource& resource,
+                    const gfx::Size& max_size,
+                    int id,
+                    int resource_id) {
+    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&ImageLoader::LoadResourceOnFileThread, this, resource,
+                   max_size, id, resource_id));
+  }
+
+  void LoadResourceOnFileThread(const ExtensionResource& resource,
+                                const gfx::Size& max_size,
+                                int id,
+                                int resource_id) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    SkBitmap* image = ExtensionIconSource::LoadImageByResourceId(
+        resource_id);
+    ReportBack(image, resource, max_size, id);
+  }
+
   void ReportBack(SkBitmap* image, const ExtensionResource& resource,
                   const gfx::Size& original_size, int id) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -200,12 +226,47 @@ void ImageLoadingTracker::LoadImages(const Extension* extension,
       continue;
     }
 
-    // Instruct the ImageLoader to load this on the File thread. LoadImage does
-    // not block.
+    // Instruct the ImageLoader to load this on the File thread. LoadImage and
+    // LoadResource do not block.
     if (!loader_)
       loader_ = new ImageLoader(this);
-    loader_->LoadImage(it->resource, it->max_size, id);
+
+    // Load resources for WebStore component extension.
+    if (load_info.extension_id == extension_misc::kWebStoreAppId) {
+      loader_->LoadResource(it->resource, it->max_size, id, IDR_WEBSTORE_ICON);
+      continue;
+    }
+
+    int resource_id;
+    if (IsComponentExtensionResource(extension, it->resource, resource_id))
+      loader_->LoadResource(it->resource, it->max_size, id, resource_id);
+    else
+      loader_->LoadImage(it->resource, it->max_size, id);
   }
+}
+
+bool ImageLoadingTracker::IsComponentExtensionResource(
+    const Extension* extension,
+    const ExtensionResource& resource,
+    int& resource_id) const {
+  if (extension->location() != Extension::COMPONENT)
+    return false;
+
+  FilePath directory_path = extension->path();
+  FilePath relative_path = directory_path.BaseName().Append(
+      resource.relative_path());
+
+  for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
+    FilePath resource_path =
+        FilePath().AppendASCII(kComponentExtensionResources[i].name);
+    resource_path = resource_path.NormalizePathSeparators();
+
+    if (relative_path == resource_path) {
+      resource_id = kComponentExtensionResources[i].value;
+      return true;
+    }
+  }
+  return false;
 }
 
 void ImageLoadingTracker::OnImageLoaded(

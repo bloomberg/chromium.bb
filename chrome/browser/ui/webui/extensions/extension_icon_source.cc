@@ -126,10 +126,6 @@ void ExtensionIconSource::StartDataRequest(const std::string& path,
   if (icon.relative_path().empty()) {
     LoadIconFailed(request_id);
   } else {
-    if (request->extension->location() == Extension::COMPONENT &&
-        TryLoadingComponentExtensionImage(icon, request_id)) {
-      return;
-    }
     LoadExtensionImage(icon, request_id);
   }
 }
@@ -143,13 +139,6 @@ void ExtensionIconSource::LoadIconFailed(int request_id) {
     LoadFaviconImage(request_id);
   else
     LoadDefaultImage(request_id);
-}
-
-const SkBitmap* ExtensionIconSource::GetWebStoreImage() {
-  if (!web_store_icon_data_.get())
-    web_store_icon_data_.reset(LoadImageByResourceId(IDR_WEBSTORE_ICON));
-
-  return web_store_icon_data_.get();
 }
 
 const SkBitmap* ExtensionIconSource::GetDefaultAppImage() {
@@ -184,9 +173,7 @@ void ExtensionIconSource::LoadDefaultImage(int request_id) {
   ExtensionIconRequest* request = GetData(request_id);
   const SkBitmap* default_image = NULL;
 
-  if (request->extension->id() == extension_misc::kWebStoreAppId)
-    default_image = GetWebStoreImage();
-  else if (request->extension->is_app())
+  if (request->extension->is_app())
     default_image = GetDefaultAppImage();
   else
     default_image = GetDefaultExtensionImage();
@@ -202,26 +189,6 @@ void ExtensionIconSource::LoadDefaultImage(int request_id) {
     resized_image = *default_image;
 
   FinalizeImage(&resized_image, request_id);
-}
-
-bool ExtensionIconSource::TryLoadingComponentExtensionImage(
-    const ExtensionResource& icon, int request_id) {
-  ExtensionIconRequest* request = GetData(request_id);
-  FilePath directory_path = request->extension->path();
-  FilePath relative_path = directory_path.BaseName().Append(
-      icon.relative_path());
-  for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
-    FilePath bm_resource_path =
-        FilePath().AppendASCII(kComponentExtensionResources[i].name);
-    bm_resource_path = bm_resource_path.NormalizePathSeparators();
-    if (relative_path == bm_resource_path) {
-      scoped_ptr<SkBitmap> decoded(LoadImageByResourceId(
-          kComponentExtensionResources[i].value));
-      FinalizeImage(decoded.get(), request_id);
-      return true;
-    }
-  }
-  return false;
 }
 
 void ExtensionIconSource::LoadExtensionImage(const ExtensionResource& icon,
