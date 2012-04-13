@@ -2391,6 +2391,7 @@ window_show_menu(struct display *display,
 	window->x = x;
 	window->y = y;
 
+	input_ungrab(input);
 	wl_shell_surface_set_popup(window->shell_surface, input->input_device,
 				   display_get_serial(window->display),
 				   window->parent->shell_surface,

@@ -402,6 +402,8 @@ dnd_button_handler(struct widget *widget,
 		dnd_drag->drag_surface =
 			wl_compositor_create_surface(compositor);
 
+		input_ungrab(input);
+
 		dnd_drag->data_source =
 			display_create_data_source(dnd->display);
 		wl_data_source_add_listener(dnd_drag->data_source,
