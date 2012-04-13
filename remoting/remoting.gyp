@@ -166,18 +166,6 @@
       'resources/infographic_remote_assistance.png',
       'resources/tick.png',
     ],
-    'remoting_host_installer_mac_root': 'host/installer/mac/',
-    'remoting_host_installer_mac_files': [
-      #'host/installer/mac/ChromeRemoteDesktop.packproj',
-      'host/installer/mac/Chromoting.packproj',
-      'host/installer/mac/LaunchAgents/org.chromium.chromoting.plist',
-      'host/installer/mac/PrivilegedHelperTools/org.chromium.chromoting.json',
-      'host/installer/mac/PrivilegedHelperTools/org.chromium.chromoting.me2me.sh',
-      'host/installer/mac/Scripts/keystone_install.sh',
-      'host/installer/mac/Scripts/remoting_postflight.sh',
-      'host/installer/mac/Scripts/uninstall.sh',
-      #'host/installer/mac/Keystone/GoogleSoftwareUpdate.pkg.zip',
-    ],
   },
 
   'target_defaults': {
@@ -1090,77 +1078,6 @@
         'host/keygen_main.cc',
       ],
     },  # end of target 'remoting_host_keygen'
-
-    # This packages up the files needed for the remoting host installer so
-    # they can be sent off to be signed.
-    # We don't build an installer here because we don't have signed binaries.
-    {
-      'target_name': 'remoting_me2me_host_archive',
-      'type': 'none',
-      'dependencies': [
-        'remoting_me2me_host',
-      ],
-      'sources': [
-        'host/installer/build-installer-archive.py',
-      ],
-      'conditions': [
-        ['OS=="mac"', {
-          'sources': [
-            '<@(remoting_host_installer_mac_files)',
-          ],
-        }],  # OS=="mac"
-        ['OS=="win"', {
-          'dependencies': [
-            # TODO(garykac)
-          ],
-        }],  # OS=="win"
-      ],  # conditions
-      'actions': [
-        {
-          'action_name': 'Zip installer files for signing',
-          'temp_dir': '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting-me2me-host',
-          'zip_path': '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
-          'generated_files': [],
-          'generated_files_dst': [],
-          'source_files_root': '',
-          'source_files': [],
-          'conditions': [
-            ['OS=="mac"', {
-              'generated_files': [
-                '<(PRODUCT_DIR)/remoting_me2me_host',
-              ],
-              'generated_files_dst': [
-                'PrivilegedHelperTools/org.chromium.chromoting.me2me_host',
-              ],
-              'source_files_root': '<(remoting_host_installer_mac_root)',
-              'source_files': [
-                '<@(remoting_host_installer_mac_files)',
-              ],
-            }],  # OS=="mac"
-          ],  # conditions
-          'inputs': [
-            'host/installer/build-installer-archive.py',
-            '<@(_source_files)',
-          ],
-          'outputs': [
-            '<(_zip_path)',
-          ],
-          'action': [
-            'python',
-            'host/installer/build-installer-archive.py',
-            '<(_temp_dir)',
-            '<(_zip_path)',
-            '<(_source_files_root)',
-            '--source-files',
-            '<@(_source_files)',
-            '--generated-files',
-            '<@(_generated_files)',
-            '--generated-files-dst',
-            '<@(_generated_files_dst)',
-          ],
-        },
-      ],  # actions
-    }, # end of target 'remoting_me2me_host_archive'
 
     {
       'target_name': 'remoting_jingle_glue',
