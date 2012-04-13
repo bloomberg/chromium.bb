@@ -38,6 +38,7 @@
 }
 
 .footer-menu {
+  -webkit-margin-end: 10px;
   max-height: 400px;
   overflow: auto;
   padding: 6px 8px;
