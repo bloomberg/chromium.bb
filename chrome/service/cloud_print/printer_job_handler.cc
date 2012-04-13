@@ -54,7 +54,8 @@ PrinterJobHandler::PrinterJobHandler(
       shutting_down_(false),
       job_check_pending_(false),
       printer_update_pending_(true),
-      task_in_progress_(false) {
+      task_in_progress_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 bool PrinterJobHandler::Initialize() {
@@ -169,7 +170,7 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
   print_system_->GetPrinterCapsAndDefaults(
       printer_info.printer_name.c_str(),
       base::Bind(&PrinterJobHandler::OnReceivePrinterCaps,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // While we are waiting for the data, pretend we have work to do and return
   // true.

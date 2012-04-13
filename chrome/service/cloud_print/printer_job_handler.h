@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
@@ -289,6 +290,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   JobStatusUpdaterList job_status_updater_list_;
 
   base::TimeTicks last_job_fetch_time_;
+  base::WeakPtrFactory<PrinterJobHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterJobHandler);
 };
