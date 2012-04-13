@@ -77,6 +77,11 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
       CreateLocalAudioTrack(
           const std::string& label,
           webrtc::AudioDeviceModule* audio_device) OVERRIDE;
+  virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
+      const std::string& sdp) OVERRIDE;
+  virtual webrtc::IceCandidateInterface* CreateIceCandidate(
+      const std::string& label,
+      const std::string& sdp) OVERRIDE;
 
  private:
   bool mock_pc_factory_created_;

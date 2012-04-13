@@ -127,6 +127,8 @@
             'renderer/media/mock_media_stream_impl.h',
             'renderer/media/mock_peer_connection_impl.cc',
             'renderer/media/mock_peer_connection_impl.h',
+            'renderer/media/mock_web_peer_connection_00_handler_client.cc',
+            'renderer/media/mock_web_peer_connection_00_handler_client.h',
             'renderer/media/mock_web_peer_connection_handler_client.cc',
             'renderer/media/mock_web_peer_connection_handler_client.h',
             'test/webrtc_audio_device_test.cc',
@@ -297,6 +299,7 @@
           'sources': [
             'renderer/media/media_stream_dispatcher_unittest.cc',
             'renderer/media/media_stream_impl_unittest.cc',
+            'renderer/media/peer_connection_handler_jsep_unittest.cc',
             'renderer/media/peer_connection_handler_unittest.cc',
             'renderer/media/rtc_video_decoder_unittest.cc',
             'renderer/media/webrtc_audio_device_unittest.cc',

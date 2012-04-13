@@ -11,13 +11,15 @@
 #include "base/compiler_specific.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnection.h"
 
+class MockMediaStreamDependencyFactory;
+
 namespace webrtc {
 
 class MockStreamCollection;
 
 class MockPeerConnectionImpl : public PeerConnectionInterface {
  public:
-  MockPeerConnectionImpl();
+  MockPeerConnectionImpl(MockMediaStreamDependencyFactory* factory);
 
   // PeerConnectionInterface implementation.
   virtual void ProcessSignalingMessage(const std::string& msg) OVERRIDE;
@@ -54,20 +56,43 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
 
   void AddRemoteStream(MediaStreamInterface* stream);
   void ClearStreamChangesCommitted() { stream_changes_committed_ = false; }
+  void SetReadyState(ReadyState state) { ready_state_ = state; }
 
   const std::string& signaling_message() const { return signaling_message_; }
   const std::string& stream_label() const { return stream_label_; }
   bool stream_changes_committed() const { return stream_changes_committed_; }
+  bool hint_audio() const { return hint_audio_; }
+  bool hint_video() const { return hint_video_; }
+  Action action() const { return action_; }
+  const std::string& description_sdp() const { return description_sdp_; }
+  IceOptions ice_options() const { return ice_options_; }
+  const std::string& ice_label() const { return ice_label_; }
+  const std::string& ice_sdp() const { return ice_sdp_; }
+
+  static const char kDummyOffer[];
 
  protected:
   virtual ~MockPeerConnectionImpl();
 
  private:
+  // Used for creating MockSessionDescription.
+  MockMediaStreamDependencyFactory* dependency_factory_;
+
   std::string signaling_message_;
   std::string stream_label_;
   bool stream_changes_committed_;
   talk_base::scoped_refptr<MockStreamCollection> local_streams_;
   talk_base::scoped_refptr<MockStreamCollection> remote_streams_;
+  scoped_ptr<webrtc::SessionDescriptionInterface> local_desc_;
+  scoped_ptr<webrtc::SessionDescriptionInterface> remote_desc_;
+  bool hint_audio_;
+  bool hint_video_;
+  Action action_;
+  std::string description_sdp_;
+  IceOptions ice_options_;
+  std::string ice_label_;
+  std::string ice_sdp_;
+  ReadyState ready_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionImpl);
 };
