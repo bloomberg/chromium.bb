@@ -1,8 +1,9 @@
 2012-04-13  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/brl_checks.h:
-	* tests/brl_checks.c (check_outpos): Enhance so that you can pass
-	the table list as a parameter.
+	* tests/brl_checks.c (check_outpos):
+	* tests/inpos_compbrl.c (main): Enhance so that output position
+	can be checked for different tables.
 
 2012-03-23  Christian Egli  <christian.egli@sbs.ch>
 
