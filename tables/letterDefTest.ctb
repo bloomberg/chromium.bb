@@ -1,11 +1,6 @@
 # define dot mappings
 
-#sign s 234
-#sign m 134
-sign        \x280D  134                  # ⠍
-sign        \x280E  234                  # ⠎
-
-## Note: at any given time, only 5 opCodes should be defined in this table.
+## Note: at any given time, only 3 opCodes should be defined in this table.
 ## This table is to illustrate the internal treatment of various letter definitions.
 
 ## this works.
