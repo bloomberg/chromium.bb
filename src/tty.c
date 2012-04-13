@@ -34,11 +34,17 @@
 
 #include "compositor.h"
 
+/* Introduced in 2.6.38 */
+#ifndef K_OFF
+#define K_OFF 0x04
+#endif
+
 struct tty {
 	struct weston_compositor *compositor;
 	int fd;
 	struct termios terminal_attributes;
 
+	struct wl_event_source *input_source;
 	struct wl_event_source *vt_source;
 	tty_vt_func_t vt_func;
 	int vt, starting_vt, has_vt;
@@ -60,6 +66,17 @@ static int vt_handler(int signal_number, void *data)
 		tty->vt_func(tty->compositor, TTY_ENTER_VT);
 		tty->has_vt = 1;
 	}
+
+	return 1;
+}
+
+static int
+on_tty_input(int fd, uint32_t mask, void *data)
+{
+	struct tty *tty = data;
+
+	/* Ignore input to tty.  We get keyboard events from evdev */
+	tcflush(tty->fd, TCIFLUSH);
 
 	return 1;
 }
@@ -174,8 +191,22 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 	if (tcsetattr(tty->fd, TCSANOW, &raw_attributes) < 0)
 		fprintf(stderr, "could not put terminal into raw mode: %m\n");
 
+	loop = wl_display_get_event_loop(compositor->wl_display);
+
 	ioctl(tty->fd, KDGKBMODE, &tty->kb_mode);
 	ret = ioctl(tty->fd, KDSKBMODE, K_OFF);
+	if (ret) {
+		ret = ioctl(tty->fd, KDSKBMODE, K_RAW);
+		if (ret)
+			goto err_attr;
+
+		tty->input_source = wl_event_loop_add_fd(loop, tty->fd,
+							 WL_EVENT_READABLE,
+							 on_tty_input, tty);
+		if (!tty->input_source)
+			goto err_kdkbmode;
+	}
+
 	if (ret) {
 		fprintf(stderr, "failed to set K_OFF keyboard mode on tty: %m\n");
 		goto err_attr;
@@ -196,7 +227,6 @@ tty_create(struct weston_compositor *compositor, tty_vt_func_t vt_func,
 		goto err_kdmode;
 	}
 
-	loop = wl_display_get_event_loop(compositor->wl_display);
 	tty->vt_source =
 		wl_event_loop_add_signal(loop, SIGUSR1, vt_handler, tty);
 	if (!tty->vt_source)
@@ -211,6 +241,8 @@ err_kdmode:
 	ioctl(tty->fd, KDSETMODE, KD_TEXT);
 
 err_kdkbmode:
+	if (tty->input_source)
+		wl_event_source_remove(tty->input_source);
 	ioctl(tty->fd, KDSKBMODE, tty->kb_mode);
 
 err_attr:
@@ -227,8 +259,8 @@ tty_destroy(struct tty *tty)
 {
 	struct vt_mode mode = { 0 };
 
-        if(!tty)
-                return;
+	if (tty->input_source)
+		wl_event_source_remove(tty->input_source);
 
 	if (ioctl(tty->fd, KDSKBMODE, tty->kb_mode))
 		fprintf(stderr, "failed to restore keyboard mode: %m\n");
