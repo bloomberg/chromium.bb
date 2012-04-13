@@ -60,7 +60,6 @@ void WebView::SetFastResize(bool fast_resize) {
 }
 
 void WebView::OnWebContentsFocused(content::WebContents* web_contents) {
-  DCHECK(web_contents == web_contents_);
   FocusManager* focus_manager = GetFocusManager();
   if (focus_manager)
     focus_manager->SetFocusedView(this);
