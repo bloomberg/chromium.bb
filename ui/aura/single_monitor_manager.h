@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_TEST_SINGLE_MONITOR_MANAGER_H_
-#define UI_AURA_TEST_SINGLE_MONITOR_MANAGER_H_
+#ifndef UI_AURA_SINGLE_MONITOR_MANAGER_H_
+#define UI_AURA_SINGLE_MONITOR_MANAGER_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -16,7 +16,6 @@ class Rect;
 }
 
 namespace aura {
-namespace test {
 
 // A monitor manager assuming there is one monitor.
 class SingleMonitorManager : public MonitorManager,
@@ -53,7 +52,6 @@ class SingleMonitorManager : public MonitorManager,
   DISALLOW_COPY_AND_ASSIGN(SingleMonitorManager);
 };
 
-}  // namespace test
 }  // namespace aura
 
-#endif  //  UI_AURA_TEST_SINGLE_MONITOR_MANAGER_H_
+#endif  //  UI_AURA_SINGLE_MONITOR_MANAGER_H_

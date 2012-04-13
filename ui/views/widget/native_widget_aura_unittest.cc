@@ -12,7 +12,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/test/single_monitor_manager.h"
+#include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/root_view.h"
@@ -40,8 +40,7 @@ class NativeWidgetAuraTest : public testing::Test {
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
-    aura::Env::GetInstance()->SetMonitorManager(
-        new aura::test::SingleMonitorManager);
+    aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
     root_window_.reset(
         aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
 #if defined(USE_ASH)

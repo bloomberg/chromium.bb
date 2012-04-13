@@ -21,7 +21,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/test/single_monitor_manager.h"
+#include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/test/test_stacking_client.h"
 #endif
 
@@ -195,8 +195,7 @@ void RenderViewHostTestHarness::Reload() {
 
 void RenderViewHostTestHarness::SetUp() {
 #if defined(USE_AURA)
-  aura::Env::GetInstance()->SetMonitorManager(
-      new aura::test::SingleMonitorManager);
+  aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
   root_window_.reset(aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
 #if defined(USE_ASH)
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
