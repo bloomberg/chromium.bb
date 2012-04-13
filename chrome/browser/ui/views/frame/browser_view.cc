@@ -110,6 +110,7 @@
 #include "chrome/browser/ui/views/ash/launcher/launcher_updater.h"
 #include "chrome/browser/ui/views/ash/window_positioner.h"
 #elif defined(OS_WIN)
+#include "base/win/metro.h"
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
 #include "ui/views/widget/native_widget_win.h"
@@ -1522,6 +1523,17 @@ bool BrowserView::ExecuteWindowsCommand(int command_id) {
 #if defined(OS_WIN) && !defined(USE_AURA)
   if (command_id == IDC_DEBUG_FRAME_TOGGLE)
     GetWidget()->DebugToggleFrameType();
+
+  // In Windows 8 metro mode prevent sizing and moving.
+  if (base::win::GetMetroModule()) {
+    // Windows uses the 4 lower order bits of |notification_code| for type-
+    // specific information so we must exclude this when comparing.
+    static const int sc_mask = 0xFFF0;
+    if (((command_id & sc_mask) == SC_MOVE) ||
+        ((command_id & sc_mask) == SC_SIZE) ||
+        ((command_id & sc_mask) == SC_MAXIMIZE))
+      return true;
+  }
 #endif
   // Translate WM_APPCOMMAND command ids into a command id that the browser
   // knows how to handle.
