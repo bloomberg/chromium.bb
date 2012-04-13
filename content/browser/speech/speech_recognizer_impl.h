@@ -12,6 +12,7 @@
 #include "content/browser/speech/speech_recognition_engine.h"
 #include "content/public/browser/speech_recognizer.h"
 #include "content/public/common/speech_recognition_error.h"
+#include "content/public/common/speech_recognition_result.h"
 #include "media/audio/audio_input_controller.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -27,8 +28,13 @@ class AudioManager;
 
 namespace speech {
 
-// Records audio, sends recorded audio to server and translates server response
-// to recognition result.
+// TODO(primiano) Next CL: Remove the Impl suffix and the exported
+// /content/public/browser/speech_recognizer.h interface since this class should
+// not be visible outside (currently we need it for speech input extension API).
+
+// Handles speech recognition for a session (identified by |caller_id|), taking
+// care of audio capture, silence detection/endpointer and interaction with the
+// SpeechRecognitionEngine.
 class CONTENT_EXPORT SpeechRecognizerImpl
     : public NON_EXPORTED_BASE(content::SpeechRecognizer),
       public media::AudioInputController::EventHandler,
@@ -41,14 +47,9 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   static const int kEndpointerEstimationTimeMs;
 
   SpeechRecognizerImpl(
-    content::SpeechRecognitionEventListener* listener,
-    int caller_id,
-    const std::string& language,
-    const std::string& grammar,
-    net::URLRequestContextGetter* context_getter,
-    bool filter_profanities,
-    const std::string& hardware_info,
-    const std::string& origin_url);
+      content::SpeechRecognitionEventListener* listener,
+      int caller_id,
+      SpeechRecognitionEngine* engine);
   virtual ~SpeechRecognizerImpl();
 
   // content::SpeechRecognizer methods.
@@ -59,14 +60,86 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   virtual bool IsCapturingAudio() const OVERRIDE;
   const SpeechRecognitionEngine& recognition_engine() const;
 
+ private:
+  friend class SpeechRecognizerImplTest;
+
+  enum FSMState {
+    STATE_IDLE = 0,
+    STATE_STARTING,
+    STATE_ESTIMATING_ENVIRONMENT,
+    STATE_WAITING_FOR_SPEECH,
+    STATE_RECOGNIZING,
+    STATE_WAITING_FINAL_RESULT,
+    STATE_MAX_VALUE = STATE_WAITING_FINAL_RESULT
+  };
+
+  enum FSMEvent {
+    EVENT_ABORT = 0,
+    EVENT_START,
+    EVENT_STOP_CAPTURE,
+    EVENT_AUDIO_DATA,
+    EVENT_ENGINE_RESULT,
+    EVENT_ENGINE_ERROR,
+    EVENT_AUDIO_ERROR,
+    EVENT_MAX_VALUE = EVENT_AUDIO_ERROR
+  };
+
+  struct FSMEventArgs {
+    explicit FSMEventArgs(FSMEvent event_value);
+    ~FSMEventArgs();
+
+    FSMEvent event;
+    int audio_error_code;
+    scoped_refptr<AudioChunk> audio_data;
+    content::SpeechRecognitionResult engine_result;
+    content::SpeechRecognitionError engine_error;
+  };
+
+  // Entry point for pushing any new external event into the recognizer FSM.
+  void DispatchEvent(const FSMEventArgs& event_args);
+
+  // Defines the behavior of the recognizer FSM, selecting the appropriate
+  // transition according to the current state and event.
+  FSMState ExecuteTransitionAndGetNextState(const FSMEventArgs& args);
+
+  // Process a new audio chunk in the audio pipeline (endpointer, vumeter, etc).
+  void ProcessAudioPipeline(const AudioChunk& raw_audio);
+
+  // The methods below handle transitions of the recognizer FSM.
+  FSMState StartRecording(const FSMEventArgs& event_args);
+  FSMState StartRecognitionEngine(const FSMEventArgs& event_args);
+  FSMState WaitEnvironmentEstimationCompletion(const FSMEventArgs& event_args);
+  FSMState DetectUserSpeechOrTimeout(const FSMEventArgs& event_args);
+  FSMState StopCaptureAndWaitForResult(const FSMEventArgs& event_args);
+  FSMState ProcessIntermediateResult(const FSMEventArgs& event_args);
+  FSMState ProcessFinalResult(const FSMEventArgs& event_args);
+  FSMState Abort(const FSMEventArgs& event_args);
+  FSMState AbortWithError(const content::SpeechRecognitionError* error);
+  FSMState AbortWithError(const content::SpeechRecognitionError& error);
+  FSMState DetectEndOfSpeech(const FSMEventArgs& event_args);
+  FSMState DoNothing(const FSMEventArgs& event_args) const;
+  FSMState NotFeasible(const FSMEventArgs& event_args);
+
+  // Returns the time span of captured audio samples since the start of capture.
+  int GetElapsedTimeMs() const;
+
+  // Calculates the input volume to be displayed in the UI, triggering the
+  // OnAudioLevelsChange event accordingly.
+  void UpdateSignalAndNoiseLevels(const float& rms, bool clip_detected);
+
+  void CloseAudioControllerAsynchronously();
+  void SetAudioManagerForTesting(media::AudioManager* audio_manager);
+
+  // Callback called on IO thread by audio_controller->Close().
+  void OnAudioClosed(media::AudioInputController*);
+
   // AudioInputController::EventHandler methods.
   virtual void OnCreated(media::AudioInputController* controller) OVERRIDE {}
   virtual void OnRecording(media::AudioInputController* controller) OVERRIDE {}
   virtual void OnError(media::AudioInputController* controller,
                        int error_code) OVERRIDE;
   virtual void OnData(media::AudioInputController* controller,
-                      const uint8* data,
-                      uint32 size) OVERRIDE;
+                      const uint8* data, uint32 size) OVERRIDE;
 
   // SpeechRecognitionEngineDelegate methods.
   virtual void OnSpeechRecognitionEngineResult(
@@ -74,40 +147,16 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   virtual void OnSpeechRecognitionEngineError(
       const content::SpeechRecognitionError& error) OVERRIDE;
 
- private:
-  friend class SpeechRecognizerImplTest;
-
-  void InformErrorAndAbortRecognition(
-      content::SpeechRecognitionErrorCode error);
-  void SendRecordedAudioToServer();
-
-  void HandleOnError(int error_code);  // Handles OnError in the IO thread.
-
-  // Handles OnData in the IO thread.
-  void HandleOnData(scoped_refptr<AudioChunk> raw_audio);
-
-  void OnAudioClosed(media::AudioInputController*);
-
-  // Helper method which closes the audio controller and frees it asynchronously
-  // without blocking the IO thread.
-  void CloseAudioControllerAsynchronously();
-
-  void SetAudioManagerForTesting(media::AudioManager* audio_manager);
-
   content::SpeechRecognitionEventListener* listener_;
   media::AudioManager* testing_audio_manager_;
   scoped_ptr<SpeechRecognitionEngine> recognition_engine_;
   Endpointer endpointer_;
   scoped_refptr<media::AudioInputController> audio_controller_;
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
   int caller_id_;
-  std::string language_;
-  std::string grammar_;
-  bool filter_profanities_;
-  std::string hardware_info_;
-  std::string origin_url_;
   int num_samples_recorded_;
   float audio_level_;
+  bool is_dispatching_event_;
+  FSMState state_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerImpl);
 };

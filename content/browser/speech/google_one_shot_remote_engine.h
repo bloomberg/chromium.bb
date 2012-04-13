@@ -31,7 +31,7 @@ namespace speech {
 
 class AudioChunk;
 
-struct GoogleOneShotRemoteEngineConfig {
+struct CONTENT_EXPORT GoogleOneShotRemoteEngineConfig {
   std::string language;
   std::string grammar;
   bool filter_profanities;
