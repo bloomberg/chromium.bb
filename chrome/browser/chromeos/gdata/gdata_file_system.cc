@@ -516,7 +516,7 @@ GDataFileSystem::GetDocumentsParams::GetDocumentsParams(
     const FilePath& search_file_path,
     GDataFileSystem::FeedChunkType chunk_type,
     int largest_changestamp,
-    base::ListValue* feed_list,
+    std::vector<DocumentFeed*>* feed_list,
     const FindFileCallback& callback)
     : search_file_path(search_file_path),
       chunk_type(chunk_type),
@@ -526,6 +526,7 @@ GDataFileSystem::GetDocumentsParams::GetDocumentsParams(
 }
 
 GDataFileSystem::GetDocumentsParams::~GetDocumentsParams() {
+  STLDeleteElements(feed_list.get());
 }
 
 // GDataFileSystem::LoadRootFeedParams struct implementation.
@@ -861,7 +862,8 @@ void GDataFileSystem::LoadFeedFromServer(
   // ...then also kick off document feed fetching from the server as well.
   // |feed_list| will contain the list of all collected feed updates that
   // we will receive through calls of DocumentsService::GetDocuments().
-  scoped_ptr<ListValue> feed_list(new ListValue());
+  scoped_ptr<std::vector<DocumentFeed*> > feed_list(
+      new std::vector<DocumentFeed*>);
   // Kick off document feed fetching here if we don't have complete data
   // to finish this call.
   documents_service_->GetDocuments(
@@ -2078,13 +2080,13 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
 
     return;
   }
+  const bool has_next_feed_url = current_feed->GetNextFeedURL(&next_feed_url);
 
   // Add the current feed to the list of collected feeds for this directory.
-  params->feed_list->Append(data.release());
+  params->feed_list->push_back(current_feed.release());
 
   // Check if we need to collect more data to complete the directory list.
-  if (current_feed->GetNextFeedURL(&next_feed_url) &&
-      !next_feed_url.is_empty()) {
+  if (has_next_feed_url && !next_feed_url.is_empty()) {
     // Kick of the remaining part of the feeds.
     documents_service_->GetDocuments(
         next_feed_url,
@@ -2098,7 +2100,7 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
     return;
   }
 
-  error = UpdateDirectoryWithDocumentFeed(params->feed_list.get(),
+  error = UpdateDirectoryWithDocumentFeed(*params->feed_list,
                                           FROM_SERVER,
                                           params->largest_changestamp);
   if (error != base::PLATFORM_FILE_OK) {
@@ -2624,6 +2626,7 @@ base::PlatformFileError GDataFileSystem::RemoveFileFromFileSystem(
   return base::PLATFORM_FILE_OK;
 }
 
+// static
 DocumentFeed* GDataFileSystem::ParseDocumentFeed(base::Value* feed_data) {
   DCHECK(feed_data->IsType(Value::TYPE_DICTIONARY));
   base::DictionaryValue* feed_dict = NULL;
@@ -2636,7 +2639,7 @@ DocumentFeed* GDataFileSystem::ParseDocumentFeed(base::Value* feed_data) {
 }
 
 base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
-    ListValue* feed_list,
+    const std::vector<DocumentFeed*>& feed_list,
     ContentOrigin origin,
     int largest_changestamp) {
   DVLOG(1) << "Updating directory with feed from "
@@ -2665,13 +2668,8 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
 
   int num_regular_files = 0;
   int num_hosted_documents = 0;
-  for (ListValue::const_iterator feeds_iter = feed_list->begin();
-       feeds_iter != feed_list->end(); ++feeds_iter) {
-    scoped_ptr<DocumentFeed> feed(ParseDocumentFeed(*feeds_iter));
-    if (!feed.get()) {
-      error = base::PLATFORM_FILE_ERROR_FAILED;
-      break;
-    }
+  for (size_t i = 0; i < feed_list.size(); ++i) {
+    const DocumentFeed* feed = feed_list[i];
 
     // Get upload url from the root feed. Links for all other collections will
     // be handled in GDatadirectory::FromDocumentEntry();

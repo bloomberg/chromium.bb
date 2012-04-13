@@ -558,14 +558,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
     GetDocumentsParams(const FilePath& search_file_path,
                        FeedChunkType chunk_type,
                        int largest_changestamp,
-                       base::ListValue* feed_list,
+                       std::vector<DocumentFeed*>* feed_list,
                        const FindFileCallback& callback);
     ~GetDocumentsParams();
 
     FilePath search_file_path;
     GDataFileSystem::FeedChunkType chunk_type;
     int largest_changestamp;
-    scoped_ptr<base::ListValue> feed_list;
+    scoped_ptr<std::vector<DocumentFeed*> > feed_list;
     FindFileCallback callback;
   };
 
@@ -857,14 +857,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
   base::PlatformFileError RemoveFileFromFileSystem(const FilePath& file_path);
 
   // Parses the content of |feed_data| and returns DocumentFeed instance
-  // represeting it.
-  DocumentFeed* ParseDocumentFeed(base::Value* feed_data);
+  // representing it.
+  static DocumentFeed* ParseDocumentFeed(base::Value* feed_data);
 
   // Updates whole directory structure feeds collected in |feed_list|.
   // On success, returns PLATFORM_FILE_OK. Record file statistics as UMA
   // histograms.
   base::PlatformFileError UpdateDirectoryWithDocumentFeed(
-      base::ListValue* feed_list,
+      const std::vector<DocumentFeed*>& feed_list,
       ContentOrigin origin,
       int largest_changestamp);
 

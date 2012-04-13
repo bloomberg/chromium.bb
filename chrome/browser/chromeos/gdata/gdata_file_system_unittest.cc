@@ -189,10 +189,12 @@ class GDataFileSystemTest : public testing::Test {
     scoped_ptr<Value> document(LoadJSONFile(filename));
     ASSERT_TRUE(document.get());
     ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
-    GURL unused;
-    scoped_ptr<ListValue> feed_list(new ListValue());
-    feed_list->Append(document.release());
-    ASSERT_TRUE(UpdateContent(feed_list.get()));
+    scoped_ptr<DocumentFeed> document_feed(
+        GDataFileSystem::ParseDocumentFeed(document.get()));
+    ASSERT_TRUE(document_feed.get());
+    std::vector<DocumentFeed*> feed_list;
+    feed_list.push_back(document_feed.get());
+    ASSERT_TRUE(UpdateContent(feed_list));
   }
 
   void AddDirectoryFromFile(const FilePath& directory_path,
@@ -223,7 +225,7 @@ class GDataFileSystemTest : public testing::Test {
 
   // Updates the content of directory under |directory_path| with parsed feed
   // |value|.
-  bool UpdateContent(ListValue* list) {
+  bool UpdateContent(const std::vector<DocumentFeed*>& list) {
     GURL unused;
     return file_system_->UpdateDirectoryWithDocumentFeed(
         list,
