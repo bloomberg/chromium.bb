@@ -191,7 +191,7 @@ def main(argv):
       if test in failures:
         if test not in EXCLUDES:
           unexpected_failures += 1
-          print test + ': ' + failures[test] + ' failure'
+          print '[  FAILED  ] ' + test + ': ' + failures[test] + ' failure'
           if options.verbose:
             PrintCompilationResult(options.buildpath, test)
       elif test in EXCLUDES and options.check_excludes:
