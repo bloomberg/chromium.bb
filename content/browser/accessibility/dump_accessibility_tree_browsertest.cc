@@ -182,7 +182,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
         printf("%1s %4d %s\n", is_diff? kSignalDiff : "", line + 1,
             expected_lines[line].c_str());
       }
-      printf("\n");
+      printf("\nActual\n");
+      printf("------\n");
+      printf("%s\n", actual_contents.c_str());
     }
 
     if (!file_util::PathExists(expected_file)) {
