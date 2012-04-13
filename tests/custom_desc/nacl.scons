@@ -21,6 +21,7 @@ elif trusted_env.Bit('target_arm'):
 test_host = trusted_env.ComponentProgram(
     'desc_test_host', ['desc_test_host.c'],
     EXTRA_LIBS=['sel',
+                'nacl_interval',
                 'sel_debug_dummy',
                 'manifest_proxy',
                 'simple_service',

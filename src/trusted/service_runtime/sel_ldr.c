@@ -28,9 +28,10 @@
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
-#include "native_client/src/trusted/handle_pass/ldr_handle.h"
 #include "native_client/src/trusted/gio/gio_nacl_desc.h"
 #include "native_client/src/trusted/gio/gio_shm.h"
+#include "native_client/src/trusted/handle_pass/ldr_handle.h"
+#include "native_client/src/trusted/interval_multiset/nacl_interval_range_tree_intern.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
@@ -113,9 +114,22 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
     goto cleanup_desc_tbl;
   }
 
+  nap->mem_io_regions = (struct NaClIntervalMultiset *) malloc(
+      sizeof(struct NaClIntervalRangeTree));
+  if (NULL == nap->mem_io_regions) {
+    goto cleanup_mem_map;
+  }
+
+  if (!NaClIntervalRangeTreeCtor((struct NaClIntervalRangeTree *)
+                                 nap->mem_io_regions)) {
+    free(nap->mem_io_regions);
+    nap->mem_io_regions = NULL;
+    goto cleanup_mem_map;
+  }
+
   effp = (struct NaClDescEffectorLdr *) malloc(sizeof *effp);
   if (NULL == effp) {
-    goto cleanup_mem_map;
+    goto cleanup_mem_io_regions;
   }
   if (!NaClDescEffectorLdrCtor(effp, nap)) {
     goto cleanup_effp_free;
@@ -240,6 +254,9 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   (*nap->effp->vtbl->Dtor)(nap->effp);
  cleanup_effp_free:
   free(nap->effp);
+ cleanup_mem_io_regions:
+  NaClIntervalMultisetDelete(nap->mem_io_regions);
+  nap->mem_io_regions = NULL;
  cleanup_mem_map:
   NaClVmmapDtor(&nap->mem_map);
  cleanup_desc_tbl:
@@ -1683,6 +1700,43 @@ void NaClVmHoleThreadStackIsSafe(struct NaClApp *nap) {
 
   NaClXMutexUnlock(&nap->mu);
 }
+
+/*
+ * It is fine to have multiple I/O operations read from memory in Write
+ * or SendMsg like operations.
+ */
+void NaClVmIoWillStart(struct NaClApp *nap,
+                       uint32_t addr_first_usr,
+                       uint32_t addr_last_usr) {
+  NaClXMutexLock(&nap->mu);
+  (*nap->mem_io_regions->vtbl->AddInterval)(nap->mem_io_regions,
+                                            addr_first_usr,
+                                            addr_last_usr);
+  NaClXMutexUnlock(&nap->mu);
+}
+
+
+void NaClVmIoHasEnded(struct NaClApp *nap,
+                      uint32_t addr_first_usr,
+                      uint32_t addr_last_usr) {
+  NaClXMutexLock(&nap->mu);
+  (*nap->mem_io_regions->vtbl->RemoveInterval)(nap->mem_io_regions,
+                                               addr_first_usr,
+                                               addr_last_usr);
+  NaClXMutexUnlock(&nap->mu);
+}
+
+void NaClVmIoPendingCheck_mu(struct NaClApp *nap,
+                             uint32_t addr_first_usr,
+                             uint32_t addr_last_usr) {
+  if ((*nap->mem_io_regions->vtbl->OverlapsWith)(nap->mem_io_regions,
+                                                 addr_first_usr,
+                                                 addr_last_usr)) {
+    NaClLog(LOG_FATAL,
+            "NaClVmIoWillStart: program mem write race detected. ABORTING\n");
+  }
+}
+
 
 /*
  * GDB's canonical overlay managment routine.

@@ -104,7 +104,7 @@ void NaClSysCommonThreadSyscallLeave(struct NaClAppThread *natp) {
 }
 
 int32_t NaClSysNotImplementedDecoder(struct NaClAppThread *natp) {
-  UNREFERENCED_PARAMETER(natp);
+  NaClCopyInDropLock(natp->nap);
   return -NACL_ABI_ENOSYS;
 }
 
@@ -680,15 +680,17 @@ int32_t NaClCommonSysGetdents(struct NaClAppThread *natp,
     count = INT32_MAX;
   }
   /*
-   * TODO(bsy): grab addr space lock; getdents should not normally
-   * block, though if the directory is on a networked filesystem this
-   * could, and cause mmap to be slower on Windows.
+   * Grab addr space lock; getdents should not normally block, though
+   * if the directory is on a networked filesystem this could, and
+   * cause mmap to be slower on Windows.
    */
+  NaClXMutexLock(&natp->nap->mu);
   getdents_ret = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                   Getdents)(ndp,
                             (void *) sysaddr,
                             count);
-  /* TODO(bsy): drop addr space lock */
+  NaClXMutexUnlock(&natp->nap->mu);
+  /* drop addr space lock */
   if ((getdents_ret < INT32_MIN && !NaClSSizeIsNegErrno(&getdents_ret))
       || INT32_MAX < getdents_ret) {
     /* This should never happen, because we already clamped the input count */
@@ -753,10 +755,14 @@ int32_t NaClCommonSysRead(struct NaClAppThread  *natp,
     count = INT32_MAX;
   }
 
-  /* TODO(bsy): lock memory region [buf, buf+count-1] */
+  NaClVmIoWillStart(natp->nap,
+                    (uint32_t) (uintptr_t) buf,
+                    (uint32_t) (((uintptr_t) buf) + count - 1));
   read_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                  Read)(ndp, (void *) sysaddr, count);
-  /* TODO(bsy): unlock memory region [buf, buf+count-1] */
+  NaClVmIoHasEnded(natp->nap,
+                    (uint32_t) (uintptr_t) buf,
+                    (uint32_t) (((uintptr_t) buf) + count - 1));
   if (read_result > 0) {
     NaClLog(4, "read returned %"NACL_PRIdS" bytes\n", read_result);
     NaClLog(8, "read result: %.*s\n",
@@ -818,10 +824,14 @@ int32_t NaClCommonSysWrite(struct NaClAppThread *natp,
     count = INT32_MAX;
   }
 
-  /* TODO(bsy): lock memory region [buf, buf+count-1] */
+  NaClVmIoWillStart(natp->nap,
+                    (uint32_t) (uintptr_t) buf,
+                    (uint32_t) (((uintptr_t) buf) + count - 1));
   write_result = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
                   Write)(ndp, (void *) sysaddr, count);
-  /* TODO(bsy): unlock memory region [buf, buf+count-1] */
+  NaClVmIoHasEnded(natp->nap,
+                    (uint32_t) (uintptr_t) buf,
+                    (uint32_t) (((uintptr_t) buf) + count - 1));
 
   NaClDescUnref(ndp);
 
@@ -938,12 +948,11 @@ int32_t NaClCommonSysIoctl(struct NaClAppThread *natp,
    * points to near the end of the address space, we should be fine
    * for reasonable sizes of arguments from the point of view of
    * staying within the untrusted address space.
-   *
-   * TODO(bsy): take VM lock
    */
+  NaClXMutexLock(&natp->nap->mu);
   retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
             Ioctl)(ndp, request, (void *) sysaddr);
-  /* TODO(bsy): drop VM lock */
+  NaClXMutexUnlock(&natp->nap->mu);
 cleanup_unref:
   NaClDescUnref(ndp);
 cleanup:
@@ -1388,6 +1397,9 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
     map_result = -NACL_ABI_EINVAL;
     goto cleanup;
   }
+  NaClVmIoPendingCheck_mu(nap,
+                          (uint32_t) usraddr,
+                          (uint32_t) (usraddr + length - 1));
 
   /*
    * Force NACL_ABI_MAP_FIXED, since we are specifying address in NaCl
@@ -1756,6 +1768,10 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
+  NaClVmIoPendingCheck_mu(natp->nap,
+                          (uint32_t) (uintptr_t) start,
+                          (uint32_t) ((uintptr_t) start + length - 1));
+
   retval = MunmapInternal(natp->nap, sysaddr, length);
 cleanup:
   if (holding_app_lock) {
@@ -1996,9 +2012,19 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
   }
   kern_msg_hdr.flags = kern_nanimh.flags;
 
-  /* TODO(bsy): lock user memory ranges in kern_naiov */
+  /* lock user memory ranges in kern_naiov */
+  for (i = 0; i < kern_nanimh.iov_length; ++i) {
+    NaClVmIoWillStart(natp->nap,
+                      kern_naiov[i].base,
+                      kern_naiov[i].base + kern_naiov[i].length - 1);
+  }
   ssize_retval = NACL_VTBL(NaClDesc, ndp)->SendMsg(ndp, &kern_msg_hdr, flags);
-  /* TODO(bsy): unlock user memory ranges in kern_naiov */
+  /* unlock user memory ranges in kern_naiov */
+  for (i = 0; i < kern_nanimh.iov_length; ++i) {
+    NaClVmIoHasEnded(natp->nap,
+                     kern_naiov[i].base,
+                     kern_naiov[i].base + kern_naiov[i].length - 1);
+  }
 
   if (NaClSSizeIsNegErrno(&ssize_retval)) {
     /*
@@ -2149,10 +2175,20 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
 
   recv_hdr.flags = 0;  /* just to make it obvious; IMC will clear it for us */
 
-  /* TODO(bsy): lock user memory ranges in kern_naiov */
+  /* lock user memory ranges in kern_naiov */
+  for (i = 0; i < kern_nanimh.iov_length; ++i) {
+    NaClVmIoWillStart(natp->nap,
+                      kern_naiov[i].base,
+                      kern_naiov[i].base + kern_naiov[i].length - 1);
+  }
   ssize_retval = NACL_VTBL(NaClDesc, ndp)->RecvMsg(ndp, &recv_hdr, flags,
       (struct NaClDescQuotaInterface *) natp->nap->reverse_quota_interface);
-  /* TODO(bsy): unlock user memory ranges in kern_naiov */
+  /* unlock user memory ranges in kern_naiov */
+  for (i = 0; i < kern_nanimh.iov_length; ++i) {
+    NaClVmIoHasEnded(natp->nap,
+                     kern_naiov[i].base,
+                     kern_naiov[i].base + kern_naiov[i].length - 1);
+  }
   /*
    * retval is number of user payload bytes received and excludes the
    * header bytes.

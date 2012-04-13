@@ -9,7 +9,16 @@
 #include "native_client/src/trusted/service_runtime/nacl_copy.h"
 
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+
+void NaClCopyInTakeLock(struct NaClApp *nap) {
+  NaClXMutexLock(&nap->mu);
+}
+
+void NaClCopyInDropLock(struct NaClApp *nap) {
+  NaClXMutexUnlock(&nap->mu);
+}
 
 int NaClCopyInFromUser(struct NaClApp *nap,
                        void           *dst_sys_ptr,
@@ -21,13 +30,27 @@ int NaClCopyInFromUser(struct NaClApp *nap,
   if (kNaClBadAddress == src_sys_addr) {
     return 0;
   }
-  /*
-   * TODO(bsy): grab address space lock -- do not need to do it before
-   * NaClUserToSysAddrRange check, since that does not verify whether
-   * an address is mapped or not, just that it's within 1 << nap->addr_bits.
-   */
+  NaClXMutexLock(&nap->mu);
   memcpy((void *) dst_sys_ptr, (void *) src_sys_addr, num_bytes);
-  /* TODO(bsy): drop address space lock */
+  NaClXMutexUnlock(&nap->mu);
+
+  return 1;
+}
+
+int NaClCopyInFromUserAndDropLock(struct NaClApp *nap,
+                                  void           *dst_sys_ptr,
+                                  uintptr_t      src_usr_addr,
+                                  size_t         num_bytes) {
+  uintptr_t src_sys_addr;
+
+  src_sys_addr = NaClUserToSysAddrRange(nap, src_usr_addr, num_bytes);
+  if (kNaClBadAddress == src_sys_addr) {
+    return 0;
+  }
+
+  memcpy((void *) dst_sys_ptr, (void *) src_sys_addr, num_bytes);
+  NaClXMutexUnlock(&nap->mu);
+
   return 1;
 }
 
@@ -43,13 +66,9 @@ int NaClCopyInFromUserZStr(struct NaClApp *nap,
     dst_buffer[0] = '\0';
     return 0;
   }
-  /*
-   * TODO(bsy): grab address space lock -- do not need to do it before
-   * NaClUserToSysAddrRange check, since that does not verify whether
-   * an address is mapped or not, just that it's within 1 << nap->addr_bits.
-   */
+  NaClXMutexLock(&nap->mu);
   strncpy(dst_buffer, (char *) src_sys_addr, dst_buffer_bytes);
-  /* TODO(bsy): drop address space lock */
+  NaClXMutexUnlock(&nap->mu);
 
   /* POSIX strncpy pads with NUL characters */
   if (dst_buffer[dst_buffer_bytes - 1] != '\0') {
@@ -70,13 +89,9 @@ int NaClCopyOutToUser(struct NaClApp  *nap,
   if (kNaClBadAddress == dst_sys_addr) {
     return 0;
   }
-  /*
-   * TODO(bsy): grab address space lock -- do not need to do it before
-   * NaClUserToSysAddrRange check, since that does not verify whether
-   * an address is mapped or not, just that it's within 1 << nap->addr_bits.
-   */
+  NaClXMutexLock(&nap->mu);
   memcpy((void *) dst_sys_addr, src_sys_ptr, num_bytes);
-  /* TODO(bsy): drop address space lock */
+  NaClXMutexUnlock(&nap->mu);
 
   return 1;
 }

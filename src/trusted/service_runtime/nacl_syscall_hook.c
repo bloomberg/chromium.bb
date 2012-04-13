@@ -19,6 +19,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -118,6 +119,13 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    * sp_sys points to the top of user stack where there is a retaddr to
    * trampoline slot.  NB: on x86-64, NaCl*StackAddr does no range check.
    */
+
+  NaClCopyInTakeLock(nap);
+  /*
+   * held until syscall args are copied, which occurs in the generated
+   * code.
+   */
+
   tramp_ret = *(uintptr_t *) sp_sys;
   tramp_ret = NaClUserToSysStackAddr(nap, tramp_ret);
 
@@ -157,6 +165,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   if (sysnum >= NACL_MAX_SYSCALLS) {
     NaClLog(2, "INVALID system call %"NACL_PRIdS"\n", sysnum);
     natp->sysret = -NACL_ABI_EINVAL;
+    NaClCopyInDropLock(nap);
   } else {
 #if !BENCHMARK
     NaClLog(4, "making system call %"NACL_PRIdS", "
@@ -164,6 +173,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
             sysnum, (uintptr_t) nap->syscall_table[sysnum].handler);
 #endif
     natp->sysret = (*(nap->syscall_table[sysnum].handler))(natp);
+    /* implicitly drops lock */
   }
 #if !BENCHMARK
   NaClLog(4,
