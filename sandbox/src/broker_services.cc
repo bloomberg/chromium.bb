@@ -41,11 +41,33 @@ sandbox::ResultCode SpawnCleanup(sandbox::TargetProcess* target, DWORD error) {
 // executes TargetEventsThread().
 enum {
   THREAD_CTRL_NONE,
+  THREAD_CTRL_REMOVE_PEER,
   THREAD_CTRL_QUIT,
-  THREAD_CTRL_LAST
+  THREAD_CTRL_LAST,
 };
 
-}
+// Helper structure that allows the Broker to associate a job notification
+// with a job object and with a policy.
+struct JobTracker {
+  HANDLE job;
+  sandbox::PolicyBase* policy;
+  JobTracker(HANDLE cjob, sandbox::PolicyBase* cpolicy)
+      : job(cjob), policy(cpolicy) {
+  }
+};
+
+// Helper structure that allows the broker to track peer processes
+struct PeerTracker {
+  HANDLE wait_object;
+  base::win::ScopedHandle process;
+  DWORD id;
+  HANDLE job_port;
+  PeerTracker(DWORD process_id, HANDLE broker_job_port)
+      : wait_object(NULL), id(process_id), job_port(broker_job_port) {
+  }
+};
+
+}  // namespace
 
 namespace sandbox {
 
@@ -85,6 +107,7 @@ BrokerServicesBase::~BrokerServicesBase() {
   // If there is no port Init() was never called successfully.
   if (!job_port_)
     return;
+
   // Closing the port causes, that no more Job notifications are delivered to
   // the worker thread and also causes the thread to exit. This is what we
   // want to do since we are going to close all outstanding Jobs and notifying
@@ -107,6 +130,18 @@ BrokerServicesBase::~BrokerServicesBase() {
   ::CloseHandle(job_thread_);
   delete thread_pool_;
   ::CloseHandle(no_targets_);
+
+  // Cancel the wait events and delete remaining peer trackers.
+  for (PeerTrackerMap::iterator it = peer_map_.begin();
+       it != peer_map_.end(); ++it) {
+    // Deregistration shouldn't fail, but we leak rather than crash if it does.
+    if (::UnregisterWaitEx(it->second->wait_object, INVALID_HANDLE_VALUE)) {
+      delete it->second;
+    } else {
+      NOTREACHED();
+    }
+  }
+
   // If job_port_ isn't NULL, assumes that the lock has been initialized.
   if (job_port_)
     ::DeleteCriticalSection(&lock_);
@@ -209,9 +244,23 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
         }
       }
 
+    } else if (THREAD_CTRL_REMOVE_PEER == key) {
+      // Remove a process from our list of peers.
+      AutoLock lock(&broker->lock_);
+      PeerTrackerMap::iterator it =
+          broker->peer_map_.find(reinterpret_cast<DWORD>(ovl));
+      // This shouldn't fail, but if it does leak the memory rather than crash.
+      if (::UnregisterWaitEx(it->second->wait_object, INVALID_HANDLE_VALUE)) {
+        delete it->second;
+        broker->peer_map_.erase(it);
+      } else {
+        NOTREACHED();
+      }
+
     } else if (THREAD_CTRL_QUIT == key) {
       // The broker object is being destroyed so the thread needs to exit.
       return 0;
+
     } else {
       // We have not implemented more commands.
       NOTREACHED();
@@ -312,7 +361,44 @@ ResultCode BrokerServicesBase::WaitForAllTargets() {
 
 bool BrokerServicesBase::IsActiveTarget(DWORD process_id) {
   AutoLock lock(&lock_);
-  return child_process_ids_.find(process_id) != child_process_ids_.end();
+  return child_process_ids_.find(process_id) != child_process_ids_.end() ||
+         peer_map_.find(process_id) != peer_map_.end();
+}
+
+VOID CALLBACK BrokerServicesBase::RemovePeer(PVOID parameter, BOOLEAN) {
+  PeerTracker* peer = reinterpret_cast<PeerTracker*>(parameter);
+  // Don't check the return code because we this may fail (safely) at shutdown.
+  ::PostQueuedCompletionStatus(peer->job_port, 0, THREAD_CTRL_REMOVE_PEER,
+                               reinterpret_cast<LPOVERLAPPED>(peer->id));
+}
+
+ResultCode BrokerServicesBase::AddTargetPeer(HANDLE peer_process) {
+  scoped_ptr<PeerTracker> peer(new PeerTracker(::GetProcessId(peer_process),
+                                               job_port_));
+  if (!peer->id)
+    return SBOX_ERROR_GENERIC;
+
+  if (!::DuplicateHandle(::GetCurrentProcess(), peer_process,
+                         ::GetCurrentProcess(), peer->process.Receive(),
+                         SYNCHRONIZE, FALSE, 0)) {
+    return SBOX_ERROR_GENERIC;
+  }
+
+  AutoLock lock(&lock_);
+  if (!peer_map_.insert(std::make_pair(peer->id, peer.get())).second)
+    return SBOX_ERROR_BAD_PARAMS;
+
+  if (!::RegisterWaitForSingleObject(&peer->wait_object,
+                                     peer->process, RemovePeer,
+                                     peer.get(), INFINITE, WT_EXECUTEONLYONCE |
+                                     WT_EXECUTEINWAITTHREAD)) {
+    peer_map_.erase(peer->id);
+    return SBOX_ERROR_GENERIC;
+  }
+
+  // Leak the pointer since it will be cleaned up by the callback.
+  peer.release();
+  return SBOX_ALL_OK;
 }
 
 }  // namespace sandbox
