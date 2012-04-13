@@ -347,9 +347,13 @@ destroy_selection_data_source(struct wl_listener *listener, void *data)
 
 WL_EXPORT void
 wl_input_device_set_selection(struct wl_input_device *device,
-			      struct wl_data_source *source)
+			      struct wl_data_source *source, uint32_t serial)
 {
 	struct wl_resource *data_device, *focus, *offer;
+
+	if (device->selection_data_source &&
+	    device->selection_serial - serial < UINT32_MAX / 2)
+		return;
 
 	if (device->selection_data_source) {
 		device->selection_data_source->cancel(device->selection_data_source);
@@ -358,6 +362,7 @@ wl_input_device_set_selection(struct wl_input_device *device,
 	}
 
 	device->selection_data_source = source;
+	device->selection_serial = serial;
 
 	focus = device->keyboard_focus_resource;
 	if (focus) {
@@ -387,7 +392,8 @@ data_device_set_selection(struct wl_client *client,
 		return;
 
 	/* FIXME: Store serial and check against incoming serial here. */
-	wl_input_device_set_selection(resource->data, source_resource->data);
+	wl_input_device_set_selection(resource->data, source_resource->data,
+				      serial);
 }
 
 static const struct wl_data_device_interface data_device_interface = {

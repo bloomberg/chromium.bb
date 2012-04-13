@@ -266,6 +266,7 @@ struct wl_input_device {
 	struct wl_listener drag_icon_listener;
 	struct wl_signal drag_icon_signal;
 
+	uint32_t selection_serial;
 	struct wl_data_source *selection_data_source;
 	struct wl_listener selection_data_source_listener;
 	struct wl_signal selection_signal;
@@ -343,7 +344,7 @@ wl_input_device_end_pointer_grab(struct wl_input_device *device);
 
 void
 wl_input_device_set_selection(struct wl_input_device *device,
-			      struct wl_data_source *source);
+			      struct wl_data_source *source, uint32_t serial);
 
 
 void *
