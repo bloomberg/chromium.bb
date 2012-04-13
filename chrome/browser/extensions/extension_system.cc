@@ -63,7 +63,8 @@ ExtensionSystemImpl::Shared::Shared(Profile* profile)
 }
 
 ExtensionSystemImpl::Shared::~Shared() {
-  rules_registry_service_->Shutdown();
+  if (rules_registry_service_.get())
+    rules_registry_service_->Shutdown();
 }
 
 void ExtensionSystemImpl::Shared::InitPrefs() {
