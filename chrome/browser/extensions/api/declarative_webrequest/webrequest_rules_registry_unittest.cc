@@ -47,7 +47,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
     scheme_http->Append(Value::CreateStringValue("http"));
     DictionaryValue http_condition_dict;
     http_condition_dict.Set(keys::kSchemesKey, scheme_http);
-    http_condition_dict.SetString("host_suffix", "example.com");
+    http_condition_dict.SetString(keys::kHostSuffixKey, "example.com");
     http_condition_dict.SetString(keys::kInstanceTypeKey,
                                   keys::kRequestMatcherType);
 
@@ -55,8 +55,8 @@ class WebRequestRulesRegistryTest : public testing::Test {
     scheme_http->Append(Value::CreateStringValue("https"));
     DictionaryValue https_condition_dict;
     https_condition_dict.Set(keys::kSchemesKey, scheme_https);
-    https_condition_dict.SetString("host_suffix", "example.com");
-    https_condition_dict.SetString("host_prefix", "www");
+    https_condition_dict.SetString(keys::kHostSuffixKey, "example.com");
+    https_condition_dict.SetString(keys::kHostPrefixKey, "www");
     https_condition_dict.SetString(keys::kInstanceTypeKey,
                                    keys::kRequestMatcherType);
 

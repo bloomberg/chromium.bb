@@ -27,12 +27,12 @@ TEST(WebRequestConditionTest, CreateCondition) {
 
   DictionaryValue invalid_condition;
   invalid_condition.SetString("invalid", "foobar");
-  invalid_condition.SetString("host_suffix", "example.com");
+  invalid_condition.SetString(keys::kHostSuffixKey, "example.com");
   invalid_condition.SetString(keys::kInstanceTypeKey,
                               keys::kRequestMatcherType);
 
   DictionaryValue invalid_condition2;
-  invalid_condition2.Set("host_suffix", new ListValue);
+  invalid_condition2.Set(keys::kHostSuffixKey, new ListValue);
   invalid_condition2.SetString(keys::kInstanceTypeKey,
                                keys::kRequestMatcherType);
 
@@ -40,7 +40,7 @@ TEST(WebRequestConditionTest, CreateCondition) {
   resource_type_list->Append(Value::CreateStringValue("main_frame"));
   DictionaryValue valid_condition;
   valid_condition.Set(keys::kResourceTypeKey, resource_type_list);
-  valid_condition.SetString("host_suffix", "example.com");
+  valid_condition.SetString(keys::kHostSuffixKey, "example.com");
   valid_condition.SetString(keys::kInstanceTypeKey,
                             keys::kRequestMatcherType);
 
@@ -85,15 +85,15 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   http_scheme_list->Append(Value::CreateStringValue("http"));
   DictionaryValue http_condition;
   http_condition.Set(keys::kSchemesKey, http_scheme_list);
-  http_condition.SetString("host_suffix", "example.com");
+  http_condition.SetString(keys::kHostSuffixKey, "example.com");
   http_condition.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
   ListValue* https_scheme_list = new ListValue();
   https_scheme_list->Append(Value::CreateStringValue("https"));
   DictionaryValue https_condition;
   https_condition.Set(keys::kSchemesKey, https_scheme_list);
-  https_condition.SetString("host_suffix", "example.com");
-  https_condition.SetString("host_prefix", "www");
+  https_condition.SetString(keys::kHostSuffixKey, "example.com");
+  https_condition.SetString(keys::kHostPrefixKey, "www");
   https_condition.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
   WebRequestConditionSet::AnyVector conditions;
@@ -148,7 +148,7 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
   }
   EXPECT_EQ(1, number_matches);
 
-  // Check that both, host_prefix and host_suffix are evaluated.
+  // Check that both, hostPrefix and hostSuffix are evaluated.
   GURL https_foo_url("https://foo.example.com");
   url_match_ids = matcher.MatchURL(https_foo_url);
   TestURLRequest https_foo_request(https_foo_url, NULL);
@@ -176,7 +176,7 @@ TEST(WebRequestConditionTest, TestPortFilter) {
 
   DictionaryValue condition;
   condition.Set(keys::kPortsKey, port_ranges);
-  condition.SetString("host_suffix", "example.com");
+  condition.SetString(keys::kHostSuffixKey, "example.com");
   condition.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
 
   linked_ptr<json_schema_compiler::any::Any> any_condition =

@@ -13,10 +13,12 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition_attribute.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
+#include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_helpers.h"
 #include "net/url_request/url_request.h"
 
 namespace helpers = extensions::declarative_webrequest_helpers;
+namespace keys = extensions::declarative_webrequest_constants;
 
 namespace {
 static extensions::URLMatcherConditionSet::ID g_next_id = 0;
@@ -35,25 +37,6 @@ const char kVectorOfStringsExpected[] =
     "Attribute '%s' expected a vector of strings";
 const char kInvalidPortRanges[] = "Invalid port ranges";
 
-// String literals from the JavaScript API:
-const char kHostContainsKey[] = "host_contains";
-const char kHostEqualsKey[] = "host_equals";
-const char kHostPrefixKey[] = "host_prefix";
-const char kHostSuffixKey[] = "host_suffix";
-const char kHostSuffixPathPrefixKey[] = "host_suffix_path_prefix";
-const char kPathContainsKey[] = "path_contains";
-const char kPathEqualsKey[] = "path_equals";
-const char kPathPrefixKey[] = "path_prefix";
-const char kPathSuffixKey[] = "path_suffix";
-const char kQueryContainsKey[] = "query_contains";
-const char kQueryEqualsKey[] = "query_equals";
-const char kQueryPrefixKey[] = "query_prefix";
-const char kQuerySuffixKey[] = "query_suffix";
-const char kURLContainsKey[] = "url_contains";
-const char kURLEqualsKey[] = "url_equals";
-const char kURLPrefixKey[] = "url_prefix";
-const char kURLSuffixKey[] = "url_suffix";
-
 // Registry for all factory methods of extensions::URLMatcherConditionFactory
 // that allows translating string literals from the extension API into
 // the corresponding factory method to be called.
@@ -61,22 +44,23 @@ class URLMatcherConditionFactoryMethods {
  public:
   URLMatcherConditionFactoryMethods() {
     typedef extensions::URLMatcherConditionFactory F;
-    factory_methods_[kHostContainsKey] = &F::CreateHostContainsCondition;
-    factory_methods_[kHostEqualsKey] = &F::CreateHostEqualsCondition;
-    factory_methods_[kHostPrefixKey] = &F::CreateHostPrefixCondition;
-    factory_methods_[kHostSuffixKey] = &F::CreateHostSuffixCondition;
-    factory_methods_[kPathContainsKey] = &F::CreatePathContainsCondition;
-    factory_methods_[kPathEqualsKey] = &F::CreatePathEqualsCondition;
-    factory_methods_[kPathPrefixKey] = &F::CreatePathPrefixCondition;
-    factory_methods_[kPathSuffixKey] = &F::CreatePathSuffixCondition;
-    factory_methods_[kQueryContainsKey] = &F::CreateQueryContainsCondition;
-    factory_methods_[kQueryEqualsKey] = &F::CreateQueryEqualsCondition;
-    factory_methods_[kQueryPrefixKey] = &F::CreateQueryPrefixCondition;
-    factory_methods_[kQuerySuffixKey] = &F::CreateQuerySuffixCondition;
-    factory_methods_[kURLContainsKey] = &F::CreateURLContainsCondition;
-    factory_methods_[kURLEqualsKey] = &F::CreateURLEqualsCondition;
-    factory_methods_[kURLPrefixKey] = &F::CreateURLPrefixCondition;
-    factory_methods_[kURLSuffixKey] = &F::CreateURLSuffixCondition;
+    factory_methods_[keys::kHostContainsKey] = &F::CreateHostContainsCondition;
+    factory_methods_[keys::kHostEqualsKey] = &F::CreateHostEqualsCondition;
+    factory_methods_[keys::kHostPrefixKey] = &F::CreateHostPrefixCondition;
+    factory_methods_[keys::kHostSuffixKey] = &F::CreateHostSuffixCondition;
+    factory_methods_[keys::kPathContainsKey] = &F::CreatePathContainsCondition;
+    factory_methods_[keys::kPathEqualsKey] = &F::CreatePathEqualsCondition;
+    factory_methods_[keys::kPathPrefixKey] = &F::CreatePathPrefixCondition;
+    factory_methods_[keys::kPathSuffixKey] = &F::CreatePathSuffixCondition;
+    factory_methods_[keys::kQueryContainsKey] =
+        &F::CreateQueryContainsCondition;
+    factory_methods_[keys::kQueryEqualsKey] = &F::CreateQueryEqualsCondition;
+    factory_methods_[keys::kQueryPrefixKey] = &F::CreateQueryPrefixCondition;
+    factory_methods_[keys::kQuerySuffixKey] = &F::CreateQuerySuffixCondition;
+    factory_methods_[keys::kURLContainsKey] = &F::CreateURLContainsCondition;
+    factory_methods_[keys::kURLEqualsKey] = &F::CreateURLEqualsCondition;
+    factory_methods_[keys::kURLPrefixKey] = &F::CreateURLPrefixCondition;
+    factory_methods_[keys::kURLSuffixKey] = &F::CreateURLSuffixCondition;
   }
 
   // Returns whether a factory method for the specified |pattern_type| (e.g.

@@ -11,77 +11,77 @@
         "type": "object",
         "description": "Matches network events by various criteria.",
         "properties": {
-          "host_contains": {
+          "hostContains": {
             "type": "string",
             "description": "Matches if the host name of the URL contains a specified string.",
             "optional": true
           },
-          "host_equals": {
+          "hostEquals": {
             "type": "string",
             "description": "Matches if the host name of the URL is equal to a specified string.",
             "optional": true
           },
-          "host_prefix": {
+          "hostPrefix": {
             "type": "string",
             "description": "Matches if the host name of the URL starts with a specified string.",
             "optional": true
           },
-          "host_suffix": {
+          "hostSuffix": {
             "type": "string",
             "description": "Matches if the host name of the URL ends with a specified string.",
             "optional": true
           },
-          "path_contains": {
+          "pathContains": {
             "type": "string",
             "description": "Matches if the path segment of the URL contains a specified string.",
             "optional": true
           },
-          "path_equals": {
+          "pathEquals": {
             "type": "string",
             "description": "Matches if the path segment of the URL is equal to a specified string.",
             "optional": true
           },
-          "path_prefix": {
+          "pathPrefix": {
             "type": "string",
             "description": "Matches if the path segment of the URL starts with a specified string.",
             "optional": true
           },
-          "path_suffix": {
+          "pathSuffix": {
             "type": "string",
             "description": "Matches if the path segment of the URL ends with a specified string.",
             "optional": true
           },
-          "query_equals": {
+          "queryEquals": {
             "type": "string",
             "description": "Matches if the query segment of the URL is equal to a specified string.",
             "optional": true
           },
-          "query_prefix": {
+          "queryPrefix": {
             "type": "string",
             "description": "Matches if the query segment of the URL starts with a specified string.",
             "optional": true
           },
-          "query_suffix": {
+          "querySuffix": {
             "type": "string",
             "description": "Matches if the query segment of the URL ends with a specified string.",
             "optional": true
           },
-          "url_suffix": {
+          "urlSuffix": {
             "type": "string",
             "description": "Matches if the URL ends with a specified string.",
             "optional": true
           },
-          "url_equals": {
+          "urlEquals": {
             "type": "string",
             "description": "Matches if the URL is equal to a specified string.",
             "optional": true
           },
-          "url_prefix": {
+          "urlPrefix": {
             "type": "string",
             "description": "Matches if the URL starts with a specified string.",
             "optional": true
           },
-          "url_suffix": {
+          "urlSuffix": {
             "type": "string",
             "description": "Matches if the URL ends with a specified string.",
             "optional": true

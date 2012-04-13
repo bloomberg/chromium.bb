@@ -33,7 +33,7 @@ runTests([
       [ ["onCompleted"] ]);
     onRequest.addRules(
       [ {'conditions': [
-           new RequestMatcher({'path_suffix': ".html",
+           new RequestMatcher({'pathSuffix': ".html",
                                'resourceType': ["main_frame"],
                                'schemes': ["http"],
                                'ports': [testServerPort, [1000, 2000]]})],
@@ -88,7 +88,7 @@ runTests([
          "onCompleted"] ]);
 
     onRequest.addRules(
-      [ {'conditions': [new RequestMatcher({'path_suffix': ".html"})],
+      [ {'conditions': [new RequestMatcher({'pathSuffix': ".html"})],
          'actions': [
              new RedirectRequest({'redirectUrl': getURLHttpSimple()})]}
       ],

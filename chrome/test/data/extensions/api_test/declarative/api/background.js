@@ -10,8 +10,8 @@ var RedirectRequest = chrome.experimental.webRequest.RedirectRequest;
 
 var inputRule0 = {
   // No 'id', this should be filled by the API.
-  "conditions": [new RequestMatcher({"host_prefix": "test1"}),
-                 new RequestMatcher({"host_prefix": "test2"})],
+  "conditions": [new RequestMatcher({"hostPrefix": "test1"}),
+                 new RequestMatcher({"hostPrefix": "test2"})],
   "actions": [new CancelRequest(),
               new RedirectRequest({"redirectUrl": "http://foobar.com"})]
   // No 'priority', this should be filled by the API.
@@ -19,8 +19,8 @@ var inputRule0 = {
 
 var outputRule0 = {
   "id": "_0_",
-  "conditions": [new RequestMatcher({"host_prefix": "test1"}),
-                 new RequestMatcher({"host_prefix": "test2"})],
+  "conditions": [new RequestMatcher({"hostPrefix": "test1"}),
+                 new RequestMatcher({"hostPrefix": "test2"})],
   "actions": [new CancelRequest(),
               new RedirectRequest({"redirectUrl": "http://foobar.com"})],
   "priority": 100
@@ -37,25 +37,25 @@ var outputRule1 = inputRule1;
 
 var inputRule2 = {
   // No 'id', this should be filled by the API.
-  "conditions": [new RequestMatcher({"host_prefix": "test3"})],
+  "conditions": [new RequestMatcher({"hostPrefix": "test3"})],
   "actions": [new CancelRequest()]
   // No 'priority', this should be filled by the API.
 }
 
 var outputRule2 = {
   "id": "_1_",
-  "conditions": [new RequestMatcher({"host_prefix": "test3"})],
+  "conditions": [new RequestMatcher({"hostPrefix": "test3"})],
   "actions": [new CancelRequest()],
   "priority": 100
 }
 
 var invalidRule0 = {
-  "conditions": [new RequestMatcher({"host_prefix": "test1"})]
+  "conditions": [new RequestMatcher({"hostPrefix": "test1"})]
   // "actions" is missing but not optional.
 };
 
 var invalidRule1 = {
-  "conditions": [new RequestMatcher({"host_prefix": "test1"})],
+  "conditions": [new RequestMatcher({"hostPrefix": "test1"})],
   // "actions" contains an invalid action (separate test because this validation
   // happens on a different code path).
   "actions": [{"key": "value"}]
