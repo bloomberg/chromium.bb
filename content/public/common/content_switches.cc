@@ -233,9 +233,6 @@ const char kEnableCompositingForFixedPosition[] =
 // Enable deferred 2d canvas rendering.
 const char kEnableDeferred2dCanvas[]        = "enable-deferred-2d-canvas";
 
-// Enables compositing to texture instead of display.
-const char kEnableCompositeToTexture[]      = "enable-composite-to-texture";
-
 // Enables CSS3 regions
 const char kEnableCssRegions[]              = "enable-css-regions";
 

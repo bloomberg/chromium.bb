@@ -82,7 +82,6 @@ WebPreferences::WebPreferences()
       threaded_animation_enabled(false),
       accelerated_compositing_enabled(false),
       force_compositing_mode(false),
-      composite_to_texture_enabled(false),
       fixed_position_compositing_enabled(false),
       accelerated_layers_enabled(false),
       accelerated_animation_enabled(false),
@@ -278,9 +277,6 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Always enter compositing if requested on the command line.
   settings->setForceCompositingMode(force_compositing_mode);
-
-  // Enable composite to offscreen texture if requested on the command line.
-  settings->setCompositeToTextureEnabled(composite_to_texture_enabled);
 
   // Enable compositing for fixed position elements if requested
   // on the command line.

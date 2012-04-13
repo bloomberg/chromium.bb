@@ -96,7 +96,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool threaded_animation_enabled;
   bool accelerated_compositing_enabled;
   bool force_compositing_mode;
-  bool composite_to_texture_enabled;
   bool fixed_position_compositing_enabled;
   bool accelerated_layers_enabled;
   bool accelerated_animation_enabled;

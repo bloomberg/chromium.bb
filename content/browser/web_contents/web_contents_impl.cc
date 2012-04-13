@@ -429,8 +429,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.accelerated_layers_enabled =
       prefs.accelerated_animation_enabled =
           !command_line.HasSwitch(switches::kDisableAcceleratedLayers);
-  prefs.composite_to_texture_enabled =
-      command_line.HasSwitch(switches::kEnableCompositeToTexture);
   prefs.accelerated_plugins_enabled =
       !command_line.HasSwitch(switches::kDisableAcceleratedPlugins);
   prefs.accelerated_video_enabled =
