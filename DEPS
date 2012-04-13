@@ -8,10 +8,10 @@ vars = {
   "webkit_revision": "114137",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "8249",
+  "nacl_revision": "8264",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
-  "nacl_tools_revision": "7955",  # native_client/DEPS: tools_rev
+  "nacl_tools_revision": "8151",  # native_client/DEPS: tools_rev
 
   # These hashes need to be updated when nacl_toolchain_revision is changed.
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
@@ -371,6 +371,11 @@ deps_os = {
     "src/third_party/swig/win":
       "/trunk/deps/third_party/swig/win@" + Var("swig_revision"),
 
+    # GNU binutils assembler for x86-32.
+    "src/third_party/gnu_binutils":
+      (Var("nacl_trunk") + "/deps/third_party/gnu_binutils@" +
+       Var("nacl_tools_revision")),
+    # GNU binutils assembler for x86-64.
     "src/third_party/mingw-w64/mingw/bin":
       (Var("nacl_trunk") + "/deps/third_party/mingw-w64/mingw/bin@" +
        Var("nacl_tools_revision")),
