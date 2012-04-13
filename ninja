@@ -1,11 +1,17 @@
 #!/bin/bash
 
+# Copyright (c) 2012 Google Inc. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 OS="$(uname -s)"
 
 if [ "${OS}" = "Linux" ]; then
   exec ninja-linux64 "$@"
 elif [ "${OS}" = "Darwin" ]; then
   exec ninja-mac "$@"
+elif [[ ${OS} == CYGWIN* ]]; then
+  exec cmd.exe /c `cygpath -t windows $0`.bat "$@"
 else
   echo "Unsupported OS ${OS}"
   exit 1
