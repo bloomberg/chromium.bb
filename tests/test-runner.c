@@ -69,7 +69,7 @@ run_test(const struct test *t)
 	int cur_alloc = num_alloc;
 
 	t->run();
-	assert(("memory leak detected in test.", cur_alloc == num_alloc));
+	assert(cur_alloc == num_alloc && "memory leak detected in test.");
 	exit(EXIT_SUCCESS);
 }
 
