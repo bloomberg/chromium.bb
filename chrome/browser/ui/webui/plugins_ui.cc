@@ -44,6 +44,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
+#endif
+
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugin_finder.h"
 #include "chrome/browser/plugin_installer.h"
@@ -96,6 +100,9 @@ ChromeWebUIDataSource* CreatePluginsUIHTMLSource() {
   source->set_json_path("strings.js");
   source->add_resource_path("plugins.js", IDR_PLUGINS_JS);
   source->set_default_resource(IDR_PLUGINS_HTML);
+#if defined(OS_CHROMEOS)
+  chromeos::AddAccountUITweaksLocalizedValues(source);
+#endif
   return source;
 }
 

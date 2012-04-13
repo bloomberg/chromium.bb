@@ -7,6 +7,9 @@
  * replace, but has CSS specific to options and options-like pages. */
 
 @import url("chrome://resources/css/widgets.css");
+<if expr="pp_ifdef('chromeos')">
+  @import url("chrome://resources/css/chromeos/ui_account_tweaks.css");
+</if>
 
 /* Prevent CSS from overriding the hidden property. */
 [hidden] {

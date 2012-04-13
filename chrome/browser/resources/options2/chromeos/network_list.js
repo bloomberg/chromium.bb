@@ -418,7 +418,7 @@ cr.define('options.network', function() {
       } else if (this.data_.key == 'cellular') {
         var label = enableDataRoaming_ ? 'disableDataRoaming' :
             'enableDataRoaming';
-        var disabled = !AccountsOptions.currentUserIsOwner();
+        var disabled = !UIAccountTweaks.currentUserIsOwner();
         var entry = {label: localStrings.getString(label),
                      data: {}};
         if (disabled) {

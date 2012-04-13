@@ -18,6 +18,7 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chrome/browser/ui/webui/options2/chromeos/accounts_options_handler2.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -218,10 +219,7 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
   CoreOptionsHandler::GetLocalizedValues(localized_strings);
 
-  localized_strings->SetString(
-      "loggedInAsGuest",
-      chromeos::UserManager::Get()->IsLoggedInAsGuest() ?
-          ASCIIToUTF16("true") : ASCIIToUTF16("false"));
+  AddAccountUITweaksLocalizedValues(localized_strings);
 }
 
 void CoreChromeOSOptionsHandler::Observe(

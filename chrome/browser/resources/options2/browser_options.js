@@ -75,7 +75,7 @@ cr.define('options', function() {
           this.updateAdvancedSettingsExpander_.bind(this));
 
       if (cr.isChromeOS)
-        AccountsOptions.applyGuestModeVisibility(document);
+        UIAccountTweaks.applyGuestModeVisibility(document);
 
       // Sync (Sign in) section.
       this.updateSyncState_(templateData.syncData);
@@ -222,7 +222,7 @@ cr.define('options', function() {
       };
 
       if (cr.isChromeOS) {
-        if (!AccountsOptions.loggedInAsGuest()) {
+        if (!UIAccountTweaks.loggedInAsGuest()) {
           $('account-picture-wrapper').onclick = function(event) {
             OptionsPage.navigateToPage('changePicture');
           };
@@ -327,7 +327,7 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowPasswordManager']);
       };
-      if (cr.isChromeOS && AccountsOptions.loggedInAsGuest()) {
+      if (cr.isChromeOS && UIAccountTweaks.loggedInAsGuest()) {
         // Disable and turn off Autofill in guest mode.
         var autofillEnabled = $('autofill-enabled');
         autofillEnabled.disabled = true;
@@ -771,7 +771,7 @@ cr.define('options', function() {
      */
     maybeShowSessionRestoreDialog_: function() {
       // Don't show this dialog in Guest mode.
-      if (cr.isChromeOS && AccountsOptions.loggedInAsGuest())
+      if (cr.isChromeOS && UIAccountTweaks.loggedInAsGuest())
         return false;
       // If some of the needed preferences haven't been read yet, the
       // corresponding member variable will be undefined and we won't display

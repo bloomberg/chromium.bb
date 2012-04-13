@@ -89,13 +89,3 @@
 input#userNameEdit:invalid {
   background-color: rgb(255, 102, 102);
 }
-
-h3.guest-disabled,
-span.guest-disabled,
-label.guest-disabled {
-  color: gray;
-}
-
-a.guest-disabled {
-  opacity: 0.9
-}

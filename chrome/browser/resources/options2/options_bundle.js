@@ -14,6 +14,7 @@
 <include src="settings_dialog.js"></include>
 <if expr="pp_ifdef('chromeos')">
   <include src="../chromeos/user_images_grid.js"></include>
+  <include src="../shared/js/chromeos/ui_account_tweaks.js"></include>
   <include src="chromeos/cellular_plan_element.js"></include>
   <include src="chromeos/change_picture_options.js"></include>
   <include src="chromeos/internet_detail_ip_config_list.js"></include>
@@ -39,6 +40,7 @@
   var BluetoothPairing = options.BluetoothPairing;
   var KeyboardOverlay = options.KeyboardOverlay;
   var PointerOverlay = options.PointerOverlay;
+  var UIAccountTweaks = uiAccountTweaks.UIAccountTweaks;
 </if>
 <if expr="pp_ifdef('chromeos') and pp_ifdef('use_ash')">
   <include src="chromeos/set_wallpaper_options.js"></include>

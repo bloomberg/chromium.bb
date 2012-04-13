@@ -381,7 +381,7 @@ cr.define('options', function() {
         showMutuallyExclusiveNodes(
             [uiLanguageButton, uiLanguageMessage, uiLanguageNotification], 1);
       } else if (languageCode in templateData.uiLanguageCodeSet) {
-        if (cr.isChromeOS && AccountsOptions.loggedInAsGuest()) {
+        if (cr.isChromeOS && UIAccountTweaks.loggedInAsGuest()) {
           // In the guest mode for ChromeOS, changing UI language does not make
           // sense because it does not take effect after browser restart.
           uiLanguageButton.hidden = true;

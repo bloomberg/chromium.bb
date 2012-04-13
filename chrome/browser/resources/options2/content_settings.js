@@ -72,7 +72,7 @@ cr.define('options', function() {
       }
 
       if (cr.isChromeOS)
-        AccountsOptions.applyGuestModeVisibility(document);
+        UIAccountTweaks.applyGuestModeVisibility(document);
 
       // Cookies filter page ---------------------------------------------------
       $('show-cookies-button').onclick = function(event) {

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -80,19 +81,11 @@ void AccountsOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("owner_only", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
 
-  std::string owner_email;
-  CrosSettings::Get()->GetString(kDeviceOwner, &owner_email);
-  // Translate owner's email to the display email.
-  std::string display_email =
-      UserManager::Get()->GetUserDisplayEmail(owner_email);
-  localized_strings->SetString("owner_user_id", UTF8ToUTF16(display_email));
-
-  localized_strings->SetString("current_user_is_owner",
-      UserManager::Get()->IsCurrentUserOwner() ?
-      ASCIIToUTF16("true") : ASCIIToUTF16("false"));
   localized_strings->SetString("whitelist_is_managed",
       g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
-          ASCIIToUTF16("true") : ASCIIToUTF16("false"));
+      ASCIIToUTF16("true") : ASCIIToUTF16("false"));
+
+  AddAccountUITweaksLocalizedValues(localized_strings);
 }
 
 void AccountsOptionsHandler::HandleWhitelistUser(const base::ListValue* args) {

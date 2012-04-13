@@ -25,7 +25,8 @@ without changes to the corresponding grd file. -->
       <include name="IDR_SHARED_CSS_CHROME"
                file="shared/css/chrome_shared.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_CHROME2"
-               file="shared/css/chrome_shared2.css" type="BINDATA" />
+               file="shared/css/chrome_shared2.css" type="BINDATA"
+               flattenhtml="true" />
       <include name="IDR_SHARED_CSS_CHROME2_TOUCH"
                file="shared/css/chrome_shared2_touch.css" type="BINDATA"
                flattenhtml="true" />
@@ -163,6 +164,14 @@ without changes to the corresponding grd file. -->
                file="shared/js/parse_html_subset.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_UTIL"
                file="shared/js/util.js" type="BINDATA" />
+      <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_SHARED_CSS_UI_ACCOUNT_TWEAKS"
+                 file="shared/css/chromeos/ui_account_tweaks.css"
+                 type="BINDATA" />
+        <include name="IDR_SHARED_JS_UI_ACCOUNT_TWEAKS"
+                 file="shared/js/chromeos/ui_account_tweaks.js"
+                 type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

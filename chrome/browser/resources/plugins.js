@@ -161,6 +161,10 @@ function returnPluginsData(pluginsData) {
     };
   }
 
+  // Disable some controls for Guest in ChromeOS.
+  if (cr.isChromeOS)
+    uiAccountTweaks.UIAccountTweaks.applyGuestModeVisibility(document);
+
   // Make sure the left column (with "Description:", "Location:", etc.) is the
   // same size for all plugins.
   var labels = document.getElementsByClassName('plugin-details-label');

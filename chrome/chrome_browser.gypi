@@ -3650,6 +3650,8 @@
         'browser/ui/webui/chromeos/sim_unlock_ui.h',
         'browser/ui/webui/chromeos/system_info_ui.cc',
         'browser/ui/webui/chromeos/system_info_ui.h',
+        'browser/ui/webui/chromeos/ui_account_tweaks.cc',
+        'browser/ui/webui/chromeos/ui_account_tweaks.h',
         'browser/ui/webui/constrained_html_ui.cc',
         'browser/ui/webui/constrained_html_ui.h',
         'browser/ui/webui/constrained_html_ui_delegate_impl.cc',
