@@ -5,14 +5,13 @@
 #include "content/browser/profiler_message_filter.h"
 
 #include "base/tracked_objects.h"
-#include "base/values.h"
 #include "content/browser/profiler_controller_impl.h"
 #include "content/common/child_process_messages.h"
 
-using content::BrowserMessageFilter;
-using content::BrowserThread;
+namespace content {
 
-ProfilerMessageFilter::ProfilerMessageFilter() {
+ProfilerMessageFilter::ProfilerMessageFilter(ProcessType process_type)
+    : process_type_(process_type) {
 }
 
 ProfilerMessageFilter::~ProfilerMessageFilter() {
@@ -39,10 +38,9 @@ bool ProfilerMessageFilter::OnMessageReceived(const IPC::Message& message,
 
 void ProfilerMessageFilter::OnChildProfilerData(
     int sequence_number,
-    const base::DictionaryValue& profiler_data) {
-  base::DictionaryValue* dictionary_value = new base::DictionaryValue;
-  dictionary_value->MergeDictionary(&profiler_data);
-  // OnProfilerDataCollected assumes the ownership of profiler_data.
-  content::ProfilerControllerImpl::GetInstance()->OnProfilerDataCollected(
-      sequence_number, dictionary_value);
+    const tracked_objects::ProcessDataSnapshot& profiler_data) {
+  ProfilerControllerImpl::GetInstance()->OnProfilerDataCollected(
+      sequence_number, profiler_data, process_type_);
+}
+
 }

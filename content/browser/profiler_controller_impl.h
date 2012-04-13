@@ -6,14 +6,18 @@
 #define CONTENT_BROWSER_PROFILER_CONTROLLER_IMPL_H_
 
 #include "base/memory/singleton.h"
-#include "base/tracked_objects.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/profiler_controller.h"
+#include "content/public/common/process_type.h"
+
+namespace tracked_objects {
+struct ProcessDataSnapshot;
+}
 
 namespace content {
 
 // ProfilerController's implementation.
-class CONTENT_EXPORT ProfilerControllerImpl : public ProfilerController {
+class ProfilerControllerImpl : public ProfilerController {
  public:
   static ProfilerControllerImpl* GetInstance();
 
@@ -22,31 +26,30 @@ class CONTENT_EXPORT ProfilerControllerImpl : public ProfilerController {
   ProfilerControllerImpl();
   virtual ~ProfilerControllerImpl();
 
-  // Send number of pending processes to subscriber_. |end| is set to true if it
-  // is the last time. This is called on UI thread.
+  // Notify the |subscriber_| that it should expect at least |pending_processes|
+  // additional calls to OnProfilerDataCollected().  OnPendingProcess() may be
+  // called repeatedly; the last call will have |end| set to true, indicating
+  // that there is no longer a possibility for the count of pending processes to
+  // increase.  This is called on the UI thread.
   void OnPendingProcesses(int sequence_number, int pending_processes, bool end);
 
-  // Send profiler_data back to subscriber_. subscriber_ assumes the ownership
-  // of profiler_data. This is called on UI thread.
-  void OnProfilerDataCollected(int sequence_number,
-                               base::DictionaryValue* profiler_data);
+  // Send the |profiler_data| back to the |subscriber_|.
+  // This is called on the UI thread.
+  void OnProfilerDataCollected(
+      int sequence_number,
+      const tracked_objects::ProcessDataSnapshot& profiler_data,
+      content::ProcessType process_type);
 
   // ProfilerController implementation:
   virtual void Register(ProfilerSubscriber* subscriber) OVERRIDE;
-  virtual void Unregister(ProfilerSubscriber* subscriber) OVERRIDE;
+  virtual void Unregister(const ProfilerSubscriber* subscriber) OVERRIDE;
   virtual void GetProfilerData(int sequence_number) OVERRIDE;
-  virtual void SetProfilerStatus(
-      tracked_objects::ThreadData::Status status) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<ProfilerControllerImpl>;
 
   // Contact child processes and get their profiler data.
   void GetProfilerDataFromChildProcesses(int sequence_number);
-
-  // Contact child processes and set profiler status to |enable|.
-  void SetProfilerStatusInChildProcesses(
-      tracked_objects::ThreadData::Status status);
 
   ProfilerSubscriber* subscriber_;
 
@@ -56,4 +59,3 @@ class CONTENT_EXPORT ProfilerControllerImpl : public ProfilerController {
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_PROFILER_CONTROLLER_IMPL_H_
-

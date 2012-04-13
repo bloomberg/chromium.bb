@@ -39,18 +39,12 @@ class CONTENT_EXPORT ProfilerController {
   // Unregister the subscriber so that it will not be called when for example
   // OnProfilerDataCollected is returning profiler data from a child process.
   // Safe to call even if caller is not the current subscriber.
-  virtual void Unregister(ProfilerSubscriber* subscriber) = 0;
+  virtual void Unregister(const ProfilerSubscriber* subscriber) = 0;
 
   // Contact all processes and get their profiler data.
   virtual void GetProfilerData(int sequence_number) = 0;
-
-  // Contact all processes and set profiler status to |enable|.
-  virtual void SetProfilerStatus(
-      tracked_objects::ThreadData::Status status) = 0;
-
 };
 
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_PROFILER_CONTROLLER_H_
-

@@ -544,7 +544,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       content::BrowserContext::GetQuotaManager(browser_context),
       content::GetContentClient()->browser()->CreateQuotaPermissionContext()));
   channel_->AddFilter(new content::GamepadBrowserMessageFilter(this));
-  channel_->AddFilter(new ProfilerMessageFilter());
+  channel_->AddFilter(new content::ProfilerMessageFilter(
+      content::PROCESS_TYPE_RENDERER));
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {

@@ -90,7 +90,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
   child_process_host_.reset(ChildProcessHost::Create(this));
   child_process_host_->AddFilter(new TraceMessageFilter);
-  child_process_host_->AddFilter(new ProfilerMessageFilter);
+  child_process_host_->AddFilter(new content::ProfilerMessageFilter(type));
 
   g_child_process_list.Get().push_back(this);
   content::GetContentClient()->browser()->BrowserChildProcessHostCreated(this);

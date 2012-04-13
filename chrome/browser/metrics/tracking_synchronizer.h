@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
-#include "chrome/browser/ui/webui/profiler_ui.h"
 #include "content/public/browser/profiler_subscriber.h"
 
 // This class maintains state that is used to upload profiler data from the
@@ -35,7 +33,7 @@
 
 namespace chrome_browser_metrics {
 
-class RequestContext;
+class TrackingSynchronizerObserver;
 
 class TrackingSynchronizer
     : public content::ProfilerSubscriber,
@@ -52,7 +50,7 @@ class TrackingSynchronizer
   // the data received from each sub-process.
   // This method is accessible on UI thread.
   static void FetchProfilerDataAsynchronously(
-      const base::WeakPtr<ProfilerUI>& callback_object);
+      const base::WeakPtr<TrackingSynchronizerObserver>& callback_object);
 
   // ------------------------------------------------------
   // ProfilerSubscriber methods for browser child processes
@@ -64,32 +62,28 @@ class TrackingSynchronizer
                                   int pending_processes,
                                   bool end) OVERRIDE;
 
+ private:
+  friend class base::RefCountedThreadSafe<TrackingSynchronizer>;
+
+  class RequestContext;
+
+  virtual ~TrackingSynchronizer();
+
   // Send profiler_data back to callback_object_ by calling
   // DecrementPendingProcessesAndSendData which records that we are waiting
   // for one less profiler data from renderer or browser child process for the
   // given sequence number. This method is accessible on UI thread.
   virtual void OnProfilerDataCollected(
       int sequence_number,
-      base::DictionaryValue* profiler_data) OVERRIDE;
-
- private:
-  friend class base::RefCountedThreadSafe<TrackingSynchronizer>;
-  friend class RequestContext;
-
-  virtual ~TrackingSynchronizer();
-
-  // Send profiler_data back to callback_object_. It records that we are waiting
-  // for one less profiler data from renderer or browser child process for the
-  // given sequence number. This method is accessible on UI thread.
-  void OnProfilerDataCollectedOnUI(int sequence_number,
-                                   base::DictionaryValue* profiler_data);
+      const tracked_objects::ProcessDataSnapshot& profiler_data,
+      content::ProcessType process_type) OVERRIDE;
 
   // Establish a new sequence_number_, and use it to notify all the processes of
   // the need to supply, to the browser, their tracking data. It also registers
   // |callback_object| in |outstanding_requests_| map. Return the
   // sequence_number_ that was used. This method is accessible on UI thread.
   int RegisterAndNotifyAllProcesses(
-      const base::WeakPtr<ProfilerUI>& callback_object);
+      const base::WeakPtr<TrackingSynchronizerObserver>& callback_object);
 
   // It finds the RequestContext for the given |sequence_number| and notifies
   // the RequestContext's |callback_object_| about the |value|. This is called
@@ -98,17 +92,14 @@ class TrackingSynchronizer
   // sequence number. If we have received a response from all renderers and
   // browser processes, then it calls RequestContext's DeleteIfAllDone to delete
   // the entry for sequence_number. This method is accessible on UI thread.
-  void DecrementPendingProcessesAndSendData(int sequence_number,
-                                            base::DictionaryValue* value);
+  void DecrementPendingProcessesAndSendData(
+      int sequence_number,
+      const tracked_objects::ProcessDataSnapshot& profiler_data,
+      content::ProcessType process_type);
 
   // Get a new sequence number to be sent to processes from browser process.
   // This method is accessible on UI thread.
   int GetNextAvailableSequenceNumber();
-
-  // Return pointer to the singleton instance, which is allocated and
-  // deallocated on the main UI thread (during system startup and teardown).
-  // This method is accessible on UI thread.
-  static TrackingSynchronizer* CurrentSynchronizer();
 
   // We don't track the actual processes that are contacted for an update, only
   // the count of the number of processes, and we can sometimes time-out and
@@ -118,13 +109,6 @@ class TrackingSynchronizer
   // last_used_sequence_number_ is the most recently used number (used to avoid
   // reuse for a long time).
   int last_used_sequence_number_;
-
-  // This singleton instance should be started during the single threaded
-  // portion of main(). It initializes globals to provide support for all future
-  // calls. This object is created on the UI thread, and it is destroyed after
-  // all the other threads have gone away. As a result, it is ok to call it
-  // from the UI thread, or for about:profiler.
-  static TrackingSynchronizer* tracking_synchronizer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackingSynchronizer);
 };

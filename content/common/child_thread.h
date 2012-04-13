@@ -100,8 +100,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
 #endif
 
   virtual void OnSetProfilerStatus(tracked_objects::ThreadData::Status status);
-  virtual void OnGetChildProfilerData(int sequence_number,
-                                      const std::string& process_type);
+  virtual void OnGetChildProfilerData(int sequence_number);
 
   virtual void OnDumpHandles();
 

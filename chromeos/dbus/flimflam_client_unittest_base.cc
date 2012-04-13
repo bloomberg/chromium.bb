@@ -5,6 +5,7 @@
 #include "chromeos/dbus/flimflam_client_unittest_base.h"
 
 #include "base/bind.h"
+#include "base/values.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/values_util.h"

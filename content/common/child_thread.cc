@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/process.h"
-#include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/tracked_objects.h"
 #include "content/common/child_process.h"
@@ -27,6 +26,8 @@
 #if defined(OS_WIN)
 #include "content/common/handle_enumerator_win.h"
 #endif
+
+using tracked_objects::ThreadData;
 
 ChildThread::ChildThread() {
   channel_name_ = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -219,21 +220,16 @@ void ChildThread::OnSetIPCLoggingEnabled(bool enable) {
 }
 #endif  //  IPC_MESSAGE_LOG_ENABLED
 
-void ChildThread::OnSetProfilerStatus(
-    tracked_objects::ThreadData::Status status) {
-  tracked_objects::ThreadData::InitializeAndSetTrackingStatus(status);
+void ChildThread::OnSetProfilerStatus(ThreadData::Status status) {
+  ThreadData::InitializeAndSetTrackingStatus(status);
 }
 
-void ChildThread::OnGetChildProfilerData(
-    int sequence_number,
-    const std::string& process_type) {
-  scoped_ptr<base::DictionaryValue> value(
-      tracked_objects::ThreadData::ToValue(false));
-  value->SetString("process_type", process_type);
-  value->SetInteger("process_id", base::GetCurrentProcId());
+void ChildThread::OnGetChildProfilerData(int sequence_number) {
+  tracked_objects::ProcessDataSnapshot process_data;
+  ThreadData::Snapshot(false, &process_data);
 
-  Send(new ChildProcessHostMsg_ChildProfilerData(
-      sequence_number, *value.get()));
+  Send(new ChildProcessHostMsg_ChildProfilerData(sequence_number,
+                                                 process_data));
 }
 
 void ChildThread::OnDumpHandles() {

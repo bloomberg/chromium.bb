@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/message_loop.h"
+#include "base/values.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"

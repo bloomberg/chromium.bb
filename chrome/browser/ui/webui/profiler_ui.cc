@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,9 +14,12 @@
 //#define USE_SOURCE_FILES_DIRECTLY
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/tracked_objects.h"
+#include "base/values.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/task_profiler/task_profiler_data_serializer.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -127,7 +130,7 @@ void ProfilerMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   web_ui()->RegisterMessageCallback("getData",
-      base::Bind(&ProfilerMessageHandler::OnGetData,base::Unretained(this)));
+      base::Bind(&ProfilerMessageHandler::OnGetData, base::Unretained(this)));
   web_ui()->RegisterMessageCallback("resetData",
       base::Bind(&ProfilerMessageHandler::OnResetData,
                  base::Unretained(this)));
@@ -144,10 +147,9 @@ void ProfilerMessageHandler::OnResetData(const ListValue* list) {
 
 }  // namespace
 
-ProfilerUI::ProfilerUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  ui_weak_ptr_factory_.reset(new base::WeakPtrFactory<ProfilerUI>(this));
-  ui_weak_ptr_ = ui_weak_ptr_factory_->GetWeakPtr();
-
+ProfilerUI::ProfilerUI(content::WebUI* web_ui)
+    : WebUIController(web_ui),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   web_ui->AddMessageHandler(new ProfilerMessageHandler());
 
   // Set up the chrome://profiler/ source.
@@ -159,13 +161,19 @@ ProfilerUI::~ProfilerUI() {
 }
 
 void ProfilerUI::GetData() {
-  TrackingSynchronizer::FetchProfilerDataAsynchronously(ui_weak_ptr_);
+  TrackingSynchronizer::FetchProfilerDataAsynchronously(
+      weak_ptr_factory_.GetWeakPtr());
 }
 
-void ProfilerUI::ReceivedData(base::Value* value) {
+void ProfilerUI::ReceivedProfilerData(
+    const tracked_objects::ProcessDataSnapshot& profiler_data,
+    content::ProcessType process_type) {
+  // Serialize the data to JSON.
+  DictionaryValue json_data;
+  task_profiler::TaskProfilerDataSerializer::ToValue(profiler_data,
+                                                     process_type,
+                                                     &json_data);
+
   // Send the data to the renderer.
-  scoped_ptr<Value> data_values(value);
-  web_ui()->CallJavascriptFunction(
-      "g_browserBridge.receivedData", *data_values.get());
+  web_ui()->CallJavascriptFunction("g_browserBridge.receivedData", json_data);
 }
-

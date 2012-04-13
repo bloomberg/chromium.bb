@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/values.h"
 #include "chromeos/dbus/flimflam_client_unittest_base.h"
 #include "chromeos/dbus/flimflam_manager_client.h"
 #include "dbus/message.h"

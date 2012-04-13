@@ -367,20 +367,20 @@ var MainView = (function() {
 
   KEY_PROPERTIES[KEY_FUNCTION_NAME] = {
     name: 'Function name',
-    inputJsonKey: 'location.function_name',
+    inputJsonKey: 'birth_location.function_name',
     aggregator: UniquifyAggregator,
   };
 
   KEY_PROPERTIES[KEY_FILE_NAME] = {
     name: 'File name',
-    inputJsonKey: 'location.file_name',
+    inputJsonKey: 'birth_location.file_name',
     aggregator: UniquifyAggregator,
   };
 
   KEY_PROPERTIES[KEY_LINE_NUMBER] = {
     name: 'Line number',
     cellAlignment: 'right',
-    inputJsonKey: 'location.line_number',
+    inputJsonKey: 'birth_location.line_number',
     aggregator: UniquifyAggregator,
   };
 
