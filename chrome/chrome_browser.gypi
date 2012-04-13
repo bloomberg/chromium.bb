@@ -1930,6 +1930,7 @@
         'browser/shell_integration.h',
         'browser/shell_integration_android.cc',
         'browser/shell_integration_linux.cc',
+        'browser/shell_integration_linux.h',
         'browser/shell_integration_mac.mm',
         'browser/shell_integration_win.cc',
         'browser/signin/signin_manager.cc',

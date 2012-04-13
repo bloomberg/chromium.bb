@@ -137,10 +137,13 @@ class ShellIntegration {
       const std::string& app_name,
       const GURL& url,
       const std::string& extension_id,
+      const bool is_platform_app,
+      const FilePath& web_app_path,
+      const FilePath& extension_path,
       const string16& title,
       const std::string& icon_name);
 
-  static void CreateDesktopShortcut(const ShortcutInfo& shortcut_info,
+  static bool CreateDesktopShortcut(const ShortcutInfo& shortcut_info,
                                     const std::string& shortcut_template);
 #endif  // defined(USE_X11)
 

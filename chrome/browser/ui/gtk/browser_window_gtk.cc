@@ -1222,7 +1222,7 @@ void BrowserWindowGtk::ShowCreateWebAppShortcutsDialog(
 
 void BrowserWindowGtk::ShowCreateChromeAppShortcutsDialog(
     Profile* profile, const Extension* app) {
-  CreateChromeApplicationShortcutsDialogGtk::Show(window_, app);
+  CreateChromeApplicationShortcutsDialogGtk::Show(window_, profile, app);
 }
 
 void BrowserWindowGtk::Cut() {

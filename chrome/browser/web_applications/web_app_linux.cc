@@ -6,14 +6,16 @@
 
 #include "base/environment.h"
 #include "base/logging.h"
+#include "chrome/browser/shell_integration_linux.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace web_app {
 namespace internals {
 
-void CreateShortcutTask(const FilePath& web_app_path,
-                        const FilePath& profile_path,
-                        const ShellIntegration::ShortcutInfo& shortcut_info) {
+bool CreatePlatformShortcut(
+    const FilePath& web_app_path,
+    const FilePath& profile_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -21,9 +23,10 @@ void CreateShortcutTask(const FilePath& web_app_path,
   std::string shortcut_template;
   if (!ShellIntegration::GetDesktopShortcutTemplate(env.get(),
                                                     &shortcut_template)) {
-    return;
+    return false;
   }
-  ShellIntegration::CreateDesktopShortcut(shortcut_info, shortcut_template);
+  return ShellIntegrationLinux::CreateDesktopShortcutForChromeApp(
+      shortcut_info, web_app_path, shortcut_template);
 }
 
 }  // namespace internals

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_linux.h"
 
 #include <fcntl.h>
 #include <glib.h>
@@ -113,20 +113,18 @@ std::string CreateShortcutIcon(
   return icon_name;
 }
 
-void CreateShortcutOnDesktop(const FilePath& shortcut_filename,
+bool CreateShortcutOnDesktop(const FilePath& shortcut_filename,
                              const std::string& contents) {
-  // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
-
   // Make sure that we will later call openat in a secure way.
   DCHECK_EQ(shortcut_filename.BaseName().value(), shortcut_filename.value());
 
   FilePath desktop_path;
   if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
-    return;
+    return false;
 
   int desktop_fd = open(desktop_path.value().c_str(), O_RDONLY | O_DIRECTORY);
   if (desktop_fd < 0)
-    return;
+    return false;
 
   int fd = openat(desktop_fd, shortcut_filename.value().c_str(),
                   O_CREAT | O_EXCL | O_WRONLY,
@@ -134,7 +132,7 @@ void CreateShortcutOnDesktop(const FilePath& shortcut_filename,
   if (fd < 0) {
     if (HANDLE_EINTR(close(desktop_fd)) < 0)
       PLOG(ERROR) << "close";
-    return;
+    return false;
   }
 
   ssize_t bytes_written = file_util::WriteFileDescriptor(fd, contents.data(),
@@ -152,14 +150,15 @@ void CreateShortcutOnDesktop(const FilePath& shortcut_filename,
 
   if (HANDLE_EINTR(close(desktop_fd)) < 0)
     PLOG(ERROR) << "close";
+
+  return true;
 }
 
-void CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
+bool CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
                                       const std::string& contents) {
-  // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
   ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDir())
-    return;
+    return false;
 
   FilePath temp_file_path = temp_dir.path().Append(shortcut_filename);
 
@@ -167,7 +166,7 @@ void CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
                                            contents.length());
 
   if (bytes_written != static_cast<int>(contents.length()))
-    return;
+    return false;
 
   std::vector<std::string> argv;
   argv.push_back("xdg-desktop-menu");
@@ -181,6 +180,7 @@ void CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
   argv.push_back(temp_file_path.value());
   int exit_code;
   LaunchXdgUtility(argv, &exit_code);
+  return exit_code == 0;
 }
 
 // Quote a string such that it appears as one verbatim argument for the Exec
@@ -477,6 +477,9 @@ std::string ShellIntegration::GetDesktopFileContents(
     const std::string& app_name,
     const GURL& url,
     const std::string& extension_id,
+    const bool is_platform_app,
+    const FilePath& web_app_path,
+    const FilePath& extension_path,
     const string16& title,
     const std::string& icon_name) {
   if (template_contents.empty())
@@ -541,8 +544,14 @@ std::string ShellIntegration::GetDesktopFileContents(
         final_path += " ";
       final_path += exec_tokenizer.token();
     }
-    CommandLine cmd_line =
-        ShellIntegration::CommandLineArgsForLauncher(url, extension_id);
+    CommandLine cmd_line(CommandLine::NO_PROGRAM);
+    if (is_platform_app) {
+      cmd_line = ShellIntegration::CommandLineArgsForPlatformApp(
+          extension_id, web_app_path, extension_path);
+    } else {
+      cmd_line = ShellIntegration::CommandLineArgsForLauncher(
+          url, extension_id);
+    }
     const CommandLine::SwitchMap& switch_map = cmd_line.GetSwitches();
     for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
          i != switch_map.end(); ++i) {
@@ -582,31 +591,54 @@ std::string ShellIntegration::GetDesktopFileContents(
 }
 
 // static
-void ShellIntegration::CreateDesktopShortcut(
-    const ShortcutInfo& shortcut_info, const std::string& shortcut_template) {
-  // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
+bool ShellIntegration::CreateDesktopShortcut(
+    const ShortcutInfo& shortcut_info,
+    const std::string& shortcut_template) {
+  DCHECK(!shortcut_info.is_platform_app);
+  DCHECK(shortcut_info.extension_id.empty());
 
+  return ShellIntegrationLinux::CreateDesktopShortcutForChromeApp(
+      shortcut_info, FilePath(), shortcut_template);
+}
+
+namespace ShellIntegrationLinux {
+
+bool CreateDesktopShortcutForChromeApp(
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const FilePath& web_app_path,
+    const std::string& shortcut_template) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath shortcut_filename = GetDesktopShortcutFilename(shortcut_info.url);
+  FilePath shortcut_filename = ShellIntegration::GetDesktopShortcutFilename(
+      shortcut_info.url);
   if (shortcut_filename.empty())
-    return;
+    return false;
 
   std::string icon_name = CreateShortcutIcon(shortcut_info, shortcut_filename);
 
   std::string app_name =
       web_app::GenerateApplicationNameFromInfo(shortcut_info);
-  std::string contents = GetDesktopFileContents(
+  std::string contents = ShellIntegration::GetDesktopFileContents(
       shortcut_template,
       app_name,
       shortcut_info.url,
       shortcut_info.extension_id,
+      shortcut_info.is_platform_app,
+      web_app_path,
+      shortcut_info.extension_path,
       shortcut_info.title,
       icon_name);
 
+  bool success = true;
+
   if (shortcut_info.create_on_desktop)
-    CreateShortcutOnDesktop(shortcut_filename, contents);
+    success = CreateShortcutOnDesktop(shortcut_filename, contents);
 
   if (shortcut_info.create_in_applications_menu)
-    CreateShortcutInApplicationsMenu(shortcut_filename, contents);
+    success = CreateShortcutInApplicationsMenu(shortcut_filename, contents) &&
+              success;
+
+  return success;
 }
+
+}  // namespace ShellIntegrationLinux

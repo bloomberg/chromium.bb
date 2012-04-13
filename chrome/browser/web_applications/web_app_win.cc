@@ -92,9 +92,10 @@ bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image) {
   return true;
 }
 
-void CreateShortcutTask(const FilePath& web_app_path,
-                        const FilePath& profile_path,
-                        const ShellIntegration::ShortcutInfo& shortcut_info) {
+bool CreatePlatformShortcut(
+    const FilePath& web_app_path,
+    const FilePath& profile_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   // Shortcut paths under which to create shortcuts.
@@ -135,7 +136,7 @@ void CreateShortcutTask(const FilePath& web_app_path,
         continue;
 
       if (!PathService::Get(locations[i].location_id, &path)) {
-        return;
+        return false;
       }
 
       if (locations[i].sub_dir != NULL)
@@ -158,13 +159,7 @@ void CreateShortcutTask(const FilePath& web_app_path,
   }
 
   if (shortcut_paths.empty()) {
-    return;
-  }
-
-  // Ensure web_app_path exists.
-  if (!file_util::PathExists(web_app_path) &&
-      !file_util::CreateDirectory(web_app_path)) {
-    return;
+    return false;
   }
 
   // Generates file name to use with persisted ico and shortcut file.
@@ -176,12 +171,12 @@ void CreateShortcutTask(const FilePath& web_app_path,
       FILE_PATH_LITERAL(".ico"));
   if (!web_app::internals::CheckAndSaveIcon(icon_file,
         *shortcut_info.favicon.ToSkBitmap())) {
-    return;
+    return false;
   }
 
   FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    return;
+    return false;
   }
 
   // Working directory.
@@ -253,6 +248,8 @@ void CreateShortcutTask(const FilePath& web_app_path,
       success = false;
     }
   }
+
+  return success;
 }
 
 }  // namespace internals

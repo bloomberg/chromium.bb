@@ -23,6 +23,7 @@ typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 
 class Extension;
+class Profile;
 class TabContentsWrapper;
 
 class CreateApplicationShortcutsDialogGtk
@@ -48,9 +49,9 @@ class CreateApplicationShortcutsDialogGtk
   // Subclasses can override it to take some action at that time.
   virtual void OnCreatedShortcut(void) {}
 
-  void CreateDesktopShortcut(
+  virtual void CreateDesktopShortcut(
       const ShellIntegration::ShortcutInfo& shortcut_info);
-  void ShowErrorDialog();
+  virtual void ShowErrorDialog();
 
   GtkWindow* parent_;
 
@@ -101,9 +102,10 @@ class CreateChromeApplicationShortcutsDialogGtk
     public ImageLoadingTracker::Observer {
  public:
   // Displays the dialog box to create application shortcuts for |app|.
-  static void Show(GtkWindow* parent, const Extension* app);
+  static void Show(GtkWindow* parent, Profile* profile, const Extension* app);
 
   CreateChromeApplicationShortcutsDialogGtk(GtkWindow* parent,
+                                            Profile* profile,
                                             const Extension* app);
   virtual ~CreateChromeApplicationShortcutsDialogGtk() {}
 
@@ -114,8 +116,13 @@ class CreateChromeApplicationShortcutsDialogGtk
                              const std::string& extension_id,
                              int index) OVERRIDE;
 
+ protected:
+  virtual void CreateDesktopShortcut(
+      const ShellIntegration::ShortcutInfo& shortcut_info) OVERRIDE;
+
  private:
   const Extension* app_;
+  FilePath profile_path_;
   ImageLoadingTracker tracker_;
   DISALLOW_COPY_AND_ASSIGN(CreateChromeApplicationShortcutsDialogGtk);
 };

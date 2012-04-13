@@ -114,6 +114,7 @@ CommandLine ShellIntegration::CommandLineArgsForPlatformApp(
 #endif
 
   new_cmd_line.AppendSwitchASCII(switches::kAppId, extension_app_id);
+  new_cmd_line.AppendSwitch(switches::kEnablePlatformApps);
 
   // Convert path to absolute and ensure it exists.
   FilePath absolute_extension_path(extension_path);

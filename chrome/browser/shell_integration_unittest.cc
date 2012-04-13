@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -357,6 +357,9 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             web_app::GenerateApplicationNameFromURL(GURL(test_cases[i].url)),
             GURL(test_cases[i].url),
             "",
+            false,
+            FilePath(),
+            FilePath(),
             ASCIIToUTF16(test_cases[i].title),
             test_cases[i].icon_name));
   }

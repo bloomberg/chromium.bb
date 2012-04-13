@@ -9,11 +9,13 @@
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,8 +49,9 @@ void CreateWebApplicationShortcutsDialogGtk::Show(
 }
 
 void CreateChromeApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
+                                                     Profile* profile,
                                                      const Extension* app) {
-  new CreateChromeApplicationShortcutsDialogGtk(parent, app);
+  new CreateChromeApplicationShortcutsDialogGtk(parent, profile, app);
 }
 
 
@@ -301,13 +304,17 @@ void CreateWebApplicationShortcutsDialogGtk::OnCreatedShortcut() {
 CreateChromeApplicationShortcutsDialogGtk::
     CreateChromeApplicationShortcutsDialogGtk(
         GtkWindow* parent,
+        Profile* profile,
         const Extension* app)
       : CreateApplicationShortcutsDialogGtk(parent),
         app_(app),
+        profile_path_(profile->GetPath()),
         ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this))  {
 
   // Get shortcut information now, it's needed for our UI.
   shortcut_info_.extension_id = app_->id();
+  shortcut_info_.extension_path = app_->path();
+  shortcut_info_.is_platform_app = app_->is_platform_app();
   shortcut_info_.url = GURL(app_->launch_web_url());
   shortcut_info_.title = UTF8ToUTF16(app_->name());
   shortcut_info_.description = UTF8ToUTF16(app_->description());
@@ -346,4 +353,17 @@ void CreateChromeApplicationShortcutsDialogGtk::OnImageLoaded(
 
   CreateIconPixBuf(shortcut_info_.favicon);
   CreateDialogBox(parent_);
+}
+
+void CreateChromeApplicationShortcutsDialogGtk::CreateDesktopShortcut(
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  if (web_app::CreateShortcutOnFileThread(profile_path_, shortcut_info)) {
+    Release();
+  } else {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        base::Bind(&CreateChromeApplicationShortcutsDialogGtk::ShowErrorDialog,
+                   this));
+  }
 }

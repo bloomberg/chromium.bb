@@ -46,11 +46,17 @@ std::string GenerateApplicationNameFromExtensionId(const std::string& id);
 std::string GetExtensionIdFromApplicationName(const std::string& app_name);
 
 // Creates a shortcut for web application based on given shortcut data.
-// |profile_path| is used as root directory for persisted data such as icon.
-// Directory layout is similar to what Gears has, i.e. an web application's
-// file is stored under "#/host_name/scheme_port", where '#' is the
-// |root_dir|.  A crx based app uses a directory named _crx_<app id>.
+// |profile_path| is the path of the creating profile. |shortcut_info)
+// contains information about the shortcut to create.
 void CreateShortcut(
+    const FilePath& profile_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info);
+
+// Creates a shortcut. Must be called on the file thread. This is used to
+// implement CreateShortcut() above, and can also be used directly from the
+// file thread. |profile_path| is the path of the creating profile.
+// |shortcut_info| constains info about the shortcut to create.
+bool CreateShortcutOnFileThread(
     const FilePath& profile_path,
     const ShellIntegration::ShortcutInfo& shortcut_info);
 
@@ -78,11 +84,16 @@ namespace internals {
 bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image);
 #endif
 
-// Does the actual job of creating a shortcut (see CreateShortcut() above).
-// This must be called on the file thread.
-void CreateShortcutTask(const FilePath& web_app_path,
-                        const FilePath& profile_path,
-                        const ShellIntegration::ShortcutInfo& shortcut_info);
+// Implemented for each platform, does the platform specific parts of creating
+// shortcuts. Used internally by CreateShortcutOnFileThread.
+// |shortcut_data_path| is where to store any resources created for the
+// shortcut, and is also used as the UserDataDir for platform app shortcuts.
+// |profile_path| is the path of the creating profile. |shortcut_info|
+// contains info about the shortcut to create.
+bool CreatePlatformShortcut(
+    const FilePath& shortcut_data_path,
+    const FilePath& profile_path,
+    const ShellIntegration::ShortcutInfo& shortcut_info);
 
 // Sanitizes |name| and returns a version of it that is safe to use as an
 // on-disk file name .
