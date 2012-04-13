@@ -5370,19 +5370,6 @@
    fun:_ZN7WebCore7Element16styleForRendererEv
 }
 {
-   bug_122130
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN10extensions20RulesRegistryService30RegisterDefaultRulesRegistriesEv
-   fun:_ZN19ExtensionSystemImpl6Shared4InitEb
-   fun:_ZN19ExtensionSystemImpl4InitEb
-   fun:_ZN14ProfileManager22DoFinalInitForServicesEP7Profileb
-   fun:_ZN14ProfileManager11DoFinalInitEP7Profileb
-   fun:_ZN14ProfileManager10AddProfileEP7Profile
-   fun:_ZN14ProfileManager*GetProfileERK8FilePath
-   fun:_ZN14ProfileManager*Get*ProfileERK8FilePath
-}
-{
    bug_122177
    Memcheck:Leak
    ...

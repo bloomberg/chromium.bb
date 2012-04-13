@@ -49,6 +49,13 @@ void RulesRegistryService::RegisterDefaultRulesRegistries() {
           web_request_rules_registry));
 }
 
+void RulesRegistryService::Shutdown() {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&RegisterToExtensionWebRequestEventRouterOnIO,
+          scoped_refptr<WebRequestRulesRegistry>(NULL)));
+}
+
 void RulesRegistryService::RegisterRulesRegistry(
     const std::string& event_name,
     scoped_refptr<RulesRegistry> rule_registry) {

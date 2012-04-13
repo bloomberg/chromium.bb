@@ -34,6 +34,10 @@ class RulesRegistryService : public content::NotificationObserver  {
   explicit RulesRegistryService(Profile* profile);
   virtual ~RulesRegistryService();
 
+  // Unregisters refptrs to concrete RulesRegistries at other objects that were
+  // created by us so that the RulesRegistries can be released.
+  void Shutdown();
+
   // Registers the default RulesRegistries used in Chromium.
   void RegisterDefaultRulesRegistries();
 
