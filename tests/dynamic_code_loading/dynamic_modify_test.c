@@ -102,7 +102,7 @@ void copy_and_pad_fragment(void *dest,
   memcpy(dest, fragment_start, fragment_size);
 }
 
-/* Check that we can't dynamically rewrite code. */
+/* Check that we can dynamically rewrite code. */
 void test_replacing_code() {
   uint8_t *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
@@ -254,59 +254,6 @@ void test_external_jump_target_replacement() {
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
   assert(rc == 4321);
-}
-
-/* Check that we can't dynamically rewrite code. */
-void test_replacing_code_disabled() {
-  uint8_t *load_area = allocate_code_space(1);
-  uint8_t buf[BUF_SIZE];
-  int rc;
-  int (*func)();
-
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
-  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
-  assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
-  rc = func();
-  assert(rc == 1234);
-
-  /* write replacement to the same location */
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func_replacement,
-                                          &template_func_replacement_end);
-  rc = nacl_dyncode_modify(load_area, buf, sizeof(buf));
-  assert(rc != 0);
-  func = (int (*)()) (uintptr_t) load_area;
-  rc = func();
-  assert(rc == 1234);
-}
-
-/* Check that we can dynamically rewrite code. */
-void test_replacing_code_unaligned_disabled() {
-  uint8_t *load_area = allocate_code_space(1);
-  uint8_t buf[BUF_SIZE];
-  int first_diff = 0;
-  int rc;
-  int (*func)();
-
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
-  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
-  assert(rc == 0);
-  func = (int (*)()) (uintptr_t) load_area;
-  rc = func();
-  assert(rc == 1234);
-
-  /* write replacement to the same location, unaligned */
-  copy_and_pad_fragment(buf, sizeof(buf), &template_func_replacement,
-                                          &template_func_replacement_end);
-  while (buf[first_diff] == load_area[first_diff] && first_diff < sizeof buf) {
-    first_diff++;
-  }
-  rc = nacl_dyncode_modify(load_area+first_diff, buf+first_diff,
-                           sizeof(buf)-first_diff);
-  assert(rc != 0);
-  func = (int (*)()) (uintptr_t) load_area;
-  rc = func();
-  assert(rc == 1234);
 }
 
 #if defined(__i386__) || defined(__x86_64__)
