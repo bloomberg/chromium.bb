@@ -43,6 +43,10 @@ const char kIfMatchHeaderFormat[] = "If-Match: %s";
 const char kGetDocumentListURL[] =
     "https://docs.google.com/feeds/default/private/full/-/mine";
 
+// URL requesting documents list of changes to documents collections.
+const char kGetChangesListURL[] =
+    "https://docs.google.com/feeds/default/private/changes";
+
 // Root document list url.
 const char kDocumentListRootURL[] =
     "https://docs.google.com/feeds/default/private/full";
@@ -92,15 +96,24 @@ GURL AddStandardUrlParams(const GURL& url) {
 
 // Adds additional parameters for API version, output content type and to show
 // folders in the feed are added to document feed URLs.
-GURL AddFeedUrlParams(const GURL& url, int num_items_to_fetch) {
+GURL AddFeedUrlParams(const GURL& url, int num_items_to_fetch,
+                      int changestamp) {
   GURL result = AddStandardUrlParams(url);
-  result = chrome_browser_net::AppendOrReplaceQueryParameter(result,
-                                                    "showfolders",
-                                                    "true");
+  result = chrome_browser_net::AppendOrReplaceQueryParameter(
+      result,
+      "showfolders",
+      "true");
   result = chrome_browser_net::AppendOrReplaceQueryParameter(
       result,
       "max-results",
       base::StringPrintf("%d", num_items_to_fetch));
+
+  if (changestamp) {
+    result = chrome_browser_net::AppendQueryParameter(
+        result,
+        "start-index",
+        base::StringPrintf("%d", changestamp));
+  }
   return result;
 }
 
@@ -442,8 +455,10 @@ base::Value* GetDataOperation::ParseResponse(const std::string& data) {
 
 GetDocumentsOperation::GetDocumentsOperation(GDataOperationRegistry* registry,
                                              Profile* profile,
+                                             int start_changestamp,
                                              const GetDataCallback& callback)
-    : GetDataOperation(registry, profile, callback) {
+    : GetDataOperation(registry, profile, callback),
+      start_changestamp_(start_changestamp) {
 }
 
 GetDocumentsOperation::~GetDocumentsOperation() {}
@@ -454,9 +469,17 @@ void GetDocumentsOperation::SetUrl(const GURL& url) {
 
 GURL GetDocumentsOperation::GetURL() const {
   if (!override_url_.is_empty())
-    return AddFeedUrlParams(override_url_, kMaxDocumentsPerFeed);
+    return AddFeedUrlParams(override_url_, kMaxDocumentsPerFeed, 0);
 
-  return AddFeedUrlParams(GURL(kGetDocumentListURL), kMaxDocumentsPerFeed);
+  if (start_changestamp_ == 0) {
+    return AddFeedUrlParams(GURL(kGetDocumentListURL),
+                            kMaxDocumentsPerFeed,
+                            0);
+  }
+
+  return AddFeedUrlParams(GURL(kGetChangesListURL),
+                          kMaxDocumentsPerFeed,
+                          start_changestamp_);
 }
 
 //========================= GetAccountMetadataOperation ========================

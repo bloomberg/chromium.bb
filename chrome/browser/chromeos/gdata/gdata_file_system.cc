@@ -868,6 +868,7 @@ void GDataFileSystem::LoadFeedFromServer(
   // to finish this call.
   documents_service_->GetDocuments(
       GURL(),   // root feed start.
+      0,
       base::Bind(&GDataFileSystem::OnGetDocuments,
                  GetWeakPtrForCurrentThread(),
                  base::Owned(new GetDocumentsParams(search_file_path,
@@ -2090,6 +2091,7 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
     // Kick of the remaining part of the feeds.
     documents_service_->GetDocuments(
         next_feed_url,
+        0,
         base::Bind(&GDataFileSystem::OnGetDocuments,
                    GetWeakPtrForCurrentThread(),
                    new GetDocumentsParams(params->search_file_path,

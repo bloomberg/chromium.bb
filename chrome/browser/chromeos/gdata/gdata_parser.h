@@ -353,6 +353,10 @@ class DocumentEntry : public GDataEntry {
   static void RegisterJSONConverter(
       base::JSONValueConverter<DocumentEntry>* converter);
 
+  // Helper function for parsing bool fields based on presence of
+  // their value nodes.
+  static bool HasFieldPresent(const base::Value* value, bool* result);
+
   // Returns true if |file| has one of the hosted document extensions.
   static bool HasHostedDocumentExtension(const FilePath& file);
 
@@ -395,7 +399,10 @@ class DocumentEntry : public GDataEntry {
   // Document feed file size (exists only for kinds FILE and PDF).
   int64 file_size() const { return file_size_; }
 
-  // Text version of document entry kind. Returns an empty string for
+  // True if the file or directory is deleted (applicable to change feeds only).
+  bool deleted() const { return deleted_ || removed_; }
+
+// Text version of document entry kind. Returns an empty string for
   // unknown entry kind.
   std::string GetEntryKindText() const;
 
@@ -442,6 +449,8 @@ class DocumentEntry : public GDataEntry {
   string16 suggested_filename_;
   std::string file_md5_;
   int64 file_size_;
+  bool deleted_;
+  bool removed_;
 
   static const char kFeedLinkField[];
   static const char kContentField[];
@@ -453,6 +462,8 @@ class DocumentEntry : public GDataEntry {
   static const char kIDField[];
   static const char kTitleField[];
   static const char kPublishedField[];
+  static const char kDeletedField[];
+  static const char kRemovedField[];
 
   static const char kEntryNode[];
   static const char kETagAttr[];
@@ -513,6 +524,10 @@ class DocumentFeed : public GDataEntry {
   // Number of items per feed of the document entry list.
   int items_per_page() const { return items_per_page_; }
 
+  // The largest changestamp. Next time the documents should be fetched
+  // from this changestamp.
+  int largest_changestamp() const { return largest_changestamp_; }
+
   // Document entry list title.
   const std::string& title() { return title_; }
 
@@ -527,11 +542,13 @@ class DocumentFeed : public GDataEntry {
   int start_index_;
   int items_per_page_;
   std::string title_;
+  int largest_changestamp_;
 
   static const char kStartIndexField[];
   static const char kItemsPerPageField[];
   static const char kTitleField[];
   static const char kEntryField[];
+  static const char kLargestChangestamp[];
 
   DISALLOW_COPY_AND_ASSIGN(DocumentFeed);
 };

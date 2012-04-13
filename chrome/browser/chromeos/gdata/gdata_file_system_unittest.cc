@@ -1017,7 +1017,7 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
       &message_loop_);
 
   EXPECT_CALL(*mock_doc_service_, GetAccountMetadata(_)).Times(1);
-  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _)).Times(1);
+  EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, _)).Times(1);
 
   file_system_->FindFileByPathAsync(
       FilePath(FILE_PATH_LITERAL("gdata")), callback);

@@ -457,6 +457,8 @@ const char DocumentEntry::kResourceIdField[] = "gd$resourceId.$t";
 const char DocumentEntry::kIDField[] = "id.$t";
 const char DocumentEntry::kTitleField[] = "title.$t";
 const char DocumentEntry::kPublishedField[] = "published.$t";
+const char DocumentEntry::kDeletedField[] = "gd$deleted";
+const char DocumentEntry::kRemovedField[] = "gd$removed";
 
 const char DocumentEntry::kEntryNode[] = "entry";
 // Attributes are not namespace-blind as node names in XmlReader.
@@ -489,10 +491,20 @@ const char DocumentEntry::kFilenameNode[] = "filename";
 const char DocumentEntry::kSuggestedFilenameNode[] = "suggestedFilename";
 const char DocumentEntry::kSizeNode[] = "size";
 
-DocumentEntry::DocumentEntry() : kind_(DocumentEntry::UNKNOWN), file_size_(0) {
+DocumentEntry::DocumentEntry()
+    : kind_(DocumentEntry::UNKNOWN),
+      file_size_(0),
+      deleted_(false),
+      removed_(false) {
 }
 
 DocumentEntry::~DocumentEntry() {
+}
+
+bool DocumentEntry::HasFieldPresent(const base::Value* value,
+                                    bool* result) {
+  *result = (value != NULL);
+  return true;
 }
 
 // static
@@ -521,6 +533,12 @@ void DocumentEntry::RegisterJSONConverter(
       kSizeField, &DocumentEntry::file_size_, &base::StringToInt64);
   converter->RegisterStringField(
       kSuggestedFileNameField, &DocumentEntry::suggested_filename_);
+  // Deleted are treated as 'trashed' items on web client side. Removed files
+  // are gone for good. We treat both cases as 'deleted' for this client.
+  converter->RegisterCustomValueField<bool>(
+      kDeletedField, &DocumentEntry::deleted_, &DocumentEntry::HasFieldPresent);
+  converter->RegisterCustomValueField<bool>(
+      kRemovedField, &DocumentEntry::removed_, &DocumentEntry::HasFieldPresent);
 }
 
 std::string DocumentEntry::GetHostedDocumentExtension() const {
@@ -682,10 +700,15 @@ DocumentEntry* DocumentEntry::CreateFromXml(XmlReader* xml_reader) {
 const char DocumentFeed::kStartIndexField[] = "openSearch$startIndex.$t";
 const char DocumentFeed::kItemsPerPageField[] =
     "openSearch$itemsPerPage.$t";
+const char DocumentFeed::kLargestChangestamp[] =
+    "docs$largestChangestamp.value";
 const char DocumentFeed::kTitleField[] = "title.$t";
 const char DocumentFeed::kEntryField[] = "entry";
 
-DocumentFeed::DocumentFeed() : start_index_(0), items_per_page_(0) {
+DocumentFeed::DocumentFeed()
+    : start_index_(0),
+      items_per_page_(0),
+      largest_changestamp_(0) {
 }
 
 DocumentFeed::~DocumentFeed() {
@@ -705,6 +728,9 @@ void DocumentFeed::RegisterJSONConverter(
       kItemsPerPageField, &DocumentFeed::items_per_page_, &base::StringToInt);
   converter->RegisterStringField(kTitleField, &DocumentFeed::title_);
   converter->RegisterRepeatedMessage(kEntryField, &DocumentFeed::entries_);
+  converter->RegisterCustomField<int>(
+     kLargestChangestamp, &DocumentFeed::largest_changestamp_,
+     &base::StringToInt);
 }
 
 bool DocumentFeed::Parse(base::Value* value) {
@@ -714,8 +740,11 @@ bool DocumentFeed::Parse(base::Value* value) {
     return false;
   }
 
-  for (size_t i = 0; i < entries_.size(); ++i) {
-    entries_[i]->FillRemainingFields();
+  ScopedVector<DocumentEntry>::iterator iter = entries_.begin();
+  while (iter != entries_.end()) {
+    DocumentEntry* entry = (*iter);
+    entry->FillRemainingFields();
+    ++iter;
   }
   return true;
 }

@@ -70,12 +70,15 @@ class DocumentsServiceInterface {
   // Can be called on any thread.
   virtual void Authenticate(const AuthStatusCallback& callback) = 0;
 
-  // Gets the document feed from |feed_url|. If this URL is empty, the call
-  // will fetch the default ('root') document feed. Upon completion,
-  // invokes |callback| with results on the calling thread.
+  // Fetches the document feed from |feed_url| with |start_changestamp|. If this
+  // URL is empty, the call will fetch the default root or change document feed.
+  // |start_changestamp| specifies the starting point from change feeds only.
+  // Value different than 0, it would trigger delta feed fetching.
+  // Upon completion, invokes |callback| with results on the calling thread.
   //
   // Can be called on any thread.
   virtual void GetDocuments(const GURL& feed_url,
+                            int start_changestamp,
                             const GetDataCallback& callback) = 0;
 
   // Gets the account metadata from the server using the default account
@@ -192,6 +195,7 @@ class DocumentsService
   virtual void CancelAll() OVERRIDE;
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual void GetDocuments(const GURL& feed_url,
+                            int start_changestamp,
                             const GetDataCallback& callback) OVERRIDE;
   virtual void GetAccountMetadata(const GetDataCallback& callback) OVERRIDE;
   virtual void DeleteDocument(const GURL& document_url,

@@ -208,6 +208,7 @@ class GetDocumentsOperation : public GetDataOperation {
  public:
   GetDocumentsOperation(GDataOperationRegistry* registry,
                         Profile* profile,
+                        int start_changestamp,
                         const GetDataCallback& callback);
   virtual ~GetDocumentsOperation();
 
@@ -221,6 +222,7 @@ class GetDocumentsOperation : public GetDataOperation {
 
  private:
   GURL override_url_;
+  int start_changestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(GetDocumentsOperation);
 };

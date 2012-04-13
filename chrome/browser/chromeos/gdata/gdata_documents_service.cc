@@ -96,9 +96,13 @@ void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
 }
 
 void DocumentsService::GetDocuments(const GURL& url,
+                                    int start_changestamp,
                                     const GetDataCallback& callback) {
   GetDocumentsOperation* operation =
-      new GetDocumentsOperation(operation_registry_.get(), profile_, callback);
+      new GetDocumentsOperation(operation_registry_.get(),
+                                profile_,
+                                start_changestamp,
+                                callback);
   if (!url.is_empty())
     operation->SetUrl(url);
   StartOperationOnUIThread(operation);
