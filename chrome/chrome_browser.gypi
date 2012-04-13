@@ -3192,7 +3192,6 @@
         'browser/ui/toolbar/toolbar_model_delegate.h',
         'browser/ui/toolbar/wrench_menu_model.cc',
         'browser/ui/toolbar/wrench_menu_model.h',
-        'browser/ui/toolbar/wrench_menu_model_chromeos.cc',
         'browser/ui/touch/status_bubble_touch.cc',
         'browser/ui/touch/status_bubble_touch.h',
         'browser/ui/view_ids.h',

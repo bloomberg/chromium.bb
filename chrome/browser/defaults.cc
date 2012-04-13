@@ -29,7 +29,11 @@ const int kMiniTabWidth = 64;
 const bool kCanToggleSystemTitleBar = false;
 const bool kRestorePopups = false;
 const bool kShowImportOnBookmarkBar = false;
-const bool kShowExitMenuItem = true;
+const bool kShowExitMenuItem = false;
+const bool kShowFeedbackMenuItem = true;
+const bool kShowHelpMenuItemIcon = true;
+const bool kShowSyncSetupMenuItem = false;
+const bool kShowUpgradeMenuItem = false;
 const bool kDownloadPageHasShowInFolder = true;
 const bool kSizeTabButtonToTopOfTabStrip = false;
 const bool kSyncAutoStarts = true;
@@ -65,6 +69,10 @@ const bool kShowExitMenuItem = false;
 #else
 const bool kShowExitMenuItem = true;
 #endif
+const bool kShowFeedbackMenuItem = false;
+const bool kShowHelpMenuItemIcon = false;
+const bool kShowSyncSetupMenuItem = true;
+const bool kShowUpgradeMenuItem = true;
 const bool kSizeTabButtonToTopOfTabStrip = false;
 const bool kSyncAutoStarts = false;
 const bool kShowOtherBrowsersInAboutMemory = true;
