@@ -142,9 +142,20 @@ static IMFSample* CreateInputSample(const uint8* stream, int size,
 
 static IMFSample* CreateSampleFromInputBuffer(
     const media::BitstreamBuffer& bitstream_buffer,
+    base::ProcessHandle renderer_process,
     DWORD stream_size,
     DWORD alignment) {
-  base::SharedMemory shm(bitstream_buffer.handle(), true);
+  HANDLE shared_memory_handle = NULL;
+  RETURN_ON_FAILURE(::DuplicateHandle(renderer_process,
+                                      bitstream_buffer.handle(),
+                                      base::GetCurrentProcessHandle(),
+                                      &shared_memory_handle,
+                                      0,
+                                      FALSE,
+                                      DUPLICATE_SAME_ACCESS),
+                     "Duplicate handle failed", NULL);
+
+  base::SharedMemory shm(shared_memory_handle, true);
   RETURN_ON_FAILURE(shm.Map(bitstream_buffer.size()),
                     "Failed in base::SharedMemory::Map", NULL);
 
@@ -494,11 +505,13 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
 }
 
 DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
-    media::VideoDecodeAccelerator::Client* client)
+    media::VideoDecodeAccelerator::Client* client,
+    base::ProcessHandle renderer_process)
     : client_(client),
       egl_config_(NULL),
       state_(kUninitialized),
       pictures_requested_(false),
+      renderer_process_(renderer_process),
       last_input_buffer_id_(-1),
       inputs_before_decode_(0) {
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
@@ -547,6 +560,7 @@ void DXVAVideoDecodeAccelerator::Decode(
 
   base::win::ScopedComPtr<IMFSample> sample;
   sample.Attach(CreateSampleFromInputBuffer(bitstream_buffer,
+                                            renderer_process_,
                                             input_stream_info_.cbSize,
                                             input_stream_info_.cbAlignment));
   RETURN_AND_NOTIFY_ON_FAILURE(sample, "Failed to create input sample",

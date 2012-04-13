@@ -58,6 +58,7 @@ class GpuMessageFilter : public content::BrowserMessageFilter,
   // Helper callbacks for the message handlers.
   void EstablishChannelCallback(IPC::Message* reply,
                                 const IPC::ChannelHandle& channel,
+                                base::ProcessHandle gpu_process_for_browser,
                                 const content::GPUInfo& gpu_info);
   void CreateCommandBufferCallback(IPC::Message* reply, int32 route_id);
 

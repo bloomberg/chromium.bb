@@ -18,7 +18,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -59,10 +58,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#endif
-
-#if defined(OS_WIN)
-#include "content/common/sandbox_policy.h"
 #endif
 
 using WebKit::WebBindings;
@@ -489,8 +484,7 @@ void WebPluginDelegateProxy::OnChannelError() {
 
 static void CopyTransportDIBHandleForMessage(
     const TransportDIB::Handle& handle_in,
-    TransportDIB::Handle* handle_out,
-    base::ProcessId peer_pid) {
+    TransportDIB::Handle* handle_out) {
 #if defined(OS_MACOSX)
   // On Mac, TransportDIB::Handle is typedef'ed to FileDescriptor, and
   // FileDescriptor message fields needs to remain valid until the message is
@@ -500,12 +494,6 @@ static void CopyTransportDIBHandleForMessage(
     return;
   }
   handle_out->auto_close = true;
-#elif defined(OS_WIN)
-  // On Windows we need to duplicate the handle for the plugin process.
-  *handle_out = NULL;
-  sandbox::BrokerDuplicateHandle(handle_in, peer_pid, handle_out,
-                                 FILE_MAP_READ | FILE_MAP_WRITE, 0);
-  CHECK(*handle_out != NULL);
 #else
   // Don't need to do anything special for other platforms.
   *handle_out = handle_in;
@@ -532,18 +520,15 @@ void WebPluginDelegateProxy::SendUpdateGeometry(
   {
     if (transport_stores_[0].dib.get())
       CopyTransportDIBHandleForMessage(transport_stores_[0].dib->handle(),
-                                       &param.windowless_buffer0,
-                                       channel_host_->peer_pid());
+                                       &param.windowless_buffer0);
 
     if (transport_stores_[1].dib.get())
       CopyTransportDIBHandleForMessage(transport_stores_[1].dib->handle(),
-                                       &param.windowless_buffer1,
-                                       channel_host_->peer_pid());
+                                       &param.windowless_buffer1);
 
     if (background_store_.dib.get())
       CopyTransportDIBHandleForMessage(background_store_.dib->handle(),
-                                       &param.background_buffer,
-                                       channel_host_->peer_pid());
+                                       &param.background_buffer);
   }
 
   IPC::Message* msg;

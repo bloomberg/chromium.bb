@@ -65,6 +65,7 @@ class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
   static void GpuChannelEstablishedOnIO(
       EstablishRequest* request,
       const IPC::ChannelHandle& channel_handle,
+      base::ProcessHandle gpu_process_handle,
       const GPUInfo& gpu_info);
 
   int gpu_client_id_;

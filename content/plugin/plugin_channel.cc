@@ -161,7 +161,8 @@ void PluginChannel::NotifyRenderersOfPendingShutdown() {
 }
 
 PluginChannel::PluginChannel()
-    : renderer_id_(-1),
+    : renderer_handle_(0),
+      renderer_id_(-1),
       in_send_(0),
       incognito_(false),
       filter_(new MessageFilter()) {
@@ -172,6 +173,9 @@ PluginChannel::PluginChannel()
 }
 
 PluginChannel::~PluginChannel() {
+  if (renderer_handle_)
+    base::CloseProcessHandle(renderer_handle_);
+
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&PluginReleaseCallback),
@@ -281,7 +285,18 @@ base::WaitableEvent* PluginChannel::GetModalDialogEvent(
   return filter_->GetModalDialogEvent(containing_window);
 }
 
+void PluginChannel::OnChannelConnected(int32 peer_pid) {
+  base::ProcessHandle handle;
+  if (!base::OpenProcessHandle(peer_pid, &handle)) {
+    NOTREACHED();
+  }
+  renderer_handle_ = handle;
+  NPChannelBase::OnChannelConnected(peer_pid);
+}
+
 void PluginChannel::OnChannelError() {
+  base::CloseProcessHandle(renderer_handle_);
+  renderer_handle_ = 0;
   NPChannelBase::OnChannelError();
   CleanUp();
 }

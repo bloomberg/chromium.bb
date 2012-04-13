@@ -655,7 +655,7 @@ void EglRenderingVDAClient::CreateDecoder() {
   CHECK(decoder_deleted());
 #if defined(OS_WIN)
   scoped_refptr<DXVAVideoDecodeAccelerator> decoder =
-      new DXVAVideoDecodeAccelerator(this);
+      new DXVAVideoDecodeAccelerator(this, base::GetCurrentProcessHandle());
 #else  // OS_WIN
   scoped_refptr<OmxVideoDecodeAccelerator> decoder =
       new OmxVideoDecodeAccelerator(this);

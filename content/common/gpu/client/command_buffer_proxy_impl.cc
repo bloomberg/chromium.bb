@@ -20,10 +20,6 @@
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "ui/gfx/size.h"
 
-#if defined(OS_WIN)
-#include "content/common/sandbox_policy.h"
-#endif
-
 using gpu::Buffer;
 
 CommandBufferProxyImpl::CommandBufferProxyImpl(
@@ -238,13 +234,7 @@ int32 CommandBufferProxyImpl::CreateTransferBuffer(
     return -1;
 
   base::SharedMemoryHandle handle = shm->handle();
-#if defined(OS_WIN)
-  // Windows needs to explicitly duplicate the handle out to another process.
-  if (!sandbox::BrokerDuplicateHandle(handle, channel_->gpu_pid(),
-                                      &handle, FILE_MAP_WRITE, 0)) {
-    return -1;
-  }
-#elif defined(OS_POSIX)
+#if defined(OS_POSIX)
   DCHECK(!handle.auto_close);
 #endif
 
@@ -267,20 +257,10 @@ int32 CommandBufferProxyImpl::RegisterTransferBuffer(
   if (last_state_.error != gpu::error::kNoError)
     return -1;
 
-  // Returns FileDescriptor with auto_close off.
-  base::SharedMemoryHandle handle = shared_memory->handle();
-#if defined(OS_WIN)
-  // Windows needs to explicitly duplicate the handle out to another process.
-  if (!sandbox::BrokerDuplicateHandle(handle, channel_->gpu_pid(),
-                                      &handle, FILE_MAP_WRITE, 0)) {
-    return -1;
-  }
-#endif
-
   int32 id;
   if (!Send(new GpuCommandBufferMsg_RegisterTransferBuffer(
       route_id_,
-      handle,
+      shared_memory->handle(),  // Returns FileDescriptor with auto_close off.
       size,
       id_request,
       &id))) {

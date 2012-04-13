@@ -41,6 +41,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   };
 
   typedef base::Callback<void(const IPC::ChannelHandle&,
+                              base::ProcessHandle,
                               const content::GPUInfo&)>
       EstablishChannelCallback;
 
@@ -163,6 +164,9 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
 
   // Qeueud messages to send when the process launches.
   std::queue<IPC::Message*> queued_messages_;
+
+  // The handle for the GPU process or null if it is not known to be launched.
+  base::ProcessHandle gpu_process_;
 
   // Whether we are running a GPU thread inside the browser process instead
   // of a separate GPU process.

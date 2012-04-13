@@ -23,10 +23,6 @@
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_switches.h"
 
-#if defined(OS_WIN)
-#include "content/common/sandbox_policy.h"
-#endif
-
 GpuCommandBufferStub::SurfaceState::SurfaceState(int32 surface_id,
                                                  bool visible,
                                                  base::TimeTicks last_used_time)
@@ -471,7 +467,17 @@ void GpuCommandBufferStub::OnRegisterTransferBuffer(
     size_t size,
     int32 id_request,
     IPC::Message* reply_message) {
+#if defined(OS_WIN)
+  // Windows dups the shared memory handle it receives into the current process
+  // and closes it when this variable goes out of scope.
+  base::SharedMemory shared_memory(transfer_buffer,
+                                   false,
+                                   channel_->renderer_process());
+#else
+  // POSIX receives a dup of the shared memory handle and closes the dup when
+  // this variable goes out of scope.
   base::SharedMemory shared_memory(transfer_buffer, false);
+#endif
 
   if (command_buffer_.get()) {
     int32 id = command_buffer_->RegisterTransferBuffer(&shared_memory,
@@ -500,22 +506,20 @@ void GpuCommandBufferStub::OnDestroyTransferBuffer(
 void GpuCommandBufferStub::OnGetTransferBuffer(
     int32 id,
     IPC::Message* reply_message) {
+  // Fail if the renderer process has not provided its process handle.
+  if (!channel_->renderer_process())
+    return;
+
   if (command_buffer_.get()) {
     base::SharedMemoryHandle transfer_buffer = base::SharedMemoryHandle();
     uint32 size = 0;
 
     gpu::Buffer buffer = command_buffer_->GetTransferBuffer(id);
     if (buffer.shared_memory) {
-#if defined(OS_WIN)
-      transfer_buffer = NULL;
-      sandbox::BrokerDuplicateHandle(buffer.shared_memory->handle(),
-          channel_->renderer_pid(), &transfer_buffer, FILE_MAP_READ |
-          FILE_MAP_WRITE, 0);
-      CHECK(transfer_buffer != NULL);
-#else
-      buffer.shared_memory->ShareToProcess(channel_->renderer_pid(),
+      // Assume service is responsible for duplicating the handle to the calling
+      // process.
+      buffer.shared_memory->ShareToProcess(channel_->renderer_process(),
                                            &transfer_buffer);
-#endif
       size = buffer.size;
     }
 
@@ -553,7 +557,8 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
       new GpuVideoDecodeAccelerator(this, decoder_route_id, this);
   video_decoders_.AddWithID(decoder, decoder_route_id);
   channel_->AddRoute(decoder_route_id, decoder);
-  decoder->Initialize(profile, reply_message);
+  decoder->Initialize(profile, reply_message,
+                      channel_->renderer_process());
 }
 
 void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {

@@ -374,33 +374,21 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
-  // GPU needs to copy sections to renderers.
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
-                           sandbox::TargetPolicy::HANDLES_DUP_ANY,
-                           L"Section");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
   AddGenericDllEvictionPolicy(policy);
 #endif
   return true;
 }
 
 bool AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
-  // Renderers need to copy sections for plugin DIBs and GPU.
+  // Renderers need to copy sections for plugin DIBs.
   sandbox::ResultCode result;
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
                            sandbox::TargetPolicy::HANDLES_DUP_ANY,
                            L"Section");
-  if (result != sandbox::SBOX_ALL_OK)
+  if (result != sandbox::SBOX_ALL_OK) {
+    NOTREACHED();
     return false;
-
-  // Renderers need to share events with plugins.
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
-                           sandbox::TargetPolicy::HANDLES_DUP_ANY,
-                           L"Event");
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
+  }
 
   policy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0);
 
@@ -463,33 +451,30 @@ bool BrokerDuplicateHandle(HANDLE source_handle,
                            HANDLE* target_handle,
                            DWORD desired_access,
                            DWORD options) {
-  // If our process is the target just duplicate the handle.
-  if (::GetCurrentProcessId() == target_process_id) {
-    return !!::DuplicateHandle(::GetCurrentProcess(), source_handle,
-                               ::GetCurrentProcess(), target_handle,
-                               desired_access, FALSE, options);
+  // Just use DuplicateHandle() if we aren't in the sandbox.
+  if (!g_target_services) {
+    base::win::ScopedHandle target_process(::OpenProcess(PROCESS_DUP_HANDLE,
+                                                         FALSE,
+                                                         target_process_id));
+    if (!target_process.IsValid())
+      return false;
 
-  }
+    if (!::DuplicateHandle(::GetCurrentProcess(), source_handle,
+                           target_process, target_handle,
+                           desired_access, FALSE,
+                           options)) {
+      return false;
+    }
 
-  // Try the broker next
-  if (g_target_services &&
-      g_target_services->DuplicateHandle(source_handle, target_process_id,
-                                         target_handle, desired_access,
-                                         options) == SBOX_ALL_OK) {
     return true;
   }
 
-  // Finally, see if we already have access to the process.
-  base::win::ScopedHandle target_process;
-  target_process.Set(::OpenProcess(PROCESS_DUP_HANDLE, FALSE,
-                                    target_process_id));
-  if (target_process.IsValid()) {
-    return !!::DuplicateHandle(::GetCurrentProcess(), source_handle,
-                                target_process, target_handle,
-                                desired_access, FALSE, options);
-  }
-
-  return false;
+  ResultCode result = g_target_services->DuplicateHandle(source_handle,
+                                                         target_process_id,
+                                                         target_handle,
+                                                         desired_access,
+                                                         options);
+  return SBOX_ALL_OK == result;
 }
 
 
@@ -588,7 +573,6 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     policy->Release();
     base::ProcessHandle process = 0;
     base::LaunchProcess(*cmd_line, base::LaunchOptions(), &process);
-    g_broker_services->AddTargetPeer(process);
     return process;
   }
 

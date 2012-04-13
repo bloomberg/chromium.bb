@@ -402,15 +402,6 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
     return false;
   }
 
-  // Add policy for the plugin proxy window pump event
-  // used by WebPluginDelegateProxy::HandleInputEvent().
-  if (policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
-                      sandbox::TargetPolicy::HANDLES_DUP_ANY,
-                      L"Event") != sandbox::SBOX_ALL_OK) {
-    NOTREACHED();
-    return false;
-  }
-
   // Add the policy for the pipes.
   if (policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
                       sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,

@@ -39,8 +39,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   };
 
   // Does not take ownership of |client| which must outlive |*this|.
-  explicit DXVAVideoDecodeAccelerator(
-      media::VideoDecodeAccelerator::Client* client);
+  DXVAVideoDecodeAccelerator(
+      media::VideoDecodeAccelerator::Client* client,
+      base::ProcessHandle renderer_process);
   virtual ~DXVAVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
@@ -185,6 +186,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Contains the id of the last input buffer received from the client.
   int32 last_input_buffer_id_;
+
+  // Handle to the renderer process.
+  base::ProcessHandle renderer_process_;
 
   // Ideally the reset token would be a stack variable which is used while
   // creating the device manager. However it seems that the device manager

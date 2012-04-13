@@ -40,6 +40,8 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        bool software)
     : gpu_channel_manager_(gpu_channel_manager),
       client_id_(client_id),
+      renderer_process_(base::kNullProcessHandle),
+      renderer_pid_(base::kNullProcessId),
       share_group_(share_group ? share_group : new gfx::GLShareGroup),
       watchdog_(watchdog),
       software_(software),
@@ -60,6 +62,10 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
 }
 
 GpuChannel::~GpuChannel() {
+#if defined(OS_WIN)
+  if (renderer_process_)
+    CloseHandle(renderer_process_);
+#endif
 }
 
 bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
@@ -105,6 +111,10 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
 
 void GpuChannel::OnChannelError() {
   gpu_channel_manager_->RemoveChannel(client_id_);
+}
+
+void GpuChannel::OnChannelConnected(int32 peer_pid) {
+  renderer_pid_ = peer_pid;
 }
 
 bool GpuChannel::Send(IPC::Message* message) {
@@ -201,6 +211,7 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   // here. This is so the reply can be delayed if the scheduler is unscheduled.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_Initialize, OnInitialize)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_CreateOffscreenCommandBuffer,
                                     OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_DestroyCommandBuffer,
@@ -299,6 +310,15 @@ void GpuChannel::RemoveRoute(int32 route_id) {
 
 bool GpuChannel::ShouldPreferDiscreteGpu() const {
   return num_contexts_preferring_discrete_gpu_ > 0;
+}
+
+void GpuChannel::OnInitialize(base::ProcessHandle renderer_process) {
+  // Initialize should only happen once.
+  DCHECK(!renderer_process_);
+
+  // Verify that the renderer has passed its own process handle.
+  if (base::GetProcId(renderer_process) == renderer_pid_)
+    renderer_process_ = renderer_process;
 }
 
 void GpuChannel::OnCreateOffscreenCommandBuffer(
