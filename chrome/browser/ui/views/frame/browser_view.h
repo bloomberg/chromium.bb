@@ -67,6 +67,7 @@ namespace views {
 class AccessiblePaneView;
 class ExternalFocusTracker;
 class Menu;
+class WebView;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -613,13 +614,13 @@ class BrowserView : public BrowserWindow,
   InfoBarContainerView* infobar_container_;
 
   // The view that contains the selected TabContents.
-  TabContentsContainer* contents_container_;
+  views::WebView* contents_container_;
 
   // The view that contains devtools window for the selected TabContents.
   TabContentsContainer* devtools_container_;
 
   // The view that contains instant's TabContents.
-  TabContentsContainer* preview_container_;
+  views::WebView* preview_container_;
 
   // The view managing both the contents_container_ and preview_container_.
   ContentsContainer* contents_;
