@@ -390,17 +390,22 @@ void DragDownload(const DownloadItem* download,
   }
 
 #if !defined(TOOLKIT_GTK)
+#if defined(USE_AURA)
   views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
-  // TODO(varunjain): Widget should not be NULL here. But its causing the crash
-  // in http://code.google.com/p/chromium/issues/detail?id=120430 Find out why.
-  if (!widget || !widget->native_widget())
-    return;
-
   gfx::Point location = gfx::Screen::GetCursorScreenPoint();
   // We do not care about notifying the DragItemView on completion of drag. So
   // we pass NULL to RunShellDrag for the source view.
   widget->RunShellDrag(NULL, data, location,
       ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
+#else // We are on WIN without AURA
+  // We cannot use Widget::RunShellDrag on WIN since the |view| is backed by a
+  // TabContentsViewWin, not a NativeWidgetWin.
+  scoped_refptr<ui::DragSource> drag_source(new ui::DragSource);
+  // Run the drag and drop loop
+  DWORD effects;
+  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
+             drag_source.get(), DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
+#endif
 
 #else
   GtkWidget* root = gtk_widget_get_toplevel(view);
