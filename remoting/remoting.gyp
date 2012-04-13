@@ -258,6 +258,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             'remoting_elevated_controller',
+            'remoting_protocol',
             'remoting_version_resources',
           ],
           'sources': [
@@ -267,6 +268,8 @@
             'host/elevated_controller_module_win.cc',
             'host/elevated_controller_win.cc',
             'host/elevated_controller_win.h',
+            'host/verify_config_window_win.cc',
+            'host/verify_config_window_win.h',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/elevated_controller_version.rc'
           ],
           'msvs_settings': {

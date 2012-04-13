@@ -16,6 +16,8 @@
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
 #include "remoting/host/branding.h"
+#include "remoting/host/elevated_controller_resource.h"
+#include "remoting/host/verify_config_window_win.h"
 
 namespace {
 
@@ -94,6 +96,28 @@ HRESULT WriteConfig(const FilePath& filename,
                     size_t length) {
   if (length > kMaxConfigFileSize) {
       return E_FAIL;
+  }
+
+  // Extract the configuration data that the user will verify.
+  scoped_ptr<base::Value> config_value(base::JSONReader::Read(content));
+  if (!config_value.get()) {
+    return E_FAIL;
+  }
+  base::DictionaryValue* config_dict = NULL;
+  if (!config_value->GetAsDictionary(&config_dict)) {
+    return E_FAIL;
+  }
+  std::string email, host_id, host_secret_hash;
+  if (!config_dict->GetString("xmpp_login", &email) ||
+      !config_dict->GetString("host_id", &host_id) ||
+      !config_dict->GetString("host_secret_hash", &host_secret_hash)) {
+    return E_FAIL;
+  }
+
+  // Ask the user to verify the configuration.
+  remoting::VerifyConfigWindowWin verify_win(email, host_id, host_secret_hash);
+  if (!verify_win.Run()) {
+    return E_FAIL;
   }
 
   // Create a security descriptor for the configuration file.

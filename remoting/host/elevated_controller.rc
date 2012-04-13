@@ -3,6 +3,8 @@
 // Embedded type library.
 1 typelib "remoting/host/elevated_controller.tlb"
 
+#include "elevated_controller_resource.h"
+
 // English (U.S.) resources
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -13,10 +15,52 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 STRINGTABLE
 BEGIN
 #ifdef OFFICIAL_BUILD
-  100 "Chrome Remote Desktop Host Controller"
+  IDS_CONTROLLER "Chrome Remote Desktop Host Controller"
 #else
-  100 "Chromoting Host Controller"
+  IDS_CONTROLLER "Chromoting Host Controller"
 #endif
 END
 
-#endif // English (U.S.) resources
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_VERIFY_CONFIG_DIALOG DIALOGEX 0, 0, 221, 120
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOPMOST
+CAPTION "kTitle"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_PIN,7,69,107,15,WS_TABSTOP
+    DEFPUSHBUTTON   "kOK",IDOK,116,100,98,14,WS_TABSTOP
+    LTEXT           "kConfirmConfigChange",IDC_MESSAGE,7,7,207,30
+    LTEXT           "kEmail",IDC_EMAIL,7,38,207,30
+    PUSHBUTTON      "kCancel",IDCANCEL,7,100,98,14,WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_VERIFY_CONFIG_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 214
+        VERTGUIDE, 105
+        VERTGUIDE, 116
+        VERTGUIDE, 203
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 52
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////

@@ -28,7 +28,7 @@ class ElevatedControllerModuleWin
 
 remoting::ElevatedControllerModuleWin _AtlModule;
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int command) {
+int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int command) {
   CommandLine::Init(0, NULL);
 
   // This object instance is required by Chrome code (for example,
