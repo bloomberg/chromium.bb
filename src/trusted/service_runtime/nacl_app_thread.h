@@ -100,7 +100,6 @@ struct NaClAppThread {
   enum NaClThreadState      state;
 
   struct NaClThreadContext  user;
-  /* sys is only used to hold segment registers */
   struct NaClThreadContext  sys;
   /*
    * NaClThread abstraction allows us to specify the stack size
