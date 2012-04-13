@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,16 +28,22 @@ class BaseWindowFinder {
   virtual ~BaseWindowFinder() {}
 
  protected:
-  // Returns true if iteration should stop, false if iteration should continue.
-  virtual bool ShouldStopIterating(HWND window) = 0;
-
   static BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
+    // Cast must match that in as_lparam().
     BaseWindowFinder* finder = reinterpret_cast<BaseWindowFinder*>(lParam);
     if (finder->ignore_.find(hwnd) != finder->ignore_.end())
       return TRUE;
 
     return finder->ShouldStopIterating(hwnd) ? FALSE : TRUE;
   }
+
+  LPARAM as_lparam() {
+    // Cast must match that in WindowCallbackProc().
+    return reinterpret_cast<LPARAM>(static_cast<BaseWindowFinder*>(this));
+  }
+
+  // Returns true if iteration should stop, false if iteration should continue.
+  virtual bool ShouldStopIterating(HWND window) = 0;
 
  private:
   const std::set<HWND>& ignore_;
@@ -118,7 +124,7 @@ class TopMostFinder : public BaseWindowFinder {
         screen_loc_(screen_loc),
         is_top_most_(false),
         tmp_region_(CreateRectRgn(0, 0, 0, 0)) {
-    EnumWindows(WindowCallbackProc, reinterpret_cast<LPARAM>(this));
+    EnumWindows(WindowCallbackProc, as_lparam());
   }
 
   // The window we're looking for.
@@ -177,8 +183,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
       : BaseWindowFinder(ignore),
         screen_loc_(screen_loc),
         result_(NULL) {
-    EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc,
-                      reinterpret_cast<LPARAM>(this));
+    EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, as_lparam());
   }
 
   // Position of the mouse.
@@ -241,8 +246,7 @@ class DockToWindowFinder : public BaseWindowFinder {
         screen_loc);
     if (!work_area.IsEmpty()) {
       result_.set_monitor_bounds(work_area);
-      EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc,
-                        reinterpret_cast<LPARAM>(this));
+      EnumThreadWindows(GetCurrentThreadId(), WindowCallbackProc, as_lparam());
     }
   }
 
