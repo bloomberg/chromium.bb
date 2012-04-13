@@ -378,42 +378,12 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'ncval_testing', default=False,
     desc='EXPERIMENTAL: Compile validator code for testing within enuminsts')
 
-  #########################################################################
-  # EXPERIMENTAL
-  # This is only for testing within an artificial cros_chroot hook for ARM/thumb2
-  #
-  # BUG=http://code.google.com/p/chromium/issues/detail?id=61695
-  # BUG=http://code.google.com/p/chromium/issues/detail?id=38909
-  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
-  #
-  BitFromArgument(env, 'cros_chroot',
-                  default=os.path.exists("/etc/debian_chroot"),
-                  desc='EXPERIMENTAL: Set to 1 if compiling '
-                  'within ChromeOS chroot')
-  if env.Bit('cros_chroot'):
-    sysroot = os.environ.get('SYSROOT')
-    if sysroot is None or not os.path.exists(sysroot):
-      print "Running inside  ChromiumOS chroot.\n"\
-          "You need to export a valid SYSROOT env var\n"\
-          "if you expect to build board-specific trusted tools"
-    else:
-      env['ENV']['SYSROOT'] = sysroot
-      print "pre_base_env['ENV']['SYSROOT']=", sysroot
-  #########################################################################
-
   # PNaCl sanity checks
   if ((env.Bit('pnacl_generate_pexe') or env.Bit('use_sandboxed_translator'))
       and not env.Bit('bitcode')):
     raise ValueError("pnacl_generate_pexe and use_sandboxed_translator"
                         "don't make sense without bitcode")
 
-def CrosChrootHasGclient():
-  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2455
-  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
-  # Without truly gross hackery, it is difficult to use gclient
-  # inside a CrOS chroot within an emerge/ebuild.
-  # For now, just report False
-  return False
 
 def CheckArguments():
   for key in ARGUMENTS:
@@ -2946,34 +2916,6 @@ def MakeLinuxEnv():
       if not platform.machine().startswith('arm'):
         jail = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
         linux_env.Replace(EMULATOR=jail + '/run_under_qemu_arm')
-
-    ###############################################################
-    # EXPERIMENTAL
-    # This is needed to switch to a different trusted cross
-    # toolchain when compiling within the cros_chroot
-    # BUG=http://code.google.com/p/chromium/issues/detail?id=61695
-    # BUG=http://code.google.com/p/chromium/issues/detail?id=38909
-    # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
-    #
-    elif linux_env.Bit('cros_chroot'):
-        # TODO(mseaborn): It would be clearer just to inline
-        # setup_arm_cros_toolchain.py here.
-        sys.path.append('tools/llvm')
-        from setup_arm_cros_toolchain import arm_env
-        sys.path.pop()
-        arm_env = arm_env.copy()
-        arm_env.update(os.environ)
-        linux_env.Replace(CC=arm_env.get('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
-                          CXX=arm_env.get('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
-                          LD=arm_env.get('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
-                          EMULATOR=arm_env.get('ARM_EMU', ''),
-                          ASFLAGS=[],
-                          LIBPATH=['${LIB_DIR}',
-                                   arm_env.get('ARM_LIB_DIR', '').split()],
-                          LINKFLAGS=arm_env.get('ARM_LINKFLAGS', ''),
-                          )
-
-        linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'crypto'])
     else:
       jail = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
       linux_env.Replace(CC='arm-linux-gnueabi-gcc-4.5',
@@ -3283,29 +3225,12 @@ if not nacl_env.Bit('nacl_glibc'):
         ])
 
 nacl_env.Append(
-    BUILD_SCONSCRIPTS = [
+    BUILD_SCONSCRIPTS = ExtendFileList([
     ####  ALPHABETICALLY SORTED ####
     'src/include/nacl/nacl.scons',
     'src/shared/gio/nacl.scons',
     'src/shared/imc/nacl.scons',
     'src/shared/platform/nacl.scons',
-    ]);
-
-# BUG=http://code.google.com/p/nativeclient/issues/detail?id=2455
-# BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
-# The two nacl.scons files generate dependencies outside of the native_client
-# source tree. Unfortunately, due to several issues, the chromeos chroot can
-# not run gclient within an ebuild process.
-# In order to generate the PNaCl toolchain within chromeos chroot as an ebuild
-# process, we need to excise those nacl.scons file that DO generate
-# dependencies outside of the native_client source tree
-
-if (not nacl_env.Bit('cros_chroot')) or CrosChrootHasGclient():
-  nacl_env.Append(
-      BUILD_SCONSCRIPTS = ppapi_scons_files['untrusted_scons_files'])
-
-nacl_env.Append(
-    BUILD_SCONSCRIPTS = [
     'src/shared/srpc/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
     'src/trusted/validator_x86/nacl.scons',
@@ -3319,7 +3244,7 @@ nacl_env.Append(
     'src/untrusted/ppapi/nacl.scons',
     'src/untrusted/valgrind/nacl.scons',
     ####  ALPHABETICALLY SORTED ####
-    ])
+    ], ppapi_scons_files['untrusted_scons_files']))
 
 # These are tests that are worthwhile to run in IRT variant only.
 irt_only_tests = [
@@ -3441,12 +3366,7 @@ nonvariant_tests = ExtendFileList([
     #### ALPHABETICALLY SORTED ####
     ], ppapi_scons_files['nonvariant_test_scons_files'])
 
-if (not nacl_env.Bit('cros_chroot')) or CrosChrootHasGclient():
-  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2455
-  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
-  # Do not load up these nacl.scons files in CrOS chroot, as they
-  # inject dependecies outside of the native_client source tree
-  nacl_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests + nonvariant_tests)
+nacl_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests + nonvariant_tests)
 
 # ----------------------------------------------------------
 # Possibly install an sdk by downloading it
@@ -3652,26 +3572,15 @@ AddImplicitLibs(nacl_env)
 AddImplicitLibs(nacl_irt_env)
 
 nacl_irt_env.Append(
-    BUILD_SCONSCRIPTS = [
+    BUILD_SCONSCRIPTS = ExtendFileList([
         'src/include/nacl/nacl.scons',
         'src/shared/gio/nacl.scons',
         'src/shared/platform/nacl.scons',
-        ])
-
-if (not nacl_irt_env.Bit('cros_chroot')) or CrosChrootHasGclient():
-  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2455
-  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
-  # Do not load up these nacl.scons files in CrOS chroot, as they
-  # inject dependecies outside of the native_client source tree
-  nacl_irt_env.Append(
-      BUILD_SCONSCRIPTS = ppapi_scons_files['untrusted_irt_scons_files'])
-nacl_irt_env.Append(
-    BUILD_SCONSCRIPTS = [
         'src/shared/srpc/nacl.scons',
         'src/untrusted/irt/nacl.scons',
         'src/untrusted/nacl/nacl.scons',
         'src/untrusted/stubs/nacl.scons',
-    ])
+    ], ppapi_scons_files['untrusted_irt_scons_files']))
 
 environment_list.append(nacl_irt_env)
 
@@ -3846,10 +3755,7 @@ def DumpEnvironmentInfo(selected_envs):
       print 'CC:', cc
       asppcom = env.subst('${ASPPCOM}')
       print 'ASPPCOM:', asppcom
-      if env.Bit('cros_chroot'):
-        print "in CrOS chroot. Not Running nacl-gcc"
-      else:
-        DumpCompilerVersion(cc, env)
+      DumpCompilerVersion(cc, env)
       print
     # TODO(pdox): This only works for linux/X86-64. Is there a better way
     #             of locating the PNaCl toolchain here?
