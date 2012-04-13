@@ -29,6 +29,8 @@ LazyBackgroundTaskQueue::LazyBackgroundTaskQueue(Profile* profile)
     : profile_(profile) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
 }
@@ -66,7 +68,7 @@ void LazyBackgroundTaskQueue::AddPendingTask(
     const Extension* extension = profile->GetExtensionService()->
         extensions()->GetByID(extension_id);
     DCHECK(extension->has_lazy_background_page());
-  ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
+    ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
     pm->IncrementLazyKeepaliveCount(extension);
     pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
   } else {
@@ -113,6 +115,19 @@ void LazyBackgroundTaskQueue::Observe(
           host->extension()->has_lazy_background_page()) {
         CHECK(host->did_stop_loading());
         ProcessPendingTasks(host);
+      }
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
+      // Clear pending tasks when the background host dies. This can happen
+      // if the extension crashes. This is not strictly necessary, since we
+      // also unload the extension in that case (which clears the tasks below),
+      // but is a good extra precaution.
+      Profile* profile = content::Source<Profile>(source).ptr();
+      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+      if (host->extension_host_type() ==
+              chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+        pending_tasks_.erase(PendingTasksKey(profile, host->extension()->id()));
       }
       break;
     }

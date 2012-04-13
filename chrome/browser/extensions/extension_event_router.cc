@@ -114,7 +114,6 @@ ExtensionEventRouter::ExtensionEventRouter(Profile* profile)
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));
-  // TODO(tessamac): also get notified for background page crash/failure.
 }
 
 ExtensionEventRouter::~ExtensionEventRouter() {}
@@ -489,8 +488,6 @@ void ExtensionEventRouter::Observe(
           profile_, extension);
       break;
     }
-
-    // TODO(tessamac): if background page crashed/failed clear queue.
     default:
       NOTREACHED();
       return;
