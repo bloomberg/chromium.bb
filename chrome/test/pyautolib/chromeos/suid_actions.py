@@ -12,14 +12,18 @@ Usage:
   sudo python suid_actions.py --action=CleanFlimflamDirs
 """
 
+import logging
 import optparse
 import os
 import shutil
 import sys
 
-
 sys.path.append('/usr/local')  # to import autotest libs.
 from autotest.cros import cryptohome
+
+# TODO(bartfab): Remove when crosbug.com/20709 is fixed.
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
+from pyauto import AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE
 
 
 class SuidAction(object):
@@ -64,6 +68,38 @@ class SuidAction(object):
   def RemoveAllCryptohomeVaults(self):
     """Remove any existing cryptohome vaults."""
     cryptohome.remove_all_vaults()
+
+  def TryToDisableLocalStateAutoClearing(self):
+    """Try to disable clearing of the local state on session manager startup.
+
+    This will fail if rootfs verification is on.
+    TODO(bartfab): Remove this method when crosbug.com/20709 is fixed.
+    """
+    os.system('mount -o remount,rw /')
+    os.remove(AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE)
+    os.system('mount -o remount,ro /')
+    if os.path.exists(AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE):
+      logging.debug('Failed to remove %s. Session manager will clear local '
+                    'state on startup.' % AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE)
+    else:
+      logging.debug('Removed %s. Session manager will not clear local state on '
+                    'startup.' % AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE)
+
+  def TryToEnableLocalStateAutoClearing(self):
+    """Try to enable clearing of the local state on session manager startup.
+
+    This will fail if rootfs verification is on.
+    TODO(bartfab): Remove this method when crosbug.com/20709 is fixed.
+    """
+    os.system('mount -o remount,rw /')
+    open(AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE, 'w').close()
+    os.system('mount -o remount,ro /')
+    if os.path.exists(AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE):
+      logging.debug('Created %s. Session manager will clear local state on '
+                    'startup.' % AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE)
+    else:
+      logging.debug('Failed to create %s. Session manager will not clear local '
+                    'state on startup.' % AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE)
 
 
 if __name__ == '__main__':

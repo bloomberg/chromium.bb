@@ -96,6 +96,9 @@ _REMOTE_PROXY = None
 _OPTIONS = None
 _BROWSER_PID = None
 
+# TODO(bartfab): Remove when crosbug.com/20709 is fixed.
+AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE = '/root/.forget_usernames'
+
 
 class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   """Base class for UI Test Cases in Python.
@@ -446,6 +449,30 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def RemoveAllCryptohomeVaultsOnChromeOS():
     """Remove any existing cryptohome vaults."""
     PyUITest.RunSuperuserActionOnChromeOS('RemoveAllCryptohomeVaults')
+
+  @staticmethod
+  def TryToDisableLocalStateAutoClearingOnChromeOS():
+    """Disable clearing of the local state on session manager startup.
+
+    TODO(bartfab): Remove this method when crosbug.com/20709 is fixed.
+    """
+    PyUITest.RunSuperuserActionOnChromeOS('TryToDisableLocalStateAutoClearing')
+
+  @staticmethod
+  def TryToEnableLocalStateAutoClearingOnChromeOS():
+    """Enable clearing of the local state on session manager startup.
+
+    TODO(bartfab): Remove this method when crosbug.com/20709 is fixed.
+    """
+    PyUITest.RunSuperuserActionOnChromeOS('TryToEnableLocalStateAutoClearing')
+
+  @staticmethod
+  def IsLocalStateAutoClearingEnabledOnChromeOS():
+    """Check if the session manager is set to clear the local state on startup.
+
+    TODO(bartfab): Remove this method when crosbug.com/20709 is fixed.
+    """
+    return os.path.exists(AUTO_CLEAR_LOCAL_STATE_MAGIC_FILE)
 
   @staticmethod
   def _IsInodeNew(path, old_inode):
@@ -1292,7 +1319,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       an instance of prefs_info.PrefsInfo
     """
     return prefs_info.PrefsInfo(
-        self._SendJSONRequest(0,
+        self._SendJSONRequest(-1,
                               json.dumps({'command': 'GetLocalStatePrefsInfo'}),
                               self.action_max_timeout_ms()))
 
