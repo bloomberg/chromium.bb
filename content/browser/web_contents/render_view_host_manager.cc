@@ -498,6 +498,14 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   const GURL& current_url = (curr_entry) ? curr_entry->GetURL() :
       curr_instance->GetSite();
 
+  // View-source URLs must use a new SiteInstance and BrowsingInstance.
+  // TODO(creis): Refactor this method so this duplicated code isn't needed.
+  // See http://crbug.com/123007.
+  if (curr_entry &&
+      curr_entry->IsViewSourceMode() != entry.IsViewSourceMode()) {
+    return SiteInstance::CreateForURL(browser_context, dest_url);
+  }
+
   // Use the current SiteInstance for same site navigations, as long as the
   // process type is correct.  (The URL may have been installed as an app since
   // the last time we visited it.)

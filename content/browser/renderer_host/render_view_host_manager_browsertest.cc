@@ -750,9 +750,12 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   AddBlankTabAndShow(browser());
 
   // Load a random page and then navigate to view-source: of it.
-  // This is one way to cause two rvh instances for the same instance id.
+  // This used to cause two RVH instances for the same SiteInstance, which
+  // was a problem.  This is no longer the case.
   GURL navigated_url(test_server()->GetURL("files/title2.html"));
   ui_test_utils::NavigateToURL(browser(), navigated_url);
+  SiteInstance* site_instance1 = browser()->GetSelectedWebContents()->
+      GetRenderViewHost()->GetSiteInstance();
 
   // Observe the newly created render_view_host to make sure it will not leak.
   RenderViewHostObserverArray rvh_observers;
@@ -764,6 +767,11 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   ui_test_utils::NavigateToURL(browser(), view_source_url);
   rvh_observers.AddObserverToRVH(browser()->GetSelectedWebContents()->
       GetRenderViewHost());
+  SiteInstance* site_instance2 = browser()->GetSelectedWebContents()->
+      GetRenderViewHost()->GetSiteInstance();
+
+  // Ensure that view-source navigations force a new SiteInstance.
+  EXPECT_NE(site_instance1, site_instance2);
 
   // Now navigate to a different instance so that we swap out again.
   ui_test_utils::NavigateToURL(browser(),
