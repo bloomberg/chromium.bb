@@ -284,16 +284,6 @@ void CertificateManagerHandler::GetLocalizedValues(
   localized_strings->SetString("unknownCertsTabDescription",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_UNKNOWN_TREE_DESCRIPTION));
 
-  // Tree columns.
-  localized_strings->SetString("certNameColumn",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_NAME_COLUMN_LABEL));
-  localized_strings->SetString("certDeviceColumn",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_DEVICE_COLUMN_LABEL));
-  localized_strings->SetString("certSerialColumn",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_SERIAL_NUMBER_COLUMN_LABEL));
-  localized_strings->SetString("certExpiresColumn",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EXPIRES_COLUMN_LABEL));
-
   // Buttons.
   localized_strings->SetString("view_certificate",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_VIEW_CERT_BUTTON));
@@ -301,8 +291,6 @@ void CertificateManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_IMPORT_BUTTON));
   localized_strings->SetString("export_certificate",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EXPORT_BUTTON));
-  localized_strings->SetString("export_all_certificates",
-      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EXPORT_ALL_BUTTON));
   localized_strings->SetString("edit_certificate",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_BUTTON));
   localized_strings->SetString("delete_certificate",

@@ -65,14 +65,6 @@ void SearchEngineManagerHandler::GetLocalizedValues(
   localized_strings->SetString("extensionKeywordsListTitle",
       l10n_util::GetStringUTF16(
           IDS_SEARCH_ENGINES_EDITOR_EXTENSIONS_SEPARATOR));
-  localized_strings->SetString("manageExtensionsLinkText",
-      l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS));
-  localized_strings->SetString("searchEngineTableNameHeader",
-      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN));
-  localized_strings->SetString("searchEngineTableKeywordHeader",
-      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN));
-  localized_strings->SetString("searchEngineTableURLHeader",
-      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_EDIT_BUTTON));
   localized_strings->SetString("makeDefaultSearchEngineButton",
       l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_MAKE_DEFAULT_BUTTON));
   localized_strings->SetString("searchEngineTableNamePlaceholder",

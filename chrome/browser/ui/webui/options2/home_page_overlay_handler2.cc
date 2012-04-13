@@ -39,9 +39,6 @@ void HomePageOverlayHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   RegisterTitle(localized_strings, "homePageOverlay",
                 IDS_OPTIONS2_HOMEPAGE_TITLE);
-  localized_strings->SetString(
-      "homePageDialogLabel",
-      l10n_util::GetStringUTF16(IDS_OPTIONS2_HOMEPAGE_DIALOG_LABEL));
 }
 
 void HomePageOverlayHandler::RequestAutocompleteSuggestions(

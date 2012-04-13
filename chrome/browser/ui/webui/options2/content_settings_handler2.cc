@@ -207,16 +207,11 @@ void ContentSettingsHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "content_exceptions", IDS_COOKIES_EXCEPTIONS_BUTTON },
     { "allowException", IDS_EXCEPTIONS_ALLOW_BUTTON },
     { "blockException", IDS_EXCEPTIONS_BLOCK_BUTTON },
     { "sessionException", IDS_EXCEPTIONS_SESSION_ONLY_BUTTON },
     { "askException", IDS_EXCEPTIONS_ASK_BUTTON },
-    { "addExceptionRow", IDS_EXCEPTIONS_ADD_BUTTON },
-    { "removeExceptionRow", IDS_EXCEPTIONS_REMOVE_BUTTON },
-    { "editExceptionRow", IDS_EXCEPTIONS_EDIT_BUTTON },
     { "otr_exceptions_explanation", IDS_EXCEPTIONS_OTR_LABEL },
-    { "examplePattern", IDS_EXCEPTIONS_PATTERN_EXAMPLE },
     { "addNewExceptionInstructions", IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS },
     { "manage_exceptions", IDS_EXCEPTIONS_MANAGE },
     { "manage_handlers", IDS_HANDLERS_MANAGE },

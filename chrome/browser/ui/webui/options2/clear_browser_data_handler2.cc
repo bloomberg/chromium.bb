@@ -50,9 +50,7 @@ void ClearBrowserDataHandler::GetLocalizedValues(
     { "deletePasswordsCheckbox", IDS_DEL_PASSWORDS_CHKBOX },
     { "deleteFormDataCheckbox", IDS_DEL_FORM_DATA_CHKBOX },
     { "clearBrowserDataCommit", IDS_CLEAR_BROWSING_DATA_COMMIT },
-    { "flashStorageSettings", IDS_FLASH_STORAGE_SETTINGS },
     { "flash_storage_url", IDS_FLASH_STORAGE_URL },
-    { "clearDataDeleting", IDS_CLEAR_DATA_DELETING },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

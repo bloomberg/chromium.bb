@@ -45,11 +45,6 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON));
   localized_strings->SetString("languages",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES));
-  localized_strings->SetString("please_add_another_language",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_LANGUAGE));
-  localized_strings->SetString("remove_button",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
   localized_strings->SetString("add_language_instructions",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS));
@@ -64,10 +59,6 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
   localized_strings->SetString("display_in_this_language",
       l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
-          product_name));
-  localized_strings->SetString("this_language_is_currently_in_use",
-      l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_THIS_LANGUAGE_IS_CURRENTLY_IN_USE,
           product_name));
   localized_strings->SetString("restart_required",
           l10n_util::GetStringUTF16(IDS_OPTIONS_RELAUNCH_REQUIRED));
