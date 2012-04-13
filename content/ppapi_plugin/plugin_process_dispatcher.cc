@@ -17,7 +17,7 @@ const int kPluginReleaseTimeSeconds = 30;
 
 PluginProcessDispatcher::PluginProcessDispatcher(
     base::ProcessHandle remote_process_handle,
-    GetInterfaceFunc get_interface)
+    PP_GetInterface_Func get_interface)
     : ppapi::proxy::PluginDispatcher(remote_process_handle, get_interface) {
   ChildProcess::current()->AddRefProcess();
 }

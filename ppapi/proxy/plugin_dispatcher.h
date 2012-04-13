@@ -67,7 +67,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   //
   // You must call InitPluginWithChannel after the constructor.
   PluginDispatcher(base::ProcessHandle remote_process_handle,
-                   GetInterfaceFunc get_interface);
+                   PP_GetInterface_Func get_interface);
   virtual ~PluginDispatcher();
 
   // The plugin side maintains a mapping from PP_Instance to Dispatcher so

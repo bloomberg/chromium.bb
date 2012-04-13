@@ -121,3 +121,19 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name);
 
 #endinl
 
+/**
+ * Defines the type of the <code>PPP_InitializeModule</code> function.
+ */
+typedef int32_t PP_InitializeModule_Func(
+    [in] PP_Module module,
+    [in] PPB_GetInterface get_browser_interface);
+
+/**
+ * Defines the type of the <code>PPP_ShutdownModule</code> function.
+ */
+typedef void PP_ShutdownModule_Func();
+
+/**
+ * Defines the type of the <code>PPP_ShutdownModule</code> function.
+ */
+typedef interface_t PP_GetInterface_Func([in] str_t interface_name);

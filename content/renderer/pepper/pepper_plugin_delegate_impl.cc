@@ -105,7 +105,7 @@ class HostDispatcherWrapper
   bool Init(base::ProcessHandle plugin_process_handle,
             const IPC::ChannelHandle& channel_handle,
             PP_Module pp_module,
-            ppapi::proxy::Dispatcher::GetInterfaceFunc local_get_interface,
+            PP_GetInterface_Func local_get_interface,
             const ppapi::Preferences& preferences,
             PepperHungPluginFilter* filter) {
     if (channel_handle.name.empty())

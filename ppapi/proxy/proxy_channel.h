@@ -28,8 +28,6 @@ class PPAPI_PROXY_EXPORT ProxyChannel
     : public IPC::Channel::Listener,
       public IPC::Message::Sender {
  public:
-  typedef void (*ShutdownModuleFunc)();
-
   class PPAPI_PROXY_EXPORT Delegate {
    public:
     virtual ~Delegate() {}

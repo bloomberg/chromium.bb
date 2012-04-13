@@ -63,11 +63,11 @@ PpapiThread::~PpapiThread() {
     return;
 
   // The ShutdownModule/ShutdownBroker function is optional.
-  ppapi::proxy::ProxyChannel::ShutdownModuleFunc shutdown_function =
+  PP_ShutdownModule_Func shutdown_function =
       is_broker_ ?
-      reinterpret_cast<ppapi::proxy::ProxyChannel::ShutdownModuleFunc>(
+      reinterpret_cast<PP_ShutdownModule_Func>(
           library_.GetFunctionPointer("PPP_ShutdownBroker")) :
-      reinterpret_cast<ppapi::proxy::ProxyChannel::ShutdownModuleFunc>(
+      reinterpret_cast<PP_ShutdownModule_Func>(
           library_.GetFunctionPointer("PPP_ShutdownModule"));
   if (shutdown_function)
     shutdown_function();
@@ -210,7 +210,7 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
   } else {
     // Get the GetInterface function (required).
     get_plugin_interface_ =
-        reinterpret_cast<ppapi::proxy::Dispatcher::GetInterfaceFunc>(
+        reinterpret_cast<PP_GetInterface_Func>(
             library.GetFunctionPointer("PPP_GetInterface"));
     if (!get_plugin_interface_) {
       LOG(WARNING) << "No PPP_GetInterface in plugin library";
@@ -227,8 +227,8 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
 #endif
 
     // Get the InitializeModule function (required).
-    ppapi::proxy::Dispatcher::InitModuleFunc init_module =
-        reinterpret_cast<ppapi::proxy::Dispatcher::InitModuleFunc>(
+    PP_InitializeModule_Func init_module =
+        reinterpret_cast<PP_InitializeModule_Func>(
             library.GetFunctionPointer("PPP_InitializeModule"));
     if (!init_module) {
       LOG(WARNING) << "No PPP_InitializeModule in plugin library";

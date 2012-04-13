@@ -63,7 +63,7 @@ class BoolRestorer {
 
 HostDispatcher::HostDispatcher(base::ProcessHandle remote_process_handle,
                                PP_Module module,
-                               GetInterfaceFunc local_get_interface,
+                               PP_GetInterface_Func local_get_interface,
                                SyncMessageStatusReceiver* sync_status)
     : Dispatcher(remote_process_handle, local_get_interface),
       sync_status_(sync_status),

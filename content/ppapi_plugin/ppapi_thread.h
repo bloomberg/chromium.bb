@@ -86,7 +86,7 @@ class PpapiThread : public ChildThread,
   // Global state tracking for the proxy.
   ppapi::proxy::PluginGlobals plugin_globals_;
 
-  ppapi::proxy::Dispatcher::GetInterfaceFunc get_plugin_interface_;
+  PP_GetInterface_Func get_plugin_interface_;
 
   // Callback to call when a new instance connects to the broker.
   // Used only when is_broker_.

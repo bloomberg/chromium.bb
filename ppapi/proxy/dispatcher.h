@@ -15,6 +15,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
+#include "ppapi/c/ppp.h"
 #include "ppapi/proxy/proxy_channel.h"
 #include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/interface_proxy.h"
@@ -43,9 +44,6 @@ class VarSerializationRules;
 //                                      |
 class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
  public:
-  typedef const void* (*GetInterfaceFunc)(const char*);
-  typedef int32_t (*InitModuleFunc)(PP_Module, GetInterfaceFunc);
-
   virtual ~Dispatcher();
 
   // Returns true if the dispatcher is on the plugin side, or false if it's the
@@ -78,11 +76,13 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
-  GetInterfaceFunc local_get_interface() const { return local_get_interface_; }
+  PP_GetInterface_Func local_get_interface() const {
+    return local_get_interface_;
+  }
 
  protected:
   Dispatcher(base::ProcessHandle remote_process_handle,
-             GetInterfaceFunc local_get_interface);
+             PP_GetInterface_Func local_get_interface);
 
   // Setter for the derived classes to set the appropriate var serialization.
   // Takes one reference of the given pointer, which must be on the heap.
@@ -105,7 +105,7 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
 
   bool disallow_trusted_interfaces_;
 
-  GetInterfaceFunc local_get_interface_;
+  PP_GetInterface_Func local_get_interface_;
 
   scoped_refptr<VarSerializationRules> serialization_rules_;
 

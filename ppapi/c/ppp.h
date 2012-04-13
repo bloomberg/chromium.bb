@@ -1,14 +1,17 @@
-/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-/* From ppp.idl modified Mon Aug  8 06:47:44 2011. */
+/* From ppp.idl modified Fri Apr 13 10:57:17 2012. */
 
 #ifndef PPAPI_C_PPP_H_
 #define PPAPI_C_PPP_H_
 
 #include "ppapi/c/pp_macros.h"
+#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/ppb.h"
 
 /**
  * @file
@@ -126,6 +129,31 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name);
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif
+
+
+/**
+ * @addtogroup Typedefs
+ * @{
+ */
+/**
+ * Defines the type of the <code>PPP_InitializeModule</code> function.
+ */
+typedef int32_t (*PP_InitializeModule_Func)(
+    PP_Module module,
+    PPB_GetInterface get_browser_interface);
+
+/**
+ * Defines the type of the <code>PPP_ShutdownModule</code> function.
+ */
+typedef void (*PP_ShutdownModule_Func)();
+
+/**
+ * Defines the type of the <code>PPP_ShutdownModule</code> function.
+ */
+typedef const void* (*PP_GetInterface_Func)(const char* interface_name);
+/**
+ * @}
+ */
 
 #endif  /* PPAPI_C_PPP_H_ */
 

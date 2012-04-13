@@ -14,12 +14,17 @@
 #include "ppapi/cpp/module_embedder.h"
 
 static pp::Module* g_module_singleton = NULL;
+static PP_GetInterface_Func g_broker_get_interface = NULL;
 
 namespace pp {
 
 // Give a default implementation of Module::Get().  See module.cc for details.
 pp::Module* Module::Get() {
   return g_module_singleton;
+}
+
+void SetBrokerGetIntefaceFunc(PP_GetInterface_Func broker_get_interface) {
+  g_broker_get_interface = broker_get_interface;
 }
 
 }  // namespace pp
@@ -46,7 +51,9 @@ PP_EXPORT void PPP_ShutdownModule() {
 }
 
 PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
-  if (!g_module_singleton)
-    return NULL;
-  return g_module_singleton->GetPluginInterface(interface_name);
+  if (g_module_singleton)
+    return g_module_singleton->GetPluginInterface(interface_name);
+  if (g_broker_get_interface)
+    return g_broker_get_interface(interface_name);
+  return NULL;
 }

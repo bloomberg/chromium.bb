@@ -14,7 +14,7 @@
 class PluginProcessDispatcher : public ppapi::proxy::PluginDispatcher {
  public:
   PluginProcessDispatcher(base::ProcessHandle remote_process_handle,
-                          GetInterfaceFunc get_interface);
+                          PP_GetInterface_Func get_interface);
   virtual ~PluginProcessDispatcher();
 
  private:
