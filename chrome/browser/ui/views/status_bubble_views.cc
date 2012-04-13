@@ -72,7 +72,8 @@ class StatusBubbleViews::StatusView : public views::Label,
                                       public ui::LinearAnimation,
                                       public ui::AnimationDelegate {
  public:
-  StatusView(StatusBubble* status_bubble, views::Widget* popup,
+  StatusView(StatusBubble* status_bubble,
+             views::Widget* popup,
              ui::ThemeProvider* theme_provider)
       : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(kFramerate, this)),
         stage_(BUBBLE_HIDDEN),
@@ -313,7 +314,6 @@ double StatusBubbleViews::StatusView::GetCurrentOpacity() {
 
 void StatusBubbleViews::StatusView::SetOpacity(double opacity) {
   popup_->SetOpacity(static_cast<unsigned char>(opacity * 255));
-  SchedulePaint();
 }
 
 void StatusBubbleViews::StatusView::AnimateToState(double state) {
@@ -544,7 +544,8 @@ void StatusBubbleViews::StatusViewExpander::SetBubbleWidth(int width) {
 const int StatusBubbleViews::kShadowThickness = 1;
 
 StatusBubbleViews::StatusBubbleViews(views::View* base_view)
-    : offset_(0),
+    : contains_mouse_(false),
+      offset_(0),
       popup_(NULL),
       opacity_(0),
       base_view_(base_view),
@@ -604,6 +605,8 @@ void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
   position_.SetPoint(base_view_->GetMirroredXWithWidthInView(x, w), y);
   size_.SetSize(w, h);
   Reposition();
+  if (popup_.get() && contains_mouse_)
+    AvoidMouse(last_mouse_moved_location_);
 }
 
 void StatusBubbleViews::SetStatus(const string16& status_text) {
@@ -692,8 +695,10 @@ void StatusBubbleViews::Hide() {
 
 void StatusBubbleViews::MouseMoved(const gfx::Point& location,
                                    bool left_content) {
+  contains_mouse_ = !left_content;
   if (left_content)
     return;
+  last_mouse_moved_location_ = location;
 
   if (view_) {
     view_->ResetTimer();
