@@ -59,6 +59,9 @@ class CrashGenerationServer {
   typedef void (*OnClientExitedCallback)(void* context,
                                          const ClientInfo* client_info);
 
+  typedef void (*OnClientUploadRequestCallback)(void* context,
+                                                const DWORD crash_id);
+
   // Creates an instance with the given parameters.
   //
   // Parameter pipe_name: Name of the Windows named pipe
@@ -86,6 +89,8 @@ class CrashGenerationServer {
                         void* dump_context,
                         OnClientExitedCallback exit_callback,
                         void* exit_context,
+                        OnClientUploadRequestCallback upload_request_callback,
+                        void* upload_context,
                         bool generate_dumps,
                         const std::wstring* dump_path);
 
@@ -249,6 +254,12 @@ class CrashGenerationServer {
 
   // Context for client process exit callback.
   void* exit_context_;
+
+  // Callback for upload request.
+  OnClientUploadRequestCallback upload_request_callback_;
+
+  // Context for upload request callback.
+  void* upload_context_;
 
   // Whether to generate dumps.
   bool generate_dumps_;

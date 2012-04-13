@@ -52,7 +52,8 @@ ClientInfo::ClientInfo(CrashGenerationServer* crash_server,
       dump_requested_handle_(NULL),
       dump_generated_handle_(NULL),
       dump_request_wait_handle_(NULL),
-      process_exit_wait_handle_(NULL) {
+      process_exit_wait_handle_(NULL),
+      crash_id_(NULL) {
   GetSystemTimeAsFileTime(&start_time_);
 }
 
@@ -61,6 +62,12 @@ bool ClientInfo::Initialize() {
   if (!process_handle_) {
     return false;
   }
+
+  // The crash_id will be the low order word of the process creation time.
+  FILETIME creation_time, exit_time, kernel_time, user_time;
+  if (GetProcessTimes(process_handle_, &creation_time, &exit_time,
+                      &kernel_time, &user_time))
+    crash_id_ = creation_time.dwLowDateTime;
 
   dump_requested_handle_ = CreateEvent(NULL,    // Security attributes.
                                        TRUE,    // Manual reset.

@@ -84,11 +84,12 @@ static const int kShutdownDelayMs = 10000;
 static const int kShutdownSleepIntervalMs = 5;
 
 static bool IsClientRequestValid(const ProtocolMessage& msg) {
-  return msg.tag == MESSAGE_TAG_REGISTRATION_REQUEST &&
-         msg.pid != 0 &&
-         msg.thread_id != NULL &&
-         msg.exception_pointers != NULL &&
-         msg.assert_info != NULL;
+  return msg.tag == MESSAGE_TAG_UPLOAD_REQUEST ||
+         (msg.tag == MESSAGE_TAG_REGISTRATION_REQUEST &&
+          msg.id != 0 &&
+          msg.thread_id != NULL &&
+          msg.exception_pointers != NULL &&
+          msg.assert_info != NULL);
 }
 
 CrashGenerationServer::CrashGenerationServer(
@@ -100,6 +101,8 @@ CrashGenerationServer::CrashGenerationServer(
     void* dump_context,
     OnClientExitedCallback exit_callback,
     void* exit_context,
+    OnClientUploadRequestCallback upload_request_callback,
+    void* upload_context,
     bool generate_dumps,
     const std::wstring* dump_path)
     : pipe_name_(pipe_name),
@@ -113,6 +116,8 @@ CrashGenerationServer::CrashGenerationServer(
       dump_context_(dump_context),
       exit_callback_(exit_callback),
       exit_context_(exit_context),
+      upload_request_callback_(upload_request_callback),
+      upload_context_(upload_context),
       generate_dumps_(generate_dumps),
       dump_generator_(NULL),
       server_state_(IPC_SERVER_STATE_UNINITIALIZED),
@@ -416,9 +421,15 @@ void CrashGenerationServer::HandleReadDoneState() {
     return;
   }
 
+  if (msg_.tag == MESSAGE_TAG_UPLOAD_REQUEST) {
+    if (upload_request_callback_)
+      upload_request_callback_(upload_context_, msg_.id);
+    return;
+  }
+  
   scoped_ptr<ClientInfo> client_info(
       new ClientInfo(this,
-                     msg_.pid,
+                     msg_.id,
                      msg_.dump_type,
                      msg_.thread_id,
                      msg_.exception_pointers,
@@ -582,7 +593,7 @@ void CrashGenerationServer::EnterStateImmediately(IPCServerState state) {
 bool CrashGenerationServer::PrepareReply(const ClientInfo& client_info,
                                          ProtocolMessage* reply) const {
   reply->tag = MESSAGE_TAG_REGISTRATION_RESPONSE;
-  reply->pid = GetCurrentProcessId();
+  reply->id = GetCurrentProcessId();
 
   if (CreateClientHandles(client_info, reply)) {
     return true;

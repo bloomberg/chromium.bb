@@ -223,7 +223,7 @@ bool CrashGenerationClient::RegisterClient(HANDLE pipe) {
   crash_event_ = reply.dump_request_handle;
   crash_generated_ = reply.dump_generated_handle;
   server_alive_ = reply.server_alive_handle;
-  server_process_id_ = reply.pid;
+  server_process_id_ = reply.id;
 
   return true;
 }
@@ -261,7 +261,7 @@ HANDLE CrashGenerationClient::ConnectToPipe(const wchar_t* pipe_name,
 bool CrashGenerationClient::ValidateResponse(
     const ProtocolMessage& msg) const {
   return (msg.tag == MESSAGE_TAG_REGISTRATION_RESPONSE) &&
-         (msg.pid != 0) &&
+         (msg.id != 0) &&
          (msg.dump_request_handle != NULL) &&
          (msg.dump_generated_handle != NULL) &&
          (msg.server_alive_handle != NULL);
