@@ -263,10 +263,15 @@ void AppList::OnWidgetClosing(views::Widget* widget) {
 void AppList::OnWidgetActivationChanged(views::Widget* widget, bool active) {
   DCHECK(view_->GetWidget() == widget);
   if (view_ && is_visible_ && !active) {
-    aura::Window* self = view_->GetWidget()->GetNativeWindow();
+    aura::Window* applist_container = Shell::GetInstance()->GetContainer(
+        internal::kShellWindowId_AppListContainer);
+    aura::Window* bubble_container = Shell::GetInstance()->GetContainer(
+        internal::kShellWindowId_SettingBubbleContainer);
     aura::Window* active_window = ash::wm::GetActiveWindow();
-    if (active_window->parent() != self->parent())
+    if (active_window->parent() != applist_container &&
+        active_window->parent() != bubble_container) {
       SetVisible(false);
+    }
   }
 }
 
