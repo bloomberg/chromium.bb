@@ -170,8 +170,8 @@ class NetworkActionPredictorTest : public testing::Test {
     predictor_->DeleteAllRows();
   }
 
-  void DeleteRowsWithURLs(const history::URLRows& rows) {
-    predictor_->DeleteRowsWithURLs(rows);
+  void DeleteRowsWithURLs(const std::set<GURL>& urls) {
+    predictor_->DeleteRowsWithURLs(urls);
   }
 
   void DeleteOldIdsFromCaches(
@@ -278,11 +278,11 @@ TEST_F(NetworkActionPredictorTest, DeleteRowsWithURLs) {
   EXPECT_EQ(arraysize(test_url_db), db_cache()->size());
   EXPECT_EQ(arraysize(test_url_db), db_id_cache()->size());
 
-  history::URLRows rows;
+  std::set<GURL> urls;
   for (size_t i = 0; i < 2; ++i)
-    rows.push_back(history::URLRow(test_url_db[i].url));
+    urls.insert(test_url_db[i].url);
 
-  DeleteRowsWithURLs(rows);
+  DeleteRowsWithURLs(urls);
 
   EXPECT_EQ(arraysize(test_url_db) - 2, db_cache()->size());
   EXPECT_EQ(arraysize(test_url_db) - 2, db_id_cache()->size());

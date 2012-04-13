@@ -900,6 +900,7 @@ bool AndroidProviderBackend::SimulateUpdateURL(
   if (!history_db_->GetURLRow(ids[0].url_id, &old_url_row))
     return false;
   deleted_details->rows.push_back(old_url_row);
+  deleted_details->urls.insert(old_url_row.url());
 
   FaviconID favicon_id = statement->statement()->ColumnInt64(4);
   if (favicon_id) {
@@ -1025,6 +1026,7 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
     if (!history_db_->GetURLRow(i->url_id, &url_row))
       return false;
     deleted_details->rows.push_back(url_row);
+    deleted_details->urls.insert(url_row.url());
     if (thumbnail_db_->GetIconMappingsForPageURL(url_row.url(), NULL))
       favicon->urls.insert(url_row.url());
   }

@@ -547,6 +547,9 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
   ASSERT_TRUE(delegate_.deleted_details());
   EXPECT_FALSE(delegate_.modified_details());
   EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
+  EXPECT_EQ(1u, delegate_.deleted_details()->urls.size());
+  EXPECT_TRUE(delegate_.deleted_details()->urls.end() !=
+              delegate_.deleted_details()->urls.find(row1.url()));
   EXPECT_EQ(row1.url(), delegate_.deleted_details()->rows[0].url());
   EXPECT_EQ(row1.last_visit_time(),
             delegate_.deleted_details()->rows[0].last_visit());
@@ -594,6 +597,9 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
   ASSERT_TRUE(delegate_.deleted_details());
   EXPECT_FALSE(delegate_.modified_details());
   EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
+  EXPECT_EQ(1u, delegate_.deleted_details()->urls.size());
+  EXPECT_TRUE(delegate_.deleted_details()->urls.end() !=
+              delegate_.deleted_details()->urls.find(row2.url()));
   EXPECT_EQ(row2.url(), delegate_.deleted_details()->rows[0].url());
   EXPECT_EQ(row2.last_visit_time(),
             delegate_.deleted_details()->rows[0].last_visit());
@@ -749,6 +755,9 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   // Verify notifications, Update involves insert and delete URLS.
   ASSERT_TRUE(delegate_.deleted_details());
   EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
+  EXPECT_EQ(1u, delegate_.deleted_details()->urls.size());
+  EXPECT_TRUE(delegate_.deleted_details()->urls.end() !=
+              delegate_.deleted_details()->urls.find(row1.url()));
   EXPECT_EQ(row1.url(), delegate_.deleted_details()->rows[0].url());
   EXPECT_EQ(row1.last_visit_time(),
             delegate_.deleted_details()->rows[0].last_visit());
@@ -801,6 +810,9 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   // Verify notifications, Update involves insert and delete URLS.
   ASSERT_TRUE(delegate_.deleted_details());
   EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
+  EXPECT_EQ(1u, delegate_.deleted_details()->urls.size());
+  EXPECT_TRUE(delegate_.deleted_details()->urls.end() !=
+              delegate_.deleted_details()->urls.find(row2.url()));
   EXPECT_EQ(row2.url(), delegate_.deleted_details()->rows[0].url());
   EXPECT_EQ(row2.last_visit_time(),
             delegate_.deleted_details()->rows[0].last_visit());
@@ -1484,6 +1496,9 @@ TEST_F(AndroidProviderBackendTest, DeleteHistory) {
   // Verify notification
   ASSERT_TRUE(delegate_.deleted_details());
   ASSERT_EQ(2u, delegate_.deleted_details()->rows.size());
+  ASSERT_EQ(2u, delegate_.deleted_details()->urls.size());
+  ASSERT_TRUE(delegate_.modified_details());
+  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
   EXPECT_EQ(row1.url(),
             delegate_.modified_details()->changed_urls[0].url());
   EXPECT_EQ(Time::UnixEpoch(),

@@ -145,9 +145,10 @@ void HistoryExtensionEventRouter::HistoryUrlsRemoved(
   DictionaryValue* dict = new DictionaryValue();
   dict->SetBoolean(kAllHistoryKey, details->all_history);
   ListValue* urls = new ListValue();
-  for (history::URLRows::const_iterator iterator = details->rows.begin();
-      iterator != details->rows.end(); ++iterator) {
-    urls->Append(new StringValue(iterator->url().spec()));
+  for (std::set<GURL>::const_iterator iterator = details->urls.begin();
+      iterator != details->urls.end();
+      ++iterator) {
+    urls->Append(new StringValue(iterator->spec()));
   }
   dict->Set(kUrlsKey, urls);
   args.Append(dict);
