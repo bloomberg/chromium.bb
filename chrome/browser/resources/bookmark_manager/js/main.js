@@ -766,6 +766,8 @@ var dnd = {
       else
         chrome.experimental.bookmarkManager.drop(parentId);
 
+      e.preventDefault();
+
       // TODO(arv): Select the newly dropped items.
     }
     this.dropDestination = null;
