@@ -316,6 +316,8 @@ const void* GetInterface(const char* name) {
     return PPB_Flash_Impl::GetInterface12_0();
   if (strcmp(name, PPB_FLASH_INTERFACE_12_1) == 0)
     return PPB_Flash_Impl::GetInterface12_1();
+  if (strcmp(name, PPB_FLASH_INTERFACE_12_2) == 0)
+    return PPB_Flash_Impl::GetInterface12_2();
   if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE_4_0) == 0)
     return ::ppapi::thunk::GetPPB_Flash_Clipboard_4_0_Thunk();
   if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE_3_0) == 0)

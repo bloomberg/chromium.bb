@@ -266,6 +266,11 @@ void UpdateActivity(PP_Instance pp_instance) {
   // TODO(viettrungluu): Implement me.
 }
 
+PP_Var GetDeviceID(PP_Instance pp_instance) {
+  // TODO(brettw) implement me.
+  return PP_MakeUndefined();
+}
+
 const PPB_Flash_11 ppb_flash_11 = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs11,
@@ -304,6 +309,22 @@ const PPB_Flash_12_1 ppb_flash_12_1 = {
   &UpdateActivity
 };
 
+const PPB_Flash_12_2 ppb_flash_12_2 = {
+  &SetInstanceAlwaysOnTop,
+  &DrawGlyphs,
+  &GetProxyForURL,
+  &Navigate,
+  &RunMessageLoop,
+  &QuitMessageLoop,
+  &GetLocalTimeZoneOffset,
+  &GetCommandLineArgs,
+  &PreLoadFontWin,
+  &IsRectTopmost,
+  &InvokePrinting,
+  &UpdateActivity,
+  &GetDeviceID
+};
+
 }  // namespace
 
 // static
@@ -319,6 +340,11 @@ const PPB_Flash_12_0* PPB_Flash_Impl::GetInterface12_0() {
 // static
 const PPB_Flash_12_1* PPB_Flash_Impl::GetInterface12_1() {
   return &ppb_flash_12_1;
+}
+
+// static
+const PPB_Flash_12_2* PPB_Flash_Impl::GetInterface12_2() {
+  return &ppb_flash_12_2;
 }
 
 }  // namespace ppapi

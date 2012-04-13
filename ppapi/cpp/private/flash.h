@@ -57,7 +57,7 @@ class Flash {
   static bool IsRectTopmost(const InstanceHandle& instance, const Rect& rect);
   static int32_t InvokePrinting(const InstanceHandle& instance);
   static void UpdateActivity(const InstanceHandle& instance);
-
+  static Var GetDeviceID(const InstanceHandle& instance);
 };
 
 }  // namespace flash

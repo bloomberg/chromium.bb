@@ -222,6 +222,11 @@ void UpdateActivity(PP_Instance instance) {
   // TODO(viettrungluu): Implement me.
 }
 
+PP_Var GetDeviceID(PP_Instance instance) {
+  // TODO(brettw) implement me.
+  return PP_MakeUndefined();
+}
+
 const PPB_Flash_11 flash_interface_11 = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs11,
@@ -260,6 +265,22 @@ const PPB_Flash_12_1 flash_interface_12_1 = {
   &UpdateActivity
 };
 
+const PPB_Flash_12_2 flash_interface_12_2 = {
+  &SetInstanceAlwaysOnTop,
+  &DrawGlyphs,
+  &GetProxyForURL,
+  &Navigate,
+  &RunMessageLoop,
+  &QuitMessageLoop,
+  &GetLocalTimeZoneOffset,
+  &GetCommandLineArgs,
+  &PreLoadFontWin,
+  &IsRectTopmost,
+  &InvokePrinting,
+  &UpdateActivity,
+  &GetDeviceID
+};
+
 }  // namespace
 
 PPB_Flash_Proxy::PPB_Flash_Proxy(Dispatcher* dispatcher)
@@ -286,6 +307,11 @@ const PPB_Flash_12_0* PPB_Flash_Proxy::GetInterface12_0() {
 // static
 const PPB_Flash_12_1* PPB_Flash_Proxy::GetInterface12_1() {
   return &flash_interface_12_1;
+}
+
+// static
+const PPB_Flash_12_2* PPB_Flash_Proxy::GetInterface12_2() {
+  return &flash_interface_12_2;
 }
 
 bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
