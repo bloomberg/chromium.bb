@@ -70,7 +70,7 @@ void DidSeekFile(const LocalFileReader::OpenFileStreamCallback& callback,
   if (new_offset < 0)
     result = static_cast<int>(new_offset);
   else if (new_offset != initial_offset)
-    result = net::ERR_FAILED;
+    result = net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
   callback.Run(result, stream_impl.Pass());
 }
 
