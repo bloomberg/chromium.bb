@@ -22,9 +22,6 @@ ShellContextMenu::~ShellContextMenu() {
 
 void ShellContextMenu::ShowMenu(views::Widget* widget,
                                 const gfx::Point& location) {
-  if (!Shell::GetInstance()->user_wallpaper_delegate()->
-      CanOpenSetWallpaperPage())
-    return;
   ui::SimpleMenuModel menu_model(this);
   menu_model.AddItem(MENU_CHANGE_WALLPAPER,
       l10n_util::GetStringUTF16(IDS_AURA_SET_DESKTOP_WALLPAPER));
@@ -42,7 +39,14 @@ bool ShellContextMenu::IsCommandIdChecked(int command_id) const {
 }
 
 bool ShellContextMenu::IsCommandIdEnabled(int command_id) const {
-  return true;
+  switch (static_cast<MenuItem>(command_id)) {
+    case MENU_CHANGE_WALLPAPER: {
+      return Shell::GetInstance()->user_wallpaper_delegate()->
+          CanOpenSetWallpaperPage();
+    }
+    default:
+      return true;
+  }
 }
 
 void ShellContextMenu::ExecuteCommand(int command_id) {

@@ -12979,7 +12979,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Require password to wake from sleep
       </message>
       <message name="IDS_SET_WALLPAPER_BUTTON" desc="The button to set wallpaper.">
-        Set Wallpaper...
+        Set wallpaper...
       </message>
       <message name="IDS_OPTIONS_SET_WALLPAPER_DIALOG_TITLE" desc="Title of the dialog shown when user wants to change his/her wallpaper.">
         Set Wallpaper
