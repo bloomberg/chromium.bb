@@ -24,8 +24,10 @@ if not cros_build_lib.IsInsideChroot():
 import portage
 
 
-EMERGE_CMD = os.path.join(os.path.dirname(__file__),
-                          '../bin', 'parallel_emerge')
+EMERGE_CMD = os.path.join(
+    constants.SOURCE_ROOT, 'chromite/bin/parallel_emerge')
+CROS_OVERLAY_LIST_CMD = os.path.join(
+    constants.SOURCE_ROOT, 'src/platform/dev/host/cros_overlay_list')
 PACKAGE_STABLE = '[stable]'
 PACKAGE_NONE = '[none]'
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
@@ -172,7 +174,7 @@ def GetAllTargets():
 
   returns the list of cross targets for the current tree
   """
-  cmd = ['cros_overlay_list', '--all_boards']
+  cmd = [CROS_OVERLAY_LIST_CMD, '--all_boards']
   overlays = cros_build_lib.RunCommand(cmd, print_cmd=False,
                                        redirect_stdout=True).output.splitlines()
   targets = set()
