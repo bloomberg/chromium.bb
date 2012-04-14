@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
-#include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_sync_client.h"
 #include "chrome/common/chrome_paths.h"
@@ -133,6 +132,7 @@ class GDataFileSystemTest : public testing::Test {
         io_thread_(content::BrowserThread::IO),
         file_system_(NULL),
         mock_doc_service_(NULL),
+        mock_sync_client_(NULL),
         num_callback_invocations_(0),
         expected_error_(base::PLATFORM_FILE_OK),
         expected_cache_state_(0),
@@ -166,9 +166,6 @@ class GDataFileSystemTest : public testing::Test {
 
     mock_sync_client_.reset(new MockGDataSyncClient);
     file_system_->AddObserver(mock_sync_client_.get());
-
-    mock_directory_observer_.reset(new MockDirectoryChangeObserver);
-    file_system_->AddObserver(mock_directory_observer_.get());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -977,7 +974,6 @@ class GDataFileSystemTest : public testing::Test {
   MockDocumentsService* mock_doc_service_;
   MockFreeDiskSpaceGetter* mock_free_disk_space_checker_;
   scoped_ptr<MockGDataSyncClient> mock_sync_client_;
-  scoped_ptr<MockDirectoryChangeObserver> mock_directory_observer_;
 
   int num_callback_invocations_;
   base::PlatformFileError expected_error_;
@@ -1204,7 +1200,7 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(2);
 
   LoadChangeFeed("delta_file_added_in_root.json", ++latest_changelog);
@@ -1223,16 +1219,16 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
       FILE_PATH_LITERAL("gdata/Directory 1"))));
 
   // Add file to an existing directory.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
   LoadChangeFeed("delta_file_added_in_directory.json", ++latest_changelog);
   EXPECT_TRUE(FindFile(FilePath(
       FILE_PATH_LITERAL("gdata/Directory 1/Added file.gdoc"))));
 
   // Remove that file from the directory.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
   LoadChangeFeed("delta_file_deleted_in_directory.json", ++latest_changelog);
   EXPECT_TRUE(FindFile(FilePath(
@@ -1245,9 +1241,9 @@ TEST_F(GDataFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
   int latest_changelog = 0;
   LoadRootFeedDocument("root_feed.json");
   // Add file to a new directory.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/New Directory"))))).Times(1);
 
   LoadChangeFeed("delta_file_added_in_new_directory.json", ++latest_changelog);
@@ -1273,11 +1269,11 @@ TEST_F(GDataFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
   EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
       "gdata/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
 
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 2"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 2/Directory 1")))))
       .Times(1);
   LoadChangeFeed("delta_dir_moved_from_root_to_directory.json",
@@ -1311,9 +1307,9 @@ TEST_F(GDataFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
   EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
       "gdata/Directory 1/SubDirectory File 1.txt"))));
 
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
   LoadChangeFeed("delta_file_moved_from_directory_to_root.json",
                  ++latest_changelog);
@@ -1339,9 +1335,9 @@ TEST_F(GDataFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
   EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
       "gdata/Directory 1/SubDirectory File 1.txt"))));
 
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
   LoadChangeFeed("delta_file_renamed_in_directory.json",
                  ++latest_changelog);
@@ -1476,7 +1472,7 @@ TEST_F(GDataFileSystemTest, RenameFile) {
       base::Bind(&CallbackHelper::FileOperationCallback,
                  callback_helper_.get());
 
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
@@ -1522,9 +1518,9 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
                  callback_helper_.get());
 
   // Expect notification for both source and destination directories.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
@@ -1572,9 +1568,9 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
                  callback_helper_.get());
 
   // Expect notification for both source and destination directories.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
@@ -1599,7 +1595,7 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
 
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
 
   AddDirectoryFromFile(dest_parent_path, "directory_entry_atom.json");
@@ -1640,11 +1636,11 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
 
   // Expect notification for both source and destination directories plus
   // interim file path.
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/New Folder 1"))))).Times(1);
 
   file_system_->Move(src_file_path, dest_file_path, callback);
@@ -1774,7 +1770,7 @@ TEST_F(GDataFileSystemTest, RemoveFiles) {
   EXPECT_EQ(file, FindFileByResourceId(file_in_subdir_resource));
 
   // Once for file in root and once for file...
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(2);
 
   // Remove first file in root.
@@ -1809,7 +1805,7 @@ TEST_F(GDataFileSystemTest, RemoveFiles) {
 TEST_F(GDataFileSystemTest, CreateDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
 
   // Create directory in root.
@@ -1818,7 +1814,7 @@ TEST_F(GDataFileSystemTest, CreateDirectory) {
   AddDirectoryFromFile(dir_path, "directory_entry_atom.json");
   EXPECT_TRUE(FindFile(dir_path) != NULL);
 
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
       Eq(FilePath(FILE_PATH_LITERAL("gdata/New Folder 1"))))).Times(1);
 
   // Create directory in a sub dirrectory.
