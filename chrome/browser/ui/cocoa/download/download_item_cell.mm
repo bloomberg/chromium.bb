@@ -72,10 +72,10 @@ NSTimeInterval kShowStatusDuration = 0.3;
 NSTimeInterval kHideStatusDuration = 0.3;
 
 // Duration of the 'download complete' animation, in seconds.
-const int kCompleteAnimationDuration = 2.5;
+const CGFloat kCompleteAnimationDuration = 2.5;
 
 // Duration of the 'download interrupted' animation, in seconds.
-const int kInterruptedAnimationDuration = 2.5;
+const CGFloat kInterruptedAnimationDuration = 2.5;
 
 using content::DownloadItem;
 
