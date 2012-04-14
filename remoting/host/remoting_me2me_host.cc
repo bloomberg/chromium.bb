@@ -148,6 +148,8 @@ class HostProcess : public OAuthClient::Delegate {
       // handle it directly, so refresh it asynchronously. A task will be
       // posted on the message loop to start watching the NAT policy when
       // the access token is available.
+      //
+      // TODO(sergeyu): Move this code to SignalingConnector.
       oauth_client_.Start(oauth_refresh_token_, this,
                           message_loop_.message_loop_proxy());
     } else {
@@ -173,8 +175,11 @@ class HostProcess : public OAuthClient::Delegate {
     // next time it calls Connect. If not, then this is the initial token
     // exchange, so proceed to the next stage of connection.
     if (signal_strategy_.get()) {
-      signal_strategy_->SetAuthInfo(xmpp_login_, xmpp_auth_token_,
-                                    xmpp_auth_service_);
+      context_->network_message_loop()->PostTask(
+          FROM_HERE, base::Bind(
+              &XmppSignalStrategy::SetAuthInfo,
+              base::Unretained(signal_strategy_.get()),
+              xmpp_login_, xmpp_auth_token_, xmpp_auth_service_));
     } else {
       StartWatchingNatPolicy();
     }
