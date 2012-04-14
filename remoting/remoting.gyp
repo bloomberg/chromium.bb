@@ -417,13 +417,13 @@
             '<(PRODUCT_DIR)/chromoting.msi',
           ],
           'conditions': [
-            ['branding == "Chrome"', {
+            ['buildtype == "Official"', {
               'variables': {
-                 'branding': '-dOfficialBuild=1',
+                 'official_build': '-dOfficialBuild=1',
               },
             }, { # else branding!="Chrome"
               'variables': {
-                 'branding': '',
+                 'official_build': '',
               },
             }],
           ],
@@ -451,7 +451,8 @@
                 '-dVersion=<(version_full) '
                 '"-dFileSource=<(PRODUCT_DIR)." '
                 '"-dSasDllPath=<(platformsdk_path)/redist/x86/sas.dll" '
-                '<(branding) '
+                '<(official_build) '
+                '"-dBranding=<(branding)" '
                 '-out <@(_outputs)',
                 '"<(RULE_INPUT_PATH)"',
               ],
@@ -481,7 +482,8 @@
                 '-dVersion=<(version_full) '
                 '"-dFileSource=<(PRODUCT_DIR)." '
                 '"-dSasDllPath=<(platformsdk_path)/redist/x86/sas.dll" '
-                '<(branding) '
+                '<(official_build) '
+                '"-dBranding=<(branding)" '
                 '-out "<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).msi"',
                 '"<(RULE_INPUT_PATH)"',
               ],

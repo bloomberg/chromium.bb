@@ -4,7 +4,7 @@
   <?define EventSourceName = "chromoting" ?>
   <?define ServiceName = "chromoting" ?>
 
-  <?ifdef OfficialBuild ?>
+  <?if $(var.Branding) ~= Chrome ?>
     <?define ChromotingHost = "Chrome Remote Desktop Host" ?>
     <?define FirewallName = "Chrome Remote Desktop Host" ?>
     <?define Manufacturer = "Google Inc." ?>
