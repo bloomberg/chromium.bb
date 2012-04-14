@@ -83,7 +83,11 @@ BrowserPpp* LookupBrowserPppForInstance(PP_Instance instance) {
   if (NULL == instance_to_ppp_map) {
     return NULL;
   }
-  return (*instance_to_ppp_map)[instance];
+  std::map<PP_Instance, BrowserPpp*>::const_iterator iter =
+    instance_to_ppp_map->find(instance);
+  if (iter == instance_to_ppp_map->end())
+    return NULL;
+  return iter->second;
 }
 
 void SetModuleIdForSrpcChannel(NaClSrpcChannel* channel, PP_Module module_id) {
@@ -135,14 +139,24 @@ PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
   if (NULL == channel_to_module_id_map) {
     return 0;
   }
-  return (*channel_to_module_id_map)[channel];
+  std::map<NaClSrpcChannel*, PP_Module>::const_iterator iter =
+    channel_to_module_id_map->find(channel);
+  if (iter == channel_to_module_id_map->end()) {
+    return 0;
+  }
+  return iter->second;
 }
 
-PP_Module LookupInstanceIdForSrpcChannel(NaClSrpcChannel* channel) {
+PP_Instance LookupInstanceIdForSrpcChannel(NaClSrpcChannel* channel) {
   if (NULL == channel_to_instance_id_map) {
     return 0;
   }
-  return (*channel_to_instance_id_map)[channel];
+  std::map<NaClSrpcChannel*, PP_Instance>::const_iterator iter =
+    channel_to_instance_id_map->find(channel);
+  if (iter == channel_to_instance_id_map->end()) {
+    return 0;
+  }
+  return iter->second;
 }
 
 NaClSrpcChannel* GetMainSrpcChannel(NaClSrpcRpc* upcall_rpc) {
