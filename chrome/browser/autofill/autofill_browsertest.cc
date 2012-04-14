@@ -190,7 +190,7 @@ class AutofillTest : public InProcessBrowserTest {
     ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
                                                        VIEW_ID_TAB_CONTAINER));
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                             VIEW_ID_TAB_CONTAINER));
+                                             VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
     LOG(WARNING) << "Focusing the first name field.";
     bool result = false;

@@ -5,17 +5,8 @@
 #include "ui/views/controls/webview/webview.h"
 
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "ipc/ipc_message.h"
-#include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/views/controls/native/native_view_host.h"
-#include "ui/views/focus/focus_manager.h"
 
 namespace views {
 
@@ -24,49 +15,21 @@ namespace views {
 
 WebView::WebView(content::BrowserContext* browser_context)
     : wcv_holder_(new NativeViewHost),
-      web_contents_(NULL),
       browser_context_(browser_context) {
-  AddChildView(wcv_holder_);
+  Init();
 }
 
 WebView::~WebView() {
 }
 
-content::WebContents* WebView::GetWebContents() {
-  if (!web_contents_) {
-    wc_owner_.reset(content::WebContents::Create(browser_context_,
-                                                 NULL,
-                                                 MSG_ROUTING_NONE,
-                                                 NULL,
-                                                 NULL));
-    web_contents_ = wc_owner_.get();
-    web_contents_->SetDelegate(this);
-    AttachWebContents();
-  }
-  return web_contents_;
-}
+////////////////////////////////////////////////////////////////////////////////
+// WebView, private:
 
-void WebView::SetWebContents(content::WebContents* web_contents) {
-  if (web_contents == web_contents_)
-    return;
-  DetachWebContents();
-  wc_owner_.reset();
-  web_contents_ = web_contents;
-  AttachWebContents();
-}
-
-void WebView::SetFastResize(bool fast_resize) {
-  wcv_holder_->set_fast_resize(fast_resize);
-}
-
-void WebView::OnWebContentsFocused(content::WebContents* web_contents) {
-  DCHECK(web_contents == web_contents_);
-  FocusManager* focus_manager = GetFocusManager();
-  if (!focus_manager) {
-    NOTREACHED();
-    return;
-  }
-  focus_manager->SetFocusedView(this);
+void WebView::Init() {
+  AddChildView(wcv_holder_);
+  web_contents_.reset(
+      content::WebContents::Create(browser_context_, NULL, MSG_ROUTING_NONE,
+                                   NULL, NULL));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,128 +40,8 @@ void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void WebView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  if (is_add)
-    AttachWebContents();
-}
-
-bool WebView::SkipDefaultKeyEventProcessing(const views::KeyEvent& event) {
-  // Don't look-up accelerators or tab-traversal if we are showing a non-crashed
-  // TabContents.
-  // We'll first give the page a chance to process the key events.  If it does
-  // not process them, they'll be returned to us and we'll treat them as
-  // accelerators then.
-  return web_contents_ && !web_contents_->IsCrashed();
-}
-
-bool WebView::IsFocusable() const {
-  // We need to be focusable when our contents is not a view hierarchy, as
-  // clicking on the contents needs to focus us.
-  return !!web_contents_;
-}
-
-void WebView::OnFocus() {
-  if (web_contents_)
-    web_contents_->Focus();
-}
-
-void WebView::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  if (web_contents_)
-    web_contents_->FocusThroughTabTraversal(reverse);
-}
-
-void WebView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
-}
-
-gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {
-  if (web_contents_) {
-    content::RenderWidgetHostView* host_view =
-        web_contents_->GetRenderWidgetHostView();
-    if (host_view)
-      return host_view->GetNativeViewAccessible();
-  }
-  return View::GetNativeViewAccessible();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WebView, content::NotificationObserver implementation:
-
-void WebView::Observe(int type,
-                      const content::NotificationSource& source,
-                      const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED) {
-    std::pair<content::RenderViewHost*, content::RenderViewHost*>*
-        switched_details =
-            content::Details<std::pair<content::RenderViewHost*,
-                                       content::RenderViewHost*> >(
-                details).ptr();
-    RenderViewHostChanged(switched_details->first,
-                          switched_details->second);
-  } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
-    WebContentsDestroyed(content::Source<content::WebContents>(source).ptr());
-  } else {
-    NOTREACHED();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WebView, content::WebContentsDelegate implementation:
-
-void WebView::WebContentsFocused(content::WebContents* web_contents) {
-  DCHECK(wc_owner_.get());
-  // The WebView is only the delegate of WebContentses it creates itself.
-  WebContentsFocused(web_contents_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// WebView, private:
-
-void WebView::AttachWebContents() {
-  // Prevents attachment if the WebView isn't already in a Widget, or it's
-  // already attached.
-  if (!GetWidget() || !web_contents_ ||
-      wcv_holder_->native_view() == web_contents_->GetNativeView()) {
-    return;
-  }
-
-  if (web_contents_) {
+  if (is_add && child == this)
     wcv_holder_->Attach(web_contents_->GetNativeView());
-
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-        content::Source<content::NavigationController>(
-            &web_contents_->GetController()));
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-        content::Source<content::WebContents>(web_contents_));
-  }
-}
-
-void WebView::DetachWebContents() {
-  if (web_contents_) {
-    wcv_holder_->Detach();
-#if defined(OS_WIN)
-    // TODO(beng): This should either not be necessary, or be done implicitly by
-    //             NativeViewHostWin on Detach(). As it stands, this is needed
-    //             so that the view of the detached contents knows to tell the
-    //             renderer its been hidden.
-    ShowWindow(web_contents_->GetNativeView(), SW_HIDE);
-#endif
-  }
-  registrar_.RemoveAll();
-}
-
-void WebView::RenderViewHostChanged(content::RenderViewHost* old_host,
-                                    content::RenderViewHost* new_host) {
-  if (GetFocusManager()->GetFocusedView() == this)
-    web_contents_->Focus();
-}
-
-void WebView::WebContentsDestroyed(content::WebContents* web_contents) {
-  DCHECK(web_contents == web_contents_);
-  SetWebContents(NULL);
 }
 
 }  // namespace views

@@ -93,7 +93,6 @@
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/controls/single_split_view.h"
-#include "ui/views/controls/webview/webview.h"
 #include "ui/views/events/event.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/focus/view_storage.h"
@@ -1201,7 +1200,7 @@ int BrowserView::GetExtraRenderViewHeight() const {
 }
 
 void BrowserView::WebContentsFocused(WebContents* contents) {
-  contents_container_->OnWebContentsFocused(contents);
+  contents_container_->WebContentsFocused(contents);
 }
 
 void BrowserView::ShowPageInfo(Profile* profile,
@@ -1314,12 +1313,10 @@ void BrowserView::Paste() {
 }
 
 void BrowserView::ShowInstant(TabContentsWrapper* preview) {
-  if (!preview_container_) {
-    preview_container_ = new views::WebView(browser_->profile());
-    preview_container_->set_id(VIEW_ID_TAB_CONTAINER);
-  }
+  if (!preview_container_)
+    preview_container_ = new TabContentsContainer();
   contents_->SetPreview(preview_container_, preview->web_contents());
-  preview_container_->SetWebContents(preview->web_contents());
+  preview_container_->ChangeWebContents(preview->web_contents());
 }
 
 void BrowserView::HideInstant() {
@@ -1327,7 +1324,7 @@ void BrowserView::HideInstant() {
     return;
 
   // The contents must be changed before SetPreview is invoked.
-  preview_container_->SetWebContents(NULL);
+  preview_container_->ChangeWebContents(NULL);
   contents_->SetPreview(NULL, NULL);
   delete preview_container_;
   preview_container_ = NULL;
@@ -1375,7 +1372,7 @@ LocationBarView* BrowserView::GetLocationBarView() const {
 }
 
 views::View* BrowserView::GetTabContentsContainerView() const {
-  return contents_container_;
+  return contents_container_->GetFocusView();
 }
 
 ToolbarView* BrowserView::GetToolbarView() const {
@@ -1393,7 +1390,7 @@ void BrowserView::TabDetachedAt(TabContentsWrapper* contents, int index) {
     // We need to reset the current tab contents to NULL before it gets
     // freed. This is because the focus manager performs some operations
     // on the selected TabContents when it is removed.
-    contents_container_->SetWebContents(NULL);
+    contents_container_->ChangeWebContents(NULL);
     infobar_container_->ChangeTabContents(NULL);
     UpdateDevToolsForContents(NULL);
   }
@@ -1425,9 +1422,9 @@ void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
     // If 'preview' is becoming active, swap the 'active' and 'preview' and
     // delete what was the active.
     contents_->MakePreviewContentsActiveContents();
-    views::WebView* old_container = contents_container_;
+    TabContentsContainer* old_container = contents_container_;
     contents_container_ = preview_container_;
-    old_container->SetWebContents(NULL);
+    old_container->ChangeWebContents(NULL);
     delete old_container;
     preview_container_ = NULL;
   }
@@ -1903,8 +1900,7 @@ void BrowserView::Init() {
   infobar_container_ = new InfoBarContainerView(this);
   AddChildView(infobar_container_);
 
-  contents_container_ = new views::WebView(browser_->profile());
-  contents_container_->set_id(VIEW_ID_TAB_CONTAINER);
+  contents_container_ = new TabContentsContainer;
   contents_ = new ContentsContainer(contents_container_);
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
@@ -2418,7 +2414,7 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
   // we don't want any TabContents to be attached, so that we
   // avoid an unnecessary resize and re-layout of a TabContents.
   if (change_tab_contents)
-    contents_container_->SetWebContents(NULL);
+    contents_container_->ChangeWebContents(NULL);
   infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
@@ -2427,7 +2423,7 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
   }
   UpdateUIForContents(new_contents);
   if (change_tab_contents)
-    contents_container_->SetWebContents(new_contents->web_contents());
+    contents_container_->ChangeWebContents(new_contents->web_contents());
 
   UpdateDevToolsForContents(new_contents);
   // TODO(beng): This should be called automatically by ChangeWebContents, but I

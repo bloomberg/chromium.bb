@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
   ASSERT_TRUE(IsViewFocused(location_bar_focus_view_id_));
 
   ClickOnView(VIEW_ID_TAB_CONTAINER);
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   ClickOnView(VIEW_ID_LOCATION_BAR);
   ASSERT_TRUE(IsViewFocused(location_bar_focus_view_id_));
@@ -254,11 +254,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_BrowsersRememberFocus) {
   gfx::NativeWindow window = browser()->window()->GetNativeHandle();
 
   // The focus should be on the Tab contents.
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
   // Now hide the window, show it again, the focus should not have changed.
   ui_test_utils::HideNativeWindow(window);
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(window));
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   browser()->FocusLocationBar();
   ASSERT_TRUE(IsViewFocused(location_bar_focus_view_id_));
@@ -347,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
       // Activate the tab.
       browser()->ActivateTabAt(j, true);
 
-      ViewID vid = kFocusPage[i][j] ? VIEW_ID_TAB_CONTAINER :
+      ViewID vid = kFocusPage[i][j] ? VIEW_ID_TAB_CONTAINER_FOCUS_VIEW :
                                       location_bar_focus_view_id_;
       ASSERT_TRUE(IsViewFocused(vid));
     }
@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
     // Try the above, but with ctrl+tab. Since tab normally changes focus,
     // this has regressed in the past. Loop through several times to be sure.
     for (int j = 0; j < 15; j++) {
-      ViewID vid = kFocusPage[i][j % 5] ? VIEW_ID_TAB_CONTAINER :
+      ViewID vid = kFocusPage[i][j % 5] ? VIEW_ID_TAB_CONTAINER_FOCUS_VIEW :
                                           location_bar_focus_view_id_;
       ASSERT_TRUE(IsViewFocused(vid));
 
@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
     // As above, but with ctrl+shift+tab.
     browser()->ActivateTabAt(4, true);
     for (int j = 14; j >= 0; --j) {
-      ViewID vid = kFocusPage[i][j % 5] ? VIEW_ID_TAB_CONTAINER :
+      ViewID vid = kFocusPage[i][j % 5] ? VIEW_ID_TAB_CONTAINER_FOCUS_VIEW :
                                           location_bar_focus_view_id_;
       ASSERT_TRUE(IsViewFocused(vid));
 
@@ -398,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
   browser()->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
 
   // Focus should be on the recently opened tab page.
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Select 1st tab, focus should still be on the location-bar.
   // (bug http://crbug.com/23296)
@@ -410,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
   browser()->Find();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   browser()->ActivateTabAt(1, true);
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
   browser()->ActivateTabAt(0, true);
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 }
@@ -620,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Focus should be on the page.
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Let's show an interstitial.
   TestInterstitialPage* interstitial_page =
@@ -743,7 +743,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Page should have focus.
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
   EXPECT_TRUE(browser()->GetSelectedWebContents()->GetRenderViewHost()->
               GetView()->HasFocus());
 
@@ -758,14 +758,14 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   ui_test_utils::RunMessageLoop();
 
   // The interstitial should have focus now.
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
   EXPECT_TRUE(interstitial_page->HasFocus());
 
   // Hide the interstitial.
   interstitial_page->DontProceed();
 
   // Focus should be back on the original page.
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 
 // Make sure Find box can request focus, even when it is already open.
@@ -812,7 +812,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
   // Set focus to the page.
   ClickOnView(VIEW_ID_TAB_CONTAINER);
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Now press Ctrl+F again and focus should move to the Find box.
 #if defined(OS_MACOSX)
@@ -836,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
   browser()->ShowHistoryTab();
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
       browser()->GetSelectedWebContents()));
-  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open the new tab, focus should be on the location bar.
   browser()->NewTab();
@@ -848,7 +848,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
   browser()->ShowDownloadsTab();
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
       browser()->GetSelectedWebContents()));
-  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open about:blank, focus should be on the location bar.
   browser()->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
@@ -901,7 +901,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
 
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 
 // Tests that focus goes where expected when using reload on a crashed tab.
@@ -924,7 +924,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnReloadCrashedTab) {
 
   // Focus should now be on the tab contents.
   browser()->ShowDownloadsTab();
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 }
 
 }  // namespace

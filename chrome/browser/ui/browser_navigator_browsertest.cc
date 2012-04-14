@@ -1220,7 +1220,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // The tab contents should have the focus in the second tab.
-  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Go back to the first tab. The focus should not be in the omnibox.
   browser()->SelectPreviousTab();
