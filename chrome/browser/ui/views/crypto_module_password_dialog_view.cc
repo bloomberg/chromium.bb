@@ -18,8 +18,6 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
-int kInputPasswordMinWidth = 8;
-
 namespace browser {
 
 // CryptoModulePasswordDialogView
@@ -110,9 +108,11 @@ void CryptoModulePasswordDialogView::Init(
 views::View* CryptoModulePasswordDialogView::GetInitiallyFocusedView() {
   return password_entry_;
 }
+
 ui::ModalType CryptoModulePasswordDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
+
 views::View* CryptoModulePasswordDialogView::GetContentsView() {
   return this;
 }
