@@ -27,6 +27,7 @@ class ExtensionBrowserTest
   ExtensionBrowserTest();
   virtual ~ExtensionBrowserTest();
 
+  // InProcessBrowserTest
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
   const Extension* LoadExtension(const FilePath& path);

@@ -87,26 +87,26 @@ InProcessBrowserTest::~InProcessBrowserTest() {
 }
 
 void InProcessBrowserTest::SetUp() {
-  // Create a temporary user data directory if required.
-  ASSERT_TRUE(CreateUserDataDirectory())
-      << "Could not create user data directory.";
-
   // Undo TestingBrowserProcess creation in ChromeTestSuite.
   // TODO(phajdan.jr): Extract a smaller test suite so we don't need this.
   DCHECK(g_browser_process);
   delete g_browser_process;
   g_browser_process = NULL;
 
-  // Allow subclasses the opportunity to make changes to the default user data
-  // dir before running any tests.
-  ASSERT_TRUE(SetUpUserDataDirectory())
-      << "Could not set up user data directory.";
-
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Allow subclasses to change the command line before running any tests.
   SetUpCommandLine(command_line);
   // Add command line arguments that are used by all InProcessBrowserTests.
   PrepareTestCommandLine(command_line);
+
+  // Create a temporary user data directory if required.
+  ASSERT_TRUE(CreateUserDataDirectory())
+      << "Could not create user data directory.";
+
+  // Allow subclasses the opportunity to make changes to the default user data
+  // dir before running any tests.
+  ASSERT_TRUE(SetUpUserDataDirectory())
+      << "Could not set up user data directory.";
 
   // Single-process mode is not set in BrowserMain, so process it explicitly,
   // and set up renderer.

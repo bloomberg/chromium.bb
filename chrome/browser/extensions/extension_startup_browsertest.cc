@@ -38,6 +38,18 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     EnableDOMAutomation();
 
+    if (!enable_extensions_)
+      command_line->AppendSwitch(switches::kDisableExtensions);
+
+    if (!load_extensions_.empty()) {
+      FilePath::StringType paths = JoinString(load_extensions_, ',');
+      command_line->AppendSwitchNative(switches::kLoadExtension,
+                                       paths);
+      command_line->AppendSwitch(switches::kDisableExtensionsFileAccessCheck);
+    }
+  }
+
+  virtual bool SetUpUserDataDirectory() {
     FilePath profile_dir;
     PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
     profile_dir = profile_dir.AppendASCII("Default");
@@ -47,27 +59,17 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     user_scripts_dir_ = profile_dir.AppendASCII("User Scripts");
     extensions_dir_ = profile_dir.AppendASCII("Extensions");
 
-    if (enable_extensions_) {
-      if (load_extensions_.empty()) {
-        FilePath src_dir;
-        PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
-        src_dir = src_dir.AppendASCII("extensions").AppendASCII("good");
+    if (enable_extensions_ && load_extensions_.empty()) {
+      FilePath src_dir;
+      PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
+      src_dir = src_dir.AppendASCII("extensions").AppendASCII("good");
 
-        file_util::CopyFile(src_dir.AppendASCII("Preferences"),
-                            preferences_file_);
-        file_util::CopyDirectory(src_dir.AppendASCII("Extensions"),
-                                 profile_dir, true);  // recursive
-      }
-    } else {
-      command_line->AppendSwitch(switches::kDisableExtensions);
+      file_util::CopyFile(src_dir.AppendASCII("Preferences"),
+                          preferences_file_);
+      file_util::CopyDirectory(src_dir.AppendASCII("Extensions"),
+                               profile_dir, true);  // recursive
     }
-
-    if (!load_extensions_.empty()) {
-      FilePath::StringType paths = JoinString(load_extensions_, ',');
-      command_line->AppendSwitchNative(switches::kLoadExtension,
-                                       paths);
-      command_line->AppendSwitch(switches::kDisableExtensionsFileAccessCheck);
-    }
+    return true;
   }
 
   virtual void TearDown() {
