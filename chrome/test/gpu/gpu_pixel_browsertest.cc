@@ -113,6 +113,8 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
       generated_img_dir_ = test_data_dir_.AppendASCII("generated");
     if (command_line->HasSwitch(kReferenceDir))
       ref_img_dir_ = command_line->GetSwitchValuePath(kReferenceDir);
+    else if (!command_line->HasSwitch(switches::kUseGpuInTests))
+      ref_img_dir_ = test_data_dir_.AppendASCII("llvmpipe_reference");
     else
       ref_img_dir_ = test_data_dir_.AppendASCII("gpu_reference");
 
