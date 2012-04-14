@@ -1589,8 +1589,8 @@ void GetGDataFilePropertiesFunction::OnFileProperties(
   }
 
   property_dict->SetString("thumbnailUrl", file->thumbnail_url().spec());
-  if (!file->edit_url().is_empty())
-    property_dict->SetString("editUrl", file->edit_url().spec());
+  if (!file->alternate_url().is_empty())
+    property_dict->SetString("editUrl", file->alternate_url().spec());
 
   if (!file->content_url().is_empty())
     property_dict->SetString("contentUrl", file->content_url().spec());

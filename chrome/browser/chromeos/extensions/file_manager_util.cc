@@ -228,7 +228,7 @@ class GetFilePropertiesDelegate : public gdata::FindFileDelegate {
     if (error == base::PLATFORM_FILE_OK && file && file->AsGDataFile()) {
       resource_id_ = file->AsGDataFile()->resource_id();
       file_name_ = file->AsGDataFile()->file_name();
-      edit_url_ = file->AsGDataFile()->edit_url();
+      edit_url_ = file->AsGDataFile()->alternate_url();
     }
   }
 

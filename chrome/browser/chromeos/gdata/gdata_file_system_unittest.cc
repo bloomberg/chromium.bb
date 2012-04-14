@@ -137,7 +137,8 @@ class GDataFileSystemTest : public testing::Test {
         expected_error_(base::PLATFORM_FILE_OK),
         expected_cache_state_(0),
         expected_sub_dir_type_(GDataRootDirectory::CACHE_TYPE_META),
-        expect_outgoing_symlink_(false) {
+        expect_outgoing_symlink_(false),
+        root_feed_changestamp_(0) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -185,6 +186,11 @@ class GDataFileSystemTest : public testing::Test {
 
   // Loads test json file as root ("/gdata") element.
   void LoadRootFeedDocument(const std::string& filename) {
+    LoadChangeFeed(filename, 0);
+  }
+
+  void LoadChangeFeed(const std::string& filename,
+                      int largest_changestamp) {
     std::string error;
     scoped_ptr<Value> document(LoadJSONFile(filename));
     ASSERT_TRUE(document.get());
@@ -194,7 +200,7 @@ class GDataFileSystemTest : public testing::Test {
     ASSERT_TRUE(document_feed.get());
     std::vector<DocumentFeed*> feed_list;
     feed_list.push_back(document_feed.get());
-    ASSERT_TRUE(UpdateContent(feed_list));
+    ASSERT_TRUE(UpdateContent(feed_list, largest_changestamp));
   }
 
   void AddDirectoryFromFile(const FilePath& directory_path,
@@ -220,17 +226,21 @@ class GDataFileSystemTest : public testing::Test {
 
     ASSERT_EQ(file_system_->AddNewDirectory(directory_path.DirName(),
                                             entry_value),
-              base::PLATFORM_FILE_OK);
+              base::PLATFORM_FILE_OK)
+        << "Failed adding "
+        << directory_path.DirName().value();
   }
 
   // Updates the content of directory under |directory_path| with parsed feed
   // |value|.
-  bool UpdateContent(const std::vector<DocumentFeed*>& list) {
+  bool UpdateContent(const std::vector<DocumentFeed*>& list,
+                     int largest_changestamp) {
     GURL unused;
-    return file_system_->UpdateDirectoryWithDocumentFeed(
+    return file_system_->UpdateFromFeed(
         list,
         FROM_SERVER,
-        0) == base::PLATFORM_FILE_OK;
+        largest_changestamp,
+        root_feed_changestamp_++) == base::PLATFORM_FILE_OK;
   }
 
   bool RemoveFile(const FilePath& file_path) {
@@ -806,10 +816,8 @@ class GDataFileSystemTest : public testing::Test {
   // filesystem has a root at 'gdata'
   void TestLoadMetadataFromCache() {
     file_system_->LoadRootFeedFromCache(
-        GDataFileSystem::FEED_CHUNK_INITIAL,
-        0,
-        FilePath(FILE_PATH_LITERAL("gdata")),
         false,     // load_from_server
+        FilePath(FILE_PATH_LITERAL("gdata")),
         base::Bind(&GDataFileSystemTest::OnExpectToFindFile,
                    FilePath(FILE_PATH_LITERAL("gdata"))));
     BrowserThread::GetBlockingPool()->FlushForTesting();
@@ -973,6 +981,7 @@ class GDataFileSystemTest : public testing::Test {
   GDataRootDirectory::CacheSubDirectoryType expected_sub_dir_type_;
   bool expect_outgoing_symlink_;
   std::string expected_file_extension_;
+  int root_feed_changestamp_;
 };
 
 // Delegate used to find a directory element for file system updates.
@@ -1091,7 +1100,7 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNames) {
       "gdata/Slash \xE2\x88\x95 in file 1.txt")));
 
   EXPECT_TRUE(FindFile(FilePath::FromUTF8Unsafe(
-      "gdata/Slash \xE2\x88\x95 in directory/SubDirectory File 1.txt")));
+      "gdata/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt")));
 }
 
 TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
@@ -1104,7 +1113,7 @@ TEST_F(GDataFileSystemTest, SearchEncodedFileNamesLoadingRoot) {
       "gdata/Slash \xE2\x88\x95 in file 1.txt")));
 
   EXPECT_TRUE(FindFile(FilePath::FromUTF8Unsafe(
-      "gdata/Slash \xE2\x88\x95 in directory/SubDirectory File 1.txt")));
+      "gdata/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt")));
 }
 
 TEST_F(GDataFileSystemTest, SearchDuplicateNames) {
@@ -1187,6 +1196,160 @@ TEST_F(GDataFileSystemTest, FilePathTests) {
       FilePath(FILE_PATH_LITERAL("gdata/Directory 1/SubDirectory File 1.txt")));
 }
 
+TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileInRoot) {
+  int latest_changelog = 0;
+  LoadRootFeedDocument("root_feed.json");
+
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(2);
+
+  LoadChangeFeed("delta_file_added_in_root.json", ++latest_changelog);
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL("gdata/Added file.gdoc"))));
+
+  LoadChangeFeed("delta_file_deleted_in_root.json", ++latest_changelog);
+  EXPECT_FALSE(FindFile(FilePath(FILE_PATH_LITERAL("gdata/Added file.gdoc"))));
+}
+
+
+TEST_F(GDataFileSystemTest, ChangeFeed_AddAndDeleteFileFromExistingDirectory) {
+  int latest_changelog = 0;
+  LoadRootFeedDocument("root_feed.json");
+
+  EXPECT_TRUE(FindFile(FilePath(
+      FILE_PATH_LITERAL("gdata/Directory 1"))));
+
+  // Add file to an existing directory.
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+  LoadChangeFeed("delta_file_added_in_directory.json", ++latest_changelog);
+  EXPECT_TRUE(FindFile(FilePath(
+      FILE_PATH_LITERAL("gdata/Directory 1/Added file.gdoc"))));
+
+  // Remove that file from the directory.
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+  LoadChangeFeed("delta_file_deleted_in_directory.json", ++latest_changelog);
+  EXPECT_TRUE(FindFile(FilePath(
+      FILE_PATH_LITERAL("gdata/Directory 1"))));
+  EXPECT_FALSE(FindFile(FilePath(
+      FILE_PATH_LITERAL("gdata/Directory 1/Added file.gdoc"))));
+}
+
+TEST_F(GDataFileSystemTest, ChangeFeed_AddFileToNewDirectory) {
+  int latest_changelog = 0;
+  LoadRootFeedDocument("root_feed.json");
+  // Add file to a new directory.
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata/New Directory"))))).Times(1);
+
+  LoadChangeFeed("delta_file_added_in_new_directory.json", ++latest_changelog);
+
+  EXPECT_TRUE(FindFile(FilePath(
+      FILE_PATH_LITERAL("gdata/New Directory"))));
+  EXPECT_TRUE(FindFile(FilePath(
+      FILE_PATH_LITERAL("gdata/New Directory/File in new dir.gdoc"))));
+}
+
+TEST_F(GDataFileSystemTest, ChangeFeed_DirectoryMovedFromRootToDirectory) {
+  int latest_changelog = 0;
+  LoadRootFeedDocument("root_feed.json");
+
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 2"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/SubDirectory File 1.txt"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/Sub Directory Folder"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
+
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 2"))))).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 2/Directory 1")))))
+      .Times(1);
+  LoadChangeFeed("delta_dir_moved_from_root_to_directory.json",
+                 ++latest_changelog);
+
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 2"))));
+  EXPECT_FALSE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 2/Directory 1"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 2/Directory 1/SubDirectory File 1.txt"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 2/Directory 1/Sub Directory Folder"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 2/Directory 1/Sub Directory Folder/"
+      "Sub Sub Directory Folder"))));
+}
+
+TEST_F(GDataFileSystemTest, ChangeFeed_FileMovedFromDirectoryToRoot) {
+  int latest_changelog = 0;
+  LoadRootFeedDocument("root_feed.json");
+
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/Sub Directory Folder"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/SubDirectory File 1.txt"))));
+
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+  LoadChangeFeed("delta_file_moved_from_directory_to_root.json",
+                 ++latest_changelog);
+
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/Sub Directory Folder"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/Sub Directory Folder/Sub Sub Directory Folder"))));
+  EXPECT_FALSE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/SubDirectory File 1.txt"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/SubDirectory File 1.txt"))));
+}
+
+TEST_F(GDataFileSystemTest, ChangeFeed_FileRenamedInDirectory) {
+  int latest_changelog = 0;
+  LoadRootFeedDocument("root_feed.json");
+
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/SubDirectory File 1.txt"))));
+
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata"))))).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnDirectoryChanged(
+      Eq(FilePath(FILE_PATH_LITERAL("gdata/Directory 1"))))).Times(1);
+  LoadChangeFeed("delta_file_renamed_in_directory.json",
+                 ++latest_changelog);
+
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1"))));
+  EXPECT_FALSE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/SubDirectory File 1.txt"))));
+  EXPECT_TRUE(FindFile(FilePath(FILE_PATH_LITERAL(
+      "gdata/Directory 1/New SubDirectory File 1.txt"))));
+}
+
 TEST_F(GDataFileSystemTest, CachedFeedLoading) {
   SaveTestFileSystem();
   TestLoadMetadataFromCache();
@@ -1227,11 +1390,11 @@ TEST_F(GDataFileSystemTest, CopyFileToNonExistingDirectory) {
   LoadRootFeedDocument("root_feed.json");
 
   GDataFileBase* src_file = NULL;
-  EXPECT_TRUE((src_file = FindFile(src_file_path)) != NULL);
+  ASSERT_TRUE((src_file = FindFile(src_file_path)) != NULL);
   EXPECT_TRUE(src_file->AsGDataFile() != NULL);
   std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
   EXPECT_EQ(src_file, FindFileByResourceId(src_file_path_resource));
-  EXPECT_FALSE(src_file->self_url().is_empty());
+  EXPECT_FALSE(src_file->edit_url().is_empty());
 
   EXPECT_TRUE(FindFile(dest_parent_path) == NULL);
 
@@ -1265,7 +1428,7 @@ TEST_F(GDataFileSystemTest, CopyFileToInvalidPath) {
   EXPECT_TRUE(src_file->AsGDataFile() != NULL);
   std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
   EXPECT_EQ(src_file, FindFileByResourceId(src_file_path_resource));
-  EXPECT_FALSE(src_file->self_url().is_empty());
+  EXPECT_FALSE(src_file->edit_url().is_empty());
 
   GDataFileBase* dest_parent = NULL;
   EXPECT_TRUE((dest_parent = FindFile(dest_parent_path)) != NULL);
@@ -1302,7 +1465,7 @@ TEST_F(GDataFileSystemTest, RenameFile) {
   EXPECT_EQ(src_file, FindFileByResourceId(src_file_resource));
 
   EXPECT_CALL(*mock_doc_service_,
-              RenameResource(src_file->self_url(),
+              RenameResource(src_file->edit_url(),
                              FILE_PATH_LITERAL("Test.log"), _));
 
   FileOperationCallback callback =
@@ -1336,7 +1499,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
   EXPECT_TRUE(src_file->AsGDataFile() != NULL);
   std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
   EXPECT_EQ(src_file, FindFileByResourceId(src_file_path_resource));
-  EXPECT_FALSE(src_file->self_url().is_empty());
+  EXPECT_FALSE(src_file->edit_url().is_empty());
 
   GDataFileBase* dest_parent = NULL;
   EXPECT_TRUE((dest_parent = FindFile(dest_parent_path)) != NULL);
@@ -1344,11 +1507,11 @@ TEST_F(GDataFileSystemTest, MoveFileFromRootToSubDirectory) {
   EXPECT_FALSE(dest_parent->content_url().is_empty());
 
   EXPECT_CALL(*mock_doc_service_,
-              RenameResource(src_file->self_url(),
+              RenameResource(src_file->edit_url(),
                              FILE_PATH_LITERAL("Test.log"), _));
   EXPECT_CALL(*mock_doc_service_,
               AddResourceToDirectory(dest_parent->content_url(),
-                                     src_file->self_url(), _));
+                                     src_file->edit_url(), _));
 
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
@@ -1385,7 +1548,7 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   EXPECT_TRUE(src_file->AsGDataFile() != NULL);
   std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
   EXPECT_EQ(src_file, FindFileByResourceId(src_file_path_resource));
-  EXPECT_FALSE(src_file->self_url().is_empty());
+  EXPECT_FALSE(src_file->edit_url().is_empty());
 
   GDataFileBase* src_parent = NULL;
   EXPECT_TRUE((src_parent = FindFile(src_parent_path)) != NULL);
@@ -1393,11 +1556,11 @@ TEST_F(GDataFileSystemTest, MoveFileFromSubDirectoryToRoot) {
   EXPECT_FALSE(src_parent->content_url().is_empty());
 
   EXPECT_CALL(*mock_doc_service_,
-              RenameResource(src_file->self_url(),
+              RenameResource(src_file->edit_url(),
                              FILE_PATH_LITERAL("Test.log"), _));
   EXPECT_CALL(*mock_doc_service_,
               RemoveResourceFromDirectory(src_parent->content_url(),
-                                          src_file->self_url(),
+                                          src_file->edit_url(),
                                           src_file_path_resource, _));
 
   FileOperationCallback callback =
@@ -1442,7 +1605,7 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
   EXPECT_TRUE(src_file->AsGDataFile() != NULL);
   std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
   EXPECT_EQ(src_file, FindFileByResourceId(src_file_path_resource));
-  EXPECT_FALSE(src_file->self_url().is_empty());
+  EXPECT_FALSE(src_file->edit_url().is_empty());
 
   GDataFileBase* src_parent = NULL;
   EXPECT_TRUE((src_parent = FindFile(src_parent_path)) != NULL);
@@ -1457,15 +1620,15 @@ TEST_F(GDataFileSystemTest, MoveFileBetweenSubDirectories) {
   EXPECT_TRUE(FindFile(interim_file_path) == NULL);
 
   EXPECT_CALL(*mock_doc_service_,
-              RenameResource(src_file->self_url(),
+              RenameResource(src_file->edit_url(),
                              FILE_PATH_LITERAL("Test.log"), _));
   EXPECT_CALL(*mock_doc_service_,
               RemoveResourceFromDirectory(src_parent->content_url(),
-                                          src_file->self_url(),
+                                          src_file->edit_url(),
                                           src_file_path_resource, _));
   EXPECT_CALL(*mock_doc_service_,
               AddResourceToDirectory(dest_parent->content_url(),
-                                     src_file->self_url(), _));
+                                     src_file->edit_url(), _));
 
   FileOperationCallback callback =
       base::Bind(&CallbackHelper::FileOperationCallback,
@@ -1526,7 +1689,7 @@ TEST_F(GDataFileSystemTest, MoveFileToNonExistingDirectory) {
   EXPECT_TRUE(src_file->AsGDataFile() != NULL);
   std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
   EXPECT_EQ(src_file, FindFileByResourceId(src_file_path_resource));
-  EXPECT_FALSE(src_file->self_url().is_empty());
+  EXPECT_FALSE(src_file->edit_url().is_empty());
 
   EXPECT_TRUE(FindFile(dest_parent_path) == NULL);
 
@@ -1560,7 +1723,7 @@ TEST_F(GDataFileSystemTest, MoveFileToInvalidPath) {
   EXPECT_TRUE(src_file->AsGDataFile() != NULL);
   std::string src_file_path_resource = src_file->AsGDataFile()->resource_id();
   EXPECT_EQ(src_file, FindFileByResourceId(src_file_path_resource));
-  EXPECT_FALSE(src_file->self_url().is_empty());
+  EXPECT_FALSE(src_file->edit_url().is_empty());
 
   GDataFileBase* dest_parent = NULL;
   EXPECT_TRUE((dest_parent = FindFile(dest_parent_path)) != NULL);
@@ -2442,7 +2605,8 @@ TEST_F(GDataFileSystemTest, GetGDataFileInfoFromPath) {
   GDataFileBase* file_info = file_system_->GetGDataFileInfoFromPath(
       FilePath(FILE_PATH_LITERAL("gdata/File 1.txt")));
   ASSERT_TRUE(file_info != NULL);
-  EXPECT_EQ("https://file1_link_self/", file_info->self_url().spec());
+  EXPECT_EQ("https://file1_link_self/file:2_file_resource_id",
+            file_info->edit_url().spec());
   EXPECT_EQ("https://file_content_url/", file_info->content_url().spec());
 
   GDataFileBase* non_existent = file_system_->GetGDataFileInfoFromPath(
@@ -2755,7 +2919,7 @@ TEST_F(GDataFileSystemTest, GetFile_HostedDocument) {
   EXPECT_TRUE(dict_value->GetString("url", &edit_url));
   EXPECT_TRUE(dict_value->GetString("resource_id", &resource_id));
 
-  EXPECT_EQ(file->AsGDataFile()->edit_url().spec(), edit_url);
+  EXPECT_EQ(file->AsGDataFile()->alternate_url().spec(), edit_url);
   EXPECT_EQ(file->resource_id(), resource_id);
 }
 

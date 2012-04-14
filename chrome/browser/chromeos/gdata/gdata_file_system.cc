@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -345,6 +346,50 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
   }
 }
 
+// Recursively extracts the paths set of all sub-directories of |entry|.
+void GetChildDirectoryPaths(GDataFileBase* entry,
+                            std::set<FilePath>* changed_dirs) {
+  GDataDirectory* dir = entry->AsGDataDirectory();
+  if (!dir)
+    return;
+
+  for (GDataFileCollection::const_iterator it = dir->children().begin();
+       it != dir->children().end(); ++it) {
+    GDataDirectory* child_dir = it->second->AsGDataDirectory();
+    if (child_dir) {
+      changed_dirs->insert(child_dir->GetFilePath());
+      GetChildDirectoryPaths(child_dir, changed_dirs);
+    }
+  }
+}
+
+
+// Helper function for removing |entry| from |directory|. If |entry| is a
+// directory too, it will collect all its children file paths into
+// |changed_dirs| as well.
+void RemoveEntryFromDirectory(GDataDirectory* directory,
+                              GDataFileBase* entry,
+                              std::set<FilePath>* changed_dirs) {
+  // Get the list of all sub-directory paths, so we can notify their listeners
+  // that they are smoked.
+  GetChildDirectoryPaths(entry, changed_dirs);
+  directory->RemoveFile(entry);
+}
+
+// Helper function for adding new |file| from the feed into |directory|. It
+// checks the type of file and updates |changed_dirs| if this file adding
+// opertation needs to raise directory notification update. If file is being
+// added to |orphaned_entries_dir| such notifications are not raised since
+// we ignore such files and don't add them to the file system now.
+void AddEntryToDirectory(GDataFileBase* file,
+                         GDataDirectory* directory,
+                         GDataRootDirectory* orphaned_entries_dir,
+                         std::set<FilePath>* changed_dirs) {
+  directory->AddFile(file);
+  if (file->AsGDataDirectory() && directory != orphaned_entries_dir)
+    changed_dirs->insert(file->GetFilePath());
+}
+
 // Invoked upon completion of TransferRegularFile initiated by Copy.
 //
 // |callback| is run on the thread represented by |relay_proxy|.
@@ -521,15 +566,15 @@ GDataFileProperties::~GDataFileProperties() {
 // GDataFileSystem::GetDocumentsParams struct implementation.
 
 GDataFileSystem::GetDocumentsParams::GetDocumentsParams(
-    const FilePath& search_file_path,
-    GDataFileSystem::FeedChunkType chunk_type,
-    int largest_changestamp,
+    int start_changestamp,
+    int root_feed_changestamp,
     std::vector<DocumentFeed*>* feed_list,
+    const FilePath& search_file_path,
     const FindFileCallback& callback)
-    : search_file_path(search_file_path),
-      chunk_type(chunk_type),
-      largest_changestamp(largest_changestamp),
+    : start_changestamp(start_changestamp),
+      root_feed_changestamp(root_feed_changestamp),
       feed_list(feed_list),
+      search_file_path(search_file_path),
       callback(callback) {
 }
 
@@ -541,15 +586,11 @@ GDataFileSystem::GetDocumentsParams::~GetDocumentsParams() {
 
 GDataFileSystem::LoadRootFeedParams::LoadRootFeedParams(
     FilePath search_file_path,
-    FeedChunkType chunk_type,
-    int largest_changestamp,
     bool should_load_from_server,
     const FindFileCallback& callback)
     : search_file_path(search_file_path),
-        chunk_type(chunk_type),
-        largest_changestamp(largest_changestamp),
-        should_load_from_server(should_load_from_server),
-        callback(callback) {
+      should_load_from_server(should_load_from_server),
+      callback(callback) {
 }
 
 GDataFileSystem::LoadRootFeedParams::~LoadRootFeedParams() {
@@ -768,14 +809,19 @@ void GDataFileSystem::FindFileByPathAsync(
     // Load root feed from this disk cache. Upon completion, kick off server
     // fetching.
     root_->set_origin(INITIALIZING);
-    RestoreRootFeedFromCache(search_file_path, callback);
+    LoadRootFeedFromCache(true,  // should_load_from_server
+                          search_file_path,
+                          callback);
     return;
   } else if (root_->NeedsRefresh()) {
     // If content is stale or from disk from cache, fetch content from
     // the server.
     ContentOrigin initial_origin = root_->origin();
     root_->set_origin(REFRESHING);
-    ReloadFeedFromServerIfNeeded(search_file_path, initial_origin, callback);
+    ReloadFeedFromServerIfNeeded(initial_origin,
+                                 root_->largest_changestamp(),
+                                 search_file_path,
+                                 callback);
     return;
   }
 
@@ -797,28 +843,32 @@ void GDataFileSystem::FindFileByPathOnCallingThread(
 }
 
 void GDataFileSystem::ReloadFeedFromServerIfNeeded(
-    const FilePath& search_file_path,
     ContentOrigin initial_origin,
+    int local_changestamp,
+    const FilePath& search_file_path,
     const FindFileCallback& callback) {
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
   documents_service_->GetAccountMetadata(
       base::Bind(&GDataFileSystem::OnGetAccountMetadata,
                  GetWeakPtrForCurrentThread(),
-                 search_file_path,
                  initial_origin,
+                 local_changestamp,
+                 search_file_path,
                  callback));
 }
 
 void GDataFileSystem::OnGetAccountMetadata(
-    const FilePath& search_file_path,
     ContentOrigin initial_origin,
+    int local_changestamp,
+    const FilePath& search_file_path,
     const FindFileCallback& callback,
     GDataErrorCode status,
     scoped_ptr<base::Value> feed_data) {
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error != base::PLATFORM_FILE_OK) {
-    LoadFeedFromServer(search_file_path, 0, callback);
+    // Get changes starting from the next changestamp from what we have locally.
+    LoadFeedFromServer(local_changestamp + 1, 0, search_file_path, callback);
     return;
   }
 
@@ -826,24 +876,24 @@ void GDataFileSystem::OnGetAccountMetadata(
   if (feed_data.get())
       feed.reset(AccountMetadataFeed::CreateFrom(feed_data.get()));
   if (!feed.get()) {
-    LoadFeedFromServer(search_file_path, 0, callback);
+    LoadFeedFromServer(local_changestamp + 1, 0, search_file_path, callback);
     return;
   }
 
   bool changes_detected = true;
-  {
-    base::AutoLock lock(lock_);
-    if (root_->largest_changestamp() >= feed->largest_changestamp()) {
-      if (root_->largest_changestamp() > feed->largest_changestamp()) {
-        LOG(WARNING) << "Cached client feed is fresher than server, client = "
-                     << root_->largest_changestamp()
-                     << ", server = "
-                     << feed->largest_changestamp();
-      }
+  if (local_changestamp >= feed->largest_changestamp()) {
+    if (local_changestamp > feed->largest_changestamp()) {
+      LOG(WARNING) << "Cached client feed is fresher than server, client = "
+                   << local_changestamp
+                   << ", server = "
+                   << feed->largest_changestamp();
+    }
+    {
+      base::AutoLock lock(lock_);
       root_->set_origin(initial_origin);
       root_->set_refresh_time(base::Time::Now());
-      changes_detected = false;
     }
+    changes_detected = false;
   }
 
   // No changes detected, continue with search as planned.
@@ -858,14 +908,16 @@ void GDataFileSystem::OnGetAccountMetadata(
   SaveFeed(feed_data.Pass(), FilePath(kAccountMetadataFile));
 
   // Load changes from the server.
-  // TODO(zelidrag): We should replace this with loading of the change feed
-  // instead of the full feed.
-  LoadFeedFromServer(search_file_path, feed->largest_changestamp(), callback);
+  LoadFeedFromServer(local_changestamp > 0 ? local_changestamp + 1 : 0,
+                     feed->largest_changestamp(),
+                     search_file_path,
+                     callback);
 }
 
 void GDataFileSystem::LoadFeedFromServer(
+    int start_changestamp,
+    int root_feed_changestamp,
     const FilePath& search_file_path,
-    int largest_changestamp,
     const FindFileCallback& callback) {
   // ...then also kick off document feed fetching from the server as well.
   // |feed_list| will contain the list of all collected feed updates that
@@ -876,13 +928,13 @@ void GDataFileSystem::LoadFeedFromServer(
   // to finish this call.
   documents_service_->GetDocuments(
       GURL(),   // root feed start.
-      0,
+      start_changestamp,
       base::Bind(&GDataFileSystem::OnGetDocuments,
                  GetWeakPtrForCurrentThread(),
-                 base::Owned(new GetDocumentsParams(search_file_path,
-                                                    FEED_CHUNK_REST,
-                                                    largest_changestamp,
+                 base::Owned(new GetDocumentsParams(start_changestamp,
+                                                    root_feed_changestamp,
                                                     feed_list.release(),
+                                                    search_file_path,
                                                     callback))));
 }
 
@@ -1208,7 +1260,7 @@ void GDataFileSystem::Rename(const FilePath& file_path,
   }
 
   documents_service_->RenameResource(
-      file->self_url(),
+      file->edit_url(),
       file_name,
       base::Bind(&GDataFileSystem::OnRenameResourceCompleted,
                  GetWeakPtrForCurrentThread(),
@@ -1307,7 +1359,7 @@ void GDataFileSystem::AddFileToDirectory(const FilePath& dir_path,
 
   documents_service_->AddResourceToDirectory(
       dir->content_url(),
-      file->self_url(),
+      file->edit_url(),
       base::Bind(&GDataFileSystem::OnAddFileToDirectoryCompleted,
                  GetWeakPtrForCurrentThread(),
                  callback,
@@ -1343,7 +1395,7 @@ void GDataFileSystem::RemoveFileFromDirectory(
 
   documents_service_->RemoveResourceFromDirectory(
       dir->content_url(),
-      file->self_url(),
+      file->edit_url(),
       file->resource_id(),
       base::Bind(&GDataFileSystem::OnRemoveFileFromDirectoryCompleted,
                  GetWeakPtrForCurrentThread(),
@@ -1367,7 +1419,7 @@ void GDataFileSystem::Remove(const FilePath& file_path,
   }
 
   documents_service_->DeleteDocument(
-      file_info->self_url(),
+      file_info->edit_url(),
       base::Bind(&GDataFileSystem::OnRemovedDocument,
                  GetWeakPtrForCurrentThread(),
                  callback,
@@ -1505,7 +1557,7 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
         FROM_HERE,
         base::Bind(&GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool,
                    GetGDataTempDocumentFolderPath(),
-                   file_properties.edit_url,
+                   file_properties.alternate_url,
                    file_properties.resource_id,
                    error,
                    temp_file_path,
@@ -1807,7 +1859,7 @@ bool GDataFileSystem::GetFileInfoFromPath(
     properties->file_md5 = regular_file->file_md5();
     properties->mime_type = regular_file->content_mime_type();
     properties->content_url = regular_file->content_url();
-    properties->edit_url = regular_file->edit_url();
+    properties->alternate_url = regular_file->alternate_url();
     properties->is_hosted_document = regular_file->is_hosted_document();
   }
   return true;
@@ -2099,20 +2151,23 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
     // Kick of the remaining part of the feeds.
     documents_service_->GetDocuments(
         next_feed_url,
-        0,
+        params->start_changestamp,
         base::Bind(&GDataFileSystem::OnGetDocuments,
                    GetWeakPtrForCurrentThread(),
-                   new GetDocumentsParams(params->search_file_path,
-                                          FEED_CHUNK_REST,
-                                          params->largest_changestamp,
-                                          params->feed_list.release(),
-                                          params->callback)));
+                   base::Owned(
+                       new GetDocumentsParams(params->start_changestamp,
+                                              params->root_feed_changestamp,
+                                              params->feed_list.release(),
+                                              params->search_file_path,
+                                              params->callback))));
     return;
   }
 
-  error = UpdateDirectoryWithDocumentFeed(*params->feed_list,
-                                          FROM_SERVER,
-                                          params->largest_changestamp);
+  error = UpdateFromFeed(*params->feed_list,
+                         FROM_SERVER,
+                         params->start_changestamp,
+                         params->root_feed_changestamp);
+
   if (error != base::PLATFORM_FILE_OK) {
     if (!params->callback.is_null()) {
       params->callback.Run(error, FilePath(),
@@ -2132,57 +2187,9 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
   }
 }
 
-void GDataFileSystem::RestoreRootFeedFromCache(
-    const FilePath& search_file_path,
-    const FindFileCallback& callback) {
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  Value* metadata = new DictionaryValue();
-  BrowserThread::GetBlockingPool()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::LoadJsonFileOnIOThreadPool,
-                 cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
-                     FilePath(kAccountMetadataFile)),
-                 error,
-                 metadata),
-      base::Bind(&GDataFileSystem::OnLoadCachedMetadata,
-                 GetWeakPtrForCurrentThread(),
-                 search_file_path,
-                 callback,
-                 base::Owned(error),
-                 base::Owned(metadata)));
-}
-
-void GDataFileSystem::OnLoadCachedMetadata(const FilePath& search_file_path,
-                                           const FindFileCallback& callback,
-                                           base::PlatformFileError* error,
-                                           base::Value* metadata_value) {
-  // Get the latest changestemp on the record that represents how old was the
-  // cached root feed.
-  int largest_changestamp = 0;
-  base::DictionaryValue* metadata = NULL;
-  if (*error == base::PLATFORM_FILE_OK && metadata &&
-      metadata->GetAsDictionary(&metadata)) {
-    scoped_ptr<AccountMetadataFeed> feed;
-    if (metadata)
-        feed.reset(AccountMetadataFeed::CreateFrom(metadata));
-
-    if (feed.get())
-      largest_changestamp = feed->largest_changestamp();
-  }
-
-  LoadRootFeedFromCache(FEED_CHUNK_REST,
-                        largest_changestamp,
-                        search_file_path,
-                        true,  // should_load_from_server
-                        callback);
-}
-
 void GDataFileSystem::LoadRootFeedFromCache(
-    FeedChunkType chunk_type,
-    int largest_changestamp,
-    const FilePath& search_file_path,
     bool should_load_from_server,
+    const FilePath& search_file_path,
     const FindFileCallback& callback) {
   const FilePath path =
       cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
@@ -2194,16 +2201,16 @@ void GDataFileSystem::LoadRootFeedFromCache(
       base::Bind(&LoadProtoOnIOThreadPool, path, serialized_proto, error),
       base::Bind(&GDataFileSystem::OnProtoLoaded,
                  GetWeakPtrForCurrentThread(),
-                 LoadRootFeedParams(search_file_path,
-                                    chunk_type,
-                                    largest_changestamp,
-                                    should_load_from_server,
-                                    callback),
+                 base::Owned(
+                     new LoadRootFeedParams(
+                         search_file_path,
+                         should_load_from_server,
+                         callback)),
                  base::Owned(error),
                  base::Owned(serialized_proto)));
 }
 
-void GDataFileSystem::OnProtoLoaded(const LoadRootFeedParams& params,
+void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params,
                                     base::PlatformFileError* error,
                                     std::string* proto) {
   {
@@ -2212,6 +2219,7 @@ void GDataFileSystem::OnProtoLoaded(const LoadRootFeedParams& params,
     if (root_->origin() == FROM_SERVER)
       return;
   }
+  int local_changestamp = 0;
   // Update directory structure only if everything is OK and we haven't yet
   // received the feed from the server yet.
   if (*error == base::PLATFORM_FILE_OK) {
@@ -2219,23 +2227,24 @@ void GDataFileSystem::OnProtoLoaded(const LoadRootFeedParams& params,
     base::AutoLock lock(lock_);  // To access root_.
     if (root_->ParseFromString(*proto)) {
       NotifyInitialLoadFinished();
+      local_changestamp = root_->largest_changestamp();
     } else {
       *error = base::PLATFORM_FILE_ERROR_FAILED;
       LOG(WARNING) << "Parse of cached proto file failed";
     }
   }
 
-  FindFileCallback callback = params.callback;
+  FindFileCallback callback = params->callback;
   // If we got feed content from cache, try search over it.
-  if (!params.should_load_from_server ||
+  if (!params->should_load_from_server ||
       (*error == base::PLATFORM_FILE_OK && !callback.is_null())) {
     // Continue file content search operation if the delegate hasn't terminated
     // this search branch already.
-    FindFileByPathOnCallingThread(params.search_file_path, callback);
+    FindFileByPathOnCallingThread(params->search_file_path, callback);
     callback.Reset();
   }
 
-  if (!params.should_load_from_server)
+  if (!params->should_load_from_server)
     return;
 
   {
@@ -2247,7 +2256,10 @@ void GDataFileSystem::OnProtoLoaded(const LoadRootFeedParams& params,
   // Kick of the retrieval of the feed from server. If we have previously
   // |reported| to the original callback, then we just need to refresh the
   // content without continuing search upon operation completion.
-  ReloadFeedFromServerIfNeeded(params.search_file_path, FROM_CACHE, callback);
+  ReloadFeedFromServerIfNeeded(FROM_CACHE,
+                               local_changestamp,
+                               params->search_file_path,
+                               callback);
 }
 
 void GDataFileSystem::SaveFileSystemAsProto() {
@@ -2648,130 +2660,40 @@ DocumentFeed* GDataFileSystem::ParseDocumentFeed(base::Value* feed_data) {
   return DocumentFeed::CreateFrom(feed_dict);
 }
 
-base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
+base::PlatformFileError GDataFileSystem::UpdateFromFeed(
     const std::vector<DocumentFeed*>& feed_list,
     ContentOrigin origin,
-    int largest_changestamp) {
-  DVLOG(1) << "Updating directory with feed from "
-           << (origin == FROM_CACHE ? "cache" : "web server");
+    int start_changestamp,
+    int root_feed_changestamp) {
+   DVLOG(1) << "Updating directory with a feed";
 
+  bool is_delta_feed = start_changestamp != 0;
   // We need to lock here as well (despite FindFileByPath lock) since directory
   // instance below is a 'live' object.
   base::AutoLock lock(lock_);
-  // Don't send directory content change notification while performing
-  // the initial content retreival.
-  bool should_notify_directory_changed = root_->origin() != INITIALIZING &&
-                                         root_->origin() != UNINITIALIZED;
   bool should_notify_initial_load = root_->origin() == INITIALIZING;
 
   root_->set_origin(origin);
   root_->set_refresh_time(base::Time::Now());
-  root_->set_largest_changestamp(largest_changestamp);
-  root_->RemoveChildren();
 
-  // A map of self URLs to pairs of gdata file and parent URL.
-  typedef std::map<GURL, std::pair<GDataFileBase*, GURL> >
-      UrlToFileAndParentMap;
-  UrlToFileAndParentMap file_by_url;
-  bool first_feed = true;
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-
+  int delta_feed_changestamp = 0;
   int num_regular_files = 0;
   int num_hosted_documents = 0;
-  for (size_t i = 0; i < feed_list.size(); ++i) {
-    const DocumentFeed* feed = feed_list[i];
-
-    // Get upload url from the root feed. Links for all other collections will
-    // be handled in GDatadirectory::FromDocumentEntry();
-    if (first_feed) {
-      const Link* root_feed_upload_link =
-          feed->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
-      if (root_feed_upload_link)
-        root_->set_upload_url(root_feed_upload_link->href());
-      first_feed = false;
-    }
-
-    for (ScopedVector<DocumentEntry>::const_iterator iter =
-             feed->entries().begin();
-         iter != feed->entries().end(); ++iter) {
-      DocumentEntry* doc = *iter;
-      GDataFileBase* file = GDataFileBase::FromDocumentEntry(NULL, doc,
-                                                             root_.get());
-      // Some document entries don't map into files (i.e. sites).
-      if (!file)
-        continue;
-      // Count the number of files.
-      GDataFile* as_file = file->AsGDataFile();
-      if (as_file) {
-        if (as_file->is_hosted_document())
-          ++num_hosted_documents;
-        else
-          ++num_regular_files;
-      }
-
-      GURL parent_url;
-      const Link* parent_link = doc->GetLinkByType(Link::PARENT);
-      if (parent_link)
-        parent_url = parent_link->href();
-
-      UrlToFileAndParentMap::mapped_type& map_entry =
-          file_by_url[file->self_url()];
-      // An entry with the same self link may already exist, so we need to
-      // release the existing GDataFileBase instance before overwriting the
-      // entry with another GDataFileBase instance.
-      if (map_entry.first) {
-        LOG(WARNING) << "Found duplicate file "
-                     << map_entry.first->file_name();
-      }
-
-      delete map_entry.first;
-      map_entry.first = file;
-      map_entry.second = parent_url;
-    }
-  }
-
-  if (error != base::PLATFORM_FILE_OK) {
-    // If the code above fails to parse a feed, any GDataFileBase instance
-    // added to |file_by_url| is not managed by a GDataDirectory instance,
-    // so we need to explicitly release them here.
-    for (UrlToFileAndParentMap::iterator it = file_by_url.begin();
-         it != file_by_url.end(); ++it) {
-      delete it->second.first;
-    }
+  FileResourceIdMap file_map;
+  base::PlatformFileError error =
+      FeedToFileResourceMap(feed_list,
+                            &file_map,
+                            &delta_feed_changestamp,
+                            &num_regular_files,
+                            &num_hosted_documents);
+  if (error != base::PLATFORM_FILE_OK)
     return error;
-  }
 
-  // Resolve all parent links. Some files will be orphaned.
-  scoped_ptr<GDataRootDirectory> orphaned_files(new GDataRootDirectory(NULL));
-  for (UrlToFileAndParentMap::iterator it = file_by_url.begin();
-       it != file_by_url.end(); ++it) {
-    scoped_ptr<GDataFileBase> file(it->second.first);
-    GURL parent_url = it->second.second;
-    GDataDirectory* dir = root_.get();
-    if (!parent_url.is_empty()) {
-      UrlToFileAndParentMap::const_iterator find_iter =
-          file_by_url.find(parent_url);
-      if (find_iter == file_by_url.end()) {
-        DVLOG(1) << "Found orphaned file '" << file->file_name()
-                 << "' with non-existing parent folder of "
-                 << parent_url.spec();
-        dir = orphaned_files.get();
-      } else {
-        dir = find_iter->second.first ?
-              find_iter->second.first->AsGDataDirectory() : NULL;
-        if (!dir) {
-          DVLOG(1) << "Found orphaned file '" << file->file_name()
-                   << "' pointing to non directory parent "
-                   << parent_url.spec();
-          dir = orphaned_files.get();
-        }
-      }
-    }
-    dir->AddFile(file.release());
-  }
+  ApplyFeedFromFileUrlMap(
+      is_delta_feed,
+      is_delta_feed ? delta_feed_changestamp : root_feed_changestamp,
+      file_map);
 
-  if (should_notify_directory_changed)
-    NotifyDirectoryChanged(root_->GetFilePath());
   if (should_notify_initial_load)
     NotifyInitialLoadFinished();
 
@@ -2780,9 +2702,204 @@ base::PlatformFileError GDataFileSystem::UpdateDirectoryWithDocumentFeed(
   UMA_HISTOGRAM_COUNTS("GData.NumberOfHostedDocuments",
                        num_hosted_documents);
   UMA_HISTOGRAM_COUNTS("GData.NumberOfTotalFiles", num_total_files);
-
   return base::PLATFORM_FILE_OK;
 }
+
+void GDataFileSystem::ApplyFeedFromFileUrlMap(
+    bool is_delta_feed,
+    int feed_changestamp,
+    const FileResourceIdMap& file_map) {
+  lock_.AssertAcquired();
+  // Don't send directory content change notification while performing
+  // the initial content retrieval.
+  const bool should_notify_directory_changed = is_delta_feed;
+
+  std::set<FilePath> changed_dirs;
+
+  if (!is_delta_feed) {  // Full update.
+    root_->RemoveChildren();
+    changed_dirs.insert(root_->GetFilePath());
+  }
+  root_->set_largest_changestamp(feed_changestamp);
+
+  scoped_ptr<GDataRootDirectory> orphaned_entries_dir(
+      new GDataRootDirectory(NULL));
+  // Go through all entires generated by the feed and apply them to the local
+  // snapshot of the file system.
+  for (FileResourceIdMap::const_iterator it = file_map.begin();
+       it != file_map.end(); ++it) {
+    scoped_ptr<GDataFileBase> entry(it->second);
+    DCHECK_EQ(it->first, entry->resource_id());
+    GDataFileBase* old_entry = root_->GetFileByResourceId(entry->resource_id());
+    GDataDirectory* dest_dir = NULL;
+    if (entry->is_deleted()) {  // Deleted file/directory.
+      DVLOG(1) << "Removing file " << entry->file_name();
+      if (!old_entry)
+        continue;
+
+      dest_dir = old_entry->parent();
+      if (!dest_dir) {
+        NOTREACHED();
+        continue;
+      }
+      RemoveEntryFromDirectory(dest_dir, old_entry, &changed_dirs);
+    } else if (old_entry) {  // Change or move of existing entry.
+      // Please note that entry rename is just a special case of change here
+      // since name is just one of the properties that can change.
+      DVLOG(1) << "Changed file " << entry->file_name();
+      dest_dir = old_entry->parent();
+      if (!dest_dir) {
+        NOTREACHED();
+        continue;
+      }
+      // Move children files over if we are dealing with directories.
+      if (old_entry->AsGDataDirectory() && entry->AsGDataDirectory()) {
+        entry->AsGDataDirectory()->TakeOverFiles(
+            old_entry->AsGDataDirectory());
+      }
+      // Remove the old instance of this entry.
+      RemoveEntryFromDirectory(dest_dir, old_entry, &changed_dirs);
+      // Did we actually move the new file to another directory?
+      if (dest_dir->resource_id() != entry->parent_resource_id()) {
+        changed_dirs.insert(dest_dir->GetFilePath());
+        dest_dir = FindDirectoryForNewEntry(entry.get(),
+                                            file_map,
+                                            orphaned_entries_dir.get());
+      }
+      DCHECK(dest_dir);
+      AddEntryToDirectory(entry.release(),
+                          dest_dir,
+                          orphaned_entries_dir.get(),
+                          &changed_dirs);
+    } else {  // Adding a new file.
+      dest_dir = FindDirectoryForNewEntry(entry.get(),
+                                          file_map,
+                                          orphaned_entries_dir.get());
+      DCHECK(dest_dir);
+      AddEntryToDirectory(entry.release(),
+                          dest_dir,
+                          orphaned_entries_dir.get(),
+                          &changed_dirs);
+    }
+
+    // Record changed directory if this was a delta feed and the parent
+    // directory is already properly rooted within its parent.
+    if (dest_dir && (dest_dir->parent() || dest_dir == root_.get()) &&
+        dest_dir != orphaned_entries_dir.get() && is_delta_feed) {
+      changed_dirs.insert(dest_dir->GetFilePath());
+    }
+  }
+
+  if (should_notify_directory_changed) {
+    for (std::set<FilePath>::iterator dir_iter = changed_dirs.begin();
+        dir_iter != changed_dirs.end(); ++dir_iter) {
+      NotifyDirectoryChanged(*dir_iter);
+    }
+  }
+}
+
+GDataDirectory* GDataFileSystem::FindDirectoryForNewEntry(
+    GDataFileBase* new_entry,
+    const FileResourceIdMap& file_map,
+    GDataRootDirectory* orphaned_entries_dir) {
+  GDataDirectory* dir = NULL;
+  // Added file.
+  const std::string& parent_id = new_entry->parent_resource_id();
+  if (parent_id.empty()) {
+    dir = root_.get();
+    DVLOG(1) << "Root parent for " << new_entry->file_name();
+  } else {
+    GDataFileBase* entry = root_->GetFileByResourceId(parent_id);
+    dir = entry ? entry->AsGDataDirectory() : NULL;
+    if (!dir) {
+      // The parent directory was also added with this set of feeds.
+      FileResourceIdMap::const_iterator find_iter =
+          file_map.find(parent_id);
+      dir = (find_iter != file_map.end() &&
+             find_iter->second) ?
+                find_iter->second->AsGDataDirectory() : NULL;
+      DVLOG(1) << "Found parent for " << new_entry->file_name()
+               << " in map " << parent_id;
+      if (!dir) {
+        DVLOG(1) << "Adding orphan " << new_entry->GetFilePath().value();
+        dir = orphaned_entries_dir;
+      }
+    }
+  }
+  return dir;
+}
+
+base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
+    const std::vector<DocumentFeed*>& feed_list,
+    FileResourceIdMap* file_map,
+    int* feed_changestamp,
+    int* num_regular_files,
+    int* num_hosted_documents) {
+  lock_.AssertAcquired();
+
+  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  *num_regular_files = 0;
+  *num_hosted_documents = 0;
+  for (size_t i = 0; i < feed_list.size(); ++i) {
+    const DocumentFeed* feed = feed_list[i];
+
+    // Get upload url from the root feed. Links for all other collections will
+    // be handled in GDatadirectory::FromDocumentEntry();
+    if (i == 0) {
+      const Link* root_feed_upload_link =
+          feed->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
+      if (root_feed_upload_link)
+        root_->set_upload_url(root_feed_upload_link->href());
+      *feed_changestamp = feed->largest_changestamp();
+      DCHECK(*feed_changestamp >= 0);
+    }
+
+    for (ScopedVector<DocumentEntry>::const_iterator iter =
+             feed->entries().begin();
+         iter != feed->entries().end(); ++iter) {
+      DocumentEntry* doc = *iter;
+      GDataFileBase* entry = GDataFileBase::FromDocumentEntry(NULL, doc,
+                                                             root_.get());
+      // Some document entries don't map into files (i.e. sites).
+      if (!entry)
+        continue;
+      // Count the number of files.
+      GDataFile* as_file = entry->AsGDataFile();
+      if (as_file) {
+        if (as_file->is_hosted_document())
+          ++(*num_hosted_documents);
+        else
+          ++(*num_regular_files);
+      }
+
+      FileResourceIdMap::iterator map_entry =
+          file_map->find(entry->resource_id());
+
+      // An entry with the same self link may already exist, so we need to
+      // release the existing GDataFileBase instance before overwriting the
+      // entry with another GDataFileBase instance.
+      if (map_entry != file_map->end()) {
+        LOG(WARNING) << "Found duplicate file "
+                     << map_entry->second->file_name();
+
+        delete map_entry->second;
+        file_map->erase(map_entry);
+      }
+      file_map->insert(
+          std::pair<std::string, GDataFileBase*>(entry->resource_id(), entry));
+    }
+  }
+
+  if (error != base::PLATFORM_FILE_OK) {
+    // If the code above fails to parse a feed, any GDataFileBase instance
+    // added to |file_by_url| is not managed by a GDataDirectory instance,
+    // so we need to explicitly release them here.
+    STLDeleteValues(file_map);
+  }
+
+  return error;
+}
+
 
 void GDataFileSystem::NotifyCacheInitialized() {
   DVLOG(1) << "Cache initialized";

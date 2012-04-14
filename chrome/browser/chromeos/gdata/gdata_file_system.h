@@ -132,7 +132,7 @@ struct GDataFileProperties {
   std::string file_md5;
   std::string mime_type;
   GURL content_url;
-  GURL edit_url;
+  GURL alternate_url;
   bool is_hosted_document;
 };
 
@@ -505,14 +505,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
     DIRECTORY_ALREADY_PRESENT,
   };
 
-  // Document feed chunk type.
-  enum FeedChunkType {
-    // The very first part of content we fetch (i.e. first 200 items),
-    FEED_CHUNK_INITIAL,
-    // The rest of the feed that excludes FEED_CHUNK_INITIAL,
-    FEED_CHUNK_REST
-  };
-
   // Defines set of parameters passes to intermediate callbacks during
   // execution of CreateDirectory() method.
   struct CreateDirectoryParams {
@@ -555,35 +547,38 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Defines set of parameters sent to callback OnGetDocuments().
   struct GetDocumentsParams {
-    GetDocumentsParams(const FilePath& search_file_path,
-                       FeedChunkType chunk_type,
-                       int largest_changestamp,
+    GetDocumentsParams(int start_changestamp,
+                       int root_feed_changestamp,
                        std::vector<DocumentFeed*>* feed_list,
+                       const FilePath& search_file_path,
                        const FindFileCallback& callback);
     ~GetDocumentsParams();
 
-    FilePath search_file_path;
-    GDataFileSystem::FeedChunkType chunk_type;
-    int largest_changestamp;
+    // Changestamps are positive numbers in increasing order. The difference
+    // between two changestamps is proportional equal to number of items in
+    // delta feed between them - bigger the difference, more likely bigger
+    // number of items in delta feeds.
+    int start_changestamp;
+    int root_feed_changestamp;
     scoped_ptr<std::vector<DocumentFeed*> > feed_list;
+    FilePath search_file_path;
     FindFileCallback callback;
   };
 
   // Defines set of parameters sent to callback OnGetDocuments().
   struct LoadRootFeedParams {
     LoadRootFeedParams(FilePath search_file_path,
-                       FeedChunkType chunk_type,
-                       int largest_changestamp,
                        bool should_load_from_server,
                        const FindFileCallback& callback);
     ~LoadRootFeedParams();
 
     FilePath search_file_path;
-    GDataFileSystem::FeedChunkType chunk_type;
-    int largest_changestamp;
     bool should_load_from_server;
     const FindFileCallback callback;
   };
+
+  typedef std::map<std::string /* resource_id */, GDataFileBase*>
+      FileResourceIdMap;
 
   // Callback similar to FileOperationCallback but with a given |file_path|.
   typedef base::Callback<void(base::PlatformFileError error,
@@ -834,16 +829,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   base::PlatformFileError AddFileToDirectoryOnFilesystem(
       const FilePath& file_path, const FilePath& dir_path);
 
-  // Restores account metadata and root feed from cache.
-  void RestoreRootFeedFromCache(const FilePath& search_file_path,
-                                const FindFileCallback& callback);
-
-  // Helper function for loading account metadata during cache restore.
-  void OnLoadCachedMetadata(const FilePath& search_file_path,
-                            const FindFileCallback& callback,
-                            base::PlatformFileError* error,
-                            base::Value* metadata_value);
-
   // Removes a file or directory at |file_path| from another directory at
   // |dir_path| on in-memory snapshot of the file system.
   // Returns PLATFORM_FILE_OK if successful.
@@ -863,10 +848,33 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Updates whole directory structure feeds collected in |feed_list|.
   // On success, returns PLATFORM_FILE_OK. Record file statistics as UMA
   // histograms.
-  base::PlatformFileError UpdateDirectoryWithDocumentFeed(
+  base::PlatformFileError UpdateFromFeed(
       const std::vector<DocumentFeed*>& feed_list,
       ContentOrigin origin,
-      int largest_changestamp);
+      int largest_changestamp,
+      int root_feed_changestamp);
+
+  // Applies the pre-processed feed from |file_map| map onto the file system.
+  void ApplyFeedFromFileUrlMap(bool is_delta_feed,
+                               int feed_changestamp,
+                               const FileResourceIdMap& file_map);
+
+  // Finds directory where new |file| should be added to during feed processing.
+  // |orphaned_entries_dir| collects files/dirs that don't have a parent in
+  // either locally cached file system or in this new feed.
+  GDataDirectory* FindDirectoryForNewEntry(
+      GDataFileBase* new_file,
+      const FileResourceIdMap& file_map,
+      GDataRootDirectory* orphaned_entries);
+
+  // Converts list of document feeds from collected feeds into
+  // FileResourceIdMap.
+  base::PlatformFileError FeedToFileResourceMap(
+      const std::vector<DocumentFeed*>& feed_list,
+      FileResourceIdMap* file_map,
+      int* feed_changestamp,
+      int* num_regular_files,
+      int* num_hosted_documents);
 
   // Converts |entry_value| into GFileDocument instance and adds it
   // to virtual file system at |directory_path|.
@@ -882,33 +890,38 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Retreives account metadata and determines from the last change timestamp
   // if the feed content loading from the server needs to be initiated.
-  void ReloadFeedFromServerIfNeeded(const FilePath& search_file_path,
-                                    ContentOrigin initial_origin,
+  void ReloadFeedFromServerIfNeeded(ContentOrigin initial_origin,
+                                    int local_changestamp,
+                                    const FilePath& search_file_path,
                                     const FindFileCallback& callback);
 
   // Helper callback for handling results of metadata retrieval initiated from
   // ReloadFeedFromServerIfNeeded(). This method makes a decision about fetching
   // the content of the root feed during the root directory refresh process.
-  void OnGetAccountMetadata(const FilePath& search_file_path,
-                            ContentOrigin initial_origin,
+  void OnGetAccountMetadata(ContentOrigin initial_origin,
+                            int local_changestamp,
+                            const FilePath& search_file_path,
                             const FindFileCallback& callback,
                             GDataErrorCode error,
                             scoped_ptr<base::Value> feed_data);
 
-  // Starts root feed load from the server. If successful, it will try to find
-  // the file upon retrieval completion.
-  void LoadFeedFromServer(const FilePath& search_file_path,
-                          int largest_changestamp,
+  // Starts root feed load from the server. Value of |start_changestamp|
+  // determines the type of feed to load - 0 means root feed, every other
+  // value would trigger delta feed.
+  // In the case of loading the root feed we use |root_feed_changestamp| as its
+  // initial changestamp value since it does not come with that info.
+  // If successful, it will try to find the file upon retrieval completion.
+  void LoadFeedFromServer(int start_changestamp,
+                          int root_feed_changestamp,
+                          const FilePath& search_file_path,
                           const FindFileCallback& callback);
 
   // Starts root feed load from the cache. If successful, it will try to find
   // the file upon retrieval completion. In addition to that, it will
   // initate retrieval of the root feed from the server if
   // |should_load_from_server| is set.
-  void LoadRootFeedFromCache(FeedChunkType chunk_type,
-                             int largest_changestamp,
+  void LoadRootFeedFromCache(bool should_load_from_server,
                              const FilePath& search_file_path,
-                             bool should_load_from_server,
                              const FindFileCallback& callback);
 
   // Loads json file content content from |file_path| on IO thread pool.
@@ -917,7 +930,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                          base::Value* result);
 
   // Callback for handling root directory refresh from the cache.
-  void OnProtoLoaded(const LoadRootFeedParams& params,
+  void OnProtoLoaded(LoadRootFeedParams* params,
                      base::PlatformFileError* error,
                      std::string* proto);
 

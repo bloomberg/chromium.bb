@@ -77,15 +77,15 @@
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://dir1_sub_sub_self_link",
+            "href": "https://dir1_sub_sub_self_link/folder:1_folder_resouce_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://dir1_sub_self_link",
+            "href": "https://dir2_sub_self_link/folder:sub_dir_folder_resouce_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          }, {
-            "href": "https://1_edit_link",
+            "href": "https://dir1_sub_sub_self_link/folder:1_folder_resouce_id",
             "rel": "edit",
             "type": "application/atom+xml"
          } ],
@@ -147,29 +147,29 @@
             "$t": "0"
          },
          "gd$resourceId": {
-            "$t": "folder:1_folder_resouce_id"
+            "$t": "folder:sub_dir_folder_resouce_id"
          },
          "id": {
-            "$t": "https://1_folder_id"
+            "$t": "https://sub_dir_folder_resouce_id"
          },
          "link": [ {
-            "href": "https://1_folder_alternate_link",
+            "href": "https://2_folder_alternate_link",
             "rel": "alternate",
             "type": "text/html"
          }, {
-            "href": "https://1_folder_resumable_create_media_link",
+            "href": "https://2_folder_resumable_create_media_link",
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://dir1_sub_self_link",
+            "href": "https://dir2_sub_self_link/folder:sub_dir_folder_resouce_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://dir_1_self_link",
+            "href": "https://dir_1_self_link/folder:1_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          }, {
-            "href": "https://1_edit_link",
+            "href": "https://dir2_sub_self_link/folder:sub_dir_folder_resouce_id",
             "rel": "edit",
             "type": "application/atom+xml"
          } ],
@@ -250,15 +250,15 @@
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://dir1_file_link_self",
+            "href": "https://dir1_file_link_self/file:2_file_resouce_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://dir_1_self_link",
+            "href": "https://dir_1_self_link/folder:1_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          }, {
-            "href": "https://file_link_edit",
+            "href": "https://dir1_file_link_self/file:2_file_resouce_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -338,11 +338,11 @@
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://dir_1_self_link",
+            "href": "https://dir_1_self_link/folder:1_folder_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://dir_1_edit_link",
+            "href": "https://dir_1_self_link/folder:1_folder_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          } ],
@@ -418,11 +418,11 @@
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://slash_dir_self_link",
+            "href": "https://slash_dir_self_link/folder:slash_dir_folder_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://slash_dir_edit_link",
+            "href": "https://slash_dir_self_link/folder:slash_dir_folder_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          } ],
@@ -503,11 +503,11 @@
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://file1_link_self",
+            "href": "https://file1_link_self/file:2_file_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://file1_link_edit",
+            "href": "https://file1_link_self/file:2_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -592,11 +592,11 @@
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://slash_file_link_self",
+            "href": "https://slash_file_link_self/file:slash_file_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://slash_file_link_edit",
+            "href": "https://slash_file_link_self/file:slash_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -681,11 +681,11 @@
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://duplicate_name_link_self",
+            "href": "https://duplicate_name_link_self/file:3_file_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://duplicate_name_link_edit",
+            "href": "https://duplicate_name_link_self/file:3_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -770,11 +770,11 @@
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://duplicate2_link_self",
+            "href": "https://duplicate2_link_self/file:4_file_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://duplicate2_link_edit",
+            "href": "https://duplicate2_link_self/file:4_file_resource_id",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -854,7 +854,11 @@
             "rel": "http://schemas.google.com/docs/2007/thumbnail",
             "type": "image/jpeg"
          }, {
-            "href": "https://3_document_self_link",
+            "href": "https://3_document_self_link/document:5_document_resource_id",
+            "rel": "edit",
+            "type": "application/atom+xml"
+         }, {
+            "href": "https://3_document_self_link/document:5_document_resource_id",
             "rel": "self",
             "type": "application/atom+xml"
          } ],
@@ -916,10 +920,10 @@
             "$t": "0"
          },
          "gd$resourceId": {
-            "$t": "folder:1_folder_resouce_id"
+            "$t": "folder:sub_dir_folder_2_self_link"
          },
          "id": {
-            "$t": "https://1_folder_id"
+            "$t": "https://sub_dir_folder_2_self_link"
          },
          "link": [ {
             "href": "https://1_folder_alternate_link",
@@ -930,11 +934,11 @@
             "rel": "http://schemas.google.com/g/2005#resumable-create-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://slash_dir_sub_self_link",
+            "href": "https://sub_dir_folder_2_self_link/folder:sub_dir_folder_2_self_link",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://1_edit_link",
+            "href": "https://sub_dir_folder_2_self_link/folder:sub_dir_folder_2_self_link",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -946,7 +950,7 @@
             "$t": "2010-11-07T05:03:54.719Z"
          },
          "title": {
-            "$t": "Sub Directory Folder"
+            "$t": "Directory 2"
          },
          "updated": {
             "$t": "2011-04-01T18:34:08.234Z"
@@ -974,7 +978,7 @@
             "type": "audio/mpeg"
          },
          "docs$filename": {
-            "$t": "SubDirectory File 1.txt"
+            "$t": "Slash SubDir File.txt"
          },
          "docs$md5Checksum": {
             "$t": "3b4382ebefec6e743578c76bbd0575ce"
@@ -983,7 +987,7 @@
             "$t": "892721"
          },
          "docs$suggestedFilename": {
-            "$t": "SubDirectory File 1.txt"
+            "$t": "Slash SubDir File.txt"
          },
          "docs$writersCanInvite": {
             "value": "true"
@@ -1005,10 +1009,10 @@
             "$t": "892721"
          },
          "gd$resourceId": {
-            "$t": "file:2_file_resouce_id"
+            "$t": "file:slash_subdir_file"
          },
          "id": {
-            "$t": "2_file_id"
+            "$t": "slash_subdir_file"
          },
          "link": [ {
             "href": "https://file_link_alternate",
@@ -1019,11 +1023,11 @@
             "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
             "type": "application/atom+xml"
          }, {
-            "href": "https://slash_dir__link_self",
+            "href": "https://slash_dir_link_self/file:slash_subdir_file",
             "rel": "self",
             "type": "application/atom+xml"
          }, {
-            "href": "https://file_link_edit",
+            "href": "https://slash_dir_link_self/file:slash_subdir_file",
             "rel": "edit",
             "type": "application/atom+xml"
          }, {
@@ -1031,7 +1035,7 @@
             "rel": "edit-media",
             "type": "audio/mpeg"
          }, {
-            "href": "https://slash_dir_self_link",
+            "href": "https://slash_dir_self_link/folder:slash_dir_folder_resource_id",
             "rel": "http://schemas.google.com/docs/2007#parent",
             "type": "application/atom+xml"
          } ],
@@ -1039,7 +1043,7 @@
             "$t": "2011-12-14T00:40:47.330Z"
          },
          "title": {
-            "$t": "SubDirectory File 1.txt"
+            "$t": "Slash SubDir File.txt"
          },
          "updated": {
             "$t": "2011-12-14T00:40:47.330Z"

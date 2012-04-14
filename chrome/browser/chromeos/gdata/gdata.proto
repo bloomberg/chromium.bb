@@ -26,7 +26,7 @@ message GDataFileBaseProto {
   optional string file_name = 2;
   optional string title = 3;
   optional string resource_id = 4;
-  optional string self_url = 5;
+  optional string edit_url = 5;
   optional string content_url = 6;
 }
 
@@ -35,7 +35,7 @@ message GDataFileProto {
   optional GDataFileBaseProto gdata_file_base = 1;
   optional uint32 kind = 2;
   optional string thumbnail_url = 3;
-  optional string edit_url = 4;
+  optional string alternate_url = 4;
   optional string content_mime_type = 5;
   optional string etag = 6;
   optional string id = 7;

@@ -101,8 +101,17 @@ class GDataFileBase {
   // The content URL is used for downloading regular files as is.
   const GURL& content_url() const { return content_url_; }
 
-  // The self URL is used for removing files and hosted documents.
-  const GURL& self_url() const { return self_url_; }
+  // The edit URL is used for removing files and hosted documents.
+  const GURL& edit_url() const { return edit_url_; }
+
+  // The resource id of the parent folder. This piece of information is needed
+  // to pair files from change feeds with their directory parents withing the
+  // existing file system snapshot (GDataRootDirectory::resource_map_).
+  const std::string& parent_resource_id() const { return parent_resource_id_; }
+
+  // True if file was deleted. Used only for instances that are generated from
+  // delta feeds.
+  bool is_deleted() const { return deleted_; }
 
   // Returns virtual file path representing this file system entry. This path
   // corresponds to file path expected by public methods of GDataFileSyste
@@ -135,10 +144,12 @@ class GDataFileBase {
   // so we can represent them with unique URLs/paths in File API layer.
   // For example, two files in the same directory with the same name "Foo"
   // will show up in the virtual directory as "Foo" and "Foo (2)".
-  GURL self_url_;
+  GURL edit_url_;
   GURL content_url_;
   GDataDirectory* parent_;
   GDataRootDirectory* root_;  // Weak pointer to GDataRootDirectory.
+  bool deleted_;
+  std::string parent_resource_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GDataFileBase);
@@ -200,7 +211,7 @@ class GDataFile : public GDataFileBase {
 
   DocumentEntry::EntryKind kind() const { return kind_; }
   const GURL& thumbnail_url() const { return thumbnail_url_; }
-  const GURL& edit_url() const { return edit_url_; }
+  const GURL& alternate_url() const { return alternate_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
   const std::string& etag() const { return etag_; }
   const std::string& id() const { return id_; }
@@ -219,7 +230,7 @@ class GDataFile : public GDataFileBase {
   // Content URL for files.
   DocumentEntry::EntryKind kind_;
   GURL thumbnail_url_;
-  GURL edit_url_;
+  GURL alternate_url_;
   std::string content_mime_type_;
   std::string etag_;
   std::string id_;
@@ -257,6 +268,9 @@ class GDataDirectory : public GDataFileBase {
   // through the name de-duplication for |file| based on the current state of
   // the file system.
   bool TakeFile(GDataFileBase* file);
+
+  // Takes over all files from |dir|.
+  bool TakeOverFiles(GDataDirectory* dir);
 
   // Removes the file from its children list and destroys the file instance.
   bool RemoveFile(GDataFileBase* file);

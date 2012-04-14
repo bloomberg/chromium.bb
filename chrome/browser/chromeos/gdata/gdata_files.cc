@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "net/base/escape.h"
 
 namespace {
 
@@ -43,6 +44,12 @@ std::string CacheSubDirectoryTypeToString(
   return "unknown subdir";
 }
 
+// Extracts resource_id out of edit url.
+std::string ExtractResourceId(const GURL& url) {
+  return net::UnescapeURLComponent(url.ExtractFileName(),
+                                   net::UnescapeRule::URL_SPECIAL_CHARS);
+}
+
 }  // namespace
 
 namespace gdata {
@@ -51,7 +58,8 @@ namespace gdata {
 
 GDataFileBase::GDataFileBase(GDataDirectory* parent, GDataRootDirectory* root)
     : parent_(parent),
-      root_(root) {
+      root_(root),
+      deleted_(false) {
 }
 
 GDataFileBase::~GDataFileBase() {
@@ -170,9 +178,10 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
     file->file_info_.size = 0;
   }
   file->kind_ = doc->kind();
-  const Link* self_link = doc->GetLinkByType(Link::SELF);
-  DCHECK(self_link);
-  file->self_url_ = self_link->href();
+  const Link* edit_link = doc->GetLinkByType(Link::EDIT);
+  DCHECK(edit_link) << "No edit link for file " << file->title_;
+  if (edit_link)
+    file->edit_url_ = edit_link->href();
   file->content_url_ = doc->content_url();
   file->content_mime_type_ = doc->content_mime_type();
   file->etag_ = doc->etag();
@@ -182,6 +191,10 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   file->file_info_.last_modified = doc->updated_time();
   file->file_info_.last_accessed = doc->updated_time();
   file->file_info_.creation_time = doc->published_time();
+  file->deleted_ = doc->deleted();
+  const Link* parent_link = doc->GetLinkByType(Link::PARENT);
+  if (parent_link)
+    file->parent_resource_id_ = ExtractResourceId(parent_link->href());
 
   // SetFileNameFromTitle() must be called after |title_|,
   // |is_hosted_document_| and |document_extension_| are set.
@@ -193,7 +206,7 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
 
   const Link* alternate_link = doc->GetLinkByType(Link::ALTERNATE);
   if (alternate_link)
-    file->edit_url_ = alternate_link->href();
+    file->alternate_url_ = alternate_link->href();
 
   return file;
 }
@@ -233,9 +246,16 @@ GDataFileBase* GDataDirectory::FromDocumentEntry(GDataDirectory* parent,
   dir->start_feed_url_ = doc->content_url();
   dir->resource_id_ = doc->resource_id();
   dir->content_url_ = doc->content_url();
-  const Link* self_link = doc->GetLinkByType(Link::SELF);
-  DCHECK(self_link);
-  dir->self_url_ = self_link->href();
+  dir->deleted_ = doc->deleted();
+
+  const Link* edit_link = doc->GetLinkByType(Link::EDIT);
+  DCHECK(edit_link) << "No edit link for dir " << dir->title_;
+  if (edit_link)
+    dir->edit_url_ = edit_link->href();
+
+  const Link* parent_link = doc->GetLinkByType(Link::PARENT);
+  if (parent_link)
+    dir->parent_resource_id_ = ExtractResourceId(parent_link->href());
 
   const Link* upload_link = doc->GetLinkByType(Link::RESUMABLE_CREATE_MEDIA);
   if (upload_link)
@@ -290,6 +310,11 @@ void GDataDirectory::AddFile(GDataFileBase* file) {
   if (full_file_name.value() != file->file_name())
     file->set_file_name(full_file_name.value());
   children_.insert(std::make_pair(file->file_name(), file));
+  DVLOG(1) << "Adding: "
+           << this->GetFilePath().value()
+           << "/" + file->file_name()
+           << ", resource " << file->parent_resource_id()
+           << "/" + file->resource_id();
 
   // Add file to resource map.
   root_->AddFileToResourceMap(file);
@@ -309,6 +334,17 @@ bool GDataDirectory::TakeFile(GDataFileBase* file) {
   file->SetFileNameFromTitle();
   AddFile(file);
 
+  return true;
+}
+
+bool GDataDirectory::TakeOverFiles(GDataDirectory* dir) {
+  for (GDataFileCollection::iterator iter = dir->children_.begin();
+       iter != dir->children_.end(); ++iter) {
+    GDataFileBase* file = iter->second;
+    file->SetFileNameFromTitle();
+    AddFile(file);
+  }
+  dir->children_.clear();
   return true;
 }
 
@@ -378,17 +414,12 @@ GDataRootDirectory* GDataRootDirectory::AsGDataRootDirectory() {
 
 void GDataRootDirectory::AddFileToResourceMap(GDataFileBase* file) {
   // GDataFileSystem has already locked.
-  // Only files have resource.
-  if (file->AsGDataFile()) {
-    resource_map_.insert(
-        std::make_pair(file->AsGDataFile()->resource_id(), file));
-  }
+  resource_map_.insert(std::make_pair(file->resource_id(), file));
 }
 
 void GDataRootDirectory::RemoveFileFromResourceMap(GDataFileBase* file) {
   // GDataFileSystem has already locked.
-  if (file->AsGDataFile())
-    resource_map_.erase(file->AsGDataFile()->resource_id());
+  resource_map_.erase(file->resource_id());
 }
 
 void GDataRootDirectory::RemoveFilesFromResourceMap(
@@ -402,9 +433,7 @@ void GDataRootDirectory::RemoveFilesFromResourceMap(
       continue;
     }
 
-    // Only files have resource.
-    if (iter->second->AsGDataFile())
-      resource_map_.erase(iter->second->AsGDataFile()->resource_id());
+    resource_map_.erase(iter->second->resource_id());
   }
 }
 
@@ -538,7 +567,7 @@ void GDataFileBase::FromProto(const GDataFileBaseProto& proto) {
   file_name_ = proto.file_name();
   title_ = proto.title();
   resource_id_ = proto.resource_id();
-  self_url_ = GURL(proto.self_url());
+  edit_url_ = GURL(proto.edit_url());
   content_url_ = GURL(proto.content_url());
 }
 
@@ -557,7 +586,7 @@ void GDataFileBase::ToProto(GDataFileBaseProto* proto) const {
   proto->set_file_name(file_name_);
   proto->set_title(title_);
   proto->set_resource_id(resource_id_);
-  proto->set_self_url(self_url_.spec());
+  proto->set_edit_url(edit_url_.spec());
   proto->set_content_url(content_url_.spec());
 }
 
@@ -565,7 +594,7 @@ void GDataFile::FromProto(const GDataFileProto& proto) {
   GDataFileBase::FromProto(proto.gdata_file_base());
   kind_ = DocumentEntry::EntryKind(proto.kind());
   thumbnail_url_ = GURL(proto.thumbnail_url());
-  edit_url_ = GURL(proto.edit_url());
+  alternate_url_ = GURL(proto.alternate_url());
   content_mime_type_ = proto.content_mime_type();
   etag_ = proto.etag();
   id_ = proto.id();
@@ -578,7 +607,7 @@ void GDataFile::ToProto(GDataFileProto* proto) const {
   GDataFileBase::ToProto(proto->mutable_gdata_file_base());
   proto->set_kind(kind_);
   proto->set_thumbnail_url(thumbnail_url_.spec());
-  proto->set_edit_url(edit_url_.spec());
+  proto->set_alternate_url(alternate_url_.spec());
   proto->set_content_mime_type(content_mime_type_);
   proto->set_etag(etag_);
   proto->set_id(id_);
