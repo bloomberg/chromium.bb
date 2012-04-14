@@ -6,9 +6,16 @@
 
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 
 // static
 void BrowserList::HandleAppExitingForPlatform() {
+  // Close All non browser windows now. Those includes notifications
+  // and windows created by Ash (launcher, background, etc).
+  g_browser_process->notification_ui_manager()->CancelAll();
+  // TODO(oshima): Close all non browser windows here while
+  // the message loop is still alive.
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableZeroBrowsersOpenForTests)) {

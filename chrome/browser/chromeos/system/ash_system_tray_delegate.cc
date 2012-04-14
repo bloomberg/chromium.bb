@@ -625,22 +625,19 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   void UpdateClockType(PrefService* service) {
     clock_type_ = service->GetBoolean(prefs::kUse24HourClock) ?
         base::k24HourClock : base::k12HourClock;
-    ash::ClockObserver* observer =
-        ash::Shell::GetInstance()->tray()->clock_observer();
+    ash::ClockObserver* observer = tray_->clock_observer();
     if (observer)
       observer->OnDateFormatChanged();
   }
 
   void NotifyRefreshClock() {
-    ash::ClockObserver* observer =
-        ash::Shell::GetInstance()->tray()->clock_observer();
+    ash::ClockObserver* observer = tray_->clock_observer();
     if (observer)
       observer->Refresh();
   }
 
   void NotifyRefreshNetwork() {
-    ash::NetworkObserver* observer =
-        ash::Shell::GetInstance()->tray()->network_observer();
+    ash::NetworkObserver* observer = tray_->network_observer();
     if (observer) {
       NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
       ash::NetworkIconInfo info;
@@ -652,15 +649,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   void NotifyRefreshBluetooth() {
-    ash::BluetoothObserver* observer =
-        ash::Shell::GetInstance()->tray()->bluetooth_observer();
+    ash::BluetoothObserver* observer = tray_->bluetooth_observer();
     if (observer)
       observer->OnBluetoothRefresh();
   }
 
   void NotifyRefreshIME() {
-    ash::IMEObserver* observer =
-        ash::Shell::GetInstance()->tray()->ime_observer();
+    ash::IMEObserver* observer = tray_->ime_observer();
     if (observer)
       observer->OnIMERefresh();
   }
@@ -688,20 +683,18 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from AudioHandler::VolumeObserver.
   virtual void OnVolumeChanged() OVERRIDE {
     float level = AudioHandler::GetInstance()->GetVolumePercent() / 100.f;
-    ash::Shell::GetInstance()->tray()->audio_observer()->
-        OnVolumeChanged(level);
+    tray_->audio_observer()->OnVolumeChanged(level);
   }
 
   // Overridden from PowerManagerClient::Observer.
   virtual void BrightnessChanged(int level, bool user_initiated) OVERRIDE {
-    ash::Shell::GetInstance()->tray()->brightness_observer()->
+    tray_->brightness_observer()->
         OnBrightnessChanged(static_cast<double>(level), user_initiated);
   }
 
   virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE {
     power_supply_status_ = power_status;
-    ash::PowerStatusObserver* observer =
-        ash::Shell::GetInstance()->tray()->power_status_observer();
+    ash::PowerStatusObserver* observer = tray_->power_status_observer();
     if (observer)
       observer->OnPowerStatusChanged(power_status);
   }
@@ -754,8 +747,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void OnNetworkManagerChanged(NetworkLibrary* crosnet) OVERRIDE {
     RefreshNetworkObserver(crosnet);
     RefreshNetworkDeviceObserver(crosnet);
-    data_promo_notification_->ShowOptionalMobileDataPromoNotification(crosnet,
-        tray_, this);
+    data_promo_notification_->ShowOptionalMobileDataPromoNotification(
+        crosnet, tray_, this);
 
     NotifyRefreshNetwork();
   }
@@ -781,8 +774,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         break;
       }
       case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
-        ash::UpdateObserver* observer =
-            ash::Shell::GetInstance()->tray()->update_observer();
+        ash::UpdateObserver* observer = tray_->update_observer();
         if (observer)
           observer->OnUpdateRecommended();
         break;
@@ -791,8 +783,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         // This notification is also sent on login screen when user avatar
         // is loaded from file.
         if (GetUserLoginStatus() != ash::user::LOGGED_IN_NONE) {
-          ash::UserObserver* observer =
-              ash::Shell::GetInstance()->tray()->user_observer();
+          ash::UserObserver* observer = tray_->user_observer();
           if (observer)
             observer->OnUserUpdate();
         }
@@ -808,7 +799,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
               service->GetInteger(prefs::kLanguageXkbRemapSearchKeyTo);
         } else if (pref == prefs::kSpokenFeedbackEnabled) {
           ash::AccessibilityObserver* observer =
-              ash::Shell::GetInstance()->tray()->accessibility_observer();
+              tray_->accessibility_observer();
           if (observer) {
             observer->OnAccessibilityModeChanged(
                 service->GetBoolean(prefs::kSpokenFeedbackEnabled),
@@ -900,8 +891,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         search_key_mapped_to_ == input_method::kCapsLockKey)
       id = IDS_STATUSBAR_CAPS_LOCK_ENABLED_PRESS_SEARCH;
 
-    ash::CapsLockObserver* observer =
-      ash::Shell::GetInstance()->tray()->caps_lock_observer();
+    ash::CapsLockObserver* observer = tray_->caps_lock_observer();
     if (observer)
       observer->OnCapsLockChanged(enabled, id);
   }
