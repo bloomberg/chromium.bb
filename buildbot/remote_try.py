@@ -114,7 +114,7 @@ class RemoteTryJob(object):
     try:
       cros_lib.GitPushWithRetry(push_branch, self.tryjob_repo, retries=3,
                                 dryrun=dryrun)
-    except cros_lib.GitPushFailed:
+    except cros_lib.RunCommandError:
       cros_lib.Error('Failed to submit tryjob.  This could be due to too many '
                      'submission requests by users.  Please try again.')
       raise

@@ -69,10 +69,6 @@ class DebugLevel(object):
     return isinstance(debug_level, cls.Level)
 
 
-class GitPushFailed(Exception):
-  """Raised when a git push failed after retry."""
-  pass
-
 class CommandResult(object):
   """An object to store various attributes of a child process."""
 
@@ -975,8 +971,8 @@ def GitPushWithRetry(branch, cwd, dryrun=False, retries=5):
       if retry < retries:
         print 'Error pushing changes trying again (%s/%s)' % (retry, retries)
         time.sleep(5 * retry)
-  else:
-    raise GitPushFailed('Failed to push change after %s retries' % retries)
+      else:
+        raise
 
 
 def RunCommandWithRetries(max_retry, *args, **kwds):
