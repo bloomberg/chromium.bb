@@ -126,7 +126,7 @@ void P2PPortAllocatorSession::GetPortConfigurations() {
   // Add an empty configuration synchronously, so a local connection
   // can be started immediately.
   ConfigReady(new cricket::PortConfiguration(
-      talk_base::SocketAddress(), "", "", ""));
+      talk_base::SocketAddress(), username(), password(), ""));
 
   ResolveStunServerAddress();
   AllocateRelaySession();
@@ -193,7 +193,9 @@ void P2PPortAllocatorSession::AllocateRelaySession() {
   }
 
   std::string url = "https://" + allocator_->config_.relay_server +
-      kCreateRelaySessionURL;
+      kCreateRelaySessionURL +
+      "?username=" + net::EscapeUrlEncodedData(username(), true) +
+      "&password=" + net::EscapeUrlEncodedData(password(), true);
 
   // Use |relay_username| parameter to identify type of client for the
   // relay session.
@@ -203,7 +205,7 @@ void P2PPortAllocatorSession::AllocateRelaySession() {
   // is currently used for Chromoting only. This code should be removed
   // once Chromoting stops using Transport API and the API is removed.
   if (!allocator_->config_.relay_username.empty()) {
-    url += "?sn=" +
+    url += "&sn=" +
         net::EscapeUrlEncodedData(allocator_->config_.relay_username, true);
   }
 
@@ -235,8 +237,6 @@ void P2PPortAllocatorSession::ParseRelayResponse() {
     return;
   }
 
-  relay_username_.clear();
-  relay_password_.clear();
   relay_ip_.Clear();
   relay_udp_port_ = 0;
   relay_tcp_port_ = 0;
@@ -251,9 +251,17 @@ void P2PPortAllocatorSession::ParseRelayResponse() {
     TrimWhitespaceASCII(it->second, TRIM_ALL, &value);
 
     if (key == "username") {
-      relay_username_ = value;
+      if (value != username()) {
+        LOG(ERROR) << "When creating relay session received user name "
+            " that was different from the value specified in the query.";
+        return;
+      }
     } else if (key == "password") {
-      relay_password_ = value;
+      if (value != password()) {
+        LOG(ERROR) << "When creating relay session received password "
+            "that was different from the value specified in the query.";
+        return;
+      }
     } else if (key == "relay.ip") {
       relay_ip_.SetIP(value);
       if (relay_ip_.ip() == 0) {
@@ -278,7 +286,7 @@ void P2PPortAllocatorSession::ParseRelayResponse() {
 void P2PPortAllocatorSession::AddConfig() {
   cricket::PortConfiguration* config =
       new cricket::PortConfiguration(stun_server_address_,
-                                     relay_username_, relay_password_, "");
+                                     username(), password(), "");
 
   if (relay_ip_.ip() != 0) {
     cricket::PortConfiguration::PortList ports;

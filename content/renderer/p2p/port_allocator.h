@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,8 +87,6 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
   scoped_ptr<WebKit::WebURLLoader> relay_session_request_;
   int relay_session_attempts_;
   std::string relay_session_response_;
-  std::string relay_username_;
-  std::string relay_password_;
   talk_base::SocketAddress relay_ip_;
   int relay_udp_port_;
   int relay_tcp_port_;
