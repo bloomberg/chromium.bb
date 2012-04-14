@@ -17,16 +17,11 @@
   top: -8px;
 }
 
-.toolbar-container div {
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .toolbar-stub {
   position: absolute;
   width: 134px;
   height: 7px;
-  left: 253px;
+  left: 243px;
   border-bottom-left-radius: 7px;
   border-bottom-right-radius: 7px;
   background-color: #4695ff;
