@@ -13,7 +13,10 @@ mmap_race_nexe = env.ComponentProgram('mmap_race', ['mmap_race.c'],
                                         '${PTHREAD_LIBS}',
                                         '${NONIRT_LIBS}'])
 
-expected_exit = 'sigabrt'
+if env.Bit('coverage_enabled'):
+  expected_exit = 'naclabort_coverage'
+else:
+  expected_exit = 'sigabrt'
 
 node = env.CommandSelLdrTestNacl('mmap_race_socketpair_test.out',
                                  mmap_race_nexe,
