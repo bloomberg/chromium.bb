@@ -62,8 +62,11 @@ void WebView::SetFastResize(bool fast_resize) {
 void WebView::OnWebContentsFocused(content::WebContents* web_contents) {
   DCHECK(web_contents == web_contents_);
   FocusManager* focus_manager = GetFocusManager();
-  if (focus_manager)
-    focus_manager->SetFocusedView(this);
+  if (!focus_manager) {
+    NOTREACHED();
+    return;
+  }
+  focus_manager->SetFocusedView(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -176,7 +179,7 @@ void WebView::AttachWebContents() {
 void WebView::DetachWebContents() {
   if (web_contents_) {
     wcv_holder_->Detach();
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
     // TODO(beng): This should either not be necessary, or be done implicitly by
     //             NativeViewHostWin on Detach(). As it stands, this is needed
     //             so that the view of the detached contents knows to tell the
