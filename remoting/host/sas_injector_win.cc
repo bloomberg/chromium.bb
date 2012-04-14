@@ -11,7 +11,7 @@
 #include "base/file_path.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
-#include "base/utf_string_conversions.h"
+#include "base/stringize_macros.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 
@@ -29,9 +29,10 @@ typedef VOID (WINAPI *SendSasFunc)(BOOL);
 
 // The registry key and value holding the policy controlling software SAS
 // generation.
-const char kSystemPolicyKeyName[] =
-    "Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System";
-const char kSoftwareSasValueName[] = "SoftwareSASGeneration";
+const char16 kSystemPolicyKeyName[] =
+    TO_L_STRING("Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\")
+    TO_L_STRING("System");
+const char16 kSoftwareSasValueName[] = TO_L_STRING("SoftwareSASGeneration");
 
 const DWORD kEnableSoftwareSasByServices = 1;
 
@@ -48,9 +49,6 @@ class ScopedSoftwareSasPolicy {
   // The handle of the registry key were SoftwareSASGeneration policy is stored.
   base::win::RegKey system_policy_;
 
-  // Name of the registry value holding the policy.
-  string16 value_name_;
-
   // True if the policy needs to be restored.
   bool restore_policy_;
 
@@ -64,7 +62,7 @@ ScopedSoftwareSasPolicy::ScopedSoftwareSasPolicy()
 ScopedSoftwareSasPolicy::~ScopedSoftwareSasPolicy() {
   // Restore the default policy by deleting the value that we have set.
   if (restore_policy_) {
-    LONG result = system_policy_.DeleteValue(value_name_.c_str());
+    LONG result = system_policy_.DeleteValue(kSoftwareSasValueName);
     if (result != ERROR_SUCCESS) {
       SetLastError(result);
       LOG_GETLASTERROR(ERROR)
@@ -76,7 +74,7 @@ ScopedSoftwareSasPolicy::~ScopedSoftwareSasPolicy() {
 bool ScopedSoftwareSasPolicy::Apply() {
   // Query the currently set SoftwareSASGeneration policy.
   LONG result = system_policy_.Open(HKEY_LOCAL_MACHINE,
-                                    ASCIIToUTF16(kSystemPolicyKeyName).c_str(),
+                                    kSystemPolicyKeyName,
                                     KEY_QUERY_VALUE | KEY_SET_VALUE |
                                         KEY_WOW64_64KEY);
   if (result != ERROR_SUCCESS) {
@@ -86,12 +84,11 @@ bool ScopedSoftwareSasPolicy::Apply() {
     return false;
   }
 
-  value_name_ = ASCIIToUTF16(kSoftwareSasValueName);
-  bool custom_policy = system_policy_.HasValue(value_name_.c_str());
+  bool custom_policy = system_policy_.HasValue(kSoftwareSasValueName);
 
   // Override the default policy (i.e. there is no value in the registry) only.
   if (!custom_policy) {
-    result = system_policy_.WriteValue(value_name_.c_str(),
+    result = system_policy_.WriteValue(kSoftwareSasValueName,
                                        kEnableSoftwareSasByServices);
     if (result != ERROR_SUCCESS) {
       SetLastError(result);

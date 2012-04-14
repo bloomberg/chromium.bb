@@ -290,8 +290,7 @@ DWORD DaemonControllerWin::OpenService(ScopedScHandle* service_out) {
   }
 
   ScopedScHandle service(
-      ::OpenServiceW(scmanager, UTF8ToUTF16(kWindowsServiceName).c_str(),
-                     SERVICE_QUERY_STATUS));
+      ::OpenServiceW(scmanager, kWindowsServiceName, SERVICE_QUERY_STATUS));
   if (!service.IsValid()) {
     DWORD error = GetLastError();
     if (error != ERROR_SERVICE_DOES_NOT_EXIST) {

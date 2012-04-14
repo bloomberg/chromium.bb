@@ -19,8 +19,8 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/string16.h"
+#include "base/stringize_macros.h"
 #include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -46,10 +46,10 @@ const int kMaxLaunchDelaySeconds = 60;
 const int kMinLaunchDelaySeconds = 1;
 
 // Name of the default session desktop.
-const char kDefaultDesktopName[] = "winsta0\\default";
+char16 kDefaultDesktopName[] = TO_L_STRING("winsta0\\default");
 
 // Match the pipe name prefix used by Chrome IPC channels.
-const char kChromePipeNamePrefix[] = "\\\\.\\pipe\\chrome.";
+const char16 kChromePipeNamePrefix[] = TO_L_STRING("\\\\.\\pipe\\chrome.");
 
 // The IPC channel name is passed to the host in the command line.
 const char kChromotingIpcSwitchName[] = "chromoting-ipc";
@@ -60,8 +60,8 @@ const char* kCopiedSwitchNames[] = { "auth-config", "host-config" };
 
 // The security descriptor of the Chromoting IPC channel. It gives full access
 // to LocalSystem and denies access by anyone else.
-const char kChromotingChannelSecurityDescriptor[] =
-    "O:SY" "G:SY" "D:(A;;GA;;;SY)";
+const char16 kChromotingChannelSecurityDescriptor[] =
+    TO_L_STRING("O:SYG:SYD:(A;;GA;;;SY)");
 
 // Takes the process token and makes a copy of it. The returned handle will have
 // |desired_access| rights.
@@ -152,7 +152,7 @@ bool CreateSessionToken(uint32 session_id,
 // Generates random channel ID.
 // N.B. Stolen from src/content/common/child_process_host_impl.cc
 string16 GenerateRandomChannelId(void* instance) {
-  return base::StringPrintf(ASCIIToUTF16("%d.%p.%d").c_str(),
+  return base::StringPrintf(TO_L_STRING("%d.%p.%d"),
                             base::GetCurrentProcId(), instance,
                             base::RandInt(0, std::numeric_limits<int>::max()));
 }
@@ -168,7 +168,7 @@ bool CreatePipeForIpcChannel(void* instance,
   security_attributes.bInheritHandle = FALSE;
 
   ULONG security_descriptor_length = 0;
-  if (!ConvertStringSecurityDescriptorToSecurityDescriptorA(
+  if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(
            kChromotingChannelSecurityDescriptor,
            SDDL_REVISION_1,
            reinterpret_cast<PSECURITY_DESCRIPTOR*>(
@@ -183,7 +183,7 @@ bool CreatePipeForIpcChannel(void* instance,
   string16 channel_name(GenerateRandomChannelId(instance));
 
   // Convert it to the pipe name.
-  string16 pipe_name(ASCIIToUTF16(kChromePipeNamePrefix));
+  string16 pipe_name(kChromePipeNamePrefix);
   pipe_name.append(channel_name);
 
   // Create the server end of the pipe. This code should match the code in
@@ -217,14 +217,13 @@ bool LaunchProcessAsUser(const FilePath& binary,
                          HANDLE user_token,
                          base::Process* process_out) {
   string16 application_name = binary.value();
-  string16 desktop = ASCIIToUTF16(kDefaultDesktopName);
 
   base::win::ScopedProcessInformation process_info;
   STARTUPINFOW startup_info;
 
   memset(&startup_info, 0, sizeof(startup_info));
   startup_info.cb = sizeof(startup_info);
-  startup_info.lpDesktop = const_cast<LPWSTR>(desktop.c_str());
+  startup_info.lpDesktop = kDefaultDesktopName;
 
   if (!CreateProcessAsUserW(user_token,
                             application_name.c_str(),

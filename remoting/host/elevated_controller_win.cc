@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/stringize_macros.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
@@ -29,8 +30,8 @@ const FilePath::CharType kTempFileExtension[] = FILE_PATH_LITERAL("json~");
 
 // The host configuration file security descriptor that enables full access to
 // Local System and built-in administrators only.
-const char kConfigFileSecurityDescriptor[] =
-    "O:BA" "G:BA" "D:(A;;GA;;;SY)(A;;GA;;;BA)";
+const char16 kConfigFileSecurityDescriptor[] =
+    TO_L_STRING("O:BAG:BAD:(A;;GA;;;SY)(A;;GA;;;BA)");
 
 // The maximum size of the configuration file. "1MB ought to be enough" for any
 // reasonable configuration we will ever need. 1MB is low enough to make
@@ -126,7 +127,7 @@ HRESULT WriteConfig(const FilePath& filename,
   security_attributes.bInheritHandle = FALSE;
 
   ULONG security_descriptor_length = 0;
-  if (!ConvertStringSecurityDescriptorToSecurityDescriptorA(
+  if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(
            kConfigFileSecurityDescriptor,
            SDDL_REVISION_1,
            reinterpret_cast<PSECURITY_DESCRIPTOR*>(
@@ -346,8 +347,7 @@ HRESULT ElevatedControllerWin::OpenService(ScopedScHandle* service_out) {
   DWORD desired_access = SERVICE_CHANGE_CONFIG | SERVICE_QUERY_STATUS |
                          SERVICE_START | SERVICE_STOP;
   ScopedScHandle service(
-      ::OpenServiceW(scmanager, UTF8ToUTF16(kWindowsServiceName).c_str(),
-                     desired_access));
+      ::OpenServiceW(scmanager, kWindowsServiceName, desired_access));
   if (!service.IsValid()) {
     error = GetLastError();
     LOG_GETLASTERROR(ERROR)

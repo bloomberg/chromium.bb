@@ -19,9 +19,9 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/stringize_macros.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
-#include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 
 #include "remoting/base/scoped_sc_handle_win.h"
@@ -35,10 +35,11 @@ using base::StringPrintf;
 namespace {
 
 // TODO(alexeypa): investigate and migrate this over to Chrome's i18n framework.
-const char kMuiStringFormat[] = "@%ls,-%d";
-const char kServiceDependencies[] = "";
+const char16 kMuiStringFormat[] = TO_L_STRING("@%ls,-%d");
+const char16 kServiceDependencies[] = TO_L_STRING("");
 
-const char kServiceCommandLineFormat[] = "\"%ls\" --host-binary=\"%ls\"";
+const char16 kServiceCommandLineFormat[] =
+    TO_L_STRING("\"%ls\" --host-binary=\"%ls\"");
 
 const DWORD kServiceStopTimeoutMs = 30 * 1000;
 
@@ -48,18 +49,18 @@ const uint32 kInvalidSession = 0xffffffff;
 const char kIoThreadName[] = "I/O thread";
 
 // A window class for the session change notifications window.
-static const char kSessionNotificationWindowClass[] =
-  "Chromoting_SessionNotificationWindow";
+const char16 kSessionNotificationWindowClass[] =
+  TO_L_STRING("Chromoting_SessionNotificationWindow");
 
 // Command line actions and switches:
 // "run" sumply runs the service as usual.
-const char kRunActionName[] = "run";
+const char16 kRunActionName[] = TO_L_STRING("run");
 
 // "install" requests the service to be installed.
-const char kInstallActionName[] = "install";
+const char16 kInstallActionName[] = TO_L_STRING("install");
 
 // "remove" uninstalls the service.
-const char kRemoveActionName[] = "remove";
+const char16 kRemoveActionName[] = TO_L_STRING("remove");
 
 // "--console" runs the service interactively for debugging purposes.
 const char kConsoleSwitchName[] = "console";
@@ -102,7 +103,7 @@ HostService::HostService() :
   console_session_id_(kInvalidSession),
   message_loop_(NULL),
   run_routine_(&HostService::RunAsService),
-  service_name_(UTF8ToUTF16(kWindowsServiceName)),
+  service_name_(kWindowsServiceName),
   service_status_handle_(0),
   shutting_down_(false),
   stopped_event_(true, false) {
@@ -186,12 +187,12 @@ bool HostService::InitWithCommandLine(const CommandLine* command_line) {
       LOG(ERROR) << "Invalid command line: more than one action requested.";
       return false;
     }
-    if (args[0] == ASCIIToUTF16(kInstallActionName)) {
+    if (args[0] == kInstallActionName) {
       run_routine_ = &HostService::Install;
-    } else if (args[0] == ASCIIToUTF16(kRemoveActionName)) {
+    } else if (args[0] == kRemoveActionName) {
       run_routine_ = &HostService::Remove;
       host_binary_required = false;
-    } else if (args[0] != ASCIIToUTF16(kRunActionName)) {
+    } else if (args[0] != kRunActionName) {
       LOG(ERROR) << "Invalid command line: invalid action specified: "
                  << args[0];
       return false;
@@ -233,7 +234,7 @@ int HostService::Install() {
     return kErrorExitCode;
   }
 
-  string16 name = StringPrintf(ASCIIToUTF16(kMuiStringFormat).c_str(),
+  string16 name = StringPrintf(kMuiStringFormat,
                                exe.value().c_str(),
                                IDS_DISPLAY_SERVICE_NAME);
 
@@ -243,10 +244,9 @@ int HostService::Install() {
     return kErrorExitCode;
   }
 
-  string16 command_line = StringPrintf(
-                              ASCIIToUTF16(kServiceCommandLineFormat).c_str(),
-                              exe.value().c_str(),
-                              host_binary_.value().c_str());
+  string16 command_line = StringPrintf(kServiceCommandLineFormat,
+                                       exe.value().c_str(),
+                                       host_binary_.value().c_str());
   ScopedScHandle service(
       CreateServiceW(scmanager,
                      service_name_.c_str(),
@@ -257,16 +257,15 @@ int HostService::Install() {
                      command_line.c_str(),
                      NULL,
                      NULL,
-                     ASCIIToUTF16(kServiceDependencies).c_str(),
+                     kServiceDependencies,
                      NULL,
                      NULL));
 
   if (service.IsValid()) {
     // Set the service description if the service is freshly installed.
-    string16 description = StringPrintf(
-                               ASCIIToUTF16(kMuiStringFormat).c_str(),
-                               exe.value().c_str(),
-                               IDS_SERVICE_DESCRIPTION);
+    string16 description = StringPrintf(kMuiStringFormat,
+                                        exe.value().c_str(),
+                                        IDS_SERVICE_DESCRIPTION);
 
     SERVICE_DESCRIPTIONW info;
     info.lpDescription = const_cast<LPWSTR>(description.c_str());
@@ -421,13 +420,12 @@ int HostService::RunInConsole() {
   LPCWSTR atom = NULL;
   HWND window = NULL;
   HINSTANCE instance = GetModuleHandle(NULL);
-  string16 window_class = ASCIIToUTF16(kSessionNotificationWindowClass);
 
   WNDCLASSEX wc = {0};
   wc.cbSize = sizeof(wc);
   wc.lpfnWndProc = base::win::WrappedWindowProc<SessionChangeNotificationProc>;
   wc.hInstance = instance;
-  wc.lpszClassName = window_class.c_str();
+  wc.lpszClassName = kSessionNotificationWindowClass;
   atom = reinterpret_cast<LPCWSTR>(RegisterClassExW(&wc));
   if (atom == NULL) {
     LOG_GETLASTERROR(ERROR)
