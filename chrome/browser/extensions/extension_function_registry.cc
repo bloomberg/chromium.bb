@@ -121,8 +121,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<TabsInsertCSSFunction>();
 
   // Page Actions.
-  RegisterFunction<EnablePageActionFunction>();
-  RegisterFunction<DisablePageActionFunction>();
+  RegisterFunction<EnablePageActionsFunction>();
+  RegisterFunction<DisablePageActionsFunction>();
   RegisterFunction<PageActionShowFunction>();
   RegisterFunction<PageActionHideFunction>();
   RegisterFunction<PageActionSetIconFunction>();

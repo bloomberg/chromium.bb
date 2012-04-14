@@ -34,6 +34,12 @@ const char kIconIndexOutOfBounds[] = "Page action icon index out of bounds.";
 const char kNoIconSpecified[] = "Page action has no icons to show.";
 }
 
+PageActionsFunction::PageActionsFunction() {
+}
+
+PageActionsFunction::~PageActionsFunction() {
+}
+
 bool PageActionFunction::RunImpl() {
   ExtensionActionFunction::RunImpl();
 
@@ -67,12 +73,14 @@ bool PageActionFunction::RunImpl() {
   return true;
 }
 
-bool PageActionFunction::SetPageActionEnabled(bool enable) {
+bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   std::string extension_action_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_action_id));
   DictionaryValue* action = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &action));
 
+  int tab_id;
+  EXTENSION_FUNCTION_VALIDATE(action->GetInteger(keys::kTabIdKey, &tab_id));
   std::string url;
   EXTENSION_FUNCTION_VALIDATE(action->GetString(keys::kUrlKey, &url));
 
@@ -103,10 +111,10 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
   // Find the TabContents that contains this tab id.
   TabContentsWrapper* contents = NULL;
   bool result = ExtensionTabUtil::GetTabById(
-      tab_id_, profile(), include_incognito(), NULL, NULL, &contents, NULL);
+      tab_id, profile(), include_incognito(), NULL, NULL, &contents, NULL);
   if (!result || !contents) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
-        kNoTabError, base::IntToString(tab_id_));
+        kNoTabError, base::IntToString(tab_id));
     return false;
   }
 
@@ -119,9 +127,9 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
   }
 
   // Set visibility and broadcast notifications that the UI should be updated.
-  page_action->SetIsVisible(tab_id_, enable);
-  page_action->SetTitle(tab_id_, title);
-  page_action->SetIconIndex(tab_id_, icon_id);
+  page_action->SetIsVisible(tab_id, enable);
+  page_action->SetTitle(tab_id, title);
+  page_action->SetIconIndex(tab_id, icon_id);
   contents->extension_tab_helper()->PageActionStateChanged();
 
   return true;
@@ -133,11 +141,11 @@ bool PageActionFunction::SetVisible(bool visible) {
   return true;
 }
 
-bool EnablePageActionFunction::RunExtensionAction() {
+bool EnablePageActionsFunction::RunImpl() {
   return SetPageActionEnabled(true);
 }
 
-bool DisablePageActionFunction::RunExtensionAction() {
+bool DisablePageActionsFunction::RunImpl() {
   return SetPageActionEnabled(false);
 }
 
