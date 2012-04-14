@@ -107,10 +107,14 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
   // There should also be a 'desktop' border around the window at the top.
   // Since the workspace excludes the tray area we only need one border size.
   int default_height = work_area.height() - kDesktopBorderSize;
+  // We align the size to the grid size to avoid any surprise when the
+  // monitor height isn't divide-able by our alignment factor.
+  default_width -= default_width % kDesktopBorderSize;
+  default_height -= default_height % kDesktopBorderSize;
   int offset_x = kDesktopBorderSize;
   int maximum_window_width = 1280;
   if (default_width > maximum_window_width) {
-    // The window should get centered on the screen as well.
+    // The window should get centered on the screen and not follow the grid.
     offset_x = (work_area.width() - maximum_window_width) / 2;
     // Never make a window wider then 1280.
     default_width = maximum_window_width;

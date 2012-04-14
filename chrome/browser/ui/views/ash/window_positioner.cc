@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -55,10 +56,10 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
       work_area.width()) ||
       (old_pos.height() + popup_position_offset_from_screen_corner_y >=
        work_area.height()))
-    return old_pos;
-  const gfx::Rect result = SmartPopupPosition(old_pos, work_area);
+    return AlignPopupPosition(old_pos, work_area, grid);
+  const gfx::Rect result = SmartPopupPosition(old_pos, work_area, grid);
   if (!result.IsEmpty())
-    return result;
+    return AlignPopupPosition(result, work_area, grid);
   return NormalPopupPosition(old_pos, work_area);
 }
 
@@ -97,7 +98,8 @@ gfx::Rect WindowPositioner::NormalPopupPosition(
 
 gfx::Rect WindowPositioner::SmartPopupPosition(
     const gfx::Rect& old_pos,
-    const gfx::Rect& work_area) {
+    const gfx::Rect& work_area,
+    int grid) {
   const std::vector<aura::Window*> windows =
       ash::WindowCycleController::BuildWindowList();
 
@@ -150,7 +152,11 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
         for (i = 0; i < regions.size(); i++) {
           if (regions[i]->Intersects(gfx::Rect(x + work_area.x(),
                                                y + work_area.y(), w, h))) {
-            y = regions[i]->y() + regions[i]->height() - work_area.y();
+            y = regions[i]->bottom() - work_area.y();
+            if (grid > 1) {
+              // Align to the (next) grid step.
+              y = ash::WindowResizer::AlignToGridRoundUp(y, grid);
+            }
             break;
           }
         }
@@ -160,4 +166,25 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
     }
   }
   return gfx::Rect(0, 0, 0, 0);
+}
+
+gfx::Rect WindowPositioner::AlignPopupPosition(
+    const gfx::Rect& pos,
+    const gfx::Rect& work_area,
+    int grid) {
+  if (grid <= 1)
+    return pos;
+
+  int x = pos.x() - (pos.x() - work_area.x()) % grid;
+  int y = pos.y() - (pos.y() - work_area.y()) % grid;
+  int w = pos.width();
+  int h = pos.height();
+
+  // If the alignment was pushing the window out of the screen, we ignore the
+  // alignment for that call.
+  if (abs(pos.right() - work_area.right()) < grid)
+    x = work_area.right() - w;
+  if (abs(pos.bottom() - work_area.bottom()) < grid)
+    y = work_area.bottom() - h;
+  return gfx::Rect(x, y, w, h);
 }

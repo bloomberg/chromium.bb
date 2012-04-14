@@ -31,11 +31,17 @@ class WindowPositioner {
   // Find a smart way to position the popup window. If there is no space this
   // function will return an empty rectangle.
   gfx::Rect SmartPopupPosition(const gfx::Rect& old_pos,
-                               const gfx::Rect& work_space);
+                               const gfx::Rect& work_area,
+                               int grid);
 
   // Find the next available cascading popup position (on the given screen).
   gfx::Rect NormalPopupPosition(const gfx::Rect& old_pos,
-                                const gfx::Rect& work_space);
+                                const gfx::Rect& work_area);
+
+  // Align the location to the grid / snap to the right / bottom corner.
+  gfx::Rect AlignPopupPosition(const gfx::Rect &pos,
+                               const gfx::Rect &work_area,
+                               int grid);
 
   // Constants to identify the type of resize.
   static const int kBoundsChange_None;

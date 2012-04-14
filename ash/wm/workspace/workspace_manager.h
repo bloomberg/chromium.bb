@@ -85,9 +85,6 @@ class ASH_EXPORT WorkspaceManager {
   void set_grid_size(int size) { grid_size_ = size; }
   int grid_size() const { return grid_size_; }
 
-  // Returns a bounds aligned to the grid. Returns |bounds| if grid_size is 0.
-  gfx::Rect AlignBoundsToGrid(const gfx::Rect& bounds);
-
   void set_shelf(ShelfLayoutManager* shelf) { shelf_ = shelf; }
 
   // Updates the visibility and whether any windows overlap the shelf.

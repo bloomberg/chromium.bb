@@ -306,7 +306,11 @@ TEST_F(WorkspaceManagerTest, SnapToGrid) {
   scoped_ptr<Window> w1(CreateTestWindowUnparented());
   w1->SetBounds(gfx::Rect(1, 6, 25, 30));
   w1->SetParent(GetViewport());
-  EXPECT_EQ(gfx::Rect(0, 8, 24, 32), w1->bounds());
+  // We are not aligning this anymore this way. When the window gets shown
+  // the window is expected to be handled differently, but this cannot be
+  // tested with this test. So the result of this test should be that the
+  // bounds are exactly as passed in.
+  EXPECT_EQ(gfx::Rect(1, 6, 25, 30), w1->bounds());
 }
 
 // Assertions around a fullscreen window.

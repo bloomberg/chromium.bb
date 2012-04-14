@@ -11,7 +11,6 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/managed_workspace.h"
 #include "ash/wm/workspace/maximized_workspace.h"
@@ -41,15 +40,6 @@ void BuildWindowList(const std::vector<aura::Window*>& windows,
       result->push_back(windows[i]);
     BuildWindowList(windows[i]->transient_children(), result);
   }
-}
-
-gfx::Rect AlignRectToGrid(const gfx::Rect& rect, int grid_size) {
-  if (grid_size <= 1)
-    return rect;
-  return gfx::Rect(ash::WindowResizer::AlignToGrid(rect.x(), grid_size),
-                   ash::WindowResizer::AlignToGrid(rect.y(), grid_size),
-                   ash::WindowResizer::AlignToGrid(rect.width(), grid_size),
-                   ash::WindowResizer::AlignToGrid(rect.height(), grid_size));
 }
 
 }
@@ -105,9 +95,6 @@ void WorkspaceManager::AddWindow(aura::Window* window) {
     return;
   }
 
-  if (wm::IsWindowNormal(window) && grid_size_ > 1)
-    SetWindowBounds(window, AlignBoundsToGrid(window->GetTargetBounds()));
-
   Workspace* workspace = NULL;
   Workspace::Type type_for_window = Workspace::TypeForWindow(window);
   switch (type_for_window) {
@@ -141,12 +128,6 @@ void WorkspaceManager::SetActiveWorkspaceByWindow(aura::Window* window) {
   Workspace* workspace = FindBy(window);
   if (workspace)
     workspace->Activate();
-}
-
-gfx::Rect WorkspaceManager::AlignBoundsToGrid(const gfx::Rect& bounds) {
-  if (grid_size_ <= 1)
-    return bounds;
-  return AlignRectToGrid(bounds, grid_size_);
 }
 
 void WorkspaceManager::UpdateShelfVisibility() {

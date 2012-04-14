@@ -44,10 +44,6 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 
   if (child->IsVisible()) {
     workspace_manager_->AddWindow(child);
-  } else if (wm::IsWindowNormal(child)) {
-    // Align non-maximized/fullscreen windows to a grid.
-    SetChildBoundsDirect(
-        child, workspace_manager_->AlignBoundsToGrid(child->GetTargetBounds()));
   }
 }
 

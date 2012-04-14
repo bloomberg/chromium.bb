@@ -8,6 +8,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
+#include "ash/wm/window_resizer.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/browser.h"
@@ -112,7 +113,10 @@ WindowPositionerTest::WindowPositionerTest()
   profile_.reset(new TestingProfile());
 }
 
-WindowPositionerTest::~WindowPositionerTest() {}
+WindowPositionerTest::~WindowPositionerTest() {
+  profile_.reset(NULL);
+  ui_thread_.reset(NULL);
+}
 
 void WindowPositionerTest::SetUp() {
   AshTestBase::SetUp();
@@ -251,7 +255,7 @@ TEST_F(WindowPositionerTest, cascading) {
 
 TEST_F(WindowPositionerTest, filling) {
   const gfx::Rect work_area = gfx::Screen::GetPrimaryMonitorWorkArea();
-
+  int grid = ash::Shell::GetInstance()->GetGridSize();
   gfx::Rect popup_position(0, 0, 256, 128);
   // Leave space on the left and the right and see if we fill top to bottom.
   window()->SetBounds(gfx::Rect(work_area.x() + popup_position.width(),
@@ -270,20 +274,23 @@ TEST_F(WindowPositionerTest, filling) {
   popup()->Show();
   gfx::Rect mid_left = window_positioner()->GetPopupPosition(popup_position);
   EXPECT_EQ(gfx::Rect(work_area.x(),
-                      work_area.y() + top_left.height(),
-                      popup_position.width(), popup_position.height()),
+                      ash::WindowResizer::AlignToGridRoundDown(
+                          work_area.y() + top_left.height(), grid),
+                          popup_position.width(), popup_position.height()),
                       mid_left);
 
   // Block now everything so that we can only put the popup on the bottom
   // of the left side.
+  // Note: We need to keep one "grid spacing free" if the window does not
+  // fit into the grid (which is true for 200 height).`
   popup()->SetBounds(gfx::Rect(work_area.x(), work_area.y(),
                                popup_position.width(),
-                               work_area.height() - popup_position.height()));
+                               work_area.height() - popup_position.height() -
+                                   grid + 1));
   gfx::Rect bottom_left = window_positioner()->GetPopupPosition(
                               popup_position);
   EXPECT_EQ(gfx::Rect(work_area.x(),
-                      work_area.y() + work_area.height() -
-                          popup_position.height(),
+                      work_area.bottom() - popup_position.height(),
                       popup_position.width(), popup_position.height()),
                       bottom_left);
 
@@ -294,8 +301,8 @@ TEST_F(WindowPositionerTest, filling) {
                                1));
   gfx::Rect top_right = window_positioner()->GetPopupPosition(
                             popup_position);
-  EXPECT_EQ(gfx::Rect(work_area.x() + work_area.width() -
-                          popup_position.width(),
+  EXPECT_EQ(gfx::Rect(ash::WindowResizer::AlignToGridRoundDown(
+                         work_area.right() - popup_position.width(), grid),
                       work_area.y(),
                       popup_position.width(), popup_position.height()),
                       top_right);
