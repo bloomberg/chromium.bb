@@ -81,7 +81,7 @@ def AppendToGTestOutput(gtest_args, value):
   args = gtest_args[:]
   current_value = GetGTestOutput(args)
   if not current_value:
-    return
+    return gtest_args
 
   current_arg = '--gtest_output=' + current_value
   args.remove(current_arg)
@@ -93,7 +93,7 @@ def RemoveGTestOutput(gtest_args):
   args = gtest_args[:]
   current_value = GetGTestOutput(args)
   if not current_value:
-    return
+    return gtest_args
 
   args.remove('--gtest_output=' + current_value)
   return args
