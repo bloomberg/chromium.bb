@@ -112,6 +112,10 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   if (manager->IsBlacklisted())
     return;
 
+  // Bail if we're missing any of the necessary form components.
+  if (!manager->HasValidPasswordForm())
+    return;
+
   PasswordForm provisionally_saved_form(form);
   provisionally_saved_form.ssl_valid = form.origin.SchemeIsSecure() &&
       !delegate_->DidLastPageLoadEncounterSSLErrors();
@@ -184,8 +188,6 @@ void PasswordManager::OnPasswordFormsRendered(
     if (provisional_save_manager_->DoesManage(*iter)) {
       // The form trying to be saved has immediately re-appeared. Assume login
       // failure and abort this save, by clearing provisional_save_manager_.
-      // Don't delete the login managers since the user may try again
-      // and we want to be able to save in that case.
       provisional_save_manager_->SubmitFailed();
       provisional_save_manager_.reset();
       return;
