@@ -103,8 +103,13 @@ def AppendToXML(final_xml, generic_path, shard):
   """Combine the shard xml file with the final xml file."""
 
   path = generic_path + str(shard)
-  with open(path) as shard_xml_file:
-    shard_xml = minidom.parse(shard_xml_file)
+
+  try:
+    with open(path) as shard_xml_file:
+      shard_xml = minidom.parse(shard_xml_file)
+  except IOError:
+    # If the shard crashed, gtest will not have generated an xml file.
+    return final_xml
 
   if not final_xml:
     # Out final xml is empty, let's prepopulate it with the first one we see.
@@ -369,8 +374,10 @@ class ShardingSupervisor(object):
       final_xml = None
       for i in range(start_point, start_point + self.num_shards_to_run):
         final_xml = AppendToXML(final_xml, xml_path, i)
-      with open(xml_path, 'w') as final_file:
-        final_xml.writexml(final_file)
+
+      if final_xml:
+        with open(xml_path, 'w') as final_file:
+          final_xml.writexml(final_file)
 
     num_failed = len(self.failed_shards)
     if num_failed > 0:
