@@ -24,6 +24,8 @@ import re
 import sys
 import threading
 
+from xml.dom import minidom
+
 # Add tools/ to path
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(BASE_PATH, ".."))
@@ -66,6 +68,79 @@ def DetectNumCores():
     return SS_DEFAULT_NUM_CORES
 
 
+def GetGTestOutput(args):
+  """Extracts gtest_output from the args. Returns none if not present."""
+
+  for arg in args:
+    if '--gtest_output=' in arg:
+      return arg.split('=')[1]
+  return None
+
+
+def AppendToGTestOutput(gtest_args, value):
+  args = gtest_args[:]
+  current_value = GetGTestOutput(args)
+  if not current_value:
+    return
+
+  current_arg = '--gtest_output=' + current_value
+  args.remove(current_arg)
+  args.append('--gtest_output=' + current_value + value)
+  return args
+
+
+def RemoveGTestOutput(gtest_args):
+  args = gtest_args[:]
+  current_value = GetGTestOutput(args)
+  if not current_value:
+    return
+
+  args.remove('--gtest_output=' + current_value)
+  return args
+
+
+def AppendToXML(final_xml, generic_path, shard):
+  """Combine the shard xml file with the final xml file."""
+
+  path = generic_path + str(shard)
+  with open(path) as shard_xml_file:
+    shard_xml = minidom.parse(shard_xml_file)
+
+  if not final_xml:
+    # Out final xml is empty, let's prepopulate it with the first one we see.
+    return shard_xml
+
+  shard_node = shard_xml.documentElement
+  final_node = final_xml.documentElement
+
+  testcases = shard_node.getElementsByTagName('testcase')
+  final_testcases = final_node.getElementsByTagName('testcase')
+  for testcase in testcases:
+    name = testcase.getAttribute('name')
+    classname = testcase.getAttribute('classname')
+    failures = testcase.getElementsByTagName('failure')
+    status = testcase.getAttribute('status')
+    elapsed = testcase.getAttribute('time')
+
+    # don't bother updating the final xml if there is no data.
+    if status == 'notrun':
+      continue
+
+    # Look in our final xml to see if it's there.
+    # There has to be a better way...
+    for final_testcase in final_testcases:
+      final_name = final_testcase.getAttribute('name')
+      final_classname = final_testcase.getAttribute('classname')
+      if final_name == name and final_classname == classname:
+        # We got the same entry.
+        final_testcase.setAttribute('status', status)
+        final_testcase.setAttribute('time', elapsed)
+        for failure in failures:
+          final_testcase.appendChild(failure)
+
+  return final_xml
+
+
 def RunShard(test, total_shards, index, gtest_args, stdout, stderr):
   """Runs a single test shard in a subprocess.
 
@@ -73,7 +148,10 @@ def RunShard(test, total_shards, index, gtest_args, stdout, stderr):
     The Popen object representing the subprocess handle.
   """
   args = [test]
-  args.extend(gtest_args)
+
+  # If there is a gtest_output
+  test_args = AppendToGTestOutput(gtest_args, str(index))
+  args.extend(test_args)
   env = os.environ.copy()
   env["GTEST_TOTAL_SHARDS"] = str(total_shards)
   env["GTEST_SHARD_INDEX"] = str(index)
@@ -282,6 +360,18 @@ class ShardingSupervisor(object):
     else:
       self.WaitForShards()
 
+    # All the shards are done.  Merge all the XML files and generate the
+    # main one.
+    output_arg = GetGTestOutput(self.gtest_args)
+    if output_arg:
+      xml, xml_path = output_arg.split(':', 1)
+      assert(xml == 'xml')
+      final_xml = None
+      for i in range(start_point, start_point + self.num_shards_to_run):
+        final_xml = AppendToXML(final_xml, xml_path, i)
+      with open(xml_path, 'w') as final_file:
+        final_xml.writexml(final_file)
+
     num_failed = len(self.failed_shards)
     if num_failed > 0:
       self.failed_shards.sort()
@@ -391,7 +481,9 @@ class ShardingSupervisor(object):
 
     for test_filter in gtest_filters:
       args = [self.test, "--gtest_filter=" + test_filter]
-      args.extend(self.gtest_args)
+      # Don't update the xml output files during retry.
+      stripped_gtests_args = RemoveGTestOutput(self.gtest_args)
+      args.extend(stripped_gtests_args)
       rerun = subprocess.Popen(args)
       rerun.wait()
       if rerun.returncode != 0:
