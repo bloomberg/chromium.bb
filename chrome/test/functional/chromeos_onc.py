@@ -23,8 +23,8 @@ class ChromeosONC(policy_base.PolicyTestBase):
   ONC_PATH = os.path.join(pyauto.PyUITest.DataDir(), 'chromeos', 'cros')
 
   def setUp(self):
-    policy_base.PolicyTestBase.setUp(self)
     self.CleanupFlimflamDirsOnChromeOS()
+    policy_base.PolicyTestBase.setUp(self)
     self.LoginWithTestAccount()
 
   def _ReadONCFileAndSet(self, filename):
@@ -95,7 +95,11 @@ class ChromeosONC(policy_base.PolicyTestBase):
     self._VerifyRememberedWifiNetworks(wifi_networks)
 
   def testAddBacktoBackONC(self):
-    """Test adding three different ONC files one after the other."""
+    """Test adding three different ONC files one after the other.
+
+    TODO(stanleyw): crosbug.com/29422 This test checks for buggy behavior that
+    has since been fiex in crosbug.com/27862.
+    """
     wifi_networks = {
         'ssid-none': '',
         'ssid-wep': 'WEP',

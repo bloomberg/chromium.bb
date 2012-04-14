@@ -48,7 +48,12 @@ class SuidAction(object):
 
   ## Actions ##
   def CleanFlimflamDirs(self):
-    """Clean the contents of all flimflam profiles."""
+    """Clean the contents of all flimflam profiles.
+
+    TODO(stanleyw): crosbug.com/29421 This method restarts flimflam. It should
+    wait until flimflam is fully initialized and accessible via DBus. Otherwise,
+    there is a race conditions and subsequent accesses to flimflam may fail.
+    """
     flimflam_dirs = ['/home/chronos/user/flimflam',
                      '/var/cache/flimflam']
     os.system('stop flimflam')
