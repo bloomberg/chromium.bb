@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted_memory.h"
@@ -235,6 +236,9 @@ void URLRequestChromeJob::Start() {
       FROM_HERE,
       base::Bind(&URLRequestChromeJob::StartAsync,
                  weak_factory_.GetWeakPtr()));
+
+  TRACE_EVENT_ASYNC_BEGIN1("browser", "DataManager:Request", this, "URL",
+      request_->url().possibly_invalid_spec());
 }
 
 void URLRequestChromeJob::Kill() {
@@ -256,6 +260,7 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
 }
 
 void URLRequestChromeJob::DataAvailable(RefCountedMemory* bytes) {
+  TRACE_EVENT_ASYNC_END0("browser", "DataManager:Request", this);
   if (bytes) {
     // The request completed, and we have all the data.
     // Clear any IO pending status.
