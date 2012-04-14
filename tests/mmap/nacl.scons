@@ -35,7 +35,5 @@ node = env.CommandSelLdrTestNacl(
 #   running under a VM, since running the test on memcheck locally is
 #   fast enough.
 is_broken = env.Bit('running_on_valgrind')
-env.AddNodeToTestSuite(node,
-                       ['small_tests', 'mmap_race_tests'],
-                       'run_mmap_atomicity_test',
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_mmap_atomicity_test',
                        is_broken=is_broken)

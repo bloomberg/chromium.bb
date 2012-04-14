@@ -38,9 +38,6 @@
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
-#include "native_client/src/trusted/interval_multiset/nacl_interval_multiset.h"
-#include "native_client/src/trusted/interval_multiset/nacl_interval_range_tree.h"
-
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
@@ -124,10 +121,8 @@ struct NaClApp {
 #endif
 
   /* only used for ET_EXEC:  for CS restriction */
-  uintptr_t                 static_text_end;
-  /*
-   * relative to mem_start; ro after app starts. memsz from phdr
-   */
+  uintptr_t                 static_text_end;  /* relative to mem_start */
+  /* ro after app starts. memsz from phdr */
 
   /*
    * The dynamic code area follows the static code area.  These fields
@@ -174,10 +169,10 @@ struct NaClApp {
 
   /* common to both ELF executables and relocatable load images */
 
-  uintptr_t                 springboard_addr;
+  uintptr_t                 springboard_addr;  /* relative to mem_start */
   /*
    * springboard code addr for context switching into app sandbox, relative
-   * to mem_start
+   * to code sandbox CS
    */
 
   /*
@@ -253,8 +248,6 @@ struct NaClApp {
    * memory map is in user addresses.
    */
   struct NaClVmmap          mem_map;
-
-  struct NaClIntervalMultiset *mem_io_regions;
 
   /*
    * This is the effector interface object that is used to manipulate
@@ -673,66 +666,6 @@ void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 void NaClVmHoleWaitToStartThread(struct NaClApp *nap);
 
 void NaClVmHoleThreadStackIsSafe(struct NaClApp *nap);
-
-/*
- * More VM race detection.  In windows, when we unmap or mmap over
- * existing memory, we cannot maintain the address space reservation
- * -- we have to unmap the original mapping with the appropriate
- * unmapping function (VirtualFree or UnmapViewOfFile) before we can
- * VirtualAlloc to reserve the addresss pace, leaving a timing window
- * where another thread (possibly injected into the binary, e.g.,
- * antivirus code) might map something else into.  We stop user-space
- * threads when mmap/munmap occurs and detect if the temporary VM hole
- * was filled by some other thread (and abort the process in that
- * case), so that untrusted code cannot observe nor modify the memory
- * that lands in the hole.  However, we still have the case where the
- * untrusted code's threads aren't running user-space code -- a thread
- * may have entered into a syscall handler.  We don't stop such
- * threads, because they might be holding locks that the memory
- * mapping functions need.  This means that, for example, a malicious
- * application could -- assuming it could create the innocent thread
- * race condition -- have one thread invoke the "write" NaCl syscall,
- * enter into the host OS "write" syscall code in the NaCl syscall
- * handler, then have another thread mmap (or munmap) the memory where
- * the source memory region from which the content to be written
- * resides, and as a side effect of this race, exfiltrate memory
- * contents that NaCl modules aren't supposed to be able to access.
- *
- * NB: we do not try to prevent data races such as two "read" syscalls
- * simultaneously trying to write the same memory region, or
- * concurrent "read" and "write" syscalls racing on the same memory
- * region..
- */
-
-/*
- * Some potentially blocking I/O operation is about to start.  Syscall
- * handlers implement DMA-style access where the host-OS syscalls
- * directly read/write untrusted memory, so we must record the
- * affected memory ranges as "in use" by I/O operations.
- */
-void NaClVmIoWillStart(struct NaClApp *nap,
-                       uint32_t addr_first_usr,
-                       uint32_t addr_last_usr);
-
-
-/*
- * It is a fatal error to have an invocation of NaClVmIoHasEnded whose
- * arguments do not match those of an earlier, unmatched invocation of
- * NaClVmIoWillStart.
- */
-void NaClVmIoHasEnded(struct NaClApp *nap,
-                      uint32_t addr_first_usr,
-                      uint32_t addr_last_usr);
-
-/*
- * Used by operations (mmap, munmap) that will open a VM hole.
- * Invoked while holding the VM lock.  Check that no I/O is pending;
- * abort the app if the app is racing I/O operations against VM
- * operations.
- */
-void NaClVmIoPendingCheck_mu(struct NaClApp *nap,
-                             uint32_t addr_first_usr,
-                             uint32_t addr_last_usr);
 
 void NaClGdbHook(struct NaClApp const *nap);
 

@@ -47,14 +47,6 @@ int NaClCopyInFromUser(struct NaClApp *nap,
                        uintptr_t      src_usr_addr,
                        size_t         num_bytes) NACL_WUR;
 
-void NaClCopyInTakeLock(struct NaClApp *nap);
-int NaClCopyInFromUserAndDropLock(struct NaClApp *nap,
-                                  void           *dst_sys_ptr,
-                                  uintptr_t      src_usr_addr,
-                                  size_t         num_bytes) NACL_WUR;
-void NaClCopyInDropLock(struct NaClApp *nap);
-
-
 /*
  * Similarly to strncpy from untrusted address space to trusted
  * address space, except returns success/failure (bool as int) and the

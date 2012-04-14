@@ -314,7 +314,6 @@ sel_ldr_libs = ['sel',
                 'imc',
                 'container',
                 'nacl_fault_inject',
-                'nacl_interval',
                 'platform',
                 'platform_qual_lib',
                 VALIDATOR_LIB,
@@ -461,7 +460,6 @@ if (not env.CrossToolsBuild() and
                   'nacl_base',
                   'imc',
                   'nacl_fault_inject',
-                  'nacl_interval',
                   'platform',
                   VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
@@ -519,7 +517,6 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'nacl_base',
                   'imc',
                   'nacl_fault_inject',
-                  'nacl_interval',
                   'platform',
                   VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
@@ -563,7 +560,6 @@ nacl_sync_cond_test_exe = env.ComponentProgram(
                 'nacl_base',
                 'imc',
                 'nacl_fault_inject',
-                'nacl_interval',
                 'platform',
                 VALIDATOR_LIB,
                 ] + DEBUG_LIBS)
@@ -599,7 +595,6 @@ if (not env.Bit('coverage_enabled') and
                                                      'nacl_perf_counter',
                                                      'gio_wrapped_desc',
                                                      'nacl_fault_inject',
-                                                     'nacl_interval',
                                                      'platform',
                                                      ])
   node = env.CommandTest('nacl_signal_unittest.out',
@@ -618,7 +613,6 @@ if env.Bit('posix'):
                                                'nacl_perf_counter',
                                                'gio_wrapped_desc',
                                                'nacl_fault_inject',
-                                               'nacl_interval',
                                                'platform',
                                                ])
   node = env.CommandTest('nacl_signal_frame_test.out',
@@ -632,7 +626,6 @@ if env.Bit('windows') and env.Bit('target_x86_64'):
                                    'win/exception_patch/ntdll_test.c',
                                    EXTRA_LIBS=['sel',
                                                'nacl_fault_inject',
-                                               'nacl_interval',
                                                'platform',
                                                ])
   node = env.CommandTest('patch_ntdll_test.out',
@@ -663,7 +656,6 @@ check_test_exe = env.ComponentProgram('nacl_check_test',
                                                   'nacl_perf_counter',
                                                   'gio_wrapped_desc',
                                                   'nacl_fault_inject',
-                                                  'nacl_interval',
                                                   'platform',
                                                   ])
 node = env.CommandTest(
@@ -788,7 +780,6 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'nacl_base',
                   'imc',
                   'nacl_fault_inject',
-                  'nacl_interval',
                   'platform',
                   'nacl_xdr',
                   'container',
@@ -942,7 +933,6 @@ if (not env.CrossToolsBuild() and
                   'nacl_base',
                   'imc',
                   'nacl_fault_inject',
-                  'nacl_interval',
                   'platform',
                   VALIDATOR_LIB,
                   ] + DEBUG_LIBS)

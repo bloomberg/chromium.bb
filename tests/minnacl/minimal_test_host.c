@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -10,22 +10,20 @@
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
-#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/tests/minnacl/minimal_test_syscalls.h"
 
 static int32_t NotImplementedDecoder(struct NaClAppThread *natp) {
-  NaClCopyInDropLock(natp->nap);
+  UNREFERENCED_PARAMETER(natp);
   printf("Error: entered an unexpected syscall!\n");
   fflush(stdout);
   _exit(1);
 }
 
 static int32_t MySyscallInvoke(struct NaClAppThread *natp) {
-  NaClCopyInDropLock(natp->nap);
+  UNREFERENCED_PARAMETER(natp);
   printf("Inside custom test 'invoke' syscall\n");
   fflush(stdout);
   /* Return a value that the test guest program checks for. */
@@ -33,7 +31,7 @@ static int32_t MySyscallInvoke(struct NaClAppThread *natp) {
 }
 
 static int32_t MySyscallExit(struct NaClAppThread *natp) {
-  NaClCopyInDropLock(natp->nap);
+  UNREFERENCED_PARAMETER(natp);
   printf("Inside custom test 'exit' syscall\n");
   fflush(stdout);
   _exit(0);
