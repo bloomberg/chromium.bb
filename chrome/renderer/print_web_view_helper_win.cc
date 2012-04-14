@@ -108,11 +108,44 @@ void PrintWebViewHelper::PrintPageInternal(
 
   int page_number = params.page_number;
 
-  // Calculate scaling.
-  double actual_shrink = gfx::CalculatePageScale(
-      metafile->context(),
-      params.params.content_size.width(),
-      params.params.content_size.height());
+  // Calculate the dpi adjustment.
+  // Browser will render context using desired_dpi, so we need to calculate
+  // adjustment factor to play content on the printer DC later during the
+  // actual printing.
+  double actual_shrink = static_cast<float>(params.params.desired_dpi /
+                                            params.params.dpi);
+  if (print_for_preview_) {
+    // While printing from the preview, we are using PDF to print.
+    // It creates a temp metafile based on screen DC. The standard scale factor
+    // may not fit an entire content of the PDF to the metafile. It will cause
+    // output to be cutoff.
+    // (See http://code.google.com/p/chromium-os/issues/detail?id=16088 and
+    // related Chrome bugs)
+    // In such case we need to calculate the same scale ratio PDF plugin will
+    // calculate during printing.
+    // TODO(gene): Revisit current implementation and address comments below.
+    // (http://code.google.com/p/chromium/issues/detail?id=123408)
+    // Ideally, we should return this parameter from the plugin to avoid code
+    // duplication. However, currently the call stack involves WebKit and at
+    // some point shrink factor was cutoff and always returns 1.0.
+    //   webkit::ppapi::PluginInstance::PrintPDFOutput - ratio calculated here
+    //   webkit::ppapi::PluginInstance::PrintPageHelper
+    //   webkit::ppapi::PluginInstance::PrintPage
+    //   webkit::ppapi::WebPluginImpl::printPage
+    //   WebKit::WebPluginContainerImpl::printPage
+    //   WebKit::ChromePluginPrintContext::spoolPage - always return 1.0 scale
+    //   WebKit::WebFrameImpl::printPage
+    //   PrintWebViewHelper::RenderPage
+    //   PrintWebViewHelper::PrintPageInternal
+    //
+    // Another solution is to build in scaling factor into metafile itself
+    // (for example, GDI comments), and make metafile playback to take care of
+    // scaling automatically.
+    actual_shrink = gfx::CalculatePageScale(
+        metafile->context(),
+        params.params.content_size.width(),
+        params.params.content_size.height());
+  }
 
   gfx::Size page_size_in_dpi;
   gfx::Rect content_area_in_dpi;

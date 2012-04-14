@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -665,7 +666,8 @@ PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view)
       fit_to_page_(true),
       user_cancelled_scripted_print_count_(0),
       is_scripted_printing_blocked_(false),
-      notify_browser_of_print_failure_(true) {
+      notify_browser_of_print_failure_(true),
+      print_for_preview_(false) {
 }
 
 PrintWebViewHelper::~PrintWebViewHelper() {}
@@ -743,8 +745,15 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
     return;
   }
 
+  // Set |print_for_preview_| flag and autoreset it to back to original
+  // on return.
+  AutoReset<bool> set_printing_flag(&print_for_preview_, true);
+
   WebFrame* pdf_frame = pdf_element.document().frame();
-  if (!UpdatePrintSettings(pdf_frame, pdf_element, job_settings, true)) {
+  // TODO(gene): Consider using |print_for_preview_| inside UpdatePrintSettings
+  // instead of passing this as parameter.
+  if (!UpdatePrintSettings(pdf_frame, pdf_element,
+                           job_settings, print_for_preview_)) {
     LOG(ERROR) << "UpdatePrintSettings failed";
     DidFinishPrinting(FAIL_PRINT);
     return;
