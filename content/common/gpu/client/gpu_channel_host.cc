@@ -93,10 +93,10 @@ void GpuChannelHost::MessageFilter::OnChannelError() {
 }
 
 GpuChannelHost::GpuChannelHost(
-    GpuChannelHostFactory* factory, int gpu_process_id, int client_id)
+    GpuChannelHostFactory* factory, int gpu_host_id, int client_id)
     : factory_(factory),
-      gpu_process_id_(gpu_process_id),
       client_id_(client_id),
+      gpu_host_id_(gpu_host_id),
       state_(kUnconnected) {
 }
 
@@ -104,8 +104,7 @@ GpuChannelHost::~GpuChannelHost() {
 }
 
 void GpuChannelHost::Connect(
-    const IPC::ChannelHandle& channel_handle,
-    base::ProcessHandle client_process_for_gpu) {
+    const IPC::ChannelHandle& channel_handle) {
   DCHECK(factory_->IsMainThread());
   // Open a channel to the GPU process. We pass NULL as the main listener here
   // since we need to filter everything to route it to the right thread.
@@ -130,10 +129,6 @@ void GpuChannelHost::Connect(
   // and receives the hello message from the GPU process. The messages get
   // cached.
   state_ = kConnected;
-
-  // Notify the GPU process of our process handle. This gives it the ability
-  // to map client handles into the GPU process.
-  Send(new GpuChannelMsg_Initialize(client_process_for_gpu));
 }
 
 void GpuChannelHost::set_gpu_info(const content::GPUInfo& gpu_info) {

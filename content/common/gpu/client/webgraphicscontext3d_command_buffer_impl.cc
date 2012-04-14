@@ -483,8 +483,9 @@ void WebGraphicsContext3DCommandBufferImpl::Destroy() {
   host_ = NULL;
 }
 
+// TODO(apatrick,piman): This should be renamed to something clearer.
 int WebGraphicsContext3DCommandBufferImpl::GetGPUProcessID() {
-  return host_ ? host_->gpu_process_id() : 0;
+  return host_ ? host_->gpu_host_id() : 0;
 }
 
 int WebGraphicsContext3DCommandBufferImpl::GetChannelID() {
