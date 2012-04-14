@@ -1088,7 +1088,7 @@ views::Widget* BrowserView::DoShowAboutChromeDialog() {
 }
 
 void BrowserView::ShowUpdateChromeDialog() {
-  UpdateRecommendedMessageBox::ShowMessageBox(GetWidget()->GetNativeWindow());
+  UpdateRecommendedMessageBox::Show(GetWidget()->GetNativeWindow());
 }
 
 void BrowserView::ShowTaskManager() {

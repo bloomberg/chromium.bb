@@ -18,14 +18,14 @@ class MessageBoxView;
 // the latest version to be put to use.
 class UpdateRecommendedMessageBox : public views::DialogDelegate {
  public:
-  // This box is modal to |parent_window|.
-  static void ShowMessageBox(gfx::NativeWindow parent_window);
+  static void Show(gfx::NativeWindow parent_window);
+
+ private:
+  UpdateRecommendedMessageBox();
+  virtual ~UpdateRecommendedMessageBox();
 
   // Overridden from views::DialogDelegate:
   virtual bool Accept() OVERRIDE;
-
- protected:
-  // Overridden from views::DialogDelegate:
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
@@ -36,10 +36,6 @@ class UpdateRecommendedMessageBox : public views::DialogDelegate {
   virtual views::View* GetContentsView() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
-
- private:
-  explicit UpdateRecommendedMessageBox(gfx::NativeWindow parent_window);
-  virtual ~UpdateRecommendedMessageBox();
 
   views::MessageBoxView* message_box_view_;
 
