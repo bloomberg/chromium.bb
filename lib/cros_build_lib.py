@@ -86,6 +86,7 @@ class RunCommandError(Exception):
   """Error caught in RunCommand() method."""
   def __init__(self, msg, result):
     self.result = result
+    self.msg = msg
     Exception.__init__(self, msg)
     self.args = (msg, result)
 
@@ -95,7 +96,7 @@ class RunCommandError(Exception):
       items.append(self.result.error)
     if self.result.output:
       items.append(self.result.output)
-    items.append(Exception.__str__(self))
+    items.append(self.msg)
     out = '\n'.join(items)
     # Python doesn't let you include non-ascii characters in error messages.
     # To be safe, replace all non-ascii characters with xml-escaped versions.
@@ -425,7 +426,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     cmd_result.returncode = proc.returncode
 
     if not error_ok and not error_code_ok and proc.returncode:
-      msg = 'Failed command "%r" with extra env %r' % (cmd, extra_env)
+      msg = 'Failed command "%r", cwd=%s, extra env=%r' % (cmd, cwd, extra_env)
       if error_message:
         msg += '\n%s' % error_message
       raise RunCommandError(msg, cmd_result)
