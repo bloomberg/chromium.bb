@@ -34,7 +34,7 @@ ClientSession::ClientSession(
   // later and set them only when connection is authenticated.
   connection_->set_clipboard_stub(this);
   connection_->set_host_stub(this);
-  connection_->set_input_stub(&auth_input_filter_);
+  connection_->set_input_stub(this);
 }
 
 ClientSession::~ClientSession() {
