@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -147,6 +147,6 @@ TEST_F(SetupUtilTest, DeleteFileFromTempProcess) {
   ASSERT_TRUE(file_util::PathExists(test_file));
   file_util::WriteFile(test_file, "foo", 3);
   EXPECT_TRUE(installer::DeleteFileFromTempProcess(test_file, 0));
-  base::PlatformThread::Sleep(200);
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
   EXPECT_FALSE(file_util::PathExists(test_file));
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -472,7 +472,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
       temp_dir_.path(), WorkItem::NEW_NAME_IF_IN_USE,
       alternate_to));
   if (IsFileInUse(file_name_to))
-    base::PlatformThread::Sleep(2000);
+    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(2));
   // If file is still in use, the rest of the test will fail.
   ASSERT_FALSE(IsFileInUse(file_name_to));
   EXPECT_TRUE(work_item->Do());
