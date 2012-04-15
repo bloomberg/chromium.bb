@@ -505,7 +505,7 @@ static void CopyTransportDIBHandleForMessage(
   *handle_out = NULL;
   sandbox::BrokerDuplicateHandle(handle_in, peer_pid, handle_out,
                                  FILE_MAP_READ | FILE_MAP_WRITE, 0);
-  CHECK(*handle_out != NULL);
+  DCHECK(*handle_out != NULL);
 #else
   // Don't need to do anything special for other platforms.
   *handle_out = handle_in;
