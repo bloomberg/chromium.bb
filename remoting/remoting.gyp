@@ -1,3 +1,4 @@
+
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -13,16 +14,14 @@
     'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
     'host_plugin_description': 'Allow another user to access your computer securely over the Internet.',
 
-    # Borrow the scripts for generating version information for remoting
-    # binaries from Chrome.
-    'variables': {
-      'version_py_path': '../chrome/tools/build/version.py',
-      'version_path': '../remoting/VERSION',
-    },
-    'version_py_path': '<(version_py_path)',
-    'version_path': '<(version_path)',
+    # The version is composed from major & minor versions specific to remoting
+    # and build & patch versions inherited from Chrome.
+    'version_py_path': '../chrome/tools/build/version.py',
+    'version_path': '../remoting/VERSION',
+    'chrome_version_path': '../chrome/VERSION',
     'version_full':
-        '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
+      '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@").'
+      '<!(python <(version_py_path) -f <(chrome_version_path) -t "@BUILD@.@PATCH@")',
 
     'conditions': [
       ['OS=="mac"', {
@@ -332,9 +331,10 @@
         # Generates the version information resources for the Windows binaries.
         # The .RC files are generated from the "version.rc.version" template and
         # placed in the "<(SHARED_INTERMEDIATE_DIR)/remoting" folder.
-        # The substiture strings are taken from:
-        #   - remoting/VERSION - the current version of Chromoting.
+        # The substitution strings are taken from:
         #   - build/util/LASTCHANGE - the last source code revision.
+        #   - chrome/VERSION - the build & patch versions.
+        #   - remoting/VERSION - the major & minor versions.
         #   - xxx_branding - UI/localizable strings.
         #   - xxx.ver - per-binary non-localizable strings such as the binary
         #     name.
@@ -350,6 +350,7 @@
             'version.rc.version',
             '<(DEPTH)/build/util/LASTCHANGE',
             '<(version_path)',
+            '<(chrome_version_path)',
           ],
           'direct_dependent_settings': {
             'include_dirs': [
@@ -384,6 +385,7 @@
               'inputs': [
                 '<(template_input_path)',
                 '<(version_path)',
+                '<(chrome_version_path)',
                 '<(branding_path)',
                 '<(lastchange_path)',
               ],
@@ -394,6 +396,7 @@
                 'python',
                 '<(version_py_path)',
                 '-f', '<(RULE_INPUT_PATH)',
+                '-f', '<(chrome_version_path)',
                 '-f', '<(version_path)',
                 '-f', '<(branding_path)',
                 '-f', '<(lastchange_path)',
@@ -638,6 +641,8 @@
       'sources': [
         'webapp/build-webapp.py',
         'webapp/verify-webapp.py',
+        '<(version_path)',
+        '<(chrome_version_path)',
         '<@(remoting_webapp_files)',
         '<@(remoting_webapp_locale_files)',
       ],
@@ -688,6 +693,8 @@
           'inputs': [
             'webapp/build-webapp.py',
             '<(_plugin_path)',
+            '<(version_path)',
+            '<(chrome_version_path)',
             '<@(remoting_webapp_files)',
             '<@(remoting_webapp_locale_files)',
           ],
@@ -698,6 +705,7 @@
           'action': [
             'python', 'webapp/build-webapp.py',
             '<(buildtype)',
+            '<(version_full)',
             '<(host_plugin_mime_type)',
             '<(_output_dir)',
             '<(_zip_path)',
