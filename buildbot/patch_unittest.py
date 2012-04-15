@@ -44,7 +44,14 @@ class GerritPatchTest(mox.MoxTestBase):
   def test_json(self):
     return copy.deepcopy(FAKE_PATCH_JSON)
 
-  def GerritDepenedenciesHelper(self, git_log, expected_return_tuple):
+  def MockCommandResult(self, **kwds):
+    obj = self.mox.CreateMock(cros_lib.CommandResult)
+    kwds.setdefault('returncode', 0)
+    for attr, val in kwds.iteritems():
+      setattr(obj, attr, val)
+    return obj
+
+  def GerritDependenciesHelper(self, cmd_output, expected_return_tuple):
     build_root = 'fake_build_root'
     project_dir = 'fake_build_root/fake_project_dir'
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
@@ -57,6 +64,9 @@ class GerritPatchTest(mox.MoxTestBase):
     cros_lib.RunCommand(mox.IgnoreArg(), cwd=project_dir, print_cmd=False)
     cros_patch._GetProjectManifestBranch(
         build_root, 'tacos/chromite').AndReturn('m/master')
+
+    git_log = self.MockCommandResult(output=cmd_output)
+
     cros_lib.RunCommand(
         ['git', 'log', '-z', 'm/master..FETCH_HEAD^'], cwd=project_dir,
         redirect_stdout=True, print_cmd=False).AndReturn(git_log)
@@ -100,15 +110,12 @@ class GerritPatchTest(mox.MoxTestBase):
 
     Change-Id: 1234abce
     """
-    git_log = self.mox.CreateMock(cros_lib.CommandResult)
-    git_log.output = '\0'.join([commit1, commit2])
-    self.GerritDepenedenciesHelper(git_log, ['1234abcd', '1234abce'])
+    self.GerritDependenciesHelper('\0'.join([commit1, commit2]),
+                                  ['1234abcd', '1234abce'])
 
   def testGerritNoDependencies(self):
     """Tests that we return an empty tuple if the commit has no deps."""
-    git_rev_list_obj = self.mox.CreateMock(cros_lib.CommandResult)
-    git_rev_list_obj.output = ''
-    self.GerritDepenedenciesHelper(git_rev_list_obj, [])
+    self.GerritDependenciesHelper('', [])
 
   def testPaladinDependencies(self):
     """Tests that we can get dependencies specified through commit message."""
