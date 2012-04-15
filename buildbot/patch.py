@@ -517,6 +517,28 @@ class GitRepoPatch(object):
     self._is_fetched.add(git_repo)
     return self.sha1
 
+  def GetDiffStatus(self, git_repo):
+    """Isolate the paths and modifications this patch induces.
+
+    Note that detection of file renaming is explicitly turned off.
+    This is intentional since the level of rename detection can vary
+    by user configuration, and trying to have our code specify the
+    minimum level is fairly messy from an API perspective.
+
+    Args:
+      git_repo: Git repository to operate upon.
+
+    returns: A dictionary of path -> modification_type tuples.  See
+      `git log --help`, specifically the --diff-filter section for details."""
+
+    self.Fetch(git_repo)
+
+    lines = cros_build_lib.RunGitCommand(
+        git_repo, ['diff', '--no-renames', '--name-status',
+                   '%s^..%s' % (self.sha1, self.sha1)])
+    lines = lines.output.splitlines()
+    return dict(line.split('\t', 1)[::-1] for line in lines)
+
   def _CherryPick(self, git_repo, trivial=False, inflight=False):
     """Attempts to cherry-pick the given rev into branch.
 
@@ -596,6 +618,15 @@ class GitRepoPatch(object):
                                                constants.PATCH_BRANCH):
       cmd = ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream]
       cros_build_lib.RunGitCommand(git_repo, cmd)
+
+    # Run the sanity checks against current HEAD; if they fail, see if
+    # it's induced by our current series of patches, or if it is
+    # due to a conflict against ToT itself.
+    try:
+      self._SanityChecks(git_repo, 'HEAD', True)
+    except ApplyPatchException:
+      self._SanityChecks(git_repo, upstream, False)
+      raise
 
     do_checkout = True
     try:
@@ -797,6 +828,28 @@ class GitRepoPatch(object):
       logging.info('Found %s Paladin dependencies for change %s', dependencies,
                    self)
     return dependencies
+
+  def _SanityChecks(self, git_repo, tree_revision, is_inflight=False):
+    ebuilds = [path for (path, mtype) in
+               self.GetDiffStatus(git_repo).iteritems()
+               if mtype == 'A' and path.endswith('.ebuild')]
+
+    if not ebuilds:
+      return
+
+    # Note the output of this ls-tree invocation is filename per line;
+    # basically equivalent to ls -1.
+    conflicts = cros_build_lib.RunGitCommand(
+        git_repo,
+        ['ls-tree', '--full-name', '--name-only', '-z', tree_revision,
+         '--'] + ebuilds,
+        error_code_ok=True).output.split('\0')[:-1]
+
+    if conflicts:
+      raise ApplyPatchException(
+          self, inflight=is_inflight,
+          message="Ebuild rename conflicts detected.",
+          files=conflicts)
 
   def __str__(self):
     """Returns custom string to identify this patch."""
