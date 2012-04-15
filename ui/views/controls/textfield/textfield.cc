@@ -445,14 +445,12 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     UpdateAllProperties();
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-    if (!views::Widget::IsPureViews()) {
-      // TODO(beng): remove this once NativeTextfieldWin subclasses
-      // NativeControlWin. This is currently called to perform post-AddChildView
-      // initialization for the wrapper.
-      //
-      // Remove the include for native_textfield_win.h above when you fix this.
-      static_cast<NativeTextfieldWin*>(native_wrapper_)->AttachHack();
-    }
+    // TODO(beng): remove this once NativeTextfieldWin subclasses
+    // NativeControlWin. This is currently called to perform post-AddChildView
+    // initialization for the wrapper.
+    //
+    // Remove the include for native_textfield_win.h above when you fix this.
+    static_cast<NativeTextfieldWin*>(native_wrapper_)->AttachHack();
 #endif
   }
 }

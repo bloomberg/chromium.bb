@@ -30,13 +30,6 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #endif
 
-namespace {
-
-// Set to true if a pure Views implementation is preferred
-bool use_pure_views = false;
-
-}  // namespace
-
 namespace views {
 
 // This class is used to keep track of the event a Widget is processing, and
@@ -226,20 +219,6 @@ Widget* Widget::CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
   params.bounds = bounds;
   widget->Init(params);
   return widget;
-}
-
-// static
-void Widget::SetPureViews(bool pure) {
-  use_pure_views = pure;
-}
-
-// static
-bool Widget::IsPureViews() {
-#if defined(USE_AURA)
-  return true;
-#else
-  return use_pure_views;
-#endif
 }
 
 // static

@@ -79,7 +79,6 @@ WebContents* GetWebContentsFromDelegate(LocationBarView::Delegate* delegate) {
 
 // A utility function to cast OmniboxView to OmniboxViewViews.
 OmniboxViewViews* AsViews(OmniboxView* view) {
-  DCHECK(views::Widget::IsPureViews());
   return static_cast<OmniboxViewViews*>(view);
 }
 
@@ -462,11 +461,10 @@ void LocationBarView::SetInstantSuggestion(const string16& text,
     if (!suggested_text_view_) {
       suggested_text_view_ = new SuggestedTextView(location_entry_->model());
       suggested_text_view_->SetText(text);
-      if (views::Widget::IsPureViews())
-        NOTIMPLEMENTED();
-#if !defined(USE_AURA)
-      else
-        suggested_text_view_->SetFont(GetOmniboxViewWin()->GetFont());
+#if defined(USE_AURA)
+      NOTIMPLEMENTED();
+#else
+      suggested_text_view_->SetFont(GetOmniboxViewWin()->GetFont());
 #endif
       AddChildView(suggested_text_view_);
     } else if (suggested_text_view_->text() != text) {
@@ -491,16 +489,19 @@ string16 LocationBarView::GetInstantSuggestion() const {
 #endif
 
 void LocationBarView::SetLocationEntryFocusable(bool focusable) {
-  if (views::Widget::IsPureViews())
+#if defined(USE_AURA)
     AsViews(location_entry_.get())->SetLocationEntryFocusable(focusable);
-  else
+#else
     set_focusable(focusable);
+#endif
 }
 
 bool LocationBarView::IsLocationEntryFocusableInRootView() const {
-  return views::Widget::IsPureViews() ?
-      AsViews(location_entry_.get())->IsLocationEntryFocusableInRootView() :
-      views::View::IsFocusable();
+#if defined(USE_AURA)
+  return AsViews(location_entry_.get())->IsLocationEntryFocusableInRootView();
+#else
+  return views::View::IsFocusable();
+#endif
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
@@ -722,30 +723,28 @@ void LocationBarView::Layout() {
   // keyword hints and suggested text is minimal and we're not confident this
   // is the right approach for suggested text.
   if (suggested_text_view_) {
-    if (views::Widget::IsPureViews()) {
-      NOTIMPLEMENTED();
+#if defined(USE_AURA)
+    NOTIMPLEMENTED();
+#else
+    // TODO(sky): need to layout when the user changes caret position.
+    int suggested_text_width =
+        suggested_text_view_->GetPreferredSize().width();
+    int vis_text_width = GetOmniboxViewWin()->WidthOfTextAfterCursor();
+    if (vis_text_width + suggested_text_width > entry_width) {
+      // Hide the suggested text if the user has scrolled or we can't fit all
+      // the suggested text.
+      suggested_text_view_->SetBounds(0, 0, 0, 0);
     } else {
-#if !defined(USE_AURA)
-      // TODO(sky): need to layout when the user changes caret position.
-      int suggested_text_width =
-          suggested_text_view_->GetPreferredSize().width();
-      int vis_text_width = GetOmniboxViewWin()->WidthOfTextAfterCursor();
-      if (vis_text_width + suggested_text_width > entry_width) {
-        // Hide the suggested text if the user has scrolled or we can't fit all
-        // the suggested text.
-        suggested_text_view_->SetBounds(0, 0, 0, 0);
-      } else {
-        int location_needed_width = location_entry_->TextWidth();
-        location_bounds.set_width(std::min(location_needed_width,
-                                           entry_width - suggested_text_width));
-        // TODO(sky): figure out why this needs the -1.
-        suggested_text_view_->SetBounds(location_bounds.right() - 1,
-                                        location_bounds.y(),
-                                        suggested_text_width,
-                                        location_bounds.height());
-      }
-#endif
+      int location_needed_width = location_entry_->TextWidth();
+      location_bounds.set_width(std::min(location_needed_width,
+                                         entry_width - suggested_text_width));
+      // TODO(sky): figure out why this needs the -1.
+      suggested_text_view_->SetBounds(location_bounds.right() - 1,
+                                      location_bounds.y(),
+                                      suggested_text_width,
+                                      location_bounds.height());
     }
+#endif
   }
 #endif
 
@@ -856,10 +855,7 @@ void LocationBarView::OnMouseReleased(const views::MouseEvent& event) {
 }
 
 void LocationBarView::OnMouseCaptureLost() {
-  if (views::Widget::IsPureViews())
-    NOTIMPLEMENTED();
-  else
-    GetOmniboxViewWin()->HandleExternalMsg(WM_CAPTURECHANGED, 0, CPoint());
+  GetOmniboxViewWin()->HandleExternalMsg(WM_CAPTURECHANGED, 0, CPoint());
 }
 #endif
 
@@ -1058,10 +1054,7 @@ void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
   UINT flags = event.native_event().wParam;
   gfx::Point screen_point(event.location());
   ConvertPointToScreen(this, &screen_point);
-  if (views::Widget::IsPureViews())
-    NOTIMPLEMENTED();
-  else
-    GetOmniboxViewWin()->HandleExternalMsg(msg, flags, screen_point.ToPOINT());
+  GetOmniboxViewWin()->HandleExternalMsg(msg, flags, screen_point.ToPOINT());
 }
 #endif
 
@@ -1096,12 +1089,13 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(
       return true;
   }
 
-#if !defined(USE_AURA)
-  if (!views::Widget::IsPureViews())
-    return GetOmniboxViewWin()->SkipDefaultKeyEventProcessing(event);
-#endif
+#if defined(USE_AURA)
   NOTIMPLEMENTED();
   return false;
+#else
+  return GetOmniboxViewWin()->SkipDefaultKeyEventProcessing(event);
+#endif
+
 #else
   // This method is not used for Linux ports. See FocusManager::OnKeyEvent() in
   // src/ui/views/focus/focus_manager.cc for details.
@@ -1300,7 +1294,6 @@ bool LocationBarView::HasValidSuggestText() const {
 
 #if !defined(USE_AURA)
 OmniboxViewWin* LocationBarView::GetOmniboxViewWin() {
-  CHECK(!views::Widget::IsPureViews());
   return static_cast<OmniboxViewWin*>(location_entry_.get());
 }
 #endif

@@ -660,12 +660,13 @@ bool NativeWidgetWin::HasCapture(unsigned int flags) const {
 }
 
 InputMethod* NativeWidgetWin::CreateInputMethod() {
-  if (views::Widget::IsPureViews()) {
-    InputMethod* input_method = new InputMethodWin(this);
-    input_method->Init(GetWidget());
-    return input_method;
-  }
+#if defined(USE_AURA)
+  InputMethod* input_method = new InputMethodWin(this);
+  input_method->Init(GetWidget());
+  return input_method;
+#else
   return NULL;
+#endif
 }
 
 void NativeWidgetWin::CenterWindow(const gfx::Size& size) {

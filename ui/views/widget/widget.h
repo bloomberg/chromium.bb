@@ -218,11 +218,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                           const Widget* target,
                           gfx::Rect* rect);
 
-  // SetPureViews and IsPureViews update and return the state of a global
-  // setting that tracks whether to use available pure Views implementations.
-  static void SetPureViews(bool pure);
-  static bool IsPureViews();
-
   // Retrieves the Widget implementation associated with the given
   // NativeView or Window, or NULL if the supplied handle has no associated
   // Widget.

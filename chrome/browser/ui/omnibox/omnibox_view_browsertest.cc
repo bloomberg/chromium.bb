@@ -160,9 +160,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(SetupComponents());
     browser()->FocusLocationBar();
     // Use Textfield's view id on pure views. See crbug.com/71144.
-#if defined(TOOLKIT_VIEWS)
-    if (views::Widget::IsPureViews())
-      location_bar_focus_view_id_ = VIEW_ID_OMNIBOX;
+#if defined(USE_AURA)
+    location_bar_focus_view_id_ = VIEW_ID_OMNIBOX;
 #endif
     ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
                                              location_bar_focus_view_id_));

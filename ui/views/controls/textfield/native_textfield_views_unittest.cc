@@ -126,13 +126,11 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   // ::testing::Test:
   virtual void SetUp() {
     ViewsTestBase::SetUp();
-    Widget::SetPureViews(true);
   }
 
   virtual void TearDown() {
     if (widget_)
       widget_->Close();
-    Widget::SetPureViews(false);
     ViewsTestBase::TearDown();
   }
 

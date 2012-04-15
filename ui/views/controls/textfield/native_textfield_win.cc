@@ -1164,9 +1164,11 @@ void NativeTextfieldWin::BuildContextMenu() {
 // static
 NativeTextfieldWrapper* NativeTextfieldWrapper::CreateWrapper(
     Textfield* field) {
-  if (views::Widget::IsPureViews())
-    return new NativeTextfieldViews(field);
+#if defined(USE_AURA)
+  return new NativeTextfieldViews(field);
+#else
   return new NativeTextfieldWin(field);
+#endif
 }
 
 }  // namespace views

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,7 +55,6 @@ class NativeScrollBarTest : public ViewsTestBase {
   }
 
   virtual void SetUp() {
-    Widget::SetPureViews(true);
     ViewsTestBase::SetUp();
     controller_.reset(new TestScrollBarController());
 
@@ -83,7 +82,6 @@ class NativeScrollBarTest : public ViewsTestBase {
   virtual void TearDown() {
     widget_->Close();
     ViewsTestBase::TearDown();
-    Widget::SetPureViews(false);
   }
 
  protected:

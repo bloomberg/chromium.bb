@@ -207,9 +207,11 @@ void NativeComboboxWin::UpdateFont() {
 // static
 NativeComboboxWrapper* NativeComboboxWrapper::CreateWrapper(
     Combobox* combobox) {
-  if (Widget::IsPureViews())
-    return new NativeComboboxViews(combobox);
+#if defined(USE_AURA)
+  return new NativeComboboxViews(combobox);
+#else
   return new NativeComboboxWin(combobox);
+#endif
 }
 
 }  // namespace views

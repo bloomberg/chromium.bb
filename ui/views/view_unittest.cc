@@ -2725,7 +2725,6 @@ class ViewLayerTest : public ViewsTestBase {
   virtual void TearDown() OVERRIDE {
     View::set_use_acceleration_when_possible(old_use_acceleration_);
     widget_->CloseNow();
-    Widget::SetPureViews(false);
     ViewsTestBase::TearDown();
   }
 

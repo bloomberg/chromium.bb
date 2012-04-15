@@ -519,6 +519,8 @@
         }],
         ['use_aura==0 and OS=="win"', {
           'sources/': [
+            ['exclude', 'controls/combobox/native_combobox_views_unittest.cc'],
+            ['exclude', 'controls/textfield/native_textfield_views_unittest.cc'],
             ['exclude', 'controls/tree/tree_view_views_unittest.cc'],
           ],
         }],
