@@ -1,7 +1,9 @@
+#! /usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import os.path
 import sys
 
@@ -28,10 +30,10 @@ class Callspec(object):
   def __init__(self, callspec_node):
     self.node = callspec_node
 
-  def process(self, refs):
+  def process(self, callbacks):
     parameters = []
     for node in self.node.children:
-      parameters.append(Param(node).process(refs))
+      parameters.append(Param(node).process(callbacks))
     return self.node.GetName(), parameters
 
 class Param(object):
@@ -42,10 +44,10 @@ class Param(object):
   def __init__(self, param_node):
     self.node = param_node
 
-  def process(self, refs):
+  def process(self, callbacks):
     return Typeref(self.node.GetProperty( 'TYPEREF'),
                    self.node,
-                   { 'name': self.node.GetName() }).process(refs)
+                   { 'name': self.node.GetName() }).process(callbacks)
 
 class Dictionary(object):
   '''
@@ -55,11 +57,11 @@ class Dictionary(object):
   def __init__(self, dictionary_node):
     self.node = dictionary_node
 
-  def process(self, refs):
+  def process(self, callbacks):
     properties = {}
     for node in self.node.children:
       if node.cls == 'Member':
-        k, v = Member(node).process(refs)
+        k, v = Member(node).process(callbacks)
         properties[k] = v
     return { 'id': self.node.GetName(),
              'properties': properties,
@@ -74,7 +76,7 @@ class Member(object):
   def __init__(self, member_node):
     self.node = member_node
 
-  def process(self, refs):
+  def process(self, callbacks):
     properties = {}
     name = self.node.GetName()
     if self.node.GetProperty('OPTIONAL'):
@@ -85,14 +87,14 @@ class Member(object):
     for node in self.node.children:
       if node.cls == 'Callspec':
         is_function = True
-        name, parameters = Callspec(node).process(refs)
+        name, parameters = Callspec(node).process(callbacks)
         properties['parameters'] = parameters
     properties['name'] = name
     if is_function:
       properties['type'] = 'function'
     else:
       properties = Typeref(self.node.GetProperty('TYPEREF'),
-                           self.node, properties).process(refs)
+                           self.node, properties).process(callbacks)
     return name, properties
 
 class Typeref(object):
@@ -106,7 +108,7 @@ class Typeref(object):
     self.parent = parent
     self.additional_properties = additional_properties
 
-  def process(self, refs):
+  def process(self, callbacks):
     properties = self.additional_properties
     result = properties
 
@@ -141,9 +143,9 @@ class Typeref(object):
     elif self.typeref is None:
       properties['type'] = 'function'
     else:
-      try:
-        result = refs[self.typeref]
-      except KeyError, e:
+      if self.typeref in callbacks:
+        properties.update(callbacks[self.typeref])
+      else:
         properties['$ref'] = self.typeref
 
     return result
@@ -160,16 +162,16 @@ class Namespace(object):
     self.events = []
     self.functions = []
     self.types = []
-    self.refs = {}
+    self.callbacks = {}
 
   def process(self):
     for node in self.namespace.children:
       cls = node.cls
       if cls == "Dictionary":
-        self.types.append(Dictionary(node).process(self.refs))
+        self.types.append(Dictionary(node).process(self.callbacks))
       elif cls == "Callback":
-        k, v = Member(node).process(self.refs)
-        self.refs[k] = v
+        k, v = Member(node).process(self.callbacks)
+        self.callbacks[k] = v
       elif cls == "Interface" and node.GetName() == "Functions":
         self.functions = self.process_interface(node)
       elif cls == "Interface" and node.GetName() == "Events":
@@ -187,7 +189,7 @@ class Namespace(object):
     members = []
     for member in node.children:
       if member.cls == 'Member':
-        name, properties = Member(member).process(self.refs)
+        name, properties = Member(member).process(self.callbacks)
         members.append(properties)
     return members
 
@@ -234,3 +236,15 @@ def Load(filename):
   idl = idl_parser.IDLParser().ParseData(contents, filename)
   idl_schema = IDLSchema(idl)
   return idl_schema.process()
+
+def Main():
+  '''
+  Dump a json serialization of parse result for the IDL files whose names
+  were passed in on the command line.
+  '''
+  for filename in sys.argv[1:]:
+    schema = Load(filename)
+    print json.dumps(schema, indent=2)
+
+if __name__ == '__main__':
+  Main()

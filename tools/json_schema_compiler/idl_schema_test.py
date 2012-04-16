@@ -43,5 +43,13 @@ class IdlSchemaTest(unittest.TestCase):
                                 'items':{'$ref':'MyType2'}}]}]
     self.assertEquals(expected, getParams(schema, 'function12'))
 
+
+  def testArrayOfCallbacks(self):
+    schema = idl_schema.Load('test/idl_callback_arrays.idl')[0]
+    expected = [{'type':'array', 'name':'callbacks',
+                 'items':{'type':'function', 'name':'MyCallback',
+                          'parameters':[{'type':'integer', 'name':'x'}]}}]
+    self.assertEquals(expected, getParams(schema, 'whatever'))
+
 if __name__ == '__main__':
   unittest.main()
