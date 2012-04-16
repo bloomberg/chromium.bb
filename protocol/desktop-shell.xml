@@ -1,6 +1,12 @@
 <protocol name="desktop">
 
   <interface name="desktop_shell" version="1">
+    <description summary="create desktop widgets and helpers">
+      Traditional user interfaces can rely on this interface to define the
+      foundations of typical desktops. Currently it's possible to set up
+      background, panels and locking surfaces.
+    </description>
+
     <request name="set_background">
       <arg name="output" type="object" interface="wl_output"/>
       <arg name="surface" type="object" interface="wl_shell_surface"/>
@@ -26,21 +32,28 @@
       <arg name="height" type="int"/>
     </event>
 
-    <!-- Tell the shell we want it to create and set the lock surface,
-         which is a GUI asking the user to unlock the screen. The lock
-         surface is announced with 'set_lock_surface'. Whether or not
-         the shell actually implements locking, it MUST send 'unlock'
-         request to let the normal desktop resume. -->
-    <event name="prepare_lock_surface"/>
+    <event name="prepare_lock_surface">
+      <description summary="tell the client to create, set the lock surface">
+	Tell the shell we want it to create and set the lock surface, which is
+	a GUI asking the user to unlock the screen. The lock surface is
+	announced with 'set_lock_surface'. Whether or not the shell actually
+	implements locking, it MUST send 'unlock' request to let the normal
+        desktop resume.
+      </description>
+    </event>
   </interface>
 
-  <!-- Only one client can bind this interface at a time. -->
   <interface name="screensaver" version="1">
+    <description summary="interface for implementing screensavers">
+      Only one client can bind this interface at a time.
+    </description>
 
-    <!-- Set the surface type as a screensaver for a particular output.
-         A screensaver surface is normally hidden, and only visible after
-         an idle timeout. -->
     <request name="set_surface">
+      <description summary="set the surface type as a screensaver">
+	A screensaver surface is normally hidden, and only visible after an
+        idle timeout.
+      </description>
+
       <arg name="surface" type="object" interface="wl_shell_surface"/>
       <arg name="output" type="object" interface="wl_output"/>
     </request>
