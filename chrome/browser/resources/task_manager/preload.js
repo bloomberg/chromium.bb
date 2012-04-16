@@ -8,6 +8,9 @@ var taskmanager = undefined;  // This will be instantiated in main.js.
 
 /**
  * Invoked when a range of items has changed.
+ * @param {Integer} start The start position of tasks to be changed
+ * @param {Integer} length The length of tasks to be changed
+ * @param {Array of task} tasks The array of updated task
  */
 function taskChanged(start, length, tasks) {
   var task = {type: 'change', start: start, length: length, tasks: tasks};
@@ -19,8 +22,8 @@ function taskChanged(start, length, tasks) {
 var cachedEnabledColumns;
 
 /**
- * Returns the dictionary which contains the list of columns and whether each
- * column is enabled or not.
+ * @return {Dictionary} the dictionary which contains the list of columns and
+ * whether each column is enabled or not.
  */
 function getEnabledColumns() {
   // Use the cache after the second time since access to localStorage is slow.
@@ -41,14 +44,17 @@ function getEnabledColumns() {
 }
 
 /**
- * Returns whether the given column (at |columnId|) is enabled or not.
+ * @return {Boolean} the given column (at |columnId|) is enabled or not.
+ * @param {String} columnId The ID of the collumn to be checked.
  */
 function isColumnEnabled(columnId) {
   return (getEnabledColumns())[columnId];
 }
 
 /**
- * Sets whether the given column is enabled or not.
+ * Sets the given column either enabled or disabled.
+ * @param {String} columnId The ID of the collumn to be set.
+ * @param {Boolean} newChecked True, to set the column enable. False otherwise.
  */
 function setColumnEnabled(columnId, newChecked) {
   commands.setUpdateColumn(columnId, newChecked);
@@ -58,7 +64,7 @@ function setColumnEnabled(columnId, newChecked) {
 }
 
 // Enable the taskmanager model before the loading of scripts.
-(function () {
+(function() {
   for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
     var columnId = DEFAULT_COLUMNS[i][0];
     if (isColumnEnabled(columnId))

@@ -47,7 +47,6 @@ TaskManagerCommands = {
 
   /**
    * Sends command to enable or disable the given columns to update the data.
-   * @public
    */
   setUpdateColumn: function(columnId, isEnabled) {
     chrome.send('setUpdateColumn', [columnId, isEnabled]);

@@ -12,8 +12,9 @@ var localStrings = new LocalStrings();
 TaskManager.prototype = {
   /**
    * Handle window close.
+   * @this
    */
-  onClose: function () {
+  onClose: function() {
     if (!this.disabled_) {
       this.disabled_ = true;
       commands.disableTaskManager();
@@ -24,8 +25,9 @@ TaskManager.prototype = {
    * Handles selection changes.
    * This is also called when data of tasks are refreshed, even if selection
    * has not been changed.
+   * @this
    */
-  onSelectionChange: function () {
+  onSelectionChange: function() {
     var sm = this.selectionModel_;
     var dm = this.dataModel_;
     var selectedIndexes = sm.selectedIndexes;
@@ -40,9 +42,9 @@ TaskManager.prototype = {
     }
     if (this.is_end_process_enabled_ != is_end_process_enabled) {
       if (is_end_process_enabled)
-        $('kill-process').removeAttribute("disabled");
+        $('kill-process').removeAttribute('disabled');
       else
-        $('kill-process').setAttribute("disabled", "true");
+        $('kill-process').setAttribute('disabled', 'true');
 
       this.is_end_process_enabled_ = is_end_process_enabled;
     }
@@ -51,15 +53,17 @@ TaskManager.prototype = {
   /**
    * Closes taskmanager dialog.
    * After this function is called, onClose() will be called.
+   * @this
    */
-  close: function () {
+  close: function() {
     window.close();
   },
 
   /**
    * Sends commands to kill selected processes.
+   * @this
    */
-  killSelectedProcesses: function () {
+  killSelectedProcesses: function() {
     var selectedIndexes = this.selectionModel_.selectedIndexes;
     var dm = this.dataModel_;
     var uniqueIds = [];
@@ -74,8 +78,9 @@ TaskManager.prototype = {
 
   /**
    * Initializes taskmanager.
+   * @this
    */
-  initialize: function (dialogDom, opt) {
+  initialize: function(dialogDom, opt) {
     if (!dialogDom) {
       console.log('ERROR: dialogDom is not defined.');
       return;
@@ -96,7 +101,7 @@ TaskManager.prototype = {
       var column_label_id = DEFAULT_COLUMNS[i][1];
       var localized_label = localStrings.getString(column_label_id);
       // Falls back to raw column_label_id if localized string is not defined.
-      if (localized_label == "")
+      if (localized_label == '')
         localized_label = column_label_id;
 
       this.localized_column_[i] = localized_label;
@@ -155,6 +160,7 @@ TaskManager.prototype = {
    * Initializes the visibilities and handlers of the elements.
    * This method is called by initialize().
    * @private
+   * @this
    */
   initElements_: function() {
     // <if expr="pp_ifdef('chromeos')">
@@ -174,6 +180,7 @@ TaskManager.prototype = {
   /**
    * Additional initialization of taskmanager. This function is called when
    * the loading of delayed scripts finished.
+   * @this
    */
   delayedInitialize: function() {
     this.initColumnMenu_();
@@ -206,7 +213,7 @@ TaskManager.prototype = {
     this.table_.redraw();
   },
 
-  initColumnModel_: function () {
+  initColumnModel_: function() {
     var table_columns = new Array();
     for (var i = 0; i < DEFAULT_COLUMNS.length; i++) {
       var column = DEFAULT_COLUMNS[i];
@@ -226,7 +233,7 @@ TaskManager.prototype = {
     this.columnModel_ = new cr.ui.table.TableColumnModel(table_columns);
   },
 
-  initColumnMenu_: function () {
+  initColumnMenu_: function() {
     this.column_menu_commands_ = [];
 
     this.commandsElement_ = this.document_.createElement('commands');
@@ -249,7 +256,7 @@ TaskManager.prototype = {
       command.menuitem = item;
       item.textContent = this.localized_column_[i];
       if (isColumnEnabled(column[0]))
-        item.setAttributeNode(this.document_.createAttribute("checked"));
+        item.setAttributeNode(this.document_.createAttribute('checked'));
       this.columnSelectContextMenu_.appendChild(item);
     }
 
@@ -266,11 +273,11 @@ TaskManager.prototype = {
                                     this.onCommandCanExecute_.bind(this));
   },
 
-  initTableMenu_: function () {
+  initTableMenu_: function() {
     this.table_menu_commands_ = [];
     this.tableContextMenu_ = this.document_.createElement('menu');
 
-    var addMenuItem = function (tm, command_id, string_id, default_label) {
+    var addMenuItem = function(tm, command_id, string_id, default_label) {
       // Creates command element to receive event.
       var command = tm.document_.createElement('command');
       command.id = COMMAND_CONTEXTMENU_TABLE_PREFIX + '-' + command_id;
@@ -287,14 +294,14 @@ TaskManager.prototype = {
       tm.tableContextMenu_.appendChild(item);
     };
 
-    addMenuItem(this, 'inspect', 'inspect', "Inspect");
-    addMenuItem(this, 'activate', 'activate', "Activate");
+    addMenuItem(this, 'inspect', 'inspect', 'Inspect');
+    addMenuItem(this, 'activate', 'activate', 'Activate');
 
     this.document_.body.appendChild(this.tableContextMenu_);
     cr.ui.Menu.decorate(this.tableContextMenu_);
   },
 
-  initTable_: function () {
+  initTable_: function() {
     if (!this.dataModel_ || !this.selectionModel_ || !this.columnModel_) {
       console.log('ERROR: some models are not defined.');
       return;
@@ -321,7 +328,9 @@ TaskManager.prototype = {
   /**
    * Returns a list item element of the list. This method trys to reuse the
    * cached element, or creates a new element.
+   * @return {cr.ui.ListItem}  list item element which contains the given data.
    * @private
+   * @this
    */
   getRow_: function(data, table) {
     // Trys to reuse the cached row;
@@ -332,10 +341,10 @@ TaskManager.prototype = {
     // Initializes the cache.
     var pid = data['processId'][0];
     this.elementsCache_[pid] = {
-      listItem:null,
-      cell:[],
-      icon:[],
-      columns:{}
+      listItem: null,
+      cell: [],
+      icon: [],
+      columns: {}
     };
 
     // Create new row.
@@ -345,7 +354,9 @@ TaskManager.prototype = {
   /**
    * Returns a list item element with re-using the previous cached element, or
    * returns null if failed.
+   * @return {cr.ui.ListItem} cached un-used element to be reused.
    * @private
+   * @this
    */
   renderRowFromCache_: function(data, table) {
     var pid = data['processId'][0];
@@ -410,8 +421,10 @@ TaskManager.prototype = {
   },
 
   /**
-   * Create a new list item element and returns it.
+   * Create a new list item element.
+   * @return {cr.ui.ListItem} created new list item element.
    * @private
+   * @this
    */
   renderRow_: function(data, table) {
     var pid = data['processId'][0];
@@ -453,7 +466,9 @@ TaskManager.prototype = {
 
   /**
    * Create a new element of the cell.
+   * @return {HTMLDIVElement} created cell
    * @private
+   * @this
    */
   renderColumn_: function(entry, columnId, table) {
     var container = this.document_.createElement('div');
@@ -518,6 +533,7 @@ TaskManager.prototype = {
   /**
    * Updates the task list with the supplied task.
    * @private
+   * @this
    */
   processTaskChange: function(task) {
     var dm = this.dataModel_;
@@ -574,6 +590,7 @@ TaskManager.prototype = {
 
   /**
    * Respond to a command being executed.
+   * @this
    */
   onCommand_: function(event) {
     var command = event.command;
@@ -606,8 +623,9 @@ TaskManager.prototype = {
   /**
    * Store resourceIndex of target resource of context menu, because resource
    * will be replaced when it is refreshed.
+   * @this
    */
-  onTableContextMenuOpened_: function (e) {
+  onTableContextMenuOpened_: function(e) {
     if (!this.isFinishedInitDelayed_)
       return;
 
@@ -622,7 +640,7 @@ TaskManager.prototype = {
     activate_menuitem.disabled = true;
 
     var target = e.target;
-    for (; ; target = target.parentNode) {
+    for (;; target = target.parentNode) {
       if (!target) return;
       var classes = target.classList;
       if (classes &&
@@ -663,7 +681,7 @@ TaskManager.prototype = {
     menuitem.checked = newChecked;
     setColumnEnabled(columnId, newChecked);
 
-    this.initColumnModel_()
+    this.initColumnModel_();
     this.table_.columnModel = this.columnModel_;
     this.table_.redraw();
   },
