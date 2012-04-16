@@ -854,6 +854,10 @@ static void PreSandboxInit() {
 
 #if !defined(CHROMIUM_SELINUX)
 static bool EnterSandbox() {
+  PreSandboxInit();
+  SkiaFontConfigSetImplementation(
+      new FontConfigIPC(kMagicSandboxIPCDescriptor));
+
   // The SUID sandbox sets this environment variable to a file descriptor
   // over which we can signal that we have completed our startup and can be
   // chrooted.
@@ -869,8 +873,6 @@ static bool EnterSandbox() {
     if (!*sandbox_fd_string || *endptr || fd_long < 0 || fd_long > INT_MAX)
       return false;
     const int fd = fd_long;
-
-    PreSandboxInit();
 
     static const char kMsgChrootMe = 'C';
     static const char kMsgChrootSuccessful = 'O';
@@ -893,9 +895,6 @@ static bool EnterSandbox() {
       LOG(ERROR) << "Error code reply from chroot helper";
       return false;
     }
-
-    SkiaFontConfigSetImplementation(
-        new FontConfigIPC(kMagicSandboxIPCDescriptor));
 
 #if !defined(OS_OPENBSD)
     // Previously, we required that the binary be non-readable. This causes the
@@ -924,14 +923,6 @@ static bool EnterSandbox() {
       }
     }
 #endif
-#if defined(SECCOMP_SANDBOX)
-  } else if (SeccompSandboxEnabled()) {
-    PreSandboxInit();
-    SkiaFontConfigSetImplementation(
-        new FontConfigIPC(kMagicSandboxIPCDescriptor));
-#endif
-  } else {
-    SkiaFontConfigUseDirectImplementation();
   }
 
   return true;
