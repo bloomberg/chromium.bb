@@ -90,8 +90,7 @@ void BrowsingDataCookieHelper::DeleteCookieOnIOThread(
 
 CannedBrowsingDataCookieHelper::CannedBrowsingDataCookieHelper(
     Profile* profile)
-    : BrowsingDataCookieHelper(profile),
-    profile_(profile) {
+    : BrowsingDataCookieHelper(profile) {
 }
 
 CannedBrowsingDataCookieHelper::~CannedBrowsingDataCookieHelper() {}
@@ -99,7 +98,7 @@ CannedBrowsingDataCookieHelper::~CannedBrowsingDataCookieHelper() {}
 CannedBrowsingDataCookieHelper* CannedBrowsingDataCookieHelper::Clone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CannedBrowsingDataCookieHelper* clone =
-      new CannedBrowsingDataCookieHelper(profile_);
+      new CannedBrowsingDataCookieHelper(profile());
 
   clone->cookie_list_ = cookie_list_;
   return clone;

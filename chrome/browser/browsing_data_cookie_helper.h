@@ -43,6 +43,7 @@ class BrowsingDataCookieHelper
  protected:
   friend class base::RefCountedThreadSafe<BrowsingDataCookieHelper>;
   virtual ~BrowsingDataCookieHelper();
+  Profile* profile() { return profile_; }
 
  private:
   // Fetch the cookies. This must be called in the IO thread.
@@ -117,8 +118,6 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   virtual ~CannedBrowsingDataCookieHelper();
 
   net::CookieList cookie_list_;
-
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataCookieHelper);
 };
