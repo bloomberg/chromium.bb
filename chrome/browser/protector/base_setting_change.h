@@ -55,6 +55,10 @@ class BaseSettingChange {
   // base method.
   virtual bool Init(Profile* profile);
 
+  // Called instead of Init when ProtectorService is disabled. No other members
+  // are called in that case.
+  virtual void InitWhenDisabled(Profile* profile);
+
   // Persists new setting if needed. |browser| is the Browser instance from
   // which the user action originates.
   virtual void Apply(Browser* browser);

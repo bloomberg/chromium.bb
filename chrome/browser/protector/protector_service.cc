@@ -10,6 +10,7 @@
 #include "chrome/browser/protector/composite_settings_change.h"
 #include "chrome/browser/protector/keys.h"
 #include "chrome/browser/protector/protected_prefs_watcher.h"
+#include "chrome/browser/protector/protector_utils.h"
 #include "chrome/browser/protector/settings_change_global_error.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -46,19 +47,24 @@ ProtectorService::~ProtectorService() {
 
 void ProtectorService::ShowChange(BaseSettingChange* change) {
   DCHECK(change);
+  // Change instance will either be owned by |this| or deleted after this call.
+  scoped_ptr<BaseSettingChange> change_ptr(change);
 
   DVLOG(1) << "Init change";
-  if (!change->Init(profile_)) {
+  if (!protector::IsEnabled()) {
+    change_ptr->InitWhenDisabled(profile_);
+    return;
+  } else if (!change_ptr->Init(profile_)) {
     LOG(WARNING) << "Error while initializing, dismissing change";
-    delete change;
     return;
   }
 
-  Item* item_to_merge_with = FindItemToMergeWith(change);
+  Item* item_to_merge_with = FindItemToMergeWith(change_ptr.get());
   if (item_to_merge_with) {
     // CompositeSettingsChange takes ownership of merged changes.
     BaseSettingChange* existing_change = item_to_merge_with->change.release();
-    CompositeSettingsChange* merged_change = existing_change->MergeWith(change);
+    CompositeSettingsChange* merged_change =
+        existing_change->MergeWith(change_ptr.release());
     item_to_merge_with->change.reset(merged_change);
     item_to_merge_with->was_merged = true;
     if (item_to_merge_with->error->GetBubbleView())
@@ -69,9 +75,9 @@ void ProtectorService::ShowChange(BaseSettingChange* change) {
   } else {
     Item new_item;
     SettingsChangeGlobalError* error =
-        new SettingsChangeGlobalError(change, this);
+        new SettingsChangeGlobalError(change_ptr.get(), this);
     new_item.error.reset(error);
-    new_item.change.reset(change);
+    new_item.change.reset(change_ptr.release());
     items_.push_back(new_item);
     // Do not show the bubble immediately if another one is active.
     error->AddToProfile(profile_, !has_active_change_);

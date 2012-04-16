@@ -30,6 +30,7 @@ class PrefsBackupInvalidChange : public BasePrefsChange {
 
   // BasePrefsChange overrides:
   virtual bool Init(Profile* profile) OVERRIDE;
+  virtual void InitWhenDisabled(Profile* profile) OVERRIDE;
   virtual void Apply(Browser* browser) OVERRIDE;
   virtual void Discard(Browser* browser) OVERRIDE;
   virtual void Timeout() OVERRIDE;
@@ -72,6 +73,10 @@ bool PrefsBackupInvalidChange::Init(Profile* profile) {
   DismissOnPrefChange(prefs::kURLsToRestoreOnStartup);
   DismissOnPrefChange(prefs::kPinnedTabs);
   return true;
+}
+
+void PrefsBackupInvalidChange::InitWhenDisabled(Profile* profile) {
+  // Nothing to do here since the backup has been already reset.
 }
 
 void PrefsBackupInvalidChange::Apply(Browser* browser) {

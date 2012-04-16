@@ -86,7 +86,7 @@ void ProtectedPrefsWatcher::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(kBackupHomePage, "",
                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(kBackupHomePageIsNewTabPage, false,
-                            PrefService::UNSYNCABLE_PREF);
+                             PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(kBackupShowHomeButton, false,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterIntegerPref(kBackupRestoreOnStartup, 0,
@@ -129,6 +129,14 @@ const base::Value* ProtectedPrefsWatcher::GetBackupForPref(
          backup_path != kBackupExtensionsIDs &&
          backup_path != kBackupSignature);
   return backup_pref->GetValue();
+}
+
+void ProtectedPrefsWatcher::ForceUpdateBackup() {
+  UMA_HISTOGRAM_ENUMERATION(
+      kProtectorHistogramPrefs,
+      kProtectorErrorForcedUpdate,
+      kProtectorErrorCount);
+  InitBackup();
 }
 
 void ProtectedPrefsWatcher::Observe(

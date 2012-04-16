@@ -39,9 +39,13 @@ bool BaseSettingChange::Contains(const BaseSettingChange* other) const {
 }
 
 bool BaseSettingChange::Init(Profile* profile) {
-  DCHECK(profile);
+  DCHECK(profile && !profile_);
   profile_ = profile;
   return true;
+}
+
+void BaseSettingChange::InitWhenDisabled(Profile* profile) {
+  DCHECK(profile && !profile_);
 }
 
 void BaseSettingChange::Apply(Browser* browser) {

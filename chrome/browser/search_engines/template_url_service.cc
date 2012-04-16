@@ -654,7 +654,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
     UpdateKeywordSearchTermsForURL(visits_to_add_[i]);
   visits_to_add_.clear();
 
-  if (new_resource_keyword_version && service_.get())
+  if (new_resource_keyword_version)
     service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
 
 #if defined(ENABLE_PROTECTOR_SERVICE)
@@ -676,8 +676,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
       // Protector is turned off: set the current default search to itself
       // to update the backup and sign it. Otherwise, change will be reported
       // every time when keywords are loaded until a search provider is added.
-      // Note that this saves the default search provider to prefs.
-      SetDefaultSearchProviderNoNotify(default_search_provider_);
+      service_->SetDefaultSearchProvider(default_search_provider_);
     }
   }
 #endif

@@ -23,6 +23,7 @@ enum ProtectorError {
   kProtectorErrorValueChanged,
   kProtectorErrorValueValid,
   kProtectorErrorValueValidZero,
+  kProtectorErrorForcedUpdate,
 
   // This is for convenience only, must always be the last.
   kProtectorErrorCount
@@ -55,7 +56,7 @@ extern const char kProtectorHistogramStartupSettingsApplied[];
 // Histogram name to report the new startup settings when the backup is
 // valid and a change is detected.
 extern const char kProtectorHistogramStartupSettingsChanged[];
-// Histogram name to report when keeps previous startup settings.
+// Histogram name to report when user keeps previous startup settings.
 extern const char kProtectorHistogramStartupSettingsDiscarded[];
 // Histogram name to report when user ignores startup settings change.
 extern const char kProtectorHistogramStartupSettingsTimeout[];

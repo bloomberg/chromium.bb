@@ -25,6 +25,7 @@ class BasePrefsChange : public BaseSettingChange,
 
   // BaseSettingChange overrides:
   virtual bool Init(Profile* profile) OVERRIDE;
+  virtual void InitWhenDisabled(Profile* profile) OVERRIDE;
 
  protected:
   // Marks |this| to be dismissed when |pref_name| is changed. Should only be

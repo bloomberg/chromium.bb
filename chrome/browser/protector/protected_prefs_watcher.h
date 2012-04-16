@@ -42,8 +42,9 @@ class ProtectedPrefsWatcher : public content::NotificationObserver {
   // instance is owned by the PrefService.
   const base::Value* GetBackupForPref(const std::string& path) const;
 
-  // Updates the backup signature.
-  void UpdateBackupSignature();
+  // Forces a valid backup, matching actual preferences (overwriting any
+  // previous data). Should only be when protector service is disabled.
+  void ForceUpdateBackup();
 
   // True if the backup was valid at the profile load time.
   bool is_backup_valid() { return is_backup_valid_; }
@@ -83,6 +84,9 @@ class ProtectedPrefsWatcher : public content::NotificationObserver {
 
   // Returns |true| if backup signature is valid.
   bool IsSignatureValid() const;
+
+  // Updates the backup signature.
+  void UpdateBackupSignature();
 
   // Returns data to be signed as string.
   std::string GetSignatureData(PrefService* prefs) const;

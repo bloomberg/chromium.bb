@@ -5,8 +5,10 @@
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/base_prefs_change.h"
+#include "chrome/browser/protector/protected_prefs_watcher.h"
 #include "chrome/browser/protector/protector_service.h"
 #include "chrome/browser/protector/protector_service_factory.h"
+#include "chrome/browser/protector/protector_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 
@@ -23,6 +25,13 @@ bool BasePrefsChange::Init(Profile* profile) {
     return false;
   pref_observer_.reset(new PrefSetObserver(profile->GetPrefs(), this));
   return true;
+}
+
+void BasePrefsChange::InitWhenDisabled(Profile* profile) {
+  // Forcibly set backup to match the actual settings so that no changes are
+  // detected on future runs.
+  ProtectorServiceFactory::GetForProfile(profile)->GetPrefsWatcher()->
+      ForceUpdateBackup();
 }
 
 void BasePrefsChange::DismissOnPrefChange(const std::string& pref_name) {

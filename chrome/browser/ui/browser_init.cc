@@ -1582,18 +1582,11 @@ void BrowserInit::LaunchWithProfile::CheckPreferencesBackup(Profile* profile) {
       ProtectorServiceFactory::GetForProfile(profile);
   ProtectedPrefsWatcher* prefs_watcher = protector_service->GetPrefsWatcher();
 
-  // BaseSettingChange instances are always created, even when Protector is
-  // disabled, to report corresponding histograms. With Protector disabled,
-  // the backup is updated to match the new setting value, otherwise histograms
-  // would be reported on each run.
-  // TODO(ivankr): move IsEnabled() check to ProtectorService::ShowChange().
-
   // Check if backup is valid.
   if (!prefs_watcher->is_backup_valid()) {
     scoped_ptr<BaseSettingChange> change(
         protector::CreatePrefsBackupInvalidChange());
-    if (protector::IsEnabled())
-      protector_service->ShowChange(change.release());
+    protector_service->ShowChange(change.release());
     // Further checks make no sense.
     return;
   }
@@ -1612,12 +1605,7 @@ void BrowserInit::LaunchWithProfile::CheckPreferencesBackup(Profile* profile) {
             new_tabs,
             SessionStartupPref::GetStartupPrefBackup(profile),
             PinnedTabCodec::ReadPinnedTabs(tabs_backup)));
-    if (protector::IsEnabled()) {
-      protector_service->ShowChange(change.release());
-    } else {
-      SessionStartupPref::SetStartupPref(profile, new_pref);
-      PinnedTabCodec::WritePinnedTabs(profile, new_tabs);
-    }
+    protector_service->ShowChange(change.release());
   }
 }
 

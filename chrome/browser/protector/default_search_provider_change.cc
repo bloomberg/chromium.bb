@@ -87,6 +87,7 @@ class DefaultSearchProviderChange : public BaseSettingChange,
 
   // BaseSettingChange overrides:
   virtual bool Init(Profile* profile) OVERRIDE;
+  virtual void InitWhenDisabled(Profile* profile) OVERRIDE;
   virtual void Apply(Browser* browser) OVERRIDE;
   virtual void Discard(Browser* browser) OVERRIDE;
   virtual void Timeout() OVERRIDE;
@@ -230,6 +231,12 @@ bool DefaultSearchProviderChange::Init(Profile* profile) {
   }
 
   return true;
+}
+
+void DefaultSearchProviderChange::InitWhenDisabled(Profile* profile) {
+  // The --no-protector case is handled in TemplateURLService internals.
+  // TODO(ivankr): move it here.
+  NOTREACHED();
 }
 
 void DefaultSearchProviderChange::Apply(Browser* browser) {
