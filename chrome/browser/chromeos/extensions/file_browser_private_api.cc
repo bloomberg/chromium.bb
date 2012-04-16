@@ -576,7 +576,7 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   return true;
 }
 
-class ExecuteTasksFileBrowserFunction::Executor: public FileTaskExecutor {
+class ExecuteTasksFileBrowserFunction::Executor : public FileTaskExecutor {
  public:
   Executor(Profile* profile,
            const GURL& source_url,
@@ -584,13 +584,22 @@ class ExecuteTasksFileBrowserFunction::Executor: public FileTaskExecutor {
            const std::string& action_id,
            ExecuteTasksFileBrowserFunction* function)
     : FileTaskExecutor(profile, source_url, extension_id, action_id),
-      function_(function)
-  {}
+      function_(function) {
+  }
+
+  virtual ~Executor() OVERRIDE {
+    if (function_)
+      function_->OnTaskExecuted(false);
+  }
 
  protected:
   // FileTaskExecutor overrides.
   virtual Browser* browser() { return function_->GetCurrentBrowser(); }
-  virtual void Done(bool success) { function_->SendResponse(success); }
+  virtual void Done(bool success) {
+    function_->OnTaskExecuted(success);
+    // Let's make sure |function_| gets notified only once.
+    function_ = NULL;
+  }
 
  private:
   scoped_refptr<ExecuteTasksFileBrowserFunction> function_;
@@ -637,11 +646,16 @@ bool ExecuteTasksFileBrowserFunction::RunImpl() {
 
   scoped_refptr<Executor> executor =
       new Executor(profile(), source_url(), extension_id, action_id, this);
+
   if (!executor->Execute(file_urls))
     return false;
 
   result_.reset(new base::FundamentalValue(true));
   return true;
+}
+
+void ExecuteTasksFileBrowserFunction::OnTaskExecuted(bool success) {
+  SendResponse(success);
 }
 
 FileBrowserFunction::FileBrowserFunction() {

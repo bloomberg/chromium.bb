@@ -184,16 +184,18 @@ FilePath ExtractGDataPath(const FilePath& path) {
   return extracted;
 }
 
+void InsertGDataCachePathsPermissions(
+    Profile* profile,
+    const FilePath& gdata_path,
+    std::vector<std::pair<FilePath, int> >* cache_paths ) {
+  DCHECK(cache_paths);
 
-void SetPermissionsForGDataCacheFiles(Profile* profile,
-                                      int pid,
-                                      const FilePath& path) {
   GDataFileSystem* file_system = GetGDataFileSystem(profile);
   if (!file_system)
     return;
 
   GDataFileProperties file_properties;
-  file_system->GetFileInfoFromPath(path, &file_properties);
+  file_system->GetFileInfoFromPath(gdata_path, &file_properties);
 
   std::string resource_id = file_properties.resource_id;
   std::string file_md5 = file_properties.file_md5;
@@ -202,25 +204,31 @@ void SetPermissionsForGDataCacheFiles(Profile* profile,
   // operations (when fileEntry.file() is called), so read only permissions
   // should be sufficient for all cache paths. For the rest of supported
   // operations the file access check is done for gdata/ paths.
-  std::vector<std::pair<FilePath, int> > cache_paths;
-  cache_paths.push_back(std::make_pair(
+  cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
           GDataRootDirectory::CACHE_TYPE_PERSISTENT,
           GDataFileSystem::CACHED_FILE_FROM_SERVER),
       kReadOnlyFilePermissions));
   // TODO(tbarzic): When we start supporting openFile operation, we may have to
   // change permission for localy modified files to match handler's permissions.
-  cache_paths.push_back(std::make_pair(
+  cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
           GDataRootDirectory::CACHE_TYPE_PERSISTENT,
           GDataFileSystem::CACHED_FILE_LOCALLY_MODIFIED),
      kReadOnlyFilePermissions));
-  cache_paths.push_back(std::make_pair(
+  cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
           GDataRootDirectory::CACHE_TYPE_TMP,
           GDataFileSystem::CACHED_FILE_FROM_SERVER),
       kReadOnlyFilePermissions));
 
+}
+
+void SetPermissionsForGDataCacheFiles(Profile* profile,
+                                      int pid,
+                                      const FilePath& path) {
+  std::vector<std::pair<FilePath, int> > cache_paths;
+  InsertGDataCachePathsPermissions(profile, path, &cache_paths);
   for (size_t i = 0; i < cache_paths.size(); i++) {
     content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
         pid, cache_paths[i].first, cache_paths[i].second);

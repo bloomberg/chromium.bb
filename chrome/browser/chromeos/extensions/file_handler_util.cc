@@ -14,8 +14,11 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -449,11 +452,6 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
       }
     }
 
-    ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        handler_pid_,
-        final_file_path,
-        GetAccessPermissionsForHandler(handler_extension_.get(), action_id_));
-
     // Grant access to this particular file to target extension. This will
     // ensure that the target extension can access only this FS entry and
     // prevent from traversing FS hierarchy upward.
@@ -491,8 +489,8 @@ FileTaskExecutor::FileTaskExecutor(Profile* profile,
   : profile_(profile),
     source_url_(source_url),
     extension_id_(extension_id),
-    action_id_(action_id)
-{}
+    action_id_(action_id) {
+}
 
 FileTaskExecutor::~FileTaskExecutor() {}
 
@@ -508,8 +506,10 @@ bool FileTaskExecutor::Execute(const std::vector<GURL>& file_urls) {
     return false;
 
   int handler_pid = ExtractProcessFromExtensionId(handler->id(), profile_);
-  if (handler_pid < 0)
-    return false;
+  if (handler_pid <= 0) {
+    if (!handler->has_lazy_background_page())
+      return false;
+  }
 
   // Get local file system instance on file thread.
   BrowserThread::PostTask(
@@ -547,21 +547,6 @@ void FileTaskExecutor::ExecuteFailedOnUIThread() {
   Done(false);
 }
 
-void FileTaskExecutor::SetupFileAccessPermissionsForGDataCache(
-    const FileDefinitionList& file_list,
-    int handler_pid) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  for (FileDefinitionList::const_iterator iter = file_list.begin();
-       iter != file_list.end();
-       ++iter) {
-    if (!gdata::util::IsUnderGDataMountPoint(iter->absolute_path))
-      continue;
-    gdata::util::SetPermissionsForGDataCacheFiles(profile_, handler_pid,
-        iter->absolute_path);
-  }
-}
-
 void FileTaskExecutor::ExecuteFileActionsOnUIThread(
     const std::string& file_system_name,
     const GURL& file_system_root,
@@ -581,13 +566,47 @@ void FileTaskExecutor::ExecuteFileActionsOnUIThread(
     return;
   }
 
+  InitHandlerHostFileAccessPermissions(file_list, extension, action_id_);
+
+  if (handler_pid > 0) {
+    SetupPermissionsAndDispatchEvent(file_system_name, file_system_root,
+        file_list, handler_pid, NULL);
+  } else {
+    // We have to wake the handler background page before we proceed.
+    extensions::LazyBackgroundTaskQueue* queue =
+        ExtensionSystem::Get(profile_)->lazy_background_task_queue();
+    if (!queue->ShouldEnqueueTask(profile_, extension)) {
+      Done(false);
+      return;
+    }
+    queue->AddPendingTask(
+        profile_, extension_id_,
+        base::Bind(&FileTaskExecutor::SetupPermissionsAndDispatchEvent, this,
+                   file_system_name, file_system_root, file_list, handler_pid));
+  }
+}
+
+void FileTaskExecutor::SetupPermissionsAndDispatchEvent(
+    const std::string& file_system_name,
+    const GURL& file_system_root,
+    const FileDefinitionList& file_list,
+    int handler_pid_in,
+    ExtensionHost* host) {
+  int handler_pid = host ? host->render_process_host()->GetID() :
+                           handler_pid_in;
+
+  if (handler_pid <= 0) {
+    Done(false);
+    return;
+  }
+
   ExtensionEventRouter* event_router = profile_->GetExtensionEventRouter();
   if (!event_router) {
     Done(false);
     return;
   }
 
-  SetupFileAccessPermissionsForGDataCache(file_list, handler_pid);
+  SetupHandlerHostFileAccessPermissions(handler_pid);
 
   scoped_ptr<ListValue> event_args(new ListValue());
   event_args->Append(Value::CreateStringValue(action_id_));
@@ -623,7 +642,45 @@ void FileTaskExecutor::ExecuteFileActionsOnUIThread(
       extension_id_, std::string("fileBrowserHandler.onExecute"),
       json_args, profile_,
       GURL());
+
   Done(true);
+}
+
+void FileTaskExecutor::InitHandlerHostFileAccessPermissions(
+    const FileDefinitionList& file_list,
+    const Extension* handler_extension,
+    const std::string& action_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  for (FileDefinitionList::const_iterator iter = file_list.begin();
+       iter != file_list.end();
+       ++iter) {
+    // Setup permission for file's absolute file.
+    handler_host_permissions_.push_back(std::make_pair(
+        iter->absolute_path,
+        GetAccessPermissionsForHandler(handler_extension, action_id)));
+
+    if (!gdata::util::IsUnderGDataMountPoint(iter->absolute_path))
+      continue;
+
+    // If the file is on gdata mount point, we'll have to give handler host
+    // permissions for file's gdata cache paths.
+    // This has to be called on UI thread.
+    gdata::util::InsertGDataCachePathsPermissions(profile_, iter->absolute_path,
+        &handler_host_permissions_);
+  }
+}
+
+void FileTaskExecutor::SetupHandlerHostFileAccessPermissions(int handler_pid) {
+  for (size_t i = 0; i < handler_host_permissions_.size(); i++) {
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+        handler_pid,
+        handler_host_permissions_[i].first,
+        handler_host_permissions_[i].second);
+  }
+
+  // We don't need this anymore.
+  handler_host_permissions_.clear();
 }
 
 } // namespace file_handler_util

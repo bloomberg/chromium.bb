@@ -6,11 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_HANDLER_UTIL_H_
 #pragma once
 
+#include <vector>
+
 #include "base/platform_file.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 
 class Browser;
+class ExtensionHost;
 class FileBrowserHandler;
 class GURL;
 class Profile;
@@ -89,6 +92,7 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
     FilePath absolute_path;
     bool is_directory;
   };
+
   typedef std::vector<FileDefinition> FileDefinitionList;
   class ExecuteTasksFileSystemCallbackDispatcher;
   void RequestFileEntryOnFileThread(
@@ -96,20 +100,35 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
       const scoped_refptr<const Extension>& handler,
       int handler_pid,
       const std::vector<GURL>& file_urls);
-  void SetupFileAccessPermissionsForGDataCache(
-      const FileDefinitionList& file_list,
-      int handler_pid);
-  void RespondFailedOnUIThread(base::PlatformFileError error_code);
+
+  void ExecuteFailedOnUIThread();
   void ExecuteFileActionsOnUIThread(const std::string& file_system_name,
                                     const GURL& file_system_root,
                                     const FileDefinitionList& file_list,
                                     int handler_id);
-  void ExecuteFailedOnUIThread();
+  void SetupPermissionsAndDispatchEvent(const std::string& file_system_name,
+                                        const GURL& file_system_root,
+                                        const FileDefinitionList& file_list,
+                                        int handler_pid_in,
+                                        ExtensionHost* host);
+
+  // Populates |handler_host_permissions| with file path-permissions pairs that
+  // will be given to the handler extension host process.
+  void InitHandlerHostFileAccessPermissions(
+      const FileDefinitionList& file_list,
+      const Extension* handler_extension,
+      const std::string& action_id);
+  // Registers file permissions from |handler_host_permissions_| with
+  // ChildProcessSecurityPolicy for process with id |handler_pid|.
+  void SetupHandlerHostFileAccessPermissions(int handler_pid);
 
   Profile* profile_;
   const GURL source_url_;
   const std::string extension_id_;
   const std::string action_id_;
+
+  // (File path, permission for file path) pairs for the handler.
+  std::vector<std::pair<FilePath, int> > handler_host_permissions_;
 };
 
 }  // namespace file_handler_util

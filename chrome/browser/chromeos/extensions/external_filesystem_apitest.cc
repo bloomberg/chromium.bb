@@ -8,13 +8,18 @@
 #include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 
 using ::testing::_;
@@ -33,6 +38,33 @@ const char kFileBrowserExtensionId[] = "ddammdhioacbehjngdmkjcjbnfginlla";
 // Flags used to run the tests with a COMPONENT extension.
 const int kComponentFlags = ExtensionApiTest::kFlagEnableFileAccess |
                             ExtensionApiTest::kFlagLoadAsComponent;
+
+// Helper class to wait for a background page to load or close again.
+// TODO(tbarzic): We can probably share this with e.g.
+//                lazy_background_page_apitest.
+class BackgroundObserver {
+ public:
+  BackgroundObserver()
+      : page_created_(chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+                      content::NotificationService::AllSources()),
+        page_closed_(chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                     content::NotificationService::AllSources()) {
+  }
+
+  // TODO(tbarzic): Use this for file handlers in the rest of the tests
+  // (instead of calling chrome.test.succeed in js).
+  void WaitUntilLoaded() {
+    page_created_.Wait();
+  }
+
+  void WaitUntilClosed() {
+    page_closed_.Wait();
+  }
+
+ private:
+  ui_test_utils::WindowedNotificationObserver page_created_;
+  ui_test_utils::WindowedNotificationObserver page_closed_;
+};
 
 // Returns the expected URL for the given path.
 GURL GetExpectedURL(const std::string& path) {
@@ -118,12 +150,28 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
 
   virtual ~FileSystemExtensionApiTest() {}
 
+  void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
+  }
+
   // Adds a local mount point at at mount point /tmp.
   void AddTmpMountPoint() {
     fileapi::ExternalFileSystemMountPointProvider* provider =
         BrowserContext::GetFileSystemContext(browser()->profile())->
             external_provider();
     provider->AddLocalMountPoint(test_mount_point_);
+  }
+
+  // Loads the extension, which temporarily starts the lazy background page
+  // to dispatch the onInstalled event. We wait until it shuts down again.
+  const Extension* LoadExtensionAndWait(const std::string& test_name) {
+    BackgroundObserver page_complete;
+    FilePath extdir = test_data_dir_.AppendASCII(test_name);
+    const Extension* extension = LoadExtension(extdir);
+    if (extension)
+      page_complete.WaitUntilClosed();
+    return extension;
   }
 
  private:
@@ -187,6 +235,14 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, LocalFileSystem) {
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTest) {
   AddTmpMountPoint();
   ASSERT_TRUE(RunExtensionTest("filesystem_handler")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest(
+      "filebrowser_component", "read.html", kComponentFlags)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, FileBrowserTestLazy) {
+  AddTmpMountPoint();
+  ASSERT_TRUE(LoadExtensionAndWait("filesystem_handler_lazy_background"))
+      << message_;
   ASSERT_TRUE(RunExtensionSubtest(
       "filebrowser_component", "read.html", kComponentFlags)) << message_;
 }

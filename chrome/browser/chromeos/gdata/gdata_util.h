@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "googleurl/src/gurl.h"
 
@@ -42,6 +43,13 @@ bool IsUnderGDataMountPoint(const FilePath& path);
 // point. Returns an empty path if |path| is not under the GData mount point.
 // Examples: ExtractGDatPath("/special/gdata/foo.txt") => "gdata/foo.txt"
 FilePath ExtractGDataPath(const FilePath& path);
+
+// Returns vector of all possible cache paths for a given path on gdata mount
+// point.
+void InsertGDataCachePathsPermissions(
+    Profile* profile_,
+    const FilePath& gdata_path,
+    std::vector<std::pair<FilePath, int> >* cache_paths);
 
 // Grants read-only file access permissions to the process whose id is |pid|
 // with ChildProcessSecurityPolicy for all possible cache paths that may be

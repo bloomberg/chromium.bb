@@ -104,6 +104,8 @@ class ExecuteTasksFileBrowserFunction : public AsyncExtensionFunction {
   ExecuteTasksFileBrowserFunction();
   virtual ~ExecuteTasksFileBrowserFunction();
 
+  void OnTaskExecuted(bool success);
+
  protected:
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
