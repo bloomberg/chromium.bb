@@ -286,6 +286,8 @@ cr.define('options.internet', function() {
       updateHidden('#details-internet-page .wifi-details', !this.wireless);
       updateHidden('#details-internet-page .vpn-details', !this.vpn);
       updateHidden('#details-internet-page .proxy-details', !this.showProxy);
+      /* Network information merged into the Wifi tab for wireless networks. */
+      updateHidden('#details-internet-page .network-details', this.wireless);
 
       // Cell plan related.
       $('plan-list').hidden = this.cellplanloading;
@@ -304,10 +306,10 @@ cr.define('options.internet', function() {
       updateHidden('#details-internet-page .apn-details-view', true);
 
       // Password and shared.
-      updateHidden('#details-internet-page .password-details',
+      updateHidden('#details-internet-page #password-details',
                    !this.wireless || !this.password);
-      updateHidden('#details-internet-page .shared-network', !this.shared);
-      updateHidden('#details-internet-page .prefer-network',
+      updateHidden('#details-internet-page #shared-network', !this.shared);
+      updateHidden('#details-internet-page #prefer-network',
                    !this.showPreferred);
 
       // Proxy
@@ -670,7 +672,24 @@ cr.define('options.internet', function() {
       detailsPage.cellular = false;
       detailsPage.gsm = false;
       detailsPage.shared = data.shared;
-      $('inet-ssid').textContent = data.ssid;
+      $('wifi-connection-state').textContent = data.connectionState;
+      $('wifi-ssid').textContent = data.ssid;
+      $('wifi-ip-address').textContent = inetAddress;
+      $('wifi-subnet-address').textContent = inetSubnetAddress;
+      $('wifi-gateway').textContent = inetGateway;
+      $('wifi-dns').textContent = inetDns;
+      if (data.encryption && data.encryption.length > 0) {
+        $('wifi-security').textContent = data.encryption;
+        $('wifi-security-entry').hidden = false;
+      } else {
+        $('wifi-security-entry').hidden = true;
+      }
+      if (data.hardwareAddress) {
+        $('wifi-hardware-address').textContent = data.hardwareAddress;
+        $('wifi-hardware-address-entry').hidden = false;
+      } else {
+        $('wifi-hardware-address-entry').hidden = true;
+      }
       detailsPage.showPreferred = data.showPreferred;
       $('prefer-network-wifi').checked = data.preferred.value;
       $('prefer-network-wifi').disabled = !data.remembered;

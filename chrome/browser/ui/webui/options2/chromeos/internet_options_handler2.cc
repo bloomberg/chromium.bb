@@ -309,7 +309,7 @@ void InternetOptionsHandler::GetLocalizedValues(
     { "changeProxyButton",
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON },
     { "managedNetwork", IDS_OPTIONS_SETTINGS_MANAGED_NETWORK },
-    { "wifiNetworkTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI },
+    { "wifiNetworkTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION },
     { "vpnTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_VPN },
     { "cellularPlanTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_PLAN },
     { "cellularConnTabLabel", IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION },
@@ -337,6 +337,8 @@ void InternetOptionsHandler::GetLocalizedValues(
 
     { "accessLockedMsg", IDS_STATUSBAR_NETWORK_LOCKED },
     { "inetSsid", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID },
+    { "inetEncryption",
+       IDS_OPTIONS_SETTIGNS_INTERNET_OPTIONS_NETWORK_ENCRYPTION },
     { "inetPassProtected",
        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED },
     { "inetNetworkShared",
@@ -888,6 +890,7 @@ void InternetOptionsHandler::PopulateWifiDetails(
   dictionary->SetBoolean("remembered", remembered);
   bool shared = wifi->profile_type() == chromeos::PROFILE_SHARED;
   dictionary->SetBoolean("shared", shared);
+  dictionary->SetString("encryption", wifi->GetEncryptionString());
 }
 
 DictionaryValue* InternetOptionsHandler::CreateDictionaryFromCellularApn(

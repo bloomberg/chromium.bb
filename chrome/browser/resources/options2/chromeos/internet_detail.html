@@ -46,7 +46,8 @@
         <span class="active-tab-label"
             i18n-content="cellularDeviceTabLabel"></span>
       </span>
-      <span id="internet-nav-tab" class="tab" tab-contents="internet-tab">
+      <span id="internet-nav-tab" class="tab network-details" 
+          tab-contents="internet-tab">
         <span class="tab-label" i18n-content="networkTabLabel"></span>
         <span class="active-tab-label" i18n-content="networkTabLabel"></span>
       </span>
@@ -63,16 +64,8 @@
     </div>
     <div id="wifi-network-tab" class="subpages-tab-contents wifi-details">
       <section>
-        <table class="ssid-table">
-          <tr>
-            <td class="option-name" i18n-content="inetSsid"></td>
-            <td id="inet-ssid" class="option-value"></td>
-          </tr>
-        </table>
-      </section>
-      <section>
         <table class="option-control-table">
-          <tr class="prefer-network">
+          <tr id="prefer-network">
             <td>
               <div class="checkbox">
                 <label>
@@ -98,17 +91,52 @@
           </tr>
         </table>
       </section>
-      <section id="password-network" class="password-details">
-        <table class="option-control-table">
+      <section>
+        <table id="wifi-settings-table">
           <tr>
-            <td class="option-name" i18n-content="inetPassProtected"></td>
+            <td class="option-name" i18n-content="connectionState"></td>
+            <td id="wifi-connection-state" class="option-value"></td>
+          <tr>
+            <td class="option-name" i18n-content="inetSsid"></td>
+            <td id="wifi-ssid" class="option-value"></td>
+          </tr>
+          <tr>
+            <td class="option-name" i18n-content="inetAddress"></td>
+            <td id="wifi-ip-address" class="option-value"></td>
+          </tr>
+          <tr>
+            <td class="option-name" i18n-content="inetSubnetAddress"></td>
+            <td id="wifi-subnet-address" class="option-value"></td>
+          </tr>
+          <tr>
+            <td class="option-name" i18n-content="inetGateway"></td>
+            <td id="wifi-gateway" class="option-value"></td>
+          </tr>
+          <tr>
+            <td class="option-name" i18n-content="inetDns"></td>
+            <td id="wifi-dns" class="option-value"></td>
+          </tr>
+          <tr id="wifi-security-entry">
+            <td class="options-name" i18n-content="inetEncryption"></td>
+            <td id="wifi-security" class="option-value"></td>
+          </tr>
+          <tr id="wifi-hardware-address-entry">
+            <td class="option-name" i18n-content="hardwareAddress"></td>
+            <td id="wifi-hardware-address" class="option-value"></td>
           </tr>
         </table>
       </section>
-      <section id="shared-network" class="shared-network">
+      <section>
         <table class="option-control-table">
           <tr>
-            <td class="option-name" i18n-content="inetNetworkShared"></td>
+            <td id="password-details"  class="option-name"
+                i18n-content="inetPassProtected">
+            </td>
+          </tr>
+          <tr>
+            <td id="shared-network" class="option-name"
+                i18n-content="inetNetworkShared">
+            </td>
           </tr>
         </table>
       </section>

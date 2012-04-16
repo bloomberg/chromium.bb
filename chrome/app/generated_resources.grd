@@ -13068,6 +13068,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings Internet options, the label for the network id.">
         SSID:
       </message>
+      <message name="IDS_OPTIONS_SETTIGNS_INTERNET_OPTIONS_NETWORK_ENCRYPTION" desc="Label in the network details dialog for showing the encryption method.">
+        Security:
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD" desc="In settings Internet options, the label for the EAP method.">
         EAP method:
       </message>
@@ -13219,7 +13222,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Use static IP
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS" desc="In settings Internet options, the label for IP address.">
-        Address:
+        IP Address:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK" desc="In settings Internet options, the label for subnet mask.">
         Subnet mask:
