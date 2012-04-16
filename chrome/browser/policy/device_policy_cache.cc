@@ -347,6 +347,17 @@ void DevicePolicyCache::CheckFetchingDone() {
   }
 }
 
+void DevicePolicyCache::DecodeDevicePolicy(
+    const em::ChromeDeviceSettingsProto& policy,
+    PolicyMap* policies) {
+  // Decode the various groups of policies.
+  DecodeLoginPolicies(policy, policies);
+  DecodeKioskPolicies(policy, policies);
+  DecodeNetworkPolicies(policy, policies, install_attributes_);
+  DecodeReportingPolicies(policy, policies);
+  DecodeGenericPolicies(policy, policies);
+}
+
 // static
 void DevicePolicyCache::DecodeLoginPolicies(
     const em::ChromeDeviceSettingsProto& policy,
@@ -473,7 +484,8 @@ void DevicePolicyCache::DecodeKioskPolicies(
 // static
 void DevicePolicyCache::DecodeNetworkPolicies(
     const em::ChromeDeviceSettingsProto& policy,
-    PolicyMap* policies) {
+    PolicyMap* policies,
+    EnterpriseInstallAttributes* install_attributes) {
   if (policy.has_device_proxy_settings()) {
     const em::DeviceProxySettingsProto& container(
         policy.device_proxy_settings());
@@ -488,9 +500,15 @@ void DevicePolicyCache::DecodeNetworkPolicies(
       proxy_settings->SetString(key::kProxyBypassList,
                                 container.proxy_bypass_list());
     }
+
+    // Figure out the level. Proxy policy is mandatory in kiosk mode.
+    PolicyLevel level = POLICY_LEVEL_RECOMMENDED;
+    if (install_attributes->GetMode() == DEVICE_MODE_KIOSK)
+      level = POLICY_LEVEL_MANDATORY;
+
     if (!proxy_settings->empty()) {
       policies->Set(key::kProxySettings,
-                    POLICY_LEVEL_RECOMMENDED,
+                    level,
                     POLICY_SCOPE_MACHINE,
                     proxy_settings.release());
     }
@@ -634,18 +652,6 @@ void DevicePolicyCache::DecodeGenericPolicies(
                     urls);
     }
   }
-}
-
-// static
-void DevicePolicyCache::DecodeDevicePolicy(
-    const em::ChromeDeviceSettingsProto& policy,
-    PolicyMap* policies) {
-  // Decode the various groups of policies.
-  DecodeLoginPolicies(policy, policies);
-  DecodeKioskPolicies(policy, policies);
-  DecodeNetworkPolicies(policy, policies);
-  DecodeReportingPolicies(policy, policies);
-  DecodeGenericPolicies(policy, policies);
 }
 
 }  // namespace policy
