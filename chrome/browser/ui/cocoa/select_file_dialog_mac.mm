@@ -233,6 +233,7 @@ void SelectFileDialogImpl::SelectFileImpl(
   context->owning_window = owning_window;
 
   if (type == SELECT_SAVEAS_FILE) {
+    [dialog setCanSelectHiddenExtension:YES];
     [dialog beginSheetForDirectory:default_dir
                               file:default_filename
                     modalForWindow:owning_window
