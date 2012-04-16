@@ -350,8 +350,10 @@ void CrxInstaller::ConfirmInstall() {
 
   if (!frontend_weak_->extension_prefs()->IsExtensionAllowedByPolicy(
           extension_->id(), install_source_)) {
-    ReportFailureFromUIThread(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_CANT_INSTALL_POLICY_BLACKLIST));
+    ReportFailureFromUIThread(l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_CANT_INSTALL_POLICY_BLACKLIST,
+        UTF8ToUTF16(extension_->name()),
+        UTF8ToUTF16(extension_->id())));
     return;
   }
 

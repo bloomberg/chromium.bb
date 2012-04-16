@@ -4335,7 +4335,7 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
         This extension is blacklisted.
       </message>
       <message name="IDS_EXTENSION_CANT_INSTALL_POLICY_BLACKLIST" desc="Error message when a user tries to install an extension that is blacklisted by administrator policy.">
-        This extension is blacklisted by admin policy.
+        <ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph> (extension ID "<ph name="EXTENSION_ID">$2<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>") is blacklisted by the administrator.
       </message>
       <message name="IDS_EXTENSION_MOVE_DIRECTORY_TO_PROFILE_FAILED" desc="">
         Could not move extension directory into profile.
