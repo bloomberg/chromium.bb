@@ -3281,10 +3281,8 @@ static const PrepopulatedEngine* GetEngineForURL(const std::string& url) {
   // First special-case Google, because the prepopulate URL for it will not
   // convert to a GURL and thus won't have an origin.  Instead see if the
   // incoming URL's host is "[*.]google.<TLD>".
-  if (google_util::IsGoogleHostname(as_gurl.host(),
-                                    google_util::DISALLOW_SUBDOMAIN)) {
+  if (google_util::IsGoogleHostname(as_gurl.host()))
     return &google;
-  }
 
   // Now check the rest of the prepopulate data.
   GURL origin(as_gurl.GetOrigin());

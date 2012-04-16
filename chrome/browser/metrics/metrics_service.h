@@ -32,7 +32,6 @@
 
 class BookmarkModel;
 class BookmarkNode;
-class ChromeNetworkDelegate;
 class MetricsReportingScheduler;
 class PrefService;
 class Profile;
@@ -438,7 +437,6 @@ class MetricsServiceHelper {
   friend class InstantFieldTrial;
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
   friend class extensions::ExtensionDownloader;
-  friend class ChromeNetworkDelegate;
 
   // Returns true if prefs::kMetricsReportingEnabled is set.
   static bool IsMetricsReportingEnabled();
