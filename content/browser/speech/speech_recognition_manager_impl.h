@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
@@ -119,7 +120,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
   std::string request_info_;
   bool can_report_metrics_;
   int recording_caller_id_;
-  content::SpeechRecognitionManagerDelegate* delegate_;
+  scoped_ptr<content::SpeechRecognitionManagerDelegate> delegate_;
 };
 
 }  // namespace speech
