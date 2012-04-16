@@ -87,7 +87,8 @@ int GpuMain(const content::MainFunctionParams& parameters) {
     }
 
 #if defined(OS_LINUX)
-    if (gpu_info.vendor_id == 0x10de) {  // NVIDIA
+    if (gpu_info.vendor_id == 0x10de &&  // NVIDIA
+        gpu_info.driver_vendor == "NVIDIA") {
       base::ThreadRestrictions::AssertIOAllowed();
       if (access("/dev/nvidiactl", R_OK) != 0) {
         LOG(INFO) << "NVIDIA device file /dev/nvidiactl access denied";
