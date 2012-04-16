@@ -23,14 +23,14 @@
 namespace content {
 
 BrowserPluginWebContentsObserver::BrowserPluginWebContentsObserver(
-    TabContents* tab_contents)
-    : WebContentsObserver(tab_contents),
+    WebContentsImpl* web_contents)
+    : WebContentsObserver(web_contents),
       host_(NULL),
       instance_id_(0) {
   registrar_.Add(this,
                  NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
                  Source<RenderViewHost>(
-                    tab_contents->GetRenderViewHost()));
+                    web_contents->GetRenderViewHost()));
 }
 
 BrowserPluginWebContentsObserver::~BrowserPluginWebContentsObserver() {
@@ -89,8 +89,8 @@ void BrowserPluginWebContentsObserver::OnOpenChannelToBrowserPlugin(
   SiteInstance* site_instance =
       SiteInstance::CreateForURL(
           browser_context, url);
-  TabContents* guest_tab_contents =
-      static_cast<TabContents*>(
+  WebContentsImpl* guest_web_contents =
+      static_cast<WebContentsImpl*>(
           WebContents::Create(
               browser_context,
               site_instance,
@@ -101,7 +101,7 @@ void BrowserPluginWebContentsObserver::OnOpenChannelToBrowserPlugin(
   // TODO(fsamuel): Set the WebContentsDelegate here.
   RenderViewHostImpl* guest_render_view_host =
       static_cast<RenderViewHostImpl*>(
-          guest_tab_contents->GetRenderViewHost());
+          guest_web_contents->GetRenderViewHost());
 
   // We need to make sure that the RenderViewHost knows that it's
   // hosting a guest RenderView so that it informs the RenderView
@@ -109,7 +109,7 @@ void BrowserPluginWebContentsObserver::OnOpenChannelToBrowserPlugin(
   // until a guest-to-host channel has been initialized.
   guest_render_view_host->set_guest(true);
 
-  guest_tab_contents->GetController().LoadURL(
+  guest_web_contents->GetController().LoadURL(
       url,
       Referrer(),
       PAGE_TRANSITION_HOME_PAGE,
@@ -117,11 +117,11 @@ void BrowserPluginWebContentsObserver::OnOpenChannelToBrowserPlugin(
 
   guest_render_view_host->GetView()->SetSize(size);
   BrowserPluginWebContentsObserver* guest_observer =
-      guest_tab_contents->browser_plugin_web_contents_observer();
-  guest_observer->set_host(static_cast<TabContents*>(web_contents()));
+      guest_web_contents->browser_plugin_web_contents_observer();
+  guest_observer->set_host(static_cast<WebContentsImpl*>(web_contents()));
   guest_observer->set_instance_id(instance_id);
 
-  AddGuest(guest_tab_contents, frame_id);
+  AddGuest(guest_web_contents, frame_id);
 }
 
 void BrowserPluginWebContentsObserver::OnRendererPluginChannelCreated(
@@ -153,21 +153,20 @@ void BrowserPluginWebContentsObserver::OnRendererPluginChannelCreated(
           channel_handle));
 }
 
-void BrowserPluginWebContentsObserver::AddGuest(
-    TabContents* guest,
-    int64 frame_id) {
+void BrowserPluginWebContentsObserver::AddGuest(WebContentsImpl* guest,
+                                                int64 frame_id) {
   guests_[guest] = frame_id;
 }
 
-void BrowserPluginWebContentsObserver::RemoveGuest(TabContents* guest) {
+void BrowserPluginWebContentsObserver::RemoveGuest(WebContentsImpl* guest) {
   guests_.erase(guest);
 }
 
 void BrowserPluginWebContentsObserver::DestroyGuests() {
   for (GuestMap::const_iterator it = guests_.begin();
        it != guests_.end(); ++it) {
-    const TabContents* contents = it->first;
-    delete contents;
+    const WebContentsImpl* web_contents = it->first;
+    delete web_contents;
   }
   guests_.clear();
 }
@@ -177,13 +176,13 @@ void BrowserPluginWebContentsObserver::DidCommitProvisionalLoadForFrame(
     bool is_main_frame,
     const GURL& url,
     PageTransition transition_type) {
-  typedef std::set<TabContents*> GuestSet;
+  typedef std::set<WebContentsImpl*> GuestSet;
   GuestSet guests_to_delete;
   for (GuestMap::const_iterator it = guests_.begin();
        it != guests_.end(); ++it) {
-    TabContents* contents = it->first;
+    WebContentsImpl* web_contents = it->first;
     if (it->second == frame_id) {
-      guests_to_delete.insert(contents);
+      guests_to_delete.insert(web_contents);
     }
   }
   for (GuestSet::const_iterator it = guests_to_delete.begin();
@@ -218,11 +217,11 @@ void BrowserPluginWebContentsObserver::Observe(
   // If the host is hidden we need to hide the guests as well.
   for (GuestMap::const_iterator it = guests_.begin();
        it != guests_.end(); ++it) {
-    TabContents* contents = it->first;
+    WebContentsImpl* web_contents = it->first;
     if (visible)
-      contents->ShowContents();
+      web_contents->ShowContents();
     else
-      contents->HideContents();
+      web_contents->HideContents();
   }
 }
 

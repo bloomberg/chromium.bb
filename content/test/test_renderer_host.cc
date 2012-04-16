@@ -102,9 +102,9 @@ void RenderViewHostTester::EnableAccessibilityUpdatedNotifications(
 // static
 RenderViewHost* RenderViewHostTester::GetPendingForController(
     NavigationController* controller) {
-  TabContents* tab_contents = static_cast<TabContents*>(
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       controller->GetWebContents());
-  return tab_contents->GetRenderManagerForTesting()->pending_render_view_host();
+  return web_contents->GetRenderManagerForTesting()->pending_render_view_host();
 }
 
 // static

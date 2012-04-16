@@ -111,7 +111,7 @@ void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
 }
 
 void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
-                            TabContents* tab_contents) {
+                            WebContentsImpl* web_contents) {
   DCHECK(entry);
 
   InitializeEntryIfNeeded(entry);
@@ -158,7 +158,7 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
     return;
   }
 
-  if (tab_contents->DisplayedInsecureContent())
+  if (web_contents->DisplayedInsecureContent())
     entry->GetSSL().content_status |= SSLStatus::DISPLAYED_INSECURE_CONTENT;
 }
 

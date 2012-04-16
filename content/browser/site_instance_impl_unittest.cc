@@ -249,11 +249,11 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
                                                &site_delete_counter,
                                                &browsing_delete_counter);
   {
-    TabContents contents(browser_context.get(),
-                         instance,
-                         MSG_ROUTING_NONE,
-                         NULL,
-                         NULL);
+    WebContentsImpl web_contents(browser_context.get(),
+                                 instance,
+                                 MSG_ROUTING_NONE,
+                                 NULL,
+                                 NULL);
     EXPECT_EQ(1, site_delete_counter);
     EXPECT_EQ(1, browsing_delete_counter);
   }

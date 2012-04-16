@@ -697,6 +697,4 @@ class CONTENT_EXPORT WebContentsImpl
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };
 
-typedef class WebContentsImpl TabContents;
-
 #endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_IMPL_H_

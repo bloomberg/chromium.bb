@@ -166,9 +166,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Wait for the cross-site transition in the new tab to finish.
   ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
-  TabContents* tab_contents = static_cast<TabContents*>(
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       browser()->GetSelectedWebContents());
-  EXPECT_FALSE(tab_contents->GetRenderManagerForTesting()->
+  EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->
       pending_render_view_host());
 
   // Should have a new SiteInstance.
@@ -224,9 +224,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Wait for the cross-site transition in the new tab to finish.
   ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
-  TabContents* tab_contents = static_cast<TabContents*>(
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       browser()->GetSelectedWebContents());
-  EXPECT_FALSE(tab_contents->GetRenderManagerForTesting()->
+  EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->
       pending_render_view_host());
 
   // Should have a new SiteInstance (in a new BrowsingInstance).

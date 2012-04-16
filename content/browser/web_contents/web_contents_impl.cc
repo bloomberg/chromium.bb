@@ -1772,9 +1772,9 @@ void WebContentsImpl::OnSetSelectedColorInColorChooser(int color_chooser_id,
     color_chooser_->SetSelectedColor(color);
 }
 
-void TabContents::OnPepperPluginHung(int plugin_child_id,
-                                     const FilePath& path,
-                                     bool is_hung) {
+void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
+                                         const FilePath& path,
+                                         bool is_hung) {
   if (delegate_)
     delegate_->PluginHungStatusChanged(this, plugin_child_id, path, is_hung);
 }
