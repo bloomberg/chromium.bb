@@ -48,7 +48,7 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
       store_birthday_sent_(false),
       client_stuck_(false),
       commit_time_rename_prepended_string_(""),
-      countdown_to_postbuffer_fail_(0),
+      fail_next_postbuffer_(false),
       directory_(directory),
       mid_commit_observer_(NULL),
       throttling_(false),
@@ -111,9 +111,8 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     InvalidateAndClearAuthToken();
   }
 
-  if (--countdown_to_postbuffer_fail_ == 0) {
-    // Fail as countdown hits zero.
-    params->response.server_status = HttpResponse::SYNC_SERVER_ERROR;
+  if (fail_next_postbuffer_) {
+    fail_next_postbuffer_ = false;
     return false;
   }
 

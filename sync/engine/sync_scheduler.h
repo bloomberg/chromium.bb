@@ -179,7 +179,6 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   };
   friend class SyncSchedulerTest;
   friend class SyncSchedulerWhiteboxTest;
-  friend class SyncerTest;
 
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerWhiteboxTest,
       DropNudgeWhileExponentialBackOff);
@@ -247,12 +246,6 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   static const char* GetModeString(Mode mode);
 
   static const char* GetDecisionString(JobProcessDecision decision);
-
-  // Assign |start| and |end| to appropriate SyncerStep values for the
-  // specified |purpose|.
-  static void SetSyncerStepsForPurpose(
-      SyncSessionJob::SyncSessionJobPurpose purpose,
-      SyncerStep* start, SyncerStep* end);
 
   // Helpers that log before posting to |sync_loop_|.  These will only post
   // the task in between calls to Start/Stop.
@@ -346,6 +339,12 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
 
   // Creates a session for a poll and performs the sync.
   void PollTimerCallback();
+
+  // Assign |start| and |end| to appropriate SyncerStep values for the
+  // specified |purpose|.
+  void SetSyncerStepsForPurpose(SyncSessionJob::SyncSessionJobPurpose purpose,
+                                SyncerStep* start,
+                                SyncerStep* end);
 
   // Used to update |connection_code_|, see below.
   void UpdateServerConnectionManagerStatus(
