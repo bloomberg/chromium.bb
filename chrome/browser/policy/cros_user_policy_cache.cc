@@ -4,12 +4,10 @@
 
 #include "chrome/browser/policy/cros_user_policy_cache.h"
 
-#include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
 #include "chrome/browser/policy/proto/cloud_policy.pb.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
@@ -73,8 +71,10 @@ void CrosUserPolicyCache::StorePolicyOperation::Run() {
   std::string serialized;
   if (!policy_.SerializeToString(&serialized)) {
     LOG(ERROR) << "Failed to serialize policy protobuf!";
-    callback_.Run(false);
+    if (!callback_.is_null())
+      callback_.Run(false);
     delete this;
+    return;
   }
   session_manager_client_->StoreUserPolicy(
       serialized,

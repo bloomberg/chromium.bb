@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/user_policy_disk_cache.h"
 #include "chrome/browser/policy/user_policy_token_cache.h"
