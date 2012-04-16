@@ -619,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(SearchServerDoesntSupportInstant)) {
   SetupInstantProvider("empty.html");
 
   ui_test_utils::WindowedNotificationObserver tab_closed_observer(
-      content::NOTIFICATION_TAB_CLOSED,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
 
   omnibox()->SetUserText(ASCIIToUTF16("d"));
@@ -645,7 +645,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   EXPECT_FALSE(preview());
 
   ui_test_utils::WindowedNotificationObserver tab_closed_observer(
-      content::NOTIFICATION_TAB_CLOSED,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
 
   // Now type in some search text.

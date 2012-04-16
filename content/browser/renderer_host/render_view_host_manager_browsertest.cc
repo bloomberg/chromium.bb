@@ -67,9 +67,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Open a same-site link in a new tab.
-  ui_test_utils::WindowedNotificationObserver new_tab_observer(
-      content::NOTIFICATION_TAB_ADDED,
-      content::Source<content::WebContentsDelegate>(browser()));
+  ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
+      content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
@@ -364,9 +363,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a target=foo link.
-  ui_test_utils::WindowedNotificationObserver new_tab_observer(
-      content::NOTIFICATION_TAB_ADDED,
-      content::Source<content::WebContentsDelegate>(browser()));
+  ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
+      content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
@@ -447,9 +445,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a target=foo link.
-  ui_test_utils::WindowedNotificationObserver new_tab_observer(
-      content::NOTIFICATION_TAB_ADDED,
-      content::Source<content::WebContentsDelegate>(browser()));
+  ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer((
+      content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",

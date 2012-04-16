@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,12 +13,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -119,7 +119,7 @@ WebContents* TabFinder::FindTab(Browser* browser,
 void TabFinder::Observe(int type,
                         const content::NotificationSource& source,
                         const content::NotificationDetails& details) {
-  DCHECK_EQ(type, content::NOTIFICATION_TAB_PARENTED);
+  DCHECK_EQ(type, chrome::NOTIFICATION_TAB_PARENTED);
 
   // The tab was added to a browser. Query for its state now.
   TabContentsWrapper* tab = content::Source<TabContentsWrapper>(source).ptr();
@@ -127,7 +127,7 @@ void TabFinder::Observe(int type,
 }
 
 TabFinder::TabFinder() {
-  registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllSources());
 }
 

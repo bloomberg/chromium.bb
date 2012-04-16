@@ -499,9 +499,9 @@ void MetricsService::SetUpNotifications(
                  content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_USER_ACTION,
                  content::NotificationService::AllSources());
-  registrar->Add(observer, content::NOTIFICATION_TAB_PARENTED,
+  registrar->Add(observer, chrome::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllSources());
-  registrar->Add(observer, content::NOTIFICATION_TAB_CLOSING,
+  registrar->Add(observer, chrome::NOTIFICATION_TAB_CLOSING,
                  content::NotificationService::AllSources());
   registrar->Add(observer, content::NOTIFICATION_LOAD_START,
                  content::NotificationService::AllSources());
@@ -545,8 +545,8 @@ void MetricsService::Observe(int type,
       LogWindowChange(type, source, details);
       break;
 
-    case content::NOTIFICATION_TAB_PARENTED:
-    case content::NOTIFICATION_TAB_CLOSING:
+    case chrome::NOTIFICATION_TAB_PARENTED:
+    case chrome::NOTIFICATION_TAB_CLOSING:
       LogWindowChange(type, source, details);
       break;
 
@@ -1311,12 +1311,12 @@ void MetricsService::LogWindowChange(
   DCHECK_NE(controller_id, -1);
 
   switch (type) {
-    case content::NOTIFICATION_TAB_PARENTED:
+    case chrome::NOTIFICATION_TAB_PARENTED:
     case chrome::NOTIFICATION_BROWSER_OPENED:
       window_type = MetricsLog::WINDOW_CREATE;
       break;
 
-    case content::NOTIFICATION_TAB_CLOSING:
+    case chrome::NOTIFICATION_TAB_CLOSING:
     case chrome::NOTIFICATION_BROWSER_CLOSED:
       window_map_.erase(window_map_.find(window_or_tab));
       window_type = MetricsLog::WINDOW_DESTROY;

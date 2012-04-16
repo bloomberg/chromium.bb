@@ -37,9 +37,12 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       download_count_(0),
       infobar_(NULL) {
   content::Source<NavigationController> notification_source(controller);
+  content::Source<content::WebContents> web_contents_source(
+       controller->GetWebContents());
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
                  notification_source);
-  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED, notification_source);
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                 web_contents_source);
 
   NavigationEntry* active_entry = originating_controller ?
       originating_controller->GetActiveEntry() : controller->GetActiveEntry();
@@ -101,9 +104,19 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if ((type != content::NOTIFICATION_NAV_ENTRY_PENDING &&
-       type != content::NOTIFICATION_TAB_CLOSED) ||
+  if (type != content::NOTIFICATION_NAV_ENTRY_PENDING &&
+      type != content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
+    NOTREACHED();
+    return;
+  }
+  if (type == content::NOTIFICATION_NAV_ENTRY_PENDING &&
       content::Source<NavigationController>(source).ptr() != controller_) {
+    NOTREACHED();
+    return;
+  }
+  if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED &&
+      &content::Source<content::WebContents>(source).ptr()->
+          GetController() != controller_) {
     NOTREACHED();
     return;
   }
@@ -138,7 +151,7 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
       break;
     }
 
-    case content::NOTIFICATION_TAB_CLOSED:
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
       // Tab closed, no need to handle closing the dialog as it's owned by the
       // TabContents, break so that we get deleted after switch.
       break;

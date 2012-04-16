@@ -37,7 +37,7 @@ ChromeToMobileBubbleNotificationBridge::ChromeToMobileBubbleNotificationBridge(
       selector_(selector) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::NotificationService::AllSources());
 }
 

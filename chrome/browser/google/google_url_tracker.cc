@@ -327,10 +327,14 @@ void GoogleURLTracker::Observe(int type,
     }
 
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
-    case content::NOTIFICATION_TAB_CLOSED:
       OnNavigationCommittedOrTabClosed(
           content::Source<NavigationController>(source).ptr()->
               GetWebContents(), type);
+      break;
+
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
+      OnNavigationCommittedOrTabClosed(
+          content::Source<content::WebContents>(source).ptr(), type);
       break;
 
     default:
@@ -363,8 +367,10 @@ void GoogleURLTracker::OnNavigationPending(
   // tab close command since that means the load will never commit.
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::Source<NavigationController>(controller_));
-  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
-                 content::Source<NavigationController>(controller_));
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<content::WebContents>(controller_->GetWebContents()));
 }
 
 void GoogleURLTracker::OnNavigationCommittedOrTabClosed(

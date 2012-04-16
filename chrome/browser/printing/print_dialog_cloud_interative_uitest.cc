@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, HandlersRegistered) {
 
   // Close the dialog before finishing the test.
   ui_test_utils::WindowedNotificationObserver tab_closed_observer(
-      content::NOTIFICATION_TAB_CLOSED,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
 
   // Can't use ui_test_utils::SendKeyPressSync or

@@ -184,7 +184,7 @@ WebIntentPickerController::WebIntentPickerController(
       &wrapper->web_contents()->GetController();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  content::Source<content::NavigationController>(controller));
-  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
                  content::Source<content::NavigationController>(controller));
 }
 
@@ -242,7 +242,7 @@ void WebIntentPickerController::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_LOAD_START ||
-         type == content::NOTIFICATION_TAB_CLOSING);
+         type == chrome::NOTIFICATION_TAB_CLOSING);
   ClosePicker();
 }
 

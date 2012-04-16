@@ -381,9 +381,12 @@ void TabStripNotificationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == notification_) {
-    if (type == content::NOTIFICATION_TAB_PARENTED) {
+    if (type == chrome::NOTIFICATION_TAB_PARENTED) {
       ObserveTab(&(content::Source<TabContentsWrapper>(source).ptr()->
                      web_contents()->GetController()));
+    } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
+      ObserveTab(&(content::Source<content::WebContents>(source).ptr()->
+                     GetController()));
     } else {
       ObserveTab(content::Source<NavigationController>(source).ptr());
     }
@@ -396,7 +399,7 @@ void TabStripNotificationObserver::Observe(
 TabAppendedNotificationObserver::TabAppendedNotificationObserver(
     Browser* parent, AutomationProvider* automation,
     IPC::Message* reply_message)
-    : TabStripNotificationObserver(content::NOTIFICATION_TAB_PARENTED,
+    : TabStripNotificationObserver(chrome::NOTIFICATION_TAB_PARENTED,
                                    automation),
       parent_(parent),
       reply_message_(reply_message) {
@@ -423,8 +426,10 @@ void TabAppendedNotificationObserver::ObserveTab(
 TabClosedNotificationObserver::TabClosedNotificationObserver(
     AutomationProvider* automation, bool wait_until_closed,
     IPC::Message* reply_message)
-    : TabStripNotificationObserver(wait_until_closed ?
-          content::NOTIFICATION_TAB_CLOSED : content::NOTIFICATION_TAB_CLOSING,
+    : TabStripNotificationObserver(
+      wait_until_closed
+          ? static_cast<int>(content::NOTIFICATION_WEB_CONTENTS_DESTROYED)
+          : static_cast<int>(chrome::NOTIFICATION_TAB_CLOSING),
           automation),
       reply_message_(reply_message),
       for_browser_command_(false) {
@@ -1016,11 +1021,11 @@ struct CommandNotification {
 };
 
 const struct CommandNotification command_notifications[] = {
-  {IDC_DUPLICATE_TAB, content::NOTIFICATION_TAB_PARENTED},
+  {IDC_DUPLICATE_TAB, chrome::NOTIFICATION_TAB_PARENTED},
 
   // Returns as soon as the restored tab is created. To further wait until
   // the content page is loaded, use WaitForTabToBeRestored.
-  {IDC_RESTORE_TAB, content::NOTIFICATION_TAB_PARENTED},
+  {IDC_RESTORE_TAB, chrome::NOTIFICATION_TAB_PARENTED},
 
   // For the following commands, we need to wait for a new tab to be created,
   // load to finish, and title to change.
@@ -2683,14 +2688,14 @@ NewTabObserver::NewTabObserver(AutomationProvider* automation,
       reply_message_(reply_message) {
   // Use TAB_PARENTED to detect the new tab.
   registrar_.Add(this,
-                 content::NOTIFICATION_TAB_PARENTED,
+                 chrome::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllSources());
 }
 
 void NewTabObserver::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_TAB_PARENTED, type);
+  DCHECK_EQ(chrome::NOTIFICATION_TAB_PARENTED, type);
   NavigationController* controller =
       &(content::Source<TabContentsWrapper>(source).ptr()->
           web_contents()->GetController());

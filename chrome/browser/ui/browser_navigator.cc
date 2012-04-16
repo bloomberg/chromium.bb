@@ -618,7 +618,7 @@ void Navigate(NavigateParams* params) {
 
   if (params->disposition != CURRENT_TAB) {
     content::NotificationService::current()->Notify(
-        content::NOTIFICATION_TAB_ADDED,
+        chrome::NOTIFICATION_TAB_ADDED,
         content::Source<content::WebContentsDelegate>(params->browser),
         content::Details<WebContents>(params->target_contents->web_contents()));
   }

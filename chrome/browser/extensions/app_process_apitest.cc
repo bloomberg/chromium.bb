@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -126,7 +127,7 @@ class AppApiTest : public ExtensionApiTest {
     EXPECT_FALSE(browser()->GetWebContentsAt(1)->GetWebUI());
 
     ui_test_utils::WindowedNotificationObserver tab_added_observer(
-        content::NOTIFICATION_TAB_ADDED,
+        chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
     browser()->NewTab();
     tab_added_observer.Wait();
@@ -197,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   LOG(INFO) << "Nav 2.";
 
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
-      content::NOTIFICATION_TAB_ADDED,
+      chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
   browser()->NewTab();
   tab_added_observer.Wait();
@@ -314,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, BookmarkAppGetsNormalProcess) {
   EXPECT_FALSE(browser()->GetWebContentsAt(1)->GetWebUI());
 
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
-      content::NOTIFICATION_TAB_ADDED,
+      chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
   browser()->NewTab();
   tab_added_observer.Wait();

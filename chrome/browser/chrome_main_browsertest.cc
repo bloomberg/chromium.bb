@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
       FilePath(), FilePath().AppendASCII("empty.html"));
   new_command_line_.AppendArgPath(test_file_path);
   ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_TAB_ADDED,
+        chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
   Relaunch();
   observer.Wait();
@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
       FilePath(), FilePath().AppendASCII("empty.html"));
   new_command_line_.AppendArgPath(test_file_path);
   ui_test_utils::WindowedNotificationObserver tab_observer(
-        content::NOTIFICATION_TAB_ADDED,
+        chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
   Relaunch();
   tab_observer.Wait();

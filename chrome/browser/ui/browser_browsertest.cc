@@ -537,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   redirect_popup += "\";";
 
   ui_test_utils::WindowedNotificationObserver popup_observer(
-        content::NOTIFICATION_TAB_ADDED,
+        chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
   ui_test_utils::WindowedNotificationObserver nav_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -571,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   refresh_popup += "\">');w.document.close();";
 
   ui_test_utils::WindowedNotificationObserver popup_observer2(
-        content::NOTIFICATION_TAB_ADDED,
+        chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
   ui_test_utils::WindowedNotificationObserver nav_observer2(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -625,7 +625,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   dont_fork_popup += "\";";
 
   ui_test_utils::WindowedNotificationObserver popup_observer(
-        content::NOTIFICATION_TAB_ADDED,
+        chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
   ui_test_utils::WindowedNotificationObserver nav_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,

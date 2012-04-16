@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ AutomationTabTracker::~AutomationTabTracker() {
 void AutomationTabTracker::AddObserver(NavigationController* resource) {
   // This tab could either be a regular tab or an external tab
   // Register for both notifications.
-  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
                  content::Source<NavigationController>(resource));
   registrar_.Add(this, chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
                  content::Source<NavigationController>(resource));
@@ -31,7 +31,7 @@ void AutomationTabTracker::AddObserver(NavigationController* resource) {
 }
 
 void AutomationTabTracker::RemoveObserver(NavigationController* resource) {
-  registrar_.Remove(this, content::NOTIFICATION_TAB_CLOSING,
+  registrar_.Remove(this, chrome::NOTIFICATION_TAB_CLOSING,
                     content::Source<NavigationController>(resource));
   registrar_.Remove(this, chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED,
                     content::Source<NavigationController>(resource));
@@ -50,7 +50,7 @@ void AutomationTabTracker::Observe(
               base::Time::Now();
       return;
     case chrome::NOTIFICATION_EXTERNAL_TAB_CLOSED:
-    case content::NOTIFICATION_TAB_CLOSING:
+    case chrome::NOTIFICATION_TAB_CLOSING:
       {
         std::map<NavigationController*, base::Time>::iterator iter =
             last_navigation_times_.find(

@@ -186,27 +186,7 @@ enum NotificationType {
   // BrowserContext* and the details is the inspected RenderViewHost*.
   NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
 
-  // Tabs --------------------------------------------------------------------
-
-  // Sent when a tab is added to a WebContentsDelegate. The source is the
-  // WebContentsDelegate and the details is the added WebContents.
-  NOTIFICATION_TAB_ADDED,
-
-  // This notification is sent after a tab has been appended to the tab_strip.
-  // The source is a Source<TabContentsWrapper> of the tab being added. There
-  // are no details.
-  NOTIFICATION_TAB_PARENTED,
-
-  // This message is sent before a tab has been closed.  The source is a
-  // Source<NavigationController> with a pointer to the controller for the
-  // closed tab.  No details are expected.
-  //
-  // See also TAB_CLOSED.
-  NOTIFICATION_TAB_CLOSING,
-
-  // Notification that a tab has been closed. The source is the
-  // NavigationController with no details.
-  NOTIFICATION_TAB_CLOSED,
+  // WebContents ---------------------------------------------------------------
 
   // This notification is sent when a render view host has connected to a
   // renderer process. The source is a Source<WebContents> with a pointer to

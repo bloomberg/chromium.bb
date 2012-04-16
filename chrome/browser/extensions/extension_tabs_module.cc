@@ -1800,7 +1800,7 @@ bool DetectTabLanguageFunction::RunImpl() {
   registrar_.Add(this, chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
                  content::Source<WebContents>(contents->web_contents()));
   registrar_.Add(
-      this, content::NOTIFICATION_TAB_CLOSING,
+      this, chrome::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(
           &(contents->web_contents()->GetController())));
   registrar_.Add(

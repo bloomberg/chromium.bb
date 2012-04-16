@@ -342,7 +342,7 @@ void WaitForNavigations(NavigationController* controller,
 
 void WaitForNewTab(Browser* browser) {
   TestNotificationObserver observer;
-  RegisterAndWait(&observer, content::NOTIFICATION_TAB_ADDED,
+  RegisterAndWait(&observer, chrome::NOTIFICATION_TAB_ADDED,
                   content::Source<content::WebContentsDelegate>(browser));
 }
 
@@ -433,7 +433,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
   }
 
   WindowedNotificationObserver tab_added_observer(
-      content::NOTIFICATION_TAB_ADDED,
+      chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
 
   WindowedNotificationObserver auth_observer(
@@ -972,6 +972,11 @@ void WindowedNotificationObserver::Observe(
   } else {
     sources_seen_.insert(source.map_key());
   }
+}
+
+WindowedTabAddedNotificationObserver::WindowedTabAddedNotificationObserver(
+    const content::NotificationSource& source)
+    : WindowedNotificationObserver(chrome::NOTIFICATION_TAB_ADDED, source) {
 }
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,

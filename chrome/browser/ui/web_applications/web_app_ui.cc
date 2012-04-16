@@ -15,12 +15,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -104,7 +104,7 @@ UpdateShortcutWorker::UpdateShortcutWorker(TabContentsWrapper* tab_contents)
 
   registrar_.Add(
       this,
-      content::NOTIFICATION_TAB_CLOSING,
+      chrome::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(
           &tab_contents_->web_contents()->GetController()));
 }
@@ -118,7 +118,7 @@ void UpdateShortcutWorker::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_TAB_CLOSING &&
+  if (type == chrome::NOTIFICATION_TAB_CLOSING &&
       content::Source<NavigationController>(source).ptr() ==
         &tab_contents_->web_contents()->GetController()) {
     // Underlying tab is closing.

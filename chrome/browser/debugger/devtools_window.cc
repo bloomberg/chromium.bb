@@ -215,7 +215,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
           &tab_contents_->web_contents()->GetController()));
   registrar_.Add(
       this,
-      content::NOTIFICATION_TAB_CLOSING,
+      chrome::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(
           &tab_contents_->web_contents()->GetController()));
   registrar_.Add(
@@ -487,7 +487,7 @@ void DevToolsWindow::Observe(int type,
     UpdateTheme();
     DoAction();
     AddDevToolsExtensionsToClient();
-  } else if (type == content::NOTIFICATION_TAB_CLOSING) {
+  } else if (type == chrome::NOTIFICATION_TAB_CLOSING) {
     if (content::Source<NavigationController>(source).ptr() ==
             &tab_contents_->web_contents()->GetController()) {
       // This happens when browser closes all of its tabs as a result

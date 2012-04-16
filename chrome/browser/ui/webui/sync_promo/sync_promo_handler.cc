@@ -91,7 +91,7 @@ void SyncPromoHandler::RegisterMessages() {
   if (!web_ui()->GetWebContents()->GetController().GetActiveEntry()->
           IsViewSourceMode()) {
     // Listen to see if the tab we're in gets closed.
-    registrar_.Add(this, content::NOTIFICATION_TAB_CLOSING,
+    registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
         content::Source<NavigationController>(
             &web_ui()->GetWebContents()->GetController()));
     // Listen to see if the window we're in gets closed.
@@ -148,7 +148,7 @@ void SyncPromoHandler::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_TAB_CLOSING: {
+    case chrome::NOTIFICATION_TAB_CLOSING: {
       if (!window_already_closed_)
         RecordUserFlowAction(SYNC_PROMO_CLOSED_TAB);
       break;

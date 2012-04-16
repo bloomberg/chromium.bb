@@ -51,7 +51,7 @@ ExtensionTabIdMap::TabObserver::TabObserver() {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
+  registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_RETARGETING,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -84,7 +84,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
               tab->restore_tab_helper()->window_id().id()));
       break;
     }
-    case content::NOTIFICATION_TAB_PARENTED: {
+    case chrome::NOTIFICATION_TAB_PARENTED: {
       TabContentsWrapper* tab =
           content::Source<TabContentsWrapper>(source).ptr();
       RenderViewHost* host = tab->web_contents()->GetRenderViewHost();

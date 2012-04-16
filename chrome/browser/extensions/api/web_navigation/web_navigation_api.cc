@@ -404,7 +404,7 @@ void WebNavigationEventRouter::Init() {
                    chrome::NOTIFICATION_RETARGETING,
                    content::NotificationService::AllSources());
     registrar_.Add(this,
-                   content::NOTIFICATION_TAB_ADDED,
+                   chrome::NOTIFICATION_TAB_ADDED,
                    content::NotificationService::AllSources());
     registrar_.Add(this,
                    content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
@@ -426,7 +426,7 @@ void WebNavigationEventRouter::Observe(
       break;
     }
 
-    case content::NOTIFICATION_TAB_ADDED:
+    case chrome::NOTIFICATION_TAB_ADDED:
       TabAdded(content::Details<WebContents>(details).ptr());
       break;
 

@@ -109,7 +109,7 @@ void SessionChangeProcessor::Observe(
       break;
     }
 
-    case content::NOTIFICATION_TAB_PARENTED: {
+    case chrome::NOTIFICATION_TAB_PARENTED: {
       SyncedTabDelegate* tab =
           content::Source<TabContentsWrapper>(source).ptr()->
               synced_tab_delegate();
@@ -137,13 +137,20 @@ void SessionChangeProcessor::Observe(
       break;
     }
 
-    case content::NOTIFICATION_TAB_CLOSED: {
-      SyncedTabDelegate* tab = ExtractSyncedTabDelegate(source);
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+      TabContentsWrapper* tab_contents_wrapper =
+          TabContentsWrapper::GetCurrentWrapperForContents(
+              content::Source<WebContents>(source).ptr());
+      if (!tab_contents_wrapper) {
+        return;
+      }
+      SyncedTabDelegate* tab = tab_contents_wrapper->synced_tab_delegate();
       if (!tab || tab->profile() != profile_) {
         return;
       }
       modified_tabs.push_back(tab);
-      DVLOG(1) << "Received TAB_CLOSED for profile " << profile_;
+      DVLOG(1) << "Received NOTIFICATION_WEB_CONTENTS_DESTROYED for profile "
+               << profile_;
       break;
     }
 
@@ -341,9 +348,10 @@ void SessionChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!profile_)
     return;
-  notification_registrar_.Add(this, content::NOTIFICATION_TAB_PARENTED,
+  notification_registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
       content::NotificationService::AllSources());
-  notification_registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
+  notification_registrar_.Add(this,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
   notification_registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
       content::NotificationService::AllSources());

@@ -161,7 +161,7 @@ void AlternateNavURLFetcher::Observe(
       // WARNING: |this| may be deleted!
       break;
 
-    case content::NOTIFICATION_TAB_CLOSED:
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
       // We have been closed. In order to prevent the URLFetcher from trying to
       // access the controller that will be invalid, we delete ourselves.
       // This deletes the URLFetcher and insures its callback won't be called.
@@ -184,8 +184,10 @@ void AlternateNavURLFetcher::OnURLFetchComplete(
 
 void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
   controller_ = controller;
-  registrar_.Add(this, content::NOTIFICATION_TAB_CLOSED,
-                 content::Source<NavigationController>(controller_));
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<content::WebContents>(controller_->GetWebContents()));
 
   DCHECK_EQ(NOT_STARTED, state_);
   state_ = IN_PROGRESS;

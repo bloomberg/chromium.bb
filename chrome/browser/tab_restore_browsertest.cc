@@ -64,7 +64,7 @@ class TabRestoreTest : public InProcessBrowserTest {
   void CloseTab(int index) {
     content::WebContents* new_tab = browser()->GetWebContentsAt(index);
     ui_test_utils::WindowedNotificationObserver tab_close_observer(
-          content::NOTIFICATION_TAB_CLOSED,
+          content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
           content::NotificationService::AllSources());
     browser()->CloseTabContents(new_tab);
     tab_close_observer.Wait();
@@ -94,7 +94,7 @@ class TabRestoreTest : public InProcessBrowserTest {
 
     // Restore the tab.
     ui_test_utils::WindowedNotificationObserver tab_added_observer(
-      content::NOTIFICATION_TAB_PARENTED,
+      chrome::NOTIFICATION_TAB_PARENTED,
       content::NotificationService::AllSources());
     ui_test_utils::WindowedNotificationObserver tab_loaded_observer(
       content::NOTIFICATION_LOAD_STOP,

@@ -9,7 +9,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "net/test/test_server.h"
 
 class ResourceDispatcherHostBrowserTest : public InProcessBrowserTest {
@@ -30,8 +29,7 @@ bool ResourceDispatcherHostBrowserTest::GetPopupTitle(const GURL& url,
                                                       string16* title) {
   ui_test_utils::NavigateToURL(browser(), url);
 
-  ui_test_utils::WindowedNotificationObserver observer(
-      content::NOTIFICATION_TAB_ADDED,
+  ui_test_utils::WindowedTabAddedNotificationObserver observer(
       content::NotificationService::AllSources());
 
   // Create dynamic popup.

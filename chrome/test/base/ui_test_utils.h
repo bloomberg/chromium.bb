@@ -448,6 +448,21 @@ class WindowedNotificationObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserver);
 };
 
+// A WindowedNotificationObserver hard-wired to observe
+// chrome::NOTIFICATION_TAB_ADDED.
+class WindowedTabAddedNotificationObserver
+    : public WindowedNotificationObserver {
+ public:
+  // Register to listen for notifications of NOTIFICATION_TAB_ADDED from either
+  // a specific source, or from all sources if |source| is
+  // NotificationService::AllSources().
+  WindowedTabAddedNotificationObserver(
+      const content::NotificationSource& source);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowedTabAddedNotificationObserver);
+};
+
 // Similar to WindowedNotificationObserver but also provides a way of retrieving
 // the details associated with the notification.
 // Note that in order to use that class the details class should be copiable,

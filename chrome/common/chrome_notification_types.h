@@ -135,6 +135,25 @@ enum NotificationType {
   // RenderViewHost and the details are not used.
   NOTIFICATION_FOCUSED_EDITABLE_NODE_TOUCHED,
 
+  // Tabs --------------------------------------------------------------------
+
+  // Sent when a tab is added to a WebContentsDelegate. The source is the
+  // WebContentsDelegate and the details is the added WebContents.
+  NOTIFICATION_TAB_ADDED,
+
+  // This notification is sent after a tab has been appended to the tab_strip.
+  // The source is a Source<TabContentsWrapper> of the tab being added. There
+  // are no details.
+  NOTIFICATION_TAB_PARENTED,
+
+  // This message is sent before a tab has been closed.  The source is a
+  // Source<NavigationController> with a pointer to the controller for the
+  // closed tab.  No details are expected.
+  //
+  // See also content::NOTIFICATION_WEB_CONTENTS_DESTROYED, which is sent when
+  // the WebContents containing the NavigationController is destroyed.
+  NOTIFICATION_TAB_CLOSING,
+
   // Stuff inside the tabs ---------------------------------------------------
 
   // Sent when the bookmark bubble hides. The source is the profile, the

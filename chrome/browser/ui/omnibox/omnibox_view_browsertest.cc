@@ -224,11 +224,12 @@ class OmniboxViewTest : public InProcessBrowserTest,
       return;
 
     content::NotificationRegistrar registrar;
-    registrar.Add(this,
-                  (tab_count < expected_tab_count ?
-                   content::NOTIFICATION_TAB_PARENTED :
-                   content::NOTIFICATION_TAB_CLOSED),
-                   content::NotificationService::AllSources());
+    registrar.Add(
+        this,
+        tab_count < expected_tab_count
+            ? static_cast<int>(chrome::NOTIFICATION_TAB_PARENTED)
+            : static_cast<int>(content::NOTIFICATION_WEB_CONTENTS_DESTROYED),
+        content::NotificationService::AllSources());
 
     while (!HasFailure() && browser->tab_count() != expected_tab_count)
       ui_test_utils::RunMessageLoop();
@@ -370,8 +371,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
     switch (type) {
-      case content::NOTIFICATION_TAB_CLOSED:
-      case content::NOTIFICATION_TAB_PARENTED:
+      case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
+      case chrome::NOTIFICATION_TAB_PARENTED:
       case chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY:
       case chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED:
       case chrome::NOTIFICATION_HISTORY_LOADED:

@@ -384,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   // popup will be constrained, which isn't what we want to test.
 
   ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_TAB_ADDED,
+        chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
   ui_test_utils::WindowedNotificationObserver load_stop_observer(
       content::NOTIFICATION_LOAD_STOP,
@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   CheckTitle("popup");
 
   ui_test_utils::WindowedNotificationObserver tab_close_observer(
-      content::NOTIFICATION_TAB_CLOSED,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
   browser()->CloseTab();
   tab_close_observer.Wait();

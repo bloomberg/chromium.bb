@@ -3509,7 +3509,7 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
                            int index) {
   fullscreen_controller_->OnTabClosing(contents->web_contents());
   content::NotificationService::current()->Notify(
-      content::NOTIFICATION_TAB_CLOSING,
+      chrome::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(
           &contents->web_contents()->GetController()),
       content::NotificationService::NoDetails());
