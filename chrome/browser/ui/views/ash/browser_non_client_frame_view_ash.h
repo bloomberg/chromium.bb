@@ -22,6 +22,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                                      public views::ButtonListener,
                                      public TabIconView::TabIconViewModel {
  public:
+  static const char kViewClassName[];
+
   BrowserNonClientFrameViewAsh(BrowserFrame* frame, BrowserView* browser_view);
   virtual ~BrowserNonClientFrameViewAsh();
 
@@ -46,6 +48,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // views::View overrides:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
   virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;

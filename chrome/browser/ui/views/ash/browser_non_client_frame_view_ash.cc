@@ -58,6 +58,10 @@ const int kContentShadowHeight = 1;
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, public:
 
+// static
+const char BrowserNonClientFrameViewAsh::kViewClassName[] =
+    "BrowserNonClientFrameViewAsh";
+
 BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     BrowserFrame* frame, BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
@@ -213,6 +217,10 @@ void BrowserNonClientFrameViewAsh::Layout() {
   if (avatar_button())
     LayoutAvatar();
   BrowserNonClientFrameView::Layout();
+}
+
+std::string BrowserNonClientFrameViewAsh::GetClassName() const {
+  return kViewClassName;
 }
 
 bool BrowserNonClientFrameViewAsh::HitTest(const gfx::Point& l) const {

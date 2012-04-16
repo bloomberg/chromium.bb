@@ -378,6 +378,9 @@ void TabStrip::RemoveTabDelegate::HighlightCloseButton() {
 // TabStrip, public:
 
 // static
+const char TabStrip::kViewClassName[] = "TabStrip";
+
+// static
 const int TabStrip::kMiniToNonMiniGap = 3;
 
 TabStrip::TabStrip(TabStripController* controller)
@@ -911,6 +914,10 @@ void TabStrip::PaintClosingTabs(gfx::Canvas* canvas, int index) {
        i != tabs.rend(); ++i) {
     (*i)->Paint(canvas);
   }
+}
+
+std::string TabStrip::GetClassName() const {
+  return kViewClassName;
 }
 
 gfx::Size TabStrip::GetPreferredSize() {

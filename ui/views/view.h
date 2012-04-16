@@ -46,7 +46,6 @@ class TextInputClient;
 class Texture;
 class ThemeProvider;
 class Transform;
-enum TouchStatus;
 }
 
 #if defined(OS_WIN)
