@@ -120,25 +120,50 @@ int32_t ReceiveMessage(PP_Resource ws,
                        PP_CompletionCallback callback) {
   DebugPrintf("PPB_WebSocket::ReceiveMessage: ws=%"NACL_PRId32"\n", ws);
 
+  if (message == NULL)
+    return PP_ERROR_FAILED;
   int32_t callback_id =
       CompletionCallbackTable::Get()->AddCallback(callback, message);
   if (callback_id == 0)
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
-  // TODO(toyoshim): ReceiveMessage needs performance optimization to reduce
-  // chances to call RPC.
+  nacl_abi_size_t sync_read_buffer_size = kMaxReturnVarSize;
+  nacl::scoped_array<char> sync_read_buffer_bytes(
+      new char[sync_read_buffer_size]);
+
   int32_t pp_error;
   NaClSrpcError srpc_result =
       PpbWebSocketRpcClient::PPB_WebSocket_ReceiveMessage(
           GetMainSrpcChannel(),
           ws,
           callback_id,
-          &pp_error);
+          &pp_error,
+          &sync_read_buffer_size,
+          sync_read_buffer_bytes.get());
   DebugPrintf("PPB_WebSocket::ReceiveMessage: %s\n",
       NaClSrpcErrorString(srpc_result));
 
   if (srpc_result != NACL_SRPC_RESULT_OK)
     pp_error = PP_ERROR_FAILED;
+
+  if (pp_error != PP_OK_COMPLETIONPENDING) {
+    // Consumes plugin callback and deserialize received data.
+    void* plugin_buffer;
+    PP_Var* plugin_var;
+    PP_CompletionCallback plugin_callback =
+        CompletionCallbackTable::Get()->RemoveCallback(callback_id,
+                                                       &plugin_buffer,
+                                                       &plugin_var);
+    DCHECK(plugin_callback.func == callback.func);
+    DCHECK(plugin_var == message);
+    if (pp_error == PP_OK) {
+      *message = PP_MakeUndefined();
+      if (!DeserializeTo(sync_read_buffer_bytes.get(),
+          sync_read_buffer_size, 1, message))
+        return PP_ERROR_FAILED;
+    }
+  }
+
   return MayForceCallback(callback, pp_error);
 }
 

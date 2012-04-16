@@ -11,14 +11,17 @@
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
-#include "srpcgen/ppb_rpc.h"
+#include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_websocket.h"
+#include "srpcgen/ppb_rpc.h"
 
 using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::DeleteRemoteCallbackInfo;
 using ppapi_proxy::DeserializeTo;
 using ppapi_proxy::MakeRemoteCompletionCallback;
+using ppapi_proxy::PPBCoreInterface;
 using ppapi_proxy::PPBWebSocketInterface;
+using ppapi_proxy::Serialize;
 using ppapi_proxy::SerializeTo;
 
 void PpbWebSocketRpcServer::PPB_WebSocket_Create(
@@ -135,7 +138,9 @@ void PpbWebSocketRpcServer::PPB_WebSocket_ReceiveMessage(
     PP_Resource ws,
     int32_t callback_id,
     // outputs
-    int32_t* pp_error) {
+    int32_t* pp_error,
+    nacl_abi_size_t* sync_read_buffer_size,
+    char* sync_read_buffer_bytes) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
@@ -144,22 +149,31 @@ void PpbWebSocketRpcServer::PPB_WebSocket_ReceiveMessage(
       MakeRemoteCompletionCallback(rpc->channel, callback_id, &callback_var);
   if (NULL == remote_callback.func)
     return;
-  // TODO(toyoshim): Removing optional flag is easy way to expect asynchronous
-  // completion on the following PPBWebSocketInterface()->ReceiveMessage(). But
-  // from the viewpoint of performance, we should handle synchronous
-  // completion correctly.
-  remote_callback.flags &= ~PP_COMPLETIONCALLBACK_FLAG_OPTIONAL;
 
-  // The callback is always invoked asynchronously for now, so it doesn't care
-  // about re-entrancy.
   *pp_error = PPBWebSocketInterface()->ReceiveMessage(
       ws, callback_var, remote_callback);
   DebugPrintf("PPB_WebSocket::ReceiveMessage: pp_error=%"NACL_PRId32"\n",
       *pp_error);
-  CHECK(*pp_error != PP_OK);  // Should not complete synchronously
-  if (*pp_error != PP_OK_COMPLETIONPENDING)
-    DeleteRemoteCallbackInfo(remote_callback);
   rpc->result = NACL_SRPC_RESULT_OK;
+
+  // No callback scheduled. Handles synchronous completion here.
+  if (*pp_error != PP_OK_COMPLETIONPENDING) {
+    if (*pp_error == PP_OK) {
+      // Try serialization from callback_var to sync_read_buffer_bytes. It
+      // could fail if serialized callback_var is larger than
+      // sync_read_buffer_size.
+      if (!SerializeTo(callback_var, sync_read_buffer_bytes,
+          sync_read_buffer_size)) {
+        // Buffer for synchronous completion is not big enough. Uses
+        // asynchronous completion callback.
+        *pp_error = PP_OK_COMPLETIONPENDING;
+        // Schedule to invoke remote_callback later from main thread.
+        PPBCoreInterface()->CallOnMainThread(0, remote_callback, PP_OK);
+        return;
+      }
+    }
+    DeleteRemoteCallbackInfo(remote_callback);
+  }
 }
 
 void PpbWebSocketRpcServer::PPB_WebSocket_SendMessage(

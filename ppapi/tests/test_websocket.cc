@@ -6,7 +6,9 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -198,6 +200,7 @@ void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST_WITH_REFERENCE_CHECK(BinarySendReceive, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(StressedSendReceive, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(BufferedAmount, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(AbortCalls, filter);
 
   RUN_TEST_WITH_REFERENCE_CHECK(CcInterfaces, filter);
 
@@ -649,28 +652,43 @@ std::string TestWebSocket::TestStressedSendReceive() {
   for (uint32_t i = 0; i < binary.size(); ++i)
     binary[i] = i;
   PP_Var binary_var = CreateVarBinary(binary);
+  // Prepare very large binary data over 64KiB. Object serializer in
+  // ppapi_proxy has a limitation of 64KiB as maximum return PP_Var data size
+  // to SRPC. In case received data over 64KiB exists, a specific code handles
+  // this large data via asynchronous callback from main thread. This data
+  // intends to test the code.
+  std::vector<uint8_t> large_binary(65 * 1024);
+  for (uint32_t i = 0; i < large_binary.size(); ++i)
+    large_binary[i] = i & 0xff;
+  PP_Var large_binary_var = CreateVarBinary(large_binary);
 
   // Send many messages.
+  int32_t result;
   for (int i = 0; i < 256; ++i) {
-    int32_t result = websocket_interface_->SendMessage(ws, text_var);
+    result = websocket_interface_->SendMessage(ws, text_var);
     ASSERT_EQ(PP_OK, result);
     result = websocket_interface_->SendMessage(ws, binary_var);
     ASSERT_EQ(PP_OK, result);
   }
+  result = websocket_interface_->SendMessage(ws, large_binary_var);
+  ASSERT_EQ(PP_OK, result);
   ReleaseVar(text_var);
   ReleaseVar(binary_var);
+  ReleaseVar(large_binary_var);
 
   // Receive echoed data.
-  for (int i = 0; i < 512; ++i) {
+  for (int i = 0; i <= 512; ++i) {
     TestCompletionCallback callback(instance_->pp_instance(), force_async_);
     PP_Var received_message;
-    int32_t result = websocket_interface_->ReceiveMessage(
+    result = websocket_interface_->ReceiveMessage(
         ws, &received_message, callback.GetCallback().pp_completion_callback());
     ASSERT_TRUE(result == PP_OK || result == PP_OK_COMPLETIONPENDING);
     if (result == PP_OK_COMPLETIONPENDING)
       result = callback.WaitForResult();
     ASSERT_EQ(PP_OK, result);
-    if (i & 1) {
+    if (i == 512) {
+      ASSERT_TRUE(AreEqualWithBinary(received_message, large_binary));
+    } else if (i & 1) {
       ASSERT_TRUE(AreEqualWithBinary(received_message, binary));
     } else {
       ASSERT_TRUE(AreEqualWithString(received_message, text));
@@ -742,6 +760,147 @@ std::string TestWebSocket::TestBufferedAmount() {
   ReleaseVar(reason);
   ReleaseVar(empty_string);
   core_interface_->ReleaseResource(ws);
+
+  PASS();
+}
+
+std::string TestWebSocket::TestAbortCalls() {
+  // Test abort behaviors where a WebSocket PP_Resource is released while
+  // each function is in-flight on the WebSocket PP_Resource.
+  std::vector<uint8_t> large_binary(65 * 1024);
+  PP_Var large_var = CreateVarBinary(large_binary);
+
+  // Firstly, test the behavior for SendMessage().
+  // This function doesn't require a callback, but operation will be done
+  // asynchronously in WebKit and browser process.
+  int32_t result;
+  std::string url = GetFullURL(kEchoServerURL);
+  PP_Resource ws = Connect(url, &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  result = websocket_interface_->SendMessage(ws, large_var);
+  ASSERT_EQ(PP_OK, result);
+  core_interface_->ReleaseResource(ws);
+
+  // Following tests make sure the behavior for functions which require a
+  // callback. The callback must get a PP_ERROR_ABORTED.
+  // Test the behavior for Connect().
+  ws = websocket_interface_->Create(instance_->pp_instance());
+  ASSERT_TRUE(ws);
+  PP_Var url_var = CreateVarString(url);
+  TestCompletionCallback connect_callback(
+      instance_->pp_instance(), force_async_);
+  result = websocket_interface_->Connect(ws, url_var, NULL, 0,
+      connect_callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  core_interface_->ReleaseResource(ws);
+  result = connect_callback.WaitForResult();
+  ASSERT_EQ(PP_ERROR_ABORTED, result);
+  ReleaseVar(url_var);
+
+  // Test the behavior for Close().
+  ws = Connect(url, &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  PP_Var reason_var = CreateVarString("abort");
+  TestCompletionCallback close_callback(
+      instance_->pp_instance(), force_async_);
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason_var,
+      close_callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  core_interface_->ReleaseResource(ws);
+  result = close_callback.WaitForResult();
+  ASSERT_EQ(PP_ERROR_ABORTED, result);
+  ReleaseVar(reason_var);
+
+  // Test the behavior for ReceiveMessage().
+  // Firstly, make sure the simplest case to wait for data which never arrives.
+  ws = Connect(url, &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  PP_Var receive_var;
+  TestCompletionCallback receive_callback(
+      instance_->pp_instance(), force_async_);
+  result = websocket_interface_->ReceiveMessage(ws, &receive_var,
+      receive_callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  core_interface_->ReleaseResource(ws);
+  result = receive_callback.WaitForResult();
+  ASSERT_EQ(PP_ERROR_ABORTED, result);
+
+  // Test the behavior where receive process might be in-flight.
+  const char* text = "yukarin";
+  PP_Var text_var = CreateVarString(text);
+
+  // Each trial sends 17 messages and receives just |trial| number of
+  // message(s) before releasing the WebSocket. The WebSocket is released while
+  // the next message is going to be received.
+  for (int trial = 1; trial <= 16; trial++) {
+    ws = Connect(url, &result, "");
+    ASSERT_TRUE(ws);
+    ASSERT_EQ(PP_OK, result);
+    for (int i = 0; i <= 16; ++i) {
+      result = websocket_interface_->SendMessage(ws, text_var);
+      ASSERT_EQ(PP_OK, result);
+    }
+    std::auto_ptr<TestCompletionCallback> callback;
+    PP_Var var;
+    for (int i = 0; i < trial; ++i) {
+      callback.reset(
+          new TestCompletionCallback(instance_->pp_instance(), force_async_));
+      result = websocket_interface_->ReceiveMessage(
+          ws, &var, callback->GetCallback().pp_completion_callback());
+      if (result == PP_OK_COMPLETIONPENDING)
+        result = callback->WaitForResult();
+      ASSERT_EQ(PP_OK, result);
+      ASSERT_TRUE(AreEqualWithString(var, text));
+      ReleaseVar(var);
+    }
+    result = websocket_interface_->ReceiveMessage(
+        ws, &var, callback->GetCallback().pp_completion_callback());
+    core_interface_->ReleaseResource(ws);
+    if (result != PP_OK) {
+      result = callback->WaitForResult();
+      ASSERT_EQ(PP_ERROR_ABORTED, result);
+    }
+  }
+  // Same test, but the last receiving message is large message over 64KiB.
+  for (int trial = 1; trial <= 16; trial++) {
+    ws = Connect(url, &result, "");
+    ASSERT_TRUE(ws);
+    ASSERT_EQ(PP_OK, result);
+    for (int i = 0; i <= 16; ++i) {
+      if (i == trial)
+        result = websocket_interface_->SendMessage(ws, large_var);
+      else
+        result = websocket_interface_->SendMessage(ws, text_var);
+      ASSERT_EQ(PP_OK, result);
+    }
+    std::auto_ptr<TestCompletionCallback> callback;
+    PP_Var var;
+    for (int i = 0; i < trial; ++i) {
+      callback.reset(
+          new TestCompletionCallback(instance_->pp_instance(), force_async_));
+      result = websocket_interface_->ReceiveMessage(
+          ws, &var, callback->GetCallback().pp_completion_callback());
+      if (result == PP_OK_COMPLETIONPENDING)
+        result = callback->WaitForResult();
+      ASSERT_EQ(PP_OK, result);
+      ASSERT_TRUE(AreEqualWithString(var, text));
+      ReleaseVar(var);
+    }
+    result = websocket_interface_->ReceiveMessage(
+        ws, &var, callback->GetCallback().pp_completion_callback());
+    core_interface_->ReleaseResource(ws);
+    if (result != PP_OK) {
+      result = callback->WaitForResult();
+      ASSERT_EQ(PP_ERROR_ABORTED, result);
+    }
+  }
+
+  ReleaseVar(large_var);
+  ReleaseVar(text_var);
 
   PASS();
 }
@@ -1152,3 +1311,4 @@ std::string TestWebSocket::TestUtilityBufferedAmount() {
 
   PASS();
 }
+

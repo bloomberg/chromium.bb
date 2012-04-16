@@ -44,6 +44,7 @@
                       ['callback_id', 'int32_t'],      # PP_CompletionCallback
                      ],
            'outputs': [['pp_error', 'int32_t'],        # int32_t
+                       ['sync_read_buffer', 'char[]'], # PP_Var
                       ]
           },
           {'name': 'PPB_WebSocket_SendMessage',

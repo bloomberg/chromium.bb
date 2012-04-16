@@ -2871,7 +2871,8 @@ static void PPB_WebSocket_ReceiveMessageDispatcher(
       done,
       inputs[0]->u.ival,
       inputs[1]->u.ival,
-      &(outputs[0]->u.ival)
+      &(outputs[0]->u.ival),
+      &(outputs[1]->u.count), outputs[1]->arrays.carr
   );
 }
 
@@ -3297,7 +3298,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_WebSocket_IsWebSocket:i:i", PPB_WebSocket_IsWebSocketDispatcher },
   { "PPB_WebSocket_Connect:iCCii:i", PPB_WebSocket_ConnectDispatcher },
   { "PPB_WebSocket_Close:iiCi:i", PPB_WebSocket_CloseDispatcher },
-  { "PPB_WebSocket_ReceiveMessage:ii:i", PPB_WebSocket_ReceiveMessageDispatcher },
+  { "PPB_WebSocket_ReceiveMessage:ii:iC", PPB_WebSocket_ReceiveMessageDispatcher },
   { "PPB_WebSocket_SendMessage:iC:i", PPB_WebSocket_SendMessageDispatcher },
   { "PPB_WebSocket_GetBufferedAmount:i:l", PPB_WebSocket_GetBufferedAmountDispatcher },
   { "PPB_WebSocket_GetCloseCode:i:i", PPB_WebSocket_GetCloseCodeDispatcher },

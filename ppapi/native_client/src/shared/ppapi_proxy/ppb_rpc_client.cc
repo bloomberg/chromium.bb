@@ -3574,17 +3574,19 @@ NaClSrpcError PpbWebSocketRpcClient::PPB_WebSocket_ReceiveMessage(
     NaClSrpcChannel* channel,
     PP_Resource ws,
     int32_t callback_id,
-    int32_t* pp_error)  {
+    int32_t* pp_error,
+    nacl_abi_size_t* sync_read_buffer_bytes, char* sync_read_buffer)  {
   VCHECK(ppapi_proxy::PPBCoreInterface()->IsMainThread(),
          ("%s: PPAPI calls are not supported off the main thread\n",
           __FUNCTION__));
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_WebSocket_ReceiveMessage:ii:i",
+      "PPB_WebSocket_ReceiveMessage:ii:iC",
       ws,
       callback_id,
-      pp_error
+      pp_error,
+      sync_read_buffer_bytes, sync_read_buffer
   );
   return retval;
 }

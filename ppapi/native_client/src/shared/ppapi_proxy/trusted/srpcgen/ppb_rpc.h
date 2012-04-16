@@ -1430,7 +1430,8 @@ class PpbWebSocketRpcServer {
       NaClSrpcClosure* done,
       PP_Resource ws,
       int32_t callback_id,
-      int32_t* pp_error);
+      int32_t* pp_error,
+      nacl_abi_size_t* sync_read_buffer_bytes, char* sync_read_buffer);
   static void PPB_WebSocket_SendMessage(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

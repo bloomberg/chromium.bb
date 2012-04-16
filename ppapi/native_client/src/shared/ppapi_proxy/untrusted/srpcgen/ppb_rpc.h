@@ -1243,7 +1243,8 @@ class PpbWebSocketRpcClient {
       NaClSrpcChannel* channel,
       PP_Resource ws,
       int32_t callback_id,
-      int32_t* pp_error);
+      int32_t* pp_error,
+      nacl_abi_size_t* sync_read_buffer_bytes, char* sync_read_buffer);
   static NaClSrpcError PPB_WebSocket_SendMessage(
       NaClSrpcChannel* channel,
       PP_Resource ws,
