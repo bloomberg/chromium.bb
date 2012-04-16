@@ -114,10 +114,6 @@ void EventExecutorWin::HandleKey(const KeyEvent& event) {
   // Reset the system idle suspend timeout.
   SetThreadExecutionState(ES_SYSTEM_REQUIRED);
 
-  // Events which don't specify whether the key is pressed are invalid.
-  if (!event.has_pressed())
-    return;
-
   // The mapping between scancodes and VKEY values depends on the foreground
   // window's current keyboard layout.
   HKL layout = GetForegroundKeyboardLayout();

@@ -325,10 +325,6 @@ void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
     return;
   }
 
-  // Events which don't specify whether the key is pressed are invalid.
-  if (!event.has_pressed())
-    return;
-
   int keycode = kInvalidKeycode;
   if (event.has_usb_keycode()) {
     keycode = UsbKeycodeToNativeKeycode(event.usb_keycode());
