@@ -426,7 +426,7 @@
                      'glotov+watch@chromium.org'],
     'panels': ['dimich@chromium.org', 'jennb@chromium.org',
                'aburago@chromium.org', 'dcheng@chromium.org',
-               'jianli@chromium.org', 'dslomov@chromium.org'],
+               'jianli@chromium.org'],
     'importer': ['tfarina@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'accelerator_table': ['mazda+watch@chromium.org',
