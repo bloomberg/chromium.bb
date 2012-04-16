@@ -62,7 +62,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "content/common/sandbox_policy.h"
+#include "content/public/common/sandbox_init.h"
 #endif
 
 using WebKit::WebBindings;
@@ -503,7 +503,7 @@ static void CopyTransportDIBHandleForMessage(
 #elif defined(OS_WIN)
   // On Windows we need to duplicate the handle for the plugin process.
   *handle_out = NULL;
-  sandbox::BrokerDuplicateHandle(handle_in, peer_pid, handle_out,
+  content::BrokerDuplicateHandle(handle_in, peer_pid, handle_out,
                                  FILE_MAP_READ | FILE_MAP_WRITE, 0);
   DCHECK(*handle_out != NULL);
 #else

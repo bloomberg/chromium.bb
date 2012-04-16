@@ -23,12 +23,6 @@ CONTENT_EXPORT bool InitBrokerServices(
 CONTENT_EXPORT bool InitTargetServices(
     sandbox::TargetServices* target_services);
 
-CONTENT_EXPORT bool BrokerDuplicateHandle(HANDLE source_handle,
-                                          DWORD target_process_id,
-                                          HANDLE* target_handle,
-                                          DWORD desired_access,
-                                          DWORD options);
-
 // Starts a sandboxed process with the given directory unsandboxed
 // and returns a handle to it.
 CONTENT_EXPORT base::ProcessHandle StartProcessWithAccess(

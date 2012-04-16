@@ -36,7 +36,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "content/common/sandbox_policy.h"
+#include "content/public/common/sandbox_init.h"
 #endif
 
 using WebKit::WebBindings;
@@ -133,7 +133,7 @@ void WebPluginProxy::WillDestroyWindow(gfx::PluginWindowHandle window) {
 #if defined(OS_WIN)
 void WebPluginProxy::SetWindowlessPumpEvent(HANDLE pump_messages_event) {
   HANDLE pump_messages_event_for_renderer = NULL;
-  sandbox::BrokerDuplicateHandle(pump_messages_event, channel_->peer_pid(),
+  content::BrokerDuplicateHandle(pump_messages_event, channel_->peer_pid(),
                                  &pump_messages_event_for_renderer,
                                  SYNCHRONIZE | EVENT_MODIFY_STATE, 0);
   DCHECK(pump_messages_event_for_renderer != NULL);

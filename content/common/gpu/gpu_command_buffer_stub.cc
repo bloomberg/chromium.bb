@@ -24,7 +24,7 @@
 #include "ui/gfx/gl/gl_switches.h"
 
 #if defined(OS_WIN)
-#include "content/common/sandbox_policy.h"
+#include "content/public/common/sandbox_init.h"
 #endif
 
 GpuCommandBufferStub::SurfaceState::SurfaceState(int32 surface_id,
@@ -508,7 +508,7 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
     if (buffer.shared_memory) {
 #if defined(OS_WIN)
       transfer_buffer = NULL;
-      sandbox::BrokerDuplicateHandle(buffer.shared_memory->handle(),
+      content::BrokerDuplicateHandle(buffer.shared_memory->handle(),
           channel_->renderer_pid(), &transfer_buffer, FILE_MAP_READ |
           FILE_MAP_WRITE, 0);
       CHECK(transfer_buffer != NULL);

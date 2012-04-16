@@ -21,7 +21,7 @@
 #include "ui/gfx/size.h"
 
 #if defined(OS_WIN)
-#include "content/common/sandbox_policy.h"
+#include "content/public/common/sandbox_init.h"
 #endif
 
 using gpu::Buffer;
@@ -240,7 +240,7 @@ int32 CommandBufferProxyImpl::CreateTransferBuffer(
   base::SharedMemoryHandle handle = shm->handle();
 #if defined(OS_WIN)
   // Windows needs to explicitly duplicate the handle out to another process.
-  if (!sandbox::BrokerDuplicateHandle(handle, channel_->gpu_pid(),
+  if (!content::BrokerDuplicateHandle(handle, channel_->gpu_pid(),
                                       &handle, FILE_MAP_WRITE, 0)) {
     return -1;
   }
@@ -271,7 +271,7 @@ int32 CommandBufferProxyImpl::RegisterTransferBuffer(
   base::SharedMemoryHandle handle = shared_memory->handle();
 #if defined(OS_WIN)
   // Windows needs to explicitly duplicate the handle out to another process.
-  if (!sandbox::BrokerDuplicateHandle(handle, channel_->gpu_pid(),
+  if (!content::BrokerDuplicateHandle(handle, channel_->gpu_pid(),
                                       &handle, FILE_MAP_WRITE, 0)) {
     return -1;
   }
