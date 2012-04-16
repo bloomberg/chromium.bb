@@ -712,6 +712,7 @@
           ],
           'variables': {
             'build_app_dmg_script_path': 'tools/build/mac/build_app_dmg',
+            'pkg_dmg_script_path': 'installer/mac/pkg-dmg',
 
             'conditions': [
               # This duplicates the output path from build_app_dmg.
@@ -726,6 +727,7 @@
             {
               'inputs': [
                 '<(build_app_dmg_script_path)',
+                '<(pkg_dmg_script_path)',
                 '<(PRODUCT_DIR)/<(mac_product_name).app',
               ],
               'outputs': [
