@@ -1030,6 +1030,14 @@ enum {
 
 - (void)fullScreenModeChanged:(bool)isFullScreen {
   [self updateWindowLevel];
+
+  // The full-screen window is in normal level and changing the panel window to
+  // same normal level will not move it below the full-screen window. Thus we
+  // need to reorder the panel window.
+  if (isFullScreen)
+    [[self window] orderBack:nil];
+  else
+    [[self window] orderFrontRegardless];
 }
 
 - (BOOL)canBecomeKeyWindow {
@@ -1053,8 +1061,9 @@ enum {
   if (![self isWindowLoaded])
     return;
   // Make sure we don't draw on top of a window in full screen mode.
-  if (windowShim_->panel()->manager()->is_full_screen() ||
-      !windowShim_->panel()->always_on_top()) {
+  Panel* panel = windowShim_->panel();
+  if (panel->manager()->display_settings_provider()->is_full_screen() ||
+      !panel->always_on_top()) {
     [[self window] setLevel:NSNormalWindowLevel];
     return;
   }
@@ -1073,7 +1082,7 @@ enum {
   // While this is OK for expanded panels, it makes minimized panels impossible
   // to activate. As a result, we still use NSStatusWindowLevel for minimized
   // panels, since it's impossible to compose IME text in them anyway.
-  if (windowShim_->panel()->IsMinimized()) {
+  if (panel->IsMinimized()) {
     [[self window] setLevel:NSStatusWindowLevel];
     return;
   }

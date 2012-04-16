@@ -172,9 +172,11 @@ bool DisplaySettingsProviderWin::CheckTaskbars(bool notify_observer) {
         alignment, bounds);
     if (visibility != taskbars_[i].visibility) {
       taskbars_[i].visibility = visibility;
-      if (notify_observer && desktop_bar_observer()) {
-        desktop_bar_observer()->OnAutoHidingDesktopBarVisibilityChanged(
-            alignment, visibility);
+      if (notify_observer) {
+        FOR_EACH_OBSERVER(
+            DesktopBarObserver,
+            desktop_bar_observers(),
+            OnAutoHidingDesktopBarVisibilityChanged(alignment, visibility));
       }
     }
   }
