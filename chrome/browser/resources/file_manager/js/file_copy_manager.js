@@ -34,6 +34,7 @@ FileCopyManager.Task = function(sourceDirEntry, targetDirEntry) {
   this.completedBytes = 0;
 
   this.deleteAfterCopy = false;
+  this.move = false;
   this.sourceOnGData = false;
   this.targetOnGData = false;
 
@@ -58,8 +59,7 @@ FileCopyManager.Task.prototype.setEntries = function(entries, callback) {
   this.originalEntries = entries;
   // When moving directories, FileEntry.moveTo() is used if both source
   // and target are on GData. There is no need to recurse into directories.
-  var recurse = !(this.deleteAfterCopy &&
-                  this.sourceOnGData && this.targetOnGData);
+  var recurse = !this.move;
   util.recurseAndResolveEntries(entries, recurse, onEntriesRecursed);
 }
 
@@ -338,7 +338,14 @@ FileCopyManager.prototype.queueCopy = function(sourceDirEntry,
                                                targetOnGData) {
   var self = this;
   var copyTask = new FileCopyManager.Task(sourceDirEntry, targetDirEntry);
-  copyTask.deleteAfterCopy = deleteAfterCopy;
+  if (deleteAfterCopy) {
+    if (DirectoryModel.getRootPath(sourceDirEntry.fullPath) ==
+            DirectoryModel.getRootPath(targetDirEntry.fullPath)) {
+      copyTask.move = true;
+    } else {
+      copyTask.deleteAfterCopy = true;
+    }
+  }
   copyTask.sourceOnGData = sourceOnGData;
   copyTask.targetOnGData = targetOnGData;
   copyTask.setEntries(entries, function() {
@@ -433,11 +440,7 @@ FileCopyManager.prototype.serviceNextTask_ = function(
     // We should not dispatch a PROGRESS event when there is no pending items
     // in the task.
     if (task.pendingDirectories.length + task.pendingFiles.length == 0) {
-      // All done with the entries in this task.
-      // If files are moved within GData, FileEntry.moveTo() is used and
-      // there is no need to delete the original files.
-      var sourceAndTargetOnGData = task.sourceOnGData && task.targetOnGData;
-      if (task.deleteAfterCopy && !sourceAndTargetOnGData) {
+      if (task.deleteAfterCopy) {
         deleteOriginals();
       } else {
         onTaskComplete();
@@ -605,9 +608,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     if (err.code != FileError.NOT_FOUND_ERR)
       return onError('FILESYSTEM_ERROR', err);
 
-    if (task.deleteAfterCopy &&
-        DirectoryModel.getRootPath(sourceEntry.fullPath) ==
-            DirectoryModel.getRootPath(targetDirEntry.fullPath)) {
+    if (task.move) {
       resolveDirAndBaseName(
           targetDirEntry, targetRelativePath,
           function(dirEntry, fileName) {
@@ -616,13 +617,10 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
                                onFilesystemError);
           },
           onFilesystemError);
-      // Since the file has been moved (not copied) the original file doesn't
-      // need to be deleted.
-      task.deleteAfterCopy = false;
       return;
     }
 
-    if (task.sourceOnGData && task.targetOnGData && !task.deleteAfterCopy) {
+    if (task.sourceOnGData && task.targetOnGData) {
       // TODO(benchan): GDataFileSystem has not implemented directory copy,
       // and thus we only call FileEntry.copyTo() for files. Revisit this
       // code when GDataFileSystem supports directory copy.
