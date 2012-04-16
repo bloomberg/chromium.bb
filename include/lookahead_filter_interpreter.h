@@ -28,6 +28,7 @@ class LookaheadFilterInterpreter : public Interpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, QuickMoveTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SimpleTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest);
+  FRIEND_TEST(LookaheadFilterInterpreterTest, VariableDelayTest);
  public:
   LookaheadFilterInterpreter(PropRegistry* prop_reg, Interpreter* next);
   virtual ~LookaheadFilterInterpreter();
@@ -97,6 +98,8 @@ class LookaheadFilterInterpreter : public Interpreter {
   // Also, |gesture| comes earlier in time than |addend|.
   static void CombineGestures(Gesture* gesture, const Gesture* addend);
 
+  stime_t ExtraVariableDelay() const;
+
   List<QState> queue_;
   List<QState> free_list_;
 
@@ -115,7 +118,12 @@ class LookaheadFilterInterpreter : public Interpreter {
   Gesture result_;
 
   DoubleProperty min_nonsuppress_speed_;
-  DoubleProperty delay_;
+  DoubleProperty min_delay_;
+  // On some platforms, min_delay_ is very small, and sometimes we would like
+  // temporary extra delay to avoid problems, so we can in those cases add
+  // a delay specified by max_delay_. It's okay for max_delay_ to be less
+  // than min_delay_. In that case, it simply has no effect.
+  DoubleProperty max_delay_;
   // If this much time passes between consecutive events, interpolate.
   DoubleProperty split_min_period_;
   // If a contact appears to move faster than this, the drumroll detector may

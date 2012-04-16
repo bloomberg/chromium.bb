@@ -8,6 +8,8 @@
 #include <math.h>
 #include <values.h>
 
+#include "gestures/include/util.h"
+
 using std::max;
 using std::min;
 
@@ -23,7 +25,8 @@ LookaheadFilterInterpreter::LookaheadFilterInterpreter(
       last_interpreted_time_(0.0),
       min_nonsuppress_speed_(prop_reg, "Input Queue Min Nonsuppression Speed",
                              200.0),
-      delay_(prop_reg, "Input Queue Delay", 0.017),
+      min_delay_(prop_reg, "Input Queue Delay", 0.017),
+      max_delay_(prop_reg, "Input Queue Max Delay", 0.013),
       split_min_period_(prop_reg, "Min Interpolate Period", 0.021),
       drumroll_speed_thresh_(prop_reg, "Drumroll Speed Thresh", 400.0),
       drumroll_max_speed_ratio_(prop_reg,
@@ -48,14 +51,17 @@ Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
   }
   QState* node = free_list_.PopFront();
   node->set_state(*hwstate);
-  double delay = max(0.0, min(kMaxDelay, delay_.val_));
+  double delay = max(0.0, min(kMaxDelay, min_delay_.val_));
   node->due_ = hwstate->timestamp + delay;
   node->completed_ = false;
   if (queue_.Empty())
     node->output_ids_.clear();
   else
     node->output_ids_ = queue_.Tail()->output_ids_;
-  if (!queue_.Empty() && queue_.Tail()->due_ > node->due_) {
+  // At this point, if ExtraVariableDelay() > 0, queue_.Tail()->due_ may have
+  // ExtraVariableDelay() applied, but node->due_ does not, yet.
+  if (!queue_.Empty() && queue_.Tail()->due_ > node->due_ &&
+      (queue_.Tail()->due_ - node->due_ > ExtraVariableDelay())) {
     Err("Clock changed backwards. Clearing queue.");
     do {
       free_list_.PushBack(queue_.PopFront());
@@ -134,6 +140,7 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
       drumroll_max_speed_ratio_.val_;
   const float prev_dt_sq = prev_dt * prev_dt;
 
+  bool did_separate = false;
   for (size_t i = 0; i < hs->finger_cnt; i++) {
     FingerState* fs = &hs->fingers[i];
     const short old_id = fs->tracking_id;
@@ -210,8 +217,14 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
             continue;
         }
       }
+      did_separate = true;
       SeparateFinger(tail, fs, old_id);
     }
+  }
+  if (did_separate) {
+    // Possibly add some extra delay to correct, incase this separation
+    // shouldn't have occurred.
+    tail->due_ += ExtraVariableDelay();
   }
 }
 
@@ -273,7 +286,7 @@ void LookaheadFilterInterpreter::AttemptInterpolation() {
   node->completed_ = false;
   Interpolate(prev->state_, new_node->state_, &node->state_);
 
-  double delay = max(0.0, min(kMaxDelay, delay_.val_));
+  double delay = max(0.0, min(kMaxDelay, min_delay_.val_));
   node->due_ = node->state_.timestamp + delay;
 
   if (node->state_.timestamp <= last_interpreted_time_) {
@@ -490,6 +503,10 @@ void LookaheadFilterInterpreter::CombineGestures(Gesture* gesture,
   }
   if (!gesture->details.buttons.down && !gesture->details.buttons.up)
     *gesture = Gesture();
+}
+
+stime_t LookaheadFilterInterpreter::ExtraVariableDelay() const {
+  return std::max(0.0, max_delay_.val_ - min_delay_.val_);
 }
 
 LookaheadFilterInterpreter::QState::QState()

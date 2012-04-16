@@ -121,9 +121,9 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
 
       interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
       interpreter->SetHardwareProperties(initial_hwprops);
-      interpreter->delay_.val_ = 0.05;
+      interpreter->min_delay_.val_ = 0.05;
       EXPECT_TRUE(base_interpreter->set_hwprops_called_);
-      expected_timeout = interpreter->delay_.val_;
+      expected_timeout = interpreter->min_delay_.val_;
     }
     stime_t timeout = -1.0;
     Gesture* out = interpreter->SyncInterpret(&hs[i], &timeout);
@@ -170,6 +170,78 @@ TEST(LookaheadFilterInterpreterTest, SimpleTest) {
   }
 }
 
+class LookaheadFilterInterpreterVariableDelayTestInterpreter
+    : public Interpreter {
+ public:
+  LookaheadFilterInterpreterVariableDelayTestInterpreter()
+      : interpret_call_count_ (0) {}
+
+  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+    interpret_call_count_++;
+    EXPECT_EQ(1, hwstate->finger_cnt);
+    finger_ids_.insert(hwstate->fingers[0].tracking_id);
+    return NULL;
+  }
+
+  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+    EXPECT_TRUE(false);
+    return NULL;
+  }
+
+  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {};
+
+  std::set<short> finger_ids_;
+  size_t interpret_call_count_;
+};
+
+// Tests that with a zero delay, we can still avoid unnecessary splitting
+// by using variable delay.
+TEST(LookaheadFilterInterpreterTest, VariableDelayTest) {
+  LookaheadFilterInterpreterVariableDelayTestInterpreter* base_interpreter =
+      new LookaheadFilterInterpreterVariableDelayTestInterpreter;
+  LookaheadFilterInterpreter interpreter(NULL, base_interpreter);
+
+  HardwareProperties initial_hwprops = {
+    0, 0, 100, 100,  // left, top, right, bottom
+    1,  // x res (pixels/mm)
+    1,  // y res (pixels/mm)
+    133, 133, 5, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    0, 0, 0  // t5r2, semi, button pad
+  };
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, pr, orient, x, y, id
+    { 0, 0, 0, 0, 1, 0, 10, 10, 10, 1 },
+    { 0, 0, 0, 0, 1, 0, 10, 30, 10, 1 },
+    { 0, 0, 0, 0, 1, 0, 10, 50, 10, 1 },
+  };
+  HardwareState hs[] = {
+    // Expect movement to take
+    { 1.01, 0, 1, 1, &fs[0] },
+    { 1.02, 0, 1, 1, &fs[1] },
+    { 1.03, 0, 1, 1, &fs[2] },
+  };
+
+  interpreter.SetHardwareProperties(initial_hwprops);
+  interpreter.min_delay_.val_ = 0.0;
+
+  for (size_t i = 0; i < arraysize(hs); i++) {
+    stime_t timeout = -1.0;
+    interpreter.SyncInterpret(&hs[i], &timeout);
+    stime_t next_input = i < (arraysize(hs) - 1) ? hs[i + 1].timestamp :
+        INFINITY;
+    stime_t now = hs[i].timestamp;
+    while (timeout >= 0 && (timeout + now) < next_input) {
+      now += timeout;
+      timeout = -1.0;
+      interpreter.HandleTimer(now, &timeout);
+    }
+  }
+  EXPECT_EQ(3, base_interpreter->interpret_call_count_);
+  EXPECT_EQ(1, base_interpreter->finger_ids_.size());
+  EXPECT_EQ(1, *base_interpreter->finger_ids_.begin());
+}
+
 // This test makes sure that if an interpreter requests a timeout, and then
 // there is a spurious callback, that we request another callback for the time
 // that remains.
@@ -191,21 +263,22 @@ TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest) {
   base_interpreter->timer_return_ = 1.0;
   interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
   interpreter->SetHardwareProperties(initial_hwprops);
-  interpreter->delay_.val_ = 0.05;
+  interpreter->min_delay_.val_ = 0.05;
   EXPECT_TRUE(base_interpreter->set_hwprops_called_);
 
   stime_t timeout = -1.0;
   Gesture* out = interpreter->SyncInterpret(&hs, &timeout);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
-  EXPECT_FLOAT_EQ(interpreter->delay_.val_, timeout);
+  EXPECT_FLOAT_EQ(interpreter->min_delay_.val_, timeout);
 
-  out = interpreter->HandleTimer(hs.timestamp + interpreter->delay_.val_,
+  out = interpreter->HandleTimer(hs.timestamp + interpreter->min_delay_.val_,
                                  &timeout);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_FLOAT_EQ(1.0, timeout);
 
 
-  out = interpreter->HandleTimer(hs.timestamp + interpreter->delay_.val_ + 0.25,
+  out = interpreter->HandleTimer(hs.timestamp + interpreter->min_delay_.val_ +
+                                 0.25,
                                  &timeout);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_FLOAT_EQ(0.75, timeout);
@@ -455,7 +528,7 @@ TEST(LookaheadFilterInterpreterTest, InterpolateTest) {
                 3));  // dy
     interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
     interpreter->SetHardwareProperties(initial_hwprops);
-    interpreter->delay_.val_ = 0.05;
+    interpreter->min_delay_.val_ = 0.05;
 
     stime_t timeout = -1.0;
     Gesture* out = interpreter->SyncInterpret(&hs[0], &timeout);
@@ -525,7 +598,7 @@ TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest) {
   stime_t timeout = -1.0;
   Gesture* out = interpreter->SyncInterpret(&hs[0], &timeout);
   EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), out);
-  EXPECT_FLOAT_EQ(timeout, interpreter->delay_.val_);
+  EXPECT_FLOAT_EQ(timeout, interpreter->min_delay_.val_);
 
   stime_t now = hs[0].timestamp + timeout;
   timeout = -1.0;
