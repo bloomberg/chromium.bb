@@ -202,7 +202,9 @@
   struct IPC_MESSAGE_EXPORT struct_name : parent { \
     struct_name(); \
     ~struct_name();
-#define IPC_STRUCT_MEMBER(type, name) type name;
+// Optional variadic parameters specify the default value for this struct
+// member. They are passed through to the constructor for |type|.
+#define IPC_STRUCT_MEMBER(type, name, ...) type name;
 #define IPC_STRUCT_END() };
 
 // Message macros collect specific numbers of arguments and funnel them into

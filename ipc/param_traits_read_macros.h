@@ -17,7 +17,7 @@
 #define IPC_STRUCT_BEGIN_WITH_PARENT(struct_name, parent) \
   IPC_STRUCT_BEGIN(struct_name)
 #define IPC_STRUCT_BEGIN(struct_name) IPC_STRUCT_TRAITS_BEGIN(struct_name)
-#define IPC_STRUCT_MEMBER(type, name) IPC_STRUCT_TRAITS_MEMBER(name)
+#define IPC_STRUCT_MEMBER(type, name, ...) IPC_STRUCT_TRAITS_MEMBER(name)
 #define IPC_STRUCT_END() IPC_STRUCT_TRAITS_END()
 
 // Set up so next include will generate read methods.
