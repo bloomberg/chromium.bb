@@ -330,7 +330,6 @@ class XcodeSettings(object):
       if self._Test('GCC_ENABLE_SSE42_EXTENSIONS', 'YES', default='NO'):
         cflags.append('-msse4.2')
 
-    cflags += self._Settings().get('OTHER_CFLAGS', [])
     cflags += self._Settings().get('WARNING_CFLAGS', [])
 
     config = self.spec['configurations'][self.configname]
@@ -346,6 +345,7 @@ class XcodeSettings(object):
     self.configname = configname
     cflags_c = []
     self._Appendf(cflags_c, 'GCC_C_LANGUAGE_STANDARD', '-std=%s')
+    cflags_c += self._Settings().get('OTHER_CFLAGS', [])
     self.configname = None
     return cflags_c
 
@@ -361,6 +361,18 @@ class XcodeSettings(object):
       cflags_cc.append('-fvisibility-inlines-hidden')
     if self._Test('GCC_THREADSAFE_STATICS', 'NO', default='YES'):
       cflags_cc.append('-fno-threadsafe-statics')
+
+    other_ccflags = []
+    for flag in self._Settings().get('OTHER_CPLUSPLUSFLAGS', ['$(inherited)']):
+      # TODO: More general variable expansion. Missing in many other places too.
+      if flag in ('$inherited', '$(inherited)', '${inherited}'):
+        flag = '$OTHER_CFLAGS'
+      if flag in ('$OTHER_CFLAGS', '$(OTHER_CFLAGS)', '${OTHER_CFLAGS}'):
+        other_ccflags += self._Settings().get('OTHER_CFLAGS', [])
+      else:
+        other_ccflags.append(flag)
+    cflags_cc += other_ccflags
+
     self.configname = None
     return cflags_cc
 
