@@ -423,6 +423,9 @@ void ExtensionEventRouter::OnExtensionEventAck(
 
 void ExtensionEventRouter::DispatchPendingEvent(
     const linked_ptr<ExtensionEvent>& event, ExtensionHost* host) {
+  if (!host)
+    return;
+
   ListenerProcess listener(host->render_process_host(),
                            host->extension()->id());
   if (listeners_[event->event_name].count(listener) > 0u)

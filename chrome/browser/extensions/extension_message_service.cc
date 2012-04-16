@@ -442,6 +442,9 @@ void ExtensionMessageService::PendingOpenChannel(
     const OpenChannelParams& params_in,
     int source_process_id,
     ExtensionHost* host) {
+  if (!host)
+    return;  // TODO(mpcomplete): notify source of disconnect?
+
   // Re-lookup the source process since it may no longer be valid.
   OpenChannelParams params = params_in;
   params.source = content::RenderProcessHost::FromID(source_process_id);

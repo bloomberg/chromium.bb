@@ -126,13 +126,17 @@ class ExtensionMessageService : public content::NotificationObserver {
   void PendingOpenChannel(const OpenChannelParams& params,
                           int source_process_id,
                           ExtensionHost* host);
-  void PendingCloseChannel(int port_id, bool connection_error, ExtensionHost*) {
-    CloseChannel(port_id, connection_error);
+  void PendingCloseChannel(int port_id,
+                           bool connection_error,
+                           ExtensionHost* host) {
+    if (host)
+      CloseChannel(port_id, connection_error);
   }
   void PendingPostMessage(int port_id,
                           const std::string& message,
-                          ExtensionHost*) {
-    PostMessageFromRenderer(port_id, message);
+                          ExtensionHost* host) {
+    if (host)
+      PostMessageFromRenderer(port_id, message);
   }
 
   content::NotificationRegistrar registrar_;

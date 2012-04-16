@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/profiles/profile.h"
@@ -65,10 +66,12 @@ void LazyBackgroundTaskQueue::AddPendingTask(
 
     // If this is the first enqueued task, ensure the background page
     // is loaded.
-    const Extension* extension = profile->GetExtensionService()->
-        extensions()->GetByID(extension_id);
+    const Extension* extension =
+        ExtensionSystem::Get(profile)->extension_service()->
+            extensions()->GetByID(extension_id);
     DCHECK(extension->has_lazy_background_page());
-    ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
+    ExtensionProcessManager* pm =
+        ExtensionSystem::Get(profile)->process_manager();
     pm->IncrementLazyKeepaliveCount(extension);
     pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
   } else {
@@ -78,11 +81,18 @@ void LazyBackgroundTaskQueue::AddPendingTask(
   tasks_list->push_back(task);
 }
 
-void LazyBackgroundTaskQueue::ProcessPendingTasks(ExtensionHost* host) {
-  PendingTasksKey key(host->profile(), host->extension()->id());
+void LazyBackgroundTaskQueue::ProcessPendingTasks(
+    ExtensionHost* host,
+    Profile* profile,
+    const Extension* extension) {
+  if (!profile->IsSameProfile(profile_) ||
+      !extension->has_lazy_background_page())
+    return;
+
+  PendingTasksKey key(profile, extension->id());
   PendingTasksMap::iterator map_it = pending_tasks_.find(key);
   if (map_it == pending_tasks_.end()) {
-    NOTREACHED();  // lazy page should not load without any pending tasks
+    CHECK(!host);  // lazy page should not load without any pending tasks
     return;
   }
 
@@ -95,9 +105,12 @@ void LazyBackgroundTaskQueue::ProcessPendingTasks(ExtensionHost* host) {
   tasks->clear();
   pending_tasks_.erase(map_it);
 
-  // Balance the keepalive in AddPendingTask.
-  host->profile()->GetExtensionProcessManager()->
-      DecrementLazyKeepaliveCount(host->extension());
+  // Balance the keepalive in AddPendingTask. Note we don't do this on a
+  // failure to load, because the keepalive count is reset in that case.
+  if (host) {
+    ExtensionSystem::Get(profile)->process_manager()->
+        DecrementLazyKeepaliveCount(extension);
+  }
 }
 
 void LazyBackgroundTaskQueue::Observe(
@@ -109,38 +122,36 @@ void LazyBackgroundTaskQueue::Observe(
       // If an on-demand background page finished loading, dispatch queued up
       // events for it.
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-      if (host->profile()->IsSameProfile(profile_) &&
-          host->extension_host_type() ==
-              chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
-          host->extension()->has_lazy_background_page()) {
+      if (host->extension_host_type() ==
+              chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
         CHECK(host->did_stop_loading());
-        ProcessPendingTasks(host);
+        ProcessPendingTasks(host, host->profile(), host->extension());
       }
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
-      // Clear pending tasks when the background host dies. This can happen
-      // if the extension crashes. This is not strictly necessary, since we
-      // also unload the extension in that case (which clears the tasks below),
-      // but is a good extra precaution.
+      // Notify consumers about the load failure when the background host dies.
+      // This can happen if the extension crashes. This is not strictly
+      // necessary, since we also unload the extension in that case (which
+      // dispatches the tasks below), but is a good extra precaution.
       Profile* profile = content::Source<Profile>(source).ptr();
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       if (host->extension_host_type() ==
               chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-        pending_tasks_.erase(PendingTasksKey(profile, host->extension()->id()));
+        ProcessPendingTasks(NULL, profile, host->extension());
       }
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
-      // Clear pending tasks for this extension.
+      // Notify consumers that the page failed to load.
       Profile* profile = content::Source<Profile>(source).ptr();
       UnloadedExtensionInfo* unloaded =
           content::Details<UnloadedExtensionInfo>(details).ptr();
-      pending_tasks_.erase(PendingTasksKey(
-          profile, unloaded->extension->id()));
-      if (profile->HasOffTheRecordProfile())
-        pending_tasks_.erase(PendingTasksKey(
-            profile->GetOffTheRecordProfile(), unloaded->extension->id()));
+      ProcessPendingTasks(NULL, profile, unloaded->extension);
+      if (profile->HasOffTheRecordProfile()) {
+        ProcessPendingTasks(NULL, profile->GetOffTheRecordProfile(),
+                            unloaded->extension);
+      }
       break;
     }
     default:

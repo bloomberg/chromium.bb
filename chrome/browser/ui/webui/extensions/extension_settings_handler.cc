@@ -822,5 +822,6 @@ ExtensionSettingsHandler::GetExtensionUninstallDialog() {
 }
 
 void ExtensionSettingsHandler::InspectExtensionHost(ExtensionHost* host) {
-  DevToolsWindow::OpenDevToolsWindow(host->render_view_host());
+  if (host)
+    DevToolsWindow::OpenDevToolsWindow(host->render_view_host());
 }
