@@ -42,7 +42,7 @@ function waitForFinish()
     domAutomationController.send("resized");
   } else {
     g_swapsBeforeAck--;
-    draw();
+    document.getElementById('container').style.zIndex = g_swapsBeforeAck + 1;
     window.webkitRequestAnimationFrame(waitForFinish);
   }
 }
@@ -67,7 +67,7 @@ function preCallResizeInChromium(targetWidth, targetHeight)
 <body onload="notifyLoadFinished()">
 <div style="position:relative; width:200px; height:200px; background-color:black">
 </div>
-<div style="position:absolute; top:0px; left:0px">
+<div id="container" style="position:absolute; top:0px; left:0px">
 <canvas id="c" width="200" height="200" class="nomargin"></canvas>
 </div>
 </body>
