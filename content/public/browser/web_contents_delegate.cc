@@ -30,6 +30,8 @@ bool WebContentsDelegate::IsPopupOrPanel(const WebContents* source) const {
 
 bool WebContentsDelegate::IsApplication() const { return false; }
 
+bool WebContentsDelegate::CanLoadDataURLsInWebUI() const { return false; }
+
 bool WebContentsDelegate::CanReloadContents(WebContents* source) const {
   return true;
 }

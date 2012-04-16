@@ -1072,15 +1072,14 @@ bool WebContentsImpl::NavigateToEntry(
   int enabled_bindings = dest_render_view_host->GetEnabledBindings();
   WebUIControllerFactory* factory =
       content::GetContentClient()->browser()->GetWebUIControllerFactory();
+  bool data_urls_allowed = delegate_ && delegate_->CanLoadDataURLsInWebUI();
   bool is_allowed_in_web_ui_renderer =
       factory &&
-      factory->IsURLAcceptableForWebUI(GetBrowserContext(), entry.GetURL());
-#if defined(OS_CHROMEOS)
-  is_allowed_in_web_ui_renderer |= entry.GetURL().SchemeIs(chrome::kDataScheme);
-#endif
+      factory->IsURLAcceptableForWebUI(GetBrowserContext(), entry.GetURL(),
+                                       data_urls_allowed);
   if ((enabled_bindings & content::BINDINGS_POLICY_WEB_UI) &&
       !is_allowed_in_web_ui_renderer) {
-    // Log the URL to help us diagnose http://crbug.com/72235.
+    // Log the URL to help us diagnose any future failures of this CHECK.
     content::GetContentClient()->SetActiveURL(entry.GetURL());
     CHECK(0);
   }

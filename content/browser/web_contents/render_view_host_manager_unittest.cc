@@ -84,8 +84,10 @@ class RenderViewHostManagerTestWebUIControllerFactory
     return content::GetContentClient()->HasWebUIScheme(url);
   }
 
-  virtual bool IsURLAcceptableForWebUI(BrowserContext* browser_context,
-      const GURL& url) const OVERRIDE {
+  virtual bool IsURLAcceptableForWebUI(
+      BrowserContext* browser_context,
+      const GURL& url,
+      bool data_urls_allowed) const OVERRIDE {
     return false;
   }
 

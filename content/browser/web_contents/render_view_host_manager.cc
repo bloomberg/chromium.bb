@@ -377,8 +377,9 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   if (web_ui_factory) {
     if (web_ui_factory->UseWebUIForURL(browser_context, current_url)) {
       // Force swap if it's not an acceptable URL for Web UI.
+      // Here, data URLs are never allowed.
       if (!web_ui_factory->IsURLAcceptableForWebUI(browser_context,
-                                                   new_entry->GetURL()))
+                                                   new_entry->GetURL(), false))
         return true;
     } else {
       // Force swap if it's a Web UI URL.

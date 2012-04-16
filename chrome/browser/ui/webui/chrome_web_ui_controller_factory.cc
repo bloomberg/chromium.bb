@@ -394,7 +394,8 @@ bool ChromeWebUIControllerFactory::UseWebUIBindingsForURL(
 
 bool ChromeWebUIControllerFactory::IsURLAcceptableForWebUI(
     content::BrowserContext* browser_context,
-    const GURL& url) const {
+    const GURL& url,
+    bool data_urls_allowed) const {
   return UseWebUIForURL(browser_context, url) ||
       // javacsript: URLs are allowed to run in Web UI pages
       url.SchemeIs(chrome::kJavaScriptScheme) ||
@@ -405,7 +406,11 @@ bool ChromeWebUIControllerFactory::IsURLAcceptableForWebUI(
       url == GURL(chrome::kChromeUICrashURL) ||
       url == GURL(chrome::kChromeUIKillURL) ||
       url == GURL(chrome::kChromeUIHangURL) ||
-      url == GURL(chrome::kChromeUIShorthangURL);
+      url == GURL(chrome::kChromeUIShorthangURL) ||
+      // Data URLs are usually not allowed in WebUI for security reasons.
+      // BalloonHosts are one exception needed by ChromeOS, and are safe because
+      // they cannot be scripted by other pages.
+      (data_urls_allowed && url.SchemeIs(chrome::kDataScheme));
 }
 
 WebUIController* ChromeWebUIControllerFactory::CreateWebUIControllerForURL(

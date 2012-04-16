@@ -157,6 +157,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // application.
   virtual bool IsApplication() const;
 
+  // Check whether this contents is permitted to load data URLs in WebUI mode.
+  // This is normally disallowed for security.
+  virtual bool CanLoadDataURLsInWebUI() const;
+
   // Detach the given tab and convert it to a "webapp" view.  The tab must be
   // a WebContents with a valid WebApp set.
   virtual void ConvertContentsToApplication(WebContents* source) {}

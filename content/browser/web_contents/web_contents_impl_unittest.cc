@@ -75,7 +75,9 @@ class WebContentsImplTestWebUIControllerFactory
   }
 
   virtual bool IsURLAcceptableForWebUI(
-      BrowserContext* browser_context, const GURL& url) const {
+      BrowserContext* browser_context,
+      const GURL& url,
+      bool data_urls_allowed) const {
     return content::GetContentClient()->HasWebUIScheme(url);
   }
 };
