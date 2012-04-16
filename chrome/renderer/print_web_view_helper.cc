@@ -750,10 +750,7 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   AutoReset<bool> set_printing_flag(&print_for_preview_, true);
 
   WebFrame* pdf_frame = pdf_element.document().frame();
-  // TODO(gene): Consider using |print_for_preview_| inside UpdatePrintSettings
-  // instead of passing this as parameter.
-  if (!UpdatePrintSettings(pdf_frame, pdf_element,
-                           job_settings, print_for_preview_)) {
+  if (!UpdatePrintSettings(pdf_frame, pdf_element, job_settings)) {
     LOG(ERROR) << "UpdatePrintSettings failed";
     DidFinishPrinting(FAIL_PRINT);
     return;
@@ -834,7 +831,7 @@ void PrintWebViewHelper::OnPrintPreview(const DictionaryValue& settings) {
   print_preview_context_.OnPrintPreview();
 
   if (!UpdatePrintSettings(print_preview_context_.frame(),
-                           print_preview_context_.node(), settings, false)) {
+                           print_preview_context_.node(), settings)) {
     if (print_preview_context_.last_error() != PREVIEW_ERROR_BAD_SETTING) {
       Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(
           routing_id(), print_pages_params_->params.document_cookie));
@@ -1287,18 +1284,18 @@ bool PrintWebViewHelper::InitPrintSettingsAndPrepareFrame(
 
 bool PrintWebViewHelper::UpdatePrintSettings(
     WebKit::WebFrame* frame, const WebKit::WebNode& node,
-    const DictionaryValue& passed_job_settings, bool print_for_preview) {
+    const DictionaryValue& passed_job_settings) {
   DCHECK(is_preview_enabled_);
   const DictionaryValue* job_settings = &passed_job_settings;
   DictionaryValue modified_job_settings;
   if (job_settings->empty()) {
-    if (!print_for_preview)
+    if (!print_for_preview_)
       print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);
     return false;
   }
 
   bool source_is_html = true;
-  if (print_for_preview) {
+  if (print_for_preview_) {
     if (!job_settings->GetBoolean(printing::kSettingPreviewModifiable,
                                   &source_is_html)) {
       NOTREACHED();
@@ -1307,7 +1304,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     source_is_html = !PrintingNodeOrPdfFrame(frame, node);
   }
 
-  if (print_for_preview || !source_is_html) {
+  if (print_for_preview_ || !source_is_html) {
     modified_job_settings.MergeDictionary(job_settings);
     modified_job_settings.SetBoolean(printing::kSettingHeaderFooterEnabled,
                                      false);
@@ -1319,9 +1316,9 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     // - On Mac with CG, we can add a margin when generating the preview.
     // - On Linux, we never add a margin (We Could add it in the plugin).
 #if defined(OS_MACOSX) && !defined(USE_SKIA)
-    bool get_margins_from_pdf = !source_is_html && !print_for_preview;
+    bool get_margins_from_pdf = !source_is_html && !print_for_preview_;
 #elif defined(OS_WIN) || defined(OS_MACOSX)
-    bool get_margins_from_pdf = !source_is_html && print_for_preview;
+    bool get_margins_from_pdf = !source_is_html && print_for_preview_;
 #else
     bool get_margins_from_pdf = false;
 #endif
@@ -1344,7 +1341,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
 
   if (!PrintMsg_Print_Params_IsValid(settings.params)) {
-    if (!print_for_preview) {
+    if (!print_for_preview_) {
       print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
     } else {
       // PrintForPrintPreview
@@ -1367,7 +1364,7 @@ bool PrintWebViewHelper::UpdatePrintSettings(
     return false;
   }
 
-  if (!print_for_preview) {
+  if (!print_for_preview_) {
     // Validate expected print preview settings.
     if (!job_settings->GetString(printing::kPreviewUIAddr,
                                  &(settings.params.preview_ui_addr)) ||

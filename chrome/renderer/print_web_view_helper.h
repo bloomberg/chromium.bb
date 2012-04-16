@@ -216,8 +216,7 @@ class PrintWebViewHelper
   // copies, page range, etc.
   bool UpdatePrintSettings(WebKit::WebFrame* frame,
                            const WebKit::WebNode& node,
-                           const base::DictionaryValue& passed_job_settings,
-                           bool print_for_preview);
+                           const base::DictionaryValue& passed_job_settings);
 
   // Get final print settings from the user.
   // Return false if the user cancels or on error.
