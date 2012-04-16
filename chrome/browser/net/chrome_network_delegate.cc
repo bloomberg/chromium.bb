@@ -14,6 +14,8 @@
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/google/google_util.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -165,6 +167,10 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
+  // Attach any applicable Chrome metrics headers. This is a best-effort attempt
+  // where failure will not cause OnBeforeSendHeaders to back out.
+  AddChromeMetricsStateHeader(request, headers);
+
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
       profile_, extension_info_map_.get(), request, callback, headers);
 }
@@ -303,4 +309,24 @@ bool ChromeNetworkDelegate::CanSetCookie(
   }
 
   return allow;
+}
+
+void ChromeNetworkDelegate::AddChromeMetricsStateHeader(
+    net::URLRequest* request,
+    net::HttpRequestHeaders* headers) {
+  // Note our criteria for attaching Chrome experiment headers:
+  // 1. We only transmit to *.google.<TLD> domains. NOTE that this use of
+  //    google_util helpers to check this does not guarantee that the URL is
+  //    Google-owned, only that it is of the form *.google.<TLD>. In the future
+  //    we may choose to reinforce this check.
+  // 2. We must verify that the transmitting profile is not off the record.
+  // 3. For the X-Chrome-UMA-Enabled bit, we only set it if UMA is in fact
+  //    enabled for this install of Chrome.
+  Profile* profile_instance = reinterpret_cast<Profile*>(profile_);
+  if (google_util::IsGoogleDomainUrl(request->url().spec(),
+                                     google_util::ALLOW_SUBDOMAIN) &&
+      profile_instance && !profile_instance->IsOffTheRecord() &&
+      MetricsServiceHelper::IsMetricsReportingEnabled()) {
+    headers->SetHeader("X-Chrome-UMA-Enabled", "1");
+  }
 }

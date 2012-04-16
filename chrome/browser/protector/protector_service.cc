@@ -26,8 +26,11 @@ namespace {
 bool CanMerge(const GURL& url1, const GURL& url2) {
   VLOG(1) << "Checking if can merge " << url1.spec() << " with " << url2.spec();
   // All Google URLs are considered the same one.
-  if (google_util::IsGoogleHostname(url1.host()))
-    return google_util::IsGoogleHostname(url2.host());
+  if (google_util::IsGoogleHostname(url1.host(),
+                                    google_util::DISALLOW_SUBDOMAIN)) {
+    return google_util::IsGoogleHostname(url2.host(),
+                                         google_util::DISALLOW_SUBDOMAIN);
+  }
   // Otherwise URLs must have the same domain.
   return net::RegistryControlledDomainService::SameDomainOrHost(url1, url2);
 }

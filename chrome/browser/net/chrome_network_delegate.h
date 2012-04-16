@@ -83,6 +83,11 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
                             const std::string& cookie_line,
                             net::CookieOptions* options) OVERRIDE;
 
+  // Adds Chrome experiment and metrics state as custom headers to |headers|
+  // based on local state and |request|.
+  void AddChromeMetricsStateHeader(net::URLRequest* request,
+                                   net::HttpRequestHeaders* headers);
+
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   void* profile_;
   scoped_refptr<CookieSettings> cookie_settings_;
