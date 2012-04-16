@@ -499,7 +499,8 @@ destroy_tablet_shell(struct wl_resource *resource)
 }
 
 static void
-bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
+bind_tablet_shell(struct wl_client *client, void *data, uint32_t version,
+		  uint32_t id)
 {
 	struct tablet_shell *shell = data;
 
@@ -559,8 +560,8 @@ shell_init(struct weston_compositor *compositor)
 	wl_signal_add(&compositor->unlock_signal, &shell->unlock_listener);
 
 	/* FIXME: This will make the object available to all clients. */
-	wl_display_add_global(compositor->wl_display,
-			      &tablet_shell_interface, shell, bind_shell);
+	wl_display_add_global(compositor->wl_display, &tablet_shell_interface,
+			      shell, bind_tablet_shell);
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
 	shell->long_press_source =
