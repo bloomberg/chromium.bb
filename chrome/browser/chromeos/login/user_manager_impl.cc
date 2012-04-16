@@ -380,8 +380,6 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
   // This user must be in the front of the user list.
   users_.insert(users_.begin(), logged_in_user_);
 
-  NotifyOnLogin();
-
   if (is_current_user_new_) {
     SetInitialUserImage(email);
   } else {
@@ -413,6 +411,8 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
                               histogram_index,
                               kHistogramImagesCount);
   }
+
+  NotifyOnLogin();
 }
 
 void UserManagerImpl::DemoUserLoggedIn() {
