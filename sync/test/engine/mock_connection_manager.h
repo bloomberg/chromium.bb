@@ -117,7 +117,8 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // issue multiple requests during a sync cycle.
   void NextUpdateBatch();
 
-  void FailNextPostBufferToPathCall() { fail_next_postbuffer_ = true; }
+  void FailNextPostBufferToPathCall() { countdown_to_postbuffer_fail_ = 1; }
+  void FailNthPostBufferToPathCall(int n) { countdown_to_postbuffer_fail_ = n; }
 
   void SetClearUserDataResponseStatus(sync_pb::SyncEnums::ErrorType errortype);
 
@@ -222,6 +223,11 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
     return store_birthday_;
   }
 
+  // Explicitly indicate that we will not be fetching some updates.
+  void ClearUpdatesQueue() {
+    update_queue_.clear();
+  }
+
   // Locate the most recent update message for purpose of alteration.
   sync_pb::SyncEntity* GetMutableLastUpdate();
 
@@ -299,8 +305,9 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   bool client_stuck_;
   std::string commit_time_rename_prepended_string_;
 
-  // Fail on the next call to PostBufferToPath().
-  bool fail_next_postbuffer_;
+  // On each PostBufferToPath() call, we decrement this counter.  The call fails
+  // iff we hit zero at that call.
+  int countdown_to_postbuffer_fail_;
 
   // Our directory.  Used only to ensure that we are not holding the transaction
   // lock when performing network I/O.  Can be NULL if the test author is

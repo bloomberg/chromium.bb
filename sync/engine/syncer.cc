@@ -110,17 +110,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
 
     switch (current_step) {
       case SYNCER_BEGIN:
-        // This isn't perfect, as we can end up bundling extensions activity
-        // intended for the next session into the current one.  We could do a
-        // test-and-reset as with the source, but note that also falls short if
-        // the commit request fails (e.g. due to lost connection), as we will
-        // fall all the way back to the syncer thread main loop in that case,
-        // creating a new session when a connection is established, losing the
-        // records set here on the original attempt.  This should provide us
-        // with the right data "most of the time", and we're only using this
-        // for analysis purposes, so Law of Large Numbers FTW.
-        session->context()->extensions_monitor()->GetAndClearRecords(
-            session->mutable_extensions_activity());
         session->context()->PruneUnthrottledTypes(base::TimeTicks::Now());
         session->SendEventNotification(SyncEngineEvent::SYNC_CYCLE_BEGIN);
 
@@ -166,13 +155,19 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       case STORE_TIMESTAMPS: {
         StoreTimestampsCommand store_timestamps;
         store_timestamps.Execute(session);
-        // We should download all of the updates before attempting to process
-        // them.
-        if (session->status_controller().ServerSaysNothingMoreToDownload() ||
-            !session->status_controller().download_updates_succeeded()) {
-          next_step = APPLY_UPDATES;
-        } else {
+        // We download all of the updates before attempting to apply them.
+        if (!session->status_controller().download_updates_succeeded()) {
+          // We may have downloaded some updates, but if the latest download
+          // attempt failed then we don't have all the updates.  We'll leave
+          // it to a retry job to pick up where we left off.
+          last_step = SYNCER_END; // Necessary for CONFIGURATION mode.
+          next_step = SYNCER_END;
+          DVLOG(1) << "Aborting sync cycle due to download updates failure";
+        } else if (!session->status_controller()
+                       .ServerSaysNothingMoreToDownload()) {
           next_step = DOWNLOAD_UPDATES;
+        } else {
+          next_step = APPLY_UPDATES;
         }
         break;
       }
@@ -203,6 +198,19 @@ void Syncer::SyncShare(sessions::SyncSession* session,
 
         if (!session->status_controller().commit_ids().empty()) {
           DVLOG(1) << "Building a commit message";
+
+          // This isn't perfect, since the set of extensions activity may not
+          // correlate exactly with the items being committed.  That's OK as
+          // long as we're looking for a rough estimate of extensions activity,
+          // not an precise mapping of which commits were triggered by which
+          // extension.
+          //
+          // We will push this list of extensions activity back into the
+          // ExtensionsActivityMonitor if this commit turns out to not contain
+          // any bookmarks, or if the commit fails.
+          session->context()->extensions_monitor()->GetAndClearRecords(
+              session->mutable_extensions_activity());
+
           BuildCommitCommand build_commit_command;
           build_commit_command.Execute(session);
 

@@ -215,6 +215,8 @@ TEST_F(SyncSessionTest, MoreToSyncIfUnsyncedGreaterThanCommitted) {
 TEST_F(SyncSessionTest, MoreToDownloadIfDownloadFailed) {
   status()->set_updates_request_types(ParamsMeaningAllEnabledTypes());
 
+  status()->set_last_download_updates_result(NETWORK_IO_ERROR);
+
   // When DownloadUpdatesCommand fails, these should be false.
   EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
   EXPECT_FALSE(status()->download_updates_succeeded());
@@ -229,6 +231,7 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotChangesRemaining) {
 
   // When the server returns changes_remaining, that means there's
   // more to download.
+  status()->set_last_download_updates_result(SYNCER_OK);
   status()->mutable_updates_response()->mutable_get_updates()
      ->set_changes_remaining(1000L);
   EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
@@ -242,54 +245,7 @@ TEST_F(SyncSessionTest, MoreToDownloadIfGotChangesRemaining) {
 TEST_F(SyncSessionTest, MoreToDownloadIfGotNoChangesRemaining) {
   status()->set_updates_request_types(ParamsMeaningAllEnabledTypes());
 
-  // When the server returns a timestamp, that means we're up to date.
-  status()->mutable_updates_response()->mutable_get_updates()
-      ->set_changes_remaining(0);
-  EXPECT_TRUE(status()->ServerSaysNothingMoreToDownload());
-  EXPECT_TRUE(status()->download_updates_succeeded());
-
-  // Download updates has its own loop in the syncer; it shouldn't factor
-  // into HasMoreToSync.
-  EXPECT_FALSE(session_->HasMoreToSync());
-}
-
-TEST_F(SyncSessionTest, MoreToDownloadIfGotNoChangesRemainingForSubset) {
-  status()->set_updates_request_types(ParamsMeaningJustOneEnabledType());
-
-  // When the server returns a timestamp, that means we're up to date for that
-  // type.  But there may still be more to download if there are other
-  // datatypes that we didn't request on this go-round.
-  status()->mutable_updates_response()->mutable_get_updates()
-      ->set_changes_remaining(0);
-
-  EXPECT_TRUE(status()->ServerSaysNothingMoreToDownload());
-  EXPECT_TRUE(status()->download_updates_succeeded());
-
-  // Download updates has its own loop in the syncer; it shouldn't factor
-  // into HasMoreToSync.
-  EXPECT_FALSE(session_->HasMoreToSync());
-}
-
-TEST_F(SyncSessionTest, MoreToDownloadIfGotChangesRemainingAndEntries) {
-  status()->set_updates_request_types(ParamsMeaningAllEnabledTypes());
-  // The actual entry count should not factor into the HasMoreToSync
-  // determination.
-  status()->mutable_updates_response()->mutable_get_updates()->add_entries();
-  status()->mutable_updates_response()->mutable_get_updates()
-      ->set_changes_remaining(1000000L);;
-  EXPECT_FALSE(status()->ServerSaysNothingMoreToDownload());
-  EXPECT_TRUE(status()->download_updates_succeeded());
-
-  // Download updates has its own loop in the syncer; it shouldn't factor
-  // into HasMoreToSync.
-  EXPECT_FALSE(session_->HasMoreToSync());
-}
-
-TEST_F(SyncSessionTest, MoreToDownloadIfGotNoChangesRemainingAndEntries) {
-  status()->set_updates_request_types(ParamsMeaningAllEnabledTypes());
-  // The actual entry count should not factor into the HasMoreToSync
-  // determination.
-  status()->mutable_updates_response()->mutable_get_updates()->add_entries();
+  status()->set_last_download_updates_result(SYNCER_OK);
   status()->mutable_updates_response()->mutable_get_updates()
       ->set_changes_remaining(0);
   EXPECT_TRUE(status()->ServerSaysNothingMoreToDownload());
