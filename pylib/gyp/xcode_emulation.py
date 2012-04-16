@@ -371,7 +371,7 @@ class XcodeSettings(object):
     if not isinstance(flags, list):
       flags = [flags]
 
-    for flag in self._Settings().get('OTHER_CPLUSPLUSFLAGS', ['$(inherited)']):
+    for flag in flags:
       # TODO: More general variable expansion. Missing in many other places too.
       if flag in ('$inherited', '$(inherited)', '${inherited}'):
         flag = '$OTHER_CFLAGS'
