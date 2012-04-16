@@ -103,10 +103,6 @@ EWMH
    just another wl_surface? Do we need this if we have the .desktop
    file?  How to set multiple sizes?
 
- - ping event, essentially the opposite of the display.sync request.
-   Compositor can ping clients to see if they're alive (typically when
-   sending input events to a client surface)
-
  - move to workspace, keep on top, on all workspaces, minimize etc
    requests for implementing client side window menu? or just make a
    "show window menu" request to let the compositor display and manage
