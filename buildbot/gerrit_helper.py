@@ -328,7 +328,7 @@ class GerritHelper():
 
     command = self.ssh_prefix + ['gerrit', 'gsql', '--format=JSON']
     result = cros_build_lib.RunCommand(command, redirect_stdout=True,
-                                       query=query)
+                                       input=query)
 
     query_type = 'update-stats' if is_command else 'query-stats'
 
