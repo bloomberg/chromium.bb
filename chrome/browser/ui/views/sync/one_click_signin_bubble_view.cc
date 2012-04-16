@@ -174,8 +174,8 @@ void OneClickSigninBubbleView::LinkClicked(views::Link* source,
     advanced_callback_.Run();
 }
 
-void OneClickSigninBubbleView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
-  DCHECK_EQ(sender, close_button_);
+void OneClickSigninBubbleView::ButtonPressed(views::Button* sender,
+                                             const views::Event& event) {
+  DCHECK_EQ(close_button_, sender);
   StartFade(false);
 }

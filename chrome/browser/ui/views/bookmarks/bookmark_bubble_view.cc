@@ -298,7 +298,7 @@ void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
     content::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
     ShowEditor();
   } else {
-    DCHECK_EQ(sender, close_button_);
+    DCHECK_EQ(close_button_, sender);
     StartFade(false);
   }
 }
