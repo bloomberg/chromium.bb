@@ -10,11 +10,6 @@ const char kIncognitoKey[] = "incognito";
 
 const char kScopeKey[] = "scope";
 
-const char kNotControllable[] = "not_controllable";
-const char kControlledByOtherExtensions[] = "controlled_by_other_extensions";
-const char kControllableByThisExtension[] = "controllable_by_this_extension";
-const char kControlledByThisExtension[] = "controlled_by_this_extension";
-
 const char kIncognitoSpecific[] = "incognitoSpecific";
 const char kLevelOfControl[] = "levelOfControl";
 const char kValue[] = "value";
@@ -31,4 +26,3 @@ const char kPermissionErrorMessage[] =
     "Be sure to declare in your manifest what permissions you need.";
 
 }  // extension_preference_api_constants
-

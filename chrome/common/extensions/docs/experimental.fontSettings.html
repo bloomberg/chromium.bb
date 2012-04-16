@@ -232,10 +232,26 @@
             </ol>
           </li>
                   <li>
+            <a href="#global-events">Events</a>
+            <ol>
+              <li>
+                <a href="#event-onFontNameChanged">onFontNameChanged</a>
+              </li>
+            </ol>
+          </li>
+                  <li>
             <a href="#types">Types</a>
             <ol>
               <li>
                 <a href="#type-FontName">FontName</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-ScriptCode">ScriptCode</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-GenericFamily">GenericFamily</a>
                 <ol>
                 </ol>
               </li>
@@ -724,18 +740,16 @@ directory. For other examples and for help in viewing the source code, see
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
-                        <span>["Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor", "Grek", "Gujr", "Guru", "Hang", "Hans", "Hant", "Hebr", "Hrkt", "Knda", "Khmr", "Laoo", "Mlym", "Mong", "Mymr", "Orya", "Sinh", "Taml", "Telu", "Thaa", "Thai", "Tibt", "Yiii"]</span>
+                        <a href="experimental.fontSettings.html#type-ScriptCode">ScriptCode</a>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>The ISO 15924 script code for which the font setting should be retrieved. If omitted, the global script font setting is retrieved.</dd>
+          <dd>The script for which the font setting should be retrieved. If omitted, the global script font setting is retrieved.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -749,18 +763,16 @@ directory. For other examples and for help in viewing the source code, see
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
-                        <span>["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"]</span>
+                        <a href="experimental.fontSettings.html#type-GenericFamily">GenericFamily</a>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>The CSS generic font family for which the font setting should be retrieved.</dd>
+          <dd>The generic font family for which the font setting should be retrieved.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1283,18 +1295,16 @@ directory. For other examples and for help in viewing the source code, see
                 <div style="display:inline">
                   (
                     <span class="optional">optional</span>
-                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
-                        <span>["Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor", "Grek", "Gujr", "Guru", "Hang", "Hans", "Hant", "Hebr", "Hrkt", "Knda", "Khmr", "Laoo", "Mlym", "Mong", "Mymr", "Orya", "Sinh", "Taml", "Telu", "Thaa", "Thai", "Tibt", "Yiii"]</span>
+                        <a href="experimental.fontSettings.html#type-ScriptCode">ScriptCode</a>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>The ISO 15924 script code for which the font setting should be set. If omitted, the global script font setting is set.</dd>
+          <dd>The script code which the font setting should be set. If omitted, the global script font setting is set.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1308,18 +1318,16 @@ directory. For other examples and for help in viewing the source code, see
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="enum">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
-                        <span>["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"]</span>
+                        <a href="experimental.fontSettings.html#type-GenericFamily">GenericFamily</a>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>The CSS generic font family for which the font setting should be set.</dd>
+          <dd>The generic font family for which the font setting should be set.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -1518,7 +1526,160 @@ directory. For other examples and for help in viewing the source code, see
             </div>  <!-- /apiItem -->
           </div>  <!-- /apiGroup -->
           <!-- EVENTS -->
-           <!-- /apiGroup -->
+          <div id="eventsTemplate" class="apiGroup">
+            <a name="global-events"></a>
+            <h3>Events</h3>
+            <!-- iterates over all events -->
+            <div class="apiItem">
+              <a name="event-onFontNameChanged"></a>
+              <h4>onFontNameChanged</h4>
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.experimental.fontSettings.</span><span>onFontNameChanged</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
+              </div>
+              <div class="description">
+                <p>Fired when a font name preference changes.</p>
+                <!-- LISTENER PARAMETERS -->
+                <div>
+                  <h4>Listener parameters</h4>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>details</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>fontName</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>script</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.fontSettings.html#type-ScriptCode">ScriptCode</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The script code for which the font setting has changed. If omitted, the global script font setting has changed.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>genericFamily</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.fontSettings.html#type-GenericFamily">GenericFamily</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>The generic font family for which the font setting has changed.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>levelOfControl</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                        <span>["not_controllable", "controlled_by_other_extensions", "controllable_by_this_extension", "controlled_by_this_extension"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>One of<br><var>not_controllable</var>: cannot be controlled by any extension<br><var>controlled_by_other_extensions</var>: controlled by extensions with higher precedence<br><var>controllable_by_this_extension</var>: can be controlled by this extension<br><var>controlled_by_this_extension</var>: controlled by this extension</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                </div>
+                <!-- EXTRA PARAMETERS -->
+                <!-- LISTENER RETURN VALUE -->
+                <dl>
+                </dl>
+              </div> <!-- /description -->
+            </div> <!-- /apiItem -->
+          </div> <!-- /apiGroup -->
           <!-- TYPES -->
           <div class="apiGroup">
             <a name="types"></a>
@@ -1595,6 +1756,58 @@ directory. For other examples and for help in viewing the source code, see
               </div>
             </dl>
           </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-ScriptCode"></a>
+              <h4>ScriptCode</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                        <span>["Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor", "Grek", "Gujr", "Guru", "Hang", "Hans", "Hant", "Hebr", "Hrkt", "Knda", "Khmr", "Laoo", "Mlym", "Mong", "Mymr", "Orya", "Sinh", "Taml", "Telu", "Thaa", "Thai", "Tibt", "Yiii"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>An ISO 15924 script code.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-GenericFamily"></a>
+              <h4>GenericFamily</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                        <span>["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>A CSS generic font family.</dd>
+          <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->

@@ -17,12 +17,6 @@ extern const char kIncognitoSpecific[];
 extern const char kLevelOfControl[];
 extern const char kValue[];
 
-// Values for levelOfControl.
-extern const char kNotControllable[];
-extern const char kControlledByOtherExtensions[];
-extern const char kControllableByThisExtension[];
-extern const char kControlledByThisExtension[];
-
 // Errors.
 extern const char kIncognitoErrorMessage[];
 extern const char kIncognitoSessionOnlyErrorMessage[];

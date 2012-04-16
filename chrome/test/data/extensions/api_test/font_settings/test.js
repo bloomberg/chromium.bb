@@ -14,11 +14,26 @@ function expect(expected, message) {
 }
 
 chrome.test.runTests([
+  // This test may fail on Windows if the font is not installed on the
+  // system. See crbug.com/122303
   function setPerScriptFontName() {
+    var script = 'Hang';
+    var genericFamily = 'standard';
+    var fontName = 'Verdana';
+
+    chrome.test.listenOnce(fs.onFontNameChanged, function(details) {
+      chrome.test.assertEq(details, {
+        script: script,
+        genericFamily: genericFamily,
+        fontName: fontName,
+        levelOfControl: 'controlled_by_this_extension'
+      });
+    });
+
     fs.setFontName({
-      script: 'Hang',
-      genericFamily: 'standard',
-      fontName: 'Verdana'
+      script: script,
+      genericFamily: genericFamily,
+      fontName: fontName
     }, chrome.test.callbackPass());
   },
 
@@ -26,15 +41,26 @@ chrome.test.runTests([
     var expected = 'Verdana';
     var message = 'Setting for Hangul standard font should be ' + expected;
 
-    // This test may fail on Windows if the font is not installed on the
-    // system. See crbug.com/122303
     fs.getFontName({
       script: 'Hang',
       genericFamily: 'standard'
     }, expect({fontName: expected}, message));
   },
 
+  // This test may fail on Windows if the font is not installed on
+  // the system. See crbug.com/122303
   function setGlobalFontName() {
+    var fontName = 'Tahoma';
+    var genericFamily = 'sansserif';
+
+    chrome.test.listenOnce(fs.onFontNameChanged, function(details) {
+      chrome.test.assertEq(details, {
+        genericFamily: genericFamily,
+        fontName: fontName,
+        levelOfControl: 'controlled_by_this_extension'
+      });
+    });
+
     fs.setFontName({
       genericFamily: 'sansserif',
       fontName: 'Tahoma'
@@ -46,8 +72,6 @@ chrome.test.runTests([
     var message =
         'Setting for global sansserif font should be ' + expected;
 
-    // As above, this test may fail on Windows if the font is not installed on
-    // the system. See crbug.com/122303
     fs.getFontName({
       genericFamily: 'sansserif'
     }, expect({fontName: expected}, message));

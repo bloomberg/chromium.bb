@@ -7,6 +7,28 @@
 #pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
+
+class ExtensionFontSettingsEventRouter : public content::NotificationObserver {
+ public:
+  explicit ExtensionFontSettingsEventRouter(Profile* profile);
+  virtual ~ExtensionFontSettingsEventRouter();
+
+  void Init();
+
+ private:
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  PrefChangeRegistrar registrar_;
+
+  // Weak, owns us (transitively via ExtensionService).
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionFontSettingsEventRouter);
+};
 
 class GetFontNameFunction : public SyncExtensionFunction {
  public:

@@ -135,32 +135,6 @@ class InvertBooleanTransformer : public PrefTransformerInterface {
   }
 };
 
-// Returns a string constant (defined in the API) indicating the level of
-// control this extension has over the specified preference.
-const char* GetLevelOfControl(
-    Profile* profile,
-    const std::string& extension_id,
-    const std::string& browser_pref,
-    bool incognito) {
-  PrefService* prefs = incognito ? profile->GetOffTheRecordPrefs()
-                                 : profile->GetPrefs();
-  const PrefService::Preference* pref =
-      prefs->FindPreference(browser_pref.c_str());
-  CHECK(pref);
-  ExtensionPrefs* ep = profile->GetExtensionService()->extension_prefs();
-
-  if (!pref->IsExtensionModifiable())
-    return keys::kNotControllable;
-
-  if (ep->DoesExtensionControlPref(extension_id, browser_pref, incognito))
-    return keys::kControlledByThisExtension;
-
-  if (ep->CanExtensionControlPref(extension_id, browser_pref, incognito))
-    return keys::kControllableByThisExtension;
-
-  return keys::kControlledByOtherExtensions;
-}
-
 class PrefMapping {
  public:
   static PrefMapping* GetInstance() {
@@ -309,35 +283,12 @@ void ExtensionPreferenceEventRouter::OnPrefChanged(
                      ep->HasIncognitoPrefValue(browser_pref));
   }
 
-  ExtensionEventRouter* router = profile_->GetExtensionEventRouter();
-  if (!router || !router->HasEventListener(event_name))
-    return;
-  const ExtensionSet* extensions = extension_service->extensions();
-  for (ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    std::string extension_id = (*it)->id();
-    // TODO(bauerb): Only iterate over registered event listeners.
-    if (router->ExtensionHasEventListener(extension_id, event_name) &&
-        (*it)->HasAPIPermission(permission) &&
-        (!incognito || extension_service->CanCrossIncognito(*it))) {
-      std::string level_of_control =
-          GetLevelOfControl(profile_, extension_id, browser_pref, incognito);
-      dict->SetString(keys::kLevelOfControl, level_of_control);
-
-      std::string json_args;
-      base::JSONWriter::Write(&args, &json_args);
-
-      DispatchEvent(extension_id, event_name, json_args);
-    }
-  }
-}
-
-void ExtensionPreferenceEventRouter::DispatchEvent(
-    const std::string& extension_id,
-    const std::string& event_name,
-    const std::string& json_args) {
-  profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-      extension_id, event_name, json_args, NULL, GURL());
+  helpers::DispatchEventToExtensions(profile_,
+                                     event_name,
+                                     &args,
+                                     permission,
+                                     incognito,
+                                     browser_pref);
 }
 
 PreferenceFunction::~PreferenceFunction() { }
@@ -390,7 +341,8 @@ bool GetPreferenceFunction::RunImpl() {
 
   // Retrieve level of control.
   std::string level_of_control =
-      GetLevelOfControl(profile_, extension_id(), browser_pref, incognito);
+      helpers::GetLevelOfControl(profile_, extension_id(), browser_pref,
+                                 incognito);
   result->SetString(keys::kLevelOfControl, level_of_control);
 
   // Retrieve pref value.

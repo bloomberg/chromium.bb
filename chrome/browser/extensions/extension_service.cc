@@ -46,6 +46,7 @@
 #include "chrome/browser/extensions/extension_data_deleter.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/extension_font_settings_api.h"
 #include "chrome/browser/extensions/extension_global_error.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_input_ime_api.h"
@@ -551,6 +552,9 @@ void ExtensionService::InitEventRouters() {
   web_navigation_event_router_.reset(
       new extensions::WebNavigationEventRouter(profile_));
   web_navigation_event_router_->Init();
+  font_settings_event_router_.reset(
+      new ExtensionFontSettingsEventRouter(profile_));
+  font_settings_event_router_->Init();
 
 #if defined(OS_CHROMEOS)
   FileBrowserEventRouterFactory::GetForProfile(

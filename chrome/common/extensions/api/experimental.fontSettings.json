@@ -20,12 +20,27 @@
             "description": "The font name localized for the current locale."
           }
         }
+      },
+      {
+        "id": "ScriptCode",
+        "type": "string",
+        "enum": [ "Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor",
+                  "Grek", "Gujr", "Guru", "Hang", "Hans", "Hant", "Hebr", "Hrkt", "Knda",
+                  "Khmr", "Laoo", "Mlym", "Mong", "Mymr", "Orya", "Sinh", "Taml", "Telu",
+                  "Thaa", "Thai", "Tibt", "Yiii"
+                ],
+        "description": "An ISO 15924 script code."
+      },
+      {
+        "id": "GenericFamily",
+        "type": "string",
+        "enum": ["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"],
+        "description": "A CSS generic font family."
       }
     ],
     "functions": [
       {
         "name": "getFontName",
-        "type": "function",
         "description": "Gets the font name of the current setting for a given script and generic font family.",
         "parameters": [
           {
@@ -33,20 +48,13 @@
             "type": "object",
             "properties": {
               "script": {
-                "type": "string",
-                "enum": [
-                    "Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor",
-                    "Grek", "Gujr", "Guru", "Hang", "Hans", "Hant", "Hebr", "Hrkt", "Knda",
-                    "Khmr", "Laoo", "Mlym", "Mong", "Mymr", "Orya", "Sinh", "Taml", "Telu",
-                    "Thaa", "Thai", "Tibt", "Yiii"
-                ],
-                "description": "The ISO 15924 script code for which the font setting should be retrieved. If omitted, the global script font setting is retrieved.",
+                "$ref": "ScriptCode",
+                "description": "The script for which the font setting should be retrieved. If omitted, the global script font setting is retrieved.",
                 "optional": true
               },
               "genericFamily": {
-                "type": "string",
-                "enum": ["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"],
-                "description": "The CSS generic font family for which the font setting should be retrieved."
+                "$ref": "GenericFamily",
+                "description": "The generic font family for which the font setting should be retrieved."
               }
             }
           },
@@ -71,7 +79,6 @@
       },
       {
         "name": "setFontName",
-        "type": "function",
         "description": "Sets the font name of the current setting for a given script and generic font family.",
         "parameters": [
           {
@@ -79,20 +86,13 @@
             "type": "object",
             "properties": {
               "script": {
-                "type": "string",
-                "enum": [
-                    "Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor",
-                    "Grek", "Gujr", "Guru", "Hang", "Hans", "Hant", "Hebr", "Hrkt", "Knda",
-                    "Khmr", "Laoo", "Mlym", "Mong", "Mymr", "Orya", "Sinh", "Taml", "Telu",
-                    "Thaa", "Thai", "Tibt", "Yiii"
-                ],
-                "description": "The ISO 15924 script code for which the font setting should be set. If omitted, the global script font setting is set.",
+                "$ref": "ScriptCode",
+                "description": "The script code which the font setting should be set. If omitted, the global script font setting is set.",
                 "optional": true
               },
               "genericFamily": {
-                "type": "string",
-                "enum": ["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"],
-                "description": "The CSS generic font family for which the font setting should be set."
+                "$ref": "GenericFamily",
+                "description": "The generic font family for which the font setting should be set."
               },
               "fontName": {
                 "type": "string",
@@ -110,7 +110,6 @@
       },
       {
         "name": "getFontList",
-        "type": "function",
         "description": "Gets a list of fonts on the system.",
         "parameters": [
           {
@@ -128,7 +127,6 @@
       },
       {
         "name": "getDefaultFontSize",
-        "type": "function",
         "description": "Gets the default font size.",
         "parameters": [
           {
@@ -158,7 +156,6 @@
       },
       {
         "name": "setDefaultFontSize",
-        "type": "function",
         "description": "Sets the default font size.",
         "parameters": [
           {
@@ -181,7 +178,6 @@
       },
       {
         "name": "getDefaultFixedFontSize",
-        "type": "function",
         "description": "Gets the default size for fixed width fonts.",
         "parameters": [
           {
@@ -211,7 +207,6 @@
       },
       {
         "name": "setDefaultFixedFontSize",
-        "type": "function",
         "description": "Sets the default size for fixed width fonts.",
         "parameters": [
           {
@@ -234,7 +229,6 @@
       },
       {
         "name": "getMinimumFontSize",
-        "type": "function",
         "description": "Gets the minimum font size.",
         "parameters": [
           {
@@ -264,7 +258,6 @@
       },
       {
         "name": "setMinimumFontSize",
-        "type": "function",
         "description": "Sets the minimum font size.",
         "parameters": [
           {
@@ -282,6 +275,35 @@
             "name": "callback",
             "optional": true,
             "parameters": []
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onFontNameChanged",
+        "description": "Fired when a font name preference changes.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "fontName": { "type": "string" },
+              "script": {
+                "$ref": "ScriptCode",
+                "description": "The script code for which the font setting has changed. If omitted, the global script font setting has changed.",
+                "optional": true
+              },
+              "genericFamily": {
+                "$ref": "GenericFamily",
+                "description": "The generic font family for which the font setting has changed."
+              },
+              "levelOfControl": {
+                "description": "One of<br><var>not_controllable</var>: cannot be controlled by any extension<br><var>controlled_by_other_extensions</var>: controlled by extensions with higher precedence<br><var>controllable_by_this_extension</var>: can be controlled by this extension<br><var>controlled_by_this_extension</var>: controlled by this extension",
+                "type": "string",
+                "enum": ["not_controllable", "controlled_by_other_extensions", "controllable_by_this_extension", "controlled_by_this_extension"]
+              }
+            }
           }
         ]
       }

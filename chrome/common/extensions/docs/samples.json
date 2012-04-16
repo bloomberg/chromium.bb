@@ -112,6 +112,7 @@
     "chrome.experimental.fontSettings.getFontList": "experimental.fontSettings.html#method-getFontList",
     "chrome.experimental.fontSettings.getFontName": "experimental.fontSettings.html#method-getFontName",
     "chrome.experimental.fontSettings.getMinimumFontSize": "experimental.fontSettings.html#method-getMinimumFontSize",
+    "chrome.experimental.fontSettings.onFontNameChanged": "experimental.fontSettings.html#event-onFontNameChanged",
     "chrome.experimental.fontSettings.setDefaultFixedFontSize": "experimental.fontSettings.html#method-setDefaultFixedFontSize",
     "chrome.experimental.fontSettings.setDefaultFontSize": "experimental.fontSettings.html#method-setDefaultFontSize",
     "chrome.experimental.fontSettings.setFontName": "experimental.fontSettings.html#method-setFontName",
