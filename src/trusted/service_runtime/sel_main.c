@@ -195,7 +195,6 @@ int main(int  argc,
   int                           skip_qualification = 0;
   int                           enable_debug_stub = 0;
   int                           handle_signals = 0;
-  int                           exception_handling_requested = 0;
   int                           enable_exception_handling = 0;
   int                           fixed_feature_cpu_mode = 0;
   struct NaClPerfCounter        time_all_main;
@@ -227,6 +226,12 @@ int main(int  argc,
 
   fflush((FILE *) NULL);
 
+#if NACL_WINDOWS
+  if (argc >= 2 && strcmp(argv[1], "--debug-exception-handler") == 0) {
+    exit(NaClDebugExceptionHandlerStandaloneMain(argc - 2, argv + 2));
+  }
+#endif
+
   if (!GioFileRefCtor(&gout, stdout)) {
     fprintf(stderr, "Could not create general standard output channel\n");
     exit(1);
@@ -254,7 +259,7 @@ int main(int  argc,
                        "aB:ceE:f:Fgh:i:Il:Qr:RsSvw:X:Z")) != -1) {
     switch (opt) {
       case 'e':
-        exception_handling_requested = 1;
+        enable_exception_handling = 1;
         break;
 #if NACL_LINUX
       case 'D':
@@ -369,43 +374,6 @@ int main(int  argc,
     }
   }
 
-  if (getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
-    exception_handling_requested = 1;
-  }
-  if (exception_handling_requested) {
-#if NACL_WINDOWS
-    int status;
-    DWORD exit_code;
-    enable_exception_handling = 1;
-    status = NaClLaunchAndDebugItself(argv[0], &exit_code);
-    if (status == DEBUG_EXCEPTION_HANDLER_NOT_SUPPORTED) {
-      enable_exception_handling = 0;
-    } else if (status == DEBUG_EXCEPTION_HANDLER_SUCCESS) {
-      return exit_code;
-    } else if (status == DEBUG_EXCEPTION_HANDLER_ERROR) {
-      fprintf(stderr, "ERROR in debug exception handling %d\n",
-              GetLastError());
-      return -1;
-    }
-#elif NACL_LINUX
-    handle_signals = 1;
-    enable_exception_handling = 1;
-#elif NACL_OSX
-    int status;
-    enable_exception_handling = 1;
-    status = NaClInterceptMachExceptions();
-    if (!status) {
-      fprintf(stderr, "ERROR setting up Mach exception interception.\n");
-      return -1;
-    }
-#else
-# error Unknown host OS
-#endif
-  }
-  if (exception_handling_requested && !enable_exception_handling) {
-    fprintf(stderr, "WARNING: exception handling is not supported\n");
-  }
-
   if (debug_mode_ignore_validator == 1)
     fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
   else if (debug_mode_ignore_validator > 1)
@@ -507,7 +475,27 @@ int main(int  argc,
   state.skip_validator = (debug_mode_ignore_validator > 1);
   state.validator_stub_out_mode = stub_out_mode;
   state.enable_debug_stub = enable_debug_stub;
-  state.enable_exception_handling = enable_exception_handling;
+
+  if (getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
+    enable_exception_handling = 1;
+  }
+  if (enable_exception_handling) {
+    state.enable_exception_handling = 1;
+#if NACL_WINDOWS
+    state.attach_debug_exception_handler_func =
+        NaClDebugExceptionHandlerStandaloneAttach;
+#elif NACL_LINUX
+    handle_signals = 1;
+#elif NACL_OSX
+    if (!NaClInterceptMachExceptions()) {
+      fprintf(stderr, "ERROR setting up Mach exception interception.\n");
+      return -1;
+    }
+#else
+# error Unknown host OS
+#endif
+  }
+
   if (fixed_feature_cpu_mode) {
     NaClLog(LOG_WARNING, "Enabling Fixed-Feature CPU Mode\n");
     state.fixed_feature_cpu_mode = 1;

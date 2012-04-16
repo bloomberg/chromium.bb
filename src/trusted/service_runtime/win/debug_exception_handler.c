@@ -21,7 +21,19 @@
 #include "native_client/src/trusted/service_runtime/win/thread_handle_map.h"
 
 
-static int HandleException(HANDLE process_handle, DWORD windows_thread_id,
+/*
+ * This struct is passed in a message from the main sel_ldr process to
+ * the debug exception handler process to communicate the address of
+ * service_runtime's global arrays, nacl_thread and nacl_thread_ids.
+ */
+struct StartupInfo {
+  struct NaClAppThread **nacl_thread;
+  uint32_t *nacl_thread_ids;
+};
+
+
+static int HandleException(struct StartupInfo *startup_info,
+                           HANDLE process_handle, DWORD windows_thread_id,
                            HANDLE thread_handle);
 
 
@@ -86,7 +98,7 @@ static BOOL WriteProcessMemoryChecked(HANDLE process_handle, void *remote_addr,
 
 
 /*
- * DebugLoop below handles debug events in NaCl program.
+ * NaClDebugExceptionHandlerRun() below handles debug events in NaCl program.
  * CREATE_PROCESS, CREATE_THREAD and EXIT_THREAD events are used
  * to store thread handles. These thread handles are needed to get and set
  * thread context.
@@ -109,7 +121,9 @@ static BOOL WriteProcessMemoryChecked(HANDLE process_handle, void *remote_addr,
  * terminates.
  */
 
-int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code) {
+void NaClDebugExceptionHandlerRun(HANDLE process_handle,
+                                  void *info, size_t info_size) {
+  struct StartupInfo *startup_info = info;
   DEBUG_EVENT debug_event;
   int process_exited = 0;
   int error = 0;
@@ -117,6 +131,11 @@ int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code) {
   ThreadHandleMap *map;
   HANDLE thread_handle;
   DWORD exception_code;
+
+  if (info_size != sizeof(struct StartupInfo)) {
+    return;
+  }
+
   map = CreateThreadHandleMap();
   while (!process_exited) {
     if (!WaitForDebugEvent(&debug_event, INFINITE)) {
@@ -158,8 +177,8 @@ int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code) {
         } else {
           exception_code =
               debug_event.u.Exception.ExceptionRecord.ExceptionCode;
-          if (HandleException(process_handle, debug_event.dwThreadId,
-                              thread_handle)) {
+          if (HandleException(startup_info, process_handle,
+                              debug_event.dwThreadId, thread_handle)) {
             continue_status = DBG_CONTINUE;
           } else if (exception_code == EXCEPTION_BREAKPOINT) {
             /*
@@ -196,10 +215,7 @@ int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code) {
   DestroyThreadHandleMap(map);
   if (error) {
     TerminateProcess(process_handle, -1);
-    return DEBUG_EXCEPTION_HANDLER_ERROR;
   }
-  GetExitCodeProcess(process_handle, exit_code);
-  return DEBUG_EXCEPTION_HANDLER_SUCCESS;
 }
 
 
@@ -216,7 +232,8 @@ int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code) {
  * determine whether the thread faulted in trusted or untrusted code.
  */
 #if NACL_BUILD_SUBARCH == 32
-static BOOL GetThreadIndex(HANDLE process_handle, HANDLE thread_handle,
+static BOOL GetThreadIndex(struct StartupInfo *startup_info,
+                           HANDLE process_handle, HANDLE thread_handle,
                            const CONTEXT *regs,
                            uint32_t windows_thread_id,
                            uint32_t *nacl_thread_index) {
@@ -250,7 +267,8 @@ static BOOL GetThreadIndex(HANDLE process_handle, HANDLE thread_handle,
  * The implementation below is simpler but slower, because it copies
  * all of the nacl_thread_ids global array.
  */
-static BOOL GetThreadIndex(HANDLE process_handle, HANDLE thread_handle,
+static BOOL GetThreadIndex(struct StartupInfo *startup_info,
+                           HANDLE process_handle, HANDLE thread_handle,
                            const CONTEXT *regs,
                            uint32_t windows_thread_id,
                            uint32_t *nacl_thread_index) {
@@ -263,12 +281,7 @@ static BOOL GetThreadIndex(HANDLE process_handle, HANDLE thread_handle,
   if (copy == NULL) {
     return FALSE;
   }
-  /*
-   * Note that this assumes that nacl_thread_ids (a global array) is
-   * at the same address in the debuggee process as in this debugger
-   * process.  We make a similar assumption for nacl_thread later.
-   */
-  if (!ReadProcessMemoryChecked(process_handle, nacl_thread_ids,
+  if (!ReadProcessMemoryChecked(process_handle, startup_info->nacl_thread_ids,
                                 copy, sizeof(nacl_thread_ids))) {
     goto done;
   }
@@ -285,7 +298,8 @@ static BOOL GetThreadIndex(HANDLE process_handle, HANDLE thread_handle,
 }
 #endif
 
-static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
+static BOOL HandleException(struct StartupInfo *startup_info,
+                            HANDLE process_handle, DWORD windows_thread_id,
                             HANDLE thread_handle) {
   CONTEXT context;
   uint32_t nacl_thread_index;
@@ -309,7 +323,7 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
     return FALSE;
   }
 
-  if (!GetThreadIndex(process_handle, thread_handle, &context,
+  if (!GetThreadIndex(startup_info, process_handle, thread_handle, &context,
                       windows_thread_id, &nacl_thread_index)) {
     /*
      * We can get here if the faulting thread is running trusted code
@@ -318,15 +332,7 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
     return FALSE;
   }
 
-  /*
-   * Note that this assumes that nacl_thread (a global array) is at
-   * the same address in the debuggee process as in this debugger
-   * process.  This assumes that the debuggee is running the same
-   * executable/DLL as this process, and that address space
-   * randomisation for a given executable/DLL does not vary across
-   * processes (which is true on Windows).
-   */
-  if (!READ_MEM(process_handle, nacl_thread + nacl_thread_index,
+  if (!READ_MEM(process_handle, startup_info->nacl_thread + nacl_thread_index,
                 &natp_remote)) {
     return FALSE;
   }
@@ -462,28 +468,51 @@ static BOOL HandleException(HANDLE process_handle, DWORD windows_thread_id,
   return SetThreadContext(thread_handle, &context);
 }
 
-int NaClLaunchAndDebugItself(char *program, DWORD *exit_code) {
-  PROCESS_INFORMATION process_information;
-  STARTUPINFOA startup_info = {sizeof(STARTUPINFOA)};
-  int result;
-  if (IsDebuggerPresent()) {
-    return DEBUG_EXCEPTION_HANDLER_UNDER_DEBUGGER;
+int NaClDebugExceptionHandlerEnsureAttached(struct NaClApp *nap) {
+  if (nap->attach_debug_exception_handler_func == NULL) {
+    /*
+     * No callback was provided, so we assume that the debug exception
+     * handler was attached during process startup.
+     */
+    return 1;
   }
-  if (0 == CreateProcessA(
-               program,
-               GetCommandLineA(),
-               NULL,
-               NULL,
-               TRUE,
-               DEBUG_PROCESS,
-               NULL,
-               NULL,
-               &startup_info,
-               &process_information)) {
-    return DEBUG_EXCEPTION_HANDLER_ERROR;
+  if (nap->debug_exception_handler_state
+      == NACL_DEBUG_EXCEPTION_HANDLER_NOT_STARTED) {
+    struct StartupInfo info;
+    info.nacl_thread = nacl_thread;
+    info.nacl_thread_ids = nacl_thread_ids;
+    if (nap->attach_debug_exception_handler_func(&info, sizeof(info))) {
+      nap->debug_exception_handler_state = NACL_DEBUG_EXCEPTION_HANDLER_STARTED;
+    } else {
+      /* Attaching the exception handler failed; don't try again later. */
+      nap->debug_exception_handler_state = NACL_DEBUG_EXCEPTION_HANDLER_FAILED;
+    }
   }
-  CloseHandle(process_information.hThread);
-  result = NaClDebugLoop(process_information.hProcess, exit_code);
-  CloseHandle(process_information.hProcess);
-  return result;
+  return (nap->debug_exception_handler_state
+          == NACL_DEBUG_EXCEPTION_HANDLER_STARTED);
+}
+
+/*
+ * TODO(mseaborn): Remove this function.  It is provided because
+ * Chromium is currently using it, but Chromium will be switched over
+ * to using NaClDebugExceptionHandlerRun().
+ */
+int NaClDebugLoop(HANDLE process_handle, DWORD *exit_code) {
+  /*
+   * This assumes that nacl_thread (a global array) is at the same
+   * address in the debuggee process as in this debugger process.
+   * This assumption is not always true, which is why this function is
+   * scheduled to be removed!
+   */
+  struct StartupInfo info;
+  info.nacl_thread = nacl_thread;
+  info.nacl_thread_ids = nacl_thread_ids;
+
+  NaClDebugExceptionHandlerRun(process_handle, &info, sizeof(info));
+  /*
+   * Chromium does not look at *exit_code and the return value.  We
+   * provide dummy values here.
+   */
+  *exit_code = 0;
+  return DEBUG_EXCEPTION_HANDLER_SUCCESS;
 }

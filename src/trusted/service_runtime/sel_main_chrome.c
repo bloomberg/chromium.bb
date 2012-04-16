@@ -47,6 +47,7 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
   args->validation_cache = NULL;
 #if NACL_WINDOWS
   args->broker_duplicate_handle_func = NULL;
+  args->attach_debug_exception_handler_func = NULL;
 #endif
   return args;
 }
@@ -202,10 +203,8 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
               "Failed to set up Mach exception handler\n");
     }
 #elif NACL_WINDOWS
-    /*
-     * Nothing to do: The debug helper process must be set up
-     * separately by Chromium.
-     */
+    nap->attach_debug_exception_handler_func =
+        args->attach_debug_exception_handler_func;
 #else
 # error Unknown host OS
 #endif

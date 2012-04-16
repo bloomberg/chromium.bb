@@ -218,6 +218,10 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
     goto cleanup_desc_mu;
   }
   nap->enable_exception_handling = 0;
+#if NACL_WINDOWS
+  nap->debug_exception_handler_state = NACL_DEBUG_EXCEPTION_HANDLER_NOT_STARTED;
+  nap->attach_debug_exception_handler_func = NULL;
+#endif
 
   return 1;
 

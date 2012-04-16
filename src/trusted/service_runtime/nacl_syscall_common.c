@@ -54,6 +54,10 @@
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
+#if NACL_WINDOWS
+#include "native_client/src/trusted/service_runtime/win/debug_exception_handler.h"
+#endif
+
 
 struct NaClDescQuotaInterface;
 
@@ -2886,6 +2890,20 @@ int32_t NaClCommonSysException_Handler(struct NaClAppThread *natp,
     goto no_lock_exit;
   }
   NaClXMutexLock(&natp->nap->exception_mu);
+
+#if NACL_WINDOWS
+  /*
+   * This needs to be done while holding the lock so that we don't
+   * start two debug exception handlers.
+   */
+  if (handler_addr != 0) {
+    if (!NaClDebugExceptionHandlerEnsureAttached(natp->nap)) {
+      rv = -NACL_ABI_ENOSYS;
+      goto unlock_exit;
+    }
+  }
+#endif
+
   if (0 != old_handler &&
       !NaClCopyOutToUser(natp->nap, (uintptr_t) old_handler,
                          &natp->nap->exception_handler,

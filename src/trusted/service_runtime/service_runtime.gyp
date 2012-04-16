@@ -135,6 +135,8 @@
             }],
             ['OS=="win"', {
               'sources': [
+                'win/debug_exception_handler.c',
+                'win/debug_exception_handler_standalone.c',
                 'win/nacl_ldt.c',
                 'win/nacl_oop_debugger_hooks.c',
                 'win/nacl_thread_nice.c',
@@ -250,11 +252,6 @@
             '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle',
           ],
         }],
-        ['OS=="win"', {
-          'sources': [
-             'win/debug_exception_handler.c',
-          ],
-        }],
       ],
     }, {
       'target_name': 'container',
@@ -354,9 +351,6 @@
                 '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle64',
               ],
             }],
-          ],
-          'sources': [
-            'win/debug_exception_handler.c',
           ],
         }, {
           'target_name': 'container64',

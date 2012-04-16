@@ -199,6 +199,8 @@ elif env.Bit('linux'):
 #
 if env.Bit('windows'):
   ldr_inputs += [
+    'win/debug_exception_handler.c',
+    'win/debug_exception_handler_standalone.c',
     'win/nacl_signal.c',
     'win/thread_handle_map.c',
     'win/thread_suspension.c',
@@ -207,7 +209,6 @@ if env.Bit('windows'):
   if env.Bit('target_x86_32'):
     ldr_inputs += [
       'win/nacl_signal_32.c',
-      'win/debug_exception_handler.c',
     ]
   elif env.Bit('target_x86_64'):
     ldr_inputs += [
@@ -215,7 +216,6 @@ if env.Bit('windows'):
       'win/exception_patch/intercept.S',
       'win/exception_patch/ntdll_patch.c',
       'win/nacl_signal_64.c',
-      'win/debug_exception_handler.c',
     ]
   else:
     raise Exception("Unsupported target")

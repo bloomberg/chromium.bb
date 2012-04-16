@@ -82,6 +82,19 @@ enum NaClResourcePhase {
   NACL_RESOURCE_PHASE_REV_CHAN
 };
 
+#if NACL_WINDOWS
+enum NaClDebugExceptionHandlerState {
+  NACL_DEBUG_EXCEPTION_HANDLER_NOT_STARTED,
+  NACL_DEBUG_EXCEPTION_HANDLER_STARTED,
+  NACL_DEBUG_EXCEPTION_HANDLER_FAILED
+};
+/*
+ * Callback function used to request that an exception handler be
+ * attached using the Windows debug API.  See sel_main_chrome.h.
+ */
+typedef int (*NaClAttachDebugExceptionHandlerFunc)(void *info, size_t size);
+#endif
+
 struct NaClApp {
   /*
    * public, user settable prior to app start.
@@ -331,6 +344,10 @@ struct NaClApp {
   struct NaClMutex          exception_mu;
   uint32_t                  exception_handler;
   int                       enable_exception_handling;
+#if NACL_WINDOWS
+  enum NaClDebugExceptionHandlerState debug_exception_handler_state;
+  NaClAttachDebugExceptionHandlerFunc attach_debug_exception_handler_func;
+#endif
 };
 
 
