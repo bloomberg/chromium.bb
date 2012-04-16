@@ -137,7 +137,7 @@ class CHROMEOS_EXPORT BluetoothDeviceClient {
   // The Services map is used to convey the set of services discovered
   // on a device. The keys are unique record handles and the values are
   // XML-formatted service records. Both can be generated using the
-  // spdtool(1) binary distributed with bluetoothd.
+  // sdptool(1) binary distributed with bluetoothd.
   typedef std::map<const uint32, std::string> ServiceMap;
 
   // The ServicesCallback is used for the DiscoverServices() method. It
