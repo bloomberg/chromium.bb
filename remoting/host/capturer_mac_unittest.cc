@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -28,6 +29,7 @@ class CapturerMacTest : public testing::Test {
 
   scoped_ptr<Capturer> capturer_;
   SkRegion region_;
+  MessageLoop message_loop_;
 };
 
 // CapturerCallback1 verifies that the whole screen is initially dirty.
@@ -97,6 +99,7 @@ TEST_F(CapturerMacTest, Capture) {
   capturer_->InvalidateRegion(region_);
   capturer_->CaptureInvalidRegion(base::Bind(
       &CapturerCallback2::CaptureDoneCallback, base::Unretained(&callback2)));
+  message_loop_.RunAllPending();
 }
 
 }  // namespace remoting
