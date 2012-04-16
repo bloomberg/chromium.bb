@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -23,10 +23,9 @@ class SBEntry;
 // A truncated hash's type.
 typedef int32 SBPrefix;
 
-// Container for holding a chunk URL and the MAC of the contents of the URL.
+// Container for holding a chunk URL and the list it belongs to.
 struct ChunkUrl {
   std::string url;
-  std::string mac;
   std::string list_name;
 };
 
@@ -318,12 +317,6 @@ bool IsPhishingList(const std::string& list_name);
 bool IsMalwareList(const std::string& list_name);
 bool IsBadbinurlList(const std::string& list_name);
 bool IsBadbinhashList(const std::string& list_name);
-
-// Returns 'true' if 'mac' can be verified using 'key' and 'data'.
-bool VerifyMAC(const std::string& key,
-               const std::string& mac,
-               const char* data,
-               int data_length);
 
 GURL GeneratePhishingReportUrl(const std::string& report_page,
                                const std::string& url_to_report,

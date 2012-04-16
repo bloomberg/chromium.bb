@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #ifndef NDEBUG
 #include "base/base64.h"
 #endif
-#include "base/bind.h"
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -48,16 +47,12 @@ class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
   virtual SafeBrowsingProtocolManager* CreateProtocolManager(
       SafeBrowsingService* sb_service,
       const std::string& client_name,
-      const std::string& client_key,
-      const std::string& wrapped_key,
       net::URLRequestContextGetter* request_context_getter,
-      const std::string& info_url_prefix,
-      const std::string& mackey_url_prefix,
+      const std::string& url_prefix,
       bool disable_auto_update) {
     return new SafeBrowsingProtocolManager(
-        sb_service, client_name, client_key, wrapped_key,
-        request_context_getter, info_url_prefix, mackey_url_prefix,
-        disable_auto_update);
+        sb_service, client_name, request_context_getter,
+        url_prefix, disable_auto_update);
   }
  private:
   DISALLOW_COPY_AND_ASSIGN(SBProtocolManagerFactoryImpl);
@@ -72,29 +67,22 @@ SBProtocolManagerFactory* SafeBrowsingProtocolManager::factory_ = NULL;
 SafeBrowsingProtocolManager* SafeBrowsingProtocolManager::Create(
     SafeBrowsingService* sb_service,
     const std::string& client_name,
-    const std::string& client_key,
-    const std::string& wrapped_key,
     net::URLRequestContextGetter* request_context_getter,
-    const std::string& info_url_prefix,
-    const std::string& mackey_url_prefix,
+    const std::string& url_prefix,
     bool disable_auto_update) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!factory_)
     factory_ = new SBProtocolManagerFactoryImpl();
-  return factory_->CreateProtocolManager(sb_service, client_name, client_key,
-                                         wrapped_key, request_context_getter,
-                                         info_url_prefix, mackey_url_prefix,
-                                         disable_auto_update);
+  return factory_->CreateProtocolManager(sb_service, client_name,
+                                         request_context_getter,
+                                         url_prefix, disable_auto_update);
 }
 
 SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
     SafeBrowsingService* sb_service,
     const std::string& client_name,
-    const std::string& client_key,
-    const std::string& wrapped_key,
     net::URLRequestContextGetter* request_context_getter,
-    const std::string& http_url_prefix,
-    const std::string& https_url_prefix,
+    const std::string& url_prefix,
     bool disable_auto_update)
     : sb_service_(sb_service),
       request_type_(NO_REQUEST),
@@ -104,17 +92,13 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
       gethash_back_off_mult_(1),
       next_update_sec_(-1),
       update_state_(FIRST_REQUEST),
-      initial_request_(true),
       chunk_pending_to_write_(false),
-      client_key_(client_key),
-      wrapped_key_(wrapped_key),
       update_size_(0),
       client_name_(client_name),
       request_context_getter_(request_context_getter),
-      http_url_prefix_(http_url_prefix),
-      https_url_prefix_(https_url_prefix),
+      url_prefix_(url_prefix),
       disable_auto_update_(disable_auto_update) {
-  DCHECK(!http_url_prefix_.empty() && !https_url_prefix_.empty());
+  DCHECK(!url_prefix_.empty());
 
   // Set the backoff multiplier fuzz to a random value between 0 and 1.
   back_off_fuzz_ = static_cast<float>(base::RandDouble());
@@ -168,8 +152,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
     sb_service_->HandleGetHashResults(check, full_hashes, false);
     return;
   }
-  bool use_mac = !client_key_.empty();
-  GURL gethash_url = GetHashUrl(use_mac);
+  GURL gethash_url = GetHashUrl();
   content::URLFetcher* fetcher = content::URLFetcher::Create(
       gethash_url, content::URLFetcher::POST, this);
   hash_requests_[fetcher] = check;
@@ -185,15 +168,6 @@ void SafeBrowsingProtocolManager::GetFullHash(
 }
 
 void SafeBrowsingProtocolManager::GetNextUpdate() {
-  if (initial_request_) {
-    if (client_key_.empty() || wrapped_key_.empty()) {
-      IssueKeyRequest();
-      return;
-    } else {
-      initial_request_ = false;
-    }
-  }
-
   if (!request_.get())
     IssueUpdateRequest();
 }
@@ -242,24 +216,18 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       can_cache = true;
       gethash_error_count_ = 0;
       gethash_back_off_mult_ = 1;
-      bool re_key = false;
       SafeBrowsingProtocolParser parser;
       std::string data;
       source->GetResponseAsString(&data);
       parsed_ok = parser.ParseGetHash(
           data.data(),
           static_cast<int>(data.length()),
-          client_key_,
-          &re_key,
           &full_hashes);
       if (!parsed_ok) {
         // If we fail to parse it, we must still inform the SafeBrowsingService
         // so that it doesn't hold up the user's request indefinitely. Not sure
         // what to do at that point though!
         full_hashes.clear();
-      } else {
-        if (re_key)
-          HandleReKey();
       }
     } else {
       HandleGetHashError(Time::Now());
@@ -279,7 +247,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
 
     hash_requests_.erase(it);
   } else {
-    // Update, chunk or key response.
+    // Update or chunk response.
     fetcher.reset(request_.release());
 
     if (request_type_ == UPDATE_REQUEST) {
@@ -311,15 +279,6 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
         case CHUNK_REQUEST:
           if (parsed_ok)
             chunk_request_urls_.pop_front();
-          break;
-        case GETKEY_REQUEST:
-          if (initial_request_) {
-            // This is the first request we've made this session. Now that we
-            // have the keys, do the regular update request.
-            initial_request_ = false;
-            GetNextUpdate();
-            return;
-          }
           break;
         case UPDATE_REQUEST:
           if (chunk_request_urls_.empty() && parsed_ok) {
@@ -367,13 +326,11 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
   switch (request_type_) {
     case UPDATE_REQUEST: {
       int next_update_sec = -1;
-      bool re_key = false;
       bool reset = false;
       scoped_ptr<std::vector<SBChunkDelete> > chunk_deletes(
           new std::vector<SBChunkDelete>);
       std::vector<ChunkUrl> chunk_urls;
-      if (!parser.ParseUpdate(data, length, client_key_,
-                              &next_update_sec, &re_key,
+      if (!parser.ParseUpdate(data, length, &next_update_sec,
                               &reset, chunk_deletes.get(), &chunk_urls)) {
         return false;
       }
@@ -391,10 +348,6 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
       } else if (update_state_ == SECOND_REQUEST) {
         next_update_sec_ = base::RandInt(15 * 60, 45 * 60);
       }
-
-      // We need to request a new set of keys for MAC.
-      if (re_key)
-        HandleReKey();
 
       // New chunks to download.
       if (!chunk_urls.empty()) {
@@ -422,30 +375,22 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
                           base::Time::Now() - chunk_request_start_);
 
       const ChunkUrl chunk_url = chunk_request_urls_.front();
-      bool re_key = false;
       scoped_ptr<SBChunkList> chunks(new SBChunkList);
       UMA_HISTOGRAM_COUNTS("SB2.ChunkSize", length);
       update_size_ += length;
       if (!parser.ParseChunk(chunk_url.list_name, data, length,
-                             client_key_, chunk_url.mac,
-                             &re_key, chunks.get())) {
+                             chunks.get())) {
 #ifndef NDEBUG
         std::string data_str;
         data_str.assign(data, length);
         std::string encoded_chunk;
         base::Base64Encode(data_str, &encoded_chunk);
         VLOG(1) << "ParseChunk error for chunk: " << chunk_url.url
-                << ", client_key: " << client_key_
-                << ", wrapped_key: " << wrapped_key_
-                << ", mac: " << chunk_url.mac
                 << ", Base64Encode(data): " << encoded_chunk
                 << ", length: " << length;
 #endif
         return false;
       }
-
-      if (re_key)
-        HandleReKey();
 
       // Chunks to add to storage.  Pass ownership of |chunks|.
       if (!chunks->empty()) {
@@ -453,19 +398,6 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
         sb_service_->HandleChunk(chunk_url.list_name, chunks.release());
       }
 
-      break;
-    }
-    case GETKEY_REQUEST: {
-      std::string client_key, wrapped_key;
-      if (!parser.ParseNewKey(data, length, &client_key, &wrapped_key))
-        return false;
-
-      client_key_ = client_key;
-      wrapped_key_ = wrapped_key;
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&SafeBrowsingService::OnNewMacKeys,
-                     sb_service_, client_key_, wrapped_key_));
       break;
     }
 
@@ -571,16 +503,6 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   request_->Start();
 }
 
-void SafeBrowsingProtocolManager::IssueKeyRequest() {
-  GURL key_url = MacKeyUrl();
-  request_type_ = GETKEY_REQUEST;
-  request_.reset(content::URLFetcher::Create(
-      key_url, content::URLFetcher::GET, this));
-  request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  request_->SetRequestContext(request_context_getter_);
-  request_->Start();
-}
-
 void SafeBrowsingProtocolManager::OnGetChunksComplete(
     const std::vector<SBListChunkRanges>& lists, bool database_error) {
   DCHECK_EQ(request_type_, UPDATE_REQUEST);
@@ -590,14 +512,12 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
     return;
   }
 
-  const bool use_mac = !client_key_.empty();
-
   // Format our stored chunks:
   std::string list_data;
   bool found_malware = false;
   bool found_phishing = false;
   for (size_t i = 0; i < lists.size(); ++i) {
-    list_data.append(FormatList(lists[i], use_mac));
+    list_data.append(FormatList(lists[i]));
     if (lists[i].name == safe_browsing_util::kPhishingList)
       found_phishing = true;
 
@@ -609,13 +529,13 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   // lists.
   if (!found_phishing)
     list_data.append(FormatList(
-        SBListChunkRanges(safe_browsing_util::kPhishingList), use_mac));
+        SBListChunkRanges(safe_browsing_util::kPhishingList)));
 
   if (!found_malware)
     list_data.append(FormatList(
-        SBListChunkRanges(safe_browsing_util::kMalwareList), use_mac));
+        SBListChunkRanges(safe_browsing_util::kMalwareList)));
 
-  GURL update_url = UpdateUrl(use_mac);
+  GURL update_url = UpdateUrl();
   request_.reset(content::URLFetcher::Create(
       update_url, content::URLFetcher::POST, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
@@ -690,31 +610,21 @@ void SafeBrowsingProtocolManager::ReportMalwareDetails(
 
 // static
 std::string SafeBrowsingProtocolManager::FormatList(
-    const SBListChunkRanges& list, bool use_mac) {
+    const SBListChunkRanges& list) {
   std::string formatted_results;
   formatted_results.append(list.name);
   formatted_results.append(";");
   if (!list.adds.empty()) {
     formatted_results.append("a:" + list.adds);
-    if (!list.subs.empty() || use_mac)
+    if (!list.subs.empty())
       formatted_results.append(":");
   }
   if (!list.subs.empty()) {
     formatted_results.append("s:" + list.subs);
-    if (use_mac)
-      formatted_results.append(":");
   }
-  if (use_mac)
-    formatted_results.append("mac");
   formatted_results.append("\n");
 
   return formatted_results;
-}
-
-void SafeBrowsingProtocolManager::HandleReKey() {
-  client_key_.clear();
-  wrapped_key_.clear();
-  IssueKeyRequest();
 }
 
 void SafeBrowsingProtocolManager::HandleGetHashError(const Time& now) {
@@ -745,28 +655,13 @@ std::string SafeBrowsingProtocolManager::ComposeUrl(
   return url;
 }
 
-GURL SafeBrowsingProtocolManager::UpdateUrl(bool use_mac) const {
-  std::string url = ComposeUrl(http_url_prefix_, "downloads", client_name_,
-                               version_, additional_query_);
-  if (use_mac) {
-    url.append("&wrkey=");
-    url.append(wrapped_key_);
-  }
-  return GURL(url);
+GURL SafeBrowsingProtocolManager::UpdateUrl() const {
+  return GURL(ComposeUrl(url_prefix_, "downloads", client_name_, version_,
+                         additional_query_));
 }
 
-GURL SafeBrowsingProtocolManager::GetHashUrl(bool use_mac) const {
-  std::string url= ComposeUrl(http_url_prefix_, "gethash", client_name_,
-                              version_, additional_query_);
-  if (use_mac) {
-    url.append("&wrkey=");
-    url.append(wrapped_key_);
-  }
-  return GURL(url);
-}
-
-GURL SafeBrowsingProtocolManager::MacKeyUrl() const {
-  return GURL(ComposeUrl(https_url_prefix_, "newkey", client_name_, version_,
+GURL SafeBrowsingProtocolManager::GetHashUrl() const {
+  return GURL(ComposeUrl(url_prefix_, "gethash", client_name_, version_,
                          additional_query_));
 }
 
@@ -779,8 +674,7 @@ GURL SafeBrowsingProtocolManager::SafeBrowsingHitUrl(
          threat_type == SafeBrowsingService::BINARY_MALWARE_URL ||
          threat_type == SafeBrowsingService::BINARY_MALWARE_HASH ||
          threat_type == SafeBrowsingService::CLIENT_SIDE_PHISHING_URL);
-  // The malware and phishing hits go over HTTP.
-  std::string url = ComposeUrl(http_url_prefix_, "report", client_name_,
+  std::string url = ComposeUrl(url_prefix_, "report", client_name_,
                                version_, additional_query_);
   std::string threat_list = "none";
   switch (threat_type) {
@@ -811,10 +705,9 @@ GURL SafeBrowsingProtocolManager::SafeBrowsingHitUrl(
 }
 
 GURL SafeBrowsingProtocolManager::MalwareDetailsUrl() const {
-  // The malware details go over HTTPS.
   std::string url = base::StringPrintf(
           "%s/clientreport/malware?client=%s&appver=%s&pver=1.0",
-          https_url_prefix_.c_str(),
+          url_prefix_.c_str(),
           client_name_.c_str(),
           version_.c_str());
   return GURL(url);
@@ -824,7 +717,11 @@ GURL SafeBrowsingProtocolManager::NextChunkUrl(const std::string& url) const {
   std::string next_url;
   if (!StartsWithASCII(url, "http://", false) &&
       !StartsWithASCII(url, "https://", false)) {
-    next_url.append("http://");
+    // Use https if we updated via https, otherwise http (useful for testing).
+    if (StartsWithASCII(url_prefix_, "https://", false))
+      next_url.append("https://");
+    else
+      next_url.append("http://");
     next_url.append(url);
   } else {
     next_url = url;

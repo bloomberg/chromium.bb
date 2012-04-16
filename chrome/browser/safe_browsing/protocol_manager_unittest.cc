@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,14 +11,9 @@
 using base::Time;
 using base::TimeDelta;
 
-static const char kInfoUrlPrefix[] = "http://info.prefix.com/foo";
-static const char kMacKeyUrlPrefix[] = "https://key.prefix.com/bar";
+static const char kUrlPrefix[] = "https://prefix.com/foo";
 static const char kClient[] = "unittest";
 static const char kAppVer[] = "1.0";
-static const char kClientKey[] = "SCg9lcLHd0dfksXgYsacwQ==";
-static const char kWrappedKey[] =
-    "AKEgNisjLl7iRYrjWHmpd_XwCiilxrw8nNaYH47tiQ7pDe9cEErjVHGZaPPUau5h61tbXSDqA"
-    "BiJZnDFByc_g8B5vTwxkhBf9g==";
 static const char kAdditionalQuery[] = "additional_query";
 
 class SafeBrowsingProtocolManagerTest : public testing::Test {
@@ -26,8 +21,7 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
 
 // Ensure that we respect section 5 of the SafeBrowsing protocol specification.
 TEST_F(SafeBrowsingProtocolManagerTest, TestBackOffTimes) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, kClientKey, kWrappedKey, NULL,
-                                 kInfoUrlPrefix, kMacKeyUrlPrefix, false);
+  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
   pm.next_update_sec_ = 1800;
   DCHECK(pm.back_off_fuzz_ >= 0.0 && pm.back_off_fuzz_ <= 1.0);
 
@@ -63,44 +57,33 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestBackOffTimes) {
   EXPECT_EQ(pm.GetNextUpdateTime(false), 1800 * 1000);
 }
 
-// Test string combinations with and without MAC.
 TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, kClientKey, kWrappedKey, NULL,
-                                 kInfoUrlPrefix, kMacKeyUrlPrefix, false);
+  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
 
   // Add and Sub chunks.
   SBListChunkRanges phish("goog-phish-shavar");
   phish.adds = "1,4,6,8-20,99";
   phish.subs = "16,32,64-96";
-  EXPECT_EQ(pm.FormatList(phish, false),
+  EXPECT_EQ(pm.FormatList(phish),
             "goog-phish-shavar;a:1,4,6,8-20,99:s:16,32,64-96\n");
-  EXPECT_EQ(pm.FormatList(phish, true),
-            "goog-phish-shavar;a:1,4,6,8-20,99:s:16,32,64-96:mac\n");
 
   // Add chunks only.
   phish.subs = "";
-  EXPECT_EQ(pm.FormatList(phish, false),
-            "goog-phish-shavar;a:1,4,6,8-20,99\n");
-  EXPECT_EQ(pm.FormatList(phish, true),
-            "goog-phish-shavar;a:1,4,6,8-20,99:mac\n");
+  EXPECT_EQ(pm.FormatList(phish), "goog-phish-shavar;a:1,4,6,8-20,99\n");
 
   // Sub chunks only.
   phish.adds = "";
   phish.subs = "16,32,64-96";
-  EXPECT_EQ(pm.FormatList(phish, false), "goog-phish-shavar;s:16,32,64-96\n");
-  EXPECT_EQ(pm.FormatList(phish, true),
-            "goog-phish-shavar;s:16,32,64-96:mac\n");
+  EXPECT_EQ(pm.FormatList(phish), "goog-phish-shavar;s:16,32,64-96\n");
 
   // No chunks of either type.
   phish.adds = "";
   phish.subs = "";
-  EXPECT_EQ(pm.FormatList(phish, false), "goog-phish-shavar;\n");
-  EXPECT_EQ(pm.FormatList(phish, true), "goog-phish-shavar;mac\n");
+  EXPECT_EQ(pm.FormatList(phish), "goog-phish-shavar;\n");
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, kClientKey, kWrappedKey, NULL,
-                                 kInfoUrlPrefix, kMacKeyUrlPrefix, false);
+  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
 
   // No errors or back off time yet.
   EXPECT_EQ(pm.gethash_error_count_, 0);
@@ -152,56 +135,37 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, kClientKey, kWrappedKey, NULL,
-                                 kInfoUrlPrefix, kMacKeyUrlPrefix, false);
+  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
   pm.version_ = kAppVer;
-  EXPECT_EQ("http://info.prefix.com/foo/gethash?client=unittest&appver=1.0&"
-            "pver=2.2", pm.GetHashUrl(false).spec());
-  EXPECT_EQ("http://info.prefix.com/foo/gethash?client=unittest&appver=1.0&"
-            "pver=2.2&wrkey=AKEgNisjLl7iRYrjWHmpd_XwCiilxrw8nNaYH47tiQ7pDe9cE"
-            "ErjVHGZaPPUau5h61tbXSDqABiJZnDFByc_g8B5vTwxkhBf9g==",
-            pm.GetHashUrl(true).spec());
+  EXPECT_EQ("https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
+            "pver=2.2", pm.GetHashUrl().spec());
 
   pm.set_additional_query(kAdditionalQuery);
-  EXPECT_EQ("http://info.prefix.com/foo/gethash?client=unittest&appver=1.0&"
+  EXPECT_EQ("https://prefix.com/foo/gethash?client=unittest&appver=1.0&"
             "pver=2.2&additional_query",
-            pm.GetHashUrl(false).spec());
-  EXPECT_EQ("http://info.prefix.com/foo/gethash?client=unittest&appver=1.0&"
-            "pver=2.2&additional_query&wrkey=AKEgNisjLl7iRYrjWHmpd_XwCiilxrw8"
-            "nNaYH47tiQ7pDe9cEErjVHGZaPPUau5h61tbXSDqABiJZnDFByc_g8B5vTwxkhBf"
-            "9g==", pm.GetHashUrl(true).spec());
+            pm.GetHashUrl().spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, kClientKey, kWrappedKey, NULL,
-                                 kInfoUrlPrefix, kMacKeyUrlPrefix, false);
+  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
   pm.version_ = kAppVer;
 
-  EXPECT_EQ("http://info.prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=2.2", pm.UpdateUrl(false).spec());
-  EXPECT_EQ("http://info.prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=2.2&wrkey=AKEgNisjLl7iRYrjWHmpd_XwCiilxrw8nNaYH47tiQ7pDe9cE"
-            "ErjVHGZaPPUau5h61tbXSDqABiJZnDFByc_g8B5vTwxkhBf9g==",
-            pm.UpdateUrl(true).spec());
+  EXPECT_EQ("https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
+            "pver=2.2", pm.UpdateUrl().spec());
 
   pm.set_additional_query(kAdditionalQuery);
-  EXPECT_EQ("http://info.prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=2.2&additional_query", pm.UpdateUrl(false).spec());
-  EXPECT_EQ("http://info.prefix.com/foo/downloads?client=unittest&appver=1.0&"
-            "pver=2.2&additional_query&wrkey=AKEgNisjLl7iRYrjWHmpd_XwCiilxrw8"
-            "nNaYH47tiQ7pDe9cEErjVHGZaPPUau5h61tbXSDqABiJZnDFByc_g8B5vTwxkhBf"
-            "9g==", pm.UpdateUrl(true).spec());
+  EXPECT_EQ("https://prefix.com/foo/downloads?client=unittest&appver=1.0&"
+            "pver=2.2&additional_query", pm.UpdateUrl().spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, kClientKey, kWrappedKey, NULL,
-                                 kInfoUrlPrefix, kMacKeyUrlPrefix, false);
+  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
   pm.version_ = kAppVer;
 
   GURL malicious_url("http://malicious.url.com");
   GURL page_url("http://page.url.com");
   GURL referrer_url("http://referrer.url.com");
-  EXPECT_EQ("http://info.prefix.com/foo/report?client=unittest&appver=1.0&"
+  EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
             "pver=2.2&evts=malblhit&evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
             "url.com%2F&evtb=1",
@@ -210,7 +174,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
                 true, SafeBrowsingService::URL_MALWARE).spec());
 
   pm.set_additional_query(kAdditionalQuery);
-  EXPECT_EQ("http://info.prefix.com/foo/report?client=unittest&appver=1.0&"
+  EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
             "pver=2.2&additional_query&evts=phishblhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
@@ -219,7 +183,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
                 malicious_url, page_url, referrer_url,
                 false, SafeBrowsingService::URL_PHISHING).spec());
 
-  EXPECT_EQ("http://info.prefix.com/foo/report?client=unittest&appver=1.0&"
+  EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
             "pver=2.2&additional_query&evts=binurlhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
@@ -228,7 +192,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
                 malicious_url, page_url, referrer_url,
                 false, SafeBrowsingService::BINARY_MALWARE_URL).spec());
 
-  EXPECT_EQ("http://info.prefix.com/foo/report?client=unittest&appver=1.0&"
+  EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
             "pver=2.2&additional_query&evts=binhashhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
@@ -237,7 +201,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
                 malicious_url, page_url, referrer_url,
                 false, SafeBrowsingService::BINARY_MALWARE_HASH).spec());
 
-  EXPECT_EQ("http://info.prefix.com/foo/report?client=unittest&appver=1.0&"
+  EXPECT_EQ("https://prefix.com/foo/report?client=unittest&appver=1.0&"
             "pver=2.2&additional_query&evts=phishcsdhit&"
             "evtd=http%3A%2F%2Fmalicious.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
@@ -248,32 +212,17 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestSafeBrowsingHitUrl) {
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestMalwareDetailsUrl) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, kClientKey, kWrappedKey, NULL,
-                                 kInfoUrlPrefix, kMacKeyUrlPrefix, false);
+  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
 
   pm.version_ = kAppVer;
   pm.set_additional_query(kAdditionalQuery);  // AdditionalQuery is not used.
-  EXPECT_EQ("https://key.prefix.com/bar/clientreport/malware?"
+  EXPECT_EQ("https://prefix.com/foo/clientreport/malware?"
             "client=unittest&appver=1.0&pver=1.0",
             pm.MalwareDetailsUrl().spec());
 }
 
-TEST_F(SafeBrowsingProtocolManagerTest, TestMacKeyUrl) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, kClientKey, kWrappedKey, NULL,
-                                 kInfoUrlPrefix, kMacKeyUrlPrefix, false);
-  pm.version_ = kAppVer;
-
-  EXPECT_EQ("https://key.prefix.com/bar/newkey?client=unittest&appver=1.0&"
-            "pver=2.2", pm.MacKeyUrl().spec());
-
-  pm.set_additional_query(kAdditionalQuery);
-  EXPECT_EQ("https://key.prefix.com/bar/newkey?client=unittest&appver=1.0&"
-            "pver=2.2&additional_query", pm.MacKeyUrl().spec());
-}
-
 TEST_F(SafeBrowsingProtocolManagerTest, TestNextChunkUrl) {
-  SafeBrowsingProtocolManager pm(NULL, kClient, kClientKey, kWrappedKey, NULL,
-                                 kInfoUrlPrefix, kMacKeyUrlPrefix, false);
+  SafeBrowsingProtocolManager pm(NULL, kClient, NULL, kUrlPrefix, false);
   pm.version_ = kAppVer;
 
   std::string url_partial = "localhost:1234/foo/bar?foo";
@@ -281,7 +230,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestNextChunkUrl) {
   std::string url_https_full = "https://localhost:1234/foo/bar?foo";
   std::string url_https_no_query = "https://localhost:1234/foo/bar";
 
-  EXPECT_EQ("http://localhost:1234/foo/bar?foo",
+  EXPECT_EQ("https://localhost:1234/foo/bar?foo",
             pm.NextChunkUrl(url_partial).spec());
   EXPECT_EQ("http://localhost:1234/foo/bar?foo",
             pm.NextChunkUrl(url_http_full).spec());
@@ -291,7 +240,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestNextChunkUrl) {
             pm.NextChunkUrl(url_https_no_query).spec());
 
   pm.set_additional_query(kAdditionalQuery);
-  EXPECT_EQ("http://localhost:1234/foo/bar?foo&additional_query",
+  EXPECT_EQ("https://localhost:1234/foo/bar?foo&additional_query",
             pm.NextChunkUrl(url_partial).spec());
   EXPECT_EQ("http://localhost:1234/foo/bar?foo&additional_query",
             pm.NextChunkUrl(url_http_full).spec());

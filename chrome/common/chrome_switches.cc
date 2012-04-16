@@ -1055,10 +1055,7 @@ const char kRestoreLastSession[]            = "restore-last-session";
 
 // URL prefix used by safebrowsing to fetch hash, download data and report
 // malware.
-const char kSbInfoURLPrefix[] = "safebrowsing-info-url-prefix";
-
-// URL prefix used by safebrowsing to get MAC key.
-const char kSbMacKeyURLPrefix[] = "safebrowsing-mackey-url-prefix";
+const char kSbURLPrefix[] = "safebrowsing-url-prefix";
 
 // If present, safebrowsing only performs update when
 // SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.

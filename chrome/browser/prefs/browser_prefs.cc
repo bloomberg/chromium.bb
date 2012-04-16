@@ -46,7 +46,6 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/tabs/pinned_tab_codec.h"
 #include "chrome/browser/task_manager/task_manager.h"
@@ -128,10 +127,6 @@ void RegisterLocalState(PrefService* local_state) {
 
 #if defined(ENABLE_NOTIFICATIONS)
   NotificationPrefsManager::RegisterPrefs(local_state);
-#endif
-
-#if defined(ENABLE_SAFE_BROWSING)
-  SafeBrowsingService::RegisterPrefs(local_state);
 #endif
 
 #if defined(ENABLE_TASK_MANAGER)

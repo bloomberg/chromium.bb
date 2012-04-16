@@ -59,14 +59,9 @@ namespace {
 const FilePath::CharType kCookiesFile[] = FILE_PATH_LITERAL(" Cookies");
 
 // The default URL prefix where browser fetches chunk updates, hashes,
-// and reports safe browsing hits.
-const char* const kSbDefaultInfoURLPrefix =
-    "http://safebrowsing.clients.google.com/safebrowsing";
-
-// The default URL prefix where browser fetches MAC client key and reports
-// malware details.
-const char* const kSbDefaultMacKeyURLPrefix =
-    "https://sb-ssl.google.com/safebrowsing";
+// and reports safe browsing hits and malware details.
+const char* const kSbDefaultURLPrefix =
+    "https://safebrowsing.google.com/safebrowsing";
 
 // When download url check takes this long, client's callback will be called
 // without waiting for the result.
@@ -586,24 +581,9 @@ void SafeBrowsingService::OnBlockingPageDone(
   }
 }
 
-void SafeBrowsingService::OnNewMacKeys(const std::string& client_key,
-                                       const std::string& wrapped_key) {
-  PrefService* prefs = g_browser_process->local_state();
-  if (prefs) {
-    prefs->SetString(prefs::kSafeBrowsingClientKey, client_key);
-    prefs->SetString(prefs::kSafeBrowsingWrappedKey, wrapped_key);
-  }
-}
-
 net::URLRequestContextGetter* SafeBrowsingService::url_request_context() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return url_request_context_getter_.get();
-}
-
-// static
-void SafeBrowsingService::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterStringPref(prefs::kSafeBrowsingClientKey, "");
-  prefs->RegisterStringPref(prefs::kSafeBrowsingWrappedKey, "");
 }
 
 void SafeBrowsingService::ResetDatabase() {
@@ -653,9 +633,7 @@ void SafeBrowsingService::DestroyURLRequestContextOnIOThread() {
   url_request_context_ = NULL;
 }
 
-void SafeBrowsingService::StartOnIOThread(
-    const std::string& client_key,
-    const std::string& wrapped_key) {
+void SafeBrowsingService::StartOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (enabled_)
     return;
@@ -686,24 +664,17 @@ void SafeBrowsingService::StartOnIOThread(
   bool disable_auto_update =
       cmdline->HasSwitch(switches::kSbDisableAutoUpdate) ||
       cmdline->HasSwitch(switches::kDisableBackgroundNetworking);
-  std::string info_url_prefix =
-      cmdline->HasSwitch(switches::kSbInfoURLPrefix) ?
-      cmdline->GetSwitchValueASCII(switches::kSbInfoURLPrefix) :
-      kSbDefaultInfoURLPrefix;
-  std::string mackey_url_prefix =
-      cmdline->HasSwitch(switches::kSbMacKeyURLPrefix) ?
-      cmdline->GetSwitchValueASCII(switches::kSbMacKeyURLPrefix) :
-      kSbDefaultMacKeyURLPrefix;
+  std::string url_prefix =
+      cmdline->HasSwitch(switches::kSbURLPrefix) ?
+      cmdline->GetSwitchValueASCII(switches::kSbURLPrefix) :
+      kSbDefaultURLPrefix;
 
   DCHECK(!protocol_manager_);
   protocol_manager_ =
       SafeBrowsingProtocolManager::Create(this,
                                           client_name,
-                                          client_key,
-                                          wrapped_key,
                                           url_request_context_getter_,
-                                          info_url_prefix,
-                                          mackey_url_prefix,
+                                          url_prefix,
                                           disable_auto_update);
 
   protocol_manager_->Initialize();
@@ -1005,17 +976,6 @@ void SafeBrowsingService::DatabaseUpdateFinished(bool update_succeeded) {
 void SafeBrowsingService::Start() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Retrieve client MAC keys.
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  std::string client_key, wrapped_key;
-  if (local_state) {
-    client_key =
-      local_state->GetString(prefs::kSafeBrowsingClientKey);
-    wrapped_key =
-      local_state->GetString(prefs::kSafeBrowsingWrappedKey);
-  }
-
   CommandLine* cmdline = CommandLine::ForCurrentProcess();
   enable_download_protection_ =
       !cmdline->HasSwitch(switches::kSbDisableDownloadProtection);
@@ -1039,8 +999,7 @@ void SafeBrowsingService::Start() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingService::StartOnIOThread,
-                 this, client_key, wrapped_key));
+      base::Bind(&SafeBrowsingService::StartOnIOThread, this));
 }
 
 void SafeBrowsingService::Stop() {

@@ -4,12 +4,10 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
-#include "base/base64.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/google/google_util.h"
-#include "crypto/hmac.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_util.h"
@@ -19,8 +17,6 @@
 #if defined(OS_WIN)
 #include "chrome/installer/util/browser_distribution.h"
 #endif
-
-static const int kSafeBrowsingMacDigestSize = 20;
 
 // Continue to this URL after submitting the phishing report form.
 // TODO(paulg): Change to a Chrome specific URL.
@@ -477,39 +473,6 @@ bool IsBadbinurlList(const std::string& list_name) {
 
 bool IsBadbinhashList(const std::string& list_name) {
   return list_name.compare(kBinHashList) == 0;
-}
-
-static void DecodeWebSafe(std::string* decoded) {
-  DCHECK(decoded);
-  for (std::string::iterator i(decoded->begin()); i != decoded->end(); ++i) {
-    if (*i == '_')
-      *i = '/';
-    else if (*i == '-')
-      *i = '+';
-  }
-}
-
-bool VerifyMAC(const std::string& key, const std::string& mac,
-               const char* data, int data_length) {
-  std::string key_copy = key;
-  DecodeWebSafe(&key_copy);
-  std::string decoded_key;
-  base::Base64Decode(key_copy, &decoded_key);
-
-  std::string mac_copy = mac;
-  DecodeWebSafe(&mac_copy);
-  std::string decoded_mac;
-  base::Base64Decode(mac_copy, &decoded_mac);
-
-  crypto::HMAC hmac(crypto::HMAC::SHA1);
-  if (!hmac.Init(decoded_key))
-    return false;
-  const std::string data_str(data, data_length);
-  unsigned char digest[kSafeBrowsingMacDigestSize];
-  if (!hmac.Sign(data_str, digest, kSafeBrowsingMacDigestSize))
-    return false;
-
-  return !memcmp(digest, decoded_mac.data(), kSafeBrowsingMacDigestSize);
 }
 
 GURL GeneratePhishingReportUrl(const std::string& report_page,

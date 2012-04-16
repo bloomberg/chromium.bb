@@ -52,7 +52,8 @@ using content::BrowserThread;
 
 namespace {
 
-const FilePath::CharType kDataFile[] = FILE_PATH_LITERAL("testing_input.dat");
+const FilePath::CharType kDataFile[] =
+    FILE_PATH_LITERAL("testing_input_nomac.dat");
 const char kUrlVerifyPath[] = "/safebrowsing/verify_urls";
 const char kDBVerifyPath[] = "/safebrowsing/verify_database";
 const char kDBResetPath[] = "/reset";
@@ -209,7 +210,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   SafeBrowsingServiceTest()
     : safe_browsing_service_(NULL),
       is_database_ready_(true),
-      is_initial_request_(false),
       is_update_scheduled_(false),
       is_checked_url_in_db_(false),
       is_checked_url_safe_(false) {
@@ -221,8 +221,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   void UpdateSafeBrowsingStatus() {
     ASSERT_TRUE(safe_browsing_service_);
     base::AutoLock lock(update_status_mutex_);
-    is_initial_request_ =
-        safe_browsing_service_->protocol_manager_->is_initial_request();
     last_update_ = safe_browsing_service_->protocol_manager_->last_update();
     is_update_scheduled_ =
         safe_browsing_service_->protocol_manager_->update_timer_.IsRunning();
@@ -273,11 +271,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     return is_database_ready_;
   }
 
-  bool is_initial_request() {
-    base::AutoLock l(update_status_mutex_);
-    return is_initial_request_;
-  }
-
   base::Time last_update() {
     base::AutoLock l(update_status_mutex_);
     return last_update_;
@@ -317,15 +310,12 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     command_line->AppendSwitch(
         switches::kDisableClientSidePhishingDetection);
 
-    // In this test, we fetch SafeBrowsing data and Mac key from the same
-    // server. Although in real production, they are served from different
-    // servers.
+    // Point to the testing server for all SafeBrowsing requests.
     std::string url_prefix =
         base::StringPrintf("http://%s:%d/safebrowsing",
                            SafeBrowsingTestServer::Host(),
                            SafeBrowsingTestServer::Port());
-    command_line->AppendSwitchASCII(switches::kSbInfoURLPrefix, url_prefix);
-    command_line->AppendSwitchASCII(switches::kSbMacKeyURLPrefix, url_prefix);
+    command_line->AppendSwitchASCII(switches::kSbURLPrefix, url_prefix);
   }
 
   void SetTestStep(int step) {
@@ -342,7 +332,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 
   // States associated with safebrowsing service updates.
   bool is_database_ready_;
-  bool is_initial_request_;
   base::Time last_update_;
   bool is_update_scheduled_;
   // Indicates if there is a match between a URL's prefix and safebrowsing
@@ -577,7 +566,6 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
   // is checked.
   safe_browsing_helper->WaitForStatusUpdate(0);
   EXPECT_TRUE(is_database_ready());
-  EXPECT_TRUE(is_initial_request());
   EXPECT_FALSE(is_update_scheduled());
   EXPECT_TRUE(last_update().is_null());
   // Starts updates. After each update, the test will fetch a list of URLs with
@@ -601,8 +589,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
       // Periodically pull the status.
       safe_browsing_helper->WaitForStatusUpdate(
           TestTimeouts::tiny_timeout_ms());
-    } while (is_update_scheduled() || is_initial_request() ||
-             !is_database_ready());
+    } while (is_update_scheduled() || !is_database_ready());
 
 
     if (last_update() < now) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,18 +56,13 @@ class SafeBrowsingProtocolParser {
   // Parse the response of an update request. Results for chunk deletions (both
   // add-del and sub-del are returned in 'chunk_deletes', and new chunk URLs to
   // download are contained in 'chunk_urls'. The next time the client is allowed
-  // to request another update is returned in 'next_update_sec'. If the service
-  // wants us to retrieve new MAC keys, 're_key' will be set to true. If we are
-  // using MACs to verify responses, the 'key' must be set to the private key
-  // returned from the SafeBrowsing servers. 'reset' will be set to true if the
-  // SafeBrowsing service wants us to dump our database.
+  // to request another update is returned in 'next_update_sec'. 'reset' will
+  // be set to true if the SafeBrowsing service wants us to dump our database.
   // Returns 'true'if it was able to decode the chunk properly, 'false' if not
   // decoded properly and the results should be ignored.
   bool ParseUpdate(const char* chunk_data,
                    int chunk_len,
-                   const std::string& key,
                    int* next_update_sec,
-                   bool* re_key,
                    bool* reset,
                    std::vector<SBChunkDelete>* chunk_deletes,
                    std::vector<ChunkUrl>* chunk_urls);
@@ -78,29 +73,16 @@ class SafeBrowsingProtocolParser {
   bool ParseChunk(const std::string& list_name,
                   const char* chunk_data,
                   int chunk_len,
-                  const std::string& key,
-                  const std::string& mac,
-                  bool* re_key,
                   SBChunkList* chunks);
 
   // Parse the result of a GetHash request, returning the list of full hashes.
-  // If we are checking for valid MACs, the caller should populate 'key'.
   bool ParseGetHash(const char* chunk_data,
                     int chunk_len,
-                    const std::string& key,
-                    bool* re_key,
                     std::vector<SBFullHashResult>* full_hashes);
 
   // Convert a list of partial hashes into a proper GetHash request.
   void FormatGetHash(const std::vector<SBPrefix>& prefixes,
                      std::string* request);
-
-  // Parse the keys used for subsequent communications with the SafeBrowsing
-  // servers. Returns true on successful parse, false on parse error.
-  bool ParseNewKey(const char* chunk_data,
-                   int chunk_length,
-                   std::string* client_key,
-                   std::string* wrapped_key);
 
  private:
   bool ParseAddChunk(const std::string& list_name,

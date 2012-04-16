@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,11 +49,8 @@ class SBProtocolManagerFactory {
   virtual SafeBrowsingProtocolManager* CreateProtocolManager(
       SafeBrowsingService* sb_service,
       const std::string& client_name,
-      const std::string& client_key,
-      const std::string& wrapped_key,
       net::URLRequestContextGetter* request_context_getter,
-      const std::string& info_url_prefix,
-      const std::string& mackey_url_prefix,
+      const std::string& url_prefix,
       bool disable_auto_update) = 0;
  private:
   DISALLOW_COPY_AND_ASSIGN(SBProtocolManagerFactory);
@@ -65,7 +62,6 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestGetHashUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
                            TestGetHashBackOffTimes);
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestMacKeyUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
                            TestSafeBrowsingHitUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
@@ -87,11 +83,8 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   static SafeBrowsingProtocolManager* Create(
       SafeBrowsingService* sb_service,
       const std::string& client_name,
-      const std::string& client_key,
-      const std::string& wrapped_key,
       net::URLRequestContextGetter* request_context_getter,
-      const std::string& info_url_prefix,
-      const std::string& mackey_url_prefix,
+      const std::string& url_prefix,
       bool disable_auto_update);
 
   // Sets up the update schedule and internal state for making periodic requests
@@ -135,8 +128,6 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   // Users can opt-in on the SafeBrowsing interstitial to send detailed
   // malware reports. |report| is the serialized report.
   void ReportMalwareDetails(const std::string& report);
-
-  bool is_initial_request() const { return initial_request_; }
 
   // The last time we received an update.
   base::Time last_update() const { return last_update_; }
@@ -193,11 +184,8 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   SafeBrowsingProtocolManager(
       SafeBrowsingService* sb_service,
       const std::string& client_name,
-      const std::string& client_key,
-      const std::string& wrapped_key,
       net::URLRequestContextGetter* request_context_getter,
-      const std::string& http_url_prefix,
-      const std::string& https_url_prefix,
+      const std::string& url_prefix,
       bool disable_auto_update);
 
  private:
@@ -210,13 +198,11 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
     NO_REQUEST = 0,     // No requests in progress
     UPDATE_REQUEST,     // Request for redirect URLs
     CHUNK_REQUEST,      // Request for a specific chunk
-    GETKEY_REQUEST      // Update the client's MAC key
   };
 
-  // Composes a URL using |prefix|, |method| (e.g.: gethash, download,
-  // newkey, report), |client_name| and |version|. When not empty,
-  // |additional_query| is appended to the URL with an additional "&"
-  // in the front.
+  // Composes a URL using |prefix|, |method| (e.g.: gethash, download, report).
+  // |client_name| and |version|. When not empty, |additional_query| is
+  // appended to the URL with an additional "&" in the front.
   static std::string ComposeUrl(const std::string& prefix,
                                 const std::string& method,
                                 const std::string& client_name,
@@ -224,13 +210,9 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
                                 const std::string& additional_query);
 
   // Generates Update URL for querying about the latest set of chunk updates.
-  // Append "wrkey=xxx" to the URL when |use_mac| is true.
-  GURL UpdateUrl(bool use_mac) const;
+  GURL UpdateUrl() const;
   // Generates GetHash request URL for retrieving full hashes.
-  // Append "wrkey=xxx" to the URL when |use_mac| is true.
-  GURL GetHashUrl(bool use_mac) const;
-  // Generates new MAC client key request URL.
-  GURL MacKeyUrl() const;
+  GURL GetHashUrl() const;
   // Generates URL for reporting safe browsing hits for UMA users.
   GURL SafeBrowsingHitUrl(
       const GURL& malicious_url, const GURL& page_url, const GURL& referrer_url,
@@ -269,22 +251,14 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   // Sends a request for a chunk to the SafeBrowsing servers.
   void IssueChunkRequest();
 
-  // Gets a key from the SafeBrowsing servers for use with MAC. This should only
-  // be called once per client unless the server directly tells us to update.
-  void IssueKeyRequest();
-
   // Formats a string returned from the database into:
-  //   "list_name;a:<add_chunk_ranges>:s:<sub_chunk_ranges>:mac\n"
-  static std::string FormatList(const SBListChunkRanges& list, bool use_mac);
+  //   "list_name;a:<add_chunk_ranges>:s:<sub_chunk_ranges>\n"
+  static std::string FormatList(const SBListChunkRanges& list);
 
   // Runs the protocol parser on received data and update the
   // SafeBrowsingService with the new content. Returns 'true' on successful
   // parse, 'false' on error.
   bool HandleServiceResponse(const GURL& url, const char* data, int length);
-
-  // If the SafeBrowsing service wants us to re-key, we clear our key state and
-  // issue the request.
-  void HandleReKey();
 
   // Updates internal state for each GetHash response error, assuming that the
   // current time is |now|.
@@ -332,7 +306,7 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   int next_update_sec_;
   base::OneShotTimer<SafeBrowsingProtocolManager> update_timer_;
 
-  // All chunk requests that need to be made, along with their MAC.
+  // All chunk requests that need to be made.
   std::deque<ChunkUrl> chunk_request_urls_;
 
   // Map of GetHash requests.
@@ -348,18 +322,9 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   };
   UpdateRequestState update_state_;
 
-  // We'll attempt to get keys once per browser session if we don't already have
-  // them. They are not essential to operation, but provide a layer of
-  // verification.
-  bool initial_request_;
-
   // True if the service has been given an add/sub chunk but it hasn't been
   // added to the database yet.
   bool chunk_pending_to_write_;
-
-  // The keys used for MAC. Empty keys mean we aren't using MAC.
-  std::string client_key_;
-  std::string wrapped_key_;
 
   // The last time we successfully received an update.
   base::Time last_update_;
@@ -384,19 +349,16 @@ class SafeBrowsingProtocolManager : public content::URLFetcherDelegate {
   std::string client_name_;
 
   // A string that is appended to the end of URLs for download, gethash,
-  // newkey, safebrowsing hits and chunk update requests.
+  // safebrowsing hits and chunk update requests.
   std::string additional_query_;
 
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // URL prefix where browser fetches safebrowsing chunk updates, hashes, and
-  // reports hits to the safebrowsing list for UMA users.
-  std::string http_url_prefix_;
-
-  // URL prefix where browser fetches MAC client key, and reports detailed
-  // malware reports for users who opt-in.
-  std::string https_url_prefix_;
+  // reports hits to the safebrowsing list and sends detaild malware reports
+  // for UMA users.
+  std::string url_prefix_;
 
   // When true, protocol manager will not start an update unless
   // ForceScheduleNextUpdate() is called. This is set for testing purpose.

@@ -263,11 +263,6 @@ class SafeBrowsingService
   void OnBlockingPageDone(const std::vector<UnsafeResource>& resources,
                           bool proceed);
 
-  // Called on the UI thread when the SafeBrowsingProtocolManager has received
-  // updated MAC keys.
-  void OnNewMacKeys(const std::string& client_key,
-                    const std::string& wrapped_key);
-
   bool enabled() const { return enabled_; }
 
   bool download_protection_enabled() const {
@@ -287,9 +282,6 @@ class SafeBrowsingService
   }
 
   net::URLRequestContextGetter* url_request_context();
-
-  // Preference handling.
-  static void RegisterPrefs(PrefService* prefs);
 
   // Called on the IO thread to reset the database.
   void ResetDatabase();
@@ -357,8 +349,7 @@ class SafeBrowsingService
 
   // Called to initialize objects that are used on the io_thread.  This may be
   // called multiple times during the life of the SafeBrowsingService.
-  void StartOnIOThread(const std::string& client_key,
-                       const std::string& wrapped_key);
+  void StartOnIOThread();
 
   // Called to shutdown operations on the io_thread. This may be called multiple
   // times during the life of the SafeBrowsingService.
