@@ -85,6 +85,8 @@ ExtensionFunctionRegistry::~ExtensionFunctionRegistry() {
 }
 
 void ExtensionFunctionRegistry::ResetFunctions() {
+#if defined(ENABLE_EXTENSIONS)
+
   // Register all functions here.
 
   // Alarms
@@ -511,6 +513,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // Generated APIs
   extensions::api::GeneratedFunctionRegistry::RegisterAll(this);
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 void ExtensionFunctionRegistry::GetAllNames(std::vector<std::string>* names) {

@@ -535,6 +535,7 @@ void ExtensionService::InitEventRouters() {
   if (event_routers_initialized_)
     return;
 
+#if defined(ENABLE_EXTENSIONS)
   downloads_event_router_.reset(new ExtensionDownloadsEventRouter(profile_));
   history_event_router_.reset(new HistoryExtensionEventRouter());
   history_event_router_->ObserveProfile(profile_);
@@ -574,6 +575,7 @@ void ExtensionService::InitEventRouters() {
   ExtensionInputUiEventRouter::GetInstance()->Init();
 #endif
 
+#endif  // defined(ENABLE_EXTENSIONS)
   event_routers_initialized_ = true;
 }
 

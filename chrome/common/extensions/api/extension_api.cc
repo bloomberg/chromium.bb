@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/simple_feature_provider.h"
 #include "googleurl/src/gurl.h"
 #include "grit/common_resources.h"
+#include "grit/extensions_api_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using base::DictionaryValue;
