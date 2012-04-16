@@ -23,7 +23,7 @@ struct SSLStatus;
 
 // A NavigationEntry is a data structure that captures all the information
 // required to recreate a browsing state. This includes some opaque binary
-// state as provided by the TabContents as well as some clear text title and
+// state as provided by the WebContentsImpl as well as some clear text title and
 // URL which is used for our user interface.
 class NavigationEntry {
  public:

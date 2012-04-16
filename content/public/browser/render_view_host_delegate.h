@@ -62,7 +62,7 @@ struct RendererPreferences;
 //  of the RenderViewHost.
 //
 //  This interface currently encompasses every type of message that was
-//  previously being sent by TabContents itself. Some of these notifications
+//  previously being sent by WebContents itself. Some of these notifications
 //  may not be relevant to all users of RenderViewHost and we should consider
 //  exposing a more generic Send function on RenderViewHost and a response
 //  listener here to serve that need.
@@ -158,8 +158,8 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   };
 
   // RendererManagerment -------------------------------------------------------
-  // Functions for managing switching of Renderers. For TabContents, this is
-  // implemented by the RenderViewHostManager
+  // Functions for managing switching of Renderers. For WebContents, this is
+  // implemented by the RenderViewHostManager.
 
   class CONTENT_EXPORT RendererManagement {
    public:
@@ -198,8 +198,8 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // Gets the URL that is currently being displayed, if there is one.
   virtual const GURL& GetURL() const;
 
-  // Return this object cast to a TabContents, if it is one. If the object is
-  // not a TabContents, returns NULL. DEPRECATED: Be sure to include brettw or
+  // Return this object cast to a WebContents, if it is one. If the object is
+  // not a WebContents, returns NULL. DEPRECATED: Be sure to include brettw or
   // jam as reviewers before you use this method. http://crbug.com/82582
   virtual content::WebContents* GetAsWebContents();
 

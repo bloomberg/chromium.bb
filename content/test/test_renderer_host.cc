@@ -175,7 +175,7 @@ WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
   if (!browser_context_.get())
     browser_context_.reset(new TestBrowserContext());
 
-  // This will be deleted when the TabContents goes away.
+  // This will be deleted when the WebContentsImpl goes away.
   SiteInstance* instance = SiteInstance::Create(browser_context_.get());
 
   return new TestWebContents(browser_context_.get(), instance);
@@ -213,7 +213,7 @@ void RenderViewHostTestHarness::TearDown() {
   root_window_.reset();
 #endif
 
-  // Make sure that we flush any messages related to TabContents destruction
+  // Make sure that we flush any messages related to WebContentsImpl destruction
   // before we destroy the browser context.
   MessageLoop::current()->RunAllPending();
 

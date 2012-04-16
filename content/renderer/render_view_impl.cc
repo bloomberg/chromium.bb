@@ -1268,7 +1268,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
 
     // Reset the zoom limits in case a plugin had changed them previously. This
     // will also call us back which will cause us to send a message to
-    // update TabContents.
+    // update WebContentsImpl.
     webview()->zoomLimitsChanged(
         WebView::zoomFactorToZoomLevel(content::kMinimumZoomFactor),
         WebView::zoomFactorToZoomLevel(content::kMaximumZoomFactor));

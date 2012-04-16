@@ -215,7 +215,7 @@ enum NotificationType {
   // expected.
   NOTIFICATION_WEB_CONTENTS_CONNECTED,
 
-  // This notification is sent when a TabContents swaps its render view host
+  // This notification is sent when a WebContents swaps its render view host
   // with another one, possibly changing processes. The source is a
   // Source<WebContents> with a pointer to the WebContents.  A
   // TAB_CONTENTS_DISCONNECTED notification is guaranteed before the
@@ -227,7 +227,7 @@ enum NotificationType {
   // the WebContents (the pointer is usable).  No details are expected.
   NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
 
-  // This notification is sent after TabContents' title is updated. The source
+  // This notification is sent after WebContents' title is updated. The source
   // is a Source<WebContents> with a pointer to the WebContents. The details
   // is a std::pair<NavigationEntry*, bool> that contains more information.
   NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
@@ -280,9 +280,9 @@ enum NotificationType {
   // hung view, and no details are expected.
   NOTIFICATION_RENDERER_PROCESS_HANG,
 
-  // This is sent to notify that the RenderViewHost displayed in a
-  // TabContents has changed.  Source is the NavigationController for which the
-  // change happened, details is a
+  // This is sent to notify that the RenderViewHost displayed in a WebContents
+  // has changed.  Source is the NavigationController for which the change
+  // happened, details is a
   // std::pair::<old RenderViewHost, new RenderViewHost>).
   NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
 

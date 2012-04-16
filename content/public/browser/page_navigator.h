@@ -70,7 +70,7 @@ class PageNavigator {
 
   // Opens a URL with the given disposition.  The transition specifies how this
   // navigation should be recorded in the history system (for example, typed).
-  // Returns the TabContents the URL is opened in, or NULL if the URL wasn't
+  // Returns the WebContents the URL is opened in, or NULL if the URL wasn't
   // opened immediately.
   virtual WebContents* OpenURL(const OpenURLParams& params) = 0;
 };

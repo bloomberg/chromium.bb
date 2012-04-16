@@ -40,7 +40,7 @@ class SSLPolicy {
   void OnRequestStarted(SSLRequestInfo* info);
 
   // Update the SSL information in |entry| to match the current state.
-  // |tab_contents| is the TabContents associated with this entry.
+  // |web_contents| is the WebContentsImpl associated with this entry.
   void UpdateEntry(content::NavigationEntryImpl* entry,
                    WebContentsImpl* web_contents);
 

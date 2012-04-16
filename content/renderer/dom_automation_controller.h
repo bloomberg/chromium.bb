@@ -41,7 +41,7 @@
       |                 |-------->|DAController|<----|
       |                                 |
       |                                 |(5)
-      |---------|TabContents|<----------|
+      |-------|WebContentsImpl|<--------|
 
 
    Legends:

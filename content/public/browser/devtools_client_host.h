@@ -43,8 +43,8 @@ class CONTENT_EXPORT DevToolsClientHost {
   // Invoked when the contents are replaced by another contents.
   virtual void ContentsReplaced(WebContents* new_contents) = 0;
 
-  // Creates DevToolsClientHost for TabContents containing default DevTools
-  // frontend implementation.
+  // Creates a DevToolsClientHost for a WebContents containing the default
+  // DevTools frontend implementation.
   static DevToolsClientHost* CreateDevToolsFrontendHost(
       WebContents* client_web_contents,
       DevToolsFrontendHostDelegate* delegate);

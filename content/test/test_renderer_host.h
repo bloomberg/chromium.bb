@@ -46,7 +46,7 @@ class RenderViewHostTester {
   // outside of content.
   static void EnableAccessibilityUpdatedNotifications(RenderViewHost* host);
 
-  // If the given TabContents has a pending RVH, returns it, otherwise NULL.
+  // If the given WebContentsImpl has a pending RVH, returns it, otherwise NULL.
   static RenderViewHost* GetPendingForController(
       NavigationController* controller);
 

@@ -206,7 +206,7 @@ class TestSiteInstance : public SiteInstanceImpl {
 
 // Test to ensure no memory leaks for SiteInstance objects.
 TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
-  // The existence of this object will cause TabContents to create our
+  // The existence of this object will cause WebContentsImpl to create our
   // test one instead of the real one.
   content::RenderViewHostTestEnabler rvh_test_enabler;
   int site_delete_counter = 0;
@@ -258,7 +258,7 @@ TEST_F(SiteInstanceTest, SiteInstanceDestructor) {
     EXPECT_EQ(1, browsing_delete_counter);
   }
 
-  // Make sure that we flush any messages related to the above TabContents
+  // Make sure that we flush any messages related to the above WebContentsImpl
   // destruction.
   MessageLoop::current()->RunAllPending();
 

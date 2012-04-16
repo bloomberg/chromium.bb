@@ -22,9 +22,9 @@ class CONTENT_EXPORT WebUIImpl : public content::WebUI,
   explicit WebUIImpl(content::WebContents* contents);
   virtual ~WebUIImpl();
 
-  // Called by TabContents when the RenderView is first created. This is *not*
-  // called for every page load because in some cases RenderViewHostManager will
-  // reuse RenderView instances.
+  // Called by WebContentsImpl when the RenderView is first created. This is
+  // *not* called for every page load because in some cases
+  // RenderViewHostManager will reuse RenderView instances.
   void RenderViewCreated(content::RenderViewHost* render_view_host);
 
   // WebUI implementation:

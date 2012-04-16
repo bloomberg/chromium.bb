@@ -1174,7 +1174,7 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SavePageAsMHTML,
                     int /* job_id */,
                     IPC::PlatformFileForTransit /* file handle */)
 
-// Temporary message to diagnose an unexpected condition in TabContents.
+// Temporary message to diagnose an unexpected condition in WebContentsImpl.
 IPC_MESSAGE_CONTROL1(ViewMsg_TempCrashWithData,
                      GURL /* data */)
 
@@ -1196,7 +1196,7 @@ IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_CreateWindow,
                             int64 /* cloned_session_storage_namespace_id */)
 
 // Similar to ViewHostMsg_CreateWindow, except used for sub-widgets, like
-// <select> dropdowns.  This message is sent to the TabContents that
+// <select> dropdowns.  This message is sent to the WebContentsImpl that
 // contains the widget being created.
 IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_CreateWidget,
                             int /* opener_id */,

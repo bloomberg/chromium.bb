@@ -34,7 +34,7 @@ namespace net {
 class SSLInfo;
 }
 
-// The SSLManager SSLManager controls the SSL UI elements in a TabContents.  It
+// The SSLManager SSLManager controls the SSL UI elements in a WebContents.  It
 // listens for various events that influence when these elements should or
 // should not be displayed and adjusts them accordingly.
 //

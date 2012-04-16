@@ -127,15 +127,14 @@ class WebContents : public PageNavigator {
   virtual const string16& GetTitle() const = 0;
 
   // The max page ID for any page that the current SiteInstance has loaded in
-  // this TabContents.  Page IDs are specific to a given SiteInstance and
-  // TabContents, corresponding to a specific RenderView in the renderer.
+  // this WebContents.  Page IDs are specific to a given SiteInstance and
+  // WebContents, corresponding to a specific RenderView in the renderer.
   // Page IDs increase with each new page that is loaded by a tab.
   virtual int32 GetMaxPageID() = 0;
 
   // The max page ID for any page that the given SiteInstance has loaded in
-  // this TabContents.
-  virtual int32 GetMaxPageIDForSiteInstance(
-      SiteInstance* site_instance) = 0;
+  // this WebContents.
+  virtual int32 GetMaxPageIDForSiteInstance(SiteInstance* site_instance) = 0;
 
   // Returns the SiteInstance associated with the current page.
   virtual SiteInstance* GetSiteInstance() const = 0;
@@ -227,14 +226,14 @@ class WebContents : public PageNavigator {
   // TODO(brettw): Most of these should be removed and the caller should call
   // the view directly.
 
-  // Returns the actual window that is focused when this TabContents is shown.
+  // Returns the actual window that is focused when this WebContents is shown.
   virtual gfx::NativeView GetContentNativeView() const = 0;
 
-  // Returns the NativeView associated with this TabContents. Outside of
+  // Returns the NativeView associated with this WebContents. Outside of
   // automation in the context of the UI, this is required to be implemented.
   virtual gfx::NativeView GetNativeView() const = 0;
 
-  // Returns the bounds of this TabContents in the screen coordinate system.
+  // Returns the bounds of this WebContents in the screen coordinate system.
   virtual void GetContainerBounds(gfx::Rect* out) const = 0;
 
   // Makes the tab the focused window.
@@ -282,7 +281,7 @@ class WebContents : public PageNavigator {
   // Returns the contents MIME type after a navigation.
   virtual const std::string& GetContentsMimeType() const = 0;
 
-  // Returns true if this TabContents will notify about disconnection.
+  // Returns true if this WebContents will notify about disconnection.
   virtual bool WillNotifyDisconnection() const = 0;
 
   // Override the encoding and reload the page by sending down
@@ -300,7 +299,7 @@ class WebContents : public PageNavigator {
   virtual content::RendererPreferences* GetMutableRendererPrefs() = 0;
 
   // Set the time when we started to create the new tab page.  This time is
-  // from before we created this TabContents.
+  // from before we created this WebContents.
   virtual void SetNewTabStartTime(const base::TimeTicks& time) = 0;
   virtual base::TimeTicks GetNewTabStartTime() const = 0;
 

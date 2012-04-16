@@ -366,7 +366,7 @@ TEST_F(ResourceDispatcherTest, DISABLED_CrossSiteNavigationErrorPage) {
   // Check that renderer-initiated navigations still work.  In a previous bug,
   // the ResourceDispatcherHost would think that such navigations were
   // cross-site, because we didn't clean up from the previous request.  Since
-  // TabContents was in the NORMAL state, it would ignore the attempt to run
+  // WebContentsImpl was in the NORMAL state, it would ignore the attempt to run
   // the onunload handler, and the navigation would fail. We can't test by
   // redirecting to javascript:window.location='someURL', since javascript:
   // URLs are prohibited by policy from interacting with sensitive chrome
