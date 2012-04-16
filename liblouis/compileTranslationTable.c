@@ -393,7 +393,7 @@ showString (widechar const *chars, int length)
   scratchBuf[bufPos++] = '\'';
   for (charPos = 0; charPos < length; charPos++)
     {
-      if (chars[charPos] > 32 && chars[charPos] < 127)
+      if (chars[charPos] >= 32 && chars[charPos] < 127)
 	scratchBuf[bufPos++] = (char) chars[charPos];
       else
 	{

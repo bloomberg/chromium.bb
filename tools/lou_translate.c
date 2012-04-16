@@ -32,10 +32,11 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include "liblouis.h"
+#include "louis.h"
 #include "progname.h"
 #include "version-etc.h"
 
-#define BUFSIZE 2048
+#define BUFSIZE MAXSTRING - 4
 
 static int forward_flag = 0;
 static int backward_flag = 0;
@@ -57,37 +58,37 @@ const char version_etc_copyright[] =
 static void 
 translate_input (int forward_translation, char *table_name)
 {
+  char charbuf[BUFSIZE];
+  char *outputbuf;
   widechar inbuf[BUFSIZE];
   widechar transbuf[BUFSIZE];
   int inlen;
   int translen;
-  int ch = 0;
   int k;
+  int ch = 0;
   int result;
-
   while (1)
     {
       translen = BUFSIZE;
-      inlen = 0;
-      while ((ch = getchar ()) != '\n' && inlen < BUFSIZE)
-	inbuf[inlen++] = ch;
+      k = 0;
+      while ((ch = getchar ()) != '\n' && ch != EOF && k < BUFSIZE)
+	charbuf[k++] = ch;
       if (ch == EOF)
 	break;
-      inbuf[inlen] = 0;
+      charbuf[k] = 0;
+      inlen = extParseChars (charbuf, inbuf);
       if (forward_translation) 
-	{
 	  result = lou_translateString (table_name, inbuf, &inlen,
 				      transbuf, &translen, NULL, NULL, 0);
-	}
       else 
 	result = lou_backTranslateString (table_name, inbuf, &inlen,
 					  transbuf, &translen, NULL, NULL, 0);
       if (!result)
 	break;
-      transbuf[translen] = 0;
-      for (k = 0; k < translen; k++)
-	printf ("%c", transbuf[k]);
-      printf ("\n");
+      outputbuf = showString (transbuf, translen);
+      k = strlen (outputbuf) - 1;
+      outputbuf[k] = 0;
+      printf ("%s\n", &outputbuf[1]);
     }
   lou_free ();
 }
