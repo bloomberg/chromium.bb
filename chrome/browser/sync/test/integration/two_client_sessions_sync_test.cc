@@ -30,7 +30,6 @@ class TwoClientSessionsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientSessionsSyncTest);
 };
 
-static const char* kValidPassphrase = "passphrase!";
 static const char* kURL1 = "http://127.0.0.1/bubba1";
 static const char* kURL2 = "http://127.0.0.1/bubba2";
 
@@ -38,12 +37,8 @@ static const char* kURL2 = "http://127.0.0.1/bubba2";
 // (as well as multi-window). We're currently only checking basic single-window/
 // single-tab functionality.
 
-// All tests involving changes to the sessions appear to be flaky, especially
-// on windows.
-// crbug.com/85294
-
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       DISABLED_SingleClientChanged) {
+                       SingleClientChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -83,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       DISABLED_SingleClientEnabledEncryptionAndChanged) {
+                       SingleClientEnabledEncryptionAndChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -119,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(IsEncrypted(1, syncable::SESSIONS));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DISABLED_BothChanged) {
+IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, BothChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -136,245 +131,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DISABLED_BothChanged) {
   // Wait for sync.
   ASSERT_TRUE(AwaitQuiescence());
 
-  // Get foreign session data from client 0 and 1.
-  SyncedSessionVector sessions0;
-  SyncedSessionVector sessions1;
-  ASSERT_TRUE(GetSessionData(0, &sessions0));
-  ASSERT_TRUE(GetSessionData(1, &sessions1));
-
-  // Verify client 1's foreign session matches client 0's current window and
-  // vice versa.
-  ASSERT_EQ(1U, sessions0.size());
-  ASSERT_EQ(1U, sessions1.size());
-  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
-  ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows.Get()));
-}
-
-// Flaky (number of conflicting nodes is off). http://crbug.com/85294.
-IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       DISABLED_FirstChangesAndSetsPassphrase) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  ASSERT_TRUE(CheckInitialState(0));
-  ASSERT_TRUE(CheckInitialState(1));
-
-  ScopedWindowMap client0_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1),
-      client0_windows.GetMutable()));
-
-  ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
-  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
-  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_simple_conflicts);
-  // We have two meta nodes (one for each client), the one tab node, plus the
-  // basic preference/themes/search engines items.
-  ASSERT_EQ(NumberOfDefaultSyncItems() + 3,
-      GetClient(1)->GetLastSessionSnapshot()->
-      num_encryption_conflicts);  // The encrypted nodes.
-
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
-  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->WaitForTypeEncryption(syncable::SESSIONS));
-
-  ASSERT_TRUE(IsEncrypted(0, syncable::SESSIONS));
-  ASSERT_TRUE(IsEncrypted(1, syncable::SESSIONS));
-  // Get foreign session data from client 0 and 1.
-  SyncedSessionVector sessions1;
-  ASSERT_TRUE(GetSessionData(1, &sessions1));
-
-  // Verify client 1's foreign session matches client 0's current window and
-  // vice versa.
-  ASSERT_EQ(1U, sessions1.size());
-  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
-}
-
-// Flaky (number of conflicting nodes is off). http://crbug.com/85294.
-IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       DISABLED_FirstChangesWhileSecondWaitingForPassphrase) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  ASSERT_TRUE(CheckInitialState(0));
-  ASSERT_TRUE(CheckInitialState(1));
-
-  ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
-  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
-  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_simple_conflicts);
-  // We have nine encryption conflicts due to the two meta nodes (one for each
-  // client), plus the basic preference/themes/search engines nodes.
-  ASSERT_EQ(NumberOfDefaultSyncItems() + 2,
-      GetClient(1)->GetLastSessionSnapshot()->
-      num_encryption_conflicts);  // The encrypted nodes.
-
-  ScopedWindowMap client0_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1),
-      client0_windows.GetMutable()));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_simple_conflicts);
-  ASSERT_EQ(NumberOfDefaultSyncItems() + 3,
-      GetClient(1)->GetLastSessionSnapshot()->
-      num_encryption_conflicts);  // The encrypted nodes.
-
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
-  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->WaitForTypeEncryption(syncable::SESSIONS));
-
-  ASSERT_TRUE(IsEncrypted(0, syncable::SESSIONS));
-  ASSERT_TRUE(IsEncrypted(1, syncable::SESSIONS));
-  // Get foreign session data from client 0 and 1.
-  SyncedSessionVector sessions1;
-  ASSERT_TRUE(GetSessionData(1, &sessions1));
-
-  // Verify client 1's foreign session matches client 0's current window and
-  // vice versa.
-  ASSERT_EQ(1U, sessions1.size());
-  ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows.Get()));
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       DISABLED_SecondChangesAfterEncrAndPassphraseChange) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  ASSERT_TRUE(CheckInitialState(0));
-  ASSERT_TRUE(CheckInitialState(1));
-
-  ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
-  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
-  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_simple_conflicts);
-  // We have two encryption conflicts due to the two meta nodes (one for each
-  // client), plus the basic preference/themes/search engines nodes.
-  ASSERT_EQ(NumberOfDefaultSyncItems() + 2,
-      GetClient(1)->GetLastSessionSnapshot()->
-      num_encryption_conflicts);  // The encrypted nodes.
-
-  // These changes are either made with the old passphrase or not encrypted at
-  // all depending on when client 0's changes are propagated.
-  ScopedWindowMap client1_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(1, GURL(kURL1),
-      client1_windows.GetMutable()));
-
-  // At this point we enter the passphrase, triggering a resync, in which the
-  // local changes of client 1 get sent to client 0.
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
-  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->WaitForTypeEncryption(syncable::SESSIONS));
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_encryption_conflicts);
-
-  ASSERT_TRUE(IsEncrypted(0, syncable::SESSIONS));
-  ASSERT_TRUE(IsEncrypted(1, syncable::SESSIONS));
-  SyncedSessionVector sessions0;
-  SyncedSessionVector sessions1;
-  ASSERT_TRUE(GetSessionData(0, &sessions0));
-  ASSERT_FALSE(GetSessionData(1, &sessions1));
-}
-
-// Flaky (number of conflicting nodes is off). http://crbug.com/85294.
-IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       DISABLED_SecondChangesBeforeEncrAndPassphraseChange) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  ASSERT_TRUE(CheckInitialState(0));
-  ASSERT_TRUE(CheckInitialState(1));
-
-  // These changes are either made on client 1 without encryption.
-  ScopedWindowMap client1_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(1, GURL(kURL1),
-      client1_windows.GetMutable()));
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-
-  // Turn encryption on client 0. Client 1's foreign will be encrypted with the
-  // new passphrase and synced back. It will be unable to decrypt it yet.
-  ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
-  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
-  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_simple_conflicts);
-  // We have three encryption conflicts due to the two meta nodes (one for
-  // each client), the one tab node, plus the basic preference/themes/search
-  // engines nodes.
-  ASSERT_GE(NumberOfDefaultSyncItems() + 3,
-      GetClient(1)->GetLastSessionSnapshot()->
-      num_encryption_conflicts);  // The encrypted nodes.
-
-  // At this point we enter the passphrase, triggering a resync.
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
-  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(1)->WaitForTypeEncryption(syncable::SESSIONS));
-
-  ASSERT_TRUE(IsEncrypted(0, syncable::SESSIONS));
-  ASSERT_TRUE(IsEncrypted(1, syncable::SESSIONS));
-  // Client 0's foreign data should match client 1's local data. Client 1's
-  // foreign data is empty because client 0 did not open any tabs.
-  SyncedSessionVector sessions0;
-  SyncedSessionVector sessions1;
-  ASSERT_TRUE(GetSessionData(0, &sessions0));
-  ASSERT_FALSE(GetSessionData(1, &sessions1));
-  ASSERT_EQ(1U, sessions0.size());
-  ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows.Get()));
-}
-
-// Flaky (number of conflicting nodes is off). http://crbug.com/85294.
-IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       DISABLED_BothChangeWithEncryptionAndPassphrase) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  ASSERT_TRUE(CheckInitialState(0));
-  ASSERT_TRUE(CheckInitialState(1));
-
-  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(GetClient(0)->AwaitPassphraseAccepted());
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
-
-  // These changes will sync over to client 1, who will be unable to decrypt
-  // them due to the missing passphrase.
-  ScopedWindowMap client0_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(0, GURL(kURL1),
-      client0_windows.GetMutable()));
-  ASSERT_TRUE(EnableEncryption(0, syncable::SESSIONS));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_simple_conflicts);
-  // We have three encryption conflicts due to the two meta nodes (one for
-  // each client), the one tab node, plus the basic preference/themes/search
-  // engines nodes.
-  ASSERT_EQ(NumberOfDefaultSyncItems() + 3,
-      GetClient(1)->GetLastSessionSnapshot()->
-      num_encryption_conflicts);  // The encrypted nodes.
-
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseRequired());
-  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
-  ASSERT_FALSE(GetClient(1)->service()->IsPassphraseRequired());
-  ASSERT_TRUE(GetClient(1)->WaitForTypeEncryption(syncable::SESSIONS));
-
-  // Open windows on client 1, which should automatically be encrypted.
-  ScopedWindowMap client1_windows;
-  ASSERT_TRUE(OpenTabAndGetLocalWindows(1, GURL(kURL2),
-      client1_windows.GetMutable()));
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-
-  ASSERT_TRUE(IsEncrypted(0, syncable::SESSIONS));
-  ASSERT_TRUE(IsEncrypted(1, syncable::SESSIONS));
   // Get foreign session data from client 0 and 1.
   SyncedSessionVector sessions0;
   SyncedSessionVector sessions1;
