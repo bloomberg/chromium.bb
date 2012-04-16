@@ -324,8 +324,7 @@ main (int argc, char **argv)
 	      break;
 	    transbuf[translen] = 0;
 	    printf ("Translation:\n");
-	    for (k = 0; k < translen; k++)
-	      printf ("%c", transbuf[k]);
+	    printf ("%s", showString (transbuf, translen));
 	    printf ("\n");
 	    if (showSizes)
 	      printf ("input length = %d; output length = %d\n", inlen,
@@ -333,8 +332,7 @@ main (int argc, char **argv)
 	    lou_backTranslateString (table, transbuf, &translen, outbuf,
 				     &outlen, NULL, NULL, 0);
 	    printf ("Back-translation:\n");
-	    for (k = 0; k < outlen; k++)
-	      printf ("%c", outbuf[k]);
+	    printf ("%s", showString (outbuf, outlen));
 	    printf ("\n");
 	    if (showSizes)
 	      printf ("input length = %d; output length = %d.\n", translen,
@@ -384,8 +382,7 @@ main (int argc, char **argv)
 		else
 		  {
 		    printf ("Translation:\n");
-		    for (k = 0; k < translen; k++)
-		      printf ("%c", transbuf[k]);
+		    printf ("%s", showString (transbuf, translen));
 		    printf ("\n");
 		    if (showSizes)
 		      printf ("input length = %d; output length = %d\n",
@@ -417,13 +414,11 @@ main (int argc, char **argv)
 					&inputPos[0], &cursorPos, mode))
 		  break;
 		printf ("Back-translation:\n");
-		for (k = 0; k < outlen; k++)
-		  printf ("%c", outbuf[k]);
+		printf ("%s", showString (outbuf, outlen));
 		printf ("\n");
 		if (showSizes)
 		  printf ("input length = %d; output length = %d\n",
-			  translen, outlen);
-		if (cursorPos != -1)
+			  translen, outlen);		if (cursorPos != -1)
 		  printf ("Cursor position: %d\n", cursorPos);
 		if (enteredEmphasis[0])
 		  printf ("Returned emphasis: %s\n", emphasis);

@@ -561,7 +561,7 @@ validMatch ()
   TranslationTableCharacterAttributes prevAttr = 0;
   int k;
   int kk = 0;
-  unsigned short mask;
+  unsigned short mask = 0;
   if (!transCharslen)
     return 0;
   switch (transOpcode)
