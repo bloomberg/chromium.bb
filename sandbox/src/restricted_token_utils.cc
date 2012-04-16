@@ -278,6 +278,8 @@ const wchar_t* GetIntegrityLevelString(IntegrityLevel integrity_level) {
       return L"S-1-16-4096";
     case INTEGRITY_LEVEL_BELOW_LOW:
       return L"S-1-16-2048";
+    case INTEGRITY_LEVEL_UNTRUSTED:
+      return L"S-1-16-0";
     case INTEGRITY_LEVEL_LAST:
       return NULL;
   }
@@ -315,21 +317,12 @@ DWORD SetProcessIntegrityLevel(IntegrityLevel integrity_level) {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return ERROR_SUCCESS;
 
-  const wchar_t* integrity_level_str = GetIntegrityLevelString(integrity_level);
-  if (!integrity_level_str) {
+  // We don't check for an invalid level here because we'll just let it
+  // fail on the SetTokenIntegrityLevel call later on.
+  if (integrity_level == INTEGRITY_LEVEL_LAST) {
     // No mandatory level specified, we don't change it.
     return ERROR_SUCCESS;
   }
-
-  // Before we can change the token, we need to change the security label on the
-  // process so it is still possible to open the process with the new token.
-  std::wstring ace_access = SDDL_NO_READ_UP;
-  ace_access += SDDL_NO_WRITE_UP;
-  DWORD error = SetObjectIntegrityLabel(::GetCurrentProcess(), SE_KERNEL_OBJECT,
-                                        ace_access.c_str(),
-                                        integrity_level_str);
-  if (ERROR_SUCCESS != error)
-    return error;
 
   HANDLE token_handle;
   if (!::OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_DEFAULT,

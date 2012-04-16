@@ -356,6 +356,10 @@ bool AddPolicyForGPU(CommandLine* cmd_line, sandbox::TargetPolicy* policy) {
                               sandbox::USER_RESTRICTED);
         policy->SetJobLevel(sandbox::JOB_LOCKDOWN,
                             JOB_OBJECT_UILIMIT_HANDLES);
+        // This is a trick to keep the GPU out of low-integrity processes. It
+        // starts at low-integrity for UIPI to work, then drops below
+        // low-integrity after warm-up.
+        policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
       }
 
       policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
@@ -413,7 +417,8 @@ bool AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
   }
 
   policy->SetTokenLevel(initial_token, sandbox::USER_LOCKDOWN);
-  policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+  // Prevents the renderers from manipulating low-integrity processes.
+  policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
 
   bool use_winsta = !CommandLine::ForCurrentProcess()->HasSwitch(
                         switches::kDisableAltWinstation);

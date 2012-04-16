@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,42 @@
 
 #include <shlwapi.h>
 
+#include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "sandbox/tests/common/controller.h"
 
 #pragma comment(lib, "shlwapi.lib")
+
+namespace {
+
+void TestProcessAccess(sandbox::TestRunner* runner, DWORD target) {
+  const wchar_t *kCommandTemplate = L"OpenProcessCmd %d %d";
+  wchar_t command[1024] = {0};
+
+  // Test all the scary process permissions.
+  wsprintf(command, kCommandTemplate, target, PROCESS_CREATE_THREAD);
+  EXPECT_EQ(sandbox::SBOX_TEST_DENIED, runner->RunTest(command));
+  wsprintf(command, kCommandTemplate, target, PROCESS_DUP_HANDLE);
+  EXPECT_EQ(sandbox::SBOX_TEST_DENIED, runner->RunTest(command));
+  wsprintf(command, kCommandTemplate, target, PROCESS_SET_INFORMATION);
+  EXPECT_EQ(sandbox::SBOX_TEST_DENIED, runner->RunTest(command));
+  wsprintf(command, kCommandTemplate, target, PROCESS_VM_OPERATION);
+  EXPECT_EQ(sandbox::SBOX_TEST_DENIED, runner->RunTest(command));
+  wsprintf(command, kCommandTemplate, target, PROCESS_VM_READ);
+  EXPECT_EQ(sandbox::SBOX_TEST_DENIED, runner->RunTest(command));
+  wsprintf(command, kCommandTemplate, target, PROCESS_VM_WRITE);
+  EXPECT_EQ(sandbox::SBOX_TEST_DENIED, runner->RunTest(command));
+  wsprintf(command, kCommandTemplate, target, PROCESS_QUERY_INFORMATION);
+  EXPECT_EQ(sandbox::SBOX_TEST_DENIED, runner->RunTest(command));
+  wsprintf(command, kCommandTemplate, target, WRITE_DAC);
+  EXPECT_EQ(sandbox::SBOX_TEST_DENIED, runner->RunTest(command));
+  wsprintf(command, kCommandTemplate, target, WRITE_OWNER);
+  EXPECT_EQ(sandbox::SBOX_TEST_DENIED, runner->RunTest(command));
+  wsprintf(command, kCommandTemplate, target, READ_CONTROL);
+  EXPECT_EQ(sandbox::SBOX_TEST_DENIED, runner->RunTest(command));
+}
+
+}  // namespace
 
 namespace sandbox {
 
@@ -96,13 +128,64 @@ TEST(ValidationSuite, TestWindows) {
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command));
 }
 
-// Tests if the processes are correctly protected by the sandbox.
-TEST(ValidationSuite, TestProcess) {
+// Tests that a locked-down process cannot open another locked-down process.
+TEST(ValidationSuite, TestProcessDenyLockdown) {
   TestRunner runner;
+  TestRunner target;
   wchar_t command[1024] = {0};
 
-  wsprintf(command, L"OpenProcessCmd %d", ::GetCurrentProcessId());
-  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command));
+  target.SetAsynchronous(true);
+
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, target.RunTest(L"SleepCmd 30000"));
+
+  TestProcessAccess(&runner, target.process_id());
+}
+
+// Tests that a low-integrity process cannot open a locked-down process (due
+// to the integrity label changing after startup via SetDelayedIntegrityLevel).
+TEST(ValidationSuite, TestProcessDenyLowIntegrity) {
+  // This test applies only to Vista and above.
+  if (base::win::Version() < base::win::VERSION_VISTA)
+    return;
+
+  TestRunner runner;
+  TestRunner target;
+  wchar_t command[1024] = {0};
+
+  target.SetAsynchronous(true);
+  target.GetPolicy()->SetDelayedIntegrityLevel(INTEGRITY_LEVEL_LOW);
+
+  runner.GetPolicy()->SetIntegrityLevel(INTEGRITY_LEVEL_LOW);
+  runner.GetPolicy()->SetTokenLevel(USER_RESTRICTED_SAME_ACCESS,
+                                    USER_INTERACTIVE);
+
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, target.RunTest(L"SleepCmd 30000"));
+
+  TestProcessAccess(&runner, target.process_id());
+}
+
+// Tests that a locked-down process cannot open a low-integrity process.
+TEST(ValidationSuite, TestProcessDenyBelowLowIntegrity) {
+  //  This test applies only to Vista and above.
+  if (base::win::Version() < base::win::VERSION_VISTA)
+    return;
+
+  TestRunner runner;
+  TestRunner target;
+  wchar_t command[1024] = {0};
+
+  target.SetAsynchronous(true);
+  target.GetPolicy()->SetIntegrityLevel(INTEGRITY_LEVEL_LOW);
+  target.GetPolicy()->SetTokenLevel(USER_RESTRICTED_SAME_ACCESS,
+                                    USER_INTERACTIVE);
+
+  runner.GetPolicy()->SetDelayedIntegrityLevel(INTEGRITY_LEVEL_UNTRUSTED);
+  runner.GetPolicy()->SetTokenLevel(USER_RESTRICTED_SAME_ACCESS,
+                                    USER_INTERACTIVE);
+
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, target.RunTest(L"SleepCmd 30000"));
+
+  TestProcessAccess(&runner, target.process_id());
 }
 
 // Tests if the threads are correctly protected by the sandbox.

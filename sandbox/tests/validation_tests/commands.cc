@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,15 +88,16 @@ int TestValidWindow(HWND window) {
 }
 
 SBOX_TESTS_COMMAND int OpenProcessCmd(int argc, wchar_t **argv) {
-  if (1 != argc)
+  if (2 != argc)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
-  DWORD process_id = _wtoi(argv[0]);
-  return TestOpenProcess(process_id);
+  DWORD process_id = _wtol(argv[0]);
+  DWORD access_mask = _wtol(argv[1]);
+  return TestOpenProcess(process_id, access_mask);
 }
 
-int TestOpenProcess(DWORD process_id) {
-  HANDLE process = ::OpenProcess(PROCESS_VM_READ,
+int TestOpenProcess(DWORD process_id, DWORD access_mask) {
+  HANDLE process = ::OpenProcess(access_mask,
                                  FALSE,  // Do not inherit handle.
                                  process_id);
   if (NULL == process) {
@@ -248,5 +249,14 @@ int TestSwitchDesktop() {
   }
   return SBOX_TEST_DENIED;
 }
+
+SBOX_TESTS_COMMAND int SleepCmd(int argc, wchar_t **argv) {
+  if (1 != argc)
+    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
+
+  ::Sleep(_wtoi(argv[0]));
+  return SBOX_TEST_SUCCEEDED;
+}
+
 
 }  // namespace sandbox

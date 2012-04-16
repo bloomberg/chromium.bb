@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@ namespace sandbox {
 int TestValidWindow(HWND window);
 
 // Tries to open the process_id. Returns a SboxTestResult.
-int TestOpenProcess(DWORD process_id);
+int TestOpenProcess(DWORD process_id, DWORD access_mask);
 
 // Tries to open thread_id. Returns a SboxTestResult.
 int TestOpenThread(DWORD thread_id);
