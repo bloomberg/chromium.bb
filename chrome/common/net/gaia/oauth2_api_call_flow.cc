@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/stringprintf.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -20,6 +21,15 @@ using content::URLFetcherDelegate;
 using net::ResponseCookies;
 using net::URLRequestContextGetter;
 using net::URLRequestStatus;
+
+namespace {
+static const char kAuthorizationHeaderFormat[] =
+    "Authorization: Bearer %s";
+
+static std::string MakeAuthorizationHeader(const std::string& auth_token) {
+  return StringPrintf(kAuthorizationHeaderFormat, auth_token.c_str());
+}
+}  // namespace
 
 OAuth2ApiCallFlow::OAuth2ApiCallFlow(
     net::URLRequestContextGetter* context,
@@ -146,6 +156,7 @@ URLFetcher* OAuth2ApiCallFlow::CreateURLFetcher() {
   result->SetRequestContext(context_);
   result->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                        net::LOAD_DO_NOT_SAVE_COOKIES);
+  result->AddExtraRequestHeader(MakeAuthorizationHeader(access_token_));
 
   if (!empty_body)
     result->SetUploadData("application/x-www-form-urlencoded", body);

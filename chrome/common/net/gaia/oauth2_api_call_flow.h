@@ -88,6 +88,7 @@ class OAuth2ApiCallFlow
   };
 
   friend class OAuth2ApiCallFlowTest;
+  FRIEND_TEST_ALL_PREFIXES(OAuth2ApiCallFlowTest, CreateURLFetcher);
 
   // Helper to create an instance of access token fetcher.
   // Caller owns the returned instance.

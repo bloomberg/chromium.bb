@@ -18,6 +18,7 @@
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/common/url_fetcher_factory.h"
 #include "content/test/test_url_fetcher_factory.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
@@ -27,11 +28,15 @@
 using content::URLFetcher;
 using content::URLFetcherDelegate;
 using content::URLFetcherFactory;
+using net::HttpRequestHeaders;
 using net::URLRequestStatus;
 using testing::_;
 using testing::Return;
 
 namespace {
+static std::string CreateBody() {
+  return "some body";
+}
 
 static GURL CreateApiUrl() {
   return GURL("https://www.googleapis.com/someapi");
@@ -48,7 +53,7 @@ static std::vector<std::string> CreateTestScopes() {
 
 class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
                               public URLFetcherFactory {
-public:
+ public:
   MockUrlFetcherFactory()
       : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   }
@@ -145,8 +150,9 @@ class OAuth2ApiCallFlowTest : public testing::Test {
   }
 
   TestURLFetcher* SetupApiCall(bool succeeds, net::HttpStatusCode status) {
+    std::string body(CreateBody());
     GURL url(CreateApiUrl());
-    EXPECT_CALL(*flow_, CreateApiCallBody()).WillOnce(Return(""));
+    EXPECT_CALL(*flow_, CreateApiCallBody()).WillOnce(Return(body));
     EXPECT_CALL(*flow_, CreateApiCallUrl()).WillOnce(Return(url));
     TestURLFetcher* url_fetcher = CreateURLFetcher(
         url, succeeds, status, "");
@@ -261,4 +267,23 @@ TEST_F(OAuth2ApiCallFlowTest, EmptyAccessTokenNewTokenGenerationFails) {
   EXPECT_CALL(*flow_, ProcessMintAccessTokenFailure(error));
   flow_->Start();
   flow_->OnGetTokenFailure(error);
+}
+
+TEST_F(OAuth2ApiCallFlowTest, CreateURLFetcher) {
+  std::string rt = "refresh_token";
+  std::string at = "access_token";
+  std::vector<std::string> scopes(CreateTestScopes());
+  std::string body = CreateBody();
+  GURL url(CreateApiUrl());
+
+  CreateFlow(rt, at, scopes);
+  TestURLFetcher* url_fetcher = SetupApiCall(true, net::HTTP_OK);
+  flow_->CreateURLFetcher();
+  HttpRequestHeaders headers;
+  url_fetcher->GetExtraRequestHeaders(&headers);
+  std::string auth_header;
+  EXPECT_TRUE(headers.GetHeader("Authorization", &auth_header));
+  EXPECT_EQ("Bearer access_token", auth_header);
+  EXPECT_EQ(url, url_fetcher->GetOriginalURL());
+  EXPECT_EQ(body, url_fetcher->upload_data());
 }
