@@ -2242,11 +2242,6 @@ FileManager.prototype = {
     }
 
     this.previewSummary_.textContent = str('COMPUTING_SELECTION');
-    // Removing childrens of task buttons and preview thumbnails after simple
-    // event dispatched (see above). This can ensure a smooth disappearing
-    // animation when nothing is selected.
-    this.taskItems_.visible = false;
-    this.taskItems_.clear();
     removeChildren(this.previewThumbnails_);
 
     var fileCount = 0;
@@ -2327,7 +2322,6 @@ FileManager.prototype = {
     }
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      this.taskItems_.clear();
       // Some internal tasks cannot be defined in terms of file patterns,
       // so we pass selection to check for them manually.
       if (selection.directoryCount == 0 && selection.fileCount > 0) {
@@ -2543,7 +2537,7 @@ FileManager.prototype = {
       if (defaultTask == null) defaultTask = task;
     }
 
-    this.taskItems_.visible = tasksCount > 0;
+    this.taskItems_.hidden = tasksCount == 0;
     if (tasksCount > 1) {
       // Duplicate default task in drop-down list.
       this.renderTaskItem_(defaultTask);
