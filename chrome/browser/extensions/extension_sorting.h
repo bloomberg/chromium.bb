@@ -93,7 +93,7 @@ class ExtensionSorting {
 
   // Converts the page index integer to its StringOrdinal equivalent. This takes
   // O(# of apps) worst-case.
-  StringOrdinal PageIntegerAsStringOrdinal(size_t page_index) const;
+  StringOrdinal PageIntegerAsStringOrdinal(size_t page_index);
 
  private:
   // Unit tests.
@@ -128,6 +128,9 @@ class ExtensionSorting {
   void AddOrdinalMapping(const std::string& extension_id,
                          const StringOrdinal& page_ordinal,
                          const StringOrdinal& app_launch_ordinal);
+
+  // Ensures |ntp_ordinal_map_| is of |minimum_size| number of entries.
+  void CreateOrdinalsIfNecessary(size_t minimum_size);
 
   // Removes the mapping for |extension_id| with a page ordinal of
   // |page_ordinal| and a app launch ordinal of |app_launch_ordinal|. If there

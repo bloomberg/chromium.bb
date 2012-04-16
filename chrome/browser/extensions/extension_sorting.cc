@@ -47,6 +47,18 @@ void ExtensionSorting::Initialize(
   MigrateAppIndex(extension_ids);
 }
 
+void ExtensionSorting::CreateOrdinalsIfNecessary(size_t minimum_size) {
+  // Create StringOrdinal values as required to ensure |ntp_ordinal_map_| has at
+  // least |minimum_size| entries.
+  if (ntp_ordinal_map_.empty() && minimum_size > 0)
+    ntp_ordinal_map_[StringOrdinal::CreateInitialOrdinal()];
+
+  while (ntp_ordinal_map_.size() < minimum_size) {
+    StringOrdinal filler = ntp_ordinal_map_.rbegin()->first.CreateAfter();
+    ntp_ordinal_map_[filler];
+  }
+}
+
 void ExtensionSorting::MigrateAppIndex(
     const ExtensionPrefs::ExtensionIdSet& extension_ids) {
   if (extension_ids.empty())
@@ -75,18 +87,7 @@ void ExtensionSorting::MigrateAppIndex(
         break;
       }
 
-      // Since we require all earlier StringOrdinals to already exist in order
-      // to properly convert from integers and we are iterating though them in
-      // no given order, we create earlier StringOrdinal values as required.
-      // This should be filled in by the time we are done with this loop.
-      if (ntp_ordinal_map_.empty())
-        ntp_ordinal_map_[StringOrdinal::CreateInitialOrdinal()];
-      while (ntp_ordinal_map_.size()
-             <= static_cast<size_t>(old_page_index)) {
-        StringOrdinal earlier_page =
-            ntp_ordinal_map_.rbegin()->first.CreateAfter();
-        ntp_ordinal_map_[earlier_page];
-      }
+      CreateOrdinalsIfNecessary(static_cast<size_t>(old_page_index) + 1);
 
       page = PageIntegerAsStringOrdinal(old_page_index);
       SetPageOrdinal(*ext_id, page);
@@ -267,8 +268,9 @@ void ExtensionSorting::SetAppLaunchOrdinal(
     const StringOrdinal& new_app_launch_ordinal) {
   // No work is required if the old and new values are the same.
   if (new_app_launch_ordinal.EqualOrBothInvalid(
-          GetAppLaunchOrdinal(extension_id)))
+          GetAppLaunchOrdinal(extension_id))) {
     return;
+  }
 
   StringOrdinal page_ordinal = GetPageOrdinal(extension_id);
   RemoveOrdinalMapping(
@@ -393,29 +395,21 @@ int ExtensionSorting::PageStringOrdinalAsInteger(
       std::distance(ntp_ordinal_map_.begin(), it) : -1;
 }
 
-StringOrdinal ExtensionSorting::PageIntegerAsStringOrdinal(size_t page_index)
-    const {
-  // We shouldn't have a page_index that is more than 1 position away from the
-  // current end.
-  CHECK_LE(page_index, ntp_ordinal_map_.size());
-
+StringOrdinal ExtensionSorting::PageIntegerAsStringOrdinal(size_t page_index) {
   const DictionaryValue* extensions = pref_service_->GetDictionary(
           ExtensionPrefs::kExtensionsPref);
+
   if (!extensions)
     return StringOrdinal();
 
   if (page_index < ntp_ordinal_map_.size()) {
     PageOrdinalMap::const_iterator it = ntp_ordinal_map_.begin();
     std::advance(it, page_index);
-
     return it->first;
-
-  } else {
-    if (ntp_ordinal_map_.empty())
-      return StringOrdinal::CreateInitialOrdinal();
-    else
-      return ntp_ordinal_map_.rbegin()->first.CreateAfter();
   }
+
+  CreateOrdinalsIfNecessary(page_index + 1);
+  return ntp_ordinal_map_.rbegin()->first;
 }
 
 StringOrdinal ExtensionSorting::GetMinOrMaxAppLaunchOrdinalsOnPage(
