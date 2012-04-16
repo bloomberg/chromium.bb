@@ -85,6 +85,8 @@ def CreateSCM(url, root_dir=None, relpath=None):
   scm_name = GetScmName(url)
   if not scm_name in SCM_MAP:
     raise gclient_utils.Error('No SCM found for url %s' % url)
+  if not gclient_utils.FindCommandExecutable(scm_name):
+    raise gclient_utils.Error('%s command not found' % scm_name)
   return SCM_MAP[scm_name](url, root_dir, relpath)
 
 
