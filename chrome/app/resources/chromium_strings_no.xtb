@@ -1,4 +1,152 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="6676384891291319759">Gå til Internett</translation>
+<translation id="6373523479360886564">Er du sikker på at du vil avinstallere Chromium?</translation>
+<translation id="8957741245723343544">Endringene dine trer i kraft neste gang du starter Chromium OS.</translation>
+<translation id="6510925080656968729">Avinstaller Chromium</translation>
+<translation id="6893813176749746474">Chromium har blitt oppdatert, men du har ikke brukt den på minst 30 dager.</translation>
+<translation id="2770231113462710648">Endre standardnettleser til:</translation>
+<translation id="6613594504749178791">Endringene dine trer i kraft neste gang du starter Chromium.</translation>
+<translation id="3748537968684000502">Du ser på en sikker Chromium-side.</translation>
+<translation id="8971920611044657379">Chromium Frame</translation>
+<translation id="1065672644894730302">Kan ikke lese innstillingene. Enkelte funksjoner kan være utilgjengelige, og endringer av innstillingene blir ikke lagret.</translation>
+<translation id="2469082501656808441">En ny versjon av Chromium er tilgjengelig.</translation>
+<translation id="4222661289444749267">Chrome Frame-oppdatering.</translation>
+<translation id="2843244238218937196">Chromium-gjengiver</translation>
+<translation id="7128196614940529818">Chromium Frame er allerede installert og tilgjengelig for alle brukere av denne datamaskinen. Hvis du ønsker å installere Chromium Frame på brukernivå, må du først avinstallere versjonen på systemnivå, som ble installert av en administrator.</translation>
+<translation id="731644333568559921">Oppdater &amp;Chromium OS</translation>
+<translation id="7421823331379285070">Chromium krever Windows XP eller nyere. Enkelte funksjoner vil kanskje ikke fungere.</translation>
+<translation id="1185134272377778587">Om Chromium</translation>
+<translation id="4330297532943865716">Det ble funnet en konfliktskapende installasjon av Chromium eller Chromium Frame på systemet. Avinstaller den og prøv på nytt.</translation>
+<translation id="6953661834318318668">Chromium-verktøylinjen</translation>
+<translation id="7097100943370017396">Chromium oppdateres ikke lenger, fordi operativsystemet ditt er foreldet.</translation>
+<translation id="2777754523825675150">Chromium gjenoppretter den forrige økten ved oppstart. Noen av de øktbaserte innstillingene dine, blant annet de som sletter data ved avslutning, blir deaktivert.</translation>
+<translation id="4103959775970322855">Chromium har blitt oppdatert til <ph name="VERSION"/></translation>
+<translation id="4285930937574705105">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Chromium hvis nettleseren kjører, og prøv på nytt.</translation>
+<translation id="2589479092236095792">Chromium-innstillinger for autofyll</translation>
+<translation id="3555616473548901994">Avinstallering fullført.</translation>
+<translation id="2940837712536340734">Chromium OS er oppdatert.</translation>
+<translation id="2886012850691518054">Valgfritt: Bidra til å gjøre Chromium bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
+<translation id="3848258323044014972"><ph name="PAGE_TITLE"/> – Chromium</translation>
+<translation id="1989424089625731201">Du prøvde å åpne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men sertifikatet som tjeneren oppga, inneholder feil. Chromium kan ikke bruke sertifikater med feil og heller ikke bekrefte identiteten til nettstedet du prøvde å åpne.</translation>
+<translation id="3103660991484857065">Installasjonsprogrammet kunne ikke dekomprimere arkivet. Last ned Chromium på nytt.</translation>
+<translation id="2933983827758164650">Hvis du lukker Chromium nå, avbrytes denne nedlastingen.</translation>
+<translation id="872034308864968620">La Chromium kjøre i bakgrunnen</translation>
+<translation id="4320129595801648679">Siden Ny fane i Chromium har nytt oppsett. Bytt mellom valg ved å klikke på disse etikettene. Chromium husker innstillingen din til neste gang.</translation>
+<translation id="3032787606318309379">Legger til i Chromium …</translation>
+<translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advarsel:<ph name="END_BOLD"/> Chromium kan ikke forhindre utvidelser fra å registrere nettleserloggen din. Du kan deaktivere denne utvidelsen i inkognitomodus ved å oppheve merkingen av dette alternativet.</translation>
+<translation id="985602178874221306">The Chromium Authors</translation>
+<translation id="8628626585870903697">Chromium omfatter ikke PDF-visningsprogrammet som er nødvendig for at «Forhåndsvisning av utskrift» skal fungere.</translation>
+<translation id="7138853919861947730">Chromium kan bruke nett-tjenester for å forbedre surfingen din.</translation>
+<translation id="4179848566211676653">Avslutt Chromium</translation>
+<translation id="3849925841547750267">Mozilla Firefox-innstillingene dine er dessverre ikke tilgjengelige når den nettleseren brukes. Hvis du vil installere de innstillingene til Chromium, må du lagre arbeidet ditt og lukke alle Firefox-vinduer. Klikk deretter på Fortsett.</translation>
+<translation id="7771626876550251690">I dette tilfellet samsvarte ikke adressen oppført i sertifikatet med adressen til nettstedet nettleseren din prøvde å åpne. En mulig årsak til dette er at kommunikasjonen fra deg blir oppfanget av en angriper som presenterer et sertifikat for et annet nettsted og således medfører et misforhold. En annen mulig grunn er at tjeneren er konfigurert til å returnere det samme sertifikatet for flere nettsteder, herunder det du vil åpne, selv om det sertifikatet ikke er gyldig for alle de aktuelle nettstedene. Chromium kan med sikkerhet fastslå at du nådde &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, men kan ikke bekrefte at det er det samme nettstedet som &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, som du ville åpne. Hvis du fortsetter, vil ikke Chromium sjekke etter ytterligere misforhold for navn.</translation>
+<translation id="4330585738697551178">Denne modulen er kjent for å komme i konflikt med Chromium.</translation>
+<translation id="3190315855212034486">Chromium har krasjet. Vil du starte den på nytt nå?</translation>
+<translation id="6714487516757221107">Finner ingen versjon av Chromium eller Chromium Frame for oppdatering.</translation>
+<translation id="4124681358536363708">Det ser ut til at installasjonskatalogen for Chromium er i bruk. Du må starte datamaskinen din på nytt og prøve igjen.</translation>
+<translation id="8770560772173120024">Chromium importerer Favoritter/Bokmerker.</translation>
+<translation id="6290315939897260265">Ikke brukt i Chromium. Plassholder for å holde ressurskart synkroniserte.</translation>
+<translation id="2977470724722393594">Chromium er oppdatert</translation>
+<translation id="9191268552238695869">En administrator har installert Chromium på dette systemet, og nettleseren er tilgjengelig for alle brukere. Chromium på systemnivå erstatter installasjonene du har på brukernivå.</translation>
+<translation id="3509308970982693815">Lukk alle Chromium-vinduer og prøv på nytt.</translation>
+<translation id="4077262827416206768">Lukk alle Chromium-vinduer og start Chromium på nytt for at denne endringen skal tre i kraft.</translation>
+<translation id="9119843944749246249">Copyright © 2006–2012, The Chromium Authors. Med enerett.</translation>
+<translation id="6944967875980567883">Moduler lastet inn i Chromium</translation>
+<translation id="118298050220780080">Du prøvde å åpne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men tjeneren oppga et sertifikat utstedt av en enhet som operativsystemet på datamaskinen din ikke anser som pålitelig. Dette kan bety at tjeneren har generert sine egne sikkerhetslegitimasjoner, som Chromium ikke kan stole på for identitetsinformasjon, eller at en angriper prøver å fange opp kommunikasjonen din.</translation>
+<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="3296368748942286671">Fortsett å kjøre bakgrunnsprogrammer når Chromium er lukket</translation>
+<translation id="2918265831258045091">Vil du avslutte Chromium mens en nedlasting pågår?</translation>
+<translation id="6055895534982063517">En nyere versjon av Chromium er tilgjengelig, og den er raskere enn noen gang.</translation>
+<translation id="2407806170074302369">Om Chromium Frame</translation>
+<translation id="5405650547142096840">Fjern fra Chromium</translation>
+<translation id="7747138024166251722">Installasjonsprogrammet kunne ikke opprette en midlertidig katalog. Kontroller at du har nok ledig diskplass og tillatelse til å installere programvare.</translation>
+<translation id="3258596308407688501">Chromium kan ikke lese og skrive til egen datakatalog:
+
+<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="4932687624772039103">Chromium støtter ikke <ph name="OS_NAME"/>.</translation>
+<translation id="8738921060445980047">Ukjent versjon.</translation>
+<translation id="2485422356828889247">Avinstaller</translation>
+<translation id="85843667276690461">Få hjelp med å bruke Chromium</translation>
+<translation id="263863604136125912">Åpne Chromium</translation>
+<translation id="2881203820889150661">Chromium kan ikke opprette en programsnarvei. Dette skyldes at Chromium ikke kan fastslå det gjeldende skrivebordsmiljøet.</translation>
+<translation id="4886158514168859177">Denne datamaskinen har allerede en nyere versjon av Chromium Frame. Hvis programvaren ikke fungerer, må du avinstallere Chromium Frame og prøve på nytt.</translation>
+<translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
+<translation id="6734080038664603509">Oppdater &amp;Chromium</translation>
+<translation id="8862326446509486874">Du har ikke de nødvendige rettighetene for å installere på systemnivå. Prøv å kjøre installasjonsprogrammet som administrator.</translation>
+<translation id="1774152462503052664">La Chromium kjøre i bakgrunnen</translation>
+<translation id="9022552996538154597">Logg på Chromium</translation>
+<translation id="4365115785552740256">Chromium er gjort mulig av åpen kilde-prosjektet <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> og annen <ph name="BEGIN_LINK_OSS"/>åpen kilde-programvare<ph name="END_LINK_OSS"/>.</translation>
+<translation id="7549178288319965365">Om Chromium OS</translation>
+<translation id="6248213926982192922">Gjør Chromium til standard nettleser</translation>
+<translation id="7337881442233988129">Chromium</translation>
+<translation id="3069161343438701711">Chromium-arbeider</translation>
+<translation id="5820394555380036790">Chromium OS</translation>
+<translation id="6757767188268205357">Ikke spør meg igjen</translation>
+<translation id="7700951445648533795">Vil du avslutte Chromium mens <ph name="DOWNLOAD_COUNT"/> nedlastinger pågår?</translation>
+<translation id="275588974610408078">Krasjrapportering er ikke tilgjengelig i Chromium.</translation>
+<translation id="5909170354645388250">Ikke brukt i Chromium. Plassholder for å holde ressurskart synkroniserte. Den forventer ett argument: $1.</translation>
+<translation id="3582788516608077514">Oppdaterer Chromium …</translation>
+<translation id="7223968959479464213">Oppgavebehandling – Chromium</translation>
+<translation id="3838208658251026018">Chromium importerer de følgende elementene fra <ph name="BROWSER_COMPONENT"/>:</translation>
+<translation id="2673087257647337101">Nå er oppdateringen snart ferdig! Start Chromium på nytt for å fullføre oppdateringen.</translation>
+<translation id="5398878173008909840">En nyere versjon av Chromium er tilgjengelig.</translation>
+<translation id="2648074677641340862">Det oppsto en systemfeil under installering. Last ned Chromium på nytt.</translation>
+<translation id="5942520288919337908"><ph name="EXTENSION_NAME"/> har blitt lagt til i Chromium.</translation>
+<translation id="8678787945719392857">Vil du bruke denne Google-kontoen til å synkronisere alle Chromium-tingene dine?</translation>
+<translation id="5974438302735098483">Chromium er oppdatert</translation>
+<translation id="8621669128220841554">Installeringen mislyktes på grunn av en uspesifisert feil. Last ned Chromium på nytt.</translation>
+<translation id="6717134281241384636">Profilen din kan ikke brukes fordi den kommer fra en nyere versjon av Chromium.
+
+Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilkatalog eller bruk en nyere versjon av Chromium.</translation>
+<translation id="2712549016134575851">Det er registrert en konflikt med et annet installert program.</translation>
+<translation id="9013087743919948559">Legg til i Chromium</translation>
+<translation id="6212496753309875659">Denne datamaskinen har allerede en nyere versjon av Chromium. Hvis programvaren ikke fungerer, må du avinstallere Chromium og prøve på nytt.</translation>
+<translation id="3014684866565908571">Chromium-verktøy</translation>
+<translation id="1298199220304005244">Få hjelp med å bruke Chromium OS</translation>
+<translation id="667672506951335584">Hvis du lukker Chromium nå, avbrytes disse nedlastingene.</translation>
+<translation id="1691304614444223855">Chromium Frame er oppdatert. Start nettleseren på nytt. Chromium-versjon: <ph name="TODO_0001"/>, Chromium Frame-versjon: <ph name="TODO_0002"/></translation>
+<translation id="1105130903706696483">Chromium ble ikke avsluttet på riktig måte. Klikk på Gjenopprett for å åpne sidene du hadde åpnet, på nytt.</translation>
+<translation id="1929939181775079593">Chromium svarer ikke. Vil du starte den på nytt nå?</translation>
+<translation id="6089587093203430357">Instant</translation>
+<translation id="2966088006374919794">Chromium må starte et eksternt program for å håndtere <ph name="SCHEME"/>-koblinger. Den påkrevde koblingen er <ph name="PROTOLINK"/>.</translation>
+<translation id="5699533844376998780">Utvidelsen «<ph name="EXTENSION_NAME"/>» har blitt lagt til.</translation>
+<translation id="8046283042877435986">Dette nettstedet anbefaler Chromium Frame (allerede installert).</translation>
+<translation id="6287463253129672858">Kan ikke installere den samme Chromium Frame-versjonen som kjører. Lukk Chromium Frame og prøv på nytt.</translation>
+<translation id="2558235863893655150">Vil du at Chrome skal lagre passordet ditt?</translation>
+<translation id="1688750314291223739">Konfigurer Synkronisering til å lagre de personlig tilpassede nettleserfunksjonene dine på nettet slik at du kan bruke dem fra Chromium på enhver datamaskin.</translation>
+<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
+<translation id="8865765905101981392">Nettleser</translation>
+<translation id="2910007522516064972">Om &amp;Chromium</translation>
+<translation id="8453117565092476964">Installasjonsarkivet er skadet eller ugyldig. Last ned Chromium på nytt.</translation>
+<translation id="309634601461115233">Logg deg av og så på Chromium OS igjen for at denne endringen skal tre i kraft.</translation>
+<translation id="3249425904492147663">Du prøvde å åpne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men tjeneren oppga et utløpt sertifikat. Vi finner ikke tilgjengelig informasjon som kan bekrefte om sertifikatet har blitt kompromittert siden det utløp. Følgelig kan ikke Chromium garantere at du kommuniserer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, og ikke en angriper. Klokken på datamaskinen din er satt til <ph name="CURRENT_TIME"/>. Er det korrekt? Hvis ikke, må du rette opp feilen og laste inn denne siden på nytt.</translation>
+<translation id="7196020411877309443">Hvorfor vises dette?</translation>
+<translation id="7483335560992089831">Kan ikke installere den samme Chromium-versjonen som kjører. Lukk Chromium og prøv på nytt.</translation>
+<translation id="7641113255207688324">Chromium er ikke standard nettleser.</translation>
+<translation id="2174090135251659490">Du prøvde å åpne &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men tjeneren oppga et sertifikat som ikke er gyldig enda. Vi finner ikke tilgjengelig informasjon som kan bekrefte at sertifikatet er pålitelig. Chromium kan ikke med sikkerhet garantere at du kommuniserer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, og ikke en angriper. Klokken på datamaskinen din er satt til <ph name="CURRENT_TIME"/>. Er det korrekt? Hvis ikke, må du rette opp feilen og laste inn denne siden på nytt.</translation>
+<translation id="2119636228670142020">Om &amp;Chromium OS</translation>
+<translation id="1708666629004767631">En ny, sikrere versjon av Chromium er tilgjengelig.</translation>
+<translation id="5859758987635973787">Chromium er oppdatert (<ph name="VERSION"/>)</translation>
+<translation id="8616882682724010661">Se <ph name="BEGIN_LINK"/>flere fordeler<ph name="END_LINK"/> ved pålogging til Chromium.</translation>
+<translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe til det med Skype.</translation>
+<translation id="7503101070699687603">Chromium-vert for programtillegg</translation>
+<translation id="9013262824292842194">Chromium krever Windows Vista eller Windows XP med SP2 eller høyere.</translation>
+<translation id="1967743265616885482">Vi har tidligere lagt merke til at en modul med det samme navnet, har kommet i konflikt med Chromium.</translation>
+<translation id="4224199872375172890">Chromium er oppdatert.</translation>
+<translation id="5498103559159810756">Google Chrome bruker søkemotoren du har angitt som standard, som er <ph name="PAGE_TITLE"/>. Vil du beholde denne som standard søkemotor?</translation>
+<translation id="5862307444128926510">Velkommen til Chromium</translation>
+<translation id="1622565934590470080">Denne datamaskinen har allerede en nyere versjon av Chromium og Chromium Frame. Hvis programvarene ikke fungerer, må du avinstallere både Chromium og Chromium Frame og prøve på nytt.</translation>
+<translation id="7318036098707714271">Innstillingerfilen din er ødelagt eller ugyldig.
+
+Chromium kan ikke gjenopprette innstillingen dine.</translation>
+<translation id="7123348595797445166">Prøv den (allerede installert)</translation>
+<translation id="6403826409255603130">Chromium er en nettleser som kjører nettsider og programmer i lynets hastighet. Den er rask, stabil og enkel å bruke. Surf på nettet på en tryggere måte med Chromium, som har innebygd beskyttelse mot skadelig programvare og nettfisking.</translation>
+<translation id="2927042866129133279">Ugyldige argumenter. Chromium Frame kan ikke installeres i klar-modus uten også å installere Chromium.</translation>
+<translation id="2572494885440352020">Chromium-hjelper</translation>
+<translation id="442817494342774222">Chromium er konfigurert til automatisk å starte når du starter datamaskinen din.</translation>
+<translation id="8974095189086268230">Chromium OS er gjort mulig av ytterligere <ph name="BEGIN_LINK_CROS_OSS"/>åpen kilde-programvare<ph name="END_LINK_CROS_OSS"/>.</translation>
+<translation id="6154296300983386343">Start Chromium på nytt for å fullføre oppdateringen</translation>
+<translation id="1221340462641866827">Chromium OS støtter ikke start av et eksternt program for å håndtere <ph name="SCHEME"/>-koblinger. Den påkrevde koblingen er <ph name="PROTOLINK"/>.</translation>
 </translationbundle>

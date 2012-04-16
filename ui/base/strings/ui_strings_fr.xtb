@@ -24,9 +24,9 @@
 <translation id="6364916375976753737">Défilement vers la gauche</translation>
 <translation id="8210608804940886430">Page suivante</translation>
 <translation id="5329858601952122676">&amp;Supprimer</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY"/> Ko</translation>
 <translation id="6659594942844771486">Onglet</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> Mo</translation>
-<translation id="3806858430610674159"><ph name="QUANTITY"/> Ko</translation>
 <translation id="2497284189126895209">Tous les fichiers</translation>
 <translation id="7814458197256864873">&amp;Copier</translation>
 <translation id="3889424535448813030">Droite</translation>
@@ -37,6 +37,7 @@
 <translation id="3183922693828471536">Défilement jusqu'ici</translation>
 <translation id="4552416320897244156">PgSuiv</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="8677655579646609597"><ph name="QUANTITY"/> Ko/s</translation>
 <translation id="2190355936436201913">(vide)</translation>
 <translation id="8447116497070723931">PgPréc</translation>
 <translation id="4588090240171750605">Défilement vers la droite</translation>
@@ -49,7 +50,6 @@
 <translation id="9170848237812810038">Ann&amp;uler</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> Po</translation>
 <translation id="5583640892426849032">Retour</translation>
-<translation id="2619528525756897123"><ph name="QUANTITY"/> Ko/s</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> Go/s</translation>
 <translation id="436869212180315161">Cliquer</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY"/> To/s</translation>

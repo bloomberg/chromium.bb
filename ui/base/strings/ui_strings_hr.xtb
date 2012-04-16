@@ -24,9 +24,9 @@
 <translation id="6364916375976753737">Pomakni se lijevo</translation>
 <translation id="8210608804940886430">Stranica prema dolje</translation>
 <translation id="5329858601952122676">&amp;Obriši</translation>
+<translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
-<translation id="3806858430610674159"><ph name="QUANTITY"/> kB</translation>
 <translation id="2497284189126895209">Sve datoteke</translation>
 <translation id="7814458197256864873">&amp;Kopiraj</translation>
 <translation id="3889424535448813030">Strelica desno</translation>
@@ -37,6 +37,7 @@
 <translation id="3183922693828471536">Pomakni ovdje</translation>
 <translation id="4552416320897244156">PgDwn</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="8677655579646609597"><ph name="QUANTITY"/> KB/s</translation>
 <translation id="2190355936436201913">(prazno)</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="4588090240171750605">Pomakni se desno</translation>
@@ -49,7 +50,6 @@
 <translation id="9170848237812810038">&amp;Poništi</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="5583640892426849032">Backspace</translation>
-<translation id="2619528525756897123"><ph name="QUANTITY"/> kB/s</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY"/> GB/s</translation>
 <translation id="436869212180315161">Pritisnite</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY"/> TB/s</translation>

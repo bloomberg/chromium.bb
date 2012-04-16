@@ -34,9 +34,11 @@
 
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="5469825884154817306">I-block ang mga larawan sa mga site na ito</translation>
+<translation id="8412312801707973447">Kung isinasagawa ang mga online na pagsusuri sa OCSP/CRL</translation>
 <translation id="2908277604670530363">Pinakamataas na bilang ng sabay-sabay na koneksyon sa proxy server</translation>
 <translation id="7298195798382681320">Inirerekomenda</translation>
 <translation id="1438955478865681012">Kino-configure ang mga patakaran na kaugnay ng extension. Hindi pinapayagan ang user na i-install ang mga naka-blackilist na extension maliban kung naka-whitelist ang mga ito. Maaari mo ring pilitin ang <ph name="PRODUCT_NAME"/> na awtomatikong mag-install ng mga extension sa pamamagitan ng pagtukoy sa mga ito sa <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME"/>. Sumusunod ang blacklist sa listahan ng mga pinilit na extension.</translation>
+<translation id="3478024346823118645">I-wipe ang data ng user sa pag-sign-out</translation>
 <translation id="8668394701842594241">Tumutukoy ng isang listahan ng mga plugin na pinagana sa <ph name="PRODUCT_NAME"/> at pumipigil sa mga user na baguhin ang setting na ito.
 
       Magagamit ang mga wildcard na character na '*' at '?' upang itugma ang mga pagkakasunud-sunod ng mga arbitrary na character. Itinutugma ng '*' ang isang arbitrary na numero ng mga character habang tinutukoy ng '?' ang isang opsyonal na isahang character, hal. itinutugma ang zero o isang character. Ang escape na character ay '\', kaya upang tumugma sa aktwal na '*', '?', o '\' na mga character, maaari kang maglagay ng isang '\' sa harap ng mga ito.
@@ -47,6 +49,12 @@
 
       Kung hinayaang hindi nakatakda ang patakarang ito maaaring hindi paganahin ng user ang anumang plugin na naka-install sa system.</translation>
 <translation id="5255162913209987122">Maaaring Irekomenda</translation>
+<translation id="1492145937778428165">Tinutukoy ang tagal sa milliseconds kung kailan na-query sa serbisyo ng pamamahala sa device ang impormasyon ng patakaran ng device.
+
+      Ino-override ng pagtatakda ng patakarang ito ang default na halaga na 3 oras. Ang mga wastong halaga para sa patakarang ito ay mula 1800000 (30 minuto) hanggang 86400000 (1 araw). Ididikit sa mga naaayong limitasyon ang anumang mga halagang wala sa sakop na ito.
+
+      Kapag hindi nakatakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_OS_NAME"/> ang default na halaga na 3 oras.</translation>
+<translation id="3765260570442823273">Tagal ng babalang mensahe ng pag-log-out ng idle</translation>
 <translation id="7331962793961469250">Kapag nakatakda sa True, hindi lilitaw sa bagong pahina ng tab ang mga pag-promote para sa mga Chrome Web Store app.
 
       Palilitawin ng pagtatakda sa pagpipiliang ito sa False o pag-iwan dito na hindi nakatakda sa bagong pahina ng tab ang mga pag-promote para sa mga Chrome Web Store app</translation>
@@ -67,13 +75,6 @@
       Kung hindi pinagana ang setting na ito, hindi magagawa ng mga user na hindi paganahin ang proxy, at hindi papayagan ang machine na ibahagi ang mga printer nito sa <ph name="CLOUD_PRINT_NAME"/>.
 
       Kung hinayaang hindi nakatakda ang patakarang ito, papaganahin ito ngunit magagawa ng user na baguhin ito.</translation>
-<translation id="6236112779188162585">Ang patakarang ito ay isang override para sa pagpipilian sa mga setting ng  &quot;I-clear ang cookies at iba pang data ng site kapag isinara ko ang aking browser&quot; na nilalaman.
-
-      Kapag nakatakda sa pinagana tatanggalin ng <ph name="PRODUCT_NAME"/> ang lahat ng lokal na naka-imbak na data mula sa browser kapag naka-shut down ito.
-
-      Kung nakatakda sa hindi pinagana hindi maki-clear sa paglabas ang data ng site.
-
-      Kung hinayaang hindi nakatakda gagamitin ng <ph name="PRODUCT_NAME"/> ang default na magpapanatili ng data ng site sa pag-shut down at magagawa ng user na baguhin ito.</translation>
 <translation id="1427655258943162134">Address o URL ng mga proxy server</translation>
 <translation id="1827523283178827583">Gumamit ng mga nakapirming proxy server</translation>
 <translation id="3021409116652377124">Huwag paganahin ang tagahanap ng plugin</translation>
@@ -102,7 +103,7 @@
 <translation id="7763311235717725977">Binibigyang-daan kang itakda kung pinapayagan o hindi ang mga website na magpakita ng mga larawan. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagpapakita ng mga larawan.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AllowImages' at magagawa ng user na baguhin ito.</translation>
-<translation id="2455652143675149114">Pinapayagan kang tukuyin ang pag-uugali sa startup. Kung pinili mo ang 'Buksan ang home page' palaging bubuksan ang home page kapag sinimulan mo ang <ph name="PRODUCT_NAME"/>. Kung pinili mo ang 'Muling buksan ang mga URL na huling binuksan', ang mga URL na huling binuksan ang <ph name="PRODUCT_NAME"/> na sinara ay muling bubuksan. Kung pinili mo ang 'Magbukas ng listahan ng mga URL', ang listahan ng 'mga URL na bubuksan sa startup' ay bubuksan kapag sinimulan ng user ang <ph name="PRODUCT_NAME"/>. Kung pinagana mo ang setting na ito, hindi ito mababago o ma-o-override ng mga user sa <ph name="PRODUCT_NAME"/>. Ang hindi pagpapagana ng setting na ito ay katumbas ng pag-iwan dito na hindi na-configure. Mababago pa rin ito ng user sa <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="5630352020869108293">Ipanumbalik ang huling session</translation>
 <translation id="4980635395568992380">Uri ng data:</translation>
 <translation id="3096595567015595053">Listahan ng mga pinaganang plugin</translation>
 <translation id="5912364507361265851">Payagan ang mga user na ipakita ang mga password sa Tagapamahala ng Password</translation>
@@ -111,18 +112,37 @@
       Kung pinagana mo ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME"/>.
 
       Kung hinayaang hindi nakatakda ang patakarang ito magiging available ang Google Sync upang makapili ang user kung gagamitin ito o hindi.</translation>
+<translation id="7412982067535265896">Binibigyang-daan kang magtakda ng listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magtakda ng mga session lamang na cookies.
+
+          Kung hindi itinakda ang patakarang ito, gagamitin ang pandaigdigang default na halaga para sa lahat ng site mula sa patakarang 'DefaultCookiesSetting,' kung nakatakda ito, o kung hindi man ay ang personal na configuration ng user.
+
+          Kung ang patakarang &quot;RestoreOnStartup&quot; ay nakatakda upang magpanumbalik ng mga URL mula sa mga nakaraang session sa patakarang ito, hindi kikilalanin ang patakarang ito at permanenteng iimbak ang cookies para sa mga site na iyon.
+</translation>
 <translation id="8828766846428537606">I-configure ang default na home page sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user sa pagbabago nito. Ang mga setting ng home page ng user ay lubos na naka-lock down lamang, kung pinili mo ang home page upang maging ang pahina ng bagong tab, o itakda ito upang maging URL at tumukoy ng URL ng home page. Kung hindi mo tutukuyin ang URL ng home page, maitatakda pa rin ung ser ang home page sa pahina ng bagong tab sa pamamagitan ng pagtukoy sa 'chrome://newtab'.</translation>
 <translation id="2231817271680715693">I-import ang kasaysayan ng pagba-browse mula sa default na browser sa unang pagtakbo</translation>
 <translation id="1353966721814789986">Mga pahina ng startup</translation>
 <translation id="5564962323737505851">Kino-configure ang tagapamahala ng password. Kung pinagana ang tagapamahala ng password, maaari mong piliing paganahin o hindi paganahin kung maaaring ipakita ng user ang mga naka-imbak na password sa malinaw na teksto.</translation>
+<translation id="7989334138134558357">Sa mode ng retail lamang aktibo ang patakarang ito.
+
+      Kapag ang halaga ng patakarang ito ay nakatakda at hindi 0, awtomatikong mala-log out ang kasalukuyang naka-log in na user ng demo pagkatapos ng tinukoy na oras.
+
+        Dapat na tinukoy sa milliseconds ang halaga ng patakaran.</translation>
 <translation id="4668325077104657568">Default na setting ng mga larawan</translation>
 <translation id="7161193985878519056">Hindi pinagana ang mode na incognito.</translation>
 <translation id="6368403635025849609">Payagan ang JavaScript sa mga site na ito</translation>
 <translation id="6074963268421707432">Huwag payagan ang anumang site na magpakita ng mga notification sa desktop</translation>
+<translation id="8614804915612153606">Hindi Pinapagana ang Awtomatikong Pag-update</translation>
 <translation id="8104962233214241919">Awtomatikong pumili ng mga certificate ng client para sa mga site na ito</translation>
+<translation id="2906874737073861391">Listahan ng mga extension ng AppPack</translation>
 <translation id="3758249152301468420">Huwag paganahin ang Mga Tool ng Nag-develop</translation>
 <translation id="8665076741187546529">I-configure ang listahan ng mga extension na pinilit i-install</translation>
+<translation id="2505112041294615513">Kino-configure ang direktoryo na gagamitin ng <ph name="PRODUCT_FRAME_NAME"/> para sa pag-iimbak ng data ng user.
+
+      Kung itatakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_FRAME_NAME"/> ang ibinigay na direktoryo.
+
+      Kung iniwang hindi nakatakda ang setting na ito, gagamitin ang default na direktoryo ng profile.</translation>
 <translation id="4899708173828500852">Paganahin ang Ligtas na Pagba-browse</translation>
+<translation id="7719251660743813569">Kinokontrol kung iniuulat pabalik sa Google ang mga sukatan ng paggamit. Kung nakatakda sa true, mag-uulat ng mga sukatan ng paggamit ang <ph name="PRODUCT_OS_NAME"/>. Kung hindi naka-configure o nakatakda sa false, hindi papaganahin ang pag-uulat ng mga sukatan.</translation>
 <translation id="3570008976476035109">I-block ang mga plugin sa mga site na ito</translation>
 <translation id="2884728160143956392">Payagan ang mga cookies sa session lamang sa mga site na ito</translation>
 <translation id="4655130238810647237">Pinapagana o hindi pinapagana ang pag-edit ng mga bookmark sa <ph name="PRODUCT_NAME"/>.
@@ -142,6 +162,8 @@
       Kung hinayaang hindi nakatakda ang patakarang ito ang setting ay magiging kung ano ang pinili ng user sa panahon ng pag-install/ unang pagtakbo.</translation>
 <translation id="9135033364005346124">Paganahin ang <ph name="CLOUD_PRINT_NAME"/> proxy</translation>
 <translation id="6943577887654905793">Kagustuhang pangalan ng Mac/Linux:</translation>
+<translation id="8906768759089290519">Payagan ang mode ng bisita</translation>
+<translation id="838870586332499308">Payagan ang roaming ng data</translation>
 <translation id="254524874071906077">Itakda ang Chrome bilang Default na Browser</translation>
 <translation id="8764119899999036911">Tinutukoy kung ang binuong Kerberos SPN ay nakabatay sa canonical na pangalan ng DNS o sa orihinal na pangalang inilagay.
 
@@ -178,6 +200,18 @@
       Kung hinayaang hindi nakatakda ang patakarang ito, papaganahin ito ngunit magagawa ng mga user na baguhin ito.</translation>
 <translation id="2711603272213076156">Payagan ang paghiling ng mga dialog sa pagpili ng file.</translation>
 <translation id="1426410128494586442">Oo</translation>
+<translation id="1692788808502061374">Binibigyang-daan kang tumukoy ng listahan ng mga extension na ii-install sa background, nang walang pakikipag-ugnayan sa user.
+
+       Ang bawat item ng listahan ay isang string na naglalaman ng extension ID at URL ng update na pinaghihiwa-hiwalay ng tuldok-kuwit (<ph name="SEMICOLON"/>). Ang extension ID ay ang string na may 32 titk na matatagpuan hal. sa <ph name="CHROME_EXTENSIONS_LINK"/> kapag nasa mode ng developer. Dapat na tumuro ang URL ng update sa isang Update Manifest XML document tulad ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC1"/>.
+
+          Para sa bawat item, babawiin ng <ph name="PRODUCT_NAME"/> ang extension na tinukoy ng extension ID mula sa serbisyo ng pag-update sa tinukoy na URL ng update at ii-install ito sa background.
+
+          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE"/> ang extension na <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> mula sa karaniwang URL ng update ng Chrome Web Store. Para sa higit pang impormasyon tungkol sa mga extension ng pag-host, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+
+          Hindi magagawa ng mga user na mag-install ng extension na tinukoy ng patakarang ito. Kapag nag-alis ka ng extension mula sa listahang ito, awtomatiko itong ia-uninstall ng <ph name="PRODUCT_NAME"/>.
+
+          Kung hindi itinakda ang patakarang ito, makakapag-uninstall ang user ng anumang extension sa <ph name="PRODUCT_NAME"/>.
+</translation>
 <translation id="4962195944157514011">Tinutukoy ang URL ng search engine na ginamit kapag nagsasagawa ng isang default na paghahanap. Dapat na maglaman ng string na '<ph name="SEARCH_TERM_MARKER"/>' ang URL, na papalitan sa panahon ng query ng mga terminong hinahanap ng user.
 
           Dapat na itakda ang pagpipiliang ito kapag pinagana ang patakarang 'DefaultSearchProviderEnabled' at kikilalanin lamang kung ito ang sitwasyon.</translation>
@@ -198,6 +232,11 @@
           Kung pinagana o hindi mo pinagana ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME"/>.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, papaganahin ito ngunit magagawa ng mga user na baguhin ito.</translation>
+<translation id="1138294736309071213">Sa mode ng retail lamang aktibo ang patakarang ito.
+
+      Tinutukoy ang tagal bago ipakita ang screen saver sa screen sa pag-sign-in para sa mga device sa mode ng retail.
+
+      Dapat na tinukoy sa milliseconds ang halaga ng patakaran.</translation>
 <translation id="6368011194414932347">I-configure ang URL ng home page</translation>
 <translation id="2877225735001246144">Huwag paganahin ang paghahanap ng CNAME kapag nakikipagsundo sa pagpapatotoo ng Kerberos</translation>
 <translation id="6378014222084506939">Pagiging available ng mode na Incognito.</translation>
@@ -223,6 +262,7 @@
 
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="6786747875388722282">Mga Extension</translation>
+<translation id="1655229863189977773">Itakda ang laki ng cache ng disk sa bytes</translation>
 <translation id="6899705656741990703">I-auto detect ang mga setting ng proxy</translation>
 <translation id="4101772068965291327">Buksan ang home page</translation>
 <translation id="7003334574344702284">Pinupwersa ng patakarang ito na ma-import mula sa nakaraang default na browser ang mga naka-save na password kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng import.
@@ -235,11 +275,6 @@
           Kung pinagana mo ang setting na ito, at ang port na hindi karaniwan (ibig sabihin, isang port bukod sa 80 o 443) ay inilagay, isasama ito sa nabuong Kerberos SPN.
 
          Kung hindi mo pinagana ang setting na ito, ang nabuong Kerberos SPN ay hindi magsasama ng port sa anumang kaso.</translation>
-<translation id="6467600784527692462">Tinutukoy ang yugto sa millisecond kung saan na-query para sa impormasyon ng patakaran ang pamamahala ng device.
-
-      Ino-override ng pagtatakda ng patakarang ito ang default na halagang 3 oras. Ang mga wastong halaga para sa patakarang ito ay mula 1800000 (30 minuto) hanggang 86400000 (1 araw). Ang anumang mga halagang wala sa sakop na ito ay ika-clamp sa mga naaayon na hangganan.
-
-      Ipapagamit sa <ph name="PRODUCT_FRAME_NAME"/> ng pag-iwan sa patakarang ito na hindi nakatakda ang default na halagang 3 oras.</translation>
 <translation id="8992176907758534924">Huwag payagan ang anumang site na magpakita ng mga larawan</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">Listahan ng mga hindi pinaganang plugin</translation>
@@ -256,6 +291,16 @@
 
           Bibigyang-daan ng pag-iwan sa patakarang ito na hindi nakatakda ang mga user na piliin ang kanyang home page nang mag-isa kung hindi rin nakatakda ang HomepageIsNewTabPage.</translation>
 <translation id="8955719471735800169">Bumalik sa tuktok</translation>
+<translation id="7948377189987658754">Ang patakarang ito ay isang override para sa pagpipilian ng mga setting ng nilalaman na &quot;I-clear ang cookies at iba pang data ng site kapag isinara ko ang aking browser.&quot;
+
+      Kapag nakatakda na pinagana, tatanggalin ng <ph name="PRODUCT_NAME"/> ang lahat ng lokal na nakaimbak na data mula sa browser kapag naka-shut down ito.
+
+      Kung nakatakda na hindi pinapagana, hindi iki-clear ang data ng site sa paglabas.
+
+      Kung hindi itinakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME"/> ang default, na panatilihin ang data ng site kapag nag-shut down at mababago ito ng user.
+
+      Kung nakatakda ang patakarang &quot;RestoreOnStartup&quot; na magpanumbalik ng mga URL mula sa mga nakaraang session, hindi iki-clear ng patakarang ito ang cookies o iba pang data na may-katuturan sa ganap na pagpapanumbalik ng nakaraang session ng pagba-browse.</translation>
+<translation id="8170882486743832400">I-configure ang mga pagpipilian sa GData</translation>
 <translation id="2322733497952278056">Binibigyang-daan ang access sa mga nakalistang URL, bilang mga pagbubukod sa blacklist ng URL.
 
       Tingnan ang paglalarawan sa patakaran ng blacklist ng URL para sa format ng mga entry ng listahang ito.
@@ -287,10 +332,20 @@
 
       Kung hinayaang hindi nakatakda ang setting na ito maaaring magpasya ang user na gamitin o hindi ang pagpapaganang ito.</translation>
 <translation id="9035964157729712237">Ang mga ID ng Extension upang maibukod mula sa blacklist</translation>
+<translation id="8587229956764455752">Payagan ang paglikha ng mga bagong user account</translation>
 <translation id="3964909636571393861">Nagbibigay-daan sa pag-access sa isang listahan ng mga URL</translation>
 <translation id="3450318623141983471">Iulat ang katayuan ng dev switch ng device sa pag-boot. Kung hindi nakatakda ang patakaran, o nakatakda sa false, hindi maiuulat ang katayuan ng dev switch.</translation>
-<translation id="9102979059463597405">Paganahin ang extension ng mga certificate ng origin-bound na TLS</translation>
+<translation id="1811270320106005269">Paganahin ang pag-lock kapag naging idle o nasuspinde ang mga device na <ph name="PRODUCT_OS_NAME"/>.
+
+      Kung paganahin mo ang setting na ito, hihingan ng password ang mga user upang i-unlock ang device mula sa sleep.
+
+      Kung hindi mo paganahin ang setting na ito, hindi hihingan ng password ang mga user upang i-unlock ang device mula sa sleep.
+
+      Kung paganahin mo o hindi ang setting na ito, hindi ito mababago o ma-o-override ng mga user.
+
+      Kung hindi nakatakda ang patakaran, makakapili ang user kung nais niyang mahingan ng password upang i-unlock ang device o hindi.</translation>
 <translation id="6022948604095165524">Pagkilos sa startup</translation>
+<translation id="9042911395677044526">Nagbibigay-daan na malapat sa bawat user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME"/> na device. Ang configuration ng network ay isang naka-format sa JSON  na string tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL"/></translation>
 <translation id="7625444193696794922">Tinutukoy ang channel ng paglabas kung saan dapat naka-lock ang device.</translation>
 <translation id="2240879329269430151">Binibigyang-daan kang magtakda kung pinapayagan o hindi ang mga website na magpakita ng mga pop-up. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagpapakita ng mga popup.
 
@@ -318,30 +373,26 @@
 
       Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang default na halaga na 32.</translation>
 <translation id="3864818549971490907">Default na setting ng mga plugin</translation>
+<translation id="7151201297958662315">Tinutukoy kung nagsimula na ang isang proseso ng <ph name="PRODUCT_NAME"/> sa pag-login sa OS at patuloy na tumatakbo kapag nakasara ang huling window ng browser, bagay na nagbibigay-daan na manatiling aktibo ang apps sa background. Ipinapakita ng background na proseso ang isang icon sa system tray at maisasara ito mula roon anumang oras.
+
+      Kung nakatakda sa True ang patakarang ito, papaganahin ang mode ng background at hindi ito makokontrol ng user sa mga setting ng browser.
+
+      Kung nakatakda sa False ang patakarang ito, hindi papaganahin ang mode ng background at hindi ito makokontrol ng user sa mga setting ng browser.
+
+      Kung iniwang hindi nakatakda ang patakarang ito, inisyal na hindi papaganahin ang mode ng background at makokontrol ito ng user sa mga setting ng browser.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o mas bago</translation>
-<translation id="2694541305803182600">Paganahin ang pag-lock kapag naging idle o nasuspinde ang mga device ng ChromeOS.
-
-      Kung pinagana mo ang setting na ito, ang mga user ay hihingian ng isang password upang i-unlock ang mga device ng ChromeOS mula sa pag-sleep.
-
-      Kung hindi mo pinagana ang setting na ito, ang mga user ay hindi hihingian ng isang password upang gisingin ang mga device ng ChromeOS mula sa pag-sleep.
-
-      Kung pinagana o hindi mo pinagana ang setting na ito, hindi maaaring baguhin o i-override ang setting na ito sa <ph name="PRODUCT_OS_NAME"/>.
-
-      Kung hinayaang hindi nakatakda ang patakarang ito mapipili ng user kung gusto niyang hingian siya o hindi ng password upang i-unlock ang device.</translation>
 <translation id="2646290749315461919">Binibigyang-daan kang itakda kung pinapayagan o hindi ang mga website na subaybayan ang pisikal na lokasyon ng mga user. Maaaring payagan bilang default, tanggihan bilang ang pagsubaybay sa pisikal na lokasyon ng mga user, o maaaring tanungin ang user sa bawat pagkakataong humiling ng pisikal na lokasyon ang isang website.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskGeolocation' at magagawa itong baguhin ng user.</translation>
 <translation id="5770738360657678870">Dev channel (maaaring hindi stable)</translation>
 <translation id="2959898425599642200">Mga panuntunan sa pag-bypass ng proxy</translation>
 <translation id="1098794473340446990">Iulat ang mga oras ng aktibidad ng device. Kung nakatakda ang setting na ito sa True, ang mga naka-enroll na device ay mag-uulat ng mga panahon kapag active sa device ang user. Kung hindi nakatakda ang setting na ito o nakatakda sa False, hindi maitatala o maiuulat ang mga oras ng aktibidad ng device.</translation>
-<translation id="7337941689192402544">Itakda ang direktoryo ng data ng user ng <ph name="PRODUCT_NAME"/></translation>
 <translation id="896575211736907134">Pinwersa ang mode na Incognito.</translation>
 <translation id="6641981670621198190">Huwag paganahin ang suporta para sa mga API ng mga 3D na graphic</translation>
 <translation id="2741921267428646309">Ito ang listahan ng mga patakaran na ginagalang ng <ph name="PRODUCT_NAME"/>. Hindi mo kailangang baguhin ang mga setting na ito nang manu-mano! Maaari kang mag-download ng mga template na madaling gamitin mula sa <ph name="POLICY_TEMPLATE_DOWNLOAD_URL"/>. Ang listahan ng mga suportadong patakaran ay ang katulad para sa Chromium at Google Chrome, ngunit magkaiba ang mga lokasyon ng kanilang registry ng Window. Nagsisimula sa <ph name="CHROMIUM_KEY"/> para sa mga patakaran ng Chromium at sa <ph name="GOOGLE_CHROME_KEY"/> para sa mga patakaran ng Google Chrome.</translation>
 <translation id="7929480864713075819">Paganahin ang pag-uulat ng impormasyon ng memorya (laki ng JS heap) sa pahina</translation>
 <translation id="7003746348783715221">Mga kagustuhan sa <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Paganahin ang firewall traversal mula sa client ng malayuang pag-access</translation>
-<translation id="7082208731926398296">Pinapayagan na mailapat sa bawat user ang pag-push ng configuration ng network sa isang device ng <ph name="PRODUCT_OS_NAME"/>. Ang configuration ng network ay isang JSON-formatted na string tulad ng tinukoy ng format na Configuration ng Open Network na inilalarawan sa https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
 <translation id="9096086085182305205">Whitelist ng server sa pagpapatotoo</translation>
 <translation id="7063895219334505671">Pinapayagan ang mga popup sa mga site na ito</translation>
 <translation id="4052765007567912447">Kinokontrol kung maaaring magpakita ang user o hindi ng mga password sa malinaw na teksto sa tagapamahala ng password.
@@ -357,6 +408,7 @@
 
       Kung pinagana mo ang setting na ito o hindi nagtakda ng halaga, mananatiling nasa ilalim ng kontrol ng user ang AutoFill. Bibigyang-daan sila nitong mag-configure ng mga profile ng AutoFill at i-on o i-off ang AutoFill ayon sa sarili nilang paghuhusga.</translation>
 <translation id="6157537876488211233">Listahang pinaghihiwalay ng kuwit ng mga panuntunan sa pag-bypass ng proxy</translation>
+<translation id="3965339130942650562">Mag-timeout hanggang maisagawa ang pag-log-out ng idle na user</translation>
 <translation id="7091198954851103976">Palaging patakbuhin ang mga plugin na nangangailangan ng pahintulot</translation>
 <translation id="8870318296973696995">Home page</translation>
 <translation id="1240643596769627465">Tinutukoy ang URL ng search engine na ginagamit upang magbigay ng mga instant na resulta. Dapat na maglaman ng string na <ph name="SEARCH_TERM_MARKER"/> ang URL, na papalitan sa panahon ng query ng tekstong inilagay ng user sa ngayon.
@@ -370,6 +422,11 @@
 <translation id="7880891067740158163">Binibigyang-daan kang tumukoy ng isang listahan ng mga pattern ng url na tumutukoy sa mga site kung saan dapat awtomatikong pumili ng mga certificate ng client ang <ph name="PRODUCT_NAME"/>, kung humiling ng isang certificate ang site.
 
           Kung hinayaang hindi nakatakda ang patakaran walang gagawing awtomatikong pagpili para sa anumang site.</translation>
+<translation id="583542926035627341">Sa mode ng retail lamang aktibo ang patakarang ito.
+
+      Nililista ang mga extension na awtomatikong naka-install para sa user ng Demo, para sa mga device na nasa mode ng retail. Naka-save ang mga extension na ito sa device at maaaring i-install habang naka-offline, pagkatapos ng pag-install.
+
+      Naglalaman ang bawat listahan ng diksyunaryo na dapat kabilangan ng ID ng extension sa field na 'extension-id,' at ang URL ng update nito sa field na 'update-url.' Maitatakda ang opsyonal na field na 'online-only' saTrue upang isaad na dapat i-install ang extension na ito kapag  naka-online ang device sa panahon ng pag-sign-in.</translation>
 <translation id="3866249974567520381">Paglalarawan</translation>
 <translation id="5192837635164433517">Binibigyang-daan ang paggamit ng mga kahaliling pahina ng mga error na built in sa <ph name="PRODUCT_NAME"/> (gaya ng 'hindi natagpuan ang pahina') at pinipigilan ang mga user na baguhin ang setting na ito.
 
@@ -387,6 +444,7 @@
       Ang mga URL na gumagamit ng scheme mula sa listahang ito ay hindi maglo-load at hindi maaaring i-navigate.
 
       Kung hinayaang hindi nakatakda ang patakarang ito o walang laman ang listahan magiging naa-access ang lahat ng scheme sa <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="131353325527891113">Ipakita ang mga username sa screen ng pag-login</translation>
 <translation id="5317965872570843334">Binibigyang-daan ang paggamit ng STUN at mga relay server kapag sinusubukan ng mga malayuang client na bumuo ng isang koneksyon sa machine na ito.
 
           Kung pinagana ang setting na ito, matutuklasan at makakakonekta ang mga malayuang client sa mga machine na ito kahit na hinihiwalay ang mga ito ng isang firewall.
@@ -415,10 +473,15 @@
           Isinasaalang-alang lamang sa ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
 <translation id="467236746355332046">Mga suportadong tampok:</translation>
 <translation id="7632724434767231364">Pangalan ng GSSAPI library</translation>
+<translation id="3038323923255997294">Magpatuloy sa pagpapatakbo ng apps sa background kapag nakasara ang <ph name="PRODUCT_NAME"/></translation>
+<translation id="7651739109954974365">Tinutukoy kung dapat paganahin ang roaming ng data para sa device. Kung nakatakda sa true, pinapayagan ang roaming ng data. Kung iniwang hindi naka-configure o nakatakda sa false, hindi magiging available ang roaming ng data.</translation>
 <translation id="6244210204546589761">Mga bubuksang URL sa startup</translation>
 <translation id="7468416082528382842">Lokasyon ng registry ng window:</translation>
 <translation id="1808715480127969042">I-block ang cookies sa mga site na ito</translation>
 <translation id="7340034977315324840">Iulat ang mga panahon ng aktibidad ng device</translation>
+<translation id="4928632305180102854">Kinokontrol kung pinapayagan ng <ph name="PRODUCT_OS_NAME"/> na malikha ang mga bagong user account. Kung nakatakda sa false ang patakarang ito, hindi makakapag-login ang mga user na wala pang account.
+
+      Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papayagang malikha ang mga bagong user account kung hindi pinipigilan ng <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> ang pag-log in ng user.</translation>
 <translation id="267596348720209223">Tinutukoy ang mga pag-encode ng character na sinusuportahan ng provider ng paghahanap. Ang mga pag-encode ay mga pangalan ng pahina ng code tulad ng UTF-8, GB2312, at ISO-8859-1. Sinusubukan ang mga ito sa pagkakasunud-sunod na ibinigay.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, gagamitin ang default na UTF-8.
@@ -428,9 +491,6 @@
 <translation id="1454846751303307294">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na hindi pinapayagang magpatakbo ng JavaScript.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
-<translation id="8818028108855269021">Tinutukoy kung dapat paganagin o hindi ang extension ng mga origin-bound na certificate ng TLS.
-
-      Ginagamit ang setting na ito upang paganahin ang extension ng mga origin-bound na certificate ng TLS para sa pagsubok.  Aalisin ang eksperimental na setting na ito sa hinaharap.</translation>
 <translation id="538108065117008131">Payagan ang <ph name="PRODUCT_FRAME_NAME"/> na pamahalaan ang mga sumusunod na uri ng nilalaman.</translation>
 <translation id="717221064259627503">Kino-configure ang direktoryo na gagamitin ng <ph name="PRODUCT_NAME"/> para sa pag-iimbak ng mga naka-cache na file sa disk.
 
@@ -455,9 +515,7 @@
       Kung pinili ang 'Ipinilit', maaari LAMANG buksan ang mga pahina sa mode na Incognito.</translation>
 <translation id="5085647276663819155">Huwag paganahin ang Preview ng Pag-print</translation>
 <translation id="2030905906517501646">Default na keyword ng provider ng paghahanap</translation>
-<translation id="2949818985084413317">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magtakda ng session lamang na cookies.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultCookiesSetting' kung nakatakda, o kung hindi man ay sa personal na configuration ng user.</translation>
+<translation id="3072045631333522102">Screen saver na gagamitin sa screen sa pag-sign-in sa mode ng retail</translation>
 <translation id="7393895128271703858">Hindi na ginagamit ang patakarang ito, sa halip ay mangyaring piliin ang DefaultJavaScriptSetting.
 
       Pinapagana ang JavaScript sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user na baguhin ang setting na ito.
@@ -518,6 +576,7 @@
 <translation id="681446116407619279">Mga suportadong scheme ng pagpapatotoo</translation>
 <translation id="4027608872760987929">Paganahin ang default na provider ng paghahanap</translation>
 <translation id="2223598546285729819">Default na setting ng notification</translation>
+<translation id="3984028218719007910">Tinutukoy kung pinapanatili ng <ph name="PRODUCT_OS_NAME"/> ang lokal na data ng account pagkatapos ng pag-logout. Kung nakatakda sa true, walang mga umiiral nang account ang pananatilihin ng <ph name="PRODUCT_OS_NAME"/> at idi-discard ang lahat ng data mula sa session ng user pagkatapos ng pag-logout. Kung nakatakda sa false o hindi naka-configure ang patakarang ito, maaaring magpanatili ng (na-encrypt na) lokal na data ng user ang device.</translation>
 <translation id="3793095274466276777">Kino-configure ang default na mga pagsusuri ng browser sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user sa pagbabago ng mga ito. Kung pinagana mo ang setting na ito, palaging titingnan ng <ph name="PRODUCT_NAME"/> ang startup kahit na default na browser ito at awtomatikong irerehistro ang sarili nito kung posible. Kung hindi pinagana ang setting na ito, hindi kailanmang titingnan ng <ph name="PRODUCT_NAME"/> kung ito ang default na browser at hindi papaganahin ang mga kontrol ng user para sa pagtatakda ng pagpipiliang ito. Kung hindi nakatakda ang setting na ito, papayagan ng <ph name="PRODUCT_NAME"/> ang user na kontrolin kahit na ito ay default na browser at kahit na dapat maipakita ang mga notification ng user kapag hindi ito ipinapakita.</translation>
 <translation id="7529100000224450960">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magbukas ng mga popup.
 
@@ -525,10 +584,15 @@
 <translation id="1530812829012954197">Palaging i-render ang mga sumusunod na pattern ng URL sa browser ng host</translation>
 <translation id="8288507390252297611">Huwag paganahin ang preview sa pag-print. Ginagamit ang setting na ito upang pilitin ang paggamit ng print dialog ng system sa halip na preview sa pag-print.</translation>
 <translation id="913195841488580904">I-block ang access sa isang listahan ng mga URL</translation>
+<translation id="6373222873250380826">Hindi pinapagana ang mga awtomatikong update kapag nakatakda sa True.
+
+      Awtomatikong tumitingin ng mga update ang mga <ph name="PRODUCT_OS_NAME"/> device kapag hindi naka-configure ang setting na ito o kung nakatakda ito sa False.</translation>
 <translation id="6190022522129724693">Default na setting ng mga popup</translation>
 <translation id="847472800012384958">Huwag payagang magpakita ng mga popup ang anumang site</translation>
 <translation id="4733471537137819387">Mga patakarang kaugnay ng pinagsamang pagpapatotoo ng HTTP.</translation>
 <translation id="8951350807133946005">Itakda ang direktoryo ng cache ng disk</translation>
+<translation id="9055197679339967051">Kung ang release channel ay dapat na maging maitatakda ng user o naka-lock.</translation>
+<translation id="2592091433672667839">Tagal ng kawalan ng aktibidad bago ipakita ang screen saver sa screen sa pag-sign-in sa mode ng retail</translation>
 <translation id="166427968280387991">Proxy server</translation>
 <translation id="2805707493867224476">Payagang magpakita ng mga pop-up ang lahat ng mga site</translation>
 <translation id="1727394138581151779">I-block ang lahat ng plugin</translation>
@@ -545,8 +609,14 @@
 <translation id="3034580675120919256">Binibigyang-daan kang itakda kung pinapayagan o hindi ang mga website na magpatakbo ng JavaScript. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagpapatakbo ng JavaScript.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AllowJavaScript' at magagawa ng user na baguhin ito.</translation>
+<translation id="7459381849362539054">I-configure ang GData sa <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="3195451902035818945">Tinutukoy kung ang paghahati ng SSL record ay dapat hindi paganahin. Ang paghahati ng record ay isang remedyo para sa kahinaan sa SSL 3.0 at TLS 1.0, ngunit maaaring magdulot ng mga isyu sa pagiging tugma sa ilang server at proxy ng HTTPS. Kung hindi nakatakda ang patakaran, o nakatakda sa false, gagamitin ang paghahati ng record sa mga koneksyon ng SSL/TLS na gumagamit ng CBC ciphersuites.</translation>
+<translation id="6903814433019432303">Sa mode ng retail lamang aktibo ang patakarang ito.
+
+      Tinutukoy ang hanay ng mga URL na ilo-load kapag nagsimula na ang session ng demo. I-o-override ng patakarang ito ang anumang iba pang mga mekanismo para sa pagtatakda sa inisyal na URL at samakatuwid, mailalapat lamang sa isang session na hindi nauugnay sa isang partikular na user.</translation>
 <translation id="5868414965372171132">Configuration ng network sa antas ng user</translation>
+<translation id="1221359380862872747">Mag-load ng mga tinukoy na url sa pag-login sa demo</translation>
+<translation id="6771644447620682565">Hindi pinapagana ang GData</translation>
 <translation id="5493552890659553833">Pinapagana ang mga suhestiyon sa paghahanap sa Omnibox ng <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user na baguhin ang setting na ito.
 
       Kung pinagana mo ang setting na ito, ginagamit ang mga suhestiyon sa paghahanap.
@@ -556,6 +626,9 @@
       Kung pinagana o hindi mo pinagana ang setting na ito, hindi maaaring baguhin o i-override ang setting na ito sa <ph name="PRODUCT_NAME"/>.
 
       Kung hinayaang hindi nakatakda ang patakarang ito, papaganahin ito ngunit hindi magagawa ng user na baguhin ito.</translation>
+<translation id="2431811512983100641">Tinutukoy kung dapat paganahin o hindi ang extension ng mga certificate na patungo sa domain ng TLS.
+
+      Ginagamit ang setting na ito upang paganahin ang extension ng mga certificate na patungo sa domain ng TLS para sa pagsubok.  Aalisin ang pang-eksperimentong setting na ito sa hinaharap.</translation>
 <translation id="8711086062295757690">Tinutukoy ang keyword, ang shortcut na ginamit sa omnibox upang i-trigger ang paghahanap para sa provider na ito.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, walang keyword ang maa-activate sa provider ng paghahanap.
@@ -563,9 +636,8 @@
           Isinasaalang-alang lamang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled'.</translation>
 <translation id="5774856474228476867">URL sa paghahanap ng default na provider ng paghahanap</translation>
 <translation id="4650759511838826572">Huwag paganahin ang mga scheme ng protocol ng URL</translation>
-<translation id="6524941558928880715">Muling buksan ang mga URL na huling binuksan</translation>
 <translation id="602728333950205286">Instant na URL ng default na provider ng paghahanap</translation>
-<translation id="24485093530245771">Itakda ang laki ng cache ng disk sa megabytes</translation>
+<translation id="3030000825273123558">Paganahin ang pag-uulat ng mga sukatan</translation>
 <translation id="1675002386741412210">Suportado sa:</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="4482640907922304445">Ipinapakita ang button na Home sa toolbar ng  <ph name="PRODUCT_NAME"/>.
@@ -596,9 +668,14 @@
       Tandaang maaaring i-override ng EnabledPlugins at DisabledPluginsExceptions ang patakarang ito.
 
       Kung hinayaang hindi nakatakda ang patakarang ito maaaaring gamitin ng user ang anumang plugin na naka-install sa system maliban sa mga naka-hard-code na plugin na hindi tugma, luma o mapanganib.</translation>
+<translation id="8101760444435022591">Dahil walang mabisang pakinabang sa seguridad ang hindi pa pinal at mga pagsusuri sa pagbawi sa online, hindi pinapagana ang mga iyon bilang default sa  bersyon 19 at mas bago ng <ph name="PRODUCT_NAME"/>. Sa pamamagitan ng pagtatakda sa patakarang ito sa true, ipapanumbalik ang nakaraang paggalaw at isasagawa ang mga online na pagsusuri ng OCSP/CRL.
+
+      Kung hindi nakatakda ang patakarang ito, o kung nakatakda ito sa false, hindi magsasagawa ng mga pagsusuri sa pagbawi sa online ang Chrome sa Chrome 19 at mas mabago.</translation>
 <translation id="5469484020713359236">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magtakda ng cookies.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultCookiesSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
+<translation id="3664573135939978914">Hindi pinapagana ang GData sa mga Cellular na koneksyon</translation>
+<translation id="930930237275114205">Itakda ang direktoryo ng data ng user ng <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="5208240613060747912">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na hindi pinapayagang magpakita ng mga notification.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -622,11 +699,25 @@
       Pinipigilan ng pagpapagana sa setting na ang mga web page mula sa pag-access ng graphics processing unit (GPU). Sa partikular, hindi maa-access ng mga web page ang WebGL API at hindi magagamit ng mga plugin ang Pepper 3D API.
 
       Potensyal na pinapayagan ng hindi pagpapagana sa setting na ito o pag-iwan dito na hindi nakatakda ang mga web page na gamitin ang WebGL API at ang mga plugin upang gamitin ang Pepper 3D API. Maaaring kailanganin pa rin ng mga default na setting ng browser na ipasa ang mga argument ng linya ng command upang magamit ang mga API na ito.</translation>
+<translation id="3417418267404583991">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papaganahin ng <ph name="PRODUCT_OS_NAME"/> ang mga pag-login ng bisita. Ang mga pag-login ng bisita ay mga walang pagkakakilanlang session ng user at hindi nangangailangan ng password.
+
+      Kung nakatakda sa false ang patakarang ito, hindi papayagan ng <ph name="PRODUCT_OS_NAME"/> na masimulan ang mga session ng bisita.</translation>
+<translation id="8329984337216493753">Sa mode ng retail lamang aktibo ang patakarang ito.
+
+      Kapag nakatukoy ang DeviceIdleLogoutTimeout, tinutukoy ng patakarang ito ang tagal ng kahon ng babala gamit ang count down timer na ipinapakita sa user bago isagawa ang pag-logout.
+
+      Dapat na tinukoy sa milliseconds ang halaga ng patakaran.</translation>
 <translation id="237494535617297575">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpakita ng mga notification.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung hindi ito nakatakda, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="944817693306670849">Itakda ang laki ng cache ng disk</translation>
 <translation id="8544375438507658205">Default na taga-render ng HTML para sa <ph name="PRODUCT_FRAME_NAME"/></translation>
+<translation id="2371309782685318247">Tinutukoy ang tagal sa milliseconds kung kailan na-query sa serbisyo ng pamamahala sa device ang impormasyon ng patakaran ng user.
+
+      Ino-override ng pagtatakda ng patakarang ito ang default na halaga na 3 oras. Ang mga wastong halaga para sa patakarang ito ay mula 1800000 (30 minuto) hanggang 86400000 (1 araw). Ididikit sa mga naaayong limitasyon ang anumang mga halagang wala sa sakop na ito.
+
+      Kapag hindi nakatakda ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME"/> ang default na halaga na 3 oras.
+</translation>
 <translation id="7424751532654212117">Listahan ng mga pagbubukod sa listahan ng hindi pinaganang mga plugin</translation>
 <translation id="6233173491898450179">Itakda ang direktoryo sa pag-download</translation>
 <translation id="9191982992032190929">Tinutukoy ang URL para sa web store ng enterprise. Kapag pinagana ang setting na ito, lilitaw sa pahina ng bagong tab ang isang app na kapag na-click ay magdadala sa user sa tinukoy na URL. Maaaring i-install mula sa pahinang ito ang mga extension at app nang walang mga karagdagang babalang ipinapakita sa user. Kung nakatakda ang patakarang ito, dapat ring itakda ang EnterpriseWebStoreName.
@@ -640,7 +731,6 @@
 <translation id="2299220924812062390">Tukuyin ang isang listahan ng mga pinapaganang plugin</translation>
 <translation id="924557436754151212">Mag-import ng mga naka-save na password mula sa default na browser sa unang pagtakbo</translation>
 <translation id="1897365952389968758">Pinapayagang magpatakbo ng JavaScript ang lahat ng mga site</translation>
-<translation id="3963316686348464884">Pinapayagan na mailapat ang pag-push ng configuration ng network sa lahat ng user ng isang device ng <ph name="PRODUCT_OS_NAME"/>. Ang configuration ng network ay isang JSON-formatted na string tulad ng tinukoy ng format na Configuration ng Open Network na inilalarawan sa https://sites.google.com/a/chromium.org/dev/chromium-os/chromiumos-design-docs/open-network-configuration</translation>
 <translation id="6931242315485576290">Huwag paganahin pag-synchronize ng data sa Google</translation>
 <translation id="36674322972891584">Pinapagana ang hula ng network sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user na baguhin ang setting na ito.
 
@@ -649,12 +739,10 @@
       Kung hinayaang hindi nakatakda ang ang patakarang ito, papaganahin ito ngunit magagawa ng user na baguhin ito.</translation>
 <translation id="7006788746334555276">Mga Setting ng Nilalaman</translation>
 <translation id="5142301680741828703">Palaging i-render ang mga sumusunod na pattern ng URL sa <ph name="PRODUCT_FRAME_NAME"/></translation>
-<translation id="2794522310070714259">Tinutukoy ang yugto sa mga millisecond kung kailan na-query ang serbisyo ng pamamahala ng device para sa impormasyon sa patakaran ng user.
-
-      Ino-override ng pagtatakda ng patakarang ito ang default na halagang 3 oras. Ang mga wastong halaga para sa patakarang ito ay mula 1800000 (30 minuto) hanggang 86400000 (1 araw). Ika-clamp sa mga naaayong limitasyon ang anumang mga halagang wala sa sakop na ito.
-
-      Gagamitin ng <ph name="PRODUCT_FRAME_NAME"/> ang default na halagang 3 oras ang pag-iwan sa patakarang ito na hindi nakatakda.</translation>
 <translation id="4625915093043961294">I-configure ang whitelist sa pag-install ng extension</translation>
+<translation id="3940756655305062524">Kung nakatakda sa True ang patakarang ito at hindi tinukoy ang patakaran ng ChromeOsReleaseChannel, papayagan ang mga user ng nagpapatalang domain na baguhin ang channel ng paglabas ng device. Kung nakatakda sa false ang patakarang ito, ila-lock ang device sa anumang channel kung saan ito huling nakatakda.
+
+      I-o-override ng ChromeOsReleaseChannel ang channel na pinili ng user ngunit mas stable ang channel ng patakaran kaysa sa patakarang naka-install sa device, magaganap lamang ang paglilipat ng channel pagkatapos maabot ng bersyon ng mas stable na channel ang bilang na mas mataas kaysa sa naka-install sa device.</translation>
 <translation id="187819629719252111">Binibigyang-daan ang access sa mga lokal na file sa machine sa pamamagitan ng pagpayag sa <ph name="PRODUCT_NAME"/> na magpakita ng mga dialog ng pagpili ng file.
 
       Kung pinagana mo ang setting na ito, mabubuksan ng mga user ang mga dialog ng pagpili ng file bilang karaniwan.
@@ -671,7 +759,11 @@
 <translation id="7774768074957326919">Gumamit ng mga setting ng proxy ng system</translation>
 <translation id="3891357445869647828">Paganahin ang JavaScript</translation>
 <translation id="868187325500643455">Payagan ang lahat ng site upang awtomatikong magpatakbo ng mga plugin</translation>
+<translation id="7421483919690710988">Itakda ang laki ng cache ng disk ng media sa bytes</translation>
 <translation id="5226033722357981948">Tukuyin kung dapat na hindi paganahin ang tagahanap ng plugin</translation>
+<translation id="584083164257867276">Tinutukoy ang listahan ng mga user na pinapayagang mag-login sa device. Ang mga entry ay nasa anyo ng <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, gaya ng <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Upang payagan ang mga arbitrary user sa isang domain, na gumamit ng mga entry na may anyong <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
+
+      Kung hindi naka-configure ang patakarang ito, walang mga paghihigpit sa kung ano ang pinapayagang i-sign in ng user. Tandaang kailangan pa rin ng paglikha ng mga bagong user na ma-configure nang maayos ang patakaran sa <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/>.</translation>
 <translation id="6145799962557135888">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpatakbo ng JavaScript.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -680,6 +772,7 @@
       Kung hindi pinagana, walang ini-import na mga bookmark.
 
       Kung hindi nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
+<translation id="5067143124345820993">White list ng user sa pag-login</translation>
 <translation id="3612784419634427880">Available ang mode na Incognito.</translation>
 <translation id="2514328368635166290">Tinutukoy ang paboritong URL ng icon ng default na provider ng paghahanap.
 
@@ -703,6 +796,10 @@
 <translation id="4525521128313814366">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na hindi pinapayagang magpakita ng mga larawan.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultImagesSetting' kung pinagana, o kung hindi man ay sa personal na configuration ng user.</translation>
+<translation id="1894491175123948728">Sa mode ng retail lamang aktibo ang patakarang ito.
+
+      Tinutukoy ang id ng extension na gagamitin bilang isang screen saver sa screen sa pag-sign-in. Ang extension ay dapat na bahagi ng AppPack na naka-configure para sa domain na ito sa pamamagitan ng patakarang AppPacks.</translation>
+<translation id="3866530186104388232">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, ipapakita ng <ph name="PRODUCT_OS_NAME"/> ang mga umiiral nang user sa screen ng pag-login at papayag na pumili ng isa. Kung nakatakda sa false ang patakarang ito, gagamitin ng <ph name="PRODUCT_OS_NAME"/> ang prompt ng username/password para sa pag-login.</translation>
 <translation id="2098658257603918882">Paganahin ang pag-uulat ng data ng paggamit at kaugnay ng crash</translation>
 <translation id="1151353063931113432">Pinapayagan ang mga larawan sa mga site na ito</translation>
 <translation id="1297182715641689552">Gumamit ng .pac proxy script</translation>
@@ -716,6 +813,7 @@
 
           Kung hindi pinagana ang setting na ito at ang mga papalabas na UDP na koneksyon ay pini-filter ng firewall, makakakonekta lamang ang machine na ito sa mga host machine sa loob ng lokal na network.</translation>
 <translation id="5511702823008968136">Paganahin ang Bookmark Bar</translation>
+<translation id="7736666549200541892">Paganahin ang extension ng mga certificate ng patungo sa domain na TLS</translation>
 <translation id="7848840259379156480">Pinapayagan kang i-configure ang default na taga-render ng HTML kapag na-install ang <ph name="PRODUCT_FRAME_NAME"/>. Ang default na setting ay upang payagan ang browser ng host na gawin ang pag-render, ngunit maaari mong i-override ito at i-render ng <ph name="PRODUCT_FRAME_NAME"/> ang mga pahina ng HTML bilang default.</translation>
 <translation id="9142678351429467783">Binibigyang-daan ang pagpi-print sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user sa pagbago ng setting na ito.
 
@@ -739,6 +837,11 @@
       Kung hindi pinagana ang setting na ito, lalagyan ng label ng URL nito ang web store app ng enterprise (kung umiiral ito).</translation>
 <translation id="1734716591049455502">I-configure ang mga pagpipilian sa malayuang pag-access</translation>
 <translation id="8777120694819070607">Pinapayagan ng <ph name="PRODUCT_NAME"/> upang magpatakbo ng mga plugin na wala na sa panahon. Kung pinagana mo ang setting na ito, hindi gagamitin ang mga hindi napapanahong plugin at hihingi ng pahintulot ang mga user na patakbuhin ang mga ito. Kung hindi naitakada ang setting na ito, hihingan ng pahintulot ang mga user na magpatakbo ng mga hindi napapanahong plugin</translation>
+<translation id="4922427744878251344">Hindi pinapagana ang pag-sync ng Google Docs kapag gumagamit ng cellular na koneksyon kapag nakatakda sa True.
+
+          - ibig sabihin, sini-sync lamang ang data sa Google Docs kapag nakakonekta sa pamamagitan ng WiFi o Ethernet.
+
+          - kung hindi nakatakda o kung false, makakapaglipat ng mga file sa Google Docs ang mga user sa pamamagitan ng mga cellular na koneksyon.</translation>
 <translation id="2629448496147630947">I-configure ang mga pagpipilian sa malayuang pag-access sa <ph name="PRODUCT_NAME"/>. Binabalewala ang mga tampok na ito maliban kung naka-install ang web application ng Malayuang Pag-access.</translation>
 <translation id="1310699457130669094">Maaari kang tumukoy ng isang URL sa isang proxy .pac file dito.
 
@@ -775,6 +878,7 @@
 
       Kung hinayaang hindi nakatakda ang patakarang ito, papaganahin ang third party na cookies ngunit magagawa ng user na baguhin iyon.</translation>
 <translation id="6810445994095397827">I-block ang JavaScript sa mga site na ito</translation>
+<translation id="57127641120127115">Paganahin ang pag-lock kapag naging idle o nasuspinde ang device.</translation>
 <translation id="6672934768721876104">Hindi na ginagamit ang patakarang ito, sa halip ay gamitin ang ProxyMode.
 
           Binibigyang-daan kang tukuyin ang proxy server na ginamit ng <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user na baguhin ang mga setting ng proxy.
@@ -804,9 +908,14 @@
 
           Para sa higit pang mga detalyadong halimbawa, bisitahin ang:
           <ph name="PROXY_HELP_URL"/></translation>
-<translation id="2263362640517427542">Paganahin ang lock kapag naging idle o nasuspinde ang mga device ng ChromeOS.</translation>
+<translation id="6630106909870121131">Nagbibigay-daan na malapat sa lahat ng user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME"/> na device. Ang configuration ng network ay isang naka-format sa JSON  na string tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL"/></translation>
 <translation id="1948757837129151165">Mga Patakaran para sa Pagpapatotoo ng HTTP</translation>
 <translation id="5946082169633555022">Beta channel</translation>
+<translation id="282142179381950064">Hindi pinapagana ang pag-sync ng Google Docs kapag nakatakda sa True.
+
+          - ibig sabihin, walang na-upload na data sa Google Docs.
+
+          - kung hindi nakatakda o kung false, makakapaglipat ng mga file sa Google Docs ang mga user.</translation>
 <translation id="8303314579975657113">Tinutukoy kung aling library ng GSSAPI ang gagamitin para sa Pagpapatotoo ng HTTP. Makakapagtakda ka ng isang pangalan ng library, o isang buong daanan.
 
           Kung walang ibinigay na setting, babalik ang <ph name="PRODUCT_NAME"/> sa paggamit ng default na pangalan ng library.</translation>
@@ -826,16 +935,16 @@
       Kung hindi pinagana o hindi na-configure ang setting na ito, makakapag-print ang mga user sa <ph name="CLOUD_PRINT_NAME"/> mula sa dialog ng pag-print ng <ph name="PRODUCT_NAME"/>.
 
       Kung hindi pinagana ang setting na ito, hindi makakapag-print ang mga user sa <ph name="CLOUD_PRINT_NAME"/> mula sa <ph name="PRODUCT_NAME"/> na dialog ng pag-print</translation>
-<translation id="8879211610210555624">Binibigyang-daan kang tumukoy ng isang listahan ng mga extension na i-i-install nang tahimik, nang walang pakikipag-ugnayan ng user.
+<translation id="2339225390014743328">Binibigyang-daan kang tukuyin ang paggalaw sa startup.
 
-          Isang string ang bawat item sa listahan, na naglalaman ng isang ID ng extension at isang URL ng Update na nililimitahan ng isang tutuldok (<ph name="SEMICOLON"/>). Halimbawa: <ph name="EXTENSION_POLICY_EXAMPLE"/>. Para sa bawat item, babawiin ng <ph name="PRODUCT_NAME"/> ang extension na tinukoy ng ID mula sa tinukoy na URL at tahimik itong mai-install. Ipinapaliwanag ng mga sumusunod na pahina kung paano ka makakapag-host ng mga extension sa sarili mong server. Tungkol sa mga URL ng update: <ph name="LINK_TO_EXTENSION_DOC1"/> , tungkol sa pagho-host ng mga extension sa pangkalahatan: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+          Kung piliin mo ang 'Buksan ang home page,' palaging magbubukas ang home page kapag sinimulan mo ang <ph name="PRODUCT_NAME"/>.
 
-          Hindi magagawang i-uninstall ng mga user ang mga extension na tinukoy ng patakarang ito. Kung mag-alis ka ng isang extension mula sa listahang ito, awtomatiko itong i-a-uninstall ng <ph name="PRODUCT_NAME"/>. Ang mga extension na naka-blacklist sa 'ExtensionInstallBlacklist' at hindi naka-whitelist, ay hindi maaaring pwersahang i-install ng patakarang ito.
+          Kung piliin mo ang 'Ipanumbalik ang huling session,' ang mga URL na bukas noong huling isinara ang <ph name="PRODUCT_NAME"/> ay muling bubuksan at ipapanumbalik ang session ng pagba-browse tulad ng kung paano ito iniwan.
+          Kapag pinili ang opsyong ito, hindi papaganahin ang ilang setting na nakasalalay sa mga session o nagsasagawa ng mga pagkilos sa panahon ng paglabas (gaya ng I-clear ang data mula sa pagba-browse sa panahon ng paglabas o session-lamang na cookies).
 
-          Kung hinayaang hindi nakatakda ang patakarang ito maaaring i-uninstall ng user ang anumang extension sa <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="7855654568917742889">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_NAME"/> para sa pag-iimbak ng data ng user.
+          Kung piliin mo ang 'Magbukas ng listahan ng mga URL, bubuksan ang listahan ng 'Mga URL na bubuksan sa startup' kapag sinimulan ng isang user ang <ph name="PRODUCT_NAME"/>.
 
-      Kung itinakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME"/> ang direktoryo.
+          Kung papaganahin mo ang setting na ito, hindi ito mababago o ma-o-override ng mga user sa <ph name="PRODUCT_NAME"/>.
 
-      Kung hinayaang hindi nakatakda ang setting na ito gagamitin ang default na direktoryo ng profile.</translation>
+          Ang hindi pagpapagana sa setting na ito ay katumbas ng hindi pag-configure dito. Mababago pa rin ito ng user sa <ph name="PRODUCT_NAME"/>.</translation>
 </translationbundle>

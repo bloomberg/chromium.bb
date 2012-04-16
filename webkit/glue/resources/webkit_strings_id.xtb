@@ -8,7 +8,7 @@
 <translation id="5048533449481078685">penanda daftar</translation>
 <translation id="4202807286478387388">lompati</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/> - <ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
-<translation id="795667975304826397">Tidak ada berkas yang dipilih</translation>
+<translation id="795667975304826397">Tidak ada file yang dipilih</translation>
 <translation id="8141602879876242471">Terdapat indeks yang dapat dicari. Masukkan kata kunci penelusuran:</translation>
 <translation id="370665806235115550">Membuka...</translation>
 <translation id="6845533974506654842">tekan</translation>
@@ -20,18 +20,19 @@
 <translation id="5944544982112848342">2048 (Tingkat Tinggi)</translation>
 <translation id="3040011195152428237">tautan</translation>
 <translation id="4522570452068850558">Detail</translation>
-<translation id="8451268428117625855">Pilih berkas.</translation>
-<translation id="7364796246159120393">Pilih Berkas</translation>
+<translation id="8451268428117625855">Pilih file.</translation>
+<translation id="7364796246159120393">Pilih File</translation>
 <translation id="2761667185364618470">Centang kotak ini jika Anda ingin melanjutkan.</translation>
 <translation id="8964020114565522021">Tarik file ke sini</translation>
 <translation id="838869780401515933">centangi</translation>
 <translation id="2846343701378493991">1024 (Tingkat Menengah)</translation>
-<translation id="1637811476055996098">Pilih Berkas</translation>
+<translation id="1637811476055996098">Pilih File</translation>
 <translation id="5476505524087279545">batalkan centang</translation>
 <translation id="2507943997699731163">Harap isi bidang ini.</translation>
+<translation id="5919473608089529604">Tidak dapat memuat plugin.</translation>
 <translation id="6663448176199120256">Penelusuran Barusan</translation>
 <translation id="2597378329261239068">Dokumen ini dilindungi sandi. Masukkan sandi.</translation>
-<translation id="5466621249238537318">Pilih salah satu atau beberapa berkas.</translation>
+<translation id="5466621249238537318">Pilih salah satu atau beberapa file.</translation>
 <translation id="8750798805984357768">Pilih salah satu opsi berikut.</translation>
 <translation id="7740050170769002709">Konten HTML</translation>
 <translation id="2226276347425096477">Pendekkan teks ini menjadi <ph name="MAX_CHARACTERS"/> karakter atau kurang (saat ini Anda menggunakan <ph name="CURRENT_LENGTH"/> karakter).</translation>
@@ -42,7 +43,7 @@
 <translation id="1842960171412779397">pilih</translation>
 <translation id="3450233048674729344">Nilai harus lebih kecil atau sama dengan <ph name="MAXIMUM"/>.</translation>
 <translation id="6119846243427417423">aktifkan</translation>
-<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> berkas</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> file</translation>
 <translation id="3934680773876859118">Gagal memuat dokumen PDF</translation>
 <translation id="8597182159515967513">kepala</translation>
 <translation id="2653659639078652383">Kirim</translation>

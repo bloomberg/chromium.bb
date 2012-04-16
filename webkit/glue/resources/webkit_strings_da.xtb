@@ -10,7 +10,7 @@
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="795667975304826397">Der er ikke valgt nogen fil</translation>
 <translation id="8141602879876242471">Der kan søges i dette indeks. Indtast søge-nøgleord:</translation>
-<translation id="370665806235115550">Indlæser ...</translation>
+<translation id="370665806235115550">Indlæser...</translation>
 <translation id="6845533974506654842">tryk</translation>
 <translation id="8244226242650769279">billedekort</translation>
 <translation id="310520048233152454">Angiv en webadresse.</translation>
@@ -29,6 +29,7 @@
 <translation id="1637811476055996098">Vælg filer</translation>
 <translation id="5476505524087279545">fjern markering</translation>
 <translation id="2507943997699731163">Udfyld dette felt.</translation>
+<translation id="5919473608089529604">Pluginnet kunne ikke indlæses.</translation>
 <translation id="6663448176199120256">Nylige søgninger</translation>
 <translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Indtast en adgangskode.</translation>
 <translation id="5466621249238537318">Vælg en eller flere filer.</translation>

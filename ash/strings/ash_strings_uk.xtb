@@ -1,4 +1,51 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
+<translation id="3595596368722241419">Повний заряд акумулятора</translation>
+<translation id="908313544993743941">Вимкнути мобільну мережу</translation>
+<translation id="30155388420722288">Кнопка переповнення</translation>
+<translation id="5571066253365925590">Bluetooth увімкнено</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
+<translation id="2268130516524549846">Bluetooth вимкнено</translation>
+<translation id="3626281679859535460">Яскравість</translation>
+<translation id="7982789257301363584">Мережа</translation>
+<translation id="2297568595583585744">Контейтер стану</translation>
+<translation id="2946640296642327832">Увімкнути Bluetooth</translation>
+<translation id="6596816719288285829">ІР-адреса</translation>
+<translation id="289426338439836048">Інша мобільна мережа...</translation>
+<translation id="5233638681132016545">Нова вкладка</translation>
+<translation id="785750925697875037">Переглянути обліковий запис для мобільних пристроїв</translation>
+<translation id="7864539943188674973">Вимкнути Bluetooth</translation>
+<translation id="3126069444801937830">Перезапустіть, щоб оновити</translation>
+<translation id="8190698733819146287">Налаштувати мови та введення тексту...</translation>
+<translation id="7911992579061465928">Низький заряд батареї</translation>
+<translation id="598295083618286569">Bluetooth під’єднано</translation>
+<translation id="5222676887888702881">Вийти</translation>
+<translation id="811680302244032017">Додати пристрій...</translation>
+<translation id="3232695630852378748">Налаштування Bluetooth...</translation>
+<translation id="1480041086352807611">Демонстраційний режим</translation>
+<translation id="4186384497305035875">Цей екран навмисно залишили порожнім</translation>
+<translation id="9089416786594320554">Методи введення</translation>
+<translation id="7706302027196209560">Увімкнути Wi-Fi</translation>
+<translation id="4430019312045809116">Гучність</translation>
+<translation id="3557139239102318020">Потягніть униз, щоб згорнути, ліворуч чи праворуч, щоб фрагментувати</translation>
+<translation id="5980301590375426705">Завершити сеанс у режимі гостя</translation>
+<translation id="8308637677604853869">Попереднє меню</translation>
+<translation id="3595065677684516080">Налаштування й довідка</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="3784455785234192852">Заблокувати</translation>
+<translation id="5836819469861742634">Змінити налаштування проксі ...</translation>
+<translation id="2872961005593481000">Завершити роботу</translation>
+<translation id="8735871257195921372">Інша мережа Wi-Fi...</translation>
+<translation id="2152495481414285304">Програми</translation>
+<translation id="1690310444231390462">Вимкнути Wi-Fi</translation>
+<translation id="77565731175229781">Налаштування мережі ...</translation>
+<translation id="7029814467594812963">Завершити сеанс</translation>
+<translation id="7908019422099334890">Установити фоновий малюнок...</translation>
+<translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7841796031898165175">Увімкнути мобільну мережу</translation>
+<translation id="9072667645353666975">Батарея: <ph name="PERCENTAGE"/>%
+<ph name="HOUR"/> год. <ph name="MINUTE"/> хв.</translation>
+<translation id="48607902311828362">Режим польоту</translation>
 </translationbundle>

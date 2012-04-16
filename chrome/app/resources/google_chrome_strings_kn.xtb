@@ -5,6 +5,7 @@
 <translation id="8485767968786176057">ಈ ಸಂದರ್ಭದಲ್ಲಿ, ನಿಮ್ಮ ಬ್ರೌಸರ್ ಹೋಗಲು ಪ್ರಯತ್ನಿಸಿದ ವೆಬ್‌ಸೈಟ್‌ನ ವಿಳಾಸಕ್ಕೆ ಪ್ರಮಾಣಪತ್ರದಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡಲಾದ ವಿಳಾಸವು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ಇದಕ್ಕಾಗಿ ಒಂದು ಸಂಭವನೀಯ ಕಾರಣವೆಂದರೆ ನಿಮ್ಮ ಸಂವಹನಗಳನ್ನು ದಾಳಿಕೋರರಿಂದ ತಡೆಯುಂಟು ಮಾಡಲಾಗುತ್ತಿದೆ, ಇವರು ಬೇರೆಯ ವೆಬ್‌ಸೈಟ್‌ಗೆ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಪ್ರದರ್ಶಿಸುತ್ತಿದ್ದಾರೆ, ಇದರಿಂದಾಗಿ ವ್ಯತ್ಯಾಸಕ್ಕೆ ಕಾರಣವಾಗಿದೆ. ಮತ್ತೊಂದು ಸಂಭವನೀಯ ಕಾರಣವೆಂದರೆ ನೀವು ಭೇಟಿ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವುದು ಸೇರಿದಂತೆ, ಆ ಎಲ್ಲ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೂ ಪ್ರಮಾಣಪತ್ರವು ಮಾನ್ಯವಾಗಿಲ್ಲದಿದ್ದರೂ ಸಹ ಸರ್ವರ್ ಅನ್ನು ಬಹು ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗಾಗಿ ಹೊಂದಿಸಲಾಗಿದೆ. ನೀವು &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಿರುವಿರಿ ಎಂದು Google Chrome ಖಚಿತವಾಗಿ ಹೇಳಬಹುದಾಗಿದೆ, ಆದರೆ ಇದು ತಲುಪಬೇಕೆಂದಿರುವ &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಸೈಟ್‌ನಂತಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿಲ್ಲ. ನೀವು ಮುಂದುವರಿದಲ್ಲಿ, Chrome ಯಾವುದೇ ಇನ್ನಷ್ಟು ಹೆಸರು ಹೊಂದಾಣಿಕೆಯಾಗದಿರುವುದಕ್ಕೆ ಪರಿಶೀಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="5430073640787465221">ನಿಮ್ಮ ಪ್ರಾಶಸ್ತ್ಯಗಳ ಫೈಲ್ ದೋಷಪೂರಿತವಾಗಿದೆ ಅಥವಾ ಅಮಾನ್ಯವಾಗಿದೆ. ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಪಡೆದುಕೊಳ್ಳುವಲ್ಲಿ Google Chrome ವಿಫಲಗೊಂಡಿದೆ.</translation>
 <translation id="6676384891291319759">ಇಂಟರ್ನೆಟ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
+<translation id="573759479754913123">Chrome OS ಕುರಿತು</translation>
 <translation id="5453904507266736060">Google Chrome ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಚಾಲನೆಗೊಳ್ಳಲು ಅನುಮತಿಸಿ</translation>
 <translation id="2383457833405848421">Chrome ಫ್ರೇಮ್ ಬಗ್ಗೆ...</translation>
 <translation id="386202838227397562">ದಯವಿಟ್ಟು ಎಲ್ಲಾ Google Chrome ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -21,15 +22,16 @@
 <translation id="1761870329818521071">ಪ್ರಸ್ತುತವಾಗಿ ಚಾಲನೆಯಲ್ಲಿರುವ ಅದೇ Google Chrome Frame ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು  Google Chrome Frame ಅನ್ನು ಮುಚ್ಚಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="3140883423282498090">ನೀವು ಮುಂದಿನ ಬಾರಿ Google Chrome ಮರುಪ್ರಾರಂಭಿಸಿದಾಗ ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಕಾರ್ಯಗತಗೊಳ್ಳುತ್ತವೆ.</translation>
+<translation id="1773601347087397504">Chrome OS ಅನ್ನು ಬಳಸಿಕೊಳ್ಳುವುದರೊಂದಿಗೆ ಸಹಾಯವನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="1872436416934435136">ನಿಮ್ಮ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಂ ಚೆನ್ನಾಗಿರುವುದರ ಕಾರಣ Google Chrome ಅನ್ನು ಇನ್ನು ಮುಂದೆ ನವೀಕರಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="5339639696978861456">Chrome Frame ಅನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ. Chrome ಆವೃತ್ತಿ: <ph name="TODO_0001"/>, Chrome Frame ಆವೃತ್ತಿ: <ph name="TODO_0002"/></translation>
 <translation id="4281844954008187215">ಸೇವೆಯ ನಿಯಮಗಳು</translation>
+<translation id="8398145039500709259">ನಿಮ್ಮೆಲ್ಲಾ Chrome ಸಂಗತಿಯನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಈ Google ಖಾತೆಯನ್ನು ಬಳಸುವುದೇ?</translation>
 <translation id="6862759394142635932">ನೀವು ಈಗ Google Chrome ಮುಚ್ಚಿದರೆ, ಈ ಡೌನ್‌ಲೋಡ್ ಅನ್ನು ರದ್ದುಮಾಡಲಾಗುವುದು.</translation>
 <translation id="1779550429052479749">Google Chrome ಅಥವಾ Google Chrome Frame  ಅನ್ನು ಸಿಸ್ಟಂ‌ನಲ್ಲಿ ಸ್ಥಾಪಿಸುವ ಸಂದರ್ಭದಲ್ಲಿ ಸಂಘರ್ಷವು ಪತ್ತೆಯಾಗಿದೆ. ದಯವಿಟ್ಟು ಅಸ್ಥಾಪಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3555616473548901994">ಅಸ್ಥಾಪನೆ ಪೂರ್ಣಗೊಂಡಿದೆ.</translation>
 <translation id="8556340503434111824">Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ, ಮತ್ತು ಇದು ಎಂದಿಗಿಂತಲೂ ವೇಗವಾಗಿದೆ.</translation>
 <translation id="4728575227883772061">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. Google Chrome ಪ್ರಸ್ತುತ ಚಲಿಸುತ್ತಿದ್ದರೆ, ದಯವಿಟ್ಟು ಇದನ್ನು ಮುಚ್ಚಿ ಮತ್ತು ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="4727256538826447736">ನೀವು &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ, ಆದರೆ ಸರ್ವರ್ ಅವಧಿ ಮುಗಿದಿರುವ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಪ್ರಸ್ತುತಪಡಿಸಿದೆ. ಇದರ ಅವಧಿ ಮುಕ್ತಾಯಗೊಂಡಾಗಿನಿಂದಲೂ ಆ ಪ್ರಮಾಣಪತ್ರ ಹೊಂದಾಣಿಕೆಯಾಗಿದೆಯೆ ಎಂಬುದನ್ನು ಸೂಚಿಸಲು ಯಾವುದೇ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ. ನೀವು &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ರೊಂದಿಗೆ ಮತ್ತು ಆಕ್ರಮಣಕಾರರೊಂದಿಗೆ ಸಂವಹಿಸುತ್ತಿರುವಿರಿ ಎಂಬುದನ್ನು Google Chrome ಖಾತ್ರಿಪಡಿಸುವುದಿಲ್ಲ ಎಂಬುದು ಇದರರ್ಥ.</translation>
 <translation id="3080151273017101988">Google Chrome ಮುಚ್ಚಿದಾಗ ಚಾಲನೆಯಲ್ಲಿರುವ ಹಿನ್ನೆಲೆ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಮುಂದುವರಿಸಿ</translation>
 <translation id="4149882025268051530">ಆರ್ಕೈವ್ ಅನ್ನು ವಿಕಸನ ಮಾಡಲು ಇನ್ಸ್ಟಾಲರ್ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ Google Chrome ಅನ್ನು ಡೌನ್ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="6989339256997917931">Google Chrome ನವೀಕರಿಸಲಾಗಿದೆ, ಆದರೆ ನೀವು ಕನಿಷ್ಠ 30 ದಿನಗಳವರೆಗಾದರೂ ಇದನ್ನು ಬಳಸಿರಲಿಕ್ಕಿಲ್ಲ. </translation>
@@ -41,24 +43,29 @@
 <translation id="8227755444512189073"><ph name="SCHEME"/> ಲಿಂಕ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು Google Chrome ಬಾಹ್ಯ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಪ್ರಾರಂಭಿಸುವುದು ಅವಶ್ಯಕವಾಗಿದೆ. ವಿನಂತಿಸಿದ ಲಿಂಕ್‌<ph name="PROTOLINK"/> ಆಗಿದೆ.</translation>
 <translation id="8290100596633877290">ಓಹ್! Google Chrome ಕ್ರ‍್ಯಾಶ್‌ ಆಗಿದೆ.ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೆ?</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/>ಸೇವಾ ನಿಯಮಗಳು<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
+<translation id="1393853151966637042">Chrome ಅನ್ನು ಬಳಸಿಕೊಳ್ಳುವುದರೊಂದಿಗೆ ಸಹಾಯವನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="3487814320513494737">Chrome ನ ಹೊಸ ಟ್ಯಾಬ್ ಪುಟವನ್ನು ಮರುವಿನ್ಯಾಸಮಾಡಲಾಗಿದೆ. ಈ ಲೇಬಲ್‌ಗಳನ್ನು ಕ್ಲಿಕ್ ಮಾಡುವುದರ ಮೂಲಕ ವಿಭಾಗಗಳ ನಡುವೆ ಸರಾಗವಾಗಿ ಚಲಿಸಿ. ಮುಂದಿನ ದಿನಗಳಲ್ಲಿ Chrome ನಿಮ್ಮ ಆದ್ಯತೆಯನ್ನು ನೆನಪಿನಲ್ಲಿರಿಸಿಕೊಳ್ಳುತ್ತದೆ.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="6423071462708908582">ನೀವು &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿರುವಿರಿ, ಆದರೆ ಸರ್ವರ್ ಅವಧಿ ಮುಗಿದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸಲ್ಲಿಸಿದೆ. ತನ್ನ ವಾಯಿದೆ ಮುಗಿದಾಗಿನಿಂದಲೂ ಆ ಪ್ರಮಾಣಪತ್ರಕ್ಕೆ ಧಕ್ಕೆಯುಂಟಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಸೂಚಿಸುವ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ. ಇದರರ್ಥವೇನೆಂದರೆ ನೀವು &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ನೊಂದಿಗೆ ಸಂವಹಿಸುತ್ತಿರುವಿರಿ ಮತ್ತು ಆಕ್ರಮಣಾಕಾರನಲ್ಲ ಎಂಬುದಕ್ಕೆ Google Chrome ಭರವಸೆ ನೀಡುವುದಿಲ್ಲ. ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನ ಗಡಿಯಾರವನ್ನು ಪ್ರಸ್ತುತ <ph name="CURRENT_TIME"/> ಗೆ ಹೊಂದಿಸಿದೆ. ಇದು ಸರಿ ಎಂದು ತೋರುತ್ತಿದೆಯೇ? ಸರಿಯಲ್ಲದಿದ್ದರೆ, ಈ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್‌ ಮಾಡಿ ಯಾವುದೇ ದೋಷವನ್ನು ನೀವು ಸರಿಪಡಿಸಿ.</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="3889417619312448367">Google Chrome ಅನ್ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3282568296779691940">Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="3089968997497233615">ಹೊಸದಾದ, ಸುರಕ್ಷಿತವಾದ Google Chrome ನ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ.</translation>
 <translation id="5037239767309817516">ಈ ಬದಲಾವಣೆಯು ಕಾರ್ಯಗತಗೊಳ್ಳಲು ದಯವಿಟ್ಟು ಎಲ್ಲ Google Chrome ವಿಂಡೊಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಅದನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="7451721381978275812">ಅಮಾನ್ಯವಾದ ವಾದಗಳು. Google Chrome ಸ್ಥಾಪನೆ ಮಾಡದೆ ಸಿದ್ಧತೆಯ ಮೋಡ್‌ನಲ್ಲಿ Google Chrome Frame ಅನ್ನು ಸ್ಥಾಪನೆ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="5727432509906037972">ಡೌನ್‌ಲೋಡ್ ಪ್ರಗತಿಯಲ್ಲಿರುವಾಗ ನೀವು Google Chrome ನಿಂದ ತೊರೆಯಬೇಕೆಂದು ಬಯಸುವಿರಾ?</translation>
-<translation id="1367236238006776563">ವಿಸ್ತರಣೆ &quot;<ph name="EXTENSION_NAME"/>&quot; ಅನ್ನು Chrome ಗೆ ಸೇರಿಸಲಾಗಿದೆ.</translation>
 <translation id="4585888816441913908">ಈ ಕಂಪ್ಯೂಟರ್ Google Chrome ಮತ್ತು Google Chrome ಫ್ರೇಮ್‌ನ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯನ್ನು ಈಗಾಗಲೇ ಹೊಂದಿದೆ. ಸಾಫ್ಟ್‌ವೇರ್ ಕಾರ್ಯನಿರ್ವಹಿಸದಿದ್ದರೆ, ದಯವಿಟ್ಟು Google Chrome ಮತ್ತು Google Chrome ಫ್ರೇಮ್ ಎರಡನ್ನೂ ಅಸ್ಥಾಪಿಸಿ ಹಾಗೂ ನಂತರ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="6368958679917195344">ಹೆಚ್ಚುವರಿ <ph name="BEGIN_LINK_CROS_OSS"/>ತೆರೆದ ಮೂಲ ಸಾಫ್ಟ್‌ವೇರ್<ph name="END_LINK_CROS_OSS"/> ನಿಂದ Chrome OS ಮಾಡಲು ಸಾಧ್ಯ.</translation>
+<translation id="7459554271817304652">ನಿಮ್ಮ ವೈಯಕ್ತಿಕಗೊಳಿಸಿದ ಬ್ರೌಸರ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ವೆಬ್‍ಗೆ ಉಳಿಸಲು ಮತ್ತು ಅವುಗಳನ್ನು Google Chrome ನಿಂದ ಯಾವುದೇ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಪ್ರವೇಶಿಸಲು ಸಿಂಕ್ ಅನ್ನು ಹೊಂದಿಸಿ.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3215326788962391210">ನೀವು &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ, ಆದರೆ ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಂನಿಂದ ವಿಶ್ವಾಸಾರ್ಹಗೊಂಡಿರದ ಅಸ್ತಿತ್ವದಿಂದ ನೀಡಿದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಪ್ರಸ್ತುತಪಡಿಸಿದ್ದಾರೆ. Google Chrome ಗುರುತಿನ ಮಾಹಿತಿಗಾಗಿ ಅವಲಂಬಿತವಾಗದೆ ಇರುವಂತಹ ಸರ್ವರ್ ತನ್ನದೇ ಆದಂತಹ ಸ್ವಂತ ಭದ್ರತಾ ರುಜುವಾತುಗಳನ್ನು ರಚಿಸಿದೆ ಎಂದರ್ಥವಾಗಿರಬಹುದು, ಅಥವಾ ನಿಮ್ಮ ಸಂವಹನಗಳನ್ನು ಆಕ್ರಮಣಾಕಾರರೊಬ್ಬರು ತಡೆಯಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರಬಹುದು.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="1195935957447623558">Google Chrome ಸರಿಯಾಗಿ ಶಟ್ ಡೌನ್ ಆಗಿಲ್ಲ. ನೀವು ತೆರೆದ ಪುಟವನ್ನು ಮರುತೆರೆಯಲು, ಪುನಃಸ್ಥಾಪನೆ ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="2783467918276328046">Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡುವ <ph name="BEGIN_LINK"/>ಇನ್ನಷ್ಟು ಲಾಭಗಳನ್ನು<ph name="END_LINK"/> ನೋಡಿ.</translation>
 <translation id="2580411288591421699">ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿರುವ ಅದೇ Google Chrome ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು Google Chrome ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="1457721931618994305">Google Chrome ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7747138024166251722">ಸ್ಥಾಪಕಕ್ಕೆ ತಾತ್ಕಾಲಿಕ ಡೈರೆಕ್ಟರಿಯನ್ನು ರಚಿಸಲಾಗಲಿಲ್ಲ. ಸಾಫ್ಟ್ವೇರ್ ಸ್ಥಾಪನೆ ಮಾಡಲು ಮುಕ್ತ ಡಿಸ್ಕ್ ಜಾಗ ಮತ್ತು ಅನುಮತಿಗಾಗಿ ದಯವಿಟ್ಟು ಪರಿಶೀಲಿಸಿ.</translation>
 <translation id="5170938038195470297">ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿಯಿಂದ ಆಗಿರುವ ಕಾರಣ ಅದನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ. ಕೆಲವು ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿಲ್ಲದಿರಬಹುದು. ದಯವಿಟ್ಟು ಬೇರೆಯ ಪ್ರೊಫೈಲ್ ಡೈರೆಕ್ಟರಿಯನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಿ ಅಥವಾ Chrome ನ ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿ.</translation>
 <translation id="8738921060445980047">ಅಜ್ಞಾತ ಆವೃತ್ತಿ.</translation>
@@ -66,7 +73,7 @@
 <translation id="2748463065602559597">ನೀವು ಸುರಕ್ಷಿತ Google Chrome ಪುಟವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ.</translation>
 <translation id="7185038942300673794">Chrome ಗೆ <ph name="EXTENSION_NAME"/> ಅನ್ನು ಸೇರಿಸಲಾಗಿದೆ.</translation>
 <translation id="9073088951656332330">ನವೀಕರಿಸಲು Google Chrome ಅಥವಾ Google Chrome ಫ್ರೇಮ್‌‌ನ ಯಾವುದೇ ಸ್ಥಾಪನೆಯು ಕಂಡುಬಂದಿಲ್ಲ.</translation>
-<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>ಎಚ್ಚರಿಕೆ: <ph name="END_BOLD"/>Google Chrome ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸದಲ್ಲಿ ರಿಕಾರ್ಡಿಂಗ್‌ನಿಂದ ವಿಸ್ತರಣೆಗಳನ್ನು ತಡೆಯುವುದಿಲ್ಲ. ಅಜ್ಞಾತ ಮೋಡ್‌ನಲ್ಲಿ ಈ ವಿಸ್ತರಣೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ಈ ಆಯ್ಕೆಯನ್ನು ಆರಿಸಬೇಡಿ.</translation>
+<translation id="9107728822479888688"><ph name="BEGIN_BOLD"/>ಎಚ್ಚರಿಕೆ:<ph name="END_BOLD"/> Google Chrome ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸದಲ್ಲಿ ರೆಕಾರ್ಡಿಂಗ್‌ನಿಂದ ವಿಸ್ತರಣೆಗಳನ್ನು ತಡೆಯುವುದಿಲ್ಲ. ಅಜ್ಞಾತ ಮೋಡ್‌ನಲ್ಲಿ ಈ ವಿಸ್ತರಣೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ಈ ಆಯ್ಕೆಯನ್ನು ಆರಿಸಬೇಡಿ.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="3904146009066562368">Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ</translation>
 <translation id="911206726377975832">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಸಹ ಅಳಿಸುವುದೇ?</translation>
@@ -85,6 +92,7 @@
 <translation id="5941830788786076944">Google Chrome ಅನ್ನು ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿ ಮಾಡಿ</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="4561051373932531560">Google Chrome ನೀವು ವೆಬ್‌ನಲ್ಲಿ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಕ್ಲಿಕ್ ಮಾಡಲು ಅವಕಾಶ ಮಾಡುತ್ತದೆ ಮತ್ತು Skype ನೊಂದಿಗೆ ಕರೆ ಮಾಡುತ್ತದೆ!</translation>
+<translation id="4573769928351971197">ಆರಂಭಿಕದಲ್ಲಿ ನಿಮ್ಮ ಹಿಂದಿನ ಸೆಶನ್ ಅನ್ನು Google Chrome ಮರುಸ್ಥಾಪಿಸುತ್ತದೆ. ನಿರ್ಗಮಿಸುವಲ್ಲಿ ತೆರವುಗೊಳಿಸುವ ಡೇಟಾದಂತಹ, ನಿಮ್ಮ ಕೆಲವೊಂದು ಸೆಶನ್-ಆಧಾರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು, ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುವುದು.</translation>
 <translation id="3612333635265770873">ಒಂದೇ ಹೆಸರಿರುವ ಮಾಡ್ಯುಲ್ ಮತ್ತು Google Chrome ನೊಂದಿಗೆ ಘರ್ಷಣೆ ಆಗಬಹುದು.</translation>
 <translation id="61852838583753520">&amp;Chrome OS ನವೀಕರಿಸಿ</translation>
 <translation id="6650142020817594541">ಈ ಸೈಟ್ Google Chrome Frame ಅನ್ನು ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ (ಈಗಾಗಲೇ ಸ್ಥಾಪನೆ ಮಾಡಲಾಗಿದೆ).</translation>
@@ -103,6 +111,7 @@
 <translation id="8614913330719544658">Google Chrome ಸ್ಪಂದಿಸುತ್ತಿಲ್ಲ. ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೆ?
 </translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="5699533844376998780">&quot;<ph name="EXTENSION_NAME"/>&quot; ವಿಸ್ತರಣೆಯನ್ನು ಸೇರಿಸಲಾಗಿದೆ.</translation>
 <translation id="6126631249883707068">Google Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಉಳಿಸಲು ನೀವು ಬಯಸುವಿರಾ?</translation>
 <translation id="5046764976540625289">Chrome ಅನ್ನು ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="2925521875688282191">ದಯವಿಟ್ಟು  Chrome OS ನಿಂದ ಸೈನ್ ಔಟ್ ಮಾಡಿ ಮತ್ತು ಈ ಬದಲಾವಣೆಗಳು ಕಾರ್ಯಗತವಾಗಲು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.</translation>
@@ -113,6 +122,7 @@
 <translation id="2189123953385179981"><ph name="SCHEME"/> ಲಿಂಕ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು ಬಾಹ್ಯ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಪ್ರಾರಂಭಿಸಲು Google ChromeOS ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. <ph name="PROTOLINK"/> ವಿನಂತಿಸಿದ ಲಿಂಕ್‌ ಆಗಿದೆ.</translation>
 <translation id="711654979569750606">ಹಕ್ಕುಸ್ವಾಮ್ಯ © 2006-2012 Google Inc. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.</translation>
 <translation id="8205111949707227942">ಐಚ್ಚಿಕ: Google ಗೆ ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳು ಮತ್ತು ಕ್ರ್ಯಾಷ್ ವರದಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುವುದರಿಂದ Chrome OS ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ.</translation>
+<translation id="8345657477105118085">Chrome OS ನವೀಕರಿಸಿದೆ.</translation>
 <translation id="7196020411877309443">ನಾನು ಇದನ್ನೇಕೆ ನೋಡುತ್ತಿದ್ದೇನೆ?</translation>
 <translation id="2769762047821873045">Google Chrome ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅಲ್ಲ.</translation>
 <translation id="7825851276765848807">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ Google Chrome ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
@@ -120,6 +130,7 @@
 <translation id="2666187591945638709">Google Chrome ಅನ್ನು <ph name="VERSION"/> ಗೆ ನವೀಕರಿಸಲಾಗಿದೆ</translation>
 <translation id="5334545119300433702">Google Chrome ನೊಂದಿಗಿನ ಈ ಮಾಡ್ಯೂಲ್‌‌ನ ಘರ್ಷಣೆ ಎಲ್ಲರಿಗೂ ತಿಳಿದಿರುವಂಥದ್ದು. </translation>
 <translation id="4892299120052124303">ನೀವು ಈಗ GOOGLE CHROME ಮುಚ್ಚಿದರೆ, ಈ ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ರದ್ದುಮಾಡಲಾಗುವುದು.</translation>
+<translation id="6634887557811630702">Google Chrome ಅನ್ನು ನವೀಕರಿಸಿದೆ</translation>
 <translation id="2084710999043359739">Chrome ಗೆ ಸೇರಿಸಿ</translation>
 <translation id="4084877369264707540">Google Chrome Frame ಅನ್ನು ಈಗಾಗಲೇ ಸ್ಥಾಪಿಸಲಾಗಿದೆ ಮತ್ತು ಈ ಕಂಪ್ಯೂಟರ್‌ನ ಎಲ್ಲ ಬಳಕೆದಾರರಿಗೆ ಲಭ್ಯವಿದೆ. ಬಳಕೆದಾರರ ಹಂತದಲ್ಲಿ ನೀವು Google Chrome Frame ಅನ್ನು ಸ್ಥಾಪಿಸಲು ನೀವು ಬಯಸಿದರೆ, ನೀವು ಮೊದಲಿಗೆ ನಿರ್ವಾಹಕರಿಂದ ಸ್ಥಾಪಿಸಲಾದ ಸಿಸ್ಟಂ ಹಂತದ ಆವೃತ್ತಿಯನ್ನು ಅಸ್ಥಾಪಿಸಬೇಕಾಗಿದೆ.</translation>
 <translation id="3360895254066713204">Chrome ಸಹಾಯಕ</translation>
@@ -136,11 +147,12 @@
 <translation id="4338032231047635328">ನೀವು &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ, ಆದರೆ ಸರ್ವರ್ ಒದಗಿಸಿದ ಪ್ರಮಾಣಪತ್ರವು ದೋಷಗಳಿಂದ ಕೂಡಿದೆ. Google Chrome ದೋಷಗಳೊಂದಿಗೆ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಬಳಸುವುದಿಲ್ಲ ಮತ್ತು ಇದಕ್ಕೆ ಸಂಪರ್ಕಿಸಲು ನೀವು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವ ಸೈಟ್‌ನ ಗುರುತಿಸುವಿಕೆಯನ್ನು ಮೌಲ್ಯೀಕರಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1847321074516120686">Chrome ಸ್ವಯಂತುಂಬುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
+<translation id="3836351788193713666">ಬಹಳಷ್ಟನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ! ನವೀಕರಣವನ್ನು ಮುಗಿಸಲು Google Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
 <translation id="7106741999175697885">ಕಾರ್ಯ ನಿರ್ವಾಹಕ - Google Chrome</translation>
+<translation id="1826482739472655104">ನೀವು &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿರುವಿರಿ, ಆದರೆ ಸರ್ವರ್ ಅವಧಿ ಮುಗಿದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸಲ್ಲಿಸಿದೆ. ಪ್ರಮಾಣಪತ್ರವು ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಬಹುದೆ ಎಂಬುದನ್ನು ಸೂಚಿಸಲು ಯಾವುದೇ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ. Google Chrome ನೀವು ಆಕ್ರಮಣಕಾರನಲ್ಲದ, &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ನೊಂದಿಗೆ ಸಂವಹಿಸುತ್ತಿದ್ದೀರೆಂದು ವಿಶ್ವಸನೀಯವಾಗಿ ಭರವಸೆ ನೀಡುವುದಿಲ್ಲ. ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಗಂಟೆಯನ್ನು ಪ್ರಸ್ತುತ <ph name="CURRENT_TIME"/> ಗೆ ಹೊಂದಿಸಿದೆ. ಇದು ಸರಿ ಎಂದು ತೋರುತ್ತಿದೆಯೇ? ಸರಿಯಲ್ಲದಿದ್ದರೆ, ಈ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್‌ಮಾಡಿ  ಯಾವುದೇ ದೋಷವನ್ನು ನೀವು ಸರಿಪಡಿಸಿ.</translation>
 <translation id="8449380764213232436">Google Chrome ಈಗ  <ph name="BROWSER_COMPONENT"/> ನಿಂದ ಕೆಳಗಿನ ವಿಷಯವನ್ನು ಆಮದು ಮಾಡಿಕೊಳ್ಳುತ್ತಿದೆ:</translation>
 <translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">ಸ್ಥಾಪನೆ ವೇಳೆ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಮ್ ದೋಷವು ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು Google Chrome ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಡೌನ್ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="5495581687705680288">ಮಾಡ್ಯೂಲ್‌ಗಳನ್ನು Google Chrome ನಲ್ಲಿ ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="4086010630946365132">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ಅನ್ನು ತಲುಪಲು ನೀವು ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ, ಆದರೆ ಸರ್ವರ್ ಇನ್ನೂ ಮಾನ್ಯವಾಗಿಲ್ಲವೆಂದು ಪ್ರಮಾಣಪತ್ರವನ್ನು ಪ್ರಸ್ತುತಪಡಿಸಿದೆ. ಪ್ರಮಾಣಪತ್ರವು ವಿಶ್ವಾಸಾರ್ಹವಾಗಿರಬಹುದೆ ಎಂಬುದನ್ನು ಸೂಚಿಸಲು ಯಾವುದೇ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ. Google Chrome ನೀವು ಆಕ್ರಮಣಕಾರನಲ್ಲದೆ, &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ನೊಂದಿಗೆ ಸಂವಹನ ಮಾಡುತ್ತಿದ್ದೀರಿ ಎಂಬುದನ್ನು ಖಾತರಿ ಮಾಡಬಹುದು. ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಗಡಿಯಾರ ಮತ್ತು ಸಮಯ ವಲಯ ಸರಿಯಾಗಿ ಹೊಂದಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನು ಖಾತ್ರಿಪಡಿಸಿಕೊಳ್ಳಬೇಕು. ಅವುಗಳು ಸರಿಯಿಲ್ಲದಿದ್ದರೆ, ನೀವು ಯಾವುದೇ ಸಮಸ್ಯೆಗಳನ್ನು ಸರಿಪಡಿಸಬೇಕು ಮತ್ತು ಈ ಪುಟವನ್ನು ರೀಫ್ರೆಶ್ ಮಾಡಬೇಕು.</translation>
 <translation id="8129812357326543296">&amp;Google Chrome ಬಗ್ಗೆ</translation>
 </translationbundle>

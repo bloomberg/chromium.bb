@@ -1,4 +1,51 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
+<translation id="3595596368722241419">பேட்டரி நிரம்பியது</translation>
+<translation id="908313544993743941">செல்லுலாரை முடக்கு</translation>
+<translation id="30155388420722288">மிகைப்படுத்தி பொத்தான்</translation>
+<translation id="5571066253365925590">Bluetooth இயக்கப்பட்டது</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
+<translation id="2268130516524549846">Bluetooth முடக்கப்பட்டது</translation>
+<translation id="3626281679859535460">ஒளிர்வு</translation>
+<translation id="7982789257301363584">நெட்வொர்க்</translation>
+<translation id="2297568595583585744">நிலைத் தட்டு</translation>
+<translation id="2946640296642327832">Bluetooth ஐ இயக்கு</translation>
+<translation id="6596816719288285829">IP முகவரி</translation>
+<translation id="289426338439836048">பிற மொபைல் பிணையம்...</translation>
+<translation id="5233638681132016545">புதிய தாவல்</translation>
+<translation id="785750925697875037">மொபைல் கணக்கைப் பார்க்கவும்</translation>
+<translation id="7864539943188674973">Bluetooth ஐ முடக்கு</translation>
+<translation id="3126069444801937830">புதுப்பிக்க மீண்டும் தொடங்குக</translation>
+<translation id="8190698733819146287">மொழிகள் மற்றும்  உள்ளீடைத் தனிப்பயனாக்கு...</translation>
+<translation id="7911992579061465928">பேட்டரி குறைவு</translation>
+<translation id="598295083618286569">Bluetooth இணைக்கப்பட்டது</translation>
+<translation id="5222676887888702881">வெளியேறு</translation>
+<translation id="811680302244032017">சாதனத்தைச் சேர்க்கவும்...</translation>
+<translation id="3232695630852378748">Bluetooth அமைப்புகள்...</translation>
+<translation id="1480041086352807611">டெமோ பயன்முறை</translation>
+<translation id="4186384497305035875">இந்தத் திரை வேண்டுமென்றே வெறுமையாக விடப்பட்டுள்ளது.</translation>
+<translation id="9089416786594320554">உள்ளீட்டு முறைகள்</translation>
+<translation id="7706302027196209560">Wi-fi ஐ இயக்கு</translation>
+<translation id="4430019312045809116">அளவு</translation>
+<translation id="3557139239102318020">குறைக்க கீழே இழுக்கவும், அடுக்குவதற்கு இடது அல்லது வலதுபுறம் இழுக்கவும்</translation>
+<translation id="5980301590375426705">விருந்தினரிலிருந்து வெளியேறவும்</translation>
+<translation id="8308637677604853869">முந்தைய மெனு</translation>
+<translation id="3595065677684516080">அமைப்புகளும் உதவியும்</translation>
+<translation id="4479639480957787382">ஈத்தர்நெட்</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="3784455785234192852">பூட்டு</translation>
+<translation id="5836819469861742634">ப்ராக்ஸி அமைப்புகளை மாற்றவும் ...</translation>
+<translation id="2872961005593481000">நிறுத்து</translation>
+<translation id="8735871257195921372">பிற Wi-fi நெட்வொர்க்...</translation>
+<translation id="2152495481414285304">பயன்பாடுகள்</translation>
+<translation id="1690310444231390462">Wi-fi ஐ முடக்கு</translation>
+<translation id="77565731175229781">நெட்வொர்க் அமைப்புகள் ...</translation>
+<translation id="7029814467594812963">அமர்விலிருந்து வெளியேறவும்</translation>
+<translation id="7908019422099334890">வால்பேப்பரை அமை...</translation>
+<translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7841796031898165175">செல்லுலாரை இயக்கு</translation>
+<translation id="9072667645353666975">பேட்டரி: <ph name="PERCENTAGE"/>%
+<ph name="HOUR"/>ம <ph name="MINUTE"/>நி</translation>
+<translation id="48607902311828362">விமான பயன்முறை</translation>
 </translationbundle>

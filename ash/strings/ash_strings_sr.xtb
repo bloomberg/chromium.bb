@@ -1,4 +1,51 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="3595596368722241419">Батерија је пуна</translation>
+<translation id="908313544993743941">Онемогући мобилну</translation>
+<translation id="30155388420722288">Дугме за додатне опције</translation>
+<translation id="5571066253365925590">Bluetooth је омогућен</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
+<translation id="2268130516524549846">Bluetooth је онемогућен</translation>
+<translation id="3626281679859535460">Осветљеност</translation>
+<translation id="7982789257301363584">Мрежа</translation>
+<translation id="2297568595583585744">Палета статуса</translation>
+<translation id="2946640296642327832">Омогући Bluetooth</translation>
+<translation id="6596816719288285829">IP адреса</translation>
+<translation id="289426338439836048">Друга мобилна мрежа...</translation>
+<translation id="5233638681132016545">Нова картица</translation>
+<translation id="785750925697875037">Прикажи налог за мобилне уређаје</translation>
+<translation id="7864539943188674973">Онемогући Bluetooth</translation>
+<translation id="3126069444801937830">Покрените поново да бисте ажурирали</translation>
+<translation id="8190698733819146287">Прилагоди језике и унос...</translation>
+<translation id="7911992579061465928">Батерија је скоро празна</translation>
+<translation id="598295083618286569">Успостављена је веза са Bluetooth-ом</translation>
+<translation id="5222676887888702881">Одјави ме</translation>
+<translation id="811680302244032017">Додај уређај...</translation>
+<translation id="3232695630852378748">Подешавања за Bluetooth...</translation>
+<translation id="1480041086352807611">Режим демонстрације</translation>
+<translation id="4186384497305035875">Овај екран је намерно остављен празан</translation>
+<translation id="9089416786594320554">Методи уноса</translation>
+<translation id="7706302027196209560">Омогући Wi-fi</translation>
+<translation id="4430019312045809116">Јачина звука</translation>
+<translation id="3557139239102318020">Повуците надоле да бисте умањили, улево или удесно да бисте приказали напоредно</translation>
+<translation id="5980301590375426705">Изађи из сесије госта</translation>
+<translation id="8308637677604853869">Претходни мени</translation>
+<translation id="3595065677684516080">Подешавања и помоћ</translation>
+<translation id="4479639480957787382">Етернет</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="3784455785234192852">Закључај</translation>
+<translation id="5836819469861742634">Промени подешавања проксија...</translation>
+<translation id="2872961005593481000">Искључи</translation>
+<translation id="8735871257195921372">Друга Wi-fi мрежа...</translation>
+<translation id="2152495481414285304">Апликације</translation>
+<translation id="1690310444231390462">Онемогући Wi-fi</translation>
+<translation id="77565731175229781">Подешавања мреже...</translation>
+<translation id="7029814467594812963">Изађи из сесије</translation>
+<translation id="7908019422099334890">Подеси позадину...</translation>
+<translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7841796031898165175">Омогући мобилну мрежу</translation>
+<translation id="9072667645353666975">Батерија: <ph name="PERCENTAGE"/>%
+<ph name="HOUR"/>с <ph name="MINUTE"/>мин</translation>
+<translation id="48607902311828362">Режим рада у авиону</translation>
 </translationbundle>

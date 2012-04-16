@@ -1,4 +1,51 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="3595596368722241419">แบตเตอรี่เต็ม</translation>
+<translation id="908313544993743941">ปิดใช้งานเครือข่ายมือถือ</translation>
+<translation id="30155388420722288">ปุ่มแบบโอเวอร์โฟลว์</translation>
+<translation id="5571066253365925590">เปิดใช้งานบลูทูธแล้ว</translation>
+<translation id="9074739597929991885">บลูทูธ</translation>
+<translation id="2268130516524549846">ปิดใช้งานบลูทูธแล้ว</translation>
+<translation id="3626281679859535460">ความสว่าง</translation>
+<translation id="7982789257301363584">เครือข่าย</translation>
+<translation id="2297568595583585744">ถาดสถานะ</translation>
+<translation id="2946640296642327832">เปิดใช้งานบลูทูธ</translation>
+<translation id="6596816719288285829">ที่อยู่ IP</translation>
+<translation id="289426338439836048">เครือข่ายมือถืออื่น...</translation>
+<translation id="5233638681132016545">แท็บใหม่</translation>
+<translation id="785750925697875037">ดูบัญชีมือถือ</translation>
+<translation id="7864539943188674973">ปิดใช้งานบลูทูธ</translation>
+<translation id="3126069444801937830">รีสตาร์ทเพื่ออัปเดต</translation>
+<translation id="8190698733819146287">กำหนดค่าภาษาและการป้อนข้อมูล... </translation>
+<translation id="7911992579061465928">แบตเตอรี่ต่ำ</translation>
+<translation id="598295083618286569">เชื่อมต่อบลูทูธแล้ว</translation>
+<translation id="5222676887888702881">ออกจากระบบ</translation>
+<translation id="811680302244032017">เพิ่มอุปกรณ์...</translation>
+<translation id="3232695630852378748">การตั้งค่าบลูทูธ...</translation>
+<translation id="1480041086352807611">โหมดสาธิต</translation>
+<translation id="4186384497305035875">หน้าจอนี้ถูกปล่อยว่างไว้โดยเจตนา</translation>
+<translation id="9089416786594320554">วิธีการป้อนข้อมูล</translation>
+<translation id="7706302027196209560">เปิดใช้งาน WiFi</translation>
+<translation id="4430019312045809116">ระดับเสียง</translation>
+<translation id="3557139239102318020">ดึงลงเพื่อลดขนาดให้ต่ำสุด ดึงไปทางซ้ายหรือขวาเพื่อต่อภาพ</translation>
+<translation id="5980301590375426705">ออกจากเซสชันผู้เยี่ยมชม</translation>
+<translation id="8308637677604853869">เมนูก่อนหน้า</translation>
+<translation id="3595065677684516080">การตั้งค่าและความช่วยเหลือ</translation>
+<translation id="4479639480957787382">อีเทอร์เน็ต</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="3784455785234192852">ล็อก</translation>
+<translation id="5836819469861742634">เปลี่ยนการตั้งค่าพร็อกซี...</translation>
+<translation id="2872961005593481000">ปิด</translation>
+<translation id="8735871257195921372">เครือข่าย WiFi อื่น...</translation>
+<translation id="2152495481414285304">แอปพลิเคชัน</translation>
+<translation id="1690310444231390462">ปิดใช้งาน WiFi</translation>
+<translation id="77565731175229781">การตั้งค่าเครือข่าย...</translation>
+<translation id="7029814467594812963">ออกจากเซสชัน</translation>
+<translation id="7908019422099334890">ตั้งค่าวอลเปเปอร์...</translation>
+<translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7841796031898165175">เปิดใช้งานเครือข่ายมือถือ</translation>
+<translation id="9072667645353666975">แบตเตอรี่: <ph name="PERCENTAGE"/>%
+<ph name="HOUR"/> ชม. <ph name="MINUTE"/> นาที</translation>
+<translation id="48607902311828362">โหมดใช้งานบนเครื่องบิน</translation>
 </translationbundle>

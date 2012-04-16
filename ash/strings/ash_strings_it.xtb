@@ -1,4 +1,51 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="3595596368722241419">Batteria carica</translation>
+<translation id="908313544993743941">Disattiva rete cellulare</translation>
+<translation id="30155388420722288">Pulsante Overflow</translation>
+<translation id="5571066253365925590">Bluetooth attivo</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
+<translation id="2268130516524549846">Bluetooth non attivo</translation>
+<translation id="3626281679859535460">Luminosità</translation>
+<translation id="7982789257301363584">Rete</translation>
+<translation id="2297568595583585744">Barra di stato</translation>
+<translation id="2946640296642327832">Attiva Bluetooth</translation>
+<translation id="6596816719288285829">Indirizzo IP</translation>
+<translation id="289426338439836048">Altra rete mobile...</translation>
+<translation id="5233638681132016545">Nuova scheda</translation>
+<translation id="785750925697875037">Visualizza account per cellulari</translation>
+<translation id="7864539943188674973">Disattiva Bluetooth</translation>
+<translation id="3126069444801937830">Riavvia per aggiornare</translation>
+<translation id="8190698733819146287">Personalizza lingue e immissione...</translation>
+<translation id="7911992579061465928">Batteria in esaurimento</translation>
+<translation id="598295083618286569">Bluetooth collegato</translation>
+<translation id="5222676887888702881">Esci</translation>
+<translation id="811680302244032017">Aggiungi dispositivo...</translation>
+<translation id="3232695630852378748">Impostazioni Bluetooth...</translation>
+<translation id="1480041086352807611">Modalità Demo</translation>
+<translation id="4186384497305035875">Questo schermo è stato lasciato intenzionalmente vuoto</translation>
+<translation id="9089416786594320554">Metodi di immissione</translation>
+<translation id="7706302027196209560">Attiva Wi-Fi</translation>
+<translation id="4430019312045809116">Volume</translation>
+<translation id="3557139239102318020">Tira verso il basso per ridurre a icona, verso sinistra o destra per affiancare</translation>
+<translation id="5980301590375426705">Esci da sessione Ospite</translation>
+<translation id="8308637677604853869">Menu precedente</translation>
+<translation id="3595065677684516080">Impostazioni e Guida</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="3784455785234192852">Blocca</translation>
+<translation id="5836819469861742634">Modifica impostazioni proxy...</translation>
+<translation id="2872961005593481000">Spegni</translation>
+<translation id="8735871257195921372">Altra rete Wi-Fi...</translation>
+<translation id="2152495481414285304">Applicazioni</translation>
+<translation id="1690310444231390462">Disattiva Wi-Fi</translation>
+<translation id="77565731175229781">Impostazioni di rete...</translation>
+<translation id="7029814467594812963">Esci da sessione</translation>
+<translation id="7908019422099334890">Imposta sfondo...</translation>
+<translation id="6362354186508391853">Ctrl +</translation>
+<translation id="7841796031898165175">Attiva cellulare</translation>
+<translation id="9072667645353666975">Batteria: <ph name="PERCENTAGE"/>%
+<ph name="HOUR"/> h <ph name="MINUTE"/> m</translation>
+<translation id="48607902311828362">Modalità aereo</translation>
 </translationbundle>

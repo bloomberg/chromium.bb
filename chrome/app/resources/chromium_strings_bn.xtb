@@ -1,4 +1,150 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="6676384891291319759">ইন্টারনেটটি অ্যাক্সেস করুন</translation>
+<translation id="6373523479360886564">আপনি কি Chromium আনইনস্টল করার ব্যাপারে নিশ্চিত?</translation>
+<translation id="8957741245723343544">আপনার পরিবর্তনগুলি পরবর্তী সময় আপনি Chromium OS পুনরায় চালু করলে ফলপ্রদ হবে৷</translation>
+<translation id="6510925080656968729">Chromium আনইনস্টল করুন</translation>
+<translation id="6893813176749746474"> Chromium আপডেট করা হয়েছে৷ কিন্তু আপনি এটি অন্ততঃপক্ষে 30 দিন ব্যবহার করতে পারবেন না৷</translation>
+<translation id="2770231113462710648">ডিফল্ট ব্রাউজার এতে পরিবর্তন করুন:</translation>
+<translation id="6613594504749178791">আপনার পরিবর্তনগুলি পরবর্তী সময় আপনি Chromium পুনরায় চালু হলে ফলপ্রদ হবে৷</translation>
+<translation id="3748537968684000502">আপনি একটি নিরাপদ Chromium পৃষ্ঠা  দেখছেন৷</translation>
+<translation id="8971920611044657379">Chromium ফ্রেম</translation>
+<translation id="1065672644894730302">আপনার অভিরুচিগুলি পড়া যাবে না৷ কিছু বৈশিষ্ট্য অনুপলব্ধ থাকতে পারে ও অভিরুচিগুলিতে করা পরিবর্তনগুলি সংরক্ষিত হবে না৷</translation>
+<translation id="2469082501656808441">Chromium-এর একটি নতুন সংস্করণ উপলব্ধ আছে</translation>
+<translation id="4222661289444749267">Chromium ফ্রেম আপডেট করুন৷</translation>
+<translation id="2843244238218937196">Chromium পেশকারী</translation>
+<translation id="7128196614940529818">এই কম্পিউটারে সকল ব্যবহারকারীর জন্য Chromium ফ্রেম ইতিমধ্যে ইনস্টল এবং উপলব্ধ হয়েছে৷ আপনি যদি ব্যবহারকারীর স্তরে Chromium ফ্রেম ইনস্টল করতে চান, প্রথমেই প্রশাসক দ্বারা ইনস্টল করা একটি সিস্টেম স্তরীয় সংস্করণ আপনাকে অবশ্যই আনইনস্টল করতে হবে৷</translation>
+<translation id="731644333568559921">&amp;Chromium OS আপডেট করুন</translation>
+<translation id="7421823331379285070">Chromium-এর Windows XP অথবা পরবর্তী সংস্করণ প্রয়োজন৷ কিছু বৈশিষ্ট্য কাজ নাও করতে পারে৷</translation>
+<translation id="1185134272377778587">Chromium সম্পর্কে</translation>
+<translation id="4330297532943865716">সিস্টেমে Chromium বা Chromium ফ্রেম এর একটি পরস্পরবিরোধী ইনস্টলেশন দেখতে পাওয়া গেছে৷ দয়া করে এটি  আনইনস্টল করুন এবং আবার চেষ্টা করুন৷</translation>
+<translation id="6953661834318318668">Chromium সরঞ্জামদণ্ড</translation>
+<translation id="7097100943370017396">Chromium আপডেটিং নেই কারণ আপনার অপারেটিং সিস্টেম অপ্রচলিত৷</translation>
+<translation id="2777754523825675150">Chromium আরম্ভে আপনার পূর্ববর্তী সেশন পুনরুদ্ধার করবে৷ আপনার কিছু সেশন-নির্ভর সেটিংস, যেমন যেগুলি প্রস্থানে ডেটা সাফ করে, তা অক্ষম হবে৷</translation>
+<translation id="4103959775970322855">Chromium <ph name="VERSION"/>-এ আপডেট করা হয়েছে </translation>
+<translation id="4285930937574705105">অনির্দিষ্ট ত্রুটির কারণে ইনস্টলেশন ব্যর্থ৷ বর্তমানে Chromium চালু থাকলেও, দয়া করে এটি বন্ধ করুন এবং পুনরায় চেষ্টা করুন৷</translation>
+<translation id="2589479092236095792">Chromium স্বতঃপূর্ণ সেটিংস</translation>
+<translation id="3555616473548901994">আনইনস্টলেশন সম্পূর্ণ৷</translation>
+<translation id="2940837712536340734">Chromium OS  আপ-টু-ডেট আছে৷</translation>
+<translation id="2886012850691518054">ঐচ্ছিক: স্বয়ংক্রিয়ভাবে Google-এ ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদন পাঠিয়ে Chromium-কে আরো ভালো করতে সহায়তা করুন৷</translation>
+<translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
+<translation id="1989424089625731201">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-তে পৌঁছানোর চেষ্টা করেছেন, কিন্তু সার্ভারের উপস্থাপিত শংসাপত্রে ত্রুটি রয়েছে৷ Chromium ত্রুটি থাকা কোনো শংসাপত্র ব্যবহার করে না এবং সংযোগের জন্য আপনি যে সাইটে চেষ্টা করেছেন তার পরিচয় যাচাই করতে পারে না৷</translation>
+<translation id="3103660991484857065">ইনস্টলার আর্কাইভ অসংকুচিত করতে ব্যর্থ হয়েছে৷ দয়া করে Chromium পুনরায় ডাউনলোড করুন৷</translation>
+<translation id="2933983827758164650">যদি আপনি Chromium এখন বন্ধ করেন, তবে এই ডাউনলোডটি বাতিল হয়ে যাবে৷</translation>
+<translation id="872034308864968620">Chromium-কে পটভূমিতে চলতে দিন</translation>
+<translation id="4320129595801648679">Chromium-এর নতুন ট্যাব পৃষ্ঠা পুনর্সজ্জিত হয়েছে৷ এই লেবেল ক্লিক করে বিভাগগুলির মধ্যে পরিবর্তন করুন৷ Chromium পরবর্তী সময়ের জন্য আপনার পছন্দ মনে রাখবে৷</translation>
+<translation id="3032787606318309379">Chromium-এ জুড়ছে...</translation>
+<translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>সতর্কতা:<ph name="END_BOLD"/> আপনার ব্রাউজিং ইতিহাস রেকর্ডিং করা থেকে এক্সটেনশনগুলিতে বাধা দিতে পারেনা৷ ছদ্মবেশী মোডে এই এক্সটেনশনটি অক্ষম করতে, এই বিকল্পটি নির্বাচন মুক্ত করুন৷</translation>
+<translation id="985602178874221306">Chromium রচয়িতা</translation>
+<translation id="8628626585870903697">Chromium PDF দর্শক যা ফাংশানে প্রিন্ট প্রিভিউ জন্য আবশ্যক, তা অন্তর্ভূক্ত করেনি৷</translation>
+<translation id="7138853919861947730">আপনার ব্রাউজিং অভিজ্ঞতা উন্নত করতে Chromium ওয়েব পরিষেবাগুলি ব্যবহার করতে পারে৷</translation>
+<translation id="4179848566211676653">Chromium প্রস্থান</translation>
+<translation id="3849925841547750267">দুঃখজনকভাবে, যখন ব্রাউজারটি চলমান আপনার Mozilla Firefox-এর সেটিংস পাওয়া যাচ্ছে না৷ Chromium-এ ওই সমস্ত সেটিংগুলি আমদানী করতে, আপনার কাজ সংরক্ষণ করুন এবং সকল Firefox উইন্ডো বন্ধ করুন৷ তারপরে অবিরত ক্লিক করুন৷</translation>
+<translation id="7771626876550251690">এক্ষেত্রে, শংসাপত্রে তালিকাবদ্ধ ঠিকানাটি সেই ওয়েবসাইট ঠিকানার সাথে মেলে না যেখানে আপনার ব্রাউজার যাওয়ার চেষ্টা করছে৷ এর একটি সম্ভাব্য কারণ হতে পারে যে একজন আক্রমণকারী আপনার যোগাযোগ বিচ্ছিন্ন করছে যে কোনো আলাদা ওয়েবসাইটের জন্য শংসাপত্র উপস্থাপন করছে ও যার কারণে ভুল মিল হতে পারে৷ এর অন্য একটি সম্ভাব্য কারণ হতে পারে যে সার্ভারটিতে একাধিক ওয়েবসাইটের জন্য একই শংসাপত্র সেট আছে, এর মধ্যে সেটিও আছে যা আপনি দেখার চেষ্টা করছেন, যদিও এই শংসাপত্রটি সবকটি ওয়েবসাইটের জন্য বৈধ নয়৷ Chromium নিশ্চিত হয়ে বলতে পারে যে আপনি &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;-এ পৌঁছেছেন, কিন্তু এই সাইটটি এবং &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; একই কি না তা যাচাই করতে পারে না, যেখানে আপনি যেতে চান৷ আপনি যদি এগিয়ে যান, Chromium আর কোনো নাম অমিল পরীক্ষা করবে না৷</translation>
+<translation id="4330585738697551178">এই মডিউল Chromium-এর সঙ্গে বিরোধের জন্য জ্ঞাত হয়৷</translation>
+<translation id="3190315855212034486">ওহো! Chromium ক্র্যাশ করেছে৷ এখন পুনরায় শুরু করবেন?</translation>
+<translation id="6714487516757221107">Chromium বা Chromium ফ্রেম এর কোন ইনস্টলেশন আপডেট পাওয়া যায়নি৷</translation>
+<translation id="4124681358536363708">Chromium ইনস্টলেশন নির্দেশিকা ব্যবহার হবে বলে মনে হয়৷ দয়া করে আপনার কম্পিউটার পুনরায় কর্মচ্যুত করুন এবং পুনরায় চেষ্টা করুন৷</translation>
+<translation id="8770560772173120024">Chromium এখন পছন্দ/বুকমার্ক আমদানি করছে৷</translation>
+<translation id="6290315939897260265">Chromium-এ ব্যবহৃত হয় না৷ সংস্থান মানচিত্র সিঙ্কে রাখার প্লেসহোল্ডার৷</translation>
+<translation id="2977470724722393594">Chromium আপ-টু-ডেট আছে</translation>
+<translation id="9191268552238695869">প্রশাসক এই সিস্টেমে Chromium ইনস্টল করেছেন, এবং এটি সমস্ত ব্যবহারকারীদের জন্য উপলব্ধ৷ সিস্টেম স্তরীয় Chromium আপনার ব্যবহারকারী-স্তর ইনস্টলেশন এখন প্রতিস্থাপন করবে৷</translation>
+<translation id="3509308970982693815">দয়া করে সব Chromium উইন্ডো বন্ধ করুন ও আবার চেষ্টা করুন৷</translation>
+<translation id="4077262827416206768">দয়া করে সব Chromium উইন্ডো বন্ধ করুন এবং এই পরিবর্তন কার্যকরী করতে Chromium পুনরায় চালু করুন৷</translation>
+<translation id="9119843944749246249">কপিরাইট © 2006-2012 Chromium রচয়িতা৷ সর্বস্বত্ত্ব সংরক্ষিত৷</translation>
+<translation id="6944967875980567883">Chromium-এ মডিউলগুলি লোড হয়েছে</translation>
+<translation id="118298050220780080">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-এ পৌঁছানোর প্রয়াস করেছেন, কিন্তু সার্ভারটি একটি এমন শংসাপত্র উপস্থাপন করেছে যা একটি এমন সত্তা দ্বারা ইস্য করা হয়েছে যাকে আপনার কম্পিউটারের অপারেটিং সিস্টেম বিশ্বাস করে না৷ এর অর্থ হতে পারে যে সার্ভার নিজের নিরাপত্তা প্রমাণপ্রত্রাদির নিশ্চয়তা দিতে পারে, যা Chromium পরিচয় তথ্যের জন্য বিশ্বাস করে না অথবা হতে পারে একজন আক্রমণকারী আপনার যোগাযোগকে বাধা দেওয়ার চেষ্টা করছে৷</translation>
+<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="3296368748942286671"> Chromium বন্ধ হলে পটভূমির অ্যাপ্লিকেশন চালু রাখুন</translation>
+<translation id="2918265831258045091">আপনি কি ডাউনলোড প্রগগতি সহ Chromium থেকে প্রস্থান করতে চান?</translation>
+<translation id="6055895534982063517">Chromium-এর একটি নতুন সংস্করণ উপলব্ধ আছে৷ এবং এটি আগের তুলনায় আরও দ্রুত৷</translation>
+<translation id="2407806170074302369">Chromium ফ্রেম সম্পর্কে ...</translation>
+<translation id="5405650547142096840">Chromium থেকে সরান</translation>
+<translation id="7747138024166251722">ইনস্টলারটি অস্থায়ী ডাইরেক্টরি তৈরি করতে পারে নি৷ দয়া করে মুক্ত ডিস্ক স্থান এবং সফ্টওয়্যারটি ইনস্টল করার অনুমতি যাচাই করে নিন৷</translation>
+<translation id="3258596308407688501">Chromium তার ডেটা ডিরেক্টরিতে পড়তে এবং লিখতে পারে না:
+
+<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="4932687624772039103">Chromium <ph name="OS_NAME"/> সমর্থন করে না৷</translation>
+<translation id="8738921060445980047">অজানা সংস্করণ৷</translation>
+<translation id="2485422356828889247">আনইনস্টল</translation>
+<translation id="85843667276690461">Chromium ব্যবহারে সাহায্য পেতে</translation>
+<translation id="263863604136125912">Chromium আরম্ভ করুন</translation>
+<translation id="2881203820889150661">Chromium শর্টকাট অ্যাপ্লিকেশন তৈরি করতে পারে না কারণ এটি সাম্প্রতিক ডেক্সটপ পরিবেশকে নির্ধারণ করতে পারে না৷</translation>
+<translation id="4886158514168859177">এই কম্পিউটারে ইতিমধ্যে Chromium ফ্রেম এর আরও একটি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যার কাজ না করে, দয়া করে Chromium ফ্রেম আনইনস্টল করুন এবং পুনরায় চেষ্টা করুন৷</translation>
+<translation id="911206726377975832">আপনার ব্রাউজিং ডেটাও মুছে দেবেন?</translation>
+<translation id="6734080038664603509">&amp;Chromium আপডেট করুন</translation>
+<translation id="8862326446509486874">সিস্টেম-স্তরীয় ইনস্টলের জন্য আপনার কাছে যথাযথ অধিকারগুলি নেই৷ প্রশাসক হিসাবে আবার ইনস্টলারটি চালনার চেষ্টা করুন৷</translation>
+<translation id="1774152462503052664">Chromium-কে পটভূমিতে চলতে দিন</translation>
+<translation id="9022552996538154597">Chromium-এ সাইন ইন করুন</translation>
+<translation id="4365115785552740256">Chromium  <ph name="BEGIN_LINK_CHROMIUM"/> Chromium<ph name="END_LINK_CHROMIUM"/> ওপেন সোর্স প্রকল্প এবং অন্যান্য <ph name="BEGIN_LINK_OSS"/>ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_OSS"/> দ্বারা করা সম্ভব হয়েছে৷</translation>
+<translation id="7549178288319965365">Chromium OS সম্পর্কে</translation>
+<translation id="6248213926982192922">Chromium-কে ডিফল্ট ব্রাউজার করুন</translation>
+<translation id="7337881442233988129">Chromium</translation>
+<translation id="3069161343438701711">Chromium কর্মী</translation>
+<translation id="5820394555380036790">Chromium OS</translation>
+<translation id="6757767188268205357">আমাকে বাগ করবেন না</translation>
+<translation id="7700951445648533795">আপনি কি প্রগতিতিতে থাকা <ph name="DOWNLOAD_COUNT"/>টি  ডাউনলোড সহ Chromium থেকে প্রস্থান করতে চান?</translation>
+<translation id="275588974610408078">Chromium-এ ক্র্যাশ প্রতিবেদন উপলব্ধ নেই৷</translation>
+<translation id="5909170354645388250">Chromium-এ ব্যবহৃত হয় না৷ সংস্থান মানচিত্র সিঙ্কে রাখার প্লেসহোল্ডার৷ এটি একটি যুক্তি প্রত্যাশা করে: $1৷</translation>
+<translation id="3582788516608077514">Chromium আপডেট হচ্ছে...</translation>
+<translation id="7223968959479464213">টাস্ক ম্যানেজার - Chromium</translation>
+<translation id="3838208658251026018">Chromium বর্তমানে <ph name="BROWSER_COMPONENT"/> থেকে নিম্নোক্ত আইটেমগুলি আমদানি করছে:</translation>
+<translation id="2673087257647337101">প্রায় আপ-টু-ডেট! আপডেট শেষ করতে Chromium পুনরায় চালু করুন৷</translation>
+<translation id="5398878173008909840">Chromium-এর একটি নতুন সংস্করণ উপলব্ধ আছে৷</translation>
+<translation id="2648074677641340862">ইনস্টলেশনের সময় একটি অপারেটিং সিস্টেম ত্রুটি ঘটেছে৷ দয়া করে Chromium পুনরায় ডাউনলোড করুন৷</translation>
+<translation id="5942520288919337908">Chromium-এ <ph name="EXTENSION_NAME"/> জোড়া হয়েছে৷</translation>
+<translation id="8678787945719392857">আপনার সমস্ত Chromium স্টাফ সিঙ্ক করতে এই Google অ্যাকাউন্ট ব্যবহার করেন কি?</translation>
+<translation id="5974438302735098483">Chromium আপডেট করা হয়েছে</translation>
+<translation id="8621669128220841554">অনির্দিষ্ট ত্রুটির কারণে ইনস্টলেশন ব্যর্থ৷ দয়া করে Chromium পুনরায় ডাউনলোড করুন৷</translation>
+<translation id="6717134281241384636">আপনার প্রোফাইলটি ব্যবহার করতে পারা যাবে না কারণ এটি একটি Chromium-এর নতুন সংস্করণ৷ কিছু বিষয় অনুপলব্ধ হতে পারে৷ দয়া করে একটি ভিন্ন প্রোফাইল ডিরেক্টরি উল্লেখ করুন অথবা Chromium-এর একটি নতুন সংস্করণ ব্যবহার করুন৷</translation>
+<translation id="2712549016134575851">অন্য একটি ইনস্টল থাকা প্রয়োগের সাথে বিরোধ সনাক্ত করা হয়েছে৷</translation>
+<translation id="9013087743919948559">Chromium-এ জুড়ুন</translation>
+<translation id="6212496753309875659">এই কম্পিউটারে ইতিমধ্যে Chromium-এর আরও একটি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যার কাজ না করে, দয়া করে Chromium আনইনস্টল করুন এবং পুনরায় চেষ্টা করুন৷</translation>
+<translation id="3014684866565908571">Chromium ইউটিলিটি</translation>
+<translation id="1298199220304005244">Chromium OS ব্যবহারে সাহায্য পেতে</translation>
+<translation id="667672506951335584">যদি আপনি Chromium এখন বন্ধ করেন, তবে এই ডাউনলোডগুলি বাতিল হয়ে যাবে৷</translation>
+<translation id="1691304614444223855">Chromium ফ্রেম আপডেট করা হয়েছে৷ দয়া করে আপনার ব্রাউজার পুনরায় চালু করুন৷ Chromium সংস্করণ: <ph name="TODO_0001"/>, Chromium ফ্রেম সংস্করণ: <ph name="TODO_0002"/></translation>
+<translation id="1105130903706696483">Chromium সঠিকভাবে বন্ধ হয় নি৷আগের খোলা পাতাটি পুনরায় খুলতে,রিস্টোর ক্লিক করুন৷</translation>
+<translation id="1929939181775079593">Chromium সাড়া দিচ্ছে না৷ পুনরায় শুরু করবেন?</translation>
+<translation id="6089587093203430357">তাতক্ষণিক</translation>
+<translation id="2966088006374919794">Chromiumএকটি বহিঃস্থ অ্যপ্লিকেশন আরম্ভ করার জন্য <ph name="SCHEME"/> সংযোগগুলি নিয়ন্ত্রণ করে৷ অনুরোধকৃত লিংকটি হল <ph name="PROTOLINK"/>৷</translation>
+<translation id="5699533844376998780">এক্সটেনশন &quot;<ph name="EXTENSION_NAME"/>&quot; জোড়া হয়েছে৷</translation>
+<translation id="8046283042877435986">এই সাইটটি Chromium ফ্রেম (ইতিমধ্যে ইনস্টল) বিষয়ে পরামর্শ দেয়৷</translation>
+<translation id="6287463253129672858">একই Chromium ফ্রেম সংস্করণ যা বর্তমানে চলমান, ইনস্টল করতে পারবেন না৷ দয়া করে Chromium ফ্রেম বন্ধ করুন এবং পুনরায় চেষ্টা করুন৷</translation>
+<translation id="2558235863893655150">আপনি কি আপনার পাসওয়ার্ড সংরক্ষণ করতে Chromium চান?</translation>
+<translation id="1688750314291223739">ওয়েবে আপনার ব্যক্তিগতকৃত ব্রাউজার বিষয় সংরক্ষণ করতে সিঙ্ক সেট করুন এবং যেকোনো কম্পিউটারে Chromium থেকে সেগুলিতে অ্যাক্সেস করুন৷</translation>
+<translation id="9171640504251796339"><ph name="GRITLANGCODE_1"/>http://www.google.com/support/chrome/bin/answer.py?answer=161796</translation>
+<translation id="8865765905101981392">ইন্টারনেট ব্রাউজার</translation>
+<translation id="2910007522516064972">&amp;Chromium সম্পর্কে</translation>
+<translation id="8453117565092476964">ইনস্টলার আর্কাইভ অবিশুদ্ধ বা অবৈধ৷ দয়া করে Chromium পুনরায় ডাউনলোড করুন৷</translation>
+<translation id="309634601461115233">দয়া করে Chromium OS থেকে সাইন আউট করুন এবং এই পরিবর্তন কার্যকরী করতে পুনরায় সাইন ইন করুন৷</translation>
+<translation id="3249425904492147663">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-এ পৌঁছানোর প্রয়াস করেছেন, কিন্তু সার্ভারটি একটি মেয়াদ শেষ হওয়া শংসাপত্র উপস্থাপন করেছে৷ শংসাপত্রটি মেয়াদ শেষ হওয়ার পরে এটি আপোশ করা হয়েছে কি না সেই বিষয়ক কোনো তথ্য উপলব্ধ নেই৷ এর অর্থ হল আপনি &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;-এর সাথে যোগাযোগ করছেন এবং কোনো আক্রমণকারী সাথে নয় Chromium তার নিশ্চয়তা দেয় না৷ আপনার কম্পিউটারের ঘড়ি বর্তমানে <ph name="CURRENT_TIME"/>-এ সেট আছে৷ এটি কি ঠিক দেখাচ্ছে? যদি না দেখায় তাহলে, আপনার ত্রুটিটি ঠিক করা ও এই পৃষ্ঠাটি রিফ্রেশ করা উচিত৷</translation>
+<translation id="7196020411877309443">আমি এটা কেন দেখছি?</translation>
+<translation id="7483335560992089831">একই Chromium সংস্করণ যা বর্তমানে চলমান, ইনস্টল করতে পারবেন না৷ দয়া করে Chromium বন্ধ করুন এবং পুনরায় চেষ্টা করুন৷</translation>
+<translation id="7641113255207688324">Chromium আপনার ডিফল্ট ব্রাউজার নয়৷</translation>
+<translation id="2174090135251659490">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-এ পৌঁছানোর প্রয়াস করেছেন, কিন্তু সার্ভারটি একটি এমন শংসাপত্র উপস্থাপন করেছে যা এখনও বৈধ নয়৷ শংসাপত্রটি বিশ্বস্ত কি না তার ইঙ্গিত দেওয়ার জন্য কোনো তথ্য উপলব্ধ নেই৷ আপনি &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;-এর সাথে যোগাযোগ করছেন এবং কোনো আক্রমণকারী সাথে নয় Chromium বিশ্বাসের সাথে তার নিশ্চয়তা দিতে পারে না৷ আপনার কম্পিউটারের ঘড়ি বর্তমানে <ph name="CURRENT_TIME"/>-এ সেট আছে৷ এটি কি ঠিক দেখাচ্ছে? যদি না দেখায় তাহলে, আপনার ত্রুটিটি ঠিক করা ও এই পৃষ্ঠাটি রিফ্রেশ করা উচিত৷</translation>
+<translation id="2119636228670142020">&amp;Chromium OS সম্পর্কে</translation>
+<translation id="1708666629004767631">Chromium-এর একটি নতুন, নিরাপদ সংস্করণ উপলব্ধ আছে৷</translation>
+<translation id="5859758987635973787">Chromium আপ-টু-ডেট আছে (<ph name="VERSION"/>)</translation>
+<translation id="8616882682724010661">Chromium-এ সাইন ইনের জন্য <ph name="BEGIN_LINK"/>আরও সুবিধা<ph name="END_LINK"/> দেখুন৷</translation>
+<translation id="378917192836375108">Chromium আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
+<translation id="7503101070699687603">Chromium প্লাগ-ইন হোস্ট</translation>
+<translation id="9013262824292842194">Windows Vista বা SP2 সহ Windows XP বা উন্নততর Chromium প্রয়োজন৷</translation>
+<translation id="1967743265616885482">একই নামের একটি মডিউল Chromium সঙ্গে বিরোধে জ্ঞাত হয়েছে৷</translation>
+<translation id="4224199872375172890">Chromium আপ-টু-ডেট আছে৷</translation>
+<translation id="5498103559159810756">Chromium আপনার বাতিল অনুসন্ধান ইঞ্জিন ব্যবহার করে, যা বর্তমানে <ph name="PAGE_TITLE"/>-এ সেট করা৷ আপনি কি আপনার বাতিল অনুসন্ধান ইঞ্জিন রাখতে চান?</translation>
+<translation id="5862307444128926510">Chromium-এ স্বাগতম</translation>
+<translation id="1622565934590470080">এই কম্পিউটারে ইতিমধ্যে Chromium এবং Chromium ফ্রেমের আরও একটি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যার কাজ না করে, দয়া করে Chromium এবং Chromium ফ্রেম আনইনস্টল করুন এবং পুনরায় চেষ্টা করুন৷</translation>
+<translation id="7318036098707714271">আপনার অভিরুচিসমূহ ফাইল দূষিত অথবা অবৈধ৷
+
+Chromium আপনার সেটিংস পুনরুদ্ধার করতে অক্ষম৷</translation>
+<translation id="7123348595797445166">এটা চেষ্টা করুন (ইনস্টল করা আছে)</translation>
+<translation id="6403826409255603130">Chromium হল একটি ওয়েব ব্রাউজার যা ওয়েব পৃষ্ঠার গতি এবং অ্যাপ্লিকেশনগুলিকে আলোকের গতিতে সঞ্চালিত করে৷ এটা দ্রুত, স্থিতিশীল, এবং সহজে ব্যবহারের যোগ্য৷ Chromium নির্মিত ম্যালওয়ার এবং ফিশিং সুরক্ষার সাহায্যে আরও সুরক্ষিত ভাবে ওয়েব ব্রাউজ করুন৷</translation>
+<translation id="2927042866129133279">অবৈধ যুক্তি৷ Chromium ইনস্টল করা ছাড়াও Chromium ফ্রেম প্রস্তুত মোডে ইনস্টল করা যাবে না৷</translation>
+<translation id="2572494885440352020">Chromium সহায়ক</translation>
+<translation id="442817494342774222">আপনি আপনার কম্পিউটার চালু করলে স্বয়ংক্রিয়রূপে আরম্ভ করার Chromium কনফিগার চালু হবে৷ </translation>
+<translation id="8974095189086268230">Chrome OS সম্ভবত অতিরিক্ত <ph name="BEGIN_LINK_CROS_OSS"/>ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_CROS_OSS"/> দিয়ে তৈরি৷</translation>
+<translation id="6154296300983386343">আপডেট শেষ করতে Chromium পুনরায় চালু করুন</translation>
+<translation id="1221340462641866827">Chromium OS  <ph name="SCHEME"/> সংযোগগুলি নিয়ন্ত্রণে একটি বহিঃস্থ অ্যাপ্লিকেশন চালু করা সমর্থন করে না৷ অনুরোধকৃত লিংকটি হল <ph name="PROTOLINK"/>৷</translation>
 </translationbundle>
