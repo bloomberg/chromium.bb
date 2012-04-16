@@ -1179,7 +1179,7 @@ void View::CalculateOffsetToAncestorWithLayer(gfx::Point* offset,
   if (!parent_)
     return;
 
-  offset->Offset(x(), y());
+  offset->Offset(GetMirroredX(), y());
   parent_->CalculateOffsetToAncestorWithLayer(offset, layer_parent);
 }
 
@@ -1187,7 +1187,7 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
                              const gfx::Point& point) {
   gfx::Point local_point(point);
   if (parent_layer != layer())
-    local_point.Offset(x(), y());
+    local_point.Offset(GetMirroredX(), y());
   if (layer() && parent_layer != layer()) {
     parent_layer->Add(layer());
     layer()->SetBounds(gfx::Rect(local_point.x(), local_point.y(),
@@ -1222,7 +1222,7 @@ void View::UpdateChildLayerBounds(const gfx::Point& offset) {
     layer()->SetBounds(gfx::Rect(offset.x(), offset.y(), width(), height()));
   } else {
     for (int i = 0, count = child_count(); i < count; ++i) {
-      gfx::Point new_offset(offset.x() + child_at(i)->x(),
+      gfx::Point new_offset(offset.x() + child_at(i)->GetMirroredX(),
                             offset.y() + child_at(i)->y());
       child_at(i)->UpdateChildLayerBounds(new_offset);
     }
@@ -1637,7 +1637,7 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
       if (parent_) {
         gfx::Point offset;
         parent_->CalculateOffsetToAncestorWithLayer(&offset, NULL);
-        offset.Offset(x(), y());
+        offset.Offset(GetMirroredX(), y());
         layer()->SetBounds(gfx::Rect(offset, size()));
       } else {
         layer()->SetBounds(bounds_);
@@ -1809,7 +1809,7 @@ void View::UpdateParentLayer() {
     return;
 
   ui::Layer* parent_layer = NULL;
-  gfx::Point offset(x(), y());
+  gfx::Point offset(GetMirroredX(), y());
 
   // TODO(sad): The NULL check here for parent_ essentially is to check if this
   // is the RootView. Instead of doing this, this function should be made

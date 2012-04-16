@@ -12,6 +12,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -2866,6 +2867,65 @@ TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
   v2->SetVisible(false);
   v2->SetBoundsRect(gfx::Rect(10, 11, 20, 30));
   EXPECT_EQ(gfx::Rect(30, 41, 20, 30), v2->layer()->bounds());
+}
+
+// Make sure layers are positioned correctly in RTL.
+TEST_F(ViewLayerTest, BoundInRTL) {
+  std::string locale = l10n_util::GetApplicationLocale(std::string());
+  base::i18n::SetICUDefaultLocale("he");
+
+  View* view = new View;
+  widget()->SetContentsView(view);
+
+  int content_width = view->width();
+
+  // |v1| is initially not attached to anything. So its layer will have the same
+  // bounds as the view.
+  View* v1 = new View;
+  v1->SetPaintToLayer(true);
+  v1->SetBounds(10, 10, 20, 10);
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 10),
+            v1->layer()->bounds());
+
+  // Once |v1| is attached to the widget, its layer will get RTL-appropriate
+  // bounds.
+  view->AddChildView(v1);
+  EXPECT_EQ(gfx::Rect(content_width - 30, 10, 20, 10),
+            v1->layer()->bounds());
+  gfx::Rect l1bounds = v1->layer()->bounds();
+
+  // Now attach a View to the widget first, then create a layer for it. Make
+  // sure the bounds are correct.
+  View* v2 = new View;
+  v2->SetBounds(50, 10, 30, 10);
+  EXPECT_FALSE(v2->layer());
+  view->AddChildView(v2);
+  v2->SetPaintToLayer(true);
+  EXPECT_EQ(gfx::Rect(content_width - 80, 10, 30, 10),
+            v2->layer()->bounds());
+  gfx::Rect l2bounds = v2->layer()->bounds();
+
+  view->SetPaintToLayer(true);
+  EXPECT_EQ(l1bounds, v1->layer()->bounds());
+  EXPECT_EQ(l2bounds, v2->layer()->bounds());
+
+  // Move one of the views. Make sure the layer is positioned correctly
+  // afterwards.
+  v1->SetBounds(v1->x() - 5, v1->y(), v1->width(), v1->height());
+  l1bounds.set_x(l1bounds.x() + 5);
+  EXPECT_EQ(l1bounds, v1->layer()->bounds());
+
+  view->SetPaintToLayer(false);
+  EXPECT_EQ(l1bounds, v1->layer()->bounds());
+  EXPECT_EQ(l2bounds, v2->layer()->bounds());
+
+  // Move a view again.
+  v2->SetBounds(v2->x() + 5, v2->y(), v2->width(), v2->height());
+  l2bounds.set_x(l2bounds.x() - 5);
+  EXPECT_EQ(l2bounds, v2->layer()->bounds());
+
+  // Reset locale.
+  base::i18n::SetICUDefaultLocale(locale);
 }
 
 // Makes sure a transform persists after toggling the visibility.
