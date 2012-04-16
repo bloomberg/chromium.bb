@@ -8,7 +8,9 @@ namespace chromeos {
 namespace input_method {
 
 MockXKeyboard::MockXKeyboard()
-    : set_current_keyboard_layout_by_name_count_(0) {
+    : set_current_keyboard_layout_by_name_count_(0),
+      caps_lock_is_enabled_(false),
+      num_lock_is_enabled_(true) {
 }
 
 bool MockXKeyboard::SetCurrentKeyboardLayoutByName(
@@ -29,27 +31,34 @@ bool MockXKeyboard::ReapplyCurrentKeyboardLayout() {
 void MockXKeyboard::ReapplyCurrentModifierLockStatus() {
 }
 
-void MockXKeyboard::SetLockedModifiers(
-    ModifierLockStatus new_caps_lock_status,
-    ModifierLockStatus new_num_lock_status) {
+void MockXKeyboard::SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
+                                       ModifierLockStatus new_num_lock_status) {
+  if (new_caps_lock_status != kDontChange) {
+    caps_lock_is_enabled_ =
+        (new_caps_lock_status == kEnableLock) ? true : false;
+  }
+  if (new_num_lock_status != kDontChange)
+    num_lock_is_enabled_ = (new_num_lock_status == kEnableLock) ? true : false;
 }
 
 void MockXKeyboard::SetNumLockEnabled(bool enable_num_lock) {
+  num_lock_is_enabled_ = enable_num_lock;
 }
 
 void MockXKeyboard::SetCapsLockEnabled(bool enable_caps_lock) {
+  caps_lock_is_enabled_ = enable_caps_lock;
 }
 
 bool MockXKeyboard::NumLockIsEnabled() {
-  return true;
+  return num_lock_is_enabled_;
 }
 
 bool MockXKeyboard::CapsLockIsEnabled() {
-  return false;
+  return caps_lock_is_enabled_;
 }
 
 std::string MockXKeyboard::CreateFullXkbLayoutName(
-      const std::string& layout_name,
+    const std::string& layout_name,
       const ModifierMap& modifire_map) {
   return "";
 }
@@ -60,6 +69,8 @@ unsigned int MockXKeyboard::GetNumLockMask() {
 
 void MockXKeyboard::GetLockedModifiers(bool* out_caps_lock_enabled,
                                        bool* out_num_lock_enabled) {
+  *out_caps_lock_enabled = caps_lock_is_enabled_;
+  *out_num_lock_enabled = num_lock_is_enabled_;
 }
 
 }  // namespace input_method

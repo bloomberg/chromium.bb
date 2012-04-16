@@ -41,6 +41,8 @@ class MockXKeyboard : public XKeyboard {
 
   int set_current_keyboard_layout_by_name_count_;
   std::string last_layout_;
+  bool caps_lock_is_enabled_;
+  bool num_lock_is_enabled_;
   // TODO(yusukes): Add more variables for counting the numbers of the API calls
 
  private:
