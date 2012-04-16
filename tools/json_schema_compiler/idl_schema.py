@@ -6,6 +6,7 @@
 import json
 import os.path
 import sys
+import re
 
 # This file is a peer to json_schema.py. Each of these files understands a
 # certain format describing APIs (either JSON or IDL), reads files written
@@ -22,18 +23,45 @@ if idl_generators_path not in sys.path:
   sys.path.insert(0, idl_generators_path)
 import idl_parser
 
+def ProcessComment(comment):
+  '''
+  Given the string from a Comment node, parse it into a tuple that looks
+  like:
+    (
+      "The processed comment, minus all |parameter| mentions.",
+      {
+        'parameter_name_1': "The comment that followed |parameter_name_1|:",
+        ...
+      }
+    )
+  '''
+  # Find all the parameter comments of the form "|name|: comment".
+  parameter_comments = re.findall(r'\n *\|([^|]*)\| *: *(.*)', comment)
+  # Get the parent comment (everything before the first parameter comment.
+  parent_comment = re.sub(r'\n *\|.*', '', comment)
+  parent_comment = parent_comment.replace('\n', '').strip()
+
+  parsed = {}
+  for (name, comment) in parameter_comments:
+    parsed[name] = comment.replace('\n', '').strip()
+  return (parent_comment, parsed)
+
 class Callspec(object):
   '''
   Given a Callspec node representing an IDL function declaration, converts into
   a name/value pair where the value is a list of function parameters.
   '''
-  def __init__(self, callspec_node):
+  def __init__(self, callspec_node, comment):
     self.node = callspec_node
+    self.comment = comment
 
   def process(self, callbacks):
     parameters = []
     for node in self.node.children:
-      parameters.append(Param(node).process(callbacks))
+      parameter = Param(node).process(callbacks)
+      if parameter['name'] in self.comment:
+        parameter['description'] = self.comment[parameter['name']]
+      parameters.append(parameter)
     return self.node.GetName(), parameters
 
 class Param(object):
@@ -84,10 +112,15 @@ class Member(object):
     if self.node.GetProperty('nodoc'):
       properties['nodoc'] = True
     is_function = False
+    parameter_comments = {}
+    for node in self.node.children:
+      if node.cls == 'Comment':
+        (parent_comment, parameter_comments) = ProcessComment(node.GetName())
+        properties['description'] = parent_comment
     for node in self.node.children:
       if node.cls == 'Callspec':
         is_function = True
-        name, parameters = Callspec(node).process(callbacks)
+        name, parameters = Callspec(node, parameter_comments).process(callbacks)
         properties['parameters'] = parameters
     properties['name'] = name
     if is_function:

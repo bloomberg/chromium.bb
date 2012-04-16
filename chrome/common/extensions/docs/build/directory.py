@@ -18,6 +18,14 @@ import json_minify as minify
 # default C locale.
 locale.setlocale(locale.LC_ALL, 'C')
 
+import sys
+_script_path = os.path.realpath(__file__)
+_build_dir = os.path.dirname(_script_path)
+_base_dir = os.path.normpath(_build_dir + "/..")
+sys.path.insert(0, os.path.normpath(_base_dir +
+                   "/../../../../tools/json_schema_compiler"))
+import idl_schema
+
 def sorted_walk(path):
   """ A version of os.walk that yields results in order sorted by name.
 
@@ -58,18 +66,55 @@ def parse_json_file(path, encoding="utf-8"):
 
   return json_obj
 
+def parse_idl_file(path):
+  """ Load the specified file and parse it as IDL.
+
+  Args:
+    path: Path to a file containing JSON-encoded data.
+  """
+  api_def = idl_schema.Load(path)
+  return api_def
+
+def write_json_to_file(manifest, path):
+  """ Writes the contents of this manifest file as a JSON-encoded text file.
+
+  Args:
+    manifest: The manifest structure to write.
+    path: The path to write the manifest file to.
+
+  Raises:
+    Exception: If the file could not be written.
+  """
+  manifest_text = json.dumps(manifest, indent=2,
+                             sort_keys=True, separators=(',', ': '))
+  output_path = os.path.realpath(path)
+  try:
+    output_file = open(output_path, 'w')
+  except IOError, msg:
+    raise Exception("Failed to write the samples manifest file."
+                    "The specific error was: %s." % msg)
+  output_file.write(manifest_text)
+  output_file.close()
+
 class ApiManifest(object):
   """ Represents the list of API methods contained in the extension API JSON """
 
-  def __init__(self, manifest_paths):
-    """ Read the supplied manifest file and parse its contents.
+  def __init__(self, json_paths, idl_paths):
+    """ Read the supplied json files and idl files and parse their contents.
 
     Args:
-      manifest_paths: Array of paths to API schemas.
+      json_paths: Array of paths to .json API schemas.
+      idl_paths: Array of paths to .idl API schemas.
     """
-    self._manifest = [];
-    for path in manifest_paths:
+    self._manifest = []
+    self._temporary_json_files = []
+    for path in json_paths:
       self._manifest.extend(parse_json_file(path))
+    for path in idl_paths:
+      module = parse_idl_file(path)
+      json_path = os.path.realpath(path.replace('.idl', '.json'))
+      self._temporary_json_files.append((module, json_path))
+      self._manifest.extend(module)
 
   def _parseModuleDocLinksByKeyTypes(self, module, key):
     """
@@ -186,6 +231,22 @@ class ApiManifest(object):
       api_dict.update(self._parseModuleDocLinksByKeyTypes(module, 'events'))
     return api_dict
 
+  def generateJSONFromIDL(self):
+    """ Writes temporary .json files for every .idl file we have read, for
+    use by the documentation generator.
+    """
+    for (module, json_path) in self._temporary_json_files:
+      if os.path.exists(json_path):
+        print ("WARNING: Overwriting existing file '%s'"
+               " with generated content." % (json_path))
+      write_json_to_file(module, json_path)
+
+  def cleanupGeneratedFiles(self):
+    """ Removes the temporary .json files we generated from .idl before.
+    """
+    for (module, json_path) in self._temporary_json_files:
+      os.remove(json_path)
+
 class SamplesManifest(object):
   """ Represents a manifest file containing information about the sample
   extensions available in the codebase. """
@@ -262,16 +323,7 @@ class SamplesManifest(object):
     Args:
       path: The path to write the samples manifest file to.
     """
-    manifest_text = json.dumps(self._manifest_data, indent=2,
-                               sort_keys=True, separators=(',', ': '))
-    output_path = os.path.realpath(path)
-    try:
-      output_file = open(output_path, 'w')
-    except IOError, msg:
-      raise Exception("Failed to write the samples manifest file."
-                      "The specific error was: %s." % msg)
-    output_file.write(manifest_text)
-    output_file.close()
+    write_json_to_file(self._manifest_data, path)
 
   def writeZippedSamples(self):
     """ For each sample in the current manifest, create a zip file with the

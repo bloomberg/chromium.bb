@@ -27,6 +27,8 @@ _extension_api_dir = os.path.normpath(_base_dir + "/../api")
 
 _extension_api_json_schemas = glob.glob(_extension_api_dir +
                                         '/[a-zA-Z0-9]*.json')
+_extension_api_idl_schemas = glob.glob(_extension_api_dir +
+                                       '/[a-zA-Z0-9]*.idl')
 _api_template_html = _template_dir + "/api_template.html"
 _page_shell_html = _template_dir + "/page_shell.html"
 _generator_html = _build_dir + "/generator.html"
@@ -193,7 +195,8 @@ def main():
     dump_render_tree = FindDumpRenderTree()
 
   # Load the manifest of existing API Methods
-  api_manifest = ApiManifest(_extension_api_json_schemas)
+  api_manifest = ApiManifest(_extension_api_json_schemas,
+                             _extension_api_idl_schemas)
 
   # Read static file names
   static_names = GetStaticFileNames()
@@ -211,6 +214,9 @@ def main():
     else:
       raise Exception("--page-name argument must be one of %s." %
                       ', '.join(sorted(page_names)))
+
+  # Write temporary JSON files based on the IDL inputs
+  api_manifest.generateJSONFromIDL()
 
   # Render a manifest file containing metadata about all the extension samples
   samples_manifest = SamplesManifest(_samples_dir, _base_dir, api_manifest)
@@ -242,6 +248,9 @@ def main():
   debug_log = os.path.normpath(_build_dir + "/" + "debug.log")
   if (os.path.isfile(debug_log)):
     os.remove(debug_log)
+
+  # Cleanup our temporary IDL->JSON files
+  api_manifest.cleanupGeneratedFiles()
 
   if 'EX_OK' in dir(os):
     return os.EX_OK

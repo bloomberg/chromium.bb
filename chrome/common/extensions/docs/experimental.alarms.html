@@ -225,6 +225,10 @@
                 <a href="#type-Alarm">Alarm</a>
                 <ol>
                 </ol>
+              </li><li>
+                <a href="#type-AlarmCreateInfo">AlarmCreateInfo</a>
+                <ol>
+                </ol>
               </li>
             </ol>
           </li>
@@ -317,7 +321,7 @@
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.alarms.create</span>(<span class="optional"><span>string</span>
-                      <var><span>name</span></var></span><span class="null"><span>, </span><span>object</span>
+                      <var><span>name</span></var></span><span class="null"><span>, </span><span>AlarmCreateInfo</span>
                       <var><span>alarmInfo</span></var></span>)</div>
               <div class="description">
                 <p>Creates an alarm. After the delay is expired, the onAlarm event is fired. If there is another alarm with the same name (or no name if none is specified), it will be cancelled and replaced by this alarm.</p>
@@ -358,7 +362,7 @@
                   (
                     <span id="typeTemplate">
                       <span>
-                        <span>object</span>
+                        <a href="experimental.alarms.html#type-AlarmCreateInfo">AlarmCreateInfo</a>
                       </span>
                     </span>
                   )
@@ -369,58 +373,6 @@
             Undocumented.
           </dd>
           <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>delayInSeconds</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Length of time in seconds after which the onAlarm event should fire. Note that granularity is not guaranteed: this value is more of a hint to the browser. For performance reasons, alarms may be delayed an arbitrary amount of time before firing.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>repeating</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>boolean</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>True if the alarm should repeatedly fire at regular intervals. Defaults to false.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
@@ -440,7 +392,7 @@
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.alarms.get</span>(<span class="optional"><span>string</span>
                       <var><span>name</span></var></span><span class="null"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
+                      <var><span>AlarmCallback</span></var></span>)</div>
               <div class="description">
                 <p>Retrieves details about the specified alarm.</p>
                 <!-- PARAMETERS -->
@@ -473,7 +425,7 @@
                   </div><div>
                     <div>
           <dt>
-            <var>callback</var>
+            <var>AlarmCallback</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -494,6 +446,39 @@
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>alarm</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.alarms.html#type-Alarm">Alarm</a>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
         </div>
                   </div>
                 </dl>
@@ -548,7 +533,7 @@
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.alarms.getAll</span>(<span class="null"><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
+                      <var><span>AlarmListCallback</span></var></span>)</div>
               <div class="description">
                 <p>Gets an array of all the alarms.</p>
                 <!-- PARAMETERS -->
@@ -557,7 +542,7 @@
                   <div>
                     <div>
           <dt>
-            <var>callback</var>
+            <var>AlarmListCallback</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -578,6 +563,45 @@
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
+          <dd>
+            <div>
+          <h5>Parameters</h5>
+          <dl>
+            <div>
+              <div>
+          <dt>
+            <var>alarms</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="experimental.alarms.html#type-Alarm">Alarm</a>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div>
+          </dl>
+        </div>
+          </dd>
         </div>
                   </div>
                 </dl>
@@ -718,6 +742,29 @@
               <div>
                 <div>
           <dt>
+            <var>delayInSeconds</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Original length of time in seconds after which the onAlarm event should fire. TODO: need minimum=0</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
             <var>name</var>
               <em>
                 <!-- TYPE -->
@@ -741,29 +788,6 @@
               </div><div>
                 <div>
           <dt>
-            <var>delayInSeconds</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Original length of time in seconds after which the onAlarm event should fire.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
             <var>repeating</var>
               <em>
                 <!-- TYPE -->
@@ -779,6 +803,84 @@
               </em>
           </dt>
           <dd>True if the alarm repeatedly fires at regular intervals, false if it only fires once.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-AlarmCreateInfo"></a>
+              <h4>AlarmCreateInfo</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>delayInSeconds</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Length of time in seconds after which the onAlarm event should fire. Note that granularity is not guaranteed: this value is more of a hint to the browser. For performance reasons, alarms may be delayed an arbitrary amount of time before firing. TODO: need minimum=0</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>repeating</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>True if the alarm should repeatedly fire at regular intervals. Defaults to false.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
