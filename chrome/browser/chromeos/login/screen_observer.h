@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,8 +50,8 @@ class ScreenObserver {
                                      const std::string& password) = 0;
 
   // Set/get usage statistics reporting checkbox status on EULA screen.
-  virtual void set_usage_statistics_reporting(bool val) = 0;
-  virtual bool usage_statistics_reporting() const = 0;
+  virtual void SetUsageStatisticsReporting(bool val) = 0;
+  virtual bool GetUsageStatisticsReporting() const = 0;
 
  protected:
   virtual ~ScreenObserver() {}

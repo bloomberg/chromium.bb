@@ -135,7 +135,8 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       is_out_of_box_(false),
       host_(host),
       oobe_display_(oobe_display),
-      usage_statistics_reporting_(true) {
+      usage_statistics_reporting_(true),
+      skip_update_enroll_after_eula_(false) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
 }
@@ -327,6 +328,10 @@ void WizardController::SkipRegistration() {
     LOG(ERROR) << "Registration screen is not active.";
 }
 
+void WizardController::SkipUpdateEnrollAfterEula() {
+  skip_update_enroll_after_eula_ = true;
+}
+
 // static
 void WizardController::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(kOobeComplete,
@@ -412,7 +417,13 @@ void WizardController::OnEulaAccepted() {
 #endif
   }
 
-  InitiateOOBEUpdate();
+  if (skip_update_enroll_after_eula_) {
+    PerformPostEulaActions();
+    PerformPostUpdateActions();
+    ShowEnterpriseEnrollmentScreen();
+  } else {
+    InitiateOOBEUpdate();
+  }
 }
 
 void WizardController::OnUpdateErrorCheckingForUpdate() {
@@ -479,20 +490,27 @@ void WizardController::OnEnterpriseAutoEnrollmentDone() {
 }
 
 void WizardController::OnOOBECompleted() {
-  MarkOobeCompleted();
+  PerformPostUpdateActions();
   ShowLoginScreen();
 }
 
 void WizardController::InitiateOOBEUpdate() {
+  PerformPostEulaActions();
+  GetUpdateScreen()->StartUpdate();
+  SetCurrentScreenSmooth(GetUpdateScreen(), true);
+}
+
+void WizardController::PerformPostEulaActions() {
   // Now that EULA has been accepted (for official builds), enable portal check.
   // ChromiumOS builds would go though this code path too.
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
       SetDefaultCheckPortalList();
   host_->CheckForAutoEnrollment();
-  GetUpdateScreen()->StartUpdate();
-  SetCurrentScreenSmooth(GetUpdateScreen(), true);
 }
 
+void WizardController::PerformPostUpdateActions() {
+  MarkOobeCompleted();
+}
 
 void WizardController::SetCurrentScreen(WizardScreen* new_current) {
   SetCurrentScreenSmooth(new_current, false);
@@ -738,11 +756,11 @@ void WizardController::OnSetUserNamePassword(const std::string& username,
   password_ = password;
 }
 
-void WizardController::set_usage_statistics_reporting(bool val) {
+void WizardController::SetUsageStatisticsReporting(bool val) {
   usage_statistics_reporting_ = val;
 }
 
-bool WizardController::usage_statistics_reporting() const {
+bool WizardController::GetUsageStatisticsReporting() const {
   return usage_statistics_reporting_;
 }
 

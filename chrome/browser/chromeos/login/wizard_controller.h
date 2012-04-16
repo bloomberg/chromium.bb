@@ -90,6 +90,9 @@ class WizardController : public ScreenObserver {
   // If being at register screen proceeds to the next one.
   void SkipRegistration();
 
+  // Skip update, go straight to enrollment after EULA is accepted.
+  void SkipUpdateEnrollAfterEula();
+
   // Lazy initializers and getters for screens.
   NetworkScreen* GetNetworkScreen();
   UpdateScreen* GetUpdateScreen();
@@ -149,13 +152,20 @@ class WizardController : public ScreenObserver {
   // Shows update screen and starts update process.
   void InitiateOOBEUpdate();
 
+  // Actions that should be done right after EULA is accepted,
+  // before update check.
+  void PerformPostEulaActions();
+
+  // Actions that should be done right after update stage is finished.
+  void PerformPostUpdateActions();
+
   // Overridden from ScreenObserver:
   virtual void OnExit(ExitCodes exit_code) OVERRIDE;
   virtual void ShowCurrentScreen() OVERRIDE;
   virtual void OnSetUserNamePassword(const std::string& username,
                                      const std::string& password) OVERRIDE;
-  virtual void set_usage_statistics_reporting(bool val) OVERRIDE;
-  virtual bool usage_statistics_reporting() const OVERRIDE;
+  virtual void SetUsageStatisticsReporting(bool val) OVERRIDE;
+  virtual bool GetUsageStatisticsReporting() const OVERRIDE;
 
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
@@ -214,6 +224,10 @@ class WizardController : public ScreenObserver {
   // State of Usage stat/error reporting checkbox on EULA screen
   // during wizard lifetime.
   bool usage_statistics_reporting_;
+
+  // If true then update check is cancelled and enrollment is started after
+  // EULA is accepted.
+  bool skip_update_enroll_after_eula_;
 
   // Time when the EULA was accepted. Used to measure the duration from the EULA
   // acceptance until the Sign-In screen is displayed.

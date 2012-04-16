@@ -7,18 +7,20 @@
  */
 
 // TODO(xiyuan): Find a better to share those constants.
-const SCREEN_GAIA_SIGNIN = 'gaia-signin';
-const SCREEN_ACCOUNT_PICKER = 'account-picker';
+/** @const */ var SCREEN_OOBE_NETWORK = 'connect';
+/** @const */ var SCREEN_OOBE_EULA = 'eula';
+/** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';
+/** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
-const ACCELERATOR_ACCESSIBILITY = 'accessibility';
-const ACCELERATOR_CANCEL = 'cancel';
-const ACCELERATOR_ENROLLMENT = 'enrollment';
-const ACCELERATOR_EXIT = 'exit';
-const ACCELERATOR_VERSION = 'version';
+/** @const */ var ACCELERATOR_ACCESSIBILITY = 'accessibility';
+/** @const */ var ACCELERATOR_CANCEL = 'cancel';
+/** @const */ var ACCELERATOR_ENROLLMENT = 'enrollment';
+/** @const */ var ACCELERATOR_EXIT = 'exit';
+/** @const */ var ACCELERATOR_VERSION = 'version';
 
 /* Help topic identifiers. */
-const HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
+/** @const */ var HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
 
 cr.define('cr.ui.login', function() {
   var Bubble = cr.ui.Bubble;
@@ -82,15 +84,21 @@ cr.define('cr.ui.login', function() {
      */
     handleAccelerator: function(name) {
       if (name == ACCELERATOR_ACCESSIBILITY) {
-        chrome.send('toggleAccessibility', []);
+        chrome.send('toggleAccessibility');
       } else if (name == ACCELERATOR_CANCEL) {
         if (this.currentScreen.cancel) {
           this.currentScreen.cancel();
         }
       } else if (name == ACCELERATOR_ENROLLMENT) {
         var currentStepId = this.screens_[this.currentStep_];
-        if (currentStepId == SCREEN_GAIA_SIGNIN)
-          chrome.send('toggleEnrollmentScreen', []);
+        if (currentStepId == SCREEN_GAIA_SIGNIN) {
+          chrome.send('toggleEnrollmentScreen');
+        } else if (currentStepId == SCREEN_OOBE_NETWORK ||
+                   currentStepId == SCREEN_OOBE_EULA) {
+          // In this case update check will be skipped and OOBE will
+          // proceed straight to enrollment screen when EULA is accepted.
+          chrome.send('skipUpdateEnrollAfterEula');
+        }
       } else if (name == ACCELERATOR_EXIT) {
         if (this.currentScreen.exit) {
           this.currentScreen.exit();

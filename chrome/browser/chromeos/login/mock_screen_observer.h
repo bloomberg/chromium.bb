@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,8 +24,8 @@ class MockScreenObserver : public ScreenObserver {
   MOCK_METHOD0(ShowCurrentScreen, void());
   MOCK_METHOD2(OnSetUserNamePassword,
                void(const std::string&, const std::string&));
-  MOCK_METHOD1(set_usage_statistics_reporting, void(bool));
-  MOCK_CONST_METHOD0(usage_statistics_reporting, bool());
+  MOCK_METHOD1(SetUsageStatisticsReporting, void(bool));
+  MOCK_CONST_METHOD0(GetUsageStatisticsReporting, bool());
 };
 
 }  // namespace chromeos
