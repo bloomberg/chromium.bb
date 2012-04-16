@@ -59,16 +59,21 @@ class GerritPatchTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_lib, 'GetProjectDir')
 
     my_patch = cros_patch.GerritPatch(self.test_json, False)
+    rev = FAKE_PATCH_JSON['currentPatchSet']['revision']
+    my_patch.sha1 = rev
     cros_lib.GetProjectDir(build_root, 'tacos/chromite').AndReturn(project_dir)
-    # Ignore git fetch.
-    cros_lib.RunCommand(mox.IgnoreArg(), cwd=project_dir, print_cmd=False)
+
+    # Ignore git fetch machinery.
+    self.mox.StubOutWithMock(my_patch, 'Fetch')
+    my_patch.Fetch(project_dir).AndReturn(rev)
+
     cros_patch._GetProjectManifestBranch(
         build_root, 'tacos/chromite').AndReturn('m/master')
 
     git_log = self.MockCommandResult(output=cmd_output)
 
     cros_lib.RunCommand(
-        ['git', 'log', '-z', 'm/master..FETCH_HEAD^'], cwd=project_dir,
+        ['git', 'log', '-z', 'm/master..%s^' % rev], cwd=project_dir,
         redirect_stdout=True, print_cmd=False).AndReturn(git_log)
 
     self.mox.ReplayAll()

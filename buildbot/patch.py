@@ -39,7 +39,7 @@ class MissingChangeIDException(Exception):
 class GitRepoPatch(object):
   """Representing a patch from a branch of a local or remote git repository."""
 
-  def __init__(self, project_url, project, ref, tracking_branch):
+  def __init__(self, project_url, project, ref, tracking_branch, sha1=None):
     """Initialization of abstract Patch class.
 
     Args:
@@ -48,36 +48,78 @@ class GitRepoPatch(object):
       project: The name of the project that the patch applies to.
       ref: The refspec to pull from the git repo.
       tracking_branch:  The remote branch of the project the patch applies to.
+      sha1: The sha1 of the commit, if known.  This *must* be accurate.  Can
+        be None if not yet known- which case Fetch will update it.
     """
     self.project_url = project_url
     self.project = project
     self.ref = ref
     self.tracking_branch = os.path.basename(tracking_branch)
+    self.sha1 = sha1
 
   def ProjectDir(self, buildroot):
     """Returns the local directory where this patch will be applied."""
     return cros_lib.GetProjectDir(buildroot, self.project)
 
-  def _RebaseOnto(self, branch, upstream, project_dir, trivial):
-    """Attempts to rebase FETCH_HEAD onto branch -- while not on a branch.
+  def Fetch(self, target_repo):
+    """Fetch this patch into the target repository.
+
+    FETCH_HEAD is implicitly reset by this operation.  Additionally,
+    if the sha1 of the patch was not yet known, it is pulled and stored
+    on this object.
+
+    Finally, if the sha1 is known and it's already available in the target
+    repository, this will skip the actual fetch operation (it's unneeded).
+    """
+
+    if self.sha1 is not None:
+      ret = cros_lib.RunCommandCaptureOutput(
+          ['git', 'show', self.sha1], cwd=target_repo, print_cmd=False,
+          error_code_ok=True).returncode
+      if ret == 0:
+        return self.sha1
+
+    cros_lib.RunCommand(['git', 'fetch', self.project_url, self.ref],
+                        cwd=target_repo, print_cmd=False)
+
+    # Even if we know the sha1, still do a sanity check to ensure we
+    # actually just fetched it.
+    ret = cros_lib.RunCommand(['git', 'rev-list', '-n1', 'FETCH_HEAD'],
+                              cwd=target_repo, redirect_stdout=True,
+                              print_cmd=False)
+    ret = ret.output.strip()
+    if self.sha1 is not None:
+      if ret != self.sha1:
+        raise PatchException('Patch %s specifies sha1 %s, yet in fetching from '
+                             '%s we could not find that sha1.  Internal error '
+                             'most likely.' % (self, self.sha1, self.ref))
+    else:
+      self.sha1 = ret
+    return self.sha1
+
+  def _RebaseOnto(self, branch, upstream, project_dir, rev, trivial):
+    """Attempts to rebase the given rev into branch.
 
     Raises:
       cros_lib.RunCommandError:  If the rebase operation returns an error code.
-        In this case, we still rebase --abort before returning.
+        In this case, we still rebase --abort (or equivalent) before
+        returning.
     """
     try:
-      git_rb = ['git', 'rebase']
-      if trivial: git_rb.extend(['--strategy', 'resolve', '-X', 'trivial'])
-      git_rb.extend(['--onto', branch, upstream, 'FETCH_HEAD'])
+      cmd = ['git', 'rebase']
+      if trivial:
+        cmd.extend(['--strategy', 'resolve', '-X', 'trivial'])
+      cmd.extend(['--onto', branch, upstream, rev])
+
       # Run the rebase command.
-      cros_lib.RunCommand(git_rb, cwd=project_dir, print_cmd=False)
+      cros_lib.RunCommand(cmd, cwd=project_dir, print_cmd=False)
 
     except cros_lib.RunCommandError:
-      cros_lib.RunCommand(['git', 'rebase', '--abort'], cwd=project_dir,
-                          error_ok=True, print_cmd=False)
+      cros_lib.RunCommand(['git', 'rebase', '--abort'],
+                          cwd=project_dir, print_cmd=False, error_code_ok=True)
       raise
 
-  def _RebasePatch(self, buildroot, project_dir, trivial):
+  def _RebasePatch(self, buildroot, project_dir, rev, trivial):
     """Rebase patch fetched from gerrit onto constants.PATCH_BRANCH.
 
     When the function completes, the constants.PATCH_BRANCH branch will be
@@ -86,33 +128,41 @@ class GitRepoPatch(object):
     Arguments:
       buildroot: The buildroot.
       project_dir: Directory of the project that is being patched.
+      rev: The rev we're rebasing into the tree.
       trivial: Use trivial logic that only allows trivial merges.  Note:
         Requires Git >= 1.7.6 -- bug <.  Bots have 1.7.6 installed.
 
     Raises:
       ApplyPatchException: If the patch failed to apply.
     """
+
     upstream = _GetProjectManifestBranch(buildroot, self.project)
-    cros_lib.RunCommand(['git', 'fetch', self.project_url, self.ref],
-                        cwd=project_dir, print_cmd=False)
+
     try:
-      self._RebaseOnto(constants.PATCH_BRANCH, upstream, project_dir, trivial)
-      cros_lib.RunCommand(['git', 'checkout', '-B', constants.PATCH_BRANCH],
-                          cwd=project_dir, print_cmd=False)
+      self._RebaseOnto(constants.PATCH_BRANCH, upstream, project_dir, rev,
+                       trivial)
     except cros_lib.RunCommandError:
-      try:
-        # Failed to rebase against branch, try TOT.
-        self._RebaseOnto(upstream, upstream, project_dir, trivial)
-      except cros_lib.RunCommandError:
-        raise ApplyPatchException(
-            self, patch_type=ApplyPatchException.TYPE_REBASE_TO_TOT)
-      else:
-        # We failed to apply to patch_branch but succeeded against TOT.
-        # We should pass a different type of exception in this case.
-        raise ApplyPatchException(
-            self, patch_type=ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT)
+      # Ignore this error; next we fiddle with the patch a bit to
+      # discern what exception to throw.
+      pass
+    else:
+      cros_lib.RunCommand(['git', 'checkout', '-B', constants.PATCH_BRANCH,
+                          'HEAD'], cwd=project_dir, print_cmd=False)
+      return
+
+    try:
+      self._RebaseOnto(upstream, upstream, project_dir, rev, trivial)
+      raise ApplyPatchException(
+          self, patch_type=ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT)
+    except cros_lib.RunCommandError:
+      # Cleanup the rebase attempt.
+      cros_lib.RunCommandCaptureOutput(
+          ['git', 'rebase', '--abort'], cwd=project_dir, print_cmd=False)
+      raise ApplyPatchException(
+          self, patch_type=ApplyPatchException.TYPE_REBASE_TO_TOT)
 
     finally:
+      # Ensure we're on the correct branch on the way out.
       cros_lib.RunCommand(['git', 'checkout', constants.PATCH_BRANCH],
                           cwd=project_dir, print_cmd=False)
 
@@ -134,26 +184,34 @@ class GitRepoPatch(object):
                               manifest_branch_base))
 
     project_dir = self.ProjectDir(buildroot)
+
+    rev = self.Fetch(project_dir)
+
     if not cros_lib.DoesLocalBranchExist(project_dir, constants.PATCH_BRANCH):
       upstream = cros_lib.GetManifestDefaultBranch(buildroot)
       cros_lib.RunCommand(['git', 'checkout', '-b', constants.PATCH_BRANCH,
                            '-t', 'm/' + upstream], cwd=project_dir,
                           print_cmd=False)
-    self._RebasePatch(buildroot, project_dir, trivial)
+    self._RebasePatch(buildroot, project_dir, rev, trivial)
 
   def __str__(self):
     """Returns custom string to identify this patch."""
-    return '%s:%s' % (self.project, self.ref)
+    s = '%s:%s' % (self.project, self.ref)
+    if self.sha1:
+      s = '%s:%s' % (s, self.sha1)
+    return s
 
 
 class LocalGitRepoPatch(GitRepoPatch):
   """Represents patch coming from an on-disk git repo."""
 
+  def __init__(self, project_url, project, ref, tracking_branch, sha1):
+    GitRepoPatch.__init__(self, project_url, project, ref, tracking_branch,
+                          sha1=sha1)
+
   def Sha1Hash(self):
     """Get the Sha1 of the branch."""
-    source_root = constants.SOURCE_ROOT
-    return cros_lib.GetGitRepoRevision(cwd=self.ProjectDir(source_root),
-                                       branch=self.ref)
+    return self.sha1
 
   def Upload(self, remote_ref, dryrun=False):
     """Upload the patch to a remote git branch.
@@ -195,7 +253,8 @@ class GerritPatch(GitRepoPatch):
         self._GetProjectUrl(patch_dict['project'], internal),
         patch_dict['project'],
         patch_dict['currentPatchSet']['ref'],
-        patch_dict['branch'])
+        patch_dict['branch'],
+        sha1=patch_dict['currentPatchSet']['revision'])
 
     self.patch_dict = patch_dict
     self.internal = internal
@@ -237,9 +296,10 @@ class GerritPatch(GitRepoPatch):
   def CommitMessage(self, buildroot):
     """Returns the commit message for the patch as a string."""
     project_dir = self.ProjectDir(buildroot)
-    cros_lib.RunCommand(['git', 'fetch', self.project_url, self.ref],
-                        cwd=project_dir, print_cmd=False)
-    return_obj = cros_lib.RunCommand(['git', 'show', '-s', 'FETCH_HEAD'],
+
+    rev = self.Fetch(project_dir)
+
+    return_obj = cros_lib.RunCommand(['git', 'show', '-s', rev],
                                      cwd=project_dir, redirect_stdout=True,
                                      print_cmd=False)
     return return_obj.output
@@ -259,11 +319,12 @@ class GerritPatch(GitRepoPatch):
     dependencies = []
     logging.info('Checking for Gerrit dependencies for change %s', self)
     project_dir = self.ProjectDir(buildroot)
-    cros_lib.RunCommand(['git', 'fetch', self.project_url, self.ref],
-                        cwd=project_dir, print_cmd=False)
+
+    rev = self.Fetch(project_dir)
+
+    manifest_branch = _GetProjectManifestBranch(buildroot, self.project)
     return_obj = cros_lib.RunCommand(
-        ['git', 'log', '-z', '%s..FETCH_HEAD^' %
-          _GetProjectManifestBranch(buildroot, self.project)],
+        ['git', 'log', '-z', '%s..%s^' % (manifest_branch, rev)],
         cwd=project_dir, redirect_stdout=True, print_cmd=False)
 
     for patch_output in return_obj.output.split('\0'):
@@ -352,10 +413,12 @@ def PrepareLocalPatches(patches, manifest_branch):
     project, branch = patch.split(':')
     project_dir = cros_lib.GetProjectDir(constants.SOURCE_ROOT, project)
 
-    cmd = ['git', 'log', '%s..%s' % ('m/' + manifest_branch, branch),
-           '--format=%H']
+    cmd = ['git', 'rev-list', '-n1', '%s..%s'
+           % ('m/' + manifest_branch, branch)]
     result = cros_lib.RunCommand(cmd, redirect_stdout=True, cwd=project_dir)
-    if not result.output.strip():
+    sha1 = result.output.strip()
+
+    if not sha1:
       raise PatchException('No changes found in %s:%s' % (project, branch))
 
     # Store remote tracking branch for verification during patch stage.
@@ -366,6 +429,7 @@ def PrepareLocalPatches(patches, manifest_branch):
                            % (project, branch))
 
     patch_info.append(LocalGitRepoPatch(os.path.join(project_dir, '.git'),
-                                        project, branch, tracking_branch))
+                                        project, branch, tracking_branch,
+                                        sha1))
 
   return patch_info
