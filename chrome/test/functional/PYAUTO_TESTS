@@ -149,8 +149,6 @@
       '-sync.SyncTest.testPersonalStuffSyncSection',
       # crbug.com/95140
       '-translate.TranslateTest.testGoBackAndForwardToTranslatePage',
-      # crbug.com/123402
-      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
     ],
 
     'win': [
