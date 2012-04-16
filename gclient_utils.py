@@ -193,16 +193,6 @@ def safe_makedirs(tree):
         raise
 
 
-def FindCommandExecutable(cmd):
-  """Finds the specified |cmd| in $PATH and returns its path.  Returns None
-  if it's not found."""
-  for path in os.environ['PATH'].split(os.pathsep):
-    full_path = os.path.join(path, cmd)
-    if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
-      return full_path
-  return None
-
-
 def CheckCallAndFilterAndHeader(args, always=False, **kwargs):
   """Adds 'header' support to CheckCallAndFilter.
 

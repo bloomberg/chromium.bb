@@ -55,7 +55,6 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
         'CheckCallAndFilterAndHeader')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileWrite')
-    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FindCommandExecutable')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'RemoveDirectory')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'Capture')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, '_CaptureInfo')
@@ -112,9 +111,6 @@ class SVNWrapperTestCase(BaseTestCase):
         'url',
     ]
 
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
-    self.mox.ReplayAll()
-
     # If you add a member, be sure to add the relevant test!
     self.compareMembers(self._scm_wrapper('svn://a'), members)
 
@@ -126,7 +122,6 @@ class SVNWrapperTestCase(BaseTestCase):
   def testSVNFullUrlForRelativeUrl(self):
     self.url = 'svn://a/b/c/d'
 
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -135,7 +130,6 @@ class SVNWrapperTestCase(BaseTestCase):
   def testGITFullUrlForRelativeUrl(self):
     self.url = 'git://a/b/c/d'
 
-    gclient_scm.gclient_utils.FindCommandExecutable('git').AndReturn("./git")
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -144,7 +138,6 @@ class SVNWrapperTestCase(BaseTestCase):
   def testGITFakeHttpUrl(self):
     self.url = 'git+http://foo'
 
-    gclient_scm.gclient_utils.FindCommandExecutable('git').AndReturn("./git")
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -153,7 +146,6 @@ class SVNWrapperTestCase(BaseTestCase):
   def testGITFakeHttpsUrl(self):
     self.url = 'git+https://foo'
 
-    gclient_scm.gclient_utils.FindCommandExecutable('git').AndReturn("./git")
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -163,7 +155,6 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=False)
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -178,7 +169,6 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testRevertMissing(self):
     options = self.Options(verbose=True)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(False)
     gclient_scm.scm.SVN.Capture(['--version'], None
@@ -221,7 +211,6 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(parent).AndReturn(False)
     gclient_scm.os.makedirs(parent)
     gclient_scm.os.path.exists(parent).AndReturn(True)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.Capture(['--version'], None
         ).AndReturn('svn, version 1.6')
@@ -241,7 +230,6 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testRevertNone(self):
     options = self.Options(verbose=True)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(join(self.base_path, '.svn')).AndReturn(True)
     gclient_scm.scm.SVN.CaptureStatus(None, self.base_path).AndReturn([])
@@ -262,7 +250,6 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(join(self.base_path, '.svn')).AndReturn(True)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     items = [
       ('~      ', 'a'),
     ]
@@ -292,7 +279,6 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=True)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.os.path.isdir(join(self.base_path, '.svn')).AndReturn(True)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     items = [
       ('~      ', '.'),
     ]
@@ -316,7 +302,6 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testStatus(self):
     options = self.Options(verbose=True)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
@@ -339,7 +324,6 @@ class SVNWrapperTestCase(BaseTestCase):
     file_info.url = self.url
     file_info.uuid = 'ABC'
     file_info.revision = 42
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     # Checkout.
@@ -374,7 +358,6 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
 
     # Checkout or update.
     dotted_path = join(self.base_path, '.')
@@ -415,7 +398,6 @@ class SVNWrapperTestCase(BaseTestCase):
       'UUID': 'ABC',
       'Revision': 42,
     }
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
@@ -449,7 +431,6 @@ class SVNWrapperTestCase(BaseTestCase):
       'UUID': 'ABC',
       'Revision': 42,
     }
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
@@ -495,7 +476,6 @@ class SVNWrapperTestCase(BaseTestCase):
         ).AndReturn('svn, version 1.5.1 (r32289)')
     gclient_scm.os.path.exists(join(self.base_path, '.svn')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, 'DEPS')).AndReturn(False)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
 
     # Verify no locked files.
     dotted_path = join(self.base_path, '.')
@@ -535,7 +515,6 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN.Capture(['--version'], None
         ).AndReturn('svn, version 1.4.4 (r25188)')
     gclient_scm.os.path.exists(self.base_path).AndReturn(True)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
 
     # When checking out a single file with svn 1.4, we use svn export
     files_list = self.mox.CreateMockAnything()
@@ -564,7 +543,6 @@ class SVNWrapperTestCase(BaseTestCase):
     # the old DEPS file.
     gclient_scm.os.path.exists(join(self.base_path, 'DEPS')).AndReturn(True)
     gclient_scm.os.remove(join(self.base_path, 'DEPS'))
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
 
     # Verify no locked files.
     gclient_scm.scm.SVN.CaptureStatus(
@@ -609,7 +587,6 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.scm.SVN.Capture(['--version'], None
         ).AndReturn('svn, version 1.5.1 (r32289)')
     gclient_scm.os.path.exists(join(self.base_path, '.svn')).AndReturn(True)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
 
     # Verify no locked files.
     gclient_scm.scm.SVN.CaptureStatus(None, join(self.base_path, '.')
@@ -633,7 +610,6 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testUpdateGit(self):
     options = self.Options(verbose=True)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     file_path = gclient_scm.os.path.join(self.root_dir, self.relpath, '.git')
     gclient_scm.os.path.exists(file_path).AndReturn(True)
 
@@ -647,7 +623,6 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testUpdateHg(self):
     options = self.Options(verbose=True)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(True)
 
@@ -670,7 +645,6 @@ class SVNWrapperTestCase(BaseTestCase):
         ).AndReturn(True)
     gclient_scm.scm.SVN.IsValidRevision(url='%s@%s' % (self.url, 'fake')
         ).AndReturn(False)
-    gclient_scm.gclient_utils.FindCommandExecutable('svn').AndReturn("./svn")
 
     self.mox.ReplayAll()
 
@@ -1130,7 +1104,6 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
         ).AndReturn(False)
 
     gclient_scm.scm.os.path.isdir(self.base_path).AndReturn(True)
-    gclient_scm.gclient_utils.FindCommandExecutable('git').AndReturn("./git")
 
     self.mox.ReplayAll()
 
@@ -1184,7 +1157,6 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
 
     gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
     gclient_scm.os.path.isdir(self.base_path).MultipleTimes().AndReturn(True)
-    gclient_scm.gclient_utils.FindCommandExecutable('git').AndReturn("./git")
 
     self.mox.ReplayAll()
 
