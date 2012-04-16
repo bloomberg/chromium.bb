@@ -799,10 +799,8 @@ function setColor(color) {
  * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
  */
 function printPreviewFailed() {
-  previewArea.displayErrorMessageWithButtonAndNotify(
-      localStrings.getString('previewFailed'),
-      localStrings.getString('launchNativeDialog'),
-      launchNativePrintDialog);
+  previewArea.displayErrorMessageAndNotify(
+      localStrings.getString('previewFailed'));
 }
 
 /**
