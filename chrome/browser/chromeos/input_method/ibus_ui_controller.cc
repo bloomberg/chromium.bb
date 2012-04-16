@@ -10,29 +10,34 @@
 
 #include <sstream>
 
-#include "base/logging.h"
-#include "base/string_util.h"
-#include "third_party/mozc/session/candidates_lite.pb.h"
-
-#if defined(HAVE_IBUS)
 #include "ash/shell.h"
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
+#include "chrome/browser/chromeos/input_method/input_method_descriptor.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "third_party/mozc/session/candidates_lite.pb.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/ibus_client_impl.h"
 #include "ui/base/ime/input_method_ibus.h"
 
-namespace {
-
-// The list of input method IDs for Mozc Japanese IMEs.
-const char* kMozcJaInputMethodIds[] = { "mozc", "mozc-jp", "mozc-dv" };
-
-}  // namespace
-#endif
-
 namespace chromeos {
 namespace input_method {
+namespace {
+
+bool IsActive(const std::string& input_method_id,
+              const InputMethodDescriptors* descriptors) {
+  for (size_t i = 0; i < descriptors->size(); ++i) {
+    if (descriptors->at(i).id() == input_method_id) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 InputMethodLookupTable::InputMethodLookupTable()
     : visible(false),
@@ -294,12 +299,16 @@ class IBusUiControllerImpl : public IBusUiController {
                                    int32 y,
                                    int32 w,
                                    int32 h) OVERRIDE {
+      // The list of input method IDs for Mozc Japanese IMEs.
+      const char* kMozcJaInputMethodIds[] = { "mozc", "mozc-jp", "mozc-dv" };
+
       if (!ui_)
         return;
 
-      const std::string current_input_method_id = GetCurrentInputMethodId();
+      scoped_ptr<InputMethodDescriptors> input_methods(
+          InputMethodManager::GetInstance()->GetSupportedInputMethods());
       for (size_t i = 0; i < arraysize(kMozcJaInputMethodIds); ++i) {
-        if (kMozcJaInputMethodIds[i] == current_input_method_id) {
+        if (IsActive(kMozcJaInputMethodIds[i], input_methods.get())) {
           // Mozc Japanese IMEs require cursor location information to show the
           // suggestion window in a correct position.
           ui::internal::IBusClientImpl::SetCursorLocation(context, x, y, w, h);
@@ -736,6 +745,11 @@ IBusUiController* IBusUiController::Create() {
 }
 
 IBusUiController::~IBusUiController() {
+}
+
+bool IsActiveForTesting(const std::string& input_method_id,
+                        const InputMethodDescriptors* descriptors) {
+  return IsActive(input_method_id, descriptors);
 }
 
 }  // namespace input_method

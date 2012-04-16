@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -22,6 +22,9 @@ namespace input_method {
 
 // A key for attaching the |ibus_service_panel_| object to |ibus_|.
 const char kPanelObjectKey[] = "panel-object";
+
+class InputMethodDescriptor;
+typedef std::vector<InputMethodDescriptor> InputMethodDescriptors;
 
 // The struct represents the input method lookup table (list of candidates).
 // Used for InputMethodUpdateLookupTableMonitorFunction.
@@ -140,6 +143,9 @@ class IBusUiController {
   // sent to the ibus-daemon
   virtual void NotifyPageDown() = 0;
 };
+
+bool IsActiveForTesting(const std::string& input_method_id,
+                        const InputMethodDescriptors* descriptors);
 
 }  // namespace input_method
 }  // namespace chromeos

@@ -1292,6 +1292,7 @@
         'browser/chromeos/gview_request_interceptor_unittest.cc',
         'browser/chromeos/imageburner/burn_manager_unittest.cc',
         'browser/chromeos/input_method/candidate_window_view_unittest.cc',
+        'browser/chromeos/input_method/ibus_ui_controller_unittest.cc',
         'browser/chromeos/input_method/input_method_descriptor_unittest.cc',
         'browser/chromeos/input_method/input_method_property_unittest.cc',
         'browser/chromeos/input_method/input_method_util_unittest.cc',
