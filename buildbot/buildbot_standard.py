@@ -104,7 +104,7 @@ def SetupContextVars(context):
 def ValidatorTest(context, architecture, validator):
   Command(context,
       cmd=[sys.executable,
-        'tests/validator_regression/validator_regression_test.py',
+        'tests/abi_corpus/validator_regression_test.py',
         '--keep-going',
         '--validator', validator,
         '--arch', architecture])
@@ -230,7 +230,7 @@ def BuildScript(status, context):
     with Step('predownload validator corpus', status):
       Command(context,
           cmd=[sys.executable,
-               'tests/validator_regression/validator_regression_test.py',
+               'tests/abi_corpus/validator_regression_test.py',
                '--download-only'])
 
     with Step('validator_regression_test current x86-32', status,
