@@ -42,7 +42,7 @@ class FileSystemUsageCache {
   static bool Exists(const FilePath& usage_file_path);
   static bool Delete(const FilePath& usage_file_path);
 
-  static const char kUsageFileName[];
+  static const FilePath::CharType kUsageFileName[];
   static const char kUsageFileHeader[];
   static const int kUsageFileSize;
   static const int kUsageFileHeaderSize;

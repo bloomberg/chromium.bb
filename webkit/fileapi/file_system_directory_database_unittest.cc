@@ -6,13 +6,24 @@
 
 #include <math.h>
 
+#include "base/file_util.h"
+#include "base/platform_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "webkit/fileapi/file_system_database_test_helper.h"
+#include "webkit/fileapi/file_system_util.h"
+
+#define FPL(x) FILE_PATH_LITERAL(x)
 
 namespace fileapi {
+
+namespace {
+const FilePath::CharType kDirectoryDatabaseName[] = FPL("Paths");
+}
 
 class FileSystemDirectoryDatabaseTest : public testing::Test {
  public:
@@ -29,10 +40,14 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
   }
 
   void InitDatabase() {
-    // First reset() is to avoid multiple database instance for single
-    // directory at once.
+    // Call CloseDatabase() to avoid having multiple database instances for
+    // single directory at once.
+    CloseDatabase();
+    db_.reset(new FileSystemDirectoryDatabase(path()));
+  }
+
+  void CloseDatabase() {
     db_.reset();
-    db_.reset(new FileSystemDirectoryDatabase(base_.path()));
   }
 
   bool AddFileInfo(FileId parent_id, const FilePath::StringType& name) {
@@ -41,6 +56,87 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
     info.parent_id = parent_id;
     info.name = name;
     return db_->AddFileInfo(info, &file_id);
+  }
+
+  void CreateDirectory(FileId parent_id,
+                       const FilePath::StringType& name,
+                       FileId* file_id_out) {
+    FileId file_id;
+
+    FileInfo info;
+    info.parent_id = parent_id;
+    info.name = name;
+    ASSERT_TRUE(db_->AddFileInfo(info, &file_id));
+
+    if (file_id_out)
+      *file_id_out = file_id;
+  }
+
+  void CreateFile(FileId parent_id,
+                  const FilePath::StringType& name,
+                  const FilePath::StringType& data_path,
+                  FileId* file_id_out) {
+    FileId file_id;
+
+    FileInfo info;
+    info.parent_id = parent_id;
+    info.name = name;
+    info.data_path = FilePath(data_path).NormalizePathSeparators();
+    ASSERT_TRUE(db_->AddFileInfo(info, &file_id));
+
+    FilePath local_path = path().Append(data_path);
+    if (!file_util::DirectoryExists(local_path.DirName()))
+      ASSERT_TRUE(file_util::CreateDirectory(local_path.DirName()));
+
+    bool created = false;
+    base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+    base::PlatformFile file = base::CreatePlatformFile(
+        local_path,
+        base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
+        &created, &error);
+    ASSERT_EQ(base::PLATFORM_FILE_OK, error);
+    ASSERT_TRUE(created);
+    ASSERT_TRUE(base::ClosePlatformFile(file));
+
+    if (file_id_out)
+      *file_id_out = file_id;
+  }
+
+  void ClearDatabaseAndDirectory() {
+    db_.reset();
+    ASSERT_TRUE(file_util::Delete(path(), true /* recursive */));
+    ASSERT_TRUE(file_util::CreateDirectory(path()));
+    db_.reset(new FileSystemDirectoryDatabase(path()));
+  }
+
+  bool RepairDatabase() {
+    return db()->RepairDatabase(
+        FilePathToString(path().Append(kDirectoryDatabaseName)));
+  }
+
+  const FilePath& path() {
+    return base_.path();
+  }
+
+  // Makes link from |parent_id| to |child_id| with |name|.
+  void MakeHierarchyLink(FileId parent_id,
+                         FileId child_id,
+                         const FilePath::StringType& name) {
+    ASSERT_TRUE(db()->db_->Put(
+        leveldb::WriteOptions(),
+        "CHILD_OF:" + base::Int64ToString(parent_id) + ":" +
+        FilePathToString(FilePath(name)),
+        base::Int64ToString(child_id)).ok());
+  }
+
+  // Deletes link from parent of |file_id| to |file_id|.
+  void DeleteHierarchyLink(FileId file_id) {
+    FileInfo file_info;
+    ASSERT_TRUE(db()->GetFileInfo(file_id, &file_info));
+    ASSERT_TRUE(db()->db_->Delete(
+        leveldb::WriteOptions(),
+        "CHILD_OF:" + base::Int64ToString(file_info.parent_id) + ":" +
+        FilePathToString(FilePath(file_info.name))).ok());
   }
 
  protected:
@@ -403,7 +499,7 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestOverwritingMoveFileSuccess) {
 }
 
 TEST_F(FileSystemDirectoryDatabaseTest, TestGetNextInteger) {
-  int64 next;
+  int64 next = -1;
   EXPECT_TRUE(db()->GetNextInteger(&next));
   EXPECT_EQ(0, next);
   EXPECT_TRUE(db()->GetNextInteger(&next));
@@ -416,6 +512,146 @@ TEST_F(FileSystemDirectoryDatabaseTest, TestGetNextInteger) {
   InitDatabase();
   EXPECT_TRUE(db()->GetNextInteger(&next));
   EXPECT_EQ(4, next);
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_Empty) {
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+
+  int64 next = -1;
+  EXPECT_TRUE(db()->GetNextInteger(&next));
+  EXPECT_EQ(0, next);
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_Consistent) {
+  FileId dir_id;
+  CreateFile(0, FPL("foo"), FPL("hoge"), NULL);
+  CreateDirectory(0, FPL("bar"), &dir_id);
+  CreateFile(dir_id, FPL("baz"), FPL("fuga"), NULL);
+  CreateFile(dir_id, FPL("fizz"), FPL("buzz"), NULL);
+
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest,
+       TestConsistencyCheck_BackingMultiEntry) {
+  const FilePath::CharType kBackingFileName[] = FPL("the celeb");
+  CreateFile(0, FPL("foo"), kBackingFileName, NULL);
+
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+  ASSERT_TRUE(file_util::Delete(path().Append(kBackingFileName), false));
+  CreateFile(0, FPL("bar"), kBackingFileName, NULL);
+  EXPECT_FALSE(db()->IsFileSystemConsistent());
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_FileLost) {
+  const FilePath::CharType kBackingFileName[] = FPL("hoge");
+  CreateFile(0, FPL("foo"), kBackingFileName, NULL);
+
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+  ASSERT_TRUE(file_util::Delete(path().Append(kBackingFileName), false));
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_OrphanFile) {
+  CreateFile(0, FPL("foo"), FPL("hoge"), NULL);
+
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+
+  bool created = false;
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  base::PlatformFile file = base::CreatePlatformFile(
+      path().Append(FPL("Orphan File")),
+      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
+      &created, &error);
+  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
+  ASSERT_TRUE(created);
+  ASSERT_TRUE(base::ClosePlatformFile(file));
+
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_RootLoop) {
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+  MakeHierarchyLink(0, 0, FPL(""));
+  EXPECT_FALSE(db()->IsFileSystemConsistent());
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_DirectoryLoop) {
+  FileId dir1_id;
+  FileId dir2_id;
+  FilePath::StringType dir1_name = FPL("foo");
+  CreateDirectory(0, dir1_name, &dir1_id);
+  CreateDirectory(dir1_id, FPL("bar"), &dir2_id);
+
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+  MakeHierarchyLink(dir2_id, dir1_id, dir1_name);
+  EXPECT_FALSE(db()->IsFileSystemConsistent());
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_NameMismatch) {
+  FileId dir_id;
+  FileId file_id;
+  CreateDirectory(0, FPL("foo"), &dir_id);
+  CreateFile(dir_id, FPL("bar"), FPL("hoge/fuga/piyo"), &file_id);
+
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+  DeleteHierarchyLink(file_id);
+  MakeHierarchyLink(dir_id, file_id, FPL("baz"));
+  EXPECT_FALSE(db()->IsFileSystemConsistent());
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestConsistencyCheck_WreckedEntries) {
+  FileId dir1_id;
+  FileId dir2_id;
+  CreateDirectory(0, FPL("foo"), &dir1_id);
+  CreateDirectory(dir1_id, FPL("bar"), &dir2_id);
+  CreateFile(dir2_id, FPL("baz"), FPL("fizz/buzz"), NULL);
+
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+  DeleteHierarchyLink(dir2_id);  // Delete link from |dir1_id| to |dir2_id|.
+  EXPECT_FALSE(db()->IsFileSystemConsistent());
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_Success) {
+  FilePath::StringType kFileName = FPL("bar");
+
+  FileId file_id_prev;
+  CreateFile(0, FPL("foo"), FPL("hoge"), NULL);
+  CreateFile(0, kFileName, FPL("fuga"), &file_id_prev);
+
+  const FilePath kDatabaseDirectory = path().Append(kDirectoryDatabaseName);
+  CloseDatabase();
+  CorruptDatabase(kDatabaseDirectory, leveldb::kDescriptorFile,
+                  0, std::numeric_limits<size_t>::max());
+  InitDatabase();
+  EXPECT_FALSE(db()->IsFileSystemConsistent());
+
+  FileId file_id;
+  EXPECT_TRUE(db()->GetChildWithName(0, kFileName, &file_id));
+  EXPECT_EQ(file_id_prev, file_id);
+
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
+}
+
+TEST_F(FileSystemDirectoryDatabaseTest, TestRepairDatabase_Failure) {
+  FilePath::StringType kFileName = FPL("bar");
+
+  CreateFile(0, FPL("foo"), FPL("hoge"), NULL);
+  CreateFile(0, kFileName, FPL("fuga"), NULL);
+
+  const FilePath kDatabaseDirectory = path().Append(kDirectoryDatabaseName);
+  CloseDatabase();
+  CorruptDatabase(kDatabaseDirectory, leveldb::kDescriptorFile,
+                  0, std::numeric_limits<size_t>::max());
+  CorruptDatabase(kDatabaseDirectory, leveldb::kLogFile,
+                  -1, 1);
+  InitDatabase();
+  EXPECT_FALSE(db()->IsFileSystemConsistent());
+
+  FileId file_id;
+  EXPECT_FALSE(db()->GetChildWithName(0, kFileName, &file_id));
+  EXPECT_TRUE(db()->IsFileSystemConsistent());
 }
 
 }  // namespace fileapi

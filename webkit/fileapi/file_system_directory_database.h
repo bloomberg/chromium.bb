@@ -32,8 +32,6 @@ namespace fileapi {
 
 // TODO(ericu): Safe mode, which does more checks such as the above on debug
 // builds.
-// TODO(ericu): FSCK, for a full-database check [data file validation possibly
-// done elsewhere].
 // TODO(ericu): Add a method that will give a unique filename for a data file.
 class FileSystemDirectoryDatabase {
  public:
@@ -86,15 +84,22 @@ class FileSystemDirectoryDatabase {
   // creation/destruction of FileSystemDirectoryDatabase objects.
   bool GetNextInteger(int64* next);
 
+  // Returns true if the database looks consistent with local filesystem.
+  bool IsFileSystemConsistent();
+
   static bool DestroyDatabase(const FilePath& path);
 
  private:
   enum RecoveryOption {
     DELETE_ON_CORRUPTION,
+    REPAIR_ON_CORRUPTION,
     FAIL_ON_CORRUPTION,
   };
 
+  friend class FileSystemDirectoryDatabaseTest;
+
   bool Init(RecoveryOption recovery_option);
+  bool RepairDatabase(const std::string& db_path);
   void ReportInitStatus(const leveldb::Status& status);
   bool StoreDefaultValues();
   bool GetLastFileId(FileId* file_id);

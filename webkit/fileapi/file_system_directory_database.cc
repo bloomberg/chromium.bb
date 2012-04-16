@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/file_system_directory_database.h"
 
+#include <algorithm>
 #include <math.h>
 
 #include "base/file_util.h"
@@ -14,6 +15,7 @@
 #include "base/string_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+#include "webkit/fileapi/file_system_usage_cache.h"
 #include "webkit/fileapi/file_system_util.h"
 
 namespace {
@@ -106,6 +108,266 @@ std::string GetFileLookupKey(
   return base::Int64ToString(file_id);
 }
 
+// Assumptions:
+//  - Any database entry is one of:
+//    - ("CHILD_OF:|parent_id|:<name>", "|file_id|"),
+//    - ("LAST_FILE_ID", "|last_file_id|"),
+//    - ("LAST_INTEGER", "|last_integer|"),
+//    - ("|file_id|", "pickled FileInfo")
+//        where FileInfo has |parent_id|, |data_path|, |name| and
+//        |modification_time|,
+// Constraints:
+//  - Each file in the database has unique backing file.
+//  - Each file in |filesystem_data_directory_| has a database entry.
+//  - Directory structure is tree, i.e. connected and acyclic.
+class DatabaseCheckHelper {
+ public:
+  typedef fileapi::FileSystemDirectoryDatabase::FileId FileId;
+  typedef fileapi::FileSystemDirectoryDatabase::FileInfo FileInfo;
+
+  DatabaseCheckHelper(fileapi::FileSystemDirectoryDatabase* dir_db,
+                      leveldb::DB* db,
+                      const FilePath& path);
+
+  bool IsFileSystemConsistent() {
+    return IsDatabaseEmpty() ||
+        (ScanDatabase() && ScanDirectory() && ScanHierarchy());
+  }
+
+ private:
+  bool IsDatabaseEmpty();
+  // These 3 methods need to be called in the order.  Each method requires its
+  // previous method finished successfully. They also require the database is
+  // not empty.
+  bool ScanDatabase();
+  bool ScanDirectory();
+  bool ScanHierarchy();
+
+  fileapi::FileSystemDirectoryDatabase* dir_db_;
+  leveldb::DB* db_;
+  FilePath path_;
+
+  std::set<FilePath> files_in_db_;
+
+  size_t num_directories_in_db_;
+  size_t num_files_in_db_;
+  size_t num_hierarchy_links_in_db_;
+
+  FileId last_file_id_;
+  FileId last_integer_;
+};
+
+DatabaseCheckHelper::DatabaseCheckHelper(
+    fileapi::FileSystemDirectoryDatabase* dir_db,
+    leveldb::DB* db,
+    const FilePath& path)
+    : dir_db_(dir_db), db_(db), path_(path),
+      num_directories_in_db_(0),
+      num_files_in_db_(0),
+      num_hierarchy_links_in_db_(0),
+      last_file_id_(-1), last_integer_(-1) {
+  DCHECK(dir_db_);
+  DCHECK(db_);
+  DCHECK(!path_.empty() && file_util::DirectoryExists(path_));
+}
+
+bool DatabaseCheckHelper::IsDatabaseEmpty() {
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  itr->SeekToFirst();
+  return !itr->Valid();
+}
+
+bool DatabaseCheckHelper::ScanDatabase() {
+  // Scans all database entries sequentially to verify each of them has unique
+  // backing file.
+  int64 max_file_id = -1;
+  std::set<FileId> file_ids;
+
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
+    std::string key = itr->key().ToString();
+    if (StartsWithASCII(key, kChildLookupPrefix, true)) {
+      // key: "CHILD_OF:<parent_id>:<name>"
+      // value: "<child_id>"
+      ++num_hierarchy_links_in_db_;
+    } else if (key == kLastFileIdKey) {
+      // key: "LAST_FILE_ID"
+      // value: "<last_file_id>"
+      if (last_file_id_ >= 0 ||
+          !base::StringToInt64(itr->value().ToString(), &last_file_id_))
+        return false;
+
+      if (last_file_id_ < 0)
+        return false;
+    } else if (key == kLastIntegerKey) {
+      // key: "LAST_INTEGER"
+      // value: "<last_integer>"
+      if (last_integer_ >= 0 ||
+          !base::StringToInt64(itr->value().ToString(), &last_integer_))
+        return false;
+    } else {
+      // key: "<entry_id>"
+      // value: "<pickled FileInfo>"
+      FileInfo file_info;
+      if (!FileInfoFromPickle(
+              Pickle(itr->value().data(), itr->value().size()), &file_info))
+        return false;
+
+      FileId file_id = -1;
+      if (!base::StringToInt64(key, &file_id) || file_id < 0)
+        return false;
+
+      if (max_file_id < file_id)
+        max_file_id = file_id;
+      if (!file_ids.insert(file_id).second)
+        return false;
+
+      if (file_info.is_directory()) {
+        ++num_directories_in_db_;
+        DCHECK(file_info.data_path.empty());
+      } else {
+        // Ensure any pair of file entry don't share their data_path.
+        if (!files_in_db_.insert(file_info.data_path).second)
+          return false;
+
+        // Ensure the backing file exists as a normal file.
+        base::PlatformFileInfo platform_file_info;
+        if (!file_util::GetFileInfo(
+                path_.Append(file_info.data_path), &platform_file_info) ||
+            platform_file_info.is_directory ||
+            platform_file_info.is_symbolic_link) {
+          // leveldb::Iterator iterates a snapshot of the database.
+          // So even after RemoveFileInfo() call, we'll visit hierarchy link
+          // from |parent_id| to |file_id|.
+          if (!dir_db_->RemoveFileInfo(file_id))
+            return false;
+          --num_hierarchy_links_in_db_;
+          files_in_db_.erase(file_info.data_path);
+        } else {
+          ++num_files_in_db_;
+        }
+      }
+    }
+  }
+
+  // TODO(tzik): Add constraint for |last_integer_| to avoid possible
+  // data path confliction on ObfuscatedFileUtil.
+  return max_file_id <= last_file_id_;
+}
+
+bool DatabaseCheckHelper::ScanDirectory() {
+  // Scans all local file system entries to verify each of them has a database
+  // entry.
+  const FilePath kExcludes[] = {
+    FilePath(kDirectoryDatabaseName),
+    FilePath(fileapi::FileSystemUsageCache::kUsageFileName),
+  };
+
+  // Any path in |pending_directories| is relative to |path_|.
+  std::stack<FilePath> pending_directories;
+  pending_directories.push(FilePath());
+
+  while (!pending_directories.empty()) {
+    FilePath dir_path = pending_directories.top();
+    pending_directories.pop();
+
+    file_util::FileEnumerator file_enum(
+        dir_path.empty() ? path_ : path_.Append(dir_path),
+        false /* recursive */,
+        static_cast<file_util::FileEnumerator::FileType>(
+            file_util::FileEnumerator::DIRECTORIES |
+            file_util::FileEnumerator::FILES));
+
+    FilePath absolute_file_path;
+    while (!(absolute_file_path = file_enum.Next()).empty()) {
+      file_util::FileEnumerator::FindInfo find_info;
+      file_enum.GetFindInfo(&find_info);
+
+      FilePath relative_file_path;
+      if (!path_.AppendRelativePath(absolute_file_path, &relative_file_path))
+        return false;
+
+      if (std::find(kExcludes, kExcludes + arraysize(kExcludes),
+                    relative_file_path) != kExcludes + arraysize(kExcludes))
+        continue;
+
+      if (file_util::FileEnumerator::IsDirectory(find_info)) {
+        pending_directories.push(relative_file_path);
+        continue;
+      }
+
+      // Check if the file has a database entry.
+      std::set<FilePath>::iterator itr = files_in_db_.find(relative_file_path);
+      if (itr == files_in_db_.end()) {
+        if (!file_util::Delete(absolute_file_path, false))
+          return false;
+      } else {
+        files_in_db_.erase(itr);
+      }
+    }
+  }
+
+  return files_in_db_.empty();
+}
+
+bool DatabaseCheckHelper::ScanHierarchy() {
+  size_t visited_directories = 0;
+  size_t visited_files = 0;
+  size_t visited_links = 0;
+
+  std::stack<FileId> directories;
+  directories.push(0);
+
+  // Check if the root directory exists as a directory.
+  FileInfo file_info;
+  if (!dir_db_->GetFileInfo(0, &file_info))
+    return false;
+  if (file_info.parent_id != 0 ||
+      !file_info.is_directory())
+    return false;
+
+  while (!directories.empty()) {
+    ++visited_directories;
+    FileId dir_id = directories.top();
+    directories.pop();
+
+    std::vector<FileId> children;
+    if (!dir_db_->ListChildren(dir_id, &children))
+      return false;
+    for (std::vector<FileId>::iterator itr = children.begin();
+         itr != children.end();
+         ++itr) {
+      // Any directory must not have root directory as child.
+      if (!*itr)
+        return false;
+
+      // Check if the child knows the parent as its parent.
+      FileInfo file_info;
+      if (!dir_db_->GetFileInfo(*itr, &file_info))
+        return false;
+      if (file_info.parent_id != dir_id)
+        return false;
+
+      // Check if the parent knows the name of its child correctly.
+      FileId file_id;
+      if (!dir_db_->GetChildWithName(dir_id, file_info.name, &file_id) ||
+          file_id != *itr)
+        return false;
+
+      if (file_info.is_directory())
+        directories.push(*itr);
+      else
+        ++visited_files;
+      ++visited_links;
+    }
+  }
+
+  // Check if we've visited all database entries.
+  return num_directories_in_db_ == visited_directories &&
+      num_files_in_db_ == visited_files &&
+      num_hierarchy_links_in_db_ == visited_links;
+}
+
 }  // namespace
 
 namespace fileapi {
@@ -126,7 +388,7 @@ FileSystemDirectoryDatabase::~FileSystemDirectoryDatabase() {
 
 bool FileSystemDirectoryDatabase::GetChildWithName(
     FileId parent_id, const FilePath::StringType& name, FileId* child_id) {
-  if (!Init(FAIL_ON_CORRUPTION))
+  if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(child_id);
   std::string child_key = GetChildLookupKey(parent_id, name);
@@ -167,7 +429,7 @@ bool FileSystemDirectoryDatabase::GetFileWithPath(
 bool FileSystemDirectoryDatabase::ListChildren(
     FileId parent_id, std::vector<FileId>* children) {
   // Check to add later: fail if parent is a file, at least in debug builds.
-  if (!Init(FAIL_ON_CORRUPTION))
+  if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(children);
   std::string child_key_prefix = GetChildListingKeyPrefix(parent_id);
@@ -190,7 +452,7 @@ bool FileSystemDirectoryDatabase::ListChildren(
 }
 
 bool FileSystemDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
-  if (!Init(FAIL_ON_CORRUPTION))
+  if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(info);
   std::string file_key = GetFileLookupKey(file_id);
@@ -217,7 +479,7 @@ bool FileSystemDirectoryDatabase::GetFileInfo(FileId file_id, FileInfo* info) {
 
 bool FileSystemDirectoryDatabase::AddFileInfo(
     const FileInfo& info, FileId* file_id) {
-  if (!Init(FAIL_ON_CORRUPTION))
+  if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(file_id);
   std::string child_key = GetChildLookupKey(info.parent_id, info.name);
@@ -259,7 +521,7 @@ bool FileSystemDirectoryDatabase::AddFileInfo(
 }
 
 bool FileSystemDirectoryDatabase::RemoveFileInfo(FileId file_id) {
-  if (!Init(FAIL_ON_CORRUPTION))
+  if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   leveldb::WriteBatch batch;
   if (!RemoveFileInfoHelper(file_id, &batch))
@@ -276,7 +538,7 @@ bool FileSystemDirectoryDatabase::UpdateFileInfo(
     FileId file_id, const FileInfo& new_info) {
   // TODO: We should also check to see that this doesn't create a loop, but
   // perhaps only in a debug build.
-  if (!Init(FAIL_ON_CORRUPTION))
+  if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(file_id);  // You can't remove the root, ever.  Just delete the DB.
   FileInfo old_info;
@@ -360,7 +622,7 @@ bool FileSystemDirectoryDatabase::OverwritingMoveFile(
 }
 
 bool FileSystemDirectoryDatabase::GetNextInteger(int64* next) {
-  if (!Init(FAIL_ON_CORRUPTION))
+  if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(next);
   std::string int_string;
@@ -422,15 +684,46 @@ bool FileSystemDirectoryDatabase::Init(RecoveryOption recovery_option) {
   }
   HandleError(FROM_HERE, status);
 
-  if (recovery_option == FAIL_ON_CORRUPTION)
-    return false;
+  switch (recovery_option) {
+    case FAIL_ON_CORRUPTION:
+      return false;
+    case REPAIR_ON_CORRUPTION:
+      LOG(WARNING) << "Corrupted FileSystemDirectoryDatabase detected."
+                   << " Attempting to repair.";
+      if (RepairDatabase(path))
+        return true;
+      LOG(WARNING) << "Failed to repair FileSystemDirectoryDatabase.";
+      // fall through
+    case DELETE_ON_CORRUPTION:
+      LOG(WARNING) << "Clearing FileSystemDirectoryDatabase.";
+      if (!file_util::Delete(filesystem_data_directory_, true))
+        return false;
+      if (!file_util::CreateDirectory(filesystem_data_directory_))
+        return false;
+      return Init(FAIL_ON_CORRUPTION);
+  }
 
-  DCHECK_EQ(DELETE_ON_CORRUPTION, recovery_option);
-  if (!file_util::Delete(filesystem_data_directory_, true))
+  NOTREACHED();
+  return false;
+}
+
+bool FileSystemDirectoryDatabase::RepairDatabase(const std::string& db_path) {
+  DCHECK(!db_.get());
+  if (!leveldb::RepairDB(db_path, leveldb::Options()).ok())
     return false;
-  if (!file_util::CreateDirectory(filesystem_data_directory_))
+  if (!Init(FAIL_ON_CORRUPTION))
     return false;
-  return Init(FAIL_ON_CORRUPTION);
+  if (IsFileSystemConsistent())
+    return true;
+  db_.reset();
+  return false;
+}
+
+bool FileSystemDirectoryDatabase::IsFileSystemConsistent() {
+  if (!Init(FAIL_ON_CORRUPTION))
+    return false;
+  DatabaseCheckHelper helper(this, db_.get(), filesystem_data_directory_);
+  return helper.IsFileSystemConsistent();
 }
 
 void FileSystemDirectoryDatabase::ReportInitStatus(
@@ -484,7 +777,7 @@ bool FileSystemDirectoryDatabase::StoreDefaultValues() {
 }
 
 bool FileSystemDirectoryDatabase::GetLastFileId(FileId* file_id) {
-  if (!Init(FAIL_ON_CORRUPTION))
+  if (!Init(REPAIR_ON_CORRUPTION))
     return false;
   DCHECK(file_id);
   std::string id_string;

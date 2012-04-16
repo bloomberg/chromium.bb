@@ -522,7 +522,7 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
       GetBaseDirectoryForOriginAndType(origin_url, type, false);
   if (base_path.empty() || !file_util::DirectoryExists(base_path)) return 0;
   FilePath usage_file_path =
-      base_path.AppendASCII(FileSystemUsageCache::kUsageFileName);
+      base_path.Append(FileSystemUsageCache::kUsageFileName);
 
   bool is_valid = FileSystemUsageCache::IsValid(usage_file_path);
   int32 dirty_status = FileSystemUsageCache::GetDirty(usage_file_path);
@@ -621,7 +621,7 @@ FilePath SandboxMountPointProvider::GetUsageCachePathForOriginAndType(
       GetBaseDirectoryForOriginAndType(origin_url, type, false);
   if (base_path.empty())
     return FilePath();
-  return base_path.AppendASCII(FileSystemUsageCache::kUsageFileName);
+  return base_path.Append(FileSystemUsageCache::kUsageFileName);
 }
 
 FilePath SandboxMountPointProvider::OldCreateFileSystemRootPath(
