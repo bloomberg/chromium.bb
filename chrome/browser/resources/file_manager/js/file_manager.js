@@ -490,12 +490,6 @@ FileManager.prototype = {
     this.initFileList_();
     this.initDialogs_();
 
-    this.copyManager_ = new FileCopyManager(this.filesystem_.root);
-    this.copyManager_.addEventListener('copy-progress',
-                                       this.onCopyProgress_.bind(this));
-    this.copyManager_.addEventListener('copy-operation-complete',
-        this.onCopyManagerOperationComplete_.bind(this));
-
     window.addEventListener('popstate', this.onPopState_.bind(this));
     window.addEventListener('unload', this.onUnload_.bind(this));
 
@@ -530,10 +524,6 @@ FileManager.prototype = {
 
     chrome.fileBrowserPrivate.onFileChanged.addListener(
         this.onFileChanged_.bind(this));
-
-    // The list of callbacks to be invoked during the directory rescan after
-    // all paste tasks are complete.
-    this.pasteSuccessCallbacks_ = [];
 
     var path = this.getPathFromUrlOrParams_();
     if (path &&
@@ -577,6 +567,23 @@ FileManager.prototype = {
 
     this.directoryModel_.offline = this.isOffline();
 
+    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE)
+      this.initDataTransferOperations_();
+
+    this.table_.endBatchUpdates();
+    this.grid_.endBatchUpdates();
+
+    metrics.recordInterval('Load.DOM');
+    metrics.recordInterval('Load.Total');
+  };
+
+  FileManager.prototype.initDataTransferOperations_ = function() {
+    this.copyManager_ = new FileCopyManager(this.filesystem_.root);
+    this.copyManager_.addEventListener('copy-progress',
+                                       this.onCopyProgress_.bind(this));
+    this.copyManager_.addEventListener('copy-operation-complete',
+        this.onCopyManagerOperationComplete_.bind(this));
+
     var controller = this.fileTransferController_ = new FileTransferController(
         this.directoryModel_.fileList,
         this.directoryModel_.fileListSelection,
@@ -592,12 +599,6 @@ FileManager.prototype = {
         this.blinkSelection.bind(this));
     controller.addEventListener('selection-cut',
         this.blinkSelection.bind(this));
-
-    this.table_.endBatchUpdates();
-    this.grid_.endBatchUpdates();
-
-    metrics.recordInterval('Load.DOM');
-    metrics.recordInterval('Load.Total');
   };
 
   /**
@@ -1213,7 +1214,8 @@ FileManager.prototype = {
         return this.document_.queryCommandEnabled(commandId);
 
       case 'paste':
-        return this.fileTransferController_.queryPasteCommandEnabled();
+        return !!this.fileTransferController_ &&
+               this.fileTransferController_.queryPasteCommandEnabled();
 
       case 'rename':
         return (// Initialized to the point where we have a current directory
@@ -1437,17 +1439,6 @@ FileManager.prototype = {
       clearTimeout(this.butterTimeout_);
       if (this.currentButter_)
         this.hideButter();
-
-      self = this;
-      var callback;
-      while (callback = self.pasteSuccessCallbacks_.shift()) {
-        try {
-          callback();
-        } catch (ex) {
-          console.error('Caught exception while inovking callback: ' +
-                        callback, ex);
-        }
-      }
     } else if (event.reason == 'ERROR') {
       clearTimeout(this.butterTimeout_);
       switch (event.error.reason) {

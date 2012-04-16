@@ -136,10 +136,13 @@
     </commands>
 
     <menu class=file-context-menu>
-      <menuitem command='#cut'></menuitem>
-      <menuitem command='#copy'></menuitem>
-      <menuitem command='#paste'></menuitem>
-      <hr>
+      <menuitem command='#cut' visibleif='this.dialogType_ ==
+                                          "full-page"'></menuitem>
+      <menuitem command='#copy' visibleif='this.dialogType_ ==
+                                           "full-page"'></menuitem>
+      <menuitem command='#paste'visibleif='this.dialogType_ ==
+                                           "full-page"'></menuitem>
+      <hr visibleif='this.dialogType_ == "full-page"'>
       <menuitem command='#rename'></menuitem>
       <menuitem command='#delete'></menuitem>
       <hr visibleif='this.dialogType_ == "saveas-file" ||
