@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -24,20 +24,18 @@ BRAND_SCRIPT="${TOP}/build/branding_value.sh"
 
 BUILD_BRANDING=$1
 
-# show things as we run them
-set -x
-
 APP_NAME=$("${BRAND_SCRIPT}" "${BUILD_BRANDING}" PRODUCT_FULLNAME)
 DMG_NAME=$(echo "${APP_NAME}" | sed "s/ //g")
 
 SRC_APP_PATH="${BUILT_PRODUCTS_DIR}/${APP_NAME}.app"
 VOL_NAME="${APP_NAME}"
-DST_DMG_PATH="${BUILT_PRODUCTS_DIR}/${DMG_NAME}"
+DST_DMG_PATH="${BUILT_PRODUCTS_DIR}/${DMG_NAME}.dmg"
 
 # Call the real working
 "${PKG_DMG}" --source /var/empty \
              --target "${DST_DMG_PATH}" \
              --format UDBZ \
+             --verbosity 0 \
              --volname "${VOL_NAME}" \
              --tempdir "${TEMP_DIR}" \
              --copy "${SRC_APP_PATH}/:/${APP_NAME}.app/"
