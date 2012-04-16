@@ -21,6 +21,7 @@
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "sync/syncable/syncable.h"  // TODO(tim): Investigating bug 121587.
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -214,8 +215,22 @@ void BookmarkChangeProcessor::BookmarkNodeChanged(BookmarkModel* model,
   // Lookup the sync node that's associated with |node|.
   sync_api::WriteNode sync_node(&trans);
   if (!model_associator_->InitSyncNodeFromChromeId(node->id(), &sync_node)) {
-    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
-                                                        std::string());
+    // TODO(tim): Investigating bug 121587.
+    if (model_associator_->GetSyncIdFromChromeId(node->id()) ==
+                                                 sync_api::kInvalidId) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Bookmark id not found in model associator on BookmarkNodeChanged");
+    } else if (!sync_node.GetEntry()->good()) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Could not InitByIdLookup on BookmarkNodeChanged, good() failed");
+    } else if (sync_node.GetEntry()->Get(::syncable::IS_DEL)) {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Could not InitByIdLookup on BookmarkNodeChanged, is_del true");
+    } else {
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+          "Could not InitByIdLookup on BookmarkNodeChanged, "
+          " DecryptIfNecessary failed");
+    }
     return;
   }
 
