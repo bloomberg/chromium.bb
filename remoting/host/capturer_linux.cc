@@ -426,6 +426,8 @@ void CapturerLinux::DeinitXlib() {
     gc_ = NULL;
   }
 
+  x_server_pixel_buffer_.Release();
+
   if (display_) {
     if (damage_handle_)
       XDamageDestroy(display_, damage_handle_);
