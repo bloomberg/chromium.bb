@@ -4,6 +4,7 @@
 
 #include "webkit/tools/test_shell/test_shell_webmimeregistry_impl.h"
 
+#include "base/basictypes.h"
 #include "base/string_util.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
@@ -22,49 +23,46 @@ std::string ToASCIIOrEmpty(const WebString& string) {
 }  // namespace
 
 TestShellWebMimeRegistryImpl::TestShellWebMimeRegistryImpl() {
-  // Claim we support Ogg+Theora/Vorbis.
-  media_map_.insert("video/ogg");
-  media_map_.insert("audio/ogg");
-  media_map_.insert("application/ogg");
-  codecs_map_.insert("theora");
-  codecs_map_.insert("vorbis");
+  net::GetMediaTypesBlacklistedForTests(&blacklisted_media_types_);
 
-  // Claim we support WAV.
-  media_map_.insert("audio/wav");
-  media_map_.insert("audio/x-wav");
-  codecs_map_.insert("1");  // PCM for WAV.
+  net::GetMediaCodecsBlacklistedForTests(&blacklisted_media_codecs_);
 }
 
 TestShellWebMimeRegistryImpl::~TestShellWebMimeRegistryImpl() {}
 
+// Returns IsNotSupported if mime_type or any of the codecs are not supported.
+// Otherwse, defers to the real registry.
 WebMimeRegistry::SupportsType
-    TestShellWebMimeRegistryImpl::supportsMediaMIMEType(
+TestShellWebMimeRegistryImpl::supportsMediaMIMEType(
     const WebString& mime_type,
     const WebString& codecs) {
-  // Not supporting the container is a flat-out no.
-  if (!IsSupportedMediaMimeType(ToASCIIOrEmpty(mime_type)))
+  if (IsBlacklistedMediaMimeType(ToASCIIOrEmpty(mime_type)))
     return IsNotSupported;
 
-  // If we don't recognize the codec, it's possible we support it.
   std::vector<std::string> parsed_codecs;
   net::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codecs, true);
-  if (!AreSupportedMediaCodecs(parsed_codecs))
-    return MayBeSupported;
+  if (HasBlacklistedMediaCodecs(parsed_codecs))
+    return IsNotSupported;
 
-  // Otherwise we have a perfect match.
-  return IsSupported;
+  return SimpleWebMimeRegistryImpl::supportsMediaMIMEType(mime_type, codecs);
 }
 
-bool TestShellWebMimeRegistryImpl::IsSupportedMediaMimeType(
+bool TestShellWebMimeRegistryImpl::IsBlacklistedMediaMimeType(
     const std::string& mime_type) {
-  return media_map_.find(mime_type) != media_map_.end();
+  for (size_t i = 0; i < blacklisted_media_types_.size(); ++i) {
+    if (blacklisted_media_types_[i] == mime_type)
+      return true;
+  }
+  return false;
 }
 
-bool TestShellWebMimeRegistryImpl::AreSupportedMediaCodecs(
+bool TestShellWebMimeRegistryImpl::HasBlacklistedMediaCodecs(
     const std::vector<std::string>& codecs) {
   for (size_t i = 0; i < codecs.size(); ++i) {
-    if (codecs_map_.find(codecs[i]) == codecs_map_.end())
-      return false;
+    for (size_t j = 0; j < blacklisted_media_codecs_.size(); ++j) {
+      if (blacklisted_media_codecs_[j] == codecs[i])
+        return true;
+    }
   }
-  return !codecs.empty();
+  return false;
 }

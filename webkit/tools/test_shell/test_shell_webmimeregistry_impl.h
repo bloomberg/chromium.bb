@@ -18,24 +18,25 @@ class TestShellWebMimeRegistryImpl
   TestShellWebMimeRegistryImpl();
   virtual ~TestShellWebMimeRegistryImpl();
 
-  // Override to force that we only support ogg, vorbis and theora.
+  // Override to force that we only support types and codecs that are supported
+  // by all variations of Chromium.
   //
   // Media layout tests use canPlayType() to determine the test input files.
   // Different flavours of Chromium support different codecs, which has an
-  // impact on how canPlayType() behaves.  Since Chromium's baselines are
-  // generated against ogg/vorbis/theora content we need to lock down how
-  // canPlayType() behaves when running layout tests.
+  // impact on how canPlayType() behaves.  Since Chromium's baselines and
+  // expectations are generated against the common set of types, we need to
+  // prevent canPlayType() from indicating it supports other types when running
+  // layout tests.
   virtual WebKit::WebMimeRegistry::SupportsType supportsMediaMIMEType(
       const WebKit::WebString&,
       const WebKit::WebString&) OVERRIDE;
 
  private:
-  bool IsSupportedMediaMimeType(const std::string& mime_type);
-  bool AreSupportedMediaCodecs(const std::vector<std::string>& codecs);
+  bool IsBlacklistedMediaMimeType(const std::string& mime_type);
+  bool HasBlacklistedMediaCodecs(const std::vector<std::string>& codecs);
 
-  typedef base::hash_set<std::string> MimeMappings;
-  MimeMappings media_map_;
-  MimeMappings codecs_map_;
+  std::vector<std::string> blacklisted_media_types_;
+  std::vector<std::string> blacklisted_media_codecs_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellWebMimeRegistryImpl);
 };
