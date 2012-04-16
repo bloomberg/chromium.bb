@@ -55,7 +55,7 @@ int
 abi16_chan_nvc0(struct nouveau_object *obj)
 {
 	struct nouveau_device *dev = (struct nouveau_device *)obj->parent;
-	struct drm_nouveau_channel_alloc req;
+	struct drm_nouveau_channel_alloc req = {};
 	struct nvc0_fifo *nvc0 = obj->data;
 	int ret;
 
