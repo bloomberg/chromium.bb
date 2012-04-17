@@ -33,3 +33,23 @@ BUGCR119667 : media/W3C/video/canPlayType/canPlayType_supported_but_no_codecs_pa
 BUGCR119667 : media/W3C/video/canPlayType/canPlayType_two_implies_one_1.html = PASS
 BUGCR119667 : media/W3C/video/canPlayType/canPlayType_two_implies_one_2.html = PASS
 
+// Rebaseline after skia 3695 lands
+BUGCR123809 : fast/backgrounds/background-leakage-transforms.html = IMAGE
+BUGCR123809 : fast/backgrounds/background-leakage.html = IMAGE
+BUGCR123809 : fast/borders/border-radius-complex-inner.html = IMAGE
+BUGCR123809 : fast/borders/borderRadiusDouble01.html = IMAGE
+BUGCR123809 : fast/borders/borderRadiusDouble02.html = IMAGE
+BUGCR123809 : fast/borders/borderRadiusDouble05.html = IMAGE
+BUGCR123809 : fast/borders/borderRadiusGroove02.html = IMAGE
+BUGCR123809 : fast/borders/borderRadiusRidge01.html = IMAGE
+BUGCR123809 : fast/borders/border-styles-split.html = IMAGE
+BUGCR123809 : fast/repaint/shadow-multiple-vertical.html = IMAGE
+BUGCR123809 : fast/writing-mode/border-styles-vertical-lr.html = IMAGE
+BUGCR123809 : fast/writing-mode/border-styles-vertical-rl.html = IMAGE
+BUGCR123809 : ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-001.htm = IMAGE
+BUGCR123809 : ietestcenter/css3/bordersbackgrounds/border-radius-sum-of-radii-002.htm = IMAGE
+BUGCR123809 : svg/hixie/perf/001.xml = IMAGE
+BUGCR123809 : svg/hixie/perf/002.xml = IMAGE
+BUGCR123680 : fast/repaint/shadow-multiple-vertical.html = IMAGE
+BUGCR123680 : svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
+
