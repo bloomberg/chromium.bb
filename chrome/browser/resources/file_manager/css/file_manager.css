@@ -702,11 +702,6 @@ input.rename {
   width: 114px;
 }
 
-.thumbnail-grid li,
-.detail-table list li {
-  -webkit-user-drag: element;
-}
-
 /* The cr.ui.Table representing the detailed file list. */
 .detail-table {
   border: 0;

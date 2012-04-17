@@ -39,6 +39,7 @@ FileTransferController.prototype = {
    * @param {cr.ui.List} list Items in the list will be draggable.
    */
   attachDragSource: function(list) {
+    list.style.webkitUserDrag = 'element';
     list.addEventListener('dragstart', this.onDragStart_.bind(this, list));
     list.addEventListener('dragend', this.onDragEnd_.bind(this, list));
     list.addEventListener('drag', this.onDrag_.bind(this, list));
