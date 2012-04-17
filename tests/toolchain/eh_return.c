@@ -90,7 +90,13 @@ int main(int argc, char* argv[]) {
     goto this_is_reachable;
   }
   next_step(1);
-  dummy0();
+  /*  Convince the machine basic block placement optimizer not to move these
+   *  BBs around (it's actually legal to do so because dummy0 does not
+   *  actually return).
+  */
+  if (argc != 667) {
+    dummy0();
+  }
 
 this_is_reachable:
   next_step(6);
