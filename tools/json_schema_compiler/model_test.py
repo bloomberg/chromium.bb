@@ -27,25 +27,9 @@ class ModelTest(unittest.TestCase):
     self.assertEquals(3, len(self.model.namespaces))
     self.assertTrue(self.permissions)
 
-  def testNamespaceNoCompile(self):
-    self.permissions_json[0]['namespace'] = 'something'
-    self.permissions_json[0]['nocompile'] = True
-    self.model.AddNamespace(self.permissions_json[0],
-        'path/to/something.json')
-    self.assertEquals(3, len(self.model.namespaces))
-
   def testHasFunctions(self):
     self.assertEquals(["contains", "getAll", "remove", "request"],
         sorted(self.permissions.functions.keys()))
-
-  def testFunctionNoCompile(self):
-    # tabs.json has 2 functions marked as nocompile (connect, sendRequest)
-    self.assertEquals(["captureVisibleTab", "create", "detectLanguage",
-          "executeScript", "get", "getAllInWindow", "getCurrent",
-          "getSelected", "highlight", "insertCSS", "move", "query", "reload",
-          "remove", "update"],
-          sorted(self.tabs.functions.keys())
-    )
 
   def testHasTypes(self):
     self.assertEquals(['Tab'], self.tabs.types.keys())

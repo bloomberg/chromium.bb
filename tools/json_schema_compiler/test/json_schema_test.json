@@ -1,0 +1,101 @@
+[
+  {
+    "namespace": "compile",
+    "functions": [],
+    "types":     {}
+  },
+
+  {
+    "namespace": "nocompile",
+    "nocompile": true,
+    "functions": [],
+    "types":     {}
+  },
+
+  {
+    "namespace": "functions",
+    "functions": [
+      {
+        "id": "one",
+        "nocompile": true
+      },
+      {
+        "id": "two"
+      },
+      {
+        "id": "three",
+        "nocompile": true
+      },
+      {
+        "id": "four"
+      }
+    ],
+
+    "types": {
+      "one": { "key": "value" }
+    }
+  },
+
+  {
+    "namespace": "types",
+    "functions": [
+      { "id": "one" }
+    ],
+    "types": {
+      "one": {
+        "key": "value",
+        "nocompile": true
+      },
+      "two": {
+        "key": "value"
+      },
+      "three": {
+        "key": "value",
+        "nocompile": true
+      },
+      "four": {
+        "key": "value"
+      }
+    }
+  },
+
+  {
+    "namespace": "nested",
+    "properties": {
+      "sync": {
+        "functions": [
+          {
+            "id": "one",
+            "nocompile": true
+          },
+          {
+            "id": "two"
+          },
+          {
+            "id": "three",
+            "nocompile": true
+          },
+          {
+            "id": "four"
+          }
+        ],
+        "types": {
+          "one": {
+            "key": "value",
+            "nocompile": true
+          },
+          "two": {
+            "key": "value"
+          },
+          "three": {
+            "key": "value",
+            "nocompile": true
+          },
+          "four": {
+            "key": "value"
+          }
+        }
+      }
+    }
+  }
+]

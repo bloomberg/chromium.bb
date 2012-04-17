@@ -48,9 +48,28 @@ def StripJSONComments(stream):
 
   return result
 
+def DeleteNocompileNodes(item):
+  def HasNocompile(thing):
+    return type(thing) == dict and thing.get('nocompile', False)
+
+  if type(item) == dict:
+    toDelete = []
+    for key, value in item.items():
+      if HasNocompile(value):
+        toDelete.append(key)
+      else:
+        DeleteNocompileNodes(value)
+    for key in toDelete:
+      del item[key]
+  elif type(item) == list:
+    item[:] = [DeleteNocompileNodes(thing)
+        for thing in item if not HasNocompile(thing)]
+
+  return item
+
 def Load(filename):
   with open(filename, 'r') as handle:
-    return json.loads(StripJSONComments(handle.read()))
+    return DeleteNocompileNodes(json.loads(StripJSONComments(handle.read())))
 
 
 # A dictionary mapping |filename| to the object resulting from loading the JSON

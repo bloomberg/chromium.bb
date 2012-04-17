@@ -190,12 +190,8 @@ updateEverything();
       # Get main json file
       api_defs = json_schema.Load(json_file_path)
       namespace = api_model.AddNamespace(api_defs[0], json_file_path)
-      if not namespace:
-        body.Append("<pre>Target file %s is marked nocompile</pre>" %
-            json_file_path)
-        return
       type_generator = cpp_type_generator.CppTypeGenerator(
-         'preview::api', namespace, namespace.unix_name)
+         'previewserver::api', namespace, namespace.unix_name)
 
       # Get json file depedencies
       for dependency in api_defs[0].get('dependencies', []):

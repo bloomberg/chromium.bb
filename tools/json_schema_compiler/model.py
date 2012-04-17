@@ -16,12 +16,8 @@ class Model(object):
     self.namespaces = {}
 
   def AddNamespace(self, json, source_file):
-    """Add a namespace's json to the model if it doesn't have "nocompile"
-    property set to true. Returns the new namespace or None if a namespace
-    wasn't added.
+    """Add a namespace's json to the model and returns the namespace.
     """
-    if json.get('nocompile', False):
-      return None
     namespace = Namespace(json, source_file)
     self.namespaces[namespace.name] = namespace
     return namespace
@@ -54,8 +50,7 @@ class Namespace(object):
       type_ = Type(self, type_json['id'], type_json)
       self.types[type_.name] = type_
     for function_json in json.get('functions', []):
-      if not function_json.get('nocompile', False):
-        self.functions[function_json['name']] = Function(self, function_json)
+      self.functions[function_json['name']] = Function(self, function_json)
 
 class Type(object):
   """A Type defined in the json.
@@ -94,8 +89,7 @@ class Type(object):
     self.functions = {}
     self.parent = parent
     for function_json in json.get('functions', []):
-      if not function_json.get('nocompile', False):
-        self.functions[function_json['name']] = Function(self, function_json)
+      self.functions[function_json['name']] = Function(self, function_json)
     props = []
     for prop_name, prop_json in json.get('properties', {}).items():
       # TODO(calamity): support functions (callbacks) as properties.  The model
