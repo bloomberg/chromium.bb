@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -98,12 +99,18 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   // Running when all tabs are discarded should do nothing.
   EXPECT_FALSE(g_browser_process->oom_priority_manager()->DiscardTab());
 
+  // Force creation of the FindBarController.
+  browser()->GetFindBarController();
+
   // Select the first tab.  It should reload.
   WindowedNotificationObserver reload1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
   browser()->SelectNumberedTab(0);
   reload1.Wait();
+  // Make sure the FindBarController gets the right TabContentsWrapper.
+  EXPECT_EQ(browser()->GetFindBarController()->tab_contents(),
+            browser()->GetSelectedTabContentsWrapper());
   EXPECT_EQ(0, browser()->active_index());
   EXPECT_FALSE(browser()->IsTabDiscarded(0));
   EXPECT_TRUE(browser()->IsTabDiscarded(1));

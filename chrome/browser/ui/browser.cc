@@ -3538,6 +3538,7 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
                                bool user_gesture) {
   // On some platforms we want to automatically reload tabs that are
   // killed when the user selects them.
+  bool did_reload = false;
   if (user_gesture && new_contents->web_contents()->GetCrashedStatus() ==
         base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
@@ -3545,17 +3546,16 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
       // Log to track down crash crbug.com/119068
       LOG(WARNING) << "Reloading killed tab at " << index;
       Reload(CURRENT_TAB);
-      return;
+      did_reload = true;
     }
   }
 
   // Discarded tabs always get reloaded.
-  if (IsTabDiscarded(index)) {
+  if (!did_reload && IsTabDiscarded(index)) {
     // Log to track down crash crbug.com/119068
     LOG(WARNING) << "Reloading discarded tab at " << index
         << " gesture " << user_gesture;
     Reload(CURRENT_TAB);
-    return;
   }
 
   // If we have any update pending, do it now.
