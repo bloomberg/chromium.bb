@@ -23,6 +23,10 @@
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #endif
 
+#if defined(OS_WIN)
+#include "content/public/common/sandbox_init.h"
+#endif
+
 using content::RenderThread;
 
 namespace chrome {
@@ -78,11 +82,26 @@ void EnableBackgroundSelLdrLaunch() {
       RenderThread::Get()->GetSyncMessageFilter();
 }
 
+int BrokerDuplicateHandle(void* source_handle,
+                          unsigned int process_id,
+                          void** target_handle,
+                          unsigned int desired_access,
+                          unsigned int options) {
+#if defined(OS_WIN)
+  return content::BrokerDuplicateHandle(source_handle, process_id,
+                                        target_handle, desired_access,
+                                        options);
+#else
+  return 0;
+#endif
+}
+
 const PPB_NaCl_Private ppb_nacl = {
   &LaunchSelLdr,
   &UrandomFD,
   &Are3DInterfacesDisabled,
   &EnableBackgroundSelLdrLaunch,
+  &BrokerDuplicateHandle,
 };
 
 class PPB_NaCl_Impl {

@@ -407,6 +407,14 @@ bool AddPolicyForRenderer(sandbox::TargetPolicy* policy) {
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
+  // Renderers need to send named pipe handles and shared memory
+  // segment handles to NaCl loader processes.
+  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_HANDLES,
+                           sandbox::TargetPolicy::HANDLES_DUP_ANY,
+                           L"File");
+  if (result != sandbox::SBOX_ALL_OK)
+    return false;
+
   policy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0);
 
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
@@ -694,6 +702,10 @@ bool BrokerDuplicateHandle(HANDLE source_handle,
   }
 
   return false;
+}
+
+bool BrokerAddTargetPeer(HANDLE peer_process) {
+  return g_broker_services->AddTargetPeer(peer_process) == sandbox::SBOX_ALL_OK;
 }
 
 }  // namespace content

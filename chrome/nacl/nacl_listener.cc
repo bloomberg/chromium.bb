@@ -26,6 +26,8 @@
 #if defined(OS_WIN)
 #include <fcntl.h>
 #include <io.h>
+
+#include "content/public/common/sandbox_init.h"
 #endif
 
 namespace {
@@ -65,6 +67,19 @@ int CreateMemoryObject(size_t size, int executable) {
 
 int CreateMemoryObject(size_t size, int executable) {
   return content::MakeSharedMemorySegmentViaIPC(size, executable);
+}
+
+#elif defined(OS_WIN)
+
+// We wrap the function to convert the bool return value to an int.
+int BrokerDuplicateHandle(NaClHandle source_handle,
+                          uint32_t process_id,
+                          NaClHandle* target_handle,
+                          uint32_t desired_access,
+                          uint32_t options) {
+  return content::BrokerDuplicateHandle(source_handle, process_id,
+                                        target_handle, desired_access,
+                                        options);
 }
 
 #endif
@@ -203,6 +218,9 @@ void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
   args->imc_bootstrap_handle = nacl::ToNativeHandle(handles[0]);
   args->enable_exception_handling = enable_exception_handling;
   args->enable_debug_stub = debug_enabled_;
+#if defined(OS_WIN)
+  args->broker_duplicate_handle_func = BrokerDuplicateHandle;
+#endif
   NaClChromeMainStart(args);
   NOTREACHED();
 }

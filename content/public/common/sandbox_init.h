@@ -42,6 +42,15 @@ CONTENT_EXPORT bool BrokerDuplicateHandle(HANDLE source_handle,
                                           DWORD desired_access,
                                           DWORD options);
 
+// Inform the current process's sandbox broker (e.g. the broker for
+// 32-bit processes) about a process created under a different sandbox
+// broker (e.g. the broker for 64-bit processes).  This allows
+// BrokerDuplicateHandle() to send handles to a process managed by
+// another broker.  For example, it allows the 32-bit renderer to send
+// handles to 64-bit NaCl processes.  This returns true on success,
+// false otherwise.
+CONTENT_EXPORT bool BrokerAddTargetPeer(HANDLE peer_process);
+
 #elif defined(OS_MACOSX)
 
 // Initialize the sandbox of the given |sandbox_type|, optionally specifying a

@@ -595,39 +595,6 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
     return false;
   }
 
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
-  // Establish the communication for handle passing protocol
-  struct NaClDesc* desc = NaClHandlePassBrowserGetSocketAddress();
-
-  DWORD my_pid = GetCurrentProcessId();
-  nacl::Handle my_handle = GetCurrentProcess();
-  nacl::Handle my_handle_in_selldr;
-
-  if (!DuplicateHandle(GetCurrentProcess(),
-                       my_handle,
-                       subprocess_->child_process(),
-                       &my_handle_in_selldr,
-                       PROCESS_DUP_HANDLE,
-                       FALSE,
-                       0)) {
-    error_info->SetReport(ERROR_SEL_LDR_HANDLE_PASSING,
-                          "ServiceRuntime: failed handle passing protocol");
-    return false;
-  }
-
-  rpc_result =
-      NaClSrpcInvokeBySignature(&command_channel_,
-                                "init_handle_passing:hii:",
-                                desc,
-                                my_pid,
-                                reinterpret_cast<int>(my_handle_in_selldr));
-
-  if (NACL_SRPC_RESULT_OK != rpc_result) {
-    error_info->SetReport(ERROR_SEL_LDR_HANDLE_PASSING,
-                          "ServiceRuntime: failed handle passing protocol");
-    return false;
-  }
-#endif
   // start the module.  otherwise we cannot connect for multimedia
   // subsystem since that is handled by user-level code (not secure!)
   // in libsrpc.
