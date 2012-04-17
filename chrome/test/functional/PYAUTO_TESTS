@@ -601,8 +601,8 @@
       '-plugins.PluginsTest.testBlockAllPlugins',
       '-plugins.PluginsTest.testBlockPluginException',
       # crbug.com/123419
-      '-browsing_data.BrowsingDataTest.testClearCookies'
-      '-databases.DatabasesTest.testDeleteAndUpdateDatabase'
+      '-browsing_data.BrowsingDataTest.testClearCookies',
+      '-databases.DatabasesTest.testDeleteAndUpdateDatabase',
     ],
 
     'chromeos': [
