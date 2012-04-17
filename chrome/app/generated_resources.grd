@@ -12643,7 +12643,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Wireless networks
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_NETWORK" desc="Title for the Wifi network group on the settings page.">
-        Wireless network
+        Wi-Fi network
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK" desc="Title for the cellular network group on the settings page.">
         Mobile data
@@ -12685,7 +12685,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Disable Wi-Fi
       </message>
       <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_CELLULAR" desc="Menu option in the Cellular menu when there is a connected cellular network.">
-        Disable cellular
+        Disable mobile data
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_AIRPLANE_MODE" desc="Control on the settings page for disabling all wireless communication.">
         Airplane mode
