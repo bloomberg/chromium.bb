@@ -15,7 +15,7 @@ struct PasswordFormFillData;
 class PasswordFormManager;
 class Profile;
 
-// An abstraction of operations in the external environment (TabContents)
+// An abstraction of operations in the external environment (WebContents)
 // that the PasswordManager depends on.  This allows for more targeted
 // unit testing.
 class PasswordManagerDelegate {

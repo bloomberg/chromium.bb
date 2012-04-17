@@ -328,7 +328,7 @@ void InstantController::OnAutocompleteLostFocus(
   }
 
   // Walk up the view hierarchy. If the view gaining focus is a subview of the
-  // TabContents view (such as a windowed plugin or http auth dialog), we want
+  // WebContents view (such as a windowed plugin or http auth dialog), we want
   // to keep the preview contents. Otherwise, focus has gone somewhere else,
   // such as the JS inspector, and we want to cancel the preview.
   gfx::NativeView view_gaining_focus_ancestor = view_gaining_focus;

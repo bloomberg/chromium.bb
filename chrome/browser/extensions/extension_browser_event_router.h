@@ -200,7 +200,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
    private:
     // Whether we are waiting to fire the 'complete' status change. This will
-    // occur the first time the TabContents stops loading after the
+    // occur the first time the WebContents stops loading after the
     // NAV_ENTRY_COMMITTED was fired. The tab may go back into and out of the
     // loading state subsequently, but we will ignore those changes.
     bool complete_waiting_on_load_;

@@ -2980,7 +2980,7 @@ TEST_F(AutofillManagerTest, TestExternalDelegate) {
 // landing autofill_external_delegate_android.cc in the Chromium tree
 // have not themselves landed.
 
-// Turn on the external delegate.  Recreate a TabContents.  Make sure
+// Turn on the external delegate.  Recreate a WebContents.  Make sure
 // an external delegate was set in the proper structures.
 TEST_F(AutofillManagerTest, TestTabContentsWithExternalDelegate) {
   CommandLine::ForCurrentProcess()->AppendSwitch(

@@ -96,7 +96,7 @@ class PasswordManager : public LoginModel,
   scoped_ptr<PasswordFormManager> provisional_save_manager_;
 
   // Our delegate for carrying out external operations.  This is typically the
-  // containing TabContents.
+  // containing WebContents.
   PasswordManagerDelegate* const delegate_;
 
   // The LoginModelObserver (i.e LoginView) requiring autofill.

@@ -180,7 +180,7 @@ class PrerenderContents::TabContentsDelegateImpl
     return prerender_contents_->ShouldSuppressDialogs();
   }
 
-  // Commits the History of Pages to the given TabContents.
+  // Commits the History of Pages to the given TabContentsWrapper.
   void CommitHistory(TabContentsWrapper* tab) {
     for (size_t i = 0; i < add_page_vector_.size(); ++i)
       tab->history_tab_helper()->UpdateHistoryForNavigation(
@@ -316,7 +316,7 @@ void PrerenderContents::StartPrerendering(
   tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
   new_contents->SetDelegate(tab_contents_delegate_.get());
 
-  // Set the size of the prerender TabContents.
+  // Set the size of the prerender WebContents.
   prerender_contents_->web_contents()->GetView()->SizeContents(
       tab_bounds.size());
 
@@ -410,7 +410,7 @@ PrerenderContents::~PrerenderContents() {
     }
   }
 
-  // If we still have a TabContents, clean up anything we need to and then
+  // If we still have a WebContents, clean up anything we need to and then
   // destroy it.
   if (prerender_contents_.get())
     delete ReleasePrerenderContents();
@@ -454,11 +454,11 @@ void PrerenderContents::Observe(int type,
         content::Details<RenderViewHost> new_render_view_host(details);
         OnRenderViewHostCreated(new_render_view_host.ptr());
 
-        // When a new RenderView is created for a prerendering TabContents,
+        // When a new RenderView is created for a prerendering WebContents,
         // tell the new RenderView it's being used for prerendering before any
         // navigations occur.  Note that this is always triggered before the
         // first navigation, so there's no need to send the message just after
-        // the TabContents is created.
+        // the WebContents is created.
         new_render_view_host->Send(
             new PrerenderMsg_SetIsPrerendering(
                 new_render_view_host->GetRoutingID(),

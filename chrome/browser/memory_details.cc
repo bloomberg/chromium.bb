@@ -191,7 +191,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       extensions::ProcessMap* extension_process_map =
           extension_service->process_map();
 
-      // The RenderProcessHost may host multiple TabContents.  Any
+      // The RenderProcessHost may host multiple WebContentses.  Any
       // of them which contain diagnostics information make the whole
       // process be considered a diagnostics process.
       content::RenderProcessHost::RenderWidgetHostsIterator iter(

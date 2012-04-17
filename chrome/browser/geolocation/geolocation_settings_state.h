@@ -33,7 +33,7 @@ class GeolocationSettingsState {
   // Sets the state for |requesting_origin|.
   void OnGeolocationPermissionSet(const GURL& requesting_origin, bool allowed);
 
-  // Delegated by TabContents to indicate a navigation has happened and we
+  // Delegated by WebContents to indicate a navigation has happened and we
   // may need to clear our settings.
   void DidNavigate(const content::LoadCommittedDetails& details);
 

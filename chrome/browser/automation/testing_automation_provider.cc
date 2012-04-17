@@ -1531,7 +1531,7 @@ void TestingAutomationProvider::GetPageType(
     *page_type = entry->GetPageType();
     *success = true;
     // In order to return the proper result when an interstitial is shown and
-    // no navigation entry were created for it we need to ask the TabContents.
+    // no navigation entry were created for it we need to ask the WebContents.
     if (*page_type == content::PAGE_TYPE_NORMAL &&
         tab->GetWebContents()->ShowingInterstitialPage())
       *page_type = content::PAGE_TYPE_INTERSTITIAL;
@@ -4072,7 +4072,7 @@ TabContentsWrapper* GetTabContentsWrapperFromDict(const Browser* browser,
   return tab_contents;
 }
 
-// Get the TranslateInfoBarDelegate from TabContents.
+// Get the TranslateInfoBarDelegate from WebContents.
 TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
     WebContents* web_contents) {
   InfoBarTabHelper* infobar_helper =

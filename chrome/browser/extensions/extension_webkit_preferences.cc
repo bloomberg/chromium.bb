@@ -39,7 +39,7 @@ void SetPreferences(const Extension* extension,
 
   // If this is a component extension, then apply the same poliy for
   // accelerated compositing as for chrome: URLs (from
-  // TabContents::GetWebkitPrefs).  This is important for component extensions
+  // WebContents::GetWebkitPrefs).  This is important for component extensions
   // like the file manager which are sometimes loaded using chrome: URLs and
   // sometimes loaded with chrome-extension: URLs - we should expect the
   // performance characteristics to be similar in both cases.

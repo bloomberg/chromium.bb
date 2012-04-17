@@ -40,11 +40,6 @@ class PrerenderManager;
 class PrerenderRenderViewHostObserver;
 class PrerenderTracker;
 
-// This class is a peer of TabContents. It can host a renderer, but does not
-// have any visible display. Its navigation is not managed by a
-// NavigationController because is has no facility for navigating (other than
-// programatically view window.location.href) or RenderViewHostManager because
-// it is never allowed to navigate across a SiteInstance boundary.
 class PrerenderContents : public content::NotificationObserver,
                           public content::WebContentsObserver {
  public:
@@ -187,7 +182,7 @@ class PrerenderContents : public content::NotificationObserver,
   // Adds all alias URLs from another prerender.
   void AddAliasURLsFromOtherPrerenderContents(PrerenderContents* other_pc);
 
-  // The preview TabContents (may be null).
+  // The preview TabContentsWrapper (may be null).
   TabContentsWrapper* prerender_contents() const {
     return prerender_contents_.get();
   }
@@ -282,7 +277,7 @@ class PrerenderContents : public content::NotificationObserver,
   // RenderViewHostDelegate has received from the RenderView.
   // Used to apply to the new RenderViewHost delegate that might eventually
   // own the contained RenderViewHost when the prerendered page is shown
-  // in a TabContents.
+  // in a WebContents.
   string16 title_;
   int32 page_id_;
   GURL url_;
@@ -323,7 +318,7 @@ class PrerenderContents : public content::NotificationObserver,
   // RenderViewHost for this object.
   scoped_ptr<base::ProcessMetrics> process_metrics_;
 
-  // The prerendered TabContents; may be null.
+  // The prerendered TabContentsWrapper; may be null.
   scoped_ptr<TabContentsWrapper> prerender_contents_;
 
   scoped_ptr<PrerenderRenderViewHostObserver> render_view_host_observer_;

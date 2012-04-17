@@ -54,8 +54,8 @@ class InstantLoader : public content::NotificationObserver {
                 const std::string& group);
   virtual ~InstantLoader();
 
-  // Invoked to load a URL. |tab_contents| is the TabContents the preview is
-  // going to be shown on top of and potentially replace. Returns true if the
+  // Invoked to load a URL. |tab_contents| is the TabContentsWrapper the preview
+  // is going to be shown on top of and potentially replace. Returns true if the
   // arguments differ from the last call to |Update|.
   bool Update(TabContentsWrapper* tab_contents,
               const TemplateURL* template_url,
@@ -74,11 +74,12 @@ class InstantLoader : public content::NotificationObserver {
   // content.
   bool IsMouseDownFromActivate();
 
-  // Releases the preview TabContents passing ownership to the caller. This is
-  // intended to be called when the preview TabContents is committed. This does
-  // not notify the delegate. |tab_contents| is the underlying tab onto which
-  // the preview will be committed. It can be NULL when the underlying tab is
-  // irrelevant, for example when |type| is INSTANT_COMMIT_DESTROY.
+  // Releases the preview TabContentsWrapper passing ownership to the caller.
+  // This is intended to be called when the preview TabContentsWrapper is
+  // committed. This does not notify the delegate. |tab_contents| is the
+  // underlying tab onto which the preview will be committed. It can be NULL
+  // when the underlying tab is irrelevant, for example when |type| is
+  // INSTANT_COMMIT_DESTROY.
   TabContentsWrapper* ReleasePreviewContents(InstantCommitType type,
                                              TabContentsWrapper* tab_contents);
 
@@ -91,7 +92,7 @@ class InstantLoader : public content::NotificationObserver {
   void MaybeLoadInstantURL(TabContentsWrapper* tab_contents,
                            const TemplateURL* template_url);
 
-  // Returns true if the preview NavigationController's TabContents has a
+  // Returns true if the preview NavigationController's WebContents has a
   // pending NavigationEntry.
   bool IsNavigationPending() const;
 
@@ -100,14 +101,14 @@ class InstantLoader : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // The preview TabContents; may be null.
+  // The preview TabContentsWrapper; may be null.
   TabContentsWrapper* preview_contents() const {
     return preview_contents_.get();
   }
 
-  // Returns true if the preview TabContents is ready to be shown. A non-instant
-  // loader is ready once the renderer paints, otherwise it isn't ready until we
-  // get a response back from the page.
+  // Returns true if the preview TabContentsWrapper is ready to be shown. A
+  // non-instant loader is ready once the renderer paints, otherwise it isn't
+  // ready until we get a response back from the page.
   bool ready() const { return ready_; }
 
   // Returns true if the current load returned a 200.
@@ -207,11 +208,11 @@ class InstantLoader : public content::NotificationObserver {
   // The url we're displaying.
   GURL url_;
 
-  // Delegate of the preview TabContents. Used to detect when the user does some
-  // gesture on the TabContents and the preview needs to be activated.
+  // Delegate of the preview WebContents. Used to detect when the user does some
+  // gesture on the WebContents and the preview needs to be activated.
   scoped_ptr<TabContentsDelegateImpl> preview_tab_contents_delegate_;
 
-  // The preview TabContents; may be null.
+  // The preview TabContentsWrapper; may be null.
   scoped_ptr<TabContentsWrapper> preview_contents_;
 
   // Is the preview_contents ready to be shown?

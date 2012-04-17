@@ -364,7 +364,7 @@ bool DebuggerFunction::InitTabContents() {
   DictionaryValue* dict = static_cast<DictionaryValue*>(debuggee);
   EXTENSION_FUNCTION_VALIDATE(dict->GetInteger(keys::kTabIdKey, &tab_id_));
 
-  // Find the TabContents that contains this tab id.
+  // Find the TabContentsWrapper that contains this tab id.
   contents_ = NULL;
   TabContentsWrapper* wrapper = NULL;
   bool result = ExtensionTabUtil::GetTabById(

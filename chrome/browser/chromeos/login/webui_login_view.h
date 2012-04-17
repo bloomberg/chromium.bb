@@ -119,13 +119,13 @@ class WebUILoginView : public views::WidgetDelegateView,
   // Login window which shows the view.
   views::Widget* login_window_;
 
-  // Converts keyboard events on the TabContents to accelerators.
+  // Converts keyboard events on the WebContents to accelerators.
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
   // Maps installed accelerators to OOBE webui accelerator identifiers.
   AccelMap accel_map_;
 
-  // Watches webui_login_'s TabContents rendering.
+  // Watches webui_login_'s WebContents rendering.
   scoped_ptr<TabRenderWatcher> tab_watcher_;
 
   // Whether the host window is frozen.

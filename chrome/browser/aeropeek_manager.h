@@ -168,8 +168,8 @@ class AeroPeekManager : public TabStripModelObserver,
   // if it is alive.
   // Since Windows cannot send AeroPeek events directly to Chrome windows, we
   // use a place-holder window to receive AeroPeek events. So, when Windows
-  // sends an AeroPeek event, the corresponding tab (and TabContents) may have
-  // been deleted by Chrome. To prevent us from accessing deleted TabContents,
+  // sends an AeroPeek event, the corresponding tab (and WebContents) may have
+  // been deleted by Chrome. To prevent us from accessing deleted WebContents,
   // we need to check if the tab is still alive.
   content::WebContents* GetWebContents(int tab_id) const;
 

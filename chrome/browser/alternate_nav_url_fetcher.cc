@@ -92,7 +92,7 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
   owner()->web_contents()->OpenURL(params);
 
   // We should always close, even if the navigation did not occur within this
-  // TabContents.
+  // WebContents.
   return true;
 }
 

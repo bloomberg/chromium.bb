@@ -153,10 +153,10 @@ void ExtensionBrowserEventRouter::RegisterForTabNotifications(
       this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<NavigationController>(&contents->GetController()));
 
-  // Observing TAB_CONTENTS_DESTROYED is necessary because it's
+  // Observing NOTIFICATION_WEB_CONTENTS_DESTROYED is necessary because it's
   // possible for tabs to be created, detached and then destroyed without
   // ever having been re-attached and closed. This happens in the case of
-  // a devtools TabContents that is opened in window, docked, then closed.
+  // a devtools WebContents that is opened in window, docked, then closed.
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::Source<WebContents>(contents));
 }

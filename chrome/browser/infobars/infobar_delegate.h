@@ -111,7 +111,7 @@ class InfoBarDelegate {
   // using StoreActiveEntryUniqueID automatically.
   explicit InfoBarDelegate(InfoBarTabHelper* infobar_helper);
 
-  // Store the unique id for the active entry in the specified TabContents, to
+  // Store the unique id for the active entry in the specified WebContents, to
   // be used later upon navigation to determine if this InfoBarDelegate should
   // be expired from |contents_|.
   void StoreActiveEntryUniqueID(InfoBarTabHelper* infobar_helper);
@@ -125,7 +125,7 @@ class InfoBarDelegate {
   void RemoveSelf();
 
  private:
-  // The unique id of the active NavigationEntry of the TabContents that we were
+  // The unique id of the active NavigationEntry of the WebContents that we were
   // opened for. Used to help expire on navigations.
   int contents_unique_id_;
 

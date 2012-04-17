@@ -157,7 +157,7 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   int render_process_id_;
   int render_view_id_;
   int bridge_id_;
-  // The unique id of the committed NavigationEntry of the TabContents that we
+  // The unique id of the committed NavigationEntry of the WebContents that we
   // were opened for. Used to help expire on navigations.
   int committed_contents_unique_id_;
 
@@ -683,7 +683,7 @@ void ChromeGeolocationPermissionContext::NotifyPermissionSet(
     bool allowed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // TabContents may have gone away (or not exists for extension).
+  // WebContents may have gone away (or not exists for extension).
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::Get(render_process_id, render_view_id);
   if (content_settings) {

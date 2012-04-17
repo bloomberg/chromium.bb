@@ -86,7 +86,7 @@ static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
 
 // Tests that we can load extension pages into the tab area and they can call
 // extension APIs.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
                     .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")

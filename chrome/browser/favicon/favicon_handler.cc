@@ -138,7 +138,7 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
   image_urls_.clear();
 
   // Request the favicon from the history service. In parallel to this the
-  // renderer is going to notify us (well TabContents) when the favicon url is
+  // renderer is going to notify us (well WebContents) when the favicon url is
   // available.
   if (GetFaviconService()) {
     GetFaviconForURL(url_, icon_types_, &cancelable_consumer_,
@@ -296,7 +296,7 @@ void FaviconHandler::OnDidDownloadFavicon(int id,
                                           const gfx::Image& image) {
   DownloadRequests::iterator i = download_requests_.find(id);
   if (i == download_requests_.end()) {
-    // Currently TabContents notifies us of ANY downloads so that it is
+    // Currently WebContents notifies us of ANY downloads so that it is
     // possible to get here.
     return;
   }

@@ -394,7 +394,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
   }
 
   // If we don't want to use prerenders at all, we are done.
-  // For bookkeeping purposes, we need to mark this TabContents to
+  // For bookkeeping purposes, we need to mark this WebContents to
   // reflect that it would have been prerendered.
   if (GetMode() == PRERENDER_MODE_EXPERIMENT_NO_USE_GROUP) {
     MarkWebContentsAsWouldBePrerendered(web_contents);
@@ -534,7 +534,7 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
   AddToHistory(entry);
   pending_delete_list_.push_back(entry);
 
-  // Destroy the old TabContents relatively promptly to reduce resource usage,
+  // Destroy the old WebContents relatively promptly to reduce resource usage,
   // and in the case of HTML5 media, reduce the change of playing any sound.
   PostCleanupTask();
 }

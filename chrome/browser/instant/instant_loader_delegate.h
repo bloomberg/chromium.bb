@@ -45,7 +45,7 @@ class InstantLoaderDelegate {
   // Adds the specified url to the set of urls instant won't prefetch for.
   virtual void AddToBlacklist(InstantLoader* loader, const GURL& url) = 0;
 
-  // Invoked if the loader swaps to a different TabContents.
+  // Invoked if the loader swaps to a different WebContents.
   virtual void SwappedTabContents(InstantLoader* loader) = 0;
 
   // Invoked when the webcontents created by the loader is focused.

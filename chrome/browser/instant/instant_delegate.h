@@ -19,15 +19,15 @@ class Rect;
 // InstantController for details.
 class InstantDelegate {
  public:
-  // Invoked when the instant TabContents should be shown.
+  // Invoked when the instant TabContentsWrapper should be shown.
   virtual void ShowInstant(TabContentsWrapper* preview_contents) = 0;
 
-  // Invoked when the instant TabContents should be hidden.
+  // Invoked when the instant TabContentsWrapper should be hidden.
   virtual void HideInstant() = 0;
 
   // Invoked when the user does something that should result in the preview
-  // TabContents becoming the active TabContents. The delegate takes ownership
-  // of the supplied TabContents.
+  // TabContentsWrapper becoming the active TabContentsWrapper. The delegate
+  // takes ownership of the supplied TabContentsWrapper.
   virtual void CommitInstant(TabContentsWrapper* preview_contents) = 0;
 
   // Invoked when the suggested text is to change to |text|.

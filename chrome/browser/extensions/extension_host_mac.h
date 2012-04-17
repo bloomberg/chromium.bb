@@ -9,7 +9,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 
 // TODO(mpcomplete): I don't know what this does or if it is needed anymore,
-// now that ExtensionHost is restructured to rely on TabContents.
+// now that ExtensionHost is restructured to rely on WebContents.
 class ExtensionHostMac : public ExtensionHost {
  public:
   ExtensionHostMac(const Extension* extension,

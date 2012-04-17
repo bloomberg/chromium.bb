@@ -380,7 +380,7 @@ WebContents* ExternalTabContainer::OpenURLFromTab(WebContents* source,
         // TODO(ananta)
         // We should populate other fields in the
         // ViewHostMsg_FrameNavigate_Params structure. Another option could be
-        // to refactor the UpdateHistoryForNavigation function in TabContents.
+        // to refactor the UpdateHistoryForNavigation function in WebContents.
         content::FrameNavigateParams nav_params;
         nav_params.referrer = content::Referrer(referrer,
                                                 params.referrer.policy);

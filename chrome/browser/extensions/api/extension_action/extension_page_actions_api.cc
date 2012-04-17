@@ -55,7 +55,7 @@ bool PageActionFunction::RunImpl() {
     return false;
   }
 
-  // Find the TabContents that contains this tab id.
+  // Find the TabContentsWrapper that contains this tab id.
   contents_ = NULL;
   TabContentsWrapper* wrapper = NULL;
   bool result = ExtensionTabUtil::GetTabById(
@@ -108,7 +108,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
     return false;
   }
 
-  // Find the TabContents that contains this tab id.
+  // Find the TabContentsWrapper that contains this tab id.
   TabContentsWrapper* contents = NULL;
   bool result = ExtensionTabUtil::GetTabById(
       tab_id, profile(), include_incognito(), NULL, NULL, &contents, NULL);

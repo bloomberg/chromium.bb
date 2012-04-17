@@ -169,7 +169,7 @@ class TestPrerenderContents : public PrerenderContents {
       EXPECT_TRUE(was_hidden_);
 
     // A used PrerenderContents will only be destroyed when we swap out
-    // TabContents, at the end of a navigation caused by a call to
+    // WebContents, at the end of a navigation caused by a call to
     // NavigateToURLImpl().
     if (final_status() == FINAL_STATUS_USED)
       EXPECT_TRUE(new_render_view_host_);
@@ -1421,7 +1421,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTaskManager) {
   // Start with two resources.
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
 
-  // One of the resources that has a TabContents associated with it should have
+  // One of the resources that has a WebContents associated with it should have
   // the Prerender prefix.
   const string16 prefix =
       l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRERENDER_PREFIX, string16());

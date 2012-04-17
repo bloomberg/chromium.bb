@@ -171,7 +171,7 @@ DevToolsWindow* DevToolsWindow::Create(
     RenderViewHost* inspected_rvh,
     bool docked,
     bool shared_worker_frontend) {
-  // Create TabContents with devtools.
+  // Create TabContentsWrapper with devtools.
   TabContentsWrapper* tab_contents =
       Browser::TabContentsFactory(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
   tab_contents->web_contents()->GetRenderViewHost()->AllowBindings(

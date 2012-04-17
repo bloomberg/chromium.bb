@@ -12,7 +12,7 @@
 
 // Filters and dispatches extension-related IPC messages that arrive from
 // renderers. There is one of these objects for each RenderViewHost in Chrome.
-// Contrast this with ExtensionTabHelper, which is only created for TabContents.
+// Contrast this with ExtensionTabHelper, which is only created for WebContents.
 //
 // TODO(aa): Handling of content script messaging should be able to move to EFD
 // once there is an EFD for every RVHD where extension code can run. Then we

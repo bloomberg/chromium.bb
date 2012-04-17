@@ -8,7 +8,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 // ExternalProtocolObserver is responsible for handling messages from
-// TabContents relating to external protocols.
+// WebContents relating to external protocols.
 class ExternalProtocolObserver : public content::WebContentsObserver {
  public:
   explicit ExternalProtocolObserver(content::WebContents* web_contents);

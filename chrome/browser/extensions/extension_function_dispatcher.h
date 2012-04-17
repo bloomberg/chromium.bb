@@ -45,7 +45,7 @@ typedef ExtensionFunction* (*ExtensionFunctionFactory)();
 //
 // Note that a single ExtensionFunctionDispatcher does *not* correspond to a
 // single RVH, a single extension, or a single URL. This is by design so that
-// we can gracefully handle cases like TabContents, where the RVH, extension,
+// we can gracefully handle cases like WebContents, where the RVH, extension,
 // and URL can all change over the lifetime of the tab. Instead, these items
 // are all passed into each request.
 class ExtensionFunctionDispatcher

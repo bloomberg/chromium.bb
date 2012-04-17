@@ -15,8 +15,8 @@
 
 using content::WebContents;
 
-// TabContentsDelegate implementation. This owns the TabContents supplied to the
-// constructor.
+// TabContentsDelegate implementation. This owns the TabContentsWrapper supplied
+// to the constructor.
 class InstantUnloadHandler::TabContentsDelegateImpl
     : public content::WebContentsDelegate {
  public:
@@ -93,7 +93,7 @@ void InstantUnloadHandler::RunUnloadListenersOrDestroy(TabContentsWrapper* tab,
 }
 
 void InstantUnloadHandler::Activate(TabContentsDelegateImpl* delegate) {
-  // Take ownership of the TabContents from the delegate.
+  // Take ownership of the TabContentsWrapper from the delegate.
   TabContentsWrapper* tab = delegate->ReleaseTab();
   browser::NavigateParams params(browser_, tab);
   params.disposition = NEW_FOREGROUND_TAB;

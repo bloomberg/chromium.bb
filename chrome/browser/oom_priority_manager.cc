@@ -54,8 +54,8 @@ const int kAdjustmentIntervalSeconds = 10;
 // currently focused tab.
 const int kFocusedTabScoreAdjustIntervalMs = 500;
 
-// Returns a unique ID for a TabContents.  Do not cast back to a pointer, as
-// the TabContents could be deleted if the user closed the tab.
+// Returns a unique ID for a WebContents.  Do not cast back to a pointer, as
+// the WebContents could be deleted if the user closed the tab.
 int64 IdFromTabContents(WebContents* web_contents) {
   return reinterpret_cast<int64>(web_contents);
 }

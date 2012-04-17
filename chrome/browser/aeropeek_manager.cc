@@ -434,9 +434,9 @@ class AeroPeekWindow : public ui::WindowImpl {
   // An interface which dispatches events received from Window.
   // This window notifies events received from Windows to TabStrip through
   // this interface.
-  // We should not directly access TabContents members since Windows may send
+  // We should not directly access WebContents members since Windows may send
   // AeroPeek events to a tab closed by Chrome.
-  // To prevent such race condition, we get access to TabContents through
+  // To prevent such race condition, we get access to WebContents through
   // AeroPeekManager.
   AeroPeekWindowDelegate* delegate_;
 

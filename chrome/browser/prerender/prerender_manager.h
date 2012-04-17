@@ -196,7 +196,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Clears the data indicated by which bits of clear_flags are set.
   //
   // If the CLEAR_PRERENDER_CONTENTS bit is set, all active prerenders are
-  // cancelled and then deleted, and any TabContents queued for destruction are
+  // cancelled and then deleted, and any WebContents queued for destruction are
   // destroyed as well.
   //
   // If the CLEAR_PRERENDER_HISTORY bit is set, the prerender history is
@@ -310,7 +310,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void MaybeStopSchedulingPeriodicCleanups();
 
   // Deletes stale and cancelled prerendered PrerenderContents, as well as
-  // TabContents that have been replaced by prerendered TabContents.
+  // WebContents that have been replaced by prerendered WebContents.
   // Also identifies and kills PrerenderContents that use too much
   // resources.
   void PeriodicCleanup();
@@ -351,8 +351,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   bool DoesRateLimitAllowPrerender() const;
 
-  // Deletes old TabContents that have been replaced by prerendered ones.  This
-  // is needed because they're replaced in a callback from the old TabContents,
+  // Deletes old WebContents that have been replaced by prerendered ones.  This
+  // is needed because they're replaced in a callback from the old WebContents,
   // so cannot immediately be deleted.
   void DeleteOldTabContents();
 
@@ -372,7 +372,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   base::Value* GetActivePrerendersAsValue() const;
 
   // Destroys all pending prerenders using FinalStatus.  Also deletes them as
-  // well as any swapped out TabContents queued for destruction.
+  // well as any swapped out WebContents queued for destruction.
   // Used both on destruction, and when clearing the browsing history.
   void DestroyAllContents(FinalStatus final_status);
 
@@ -418,10 +418,10 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // List of prerender elements to be deleted
   std::list<PrerenderContents*> pending_delete_list_;
 
-  // Set of TabContents which are currently displaying a prerendered page.
+  // Set of WebContents which are currently displaying a prerendered page.
   base::hash_set<content::WebContents*> prerendered_tab_contents_set_;
 
-  // Set of TabContents which would be displaying a prerendered page
+  // Set of WebContents which would be displaying a prerendered page
   // (for the control group).
   base::hash_set<content::WebContents*> would_be_prerendered_tab_contents_set_;
 

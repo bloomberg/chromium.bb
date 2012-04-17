@@ -153,7 +153,7 @@ void DownloadRequestLimiter::TabDownloadState::Observe(
 
     case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
       // Tab closed, no need to handle closing the dialog as it's owned by the
-      // TabContents, break so that we get deleted after switch.
+      // WebContents, break so that we get deleted after switch.
       break;
 
     default:

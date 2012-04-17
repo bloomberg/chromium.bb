@@ -46,7 +46,7 @@ class ViewProp;
 // This class serves as the container window for an external tab.
 // An external tab is a Chrome tab that is meant to displayed in an
 // external process. This class provides the FocusManger needed by the
-// TabContents as well as an implementation of content::WebContentsDelegate.
+// WebContents as well as an implementation of content::WebContentsDelegate.
 class ExternalTabContainer : public content::WebContentsDelegate,
                              public content::WebContentsObserver,
                              public content::NotificationObserver,
@@ -83,7 +83,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
             bool infobars_enabled,
             bool supports_full_tab_mode);
 
-  // Unhook the keystroke listener and notify about the closing TabContents.
+  // Unhook the keystroke listener and notify about the closing WebContents.
   // This function gets called from three places, which is fine.
   // 1. OnFinalMessage
   // 2. In the destructor.
@@ -101,7 +101,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   // message it did not process
   void ProcessUnhandledAccelerator(const MSG& msg);
 
-  // See TabContents::FocusThroughTabTraversal.  Called from AutomationProvider.
+  // See WebContents::FocusThroughTabTraversal.  Called from AutomationProvider.
   void FocusThroughTabTraversal(bool reverse, bool restore_focus_to_view);
 
   // A helper method that tests whether the given window is an
@@ -324,7 +324,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
 
   // Top level navigations received for a tab while it is waiting for an ack
   // from the external host go here. Scenario is a window.open executes on a
-  // page in ChromeFrame. A new TabContents is created and the current
+  // page in ChromeFrame. A new WebContents is created and the current
   // ExternalTabContainer is notified via AddNewContents. At this point we
   // send off an attach tab request to the host browser. Before the host
   // browser sends over the ack, we receive a top level URL navigation for the

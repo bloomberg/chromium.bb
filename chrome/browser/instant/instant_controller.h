@@ -33,10 +33,10 @@ class TabContentsWrapper;
 class TemplateURL;
 class TemplateURLService;
 
-// InstantController maintains a TabContents that is intended to give a preview
+// InstantController maintains a WebContents that is intended to give a preview
 // of a URL. InstantController is owned by Browser.
 //
-// At any time the TabContents maintained by InstantController may be destroyed
+// At any time the WebContents maintained by InstantController may be destroyed
 // by way of |DestroyPreviewContents|, which results in |HideInstant| being
 // invoked on the delegate. Similarly the preview may be committed at any time
 // by invoking |CommitCurrentPreview|, which results in |CommitInstant|
@@ -71,12 +71,12 @@ class InstantController : public InstantLoaderDelegate {
   static bool CommitIfCurrent(InstantController* controller);
 
   // Invoked as the user types in the omnibox with the url to navigate to. If
-  // the url is valid and a preview TabContents has not been created, it is
+  // the url is valid and a preview WebContents has not been created, it is
   // created. If |verbatim| is true search results are shown for |user_text|
   // rather than the best guess as to what the search thought the user meant.
   // |verbatim| only matters if the AutocompleteMatch is for a search engine
   // that supports instant. Returns true if the attempt to update does not
-  // result in the preview TabContents being destroyed.
+  // result in the preview WebContents being destroyed.
   bool Update(TabContentsWrapper* tab_contents,
               const AutocompleteMatch& match,
               const string16& user_text,
@@ -89,7 +89,7 @@ class InstantController : public InstantLoaderDelegate {
   void SetOmniboxBounds(const gfx::Rect& bounds);
 
   // Notifies the delegate to hide the preview and destroys the preview
-  // TabContents. Does nothing if the preview TabContents has not been created.
+  // WebContents. Does nothing if the preview WebContents has not been created.
   void DestroyPreviewContents();
 
   // Notifies the delegate to hide the preview but leaves it around in hopes it
@@ -134,13 +134,13 @@ class InstantController : public InstantLoaderDelegate {
   // default search engine, in anticipation of the user typing a query.
   void OnAutocompleteGotFocus(TabContentsWrapper* tab_contents);
 
-  // Releases the preview TabContents passing ownership to the caller. This is
-  // intended to be called when the preview TabContents is committed. This does
+  // Releases the preview WebContents passing ownership to the caller. This is
+  // intended to be called when the preview WebContents is committed. This does
   // not notify the delegate. |tab_contents| is the underlying tab onto which
   // the preview will be committed. It can be NULL when the underlying tab is
   // irrelevant, for example when |type| is INSTANT_COMMIT_DESTROY.
   // WARNING: be sure and invoke CompleteRelease after adding the returned
-  // TabContents to a tabstrip.
+  // WebContents to a tabstrip.
   TabContentsWrapper* ReleasePreviewContents(InstantCommitType type,
                                              TabContentsWrapper* tab_contents);
 
@@ -148,14 +148,15 @@ class InstantController : public InstantLoaderDelegate {
   // Invoke this if you explicitly invoke ReleasePreviewContents.
   void CompleteRelease(TabContentsWrapper* tab);
 
-  // TabContents the match is being shown for.
+  // TabContentsWrapper the match is being shown for.
   TabContentsWrapper* tab_contents() const { return tab_contents_; }
 
-  // The preview TabContents; may be null.
+  // The preview TabContentsWrapper; may be null.
   TabContentsWrapper* GetPreviewContents() const;
 
-  // Returns true if the preview TabContents is ready to be displayed. In some
-  // situations this may return false yet GetPreviewContents() returns non-NULL.
+  // Returns true if the preview TabContentsWrapper is ready to be displayed. In
+  // some situations this may return false yet GetPreviewContents() returns
+  // non-NULL.
   bool is_displayable() const { return is_displayable_; }
 
   // Returns the transition type of the last AutocompleteMatch passed to Update.
@@ -210,7 +211,7 @@ class InstantController : public InstantLoaderDelegate {
 
   // Deletes |loader| after a delay. At the time we determine a site doesn't
   // want to participate in instant we can't destroy the loader (because
-  // destroying the loader destroys the TabContents and the TabContents is on
+  // destroying the loader destroys the WebContents and the WebContents is on
   // the stack). Instead we place the loader in |loaders_to_destroy_| and
   // schedule a task.
   void ScheduleDestroy(InstantLoader* loader);
@@ -224,7 +225,7 @@ class InstantController : public InstantLoaderDelegate {
   // don't own this pointer.
   TemplateURLService* template_url_service_;
 
-  // The TabContents last passed to |Update|.
+  // The TabContentsWrapper last passed to |Update|.
   TabContentsWrapper* tab_contents_;
 
   // True if |loader_| is ready to be displayed.

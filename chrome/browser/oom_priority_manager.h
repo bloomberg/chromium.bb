@@ -62,7 +62,7 @@ class OomPriorityManager : public content::NotificationObserver {
     base::ProcessHandle renderer_handle;
     bool sudden_termination_allowed;
     string16 title;
-    int64 tab_contents_id;  // unique ID per TabContents
+    int64 tab_contents_id;  // unique ID per WebContents
   };
   typedef std::vector<TabStats> TabStatsList;
 

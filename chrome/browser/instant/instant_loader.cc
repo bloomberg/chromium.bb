@@ -641,8 +641,8 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate,
 InstantLoader::~InstantLoader() {
   registrar_.RemoveAll();
 
-  // Delete the TabContents before the delegate as the TabContents holds a
-  // reference to the delegate.
+  // Delete the TabContentsWrapper before the delegate as the TabContentsWrapper
+  // holds a reference to the delegate.
   if (preview_contents())
     AddPreviewUsageForHistogram(template_url_id_, PREVIEW_DELETED, group_);
   preview_contents_.reset();
