@@ -73,6 +73,14 @@ const size_t kMaxSavedScreenshots = 2;
 
 #if defined(OS_CHROMEOS)
 
+// Compare two screenshot filepaths, which include the screenshot timestamp
+// in the format of screenshot-yyyymmdd-hhmmss.png. Return true if |filepath1|
+// is more recent |filepath2|.
+bool ScreenshotTimestampComp(const std::string& filepath1,
+                             const std::string& filepath2) {
+  return filepath1 > filepath2;
+}
+
 void GetSavedScreenshots(std::vector<std::string>* saved_screenshots,
                          base::WaitableEvent* done) {
   saved_screenshots->clear();
@@ -88,14 +96,22 @@ void GetSavedScreenshots(std::vector<std::string>* saved_screenshots,
                                         file_util::FileEnumerator::FILES,
                                         std::string(kScreenshotPattern));
   FilePath screenshot = screenshots.Next();
-  while (!screenshot.empty()) {
-    saved_screenshots->push_back(std::string(kSavedScreenshotsUrl) +
-                                 screenshot.BaseName().value());
-    if (saved_screenshots->size() >= kMaxSavedScreenshots)
-      break;
 
+  std::vector<std::string> screenshot_filepaths;
+  while (!screenshot.empty()) {
+    screenshot_filepaths.push_back(screenshot.BaseName().value());
     screenshot = screenshots.Next();
   }
+
+  size_t sort_size =
+      std::min(kMaxSavedScreenshots, screenshot_filepaths.size());
+  std::partial_sort(screenshot_filepaths.begin(),
+                    screenshot_filepaths.begin() + sort_size,
+                    screenshot_filepaths.end(),
+                    ScreenshotTimestampComp);
+  for (size_t i = 0; i < sort_size; ++i)
+    saved_screenshots->push_back(std::string(kSavedScreenshotsUrl) +
+                                   screenshot_filepaths[i]);
   done->Signal();
 }
 
