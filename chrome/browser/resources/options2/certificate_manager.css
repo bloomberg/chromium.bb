@@ -6,6 +6,12 @@
   min-width: 700px;
 }
 
+#certificateRestoreOverlay h1 {
+  /* Leave enough space for the close-button. */
+  /* TODO(KGR): make dialogs to use flex-boxes instead of relying on padding. */
+  padding-right: 35px;
+}
+
 .certificate-tree-table {
   width: 100%;
 }
