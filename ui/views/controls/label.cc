@@ -81,17 +81,17 @@ void Label::SetAutoColorReadabilityEnabled(bool enabled) {
   RecalculateColors();
 }
 
-void Label::SetEnabledColor(const SkColor& color) {
+void Label::SetEnabledColor(SkColor color) {
   requested_enabled_color_ = color;
   RecalculateColors();
 }
 
-void Label::SetDisabledColor(const SkColor& color) {
+void Label::SetDisabledColor(SkColor color) {
   requested_disabled_color_ = color;
   RecalculateColors();
 }
 
-void Label::SetBackgroundColor(const SkColor& color) {
+void Label::SetBackgroundColor(SkColor color) {
   background_color_ = color;
   RecalculateColors();
 }

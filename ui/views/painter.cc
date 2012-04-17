@@ -20,7 +20,7 @@ namespace {
 
 class GradientPainter : public Painter {
  public:
-  GradientPainter(bool horizontal, const SkColor& top, const SkColor& bottom)
+  GradientPainter(bool horizontal, SkColor top, SkColor bottom)
       : horizontal_(horizontal) {
     colors_[0] = top;
     colors_[1] = bottom;

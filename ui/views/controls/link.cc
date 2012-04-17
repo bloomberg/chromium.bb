@@ -127,13 +127,13 @@ void Link::SetFont(const gfx::Font& font) {
   RecalculateFont();
 }
 
-void Link::SetEnabledColor(const SkColor& color) {
+void Link::SetEnabledColor(SkColor color) {
   requested_enabled_color_ = color;
   if (!pressed_)
     Label::SetEnabledColor(requested_enabled_color_);
 }
 
-void Link::SetPressedColor(const SkColor& color) {
+void Link::SetPressedColor(SkColor color) {
   requested_pressed_color_ = color;
   if (pressed_)
     Label::SetEnabledColor(requested_pressed_color_);

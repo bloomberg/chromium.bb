@@ -18,7 +18,7 @@ namespace views {
 // background in a solid color.
 class SolidBackground : public Background {
  public:
-  explicit SolidBackground(const SkColor& color) {
+  explicit SolidBackground(SkColor color) {
     SetNativeControlColor(color);
   }
 
@@ -87,7 +87,7 @@ HBRUSH Background::GetNativeControlBrush() const {
 #endif
 
 //static
-Background* Background::CreateSolidBackground(const SkColor& color) {
+Background* Background::CreateSolidBackground(SkColor color) {
   return new SolidBackground(color);
 }
 
@@ -103,8 +103,8 @@ Background* Background::CreateStandardPanelBackground() {
 }
 
 //static
-Background* Background::CreateVerticalGradientBackground(
-    const SkColor& color1, const SkColor& color2) {
+Background* Background::CreateVerticalGradientBackground(SkColor color1,
+                                                         SkColor color2) {
   Background* background = CreateBackgroundPainter(
       true, Painter::CreateVerticalGradient(color1, color2));
   background->SetNativeControlColor(

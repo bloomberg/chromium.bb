@@ -83,14 +83,14 @@ class VIEWS_EXPORT Label : public View {
 
   // Sets the color.  This will automatically force the color to be readable
   // over the current background color.
-  virtual void SetEnabledColor(const SkColor& color);
-  void SetDisabledColor(const SkColor& color);
+  virtual void SetEnabledColor(SkColor color);
+  void SetDisabledColor(SkColor color);
 
   SkColor enabled_color() const { return actual_enabled_color_; }
 
   // Sets the background color.  This won't be explicitly drawn, but the label
   // will force the text color to be readable over it.
-  void SetBackgroundColor(const SkColor& color);
+  void SetBackgroundColor(SkColor color);
 
   // Enables a drop shadow underneath the text.
   void SetShadowColors(SkColor enabled_color, SkColor disabled_color);
