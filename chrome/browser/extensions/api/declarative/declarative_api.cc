@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -54,21 +55,20 @@ bool RulesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(rules_registry_);
 
   if (content::BrowserThread::CurrentlyOn(rules_registry_->GetOwnerThread())) {
-    RunImplOnCorrectThread();
-    SendResponseOnUIThread();
+    bool success = RunImplOnCorrectThread();
+    SendResponse(success);
   } else {
-    content::BrowserThread::PostTaskAndReply(
-        rules_registry_->GetOwnerThread(), FROM_HERE,
-        base::Bind(base::IgnoreResult(&RulesFunction::RunImplOnCorrectThread),
-                   this),
-        base::Bind(&RulesFunction::SendResponseOnUIThread, this));
+    scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            rules_registry_->GetOwnerThread());
+    base::PostTaskAndReplyWithResult(
+        message_loop_proxy,
+        FROM_HERE,
+        base::Bind(&RulesFunction::RunImplOnCorrectThread, this),
+        base::Bind(&RulesFunction::SendResponse, this));
   }
 
   return true;
-}
-
-void RulesFunction::SendResponseOnUIThread() {
-  SendResponse(error_.empty());
 }
 
 bool AddRulesFunction::RunImplOnCorrectThread() {

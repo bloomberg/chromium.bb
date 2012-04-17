@@ -26,9 +26,6 @@ class RulesFunction : public AsyncExtensionFunction {
 
  protected:
   scoped_refptr<RulesRegistry> rules_registry_;
-
- private:
-  void SendResponseOnUIThread();
 };
 
 class AddRulesFunction : public RulesFunction {
