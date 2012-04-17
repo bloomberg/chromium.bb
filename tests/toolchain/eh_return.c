@@ -45,8 +45,7 @@ void dummy3() {
   ASSERT(dummy0_cfa == cfa, "ERROR: cfa mismatch");
 
   next_step(5);
-  /* back to main */
-  __builtin_eh_return (STACK_REMAINDER, return_address);
+  exit(55);
 }
 
 void dummy2() {
@@ -68,10 +67,6 @@ void dummy1() {
 }
 
 void dummy0() {
-
-  /* Save the return address for later use. */
-  return_address = (void*) __builtin_return_address (0);
-  printf("ra: %p\n", return_address);
   /* NOTE: __builtin_dwarf_cfa() return a pointer to the "current stack frame"
    *  CFA="canonical frame address".
    *  We pick STACK_REMAINDER so that stack is completely cleaned up and
@@ -86,22 +81,8 @@ void dummy0() {
 }
 
 int main(int argc, char* argv[]) {
-  if (argc == 666) {
-    goto this_is_reachable;
-  }
   next_step(1);
-  /*  Convince the machine basic block placement optimizer not to move these
-   *  BBs around (it's actually legal to do so because dummy0 does not
-   *  actually return).
-  */
-  if (argc != 667) {
-    dummy0();
-  }
-
-this_is_reachable:
-  next_step(6);
-  /* would prefer to use "return 55;" here but the eh_return calls appear to
-   * clobber the register state in some unexpected way
-   */
-  exit(55);
+  dummy0();
+  /* Should not get here */
+  abort();
 }
