@@ -29,7 +29,7 @@ class Rect;
 //
 //  A delegate interface that the TabStripModel uses to perform work that it
 //  can't do itself, such as obtain a container HWND for creating new
-//  TabContents, creating new TabStripModels for detached tabs, etc.
+//  TabContentsWrappers, creating new TabStripModels for detached tabs, etc.
 //
 //  This interface is typically implemented by the controller that instantiates
 //  the TabStripModel (in our case the Browser object).
@@ -60,9 +60,9 @@ class TabStripModelDelegate {
   // Determines what drag actions are possible for the specified strip.
   virtual int GetDragActions() const = 0;
 
-  // Creates an appropriate TabContents for the given URL. This is handled by
-  // the delegate since the TabContents may require special circumstances to
-  // exist for it to be constructed (e.g. a parent HWND).
+  // Creates an appropriate TabContentsWrapper for the given URL. This is
+  // handled by the delegate since the TabContentsWrapper may require special
+  // circumstances to exist for it to be constructed (e.g. a parent HWND).
   // If |defer_load| is true, the navigation controller doesn't load the url.
   // If |instance| is not null, its process is used to render the tab.
   virtual TabContentsWrapper* CreateTabContentsForURL(
@@ -85,14 +85,14 @@ class TabStripModelDelegate {
   virtual void CloseFrameAfterDragSession() = 0;
 
   // Creates an entry in the historical tab database for the specified
-  // TabContents.
+  // TabContentsWrapper.
   virtual void CreateHistoricalTab(TabContentsWrapper* contents) = 0;
 
-  // Runs any unload listeners associated with the specified TabContents before
-  // it is closed. If there are unload listeners that need to be run, this
-  // function returns true and the TabStripModel will wait before closing the
-  // TabContents. If it returns false, there are no unload listeners and the
-  // TabStripModel can close the TabContents immediately.
+  // Runs any unload listeners associated with the specified TabContentsWrapper
+  // before it is closed. If there are unload listeners that need to be run,
+  // this function returns true and the TabStripModel will wait before closing
+  // the TabContentsWrapper. If it returns false, there are no unload listeners
+  // and the TabStripModel can close the TabContentsWrapper immediately.
   virtual bool RunUnloadListenerBeforeClosing(TabContentsWrapper* contents) = 0;
 
   // Returns true if a tab can be restored.

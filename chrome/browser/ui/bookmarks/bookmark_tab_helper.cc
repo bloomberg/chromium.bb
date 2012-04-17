@@ -48,7 +48,7 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() {
   if (web_contents()->ShowingInterstitialPage())
     return false;
 
-  // See TabContents::GetWebUIForCurrentState() comment for more info. This case
+  // See WebContents::GetWebUIForCurrentState() comment for more info. This case
   // is very similar, but for non-first loads, we want to use the committed
   // entry. This is so the bookmarks bar disappears at the same time the page
   // does.

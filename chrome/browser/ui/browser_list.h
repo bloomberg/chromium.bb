@@ -229,7 +229,7 @@ class TabContentsWrapper;
 //
 // Example:
 //   for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
-//     TabContents* cur = *iterator;
+//     TabContentsWrapper* cur = *iterator;
 //     -or-
 //     iterator->operationOnTabContents();
 //     ...
@@ -243,15 +243,15 @@ class TabContentsIterator {
     return cur_ == NULL;
   }
 
-  // Returns the Browser instance associated with the current TabContents.
-  // Valid as long as !done()
+  // Returns the Browser instance associated with the current
+  // TabContentsWrapper. Valid as long as !done()
   Browser* browser() const {
     if (browser_iterator_ != BrowserList::end())
       return *browser_iterator_;
     return NULL;
   }
 
-  // Returns the current TabContents, valid as long as !Done()
+  // Returns the current TabContentsWrapper, valid as long as !Done()
   TabContentsWrapper* operator->() const {
     return cur_;
   }
@@ -285,9 +285,9 @@ class TabContentsIterator {
   // iterator over the TabContentsWrappers doing background printing.
   std::set<TabContentsWrapper*>::const_iterator bg_printing_iterator_;
 
-  // Current TabContents, or NULL if we're at the end of the list. This can
-  // be extracted given the browser iterator and index, but it's nice to cache
-  // this since the caller may access the current host many times.
+  // Current TabContentsWrapper, or NULL if we're at the end of the list. This
+  // can be extracted given the browser iterator and index, but it's nice to
+  // cache this since the caller may access the current host many times.
   TabContentsWrapper* cur_;
 };
 

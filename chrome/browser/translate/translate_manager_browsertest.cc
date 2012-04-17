@@ -170,10 +170,10 @@ class TranslateManagerTest : public TabContentsWrapperTestHarness,
     WebKit::initialize(&webkit_platform_support_);
     // Access the TranslateManager singleton so it is created before we call
     // TabContentsWrapperTestHarness::SetUp() to match what's done in Chrome,
-    // where the TranslateManager is created before the TabContents.  This
+    // where the TranslateManager is created before the WebContents.  This
     // matters as they both register for similar events and we want the
     // notifications to happen in the same sequence (TranslateManager first,
-    // TabContents second).  Also clears the translate script so it is fetched
+    // WebContents second).  Also clears the translate script so it is fetched
     // everytime and sets the expiration delay to a large value by default (in
     // case it was zeroed in a previous test).
     TranslateManager::GetInstance()->ClearTranslateScript();

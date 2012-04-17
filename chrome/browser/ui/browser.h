@@ -448,12 +448,12 @@ class Browser : public TabHandlerDelegate,
   int GetIndexForInsertionDuringRestore(int relative_index);
 
   // Adds a selected tab with the specified URL and transition, returns the
-  // created TabContents.
+  // created TabContentsWrapper.
   TabContentsWrapper* AddSelectedTabWithURL(
       const GURL& url,
       content::PageTransition transition);
 
-  // Add a new tab, given a TabContents. A TabContents appropriate to
+  // Add a new tab, given a TabContentsWrapper. A WebContents appropriate to
   // display the last committed entry is created and returned.
   content::WebContents* AddTab(TabContentsWrapper* tab_contents,
                                content::PageTransition type);
@@ -817,8 +817,8 @@ class Browser : public TabHandlerDelegate,
   virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
 
-  // Centralized method for creating a TabContents, configuring and installing
-  // all its supporting objects and observers.
+  // Centralized method for creating a TabContentsWrapper, configuring and
+  // installing all its supporting objects and observers.
   static TabContentsWrapper* TabContentsFactory(
       Profile* profile,
       content::SiteInstance* site_instance,
@@ -839,8 +839,8 @@ class Browser : public TabHandlerDelegate,
       const DockInfo& dock_info,
       bool maximize);
   virtual int GetDragActions() const;
-  // Construct a TabContents for a given URL, profile and transition type.
-  // If instance is not null, its process will be used to render the tab.
+  // Construct a TabContentsWrapper for a given URL, profile and transition
+  // type. If instance is not null, its process will be used to render the tab.
   virtual TabContentsWrapper* CreateTabContentsForURL(
       const GURL& url,
       const content::Referrer& referrer,
@@ -1189,7 +1189,7 @@ class Browser : public TabHandlerDelegate,
   void UpdateOpenFileState();
 
   // Ask the Reload/Stop button to change its icon, and update the Stop command
-  // state.  |is_loading| is true if the current TabContents is loading.
+  // state.  |is_loading| is true if the current WebContents is loading.
   // |force| is true if the button should change its icon immediately.
   void UpdateReloadStopState(bool is_loading, bool force);
 
@@ -1400,7 +1400,7 @@ class Browser : public TabHandlerDelegate,
 
   typedef std::map<const content::WebContents*, int> UpdateMap;
 
-  // Maps from TabContents to pending UI updates that need to be processed.
+  // Maps from WebContents to pending UI updates that need to be processed.
   // We don't update things like the URL or tab title right away to avoid
   // flickering and extra painting.
   // See ScheduleUIUpdate and ProcessPendingUIUpdates.
@@ -1481,7 +1481,7 @@ class Browser : public TabHandlerDelegate,
   };
 
   // Which deferred action to perform when OnDidGetApplicationInfo is notified
-  // from a TabContents. Currently, only one pending action is allowed.
+  // from a WebContents. Currently, only one pending action is allowed.
   WebAppAction pending_web_app_action_;
 
   // The profile's tab restore service. The service is owned by the profile,

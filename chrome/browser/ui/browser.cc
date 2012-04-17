@@ -851,7 +851,7 @@ WebContents* Browser::OpenAppShortcutWindow(Profile* profile,
   if (update_shortcut) {
     // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
     // up in LoadingStateChanged to schedule a GetApplicationInfo. And when
-    // the web app info is available, TabContents notifies Browser via
+    // the web app info is available, ExtensionTabHelper notifies Browser via
     // OnDidGetApplicationInfo, which calls
     // web_app::UpdateShortcutForTabContents when it sees UPDATE_SHORTCUT as
     // pending web app action.
@@ -2778,8 +2778,8 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
 
 // static
 bool Browser::RunUnloadEventsHelper(WebContents* contents) {
-  // If the TabContents is not connected yet, then there's no unload
-  // handler we can fire even if the TabContents has an unload listener.
+  // If the WebContents is not connected yet, then there's no unload
+  // handler we can fire even if the WebContents has an unload listener.
   // One case where we hit this is in a tab that has an infinite loop
   // before load.
   if (contents->NeedToFireBeforeUnload()) {
@@ -3279,8 +3279,8 @@ TabContentsWrapper* Browser::AddBlankTab(bool foreground) {
 
 TabContentsWrapper* Browser::AddBlankTabAt(int index, bool foreground) {
   // Time new tab page creation time.  We keep track of the timing data in
-  // TabContents, but we want to include the time it takes to create the
-  // TabContents object too.
+  // WebContents, but we want to include the time it takes to create the
+  // WebContents object too.
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
   browser::NavigateParams params(this, GURL(chrome::kChromeUINewTabURL),
                                  content::PAGE_TRANSITION_TYPED);
@@ -3381,7 +3381,7 @@ void Browser::DuplicateContentsAt(int index) {
                           window()->GetRestoredBounds().size()));
 
     // We need to show the browser now.  Otherwise ContainerWin assumes the
-    // TabContents is invisible and won't size it.
+    // WebContents is invisible and won't size it.
     browser->window()->Show();
 
     // The page transition below is only for the purpose of inserting the tab.
@@ -3514,7 +3514,7 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
           &contents->web_contents()->GetController()),
       content::NotificationService::NoDetails());
 
-  // Sever the TabContents' connection back to us.
+  // Sever the WebContents' connection back to us.
   SetAsDelegate(contents, NULL);
 }
 
@@ -4114,9 +4114,9 @@ void Browser::WebContentsCreated(WebContents* source_contents,
                                  WebContents* new_contents) {
   // Create a TabContentsWrapper now, so all observers are in place, as the
   // network requests for its initial navigation will start immediately. The
-  // TabContents will later be inserted into this browser using
+  // WebContents will later be inserted into this browser using
   // Browser::Navigate via AddNewContents. The latter will retrieve the newly
-  // created TabContentsWrapper from TabContents object.
+  // created TabContentsWrapper from WebContents object.
   new TabContentsWrapper(new_contents);
 
   // Notify.
@@ -5386,7 +5386,7 @@ Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
 }
 
 void Browser::SetAsDelegate(TabContentsWrapper* tab, Browser* delegate) {
-  // TabContents...
+  // WebContents...
   tab->web_contents()->SetDelegate(delegate);
 
   // ...and all the helpers.
@@ -5484,8 +5484,8 @@ void Browser::TabRestoreServiceDestroyed(TabRestoreService* service) {
   tab_restore_service_ = NULL;
 }
 
-// Centralized method for creating a TabContents, configuring and installing
-// all its supporting objects and observers.
+// Centralized method for creating a TabContentsWrapper, configuring and
+// installing all its supporting objects and observers.
 TabContentsWrapper* Browser::TabContentsFactory(
     Profile* profile,
     SiteInstance* site_instance,
@@ -5606,7 +5606,7 @@ void Browser::ViewSource(TabContentsWrapper* contents,
                           window()->GetRestoredBounds().size()));
 
     // We need to show the browser now. Otherwise ContainerWin assumes the
-    // TabContents is invisible and won't size it.
+    // WebContents is invisible and won't size it.
     browser->window()->Show();
 
     // The page transition below is only for the purpose of inserting the tab.

@@ -52,7 +52,7 @@ const CGFloat kTipHeight = 12.0;
   // Needed to send resize messages when infobars are added or removed.
   id<ViewResizer> resizeDelegate_;  // weak
 
-  // The TabContents we are currently showing infobars for.
+  // The TabContentsWrapper we are currently showing infobars for.
   TabContentsWrapper* currentTabContents_;  // weak
 
   // Holds the InfoBarControllers currently owned by this container.

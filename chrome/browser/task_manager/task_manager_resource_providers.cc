@@ -383,7 +383,7 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
 
-  // Add all the existing TabContents.
+  // Add all the existing TabContentsWrappers.
   for (TabContentsIterator iterator; !iterator.done(); ++iterator)
     Add(*iterator);
 
@@ -396,7 +396,7 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
                  content::NotificationService::AllBrowserContextsAndSources());
   // TAB_CONTENTS_DISCONNECTED should be enough to know when to remove a
   // resource.  This is an attempt at mitigating a crasher that seem to
-  // indicate a resource is still referencing a deleted TabContents
+  // indicate a resource is still referencing a deleted WebContents
   // (http://crbug.com/7321).
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -453,7 +453,7 @@ void TaskManagerTabContentsResourceProvider::Add(
   std::map<TabContentsWrapper*, TaskManagerTabContentsResource*>::const_iterator
       iter = resources_.find(tab_contents);
   if (iter != resources_.end()) {
-    // The case may happen that we have added a TabContents as part of the
+    // The case may happen that we have added a WebContents as part of the
     // iteration performed during StartUpdating() call but the notification that
     // it has connected was not fired yet. So when the notification happens, we
     // already know about this tab and just ignore it.
@@ -469,7 +469,7 @@ void TaskManagerTabContentsResourceProvider::Remove(
   std::map<TabContentsWrapper*, TaskManagerTabContentsResource*>::iterator
       iter = resources_.find(tab_contents);
   if (iter == resources_.end()) {
-    // Since TabContents are destroyed asynchronously (see TabContentsCollector
+    // Since WebContents are destroyed asynchronously (see TabContentsCollector
     // in navigation_controller.cc), we can be notified of a tab being removed
     // that we don't know.  This can happen if the user closes a tab and quickly
     // opens the task manager, before the tab is actually destroyed.

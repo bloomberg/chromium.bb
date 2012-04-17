@@ -76,7 +76,7 @@
     case NSRunStoppedResponse: {  // Window was closed underneath us
       // Need to call OnCancel() because there is some cleanup that needs
       // to be done.  It won't call back to the javascript since the
-      // JavaScriptAppModalDialog knows that the TabContents was destroyed.
+      // JavaScriptAppModalDialog knows that the WebContents was destroyed.
       native_dialog->dialog()->OnCancel(shouldSuppress);
       break;
     }

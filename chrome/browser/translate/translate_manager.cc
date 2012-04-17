@@ -338,7 +338,7 @@ void TranslateManager::Observe(int type,
       // When doing a page reload, we don't get a TAB_LANGUAGE_DETERMINED
       // notification.  So we need to explictly initiate the translation.
       // Note that we delay it as the TranslateManager gets this notification
-      // before the TabContents and the TabContents processing might remove the
+      // before the WebContents and the WebContents processing might remove the
       // current infobars.  Since InitTranslation might add an infobar, it must
       // be done after that.
       MessageLoop::current()->PostTask(FROM_HERE,

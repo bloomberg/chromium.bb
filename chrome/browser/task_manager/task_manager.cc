@@ -1100,7 +1100,7 @@ void TaskManager::OpenAboutMemory() {
 
     // In case the browser window is minimized, show it. If |browser| is a
     // non-tabbed window, the call to OpenURL above will have opened a
-    // TabContents in a tabbed browser, so we need to grab it with
+    // TabContentsWrapper in a tabbed browser, so we need to grab it with
     // GetLastActive before the call to show().
     if (!browser->is_type_tabbed()) {
       browser = BrowserList::GetLastActive();

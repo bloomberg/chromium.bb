@@ -99,7 +99,7 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
 @property(assign, nonatomic) BOOL allowedCookiesButtonsEnabled;
 @property(assign, nonatomic) BOOL blockedCookiesButtonsEnabled;
 
-// Designated initializer. TabContents cannot be NULL.
+// Designated initializer. TabContentsWrapper cannot be NULL.
 - (id)initWithTabContentsWrapper:(TabContentsWrapper*)wrapper;
 
 // Closes the sheet and ends the modal loop. This will also cleanup the memory.

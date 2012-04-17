@@ -25,7 +25,7 @@ void AppModalDialogQueue::ShowNextDialog() {
 void AppModalDialogQueue::ActivateModalDialog() {
   if (showing_modal_dialog_) {
     // As part of showing a modal dialog we may end up back in this method
-    // (showing a dialog activates the TabContents, which can trigger a call
+    // (showing a dialog activates the WebContents, which can trigger a call
     // to ActivateModalDialog). We ignore such a request as after the call to
     // activate the tab contents the dialog is shown.
     return;

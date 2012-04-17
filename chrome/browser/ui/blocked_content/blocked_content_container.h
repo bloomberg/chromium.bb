@@ -4,7 +4,7 @@
 
 // Defines the public interface for the blocked content (including popup)
 // notifications. This interface should only be used by the
-// BlockedContentTabHelper. Users and subclasses of TabContents/
+// BlockedContentTabHelper. Users and subclasses of WebContents/
 // TabContentsWrapper should use the appropriate methods on
 // BlockedContentTabHelper to access information about blocked content.
 
@@ -20,22 +20,22 @@
 
 class TabContentsWrapper;
 
-// Takes ownership of TabContents that are unrequested popup windows.
+// Takes ownership of TabContentsWrappers that are unrequested popup windows.
 class BlockedContentContainer : public BlockedContentTabHelperDelegate,
                                 public content::WebContentsDelegate {
  public:
-  // Creates a container for a certain TabContents:
+  // Creates a container for a certain TabContentsWrapper:
   explicit BlockedContentContainer(TabContentsWrapper* owner);
   virtual ~BlockedContentContainer();
 
-  // Adds a TabContents to this container. |bounds| are the window bounds
-  // requested for the TabContents.
+  // Adds a TabContentsWrapper to this container. |bounds| are the window bounds
+  // requested for the TabContentsWrapper.
   void AddTabContents(TabContentsWrapper* tab_contents,
                       WindowOpenDisposition disposition,
                       const gfx::Rect& bounds,
                       bool user_gesture);
 
-  // Shows the blocked TabContents |tab_contents|.
+  // Shows the blocked TabContentsWrapper |tab_contents|.
   void LaunchForContents(TabContentsWrapper* tab_contents);
 
   // Returns the number of blocked contents.
@@ -90,7 +90,8 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
 
   typedef std::vector<BlockedContent> BlockedContents;
 
-  // The TabContents that owns and constrains this BlockedContentContainer.
+  // The TabContentsWrapper that owns and constrains this
+  // BlockedContentContainer.
   TabContentsWrapper* owner_;
 
   // Information about all blocked contents.

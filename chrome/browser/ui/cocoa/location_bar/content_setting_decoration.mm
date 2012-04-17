@@ -380,6 +380,6 @@ void ContentSettingDecoration::AnimationTimerFired() {
   // Even after the animation completes, the |animator_| object should be kept
   // alive to prevent the animation from re-appearing if the page opens
   // additional popups later. The animator will be cleared when the decoration
-  // hides, indicating something has changed with the TabContents (probably
+  // hides, indicating something has changed with the WebContents (probably
   // navigation).
 }

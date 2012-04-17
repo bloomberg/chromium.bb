@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
 
   // Register for a notification if an additional tab_contents was instantiated.
   // Opening a Singleton tab that is already opened should not be opening a new
-  // tab nor be creating a new TabContents object
+  // tab nor be creating a new TabContentsWrapper object.
   content::NotificationRegistrar registrar;
 
   // As the registrar object goes out of scope, this will get unregistered
@@ -613,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_IgnoreAction) {
   RunSuppressTest(IGNORE_ACTION);
 }
 
-// This tests adding a foreground tab with a predefined TabContents.
+// This tests adding a foreground tab with a predefined TabContentsWrapper.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_FOREGROUND_TAB;
@@ -631,7 +631,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
 }
 
 #if defined(OS_WIN)
-// This tests adding a popup with a predefined TabContents.
+// This tests adding a popup with a predefined TabContentsWrapper.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
@@ -647,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   // The web platform is weird. The window bounds specified in
   // |p.window_bounds| are used as follows:
   // - the origin is used to position the window
-  // - the size is used to size the TabContents of the window.
+  // - the size is used to size the TabContentsWrapper of the window.
   // As such the position of the resulting window will always match
   // p.window_bounds.origin(), but its size will not. We need to match
   // the size against the selected tab's view's container size.

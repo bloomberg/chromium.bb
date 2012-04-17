@@ -112,9 +112,10 @@ bool AdjustNavigateParamsForURL(browser::NavigateParams* params) {
 // |params|. This might just return the same Browser specified in |params|, or
 // some other if that Browser is deemed incompatible.
 Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
-  // If no source TabContents was specified, we use the selected one from the
-  // target browser. This must happen first, before GetBrowserForDisposition()
-  // has a chance to replace |params->browser| with another one.
+  // If no source TabContentsWrapper was specified, we use the selected one from
+  // the target browser. This must happen first, before
+  // GetBrowserForDisposition() has a chance to replace |params->browser| with
+  // another one.
   if (!params->source_contents && params->browser)
     params->source_contents =
         params->browser->GetSelectedTabContentsWrapper();
@@ -297,13 +298,13 @@ class ScopedBrowserDisplayer {
   DISALLOW_COPY_AND_ASSIGN(ScopedBrowserDisplayer);
 };
 
-// This class manages the lifetime of a TabContents created by the Navigate()
-// function. When Navigate() creates a TabContents for a URL, an instance of
-// this class takes ownership of it via TakeOwnership() until the TabContents
-// is added to a tab strip at which time ownership is relinquished via
-// ReleaseOwnership(). If this object goes out of scope without being added
-// to a tab strip, the created TabContents is deleted to avoid a leak and the
-// params->target_contents field is set to NULL.
+// This class manages the lifetime of a TabContentsWrapper created by the
+// Navigate() function. When Navigate() creates a TabContentsWrapper for a URL,
+// an instance of this class takes ownership of it via TakeOwnership() until the
+// TabContentsWrapper is added to a tab strip at which time ownership is
+// relinquished via ReleaseOwnership(). If this object goes out of scope without
+// being added to a tab strip, the created TabContentsWrapper is deleted to
+// avoid a leak and the params->target_contents field is set to NULL.
 class ScopedTargetContentsOwner {
  public:
   explicit ScopedTargetContentsOwner(browser::NavigateParams* params)
@@ -460,7 +461,7 @@ void Navigate(NavigateParams* params) {
   // Make sure the Browser is shown if params call for it.
   ScopedBrowserDisplayer displayer(params);
 
-  // Makes sure any TabContents created by this function is destroyed if
+  // Makes sure any TabContentsWrapper created by this function is destroyed if
   // not properly added to a tab strip.
   ScopedTargetContentsOwner target_contents_owner(params);
 
@@ -482,7 +483,7 @@ void Navigate(NavigateParams* params) {
   }
 
   // Determine if the navigation was user initiated. If it was, we need to
-  // inform the target TabContents, and we may need to update the UI.
+  // inform the target TabContentsWrapper, and we may need to update the UI.
   content::PageTransition base_transition =
       content::PageTransitionStripQualifier(params->transition);
   bool user_initiated =
@@ -499,8 +500,9 @@ void Navigate(NavigateParams* params) {
   // Check if this is a singleton tab that already exists
   int singleton_index = GetIndexOfSingletonTab(params);
 
-  // If no target TabContents was specified, we need to construct one if we are
-  // supposed to target a new tab; unless it's a singleton that already exists.
+  // If no target TabContentsWrapper was specified, we need to construct one if
+  // we are supposed to target a new tab; unless it's a singleton that already
+  // exists.
   if (!params->target_contents && singleton_index < 0) {
     GURL url;
     if (params->url.is_empty()) {

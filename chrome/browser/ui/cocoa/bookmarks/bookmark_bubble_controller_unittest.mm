@@ -474,7 +474,7 @@ TEST_F(BookmarkBubbleControllerTest, BubbleGoesAwayOnNewTab) {
   // Many of our browser objects (Browser, Profile, RequestContext)
   // are "just enough" to run tests without being complete.  Instead
   // we fake the notification that would be triggered by a tab
-  // creation. See TabContents::NotifyConnected().
+  // creation. See WebContents::NotifyConnected().
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
       content::Source<WebContents>(NULL),

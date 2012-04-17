@@ -39,25 +39,26 @@ class TabStripModelObserver {
     ALL
   };
 
-  // A new TabContents was inserted into the TabStripModel at the specified
-  // index. |foreground| is whether or not it was opened in the foreground
-  // (selected).
+  // A new TabContentsWrapper was inserted into the TabStripModel at the
+  // specified index. |foreground| is whether or not it was opened in the
+  // foreground (selected).
   virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int index,
                              bool foreground);
 
-  // The specified TabContents at |index| is being closed (and eventually
+  // The specified TabContentsWrapper at |index| is being closed (and eventually
   // destroyed). |tab_strip_model| is the TabStripModel the tab was part of.
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             TabContentsWrapper* contents,
                             int index);
 
-  // The specified TabContents at |index| is being detached, perhaps to be
-  // inserted in another TabStripModel. The implementer should take whatever
-  // action is necessary to deal with the TabContents no longer being present.
+  // The specified TabContentsWrapper at |index| is being detached, perhaps to
+  // be inserted in another TabStripModel. The implementer should take whatever
+  // action is necessary to deal with the TabContentsWrapper no longer being
+  // present.
   virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
 
-  // The active TabContents is about to change from |old_contents|.
+  // The active TabContentsWrapper is about to change from |old_contents|.
   // This gives observers a chance to prepare for an impending switch before it
   // happens.
   virtual void TabDeactivated(TabContentsWrapper* contents);
@@ -84,14 +85,14 @@ class TabStripModelObserver {
   virtual void TabSelectionChanged(TabStripModel* tab_strip_model,
                                    const TabStripSelectionModel& old_model);
 
-  // The specified TabContents at |from_index| was moved to |to_index|.
+  // The specified TabContentsWrapper at |from_index| was moved to |to_index|.
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
                         int to_index);
 
-  // The specified TabContents at |index| changed in some way. |contents| may
-  // be an entirely different object and the old value is no longer available
-  // by the time this message is delivered.
+  // The specified TabContentsWrapper at |index| changed in some way. |contents|
+  // may be an entirely different object and the old value is no longer
+  // available by the time this message is delivered.
   //
   // See TabChangeType for a description of |change_type|.
   virtual void TabChangedAt(TabContentsWrapper* contents,
@@ -100,7 +101,7 @@ class TabStripModelObserver {
 
   // The tab contents was replaced at the specified index. This is invoked
   // when instant is enabled and the user navigates by way of instant or when
-  // prerendering swaps in a prerendered TabContents.
+  // prerendering swaps in a prerendered TabContentsWrapper.
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,

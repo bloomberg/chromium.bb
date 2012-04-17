@@ -74,7 +74,7 @@ void BlockedContentContainer::LaunchForContents(
       tab_contents->web_contents()->SetDelegate(NULL);
       tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
       // We needn't call WasRestored to change its status because the
-      // TabContents::AddNewContents will do it.
+      // WebContents::AddNewContents will do it.
       owner_->web_contents()->AddNewContents(
           tab_contents->web_contents(),
           content.disposition,

@@ -102,7 +102,7 @@ ConstrainedWindowMac::~ConstrainedWindowMac() {}
 
 void ConstrainedWindowMac::ShowConstrainedWindow() {
   should_be_visible_ = true;
-  // The TabContents only has a native window if it is currently visible. In
+  // The WebContents only has a native window if it is currently visible. In
   // this case, open the sheet now. Else, Realize() will be called later, when
   // our tab becomes visible.
   NSWindow* browserWindow =

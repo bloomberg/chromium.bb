@@ -35,7 +35,7 @@ class URLRequest;
 
 #define TASKMANAGER_RESOURCE_TYPE_LIST(def) \
     def(BROWSER)         /* The main browser process. */ \
-    def(RENDERER)        /* A normal TabContents renderer process. */ \
+    def(RENDERER)        /* A normal WebContents renderer process. */ \
     def(EXTENSION)       /* An extension or app process. */ \
     def(NOTIFICATION)    /* A notification process. */ \
     def(PLUGIN)          /* A plugin process. */ \
@@ -385,7 +385,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Returns the type of the given resource.
   TaskManager::Resource::Type GetResourceType(int index) const;
 
-  // Returns TabContents of given resource or NULL if not applicable.
+  // Returns TabContentsWrapper of given resource or NULL if not applicable.
   TabContentsWrapper* GetResourceTabContents(int index) const;
 
   // Returns Extension of given resource or NULL if not applicable.

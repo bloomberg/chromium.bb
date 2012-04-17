@@ -50,7 +50,8 @@ using testing::_;
 
 namespace {
 
-// Class used to delete a TabContents when another TabContents is destroyed.
+// Class used to delete a TabContentsWrapper when another TabContentsWrapper is
+// destroyed.
 class DeleteTabContentsOnDestroyedObserver
     : public content::NotificationObserver {
  public:
@@ -115,8 +116,8 @@ class TabStripDummyDelegate : public TestTabStripModelDelegate {
   }
 
  private:
-  // A dummy TabContents we give to callers that expect us to actually build a
-  // Destinations tab for them.
+  // A dummy TabContentsWrapper we give to callers that expect us to actually
+  // build a Destinations tab for them.
   TabContentsWrapper* dummy_contents_;
 
   // Whether tabs can be closed.
@@ -148,7 +149,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
     return retval;
   }
 
-  // Forwards a URL "load" request through to our dummy TabContents
+  // Forwards a URL "load" request through to our dummy TabContentsWrapper
   // implementation.
   void LoadURL(WebContents* con, const std::wstring& url) {
     controller().LoadURL(GURL(WideToUTF16(url)), content::Referrer(),
@@ -1279,11 +1280,11 @@ TEST_F(TabStripModelTest, AddTabContents_MiddleClickLinksAndClose) {
   EXPECT_EQ(typed_page_contents, tabstrip.GetTabContentsAt(4));
 
   // Now simulate seleting a tab in the middle of the group of tabs opened from
-  // the home page and start closing them. Each TabContents in the group should
-  // be closed, right to left. This test is constructed to start at the middle
-  // TabContents in the group to make sure the cursor wraps around to the first
-  // TabContents in the group before closing the opener or any other
-  // TabContents.
+  // the home page and start closing them. Each TabContentsWrapper in the group
+  // should be closed, right to left. This test is constructed to start at the
+  // middle TabContentsWrapper in the group to make sure the cursor wraps around
+  // to the first TabContentsWrapper in the group before closing the opener or
+  // any other TabContentsWrapper.
   tabstrip.ActivateTabAt(2, true);
   tabstrip.CloseSelectedTabs();
   EXPECT_EQ(middle_click_contents3, tabstrip.GetActiveTabContents());
@@ -1300,8 +1301,9 @@ TEST_F(TabStripModelTest, AddTabContents_MiddleClickLinksAndClose) {
   EXPECT_TRUE(tabstrip.empty());
 }
 
-// Tests whether or not a TabContents created by a left click on a link that
-// opens a new tab is inserted correctly adjacent to the tab that spawned it.
+// Tests whether or not a TabContentsWrapper created by a left click on a link
+// that opens a new tab is inserted correctly adjacent to the tab that spawned
+// it.
 TEST_F(TabStripModelTest, AddTabContents_LeftClickPopup) {
   TabStripDummyDelegate delegate(NULL);
   TabStripModel tabstrip(&delegate, profile());

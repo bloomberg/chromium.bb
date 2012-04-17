@@ -25,10 +25,10 @@ class BlockedContentTabHelper : public content::WebContentsObserver {
   BlockedContentTabHelperDelegate* delegate() const { return delegate_; }
   void set_delegate(BlockedContentTabHelperDelegate* d) { delegate_ = d; }
 
-  // Sets whether all TabContents added by way of |AddNewContents| should be
-  // blocked. Transitioning from all blocked to not all blocked results in
-  // reevaluating any blocked TabContents, which may result in unblocking some
-  // of the blocked TabContents.
+  // Sets whether all TabContentsWrapper added by way of |AddNewContents| should
+  // be blocked. Transitioning from all blocked to not all blocked results in
+  // reevaluating any blocked TabContentsWrappers, which may result in
+  // unblocking some of the blocked TabContentsWrappers.
   void SetAllContentsBlocked(bool value);
 
   bool all_contents_blocked() const { return all_contents_blocked_; }
@@ -44,7 +44,7 @@ class BlockedContentTabHelper : public content::WebContentsObserver {
                 const gfx::Rect& initial_pos,
                 bool user_gesture);
 
-  // Shows the blocked TabContents |tab_contents|.
+  // Shows the blocked TabContentsWrapper |tab_contents|.
   void LaunchForContents(TabContentsWrapper* tab_contents);
 
   // Returns the number of blocked contents.
@@ -68,10 +68,11 @@ class BlockedContentTabHelper : public content::WebContentsObserver {
   // the blocked state.
   void SendNotification(TabContentsWrapper* contents, bool blocked_state);
 
-  // Object that holds any blocked TabContents spawned from this TabContents.
+  // Object that holds any blocked TabContentsWrapper spawned from this
+  // TabContentsWrapper.
   scoped_ptr<BlockedContentContainer> blocked_contents_;
 
-  // Should we block all child TabContents this attempts to spawn.
+  // Should we block all child TabContentsWrapper this attempts to spawn.
   bool all_contents_blocked_;
 
   // Owning TabContentsWrapper.
