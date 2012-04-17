@@ -19,7 +19,8 @@
     long? resultCode;
 
     // The data read, if the event type is dataRead.
-    DOMString? data;
+    // TODO(miket): [instanceOf=ArrayBuffer]object? data;
+    long[]? data;
 
     // Whether this is the final event that this socket will send.
     [nodoc] boolean isFinalEvent;
@@ -53,7 +54,8 @@
   dictionary ReadInfo {
     // The data received. Warning: will probably become a blob or other
     // appropriate binary-friendly type.
-    DOMString message;
+    // TODO(miket): [instanceOf=ArrayBuffer]object data;
+    long[] data;
   };
 
   callback ReadCallback = void (ReadInfo readInfo);
@@ -111,8 +113,9 @@
     // write operation completes without blocking, the write operation blocked
     // before completion (in which case onEvent() will eventually be called with
     // a <code>writeComplete</code> event), or an error occurred.
+    // TODO(miket): [instanceOf=ArrayBuffer]object data;
     static void write(long socketId,
-                      DOMString data,
+                      long[] data,
                       WriteCallback callback);
   };
 

@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SOCKET_SOCKET_API_H_
 #pragma once
 
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
+#include "net/base/io_buffer.h"
 
 #include <string>
 
@@ -99,6 +101,10 @@ class SocketReadFunction : public AsyncIOAPIFunction {
 };
 
 class SocketWriteFunction : public AsyncIOAPIFunction {
+ public:
+  SocketWriteFunction();
+  virtual ~SocketWriteFunction();
+
  protected:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
@@ -106,7 +112,7 @@ class SocketWriteFunction : public AsyncIOAPIFunction {
 
  private:
   int socket_id_;
-  std::string message_;
+  scoped_refptr<net::IOBufferWithSize> io_buffer_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.write")
 };

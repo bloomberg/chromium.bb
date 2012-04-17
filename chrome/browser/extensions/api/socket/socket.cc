@@ -18,8 +18,7 @@ Socket::Socket(const std::string& address, int port,
     : APIResource(APIResource::SocketResource, event_notifier),
       address_(address),
       port_(port),
-      is_connected_(false),
-      read_buffer_(new net::IOBufferWithSize(kMaxRead)) {
+      is_connected_(false) {
 }
 
 Socket::~Socket() {
@@ -27,47 +26,34 @@ Socket::~Socket() {
   DCHECK(!is_connected_);
 }
 
-void Socket::OnDataRead(int result) {
-  std::string message;
-  if (result >= 0)
-    message = std::string(read_buffer_->data(), result);
-  event_notifier()->OnDataRead(result, message);
+void Socket::OnDataRead(scoped_refptr<net::IOBuffer> io_buffer, int result) {
+  // OnDataRead will take ownership of data_value.
+  ListValue* data_value = new ListValue();
+  if (result >= 0) {
+    size_t bytes_size = static_cast<size_t>(result);
+    const char* io_buffer_start = io_buffer->data();
+    for (size_t i = 0; i < bytes_size; ++i) {
+      data_value->Set(i, Value::CreateIntegerValue(io_buffer_start[i]));
+    }
+  }
+  event_notifier()->OnDataRead(result, data_value);
 }
 
 void Socket::OnWriteComplete(int result) {
   event_notifier()->OnWriteComplete(result);
 }
 
-std::string Socket::Read() {
-  int result = socket()->Read(
-      read_buffer_, kMaxRead,
-      base::Bind(&Socket::OnDataRead, base::Unretained(this)));
-  if (result == net::ERR_IO_PENDING)
-    return "";
-  if (result < 0)
-    return "";
-  return std::string(read_buffer_->data(), result);
+int Socket::Read(scoped_refptr<net::IOBuffer> io_buffer, int io_buffer_len) {
+  return socket()->Read(
+      io_buffer.get(),
+      io_buffer_len,
+      base::Bind(&Socket::OnDataRead, base::Unretained(this), io_buffer));
 }
 
-int Socket::Write(const std::string& message) {
-  int length = message.length();
-  scoped_refptr<net::StringIOBuffer> io_buffer(
-      new net::StringIOBuffer(message));
-  scoped_refptr<net::DrainableIOBuffer> buffer(
-      new net::DrainableIOBuffer(io_buffer, length));
-
-  int bytes_sent = 0;
-  while (buffer->BytesRemaining()) {
-    int result = socket()->Write(
-        buffer, buffer->BytesRemaining(),
-        base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
-    if (result <= 0)
-      // We pass all errors, including ERROR_IO_PENDING, back to the caller.
-      return bytes_sent > 0 ? bytes_sent : result;
-    bytes_sent += result;
-    buffer->DidConsume(result);
-  }
-  return bytes_sent;
+int Socket::Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count) {
+  return socket()->Write(
+      io_buffer.get(), byte_count,
+      base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
 }
 
 }  // namespace extensions

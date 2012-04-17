@@ -31,21 +31,18 @@ class Socket : public APIResource {
   virtual int Connect() = 0;
   virtual void Disconnect() = 0;
 
-  // Returns a string representing what was able to be read without blocking.
-  // If it reads an empty string, or blocks... the behavior is
-  // indistinguishable! TODO(miket): this is awful. We should be returning a
-  // blob, and we should be giving the caller all needed information about
-  // what's happening with the read operation.
-  virtual std::string Read();
+  // Returns the number of bytes read into the buffer, or a negative number if
+  // an error occurred.
+  virtual int Read(scoped_refptr<net::IOBuffer> io_buffer, int io_buffer_size);
 
   // Returns the number of bytes successfully written, or a negative error
   // code. Note that ERR_IO_PENDING means that the operation blocked, in which
-  // case |event_notifier| will eventually be called with the final result
-  // (again, either a nonnegative number of bytes written, or a negative
-  // error).
-  virtual int Write(const std::string& message);
+  // case |event_notifier| (supplied at socket creation) will eventually be
+  // called with the final result (again, either a nonnegative number of bytes
+  // written, or a negative error).
+  virtual int Write(scoped_refptr<net::IOBuffer> io_buffer, int bytes);
 
-  virtual void OnDataRead(int result);
+  virtual void OnDataRead(scoped_refptr<net::IOBuffer> io_buffer, int result);
   virtual void OnWriteComplete(int result);
 
  protected:
@@ -56,10 +53,6 @@ class Socket : public APIResource {
   const std::string address_;
   int port_;
   bool is_connected_;
-
- private:
-  static const int kMaxRead = 1024;
-  scoped_refptr<net::IOBufferWithSize> read_buffer_;
 };
 
 }  //  namespace extensions

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,18 +51,20 @@ void APIResourceEventNotifier::OnConnectComplete(int result_code) {
 }
 
 void APIResourceEventNotifier::OnDataRead(int result_code,
-                                          const std::string& data) {
+                                          base::ListValue* data) {
   // Do we have a destination for this event? There will be one if a source id
   // was injected by the request handler for the resource's create method in
   // schema_generated_bindings.js, which will in turn be the case if the caller
   // of the create method provided an onEvent closure.
-  if (src_id_ < 0)
+  if (src_id_ < 0) {
+    delete data;
     return;
+  }
 
   DictionaryValue* event = CreateAPIResourceEvent(
       API_RESOURCE_EVENT_DATA_READ);
   event->SetInteger(kResultCodeKey, result_code);
-  event->SetString(kDataKey, data);
+  event->Set(kDataKey, data);
   DispatchEvent(event);
 }
 

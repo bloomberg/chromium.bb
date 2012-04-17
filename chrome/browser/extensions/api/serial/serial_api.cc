@@ -13,7 +13,7 @@
 namespace extensions {
 
 const char kConnectionIdKey[] = "connectionId";
-const char kMessageKey[] = "message";
+const char kDataKey[] = "data";
 const char kBytesReadKey[] = "bytesRead";
 const char kBytesWrittenKey[] = "bytesWritten";
 
@@ -81,19 +81,19 @@ bool SerialReadFunction::Prepare() {
 
 void SerialReadFunction::Work() {
   int bytes_read = -1;
-  std::string message;
+  std::string data;
   SerialConnection* serial_connection =
       controller()->GetSerialConnection(connection_id_);
   if (serial_connection) {
     unsigned char byte = '\0';
     bytes_read = serial_connection->Read(&byte);
     if (bytes_read == 1)
-      message = byte;
+      data = byte;
   }
 
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kBytesReadKey, bytes_read);
-  result->SetString(kMessageKey, message);
+  result->SetString(kDataKey, data);
   result_.reset(result);
 }
 

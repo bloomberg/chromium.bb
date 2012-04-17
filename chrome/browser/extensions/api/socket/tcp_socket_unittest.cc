@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/api_resource_event_notifier.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
 #include "net/socket/tcp_client_socket.h"
@@ -56,7 +57,9 @@ TEST(SocketTest, TestTCPSocketRead) {
   EXPECT_CALL(*tcp_client_socket, Read(_, _, _))
       .Times(1);
 
-  std::string message = socket->Read();
+  scoped_refptr<net::IOBufferWithSize> io_buffer(
+      new net::IOBufferWithSize(512));
+  socket->Read(io_buffer.get(), io_buffer->size());
 }
 
 TEST(SocketTest, TestTCPSocketWrite) {
@@ -70,7 +73,9 @@ TEST(SocketTest, TestTCPSocketWrite) {
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
       .Times(1);
 
-  socket->Write("foo");
+  scoped_refptr<net::IOBufferWithSize> io_buffer(
+      new net::IOBufferWithSize(256));
+  socket->Write(io_buffer.get(), io_buffer->size());
 }
 
 TEST(SocketTest, TestTCPSocketBlockedWrite) {
@@ -87,7 +92,10 @@ TEST(SocketTest, TestTCPSocketBlockedWrite) {
       .WillOnce(testing::DoAll(SaveArg<2>(&callback),
                                Return(net::ERR_IO_PENDING)));
 
-  ASSERT_EQ(net::ERR_IO_PENDING, socket->Write("foo"));
+  scoped_refptr<net::IOBufferWithSize> io_buffer(new net::IOBufferWithSize(
+      1));
+  ASSERT_EQ(net::ERR_IO_PENDING, socket->Write(io_buffer.get(),
+                                               io_buffer->size()));
 
   // Good. Original call came back unable to complete. Now pretend the socket
   // finished, and confirm that we passed the error back.

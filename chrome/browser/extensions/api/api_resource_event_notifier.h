@@ -16,6 +16,10 @@
 class ExtensionEventRouter;
 class Profile;
 
+namespace base {
+class ListValue;
+}
+
 namespace extensions {
 
 enum APIResourceEventType {
@@ -47,7 +51,10 @@ class APIResourceEventNotifier
   virtual ~APIResourceEventNotifier();
 
   virtual void OnConnectComplete(int result_code);
-  virtual void OnDataRead(int result_code, const std::string& data);
+
+  // Takes ownership of data.
+  virtual void OnDataRead(int result_code, base::ListValue* data);
+
   virtual void OnWriteComplete(int result_code);
 
   static std::string APIResourceEventTypeToString(
