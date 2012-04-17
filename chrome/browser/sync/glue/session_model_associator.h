@@ -393,7 +393,7 @@ class SessionModelAssociator
                                        sync_api::WriteTransaction* trans,
                                        SyncError* error);
 
-  // Fills a tab sync node with data from a TabContents object. Updates
+  // Fills a tab sync node with data from a WebContents object. Updates
   // |tab_link| with the current url if it's valid and triggers a favicon
   // load if the url has changed.
   // Returns true on success, false if we need to reassociate due to corruption.

@@ -110,7 +110,7 @@ class SessionService : public BaseSessionService,
                       bool is_pinned);
 
   // Notification that a tab has been closed. |closed_by_user_gesture| comes
-  // from |TabContents::closed_by_user_gesture|; see it for details.
+  // from |WebContents::closed_by_user_gesture|; see it for details.
   //
   // Note: this is invoked from the NavigationController's destructor, which is
   // after the actual tab has been removed.

@@ -16,7 +16,7 @@ struct LoadCommittedDetails;
 }
 
 // This class holds the language state of the current page.
-// There is one LanguageState instance per TabContents.
+// There is one LanguageState instance per WebContents.
 // It is used to determine when navigating to a new page whether it should
 // automatically be translated.
 // This auto-translate behavior is the expected behavior when:
@@ -89,7 +89,7 @@ class LanguageState {
   // for GMail for example, which provides its own translation features).
   bool page_translatable_;
 
-  // Whether a translation is currently pending (TabContents waiting for the
+  // Whether a translation is currently pending (WebContents waiting for the
   // PAGE_TRANSLATED notification).  This is needed to avoid sending duplicate
   // translate requests to a page.  TranslateManager initiates translations
   // when it received the LANGUAGE_DETERMINED notification.  This is sent by

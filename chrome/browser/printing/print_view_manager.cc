@@ -412,7 +412,7 @@ bool PrintViewManager::RenderAllMissingPagesNow() {
     return true;
   }
 
-  // TabContents is either dying or a second consecutive request to print
+  // WebContents is either dying or a second consecutive request to print
   // happened before the first had time to finish. We need to render all the
   // pages in an hurry if a print_job_ is still pending. No need to wait for it
   // to actually spool the pages, only to have the renderer generate them. Run
@@ -510,7 +510,7 @@ void PrintViewManager::TerminatePrintJob(bool cancel) {
     DCHECK(!inside_inner_message_loop_);
     DCHECK(!print_job_->document() || print_job_->document()->IsComplete());
 
-    // TabContents is either dying or navigating elsewhere. We need to render
+    // WebContents is either dying or navigating elsewhere. We need to render
     // all the pages in an hurry if a print job is still pending. This does the
     // trick since it runs a blocking message loop:
     print_job_->Stop();

@@ -116,8 +116,8 @@ class SpeechRecognitionBubbleController
 
   // Called whenever a bubble was added to or removed from the list. If the
   // bubble was being added, this method registers for close notifications with
-  // the TabContents if this was the first bubble for the tab. Similarly if the
-  // bubble was being removed, this method unregisters from TabContents if this
+  // the WebContents if this was the first bubble for the tab. Similarly if the
+  // bubble was being removed, this method unregisters from WebContents if this
   // was the last bubble associated with that tab.
   void UpdateTabContentsSubscription(int caller_id,
                                      ManageSubscriptionAction action);

@@ -199,7 +199,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
       Profile* profile,
       bool can_cross_incognito);
 
-  // Gets the extension (if any) associated with the TabContents that we're in.
+  // Gets the extension (if any) associated with the WebContents that we're in.
   const Extension* GetExtension() const;
   void AppendPlatformAppItems(const Extension* platform_app);
   void AppendPopupExtensionItems();

@@ -26,7 +26,7 @@ WebDragBookmarkHandlerAura::~WebDragBookmarkHandlerAura() {
 void WebDragBookmarkHandlerAura::DragInitialize(WebContents* contents) {
   // Ideally we would want to initialize the the TabContentsWrapper member in
   // the constructor. We cannot do that as the WebDragDest object is
-  // created during the construction of the TabContents object.  The
+  // created during the construction of the WebContents object.  The
   // TabContentsWrapper is created much later.
   DCHECK(tab_ ? (tab_->web_contents() == contents) : true);
   if (!tab_)

@@ -99,7 +99,7 @@ void SpeechRecognitionBubbleController::UpdateTabContentsSubscription(
     int caller_id, ManageSubscriptionAction action) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // If there are any other bubbles existing for the same TabContents, we would
+  // If there are any other bubbles existing for the same WebContents, we would
   // have subscribed to tab close notifications on their behalf and we need to
   // stay registered. So we don't change the subscription in such cases.
   WebContents* web_contents = bubbles_[caller_id]->GetWebContents();
@@ -107,7 +107,7 @@ void SpeechRecognitionBubbleController::UpdateTabContentsSubscription(
        iter != bubbles_.end(); ++iter) {
     if (iter->second->GetWebContents() == web_contents &&
         iter->first != caller_id) {
-      // At least one other bubble exists for the same TabContents. So don't
+      // At least one other bubble exists for the same WebContents. So don't
       // make any change to the subscription.
       return;
     }

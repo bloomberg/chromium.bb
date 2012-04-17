@@ -355,7 +355,7 @@ TEST_F(CloudPrintHtmlDialogDelegateTest, UnownedFlowLetGo) {
   EXPECT_THAT(mock_flow_handler_.get(), NotNull());
 }
 
-// Testing for ExternalHtmlDialogUI needs a mock TabContents, mock
+// Testing for ExternalHtmlDialogUI needs a mock WebContents, mock
 // CloudPrintHtmlDialogDelegate (provided through the mock
 // tab_contents)
 

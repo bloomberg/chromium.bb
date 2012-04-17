@@ -19,7 +19,7 @@ class NavigationEntry;
 namespace browser_sync {
 
 // A SyncedTabDelegate is used to insulate the sync code from depending
-// directly on TabContents, TabContentsWrapper and NavigationController.
+// directly on WebContents, TabContentsWrapper and NavigationController.
 class SyncedTabDelegate {
  public:
   virtual ~SyncedTabDelegate() {}

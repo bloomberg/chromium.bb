@@ -23,9 +23,9 @@ namespace printing {
 
 struct PageSizeMargins;
 
-// TabContents offloads print preview message handling to
+// TabContentsWrapper offloads print preview message handling to
 // PrintPreviewMessageHandler. This object has the same life time as the
-// TabContents that owns it.
+// TabContentsWrapper that owns it.
 class PrintPreviewMessageHandler : public content::WebContentsObserver {
  public:
   explicit PrintPreviewMessageHandler(content::WebContents* web_contents);

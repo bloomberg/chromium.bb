@@ -414,7 +414,7 @@ void ThumbnailGenerator::WidgetHidden(RenderWidgetHost* widget) {
 
 void ThumbnailGenerator::WebContentsDisconnected(WebContents* contents) {
   // Go through the existing callbacks, and find any that have the
-  // same renderer as this TabContents and remove them so they don't
+  // same renderer as this WebContents and remove them so they don't
   // hang around.
   ThumbnailCallbackMap::iterator iterator = callback_map_.begin();
   RenderWidgetHost* renderer = contents->GetRenderViewHost();

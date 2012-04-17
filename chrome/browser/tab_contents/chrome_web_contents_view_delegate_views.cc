@@ -66,7 +66,7 @@ bool ChromeWebContentsViewDelegateViews::Focus() {
       return true;
     }
 
-    // TODO(erg): TabContents used to own constrained windows, which is why
+    // TODO(erg): WebContents used to own constrained windows, which is why
     // this is here. Eventually this should be ported to a containing view
     // specializing in constrained window management.
     ConstrainedWindowTabHelper* helper =

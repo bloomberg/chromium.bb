@@ -860,7 +860,7 @@ void TabStripModel::ExecuteContextMenuCommand(
     case CommandDuplicate: {
       content::RecordAction(UserMetricsAction("TabContextMenu_Duplicate"));
       std::vector<int> indices = GetIndicesForCommand(context_index);
-      // Copy the TabContents off as the indices will change as tabs are
+      // Copy the TabContentsWrapper off as the indices will change as tabs are
       // duplicated.
       std::vector<TabContentsWrapper*> tabs;
       for (size_t i = 0; i < indices.size(); ++i)
@@ -876,7 +876,7 @@ void TabStripModel::ExecuteContextMenuCommand(
     case CommandCloseTab: {
       content::RecordAction(UserMetricsAction("TabContextMenu_CloseTab"));
       std::vector<int> indices = GetIndicesForCommand(context_index);
-      // Copy the TabContents off as the indices will change as we remove
+      // Copy the TabContentsWrapper off as the indices will change as we remove
       // things.
       std::vector<TabContentsWrapper*> tabs;
       for (size_t i = 0; i < indices.size(); ++i)
@@ -1007,7 +1007,7 @@ void TabStripModel::Observe(int type,
                             const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
-      // Sometimes, on qemu, it seems like a TabContents object can be destroyed
+      // Sometimes, on qemu, it seems like a WebContents object can be destroyed
       // while we still have a reference to it. We need to break this reference
       // here so we don't crash later.
       int index = GetWrapperIndex(content::Source<WebContents>(source).ptr());
@@ -1027,9 +1027,9 @@ void TabStripModel::Observe(int type,
         TabContentsWrapper* contents = GetTabContentsAt(i);
         if (contents->extension_tab_helper()->extension_app() == extension) {
           // The extension an app tab was created from has been nuked. Delete
-          // the TabContents. Deleting a TabContents results in a notification
-          // of type TAB_CONTENTS_DESTROYED; we do the necessary cleanup in
-          // handling that notification.
+          // the WebContents. Deleting a WebContents results in a notification
+          // of type NOTIFICATION_WEB_CONTENTS_DESTROYED; we do the necessary
+          // cleanup in handling that notification.
 
           InternalCloseTab(contents, i, false);
         }
@@ -1136,9 +1136,9 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& in_indices,
   if (indices.empty())
     return retval;
 
-  // Map the indices to TabContents, that way if deleting a tab deletes other
-  // tabs we're ok. Crashes seem to indicate during tab deletion other tabs are
-  // getting removed.
+  // Map the indices to TabContentsWrapper, that way if deleting a tab deletes
+  // other tabs we're ok. Crashes seem to indicate during tab deletion other
+  // tabs are getting removed.
   std::vector<TabContentsWrapper*> tabs;
   for (size_t i = 0; i < indices.size(); ++i)
     tabs.push_back(GetContentsAt(indices[i]));
@@ -1213,8 +1213,8 @@ void TabStripModel::InternalCloseTab(TabContentsWrapper* contents,
   if (create_historical_tabs)
     delegate_->CreateHistoricalTab(contents);
 
-  // Deleting the TabContents will call back to us via NotificationObserver
-  // and detach it.
+  // Deleting the TabContentsWrapper will call back to us via
+  // NotificationObserver and detach it.
   delete contents;
 }
 

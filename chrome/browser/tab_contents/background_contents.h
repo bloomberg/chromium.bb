@@ -21,7 +21,7 @@ namespace content {
 class SiteInstance;
 };
 
-// This class consumes TabContents. It can host a renderer, but does not
+// This class consumes WebContents. It can host a renderer, but does not
 // have any visible display.
 class BackgroundContents : public content::WebContentsDelegate,
                            public content::WebContentsObserver,

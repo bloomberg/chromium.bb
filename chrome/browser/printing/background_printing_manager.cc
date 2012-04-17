@@ -144,7 +144,7 @@ void BackgroundPrintingManager::OnTabContentsDestroyed(
   }
 
   // Remove NOTIFICATION_RENDERER_PROCESS_CLOSED if |preview_tab| is the last
-  // TabContents associated with |rph|.
+  // WebContents associated with |rph|.
   bool shared_rph = HasSharedRenderProcessHost(printing_tabs_, preview_tab) ||
       HasSharedRenderProcessHost(printing_tabs_pending_deletion_, preview_tab);
   if (!shared_rph) {

@@ -534,7 +534,7 @@ void PrintPreviewTabController::RemovePreviewTab(
     initiator_tab->print_view_manager()->PrintPreviewDone();
   }
 
-  // Print preview TabContents is destroyed. Notify |PrintPreviewUI| to abort
+  // Print preview WebContents is destroyed. Notify |PrintPreviewUI| to abort
   // the initiator tab preview request.
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       preview_tab->web_contents()->GetWebUI()->GetController());

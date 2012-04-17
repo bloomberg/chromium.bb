@@ -92,7 +92,7 @@ void BackgroundContents::DidNavigateMainFramePostCommit(WebContents* tab) {
       content::Details<BackgroundContents>(this));
 }
 
-// Forward requests to add a new TabContents to our delegate.
+// Forward requests to add a new WebContents to our delegate.
 void BackgroundContents::AddNewContents(WebContents* source,
                                         WebContents* new_contents,
                                         WindowOpenDisposition disposition,

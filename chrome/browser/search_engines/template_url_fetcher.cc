@@ -213,7 +213,7 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
       // Confirm addition and allow user to edit default choices. It's ironic
       // that only *non*-autodetected additions get confirmed, but the user
       // expects feedback that his action did something.
-      // The source TabContents' delegate takes care of adding the URL to the
+      // The source WebContents' delegate takes care of adding the URL to the
       // model, which takes ownership, or of deleting it if the add is
       // cancelled.
       callbacks_->ConfirmAddSearchProvider(new TemplateURL(data),

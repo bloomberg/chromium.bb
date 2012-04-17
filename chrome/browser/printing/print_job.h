@@ -114,7 +114,7 @@ class PrintJob : public PrintJobWorkerOwner,
   // thread.
   MessageLoop* const ui_message_loop_;
 
-  // Source that generates the PrintedPage's (i.e. a TabContents). It will be
+  // Source that generates the PrintedPage's (i.e. a WebContents). It will be
   // set back to NULL if the source is deleted before this object.
   PrintedPagesSource* source_;
 

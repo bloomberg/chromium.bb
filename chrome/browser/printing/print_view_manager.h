@@ -27,8 +27,9 @@ class PrintJob;
 class PrintJobWorkerOwner;
 class PrintViewManagerObserver;
 
-// Manages the print commands in relation to a TabContents. TabContents
-// delegates a few printing related commands to this instance.
+// Manages the print commands in relation to a TabContentsWrapper.
+// TabContentsWrapper delegates a few printing related commands to this
+// instance.
 class PrintViewManager : public content::NotificationObserver,
                          public PrintedPagesSource,
                          public content::WebContentsObserver {

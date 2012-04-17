@@ -23,7 +23,7 @@ RestoreTabHelper::~RestoreTabHelper() {
 void RestoreTabHelper::SetWindowID(const SessionID& id) {
   window_id_ = id;
 
-  // TODO(mpcomplete): Maybe this notification should send out a TabContents.
+  // TODO(mpcomplete): Maybe this notification should send out a WebContents.
   TabContentsWrapper* tab =
       TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
   if (tab) {

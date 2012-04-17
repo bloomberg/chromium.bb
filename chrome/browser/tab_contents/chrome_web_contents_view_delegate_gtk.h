@@ -61,7 +61,7 @@ class ChromeWebContentsViewDelegateGtk
   ui::OwnedWidgetGtk floating_;
 
   // The UI for the constrained dialog currently displayed. This is owned by
-  // TabContents, not the view.
+  // WebContents, not the view.
   ConstrainedWindowGtk* constrained_window_;
 
   // The context menu is reset every time we show it, but we keep a pointer to
