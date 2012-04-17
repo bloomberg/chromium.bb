@@ -810,15 +810,11 @@ void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
 
 ExtensionUninstallDialog*
 ExtensionSettingsHandler::GetExtensionUninstallDialog() {
-#if !defined(OS_ANDROID)
   if (!extension_uninstall_dialog_.get()) {
     extension_uninstall_dialog_.reset(
         ExtensionUninstallDialog::Create(Profile::FromWebUI(web_ui()), this));
   }
   return extension_uninstall_dialog_.get();
-#else
-  return NULL;
-#endif  // !defined(OS_ANDROID)
 }
 
 void ExtensionSettingsHandler::InspectExtensionHost(ExtensionHost* host) {

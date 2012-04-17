@@ -178,7 +178,4 @@
   "ash/ash_strings.grd": {
     "messages": [25500],
   },
-  "chrome/common/extensions_api_resources.grd": {
-    "includes": [26000],
-  },
 }

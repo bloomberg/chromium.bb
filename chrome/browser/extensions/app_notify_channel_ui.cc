@@ -135,7 +135,6 @@ void AppNotifyChannelUIImpl::OnInfoBarResult(bool accepted) {
 }
 
 void AppNotifyChannelUIImpl::OnStateChanged() {
-#if !defined(OS_ANDROID)
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   LoginUIService* login_service =
@@ -154,7 +153,6 @@ void AppNotifyChannelUIImpl::OnStateChanged() {
     StopObservingSync();
     delegate_->OnSyncSetupResult(sync_service->HasSyncSetupCompleted());
   }
-#endif  // !defined(OS_ANDROID)
 }
 
 void AppNotifyChannelUIImpl::StartObservingSync() {

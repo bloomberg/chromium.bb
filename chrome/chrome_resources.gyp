@@ -100,13 +100,6 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
-        {
-          'action_name': 'extensions_api_resources',
-          'variables': {
-            'grit_grd_file': 'common/extensions_api_resources.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        }
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
