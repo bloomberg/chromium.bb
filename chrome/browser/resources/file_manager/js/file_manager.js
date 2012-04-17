@@ -2249,12 +2249,34 @@ FileManager.prototype = {
     }
 
     this.previewSummary_.textContent = str('COMPUTING_SELECTION');
-    removeChildren(this.previewThumbnails_);
+    var thumbnails = this.document_.createDocumentFragment();
 
     var fileCount = 0;
     var byteCount = 0;
     var pendingFiles = [];
     var thumbnailCount = 0;
+    var thumbnailLoaded = -1;
+    var forcedShowTimeout = null;
+    var self = this;
+
+    function showThumbnails() {
+      if (forcedShowTimeout === null)
+        return;
+      clearTimeout(forcedShowTimeout);
+      forcedShowTimeout = null;
+
+      // Selection could change while images are loading.
+      if (self.selection == selection) {
+        removeChildren(self.previewThumbnails_);
+        self.previewThumbnails_.appendChild(thumbnails);
+      }
+    }
+
+    function onThumbnailLoaded() {
+      thumbnailLoaded++;
+      if (thumbnailLoaded == thumbnailCount)
+        showThumbnails();
+    }
 
     for (var i = 0; i < selection.indexes.length; i++) {
       var entry = this.directoryModel_.fileList.item(selection.indexes[i]);
@@ -2274,16 +2296,20 @@ FileManager.prototype = {
 
       if (thumbnailCount < MAX_PREVIEW_THUMBAIL_COUNT) {
         var box = this.document_.createElement('div');
-        var imageLoadCalback = thumbnailCount == 0 &&
-                               this.initThumbnailZoom_.bind(this, box);
-        var thumbnail = this.renderThumbnailBox_(entry, true, imageLoadCalback);
+        function imageLoadCalback(index, box, img, transform) {
+          if (index == 0)
+            self.initThumbnailZoom_(box, img, transform);
+          onThumbnailLoaded();
+        }
+        var thumbnail = this.renderThumbnailBox_(entry, true,
+            imageLoadCalback.bind(null, thumbnailCount, box));
+        thumbnailCount++;
         box.appendChild(thumbnail);
         box.style.zIndex = MAX_PREVIEW_THUMBAIL_COUNT + 1 - i;
         box.addEventListener('click',
             this.dispatchDefaultTask_.bind(this, selection));
 
-        this.previewThumbnails_.appendChild(box);
-        thumbnailCount++;
+        thumbnails.appendChild(box);
       }
 
       selection.totalCount++;
@@ -2309,8 +2335,8 @@ FileManager.prototype = {
     // Now this.selection is complete. Update buttons.
     this.updateCommonActionButtons_();
     this.updatePreviewPanelVisibility_();
-
-    var self = this;
+    forcedShowTimeout = setTimeout(showThumbnails, 100);
+    onThumbnailLoaded();
 
     function cacheNextFile(fileEntry) {
       if (fileEntry) {
