@@ -24,11 +24,19 @@ class PyAutoEventsTest(pyauto.PyUITest):
     self.GetNextEvent(success_id)
 
   def testDomMutationEvents(self):
-    """Basic tests for Dom Mutation observers."""
+    """Basic tests for WaitForDomNode."""
+    url = self.GetHttpURLForDataPath('apptest', 'dom_mutations.html')
+    self.NavigateToURL(url)
+    self.WaitForDomNode(domselector.CSSSelector('#login'), 'Log In')
+    self.NewWebDriver().find_element_by_id('login').click()
+    self.WaitForDomNode(domselector.XPath('id(\'console\')'), '.*succeeded.*')
+
+  def testDomMutationObservers(self):
+    """Tests for the various types of Dom Mutation observers."""
     url = self.GetHttpURLForDataPath('apptest', 'dom_mutations.html')
     self.NavigateToURL(url)
     self.GetNextEvent(self.AddDomMutationObserver(
-        'add', domselector.XPath('/html/body')))
+        'exists', domselector.XPath('/html/body')))
     self.GetNextEvent(self.AddDomMutationObserver(
         'add', domselector.CSSSelector('#login'), expected_value='Log In'))
     success_id = self.AddDomMutationObserver(

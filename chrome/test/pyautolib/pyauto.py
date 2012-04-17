@@ -2975,7 +2975,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     occurs on a DOM node specified by |selector|.
 
     Args:
-      mutation_type: One of 'add', 'remove', or 'change'.
+      mutation_type: One of 'add', 'remove', 'change', or 'exists'.
       selector: A DOMSelector object defining the DOM node to watch. The node
           must already exist if |mutation_type| is 'change'.
       expected_value: Optional regular expression to match against the node's
@@ -2992,9 +2992,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
-      RuntimeError if the injected javascript MutationObserver returns an error.
+      pyauto_errors.JavascriptRuntimeError if the injected javascript
+          MutationObserver returns an error.
     """
-    assert mutation_type in ('add', 'remove', 'change'), \
+    assert mutation_type in ('add', 'remove', 'change', 'exists'), \
         'Unexpected value "%s" for mutation_type.' % mutation_type
     assert isinstance(selector, domselector.DOMSelector), \
         'Unexpected type: selector is not a instance of DOMSelector.'
@@ -3020,8 +3021,33 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     jsreturn = self.ExecuteJavascript(js, **kwargs)
     if jsreturn != 'success':
       self.RemoveEventObserver(observer_id)
-      raise RuntimeError(jsreturn)
+      raise pyauto_errors.JavascriptRuntimeError(jsreturn)
     return observer_id
+
+  def WaitForDomNode(self, selector, expected_value=None, timeout=-1, **kwargs):
+    """Waits until a node matching selector exists in the DOM.
+
+    NOTE: This does NOT poll. It returns as soon as the node appears, or
+      immediately if the node already exists.
+
+    Args:
+      selector: A DOMSelector object defining the DOM node to wait for.
+      expected_value: Optional regular expression to match against the node's
+          textContent attribute. Defaults to None.
+      timeout: Time to wait for the node to exist before raising an exception,
+          defaults to the default automation timeout.
+
+      Any additional keyword arguments are passed on to ExecuteJavascript and
+      can be used to select the tab where the DOM MutationObserver is created.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+      pyauto_errors.JavascriptRuntimeError if the injected javascript
+          MutationObserver returns an error.
+    """
+    observer_id = self.AddDomMutationObserver('exists', selector,
+                                              expected_value, **kwargs)
+    self.GetNextEvent(observer_id, timeout=timeout)
 
   def GetNextEvent(self, observer_id=-1, blocking=True, timeout=-1):
     """Waits for an observed event to occur.

@@ -11,7 +11,7 @@
  * Args:
  *  automation_id: Automation id used to route DomAutomationController messages.
  *  observer_id: Id of the observer who will be receiving the messages.
- *  observer_type: One of 'add', 'remove', or 'change'.
+ *  observer_type: One of 'add', 'remove', 'change', or 'exists'.
  *  pattern: Pattern used to select the DOM node of interest.
  *  ptype: Type of |pattern|, either 'xpath' or 'css'.
  *  expected_value: If not null, regular expression matching text contents
@@ -102,6 +102,22 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
     }
   }
 
+  /* Calls raiseEvent if the expected node exists in the DOM.
+   *
+   * Args:
+   *  mutations: A list of mutation objects.
+   *  observer: The mutation observer object associated with this callback.
+   */
+  function existsNodeCallback(mutations, observer) {
+    var node = firstMatchingNode(pattern, ptype);
+    if (node && nodeValueTextEquals(node, expected_value)) {
+      raiseEvent();
+      observer.disconnect();
+      delete observer;
+      return;
+    }
+  }
+
   /* Return true if the xpath matches the given node.
    *
    * Args:
@@ -184,7 +200,8 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
    */
   function observeAdd(pattern, ptype) {
     window.domAutomationController.send("success");
-    if (firstMatchingNode(pattern, ptype)) {
+    var node = firstMatchingNode(pattern, ptype);
+    if (node && nodeValueTextEquals(node, expected_value)) {
       raiseEvent();
       console.log("Matching node in DOM, assuming it was previously added.");
       return;
@@ -243,6 +260,27 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
           subtree: true});
   }
 
+  /* Watch for a node matching pattern to exist in the DOM.
+   *
+   * Args:
+   *  pattern: A string in the format of either an XPath or CSS Selector.
+   *  ptype: Either 'xpath' or 'css'.
+   */
+  function observeExists(pattern, ptype) {
+    window.domAutomationController.send("success");
+    var node = firstMatchingNode(pattern, ptype);
+    if (node && nodeValueTextEquals(node, expected_value)) {
+      raiseEvent();
+      console.log("Node already exists in DOM.");
+      return;
+    }
+
+    var obs = new WebKitMutationObserver(existsNodeCallback);
+    obs.observe(document,
+        { childList: true,
+          attributes: true,
+          subtree: true});
+  }
 
   /* Interpret arguments and launch the requested observer function. */
   var observer;
@@ -255,6 +293,9 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
       break;
     case "change":
       observeChange(pattern, ptype);
+      break;
+    case "exists":
+      observeExists(pattern, ptype);
       break;
   }
 
