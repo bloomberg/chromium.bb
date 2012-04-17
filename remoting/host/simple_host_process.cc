@@ -93,12 +93,10 @@ class SimpleHost {
  public:
   SimpleHost()
       : message_loop_(MessageLoop::TYPE_UI),
-        file_io_thread_("FileIO"),
-        context_(NULL, message_loop_.message_loop_proxy()),
+        context_(message_loop_.message_loop_proxy()),
         fake_(false),
         is_it2me_(false) {
     context_.Start();
-    file_io_thread_.Start();
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   }
 
@@ -263,7 +261,6 @@ class SimpleHost {
   }
 
   MessageLoop message_loop_;
-  base::Thread file_io_thread_;
   ChromotingHostContext context_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 

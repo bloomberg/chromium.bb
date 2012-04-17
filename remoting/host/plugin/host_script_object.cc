@@ -134,8 +134,7 @@ bool HostNPScriptObject::Init() {
   DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
   VLOG(2) << "Init";
 
-  host_context_.reset(new ChromotingHostContext(NULL,
-                                                plugin_message_loop_proxy_));
+  host_context_.reset(new ChromotingHostContext(plugin_message_loop_proxy_));
   if (!host_context_->Start()) {
     host_context_.reset();
     return false;

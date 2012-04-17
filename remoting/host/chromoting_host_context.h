@@ -19,8 +19,7 @@ namespace remoting {
 class ChromotingHostContext {
  public:
   // Create a context.
-  ChromotingHostContext(base::MessageLoopProxy* io_message_loop,
-                        base::MessageLoopProxy* ui_message_loop);
+  ChromotingHostContext(base::MessageLoopProxy* ui_message_loop);
   virtual ~ChromotingHostContext();
 
   // TODO(ajwong): Move the Start method out of this class. Then
@@ -32,12 +31,13 @@ class ChromotingHostContext {
 
   virtual JingleThread* jingle_thread();
 
-  virtual base::MessageLoopProxy* io_message_loop();
-  virtual base::MessageLoopProxy* ui_message_loop();
+
   virtual MessageLoop* main_message_loop();
   virtual MessageLoop* encode_message_loop();
   virtual base::MessageLoopProxy* network_message_loop();
   virtual MessageLoop* desktop_message_loop();
+  virtual base::MessageLoopProxy* ui_message_loop();
+  virtual MessageLoop* file_message_loop();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromotingHostContextTest, StartAndStop);
@@ -45,7 +45,8 @@ class ChromotingHostContext {
   // A thread that hosts all network operations.
   JingleThread jingle_thread_;
 
-  // A thread that hosts ChromotingHost and performs rate control.
+  // TODO(sergeyu): The "main" thread is used just by the
+  // capturer. Consider renaming it.
   base::Thread main_thread_;
 
   // A thread that hosts all encode operations.
@@ -55,7 +56,9 @@ class ChromotingHostContext {
   // This is NOT a Chrome-style UI thread.
   base::Thread desktop_thread_;
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  // Thread for blocking IO operations.
+  base::Thread file_thread_;
+
   scoped_refptr<base::MessageLoopProxy> ui_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingHostContext);

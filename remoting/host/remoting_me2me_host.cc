@@ -77,15 +77,10 @@ class HostProcess : public OAuthClient::Delegate {
  public:
   HostProcess()
       : message_loop_(MessageLoop::TYPE_UI),
-        file_io_thread_("FileIO"),
         allow_nat_traversal_(true),
         restarting_(false) {
-    file_io_thread_.StartWithOptions(
-        base::Thread::Options(MessageLoop::TYPE_IO, 0));
-
-    context_.reset(new ChromotingHostContext(
-                           file_io_thread_.message_loop_proxy(),
-                           message_loop_.message_loop_proxy()));
+    context_.reset(
+        new ChromotingHostContext(message_loop_.message_loop_proxy()));
     context_->Start();
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   }
@@ -113,7 +108,7 @@ class HostProcess : public OAuthClient::Delegate {
     // The auth tokens can't be updated once the host is running, so we don't
     // need to check the pending state, but it's a required parameter.
     bool tokens_pending;
-    if (LoadConfig(file_io_thread_.message_loop_proxy(), &tokens_pending)) {
+    if (LoadConfig(&tokens_pending)) {
       context_->network_message_loop()->PostTask(
           FROM_HERE,
           base::Bind(&HostProcess::CreateAuthenticatorFactory,
@@ -140,7 +135,7 @@ class HostProcess : public OAuthClient::Delegate {
 
   int Run() {
     bool tokens_pending = false;
-    if (!LoadConfig(file_io_thread_.message_loop_proxy(), &tokens_pending)) {
+    if (!LoadConfig(&tokens_pending)) {
       return kInvalidHostConfigurationExitCode;
     }
     if (tokens_pending) {
@@ -157,7 +152,7 @@ class HostProcess : public OAuthClient::Delegate {
     }
 
 #if defined(OS_MACOSX)
-    file_io_thread_.message_loop_proxy()->PostTask(
+    context_->file_message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&HostProcess::ListenForConfigChanges,
                    base::Unretained(this)));
@@ -192,14 +187,14 @@ class HostProcess : public OAuthClient::Delegate {
  private:
   void StartWatchingNatPolicy() {
     nat_policy_.reset(
-        policy_hack::NatPolicy::Create(file_io_thread_.message_loop_proxy()));
+        policy_hack::NatPolicy::Create(
+            context_->file_message_loop()->message_loop_proxy()));
     nat_policy_->StartWatching(
         base::Bind(&HostProcess::OnNatPolicyUpdate, base::Unretained(this)));
   }
 
   // Read Host config from disk, returning true if successful.
-  bool LoadConfig(base::MessageLoopProxy* io_message_loop,
-                  bool* tokens_pending) {
+  bool LoadConfig(bool* tokens_pending) {
     JsonHostConfig host_config(host_config_path_);
     JsonHostConfig auth_config(auth_config_path_);
 
@@ -343,7 +338,6 @@ class HostProcess : public OAuthClient::Delegate {
   }
 
   MessageLoop message_loop_;
-  base::Thread file_io_thread_;
   scoped_ptr<ChromotingHostContext> context_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 

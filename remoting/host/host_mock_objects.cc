@@ -52,7 +52,7 @@ scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create() {
 }
 
 MockChromotingHostContext::MockChromotingHostContext()
-    : ChromotingHostContext(NULL, base::MessageLoopProxy::current()) {
+    : ChromotingHostContext(base::MessageLoopProxy::current()) {
 }
 
 MockChromotingHostContext::~MockChromotingHostContext() {}
