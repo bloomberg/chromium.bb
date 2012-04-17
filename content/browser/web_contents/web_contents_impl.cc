@@ -346,9 +346,9 @@ WebContentsImpl::~WebContentsImpl() {
 #endif
 
   // OnCloseStarted isn't called in unit tests.
-  if (!tab_close_start_time_.is_null()) {
+  if (!close_start_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("Tab.Close",
-        base::TimeTicks::Now() - tab_close_start_time_);
+        base::TimeTicks::Now() - close_start_time_);
   }
 
   FOR_EACH_OBSERVER(WebContentsObserver,
@@ -1250,8 +1250,8 @@ base::TimeTicks WebContentsImpl::GetNewTabStartTime() const {
 }
 
 void WebContentsImpl::OnCloseStarted() {
-  if (tab_close_start_time_.is_null())
-    tab_close_start_time_ = base::TimeTicks::Now();
+  if (close_start_time_.is_null())
+    close_start_time_ = base::TimeTicks::Now();
 }
 
 bool WebContentsImpl::ShouldAcceptDragAndDrop() const {
@@ -2584,7 +2584,7 @@ void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
     // spinning, since we forced it to start spinning in Navigate.
     DidStopLoading();
 
-    tab_close_start_time_ = base::TimeTicks();
+    close_start_time_ = base::TimeTicks();
   }
   is_showing_before_unload_dialog_ = false;
   static_cast<RenderViewHostImpl*>(

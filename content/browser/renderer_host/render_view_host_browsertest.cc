@@ -233,8 +233,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
 // Test that a hung renderer is killed after navigating away during cross-site
 // navigation.
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveCrossSiteNavigation) {
-  WebContents* tab = NULL;
-  WebContents* tab2 = NULL;
+  WebContents* web_contents = NULL;
+  WebContents* web_contents_2 = NULL;
   content::RenderProcessHost* rph = NULL;
   base::ProcessHandle process;
   FilePath doc_root;
@@ -260,9 +260,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveCrossSiteNavigation) {
   // Navigate the tab to the page which will lock up the process when we
   // navigate away from it.
   ui_test_utils::NavigateToURL(browser(), infinite_beforeunload_url);
-  tab = browser()->GetWebContentsAt(0);
-  rph = tab->GetRenderProcessHost();
-  EXPECT_EQ(tab->GetURL(), infinite_beforeunload_url);
+  web_contents = browser()->GetWebContentsAt(0);
+  rph = web_contents->GetRenderProcessHost();
+  EXPECT_EQ(web_contents->GetURL(), infinite_beforeunload_url);
 
   // Remember the process prior to navigation, as we expect it to get killed.
   process = rph->GetHandle();
@@ -285,10 +285,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveCrossSiteNavigation) {
   }
 
   ui_test_utils::NavigateToURL(browser(), same_process_url);
-  tab = browser()->GetWebContentsAt(0);
-  rph = tab->GetRenderProcessHost();
-  ASSERT_TRUE(tab != NULL);
-  EXPECT_EQ(tab->GetURL(), same_process_url);
+  web_contents = browser()->GetWebContentsAt(0);
+  rph = web_contents->GetRenderProcessHost();
+  ASSERT_TRUE(web_contents != NULL);
+  EXPECT_EQ(web_contents->GetURL(), same_process_url);
 
   // Now, let's open another tab with the unresponsive page, which will cause
   // the previous page and the unresponsive one to use the same process.
@@ -296,10 +296,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveCrossSiteNavigation) {
       infinite_unload_url, NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_EQ(browser()->tab_count(), 2);
-  tab2 = browser()->GetWebContentsAt(1);
-  ASSERT_TRUE(tab2 != NULL);
-  EXPECT_EQ(tab2->GetURL(), infinite_unload_url);
-  EXPECT_EQ(rph, tab2->GetRenderProcessHost());
+  web_contents_2 = browser()->GetWebContentsAt(1);
+  ASSERT_TRUE(web_contents_2 != NULL);
+  EXPECT_EQ(web_contents_2->GetURL(), infinite_unload_url);
+  EXPECT_EQ(rph, web_contents_2->GetRenderProcessHost());
 
   process = rph->GetHandle();
   ASSERT_TRUE(process);
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveCrossSiteNavigation) {
 
 // Test that a hung renderer is killed when we are closing the page.
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveClosePage) {
-  WebContents* tab = NULL;
+  WebContents* web_contents = NULL;
   FilePath doc_root;
 
   doc_root = doc_root.Append(FILE_PATH_LITERAL("content"));
@@ -346,12 +346,12 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveClosePage) {
   ui_test_utils::NavigateToURLWithDisposition(browser(),
       infinite_beforeunload_url, NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  tab = browser()->GetWebContentsAt(1);
+  web_contents = browser()->GetWebContentsAt(1);
   {
     ui_test_utils::WindowedNotificationObserver process_exit_observer(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::NotificationService::AllSources());
-    browser()->CloseTabContents(tab);
+    browser()->CloseTabContents(web_contents);
     process_exit_observer.Wait();
   }
 
@@ -360,12 +360,12 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, UnresponsiveClosePage) {
   ui_test_utils::NavigateToURLWithDisposition(browser(),
       infinite_unload_url, NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  tab = browser()->GetWebContentsAt(1);
+  web_contents = browser()->GetWebContentsAt(1);
   {
     ui_test_utils::WindowedNotificationObserver process_exit_observer(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
         content::NotificationService::AllSources());
-    browser()->CloseTabContents(tab);
+    browser()->CloseTabContents(web_contents);
     process_exit_observer.Wait();
   }
 }

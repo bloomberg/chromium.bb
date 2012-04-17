@@ -54,7 +54,7 @@ class BrowserPluginWebContentsObserver: public WebContentsObserver,
 
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
 
-  virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
  private:
   typedef std::map<WebContentsImpl*, int64> GuestMap;

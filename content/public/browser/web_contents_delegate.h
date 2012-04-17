@@ -307,51 +307,52 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void WorkerCrashed(WebContents* source) {}
 
   // Invoked when a main fram navigation occurs.
-  virtual void DidNavigateMainFramePostCommit(WebContents* tab) {}
+  virtual void DidNavigateMainFramePostCommit(WebContents* source) {}
 
   // Invoked when navigating to a pending entry. When invoked the
   // NavigationController has configured its pending entry, but it has not yet
   // been committed.
-  virtual void DidNavigateToPendingEntry(WebContents* tab) {}
+  virtual void DidNavigateToPendingEntry(WebContents* source) {}
 
   // Returns a pointer to a service to create JavaScript dialogs. May return
   // NULL in which case dialogs aren't shown.
   virtual JavaScriptDialogCreator* GetJavaScriptDialogCreator();
 
   // Called when color chooser should open. Returns the opened color chooser.
-  virtual content::ColorChooser* OpenColorChooser(WebContents* tab,
+  virtual content::ColorChooser* OpenColorChooser(WebContents* web_contents,
                                                   int color_chooser_id,
                                                   const SkColor& color);
 
   virtual void DidEndColorChooser() {}
 
   // Called when a file selection is to be done.
-  virtual void RunFileChooser(WebContents* tab,
+  virtual void RunFileChooser(WebContents* web_contents,
                               const FileChooserParams& params) {}
 
   // Request to enumerate a directory.  This is equivalent to running the file
   // chooser in directory-enumeration mode and having the user select the given
   // directory.
-  virtual void EnumerateDirectory(WebContents* tab,
+  virtual void EnumerateDirectory(WebContents* web_contents,
                                   int request_id,
                                   const FilePath& path) {}
 
   // Called when the renderer puts a tab into or out of fullscreen mode.
-  virtual void ToggleFullscreenModeForTab(WebContents* tab,
+  virtual void ToggleFullscreenModeForTab(WebContents* web_contents,
                                           bool enter_fullscreen) {}
-  virtual bool IsFullscreenForTabOrPending(const WebContents* tab) const;
+  virtual bool IsFullscreenForTabOrPending(
+      const WebContents* web_contents) const;
 
   // Called when a Javascript out of memory notification is received.
-  virtual void JSOutOfMemory(WebContents* tab) {}
+  virtual void JSOutOfMemory(WebContents* web_contents) {}
 
   // Register a new handler for URL requests with the given scheme.
-  virtual void RegisterProtocolHandler(WebContents* tab,
+  virtual void RegisterProtocolHandler(WebContents* web_contents,
                                        const std::string& protocol,
                                        const GURL& url,
                                        const string16& title) {}
 
   // Register a new handler for Intents with the given action and type filter.
-  virtual void RegisterIntentHandler(WebContents* tab,
+  virtual void RegisterIntentHandler(WebContents* web_contents,
                                      const string16& action,
                                      const string16& type,
                                      const string16& href,
@@ -360,13 +361,13 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Web Intents notification handler. See WebIntentsDispatcher for
   // documentation of callee responsibility for the dispatcher.
-  virtual void WebIntentDispatch(WebContents* tab,
+  virtual void WebIntentDispatch(WebContents* web_contents,
                                  WebIntentsDispatcher* intents_dispatcher);
 
   // Result of string search in the page. This includes the number of matches
   // found and the selection rect (in screen coordinates) for the string found.
   // If |final_update| is false, it indicates that more results follow.
-  virtual void FindReply(WebContents* tab,
+  virtual void FindReply(WebContents* web_contents,
                          int request_id,
                          int number_of_matches,
                          const gfx::Rect& selection_rect,
@@ -374,7 +375,8 @@ class CONTENT_EXPORT WebContentsDelegate {
                          bool final_update) {}
 
   // Notification that a plugin has crashed.
-  virtual void CrashedPlugin(WebContents* tab, const FilePath& plugin_path) {}
+  virtual void CrashedPlugin(WebContents* web_contents,
+                             const FilePath& plugin_path) {}
 
   // Notication that the given plugin has hung or become unhung. This
   // notification is only for Pepper plugins.
@@ -382,21 +384,21 @@ class CONTENT_EXPORT WebContentsDelegate {
   // The plugin_child_id is the unique child process ID from the plugin. Note
   // that this ID is supplied by the renderer, so should be validated before
   // it's used for anything in case there's an exploited renderer.
-  virtual void PluginHungStatusChanged(WebContents* tab,
+  virtual void PluginHungStatusChanged(WebContents* web_contents,
                                        int plugin_child_id,
                                        const FilePath& plugin_path,
                                        bool is_hung) {}
 
   // Invoked when the preferred size of the contents has been changed.
-  virtual void UpdatePreferredSize(WebContents* tab,
+  virtual void UpdatePreferredSize(WebContents* web_contents,
                                    const gfx::Size& pref_size) {}
 
   // Invoked when the contents auto-resized and the container should match it.
-  virtual void ResizeDueToAutoResize(WebContents* tab,
+  virtual void ResizeDueToAutoResize(WebContents* web_contents,
                                      const gfx::Size& new_size) {}
 
   // Notification message from HTML UI.
-  virtual void WebUISend(WebContents* tab,
+  virtual void WebUISend(WebContents* web_contents,
                          const GURL& source_url,
                          const std::string& name,
                          const base::ListValue& args) {}
@@ -404,7 +406,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Requests to lock the mouse. Once the request is approved or rejected,
   // GotResponseToLockMouseRequest() will be called on the requesting tab
   // contents.
-  virtual void RequestToLockMouse(WebContents* tab) {}
+  virtual void RequestToLockMouse(WebContents* web_contents) {}
 
   // Notification that the page has lost the mouse lock.
   virtual void LostMouseLock() {}

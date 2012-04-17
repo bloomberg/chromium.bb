@@ -120,7 +120,8 @@ class Shell : public WebContentsDelegate,
                                   int64 source_frame_id,
                                   const GURL& target_url,
                                   WebContents* new_contents) OVERRIDE;
-  virtual void DidNavigateMainFramePostCommit(WebContents* tab) OVERRIDE;
+  virtual void DidNavigateMainFramePostCommit(
+      WebContents* web_contents) OVERRIDE;
   virtual JavaScriptDialogCreator* GetJavaScriptDialogCreator() OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void HandleKeyboardEvent(

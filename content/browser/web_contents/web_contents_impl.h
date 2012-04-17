@@ -660,8 +660,8 @@ class CONTENT_EXPORT WebContentsImpl
   // The time that we started to create the new tab page.
   base::TimeTicks new_tab_start_time_;
 
-  // The time that we started to close the tab.
-  base::TimeTicks tab_close_start_time_;
+  // The time that we started to close this WebContents.
+  base::TimeTicks close_start_time_;
 
   // The time that this tab was last selected.
   base::TimeTicks last_selected_time_;

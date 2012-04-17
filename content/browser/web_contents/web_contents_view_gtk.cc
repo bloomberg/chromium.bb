@@ -84,7 +84,7 @@ WebContentsViewGtk::WebContentsViewGtk(
     : web_contents_(web_contents),
       expanded_(gtk_expanded_container_new()),
       delegate_(delegate) {
-  gtk_widget_set_name(expanded_.get(), "chrome-tab-contents-view");
+  gtk_widget_set_name(expanded_.get(), "chrome-web-contents-view");
   g_signal_connect(expanded_.get(), "size-allocate",
                    G_CALLBACK(OnSizeAllocateThunk), this);
   g_signal_connect(expanded_.get(), "child-size-request",

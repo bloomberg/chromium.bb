@@ -152,8 +152,8 @@ void Shell::WebContentsCreated(WebContents* source_contents,
   CreateShell(new_contents);
 }
 
-void Shell::DidNavigateMainFramePostCommit(WebContents* tab) {
-  PlatformSetAddressBarURL(tab->GetURL());
+void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {
+  PlatformSetAddressBarURL(web_contents->GetURL());
 }
 
 JavaScriptDialogCreator* Shell::GetJavaScriptDialogCreator() {

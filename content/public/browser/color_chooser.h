@@ -17,7 +17,7 @@ class WebContents;
 class ColorChooser {
  public:
   static ColorChooser* Create(int identifier,
-                              WebContents* tab,
+                              WebContents* web_contents,
                               SkColor initial_color);
   ColorChooser(int identifier) : identifier_(identifier) {}
   virtual ~ColorChooser() {}

@@ -138,11 +138,11 @@ static void InitInterstitialPageMap() {
 
 namespace content {
 
-InterstitialPage* InterstitialPage::Create(WebContents* tab,
+InterstitialPage* InterstitialPage::Create(WebContents* web_contents,
                                            bool new_navigation,
                                            const GURL& url,
                                            InterstitialPageDelegate* delegate) {
-  return new InterstitialPageImpl(tab, new_navigation, url, delegate);
+  return new InterstitialPageImpl(web_contents, new_navigation, url, delegate);
 }
 
 InterstitialPage* InterstitialPage::GetInterstitialPage(

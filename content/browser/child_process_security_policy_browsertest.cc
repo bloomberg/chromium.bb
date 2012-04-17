@@ -46,13 +46,13 @@ IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak) {
       ChildProcessSecurityPolicyImpl::GetInstance()->security_state_.size(),
           1U);
 
-  WebContents* tab = browser()->GetWebContentsAt(0);
-  ASSERT_TRUE(tab != NULL);
-  base::KillProcess(tab->GetRenderProcessHost()->GetHandle(),
+  WebContents* web_contents = browser()->GetWebContentsAt(0);
+  ASSERT_TRUE(web_contents != NULL);
+  base::KillProcess(web_contents->GetRenderProcessHost()->GetHandle(),
                     content::RESULT_CODE_KILLED, true);
 
-  tab->GetController().Reload(true);
+  web_contents->GetController().Reload(true);
   EXPECT_EQ(
-      ChildProcessSecurityPolicyImpl::GetInstance()->security_state_.size(),
-          1U);
+      1U,
+      ChildProcessSecurityPolicyImpl::GetInstance()->security_state_.size());
 }

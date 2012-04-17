@@ -128,8 +128,8 @@ BackingStore* CreateBackingStore(RenderWidgetHost* host,
   if (current_mem + new_mem > max_mem) {
     // Need to remove old backing stores to make room for the new one. We
     // don't want to do this when the backing store is being replace by a new
-    // one for the same tab, but this case won't get called then: we'll have
-    // removed the old one in the RemoveBackingStore above, and the cache
+    // one for the same WebContents, but this case won't get called then: we'll
+    // have removed the old one in the RemoveBackingStore above, and the cache
     // won't be over-sized.
     CreateCacheSpace((current_mem + new_mem) - max_mem);
   }

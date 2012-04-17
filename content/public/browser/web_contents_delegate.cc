@@ -44,7 +44,7 @@ bool WebContentsDelegate::ShouldSuppressDialogs() {
   return false;
 }
 
-void WebContentsDelegate::BeforeUnloadFired(WebContents* tab,
+void WebContentsDelegate::BeforeUnloadFired(WebContents* web_contents,
                                             bool proceed,
                                             bool* proceed_to_fire_unload) {
   *proceed_to_fire_unload = true;
@@ -134,18 +134,19 @@ JavaScriptDialogCreator* WebContentsDelegate::GetJavaScriptDialogCreator() {
 }
 
 bool WebContentsDelegate::IsFullscreenForTabOrPending(
-    const WebContents* tab) const {
+    const WebContents* web_contents) const {
   return false;
 }
 
-content::ColorChooser* WebContentsDelegate::OpenColorChooser(WebContents* tab,
+content::ColorChooser* WebContentsDelegate::OpenColorChooser(
+    WebContents* web_contents,
     int color_chooser_id,
     const SkColor& color) {
   return NULL;
 }
 
 void WebContentsDelegate::WebIntentDispatch(
-    WebContents* tab,
+    WebContents* web_contents,
     WebIntentsDispatcher* intents_dispatcher) {
   // The caller passes this method ownership of the |intents_dispatcher|, but
   // this empty implementation will not use it, so we delete it immediately.

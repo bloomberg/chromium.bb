@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,15 +36,15 @@ class CONTENT_EXPORT HostZoomMapImpl
   virtual void SetDefaultZoomLevel(double level) OVERRIDE;
 
   // Returns the temporary zoom level that's only valid for the lifetime of
-  // the given tab (i.e. isn't saved and doesn't affect other tabs) if it
-  // exists, the default zoom level otherwise.
+  // the given WebContents (i.e. isn't saved and doesn't affect other
+  // WebContentses) if it exists, the default zoom level otherwise.
   //
   // This may be called on any thread.
   double GetTemporaryZoomLevel(int render_process_id,
                                int render_view_id) const;
 
   // Sets the temporary zoom level that's only valid for the lifetime of this
-  // tab.
+  // WebContents.
   //
   // This should only be called on the UI thread.
   void SetTemporaryZoomLevel(int render_process_id,

@@ -123,7 +123,7 @@ void AcceleratedSurfaceBuffersSwappedCompleted(int host_id,
 #if defined(TOOLKIT_GTK)
 // Used to put a lock on surfaces so that the window to which the GPU
 // process is drawing to doesn't disappear while it is drawing when
-// a tab is closed.
+// a WebContents is closed.
 class GpuProcessHost::SurfaceRef {
  public:
   explicit SurfaceRef(gfx::PluginWindowHandle surface);

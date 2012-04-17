@@ -34,15 +34,15 @@ class WebContents;
 
 class InterstitialPage {
  public:
-  // Creates an interstitial page to show in |tab|. |new_navigation| should be
-  // set to true when the interstitial is caused by loading a new page, in which
-  // case a temporary navigation entry is created with the URL |url| and added
-  // to the navigation controller (so the interstitial page appears as a new
-  // navigation entry). |new_navigation| should be false when the interstitial
-  // was triggered by a loading a sub-resource in a page. Takes ownership of
-  // |delegate|.
+  // Creates an interstitial page to show in |web_contents|. |new_navigation|
+  // should be set to true when the interstitial is caused by loading a new
+  // page, in which case a temporary navigation entry is created with the URL
+  // |url| and added to the navigation controller (so the interstitial page
+  // appears as a new navigation entry). |new_navigation| should be false when
+  // the interstitial was triggered by a loading a sub-resource in a page. Takes
+  // ownership of |delegate|.
   CONTENT_EXPORT static InterstitialPage* Create(
-      WebContents* tab,
+      WebContents* web_contents,
       bool new_navigation,
       const GURL& url,
       InterstitialPageDelegate* delegate);
