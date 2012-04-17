@@ -152,25 +152,6 @@ div.disabled {
   min-height: 192px;
 }
 
-section {
-  -webkit-padding-start: 18px;
-  margin-bottom: 24px;
-  margin-top: 8px;
-  max-width: 600px;
-}
-
-section:last-of-type {
-  margin-bottom: 0;
-}
-
-section > h3 {
-  -webkit-margin-start: -18px;
-}
-
-section > div:only-of-type {
-  -webkit-box-flex: 1;
-}
-
 .option {
   margin-top: 0;
 }

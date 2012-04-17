@@ -95,3 +95,24 @@ body.uber-frame footer {
   min-width: 600px;
   padding: 8px 0;
 }
+
+/* Sections are used in options pages, help page and history page. This defines
+ * the section metrics to match the header metrics above. */
+body.uber-frame section {
+  -webkit-padding-start: 18px;
+  margin-bottom: 24px;
+  margin-top: 8px;
+  max-width: 600px;
+}
+
+body.uber-frame section:last-of-type {
+  margin-bottom: 0;
+}
+
+body.uber-frame section > h3 {
+  -webkit-margin-start: -18px;
+}
+
+body.uber-frame section > div:only-of-type {
+  -webkit-box-flex: 1;
+}
