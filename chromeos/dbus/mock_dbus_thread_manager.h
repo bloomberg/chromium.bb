@@ -27,6 +27,7 @@ class  MockCashewClient;
 class  MockCrosDisksClient;
 class  MockCryptohomeClient;
 class  MockDebugDaemonClient;
+class  MockFlimflamDeviceClient;
 class  MockFlimflamIPConfigClient;
 class  MockFlimflamManagerClient;
 class  MockFlimflamNetworkClient;
@@ -56,6 +57,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetCrosDisksClient, CrosDisksClient*(void));
   MOCK_METHOD0(GetCryptohomeClient, CryptohomeClient*(void));
   MOCK_METHOD0(GetDebugDaemonClient, DebugDaemonClient*(void));
+  MOCK_METHOD0(GetFlimflamDeviceClient, FlimflamDeviceClient*(void));
   MOCK_METHOD0(GetFlimflamIPConfigClient, FlimflamIPConfigClient*(void));
   MOCK_METHOD0(GetFlimflamManagerClient, FlimflamManagerClient*(void));
   MOCK_METHOD0(GetFlimflamNetworkClient, FlimflamNetworkClient*(void));
@@ -93,6 +95,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   }
   MockDebugDaemonClient* mock_debugdaemon_client() {
     return mock_debugdaemon_client_.get();
+  }
+  MockFlimflamDeviceClient* mock_flimflam_device_client() {
+    return mock_flimflam_device_client_.get();
   }
   MockFlimflamIPConfigClient* mock_flimflam_ipconfig_client() {
     return mock_flimflam_ipconfig_client_.get();
@@ -135,6 +140,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockCrosDisksClient> mock_cros_disks_client_;
   scoped_ptr<MockCryptohomeClient> mock_cryptohome_client_;
   scoped_ptr<MockDebugDaemonClient> mock_debugdaemon_client_;
+  scoped_ptr<MockFlimflamDeviceClient> mock_flimflam_device_client_;
   scoped_ptr<MockFlimflamIPConfigClient> mock_flimflam_ipconfig_client_;
   scoped_ptr<MockFlimflamManagerClient> mock_flimflam_manager_client_;
   scoped_ptr<MockFlimflamNetworkClient> mock_flimflam_network_client_;

@@ -16,6 +16,7 @@
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/flimflam_device_client.h"
 #include "chromeos/dbus/flimflam_ipconfig_client.h"
 #include "chromeos/dbus/flimflam_manager_client.h"
 #include "chromeos/dbus/flimflam_network_client.h"
@@ -77,6 +78,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create the debugdaemon client.
     debugdaemon_client_.reset(
         DebugDaemonClient::Create(client_type, system_bus_.get()));
+    // Create the Flimflam Device client.
+    flimflam_device_client_.reset(
+        FlimflamDeviceClient::Create(client_type, system_bus_.get()));
     // Create the Flimflam IPConfig client.
     flimflam_ipconfig_client_.reset(
         FlimflamIPConfigClient::Create(client_type, system_bus_.get()));
@@ -169,6 +173,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
+  virtual FlimflamDeviceClient* GetFlimflamDeviceClient() OVERRIDE {
+    return flimflam_device_client_.get();
+  }
+
+  // DBusThreadManager override.
   virtual FlimflamIPConfigClient* GetFlimflamIPConfigClient() OVERRIDE {
     return flimflam_ipconfig_client_.get();
   }
@@ -229,6 +238,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<CrosDisksClient> cros_disks_client_;
   scoped_ptr<CryptohomeClient> cryptohome_client_;
   scoped_ptr<DebugDaemonClient> debugdaemon_client_;
+  scoped_ptr<FlimflamDeviceClient> flimflam_device_client_;
   scoped_ptr<FlimflamIPConfigClient> flimflam_ipconfig_client_;
   scoped_ptr<FlimflamManagerClient> flimflam_manager_client_;
   scoped_ptr<FlimflamNetworkClient> flimflam_network_client_;

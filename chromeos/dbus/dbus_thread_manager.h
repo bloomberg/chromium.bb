@@ -30,6 +30,7 @@ class CashewClient;
 class CrosDisksClient;
 class CryptohomeClient;
 class DebugDaemonClient;
+class FlimflamDeviceClient;
 class FlimflamIPConfigClient;
 class FlimflamManagerClient;
 class FlimflamNetworkClient;
@@ -125,6 +126,11 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
   virtual DebugDaemonClient* GetDebugDaemonClient() = 0;
+
+  // Returns the Flimflam Device client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  virtual FlimflamDeviceClient* GetFlimflamDeviceClient() = 0;
 
   // Returns the Flimflam IPConfig client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut
