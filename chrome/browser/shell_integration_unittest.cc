@@ -24,6 +24,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/environment.h"
+#include "chrome/browser/shell_integration_linux.h"
 #endif
 
 #define FPL FILE_PATH_LITERAL
@@ -92,8 +93,8 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
         temp_dir.path().AppendASCII(kTemplateFilename),
         kTestData1, strlen(kTestData1)));
     std::string contents;
-    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env,
-                                                             &contents));
+    ASSERT_TRUE(ShellIntegrationLinux::GetDesktopShortcutTemplate(&env,
+                                                                  &contents));
     EXPECT_EQ(kTestData1, contents);
   }
 
@@ -110,8 +111,8 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
             .AppendASCII(kTemplateFilename),
         kTestData2, strlen(kTestData2)));
     std::string contents;
-    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env,
-                                                             &contents));
+    ASSERT_TRUE(ShellIntegrationLinux::GetDesktopShortcutTemplate(&env,
+                                                                  &contents));
     EXPECT_EQ(kTestData2, contents);
   }
 
@@ -132,8 +133,8 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
             .AppendASCII(kTemplateFilename),
         kTestData2, strlen(kTestData2)));
     std::string contents;
-    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env,
-                                                             &contents));
+    ASSERT_TRUE(ShellIntegrationLinux::GetDesktopShortcutTemplate(&env,
+                                                                  &contents));
     EXPECT_EQ(kTestData1, contents);
   }
 }
@@ -155,7 +156,7 @@ TEST(ShellIntegrationTest, GetDesktopShortcutFilename) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
     EXPECT_EQ(std::string(chrome::kBrowserProcessExecutableName) + "-" +
               test_cases[i].path,
-              ShellIntegration::GetDesktopShortcutFilename(
+              ShellIntegrationLinux::GetDesktopShortcutFilename(
                   GURL(test_cases[i].url)).value()) <<
         " while testing " << test_cases[i].url;
   }
@@ -352,7 +353,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     SCOPED_TRACE(i);
     EXPECT_EQ(
         test_cases[i].expected_output,
-        ShellIntegration::GetDesktopFileContents(
+        ShellIntegrationLinux::GetDesktopFileContents(
             test_cases[i].template_contents,
             web_app::GenerateApplicationNameFromURL(GURL(test_cases[i].url)),
             GURL(test_cases[i].url),

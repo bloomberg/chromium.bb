@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_linux.h"
 
 // Unity data typedefs.
 typedef struct _UnityInspector UnityInspector;
@@ -77,7 +77,7 @@ void EnsureMethodsLoaded() {
           dlsym(unity_lib, "unity_launcher_entry_get_for_desktop_id"));
   if (entry_get_for_desktop_id) {
     scoped_ptr<base::Environment> env(base::Environment::Create());
-    std::string desktop_id = ShellIntegration::GetDesktopName(env.get());
+    std::string desktop_id = ShellIntegrationLinux::GetDesktopName(env.get());
     chrome_entry = entry_get_for_desktop_id(desktop_id.c_str());
 
     entry_set_count =

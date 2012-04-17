@@ -21,8 +21,8 @@ bool CreatePlatformShortcut(
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::string shortcut_template;
-  if (!ShellIntegration::GetDesktopShortcutTemplate(env.get(),
-                                                    &shortcut_template)) {
+  if (!ShellIntegrationLinux::GetDesktopShortcutTemplate(env.get(),
+                                                         &shortcut_template)) {
     return false;
   }
   return ShellIntegrationLinux::CreateDesktopShortcutForChromeApp(

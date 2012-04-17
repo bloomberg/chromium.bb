@@ -17,12 +17,6 @@
 
 class CommandLine;
 
-#if defined(USE_X11)
-namespace base {
-class Environment;
-}
-#endif
-
 class ShellIntegration {
  public:
   // Sets Chrome as the default browser (only for the current user). Returns
@@ -118,34 +112,6 @@ class ShellIntegration {
       const std::string& extension_app_id,
       const FilePath& user_data_dir,
       const FilePath& extension_path);
-
-#if defined(USE_X11)
-  // Returns filename of the desktop shortcut used to launch the browser.
-  static std::string GetDesktopName(base::Environment* env);
-
-  static bool GetDesktopShortcutTemplate(base::Environment* env,
-                                         std::string* output);
-
-  // Returns filename for .desktop file based on |url|, sanitized for security.
-  static FilePath GetDesktopShortcutFilename(const GURL& url);
-
-  // Returns contents for .desktop file based on |template_contents|, |url|
-  // and |title|. The |template_contents| should be contents of .desktop file
-  // used to launch Chrome.
-  static std::string GetDesktopFileContents(
-      const std::string& template_contents,
-      const std::string& app_name,
-      const GURL& url,
-      const std::string& extension_id,
-      const bool is_platform_app,
-      const FilePath& web_app_path,
-      const FilePath& extension_path,
-      const string16& title,
-      const std::string& icon_name);
-
-  static bool CreateDesktopShortcut(const ShortcutInfo& shortcut_info,
-                                    const std::string& shortcut_template);
-#endif  // defined(USE_X11)
 
 #if defined(OS_WIN)
   // Generates Win7 app id for given app name and profile path. The returned app

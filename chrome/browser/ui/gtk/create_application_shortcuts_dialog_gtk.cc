@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
@@ -219,10 +220,10 @@ void CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut(
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::string shortcut_template;
-  if (ShellIntegration::GetDesktopShortcutTemplate(env.get(),
-                                                   &shortcut_template)) {
-    ShellIntegration::CreateDesktopShortcut(shortcut_info,
-                                            shortcut_template);
+  if (ShellIntegrationLinux::GetDesktopShortcutTemplate(env.get(),
+                                                        &shortcut_template)) {
+    ShellIntegrationLinux::CreateDesktopShortcut(shortcut_info,
+                                                 shortcut_template);
     Release();
   } else {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

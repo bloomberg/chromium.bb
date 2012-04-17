@@ -232,21 +232,6 @@ const char kXdgSettingsDefaultSchemeHandler[] = "default-url-scheme-handler";
 
 }  // namespace
 
-// static
-std::string ShellIntegration::GetDesktopName(base::Environment* env) {
-#if defined(GOOGLE_CHROME_BUILD)
-  return "google-chrome.desktop";
-#else  // CHROMIUM_BUILD
-  // Allow $CHROME_DESKTOP to override the built-in value, so that development
-  // versions can set themselves as the default without interfering with
-  // non-official, packaged versions using the built-in value.
-  std::string name;
-  if (env->GetVar("CHROME_DESKTOP", &name) && !name.empty())
-    return name;
-  return "chromium-browser.desktop";
-#endif
-}
-
 namespace {
 
 // Utility function to get the path to the version of a script shipped with
@@ -307,7 +292,7 @@ bool SetDefaultWebClient(const std::string& protocol) {
     argv.push_back(kXdgSettingsDefaultSchemeHandler);
     argv.push_back(protocol);
   }
-  argv.push_back(ShellIntegration::GetDesktopName(env.get()));
+  argv.push_back(ShellIntegrationLinux::GetDesktopName(env.get()));
 
   int exit_code;
   bool ran_ok = LaunchXdgUtility(argv, &exit_code);
@@ -338,7 +323,7 @@ ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
     argv.push_back(kXdgSettingsDefaultSchemeHandler);
     argv.push_back(protocol);
   }
-  argv.push_back(ShellIntegration::GetDesktopName(env.get()));
+  argv.push_back(ShellIntegrationLinux::GetDesktopName(env.get()));
 
   std::string reply;
   int success_code;
@@ -402,9 +387,24 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
   return browser.find("irefox") != std::string::npos;
 }
 
-// static
-bool ShellIntegration::GetDesktopShortcutTemplate(
-    base::Environment* env, std::string* output) {
+namespace ShellIntegrationLinux {
+
+std::string GetDesktopName(base::Environment* env) {
+#if defined(GOOGLE_CHROME_BUILD)
+  return "google-chrome.desktop";
+#else  // CHROMIUM_BUILD
+  // Allow $CHROME_DESKTOP to override the built-in value, so that development
+  // versions can set themselves as the default without interfering with
+  // non-official, packaged versions using the built-in value.
+  std::string name;
+  if (env->GetVar("CHROME_DESKTOP", &name) && !name.empty())
+    return name;
+  return "chromium-browser.desktop";
+#endif
+}
+
+bool GetDesktopShortcutTemplate(base::Environment* env,
+                                std::string* output) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::vector<FilePath> search_paths;
@@ -446,8 +446,7 @@ bool ShellIntegration::GetDesktopShortcutTemplate(
   return false;
 }
 
-// static
-FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
+FilePath GetDesktopShortcutFilename(const GURL& url) {
   // Use a prefix, because xdg-desktop-menu requires it.
   std::string filename =
       std::string(chrome::kBrowserProcessExecutableName) + "-" + url.spec();
@@ -471,8 +470,7 @@ FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
   return FilePath();
 }
 
-// static
-std::string ShellIntegration::GetDesktopFileContents(
+std::string GetDesktopFileContents(
     const std::string& template_contents,
     const std::string& app_name,
     const GURL& url,
@@ -590,9 +588,8 @@ std::string ShellIntegration::GetDesktopFileContents(
   return output_buffer;
 }
 
-// static
-bool ShellIntegration::CreateDesktopShortcut(
-    const ShortcutInfo& shortcut_info,
+bool CreateDesktopShortcut(
+    const ShellIntegration::ShortcutInfo& shortcut_info,
     const std::string& shortcut_template) {
   DCHECK(!shortcut_info.is_platform_app);
   DCHECK(shortcut_info.extension_id.empty());
@@ -601,24 +598,22 @@ bool ShellIntegration::CreateDesktopShortcut(
       shortcut_info, FilePath(), shortcut_template);
 }
 
-namespace ShellIntegrationLinux {
-
 bool CreateDesktopShortcutForChromeApp(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const FilePath& web_app_path,
     const std::string& shortcut_template) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath shortcut_filename = ShellIntegration::GetDesktopShortcutFilename(
-      shortcut_info.url);
+  FilePath shortcut_filename =
+      ShellIntegrationLinux::GetDesktopShortcutFilename(shortcut_info.url);
   if (shortcut_filename.empty())
     return false;
 
-  std::string icon_name = CreateShortcutIcon(shortcut_info, shortcut_filename);
+  std::string icon_name =CreateShortcutIcon(shortcut_info, shortcut_filename);
 
   std::string app_name =
       web_app::GenerateApplicationNameFromInfo(shortcut_info);
-  std::string contents = ShellIntegration::GetDesktopFileContents(
+  std::string contents = ShellIntegrationLinux::GetDesktopFileContents(
       shortcut_template,
       app_name,
       shortcut_info.url,

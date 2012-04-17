@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/background/background_mode_manager.h"
-#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/shell_integration_linux.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/auto_start_linux.h"
 #include "chrome/common/chrome_switches.h"
@@ -40,7 +40,7 @@ void EnableLaunchOnStartupCallback() {
   std::string command_line = wrapper_script +
       " --" + switches::kNoStartupWindow;
   if (!AutoStart::AddApplication(
-          ShellIntegration::GetDesktopName(environment.get()),
+          ShellIntegrationLinux::GetDesktopName(environment.get()),
           version_info->Name(),
           command_line,
           false)) {
@@ -50,7 +50,8 @@ void EnableLaunchOnStartupCallback() {
 
 void DisableLaunchOnStartupCallback() {
   scoped_ptr<base::Environment> environment(base::Environment::Create());
-  if (!AutoStart::Remove(ShellIntegration::GetDesktopName(environment.get()))) {
+  if (!AutoStart::Remove(
+          ShellIntegrationLinux::GetDesktopName(environment.get()))) {
     NOTREACHED() << "Failed to deregister launch on login.";
   }
 }
