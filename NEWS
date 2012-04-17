@@ -19,6 +19,8 @@ liblouis NEWS -- history of user-visible changes.
    - Document the test harness
 
 ** Bug fixes
+   - lou_allround and lou_translate now properly handle unicode
+     characters
 
 ** Braille Table Improvements
 
