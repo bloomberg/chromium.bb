@@ -5008,12 +5008,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_SHORTCUTS_PROVIDER_DESCRIPTION" desc=" Description of the 'Disable better ranking of previously selected shortcuts in omnibox' lab.">
         Remembers commonly selected autocomplete results based on the omnibox search term and offers those URLs the next time that same search term is typed.
       </message>
-      <message name="IDS_FLAGS_MEMORY_WIDGET_NAME" desc="Name of the 'Show memory status' lab.">
-        Show memory status
-      </message>
-      <message name="IDS_FLAGS_MEMORY_WIDGET_DESCRIPTION" desc="Description of the 'Show memory status' lab.">
-        Shows the amount of free memory in the status area. Click on the menu for more information about system memory.
-      </message>
       <message name="IDS_FLAGS_DOWNLOADS_NEW_UI_NAME" desc="Name of the 'New Downloads UI' lab.">
         New Downloads UI
       </message>

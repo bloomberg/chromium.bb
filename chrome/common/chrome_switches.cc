@@ -1198,9 +1198,6 @@ const char kWindowSize[]                    = "window-size";
 // use Chromium's network stack to fetch, and V8 to evaluate.
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
 
-// Shows a memory consumption status area widget for OOM debugging.
-const char kMemoryWidget[]                  = "memory-widget";
-
 #if defined(OS_CHROMEOS)
 // Disables gdata content provider.
 const char kDisableGData[]                  = "disable-gdata";

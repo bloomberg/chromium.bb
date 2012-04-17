@@ -221,7 +221,6 @@ extern const char kMakeDefaultBrowser[];
 extern const char kManaged[];
 extern const char kMediaCacheSize[];
 extern const char kMemoryProfiling[];
-extern const char kMemoryWidget[];
 extern const char kMessageLoopHistogrammer[];
 extern const char kMetricsRecordingOnly[];
 extern const char kMultiProfiles[];

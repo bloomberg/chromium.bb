@@ -387,18 +387,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableShortcutsProvider)
   },
   {
-    "memory-widget",
-    IDS_FLAGS_MEMORY_WIDGET_NAME,
-    IDS_FLAGS_MEMORY_WIDGET_DESCRIPTION,
-    kOsCrOS,
-#if defined(OS_CHROMEOS)
-    // This switch exists only on Chrome OS.
-    SINGLE_VALUE_TYPE(switches::kMemoryWidget)
-#else
-    SINGLE_VALUE_TYPE("")
-#endif
-  },
-  {
     "downloads-new-ui",  // FLAGS:RECORD_UMA
     IDS_FLAGS_DOWNLOADS_NEW_UI_NAME,
     IDS_FLAGS_DOWNLOADS_NEW_UI_DESCRIPTION,
