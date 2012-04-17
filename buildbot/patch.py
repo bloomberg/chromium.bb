@@ -214,6 +214,54 @@ class LocalGitRepoPatch(GitRepoPatch):
     """Get the Sha1 of the branch."""
     return self.sha1
 
+  def _GetCarbonCopy(self):
+    """Returns a copy of this commit object, with a different sha1.
+
+    This is used to work around a Gerrit bug, where a commit object cannot be
+    uploaded for review if an existing branch (in refs/tryjobs/*) points to
+    that same sha1.  So instead we create a copy of the commit object and upload
+    that to refs/tryjobs/*.
+
+    Returns:
+      The sha1 of the new commit object.
+    """
+    project_dir = self.ProjectDir(constants.SOURCE_ROOT)
+    hash_fields = [('tree_hash', '%T'), ('parent_hash', '%P')]
+    transfer_fields = [('GIT_AUTHOR_NAME', '%an'),
+                       ('GIT_AUTHOR_EMAIL', '%ae'),
+                       ('GIT_AUTHOR_DATE', '%ad'),
+                       ('GIT_COMMITTER_NAME', '%cn'),
+                       ('GIT_COMMITTER_EMAIL', '%ce')]
+    fields = hash_fields + transfer_fields
+
+    format_string = '%n'.join([code for _, code in fields] + ['%B'])
+    result = cros_lib.RunCommand(['git', 'log', '--format=%s' % format_string,
+                                  '-z', '-n1', self.sha1],
+                                  cwd=project_dir, redirect_stdout=True)
+    lines = result.output.splitlines()
+    field_value = dict(zip([name for name, _ in fields],
+                           [line.strip() for line in lines]))
+    commit_body = '\n'.join(lines[len(fields):])
+
+    if len(field_value['parent_hash'].split()) != 1:
+      raise PatchException('Branch %s:%s contains merge result %s!'
+                           % (self.project, self.ref, self.sha1))
+
+    extra_env = dict([(field, field_value[field]) for field, _ in
+                      transfer_fields])
+    result = cros_lib.RunCommand(['git', 'commit-tree',
+                                  field_value['tree_hash'], '-p',
+                                  field_value['parent_hash']], cwd=project_dir,
+                                  redirect_stdout=True, extra_env=extra_env,
+                                  input=commit_body)
+
+    new_sha1 = result.output.strip()
+    if new_sha1 == self.sha1:
+      raise PatchException('Internal error!  Carbon copy of %s is the same as '
+                           'original!' % self.sha1)
+
+    return new_sha1
+
   def Upload(self, remote_ref, dryrun=False):
     """Upload the patch to a remote git branch.
 
@@ -225,8 +273,9 @@ class LocalGitRepoPatch(GitRepoPatch):
     if cros_lib.IsProjectInternal(constants.SOURCE_ROOT, self.project):
       push_url = constants.GERRIT_INT_SSH_URL
 
+    carbon_copy = self._GetCarbonCopy()
     cmd = ['git', 'push', os.path.join(push_url, self.project),
-           '%s:%s' % (self.ref, remote_ref)]
+           '%s:%s' % (carbon_copy, remote_ref)]
     if dryrun:
       cmd.append('--dry-run')
 
