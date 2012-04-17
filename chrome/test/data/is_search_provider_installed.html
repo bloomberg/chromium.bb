@@ -30,14 +30,13 @@ function verifyExceptionFor(testName, origin) {
 
 function writeResult() {
   var result = "1";
-  if (passedAll)
+  if (passedAll) {
     logPassed("Everything passed.");
-  else {
+    document.title = "OK";
+  } else {
     logFailed("At least one test failed.");
-    result = " " + document.body.innerText; // Add a space to ensure that the
-					    // result doesn't resemble success.
+    document.title = "FAIL"
   }
-  document.cookie = document.location.hostname + "testResult=" + escape(result);
 }
 
 try {
