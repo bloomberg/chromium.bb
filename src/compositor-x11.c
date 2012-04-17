@@ -466,6 +466,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->finish_frame_timer =
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
+	output->base.origin = output->base.current;
 	output->base.repaint = x11_output_repaint;
 	output->base.destroy = x11_output_destroy;
 	output->base.assign_planes = NULL;

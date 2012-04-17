@@ -456,6 +456,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	/* FIXME: add shell_surface listener for resizing */
 	wl_shell_surface_set_toplevel(output->parent.shell_surface);
 
+	output->base.origin = output->base.current;
 	output->base.repaint = wayland_output_repaint;
 	output->base.destroy = wayland_output_destroy;
 	output->base.assign_planes = NULL;

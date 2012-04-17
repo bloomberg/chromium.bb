@@ -92,6 +92,7 @@ struct weston_output {
 	uint32_t subpixel;
 	
 	struct weston_mode *current;
+	struct weston_mode *origin;
 	struct wl_list mode_list;
 
 	void (*repaint)(struct weston_output *output,

@@ -1309,6 +1309,7 @@ create_output_for_connector(struct drm_compositor *ec,
 		output_handle_pending_scanout_buffer_destroy;
 
 	output->next_fb_id = 0;
+	output->base.origin = output->base.current;
 	output->base.repaint = drm_output_repaint;
 	output->base.destroy = drm_output_destroy;
 	output->base.assign_planes = drm_assign_planes;

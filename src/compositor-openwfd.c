@@ -401,6 +401,7 @@ create_output_for_port(struct wfd_compositor *ec,
 
 	wfdDeviceCommit(ec->dev, WFD_COMMIT_ENTIRE_DEVICE, WFD_INVALID_HANDLE);
 
+	output->base.origin = output->base.current;
 	output->base.repaint = wfd_output_repaint;
 	output->base.prepare_scanout_surface =
 		wfd_output_prepare_scanout_surface;
