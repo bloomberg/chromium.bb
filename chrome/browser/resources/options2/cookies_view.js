@@ -58,6 +58,14 @@ cr.define('options', function() {
     },
 
     /**
+     * Clear search filter when the dialog is displayed.
+     * @inheritDoc
+     */
+    didShowPage: function() {
+      $('cookies-search-box').value = '';
+    },
+
+    /**
      * Search cookie using text in |cookies-search-box|.
      */
     searchCookie: function() {
