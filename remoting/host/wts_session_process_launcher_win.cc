@@ -11,6 +11,7 @@
 #include <sddl.h>
 #include <limits>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -56,7 +57,8 @@ const char kChromotingIpcSwitchName[] = "chromoting-ipc";
 
 // The command line parameters that should be copied from the service's command
 // line to the host process.
-const char* kCopiedSwitchNames[] = { "auth-config", "host-config" };
+const char* kCopiedSwitchNames[] = {
+    "auth-config", "host-config", switches::kV, switches::kVModule };
 
 // The security descriptor of the Chromoting IPC channel. It gives full access
 // to LocalSystem and denies access by anyone else.

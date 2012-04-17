@@ -22,12 +22,14 @@ namespace remoting {
 URLRequestContext::URLRequestContext(
     net::ProxyConfigService* proxy_config_service)
     : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
+  net_log_.reset(new VlogNetLog());
+
   storage_.set_host_resolver(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                     net::HostResolver::kDefaultRetryAttempts,
-                                    NULL));
+                                    net_log_.get()));
   storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service, 0u, NULL));
+      proxy_config_service, 0u, net_log_.get()));
   storage_.set_cert_verifier(net::CertVerifier::CreateDefault());
   storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
   storage_.set_http_auth_handler_factory(
@@ -41,6 +43,7 @@ URLRequestContext::URLRequestContext(
   session_params.ssl_config_service = ssl_config_service();
   session_params.http_auth_handler_factory = http_auth_handler_factory();
   session_params.http_server_properties = http_server_properties();
+  session_params.net_log = net_log_.get();
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
   storage_.set_http_transaction_factory(

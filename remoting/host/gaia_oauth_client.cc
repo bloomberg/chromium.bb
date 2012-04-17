@@ -135,6 +135,7 @@ void GaiaOAuthClient::Core::HandleResponse(
   // RC_BAD_REQUEST means the arguments are invalid. No point retrying. We are
   // done here.
   if (source->GetResponseCode() == net::HTTP_BAD_REQUEST) {
+    LOG(ERROR) << "Gaia response: response code=net::HTTP_BAD_REQUEST.";
     delegate_->OnOAuthError();
     return;
   }
@@ -153,6 +154,11 @@ void GaiaOAuthClient::Core::HandleResponse(
       response_dict->GetString(kRefreshTokenValue, &refresh_token);
       response_dict->GetInteger(kExpiresInValue, &expires_in_seconds);
     }
+    VLOG(1) << "Gaia response: acess_token='" << access_token
+            << "', refresh_token='" << refresh_token
+            << "', expires in " << expires_in_seconds << " second(s)";
+  } else {
+    LOG(ERROR) << "Gaia response: response code=" << source->GetResponseCode();
   }
   if (access_token.empty()) {
     // If we don't have an access token yet and the the error was not

@@ -297,6 +297,7 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../base/base.gyp:base',
+            '../base/base.gyp:base_static',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../ipc/ipc.gyp:ipc',
             'remoting_version_resources',
@@ -893,6 +894,8 @@
         'host/user_authenticator_linux.cc',
         'host/user_authenticator_mac.cc',
         'host/user_authenticator_win.cc',
+        'host/vlog_net_log.cc',
+        'host/vlog_net_log.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {

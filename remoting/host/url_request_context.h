@@ -14,6 +14,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_storage.h"
+#include "remoting/host/vlog_net_log.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -32,6 +33,7 @@ class URLRequestContext : public net::URLRequestContext {
   virtual ~URLRequestContext();
 
   net::URLRequestContextStorage storage_;
+  scoped_ptr<VlogNetLog> net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContext);
 };
