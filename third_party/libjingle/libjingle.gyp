@@ -542,7 +542,6 @@
         'source/talk/app/webrtc/webrtcsdp.h',
         'source/talk/app/webrtc/webrtcsession.cc',
         'source/talk/app/webrtc/webrtcsession.h',
-        'source/talk/app/webrtc/webrtcsessionobserver.h',
         'source/talk/session/phone/audiomonitor.cc',
         'source/talk/session/phone/audiomonitor.h',
         'source/talk/session/phone/call.cc',
