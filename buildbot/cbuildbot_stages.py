@@ -144,10 +144,6 @@ class PatchChangesStage(bs.BuilderStage):
     self.local_patches = local_patches
 
   def _PerformStage(self):
-    for patch in self.gerrit_patches:
-      cros_lib.PrintBuildbotLink(str(patch), patch.url)
-      patch.Apply(self._build_root)
-
     for patch in self.local_patches:
       patch.Apply(self._build_root)
 
@@ -163,6 +159,10 @@ class PatchChangesStage(bs.BuilderStage):
       patch_object = cros_patch.GitRepoPatch(os.path.join(push_url, project),
                                              project, ref, tracking_branch)
       patch_object.Apply(self._build_root)
+
+    for patch in self.gerrit_patches:
+      cros_lib.PrintBuildbotLink(str(patch), patch.url)
+      patch.Apply(self._build_root)
 
 
 class SyncStage(bs.BuilderStage):
