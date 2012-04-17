@@ -134,6 +134,12 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       failed_datatypes_handler_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       configure_status_(DataTypeManager::UNKNOWN),
       setup_in_progress_(false) {
+#if defined(OS_ANDROID)
+  chrome::VersionInfo version_info;
+  if (version_info.IsOfficialBuild()) {
+    sync_service_url_ = GURL(kSyncServerUrl);
+  }
+#else
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
   // sync servers. Users with officially-branded Chrome stable and beta builds
@@ -146,6 +152,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       channel == chrome::VersionInfo::CHANNEL_BETA) {
     sync_service_url_ = GURL(kSyncServerUrl);
   }
+#endif
 }
 
 ProfileSyncService::~ProfileSyncService() {
