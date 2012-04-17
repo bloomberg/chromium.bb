@@ -76,6 +76,7 @@ table_files = \
 	es-old.dis \
 	es-translation.ctb \
 	et.ctb \
+	et-g0.utb \
 	eurodefs.cti \
 	fi1.ctb \
 	fi2.ctb \
