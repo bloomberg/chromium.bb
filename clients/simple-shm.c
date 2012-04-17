@@ -31,7 +31,6 @@
 #include <signal.h>
 
 #include <wayland-client.h>
-#include <wayland-egl.h>
 
 struct display {
 	struct wl_display *display;
