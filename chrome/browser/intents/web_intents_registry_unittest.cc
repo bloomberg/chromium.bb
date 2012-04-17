@@ -144,6 +144,14 @@ class TestConsumer: public WebIntentsRegistry::Consumer {
      MessageLoop::current()->Quit();
    }
 
+   bool ServicesContains(const webkit_glue::WebIntentServiceData& data) {
+     for (size_t i = 0; i < services_.size(); ++i) {
+       if (services_[i] == data)
+         return true;
+     }
+     return false;
+   }
+
    virtual void OnIntentsDefaultsQueryDone(
        WebIntentsRegistry::QueryID id,
        const DefaultWebIntentService& default_service) {
@@ -306,7 +314,7 @@ TEST_F(WebIntentsRegistryTest, GetIntentsFromMixedSources) {
   ASSERT_EQ(1U, consumer.services_.size());
 }
 
-TEST_F(WebIntentsRegistryTest, GetIntentsWithMimeMatching) {
+TEST_F(WebIntentsRegistryTest, GetIntentsWithMimeAndLiteralMatching) {
   WebIntentServiceData services[] = {
     WebIntentServiceData(GURL("http://elsewhere.com/intent/share.html"),
                          ASCIIToUTF16("http://webintents.org/share"),
@@ -323,12 +331,62 @@ TEST_F(WebIntentsRegistryTest, GetIntentsWithMimeMatching) {
     WebIntentServiceData(GURL("http://somewhere2.com/intent/share.html"),
                          ASCIIToUTF16("http://webintents.org/share"),
                          ASCIIToUTF16("text/plain"),
+                         ASCIIToUTF16("Text Sharing Service")),
+    WebIntentServiceData(GURL("http://elsewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("elsewhere"),
+                         ASCIIToUTF16("Text Sharing Service")),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("somewhere"),
+                         ASCIIToUTF16("Text Sharing Service")),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("nota/*"),
+                         ASCIIToUTF16("Text Sharing Service")),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("*nomime"),
+                         ASCIIToUTF16("Text Sharing Service")),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("*/nomime"),
+                         ASCIIToUTF16("Text Sharing Service")),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("*/*nomime"),
+                         ASCIIToUTF16("Text Sharing Service")),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("*/*/nomime"),
+                         ASCIIToUTF16("Text Sharing Service")),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("nomime/*"),
+                         ASCIIToUTF16("Text Sharing Service")),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("x-type/*"),
+                         ASCIIToUTF16("Text Sharing Service")),
+    WebIntentServiceData(GURL("http://somewhere.com/intent/share.html"),
+                         ASCIIToUTF16("http://webintents.org/share"),
+                         ASCIIToUTF16("x-/*"),  // actually a string literal
                          ASCIIToUTF16("Text Sharing Service"))
   };
   registry_.RegisterIntentService(services[0]);
   registry_.RegisterIntentService(services[1]);
   registry_.RegisterIntentService(services[2]);
   registry_.RegisterIntentService(services[3]);
+  registry_.RegisterIntentService(services[4]);
+  registry_.RegisterIntentService(services[5]);
+  registry_.RegisterIntentService(services[6]);
+  registry_.RegisterIntentService(services[7]);
+  registry_.RegisterIntentService(services[8]);
+  registry_.RegisterIntentService(services[9]);
+  registry_.RegisterIntentService(services[10]);
+  registry_.RegisterIntentService(services[11]);
+  registry_.RegisterIntentService(services[12]);
+  registry_.RegisterIntentService(services[13]);
 
   TestConsumer consumer;
 
@@ -371,17 +429,48 @@ TEST_F(WebIntentsRegistryTest, GetIntentsWithMimeMatching) {
       ASCIIToUTF16("http://webintents.org/share"),
       ASCIIToUTF16("*"), &consumer);
   consumer.WaitForData();
-  ASSERT_EQ(4U, consumer.services_.size());
-  EXPECT_EQ(services[0], consumer.services_[0]);
-  EXPECT_EQ(services[1], consumer.services_[1]);
-  EXPECT_EQ(services[2], consumer.services_[2]);
-  EXPECT_EQ(services[3], consumer.services_[3]);
+  ASSERT_EQ(5U, consumer.services_.size());
+  EXPECT_TRUE(consumer.ServicesContains(services[0]));
+  EXPECT_TRUE(consumer.ServicesContains(services[1]));
+  EXPECT_TRUE(consumer.ServicesContains(services[2]));
+  EXPECT_TRUE(consumer.ServicesContains(services[3]));
+  EXPECT_TRUE(consumer.ServicesContains(services[12]));
+
+  // Test retrieve string literal match.
+  consumer.expected_id_ = registry_.GetIntentServices(
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("elsewhere"), &consumer);
+  consumer.WaitForData();
+  ASSERT_EQ(1U, consumer.services_.size());
+  EXPECT_EQ(services[4], consumer.services_[0]);
+
+  // Test retrieve MIME-looking type but actually isn't
+  // doesn't wildcard match.
+  consumer.expected_id_ = registry_.GetIntentServices(
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("nota/mimetype"), &consumer);
+  consumer.WaitForData();
+  ASSERT_EQ(0U, consumer.services_.size());
+
+  // Also a MIME-ish type that actually isn't.
+  consumer.expected_id_ = registry_.GetIntentServices(
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("x-/mimetype"), &consumer);
+  consumer.WaitForData();
+  ASSERT_EQ(0U, consumer.services_.size());
+
+  // Extension MIME type will match wildcard.
+  consumer.expected_id_ = registry_.GetIntentServices(
+      ASCIIToUTF16("http://webintents.org/share"),
+      ASCIIToUTF16("x-type/mimetype"), &consumer);
+  consumer.WaitForData();
+  ASSERT_EQ(1U, consumer.services_.size());
 }
 
 TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
   DefaultWebIntentService default_service;
   default_service.action = ASCIIToUTF16("share");
-  default_service.type = ASCIIToUTF16("type/*");
+  default_service.type = ASCIIToUTF16("text/*");
   // Values here are just dummies to test for preservation.
   default_service.user_date = 1;
   default_service.suppression = 4;
@@ -393,7 +482,7 @@ TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
   // Test we can retrieve default entries by action.
   consumer.expected_id_ = registry_.GetDefaultIntentService(
       ASCIIToUTF16("share"),
-      ASCIIToUTF16("type/plain"),
+      ASCIIToUTF16("text/plain"),
       GURL("http://www.google.com/"),
       &consumer);
 
@@ -409,7 +498,7 @@ TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
   ASSERT_EQ("", consumer.default_.service_url);
   consumer.expected_id_ = registry_.GetDefaultIntentService(
       ASCIIToUTF16("no-share"),
-      ASCIIToUTF16("type/plain"),
+      ASCIIToUTF16("text/plain"),
       GURL("http://www.google.com/"),
       &consumer);
 
@@ -423,7 +512,20 @@ TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
   ASSERT_EQ("", consumer.default_.service_url);
   consumer.expected_id_ = registry_.GetDefaultIntentService(
       ASCIIToUTF16("share"),
-      ASCIIToUTF16("notype/plain"),
+      ASCIIToUTF16("image/plain"),
+      GURL("http://www.google.com/"),
+      &consumer);
+
+  consumer.WaitForData();
+
+  EXPECT_EQ("", consumer.default_.service_url);
+
+  // Check that a string-literal type won't match.
+  consumer.default_ = DefaultWebIntentService();
+  ASSERT_EQ("", consumer.default_.service_url);
+  consumer.expected_id_ = registry_.GetDefaultIntentService(
+      ASCIIToUTF16("share"),
+      ASCIIToUTF16("literal"),
       GURL("http://www.google.com/"),
       &consumer);
 
