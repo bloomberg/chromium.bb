@@ -100,6 +100,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
@@ -303,10 +304,8 @@
                 'app/theme/star.pdf',
                 'app/theme/star_lit.pdf',
                 'browser/mac/install.sh',
-                '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
-                '<(grit_out_dir)/theme_resources_standard.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.pak',
+                 '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
+                 '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
                 '<!@pymod_do_main(repack_locales -o -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
                 # Note: pseudo_locales are generated via the packed_resources
                 # dependency but not copied to the final target.  See
@@ -355,6 +354,11 @@
                 ],
                 'repack_path': '../tools/grit/grit/format/repack.py',
               },
+              'actions': [
+                {
+                  'includes': ['chrome_repack_theme_resources_2x.gypi']
+                },
+              ],
               'postbuilds': [
                 {
                   # This step causes an error to be raised if the .order file
@@ -531,12 +535,6 @@
                 ['internal_pdf', {
                   'dependencies': [
                     '../pdf/pdf.gyp:pdf',
-                  ],
-                }],
-                ['enable_hidpi==1', {
-                  'mac_bundle_resources': [
-                    '<(grit_out_dir)/theme_resources_2x.pak',
-                    '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_2x/ui_resources_2x.pak',
                   ],
                 }],
               ],  # conditions
