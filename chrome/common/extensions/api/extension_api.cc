@@ -275,8 +275,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_DEVTOOLS));
   RegisterSchema("experimental.accessibility", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY));
-  RegisterSchema("experimental.alarms", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_ALARMS));
   RegisterSchema("experimental.app", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP));
   RegisterSchema("experimental.bookmarkManager", ReadFromResource(

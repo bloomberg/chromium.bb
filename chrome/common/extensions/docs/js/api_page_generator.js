@@ -31,7 +31,6 @@ var MODULE_SCHEMAS = [
   '../api/debugger.json',
   '../api/devtools.json',
   '../api/experimental.accessibility.json',
-  '../api/experimental.alarms.json',
   '../api/experimental.app.json',
   '../api/experimental.bookmarkManager.json',
   '../api/experimental.downloads.json',

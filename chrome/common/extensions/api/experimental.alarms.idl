@@ -1,0 +1,68 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// File-level comment to appease parser. Eventually this will not be necessary.
+// TODO(mpcomplete): We need documentation before we can release this.
+
+namespace experimental.alarms {
+  dictionary Alarm {
+    // Name of this alarm.
+    DOMString name;
+
+    // Original length of time in seconds after which the onAlarm event should
+    // fire.
+    // TODO: need minimum=0
+    long delayInSeconds;
+
+    // True if the alarm repeatedly fires at regular intervals, false if it
+    // only fires once.
+    boolean repeating;
+  };
+
+  // TODO(mpcomplete): rename to CreateInfo when http://crbug.com/123073 is
+  // fixed.
+  dictionary AlarmCreateInfo {
+    // Length of time in seconds after which the onAlarm event should fire.
+    // Note that granularity is not guaranteed: this value is more of a hint to
+    // the browser. For performance reasons, alarms may be delayed an arbitrary
+    // amount of time before firing.
+    // TODO: need minimum=0
+    long delayInSeconds;
+
+    // True if the alarm should repeatedly fire at regular intervals. Defaults
+    // to false.
+    boolean? repeating;
+  };
+
+  callback AlarmCallback = void (Alarm alarm);
+  callback AlarmListCallback = void (Alarm[] alarms);
+
+  interface Functions {
+    // Creates an alarm. After the delay is expired, the onAlarm event is
+    // fired. If there is another alarm with the same name (or no name if none
+    // is specified), it will be cancelled and replaced by this alarm.
+    // |name|: Optional name to identify this alarm. Defaults to the empty string.
+    static void create(optional DOMString name, AlarmCreateInfo alarmInfo);
+
+    // Retrieves details about the specified alarm.
+    // |name|: The name of the alarm to get. Defaults to the empty string.
+    static void get(optional DOMString name, AlarmCallback callback);
+
+    // Gets an array of all the alarms.
+    static void getAll(AlarmListCallback callback);
+
+    // Clears the alarm with the given name.
+    // |name|: The name of the alarm to clear. Defaults to the empty string.
+    static void clear(optional DOMString name);
+
+    // Clears all alarms.
+    static void clearAll();
+  };
+
+  interface Events {
+    // Fired when an alarm has expired. Useful for transient background pages.
+    // |name|: The name of the alarm that has expired.
+    static void onAlarm(optional DOMString name);
+  };
+};

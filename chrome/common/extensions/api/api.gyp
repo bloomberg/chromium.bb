@@ -19,13 +19,13 @@
         'chromium_code': 1,
         'json_schema_files': [
           'browserAction.json',
-          'experimental.alarms.json',
           'experimental.declarative.json',
           'permissions.json',
           'tabs.json',
           'windows.json',
         ],
         'idl_schema_files': [
+          'experimental.alarms.idl',
           'experimental.bluetooth.idl',
           'experimental.dns.idl',
           'experimental.serial.idl',
