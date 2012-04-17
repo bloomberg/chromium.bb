@@ -110,31 +110,16 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
 static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
-  // This parameter causes an assertion.
-  if (command_line.HasSwitch(switches::kRendererAssertTest)) {
-    DCHECK(false);
-  }
-
-
-#if !defined(OFFICIAL_BUILD)
-  // This parameter causes an assertion too.
-  if (command_line.HasSwitch(switches::kRendererCheckFalseTest)) {
-    CHECK(false);
-  }
-#endif  // !defined(OFFICIAL_BUILD)
-
-
-  // This parameter causes a null pointer crash (crash reporter trigger).
-  if (command_line.HasSwitch(switches::kRendererCrashTest)) {
-    int* bad_pointer = NULL;
-    *bad_pointer = 0;
-  }
-
   if (command_line.HasSwitch(switches::kWaitForDebugger))
     base::debug::WaitForDebugger(60, true);
 
   if (command_line.HasSwitch(switches::kRendererStartupDialog))
     ChildProcess::WaitForDebugger("Renderer");
+
+  // This parameter causes an assertion.
+  if (command_line.HasSwitch(switches::kRendererAssertTest)) {
+    DCHECK(false);
+  }
 }
 
 // This is a simplified version of the browser Jankometer, which measures

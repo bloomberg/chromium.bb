@@ -518,9 +518,6 @@ const char kRendererCleanExit[]             = "renderer-clean-exit";
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kRendererCmdPrefix[]             = "renderer-cmd-prefix";
 
-// Causes the renderer process to crash on launch.
-const char kRendererCrashTest[]             = "renderer-crash-test";
-
 // Causes the process to run as renderer instead of as browser.
 const char kRendererProcess[]               = "renderer";
 
@@ -640,11 +637,6 @@ const char kScrollPixels[]                  = "scroll-pixels";
 // Use the system SSL library (Secure Transport on Mac, SChannel on Windows)
 // instead of NSS for SSL.
 const char kUseSystemSSL[]                  = "use-system-ssl";
-#endif
-
-#if !defined(OFFICIAL_BUILD)
-// Causes the renderer process to throw an assertion on launch.
-const char kRendererCheckFalseTest[]        = "renderer-check-false-test";
 #endif
 
 // Enable per-tile page painting.

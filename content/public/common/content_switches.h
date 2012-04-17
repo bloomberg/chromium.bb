@@ -159,7 +159,6 @@ CONTENT_EXPORT extern const char kRendererAssertTest[];
 extern const char kRendererCleanExit[];
 #endif
 extern const char kRendererCmdPrefix[];
-CONTENT_EXPORT extern const char kRendererCrashTest[];
 CONTENT_EXPORT extern const char kRendererProcess[];
 extern const char kRendererProcessLimit[];
 extern const char kRendererStartupDialog[];
@@ -197,10 +196,6 @@ extern const char kScrollPixels[];
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 extern const char kUseSystemSSL[];
-#endif
-
-#if !defined(OFFICIAL_BUILD)
-CONTENT_EXPORT extern const char kRendererCheckFalseTest[];
 #endif
 
 extern const char kEnablePerTilePainting[];
