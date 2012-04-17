@@ -322,6 +322,10 @@ gfx::Rect PanelBrowserFrameView::GetWindowBoundsForClientBounds(
 }
 
 int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
+  PanelStrip* panel_strip = panel_browser_view_->panel()->panel_strip();
+  if (!panel_strip)
+    return HTNOWHERE;
+
   if (!bounds().Contains(point))
     return HTNOWHERE;
 
@@ -338,6 +342,17 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       NonClientBorderThickness(), NonClientBorderThickness(),
       kResizeAreaCornerSize, kResizeAreaCornerSize,
       CanResize());
+
+  // The bottom edge and corners cannot be used to resize in some scenarios,
+  // i.e docked panels.
+  panel::Resizability resizability = panel_strip->GetPanelResizability(
+      panel_browser_view_->panel());
+  if (resizability == panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM &&
+      (window_component == HTBOTTOM ||
+       window_component == HTBOTTOMLEFT ||
+       window_component == HTBOTTOMRIGHT))
+    return HTNOWHERE;
+
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
 }
@@ -640,7 +655,7 @@ void PanelBrowserFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
   // appropriate frame and shadow. See ash/wm/shadow_controller.h.
 
   // Draw the divider between the titlebar and the client area.
-  if (height() > kTitlebarHeight) {
+  if (!IsShowingTitlebarOnly()) {
     canvas->DrawRect(gfx::Rect(0, kTitlebarHeight, width() - 1, 1),
                      kDividerColor);
   }
@@ -685,7 +700,7 @@ void PanelBrowserFrameView::PaintFrameEdge(gfx::Canvas* canvas) {
           frame_edges.bottom_left->height());
 
   // Draw the divider between the titlebar and the client area.
-  if (height() > kTitlebarHeight && !CanResize()) {
+  if (!IsShowingTitlebarOnly() && !CanResize()) {
     canvas->DrawRect(gfx::Rect(NonClientBorderThickness(), kTitlebarHeight,
                                width() - 1 - 2 * NonClientBorderThickness(),
                                NonClientBorderThickness()), kDividerColor);
@@ -722,4 +737,8 @@ void PanelBrowserFrameView::UpdateTitleBar() {
 bool PanelBrowserFrameView::CanResize() const {
   return panel_browser_view_->panel()->CanResizeByMouse() !=
       panel::NOT_RESIZABLE;
+}
+
+bool PanelBrowserFrameView::IsShowingTitlebarOnly() const {
+  return height() <= kTitlebarHeight;
 }

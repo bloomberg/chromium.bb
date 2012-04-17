@@ -48,6 +48,9 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // is drawn.
   gfx::Size IconOnlySize() const;
 
+  // Returns true if the frame window is showing only the titlebar.
+  bool IsShowingTitlebarOnly() const;
+
  protected:
   // Overridden from BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;

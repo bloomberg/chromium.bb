@@ -140,6 +140,15 @@ class PanelBrowserView : public BrowserView,
 
   bool IsAnimatingBounds() const;
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Sets or clears the bitwise |attribute_value| for the attibute denoted by
+  // |attribute_index|. This is used to update the style or extended style
+  // for the native window.
+  void UpdateWindowAttribute(int attribute_index,
+                             int attribute_value,
+                             bool to_set);
+#endif
+
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;
 

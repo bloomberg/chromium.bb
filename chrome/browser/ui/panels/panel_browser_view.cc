@@ -252,6 +252,15 @@ void PanelBrowserView::AnimationEnded(const ui::Animation* animation) {
 void PanelBrowserView::AnimationProgressed(const ui::Animation* animation) {
   gfx::Rect new_bounds = bounds_animator_->CurrentValueBetween(
       animation_start_bounds_, bounds_);
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // When the panel's height falls below the titlebar height, do not show
+  // thick frame since otherwise Windows will add extra size to the layout
+  // computation.
+  bool use_thick_frame = !GetFrameView()->IsShowingTitlebarOnly();
+  UpdateWindowAttribute(GWL_STYLE, WS_THICKFRAME, use_thick_frame);
+#endif
+
   ::BrowserView::SetBounds(new_bounds);
 }
 
@@ -274,10 +283,13 @@ void PanelBrowserView::OnWindowBeginUserBoundsChange() {
   // our platform-independent resizing framework. Thus we need to turn off the
   // auto-resizing explicitly here.
   panel_->SetAutoResizable(false);
+  panel_->SetPreviewMode(true);
 }
 
 void PanelBrowserView::OnWindowEndUserBoundsChange() {
   bounds_ = GetBounds();
+  panel_->SetPreviewMode(false);
+  panel_->panel_strip()->RefreshLayout();
 }
 
 void PanelBrowserView::ShowPanel() {
@@ -327,15 +339,9 @@ void PanelBrowserView::PreventActivationByOS(bool prevent_activation) {
   // Set the flags "NoActivate" and "AppWindow" to make sure
   // the minimized panels do not get activated by the OS, but
   // do appear in the taskbar and Alt-Tab menu.
-  gfx::NativeWindow native_window = GetNativePanelHandle();
-  int style = ::GetWindowLong(native_window, GWL_EXSTYLE);
-
-  if (prevent_activation)
-    ::SetWindowLong(native_window, GWL_EXSTYLE,
-        style |  WS_EX_NOACTIVATE | WS_EX_APPWINDOW);
-  else // allow activation
-    ::SetWindowLong(native_window, GWL_EXSTYLE,
-        style & ~WS_EX_NOACTIVATE & ~WS_EX_APPWINDOW);
+  UpdateWindowAttribute(GWL_EXSTYLE,
+                        WS_EX_NOACTIVATE | WS_EX_APPWINDOW,
+                        prevent_activation);
 #endif
 }
 
@@ -611,6 +617,22 @@ bool PanelBrowserView::IsAnimatingBounds() const {
 
 void PanelBrowserView::EnableResizeByMouse(bool enable) {
 }
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+void PanelBrowserView::UpdateWindowAttribute(int attribute_index,
+                                             int attribute_value,
+                                             bool to_set) {
+  gfx::NativeWindow native_window = GetNativePanelHandle();
+  int value = ::GetWindowLong(native_window, attribute_index);
+  int expected_value;
+  if (to_set)
+    expected_value = value |  attribute_value;
+  else
+    expected_value = value &  ~attribute_value;
+  if (value != expected_value)
+    ::SetWindowLong(native_window, attribute_index, expected_value);
+}
+#endif
 
 // NativePanelTesting implementation.
 class NativePanelTestingWin : public NativePanelTesting {
