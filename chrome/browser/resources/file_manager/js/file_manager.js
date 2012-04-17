@@ -3898,10 +3898,12 @@ FileManager.prototype = {
 
   FileManager.prototype.onDetailViewButtonClick_ = function(event) {
     this.setListType(FileManager.ListType.DETAIL);
+    this.currentList_.focus();
   };
 
   FileManager.prototype.onThumbnailViewButtonClick_ = function(event) {
     this.setListType(FileManager.ListType.THUMBNAIL);
+    this.currentList_.focus();
   };
 
   /**
