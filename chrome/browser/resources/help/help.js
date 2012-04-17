@@ -68,6 +68,7 @@ cr.define('help', function() {
       var moreInfo = $('more-info-container');
       var visible = moreInfo.className == 'visible';
       moreInfo.className = visible ? '' : 'visible';
+      moreInfo.style.height = visible ? '' : moreInfo.scrollHeight + 'px';
       moreInfo.addEventListener('webkitTransitionEnd', function(event) {
         $('more-info-expander').textContent = visible ?
             localStrings.getString('showMoreInfo') :

@@ -82,12 +82,11 @@ body {
 
 #more-info-container.visible {
   margin-bottom: 1.5em;
-  max-height: 25em;
 }
 
 #more-info-container {
   -webkit-transition: all 500ms linear;
+  height: 0;
   margin-bottom: 0;
-  max-height: 0;
   overflow: hidden;
 }
