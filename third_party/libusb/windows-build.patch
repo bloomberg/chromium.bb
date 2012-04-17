@@ -30,6 +30,19 @@ index fee89f5..27986b8 100644
  #endif
  
 +#endif /* LIBUSB_POLL_WINDOWS_H */
+diff --git a/libusb/os/windows_usb.h b/libusb/os/windows_usb.h
+index b629d18..6dbfaf5 100644
+--- a/libusb/os/windows_usb.h
++++ b/libusb/os/windows_usb.h
+@@ -101,8 +101,6 @@ const GUID GUID_DEVINTERFACE_USB_DEVICE = { 0xA5DCBF10, 0x6530, 0x11D2, {0x90, 0
+ #if !defined(GUID_DEVINTERFACE_USB_HUB)
+ const GUID GUID_DEVINTERFACE_USB_HUB = { 0xF18A0E88, 0xC30C, 0x11D0, {0x88, 0x15, 0x00, 0xA0, 0xC9, 0x06, 0xBE, 0xD8} };
+ #endif
+-const GUID GUID_NULL = { 0x00000000, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} };
+-
+ 
+ /*
+  * Multiple USB API backend support
 diff --git a/msvc/config.h b/msvc/config.h
 index 43b4d4e..9ac6134 100644
 --- a/msvc/config.h

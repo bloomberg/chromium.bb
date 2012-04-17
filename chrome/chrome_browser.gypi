@@ -4527,6 +4527,11 @@
             ['exclude', '^browser/ui/webui/sync_promo'],
           ],
         }],
+        ['OS!="android"', {
+          'dependencies': [
+            '../third_party/libusb/libusb.gyp:libusb',
+          ],
+        }],
         ['OS=="mac"', {
           'sources!': [
             'browser/automation/automation_provider_list_generic.cc',

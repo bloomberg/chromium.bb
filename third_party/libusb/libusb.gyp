@@ -36,8 +36,9 @@
         }],
         [ 'OS == "win"', {
           'sources': [
-            'libusb/os/windows_usb.c',
+            'libusb/os/poll_windows.c',
             'libusb/os/threads_windows.c',
+            'libusb/os/windows_usb.c',
           ],
           'include_dirs!': [
             '.',
