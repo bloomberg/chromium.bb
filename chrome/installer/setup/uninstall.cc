@@ -693,7 +693,7 @@ bool ProcessChromeWorkItems(const InstallationState& original_state,
                             const InstallerState& installer_state,
                             const FilePath& setup_path,
                             const Product& product) {
-  if (product.is_chrome())
+  if (!product.is_chrome())
     return false;
 
   scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
