@@ -9,11 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
+
 class BalloonCollection;
 class GURL;
 class Notification;
 class NotificationPrefsManager;
 class PrefService;
+class Profile;
 
 // This virtual interface is used to manage the UI surfaces for desktop
 // notifications. There is one instance per profile.

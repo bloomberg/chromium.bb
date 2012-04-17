@@ -64,22 +64,6 @@ NotificationUIManagerImpl::~NotificationUIManagerImpl() {
 #endif
 }
 
-// static
-NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
-  return Create(local_state, BalloonCollection::Create());
-}
-
-// static
-NotificationUIManager* NotificationUIManager::Create(
-    PrefService* local_state,
-    BalloonCollection* balloons) {
-  NotificationUIManagerImpl* instance =
-      new NotificationUIManagerImpl(local_state);
-  instance->Initialize(balloons);
-  balloons->set_space_change_listener(instance);
-  return instance;
-}
-
 void NotificationUIManagerImpl::Initialize(
     BalloonCollection* balloon_collection) {
   DCHECK(!balloon_collection_.get());
