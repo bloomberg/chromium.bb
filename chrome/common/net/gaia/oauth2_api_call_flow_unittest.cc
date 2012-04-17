@@ -277,7 +277,7 @@ TEST_F(OAuth2ApiCallFlowTest, CreateURLFetcher) {
   GURL url(CreateApiUrl());
 
   CreateFlow(rt, at, scopes);
-  TestURLFetcher* url_fetcher = SetupApiCall(true, net::HTTP_OK);
+  scoped_ptr<TestURLFetcher> url_fetcher(SetupApiCall(true, net::HTTP_OK));
   flow_->CreateURLFetcher();
   HttpRequestHeaders headers;
   url_fetcher->GetExtraRequestHeaders(&headers);
