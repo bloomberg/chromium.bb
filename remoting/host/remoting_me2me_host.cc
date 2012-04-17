@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/files/file_path_watcher.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -83,6 +84,9 @@ class HostProcess : public OAuthClient::Delegate {
         new ChromotingHostContext(message_loop_.message_loop_proxy()));
     context_->Start();
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+    config_updated_timer_.reset(new base::DelayTimer<HostProcess>(
+        FROM_HERE, base::TimeDelta::FromSeconds(2), this,
+        &HostProcess::ConfigUpdated));
   }
 
   void InitWithCommandLine(const CommandLine* cmd_line) {
@@ -118,12 +122,42 @@ class HostProcess : public OAuthClient::Delegate {
     }
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_WIN)
+  class ConfigChangedDelegate : public base::files::FilePathWatcher::Delegate {
+   public:
+    ConfigChangedDelegate(HostProcess* host_process) :
+      host_process_(host_process) {
+    }
+    void OnFilePathChanged(const FilePath& path) OVERRIDE {
+      // Call ConfigUpdated after a short delay, so that this object won't
+      // try to read the updated configuration file before it has been
+      // completely written.
+      // If the writer moves the new configuration file into place atomically,
+      // this delay may not be necessary.
+      host_process_->config_updated_timer_->Reset();
+    }
+    void OnFilePathError(const FilePath& path) OVERRIDE {
+    }
+   private:
+    HostProcess* host_process_;
+
+    DISALLOW_COPY_AND_ASSIGN(ConfigChangedDelegate);
+  };
+#endif  // defined(OS_WIN)
+
   void ListenForConfigChanges() {
+#if defined(OS_MACOSX)
     remoting::RegisterHupSignalHandler(
         base::Bind(&HostProcess::ConfigUpdated, base::Unretained(this)));
-  }
+#elif defined(OS_WIN)
+    scoped_refptr<base::files::FilePathWatcher::Delegate> delegate(
+        new ConfigChangedDelegate(this));
+    config_watcher_.reset(new base::files::FilePathWatcher());
+    if (!config_watcher_->Watch(host_config_path_, delegate)) {
+      LOG(ERROR) << "Couldn't watch file " << host_config_path_.value();
+    }
 #endif
+  }
 
   void CreateAuthenticatorFactory() {
     scoped_ptr<protocol::AuthenticatorFactory> factory(
@@ -151,7 +185,7 @@ class HostProcess : public OAuthClient::Delegate {
       StartWatchingNatPolicy();
     }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN)
     context_->file_message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&HostProcess::ListenForConfigChanges,
@@ -356,6 +390,8 @@ class HostProcess : public OAuthClient::Delegate {
 
   scoped_ptr<policy_hack::NatPolicy> nat_policy_;
   bool allow_nat_traversal_;
+  scoped_ptr<base::files::FilePathWatcher> config_watcher_;
+  scoped_ptr<base::DelayTimer<HostProcess> > config_updated_timer_;
 
   bool restarting_;
 

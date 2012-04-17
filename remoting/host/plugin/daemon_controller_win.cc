@@ -102,6 +102,8 @@ class DaemonControllerWin : public remoting::DaemonController {
                                  const CompletionCallback& done_callback);
   void DoSetConfigAndStart(scoped_ptr<base::DictionaryValue> config,
                            const CompletionCallback& done_callback);
+  void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
+                      const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
 
   // The worker thread used for servicing long running operations.
@@ -202,7 +204,6 @@ void DaemonControllerWin::GetConfig(const GetConfigCallback& callback) {
 void DaemonControllerWin::SetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
-
   worker_thread_.message_loop_proxy()->PostTask(
       FROM_HERE, base::Bind(
           &DaemonControllerWin::DoInstallAsNeededAndStart,
@@ -212,8 +213,10 @@ void DaemonControllerWin::SetConfigAndStart(
 void DaemonControllerWin::UpdateConfig(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
-  NOTIMPLEMENTED();
-  done_callback.Run(RESULT_FAILED);
+  worker_thread_.message_loop_proxy()->PostTask(
+      FROM_HERE, base::Bind(
+          &DaemonControllerWin::DoUpdateConfig,
+          base::Unretained(this), base::Passed(&config), done_callback));
 }
 
 void DaemonControllerWin::Stop(const CompletionCallback& done_callback) {
@@ -402,6 +405,34 @@ void DaemonControllerWin::DoSetConfigAndStart(
 
   // Start daemon.
   hr = control->StartDaemon();
+  done_callback.Run(HResultToAsyncResult(hr));
+}
+
+void DaemonControllerWin::DoUpdateConfig(
+    scoped_ptr<base::DictionaryValue> config,
+    const CompletionCallback& done_callback) {
+  // TODO(simonmorris): Much of this code was copied from DoSetConfigAndStart().
+  // Refactor.
+  DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
+  IDaemonControl* control = NULL;
+  HRESULT hr = worker_thread_.ActivateElevatedController(&control);
+  if (FAILED(hr)) {
+    done_callback.Run(HResultToAsyncResult(hr));
+    return;
+  }
+
+  // Store the configuration.
+  std::string file_content;
+  base::JSONWriter::Write(config.get(), &file_content);
+
+  ScopedBstr host_config(UTF8ToUTF16(file_content).c_str());
+  if (host_config == NULL) {
+    done_callback.Run(HResultToAsyncResult(E_OUTOFMEMORY));
+    return;
+  }
+
+  hr = control->UpdateConfig(host_config);
   done_callback.Run(HResultToAsyncResult(hr));
 }
 

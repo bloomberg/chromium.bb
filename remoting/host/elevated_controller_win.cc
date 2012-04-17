@@ -44,6 +44,9 @@ const size_t kMaxConfigFileSize = 1024 * 1024;
 const char kHostId[] = "host_id";
 const char kXmppLogin[] = "xmpp_login";
 
+// The configuration keys that cannot be specified in UpdateConfig().
+const char* const kReadonlyKeys[] = { kHostId, kXmppLogin };
+
 // Reads and parses the configuration file up to |kMaxConfigFileSize| in
 // size.
 HRESULT ReadConfig(const FilePath& filename,
@@ -327,7 +330,38 @@ STDMETHODIMP ElevatedControllerWin::StopDaemon() {
 }
 
 STDMETHODIMP ElevatedControllerWin::UpdateConfig(BSTR config) {
-  return E_NOTIMPL;
+  // Parse the config.
+  std::string config_str = UTF16ToUTF8(
+    string16(static_cast<char16*>(config), ::SysStringLen(config)));
+  scoped_ptr<base::Value> config_value(base::JSONReader::Read(config_str));
+  if (!config_value.get()) {
+    return E_FAIL;
+  }
+  base::DictionaryValue* config_dict = NULL;
+  if (!config_value->GetAsDictionary(&config_dict)) {
+    return E_FAIL;
+  }
+  // Check for bad keys.
+  for (int i = 0; i < arraysize(kReadonlyKeys); ++i) {
+    if (config_dict->HasKey(kReadonlyKeys[i])) {
+      return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
+    }
+  }
+  // Get the old config.
+  FilePath config_dir = remoting::GetConfigDir();
+  scoped_ptr<base::DictionaryValue> config_old;
+  HRESULT hr = ReadConfig(config_dir.Append(kConfigFileName), &config_old);
+  if (FAILED(hr)) {
+    return hr;
+  }
+  // Merge items from the given config into the old config.
+  config_old->MergeDictionary(config_dict);
+  // Write the updated config.
+  std::string config_updated_str;
+  base::JSONWriter::Write(config_old.get(), &config_updated_str);
+  return WriteConfig(config_dir.Append(kConfigFileName),
+                     config_updated_str.c_str(),
+                     config_updated_str.size());
 }
 
 HRESULT ElevatedControllerWin::OpenService(ScopedScHandle* service_out) {
