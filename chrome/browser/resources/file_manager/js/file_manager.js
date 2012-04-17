@@ -449,33 +449,11 @@ FileManager.prototype = {
     metrics.startInterval('Load.DOM');
     this.initCommands_();
 
-    // TODO(rginda): 6/22/11: Remove this test when createDateTimeFormat is
-    // available in all chrome trunk builds.
-    if ('createDateTimeFormat' in this.locale_) {
-      this.shortDateFormatter_ =
-        this.locale_.createDateTimeFormat({'dateType': 'medium'});
-    } else {
-      this.shortDateFormatter_ = {
-        format: function(d) {
-          return (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
-        }
-      };
-    }
+    this.shortDateFormatter_ =
+      this.locale_.createDateTimeFormat({'dateType': 'medium'});
 
-    // TODO(rginda): 6/22/11: Remove this test when createCollator is
-    // available in all chrome trunk builds.
-    if ('createCollator' in this.locale_) {
-      this.collator_ = this.locale_.createCollator({
-        'numeric': true, 'ignoreCase': true, 'ignoreAccents': true});
-    } else {
-      this.collator_ = {
-        compare: function(a, b) {
-          if (a > b) return 1;
-          if (a < b) return -1;
-          return 0;
-        }
-      };
-    }
+    this.collator_ = this.locale_.createCollator({
+      'numeric': true, 'ignoreCase': true, 'ignoreAccents': true});
 
     // Optional list of file types.
     this.fileTypes_ = this.params_.typeList;
