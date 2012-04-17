@@ -395,6 +395,8 @@ Track::Track()
 Track::~Track() {
   delete [] codec_id_;
   delete [] codec_private_;
+  delete [] language_;
+  delete [] name_;
 
   if (content_encoding_entries_) {
     for (uint32 i = 0; i < content_encoding_entries_size_; ++i) {
