@@ -331,7 +331,11 @@ void URLFetcherCore::Stop() {
 
   delegate_ = NULL;
   fetcher_ = NULL;
-  if (io_message_loop_proxy_.get()) {
+  if (!io_message_loop_proxy_.get())
+    return;
+  if (io_message_loop_proxy_->RunsTasksOnCurrentThread()) {
+    CancelURLRequest();
+  } else {
     io_message_loop_proxy_->PostTask(
         FROM_HERE, base::Bind(&URLFetcherCore::CancelURLRequest, this));
   }
