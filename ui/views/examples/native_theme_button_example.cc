@@ -63,29 +63,32 @@ ExampleNativeThemeButton::~ExampleNativeThemeButton() {
 std::string ExampleNativeThemeButton::MessWithState() {
   const char* message = NULL;
   switch (GetThemePart()) {
-  case gfx::NativeTheme::kPushButton:
-    message = "Pressed! count:%d";
-    break;
-  case gfx::NativeTheme::kRadio:
-    is_checked_ = !is_checked_;
-    message = is_checked_ ? "Checked! count:%d" : "Unchecked! count:%d";
-    break;
-  case gfx::NativeTheme::kCheckbox:
-    if (is_indeterminate_) {
-      is_checked_ = false;
-      is_indeterminate_ = false;
-    } else if (!is_checked_) {
-      is_checked_ = true;
-    } else {
-      is_checked_ = false;
-      is_indeterminate_ = true;
-    }
-
-    message = is_checked_ ? "Checked! count:%d" :
-      is_indeterminate_ ? "Indeterminate! count:%d" : "Unchecked! count:%d";
-    break;
-  default:
-    DCHECK(false);
+    case gfx::NativeTheme::kPushButton:
+      message = "Pressed! count:%d";
+      break;
+    case gfx::NativeTheme::kRadio:
+      is_checked_ = !is_checked_;
+      message = is_checked_ ? "Checked! count:%d" : "Unchecked! count:%d";
+      break;
+    case gfx::NativeTheme::kCheckbox:
+      if (is_indeterminate_) {
+        is_checked_ = false;
+        is_indeterminate_ = false;
+      } else if (!is_checked_) {
+        is_checked_ = true;
+      } else {
+        is_checked_ = false;
+        is_indeterminate_ = true;
+      }
+      if (is_checked_)
+        message = "Checked! count:%d";
+      else if (is_indeterminate_)
+        message = "Indeterminate! count:%d";
+      else
+        message = "Unchecked! count:%d";
+      break;
+    default:
+      NOTREACHED();
   }
 
   return base::StringPrintf(message, ++count_);
@@ -104,7 +107,7 @@ gfx::NativeTheme::Part ExampleNativeThemeButton::GetThemePart() const {
     case 2:
       return gfx::NativeTheme::kCheckbox;
     default:
-      DCHECK(false);
+      NOTREACHED();
   }
   return gfx::NativeTheme::kPushButton;
 }
@@ -136,7 +139,7 @@ gfx::NativeTheme::State ExampleNativeThemeButton::GetThemeState(
       case BS_PUSHED:
         return gfx::NativeTheme::kPressed;
       default:
-        DCHECK(false);
+        NOTREACHED();
     }
   }
 
@@ -150,7 +153,7 @@ gfx::NativeTheme::State ExampleNativeThemeButton::GetThemeState(
     case 3:
       return gfx::NativeTheme::kPressed;
     default:
-      DCHECK(false);
+      NOTREACHED();
   }
   return gfx::NativeTheme::kNormal;
 }

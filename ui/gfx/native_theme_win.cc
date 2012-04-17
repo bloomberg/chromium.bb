@@ -366,7 +366,7 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
     default:
       // While transitioning NativeThemeWin to the single Paint() entry point,
       // unsupported parts will DCHECK here.
-      DCHECK(false);
+      NOTREACHED();
   }
 }
 
