@@ -522,6 +522,18 @@ cr.define('ntp', function() {
     },
 
     /**
+     * Fetches the size, in pixels, of the padding-top of the tile contents.
+     * @type {number}
+     */
+    get contentPadding() {
+      if (typeof this.contentPadding_ == 'undefined') {
+        this.contentPadding_ =
+            parseInt(getComputedStyle(this.content_).paddingTop, 10);
+      }
+      return this.contentPadding_;
+    },
+
+    /**
      * Removes the tilePage from the DOM and cleans up event handlers.
      */
     remove: function() {
@@ -977,10 +989,12 @@ cr.define('ntp', function() {
       // hint hiding the webstore tile, and there are no other tiles).
       var numRows = Math.max(1, Math.ceil(numTiles / layout.numRowTiles));
       var usedHeight = layout.rowHeight * numRows;
-      // 60 matches the top padding of tile-page (which acts as the minimum).
       var newMargin = document.documentElement.clientHeight / 3 -
-          usedHeight / 3 - 60;
-      newMargin = Math.max(newMargin, 0);
+          usedHeight / 3 - this.contentPadding;
+      // The 'height' style attribute of topMargin is non-zero to work around
+      // webkit's collapsing margin behavior, so we have to factor that into
+      // our calculations here.
+      newMargin = Math.max(newMargin, 0) - this.topMargin_.offsetHeight;
 
       // |newMargin| is the final margin we actually want to show. However,
       // part of that should be animated and part should not (for the same

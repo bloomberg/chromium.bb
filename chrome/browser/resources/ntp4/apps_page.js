@@ -966,7 +966,9 @@ cr.define('ntp', function() {
       var row = Math.floor(index / layout.numRowTiles);
       var realX = this.tileGrid_.offsetLeft +
           col * layout.colWidth + layout.leftMargin;
-      var realY = this.tileGrid_.offsetTop + row * layout.rowHeight;
+
+      var realY =
+          this.topMarginPx_ + row * layout.rowHeight + this.contentPadding;
 
       this.appInstallHint_.style.left = realX + 'px';
       this.appInstallHint_.style.right = realX + 'px';

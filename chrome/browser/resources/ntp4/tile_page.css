@@ -43,6 +43,12 @@
   width: 100%;
 }
 
+.top-margin {
+  /* The only reason height is set to 1px, rather than left at 0, is that
+   * otherwise webkit collapses the top and bottom margins. */
+  height: 1px;
+}
+
 .tile-grid {
   position: relative;
   width: 100%;
