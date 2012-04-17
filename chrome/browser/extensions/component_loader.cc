@@ -295,14 +295,14 @@ void ComponentLoader::AddDefaultComponentExtensions() {
           FilePath(FILE_PATH_LITERAL("/usr/share/chromeos-assets/gaia_auth")));
     }
 
-    // TODO(gauravsh): Only include offers extension on official builds.
-    FilePath offers_extension_path(FILE_PATH_LITERAL(
-        "/usr/share/chromeos-assets/offers"));
-    if (command_line->HasSwitch(switches::kOffersExtensionPath)) {
-      offers_extension_path =
-          command_line->GetSwitchValuePath(switches::kOffersExtensionPath);
+    // TODO(gauravsh): Only include echo extension on official builds.
+    FilePath echo_extension_path(FILE_PATH_LITERAL(
+        "/usr/share/chromeos-assets/echo"));
+    if (command_line->HasSwitch(switches::kEchoExtensionPath)) {
+      echo_extension_path =
+          command_line->GetSwitchValuePath(switches::kEchoExtensionPath);
     }
-    Add(IDR_OFFERS_MANIFEST, offers_extension_path);
+    Add(IDR_ECHO_MANIFEST, echo_extension_path);
 
 #if defined(OFFICIAL_BUILD)
     if (browser_defaults::enable_help_app) {

@@ -20,6 +20,7 @@
       <include name="IDR_EXTENSION_API_JSON_COOKIES" file="extensions\api\cookies.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DEBUGGER" file="extensions\api\debugger.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_DEVTOOLS" file="extensions\api\devtools.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_ECHOPRIVATE" file="extensions\api\echoPrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_ACCESSIBILITY" file="extensions\api\experimental.accessibility.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_APP" file="extensions\api\experimental.app.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_BOOKMARKMANAGER" file="extensions\api\experimental.bookmarkManager.json" type="BINDATA" />
@@ -49,7 +50,6 @@
       <include name="IDR_EXTENSION_API_JSON_MANAGEMENT" file="extensions\api\management.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_MEDIAPLAYERPRIVATE" file="extensions\api\mediaPlayerPrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_METRICSPRIVATE" file="extensions\api\metricsPrivate.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_OFFERSPRIVATE" file="extensions\api\offersPrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_OMNIBOX" file="extensions\api\omnibox.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PAGEACTION" file="extensions\api\pageAction.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PAGEACTIONS" file="extensions\api\pageActions.json" type="BINDATA" />

@@ -3,21 +3,21 @@
 // found in the LICENSE file.
 
 chrome.test.runTests([
-  function getCouponCodeTest() {
-    var expected_code = "";
+  function getRegistrationCodeTest() {
+    var expected_code = '';
     // TODO(gauravsh): Mock out StatisticsProvider to make getCouponCode()
     // return a well known value for brower_tests.
-    chrome.offersPrivate.getCouponCode("COUPON_CODE",
+    chrome.echoPrivate.getRegistrationCode('COUPON_CODE',
         chrome.test.callbackPass(function(result) {
       chrome.test.assertTrue(result == expected_code);
     }));
-    chrome.offersPrivate.getCouponCode("GROUP_CODE",
+    chrome.echoPrivate.getRegistrationCode('GROUP_CODE',
         chrome.test.callbackPass(function(result) {
       chrome.test.assertTrue(result == expected_code);
     }));
-    chrome.offersPrivate.getCouponCode("INVALID_CODE",
+    chrome.echoPrivate.getRegistrationCode('INVALID_CODE',
         chrome.test.callbackPass(function(result) {
-      chrome.test.assertTrue(result == "");
+      chrome.test.assertTrue(result == '');
     }));
   }
 ]);

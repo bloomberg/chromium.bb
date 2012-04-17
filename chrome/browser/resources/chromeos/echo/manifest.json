@@ -10,7 +10,7 @@
   "content_security_policy": "default-src 'self'; script-src 'self' 'unsafe-eval' https://apis.google.com; frame-src 'self' https://www.googleapis.com https://www-googleapis-test.sandbox.google.com; object-src 'self'",
   "permissions": [
       "cookies",
-      "offersPrivate",
+      "echoPrivate",
       "https://*/*"
    ],
   "web_accessible_resources": [
@@ -18,7 +18,7 @@
     "main.js"
   ],
   "intents": {
-    "https://crosoffers.com/startEcho": [{
+    "https://crosecho.com/startEcho": [{
       "type" : ["application/vnd.chromeos.echo"],
       "title" : "Initiate Chrome OS ECHO",
       "path" : "main.html",

@@ -1265,9 +1265,9 @@ const char kLoginPassword[]                 = "login-password";
 // mode. Should completely disable extensions, sync and bookmarks.
 const char kGuestSession[]                  = "bwsi";
 
-// Enables overriding the path for the default offers component extension.
+// Enables overriding the path for the default echo component extension.
 // Useful for testing.
-const char kOffersExtensionPath[]           = "offers-ext-path";
+const char kEchoExtensionPath[]           = "echo-ext-path";
 
 // Show volume controls in status bar on ChromeOS.
 const char kShowVolumeStatus[]              = "show-volume-status";

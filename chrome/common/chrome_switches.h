@@ -349,7 +349,7 @@ extern const char kLoginProfile[];
 extern const char kLoginUser[];
 extern const char kLoginPassword[];
 extern const char kGuestSession[];
-extern const char kOffersExtensionPath[];
+extern const char kEchoExtensionPath[];
 extern const char kShowVolumeStatus[];
 extern const char kStubCros[];
 extern const char kStubCrosSettings[];

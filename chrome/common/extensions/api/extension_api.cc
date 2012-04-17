@@ -331,8 +331,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_MEDIAPLAYERPRIVATE));
   RegisterSchema("metricsPrivate", ReadFromResource(
       IDR_EXTENSION_API_JSON_METRICSPRIVATE));
-  RegisterSchema("offersPrivate", ReadFromResource(
-      IDR_EXTENSION_API_JSON_OFFERSPRIVATE));
+  RegisterSchema("echoPrivate", ReadFromResource(
+      IDR_EXTENSION_API_JSON_ECHOPRIVATE));
   RegisterSchema("omnibox", ReadFromResource(
       IDR_EXTENSION_API_JSON_OMNIBOX));
   RegisterSchema("pageAction", ReadFromResource(

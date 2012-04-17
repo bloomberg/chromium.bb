@@ -45,9 +45,9 @@ const char kMachineHardwareInfoDelim[] = " \n";
 
 // File to get ECHO coupon info from, and key/value delimiters of
 // the file.
-const char kOffersCouponFile[] = "/var/cache/offers/vpd_echo.txt";
-const char kOffersCouponEq[] = "=";
-const char kOffersCouponDelim[] = "\n";
+const char kEchoCouponFile[] = "/var/cache/echo/vpd_echo.txt";
+const char kEchoCouponEq[] = "=";
+const char kEchoCouponDelim[] = "\n";
 
 // File to get machine OS info from, and key/value delimiters of the file.
 const char kMachineOSInfoFile[] = "/etc/lsb-release";
@@ -154,9 +154,9 @@ void StatisticsProviderImpl::LoadMachineStatistics() {
   parser.GetNameValuePairsFromFile(FilePath(kMachineHardwareInfoFile),
                                    kMachineHardwareInfoEq,
                                    kMachineHardwareInfoDelim);
-  parser.GetNameValuePairsFromFile(FilePath(kOffersCouponFile),
-                                   kOffersCouponEq,
-                                   kOffersCouponDelim);
+  parser.GetNameValuePairsFromFile(FilePath(kEchoCouponFile),
+                                   kEchoCouponEq,
+                                   kEchoCouponDelim);
   parser.GetNameValuePairsFromFile(FilePath(kMachineOSInfoFile),
                                    kMachineOSInfoEq,
                                    kMachineOSInfoDelim);

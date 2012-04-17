@@ -4,13 +4,13 @@
 
 [
   {
-    "namespace": "offersPrivate",
+    "namespace": "echoPrivate",
     "nodoc": true,
     "platforms": ["chromeos"],
     "types": [],
     "functions": [
       {
-        "name": "getCouponCode",
+        "name": "getRegistrationCode",
         "description": "Get the group or coupon code from underlying storage.",
         "type": "function",
         "parameters": [
@@ -27,24 +27,6 @@
                 "name": "result",
                 "type": "string",
                 "description" : "The coupon code."
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "getUserConsent",
-        "description": "Get user's consent by displaying an InfoBar.",
-        "type": "function",
-        "parameters": [
-          {
-            "name": "callback",
-            "type": "function",
-            "parameters": [
-              {
-                "name": "result",
-                "type": "boolean",
-                "description" : "Consent result."
               }
             ]
           }

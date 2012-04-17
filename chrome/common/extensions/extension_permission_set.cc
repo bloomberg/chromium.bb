@@ -305,7 +305,7 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kInputMethodPrivate, "inputMethodPrivate", 0,
       ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
   info->RegisterPermission(
-      kOffersPrivate, "offersPrivate", 0, ExtensionPermissionMessage::kNone,
+      kEchoPrivate, "echoPrivate", 0, ExtensionPermissionMessage::kNone,
       kFlagCannotBeOptional);
   info->RegisterPermission(
       kTerminalPrivate, "terminalPrivate", 0, ExtensionPermissionMessage::kNone,

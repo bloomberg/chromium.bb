@@ -4,10 +4,10 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-class ExtensionOffersPrivateApiTest : public ExtensionApiTest {
+class ExtensionEchoPrivateApiTest : public ExtensionApiTest {
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionOffersPrivateApiTest, OffersTest) {
-  EXPECT_TRUE(RunComponentExtensionTest("offers/component_extension"))
+IN_PROC_BROWSER_TEST_F(ExtensionEchoPrivateApiTest, EchoTest) {
+  EXPECT_TRUE(RunComponentExtensionTest("echo/component_extension"))
       << message_;
 }
