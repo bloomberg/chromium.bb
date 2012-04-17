@@ -72,63 +72,6 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
   DISALLOW_COPY_AND_ASSIGN(AsyncUninstaller);
 };
 
-namespace extension_action_context_menu {
-
-class DevmodeObserver : public content::NotificationObserver {
- public:
-  DevmodeObserver(ExtensionActionContextMenu* menu,
-                             PrefService* service)
-      : menu_(menu), pref_service_(service) {
-    registrar_.Init(pref_service_);
-    registrar_.Add(prefs::kExtensionsUIDeveloperMode, this);
-  }
-  virtual ~DevmodeObserver() {}
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
-    if (type == chrome::NOTIFICATION_PREF_CHANGED)
-      [menu_ updateInspectorItem];
-    else
-      NOTREACHED();
-  }
-
- private:
-  ExtensionActionContextMenu* menu_;
-  PrefService* pref_service_;
-  PrefChangeRegistrar registrar_;
-};
-
-class ProfileObserverBridge : public content::NotificationObserver {
- public:
-  ProfileObserverBridge(ExtensionActionContextMenu* owner,
-                        const Profile* profile)
-      : owner_(owner),
-        profile_(profile) {
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                   content::Source<Profile>(profile));
-  }
-
-  ~ProfileObserverBridge() {}
-
-  // Overridden from content::NotificationObserver
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) {
-    if (type == chrome::NOTIFICATION_PROFILE_DESTROYED &&
-        source == content::Source<Profile>(profile_)) {
-      [owner_ invalidateProfile];
-    }
-  }
-
- private:
-  ExtensionActionContextMenu* owner_;
-  const Profile* profile_;
-  content::NotificationRegistrar registrar_;
-};
-
-}  // namespace extension_action_context_menu
-
 @interface ExtensionActionContextMenu(Private)
 // Callback for the context menu items.
 - (void)dispatch:(id)menuItem;
@@ -146,7 +89,6 @@ enum {
   kExtensionContextUninstall = 4,
   kExtensionContextHide = 5,
   kExtensionContextManage = 7,
-  kExtensionContextInspect = 8
 };
 
 int CurrentTabId() {
@@ -203,37 +145,9 @@ int CurrentTabId() {
       }
     }
 
-    NSString* inspectorTitle =
-        l10n_util::GetNSStringWithFixup(IDS_EXTENSION_ACTION_INSPECT_POPUP);
-    inspectorItem_.reset([[NSMenuItem alloc] initWithTitle:inspectorTitle
-                                                    action:@selector(dispatch:)
-                                             keyEquivalent:@""]);
-    [inspectorItem_.get() setTarget:self];
-    [inspectorItem_.get() setTag:kExtensionContextInspect];
-
-    PrefService* service = profile_->GetPrefs();
-    observer_.reset(
-        new extension_action_context_menu::DevmodeObserver(self, service));
-    profile_observer_.reset(
-        new extension_action_context_menu::ProfileObserverBridge(self,
-                                                                 profile));
-
-    [self updateInspectorItem];
     return self;
   }
   return nil;
-}
-
-- (void)updateInspectorItem {
-  PrefService* service = profile_->GetPrefs();
-  bool devmode = service->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  if (devmode) {
-    if ([self indexOfItem:inspectorItem_.get()] == -1)
-      [self addItem:inspectorItem_.get()];
-  } else {
-    if ([self indexOfItem:inspectorItem_.get()] != -1)
-      [self removeItem:inspectorItem_.get()];
-  }
 }
 
 - (void)dispatch:(id)menuItem {
@@ -279,37 +193,6 @@ int CurrentTabId() {
       browser->ShowExtensionsTab();
       break;
     }
-    case kExtensionContextInspect: {
-      BrowserWindowCocoa* window =
-          static_cast<BrowserWindowCocoa*>(browser->window());
-      ToolbarController* toolbarController =
-          [window->cocoa_controller() toolbarController];
-      LocationBarViewMac* locationBarView =
-          [toolbarController locationBarBridge];
-
-      NSPoint popupPoint = NSZeroPoint;
-      if (extension_->page_action() == action_) {
-        popupPoint = locationBarView->GetPageActionBubblePoint(action_);
-
-      } else if (extension_->browser_action() == action_) {
-        BrowserActionsController* controller =
-            [toolbarController browserActionsController];
-        popupPoint = [controller popupPointForBrowserAction:extension_];
-
-      } else {
-        NOTREACHED() << "action_ is not a page action or browser action?";
-      }
-
-      int tabId = CurrentTabId();
-      GURL url = action_->GetPopupUrl(tabId);
-      DCHECK(url.is_valid());
-      [ExtensionPopupController showURL:url
-                              inBrowser:BrowserList::GetLastActive()
-                             anchoredAt:popupPoint
-                          arrowLocation:info_bubble::kTopRight
-                                devMode:YES];
-      break;
-    }
     default:
       NOTREACHED();
       break;
@@ -317,19 +200,11 @@ int CurrentTabId() {
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
-  if ([menuItem tag] == kExtensionContextInspect) {
-    // Disable 'Inspect popup' if there is no popup.
-    return action_ && action_->HasPopup(CurrentTabId());
-  } else if ([menuItem tag] == kExtensionContextOptions) {
+  if ([menuItem tag] == kExtensionContextOptions) {
     // Disable 'Options' if there are no options to set.
     return extension_->options_url().spec().length() > 0;
   }
   return YES;
-}
-
-- (void)invalidateProfile {
-  observer_.reset();
-  profile_ = NULL;
 }
 
 @end

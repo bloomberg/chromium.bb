@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_helpers.h"
-#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
@@ -271,7 +270,6 @@ class BrowserActionsContainer
       public ui::AnimationDelegate,
       public ExtensionToolbarModel::Observer,
       public BrowserActionOverflowMenuController::Observer,
-      public ExtensionContextMenuModel::PopupDelegate,
       public views::Widget::Observer {
  public:
   BrowserActionsContainer(Browser* browser, views::View* owner_view);
@@ -364,9 +362,6 @@ class BrowserActionsContainer
   // Overridden from BrowserActionOverflowMenuController::Observer:
   virtual void NotifyMenuDeleted(
       BrowserActionOverflowMenuController* controller) OVERRIDE;
-
-  // Overridden from ExtensionContextMenuModel::PopupDelegate
-  virtual void InspectPopup(ExtensionAction* action) OVERRIDE;
 
   // Overridden from views::Widget::Observer
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;

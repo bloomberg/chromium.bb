@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,24 +24,8 @@ class ExtensionContextMenuModel
       public ui::SimpleMenuModel::Delegate,
       public ExtensionUninstallDialog::Delegate {
  public:
-  // Delegate to handle showing an ExtensionAction popup.
-  class PopupDelegate {
-   public:
-    // Called when the user selects the menu item which requests that the
-    // popup be shown and inspected.
-    virtual void InspectPopup(ExtensionAction* action) = 0;
-
-   protected:
-    virtual ~PopupDelegate() {}
-  };
-
-  // Creates a menu model for the given extension action. If
-  // prefs::kExtensionsUIDeveloperMode is enabled then a menu item
-  // will be shown for "Inspect Popup" which, when selected, will cause
-  // ShowPopupForDevToolsWindow() to be called on |delegate|.
-  ExtensionContextMenuModel(const Extension* extension,
-                            Browser* browser,
-                            PopupDelegate* delegate);
+  // Creates a menu model for the given extension action.
+  ExtensionContextMenuModel(const Extension* extension, Browser* browser);
   virtual ~ExtensionContextMenuModel();
 
   // SimpleMenuModel::Delegate overrides.
@@ -72,9 +56,6 @@ class ExtensionContextMenuModel
   Browser* browser_;
 
   Profile* profile_;
-
-  // The delegate which handles the 'inspect popup' menu command (or NULL).
-  PopupDelegate* delegate_;
 
   // Keeps track of the extension uninstall dialog.
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;

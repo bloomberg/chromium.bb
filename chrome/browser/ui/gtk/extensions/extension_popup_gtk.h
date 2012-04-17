@@ -25,14 +25,12 @@ class ExtensionPopupGtk : public content::NotificationObserver,
  public:
   ExtensionPopupGtk(Browser* browser,
                     ExtensionHost* host,
-                    GtkWidget* anchor,
-                    bool inspect);
+                    GtkWidget* anchor);
   virtual ~ExtensionPopupGtk();
 
   static void Show(const GURL& url,
                    Browser* browser,
-                   GtkWidget* anchor,
-                   bool inspect);
+                   GtkWidget* anchor);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

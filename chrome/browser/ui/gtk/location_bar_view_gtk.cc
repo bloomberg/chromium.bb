@@ -1682,20 +1682,14 @@ void LocationBarViewGtk::EnabledStateChangedForCommand(int id, bool enabled) {
     UpdateChromeToMobileIcon();
 }
 
-void LocationBarViewGtk::PageActionViewGtk::InspectPopup(
-    ExtensionAction* action) {
-  ShowPopup(true);
-}
-
-bool LocationBarViewGtk::PageActionViewGtk::ShowPopup(bool devtools) {
+bool LocationBarViewGtk::PageActionViewGtk::ShowPopup() {
   if (!page_action_->HasPopup(current_tab_id_))
     return false;
 
   ExtensionPopupGtk::Show(
       page_action_->GetPopupUrl(current_tab_id_),
       owner_->browser_,
-      event_box_.get(),
-      devtools);
+      event_box_.get());
   return true;
 }
 
@@ -1752,7 +1746,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     GdkEventButton* event) {
   Profile* profile = owner_->browser()->profile();
   if (event->button != 3) {
-    if (!ShowPopup(false)) {
+    if (!ShowPopup()) {
       ExtensionService* service = profile->GetExtensionService();
       service->browser_event_router()->PageActionExecuted(profile,
           page_action_->extension_id(), page_action_->id(), current_tab_id_,
@@ -1764,7 +1758,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
 
     if (extension->ShowConfigureContextMenus()) {
       context_menu_model_ =
-          new ExtensionContextMenuModel(extension, owner_->browser_, this);
+          new ExtensionContextMenuModel(extension, owner_->browser_);
       context_menu_.reset(
           new MenuGtk(NULL, context_menu_model_.get()));
       context_menu_->PopupForWidget(sender, event->button, event->time);

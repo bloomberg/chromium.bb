@@ -219,8 +219,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   };
 
   class PageActionViewGtk : public ImageLoadingTracker::Observer,
-                            public content::NotificationObserver,
-                            public ExtensionContextMenuModel::PopupDelegate {
+                            public content::NotificationObserver {
    public:
     PageActionViewGtk(LocationBarViewGtk* owner, ExtensionAction* page_action);
     virtual ~PageActionViewGtk();
@@ -253,13 +252,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) OVERRIDE;
 
-    // Overridden from ExtensionContextMenuModel::PopupDelegate:
-    virtual void InspectPopup(ExtensionAction* action) OVERRIDE;
-
    private:
-    // Show the popup for this page action. If |devtools| is true, show it
-    // with a debugger window attached. Returns true if a popup was shown.
-    bool ShowPopup(bool devtools);
+    // Show the popup for this page action. Returns true if a popup was shown.
+    bool ShowPopup();
 
     // Connect the accelerator for the page action popup.
     void ConnectPageActionAccelerator();

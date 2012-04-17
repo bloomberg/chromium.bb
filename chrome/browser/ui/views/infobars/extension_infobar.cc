@@ -147,7 +147,7 @@ void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
     return;
 
   scoped_refptr<ExtensionContextMenuModel> options_menu_contents =
-      new ExtensionContextMenuModel(extension, browser_, NULL);
+      new ExtensionContextMenuModel(extension, browser_);
   DCHECK_EQ(menu_, source);
   RunMenuAt(options_menu_contents.get(), menu_, views::MenuItemView::TOPLEFT);
 }

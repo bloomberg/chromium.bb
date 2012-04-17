@@ -30,30 +30,21 @@ enum MenuEntries {
   HIDE,
   DISABLE,
   UNINSTALL,
-  MANAGE,
-  INSPECT_POPUP
+  MANAGE
 };
 
 ExtensionContextMenuModel::ExtensionContextMenuModel(
     const Extension* extension,
-    Browser* browser,
-    PopupDelegate* delegate)
+    Browser* browser)
     : ALLOW_THIS_IN_INITIALIZER_LIST(SimpleMenuModel(this)),
       extension_id_(extension->id()),
       browser_(browser),
-      profile_(browser->profile()),
-      delegate_(delegate) {
+      profile_(browser->profile()) {
   extension_action_ = extension->browser_action();
   if (!extension_action_)
     extension_action_ = extension->page_action();
 
   InitCommonCommands();
-
-  if (profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode) &&
-      delegate_) {
-    AddSeparator();
-    AddItemWithStringId(INSPECT_POPUP, IDS_EXTENSION_ACTION_INSPECT_POPUP);
-  }
 }
 
 ExtensionContextMenuModel::~ExtensionContextMenuModel() {
@@ -92,12 +83,6 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     // The NAME links to the Homepage URL. If the extension doesn't have a
     // homepage, we just disable this menu item.
     return extension->GetHomepageURL().is_valid();
-  } else if (command_id == INSPECT_POPUP) {
-    WebContents* contents = browser_->GetSelectedWebContents();
-    if (!contents)
-      return false;
-
-    return extension_action_->HasPopup(ExtensionTabUtil::GetTabId(contents));
   } else if (command_id == DISABLE || command_id == UNINSTALL) {
     // Some extension types can not be disabled or uninstalled.
     return Extension::UserMayDisable(extension->location());
@@ -148,10 +133,6 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
     }
     case MANAGE: {
       browser_->ShowExtensionsTab();
-      break;
-    }
-    case INSPECT_POPUP: {
-      delegate_->InspectPopup(extension_action_);
       break;
     }
     default:

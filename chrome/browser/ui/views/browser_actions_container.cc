@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -272,7 +273,7 @@ void BrowserActionButton::ShowContextMenu(const gfx::Point& p,
 
   // Reconstructs the menu every time because the menu's contents are dynamic.
   scoped_refptr<ExtensionContextMenuModel> context_menu_contents_(
-      new ExtensionContextMenuModel(extension(), panel_->browser(), panel_));
+      new ExtensionContextMenuModel(extension(), panel_->browser()));
   views::MenuModelAdapter menu_model_adapter(context_menu_contents_.get());
   views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
 
@@ -806,10 +807,6 @@ void BrowserActionsContainer::NotifyMenuDeleted(
     BrowserActionOverflowMenuController* controller) {
   DCHECK(controller == overflow_menu_);
   overflow_menu_ = NULL;
-}
-
-void BrowserActionsContainer::InspectPopup(ExtensionAction* action) {
-  OnBrowserActionExecuted(GetBrowserActionView(action)->button(), true);
 }
 
 void BrowserActionsContainer::OnWidgetClosing(views::Widget* widget) {

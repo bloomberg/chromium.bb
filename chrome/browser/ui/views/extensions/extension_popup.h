@@ -35,6 +35,7 @@ class ExtensionPopup : public views::BubbleDelegateView,
   // devtools window for it.
   // The actual display of the popup is delayed until the page contents
   // finish loading in order to minimize UI flashing and resizing.
+  // TODO(benwells): remove unused |inspect_with_devtools| parameter.
   static ExtensionPopup* ShowPopup(
       const GURL& url,
       Browser* browser,

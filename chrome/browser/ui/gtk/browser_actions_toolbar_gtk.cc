@@ -89,7 +89,6 @@ using ui::SimpleMenuModel;
 
 class BrowserActionButton : public content::NotificationObserver,
                             public ImageLoadingTracker::Observer,
-                            public ExtensionContextMenuModel::PopupDelegate,
                             public MenuGtk::Delegate {
  public:
   BrowserActionButton(BrowserActionsToolbarGtk* toolbar,
@@ -241,7 +240,7 @@ class BrowserActionButton : public content::NotificationObserver,
       return NULL;
 
     context_menu_model_ =
-        new ExtensionContextMenuModel(extension_, toolbar_->browser(), this);
+        new ExtensionContextMenuModel(extension_, toolbar_->browser());
     context_menu_.reset(
         new MenuGtk(this, context_menu_model_.get()));
     return context_menu_.get();
@@ -267,7 +266,7 @@ class BrowserActionButton : public content::NotificationObserver,
 
   // Returns true to prevent further processing of the event that caused us to
   // show the popup, or false to continue processing.
-  bool ShowPopup(bool devtools) {
+  bool ShowPopup() {
     ExtensionAction* browser_action = extension_->browser_action();
 
     int tab_id = toolbar_->GetCurrentTabId();
@@ -278,17 +277,11 @@ class BrowserActionButton : public content::NotificationObserver,
 
     if (browser_action->HasPopup(tab_id)) {
       ExtensionPopupGtk::Show(
-          browser_action->GetPopupUrl(tab_id), toolbar_->browser(),
-          widget(), devtools);
+          browser_action->GetPopupUrl(tab_id), toolbar_->browser(), widget());
       return true;
     }
 
     return false;
-  }
-
-  // ExtensionContextMenuModel::PopupDelegate implementation.
-  virtual void InspectPopup(ExtensionAction* action) {
-    ShowPopup(true);
   }
 
   void SetImage(GdkPixbuf* image) {
@@ -317,7 +310,7 @@ class BrowserActionButton : public content::NotificationObserver,
   }
 
   static void OnClicked(GtkWidget* widget, BrowserActionButton* action) {
-    if (action->ShowPopup(false))
+    if (action->ShowPopup())
       return;
 
     ExtensionService* service =
@@ -796,9 +789,7 @@ void BrowserActionsToolbarGtk::ExecuteCommand(int command_id) {
 
   if (browser_action->HasPopup(tab_id)) {
     ExtensionPopupGtk::Show(
-        browser_action->GetPopupUrl(tab_id), browser(),
-        chevron(),
-        false);
+        browser_action->GetPopupUrl(tab_id), browser(), chevron());
   } else {
     ExtensionService* service = browser()->profile()->GetExtensionService();
     service->browser_event_router()->BrowserActionExecuted(

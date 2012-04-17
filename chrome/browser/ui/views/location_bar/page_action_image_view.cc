@@ -6,6 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/platform_util.h"
@@ -161,7 +162,7 @@ void PageActionImageView::ShowContextMenu(const gfx::Point& p,
     return;
 
   scoped_refptr<ExtensionContextMenuModel> context_menu_model(
-      new ExtensionContextMenuModel(extension, browser_, this));
+      new ExtensionContextMenuModel(extension, browser_));
   views::MenuModelAdapter menu_model_adapter(context_menu_model.get());
   menu_runner_.reset(new views::MenuRunner(menu_model_adapter.CreateMenu()));
   gfx::Point screen_loc;
@@ -256,11 +257,6 @@ void PageActionImageView::UpdateVisibility(WebContents* contents,
     SetImage(&icon);
 
   SetVisible(true);
-}
-
-void PageActionImageView::InspectPopup(ExtensionAction* action) {
-  ExecuteAction(1,      // Left-click.
-                true);  // |inspect_with_devtools|.
 }
 
 void PageActionImageView::OnWidgetClosing(views::Widget* widget) {

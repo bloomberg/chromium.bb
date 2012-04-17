@@ -162,7 +162,7 @@ ui::MenuModel* ExtensionInfoBarGtk::BuildMenuModel() {
   if (!browser)
     return NULL;
 
-  return new ExtensionContextMenuModel(extension, browser, NULL);
+  return new ExtensionContextMenuModel(extension, browser);
 }
 
 void ExtensionInfoBarGtk::OnSizeAllocate(GtkWidget* widget,
