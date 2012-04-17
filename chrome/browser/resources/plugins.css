@@ -231,7 +231,7 @@ body.show-tmi-mode .show-in-tmi-mode {
 
 /* Separate the header from the contents in each MIME Types table. */
 .plugin-details .mime-types .header td {
-  /* border-bottom: 1px solid; */
+  border-bottom: 1px solid black;
   padding-bottom: 0.1em;
 }
 
