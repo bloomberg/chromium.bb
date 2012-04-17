@@ -45,3 +45,6 @@ var COMMAND_CONTEXTMENU_COLUMN_PREFIX = 'columnContextMenu';
 var COMMAND_CONTEXTMENU_TABLE_PREFIX = 'tableContextMenu';
 
 var ENABLED_COLUMNS_KEY = 'enabledColumns';
+
+var DEFAULT_SORT_COLUMN = 'cpuUsage';
+var DEFAULT_SORT_DIRECTION = 'desc';

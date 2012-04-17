@@ -143,6 +143,9 @@ TaskManager.prototype = {
       dm.setCompareFunction(columnId, compareFunc);
     }
 
+    if (isColumnEnabled(DEFAULT_SORT_COLUMN))
+      dm.sort(DEFAULT_SORT_COLUMN, DEFAULT_SORT_DIRECTION);
+
     this.initTable_();
 
     commands.enableTaskManager();
