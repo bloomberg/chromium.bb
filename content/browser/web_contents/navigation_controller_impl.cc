@@ -12,8 +12,8 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
-#include "content/browser/in_process_webkit/session_storage_namespace_impl.h"
+#include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/debug_urls.h"

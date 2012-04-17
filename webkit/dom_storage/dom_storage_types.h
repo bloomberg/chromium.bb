@@ -12,11 +12,6 @@
 #include "base/nullable_string16.h"
 #include "base/string16.h"
 
-// Note: This flag should remain defined in this header until
-// all conditional blocks depending on this flag are no longer
-// conditional.
-#define ENABLE_NEW_DOM_STORAGE_BACKEND
-
 namespace dom_storage {
 
 // The quota for each storage area. Suggested by the spec.

@@ -71,10 +71,6 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
       const WebKit::WebString& path, unsigned quota) OVERRIDE;
 
-  virtual void dispatchStorageEvent(const WebKit::WebString& key,
-      const WebKit::WebString& old_value, const WebKit::WebString& new_value,
-      const WebKit::WebString& origin, const WebKit::WebURL& url,
-      bool is_local_storage) OVERRIDE;
   virtual WebKit::WebIDBFactory* idbFactory() OVERRIDE;
   virtual void createIDBKeysFromSerializedValuesAndKeyPath(
       const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,

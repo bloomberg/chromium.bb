@@ -226,7 +226,6 @@
         'browser/geolocation/win7_location_api_unittest_win.cc',
         'browser/geolocation/win7_location_provider_unittest_win.cc',
         'browser/host_zoom_map_impl_unittest.cc',
-        'browser/in_process_webkit/dom_storage_unittest.cc',
         'browser/in_process_webkit/indexed_db_quota_client_unittest.cc',
         'browser/in_process_webkit/indexed_db_unittest.cc',
         'browser/in_process_webkit/webkit_thread_unittest.cc',

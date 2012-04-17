@@ -5,8 +5,8 @@
 #include "content/public/browser/browser_context.h"
 
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
-#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -240,19 +240,8 @@ BrowserContext::~BrowserContext() {
                    GetDatabaseTracker(this)));
   }
 
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
   if (GetUserData(kDOMStorageContextKeyName))
     GetDOMStorageContextImpl(this)->Shutdown();
-#else
-  if (GetUserData(kDOMStorageContextKeyName) &&
-      BrowserThread::IsMessageLoopValid(BrowserThread::WEBKIT_DEPRECATED)) {
-    DOMStorageContextImpl* dom_storage_context =
-        (static_cast<UserDataAdapter<DOMStorageContextImpl>*>(
-            GetUserData(kDOMStorageContextKeyName)))->release();
-    BrowserThread::ReleaseSoon(
-        BrowserThread::WEBKIT_DEPRECATED, FROM_HERE, dom_storage_context);
-  }
-#endif
 }
 
 }  // namespace content

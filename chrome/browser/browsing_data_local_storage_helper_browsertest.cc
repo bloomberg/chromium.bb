@@ -22,7 +22,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/dom_storage/dom_storage_types.h"  // For the ENABLE flag.
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -125,15 +124,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
   CreateLocalStorageFilesForTest();
   local_storage_helper->DeleteLocalStorageFile(
       GetLocalStoragePathForTestingProfile().Append(FilePath(kTestFile0)));
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
   BrowserThread::GetBlockingPool()->FlushForTesting();
-#else
-  scoped_refptr<base::ThreadTestHelper> wait_for_webkit_thread(
-      new base::ThreadTestHelper(
-          BrowserThread::GetMessageLoopProxyForThread(
-              BrowserThread::WEBKIT_DEPRECATED)));
-  ASSERT_TRUE(wait_for_webkit_thread->Run());
-#endif
+
   // Ensure the file has been deleted.
   file_util::FileEnumerator file_enumerator(
       GetLocalStoragePathForTestingProfile(),

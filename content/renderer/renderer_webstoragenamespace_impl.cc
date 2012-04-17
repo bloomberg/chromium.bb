@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/renderer/renderer_webstoragearea_impl.h"
+#include "webkit/dom_storage/dom_storage_types.h"
 
 using WebKit::WebStorageArea;
 using WebKit::WebStorageNamespace;

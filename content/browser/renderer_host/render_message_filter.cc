@@ -17,8 +17,8 @@
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/ppapi_plugin_process_host.h"
@@ -420,7 +420,6 @@ void RenderMessageFilter::OnMsgCreateWindow(
     return;
   }
 
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
   // TODO(michaeln): Fix this.
   // This is a bug in the existing impl, session storage is effectively
   // leaked when created thru this code path (window.open()) since there
@@ -429,11 +428,6 @@ void RenderMessageFilter::OnMsgCreateWindow(
   *cloned_session_storage_namespace_id =
       dom_storage_context_->LeakyCloneSessionStorage(
           params.session_storage_namespace_id);
-#else
-  *cloned_session_storage_namespace_id =
-      dom_storage_context_->CloneSessionStorage(
-          params.session_storage_namespace_id);
-#endif
 
   render_widget_helper_->CreateNewWindow(params,
                                          no_javascript_access,

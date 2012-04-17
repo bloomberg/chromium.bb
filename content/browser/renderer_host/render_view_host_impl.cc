@@ -24,9 +24,10 @@
 #endif
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
+#include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/host_zoom_map_impl.h"
-#include "content/browser/in_process_webkit/dom_storage_context_impl.h"
 #include "content/browser/power_save_blocker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/accessibility_messages.h"

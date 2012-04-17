@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/process_util.h"
-#include "content/browser/in_process_webkit/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/notification_observer.h"
@@ -58,6 +57,7 @@ struct WebAccessibility;
 
 namespace content {
 
+class SessionStorageNamespace;
 class RenderViewHostObserver;
 struct FileChooserParams;
 struct ContextMenuParams;

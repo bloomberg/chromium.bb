@@ -10,9 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_namespace.h"
-#include "webkit/dom_storage/dom_storage_types.h"  // Temporary
-
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
 
 class DOMStorageContextImpl;
 
@@ -36,5 +33,4 @@ class SessionStorageNamespaceImpl
   DISALLOW_COPY_AND_ASSIGN(SessionStorageNamespaceImpl);
 };
 
-#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
 #endif  // CONTENT_BROWSER_DOM_STORAGE_SESSION_STORAGE_NAMESPACE_IMPL_H_

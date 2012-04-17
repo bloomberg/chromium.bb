@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
-#include "content/browser/in_process_webkit/dom_storage_message_filter.h"
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/public/common/serialized_script_value.h"
@@ -114,32 +113,6 @@ WebKit::WebData BrowserWebKitPlatformSupportImpl::loadResource(
     const char* name) {
   NOTREACHED();
   return WebKit::WebData();
-}
-
-WebKit::WebStorageNamespace*
-BrowserWebKitPlatformSupportImpl::createLocalStorageNamespace(
-    const WebKit::WebString& path, unsigned quota) {
-  // The "WebStorage" interface is used for renderer WebKit -> browser WebKit
-  // communication only.  "WebStorageClient" will be used for browser WebKit ->
-  // renderer WebKit.  So this will never be implemented.
-  NOTREACHED();
-  return 0;
-}
-
-void BrowserWebKitPlatformSupportImpl::dispatchStorageEvent(
-    const WebKit::WebString& key, const WebKit::WebString& old_value,
-    const WebKit::WebString& new_value, const WebKit::WebString& origin,
-    const WebKit::WebURL& url, bool is_local_storage) {
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
-  NOTREACHED();
-#else
-  // TODO(jorlow): Implement
-  if (!is_local_storage)
-    return;
-
-  DOMStorageMessageFilter::DispatchStorageEvent(key, old_value, new_value,
-                                                origin, url, is_local_storage);
-#endif
 }
 
 WebKit::WebSharedWorkerRepository*

@@ -13,8 +13,6 @@
 #include "webkit/dom_storage/dom_storage_context.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
-
 class DOMStorageContextImpl;
 class GURL;
 class NullableString16;
@@ -93,7 +91,5 @@ class DOMStorageMessageFilter
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageMessageFilter);
 };
-
-#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
 
 #endif  // CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_MESSAGE_FILTER_H_

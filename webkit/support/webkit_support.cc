@@ -357,11 +357,7 @@ WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
 }
 
 WebKit::WebStorageNamespace* CreateSessionStorageNamespace(unsigned quota) {
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
   return SimpleDomStorageSystem::instance().CreateSessionStorageNamespace();
-#else
-  return WebKit::WebStorageNamespace::createSessionStorageNamespace(quota);
-#endif
 }
 
 WebKit::WebString GetWebKitRootDir() {

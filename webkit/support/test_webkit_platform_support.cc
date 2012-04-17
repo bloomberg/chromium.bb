@@ -321,23 +321,7 @@ WebKit::WebString TestWebKitPlatformSupport::defaultLocale() {
 WebKit::WebStorageNamespace*
 TestWebKitPlatformSupport::createLocalStorageNamespace(
     const WebKit::WebString& path, unsigned quota) {
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
   return dom_storage_system_.CreateLocalStorageNamespace();
-#else
-  return WebKit::WebStorageNamespace::createLocalStorageNamespace(path, quota);
-#endif
-}
-
-void TestWebKitPlatformSupport::dispatchStorageEvent(
-    const WebKit::WebString& key,
-    const WebKit::WebString& old_value, const WebKit::WebString& new_value,
-    const WebKit::WebString& origin, const WebKit::WebURL& url,
-    bool is_local_storage) {
-  // All events are dispatched by the WebCore::StorageAreaProxy in the
-  // simple single process case.
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
-  NOTREACHED();
-#endif
 }
 
 WebKit::WebIDBFactory* TestWebKitPlatformSupport::idbFactory() {

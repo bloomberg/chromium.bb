@@ -257,26 +257,7 @@ WebKit::WebString TestShellWebKitInit::defaultLocale() {
 
 WebKit::WebStorageNamespace* TestShellWebKitInit::createLocalStorageNamespace(
     const WebKit::WebString& path, unsigned quota) {
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
   return dom_storage_system_.CreateLocalStorageNamespace();
-#else
-  // Enforce quota here, ignoring the value from the renderer as in Chrome.
-  return WebKit::WebStorageNamespace::createLocalStorageNamespace(
-      path,
-      WebKit::WebStorageNamespace::m_localStorageQuota);
-#endif
-}
-
-void TestShellWebKitInit::dispatchStorageEvent(
-    const WebKit::WebString& key,
-    const WebKit::WebString& old_value, const WebKit::WebString& new_value,
-    const WebKit::WebString& origin, const WebKit::WebURL& url,
-    bool is_local_storage) {
-  // All events are dispatched by the WebCore::StorageAreaProxy in the
-  // simple single process case.
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
-  NOTREACHED();
-#endif
 }
 
 WebKit::WebIDBFactory* TestShellWebKitInit::idbFactory() {

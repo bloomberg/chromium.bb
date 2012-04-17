@@ -8,9 +8,6 @@
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
-#include "webkit/dom_storage/dom_storage_types.h"
-// The above is to include the ENABLE_NEW_DOM_STORAGE_BACKEND flag
-// in all consumers.
 
 class RendererWebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
  public:

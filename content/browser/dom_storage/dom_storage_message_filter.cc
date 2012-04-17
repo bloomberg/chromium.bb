@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/dom_storage/dom_storage_message_filter_new.h"
-
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+#include "content/browser/dom_storage/dom_storage_message_filter.h"
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/nullable_string16.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/dom_storage/dom_storage_context_impl_new.h"
+#include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/common/dom_storage_messages.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/dom_storage/dom_storage_area.h"
@@ -204,5 +202,3 @@ void DOMStorageMessageFilter::SendDomStorageEvent(
   params.old_value = old_value;
   Send(new DOMStorageMsg_Event(params));
 }
-
-#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND

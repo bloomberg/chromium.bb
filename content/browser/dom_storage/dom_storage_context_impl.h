@@ -13,8 +13,6 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
-
 namespace dom_storage {
 class DomStorageContext;
 }
@@ -71,5 +69,4 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContextImpl);
 };
 
-#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND
 #endif  // CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_CONTEXT_IMPL_H_

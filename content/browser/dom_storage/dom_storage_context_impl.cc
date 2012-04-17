@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/dom_storage/dom_storage_context_impl_new.h"
-
-#ifdef ENABLE_NEW_DOM_STORAGE_BACKEND
+#include "content/browser/dom_storage/dom_storage_context_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -182,5 +180,3 @@ int64 DOMStorageContextImpl::LeakyCloneSessionStorage(
                  existing_namespace_id, clone_id));
   return clone_id;
 }
-
-#endif  // ENABLE_NEW_DOM_STORAGE_BACKEND

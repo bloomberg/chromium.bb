@@ -53,10 +53,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual void suddenTerminationChanged(bool enabled) OVERRIDE;
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
       const WebKit::WebString& path, unsigned quota) OVERRIDE;
-  virtual void dispatchStorageEvent(
-      const WebKit::WebString& key, const WebKit::WebString& old_value,
-      const WebKit::WebString& new_value, const WebKit::WebString& origin,
-      const WebKit::WebURL& url, bool is_local_storage) OVERRIDE;
   virtual WebKit::WebKitPlatformSupport::FileHandle databaseOpenFile(
       const WebKit::WebString& vfs_file_name, int desired_flags) OVERRIDE;
   virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
