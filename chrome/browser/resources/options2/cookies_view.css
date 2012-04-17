@@ -6,7 +6,7 @@
 #cookies-view-page {
   height: 90%;
   margin-left: -15px;
-  min-width: 700px;
+  min-width: 720px;
 }
 
 /* Styles for the cookies list elements in cookies_view.html. */
@@ -49,7 +49,7 @@ html[dir=rtl] #remove-all-cookies-search-column {
 #cookies-site-column {
   display: inline-block;
   font-weight: bold;
-  width: 11em;
+  width: 14em;
 }
 
 #cookies-data-column {
@@ -93,7 +93,7 @@ html[dir=rtl] list.cookie-list > .deletable-item > .close-button {
   display: inline-block;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 11em;
+  width: 14em;
 }
 
 list.cookie-list > .deletable-item[selected] .cookie-site {
@@ -102,12 +102,15 @@ list.cookie-list > .deletable-item[selected] .cookie-site {
 
 .cookie-data {
   display: inline-block;
+  max-width: 410px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cookie-size {
   display: inline-block;
   float: right;
-  margin-right: 3em;
+  margin-right: 0;
 }
 
 list.cookie-list > .deletable-item[selected] .cookie-data {
@@ -118,7 +121,7 @@ list.cookie-list > .deletable-item[selected] .cookie-data {
 /* Styles for the individual items (cookies, etc.). */
 .cookie-items {
   /* Notice that the margin and padding match up with those above. */
-  -webkit-margin-start: 11em;
+  -webkit-margin-start: 14em;
   -webkit-padding-start: 7px;
   -webkit-transition: 150ms ease-in-out;
   height: 0;
