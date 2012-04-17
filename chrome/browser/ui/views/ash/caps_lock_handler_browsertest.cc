@@ -7,66 +7,17 @@
 #include "chrome/test/base/ui_test_utils.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/input_method/mock_xkeyboard.h"
 using namespace chromeos::input_method;
 #endif
 
 namespace {
 
 #if defined(OS_CHROMEOS)
-class DummyXKeyboard : public XKeyboard {
- public:
-  explicit DummyXKeyboard(bool initial_caps_lock_state)
-      : caps_lock_is_enabled_(initial_caps_lock_state) {}
-  virtual ~DummyXKeyboard() {}
-
-  // Overridden from chrome::input_method::XKeyboard:
-  virtual bool SetCurrentKeyboardLayoutByName(
-      const std::string& layout_name) OVERRIDE {
-    return true;
-  }
-  virtual bool RemapModifierKeys(const ModifierMap& modifier_map) OVERRIDE {
-    return true;
-  }
-  virtual bool ReapplyCurrentKeyboardLayout() OVERRIDE {
-    return true;
-  }
-  virtual void ReapplyCurrentModifierLockStatus() OVERRIDE {}
-  virtual void SetLockedModifiers(
-      ModifierLockStatus new_caps_lock_status,
-      ModifierLockStatus new_num_lock_status) OVERRIDE {}
-  virtual void SetNumLockEnabled(bool enable_num_lock) OVERRIDE {}
-  virtual void SetCapsLockEnabled(bool enable_caps_lock) OVERRIDE {
-    caps_lock_is_enabled_ = enable_caps_lock;
-  }
-  virtual bool NumLockIsEnabled() OVERRIDE {
-    return true;
-  }
-  virtual bool CapsLockIsEnabled() OVERRIDE {
-    return caps_lock_is_enabled_;
-  }
-  virtual std::string CreateFullXkbLayoutName(
-      const std::string& layout_name,
-      const ModifierMap& modifire_map) OVERRIDE {
-    return "";
-  }
-  virtual unsigned int GetNumLockMask() OVERRIDE {
-    return 0;
-  }
-  virtual void GetLockedModifiers(bool* out_caps_lock_enabled,
-                                  bool* out_num_lock_enabled) OVERRIDE {}
-
- private:
-  bool caps_lock_is_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyXKeyboard);
-};
-
 class CapsLockHandlerTest : public InProcessBrowserTest {
  public:
   CapsLockHandlerTest()
-      : initial_caps_lock_state_(false),
-        xkeyboard_(initial_caps_lock_state_) {
+      : initial_caps_lock_state_(false) {
   }
   virtual void SetUp() OVERRIDE {
     handler_.reset(new CapsLockHandler(&xkeyboard_));
@@ -79,7 +30,7 @@ class CapsLockHandlerTest : public InProcessBrowserTest {
 
  protected:
   const bool initial_caps_lock_state_;
-  DummyXKeyboard xkeyboard_;
+  MockXKeyboard xkeyboard_;
   scoped_ptr<CapsLockHandler> handler_;
 
   DISALLOW_COPY_AND_ASSIGN(CapsLockHandlerTest);
