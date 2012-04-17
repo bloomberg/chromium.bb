@@ -465,7 +465,10 @@ int ValidateChunkAMD64(const uint8_t *data, size_t size,
     unsigned int name   :5;
     unsigned int type   :2;
 #ifdef _MSC_VER
-    Bool         write  :1;
+    /* We can not use Bool on Windows because it is a signed type there.
+     * TODO(khim): investigate performance impact, perhaps we can use plain
+     * ints instead of bit fields.  */
+    unsigned int write  :1;
 #else
     _Bool        write  :1;
 #endif
