@@ -757,6 +757,154 @@ drm_output_destroy(struct weston_output *output_base)
 	free(output);
 }
 
+static struct drm_mode *
+choose_mode (struct drm_output *output, struct weston_mode *target_mode)
+{
+	struct drm_mode *tmp_mode = NULL, *mode;
+
+	if (output->base.current->width == target_mode->width && 
+	    output->base.current->height == target_mode->height &&
+	    (output->base.current->refresh == target_mode->refresh ||
+	     target_mode->refresh == 0))
+		return (struct drm_mode *)output->base.current;
+
+	wl_list_for_each(mode, &output->base.mode_list, base.link) {
+		if (mode->mode_info.hdisplay == target_mode->width &&
+		    mode->mode_info.vdisplay == target_mode->height) {
+			if (mode->mode_info.vrefresh == target_mode->refresh || 
+          		    target_mode->refresh == 0) {
+				return mode;
+			} else if (!tmp_mode) 
+				tmp_mode = mode;
+		}
+	}
+
+	return tmp_mode;
+}
+
+static int
+drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mode)
+{
+	struct drm_output *output;
+	struct drm_mode *drm_mode;
+	int ret;
+	struct drm_compositor *ec;
+	struct gbm_surface *surface;
+	EGLSurface egl_surface;
+
+	if (output_base == NULL) {
+		fprintf(stderr, "output is NULL.\n");
+		return -1;
+	}
+
+	if (mode == NULL) {
+		fprintf(stderr, "mode is NULL.\n");
+		return -1;
+	}
+
+	ec = (struct drm_compositor *)output_base->compositor;
+	output = (struct drm_output *)output_base;
+	drm_mode  = choose_mode (output, mode);
+
+	if (!drm_mode) {
+		printf("%s, invalid resolution:%dx%d\n", __func__, mode->width, mode->height);
+		return -1;
+	} else if (&drm_mode->base == output->base.current) {
+		return 0;
+	} else if (drm_mode->base.width == output->base.current->width &&
+	           drm_mode->base.height == output->base.current->height) {
+		/* only change refresh value */
+		ret = drmModeSetCrtc(ec->drm.fd,
+				     output->crtc_id,
+				     output->current_fb_id, 0, 0,
+				     &output->connector_id, 1, &drm_mode->mode_info);
+
+		if (ret) {
+			fprintf(stderr, "failed to set mode (%dx%d) %u Hz\n",
+				drm_mode->base.width,
+				drm_mode->base.height,
+				drm_mode->base.refresh);
+			ret = -1;
+		} else {
+			output->base.current->flags = 0;
+			output->base.current = &drm_mode->base;
+			drm_mode->base.flags = 
+				WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+			ret = 0;
+		}
+
+		return ret;
+	}
+
+	drm_mode->base.flags =
+		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+
+	surface = gbm_surface_create(ec->gbm,
+			         drm_mode->base.width,
+			         drm_mode->base.height,
+				 GBM_FORMAT_XRGB8888,
+				 GBM_BO_USE_SCANOUT |
+				 GBM_BO_USE_RENDERING);
+	if (!surface) {
+		fprintf(stderr, "failed to create gbm surface\n");
+		return -1;
+	}
+
+	egl_surface =
+		eglCreateWindowSurface(ec->base.display,
+				       ec->base.config,
+				       surface, NULL);
+
+	if (egl_surface == EGL_NO_SURFACE) {
+		fprintf(stderr, "failed to create egl surface\n");
+		goto err;
+	}
+
+	ret = drmModeSetCrtc(ec->drm.fd,
+			     output->crtc_id,
+			     output->current_fb_id, 0, 0,
+			     &output->connector_id, 1, &drm_mode->mode_info);
+	if (ret) {
+		fprintf(stderr, "failed to set mode\n");
+		goto err;
+	}
+
+	/* reset rendering stuff. */
+	if (output->current_fb_id)
+		drmModeRmFB(ec->drm.fd, output->current_fb_id);
+	output->current_fb_id = 0;
+
+	if (output->next_fb_id)
+		drmModeRmFB(ec->drm.fd, output->next_fb_id);
+	output->next_fb_id = 0;
+
+	if (output->current_bo)
+		gbm_surface_release_buffer(output->surface,
+					   output->current_bo);
+		output->current_bo = NULL;
+
+	if (output->next_bo)
+		gbm_surface_release_buffer(output->surface,
+					   output->next_bo);
+	output->next_bo = NULL;
+
+	eglDestroySurface(ec->base.display, output->egl_surface);
+	gbm_surface_destroy(output->surface);
+	output->egl_surface = egl_surface;
+	output->surface = surface;
+
+	/*update output*/
+	output->base.current = &drm_mode->base;
+	output->base.dirty = 1;
+	weston_output_move(&output->base, output->base.x, output->base.y);
+	return 0;
+
+err:
+	eglDestroySurface(ec->base.display, egl_surface);
+	gbm_surface_destroy(surface);
+	return -1;
+}
+
 static int
 on_drm_input(int fd, uint32_t mask, void *data)
 {
@@ -1166,7 +1314,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.assign_planes = drm_assign_planes;
 	output->base.read_pixels = drm_output_read_pixels;
 	output->base.set_dpms = drm_set_dpms;
-	output->base.switch_mode = NULL;
+	output->base.switch_mode = drm_output_switch_mode;
 
 	return 0;
 
