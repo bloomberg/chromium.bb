@@ -472,6 +472,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	output->base.read_pixels = x11_output_read_pixels;
 	output->base.set_backlight = NULL;
 	output->base.set_dpms = NULL;
+	output->base.switch_mode = NULL;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 

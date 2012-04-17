@@ -99,6 +99,7 @@ struct weston_output {
 	void (*destroy)(struct weston_output *output);
 	void (*assign_planes)(struct weston_output *output);
 	void (*read_pixels)(struct weston_output *output, void *data);
+	int (*switch_mode)(struct weston_output *output, struct weston_mode *mode);
 
 	/* backlight values are on 0-255 range, where higher is brighter */
 	uint32_t backlight_current;
@@ -562,5 +563,8 @@ weston_surface_destroy(struct weston_surface *surface);
 
 struct weston_compositor *
 backend_init(struct wl_display *display, int argc, char *argv[]);
+
+int
+weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode);
 
 #endif

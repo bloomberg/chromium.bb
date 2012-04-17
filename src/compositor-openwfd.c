@@ -409,6 +409,7 @@ create_output_for_port(struct wfd_compositor *ec,
 	output->base.assign_planes = NULL;
 	output->base.set_backlight = NULL;
 	output->base.set_dpms = NULL;
+	output->base.switch_mode = NULL;
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
 

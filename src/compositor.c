@@ -79,6 +79,15 @@ sigchld_handler(int signal_number, void *data)
 	return 1;
 }
 
+WL_EXPORT int
+weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode)
+{
+	if (!output->switch_mode)
+		return -1;
+
+	return output->switch_mode(output, mode);
+}
+
 WL_EXPORT void
 weston_watch_process(struct weston_process *process)
 {

@@ -462,6 +462,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	output->base.read_pixels = wayland_output_read_pixels;
 	output->base.set_backlight = NULL;
 	output->base.set_dpms = NULL;
+	output->base.switch_mode = NULL;
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 

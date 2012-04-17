@@ -1166,6 +1166,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.assign_planes = drm_assign_planes;
 	output->base.read_pixels = drm_output_read_pixels;
 	output->base.set_dpms = drm_set_dpms;
+	output->base.switch_mode = NULL;
 
 	return 0;
 
