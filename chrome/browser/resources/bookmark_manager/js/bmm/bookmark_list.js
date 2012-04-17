@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,10 @@
 //            that handles the loading and the events from the bookmark backend.
 
 cr.define('bmm', function() {
-  const List = cr.ui.List;
-  const ListItem = cr.ui.ListItem;
-  const ArrayDataModel = cr.ui.ArrayDataModel;
-  const ContextMenuButton = cr.ui.ContextMenuButton;
+  var List = cr.ui.List;
+  var ListItem = cr.ui.ListItem;
+  var ArrayDataModel = cr.ui.ArrayDataModel;
+  var ContextMenuButton = cr.ui.ContextMenuButton;
 
   var list;
 
@@ -507,7 +507,7 @@ cr.define('bmm', function() {
           });
           urlInput.addEventListener('keydown', handleKeydown);
           urlInput.addEventListener('blur', handleBlur);
-          cr.ui.limitInputWidth(urlInput, this, 100);
+          cr.ui.limitInputWidth(urlInput, this, 200);
         }
 
       } else {

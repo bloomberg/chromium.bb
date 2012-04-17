@@ -25,7 +25,7 @@
   -webkit-padding-end: 1ex;
   box-sizing: border-box;
   display: -webkit-box;
-  width: 37%;
+  width: 30%;
 }
 
 .search-engine-list .name-column :last-child {
@@ -40,7 +40,7 @@
 
 .search-engine-list .url-column {
   box-sizing: border-box;
-  width: 37%;
+  width: 44%;
 }
 
 .search-engine-list .keyword-column,

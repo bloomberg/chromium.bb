@@ -256,6 +256,7 @@ html[dir=rtl] .header form {
 }
 
 input[type='search'] {
+  -webkit-appearance: textfield;
   -webkit-margin-end: 2px;
   -webkit-margin-start: 2px;
   width: 100%;
