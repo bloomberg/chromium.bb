@@ -37,6 +37,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         pinch_update_(false),
         pinch_end_(false),
         long_press_(false),
+        fling_(false),
         three_finger_swipe_(false),
         scroll_x_(0),
         scroll_y_(0),
@@ -57,6 +58,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     pinch_update_ = false;
     pinch_end_ = false;
     long_press_ = false;
+    fling_ = false;
     three_finger_swipe_ = false;
 
     scroll_begin_position_.SetPoint(0, 0);
@@ -77,6 +79,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool pinch_update() const { return pinch_update_; }
   bool pinch_end() const { return pinch_end_; }
   bool long_press() const { return long_press_; }
+  bool fling() const { return fling_; }
   bool three_finger_swipe() const { return three_finger_swipe_; }
 
   const gfx::Point scroll_begin_position() const {
@@ -127,6 +130,11 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         long_press_ = true;
         touch_id_ = gesture->delta_x();
         break;
+      case ui::ET_SCROLL_FLING_START:
+        EXPECT_TRUE(scroll_end_);
+        EXPECT_TRUE(velocity_x_ != 0 || velocity_y_ != 0);
+        fling_ = true;
+        break;
       case ui::ET_GESTURE_THREE_FINGER_SWIPE:
         three_finger_swipe_ = true;
         velocity_x_ = gesture->delta_x();
@@ -149,6 +157,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   bool pinch_update_;
   bool pinch_end_;
   bool long_press_;
+  bool fling_;
   bool three_finger_swipe_;
 
   gfx::Point scroll_begin_position_;

@@ -344,43 +344,43 @@ GesturePoint* GestureSequence::GetPointByPointId(int point_id) {
 
 void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
                                                 Gestures* gestures) {
-  gestures->push_back((helper_->CreateGestureEvent(
+  gestures->push_back(helper_->CreateGestureEvent(
       ui::ET_GESTURE_TAP_DOWN,
       point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      0.f, 0.f, 1 << point.touch_id())));
+      0.f, 0.f, 1 << point.touch_id()));
 }
 
 void GestureSequence::AppendClickGestureEvent(const GesturePoint& point,
                                               Gestures* gestures) {
-  gestures->push_back((helper_->CreateGestureEvent(
+  gestures->push_back(helper_->CreateGestureEvent(
       ui::ET_GESTURE_TAP,
       point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      0.f, 0.f, 1 << point.touch_id())));
+      0.f, 0.f, 1 << point.touch_id()));
 }
 
 void GestureSequence::AppendDoubleClickGestureEvent(const GesturePoint& point,
                                                     Gestures* gestures) {
-  gestures->push_back((helper_->CreateGestureEvent(
+  gestures->push_back(helper_->CreateGestureEvent(
       ui::ET_GESTURE_DOUBLE_TAP,
       point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      0.f, 0.f, 1 << point.touch_id())));
+      0.f, 0.f, 1 << point.touch_id()));
 }
 
 void GestureSequence::AppendScrollGestureBegin(const GesturePoint& point,
                                                const gfx::Point& location,
                                                Gestures* gestures) {
-  gestures->push_back((helper_->CreateGestureEvent(
+  gestures->push_back(helper_->CreateGestureEvent(
       ui::ET_GESTURE_SCROLL_BEGIN,
       location,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      0.f, 0.f, 1 << point.touch_id())));
+      0.f, 0.f, 1 << point.touch_id()));
 }
 
 void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
@@ -396,12 +396,27 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
   else if (scroll_type_ == ST_VERTICAL)
     railed_x_velocity = 0;
 
-  gestures->push_back((helper_->CreateGestureEvent(
+  gestures->push_back(helper_->CreateGestureEvent(
       ui::ET_GESTURE_SCROLL_END,
       location,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      railed_x_velocity, railed_y_velocity, 1 << point.touch_id())));
+      railed_x_velocity, railed_y_velocity, 1 << point.touch_id()));
+
+  if (railed_x_velocity != 0 || railed_y_velocity != 0) {
+    // TODO(sad|rjkroege): fling-curve is currently configured to work well with
+    // touchpad scroll-events. This curve needs to be adjusted to work correctly
+    // with both touchpad and touchscreen. Until then, multiply the velocity for
+    // touchscreen with a constant.
+    // http://crbug.com/120154
+    gestures->push_back(helper_->CreateGestureEvent(
+        ui::ET_SCROLL_FLING_START,
+        location,
+        flags_,
+        base::Time::FromDoubleT(point.last_touch_time()),
+        railed_x_velocity * 2.5, railed_y_velocity * 2.5,
+        1 << point.touch_id()));
+  }
 }
 
 void GestureSequence::AppendScrollGestureUpdate(const GesturePoint& point,
@@ -415,24 +430,24 @@ void GestureSequence::AppendScrollGestureUpdate(const GesturePoint& point,
   else if (scroll_type_ == ST_VERTICAL)
     dx = 0;
 
-  gestures->push_back((helper_->CreateGestureEvent(
+  gestures->push_back(helper_->CreateGestureEvent(
       ui::ET_GESTURE_SCROLL_UPDATE,
       location,
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
-      dx, dy, 1 << point.touch_id())));
+      dx, dy, 1 << point.touch_id()));
 }
 
 void GestureSequence::AppendPinchGestureBegin(const GesturePoint& p1,
                                               const GesturePoint& p2,
                                               Gestures* gestures) {
   gfx::Point center = p1.last_touch_position().Middle(p2.last_touch_position());
-  gestures->push_back((helper_->CreateGestureEvent(
+  gestures->push_back(helper_->CreateGestureEvent(
       ui::ET_GESTURE_PINCH_BEGIN,
       center,
       flags_,
       base::Time::FromDoubleT(p1.last_touch_time()),
-      0.f, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id())));
+      0.f, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id()));
 }
 
 void GestureSequence::AppendPinchGestureEnd(const GesturePoint& p1,
@@ -440,12 +455,12 @@ void GestureSequence::AppendPinchGestureEnd(const GesturePoint& p1,
                                             float scale,
                                             Gestures* gestures) {
   gfx::Point center = p1.last_touch_position().Middle(p2.last_touch_position());
-  gestures->push_back((helper_->CreateGestureEvent(
+  gestures->push_back(helper_->CreateGestureEvent(
       ui::ET_GESTURE_PINCH_END,
       center,
       flags_,
       base::Time::FromDoubleT(p1.last_touch_time()),
-      scale, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id())));
+      scale, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id()));
 }
 
 void GestureSequence::AppendPinchGestureUpdate(const GesturePoint& p1,
@@ -455,12 +470,12 @@ void GestureSequence::AppendPinchGestureUpdate(const GesturePoint& p1,
   // TODO(sad): Compute rotation and include it in delta_y.
   // http://crbug.com/113145
   gfx::Point center = p1.last_touch_position().Middle(p2.last_touch_position());
-  gestures->push_back((helper_->CreateGestureEvent(
+  gestures->push_back(helper_->CreateGestureEvent(
       ui::ET_GESTURE_PINCH_UPDATE,
       center,
       flags_,
       base::Time::FromDoubleT(p1.last_touch_time()),
-      scale, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id())));
+      scale, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id()));
 }
 
 void GestureSequence::AppendThreeFingerSwipeGestureEvent(const GesturePoint& p1,

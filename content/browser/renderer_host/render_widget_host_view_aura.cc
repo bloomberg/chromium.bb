@@ -1062,6 +1062,13 @@ ui::TouchStatus RenderWidgetHostViewAura::OnTouchEvent(
 ui::GestureStatus RenderWidgetHostViewAura::OnGestureEvent(
     aura::GestureEvent* event) {
   WebKit::WebGestureEvent gesture = content::MakeWebGestureEvent(event);
+  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    // Webkit does not stop a fling-scroll on tap-down. So explicitly send an
+    // event to stop any in-progress flings.
+    WebKit::WebGestureEvent fling_cancel = gesture;
+    fling_cancel.type = WebKit::WebInputEvent::GestureFlingCancel;
+    host_->ForwardGestureEvent(fling_cancel);
+  }
   host_->ForwardGestureEvent(gesture);
 
   // If a gesture is not processed by the webpage, then WebKit processes it
