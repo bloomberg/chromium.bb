@@ -37,10 +37,30 @@ cr.define('options', function() {
       $('autofill-edit-address-cancel-button').onclick = function(event) {
         self.dismissOverlay_();
       };
+
+      // TODO(jhawkins): Investigate other possible solutions.
       $('autofill-edit-address-apply-button').onclick = function(event) {
-        self.saveAddress_();
-        self.dismissOverlay_();
+        // Blur active element to ensure that pending changes are committed.
+        if (document.activeElement)
+          document.activeElement.blur();
+        // Blurring is delayed for list elements.  Queue save and close to
+        // ensure that pending changes have been applied.
+        setTimeout(function() {
+          self.saveAddress_();
+          self.dismissOverlay_();
+        }, 0);
       };
+
+      // Prevent 'blur' events on the OK and cancel buttons, which can trigger
+      // insertion of new placeholder elements.  The addition of placeholders
+      // affects layout, which interferes with being able to click on the
+      // buttons.
+      $('autofill-edit-address-apply-button').onmousedown = function(event) {
+        event.preventDefault();
+      };
+      $('autofill-edit-address-cancel-button').onmousedown = function(event) {
+        event.preventDefault();
+      }
 
       self.guid = '';
       self.populateCountryList_();
