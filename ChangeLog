@@ -1,5 +1,9 @@
 2012-04-17  Christian Egli  <christian.egli@sbs.ch>
 
+	* tests/doctests/en-GB-g2.ctb_test.txt:
+	* tests/check_doctests.py (TestHelper): Add a test helper to
+	simplify the writing of doctests.
+
 	* tests/tables/moreTables/include.utb:
 	* tests/Makefile.am (TESTS_ENVIRONMENT):
 	* tests/multiple_table_path.pl: Added some tests for the improved
