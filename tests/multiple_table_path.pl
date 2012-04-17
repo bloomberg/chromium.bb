@@ -24,7 +24,21 @@ my @tables = (
     # a table with an absolute path
     abs_path("$ENV{srcdir}/tables/loop.ctb"),
     # a list of tables with an absolute path
-    abs_path("$ENV{srcdir}/../tables/en-us-g2.ctb") . ",en-us-g1.ctb"
+    abs_path("$ENV{srcdir}/../tables/en-us-g2.ctb") . ",en-us-g1.ctb",
+    # table combinations
+    # all global tables
+    "en-us-g2.ctb,braille-patterns.cti",
+    # a global and a local table
+    "braille-patterns.cti,pass2.ctb",
+    # a local and a global table
+    "pass2.ctb,braille-patterns.cti",
+    # a relative, a local and a global table
+    "$ENV{srcdir}/tables/loop.ctb,pass2.ctb,braille-patterns.cti",
+    # a table which includes local and global tables
+    "include.utb",
+    # a relative table and a table which includes local and global tables
+    # currently fails
+#    "$ENV{srcdir}/tables/loop.ctb,include.utb",
     );
 
 # ensure existing tables are found

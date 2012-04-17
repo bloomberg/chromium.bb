@@ -1,3 +1,10 @@
+2012-04-17  Christian Egli  <christian.egli@sbs.ch>
+
+	* tests/tables/moreTables/include.utb:
+	* tests/Makefile.am (TESTS_ENVIRONMENT):
+	* tests/multiple_table_path.pl: Added some tests for the improved
+	LOUIS_TABLEPATH functionality.
+
 2012-04-13  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/Makefile.am:
