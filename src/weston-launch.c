@@ -451,7 +451,7 @@ setup_tty(struct weston_launch *wl, const char *tty)
 		char filename[16];
 
 		if (tty0 < 0)
-			error(1, errno, "count not open tty0");
+			error(1, errno, "could not open tty0");
 
 		if (ioctl(tty0, VT_OPENQRY, &wl->ttynr) < 0 || wl->ttynr == -1)
 			error(1, errno, "failed to find non-opened console"); 
@@ -482,7 +482,7 @@ help(const char *name)
 {
 	fprintf(stderr, "Usage: %s [args...] [-- [weston args..]]\n", name);
 	fprintf(stderr, "  -u, --user      Start session as specified username\n");
-	fprintf(stderr, "  -t, --tty       Start session on alternative tty device\n");
+	fprintf(stderr, "  -t, --tty       Start session on alternative tty\n");
 	fprintf(stderr, "  -v, --verbose   Be verbose\n");
 	fprintf(stderr, "  -s, --sleep     Sleep specified amount of time before exec\n");
 	fprintf(stderr, "  -h, --help      Display this help message\n");
@@ -544,13 +544,13 @@ main(int argc, char *argv[])
 		error(1, errno, "failed to get username");
 
 	if (!weston_launch_allowed(&wl))
-		error(1, 0, "Permission denied. You should..\n"
+		error(1, 0, "Permission denied. You should either:\n"
 #ifdef HAVE_SYSTEMD_LOGIN
 		      " - run from an active and local (systemd) session.\n"
 #else
 		      " - enable systemd session support for weston-launch.\n"
 #endif
-		      " - add yourself to the 'weston-launch' group.");
+		      " - or add yourself to the 'weston-launch' group.");
 
 	if (setup_tty(&wl, tty) < 0)
 		return 1;
