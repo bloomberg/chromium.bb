@@ -6,117 +6,80 @@
   -->
 <html i18n-values="dir:textdirection;">
   <head>
-    <if expr="0">
-    <!-- <if ... /if> is removed while flattening HTML. -->
-    <base href="">
-    <script>
-      // Instruction for enabling loading file manager files remotely (speeds up
-      // development cycle):
-      //
-      // 1. Find the IDR_FILE_MANAGER_MAIN resource in 
-      //    chrome/browser/resources/component_extension_resources.grd.
-      //    Change the "flattenhtml" attribute to false.
-      //
-      // 2. Build and run the Chromium OS.
-      //
-      // 3. Make source files available via the HTTP protocol:
-      //    twistd web --path chrome/browser/resources/ --port 1080
-      //
-      // 4. Open the File Manager. Execute the following JS code in its context
-      //    using DevTools:
-      //    localStorage.base = 'http://yourmachine:1080/file_manager/'
-      //
-      // This will make the File Manager use fresh JS and CSS files from the
-      // development machine. HTML files and JS files for WebWorkers would still
-      // need a rebuild to update.
-
-      document.querySelector('base').setAttribute('href', localStorage.base);
-    </script>
-    </if>
-    <!-- metrics.js initiates load performance tracking
-         so we want to parse it as early as possible -->
-    <script src="js/metrics.js"></script>
-    <script>
-      (function() {
-        // Switch to 'test harness' mode when loading from a file or http url.
-        var isHarness = document.location.protocol == 'file:' ||
-                        document.location.protocol == 'http:';
-
-        if (isHarness)
-          document.write('<script src="js/mock_chrome.js"><\57script>');
-     })();
-
-    </script>
-
+    <!-- We have to set some default title, or chrome will use the page name.
+      -- As soon as we init and change to a directory, we'll show the directory
+      -- path. Until then, use an invisible non-whitespace character.
+      -->
+    <title>&#xFEFF;</title>
     <link rel="stylesheet" href="../shared/css/dialogs.css"></link>
     <link rel="stylesheet" href="../shared/css/list.css"></link>
     <link rel="stylesheet" href="../shared/css/table.css"></link>
     <link rel="stylesheet" href="../shared/css/menu.css"></link>
-
-    <script src="../shared/js/local_strings.js"></script>
-    <script src="../shared/js/util.js"></script>
-    <script src="../shared/js/i18n_template.js"></script>
-
-    <script src="../shared/js/event_tracker.js"></script>
-    <script src="../shared/js/cr.js"></script>
-    <script src="../shared/js/event_tracker.js"></script>
-    <script src="../shared/js/cr/ui.js"></script>
-    <script src="../shared/js/cr/event_target.js"></script>
-    <script src="../shared/js/cr/ui/touch_handler.js"></script>
-    <script src="../shared/js/cr/ui/array_data_model.js"></script>
-    <script src="../shared/js/cr/ui/dialogs.js"></script>
-    <script src="../shared/js/cr/ui/list_item.js"></script>
-    <script src="../shared/js/cr/ui/list_selection_model.js"></script>
-    <script src="../shared/js/cr/ui/list_single_selection_model.js"></script>
-    <script src="../shared/js/cr/ui/list_selection_controller.js"></script>
-    <script src="../shared/js/cr/ui/list.js"></script>
-
-    <script src="../shared/js/cr/ui/splitter.js"></script>
-    <script src="../shared/js/cr/ui/table/table_splitter.js"></script>
-
-    <script src="../shared/js/cr/ui/table/table_column.js"></script>
-    <script src="../shared/js/cr/ui/table/table_column_model.js"></script>
-    <script src="../shared/js/cr/ui/table/table_header.js"></script>
-    <script src="../shared/js/cr/ui/table/table_list.js"></script>
-    <script src="../shared/js/cr/ui/table.js"></script>
-
-    <script src="../shared/js/cr/ui/grid.js"></script>
-
-    <script src="../shared/js/cr/ui/command.js"></script>
-    <script src="../shared/js/cr/ui/position_util.js"></script>
-    <script src="../shared/js/cr/ui/menu_item.js"></script>
-    <script src="../shared/js/cr/ui/menu.js"></script>
-    <script src="../shared/js/cr/ui/menu_button.js"></script>
-    <script src="../shared/js/cr/ui/context_menu_handler.js"></script>
-
-    <script src="js/combobutton.js"></script>
+    
     <link rel="stylesheet" href="css/combobutton.css"></link>
-
     <link rel="stylesheet" href="css/file_manager.css"></link>
     <link rel="stylesheet" href="css/common.css"></link>
 
-    <script src="js/util.js"></script>
-    <script src="js/directory_model.js"></script>
-    <script src="js/file_copy_manager.js"></script>
-    <script src="js/file_transfer_controller.js"></script>
-    <script src="js/file_manager.js"></script>
-    <script src="js/file_manager_pyauto.js"></script>
-    <script src="js/file_type.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/metadata/metadata_provider.js"></script>
+    <script src="js/main_scripts.js"></script>
 
-    <!-- For accurate load performance tracking
-         place all scripts above this line -->
-    <script>
-      metrics.recordInterval('Load.Script');
-    </script>
-    
-    <!-- We have to set some default title, or chrome will use the page
-      -- name.  As soon as we init and change to a directory, we'll use
-      -- the directory as the page title.  Until then, have a unicode glyph
-      -- of a tape reel.
-      -->
-    <title>&#xFEFF;</title>
+    <if expr="0">
+      <!-- This file has not been flattened, load individual scripts.
+           Keep the list in sync with js/main_scripts.js. -->
+
+      <!-- metrics.js initiates load performance tracking
+           so we want to parse it as early as possible -->
+      <script src="js/metrics.js"></script>
+
+      <script src="../shared/js/local_strings.js"></script>
+      <script src="../shared/js/util.js"></script>
+      <script src="../shared/js/i18n_template.js"></script>
+
+      <script src="../shared/js/cr.js"></script>
+      <script src="../shared/js/event_tracker.js"></script>
+      <script src="../shared/js/cr/ui.js"></script>
+      <script src="../shared/js/cr/event_target.js"></script>
+      <script src="../shared/js/cr/ui/touch_handler.js"></script>
+      <script src="../shared/js/cr/ui/array_data_model.js"></script>
+      <script src="../shared/js/cr/ui/dialogs.js"></script>
+      <script src="../shared/js/cr/ui/list_item.js"></script>
+      <script src="../shared/js/cr/ui/list_selection_model.js"></script>
+      <script src="../shared/js/cr/ui/list_single_selection_model.js"></script>
+      <script src="../shared/js/cr/ui/list_selection_controller.js"></script>
+      <script src="../shared/js/cr/ui/list.js"></script>
+
+      <script src="../shared/js/cr/ui/splitter.js"></script>
+      <script src="../shared/js/cr/ui/table/table_splitter.js"></script>
+
+      <script src="../shared/js/cr/ui/table/table_column.js"></script>
+      <script src="../shared/js/cr/ui/table/table_column_model.js"></script>
+      <script src="../shared/js/cr/ui/table/table_header.js"></script>
+      <script src="../shared/js/cr/ui/table/table_list.js"></script>
+      <script src="../shared/js/cr/ui/table.js"></script>
+
+      <script src="../shared/js/cr/ui/grid.js"></script>
+
+      <script src="../shared/js/cr/ui/command.js"></script>
+      <script src="../shared/js/cr/ui/position_util.js"></script>
+      <script src="../shared/js/cr/ui/menu_item.js"></script>
+      <script src="../shared/js/cr/ui/menu.js"></script>
+      <script src="../shared/js/cr/ui/menu_button.js"></script>
+      <script src="../shared/js/cr/ui/context_menu_handler.js"></script>
+
+      <script src="js/combobutton.js"></script>
+
+      <script src="js/util.js"></script>
+      <script src="js/directory_model.js"></script>
+      <script src="js/file_copy_manager.js"></script>
+      <script src="js/file_manager.js"></script>
+      <script src="js/file_manager_pyauto.js"></script>
+      <script src="js/file_transfer_controller.js"></script>
+      <script src="js/file_type.js"></script>
+      <script src="js/metadata/metadata_provider.js"></script>
+      <!-- For accurate load performance tracking main.js should be
+           the last script to include. -->
+      <script src="js/main.js"></script>
+    </if>
+
   </head>
   <body i18n-values=".style.fontFamily:WEB_FONT_FAMILY;
                      .style.fontSize:WEB_FONT_SIZE">
@@ -136,20 +99,15 @@
     </commands>
 
     <menu class=file-context-menu>
-      <menuitem command='#cut' visibleif='this.dialogType_ ==
-                                          "full-page"'></menuitem>
-      <menuitem command='#copy' visibleif='this.dialogType_ ==
-                                           "full-page"'></menuitem>
-      <menuitem command='#paste'visibleif='this.dialogType_ ==
-                                           "full-page"'></menuitem>
-      <hr visibleif='this.dialogType_ == "full-page"'>
+      <menuitem command='#cut' visibleif='full-page'></menuitem>
+      <menuitem command='#copy' visibleif='full-page'></menuitem>
+      <menuitem command='#paste' visibleif='full-page'></menuitem>
+      <hr visibleif='full-page'>
       <menuitem command='#rename'></menuitem>
       <menuitem command='#delete'></menuitem>
-      <hr visibleif='this.dialogType_ == "saveas-file" ||
-                     this.dialogType_ == "full-page"'>
+      <hr visibleif='saveas-file full-page'>
       <menuitem command='#newfolder'
-          visibleif='this.dialogType_ == "saveas-file" ||
-                     this.dialogType_ == "full-page"'></menuitem>
+          visibleif='saveas-file full-page'></menuitem>
     </menu>
 
     <menu class=roots-context-menu>
@@ -164,23 +122,7 @@
           i18n-content=GDATA_SHOW_HOSTED_FILES_OPTION></menuitem>
     </menu>
 
-    <!-- TODO(bshe): Remove isAura flag after all chromeos use aura. -->
-    <if expr="pp_ifdef('use_aura')">
-      <script>FileManager.prototype.isAura_ = true;</script>
-    </if>
-    <if expr="not pp_ifdef('use_aura')">
-      <!-- When loading directly from disk, isAura flag also sets to false
-        -- because the preprocessor is ignored. It should be fine for now. The
-        -- div title still shows in this case. It resembles the look of file
-        -- dialog in chromeos non aura builds. After all chromeos switches to
-        -- aura, we should use !cr.isChromeOS in the visibleif condition. Since
-        -- aura has its own window frame, we do not want to have this title div
-        -- visiable in aura.
-        -->
-      <script>FileManager.prototype.isAura_ = false;</script>
-    </if>
-    <div class=dialog-title visibleif='this.dialogType_ != "full-page" &&
-        !this.isAura_'>[TITLE]</div>
+    <div class=dialog-title invisibleif='full-page'>[TITLE]</div>
     <div class=dialog-container sidebar=sidebar>
       <div class=dialog-sidebar>
         <div class=close-sidebar tabindex=0 role="button"></div>
@@ -192,7 +134,7 @@
           <div class=breadcrumbs></div>
           <div class=detail-view role=button tabindex=4 disabled></div>
           <div class=thumbnail-view role=button tabindex=5></div>
-          <div visibleif='this.dialogType_ == "full-page"'><button
+          <div visibleif='full-page'><button
             menu="#docs-settings" class="settings" tabindex="6"></button></div>
         </div>
         <div class=dialog-body>
@@ -214,13 +156,7 @@
             <div class=tasks></div>
             <div class='delete-button cr-button task-item' command='#delete'
                     role="button" tabindex=0
-                    onclick='fileManager.deleteEntries(
-                             fileManager.selection.entries, false)'
-                    onkeypress='if (event.keyCode == 13 ||
-                                    event.keyCode == 32) {
-                                    fileManager.deleteEntries(
-                                      fileManager.selection.entries, false);}'
-                    visibleif='this.dialogType_ == "full-page"'
+                    visibleif='full-page'
                 ><img src='images/button-icon-delete.png'
                 ><div i18n-content=DELETE_BUTTON_LABEL></div
             ></div>
@@ -229,13 +165,13 @@
         </div>
       </div>
     </div>
-    <div class=dialog-footer visibleif='this.dialogType_ != "full-page"'>
+    <div class=dialog-footer invisibleif='full-page'>
       <div class=filename-label i18n-content=FILENAME_LABEL
-           visibleif='this.dialogType_ == "saveas-file"'
+           visibleif='saveas-file'
            >[FILENAME]</div>
       <input type=text class=filename-input spellcheck=false
              tabindex=1
-             visibleif='this.dialogType_ == "saveas-file"'>
+             visibleif='saveas-file'>
       <div class=horizontal-spacer></div>
       <button class=ok disabled tabindex=2>[OK]</button>
       <div class=preparing-label i18n-content=PREPARING_LABEL>[PREPARING]</div>
@@ -256,7 +192,5 @@
     </div>
     <div id=drag-image-container></div>
     <iframe id=command-dispatcher hidden></iframe>
-
-    <script>init();</script>
   </body>
 </html>

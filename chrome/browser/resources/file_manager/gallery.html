@@ -1,35 +1,32 @@
 <!--
-  -- Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  -- Copyright (c) 2012 The Chromium Authors. All rights reserved.
   -- Use of this source code is governed by a BSD-style license that can be
   -- found in the LICENSE file.
-  -->
-
-<!--
-  Load this page into a tab or an iframe, then set the gallery up like this:
-
-    iframe.contentWindow.Gallery.open(parentDirEntry, entries, closeCallback);
   -->
 <html>
 <head>
   <link rel="stylesheet" type="text/css" href="css/gallery.css"/>
   <link rel="stylesheet" type="text/css" href="css/media_controls.css"/>
 
-  <script type="text/javascript" src="js/image_editor/image_util.js"></script>
-  <script type="text/javascript" src="js/image_editor/viewport.js"></script>
-  <script type="text/javascript" src="js/image_editor/image_buffer.js"></script>
-  <script type="text/javascript" src="js/image_editor/image_view.js"></script>
-  <script type="text/javascript" src="js/image_editor/commands.js"></script>
-  <script type="text/javascript" src="js/image_editor/image_editor.js"></script>
-  <script type="text/javascript" src="js/image_editor/image_transform.js"></script>
-  <script type="text/javascript" src="js/image_editor/image_adjust.js"></script>
-  <script type="text/javascript" src="js/image_editor/filter.js"></script>
-  <script type="text/javascript" src="js/image_editor/gallery.js"></script>
+  <script src="js/image_editor/gallery_scripts.js"></script>
 
-  <script type="text/javascript" src="js/image_editor/image_encoder.js"></script>
-  <script type="text/javascript" src="js/image_editor/exif_encoder.js"></script>
-
-  <script type="text/javascript" src="js/media/media_controls.js"></script>
-
+  <if expr="0">
+    <!-- This file has not been flattened, load individual scripts.
+         Keep the list in sync with gallery_scripts.js. -->
+    <script src="js/image_editor/image_util.js"></script>
+    <script src="js/image_editor/viewport.js"></script>
+    <script src="js/image_editor/image_buffer.js"></script>
+    <script src="js/image_editor/image_view.js"></script>
+    <script src="js/image_editor/commands.js"></script>
+    <script src="js/image_editor/image_editor.js"></script>
+    <script src="js/image_editor/image_transform.js"></script>
+    <script src="js/image_editor/image_adjust.js"></script>
+    <script src="js/image_editor/filter.js"></script>
+    <script src="js/image_editor/gallery.js"></script>
+    <script src="js/image_editor/image_encoder.js"></script>
+    <script src="js/image_editor/exif_encoder.js"></script>
+    <script src="js/media/media_controls.js"></script>
+  </if>
 </head>
 <body>
   <div class="gallery"></div>

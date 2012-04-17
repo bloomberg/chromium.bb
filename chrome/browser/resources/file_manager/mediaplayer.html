@@ -1,14 +1,30 @@
+<!--
+  -- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
         "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+  <!-- We have to set some default title, or chrome will use the page name.
+    -- As soon as the i18n'd strings are loaded we replace it with the correct
+    -- string. Until then, use an invisible non-whitespace character.
+    -->
+  <title>&#xFEFF;</title>
   <link rel="icon" type="image/png" href="images/media/audio_player.png"/>
   <link rel="stylesheet" type="text/css" href="css/media_controls.css"/>
   <link rel="stylesheet" type="text/css" href="css/audio_player.css"/>
 
-  <script src="js/media/audio_player.js"></script>
-  <script src="js/media/media_controls.js"></script>
-  <script src="js/metadata/metadata_provider.js"></script>
+  <script src="js/media/mediaplayer_scripts.js"></script>
+
+  <if expr="0">
+    <!-- This file has not been flattened, load individual scripts.
+         Keep the list in sync with mediaplayer_scripts.js. -->
+    <script src="js/media/audio_player.js"></script>
+    <script src="js/media/media_controls.js"></script>
+    <script src="js/metadata/metadata_provider.js"></script>
+  </if>
 </head>
 <body>
   <div class="audio-player"></div>

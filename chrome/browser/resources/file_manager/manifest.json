@@ -22,6 +22,7 @@
     "clipboardRead",
     "https://*.googleusercontent.com/"
   ],
+  "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-src 'self' about:; img-src 'self' data: filesystem: https://*.googleusercontent.com; media-src filesystem: https://*.googleusercontent.com;",
   "app": {
     "launch": {
       "local_path": "main.html"

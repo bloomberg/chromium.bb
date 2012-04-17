@@ -518,10 +518,10 @@ div.thumbnail-view {
 
 button.settings {
   display: none;
+  /* Temporary solution not to uglify settings button */
+  height: 30px;
   margin-left: 8px;
   width: 57px;
-  /* Temporary solution not to uglify settings button */
-  height:30px;
 }
 
 [gdata] button.settings {
@@ -981,43 +981,6 @@ li.table-row {
   background-image: url(../images/filetype_gtable.png);
 }
 
-/* The filename text in the preview pane. */
-.preview-filename {
-  -webkit-margin-start: 8px;
-  color: #666;
-  font-weight: bold;
-  margin-top: 10px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* The preview image. */
-.preview-img {
-  margin-top: 10px;
-  max-height: 300px;
-  max-width: 190px;
-}
-
-.preview-img.thumbnail {
-  -webkit-background-clip: content-box;
-  /* Checkboard background to distinguish images with alpha channels, from
-   * ../images/preview-background.png
-   */
-  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAAlwSFlzAAAOTQAADiYBwNzaZQAAAAd0SU1FB9sDExUSAaQ/5TMAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAQ0lEQVRYw+3VsQkAMQwDQOfJRt7r9/FQ3ilDuAiBUy84UKFVVX8M0t2TenxxOQAAAAAAAAB7+ueZaQIAAAAAAIC3AQceAAfi8EmRSgAAAABJRU5ErkJggg==);
-  border: 1px #666 solid;
-  padding: 1px;
-}
-
-.preview-img[src=''] {
-  visibility: hidden;
-}
-
-/* Decoration when multiple images are selected. */
-.preview-img.multiple-selected {
-  -webkit-box-shadow: 5px 5px 0 #aaa;
-}
-
 .metadata-item {
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
@@ -1252,5 +1215,14 @@ div.unmounted-panel > div {
 .unmounted-panel:not([error]) > .gdata.error,
 .unmounted-panel:not([retry]) > .gdata.retry,
 .unmounted-panel:not([retry]) > .gdata.learn-more {
+  display: none;
+}
+
+body[ash] .dialog-title,
+body[type='full-page'] [invisibleif='full-page'],
+body:not([type='full-page']) [visibleif='full-page'],
+body:not([type='saveas-file']) [visibleif='saveas-file'],
+body:not([type='saveas-file']):not([type='full-page'])
+    [visibleif='saveas-file full-page'] {
   display: none;
 }

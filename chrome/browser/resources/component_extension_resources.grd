@@ -25,10 +25,13 @@
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_CSS_JS" file="bookmark_manager/css/bmm.css.js" type="BINDATA" />
 
       <if expr="pp_ifdef('file_manager_extension')">
-        <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIAPLAYER" file="file_manager/mediaplayer.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_MEDIAPLAYER" file="file_manager/mediaplayer.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_MEDIAPLAYER_JS" file="file_manager/js/media/mediaplayer_scripts.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMAGE_EDITOR" file="file_manager/gallery.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_IMAGE_EDITOR_JS" file="file_manager/js/image_editor/gallery_scripts.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_UTIL" file="file_manager/js/util.js" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_IMAGE_EDITOR" file="file_manager/gallery.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_METADATA_DISPATCHER" file="file_manager/js/metadata/metadata_dispatcher.js" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_METADATA_READER" file="file_manager/js/metadata/byte_reader.js" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_METADATA_PARSER" file="file_manager/js/metadata/metadata_parser.js" type="BINDATA" />

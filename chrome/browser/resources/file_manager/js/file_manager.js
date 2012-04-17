@@ -649,7 +649,6 @@ FileManager.prototype = {
     this.previewThumbnails_ =
         this.dialogDom_.querySelector('.preview-thumbnails');
     this.previewPanel_ = this.dialogDom_.querySelector('.preview-panel');
-    this.previewFilename_ = this.dialogDom_.querySelector('.preview-filename');
     this.previewSummary_ = this.dialogDom_.querySelector('.preview-summary');
     this.filenameInput_ = this.dialogDom_.querySelector('.filename-input');
     this.taskItems_ = this.dialogDom_.querySelector('.tasks');
@@ -696,6 +695,11 @@ FileManager.prototype = {
     this.okButton_.addEventListener('click', this.onOk_.bind(this));
     this.cancelButton_.addEventListener('click', this.onCancel_.bind(this));
 
+    this.deleteButton_.addEventListener('click',
+        this.onDeleteButtonClick_.bind(this));
+    this.deleteButton_.addEventListener('keypress',
+        this.onDeleteButtonKeyPress_.bind(this));
+
     this.dialogDom_.querySelector('div.open-sidebar').addEventListener(
         'click', this.onToggleSidebar_.bind(this));
     this.dialogDom_.querySelector('div.open-sidebar').addEventListener(
@@ -734,12 +738,8 @@ FileManager.prototype = {
     this.dialogDom_.ownerDocument.defaultView.addEventListener(
         'resize', this.onResize_.bind(this));
 
-    var ary = this.dialogDom_.querySelectorAll('[visibleif]');
-    for (var i = 0; i < ary.length; i++) {
-      var expr = ary[i].getAttribute('visibleif');
-      if (!eval(expr))
-        ary[i].style.display = 'none';
-    }
+    if (str('ASH') == '1')
+      this.dialogDom_.setAttribute('ash', 'true');
 
     this.filePopup_ = null;
 
@@ -1731,8 +1731,10 @@ FileManager.prototype = {
 
     this.okButton_.textContent = okLabel;
 
-    dialogTitle = this.params_.title || defaultTitle;
+    var dialogTitle = this.params_.title || defaultTitle;
     this.dialogDom_.querySelector('.dialog-title').textContent = dialogTitle;
+
+    this.dialogDom_.setAttribute('type', this.dialogType_);
   };
 
   FileManager.prototype.renderCheckbox_ = function() {
@@ -3158,6 +3160,23 @@ FileManager.prototype = {
 
     this.directoryModel_.deleteEntries(entries, opt_callback);
   };
+
+  FileManager.prototype.onDeleteButtonClick_ = function(event) {
+    this.deleteEntries(this.selection.entries);
+    event.preventDefault();
+    event.stopPropagation();
+  },
+
+  FileManager.prototype.onDeleteButtonKeyPress_ = function(event) {
+    switch (util.getKeyModifiers(event) + event.keyCode) {
+      case '13':  // Enter
+      case '32':  // Space
+        this.deleteEntries(this.selection.entries);
+        event.preventDefault();
+        event.stopPropagation();
+        break;
+    }
+  },
 
   FileManager.prototype.blinkSelection = function() {
     if (!this.selection || this.selection.totalCount == 0)

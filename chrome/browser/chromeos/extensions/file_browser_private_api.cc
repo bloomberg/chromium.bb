@@ -1502,6 +1502,10 @@ bool FileDialogStringsFunction::RunImpl() {
   if (gdata::util::IsGDataAvailable(profile_))
     dict->SetString("ENABLE_GDATA", "1");
 
+#if defined(USE_ASH)
+    dict->SetString("ASH", "1");
+#endif
+
   return true;
 }
 

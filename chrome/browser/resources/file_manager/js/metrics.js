@@ -8,10 +8,30 @@
  * To be included as a first script in main.html
  */
 
+(function() {
+  // Switch to the 'test harness' mode when loading from a file or http url.
+  // Do this as early as possible because the metrics code depends on
+  // chrome private APIs.
+  if (document.location.protocol == 'file:' ||
+      document.location.protocol == 'http:') {
+    console.log('created mock script');
+    document.write('<script src="js/mock_chrome.js"><\57script>');
+  }
+})();
+
 var metrics = {};
 
+/**
+ * A map from interval name to interval start timestamp.
+ */
 metrics.intervals = {};
 
+/**
+ * Start the named time interval.
+ * Should be followed by a call to recordInterval with the same name.
+ *
+ * @param {string} name Unique interval name.
+ */
 metrics.startInterval = function(name) {
   metrics.intervals[name] = Date.now();
 };
@@ -19,12 +39,25 @@ metrics.startInterval = function(name) {
 metrics.startInterval('Load.Total');
 metrics.startInterval('Load.Script');
 
+/**
+ * Convert a short metric name to the full format.
+ *
+ * @param {string} name Short metric name.
+ * @return {string} Full metric name.
+ * @private
+ */
 metrics.convertName_ = function(name) {
   return 'FileBrowser.' + name;
 };
 
+/**
+ * Create a decorator function that calls a chrome.metricsPrivate function
+ * with the same name and correct parameters.
+ *
+ * @param {string} name Method name.
+ */
 metrics.decorate = function(name) {
-  this[name] = function() {
+  metrics[name] = function() {
     var args = Array.apply(null, arguments);
     args[0] = metrics.convertName_(args[0]);
     chrome.metricsPrivate[name].apply(chrome.metricsPrivate, args);
@@ -39,6 +72,13 @@ metrics.decorate('recordSmallCount');
 metrics.decorate('recordTime');
 metrics.decorate('recordUserAction');
 
+/**
+ * Complete the time interval recording.
+ *
+ * Should be preceded by a call to startInterval with the same name. *
+ *
+ * @param {string} name Unique interval name.
+ */
 metrics.recordInterval = function(name) {
   if (name in metrics.intervals) {
     metrics.recordTime(name, Date.now() - metrics.intervals[name]);
@@ -47,6 +87,14 @@ metrics.recordInterval = function(name) {
   }
 };
 
+/**
+ * Record an enum value.
+ *
+ * @param {string} name Metric name.
+ * @param {Object} value Enum value.
+ * @param {Array.<Object>|number} validValues Array of valid values
+ *                                            or a boundary number value.
+ */
 metrics.recordEnum = function(name, value, validValues) {
   var boundaryValue;
   var index;
