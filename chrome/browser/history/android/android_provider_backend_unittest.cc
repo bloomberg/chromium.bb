@@ -1491,4 +1491,53 @@ TEST_F(AndroidProviderBackendTest, DeleteHistory) {
   EXPECT_EQ(1u, delegate_.favicon_details()->urls.size());
 }
 
+TEST_F(AndroidProviderBackendTest, TestMultipleNestingTransaction) {
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
+  ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
+                                             &history_db_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_,
+                                 &thumbnail_db_, &bookmark_model_, &delegate_));
+
+  // Create the nested transactions.
+  history_db_.BeginTransaction();
+  history_db_.BeginTransaction();
+  history_db_.BeginTransaction();
+  thumbnail_db_.BeginTransaction();
+  thumbnail_db_.BeginTransaction();
+  int history_transaction = history_db_.transaction_nesting();
+  int thumbnail_transaction = thumbnail_db_.transaction_nesting();
+
+  // Insert a row to verify the transaction number are not changed
+  // after a transaction commit.
+  HistoryAndBookmarkRow row1;
+  row1.set_raw_url("cnn.com");
+  row1.set_url(GURL("http://cnn.com"));
+  row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
+  row1.set_created(Time::Now() - TimeDelta::FromDays(20));
+  row1.set_visit_count(10);
+  row1.set_title(UTF8ToUTF16("cnn"));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
+  EXPECT_EQ(history_transaction, history_db_.transaction_nesting());
+  EXPECT_EQ(thumbnail_transaction, thumbnail_db_.transaction_nesting());
+
+  // Insert the same URL, it should failed. The transaction are still same
+  // after a rollback.
+  ASSERT_FALSE(backend->InsertHistoryAndBookmark(row1));
+  EXPECT_EQ(history_transaction, history_db_.transaction_nesting());
+  EXPECT_EQ(thumbnail_transaction, thumbnail_db_.transaction_nesting());
+
+  // Insert another row to verify we are still fine after the previous
+  // rollback.
+  HistoryAndBookmarkRow row2;
+  row2.set_raw_url("http://www.example.com");
+  row2.set_url(GURL("http://www.example.com"));
+  row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
+  row2.set_is_bookmark(false);
+  row2.set_title(UTF8ToUTF16("example"));
+  ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
+  EXPECT_EQ(history_transaction, history_db_.transaction_nesting());
+  EXPECT_EQ(thumbnail_transaction, thumbnail_db_.transaction_nesting());
+}
+
 }  // namespace history

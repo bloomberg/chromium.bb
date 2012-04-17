@@ -181,6 +181,10 @@ class AndroidProviderBackend {
     ThumbnailDatabase* thumbnail_db_;
     // Whether the transaction was committed.
     bool committed_;
+    // The count of the nested transaction in history database.
+    const int history_transaction_nesting_;
+    // The count of the nested transaction in thumbnail database.
+    const int thumbnail_transaction_nesting_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedTransaction);
   };

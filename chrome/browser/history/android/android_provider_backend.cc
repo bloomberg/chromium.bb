@@ -231,7 +231,23 @@ AndroidProviderBackend::ScopedTransaction::ScopedTransaction(
     ThumbnailDatabase* thumbnail_db)
     : history_db_(history_db),
       thumbnail_db_(thumbnail_db),
-      committed_(false) {
+      committed_(false),
+      history_transaction_nesting_(history_db_->transaction_nesting()),
+      thumbnail_transaction_nesting_(thumbnail_db_->transaction_nesting()) {
+  // Commit all existing transactions since the AndroidProviderBackend's
+  // transaction is very like to be rolled back when compared with the others.
+  // The existing transactions have been scheduled to commit by
+  // ScheduleCommit in HistoryBackend and the same number of transaction
+  // will be created after this scoped transaction ends, there should have no
+  // issue to directly commit all transactions here.
+  int count = history_transaction_nesting_;
+  while (count--)
+    history_db_->CommitTransaction();
+
+  count = thumbnail_transaction_nesting_;
+  while (count--)
+    thumbnail_db_->CommitTransaction();
+
   history_db_->BeginTransaction();
   thumbnail_db_->BeginTransaction();
 }
@@ -241,6 +257,17 @@ AndroidProviderBackend::ScopedTransaction::~ScopedTransaction() {
     history_db_->RollbackTransaction();
     thumbnail_db_->RollbackTransaction();
   }
+  // There is no transaction now.
+  DCHECK_EQ(0, history_db_->transaction_nesting());
+  DCHECK_EQ(0, thumbnail_db_->transaction_nesting());
+
+  int count = history_transaction_nesting_;
+  while (count--)
+    history_db_->BeginTransaction();
+
+  count = thumbnail_transaction_nesting_;
+  while (count--)
+    thumbnail_db_->BeginTransaction();
 }
 
 void AndroidProviderBackend::ScopedTransaction::Commit() {

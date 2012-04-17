@@ -255,13 +255,18 @@ bool AndroidCacheDatabase::CreateSearchTermsTable() {
 
 bool AndroidCacheDatabase::Attach() {
   // Commit all open transactions to make attach succeed.
-  if (GetDB().transaction_nesting())
+  int transaction_nesting = GetDB().transaction_nesting();
+  int count = transaction_nesting;
+  while (count--)
     GetDB().CommitTransaction();
 
   bool result = DoAttach();
 
-  // No matter the attach succeed or not, we need to begin a new transaction.
-  GetDB().BeginTransaction();
+  // No matter whether the attach succeeded or not, we need to create the
+  // transaction stack again.
+  count = transaction_nesting;
+  while (count--)
+    GetDB().BeginTransaction();
   return result;
 }
 
@@ -273,8 +278,10 @@ bool AndroidCacheDatabase::DoAttach() {
     return false;
 
   attach.BindString(0, db_name_.value());
-  if (!attach.Run())
+  if (!attach.Run()) {
+    LOG(ERROR) << GetDB().GetErrorMessage();
     return false;
+  }
 
   return true;
 }

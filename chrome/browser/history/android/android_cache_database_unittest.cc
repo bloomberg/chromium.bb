@@ -42,6 +42,26 @@ class AndroidCacheDatabaseTest : public testing::Test {
   HistoryDatabase history_db_;
 };
 
+TEST(AndroidCacheDatabaseAttachTest, AttachDatabaseInTransactionNesting) {
+  ScopedTempDir temp_dir;
+  FilePath android_cache_db_name;
+  HistoryDatabase history_db;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath history_db_name = temp_dir.path().AppendASCII("history.db");
+  android_cache_db_name = temp_dir.path().AppendASCII(
+        "TestAndroidCache.db");
+  ASSERT_EQ(sql::INIT_OK, history_db.Init(history_db_name, temp_dir.path()));
+  // Create nested transactions.
+  history_db.BeginTransaction();
+  history_db.BeginTransaction();
+  history_db.BeginTransaction();
+  int transaction_nesting = history_db.transaction_nesting();
+  ASSERT_EQ(sql::INIT_OK,
+            history_db.InitAndroidCacheDatabase(android_cache_db_name));
+  // The count of nested transaction is still same.
+  EXPECT_EQ(transaction_nesting, history_db.transaction_nesting());
+}
+
 TEST_F(AndroidCacheDatabaseTest, InitAndroidCacheDatabase) {
   // Try to run a sql against the table to verify them exist.
   AndroidCacheDatabase* cache_db =
