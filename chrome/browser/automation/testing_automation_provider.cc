@@ -1322,13 +1322,9 @@ void ExecuteJavascriptInRenderViewFrame(
   // This routing id needs to be remembered for the reverse
   // communication while sending back the response of
   // this javascript execution.
-  std::string set_automation_id;
-  base::SStringPrintf(&set_automation_id,
-                      "window.domAutomationController.setAutomationId(%d);",
-                      reply_message->routing_id());
-
   render_view_host->ExecuteJavascriptInWebFrame(
-      frame_xpath, UTF8ToUTF16(set_automation_id));
+      frame_xpath,
+      UTF8ToUTF16("window.domAutomationController.setAutomationId(0);"));
   render_view_host->ExecuteJavascriptInWebFrame(
       frame_xpath, script);
 }

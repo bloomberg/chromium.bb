@@ -608,7 +608,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
 
 class DomOperationObserver : public content::NotificationObserver {
  public:
-  DomOperationObserver();
+  explicit DomOperationObserver(int automation_id);
   virtual ~DomOperationObserver();
 
   virtual void Observe(int type,
@@ -620,6 +620,7 @@ class DomOperationObserver : public content::NotificationObserver {
   virtual void OnJavascriptBlocked() = 0;
 
  private:
+  int automation_id_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DomOperationObserver);
@@ -630,7 +631,7 @@ class DomOperationObserver : public content::NotificationObserver {
 class DomOperationMessageSender : public DomOperationObserver {
  public:
   DomOperationMessageSender(AutomationProvider* automation,
-                            IPC::Message* relpy_message,
+                            IPC::Message* reply_message,
                             bool use_json_interface);
   virtual ~DomOperationMessageSender();
 

@@ -1199,7 +1199,8 @@ void FindInPageNotificationObserver::Observe(
 // static
 const int FindInPageNotificationObserver::kFindInPageRequestId = -1;
 
-DomOperationObserver::DomOperationObserver() {
+DomOperationObserver::DomOperationObserver(int automation_id)
+    : automation_id_(automation_id) {
   registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN,
@@ -1215,7 +1216,8 @@ void DomOperationObserver::Observe(
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
     content::Details<DomOperationNotificationDetails> dom_op_details(details);
-    OnDomOperationCompleted(dom_op_details->json);
+    if (dom_op_details->automation_id == automation_id_)
+      OnDomOperationCompleted(dom_op_details->json);
   } else if (type == chrome::NOTIFICATION_APP_MODAL_DIALOG_SHOWN) {
     OnModalDialogShown();
   } else if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {
@@ -1237,7 +1239,8 @@ DomOperationMessageSender::DomOperationMessageSender(
     AutomationProvider* automation,
     IPC::Message* reply_message,
     bool use_json_interface)
-    : automation_(automation->AsWeakPtr()),
+    : DomOperationObserver(0),
+      automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       use_json_interface_(use_json_interface) {
 }
