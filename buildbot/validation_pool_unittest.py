@@ -51,6 +51,9 @@ class TestValidationPool(mox.MoxTestBase):
     self.mox.StubOutWithMock(validation_pool, '_RunCommand')
     self.mox.StubOutWithMock(time, 'sleep')
     self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
+    # Supress all gerrit access; having this occur is generally a sign
+    # the code is either misbehaving, or the tests are bad.
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'Query')
 
   def MockPatch(self, change_id, patch_number=None):
     patch = self.mox.CreateMock(cros_patch.GerritPatch)
@@ -65,8 +68,9 @@ class TestValidationPool(mox.MoxTestBase):
     patch.project = 'chromiumos/chromite'
     return patch
 
-  def GetPool(self, *args):
-    pool = validation_pool.ValidationPool(*args)
+  def GetPool(self, *args, **kwds):
+    kwds.setdefault('helper_pool', validation_pool.HelperPool.SimpleCreate())
+    pool = validation_pool.ValidationPool(*args, **kwds)
     self.mox.StubOutWithMock(pool, '_SendNotification')
     self.mox.StubOutWithMock(gerrit_helper.GerritHelper, '_SqlQuery')
     self.mox.StubOutWithMock(gerrit_helper.GerritHelper,
@@ -75,7 +79,7 @@ class TestValidationPool(mox.MoxTestBase):
 
   @staticmethod
   def SetPoolsContentMergingProjects(pool, *projects):
-    pool.gerrit_helpers[0].FindContentMergingProjects().AndReturn(
+    gerrit_helper.GerritHelper.FindContentMergingProjects().AndReturn(
         frozenset(projects))
 
   def testSimpleDepApplyPoolIntoRepo(self):
@@ -117,10 +121,12 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.project = 'fake_project'
     build_root = 'fakebuildroot'
 
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    pool.changes = [patch2]
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
-    pool._public_helper = helper
+    helper_pool = validation_pool.HelperPool(external=helper)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name',
+                        True, False, helper_pool=helper_pool)
+    pool.changes = [patch2]
+
     patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
     patch2.PaladinDependencies(build_root).AndReturn([])
     helper.IsChangeCommitted(patch1.id, must_match=False).AndReturn(False)
@@ -328,9 +334,10 @@ class TestValidationPool(mox.MoxTestBase):
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False,
+                        helper_pool=validation_pool.HelperPool(external=helper,
+                                                               internal=None))
     pool.changes = [patch1, patch2, patch3]
-    pool._public_helper = helper
     pool.dryrun = False
 
     self.mox.StubOutWithMock(pool, 'SubmitChange')
@@ -359,9 +366,10 @@ class TestValidationPool(mox.MoxTestBase):
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False,
+                        helper_pool=validation_pool.HelperPool(external=helper,
+                                                               internal=None))
     pool.changes = [patch1, patch2]
-    pool._public_helper = helper
     pool.dryrun = False
 
     self.mox.StubOutWithMock(pool, 'SubmitChange')
@@ -382,9 +390,10 @@ class TestValidationPool(mox.MoxTestBase):
     build_root = 'fakebuildroot'
 
     validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
+    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False,
+                        helper_pool=validation_pool.HelperPool(external=helper,
+                                                               internal=None))
     pool.non_manifest_changes = [patch1, patch2]
-    pool._public_helper = helper
     pool.dryrun = False
 
     self.mox.StubOutWithMock(pool, 'SubmitChange')
@@ -556,9 +565,6 @@ class TestPickling(cros_test_lib.TempDirMixin, unittest.TestCase):
     repository.CloneGitRepo(repo,
                             '%s/chromiumos/chromite' % constants.GIT_HTTP_URL,
                             reference=reference)
-
-    env = os.environ.copy()
-    env['PYTHON_PATH'] = reference
 
     code = """
 import sys

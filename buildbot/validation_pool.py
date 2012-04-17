@@ -69,6 +69,216 @@ def MarkChangeFailedToT(change):
   return change
 
 
+class HelperPool(object):
+  """Pool of allowed GerritHelpers to be used by CQ/PatchSeries."""
+
+  def __init__(self, internal=None, external=None):
+    """Initialize this instance with the given handlers.
+
+    Most likely you want the classmethod SimpleCreate which takes boolean
+    options.
+
+    If a given handler is None, then it's disabled; else the passed in
+    object is used.
+
+    """
+    self._external = external
+    self._internal = internal
+
+  @classmethod
+  def SimpleCreate(cls, internal=True, external=True):
+    """Classmethod helper for creating a HelperPool from boolean options.
+
+    Args:
+      internal: If True, allow access to a GerritHelper for internal.
+      external: If True, allow access to a GerritHelper for external.
+    Returns:
+      An appropriately configured HelperPool instance.
+    """
+    external = gerrit_helper.GerritHelper(internal=False) if external else None
+    internal = gerrit_helper.GerritHelper(internal=True) if internal else None
+    return cls(internal=internal, external=external)
+
+  def ForChange(self, change):
+    """Return the helper to use for a particular change.
+
+    If no helper is configured, an Exception is raised.
+    """
+    if change.internal:
+      if self._internal:
+        return self._internal
+    elif self._external:
+      return self._external
+
+    raise AssertionError(
+        'Asked for an internal=%r helper, but none are allowed in this '
+        'configuration.  This strongly points at the possibility of an '
+        'internal bug.'
+        % (change.internal,))
+
+  def __iter__(self):
+    for helper in (self._external, self._internal):
+      if helper:
+        yield helper
+
+
+class PatchSeries(object):
+
+  """Class representing a set of patches applied to a repository."""
+
+  def __init__(self, helper_pool=None):
+    self._content_merging = {}
+    if helper_pool is None:
+      helper_pool = HelperPool.SimpleCreate(internal=True, external=True)
+    self._helper_pool = helper_pool
+
+  def IsContentMerging(self, change):
+    """Discern if the given change has Content Merging enabled in gerrit.
+
+    Raises:
+      AssertionError: If the gerrit helper requested is disallowed.
+      GerritException: If there is a failure in querying gerrit.
+    Returns:
+      True if the change's project has content merging enabled, False if not.
+    """
+    helper = self._helper_pool.ForChange(change)
+    projects = self._content_merging.get(helper)
+    if projects is None:
+      projects = helper.FindContentMergingProjects()
+      self._content_merging[helper] = projects
+    return change.project in projects
+
+  def Apply(self, buildroot, changes, dryrun=False):
+    """Applies changes from pool into the directory specified by the buildroot.
+
+    This method applies changes in the order specified.  It also respects
+    dependency order.
+
+    Returns:
+      A tuple of changes-applied, changes that failed against tot, and
+      changes that failed inflight.
+    """
+    # Sets are used for performance reasons where changes_list is used to
+    # maintain ordering when applying changes.
+    changes_that_failed_to_apply_against_other_changes = set()
+    changes_that_failed_to_apply_to_tot = set()
+    changes_applied = set()
+    changes_list = []
+
+    # Maps Change numbers to GerritPatch object for lookup of dependent
+    # changes.
+    change_map = dict((change.id, change) for change in changes)
+    for change in changes:
+      logging.debug('Trying change %s', change.id)
+      helper = self._helper_pool.ForChange(change)
+      # We've already attempted this change because it was a dependent change
+      # of another change that was ready.
+      if (change in changes_that_failed_to_apply_to_tot or
+          change in changes_applied):
+        continue
+
+      # Change stacks consists of the change plus its dependencies in the order
+      # that they should be applied.
+      change_stack = [change]
+      apply_chain = True
+      deps = []
+
+      dependency_exc = None
+
+      # TODO(sosa): Modify helper logic to allows deps to be specified across
+      # different gerrit instances.
+      try:
+        deps.extend(change.GerritDependencies(buildroot))
+        deps.extend(change.PaladinDependencies(buildroot))
+      except cros_patch.MissingChangeIDException as dependency_exc:
+        change.apply_error_message = (
+            'Could not apply change %s because change has a Gerrit Dependency '
+            'that does not contain a ChangeId.  Please remove this dependency '
+            'or update the dependency with a ChangeId.' % change.id)
+      except cros_patch.BrokenCQDepends as dependency_exc:
+        change.apply_error_message = (
+            'Could not apply change %s because change has a malformed '
+            'CQ-DEPEND. CQ-DEPEND must either be the long form Change-ID, '
+            'or the change number.' % change.id)
+      except cros_patch.BrokenChangeID as dependency_exc:
+        change.apply_error_message = (
+            'Could not apply change %s because a parent change has a malformed '
+            'Change-ID.  Please fix and retry.' % change.id)
+
+      if dependency_exc:
+        logging.error(change.apply_error_message)
+        logging.error(str(dependency_exc))
+        changes_that_failed_to_apply_to_tot.add(change)
+        apply_chain = False
+        continue
+
+      for dep in deps:
+        dep_change = change_map.get(dep)
+        if not dep_change:
+          # The dep may have been committed already.
+          try:
+            if not helper.IsChangeCommitted(dep, must_match=False):
+              message = ('Could not apply change %s because dependent '
+                         'change %s is not ready to be committed.' % (
+                          change.id, dep))
+              logging.info(message)
+              change.apply_error_message = message
+              changes_that_failed_to_apply_to_tot.add(change)
+              apply_chain = False
+              break
+          except gerrit_helper.QueryNotSpecific:
+            message = ('Change %s could not be handled due to its dependency '
+                       '%s matching multiple branches.' % (change.id, dep))
+            logging.info(message)
+            change.apply_error_message = message
+            changes_that_failed_to_apply_to_tot.add(change)
+            apply_chain = False
+            break
+        else:
+          change_stack.insert(0, dep_change)
+
+      # Should we apply the chain -- i.e. all deps are ready.
+      if not apply_chain:
+        continue
+
+      # Apply changes in change_stack.  For chains that were aborted early,
+      # we still want to apply changes in change_stack because they were
+      # ready to be committed (o/w wouldn't have been in the change_map).
+      for change in change_stack:
+        try:
+          if change in changes_applied:
+            continue
+          elif change in changes_that_failed_to_apply_to_tot:
+            break
+
+          # If we're in dryrun mode, then 3way is always allowed.
+          # Otherwise, allow 3way only if the gerrit project allows it.
+          trivial = False if dryrun else not self.IsContentMerging(change)
+
+          change.Apply(buildroot, trivial=trivial)
+
+        except cros_patch.ApplyPatchException as e:
+          if e.inflight:
+            changes_that_failed_to_apply_against_other_changes.add(
+                MarkChangeFailedInflight(change))
+          else:
+            changes_that_failed_to_apply_to_tot.add(
+                MarkChangeFailedToT(change))
+
+          break
+        else:
+          # We applied the change successfully.
+          changes_applied.add(change)
+          changes_list.append(change)
+          cros_build_lib.PrintBuildbotLink(str(change), change.url)
+
+    logging.debug('Done investigating changes.  Applied %s',
+                  ' '.join([c.id for c in changes_list]))
+
+    return (changes_list,
+            changes_that_failed_to_apply_to_tot,
+            changes_that_failed_to_apply_against_other_changes)
+
 
 class ValidationPool(object):
   """Class that handles interactions with a validation pool.
@@ -76,7 +286,7 @@ class ValidationPool(object):
   This class can be used to acquire a set of commits that form a pool of
   commits ready to be validated and committed.
 
-  Usage:  Use ValidationPoo.AcquirePool -- a static
+  Usage:  Use ValidationPool.AcquirePool -- a static
   method that grabs the commits that are ready for validation.
   """
 
@@ -84,7 +294,7 @@ class ValidationPool(object):
 
   def __init__(self, overlays, build_number, builder_name, is_master, dryrun,
                changes=None, non_os_changes=None,
-               conflicting_changes=None):
+               conflicting_changes=None, helper_pool=None):
     """Initializes an instance by setting default valuables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -103,11 +313,14 @@ class ValidationPool(object):
       changes_that_failed_to_apply_earlier: Changes that failed to apply but
         we're keeping around because they conflict with other changes in
         flight.
+      helper_pool: A HelperPool instance.  If not specified, a HelperPool
+        instance is created with it's access limit discerned via looking at
+        overlays.
     """
-    build_dashboard = _BUILD_DASHBOARD
 
-    self._public_helper = None
-    self._private_helper = None
+    if helper_pool is None:
+      helper_pool = self.GetGerritHelpersForOverlays(overlays)
+    self._helper_pool = helper_pool
 
     # These instances can be instantiated via both older, or newer pickle
     # dumps.  Thus we need to assert the given args since we may be getting
@@ -132,13 +345,7 @@ class ValidationPool(object):
             % (changes_name, changes_value))
 
 
-    # TODO(sosa): Remove False case once overlays logic has stabilized on TOT.
-    if overlays in [constants.PUBLIC_OVERLAYS, constants.BOTH_OVERLAYS, False]:
-      self._public_helper = gerrit_helper.GerritHelper(internal=False)
-
-    if overlays in [constants.PRIVATE_OVERLAYS, constants.BOTH_OVERLAYS]:
-      build_dashboard = _BUILD_INT_DASHBOARD
-      self._private_helper = gerrit_helper.GerritHelper(internal=True)
+    build_dashboard = self.GetBuildDashboardForOverlays(overlays)
 
     self.build_log = '%s/builders/%s/builds/%s' % (
         build_dashboard, builder_name, str(build_number))
@@ -155,7 +362,27 @@ class ValidationPool(object):
     self._overlays = overlays
     self._build_number = build_number
     self._builder_name = builder_name
-    self._content_merging_projects = None
+    self._patch_series = PatchSeries(helper_pool=helper_pool)
+
+  @staticmethod
+  def GetBuildDashboardForOverlays(overlays):
+    """Discern the dashboard to use based on the given overlay."""
+    if overlays in [constants.PRIVATE_OVERLAYS, constants.BOTH_OVERLAYS]:
+      return _BUILD_INT_DASHBOARD
+    return _BUILD_DASHBOARD
+
+  @staticmethod
+  def GetGerritHelpersForOverlays(overlays):
+    """Discern the allowed GerritHelpers to use based on the given overlay."""
+    # TODO(sosa): Remove False case once overlays logic has stabilized on TOT.
+    internal = external = False
+    if overlays in [constants.PUBLIC_OVERLAYS, constants.BOTH_OVERLAYS, False]:
+      external = True
+
+    if overlays in [constants.PRIVATE_OVERLAYS, constants.BOTH_OVERLAYS]:
+      internal = True
+
+    return HelperPool.SimpleCreate(internal=internal, external=external)
 
   def __reduce__(self):
     """Used for pickling to re-create validation pool."""
@@ -166,17 +393,6 @@ class ValidationPool(object):
             self.is_master, self.dryrun, self.changes,
             self.non_manifest_changes,
             self.changes_that_failed_to_apply_earlier))
-
-  @property
-  def gerrit_helpers(self):
-    return [ h for h in self._public_helper, self._private_helper if h ]
-
-  def _HelperFor(self, change):
-    """Returns the Gerrit helper for the |change|."""
-    if change.internal:
-      return self._private_helper
-    else:
-      return self._public_helper
 
   @classmethod
   def _IsTreeOpen(cls, max_timeout=600):
@@ -259,7 +475,7 @@ class ValidationPool(object):
       # Only master configurations should call this method.
       pool = ValidationPool(overlays, build_number, builder_name, True, dryrun)
       # Iterate through changes from all gerrit instances we care about.
-      for helper in pool.gerrit_helpers:
+      for helper in cls.GetGerritHelpersForOverlays(overlays):
         raw_changes = helper.GrabChangesReadyForCommit()
         changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
             raw_changes, buildroot)
@@ -296,7 +512,7 @@ class ValidationPool(object):
       change = pending_commit.getAttribute(lkgm_manager.PALADIN_CHANGE_ID_ATTR)
       commit = pending_commit.getAttribute(lkgm_manager.PALADIN_COMMIT_ATTR)
 
-      for helper in pool.gerrit_helpers:
+      for helper in cls.GetGerritHelpersForOverlays(overlays):
         try:
           patch = helper.GrabPatchFromGerrit(project, change, commit)
           pool.changes.append(patch)
@@ -308,18 +524,6 @@ class ValidationPool(object):
             'Could not find change defined by %s' % pending_commit)
 
     return pool
-
-  @property
-  def ContentMergingProjects(self):
-    val = self._content_merging_projects
-    if val is None:
-      val = set()
-      for helper in self.gerrit_helpers:
-        val.update(helper.FindContentMergingProjects())
-
-      self._content_merging_projects = frozenset(val)
-
-    return val
 
   @staticmethod
   def _FilterNonCrosProjects(changes, buildroot):
@@ -373,143 +577,25 @@ class ValidationPool(object):
 
     This method applies changes in the order specified.  It also respects
     dependency order.
-
     Returns:
-      True if we managed to apply any changes.
+
+    True if we managed to apply any changes.
     """
-    # Sets are used for performance reasons where changes_list is used to
-    # maintain ordering when applying changes.
-    changes_that_failed_to_apply_against_other_changes = set()
-    changes_that_failed_to_apply_to_tot = set()
-    changes_applied = set()
-    changes_list = []
+    applied, failed_tot, failed_inflight = self._patch_series.Apply(
+        buildroot, self.changes, self.dryrun)
 
-    # Maps internal ID numbers to GerritPatch object for lookup of dependent
-    # changes.  All code w/in this function needs to use .id rather than
-    # .change_id.
-    change_map = dict((change.id, change) for change in self.changes)
-    for change in self.changes:
-      logging.debug('Trying change %s', change.id)
-      helper = self._HelperFor(change)
-      # We've already attempted this change because it was a dependent change
-      # of another change that was ready.
-      if (change in changes_that_failed_to_apply_to_tot or
-          change in changes_applied):
-        continue
+    if self.is_master:
+      for change in applied:
+        self.HandleApplied(change)
 
-      # Change stacks consists of the change plus its dependencies in the order
-      # that they should be applied.
-      change_stack = [change]
-      apply_chain = True
-      deps = []
-      # TODO(sosa): Modify helper logic to allows deps to be specified across
-      # different gerrit instances.
-
-      dependency_exc = None
-      try:
-        deps.extend(change.GerritDependencies(buildroot))
-        deps.extend(change.PaladinDependencies(buildroot))
-      except cros_patch.MissingChangeIDException as dependency_exc:
-        change.apply_error_message = (
-            'Could not apply change %s because change has a Gerrit Dependency '
-            'that does not contain a ChangeId.  Please remove this dependency '
-            'or update the dependency with a ChangeId.' % change.id)
-      except cros_patch.BrokenCQDepends as dependency_exc:
-        change.apply_error_message = (
-            'Could not apply change %s because change has a malformed '
-            'CQ-DEPEND. CQ-DEPEND must either be the long form Change-ID, '
-            'or the change number.' % change.id)
-      except cros_patch.BrokenChangeID as dependency_exc:
-        change.apply_error_message = (
-            'Could not apply change %s because a parent change has a malformed '
-            'Change-ID.  Please fix and retry.' % change.id)
-
-      if dependency_exc:
-        logging.error(change.apply_error_message)
-        logging.error(str(dependency_exc))
-        changes_that_failed_to_apply_to_tot.add(change)
-        apply_chain = False
-        continue
-
-      for dep in deps:
-        dep_change = change_map.get(dep)
-        if not dep_change:
-          # The dep may have been committed already.
-          try:
-            if not helper.IsChangeCommitted(dep, must_match=False):
-              message = ('Could not apply change %s because dependent '
-                         'change %s is not ready to be committed.' % (
-                          change.id, dep))
-              logging.info(message)
-              change.apply_error_message = message
-              changes_that_failed_to_apply_to_tot.add(change)
-              apply_chain = False
-              break
-          except gerrit_helper.QueryNotSpecific:
-            message = ('Change %s could not be handled due to its dependency '
-                       '%s matching multiple branches.'
-                       % (change.id, dep))
-            logging.info(message)
-            change.apply_error_message = message
-            changes_that_failed_to_apply_to_tot.add(change)
-            apply_chain = False
-            break
-        else:
-          change_stack.insert(0, dep_change)
-
-      # Should we apply the chain -- i.e. all deps are ready.
-      if not apply_chain:
-        continue
-
-      # Apply changes in change_stack.  For chains that were aborted early,
-      # we still want to apply changes in change_stack because they were
-      # ready to be committed (o/w wouldn't have been in the change_map).
-      for change in change_stack:
-        try:
-          if change in changes_applied:
-            continue
-          elif change in changes_that_failed_to_apply_to_tot:
-            break
-
-          # If we're in dryrun mode, then 3way is always allowed.
-          # Otherwise, allow 3way only if the gerrit project allows it.
-          if self.dryrun:
-            trivial = False
-          else:
-            trivial = change.project not in self.ContentMergingProjects
-
-          change.Apply(buildroot, trivial=trivial)
-
-        except cros_patch.ApplyPatchException as e:
-          if e.inflight:
-            changes_that_failed_to_apply_against_other_changes.add(
-                MarkChangeFailedInflight(change))
-          else:
-            changes_that_failed_to_apply_to_tot.add(
-                MarkChangeFailedToT(change))
-
-          break
-        else:
-          # We applied the change successfully.
-          changes_applied.add(change)
-          changes_list.append(change)
-          cros_build_lib.PrintBuildbotLink(str(change), change.url)
-          if self.is_master:
-            self.HandleApplied(change)
-
-    if changes_applied:
-      logging.debug('Done investigating changes.  Applied %s',
-                    ' '.join([c.id for c in changes_applied]))
-
-    if changes_that_failed_to_apply_to_tot:
+    if failed_tot:
       logging.info('Changes %s could not be applied cleanly.',
-                  ' '.join([c.id for c in changes_that_failed_to_apply_to_tot]))
-      self.HandleApplicationFailure(changes_that_failed_to_apply_to_tot)
+                  ' '.join([c.id for c in failed_tot]))
+      self.HandleApplicationFailure(failed_tot)
+    self.changes_that_failed_to_apply_earlier.extend(failed_inflight)
+    self.changes = applied
 
-    self.changes = changes_list
-    self.changes_that_failed_to_apply_earlier = list(
-        changes_that_failed_to_apply_against_other_changes)
-    return len(self.changes) > 0
+    return bool(self.changes)
 
   # Note: All submit code, all gerrit code, and basically everything other
   # than patch resolution/applying needs to use .change_id from patch objects.
@@ -536,7 +622,7 @@ class ValidationPool(object):
         logging.info('Change %s will be submitted', change)
         try:
           self.SubmitChange(change)
-          was_change_submitted = self._HelperFor(
+          was_change_submitted = self._helper_pool.ForChange(
               change).IsChangeCommitted(str(change.gerrit_number), self.dryrun)
         except cros_build_lib.RunCommandError:
           logging.error('gerrit review --submit failed for change.')
@@ -554,7 +640,7 @@ class ValidationPool(object):
 
   def SubmitChange(self, change):
     """Submits patch using Gerrit Review."""
-    cmd = self._HelperFor(change).GetGerritReviewCommand(
+    cmd = self._helper_pool.ForChange(change).GetGerritReviewCommand(
         ['--submit', '%s,%s' % (change.gerrit_number, change.patch_number)])
 
     _RunCommand(cmd, self.dryrun)
@@ -608,11 +694,13 @@ class ValidationPool(object):
           'finish building your change within the specified timeout. If you '
           'believe this happened in error, just re-mark your commit as ready. '
           'Your change will then get automatically retried.')
-      self._HelperFor(change).RemoveCommitReady(change, dryrun=self.dryrun)
+      self._helper_pool.ForChange(change).RemoveCommitReady(
+          change, dryrun=self.dryrun)
 
   def _SendNotification(self, change, msg):
     msg %= {'build_log':self.build_log}
-    PaladinMessage(msg, change, self._HelperFor(change)).Send(self.dryrun)
+    PaladinMessage(msg, change, self._helper_pool.ForChange(change)).Send(
+        self.dryrun)
 
   def HandleCouldNotSubmit(self, change):
     """Handler that is called when Paladin can't submit a change.
@@ -628,7 +716,8 @@ class ValidationPool(object):
         'The Commit Queue failed to submit your change in %(build_log)s . '
         'This can happen if you submitted your change or someone else '
         'submitted a conflicting change while your change was being tested.')
-    self._HelperFor(change).RemoveCommitReady(change, dryrun=self.dryrun)
+    self._helper_pool.ForChange(change).RemoveCommitReady(
+        change, dryrun=self.dryrun)
 
   def HandleCouldNotVerify(self, change):
     """Handler for when Paladin fails to validate a change.
@@ -644,7 +733,8 @@ class ValidationPool(object):
         'The Commit Queue failed to verify your change in %(build_log)s . '
         'If you believe this happened in error, just re-mark your commit as '
         'ready. Your change will then get automatically retried.')
-    self._HelperFor(change).RemoveCommitReady(change, dryrun=self.dryrun)
+    self._helper_pool.ForChange(change).RemoveCommitReady(
+        change, dryrun=self.dryrun)
 
   def HandleCouldNotApply(self, change):
     """Handler for when Paladin fails to apply a change.
@@ -670,7 +760,8 @@ class ValidationPool(object):
 
     msg += extra_msg
     self._SendNotification(change, msg)
-    self._HelperFor(change).RemoveCommitReady(change, dryrun=self.dryrun)
+    self._helper_pool.ForChange(change).RemoveCommitReady(
+        change, dryrun=self.dryrun)
 
   def HandleApplied(self, change):
     """Handler for when Paladin successfully applies a change.
