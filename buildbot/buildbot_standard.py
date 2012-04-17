@@ -195,9 +195,9 @@ def BuildScript(status, context):
 
   # Just build both bitages of validator and test for --validator mode.
   if context['validator']:
-    with Step('building ncval-x86-32', status):
+    with Step('build ncval-x86-32', status):
       SCons(context, platform='x86-32', parallel=True, args=['ncval'])
-    with Step('building ncval-x86-64', status):
+    with Step('build ncval-x86-64', status):
       SCons(context, platform='x86-64', parallel=True, args=['ncval'])
 
     with Step('clobber dfa_validator', status):
@@ -220,12 +220,10 @@ def BuildScript(status, context):
     with Step('build dfa_validator_64', status):
       Command(context, cmd=['make'], cwd='dfa_validator64')
 
-    with Step('clobber ragel_validator', status):
-      Command(context, cmd=['make', 'clean'],
-              cwd='src/trusted/validator_ragel/unreviewed')
-    with Step('build ragel_validator', status):
-      Command(context, cmd=['make'],
-              cwd='src/trusted/validator_ragel/unreviewed')
+    with Step('build ragel_validator-32', status):
+      SCons(context, platform='x86-32', parallel=True, args=['validator-test'])
+    with Step('build ragel_validator-64', status):
+      SCons(context, platform='x86-64', parallel=True, args=['validator-test'])
 
     with Step('predownload validator corpus', status):
       Command(context,
@@ -255,14 +253,12 @@ def BuildScript(status, context):
         halt_on_fail=False):
       ValidatorTest(
           context, 'x86-32',
-          'src/trusted/validator_ragel/unreviewed/'
-          'out/build/objs/validator-test')
+          'scons-out/opt-linux-x86-32/staging/validator-test')
     with Step('validator_regression_test ragel x86-64', status,
         halt_on_fail=False):
       ValidatorTest(
           context, 'x86-64',
-          'src/trusted/validator_ragel/unreviewed/'
-          'out/build/objs/validator-test')
+          'scons-out/opt-linux-x86-64/staging/validator-test')
     return
 
   # Make sure our Gyp build is working.
