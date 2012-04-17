@@ -79,6 +79,7 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../chrome/app/policy/cloud_policy_codegen.gyp:policy',
+        '../chrome/chrome.gyp:test_support_common',
         '../net/net.gyp:net',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -306,6 +307,7 @@
         '../chrome/chrome.gyp:browser',
         '../chrome/chrome.gyp:debugger',
         '../chrome/chrome.gyp:image_pre_reader',
+        '../chrome/chrome.gyp:test_support_common',
         '../chrome/chrome.gyp:test_support_ui',
         '../chrome/chrome.gyp:utility',
         '../content/content.gyp:content_gpu',

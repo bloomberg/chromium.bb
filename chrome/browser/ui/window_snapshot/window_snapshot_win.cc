@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,16 @@ namespace {
 
 gfx::Rect GetWindowBounds(gfx::NativeWindow window_handle) {
   RECT content_rect = {0, 0, 0, 0};
-  ::GetWindowRect(window_handle, &content_rect);
+  if (window_handle) {
+    ::GetWindowRect(window_handle, &content_rect);
+  } else {
+    MONITORINFO monitor_info = {};
+    monitor_info.cbSize = sizeof(monitor_info);
+    if (GetMonitorInfo(MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY),
+                       &monitor_info)) {
+      content_rect = monitor_info.rcMonitor;
+    }
+  }
   content_rect.right++;  // Match what PrintWindow wants.
 
   return gfx::Rect(content_rect.right - content_rect.left,
@@ -67,8 +76,8 @@ bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
   // obscured windows, and works better for out of process sub-windows.
   // Otherwise grab the bits we can get with BitBlt; it's better
   // than nothing and will work fine in the average case (window is
-  // completely on screen).
-  if (snapshot_bounds.origin() == gfx::Point() && print_window)
+  // completely on screen).  Always BitBlt when grabbing the whole screen.
+  if (snapshot_bounds.origin() == gfx::Point() && print_window && window_handle)
     (*print_window)(window_handle, mem_hdc, 0);
   else
     BitBlt(mem_hdc, 0, 0, snapshot_bounds.width(), snapshot_bounds.height(),

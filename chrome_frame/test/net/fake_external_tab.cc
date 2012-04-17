@@ -720,32 +720,9 @@ void CFUrlRequestUnittestRunner::OnInitializationTimeout() {
 }
 
 void CFUrlRequestUnittestRunner::OverrideHttpHost() {
-  net::NetworkInterfaceList nic_list;
-  if (!net::GetNetworkList(&nic_list)) {
-    LOG(ERROR) << "GetNetworkList failed to look up non-loopback adapters. "
-               << "Tests will be run over the loopback adapter, which may "
-               << "result in hangs.";
-    return;
-  }
-
-  // GetNetworkList only returns 'Up' non-loopback adapters. Select the first
-  // IPV4 address found - we should be able to bind/connect over it.
-  for (size_t i = 0; i < nic_list.size(); ++i) {
-    if (nic_list[i].address.size() != net::kIPv4AddressSize)
-      continue;
-    char* address_string =
-        inet_ntoa(*reinterpret_cast<in_addr*>(&nic_list[i].address[0]));
-    DCHECK(address_string != NULL);
-    if (address_string == NULL)
-      continue;
-    LOG(INFO) << "HTTP tests will run over " << address_string << ".";
-    override_http_host_.reset(
-        new ScopedCustomUrlRequestTestHttpHost(address_string));
-    return;
-  }
-
-  LOG(ERROR) << "Failed to find a non-loopback IP_V4 address. Tests will be "
-             << "run over the loopback adapter, which may result in hangs.";
+  override_http_host_.reset(
+      new ScopedCustomUrlRequestTestHttpHost(
+          chrome_frame_test::GetLocalIPv4Address()));
 }
 
 void CFUrlRequestUnittestRunner::PreEarlyInitialization() {

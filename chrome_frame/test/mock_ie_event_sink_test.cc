@@ -180,6 +180,7 @@ void MockIEEventSink::ExpectDocumentReadystate(int ready_state) {
 // MockIEEventSinkTest methods
 MockIEEventSinkTest::MockIEEventSinkTest() : server_mock_(1337, L"127.0.0.1",
                                                           GetTestDataFolder()) {
+  loop_.set_snapshot_on_timeout(true);
   EXPECT_CALL(server_mock_, Get(_, StrCaseEq(L"/favicon.ico"), _))
       .WillRepeatedly(SendFast("HTTP/1.1 404 Not Found", ""));
 }
@@ -187,6 +188,7 @@ MockIEEventSinkTest::MockIEEventSinkTest() : server_mock_(1337, L"127.0.0.1",
 MockIEEventSinkTest::MockIEEventSinkTest(int port, const std::wstring& address,
                                          const FilePath& root_dir)
     : server_mock_(port, address, root_dir) {
+  loop_.set_snapshot_on_timeout(true);
   EXPECT_CALL(server_mock_, Get(_, StrCaseEq(L"/favicon.ico"), _))
       .WillRepeatedly(SendFast("HTTP/1.1 404 Not Found", ""));
 }

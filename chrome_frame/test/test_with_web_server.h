@@ -48,6 +48,16 @@ class CFInvocation {
   Type method_;
 };
 
+// An interface for listeners of interesting events on a MockWebServer.
+class WebServerListener {
+ public:
+  virtual ~WebServerListener() {}
+
+  // Invoked when a MockWebServer receives an expected response; see
+  // MockWebServer::ExpectAndHandlePostedResult.
+  virtual void OnExpectedResponse() = 0;
+};
+
 // Simple Gmock friendly web server. Sample usage:
 // MockWebServer mock(9999, "0.0.0.0");
 // EXPECT_CALL(mock, Get(_, StrEq("/favicon.ico"), _)).WillRepeatedly(SendFast(
@@ -70,15 +80,15 @@ class CFInvocation {
 class MockWebServer : public test_server::HTTPTestServer {
  public:
   MockWebServer(int port, const std::wstring& address, FilePath root_dir)
-      : test_server::HTTPTestServer(port, address, root_dir) {}
+      : test_server::HTTPTestServer(port, address, root_dir), listener_(NULL) {}
 
   // Overriden from test_server::HTTPTestServer.
   MOCK_METHOD3(Get, void(test_server::ConfigurableConnection* connection,
                          const std::wstring& path,
-                         const test_server::Request&r));
+                         const test_server::Request& r));
   MOCK_METHOD3(Post, void(test_server::ConfigurableConnection* connection,
                           const std::wstring& path,
-                          const test_server::Request&r));
+                          const test_server::Request& r));
 
   // Expect a GET request for |url|. Respond with the file appropriate for
   // the given |url|. Modify the file to follow the given CFInvocation method.
@@ -102,6 +112,12 @@ class MockWebServer : public test_server::HTTPTestServer {
   void ExpectAndServeRequestAnyNumberTimes(CFInvocation invocation,
                                            const std::wstring& path_prefix);
 
+  void set_listener(WebServerListener* listener) { listener_ = listener; }
+
+  // Expect a POST to an URL containing |post_suffix|, saving the response
+  // contents for retrieval by posted_result(). Invokes the listener's
+  // OnExpectedResponse method if the posted response matches the expected
+  // result.
   void ExpectAndHandlePostedResult(CFInvocation invocation,
                                    const std::wstring& post_suffix);
 
@@ -123,6 +139,11 @@ class MockWebServer : public test_server::HTTPTestServer {
   void HandlePostedResponse(test_server::ConfigurableConnection* connection,
                             const test_server::Request& request);
 
+  void ClearResults() {
+    posted_result_.clear();
+    expected_result_.clear();
+  }
+
   void set_expected_result(const std::string& expected_result) {
     expected_result_  = expected_result;
   }
@@ -132,9 +153,15 @@ class MockWebServer : public test_server::HTTPTestServer {
   }
 
  private:
+  WebServerListener* listener_;
   // Holds the results of tests which post success/failure.
   std::string posted_result_;
   std::string expected_result_;
+};
+
+class MockWebServerListener : public WebServerListener {
+ public:
+  MOCK_METHOD0(OnExpectedResponse, void());
 };
 
 // Class that:
@@ -152,20 +179,25 @@ class ChromeFrameTestWithWebServer : public testing::Test {
   enum BrowserKind { INVALID, IE, CHROME };
 
   bool LaunchBrowser(BrowserKind browser, const wchar_t* url);
+
+  // Returns true if the test completed in time, or false if it timed out.
   bool WaitForTestToComplete(base::TimeDelta duration);
 
   // Waits for the page to notify us of the window.onload event firing.
   // Note that the milliseconds value is only approximate.
   bool WaitForOnLoad(int milliseconds);
 
-  // Launches the specified browser and waits for the test to complete
-  // (see WaitForTestToComplete).  Then checks that the outcome is equal
-  // to the expected result.
+  // Launches the specified browser and waits for the test to complete (see
+  // WaitForTestToComplete).  Then checks that the outcome is equal to the
+  // expected result.  The test is repeated once if it fails due to a timeout.
   // This function uses EXPECT_TRUE and ASSERT_TRUE for all steps performed
   // hence no return value.
   void SimpleBrowserTestExpectedResult(BrowserKind browser,
       const wchar_t* page, const char* result);
   void SimpleBrowserTest(BrowserKind browser, const wchar_t* page);
+
+  // Sets up expectations for a page to post back a result.
+  void ExpectAndHandlePostedResult();
 
   // Test if chrome frame correctly reports its version.
   void VersionTest(BrowserKind browser, const wchar_t* page);
@@ -177,6 +209,18 @@ class ChromeFrameTestWithWebServer : public testing::Test {
 
   const FilePath& GetCFTestFilePath() {
     return test_file_path_;
+  }
+
+  static chrome_frame_test::TimedMsgLoop& loop() {
+    return *loop_;
+  }
+
+  static testing::StrictMock<MockWebServerListener>& listener_mock() {
+    return *listener_mock_;
+  }
+
+  static testing::StrictMock<MockWebServer>& server_mock() {
+    return *server_mock_;
   }
 
   static void SetUpTestCase();
@@ -197,10 +241,13 @@ class ChromeFrameTestWithWebServer : public testing::Test {
   // The user data directory used for Chrome instances.
   static ScopedTempDir temp_dir_;
 
+  // The web server from which we serve the web!
+  static chrome_frame_test::TimedMsgLoop* loop_;
+  static testing::StrictMock<MockWebServerListener>* listener_mock_;
+  static testing::StrictMock<MockWebServer>* server_mock_;
+
   BrowserKind browser_;
   base::win::ScopedHandle browser_handle_;
-  chrome_frame_test::TimedMsgLoop loop_;
-  testing::StrictMock<MockWebServer> server_mock_;
 };
 
 // A helper class for doing some bookkeeping when using the

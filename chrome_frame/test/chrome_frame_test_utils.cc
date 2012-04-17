@@ -9,6 +9,7 @@
 #include <iepmapi.h>
 #include <sddl.h>
 #include <shlobj.h>
+#include <winsock2.h>
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -28,6 +29,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome_frame/utils.h"
+#include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -675,6 +677,40 @@ void ClearIESessionHistory() {
   session_history_path = session_history_path.AppendASCII("Internet Explorer");
   session_history_path = session_history_path.AppendASCII("Recovery");
   file_util::Delete(session_history_path, true);
+}
+
+std::string GetLocalIPv4Address() {
+  std::string address;
+  net::NetworkInterfaceList nic_list;
+
+  if (!net::GetNetworkList(&nic_list)) {
+    LOG(ERROR) << "GetNetworkList failed to look up non-loopback adapters. "
+               << "Tests will be run over the loopback adapter, which may "
+               << "result in hangs.";
+  } else {
+    // GetNetworkList only returns 'Up' non-loopback adapters. Select the first
+    // IPv4 address found - we should be able to bind/connect over it.
+    for (size_t i = 0; i < nic_list.size(); ++i) {
+      if (nic_list[i].address.size() != net::kIPv4AddressSize)
+        continue;
+      char* address_string =
+          inet_ntoa(*reinterpret_cast<in_addr*>(&nic_list[i].address[0]));
+      DCHECK(address_string != NULL);
+      if (address_string != NULL) {
+        LOG(INFO) << "HTTP tests will run over " << address_string << ".";
+        address.assign(address_string);
+        break;
+      }
+    }
+  }
+
+  if (address.empty()) {
+    LOG(ERROR) << "Failed to find a non-loopback IP_V4 address. Tests will be "
+               << "run over the loopback adapter, which may result in hangs.";
+    address.assign("127.0.0.1");
+  }
+
+  return address;
 }
 
 }  // namespace chrome_frame_test

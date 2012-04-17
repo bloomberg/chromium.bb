@@ -13,14 +13,18 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/time.h"
 #include "base/test/test_reg_util_win.h"
+#include "base/time.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chrome_frame/chrome_tab.h"
 #include "chrome_frame/test/simulate_input.h"
 #include "chrome_frame/test_utils.h"
@@ -189,13 +193,22 @@ class HungCOMCallDetector
 // We need a UI message loop in the main thread.
 class TimedMsgLoop {
  public:
-  TimedMsgLoop() : quit_loop_invoked_(false) {
+  TimedMsgLoop() : snapshot_on_timeout_(false), quit_loop_invoked_(false) {
+  }
+
+  void set_snapshot_on_timeout(bool value) {
+    snapshot_on_timeout_ = value;
   }
 
   void RunFor(base::TimeDelta duration) {
-    QuitAfter(duration);
     quit_loop_invoked_ = false;
+    if (snapshot_on_timeout_)
+      timeout_closure_.Reset(base::Bind(&TimedMsgLoop::SnapshotAndQuit));
+    else
+      timeout_closure_.Reset(MessageLoop::QuitClosure());
+    loop_.PostDelayedTask(FROM_HERE, timeout_closure_.callback(), duration);
     loop_.MessageLoop::Run();
+    timeout_closure_.Cancel();
   }
 
   void PostTask(const tracked_objects::Location& from_here,
@@ -209,10 +222,12 @@ class TimedMsgLoop {
   }
 
   void Quit() {
+    // Quit after no delay.
     QuitAfter(base::TimeDelta());
   }
 
   void QuitAfter(base::TimeDelta delay) {
+    timeout_closure_.Cancel();
     quit_loop_invoked_ = true;
     loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), delay);
   }
@@ -221,8 +236,33 @@ class TimedMsgLoop {
     return !quit_loop_invoked_;
   }
 
+  void RunAllPending() {
+    loop_.RunAllPending();
+  }
+
  private:
+  static void SnapshotAndQuit() {
+    FilePath snapshot;
+    if (ui_test_utils::SaveScreenSnapshotToDesktop(&snapshot)) {
+      testing::UnitTest* unit_test = testing::UnitTest::GetInstance();
+      const testing::TestInfo* test_info = unit_test->current_test_info();
+      std::string name;
+      if (test_info != NULL) {
+        name.append(test_info->test_case_name())
+            .append(1, '.')
+            .append(test_info->name());
+      } else {
+        name = "unknown test";
+      }
+      LOG(ERROR) << name << " timed out. Screen snapshot saved to "
+                 << snapshot.value();
+    }
+    MessageLoop::current()->Quit();
+  }
+
   MessageLoopForUI loop_;
+  base::CancelableClosure timeout_closure_;
+  bool snapshot_on_timeout_;
   bool quit_loop_invoked_;
 };
 
@@ -327,6 +367,10 @@ ScopedChromeFrameRegistrar::RegistrationType GetTestBedType();
 
 // Clears IE8 session restore history.
 void ClearIESessionHistory();
+
+// Returns a local IPv4 address for the current machine. The address
+// corresponding to a NIC is preferred over the loopback address.
+std::string GetLocalIPv4Address();
 
 }  // namespace chrome_frame_test
 

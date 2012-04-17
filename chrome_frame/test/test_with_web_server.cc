@@ -44,8 +44,10 @@ std::string CreateHttpHeaders(CFInvocation invocation,
      << "Content-Type: " << content_type << "\r\n";
   if (invocation.type() == CFInvocation::HTTP_HEADER)
     ss << "X-UA-Compatible: chrome=1\r\n";
-  if (add_no_cache_header)
+  if (add_no_cache_header) {
     ss << "Cache-Control: no-cache\r\n";
+    ss << "Expires: Tue, 15 Nov 1994 08:12:31 GMT\r\n";
+  }
   return ss.str();
 }
 
@@ -74,11 +76,12 @@ FilePath ChromeFrameTestWithWebServer::CFInstall_path_;
 FilePath ChromeFrameTestWithWebServer::CFInstance_path_;
 ScopedTempDir ChromeFrameTestWithWebServer::temp_dir_;
 FilePath ChromeFrameTestWithWebServer::chrome_user_data_dir_;
+chrome_frame_test::TimedMsgLoop* ChromeFrameTestWithWebServer::loop_;
+testing::StrictMock<MockWebServerListener>*
+    ChromeFrameTestWithWebServer::listener_mock_;
+testing::StrictMock<MockWebServer>* ChromeFrameTestWithWebServer::server_mock_;
 
-ChromeFrameTestWithWebServer::ChromeFrameTestWithWebServer()
-    : loop_(),
-      server_mock_(1337, L"127.0.0.1",
-          chrome_frame_test::GetTestDataFolder()) {
+ChromeFrameTestWithWebServer::ChromeFrameTestWithWebServer() {
 }
 
 // static
@@ -108,13 +111,28 @@ void ChromeFrameTestWithWebServer::SetUpTestCase() {
   CFInstall_path_ = test_file_path_.AppendASCII("CFInstall.js");
 
   ASSERT_TRUE(file_util::CopyFile(CFInstall_src_path, CFInstall_path_));
+
+  loop_ = new chrome_frame_test::TimedMsgLoop();
+  loop_->set_snapshot_on_timeout(true);
+  listener_mock_ = new testing::StrictMock<MockWebServerListener>();
+  server_mock_ = new testing::StrictMock<MockWebServer>(
+      1337, ASCIIToWide(chrome_frame_test::GetLocalIPv4Address()),
+      chrome_frame_test::GetTestDataFolder());
+  server_mock_->set_listener(listener_mock_);
 }
 
 // static
 void ChromeFrameTestWithWebServer::TearDownTestCase() {
+  delete server_mock_;
+  server_mock_ = NULL;
+  delete listener_mock_;
+  listener_mock_ = NULL;
+  delete loop_;
+  loop_ = NULL;
   file_util::Delete(CFInstall_path_, false);
   file_util::Delete(CFInstance_path_, false);
-  EXPECT_TRUE(temp_dir_.Delete());
+  if (temp_dir_.IsValid())
+    EXPECT_TRUE(temp_dir_.Delete());
 }
 
 // static
@@ -130,12 +148,16 @@ void ChromeFrameTestWithWebServer::SetUp() {
   // Make sure that we are not accidentally enabling gcf protocol.
   SetConfigBool(kAllowUnsafeURLs, false);
 
-  server_mock_.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
-  server_mock_.set_expected_result("OK");
+  server_mock().ClearResults();
+  server_mock().ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
+  server_mock().set_expected_result("OK");
 }
 
 void ChromeFrameTestWithWebServer::TearDown() {
   CloseBrowser();
+  loop().RunAllPending();
+  testing::Mock::VerifyAndClear(listener_mock_);
+  testing::Mock::VerifyAndClear(server_mock_);
 }
 
 bool ChromeFrameTestWithWebServer::LaunchBrowser(BrowserKind browser,
@@ -145,7 +167,7 @@ bool ChromeFrameTestWithWebServer::LaunchBrowser(BrowserKind browser,
   // We should resolve the URL only if it is a relative url.
   GURL parsed_url(WideToUTF8(page));
   if (!parsed_url.has_scheme()) {
-    url = server_mock_.Resolve(page);
+    url = server_mock().Resolve(page);
   }
 
   browser_ = browser;
@@ -203,8 +225,8 @@ bool ChromeFrameTestWithWebServer::BringBrowserToTop() {
 
 bool ChromeFrameTestWithWebServer::WaitForTestToComplete(
     base::TimeDelta duration) {
-  loop_.RunFor(duration);
-  return true;
+  loop().RunFor(duration);
+  return !loop().WasTimedOut();
 }
 
 bool ChromeFrameTestWithWebServer::WaitForOnLoad(int milliseconds) {
@@ -215,16 +237,41 @@ const wchar_t kPostedResultSubstring[] = L"/writefile/";
 
 void ChromeFrameTestWithWebServer::SimpleBrowserTestExpectedResult(
     BrowserKind browser, const wchar_t* page, const char* result) {
-  server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
-                                           kPostedResultSubstring);
-  ASSERT_TRUE(LaunchBrowser(browser, page));
-  WaitForTestToComplete(TestTimeouts::action_max_timeout());
-  ASSERT_EQ(result, server_mock_.posted_result());
+  int tries = 0;
+  ExpectAndHandlePostedResult();
+  // Retry tests that timeout once; see http://crbug.com/96449.
+  do {
+    // NOTE: Failed ASSERTs cause this function to exit immediately.
+    // Don't take a snapshot on the first try.
+    loop().set_snapshot_on_timeout(tries != 0);
+    ASSERT_TRUE(LaunchBrowser(browser, page));
+    if (WaitForTestToComplete(TestTimeouts::action_max_timeout())) {
+      // The test exited without timing out.  Confirm that the expected response
+      // was posted and return.
+      ASSERT_EQ(result, server_mock().posted_result());
+      break;
+    }
+    ASSERT_EQ(std::string(), server_mock().posted_result())
+        << "Test timed out yet provided a result.";
+    ASSERT_EQ(0, tries++) << "Failing test due to two timeouts.";
+    // Close the browser and try a second time.
+    CloseBrowser();
+    LOG(ERROR) << "Retrying test once since it timed out.";
+  } while (true);
+  loop().set_snapshot_on_timeout(true);
 }
 
 void ChromeFrameTestWithWebServer::SimpleBrowserTest(BrowserKind browser,
     const wchar_t* page) {
   SimpleBrowserTestExpectedResult(browser, page, "OK");
+}
+
+void ChromeFrameTestWithWebServer::ExpectAndHandlePostedResult() {
+  EXPECT_CALL(listener_mock(), OnExpectedResponse())
+      .WillRepeatedly(QUIT_LOOP_SOON(loop(),
+                                     base::TimeDelta::FromMilliseconds(100)));
+  server_mock().ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
+                                            kPostedResultSubstring);
 }
 
 void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
@@ -258,15 +305,12 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
       version = version_info->product_version();
   }
 
-  server_mock_.set_expected_result(WideToUTF8(version));
+  server_mock().set_expected_result(WideToUTF8(version));
 
   EXPECT_TRUE(version_info);
   EXPECT_FALSE(version.empty());
-  server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
-                                           kPostedResultSubstring);
-  EXPECT_TRUE(LaunchBrowser(browser, page));
-  WaitForTestToComplete(TestTimeouts::action_max_timeout());
-  ASSERT_EQ(version, UTF8ToWide(server_mock_.posted_result()));
+
+  SimpleBrowserTestExpectedResult(browser, page, WideToASCII(version).c_str());
 }
 
 // MockWebServer methods
@@ -305,11 +349,8 @@ void MockWebServer::HandlePostedResponse(
     test_server::ConfigurableConnection* connection,
     const test_server::Request& request) {
   posted_result_ = request.content();
-  if (posted_result_ == expected_result_) {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            MessageLoop::QuitClosure(),
-                                            100);
-  }
+  if (listener_ && posted_result_ == expected_result_)
+    listener_->OnExpectedResponse();
   connection->Send("HTTP/1.1 200 OK\r\n", "");
 }
 
@@ -426,7 +467,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_iframeBasic) {
 
 const wchar_t kSrcPropertyTestPage[] = L"src_property_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_SrcProperty) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_SrcProperty) {
   SimpleBrowserTest(IE, kSrcPropertyTestPage);
 }
 
@@ -444,14 +485,13 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceSingleton) {
 
 const wchar_t kCFIDelayPage[] = L"CFInstance_delay_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_CFInstanceDelay) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceDelay) {
   SimpleBrowserTest(IE, kCFIDelayPage);
 }
 
 const wchar_t kCFIFallbackPage[] = L"CFInstance_fallback_host.html";
 
-// http://crbug.com/37088
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_CFInstanceFallback) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceFallback) {
   SimpleBrowserTest(IE, kCFIFallbackPage);
 }
 
@@ -477,8 +517,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceZeroSize) {
 
 const wchar_t kCFIIfrPostPage[] = L"CFInstance_iframe_post_host.html";
 
-// http://crbug.com/32321
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeIE_CFInstanceIfrPost) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceIfrPost) {
   SimpleBrowserTest(IE, kCFIIfrPostPage);
 }
 
@@ -503,14 +542,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstancePost) {
 
 const wchar_t kCFIRPCPage[] = L"CFInstance_rpc_host.html";
 
-// This test consistently times out in debug builds; see http://crbug.com/112599
-#ifndef NDEBUG
-#define MAYBE_WidgetModeIE_CFInstanceRPC DISABLED_WidgetModeIE_CFInstanceRPC
-#else
-#define MAYBE_WidgetModeIE_CFInstanceRPC WidgetModeIE_CFInstanceRPC
-#endif
-
-TEST_F(ChromeFrameTestWithWebServer, MAYBE_WidgetModeIE_CFInstanceRPC) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceRPC) {
   if (chrome_frame_test::GetInstalledIEVersion() == IE_9) {
     LOG(INFO) << "Not running test on Vista/Windows 7 with IE9";
     return;
@@ -670,18 +702,17 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_InstallFlowTest) {
 
     ASSERT_TRUE(LaunchBrowser(IE, kInstallFlowTestUrl));
 
-    loop_.RunFor(kChromeFrameLongNavigationTimeout);
+    loop().RunFor(kChromeFrameLongNavigationTimeout);
 
     ScopedChromeFrameRegistrar::RegisterAtPath(
         GetChromeFrameBuildPath().value(),
         chrome_frame_test::GetTestBedType());
 
-    server_mock_.ExpectAndHandlePostedResult(CFInvocation(CFInvocation::NONE),
-                                             kPostedResultSubstring);
-    loop_.RunFor(kChromeFrameLongNavigationTimeout);
+    ExpectAndHandlePostedResult();
+    loop().RunFor(kChromeFrameLongNavigationTimeout);
 
     chrome_frame_test::CloseAllIEWindows();
-    ASSERT_EQ("OK", server_mock_.posted_result());
+    ASSERT_EQ("OK", server_mock().posted_result());
   }
 }
 
@@ -729,7 +760,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
-  loop_.RunFor(kChromeFrameLongNavigationTimeout);
+  loop().RunFor(kChromeFrameLongNavigationTimeout);
 
   const test_server::Request* request = NULL;
   server.FindRequest("/quit?OK", &request);
@@ -761,7 +792,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
-  loop_.RunFor(kChromeFrameVeryLongNavigationTimeout);
+  loop().RunFor(kChromeFrameVeryLongNavigationTimeout);
 
   const test_server::Request* request = NULL;
   server.FindRequest("/quit?OK", &request);
@@ -793,8 +824,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRConditionalHeaderTest) {
 const wchar_t kWindowCloseTestUrl[] =
     L"window_close.html";
 
-// http://code.google.com/p/chromium/issues/detail?id=111074
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_WindowClose) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_WindowClose) {
   SimpleBrowserTest(IE, kWindowCloseTestUrl);
 }
 
@@ -879,7 +909,7 @@ TEST_F(ChromeFrameTestWithWebServer, FAILS_FullTabModeIE_RefreshMshtmlTest) {
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
-  loop_.RunFor(kChromeFrameLongNavigationTimeout);
+  loop().RunFor(kChromeFrameLongNavigationTimeout);
 
   test_server::SimpleWebServer* ws = server.web_server();
   const test_server::ConnectionList& connections = ws->connections();
@@ -1011,7 +1041,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestDownloadFromForm) {
 
   EXPECT_CALL(win_observer_mock, OnWindowClose(_))
       .Times(testing::AtMost(1))
-      .WillOnce(QUIT_LOOP(loop_));
+      .WillOnce(QUIT_LOOP(loop()));
 
   SimpleWebServerTest server(46664);
   CustomResponse* response = new CustomResponse("/form.html");
@@ -1020,7 +1050,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestDownloadFromForm) {
   std::wstring url(server.FormatHttpPath(L"form.html"));
 
   ASSERT_TRUE(LaunchBrowser(IE, url.c_str()));
-  loop_.RunFor(kChromeFrameLongNavigationTimeout);
+  loop().RunFor(kChromeFrameLongNavigationTimeout);
 
   EXPECT_EQ(1, response->get_request_count());
   EXPECT_EQ(1, response->post_request_count());

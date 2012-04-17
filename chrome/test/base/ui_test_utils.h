@@ -657,6 +657,18 @@ void MoveMouseToCenterAndPress(
     int state,
     const base::Closure& task);
 
+#if defined(OS_WIN)
+// Saves a snapshot of the entire screen to a file named
+// ChromiumSnapshotYYYYMMDDHHMMSS.png to |directory|, returning true on success.
+// The path to the file produced is returned in |screenshot_path| if non-NULL.
+bool SaveScreenSnapshotToDirectory(const FilePath& directory,
+                                   FilePath* screenshot_path);
+
+// Saves a snapshot of the entire screen as above to the current user's desktop.
+// The Chrome path provider must be registered prior to calling this function.
+bool SaveScreenSnapshotToDesktop(FilePath* screenshot_path);
+#endif
+
 namespace internal {
 
 // A utility function to send a mouse click event in a closure. It's shared by
