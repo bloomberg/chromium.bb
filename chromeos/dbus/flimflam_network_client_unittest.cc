@@ -16,7 +16,9 @@ namespace chromeos {
 class FlimflamNetworkClientTest : public FlimflamClientUnittestBase {
  public:
   FlimflamNetworkClientTest()
-      : FlimflamClientUnittestBase(flimflam::kFlimflamNetworkInterface) {
+      : FlimflamClientUnittestBase(
+          flimflam::kFlimflamNetworkInterface,
+          dbus::ObjectPath(flimflam::kFlimflamServicePath)) {
   }
 
   virtual void SetUp() {

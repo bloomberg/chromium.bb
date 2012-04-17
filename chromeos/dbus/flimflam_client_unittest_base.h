@@ -34,7 +34,8 @@ namespace chromeos {
 // A class to provide functionalities needed for testing Flimflam D-Bus clients.
 class FlimflamClientUnittestBase : public testing::Test {
  public:
-  explicit FlimflamClientUnittestBase(const std::string& interface_name);
+  explicit FlimflamClientUnittestBase(const std::string& interface_name,
+                                      const dbus::ObjectPath& object_path);
   virtual ~FlimflamClientUnittestBase();
 
   virtual void SetUp() OVERRIDE;
@@ -112,6 +113,8 @@ class FlimflamClientUnittestBase : public testing::Test {
 
   // The interface name.
   const std::string interface_name_;
+  // The object path.
+  const dbus::ObjectPath object_path_;
   // The mock object proxy.
   scoped_refptr<dbus::MockObjectProxy> mock_proxy_;
   // The PropertyChanged signal handler given by the tested client.

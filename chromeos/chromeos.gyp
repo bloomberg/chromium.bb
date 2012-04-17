@@ -148,6 +148,7 @@
         'dbus/flimflam_client_unittest_base.h',
         'dbus/flimflam_manager_client_unittest.cc',
         'dbus/flimflam_network_client_unittest.cc',
+        'dbus/flimflam_profile_client_unittest.cc',
       ],
       'include_dirs': [
         '..',

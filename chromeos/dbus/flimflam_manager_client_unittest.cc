@@ -99,7 +99,9 @@ base::DictionaryValue* CreateExampleProperties() {
 class FlimflamManagerClientTest : public FlimflamClientUnittestBase {
  public:
   FlimflamManagerClientTest()
-      : FlimflamClientUnittestBase(flimflam::kFlimflamManagerInterface) {
+      : FlimflamClientUnittestBase(
+          flimflam::kFlimflamManagerInterface,
+          dbus::ObjectPath(flimflam::kFlimflamServicePath)) {
   }
 
   virtual void SetUp() {

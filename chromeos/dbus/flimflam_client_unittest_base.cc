@@ -5,6 +5,7 @@
 #include "chromeos/dbus/flimflam_client_unittest_base.h"
 
 #include "base/bind.h"
+#include "base/json/json_writer.h"
 #include "base/values.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -20,7 +21,10 @@ using ::testing::Return;
 namespace chromeos {
 
 FlimflamClientUnittestBase::FlimflamClientUnittestBase(
-    const std::string& interface_name) : interface_name_(interface_name) {
+    const std::string& interface_name,
+    const dbus::ObjectPath& object_path)
+    : interface_name_(interface_name),
+      object_path_(object_path) {
 }
 
 FlimflamClientUnittestBase::~FlimflamClientUnittestBase() {
@@ -36,7 +40,7 @@ void FlimflamClientUnittestBase::SetUp() {
   mock_proxy_ = new dbus::MockObjectProxy(
       mock_bus_.get(),
       flimflam::kFlimflamServiceName,
-      dbus::ObjectPath(flimflam::kFlimflamServicePath));
+      object_path_);
 
   // Set an expectation so mock_proxy's CallMethod() will use OnCallMethod()
   // to return responses.
@@ -53,9 +57,8 @@ void FlimflamClientUnittestBase::SetUp() {
 
   // Set an expectation so mock_bus's GetObjectProxy() for the given
   // service name and the object path will return mock_proxy_.
-  EXPECT_CALL(*mock_bus_, GetObjectProxy(
-      flimflam::kFlimflamServiceName,
-      dbus::ObjectPath(flimflam::kFlimflamServicePath)))
+  EXPECT_CALL(*mock_bus_, GetObjectProxy(flimflam::kFlimflamServiceName,
+                                         object_path_))
       .WillOnce(Return(mock_proxy_.get()));
 
   // ShutdownAndBlock() will be called in TearDown().
@@ -151,7 +154,11 @@ void FlimflamClientUnittestBase::ExpectDictionaryValueResult(
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& result) {
   EXPECT_EQ(DBUS_METHOD_CALL_SUCCESS, call_status);
-  EXPECT_TRUE(expected_result->Equals(&result));
+  std::string expected_result_string;
+  base::JSONWriter::Write(expected_result, &expected_result_string);
+  std::string result_string;
+  base::JSONWriter::Write(&result, &result_string);
+  EXPECT_EQ(expected_result_string, result_string);
 }
 
 void FlimflamClientUnittestBase::OnConnectToSignal(
