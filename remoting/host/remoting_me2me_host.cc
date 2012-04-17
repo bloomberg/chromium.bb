@@ -179,7 +179,8 @@ class HostProcess : public OAuthClient::Delegate {
       // the access token is available.
       //
       // TODO(sergeyu): Move this code to SignalingConnector.
-      oauth_client_.Start(oauth_refresh_token_, this,
+      oauth_client_.Start(context_->url_request_context_getter(),
+                          oauth_refresh_token_, this,
                           message_loop_.message_loop_proxy());
     } else {
       StartWatchingNatPolicy();
@@ -221,8 +222,7 @@ class HostProcess : public OAuthClient::Delegate {
  private:
   void StartWatchingNatPolicy() {
     nat_policy_.reset(
-        policy_hack::NatPolicy::Create(
-            context_->file_message_loop()->message_loop_proxy()));
+        policy_hack::NatPolicy::Create(context_->file_message_loop()));
     nat_policy_->StartWatching(
         base::Bind(&HostProcess::OnNatPolicyUpdate, base::Unretained(this)));
   }

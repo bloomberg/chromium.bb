@@ -52,7 +52,7 @@ scoped_ptr<DesktopEnvironment> DesktopEnvironment::CreateForService(
 #if defined(OS_WIN)
   event_executor.reset(new SessionEventExecutorWin(
       context->desktop_message_loop(),
-      context->file_message_loop()->message_loop_proxy(),
+      context->file_message_loop(),
       event_executor.Pass()));
 #endif
 

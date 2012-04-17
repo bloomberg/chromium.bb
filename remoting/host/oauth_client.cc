@@ -11,25 +11,19 @@
 namespace remoting {
 
 OAuthClient::OAuthClient()
-    : network_thread_("OAuthNetworkThread"),
-      file_thread_("OAuthFileThread"),
-      delegate_(NULL) {
-  network_thread_.StartWithOptions(
-      base::Thread::Options(MessageLoop::TYPE_IO, 0));
-  file_thread_.StartWithOptions(
-      base::Thread::Options(MessageLoop::TYPE_IO, 0));
-  url_request_context_getter_ = new URLRequestContextGetter(
-      network_thread_.message_loop(), file_thread_.message_loop());
-  gaia_oauth_client_.reset(
-      new GaiaOAuthClient(kGaiaOAuth2Url, url_request_context_getter_.get()));
+    : delegate_(NULL) {
 }
 
 OAuthClient::~OAuthClient() {
 }
 
-void OAuthClient::Start(const std::string& refresh_token,
-                        OAuthClient::Delegate* delegate,
-                        base::MessageLoopProxy* message_loop) {
+void OAuthClient::Start(
+    const scoped_refptr<URLRequestContextGetter>& url_context_,
+    const std::string& refresh_token,
+    OAuthClient::Delegate* delegate,
+    base::MessageLoopProxy* message_loop) {
+  gaia_oauth_client_.reset(
+      new GaiaOAuthClient(kGaiaOAuth2Url, url_context_));
   refresh_token_ = refresh_token;
   delegate_ = delegate;
   message_loop_ = message_loop;
@@ -76,12 +70,12 @@ void OAuthClient::RefreshToken() {
     "440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.apps.googleusercontent.com",
     "Bgur6DFiOMM1h8x-AQpuTQlK"
   };
-#else
+#else  // OFFICIAL_BUILD
   OAuthClientInfo client_info = {
     "440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.apps.googleusercontent.com",
     "W2ieEsG-R1gIA4MMurGrgMc_"
   };
-#endif
+#endif  // !OFFICIAL_BUILD
   gaia_oauth_client_->RefreshToken(client_info, refresh_token_, -1, this);
 }
 

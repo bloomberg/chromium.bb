@@ -10,15 +10,15 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread.h"
 #include "remoting/host/gaia_oauth_client.h"
-#include "remoting/host/url_request_context.h"
 
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
 namespace remoting {
+
+class URLRequestContextGetter;
 
 class OAuthClient : public GaiaOAuthClient::Delegate {
  public:
@@ -42,7 +42,8 @@ class OAuthClient : public GaiaOAuthClient::Delegate {
   //
   // The delegate is accessed on the specified message loop, and must out-live
   // it.
-  void Start(const std::string& refresh_token,
+  void Start(const scoped_refptr<URLRequestContextGetter>& url_context_,
+             const std::string& refresh_token,
              Delegate* delegate,
              base::MessageLoopProxy* message_loop);
 
@@ -58,11 +59,6 @@ class OAuthClient : public GaiaOAuthClient::Delegate {
  private:
   void RefreshToken();
 
-  // TODO(jamiewalch): Move these to the ChromotingHostContext class so
-  // that the URLRequestContextGetter is available for other purposes.
-  base::Thread network_thread_;
-  base::Thread file_thread_;
-  scoped_refptr<URLRequestContextGetter> url_request_context_getter_;
   scoped_ptr<GaiaOAuthClient> gaia_oauth_client_;
   std::string refresh_token_;
   OAuthClient::Delegate* delegate_;

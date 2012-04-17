@@ -12,7 +12,7 @@ namespace remoting {
 // A simple test that starts and stop the context. This tests the context
 // operates properly and all threads and message loops are valid.
 TEST(ChromotingHostContextTest, StartAndStop) {
-  MessageLoop message_loop;
+  MessageLoopForUI message_loop;
   ChromotingHostContext context(base::MessageLoopProxy::current());
 
   context.Start();
