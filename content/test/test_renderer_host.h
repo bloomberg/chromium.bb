@@ -127,10 +127,10 @@ class RenderViewHostTestHarness : public testing::Test {
   BrowserContext* browser_context();
   MockRenderProcessHost* process();
 
-  // Frees the current tab contents for tests that want to test destruction.
+  // Frees the current WebContents for tests that want to test destruction.
   void DeleteContents();
 
-  // Sets the current tab contents for tests that want to alter it. Takes
+  // Sets the current WebContents for tests that want to alter it. Takes
   // ownership of the WebContents passed.
   virtual void SetContents(WebContents* contents);
 

@@ -95,7 +95,7 @@ void BrowserPluginWebContentsObserver::OnOpenChannelToBrowserPlugin(
               browser_context,
               site_instance,
               MSG_ROUTING_NONE,
-              NULL, // base tab contents
+              NULL, // base WebContents
               NULL  // session storage namespace
           ));
   // TODO(fsamuel): Set the WebContentsDelegate here.

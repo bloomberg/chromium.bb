@@ -113,7 +113,7 @@ void WebDragSource::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (content::NOTIFICATION_WEB_CONTENTS_SWAPPED == type) {
-    // When the tab contents get swapped, our render view host goes away.
+    // When the WebContents get swapped, our render view host goes away.
     // That's OK, we can continue the drag, we just can't send messages back to
     // our drag source.
     render_view_host_ = NULL;

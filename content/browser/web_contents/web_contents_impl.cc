@@ -302,8 +302,8 @@ WebContentsImpl::WebContentsImpl(
   }
   CHECK(view_.get());
 
-  // We have the initial size of the view be based on the size of the passed in
-  // tab contents (normally a tab from the same window).
+  // We have the initial size of the view be based on the size of the view of
+  // the passed in WebContents.
   view_->CreateView(base_web_contents ?
       base_web_contents->GetView()->GetContainerSize() : gfx::Size());
 
@@ -328,7 +328,7 @@ WebContentsImpl::~WebContentsImpl() {
 
   NotifyDisconnected();
 
-  // Notify any observer that have a reference on this tab contents.
+  // Notify any observer that have a reference on this WebContents.
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<WebContents>(this),

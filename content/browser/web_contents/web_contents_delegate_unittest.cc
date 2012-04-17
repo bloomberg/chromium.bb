@@ -65,7 +65,7 @@ TEST(WebContentsDelegateTest, UnregisterInDestructor) {
   EXPECT_TRUE(contents_a->GetDelegate() == NULL);
   EXPECT_TRUE(contents_b->GetDelegate() == NULL);
 
-  // Destroy the tab contents and run the message loop to prevent leaks.
+  // Destroy the WebContentses and run the message loop to prevent leaks.
   contents_a.reset(NULL);
   contents_b.reset(NULL);
   loop.RunAllPending();

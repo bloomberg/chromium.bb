@@ -158,8 +158,8 @@ IPC_MESSAGE_ROUTED2(AccessibilityMsg_ScrollToMakeVisible,
                     gfx::Rect /* subfocus */)
 
 // Relay a request from assistive technology to move a given object
-// to a specific location, in the tab content area coordinate space, i.e.
-// (0, 0) is the top-left corner of the tab contents.
+// to a specific location, in the WebContents area coordinate space, i.e.
+// (0, 0) is the top-left corner of the WebContents.
 IPC_MESSAGE_ROUTED2(AccessibilityMsg_ScrollToPoint,
                     int /* object id */,
                     gfx::Point /* new location */)

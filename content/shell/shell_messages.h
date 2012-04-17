@@ -14,7 +14,7 @@
 IPC_MESSAGE_ROUTED1(ShellViewMsg_CaptureTextDump,
                     bool /* recursive */)
 
-// Send a text dump of the tab contents to the render host.
+// Send a text dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
                     std::string /* dump */)
 

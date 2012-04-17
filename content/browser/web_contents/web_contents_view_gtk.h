@@ -139,8 +139,8 @@ class CONTENT_EXPORT WebContentsViewGtk : public WebContentsView {
   // hierarchy.
   scoped_ptr<WebContentsViewDelegate> delegate_;
 
-  // The size we want the tab contents view to be.  We keep this in a separate
-  // variable because resizing in GTK+ is async.
+  // The size we want the view to be.  We keep this in a separate variable
+  // because resizing in GTK+ is async.
   gfx::Size requested_size_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewGtk);

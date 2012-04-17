@@ -35,8 +35,7 @@ class CONTENT_EXPORT WebDragSourceGtk : public MessageLoopForUI::Observer {
   explicit WebDragSourceGtk(WebContents* web_contents);
   virtual ~WebDragSourceGtk();
 
-  // Starts a drag for the tab contents this WebDragSourceGtk was
-  // created for.
+  // Starts a drag for the WebContents this WebDragSourceGtk was created for.
   void StartDragging(const WebDropData& drop_data,
                      WebKit::WebDragOperationsMask allowed_ops,
                      GdkEventButton* last_mouse_down,

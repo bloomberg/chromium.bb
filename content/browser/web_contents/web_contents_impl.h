@@ -584,7 +584,7 @@ class CONTENT_EXPORT WebContentsImpl
   base::TerminationStatus crashed_status_;
   int crashed_error_code_;
 
-  // Whether this tab contents is waiting for a first-response for the
+  // Whether this WebContents is waiting for a first-response for the
   // main resource of the page. This controls whether the throbber state is
   // "waiting" or "loading."
   bool waiting_for_response_;
@@ -622,8 +622,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Data for misc internal state ----------------------------------------------
 
-  // Whether the tab contents is currently being screenshotted by the
-  // DraggedTabController.
+  // Whether the WebContents is currently being screenshotted.
   bool capturing_contents_;
 
   // See getter above.

@@ -77,7 +77,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual WebContents* OpenURLFromTab(WebContents* source,
                                       const OpenURLParams& params);
 
-  // Called to inform the delegate that the tab content's navigation state
+  // Called to inform the delegate that the WebContents's navigation state
   // changed. The |changed_flags| indicates the parts of the navigation state
   // that have been updated, and is any combination of the
   // |WebContents::InvalidateTypes| bits.
@@ -125,7 +125,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // out so it can perform any cleanup necessary.
   virtual void SwappedOut(WebContents* source) {}
 
-  // Request the delegate to move this tab contents to the specified position
+  // Request the delegate to move this WebContents to the specified position
   // in screen coordinates.
   virtual void MoveContents(WebContents* source, const gfx::Rect& pos) {}
 
@@ -233,7 +233,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Returns true if the context menu command was handled
   virtual bool ExecuteContextMenuCommand(int command);
 
-  // Opens source view for given tab contents that is navigated to the given
+  // Opens source view for given WebContents that is navigated to the given
   // page url.
   virtual void ViewSourceForTab(WebContents* source, const GURL& page_url);
 
@@ -267,13 +267,13 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Returns true to allow WebContents to continue with the default processing.
   virtual bool OnGoToEntryOffset(int offset);
 
-  // Returns whether this tab contents should add the specified navigation to
+  // Returns whether this WebContents should add the specified navigation to
   // history.
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
       NavigationType navigation_type);
 
-  // Returns the native window framing the view containing the tab contents.
+  // Returns the native window framing the view containing the WebContents.
   virtual gfx::NativeWindow GetFrameNativeWindow();
 
   // Allows delegate to control whether a WebContents will be created. Returns

@@ -114,7 +114,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
       const BrowserAccessibility& node, gfx::Rect subfocus);
 
   // Tell the renderer to scroll such that |node| is at |point|,
-  // where |point| is in global coordinates of the tab contents.
+  // where |point| is in global coordinates of the WebContents.
   void ScrollToPoint(
       const BrowserAccessibility& node, gfx::Point point);
 

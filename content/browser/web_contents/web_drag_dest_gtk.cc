@@ -47,7 +47,7 @@ WebDragDestGtk::WebDragDestGtk(WebContents* web_contents, GtkWidget* widget)
   g_signal_connect(widget, "drag-data-received",
                    G_CALLBACK(OnDragDataReceivedThunk), this);
   // TODO(tony): Need a drag-data-delete handler for moving content out of
-  // the tab contents.  http://crbug.com/38989
+  // the WebContents.  http://crbug.com/38989
 
   destroy_handler_ = g_signal_connect(
       widget, "destroy", G_CALLBACK(gtk_widget_destroyed), &widget_);
