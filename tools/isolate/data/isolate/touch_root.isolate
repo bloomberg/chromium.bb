@@ -3,12 +3,13 @@
 # found in the LICENSE file.
 {
   'variables': {
-    'isolate_dependency_tracked': [
-      # Includes itself.
-      'no_run.isolate',
+    'command': [
+      'python',
+      'touch_root.py',
     ],
-    'isolate_dependency_untracked': [
-      'files1/',
+    'isolate_dependency_tracked': [
+      'touch_root.py',
+      '../../isolate.py',
     ],
   },
 }

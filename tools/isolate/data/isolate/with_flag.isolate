@@ -5,11 +5,11 @@
   'variables': {
     'command': [
       'python',
-      'child.py',
-      '--ok',
+      'with_flag.py',
+      '<(FLAG)',
     ],
     'isolate_dependency_tracked': [
-      '<(DEPTH)/data/isolate/child.py',
+      'with_flag.py',
     ],
     'isolate_dependency_untracked': [
       'files1/',

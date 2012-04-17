@@ -177,8 +177,7 @@ def process_inputs(prevdict, indir, infiles, level, read_only):
       outdict[infile]['mode'] = filemode
       outdict[infile]['size'] = filestats.st_size
       # Used to skip recalculating the hash. Use the most recent update time.
-      outdict[infile]['timestamp'] = int(round(
-          max(filestats.st_mtime, filestats.st_ctime)))
+      outdict[infile]['timestamp'] = int(round(filestats.st_mtime))
       # If the timestamp wasn't updated, carry on the sha-1.
       if (prevdict.get(infile, {}).get('timestamp') ==
           outdict[infile]['timestamp'] and
