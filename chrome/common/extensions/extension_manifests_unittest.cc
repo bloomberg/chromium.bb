@@ -254,6 +254,7 @@ TEST_F(ExtensionManifestTest, InitFromValueValid) {
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
   EXPECT_EQ("1.0.0.0", extension->VersionString());
   EXPECT_EQ("my extension", extension->name());
+  EXPECT_EQ("my extension", extension->non_localized_name());
   EXPECT_EQ(extension->id(), extension->url().host());
   EXPECT_EQ(extension->path(), path);
   EXPECT_EQ(path, extension->path());
@@ -384,6 +385,8 @@ TEST_F(ExtensionManifestTest, InitFromValueValidNameInRTL) {
       "init_valid_name_no_rtl.json"));
 
   string16 localized_name(ASCIIToUTF16("Dictionary (by Google)"));
+  EXPECT_EQ(localized_name, UTF8ToUTF16(extension->non_localized_name()));
+
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
   EXPECT_EQ(localized_name, UTF8ToUTF16(extension->name()));
 
@@ -391,6 +394,8 @@ TEST_F(ExtensionManifestTest, InitFromValueValidNameInRTL) {
   extension = LoadAndExpectSuccess("init_valid_name_strong_rtl.json");
 
   localized_name = WideToUTF16(L"Dictionary (\x05D1\x05D2"L" Google)");
+  EXPECT_EQ(localized_name, UTF8ToUTF16(extension->non_localized_name()));
+
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
   EXPECT_EQ(localized_name, UTF8ToUTF16(extension->name()));
 
