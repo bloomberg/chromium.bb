@@ -242,6 +242,73 @@ TEST(LookaheadFilterInterpreterTest, VariableDelayTest) {
   EXPECT_EQ(1, *base_interpreter->finger_ids_.begin());
 }
 
+class LookaheadFilterInterpreterNoTapSetTestInterpreter
+    : public Interpreter {
+ public:
+  LookaheadFilterInterpreterNoTapSetTestInterpreter()
+      : interpret_call_count_ (0) {}
+
+  virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+    interpret_call_count_++;
+    EXPECT_EQ(1, hwstate->finger_cnt);
+    EXPECT_TRUE(hwstate->fingers[0].flags & GESTURES_FINGER_NO_TAP);
+    return NULL;
+  }
+
+  virtual Gesture* HandleTimer(stime_t now, stime_t* timeout) {
+    EXPECT_TRUE(false);
+    return NULL;
+  }
+
+  virtual void SetHardwareProperties(const HardwareProperties& hw_props) {};
+
+  std::set<short> finger_ids_;
+  size_t interpret_call_count_;
+};
+
+// Tests that with a zero delay, we can still avoid unnecessary splitting
+// by using variable delay.
+TEST(LookaheadFilterInterpreterTest, NoTapSetTest) {
+  LookaheadFilterInterpreterNoTapSetTestInterpreter* base_interpreter =
+      new LookaheadFilterInterpreterNoTapSetTestInterpreter;
+  LookaheadFilterInterpreter interpreter(NULL, base_interpreter);
+
+  HardwareProperties initial_hwprops = {
+    0, 0, 100, 100,  // left, top, right, bottom
+    1,  // x res (pixels/mm)
+    1,  // y res (pixels/mm)
+    133, 133, 5, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    0, 0, 0  // t5r2, semi, button pad
+  };
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, pr, orient, x, y, id
+    { 0, 0, 0, 0, 1, 0, 10, 10, 10, 1 },
+    { 0, 0, 0, 0, 1, 0, 10, 30, 10, 1 },
+  };
+  HardwareState hs[] = {
+    // Expect movement to take
+    { 1.01, 0, 1, 1, &fs[0] },
+    { 1.02, 0, 1, 1, &fs[1] },
+  };
+
+  interpreter.SetHardwareProperties(initial_hwprops);
+
+  for (size_t i = 0; i < arraysize(hs); i++) {
+    stime_t timeout = -1.0;
+    interpreter.SyncInterpret(&hs[i], &timeout);
+    stime_t next_input = i < (arraysize(hs) - 1) ? hs[i + 1].timestamp :
+        INFINITY;
+    stime_t now = hs[i].timestamp;
+    while (timeout >= 0 && (timeout + now) < next_input) {
+      now += timeout;
+      timeout = -1.0;
+      interpreter.HandleTimer(now, &timeout);
+    }
+  }
+  EXPECT_EQ(2, base_interpreter->interpret_call_count_);
+}
+
 // This test makes sure that if an interpreter requests a timeout, and then
 // there is a spurious callback, that we request another callback for the time
 // that remains.

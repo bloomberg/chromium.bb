@@ -875,6 +875,8 @@ void ImmediateInterpreter::UpdateTapState(
         if (FingerTooCloseToTap(*hwstate, *fs) ||
             FingerTooCloseToTap(prev_state_, *fs))
           continue;
+        if (fs->flags & GESTURES_FINGER_NO_TAP)
+          continue;
         added_fingers.insert(*it);
         Log("TTC: Added %d", *it);
       }

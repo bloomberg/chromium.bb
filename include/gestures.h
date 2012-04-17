@@ -51,6 +51,8 @@ struct HardwareProperties {
 // but then we realized later it was actually in another place.
 #define GESTURES_FINGER_WARP_X (1 << 0)
 #define GESTURES_FINGER_WARP_Y (1 << 1)
+// If a finger has notap set, it shouldn't begin a tap gesture.
+#define GESTURES_FINGER_NO_TAP (1 << 2)
 
 struct FingerState {
   float touch_major, touch_minor;

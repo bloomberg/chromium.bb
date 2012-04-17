@@ -141,13 +141,14 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
   const float prev_dt_sq = prev_dt * prev_dt;
 
   bool did_separate = false;
+  bool new_finger_present = false;
   for (size_t i = 0; i < hs->finger_cnt; i++) {
     FingerState* fs = &hs->fingers[i];
     const short old_id = fs->tracking_id;
     bool new_finger = false;
     if (!MapContainsKey(tail->output_ids_, fs->tracking_id)) {
       tail->output_ids_[fs->tracking_id] = NextTrackingId();
-      new_finger = true;
+      new_finger_present = new_finger = true;
     }
     fs->tracking_id = tail->output_ids_[fs->tracking_id];
     if (new_finger)
@@ -219,9 +220,14 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
       }
       did_separate = true;
       SeparateFinger(tail, fs, old_id);
+      // Separating fingers shouldn't tap.
+      fs->flags |= GESTURES_FINGER_NO_TAP;
+      // Try to also flag the previous frame, if we didn't execute it yet
+      if (!prev_qs->completed_)
+        prev_fs->flags |= GESTURES_FINGER_NO_TAP;
     }
   }
-  if (did_separate) {
+  if (did_separate || new_finger_present) {
     // Possibly add some extra delay to correct, incase this separation
     // shouldn't have occurred.
     tail->due_ += ExtraVariableDelay();
