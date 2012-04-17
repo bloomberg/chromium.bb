@@ -68,17 +68,9 @@ bool PlatformCanvas::initialize(int width,
                                 bool is_opaque,
                                 HANDLE shared_section) {
   // Use platform specific device for shared_section.
-  if (shared_section) {
-    if (initializeWithDevice(BitmapPlatformDevice::Create(width,
-                                                          height,
-                                                          is_opaque,
-                                                          shared_section)))
-      return true;
-
-    // TODO(reveman): move the failure investigation from
-    // platform_canvas_win.cc to bitmap_platform_device_win.cc.
-    return false;
-  }
+  if (shared_section)
+    return initializeWithDevice(BitmapPlatformDevice::Create(
+        width, height, is_opaque, shared_section));
 
   return initializeWithDevice(new SkDevice(
       SkBitmap::kARGB_8888_Config, width, height, is_opaque));
