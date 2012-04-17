@@ -578,11 +578,19 @@ void RenderViewHostImpl::DragTargetDragEnter(
        iter != filtered_data.filenames.end(); ++iter) {
     FilePath path = FilePath::FromWStringHack(UTF16ToWideHack(*iter));
     policy->GrantRequestURL(renderer_id, net::FilePathToFileURL(path));
-    policy->GrantReadFile(renderer_id, path);
 
-    // Allow dragged directories to be enumerated by the child process.
-    // Note that we can't tell a file from a directory at this point.
-    policy->GrantReadDirectory(renderer_id, path);
+    // If the renderer already has permission to read these paths, we don't need
+    // to re-grant them. This prevents problems with DnD for files in the CrOS
+    // file manager--the file manager already had read/write access to those
+    // directories, but dragging a file would cause the read/write access to be
+    // overwritten with read-only access, making them impossible to delete or
+    // rename until the renderer was killed.
+    if (!policy->CanReadFile(renderer_id, path)) {
+      policy->GrantReadFile(renderer_id, path);
+      // Allow dragged directories to be enumerated by the child process.
+      // Note that we can't tell a file from a directory at this point.
+      policy->GrantReadDirectory(renderer_id, path);
+    }
 
     filesets.insert(path);
   }
