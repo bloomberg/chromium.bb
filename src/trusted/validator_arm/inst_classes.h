@@ -8,8 +8,9 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_V2_INST_CLASSES_H_
 
 #include <stdint.h>
-#include "native_client/src/trusted/validator_arm/model.h"
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/validator_arm/model.h"
 
 /*
  * Models the "instruction classes" that the decoder produces.
@@ -43,6 +44,7 @@ enum SafetyLevel {
 // Interface class to pull out the condition in bits 28 through 31
 class ConditionBits28To31Interface {
  public:
+  inline ConditionBits28To31Interface() {}
   inline uint32_t value(const Instruction& i) const {
     return i.bits(31, 28);
   }
@@ -52,56 +54,71 @@ class ConditionBits28To31Interface {
   inline bool undefined(const Instruction& i) const {
     return !defined(i);
   }
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(ConditionBits28To31Interface);
 };
 
 // Interface class to pull out Register D from bits 12 through 15.
 class RegDBits12To15Interface {
  public:
+  inline RegDBits12To15Interface() {}
   inline uint32_t number(const Instruction& i) const {
     return i.bits(15, 12);
   }
   inline Register reg(const Instruction& i) const {
     return Register(number(i));
   }
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegDBits12To15Interface);
 };
 
 // Interface class to pull out Register M from bits 0 through 3.
 class RegMBits0To3Interface {
  public:
+  inline RegMBits0To3Interface() {}
   inline uint32_t number(const Instruction& i) const {
     return i.bits(3, 0);
   }
   inline Register reg(const Instruction& i) const {
     return Register(number(i));
   }
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegMBits0To3Interface);
 };
 
 // Interface class to pull out Register n from bits 16 through 19.
 class RegNBits16To19Interface {
  public:
+  inline RegNBits16To19Interface() {}
   inline uint32_t number(const Instruction& i) const {
     return i.bits(19, 16);
   }
   inline Register reg(const Instruction& i) const {
     return Register(number(i));
   }
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegNBits16To19Interface);
 };
 
 // Interface class to pull out Register S from bits 8 through 11.
 class RegSBits8To11Interface {
  public:
+  inline RegSBits8To11Interface() {}
   inline uint32_t number(const Instruction& i) const {
     return i.bits(11, 8);
   }
   inline Register reg(const Instruction& i) const {
     return Register(number(i));
   }
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegSBits8To11Interface);
 };
 
 // Interface class to pull out S (update) bit from bit 20, which
 // defines if the flags register is updated by the instruction.
 class UpdatesFlagsRegisterBit20Interface {
  public:
+  inline UpdatesFlagsRegisterBit20Interface() {}
   // Returns true if bit is set that states that the flags register is updated.
   inline bool is_updated(const Instruction i) const {
     return i.bit(20);
@@ -110,6 +127,8 @@ class UpdatesFlagsRegisterBit20Interface {
   inline Register reg_if_updated(const Instruction i) const {
     return is_updated(i) ? kRegisterFlags : kRegisterNone;
   }
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(UpdatesFlagsRegisterBit20Interface);
 };
 
 // Decodes a class of instructions.  Does spooky undefined things if handed
@@ -278,14 +297,18 @@ class ClassDecoder {
   }
 
  protected:
-  ClassDecoder() {}
+  inline ClassDecoder() {}
   virtual ~ClassDecoder() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(ClassDecoder);
 };
 
 // Represents an instruction that is forbidden under all circumstances, so we
 // didn't bother decoding it further.
 class Forbidden : public ClassDecoder {
  public:
+  inline Forbidden() {}
   virtual ~Forbidden() {}
 
   virtual SafetyLevel safety(Instruction i) const {
@@ -298,11 +321,15 @@ class Forbidden : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Forbidden);
 };
 
 // Represents the undefined space in the instruction encoding.
 class Undefined : public ClassDecoder {
  public:
+  inline Undefined() {}
   virtual ~Undefined() {}
 
   virtual SafetyLevel safety(Instruction i) const {
@@ -314,11 +341,15 @@ class Undefined : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Undefined);
 };
 
 // Represents instructions that have been deprecated in ARMv7.
 class Deprecated : public ClassDecoder {
  public:
+  inline Deprecated() {}
   virtual ~Deprecated() {}
 
   virtual SafetyLevel safety(Instruction i) const {
@@ -330,6 +361,9 @@ class Deprecated : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Deprecated);
 };
 
 // Represents an unpredictable encoding.  Note that many instructions may
@@ -337,6 +371,7 @@ class Deprecated : public ClassDecoder {
 // the case where a large space of the instruction set is unpredictable.
 class Unpredictable : public ClassDecoder {
  public:
+  inline Unpredictable() {}
   virtual ~Unpredictable() {}
 
   virtual SafetyLevel safety(Instruction i) const {
@@ -348,6 +383,9 @@ class Unpredictable : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unpredictable);
 };
 
 // An instruction that, for modeling purposes, is a no-op.  It has no
@@ -389,6 +427,7 @@ class Unpredictable : public ClassDecoder {
 //
 class EffectiveNoOp : public ClassDecoder {
  public:
+  inline EffectiveNoOp() {}
   virtual ~EffectiveNoOp() {}
 
   virtual SafetyLevel safety(Instruction i) const {
@@ -399,6 +438,9 @@ class EffectiveNoOp : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(EffectiveNoOp);
 };
 
 // Models all instructions that reliably trap, preventing execution from falling
@@ -406,6 +448,7 @@ class EffectiveNoOp : public ClassDecoder {
 // special role in the SFI model, so Breakpoints are distinguished below.
 class Roadblock : public ClassDecoder {
  public:
+  inline Roadblock() {}
   virtual ~Roadblock() {}
 
   virtual SafetyLevel safety(Instruction i) const {
@@ -416,6 +459,9 @@ class Roadblock : public ClassDecoder {
     UNREFERENCED_PARAMETER(i);
     return kRegisterNone;
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Roadblock);
 };
 
 // BKPT
@@ -424,8 +470,12 @@ class Roadblock : public ClassDecoder {
 // we may generate it.
 class Breakpoint : public Roadblock {
  public:
+  inline Breakpoint() {}
   virtual ~Breakpoint() {}
   virtual bool is_literal_pool_head(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Breakpoint);
 };
 
 // Models a 3-register-shifted unary operation of the form:
@@ -447,23 +497,20 @@ class Breakpoint : public Roadblock {
 class Unary3RegisterShiftedOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  const RegMBits0To3Interface m_;
-  const RegSBits8To11Interface s_;
-  const RegDBits12To15Interface d_;
-  const UpdatesFlagsRegisterBit20Interface flags_;
-  const ConditionBits28To31Interface cond_;
+  static const RegMBits0To3Interface m_;
+  static const RegSBits8To11Interface s_;
+  static const RegDBits12To15Interface d_;
+  static const UpdatesFlagsRegisterBit20Interface flags_;
+  static const ConditionBits28To31Interface cond_;
 
   // Methods for class.
-  Unary3RegisterShiftedOp()
-      : ClassDecoder(), m_(), s_(), d_(), flags_(), cond_() {}
+  inline Unary3RegisterShiftedOp() : ClassDecoder() {}
   virtual ~Unary3RegisterShiftedOp() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
  private:
-  // Don't allow the following!
-  explicit Unary3RegisterShiftedOp(const Unary3RegisterShiftedOp&);
-  void operator=(const Unary3RegisterShiftedOp&);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary3RegisterShiftedOp);
 };
 
 // Models a 4-register-shifted binary operation of the form:
@@ -495,24 +542,21 @@ class Unary3RegisterShiftedOp : public ClassDecoder {
 class Binary4RegisterShiftedOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  const RegMBits0To3Interface m_;
-  const RegSBits8To11Interface s_;
-  const RegDBits12To15Interface d_;
-  const RegNBits16To19Interface n_;
-  const UpdatesFlagsRegisterBit20Interface flags_;
-  const ConditionBits28To31Interface cond_;
+  static const RegMBits0To3Interface m_;
+  static const RegSBits8To11Interface s_;
+  static const RegDBits12To15Interface d_;
+  static const RegNBits16To19Interface n_;
+  static const UpdatesFlagsRegisterBit20Interface flags_;
+  static const ConditionBits28To31Interface cond_;
 
   // Methods for class.
-  Binary4RegisterShiftedOp()
-      : ClassDecoder(), m_(), s_(), d_(), n_(), flags_(), cond_() {}
+  inline Binary4RegisterShiftedOp() : ClassDecoder() {}
   virtual ~Binary4RegisterShiftedOp() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
  private:
-  // Don't allow the following!
-  Binary4RegisterShiftedOp(const Binary4RegisterShiftedOp&);
-  void operator=(const Binary4RegisterShiftedOp&);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterShiftedOp);
 };
 
 // Models the most common class of data processing instructions.  We use this
@@ -539,6 +583,7 @@ class Binary4RegisterShiftedOp : public ClassDecoder {
 // UQSUB8, UHADD16, UHASX, UHSAX, UHSUB16, UHADD8, UHSUB8
 class DataProc : public ClassDecoder {
  public:
+  inline DataProc() {}
   virtual ~DataProc() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -547,6 +592,9 @@ class DataProc : public ClassDecoder {
   inline Register Rd(const Instruction& i) const {
     return i.reg(15, 12);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(DataProc);
 };
 
 // Models a 3-register-shifted test operation of the form:
@@ -571,22 +619,20 @@ class DataProc : public ClassDecoder {
 class Binary3RegisterShiftedTest : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
-  const RegMBits0To3Interface m_;
-  const RegSBits8To11Interface s_;
-  const RegNBits16To19Interface n_;
-  const UpdatesFlagsRegisterBit20Interface flags_;
-  const ConditionBits28To31Interface cond_;
+  static const RegMBits0To3Interface m_;
+  static const RegSBits8To11Interface s_;
+  static const RegNBits16To19Interface n_;
+  static const UpdatesFlagsRegisterBit20Interface flags_;
+  static const ConditionBits28To31Interface cond_;
 
   // Methods for class.
-  Binary3RegisterShiftedTest()
-      : ClassDecoder(), m_(), s_(), n_(), flags_(), cond_() {}
+  inline Binary3RegisterShiftedTest() : ClassDecoder() {}
   virtual ~Binary3RegisterShiftedTest() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+
  private:
-  // Don't allow the following!
-  explicit Binary3RegisterShiftedTest(const Binary3RegisterShiftedTest&);
-  Binary3RegisterShiftedTest& operator=(const Binary3RegisterShiftedTest&);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterShiftedTest);
 };
 
 // Models the few data-processing instructions that *don't* produce a result,
@@ -598,14 +644,19 @@ class Binary3RegisterShiftedTest : public ClassDecoder {
 // TST(immediate), TEQ(immediate), CMP(immediate), CMN(immediate)
 class Test : public DataProc {
  public:
+  inline Test() {}
   virtual ~Test() {}
   virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Test);
 };
 
 // Specifically models the TST register-immediate instruction, which is
 // important to our conditional store sandbox.
 class TestImmediate : public Test {
  public:
+  inline TestImmediate() {}
   virtual ~TestImmediate() {}
 
   virtual bool sets_Z_if_bits_clear(Instruction i,
@@ -615,6 +666,9 @@ class TestImmediate : public Test {
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(TestImmediate);
 };
 
 // A special-case data processing instruction: the immediate BIC.  We consider
@@ -622,6 +676,7 @@ class TestImmediate : public Test {
 // model it separately from other logic ops.
 class ImmediateBic : public DataProc {
  public:
+  inline ImmediateBic() {}
   virtual ~ImmediateBic() {}
 
   // ImmediateBic is exempted from the writes-r15 check.
@@ -630,6 +685,9 @@ class ImmediateBic : public DataProc {
     return MAY_BE_SAFE;
   }
   virtual bool clears_bits(Instruction i, uint32_t mask) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(ImmediateBic);
 };
 
 // Models the Pack/Saturate/Reverse instructions, which
@@ -648,6 +706,7 @@ class ImmediateBic : public DataProc {
 //
 class PackSatRev : public ClassDecoder {
  public:
+  inline PackSatRev() {}
   virtual ~PackSatRev() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -656,6 +715,9 @@ class PackSatRev : public ClassDecoder {
   inline Register Rd(const Instruction& i) const {
     return i.reg(15, 12);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PackSatRev);
 };
 
 
@@ -674,6 +736,7 @@ class PackSatRev : public ClassDecoder {
 // USAD8, USADA8, SMLAD, SMUAD, SMLSD, SMUSD, SMMLA, SMMUL, SMMLS
 class Multiply : public ClassDecoder {
  public:
+  inline Multiply() {}
   virtual ~Multiply() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -682,6 +745,9 @@ class Multiply : public ClassDecoder {
   inline Register Rd(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Multiply);
 };
 
 // Models double-word multiply instructions, which
@@ -699,6 +765,7 @@ class Multiply : public ClassDecoder {
 //
 class LongMultiply : public Multiply {
  public:
+  inline LongMultiply() {}
   virtual ~LongMultiply() {}
 
   virtual RegisterList defs(Instruction i) const;
@@ -710,6 +777,9 @@ class LongMultiply : public Multiply {
   inline Register RdHi(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LongMultiply);
 };
 
 // Saturating adds and subtracts.  Conceptually equivalent to DataProc,
@@ -720,9 +790,13 @@ class LongMultiply : public Multiply {
 //
 class SatAddSub : public DataProc {
  public:
+  inline SatAddSub() {}
   virtual ~SatAddSub() {}
 
   virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(SatAddSub);
 };
 
 // Move to Status Register.  Used from application code to alter or restore
@@ -735,6 +809,7 @@ class SatAddSub : public DataProc {
 //
 class MoveToStatusRegister : public ClassDecoder {
  public:
+  inline MoveToStatusRegister() {}
   virtual ~MoveToStatusRegister() {}
 
   virtual SafetyLevel safety(Instruction i) const {
@@ -742,6 +817,9 @@ class MoveToStatusRegister : public ClassDecoder {
     return MAY_BE_SAFE;
   }
   virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MoveToStatusRegister);
 };
 
 // A base+immediate store, of unspecified width.  (We don't care whether it
@@ -752,6 +830,7 @@ class MoveToStatusRegister : public ClassDecoder {
 // STMDA / STMED, STM / STMIA / STMEA, STMDB / STMFD, STMIB / STMFA
 class StoreImmediate : public ClassDecoder {
  public:
+  inline StoreImmediate() {}
   virtual ~StoreImmediate() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -766,6 +845,9 @@ class StoreImmediate : public ClassDecoder {
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreImmediate);
 };
 
 // A base+register store, of unspecified width.  (We don't care whether it
@@ -776,6 +858,7 @@ class StoreImmediate : public ClassDecoder {
 // STRH(register), STRD(register), STR(register), STRB(register)
 class StoreRegister : public ClassDecoder {
  public:
+  inline StoreRegister() {}
   virtual ~StoreRegister() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -789,6 +872,9 @@ class StoreRegister : public ClassDecoder {
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreRegister);
 };
 
 // STREX - a lot like a store, but with restricted addressing modes and more
@@ -799,6 +885,7 @@ class StoreRegister : public ClassDecoder {
 // STREX, STREXD, STREXB, STREXH
 class StoreExclusive : public ClassDecoder {
  public:
+  inline StoreExclusive() {}
   virtual ~StoreExclusive() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -816,6 +903,9 @@ class StoreExclusive : public ClassDecoder {
   inline Register Rd(const Instruction& i) const {
     return i.reg(15, 12);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreExclusive);
 };
 
 // Abstract base class for single- and double-register load instructions,
@@ -824,6 +914,7 @@ class StoreExclusive : public ClassDecoder {
 // - They produce a result in reg(15:12).
 class AbstractLoad : public ClassDecoder {
  public:
+  inline AbstractLoad() {}
   virtual ~AbstractLoad() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -835,6 +926,9 @@ class AbstractLoad : public ClassDecoder {
   inline Register Rt(const Instruction& i) const {
     return i.reg(15, 12);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(AbstractLoad);
 };
 
 // Loads using a register displacement, which may affect Rt (the destination)
@@ -848,6 +942,7 @@ class AbstractLoad : public ClassDecoder {
 // LDRB(register)
 class LoadRegister : public AbstractLoad {
  public:
+  inline LoadRegister() {}
   virtual ~LoadRegister() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -857,6 +952,9 @@ class LoadRegister : public AbstractLoad {
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadRegister);
 };
 
 // Loads using an immediate displacement, which may affect Rt (the destination)
@@ -871,6 +969,7 @@ class LoadRegister : public AbstractLoad {
 // LDRB(immediate), LDRB(literal)
 class LoadImmediate : public AbstractLoad {
  public:
+  inline LoadImmediate() {}
   virtual ~LoadImmediate() {}
 
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
@@ -880,6 +979,9 @@ class LoadImmediate : public AbstractLoad {
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadImmediate);
 };
 
 // Two-register immediate-offset load, which also writes Rt+1.
@@ -888,6 +990,7 @@ class LoadImmediate : public AbstractLoad {
 // LDRD(immediate), LDRD(literal)
 class LoadDoubleI : public LoadImmediate {
  public:
+  inline LoadDoubleI() {}
   virtual ~LoadDoubleI() {}
 
   virtual RegisterList defs(Instruction i) const;
@@ -901,6 +1004,9 @@ class LoadDoubleI : public LoadImmediate {
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadDoubleI);
 };
 
 // Two-register register-offset load, which also writes Rt+1.
@@ -909,6 +1015,7 @@ class LoadDoubleI : public LoadImmediate {
 // LDRD(register)
 class LoadDoubleR : public LoadRegister {
  public:
+  inline LoadDoubleR() {}
   virtual ~LoadDoubleR() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -918,6 +1025,9 @@ class LoadDoubleR : public LoadRegister {
   inline Register Rt2(const Instruction& i) const {
     return Register(Rt(i).number() + 1);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadDoubleR);
 };
 
 // LDREX and friends, where writeback is unavailable.
@@ -926,17 +1036,22 @@ class LoadDoubleR : public LoadRegister {
 // LDREX, LDREXB, LDREXH
 class LoadExclusive : public AbstractLoad {
  public:
+  inline LoadExclusive() {}
   virtual ~LoadExclusive() {}
   virtual Register base_address_register(Instruction i) const;
   // Defines the base register.
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadExclusive);
 };
 
 // LDREXD, which also writes Rt+1.
 class LoadDoubleExclusive : public LoadExclusive {
  public:
+  inline LoadDoubleExclusive() {}
   virtual ~LoadDoubleExclusive() {}
 
   virtual RegisterList defs(Instruction i) const;
@@ -945,6 +1060,9 @@ class LoadDoubleExclusive : public LoadExclusive {
   inline Register Rt2(const Instruction& i) const {
     return Register(Rt(i).number() + 1);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadDoubleExclusive);
 };
 
 // And, finally, the oddest class of loads: LDM.  In addition to the base
@@ -954,6 +1072,7 @@ class LoadDoubleExclusive : public LoadExclusive {
 // LDMDA / LDMFA, LDM / LDMIA / LDMFD, LDMDB / LDMEA, LDMIB / LDMED
 class LoadMultiple : public ClassDecoder {
  public:
+  inline LoadMultiple() {}
   virtual ~LoadMultiple() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -964,6 +1083,9 @@ class LoadMultiple : public ClassDecoder {
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadMultiple);
 };
 
 // A load to a vector register.  Like LoadCoprocessor below, the only visible
@@ -976,6 +1098,7 @@ class LoadMultiple : public ClassDecoder {
 // VLD4(single), VLD4(single, all lanes)
 class VectorLoad : public ClassDecoder {
  public:
+  inline VectorLoad() {}
   virtual ~VectorLoad() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -990,6 +1113,9 @@ class VectorLoad : public ClassDecoder {
   inline Register Rm(const Instruction& i) const {
     return i.reg(3, 0);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorLoad);
 };
 
 // A store from a vector register.
@@ -999,6 +1125,7 @@ class VectorLoad : public ClassDecoder {
 // VST1(single), VST2(single), VST3(single), VST4(single)
 class VectorStore : public ClassDecoder {
  public:
+  inline VectorStore() {}
   virtual ~VectorStore() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -1014,6 +1141,9 @@ class VectorStore : public ClassDecoder {
   inline Register Rm(const Instruction& i) const {
     return i.reg(3, 0);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStore);
 };
 
 // A generic coprocessor instruction that (by default) has no side effects.
@@ -1027,6 +1157,7 @@ class VectorStore : public ClassDecoder {
 // MCRR, MCRR2, CDP, CDP2, MCR, MCR2, MCRR, MCRR2, CDP, CDP2, MCR, MCR2
 class CoprocessorOp : public ClassDecoder {
  public:
+  inline CoprocessorOp() {}
   virtual ~CoprocessorOp() {}
 
   virtual SafetyLevel safety(Instruction i) const;
@@ -1038,6 +1169,9 @@ class CoprocessorOp : public ClassDecoder {
   inline uint32_t CoprocIndex(const Instruction& i) const {
     return i.bits(11, 8);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(CoprocessorOp);
 };
 
 // LDC/LDC2, which load data from memory directly into a coprocessor.
@@ -1050,6 +1184,7 @@ class CoprocessorOp : public ClassDecoder {
 // LDC(literal), LDC2(literal)
 class LoadCoprocessor : public CoprocessorOp {
  public:
+  inline LoadCoprocessor() {}
   virtual ~LoadCoprocessor() {}
 
   virtual RegisterList defs(Instruction i) const;
@@ -1058,6 +1193,9 @@ class LoadCoprocessor : public CoprocessorOp {
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadCoprocessor);
 };
 
 // STC/STC2, which store data from a coprocessor into RAM.  Fortunately the
@@ -1069,6 +1207,7 @@ class LoadCoprocessor : public CoprocessorOp {
 // whitelist certain cases of this on known coprocessor types (see the impl).
 class StoreCoprocessor : public CoprocessorOp {
  public:
+  inline StoreCoprocessor() {}
   virtual ~StoreCoprocessor() {}
 
   virtual RegisterList defs(Instruction i) const;
@@ -1082,11 +1221,15 @@ class StoreCoprocessor : public CoprocessorOp {
   inline Register Rn(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreCoprocessor);
 };
 
 // MRC/MRC2, which load a single register from a coprocessor register.
 class MoveFromCoprocessor : public CoprocessorOp {
  public:
+  inline MoveFromCoprocessor() {}
   virtual ~MoveFromCoprocessor() {}
 
   virtual RegisterList defs(Instruction i) const;
@@ -1099,11 +1242,15 @@ class MoveFromCoprocessor : public CoprocessorOp {
     }
     return rt;
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MoveFromCoprocessor);
 };
 
 // MRRC/MRRC2, which load pairs of registers from a coprocessor register.
 class MoveDoubleFromCoprocessor : public CoprocessorOp {
  public:
+  inline MoveDoubleFromCoprocessor() {}
   virtual ~MoveDoubleFromCoprocessor() {}
 
   virtual RegisterList defs(Instruction i) const;
@@ -1115,6 +1262,9 @@ class MoveDoubleFromCoprocessor : public CoprocessorOp {
   inline Register Rt2(const Instruction& i) const {
     return i.reg(19, 16);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MoveDoubleFromCoprocessor);
 };
 
 // BX and BLX - everyone's favorite register-indirect branch.
@@ -1123,6 +1273,7 @@ class MoveDoubleFromCoprocessor : public CoprocessorOp {
 // Hence the cryptic name.
 class BxBlx : public ClassDecoder {
  public:
+  inline BxBlx() {}
   virtual ~BxBlx() {}
 
   virtual SafetyLevel safety(Instruction i) const {
@@ -1139,6 +1290,9 @@ class BxBlx : public ClassDecoder {
   inline Register Rm(const Instruction& i) const {
     return i.reg(3, 0);
   }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BxBlx);
 };
 
 // B and BL
@@ -1147,6 +1301,7 @@ class BxBlx : public ClassDecoder {
 // the assumption holds for all non-illegal direct branches.
 class Branch : public ClassDecoder {
  public:
+  inline Branch() {}
   virtual ~Branch() {}
 
   virtual SafetyLevel safety(Instruction i) const {
@@ -1159,6 +1314,9 @@ class Branch : public ClassDecoder {
     return true;
   }
   virtual int32_t branch_target_offset(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Branch);
 };
 
 }  // namespace

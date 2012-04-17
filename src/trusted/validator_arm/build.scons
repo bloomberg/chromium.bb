@@ -69,6 +69,7 @@ for f in GEN_LIST:
 env.ComponentLibrary('arm_validator_core',
                      ['address_set.cc',
                       'inst_classes.cc',
+                      'inst_classes_statics.cc',
                       'validator.cc',
                       'gen/arm32_decode.cc'])
 
