@@ -660,6 +660,24 @@
 
       <arg name="region" type="object" interface="wl_region"/>
     </request>
+
+    <event name="enter">
+      <description summary="surface enters an output">
+        This is emitted whenever a surface's creation, movement, or resizing
+        results in some part of it being within the scanout region of an
+        output.
+      </description>
+      <arg name="output" type="object" interface="wl_output"/>
+    </event>
+
+    <event name="leave">
+      <description summary="surface leaves an output">
+        This is emitted whenever a surface's creation, movement, or resizing
+        results in it no longer having any part of it within the scanout region
+        of an output.
+      </description>
+      <arg name="output" type="object" interface="wl_output"/>
+    </event>
   </interface>
 
   <interface name="wl_input_device" version="1">
