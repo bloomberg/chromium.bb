@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,13 +59,41 @@ static const char kSearchBoxExtensionScript[] =
     "  };"
     "}";
 
-static const char kChangeEventName[] = "chrome.searchBox.onchange";
+static const char kDispatchChangeEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onchange &&"
+    "    typeof window.chrome.searchBox.onchange == 'function') {"
+    "  window.chrome.searchBox.onchange();"
+    "  true;"
+    "}";
 
-static const char kSubmitEventName[] = "chrome.searchBox.onsubmit";
+static const char kDispatchSubmitEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onsubmit &&"
+    "    typeof window.chrome.searchBox.onsubmit == 'function') {"
+    "  window.chrome.searchBox.onsubmit();"
+    "  true;"
+    "}";
 
-static const char kCancelEventName[] = "chrome.searchBox.oncancel";
+static const char kDispatchCancelEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.oncancel &&"
+    "    typeof window.chrome.searchBox.oncancel == 'function') {"
+    "  window.chrome.searchBox.oncancel();"
+    "  true;"
+    "}";
 
-static const char kResizeEventName[] = "chrome.searchBox.onresize";
+static const char kDispatchResizeEventScript[] =
+    "if (window.chrome &&"
+    "    window.chrome.searchBox &&"
+    "    window.chrome.searchBox.onresize &&"
+    "    typeof window.chrome.searchBox.onresize == 'function') {"
+    "  window.chrome.searchBox.onresize();"
+    "  true;"
+    "}";
 
 // Deprecated API support.
 // TODO(tonyg): Remove these when they are no longer used.
@@ -349,61 +377,37 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestions(
 }
 
 // static
-bool Dispatch(WebFrame* frame, const std::string& event_name) {
+void Dispatch(WebFrame* frame,
+              WebString event_dispatch_script,
+              WebString no_event_handler_script) {
   DCHECK(frame) << "Dispatch requires frame";
-  if (!frame) return false;
+  if (!frame)
+    return;
 
-  v8::HandleScope handle_scope;
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
-  if (context.IsEmpty())
-    return false;
-  v8::Context::Scope context_scope(context);
-
-  v8::Local<v8::Value> value =
-      context->Global()->Get(v8::String::New("window"));
-  std::vector<std::string> components;
-  base::SplitStringDontTrim(event_name, '.', &components);
-  for (size_t i = 0; i < components.size(); ++i) {
-    if (!value.IsEmpty() && value->IsObject())
-      value = value->ToObject()->Get(v8::String::New(components[i].c_str()));
-  }
-  if (value.IsEmpty() || !value->IsFunction())
-    return false;
-
-  v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
-  if (function.IsEmpty())
-    return false;
-
-  function->Call(v8::Object::New(), 0, NULL);
-  return true;
+  v8::Handle<v8::Value> result = frame->executeScriptAndReturnValue(
+    WebScriptSource(event_dispatch_script));
+  if (result.IsEmpty())
+    frame->executeScript(WebScriptSource(no_event_handler_script));
 }
 
 // static
 void SearchBoxExtension::DispatchChange(WebFrame* frame) {
-  if (Dispatch(frame, kChangeEventName))
-    return;
-  frame->executeScript(WebScriptSource(kUserInputScript));
+  Dispatch(frame, kDispatchChangeEventScript, kUserInputScript);
 }
 
 // static
 void SearchBoxExtension::DispatchSubmit(WebFrame* frame) {
-  if (Dispatch(frame, kSubmitEventName))
-    return;
-  frame->executeScript(WebScriptSource(kUserDoneScript));
+  Dispatch(frame, kDispatchSubmitEventScript, kUserDoneScript);
 }
 
 // static
 void SearchBoxExtension::DispatchCancel(WebFrame* frame) {
-  if (Dispatch(frame, kCancelEventName))
-    return;
-  frame->executeScript(WebScriptSource(kUserDoneScript));
+  Dispatch(frame, kDispatchCancelEventScript, kUserDoneScript);
 }
 
 // static
 void SearchBoxExtension::DispatchResize(WebFrame* frame) {
-  if (Dispatch(frame, kResizeEventName))
-    return;
-  frame->executeScript(WebScriptSource(kSetOmniboxBoundsScript));
+  Dispatch(frame, kDispatchResizeEventScript, kSetOmniboxBoundsScript);
 }
 
 // static
