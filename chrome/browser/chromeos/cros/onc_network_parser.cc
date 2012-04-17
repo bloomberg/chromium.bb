@@ -361,9 +361,16 @@ base::DictionaryValue* OncNetworkParser::Decrypt(
     return NULL;
   }
 
+  // Make sure iterations != 0, since that's not valid.
+  if (iterations == 0) {
+    parse_error_ = l10n_util::GetStringUTF8(
+        IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_UNABLE_TO_DECRYPT);
+    return NULL;
+  }
+
   // Simply a sanity check to make sure we can't lock up the machine
-  // for too long with a huge number.
-  if (iterations > kMaxIterationCount) {
+  // for too long with a huge number (or a negative number).
+  if (iterations < 0 || iterations > kMaxIterationCount) {
     parse_error_ = l10n_util::GetStringUTF8(
         IDS_NETWORK_CONFIG_ERROR_ENCRYPTED_ONC_TOO_MANY_ITERATIONS);
     return NULL;

@@ -204,6 +204,29 @@ void OncNetworkParserTest::TestProxySettings(const std::string test_blob,
                                                                 net_config));
 }
 
+TEST_F(OncNetworkParserTest, TestLoadingBrokenEncryption) {
+  {
+    std::string test_blob;
+    GetTestData("broken-encrypted-iterations.onc", &test_blob);
+    OncNetworkParser parser(test_blob,
+                            "test0000",
+                            NetworkUIData::ONC_SOURCE_USER_IMPORT);
+    EXPECT_FALSE(parser.parse_error().empty());
+    EXPECT_EQ(0, parser.GetNetworkConfigsSize());
+    EXPECT_EQ(0, parser.GetCertificatesSize());
+  }
+  {
+    std::string test_blob;
+    GetTestData("broken-encrypted-zero-iterations.onc", &test_blob);
+    OncNetworkParser parser(test_blob,
+                            "test0000",
+                            NetworkUIData::ONC_SOURCE_USER_IMPORT);
+    EXPECT_FALSE(parser.parse_error().empty());
+    EXPECT_EQ(0, parser.GetNetworkConfigsSize());
+    EXPECT_EQ(0, parser.GetCertificatesSize());
+  }
+}
+
 TEST_F(OncNetworkParserTest, TestCreateNetworkWifi) {
   std::string test_blob;
   GetTestData("network-wifi.onc", &test_blob);
