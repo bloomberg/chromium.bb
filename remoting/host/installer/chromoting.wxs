@@ -141,21 +141,23 @@
                                 Scope="any" />
       </Component>
 
-      <Component Id="omaha_registration"
-                 Guid="9a14673d-9518-4cf3-b737-52f09f02a10b">
-        <RegistryKey Id="omaha_client_key"
-                     Root="HKLM"
-                     Key="SOFTWARE\Google\Update\Clients\$(var.OmahaAppid)"
-                     Action="create">
-          <RegistryValue Type="string"
-                         Name="pv"
-                         Value="$(var.Version)"/>
+      <?ifdef OfficialBuild ?>
+        <Component Id="omaha_registration"
+                   Guid="9a14673d-9518-4cf3-b737-52f09f02a10b">
+          <RegistryKey Id="omaha_client_key"
+                       Root="HKLM"
+                       Key="SOFTWARE\Google\Update\Clients\$(var.OmahaAppid)"
+                       Action="create">
+            <RegistryValue Type="string"
+                           Name="pv"
+                           Value="$(var.Version)"/>
 
-          <RegistryValue Type="string"
-                         Name="name"
-                         Value="$(var.ChromotingHost)"/>
-        </RegistryKey>
-      </Component>
+            <RegistryValue Type="string"
+                           Name="name"
+                           Value="$(var.ChromotingHost)"/>
+          </RegistryKey>
+        </Component>
+      <?endif?>
 
       <Component Id="service_controller"
                  Guid="a559f5ba-4b11-4a6e-a1e9-70d9166cb8fc">
@@ -319,7 +321,9 @@
     <UIRef Id="WixUI_ErrorProgressText" />
 
     <Feature Id="chromoting_host" Level="1" Title="$(var.ChromotingHost)">
-      <ComponentRef Id="omaha_registration"/>
+      <?ifdef OfficialBuild ?>
+        <ComponentRef Id="omaha_registration"/>
+      <?endif?>
       <ComponentRef Id="remoting_host"/>
       <ComponentRef Id="sas.dll"/>
       <ComponentRef Id="service_controller"/>
