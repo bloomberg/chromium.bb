@@ -973,7 +973,7 @@ void RenderWidgetHostViewWin::UpdateDesiredTouchMode(bool touch_mode) {
   // Make sure that touch events even make sense.
   bool touch_mode_valid = base::win::GetVersion() >= base::win::VERSION_WIN7 &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTouchEvents);
-  touch_mode = touch_mode && touch_mode_valid;
+  touch_mode = touch_mode_valid;
 
   // Already in correct mode, nothing to do.
   if ((touch_mode && touch_events_enabled_) ||
@@ -1010,7 +1010,12 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   // scrolled when under the mouse pointer even if inactive.
   props_.push_back(ui::SetWindowSupportsRerouteMouseWheel(m_hWnd));
 
-  SetToGestureMode();
+  bool touch_enabled = base::win::GetVersion() >= base::win::VERSION_WIN7 &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableTouchEvents);
+  if (touch_enabled)
+    SetToTouchMode();
+  else
+    SetToGestureMode();
 
   return 0;
 }
