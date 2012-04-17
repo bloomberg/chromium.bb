@@ -1769,7 +1769,6 @@
         'browser/protector/histograms.cc',
         'browser/protector/histograms.h',
         'browser/protector/homepage_change.cc',
-        'browser/protector/homepage_change.h',
         'browser/protector/keys.cc',
         'browser/protector/keys.h',
         'browser/protector/prefs_backup_invalid_change.cc',

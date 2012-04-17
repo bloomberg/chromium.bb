@@ -166,7 +166,6 @@
         'thunk/ppb_buffer_trusted_thunk.cc',
         'thunk/ppb_char_set_thunk.cc',
         'thunk/ppb_console_thunk.cc',
-        'thunk/ppb_cursor_control_api.h',
         'thunk/ppb_cursor_control_thunk.cc',
         'thunk/ppb_device_ref_api.h',
         'thunk/ppb_device_ref_thunk.cc',
