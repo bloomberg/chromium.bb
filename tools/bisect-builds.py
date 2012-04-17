@@ -15,9 +15,6 @@ it will ask you whether it is good or bad before continuing the search.
 # The root URL for storage.
 BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-snapshots'
 
-# URL to the ViewVC commit page.
-BUILD_VIEWVC_URL = 'http://src.chromium.org/viewvc/chrome?view=rev&revision=%d'
-
 # Changelogs URL.
 CHANGELOG_URL = 'http://build.chromium.org/f/chromium/' \
                 'perf/dashboard/ui/changelog.html?url=/trunk/src&range=%d:%d'
@@ -28,6 +25,9 @@ DEPS_FILE= 'http://src.chromium.org/viewvc/chrome/trunk/src/DEPS?revision=%d'
 # WebKit Changelogs URL.
 WEBKIT_CHANGELOG_URL = 'http://trac.webkit.org/log/' \
                        'trunk/?rev=%d&stop_rev=%d&verbose=on'
+
+DONE_MESSAGE = 'You are probably looking for a change made after ' \
+               '%d (known good), but no later than %d (first known bad).'
 
 ###############################################################################
 
@@ -542,16 +542,13 @@ def main():
     last_known_good_webkit_rev, first_known_bad_webkit_rev = 0, 0
 
   # We're done. Let the user know the results in an official manner.
-  print('You are probably looking for build %d.' % first_known_bad_rev)
+  print DONE_MESSAGE % (last_known_good_rev, first_known_bad_rev)
+  print 'CHANGELOG URL:'
+  print '  ' + CHANGELOG_URL % (last_known_good_rev, first_known_bad_rev)
   if last_known_good_webkit_rev != first_known_bad_webkit_rev:
     print 'WEBKIT CHANGELOG URL:'
-    print WEBKIT_CHANGELOG_URL % (first_known_bad_webkit_rev,
-                                  last_known_good_webkit_rev)
-  print 'CHANGELOG URL:'
-  print CHANGELOG_URL % (last_known_good_rev, first_known_bad_rev)
-  print 'Built at revision:'
-  print BUILD_VIEWVC_URL % first_known_bad_rev
-
+    print '  ' + WEBKIT_CHANGELOG_URL % (first_known_bad_webkit_rev,
+                                         last_known_good_webkit_rev)
 
 if __name__ == '__main__':
   sys.exit(main())
