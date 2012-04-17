@@ -418,7 +418,8 @@ main (int argc, char **argv)
 		printf ("\n");
 		if (showSizes)
 		  printf ("input length = %d; output length = %d\n",
-			  translen, outlen);		if (cursorPos != -1)
+			  translen, outlen);
+		if (cursorPos != -1)
 		  printf ("Cursor position: %d\n", cursorPos);
 		if (enteredEmphasis[0])
 		  printf ("Returned emphasis: %s\n", emphasis);
