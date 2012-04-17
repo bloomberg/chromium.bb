@@ -314,6 +314,7 @@ void GestureSequence::Reset() {
   set_state(GS_NO_GESTURE);
   for (int i = 0; i < kMaxGesturePoints; ++i)
     points_[i].Reset();
+  point_count_ = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

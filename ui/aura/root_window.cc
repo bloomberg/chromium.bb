@@ -268,39 +268,45 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   event->UpdateForRootTransform(layer()->transform());
   bool handled = false;
 
-  Window* target = NULL;
-  if (HasCapture(capture_window_, ui::CW_LOCK_TOUCH))
-    target = capture_window_;
-
-  if (!target)
-    target = static_cast<Window*>(
-        gesture_recognizer_->GetTargetForTouchEvent(event));
-
+  GestureConsumer* consumer = gesture_recognizer_->GetTouchLockedTarget(event);
   ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
 
-  if (!target && !bounds().Contains(event->location())) {
-    // If the touch is outside the root window, set its target to the
-    // root window.
-    target = this;
-  } else {
-    if (!target)
-      target = GetEventHandlerForPoint(event->location());
-    if (!target)
-      return false;
+  if (!consumer || !consumer->ignores_events()) {
+    Window* target = static_cast<Window*>(consumer);
 
-    TouchEvent translated_event(*event, this, target);
-    status = ProcessTouchEvent(target, &translated_event);
-    handled = status != ui::TOUCH_STATUS_UNKNOWN;
+    if (!target && HasCapture(capture_window_, ui::CW_LOCK_TOUCH))
+      target = capture_window_;
 
-    if (status == ui::TOUCH_STATUS_QUEUED ||
-        status == ui::TOUCH_STATUS_QUEUED_END)
-      gesture_recognizer_->QueueTouchEventForGesture(target, *event);
+    if (!target) {
+      target = static_cast<Window*>(
+          gesture_recognizer_->GetTargetForLocation(event->GetLocation()));
+    }
+
+    if (!target && !bounds().Contains(event->location())) {
+      // If the touch is outside the root window, set its target to the
+      // root window.
+      target = this;
+    } else {
+      if (!target)
+        target = GetEventHandlerForPoint(event->location());
+      if (!target)
+        return false;
+
+      TouchEvent translated_event(*event, this, target);
+      status = ProcessTouchEvent(target, &translated_event);
+      handled = status != ui::TOUCH_STATUS_UNKNOWN;
+
+      if (status == ui::TOUCH_STATUS_QUEUED ||
+          status == ui::TOUCH_STATUS_QUEUED_END)
+        gesture_recognizer_->QueueTouchEventForGesture(target, *event);
+    }
+    consumer = target;
   }
 
   // Get the list of GestureEvents from GestureRecognizer.
   scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
   gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
-      *event, status, target));
+      *event, status, consumer));
   if (ProcessGestures(gestures.get()))
     handled = true;
 
@@ -313,9 +319,13 @@ bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
   Window* target = NULL;
   if (HasCapture(capture_window_, ui::CW_LOCK_TOUCH))
     target = capture_window_;
-  if (!target)
-    target = static_cast<Window*>(
-        gesture_recognizer_->GetTargetForGestureEvent(event));
+  if (!target) {
+    GestureConsumer* consumer =
+        gesture_recognizer_->GetTargetForGestureEvent(event);
+    if (consumer->ignores_events())
+      return false;
+    target = static_cast<Window*>(consumer);
+  }
 
   if (target) {
     GestureEvent translated_event(*event, this, target);
@@ -406,6 +416,9 @@ void RootWindow::ConvertPointToNativeScreen(gfx::Point* point) const {
 void RootWindow::SetCapture(Window* window, unsigned int flags) {
   if (capture_window_ == window && flags == capture_window_flags_)
     return;
+
+  if (flags & ui::CW_LOCK_TOUCH)
+    gesture_recognizer_->CancelNonCapturedTouches(window);
 
   aura::Window* old_capture_window = capture_window_;
   capture_window_ = window;
@@ -782,6 +795,10 @@ bool RootWindow::DispatchLongPressGestureEvent(ui::GestureEvent* event) {
   return DispatchGestureEvent(static_cast<GestureEvent*>(event));
 }
 
+bool RootWindow::DispatchCancelTouchEvent(ui::TouchEvent* event) {
+  return DispatchTouchEvent(static_cast<TouchEvent*>(event));
+}
+
 ui::GestureEvent* RootWindow::CreateGestureEvent(ui::EventType type,
     const gfx::Point& location,
     int flags,
@@ -791,6 +808,13 @@ ui::GestureEvent* RootWindow::CreateGestureEvent(ui::EventType type,
     unsigned int touch_id_bitfield) {
   return new GestureEvent(type, location.x(), location.y(), flags, time,
                           param_first, param_second, touch_id_bitfield);
+}
+
+ui::TouchEvent* RootWindow::CreateTouchEvent(ui::EventType type,
+                                             const gfx::Point& location,
+                                             int touch_id,
+                                             base::TimeDelta time_stamp) {
+  return new TouchEvent(type, location, touch_id, time_stamp);
 }
 
 void RootWindow::OnLayerAnimationEnded(

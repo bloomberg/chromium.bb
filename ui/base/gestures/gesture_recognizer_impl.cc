@@ -70,6 +70,15 @@ class CancelledTouchEvent : public ui::TouchEvent {
   DISALLOW_COPY_AND_ASSIGN(CancelledTouchEvent);
 };
 
+// Touches which are cancelled by a touch capture are routed to a
+// GestureEventIgnorer, which ignores them.
+class GestureConsumerIgnorer : public ui::GestureConsumer {
+ public:
+  GestureConsumerIgnorer()
+      : GestureConsumer(true) {
+  }
+};
+
 }  // namespace
 
 namespace ui {
@@ -79,17 +88,15 @@ namespace ui {
 
 GestureRecognizerImpl::GestureRecognizerImpl(GestureEventHelper* helper)
     : helper_(helper) {
+  gesture_consumer_ignorer_.reset(new GestureConsumerIgnorer());
 }
 
 GestureRecognizerImpl::~GestureRecognizerImpl() {
 }
 
-GestureConsumer* GestureRecognizerImpl::GetTargetForTouchEvent(
-    TouchEvent* event) {
-  GestureConsumer* target = touch_id_target_[event->GetTouchId()];
-  if (!target)
-    target = GetTargetForLocation(event->GetLocation());
-  return target;
+GestureConsumer* GestureRecognizerImpl::GetTouchLockedTarget(
+  TouchEvent* event) {
+  return touch_id_target_[event->GetTouchId()];
 }
 
 GestureConsumer* GestureRecognizerImpl::GetTargetForGestureEvent(
@@ -127,6 +134,22 @@ GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
     return touch_id_target_[closest_point->touch_id()];
   else
     return NULL;
+}
+
+void GestureRecognizerImpl::CancelNonCapturedTouches(
+    GestureConsumer* capturer) {
+  std::map<int, GestureConsumer*>::iterator i;
+  // Fire touch cancels, and target touch_ids to gesture_consumer_ignorer.
+  for (i = touch_id_target_.begin(); i != touch_id_target_.end(); ++i) {
+    if (capturer != i->second) {
+      scoped_ptr<TouchEvent> touchEvent(helper_->CreateTouchEvent(
+            ui::ET_TOUCH_CANCELLED, gfx::Point(0, 0),
+            i->first,
+            base::Time::NowFromSystemTime() - base::Time()));
+      helper_->DispatchCancelTouchEvent(touchEvent.get());
+      touch_id_target_[i->first] = gesture_consumer_ignorer_.get();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

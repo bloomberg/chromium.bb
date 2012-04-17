@@ -125,6 +125,7 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
     capture_lost_count_ = 0;
     mouse_event_count_ = 0;
     touch_event_count_ = 0;
+    gesture_event_count_ = 0;
   }
 
   int capture_changed_event_count() const {
@@ -133,6 +134,7 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
   int capture_lost_count() const { return capture_lost_count_; }
   int mouse_event_count() const { return mouse_event_count_; }
   int touch_event_count() const { return touch_event_count_; }
+  int gesture_event_count() const { return gesture_event_count_; }
 
   virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE {
     if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
@@ -145,6 +147,7 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
     return ui::TOUCH_STATUS_UNKNOWN;
   }
   virtual ui::GestureStatus OnGestureEvent(GestureEvent* event) OVERRIDE {
+    gesture_event_count_++;
     return ui::GESTURE_STATUS_UNKNOWN;
   }
   virtual void OnCaptureLost() OVERRIDE {
@@ -156,6 +159,7 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
   int capture_lost_count_;
   int mouse_event_count_;
   int touch_event_count_;
+  int gesture_event_count_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureWindowDelegateImpl);
 };
@@ -624,6 +628,78 @@ TEST_F(WindowTest, CaptureTests) {
   window->parent()->RemoveChild(window.get());
   EXPECT_FALSE(window->HasCapture(ui::CW_LOCK_MOUSE));
   EXPECT_EQ(NULL, root_window()->capture_window());
+}
+
+TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
+  CaptureWindowDelegateImpl delegate1;
+  scoped_ptr<Window> w1(CreateTestWindowWithDelegate(
+      &delegate1, 0, gfx::Rect(0, 0, 20, 20), NULL));
+  CaptureWindowDelegateImpl delegate2;
+  scoped_ptr<Window> w2(CreateTestWindowWithDelegate(
+      &delegate2, 0, gfx::Rect(20, 20, 20, 20), NULL));
+
+  // Press on w1.
+  TouchEvent press(ui::ET_TOUCH_PRESSED,
+                   gfx::Point(10, 10), 0, getTime());
+  root_window()->DispatchTouchEvent(&press);
+  EXPECT_EQ(1, delegate1.gesture_event_count());
+  delegate1.ResetCounts();
+  w2->SetCapture(ui::CW_LOCK_TOUCH);
+
+  // The touch was cancelled when the other window
+  // attained a touch lock.
+  EXPECT_EQ(1, delegate1.touch_event_count());
+  EXPECT_EQ(0, delegate2.touch_event_count());
+
+  delegate1.ResetCounts();
+  delegate2.ResetCounts();
+
+  TouchEvent move(ui::ET_TOUCH_MOVED,
+                  gfx::Point(10, 10), 0, getTime());
+  root_window()->DispatchTouchEvent(&move);
+
+  // This touch id is now ignored, no scroll fired.
+  EXPECT_EQ(0, delegate1.gesture_event_count());
+  EXPECT_EQ(0, delegate2.gesture_event_count());
+
+  TouchEvent release(ui::ET_TOUCH_RELEASED,
+                     gfx::Point(10, 10), 0, getTime());
+  root_window()->DispatchTouchEvent(&release);
+  EXPECT_EQ(0, delegate1.gesture_event_count());
+  EXPECT_EQ(0, delegate2.gesture_event_count());
+
+  // A new press is captured by w2.
+
+  TouchEvent press2(ui::ET_TOUCH_PRESSED,
+                    gfx::Point(10, 10), 0, getTime());
+  root_window()->DispatchTouchEvent(&press2);
+  EXPECT_EQ(0, delegate1.gesture_event_count());
+  EXPECT_EQ(1, delegate2.gesture_event_count());
+}
+
+TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
+  CaptureWindowDelegateImpl delegate;
+  scoped_ptr<Window> window(CreateTestWindowWithDelegate(
+      &delegate, 0, gfx::Rect(0, 0, 20, 20), NULL));
+
+  TouchEvent press(ui::ET_TOUCH_PRESSED,
+                   gfx::Point(10, 10), 0, getTime());
+  root_window()->DispatchTouchEvent(&press);
+
+  EXPECT_EQ(1, delegate.gesture_event_count());
+  delegate.ResetCounts();
+
+  window->SetCapture(ui::CW_LOCK_TOUCH);
+  EXPECT_EQ(0, delegate.gesture_event_count());
+  delegate.ResetCounts();
+
+  // The move event should still create a gesture, as this touch was
+  // on the window which was captured.
+  TouchEvent release(ui::ET_TOUCH_RELEASED,
+                     gfx::Point(10, 10), 0, getTime() +
+                     base::TimeDelta::FromMilliseconds(50));
+  root_window()->DispatchTouchEvent(&release);
+  EXPECT_EQ(1, delegate.gesture_event_count());
 }
 
 // Changes capture while capture is already ongoing.

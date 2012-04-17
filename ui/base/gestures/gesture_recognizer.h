@@ -48,10 +48,9 @@ class UI_EXPORT GestureRecognizer {
   virtual void FlushTouchQueue(GestureConsumer* consumer) = 0;
 
   // Return the window which should handle this TouchEvent, in the case where
-  // the touch is already associated with a target, or the touch occurs
-  // near another touch.
+  // the touch is already associated with a target.
   // Otherwise, returns null.
-  virtual GestureConsumer* GetTargetForTouchEvent(TouchEvent* event) = 0;
+  virtual GestureConsumer* GetTouchLockedTarget(TouchEvent* event) = 0;
 
   // Return the window which should handle this GestureEvent.
   virtual GestureConsumer* GetTargetForGestureEvent(GestureEvent* event) = 0;
@@ -60,6 +59,11 @@ class UI_EXPORT GestureRecognizer {
   // GestureConfiguration::max_separation_for_gesture_touches_in_pixels,
   // of |location|, returns the target of the nearest active touch.
   virtual GestureConsumer* GetTargetForLocation(const gfx::Point& location) = 0;
+
+  // For each touch on windows other than |capturer|, a cancel event
+  // is fired.  These touches are then ignored until they are released
+  // and pressed again.
+  virtual void CancelNonCapturedTouches(GestureConsumer* capturer) = 0;
 };
 
 }  // namespace ui

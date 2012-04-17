@@ -30,11 +30,8 @@ class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
   virtual ~GestureRecognizerImpl();
 
   // Checks if this finger is already down, if so, returns the current target.
-  // Otherwise, if the finger is within
-  // GestureConfiguration::max_separation_for_gesture_touches_in_pixels
-  // of another touch, returns the target of the closest touch.
-  // If there is no nearby touch, return null.
-  virtual GestureConsumer* GetTargetForTouchEvent(TouchEvent* event) OVERRIDE;
+  // Otherwise, returns NULL.
+  virtual GestureConsumer* GetTouchLockedTarget(TouchEvent* event) OVERRIDE;
 
   // Returns the target of the touches the gesture is composed of.
   virtual GestureConsumer* GetTargetForGestureEvent(
@@ -42,6 +39,11 @@ class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
 
   virtual GestureConsumer* GetTargetForLocation(
       const gfx::Point& location) OVERRIDE;
+
+  // Each touch which isn't targeted to capturer results in a touch
+  // cancel event. These touches are then targeted to
+  // gesture_consumer_ignorer.
+  virtual void CancelNonCapturedTouches(GestureConsumer* capturer) OVERRIDE;
 
  protected:
   virtual GestureSequence* CreateSequence(GestureEventHelper* helper);
@@ -70,6 +72,10 @@ class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
   // removed.
   std::map<int, GestureConsumer*> touch_id_target_;
   std::map<int, GestureConsumer*> touch_id_target_for_gestures_;
+
+  // Touches cancelled by touch capture are routed to the
+  // gesture_consumer_ignorer_.
+  scoped_ptr<GestureConsumer> gesture_consumer_ignorer_;
   GestureEventHelper* helper_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerImpl);

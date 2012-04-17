@@ -294,7 +294,14 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
       float param_first,
       float param_second,
       unsigned int touch_id_bitfield) OVERRIDE;
+
+  virtual ui::TouchEvent* CreateTouchEvent(ui::EventType type,
+                                           const gfx::Point& location,
+                                           int touch_id,
+                                           base::TimeDelta time_stamp) OVERRIDE;
+
   virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual bool DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
   // Overridden from ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(

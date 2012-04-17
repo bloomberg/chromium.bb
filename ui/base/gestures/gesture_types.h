@@ -41,12 +41,29 @@ class UI_EXPORT GestureEvent {
 // An abstract type for consumers of gesture-events created by the
 // gesture-recognizer.
 class UI_EXPORT GestureConsumer {
+ public:
+  GestureConsumer()
+      : ignores_events_(false) {
+  }
+
+  explicit GestureConsumer(bool ignores_events)
+      : ignores_events_(ignores_events) {
+  }
+
+  virtual ~GestureConsumer() {}
+  bool ignores_events() { return ignores_events_; }
+
+ private:
+  const bool ignores_events_;
 };
 
 // GestureEventHelper creates implementation-specific gesture events and
 // can dispatch them.
 class UI_EXPORT GestureEventHelper {
  public:
+  virtual ~GestureEventHelper() {
+  }
+
   // |flags| is ui::EventFlags. The meaning of |param_first| and |param_second|
   // depends on the specific gesture type (|type|).
   virtual GestureEvent* CreateGestureEvent(EventType type,
@@ -57,7 +74,13 @@ class UI_EXPORT GestureEventHelper {
                                            float param_second,
                                            unsigned int touch_id_bitfield) = 0;
 
+  virtual TouchEvent* CreateTouchEvent(EventType type,
+                                       const gfx::Point& location,
+                                       int touch_id,
+                                       base::TimeDelta time_stamp) = 0;
+
   virtual bool DispatchLongPressGestureEvent(GestureEvent* event) = 0;
+  virtual bool DispatchCancelTouchEvent(TouchEvent* event) = 0;
 };
 
 }  // namespace ui
