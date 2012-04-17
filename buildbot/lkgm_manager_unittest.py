@@ -40,6 +40,37 @@ CHROMEOS_PATCH=4
 CHROME_BRANCH=13
 """
 
+def _CreateFakeManifest(internal, entries, commits):
+  """Creates a fake manifest with some internal projects."""
+  tmp_manifest = tempfile.mktemp('manifest')
+  # Create fake but empty manifest file.
+  new_doc = minidom.getDOMImplementation().createDocument(None, 'manifest',
+                                                          None)
+  m_element = new_doc.getElementsByTagName('manifest')[0]
+  for idx in range(entries):
+    internal_element = idx % 2 == 0 and internal
+    new_element = minidom.Element('project')
+    new_element.setAttribute('name', 'project_%d' % idx)
+    new_element.setAttribute('path', 'some_path/to/project_%d' % idx)
+    new_element.setAttribute('revision', 'revision_%d' % idx)
+    if internal_element:
+      new_element.setAttribute('remote', 'cros-internal')
+
+    m_element.appendChild(new_element)
+
+  for idx in range(commits):
+    internal_element = idx % 2 == 0 and internal
+    new_element = minidom.Element('pending_commit')
+    new_element.setAttribute('project', 'project_%d' % idx)
+    new_element.setAttribute('change_id', 'changeid_%d' % idx)
+    new_element.setAttribute('commit', 'commit_%d' % idx)
+    m_element.appendChild(new_element)
+
+  with open(tmp_manifest, 'w+') as manifest_file:
+    new_doc.writexml(manifest_file, newl='\n')
+
+  return tmp_manifest
+
 
 class LKGMCandidateInfoTest(mox.MoxTestBase):
   """Test methods testing methods in _LKGMCandidateInfo class."""
@@ -494,6 +525,55 @@ class LKGMManagerTest(mox.MoxTestBase):
                        'chromite/tacos')
     finally:
       os.remove(tmp_manifest)
+
+  def testFilterProjectsFromManifest(self):
+    """Tests whether or not we can correctly remove internal projects from a
+    manifest."""
+    fake_manifest = None
+    fake_new_manifest = None
+    try:
+      fake_manifest = _CreateFakeManifest(internal=True, entries=100, commits=4)
+      fake_new_manifest = \
+          lkgm_manager.LKGMManager._FilterCrosInternalProjectsFromManifest(
+              fake_manifest)
+
+      new_dom = minidom.parse(fake_new_manifest)
+      projects = new_dom.getElementsByTagName('project')
+      for p in projects:
+        self.assertFalse(p.getAttribute('remote') == 'cros-internal')
+
+      # Check commits.  All commits with project_X where X % 2 == 0 are
+      # internal commits.
+      commits = new_dom.getElementsByTagName('pending_commit')
+      for c in commits:
+        index = c.getAttribute('project').split('_')[-1]
+        self.assertTrue(int(index) % 2 != 0)
+
+    finally:
+      if fake_manifest: os.remove(fake_manifest)
+      if fake_new_manifest: os.remove(fake_new_manifest)
+
+  def testFilterProjectsFromExternalManifest(self):
+    """Tests filtering on a project where no filtering is needed."""
+    fake_manifest = None
+    fake_new_manifest = None
+    try:
+      fake_manifest = _CreateFakeManifest(internal=False, entries=100,
+                                          commits=20)
+      fake_new_manifest = \
+          lkgm_manager.LKGMManager._FilterCrosInternalProjectsFromManifest(
+              fake_manifest)
+
+      new_dom = minidom.parse(fake_new_manifest)
+      projects = new_dom.getElementsByTagName('project')
+      self.assertEqual(len(projects), 100)
+      commits = new_dom.getElementsByTagName('pending_commit')
+      self.assertEqual(len(commits), 20)
+
+    finally:
+      if fake_manifest: os.remove(fake_manifest)
+      if fake_new_manifest: os.remove(fake_new_manifest)
+
 
   def tearDown(self):
     if os.path.exists(self.tmpdir): shutil.rmtree(self.tmpdir)

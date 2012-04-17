@@ -10,6 +10,7 @@ A library to generate and store the manifests for cros builders to use.
 import logging
 import os
 import re
+import tempfile
 import time
 from xml.dom import minidom
 
@@ -24,6 +25,12 @@ PALADIN_COMMIT_ELEMENT = 'pending_commit'
 PALADIN_PROJECT_ATTR = 'project'
 PALADIN_CHANGE_ID_ATTR = 'change_id'
 PALADIN_COMMIT_ATTR = 'commit'
+
+MANIFEST_ELEMENT = 'manifest'
+PROJECT_ELEMENT = 'project'
+PROJECT_NAME_ATTR = 'name'
+PROJECT_REMOTE_ATTR = 'remote'
+INTERNAL_REMOTE = 'cros-internal'
 
 
 class PromoteCandidateException(Exception):
@@ -186,6 +193,41 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     with open(manifest, 'w+') as manifest_file:
       manifest_dom.writexml(manifest_file)
+
+  @staticmethod
+  def _FilterCrosInternalProjectsFromManifest(manifest):
+    """Returns a path to a new manifest with internal repositories stripped.
+
+    Args:
+      manifest: Path to an existing manifest that may have internal
+        repositories.
+
+    Returns:
+      Path to a new manifest that is a copy of the original without internal
+        repositories or pending commits.
+    """
+    temp_fd, new_path = tempfile.mkstemp('external_manifest')
+    manifest_dom = minidom.parse(manifest)
+    manifest_node = manifest_dom.getElementsByTagName(MANIFEST_ELEMENT)[0]
+    projects = manifest_dom.getElementsByTagName(PROJECT_ELEMENT)
+    pending_commits = manifest_dom.getElementsByTagName(PALADIN_COMMIT_ELEMENT)
+
+    internal_projects = set()
+    for project_element in projects:
+      if project_element.getAttribute(PROJECT_REMOTE_ATTR) == INTERNAL_REMOTE:
+        project = project_element.getAttribute(PROJECT_NAME_ATTR)
+        internal_projects.add(project)
+        manifest_node.removeChild(project_element)
+
+    for commit_element in pending_commits:
+      if commit_element.getAttribute(
+          PALADIN_PROJECT_ATTR) in internal_projects:
+        manifest_node.removeChild(commit_element)
+
+    with os.fdopen(temp_fd, 'w') as manifest_file:
+      manifest_dom.writexml(manifest_file)
+
+    return new_path
 
   def CreateNewCandidate(self, validation_pool=None,
                          retries=manifest_version.NUM_RETRIES):
