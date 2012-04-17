@@ -2991,15 +2991,21 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
 #endif
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   if (is_offscreen) {
-    if (!ResizeOffscreenFrameBuffer(gfx::Size(width, height)))
+    if (!ResizeOffscreenFrameBuffer(gfx::Size(width, height))) {
+      LOG(ERROR) << "GLES2DecoderImpl: Context lost because "
+                 << "ResizeOffscreenFrameBuffer failed.";
       return error::kLostContext;
+    }
   }
 
   if (!resize_callback_.is_null()) {
     resize_callback_.Run(gfx::Size(width, height));
     DCHECK(context_->IsCurrent(surface_.get()));
-    if (!context_->IsCurrent(surface_.get()))
+    if (!context_->IsCurrent(surface_.get())) {
+      LOG(ERROR) << "GLES2DecoderImpl: Context lost because context no longer "
+                 << "current after resize callback.";
       return error::kLostContext;
+    }
   }
 
   UpdateBackbufferMemoryAccounting();
@@ -6148,10 +6154,12 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
                "glPostSubBufferCHROMIUM: command not supported by surface");
     return error::kNoError;
   }
-  if (surface_->PostSubBuffer(c.x, c.y, c.width, c.height))
+  if (surface_->PostSubBuffer(c.x, c.y, c.width, c.height)) {
     return error::kNoError;
-  else
+  } else {
+    LOG(ERROR) << "Context lost because PostSubBuffer failed.";
     return error::kLostContext;
+  }
 }
 
 error::Error GLES2DecoderImpl::GetAttribLocationHelper(

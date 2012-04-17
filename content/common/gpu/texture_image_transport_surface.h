@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -56,7 +55,8 @@ class TextureImageTransportSurface :
  private:
   // A texture backing the front/back buffer in the parent stub.
   struct Texture {
-    Texture() : client_id(0), sent_to_client(false) {}
+    Texture();
+    ~Texture();
 
     // The client-side id in the parent stub.
     uint32 client_id;
@@ -66,13 +66,15 @@ class TextureImageTransportSurface :
 
     // Whether or not that texture has been sent to the client yet.
     bool sent_to_client;
+
+    // The texture info in the parent stub.
+    gpu::gles2::TextureManager::TextureInfo::Ref info;
   };
 
   virtual ~TextureImageTransportSurface();
   void CreateBackTexture(const gfx::Size& size);
   void ReleaseBackTexture();
   void AttachBackTextureToFBO();
-  gpu::gles2::TextureManager::TextureInfo* GetParentInfo(uint32 client_id);
   int back() const { return 1 - front_; }
 
   // The framebuffer that represents this surface (service id). Allocated lazily
@@ -91,7 +93,7 @@ class TextureImageTransportSurface :
   bool stub_destroyed_;
 
   scoped_ptr<ImageTransportHelper> helper_;
-  base::WeakPtr<GpuCommandBufferStub> parent_stub_;
+  GpuCommandBufferStub* parent_stub_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureImageTransportSurface);
 };
