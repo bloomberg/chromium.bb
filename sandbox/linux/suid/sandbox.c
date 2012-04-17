@@ -381,6 +381,10 @@ static bool SetupChildEnvironment() {
 
 int main(int argc, char **argv) {
   if (argc <= 1) {
+    if (argc == 0) {
+      return 1;
+    }
+
     fprintf(stderr, "Usage: %s <renderer process> <args...>\n", argv[0]);
     return 1;
   }
