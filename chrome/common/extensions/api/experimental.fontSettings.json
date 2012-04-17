@@ -40,8 +40,8 @@
     ],
     "functions": [
       {
-        "name": "getFontName",
-        "description": "Gets the font name of the current setting for a given script and generic font family.",
+        "name": "getFont",
+        "description": "Gets the current font setting for a given script and generic font family.",
         "parameters": [
           {
             "name": "details",
@@ -78,8 +78,8 @@
         ]
       },
       {
-        "name": "setFontName",
-        "description": "Sets the font name of the current setting for a given script and generic font family.",
+        "name": "setFont",
+        "description": "Sets the font setting for a given script and generic font family.",
         "parameters": [
           {
             "name": "details",
@@ -281,8 +281,8 @@
     ],
     "events": [
       {
-        "name": "onFontNameChanged",
-        "description": "Fired when a font name preference changes.",
+        "name": "onFontChanged",
+        "description": "Fired when a font setting changes.",
         "parameters": [
           {
             "type": "object",

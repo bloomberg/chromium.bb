@@ -423,8 +423,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // Font settings.
   RegisterFunction<GetFontListFunction>();
-  RegisterFunction<GetFontNameFunction>();
-  RegisterFunction<SetFontNameFunction>();
+  RegisterFunction<GetFontFunction>();
+  RegisterFunction<SetFontFunction>();
   RegisterFunction<GetDefaultFontSizeFunction>();
   RegisterFunction<SetDefaultFontSizeFunction>();
   RegisterFunction<GetDefaultFixedFontSizeFunction>();

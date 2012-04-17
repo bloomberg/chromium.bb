@@ -30,16 +30,16 @@ class ExtensionFontSettingsEventRouter : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ExtensionFontSettingsEventRouter);
 };
 
-class GetFontNameFunction : public SyncExtensionFunction {
+class GetFontFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.getFontName")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.getFont")
 };
 
-class SetFontNameFunction : public SyncExtensionFunction {
+class SetFontFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.setFontName")
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.setFont")
 };
 
 class GetFontListFunction : public AsyncExtensionFunction {

@@ -42,7 +42,7 @@ to use for compatibility purposes.</p>
 <h2 id="examples">Examples</h2>
 <p>The following code gets the standard font for Arabic.</p>
 <pre>
-chrome.experimental.fontSettings.getFontName(
+chrome.experimental.fontSettings.getFont(
   { genericFamily: 'standard', script: 'Arab' },
   function(details) { console.log(details.fontName); }
 );
@@ -50,7 +50,7 @@ chrome.experimental.fontSettings.getFontName(
 
 <p>The next snippet sets the sans-serif font for Japanese.</p>
 <pre>
-chrome.experimental.fontSettings.setFontName(
+chrome.experimental.fontSettings.setFont(
   { genericFamily: 'sansserif', script: 'Hrkt', fontName: 'IPAPGothic' }
 );
 </pre>

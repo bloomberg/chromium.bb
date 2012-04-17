@@ -122,13 +122,13 @@
     "chrome.experimental.downloads.download": "experimental.downloads.html#method-download",
     "chrome.experimental.fontSettings.getDefaultFixedFontSize": "experimental.fontSettings.html#method-getDefaultFixedFontSize",
     "chrome.experimental.fontSettings.getDefaultFontSize": "experimental.fontSettings.html#method-getDefaultFontSize",
+    "chrome.experimental.fontSettings.getFont": "experimental.fontSettings.html#method-getFont",
     "chrome.experimental.fontSettings.getFontList": "experimental.fontSettings.html#method-getFontList",
-    "chrome.experimental.fontSettings.getFontName": "experimental.fontSettings.html#method-getFontName",
     "chrome.experimental.fontSettings.getMinimumFontSize": "experimental.fontSettings.html#method-getMinimumFontSize",
-    "chrome.experimental.fontSettings.onFontNameChanged": "experimental.fontSettings.html#event-onFontNameChanged",
+    "chrome.experimental.fontSettings.onFontChanged": "experimental.fontSettings.html#event-onFontChanged",
     "chrome.experimental.fontSettings.setDefaultFixedFontSize": "experimental.fontSettings.html#method-setDefaultFixedFontSize",
     "chrome.experimental.fontSettings.setDefaultFontSize": "experimental.fontSettings.html#method-setDefaultFontSize",
-    "chrome.experimental.fontSettings.setFontName": "experimental.fontSettings.html#method-setFontName",
+    "chrome.experimental.fontSettings.setFont": "experimental.fontSettings.html#method-setFont",
     "chrome.experimental.fontSettings.setMinimumFontSize": "experimental.fontSettings.html#method-setMinimumFontSize",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.keybinding.onCommand": "experimental.keybinding.html#event-onCommand",
@@ -1079,10 +1079,10 @@
     {
       "api_calls": [
         "chrome.experimental.fontSettings.getDefaultFontSize",
+        "chrome.experimental.fontSettings.getFont",
         "chrome.experimental.fontSettings.getFontList",
-        "chrome.experimental.fontSettings.getFontName",
         "chrome.experimental.fontSettings.setDefaultFontSize",
-        "chrome.experimental.fontSettings.setFontName"
+        "chrome.experimental.fontSettings.setFont"
       ],
       "crx_path": null,
       "description": "Sample extension for Font Settings API",
@@ -1097,13 +1097,13 @@
       "packaged_app": false,
       "path": "examples\/api\/fontSettings\/",
       "protocols": [],
-      "search_string": "FONT SETTINGS SAMPLE EXTENSION FOR FONT SETTINGS API BROWSER_ACTION EXPERIMENTAL POPUP CHROME.EXPERIMENTAL.FONTSETTINGS.GETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTLIST CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTNAME CHROME.EXPERIMENTAL.FONTSETTINGS.SETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.SETFONTNAME",
+      "search_string": "FONT SETTINGS SAMPLE EXTENSION FOR FONT SETTINGS API BROWSER_ACTION EXPERIMENTAL POPUP CHROME.EXPERIMENTAL.FONTSETTINGS.GETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONT CHROME.EXPERIMENTAL.FONTSETTINGS.GETFONTLIST CHROME.EXPERIMENTAL.FONTSETTINGS.SETDEFAULTFONTSIZE CHROME.EXPERIMENTAL.FONTSETTINGS.SETFONT",
       "source_files": [
         "manifest.json",
         "popup.html",
         "popup.js"
       ],
-      "source_hash": "b5febada226fcd2d38461121c039c55ebcb3decf",
+      "source_hash": "5dab5f989ab4e02b4b184f189d1e061102d5add6",
       "zip_path": "examples\/api\/fontSettings.zip"
     },
     {

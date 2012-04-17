@@ -16,12 +16,12 @@ function expect(expected, message) {
 chrome.test.runTests([
   // This test may fail on Windows if the font is not installed on the
   // system. See crbug.com/122303
-  function setPerScriptFontName() {
+  function setPerScriptFont() {
     var script = 'Hang';
     var genericFamily = 'standard';
     var fontName = 'Verdana';
 
-    chrome.test.listenOnce(fs.onFontNameChanged, function(details) {
+    chrome.test.listenOnce(fs.onFontChanged, function(details) {
       chrome.test.assertEq(details, {
         script: script,
         genericFamily: genericFamily,
@@ -30,7 +30,7 @@ chrome.test.runTests([
       });
     });
 
-    fs.setFontName({
+    fs.setFont({
       script: script,
       genericFamily: genericFamily,
       fontName: fontName
@@ -41,7 +41,7 @@ chrome.test.runTests([
     var expected = 'Verdana';
     var message = 'Setting for Hangul standard font should be ' + expected;
 
-    fs.getFontName({
+    fs.getFont({
       script: 'Hang',
       genericFamily: 'standard'
     }, expect({fontName: expected}, message));
@@ -53,7 +53,7 @@ chrome.test.runTests([
     var fontName = 'Tahoma';
     var genericFamily = 'sansserif';
 
-    chrome.test.listenOnce(fs.onFontNameChanged, function(details) {
+    chrome.test.listenOnce(fs.onFontChanged, function(details) {
       chrome.test.assertEq(details, {
         genericFamily: genericFamily,
         fontName: fontName,
@@ -61,7 +61,7 @@ chrome.test.runTests([
       });
     });
 
-    fs.setFontName({
+    fs.setFont({
       genericFamily: 'sansserif',
       fontName: 'Tahoma'
     }, chrome.test.callbackPass());
@@ -72,7 +72,7 @@ chrome.test.runTests([
     var message =
         'Setting for global sansserif font should be ' + expected;
 
-    fs.getFontName({
+    fs.getFont({
       genericFamily: 'sansserif'
     }, expect({fontName: expected}, message));
   },

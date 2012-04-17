@@ -215,9 +215,9 @@
               </li><li>
                 <a href="#method-getDefaultFontSize">getDefaultFontSize</a>
               </li><li>
-                <a href="#method-getFontList">getFontList</a>
+                <a href="#method-getFont">getFont</a>
               </li><li>
-                <a href="#method-getFontName">getFontName</a>
+                <a href="#method-getFontList">getFontList</a>
               </li><li>
                 <a href="#method-getMinimumFontSize">getMinimumFontSize</a>
               </li><li>
@@ -225,7 +225,7 @@
               </li><li>
                 <a href="#method-setDefaultFontSize">setDefaultFontSize</a>
               </li><li>
-                <a href="#method-setFontName">setFontName</a>
+                <a href="#method-setFont">setFont</a>
               </li><li>
                 <a href="#method-setMinimumFontSize">setMinimumFontSize</a>
               </li>
@@ -235,7 +235,7 @@
             <a href="#global-events">Events</a>
             <ol>
               <li>
-                <a href="#event-onFontNameChanged">onFontNameChanged</a>
+                <a href="#event-onFontChanged">onFontChanged</a>
               </li>
             </ol>
           </li>
@@ -302,13 +302,13 @@ for Korean, these codes are newer than "Hrkt" and "Hang" which Chrome continues
 to use for compatibility purposes.</p>
 <h2 id="examples">Examples</h2>
 <p>The following code gets the standard font for Arabic.</p>
-<pre>chrome.experimental.fontSettings.getFontName(
+<pre>chrome.experimental.fontSettings.getFont(
   { genericFamily: 'standard', script: 'Arab' },
   function(details) { console.log(details.fontName); }
 );
 </pre>
 <p>The next snippet sets the sans-serif font for Japanese.</p>
-<pre>chrome.experimental.fontSettings.setFontName(
+<pre>chrome.experimental.fontSettings.setFont(
   { genericFamily: 'sansserif', script: 'Hrkt', fontName: 'IPAPGothic' }
 );
 </pre>
@@ -606,105 +606,15 @@ directory. For other examples and for help in viewing the source code, see
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-getFontList"></a> <!-- method-anchor -->
-              <h4>getFontList</h4>
+              <a name="method-getFont"></a> <!-- method-anchor -->
+              <h4>getFont</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.getFontList</span>(<span class="null"><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-              <div class="description">
-                <p>Gets a list of fonts on the system.</p>
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                  </div>
-                </dl>
-                <!-- RETURNS -->
-                <dl>
-                </dl>
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>array of FontName results</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>results</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span>
-                        <a href="experimental.fontSettings.html#type-FontName">FontName</a>
-                      </span>
-                    </span></span>
-                        </span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-                <!-- MIN_VERSION -->
-              </div> <!-- /description -->
-            </div><div class="apiItem">
-              <a name="method-getFontName"></a> <!-- method-anchor -->
-              <h4>getFontName</h4>
-              <div class="summary">
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.getFontName</span>(<span class="null"><span>object</span>
+                  <span>chrome.experimental.fontSettings.getFont</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
-                <p>Gets the font name of the current setting for a given script and generic font family.</p>
+                <p>Gets the current font setting for a given script and generic font family.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -876,6 +786,96 @@ directory. For other examples and for help in viewing the source code, see
               </div>
             </dl>
           </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+                <!-- MIN_VERSION -->
+              </div> <!-- /description -->
+            </div><div class="apiItem">
+              <a name="method-getFontList"></a> <!-- method-anchor -->
+              <h4>getFontList</h4>
+              <div class="summary">
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.fontSettings.getFontList</span>(<span class="null"><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+              <div class="description">
+                <p>Gets a list of fonts on the system.</p>
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+                  </div>
+                </dl>
+                <!-- RETURNS -->
+                <dl>
+                </dl>
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>array of FontName results</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+          <dt>
+            <var>results</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="experimental.fontSettings.html#type-FontName">FontName</a>
+                      </span>
+                    </span></span>
+                        </span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->
@@ -1251,15 +1251,15 @@ directory. For other examples and for help in viewing the source code, see
                 <!-- MIN_VERSION -->
               </div> <!-- /description -->
             </div><div class="apiItem">
-              <a name="method-setFontName"></a> <!-- method-anchor -->
-              <h4>setFontName</h4>
+              <a name="method-setFont"></a> <!-- method-anchor -->
+              <h4>setFont</h4>
               <div class="summary">
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.fontSettings.setFontName</span>(<span class="null"><span>object</span>
+                  <span>chrome.experimental.fontSettings.setFont</span>(<span class="null"><span>object</span>
                       <var><span>details</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
-                <p>Sets the font name of the current setting for a given script and generic font family.</p>
+                <p>Sets the font setting for a given script and generic font family.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -1531,14 +1531,14 @@ directory. For other examples and for help in viewing the source code, see
             <h3>Events</h3>
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a name="event-onFontNameChanged"></a>
-              <h4>onFontNameChanged</h4>
+              <a name="event-onFontChanged"></a>
+              <h4>onFontChanged</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.fontSettings.</span><span>onFontNameChanged</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.fontSettings.</span><span>onFontChanged</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
-                <p>Fired when a font name preference changes.</p>
+                <p>Fired when a font setting changes.</p>
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>

@@ -34,8 +34,7 @@ const char kLocalizedNameKey[] = "localizedName";
 const char kPixelSizeKey[] = "pixelSize";
 const char kScriptKey[] = "script";
 
-const char kOnFontNameChanged[] =
-    "experimental.fontSettings.onFontNameChanged";
+const char kOnFontChanged[] = "experimental.fontSettings.onFontChanged";
 
 // Format for per-script font preference keys.
 // E.g., "webkit.webprefs.fonts.standard.Hrkt"
@@ -196,14 +195,14 @@ void ExtensionFontSettingsEventRouter::Observe(
 
   extension_preference_helpers::DispatchEventToExtensions(
       profile_,
-      kOnFontNameChanged,
+      kOnFontChanged,
       &args,
       ExtensionAPIPermission::kExperimental,
       incognito,
       *pref_key);
 }
 
-bool GetFontNameFunction::RunImpl() {
+bool GetFontFunction::RunImpl() {
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 
@@ -225,7 +224,7 @@ bool GetFontNameFunction::RunImpl() {
   return true;
 }
 
-bool SetFontNameFunction::RunImpl() {
+bool SetFontFunction::RunImpl() {
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 

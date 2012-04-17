@@ -61,7 +61,7 @@ function getFontChangeHandler(fontList, genericFamily) {
     if (script != DEFAULT_SCRIPT)
       details.script = script;
 
-    chrome.experimental.fontSettings.setFontName(details);
+    chrome.experimental.fontSettings.setFont(details);
   };
 }
 
@@ -82,8 +82,8 @@ function setSelectedFont(fontList, fontName) {
 }
 
 // Returns a callback function that sets the selected value of |list| to the
-// font returned from |chrome.experimental.fontSettings.getFontName|.
-function getFontNameHandler(list) {
+// font returned from |chrome.experimental.fontSettings.getFont|.
+function getFontHandler(list) {
   return function(details) {
     setSelectedFont(list, details.fontName);
   };
@@ -102,8 +102,8 @@ function updateListSelections() {
     if (script != DEFAULT_SCRIPT)
       details.script = script;
 
-    chrome.experimental.fontSettings.getFontName(details,
-                                                 getFontNameHandler(list));
+    chrome.experimental.fontSettings.getFont(details,
+                                             getFontHandler(list));
   }
 }
 
