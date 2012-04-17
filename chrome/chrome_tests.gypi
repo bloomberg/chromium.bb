@@ -1623,6 +1623,7 @@
         'browser/profiles/profile_info_util_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
         'browser/protector/composite_settings_change_unittest.cc',
+        'browser/protector/homepage_change_unittest.cc',
         'browser/protector/prefs_backup_invalid_change_unittest.cc',
         'browser/protector/protected_prefs_watcher_unittest.cc',
         'browser/protector/session_startup_change_unittest.cc',

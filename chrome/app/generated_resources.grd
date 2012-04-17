@@ -1295,10 +1295,16 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         Arrr! Something tried to commandeer your home page!
       </message>
       <message name="IDS_KEEP_HOMEPAGE" desc="The title of the button that confirms staying with the previous home page setting.">
-        Keep using <ph name="PREV_HOMEPAGE">$1<ex>My Awesome Blog</ex></ph>
+        Keep using <ph name="PREV_HOMEPAGE">$1<ex>google.com</ex></ph>
+      </message>
+      <message name="IDS_KEEP_HOMEPAGE_NTP" desc="The title of the button that confirms staying with the previous home page setting, which is opening the New Tab page.">
+        Keep using New Tab page
       </message>
       <message name="IDS_CHANGE_HOMEPAGE" desc="The title of the button that accepts new home page setting.">
-        Change to <ph name="NEW_HOMEPAGE">$1<ex>My Awesome Blog</ex></ph>
+        Change to <ph name="NEW_HOMEPAGE">$1<ex>google.com</ex></ph>
+      </message>
+      <message name="IDS_CHANGE_HOMEPAGE_NTP" desc="The title of the button that accepts new home page setting, which is opening the New Tab page.">
+        Change to New Tab page
       </message>
       <message name="IDS_CHANGE_HOMEPAGE_NO_NAME" desc="The title of the button that accepts new home page setting when the home page title is too long.">
         Change home page

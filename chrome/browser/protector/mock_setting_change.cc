@@ -32,6 +32,8 @@ MockSettingChange::MockSettingChange() {
 
   ON_CALL(*this, GetNewSettingURL()).WillByDefault(Return(GURL()));
   ON_CALL(*this, CanBeMerged()).WillByDefault(Return(false));
+
+  ON_CALL(*this, IsUserVisible()).WillByDefault(Return(true));
 }
 
 MockSettingChange::~MockSettingChange() {

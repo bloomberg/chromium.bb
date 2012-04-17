@@ -1584,9 +1584,7 @@ void BrowserInit::LaunchWithProfile::CheckPreferencesBackup(Profile* profile) {
 
   // Check if backup is valid.
   if (!prefs_watcher->is_backup_valid()) {
-    scoped_ptr<BaseSettingChange> change(
-        protector::CreatePrefsBackupInvalidChange());
-    protector_service->ShowChange(change.release());
+    protector_service->ShowChange(protector::CreatePrefsBackupInvalidChange());
     // Further checks make no sense.
     return;
   }
@@ -1599,13 +1597,39 @@ void BrowserInit::LaunchWithProfile::CheckPreferencesBackup(Profile* profile) {
     PinnedTabCodec::Tabs new_tabs = PinnedTabCodec::ReadPinnedTabs(profile);
     const base::Value* tabs_backup =
         prefs_watcher->GetBackupForPref(prefs::kPinnedTabs);
-    scoped_ptr<BaseSettingChange> change(
-        protector::CreateSessionStartupChange(
-            new_pref,
-            new_tabs,
-            SessionStartupPref::GetStartupPrefBackup(profile),
-            PinnedTabCodec::ReadPinnedTabs(tabs_backup)));
-    protector_service->ShowChange(change.release());
+    protector_service->ShowChange(protector::CreateSessionStartupChange(
+        new_pref,
+        new_tabs,
+        SessionStartupPref::GetStartupPrefBackup(profile),
+        PinnedTabCodec::ReadPinnedTabs(tabs_backup)));
+  }
+
+  // Check for homepage changes.
+  if (prefs_watcher->DidPrefChange(prefs::kHomePage) ||
+      prefs_watcher->DidPrefChange(prefs::kHomePageIsNewTabPage) ||
+      prefs_watcher->DidPrefChange(prefs::kShowHomeButton)) {
+    LOG(WARNING) << "Homepage has changed";
+    PrefService* prefs = profile->GetPrefs();
+    std::string backup_homepage;
+    bool backup_homepage_is_ntp;
+    bool backup_show_home_button;
+    if (!prefs_watcher->GetBackupForPref(prefs::kHomePage)->
+            GetAsString(&backup_homepage) ||
+        !prefs_watcher->GetBackupForPref(prefs::kHomePageIsNewTabPage)->
+            GetAsBoolean(&backup_homepage_is_ntp) ||
+        !prefs_watcher->GetBackupForPref(prefs::kShowHomeButton)->
+            GetAsBoolean(&backup_show_home_button)) {
+      NOTREACHED();
+    }
+    protector_service->ShowChange(protector::CreateHomepageChange(
+        // New:
+        prefs->GetString(prefs::kHomePage),
+        prefs->GetBoolean(prefs::kHomePageIsNewTabPage),
+        prefs->GetBoolean(prefs::kShowHomeButton),
+        // Backup:
+        backup_homepage,
+        backup_homepage_is_ntp,
+        backup_show_home_button));
   }
 }
 

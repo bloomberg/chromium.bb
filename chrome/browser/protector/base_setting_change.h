@@ -108,6 +108,11 @@ class BaseSettingChange {
   // Returns true if this change can be merged with other changes.
   virtual bool CanBeMerged() const;
 
+  // Returns |false| if this change is not user-visible. It won't be presented
+  // to user on it's own then, but may be merged with other changes and applied
+  // or discarded.
+  virtual bool IsUserVisible() const;
+
  protected:
   // Profile instance we've been associated with by an |Init| call.
   Profile* profile() { return profile_; }
@@ -121,6 +126,7 @@ class BaseSettingChange {
 // Display name priorities of various change types:
 extern const size_t kDefaultSearchProviderChangeNamePriority;
 extern const size_t kSessionStartupChangeNamePriority;
+extern const size_t kHomepageChangeNamePriority;
 
 // TODO(ivankr): CompositeSettingChange that incapsulates multiple
 // BaseSettingChange instances.
@@ -141,6 +147,14 @@ BaseSettingChange* CreateSessionStartupChange(
     const PinnedTabCodec::Tabs& actual_pinned_tabs,
     const SessionStartupPref& backup_startup_pref,
     const PinnedTabCodec::Tabs& backup_pinned_tabs);
+
+BaseSettingChange* CreateHomepageChange(
+    const std::string& actual_homepage,
+    bool actual_homepage_is_ntp,
+    bool actual_show_homepage,
+    const std::string& backup_homepage,
+    bool backup_homepage_is_ntp,
+    bool backup_show_homepage);
 
 // Allocates and initializes BaseSettingChange implementation for an unknown
 // preferences change with invalid backup.

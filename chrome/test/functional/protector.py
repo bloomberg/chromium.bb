@@ -180,6 +180,20 @@ class BaseProtectorTest(pyauto.PyUITest):
       prefs['pinned_tabs'].append({'url': tab})
     self._WritePreferences(prefs)
 
+  def _ChangeHomepage(self, homepage, homepage_is_ntp, show_homepage_button):
+    """Changes homepage settings.
+
+    Args:
+      homepage: new homepage URL (str),
+      homepage_is_ntp: whether homepage is NTP.
+      show_homepage_button: whether homepage button is visible.
+    """
+    prefs = self._LoadPreferences()
+    prefs['homepage'] = homepage
+    prefs['homepage_is_newtabpage'] = homepage_is_ntp
+    prefs['browser']['show_home_button'] = show_homepage_button
+    self._WritePreferences(prefs)
+
   def _AssertSingleTabOpen(self, url):
     """Asserts that a single tab with given url is open.
 
@@ -399,7 +413,7 @@ class ProtectorSessionStartupTest(BaseProtectorTest):
     # No longer showing the change.
     self.assertFalse(self.GetProtectorState()['showing_change'])
 
-  def testDetectSessionStartupChangeAndApply(self):
+  def testDetectSessionStartupChangeAndDiscard(self):
     """Test for detecting and discarding a session startup pref change."""
     # Set startup prefs to restoring last open tabs.
     self.SetPrefs(pyauto.kRestoreOnStartup, self._SESSION_STARTUP_LAST)
@@ -528,6 +542,74 @@ class ProtectorSessionStartupTest(BaseProtectorTest):
     self.assertFalse(self.GetProtectorState()['showing_change'])
 
 
+class ProtectorHomepageTest(BaseProtectorTest):
+  """Test suite for homepage changes with Protector enabled."""
+
+  def testDetectHomepageChangeWhenButtonNotShown(self):
+    """Test that homepage change is detected and reverted when homepage button
+    is set to not be shown.
+    """
+    previous_homepage = 'http://example.com/'
+    self.SetPrefs(pyauto.kHomePage, previous_homepage)
+    self.SetPrefs(pyauto.kHomePageIsNewTabPage, False)
+    self.SetPrefs(pyauto.kShowHomeButton, False)
+    self.RestartBrowser(
+        clear_profile=False,
+        pre_launch_hook=lambda: self._ChangeHomepage(
+            'http://example.info/', False, False))
+    # Change has been automatically reverted, no bubble shown.
+    self.assertFalse(self.GetProtectorState()['showing_change'])
+    self.assertEquals(previous_homepage,
+                      self.GetPrefsInfo().Prefs(pyauto.kHomePage))
+
+  def testDetectHomepageChangeAndApply(self):
+    """Test that homepage change is detected and can be applied."""
+    previous_homepage = 'http://example.com/'
+    new_homepage = 'http://example.info/'
+    self.SetPrefs(pyauto.kHomePage, previous_homepage)
+    self.SetPrefs(pyauto.kHomePageIsNewTabPage, False)
+    self.SetPrefs(pyauto.kShowHomeButton, False)
+    self.RestartBrowser(
+        clear_profile=False,
+        pre_launch_hook=lambda: self._ChangeHomepage(new_homepage, False, True))
+    # The change must be detected by Protector.
+    self.assertTrue(self.GetProtectorState()['showing_change'])
+    # Protector must restore old preference values.
+    self.assertEquals(previous_homepage,
+                      self.GetPrefsInfo().Prefs(pyauto.kHomePage))
+    self.assertEquals(False, self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
+    self.ApplyProtectorChange()
+    # Now new values are active.
+    self.assertEquals(new_homepage, self.GetPrefsInfo().Prefs(pyauto.kHomePage))
+    self.assertEquals(True, self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
+    # No longer showing the change
+    self.assertFalse(self.GetProtectorState()['showing_change'])
+
+  def testDetectHomepageChangeAndDiscard(self):
+    """Test that homepage change is detected and can be discarded."""
+    previous_homepage = 'http://example.com/'
+    new_homepage = 'http://example.info/'
+    self.SetPrefs(pyauto.kHomePage, previous_homepage)
+    self.SetPrefs(pyauto.kHomePageIsNewTabPage, False)
+    self.SetPrefs(pyauto.kShowHomeButton, False)
+    self.RestartBrowser(
+        clear_profile=False,
+        pre_launch_hook=lambda: self._ChangeHomepage(new_homepage, False, True))
+    # The change must be detected by Protector.
+    self.assertTrue(self.GetProtectorState()['showing_change'])
+    # Protector must restore old preference values.
+    self.assertEquals(previous_homepage,
+                      self.GetPrefsInfo().Prefs(pyauto.kHomePage))
+    self.assertEquals(False, self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
+    self.DiscardProtectorChange()
+    # Nothing changed
+    self.assertEquals(previous_homepage,
+                      self.GetPrefsInfo().Prefs(pyauto.kHomePage))
+    self.assertEquals(False, self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
+    # No longer showing the change
+    self.assertFalse(self.GetProtectorState()['showing_change'])
+
+
 class ProtectorDisabledTest(BaseProtectorTest):
   """Test suite for Protector in disabled state."""
 
@@ -605,6 +687,21 @@ class ProtectorDisabledTest(BaseProtectorTest):
     self.assertEqual(1, len(info['windows']))  # one window
     self.assertEqual(1, len(info['windows'][0]['tabs']))  # one tab
     self.assertEqual(new_url, info['windows'][0]['tabs'][0]['url'])
+
+  def testNoHomepageChangeReported(self):
+    """Test that homepage change is neither reported nor reverted."""
+    new_homepage = 'http://example.info/'
+    self.SetPrefs(pyauto.kHomePage, 'http://example.com/')
+    self.SetPrefs(pyauto.kHomePageIsNewTabPage, False)
+    self.SetPrefs(pyauto.kShowHomeButton, False)
+    self.RestartBrowser(
+        clear_profile=False,
+        pre_launch_hook=lambda: self._ChangeHomepage(new_homepage, False, True))
+    # Not showing the change.
+    self.assertFalse(self.GetProtectorState()['showing_change'])
+    # New values must be active.
+    self.assertEquals(new_homepage, self.GetPrefsInfo().Prefs(pyauto.kHomePage))
+    self.assertEquals(True, self.GetPrefsInfo().Prefs(pyauto.kShowHomeButton))
 
 
 if __name__ == '__main__':

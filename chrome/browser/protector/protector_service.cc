@@ -72,7 +72,7 @@ void ProtectorService::ShowChange(BaseSettingChange* change) {
     // Remove old GlobalError instance. Later in OnRemovedFromProfile() a new
     // GlobalError instance will be created for the composite change.
     item_to_merge_with->error->RemoveFromProfile();
-  } else {
+  } else if (change->IsUserVisible()) {
     Item new_item;
     SettingsChangeGlobalError* error =
         new SettingsChangeGlobalError(change_ptr.get(), this);
@@ -82,6 +82,8 @@ void ProtectorService::ShowChange(BaseSettingChange* change) {
     // Do not show the bubble immediately if another one is active.
     error->AddToProfile(profile_, !has_active_change_);
     has_active_change_ = true;
+  } else {
+    VLOG(1) << "Not showing a change because it's not user-visible.";
   }
 }
 

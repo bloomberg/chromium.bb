@@ -9,10 +9,9 @@
 
 namespace protector {
 
-// static
 const size_t kDefaultSearchProviderChangeNamePriority = 100U;
-// static
 const size_t kSessionStartupChangeNamePriority = 50U;
+const size_t kHomepageChangeNamePriority = 10U;
 
 // static
 const size_t BaseSettingChange::kDefaultNamePriority = 0U;
@@ -68,6 +67,10 @@ GURL BaseSettingChange::GetNewSettingURL() const {
 bool BaseSettingChange::CanBeMerged() const {
   // By default change can be collapsed if it has a non-empty keyword.
   return !GetNewSettingURL().is_empty();
+}
+
+bool BaseSettingChange::IsUserVisible() const {
+  return true;
 }
 
 }  // namespace protector

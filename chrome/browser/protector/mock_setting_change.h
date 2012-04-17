@@ -38,6 +38,8 @@ class MockSettingChange : public BaseSettingChange {
 
   MOCK_CONST_METHOD0(GetNewSettingURL, GURL());
   MOCK_CONST_METHOD0(CanBeMerged, bool());
+
+  MOCK_CONST_METHOD0(IsUserVisible, bool());
 };
 
 }  // namespace protector

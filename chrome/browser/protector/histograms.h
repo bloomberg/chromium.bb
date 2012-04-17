@@ -61,6 +61,16 @@ extern const char kProtectorHistogramStartupSettingsDiscarded[];
 // Histogram name to report when user ignores startup settings change.
 extern const char kProtectorHistogramStartupSettingsTimeout[];
 
+// Histogram name to report when user accepts new homepage.
+extern const char kProtectorHistogramHomepageApplied[];
+// Histogram name to report the new homepage when the backup is valid and a
+// change is detected.
+extern const char kProtectorHistogramHomepageChanged[];
+// Histogram name to report when user keeps previous homepage.
+extern const char kProtectorHistogramHomepageDiscarded[];
+// Histogram name to report when user ignores homepage change.
+extern const char kProtectorHistogramHomepageTimeout[];
+
 // Maximum value of search provider index in histogram enums.
 extern const int kProtectorMaxSearchProviderID;
 
