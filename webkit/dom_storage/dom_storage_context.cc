@@ -23,10 +23,12 @@ DomStorageContext::UsageInfo::UsageInfo() : data_size(0) {}
 DomStorageContext::UsageInfo::~UsageInfo() {}
 
 DomStorageContext::DomStorageContext(
-    const FilePath& directory,
+    const FilePath& localstorage_directory,
+    const FilePath& sessionstorage_directory,
     quota::SpecialStoragePolicy* special_storage_policy,
     DomStorageTaskRunner* task_runner)
-    : directory_(directory),
+    : localstorage_directory_(localstorage_directory),
+      sessionstorage_directory_(sessionstorage_directory),
       task_runner_(task_runner),
       is_shutdown_(false),
       clear_local_state_(false),
@@ -48,15 +50,15 @@ DomStorageNamespace* DomStorageContext::GetStorageNamespace(
   StorageNamespaceMap::iterator found = namespaces_.find(namespace_id);
   if (found == namespaces_.end()) {
     if (namespace_id == kLocalStorageNamespaceId) {
-      if (!directory_.empty()) {
-        if (!file_util::CreateDirectory(directory_)) {
+      if (!localstorage_directory_.empty()) {
+        if (!file_util::CreateDirectory(localstorage_directory_)) {
           LOG(ERROR) << "Failed to create 'Local Storage' directory,"
                         " falling back to in-memory only.";
-          directory_ = FilePath();
+          localstorage_directory_ = FilePath();
         }
       }
       DomStorageNamespace* local =
-          new DomStorageNamespace(directory_, task_runner_);
+          new DomStorageNamespace(localstorage_directory_, task_runner_);
       namespaces_[kLocalStorageNamespaceId] = local;
       return local;
     }
@@ -67,9 +69,10 @@ DomStorageNamespace* DomStorageContext::GetStorageNamespace(
 
 void DomStorageContext::GetUsageInfo(std::vector<UsageInfo>* infos,
                                      bool include_file_info) {
-  if (directory_.empty())
+  if (localstorage_directory_.empty())
     return;
-  FileEnumerator enumerator(directory_, false, FileEnumerator::FILES);
+  FileEnumerator enumerator(localstorage_directory_, false,
+                            FileEnumerator::FILES);
   for (FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     if (path.MatchesExtension(DomStorageArea::kDatabaseFileExtension)) {
@@ -121,7 +124,7 @@ void DomStorageContext::Shutdown() {
   for (; it != namespaces_.end(); ++it)
     it->second->Shutdown();
 
-  if (directory_.empty())
+  if (localstorage_directory_.empty())
     return;
 
   // Respect the content policy settings about what to
@@ -225,7 +228,7 @@ void DomStorageContext::ClearLocalStateInCommitSequence() {
       continue;
 
     const bool kNotRecursive = false;
-    FilePath database_file_path = directory_.Append(
+    FilePath database_file_path = localstorage_directory_.Append(
         DomStorageArea::DatabaseFileNameFromOrigin(origin));
     file_util::Delete(database_file_path, kNotRecursive);
     file_util::Delete(

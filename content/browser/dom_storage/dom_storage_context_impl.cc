@@ -65,7 +65,8 @@ void GetAllStorageFilesHelper(
   std::vector<FilePath> paths;
   for (size_t i = 0; i < infos.size(); ++i) {
     paths.push_back(
-        OriginToFullFilePath(context->directory(), infos[i].origin));
+        OriginToFullFilePath(context->localstorage_directory(),
+                             infos[i].origin));
   }
 
   reply_loop->PostTask(
@@ -80,9 +81,12 @@ DOMStorageContextImpl::DOMStorageContextImpl(
     const FilePath& data_path,
     quota::SpecialStoragePolicy* special_storage_policy) {
   base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
+  // TODO(marja): Pass a nonempty session storage directory when session storage
+  // is backed on disk.
   context_ = new dom_storage::DomStorageContext(
       data_path.empty() ?
           data_path : data_path.AppendASCII(kLocalStorageDirectory),
+      FilePath(),  // Empty session storage directory.
       special_storage_policy,
       new DomStorageWorkerPoolTaskRunner(
           worker_pool,
@@ -107,7 +111,8 @@ void DOMStorageContextImpl::GetAllStorageFiles(
 
 FilePath DOMStorageContextImpl::GetFilePath(const string16& origin_id) const {
   DCHECK(context_);
-  return OriginToFullFilePath(context_->directory(), OriginIdToGURL(origin_id));
+  return OriginToFullFilePath(context_->localstorage_directory(),
+                              OriginIdToGURL(origin_id));
 }
 
 void DOMStorageContextImpl::DeleteForOrigin(const string16& origin_id) {

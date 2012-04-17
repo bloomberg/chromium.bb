@@ -192,7 +192,7 @@ SimpleDomStorageSystem* SimpleDomStorageSystem::g_instance_;
 
 SimpleDomStorageSystem::SimpleDomStorageSystem()
     : weak_factory_(this),
-      context_(new DomStorageContext(FilePath(), NULL, NULL)),
+      context_(new DomStorageContext(FilePath(), FilePath(), NULL, NULL)),
       host_(new DomStorageHost(context_)) {
   DCHECK(!g_instance_);
   g_instance_ = this;

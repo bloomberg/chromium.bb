@@ -88,10 +88,22 @@ class DomStorageContext
     virtual ~EventObserver() {}
   };
 
-  DomStorageContext(const FilePath& directory,  // empty for incognito profiles
-                    quota::SpecialStoragePolicy* special_storage_policy,
-                    DomStorageTaskRunner* task_runner);
-  const FilePath& directory() const { return directory_; }
+  DomStorageContext(
+      const FilePath& localstorage_directory,  // empty for incognito profiles
+      const FilePath& sessionstorage_directory,  // empty for incognito profiles
+      quota::SpecialStoragePolicy* special_storage_policy,
+      DomStorageTaskRunner* task_runner);
+
+  // Returns the directory path for localStorage, or an empty directory, if
+  // there is no backing on disk.
+  const FilePath& localstorage_directory() { return localstorage_directory_; }
+
+  // Returns the directory path for sessionStorage, or an empty directory, if
+  // there is no backing on disk.
+  const FilePath& sessionstorage_directory() {
+    return sessionstorage_directory_;
+  }
+
   DomStorageTaskRunner* task_runner() const { return task_runner_; }
   DomStorageNamespace* GetStorageNamespace(int64 namespace_id);
 
@@ -161,7 +173,12 @@ class DomStorageContext
   StorageNamespaceMap namespaces_;
 
   // Where localstorage data is stored, maybe empty for the incognito use case.
-  FilePath directory_;
+  FilePath localstorage_directory_;
+
+  // Where sessionstorage data is stored, maybe empty for the incognito use
+  // case. Always empty until the file-backed session storage feature is
+  // implemented.
+  FilePath sessionstorage_directory_;
 
   // Used to schedule sequenced background tasks.
   scoped_refptr<DomStorageTaskRunner> task_runner_;
