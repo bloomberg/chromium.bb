@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ pp::Module* Module::Get() {
   return g_module_singleton;
 }
 
-void SetBrokerGetIntefaceFunc(PP_GetInterface_Func broker_get_interface) {
+void SetBrokerGetInterfaceFunc(PP_GetInterface_Func broker_get_interface) {
   g_broker_get_interface = broker_get_interface;
 }
 
