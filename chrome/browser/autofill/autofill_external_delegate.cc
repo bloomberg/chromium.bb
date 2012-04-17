@@ -12,19 +12,11 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::RenderViewHost;
-
-namespace {
-
-// The value to give as the unique id for all warnings.
-const int kWarningId = -1;
-
-// The value to give as the unique id for all password entries.
-const int kPasswordEntryId = -2;
-
-}  // namespace
+using WebKit::WebAutofillClient;
 
 AutofillExternalDelegate::~AutofillExternalDelegate() {
 }
@@ -51,7 +43,7 @@ void AutofillExternalDelegate::SelectAutofillSuggestionAtIndex(int unique_id,
 
   if (list_index == suggestions_options_index_ ||
       list_index == suggestions_clear_index_ ||
-      unique_id == kWarningId)
+      unique_id == WebAutofillClient::MenuItemIDWarningMessage)
     return;
 
   FillAutofillFormData(unique_id, true);
@@ -97,7 +89,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     v.assign(1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
     l.assign(1, string16());
     i.assign(1, string16());
-    ids.assign(1, kWarningId);
+    ids.assign(1, WebAutofillClient::MenuItemIDWarningMessage);
   } else if (ids[0] < 0 && ids.size() > 1) {
     // If we received a warning instead of suggestions from autofill but regular
     // suggestions from autocomplete, don't show the autofill warning.
@@ -166,7 +158,8 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
   SetBounds(bounds);
 
   std::vector<string16> empty(suggestions.size());
-  std::vector<int> password_ids(suggestions.size(), kPasswordEntryId);
+  std::vector<int> password_ids(suggestions.size(),
+                                WebAutofillClient::MenuItemIDPasswordEntry);
   ApplyAutofillSuggestions(suggestions, empty, empty, password_ids, -1);
 }
 
@@ -179,7 +172,7 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
     int unique_id,
     unsigned index) {
   // If the selected element is a warning we don't want to do anything.
-  if (unique_id == kWarningId)
+  if (unique_id == WebAutofillClient::MenuItemIDWarningMessage)
     return false;
 
   if (suggestions_options_index_ != -1 &&

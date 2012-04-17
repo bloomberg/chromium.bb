@@ -15,13 +15,15 @@
 #include "content/public/renderer/render_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeCollection.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebOptionElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/forms/form_data.h"
@@ -29,12 +31,15 @@
 #include "webkit/forms/form_field.h"
 #include "webkit/forms/password_form.h"
 
+using WebKit::WebAutofillClient;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebNode;
+using WebKit::WebNodeCollection;
+using WebKit::WebOptionElement;
 using WebKit::WebString;
 using webkit::forms::FormData;
 using webkit::forms::FormDataPredictions;
@@ -44,6 +49,30 @@ namespace {
 // The size above which we stop triggering autofill for an input text field
 // (so to avoid sending long strings through IPC).
 const size_t kMaximumTextSizeForAutofill = 1000;
+
+void AppendDataListSuggestions(const WebKit::WebInputElement& element,
+                               std::vector<string16>* values,
+                               std::vector<string16>* labels,
+                               std::vector<string16>* icons,
+                               std::vector<int>* item_ids) {
+  WebNodeCollection options = element.dataListOptions();
+  if (options.isNull())
+    return;
+
+  for (WebOptionElement option = options.firstItem().to<WebOptionElement>();
+      !option.isNull(); option = options.nextItem().to<WebOptionElement>()) {
+    if (!StartsWith(option.value(), element.value(), false))
+      continue;
+
+    values->push_back(option.value());
+    if (option.value() != option.label())
+      labels->push_back(option.label());
+    else
+      labels->push_back(string16());
+    icons->push_back(string16());
+    item_ids->push_back(WebAutofillClient::MenuItemIDDataListEntry);
+  }
+}
 
 }  // namespace
 
@@ -58,8 +87,6 @@ AutofillAgent::AutofillAgent(
       autofill_action_(AUTOFILL_NONE),
       display_warning_if_disabled_(false),
       was_query_node_autofilled_(false),
-      suggestions_clear_index_(-1),
-      suggestions_options_index_(-1),
       has_shown_autofill_popup_for_current_edit_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   render_view->GetWebView()->setAutofillClient(this);
@@ -146,53 +173,61 @@ bool AutofillAgent::InputElementLostFocus() {
 void AutofillAgent::didAcceptAutofillSuggestion(const WebNode& node,
                                                 const WebString& value,
                                                 const WebString& label,
-                                                int unique_id,
+                                                int item_id,
                                                 unsigned index) {
   if (password_autofill_manager_->DidAcceptAutofillSuggestion(node, value))
     return;
 
-  DCHECK(node == autofill_query_element_);
+  DCHECK(node == element_);
 
-  if (suggestions_options_index_ != -1 &&
-      index == static_cast<unsigned>(suggestions_options_index_)) {
-    // User selected 'Autofill Options'.
-    Send(new AutofillHostMsg_ShowAutofillDialog(routing_id()));
-  } else if (suggestions_clear_index_ != -1 &&
-             index == static_cast<unsigned>(suggestions_clear_index_)) {
-    // User selected 'Clear form'.
-    form_cache_.ClearFormWithElement(autofill_query_element_);
-  } else if (!unique_id) {
-    // User selected an Autocomplete entry, so we fill directly.
-    WebInputElement element = node.toConst<WebInputElement>();
-    SetNodeText(value, &element);
-  } else {
-    // Fill the values for the whole form.
-    FillAutofillFormData(node, unique_id, AUTOFILL_FILL);
+  switch (item_id) {
+    case WebAutofillClient::MenuItemIDWarningMessage:
+    case WebAutofillClient::MenuItemIDSeparator:
+      NOTREACHED();
+      break;
+    case WebAutofillClient::MenuItemIDAutofillOptions:
+      // User selected 'Autofill Options'.
+      Send(new AutofillHostMsg_ShowAutofillDialog(routing_id()));
+      break;
+    case WebAutofillClient::MenuItemIDClearForm:
+      // User selected 'Clear form'.
+      form_cache_.ClearFormWithElement(element_);
+      break;
+    case WebAutofillClient::MenuItemIDAutocompleteEntry:
+    case WebAutofillClient::MenuItemIDPasswordEntry:
+    case WebAutofillClient::MenuItemIDDataListEntry:
+      // User selected an Autocomplete or password or datalist entry, so we
+      // fill directly.
+      SetNodeText(value, &element_);
+      break;
+    default:
+      // A positive item_id is a unique id for an autofill (vs. autocomplete)
+      // suggestion.
+      DCHECK_GT(item_id, 0);
+      // Fill the values for the whole form.
+      FillAutofillFormData(node, item_id, AUTOFILL_FILL);
   }
-
-  suggestions_clear_index_ = -1;
-  suggestions_options_index_ = -1;
 }
 
 void AutofillAgent::didSelectAutofillSuggestion(const WebNode& node,
                                                 const WebString& value,
                                                 const WebString& label,
-                                                int unique_id) {
-  DCHECK_GE(unique_id, 0);
+                                                int item_id) {
   if (password_autofill_manager_->DidSelectAutofillSuggestion(node))
     return;
 
   didClearAutofillSelection(node);
-  FillAutofillFormData(node, unique_id, AUTOFILL_PREVIEW);
+
+  if (item_id > 0)
+    FillAutofillFormData(node, item_id, AUTOFILL_PREVIEW);
 }
 
 void AutofillAgent::didClearAutofillSelection(const WebNode& node) {
   if (password_autofill_manager_->DidClearAutofillSelection(node))
     return;
 
-  if (!autofill_query_element_.isNull() && node == autofill_query_element_) {
-    ClearPreviewedFormWithElement(autofill_query_element_,
-                                  was_query_node_autofilled_);
+  if (!element_.isNull() && node == element_) {
+    ClearPreviewedFormWithElement(element_, was_query_node_autofilled_);
   } else {
     // TODO(isherman): There seem to be rare cases where this code *is*
     // reachable: see [ http://crbug.com/96321#c6 ].  Ideally we would
@@ -205,12 +240,6 @@ void AutofillAgent::didClearAutofillSelection(const WebNode& node) {
 
 void AutofillAgent::removeAutocompleteSuggestion(const WebString& name,
                                                  const WebString& value) {
-  // The index of clear & options will have shifted down.
-  if (suggestions_clear_index_ != -1)
-    suggestions_clear_index_--;
-  if (suggestions_options_index_ != -1)
-    suggestions_options_index_--;
-
   Send(new AutofillHostMsg_RemoveAutocompleteEntry(routing_id(), name, value));
 }
 
@@ -233,7 +262,7 @@ void AutofillAgent::textFieldDidChange(const WebInputElement& element) {
 
 void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
   if (password_autofill_manager_->TextDidChangeInTextField(element)) {
-    autofill_query_element_ = element;
+    element_ = element;
     return;
   }
 
@@ -250,7 +279,7 @@ void AutofillAgent::TextFieldDidChangeImpl(const WebInputElement& element) {
 void AutofillAgent::textFieldDidReceiveKeyDown(const WebInputElement& element,
                                                const WebKeyboardEvent& event) {
   if (password_autofill_manager_->TextFieldHandlingKeyDown(element, event)) {
-    autofill_query_element_ = element;
+    element_ = element;
     return;
   }
 
@@ -264,33 +293,27 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
                                           const std::vector<string16>& labels,
                                           const std::vector<string16>& icons,
                                           const std::vector<int>& unique_ids) {
-  WebKit::WebView* web_view = render_view()->GetWebView();
-  if (!web_view || query_id != autofill_query_id_)
+  if (query_id != autofill_query_id_)
     return;
 
-  if (values.empty()) {
-    // No suggestions, any popup currently showing is obsolete.
-    web_view->hidePopups();
+  if (element_.isNull() || !element_.isFocusable())
     return;
-  }
 
   std::vector<string16> v(values);
   std::vector<string16> l(labels);
   std::vector<string16> i(icons);
   std::vector<int> ids(unique_ids);
-  int separator_index = -1;
 
-  DCHECK_GT(ids.size(), 0U);
-  if (!autofill_query_element_.isNull() &&
-      !autofill_query_element_.autoComplete()) {
+  if (!element_.autoComplete() && !v.empty()) {
     // If autofill is disabled and we had suggestions, show a warning instead.
     v.assign(1, l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_FORM_DISABLED));
     l.assign(1, string16());
     i.assign(1, string16());
-    ids.assign(1, -1);
-  } else if (ids[0] < 0 && ids.size() > 1) {
-    // If we received a warning instead of suggestions from autofill but regular
-    // suggestions from autocomplete, don't show the autofill warning.
+    ids.assign(1, WebAutofillClient::MenuItemIDWarningMessage);
+  } else if (ids.size() > 1 &&
+             ids[0] == WebAutofillClient::MenuItemIDWarningMessage) {
+    // If we received an autofill warning plus some autocomplete suggestions,
+    // remove the autofill warning.
     v.erase(v.begin());
     l.erase(l.begin());
     i.erase(i.begin());
@@ -298,8 +321,13 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
   }
 
   // If we were about to show a warning and we shouldn't, don't.
-  if (ids[0] < 0 && !display_warning_if_disabled_)
-    return;
+  if (!display_warning_if_disabled_ && !v.empty() &&
+      ids[0] == WebAutofillClient::MenuItemIDWarningMessage) {
+    v.clear();
+    l.clear();
+    i.clear();
+    ids.clear();
+  }
 
   // Only include "Autofill Options" special menu item if we have Autofill
   // items, identified by |unique_ids| having at least one valid value.
@@ -311,34 +339,72 @@ void AutofillAgent::OnSuggestionsReturned(int query_id,
     }
   }
 
-  // The form has been auto-filled, so give the user the chance to clear the
-  // form.  Append the 'Clear form' menu item.
-  if (has_autofill_item &&
-      FormWithElementIsAutofilled(autofill_query_element_)) {
-    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
+  if (has_autofill_item) {
+    v.push_back(string16());
     l.push_back(string16());
     i.push_back(string16());
-    ids.push_back(0);
-    suggestions_clear_index_ = v.size() - 1;
-    separator_index = v.size() - 1;
-  }
+    ids.push_back(WebAutofillClient::MenuItemIDSeparator);
 
-  if (has_autofill_item) {
+    if (FormWithElementIsAutofilled(element_)) {
+      // The form has been auto-filled, so give the user the chance to clear the
+      // form.  Append the 'Clear form' menu item.
+      v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_CLEAR_FORM_MENU_ITEM));
+      l.push_back(string16());
+      i.push_back(string16());
+      ids.push_back(WebAutofillClient::MenuItemIDClearForm);
+    }
+
     // Append the 'Chrome Autofill options' menu item;
     v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
     l.push_back(string16());
     i.push_back(string16());
-    ids.push_back(0);
-    suggestions_options_index_ = v.size() - 1;
-    separator_index = values.size();
+    ids.push_back(WebAutofillClient::MenuItemIDAutofillOptions);
+  }
+
+  CombineDataListEntriesAndShow(element_, v, l, i, ids, has_autofill_item);
+}
+
+void AutofillAgent::CombineDataListEntriesAndShow(
+    const WebKit::WebInputElement& element,
+    const std::vector<string16>& values,
+    const std::vector<string16>& labels,
+    const std::vector<string16>& icons,
+    const std::vector<int>& item_ids,
+    bool has_autofill_item) {
+  std::vector<string16> v;
+  std::vector<string16> l;
+  std::vector<string16> i;
+  std::vector<int> ids;
+
+  AppendDataListSuggestions(element, &v, &l, &i, &ids);
+
+  // If there are both <datalist> items and Autofill suggestions, add a
+  // separator between them.
+  if (!v.empty() && !values.empty()) {
+    v.push_back(string16());
+    l.push_back(string16());
+    i.push_back(string16());
+    ids.push_back(WebAutofillClient::MenuItemIDSeparator);
+  }
+
+  // Append the Autofill suggestions.
+  v.insert(v.end(), values.begin(), values.end());
+  l.insert(l.end(), labels.begin(), labels.end());
+  i.insert(i.end(), icons.begin(), icons.end());
+  ids.insert(ids.end(), item_ids.begin(), item_ids.end());
+
+  WebKit::WebView* web_view = render_view()->GetWebView();
+  if (!web_view)
+    return;
+
+  if (v.empty()) {
+    // No suggestions, any popup currently showing is obsolete.
+    web_view->hidePopups();
+    return;
   }
 
   // Send to WebKit for display.
-  if (!v.empty() && !autofill_query_element_.isNull() &&
-      autofill_query_element_.isFocusable()) {
-    web_view->applyAutofillSuggestions(
-        autofill_query_element_, v, l, i, ids, separator_index);
-  }
+  web_view->applyAutofillSuggestions(element, v, l, i, ids);
 
   Send(new AutofillHostMsg_DidShowAutofillSuggestions(
       routing_id(),
@@ -351,18 +417,18 @@ void AutofillAgent::OnFormDataFilled(int query_id,
   if (!render_view()->GetWebView() || query_id != autofill_query_id_)
     return;
 
-  was_query_node_autofilled_ = autofill_query_element_.isAutofilled();
+  was_query_node_autofilled_ = element_.isAutofilled();
 
   switch (autofill_action_) {
     case AUTOFILL_FILL:
-      FillForm(form, autofill_query_element_);
+      FillForm(form, element_);
       Send(new AutofillHostMsg_DidFillAutofillFormData(routing_id(),
                                                        base::TimeTicks::Now()));
       break;
     case AUTOFILL_PREVIEW:
-      didClearAutofillSelection(autofill_query_element_);
+      didClearAutofillSelection(element_);
 
-      PreviewForm(form, autofill_query_element_);
+      PreviewForm(form, element_);
       Send(new AutofillHostMsg_DidPreviewAutofillFormData(routing_id()));
       break;
     default:
@@ -389,7 +455,7 @@ void AutofillAgent::OnSetAutofillActionFill() {
 }
 
 void AutofillAgent::OnClearForm() {
-  form_cache_.ClearFormWithElement(autofill_query_element_);
+  form_cache_.ClearFormWithElement(element_);
 }
 
 void AutofillAgent::OnSetAutofillActionPreview() {
@@ -397,11 +463,11 @@ void AutofillAgent::OnSetAutofillActionPreview() {
 }
 
 void AutofillAgent::OnClearPreviewedForm() {
-  didClearAutofillSelection(autofill_query_element_);
+  didClearAutofillSelection(element_);
 }
 
 void AutofillAgent::OnSetNodeText(const string16& value) {
-  SetNodeText(value, &autofill_query_element_);
+  SetNodeText(value, &element_);
 }
 
 void AutofillAgent::OnAcceptPasswordAutofillSuggestion(const string16& value) {
@@ -409,7 +475,7 @@ void AutofillAgent::OnAcceptPasswordAutofillSuggestion(const string16& value) {
   // skipped it handling because it believed it would be handled here. If it
   // isn't handled here then the browser logic needs to be updated.
   bool handled = password_autofill_manager_->DidAcceptAutofillSuggestion(
-      autofill_query_element_,
+      element_,
       value);
   DCHECK(handled);
 }
@@ -418,20 +484,8 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
                                     bool autofill_on_empty_values,
                                     bool requires_caret_at_end,
                                     bool display_warning_if_disabled) {
-  // If autocomplete is disabled at the form level, then we might want to show
-  // a warning in place of suggestions. However, if autocomplete is disabled
-  // specifically for this field, we never want to show a warning. Otherwise,
-  // we might interfere with custom popups (e.g. search suggestions) used by
-  // the website.
-  const WebFormElement form = element.form();
-  if (!element.isEnabled() || element.isReadOnly() ||
-      (!element.autoComplete() && (form.isNull() || form.autoComplete())) ||
-      !element.isTextField() || element.isPasswordField() ||
-      !element.suggestedValue().isEmpty())
-    return;
-
-  // If the field has no name, then we won't have values.
-  if (element.nameForAutofill().isEmpty())
+  if (!element.isEnabled() || element.isReadOnly() || !element.isTextField() ||
+      element.isPasswordField() || !element.suggestedValue().isEmpty())
     return;
 
   // Don't attempt to autofill with values that are too large or if filling
@@ -450,6 +504,23 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
     return;
   }
 
+  element_ = element;
+
+  // If autocomplete is disabled at the form level, then we might want to show
+  // a warning in place of suggestions. However, if autocomplete is disabled
+  // specifically for this field, we never want to show a warning. Otherwise,
+  // we might interfere with custom popups (e.g. search suggestions) used by
+  // the website. Also, if the field has no name, then we won't have values.
+  const WebFormElement form = element.form();
+  if ((!element.autoComplete() && (form.isNull() || form.autoComplete())) ||
+      element.nameForAutofill().isEmpty()) {
+    CombineDataListEntriesAndShow(element, std::vector<string16>(),
+                                  std::vector<string16>(),
+                                  std::vector<string16>(),
+                                  std::vector<int>(), false);
+    return;
+  }
+
   QueryAutofillSuggestions(element, display_warning_if_disabled);
 }
 
@@ -457,7 +528,6 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
                                              bool display_warning_if_disabled) {
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
-  autofill_query_element_ = element;
   display_warning_if_disabled_ = display_warning_if_disabled;
 
   webkit::forms::FormData form;
@@ -469,7 +539,7 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
     WebFormControlElementToFormField(element, EXTRACT_VALUE, &field);
   }
 
-  gfx::Rect bounding_box(autofill_query_element_.boundsInViewportSpace());
+  gfx::Rect bounding_box(element_.boundsInViewportSpace());
 
   Send(new AutofillHostMsg_QueryFormFieldAutofill(routing_id(),
                                                   autofill_query_id_,
@@ -482,6 +552,8 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
 void AutofillAgent::FillAutofillFormData(const WebNode& node,
                                          int unique_id,
                                          AutofillAction action) {
+  DCHECK_GT(unique_id, 0);
+
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
 

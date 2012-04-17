@@ -84,6 +84,7 @@ TEST_F(ChromeRenderViewTest, SendForms) {
       document.getElementById("firstname").to<WebInputElement>();
 
   // Make sure to query for Autofill suggestions before selecting one.
+  autofill_agent_->element_ = firstname;
   autofill_agent_->QueryAutofillSuggestions(firstname, false);
 
   // Accept suggestion that contains a label.  Labeled items indicate Autofill
@@ -153,6 +154,7 @@ TEST_F(ChromeRenderViewTest, FillFormElement) {
   middlename.setAutofilled(true);
 
   // Make sure to query for Autofill suggestions before selecting one.
+  autofill_agent_->element_ = firstname;
   autofill_agent_->QueryAutofillSuggestions(firstname, false);
 
   // Accept a suggestion in a form that has been auto-filled.  This triggers

@@ -62,6 +62,7 @@
 #include "webkit/forms/form_data_predictions.h"
 #include "webkit/forms/form_field.h"
 #include "webkit/forms/password_form_dom_manager.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 
 using base::TimeTicks;
 using content::BrowserThread;
@@ -480,7 +481,8 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         values.assign(1, l10n_util::GetStringUTF16(warning));
         labels.assign(1, string16());
         icons.assign(1, string16());
-        unique_ids.assign(1, -1);
+        unique_ids.assign(1,
+                          WebKit::WebAutofillClient::MenuItemIDWarningMessage);
       } else {
         bool section_is_autofilled =
             SectionIsAutofilled(*form_structure, form,

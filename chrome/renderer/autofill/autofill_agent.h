@@ -76,12 +76,12 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void didAcceptAutofillSuggestion(const WebKit::WebNode& node,
                                            const WebKit::WebString& value,
                                            const WebKit::WebString& label,
-                                           int unique_id,
+                                           int item_id,
                                            unsigned index) OVERRIDE;
   virtual void didSelectAutofillSuggestion(const WebKit::WebNode& node,
                                            const WebKit::WebString& value,
                                            const WebKit::WebString& label,
-                                           int unique_id) OVERRIDE;
+                                           int item_id) OVERRIDE;
   virtual void didClearAutofillSelection(const WebKit::WebNode& node) OVERRIDE;
   virtual void removeAutocompleteSuggestion(
       const WebKit::WebString& name,
@@ -137,6 +137,13 @@ class AutofillAgent : public content::RenderViewObserver,
   void QueryAutofillSuggestions(const WebKit::WebInputElement& element,
                                 bool display_warning_if_disabled);
 
+  void CombineDataListEntriesAndShow(const WebKit::WebInputElement& element,
+                                     const std::vector<string16>& values,
+                                     const std::vector<string16>& labels,
+                                     const std::vector<string16>& icons,
+                                     const std::vector<int>& item_ids,
+                                     bool has_autofill_item);
+
   // Queries the AutofillManager for form data for the form containing |node|.
   // |value| is the current text in the field, and |unique_id| is the selected
   // profile's unique ID.  |action| specifies whether to Fill or Preview the
@@ -164,7 +171,7 @@ class AutofillAgent : public content::RenderViewObserver,
   int autofill_query_id_;
 
   // The element corresponding to the last request sent for form field Autofill.
-  WebKit::WebInputElement autofill_query_element_;
+  WebKit::WebInputElement element_;
 
   // The action to take when receiving Autofill data from the AutofillManager.
   AutofillAction autofill_action_;
@@ -174,12 +181,6 @@ class AutofillAgent : public content::RenderViewObserver,
 
   // Was the query node autofilled prior to previewing the form?
   bool was_query_node_autofilled_;
-
-  // The menu index of the "Clear" menu item.
-  int suggestions_clear_index_;
-
-  // The menu index of the "Autofill options..." menu item.
-  int suggestions_options_index_;
 
   // Have we already shown Autofill suggestions for the field the user is
   // currently editing?  Used to keep track of state for metrics logging.

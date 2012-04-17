@@ -10,6 +10,7 @@
 #include "chrome/common/autofill_messages.h"
 #include "chrome/renderer/autofill/form_autofill_util.h"
 #include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormElement.h"
@@ -534,9 +535,10 @@ bool PasswordAutofillManager::ShowSuggestionPopup(
 
   std::vector<string16> labels(suggestions.size());
   std::vector<string16> icons(suggestions.size());
-  std::vector<int> ids(suggestions.size(), 0);
+  std::vector<int> ids(suggestions.size(),
+                       WebKit::WebAutofillClient::MenuItemIDPasswordEntry);
   webview->applyAutofillSuggestions(
-      user_input, suggestions, labels, icons, ids, -1);
+      user_input, suggestions, labels, icons, ids);
   return true;
 }
 

@@ -43,6 +43,7 @@
 #include "ui/gfx/rect.h"
 #include "webkit/forms/form_data.h"
 #include "webkit/forms/form_field.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -911,7 +912,8 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
   };
   string16 expected_labels[] = {string16()};
   string16 expected_icons[] = {string16()};
-  int expected_unique_ids[] = {-1};
+  int expected_unique_ids[] =
+      {WebKit::WebAutofillClient::MenuItemIDWarningMessage};
   ExpectSuggestions(page_id, values, labels, icons, unique_ids,
                     kDefaultPageID, arraysize(expected_values), expected_values,
                     expected_labels, expected_icons, expected_unique_ids);
