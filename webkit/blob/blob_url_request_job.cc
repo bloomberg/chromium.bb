@@ -43,10 +43,6 @@ const char kHTTPRequestedRangeNotSatisfiableText[] =
     "Requested Range Not Satisfiable";
 const char kHTTPInternalErrorText[] = "Internal Server Error";
 
-const int kFileOpenFlags = base::PLATFORM_FILE_OPEN |
-                           base::PLATFORM_FILE_READ |
-                           base::PLATFORM_FILE_ASYNC;
-
 }  // namespace
 
 BlobURLRequestJob::BlobURLRequestJob(
@@ -361,12 +357,18 @@ bool BlobURLRequestJob::ReadFileItem(LocalFileReader* reader,
       read_buf_, bytes_to_read,
       base::Bind(&BlobURLRequestJob::DidReadFile,
                  base::Unretained(this)));
-  if (result != net::ERR_IO_PENDING) {
-    DCHECK(result != net::OK);
-    NotifyFailure(result);
-    return false;
+  if (result >= 0) {
+    // Data is immediately available.
+    if (GetStatus().is_io_pending())
+      DidReadFile(result);
+    else
+      AdvanceBytesRead(result);
+    return true;
   }
-  SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+  if (result == net::ERR_IO_PENDING)
+    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+  else
+    NotifyFailure(result);
   return false;
 }
 

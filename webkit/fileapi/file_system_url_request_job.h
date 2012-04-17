@@ -19,11 +19,8 @@
 class GURL;
 class FilePath;
 
-namespace net {
-class FileStream;
-}
-
 namespace webkit_blob {
+class LocalFileReader;
 class ShareableFileReference;
 }
 
@@ -73,7 +70,7 @@ class FileSystemURLRequestJob : public net::URLRequestJob {
   FileSystemContext* file_system_context_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   base::WeakPtrFactory<FileSystemURLRequestJob> weak_factory_;
-  scoped_ptr<net::FileStream> stream_;
+  scoped_ptr<webkit_blob::LocalFileReader> reader_;
   scoped_refptr<webkit_blob::ShareableFileReference> snapshot_ref_;
   bool is_directory_;
   scoped_ptr<net::HttpResponseInfo> response_info_;
