@@ -13,6 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "remoting/base/constants.h"
+#include "remoting/host/constants.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -43,15 +44,15 @@ const int64 kResendDelayMs = 10 * 1000;  // 10 seconds.
 const int64 kResendDelayOnHostNotFoundMs = 10 * 1000; // 10 seconds.
 const int kMaxResendOnHostNotFoundCount = 12;  // 2 minutes (12 x 10 seconds).
 
-const int kExitCodeHostIdInvalid = 100;
-
 }  // namespace
 
 HeartbeatSender::HeartbeatSender(
+    Listener* listener,
     const std::string& host_id,
     SignalStrategy* signal_strategy,
     HostKeyPair* key_pair)
-    : host_id_(host_id),
+    : listener_(listener),
+      host_id_(host_id),
       signal_strategy_(signal_strategy),
       key_pair_(key_pair),
       interval_ms_(kDefaultHeartbeatIntervalMs),
@@ -134,11 +135,8 @@ void HeartbeatSender::ProcessResponse(IqRequest* request,
                               &HeartbeatSender::ResendStanza);
           return;
         }
-        // TODO(lambroslambrou): Trigger an application-defined callback to
-        // shut down the host properly, instead of just exiting here
-        // (http://crbug.com/112160).
-        LOG(ERROR) << "Exit: Host ID not found";
-        exit(kExitCodeHostIdInvalid);
+        listener_->OnUnknownHostIdError();
+        return;
       }
     }
 

@@ -14,22 +14,22 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
+#include "remoting/host/vlog_net_log.h"
 
 namespace remoting {
 
 // TODO(willchan): This is largely copied from service_url_request_context.cc,
 // which is in turn copied from some test code. Move it somewhere reusable.
 URLRequestContext::URLRequestContext(
-    net::ProxyConfigService* proxy_config_service)
+    scoped_ptr<net::ProxyConfigService> proxy_config_service)
     : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
-  net_log_.reset(new VlogNetLog());
-
+  scoped_ptr<VlogNetLog> net_log(new VlogNetLog());
   storage_.set_host_resolver(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                     net::HostResolver::kDefaultRetryAttempts,
-                                    net_log_.get()));
+                                    net_log.get()));
   storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
-      proxy_config_service, 0u, net_log_.get()));
+      proxy_config_service.release(), 0u, net_log.get()));
   storage_.set_cert_verifier(net::CertVerifier::CreateDefault());
   storage_.set_ssl_config_service(new net::SSLConfigServiceDefaults);
   storage_.set_http_auth_handler_factory(
@@ -43,11 +43,12 @@ URLRequestContext::URLRequestContext(
   session_params.ssl_config_service = ssl_config_service();
   session_params.http_auth_handler_factory = http_auth_handler_factory();
   session_params.http_server_properties = http_server_properties();
-  session_params.net_log = net_log_.get();
+  session_params.net_log = net_log.get();
   scoped_refptr<net::HttpNetworkSession> network_session(
       new net::HttpNetworkSession(session_params));
   storage_.set_http_transaction_factory(
       new net::HttpNetworkLayer(network_session));
+  storage_.set_net_log(net_log.release());
 }
 
 URLRequestContext::~URLRequestContext() {
@@ -63,9 +64,10 @@ URLRequestContextGetter::URLRequestContextGetter(
 }
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
-  if (!url_request_context_)
+  if (!url_request_context_) {
     url_request_context_ =
-        new URLRequestContext(proxy_config_service_.get());
+        new URLRequestContext(proxy_config_service_.Pass());
+  }
   return url_request_context_;
 }
 

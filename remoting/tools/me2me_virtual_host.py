@@ -731,14 +731,24 @@ def main():
       logging.info("Host process terminated")
       desktop.host_proc = None
 
-      # The exit-code must match the one used in HeartbeatSender.
-      if os.WEXITSTATUS(status) == 100:
-        logging.info("Host ID has been deleted - exiting.")
-        # Host config is no longer valid.  Delete it, so the next time this
-        # script is run, a new Host ID will be created and registered.
+      # These exit-codes must match the ones used by the host.
+      # See remoting/host/constants.h.
+      # Delete the host or auth configuration depending on the returned error
+      # code, so the next time this script is run, a new configuration
+      # will be created and registered.
+      if os.WEXITSTATUS(status) == 2:
+        logging.info("Host configuration is invalid - exiting.")
+        os.remove(auth.config_file)
         os.remove(host.config_file)
         return 0
-
+      elif os.WEXITSTATUS(status) == 3:
+        logging.info("Host ID has been deleted - exiting.")
+        os.remove(host.config_file)
+        return 0
+      elif os.WEXITSTATUS(status) == 4:
+        logging.info("OAuth credentials are invalid - exiting.")
+        os.remove(auth.config_file)
+        return 0
 
 if __name__ == "__main__":
   logging.basicConfig(level=logging.DEBUG)

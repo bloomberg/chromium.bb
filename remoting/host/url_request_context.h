@@ -14,7 +14,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_storage.h"
-#include "remoting/host/vlog_net_log.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -27,13 +26,13 @@ namespace remoting {
 // remoting Me2Me host process where the profile is not available.
 class URLRequestContext : public net::URLRequestContext {
  public:
-  explicit URLRequestContext(net::ProxyConfigService* net_proxy_config_service);
+  explicit URLRequestContext(
+      scoped_ptr<net::ProxyConfigService> proxy_config_service);
 
  private:
   virtual ~URLRequestContext();
 
   net::URLRequestContextStorage storage_;
-  scoped_ptr<VlogNetLog> net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContext);
 };

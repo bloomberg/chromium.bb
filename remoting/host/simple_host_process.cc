@@ -89,7 +89,7 @@ const char kVideoSwitchValueVp8Rtp[] = "vp8rtp";
 
 namespace remoting {
 
-class SimpleHost {
+class SimpleHost : public HeartbeatSender::Listener {
  public:
   SimpleHost()
       : message_loop_(MessageLoop::TYPE_UI),
@@ -98,6 +98,12 @@ class SimpleHost {
         is_it2me_(false) {
     context_.Start();
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+  }
+
+  // Overridden from HeartbeatSender::Listener
+  virtual void OnUnknownHostIdError() OVERRIDE {
+    LOG(ERROR) << "Host ID not found.";
+    Shutdown();
   }
 
   int Run() {
@@ -244,8 +250,8 @@ class SimpleHost {
           signal_strategy_.get(), &key_pair_,
           base::Bind(&SimpleHost::SetIT2MeAccessCode, host_, &key_pair_)));
     } else {
-      heartbeat_sender_.reset(
-          new HeartbeatSender(host_id_, signal_strategy_.get(), &key_pair_));
+      heartbeat_sender_.reset(new HeartbeatSender(
+          this, host_id_, signal_strategy_.get(), &key_pair_));
     }
 
     host_->Start();
@@ -258,6 +264,10 @@ class SimpleHost {
               *key_pair_.private_key(), host_secret_hash_));
       host_->SetAuthenticatorFactory(factory.Pass());
     }
+  }
+
+  void Shutdown() {
+    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   MessageLoop message_loop_;

@@ -26,6 +26,7 @@
 #include "net/base/network_change_notifier.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/branding.h"
+#include "remoting/host/constants.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -51,9 +52,6 @@
 
 namespace {
 
-const int kSuccessExitCode = 0;
-const int kInvalidHostConfigurationExitCode = 1;
-
 // This is used for tagging system event logs.
 const char kApplicationName[] = "chromoting";
 
@@ -74,12 +72,15 @@ const int kMaxPortNumber = 12409;
 
 namespace remoting {
 
-class HostProcess : public OAuthClient::Delegate {
+class HostProcess
+    : public OAuthClient::Delegate,
+      public HeartbeatSender::Listener {
  public:
   HostProcess()
       : message_loop_(MessageLoop::TYPE_UI),
         allow_nat_traversal_(true),
-        restarting_(false) {
+        restarting_(false),
+        exit_code_(kSuccessExitCode) {
     context_.reset(
         new ChromotingHostContext(message_loop_.message_loop_proxy()));
     context_->Start();
@@ -194,7 +195,7 @@ class HostProcess : public OAuthClient::Delegate {
 #endif
     message_loop_.Run();
 
-    return kSuccessExitCode;
+    return exit_code_;
   }
 
   // Overridden from OAuthClient::Delegate
@@ -217,6 +218,13 @@ class HostProcess : public OAuthClient::Delegate {
 
   virtual void OnOAuthError() OVERRIDE {
     LOG(ERROR) << "OAuth: invalid credentials.";
+    Shutdown(kInvalidOauthCredentialsExitCode);
+  }
+
+  // Overridden from HeartbeatSender::Listener
+  virtual void OnUnknownHostIdError() OVERRIDE {
+    LOG(ERROR) << "Host ID not found.";
+    Shutdown(kInvalidHostIdExitCode);
   }
 
  private:
@@ -335,8 +343,8 @@ class HostProcess : public OAuthClient::Delegate {
         context_.get(), signal_strategy_.get(), desktop_environment_.get(),
         network_settings);
 
-    heartbeat_sender_.reset(
-        new HeartbeatSender(host_id_, signal_strategy_.get(), &key_pair_));
+    heartbeat_sender_.reset(new HeartbeatSender(
+        this, host_id_, signal_strategy_.get(), &key_pair_));
 
     log_to_server_.reset(
         new LogToServer(host_, ServerLogEntry::ME2ME, signal_strategy_.get()));
@@ -371,6 +379,11 @@ class HostProcess : public OAuthClient::Delegate {
     StartHost();
   }
 
+  void Shutdown(int exit_code) {
+    exit_code_ = exit_code;
+    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  }
+
   MessageLoop message_loop_;
   scoped_ptr<ChromotingHostContext> context_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
@@ -402,6 +415,8 @@ class HostProcess : public OAuthClient::Delegate {
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<HostEventLogger> host_event_logger_;
   scoped_refptr<ChromotingHost> host_;
+
+  int exit_code_;
 };
 
 }  // namespace remoting

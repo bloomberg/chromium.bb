@@ -47,8 +47,15 @@ ACTION_P(RemoveListener, list) {
   list->erase(arg0);
 }
 
-class HeartbeatSenderTest : public testing::Test {
+class HeartbeatSenderTest
+    : public testing::Test,
+      public HeartbeatSender::Listener {
  protected:
+  // Overridden from HeartbeatSender::Listener
+  virtual void OnUnknownHostIdError() OVERRIDE {
+    NOTREACHED();
+  }
+
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(key_pair_.LoadFromString(kTestHostKeyPair));
 
@@ -62,7 +69,7 @@ class HeartbeatSenderTest : public testing::Test {
         .WillRepeatedly(Return(kTestJid));
 
     heartbeat_sender_.reset(
-        new HeartbeatSender(kHostId, &signal_strategy_, &key_pair_));
+        new HeartbeatSender(this, kHostId, &signal_strategy_, &key_pair_));
   }
 
   virtual void TearDown() OVERRIDE {

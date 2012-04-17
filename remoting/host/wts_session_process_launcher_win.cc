@@ -27,7 +27,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-
+#include "remoting/host/constants.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/sas_injector.h"
 #include "remoting/host/wts_console_monitor_win.h"
@@ -36,10 +36,6 @@ using base::win::ScopedHandle;
 using base::TimeDelta;
 
 namespace {
-
-// The exit code returned by the host process when its configuration is not
-// valid.
-const int kInvalidHostConfigurationExitCode = 1;
 
 // The minimum and maximum delays between attempts to inject host process into
 // a session.
@@ -352,9 +348,11 @@ void WtsSessionProcessLauncher::OnObjectSignaled(HANDLE object) {
 
   // Stop trying to restart the host if its process exited due to
   // misconfiguration.
-  DWORD exit_code;
-  bool stop_trying = GetExitCodeProcess(process_.handle(), &exit_code) &&
-                     exit_code == kInvalidHostConfigurationExitCode;
+  int exit_code;
+  bool stop_trying =
+      base::WaitForExitCodeWithTimeout(process_.handle(), &exit_code, 0) &&
+      kMinPermanentErrorExitCode <= exit_code &&
+      exit_code <= kMaxPermanentErrorExitCode;
 
   // The host process has been terminated for some reason. The handle can now be
   // closed.

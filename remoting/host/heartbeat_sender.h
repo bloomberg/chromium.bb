@@ -79,10 +79,18 @@ class IqSender;
 //  </iq>
 class HeartbeatSender : public SignalStrategy::Listener {
  public:
-  // |signal_strategy| and |key_pair| must outlive this
+  class Listener {
+   public:
+    virtual ~Listener() { }
+    // Invoked when the host ID is permanently not recognized by the server.
+    virtual void OnUnknownHostIdError() = 0;
+  };
+
+  // |signal_strategy|, |key_pair| and |delegate| must outlive this
   // object. Heartbeats will start when the supplied SignalStrategy
   // enters the CONNECTED state.
-  HeartbeatSender(const std::string& host_id,
+  HeartbeatSender(Listener* listener,
+                  const std::string& host_id,
                   SignalStrategy* signal_strategy,
                   HostKeyPair* key_pair);
   virtual ~HeartbeatSender();
@@ -111,6 +119,7 @@ class HeartbeatSender : public SignalStrategy::Listener {
   scoped_ptr<buzz::XmlElement> CreateHeartbeatMessage();
   scoped_ptr<buzz::XmlElement> CreateSignature();
 
+  Listener* listener_;
   std::string host_id_;
   SignalStrategy* signal_strategy_;
   HostKeyPair* key_pair_;
