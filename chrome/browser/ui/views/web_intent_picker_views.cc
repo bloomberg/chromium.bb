@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/time.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -27,6 +28,7 @@
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "grit/theme_resources.h"
+#include "grit/ui_resources.h"
 #include "grit/ui_resources_standard.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -75,6 +77,9 @@ const SkColor kHalfOpacityWhite = SkColorSetARGB(128, 255, 255, 255);
 
 // The color used to display a disabled link.
 const SkColor kDisabledLinkColor = SkColorSetRGB(128, 128, 128);
+
+// The time between successive throbber frames in milliseconds.
+const int kThrobberFrameTimeMs = 50;
 
 // Enables or disables all child views of |view|.
 void EnableChildViews(views::View* view, bool enabled) {
@@ -125,6 +130,117 @@ StarsView::StarsView(double rating)
 StarsView::~StarsView() {
 }
 
+// ThrobberNativeTextButton ----------------------------------------------------
+
+// A native text button that can display a throbber in place of its icon. Much
+// of the logic of this class is copied from ui/views/controls/throbber.h.
+class ThrobberNativeTextButton : public views::NativeTextButton {
+ public:
+  ThrobberNativeTextButton(views::ButtonListener* listener,
+                           const string16& text);
+  virtual ~ThrobberNativeTextButton();
+
+  // Start or stop the throbber.
+  void StartThrobber();
+  void StopThrobber();
+
+  // Set the throbber bitmap to use. IDR_THROBBER is used by default.
+  void SetFrames(const SkBitmap* frames);
+
+ protected:
+  virtual const SkBitmap& GetImageToPaint() const OVERRIDE;
+
+ private:
+  // The timer callback to schedule painting this view.
+  void Run();
+
+  // Bitmap that contains the throbber frames.
+  const SkBitmap* frames_;
+
+  // The currently displayed frame, given to GetImageToPaint.
+  mutable SkBitmap this_frame_;
+
+  // How long one frame is displayed.
+  base::TimeDelta frame_time_;
+
+  // Used to schedule Run calls.
+  base::RepeatingTimer<ThrobberNativeTextButton> timer_;
+
+  // How many frames we have.
+  int frame_count_;
+
+  // Time when StartThrobber was called.
+  base::TimeTicks start_time_;
+
+  // Whether the throbber is shown an animating.
+  bool running_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThrobberNativeTextButton);
+};
+
+ThrobberNativeTextButton::ThrobberNativeTextButton(
+    views::ButtonListener* listener, const string16& text)
+    : NativeTextButton(listener, text),
+      frame_time_(base::TimeDelta::FromMilliseconds(kThrobberFrameTimeMs)),
+      frame_count_(0),
+      running_(false) {
+  SetFrames(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_THROBBER).ToSkBitmap());
+}
+
+ThrobberNativeTextButton::~ThrobberNativeTextButton() {
+  StopThrobber();
+}
+
+void ThrobberNativeTextButton::StartThrobber() {
+  if (running_)
+    return;
+
+  start_time_ = base::TimeTicks::Now();
+  timer_.Start(FROM_HERE, frame_time_, this, &ThrobberNativeTextButton::Run);
+  running_ = true;
+
+  SchedulePaint();
+}
+
+void ThrobberNativeTextButton::StopThrobber() {
+  if (!running_)
+    return;
+
+  timer_.Stop();
+  running_ = false;
+}
+
+void ThrobberNativeTextButton::SetFrames(const SkBitmap* frames) {
+  frames_ = frames;
+  DCHECK(frames_->width() > 0 && frames_->height() > 0);
+  DCHECK(frames_->width() % frames_->height() == 0);
+  frame_count_ = frames_->width() / frames_->height();
+  PreferredSizeChanged();
+}
+
+const SkBitmap& ThrobberNativeTextButton::GetImageToPaint() const {
+  if (!running_)
+    return NativeTextButton::GetImageToPaint();
+
+  const base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time_;
+  const int current_frame =
+      static_cast<int>(elapsed_time / frame_time_) % frame_count_;
+  const int image_size = frames_->height();
+  const int image_offset = current_frame * image_size;
+
+  SkIRect subset_rect = SkIRect::MakeXYWH(image_offset, 0,
+                                          image_size, image_size);
+  frames_->extractSubset(&this_frame_, subset_rect);
+  return this_frame_;
+}
+
+void ThrobberNativeTextButton::Run() {
+  DCHECK(running_);
+
+  SchedulePaint();
+}
+
 // ServiceButtonsView ----------------------------------------------------------
 
 // A view that contains all service buttons (i.e. the installed services).
@@ -147,6 +263,10 @@ class ServiceButtonsView : public views::View,
 
   // Updates the service button view with new model data.
   void Update();
+
+  // Start a throbber on the service button that will launch the service at
+  // |url|.
+  void StartThrobber(const GURL& url);
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
@@ -194,8 +314,8 @@ void ServiceButtonsView::Update() {
 
     grid_layout->StartRow(0, 0);
 
-    views::NativeTextButton* button =
-        new views::NativeTextButton(this, service.title);
+    ThrobberNativeTextButton* button =
+        new ThrobberNativeTextButton(this, service.title);
     button->set_alignment(views::TextButton::ALIGN_LEFT);
     button->SetTooltipText(UTF8ToUTF16(service.url.spec().c_str()));
     button->SetIcon(*service.favicon.ToSkBitmap());
@@ -206,6 +326,20 @@ void ServiceButtonsView::Update() {
 
   // Additional space to separate the buttons from the suggestions.
   grid_layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+}
+
+void ServiceButtonsView::StartThrobber(const GURL& url) {
+  for (size_t i = 0; i < model_->GetInstalledServiceCount(); ++i) {
+    const WebIntentPickerModel::InstalledService& service =
+        model_->GetInstalledServiceAt(i);
+    if (service.url != url)
+      continue;
+
+    ThrobberNativeTextButton* button =
+        static_cast<ThrobberNativeTextButton*>(child_at(i));
+    button->StartThrobber();
+    return;
+  }
 }
 
 void ServiceButtonsView::ButtonPressed(views::Button* sender,
@@ -351,14 +485,11 @@ class SuggestedExtensionsRowView : public views::View,
   // this extension.
   views::Link* title_link_;
 
-  // A throbber to display when the extension is being installed.
-  views::Throbber* throbber_;
-
   // The star rating of this extension.
   StarsView* stars_;
 
   // A button to install the extension.
-  views::NativeTextButton* install_button_;
+  ThrobberNativeTextButton* install_button_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestedExtensionsRowView);
 };
@@ -380,14 +511,10 @@ SuggestedExtensionsRowView::SuggestedExtensionsRowView(
   title_link_->set_listener(this);
   AddChildView(title_link_);
 
-  throbber_ = new views::Throbber(60, true);
-  throbber_->SetVisible(false);
-  AddChildView(throbber_);
-
   stars_ = new StarsView(extension_->average_rating);
   AddChildView(stars_);
 
-  install_button_= new views::NativeTextButton(
+  install_button_= new ThrobberNativeTextButton(
       this, l10n_util::GetStringUTF16(IDS_INTENT_PICKER_INSTALL_EXTENSION));
   AddChildView(install_button_);
 }
@@ -406,25 +533,20 @@ void SuggestedExtensionsRowView::LinkClicked(views::Link* source,
 }
 
 void SuggestedExtensionsRowView::StartThrobber() {
-  stars_->SetVisible(false);
-  install_button_->SetVisible(false);
-  throbber_->SetVisible(true);
-  throbber_->Start();
-  Layout();
+  install_button_->StartThrobber();
+  install_button_->SetText(string16());
 }
 
 void SuggestedExtensionsRowView::StopThrobber() {
-  stars_->SetVisible(true);
-  install_button_->SetVisible(true);
-  throbber_->SetVisible(false);
-  throbber_->Stop();
-  Layout();
+  install_button_->StopThrobber();
+  install_button_->SetText(
+      l10n_util::GetStringUTF16(IDS_INTENT_PICKER_INSTALL_EXTENSION));
 }
 
 void SuggestedExtensionsRowView::OnEnabledChanged() {
   title_link_->SetEnabled(enabled());
-  stars_->SetVisible(enabled());
-  install_button_->SetVisible(enabled());
+  stars_->SetEnabled(enabled());
+  install_button_->SetEnabled(enabled());
   View::OnEnabledChanged();
   Layout();
 }
@@ -439,8 +561,6 @@ void SuggestedExtensionsRowView::PaintChildren(gfx::Canvas* canvas) {
 
 // A view that contains suggested extensions from the Chrome Web Store that
 // provide an intent service matching the action/type pair.
-// This view also displays the "More suggestions" link which searches the
-// Chrome Web Store for more extensions.
 class SuggestedExtensionsView : public views::View {
  public:
   SuggestedExtensionsView(const WebIntentPickerModel* model,
@@ -459,6 +579,9 @@ class SuggestedExtensionsView : public views::View {
 
   // Hide the install throbber. This function re-enables all buttons and links.
   void StopThrobber();
+
+ protected:
+  virtual void OnEnabledChanged() OVERRIDE;
 
  private:
   const WebIntentPickerModel* model_;
@@ -518,6 +641,11 @@ void SuggestedExtensionsView::StopThrobber() {
   }
 }
 
+void SuggestedExtensionsView::OnEnabledChanged() {
+  EnableChildViews(this, enabled());
+  View::OnEnabledChanged();
+}
+
 }  // namespace
 
 // WebIntentPickerViews --------------------------------------------------------
@@ -557,6 +685,8 @@ class WebIntentPickerViews : public views::ButtonListener,
   virtual void SetActionString(const string16& action) OVERRIDE;
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
+  virtual void OnInlineDispositionWebContentsLoaded(
+      content::WebContents* web_contents) OVERRIDE;
 
   // WebIntentPickerModelObserver implementation.
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;
@@ -625,6 +755,10 @@ class WebIntentPickerViews : public views::ButtonListener,
   // A weak pointer to the choose another service link.
   views::Link* choose_another_service_link_;
 
+  // Set to true when displaying the inline disposition web contents. Used to
+  // prevent laying out the inline disposition widgets twice.
+  bool displaying_web_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerViews);
 };
 
@@ -653,7 +787,8 @@ WebIntentPickerViews::WebIntentPickerViews(Browser* browser,
       contents_(NULL),
       window_(NULL),
       more_suggestions_link_(NULL),
-      choose_another_service_link_(NULL) {
+      choose_another_service_link_(NULL),
+      displaying_web_contents_(false) {
   model_->set_observer(this);
   InitContents();
 
@@ -733,6 +868,74 @@ void WebIntentPickerViews::OnExtensionInstallFailure(const std::string& id) {
   // TODO(binji): What to display to user on failure?
 }
 
+void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
+    content::WebContents* web_contents) {
+  if (displaying_web_contents_)
+    return;
+
+  // Replace the picker with the inline disposition.
+  contents_->RemoveAllChildViews(true);
+
+  views::GridLayout* grid_layout = new views::GridLayout(contents_);
+  contents_->SetLayoutManager(grid_layout);
+
+  grid_layout->SetInsets(kContentAreaBorder, kContentAreaBorder,
+                         kContentAreaBorder, kContentAreaBorder);
+  views::ColumnSet* header_cs = grid_layout->AddColumnSet(0);
+  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                       GridLayout::USE_PREF, 0, 0);  // Icon.
+  header_cs->AddPaddingColumn(0, 4);
+  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                       GridLayout::USE_PREF, 0, 0);  // Title.
+  header_cs->AddPaddingColumn(0, 4);
+  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                       GridLayout::USE_PREF, 0, 0);  // Link.
+  header_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
+#if defined(USE_CLOSE_BUTTON)
+  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                       GridLayout::USE_PREF, 0, 0);  // Close Button.
+#endif
+
+  views::ColumnSet* full_cs = grid_layout->AddColumnSet(1);
+  full_cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
+                     GridLayout::USE_PREF, 0, 0);
+
+  const WebIntentPickerModel::InstalledService* service =
+      model_->GetInstalledServiceWithURL(model_->inline_disposition_url());
+
+  // Header row.
+  grid_layout->StartRow(0, 0);
+  views::ImageView* icon = new views::ImageView();
+  icon->SetImage(service->favicon.ToSkBitmap());
+  grid_layout->AddView(icon);
+
+  string16 elided_title = ui::ElideText(
+      service->title, gfx::Font(), kTitleLinkMaxWidth, ui::ELIDE_AT_END);
+  views::Label* title = new views::Label(elided_title);
+  grid_layout->AddView(title);
+
+  choose_another_service_link_ = new views::Link(
+      l10n_util::GetStringUTF16(IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE));
+  grid_layout->AddView(choose_another_service_link_);
+
+#if defined(USE_CLOSE_BUTTON)
+  grid_layout->AddView(CreateCloseButton());
+#endif
+
+  // Inline web contents row.
+  grid_layout->StartRow(0, 1);
+  TabContentsContainer* tab_contents_container = new TabContentsContainer;
+  grid_layout->AddView(tab_contents_container, 1, 1, GridLayout::CENTER,
+                       GridLayout::CENTER, kDialogMinWidth, 140);
+
+  // The contents can only be changed after the child is added to view
+  // hierarchy.
+  tab_contents_container->ChangeWebContents(web_contents);
+  contents_->Layout();
+  SizeToContents();
+  displaying_web_contents_ = true;
+}
+
 void WebIntentPickerViews::OnModelChanged(WebIntentPickerModel* model) {
   if (model->GetInstalledServiceCount() == 0) {
     suggestions_label_->SetText(l10n_util::GetStringUTF16(
@@ -767,7 +970,8 @@ void WebIntentPickerViews::OnInlineDisposition(
     WebIntentPickerModel* model, const GURL& url) {
   WebContents* web_contents = WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  inline_disposition_delegate_.reset(new WebIntentInlineDispositionDelegate);
+  inline_disposition_delegate_.reset(
+      new WebIntentInlineDispositionDelegate(this));
   web_contents->SetDelegate(inline_disposition_delegate_.get());
 
   const WebIntentPickerModel::InstalledService* service =
@@ -777,72 +981,18 @@ void WebIntentPickerViews::OnInlineDisposition(
   // Must call this immediately after WebContents creation to avoid race
   // with load.
   delegate_->OnInlineDispositionWebContentsCreated(web_contents);
-
-  TabContentsContainer* tab_contents_container = new TabContentsContainer;
-
   web_contents->GetController().LoadURL(
       url,
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,
       std::string());
 
-  // Replace the picker with the inline disposition.
-  contents_->RemoveAllChildViews(true);
-
-  views::GridLayout* grid_layout = new views::GridLayout(contents_);
-  contents_->SetLayoutManager(grid_layout);
-
-  grid_layout->SetInsets(kContentAreaBorder, kContentAreaBorder,
-                         kContentAreaBorder, kContentAreaBorder);
-  views::ColumnSet* header_cs = grid_layout->AddColumnSet(0);
-  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                       GridLayout::USE_PREF, 0, 0);  // Icon.
-  header_cs->AddPaddingColumn(0, 4);
-  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                       GridLayout::USE_PREF, 0, 0);  // Title.
-  header_cs->AddPaddingColumn(0, 4);
-  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                       GridLayout::USE_PREF, 0, 0);  // Link.
-  header_cs->AddPaddingColumn(1, views::kUnrelatedControlHorizontalSpacing);
-#if defined(USE_CLOSE_BUTTON)
-  header_cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                       GridLayout::USE_PREF, 0, 0);  // Close Button.
-#endif
-
-  views::ColumnSet* full_cs = grid_layout->AddColumnSet(1);
-  full_cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                     GridLayout::USE_PREF, 0, 0);
-
-  // Header row.
-  grid_layout->StartRow(0, 0);
-  views::ImageView* icon = new views::ImageView();
-  icon->SetImage(service->favicon.ToSkBitmap());
-  grid_layout->AddView(icon);
-
-  string16 elided_title = ui::ElideText(
-      service->title, gfx::Font(), kTitleLinkMaxWidth, ui::ELIDE_AT_END);
-  views::Label* title = new views::Label(elided_title);
-  grid_layout->AddView(title);
-
-  choose_another_service_link_ = new views::Link(
-      l10n_util::GetStringUTF16(IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE));
-  grid_layout->AddView(choose_another_service_link_);
-
-#if defined(USE_CLOSE_BUTTON)
-  grid_layout->AddView(CreateCloseButton());
-#endif
-
-  // Inline web contents row.
-  grid_layout->StartRow(0, 1);
-  grid_layout->AddView(tab_contents_container, 1, 1, GridLayout::CENTER,
-                       GridLayout::CENTER, kDialogMinWidth, 140);
-
-  // The contents can only be changed after the child is added to view
-  // hierarchy.
-  tab_contents_container->ChangeWebContents(web_contents);
-
+  // Disable all buttons and show throbber.
+  service_buttons_->SetEnabled(false);
+  service_buttons_->StartThrobber(url);
+  extensions_->SetEnabled(false);
+  more_suggestions_link_->SetEnabled(false);
   contents_->Layout();
-  SizeToContents();
 }
 
 void WebIntentPickerViews::OnServiceButtonClicked(

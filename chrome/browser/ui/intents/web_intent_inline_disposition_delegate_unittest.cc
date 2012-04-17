@@ -5,12 +5,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
+#include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+class WebIntentPickerMock : public WebIntentPicker {
+ public:
+  virtual void Close() OVERRIDE {}
+  virtual void SetActionString(const string16& action) OVERRIDE {}
+};
 
 class WebIntentInlineDispositionBrowserTest
     : public BrowserWithTestWindowTest {
@@ -21,7 +28,7 @@ class WebIntentInlineDispositionBrowserTest
     content::WebContents* contents = content::WebContents::Create(
         browser()->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
     wrapper_.reset(new TabContentsWrapper(contents));
-    delegate_.reset(new WebIntentInlineDispositionDelegate);
+    delegate_.reset(new WebIntentInlineDispositionDelegate(&mock_));
     contents->SetDelegate(delegate_.get());
   }
 
@@ -29,6 +36,7 @@ class WebIntentInlineDispositionBrowserTest
   TestingProfile profile_;
   scoped_ptr<TabContentsWrapper> wrapper_;
   scoped_ptr<WebIntentInlineDispositionDelegate> delegate_;
+  WebIntentPickerMock mock_;
 };
 
 // Verifies delegate's OpenURLFromTab works. This allows navigation inside

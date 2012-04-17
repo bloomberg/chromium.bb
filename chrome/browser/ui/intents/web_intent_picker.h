@@ -49,6 +49,10 @@ class WebIntentPicker {
   // activities.
   virtual void OnPendingAsyncCompleted() {}
 
+  // Called when the inline disposition's web contents have been loaded.
+  virtual void OnInlineDispositionWebContentsLoaded(
+      content::WebContents* web_contents) {}
+
   // Get the default size of the inline disposition tab container.
   static gfx::Size GetDefaultInlineDispositionSize(
       content::WebContents* web_contents);

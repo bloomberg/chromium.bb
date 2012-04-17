@@ -5,10 +5,13 @@
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 
-WebIntentInlineDispositionDelegate::WebIntentInlineDispositionDelegate() {
+WebIntentInlineDispositionDelegate::WebIntentInlineDispositionDelegate(
+    WebIntentPicker* picker)
+    : picker_(picker) {
 }
 
 WebIntentInlineDispositionDelegate::~WebIntentInlineDispositionDelegate() {
@@ -38,3 +41,10 @@ content::WebContents* WebIntentInlineDispositionDelegate::OpenURLFromTab(
 
   return source;
 }
+
+void WebIntentInlineDispositionDelegate::LoadingStateChanged(
+    content::WebContents* source) {
+  if (!source->IsLoading())
+    picker_->OnInlineDispositionWebContentsLoaded(source);
+}
+

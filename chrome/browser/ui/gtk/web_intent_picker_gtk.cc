@@ -192,7 +192,8 @@ void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
   content::WebContents* web_contents = content::WebContents::Create(
       browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
-  inline_disposition_delegate_.reset(new WebIntentInlineDispositionDelegate);
+  inline_disposition_delegate_.reset(
+      new WebIntentInlineDispositionDelegate(this));
   web_contents->SetDelegate(inline_disposition_delegate_.get());
 
   // Must call this immediately after WebContents creation to avoid race
