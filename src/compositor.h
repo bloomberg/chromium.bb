@@ -223,6 +223,7 @@ struct weston_compositor {
 	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
 
 	int has_unpack_subimage;
+	GLenum read_format;
 
 	PFNEGLBINDWAYLANDDISPLAYWL bind_display;
 	PFNEGLUNBINDWAYLANDDISPLAYWL unbind_display;

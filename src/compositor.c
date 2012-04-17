@@ -2391,10 +2391,10 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 		return -1;
 	}
 
-	if (!strstr(extensions, "GL_EXT_read_format_bgra")) {
-		fprintf(stderr, "GL_EXT_read_format_bgra not available\n");
-		return -1;
-	}
+	if (strstr(extensions, "GL_EXT_read_format_bgra"))
+		ec->read_format = GL_BGRA_EXT;
+	else
+		ec->read_format = GL_RGBA;
 
 	if (strstr(extensions, "GL_EXT_unpack_subimage"))
 		ec->has_unpack_subimage = 1;

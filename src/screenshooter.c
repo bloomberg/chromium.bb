@@ -51,6 +51,37 @@ copy_bgra_yflip(uint8_t *dst, uint8_t *src, int height,
 }
 
 static void
+copy_row_swap_RB(void *vdst, void *vsrc, int bytes)
+{
+	uint32_t *dst = vdst;
+	uint32_t *src = vsrc;
+	uint32_t *end = dst + bytes / 4;
+
+	while (dst < end) {
+		uint32_t v = *src++;
+		/*                    A R G B */
+		uint32_t tmp = v & 0xff00ff00;
+		tmp |= (v >> 16) & 0x000000ff;
+		tmp |= (v << 16) & 0x00ff0000;
+		*dst++ = tmp;
+	}
+}
+
+static void
+copy_rgba_yflip(uint8_t *dst, uint8_t *src, int height,
+		int dst_stride, int src_stride)
+{
+	uint8_t *end;
+
+	end = dst + height * dst_stride;
+	while (dst < end) {
+		copy_row_swap_RB(dst, src, src_stride);
+		dst += dst_stride;
+		src -= src_stride;
+	}
+}
+
+static void
 screenshooter_shoot(struct wl_client *client,
 		    struct wl_resource *resource,
 		    struct wl_resource *output_resource,
@@ -82,8 +113,19 @@ screenshooter_shoot(struct wl_client *client,
 	d = wl_shm_buffer_get_data(buffer) + output->y * buffer_stride +
 							output->x * 4;
 	s = tmp + output_stride * (output->current->height - 1);
-	copy_bgra_yflip(d, s, output->current->height,
-			buffer_stride, output_stride);
+
+	switch (output->compositor->read_format) {
+	case GL_BGRA_EXT:
+		copy_bgra_yflip(d, s, output->current->height,
+				buffer_stride, output_stride);
+		break;
+	case GL_RGBA:
+		copy_rgba_yflip(d, s, output->current->height,
+				buffer_stride, output_stride);
+		break;
+	default:
+		break;
+	}
 
 	free(tmp);
 }
