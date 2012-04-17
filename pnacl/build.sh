@@ -895,6 +895,10 @@ translator() {
   fi
   llvm-sb
   binutils-sb
+  # TODO(jvoung): Turn this on when Clang is patched to handle the
+  # monstrous macro-hackery in gold, or we have patched gold/clang ourselves.
+  # http://llvm.org/bugs/show_bug.cgi?id=12480
+  # binutils-gold-sb
 
   if ${PNACL_PRUNE}; then
     if [ "${SB_ARCH}" == universal ]; then
@@ -2573,6 +2577,7 @@ binutils-sb-install() {
   install-sb-tool ld
   spopd
 }
+
 #+-------------------------------------------------------------------------
 #+ binutils-gold - Build and install gold (unsandboxed)
 #+                 This is the replacement for the current
@@ -2641,7 +2646,7 @@ binutils-gold-configure() {
     ac_cv_func_mallinfo=no \
     ${srcdir}/gold/configure --prefix="${BINUTILS_INSTALL_DIR}" \
                                       --enable-targets=${gold_targets} \
-                                      --disable-intl \
+                                      --disable-nls \
                                       --enable-plugins=no \
                                       --disable-werror \
                                       --with-sysroot="${NONEXISTENT_PATH}"
@@ -2679,14 +2684,7 @@ binutils-gold-make() {
       make ${MAKE_OPTS}
   spopd
 
-  # Note: the make invocation below actually results
-  # in another configure invocation, so we pass in a few
-  # more environment variables to control this:
-
-
-
   ts-touch-commit "${objdir}"
-
 }
 
 # binutils-gold-install - Install gold
@@ -2700,6 +2698,192 @@ binutils-gold-install() {
   # "cp" has built-in smarts to deal with the ".exe" extension of ld-new
   cp ${src} ${dst}
 }
+
+### Sandboxed version of gold.
+
+#+-------------------------------------------------------------------------
+#+ binutils-gold-sb - Build and install gold (sandboxed)
+#+                 This is the replacement for the current
+#+                 final linker which is bfd based.
+#+                 It has nothing to do with the bitcode linker
+#+                 which is also gold based.
+binutils-gold-sb() {
+  StepBanner "GOLD-NATIVE-SB (libiberty + gold)"
+
+  local srcdir="${TC_SRC_GOLD}"
+  assert-dir "${srcdir}" "You need to checkout gold."
+
+  binutils-gold-sb-setup "$@"
+  binutils-gold-sb-clean
+  binutils-gold-sb-configure
+  binutils-gold-sb-make
+  binutils-gold-sb-install
+}
+
+# Internal setup function for binutils-sb-gold.
+# This defines a few global variables like the objdir.
+BINUTILS_GOLD_SB_SETUP=false
+binutils-gold-sb-setup() {
+  sb-setup "$@"
+
+  if ${BINUTILS_GOLD_SB_SETUP}; then
+    return 0
+  fi
+  BINUTILS_GOLD_SB_SETUP=true
+  BINUTILS_GOLD_SB_LOG_PREFIX="binutils-gold.sb.${SB_LOG_PREFIX}"
+  BINUTILS_GOLD_SB_OBJDIR="${SB_OBJDIR}/binutils-gold-sb"
+
+  local flags=""
+  if [ ${SB_LIBMODE} == newlib ]; then
+    flags+=" -static"
+  fi
+
+  # we do not support the non-srpc mode anymore
+  flags+=" -DNACL_SRPC"
+
+  BINUTILS_GOLD_SB_CONFIGURE_ENV=(
+    AR="${PNACL_AR}" \
+    AS="${PNACL_AS}" \
+    CC="$(GetTool cc ${SB_LIBMODE}) ${flags}" \
+    CXX="$(GetTool cxx ${SB_LIBMODE}) ${flags}" \
+    CC_FOR_BUILD="${CC}" \
+    CXX_FOR_BUILD="${CXX}" \
+    LD="$(GetTool ld ${SB_LIBMODE}) ${flags}" \
+    NM="${PNACL_NM}" \
+    RANLIB="${PNACL_RANLIB}"
+  )
+
+  case ${SB_ARCH} in
+    i686)      BINUTILS_GOLD_SB_ELF_TARGETS=i686-pc-nacl ;;
+    x86_64)    BINUTILS_GOLD_SB_ELF_TARGETS=x86_64-pc-nacl ;;
+    armv7)     BINUTILS_GOLD_SB_ELF_TARGETS=arm-pc-nacl ;;
+    universal)
+      BINUTILS_GOLD_SB_ELF_TARGETS=i686-pc-nacl,x86_64-pc-nacl,arm-pc-nacl ;;
+  esac
+}
+
+
+# binutils-gold-sb-clean - Clean gold
+binutils-gold-sb-clean() {
+  StepBanner "GOLD-NATIVE-SB" "Clean"
+  local objdir="${BINUTILS_GOLD_SB_OBJDIR}"
+
+  rm -rf "${objdir}"
+  mkdir -p "${objdir}"
+}
+
+# binutils-gold-sb-configure - Configure binutils for gold (unsandboxed)
+binutils-gold-sb-configure() {
+  local srcdir="${TC_SRC_GOLD}"
+  local objdir="${BINUTILS_GOLD_SB_OBJDIR}"
+  local installbin="${SB_INSTALL_DIR}/bin"
+
+  StepBanner "GOLD-NATIVE-SB" "Configure (libiberty)"
+  # Gold depends on liberty only for a few functions:
+  # xrealloc, lbasename, etc.
+  # we could remove these if necessary.
+  # TODO(jvoung): fix the --host= and --target= ... they should be the same.
+
+  mkdir -p "${objdir}/libiberty"
+  spushd "${objdir}/libiberty"
+  RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".configure \
+    env -i \
+    PATH="/usr/bin:/bin" \
+    "${BINUTILS_GOLD_SB_CONFIGURE_ENV[@]}" \
+    ${srcdir}/libiberty/configure --prefix="${installbin}" \
+    --host=i686-pc-nacl \
+    --target=i686-pc-nacl
+  spopd
+
+
+  StepBanner "GOLD-NATIVE-SB" "Configure (gold)"
+  # NOTE: we are still building one unnecessary target: "32bit big-endian"
+  # which is dragged in by targ_extra_big_endian=true in
+  # pnacl/src/gold/gold/configure.tgt
+  # removing it causes undefined symbols during linking of gold.
+  # The potential savings are guesstimated to be 300kB in binary size
+  local gold_targets=${BINUTILS_GOLD_SB_ELF_TARGETS}
+  # TODO(jvoung): fix the --host= and --target= ... they should be the same.
+
+  mkdir -p "${objdir}/gold"
+  spushd "${objdir}/gold"
+  RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".configure \
+    env -i \
+    PATH="/usr/bin:/bin" \
+    "${BINUTILS_GOLD_SB_CONFIGURE_ENV[@]}" \
+    ac_cv_search_zlibVersion=no \
+    ac_cv_header_sys_mman_h=no \
+    ac_cv_func_mmap=no \
+    ac_cv_func_mallinfo=no \
+    ac_cv_prog_cc_g=no \
+    ac_cv_prog_cxx_g=no \
+    ${srcdir}/gold/configure --prefix="${installbin}" \
+                                      --enable-targets=${gold_targets} \
+                                      --host=i686-pc-nacl \
+                                      --target=i686-pc-nacl \
+                                      --disable-nls \
+                                      --enable-plugins=no \
+                                      --enable-naclsrpc=yes \
+                                      --disable-werror \
+                                      --with-sysroot="${NONEXISTENT_PATH}"
+  # Note: the extra ac_cv settings:
+  # * eliminate unnecessary use of zlib
+  # * eliminate use of mmap
+  # (those should not have much impact on the non-sandboxed
+  # version but help in the sandboxed case)
+  # We also disable debug (-g) because the bitcode files become too big
+  # (with ac_cv_prog_cc_g).
+
+  # There's no point in setting the correct path as sysroot, because we
+  # want the toolchain to be relocatable. The driver will use ld command-line
+  # option --sysroot= to override this value and set it to the correct path.
+  # However, we need to include --with-sysroot during configure to get this
+  # option. So fill in a non-sense, non-existent path.
+  spopd
+}
+
+# binutils-gold-sb-make - Make binutils (unsandboxed)
+binutils-gold-sb-make() {
+  local objdir="${BINUTILS_GOLD_SB_OBJDIR}"
+  ts-touch-open "${objdir}/"
+
+  StepBanner "GOLD-NATIVE-SB" "Make (liberty)"
+  spushd "${objdir}/libiberty"
+
+  RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".make \
+      env -i PATH="/usr/bin:/bin" \
+      make ${MAKE_OPTS}
+  spopd
+
+  StepBanner "GOLD-NATIVE-SB" "Make (gold)"
+  spushd "${objdir}/gold"
+  RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".make \
+      env -i PATH="/usr/bin:/bin" \
+      make ${MAKE_OPTS}
+  spopd
+
+  ts-touch-commit "${objdir}"
+}
+
+# binutils-gold-sb-install - Install gold
+binutils-gold-sb-install() {
+  StepBanner "GOLD-NATIVE-SB" "Install"
+
+  local objdir="${BINUTILS_GOLD_SB_OBJDIR}"
+  local installbin="${SB_INSTALL_DIR}/bin"
+
+  mkdir -p "${installbin}"
+  spushd "${installbin}"
+
+  # Install just "ld"
+  cp "${objdir}"/gold/ld-new ld-gold.pexe
+
+  # Translate and install
+  translate-sb-tool ld-gold
+  install-sb-tool ld-gold
+  spopd
+}
+
 
 #+-------------------------------------------------------------------------
 #########################################################################
