@@ -67,8 +67,7 @@ void ViewRemovableDrive(const FilePath& path);
 void ViewFolder(const FilePath& dir);
 
 // Opens file with the default File Browser handler.
-// TODO(kaznacheev) remove the deprecated_enqueue parameter.
-void ViewFile(const FilePath& path, bool deprecated_enqueue);
+void ViewFile(const FilePath& path);
 
 // Opens file browser on the folder containing the file, with the file selected.
 void ShowFileInFolder(const FilePath& path);

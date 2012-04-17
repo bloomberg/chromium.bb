@@ -524,7 +524,7 @@ bool TryOpeningFileBrowser(Profile* profile, const FilePath& path) {
   return false;
 }
 
-void ViewFile(const FilePath& path, bool deprecated_enqueue) {
+void ViewFile(const FilePath& path) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   if (!TryOpeningFileBrowser(profile, path) &&
       !TryViewingFile(profile, path)) {

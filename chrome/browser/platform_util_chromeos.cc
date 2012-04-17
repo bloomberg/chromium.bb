@@ -30,7 +30,7 @@ void OpenItemOnFileThread(const FilePath& full_path) {
   if (file_util::DirectoryExists(full_path))
     callback = base::Bind(&file_manager_util::ViewFolder, full_path);
   else
-    callback = base::Bind(&file_manager_util::ViewFile, full_path, false);
+    callback = base::Bind(&file_manager_util::ViewFile, full_path);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 

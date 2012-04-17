@@ -245,8 +245,7 @@ void ActiveDownloadsHandler::HandleShowAllFiles(const ListValue* args) {
 }
 
 void ActiveDownloadsHandler::ViewFile(const ListValue* args) {
-  file_manager_util::ViewFile(FilePath(UTF16ToUTF8(ExtractStringValue(args))),
-                              false);
+  file_manager_util::ViewFile(FilePath(UTF16ToUTF8(ExtractStringValue(args))));
 }
 
 void ActiveDownloadsHandler::ModelChanged(DownloadManager* manager) {
