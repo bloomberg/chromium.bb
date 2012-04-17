@@ -167,21 +167,20 @@ void NaClListener::Listen() {
 bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NaClListener, msg)
-      IPC_MESSAGE_HANDLER(NaClProcessMsg_Start, OnStartSelLdr)
+      IPC_MESSAGE_HANDLER(NaClProcessMsg_Start, OnMsgStart)
       IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
-                                 const std::string& validation_cache_key,
-                                 const std::string& version,
-                                 bool enable_exception_handling) {
+void NaClListener::OnMsgStart(const nacl::NaClStartParams& params) {
   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
   if (args == NULL) {
     LOG(ERROR) << "NaClChromeMainArgsCreate() failed";
     return;
   }
+
+  std::vector<nacl::FileDescriptor> handles = params.handles;
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   args->create_memory_object_func = CreateMemoryObject;
@@ -211,12 +210,13 @@ void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
     LOG(INFO) << "NaCl validation cache enabled.";
     // The cache structure is not freed and exists until the NaCl process exits.
     args->validation_cache = CreateValidationCache(
-        new BrowserValidationDBProxy(this), validation_cache_key, version);
+        new BrowserValidationDBProxy(this), params.validation_cache_key,
+        params.version);
   }
 
   CHECK(handles.size() == 1);
   args->imc_bootstrap_handle = nacl::ToNativeHandle(handles[0]);
-  args->enable_exception_handling = enable_exception_handling;
+  args->enable_exception_handling = params.enable_exception_handling;
   args->enable_debug_stub = debug_enabled_;
 #if defined(OS_WIN)
   args->broker_duplicate_handle_func = BrokerDuplicateHandle;

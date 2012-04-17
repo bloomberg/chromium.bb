@@ -32,10 +32,7 @@ class NaClListener : public IPC::Channel::Listener {
   bool Send(IPC::Message* msg);
 
  private:
-  void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles,
-                     const std::string& validation_cache_key,
-                     const std::string& version,
-                     bool enable_exception_handling);
+  void OnMsgStart(const nacl::NaClStartParams& params);
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // A channel back to the browser.

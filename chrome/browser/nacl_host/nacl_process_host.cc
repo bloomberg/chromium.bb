@@ -102,7 +102,7 @@ void SetCloseOnExec(nacl::Handle fd) {
 #endif
 }
 
-bool SendHandleToSelLdr(
+bool ShareHandleToSelLdr(
     base::ProcessHandle processh,
     nacl::Handle sourceh,
     bool close_source,
@@ -881,14 +881,8 @@ void NaClProcessHost::IrtReady() {
   }
 }
 
-bool NaClProcessHost::SendStart() {
-  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-  base::PlatformFile irt_file = nacl_browser->IrtFile();
-  CHECK_NE(irt_file, base::kInvalidPlatformFileValue);
-
+bool NaClProcessHost::ReplyToRenderer() {
   std::vector<nacl::FileDescriptor> handles_for_renderer;
-  base::ProcessHandle nacl_process_handle;
-
   for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
 #if defined(OS_WIN)
     // Copy the handle into the renderer process.
@@ -917,6 +911,7 @@ bool NaClProcessHost::SendStart() {
   }
 
   const ChildProcessData& data = process_->GetData();
+  base::ProcessHandle nacl_process_handle;
 #if defined(OS_WIN)
   // Copy the process handle into the renderer process.
   // TODO(mseaborn): Remove this.  The renderer process uses this
@@ -957,18 +952,31 @@ bool NaClProcessHost::SendStart() {
   chrome_render_message_filter_ = NULL;
   reply_msg_ = NULL;
   internal_->sockets_for_renderer.clear();
+  return true;
+}
 
-  std::vector<nacl::FileDescriptor> handles_for_sel_ldr;
+bool NaClProcessHost::StartNaClExecution() {
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+
+  nacl::NaClStartParams params;
+  params.validation_cache_key = nacl_browser->GetValidatorCacheKey();
+  params.version = chrome::VersionInfo().CreateVersionString();
+  params.enable_exception_handling = enable_exception_handling_;
+
+  base::PlatformFile irt_file = nacl_browser->IrtFile();
+  CHECK_NE(irt_file, base::kInvalidPlatformFileValue);
+
+  const ChildProcessData& data = process_->GetData();
   for (size_t i = 0; i < internal_->sockets_for_sel_ldr.size(); i++) {
-    if (!SendHandleToSelLdr(data.handle,
-                            internal_->sockets_for_sel_ldr[i], true,
-                            &handles_for_sel_ldr)) {
+    if (!ShareHandleToSelLdr(data.handle,
+                             internal_->sockets_for_sel_ldr[i], true,
+                             &params.handles)) {
       return false;
     }
   }
 
   // Send over the IRT file handle.  We don't close our own copy!
-  if (!SendHandleToSelLdr(data.handle, irt_file, false, &handles_for_sel_ldr))
+  if (!ShareHandleToSelLdr(data.handle, irt_file, false, &params.handles))
     return false;
 
 #if defined(OS_MACOSX)
@@ -991,17 +999,10 @@ bool NaClProcessHost::SendStart() {
     return false;
   }
   memory_fd.auto_close = true;
-  handles_for_sel_ldr.push_back(memory_fd);
+  params.handles.push_back(memory_fd);
 #endif
 
-  // Sending the version string over IPC avoids linkage issues in cases where
-  // NaCl is not compiled into the main Chromium executable or DLL.
-  chrome::VersionInfo version_info;
-  IPC::Message* start_message =
-      new NaClProcessMsg_Start(handles_for_sel_ldr,
-                               nacl_browser->GetValidatorCacheKey(),
-                               version_info.CreateVersionString(),
-                               enable_exception_handling_);
+  IPC::Message* start_message = new NaClProcessMsg_Start(params);
 #if defined(OS_WIN)
   if (debug_context_ != NULL) {
     debug_context_->SetStartMessage(start_message);
@@ -1015,6 +1016,10 @@ bool NaClProcessHost::SendStart() {
 
   internal_->sockets_for_sel_ldr.clear();
   return true;
+}
+
+bool NaClProcessHost::SendStart() {
+  return ReplyToRenderer() && StartNaClExecution();
 }
 
 bool NaClProcessHost::StartWithLaunchedProcess() {

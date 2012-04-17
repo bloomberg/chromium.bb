@@ -108,6 +108,7 @@
               'sources': [
                 'common/nacl_cmd_line.cc',
                 'common/nacl_messages.cc',
+                'common/nacl_types.cc',
                 'nacl/nacl_broker_listener.cc',
                 'nacl/nacl_broker_listener.h',
               ],
@@ -146,6 +147,7 @@
               'sources': [
                 'nacl/nacl_helper_linux.cc',
                 '../chrome/common/nacl_messages.cc',
+                '../chrome/common/nacl_types.cc',
                 '../content/common/child_process_sandbox_support_impl_shm_linux.cc',
                 '../content/common/unix_domain_socket_posix.cc',
               ],

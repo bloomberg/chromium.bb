@@ -9,22 +9,21 @@
 #include "chrome/common/nacl_types.h"
 #include "ipc/ipc_message_macros.h"
 
-#ifndef CHROME_COMMON_NACL_MESSAGES_H_
-#define CHROME_COMMON_NACL_MESSAGES_H_
-
-#endif  // CHROME_COMMON_NACL_MESSAGES_H_
-
 #define IPC_MESSAGE_START NaClMsgStart
+
+IPC_STRUCT_TRAITS_BEGIN(nacl::NaClStartParams)
+  IPC_STRUCT_TRAITS_MEMBER(handles)
+  IPC_STRUCT_TRAITS_MEMBER(validation_cache_key)
+  IPC_STRUCT_TRAITS_MEMBER(version)
+  IPC_STRUCT_TRAITS_MEMBER(enable_exception_handling)
+IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------
 // NaClProcess messages
 // These are messages sent between the browser and the NaCl process.
 // Tells the NaCl process to start.
-IPC_MESSAGE_CONTROL4(NaClProcessMsg_Start,
-                     std::vector<nacl::FileDescriptor> /* sockets */,
-                     std::string /* validation_cache_key */,
-                     std::string /* version */,
-                     bool /* enable_exception_handling */)
+IPC_MESSAGE_CONTROL1(NaClProcessMsg_Start,
+                     nacl::NaClStartParams /* params */)
 
 // Tells the NaCl broker to launch a NaCl loader process.
 IPC_MESSAGE_CONTROL1(NaClProcessMsg_LaunchLoaderThroughBroker,

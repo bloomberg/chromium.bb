@@ -214,6 +214,7 @@
         'common/nacl_cmd_line.h',
         'common/nacl_messages.cc',
         'common/nacl_messages.h',
+        'common/nacl_types.cc',
         'common/nacl_types.h',
         'common/libxml_utils.cc',
         'common/libxml_utils.h',

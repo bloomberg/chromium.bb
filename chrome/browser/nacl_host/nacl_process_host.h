@@ -84,8 +84,16 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   void IrtReady();
 
-  // Sends the start command with file handles to an opened NaCl process.
-  // Returns false on failure.
+  // Sends the reply message to the renderer who is waiting for the plugin
+  // to load. Returns true on success.
+  bool ReplyToRenderer();
+
+  // Sends the message to the NaCl process to load the plugin. Returns true
+  // on success.
+  bool StartNaClExecution();
+
+  // Called once all initialization is complete and the NaCl process is
+  // ready to go. Returns true on success.
   bool SendStart();
 
   // Does post-process-launching tasks for starting the NaCl process once
