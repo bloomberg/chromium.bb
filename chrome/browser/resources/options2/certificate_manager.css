@@ -12,6 +12,16 @@
   padding-right: 35px;
 }
 
+/* Force tab strip to extend to the left and right edges of the window. */
+#certificate-manager-content-area {
+  padding: 6px 0 6px 0;
+}
+
+#certificate-manager-content-area .subpages-tab-contents {
+  padding-left: 28px;
+  padding-right: 14px;
+}
+
 .certificate-tree-table {
   width: 100%;
 }
