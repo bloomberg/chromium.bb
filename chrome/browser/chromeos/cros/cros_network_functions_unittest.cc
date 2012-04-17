@@ -8,6 +8,8 @@
 #include "chrome/browser/chromeos/cros/cros_network_functions.h"
 #include "chrome/browser/chromeos/cros/gvalue_util.h"
 #include "chrome/browser/chromeos/cros/mock_chromeos_network.h"
+#include "chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chromeos/dbus/mock_flimflam_profile_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -19,23 +21,50 @@ namespace {
 
 const char kExamplePath[] = "/foo/bar/baz";
 
-// Expects path and a dictionary value result.
-void ExpectPathAndDictionaryValue(const base::DictionaryValue* expected,
-                                  const char* path,
-                                  const base::DictionaryValue* result) {
-  EXPECT_STREQ(kExamplePath, path);
-  EXPECT_TRUE(expected->Equals(result));
-}
+// A mock to check arguments of NetworkPropertiesCallback and ensure that the
+// callback is called exactly once.
+class MockNetworkPropertiesCallback {
+ public:
+  // Creates a NetworkPropertiesCallback with expectations.
+  static NetworkPropertiesCallback CreateCallback(
+      const char* expected_path,
+      const base::DictionaryValue& expected_result) {
+    MockNetworkPropertiesCallback* mock_callback =
+        new MockNetworkPropertiesCallback(expected_result);
+
+    EXPECT_CALL(*mock_callback, Run(expected_path, _)).WillOnce(
+        Invoke(mock_callback, &MockNetworkPropertiesCallback::CheckResult));
+
+    return base::Bind(&MockNetworkPropertiesCallback::Run,
+                      base::Owned(mock_callback));
+  }
+
+ private:
+  explicit MockNetworkPropertiesCallback(
+      const base::DictionaryValue& expected_result)
+      : expected_result_(expected_result) {}
+
+  MOCK_METHOD2(Run, void(const char* path,
+                         const base::DictionaryValue* result));
+
+  void CheckResult(const char* path, const base::DictionaryValue* result) {
+    EXPECT_TRUE(expected_result_.Equals(result));
+  }
+
+  const base::DictionaryValue& expected_result_;
+};
 
 }  // namespace
 
-class CrosNetworkFunctionsTest : public testing::Test {
+// Test for cros_network_functions.cc with Libcros.
+class CrosNetworkFunctionsLibcrosTest : public testing::Test {
  public:
-  CrosNetworkFunctionsTest() : argument_ghash_table_(NULL) {}
+  CrosNetworkFunctionsLibcrosTest() : argument_ghash_table_(NULL) {}
 
   virtual void SetUp() {
     ::g_type_init();
     MockChromeOSNetwork::Initialize();
+    SetLibcrosNetworkFunctionsEnabled(true);
   }
 
   virtual void TearDown() {
@@ -111,13 +140,14 @@ class CrosNetworkFunctionsTest : public testing::Test {
   ScopedGHashTable result_ghash_table_;
 };
 
-TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkServiceProperty) {
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetNetworkServiceProperty) {
   const char service_path[] = "/";
   const char property[] = "property";
-  EXPECT_CALL(*MockChromeOSNetwork::Get(),
-              SetNetworkServicePropertyGValue(service_path, property, _))
-              .WillOnce(Invoke(
-                  this, &CrosNetworkFunctionsTest::OnSetNetworkPropertyGValue));
+  EXPECT_CALL(
+      *MockChromeOSNetwork::Get(),
+      SetNetworkServicePropertyGValue(service_path, property, _))
+      .WillOnce(Invoke(
+          this, &CrosNetworkFunctionsLibcrosTest::OnSetNetworkPropertyGValue));
   const char key1[] = "key1";
   const std::string string1 = "string1";
   const char key2[] = "key2";
@@ -137,47 +167,49 @@ TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkServiceProperty) {
       g_hash_table_lookup(ghash_table, key2)));
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkDeviceProperty) {
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetNetworkDeviceProperty) {
   const char device_path[] = "/";
   const char property[] = "property";
-  EXPECT_CALL(*MockChromeOSNetwork::Get(),
-              SetNetworkDevicePropertyGValue(device_path, property, _))
-              .WillOnce(Invoke(
-                  this, &CrosNetworkFunctionsTest::OnSetNetworkPropertyGValue));
+  EXPECT_CALL(
+      *MockChromeOSNetwork::Get(),
+      SetNetworkDevicePropertyGValue(device_path, property, _))
+      .WillOnce(Invoke(
+          this, &CrosNetworkFunctionsLibcrosTest::OnSetNetworkPropertyGValue));
   const bool kBool = true;
   const base::FundamentalValue value(kBool);
   CrosSetNetworkDeviceProperty(device_path, property, value);
   EXPECT_EQ(kBool, g_value_get_boolean(argument_gvalue_.get()));
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkIPConfigProperty) {
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetNetworkIPConfigProperty) {
   const char ipconfig_path[] = "/";
   const char property[] = "property";
-  EXPECT_CALL(*MockChromeOSNetwork::Get(),
-              SetNetworkIPConfigPropertyGValue(ipconfig_path, property, _))
-              .WillOnce(Invoke(
-                  this, &CrosNetworkFunctionsTest::OnSetNetworkPropertyGValue));
+  EXPECT_CALL(
+      *MockChromeOSNetwork::Get(),
+      SetNetworkIPConfigPropertyGValue(ipconfig_path, property, _))
+      .WillOnce(Invoke(
+          this, &CrosNetworkFunctionsLibcrosTest::OnSetNetworkPropertyGValue));
   const int kInt = 1234;
   const base::FundamentalValue value(kInt);
   CrosSetNetworkIPConfigProperty(ipconfig_path, property, value);
   EXPECT_EQ(kInt, g_value_get_int(argument_gvalue_.get()));
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkManagerProperty) {
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetNetworkManagerProperty) {
   const char property[] = "property";
   EXPECT_CALL(
       *MockChromeOSNetwork::Get(),
       SetNetworkManagerPropertyGValue(property, _))
       .WillOnce(Invoke(
           this,
-          &CrosNetworkFunctionsTest::OnSetNetworkManagerPropertyGValue));
+          &CrosNetworkFunctionsLibcrosTest::OnSetNetworkManagerPropertyGValue));
   const std::string kString = "string";
   const base::StringValue value(kString);
   CrosSetNetworkManagerProperty(property, value);
   EXPECT_EQ(kString, g_value_get_string(argument_gvalue_.get()));
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkManagerProperties) {
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkManagerProperties) {
   const std::string key1 = "key1";
   const std::string value1 = "value1";
   const std::string key2 = "key.2.";
@@ -193,13 +225,13 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkManagerProperties) {
       *MockChromeOSNetwork::Get(),
       RequestNetworkManagerProperties(_, _))
       .WillOnce(Invoke(
-          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties2));
+          this, &CrosNetworkFunctionsLibcrosTest::OnRequestNetworkProperties2));
 
   CrosRequestNetworkManagerProperties(
-      base::Bind(&ExpectPathAndDictionaryValue, &result));
+      MockNetworkPropertiesCallback::CreateCallback(kExamplePath, result));
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkServiceProperties) {
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkServiceProperties) {
   const std::string service_path = "service path";
   const std::string key1 = "key1";
   const std::string value1 = "value1";
@@ -216,13 +248,14 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkServiceProperties) {
       *MockChromeOSNetwork::Get(),
       RequestNetworkServiceProperties(service_path.c_str(), _, _))
       .WillOnce(Invoke(
-          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties3));
+          this, &CrosNetworkFunctionsLibcrosTest::OnRequestNetworkProperties3));
 
   CrosRequestNetworkServiceProperties(
-      service_path.c_str(), base::Bind(&ExpectPathAndDictionaryValue, &result));
+      service_path.c_str(),
+      MockNetworkPropertiesCallback::CreateCallback(kExamplePath, result));
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkDeviceProperties) {
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkDeviceProperties) {
   const std::string device_path = "device path";
   const std::string key1 = "key1";
   const std::string value1 = "value1";
@@ -239,13 +272,14 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkDeviceProperties) {
       *MockChromeOSNetwork::Get(),
       RequestNetworkDeviceProperties(device_path.c_str(), _, _))
       .WillOnce(Invoke(
-          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties3));
+          this, &CrosNetworkFunctionsLibcrosTest::OnRequestNetworkProperties3));
 
   CrosRequestNetworkDeviceProperties(
-      device_path.c_str(), base::Bind(&ExpectPathAndDictionaryValue, &result));
+      device_path.c_str(),
+      MockNetworkPropertiesCallback::CreateCallback(kExamplePath, result));
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkProfileProperties) {
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkProfileProperties) {
   const std::string profile_path = "profile path";
   const std::string key1 = "key1";
   const std::string value1 = "value1";
@@ -262,14 +296,15 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkProfileProperties) {
       *MockChromeOSNetwork::Get(),
       RequestNetworkProfileProperties(profile_path.c_str(), _, _))
       .WillOnce(Invoke(
-          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties3));
+          this, &CrosNetworkFunctionsLibcrosTest::OnRequestNetworkProperties3));
 
   CrosRequestNetworkProfileProperties(
       profile_path.c_str(),
-      base::Bind(&ExpectPathAndDictionaryValue, &result));
+      MockNetworkPropertiesCallback::CreateCallback(kExamplePath, result));
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkProfileEntryProperties) {
+TEST_F(CrosNetworkFunctionsLibcrosTest,
+       CrosRequestNetworkProfileEntryProperties) {
   const std::string profile_path = "profile path";
   const std::string profile_entry_path = "profile entry path";
   const std::string key1 = "key1";
@@ -288,14 +323,16 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkProfileEntryProperties) {
       RequestNetworkProfileEntryProperties(profile_path.c_str(),
                                            profile_entry_path.c_str(), _, _))
       .WillOnce(Invoke(
-          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties4));
+          this, &CrosNetworkFunctionsLibcrosTest::OnRequestNetworkProperties4));
 
   CrosRequestNetworkProfileEntryProperties(
-      profile_path.c_str(), profile_entry_path.c_str(),
-      base::Bind(&ExpectPathAndDictionaryValue, &result));
+      profile_path.c_str(),
+      profile_entry_path.c_str(),
+      MockNetworkPropertiesCallback::CreateCallback(kExamplePath, result));
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosRequestHiddenWifiNetworkProperties) {
+TEST_F(CrosNetworkFunctionsLibcrosTest,
+       CrosRequestHiddenWifiNetworkProperties) {
   const std::string ssid = "ssid";
   const std::string security = "security";
   const std::string key1 = "key1";
@@ -313,14 +350,14 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestHiddenWifiNetworkProperties) {
       *MockChromeOSNetwork::Get(),
       RequestHiddenWifiNetworkProperties(ssid.c_str(), security.c_str(), _, _))
       .WillOnce(Invoke(
-          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties4));
+          this, &CrosNetworkFunctionsLibcrosTest::OnRequestNetworkProperties4));
 
   CrosRequestHiddenWifiNetworkProperties(
       ssid.c_str(), security.c_str(),
-      base::Bind(&ExpectPathAndDictionaryValue, &result));
+      MockNetworkPropertiesCallback::CreateCallback(kExamplePath, result));
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosRequestVirtualNetworkProperties) {
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestVirtualNetworkProperties) {
   const std::string service_name = "service name";
   const std::string server_hostname = "server hostname";
   const std::string provider_name = "provider name";
@@ -340,21 +377,21 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestVirtualNetworkProperties) {
                                               server_hostname.c_str(),
                                               provider_name.c_str(), _, _))
       .WillOnce(Invoke(
-          this, &CrosNetworkFunctionsTest::OnRequestNetworkProperties5));
+          this, &CrosNetworkFunctionsLibcrosTest::OnRequestNetworkProperties5));
 
   CrosRequestVirtualNetworkProperties(
       service_name.c_str(),
       server_hostname.c_str(),
       provider_name.c_str(),
-      base::Bind(&ExpectPathAndDictionaryValue, &result));
+      MockNetworkPropertiesCallback::CreateCallback(kExamplePath, result));
 }
 
-TEST_F(CrosNetworkFunctionsTest, CrosConfigureService) {
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosConfigureService) {
   const char identifier[] = "identifier";
   EXPECT_CALL(*MockChromeOSNetwork::Get(),
               ConfigureService(identifier, _, &OnNetworkAction, this))
               .WillOnce(Invoke(
-                  this, &CrosNetworkFunctionsTest::OnConfigureService));
+                  this, &CrosNetworkFunctionsLibcrosTest::OnConfigureService));
   const char key1[] = "key1";
   const std::string string1 = "string1";
   const char key2[] = "key2";
@@ -371,6 +408,99 @@ TEST_F(CrosNetworkFunctionsTest, CrosConfigureService) {
   const GValue* string2_gvalue = static_cast<const GValue*>(
       g_hash_table_lookup(argument_ghash_table_.get(), key2));
   EXPECT_EQ(string2, g_value_get_string(string2_gvalue));
+}
+
+// Test for cros_network_functions.cc without Libcros.
+class CrosNetworkFunctionsTest : public testing::Test {
+ public:
+  CrosNetworkFunctionsTest() : mock_profile_client_(NULL),
+                               dictionary_value_result_(NULL) {}
+
+  virtual void SetUp() {
+    MockDBusThreadManager* mock_dbus_thread_manager = new MockDBusThreadManager;
+    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
+    mock_profile_client_ =
+        mock_dbus_thread_manager->mock_flimflam_profile_client();
+    SetLibcrosNetworkFunctionsEnabled(false);
+  }
+
+  virtual void TearDown() {
+    DBusThreadManager::Shutdown();
+    mock_profile_client_ = NULL;
+  }
+
+  // Handles responses for GetProperties method calls.
+  void OnGetProperties(
+      const dbus::ObjectPath& profile_path,
+      const FlimflamClientHelper::DictionaryValueCallback& callback) {
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, *dictionary_value_result_);
+  }
+
+  // Handles responses for GetEntry method calls.
+  void OnGetEntry(
+      const dbus::ObjectPath& profile_path,
+      const std::string& entry_path,
+      const FlimflamClientHelper::DictionaryValueCallback& callback) {
+    callback.Run(DBUS_METHOD_CALL_SUCCESS, *dictionary_value_result_);
+  }
+
+ protected:
+  MockFlimflamProfileClient* mock_profile_client_;
+  const base::DictionaryValue* dictionary_value_result_;
+};
+
+TEST_F(CrosNetworkFunctionsTest, CrosDeleteServiceFromProfile) {
+  const std::string profile_path("/profile/path");
+  const std::string service_path("/service/path");
+  EXPECT_CALL(*mock_profile_client_,
+              DeleteEntry(dbus::ObjectPath(profile_path), service_path, _))
+      .Times(1);
+  CrosDeleteServiceFromProfile(profile_path.c_str(), service_path.c_str());
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkProfileProperties) {
+  const std::string profile_path = "profile path";
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  // Set expectations.
+  dictionary_value_result_ = &result;
+  EXPECT_CALL(*mock_profile_client_,
+              GetProperties(dbus::ObjectPath(profile_path), _)).WillOnce(
+                  Invoke(this, &CrosNetworkFunctionsTest::OnGetProperties));
+
+  CrosRequestNetworkProfileProperties(
+      profile_path.c_str(),
+      MockNetworkPropertiesCallback::CreateCallback(profile_path.c_str(),
+                                                    result));
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkProfileEntryProperties) {
+  const std::string profile_path = "profile path";
+  const std::string profile_entry_path = "profile entry path";
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  // Set expectations.
+  dictionary_value_result_ = &result;
+  EXPECT_CALL(*mock_profile_client_,
+              GetEntry(dbus::ObjectPath(profile_path), profile_entry_path, _))
+      .WillOnce(Invoke(this, &CrosNetworkFunctionsTest::OnGetEntry));
+
+  CrosRequestNetworkProfileEntryProperties(
+      profile_path.c_str(), profile_entry_path.c_str(),
+      MockNetworkPropertiesCallback::CreateCallback(profile_entry_path.c_str(),
+                                                    result));
 }
 
 }  // namespace chromeos

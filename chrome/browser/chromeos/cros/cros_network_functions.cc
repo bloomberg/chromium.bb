@@ -8,10 +8,16 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/gvalue_util.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/flimflam_profile_client.h"
+#include "dbus/object_path.h"
 
 namespace chromeos {
 
 namespace {
+
+// Does nothing. Used as a callback.
+void DoNothing(DBusMethodCallStatus call_status) {}
 
 // Callback used by OnRequestNetworkProperties.
 typedef base::Callback<void(const char* path,
@@ -37,7 +43,22 @@ void OnRequestNetworkProperties(void* object,
   callback->Run(path, properties_dictionary);
 }
 
+// A callback used to implement CrosRequest*Properties functions.
+void RunCallbackWithDictionaryValue(const NetworkPropertiesCallback& callback,
+                                    const char* path,
+                                    DBusMethodCallStatus call_status,
+                                    const base::DictionaryValue& value) {
+  callback.Run(path, call_status == DBUS_METHOD_CALL_SUCCESS ? &value : NULL);
+}
+
+// A bool to remember whether we are using Libcros network functions or not.
+bool g_libcros_network_functions_enabled = true;
+
 }  // namespace
+
+void SetLibcrosNetworkFunctionsEnabled(bool enabled) {
+  g_libcros_network_functions_enabled = enabled;
+}
 
 bool CrosActivateCellularModem(const char* service_path, const char* carrier) {
   return chromeos::ActivateCellularModem(service_path, carrier);
@@ -79,7 +100,12 @@ void CrosSetNetworkManagerProperty(const char* property,
 
 void CrosDeleteServiceFromProfile(const char* profile_path,
                                   const char* service_path) {
-  chromeos::DeleteServiceFromProfile(profile_path, service_path);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::DeleteServiceFromProfile(profile_path, service_path);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamProfileClient()->DeleteEntry(
+        dbus::ObjectPath(profile_path), service_path, base::Bind(&DoNothing));
+  }
 }
 
 void CrosRequestCellularDataPlanUpdate(const char* modem_service_path) {
@@ -170,23 +196,40 @@ void CrosRequestNetworkDeviceProperties(
 void CrosRequestNetworkProfileProperties(
     const char* profile_path,
     const NetworkPropertiesCallback& callback) {
-  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
-  chromeos::RequestNetworkProfileProperties(
-      profile_path,
-      &OnRequestNetworkProperties,
-      new OnRequestNetworkPropertiesCallback(callback));
+  if (g_libcros_network_functions_enabled) {
+    // The newly allocated callback will be deleted in
+    // OnRequestNetworkProperties.
+    chromeos::RequestNetworkProfileProperties(
+        profile_path,
+        &OnRequestNetworkProperties,
+        new OnRequestNetworkPropertiesCallback(callback));
+  } else {
+    DBusThreadManager::Get()->GetFlimflamProfileClient()->GetProperties(
+        dbus::ObjectPath(profile_path),
+        base::Bind(&RunCallbackWithDictionaryValue, callback, profile_path));
+  }
 }
 
 void CrosRequestNetworkProfileEntryProperties(
     const char* profile_path,
     const char* profile_entry_path,
     const NetworkPropertiesCallback& callback) {
-  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
-  chromeos::RequestNetworkProfileEntryProperties(
-      profile_path,
-      profile_entry_path,
-      &OnRequestNetworkProperties,
-      new OnRequestNetworkPropertiesCallback(callback));
+  if (g_libcros_network_functions_enabled) {
+    // The newly allocated callback will be deleted in
+    // OnRequestNetworkProperties.
+    chromeos::RequestNetworkProfileEntryProperties(
+        profile_path,
+        profile_entry_path,
+        &OnRequestNetworkProperties,
+        new OnRequestNetworkPropertiesCallback(callback));
+  } else {
+    DBusThreadManager::Get()->GetFlimflamProfileClient()->GetEntry(
+        dbus::ObjectPath(profile_path),
+        profile_entry_path,
+        base::Bind(&RunCallbackWithDictionaryValue,
+                   callback,
+                   profile_entry_path));
+  }
 }
 
 void CrosRequestHiddenWifiNetworkProperties(

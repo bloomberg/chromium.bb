@@ -28,6 +28,9 @@ typedef base::Callback<void(
     const char* path,
     const base::DictionaryValue* properties)> NetworkPropertiesCallback;
 
+// Enables/Disables Libcros network functions.
+void SetLibcrosNetworkFunctionsEnabled(bool enabled);
+
 // Activates the cellular modem specified by |service_path| with carrier
 // specified by |carrier|.
 // |carrier| is NULL or an empty string, this will activate with the currently

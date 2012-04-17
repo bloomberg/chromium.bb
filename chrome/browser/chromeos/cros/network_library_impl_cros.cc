@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cros/network_library_impl_cros.h"
 
 #include <dbus/dbus-glib.h>
+#include "base/command_line.h"
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -44,6 +46,10 @@ NetworkLibraryImplCros::NetworkLibraryImplCros()
     : NetworkLibraryImplBase(),
       network_manager_monitor_(NULL),
       data_plan_monitor_(NULL) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableLibcros)) {
+    LOG(INFO) << "Using non Libcros network fucntions.";
+    SetLibcrosNetworkFunctionsEnabled(false);
+  }
 }
 
 NetworkLibraryImplCros::~NetworkLibraryImplCros() {

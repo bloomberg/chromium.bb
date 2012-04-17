@@ -47,23 +47,28 @@ class CHROMEOS_EXPORT FlimflamProfileClient {
 
   // Sets PropertyChanged signal handler.
   virtual void SetPropertyChangedHandler(
+      const dbus::ObjectPath& profile_path,
       const PropertyChangedHandler& handler) = 0;
 
   // Resets PropertyChanged signal handler.
-  virtual void ResetPropertyChangedHandler() = 0;
+  virtual void ResetPropertyChangedHandler(
+      const dbus::ObjectPath& profile_path) = 0;
 
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.
-  virtual void GetProperties(const DictionaryValueCallback& callback) = 0;
+  virtual void GetProperties(const dbus::ObjectPath& profile_path,
+                             const DictionaryValueCallback& callback) = 0;
 
   // Calls GetEntry method.
   // |callback| is called after the method call succeeds.
-  virtual void GetEntry(const dbus::ObjectPath& path,
+  virtual void GetEntry(const dbus::ObjectPath& profile_path,
+                        const std::string& entry_path,
                         const DictionaryValueCallback& callback) = 0;
 
   // Calls DeleteEntry method.
   // |callback| is called after the method call succeeds.
-  virtual void DeleteEntry(const dbus::ObjectPath& path,
+  virtual void DeleteEntry(const dbus::ObjectPath& profile_path,
+                           const std::string& entry_path,
                            const VoidCallback& callback) = 0;
 
  protected:

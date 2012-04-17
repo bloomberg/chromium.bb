@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
-#include "dbus/object_proxy.h"
 #include "dbus/values_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -25,74 +25,91 @@ class FlimflamProfileClientImpl : public FlimflamProfileClient {
 
   // FlimflamProfileClient overrides:
   virtual void SetPropertyChangedHandler(
+      const dbus::ObjectPath& profile_path,
       const PropertyChangedHandler& handler) OVERRIDE;
-  virtual void ResetPropertyChangedHandler() OVERRIDE;
-  virtual void GetProperties(const DictionaryValueCallback& callback) OVERRIDE;
-  virtual void GetEntry(const dbus::ObjectPath& path,
+  virtual void ResetPropertyChangedHandler(
+      const dbus::ObjectPath& profile_path) OVERRIDE;
+  virtual void GetProperties(const dbus::ObjectPath& profile_path,
+                             const DictionaryValueCallback& callback) OVERRIDE;
+  virtual void GetEntry(const dbus::ObjectPath& profile_path,
+                        const std::string& entry_path,
                         const DictionaryValueCallback& callback) OVERRIDE;
-  virtual void DeleteEntry(const dbus::ObjectPath& path,
+  virtual void DeleteEntry(const dbus::ObjectPath& profile_path,
+                           const std::string& entry_path,
                            const VoidCallback& callback) OVERRIDE;
 
  private:
-  // Handles the result of signal connection setup.
-  void OnSignalConnected(const std::string& interface,
-                         const std::string& signal,
-                         bool success);
-  // Handles PropertyChanged signal.
-  void OnPropertyChanged(dbus::Signal* signal);
-  // Handles responses for methods without results.
-  void OnVoidMethod(const VoidCallback& callback, dbus::Response* response);
-  // Handles responses for methods with DictionaryValue results.
-  void OnDictionaryValueMethod(const DictionaryValueCallback& callback,
-                               dbus::Response* response);
+  typedef std::map<std::string, FlimflamClientHelper*> HelperMap;
 
-  dbus::ObjectProxy* proxy_;
-  FlimflamClientHelper helper_;
+  // Returns the corresponding FlimflamClientHelper for the profile.
+  FlimflamClientHelper* GetHelper(const dbus::ObjectPath& profile_path);
+
+  dbus::Bus* bus_;
+  HelperMap helpers_;
+  STLValueDeleter<HelperMap> helpers_deleter_;
 
   DISALLOW_COPY_AND_ASSIGN(FlimflamProfileClientImpl);
 };
 
 FlimflamProfileClientImpl::FlimflamProfileClientImpl(dbus::Bus* bus)
-    : proxy_(bus->GetObjectProxy(
-        flimflam::kFlimflamServiceName,
-        dbus::ObjectPath(flimflam::kFlimflamServicePath))),
-      helper_(proxy_) {
-  helper_.MonitorPropertyChanged(flimflam::kFlimflamProfileInterface);
+    : bus_(bus),
+      helpers_deleter_(&helpers_) {
+}
+
+FlimflamClientHelper* FlimflamProfileClientImpl::GetHelper(
+    const dbus::ObjectPath& profile_path) {
+  HelperMap::iterator it = helpers_.find(profile_path.value());
+  if (it != helpers_.end())
+    return it->second;
+
+  // There is no helper for the profile, create it.
+  dbus::ObjectProxy* object_proxy =
+      bus_->GetObjectProxy(flimflam::kFlimflamServiceName, profile_path);
+  FlimflamClientHelper* helper = new FlimflamClientHelper(object_proxy);
+  helper->MonitorPropertyChanged(flimflam::kFlimflamProfileInterface);
+  helpers_.insert(HelperMap::value_type(profile_path.value(), helper));
+  return helper;
 }
 
 void FlimflamProfileClientImpl::SetPropertyChangedHandler(
+    const dbus::ObjectPath& profile_path,
     const PropertyChangedHandler& handler) {
-  helper_.SetPropertyChangedHandler(handler);
+  GetHelper(profile_path)->SetPropertyChangedHandler(handler);
 }
 
-void FlimflamProfileClientImpl::ResetPropertyChangedHandler() {
-  helper_.ResetPropertyChangedHandler();
+void FlimflamProfileClientImpl::ResetPropertyChangedHandler(
+    const dbus::ObjectPath& profile_path) {
+  GetHelper(profile_path)->ResetPropertyChangedHandler();
 }
 
 void FlimflamProfileClientImpl::GetProperties(
+    const dbus::ObjectPath& profile_path,
     const DictionaryValueCallback& callback) {
   dbus::MethodCall method_call(flimflam::kFlimflamProfileInterface,
                                flimflam::kGetPropertiesFunction);
-  helper_.CallDictionaryValueMethod(&method_call, callback);
+  GetHelper(profile_path)->CallDictionaryValueMethod(&method_call, callback);
 }
 
 void FlimflamProfileClientImpl::GetEntry(
-    const dbus::ObjectPath& path,
+    const dbus::ObjectPath& profile_path,
+    const std::string& entry_path,
     const DictionaryValueCallback& callback) {
   dbus::MethodCall method_call(flimflam::kFlimflamProfileInterface,
                                flimflam::kGetEntryFunction);
   dbus::MessageWriter writer(&method_call);
-  writer.AppendObjectPath(path);
-  helper_.CallDictionaryValueMethod(&method_call, callback);
+  writer.AppendString(entry_path);
+  GetHelper(profile_path)->CallDictionaryValueMethod(&method_call, callback);
 }
 
-void FlimflamProfileClientImpl::DeleteEntry(const dbus::ObjectPath& path,
-                                            const VoidCallback& callback) {
+void FlimflamProfileClientImpl::DeleteEntry(
+    const dbus::ObjectPath& profile_path,
+    const std::string& entry_path,
+    const VoidCallback& callback) {
   dbus::MethodCall method_call(flimflam::kFlimflamProfileInterface,
                                flimflam::kDeleteEntryFunction);
   dbus::MessageWriter writer(&method_call);
-  writer.AppendObjectPath(path);
-  helper_.CallVoidMethod(&method_call, callback);
+  writer.AppendString(entry_path);
+  GetHelper(profile_path)->CallVoidMethod(&method_call, callback);
 }
 
 // A stub implementation of FlimflamProfileClient.
@@ -104,13 +121,16 @@ class FlimflamProfileClientStubImpl : public FlimflamProfileClient {
 
   // FlimflamProfileClient override.
   virtual void SetPropertyChangedHandler(
+      const dbus::ObjectPath& profile_path,
       const PropertyChangedHandler& handler) OVERRIDE {}
 
   // FlimflamProfileClient override.
-  virtual void ResetPropertyChangedHandler() OVERRIDE {}
+  virtual void ResetPropertyChangedHandler(
+      const dbus::ObjectPath& profile_path) OVERRIDE {}
 
   // FlimflamProfileClient override.
-  virtual void GetProperties(const DictionaryValueCallback& callback) OVERRIDE {
+  virtual void GetProperties(const dbus::ObjectPath& profile_path,
+                             const DictionaryValueCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&FlimflamProfileClientStubImpl::PassEmptyDictionaryValue,
@@ -119,7 +139,8 @@ class FlimflamProfileClientStubImpl : public FlimflamProfileClient {
   }
 
   // FlimflamProfileClient override.
-  virtual void GetEntry(const dbus::ObjectPath& path,
+  virtual void GetEntry(const dbus::ObjectPath& profile_path,
+                        const std::string& entry_path,
                         const DictionaryValueCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -129,7 +150,8 @@ class FlimflamProfileClientStubImpl : public FlimflamProfileClient {
   }
 
   // FlimflamProfileClient override.
-  virtual void DeleteEntry(const dbus::ObjectPath& path,
+  virtual void DeleteEntry(const dbus::ObjectPath& profile_path,
+                           const std::string& entry_path,
                            const VoidCallback& callback) OVERRIDE {
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(callback,

@@ -17,13 +17,18 @@ class MockFlimflamProfileClient : public FlimflamProfileClient {
   MockFlimflamProfileClient();
   virtual ~MockFlimflamProfileClient();
 
-  MOCK_METHOD1(SetPropertyChangedHandler,
-               void(const PropertyChangedHandler& handler));
-  MOCK_METHOD0(ResetPropertyChangedHandler, void());
-  MOCK_METHOD1(GetProperties, void(const DictionaryValueCallback& callback));
-  MOCK_METHOD2(GetEntry, void(const dbus::ObjectPath& path,
+  MOCK_METHOD2(SetPropertyChangedHandler,
+               void(const dbus::ObjectPath& profile_path,
+                    const PropertyChangedHandler& handler));
+  MOCK_METHOD1(ResetPropertyChangedHandler,
+               void(const dbus::ObjectPath& profile_path));
+  MOCK_METHOD2(GetProperties, void(const dbus::ObjectPath& profile_path,
+                                   const DictionaryValueCallback& callback));
+  MOCK_METHOD3(GetEntry, void(const dbus::ObjectPath& profile_path,
+                              const std::string& entry_path,
                               const DictionaryValueCallback& callback));
-  MOCK_METHOD2(DeleteEntry, void(const dbus::ObjectPath& path,
+  MOCK_METHOD3(DeleteEntry, void(const dbus::ObjectPath& profile_path,
+                                 const std::string& entry_path,
                                  const VoidCallback& callback));
 };
 

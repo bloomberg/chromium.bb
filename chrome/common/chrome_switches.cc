@@ -1205,6 +1205,9 @@ const char kMemoryWidget[]                  = "memory-widget";
 // Disables gdata content provider.
 const char kDisableGData[]                  = "disable-gdata";
 
+// Disables Libcros.
+const char kDisableLibcros[]                = "disable-libcros";
+
 // Skips OAuth part of ChromeOS login process.
 const char kSkipOAuthLogin[]                = "skip-oauth-login";
 
