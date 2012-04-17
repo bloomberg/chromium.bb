@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,13 +16,25 @@
 
 namespace {
 
-// These are encoded AlgorithmIdentifiers for the given signature algorithm.
+// These are encoded AlgorithmIdentifiers for the given signature algorithm
+// from RFC 4055.
+
+// 1.2.840.113549.1.1.5
 const unsigned char kRSAWithSHA1[] = {
-  0x30, 0xd, 0x6, 0x9, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0xd, 0x1, 0x1, 0x5, 5, 0
+  0x30, 0xd, 0x6, 0x9, 0x2a, 0x86, 0x48, 0x86,
+  0xf7, 0xd, 0x1, 0x1, 0x5, 0x5, 0x0,
 };
 
+// 1.2.840.113549.1.1.11
 const unsigned char kRSAWithSHA256[] = {
-  0x30, 0xd, 0x6, 0x9, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0xd, 0x1, 0x1, 0xb, 5, 0
+  0x30, 0xd, 0x6, 0x9, 0x2a, 0x86, 0x48, 0x86,
+  0xf7, 0xd, 0x1, 0x1, 0xb, 0x5, 0x0,
+};
+
+// 1.2.840.113549.1.1.13
+const unsigned char kRSAWithSHA512[] = {
+  0x30, 0xd, 0x6, 0x9, 0x2a, 0x86, 0x48, 0x86,
+  0xf7, 0xd, 0x1, 0x1, 0xd, 0x5, 0x0,
 };
 
 }  // namespace
@@ -143,6 +155,10 @@ bool DNSSECKeySet::CheckSignature(
     signature_algorithm = base::StringPiece(
         reinterpret_cast<const char*>(kRSAWithSHA256),
         sizeof(kRSAWithSHA256));
+  } else if (algorithm == kDNSSEC_RSA_SHA512) {
+    signature_algorithm = base::StringPiece(
+        reinterpret_cast<const char*>(kRSAWithSHA512),
+        sizeof(kRSAWithSHA512));
   } else {
     // Unknown algorithm.
     return false;
@@ -330,7 +346,8 @@ std::string DNSSECKeySet::ASN1WrapDNSKEY(const base::StringPiece& dnskey) {
   const uint8 algorithm = data[3];
   if (algorithm != kDNSSEC_RSA_SHA1 &&
       algorithm != kDNSSEC_RSA_SHA1_NSEC3 &&
-      algorithm != kDNSSEC_RSA_SHA256) {
+      algorithm != kDNSSEC_RSA_SHA256 &&
+      algorithm != kDNSSEC_RSA_SHA512) {
     return "";
   }
 
