@@ -152,14 +152,14 @@ void SpeechRecognitionManagerImpl::CheckRenderViewTypeAndStartRecognition(
   if (!render_view_host || !render_view_host->GetDelegate())
     return;
 
-  // For host delegates other than VIEW_TYPE_TAB_CONTENTS we can't reliably show
+  // For host delegates other than VIEW_TYPE_WEB_CONTENTS we can't reliably show
   // a popup, including the speech input bubble. In these cases for privacy
   // reasons we don't want to start recording if the user can't be properly
   // notified. An example of this is trying to show the speech input bubble
   // within an extension popup: http://crbug.com/92083. In these situations the
   // speech input extension API should be used instead.
   if (render_view_host->GetDelegate()->GetRenderViewType() ==
-      content::VIEW_TYPE_TAB_CONTENTS) {
+      content::VIEW_TYPE_WEB_CONTENTS) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SpeechRecognitionManagerImpl::ProceedStartingRecognition,

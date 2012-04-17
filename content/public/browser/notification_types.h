@@ -198,8 +198,8 @@ enum NotificationType {
   // This notification is sent when a WebContents swaps its render view host
   // with another one, possibly changing processes. The source is a
   // Source<WebContents> with a pointer to the WebContents.  A
-  // TAB_CONTENTS_DISCONNECTED notification is guaranteed before the
-  // source pointer becomes junk.  No details are expected.
+  // NOTIFICATION_WEB_CONTENTS_DISCONNECTED notification is guaranteed before
+  // the source pointer becomes junk.  No details are expected.
   NOTIFICATION_WEB_CONTENTS_SWAPPED,
 
   // This message is sent after a WebContents is disconnected from the

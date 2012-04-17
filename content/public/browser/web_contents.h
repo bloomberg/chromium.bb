@@ -50,8 +50,8 @@ struct RendererPreferences;
 // Describes what goes in the main content area of a tab.
 class WebContents : public PageNavigator {
  public:
-  // |base_tab_contents| is used if we want to size the new tab contents view
-  // based on an existing tab contents view.  This can be NULL if not needed.
+  // |base_web_contents| is used if we want to size the new web contents view
+  // based on an existing web contents view.  This can be NULL if not needed.
   //
   // The session storage namespace parameter allows multiple render views and
   // tab contentses to share the same session storage (part of the WebStorage

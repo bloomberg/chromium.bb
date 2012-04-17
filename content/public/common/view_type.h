@@ -11,7 +11,7 @@ namespace content {
 // Indicates different types of views.
 enum ViewTypeValues {
   VIEW_TYPE_INVALID,
-  VIEW_TYPE_TAB_CONTENTS,
+  VIEW_TYPE_WEB_CONTENTS,
   VIEW_TYPE_INTERSTITIAL_PAGE,
   VIEW_TYPE_DEV_TOOLS_UI,
 

@@ -448,7 +448,7 @@ void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
     // If you hit this DCHECK(), please add reproduction steps to
     // http://crbug.com/109464.
     DCHECK(details->source_web_contents->GetViewType() !=
-           content::VIEW_TYPE_TAB_CONTENTS);
+           content::VIEW_TYPE_WEB_CONTENTS);
     return;
   }
   const FrameNavigationState& frame_navigation_state =

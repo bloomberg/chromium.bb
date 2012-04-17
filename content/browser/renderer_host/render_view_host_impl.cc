@@ -483,12 +483,12 @@ void RenderViewHostImpl::WasSwappedOut() {
 
     if (!content::RenderProcessHost::run_renderer_in_process() &&
         process_handle && views <= 1) {
-      // We expect the delegate for this RVH to be TabContents, as it is the
+      // We expect the delegate for this RVH to be WebContents, as it is the
       // only class that swaps out render view hosts on navigation.
       DCHECK_EQ(delegate_->GetRenderViewType(),
-                content::VIEW_TYPE_TAB_CONTENTS);
+                content::VIEW_TYPE_WEB_CONTENTS);
 
-      // Kill the process only if TabContents sets SuddenTerminationAllowed,
+      // Kill the process only if WebContents sets SuddenTerminationAllowed,
       // which indicates that the timer has expired.
       // This is not the case if we load data URLs or about:blank. The reason
       // is that there is no network requests and this code is hit without

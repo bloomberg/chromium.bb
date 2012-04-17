@@ -685,7 +685,7 @@ class CONTENT_EXPORT WebContentsImpl
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
 
-  // Our view type. Default is VIEW_TYPE_TAB_CONTENTS.
+  // Our view type. Default is VIEW_TYPE_WEB_CONTENTS.
   content::ViewType view_type_;
 
   // Is there an opener associated with this?

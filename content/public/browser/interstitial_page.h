@@ -85,4 +85,4 @@ class InterstitialPage {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_TAB_CONTENTS_INTERSTITIAL_PAGE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_INTERSTITIAL_PAGE_H_

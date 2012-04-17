@@ -81,9 +81,9 @@ class NavigationEntry {
   virtual void SetContentState(const std::string& state) = 0;
   virtual const std::string& GetContentState() const = 0;
 
-  // Describes the current page that the tab represents. For web pages
-  // (TAB_CONTENTS_WEB) this is the ID that the renderer generated for the page
-  // and is how we can tell new versus renavigations.
+  // Describes the current page that the tab represents. This is the ID that the
+  // renderer generated for the page and is how we can tell new versus
+  // renavigations.
   virtual void SetPageID(int page_id) = 0;
   virtual int32 GetPageID() const = 0;
 

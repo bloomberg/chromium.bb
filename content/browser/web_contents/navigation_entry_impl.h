@@ -65,9 +65,8 @@ class CONTENT_EXPORT NavigationEntryImpl
     unique_id_ = unique_id;
   }
 
-  // The SiteInstance tells us how to share sub-processes when the tab type is
-  // TAB_CONTENTS_WEB. This will be NULL otherwise. This is a reference counted
-  // pointer to a shared site instance.
+  // The SiteInstance tells us how to share sub-processes. This is a reference
+  // counted pointer to a shared site instance.
   //
   // Note that the SiteInstance should usually not be changed after it is set,
   // but this may happen if the NavigationEntry was cloned and needs to use a

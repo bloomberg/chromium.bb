@@ -94,9 +94,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
                                 bool blocked_by_policy) {}
 
   // Invoked when the WebContents is being destroyed. Gives subclasses a chance
-  // to cleanup. At the time this is invoked |tab_contents()| returns NULL.
+  // to cleanup. At the time this is invoked |web_contents()| returns NULL.
   // It is safe to delete 'this' from here.
-  virtual void WebContentsDestroyed(WebContents* tab) {}
+  virtual void WebContentsDestroyed(WebContents* web_contents) {}
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

@@ -99,7 +99,6 @@ bool WillHandleBrowserAboutURL(GURL* url,
          !url->SchemeIs(chrome::kAboutScheme));
 
   // Only handle chrome://foo/, URLFixerUpper::FixupURL translates about:foo.
-  // TAB_CONTENTS_WEB handles about:blank, which frames are allowed to access.
   if (!url->SchemeIs(chrome::kChromeUIScheme))
     return false;
 

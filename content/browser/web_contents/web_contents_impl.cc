@@ -276,7 +276,7 @@ WebContentsImpl::WebContentsImpl(
           static_cast<int>(content::kMaximumZoomFactor * 100)),
       temporary_zoom_settings_(false),
       content_restrictions_(0),
-      view_type_(content::VIEW_TYPE_TAB_CONTENTS),
+      view_type_(content::VIEW_TYPE_WEB_CONTENTS),
       has_opener_(false),
       color_chooser_(NULL) {
   render_manager_.Init(browser_context, site_instance, routing_id);
