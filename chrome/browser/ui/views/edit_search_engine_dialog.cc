@@ -229,14 +229,7 @@ views::Label* EditSearchEngineDialog::CreateLabel(int message_id) {
 Textfield* EditSearchEngineDialog::CreateTextfield(const string16& text,
                                                    bool lowercase) {
   Textfield* text_field = new Textfield(
-#if defined(USE_AURA)
-      Textfield::STYLE_DEFAULT);
-  NOTIMPLEMENTED();   // TODO(beng): support lowercase mode in
-                      //             NativeTextfieldViews.
-                      //             http://crbug.com/109308
-#else
       lowercase ? Textfield::STYLE_LOWERCASE : Textfield::STYLE_DEFAULT);
-#endif
   text_field->SetText(text);
   text_field->SetController(this);
   return text_field;

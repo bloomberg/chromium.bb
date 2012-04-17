@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
@@ -37,6 +38,7 @@
 #include "ui/views/metrics.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
+#include "unicode/uchar.h"
 
 #if defined(USE_AURA)
 #include "ui/base/cursor/cursor.h"
@@ -76,9 +78,6 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       ALLOW_THIS_IN_INITIALIZER_LIST(touch_selection_controller_(
           TouchSelectionController::create(this))) {
   set_border(text_border_);
-
-  // Lowercase is not supported.
-  DCHECK_NE(parent->style(), Textfield::STYLE_LOWERCASE);
 
 #if defined(OS_CHROMEOS)
   GetRenderText()->SetFontList(gfx::FontList(l10n_util::GetStringUTF8(
@@ -198,6 +197,7 @@ int NativeTextfieldViews::OnPerformDrop(const DropTargetEvent& event) {
       GetRenderText()->FindCursorPosition(event.location());
   string16 text;
   event.data().GetString(&text);
+  text = GetTextForDisplay(text);
 
   // We'll delete the current selection for a drag and drop within this view.
   bool move = initiating_drag_ && !event.IsControlDown() &&
@@ -321,7 +321,7 @@ string16 NativeTextfieldViews::GetText() const {
 }
 
 void NativeTextfieldViews::UpdateText() {
-  model_->SetText(textfield_->text());
+  model_->SetText(GetTextForDisplay(textfield_->text()));
   OnCaretBoundsChanged();
   SchedulePaint();
   textfield_->GetWidget()->NotifyAccessibilityEvent(
@@ -331,7 +331,7 @@ void NativeTextfieldViews::UpdateText() {
 void NativeTextfieldViews::AppendText(const string16& text) {
   if (text.empty())
     return;
-  model_->Append(text);
+  model_->Append(GetTextForDisplay(text));
   OnCaretBoundsChanged();
   SchedulePaint();
 }
@@ -669,9 +669,9 @@ void NativeTextfieldViews::InsertText(const string16& text) {
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
   if (GetRenderText()->insert_mode())
-    model_->InsertText(text);
+    model_->InsertText(GetTextForDisplay(text));
   else
-    model_->ReplaceText(text);
+    model_->ReplaceText(GetTextForDisplay(text));
   skip_input_method_cancel_composition_ = false;
   UpdateAfterChange(true, true);
   OnAfterUserAction();
@@ -690,6 +690,9 @@ void NativeTextfieldViews::InsertChar(char16 ch, int flags) {
   else
     model_->ReplaceChar(ch);
   skip_input_method_cancel_composition_ = false;
+
+  model_->SetText(GetTextForDisplay(GetText()));
+
   UpdateAfterChange(true, true);
   OnAfterUserAction();
 }
@@ -790,6 +793,11 @@ void NativeTextfieldViews::OnCompositionTextConfirmedOrCleared() {
 
 gfx::RenderText* NativeTextfieldViews::GetRenderText() const {
   return model_->render_text();
+}
+
+string16 NativeTextfieldViews::GetTextForDisplay(const string16& text) {
+  return textfield_->style() & Textfield::STYLE_LOWERCASE ?
+      base::i18n::ToLower(text) : text;
 }
 
 void NativeTextfieldViews::UpdateCursor() {
@@ -1047,14 +1055,23 @@ bool NativeTextfieldViews::Copy() {
 }
 
 bool NativeTextfieldViews::Paste() {
+  const string16 original_text = GetText();
   const bool success = model_->Paste();
 
-  // Calls TextfieldController::ContentsChanged() explicitly if the paste action
-  // did not change the content at all. See http://crbug.com/79002
-  if (success && GetText() == textfield_->text()) {
-    TextfieldController* controller = textfield_->GetController();
-    if (controller)
-      controller->ContentsChanged(textfield_, textfield_->text());
+  if (success) {
+    // As Paste is handled in model_->Paste(), the RenderText may contain
+    // upper case characters. This is not consistent with other places
+    // which keeps RenderText only containing lower case characters.
+    string16 new_text = GetTextForDisplay(GetText());
+    model_->SetText(new_text);
+
+    // Calls TextfieldController::ContentsChanged() explicitly if the paste
+    // action did not change the content at all. See http://crbug.com/79002
+    if (new_text == original_text) {
+      TextfieldController* controller = textfield_->GetController();
+      if (controller)
+        controller->ContentsChanged(textfield_, textfield_->text());
+    }
   }
   return success;
 }

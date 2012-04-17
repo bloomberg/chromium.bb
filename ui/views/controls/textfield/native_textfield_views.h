@@ -172,6 +172,10 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   // Returns the TextfieldViewsModel's text/cursor/selection rendering model.
   gfx::RenderText* GetRenderText() const;
 
+  // Converts |text| according to textfield style, e.g. lower case if
+  // |textfield_| has STYLE_LOWERCASE style.
+  string16 GetTextForDisplay(const string16& text);
+
   // A callback function to periodically update the cursor state.
   void UpdateCursor();
 
@@ -197,7 +201,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   // changed.
   void UpdateAfterChange(bool text_changed, bool cursor_changed);
 
-  // Utility function to prepare the context menu..
+  // Utility function to prepare the context menu.
   void UpdateContextMenu();
 
   // Convenience method to call InputMethod::OnTextInputTypeChanged();

@@ -185,7 +185,7 @@ class VIEWS_EXPORT TextfieldViewsModel {
   bool Copy();
 
   // Pastes text from the clipboard at current cursor position. Returns true
-  // if text has changed after pasting.
+  // if any text is pasted.
   bool Paste();
 
   // Tells if any text is selected, even if the selection is in composition
@@ -208,7 +208,7 @@ class VIEWS_EXPORT TextfieldViewsModel {
   void GetTextRange(ui::Range* range) const;
 
   // Sets composition text and attributes. If there is composition text already,
-  // it’ll be replaced by the new one. Otherwise, current selection will be
+  // it'll be replaced by the new one. Otherwise, current selection will be
   // replaced. If there is no selection, the composition text will be inserted
   // at the insertion point.
   // Any changes to the model except text insertion will confirm the current
