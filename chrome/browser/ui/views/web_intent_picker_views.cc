@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -44,6 +43,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/throbber.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -743,6 +743,9 @@ class WebIntentPickerViews : public views::ButtonListener,
   // A weak pointer to the browser this picker is in.
   Browser* browser_;
 
+  // A weak pointer to the WebView that hosts the WebContents being displayed.
+  views::WebView* webview_;
+
   // A weak pointer to the view that contains all other views in the picker.
   views::View* contents_;
 
@@ -784,6 +787,7 @@ WebIntentPickerViews::WebIntentPickerViews(Browser* browser,
       suggestions_label_(NULL),
       extensions_(NULL),
       browser_(browser),
+      webview_(new views::WebView(browser->profile())),
       contents_(NULL),
       window_(NULL),
       more_suggestions_link_(NULL),
@@ -924,13 +928,8 @@ void WebIntentPickerViews::OnInlineDispositionWebContentsLoaded(
 
   // Inline web contents row.
   grid_layout->StartRow(0, 1);
-  TabContentsContainer* tab_contents_container = new TabContentsContainer;
-  grid_layout->AddView(tab_contents_container, 1, 1, GridLayout::CENTER,
+  grid_layout->AddView(webview_, 1, 1, GridLayout::CENTER,
                        GridLayout::CENTER, kDialogMinWidth, 140);
-
-  // The contents can only be changed after the child is added to view
-  // hierarchy.
-  tab_contents_container->ChangeWebContents(web_contents);
   contents_->Layout();
   SizeToContents();
   displaying_web_contents_ = true;
@@ -968,10 +967,9 @@ void WebIntentPickerViews::OnExtensionIconChanged(
 
 void WebIntentPickerViews::OnInlineDisposition(
     WebIntentPickerModel* model, const GURL& url) {
-  WebContents* web_contents = WebContents::Create(
-      browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(this));
+  content::WebContents* web_contents = webview_->GetWebContents();
   web_contents->SetDelegate(inline_disposition_delegate_.get());
 
   const WebIntentPickerModel::InstalledService* service =

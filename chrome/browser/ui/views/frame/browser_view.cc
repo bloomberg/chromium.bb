@@ -55,7 +55,6 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_factory.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
@@ -959,7 +958,7 @@ void BrowserView::RotatePaneFocus(bool forwards) {
       accessible_panes.begin(), accessible_panes.end());
   accessible_views.push_back(GetTabContentsContainerView());
   if (devtools_container_->visible())
-    accessible_views.push_back(devtools_container_->GetFocusView());
+    accessible_views.push_back(devtools_container_);
   int count = static_cast<int>(accessible_views.size());
 
   // Figure out which view (if any) currently has the focus.
@@ -1910,7 +1909,7 @@ void BrowserView::Init() {
   SkColor bg_color = GetWidget()->GetThemeProvider()->
       GetColor(ThemeService::COLOR_TOOLBAR);
 
-  devtools_container_ = new TabContentsContainer;
+  devtools_container_ = new views::WebView(browser_->profile());
   devtools_container_->set_id(VIEW_ID_DEV_TOOLS_DOCKED);
   devtools_container_->SetVisible(false);
 
@@ -2040,7 +2039,7 @@ void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
   bool should_show = devtools_contents && !devtools_container_->visible();
   bool should_hide = !devtools_contents && devtools_container_->visible();
 
-  devtools_container_->ChangeWebContents(devtools_contents);
+  devtools_container_->SetWebContents(devtools_contents);
 
   if (should_show)
     ShowDevToolsContainer();

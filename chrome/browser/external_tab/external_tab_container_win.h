@@ -43,6 +43,10 @@ namespace ui {
 class ViewProp;
 }
 
+namespace views {
+class WebView;
+}
+
 // This class serves as the container window for an external tab.
 // An external tab is a Chrome tab that is meant to displayed in an
 // external process. This class provides the FocusManger needed by the
@@ -286,7 +290,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   content::NotificationRegistrar registrar_;
 
   // A view to handle focus cycling
-  TabContentsContainer* tab_contents_container_;
+  views::WebView* tab_contents_container_;
 
   int tab_handle_;
   // A failed navigation like a 404 is followed in chrome with a success

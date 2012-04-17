@@ -7,10 +7,11 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -48,7 +49,7 @@ class ConstrainedHtmlUIDelegateImplViews
 
 }  // namespace
 
-class ConstrainedHtmlDelegateViews : public TabContentsContainer,
+class ConstrainedHtmlDelegateViews : public views::WebView,
                                      public ConstrainedHtmlUIDelegate,
                                      public views::WidgetDelegate {
  public:
@@ -83,7 +84,7 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
 
   // views::WidgetDelegate interface.
   virtual views::View* GetInitiallyFocusedView() OVERRIDE {
-    return GetFocusView();
+    return this;
   }
   virtual bool CanResize() const OVERRIDE { return true; }
   virtual void WindowClosing() OVERRIDE {
@@ -103,21 +104,11 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
     return this;
   }
 
-  // TabContentsContainer interface.
+  // views::WebView overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size size;
     GetHtmlDialogUIDelegate()->GetDialogSize(&size);
     return size;
-  }
-
-  // views::WidgetDelegate interface.
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE {
-    TabContentsContainer::ViewHierarchyChanged(is_add, parent, child);
-    if (is_add && child == this) {
-      ChangeWebContents(tab()->web_contents());
-    }
   }
 
  private:
@@ -130,9 +121,11 @@ ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
     Profile* profile,
     HtmlDialogUIDelegate* delegate,
     HtmlDialogTabContentsDelegate* tab_delegate)
-    : impl_(new ConstrainedHtmlUIDelegateImplViews(profile,
+    : views::WebView(profile),
+      impl_(new ConstrainedHtmlUIDelegateImplViews(profile,
                                                    delegate,
                                                    tab_delegate)) {
+  SetWebContents(tab()->web_contents());
 }
 
 ConstrainedHtmlDelegateViews::~ConstrainedHtmlDelegateViews() {

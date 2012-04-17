@@ -49,8 +49,6 @@ class FullscreenExitBubbleViews;
 class InfoBarContainerView;
 class LocationBarView;
 class StatusBubbleViews;
-class TabContentsContainer;
-class TabContentsContainer;
 class TabStripModel;
 class ToolbarView;
 
@@ -617,7 +615,7 @@ class BrowserView : public BrowserWindow,
   views::WebView* contents_container_;
 
   // The view that contains devtools window for the selected TabContents.
-  TabContentsContainer* devtools_container_;
+  views::WebView* devtools_container_;
 
   // The view that contains instant's TabContents.
   views::WebView* preview_container_;

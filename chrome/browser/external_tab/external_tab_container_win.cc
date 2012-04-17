@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -66,6 +65,7 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/base/view_prop.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/controls/webview/webview.h"
 
 using content::BrowserThread;
 using content::LoadNotificationDetails;
@@ -1159,7 +1159,7 @@ void ExternalTabContainer::ServicePendingOpenURLRequests() {
 void ExternalTabContainer::SetupExternalTabView() {
   // Create a TabContentsContainer to handle focus cycling using Tab and
   // Shift-Tab.
-  tab_contents_container_ = new TabContentsContainer;
+  tab_contents_container_ = new views::WebView(tab_contents_->profile());
 
   // The views created here will be destroyed when the ExternalTabContainer
   // widget is torn down.
@@ -1186,7 +1186,7 @@ void ExternalTabContainer::SetupExternalTabView() {
   layout->AddView(tab_contents_container_);
   GetWidget()->SetContentsView(external_tab_view_);
   // Note that SetTabContents must be called after AddChildView is called
-  tab_contents_container_->ChangeWebContents(web_contents());
+  tab_contents_container_->SetWebContents(web_contents());
 }
 
 TemporaryPopupExternalTabContainer::TemporaryPopupExternalTabContainer(
