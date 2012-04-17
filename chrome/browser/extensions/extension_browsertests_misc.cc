@@ -779,8 +779,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   EXPECT_TRUE(result);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && defined(NDEBUG)
 #define MAYBE_PluginLoadUnload PluginLoadUnload
+#elif defined(OS_WIN) && !defined(NDEBUG)
+// http://crbug.com/123851 Debug builds are flaky.
+#define MAYBE_PluginLoadUnload FLAKY_PluginLoadUnload
 #elif defined(OS_LINUX)
 // http://crbug.com/47598
 #define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
