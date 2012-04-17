@@ -65,6 +65,21 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 
 }  // namespace
 
+// Helper methods used for the creation of the picker sheet controls.
+@implementation WebIntentPickerSheetController (helpers)
++ (NSButton*)createHyperlinkButton:(NSString*)title withFrame:(NSRect)frame {
+  NSButton* button = [[NSButton alloc] initWithFrame:frame];
+  scoped_nsobject<HyperlinkButtonCell> cell(
+      [[HyperlinkButtonCell alloc] initTextCell:title]);
+  [cell setControlSize:NSSmallControlSize];
+  [button setCell:cell.get()];
+  [button setButtonType:NSMomentaryPushInButton];
+  [button setBezelStyle:NSRegularSquareBezelStyle];
+
+  return button;
+}
+@end
+
 // This simple NSView subclass is used as the single subview of the page info
 // bubble's window's contentView. Drawing is flipped so that layout of the
 // sections is easier. Apple recommends flipping the coordinate origin when
@@ -74,6 +89,322 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 @implementation WebIntentsContentView
 - (BOOL)isFlipped {
   return YES;
+}
+@end
+
+// NSImageView subclassed to allow fading the alpha value of the image to
+// indicate an inactive/disabled extension.
+@interface DimmableImageView : NSImageView {
+ @private
+  CGFloat alpha;
+}
+
+- (void)setEnabled:(BOOL)enabled;
+
+// NSView override
+- (void)drawRect:(NSRect)rect;
+@end
+
+@implementation DimmableImageView
+- (void)drawRect:(NSRect)rect {
+  NSImage* image = [self image];
+
+  NSRect sourceRect, destinationRect;
+  sourceRect.origin = NSZeroPoint;
+  sourceRect.size = [image size];
+
+  destinationRect.origin = NSZeroPoint;
+  destinationRect.size = [self frame].size;
+
+  // If the source image is smaller than the destination, center it.
+  if (destinationRect.size.width > sourceRect.size.width) {
+    destinationRect.origin.x =
+        (destinationRect.size.width - sourceRect.size.width) / 2.0;
+    destinationRect.size.width = sourceRect.size.width;
+  }
+  if (destinationRect.size.height > sourceRect.size.height) {
+    destinationRect.origin.y =
+        (destinationRect.size.height - sourceRect.size.height) / 2.0;
+    destinationRect.size.height = sourceRect.size.height;
+  }
+
+  [image drawInRect:destinationRect
+           fromRect:sourceRect
+          operation:NSCompositeSourceOver
+           fraction:alpha];
+}
+
+- (void)setEnabled:(BOOL)enabled {
+  if (enabled)
+    alpha = 1.0;
+  else
+    alpha = 0.5;
+  [self setNeedsDisplay:YES];
+}
+@end
+
+// An NSView subclass to display ratings stars.
+@interface RatingsView : NSView
+  // Mark RatingsView as disabled/enabled.
+- (void)setEnabled:(BOOL)enabled;
+@end
+
+@implementation RatingsView
+- (void)setEnabled:(BOOL)enabled {
+  for (DimmableImageView* imageView in [self subviews])
+    [imageView setEnabled:enabled];
+}
+@end
+
+// NSView for a single row in the suggestions view.
+@interface SingleSuggestionView : NSView {
+ @private
+  scoped_nsobject<NSProgressIndicator> throbber_;
+  scoped_nsobject<NSButton> cwsButton_;
+  scoped_nsobject<RatingsView> ratingsWidget_;
+  scoped_nsobject<NSButton> installButton_;
+  scoped_nsobject<DimmableImageView> iconView_;
+}
+
+- (id)initWithExtension:
+    (const WebIntentPickerModel::SuggestedExtension*)extension
+              withIndex:(size_t)index
+          forController:(WebIntentPickerSheetController*)controller;
+- (void)startThrobber;
+- (void)setEnabled:(BOOL)enabled;
+- (void)stopThrobber;
+- (NSInteger)tag;
+@end
+
+@implementation SingleSuggestionView
+- (id)initWithExtension:
+    (const WebIntentPickerModel::SuggestedExtension*)extension
+              withIndex:(size_t)index
+          forController:(WebIntentPickerSheetController*)controller {
+  const CGFloat kMaxHeight = 34.0;
+  const CGFloat kTitleX = 20.0;
+  const CGFloat kTitleWidth = 120.0;
+  const CGFloat kStarX = 150.0;
+  const CGFloat kMinAddButtonHeight = 24.0;
+  const CGFloat kAddButtonX = 245;
+  const CGFloat kAddButtonWidth = 128.0;
+
+  // Build the main view
+  NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, kMaxHeight);
+  if (self = [super initWithFrame:contentFrame]) {
+    NSMutableArray* subviews = [NSMutableArray array];
+
+    // Add the extension icon.
+    NSImage* icon = extension->icon.ToNSImage();
+    NSRect imageFrame = NSZeroRect;
+
+    iconView_.reset(
+        [[DimmableImageView alloc] initWithFrame:imageFrame]);
+    [iconView_ setImage:icon];
+    [iconView_ setImageFrameStyle:NSImageFrameNone];
+    [iconView_ setEnabled:YES];
+
+    imageFrame.size = [icon size];
+    imageFrame.size.height = std::min(NSHeight(imageFrame), kMaxHeight);
+    imageFrame.origin.y += (kMaxHeight - NSHeight(imageFrame)) / 2.0;
+    [iconView_ setFrame:imageFrame];
+    [subviews addObject:iconView_];
+
+    // Add the extension title.
+    NSRect frame = NSMakeRect(kTitleX, 0, kTitleWidth, 0.0);
+
+    NSString* string = base::SysUTF16ToNSString(extension->title);
+    cwsButton_.reset(
+      [WebIntentPickerSheetController createHyperlinkButton:string
+                                                  withFrame:frame]);
+    [cwsButton_ setTarget:controller];
+    [cwsButton_ setAction:@selector(openExtensionLink:)];
+    [cwsButton_ setTag:index];
+    frame.size.height = std::min([[cwsButton_ cell] cellSize].height,
+                                 kMaxHeight);
+    frame.origin.y += (kMaxHeight - NSHeight(frame)) / 2.0;
+    [cwsButton_ setFrame:frame];
+    [subviews addObject:cwsButton_];
+
+    // Add the star rating
+    ratingsWidget_.reset(
+        [SingleSuggestionView
+            createStarWidgetWithRating:extension->average_rating]);
+    frame = [ratingsWidget_ frame];
+    frame.origin.y += (kMaxHeight - NSHeight(frame)) / 2.0;
+    frame.origin.x = kStarX;
+    [ratingsWidget_ setFrame: frame];
+    [subviews addObject:ratingsWidget_];
+
+    // Add an "add to chromium" button.
+    frame = NSMakeRect(kAddButtonX, 0, kAddButtonWidth, 0);
+    installButton_.reset([[NSButton alloc] initWithFrame:frame]);
+    [installButton_ setAlignment:NSLeftTextAlignment];
+    [installButton_ setButtonType:NSMomentaryPushInButton];
+    [installButton_ setBezelStyle:NSRegularSquareBezelStyle];
+    string = l10n_util::GetNSStringWithFixup(
+        IDS_INTENT_PICKER_INSTALL_EXTENSION);
+    [installButton_ setTitle:string];
+    frame.size.height = std::min(kMinAddButtonHeight, kMaxHeight);
+    frame.origin.y += (kMaxHeight - NSHeight(frame)) / 2.0;
+    [installButton_ setFrame:frame];
+
+    [installButton_ setTarget:controller];
+    [installButton_ setAction:@selector(installExtension:)];
+    [installButton_ setTag:index];
+    [subviews addObject:installButton_];
+
+    // Keep a throbber handy.
+    frame.origin.x += (NSWidth(frame) - 16) / 2;
+    frame.origin.y += (NSHeight(frame) - 16) /2;
+    frame.size = NSMakeSize(16, 16);
+    throbber_.reset(
+        [[NSProgressIndicator alloc] initWithFrame:frame]);
+    [throbber_ setHidden:YES];
+    [throbber_ setStyle:NSProgressIndicatorSpinningStyle];
+    [subviews addObject:throbber_];
+
+    [self setSubviews:subviews];
+  }
+  return self;
+}
+
++ (RatingsView*)createStarWidgetWithRating:(CGFloat)rating {
+  const int kStarSpacing = 1;  // Spacing between stars in pixels.
+  const CGFloat kStarSize = 16.0; // Size of the star in pixels.
+
+  NSMutableArray* subviews = [NSMutableArray array];
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  NSRect imageFrame = NSMakeRect(0, 0, kStarSize, kStarSize);
+
+  for (int i = 0; i < 5; ++i) {
+    NSImage* nsImage = rb.GetNativeImageNamed(
+        WebIntentPicker::GetNthStarImageIdFromCWSRating(rating, i));
+
+    scoped_nsobject<DimmableImageView> imageView(
+        [[DimmableImageView alloc] initWithFrame:imageFrame]);
+    [imageView setImage:nsImage];
+    [imageView setImageFrameStyle:NSImageFrameNone];
+    [imageView setFrame:imageFrame];
+    [imageView setEnabled:YES];
+    [subviews addObject:imageView];
+    imageFrame.origin.x += kStarSize + kStarSpacing;
+  }
+
+  NSRect frame = NSMakeRect(0, 0, (kStarSize + kStarSpacing) * 5, kStarSize);
+  RatingsView* widget = [[RatingsView alloc] initWithFrame:frame];
+  [widget setSubviews: subviews];
+  return widget;
+}
+
+- (NSInteger)tag {
+  return [installButton_ tag];
+}
+
+- (void)startThrobber {
+  [installButton_ setHidden:YES];
+  [throbber_ setHidden:NO];
+  [throbber_ startAnimation:self];
+  [iconView_ setEnabled:YES];
+  [ratingsWidget_ setEnabled:YES];
+}
+
+- (void)setEnabled:(BOOL) enabled {
+  [installButton_ setEnabled:enabled];
+  [cwsButton_ setEnabled:enabled];
+  [iconView_ setEnabled:enabled];
+  [ratingsWidget_ setEnabled:enabled];
+}
+
+- (void)stopThrobber {
+  [throbber_ setHidden:YES];
+  [throbber_ stopAnimation:self];
+  [installButton_ setHidden:NO];
+}
+
+@end
+
+@interface SuggestionView : NSView {
+ @private
+  // Used to forward button clicks. Weak reference.
+  WebIntentPickerSheetController* controller_;
+}
+
+- (id)initWithModel:(WebIntentPickerModel*)model
+      forController:(WebIntentPickerSheetController*)controller;
+- (void)startThrobberForRow:(NSInteger)index;
+- (void)stopThrobber;
+@end
+
+@implementation SuggestionView
+- (id)initWithModel:(WebIntentPickerModel*)model
+      forController:(WebIntentPickerSheetController*)controller {
+  const CGFloat kYMargin = 16.0;
+  size_t count = model->GetSuggestedExtensionCount();
+  if (count == 0)
+    return nil;
+
+  NSMutableArray* subviews = [NSMutableArray array];
+
+  CGFloat offset = kYMargin;
+  for (size_t i = count; i > 0; --i) {
+    const WebIntentPickerModel::SuggestedExtension& ext =
+        model->GetSuggestedExtensionAt(i - 1);
+    scoped_nsobject<NSView> suggestView(
+        [[SingleSuggestionView alloc] initWithExtension:&ext
+                                              withIndex:i-1
+                                          forController:controller]);
+    offset += [self addStackedView:suggestView.get()
+                        toSubviews:subviews
+                          atOffset:offset];
+  }
+  offset += kYMargin;
+
+  NSRect contentFrame = NSMakeRect(kFramePadding, 0, kWindowWidth, offset);
+  if(self =  [super initWithFrame:contentFrame])
+    [self setSubviews: subviews];
+
+  controller_ = controller;
+  return self;
+}
+
+- (void)startThrobberForRow:(NSInteger)index {
+  // Check against number of subviews
+  // Get appropriate subview
+  // Dim all subviews except our subview
+  for (SingleSuggestionView* row in [self subviews]) {
+    [row setEnabled:NO];
+    if ([row tag] == index)
+      [row startThrobber];
+  }
+  // replace button on our subview with throbber
+}
+
+- (void)stopThrobber {
+  for (SingleSuggestionView* row in [self subviews]) {
+    [row stopThrobber];
+    [row setEnabled:YES];
+  }
+}
+
+- (IBAction)installExtension:(id)sender {
+  [controller_ installExtension:sender];
+}
+
+
+- (CGFloat)addStackedView:(NSView*)view
+               toSubviews:(NSMutableArray*)subviews
+                 atOffset:(CGFloat)offset {
+  if (view == nil)
+    return 0.0;
+
+  NSPoint frameOrigin = [view frame].origin;
+  frameOrigin.y = offset;
+  [view setFrameOrigin:frameOrigin];
+  [subviews addObject:view];
+
+  return NSHeight([view frame]);
 }
 @end
 
@@ -93,6 +424,7 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 
   if ((self = [super initWithWindow:window.get()])) {
     picker_ = picker;
+    intentButtons_.reset([[NSMutableArray alloc] init]);
     [self performLayoutWithModel:NULL];
     [[self window] makeFirstResponder:self];
   }
@@ -161,12 +493,21 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   DCHECK(model_);
   const WebIntentPickerModel::SuggestedExtension& extension =
       model_->GetSuggestedExtensionAt([sender tag]);
-  if (picker_)
+  if (picker_) {
+    [suggestionView_ startThrobberForRow:[sender tag]];
+    [closeButton_ setEnabled:NO];
+    [self setIntentButtonsEnabled:NO];
     picker_->OnExtensionInstallRequested(UTF16ToUTF8(extension.id));
+  }
 }
 
-// Sets proprties on the given |field| to act as the title or description labels
-// in the bubble.
+- (void)setIntentButtonsEnabled:(BOOL)enabled {
+  for (NSButton* button in intentButtons_.get()) {
+    [button setEnabled:enabled];
+  }
+}
+
+// Sets properties on the given |field| to act as title or description labels.
 - (void)configureTextFieldAsLabel:(NSTextField*)field {
   [field setEditable:NO];
   [field setSelectable:YES];
@@ -188,117 +529,6 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   return NSHeight([view frame]);
 }
 
-- (NSButton*)newHyperlinkButton:(NSString*)title withFrame:(NSRect)frame {
-  NSButton* button = [[NSButton alloc] initWithFrame:frame];
-  scoped_nsobject<HyperlinkButtonCell> cell(
-      [[HyperlinkButtonCell alloc] initTextCell:title]);
-  [cell setControlSize:NSSmallControlSize];
-  [button setCell:cell.get()];
-  [button setButtonType:NSMomentaryPushInButton];
-  [button setBezelStyle:NSRegularSquareBezelStyle];
-
-  return button;
-}
-
-- (NSView*)newViewForSuggestedExtension:
-    (const WebIntentPickerModel::SuggestedExtension*)extension
-    withIndex:(size_t)index {
-  const CGFloat kMaxHeight = 34.0;
-  const CGFloat kTitleX = 20.0;
-  const CGFloat kTitleWidth = 120.0;
-  const CGFloat kStarX = 150.0;
-  const CGFloat kMinAddButtonHeight = 24.0;
-  const CGFloat kAddButtonX = 245;
-  const CGFloat kAddButtonWidth = 128.0;
-
-  NSMutableArray* subviews = [NSMutableArray array];
-
-  // Add the extension icon.
-  NSImage* icon = extension->icon.ToNSImage();
-  NSRect imageFrame = NSZeroRect;
-
-  scoped_nsobject<NSImageView> imageView(
-      [[NSImageView alloc] initWithFrame:imageFrame]);
-  [imageView setImage:icon];
-  [imageView setImageFrameStyle:NSImageFrameNone];
-
-  imageFrame.size = [icon size];
-  imageFrame.size.height = std::min(NSHeight(imageFrame), kMaxHeight);
-  imageFrame.origin.y += (kMaxHeight - NSHeight(imageFrame)) / 2.0;
-  [imageView setFrame:imageFrame];
-  [subviews addObject:imageView.get()];
-
-  // Add the extension title.
-  NSRect frame = NSMakeRect(kTitleX, 0, kTitleWidth, 0.0);
-
-  NSString* string = base::SysUTF16ToNSString(extension->title);
-  scoped_nsobject<NSButton> button(
-    [self newHyperlinkButton:string withFrame:frame]);
-  [button setTarget:self];
-  [button setAction:@selector(openExtensionLink:)];
-  [button setTag:index];
-  frame.size.height = std::min([[button cell] cellSize].height, kMaxHeight);
-  frame.origin.y += (kMaxHeight - NSHeight(frame)) / 2.0;
-  [button setFrame:frame];
-  [subviews addObject:button.get()];
-
-  // Add the star rating
-  [self addStarWidgetWithRating:extension->average_rating
-                     toSubviews:subviews
-                        atPoint:NSMakePoint(kStarX,0)];
-
-  // Add an "add to chromium" button.
-  frame = NSMakeRect(kAddButtonX, 0, kAddButtonWidth, 0);
-  scoped_nsobject<NSButton> addButton([[NSButton alloc] initWithFrame:frame]);
-  [addButton setAlignment:NSLeftTextAlignment];
-  [addButton setButtonType:NSMomentaryPushInButton];
-  [addButton setBezelStyle:NSRegularSquareBezelStyle];
-  string = l10n_util::GetNSStringWithFixup(IDS_INTENT_PICKER_INSTALL_EXTENSION);
-  [addButton setTitle:string];
-  frame.size.height = std::min(kMinAddButtonHeight, kMaxHeight);
-  frame.origin.y += (kMaxHeight - NSHeight(frame)) / 2.0;
-  [addButton setFrame:frame];
-
-  [addButton setTarget:self];
-  [addButton setAction:@selector(installExtension:)];
-  [addButton setTag:index];
-  [subviews addObject:addButton.get()];
-
-  // Build the main view
-  NSRect contentFrame = NSMakeRect(0, 0, kWindowWidth, kMaxHeight);
-  NSView* view =  [[NSView alloc] initWithFrame:contentFrame];
-
-  [view setSubviews: subviews];
-  return view;
-}
-
-- (NSView*)newViewForSuggestions:(WebIntentPickerModel*)model {
-  const CGFloat kYMargin = 16.0;
-  size_t count = model->GetSuggestedExtensionCount();
-  if (count == 0)
-    return nil;
-
-  NSMutableArray* subviews = [NSMutableArray array];
-
-  CGFloat offset = kYMargin;
-  for (size_t i = count; i > 0; --i) {
-    const WebIntentPickerModel::SuggestedExtension& ext =
-        model->GetSuggestedExtensionAt(i - 1);
-    scoped_nsobject<NSView> suggestView(
-        [self newViewForSuggestedExtension:&ext withIndex:i - 1]);
-    offset += [self addStackedView:suggestView.get()
-                        toSubviews:subviews
-                          atOffset:offset];
-  }
-  offset += kYMargin;
-
-  NSRect contentFrame = NSMakeRect(kFramePadding, 0, kWindowWidth, offset);
-  NSView* view =  [[NSView alloc] initWithFrame:contentFrame];
-  [view setSubviews: subviews];
-
-  return view;
-}
-
 // Adds a link to the Chrome Web Store, to obtain further intent handlers.
 // Returns the y position delta for the next offset.
 - (CGFloat)addCwsButtonToSubviews:(NSMutableArray*)subviews
@@ -307,7 +537,8 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   NSString* string =
       l10n_util::GetNSStringWithFixup(IDS_FIND_MORE_INTENT_HANDLER_MESSAGE);
   scoped_nsobject<NSButton> button(
-    [self newHyperlinkButton:string withFrame:frame]);
+    [WebIntentPickerSheetController createHyperlinkButton:string
+                                                withFrame:frame]);
   [button setTarget:self];
   [button setAction:@selector(showChromeWebStore:)];
   [subviews addObject:button.get()];
@@ -347,10 +578,10 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   NSRect buttonFrame = NSMakeRect(
       kFramePadding + kImageSize + kTextWidth, offset,
       kCloseButtonSize, kCloseButtonSize);
-  scoped_nsobject<HoverCloseButton> closeButton(
+  closeButton_.reset(
       [[HoverCloseButton alloc] initWithFrame:buttonFrame]);
-  [closeButton setTarget:self];
-  [closeButton setAction:@selector(cancelOperation:)];
+  [closeButton_ setTarget:self];
+  [closeButton_ setAction:@selector(cancelOperation:)];
 
   // Adjust view height to fit elements, center-align elements.
   CGFloat maxHeight = std::max(NSHeight(buttonFrame),
@@ -361,9 +592,9 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   [actionTextField_ setFrame:textFrame];
   [imageView setFrame:imageFrame];
 
-  [subviews addObject:actionTextField_.get()];
-  [subviews addObject:imageView.get()];
-  [subviews addObject:closeButton.get()];
+  [subviews addObject:actionTextField_];
+  [subviews addObject:imageView];
+  [subviews addObject:closeButton_];
 
   return NSHeight([imageView frame]);
 }
@@ -406,7 +637,8 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   [button setTitle:title];
   [button setTag:index];
   [button setAction:@selector(invokeService:)];
-  [subviews addObject:button.get()];
+  [subviews addObject:button];
+  [intentButtons_ addObject:button];
 
   // Call size-to-fit to fixup size.
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:button.get()];
@@ -419,32 +651,6 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   return NSHeight([button frame]);
 }
 
-- (NSPoint)addStarWidgetWithRating:(CGFloat)rating
-                     toSubviews:(NSMutableArray*)subviews
-                        atPoint:(NSPoint)position {
-  const int kStarSpacing = 1;  // Spacing between stars in pixels.
-  const CGFloat kStarSize = 16.0; // Size of the star in pixels.
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  NSRect imageFrame = NSMakeRect(position.x, position.y, kStarSize, kStarSize);
-
-  for (int i = 0; i < 5; ++i) {
-    NSImage* nsImage = rb.GetNativeImageNamed(
-        WebIntentPicker::GetNthStarImageIdFromCWSRating(rating, i));
-
-    scoped_nsobject<NSImageView> imageView(
-        [[NSImageView alloc] initWithFrame:imageFrame]);
-    [imageView setImage:nsImage];
-    [imageView setImageFrameStyle:NSImageFrameNone];
-    [imageView setFrame:imageFrame];
-    [subviews addObject:imageView.get()];
-    imageFrame.origin.x += kStarSize + kStarSpacing;
-  }
-  position.x = imageFrame.origin.x;
-  return position;
-}
-
-// Layout the contents of the picker bubble.
 - (void)performLayoutWithModel:(WebIntentPickerModel*)model {
   model_ = model;
   // |offset| is the Y position that should be drawn at next.
@@ -458,6 +664,8 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
   } else {
     offset += [self addHeaderToSubviews:subviews atOffset:offset];
     if (model) {
+      [intentButtons_ removeAllObjects];
+
       for (NSUInteger i = 0; i < model->GetInstalledServiceCount(); ++i) {
         const WebIntentPickerModel::InstalledService& service =
             model->GetInstalledServiceAt(i);
@@ -468,9 +676,9 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
                                 atOffset:offset];
       }
 
-      scoped_nsobject<NSView> suggestionView(
-          [self newViewForSuggestions:model]);
-      offset += [self addStackedView:suggestionView.get()
+      suggestionView_.reset(
+          [[SuggestionView alloc] initWithModel:model forController:self]);
+      offset += [self addStackedView:suggestionView_
                           toSubviews:subviews
                             atOffset:offset];
     }
@@ -518,6 +726,12 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
       [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
             actionTextField_];
   [actionTextField_ setFrame: textFrame];
+}
+
+- (void)stopThrobber {
+  [closeButton_ setEnabled:YES];
+  [self setIntentButtonsEnabled:YES];
+  [suggestionView_ stopThrobber];
 }
 
 - (void)closeSheet {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,6 +69,20 @@ TEST_F(HyperlinkButtonCellTest, MouseHover) {
   EXPECT_EQ([NSCursor pointingHandCursor], [NSCursor currentCursor]);
   [cell_ mouseExited:nil];
   EXPECT_EQ([NSCursor disappearingItemCursor], [NSCursor currentCursor]);
+  [NSCursor pop];
+}
+
+// Test mouse events when button is disabled. {
+TEST_F(HyperlinkButtonCellTest, MouseHoverWhenDisabled) {
+  [cell_ setEnabled:NO];
+
+  [[NSCursor disappearingItemCursor] push];  // Set a known state.
+  [cell_ mouseEntered:nil];
+  EXPECT_EQ([NSCursor disappearingItemCursor], [NSCursor currentCursor]);
+
+  [cell_ mouseExited:nil];
+  EXPECT_EQ([NSCursor disappearingItemCursor], [NSCursor currentCursor]);
+  [NSCursor pop];
   [NSCursor pop];
 }
 

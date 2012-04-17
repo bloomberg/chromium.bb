@@ -14,6 +14,7 @@
 
 class WebIntentPickerCocoa;
 class WebIntentPickerModel;
+@class SuggestionView;
 
 // Controller for intent picker constrained dialog. This dialog pops up
 // whenever a web page invokes ActivateIntent and lets the user choose which
@@ -30,7 +31,11 @@ class WebIntentPickerModel;
   WebIntentPickerModel* model_;
 
   scoped_nsobject<NSTextField> actionTextField_;
+  scoped_nsobject<SuggestionView> suggestionView_;
+  scoped_nsobject<NSButton> closeButton_;
+  scoped_nsobject<NSMutableArray> intentButtons_;
 }
+- (IBAction)installExtension:(id)sender;
 
 // Initialize the constrained dialog, and connect to picker.
 - (id)initWithPicker:(WebIntentPickerCocoa*)picker;
@@ -43,6 +48,9 @@ class WebIntentPickerModel;
 // Sets the action string of the picker, e.g.,
 // "Which service should be used for sharing?".
 - (void)setActionString:(NSString*)actionString;
+
+// Stop displaying throbber. Called when extension isntallation is complete.
+- (void)stopThrobber;
 
 // Close the current sheet (and by extension, the constrained dialog).
 - (void)closeSheet;

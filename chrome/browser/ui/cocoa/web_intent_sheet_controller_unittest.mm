@@ -160,8 +160,8 @@ TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
       isKindOfClass:[NSView class]]);
   NSView* item_view = [[suggest_view subviews] objectAtIndex:0];
 
-  // 8 subobject - Icon, title, star rating (5 objects), add button.
-  ASSERT_EQ(8U, [[item_view subviews] count]);
+  // 5 subobjects - Icon, title, star rating, add button, and throbber.
+  ASSERT_EQ(5U, [[item_view subviews] count]);
 
   // Verify title button is hooked up properly
   ASSERT_TRUE([[[item_view subviews] objectAtIndex:1]
@@ -170,8 +170,12 @@ TEST_F(WebIntentPickerSheetControllerTest, SuggestionView) {
   CheckButton(title_button, @selector(openExtensionLink:));
 
   // Verify "Add to Chromium" button is hooked up properly
-  ASSERT_TRUE([[[item_view subviews] objectAtIndex:7]
+  ASSERT_TRUE([[[item_view subviews] objectAtIndex:3]
       isKindOfClass:[NSButton class]]);
-  NSButton* add_button = [[item_view subviews] objectAtIndex:7];
+  NSButton* add_button = [[item_view subviews] objectAtIndex:3];
   CheckButton(add_button, @selector(installExtension:));
+
+  // Verify we have a throbber.
+  ASSERT_TRUE([[[item_view subviews] objectAtIndex:4]
+      isKindOfClass:[NSProgressIndicator class]]);
 }

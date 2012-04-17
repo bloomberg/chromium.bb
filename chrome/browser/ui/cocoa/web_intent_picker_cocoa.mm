@@ -204,8 +204,12 @@ void WebIntentPickerCocoa::OnExtensionInstallRequested(
 }
 
 void WebIntentPickerCocoa::OnExtensionInstallSuccess(const std::string& id) {
+  DCHECK(sheet_controller_);
+  [sheet_controller_ stopThrobber];
 }
 
 void WebIntentPickerCocoa::OnExtensionInstallFailure(const std::string& id) {
   // TODO(groby): What to do on failure? (See also binji for views/gtk)
+  DCHECK(sheet_controller_);
+  [sheet_controller_ stopThrobber];
 }
