@@ -422,20 +422,19 @@ button {
   color: #AAA;
 }
 
-.waiting:before {
-  content: url('spinner.gif');
-  position: absolute;
-  left: 0px;
-  top: -3px;
-}
-
 .waiting {
+  background-image: url('spinner.gif');
+  background-repeat: no-repeat;
+  background-position: top __MSG_@@bidi_start_edge__;
+  padding-__MSG_@@bidi_start_edge__: 30px;
+  padding-top: 2px;
+  padding-bottom: 4px;
   color: rgb(180, 180, 180);
-  margin-left: 30px;
+  line-height: 27px; /* Same as line-height for buttons */
 }
 
 .waiting-container {
-  position: relative;
+  display: -webkit-box;
 }
 
 .space-before {
@@ -468,11 +467,6 @@ button {
 
 #ask-pin-form > div {
   margin-bottom: 8px;
-}
-
-
-#cancel-connect-button, #cancel-share-button {
-  float: __MSG_@@bidi_end_edge__;
 }
 
 #current-email {

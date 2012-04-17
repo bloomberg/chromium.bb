@@ -229,9 +229,10 @@ found in the LICENSE file.
             </button>
           </div>
         </form>
-        <div data-ui-mode="home.host-setup.processing" hidden>
-          <img src="spinner.gif">
-          <span id="host-setup-processing-message"></span>
+        <div data-ui-mode="home.host-setup.processing"
+             class="waiting-container"
+             hidden>
+          <span class="waiting" id="host-setup-processing-message"></span>
         </div>
         <div data-ui-mode="home.host-setup.done" hidden>
           <div id="host-setup-done-message" class="message"></div>
@@ -337,11 +338,9 @@ found in the LICENSE file.
 
         <div data-ui-mode="home.host.waiting-for-connection home.host.waiting-for-code"
              class="waiting-container space-before">
-          <span class="waiting"
-                i18n-content="FOOTER_WAITING"></span>
-          <button id="cancel-share-button"
-                  i18n-content="CANCEL">
-          </button>
+          <span class="waiting" i18n-content="FOOTER_WAITING"></span>
+          <div class="box-spacer"></div>
+          <button id="cancel-share-button" i18n-content="CANCEL"></button>
         </div>
 
         <div id="host-plugin-container"></div>
@@ -375,9 +374,8 @@ found in the LICENSE file.
 
         <div data-ui-mode="home.client.connecting" class="waiting-container">
           <span class="waiting" i18n-content="FOOTER_WAITING"></span>
-          <button id="cancel-connect-button"
-                  i18n-content="CANCEL">
-          </button>
+          <div class="box-spacer"></div>
+          <button id="cancel-connect-button" i18n-content="CANCEL"></button>
         </div> <!-- client.connecting -->
 
         <div data-ui-mode="home.client.pin-prompt" class="centered">
@@ -507,14 +505,13 @@ found in the LICENSE file.
            class="toolbar-container"
            hidden>
         <div class="toolbar-border">
-          <span id="session-status-message"
-                i18n-content="LABEL_CONNECTED"></span>
-          <strong id="connected-to"></strong>
+          <div id="session-status-message"
+                i18n-content="LABEL_CONNECTED"></div>
+          <div id="connected-to" class="box-spacer"></div>
           <button id="toolbar-disconnect"
                   type="button"
                   i18n-content="DISCONNECT_MYSELF_BUTTON">
           </button>
-          <div class="box-spacer"></div>
           <span class="menu-button" id="send-keys-menu">
             <button>
               <span i18n-content="SEND_KEYS"></span>

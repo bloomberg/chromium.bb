@@ -199,7 +199,7 @@
     "description": "Description of the 'access' or 'client' functionality, displayed next to a button that instigates an access operation."
   },
   "HOME_DAEMON_ACTIVE_MESSAGE": {
-    "message": "You may securely access this computer from anywhere you sign in to Chromoting.",
+    "message": "You may securely access this computer using Chromoting.",
     "description": "Message displayed when the current computer is accepting remote connections."
   },
   "HOME_DAEMON_CHANGE_PIN_LINK": {
@@ -219,7 +219,7 @@
     "description": "Button displayed when the current computer is not accepting remote connections. Clicking this button causes it to start accepting remote connections."
   },
   "HOME_DAEMON_START_MESSAGE": {
-    "message": "To securely access this computer from anywhere you sign in to Chromoting, you must first enable remote connections.",
+    "message": "You must enable remote connections if you want to use Chromoting to access this computer.",
     "description": "Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them."
   },
   "HOST_SETUP_DIALOG_DESCRIPTION": {
