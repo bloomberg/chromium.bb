@@ -521,6 +521,10 @@
       '-infobars.InfobarTest.testMultipleDownloadsInfobar',
       '-prefs.PrefsTest.testDownloadDirPref',
       '-translate.TranslateTest.testDownloadsNotTranslated',
+      # crbug.com/123899
+      '-protector.ProtectorHomepageTest.testDetectHomepageChangeAndApply',
+      '-protector.ProtectorHomepageTest.testDetectHomepageChangeAndDiscard',
+      '-protector.ProtectorHomepageTest.testDetectHomepageChangeWhenButtonNotShown',
     ],
 
     'win': [
