@@ -54,6 +54,7 @@ enum EventType {
   ET_GESTURE_PINCH_END,
   ET_GESTURE_PINCH_UPDATE,
   ET_GESTURE_LONG_PRESS,
+  ET_GESTURE_THREE_FINGER_SWIPE,
 
   // Scroll support.
   // TODO[davemoore] we need to unify these events w/ touch and gestures.

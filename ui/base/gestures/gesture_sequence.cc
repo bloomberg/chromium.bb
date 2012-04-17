@@ -4,6 +4,8 @@
 
 #include "ui/base/gestures/gesture_sequence.h"
 
+#include <cmath>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -102,6 +104,36 @@ enum EdgeStateSignatureType {
 
   GST_PINCH_SECOND_CANCELLED =
       G(GS_PINCH, 1, TS_CANCELLED, false),
+
+  GST_PINCH_THIRD_PRESSED =
+      G(GS_PINCH, 2, TS_PRESSED, false),
+
+  GST_THREE_FINGER_SWIPE_FIRST_RELEASED =
+      G(GS_THREE_FINGER_SWIPE, 0, TS_RELEASED, false),
+
+  GST_THREE_FINGER_SWIPE_SECOND_RELEASED =
+      G(GS_THREE_FINGER_SWIPE, 1, TS_RELEASED, false),
+
+  GST_THREE_FINGER_SWIPE_THIRD_RELEASED =
+      G(GS_THREE_FINGER_SWIPE, 2, TS_RELEASED, false),
+
+  GST_THREE_FINGER_SWIPE_FIRST_MOVED =
+      G(GS_THREE_FINGER_SWIPE, 0, TS_MOVED, false),
+
+  GST_THREE_FINGER_SWIPE_SECOND_MOVED =
+      G(GS_THREE_FINGER_SWIPE, 1, TS_MOVED, false),
+
+  GST_THREE_FINGER_SWIPE_THIRD_MOVED =
+      G(GS_THREE_FINGER_SWIPE, 2, TS_MOVED, false),
+
+  GST_THREE_FINGER_SWIPE_FIRST_CANCELLED =
+      G(GS_THREE_FINGER_SWIPE, 0, TS_CANCELLED, false),
+
+  GST_THREE_FINGER_SWIPE_SECOND_CANCELLED =
+      G(GS_THREE_FINGER_SWIPE, 1, TS_CANCELLED, false),
+
+  GST_THREE_FINGER_SWIPE_THIRD_CANCELLED =
+      G(GS_THREE_FINGER_SWIPE, 2, TS_CANCELLED, false),
 };
 
 // Builds a signature. Signatures are assembled by joining together
@@ -226,6 +258,28 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       // remaining finger on the screen.
       scroll_type_ = ST_FREE;
       set_state(GS_SCROLL);
+      break;
+    case GST_PINCH_THIRD_PRESSED:
+      three_finger_swipe_has_fired_ = false;
+      set_state(GS_THREE_FINGER_SWIPE);
+      break;
+    case GST_THREE_FINGER_SWIPE_FIRST_RELEASED:
+    case GST_THREE_FINGER_SWIPE_SECOND_RELEASED:
+    case GST_THREE_FINGER_SWIPE_THIRD_RELEASED:
+    case GST_THREE_FINGER_SWIPE_FIRST_CANCELLED:
+    case GST_THREE_FINGER_SWIPE_SECOND_CANCELLED:
+    case GST_THREE_FINGER_SWIPE_THIRD_CANCELLED:
+      set_state(GS_PINCH);
+      break;
+    case GST_THREE_FINGER_SWIPE_FIRST_MOVED:
+    case GST_THREE_FINGER_SWIPE_SECOND_MOVED:
+    case GST_THREE_FINGER_SWIPE_THIRD_MOVED:
+      if (!three_finger_swipe_has_fired_) {
+        ThreeFingerSwipeUpdate(event, point, gestures.get());
+        GetPointByPointId(0)->UpdateForScroll();
+        GetPointByPointId(1)->UpdateForScroll();
+        GetPointByPointId(2)->UpdateForScroll();
+      }
       break;
   }
 
@@ -409,6 +463,30 @@ void GestureSequence::AppendPinchGestureUpdate(const GesturePoint& p1,
       scale, 0.f, 1 << p1.touch_id() | 1 << p2.touch_id())));
 }
 
+void GestureSequence::AppendThreeFingerSwipeGestureEvent(const GesturePoint& p1,
+                                                         const GesturePoint& p2,
+                                                         const GesturePoint& p3,
+                                                         float x_velocity,
+                                                         float y_velocity,
+                                                         Gestures* gestures) {
+  int x = (
+      p1.last_touch_position().x() +
+      p2.last_touch_position().x() +
+      p3.last_touch_position().x()) / 3;
+  int y = (
+      p1.last_touch_position().y() +
+      p2.last_touch_position().y() +
+      p3.last_touch_position().y()) / 3;
+  gfx::Point center(x, y);
+  gestures->push_back(helper_->CreateGestureEvent(
+      ui::ET_GESTURE_THREE_FINGER_SWIPE,
+      center,
+      flags_,
+      base::Time::FromDoubleT(p1.last_touch_time()),
+      x_velocity, y_velocity,
+      1 << p1.touch_id() | 1 << p2.touch_id() | 1 << p3.touch_id()));
+}
+
 bool GestureSequence::Click(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_PENDING_SYNTHETIC_CLICK);
@@ -566,6 +644,61 @@ bool GestureSequence::PinchEnd(const TouchEvent& event,
 
   pinch_distance_start_ = 0;
   pinch_distance_current_ = 0;
+  return true;
+}
+
+bool GestureSequence::ThreeFingerSwipeUpdate(const TouchEvent& event,
+    const GesturePoint& point, Gestures* gestures) {
+  DCHECK(state_ == GS_THREE_FINGER_SWIPE);
+
+  GesturePoint* point1 = GetPointByPointId(0);
+  GesturePoint* point2 = GetPointByPointId(1);
+  GesturePoint* point3 = GetPointByPointId(2);
+
+  int min_velocity = GestureConfiguration::min_swipe_speed();
+
+  float vx1 = point1->XVelocity();
+  float vx2 = point2->XVelocity();
+  float vx3 = point3->XVelocity();
+  float vy1 = point1->YVelocity();
+  float vy2 = point2->YVelocity();
+  float vy3 = point3->YVelocity();
+
+  float vx = (vx1 + vx2 + vx3) / 3;
+  float vy = (vy1 + vy2 + vy3) / 3;
+
+  // Not moving fast enough
+  if (fabs(vx) < min_velocity && fabs(vy) < min_velocity)
+    return false;
+
+  // Diagonal swipe, no event fired
+  // TODO(tdresser|sadrul): consider adding diagonal swipes
+  float ratio = fabs(vx) > fabs(vy) ? fabs(vx / vy) : fabs(vy / vx);
+  if (ratio < GestureConfiguration::max_swipe_deviation_ratio())
+    return false;
+
+  if (fabs(vx) > fabs(vy)) {
+    int sign = vx > 0 ? 1 : -1;
+    // ensure all touches are moving in the same direction, and are
+    // all moving faster than min_velocity.
+    if (vx1 * sign < min_velocity ||
+        vx2 * sign < min_velocity ||
+        vx3 * sign < min_velocity)
+        return false;
+    AppendThreeFingerSwipeGestureEvent(*point1, *point2, *point3,
+                                       sign, 0, gestures);
+  } else {
+    int sign = vy > 0 ? 1 : -1;
+    // ensure all touches are moving in the same direction, and are
+    // all moving faster than min_velocity.
+    if (vy1 * sign < min_velocity ||
+        vy2 * sign < min_velocity ||
+        vy3 * sign < min_velocity)
+      return false;
+    AppendThreeFingerSwipeGestureEvent(*point1, *point2, *point3,
+                                       0, sign, gestures);
+  }
+  three_finger_swipe_has_fired_ = true;
   return true;
 }
 

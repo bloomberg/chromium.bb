@@ -1814,6 +1814,8 @@ const char kMaxSecondsBetweenDoubleClick[] =
     "gesture.max_seconds_between_double_click";
 const char kMaxSeparationForGestureTouchesInPixels[] =
     "gesture.max_separation_for_gesture_touches_in_pixels";
+const char kMaxSwipeDeviationRatio[] =
+    "gesture.max_swipe_deviation_ratio";
 const char kMaxTouchDownDurationInSecondsForClick[] =
     "gesture.max_touch_down_duration_in_seconds_for_click";
 const char kMaxTouchMoveInPixelsForClick[] =
@@ -1828,6 +1830,8 @@ const char kMinRailBreakVelocity[] =
     "gesture.min_rail_break_velocity";
 const char kMinScrollDeltaSquared[] =
     "gesture.min_scroll_delta_squared";
+const char kMinSwipeSpeed[] =
+    "gesture.min_swipe_speed";
 const char kMinTouchDownDurationInSecondsForClick[] =
     "gesture.min_touch_down_duration_in_seconds_for_click";
 const char kPointsBufferedForVelocity[] =

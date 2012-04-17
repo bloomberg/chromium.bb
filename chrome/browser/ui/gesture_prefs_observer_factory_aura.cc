@@ -49,6 +49,7 @@ const char* kPrefsToObserve[] = {
   prefs::kLongPressTimeInSeconds,
   prefs::kMaxSecondsBetweenDoubleClick,
   prefs::kMaxSeparationForGestureTouchesInPixels,
+  prefs::kMaxSwipeDeviationRatio,
   prefs::kMaxTouchDownDurationInSecondsForClick,
   prefs::kMaxTouchMoveInPixelsForClick,
   prefs::kMinDistanceForPinchScrollInPixels,
@@ -56,6 +57,7 @@ const char* kPrefsToObserve[] = {
   prefs::kMinPinchUpdateDistanceInPixels,
   prefs::kMinRailBreakVelocity,
   prefs::kMinScrollDeltaSquared,
+  prefs::kMinSwipeSpeed,
   prefs::kMinTouchDownDurationInSecondsForClick,
   prefs::kPointsBufferedForVelocity,
   prefs::kRailBreakProportion,
@@ -93,6 +95,9 @@ void GesturePrefsObserver::Update() {
   GestureConfiguration::set_max_separation_for_gesture_touches_in_pixels(
       prefs_->GetDouble(
           prefs::kMaxSeparationForGestureTouchesInPixels));
+  GestureConfiguration::set_max_swipe_deviation_ratio(
+      prefs_->GetDouble(
+          prefs::kMaxSwipeDeviationRatio));
   GestureConfiguration::set_max_touch_down_duration_in_seconds_for_click(
       prefs_->GetDouble(
           prefs::kMaxTouchDownDurationInSecondsForClick));
@@ -114,6 +119,9 @@ void GesturePrefsObserver::Update() {
   GestureConfiguration::set_min_scroll_delta_squared(
       prefs_->GetDouble(
           prefs::kMinScrollDeltaSquared));
+  GestureConfiguration::set_min_swipe_speed(
+      prefs_->GetDouble(
+          prefs::kMinSwipeSpeed));
   GestureConfiguration::set_min_touch_down_duration_in_seconds_for_click(
       prefs_->GetDouble(
           prefs::kMinTouchDownDurationInSecondsForClick));
@@ -161,6 +169,10 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
       GestureConfiguration::max_separation_for_gesture_touches_in_pixels(),
       PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
+      prefs::kMaxSwipeDeviationRatio,
+      GestureConfiguration::max_swipe_deviation_ratio(),
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(
       prefs::kMaxTouchDownDurationInSecondsForClick,
       GestureConfiguration::max_touch_down_duration_in_seconds_for_click(),
       PrefService::UNSYNCABLE_PREF);
@@ -187,6 +199,10 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(
       prefs::kMinScrollDeltaSquared,
       GestureConfiguration::min_scroll_delta_squared(),
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(
+      prefs::kMinSwipeSpeed,
+      GestureConfiguration::min_swipe_speed(),
       PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMinTouchDownDurationInSecondsForClick,

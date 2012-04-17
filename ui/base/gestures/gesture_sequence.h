@@ -20,7 +20,8 @@ enum GestureState {
   GS_NO_GESTURE,
   GS_PENDING_SYNTHETIC_CLICK,
   GS_SCROLL,
-  GS_PINCH
+  GS_PINCH,
+  GS_THREE_FINGER_SWIPE
 };
 
 enum ScrollType {
@@ -99,6 +100,13 @@ class UI_EXPORT GestureSequence {
                                 float scale,
                                 Gestures* gestures);
 
+  void AppendThreeFingerSwipeGestureEvent(const GesturePoint& p1,
+                                          const GesturePoint& p2,
+                                          const GesturePoint& p3,
+                                          float x_velocity,
+                                          float y_velocity,
+                                          Gestures* gestures);
+
   void set_state(const GestureState state ) { state_ = state; }
 
   // Various GestureTransitionFunctions for a signature.
@@ -134,6 +142,9 @@ class UI_EXPORT GestureSequence {
   bool PinchEnd(const TouchEvent& event,
                 const GesturePoint& point,
                 Gestures* gestures);
+  bool ThreeFingerSwipeUpdate(const TouchEvent& event,
+                              const GesturePoint& point,
+                              Gestures* gestures);
 
   // Current state of gesture recognizer.
   GestureState state_;
@@ -148,6 +159,7 @@ class UI_EXPORT GestureSequence {
   float pinch_distance_current_;
 
   ScrollType scroll_type_;
+  bool three_finger_swipe_has_fired_;
   scoped_ptr<base::OneShotTimer<GestureSequence> > long_press_timer_;
 
   GesturePoint points_[kMaxGesturePoints];

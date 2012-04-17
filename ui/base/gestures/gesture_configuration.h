@@ -37,6 +37,12 @@ class UI_EXPORT GestureConfiguration {
   static void set_max_separation_for_gesture_touches_in_pixels(int val) {
     max_separation_for_gesture_touches_in_pixels_ = val;
   }
+  static double max_swipe_deviation_ratio() {
+    return max_swipe_deviation_ratio_;
+  }
+  static void set_max_swipe_deviation_ratio(double val) {
+    max_swipe_deviation_ratio_ = val;
+  }
   static double max_touch_down_duration_in_seconds_for_click() {
     return max_touch_down_duration_in_seconds_for_click_;
   }
@@ -79,6 +85,12 @@ class UI_EXPORT GestureConfiguration {
   static void set_min_scroll_delta_squared(double val) {
     min_scroll_delta_squared_ = val;
   }
+  static double min_swipe_speed() {
+    return min_swipe_speed_;
+  }
+  static void set_min_swipe_speed(double val) {
+    min_swipe_speed_ = val;
+  }
   static double min_touch_down_duration_in_seconds_for_click() {
     return min_touch_down_duration_in_seconds_for_click_;
   }
@@ -111,6 +123,7 @@ class UI_EXPORT GestureConfiguration {
   static double long_press_time_in_seconds_;
   static double max_seconds_between_double_click_;
   static double max_separation_for_gesture_touches_in_pixels_;
+  static double max_swipe_deviation_ratio_;
   static double max_touch_down_duration_in_seconds_for_click_;
   static double max_touch_move_in_pixels_for_click_;
   static double min_distance_for_pinch_scroll_in_pixels_;
@@ -118,6 +131,7 @@ class UI_EXPORT GestureConfiguration {
   static double min_pinch_update_distance_in_pixels_;
   static double min_rail_break_velocity_;
   static double min_scroll_delta_squared_;
+  static double min_swipe_speed_;
   static double min_touch_down_duration_in_seconds_for_click_;
   static int points_buffered_for_velocity_;
   static double rail_break_proportion_;

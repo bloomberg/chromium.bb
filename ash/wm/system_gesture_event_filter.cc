@@ -37,6 +37,8 @@ ui::TouchStatus SystemGestureEventFilter::PreHandleTouchEvent(
 ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     aura::Window* target, aura::GestureEvent* event) {
   // TODO(tdresser) handle system level gesture events
+  if (event->type() == ui::ET_GESTURE_THREE_FINGER_SWIPE)
+    return ui::GESTURE_STATUS_CONSUMED;
   if (target == Shell::GetRootWindow())
     return ui::GESTURE_STATUS_CONSUMED;
   return ui::GESTURE_STATUS_UNKNOWN;
@@ -44,4 +46,3 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
 
 }  // namespace internal
 }  // namespace ash
-
