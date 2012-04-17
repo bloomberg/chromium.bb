@@ -45,7 +45,8 @@ TabNavigation::TabNavigation(const TabNavigation& tab)
       transition_(tab.transition_),
       type_mask_(tab.type_mask_),
       post_id_(-1),
-      index_(tab.index_) {
+      index_(tab.index_),
+      original_request_url_(tab.original_request_url_) {
 }
 
 TabNavigation::~TabNavigation() {
@@ -60,6 +61,7 @@ TabNavigation& TabNavigation::operator=(const TabNavigation& tab) {
   type_mask_ = tab.type_mask_;
   post_id_ = tab.post_id_;
   index_ = tab.index_;
+  original_request_url_ = tab.original_request_url_;
   return *this;
 }
 
@@ -82,6 +84,7 @@ NavigationEntry* TabNavigation::ToNavigationEntry(
   entry->SetContentState(state_);
   entry->SetHasPostData(type_mask_ & TabNavigation::HAS_POST_DATA);
   entry->SetPostID(post_id_);
+  entry->SetOriginalRequestURL(original_request_url_);
 
   return entry;
 }
@@ -94,6 +97,7 @@ void TabNavigation::SetFromNavigationEntry(const NavigationEntry& entry) {
   transition_ = entry.GetTransitionType();
   type_mask_ = entry.GetHasPostData() ? TabNavigation::HAS_POST_DATA : 0;
   post_id_ = entry.GetPostID();
+  original_request_url_ = entry.GetOriginalRequestURL();
 }
 
 // static

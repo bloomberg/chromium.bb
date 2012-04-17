@@ -89,6 +89,12 @@ class TabNavigation {
   void set_index(int index) { index_ = index; }
   int index() const { return index_; }
 
+  // The URL that initially spawned the NavigationEntry.
+  const GURL& original_request_url() const { return original_request_url_; }
+  void set_original_request_url(const GURL& url) {
+    original_request_url_ = url;
+  }
+
   // Converts a set of TabNavigations into a set of NavigationEntrys. The
   // caller owns the NavigationEntrys.
   static void CreateNavigationEntriesFromTabNavigations(
@@ -108,6 +114,7 @@ class TabNavigation {
   int64 post_id_;
 
   int index_;
+  GURL original_request_url_;
 };
 
 // SessionTab ----------------------------------------------------------------

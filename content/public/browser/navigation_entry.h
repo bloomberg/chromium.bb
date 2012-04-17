@@ -138,6 +138,10 @@ class NavigationEntry {
   // All the SSL flags and state. See content::SSLStatus.
   virtual const SSLStatus& GetSSL() const = 0;
   virtual SSLStatus& GetSSL() = 0;
+
+  // Store the URL that caused this NavigationEntry to be created.
+  virtual void SetOriginalRequestURL(const GURL& original_url) = 0;
+  virtual const GURL& GetOriginalRequestURL() const = 0;
 };
 
 }  // namespace content

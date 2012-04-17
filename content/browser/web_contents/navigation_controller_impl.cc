@@ -869,6 +869,11 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   new_entry->SetHasPostData(params.is_post);
   new_entry->SetPostID(params.post_id);
 
+  if (params.redirects.size() > 0)
+    new_entry->SetOriginalRequestURL(params.redirects[0]);
+  else
+    new_entry->SetOriginalRequestURL(params.url);
+
   InsertOrReplaceEntry(new_entry, *did_replace_entry);
 }
 

@@ -218,4 +218,12 @@ SSLStatus& NavigationEntryImpl::GetSSL() {
   return ssl_;
 }
 
+void NavigationEntryImpl::SetOriginalRequestURL(const GURL& original_url) {
+  original_request_url_ = original_url;
+}
+
+const GURL& NavigationEntryImpl::GetOriginalRequestURL() const {
+  return original_request_url_;
+}
+
 }  // namespace content

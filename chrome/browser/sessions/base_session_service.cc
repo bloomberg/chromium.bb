@@ -187,7 +187,10 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
           entry.GetReferrer().url.spec() : std::string());
   pickle.WriteInt(entry.GetReferrer().policy);
 
-  // Adding more data? Be sure and update TabRestoreService too.
+  WriteStringToPickle(pickle, &bytes_written, max_state_size,
+      entry.GetOriginalRequestURL().is_valid() ?
+          entry.GetOriginalRequestURL().spec() : std::string());
+
   return new SessionCommand(command_id, pickle);
 }
 
@@ -266,6 +269,12 @@ bool BaseSessionService::RestoreUpdateTabNavigationCommand(
     navigation->referrer_ = content::Referrer(
         referrer_spec.empty() ? GURL() : GURL(referrer_spec),
         policy);
+
+    // If the original URL can't be found, leave it empty.
+    std::string url_spec;
+    if (!pickle->ReadString(&iterator, &url_spec))
+      url_spec = std::string();
+    navigation->set_original_request_url(GURL(url_spec));
   }
 
   navigation->virtual_url_ = GURL(url_spec);

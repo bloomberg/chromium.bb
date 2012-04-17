@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,6 +83,7 @@ void SessionServiceTestHelper::AssertNavigationEquals(
   EXPECT_EQ(expected.state(), actual.state());
   EXPECT_EQ(expected.transition(), actual.transition());
   EXPECT_EQ(expected.type_mask(), actual.type_mask());
+  EXPECT_TRUE(expected.original_request_url() == actual.original_request_url());
 }
 
 void SessionServiceTestHelper::AssertSingleWindowWithSingleTab(

@@ -60,6 +60,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual FaviconStatus& GetFavicon() OVERRIDE;
   virtual const SSLStatus& GetSSL() const OVERRIDE;
   virtual SSLStatus& GetSSL() OVERRIDE;
+  virtual void SetOriginalRequestURL(const GURL& original_url) OVERRIDE;
+  virtual const GURL& GetOriginalRequestURL() const OVERRIDE;
 
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
@@ -177,6 +179,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   bool has_post_data_;
   int64 post_id_;
   RestoreType restore_type_;
+  GURL original_request_url_;
 
   // This member is not persisted with sesssion restore.
   std::string extra_headers_;

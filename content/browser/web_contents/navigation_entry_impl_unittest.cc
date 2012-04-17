@@ -173,6 +173,12 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(NavigationEntryImpl::RESTORE_NONE, entry2_->restore_type());
   entry2_->set_restore_type(NavigationEntryImpl::RESTORE_LAST_SESSION);
   EXPECT_EQ(NavigationEntryImpl::RESTORE_LAST_SESSION, entry2_->restore_type());
+
+  // Original URL
+  EXPECT_EQ(GURL(), entry1_.get()->GetOriginalRequestURL());
+  EXPECT_EQ(GURL(), entry2_.get()->GetOriginalRequestURL());
+  entry2_.get()->SetOriginalRequestURL(GURL("original_url"));
+  EXPECT_EQ(GURL("original_url"), entry2_.get()->GetOriginalRequestURL());
 }
 
 }  // namespace content

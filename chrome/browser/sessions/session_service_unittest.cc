@@ -84,6 +84,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     entry->SetTransitionType(navigation.transition());
     entry->SetHasPostData(
         navigation.type_mask() & TabNavigation::HAS_POST_DATA);
+    entry->SetOriginalRequestURL(navigation.original_request_url());
     service()->UpdateTabNavigation(window_id, tab_id, index, *entry.get());
     if (select)
       service()->SetSelectedNavigationIndex(window_id, tab_id, index);
@@ -158,6 +159,7 @@ TEST_F(SessionServiceTest, Basic) {
                                        WebKit::WebReferrerPolicyDefault),
                      ASCIIToUTF16("abc"), "def",
                      content::PAGE_TRANSITION_QUALIFIER_MASK);
+  nav1.set_original_request_url(GURL("http://original.request.com"));
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, 0, true);
