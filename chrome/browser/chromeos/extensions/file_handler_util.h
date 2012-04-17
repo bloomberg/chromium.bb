@@ -82,6 +82,8 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
    virtual Browser* browser() = 0;
    virtual void Done(bool success) = 0;
 
+   Profile* profile() { return profile_; }
+
  private:
   struct FileDefinition {
     FileDefinition();

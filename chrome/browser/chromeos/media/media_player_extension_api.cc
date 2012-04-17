@@ -24,7 +24,7 @@ bool PlayMediaplayerFunction::RunImpl() {
 
   MediaPlayer* player = MediaPlayer::GetInstance();
 
-  player->PopupMediaPlayer(NULL);
+  player->PopupMediaPlayer();
   player->ClearPlaylist();
 
   size_t len = url_list->GetSize();

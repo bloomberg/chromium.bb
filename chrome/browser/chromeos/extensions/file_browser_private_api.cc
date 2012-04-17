@@ -865,7 +865,7 @@ void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
   for (SelectedFileInfoList::const_iterator iter = files.begin();
        iter != files.end();
        ++iter) {
-    bool handled = file_manager_util::TryViewingFile(iter->path);
+    bool handled = file_manager_util::TryViewingFile(profile(), iter->path);
     // If there is no default browser-defined handler for viewing this type
     // of file, try to see if we have any extension installed for it instead.
     if (!handled && files.size() == 1)
@@ -1494,12 +1494,12 @@ bool FileDialogStringsFunction::RunImpl() {
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
 
   dict->SetString("PDF_VIEW_ENABLED",
-      file_manager_util::ShouldBeOpenedWithPdfPlugin(".pdf") ?
+      file_manager_util::ShouldBeOpenedWithPdfPlugin(profile(), ".pdf") ?
           "true" : "false");
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(dict);
 
-  if (gdata::util::IsGDataAvailable(profile_))
+  if (gdata::util::IsGDataAvailable(profile()))
     dict->SetString("ENABLE_GDATA", "1");
 
 #if defined(USE_ASH)

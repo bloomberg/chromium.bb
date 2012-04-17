@@ -40,16 +40,12 @@ class MediaPlayer : public content::NotificationObserver {
   // Enqueues this fileschema url into the current playlist.
   void EnqueueMediaFileUrl(const GURL& url);
 
-  // Clears out the current playlist, and start playback of the given
-  // |file_path|.
-  void ForcePlayMediaFile(Profile* profile, const FilePath& file_path);
-
   // Clears out the current playlist, and start playback of the given url.
   void ForcePlayMediaURL(const GURL& url);
 
   // Popup the mediaplayer, this shows the browser, and sets up its
   // locations correctly.
-  void PopupMediaPlayer(Browser* creator);
+  void PopupMediaPlayer();
 
   // Sets the currently playing element to the given positions.
   void SetPlaylistPosition(int position);
@@ -84,7 +80,6 @@ class MediaPlayer : public content::NotificationObserver {
 
   MediaPlayer();
 
-  GURL GetOriginUrl() const;
   GURL GetMediaPlayerUrl() const;
 
   // Browser containing the Mediaplayer.  Used to force closes. This is

@@ -54,25 +54,32 @@ GURL GetFileBrowserUrlWithParams(
 // Get file dialog title string from its type.
 string16 GetTitleFromType(SelectFileDialog::Type type);
 
-// Opens file browser UI on its own tab on drive location defined with
-// |dir|. Automatically closes this tab on |dir| unmount.
-void ViewRemovableDrive(const FilePath& dir);
+// Shows a freshly mounted removable drive.
+// If there is another File Browser instance open this call does nothing.
+// The mount event will cause file_manager.js to show the new drive in
+// the left panel, and that is all we want.
+// If there is no File Browser open, this call opens a new one pointing to
+// |path|. In this case the tab will automatically close on |path| unmount.
+void ViewRemovableDrive(const FilePath& path);
 
 // Opens file browser UI in its own tab on file system location defined with
 // |dir|.
 void ViewFolder(const FilePath& dir);
 
-// Opens file in the browser.
-// TODO(kaznacheev): remove the obsolete enqueue parameter.
-void ViewFile(const FilePath& full_path, bool enqueue);
+// Opens file with the default File Browser handler.
+// TODO(kaznacheev) remove the deprecated_enqueue parameter.
+void ViewFile(const FilePath& path, bool deprecated_enqueue);
+
+// Opens file browser on the folder containing the file, with the file selected.
+void ShowFileInFolder(const FilePath& path);
 
 // Tries to open |file| directly in the browser. Returns false if the browser
 // can't directly handle this type of file.
-bool TryViewingFile(const FilePath& file);
+bool TryViewingFile(Profile* profile, const FilePath& path);
 
-void InstallCRX(Profile* profile, const FilePath& full_path);
+void InstallCRX(Profile* profile, const FilePath& path);
 
-bool ShouldBeOpenedWithPdfPlugin(const char* file_extension);
+bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension);
 
 // Converts the vector of progress status to their JSON (Value) form.
 base::ListValue* ProgressStatusVectorToListValue(

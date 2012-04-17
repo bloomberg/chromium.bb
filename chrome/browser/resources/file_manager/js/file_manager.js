@@ -526,6 +526,7 @@ FileManager.prototype = {
         this.onFileChanged_.bind(this));
 
     var path = this.getPathFromUrlOrParams_();
+    var invokeHandler = !this.params_.selectOnly;
     if (path &&
         DirectoryModel.getRootType(path) == DirectoryModel.RootType.GDATA) {
       // We are opening on a GData path. Mount GData and show
@@ -539,12 +540,14 @@ FileManager.prototype = {
         this.setupCurrentDirectoryPostponed_ = null;
         if (event) // If called as an event handler just exit silently.
           return;
-        this.setupCurrentDirectory_(false /* blankWhileOpeningAFile */);
+        this.setupCurrentDirectory_(
+            invokeHandler, false /* blankWhileOpeningAFile */);
       }.bind(this);
       this.directoryModel_.addEventListener('directory-changed',
           this.setupCurrentDirectoryPostponed_);
     } else {
-      this.setupCurrentDirectory_(true /* blankWhileOpeningAFile */);
+      this.setupCurrentDirectory_(
+          invokeHandler, true /* blankWhileOpeningAFile */);
     }
 
     this.summarizeSelection_();
@@ -1560,7 +1563,7 @@ FileManager.prototype = {
   FileManager.prototype.onPopState_ = function(event) {
     // TODO(serya): We should restore selected items here.
     this.closeFilePopup_();
-    this.setupCurrentDirectory_();
+    this.setupCurrentDirectory_(true /* invokeHandler */);
   };
 
   FileManager.prototype.requestResize_ = function(timeout) {
@@ -1614,11 +1617,13 @@ FileManager.prototype = {
    * Default path may also contain a file name. Freshly opened file manager
    * window has neither.
    *
-   * @param {boolean} blankWhileOpeningAFile Whether to show fade over
-   *                                         the file manager.
+   * @param {boolean} invokeHandler Whether to invoke the default handler on
+   *                                the selected file.
+   * @param {boolean} opt_blankWhileOpeningAFile Whether to show fade over
+   *                                             the file manager.
    */
   FileManager.prototype.setupCurrentDirectory_ =
-      function(blankWhileOpeningAFile) {
+      function(invokeHandler, opt_blankWhileOpeningAFile) {
     var path = this.getPathFromUrlOrParams_();
 
     if (!path) {
@@ -1629,12 +1634,12 @@ FileManager.prototype = {
     // In the FULL_PAGE mode if the hash path points to a file we might have
     // to invoke a task after selecting it.
     // If the file path is in params_ we only want to select the file.
-    if (location.hash &&
+    if (invokeHandler && location.hash &&
         this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
       // To prevent the file list flickering for a moment before the action
       // is executed we hide it under a white div.
       var shade;
-      if (blankWhileOpeningAFile) {
+      if (opt_blankWhileOpeningAFile) {
         shade = this.document_.createElement('div');
         shade.className = 'overlay-pane';
         shade.style.backgroundColor = 'white';

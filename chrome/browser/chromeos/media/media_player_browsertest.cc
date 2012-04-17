@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, Popup) {
   // Check that its not currently visible
   ASSERT_FALSE(IsPlayerVisible());
 
-  player->PopupMediaPlayer(NULL);
+  player->PopupMediaPlayer();
   player->ForcePlayMediaURL(GetMusicTestURL());
 
   ASSERT_TRUE(IsPlayerVisible());

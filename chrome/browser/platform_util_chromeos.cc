@@ -24,35 +24,6 @@ namespace {
 const char kGmailComposeUrl[] =
     "https://mail.google.com/mail/?extsrc=mailto&url=";
 
-void OpenFileBrowserOnUIThread(const FilePath& dir) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  Browser* browser = BrowserList::GetLastActive();
-  if (!browser)
-    return;
-
-  FilePath virtual_path;
-  if (!file_manager_util::ConvertFileToRelativeFileSystemPath(
-      browser->profile(), dir, &virtual_path)) {
-    return;
-  }
-
-  GURL url = file_manager_util::GetFileBrowserUrlWithParams(
-     SelectFileDialog::SELECT_NONE, string16(), virtual_path, NULL, 0,
-     FilePath::StringType());
-  browser->ShowSingletonTab(url);
-}
-
-// file_util::DirectoryExists must be called on the FILE thread.
-void ShowItemInFolderOnFileThread(const FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  FilePath dir = full_path.DirName();
-  if (file_util::DirectoryExists(dir)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&OpenFileBrowserOnUIThread, dir));
-  }
-}
-
 void OpenItemOnFileThread(const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::Closure callback;
@@ -74,8 +45,7 @@ namespace platform_util {
 
 void ShowItemInFolder(const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ShowItemInFolderOnFileThread, full_path));
+  file_manager_util::ShowFileInFolder(full_path);
 }
 
 void OpenItem(const FilePath& full_path) {
