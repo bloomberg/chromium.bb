@@ -274,13 +274,7 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
     }
     HANDLE target;
     if (g_broker_duplicate_handle_func == NULL) {
-      // TODO(mseaborn): Remove these non-NACL_STANDALONE cases.
-      // Chromium is being changed to supply g_broker_duplicate_handle_func.
-#ifdef NACL_STANDALONE  // not in Chrome
       target = OpenProcess(PROCESS_DUP_HANDLE, FALSE, header.pid);
-#else
-      target = NaClHandlePassLookupHandle(header.pid);
-#endif
       if (target == NULL) {
         return -1;
       }
@@ -308,18 +302,14 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
           WriteAll(handle, remote_handles, sizeof(uint64_t) * i);
         }
         if (g_broker_duplicate_handle_func == NULL) {
-#ifdef NACL_STANDALONE
           CloseHandle(target);
-#endif
         }
         return -1;
       }
       remote_handles[i] = reinterpret_cast<uint64_t>(temp_remote_handle);
     }
     if (g_broker_duplicate_handle_func == NULL) {
-#ifdef NACL_STANDALONE
       CloseHandle(target);
-#endif
     }
   }
   header.command = kMessage;

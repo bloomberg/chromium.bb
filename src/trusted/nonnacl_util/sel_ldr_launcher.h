@@ -116,9 +116,6 @@ struct SelLdrLauncher {
   // is talking on the other end.  Returns true if successful.
   bool KillChildProcess();
 
-  // Returns a handle to the created sel_ldr process.
-  Handle child_process() const { return child_process_; }
-
   // Returns the socket address used to connect to the sel_ldr.
   DescWrapper* socket_addr() const { return socket_addr_.get(); }
 

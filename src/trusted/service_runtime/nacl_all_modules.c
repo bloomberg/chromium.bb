@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -27,9 +27,6 @@ void  NaClAllModulesInit(void) {
   NaClTlsInit();
   NaClSyscallTableInit();
   NaClThreadNiceInit();
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
-  NaClHandlePassLdrInit();
-#endif
 }
 
 

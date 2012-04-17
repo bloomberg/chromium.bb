@@ -1039,33 +1039,6 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
   (*done->Run)(done);
 }
 
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
-/*
- * This RPC is invoked by the plugin as part of the initialization process and
- * provides the NaCl process with a socket address that can later be used for
- * pid to process handle mapping queries. This is required to enable IMC handle
- * passing inside the Chrome sandbox.
- */
-static void NaClInitHandlePassingRpc(struct NaClSrpcRpc      *rpc,
-                                     struct NaClSrpcArg      **in_args,
-                                     struct NaClSrpcArg      **out_args,
-                                     struct NaClSrpcClosure  *done) {
-  struct NaClApp  *nap = (struct NaClApp *) rpc->channel->server_instance_data;
-  NaClSrpcImcDescType handle_passing_socket_address = in_args[0]->u.hval;
-  DWORD renderer_pid = in_args[1]->u.ival;
-  NaClHandle renderer_handle = (NaClHandle)in_args[2]->u.ival;
-  UNREFERENCED_PARAMETER(out_args);
-  if (!NaClHandlePassLdrCtor(handle_passing_socket_address,
-                             renderer_pid,
-                             renderer_handle)) {
-    rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  } else {
-    rpc->result = NACL_SRPC_RESULT_OK;
-  }
-  (*done->Run)(done);
-}
-#endif
-
 NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) {
   NaClErrorCode status;
 
@@ -1626,9 +1599,6 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
     { "start_module::i", NaClSecureChannelStartModuleRpc, },
     { "log:is:", NaClSecureChannelLog, },
     { "load_module:hs:", NaClLoadModuleRpc, },
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
-    { "init_handle_passing:hii:", NaClInitHandlePassingRpc, },
-#endif
     { "reverse_setup::h", NaClSecureReverseClientSetup, },
     /* add additional calls here.  upcall set up?  start module signal? */
     { (char const *) NULL, (NaClSrpcMethod) NULL, },

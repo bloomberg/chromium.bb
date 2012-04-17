@@ -140,10 +140,11 @@ bool SelLdrLauncher::StartViaCommandLine(
 }
 
 bool SelLdrLauncher::KillChildProcess() {
-    return 0 != TerminateProcess(child_process_, 9);
-    // 9 is the exit code for the child_process_.  The value is actually not
-    // material, since (currently) the launcher does not collect/report
-    // it.
+  if (kInvalidHandle == child_process_)
+    return false;
+  return 0 != TerminateProcess(child_process_, 9);
+  // 9 is the exit code for the child_process_.  The value is actually not
+  // material, since (currently) the launcher does not collect/report it.
 }
 
 void PluginSelLdrLocator::GetDirectory(char* buffer, size_t len) {

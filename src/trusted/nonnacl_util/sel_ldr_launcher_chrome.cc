@@ -13,6 +13,9 @@ LaunchNaClProcessFunc launch_nacl_process = NULL;
 namespace nacl {
 bool SelLdrLauncher::Start(const char* url) {
   // send a synchronous message to the browser process
+  // TODO(mseaborn): Remove the nacl_proc_handle and nacl_proc_id
+  // arguments.  Chromium is being changed not to give the renderer
+  // the Windows handle of the NaCl process.
   Handle nacl_proc_handle;
   int nacl_proc_id;
   // TODO(sehr): This is asserted to be one.  Remove this parameter.
@@ -25,10 +28,6 @@ bool SelLdrLauncher::Start(const char* url) {
                            &nacl_proc_id)) {
     return false;
   }
-
-#if NACL_WINDOWS
-  NaClHandlePassBrowserRememberHandle(nacl_proc_id, nacl_proc_handle);
-#endif
 
   CloseHandlesAfterLaunch();
   // TODO(gregoryd): the handle is currently returned on Windows only.
