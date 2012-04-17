@@ -405,7 +405,7 @@ void AutofillOptionsHandler::SetCreditCardOverlayStrings(
 }
 
 void AutofillOptionsHandler::LoadAutofillData() {
-  if (!personal_data_->IsDataLoaded())
+  if (!IsPersonalDataLoaded())
     return;
 
   ListValue addresses;
@@ -439,7 +439,7 @@ void AutofillOptionsHandler::LoadAutofillData() {
 }
 
 void AutofillOptionsHandler::RemoveAddress(const ListValue* args) {
-  DCHECK(personal_data_->IsDataLoaded());
+  DCHECK(IsPersonalDataLoaded());
 
   std::string guid;
   if (!args->GetString(0, &guid)) {
@@ -451,7 +451,7 @@ void AutofillOptionsHandler::RemoveAddress(const ListValue* args) {
 }
 
 void AutofillOptionsHandler::RemoveCreditCard(const ListValue* args) {
-  DCHECK(personal_data_->IsDataLoaded());
+  DCHECK(IsPersonalDataLoaded());
 
   std::string guid;
   if (!args->GetString(0, &guid)) {
@@ -463,7 +463,7 @@ void AutofillOptionsHandler::RemoveCreditCard(const ListValue* args) {
 }
 
 void AutofillOptionsHandler::LoadAddressEditor(const ListValue* args) {
-  DCHECK(personal_data_->IsDataLoaded());
+  DCHECK(IsPersonalDataLoaded());
 
   std::string guid;
   if (!args->GetString(0, &guid)) {
@@ -502,7 +502,7 @@ void AutofillOptionsHandler::LoadAddressEditor(const ListValue* args) {
 }
 
 void AutofillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
-  DCHECK(personal_data_->IsDataLoaded());
+  DCHECK(IsPersonalDataLoaded());
 
   std::string guid;
   if (!args->GetString(0, &guid)) {
@@ -537,7 +537,7 @@ void AutofillOptionsHandler::LoadCreditCardEditor(const ListValue* args) {
 }
 
 void AutofillOptionsHandler::SetAddress(const ListValue* args) {
-  if (!personal_data_->IsDataLoaded())
+  if (!IsPersonalDataLoaded())
     return;
 
   std::string guid;
@@ -581,7 +581,7 @@ void AutofillOptionsHandler::SetAddress(const ListValue* args) {
 }
 
 void AutofillOptionsHandler::SetCreditCard(const ListValue* args) {
-  if (!personal_data_->IsDataLoaded())
+  if (!IsPersonalDataLoaded())
     return;
 
   std::string guid;
@@ -611,7 +611,7 @@ void AutofillOptionsHandler::SetCreditCard(const ListValue* args) {
 }
 
 void AutofillOptionsHandler::ValidatePhoneNumbers(const ListValue* args) {
-  if (!personal_data_->IsDataLoaded())
+  if (!IsPersonalDataLoaded())
     return;
 
   ListValue* list_value = NULL;
@@ -619,6 +619,10 @@ void AutofillOptionsHandler::ValidatePhoneNumbers(const ListValue* args) {
 
   web_ui()->CallJavascriptFunction(
     "AutofillEditAddressOverlay.setValidatedPhoneNumbers", *list_value);
+}
+
+bool AutofillOptionsHandler::IsPersonalDataLoaded() const {
+  return personal_data_ && personal_data_->IsDataLoaded();
 }
 
 }  // namespace options2

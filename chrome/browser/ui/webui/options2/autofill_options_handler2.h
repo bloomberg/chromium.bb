@@ -82,6 +82,9 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   // array of numbers, and the country code string set on the profile.
   void ValidatePhoneNumbers(const base::ListValue* args);
 
+  // Returns true if |personal_data_| is non-null and loaded.
+  bool IsPersonalDataLoaded() const;
+
   // The personal data manager, used to load Autofill profiles and credit cards.
   // Unowned pointer, may not be NULL.
   PersonalDataManager* personal_data_;
