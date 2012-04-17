@@ -342,7 +342,6 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        show_state_after_show_(ui::SHOW_STATE_DEFAULT),
        suppress_window_raise_(false),
        accel_group_(NULL),
-       debounce_timer_disabled_(false),
        fullscreen_exit_bubble_type_(
            FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
 }
@@ -1540,19 +1539,17 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
   // The GdkEventConfigure* we get here doesn't have quite the right
   // coordinates though (they're relative to the drawable window area, rather
   // than any window manager decorations, if enabled), so we need to call
-  // gtk_window_get_position() to get the right values.  (Otherwise session
-  // restore, if enabled, will restore windows to incorrect positions.)  That's
+  // gtk_window_get_position() to get the right values. (Otherwise session
+  // restore, if enabled, will restore windows to incorrect positions.) That's
   // a round trip to the X server though, so we set a debounce timer and only
   // call it (in OnDebouncedBoundsChanged() below) after we haven't seen a
   // reconfigure event in a short while.
   // We don't use Reset() because the timer may not yet be running.
   // (In that case Stop() is a no-op.)
-  if (!debounce_timer_disabled_) {
-    window_configure_debounce_timer_.Stop();
-    window_configure_debounce_timer_.Start(FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kDebounceTimeoutMilliseconds), this,
-        &BrowserWindowGtk::OnDebouncedBoundsChanged);
-  }
+  window_configure_debounce_timer_.Stop();
+  window_configure_debounce_timer_.Start(FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kDebounceTimeoutMilliseconds), this,
+      &BrowserWindowGtk::OnDebouncedBoundsChanged);
 
   return FALSE;
 }
@@ -1677,12 +1674,6 @@ bool BrowserWindowGtk::CanClose() const {
 
 bool BrowserWindowGtk::ShouldShowWindowIcon() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR);
-}
-
-void BrowserWindowGtk::DisableDebounceTimerForTests(bool is_disabled) {
-  debounce_timer_disabled_ = is_disabled;
-  if (is_disabled)
-    window_configure_debounce_timer_.Stop();
 }
 
 void BrowserWindowGtk::AddFindBar(FindBarGtk* findbar) {
