@@ -52,7 +52,6 @@ class PanelBrowserWindowCocoa;
   NSViewAnimation* boundsAnimation_;  // Lifetime controlled manually, needs
                                       // more then just |release| to terminate.
   BOOL animateOnBoundsChange_;
-  ScopedCrTrackingArea windowTrackingArea_;
   BOOL throbberShouldSpin_;
   BOOL playingMinimizeAnimation_;
   float animationStopToShowTitlebarOnly_;
@@ -121,9 +120,6 @@ class PanelBrowserWindowCocoa;
 // |command| is an integer value containing one of the constants defined in the
 // "chrome/app/chrome_command_ids.h" file.
 - (void)executeCommand:(int)command;
-
-// Invokes the settings menu when the settings button is pressed.
-- (void)runSettingsMenu:(NSView*)button;
 
 // NSAnimationDelegate method, invoked when bounds animation is finished.
 - (void)animationDidEnd:(NSAnimation*)animation;

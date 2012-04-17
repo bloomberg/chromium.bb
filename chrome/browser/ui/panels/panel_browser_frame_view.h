@@ -11,13 +11,10 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 
 class Extension;
 class PanelBrowserView;
-class PanelSettingsMenuModel;
 class SkPaint;
 namespace gfx {
 class Font;
@@ -28,23 +25,16 @@ class LinearAnimation;
 namespace views {
 class ImageButton;
 class Label;
-class MenuButton;
-class MenuItemView;
-class MenuModelAdapter;
-class MenuRunner;
 }
 
 class PanelBrowserFrameView : public BrowserNonClientFrameView,
                               public views::ButtonListener,
-                              public views::MenuButtonListener,
-                              public TabIconView::TabIconViewModel,
-                              public ui::AnimationDelegate {
+                              public TabIconView::TabIconViewModel {
  public:
   PanelBrowserFrameView(BrowserFrame* frame, PanelBrowserView* browser_view);
   virtual ~PanelBrowserFrameView();
 
   void UpdateTitleBar();
-  void OnFocusChanged(bool focused);
 
   // Returns the height of the entire nonclient top border, including the window
   // frame, any title area, and any connected client edge.
@@ -90,18 +80,9 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event)
       OVERRIDE;
 
-  // Overridden from views::MenuButtonListener:
-  virtual void OnMenuButtonClicked(views::View* source,
-                                   const gfx::Point& point) OVERRIDE;
-
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
   virtual SkBitmap GetFaviconForTabIconView() OVERRIDE;
-
-  // Overridden from AnimationDelegate:
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
  private:
   friend class PanelBrowserViewTest;
@@ -112,31 +93,6 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
     PAINT_AS_INACTIVE,
     PAINT_AS_ACTIVE,
     PAINT_FOR_ATTENTION
-  };
-
-  class MouseWatcher : public MessageLoopForUI::Observer {
-   public:
-    explicit MouseWatcher(PanelBrowserFrameView* view);
-    virtual ~MouseWatcher();
-
-    virtual bool IsCursorInViewBounds() const;
-
-  #if defined(OS_WIN) || defined(USE_AURA)
-    virtual base::EventStatus WillProcessEvent(
-        const base::NativeEvent& event) OVERRIDE;
-    virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-  #elif defined(TOOLKIT_GTK)
-    virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
-    virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
-  #endif
-
-   private:
-    void HandleGlobalMouseMoveEvent();
-
-    PanelBrowserFrameView* view_;
-    bool is_mouse_within_;
-
-    DISALLOW_COPY_AND_ASSIGN(MouseWatcher);
   };
 
   // Returns the thickness of the entire nonclient left, right, and bottom
@@ -154,37 +110,15 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   void PaintFrameEdge(gfx::Canvas* canvas);
   void PaintClientEdge(gfx::Canvas* canvas);
 
-  // Called by MouseWatcher to notify if the mouse enters or leaves the window.
-  void OnMouseEnterOrLeaveWindow(bool mouse_entered);
-
   // Retrieves the drawing metrics based on the current painting state.
   SkColor GetTitleColor(PaintState paint_state) const;
   SkBitmap* GetFrameTheme(PaintState paint_state) const;
 
-  // Make settings button visible if either of the conditions is met:
-  // 1) The panel is active, i.e. having focus.
-  // 2) The mouse is over the panel.
-  void UpdateSettingsButtonVisibility(bool active, bool cursor_in_view);
-
   bool UsingDefaultTheme(PaintState paint_state) const;
-
-  const Extension* GetExtension() const;
-
-  bool EnsureSettingsMenuCreated();
 
   string16 GetTitleText() const;
 
   bool CanResize() const;
-
-#ifdef UNIT_TEST
-  PanelSettingsMenuModel* settings_menu_model() const {
-    return settings_menu_model_.get();
-  }
-
-  void set_mouse_watcher(MouseWatcher* mouse_watcher) {
-    mouse_watcher_.reset(mouse_watcher);
-  }
-#endif
 
   // The client view hosted within this non-client frame view that is
   // guaranteed to be freed before the client view.
@@ -192,26 +126,10 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   PanelBrowserView* panel_browser_view_;
 
   PaintState paint_state_;
-  views::MenuButton* settings_button_;
   views::ImageButton* close_button_;
   TabIconView* title_icon_;
   views::Label* title_label_;
   gfx::Rect client_view_bounds_;
-  scoped_ptr<MouseWatcher> mouse_watcher_;
-  scoped_ptr<PanelSettingsMenuModel> settings_menu_model_;
-  scoped_ptr<views::MenuModelAdapter> settings_menu_adapter_;
-  views::MenuItemView* settings_menu_;  // Owned by |settings_menu_runner_|.
-  scoped_ptr<views::MenuRunner> settings_menu_runner_;
-
-  // Used to animate the visibility change of settings button.
-  scoped_ptr<ui::LinearAnimation> settings_button_animator_;
-  gfx::Rect settings_button_full_bounds_;
-  gfx::Rect settings_button_zero_bounds_;
-  bool is_settings_button_visible_;
-
-  // On Aura popups are displayed in panels. If this panel is not opened by an
-  // app, it won't have a settings button.
-  const bool has_settings_button_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserFrameView);
 };

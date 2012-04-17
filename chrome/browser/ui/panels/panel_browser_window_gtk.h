@@ -8,18 +8,15 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/base/animation/animation_delegate.h"
 
 class Panel;
 class PanelBoundsAnimation;
 class PanelDragGtk;
-class PanelSettingsMenuModel;
 class NativePanelTestingGtk;
 
 class PanelBrowserWindowGtk : public BrowserWindowGtk,
-                              public MenuGtk::Delegate,
                               public MessageLoopForUI::Observer,
                               public NativePanel,
                               public ui::AnimationDelegate {
@@ -33,8 +30,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   // BrowserWindow overrides
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
-  virtual void ShowSettingsMenu(GtkWidget* widget,
-                                GdkEventButton* event) OVERRIDE;
   virtual TitleDecoration GetWindowTitle(std::string* title) const OVERRIDE;
 
   virtual bool ShouldShowCloseButton() const OVERRIDE;
@@ -163,12 +158,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean, OnDragButtonReleased,
                        GdkEventButton*);
 
-  // Callbacks for mouse enter leave events.
-  CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean, OnEnterNotify,
-                       GdkEventCrossing*);
-  CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean, OnLeaveNotify,
-                       GdkEventCrossing*);
-
   // Tests will set this to false to prevent actual GTK drags from being
   // triggered as that generates extra unwanted signals and focus grabs.
   bool system_drag_disabled_for_testing_;
@@ -190,9 +179,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;
-
-  scoped_ptr<PanelSettingsMenuModel> settings_menu_model_;
-  scoped_ptr<MenuGtk> settings_menu_;
 
   scoped_ptr<PanelDragGtk> drag_helper_;
 
@@ -220,10 +206,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   // current one completes. In this case, we want to start the new animation
   // from where the last one left.
   gfx::Rect last_animation_progressed_bounds_;
-
-  // Whether mouse is in the window. We show the wrench icon when a panel
-  // window has focus or mouse is in a panel window.
-  bool window_has_mouse_;
 
   // The close button is not shown when panel is in icon only mode in overflow.
   bool show_close_button_;

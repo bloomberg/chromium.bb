@@ -12,8 +12,8 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="22"/>
 			<integer value="1"/>
+			<integer value="6"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -69,44 +69,6 @@
 						<reference key="NSSuperview" ref="304499912"/>
 						<string key="NSClassName">PanelTitlebarOverlayView</string>
 					</object>
-					<object class="NSCustomView" id="892753116">
-						<reference key="NSNextResponder" ref="304499912"/>
-						<int key="NSvFlags">256</int>
-						<object class="NSMutableArray" key="NSSubviews">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="NSButton" id="514167085">
-								<reference key="NSNextResponder" ref="892753116"/>
-								<int key="NSvFlags">274</int>
-								<string key="NSFrame">{{-2, -4}, {16, 20}}</string>
-								<reference key="NSSuperview" ref="892753116"/>
-								<bool key="NSViewIsLayerTreeHost">YES</bool>
-								<int key="NSViewLayerContentsRedrawPolicy">2</int>
-								<bool key="NSEnabled">YES</bool>
-								<object class="NSButtonCell" key="NSCell" id="730890819">
-									<int key="NSCellFlags">67239424</int>
-									<int key="NSCellFlags2">134217728</int>
-									<string key="NSContents">Button</string>
-									<object class="NSFont" key="NSSupport" id="383728064">
-										<string key="NSName">LucidaGrande</string>
-										<double key="NSSize">13</double>
-										<int key="NSfFlags">1044</int>
-									</object>
-									<reference key="NSControlView" ref="514167085"/>
-									<int key="NSButtonFlags">-2042347265</int>
-									<int key="NSButtonFlags2">129</int>
-									<string key="NSAlternateContents"/>
-									<string key="NSKeyEquivalent"/>
-									<int key="NSPeriodicDelay">200</int>
-									<int key="NSPeriodicInterval">25</int>
-								</object>
-							</object>
-						</object>
-						<string key="NSFrame">{{270, 0}, {16, 18}}</string>
-						<reference key="NSSuperview" ref="304499912"/>
-						<bool key="NSViewIsLayerTreeHost">YES</bool>
-						<int key="NSViewLayerContentsRedrawPolicy">2</int>
-						<string key="NSClassName">NSView</string>
-					</object>
 					<object class="NSTextField" id="537532822">
 						<reference key="NSNextResponder" ref="304499912"/>
 						<int key="NSvFlags">293</int>
@@ -117,7 +79,11 @@
 							<int key="NSCellFlags">67239488</int>
 							<int key="NSCellFlags2">4200448</int>
 							<string key="NSContents"/>
-							<reference key="NSSupport" ref="383728064"/>
+							<object class="NSFont" key="NSSupport">
+								<string key="NSName">LucidaGrande</string>
+								<double key="NSSize">13</double>
+								<int key="NSfFlags">1044</int>
+							</object>
 							<reference key="NSControlView" ref="537532822"/>
 							<bool key="NSDrawsBackground">YES</bool>
 							<int key="NSTextBezelStyle">1</int>
@@ -201,35 +167,11 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">settingsButton_</string>
-						<reference key="source" ref="304499912"/>
-						<reference key="destination" ref="514167085"/>
-					</object>
-					<int key="connectionID">15</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">onSettingsButtonClick:</string>
-						<reference key="source" ref="304499912"/>
-						<reference key="destination" ref="537532822"/>
-					</object>
-					<int key="connectionID">16</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">title_</string>
 						<reference key="source" ref="304499912"/>
 						<reference key="destination" ref="537532822"/>
 					</object>
 					<int key="connectionID">17</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">onSettingsButtonClick:</string>
-						<reference key="source" ref="304499912"/>
-						<reference key="destination" ref="514167085"/>
-					</object>
-					<int key="connectionID">18</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -238,14 +180,6 @@
 						<reference key="destination" ref="542139912"/>
 					</object>
 					<int key="connectionID">21</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">settingsButtonWrapper_</string>
-						<reference key="source" ref="304499912"/>
-						<reference key="destination" ref="892753116"/>
-					</object>
-					<int key="connectionID">23</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -328,7 +262,6 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="537532822"/>
 							<reference ref="542139912"/>
-							<reference ref="892753116"/>
 							<reference ref="438255290"/>
 						</object>
 						<reference key="parent" ref="0"/>
@@ -363,29 +296,6 @@
 						<reference key="parent" ref="542139912"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">22</int>
-						<reference key="object" ref="892753116"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="514167085"/>
-						</object>
-						<reference key="parent" ref="304499912"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">13</int>
-						<reference key="object" ref="514167085"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="730890819"/>
-						</object>
-						<reference key="parent" ref="892753116"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">14</int>
-						<reference key="object" ref="730890819"/>
-						<reference key="parent" ref="514167085"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">24</int>
 						<reference key="object" ref="438255290"/>
 						<reference key="parent" ref="304499912"/>
@@ -407,14 +317,9 @@
 					<string>1.editorWindowContentRectSynchronizationRect</string>
 					<string>10.IBPluginDependency</string>
 					<string>11.IBPluginDependency</string>
-					<string>13.CustomClassName</string>
-					<string>13.IBPluginDependency</string>
-					<string>13.IBViewBoundsToFrameTransform</string>
-					<string>14.IBPluginDependency</string>
 					<string>19.IBPluginDependency</string>
 					<string>2.IBPluginDependency</string>
 					<string>20.IBPluginDependency</string>
-					<string>22.IBPluginDependency</string>
 					<string>24.IBPluginDependency</string>
 					<string>6.IBEditorWindowLastContentRect</string>
 					<string>6.IBPluginDependency</string>
@@ -430,13 +335,6 @@
 					<boolean value="NO"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>HoverImageButton</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<object class="NSAffineTransform">
-						<bytes key="NSTransformStruct">P4AAAL+AAABDhd/awYAAAA</bytes>
-					</object>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -478,7 +376,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">ChromeEventProcessingWindow</string>
-					<string key="superclassName">NSWindow</string>
+					<string key="superclassName">UnderlayOpenGLHostingWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/ui/cocoa/chrome_event_processing_window.h</string>
@@ -501,22 +399,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>
 						<string key="minorKey"/>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">HoverButton</string>
-					<string key="superclassName">NSButton</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/hover_button.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">HoverImageButton</string>
-					<string key="superclassName">HoverButton</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/hover_image_button.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -598,35 +480,14 @@
 					<string key="className">PanelTitlebarViewCocoa</string>
 					<string key="superclassName">NSView</string>
 					<object class="NSMutableDictionary" key="actions">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>onCloseButtonClick:</string>
-							<string>onSettingsButtonClick:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
-							<string>id</string>
-						</object>
+						<string key="NS.key.0">onCloseButtonClick:</string>
+						<string key="NS.object.0">id</string>
 					</object>
 					<object class="NSMutableDictionary" key="actionInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>onCloseButtonClick:</string>
-							<string>onSettingsButtonClick:</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBActionInfo">
-								<string key="name">onCloseButtonClick:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
-								<string key="name">onSettingsButtonClick:</string>
-								<string key="candidateClassName">id</string>
-							</object>
+						<string key="NS.key.0">onCloseButtonClick:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">onCloseButtonClick:</string>
+							<string key="candidateClassName">id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
@@ -636,8 +497,6 @@
 							<string>controller_</string>
 							<string>icon_</string>
 							<string>overlay_</string>
-							<string>settingsButtonWrapper_</string>
-							<string>settingsButton_</string>
 							<string>title_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -645,8 +504,6 @@
 							<string>PanelWindowControllerCocoa</string>
 							<string>NSView</string>
 							<string>NSView</string>
-							<string>NSView</string>
-							<string>HoverImageButton</string>
 							<string>NSTextField</string>
 						</object>
 					</object>
@@ -657,8 +514,6 @@
 							<string>controller_</string>
 							<string>icon_</string>
 							<string>overlay_</string>
-							<string>settingsButtonWrapper_</string>
-							<string>settingsButton_</string>
 							<string>title_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -674,14 +529,6 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">overlay_</string>
 								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">settingsButtonWrapper_</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">settingsButton_</string>
-								<string key="candidateClassName">HoverImageButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">title_</string>
@@ -718,6 +565,14 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">PanelWindowControllerCocoa</string>
 					<string key="superclassName">NSWindowController</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBUserSource</string>
+						<string key="minorKey"/>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">UnderlayOpenGLHostingWindow</string>
+					<string key="superclassName">NSWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>
 						<string key="minorKey"/>
@@ -768,22 +623,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBFrameworkSource</string>
 						<string key="minorKey">AppKit.framework/Headers/NSPageLayout.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSButton</string>
-					<string key="superclassName">NSControl</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBFrameworkSource</string>
-						<string key="minorKey">AppKit.framework/Headers/NSButton.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">NSButtonCell</string>
-					<string key="superclassName">NSActionCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBFrameworkSource</string>
-						<string key="minorKey">AppKit.framework/Headers/NSButtonCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

@@ -74,10 +74,10 @@ class BrowserTitlebar : public content::NotificationObserver,
   // add to the menu.
   void ShowContextMenu(GdkEventButton* event);
 
-  // When a panel slides into a new position and the cursor is on the close
-  // button, the close button does not become clickable. The gtk_widget_show()
-  // call on panel_wrench_button_ in OnEnterNotify on window_ prevents the
-  // close_button_ from getting the enter-notify-event, making it unclickable.
+  // When a panel appears in the same position as the one of the panel being
+  // closed and the cursor stays in the close button, the close button appears
+  // not to be clickable. This is because neither "enter-notify-event" nor
+  // "clicked" event for the new panel gets fired if the mouse does not move.
   // This creates a bad experience when a user has multiple panels of the same
   // size (which is typical) and tries closing them all by repeatedly clicking
   // in the same place on the screen.
@@ -88,9 +88,6 @@ class BrowserTitlebar : public content::NotificationObserver,
 
   // Returns the window width to display just the icon.
   int IconOnlyWidth();
-
-  void ShowPanelWrenchButton();
-  void HidePanelWrenchButton();
 
   AvatarMenuButtonGtk* avatar_button() { return avatar_button_.get(); }
 
@@ -175,8 +172,6 @@ class BrowserTitlebar : public content::NotificationObserver,
   // Callback for favicon/settings buttons.
   CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean,
                        OnFaviconMenuButtonPressed, GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(BrowserTitlebar, gboolean,
-                       OnPanelSettingsMenuButtonPressed, GdkEventButton*);
 
   // -- Context Menu -----------------------------------------------------------
 
@@ -248,10 +243,6 @@ class BrowserTitlebar : public content::NotificationObserver,
   // The favicon and page title used when in app mode or popup mode.
   GtkWidget* app_mode_favicon_;
   GtkWidget* app_mode_title_;
-
-  // Wrench icon for panels. This'll only appear when a panel window has focus
-  // or mouse is in a panel window.
-  scoped_ptr<CustomDrawButton> panel_wrench_button_;
 
   // Whether we are using a custom frame.
   bool using_custom_frame_;

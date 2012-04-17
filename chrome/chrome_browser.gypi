@@ -3088,8 +3088,6 @@
         'browser/ui/panels/panel_overflow_indicator_gtk.h',
         'browser/ui/panels/panel_overflow_indicator_view.cc',
         'browser/ui/panels/panel_overflow_indicator_view.h',
-        'browser/ui/panels/panel_settings_menu_model.cc',
-        'browser/ui/panels/panel_settings_menu_model.h',
         'browser/ui/panels/panel_strip.cc',
         'browser/ui/panels/panel_strip.h',
         'browser/ui/panels/panel_titlebar_view_cocoa.h',

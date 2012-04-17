@@ -35,37 +35,6 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
   PanelBrowserViewTest() : BasePanelBrowserTest() { }
 
  protected:
-  class MockMouseWatcher : public PanelBrowserFrameView::MouseWatcher {
-   public:
-    explicit MockMouseWatcher(PanelBrowserFrameView* view)
-        : PanelBrowserFrameView::MouseWatcher(view),
-          is_cursor_in_view_(false) {
-    }
-
-    virtual bool IsCursorInViewBounds() const {
-      return is_cursor_in_view_;
-    }
-
-    void MoveMouse(bool is_cursor_in_view) {
-      is_cursor_in_view_ = is_cursor_in_view;
-
-#if defined(OS_WIN)
-      MSG msg;
-      msg.message = WM_MOUSEMOVE;
-      DidProcessEvent(msg);
-#elif defined(USE_AURA)
-      NOTIMPLEMENTED();
-#elif defined(TOOLKIT_GTK)
-      GdkEvent event;
-      event.type = GDK_MOTION_NOTIFY;
-      DidProcessEvent(&event);
-#endif
-    }
-
-   private:
-    bool is_cursor_in_view_;
-  };
-
   PanelBrowserView* GetBrowserView(Panel* panel) const {
     return static_cast<PanelBrowserView*>(panel->native_panel());
   }
@@ -86,22 +55,10 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     return GetBrowserView(panel)->bounds_animator_.get();
   }
 
-  ui::LinearAnimation* GetSettingsButtonAnimator(Panel* panel) const {
-    return GetBrowserView(panel)->GetFrameView()->
-        settings_button_animator_.get();
-  }
-
   int GetTitlebarHeight(Panel* panel) const {
     PanelBrowserFrameView* frame_view = GetBrowserView(panel)->GetFrameView();
     return frame_view->NonClientTopBorderHeight() -
            frame_view->NonClientBorderThickness();
-  }
-
-  MockMouseWatcher* CreateTitlebarMouseWatcher(Panel* panel) {
-    PanelBrowserFrameView* frame_view = GetBrowserView(panel)->GetFrameView();
-    MockMouseWatcher* mouse_watcher = new MockMouseWatcher(frame_view);
-    frame_view->set_mouse_watcher(mouse_watcher);
-    return mouse_watcher;
   }
 
   PanelBrowserFrameView::PaintState GetTitlebarPaintState(Panel* panel) const {
@@ -135,10 +92,6 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     return GetBrowserView(panel)->GetFrameView()->title_label_;
   }
 
-  views::Button* GetSettingsButton(Panel* panel) const {
-    return GetBrowserView(panel)->GetFrameView()->settings_button_;
-  }
-
   views::Button* GetCloseButton(Panel* panel) const {
     return GetBrowserView(panel)->GetFrameView()->close_button_;
   }
@@ -150,15 +103,6 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
   void WaitTillBoundsAnimationFinished(Panel* panel) {
     // The timer for the animation will only kick in as async task.
     while (GetBoundsAnimator(panel)->is_animating()) {
-      MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                            MessageLoop::QuitClosure());
-      MessageLoopForUI::current()->RunAllPending();
-    }
-  }
-
-  void WaitTillSettingsAnimationFinished(Panel* panel) {
-    // The timer for the animation will only kick in as async task.
-    while (GetSettingsButtonAnimator(panel)->is_animating()) {
       MessageLoopForUI::current()->PostTask(FROM_HERE,
                                             MessageLoop::QuitClosure());
       MessageLoopForUI::current()->RunAllPending();
@@ -445,14 +389,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, PanelLayout) {
 
   views::View* title_icon = GetTitleIcon(panel);
   views::View* title_text = GetTitleText(panel);
-  views::View* settings_button = GetSettingsButton(panel);
   views::View* close_button = GetCloseButton(panel);
 
   // We should have icon, text, settings button and close button.
-  EXPECT_EQ(4, GetControlCount(panel));
+  EXPECT_EQ(3, GetControlCount(panel));
   EXPECT_TRUE(ContainsControl(panel, title_icon));
   EXPECT_TRUE(ContainsControl(panel, title_text));
-  EXPECT_TRUE(ContainsControl(panel, settings_button));
   EXPECT_TRUE(ContainsControl(panel, close_button));
 
   // These controls should be visible.
@@ -468,49 +410,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, PanelLayout) {
   EXPECT_GT(title_text->width(), 0);
   EXPECT_GT(title_text->height(), 0);
   EXPECT_LT(title_text->height(), titlebar_height);
-  EXPECT_GT(settings_button->width(), 0);
-  EXPECT_GT(settings_button->height(), 0);
-  EXPECT_LT(settings_button->height(), titlebar_height);
   EXPECT_GT(close_button->width(), 0);
   EXPECT_GT(close_button->height(), 0);
   EXPECT_LT(close_button->height(), titlebar_height);
   EXPECT_LT(title_icon->x() + title_icon->width(), title_text->x());
-  EXPECT_LT(title_text->x() + title_text->width(), settings_button->x());
-  EXPECT_LT(settings_button->x() + settings_button->width(), close_button->x());
-}
-
-IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, ShowOrHideSettingsButton) {
-  Panel* panel = CreatePanel("PanelTest");
-  views::View* settings_button = GetSettingsButton(panel);
-
-  // Create and hook up the MockMouseWatcher so that we can simulate if the
-  // mouse is over the panel.
-  MockMouseWatcher* mouse_watcher = CreateTitlebarMouseWatcher(panel);
-
-  // When the panel is created, it is active. Since we cannot programatically
-  // bring the panel back to active state once it is deactivated, we have to
-  // test the cases that the panel is active first.
-  EXPECT_TRUE(panel->IsActive());
-
-  // When the panel is active, the settings button should always be visible.
-  mouse_watcher->MoveMouse(true);
-  EXPECT_TRUE(settings_button->visible());
-  mouse_watcher->MoveMouse(false);
-  EXPECT_TRUE(settings_button->visible());
-
-  // When the panel is inactive, the options button is active per the mouse over
-  // the panel or not.
-  panel->Deactivate();
-  EXPECT_FALSE(panel->IsActive());
-  WaitTillSettingsAnimationFinished(panel);
-  EXPECT_FALSE(settings_button->visible());
-
-  mouse_watcher->MoveMouse(true);
-  WaitTillSettingsAnimationFinished(panel);
-  EXPECT_TRUE(settings_button->visible());
-  mouse_watcher->MoveMouse(false);
-  WaitTillSettingsAnimationFinished(panel);
-  EXPECT_FALSE(settings_button->visible());
+  EXPECT_LT(title_text->x() + title_text->width(), close_button->x());
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {

@@ -2562,11 +2562,6 @@ void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
   }
 }
 
-void BrowserWindowGtk::ShowSettingsMenu(GtkWidget* widget,
-                                        GdkEventButton* event) {
-  // Nothing to do. Panel window will override this.
-}
-
 BrowserWindowGtk::TitleDecoration BrowserWindowGtk::GetWindowTitle(
     std::string* title) const {
   *title = UTF16ToUTF8(browser()->GetWindowTitleForCurrentTab());

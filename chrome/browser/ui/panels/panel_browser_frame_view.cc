@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_contents.h"
@@ -22,7 +21,6 @@
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/base/animation/linear_animation.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -31,11 +29,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_model_adapter.h"
-#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -84,15 +78,6 @@ const int kTitleSpacing = 8;
 
 // The spacing in pixels between the close button and the right border.
 const int kCloseButtonAndBorderSpacing = 8;
-
-// The spacing in pixels between the close button and the settings button.
-const int kSettingsButtonAndCloseButtonSpacing = 8;
-
-// This value is experimental and subjective.
-const int kUpdateSettingsVisibilityAnimationMs = 120;
-
-// This value is experimental and subjective.
-const int kSettingsButtonAnimationFrameRate = 50;
 
 // Colors used to draw active titlebar under default theme.
 const SkColor kActiveTitleTextDefaultColor = SK_ColorBLACK;
@@ -188,15 +173,6 @@ SkBitmap* CreateGradientBitmap(SkColor start_color, SkColor end_color) {
   return new SkBitmap(canvas.ExtractBitmap());
 }
 
-const ButtonResources& GetSettingsButtonResources() {
-  static ButtonResources* buttons = NULL;
-  if (!buttons) {
-    buttons = new ButtonResources(IDR_BALLOON_WRENCH, 0,
-                                  IDR_BALLOON_WRENCH_H, IDR_BALLOON_WRENCH_P);
-  }
-  return *buttons;
-}
-
 const ButtonResources& GetCloseButtonResources() {
   static ButtonResources* buttons = NULL;
   if (!buttons) {
@@ -274,123 +250,15 @@ bool IsHitTestValueForResizing(int hc) {
 
 }  // namespace
 
-// Settings button animation.
-class SettingsButtonAnimation : public ui::LinearAnimation {
- public:
-  SettingsButtonAnimation(int duration,
-                          int frame_rate,
-                          ui::AnimationDelegate* delegate)
-      : ui::LinearAnimation(duration, frame_rate, delegate) {}
- protected:
-  virtual void AnimateToState(double state) OVERRIDE {}
-};
-
-// PanelBrowserFrameView::MouseWatcher -----------------------------------------
-
-PanelBrowserFrameView::MouseWatcher::MouseWatcher(PanelBrowserFrameView* view)
-    : view_(view),
-      is_mouse_within_(false) {
-  MessageLoopForUI::current()->AddObserver(this);
-}
-
-PanelBrowserFrameView::MouseWatcher::~MouseWatcher() {
-  MessageLoopForUI::current()->RemoveObserver(this);
-}
-
-bool PanelBrowserFrameView::MouseWatcher::IsCursorInViewBounds() const {
-  gfx::Point cursor_point = gfx::Screen::GetCursorScreenPoint();
-  return view_->browser_view()->GetBounds().Contains(cursor_point.x(),
-                                                     cursor_point.y());
-}
-
-#if defined(OS_WIN)
-base::EventStatus PanelBrowserFrameView::MouseWatcher::WillProcessEvent(
-    const base::NativeEvent& event) {
-  return base::EVENT_CONTINUE;
-}
-
-void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(
-    const base::NativeEvent& event) {
-  switch (event.message) {
-    case WM_MOUSEMOVE:
-    case WM_NCMOUSEMOVE:
-    case WM_MOUSELEAVE:
-    case WM_NCMOUSELEAVE:
-      HandleGlobalMouseMoveEvent();
-      break;
-    default:
-      break;
-  }
-}
-#elif defined(USE_AURA) && defined(USE_X11)
-base::EventStatus PanelBrowserFrameView::MouseWatcher::WillProcessEvent(
-    XEvent* const& event) {
-  return base::EVENT_CONTINUE;
-}
-
-void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(
-    XEvent* const& event) {
-  if (ui::IsMotionEvent(event))
-    HandleGlobalMouseMoveEvent();
-}
-#elif defined(TOOLKIT_GTK)
-void PanelBrowserFrameView::MouseWatcher::WillProcessEvent(GdkEvent* event) {
-}
-
-void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(GdkEvent* event) {
-  switch (event->type) {
-    case GDK_ENTER_NOTIFY:
-    case GDK_LEAVE_NOTIFY:
-    case GDK_MOTION_NOTIFY:
-      HandleGlobalMouseMoveEvent();
-      break;
-    default:
-      break;
-  }
-}
-#endif
-
-void PanelBrowserFrameView::MouseWatcher::HandleGlobalMouseMoveEvent() {
-  bool is_mouse_within = IsCursorInViewBounds();
-  if (is_mouse_within == is_mouse_within_)
-    return;
-  is_mouse_within_ = is_mouse_within;
-  view_->OnMouseEnterOrLeaveWindow(is_mouse_within_);
-}
-
-// PanelBrowserFrameView -------------------------------------------------------
-
 PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
                                              PanelBrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       panel_browser_view_(browser_view),
       paint_state_(NOT_PAINTED),
-      settings_button_(NULL),
       close_button_(NULL),
       title_icon_(NULL),
-      title_label_(NULL),
-      is_settings_button_visible_(false),
-#if defined(USE_AURA)
-      has_settings_button_(panel_browser_view_->panel()->browser()->is_app()) {
-#else
-      has_settings_button_(true) {
-#endif
+      title_label_(NULL) {
   frame->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
-
-  const ButtonResources& settings_button_resources =
-      GetSettingsButtonResources();
-  settings_button_ =  new views::MenuButton(NULL, string16(), this, false);
-  settings_button_->SetIcon(*(settings_button_resources.normal_image));
-  settings_button_->SetHoverIcon(*(settings_button_resources.hover_image));
-  settings_button_->SetPushedIcon(*(settings_button_resources.pushed_image));
-  settings_button_->set_alignment(views::TextButton::ALIGN_CENTER);
-  settings_button_->set_border(NULL);
-  settings_button_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_PANEL_WINDOW_SETTINGS_BUTTON_TOOLTIP));
-  settings_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_PANEL_WINDOW_SETTINGS_BUTTON_TOOLTIP));
-  settings_button_->SetVisible(is_settings_button_visible_);
-  AddChildView(settings_button_);
 
   const ButtonResources& close_button_resources = GetCloseButtonResources();
   close_button_ = new views::ImageButton(this);
@@ -415,9 +283,6 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_label_->SetAutoColorReadabilityEnabled(false);
   AddChildView(title_label_);
-
-  if (has_settings_button_)
-    mouse_watcher_.reset(new MouseWatcher(this));
 }
 
 PanelBrowserFrameView::~PanelBrowserFrameView() {
@@ -540,31 +405,16 @@ void PanelBrowserFrameView::Layout() {
   // Check if the width is only enough to show only the icon, or both icon
   // and title. Hide corresponding controls accordingly.
   bool show_close_button = true;
-  bool show_settings_button = true;
   bool show_title_label = true;
   if (panel_strip->type() == PanelStrip::IN_OVERFLOW) {
     if (width() <= IconOnlyWidth()) {
       show_close_button = false;
-      show_settings_button = false;
       show_title_label = false;
-    } else {
-      show_settings_button = false;
     }
   }
 
-  if (!has_settings_button_)
-    show_settings_button = false;
-
   close_button_->SetVisible(show_close_button);
-  settings_button_->SetVisible(show_settings_button);
   title_label_->SetVisible(show_title_label);
-
-  // Cancel the settings button animation if the layout of titlebar is being
-  // updated.
-  if (settings_button_animator_.get() &&
-      settings_button_animator_->is_animating()) {
-    settings_button_animator_->Stop();
-  }
 
   // Layout the close button.
   int right = width();
@@ -577,28 +427,6 @@ void PanelBrowserFrameView::Layout() {
         close_button_size.width(),
         close_button_size.height());
     right = close_button_->x();
-
-    // Layout the settings button.
-    if (show_settings_button) {
-      gfx::Size settings_button_size = settings_button_->GetPreferredSize();
-      settings_button_->SetBounds(
-          close_button_->x() - kSettingsButtonAndCloseButtonSpacing -
-              settings_button_size.width(),
-          (NonClientTopBorderHeight() - settings_button_size.height()) / 2,
-          settings_button_size.width(),
-          settings_button_size.height());
-      right = settings_button_->x();
-
-      // Trace the full bounds and zero-size bounds for animation purpose.
-      settings_button_full_bounds_ = settings_button_->bounds();
-      settings_button_zero_bounds_.SetRect(
-          settings_button_full_bounds_.x() +
-              settings_button_full_bounds_.width() / 2,
-          settings_button_full_bounds_.y() +
-              settings_button_full_bounds_.height() / 2,
-          0,
-          0);
-    }
   }
 
   // Layout the icon.
@@ -681,21 +509,6 @@ void PanelBrowserFrameView::ButtonPressed(views::Button* sender,
     frame()->Close();
 }
 
-void PanelBrowserFrameView::OnMenuButtonClicked(views::View* source,
-                                                const gfx::Point& point) {
-  if (!EnsureSettingsMenuCreated())
-    return;
-
-  DCHECK_EQ(settings_button_, source);
-  gfx::Point screen_point;
-  views::View::ConvertPointToScreen(source, &screen_point);
-  if (settings_menu_runner_->RunMenuAt(source->GetWidget(),
-          settings_button_, gfx::Rect(screen_point, source->size()),
-          views::MenuItemView::TOPRIGHT, views::MenuRunner::HAS_MNEMONICS) ==
-      views::MenuRunner::MENU_DELETED)
-    return;
-}
-
 bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
   // This function is queried during the creation of the window as the
   // TabIconView we host is initialized, so we need to NULL check the selected
@@ -706,32 +519,6 @@ bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
 
 SkBitmap PanelBrowserFrameView::GetFaviconForTabIconView() {
   return frame()->widget_delegate()->GetWindowIcon();
-}
-
-void PanelBrowserFrameView::AnimationEnded(const ui::Animation* animation) {
-  settings_button_->SetVisible(is_settings_button_visible_);
-}
-
-void PanelBrowserFrameView::AnimationProgressed(
-    const ui::Animation* animation) {
-  gfx::Rect animation_start_bounds, animation_end_bounds;
-  if (is_settings_button_visible_) {
-    animation_start_bounds = settings_button_zero_bounds_;
-    animation_end_bounds = settings_button_full_bounds_;
-  } else {
-    animation_start_bounds = settings_button_full_bounds_;
-    animation_end_bounds = settings_button_zero_bounds_;
-  }
-  gfx::Rect new_bounds = settings_button_animator_->CurrentValueBetween(
-      animation_start_bounds, animation_end_bounds);
-  if (new_bounds == animation_end_bounds)
-    AnimationEnded(animation);
-  else
-    settings_button_->SetBoundsRect(new_bounds);
-}
-
-void PanelBrowserFrameView::AnimationCanceled(const ui::Animation* animation) {
-  AnimationEnded(animation);
 }
 
 int PanelBrowserFrameView::NonClientBorderThickness() const {
@@ -930,78 +717,6 @@ string16 PanelBrowserFrameView::GetTitleText() const {
 
 void PanelBrowserFrameView::UpdateTitleBar() {
   title_label_->SetText(GetTitleText());
-}
-
-void PanelBrowserFrameView::OnFocusChanged(bool focused) {
-  if (!has_settings_button_)
-    return;
-
-  UpdateSettingsButtonVisibility(focused,
-                                 mouse_watcher_->IsCursorInViewBounds());
-  SchedulePaint();
-}
-
-void PanelBrowserFrameView::OnMouseEnterOrLeaveWindow(bool mouse_entered) {
-  // Panel might be closed when we still watch the mouse event.
-  if (!panel_browser_view_->panel())
-    return;
-
-  if (!has_settings_button_)
-    return;
-
-  UpdateSettingsButtonVisibility(panel_browser_view_->focused(),
-                                 mouse_entered);
-}
-
-void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
-    bool focused, bool cursor_in_view) {
-  DCHECK(has_settings_button_);
-
-  PanelStrip* panel_strip = panel_browser_view_->panel()->panel_strip();
-  if (!panel_strip)
-    return;
-
-  // The settings button is not shown in the overflow state.
-  if (panel_strip->type() == PanelStrip::IN_OVERFLOW)
-    return;
-
-  bool is_settings_button_visible = focused || cursor_in_view;
-  if (is_settings_button_visible_ == is_settings_button_visible)
-    return;
-  is_settings_button_visible_ = is_settings_button_visible;
-
-  // Even if we're hiding the settings button, we still make it visible for the
-  // time period that the animation is running.
-  settings_button_->SetVisible(true);
-
-  if (settings_button_animator_.get()) {
-    if (settings_button_animator_->is_animating())
-      settings_button_animator_->Stop();
-  } else {
-    settings_button_animator_.reset(new SettingsButtonAnimation(
-        PanelManager::AdjustTimeInterval(kUpdateSettingsVisibilityAnimationMs),
-        kSettingsButtonAnimationFrameRate, this));
-  }
-
-  settings_button_animator_->Start();
-}
-
-bool PanelBrowserFrameView::EnsureSettingsMenuCreated() {
-  if (settings_menu_runner_.get())
-    return true;
-
-  const Extension* extension = panel_browser_view_->panel()->GetExtension();
-  if (!extension)
-    return false;
-
-  settings_menu_model_.reset(
-      new PanelSettingsMenuModel(panel_browser_view_->panel()));
-  settings_menu_adapter_.reset(
-      new views::MenuModelAdapter(settings_menu_model_.get()));
-  settings_menu_ = new views::MenuItemView(settings_menu_adapter_.get());
-  settings_menu_adapter_->BuildMenu(settings_menu_);
-  settings_menu_runner_.reset(new views::MenuRunner(settings_menu_));
-  return true;
 }
 
 bool PanelBrowserFrameView::CanResize() const {

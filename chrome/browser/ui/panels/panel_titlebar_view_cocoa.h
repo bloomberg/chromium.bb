@@ -16,7 +16,7 @@
 
 // A class that works as a custom titlebar for Panels. It is placed on top of
 // the regular Cocoa titlebar. We paint theme image on it, and it's
-// the place for the close button, wrench button, page favicon, title label.
+// the place for the close button, page favicon, title label.
 // It also facilitates dragging and minimization of the panels, and changes
 // color as 'new activity' indicator.
 // One way to have custom titlebar would be to use NSBorderlessWindow,
@@ -56,10 +56,6 @@ enum PanelDragState {
   IBOutlet PanelWindowControllerCocoa* controller_;
   IBOutlet NSView* icon_;
   IBOutlet NSTextField* title_;
-  // Since HoverImageButton manages its own alpha value, we wrap it in a subview
-  // so we can animate it with a fade in/fade out effect.
-  IBOutlet NSView* settingsButtonWrapper_;
-  IBOutlet HoverImageButton* settingsButton_;
   // Transparent view on top of entire titlebar. It catches mouse events to
   // prevent window activation by the system on mouseDown.
   IBOutlet NSView* overlay_;
@@ -90,9 +86,6 @@ enum PanelDragState {
   // Callback from Close button.
 - (void)onCloseButtonClick:(id)sender;
 
-  // Callback from Settings button.
-- (void)onSettingsButtonClick:(id)sender;
-
   // Attaches this view to the controller_'s window as a titlebar.
 - (void)attach;
 
@@ -115,10 +108,6 @@ enum PanelDragState {
 - (void)startDrag:(NSPoint)mouseLocation;
 - (void)endDrag:(BOOL)cancelled;
 - (void)drag:(NSPoint)mouseLocation;
-
-  // Update the visibility of settings button.
-- (void)updateSettingsButtonVisibility:(BOOL)mouseOverWindow;
-- (void)checkMouseAndUpdateSettingsButtonVisibility;
 
 // Draw Attention methods - change appearance of titlebar to attract user.
 - (void)drawAttention;

@@ -62,10 +62,6 @@ class Panel : public BrowserWindow,
   // Returns the PanelManager associated with this panel.
   PanelManager* manager() const;
 
-  // Gets the extension that a panel is created from.
-  // Returns NULL if it cannot be found.
-  const Extension* GetExtension() const;
-
   void SetExpansionState(ExpansionState new_expansion_state);
 
   bool IsDrawingAttention() const;
@@ -221,10 +217,6 @@ class Panel : public BrowserWindow,
   static NativePanel* CreateNativePanel(Browser* browser,
                                         Panel* panel,
                                         const gfx::Rect& bounds);
-
-  // Gets the extension from the browser that a panel is created from.
-  // Returns NULL if it cannot be found.
-  static const Extension* GetExtensionFromBrowser(Browser* browser);
 
   // Invoked when the native panel has detected a mouse click on the
   // panel's titlebar. Behavior of the click may be modified as

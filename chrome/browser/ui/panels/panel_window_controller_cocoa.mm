@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
-#include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_utils_cocoa.h"
@@ -443,14 +442,6 @@ enum {
   return self;
 }
 
-- (void)dealloc {
-  if (windowTrackingArea_.get()) {
-    [[[[self window] contentView] superview]
-        removeTrackingArea:windowTrackingArea_.get()];
-  }
-  [super dealloc];
-}
-
 - (ui::ThemeProvider*)themeProvider {
   return ThemeServiceFactory::GetForProfile(windowShim_->browser()->profile());
 }
@@ -505,20 +496,6 @@ enum {
     // Set autoresizing behavior: glued to edges.
   [overlayView_ setAutoresizingMask:(NSViewHeightSizable | NSViewWidthSizable)];
   [superview addSubview:overlayView_ positioned:NSWindowAbove relativeTo:nil];
-}
-
-- (void)mouseEntered:(NSEvent*)event {
-  [titlebar_view_ updateSettingsButtonVisibility:YES];
-}
-
-- (void)mouseExited:(NSEvent*)event {
-  // We sometimes get an exit event from a tracking area that has
-  // already been removed. So we need this check.
-  NSPoint mouse = [NSEvent mouseLocation];
-  NSRect frame = [[self window] frame];
-  if (!NSMouseInRect(mouse, frame, NO)) {
-    [titlebar_view_ updateSettingsButtonVisibility:NO];
-  }
 }
 
 - (void)disableTabContentsViewAutosizing {
@@ -755,21 +732,6 @@ enum {
              afterDelay:0];
 }
 
-- (void)runSettingsMenu:(NSView*)button {
-  Panel* panel = windowShim_->panel();
-  DCHECK(panel->GetExtension());
-
-  scoped_ptr<PanelSettingsMenuModel> settingsMenuModel(
-      new PanelSettingsMenuModel(panel));
-  scoped_nsobject<MenuController> settingsMenuController(
-      [[MenuController alloc] initWithModel:settingsMenuModel.get()
-                     useWithPopUpButtonCell:NO]);
-
-  [NSMenu popUpContextMenu:[settingsMenuController menu]
-                 withEvent:[NSApp currentEvent]
-                   forView:button];
-}
-
 - (BOOL)isDraggable {
   return windowShim_->panel()->draggable();
 }
@@ -797,27 +759,6 @@ enum {
 
 - (void)setPanelFrame:(NSRect)frame
               animate:(BOOL)animate {
-  // Setup the whole window as the tracking area so that we can get notified
-  // when the mouse enters or leaves the window. This will make us be able to
-  // show or hide settings button accordingly.
-  NSRect localBounds = frame;
-  localBounds.origin = NSZeroPoint;
-
-  if (windowTrackingArea_.get()) {
-    [[[[self window] contentView] superview]
-       removeTrackingArea:windowTrackingArea_.get()];
-  }
-
-  windowTrackingArea_.reset(
-      [[CrTrackingArea alloc] initWithRect:localBounds
-                                   options:(NSTrackingMouseEnteredAndExited |
-                                            NSTrackingActiveAlways)
-                              proxiedOwner:self
-                                  userInfo:nil]);
-  [windowTrackingArea_.get() clearOwnerWhenWindowWillClose:[self window]];
-  [[[[self window] contentView] superview]
-      addTrackingArea:windowTrackingArea_.get()];
-
   BOOL jumpToDestination = (!animateOnBoundsChange_ || !animate);
 
   // If no animation is in progress, apply bounds change instantly.

@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/panels/panel_drag_gtk.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
-#include "chrome/browser/ui/panels/panel_settings_menu_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
@@ -63,7 +62,6 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
       panel_(panel),
       bounds_(bounds),
       is_drawing_attention_(false),
-      window_has_mouse_(false),
       show_close_button_(true) {
 }
 
@@ -88,11 +86,6 @@ void PanelBrowserWindowGtk::Init() {
                    G_CALLBACK(OnTitlebarButtonPressEventThunk), this);
   g_signal_connect(titlebar_widget(), "button-release-event",
                    G_CALLBACK(OnTitlebarButtonReleaseEventThunk), this);
-
-  g_signal_connect(window_, "enter-notify-event",
-                   G_CALLBACK(OnEnterNotifyThunk), this);
-  g_signal_connect(window_, "leave-notify-event",
-                   G_CALLBACK(OnLeaveNotifyThunk), this);
 
   registrar_.Add(
       this,
@@ -217,15 +210,6 @@ bool PanelBrowserWindowGtk::UseCustomFrame() {
   return TRUE;
 }
 
-void PanelBrowserWindowGtk::ShowSettingsMenu(GtkWidget* widget,
-                                             GdkEventButton* event) {
-  if (!settings_menu_.get()) {
-    settings_menu_model_.reset(new PanelSettingsMenuModel(panel_.get()));
-    settings_menu_.reset(new MenuGtk(this, settings_menu_model_.get()));
-  }
-  settings_menu_->PopupForWidget(widget, event->button, event->time);
-}
-
 void PanelBrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
                                            GtkWidget* widget,
                                            GdkEventExpose* event) {
@@ -267,16 +251,6 @@ void PanelBrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   BrowserWindowGtk::ActiveWindowChanged(active_window);
   if (!window() || was_active == IsActive())  // State didn't change.
     return;
-
-  PanelStrip* panel_strip = panel_->panel_strip();
-  if (panel_strip) {
-    if ((IsActive() || window_has_mouse_) &&
-        panel_strip->type() != PanelStrip::IN_OVERFLOW) {
-      titlebar()->ShowPanelWrenchButton();
-    } else {
-      titlebar()->HidePanelWrenchButton();
-    }
-  }
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
@@ -802,36 +776,6 @@ gboolean PanelBrowserWindowGtk::OnDragButtonReleased(GtkWidget* widget,
                  drag_end_factory_.GetWeakPtr(),
                  false));
   return TRUE;
-}
-
-gboolean PanelBrowserWindowGtk::OnEnterNotify(GtkWidget* widget,
-                                              GdkEventCrossing* event) {
-  // Ignore if entered from a child widget.
-  if (event->detail == GDK_NOTIFY_INFERIOR)
-    return FALSE;
-
-  PanelStrip* panel_strip = panel_->panel_strip();
-  if (!panel_strip)
-    return FALSE;
-
-  if (window() && panel_strip->type() != PanelStrip::IN_OVERFLOW)
-    titlebar()->ShowPanelWrenchButton();
-
-  window_has_mouse_ = true;
-  return FALSE;
-}
-
-gboolean PanelBrowserWindowGtk::OnLeaveNotify(GtkWidget* widget,
-                                              GdkEventCrossing* event) {
-  // Ignore if left towards a child widget.
-  if (event->detail == GDK_NOTIFY_INFERIOR)
-    return FALSE;
-
-  if (window_ && !IsActive())
-    titlebar()->HidePanelWrenchButton();
-
-  window_has_mouse_ = false;
-  return FALSE;
 }
 
 // NativePanelTesting implementation.

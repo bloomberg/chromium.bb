@@ -62,10 +62,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // functions during initialization.
   virtual void Init();
 
-  // Shows the settings menu when the settings button, if present, is clicked.
-  // This is currently only used in panel window.
-  virtual void ShowSettingsMenu(GtkWidget* widget, GdkEventButton* event);
-
   // Allows for a derived class to decorate title text with pango markup.
   // Returns the type of text used for title.
   virtual TitleDecoration GetWindowTitle(std::string* title) const;

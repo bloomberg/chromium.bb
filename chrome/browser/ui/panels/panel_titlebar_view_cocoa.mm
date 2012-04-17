@@ -123,10 +123,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   [controller_ closePanel];
 }
 
-- (void)onSettingsButtonClick:(id)sender {
-  [controller_ runSettingsMenu:settingsButton_];
-}
-
 - (void)drawRect:(NSRect)rect {
   ThemeService* theme =
       static_cast<ThemeService*>([[self window] themeProvider]);
@@ -277,18 +273,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   // This draws nice tight shadow, 'sinking' text into the background.
   [[title_ cell] setBackgroundStyle:NSBackgroundStyleRaised];
 
-  // Initialize the settings button.
-  NSImage* image = gfx::GetCachedImageWithName(@"balloon_wrench.pdf");
-  [settingsButton_ setDefaultImage:image];
-  [settingsButton_ setDefaultOpacity:0.6];
-  [settingsButton_ setHoverImage:image];
-  [settingsButton_ setHoverOpacity:0.9];
-  [settingsButton_ setPressedImage:image];
-  [settingsButton_ setPressedOpacity:1.0];
-  [[settingsButton_ cell] setHighlightsBy:NSNoCellMask];
-  [self checkMouseAndUpdateSettingsButtonVisibility];
-  [self updateWrenchLayout];
-
   [self updateCloseButtonLayout];
 
   // Set autoresizing behavior: glued to edges on left, top and right.
@@ -335,15 +319,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   return icon_;
 }
 
-- (void)updateWrenchLayout {
-  NSRect bounds = [self bounds];
-  NSRect settingsButtonFrame = [settingsButtonWrapper_ frame];
-  settingsButtonFrame.origin.x = NSWidth(bounds) - NSWidth(settingsButtonFrame);
-  settingsButtonFrame.origin.y =
-      (NSHeight(bounds) - NSHeight(settingsButtonFrame)) / 2;
-  [settingsButtonWrapper_ setFrame:settingsButtonFrame];
-}
-
 - (void)updateCloseButtonLayout {
   NSRect buttonFrame = [closeButton_ frame];
   NSRect bounds = [self bounds];
@@ -372,14 +347,13 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   // in Interface Builder so it is sized in a single-line mode.
   [title_ sizeToFit];
   NSRect titleFrame = [title_ frame];
-  NSRect settingsButtonFrame = [settingsButtonWrapper_ frame];
   NSRect bounds = [self bounds];
 
   // Place the icon and title at the center of the titlebar.
   int iconWidthWithPadding = NSWidth(iconFrame) + kIconAndTextPadding;
   int titleWidth = NSWidth(titleFrame);
-  int availableWidth = NSWidth(bounds) - kButtonPadding * 4 -
-      NSWidth(closeButtonFrame) - NSWidth(settingsButtonFrame);
+  int availableWidth = NSWidth(bounds) - kButtonPadding * 2 -
+      NSWidth(closeButtonFrame);
   if (iconWidthWithPadding + titleWidth > availableWidth)
     titleWidth = availableWidth - iconWidthWithPadding;
   int startX = kButtonPadding * 2 + NSWidth(closeButtonFrame) +
@@ -415,7 +389,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)didChangeFrame:(NSNotification*)notification {
-  [self updateWrenchLayout];
   [self updateIconAndTitleLayout];
 }
 
@@ -425,7 +398,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 - (void)didChangeMainWindow:(NSNotification*)notification {
   [self setNeedsDisplay:YES];
-  [self checkMouseAndUpdateSettingsButtonVisibility];
 }
 
 - (void)mouseDown:(NSEvent*)event {
@@ -663,21 +635,6 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 - (void)finishDragTitlebar {
   [self endDrag:NO];
-}
-
-- (void)updateSettingsButtonVisibility:(BOOL)mouseOverWindow {
-  // The settings button is visible if the panel is main window or the mouse is
-  // over it.
-  BOOL shouldShowSettingsButton =
-      mouseOverWindow || [[self window] isMainWindow];
-  [[settingsButtonWrapper_ animator]
-      setAlphaValue:shouldShowSettingsButton ? 1.0 : 0.0];
-}
-
-- (void)checkMouseAndUpdateSettingsButtonVisibility {
-  BOOL mouseOverWindow = NSPointInRect([NSEvent mouseLocation],
-                                       [[self window] frame]);
-  [self updateSettingsButtonVisibility:mouseOverWindow];
 }
 
 @end

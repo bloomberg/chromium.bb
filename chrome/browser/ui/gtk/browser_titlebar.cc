@@ -383,16 +383,6 @@ void BrowserTitlebar::Init() {
                       reinterpret_cast<void*>(true));
     gtk_container_add(GTK_CONTAINER(favicon_event_box), app_mode_favicon_);
 
-    if (IsTypePanel()) {
-      panel_wrench_button_.reset(
-          BuildTitlebarButton(IDR_BALLOON_WRENCH, IDR_BALLOON_WRENCH_P,
-                              IDR_BALLOON_WRENCH_H, app_mode_hbox, FALSE,
-                              IDS_PANEL_WINDOW_SETTINGS_BUTTON_TOOLTIP));
-      g_signal_connect(panel_wrench_button_->widget(), "button-press-event",
-                       G_CALLBACK(OnPanelSettingsMenuButtonPressedThunk), this);
-      gtk_widget_set_no_show_all(panel_wrench_button_->widget(), TRUE);
-    }
-
     app_mode_title_ = gtk_label_new(NULL);
     gtk_label_set_ellipsize(GTK_LABEL(app_mode_title_), PANGO_ELLIPSIZE_END);
     gtk_misc_set_alignment(GTK_MISC(app_mode_title_), 0.0, 0.5);
@@ -925,15 +915,6 @@ gboolean BrowserTitlebar::OnFaviconMenuButtonPressed(GtkWidget* widget,
   return TRUE;
 }
 
-gboolean BrowserTitlebar::OnPanelSettingsMenuButtonPressed(
-    GtkWidget* widget, GdkEventButton* event) {
-  if (event->button != 1)
-    return FALSE;
-
-  browser_window_->ShowSettingsMenu(widget, event);
-  return TRUE;
-}
-
 void BrowserTitlebar::ShowContextMenu(GdkEventButton* event) {
   if (!context_menu_.get()) {
     context_menu_model_.reset(new ContextMenuModel(this));
@@ -986,16 +967,6 @@ int BrowserTitlebar::IconOnlyWidth() {
   GtkAllocation allocation;
   gtk_widget_get_allocation(app_mode_favicon_, &allocation);
   return 2 * kFrameBorderThickness + allocation.width;
-}
-
-void BrowserTitlebar::ShowPanelWrenchButton() {
-  if (panel_wrench_button_.get())
-    gtk_widget_show(panel_wrench_button_->widget());
-}
-
-void BrowserTitlebar::HidePanelWrenchButton() {
-  if (panel_wrench_button_.get())
-    gtk_widget_hide(panel_wrench_button_->widget());
 }
 
 bool BrowserTitlebar::IsCommandIdEnabled(int command_id) const {

@@ -5,8 +5,6 @@
 #include "chrome/browser/ui/panels/panel.h"
 
 #include "base/logging.h"
-#include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -15,9 +13,7 @@
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/window_sizer.h"
-#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -32,16 +28,6 @@
 using content::RenderViewHost;
 using content::SSLStatus;
 using content::WebContents;
-
-// static
-const Extension* Panel::GetExtensionFromBrowser(Browser* browser) {
-  // Find the extension. When we create a panel from an extension, the extension
-  // ID is passed as the app name to the Browser.
-  ExtensionService* extension_service =
-      browser->GetProfile()->GetExtensionService();
-  return extension_service->GetExtensionById(
-      web_app::GetExtensionIdFromApplicationName(browser->app_name()), false);
-}
 
 Panel::Panel(Browser* browser, const gfx::Size& requested_size)
     : browser_(browser),
@@ -90,10 +76,6 @@ panel::Resizability Panel::CanResizeByMouse() const {
     return panel::NOT_RESIZABLE;
 
   return panel_strip_->GetPanelResizability(this);
-}
-
-const Extension* Panel::GetExtension() const {
-  return GetExtensionFromBrowser(browser());
 }
 
 // TODO(jennb): do not update restored_size here as there's no knowledge

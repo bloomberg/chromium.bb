@@ -187,8 +187,6 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
     return;
   focused_ = focused;
 
-  GetFrameView()->OnFocusChanged(focused);
-
   if (focused_) {
     // Expand the panel if needed. Do NOT expand a TITLE_ONLY panel
     // otherwise it will be impossible to drag a title without
