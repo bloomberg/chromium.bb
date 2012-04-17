@@ -687,7 +687,7 @@ void HistoryService::Observe(int type,
       if (deleted_details->all_history)
         visited_links->DeleteAllURLs();
       else  // Delete individual ones.
-        visited_links->DeleteURLs(deleted_details->urls);
+        visited_links->DeleteURLs(deleted_details->rows);
       break;
     }
 

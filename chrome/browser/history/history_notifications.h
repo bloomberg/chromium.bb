@@ -57,15 +57,9 @@ struct URLsDeletedDetails : public HistoryDetails {
   // Set when all history was deleted. False means just a subset was deleted.
   bool all_history;
 
-  // The URLRows which have been deleted.
+  // The URLRows of URLs deleted. This is valid only when all_history is false
+  // indicating that a subset of history has been deleted.
   URLRows rows;
-
-  // The list of unique URLs affected. This is valid only when a subset of
-  // history is deleted. When all of it is deleted, this will be empty, since
-  // we do not bother to list all URLs. (This information can be gleaned from
-  // |rows| but, since there are several clients who need the set, we pre-build
-  // it so that the clients don't have to.)
-  std::set<GURL> urls;
 };
 
 // Details for NOTIFY_URLS_STARRED.

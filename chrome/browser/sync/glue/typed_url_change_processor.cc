@@ -151,12 +151,13 @@ void TypedUrlChangeProcessor::HandleURLsDeleted(
       return;
     }
   } else {
-    for (std::set<GURL>::iterator url = details->urls.begin();
-         url != details->urls.end(); ++url) {
+    for (history::URLRows::const_iterator row = details->rows.begin();
+         row != details->rows.end(); ++row) {
       sync_api::WriteNode sync_node(&trans);
       // The deleted URL could have been non-typed, so it might not be found
       // in the sync DB.
-      if (sync_node.InitByClientTagLookup(syncable::TYPED_URLS, url->spec()))
+      if (sync_node.InitByClientTagLookup(syncable::TYPED_URLS,
+                                          row->url().spec()))
         sync_node.Remove();
     }
   }

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/autocomplete/network_action_predictor_database.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -176,8 +177,8 @@ class NetworkActionPredictor
   // Removes all rows from the database and caches.
   void DeleteAllRows();
 
-  // Removes rows from the database and caches that contain a URL in |urls|.
-  void DeleteRowsWithURLs(const std::set<GURL>& urls);
+  // Removes rows from the database and caches that contain a URL in |rows|.
+  void DeleteRowsWithURLs(const history::URLRows& rows);
 
   // Used to batch operations on the database.
   void BeginTransaction();

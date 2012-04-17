@@ -132,6 +132,19 @@ class URLRow {
     hidden_ = hidden;
   }
 
+  // Helper functor that determines if an URLRow refers to a given URL.
+  class URLRowHasURL {
+   public:
+    explicit URLRowHasURL(const GURL& url) : url_(url) {}
+
+    bool operator()(const URLRow& row) {
+      return row.url() == url_;
+    }
+
+   private:
+    const GURL& url_;
+  };
+
  protected:
   // Swaps the contents of this URLRow with another, which allows it to be
   // destructively copied without memory allocations.
