@@ -311,13 +311,12 @@ class Strace(object):
     silent = not isEnabledFor(logging.INFO)
     stdout = stderr = None
     if silent:
-      stdout = subprocess.PIPE
-      stderr = subprocess.PIPE
+      stdout = stderr = subprocess.PIPE
     traces = ','.join(cls._Context.traces())
     trace_cmd = ['strace', '-f', '-e', 'trace=%s' % traces, '-o', logname]
-    p = subprocess.Popen(
+    child = subprocess.Popen(
         trace_cmd + cmd, cwd=cwd, stdout=stdout, stderr=stderr)
-    out, err = p.communicate()
+    out, err = child.communicate()
     # Once it's done, inject a chdir() call to cwd to be able to reconstruct
     # the full paths.
     # TODO(maruel): cwd should be saved at each process creation, so forks needs
@@ -330,14 +329,14 @@ class Strace(object):
         f.write('%s chdir("%s") = 0\n' % (pid, cwd))
         f.write(content)
 
-    if p.returncode != 0:
-      print 'Failure: %d' % p.returncode
+    if child.returncode != 0:
+      print 'Failure: %d' % child.returncode
       # pylint: disable=E1103
       if out:
         print ''.join(out.splitlines(True)[-100:])
       if err:
         print ''.join(err.splitlines(True)[-100:])
-    return p.returncode
+    return child.returncode
 
   @classmethod
   def parse_log(cls, filename, blacklist):
@@ -631,8 +630,7 @@ class Dtrace(object):
     # Part 1: start the child process.
     stdout = stderr = None
     if silent:
-      stdout = subprocess.PIPE
-      stderr = subprocess.PIPE
+      stdout = stderr = subprocess.PIPE
     child_cmd = [
       sys.executable, os.path.join(BASE_DIR, 'trace_child_process.py'),
     ]
@@ -671,11 +669,13 @@ class Dtrace(object):
 
     try:
       # Part 4: We can now tell our child to go.
-      child.communicate(signal)
+      # TODO(maruel): Another pipe than stdin could be used instead. This would
+      # be more consistent with the other tracing methods.
+      out, err = child.communicate(signal)
 
       dtrace.wait()
       if dtrace.returncode != 0:
-        print 'Failure: %d' % dtrace.returncode
+        print 'dtrace failure: %d' % dtrace.returncode
         with open(logname) as logfile:
           print ''.join(logfile.readlines()[-100:])
         # Find a better way.
@@ -684,13 +684,19 @@ class Dtrace(object):
         # Short the log right away to simplify our life. There isn't much
         # advantage in keeping it out of order.
         cls._sort_log(logname)
+      if child.returncode != 0:
+        print 'Failure: %d' % child.returncode
+        # pylint: disable=E1103
+        if out:
+          print ''.join(out.splitlines(True)[-100:])
+        if err:
+          print ''.join(err.splitlines(True)[-100:])
     except KeyboardInterrupt:
       # Still sort when testing.
       cls._sort_log(logname)
       raise
 
-    # Note that we ignore the child result code.
-    return dtrace.returncode
+    return dtrace.returncode or child.returncode
 
   @classmethod
   def parse_log(cls, filename, blacklist):
@@ -942,8 +948,7 @@ class LogmanTrace(object):
     silent = not isEnabledFor(logging.INFO)
     stdout = stderr = None
     if silent:
-      stdout = subprocess.PIPE
-      stderr = subprocess.PIPE
+      stdout = stderr = subprocess.PIPE
 
     # 1. Start the log collection. Requires administrative access. logman.exe is
     # synchronous so no need for a "warmup" call.
@@ -961,10 +966,11 @@ class LogmanTrace(object):
     logging.debug('Running: %s' % cmd_start)
     subprocess.check_call(cmd_start, stdout=stdout, stderr=stderr)
 
+    # 2. Run the child process.
+    logging.debug('Running: %s' % cmd)
     try:
-      # 2. Run the child process.
-      logging.debug('Running: %s' % cmd)
-      result = subprocess.call(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
+      child = subprocess.Popen(cmd, cwd=cwd, stdout=stdout, stderr=stderr)
+      out, err = child.communicate()
     finally:
       # 3. Stop the log collection.
       cmd_stop = [
@@ -1006,7 +1012,15 @@ class LogmanTrace(object):
       assert False, logformat
     logging.debug('Running: %s' % cmd_convert)
     subprocess.check_call(cmd_convert, stdout=stdout, stderr=stderr)
-    return result
+
+    if child.returncode != 0:
+      print 'Failure: %d' % child.returncode
+      # pylint: disable=E1103
+      if out:
+        print ''.join(out.splitlines(True)[-100:])
+      if err:
+        print ''.join(err.splitlines(True)[-100:])
+    return child.returncode
 
   @classmethod
   def parse_log(cls, filename, blacklist):
