@@ -23,6 +23,11 @@
           '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.pak',
         ]
       }],
+      ['enable_extensions==1', {
+        'pak_inputs': [
+          '<(grit_out_dir)/extensions_api_resources.pak',
+        ],
+      }],
     ],
   },
   'inputs': [
