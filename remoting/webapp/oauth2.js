@@ -28,6 +28,9 @@ remoting.OAuth2 = function() {
 /** @private */
 remoting.OAuth2.prototype.KEY_REFRESH_TOKEN_ = 'oauth2-refresh-token';
 /** @private */
+remoting.OAuth2.prototype.KEY_REFRESH_TOKEN_REVOKABLE_ =
+    'oauth2-refresh-token-revokable';
+/** @private */
 remoting.OAuth2.prototype.KEY_ACCESS_TOKEN_ = 'oauth2-access-token';
 /** @private */
 remoting.OAuth2.prototype.KEY_EMAIL_ = 'remoting-email';
@@ -41,10 +44,12 @@ remoting.OAuth2.prototype.SCOPE_ =
 /** @private */
 remoting.OAuth2.prototype.OAUTH2_TOKEN_ENDPOINT_ =
     'https://accounts.google.com/o/oauth2/token';
-
+/** @private */
+remoting.OAuth2.prototype.OAUTH2_REVOKE_TOKEN_ENDPOINT_ =
+    'https://accounts.google.com/o/oauth2/revoke';
 /** @return {boolean} True if the app is already authenticated. */
 remoting.OAuth2.prototype.isAuthenticated = function() {
-  if (this.getRefreshToken()) {
+  if (this.getRefreshToken_()) {
     return true;
   }
   return false;
@@ -56,27 +61,65 @@ remoting.OAuth2.prototype.isAuthenticated = function() {
  * @return {void} Nothing.
  */
 remoting.OAuth2.prototype.clear = function() {
-  window.localStorage.removeItem(this.KEY_REFRESH_TOKEN_);
   window.localStorage.removeItem(this.KEY_EMAIL_);
   this.clearAccessToken();
+  this.clearRefreshToken_();
 };
 
 /**
+ * Sets the refresh token.
+ *
+ * This method also marks the token as revokable, so that this object will
+ * revoke the token when it no longer needs it.
+ *
  * @param {string} token The new refresh token.
  * @return {void} Nothing.
  */
 remoting.OAuth2.prototype.setRefreshToken = function(token) {
   window.localStorage.setItem(this.KEY_REFRESH_TOKEN_, escape(token));
+  window.localStorage.setItem(this.KEY_REFRESH_TOKEN_REVOKABLE_, true);
   this.clearAccessToken();
 };
 
-/** @return {?string} The refresh token, if authenticated, or NULL. */
-remoting.OAuth2.prototype.getRefreshToken = function() {
+/**
+ * Gets the refresh token.
+ *
+ * This method also marks the refresh token as not revokable, so that this
+ * object will not revoke the token when it no longer needs it. After this
+ * object has exported the token, it cannot know whether it is still in use
+ * when this object no longer needs it.
+ *
+ * @return {?string} The refresh token, if authenticated, or NULL.
+ */
+remoting.OAuth2.prototype.exportRefreshToken = function() {
+  window.localStorage.removeItem(this.KEY_REFRESH_TOKEN_REVOKABLE_);
+  return this.getRefreshToken_();
+};
+
+/**
+ * @return {?string} The refresh token, if authenticated, or NULL.
+ * @private
+ */
+remoting.OAuth2.prototype.getRefreshToken_ = function() {
   var value = window.localStorage.getItem(this.KEY_REFRESH_TOKEN_);
   if (typeof value == 'string') {
     return unescape(value);
   }
   return null;
+};
+
+/**
+ * Clears the refresh token.
+ *
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.OAuth2.prototype.clearRefreshToken_ = function() {
+  if (window.localStorage.getItem(this.KEY_REFRESH_TOKEN_REVOKABLE_)) {
+    this.revokeToken_(this.getRefreshToken_());
+  }
+  window.localStorage.removeItem(this.KEY_REFRESH_TOKEN_);
+  window.localStorage.removeItem(this.KEY_REFRESH_TOKEN_REVOKABLE_);
 };
 
 /**
@@ -200,7 +243,7 @@ remoting.OAuth2.prototype.refreshAccessToken = function(onDone) {
   var parameters = {
     'client_id': this.CLIENT_ID_,
     'client_secret': this.CLIENT_SECRET_,
-    'refresh_token': this.getRefreshToken(),
+    'refresh_token': this.getRefreshToken_(),
     'grant_type': 'refresh_token'
   };
 
@@ -260,6 +303,31 @@ remoting.OAuth2.prototype.exchangeCodeForToken = function(code, onDone) {
   };
   remoting.xhr.post(this.OAUTH2_TOKEN_ENDPOINT_,
                     processTokenResponse,
+                    parameters);
+};
+
+/**
+ * Revokes a refresh or an access token.
+ *
+ * @param {string?} token An access or refresh token.
+ * @return {void} Nothing.
+ * @private
+ */
+remoting.OAuth2.prototype.revokeToken_ = function(token) {
+  if (!token || (token.length == 0)) {
+    return;
+  }
+  var parameters = { 'token': token };
+
+  /** @param {XMLHttpRequest} xhr The XHR reply. */
+  var processResponse = function(xhr) {
+    if (xhr.status != 200) {
+      console.log('Failed to revoke token. Status: ' + xhr.status +
+                  ' ; response: ' + xhr.responseText + ' ; xhr: ', xhr);
+    }
+  };
+  remoting.xhr.post(this.OAUTH2_REVOKE_TOKEN_ENDPOINT_,
+                    processResponse,
                     parameters);
 };
 
