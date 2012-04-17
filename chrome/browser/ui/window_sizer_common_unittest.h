@@ -176,7 +176,8 @@ static void GetWindowBounds(const gfx::Rect& monitor1_bounds,
                             const gfx::Rect& work_area,
                             Source source,
                             gfx::Rect* out_bounds,
-                            const Browser* browser) {
+                            const Browser* browser,
+                            const gfx::Rect& passed_in) {
   TestMonitorInfoProvider* mip = new TestMonitorInfoProvider;
   mip->AddMonitor(monitor1_bounds, monitor1_work_area);
   if (!monitor2_bounds.IsEmpty())
@@ -188,7 +189,7 @@ static void GetWindowBounds(const gfx::Rect& monitor1_bounds,
     sp->SetLastActiveState(state, true);
 
   WindowSizer sizer(sp, mip, browser);
-  sizer.DetermineWindowBounds(gfx::Rect(), out_bounds);
+  sizer.DetermineWindowBounds(passed_in, out_bounds);
 }
 
 #endif  // CHROME_BROWSER_UI_WINDOW_SIZER_COMMON_UNITTEST_H_

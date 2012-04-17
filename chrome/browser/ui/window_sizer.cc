@@ -171,6 +171,17 @@ void WindowSizer::DetermineWindowBounds(const gfx::Rect& specified_bounds,
         GetDefaultWindowBounds(bounds);
       }
     }
+  } else {
+    // In case that there was a bound given we need to make sure that it is
+    // visible and fits on the screen.
+    // Find the size of the work area of the monitor that intersects the bounds
+    // of the anchor window. Note: AdjustBoundsToBeVisibleOnMonitorContaining
+    // does not exactly what we want: It makes only sure that "a minimal part"
+    // is visible on the screen.
+    gfx::Rect work_area =
+        monitor_info_provider_->GetMonitorWorkAreaMatching(*bounds);
+    // Resize so that it fits.
+    *bounds = bounds->AdjustToFit(work_area);
   }
 }
 
