@@ -34,8 +34,6 @@ class ChromeWebContentsViewDelegateMac
   virtual content::WebDragDestDelegate* GetDragDestDelegate() OVERRIDE;
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
-  virtual void NativeViewCreated(NSView* view) OVERRIDE;
-  virtual void NativeViewDestroyed(NSView* view) OVERRIDE;
 
  private:
   // The context menu. Callbacks are asynchronous so we need to keep it around.

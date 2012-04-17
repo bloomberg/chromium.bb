@@ -7,7 +7,6 @@
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
 #include "chrome/browser/tab_contents/web_drag_bookmark_handler_mac.h"
-#import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
@@ -58,12 +57,4 @@ void ChromeWebContentsViewDelegateMac::ShowContextMenu(
                                    params,
                                    web_contents_->GetContentNativeView()));
   context_menu_->Init();
-}
-
-void ChromeWebContentsViewDelegateMac::NativeViewCreated(NSView* view) {
-  view_id_util::SetID(view, VIEW_ID_TAB_CONTAINER);
-}
-
-void ChromeWebContentsViewDelegateMac::NativeViewDestroyed(NSView* view) {
-  view_id_util::UnsetID(view);
 }

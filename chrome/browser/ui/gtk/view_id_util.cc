@@ -113,7 +113,6 @@ const char* GetNameFromID(ViewID id) {
     // These are never hit because the tab container uses the delegate to
     // set its ID.
     case VIEW_ID_TAB_CONTAINER:
-    case VIEW_ID_TAB_CONTAINER_FOCUS_VIEW:
     default:
       NOTREACHED() << "If you added a new VIEW_ID, please provide "
                       "a name for the widget.";

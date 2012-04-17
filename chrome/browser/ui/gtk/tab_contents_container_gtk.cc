@@ -212,10 +212,8 @@ gboolean TabContentsContainerGtk::OnFocus(GtkWidget* widget,
 // ViewIDUtil::Delegate implementation
 
 GtkWidget* TabContentsContainerGtk::GetWidgetForViewID(ViewID view_id) {
-  if (view_id == VIEW_ID_TAB_CONTAINER ||
-      view_id == VIEW_ID_TAB_CONTAINER_FOCUS_VIEW) {
+  if (view_id == VIEW_ID_TAB_CONTAINER)
     return widget();
-  }
 
   return NULL;
 }

@@ -23,7 +23,6 @@ using content::WebContents;
 NativeTabContentsContainerAura::NativeTabContentsContainerAura(
     TabContentsContainer* container)
     : container_(container) {
-  set_id(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 }
 
 NativeTabContentsContainerAura::~NativeTabContentsContainerAura() {

@@ -60,7 +60,6 @@ enum ViewID {
 
   // Tab Container window.
   VIEW_ID_TAB_CONTAINER,
-  VIEW_ID_TAB_CONTAINER_FOCUS_VIEW,
 
   // Docked dev tools.
   VIEW_ID_DEV_TOOLS_DOCKED,

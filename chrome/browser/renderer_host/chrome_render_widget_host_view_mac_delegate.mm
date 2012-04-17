@@ -115,7 +115,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
   if (self) {
     renderWidgetHost_ = renderWidgetHost;
     NSView* nativeView = renderWidgetHost_->GetView()->GetNativeView();
-    view_id_util::SetID(nativeView, VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+    view_id_util::SetID(nativeView, VIEW_ID_TAB_CONTAINER);
 
     if (renderWidgetHost_->IsRenderView()) {
       spellingObserver_.reset(

@@ -22,7 +22,6 @@ using content::WebContents;
 NativeTabContentsContainerWin::NativeTabContentsContainerWin(
     TabContentsContainer* container)
     : container_(container) {
-  set_id(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 }
 
 NativeTabContentsContainerWin::~NativeTabContentsContainerWin() {

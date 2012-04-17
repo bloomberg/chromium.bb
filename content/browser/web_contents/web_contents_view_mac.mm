@@ -410,16 +410,12 @@ void WebContentsViewMac::CloseTab() {
     if (webContentsView_->delegate()) {
       [dragDest_ setDragDelegate:webContentsView_->delegate()->
           GetDragDestDelegate()];
-      webContentsView_->delegate()->NativeViewCreated(self);
     }
   }
   return self;
 }
 
 - (void)dealloc {
-  if (webContentsView_ && webContentsView_->delegate())
-    webContentsView_->delegate()->NativeViewDestroyed(self);
-
   // Cancel any deferred tab closes, just in case.
   [self cancelDeferredClose];
 
