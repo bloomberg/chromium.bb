@@ -14,6 +14,14 @@ const char* kModuleName = "module_name";
 const char* kModuleField = "module_field";
 const char* kModulesField = "modules";
 
+void DumpException(v8::Handle<v8::Message> message) {
+  LOG(ERROR) << "["
+             << *v8::String::Utf8Value(
+                 message->GetScriptResourceName()->ToString())
+             << "(" << message->GetLineNumber() << ")] "
+             << *v8::String::Utf8Value(message->Get());
+}
+
 } // namespace
 
 ModuleSystem::ModuleSystem(v8::Handle<v8::Context> context,
@@ -71,6 +79,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   v8::Handle<v8::Value> exports(modules->Get(module_name));
   if (!exports->IsUndefined())
     return handle_scope.Close(exports);
+
   v8::Handle<v8::Value> source(GetSource(module_name));
   if (source->IsUndefined())
     return handle_scope.Close(v8::Undefined());
@@ -78,6 +87,9 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
       v8::Handle<v8::String>::Cast(source)));
   v8::Handle<v8::Function> func =
       v8::Handle<v8::Function>::Cast(RunString(wrapped_source, module_name));
+  if (func.IsEmpty())
+    return handle_scope.Close(v8::Handle<v8::Value>());
+
   exports = v8::Object::New();
   v8::Handle<v8::Object> natives(NewInstance());
   v8::Handle<v8::Value> args[] = {
@@ -127,6 +139,8 @@ v8::Handle<v8::Value> ModuleSystem::LazyFieldGetter(
     module = module_system->RequireForJsInner(
         parameters->Get(v8::String::New(kModuleName))->ToString())->ToObject();
   }
+  if (module.IsEmpty())
+    return handle_scope.Close(v8::Handle<v8::Value>());
 
   v8::Handle<v8::String> field =
       parameters->Get(v8::String::New(kModuleField))->ToString();
@@ -155,7 +169,20 @@ v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
                                               v8::Handle<v8::String> name) {
   v8::HandleScope handle_scope;
   WebKit::WebScopedMicrotaskSuppression suppression;
-  return handle_scope.Close(v8::Script::New(code, name)->Run());
+  v8::Handle<v8::Value> result;
+  v8::TryCatch try_catch;
+  try_catch.SetCaptureMessage(true);
+  v8::Handle<v8::Script> script(v8::Script::New(code, name));
+  if (try_catch.HasCaught()) {
+    DumpException(try_catch.Message());
+    return handle_scope.Close(result);
+  }
+
+  result = script->Run();
+  if (try_catch.HasCaught())
+    DumpException(try_catch.Message());
+
+  return handle_scope.Close(result);
 }
 
 v8::Handle<v8::Value> ModuleSystem::GetSource(
