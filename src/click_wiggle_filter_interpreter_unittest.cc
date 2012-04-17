@@ -158,4 +158,62 @@ TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest) {
   }
 }
 
+namespace {
+struct ThumbClickTestInput {
+  stime_t timestamp_;
+  float x_, y_, pressure_;
+  short buttons_down_;
+};
+}  // namespace {}
+
+// This tests uses actual data from a log from Ryan Tabone, where he clicked
+// with his thumb and the cursor moved.
+TEST(ClickWiggleFilterInterpreter, ThumbClickTest) {
+  ClickWiggleFilterInterpreterTestInterpreter* base_interpreter =
+    new ClickWiggleFilterInterpreterTestInterpreter;
+  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    92,  // right edge
+    61,  // bottom edge
+    1,  // x pixels/TP width
+    1,  // y pixels/TP height
+    26,  // x screen DPI
+    26,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    0  // is button pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+
+  ThumbClickTestInput inputs[] = {
+    { 1.089467, 27.83, 21.20, 11.48, 0 },
+    { 1.102349, 28.08, 21.20, 17.30, 0 },
+    { 1.115390, 28.83, 19.80, 19.24, 0 },
+    { 1.128652, 29.91, 18.60, 19.24, 0 },
+    { 1.141682, 30.50, 17.30, 19.24, 0 },
+    { 1.154569, 31.33, 16.80, 19.24, 1 },
+    { 1.168041, 31.91, 16.20, 21.18, 1 },
+    { 1.181294, 32.58, 15.90, 09.54, 1 },
+  };
+  for (size_t i = 0; i < arraysize(inputs); i++) {
+    const ThumbClickTestInput& input = inputs[i];
+    FingerState fs = {
+      0, 0, 0, 0,  // touch/width major/minor
+      input.pressure_,
+      0,  // orientation
+      input.x_, input.y_,
+      1,  // tracking id
+      0  // flags
+    };
+    HardwareState hs = { input.timestamp_, input.buttons_down_, 1, 1, &fs };
+    interpreter.SyncInterpret(&hs, NULL);
+    // Assertions tested in base interpreter
+  }
+}
+
 }  // namespace gestures

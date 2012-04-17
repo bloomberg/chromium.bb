@@ -15,7 +15,7 @@ ClickWiggleFilterInterpreter::ClickWiggleFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next)
     : button_down_occurred_(0.0),
       prev_buttons_(0),
-      wiggle_max_dist_(prop_reg, "Wiggle Max Distance", 4.0),
+      wiggle_max_dist_(prop_reg, "Wiggle Max Distance", 5.5),
       wiggle_suppress_timeout_(prop_reg, "Wiggle Timeout", 0.075),
       wiggle_button_down_timeout_(prop_reg,
                                   "Wiggle Button Down Timeout",
