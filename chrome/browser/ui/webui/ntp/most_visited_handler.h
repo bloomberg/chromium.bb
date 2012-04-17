@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,6 @@ class MostVisitedHandler : public content::WebUIMessageHandler,
   content::NotificationRegistrar registrar_;
 
   // Our consumer for the history service.
-  CancelableRequestConsumerTSimple<PageUsageData*> cancelable_consumer_;
   CancelableRequestConsumer topsites_consumer_;
 
   // The most visited URLs, in priority order.
