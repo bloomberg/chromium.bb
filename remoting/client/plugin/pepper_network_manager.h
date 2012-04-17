@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_PEPPER_NETWORK_MANAGER_H_
-#define REMOTING_PROTOCOL_PEPPER_NETWORK_MANAGER_H_
+#ifndef REMOTING_CLIENT_PLUGIN_PEPPER_NETWORK_MANAGER_H_
+#define REMOTING_CLIENT_PLUGIN_PEPPER_NETWORK_MANAGER_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -16,7 +16,6 @@ class NetworkListPrivate;
 }  // namespace pp
 
 namespace remoting {
-namespace protocol {
 
 // PepperNetworkManager uses the PPB_NetworkMonitor_Private API to
 // implement the NetworkManager interface that libjingle uses to
@@ -45,7 +44,6 @@ class PepperNetworkManager : public talk_base::NetworkManagerBase {
   base::WeakPtrFactory<PepperNetworkManager> weak_factory_;
 };
 
-}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_PEPPER_NETWORK_MANAGER_H_
+#endif  // REMOTING_CLIENT_PLUGIN_PEPPER_NETWORK_MANAGER_H_

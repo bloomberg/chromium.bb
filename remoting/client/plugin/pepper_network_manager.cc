@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/protocol/pepper_network_manager.h"
+#include "remoting/client/plugin/pepper_network_manager.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -11,7 +11,6 @@
 #include "ppapi/cpp/private/net_address_private.h"
 
 namespace remoting {
-namespace protocol {
 
 PepperNetworkManager::PepperNetworkManager(const pp::InstanceHandle& instance)
     : monitor_(instance, &PepperNetworkManager::OnNetworkListCallbackHandler,
@@ -110,5 +109,4 @@ void PepperNetworkManager::SendNetworksChangedSignal() {
   SignalNetworksChanged();
 }
 
-}  // namespace protocol
 }  // namespace remoting
