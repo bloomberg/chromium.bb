@@ -1,10 +1,6 @@
 include_rules = [
-  # DO NOT ALLOW tab_contents INCLUDES FROM THIS DIRECTORY! The renderer_host
-  # layer should be usable in contexts other than inside TabContents. Instead,
-  # you should call upward through the RenderViewHostDelegate interface.
-  #
-  # If somebody adds an include and you're fixing the build, please revert them
-  # instead of commenting out this rule.
+  # renderer_host is intended to support the content layer's renderers. No
+  # reference to the tab contents is allowed.
   "-chrome/browser/tab_contents",
 ]
 

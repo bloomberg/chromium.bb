@@ -3,4 +3,8 @@ include_rules = [
   "+media/base",  # For media command line switches.
   "+media/audio/audio_util.h",  # For audio hardware sample-rate.
   "+third_party/zlib",
+
+  # The renderer_host files should only call upwards in the layering via the
+  # delegate interfaces.
+  "-content/browser/tab_contents",
 ]
