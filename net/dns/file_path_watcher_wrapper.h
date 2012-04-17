@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_FILE_PATH_WATCHER_CALLBACK_H_
-#define NET_FILE_PATH_WATCHER_WRAPPER_H_
+#ifndef NET_DNS_FILE_PATH_WATCHER_WRAPPER_H_
+#define NET_DNS_FILE_PATH_WATCHER_WRAPPER_H_
 #pragma once
 
 #include <string>
@@ -62,5 +62,5 @@ class NET_EXPORT FilePathWatcherWrapper
 
 }  // namespace net
 
-#endif  // NET_FILE_PATH_WATCHER_CALLBACK_H_
+#endif  // NET_DNS_FILE_PATH_WATCHER_WRAPPER_H_
 
