@@ -37,6 +37,20 @@ struct screenshooter {
 };
 
 static void
+copy_bgra_yflip(uint8_t *dst, uint8_t *src, int height,
+		int dst_stride, int src_stride)
+{
+	uint8_t *end;
+
+	end = dst + height * dst_stride;
+	while (dst < end) {
+		memcpy(dst, src, src_stride);
+		dst += dst_stride;
+		src -= src_stride;
+	}
+}
+
+static void
 screenshooter_shoot(struct wl_client *client,
 		    struct wl_resource *resource,
 		    struct wl_resource *output_resource,
@@ -45,7 +59,7 @@ screenshooter_shoot(struct wl_client *client,
 	struct weston_output *output = output_resource->data;
 	struct wl_buffer *buffer = buffer_resource->data;
 	uint8_t *tmp, *d, *s;
-	int32_t buffer_stride, output_stride, i;
+	int32_t buffer_stride, output_stride;
 
 	if (!wl_buffer_is_shm(buffer))
 		return;
@@ -68,12 +82,8 @@ screenshooter_shoot(struct wl_client *client,
 	d = wl_shm_buffer_get_data(buffer) + output->y * buffer_stride +
 							output->x * 4;
 	s = tmp + output_stride * (output->current->height - 1);
-
-	for (i = 0; i < output->current->height; i++) {
-		memcpy(d, s, output_stride);
-		d += buffer_stride;
-		s -= output_stride;
-	}
+	copy_bgra_yflip(d, s, output->current->height,
+			buffer_stride, output_stride);
 
 	free(tmp);
 }
