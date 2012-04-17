@@ -184,6 +184,7 @@ extern const wchar_t kInstallerDir[];
 extern const wchar_t kInstallTempDir[];
 extern const wchar_t kInstallUserDataDir[];
 extern const wchar_t kNaClExe[];
+extern const wchar_t kPSOAInterfaceUuid[];
 extern const wchar_t kSetupExe[];
 extern const wchar_t kSxSSuffix[];
 extern const wchar_t kUninstallArgumentsField[];
@@ -215,15 +216,6 @@ extern const wchar_t kChromeChannelCanary[];
 extern const wchar_t kChromeChannelDev[];
 extern const wchar_t kChromeChannelBeta[];
 extern const wchar_t kChromeChannelStable[];
-
-// Delegate Execute registration values.
-extern const wchar_t kCommandExecuteImplUuid[];
-extern const wchar_t kDelegateExecuteLib[];
-extern const wchar_t kDelegateExecuteLibUuid[];
-extern const wchar_t kDelegateExecuteLibVersion[];
-extern const wchar_t kICommandExecuteImpl[];
-extern const wchar_t kICommandExecuteImplUuid[];
-extern const wchar_t kPSOAInterfaceUuid[];
 
 }  // namespace installer
 

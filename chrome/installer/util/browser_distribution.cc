@@ -229,6 +229,15 @@ bool BrowserDistribution::GetChromeChannel(std::wstring* channel) {
   return false;
 }
 
+bool BrowserDistribution::GetDelegateExecuteHandlerData(
+    string16* handler_class_uuid,
+    string16* type_lib_uuid,
+    string16* type_lib_version,
+    string16* interface_uuid) {
+  // TODO(grt): http://crbug.com/123727 Return values for Chromium.
+  return false;
+}
+
 void BrowserDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {

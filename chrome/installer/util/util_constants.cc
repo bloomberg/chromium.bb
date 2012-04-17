@@ -179,6 +179,9 @@ const wchar_t kInstallerDir[] = L"Installer";
 const wchar_t kInstallTempDir[] = L"Temp";
 const wchar_t kInstallUserDataDir[] = L"User Data";
 const wchar_t kNaClExe[] = L"nacl64.exe";
+// The CLSID of the proxy stub OLE Automation universal marshaler, the default
+// marshaler for all interfaces.
+const wchar_t kPSOAInterfaceUuid[] = L"{00020424-0000-0000-C000-000000000046}";
 const wchar_t kSetupExe[] = L"setup.exe";
 const wchar_t kSxSSuffix[] = L" SxS";
 const wchar_t kUninstallStringField[] = L"UninstallString";
@@ -207,17 +210,5 @@ const wchar_t kChromeChannelCanary[] = L"canary";
 const wchar_t kChromeChannelDev[] = L"dev";
 const wchar_t kChromeChannelBeta[] = L"beta";
 const wchar_t kChromeChannelStable[] = L"";
-
-// See delegate_execute.idl.
-const wchar_t kCommandExecuteImplUuid[] =
-    L"{5C65F4B0-3651-4514-B207-D10CB699B14B}";
-const wchar_t kDelegateExecuteLib[] = L"DelegateExecuteLib";
-const wchar_t kDelegateExecuteLibUuid[] =
-    L"{4E805ED8-EBA0-4601-9681-12815A56EBFD}";
-const wchar_t kDelegateExecuteLibVersion[] = L"1.0";
-const wchar_t kICommandExecuteImpl[] = L"ICommandExecuteImpl";
-const wchar_t kICommandExecuteImplUuid[] =
-    L"{0BA0D4E9-2259-4963-B9AE-A839F7CB7544}";
-const wchar_t kPSOAInterfaceUuid[] = L"{00020424-0000-0000-C000-000000000046}";
 
 }  // namespace installer

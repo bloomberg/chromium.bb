@@ -292,9 +292,6 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
     if (p.is_chrome_frame()) {
       AddChromeFrameWorkItems(original_state, installer_state, setup_path,
                               new_version, p, list);
-    } else if (p.is_chrome()) {
-      AddChromeWorkItems(original_state, installer_state, setup_path,
-                         new_version, p, list);
     }
   }
 }
@@ -825,6 +822,9 @@ void AddInstallWorkItems(const InstallationState& original_state,
 
     AddVersionKeyWorkItems(root, product->distribution(), new_version,
                            add_language_identifier, install_list);
+
+    AddDelegateExecuteWorkItems(original_state, installer_state, setup_path,
+                                new_version, *product, install_list);
   }
 
   if (installer_state.is_multi_install()) {
@@ -1030,25 +1030,36 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
   }
 }
 
-void AddChromeWorkItems(const InstallationState& original_state,
-                        const InstallerState& installer_state,
-                        const FilePath& setup_path,
-                        const Version& new_version,
-                        const Product& product,
-                        WorkItemList* list) {
-  // For the moment, this function adds work items to perform COM registration
-  // specific to the Windows 8 delegate.  If more work needs to be done in the
-  // future, pull this into its own function called by AddChromeWorkItems.
-  DCHECK(product.is_chrome());
+void AddDelegateExecuteWorkItems(const InstallationState& original_state,
+                                 const InstallerState& installer_state,
+                                 const FilePath& setup_path,
+                                 const Version& new_version,
+                                 const Product& product,
+                                 WorkItemList* list) {
+  string16 handler_class_uuid;
+  string16 type_lib_uuid;
+  string16 type_lib_version;
+  string16 interface_uuid;
+  BrowserDistribution* distribution = product.distribution();
+  if (!distribution->GetDelegateExecuteHandlerData(
+          &handler_class_uuid, &type_lib_uuid, &type_lib_version,
+          &interface_uuid)) {
+    VLOG(1) << "No DelegateExecute verb handler processing to do for "
+            << distribution->GetAppShortCutName();
+    return;
+  }
+
+  VLOG(1) << "DelegateExecute verb handler COM registration.";
+
   HKEY root = installer_state.root_key();
   const bool is_install =
       (installer_state.operation() != InstallerState::UNINSTALL);
   string16 delegate_execute_path(L"Software\\Classes\\CLSID\\");
-  delegate_execute_path.append(kCommandExecuteImplUuid);
+  delegate_execute_path.append(handler_class_uuid);
   string16 typelib_path(L"Software\\Classes\\TypeLib\\");
-  typelib_path.append(kDelegateExecuteLibUuid);
+  typelib_path.append(type_lib_uuid);
   string16 interface_path(L"Software\\Classes\\Interface\\");
-  interface_path.append(kICommandExecuteImplUuid);
+  interface_path.append(interface_uuid);
 
   if (is_install) {
     // The path to the exe (in the version directory).
@@ -1077,22 +1088,20 @@ void AddChromeWorkItems(const InstallationState& original_state,
 
     subkey.assign(delegate_execute_path).append(L"\\TypeLib");
     list->AddCreateRegKeyWorkItem(root, subkey);
-    list->AddSetRegValueWorkItem(root, subkey, L"", kDelegateExecuteLibUuid,
-                                 true);
+    list->AddSetRegValueWorkItem(root, subkey, L"", type_lib_uuid, true);
 
     subkey.assign(delegate_execute_path).append(L"\\Version");
     list->AddCreateRegKeyWorkItem(root, subkey);
-    list->AddSetRegValueWorkItem(root, subkey, L"", kDelegateExecuteLibVersion,
-                                 true);
+    list->AddSetRegValueWorkItem(root, subkey, L"", type_lib_version, true);
 
     // Register the DelegateExecuteLib type library at
     // Software\Classes\TypeLib\{4E805ED8-EBA0-4601-9681-12815A56EBFD}
     list->AddCreateRegKeyWorkItem(root, typelib_path);
 
     string16 version_key(typelib_path);
-    version_key.append(1, L'\\').append(kDelegateExecuteLibVersion);
+    version_key.append(1, L'\\').append(type_lib_version);
     list->AddCreateRegKeyWorkItem(root, version_key);
-    list->AddSetRegValueWorkItem(root, version_key, L"", kDelegateExecuteLib,
+    list->AddSetRegValueWorkItem(root, version_key, L"", L"DelegateExecuteLib",
                                  true);
 
     subkey.assign(version_key).append(L"\\FLAGS");
@@ -1117,7 +1126,7 @@ void AddChromeWorkItems(const InstallationState& original_state,
     // Software\Classes\Interface\{0BA0D4E9-2259-4963-B9AE-A839F7CB7544}
     list->AddCreateRegKeyWorkItem(root, interface_path);
     list->AddSetRegValueWorkItem(root, interface_path, L"",
-                                 kICommandExecuteImpl, true);
+                                 L"ICommandExecuteImpl", true);
 
     subkey.assign(interface_path).append(L"\\ProxyStubClsid32");
     list->AddCreateRegKeyWorkItem(root, subkey);
@@ -1125,10 +1134,9 @@ void AddChromeWorkItems(const InstallationState& original_state,
 
     subkey.assign(interface_path).append(L"\\TypeLib");
     list->AddCreateRegKeyWorkItem(root, subkey);
-    list->AddSetRegValueWorkItem(root, subkey, L"", kDelegateExecuteLibUuid,
+    list->AddSetRegValueWorkItem(root, subkey, L"", type_lib_uuid, true);
+    list->AddSetRegValueWorkItem(root, subkey, L"Version", type_lib_version,
                                  true);
-    list->AddSetRegValueWorkItem(root, subkey, L"Version",
-                                 kDelegateExecuteLibVersion, true);
 
   } else {
     list->AddDeleteRegKeyWorkItem(root, delegate_execute_path);

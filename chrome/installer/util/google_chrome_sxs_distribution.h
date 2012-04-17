@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,10 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   virtual bool CanSetAsDefault() OVERRIDE;
   virtual int GetIconIndex() OVERRIDE;
   virtual bool GetChromeChannel(std::wstring* channel) OVERRIDE;
+  virtual bool GetDelegateExecuteHandlerData(string16* handler_class_uuid,
+                                             string16* type_lib_uuid,
+                                             string16* type_lib_version,
+                                             string16* interface_uuid) OVERRIDE;
   // returns the channel name for GoogleChromeSxSDistribution
   static std::wstring ChannelName();
  private:

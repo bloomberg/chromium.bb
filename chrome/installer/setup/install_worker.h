@@ -122,15 +122,14 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
                              const Product& product,
                              WorkItemList* list);
 
-// Called for either installation or uninstallation. This method updates the
-// registry according to Chrome specific options for the current installation.
-// This includes handling of the delegate execute server.
-void AddChromeWorkItems(const InstallationState& original_state,
-                        const InstallerState& installer_state,
-                        const FilePath& setup_path,
-                        const Version& new_version,
-                        const Product& product,
-                        WorkItemList* list);
+// Called for either installation or uninstallation. This method adds or
+// removes COM registration for a product's DelegateExecute verb handler.
+void AddDelegateExecuteWorkItems(const InstallationState& original_state,
+                                 const InstallerState& installer_state,
+                                 const FilePath& setup_path,
+                                 const Version& new_version,
+                                 const Product& product,
+                                 WorkItemList* list);
 
 // This method adds work items to create (or update) Chrome uninstall entry in
 // either the Control Panel->Add/Remove Programs list or in the Omaha client

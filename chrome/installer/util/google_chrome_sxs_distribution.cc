@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -60,6 +60,14 @@ int GoogleChromeSxSDistribution::GetIconIndex() {
 bool GoogleChromeSxSDistribution::GetChromeChannel(std::wstring* channel) {
   *channel = kChannelName;
   return true;
+}
+
+bool GoogleChromeSxSDistribution::GetDelegateExecuteHandlerData(
+    string16* handler_class_uuid,
+    string16* type_lib_uuid,
+    string16* type_lib_version,
+    string16* interface_uuid) {
+  return false;
 }
 
 std::wstring GoogleChromeSxSDistribution::ChannelName() {

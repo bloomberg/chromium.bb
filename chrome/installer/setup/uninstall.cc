@@ -689,16 +689,17 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
   }
 }
 
-bool ProcessChromeWorkItems(const InstallationState& original_state,
-                            const InstallerState& installer_state,
-                            const FilePath& setup_path,
-                            const Product& product) {
-  if (!product.is_chrome())
-    return false;
-
-  scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
-  AddChromeWorkItems(original_state, installer_state, setup_path, Version(),
-                     product, item_list.get());
+// Builds and executes a work item list to remove DelegateExecute verb handler
+// work items for |product|.  This will be a noop for products whose
+// corresponding BrowserDistribution implementations do not publish
+// DelegateExecute data via an implementation of GetDelegateExecuteHandlerData.
+bool ProcessDelegateExecuteWorkItems(const InstallationState& original_state,
+                                     const InstallerState& installer_state,
+                                     const FilePath& setup_path,
+                                     const Product& product) {
+  scoped_ptr<WorkItemList> item_list(WorkItem::CreateNoRollbackWorkItemList());
+  AddDelegateExecuteWorkItems(original_state, installer_state, setup_path,
+                              Version(), product, item_list.get());
   return item_list->Do();
 }
 
@@ -709,7 +710,7 @@ bool ProcessChromeFrameWorkItems(const InstallationState& original_state,
   if (!product.is_chrome_frame())
     return false;
 
-  scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
+  scoped_ptr<WorkItemList> item_list(WorkItem::CreateNoRollbackWorkItemList());
   AddChromeFrameWorkItems(original_state, installer_state, setup_path,
                           Version(), product, item_list.get());
   return item_list->Do();
@@ -819,10 +820,10 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
                                  suffix, installer_state.target_path(), &ret);
   }
 
-  if (is_chrome) {
-    ProcessChromeWorkItems(original_state, installer_state, setup_path,
-                           product);
-  } else {
+  ProcessDelegateExecuteWorkItems(original_state, installer_state, setup_path,
+                                  product);
+
+  if (!is_chrome) {
     ProcessChromeFrameWorkItems(original_state, installer_state, setup_path,
                                 product);
   }
