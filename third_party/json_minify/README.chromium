@@ -11,7 +11,6 @@ Description:
 A set of scripts that remove comments and whitespace from JSON files.
 
 Local Modifications:
-- Added the __init__.py file for easier imports
 - Got the (much faster) json-minify-sans-regexp.js file from the second
   URL listed
-- Small change to minify_json.py to pass license tests
+- Removed minify_json.py, it is crazy slow. See commit for replacement.

@@ -12,7 +12,12 @@ import re
 import hashlib
 import zipfile
 import simplejson as json
-import json_minify as minify
+import sys
+
+_script_path = os.path.realpath(__file__)
+sys.path.insert(0, os.path.normpath(_script_path +
+                   "/../../../../../../tools"))
+import json_comment_eater
 
 # Make sure we get consistent string sorting behavior by explicitly using the
 # default C locale.
@@ -58,7 +63,7 @@ def parse_json_file(path, encoding="utf-8"):
 
   try:
     json_str = json_file.read()
-    json_obj = json.loads(minify.json_minify(json_str), encoding)
+    json_obj = json.loads(json_comment_eater.Nom(json_str), encoding)
   except ValueError, msg:
     raise Exception("Failed to parse JSON out of file %s: %s" % (path, msg))
   finally:
