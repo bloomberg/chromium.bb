@@ -44,8 +44,18 @@ FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 
 void ResourceBundle::LoadCommonResources() {
   AddDataPack(GetResourcesPakFilePath(@"chrome", nil));
-  if (base::mac::IsOSLionOrLater())
+  AddDataPack(GetResourcesPakFilePath(@"theme_resources_standard", nil));
+  AddDataPack(GetResourcesPakFilePath(@"ui_resources_standard", nil));
+
+  // On Windows and ChromeOS we load either the 1x resource or the 2x resource.
+  // On Mac we load both and let the UI framework decide which one to use.
+#if defined(ENABLE_HIDPI)
+  if (base::mac::IsOSLionOrLater()) {
     AddDataPack(GetResourcesPakFilePath(@"theme_resources_2x", nil));
+    AddDataPack(GetResourcesPakFilePath(@"theme_resources_standard_2x", nil));
+    AddDataPack(GetResourcesPakFilePath(@"ui_resources_standard_2x", nil));
+  }
+#endif
 }
 
 // static

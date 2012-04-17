@@ -12,14 +12,23 @@
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 
+namespace {
+
+FilePath GetResourcesPakFilePath(const std::string& pak_name) {
+  FilePath path;
+  PathService::Get(base::DIR_ANDROID_APP_DATA, &path);
+  DCHECK(!path.empty());
+  return path.AppendASCII("paks").AppendASCII(pak_name.c_str());
+}
+
+}  // namespace
+
 namespace ui {
 
 void ResourceBundle::LoadCommonResources() {
-  FilePath data_path;
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &data_path);
-  DCHECK(!data_path.empty());
-  data_path = data_path.AppendASCII("paks").AppendASCII("chrome.pak");
-  AddDataPack(data_path);
+  AddDataPack(GetResourcesPakFilePath("chrome.pak"));
+  AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"));
+  AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
 }
 
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
