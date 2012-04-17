@@ -60,6 +60,7 @@
         '<(src_dir)/chrome/app/chrome_version.rc.version',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome/extensions_api_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources_standard.rc',
