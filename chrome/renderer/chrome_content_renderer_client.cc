@@ -366,6 +366,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     }
 
+    // Allow full-page plug-ins for click-to-play.
+    if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay &&
+        !frame->parent() &&
+        !frame->opener() &&
+        frame->document().isPluginDocument()) {
+      status_value = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+    }
+
     switch (status_value) {
       case ChromeViewHostMsg_GetPluginInfo_Status::kNotFound: {
         NOTREACHED();
