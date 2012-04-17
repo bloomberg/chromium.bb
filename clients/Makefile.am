@@ -11,6 +11,12 @@ libexec_PROGRAMS =				\
 	$(tablet_shell)				\
 	$(screenshooter)
 
+AM_CFLAGS = $(GCC_CFLAGS)
+AM_CPPFLAGS =					\
+	-DDATADIR='"$(datadir)"'		\
+	-DBINDIR='"$(bindir)"'			\
+	$(CLIENT_CFLAGS) $(CAIRO_EGL_CFLAGS)
+
 if BUILD_SIMPLE_CLIENTS
 simple_clients_programs =			\
 	simple-egl				\
@@ -18,12 +24,15 @@ simple_clients_programs =			\
 	simple-touch
 
 simple_egl_SOURCES = simple-egl.c
+simple_egl_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
 simple_egl_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
 
 simple_shm_SOURCES = simple-shm.c
+simple_shm_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
 simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS)
 
 simple_touch_SOURCES = simple-touch.c
+simple_touch_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
 simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
 endif
 
@@ -45,12 +54,6 @@ tablet_shell = weston-tablet-shell
 screenshooter = weston-screenshooter
 
 noinst_LIBRARIES = libtoytoolkit.a
-
-AM_CFLAGS = $(GCC_CFLAGS)
-AM_CPPFLAGS =					\
-	-DDATADIR='"$(datadir)"'		\
-	-DBINDIR='"$(bindir)"'			\
-	$(CLIENT_CFLAGS) $(CAIRO_EGL_CFLAGS)
 
 libtoytoolkit_a_SOURCES =			\
 	window.c				\
