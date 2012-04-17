@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,12 @@ namespace {
 
 const BYTE kMovEax = 0xB8;
 const BYTE kMovEdx = 0xBA;
+const USHORT kMovEdxEsp = 0xD48B;
 const USHORT kCallPtrEdx = 0x12FF;
 const USHORT kCallEdx = 0xD2FF;
+const BYTE kCallEip = 0xE8;
 const BYTE kRet = 0xC2;
+const BYTE kRet2 = 0xC3;
 const BYTE kNop = 0x90;
 const USHORT kJmpEdx = 0xE2FF;
 const USHORT kXorEcx = 0xC933;
@@ -26,13 +29,14 @@ const BYTE kCallFs3 = 0;
 const BYTE kAddEsp1 = 0x83;
 const USHORT kAddEsp2 = 0x4C4;
 const BYTE kJmp32 = 0xE9;
+const USHORT kSysenter = 0x340F;
 
 const int kMaxService = 1000;
 
 // Service code for 32 bit systems.
 // NOTE: on win2003 "call dword ptr [edx]" is "call edx".
 struct ServiceEntry {
-  // this struct contains roughly the following code:
+  // This struct contains roughly the following code:
   // 00 mov     eax,25h
   // 05 mov     edx,offset SharedUserData!SystemCallStub (7ffe0300)
   // 0a call    dword ptr [edx]
@@ -46,22 +50,42 @@ struct ServiceEntry {
   BYTE ret;             // = C2
   USHORT num_params;
   BYTE nop;
-  ULONG pad1;           // Extend the structure to be the same size as the
-  ULONG pad2;           // 64 version (Wow64Entry)
+};
+
+// Service code for 32 bit Windows 8.
+struct ServiceEntryW8 {
+  // This struct contains the following code:
+  // 00 b825000000      mov     eax,25h
+  // 05 e803000000      call    eip+3
+  // 0a c22c00          ret     2Ch
+  // 0d 8bd4            mov     edx,esp
+  // 0f 0f34            sysenter
+  // 11 c3              ret
+  // 12 8bff            mov     edi,edi
+  BYTE mov_eax;         // = B8
+  ULONG service_id;
+  BYTE call_eip;        // = E8
+  ULONG call_offset;
+  BYTE ret_p;           // = C2
+  USHORT num_params;
+  USHORT mov_edx_esp;   // = BD D4
+  USHORT sysenter;      // = 0F 34
+  BYTE ret;             // = C3
+  USHORT nop;
 };
 
 // Service code for a 32 bit process running on a 64 bit os.
 struct Wow64Entry {
   // This struct may contain one of two versions of code:
   // 1. For XP, Vista and 2K3:
-  // 00 b852000000      mov     eax, 25h
+  // 00 b825000000      mov     eax, 25h
   // 05 33c9            xor     ecx, ecx
   // 07 8d542404        lea     edx, [esp + 4]
   // 0b 64ff15c0000000  call    dword ptr fs:[0C0h]
   // 12 c22c00          ret     2Ch
   //
   // 2. For Windows 7:
-  // 00 b852000000      mov     eax, 25h
+  // 00 b825000000      mov     eax, 25h
   // 05 33c9            xor     ecx, ecx
   // 07 8d542404        lea     edx, [esp + 4]
   // 0b 64ff15c0000000  call    dword ptr fs:[0C0h]
@@ -82,13 +106,34 @@ struct Wow64Entry {
   USHORT num_params;
 };
 
+// Service code for a 32 bit process running on 64 bit Windows 8.
+struct Wow64EntryW8 {
+  // 00 b825000000      mov     eax, 25h
+  // 05 64ff15c0000000  call    dword ptr fs:[0C0h]
+  // 0b c22c00          ret     2Ch
+  // 0f 90              nop
+  BYTE mov_eax;         // = B8
+  ULONG service_id;
+  ULONG call_fs1;       // = 64 FF 15 C0
+  USHORT call_fs2;      // = 00 00
+  BYTE call_fs3;        // = 00
+  BYTE ret;             // = C2
+  USHORT num_params;
+  BYTE nop;
+};
+
 // Make sure that relaxed patching works as expected.
-COMPILE_ASSERT(sizeof(ServiceEntry) == sizeof(Wow64Entry), wrong_service_len);
+const size_t kMinServiceSize = offsetof(ServiceEntry, ret);
+COMPILE_ASSERT(sizeof(ServiceEntryW8) >= kMinServiceSize, wrong_service_len);
+COMPILE_ASSERT(sizeof(Wow64Entry) >= kMinServiceSize, wrong_service_len);
+COMPILE_ASSERT(sizeof(Wow64EntryW8) >= kMinServiceSize, wrong_service_len);
 
 struct ServiceFullThunk {
   union {
     ServiceEntry original;
+    ServiceEntryW8 original_w8;
     Wow64Entry wow_64;
+    Wow64EntryW8 wow_64_w8;
   };
   int internal_thunk;  // Dummy member to the beginning of the internal thunk.
 };
@@ -212,13 +257,7 @@ NTSTATUS ServiceResolverThunk::PerformPatch(void* local_thunk,
   intercepted_code.mov_edx = kMovEdx;
   intercepted_code.stub = bit_cast<ULONG>(&full_remote_thunk->internal_thunk);
   intercepted_code.call_ptr_edx = kJmpEdx;
-  if (!win2k_) {
-    intercepted_code.ret = kRet;
-    intercepted_code.num_params = full_local_thunk->original.num_params;
-    intercepted_code.nop = kNop;
-  } else {
-    bytes_to_write = offsetof(ServiceEntry, ret);
-  }
+  bytes_to_write = kMinServiceSize;
 
   if (relative_jump_) {
     intercepted_code.mov_eax = kJmp32;
@@ -318,6 +357,27 @@ bool Wow64ResolverThunk::IsFunctionAService(void* local_thunk) const {
   return false;
 }
 
+bool Wow64W8ResolverThunk::IsFunctionAService(void* local_thunk) const {
+  Wow64EntryW8 function_code;
+  SIZE_T read;
+  if (!::ReadProcessMemory(process_, target_, &function_code,
+                           sizeof(function_code), &read))
+    return false;
+
+  if (sizeof(function_code) != read)
+    return false;
+
+  if (kMovEax != function_code.mov_eax || kCallFs1 != function_code.call_fs1 ||
+      kCallFs2 != function_code.call_fs2 ||
+      kCallFs3 != function_code.call_fs3 || kRet != function_code.ret) {
+    return false;
+  }
+
+  // Save the verified code
+  memcpy(local_thunk, &function_code, sizeof(function_code));
+  return true;
+}
+
 bool Win2kResolverThunk::IsFunctionAService(void* local_thunk) const {
   ServiceEntry function_code;
   SIZE_T read;
@@ -331,6 +391,29 @@ bool Win2kResolverThunk::IsFunctionAService(void* local_thunk) const {
   if (kMovEax != function_code.mov_eax ||
       function_code.service_id > kMaxService)
     return false;
+
+  // Save the verified code
+  memcpy(local_thunk, &function_code, sizeof(function_code));
+
+  return true;
+}
+
+bool Win8ResolverThunk::IsFunctionAService(void* local_thunk) const {
+  ServiceEntryW8 function_code;
+  SIZE_T read;
+  if (!::ReadProcessMemory(process_, target_, &function_code,
+                           sizeof(function_code), &read))
+    return false;
+
+  if (sizeof(function_code) != read)
+    return false;
+
+  if (kMovEax != function_code.mov_eax || kCallEip != function_code.call_eip ||
+      function_code.call_offset != 3 || kRet != function_code.ret_p ||
+      kMovEdxEsp != function_code.mov_edx_esp ||
+      kSysenter != function_code.sysenter || kRet2 != function_code.ret) {
+    return false;
+  }
 
   // Save the verified code
   memcpy(local_thunk, &function_code, sizeof(function_code));

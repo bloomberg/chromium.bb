@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,6 +96,21 @@ class Wow64ResolverThunk : public ServiceResolverThunk {
 };
 
 // This is the concrete resolver used to perform service-call type functions
+// inside ntdll.dll on WOW64 for Windows 8.
+class Wow64W8ResolverThunk : public ServiceResolverThunk {
+ public:
+  // The service resolver needs a child process to write to.
+  Wow64W8ResolverThunk(HANDLE process, bool relaxed)
+      : ServiceResolverThunk(process, relaxed) {}
+  virtual ~Wow64W8ResolverThunk() {}
+
+ private:
+  virtual bool IsFunctionAService(void* local_thunk) const;
+
+  DISALLOW_COPY_AND_ASSIGN(Wow64W8ResolverThunk);
+};
+
+// This is the concrete resolver used to perform service-call type functions
 // inside ntdll.dll on Windows 2000 and XP pre SP2.
 class Win2kResolverThunk : public ServiceResolverThunk {
  public:
@@ -110,6 +125,21 @@ class Win2kResolverThunk : public ServiceResolverThunk {
   virtual bool IsFunctionAService(void* local_thunk) const;
 
   DISALLOW_COPY_AND_ASSIGN(Win2kResolverThunk);
+};
+
+// This is the concrete resolver used to perform service-call type functions
+// inside ntdll.dll on Windows 8.
+class Win8ResolverThunk : public ServiceResolverThunk {
+ public:
+  // The service resolver needs a child process to write to.
+  Win8ResolverThunk(HANDLE process, bool relaxed)
+      : ServiceResolverThunk(process, relaxed) {}
+  virtual ~Win8ResolverThunk() {}
+
+ private:
+  virtual bool IsFunctionAService(void* local_thunk) const;
+
+  DISALLOW_COPY_AND_ASSIGN(Win8ResolverThunk);
 };
 
 }  // namespace sandbox

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,9 +55,14 @@ class ResolverThunkTest : public T {
   DISALLOW_COPY_AND_ASSIGN(ResolverThunkTest);
 };
 
-typedef ResolverThunkTest<sandbox::Win2kResolverThunk> Win2kResolverTest;
 typedef ResolverThunkTest<sandbox::ServiceResolverThunk> WinXpResolverTest;
+
+#if !defined(_WIN64)
+typedef ResolverThunkTest<sandbox::Win2kResolverThunk> Win2kResolverTest;
+typedef ResolverThunkTest<sandbox::Win8ResolverThunk> Win8ResolverTest;
 typedef ResolverThunkTest<sandbox::Wow64ResolverThunk> Wow64ResolverTest;
+typedef ResolverThunkTest<sandbox::Wow64W8ResolverThunk> Wow64W8ResolverTest;
+#endif
 
 const BYTE kJump32 = 0xE9;
 
@@ -70,12 +75,16 @@ void CheckJump(void* source, void* target) {
   };
 #pragma pack(pop)
 
+#if defined(_WIN64)
+  FAIL() << "Running 32-bit codepath";
+#else
   Code* patched = reinterpret_cast<Code*>(source);
   EXPECT_EQ(kJump32, patched->jump);
 
   ULONG source_addr = bit_cast<ULONG>(source);
   ULONG target_addr = bit_cast<ULONG>(target);
   EXPECT_EQ(target_addr + 19 - source_addr, patched->delta);
+#endif
 }
 
 NTSTATUS PatchNtdllWithResolver(const char* function, bool relaxed,
@@ -120,12 +129,24 @@ NTSTATUS PatchNtdllWithResolver(const char* function, bool relaxed,
 }
 
 sandbox::ServiceResolverThunk* GetTestResolver(bool relaxed) {
-  if (base::win::OSInfo::GetInstance()->wow64_status() ==
-      base::win::OSInfo::WOW64_ENABLED)
+#if defined(_WIN64)
+  return new WinXpResolverTest(relaxed);
+#else
+  base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  if (os_info->wow64_status() == base::win::OSInfo::WOW64_ENABLED) {
+    if (os_info->version() >= base::win::VERSION_WIN8)
+      return new Wow64W8ResolverTest(relaxed);
     return new Wow64ResolverTest(relaxed);
+  }
+
   if (!sandbox::IsXPSP2OrLater())
     return new Win2kResolverTest(relaxed);
+
+  if (os_info->version() >= base::win::VERSION_WIN8)
+    return new Win8ResolverTest(relaxed);
+
   return new WinXpResolverTest(relaxed);
+#endif
 }
 
 NTSTATUS PatchNtdll(const char* function, bool relaxed) {

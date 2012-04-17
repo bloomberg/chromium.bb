@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -438,13 +438,23 @@ bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
 #endif
 
   ServiceResolverThunk* thunk;
-  if (base::win::OSInfo::GetInstance()->wow64_status() ==
-      base::win::OSInfo::WOW64_ENABLED)
-    thunk = new Wow64ResolverThunk(child_->Process(), relaxed_);
-  else if (!IsXPSP2OrLater())
+#if defined(_WIN64)
+  thunk = new ServiceResolverThunk(child_->Process(), relaxed_);
+#else
+  base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  if (os_info->wow64_status() == base::win::OSInfo::WOW64_ENABLED) {
+    if (os_info->version() >= base::win::VERSION_WIN8)
+      thunk = new Wow64W8ResolverThunk(child_->Process(), relaxed_);
+    else
+      thunk = new Wow64ResolverThunk(child_->Process(), relaxed_);
+  } else if (!IsXPSP2OrLater()) {
     thunk = new Win2kResolverThunk(child_->Process(), relaxed_);
-  else
+  } else if (os_info->version() >= base::win::VERSION_WIN8) {
+    thunk = new Win8ResolverThunk(child_->Process(), relaxed_);
+  } else {
     thunk = new ServiceResolverThunk(child_->Process(), relaxed_);
+  }
+#endif
 
   std::list<InterceptionData>::iterator it = interceptions_.begin();
   for (; it != interceptions_.end(); ++it) {
