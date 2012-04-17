@@ -86,11 +86,11 @@ class MultiWindowResizeController::ResizeView : public views::View {
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
-    controller_->Resize(location);
+    controller_->Resize(location, event.flags());
     return true;
   }
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE {
-    controller_->CompleteResize();
+    controller_->CompleteResize(event.flags());
   }
   virtual void OnMouseCaptureLost() OVERRIDE {
     controller_->CancelResize();
@@ -400,15 +400,16 @@ void MultiWindowResizeController::StartResize(
   }
   int component = windows_.direction == LEFT_RIGHT ? HTRIGHT : HTBOTTOM;
   window_resizer_.reset(WorkspaceWindowResizer::Create(
-      windows_.window1, parent_location, component, grid_size_, windows));
+      windows_.window1, parent_location, component, windows));
 }
 
-void MultiWindowResizeController::Resize(const gfx::Point& screen_location) {
+void MultiWindowResizeController::Resize(const gfx::Point& screen_location,
+                                         int event_flags) {
   gfx::Point parent_location(screen_location);
   aura::Window::ConvertPointToWindow(windows_.window1->GetRootWindow(),
                                      windows_.window1->parent(),
                                      &parent_location);
-  window_resizer_->Drag(parent_location);
+  window_resizer_->Drag(parent_location, event_flags);
   gfx::Rect bounds = CalculateResizeWidgetBounds(parent_location);
   if (windows_.direction == LEFT_RIGHT)
     bounds.set_y(show_bounds_.y());
@@ -417,8 +418,8 @@ void MultiWindowResizeController::Resize(const gfx::Point& screen_location) {
   resize_widget_->SetBounds(bounds);
 }
 
-void MultiWindowResizeController::CompleteResize() {
-  window_resizer_->CompleteDrag();
+void MultiWindowResizeController::CompleteResize(int event_flags) {
+  window_resizer_->CompleteDrag(event_flags);
   window_resizer_.reset();
 
   // Mouse may still be over resizer, if not hide.

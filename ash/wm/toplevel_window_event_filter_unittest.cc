@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,6 +77,7 @@ class ToplevelWindowEventFilterTest : public AshTestBase {
     parent_->SetBounds(Shell::GetRootWindow()->bounds());
     filter_ = new ToplevelWindowEventFilter(parent_);
     parent_->SetEventFilter(filter_);
+    SetGridSize(0);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -104,6 +106,11 @@ class ToplevelWindowEventFilterTest : public AshTestBase {
   void TouchDragFromCenterBy(aura::Window* window, int dx, int dy) {
     aura::test::EventGenerator generator(Shell::GetRootWindow(), window);
     generator.PressMoveAndReleaseTouchBy(dx, dy);
+  }
+
+  void SetGridSize(int grid_size) {
+    Shell::TestApi shell_test(Shell::GetInstance());
+    shell_test.workspace_controller()->SetGridSize(grid_size);
   }
 
   ToplevelWindowEventFilter* filter_;
@@ -404,7 +411,7 @@ TEST_F(ToplevelWindowEventFilterTest, DontGotWiderThanScreen) {
 
 // Verifies that when a grid size is set resizes snap to the grid.
 TEST_F(ToplevelWindowEventFilterTest, ResizeSnaps) {
-  filter_->set_grid_size(8);
+  SetGridSize(8);
   scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
   DragFromCenterBy(target.get(), 11, 21);
   EXPECT_EQ(112, target->bounds().width());
@@ -420,7 +427,7 @@ TEST_F(ToplevelWindowEventFilterTest, ResizeSnaps) {
 
 // Verifies that when a grid size is set dragging snaps to the grid.
 TEST_F(ToplevelWindowEventFilterTest, DragSnaps) {
-  filter_->set_grid_size(8);
+  SetGridSize(8);
   scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
   aura::test::EventGenerator generator(Shell::GetRootWindow(), target.get());
   generator.PressLeftButton();

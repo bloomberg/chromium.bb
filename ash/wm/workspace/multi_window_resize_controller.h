@@ -126,10 +126,10 @@ class ASH_EXPORT MultiWindowResizeController :
   void StartResize(const gfx::Point& screen_location);
 
   // Resizes to the new location.
-  void Resize(const gfx::Point& screen_location);
+  void Resize(const gfx::Point& screen_location, int event_flags);
 
   // Completes the resize.
-  void CompleteResize();
+  void CompleteResize(int event_flags);
 
   // Cancels the resize.
   void CancelResize();

@@ -67,7 +67,7 @@ class ASH_EXPORT ToplevelWindowEventFilter :
   };
 
   // Finishes the drag.
-  void CompleteDrag(DragCompletionStatus status);
+  void CompleteDrag(DragCompletionStatus status, int event_flags);
 
   // Called during a drag to resize/position the window.
   // The return value is returned by OnMouseEvent() above.

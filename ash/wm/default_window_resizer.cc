@@ -27,25 +27,28 @@ DefaultWindowResizer::~DefaultWindowResizer() {
 DefaultWindowResizer*
 DefaultWindowResizer::Create(aura::Window* window,
                              const gfx::Point& location,
-                             int window_component,
-                             int grid_size) {
-  Details details(window, location, window_component, grid_size);
+                             int window_component) {
+  Details details(window, location, window_component);
   return details.is_resizable ? new DefaultWindowResizer(details) : NULL;
 }
 
-void DefaultWindowResizer::Drag(const gfx::Point& location) {
-  gfx::Rect bounds(CalculateBoundsForDrag(details_, location));
+void DefaultWindowResizer::Drag(const gfx::Point& location, int event_flags) {
+  int grid_size = event_flags & ui::EF_CONTROL_DOWN ?
+                  0 : ash::Shell::GetInstance()->GetGridSize();
+  gfx::Rect bounds(CalculateBoundsForDrag(details_, location, grid_size));
   if (bounds != details_.window->bounds()) {
     did_move_or_resize_ = true;
     details_.window->SetBounds(bounds);
   }
 }
 
-void DefaultWindowResizer::CompleteDrag() {
-  if (details_.grid_size <= 1 || !did_move_or_resize_)
+void DefaultWindowResizer::CompleteDrag(int event_flags) {
+  int grid_size = event_flags & ui::EF_CONTROL_DOWN ?
+                  0 : ash::Shell::GetInstance()->GetGridSize();
+  if (grid_size <= 1 || !did_move_or_resize_)
     return;
   gfx::Rect new_bounds(
-      AdjustBoundsToGrid(details_.window->bounds(), details_.grid_size));
+      AdjustBoundsToGrid(details_.window->bounds(), grid_size));
   if (new_bounds == details_.window->bounds())
     return;
 

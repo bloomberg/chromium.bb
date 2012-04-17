@@ -103,7 +103,7 @@ WindowResizer* WorkspaceEventFilter::CreateWindowResizer(
     return NULL;
   }
   return WorkspaceWindowResizer::Create(
-      window, point, window_component, grid_size(),
+      window, point, window_component,
       std::vector<aura::Window*>());
 }
 

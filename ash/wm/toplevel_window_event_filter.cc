@@ -57,7 +57,7 @@ bool ToplevelWindowEventFilter::PreHandleKeyEvent(aura::Window* target,
                                                   aura::KeyEvent* event) {
   if (window_resizer_.get() && event->type() == ui::ET_KEY_PRESSED &&
       event->key_code() == ui::VKEY_ESCAPE) {
-    CompleteDrag(DRAG_REVERT);
+    CompleteDrag(DRAG_REVERT, event->flags());
   }
   return false;
 }
@@ -94,7 +94,8 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
     case ui::ET_MOUSE_CAPTURE_CHANGED:
     case ui::ET_MOUSE_RELEASED:
       CompleteDrag(event->type() == ui::ET_MOUSE_RELEASED ?
-                   DRAG_COMPLETE : DRAG_REVERT);
+                       DRAG_COMPLETE : DRAG_REVERT,
+                   event->flags());
       if (in_move_loop_) {
         MessageLoop::current()->Quit();
         in_move_loop_ = false;
@@ -183,7 +184,7 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
       }
 
       if (!drag_done)
-        CompleteDrag(DRAG_COMPLETE);
+        CompleteDrag(DRAG_COMPLETE, event->flags());
       in_gesture_resize_ = false;
       break;
     }
@@ -232,15 +233,15 @@ WindowResizer* ToplevelWindowEventFilter::CreateWindowResizer(
     int window_component) {
   if (!wm::IsWindowNormal(window))
     return NULL;  // Don't allow resizing/dragging maximized/fullscreen windows.
-  return DefaultWindowResizer::Create(
-      window, point, window_component, grid_size_);
+  return DefaultWindowResizer::Create(window, point, window_component);
 }
 
-void ToplevelWindowEventFilter::CompleteDrag(DragCompletionStatus status) {
+void ToplevelWindowEventFilter::CompleteDrag(DragCompletionStatus status,
+                                             int event_flags) {
   scoped_ptr<WindowResizer> resizer(window_resizer_.release());
   if (resizer.get()) {
     if (status == DRAG_COMPLETE)
-      resizer->CompleteDrag();
+      resizer->CompleteDrag(event_flags);
     else
       resizer->RevertDrag();
   }
@@ -256,7 +257,8 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
 
   if (!window_resizer_.get())
     return false;
-  window_resizer_->Drag(ConvertPointToParent(target, event->location()));
+  window_resizer_->Drag(ConvertPointToParent(target, event->location()),
+                        event->flags());
   return true;
 }
 

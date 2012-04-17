@@ -48,11 +48,12 @@ class ASH_EXPORT WindowResizer {
   static int AlignToGridRoundDown(int location, int grid_size);
 
   // Invoked to drag/move/resize the window. |location| is in the coordinates
-  // of the window supplied to the constructor.
-  virtual void Drag(const gfx::Point& location) = 0;
+  // of the window supplied to the constructor. |event_flags| is the event
+  // flags from the event.
+  virtual void Drag(const gfx::Point& location, int event_flags) = 0;
 
   // Invoked to complete the drag.
-  virtual void CompleteDrag() = 0;
+  virtual void CompleteDrag(int event_flags) = 0;
 
   // Reverts the drag.
   virtual void RevertDrag() = 0;
@@ -62,8 +63,7 @@ class ASH_EXPORT WindowResizer {
     Details();
     Details(aura::Window* window,
             const gfx::Point& location,
-            int window_component,
-            int grid_size);
+            int window_component);
     ~Details();
 
     // The window we're resizing.
@@ -89,14 +89,12 @@ class ASH_EXPORT WindowResizer {
 
     // Will the drag actually modify the window?
     bool is_resizable;
-
-    // Size of the grid.
-    int grid_size;
   };
 
   static gfx::Rect CalculateBoundsForDrag(
       const Details& details,
-      const gfx::Point& location);
+      const gfx::Point& location,
+      int grid_size);
 
   static gfx::Rect AdjustBoundsToGrid(const gfx::Rect& bounds,
                                       int grid_size);
@@ -113,17 +111,20 @@ class ASH_EXPORT WindowResizer {
   // Returns the size of the window for the drag.
   static gfx::Size GetSizeForDrag(const Details& details,
                                   int* delta_x,
-                                  int* delta_y);
+                                  int* delta_y,
+                                  int grid_size);
 
   // Returns the width of the window.
   static int GetWidthForDrag(const Details& details,
                              int min_width,
-                             int* delta_x);
+                             int* delta_x,
+                             int grid_size);
 
   // Returns the height of the drag.
   static int GetHeightForDrag(const Details& details,
                               int min_height,
-                              int* delta_y);
+                              int* delta_y,
+                              int grid_size);
 };
 
 }  // namespace aura
