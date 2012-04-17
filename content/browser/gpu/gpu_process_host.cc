@@ -676,6 +676,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kDisableGpuDriverBugWorkarounds,
     switches::kDisableGpuSandbox,
     switches::kReduceGpuSandbox,
+    switches::kDisableSeccompFilterSandbox,
     switches::kDisableGpuVsync,
     switches::kDisableGpuWatchdog,
     switches::kDisableImageTransportSurface,

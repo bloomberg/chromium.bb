@@ -167,6 +167,7 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
     // going to explode.
     static const char* kPluginForwardSwitches[] = {
       switches::kNoSandbox,
+      switches::kDisableSeccompFilterSandbox,
       switches::kPpapiFlashArgs,
       switches::kPpapiStartupDialog
     };

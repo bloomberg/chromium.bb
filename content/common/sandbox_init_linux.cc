@@ -194,6 +194,57 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   EmitFailSyscall(__NR_access, ENOENT, program);
 }
 
+static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
+  // "Hot" syscalls go first.
+  EmitAllowSyscall(__NR_futex, program);
+  EmitAllowSyscall(__NR_write, program);
+  EmitAllowSyscall(__NR_epoll_wait, program);
+  EmitAllowSyscall(__NR_read, program);
+  EmitAllowSyscall(__NR_times, program);
+
+  // Less hot syscalls.
+  EmitAllowSyscall(__NR_clone, program);
+  EmitAllowSyscall(__NR_set_robust_list, program);
+  EmitAllowSyscall(__NR_getuid, program);
+  EmitAllowSyscall(__NR_geteuid, program);
+  EmitAllowSyscall(__NR_getgid, program);
+  EmitAllowSyscall(__NR_getegid, program);
+  EmitAllowSyscall(__NR_epoll_create, program);
+  EmitAllowSyscall(__NR_fcntl, program);
+  EmitAllowSyscall(__NR_socketpair, program);
+  EmitAllowSyscall(__NR_pipe, program);
+  EmitAllowSyscall(__NR_epoll_ctl, program);
+  EmitAllowSyscall(__NR_gettid, program);
+  EmitAllowSyscall(__NR_prctl, program);
+  EmitAllowSyscall(__NR_fstat, program);
+  EmitAllowSyscall(__NR_sendmsg, program);
+  EmitAllowSyscall(__NR_mmap, program);
+  EmitAllowSyscall(__NR_munmap, program);
+  EmitAllowSyscall(__NR_mprotect, program);
+  EmitAllowSyscall(__NR_madvise, program);
+  EmitAllowSyscall(__NR_rt_sigaction, program);
+  EmitAllowSyscall(__NR_rt_sigprocmask, program);
+  EmitAllowSyscall(__NR_wait4, program);
+  EmitAllowSyscall(__NR_exit_group, program);
+  EmitAllowSyscall(__NR_exit, program);
+  EmitAllowSyscall(__NR_rt_sigreturn, program);
+  EmitAllowSyscall(__NR_restart_syscall, program);
+  EmitAllowSyscall(__NR_close, program);
+  EmitAllowSyscall(__NR_recvmsg, program);
+  EmitAllowSyscall(__NR_lseek, program);
+  EmitAllowSyscall(__NR_brk, program);
+  EmitAllowSyscall(__NR_sched_yield, program);
+
+  // These are under investigation, and hopefully not here for the long term.
+  EmitAllowSyscall(__NR_shmctl, program);
+  EmitAllowSyscall(__NR_shmat, program);
+  EmitAllowSyscall(__NR_shmdt, program);
+
+  EmitFailSyscall(__NR_open, ENOENT, program);
+  EmitFailSyscall(__NR_execve, ENOENT, program);
+  EmitFailSyscall(__NR_access, ENOENT, program);
+}
+
 static bool CanUseSeccompFilters() {
   int ret = prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, 0, 0, 0);
   if (ret != 0 && errno == EFAULT)
@@ -219,7 +270,8 @@ namespace content {
 
 void InitializeSandbox() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kNoSandbox))
+  if (command_line.HasSwitch(switches::kNoSandbox) ||
+      command_line.HasSwitch(switches::kDisableSeccompFilterSandbox))
     return;
 
   std::string process_type =
@@ -238,6 +290,8 @@ void InitializeSandbox() {
 
   if (process_type == switches::kGpuProcess) {
     ApplyGPUPolicy(&program);
+  } else if (process_type == switches::kPpapiPluginProcess) {
+    ApplyFlashPolicy(&program);
   } else {
     NOTREACHED();
   }

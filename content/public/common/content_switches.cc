@@ -171,6 +171,9 @@ const char kDisableSmoothScrolling[]        = "disable-smooth-scrolling";
 // Disable the seccomp sandbox (Linux only)
 const char kDisableSeccompSandbox[]         = "disable-seccomp-sandbox";
 
+// Disable the seccomp filter sandbox (Linux only)
+const char kDisableSeccompFilterSandbox[]   = "disable-seccomp-filter-sandbox";
+
 // Disable session storage.
 const char kDisableSessionStorage[]         = "disable-session-storage";
 

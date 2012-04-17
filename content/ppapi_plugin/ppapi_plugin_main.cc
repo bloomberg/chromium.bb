@@ -17,6 +17,10 @@
 #include "sandbox/src/sandbox.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "content/public/common/sandbox_init.h"
+#endif
+
 #if defined(OS_WIN)
 sandbox::TargetServices* g_target_services = NULL;
 #else
@@ -43,6 +47,10 @@ int PpapiPluginMain(const content::MainFunctionParams& parameters) {
 
   MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrPPAPIMain");
+
+#if defined(OS_LINUX)
+  content::InitializeSandbox();
+#endif
 
   ChildProcess ppapi_process;
   ppapi_process.set_main_thread(new PpapiThread(false));  // Not a broker.
