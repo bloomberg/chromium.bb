@@ -1139,13 +1139,10 @@ document.addEventListener('command', function(e) {
   var command = e.command;
   var commandId = command.id;
   console.log(command.id, 'executed', 'on', e.target);
-  if (commandId == 'import-menu-command') {
-    // Set a flag on the list so we can select the newly imported folder.
-    list.selectImportedFolder = true;
+  if (commandId == 'import-menu-command')
     chrome.bookmarks.import();
-  } else if (command.id == 'export-menu-command') {
+  else if (command.id == 'export-menu-command')
     chrome.bookmarks.export();
-  }
 });
 
 function handleRename(e) {

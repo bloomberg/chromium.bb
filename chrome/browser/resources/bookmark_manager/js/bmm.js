@@ -197,18 +197,13 @@ cr.define('bmm', function() {
       if (!bmm.list)
         return;
 
-      if (bmm.list.selectImportedFolder) {
-        var otherBookmarks = bmm.tree.items[1].items;
-        var importedFolder = otherBookmarks[otherBookmarks.length - 1];
-        navigateTo(importedFolder.bookmarkId)
-        bmm.list.selectImportedFolder = false
-      } else {
-        bmm.list.reload();
-      }
+      // TODO(estade): this should navigate to the newly imported folder, which
+      // may be the bookmark bar if there were no previous bookmarks.
+      bmm.list.reload();
     }
 
     if (bmm.tree) {
-      bmm.treeaddEventListener('load', f);
+      bmm.tree.addEventListener('load', f);
       bmm.tree.reload();
     }
   }
