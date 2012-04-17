@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/memory/ref_counted.h"
@@ -230,8 +231,13 @@ string16 ExtensionDisabledGlobalError::GetBubbleViewMessage() {
 }
 
 string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
-  return l10n_util::GetStringUTF16(
-      IDS_EXTENSION_DISABLED_ERROR_ENABLE_BUTTON);
+  if (!base::i18n::IsRTL()) {
+    return l10n_util::GetStringUTF16(
+        IDS_EXTENSION_DISABLED_ERROR_ENABLE_BUTTON) + UTF8ToUTF16("...");
+  } else {
+    return UTF8ToUTF16("...") + l10n_util::GetStringUTF16(
+        IDS_EXTENSION_DISABLED_ERROR_ENABLE_BUTTON);
+  }
 }
 
 string16 ExtensionDisabledGlobalError::GetBubbleViewCancelButtonLabel() {
