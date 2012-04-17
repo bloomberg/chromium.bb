@@ -31,6 +31,7 @@
 #include "client/windows/common/ipc_protocol.h"
 
 static const wchar_t kCustomInfoProcessUptimeName[] = L"ptime";
+static const size_t kMaxCustomInfoEntries = 4096;
 
 namespace google_breakpad {
 
@@ -167,6 +168,9 @@ void ClientInfo::SetProcessUptime() {
 }
 
 bool ClientInfo::PopulateCustomInfo() {
+  if (custom_client_info_.count > kMaxCustomInfoEntries)
+    return false;
+
   SIZE_T bytes_count = 0;
   SIZE_T read_count = sizeof(CustomInfoEntry) * custom_client_info_.count;
 
