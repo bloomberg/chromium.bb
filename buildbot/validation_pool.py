@@ -430,7 +430,7 @@ class ValidationPool(object):
           change.Apply(buildroot, trivial=trivial)
 
         except cros_patch.ApplyPatchException as e:
-          if e.type == cros_patch.ApplyPatchException.TYPE_REBASE_TO_TOT:
+          if not e.inflight:
             changes_that_failed_to_apply_to_tot.add(change)
           else:
             change.apply_error_message = (

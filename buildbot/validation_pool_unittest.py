@@ -229,10 +229,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch4.GerritDependencies(build_root).AndReturn([])
     patch4.PaladinDependencies(build_root).AndReturn([])
     patch4.Apply(build_root, trivial=True).AndRaise(
-        cros_patch.ApplyPatchException(
-            patch1,
-            patch_type=\
-                cros_patch.ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT))
+        cros_patch.ApplyPatchException(patch1, inflight=True))
 
     pool.HandleCouldNotApply(patch1)
 

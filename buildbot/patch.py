@@ -18,17 +18,15 @@ class PatchException(Exception):
 
 class ApplyPatchException(Exception):
   """Exception thrown if we fail to apply a patch."""
-  # Types used to denote what we failed to apply against.
-  TYPE_REBASE_TO_TOT = 1
-  TYPE_REBASE_TO_PATCH_INFLIGHT = 2
 
-  def __init__(self, patch, patch_type=TYPE_REBASE_TO_TOT):
+  def __init__(self, patch, inflight=False):
     super(ApplyPatchException, self).__init__()
     self.patch = patch
-    self.type = patch_type
+    self.inflight = inflight
 
   def __str__(self):
-    return 'Failed to apply patch ' + str(self.patch)
+    return 'Failed to apply patch %s to %s' % (
+        self.patch, 'current patch series' if self.inflight else 'ToT')
 
 
 class MissingChangeIDException(Exception):
@@ -152,15 +150,13 @@ class GitRepoPatch(object):
 
     try:
       self._RebaseOnto(upstream, upstream, project_dir, rev, trivial)
-      raise ApplyPatchException(
-          self, patch_type=ApplyPatchException.TYPE_REBASE_TO_PATCH_INFLIGHT)
+      raise ApplyPatchException(self, inflight=True)
     except cros_lib.RunCommandError:
       # Cleanup the rebase attempt.
       cros_lib.RunCommandCaptureOutput(
           ['git', 'rebase', '--abort'], cwd=project_dir, print_cmd=False,
           error_code_ok=True)
-      raise ApplyPatchException(
-          self, patch_type=ApplyPatchException.TYPE_REBASE_TO_TOT)
+      raise ApplyPatchException(self, inflight=False)
 
     finally:
       # Ensure we're on the correct branch on the way out.
