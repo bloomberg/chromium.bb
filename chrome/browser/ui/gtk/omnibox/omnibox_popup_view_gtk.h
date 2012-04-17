@@ -32,6 +32,10 @@ namespace gfx {
 class Image;
 }
 
+namespace ui {
+class GtkSignalRegistrar;
+}
+
 class OmniboxPopupViewGtk : public AutocompletePopupView,
                             public content::NotificationObserver {
  public:
@@ -101,6 +105,7 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
   CHROMEGTK_CALLBACK_1(OmniboxPopupViewGtk, gboolean, HandleExpose,
                        GdkEventExpose*);
 
+  scoped_ptr<ui::GtkSignalRegistrar> signal_registrar_;
   scoped_ptr<AutocompletePopupModel> model_;
   OmniboxView* omnibox_view_;
   GtkWidget* location_bar_;
