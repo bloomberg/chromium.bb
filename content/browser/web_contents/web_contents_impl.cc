@@ -1454,7 +1454,7 @@ void WebContentsImpl::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                         bool is_main_frame,
                                                         const GURL& opener_url,
                                                         const GURL& url) {
-  bool is_error_page = (url.spec() == chrome::kUnreachableWebDataURL);
+  bool is_error_page = (url.spec() == content::kUnreachableWebDataURL);
   GURL validated_url(url);
   GURL validated_opener_url(opener_url);
   GetRenderViewHostImpl()->FilterURL(

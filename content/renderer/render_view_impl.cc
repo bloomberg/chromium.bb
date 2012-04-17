@@ -1390,8 +1390,8 @@ void RenderViewImpl::SendUpdateState(const WebHistoryItem& item) {
   if (item.isNull())
     return;
 
-  // Don't send state updates for chrome::kSwappedOutURL.
-  if (item.urlString() == WebString::fromUTF8(chrome::kSwappedOutURL))
+  // Don't send state updates for content::kSwappedOutURL.
+  if (item.urlString() == WebString::fromUTF8(content::kSwappedOutURL))
     return;
 
   Send(new ViewHostMsg_UpdateState(
@@ -1430,7 +1430,7 @@ void RenderViewImpl::LoadNavigationErrorPage(
   }
 
   frame->loadHTMLString(*error_html,
-                        GURL(chrome::kUnreachableWebDataURL),
+                        GURL(content::kUnreachableWebDataURL),
                         error.unreachableURL,
                         replace);
 }
@@ -2281,7 +2281,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       GetReferrerPolicyFromRequest(request));
 
   if (is_swapped_out_) {
-    if (request.url() != GURL(chrome::kSwappedOutURL)) {
+    if (request.url() != GURL(content::kSwappedOutURL)) {
       // Targeted links may try to navigate a swapped out frame.  Allow the
       // browser process to navigate the tab instead.  Note that it is also
       // possible for non-targeted navigations (from this view) to arrive
@@ -2299,7 +2299,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       return WebKit::WebNavigationPolicyIgnore;
     }
 
-    // Allow chrome::kSwappedOutURL to complete.
+    // Allow content::kSwappedOutURL to complete.
     return default_policy;
   }
 
@@ -2853,13 +2853,13 @@ void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
     // We bump our Page ID to correspond with the new session history entry.
     page_id_ = next_page_id_++;
 
-    // Don't update history_page_ids_ (etc) for chrome::kSwappedOutURL, since
+    // Don't update history_page_ids_ (etc) for content::kSwappedOutURL, since
     // we don't want to forget the entry that was there, and since we will
-    // never come back to chrome::kSwappedOutURL.  Note that we have to call
+    // never come back to content::kSwappedOutURL.  Note that we have to call
     // UpdateSessionHistory and update page_id_ even in this case, so that
     // the current entry gets a state update and so that we don't send a
     // state update to the wrong entry when we swap back in.
-    if (GetLoadingUrl(frame) != GURL(chrome::kSwappedOutURL)) {
+    if (GetLoadingUrl(frame) != GURL(content::kSwappedOutURL)) {
       // Advance our offset in session history, applying the length limit.
       // There is now no forward history.
       history_list_offset_++;
@@ -4447,15 +4447,15 @@ void RenderViewImpl::OnSwapOut(const ViewMsg_SwapOut_Params& params) {
     // Swap out and stop sending any IPC messages that are not ACKs.
     SetSwappedOut(true);
 
-    // Replace the page with a blank dummy URL.  The unload handler will not be
+    // Replace the page with a blank dummy URL. The unload handler will not be
     // run a second time, thanks to a check in FrameLoader::stopLoading.
     // We use loadRequest instead of loadHTMLString because the former commits
     // synchronously.  Otherwise a new navigation can interrupt the navigation
-    // to chrome::kSwappedOutURL.  If that happens to be to the page we had been
+    // to content::kSwappedOutURL. If that happens to be to the page we had been
     // showing, then WebKit will never send a commit and we'll be left spinning.
     // TODO(creis): Need to add a better way to do this that avoids running the
-    // beforeunload handler.  For now, we just run it a second time silently.
-    GURL swappedOutURL(chrome::kSwappedOutURL);
+    // beforeunload handler. For now, we just run it a second time silently.
+    GURL swappedOutURL(content::kSwappedOutURL);
     WebURLRequest request(swappedOutURL);
     webview()->mainFrame()->loadRequest(request);
   }
@@ -4528,7 +4528,7 @@ bool RenderViewImpl::MaybeLoadAlternateErrorPage(WebFrame* frame,
   // Load an empty page first so there is an immediate response to the error,
   // and then kick off a request for the alternate error page.
   frame->loadHTMLString(std::string(),
-                        GURL(chrome::kUnreachableWebDataURL),
+                        GURL(content::kUnreachableWebDataURL),
                         error.unreachableURL,
                         replace);
 

@@ -52,15 +52,15 @@ CONTENT_EXPORT extern const char kChromeUIKillURL[];
 CONTENT_EXPORT extern const char kChromeUINetworkViewCacheURL[];
 CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
 
+}  // namespace chrome
+
+namespace content {
+
 // Special URL used to start a navigation to an error page.
 extern const char kUnreachableWebDataURL[];
 
 // Special URL used to swap out a view being rendered by another process.
 extern const char kSwappedOutURL[];
-
-}  // namespace chrome
-
-namespace content {
 
 // Null terminated list of schemes that are savable. This function can be
 // invoked on any thread.

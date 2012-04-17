@@ -59,6 +59,10 @@ const char kChromeUIKillURL[] = "chrome://kill";
 const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
 const char kChromeUIShorthangURL[] = "chrome://shorthang";
 
+}  // namespace chrome
+
+namespace content {
+
 // This error URL is loaded in normal web renderer processes, so it should not
 // have a chrome:// scheme that might let it be confused with a WebUI page.
 const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
@@ -67,10 +71,6 @@ const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
 // different renderer process.  It must have a unique origin that cannot be
 // scripted by other pages in the process.
 const char kSwappedOutURL[] = "swappedout://";
-
-}  // namespace chrome
-
-namespace content {
 
 const char** GetSavableSchemes() {
   return const_cast<const char**>(g_savable_schemes);
