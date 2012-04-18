@@ -275,6 +275,28 @@ void WebIntentPickerController::OnExtensionInstallRequested(
   installer->Start();
 }
 
+void WebIntentPickerController::OnExtensionLinkClicked(const std::string& id) {
+  // Navigate from source tab.
+  Browser* browser =
+      BrowserList::FindBrowserWithWebContents(wrapper_->web_contents());
+  GURL extension_url(extension_urls::GetWebstoreItemDetailURLPrefix() + id);
+  browser::NavigateParams params(browser, extension_url,
+      content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  browser::Navigate(&params);
+}
+
+void WebIntentPickerController::OnSuggestionsLinkClicked() {
+  // Navigate from source tab.
+  Browser* browser =
+      BrowserList::FindBrowserWithWebContents(wrapper_->web_contents());
+  browser::NavigateParams params(browser,
+                                 GURL(extension_urls::GetWebstoreLaunchURL()),
+                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  browser::Navigate(&params);
+}
+
 void WebIntentPickerController::OnCancelled() {
   if (!intents_dispatcher_)
     return;

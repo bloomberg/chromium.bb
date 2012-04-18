@@ -24,6 +24,8 @@ class MockIntentPickerDelegate : public WebIntentPickerDelegate {
   MOCK_METHOD1(OnInlineDispositionWebContentsCreated,
       void(content::WebContents* web_contents));
   MOCK_METHOD1(OnExtensionInstallRequested, void(const std::string& id));
+  MOCK_METHOD1(OnExtensionLinkClicked, void(const std::string& extension_id));
+  MOCK_METHOD0(OnSuggestionsLinkClicked, void());
   MOCK_METHOD0(OnCancelled, void());
   MOCK_METHOD0(OnClosing, void());
 };

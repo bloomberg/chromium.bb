@@ -38,6 +38,8 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   void OnCancelled();
   void OnServiceChosen(size_t index);
   void OnExtensionInstallRequested(const std::string& extension_id);
+  void OnExtensionLinkClicked(const std::string& extension_id);
+  void OnSuggestionsLinkClicked();
 
   // WebIntentPicker implementation.
   virtual void Close() OVERRIDE;

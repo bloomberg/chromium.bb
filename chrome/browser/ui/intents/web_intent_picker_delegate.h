@@ -33,6 +33,12 @@ class WebIntentPickerDelegate {
   // Called when the user has chosen to install a suggested extension.
   virtual void OnExtensionInstallRequested(const std::string& id) = 0;
 
+  // Called when the user has chosen to visit the CWS entry for an extension.
+  virtual void OnExtensionLinkClicked(const std::string& id) = 0;
+
+  // Called when the user chooses to get more suggestions from CWS.
+  virtual void OnSuggestionsLinkClicked() = 0;
+
   // Called when the user cancels out of the dialog, whether by closing it
   // manually or otherwise purposefully.
   virtual void OnCancelled() = 0;

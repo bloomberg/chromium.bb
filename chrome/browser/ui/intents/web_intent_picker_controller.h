@@ -72,6 +72,8 @@ class WebIntentPickerController : public content::NotificationObserver,
   virtual void OnInlineDispositionWebContentsCreated(
       content::WebContents* web_contents) OVERRIDE;
   virtual void OnExtensionInstallRequested(const std::string& id) OVERRIDE;
+  virtual void OnExtensionLinkClicked(const std::string& id) OVERRIDE;
+  virtual void OnSuggestionsLinkClicked() OVERRIDE;
   virtual void OnCancelled() OVERRIDE;
   virtual void OnClosing() OVERRIDE;
 

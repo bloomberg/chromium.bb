@@ -287,14 +287,7 @@ void WebIntentPickerGtk::OnExtensionLinkClick(GtkWidget* link) {
   size_t index = GetExtensionWidgetRow(link);
   const WebIntentPickerModel::SuggestedExtension& extension =
       model_->GetSuggestedExtensionAt(index);
-
-  GURL extension_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
-                     UTF16ToUTF8(extension.id));
-  browser::NavigateParams params(browser_,
-                                 extension_url,
-                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&params);
+  delegate_->OnExtensionLinkClicked(UTF16ToUTF8(extension.id));
 }
 
 void WebIntentPickerGtk::OnExtensionInstallButtonClick(GtkWidget* button) {
@@ -328,12 +321,7 @@ void WebIntentPickerGtk::OnExtensionInstallButtonClick(GtkWidget* button) {
 void WebIntentPickerGtk::OnMoreSuggestionsLinkClick(GtkWidget* link) {
   // TODO(binji): This should link to a CWS search, based on the current
   // action/type pair.
-  browser::NavigateParams params(
-      browser_,
-      GURL(extension_urls::GetWebstoreLaunchURL()),
-      content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&params);
+  delegate_->OnSuggestionsLinkClicked();
 }
 
 void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {

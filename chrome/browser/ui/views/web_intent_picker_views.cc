@@ -837,14 +837,7 @@ int WebIntentPickerViews::GetDialogButtons() const {
 
 void WebIntentPickerViews::LinkClicked(views::Link* source, int event_flags) {
   if (source == more_suggestions_link_) {
-    // TODO(binji): This should link to a CWS search, based on the current
-    // action/type pair.
-    browser::NavigateParams params(
-        browser_,
-        GURL(extension_urls::GetWebstoreLaunchURL()),
-        content::PAGE_TRANSITION_AUTO_BOOKMARK);
-    params.disposition = NEW_FOREGROUND_TAB;
-    browser::Navigate(&params);
+    delegate_->OnSuggestionsLinkClicked();
   } else if (source == choose_another_service_link_) {
     // TODO(binji): Notify the controller that the user wants to pick again.
   } else {
@@ -1009,13 +1002,7 @@ void WebIntentPickerViews::OnExtensionInstallClicked(
 
 void WebIntentPickerViews::OnExtensionLinkClicked(
     const string16& extension_id) {
-  GURL extension_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
-                     UTF16ToUTF8(extension_id));
-  browser::NavigateParams params(browser_,
-                                 extension_url,
-                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&params);
+  delegate_->OnExtensionLinkClicked(UTF16ToUTF8(extension_id));
 }
 
 void WebIntentPickerViews::InitContents() {

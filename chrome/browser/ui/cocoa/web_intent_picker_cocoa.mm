@@ -213,3 +213,13 @@ void WebIntentPickerCocoa::OnExtensionInstallFailure(const std::string& id) {
   DCHECK(sheet_controller_);
   [sheet_controller_ stopThrobber];
 }
+
+void WebIntentPickerCocoa::OnExtensionLinkClicked(const std::string& id) {
+  DCHECK(delegate_);
+  delegate_->OnExtensionLinkClicked(id);
+}
+
+void WebIntentPickerCocoa::OnSuggestionsLinkClicked() {
+  DCHECK(delegate_);
+  delegate_->OnSuggestionsLinkClicked();
+}

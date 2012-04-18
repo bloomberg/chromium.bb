@@ -460,37 +460,28 @@ const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
 
 // Pop up a new tab with the Chrome Web Store.
 - (IBAction)showChromeWebStore:(id)sender {
-  GURL url(l10n_util::GetStringUTF8(IDS_WEBSTORE_URL));
-  Browser* browser = BrowserList::GetLastActive();
-  OpenURLParams params(
-      url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
-      false);
-  browser->OpenURL(params);
+  DCHECK(picker_);
+  picker_->OnSuggestionsLinkClicked();
 }
 
 // A picker button has been pressed - invoke corresponding service.
 - (IBAction)invokeService:(id)sender {
-  if (picker_)
-    picker_->OnServiceChosen([sender tag]);
+  DCHECK(picker_);
+  picker_->OnServiceChosen([sender tag]);
 }
 
 - (IBAction)openExtensionLink:(id)sender {
   DCHECK(model_);
+  DCHECK(picker_);
   const WebIntentPickerModel::SuggestedExtension& extension =
       model_->GetSuggestedExtensionAt([sender tag]);
 
-  GURL extension_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
-                     UTF16ToUTF8(extension.id));
-  Browser* browser = BrowserList::GetLastActive();
-  browser::NavigateParams params(browser,
-                                 extension_url,
-                                 content::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&params);
+  picker_->OnExtensionLinkClicked(UTF16ToUTF8(extension.id));
 }
 
 - (IBAction)installExtension:(id)sender {
   DCHECK(model_);
+  DCHECK(picker_);
   const WebIntentPickerModel::SuggestedExtension& extension =
       model_->GetSuggestedExtensionAt([sender tag]);
   if (picker_) {
