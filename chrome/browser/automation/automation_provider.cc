@@ -28,7 +28,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
-#include "chrome/browser/automation/automation_extension_tracker.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
@@ -40,17 +39,6 @@
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/extensions/extension_message_service.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/extensions/unpacked_installer.h"
-#include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job.h"
@@ -73,7 +61,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -182,13 +169,10 @@ AutomationProvider::AutomationProvider(Profile* profile)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   browser_tracker_.reset(new AutomationBrowserTracker(this));
-  extension_tracker_.reset(new AutomationExtensionTracker(this));
   tab_tracker_.reset(new AutomationTabTracker(this));
   window_tracker_.reset(new AutomationWindowTracker(this));
   new_tab_ui_load_observer_.reset(new NewTabUILoadObserver(this, profile));
   metric_event_duration_observer_.reset(new MetricEventDurationObserver());
-  extension_test_result_observer_.reset(
-      new ExtensionTestResultNotificationObserver(this));
 
   TRACE_EVENT_END_ETW("AutomationProvider::AutomationProvider", 0, "");
 }
@@ -312,11 +296,6 @@ int AutomationProvider::GetIndexForNavigationController(
   return parent->GetIndexOfController(controller);
 }
 
-int AutomationProvider::AddExtension(const Extension* extension) {
-  DCHECK(extension);
-  return extension_tracker_->Add(extension);
-}
-
 // TODO(phajdan.jr): move to TestingAutomationProvider.
 DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
     const DownloadItem* download) {
@@ -352,32 +331,6 @@ DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
   dl_item_value->SetInteger("PercentComplete", download->PercentComplete());
 
   return dl_item_value;
-}
-
-const Extension* AutomationProvider::GetExtension(int extension_handle) {
-  return extension_tracker_->GetResource(extension_handle);
-}
-
-const Extension* AutomationProvider::GetEnabledExtension(int extension_handle) {
-  const Extension* extension =
-      extension_tracker_->GetResource(extension_handle);
-  ExtensionService* service = profile_->GetExtensionService();
-  if (extension && service &&
-      service->GetExtensionById(extension->id(), false))
-    return extension;
-  return NULL;
-}
-
-const Extension* AutomationProvider::GetDisabledExtension(
-    int extension_handle) {
-  const Extension* extension =
-      extension_tracker_->GetResource(extension_handle);
-  ExtensionService* service = profile_->GetExtensionService();
-  if (extension && service &&
-      service->GetExtensionById(extension->id(), true) &&
-      !service->GetExtensionById(extension->id(), false))
-    return extension;
-  return NULL;
 }
 
 void AutomationProvider::OnChannelConnected(int pid) {
@@ -424,23 +377,6 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_ReloadAsync, ReloadAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_StopAsync, StopAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetPageFontSize, OnSetPageFontSize)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForExtensionTestResult,
-                                    WaitForExtensionTestResult)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InstallExtension,
-                                    InstallExtension)
-    IPC_MESSAGE_HANDLER(AutomationMsg_UninstallExtension,
-                        UninstallExtension)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_EnableExtension,
-                                    EnableExtension)
-    IPC_MESSAGE_HANDLER(AutomationMsg_DisableExtension,
-                        DisableExtension)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        AutomationMsg_ExecuteExtensionActionInActiveTabAsync,
-        ExecuteExtensionActionInActiveTabAsync)
-    IPC_MESSAGE_HANDLER(AutomationMsg_MoveExtensionBrowserAction,
-                        MoveExtensionBrowserAction)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetExtensionProperty,
-                        GetExtensionProperty)
     IPC_MESSAGE_HANDLER(AutomationMsg_SaveAsAsync, SaveAsAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBrowsingData, RemoveBrowsingData)
     IPC_MESSAGE_HANDLER(AutomationMsg_JavaScriptStressTestControl,
@@ -816,194 +752,6 @@ RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {
   }
 
   return NULL;
-}
-
-void AutomationProvider::WaitForExtensionTestResult(
-    IPC::Message* reply_message) {
-  DCHECK(!reply_message_);
-  reply_message_ = reply_message;
-  // Call MaybeSendResult, because the result might have come in before
-  // we were waiting on it.
-  extension_test_result_observer_->MaybeSendResult();
-}
-
-void AutomationProvider::InstallExtension(
-    const FilePath& extension_path, bool with_ui,
-    IPC::Message* reply_message) {
-  ExtensionService* service = profile_->GetExtensionService();
-  ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
-  if (service && manager) {
-    // The observer will delete itself when done.
-    new ExtensionReadyNotificationObserver(
-        manager,
-        service,
-        this,
-        AutomationMsg_InstallExtension::ID,
-        reply_message);
-
-    if (extension_path.MatchesExtension(FILE_PATH_LITERAL(".crx"))) {
-      ExtensionInstallUI* client =
-          (with_ui ? new ExtensionInstallUI(profile_) : NULL);
-      scoped_refptr<CrxInstaller> installer(
-          CrxInstaller::Create(service, client));
-      if (!with_ui)
-        installer->set_allow_silent_install(true);
-      installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
-      installer->InstallCrx(extension_path);
-    } else {
-      scoped_refptr<extensions::UnpackedInstaller> installer(
-          extensions::UnpackedInstaller::Create(service));
-      installer->set_prompt_for_plugins(with_ui);
-      installer->Load(extension_path);
-    }
-  } else {
-    AutomationMsg_InstallExtension::WriteReplyParams(reply_message, 0);
-    Send(reply_message);
-  }
-}
-
-void AutomationProvider::UninstallExtension(int extension_handle,
-                                            bool* success) {
-  *success = false;
-  const Extension* extension = GetExtension(extension_handle);
-  ExtensionService* service = profile_->GetExtensionService();
-  if (extension && service) {
-    ExtensionUnloadNotificationObserver observer;
-    service->UninstallExtension(extension->id(), false, NULL);
-    // The extension unload notification should have been sent synchronously
-    // with the uninstall. Just to be safe, check that it was received.
-    *success = observer.did_receive_unload_notification();
-  }
-}
-
-void AutomationProvider::EnableExtension(int extension_handle,
-                                         IPC::Message* reply_message) {
-  const Extension* extension = GetDisabledExtension(extension_handle);
-  ExtensionService* service = profile_->GetExtensionService();
-  ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
-  // Only enable if this extension is disabled.
-  if (extension && service && manager) {
-    // The observer will delete itself when done.
-    new ExtensionReadyNotificationObserver(
-        manager,
-        service,
-        this,
-        AutomationMsg_EnableExtension::ID,
-        reply_message);
-    service->EnableExtension(extension->id());
-  } else {
-    AutomationMsg_EnableExtension::WriteReplyParams(reply_message, false);
-    Send(reply_message);
-  }
-}
-
-void AutomationProvider::DisableExtension(int extension_handle,
-                                          bool* success) {
-  *success = false;
-  const Extension* extension = GetEnabledExtension(extension_handle);
-  ExtensionService* service = profile_->GetExtensionService();
-  if (extension && service) {
-    ExtensionUnloadNotificationObserver observer;
-    service->DisableExtension(extension->id(), Extension::DISABLE_USER_ACTION);
-    // The extension unload notification should have been sent synchronously
-    // with the disable. Just to be safe, check that it was received.
-    *success = observer.did_receive_unload_notification();
-  }
-}
-
-void AutomationProvider::ExecuteExtensionActionInActiveTabAsync(
-    int extension_handle, int browser_handle,
-    IPC::Message* reply_message) {
-  bool success = false;
-  const Extension* extension = GetEnabledExtension(extension_handle);
-  ExtensionService* service = profile_->GetExtensionService();
-  ExtensionMessageService* message_service =
-      ExtensionSystem::Get(profile_)->message_service();
-  Browser* browser = browser_tracker_->GetResource(browser_handle);
-  if (extension && service && message_service && browser) {
-    int tab_id = ExtensionTabUtil::GetTabId(browser->GetSelectedWebContents());
-    if (extension->page_action()) {
-      service->browser_event_router()->PageActionExecuted(
-          browser->profile(), extension->id(), "action", tab_id, "", 1);
-      success = true;
-    } else if (extension->browser_action()) {
-      service->browser_event_router()->BrowserActionExecuted(
-          browser->profile(), extension->id(), browser);
-      success = true;
-    }
-  }
-  AutomationMsg_ExecuteExtensionActionInActiveTabAsync::WriteReplyParams(
-      reply_message, success);
-  Send(reply_message);
-}
-
-void AutomationProvider::MoveExtensionBrowserAction(
-    int extension_handle, int index, bool* success) {
-  *success = false;
-  const Extension* extension = GetEnabledExtension(extension_handle);
-  ExtensionService* service = profile_->GetExtensionService();
-  if (extension && service) {
-    ExtensionToolbarModel* toolbar = service->toolbar_model();
-    if (toolbar) {
-      if (index >= 0 && index < static_cast<int>(toolbar->size())) {
-        toolbar->MoveBrowserAction(extension, index);
-        *success = true;
-      } else {
-        DLOG(WARNING) << "Attempted to move browser action to invalid index.";
-      }
-    }
-  }
-}
-
-void AutomationProvider::GetExtensionProperty(
-    int extension_handle,
-    AutomationMsg_ExtensionProperty type,
-    bool* success,
-    std::string* value) {
-  *success = false;
-  const Extension* extension = GetExtension(extension_handle);
-  ExtensionService* service = profile_->GetExtensionService();
-  if (extension && service) {
-    ExtensionToolbarModel* toolbar = service->toolbar_model();
-    int found_index = -1;
-    int index = 0;
-    switch (type) {
-      case AUTOMATION_MSG_EXTENSION_ID:
-        *value = extension->id();
-        *success = true;
-        break;
-      case AUTOMATION_MSG_EXTENSION_NAME:
-        *value = extension->name();
-        *success = true;
-        break;
-      case AUTOMATION_MSG_EXTENSION_VERSION:
-        *value = extension->VersionString();
-        *success = true;
-        break;
-      case AUTOMATION_MSG_EXTENSION_BROWSER_ACTION_INDEX:
-        if (toolbar) {
-          for (ExtensionList::const_iterator iter = toolbar->begin();
-               iter != toolbar->end(); iter++) {
-            // Skip this extension if we are in incognito mode
-            // and it is not incognito-enabled.
-            if (profile_->IsOffTheRecord() &&
-                !service->IsIncognitoEnabled((*iter)->id()))
-              continue;
-            if (*iter == extension) {
-              found_index = index;
-              break;
-            }
-            index++;
-          }
-          *value = base::IntToString(found_index);
-          *success = true;
-        }
-        break;
-      default:
-        LOG(WARNING) << "Trying to get undefined extension property";
-        break;
-    }
-  }
 }
 
 void AutomationProvider::SaveAsAsync(int tab_handle) {

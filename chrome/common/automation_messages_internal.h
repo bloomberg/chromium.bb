@@ -1302,7 +1302,7 @@ IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_SendJSONRequest,
 
 // Installs an extension from a crx file or unpacked extension folder
 // and returns its id. On error, |extension handle| will be 0.
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_InstallExtension,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED2_InstallExtension,
                             FilePath /* full path to crx or unpacked dir */,
                             bool     /* with UI */,
                             int      /* extension handle */)
@@ -1310,22 +1310,22 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_InstallExtension,
 // Waits for the next extension test result. Sets |test result| as the
 // received result and |message| as any accompanying message with the
 // result, which could be the empty string.
-IPC_SYNC_MESSAGE_CONTROL0_2(AutomationMsg_WaitForExtensionTestResult,
+IPC_SYNC_MESSAGE_CONTROL0_2(AutomationMsg_DEPRECATED_WaitForExtensionTestResult,
                             bool         /* test result */,
                             std::string  /* message */)
 
 // Uninstalls an extension. On success |success| is true.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_UninstallExtension,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_UninstallExtension,
                             int   /* extension handle */,
                             bool  /* success */)
 
 // Enables an extension. On success |success| is true.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_EnableExtension,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_EnableExtension,
                            int   /* extension handle */,
                            bool  /* success */)
 
 // Disables an extension. On success |success| is true.
-IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DisableExtension,
+IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DEPRECATED_DisableExtension,
                             int   /* extension handle */,
                             bool  /* success */)
 
@@ -1333,23 +1333,23 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_DisableExtension,
 // the extension's page or browser action in the given browser, but does
 // not open popups. On success |success| is true.
 IPC_SYNC_MESSAGE_CONTROL2_1(
-    AutomationMsg_ExecuteExtensionActionInActiveTabAsync,
+    AutomationMsg_DEPRECATED_ExecuteExtensionActionInActiveTabAsync,
     int   /* extension handle */,
     int   /* browser handle */,
     bool  /* success */)
 
 // Moves the browser action to the given index in the browser action toolbar.
 // On success |success| is true.
-IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_MoveExtensionBrowserAction,
+IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_DEPRECATED_MoveExtensionBrowserAction,
                             int   /* extension handle */,
                             int   /* index */,
                             bool  /* success */)
 
 // Gets an extension property |property type|. On success |success| is true,
 // and |property value| is set.
-IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_GetExtensionProperty,
+IPC_SYNC_MESSAGE_CONTROL2_2(AutomationMsg_DEPRECATED_GetExtensionProperty,
     int                              /* extension handle */,
-    AutomationMsg_ExtensionProperty  /* property type */,
+    AutomationMsg_DEPRECATED_ExtensionProperty  /* property type */,
     bool                             /* success */,
     std::string                      /* property value */)
 

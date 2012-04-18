@@ -344,12 +344,6 @@ class ExtensionUninstallObserver : public content::NotificationObserver {
 class ExtensionReadyNotificationObserver
     : public content::NotificationObserver {
  public:
-  // Creates an observer that replies using the old IPC automation method.
-  ExtensionReadyNotificationObserver(ExtensionProcessManager* manager,
-                                     ExtensionService* service,
-                                     AutomationProvider* automation,
-                                     int id,
-                                     IPC::Message* reply_message);
   // Creates an observer that replies using the JSON automation interface.
   ExtensionReadyNotificationObserver(ExtensionProcessManager* manager,
                                      ExtensionService* service,
@@ -369,9 +363,7 @@ class ExtensionReadyNotificationObserver
   ExtensionProcessManager* manager_;
   ExtensionService* service_;
   base::WeakPtr<AutomationProvider> automation_;
-  int id_;
   scoped_ptr<IPC::Message> reply_message_;
-  bool use_json_;
   const Extension* extension_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionReadyNotificationObserver);
@@ -424,38 +416,6 @@ class ExtensionsUpdatedObserver : public content::NotificationObserver {
   bool updater_finished_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsUpdatedObserver);
-};
-
-class ExtensionTestResultNotificationObserver
-    : public content::NotificationObserver {
- public:
-  explicit ExtensionTestResultNotificationObserver(
-      AutomationProvider* automation);
-  virtual ~ExtensionTestResultNotificationObserver();
-
-  // Implementation of NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
-
-  // Sends a test result back to the provider's client, if there is a pending
-  // provider message and there is a result in the queue.
-  void MaybeSendResult();
-
- private:
-  content::NotificationRegistrar registrar_;
-  base::WeakPtr<AutomationProvider> automation_;
-  // Two queues containing the test results. Although typically only
-  // one result will be in each queue, there are cases where a queue is
-  // needed.
-  // For example, perhaps two events occur asynchronously and their
-  // order of completion is not guaranteed. If the test wants to make sure
-  // both finish before continuing, a queue is needed. The test would then
-  // need to wait twice.
-  std::deque<bool> results_;
-  std::deque<std::string> messages_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionTestResultNotificationObserver);
 };
 
 // Observes when a new browser has been opened and a tab within it has stopped

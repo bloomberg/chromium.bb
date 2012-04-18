@@ -39,13 +39,10 @@
 #endif  // defined(OS_WIN) && !defined(USE_AURA)
 
 class AutomationBrowserTracker;
-class AutomationExtensionTracker;
 class AutomationResourceMessageFilter;
 class AutomationTabTracker;
 class AutomationWindowTracker;
 class Browser;
-class Extension;
-class ExtensionTestResultNotificationObserver;
 class ExternalTabContainer;
 class FilePath;
 class InitialLoadObserver;
@@ -145,11 +142,6 @@ class AutomationProvider
     reply_message_ = NULL;
     return reply_message;
   }
-
-  // Adds the extension passed in to the extension tracker, and returns
-  // the associated handle. If the tracker already contains the extension,
-  // the handle is simply returned.
-  int AddExtension(const Extension* extension);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Adds the external tab passed in to the tab tracker.
@@ -271,36 +263,6 @@ class AutomationProvider
   void EndTracing(IPC::Message* reply_message);
   void GetTracingOutput(std::string* chunk, bool* success);
 
-  void WaitForExtensionTestResult(IPC::Message* reply_message);
-
-  void InstallExtension(const FilePath& extension_path,
-                        bool with_ui,
-                        IPC::Message* reply_message);
-
-  void UninstallExtension(int extension_handle,
-                          bool* success);
-
-  void ReloadExtension(int extension_handle,
-                       IPC::Message* reply_message);
-
-  void EnableExtension(int extension_handle,
-                       IPC::Message* reply_message);
-
-  void DisableExtension(int extension_handle,
-                        bool* success);
-
-  void ExecuteExtensionActionInActiveTabAsync(int extension_handle,
-                                              int browser_handle,
-                                              IPC::Message* reply_message);
-
-  void MoveExtensionBrowserAction(int extension_handle, int index,
-                                  bool* success);
-
-  void GetExtensionProperty(int extension_handle,
-                            AutomationMsg_ExtensionProperty type,
-                            bool* success,
-                            std::string* value);
-
   // Asynchronous request for printing the current tab.
   void PrintAsync(int tab_handle);
 
@@ -321,18 +283,6 @@ class AutomationProvider
   void ReloadAsync(int tab_handle);
   void StopAsync(int tab_handle);
   void SaveAsAsync(int tab_handle);
-
-  // Returns the extension for the given handle. Returns NULL if there is
-  // no extension for the handle.
-  const Extension* GetExtension(int extension_handle);
-
-  // Returns the extension for the given handle, if the handle is valid and
-  // the associated extension is enabled. Returns NULL otherwise.
-  const Extension* GetEnabledExtension(int extension_handle);
-
-  // Returns the extension for the given handle, if the handle is valid and
-  // the associated extension is disabled. Returns NULL otherwise.
-  const Extension* GetDisabledExtension(int extension_handle);
 
   // Method called by the popup menu tracker when a popup menu is opened.
   void NotifyPopupMenuOpened();
@@ -392,9 +342,6 @@ class AutomationProvider
   scoped_ptr<IPC::ChannelProxy> channel_;
   scoped_ptr<content::NotificationObserver> new_tab_ui_load_observer_;
   scoped_ptr<content::NotificationObserver> find_in_page_observer_;
-  scoped_ptr<ExtensionTestResultNotificationObserver>
-      extension_test_result_observer_;
-  scoped_ptr<AutomationExtensionTracker> extension_tracker_;
 
   // True iff we should enable observers that check for initial load conditions.
   bool use_initial_load_observers_;

@@ -1160,16 +1160,6 @@ Error* Session::WaitForAllViewsToStopLoading() {
   return error;
 }
 
-Error* Session::InstallExtensionDeprecated(const FilePath& path) {
-  Error* error = NULL;
-  RunSessionTask(base::Bind(
-      &Automation::InstallExtensionDeprecated,
-      base::Unretained(automation_.get()),
-      path,
-      &error));
-  return error;
-}
-
 Error* Session::InstallExtension(
     const FilePath& path, std::string* extension_id) {
   Error* error = NULL;
@@ -1835,7 +1825,8 @@ Error* Session::PostBrowserStartInit() {
 
   // Install extensions.
   for (size_t i = 0; i < capabilities_.extensions.size(); ++i) {
-    error = InstallExtensionDeprecated(capabilities_.extensions[i]);
+    std::string extension_id;
+    error = InstallExtension(capabilities_.extensions[i], &extension_id);
     if (error)
       return error;
   }

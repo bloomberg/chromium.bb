@@ -224,8 +224,6 @@
         'browser/automation/automation_event_observer.h',
         'browser/automation/automation_event_queue.cc',
         'browser/automation/automation_event_queue.h',
-        'browser/automation/automation_extension_tracker.cc',
-        'browser/automation/automation_extension_tracker.h',
         'browser/automation/automation_provider.cc',
         'browser/automation/automation_provider.h',
         'browser/automation/automation_provider_aura.cc',

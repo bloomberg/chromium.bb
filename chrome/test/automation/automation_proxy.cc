@@ -18,7 +18,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/browser_proxy.h"
-#include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "ipc/ipc_descriptors.h"
@@ -234,21 +233,6 @@ void AutomationProxy::SignalInitialLoads() {
 void AutomationProxy::SignalNewTabUITab(int load_time) {
   new_tab_ui_load_time_ = load_time;
   new_tab_ui_load_complete_.Signal();
-}
-
-scoped_refptr<ExtensionProxy> AutomationProxy::InstallExtension(
-    const FilePath& extension_path, bool with_ui) {
-  int handle = 0;
-  if (!Send(new AutomationMsg_InstallExtension(extension_path,
-                                               with_ui, &handle)))
-    return NULL;
-
-  return ProxyObjectFromHandle<ExtensionProxy>(handle);
-}
-
-bool AutomationProxy::GetExtensionTestResult(
-    bool* result, std::string* message) {
-  return Send(new AutomationMsg_WaitForExtensionTestResult(result, message));
 }
 
 bool AutomationProxy::GetBrowserWindowCount(int* num_windows) {

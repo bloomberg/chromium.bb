@@ -197,9 +197,6 @@ class Automation {
   // Waits for all views to stop loading.
   void WaitForAllViewsToStopLoading(Error** error);
 
-  // Install packed extension.
-  void InstallExtensionDeprecated(const FilePath& path, Error** error);
-
   // Install a packed or unpacked extension. If the path ends with '.crx',
   // the extension is assumed to be packed.
   void InstallExtension(const FilePath& path, std::string* extension_id,

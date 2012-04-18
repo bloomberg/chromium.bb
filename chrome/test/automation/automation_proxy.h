@@ -29,7 +29,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class BrowserProxy;
-class ExtensionProxy;
 class TabProxy;
 class WindowProxy;
 struct ExternalTabSettings;
@@ -190,13 +189,6 @@ class AutomationProxy : public IPC::Channel::Listener,
   void SignalInitialLoads();
   // load_time is how long, in ms, the tab contents took to load.
   void SignalNewTabUITab(int load_time);
-
-  // Installs the extension. If |with_ui| is true an install confirmation
-  // and notification UI is shown, otherwise the install is silent. Returns the
-  // ExtensionProxy for the installed extension, or NULL on failure.
-  // Note: Overinstalls and downgrades will return NULL.
-  scoped_refptr<ExtensionProxy> InstallExtension(const FilePath& extension_path,
-                                                 bool with_ui);
 
   // Gets the next extension test result in |result|. Returns false if there
   // was a problem sending the result querying RPC.

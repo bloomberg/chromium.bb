@@ -30,7 +30,6 @@
 #include "chrome/test/automation/automation_json_requests.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
-#include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/proxy_launcher.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/base/chrome_process_util.h"
@@ -777,12 +776,6 @@ void Automation::WaitForAllViewsToStopLoading(Error** error) {
   automation::Error auto_error;
   if (!SendWaitForAllViewsToStopLoadingJSONRequest(automation(), &auto_error))
     *error = Error::FromAutomationError(auto_error);
-}
-
-void Automation::InstallExtensionDeprecated(
-    const FilePath& path, Error** error) {
-  if (!launcher_->automation()->InstallExtension(path, false).get())
-    *error = new Error(kUnknownError, "Failed to install extension");
 }
 
 void Automation::InstallExtension(

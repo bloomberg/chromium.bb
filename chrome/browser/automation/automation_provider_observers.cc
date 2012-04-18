@@ -573,25 +573,11 @@ void ExtensionUninstallObserver::Observe(
 
 ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
     ExtensionProcessManager* manager, ExtensionService* service,
-    AutomationProvider* automation, int id, IPC::Message* reply_message)
-    : manager_(manager),
-      service_(service),
-      automation_(automation->AsWeakPtr()),
-      id_(id),
-      reply_message_(reply_message),
-      use_json_(false),
-      extension_(NULL) {
-  Init();
-}
-
-ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
-    ExtensionProcessManager* manager, ExtensionService* service,
     AutomationProvider* automation, IPC::Message* reply_message)
     : manager_(manager),
       service_(service),
       automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
-      use_json_(true),
       extension_(NULL) {
   Init();
 }
@@ -654,30 +640,13 @@ void ExtensionReadyNotificationObserver::Observe(
       break;
   }
 
-  if (use_json_) {
-    AutomationJSONReply reply(automation_, reply_message_.release());
-    if (extension_) {
-      DictionaryValue dict;
-      dict.SetString("id", extension_->id());
-      reply.SendSuccess(&dict);
-    } else {
-      reply.SendError("Extension could not be installed");
-    }
+  AutomationJSONReply reply(automation_, reply_message_.release());
+  if (extension_) {
+    DictionaryValue dict;
+    dict.SetString("id", extension_->id());
+    reply.SendSuccess(&dict);
   } else {
-    if (id_ == AutomationMsg_InstallExtension::ID) {
-      // A handle of zero indicates an error.
-      int extension_handle = 0;
-      if (extension_)
-        extension_handle = automation_->AddExtension(extension_);
-      AutomationMsg_InstallExtension::WriteReplyParams(
-          reply_message_.get(), extension_handle);
-    } else if (id_ == AutomationMsg_EnableExtension::ID) {
-      AutomationMsg_EnableExtension::WriteReplyParams(
-          reply_message_.get(), true);
-    } else {
-      LOG(ERROR) << "Cannot write reply params for unknown message id.";
-    }
-    automation_->Send(reply_message_.release());
+    reply.SendError("Extension could not be installed");
   }
   delete this;
 }
@@ -792,60 +761,6 @@ void ExtensionsUpdatedObserver::Observe(
     AutomationJSONReply reply(automation_, reply_message_.release());
     reply.SendSuccess(NULL);
     delete this;
-  }
-}
-
-ExtensionTestResultNotificationObserver::
-    ExtensionTestResultNotificationObserver(AutomationProvider* automation)
-        : automation_(automation->AsWeakPtr()) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
-                 content::NotificationService::AllSources());
-}
-
-ExtensionTestResultNotificationObserver::
-    ~ExtensionTestResultNotificationObserver() {
-}
-
-void ExtensionTestResultNotificationObserver::Observe(
-    int type, const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_TEST_PASSED:
-      results_.push_back(true);
-      messages_.push_back("");
-      break;
-
-    case chrome::NOTIFICATION_EXTENSION_TEST_FAILED:
-      results_.push_back(false);
-      messages_.push_back(*content::Details<std::string>(details).ptr());
-      break;
-
-    default:
-      NOTREACHED();
-  }
-  // There may be a reply message waiting for this event, so check.
-  MaybeSendResult();
-}
-
-void ExtensionTestResultNotificationObserver::MaybeSendResult() {
-  if (!automation_)
-    return;
-
-  if (!results_.empty()) {
-    // This release method should return the automation's current
-    // reply message, or NULL if there is no current one. If it is not
-    // NULL, we are stating that we will handle this reply message.
-    IPC::Message* reply_message = automation_->reply_message_release();
-    // Send the result back if we have a reply message.
-    if (reply_message) {
-      AutomationMsg_WaitForExtensionTestResult::WriteReplyParams(
-          reply_message, results_.front(), messages_.front());
-      results_.pop_front();
-      messages_.pop_front();
-      automation_->Send(reply_message);
-    }
   }
 }
 

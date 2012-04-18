@@ -308,9 +308,6 @@ class Session {
   // Waits for all views to stop loading. Returns true on success.
   Error* WaitForAllViewsToStopLoading();
 
-  // Install packed extension at |path|.
-  Error* InstallExtensionDeprecated(const FilePath& path);
-
   // Install extension at |path|.
   Error* InstallExtension(const FilePath& path, std::string* extension_id);
 
