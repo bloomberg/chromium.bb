@@ -101,6 +101,17 @@ create_window(struct display *display, int width, int height)
 	struct window *window;
 	
 	window = malloc(sizeof *window);
+
+	window->buffer = create_shm_buffer(display,
+					   width, height,
+					   WL_SHM_FORMAT_XRGB8888,
+					   &window->shm_data);
+
+	if (!window->buffer) {
+		free(window);
+		return NULL;
+	}
+
 	window->callback = NULL;
 	window->display = display;
 	window->width = width;
@@ -108,10 +119,6 @@ create_window(struct display *display, int width, int height)
 	window->surface = wl_compositor_create_surface(display->compositor);
 	window->shell_surface = wl_shell_get_shell_surface(display->shell,
 							   window->surface);
-	window->buffer = create_shm_buffer(display,
-					   width, height,
-					   WL_SHM_FORMAT_XRGB8888,
-					   &window->shm_data);
 
 	wl_shell_surface_set_toplevel(window->shell_surface);
 
@@ -293,6 +300,8 @@ main(int argc, char **argv)
 
 	display = create_display();
 	window = create_window(display, 250, 250);
+	if (!window)
+		return 1;
 
 	sigint.sa_handler = signal_int;
 	sigemptyset(&sigint.sa_mask);
