@@ -62,6 +62,10 @@ TextureManager::~TextureManager() {
   // If this triggers, that means something is keeping a reference to
   // a TextureInfo belonging to this.
   CHECK_EQ(texture_info_count_, 0u);
+
+  DCHECK_EQ(0, num_unrenderable_textures_);
+  DCHECK_EQ(0, num_unsafe_textures_);
+  DCHECK_EQ(0, num_uncleared_mips_);
 }
 
 void TextureManager::Destroy(bool have_context) {

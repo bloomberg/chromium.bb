@@ -27,6 +27,8 @@ RenderbufferManager::~RenderbufferManager() {
   // If this triggers, that means something is keeping a reference to
   // a RenderbufferInfo belonging to this.
   CHECK_EQ(renderbuffer_info_count_, 0u);
+
+  DCHECK_EQ(0, num_uncleared_renderbuffers_);
 }
 
 size_t RenderbufferManager::RenderbufferInfo::EstimatedSize() {
