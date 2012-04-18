@@ -190,7 +190,13 @@ class HeapProfileTable {
   // Refresh the internal mmap information from MemoryRegionMap.  Results of
   // FillOrderedProfile and IterateOrderedAllocContexts will contain mmap'ed
   // memory regions as at calling RefreshMMapData.
-  void RefreshMMapData();
+  // 'mmap_alloc' is an allocator for an address map.  A function which calls
+  // LowLevelAlloc::AllocWithArena is expected like the constractor.
+  // 'mmap_dealloc' is a corresponding deallocator to 'mmap_alloc'.
+  // They are introduced to avoid expected memory fragmentation and bloat in
+  // an arena.  A dedicated arena for this function allows disposing whole the
+  // arena after ClearMMapData.
+  void RefreshMMapData(Allocator mmap_alloc, DeAllocator mmap_dealloc);
 
   // Clear the internal mmap information.  Results of FillOrderedProfile and
   // IterateOrderedAllocContexts won't contain mmap'ed memory regions after

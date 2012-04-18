@@ -143,13 +143,43 @@ static SpinLock heap_lock(SpinLock::LINKER_INITIALIZED);
 // Simple allocator for heap profiler's internal memory
 //----------------------------------------------------------------------
 
-static LowLevelAlloc::Arena *heap_profiler_memory;
+static LowLevelAlloc::Arena* heap_profiler_memory;
 
 static void* ProfilerMalloc(size_t bytes) {
   return LowLevelAlloc::AllocWithArena(bytes, heap_profiler_memory);
 }
 static void ProfilerFree(void* p) {
   LowLevelAlloc::Free(p);
+}
+
+//----------------------------------------------------------------------
+// Another allocator for heap profiler's internal mmap address map
+//
+// Large amount of memory is consumed if we use an arena 'heap_profiler_memory'
+// for the internal mmap address map.  It looks like memory fragmentation
+// because of repeated allocation/deallocation in the arena.
+//
+// 'mmap_heap_profiler_memory' is a dedicated arena for the mmap address map.
+// This arena is reserved for every construction of the mmap address map, and
+// disposed after every use.
+//----------------------------------------------------------------------
+
+static LowLevelAlloc::Arena* mmap_heap_profiler_memory = NULL;
+
+static void* MMapProfilerMalloc(size_t bytes) {
+  return LowLevelAlloc::AllocWithArena(bytes, mmap_heap_profiler_memory);
+}
+static void MMapProfilerFree(void* p) {
+  LowLevelAlloc::Free(p);
+}
+
+// This function should be called from a locked scope.
+// It returns false if failed in deleting the arena.
+static bool DeleteMMapProfilerArenaIfExistsLocked() {
+  if (mmap_heap_profiler_memory == NULL) return true;
+  if (!LowLevelAlloc::DeleteArena(mmap_heap_profiler_memory)) return false;
+  mmap_heap_profiler_memory = NULL;
+  return true;
 }
 
 // We use buffers of this size in DoGetHeapProfile.
@@ -200,7 +230,12 @@ static char* DoGetHeapProfileLocked(char* buf, int buflen) {
   int bytes_written = 0;
   if (is_on) {
     if (FLAGS_mmap_profile) {
-      heap_profile->RefreshMMapData();
+      if (!DeleteMMapProfilerArenaIfExistsLocked()) {
+        RAW_LOG(FATAL, "Memory leak in HeapProfiler:");
+      }
+      mmap_heap_profiler_memory =
+          LowLevelAlloc::NewArena(0, LowLevelAlloc::DefaultArena());
+      heap_profile->RefreshMMapData(MMapProfilerMalloc, MMapProfilerFree);
     }
     if (deep_profile) {
       bytes_written = deep_profile->FillOrderedProfile(buf, buflen - 1);
@@ -209,6 +244,9 @@ static char* DoGetHeapProfileLocked(char* buf, int buflen) {
     }
     if (FLAGS_mmap_profile) {
       heap_profile->ClearMMapData();
+      if (!DeleteMMapProfilerArenaIfExistsLocked()) {
+        RAW_LOG(FATAL, "Memory leak in HeapProfiler:");
+      }
     }
   }
   buf[bytes_written] = '\0';
@@ -532,6 +570,9 @@ extern "C" void HeapProfilerStop() {
 
   // free profile
   heap_profile->~HeapProfileTable();
+  if (!DeleteMMapProfilerArenaIfExistsLocked()) {
+    RAW_LOG(FATAL, "Memory leak in HeapProfiler:");
+  }
   ProfilerFree(heap_profile);
   heap_profile = NULL;
 
@@ -553,7 +594,7 @@ extern "C" void HeapProfilerStop() {
   is_on = false;
 }
 
-extern "C" void HeapProfilerDump(const char *reason) {
+extern "C" void HeapProfilerDump(const char* reason) {
   SpinLockHolder l(&heap_lock);
   if (is_on && !dumping) {
     DumpProfileLocked(reason);
