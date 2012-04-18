@@ -8,6 +8,8 @@ HELPERTOOLS=/Library/PrivilegedHelperTools
 NAME=org.chromium.chromoting
 AUTH_FILE="$HELPERTOOLS/$NAME.json"
 PLIST=/Library/LaunchAgents/org.chromium.chromoting.plist
+ENABLED_FILE="$HELPERTOOLS/$NAME.me2me_enabled"
+ENABLED_FILE_BACKUP="$ENABLED_FILE.backup"
 
 KSADMIN=/Library/Google/GoogleSoftwareUpdate/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin
 KSUPDATE=https://tools.google.com/service/update2
@@ -22,9 +24,13 @@ function onexit {
   exit 0
 }
 
-# Update owner and permissions for auth file.
-chown $USER "$AUTH_FILE"
-chmod 600 "$AUTH_FILE"
+# Create auth file (with correct owner and permissions) if it doesn't already
+# exist.
+if [[ ! -f "$AUTH_FILE" ]]; then
+  touch "$AUTH_FILE"
+  chown $USER "$AUTH_FILE"
+  chmod 600 "$AUTH_FILE"
+fi
 
 # Load the service.
 # The launchctl command we'd like to run:
@@ -36,10 +42,19 @@ chmod 600 "$AUTH_FILE"
 # ps and grepping for the loginwindow.app) and run the launchctl cmd as that
 # user (using launchctl bsexec).
 set `ps aux | grep loginwindow.app | grep -v grep`
-# At this point, $1=username and $2=userid
-if [[ -n $1 && -n $2 ]]; then
-  launchctl bsexec "$2" sudo -u "$1" launchctl load -w -S Aqua $PLIST
+USERNAME=$1
+USERID=$2
+if [[ -n "$USERNAME" && -n "$USERID" ]]; then
+  launchctl bsexec "$USERID" sudo -u "$USERNAME" launchctl load -w -S Aqua "$PLIST"
+fi
+
+# If there is a backup _enabled file, re-enable the service.
+if [[ -f "$ENABLED_FILE_BACKUP" ]]; then
+  mv "$ENABLED_FILE_BACKUP" "$ENABLED_FILE"
+  if [[ -n "$USERNAME" && -n "$USERID" ]]; then
+    launchctl bsexec "$USERID" sudo -u "$USERNAME" launchctl start -w -S Aqua "$NAME"
+  fi
 fi
 
 # Register a ticket with Keystone so we're updated.
-$KSADMIN --register --productid $KSPID --version $KSPVERSION --xcpath $PLIST --url $KSUPDATE
+$KSADMIN --register --productid "$KSPID" --version "$KSPVERSION" --xcpath "$PLIST" --url "$KSUPDATE"

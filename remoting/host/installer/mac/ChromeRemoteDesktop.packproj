@@ -317,8 +317,6 @@
 								<integer>0</integer>
 								<key>Path</key>
 								<string></string>
-								<key>Path Type</key>
-								<integer>1</integer>
 							</dict>
 							<key>License</key>
 							<dict>
@@ -328,8 +326,6 @@
 									<integer>0</integer>
 									<key>Path</key>
 									<string></string>
-									<key>Path Type</key>
-									<integer>1</integer>
 								</dict>
 							</dict>
 							<key>ReadMe</key>
@@ -340,8 +336,6 @@
 									<integer>0</integer>
 									<key>Path</key>
 									<string></string>
-									<key>Path Type</key>
-									<integer>1</integer>
 								</dict>
 							</dict>
 							<key>Welcome</key>
@@ -352,8 +346,6 @@
 									<integer>0</integer>
 									<key>Path</key>
 									<string></string>
-									<key>Path Type</key>
-									<integer>1</integer>
 								</dict>
 							</dict>
 						</dict>
@@ -366,7 +358,7 @@
 							<key>Imported Options</key>
 							<dict>
 								<key>IFPkgFlagInstalledSize</key>
-								<integer>19572</integer>
+								<integer>19544</integer>
 							</dict>
 							<key>Imported Package</key>
 							<true/>
@@ -458,9 +450,11 @@
 								<key>IFInstallationScriptsPreflight</key>
 								<dict>
 									<key>Path</key>
-									<string></string>
+									<string>build/Chromoting.pkg/Contents/Resources/preflight</string>
+									<key>Path Type</key>
+									<integer>2</integer>
 									<key>Status</key>
-									<false/>
+									<true/>
 								</dict>
 								<key>IFInstallationScriptsPreinstall</key>
 								<dict>
@@ -493,13 +487,13 @@
 									<key>IFPkgDescriptionTitle</key>
 									<string>Chromoting</string>
 									<key>IFPkgDescriptionVersion</key>
-									<string>0.2</string>
+									<string>1.4.6</string>
 								</dict>
 							</dict>
 							<key>Display Information</key>
 							<dict>
 								<key>CFBundleGetInfoString</key>
-								<string>Chromoting 0.2 Copyright © 2012 The Chromium Authors.</string>
+								<string>Chromoting 1.4.6 Copyright © 2012 The Chromium Authors.</string>
 								<key>CFBundleIconFile</key>
 								<string></string>
 								<key>CFBundleIconFile Path Type</key>
@@ -509,7 +503,7 @@
 								<key>CFBundleName</key>
 								<string>Chromoting</string>
 								<key>CFBundleShortVersionString</key>
-								<string>0.2</string>
+								<string>1.4.6</string>
 							</dict>
 							<key>Options</key>
 							<dict>
@@ -535,9 +529,9 @@
 							<key>Version</key>
 							<dict>
 								<key>IFMajorVersion</key>
-								<integer>0</integer>
+								<integer>1</integer>
 								<key>IFMinorVersion</key>
-								<integer>2</integer>
+								<integer>4</integer>
 							</dict>
 						</dict>
 					</dict>
