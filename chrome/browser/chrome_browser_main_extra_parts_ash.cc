@@ -38,6 +38,9 @@ ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh()
     : ChromeBrowserMainExtraParts() {
 }
 
+ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
+}
+
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #if defined(OS_CHROMEOS)
   if (base::chromeos::IsRunningOnChromeOS() ||

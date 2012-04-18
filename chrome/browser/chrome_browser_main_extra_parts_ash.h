@@ -15,6 +15,7 @@ class UserGestureHandler;
 class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsAsh();
+  virtual ~ChromeBrowserMainExtraPartsAsh();
 
   virtual void PreProfileInit() OVERRIDE;
   virtual void PostProfileInit() OVERRIDE;
