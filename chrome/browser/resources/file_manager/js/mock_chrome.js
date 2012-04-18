@@ -407,7 +407,9 @@ chrome.fileBrowserPrivate = {
       GALLERY_FILE_HIDDEN_NAME: 'Names starting with dot are reserved ' +
           'for the system. Please choose another name.',
       GALLERY_SAVED: 'Saved',
-      GALLERY_KEEP_ORIGINAL: 'Keep original',
+      GALLERY_OVERWRITE_ORIGINAL: 'Overwrite original',
+      GALLERY_OVERWRITE_BUBBLE: 'Your edits are saved automatically.<br><br>' +
+          'To keep a copy of the original image, uncheck "Overwrite original"',
       GALLERY_UNSAVED_CHANGES: 'Changes are not saved yet.',
       GALLERY_READONLY_WARNING: '$1 is read only. Edited images will be saved in the Downloads folder.',
       GALLERY_IMAGE_ERROR: 'This file could not be displayed',

@@ -231,66 +231,100 @@ body {
   width: 270px;
 }
 
-.gallery[renaming] .filename-spacer > .name,
-.gallery .filename-spacer > input {
-  opacity: 0;
-  z-index: 0;
-}
-
-.gallery .filename-spacer > .name,
-.gallery[renaming] .filename-spacer > input {
-  opacity: 1;
-  z-index: 1;
-}
-
 .gallery .filename-spacer > * {
+  -webkit-transition: top linear 180ms;
   background-color: transparent;
-  color: white;
-  font-family: Open Sans, Droid Sans Fallback, sans-serif;
   height: 21px;
+  left: 10px;
+  overflow: hidden;
   position: absolute;
   width: 260px;
 }
 
-.gallery .filename-spacer > input,
-.gallery .filename-spacer > .name {
-  border: none;
-  font-size: 120%;
-  left: 10px;
-  outline: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  top: 5px;
-  white-space: nowrap;
+.gallery .filename-spacer * {
+  color: white;
+  font-family: Open Sans, Droid Sans Fallback, sans-serif;
 }
 
-.gallery .filename-spacer > .name:hover {
+.gallery .filename-spacer .namebox {
+  top: 15px;
+}
+
+.gallery .filename-spacer[saved] .namebox {
+  top: 5px;
+}
+
+.gallery .filename-spacer .options {
+  top: 50px;
+}
+
+.gallery .filename-spacer[saved] .options {
+  top: 27px;
+}
+
+.gallery .filename-spacer[renaming] .namebox div,
+.gallery .filename-spacer .namebox input {
+  opacity: 0;
+  z-index: 0;
+}
+
+.gallery .filename-spacer .namebox div,
+.gallery .filename-spacer[renaming] .namebox input {
+  opacity: 1;
+  z-index: 1;
+}
+
+.gallery .filename-spacer .namebox input,
+.gallery .filename-spacer .namebox div {
+  border: none;
+  box-sizing: border-box;
+  font-size: 120%;
+  height: 100%;
+  outline: none;
+  overflow: hidden;
+  position: absolute;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.gallery .filename-spacer .namebox div {
+  padding: 1px 3px 0 3px;
+}
+
+.gallery .filename-spacer .namebox input {
+  padding: 0 3px 0 2px;
+}
+
+.gallery .filename-spacer .namebox div:hover {
   background-color: rgba(48, 48, 48, 1.0);
   cursor: pointer;
 }
 
-.gallery .filename-spacer > input:focus,
-.gallery .filename-spacer > input:focus:hover {
+.gallery .filename-spacer .namebox input:focus,
+.gallery .filename-spacer .namebox input:focus:hover {
   background-color: white;
   border-bottom: 1px solid white;
   border-right: 1px solid white;
   color: black;
 }
 
-.gallery .filename-spacer > .options {
-  left: 10px;
-  top: 26px;
-}
-
 .gallery .filename-spacer .saved,
-.gallery .filename-spacer .keep-original {
+.gallery .filename-spacer .overwrite-original {
   -webkit-transition: all linear 120ms;
   color: gray;
   cursor: inherit;
-  display: none;
+  display: inline-block;
   font-size: 90%;
+  margin-left: 6px;
   margin-right: 10px;
+  opacity: 0;
   pointer-events: none;
+}
+
+.gallery .filename-spacer .overwrite-original input {
+  margin-bottom: -2px;
+  margin-right: 6px;
 }
 
 .gallery .filename-spacer .saved[highlighted] {
@@ -298,12 +332,32 @@ body {
   color: white;
 }
 
-.gallery .filename-spacer .keep-original[visible] {
-  color: white;
+.gallery .filename-spacer[saved] .saved {
+  opacity: 1;
+}
+
+.gallery .filename-spacer[overwrite] .overwrite-original,
+.gallery .filename-spacer[overwrite] .overwrite-original > * {
+  color: gray;
   cursor: pointer;
-  display: inline-block;
+  opacity: 1;
   pointer-events: auto;
 }
+
+/* Bubble */
+.gallery .toolbar .bubble {
+  bottom: 65px;
+  font-size: 85%;
+  left: 50px;
+  position: absolute;
+  width: 220px;
+}
+
+.gallery .toolbar .bubble[hidden] {
+  display: none;
+}
+
+/* Toolbar buttons */
 
 .gallery .button-spacer {
   -webkit-box-flex: 1;

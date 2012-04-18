@@ -10444,8 +10444,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_GALLERY_SAVED" desc="In the Gallery, the message informing that editing saved successfully.">
         Saved
       </message>
-      <message name="IDS_FILE_BROWSER_GALLERY_KEEP_ORIGINAL" desc="In the Gallery, text on the button to keep original file along with the edited copy.">
-        Keep original
+      <message name="IDS_FILE_BROWSER_GALLERY_OVERWRITE_ORIGINAL" desc="In the Gallery, text on the button to overwrite original file along with the edited copy.">
+        Overwrite original
+      </message>
+      <message name="IDS_FILE_BROWSER_GALLERY_OVERWRITE_BUBBLE" desc="In the Gallery, text in the bubble informing user about saving and overwriting original file.">
+        Your edits are saved automatically.<ph name="BREAKS">&lt;br&gt;&lt;br&gt;</ph>To keep a copy of the original image, uncheck "Overwrite original"
       </message>
       <message name="IDS_FILE_BROWSER_GALLERY_UNSAVED_CHANGES" desc="In the Gallery, message informing about unsaved changes, when user tries to close the tab.">
         Changes are not saved yet.
