@@ -1804,7 +1804,6 @@ misc-tools() {
     RunWithLog arm_sel_ldr \
       ./scons MODE=opt-host \
       platform=arm \
-      sdl=none \
       naclsdk_validate=0 \
       sysinfo=0 \
       sel_ldr
@@ -3134,7 +3133,6 @@ libs-support-native() {
 SCONS_ARGS=(MODE=nacl
             -j${PNACL_CONCURRENCY}
             bitcode=1
-            sdl=none
             disable_nosys_linker_warnings=1
             naclsdk_validate=0
             --verbose)

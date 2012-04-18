@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -44,20 +44,20 @@ echo @@@BUILD_STEP scons_compile@@@
 
 echo @@@BUILD_STEP memcheck@@@
 ./scons -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64 \
-    sdl=none buildbot=memcheck memcheck_bot_tests
+    buildbot=memcheck memcheck_bot_tests
 
 echo @@@BUILD_STEP leakcheck@@@
 ./scons -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64 \
-    sdl=none buildbot=memcheck run_under_extra_args=--leak-check=full \
+    buildbot=memcheck run_under_extra_args=--leak-check=full \
     run_leak_test
 
 echo "@@@BUILD_STEP tsan(untrusted)@@@"
 ./scons -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64 \
-    sdl=none buildbot=tsan run_under_extra_args= tsan_bot_tests
+    buildbot=tsan run_under_extra_args= tsan_bot_tests
 
 echo "@@@BUILD_STEP tsan(trusted)@@@"
 ./scons -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64 \
-    sdl=none buildbot=tsan-trusted run_under_extra_args= tsan_bot_tests
+    buildbot=tsan-trusted run_under_extra_args= tsan_bot_tests
 
 if [[ "$TOOLCHAIN" != glibc ]]; then
 
@@ -65,12 +65,12 @@ if [[ "$TOOLCHAIN" != glibc ]]; then
   # The first RaceVerifier invocation may fail.
   ./scons -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64 \
       buildbot=tsan-trusted run_under_extra_args=--hybrid,--log-file=race.log \
-      sdl=none tsan_bot_tests || true
+      tsan_bot_tests || true
 
   echo "== RaceVerifier 2nd run =="
 
   ./scons -k --verbose ${GLIBCOPTS} --mode=dbg-host,nacl platform=x86-64 \
       buildbot=tsan-trusted run_under_extra_args=--race-verifier=race.log \
-      sdl=none tsan_bot_tests
+      tsan_bot_tests
 
 fi

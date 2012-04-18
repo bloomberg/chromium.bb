@@ -1026,14 +1026,14 @@ $(SEL_LDR):
 	(cd .. && \
 	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(PREFIX) \
 	    --mode=opt-host,nacl platform=x86-$(BITSPLATFORM) \
-	    sdl=none --verbose sel_ldr)
+	    --verbose sel_ldr)
 
 .PHONY: check
 check: $(SEL_LDR)
 	(cd .. && \
 	  ./$(SCONS) naclsdk_mode=custom:$(DESTDIR)$(PREFIX) \
 	    --mode=opt-host,nacl platform=x86-$(BITSPLATFORM) \
-	    sdl=none --verbose run_hello_world_test)
+	    --verbose run_hello_world_test)
 	mkdir BUILD/build-gcc-$(CROSSARCH)/results.$(DEJAGNU_TIMESTAMP)
 	$(MAKE) \
 	    -C BUILD/build-gcc-$(CROSSARCH) \
@@ -1076,7 +1076,7 @@ nacl-check:
 	  ./$(SCONS) -k \
 	    $(SCONS_DESTINATIONS_NOLIB) \
 	    --mode=opt-host,nacl platform=x86-$(BITSPLATFORM) \
-	    sdl=none --nacl_glibc --verbose small_tests)
+	    --nacl_glibc --verbose small_tests)
 
 
 ##################################################################

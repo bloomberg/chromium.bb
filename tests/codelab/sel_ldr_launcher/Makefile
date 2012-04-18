@@ -4,11 +4,11 @@
 NACL_CC = ../../../toolchain/linux_x86/bin/nacl64-gcc
 
 ifneq ($(shell [ -e ../../../scons-out/nacl-x86-64/lib ] ; echo $$?), 0)
-  $(error ../../../scons-out/nacl-x86-64/lib not found. Run ./scons sdl=none --mode=nacl,opt-linux platform=x86-64 from native_client directory )
+  $(error ../../../scons-out/nacl-x86-64/lib not found. Run ./scons --mode=nacl,opt-linux platform=x86-64 from native_client directory )
 endif
 
 ifneq ($(shell [ -e ../../../scons-out/opt-linux-x86-64/lib ] ; echo $$?), 0)
-  $(error ../../../scons-out/opt-linux-x86-64/lib not found. Run ./scons sdl=none --mode=nacl,opt-linux platform=x86-64 from native_client directory )
+  $(error ../../../scons-out/opt-linux-x86-64/lib not found. Run ./scons --mode=nacl,opt-linux platform=x86-64 from native_client directory )
 endif
 
 

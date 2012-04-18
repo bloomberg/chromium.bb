@@ -2,7 +2,7 @@ This is an example how to use SelLdrLauncher that starts sel_ldr, loads a NaCl m
 
 To build this example, you will need 64-bit linux.
 
-1. Build native_client with ./scons sdl=none --mode=nacl,opt-linux platform=x86-64
+1. Build native_client with ./scons --mode=nacl,opt-linux platform=x86-64
 
 2. Make this directory current (cd tests/codelab/sel_ldr_launcher)
 

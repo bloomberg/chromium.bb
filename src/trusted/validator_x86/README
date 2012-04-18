@@ -104,8 +104,7 @@ the native_client directory):
 
    (1) Generate the 64-bit decoder/validator using:
 
-       .> ./scons --mode=opt-linux platform=x86-64 sdl=none \
-             --ncval_testing=1
+       .> ./scons --mode=opt-linux platform=x86-64 --ncval_testing=1
 
    (2) Change directory to the following private tests:
 

@@ -32,11 +32,11 @@ gclient runhooks --force
 
 echo @@@BUILD_STEP scons_compile@@@
 ./scons -j 8 -k --verbose --mode=coverage-linux,nacl \
-    platform=arm bitcode=1 sdl=none
+    platform=arm bitcode=1
 
 echo @@@BUILD_STEP coverage@@@
 ./scons -k --verbose --mode=coverage-linux,nacl coverage platform=arm \
-    bitcode=1 sdl=none
+    bitcode=1
 
 echo @@@BUILD_STEP archive_coverage@@@
 export GSUTIL=/b/build/scripts/slave/gsutil
