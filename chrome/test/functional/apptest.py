@@ -4,7 +4,6 @@
 
 import pyauto_functional  # must be imported before pyauto
 import pyauto
-import domselector
 
 class PyAutoEventsTest(pyauto.PyUITest):
   """Tests using the event queue."""
@@ -27,24 +26,21 @@ class PyAutoEventsTest(pyauto.PyUITest):
     """Basic tests for WaitForDomNode."""
     url = self.GetHttpURLForDataPath('apptest', 'dom_mutations.html')
     self.NavigateToURL(url)
-    self.WaitForDomNode(domselector.CSSSelector('#login'), 'Log In')
+    self.WaitForDomNode('id("login")', 'Log In')
     self.NewWebDriver().find_element_by_id('login').click()
-    self.WaitForDomNode(domselector.XPath('id(\'console\')'), '.*succeeded.*')
+    self.WaitForDomNode('id("console")', '.*succeeded.*')
 
   def testDomMutationObservers(self):
     """Tests for the various types of Dom Mutation observers."""
     url = self.GetHttpURLForDataPath('apptest', 'dom_mutations.html')
     self.NavigateToURL(url)
-    self.GetNextEvent(self.AddDomMutationObserver(
-        'exists', domselector.XPath('/html/body')))
-    self.GetNextEvent(self.AddDomMutationObserver(
-        'add', domselector.CSSSelector('#login'), expected_value='Log In'))
-    success_id = self.AddDomMutationObserver(
-        'change', domselector.XPath('id(\'console\')'),
-        expected_value='.*succeeded.*')
+    self.GetNextEvent(self.AddDomMutationObserver('exists', '/html/body'))
+    self.GetNextEvent(self.AddDomMutationObserver('add', 'id("login")',
+                                                  'Log In'))
+    success_id = self.AddDomMutationObserver('change', 'id("console")',
+                                             '.*succeeded.*')
     self.NewWebDriver().find_element_by_id('login').click()
-    self.GetNextEvent(self.AddDomMutationObserver(
-        'remove', domselector.XPath('id(\'fail\')/a')))
+    self.GetNextEvent(self.AddDomMutationObserver('remove', 'id("fail")/a'))
     self.GetNextEvent(success_id)
 
   def _ExpectEvent(self, event_id, expected_event_name):

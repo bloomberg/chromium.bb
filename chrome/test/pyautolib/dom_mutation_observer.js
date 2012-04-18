@@ -12,20 +12,14 @@
  *  automation_id: Automation id used to route DomAutomationController messages.
  *  observer_id: Id of the observer who will be receiving the messages.
  *  observer_type: One of 'add', 'remove', 'change', or 'exists'.
- *  pattern: Pattern used to select the DOM node of interest.
- *  ptype: Type of |pattern|, either 'xpath' or 'css'.
+ *  xpath: XPath used to specify the DOM node of interest.
  *  expected_value: If not null, regular expression matching text contents
  *      expected after the mutation.
  */
 
-function(automation_id, observer_id, observer_type, pattern, ptype,
-         expected_value) {
+function(automation_id, observer_id, observer_type, xpath, expected_value) {
 
-  /* Raise an event for the DomMutationEventObserver.
-   *
-   * Args:
-   *  None
-   */
+  /* Raise an event for the DomMutationEventObserver. */
   function raiseEvent() {
     if (window.domAutomationController) {
       console.log("Event sent to DomEventObserver with id=" +
@@ -45,7 +39,7 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
     for (var j=0; j<mutations.length; j++) {
       for (var i=0; i<mutations[j].addedNodes.length; i++) {
         var node = mutations[j].addedNodes[i];
-        if (patternMatchesNode(node, pattern, ptype) &&
+        if (xpathMatchesNode(node, xpath) &&
             nodeValueTextEquals(node, expected_value)) {
           raiseEvent();
           observer.disconnect();
@@ -63,25 +57,11 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
    *  observer: The mutation observer object associated with this callback.
    */
   function removeNodeCallback(mutations, observer) {
-    if (ptype == "xpath") {
-      var node = firstMatchingNode(pattern, ptype);
-      if (!node) {
-        raiseEvent();
-        observer.disconnect();
-        delete observer;
-      }
-    } else {
-      for (var j=0; j<mutations.length; j++) {
-        for (var i=0; i<mutations[j].removedNodes.length; i++) {
-          var node = mutations[j].removedNodes[i];
-          if (patternMatchesNode(node, pattern, ptype)) {
-            raiseEvent();
-            observer.disconnect();
-            delete observer;
-            return;
-          }
-        }
-      }
+    var node = firstXPathNode(xpath);
+    if (!node) {
+      raiseEvent();
+      observer.disconnect();
+      delete observer;
     }
   }
 
@@ -109,7 +89,7 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
    *  observer: The mutation observer object associated with this callback.
    */
   function existsNodeCallback(mutations, observer) {
-    var node = firstMatchingNode(pattern, ptype);
+    var node = firstXPathNode(xpath);
     if (node && nodeValueTextEquals(node, expected_value)) {
       raiseEvent();
       observer.disconnect();
@@ -122,9 +102,9 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
    *
    * Args:
    *  node: A node object from the DOM.
-   *  xpath: A string in the format of an xpath.
+   *  xpath: An XPath used to compare with the DOM node.
    */
-  function XPathMatchesNode(node, xpath) {
+  function xpathMatchesNode(node, xpath) {
     var con = document.evaluate(xpath, document, null,
         XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
     var thisNode = con.iterateNext();
@@ -140,43 +120,11 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
   /* Returns the first node in the DOM that matches the xpath.
    *
    * Args:
-   *  xpath: A string in the format of an xpath.
+   *  xpath: XPath used to specify the DOM node of interest.
    */
   function firstXPathNode(xpath) {
     return document.evaluate(xpath, document, null,
         XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-  }
-
-  /* Returns true if the pattern matches the given node.
-   * Args:
-   *
-   *  node: A node object from the DOM.
-   *  pattern: A string in the format of either an XPath or CSS Selector.
-   *  ptype: Either 'xpath' or 'css'.
-   */
-  function patternMatchesNode(node, pattern, ptype) {
-    if (ptype == "xpath") {
-      return XPathMatchesNode(node, pattern);
-    } else if (ptype == "css") {
-      return (node.webkitMatchesSelector &&
-              node.webkitMatchesSelector(pattern));
-    }
-    return false;
-  }
-
-  /* Returns the first node in the DOM that matches pattern.
-   *
-   * Args:
-   *  pattern: A string in the format of either an XPath or CSS Selector.
-   *  ptype: Either 'xpath' or 'css'.
-   */
-  function firstMatchingNode(pattern, ptype) {
-    if (ptype == "xpath") {
-      return firstXPathNode(pattern);
-    } else if (ptype == "css") {
-      return document.querySelector(pattern);
-    }
-    return null;
   }
 
   /* Returns true if the node has a textContent attribute equal to
@@ -192,15 +140,14 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
         (node.textContent && RegExp(expected_value, "").test(node.textContent));
   }
 
-  /* Watch for a node matching pattern to be added to the DOM.
+  /* Watch for a node matching xpath to be added to the DOM.
    *
    * Args:
-   *  pattern: A string in the format of either an XPath or CSS Selector.
-   *  ptype: Either 'xpath' or 'css'.
+   *  xpath: XPath used to specify the DOM node of interest.
    */
-  function observeAdd(pattern, ptype) {
+  function observeAdd(xpath) {
     window.domAutomationController.send("success");
-    var node = firstMatchingNode(pattern, ptype);
+    var node = firstXPathNode(xpath);
     if (node && nodeValueTextEquals(node, expected_value)) {
       raiseEvent();
       console.log("Matching node in DOM, assuming it was previously added.");
@@ -214,15 +161,14 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
           subtree: true});
   }
 
-  /* Watch for a node matching pattern to be removed from the DOM.
+  /* Watch for a node matching xpath to be removed from the DOM.
    *
    * Args:
-   *  pattern: A string in the format of either an XPath or CSS Selector.
-   *  ptype: Either 'xpath' or 'css'.
+   *  xpath: XPath used to specify the DOM node of interest.
    */
-  function observeRemove(pattern, ptype) {
+  function observeRemove(xpath) {
     window.domAutomationController.send("success");
-    if (!firstMatchingNode(pattern, ptype)) {
+    if (!firstXPathNode(xpath)) {
       raiseEvent();
       console.log("No matching node in DOM, assuming it was already removed.");
       return;
@@ -235,19 +181,18 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
           subtree: true});
   }
 
-  /* Watch for the textContent of a node matching pattern to change to
+  /* Watch for the textContent of a node matching xpath to change to
    * expected_value.
    *
    * Args:
-   *  pattern: A string in the format of either an XPath or CSS Selector.
-   *  ptype: Either 'xpath' or 'css'.
+   *  xpath: XPath used to specify the DOM node of interest.
    */
-  function observeChange(pattern, ptype) {
-    var node = firstMatchingNode(pattern, ptype);
+  function observeChange(xpath) {
+    var node = firstXPathNode(xpath);
     if (!node) {
       console.log("No matching node in DOM.");
       window.domAutomationController.send(
-          "No DOM node matching pattern exists.");
+          "No DOM node matching xpath exists.");
       return;
     }
     window.domAutomationController.send("success");
@@ -260,15 +205,14 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
           subtree: true});
   }
 
-  /* Watch for a node matching pattern to exist in the DOM.
+  /* Watch for a node matching xpath to exist in the DOM.
    *
    * Args:
-   *  pattern: A string in the format of either an XPath or CSS Selector.
-   *  ptype: Either 'xpath' or 'css'.
+   *  xpath: XPath used to specify the DOM node of interest.
    */
-  function observeExists(pattern, ptype) {
+  function observeExists(xpath) {
     window.domAutomationController.send("success");
-    var node = firstMatchingNode(pattern, ptype);
+    var node = firstXPathNode(xpath);
     if (node && nodeValueTextEquals(node, expected_value)) {
       raiseEvent();
       console.log("Node already exists in DOM.");
@@ -286,19 +230,19 @@ function(automation_id, observer_id, observer_type, pattern, ptype,
   var observer;
   switch (observer_type) {
     case "add":
-      observeAdd(pattern, ptype);
+      observeAdd(xpath);
       break;
     case "remove":
-      observeRemove(pattern, ptype);
+      observeRemove(xpath);
       break;
     case "change":
-      observeChange(pattern, ptype);
+      observeChange(xpath);
       break;
     case "exists":
-      observeExists(pattern, ptype);
+      observeExists(xpath);
       break;
   }
 
-  console.log("MutationObserver javscript injection completed.")
+  console.log("MutationObserver javscript injection completed.");
 
 }

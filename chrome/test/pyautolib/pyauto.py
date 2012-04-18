@@ -79,7 +79,6 @@ except ImportError:
 
 # Should go after sys.path is set appropriately
 import bookmark_model
-import domselector
 import download_info
 import history_info
 import omnibox_info
@@ -2966,9 +2965,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)['observer_id']
 
-  def AddDomMutationObserver(self, mutation_type, selector,
-                             expected_value=None, automation_id=44444,
-                             **kwargs):
+  def AddDomMutationObserver(self, mutation_type, xpath, expected_value=None,
+                             automation_id=44444, **kwargs):
     """Sets up an event observer watching for a specific DOM mutation.
 
     Creates an observer that raises an event when a mutation of the given type
@@ -2976,8 +2974,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     Args:
       mutation_type: One of 'add', 'remove', 'change', or 'exists'.
-      selector: A DOMSelector object defining the DOM node to watch. The node
-          must already exist if |mutation_type| is 'change'.
+      xpath: An xpath specifying the DOM node to watch. The node must already
+          exist if |mutation_type| is 'change'.
       expected_value: Optional regular expression to match against the node's
           textContent attribute after the mutation. Defaults to None.
       automation_id: The automation_id used to route the observer javascript
@@ -2997,12 +2995,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     assert mutation_type in ('add', 'remove', 'change', 'exists'), \
         'Unexpected value "%s" for mutation_type.' % mutation_type
-    assert isinstance(selector, domselector.DOMSelector), \
-        'Unexpected type: selector is not a instance of DOMSelector.'
-    assert '"' not in selector.pattern, \
-        'Do not use character " in selector.'
-    assert not expected_value or '"' not in expected_value, \
-        'Do not use character " in expected_value.'
     cmd_dict = {
       'command': 'AddDomEventObserver',
       'event_name': '__dom_mutation_observer__:$(id)',
@@ -3011,27 +3003,28 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     observer_id = (
         self._GetResultFromJSONRequest(cmd_dict, windex=None)['observer_id'])
+    expected_string = ('null' if expected_value is None else '"%s"' %
+                       expected_value.replace('"', r'\"'))
     jsfile = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                           'dom_mutation_observer.js')
     with open(jsfile, 'r') as f:
-      js = ('(' + f.read() + ')(%d, %d, "%s", "%s", "%s", %s);' %
+      js = ('(' + f.read() + ')(%d, %d, "%s", "%s", %s);' %
             (automation_id, observer_id, mutation_type,
-             selector.pattern, selector.type_string,
-             'null' if expected_value is None else '"%s"' % expected_value))
+             xpath.replace('"', r'\"'), expected_string))
     jsreturn = self.ExecuteJavascript(js, **kwargs)
     if jsreturn != 'success':
       self.RemoveEventObserver(observer_id)
       raise pyauto_errors.JavascriptRuntimeError(jsreturn)
     return observer_id
 
-  def WaitForDomNode(self, selector, expected_value=None, timeout=-1, **kwargs):
-    """Waits until a node matching selector exists in the DOM.
+  def WaitForDomNode(self, xpath, expected_value=None, timeout=-1, **kwargs):
+    """Waits until a node specified by an xpath exists in the DOM.
 
     NOTE: This does NOT poll. It returns as soon as the node appears, or
       immediately if the node already exists.
 
     Args:
-      selector: A DOMSelector object defining the DOM node to wait for.
+      xpath: An xpath specifying the DOM node to watch.
       expected_value: Optional regular expression to match against the node's
           textContent attribute. Defaults to None.
       timeout: Time to wait for the node to exist before raising an exception,
@@ -3045,7 +3038,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       pyauto_errors.JavascriptRuntimeError if the injected javascript
           MutationObserver returns an error.
     """
-    observer_id = self.AddDomMutationObserver('exists', selector,
+    observer_id = self.AddDomMutationObserver('exists', xpath,
                                               expected_value, **kwargs)
     self.GetNextEvent(observer_id, timeout=timeout)
 
