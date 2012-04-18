@@ -48,7 +48,7 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
     # so we need to set PNACL_AS=1 in CCFLAGS as well.
     asm_env.Append(CCFLAGS=['-DPNACL_AS=1'])
 
-  link_cmd = ('${LD} -e _start ${TEXT_START} ${RO_START} ${RW_START}' +
+  link_cmd = ('${LD} -static -e _start ${TEXT_START} ${RO_START} ${RW_START}' +
                 ' -o ${TARGET} ${SOURCES}')
 
   if env.Bit('target_x86_32'):
