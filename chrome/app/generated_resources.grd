@@ -4120,8 +4120,8 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_APP_DISABLED_ERROR_LABEL" desc="Text displayed when an app was disabled due to a new upgrade requiring an explicit permission check from the user.">
         The newest version of the app "<ph name="APP_NAME">$1<ex>Pandora</ex></ph>" requires more permissions, so it has been disabled.
       </message>
-      <message name="IDS_EXTENSION_DISABLED_ERROR_ENABLE_BUTTON" desc="Text displayed on the button to re-enable the disabled extension or app.">
-        Re-enable
+      <message name="IDS_EXTENSION_DISABLED_ERROR_ENABLE_BUTTON" desc="Text displayed on the button to show the re-enable dialog for the disabled extension or app.">
+        Review permissions...
       </message>
       <message name="IDS_EXTENSION_DISABLED_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to a new upgrade requiring an explicit permission check from the user.">
         <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> requires new permissions
