@@ -683,6 +683,9 @@ void RenderWidgetHostViewMac::Destroy() {
     }
   }
 
+  // Ack pending swaps (if any).
+  AckPendingCompositorSwapBuffers();
+
   // We've been told to destroy.
   [cocoa_view_ retain];
   [cocoa_view_ removeFromSuperview];
