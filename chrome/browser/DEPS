@@ -35,8 +35,6 @@ include_rules = [
   # TODO(jam): Need to remove all these and use only content/public. BUG=98716
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
   "+content/browser/geolocation/wifi_data_provider_common.h",
-  # TODO(asanka): see http://codereview.chromium.org/9141031
-  "+content/browser/download/download_state_info.h",
   # TODO(ben): http://crbug.com/118410 will fix the following:
   "+content/browser/renderer_host/render_view_host_factory.h",
   "+content/browser/web_contents/web_contents_drag_win.h",
