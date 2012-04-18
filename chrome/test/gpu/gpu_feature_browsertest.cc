@@ -278,6 +278,16 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingBlocked) {
+#if defined(OS_MACOSX)
+  // Multisampling fails on virtualized mac os.
+  GPUTestBotConfig test_bot;
+  test_bot.LoadCurrentConfig(NULL);
+
+  const std::vector<uint32>& gpu_vendor = test_bot.gpu_vendor();
+  if (gpu_vendor.size() == 1 && gpu_vendor[0] == 0x15AD)
+    return;
+#endif
+
   const std::string json_blacklist =
       "{\n"
       "  \"name\": \"gpu blacklist\",\n"
