@@ -171,8 +171,8 @@ class BrowserView : public BrowserWindow,
   // activated, false if none was shown.
   bool ActivateAppModalDialog() const;
 
-  // Returns the selected TabContents[Wrapper]. Used by our NonClientView's
-  // TabIconView::TabContentsProvider implementations.
+  // Returns the selected WebContents/TabContentsWrapper. Used by our
+  // NonClientView's TabIconView::TabContentsProvider implementations.
   // TODO(beng): exposing this here is a bit bogus, since it's only used to
   // determine loading state. It'd be nicer if we could change this to be
   // bool IsSelectedTabLoading() const; or something like that. We could even
@@ -461,14 +461,14 @@ class BrowserView : public BrowserWindow,
   // Layout the Status Bubble.
   void LayoutStatusBubble();
 
-  // Prepare to show the Bookmark Bar for the specified TabContents. Returns
-  // true if the Bookmark Bar can be shown (i.e. it's supported for this
+  // Prepare to show the Bookmark Bar for the specified TabContentsWrapper.
+  // Returns true if the Bookmark Bar can be shown (i.e. it's supported for this
   // Browser type) and there should be a subsequent re-layout to show it.
   // |contents| can be NULL.
   bool MaybeShowBookmarkBar(TabContentsWrapper* contents);
 
-  // Prepare to show an Info Bar for the specified TabContents. Returns true
-  // if there is an Info Bar to show and one is supported for this Browser
+  // Prepare to show an Info Bar for the specified TabContentsWrapper. Returns
+  // true if there is an Info Bar to show and one is supported for this Browser
   // type, and there should be a subsequent re-layout to show it.
   // |contents| can be NULL.
   bool MaybeShowInfoBar(TabContentsWrapper* contents);
@@ -611,13 +611,13 @@ class BrowserView : public BrowserWindow,
   // The InfoBarContainerView that contains InfoBars for the current tab.
   InfoBarContainerView* infobar_container_;
 
-  // The view that contains the selected TabContents.
+  // The view that contains the selected WebContents.
   views::WebView* contents_container_;
 
-  // The view that contains devtools window for the selected TabContents.
+  // The view that contains devtools window for the selected WebContents.
   views::WebView* devtools_container_;
 
-  // The view that contains instant's TabContents.
+  // The view that contains instant's WebContents.
   views::WebView* preview_container_;
 
   // The view managing both the contents_container_ and preview_container_.

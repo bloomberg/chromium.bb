@@ -1391,7 +1391,7 @@ void BrowserView::TabDetachedAt(TabContentsWrapper* contents, int index) {
   if (index == browser_->active_index()) {
     // We need to reset the current tab contents to NULL before it gets
     // freed. This is because the focus manager performs some operations
-    // on the selected TabContents when it is removed.
+    // on the selected WebContents when it is removed.
     contents_container_->SetWebContents(NULL);
     infobar_container_->ChangeTabContents(NULL);
     UpdateDevToolsForContents(NULL);
@@ -2022,7 +2022,7 @@ bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
 
 bool BrowserView::MaybeShowInfoBar(TabContentsWrapper* contents) {
   // TODO(beng): Remove this function once the interface between
-  //             InfoBarContainer, DownloadShelfView and TabContents and this
+  //             InfoBarContainer, DownloadShelfView and WebContents and this
   //             view is sorted out.
   return true;
 }
@@ -2402,20 +2402,20 @@ void BrowserView::UpdateAcceleratorMetrics(
 }
 
 void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
-  // If |contents_container_| already has the correct TabContents, we can save
+  // If |contents_container_| already has the correct WebContents, we can save
   // some work.  This also prevents extra events from being reported by the
   // Visibility API under Windows, as ChangeWebContents will briefly hide
-  // the TabContents window.
+  // the WebContents window.
   DCHECK(new_contents);
   bool change_tab_contents =
       contents_container_->web_contents() != new_contents->web_contents();
 
   // Update various elements that are interested in knowing the current
-  // TabContents.
+  // WebContents.
 
   // When we toggle the NTP floating bookmarks bar and/or the info bar,
-  // we don't want any TabContents to be attached, so that we
-  // avoid an unnecessary resize and re-layout of a TabContents.
+  // we don't want any WebContents to be attached, so that we
+  // avoid an unnecessary resize and re-layout of a WebContents.
   if (change_tab_contents)
     contents_container_->SetWebContents(NULL);
   infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());

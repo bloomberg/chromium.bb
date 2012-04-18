@@ -145,7 +145,7 @@ void TabContentsViewViews::Focus() {
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
   if (wrapper) {
-    // TODO(erg): TabContents used to own constrained windows, which is why
+    // TODO(erg): WebContents used to own constrained windows, which is why
     // this is here. Eventually this should be ported to a containing view
     // specializing in constrained window management.
     ConstrainedWindowTabHelper* helper =
@@ -374,7 +374,7 @@ void TabContentsViewViews::OnNativeTabContentsViewWheelZoom(bool zoom_in) {
 }
 
 void TabContentsViewViews::OnNativeTabContentsViewMouseDown() {
-  // Make sure this TabContents is activated when it is clicked on.
+  // Make sure this WebContents is activated when it is clicked on.
   if (web_contents_->GetDelegate())
     web_contents_->GetDelegate()->ActivateContents(web_contents_);
 }

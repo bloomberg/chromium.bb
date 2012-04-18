@@ -76,13 +76,11 @@ namespace safe_browsing {
 class SafeBrowsingTabObserver;
 }
 
-// Wraps TabContents and all of its supporting objects in order to control
-// their ownership and lifetime, while allowing TabContents to remain generic
-// and re-usable in other projects.
+// Wraps WebContents and all of its supporting objects in order to control
+// their ownership and lifetime.
 //
 // TODO(avi): Eventually, this class will become TabContents as far as
-// the browser front-end is concerned, and the current TabContents will be
-// renamed to something like WebContents; <http://crbug.com/105875>.
+// the browser front-end is concerned.
 class TabContentsWrapper : public content::WebContentsObserver {
  public:
   // Takes ownership of |contents|, which must be heap-allocated (as it lives
@@ -94,12 +92,12 @@ class TabContentsWrapper : public content::WebContentsObserver {
   // heap-allocated pointer is owned by the caller.
   TabContentsWrapper* Clone();
 
-  // Helper to retrieve the existing instance that wraps a given TabContents.
+  // Helper to retrieve the existing instance that wraps a given WebContents.
   // Returns NULL if there is no such existing instance.
   // NOTE: This is not intended for general use. It is intended for situations
-  // like callbacks from content/ where only a TabContents is available. In the
+  // like callbacks from content/ where only a WebContents is available. In the
   // general case, please do NOT use this; plumb TabContentsWrapper through the
-  // chrome/ code instead of TabContents.
+  // chrome/ code instead of WebContents.
   static TabContentsWrapper* GetCurrentWrapperForContents(
       content::WebContents* contents);
   static const TabContentsWrapper* GetCurrentWrapperForContents(
@@ -282,7 +280,7 @@ class TabContentsWrapper : public content::WebContentsObserver {
       safe_browsing_tab_observer_;
   scoped_ptr<ThumbnailGenerator> thumbnail_generation_observer_;
 
-  // TabContents (MUST BE LAST) ------------------------------------------------
+  // WebContents (MUST BE LAST) ------------------------------------------------
 
   // If true, we're running the destructor.
   bool in_destructor_;

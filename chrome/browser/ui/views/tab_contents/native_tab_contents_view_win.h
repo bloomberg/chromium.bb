@@ -75,7 +75,7 @@ class NativeTabContentsViewWin : public views::NativeWidgetWin,
   internal::NativeTabContentsViewDelegate* delegate_;
 
   scoped_ptr<WebDragBookmarkHandlerWin> bookmark_handler_;
-  // A drop target object that handles drags over this TabContents.
+  // A drop target object that handles drags over this WebContents.
   scoped_refptr<WebDragDest> drag_dest_;
 
   // Used to handle the drag-and-drop.

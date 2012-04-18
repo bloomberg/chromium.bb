@@ -42,7 +42,7 @@ class DOMView : public views::NativeViewHost {
   // Loads the given URL into the page. You must have previously called Init().
   void LoadURL(const GURL& url);
 
-  // The TabContents displaying the DOM contents; may be null.
+  // The TabContentsWrapper displaying the DOM contents; may be null.
   TabContentsWrapper* dom_contents() const { return dom_contents_.get(); }
 
  protected:
@@ -57,8 +57,8 @@ class DOMView : public views::NativeViewHost {
   // implementation varies slightly, while Detach is the same in both cases.
   void AttachTabContents();
 
-  // Returns new allocated TabContents instance, caller is responsible deleting.
-  // Override in derived classes to replace TabContents with derivative.
+  // Returns new allocated WebContents instance, caller is responsible deleting.
+  // Override in derived classes to replace WebContents with derivative.
   virtual content::WebContents* CreateTabContents(
     Profile* profile, content::SiteInstance* instance);
 

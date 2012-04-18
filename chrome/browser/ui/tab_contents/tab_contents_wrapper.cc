@@ -157,7 +157,7 @@ TabContentsWrapper::TabContentsWrapper(WebContents* contents)
 TabContentsWrapper::~TabContentsWrapper() {
   in_destructor_ = true;
 
-  // Need to tear down infobars before the TabContents goes away.
+  // Need to tear down infobars before the WebContents goes away.
   // TODO(avi): Can we get this handled by the tab helper itself?
   infobar_tab_helper_.reset();
 }
@@ -210,6 +210,6 @@ Profile* TabContentsWrapper::profile() const {
 void TabContentsWrapper::WebContentsDestroyed(WebContents* tab) {
   // Destruction of the WebContents should only be done by us from our
   // destructor. Otherwise it's very likely we (or one of the helpers we own)
-  // will attempt to access the TabContents and we'll crash.
+  // will attempt to access the WebContents and we'll crash.
   DCHECK(in_destructor_);
 }

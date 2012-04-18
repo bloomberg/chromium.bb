@@ -70,7 +70,7 @@ class PanelBrowserWindowCocoa;
 - (void)tabDetached:(content::WebContents*)contents;
 
 // Sometimes (when we animate the size of the window) we want to stop resizing
-// the TabContents' cocoa view to avoid unnecessary rendering and issues
+// the WebContents's Cocoa view to avoid unnecessary rendering and issues
 // that can be caused by sizes near 0.
 - (void)disableTabContentsViewAutosizing;
 - (void)enableTabContentsViewAutosizing;

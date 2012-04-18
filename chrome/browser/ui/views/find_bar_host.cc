@@ -111,7 +111,7 @@ void FindBarHost::StopAnimation() {
 
 void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
                                         bool no_redraw) {
-  // We only move the window if one is active for the current TabContents. If we
+  // We only move the window if one is active for the current WebContents. If we
   // don't check this, then SetWidgetPosition below will end up making the Find
   // Bar visible.
   if (!find_bar_controller_->tab_contents() ||

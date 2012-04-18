@@ -118,7 +118,7 @@ class HtmlDialogView
   // until the property is removed.
   bool initialized_;
 
-  // Watches for TabContents rendering.
+  // Watches for WebContents rendering.
   scoped_ptr<TabRenderWatcher> tab_watcher_;
 
   // This view is a delegate to the HTML content since it needs to get notified

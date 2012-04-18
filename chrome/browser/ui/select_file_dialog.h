@@ -126,7 +126,7 @@ class SelectFileDialog
   // |default_extension| is the default extension to add to the file if the
   //   user doesn't type one. This should NOT include the '.'. On Windows, if
   //   you specify this you must also specify |file_types|.
-  // |source_contents| is the TabContents the call is originating from, i.e.
+  // |source_contents| is the WebContents the call is originating from, i.e.
   //   where the InfoBar should be shown in case file-selection dialogs are
   //   forbidden by policy, or NULL if no InfoBar should be shown.
   // |owning_window| is the window the dialog is modal to, or NULL for a

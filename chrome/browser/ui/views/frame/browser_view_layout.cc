@@ -270,7 +270,7 @@ void BrowserViewLayout::Layout(views::View* host) {
   top -= active_top_margin;
   contents_container_->SetActiveTopMargin(active_top_margin);
   LayoutTabContents(top, bottom);
-  // This must be done _after_ we lay out the TabContents since this
+  // This must be done _after_ we lay out the WebContents since this
   // code calls back into us to find the bounding box the find bar
   // must be laid out within, and that code depends on the
   // TabContentsContainer's bounds being up to date.

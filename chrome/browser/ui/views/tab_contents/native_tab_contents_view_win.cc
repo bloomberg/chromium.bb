@@ -232,7 +232,7 @@ void NativeTabContentsViewWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   if (window_pos->flags & SWP_HIDEWINDOW) {
     delegate_->OnNativeTabContentsViewHidden();
   } else {
-    // The TabContents was shown by a means other than the user selecting a
+    // The WebContents was shown by a means other than the user selecting a
     // Tab, e.g. the window was minimized then restored.
     if (window_pos->flags & SWP_SHOWWINDOW)
       delegate_->OnNativeTabContentsViewShown();

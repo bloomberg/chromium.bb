@@ -12,9 +12,9 @@ namespace content {
 class WebContents;
 }
 
-// ContentsContainer is responsible for managing the TabContents views.
+// ContentsContainer is responsible for managing the WebContents views.
 // ContentsContainer has up to two children: one for the currently active
-// TabContents and one for instant's TabContents.
+// WebContents and one for instant's WebContents.
 class ContentsContainer : public views::View {
  public:
   // Internal class name

@@ -37,7 +37,7 @@ void TabContentsWrapperTestHarness::SetUp() {
 void TabContentsWrapperTestHarness::TearDown() {
   contents_wrapper_.reset();
 
-  // Make sure that we flush any messages related to TabContents destruction
+  // Make sure that we flush any messages related to WebContents destruction
   // before we destroy the browser context.
   MessageLoop::current()->RunAllPending();
 

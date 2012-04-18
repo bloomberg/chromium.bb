@@ -35,7 +35,7 @@ SadTabHelper::~SadTabHelper() {
 }
 
 void SadTabHelper::RenderViewGone(base::TerminationStatus status) {
-  // Only show the sad tab if we're not in browser shutdown, so that TabContents
+  // Only show the sad tab if we're not in browser shutdown, so that WebContents
   // objects that are not in a browser (e.g., HTML dialogs) and thus are
   // visible do not flash a sad tab page.
   if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)

@@ -39,7 +39,7 @@ class PrefsTabHelper : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Update the TabContents's RendererPreferences.
+  // Update the WebContents's RendererPreferences.
   void UpdateRendererPreferences();
 
   Profile* GetProfile();

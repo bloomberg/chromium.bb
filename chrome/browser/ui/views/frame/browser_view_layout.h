@@ -74,7 +74,7 @@ class BrowserViewLayout : public views::LayoutManager {
   int LayoutBookmarkBar(int top);
   int LayoutInfoBar(int top);
 
-  // Layout the TabContents container, between the coordinates |top| and
+  // Layout the WebContents container, between the coordinates |top| and
   // |bottom|.
   void LayoutTabContents(int top, int bottom);
 

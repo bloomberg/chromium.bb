@@ -71,7 +71,7 @@ class PageActionImageView : public views::ImageView,
   virtual bool CanHandleAccelerators() const OVERRIDE;
 
   // Called to notify the PageAction that it should determine whether to be
-  // visible or hidden. |contents| is the TabContents that is active, |url| is
+  // visible or hidden. |contents| is the WebContents that is active, |url| is
   // the current page URL.
   void UpdateVisibility(content::WebContents* contents, const GURL& url);
 
