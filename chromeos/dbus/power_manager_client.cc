@@ -575,7 +575,8 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
         return;
       }
     }
-    battery_percentage_ += (discharging_ ? -1 : 1);
+    battery_percentage_ += (discharging_ ? -5 : 5);
+    battery_percentage_ = std::min(std::max(battery_percentage_, 0), 100);
 
     const int kSecondsToEmptyFullBattery(3 * 60 * 60);  // 3 hours.
 

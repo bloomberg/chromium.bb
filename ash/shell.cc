@@ -312,6 +312,9 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     return PowerSupplyStatus();
   }
 
+  virtual void RequestStatusUpdate() const OVERRIDE {
+  }
+
   virtual void ShowSettings() OVERRIDE {
   }
 

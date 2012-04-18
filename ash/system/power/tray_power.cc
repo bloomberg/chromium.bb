@@ -222,6 +222,8 @@ views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
         SkColorSetARGB(0, 0, 0, 0)));
     container->AddChildView(power_.get());
   }
+  ash::Shell::GetInstance()->tray_delegate()->RequestStatusUpdate();
+
   return container;
 }
 

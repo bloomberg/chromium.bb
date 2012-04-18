@@ -92,6 +92,9 @@ class SystemTrayDelegate {
   // Gets the current power supply status.
   virtual PowerSupplyStatus GetPowerSupplyStatus() const = 0;
 
+  // Requests a status update.
+  virtual void RequestStatusUpdate() const = 0;
+
   // Shows settings.
   virtual void ShowSettings() = 0;
 

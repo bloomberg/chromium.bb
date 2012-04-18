@@ -239,10 +239,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual PowerSupplyStatus GetPowerSupplyStatus() const OVERRIDE {
-    // Explicitly query the power status.
+    return power_supply_status_;
+  }
+
+  virtual void RequestStatusUpdate() const OVERRIDE {
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
         PowerManagerClient::UPDATE_USER);
-    return power_supply_status_;
   }
 
   virtual void ShowSettings() OVERRIDE {
