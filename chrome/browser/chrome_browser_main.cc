@@ -775,10 +775,21 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
     use_field_trial = false;
   }
   if (use_field_trial) {
-#if !defined(OS_CHROMEOS)
     const base::FieldTrial::Probability kSpdyDivisor = 100;
     base::FieldTrial::Probability npnhttp_probability = 5;
     base::FieldTrial::Probability spdy3_probability = 10;
+
+    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+    if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
+        channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
+      // 5% is for HTTP (no SPDY) and 5% for default SPDY (SPDY/2).
+      spdy3_probability = 90;
+    }
+
+#if defined(OS_CHROMEOS)
+    // Always enable SPDY (spdy/2 or spdy/3) on Chrome OS
+    npnhttp_probability = 0;
+#endif  // !defined(OS_CHROMEOS)
 
     // NPN with spdy support is the default.
     int npn_spdy_grp = -1;
@@ -805,10 +816,6 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
     } else {
       NOTREACHED();
     }
-#else
-    // Always enable SPDY on Chrome OS
-    net::HttpStreamFactory::EnableNpnSpdy();
-#endif  // !defined(OS_CHROMEOS)
   }
 
   // Setup SPDY CWND Field trial.
