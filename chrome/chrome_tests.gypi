@@ -1373,6 +1373,7 @@
         'browser/extensions/api/declarative/rules_registry_with_cache_unittest.cc',
         'browser/extensions/api/declarative/substring_set_matcher_unittest.cc',
         'browser/extensions/api/declarative/url_matcher_unittest.cc',
+        'browser/extensions/api/declarative/url_matcher_factory_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_action_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_condition_attribute_unittest.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_condition_unittest.cc',

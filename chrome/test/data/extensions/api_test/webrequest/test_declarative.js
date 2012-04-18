@@ -33,10 +33,13 @@ runTests([
       [ ["onCompleted"] ]);
     onRequest.addRules(
       [ {'conditions': [
-           new RequestMatcher({'pathSuffix': ".html",
-                               'resourceType': ["main_frame"],
-                               'schemes': ["http"],
-                               'ports': [testServerPort, [1000, 2000]]})],
+           new RequestMatcher({
+             'url': {
+                 'pathSuffix': ".html",
+                 'ports': [testServerPort, [1000, 2000]],
+                 'schemes': ["http"]
+             },
+             'resourceType': ["main_frame"]})],
          'actions': [new CancelRequest()]}
       ],
       function() {navigateAndWait(getURLHttpSimple());}
@@ -88,7 +91,7 @@ runTests([
          "onCompleted"] ]);
 
     onRequest.addRules(
-      [ {'conditions': [new RequestMatcher({'pathSuffix': ".html"})],
+      [ {'conditions': [new RequestMatcher({'url': {'pathSuffix': ".html"}})],
          'actions': [
              new RedirectRequest({'redirectUrl': getURLHttpSimple()})]}
       ],

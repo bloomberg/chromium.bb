@@ -8,6 +8,7 @@
 
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/declarative/declarative_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request_test_util.h"
@@ -16,6 +17,7 @@
 namespace extensions {
 
 namespace keys = declarative_webrequest_constants;
+namespace keys2 = declarative_constants;
 
 TEST(WebRequestConditionTest, CreateCondition) {
   // Necessary for TestURLRequest.
@@ -27,20 +29,21 @@ TEST(WebRequestConditionTest, CreateCondition) {
 
   DictionaryValue invalid_condition;
   invalid_condition.SetString("invalid", "foobar");
-  invalid_condition.SetString(keys::kHostSuffixKey, "example.com");
   invalid_condition.SetString(keys::kInstanceTypeKey,
                               keys::kRequestMatcherType);
 
   DictionaryValue invalid_condition2;
-  invalid_condition2.Set(keys::kHostSuffixKey, new ListValue);
+  invalid_condition2.Set(keys::kUrlKey, new ListValue);
   invalid_condition2.SetString(keys::kInstanceTypeKey,
                                keys::kRequestMatcherType);
 
   ListValue* resource_type_list = new ListValue();
   resource_type_list->Append(Value::CreateStringValue("main_frame"));
+  DictionaryValue* url_filter = new DictionaryValue();
+  url_filter->SetString(keys2::kHostSuffixKey, "example.com");
   DictionaryValue valid_condition;
   valid_condition.Set(keys::kResourceTypeKey, resource_type_list);
-  valid_condition.SetString(keys::kHostSuffixKey, "example.com");
+  valid_condition.Set(keys::kUrlKey, url_filter);
   valid_condition.SetString(keys::kInstanceTypeKey,
                             keys::kRequestMatcherType);
 
@@ -83,18 +86,22 @@ TEST(WebRequestConditionTest, CreateConditionSet) {
 
   ListValue* http_scheme_list = new ListValue();
   http_scheme_list->Append(Value::CreateStringValue("http"));
+  DictionaryValue* http_url_filter = new DictionaryValue();
+  http_url_filter->SetString(keys2::kHostSuffixKey, "example.com");
+  http_url_filter->Set(keys2::kSchemesKey, http_scheme_list);
   DictionaryValue http_condition;
-  http_condition.Set(keys::kSchemesKey, http_scheme_list);
-  http_condition.SetString(keys::kHostSuffixKey, "example.com");
   http_condition.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
+  http_condition.Set(keys::kUrlKey, http_url_filter);
 
   ListValue* https_scheme_list = new ListValue();
   https_scheme_list->Append(Value::CreateStringValue("https"));
+  DictionaryValue* https_url_filter = new DictionaryValue();
+  https_url_filter->SetString(keys2::kHostSuffixKey, "example.com");
+  https_url_filter->SetString(keys2::kHostPrefixKey, "www");
+  https_url_filter->Set(keys2::kSchemesKey, https_scheme_list);
   DictionaryValue https_condition;
-  https_condition.Set(keys::kSchemesKey, https_scheme_list);
-  https_condition.SetString(keys::kHostSuffixKey, "example.com");
-  https_condition.SetString(keys::kHostPrefixKey, "www");
   https_condition.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
+  https_condition.Set(keys::kUrlKey, https_url_filter);
 
   WebRequestConditionSet::AnyVector conditions;
 
@@ -174,10 +181,13 @@ TEST(WebRequestConditionTest, TestPortFilter) {
   port_ranges->Append(Value::CreateIntegerValue(80));
   port_ranges->Append(port_range);
 
+  DictionaryValue* url_filter = new DictionaryValue();
+  url_filter->Set(keys2::kPortsKey, port_ranges);
+  url_filter->SetString(keys2::kHostSuffixKey, "example.com");
+
   DictionaryValue condition;
-  condition.Set(keys::kPortsKey, port_ranges);
-  condition.SetString(keys::kHostSuffixKey, "example.com");
   condition.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
+  condition.Set(keys::kUrlKey, url_filter);
 
   linked_ptr<json_schema_compiler::any::Any> any_condition =
       make_linked_ptr(new json_schema_compiler::any::Any);

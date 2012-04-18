@@ -68,24 +68,6 @@ class WebRequestCondition {
   }
 
  private:
-  // Returns whether a condition attribute with name |condition_attribute_name|
-  // needs to be handled by the URLMatcher.
-  static bool IsURLMatcherConditionAttribute(
-      const std::string& condition_attribute_name);
-
-  // Factory method of for URLMatcherConditions.
-  static URLMatcherCondition CreateURLMatcherCondition(
-      URLMatcherConditionFactory* url_matcher_condition_factory,
-      const std::string& condition_attribute_name,
-      const base::Value* value,
-      std::string* error);
-
-  static scoped_ptr<URLMatcherSchemeFilter> CreateURLMatcherScheme(
-      const base::Value* value, std::string* error);
-
-  static scoped_ptr<URLMatcherPortFilter> CreateURLMatcherPorts(
-      const base::Value* value, std::string* error);
-
   scoped_refptr<URLMatcherConditionSet> url_matcher_conditions_;
   WebRequestConditionAttributes condition_attributes_;
 

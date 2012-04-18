@@ -9,6 +9,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/declarative/declarative_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "content/test/test_browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
@@ -24,6 +25,7 @@ const char kRuleId2[] = "rule2";
 namespace extensions {
 
 namespace keys = declarative_webrequest_constants;
+namespace keys2 = declarative_constants;
 
 class WebRequestRulesRegistryTest : public testing::Test {
  public:
@@ -45,28 +47,32 @@ class WebRequestRulesRegistryTest : public testing::Test {
   linked_ptr<RulesRegistry::Rule> CreateRule1() {
     ListValue* scheme_http = new ListValue();
     scheme_http->Append(Value::CreateStringValue("http"));
-    DictionaryValue http_condition_dict;
-    http_condition_dict.Set(keys::kSchemesKey, scheme_http);
-    http_condition_dict.SetString(keys::kHostSuffixKey, "example.com");
-    http_condition_dict.SetString(keys::kInstanceTypeKey,
-                                  keys::kRequestMatcherType);
+    DictionaryValue* http_condition_dict = new DictionaryValue();
+    http_condition_dict->Set(keys2::kSchemesKey, scheme_http);
+    http_condition_dict->SetString(keys2::kHostSuffixKey, "example.com");
+    DictionaryValue http_condition_url_filter;
+    http_condition_url_filter.Set(keys::kUrlKey, http_condition_dict);
+    http_condition_url_filter.SetString(keys::kInstanceTypeKey,
+                                        keys::kRequestMatcherType);
 
     ListValue* scheme_https = new ListValue();
     scheme_http->Append(Value::CreateStringValue("https"));
-    DictionaryValue https_condition_dict;
-    https_condition_dict.Set(keys::kSchemesKey, scheme_https);
-    https_condition_dict.SetString(keys::kHostSuffixKey, "example.com");
-    https_condition_dict.SetString(keys::kHostPrefixKey, "www");
-    https_condition_dict.SetString(keys::kInstanceTypeKey,
-                                   keys::kRequestMatcherType);
+    DictionaryValue* https_condition_dict = new DictionaryValue();
+    https_condition_dict->Set(keys2::kSchemesKey, scheme_https);
+    https_condition_dict->SetString(keys2::kHostSuffixKey, "example.com");
+    https_condition_dict->SetString(keys2::kHostPrefixKey, "www");
+    DictionaryValue https_condition_url_filter;
+    https_condition_url_filter.Set(keys::kUrlKey, https_condition_dict);
+    https_condition_url_filter.SetString(keys::kInstanceTypeKey,
+                                         keys::kRequestMatcherType);
 
     linked_ptr<json_schema_compiler::any::Any> condition1 = make_linked_ptr(
         new json_schema_compiler::any::Any);
-    condition1->Init(http_condition_dict);
+    condition1->Init(http_condition_url_filter);
 
     linked_ptr<json_schema_compiler::any::Any> condition2 = make_linked_ptr(
         new json_schema_compiler::any::Any);
-    condition2->Init(https_condition_dict);
+    condition2->Init(https_condition_url_filter);
 
     DictionaryValue action_dict;
     action_dict.SetString(keys::kInstanceTypeKey, keys::kCancelRequestType);

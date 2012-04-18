@@ -11,97 +11,10 @@
         "type": "object",
         "description": "Matches network events by various criteria.",
         "properties": {
-          "hostContains": {
-            "type": "string",
-            "description": "Matches if the host name of the URL contains a specified string.",
+          "url": {
+            "$ref": "UrlFilter",
+            "description": "Matches if the condition of the UrlFilter are fulfilled for the URL of the request.",
             "optional": true
-          },
-          "hostEquals": {
-            "type": "string",
-            "description": "Matches if the host name of the URL is equal to a specified string.",
-            "optional": true
-          },
-          "hostPrefix": {
-            "type": "string",
-            "description": "Matches if the host name of the URL starts with a specified string.",
-            "optional": true
-          },
-          "hostSuffix": {
-            "type": "string",
-            "description": "Matches if the host name of the URL ends with a specified string.",
-            "optional": true
-          },
-          "pathContains": {
-            "type": "string",
-            "description": "Matches if the path segment of the URL contains a specified string.",
-            "optional": true
-          },
-          "pathEquals": {
-            "type": "string",
-            "description": "Matches if the path segment of the URL is equal to a specified string.",
-            "optional": true
-          },
-          "pathPrefix": {
-            "type": "string",
-            "description": "Matches if the path segment of the URL starts with a specified string.",
-            "optional": true
-          },
-          "pathSuffix": {
-            "type": "string",
-            "description": "Matches if the path segment of the URL ends with a specified string.",
-            "optional": true
-          },
-          "queryEquals": {
-            "type": "string",
-            "description": "Matches if the query segment of the URL is equal to a specified string.",
-            "optional": true
-          },
-          "queryPrefix": {
-            "type": "string",
-            "description": "Matches if the query segment of the URL starts with a specified string.",
-            "optional": true
-          },
-          "querySuffix": {
-            "type": "string",
-            "description": "Matches if the query segment of the URL ends with a specified string.",
-            "optional": true
-          },
-          "urlSuffix": {
-            "type": "string",
-            "description": "Matches if the URL ends with a specified string.",
-            "optional": true
-          },
-          "urlEquals": {
-            "type": "string",
-            "description": "Matches if the URL is equal to a specified string.",
-            "optional": true
-          },
-          "urlPrefix": {
-            "type": "string",
-            "description": "Matches if the URL starts with a specified string.",
-            "optional": true
-          },
-          "urlSuffix": {
-            "type": "string",
-            "description": "Matches if the URL ends with a specified string.",
-            "optional": true
-          },
-          "schemes": {
-            "type": "array",
-            "description": "Matches if the scheme of the URL is equal to any of the schemes specified in the array.",
-            "optional": true,
-            "items": { "type": "string" }
-          },
-          "ports": {
-            "type": "array",
-            "description": "Matches if the port of the URL is contained in any of the specified port lists. For example <code>[80, 443, [1000, 1200]]</code> matches all requests on port 80, 443 and in the range 1000-1200.",
-            "optional": true,
-            "items": {
-              "choices": [
-                {"type": "integer", "description": "A specific port."},
-                {"type": "array", "items": {"type": "integer"}, "description": "A pair of integers identiying the start and end (both inclusive) of a port range."}
-              ]
-            }
           },
           "resourceType": {
             "type": "array",
