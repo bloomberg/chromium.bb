@@ -35,6 +35,7 @@
 #include "webkit/media/webvideoframe_impl.h"
 
 using WebKit::WebCanvas;
+using WebKit::WebMediaPlayer;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using media::NetworkEvent;
@@ -104,8 +105,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     MediaStreamClient* media_stream_client,
     media::MediaLog* media_log)
     : frame_(frame),
-      network_state_(WebKit::WebMediaPlayer::Empty),
-      ready_state_(WebKit::WebMediaPlayer::HaveNothing),
+      network_state_(WebMediaPlayer::NetworkStateEmpty),
+      ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
       main_loop_(MessageLoop::current()),
       filter_collection_(collection),
       started_(false),
@@ -218,8 +219,8 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
   setVolume(GetClient()->volume());
   setPreload(GetClient()->preload());
 
-  SetNetworkState(WebKit::WebMediaPlayer::Loading);
-  SetReadyState(WebKit::WebMediaPlayer::HaveNothing);
+  SetNetworkState(WebMediaPlayer::NetworkStateLoading);
+  SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
   media_log_->AddEvent(media_log_->CreateLoadEvent(url.spec()));
 
   // Media streams pipelines can start immediately.
@@ -359,14 +360,14 @@ void WebMediaPlayerImpl::setVisible(bool visible) {
 }
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \
-    COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayer::webkit_name) == \
+    COMPILE_ASSERT(static_cast<int>(WebMediaPlayer::webkit_name) == \
                    static_cast<int>(webkit_media::chromium_name), \
                    mismatching_enums)
-COMPILE_ASSERT_MATCHING_ENUM(None, NONE);
-COMPILE_ASSERT_MATCHING_ENUM(MetaData, METADATA);
-COMPILE_ASSERT_MATCHING_ENUM(Auto, AUTO);
+COMPILE_ASSERT_MATCHING_ENUM(PreloadNone, NONE);
+COMPILE_ASSERT_MATCHING_ENUM(PreloadMetaData, METADATA);
+COMPILE_ASSERT_MATCHING_ENUM(PreloadAuto, AUTO);
 
-void WebMediaPlayerImpl::setPreload(WebKit::WebMediaPlayer::Preload preload) {
+void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
   if (proxy_ && proxy_->data_source()) {
@@ -411,7 +412,7 @@ bool WebMediaPlayerImpl::paused() const {
 bool WebMediaPlayerImpl::seeking() const {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  if (ready_state_ == WebKit::WebMediaPlayer::HaveNothing)
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
     return false;
 
   return seeking_;
@@ -444,11 +445,11 @@ int WebMediaPlayerImpl::dataRate() const {
   return 0;
 }
 
-WebKit::WebMediaPlayer::NetworkState WebMediaPlayerImpl::networkState() const {
+WebMediaPlayer::NetworkState WebMediaPlayerImpl::networkState() const {
   return network_state_;
 }
 
-WebKit::WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
+WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
   return ready_state_;
 }
 
@@ -572,16 +573,15 @@ bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {
   return true;
 }
 
-WebKit::WebMediaPlayer::MovieLoadType
-    WebMediaPlayerImpl::movieLoadType() const {
+WebMediaPlayer::MovieLoadType WebMediaPlayerImpl::movieLoadType() const {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
   // TODO(hclam): If the pipeline is performing streaming, we say that this is
   // a live stream. But instead it should be a StoredStream if we have proper
   // caching.
   if (pipeline_->IsStreaming())
-    return WebKit::WebMediaPlayer::LiveStream;
-  return WebKit::WebMediaPlayer::Unknown;
+    return WebMediaPlayer::MovieLoadTypeLiveStream;
+  return WebMediaPlayer::MovieLoadTypeUnknown;
 }
 
 float WebMediaPlayerImpl::mediaTimeForTimeValue(float timeValue) const {
@@ -648,17 +648,17 @@ bool WebMediaPlayerImpl::sourceAppend(const unsigned char* data,
 }
 
 void WebMediaPlayerImpl::sourceEndOfStream(
-    WebKit::WebMediaPlayer::EndOfStreamStatus status) {
+    WebMediaPlayer::EndOfStreamStatus status) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   media::PipelineStatus pipeline_status = media::PIPELINE_OK;
 
   switch(status) {
-    case WebKit::WebMediaPlayer::EosNoError:
+    case WebMediaPlayer::EndOfStreamStatusNoError:
       break;
-    case WebKit::WebMediaPlayer::EosNetworkError:
+    case WebMediaPlayer::EndOfStreamStatusNetworkError:
       pipeline_status = media::PIPELINE_ERROR_NETWORK;
       break;
-    case WebKit::WebMediaPlayer::EosDecodeError:
+    case WebMediaPlayer::EndOfStreamStatusDecodeError:
       pipeline_status = media::PIPELINE_ERROR_DECODE;
       break;
     default:
@@ -698,13 +698,13 @@ void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
     GetClient()->disableAcceleratedCompositing();
 
   if (pipeline_->IsLocalSource())
-    SetNetworkState(WebKit::WebMediaPlayer::Loaded);
+    SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
 
-  SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
+  SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
   // Fire canplaythrough immediately after playback begins because of
   // crbug.com/106480.
   // TODO(vrk): set ready state to HaveFutureData when bug above is fixed.
-  SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
+  SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
 
   // Repaint to trigger UI update.
   Repaint();
@@ -748,7 +748,7 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
       break;
 
     case media::PIPELINE_ERROR_NETWORK:
-      SetNetworkState(WebMediaPlayer::NetworkError);
+      SetNetworkState(WebMediaPlayer::NetworkStateNetworkError);
       break;
 
     case media::PIPELINE_ERROR_INITIALIZATION_FAILED:
@@ -763,7 +763,7 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
     case media::DECODER_ERROR_NOT_SUPPORTED:
     case media::DATASOURCE_ERROR_URL_NOT_SUPPORTED:
       // Format error.
-      SetNetworkState(WebMediaPlayer::FormatError);
+      SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
       break;
 
     case media::PIPELINE_ERROR_DECODE:
@@ -773,7 +773,7 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
     case media::PIPELINE_ERROR_OPERATION_PENDING:
     case media::PIPELINE_ERROR_INVALID_STATE:
       // Decode error.
-      SetNetworkState(WebMediaPlayer::DecodeError);
+      SetNetworkState(WebMediaPlayer::NetworkStateDecodeError);
       break;
   }
 
@@ -785,16 +785,16 @@ void WebMediaPlayerImpl::OnNetworkEvent(NetworkEvent type) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   switch(type) {
     case media::DOWNLOAD_CONTINUED:
-      SetNetworkState(WebKit::WebMediaPlayer::Loading);
+      SetNetworkState(WebMediaPlayer::NetworkStateLoading);
       break;
     case media::DOWNLOAD_PAUSED:
-      SetNetworkState(WebKit::WebMediaPlayer::Idle);
+      SetNetworkState(WebMediaPlayer::NetworkStateIdle);
       break;
     case media::CAN_PLAY_THROUGH:
       // Temporarily disable delayed firing of CAN_PLAY_THROUGH due to
       // crbug.com/106480.
       // TODO(vrk): uncomment code below when bug above is fixed.
-      // SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
+      // SetReadyState(WebMediaPlayer::NetworkStateHaveEnoughData);
       break;
     default:
       NOTREACHED();
@@ -820,7 +820,7 @@ void WebMediaPlayerImpl::DataSourceInitialized(
 
   if (status != media::PIPELINE_OK) {
     DVLOG(1) << "DataSourceInitialized status: " << status;
-    SetNetworkState(WebKit::WebMediaPlayer::FormatError);
+    SetNetworkState(WebMediaPlayer::NetworkStateFormatError);
     Repaint();
     return;
   }
@@ -850,8 +850,7 @@ void WebMediaPlayerImpl::StartPipeline() {
                  proxy_.get()));
 }
 
-void WebMediaPlayerImpl::SetNetworkState(
-    WebKit::WebMediaPlayer::NetworkState state) {
+void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   DVLOG(1) << "SetNetworkState: " << state;
   network_state_ = state;
@@ -859,8 +858,7 @@ void WebMediaPlayerImpl::SetNetworkState(
   GetClient()->networkStateChanged();
 }
 
-void WebMediaPlayerImpl::SetReadyState(
-    WebKit::WebMediaPlayer::ReadyState state) {
+void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   DVLOG(1) << "SetReadyState: " << state;
   ready_state_ = state;
