@@ -518,7 +518,7 @@ bool ExecuteJavaScript(RenderViewHost* render_view_host,
                        const std::wstring& frame_xpath,
                        const std::wstring& original_script) {
   std::wstring script =
-      original_script + L"window.domAutomationController.send(0);";
+      original_script + L";window.domAutomationController.send(0);";
   return ExecuteJavaScriptHelper(render_view_host, frame_xpath, script, NULL);
 }
 
