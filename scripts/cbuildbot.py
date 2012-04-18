@@ -49,24 +49,27 @@ _DISTRIBUTED_TYPES = [constants.COMMIT_QUEUE_TYPE, constants.PFQ_TYPE,
 _BUILDBOT_REQUIRED_BINARIES = ('pbzip2',)
 
 
-def _PrintValidConfigs(trybot_only=True):
+def _PrintValidConfigs(display_all=False):
   """Print a list of valid buildbot configs.
 
   Arguments:
-    trybot_only: Only print selected trybot configs, as specified by the
-                 'trybot_list' config setting.
+    display_all: Print all configs.  Otherwise, prints only configs with
+                 trybot_list=True.
   """
+  def _GetSortKey(config_name):
+    config_dict = cbuildbot_config.config[config_name]
+    return (not config_dict['trybot_list'], config_dict['description'],
+            config_name)
+
   COLUMN_WIDTH = 45
   print 'config'.ljust(COLUMN_WIDTH), 'description'
   print '------'.ljust(COLUMN_WIDTH), '-----------'
   config_names = cbuildbot_config.config.keys()
-  config_names.sort()
+  config_names.sort(key=_GetSortKey)
   for name in config_names:
-    if not trybot_only or cbuildbot_config.config[name]['trybot_list']:
-      desc = ''
-      if cbuildbot_config.config[name]['description']:
-        desc = cbuildbot_config.config[name]['description']
-
+    if display_all or cbuildbot_config.config[name]['trybot_list']:
+      desc = cbuildbot_config.config[name].get('description')
+      desc = desc if desc else ''
       print name.ljust(COLUMN_WIDTH), desc
 
 
@@ -894,7 +897,7 @@ def main(argv):
   (options, args) = _ParseCommandLine(parser, argv)
 
   if options.list:
-    _PrintValidConfigs(not options.print_all)
+    _PrintValidConfigs(options.print_all)
     sys.exit(0)
 
   _PostParseCheck(options, args)

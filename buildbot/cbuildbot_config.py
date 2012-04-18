@@ -400,6 +400,8 @@ full = _config(
   archive_build_debug=True,
   images=['base', 'test', 'factory_test', 'factory_install'],
   git_sync=True,
+  trybot_list=True,
+  description='Full Builds',
 )
 
 pfq = _config(
@@ -418,7 +420,7 @@ paladin = _config(
   prebuilts=True,
   manifest_version=True,
   trybot_list=True,
-  description='Combined PFQ/CQ',
+  description='Commit Queue',
 )
 
 incremental = _config(
@@ -576,7 +578,9 @@ x86_generic_full.add_config('x86-pineview-full',
 
 _toolchain = \
     full.derive(latest_toolchain=True, prebuilts=False,
-                gcc_githash='gcc.gnu.org/branches/google/main')
+                gcc_githash='gcc.gnu.org/branches/google/main',
+                trybot_list=False,
+                description='Toolchain',)
 
 _toolchain.add_config('x86-generic-toolchain',
   boards=['x86-generic'],
@@ -588,7 +592,9 @@ _toolchain.add_config('arm-tegra2-seaboard-toolchain', arm,
 
 _toolchain_minor = \
     full.derive(latest_toolchain=True, prebuilts=False,
-                gcc_githash='gcc.gnu.org/branches/google/gcc-4_6')
+                gcc_githash='gcc.gnu.org/branches/google/gcc-4_6',
+                trybot_list=False,
+                description='Toolchain',)
 
 _toolchain_minor.add_config('x86-generic-toolchain_minor',
   boards=['x86-generic'],
@@ -616,7 +622,8 @@ _config.add_raw_config('x86-generic-asan',
 #
 
 internal_pfq = internal.derive(pfq, overlays=constants.PRIVATE_OVERLAYS)
-internal_pfq_branch = internal_pfq.derive(overlays=constants.BOTH_OVERLAYS)
+internal_pfq_branch = internal_pfq.derive(overlays=constants.BOTH_OVERLAYS,
+                                          trybot_list=False)
 internal_paladin = internal.derive(paladin, overlays=constants.PRIVATE_OVERLAYS)
 internal_incremental = internal.derive(incremental,
                                        overlays=constants.BOTH_OVERLAYS)
@@ -741,6 +748,8 @@ _release = full.derive(official, internal,
   git_sync=False,
   vm_tests=constants.FULL_AU_TEST_TYPE,
   upload_hw_test_artifacts=True,
+  trybot_list=True,
+  description="Release Builds",
 )
 
 _release.add_config('x86-mario-release',
