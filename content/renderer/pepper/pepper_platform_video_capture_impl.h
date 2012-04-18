@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "media/video/capture/video_capture.h"
+#include "media/video/capture/video_capture_types.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 namespace media {
@@ -34,8 +35,9 @@ class PepperPlatformVideoCaptureImpl
   virtual ~PepperPlatformVideoCaptureImpl();
 
   // webkit::ppapi::PluginDelegate::PlatformVideoCapture implementation.
-  virtual void StartCapture(media::VideoCapture::EventHandler* handler,
-                            const VideoCaptureCapability& capability) OVERRIDE;
+  virtual void StartCapture(
+      media::VideoCapture::EventHandler* handler,
+      const media::VideoCaptureCapability& capability) OVERRIDE;
   virtual void StopCapture(media::VideoCapture::EventHandler* handler) OVERRIDE;
   virtual void FeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) OVERRIDE;
   virtual bool CaptureStarted() OVERRIDE;

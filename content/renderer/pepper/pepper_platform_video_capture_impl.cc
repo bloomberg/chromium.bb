@@ -55,7 +55,7 @@ PepperPlatformVideoCaptureImpl::~PepperPlatformVideoCaptureImpl() {
 
 void PepperPlatformVideoCaptureImpl::StartCapture(
     media::VideoCapture::EventHandler* handler,
-    const VideoCaptureCapability& capability) {
+    const media::VideoCaptureCapability& capability) {
   DCHECK(handler == handler_);
 
   if (unbalanced_start_)

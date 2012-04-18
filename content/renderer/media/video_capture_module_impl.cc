@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,11 +148,11 @@ void VideoCaptureModuleImpl::StartCaptureInternal(
   frame_rate_ = capability.maxFPS;
   state_ = video_capture::kStarted;
 
-  media::VideoCapture::VideoCaptureCapability cap;
+  media::VideoCaptureCapability cap;
   cap.width = capability.width;
   cap.height = capability.height;
-  cap.max_fps = capability.maxFPS;
-  cap.raw_type = media::VideoFrame::I420;
+  cap.frame_rate = capability.maxFPS;
+  cap.color = media::VideoFrame::I420;
   capture_engine_->StartCapture(this, cap);
 }
 

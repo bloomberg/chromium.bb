@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/threading/thread.h"
 #include "content/common/media/video_capture.h"
 #include "media/video/capture/video_capture.h"
+#include "media/video/capture/video_capture_types.h"
 #include "third_party/webrtc/common_types.h"
 #include "third_party/webrtc/modules/video_capture/main/interface/video_capture_defines.h"
 #include "third_party/webrtc/modules/video_capture/main/source/video_capture_impl.h"

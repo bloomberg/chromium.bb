@@ -57,7 +57,7 @@ class MockVideoCaptureImpl : public VideoCaptureImpl {
 
   MOCK_METHOD2(StartCapture,
                void(media::VideoCapture::EventHandler* handler,
-                    const VideoCaptureCapability& capability));
+                    const media::VideoCaptureCapability& capability));
   MOCK_METHOD1(StopCapture, void(media::VideoCapture::EventHandler* handler));
   MOCK_METHOD1(FeedBuffer, void(scoped_refptr<VideoFrameBuffer> buffer));
 
@@ -88,12 +88,12 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     message_loop_proxy_ =
         base::MessageLoopProxy::current().get();
     vc_manager_ = new MockVideoCaptureImplManager();
-    media::VideoCapture::VideoCaptureCapability capability;
+    media::VideoCaptureCapability capability;
     capability.width = kWidth;
     capability.height = kHeight;
-    capability.max_fps = kFPS;
+    capability.frame_rate = kFPS;
     capability.expected_capture_delay = 0;
-    capability.raw_type = media::VideoFrame::I420;
+    capability.color = media::VideoFrame::I420;
     capability.interlaced = false;
 
     decoder_ = new CaptureVideoDecoder(message_loop_proxy_,

@@ -290,9 +290,9 @@ void PPB_VideoCapture_Impl::SetRequestedInfo(
 
   capability_.width = device_info.width;
   capability_.height = device_info.height;
-  capability_.max_fps = device_info.frames_per_second;
+  capability_.frame_rate = device_info.frames_per_second;
   capability_.expected_capture_delay = 0;  // Ignored.
-  capability_.raw_type = media::VideoFrame::I420;
+  capability_.color = media::VideoFrame::I420;
   capability_.interlaced = false;  // Ignored.
 }
 

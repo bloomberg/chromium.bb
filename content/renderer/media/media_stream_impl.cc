@@ -237,12 +237,12 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
     // It's a local stream.
     int video_session_id =
         media_stream_dispatcher_->video_session_id(msm_label, 0);
-    media::VideoCapture::VideoCaptureCapability capability;
+    media::VideoCaptureCapability capability;
     capability.width = kVideoCaptureWidth;
     capability.height = kVideoCaptureHeight;
-    capability.max_fps = kVideoCaptureFramePerSecond;
+    capability.frame_rate = kVideoCaptureFramePerSecond;
     capability.expected_capture_delay = 0;
-    capability.raw_type = media::VideoFrame::I420;
+    capability.color = media::VideoFrame::I420;
     capability.interlaced = false;
     decoder = new CaptureVideoDecoder(
         message_loop_factory->GetMessageLoopProxy("CaptureVideoDecoderThread"),

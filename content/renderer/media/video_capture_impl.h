@@ -16,6 +16,7 @@
 #include "content/common/media/video_capture.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "media/video/capture/video_capture.h"
+#include "media/video/capture/video_capture_types.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -25,8 +26,9 @@ class CONTENT_EXPORT VideoCaptureImpl
     : public media::VideoCapture, public VideoCaptureMessageFilter::Delegate {
  public:
   // media::VideoCapture interface.
-  virtual void StartCapture(media::VideoCapture::EventHandler* handler,
-                            const VideoCaptureCapability& capability) OVERRIDE;
+  virtual void StartCapture(
+      media::VideoCapture::EventHandler* handler,
+      const media::VideoCaptureCapability& capability) OVERRIDE;
   virtual void StopCapture(media::VideoCapture::EventHandler* handler) OVERRIDE;
   virtual void FeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) OVERRIDE;
   virtual bool CaptureStarted() OVERRIDE;
@@ -56,7 +58,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual ~VideoCaptureImpl();
 
   void DoStartCapture(media::VideoCapture::EventHandler* handler,
-                      const VideoCaptureCapability& capability);
+                      const media::VideoCaptureCapability& capability);
   void DoStopCapture(media::VideoCapture::EventHandler* handler);
   void DoFeedBuffer(scoped_refptr<VideoFrameBuffer> buffer);
 
@@ -89,8 +91,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   typedef std::map<int /* buffer_id */, DIBBuffer*> CachedDIB;
   CachedDIB cached_dibs_;
 
-  typedef std::map<media::VideoCapture::EventHandler*, VideoCaptureCapability>
-      ClientInfo;
+  typedef std::map<media::VideoCapture::EventHandler*,
+      media::VideoCaptureCapability> ClientInfo;
   ClientInfo clients_;
 
   ClientInfo clients_pending_on_filter_;

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "media/video/capture/video_capture.h"
+#include "media/video/capture/video_capture_types.h"
 #include "ppapi/c/dev/ppp_video_capture_dev.h"
 #include "ppapi/shared_impl/ppb_video_capture_shared.h"
 #include "ppapi/shared_impl/resource.h"
@@ -97,7 +98,7 @@ class PPB_VideoCapture_Impl
 
   DeviceRefDataVector devices_data_;
 
-  media::VideoCapture::VideoCaptureCapability capability_;
+  media::VideoCaptureCapability capability_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoCapture_Impl);
 };

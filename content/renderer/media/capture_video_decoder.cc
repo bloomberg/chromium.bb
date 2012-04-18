@@ -19,7 +19,7 @@ CaptureVideoDecoder::CaptureVideoDecoder(
     base::MessageLoopProxy* message_loop_proxy,
     media::VideoCaptureSessionId video_stream_id,
     VideoCaptureImplManager* vc_manager,
-    const media::VideoCapture::VideoCaptureCapability& capability)
+    const media::VideoCaptureCapability& capability)
     : message_loop_proxy_(message_loop_proxy),
       vc_manager_(vc_manager),
       capability_(capability),
@@ -261,7 +261,7 @@ void CaptureVideoDecoder::OnBufferReadyOnDecoderThread(
 
   // Assume YV12 format. Note that camera gives YUV and media pipeline video
   // renderer asks for YVU. The following code did the conversion.
-  DCHECK_EQ(capability_.raw_type, media::VideoFrame::I420);
+  DCHECK_EQ(capability_.color, media::VideoFrame::I420);
   int y_width = buf->width;
   int y_height = buf->height;
   int uv_width = buf->width / 2;

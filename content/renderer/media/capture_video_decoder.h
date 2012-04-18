@@ -12,6 +12,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/video_frame.h"
 #include "media/video/capture/video_capture.h"
+#include "media/video/capture/video_capture_types.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -28,7 +29,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
       base::MessageLoopProxy* message_loop_proxy,
       media::VideoCaptureSessionId video_stream_id,
       VideoCaptureImplManager* vc_manager,
-      const media::VideoCapture::VideoCaptureCapability& capability);
+      const media::VideoCaptureCapability& capability);
   virtual ~CaptureVideoDecoder();
 
   // Filter implementation.
@@ -96,7 +97,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
 
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
-  media::VideoCapture::VideoCaptureCapability capability_;
+  media::VideoCaptureCapability capability_;
   gfx::Size natural_size_;
   DecoderState state_;
   bool got_first_frame_;

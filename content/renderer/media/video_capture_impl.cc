@@ -94,8 +94,8 @@ void VideoCaptureImpl::DoDeInit(base::Closure task) {
 
 void VideoCaptureImpl::StartCapture(
     media::VideoCapture::EventHandler* handler,
-    const VideoCaptureCapability& capability) {
-  DCHECK_EQ(capability.raw_type, media::VideoFrame::I420);
+    const media::VideoCaptureCapability& capability) {
+  DCHECK_EQ(capability.color, media::VideoFrame::I420);
 
   capture_message_loop_proxy_->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureImpl::DoStartCapture,
@@ -149,7 +149,7 @@ void VideoCaptureImpl::OnDelegateAdded(int32 device_id) {
 
 void VideoCaptureImpl::DoStartCapture(
     media::VideoCapture::EventHandler* handler,
-    const VideoCaptureCapability& capability) {
+    const media::VideoCaptureCapability& capability) {
   DCHECK(capture_message_loop_proxy_->BelongsToCurrentThread());
 
   if (state_ == video_capture::kError) {
@@ -202,10 +202,10 @@ void VideoCaptureImpl::DoStartCapture(
 
   clients_[handler] = capability;
   DCHECK_EQ(clients_.size(), 1ul);
-  video_type_ = capability.raw_type;
+  video_type_ = capability.color;
   current_params_.width = capability.width;
   current_params_.height = capability.height;
-  current_params_.frame_per_second = capability.max_fps;
+  current_params_.frame_per_second = capability.frame_rate;
   DVLOG(1) << "StartCapture: starting with first resolution ("
            << current_params_.width << ", " << current_params_.height << ")";
 
@@ -359,7 +359,7 @@ void VideoCaptureImpl::DoDelegateAdded(int32 device_id) {
   for (ClientInfo::iterator it = clients_pending_on_filter_.begin();
        it != clients_pending_on_filter_.end(); ) {
     media::VideoCapture::EventHandler* handler = it->first;
-    const VideoCaptureCapability capability = it->second;
+    const media::VideoCaptureCapability capability = it->second;
     clients_pending_on_filter_.erase(it++);
     StartCapture(handler, capability);
   }
