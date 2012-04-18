@@ -125,6 +125,9 @@ class MEDIA_EXPORT VideoDecoder : public Filter {
   // Non-NULL frames contain decoded video data or may indicate the  end of
   // the stream. NULL video frames indicate an aborted read. This can happen if
   // the DemuxerStream gets flushed and doesn't have any more data to return.
+  //
+  // When Flush() is called VideoDecoder implementations should fulfill pending
+  // reads prior to executing the Flush() callback.
   typedef base::Callback<void(scoped_refptr<VideoFrame>)> ReadCB;
   virtual void Read(const ReadCB& read_cb) = 0;
 
