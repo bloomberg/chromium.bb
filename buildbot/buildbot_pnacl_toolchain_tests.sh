@@ -17,7 +17,15 @@ readonly LLVM_TESTSUITE=pnacl/scripts/llvm-test-suite.sh
 # build.sh, llvm test suite and torture tests all use this value
 export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-4}
 
+# Change the  toolchain build script (PNACL_BUILD) behavior slightly
+# wrt to error logging and mecurial retry delays.
+# TODO(robertm): if this special casing is still needed,
+#                make this into separate vars
 export PNACL_BUILDBOT=true
+# Make the toolchain build script (PNACL_BUILD) more verbose.
+# This will also prevent bot timeouts which otherwise gets triggered
+# by long periods without console output.
+export PNACL_VERBOSE=true
 
 clobber() {
   echo @@@BUILD_STEP clobber@@@
@@ -46,13 +54,15 @@ build-sbtc-prerequisites() {
 scons-tests-translator() {
   local platform=$1
 
-  echo "@@@BUILD_STEP scons-tests-translator ${platform}@@@"
+  echo "@@@BUILD_STEP scons-sb-translator [${platform}] [prereq]@@@"
   build-sbtc-prerequisites ${platform}
+
   local use_sbtc="use_sandboxed_translator=1"
   local extra="--mode=opt-host,nacl -j${PNACL_CONCURRENCY} ${use_sbtc} -k"
-  ${SCONS_COMMON} ${extra} platform=${platform} "small_tests" || handle-error
-  ${SCONS_COMMON} ${extra} platform=${platform} "medium_tests" || handle-error
-  ${SCONS_COMMON} ${extra} platform=${platform} "large_tests" || handle-error
+  for group in smoke_tests large_tests ; do
+      echo "@@@BUILD_STEP scons-sb-translator [${platform}] [${group}]@@@"
+      ${SCONS_COMMON} ${extra} platform=${platform} ${group} || handle-error
+  done
 }
 ####
 
