@@ -376,7 +376,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       property.key = properties[i].key;
       property.name = util->TranslateString(properties[i].label);
       property.selected = properties[i].is_selection_item_checked;
-      property.is_selection = properties[i].is_selection_item;
       list->push_back(property);
     }
   }
@@ -385,10 +384,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     input_method::InputMethodManager::GetInstance()->ChangeInputMethod(ime_id);
   }
 
-  virtual void ActivateIMEProperty(
-      const std::string& key, bool is_selection) OVERRIDE {
-    input_method::InputMethodManager::GetInstance()->SetImePropertyActivated(
-        key, is_selection);
+  virtual void ActivateIMEProperty(const std::string& key) OVERRIDE {
+    input_method::InputMethodManager::GetInstance()->
+        ActivateInputMethodProperty(key);
   }
 
   virtual void GetMostRelevantNetworkIcon(ash::NetworkIconInfo* info,
@@ -830,22 +828,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // Overridden from InputMethodManager::Observer.
   virtual void InputMethodChanged(
-      input_method::InputMethodManager* manager,
-      const input_method::InputMethodDescriptor& current_method,
-      size_t num_active_input_methods) OVERRIDE {
+      input_method::InputMethodManager* manager) OVERRIDE {
     NotifyRefreshIME();
   }
 
-  virtual void ActiveInputMethodsChanged(
-      input_method::InputMethodManager* manager,
-      const input_method::InputMethodDescriptor& current_input_method,
-      size_t num_active_input_methods) OVERRIDE {
-    NotifyRefreshIME();
-  }
-
-  virtual void PropertyListChanged(
-      input_method::InputMethodManager* manager,
-      const input_method::InputMethodPropertyList& properties) OVERRIDE {
+  virtual void InputMethodPropertyChanged(
+      input_method::InputMethodManager* manager) OVERRIDE {
     NotifyRefreshIME();
   }
 

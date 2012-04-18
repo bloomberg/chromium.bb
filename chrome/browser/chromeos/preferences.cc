@@ -623,6 +623,12 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
   if (!value.empty())
     base::SplitString(value, ',', &split_values);
 
+  if (section == std::string(language_prefs::kGeneralSectionName) &&
+      name == std::string(language_prefs::kPreloadEnginesConfigName)) {
+    input_method_manager_->EnableInputMethods(split_values);
+    return;
+  }
+
   // We should call the cros API even when |value| is empty, to disable default
   // config.
   SetLanguageConfigStringList(section, name, split_values);
@@ -694,15 +700,13 @@ void Preferences::UpdateAutoRepeatRate() {
   input_method::XKeyboard::SetAutoRepeatRate(rate);
 }
 
+// static
 void Preferences::UpdateVirturalKeyboardPreference(PrefService* prefs) {
   const DictionaryValue* virtual_keyboard_pref =
       prefs->GetDictionary(prefs::kLanguagePreferredVirtualKeyboard);
   DCHECK(virtual_keyboard_pref);
 
-  input_method::InputMethodManager* input_method_manager =
-      input_method::InputMethodManager::GetInstance();
-  input_method_manager->ClearAllVirtualKeyboardPreferences();
-
+  // TODO(yusukes): Clear all virtual keyboard preferences here.
   std::string url;
   std::vector<std::string> layouts_to_remove;
   for (DictionaryValue::key_iterator iter = virtual_keyboard_pref->begin_keys();
@@ -711,14 +715,7 @@ void Preferences::UpdateVirturalKeyboardPreference(PrefService* prefs) {
     const std::string& layout_id = *iter;  // e.g. "us", "handwriting-vk"
     if (!virtual_keyboard_pref->GetString(layout_id, &url))
       continue;
-    if (!input_method_manager->SetVirtualKeyboardPreference(
-            layout_id, GURL(url))) {
-      // Either |layout_id| or |url| is invalid. Remove the key from |prefs|
-      // later.
-      layouts_to_remove.push_back(layout_id);
-      LOG(ERROR) << "Removing invalid virtual keyboard pref: layout="
-                 << layout_id;
-    }
+    // TODO(yusukes): add the virtual keyboard preferences here.
   }
 
   // Remove invalid prefs.

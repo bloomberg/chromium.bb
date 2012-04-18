@@ -19,16 +19,9 @@ class ExtensionInputMethodEventRouter
 
   // Implements input_method::InputMethodManager::Observer:
   virtual void InputMethodChanged(
-      input_method::InputMethodManager* manager,
-      const input_method::InputMethodDescriptor& current_input_method,
-      size_t num_active_input_methods) OVERRIDE;
-  virtual void ActiveInputMethodsChanged(
-      input_method::InputMethodManager* manager,
-      const input_method::InputMethodDescriptor& current_input_method,
-      size_t num_active_input_methods) OVERRIDE;
-  virtual void PropertyListChanged(
-      input_method::InputMethodManager* manager,
-      const input_method::InputMethodPropertyList& properties) OVERRIDE;
+      input_method::InputMethodManager* manager) OVERRIDE;
+  virtual void InputMethodPropertyChanged(
+      input_method::InputMethodManager* manager) OVERRIDE {}
 
   // Returns input method name for the given XKB (X keyboard extensions in X
   // Window System) id.

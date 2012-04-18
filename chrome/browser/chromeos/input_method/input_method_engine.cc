@@ -54,7 +54,9 @@ class InputMethodEngineImpl
         context_id_(-1) {}
 
   ~InputMethodEngineImpl() {
-    input_method::InputMethodManager::GetInstance()->RemoveActiveIme(ibus_id_);
+    input_method::InputMethodManager* manager =
+        input_method::InputMethodManager::GetInstance();
+    manager->RemoveInputMethodExtension(ibus_id_);
   }
 
   bool Init(InputMethodEngine::Observer* observer,
@@ -179,7 +181,7 @@ bool InputMethodEngineImpl::Init(InputMethodEngine::Observer* observer,
 
   observer_ = observer;
   engine_id_ = engine_id;
-  manager->AddActiveIme(ibus_id_, engine_name, layouts, language);
+  manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, language);
   return true;
 }
 

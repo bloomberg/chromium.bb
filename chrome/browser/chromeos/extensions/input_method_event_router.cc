@@ -32,9 +32,7 @@ ExtensionInputMethodEventRouter::~ExtensionInputMethodEventRouter() {
 }
 
 void ExtensionInputMethodEventRouter::InputMethodChanged(
-    input_method::InputMethodManager *manager,
-    const input_method::InputMethodDescriptor &current_input_method,
-    size_t num_active_input_methods) {
+    input_method::InputMethodManager *manager) {
   Profile *profile = ProfileManager::GetDefaultProfile();
   ExtensionEventRouter *router = profile->GetExtensionEventRouter();
 
@@ -42,8 +40,8 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
     return;
 
   ListValue args;
-  StringValue *input_method_name =
-      new StringValue(GetInputMethodForXkb(current_input_method.id()));
+  StringValue *input_method_name = new StringValue(
+      GetInputMethodForXkb(manager->GetCurrentInputMethod().id()));
   args.Append(input_method_name);
   std::string args_json;
   base::JSONWriter::Write(&args, &args_json);
@@ -52,17 +50,6 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
   router->DispatchEventToRenderers(
       extension_event_names::kOnInputMethodChanged,
       args_json, profile, GURL());
-}
-
-void ExtensionInputMethodEventRouter::ActiveInputMethodsChanged(
-    input_method::InputMethodManager *manager,
-    const input_method::InputMethodDescriptor &current_input_method,
-    size_t num_active_input_methods) {
-}
-
-void ExtensionInputMethodEventRouter::PropertyListChanged(
-    input_method::InputMethodManager *manager,
-    const input_method::InputMethodPropertyList &current_ime_properties) {
 }
 
 std::string ExtensionInputMethodEventRouter::GetInputMethodForXkb(

@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
 #include "chrome/browser/chromeos/background/desktop_background_observer.h"
@@ -207,6 +208,8 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   if (!parameters().ui_task && chromeos::CrosLibrary::Get())
     chromeos::CrosLibrary::Shutdown();
 
+  chromeos::input_method::InputMethodManager::Shutdown();
+
   chromeos::CrosDBusService::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 
@@ -270,6 +273,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // Likewise, initialize the upgrade detector for Chrome OS. The upgrade
   // detector starts to monitor changes from the update engine.
   UpgradeDetectorChromeos::GetInstance()->Init();
+
+  // This function and SystemKeyEventListener use InputMethodManager.
+  chromeos::input_method::InputMethodManager::Initialize();
 
   if (base::chromeos::IsRunningOnChromeOS()) {
     // Enable Num Lock on X start up for http://crosbug.com/p/5795 and

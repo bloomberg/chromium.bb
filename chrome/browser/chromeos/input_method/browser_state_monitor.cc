@@ -45,7 +45,7 @@ BrowserStateMonitor::BrowserStateMonitor(InputMethodManager* manager)
                               content::NOTIFICATION_APP_TERMINATING,
                               content::NotificationService::AllSources());
 
-  // TODO(yusukes): Tell the initial state to the manager.
+  manager_->SetState(state_);
   manager_->AddObserver(this);
 }
 
@@ -53,17 +53,14 @@ BrowserStateMonitor::~BrowserStateMonitor() {
   manager_->RemoveObserver(this);
 }
 
+void BrowserStateMonitor::SetPrefServiceForTesting(PrefService* pref_service) {
+  pref_service_ = pref_service;
+}
+
 void BrowserStateMonitor::UpdateLocalState(
     const std::string& current_input_method) {
-  if (!InputMethodUtil::IsKeyboardLayout(current_input_method)) {
-    LOG(ERROR) << "Only keyboard layouts are supported: "
-               << current_input_method;
-    return;
-  }
-
   if (!g_browser_process || !g_browser_process->local_state())
     return;
-
   g_browser_process->local_state()->SetString(
       language_prefs::kPreferredKeyboardLayout,
       current_input_method);
@@ -80,22 +77,22 @@ void BrowserStateMonitor::UpdateUserPreferences(
   current_input_method_pref_.SetValue(current_input_method);
 }
 
-void BrowserStateMonitor::InputMethodChanged(
-    InputMethodManager* manager,
-    const InputMethodDescriptor& current_input_method,
-    size_t num_active_input_methods) {
+void BrowserStateMonitor::InputMethodChanged(InputMethodManager* manager) {
   DCHECK_EQ(manager_, manager);
+  const std::string current_input_method =
+    manager->GetCurrentInputMethod().id();
   // Save the new input method id depending on the current browser state.
   switch (state_) {
     case InputMethodManager::STATE_LOGIN_SCREEN:
-      UpdateLocalState(current_input_method.id());
+      if (!InputMethodUtil::IsKeyboardLayout(current_input_method)) {
+        LOG(ERROR) << "Only keyboard layouts are supported: "
+                   << current_input_method;
+        return;
+      }
+      UpdateLocalState(current_input_method);
       return;
     case InputMethodManager::STATE_BROWSER_SCREEN:
-      UpdateUserPreferences(current_input_method.id());
-      return;
-    case InputMethodManager::STATE_LOGGING_IN:
-      // Do not update the prefs since Preferences::NotifyPrefChanged() will
-      // notify the current/previous input method IDs to the manager.
+      UpdateUserPreferences(current_input_method);
       return;
     case InputMethodManager::STATE_LOCK_SCREEN:
       // We use a special set of input methods on the screen. Do not update.
@@ -105,6 +102,9 @@ void BrowserStateMonitor::InputMethodChanged(
   }
   NOTREACHED();
 }
+
+void BrowserStateMonitor::InputMethodPropertyChanged(
+    InputMethodManager* manager) {}
 
 void BrowserStateMonitor::Observe(
     int type,
@@ -118,8 +118,11 @@ void BrowserStateMonitor::Observe(
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
       // The user logged in, but the browser window for user session is not yet
       // ready. An initial input method hasn't been set to the manager.
-      // Note that the notification is also sent when Chrome crashes/restarts.
-      SetState(InputMethodManager::STATE_LOGGING_IN);
+      // Note that the notification is also sent when Chrome crashes/restarts
+      // as of writing, but it might be changed in the future (therefore we need
+      // to listen to NOTIFICATION_SESSION_STARTED as well.)
+      VLOG(1) << "Received chrome::NOTIFICATION_LOGIN_USER_CHANGED";
+      SetState(InputMethodManager::STATE_BROWSER_SCREEN);
       break;
     }
     case chrome::NOTIFICATION_SESSION_STARTED: {
@@ -128,6 +131,7 @@ void BrowserStateMonitor::Observe(
       // We should NOT call InitializePrefMembers() here since the notification
       // is sent in the PreProfileInit phase in case when Chrome crashes and
       // restarts.
+      VLOG(1) << "Received chrome::NOTIFICATION_SESSION_STARTED";
       SetState(InputMethodManager::STATE_BROWSER_SCREEN);
       break;
     }
@@ -145,33 +149,33 @@ void BrowserStateMonitor::Observe(
       break;
     }
   }
-
-  // TODO(yusukes): On R20, we should handle Chrome crash/restart correctly.
-  // Currently, a wrong input method could be selected when Chrome crashes and
-  // restarts.
+  // Note: browser notifications are sent in the following order.
   //
-  // Normal login sequence:
+  // Normal login:
   // 1. chrome::NOTIFICATION_LOGIN_USER_CHANGED is sent.
   // 2. Preferences::NotifyPrefChanged() is called. preload_engines (which
   //    might change the current input method) and current/previous input method
   //    are sent to the manager.
   // 3. chrome::NOTIFICATION_SESSION_STARTED is sent.
   //
-  // Chrome crash/restart (after logging in) sequence:
-  // 1. chrome::NOTIFICATION_LOGIN_USER_CHANGED is sent.
+  // Chrome crash/restart (after logging in):
+  // 1. chrome::NOTIFICATION_LOGIN_USER_CHANGED might be sent.
   // 2. chrome::NOTIFICATION_SESSION_STARTED is sent.
-  // 3. Preferences::NotifyPrefChanged() is called. preload_engines (which
-  //    might change the current input method) and current/previous input method
-  //    are sent to the manager. When preload_engines are sent to the manager,
-  //    UpdateUserPreferences() might be accidentally called.
+  // 3. Preferences::NotifyPrefChanged() is called. The same things as above
+  //    happen.
+  //
+  // We have to be careful not to overwrite both local and user prefs when
+  // preloaded engine is set. Note that it does not work to do nothing in
+  // InputMethodChanged() between chrome::NOTIFICATION_LOGIN_USER_CHANGED and
+  // chrome::NOTIFICATION_SESSION_STARTED because SESSION_STARTED is sent very
+  // early on Chrome crash/restart.
 }
 
 void BrowserStateMonitor::SetState(InputMethodManager::State new_state) {
   const InputMethodManager::State old_state = state_;
   state_ = new_state;
-  if (old_state != state_) {
-    // TODO(yusukes): Tell the new state to the manager.
-  }
+  if (old_state != state_)
+    manager_->SetState(state_);
 }
 
 void BrowserStateMonitor::InitializePrefMembers() {
@@ -179,7 +183,7 @@ void BrowserStateMonitor::InitializePrefMembers() {
     return;
 
   initialized_ = true;
-  PrefService* pref_service = GetPrefService();
+  PrefService* pref_service = pref_service_ ? pref_service_ : GetPrefService();
   DCHECK(pref_service);
   DCHECK_EQ(InputMethodManager::STATE_BROWSER_SCREEN, state_);
   previous_input_method_pref_.Init(

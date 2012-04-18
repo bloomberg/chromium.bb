@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cryptohome/mock_async_method_caller.h"
+#include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -128,6 +129,9 @@ class LoginUtilsTestBase : public TESTBASE,
     // DBusThreadManager is used from chromeos::ProxyConfigServiceImpl,
     // which is part of io_thread_state_.
     DBusThreadManager::InitializeForTesting(&mock_dbus_thread_manager_);
+
+    input_method::InputMethodManager::InitializeForTesting(
+        &mock_input_method_manager_);
 
     // Likewise, SessionManagerClient should also be initialized before
     // io_thread_state_.
@@ -363,6 +367,7 @@ class LoginUtilsTestBase : public TESTBASE,
   scoped_ptr<IOThread> io_thread_state_;
 
   MockDBusThreadManager mock_dbus_thread_manager_;
+  input_method::MockInputMethodManager mock_input_method_manager_;
   TestURLFetcherFactory test_url_fetcher_factory_;
 
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;

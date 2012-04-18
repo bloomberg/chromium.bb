@@ -386,8 +386,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   virtual void SwitchIME(const std::string& ime_id) OVERRIDE {
   }
 
-  virtual void ActivateIMEProperty(const std::string& key,
-                                   bool is_selection) OVERRIDE {
+  virtual void ActivateIMEProperty(const std::string& key) OVERRIDE {
   }
 
   virtual void GetMostRelevantNetworkIcon(NetworkIconInfo* info,
