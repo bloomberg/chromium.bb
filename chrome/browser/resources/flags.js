@@ -6,38 +6,13 @@
  * This variable structure is here to document the structure that the template
  * expects to correctly populate the page.
  */
-var flagsExperimentsDataFormat = {
-  flagsExperiments: [
-    {
-      internal_name: 'Experiment ID string',
-      name: 'Experiment Name',
-      description: 'description',
-      // enabled is only set if the experiment is single valued.
-      enabled: true,
-      // choices is only set if the experiment has multiple values.
-      choices: [
-        {
-          internal_name: 'Experiment ID string',
-          description: 'description',
-          selected: true
-        }
-      ],
-      supported: true,
-      supported_platforms: [
-        'Mac',
-        'Linux'
-      ],
-    }
-  ],
-  needsRestart: false
-};
 
 /**
  * Takes the |flagsExperimentsData| input argument which represents data about
  * the currently available experiments and populates the html jstemplate
  * with that data. It expects an object structure like the above.
- * @param {Object} flagsExperimentsData Information about available experiments
- *     in the format of the flagsExperimentsDataFormat object above.
+ * @param {Object} flagsExperimentsData Information about available experiments.
+ *     See returnFlagsExperiments() for the structure of this object.
  */
 function renderTemplate(flagsExperimentsData) {
   // This is the javascript code that processes the template:
@@ -96,7 +71,32 @@ function restartBrowser() {
  * Called by the WebUI to re-populate the page with data representing the
  * current state of installed experiments.
  * @param {Object} flagsExperimentsData Information about available experiments
- *     in the format of the flagsExperimentsDataFormat object above.
+ *     in the following format:
+ *   {
+ *     flagsExperiments: [
+ *       {
+ *         internal_name: 'Experiment ID string',
+ *         name: 'Experiment Name',
+ *         description: 'description',
+ *         // enabled is only set if the experiment is single valued.
+ *         enabled: true,
+ *         // choices is only set if the experiment has multiple values.
+ *         choices: [
+ *           {
+ *             internal_name: 'Experiment ID string',
+ *             description: 'description',
+ *             selected: true
+ *           }
+ *         ],
+ *         supported: true,
+ *         supported_platforms: [
+ *           'Mac',
+ *           'Linux'
+ *         ],
+ *       }
+ *     ],
+ *     needsRestart: false
+ *   }
  */
 function returnFlagsExperiments(flagsExperimentsData) {
   var bodyContainer = $('body-container');

@@ -3,81 +3,11 @@
 // found in the LICENSE file.
 
 /**
- * This variable structure is here to document the structure that the template
- * expects to correctly populate the page.
- */
-var pluginDataFormat = {
-  plugins: [
-    {
-      name: 'Group Name',
-      description: 'description',
-      version: 'version',
-      update_url: 'http://update/',
-      critical: true,
-      enabled: true,
-      plugin_files: [
-        {
-          path: '/blahblah/blahblah/MyCrappyPlugin.plugin',
-          name: 'MyCrappyPlugin',
-          version: '1.2.3',
-          description: 'My crappy plugin',
-          mimeTypes: [
-            { description: 'Foo Media',
-              fileExtensions: ['foo'],
-              mimeType: 'application/x-my-foo' },
-            { description: 'Bar Stuff',
-              fileExtensions: ['bar', 'baz'],
-              mimeType: 'application/my-bar' }
-          ],
-          enabledMode: 'enabledByUser'
-        },
-        {
-          path: '/tmp/MyFirst.plugin',
-          name: 'MyFirstPlugin',
-          version: '3.14r15926',
-          description: 'My first plugin',
-          mimeTypes: [
-            { description: 'New Guy Media',
-              fileExtensions: ['mfp'],
-              mimeType: 'application/x-my-first' }
-          ],
-          enabledMode: 'enabledByPolicy'
-        },
-        {
-          path: '/foobar/baz/YourGreatPlugin.plugin',
-          name: 'YourGreatPlugin',
-          version: '4.5',
-          description: 'Your great plugin',
-          mimeTypes: [
-            { description: 'Baz Stuff',
-              fileExtensions: ['baz'],
-              mimeType: 'application/x-your-baz' }
-          ],
-          enabledMode: 'disabledByUser'
-        },
-        {
-          path: '/foobiz/bar/HisGreatPlugin.plugin',
-          name: 'HisGreatPlugin',
-          version: '1.2',
-          description: 'His great plugin',
-          mimeTypes: [
-            { description: 'More baz Stuff',
-              fileExtensions: ['bor'],
-              mimeType: 'application/x-his-bor' }
-          ],
-          enabledMode: 'disabledByPolicy'
-        }
-      ]
-    }
-  ]
-};
-
-/**
  * Takes the |pluginsData| input argument which represents data about the
  * currently installed/running plugins and populates the html jstemplate with
  * that data. It expects an object structure like the above.
- * @param {Object} pluginsData Detailed info about installed plugins. See
- *     'var pluginDataFormat' above.
+ * @param {Object} pluginsData Detailed info about installed plugins. Same
+ *     expected format as returnPluginsData().
  */
 function renderTemplate(pluginsData) {
   // This is the javascript code that processes the template:
@@ -103,14 +33,80 @@ function loadShowDetailsFromPrefs(show_details) {
   $('expand').style.display =
       show_details ? 'none' : 'inline';
 
-  document.body.className = show_details ? 'show-tmi-mode' : 'hide-tmi-mode';
+  document.body.className = show_details ? 'show-in-tmi-mode' : 'hide-tmi-mode';
 }
 
 /**
  * Called by the web_ui_ to re-populate the page with data representing the
  * current state of installed plugins.
- * @param {Object} pluginsData Detailed info about installed plugins. See
- *     'var pluginDataFormat' above.
+ * @param {Object} pluginsData Detailed info about installed plugins. The
+ *     template expects each plugin's format to match the following structure to
+ *     correctly populate the page:
+ *   {
+ *     plugins: [
+ *       {
+ *         name: 'Group Name',
+ *         description: 'description',
+ *         version: 'version',
+ *         update_url: 'http://update/',
+ *         critical: true,
+ *         enabled: true,
+ *         plugin_files: [
+ *           {
+ *             path: '/blahblah/blahblah/MyCrappyPlugin.plugin',
+ *             name: 'MyCrappyPlugin',
+ *             version: '1.2.3',
+ *             description: 'My crappy plugin',
+ *             mimeTypes: [
+ *               { description: 'Foo Media',
+ *                 fileExtensions: ['foo'],
+ *                 mimeType: 'application/x-my-foo' },
+ *               { description: 'Bar Stuff',
+ *                 fileExtensions: ['bar', 'baz'],
+ *                 mimeType: 'application/my-bar' }
+ *             ],
+ *             enabledMode: 'enabledByUser'
+ *           },
+ *           {
+ *             path: '/tmp/MyFirst.plugin',
+ *             name: 'MyFirstPlugin',
+ *             version: '3.14r15926',
+ *             description: 'My first plugin',
+ *             mimeTypes: [
+ *               { description: 'New Guy Media',
+ *                 fileExtensions: ['mfp'],
+ *                 mimeType: 'application/x-my-first' }
+ *             ],
+ *             enabledMode: 'enabledByPolicy'
+ *           },
+ *           {
+ *             path: '/foobar/baz/YourGreatPlugin.plugin',
+ *             name: 'YourGreatPlugin',
+ *             version: '4.5',
+ *             description: 'Your great plugin',
+ *             mimeTypes: [
+ *               { description: 'Baz Stuff',
+ *                 fileExtensions: ['baz'],
+ *                 mimeType: 'application/x-your-baz' }
+ *             ],
+ *             enabledMode: 'disabledByUser'
+ *           },
+ *           {
+ *             path: '/foobiz/bar/HisGreatPlugin.plugin',
+ *             name: 'HisGreatPlugin',
+ *             version: '1.2',
+ *             description: 'His great plugin',
+ *             mimeTypes: [
+ *               { description: 'More baz Stuff',
+ *                 fileExtensions: ['bor'],
+ *                 mimeType: 'application/x-his-bor' }
+ *             ],
+ *             enabledMode: 'disabledByPolicy'
+ *           }
+ *         ]
+ *       }
+ *     ]
+ *   }
  */
 function returnPluginsData(pluginsData) {
   var bodyContainer = $('body-container');
@@ -231,7 +227,7 @@ function handleSetPluginAlwaysAllowed(el) {
 
 /**
  * @param {Object} plugin An object containing the information about a plugin.
- *     See 'var pluginDataFormat' above.
+ *     See returnPluginsData() for the format of this object.
  * @return {boolean} Whether the plugin's version should be displayed.
  */
 function shouldDisplayPluginVersion(plugin) {
@@ -240,7 +236,7 @@ function shouldDisplayPluginVersion(plugin) {
 
 /**
  * @param {Object} plugin An object containing the information about a plugin.
- *     See 'var pluginDataFormat' above.
+ *     See returnPluginsData() for the format of this object.
  * @return {boolean} Whether the plugin's description should be displayed.
  */
 function shouldDisplayPluginDescription(plugin) {
@@ -255,7 +251,7 @@ function shouldDisplayPluginDescription(plugin) {
 
 /**
  * @param {Object} plugin An object containing the information about a plugin.
- *     See 'var pluginDataFormat' above.
+ *     See returnPluginsData() for the format of this object.
  * @return {boolean} Whether the plugin is enabled.
  */
 function isPluginEnabled(plugin) {
