@@ -28,6 +28,21 @@ typedef base::Callback<void(
     const char* path,
     const base::DictionaryValue* properties)> NetworkPropertiesCallback;
 
+// Callback for network properties watchers.
+typedef base::Callback<void(
+    const std::string& path,
+    const std::string& key,
+    const base::Value& value)> NetworkPropertiesWatcherCallback;
+
+// Base class of signal watchers.
+class CrosNetworkWatcher {
+ public:
+  virtual ~CrosNetworkWatcher() {}
+
+ protected:
+  CrosNetworkWatcher() {}
+};
+
 // Enables/Disables Libcros network functions.
 void SetLibcrosNetworkFunctionsEnabled(bool enabled);
 
@@ -76,42 +91,27 @@ void CrosRequestCellularDataPlanUpdate(const char* modem_service_path);
 
 // Sets up monitoring of the PropertyChanged signal on the flimflam manager.
 // The provided |callback| will be called whenever a manager property changes.
-// |object| will be supplied as the first argument to the callback.
-NetworkPropertiesMonitor CrosMonitorNetworkManagerProperties(
-    MonitorPropertyGValueCallback callback,
-    void* object);
+CrosNetworkWatcher* CrosMonitorNetworkManagerProperties(
+    const NetworkPropertiesWatcherCallback& callback);
 
 // Similar to MonitorNetworkManagerProperties for a specified network service.
-NetworkPropertiesMonitor CrosMonitorNetworkServiceProperties(
-    MonitorPropertyGValueCallback callback,
-    const char* service_path,
-    void* object);
+CrosNetworkWatcher* CrosMonitorNetworkServiceProperties(
+    const NetworkPropertiesWatcherCallback& callback,
+    const std::string& service_path);
 
 // Similar to MonitorNetworkManagerProperties for a specified network device.
-NetworkPropertiesMonitor CrosMonitorNetworkDeviceProperties(
-    MonitorPropertyGValueCallback callback,
-    const char* device_path,
-    void* object);
-
-// Disconnects a PropertyChangeMonitor.
-void CrosDisconnectNetworkPropertiesMonitor(
-    NetworkPropertiesMonitor monitor);
+CrosNetworkWatcher* CrosMonitorNetworkDeviceProperties(
+    const NetworkPropertiesWatcherCallback& callback,
+    const std::string& device_path);
 
 // Sets up monitoring of the cellular data plan updates from Cashew.
-DataPlanUpdateMonitor CrosMonitorCellularDataPlan(
-    MonitorDataPlanCallback callback,
-    void* object);
-
-// Disconnects a DataPlanUpdateMonitor.
-void CrosDisconnectDataPlanUpdateMonitor(DataPlanUpdateMonitor monitor);
+CrosNetworkWatcher* CrosMonitorCellularDataPlan(
+    MonitorDataPlanCallback callback, void* object);
 
 // Similar to MonitorNetworkManagerProperties for a specified network device.
-SMSMonitor CrosMonitorSMS(const char* modem_device_path,
-                          MonitorSMSCallback callback,
-                          void* object);
-
-// Disconnects a SMSMonitor.
-void CrosDisconnectSMSMonitor(SMSMonitor monitor);
+CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,
+                                   MonitorSMSCallback callback,
+                                   void* object);
 
 // Connects to the service with the |service_path|.
 // Service parameters such as authentication must already be configured.

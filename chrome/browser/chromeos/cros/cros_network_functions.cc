@@ -19,6 +19,94 @@ namespace chromeos {
 
 namespace {
 
+// Used as a callback for chromeos::MonitorNetwork*Properties.
+void OnNetworkPropertiesChanged(void* object,
+                                const char* path,
+                                const char* key,
+                                const GValue* gvalue);
+
+// Class to watch network manager's properties with Libcros.
+class CrosNetworkManagerPropertiesWatcher : public CrosNetworkWatcher {
+ public:
+  CrosNetworkManagerPropertiesWatcher(
+      const NetworkPropertiesWatcherCallback& callback)
+      : callback_(callback),
+        monitor_(chromeos::MonitorNetworkManagerProperties(
+            &OnNetworkPropertiesChanged, &callback_)) {}
+  virtual ~CrosNetworkManagerPropertiesWatcher() {
+    chromeos::DisconnectNetworkPropertiesMonitor(monitor_);
+  }
+
+ private:
+  NetworkPropertiesWatcherCallback callback_;
+  NetworkPropertiesMonitor monitor_;
+};
+
+// Class to watch network service's properties with Libcros.
+class CrosNetworkServicePropertiesWatcher : public CrosNetworkWatcher {
+ public:
+  CrosNetworkServicePropertiesWatcher(
+      const NetworkPropertiesWatcherCallback& callback,
+      const std::string& service_path)
+      : callback_(callback),
+        monitor_(chromeos::MonitorNetworkServiceProperties(
+            &OnNetworkPropertiesChanged, service_path.c_str(), &callback_)) {}
+  virtual ~CrosNetworkServicePropertiesWatcher() {
+    chromeos::DisconnectNetworkPropertiesMonitor(monitor_);
+  }
+
+ private:
+  NetworkPropertiesWatcherCallback callback_;
+  NetworkPropertiesMonitor monitor_;
+};
+
+// Class to watch network device's properties with Libcros.
+class CrosNetworkDevicePropertiesWatcher : public CrosNetworkWatcher {
+ public:
+  CrosNetworkDevicePropertiesWatcher(
+      const NetworkPropertiesWatcherCallback& callback,
+      const std::string& device_path)
+      : callback_(callback),
+        monitor_(chromeos::MonitorNetworkDeviceProperties(
+            &OnNetworkPropertiesChanged, device_path.c_str(), &callback_)) {}
+  virtual ~CrosNetworkDevicePropertiesWatcher() {
+    chromeos::DisconnectNetworkPropertiesMonitor(monitor_);
+  }
+
+ private:
+  NetworkPropertiesWatcherCallback callback_;
+  NetworkPropertiesMonitor monitor_;
+};
+
+// Class to watch data plan update with Libcros.
+class CrosDataPlanUpdateWatcher : public CrosNetworkWatcher {
+ public:
+  CrosDataPlanUpdateWatcher(MonitorDataPlanCallback callback, void* object)
+      : monitor_(chromeos::MonitorCellularDataPlan(callback, object)) {}
+  virtual ~CrosDataPlanUpdateWatcher() {
+    chromeos::DisconnectDataPlanUpdateMonitor(monitor_);
+  }
+
+ private:
+  DataPlanUpdateMonitor monitor_;
+};
+
+// Class to watch sms Libcros.
+class CrosSMSWatcher : public CrosNetworkWatcher {
+ public:
+  CrosSMSWatcher(const std::string& modem_device_path,
+                 MonitorSMSCallback callback,
+                 void* object)
+      : monitor_(chromeos::MonitorSMS(modem_device_path.c_str(),
+                                      callback, object)) {}
+  virtual ~CrosSMSWatcher() {
+    chromeos::DisconnectSMSMonitor(monitor_);
+  }
+
+ private:
+  SMSMonitor monitor_;
+};
+
 // Does nothing. Used as a callback.
 void DoNothing(DBusMethodCallStatus call_status) {}
 
@@ -44,6 +132,19 @@ void OnRequestNetworkProperties(void* object,
       properties_dictionary);
 
   callback->Run(path, properties_dictionary);
+}
+
+// Used as a callback for chromeos::MonitorNetwork*Properties.
+void OnNetworkPropertiesChanged(void* object,
+                                const char* path,
+                                const char* key,
+                                const GValue* gvalue) {
+  if (key == NULL || gvalue == NULL || path == NULL || object == NULL)
+    return;
+  NetworkPropertiesWatcherCallback* callback =
+      static_cast<NetworkPropertiesWatcherCallback*>(object);
+  scoped_ptr<Value> value(ConvertGValueToValue(gvalue));
+  callback->Run(path, key, *value);
 }
 
 // A callback used to implement CrosRequest*Properties functions.
@@ -115,51 +216,32 @@ void CrosRequestCellularDataPlanUpdate(const char* modem_service_path) {
   chromeos::RequestCellularDataPlanUpdate(modem_service_path);
 }
 
-NetworkPropertiesMonitor CrosMonitorNetworkManagerProperties(
-    MonitorPropertyGValueCallback callback,
-    void* object) {
-  return chromeos::MonitorNetworkManagerProperties(callback, object);
+CrosNetworkWatcher* CrosMonitorNetworkManagerProperties(
+    const NetworkPropertiesWatcherCallback& callback) {
+  return new CrosNetworkManagerPropertiesWatcher(callback);
 }
 
-NetworkPropertiesMonitor CrosMonitorNetworkServiceProperties(
-    MonitorPropertyGValueCallback callback,
-    const char* service_path,
-    void* object) {
-  return chromeos::MonitorNetworkServiceProperties(
-      callback, service_path, object);
+CrosNetworkWatcher* CrosMonitorNetworkServiceProperties(
+    const NetworkPropertiesWatcherCallback& callback,
+    const std::string& service_path) {
+  return new CrosNetworkServicePropertiesWatcher(callback, service_path);
 }
 
-NetworkPropertiesMonitor CrosMonitorNetworkDeviceProperties(
-    MonitorPropertyGValueCallback callback,
-    const char* device_path,
-    void* object) {
-  return chromeos::MonitorNetworkDeviceProperties(
-      callback, device_path, object);
+CrosNetworkWatcher* CrosMonitorNetworkDeviceProperties(
+    const NetworkPropertiesWatcherCallback& callback,
+    const std::string& device_path) {
+  return new CrosNetworkDevicePropertiesWatcher(callback, device_path);
 }
 
-void CrosDisconnectNetworkPropertiesMonitor(
-    NetworkPropertiesMonitor monitor) {
-  DisconnectNetworkPropertiesMonitor(monitor);
+CrosNetworkWatcher* CrosMonitorCellularDataPlan(
+    MonitorDataPlanCallback callback, void* object) {
+  return new CrosDataPlanUpdateWatcher(callback, object);
 }
 
-DataPlanUpdateMonitor CrosMonitorCellularDataPlan(
-    MonitorDataPlanCallback callback,
-    void* object) {
-  return chromeos::MonitorCellularDataPlan(callback, object);
-}
-
-void CrosDisconnectDataPlanUpdateMonitor(DataPlanUpdateMonitor monitor) {
-  chromeos::DisconnectDataPlanUpdateMonitor(monitor);
-}
-
-SMSMonitor CrosMonitorSMS(const char* modem_device_path,
-                          MonitorSMSCallback callback,
-                          void* object) {
-  return chromeos::MonitorSMS(modem_device_path, callback, object);
-}
-
-void CrosDisconnectSMSMonitor(SMSMonitor monitor) {
-  chromeos::DisconnectSMSMonitor(monitor);
+CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,
+                                   MonitorSMSCallback callback,
+                                   void* object) {
+  return new CrosSMSWatcher(modem_device_path, callback, object);
 }
 
 void CrosRequestNetworkServiceConnect(const char* service_path,

@@ -9,7 +9,6 @@
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/gvalue_util.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros_settings.h"
@@ -43,9 +42,7 @@ std::string SafeString(const char* s) {
 ////////////////////////////////////////////////////////////////////////////
 
 NetworkLibraryImplCros::NetworkLibraryImplCros()
-    : NetworkLibraryImplBase(),
-      network_manager_monitor_(NULL),
-      data_plan_monitor_(NULL) {
+    : NetworkLibraryImplBase() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableLibcros)) {
     LOG(INFO) << "Using non Libcros network fucntions.";
     SetLibcrosNetworkFunctionsEnabled(false);
@@ -53,20 +50,8 @@ NetworkLibraryImplCros::NetworkLibraryImplCros()
 }
 
 NetworkLibraryImplCros::~NetworkLibraryImplCros() {
-  if (network_manager_monitor_)
-    CrosDisconnectNetworkPropertiesMonitor(network_manager_monitor_);
-  if (data_plan_monitor_)
-    CrosDisconnectDataPlanUpdateMonitor(data_plan_monitor_);
-  for (NetworkPropertiesMonitorMap::iterator iter =
-           montitored_networks_.begin();
-       iter != montitored_networks_.end(); ++iter) {
-    CrosDisconnectNetworkPropertiesMonitor(iter->second);
-  }
-  for (NetworkPropertiesMonitorMap::iterator iter =
-           montitored_devices_.begin();
-       iter != montitored_devices_.end(); ++iter) {
-    CrosDisconnectNetworkPropertiesMonitor(iter->second);
-  }
+  STLDeleteValues(&monitored_networks_);
+  STLDeleteValues(&monitored_devices_);
 }
 
 void NetworkLibraryImplCros::Init() {
@@ -76,11 +61,10 @@ void NetworkLibraryImplCros::Init() {
   // on the connman side, so the call should be quick.
   VLOG(1) << "Requesting initial network manager info from libcros.";
   CrosRequestNetworkManagerProperties(base::Bind(&NetworkManagerUpdate, this));
-  network_manager_monitor_ =
-      CrosMonitorNetworkManagerProperties(
-          &NetworkManagerStatusChangedHandler, this);
-  data_plan_monitor_ =
-      CrosMonitorCellularDataPlan(&DataPlanUpdateHandler, this);
+  network_manager_watcher_.reset(CrosMonitorNetworkManagerProperties(
+      base::Bind(&NetworkManagerStatusChangedHandler, this)));
+  data_plan_watcher_.reset(
+      CrosMonitorCellularDataPlan(&DataPlanUpdateHandler, this));
   // Always have at least one device obsever so that device updates are
   // always received.
   network_device_observer_.reset(new NetworkLibraryDeviceObserver());
@@ -95,55 +79,51 @@ bool NetworkLibraryImplCros::IsCros() const {
 
 void NetworkLibraryImplCros::MonitorNetworkStart(
     const std::string& service_path) {
-  if (montitored_networks_.find(service_path) == montitored_networks_.end()) {
-    chromeos::NetworkPropertiesMonitor monitor =
-        CrosMonitorNetworkServiceProperties(
-            &NetworkStatusChangedHandler, service_path.c_str(), this);
-    montitored_networks_[service_path] = monitor;
+  if (monitored_networks_.find(service_path) == monitored_networks_.end()) {
+    CrosNetworkWatcher* watcher = CrosMonitorNetworkServiceProperties(
+        base::Bind(&NetworkStatusChangedHandler, this), service_path);
+    monitored_networks_[service_path] = watcher;
   }
 }
 
 void NetworkLibraryImplCros::MonitorNetworkStop(
     const std::string& service_path) {
-  NetworkPropertiesMonitorMap::iterator iter =
-      montitored_networks_.find(service_path);
-  if (iter != montitored_networks_.end()) {
-    CrosDisconnectNetworkPropertiesMonitor(iter->second);
-    montitored_networks_.erase(iter);
+  NetworkWatcherMap::iterator iter = monitored_networks_.find(service_path);
+  if (iter != monitored_networks_.end()) {
+    delete iter->second;
+    monitored_networks_.erase(iter);
   }
 }
 
 void NetworkLibraryImplCros::MonitorNetworkDeviceStart(
     const std::string& device_path) {
-  if (montitored_devices_.find(device_path) == montitored_devices_.end()) {
-    chromeos::NetworkPropertiesMonitor monitor =
-        CrosMonitorNetworkDeviceProperties(
-            &NetworkDevicePropertyChangedHandler, device_path.c_str(), this);
-    montitored_devices_[device_path] = monitor;
+  if (monitored_devices_.find(device_path) == monitored_devices_.end()) {
+    CrosNetworkWatcher* watcher = CrosMonitorNetworkDeviceProperties(
+        base::Bind(&NetworkDevicePropertyChangedHandler, this), device_path);
+    monitored_devices_[device_path] = watcher;
   }
 }
 
 void NetworkLibraryImplCros::MonitorNetworkDeviceStop(
     const std::string& device_path) {
-  NetworkPropertiesMonitorMap::iterator iter =
-      montitored_devices_.find(device_path);
-  if (iter != montitored_devices_.end()) {
-    CrosDisconnectNetworkPropertiesMonitor(iter->second);
-    montitored_devices_.erase(iter);
+  NetworkWatcherMap::iterator iter = monitored_devices_.find(device_path);
+  if (iter != monitored_devices_.end()) {
+    delete iter->second;
+    monitored_devices_.erase(iter);
   }
 }
 
 // static callback
 void NetworkLibraryImplCros::NetworkStatusChangedHandler(
-    void* object, const char* path, const char* key, const GValue* gvalue) {
+    void* object,
+    const std::string& path,
+    const std::string& key,
+    const Value& value) {
   DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (key == NULL || gvalue == NULL || path == NULL || object == NULL)
-    return;
-  scoped_ptr<Value> value(ConvertGValueToValue(gvalue));
-  networklib->UpdateNetworkStatus(std::string(path), std::string(key), *value);
+  networklib->UpdateNetworkStatus(std::string(path), std::string(key), value);
 }
 
 void NetworkLibraryImplCros::UpdateNetworkStatus(
@@ -168,17 +148,17 @@ void NetworkLibraryImplCros::UpdateNetworkStatus(
 
 // static callback
 void NetworkLibraryImplCros::NetworkDevicePropertyChangedHandler(
-    void* object, const char* path, const char* key, const GValue* gvalue) {
+    void* object,
+    const std::string& path,
+    const std::string& key,
+    const Value& value) {
   DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  if (key == NULL || gvalue == NULL || path == NULL || object == NULL)
-    return;
-  scoped_ptr<Value> value(ConvertGValueToValue(gvalue));
   networklib->UpdateNetworkDeviceStatus(std::string(path),
                                         std::string(key),
-                                        *value);
+                                        value);
 }
 
 void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
@@ -710,22 +690,22 @@ void NetworkLibraryImplCros::SetIPConfig(const NetworkIPConfig& ipconfig) {
 
 // static
 void NetworkLibraryImplCros::NetworkManagerStatusChangedHandler(
-    void* object, const char* path, const char* key, const GValue* gvalue) {
+    void* object,
+    const std::string& path,
+    const std::string& key,
+    const Value& value) {
   DCHECK(CrosLibrary::Get()->libcros_loaded());
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
   DCHECK(networklib);
-  scoped_ptr<Value> value(ConvertGValueToValue(gvalue));
-  networklib->NetworkManagerStatusChanged(key, value.get());
+  networklib->NetworkManagerStatusChanged(key, &value);
 }
 
 // This processes all Manager update messages.
 void NetworkLibraryImplCros::NetworkManagerStatusChanged(
-    const char* key, const Value* value) {
+    const std::string& key, const Value* value) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::TimeTicks start = base::TimeTicks::Now();
-  if (!key)
-    return;
   VLOG(1) << "NetworkManagerStatusChanged: KEY=" << key;
   int index = NativeNetworkParser::property_mapper()->Get(key);
   switch (index) {

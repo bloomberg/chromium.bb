@@ -37,6 +37,28 @@ class MockChromeOSNetwork {
   MOCK_METHOD2(SetNetworkManagerPropertyGValue,
                void(const char* property,
                     const GValue* gvalue));
+  MOCK_METHOD2(MonitorNetworkManagerProperties,
+               NetworkPropertiesMonitor(MonitorPropertyGValueCallback callback,
+                                        void* object));
+  MOCK_METHOD3(MonitorNetworkServiceProperties,
+               NetworkPropertiesMonitor(MonitorPropertyGValueCallback callback,
+                                        const char* service_path,
+                                        void* object));
+  MOCK_METHOD3(MonitorNetworkDeviceProperties,
+               NetworkPropertiesMonitor(MonitorPropertyGValueCallback callback,
+                                        const char* device_path,
+                                        void* object));
+  MOCK_METHOD1(DisconnectNetworkPropertiesMonitor,
+               void(NetworkPropertiesMonitor monitor));
+  MOCK_METHOD2(MonitorCellularDataPlan,
+               DataPlanUpdateMonitor(MonitorDataPlanCallback callback,
+                                     void* object));
+  MOCK_METHOD1(DisconnectDataPlanUpdateMonitor,
+               void(DataPlanUpdateMonitor monitor));
+  MOCK_METHOD3(MonitorSMS, SMSMonitor(const char* modem_device_path,
+                                      MonitorSMSCallback callback,
+                                      void* object));
+  MOCK_METHOD1(DisconnectSMSMonitor, void(SMSMonitor monitor));
   MOCK_METHOD2(RequestNetworkManagerProperties,
                void(NetworkPropertiesGValueCallback callback, void* object));
   MOCK_METHOD3(RequestNetworkServiceProperties,

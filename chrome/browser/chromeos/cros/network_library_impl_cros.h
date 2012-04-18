@@ -75,13 +75,17 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
   //////////////////////////////////////////////////////////////////////////////
   // Calbacks.
-  static void NetworkStatusChangedHandler(
-      void* object, const char* path, const char* key, const GValue* value);
+  static void NetworkStatusChangedHandler(void* object,
+                                          const std::string& path,
+                                          const std::string& key,
+                                          const base::Value& value);
   void UpdateNetworkStatus(
       const std::string& path, const std::string& key, const Value& value);
 
-  static void NetworkDevicePropertyChangedHandler(
-      void* object, const char* path, const char* key, const GValue* gvalue);
+  static void NetworkDevicePropertyChangedHandler(void* object,
+                                                  const std::string& path,
+                                                  const std::string& key,
+                                                  const base::Value& value);
   void UpdateNetworkDeviceStatus(
       const std::string& path, const std::string& key, const Value& value);
   // Cellular specific updates. Returns false if update was ignored / reverted
@@ -117,8 +121,10 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
       const char* service_path,
       const base::DictionaryValue* properties);
 
-  static void NetworkManagerStatusChangedHandler(
-      void* object, const char* path, const char* key, const GValue* value);
+  static void NetworkManagerStatusChangedHandler(void* object,
+                                                 const std::string& path,
+                                                 const std::string& key,
+                                                 const base::Value& value);
   static void NetworkManagerUpdate(void* object,
                                    const char* manager_path,
                                    const base::DictionaryValue* properties);
@@ -144,7 +150,7 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
  private:
   // This processes all Manager update messages.
-  void NetworkManagerStatusChanged(const char* key, const Value* value);
+  void NetworkManagerStatusChanged(const std::string& key, const Value* value);
   void ParseNetworkManager(const DictionaryValue& dict);
   void UpdateTechnologies(const ListValue* technologies, int* bitfieldp);
   void UpdateAvailableTechnologies(const ListValue* technologies);
@@ -177,23 +183,22 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
         NetworkLibrary* cros, const NetworkDevice* device) OVERRIDE {}
   };
 
-  typedef std::map<std::string, chromeos::NetworkPropertiesMonitor>
-          NetworkPropertiesMonitorMap;
+  typedef std::map<std::string, CrosNetworkWatcher*> NetworkWatcherMap;
 
   // For monitoring network manager status changes.
-  NetworkPropertiesMonitor network_manager_monitor_;
+  scoped_ptr<CrosNetworkWatcher> network_manager_watcher_;
 
   // For monitoring data plan changes to the connected cellular network.
-  DataPlanUpdateMonitor data_plan_monitor_;
+  scoped_ptr<CrosNetworkWatcher> data_plan_watcher_;
 
   // Network device observer.
   scoped_ptr<NetworkLibraryDeviceObserver> network_device_observer_;
 
   // Map of monitored networks.
-  NetworkPropertiesMonitorMap montitored_networks_;
+  NetworkWatcherMap monitored_networks_;
 
   // Map of monitored devices.
-  NetworkPropertiesMonitorMap montitored_devices_;
+  NetworkWatcherMap monitored_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibraryImplCros);
 };

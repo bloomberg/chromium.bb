@@ -42,6 +42,61 @@ void CallMockSetNetworkManagerPropertyGValue(const char* property,
   g_mock_chromeos_network->SetNetworkManagerPropertyGValue(property, gvalue);
 }
 
+// Calls mock MonitorNetworkManagerProperties.
+NetworkPropertiesMonitor CallMockMonitorNetworkManagerProperties(
+    MonitorPropertyGValueCallback callback, void* object) {
+  return g_mock_chromeos_network->MonitorNetworkManagerProperties(callback,
+                                                                  object);
+}
+
+// Calls mock MonitorNetworkServiceProperties.
+NetworkPropertiesMonitor CallMockMonitorNetworkServiceProperties(
+    MonitorPropertyGValueCallback callback,
+    const char* service_path,
+    void* object) {
+  return g_mock_chromeos_network->MonitorNetworkServiceProperties(
+      callback, service_path, object);
+}
+
+// Calls mock MonitorNetworkDeviceProperties.
+NetworkPropertiesMonitor CallMockMonitorNetworkDeviceProperties(
+    MonitorPropertyGValueCallback callback,
+    const char* device_path,
+    void* object) {
+  return g_mock_chromeos_network->MonitorNetworkDeviceProperties(
+      callback, device_path, object);
+}
+
+// Calls mock DisconnectNetworkPropertiesMonitor.
+void CallMockDisconnectNetworkPropertiesMonitor(
+    NetworkPropertiesMonitor monitor) {
+  g_mock_chromeos_network->DisconnectNetworkPropertiesMonitor(monitor);
+}
+
+// Calls mock MonitorCellularDataPlan.
+DataPlanUpdateMonitor CallMockMonitorCellularDataPlan(
+    MonitorDataPlanCallback callback, void* object) {
+  return g_mock_chromeos_network->MonitorCellularDataPlan(callback, object);
+}
+
+// Calls mock DisconnectDataPlanUpdateMonitor.
+void CallMockDisconnectDataPlanUpdateMonitor(DataPlanUpdateMonitor monitor) {
+  g_mock_chromeos_network->DisconnectDataPlanUpdateMonitor(monitor);
+}
+
+// Calls mock MonitorSMS.
+SMSMonitor CallMockMonitorSMS(const char* modem_device_path,
+                              MonitorSMSCallback callback,
+                              void* object) {
+  return g_mock_chromeos_network->MonitorSMS(modem_device_path, callback,
+                                             object);
+}
+
+// Calls mock DisconnectSMSMonitor.
+void CallMockDisconnectSMSMonitor(SMSMonitor monitor) {
+  g_mock_chromeos_network->DisconnectSMSMonitor(monitor);
+}
+
 // Calls mock RequestNetworkManagerProperties.
 void CallMockRequestNetworkManagerProperties(
     NetworkPropertiesGValueCallback callback,
@@ -139,6 +194,19 @@ void MockChromeOSNetwork::Initialize() {
       &CallMockSetNetworkIPConfigPropertyGValue;
     chromeos::SetNetworkManagerPropertyGValue =
       &CallMockSetNetworkManagerPropertyGValue;
+    chromeos::MonitorNetworkManagerProperties =
+        &CallMockMonitorNetworkManagerProperties;
+    chromeos::MonitorNetworkServiceProperties =
+        &CallMockMonitorNetworkServiceProperties;
+    chromeos::MonitorNetworkDeviceProperties =
+        &CallMockMonitorNetworkDeviceProperties;
+    chromeos::DisconnectNetworkPropertiesMonitor =
+        &CallMockDisconnectNetworkPropertiesMonitor;
+    chromeos::MonitorCellularDataPlan = &CallMockMonitorCellularDataPlan;
+    chromeos::DisconnectDataPlanUpdateMonitor =
+        &CallMockDisconnectDataPlanUpdateMonitor;
+    chromeos::MonitorSMS = &CallMockMonitorSMS;
+    chromeos::DisconnectSMSMonitor = &CallMockDisconnectSMSMonitor;
     chromeos::RequestNetworkManagerProperties =
         &CallMockRequestNetworkManagerProperties;
     chromeos::RequestNetworkServiceProperties =
@@ -166,6 +234,14 @@ void MockChromeOSNetwork::Shutdown() {
     chromeos::SetNetworkDevicePropertyGValue = NULL;
     chromeos::SetNetworkIPConfigPropertyGValue = NULL;
     chromeos::SetNetworkManagerPropertyGValue = NULL;
+    chromeos::MonitorNetworkManagerProperties = NULL;
+    chromeos::MonitorNetworkServiceProperties = NULL;
+    chromeos::MonitorNetworkDeviceProperties = NULL;
+    chromeos::DisconnectNetworkPropertiesMonitor = NULL;
+    chromeos::MonitorCellularDataPlan = NULL;
+    chromeos::DisconnectDataPlanUpdateMonitor = NULL;
+    chromeos::MonitorSMS = NULL;
+    chromeos::DisconnectSMSMonitor = NULL;
     chromeos::RequestNetworkManagerProperties = NULL;
     chromeos::RequestNetworkServiceProperties = NULL;
     chromeos::RequestNetworkDeviceProperties = NULL;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,9 +17,6 @@ class Profile;
 
 namespace chromeos {
 
-struct SMS;
-class SMSHandler;
-
 // Performs monitoring of incoming SMS and shows system notifications.
 class SmsObserver : public NetworkLibrary::NetworkManagerObserver {
  public:
@@ -27,7 +24,7 @@ class SmsObserver : public NetworkLibrary::NetworkManagerObserver {
   virtual ~SmsObserver();
 
  private:
-  typedef std::map<std::string, SMSHandler*> ObserversMap;
+  typedef std::map<std::string, CrosNetworkWatcher*> ObserversMap;
 
   // NetworkLibrary:NetworkManagerObserver implementation:
   virtual void OnNetworkManagerChanged(NetworkLibrary* obj) OVERRIDE;

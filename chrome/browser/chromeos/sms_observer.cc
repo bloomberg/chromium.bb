@@ -44,7 +44,7 @@ void SmsObserver::UpdateObservers(NetworkLibrary* library) {
     }
     if (!found) {
       VLOG(1) << "Remove SMS monitor for " << it_observer->first;
-      CrosDisconnectSMSMonitor(it_observer->second);
+      delete it_observer->second;
       observers_.erase(it_observer++);
     } else {
       ++it_observer;
@@ -63,9 +63,9 @@ void SmsObserver::UpdateObservers(NetworkLibrary* library) {
     ObserversMap::iterator it_observer = observers_.find(device_path);
     if (it_observer == observers_.end()) {
       VLOG(1) << "Add SMS monitor for " << device_path;
-      chromeos::SMSMonitor monitor =
-          CrosMonitorSMS(device_path.c_str(), &StaticCallback, this);
-      observers_.insert(ObserversMap::value_type(device_path, monitor));
+      CrosNetworkWatcher* watcher =
+          CrosMonitorSMS(device_path, &StaticCallback, this);
+      observers_.insert(ObserversMap::value_type(device_path, watcher));
     } else {
       VLOG(1) << "Already has SMS monitor for " << device_path;
     }
@@ -80,7 +80,7 @@ void SmsObserver::DisconnectAll() {
   for (ObserversMap::iterator it = observers_.begin();
        it != observers_.end(); ++it) {
     VLOG(1) << "Remove SMS monitor for " << it->first;
-    CrosDisconnectSMSMonitor(it->second);
+    delete it->second;
   }
   observers_.clear();
 }

@@ -58,6 +58,43 @@ class MockNetworkPropertiesCallback {
   const base::DictionaryValue& expected_result_;
 };
 
+// A mock to check arguments of NetworkPropertiesWatcherCallback and ensure that
+// the callback is called exactly once.
+class MockNetworkPropertiesWatcherCallback {
+ public:
+  // Creates a NetworkPropertiesWatcherCallback with expectations.
+  static NetworkPropertiesWatcherCallback CreateCallback(
+      const std::string& expected_path,
+      const std::string& expected_key,
+      const base::Value& expected_value) {
+    MockNetworkPropertiesWatcherCallback* mock_callback =
+        new MockNetworkPropertiesWatcherCallback(expected_value);
+
+    EXPECT_CALL(*mock_callback, Run(expected_path, expected_key, _)).WillOnce(
+        Invoke(mock_callback,
+               &MockNetworkPropertiesWatcherCallback::CheckValue));
+
+    return base::Bind(&MockNetworkPropertiesWatcherCallback::Run,
+                      base::Owned(mock_callback));
+  }
+
+ private:
+  explicit MockNetworkPropertiesWatcherCallback(
+      const base::Value& expected_value) : expected_value_(expected_value) {}
+
+  MOCK_METHOD3(Run, void(const std::string& expected_path,
+                         const std::string& expected_key,
+                         const base::Value& value));
+
+  void CheckValue(const std::string& expected_path,
+                  const std::string& expected_key,
+                  const base::Value& value) {
+    EXPECT_TRUE(expected_value_.Equals(&value));
+  }
+
+  const base::Value& expected_value_;
+};
+
 }  // namespace
 
 // Test for cros_network_functions.cc with Libcros.
@@ -88,6 +125,20 @@ class CrosNetworkFunctionsLibcrosTest : public testing::Test {
   void OnSetNetworkManagerPropertyGValue(const char* property,
                                          const GValue* gvalue) {
     OnSetNetworkPropertyGValue("", property, gvalue);
+  }
+
+  // Handles call for MonitorNetworkManagerProperties
+  NetworkPropertiesMonitor OnMonitorNetworkManagerProperties(
+      MonitorPropertyGValueCallback callback, void* object) {
+    property_changed_callback_ = base::Bind(callback, object);
+    return NULL;
+  }
+
+  // Handles call for MonitorNetwork*Properties
+  NetworkPropertiesMonitor OnMonitorNetworkProperties(
+      MonitorPropertyGValueCallback callback, const char* path, void* object) {
+    property_changed_callback_ = base::Bind(callback, object);
+    return NULL;
   }
 
   // Handles call for ConfigureService.
@@ -142,6 +193,9 @@ class CrosNetworkFunctionsLibcrosTest : public testing::Test {
   ScopedGValue argument_gvalue_;
   ScopedGHashTable argument_ghash_table_;
   ScopedGHashTable result_ghash_table_;
+  base::Callback<void(const char* path,
+                      const char* key,
+                      const GValue* gvalue)> property_changed_callback_;
 };
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetNetworkServiceProperty) {
@@ -211,6 +265,123 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetNetworkManagerProperty) {
   const base::StringValue value(kString);
   CrosSetNetworkManagerProperty(property, value);
   EXPECT_EQ(kString, g_value_get_string(argument_gvalue_.get()));
+}
+
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosMonitorNetworkManagerProperties) {
+  const std::string path = "path";
+  const std::string key = "key";
+  const int kValue = 42;
+  const base::FundamentalValue value(kValue);
+
+  // Start monitoring.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              MonitorNetworkManagerProperties(_, _))
+      .WillOnce(Invoke(
+          this,
+          &CrosNetworkFunctionsLibcrosTest::OnMonitorNetworkManagerProperties));
+  CrosNetworkWatcher* watcher = CrosMonitorNetworkManagerProperties(
+      MockNetworkPropertiesWatcherCallback::CreateCallback(path, key, value));
+
+  // Call callback.
+  ScopedGValue gvalue(new GValue());
+  g_value_init(gvalue.get(), G_TYPE_INT);
+  g_value_set_int(gvalue.get(), kValue);
+  property_changed_callback_.Run(path.c_str(), key.c_str(), gvalue.get());
+
+  // Stop monitoring.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              DisconnectNetworkPropertiesMonitor(_)).Times(1);
+  delete watcher;
+}
+
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosMonitorNetworkServiceProperties) {
+  const std::string path = "path";
+  const std::string key = "key";
+  const int kValue = 42;
+  const base::FundamentalValue value(kValue);
+
+  // Start monitoring.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              MonitorNetworkServiceProperties(_, path.c_str(), _))
+      .WillOnce(Invoke(
+          this,
+          &CrosNetworkFunctionsLibcrosTest::OnMonitorNetworkProperties));
+  CrosNetworkWatcher* watcher = CrosMonitorNetworkServiceProperties(
+      MockNetworkPropertiesWatcherCallback::CreateCallback(path, key, value),
+      path);
+
+  // Call callback.
+  ScopedGValue gvalue(new GValue());
+  g_value_init(gvalue.get(), G_TYPE_INT);
+  g_value_set_int(gvalue.get(), kValue);
+  property_changed_callback_.Run(path.c_str(), key.c_str(), gvalue.get());
+
+  // Stop monitoring.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              DisconnectNetworkPropertiesMonitor(_)).Times(1);
+  delete watcher;
+}
+
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosMonitorNetworkDeviceProperties) {
+  const std::string path = "path";
+  const std::string key = "key";
+  const int kValue = 42;
+  const base::FundamentalValue value(kValue);
+
+  // Start monitoring.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              MonitorNetworkDeviceProperties(_, path.c_str(), _))
+      .WillOnce(Invoke(
+          this,
+          &CrosNetworkFunctionsLibcrosTest::OnMonitorNetworkProperties));
+  CrosNetworkWatcher* watcher = CrosMonitorNetworkDeviceProperties(
+      MockNetworkPropertiesWatcherCallback::CreateCallback(path, key, value),
+      path);
+
+  // Call callback.
+  ScopedGValue gvalue(new GValue());
+  g_value_init(gvalue.get(), G_TYPE_INT);
+  g_value_set_int(gvalue.get(), kValue);
+  property_changed_callback_.Run(path.c_str(), key.c_str(), gvalue.get());
+
+  // Stop monitoring.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              DisconnectNetworkPropertiesMonitor(_)).Times(1);
+  delete watcher;
+}
+
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosMonitorCellularDataPlan) {
+  MonitorDataPlanCallback callback =
+      reinterpret_cast<MonitorDataPlanCallback>(42);  // Dummy value.
+  void* object = reinterpret_cast<void*>(84);  // Dummy value.
+
+  // Start monitoring.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              MonitorCellularDataPlan(callback, object)).Times(1);
+  CrosNetworkWatcher* watcher = CrosMonitorCellularDataPlan(callback, object);
+
+  // Stop monitoring.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              DisconnectDataPlanUpdateMonitor(_)).Times(1);
+  delete watcher;
+}
+
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosMonitorSMS) {
+  const std::string modem_device_path = "/modem/device/path";
+  MonitorSMSCallback callback =
+      reinterpret_cast<MonitorSMSCallback>(42);  // Dummy value.
+  void* object = reinterpret_cast<void*>(84);  // Dummy value.
+
+  // Start monitoring.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              MonitorSMS(modem_device_path.c_str(), callback, object)).Times(1);
+  CrosNetworkWatcher* watcher = CrosMonitorSMS(
+      modem_device_path, callback, object);
+
+  // Stop monitoring.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              DisconnectSMSMonitor(_)).Times(1);
+  delete watcher;
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkManagerProperties) {
