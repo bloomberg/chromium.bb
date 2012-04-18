@@ -76,12 +76,13 @@ std::string FailedDatatypesHandler::GetErrorString() const {
   if (!startup_errors_.empty()) {
     message = "Sync configuration failed when starting ";
     message += GetErrorStringFromErrors(startup_errors_);
-    message += "\n";
+    message += ". ";
   }
 
   if (!runtime_errors_.empty()) {
     message += "The following errors were encountered at runtime: ";
     message += GetErrorStringFromErrors(runtime_errors_);
+    message += ".";
   }
   return message;
 }
