@@ -22,6 +22,7 @@ namespace internal {
 
 namespace {
 const int kIconPaddingLeft = 5;
+const int kPaddingAroundButtons = 5;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -196,6 +197,85 @@ void FixedSizedScrollView::OnMouseEntered(const views::MouseEvent& event) {
 void FixedSizedScrollView::OnPaintFocusBorder(gfx::Canvas* canvas) {
   // Do not paint the focus border.
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// TrayPopupTextButton
+
+TrayPopupTextButton::TrayPopupTextButton(views::ButtonListener* listener,
+                                         const string16& text)
+    : views::TextButton(listener, text),
+      hover_(false),
+      hover_bg_(views::Background::CreateSolidBackground(SkColorSetARGB(
+             10, 0, 0, 0))),
+      hover_border_(views::Border::CreateSolidBorder(1, kButtonStrokeColor)) {
+  set_alignment(ALIGN_CENTER);
+  set_border(NULL);
+  set_focusable(true);
+}
+
+TrayPopupTextButton::~TrayPopupTextButton() {}
+
+gfx::Size TrayPopupTextButton::GetPreferredSize() {
+  gfx::Size size = views::TextButton::GetPreferredSize();
+  size.Enlarge(0, 16);
+  return size;
+}
+
+void TrayPopupTextButton::OnMouseEntered(const views::MouseEvent& event) {
+  hover_ = true;
+  SchedulePaint();
+}
+
+void TrayPopupTextButton::OnMouseExited(const views::MouseEvent& event) {
+  hover_ = false;
+  SchedulePaint();
+}
+
+void TrayPopupTextButton::OnPaintBackground(gfx::Canvas* canvas) {
+  if (hover_)
+    hover_bg_->Paint(canvas, this);
+  else
+    views::TextButton::OnPaintBackground(canvas);
+}
+
+void TrayPopupTextButton::OnPaintBorder(gfx::Canvas* canvas) {
+  if (hover_)
+    hover_border_->Paint(*this, canvas);
+  else
+    views::TextButton::OnPaintBorder(canvas);
+}
+
+void TrayPopupTextButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+    canvas->DrawRect(gfx::Rect(1, 1, width() - 3, height() - 3),
+                     ash::kFocusBorderColor);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TrayPopupTextButtonContainer
+
+TrayPopupTextButtonContainer::TrayPopupTextButtonContainer() {
+  views::BoxLayout *layout = new
+    views::BoxLayout(views::BoxLayout::kHorizontal,
+        kPaddingAroundButtons,
+        kPaddingAroundButtons,
+        -1);
+  layout->set_spread_blank_space(true);
+  SetLayoutManager(layout);
+}
+
+TrayPopupTextButtonContainer::~TrayPopupTextButtonContainer() {
+}
+
+void TrayPopupTextButtonContainer::AddTextButton(TrayPopupTextButton* button) {
+  if (has_children() && !button->border()) {
+    button->set_border(views::Border::CreateSolidSidedBorder(0, 1, 0, 0,
+        kButtonStrokeColor));
+  }
+  AddChildView(button);
+}
+
 
 views::View* CreateDetailedHeaderEntry(int string_id,
                                        ViewClickListener* listener) {

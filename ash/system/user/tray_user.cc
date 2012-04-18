@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_views.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "skia/ext/image_operations.h"
@@ -28,78 +29,11 @@
 
 namespace {
 
-const int kPaddingAroundButtons = 5;
-
 const int kUserInfoHorizontalPadding = 14;
 const int kUserInfoVerticalPadding = 10;
 const int kUserInfoPaddingBetweenItems = 3;
 
 const int kUserIconSize = 27;
-
-const SkColor kButtonStrokeColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
-
-// A custom textbutton with some extra vertical padding, and custom border,
-// alignment and hover-effects.
-class TrayButton : public views::TextButton {
- public:
-  TrayButton(views::ButtonListener* listener, const string16& text)
-      : views::TextButton(listener, text),
-        hover_(false),
-        hover_bg_(views::Background::CreateSolidBackground(SkColorSetARGB(
-               10, 0, 0, 0))),
-        hover_border_(views::Border::CreateSolidBorder(1, kButtonStrokeColor)) {
-    set_alignment(ALIGN_CENTER);
-    set_border(NULL);
-    set_focusable(true);
-  }
-
-  virtual ~TrayButton() {}
-
- private:
-  // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    gfx::Size size = views::TextButton::GetPreferredSize();
-    size.Enlarge(0, 16);
-    return size;
-  }
-
-  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE {
-    hover_ = true;
-    SchedulePaint();
-  }
-
-  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE {
-    hover_ = false;
-    SchedulePaint();
-  }
-
-  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE {
-    if (hover_)
-      hover_bg_->Paint(canvas, this);
-    else
-      views::TextButton::OnPaintBackground(canvas);
-  }
-
-  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE {
-    if (hover_)
-      hover_border_->Paint(*this, canvas);
-    else
-      views::TextButton::OnPaintBorder(canvas);
-  }
-
-  void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE {
-    if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
-      canvas->DrawRect(gfx::Rect(1, 1, width() - 3, height() - 3),
-                       ash::kFocusBorderColor);
-    }
-  }
-
-  bool hover_;
-  scoped_ptr<views::Background> hover_bg_;
-  scoped_ptr<views::Border> hover_border_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrayButton);
-};
 
 }  // namespace
 
@@ -144,21 +78,14 @@ class UserView : public views::View,
     bool guest = login_ == ash::user::LOGGED_IN_GUEST;
     bool kiosk = login_ == ash::user::LOGGED_IN_KIOSK;
 
-    views::View* button_container = new views::View;
-    views::BoxLayout *layout = new
-        views::BoxLayout(views::BoxLayout::kHorizontal,
-            kPaddingAroundButtons,
-            kPaddingAroundButtons,
-            -1);
-    layout->set_spread_blank_space(true);
-    button_container->SetLayoutManager(layout);
-
+    TrayPopupTextButtonContainer* button_container =
+        new TrayPopupTextButtonContainer;
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
     if (!kiosk) {
-      shutdown_ = new TrayButton(this, bundle.GetLocalizedString(
+      shutdown_ = new TrayPopupTextButton(this, bundle.GetLocalizedString(
             IDS_ASH_STATUS_TRAY_SHUT_DOWN));
-      button_container->AddChildView(shutdown_);
+      button_container->AddTextButton(shutdown_);
     } else {
       views::Label* label = new views::Label;
       label->SetText(
@@ -169,18 +96,18 @@ class UserView : public views::View,
       button_container->AddChildView(label);
     }
 
-    signout_ = new TrayButton(this, bundle.GetLocalizedString(
+    signout_ = new TrayPopupTextButton(this, bundle.GetLocalizedString(
         guest ? IDS_ASH_STATUS_TRAY_EXIT_GUEST :
         kiosk ? IDS_ASH_STATUS_TRAY_EXIT_KIOSK :
                 IDS_ASH_STATUS_TRAY_SIGN_OUT));
     signout_->set_border(views::Border::CreateSolidSidedBorder(
           kiosk, 1, kiosk, kiosk || !guest, kButtonStrokeColor));
-    button_container->AddChildView(signout_);
+    button_container->AddTextButton(signout_);
 
     if (!guest && !kiosk) {
-      lock_ = new TrayButton(this, bundle.GetLocalizedString(
+      lock_ = new TrayPopupTextButton(this, bundle.GetLocalizedString(
             IDS_ASH_STATUS_TRAY_LOCK));
-      button_container->AddChildView(lock_);
+      button_container->AddTextButton(lock_);
     }
 
     AddChildView(button_container);
@@ -248,9 +175,9 @@ class UserView : public views::View,
   views::Label* email_;
   views::View* update_;
 
-  TrayButton* shutdown_;
-  TrayButton* signout_;
-  TrayButton* lock_;
+  TrayPopupTextButton* shutdown_;
+  TrayPopupTextButton* signout_;
+  TrayPopupTextButton* lock_;
 
   DISALLOW_COPY_AND_ASSIGN(UserView);
 };

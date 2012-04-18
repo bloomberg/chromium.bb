@@ -572,7 +572,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual bool GetCellularScanSupported() OVERRIDE {
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
-    DCHECK(crosnet->cellular_enabled());
     const NetworkDevice* cellular = crosnet->FindCellularDevice();
     return cellular ? cellular->support_network_scan() : false;
   }

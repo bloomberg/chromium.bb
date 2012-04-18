@@ -8,6 +8,7 @@
 
 #include "ui/gfx/font.h"
 #include "ui/gfx/size.h"
+#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/slider.h"
@@ -135,6 +136,42 @@ class FixedSizedScrollView : public views::ScrollView {
   gfx::Size fixed_size_;
 
   DISALLOW_COPY_AND_ASSIGN(FixedSizedScrollView);
+};
+
+// A custom textbutton with some extra vertical padding, and custom border,
+// alignment and hover-effects.
+class TrayPopupTextButton : public views::TextButton {
+ public:
+  TrayPopupTextButton(views::ButtonListener* listener, const string16& text);
+  virtual ~TrayPopupTextButton();
+
+ private:
+  // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
+
+  bool hover_;
+  scoped_ptr<views::Background> hover_bg_;
+  scoped_ptr<views::Border> hover_border_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrayPopupTextButton);
+};
+
+// A container for TrayPopupTextButtons (and possibly other views). This sets up
+// the TrayPopupTextButtons to paint their borders correctly.
+class TrayPopupTextButtonContainer : public views::View {
+ public:
+  TrayPopupTextButtonContainer();
+  virtual ~TrayPopupTextButtonContainer();
+
+  void AddTextButton(TrayPopupTextButton* button);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TrayPopupTextButtonContainer);
 };
 
 // Creates a container for the various detailed popups. Clicking on the view

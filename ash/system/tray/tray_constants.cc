@@ -25,6 +25,7 @@ const SkColor kHeaderHoverBackgroundColor = SkColorSetRGB(0xe1, 0xe1, 0xe1);
 
 const SkColor kBorderDarkColor = SkColorSetARGB(51, 0, 0, 0);
 const SkColor kBorderLightColor = SkColorSetRGB(0xeb, 0xeb, 0xeb);
+const SkColor kButtonStrokeColor = SkColorSetRGB(0xdd, 0xdd, 0xdd);
 
 const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 
