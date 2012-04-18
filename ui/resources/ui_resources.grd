@@ -327,6 +327,10 @@
         <include name="IDR_AURA_UBER_TRAY_IME" file="aura/status_ime.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_UPDATE" file="aura/status_update.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="aura/status_update_dark.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="aura/status_wifi_enabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="aura/status_wifi_disabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED" file="aura/status_cellular_enabled.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED" file="aura/status_cellular_disabled.png" type="BINDATA" />
 
         <include name="IDR_AURA_SWITCH_MONITOR" file="aura/switch_monitor.png" type="BINDATA" />
         <include name="IDR_OAK" file="oak.png" type="BINDATA"/>

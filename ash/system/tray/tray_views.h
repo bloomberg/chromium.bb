@@ -69,7 +69,8 @@ class ViewClickListener {
 };
 
 // A view that changes background color on hover, and triggers a callback in the
-// associated ViewClickListener on click.
+// associated ViewClickListener on click. The view can also be forced to
+// maintain a fixed height.
 class HoverHighlightView : public ActionableView {
  public:
   explicit HoverHighlightView(ViewClickListener* listener);
@@ -89,12 +90,14 @@ class HoverHighlightView : public ActionableView {
 
   void set_highlight_color(SkColor color) { highlight_color_ = color; }
   void set_default_color(SkColor color) { default_color_ = color; }
+  void set_fixed_height(int height) { fixed_height_ = height; }
 
  private:
   // Overridden from ActionableView.
   virtual bool PerformAction(const views::Event& event) OVERRIDE;
 
   // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
@@ -105,6 +108,7 @@ class HoverHighlightView : public ActionableView {
   string16 accessible_name_;
   SkColor highlight_color_;
   SkColor default_color_;
+  int fixed_height_;
   bool hover_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);

@@ -79,6 +79,7 @@ HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
     : listener_(listener),
       highlight_color_(kHoverBackgroundColor),
       default_color_(0),
+      fixed_height_(0),
       hover_(false) {
   set_notify_enter_exit_on_child(true);
 }
@@ -126,6 +127,13 @@ bool HoverHighlightView::PerformAction(const views::Event& event) {
     return false;
   listener_->ClickedOn(this);
   return true;
+}
+
+gfx::Size HoverHighlightView::GetPreferredSize() {
+  gfx::Size size = ActionableView::GetPreferredSize();
+  if (fixed_height_)
+    size.set_height(fixed_height_);
+  return size;
 }
 
 void HoverHighlightView::OnMouseEntered(const views::MouseEvent& event) {
@@ -193,6 +201,7 @@ views::View* CreateDetailedHeaderEntry(int string_id,
                                        ViewClickListener* listener) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   HoverHighlightView* container = new HoverHighlightView(listener);
+  container->set_fixed_height(kTrayPopupItemHeight);
   container->SetLayoutManager(new
       views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3, kIconPaddingLeft));
   views::ImageView* back =
