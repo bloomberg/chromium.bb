@@ -363,6 +363,8 @@
         '../third_party/skia/src/gpu/GrBufferAllocPool.cpp',
         '../third_party/skia/src/gpu/GrBufferAllocPool.h',
         '../third_party/skia/src/gpu/GrClip.cpp',
+        '../third_party/skia/src/gpu/GrClipMaskManager.cpp',
+        '../third_party/skia/src/gpu/GrClipMaskManager.h',
         '../third_party/skia/src/gpu/GrContext.cpp',
         '../third_party/skia/src/gpu/GrDefaultPathRenderer.cpp',
         '../third_party/skia/src/gpu/GrDefaultPathRenderer.h',
