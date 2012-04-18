@@ -95,6 +95,12 @@ enum shell_surface_type {
 	SHELL_SURFACE_POPUP
 };
 
+struct ping_timer {
+	struct wl_event_source *source;
+	uint32_t pong_received;
+	uint32_t serial;
+};
+
 struct shell_surface {
 	struct wl_resource resource;
 
@@ -106,6 +112,7 @@ struct shell_surface {
 	enum shell_surface_type type;
 	int32_t saved_x, saved_y;
 	bool saved_position_valid;
+	int unresponsive;
 
 	struct {
 		struct weston_transform transform;
@@ -127,6 +134,8 @@ struct shell_surface {
 		uint32_t framerate;
 		struct weston_surface *black_surface;
 	} fullscreen;
+
+	struct ping_timer *ping_timer;
 
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
@@ -283,6 +292,69 @@ static const struct wl_pointer_grab_interface move_grab_interface = {
 	move_grab_motion,
 	move_grab_button,
 };
+
+static int
+ping_timeout_handler(void *data)
+{
+	struct shell_surface *shsurf = data;
+
+	if (!shsurf || !shsurf->ping_timer)
+		return 1;
+
+	if (shsurf->ping_timer->pong_received) {
+		free(shsurf->ping_timer);
+		shsurf->ping_timer = NULL;
+	} else {
+		/* Client is not responding */
+		shsurf->unresponsive = 1;
+	}
+
+	return 1;
+}
+
+static void
+ping_handler(struct weston_surface *surface, uint32_t serial)
+{
+	struct shell_surface *shsurf;
+	shsurf = get_shell_surface(surface);
+	struct wl_event_loop *loop;
+	int ping_timeout = 15000;
+
+	if (!shsurf)
+		return;
+
+	if (!shsurf->ping_timer) {
+		shsurf->ping_timer = malloc(sizeof shsurf->ping_timer);
+		if (!shsurf->ping_timer)
+			return;
+
+		shsurf->ping_timer->serial = serial;
+		shsurf->ping_timer->pong_received = 0;
+		loop = wl_display_get_event_loop(surface->compositor->wl_display);
+		shsurf->ping_timer->source =
+			wl_event_loop_add_timer(loop, ping_timeout_handler, shsurf);
+		wl_event_source_timer_update(shsurf->ping_timer->source, ping_timeout);
+
+		wl_shell_surface_send_ping(&shsurf->resource, serial);
+	}
+}
+
+static void
+shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
+							uint32_t serial)
+{
+	struct shell_surface *shsurf = resource->data;
+
+	if (!shsurf || !shsurf->ping_timer)
+		return;
+
+	if (shsurf->ping_timer->serial == serial) {
+		shsurf->ping_timer->pong_received = 1;
+		shsurf->unresponsive = 0;
+		free(shsurf->ping_timer);
+		shsurf->ping_timer = NULL;
+	}
+}
 
 static int
 weston_surface_move(struct weston_surface *es,
@@ -876,6 +948,7 @@ shell_surface_set_popup(struct wl_client *client,
 }
 
 static const struct wl_shell_surface_interface shell_surface_implementation = {
+	shell_surface_pong,
 	shell_surface_move,
 	shell_surface_resize,
 	shell_surface_set_toplevel,
@@ -907,6 +980,8 @@ destroy_shell_surface(struct wl_resource *resource)
 	 */
 	wl_list_remove(&shsurf->surface_destroy_listener.link);
 	shsurf->surface->configure = NULL;
+	if (shsurf->ping_timer)
+		free(shsurf->ping_timer);
 
 	wl_list_remove(&shsurf->link);
 	free(shsurf);
@@ -970,6 +1045,8 @@ shell_get_shell_surface(struct wl_client *client,
 
 	surface->configure = shell_surface_configure;
 
+	shsurf->unresponsive = 0;
+
 	shsurf->resource.destroy = destroy_shell_surface;
 	shsurf->resource.object.id = id;
 	shsurf->resource.object.interface = &wl_shell_surface_interface;
@@ -983,6 +1060,7 @@ shell_get_shell_surface(struct wl_client *client,
 	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 	shsurf->fullscreen.framerate = 0;
 	shsurf->fullscreen.black_surface = NULL;
+	shsurf->ping_timer = NULL;
 	wl_list_init(&shsurf->fullscreen.transform.link);
 
 	shsurf->surface_destroy_listener.notify = shell_handle_surface_destroy;
@@ -2225,11 +2303,21 @@ debug_repaint_binding(struct wl_input_device *device, uint32_t time,
 static void
 shell_destroy(struct wl_listener *listener, void *data)
 {
+	struct weston_surface *surface;
+	struct shell_surface *shsurf;
 	struct desktop_shell *shell =
 		container_of(listener, struct desktop_shell, destroy_listener);
 
 	if (shell->child.client)
 		wl_client_destroy(shell->child.client);
+
+	wl_list_for_each(surface, &shell->compositor->surface_list, link) {
+		shsurf = get_shell_surface(surface);
+		if (!shsurf)
+			continue;
+		if (shsurf->ping_timer)
+			free(shsurf->ping_timer);
+	}
 
 	free(shell->screensaver.path);
 	free(shell);
@@ -2256,6 +2344,7 @@ shell_init(struct weston_compositor *ec)
 	wl_signal_add(&ec->lock_signal, &shell->lock_listener);
 	shell->unlock_listener.notify = unlock;
 	wl_signal_add(&ec->unlock_signal, &shell->unlock_listener);
+	ec->ping_handler = ping_handler;
 
 	wl_list_init(&shell->backgrounds);
 	wl_list_init(&shell->panels);

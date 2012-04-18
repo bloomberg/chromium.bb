@@ -1947,6 +1947,13 @@ widget_schedule_resize(struct widget *widget, int32_t width, int32_t height)
 }
 
 static void
+handle_ping(void *data, struct wl_shell_surface *shell_surface,
+							uint32_t serial)
+{
+	wl_shell_surface_pong(shell_surface, serial);
+}
+
+static void
 handle_configure(void *data, struct wl_shell_surface *shell_surface,
 		 uint32_t edges, int32_t width, int32_t height)
 {
@@ -1984,6 +1991,7 @@ handle_popup_done(void *data, struct wl_shell_surface *shell_surface)
 }
 
 static const struct wl_shell_surface_listener shell_surface_listener = {
+	handle_ping,
 	handle_configure,
 	handle_popup_done
 };
