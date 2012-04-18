@@ -854,6 +854,9 @@ const char kNoExperiments[]                 = "no-experiments";
 // you're for some reason tempted to pass them both.
 const char kNoFirstRun[]                    = "no-first-run";
 
+// Starts the browser outside of managed mode.
+const char kNoManaged[]                     = "no-managed";
+
 // Don't send hyperlink auditing pings
 const char kNoPings[]                       = "no-pings";
 

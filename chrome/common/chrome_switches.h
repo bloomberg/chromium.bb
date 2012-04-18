@@ -232,6 +232,7 @@ extern const char kNoDisplayingInsecureContent[];
 extern const char kNoEvents[];
 extern const char kNoExperiments[];
 extern const char kNoFirstRun[];
+extern const char kNoManaged[];
 extern const char kNoProxyServer[];
 extern const char kNoPings[];
 extern const char kNoProtector[];

@@ -42,6 +42,14 @@ enum NotificationType {
   // valid for the duration of this call.
   NOTIFICATION_BROWSER_CLOSED,
 
+  // This message is sent when closing a browser has been cancelled, either by
+  // the user cancelling a beforeunload dialog, or IsClosingPermitted()
+  // disallowing closing. This notification implies that no BROWSER_CLOSING or
+  // BROWSER_CLOSED notification will be sent.
+  // The source is a Source<Browser> containing the affected browser. No details
+  // are expected.
+  NOTIFICATION_BROWSER_CLOSE_CANCELLED,
+
   // Indicates that a top window has been closed.  The source is the HWND
   // that was closed, no details are expected.
   NOTIFICATION_WINDOW_CLOSED,

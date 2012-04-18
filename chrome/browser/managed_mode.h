@@ -5,25 +5,75 @@
 #ifndef CHROME_BROWSER_MANAGED_MODE_H_
 #define CHROME_BROWSER_MANAGED_MODE_H_
 
+#include <set>
+#include <vector>
+
+#include "base/callback.h"
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+
+class Browser;
+template<typename T>
+struct DefaultSingletonTraits;
 class PrefService;
 class Profile;
 
-class ManagedMode {
+class ManagedMode : public BrowserList::Observer,
+                    public content::NotificationObserver {
  public:
+  typedef base::Callback<void(bool)> EnterCallback;
+
   static void RegisterPrefs(PrefService* prefs);
   static bool IsInManagedMode();
 
-  // Returns true iff managed mode was entered sucessfully.
-  static bool EnterManagedMode(Profile* profile);
+  // Calls |callback| with the argument true iff managed mode was entered
+  // sucessfully.
+  static void EnterManagedMode(Profile* profile, const EnterCallback& callback);
   static void LeaveManagedMode();
 
+  // BrowserList::Observer implementation:
+  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
+
+  // content::NotificationObserver implementation:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+ protected:
+  ManagedMode();
+  virtual ~ManagedMode();
+  void EnterManagedModeImpl(Profile* profile, const EnterCallback& callback);
+
  private:
+  friend struct DefaultSingletonTraits<ManagedMode>;
+  friend class Singleton<ManagedMode>;
+
+  static ManagedMode* GetInstance();
+
+  void LeaveManagedModeImpl();
+
+  void FinalizeEnter(bool result);
+
   // Platform-specific methods that confirm whether we can enter or leave
   // managed mode.
-  static bool PlatformConfirmEnter();
-  static bool PlatformConfirmLeave();
+  virtual bool PlatformConfirmEnter();
+  virtual bool PlatformConfirmLeave();
 
-  static void SetInManagedMode(bool in_managed_mode);
+  virtual bool IsInManagedModeImpl();
+  virtual void SetInManagedMode(bool in_managed_mode);
+
+  content::NotificationRegistrar registrar_;
+
+  // The managed profile. This is non-NULL only while we're entering
+  // managed mode.
+  const Profile* managed_profile_;
+  std::set<const Browser*> browsers_to_close_;
+  std::vector<EnterCallback> callbacks_;
 };
 
 #endif  // CHROME_BROWSER_MANAGED_MODE_H_

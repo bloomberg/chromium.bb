@@ -5307,6 +5307,11 @@ void Browser::CancelWindowClose() {
   tabs_needing_unload_fired_.clear();
   is_attempting_to_close_browser_ = false;
 
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
+      content::Source<Browser>(this),
+      content::NotificationService::NoDetails());
+
   // Inform TabCloseableStateWatcher that closing of window has been canceled.
   TabCloseableStateWatcher* watcher =
       g_browser_process->tab_closeable_state_watcher();

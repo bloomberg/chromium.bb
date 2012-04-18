@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/extensions/extension_preference_api_constants.h"
 
@@ -34,16 +35,15 @@ bool GetManagedModeFunction::RunImpl() {
 EnterManagedModeFunction::~EnterManagedModeFunction() { }
 
 bool EnterManagedModeFunction::RunImpl() {
-  bool confirmed = true;
-  if (!ManagedMode::IsInManagedMode()) {
-    // TODO(pamg): WIP. Show modal password dialog and save hashed password. Set
-    //     |confirmed| to false if user cancels dialog.
-
-    confirmed = ManagedMode::EnterManagedMode(profile());
-  }
-
-  scoped_ptr<DictionaryValue> result(new DictionaryValue);
-  result->SetBoolean(kEnterSuccessKey, confirmed);
-  result_.reset(result.release());
+  ManagedMode::EnterManagedMode(
+      profile(),
+      base::Bind(&EnterManagedModeFunction::SendResult, this));
   return true;
+}
+
+void EnterManagedModeFunction::SendResult(bool success) {
+  scoped_ptr<DictionaryValue> result(new DictionaryValue);
+  result->SetBoolean(kEnterSuccessKey, success);
+  result_.reset(result.release());
+  SendResponse(true);
 }
