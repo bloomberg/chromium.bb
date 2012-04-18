@@ -50,9 +50,8 @@ void RendererWebColorChooserImpl::Open(SkColor initial_color) {
                                         initial_color));
 }
 
-void RendererWebColorChooserImpl::OnDidChooseColorResponse(
-    int color_chooser_id,
-    const SkColor& color) {
+void RendererWebColorChooserImpl::OnDidChooseColorResponse(int color_chooser_id,
+                                                           SkColor color) {
   DCHECK(identifier_ == color_chooser_id);
 
   client_->didChooseColor(static_cast<WebKit::WebColor>(color));

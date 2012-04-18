@@ -359,7 +359,7 @@ class WebContents : public PageNavigator {
 
   // Called when the user has selected a color in the color chooser.
   virtual void DidChooseColorInColorChooser(int color_chooser_id,
-                                            const SkColor&) = 0;
+                                            SkColor color) = 0;
 
   // Called when the color chooser has ended.
   virtual void DidEndColorChooser(int color_chooser_id) = 0;

@@ -29,7 +29,6 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
@@ -48,6 +47,7 @@
 #include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -1407,7 +1407,7 @@ bool WebContentsImpl::HasOpener() const {
 }
 
 void WebContentsImpl::DidChooseColorInColorChooser(int color_chooser_id,
-                                                   const SkColor& color) {
+                                                   SkColor color) {
   GetRenderViewHost()->Send(new ViewMsg_DidChooseColorResponse(
       GetRenderViewHost()->GetRoutingID(), color_chooser_id, color));
 }
@@ -1755,7 +1755,7 @@ void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
 }
 
 void WebContentsImpl::OnOpenColorChooser(int color_chooser_id,
-                                         const SkColor& color) {
+                                         SkColor color) {
   color_chooser_ = delegate_->OpenColorChooser(this, color_chooser_id, color);
 }
 
@@ -1766,7 +1766,7 @@ void WebContentsImpl::OnEndColorChooser(int color_chooser_id) {
 }
 
 void WebContentsImpl::OnSetSelectedColorInColorChooser(int color_chooser_id,
-                                                       const SkColor& color) {
+                                                       SkColor color) {
   if (color_chooser_ &&
       color_chooser_id == color_chooser_->identifier())
     color_chooser_->SetSelectedColor(color);

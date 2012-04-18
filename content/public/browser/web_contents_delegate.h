@@ -321,7 +321,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Called when color chooser should open. Returns the opened color chooser.
   virtual content::ColorChooser* OpenColorChooser(WebContents* web_contents,
                                                   int color_chooser_id,
-                                                  const SkColor& color);
+                                                  SkColor color);
 
   virtual void DidEndColorChooser() {}
 

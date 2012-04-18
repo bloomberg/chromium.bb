@@ -4182,7 +4182,7 @@ content::JavaScriptDialogCreator* Browser::GetJavaScriptDialogCreator() {
 
 content::ColorChooser* Browser::OpenColorChooser(WebContents* tab,
                                                  int color_chooser_id,
-                                                 const SkColor& color) {
+                                                 SkColor color) {
 #if defined(OS_WIN)
   // On Windows, only create a color chooser if one doesn't exist, because we
   // can't close the old color chooser dialog.

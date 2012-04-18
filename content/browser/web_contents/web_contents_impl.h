@@ -231,7 +231,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool GotResponseToLockMouseRequest(bool allowed) OVERRIDE;
   virtual bool HasOpener() const OVERRIDE;
   virtual void DidChooseColorInColorChooser(int color_chooser_id,
-                                            const SkColor&) OVERRIDE;
+                                            SkColor color) OVERRIDE;
   virtual void DidEndColorChooser(int color_chooser_id) OVERRIDE;
 
   // Implementation of PageNavigator.
@@ -457,11 +457,9 @@ class CONTENT_EXPORT WebContentsImpl
                    bool final_update);
   void OnCrashedPlugin(const FilePath& plugin_path);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
-  void OnOpenColorChooser(int color_chooser_id,
-                          const SkColor& color);
+  void OnOpenColorChooser(int color_chooser_id, SkColor color);
   void OnEndColorChooser(int color_chooser_id);
-  void OnSetSelectedColorInColorChooser(int color_chooser_id,
-                                        const SkColor& color);
+  void OnSetSelectedColorInColorChooser(int color_chooser_id, SkColor color);
   void OnPepperPluginHung(int plugin_child_id,
                           const FilePath& path,
                           bool is_hung);

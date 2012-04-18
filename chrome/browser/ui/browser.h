@@ -1041,10 +1041,9 @@ class Browser : public TabHandlerDelegate,
   virtual void DidNavigateToPendingEntry(content::WebContents* tab) OVERRIDE;
   virtual content::JavaScriptDialogCreator*
       GetJavaScriptDialogCreator() OVERRIDE;
-  virtual content::ColorChooser* OpenColorChooser(
-      content::WebContents* tab,
-      int color_chooser_id,
-      const SkColor& color) OVERRIDE;
+  virtual content::ColorChooser* OpenColorChooser(content::WebContents* tab,
+                                                  int color_chooser_id,
+                                                  SkColor color) OVERRIDE;
   virtual void DidEndColorChooser() OVERRIDE;
   virtual void RunFileChooser(
       content::WebContents* tab,
