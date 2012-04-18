@@ -294,6 +294,20 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
       memcpy(target, data, (frame_info_.width * frame_info_.height * 3) / 2);
       break;
     }
+    case media::VideoCaptureDevice::kYV12: {
+      const uint8* ptr = data;
+      memcpy(yplane, ptr, (frame_info_.width * frame_info_.height));
+      ptr += frame_info_.width * frame_info_.height;
+      memcpy(vplane, ptr, (frame_info_.width * frame_info_.height) >> 2);
+      ptr += (frame_info_.width * frame_info_.height) >> 2;
+      memcpy(uplane, ptr, (frame_info_.width * frame_info_.height) >> 2);
+      break;
+    }
+    case media::VideoCaptureDevice::kNV21: {
+      media::ConvertNV21ToYUV(data, yplane, uplane, vplane, frame_info_.width,
+                              frame_info_.height);
+      break;
+    }
     case media::VideoCaptureDevice::kYUY2: {
       media::ConvertYUY2ToYUV(data, yplane, uplane, vplane, frame_info_.width,
                               frame_info_.height);
