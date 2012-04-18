@@ -757,18 +757,24 @@ void ChromeBrowserMainParts::ProxyConnectionsFieldTrial() {
 //           default group: no npn or spdy is involved. The "old" non-spdy
 //                          chrome behavior.
 void ChromeBrowserMainParts::SpdyFieldTrial() {
+  bool use_field_trial = true;
   if (parsed_command_line().HasSwitch(switches::kUseSpdy)) {
     std::string spdy_mode =
         parsed_command_line().GetSwitchValueASCII(switches::kUseSpdy);
     net::HttpNetworkLayer::EnableSpdy(spdy_mode);
+    use_field_trial = false;
   }
   if (parsed_command_line().HasSwitch(switches::kEnableSpdy3)) {
     net::HttpStreamFactory::EnableNpnSpdy3();
+    use_field_trial = false;
   } else if (parsed_command_line().HasSwitch(switches::kEnableNpn)) {
     net::HttpStreamFactory::EnableNpnSpdy();
+    use_field_trial = false;
   } else if (parsed_command_line().HasSwitch(switches::kEnableNpnHttpOnly)) {
     net::HttpStreamFactory::EnableNpnHttpOnly();
-  } else {
+    use_field_trial = false;
+  }
+  if (use_field_trial) {
 #if !defined(OS_CHROMEOS)
     const base::FieldTrial::Probability kSpdyDivisor = 100;
     base::FieldTrial::Probability npnhttp_probability = 5;
