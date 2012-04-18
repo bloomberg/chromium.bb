@@ -37,8 +37,13 @@ bool ChromotingHostContext::Start() {
   if (!started)
     return false;
 
-  url_request_context_getter_ = new URLRequestContextGetter(
-      io_thread_.message_loop(), file_thread_.message_loop());
+  // net::ProxyService::CreateSystemProxyConfigService requires a UI thread.
+  // TODO(jamiewalch): Clean up this dependency.
+  MessageLoop* loop = MessageLoop::current();
+  if (loop && loop->type() == MessageLoop::TYPE_UI) {
+    url_request_context_getter_ = new URLRequestContextGetter(
+        io_thread_.message_loop(), file_thread_.message_loop());
+  }
   return true;
 }
 
@@ -76,6 +81,7 @@ base::MessageLoopProxy* ChromotingHostContext::file_message_loop() {
 
 const scoped_refptr<URLRequestContextGetter>&
 ChromotingHostContext::url_request_context_getter() {
+  DCHECK(url_request_context_getter_.get());
   return url_request_context_getter_;
 }
 
