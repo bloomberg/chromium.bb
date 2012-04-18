@@ -32,6 +32,7 @@ class  MockFlimflamIPConfigClient;
 class  MockFlimflamManagerClient;
 class  MockFlimflamNetworkClient;
 class  MockFlimflamProfileClient;
+class  MockFlimflamServiceClient;
 class  MockImageBurnerClient;
 class  MockIntrospectableClient;
 class  MockPowerManagerClient;
@@ -62,6 +63,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetFlimflamManagerClient, FlimflamManagerClient*(void));
   MOCK_METHOD0(GetFlimflamNetworkClient, FlimflamNetworkClient*(void));
   MOCK_METHOD0(GetFlimflamProfileClient, FlimflamProfileClient*(void));
+  MOCK_METHOD0(GetFlimflamServiceClient, FlimflamServiceClient*(void));
   MOCK_METHOD0(GetImageBurnerClient, ImageBurnerClient*(void));
   MOCK_METHOD0(GetIntrospectableClient, IntrospectableClient*(void));
   MOCK_METHOD0(GetPowerManagerClient, PowerManagerClient*(void));
@@ -111,6 +113,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockFlimflamProfileClient* mock_flimflam_profile_client() {
     return mock_flimflam_profile_client_.get();
   }
+  MockFlimflamServiceClient* mock_flimflam_service_client() {
+    return mock_flimflam_service_client_.get();
+  }
   MockImageBurnerClient* mock_image_burner_client() {
     return mock_image_burner_client_.get();
   }
@@ -145,6 +150,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockFlimflamManagerClient> mock_flimflam_manager_client_;
   scoped_ptr<MockFlimflamNetworkClient> mock_flimflam_network_client_;
   scoped_ptr<MockFlimflamProfileClient> mock_flimflam_profile_client_;
+  scoped_ptr<MockFlimflamServiceClient> mock_flimflam_service_client_;
   scoped_ptr<MockImageBurnerClient> mock_image_burner_client_;
   scoped_ptr<MockIntrospectableClient> mock_introspectable_client_;
   scoped_ptr<MockPowerManagerClient> mock_power_manager_client_;
