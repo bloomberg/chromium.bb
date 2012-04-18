@@ -17,7 +17,6 @@ class PanelDragGtk;
 class NativePanelTestingGtk;
 
 class PanelBrowserWindowGtk : public BrowserWindowGtk,
-                              public MessageLoopForUI::Observer,
                               public NativePanel,
                               public ui::AnimationDelegate {
  public:
@@ -112,18 +111,9 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
                             const gfx::Rect& to_bounds);
   bool IsAnimatingBounds() const;
 
-  // MessageLoop::Observer implementation:
-  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
-  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
-
   // Overridden from AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-
-  void CreateDragWidget();
-  void DestroyDragWidget();
-  void EndDrag(bool canceled);
-  void CleanupDragDrop();
 
   // Creates helper for handling drags if not already created.
   void EnsureDragHelperCreated();
@@ -136,46 +126,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   GdkRectangle GetTitlebarRectForDrawAttention() const;
 
   CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean,
-                       OnTitlebarButtonPressEvent, GdkEventButton*);
-  CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean,
                        OnTitlebarButtonReleaseEvent, GdkEventButton*);
-
-  // drag-begin is emitted when the drag is started. We connect so that we can
-  // set the drag icon to a transparent pixbuf.
-  CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, void, OnDragBegin,
-                       GdkDragContext*);
-
-  // drag-failed is emitted when the drag is finished.  In our case the signal
-  // does not imply failure as we don't use the drag-n-drop API to transfer drop
-  // data.
-  CHROMEGTK_CALLBACK_2(PanelBrowserWindowGtk, gboolean, OnDragFailed,
-                       GdkDragContext*, GtkDragResult);
-
-  // When a drag is ending, a fake button release event is passed to the drag
-  // widget to fake letting go of the mouse button.  We need a callback for
-  // this event because it is the only way to catch drag end events when the
-  // user presses space or return.
-  CHROMEGTK_CALLBACK_1(PanelBrowserWindowGtk, gboolean, OnDragButtonReleased,
-                       GdkEventButton*);
-
-  // Tests will set this to false to prevent actual GTK drags from being
-  // triggered as that generates extra unwanted signals and focus grabs.
-  bool system_drag_disabled_for_testing_;
-
-  // A copy of the last button press event, used to initiate a drag.
-  GdkEvent* last_mouse_down_;
-
-  // A GtkInivisible used to track the drag event.  GtkInvisibles are of the
-  // type GInitiallyUnowned, but the widget initialization code sinks the
-  // reference, so we can't use an OwnedWidgetGtk here.
-  GtkWidget* drag_widget_;
-
-  // Due to a bug in GTK+, we need to force the end of a drag when we get a
-  // mouse release event on the the dragged widget, otherwise, we don't know
-  // when the drag has ended when the user presses space or enter.  We queue
-  // a task to end the drag and only run it if GTK+ didn't send us the
-  // drag-failed event.
-  base::WeakPtrFactory<PanelBrowserWindowGtk> drag_end_factory_;
 
   scoped_ptr<Panel> panel_;
   gfx::Rect bounds_;

@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/panels/panel_strip.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/base/dragdrop/gtk_dnd_util.h"
 
 using content::WebContents;
 
@@ -55,10 +54,6 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
                                              Panel* panel,
                                              const gfx::Rect& bounds)
     : BrowserWindowGtk(browser),
-      system_drag_disabled_for_testing_(false),
-      last_mouse_down_(NULL),
-      drag_widget_(NULL),
-      drag_end_factory_(this),
       panel_(panel),
       bounds_(bounds),
       is_drawing_attention_(false),
@@ -66,7 +61,6 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
 }
 
 PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
-  CleanupDragDrop();
 }
 
 void PanelBrowserWindowGtk::Init() {
@@ -82,8 +76,9 @@ void PanelBrowserWindowGtk::Init() {
   // minimize etc. can only be done from the panel UI.
   gtk_window_set_skip_taskbar_hint(window(), TRUE);
 
-  g_signal_connect(titlebar_widget(), "button-press-event",
-                   G_CALLBACK(OnTitlebarButtonPressEventThunk), this);
+  // Only need to watch for titlebar button release event. BrowserWindowGtk
+  // already watches for button-press-event and determines if titlebar or
+  // window edge was hit.
   g_signal_connect(titlebar_widget(), "button-release-event",
                    G_CALLBACK(OnTitlebarButtonReleaseEventThunk), this);
 
@@ -135,11 +130,13 @@ bool PanelBrowserWindowGtk::HandleTitleBarLeftMousePress(
     GdkEventButton* event,
     guint32 last_click_time,
     gfx::Point last_click_position) {
-  // In theory we should never enter this function as we have a handler for
-  // button press on titlebar where we handle this.  Not putting NOTREACHED()
-  // here because we don't want to crash if hit-testing for titlebar in window
-  // button press handler in BrowserWindowGtk is off by a pixel or two.
-  DLOG(WARNING) << "Hit-testing for titlebar off by a pixel or two?";
+  DCHECK_EQ(1U, event->button);
+  DCHECK_EQ(GDK_BUTTON_PRESS, event->type);
+
+  if (panel_->draggable()) {
+    EnsureDragHelperCreated();
+    drag_helper_->InitialTitlebarMousePress(event, titlebar_widget());
+  }
   return TRUE;
 }
 
@@ -295,15 +292,6 @@ void PanelBrowserWindowGtk::Observe(
       // Cleanup.
       if (bounds_animator_.get())
         bounds_animator_.reset();
-
-      CleanupDragDrop();
-      if (drag_widget_) {
-        // Terminate the grab if we have it. We could do this using any widget,
-        // |drag_widget_| is just convenient.
-        gtk_grab_add(drag_widget_);
-        gtk_grab_remove(drag_widget_);
-        DestroyDragWidget();
-      }
 
       if (drag_helper_.get())
         drag_helper_.reset();
@@ -546,49 +534,6 @@ bool PanelBrowserWindowGtk::IsAnimatingBounds() const {
   return bounds_animator_.get() && bounds_animator_->is_animating();
 }
 
-void PanelBrowserWindowGtk::WillProcessEvent(GdkEvent* event) {
-  // Nothing to do.
-}
-
-void PanelBrowserWindowGtk::DidProcessEvent(GdkEvent* event) {
-  DCHECK(last_mouse_down_);
-  if (event->type != GDK_MOTION_NOTIFY || !panel_->draggable())
-    return;
-
-  gdouble new_x_double;
-  gdouble new_y_double;
-  gdouble old_x_double;
-  gdouble old_y_double;
-  gdk_event_get_root_coords(event, &new_x_double, &new_y_double);
-  gdk_event_get_root_coords(last_mouse_down_, &old_x_double, &old_y_double);
-
-  gint new_x = static_cast<gint>(new_x_double);
-  gint new_y = static_cast<gint>(new_y_double);
-  gint old_x = static_cast<gint>(old_x_double);
-  gint old_y = static_cast<gint>(old_y_double);
-
-  if (!drag_widget_ &&
-      !IsAnimatingBounds() &&
-      gtk_drag_check_threshold(titlebar_widget(), old_x,
-                               old_y, new_x, new_y)) {
-    CreateDragWidget();
-    if (!system_drag_disabled_for_testing_) {
-      GtkTargetList* list = ui::GetTargetListFromCodeMask(ui::CHROME_TAB);
-      gtk_drag_begin(drag_widget_, list, GDK_ACTION_MOVE, 1, last_mouse_down_);
-      // gtk_drag_begin increments reference count for GtkTargetList.  So unref
-      // it here to reduce the reference count.
-      gtk_target_list_unref(list);
-    }
-    panel_->manager()->StartDragging(panel_.get(), gfx::Point(old_x, old_y));
-  }
-
-  if (drag_widget_) {
-    panel_->manager()->Drag(gfx::Point(new_x, new_y));
-    gdk_event_free(last_mouse_down_);
-    last_mouse_down_ = gdk_event_copy(event);
-  }
-}
-
 void PanelBrowserWindowGtk::AnimationEnded(const ui::Animation* animation) {
   titlebar()->SendEnterNotifyToCloseButtonIfUnderMouse();
 
@@ -615,54 +560,6 @@ void PanelBrowserWindowGtk::AnimationProgressed(
   last_animation_progressed_bounds_ = new_bounds;
 }
 
-void PanelBrowserWindowGtk::CreateDragWidget() {
-  DCHECK(!drag_widget_);
-  drag_widget_ = gtk_invisible_new();
-  g_signal_connect_after(drag_widget_, "drag-begin",
-                         G_CALLBACK(OnDragBeginThunk), this);
-  g_signal_connect(drag_widget_, "drag-failed",
-                   G_CALLBACK(OnDragFailedThunk), this);
-  g_signal_connect(drag_widget_, "button-release-event",
-                   G_CALLBACK(OnDragButtonReleasedThunk), this);
-}
-
-void PanelBrowserWindowGtk::DestroyDragWidget() {
-  if (drag_widget_) {
-    gtk_widget_destroy(drag_widget_);
-    drag_widget_ = NULL;
-  }
-}
-
-void PanelBrowserWindowGtk::EndDrag(bool canceled) {
-  if (!system_drag_disabled_for_testing_)
-    DCHECK(drag_widget_);
-
-  // Make sure we only run EndDrag once by canceling any tasks that want
-  // to call EndDrag.
-  drag_end_factory_.InvalidateWeakPtrs();
-
-  CleanupDragDrop();
-
-  if (drag_widget_) {
-    // We must let gtk clean up after we handle the drag operation, otherwise
-    // there will be outstanding references to the drag widget when we try to
-    // destroy it.
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&PanelBrowserWindowGtk::DestroyDragWidget,
-                   drag_end_factory_.GetWeakPtr()));
-    panel_->manager()->EndDragging(canceled);
-  }
-}
-
-void PanelBrowserWindowGtk::CleanupDragDrop() {
-  if (last_mouse_down_) {
-    MessageLoopForUI::current()->RemoveObserver(this);
-    gdk_event_free(last_mouse_down_);
-    last_mouse_down_ = NULL;
-  }
-}
-
 GdkRectangle PanelBrowserWindowGtk::GetTitlebarRectForDrawAttention() const {
   GdkRectangle rect;
   rect.x = 0;
@@ -681,32 +578,10 @@ GdkRectangle PanelBrowserWindowGtk::GetTitlebarRectForDrawAttention() const {
   return rect;
 }
 
-gboolean PanelBrowserWindowGtk::OnTitlebarButtonPressEvent(
-    GtkWidget* widget, GdkEventButton* event) {
-  // Early return if animation in progress.
-  if (IsAnimatingBounds())
-    return TRUE;
-
-  // Every button press ensures either a button-release-event or a drag-fail
-  // signal for |widget|.
-  if (event->button == 1 && event->type == GDK_BUTTON_PRESS) {
-    // Store the button press event, used to initiate a drag.
-    DCHECK(!last_mouse_down_);
-    last_mouse_down_ = gdk_event_copy(reinterpret_cast<GdkEvent*>(event));
-    MessageLoopForUI::current()->AddObserver(this);
-  }
-
-  return TRUE;
-}
-
 gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
     GtkWidget* widget, GdkEventButton* event) {
-  if (event->button != 1) {
-    DCHECK(!last_mouse_down_);
+  if (event->button != 1)
     return TRUE;
-  }
-
-  CleanupDragDrop();
 
   if (event->state & GDK_CONTROL_MASK) {
     panel_->OnTitlebarClicked(panel::APPLY_TO_ALL);
@@ -736,46 +611,14 @@ void PanelBrowserWindowGtk::HandleFocusIn(GtkWidget* widget,
                                           GdkEventFocus* event) {
   BrowserWindowGtk::HandleFocusIn(widget, event);
 
-  if (!is_drawing_attention_)
+  // Do not clear draw attention if user cannot see contents of panel.
+  if (!is_drawing_attention_ || panel_->IsMinimized())
     return;
 
   panel_->FlashFrame(false);
-  DCHECK(panel_->expansion_state() == Panel::EXPANDED);
 
   disableMinimizeUntilTime_ = base::Time::Now() +
       base::TimeDelta::FromMilliseconds(kSuspendMinimizeOnClickIntervalMs);
-}
-
-void PanelBrowserWindowGtk::OnDragBegin(GtkWidget* widget,
-                                        GdkDragContext* context) {
-  // Set drag icon to be a transparent pixbuf.
-  GdkPixbuf* pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, 1, 1);
-  gdk_pixbuf_fill(pixbuf, 0);
-  gtk_drag_set_icon_pixbuf(context, pixbuf, 0, 0);
-  g_object_unref(pixbuf);
-}
-
-gboolean PanelBrowserWindowGtk::OnDragFailed(
-    GtkWidget* widget, GdkDragContext* context, GtkDragResult result) {
-  bool canceled = (result != GTK_DRAG_RESULT_NO_TARGET);
-  EndDrag(canceled);
-  return TRUE;
-}
-
-gboolean PanelBrowserWindowGtk::OnDragButtonReleased(GtkWidget* widget,
-                                                     GdkEventButton* button) {
-  // We always get this event when gtk is releasing the grab and ending the
-  // drag.  This gets fired before drag-failed handler gets fired.  However,
-  // if the user ended the drag with space or enter, we don't get a follow up
-  // event to tell us the drag has finished (either a drag-failed or a
-  // drag-end).  We post a task, instead of calling EndDrag right here, to give
-  // GTK+ a chance to send the drag-failed event with the right status.  If
-  // GTK+ does send the drag-failed event, we cancel the task.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&PanelBrowserWindowGtk::EndDrag,
-                 drag_end_factory_.GetWeakPtr(),
-                 false));
-  return TRUE;
 }
 
 // NativePanelTesting implementation.
@@ -825,9 +668,9 @@ void NativePanelTestingGtk::PressLeftMouseButtonTitlebar(
   event->button.y_root = mouse_location.y();
   if (modifier == panel::APPLY_TO_ALL)
     event->button.state |= GDK_CONTROL_MASK;
-  panel_browser_window_gtk_->OnTitlebarButtonPressEvent(
-      panel_browser_window_gtk_->titlebar_widget(),
-      reinterpret_cast<GdkEventButton*>(event));
+  panel_browser_window_gtk_->HandleTitleBarLeftMousePress(
+      reinterpret_cast<GdkEventButton*>(event),
+      GDK_CURRENT_TIME, gfx::Point());
   gdk_event_free(event);
   MessageLoopForUI::current()->RunAllPending();
 }
@@ -838,36 +681,41 @@ void NativePanelTestingGtk::ReleaseMouseButtonTitlebar(
   event->button.button = 1;
   if (modifier == panel::APPLY_TO_ALL)
     event->button.state |= GDK_CONTROL_MASK;
-  panel_browser_window_gtk_->OnTitlebarButtonReleaseEvent(
-      panel_browser_window_gtk_->titlebar_widget(),
-      reinterpret_cast<GdkEventButton*>(event));
+  if (panel_browser_window_gtk_->drag_helper_.get()) {
+    panel_browser_window_gtk_->drag_helper_->OnButtonReleaseEvent(
+        NULL, reinterpret_cast<GdkEventButton*>(event));
+  } else {
+    panel_browser_window_gtk_->OnTitlebarButtonReleaseEvent(
+        NULL, reinterpret_cast<GdkEventButton*>(event));
+  }
+  gdk_event_free(event);
   MessageLoopForUI::current()->RunAllPending();
 }
 
 void NativePanelTestingGtk::DragTitlebar(const gfx::Point& mouse_location) {
-  // Prevent extra unwanted signals and focus grabs.
-  panel_browser_window_gtk_->system_drag_disabled_for_testing_ = true;
-
+  if (!panel_browser_window_gtk_->drag_helper_.get())
+    return;
   GdkEvent* event = gdk_event_new(GDK_MOTION_NOTIFY);
   event->motion.x_root = mouse_location.x();
   event->motion.y_root = mouse_location.y();
-  panel_browser_window_gtk_->DidProcessEvent(event);
+  panel_browser_window_gtk_->drag_helper_->OnMouseMoveEvent(
+      NULL, reinterpret_cast<GdkEventMotion*>(event));
   gdk_event_free(event);
   MessageLoopForUI::current()->RunAllPending();
 }
 
 void NativePanelTestingGtk::CancelDragTitlebar() {
-  panel_browser_window_gtk_->OnDragFailed(
-      panel_browser_window_gtk_->drag_widget_, NULL,
-      GTK_DRAG_RESULT_USER_CANCELLED);
-  MessageLoopForUI::current()->RunAllPending();
+  if (!panel_browser_window_gtk_->drag_helper_.get())
+    return;
+
+  panel_browser_window_gtk_->drag_helper_->EndDrag(true);
 }
 
 void NativePanelTestingGtk::FinishDragTitlebar() {
-  panel_browser_window_gtk_->OnDragFailed(
-      panel_browser_window_gtk_->drag_widget_, NULL,
-      GTK_DRAG_RESULT_NO_TARGET);
-  MessageLoopForUI::current()->RunAllPending();
+  if (!panel_browser_window_gtk_->drag_helper_.get())
+    return;
+
+  panel_browser_window_gtk_->drag_helper_->EndDrag(false);
 }
 
 bool NativePanelTestingGtk::VerifyDrawingAttention() const {
