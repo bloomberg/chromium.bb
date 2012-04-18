@@ -23,7 +23,7 @@ class GURL;
 class PrefService;
 class Profile;
 
-// The TabContents used for the New Tab page.
+// The WebContents used for the New Tab page.
 class NewTabUI : public content::WebUIController,
                  public content::NotificationObserver {
  public:

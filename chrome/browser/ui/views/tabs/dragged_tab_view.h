@@ -78,11 +78,11 @@ class DraggedTabView : public views::View {
   // The size of the tab renderer.
   gfx::Size tab_size_;
 
-  // A handle to the DIB containing the current screenshot of the TabContents
+  // A handle to the DIB containing the current screenshot of the WebContents
   // we are dragging.
   scoped_ptr<NativeViewPhotobooth> photobooth_;
 
-  // Size of the TabContents being dragged.
+  // Size of the WebContents being dragged.
   gfx::Size contents_size_;
 
   DISALLOW_COPY_AND_ASSIGN(DraggedTabView);

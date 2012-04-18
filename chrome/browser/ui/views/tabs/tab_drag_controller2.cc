@@ -682,7 +682,7 @@ void TabDragController2::MoveAttached(const gfx::Point& screen_point) {
     tabs[i] = drag_data_[i].attached_tab;
 
   bool did_layout = false;
-  // Update the model, moving the TabContents from one index to another. Do this
+  // Update the model, moving the WebContents from one index to another. Do this
   // only if we have moved a minimum distance since the last reorder (to prevent
   // jitter) or if this the first move and the tabs are not consecutive.
   if (abs(MajorAxisValue(screen_point, attached_tabstrip_) -
@@ -1290,7 +1290,7 @@ void TabDragController2::CompleteDrag() {
           break;
       }
     }
-    // Compel the model to construct a new window for the detached TabContents.
+    // Compel the model to construct a new window for the detached WebContents.
     views::Widget* widget = source_tabstrip_->GetWidget();
     gfx::Rect window_bounds(widget->GetRestoredBounds());
     window_bounds.set_origin(GetWindowCreatePoint());

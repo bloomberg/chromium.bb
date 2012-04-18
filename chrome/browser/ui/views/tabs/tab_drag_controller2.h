@@ -205,7 +205,7 @@ class TabDragController2 : public TabDragController,
   // Runs a nested message loop that handles moving the current Browser.
   void RunMoveLoop();
 
-  // Returns the index where the dragged TabContents should be inserted into
+  // Returns the index where the dragged WebContents should be inserted into
   // |attached_tabstrip_| given the DraggedTabView's bounds |dragged_bounds| in
   // coordinates relative to |attached_tabstrip_| and has had the mirroring
   // transformation applied.
@@ -222,7 +222,7 @@ class TabDragController2 : public TabDragController,
   gfx::Point GetAttachedDragPoint(const gfx::Point& screen_point);
 
   // Finds the Tabs within the specified TabStrip that corresponds to the
-  // TabContents of the dragged tabs. Returns an empty vector if not attached.
+  // WebContents of the dragged tabs. Returns an empty vector if not attached.
   std::vector<BaseTab*> GetTabsMatchingDraggedContents(TabStrip* tabstrip);
 
   // Does the work for EndDrag. If we actually started a drag and |how_end| is
@@ -236,7 +236,7 @@ class TabDragController2 : public TabDragController,
   void RevertDragAt(size_t drag_index);
 
   // Selects the dragged tabs in |model|. Does nothing if there are no longer
-  // any dragged contents (as happens when a TabContents is deleted out from
+  // any dragged contents (as happens when a WebContents is deleted out from
   // under us).
   void ResetSelection(TabStripModel* model);
 

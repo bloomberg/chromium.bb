@@ -46,7 +46,7 @@ void TestHtmlDialogObserver::Observe(
       // NavigationController finishes loading. The HtmlDialog notification is
       // issued from html_dialog_ui.cc on RenderView creation which results from
       // the call to render_manager_.Navigate in the method
-      // TabContents::NavigateToEntry. The new RenderView is later told to
+      // WebContents::NavigateToEntry. The new RenderView is later told to
       // navigate in this method, ensuring that this is not a race condition.
       registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                      content::Source<NavigationController>(

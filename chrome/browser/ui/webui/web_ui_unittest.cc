@@ -97,14 +97,14 @@ class WebUITest : public TabContentsWrapperTestHarness {
 };
 
 // Tests that the New Tab Page flags are correctly set and propogated by
-// TabContents when we first navigate to a Web UI page, then to a standard
+// WebContents when we first navigate to a Web UI page, then to a standard
 // non-DOM-UI page.
 TEST_F(WebUITest, WebUIToStandard) {
   DoNavigationTest(contents_wrapper(), 1);
 
   // Test the case where we're not doing the initial navigation. This is
   // slightly different than the very-first-navigation case since the
-  // SiteInstance will be the same (the original TabContents must still be
+  // SiteInstance will be the same (the original WebContents must still be
   // alive), which will trigger different behavior in RenderViewHostManager.
   WebContents* contents2 =
       WebContentsTester::CreateTestWebContents(profile(), NULL);

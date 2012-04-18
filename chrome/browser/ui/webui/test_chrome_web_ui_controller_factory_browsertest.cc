@@ -19,7 +19,7 @@ using ::testing::StrictMock;
 
 namespace {
 
-// Returns a new WebUI object for the TabContents from |arg0|.
+// Returns a new WebUI object for the WebContents from |arg0|.
 ACTION(ReturnNewWebUI) {
   return new WebUIController(arg0);
 }

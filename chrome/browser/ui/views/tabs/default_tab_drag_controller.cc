@@ -336,7 +336,7 @@ DefaultTabDragController::~DefaultTabDragController() {
   // uses GetIndexForDraggedContents, which will be invalid.
   view_.reset(NULL);
 
-  // Reset the delegate of the dragged TabContents. This ends up doing nothing
+  // Reset the delegate of the dragged WebContents. This ends up doing nothing
   // if the drag was completed.
   ResetDelegates();
 }
@@ -386,7 +386,7 @@ void DefaultTabDragController::InitTabDragData(BaseTab* tab,
       content::Source<WebContents>(drag_data->contents->web_contents()));
 
   // We need to be the delegate so we receive messages about stuff, otherwise
-  // our dragged TabContents may be replaced and subsequently
+  // our dragged WebContents may be replaced and subsequently
   // collected/destroyed while the drag is in process, leading to nasty crashes.
   drag_data->original_delegate =
       drag_data->contents->web_contents()->GetDelegate();
@@ -701,7 +701,7 @@ void DefaultTabDragController::MoveAttached(const gfx::Point& screen_point) {
     tabs[i] = drag_data_[i].attached_tab;
 
   bool did_layout = false;
-  // Update the model, moving the TabContents from one index to another. Do this
+  // Update the model, moving the WebContents from one index to another. Do this
   // only if we have moved a minimum distance since the last reorder (to prevent
   // jitter) or if this the first move and the tabs are not consecutive.
   if (!stacking_ && (abs(MajorAxisValue(screen_point, attached_tabstrip_) -
@@ -838,18 +838,18 @@ void DefaultTabDragController::Attach(TabStrip* attached_tabstrip,
 
   if (tabs.empty()) {
     // There is no Tab in |attached_tabstrip| that corresponds to the dragged
-    // TabContents. We must now create one.
+    // WebContents. We must now create one.
 
     selection_model_before_attach_.Copy(attached_tabstrip->GetSelectionModel());
 
-    // Remove ourselves as the delegate now that the dragged TabContents is
+    // Remove ourselves as the delegate now that the dragged WebContents is
     // being inserted back into a Browser.
     for (size_t i = 0; i < drag_data_.size(); ++i) {
       drag_data_[i].contents->web_contents()->SetDelegate(NULL);
       drag_data_[i].original_delegate = NULL;
     }
 
-    // Return the TabContents' to normalcy.
+    // Return the WebContents to normalcy.
     source_dragged_contents()->web_contents()->SetCapturingContents(false);
 
     // Inserting counts as a move. We don't want the tabs to jitter when the
@@ -903,7 +903,7 @@ void DefaultTabDragController::Attach(TabStrip* attached_tabstrip,
 }
 
 void DefaultTabDragController::Detach() {
-  // Prevent the TabContents' HWND from being hidden by any of the model
+  // Prevent the WebContents HWND from being hidden by any of the model
   // operations performed during the drag.
   source_dragged_contents()->web_contents()->SetCapturingContents(true);
 
@@ -1248,7 +1248,7 @@ void DefaultTabDragController::CompleteDrag() {
           break;
       }
     }
-    // Compel the model to construct a new window for the detached TabContents.
+    // Compel the model to construct a new window for the detached WebContents.
     views::Widget* widget = source_tabstrip_->GetWidget();
     gfx::Rect window_bounds(widget->GetRestoredBounds());
     window_bounds.set_origin(GetWindowCreatePoint());
@@ -1301,7 +1301,7 @@ void DefaultTabDragController::CreateDraggedView(
   DCHECK_EQ(data.size(), drag_data_.size());
 
   // Set up the photo booth to start capturing the contents of the dragged
-  // TabContents.
+  // WebContents.
   NativeViewPhotobooth* photobooth =
       NativeViewPhotobooth::Create(
           source_dragged_contents()->web_contents()->GetNativeView());

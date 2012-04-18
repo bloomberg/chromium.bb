@@ -173,7 +173,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
   // we need to preserve it so we can send it later.
   int active_match_ordinal_;
   int number_of_matches_;
-  // The id of the current find request, obtained from TabContents. Allows us
+  // The id of the current find request, obtained from WebContents. Allows us
   // to monitor when the search completes.
   int current_find_request_id_;
 

@@ -399,11 +399,11 @@ IPC_SYNC_MESSAGE_CONTROL3_1(AutomationMsg_NavigateInExternalTab,
 // It is a notification that the NavigationState was changed
 // Request:
 //   -int: The flags specifying what changed
-//         (see TabContents::InvalidateTypes)
+//         (see content::InvalidateTypes)
 // Response:
 //   None expected
 IPC_MESSAGE_ROUTED2(AutomationMsg_NavigationStateChanged,
-                    int,  // TabContents::InvalidateTypes
+                    int,  // content::InvalidateTypes
                     NavigationInfo)  // title, url etc.
 
 // This message is an outgoing message from Chrome to an external host.

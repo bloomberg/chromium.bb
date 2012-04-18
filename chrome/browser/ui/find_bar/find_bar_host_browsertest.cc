@@ -1049,7 +1049,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
       FindBarController::kKeepSelection);
 
   // Re-open the Find box.
-  // This is a special case: previous search in TabContents used to get cleared
+  // This is a special case: previous search in WebContents used to get cleared
   // if you opened and closed the FindBox, which would cause the global
   // prepopulate value to show instead of last search in this tab.
   EnsureFindBoxOpen();

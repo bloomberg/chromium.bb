@@ -347,7 +347,7 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_GetFPS)
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
 
 //-----------------------------------------------------------------------------
-// TabContents messages
+// Misc messages
 // These are messages sent from the renderer to the browser process.
 
 // Provides the contents for the given page that was loaded recently.

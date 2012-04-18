@@ -51,7 +51,7 @@ class HtmlDialogTabContentsDelegate : public content::WebContentsDelegate {
   Profile* profile() const;
 
   // Calling this causes all following events sent from the
-  // TabContents object to be ignored.  It also makes all following
+  // WebContents object to be ignored.  It also makes all following
   // calls to profile() return NULL.
   void Detach();
 

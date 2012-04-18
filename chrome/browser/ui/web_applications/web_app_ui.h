@@ -14,11 +14,11 @@ class TabContentsWrapper;
 
 namespace web_app {
 
-// Extracts shortcut info of given TabContents.
+// Extracts shortcut info of given TabContentsWrapper.
 void GetShortcutInfoForTab(TabContentsWrapper* tab_contents,
                            ShellIntegration::ShortcutInfo* info);
 
-// Updates web app shortcut of the TabContents. This function checks and
+// Updates web app shortcut of the TabContentsWrapper. This function checks and
 // updates web app icon and shortcuts if needed. For icon, the check is based
 // on MD5 hash of icon image. For shortcuts, it checks the desktop, start menu
 // and quick launch (as well as pinned shortcut) for shortcut and only

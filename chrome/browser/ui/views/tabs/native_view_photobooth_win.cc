@@ -72,7 +72,7 @@ void NativeViewPhotoboothWin::Replace(HWND new_hwnd) {
   current_hwnd_ = new_hwnd;
 
   if (IsWindow(new_hwnd)) {
-    // Insert the TabContents into the capture window.
+    // Insert the WebContents into the capture window.
     SetParent(current_hwnd_, capture_window_->GetNativeView());
 
     // Show the window (it may not be visible). This is the only safe way of
@@ -155,7 +155,7 @@ void NativeViewPhotoboothWin::CreateCaptureWindow(HWND initial_hwnd) {
   params.transparent = true;
   params.bounds = capture_bounds;
   capture_window_->Init(params);
-  // If the capture window isn't visible, blitting from the TabContents'
+  // If the capture window isn't visible, blitting from the WebContents's
   // HWND's DC to the capture bitmap produces blankness.
   capture_window_->Show();
   SetLayeredWindowAttributes(

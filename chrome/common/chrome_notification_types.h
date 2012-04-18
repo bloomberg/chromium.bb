@@ -126,8 +126,9 @@ enum NotificationType {
   // MetricEventDurationDetails.
   NOTIFICATION_METRIC_EVENT_DURATION,
 
-  // This notification is sent when TabContents::SetAppExtension is invoked.
-  // The source is the ExtensionTabHelper SetAppExtension was invoked on.
+  // This notification is sent when ExtensionTabHelper::SetExtensionApp is
+  // invoked. The source is the ExtensionTabHelper SetExtensionApp was invoked
+  // on.
   NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
 
   // Notification posted when the element that is focused and currently accepts
@@ -161,10 +162,9 @@ enum NotificationType {
   NOTIFICATION_BOOKMARK_BUBBLE_HIDDEN,
 
   // This notification is sent when the result of a find-in-page search is
-  // available with the browser process. The source is a Source<TabContents>
-  // with a pointer to the TabContents. Details encompass a
-  // FindNotificationDetail object that tells whether the match was found or
-  // not found.
+  // available with the browser process. The source is a Source<WebContents>.
+  // Details encompass a FindNotificationDetail object that tells whether the
+  // match was found or not found.
   NOTIFICATION_FIND_RESULT_AVAILABLE,
 
   // Sent just before the installation confirm dialog is shown. The source

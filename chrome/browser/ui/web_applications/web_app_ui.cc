@@ -51,7 +51,7 @@ class UpdateShortcutWorker : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  // Downloads icon via TabContents.
+  // Downloads icon via TabContentsWrapper.
   void DownloadIcon();
 
   // Callback when icon downloaded.
@@ -127,17 +127,17 @@ void UpdateShortcutWorker::Observe(
 }
 
 void UpdateShortcutWorker::DownloadIcon() {
-  // FetchIcon must run on UI thread because it relies on TabContents
+  // FetchIcon must run on UI thread because it relies on WebContents
   // to download the icon.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (tab_contents_ == NULL) {
-    DeleteMe();  // We are done if underlying TabContents is gone.
+    DeleteMe();  // We are done if underlying WebContents is gone.
     return;
   }
 
   if (unprocessed_icons_.empty()) {
-    // No app icon. Just use the favicon from TabContents.
+    // No app icon. Just use the favicon from WebContents.
     UpdateShortcuts();
     return;
   }
@@ -156,7 +156,7 @@ void UpdateShortcutWorker::OnIconDownloaded(int download_id,
                                             bool errored,
                                             const SkBitmap& image) {
   if (tab_contents_ == NULL) {
-    DeleteMe();  // We are done if underlying TabContents is gone.
+    DeleteMe();  // We are done if underlying WebContents is gone.
     return;
   }
 

@@ -708,7 +708,7 @@ void TabStrip::MaybeStartDrag(
   if (!original_selection.IsSelected(model_index))
     selection_model.Copy(original_selection);
   // Delete the existing DragController before creating a new one. We do this as
-  // creating the DragController remembers the TabContents delegates and we need
+  // creating the DragController remembers the WebContents delegates and we need
   // to make sure the existing DragController isn't still a delegate.
   drag_controller_.reset();
   drag_controller_.reset(TabDragController::Create(
