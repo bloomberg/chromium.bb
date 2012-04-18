@@ -113,7 +113,7 @@ bool TypedUrlModelAssociator::ShouldIgnoreUrl(
   if (url.url().spec().empty())
     return true;
 
-  // We ignore URLs that where imported, but have never been visited by
+  // We ignore URLs that were imported, but have never been visited by
   // chromium.
   static const int kLastImportedSource = history::SOURCE_EXTENSION;
   history::VisitSourceMap map;
@@ -154,17 +154,14 @@ SyncError TypedUrlModelAssociator::AssociateModels() {
       return SyncError();
     DCHECK_EQ(0U, visit_vectors.count(ix->id()));
     if (!FixupURLAndGetVisits(
-            history_backend_, &(*ix), &(visit_vectors[ix->id()]))) {
-      return error_handler_->CreateAndUploadError(
-          FROM_HERE,
-          "Could not get the url's visits.",
-          model_type());
-    }
-
-    if (ShouldIgnoreUrl(*ix, visit_vectors[ix->id()]))
+            history_backend_, &(*ix), &(visit_vectors[ix->id()])) ||
+        ShouldIgnoreUrl(*ix, visit_vectors[ix->id()])) {
+      // Ignore this URL if we couldn't load the visits or if there's some
+      // other problem with it (it was empty, or imported and never visited).
       ix = typed_urls.erase(ix);
-    else
+    } else {
       ++ix;
+    }
   }
 
   history::URLRows new_urls;

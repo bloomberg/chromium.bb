@@ -344,6 +344,33 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeEmptySync) {
   EXPECT_TRUE(URLsEqual(entries[0], sync_entries[0]));
 }
 
+TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeErrorReadingVisits) {
+  history::URLRows entries;
+  history::VisitVector visits;
+  history::URLRow native_entry1(MakeTypedUrlEntry("http://foo.com", "bar",
+                                                  2, 15, false, &visits));
+  history::URLRow native_entry2(MakeTypedUrlEntry("http://foo2.com", "bar",
+                                                  3, 15, false, &visits));
+  entries.push_back(native_entry1);
+  entries.push_back(native_entry2);
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(entries), Return(true)));
+  // Return an error from GetMostRecentVisitsForURL() for the second URL.
+  EXPECT_CALL((*history_backend_.get()),
+              GetMostRecentVisitsForURL(native_entry1.id(), _, _)).
+                  WillRepeatedly(Return(true));
+  EXPECT_CALL((*history_backend_.get()),
+              GetMostRecentVisitsForURL(native_entry2.id(), _, _)).
+                  WillRepeatedly(Return(false));
+  SetIdleChangeProcessorExpectations();
+  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  StartSyncService(create_root.callback());
+  history::URLRows sync_entries;
+  GetTypedUrlsFromSyncDB(&sync_entries);
+  ASSERT_EQ(1U, sync_entries.size());
+  EXPECT_TRUE(URLsEqual(native_entry1, sync_entries[0]));
+}
+
 TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeWithBlankEmptySync) {
   std::vector<history::URLRow> entries;
   history::VisitVector visits;
