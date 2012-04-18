@@ -7,23 +7,12 @@
 #include "base/path_service.h"
 #include "ui/base/ui_base_paths.h"
 
-namespace {
-
-FilePath GetResourcesPakFilePath(const std::string& pak_name) {
-  FilePath path;
-  if (PathService::Get(base::DIR_MODULE, &path))
-    return path.AppendASCII(pak_name.c_str());
-  return FilePath();
-}
-
-}  // namespace
-
 namespace ui {
 
 void ResourceBundle::LoadCommonResources() {
-  AddDataPack(GetResourcesPakFilePath("chrome.pak"));
-  AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"));
-  AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
+  FilePath path;
+  PathService::Get(ui::FILE_RESOURCES_PAK, &path);
+  AddDataPack(path);
 }
 
 }  // namespace ui
