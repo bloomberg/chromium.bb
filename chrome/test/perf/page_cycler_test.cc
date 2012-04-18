@@ -29,18 +29,25 @@
 #ifndef NDEBUG
 static const int kTestIterations = 2;
 static const int kDatabaseTestIterations = 2;
+static const int kWebPageReplayIterations = 2;
 #else
 static const int kTestIterations = 10;
 // For some unknown reason, the DB perf tests are much much slower on the
 // Vista perf bot, so we have to cut down the number of iterations to 5
 // to make sure each test finishes in less than 10 minutes.
 static const int kDatabaseTestIterations = 5;
+static const int kWebPageReplayIterations = 5;
 #endif
 static const int kIDBTestIterations = 5;
 
 // URL at which data files may be found for HTTP tests.  The document root of
 // this URL's server should point to data/page_cycler/.
 static const char kBaseUrl[] = "http://localhost:8000/";
+
+// The following port numbers must match those in
+//     src/tools/python/google/webpagereplay_utils.py.
+static const char kWebPageReplayHttpPort[] = "8080";
+static const char kWebPageReplayHttpsPort[] = "8413";
 
 namespace {
 
@@ -158,21 +165,17 @@ class PageCyclerTest : public UIPerfTest {
     return num_test_iterations_;
   }
 
-  // For HTTP tests, the name must be safe for use in a URL without escaping.
-  void RunPageCycler(const char* name, std::wstring* pages,
-                     std::string* timings, bool use_http) {
+  virtual void GetTestUrl(const char* name, bool use_http, GURL *test_url) {
     FilePath test_path = GetDataPath(name);
     ASSERT_TRUE(file_util::DirectoryExists(test_path))
         << "Missing test directory " << test_path.value();
-
     PopulateBufferCache(test_path);
 
-    GURL test_url;
     if (use_http) {
-      test_url = GURL(std::string(kBaseUrl) + name + "/start.html");
+      *test_url = GURL(std::string(kBaseUrl) + name + "/start.html");
     } else {
       test_path = test_path.Append(FILE_PATH_LITERAL("start.html"));
-      test_url = net::FilePathToFileURL(test_path);
+      *test_url = net::FilePathToFileURL(test_path);
     }
 
     // run N iterations
@@ -182,7 +185,14 @@ class PageCyclerTest : public UIPerfTest {
     replacements.SetQuery(
         query_string.c_str(),
         url_parse::Component(0, query_string.length()));
-    test_url = test_url.ReplaceComponents(replacements);
+    *test_url = test_url->ReplaceComponents(replacements);
+  }
+
+  // For HTTP tests, the name must be safe for use in a URL without escaping.
+  void RunPageCycler(const char* name, std::wstring* pages,
+                     std::string* timings, bool use_http) {
+    GURL test_url;
+    GetTestUrl(name, use_http, &test_url);
 
     scoped_refptr<TabProxy> tab(GetActiveTab());
     ASSERT_TRUE(tab.get());
@@ -443,6 +453,77 @@ class PageCyclerIndexedDatabaseReferenceTest : public PageCyclerReferenceTest {
   }
 };
 
+// Web Page Replay is a proxy server to record and serve pages
+// with realistic network delays and bandwidth throttling.
+// runtest.py launches replay.py to support these tests.
+class PageCyclerWebPageReplayTest : public PageCyclerTest {
+ public:
+  PageCyclerWebPageReplayTest() {
+    // These Chrome command-line arguments need to be kept in sync
+    // with src/tools/python/google/webpagereplay_utils.py.
+    FilePath extension_path = GetPageCyclerWprPath("extension");
+    launch_arguments_.AppendSwitchPath(
+        switches::kLoadExtension, extension_path);
+    // TODO(slamm): Instead of kHostResolverRules, add a new switch,
+    //     kTestingFixedDnsPort, and configure Web Page Replay to run
+    //     a DNS proxy on that port to test Chrome's DNS code.
+    launch_arguments_.AppendSwitchASCII(
+        switches::kHostResolverRules, "MAP * 127.0.0.1");
+    launch_arguments_.AppendSwitchASCII(
+        switches::kTestingFixedHttpPort, kWebPageReplayHttpPort);
+    launch_arguments_.AppendSwitchASCII(
+        switches::kTestingFixedHttpsPort, kWebPageReplayHttpsPort);
+    launch_arguments_.AppendSwitch(switches::kEnableExperimentalExtensionApis);
+    launch_arguments_.AppendSwitch(switches::kEnableStatsTable);
+    launch_arguments_.AppendSwitch(switches::kEnableBenchmarking);
+    launch_arguments_.AppendSwitch(switches::kIgnoreCertificateErrors);
+    launch_arguments_.AppendSwitch(switches::kNoProxyServer);
+  }
+
+  FilePath GetPageCyclerWprPath(const char* name) {
+    FilePath wpr_path;
+    PathService::Get(base::DIR_SOURCE_ROOT, &wpr_path);
+    wpr_path = wpr_path.AppendASCII("tools");
+    wpr_path = wpr_path.AppendASCII("page_cycler");
+    wpr_path = wpr_path.AppendASCII("webpagereplay");
+    wpr_path = wpr_path.AppendASCII(name);
+    return wpr_path;
+  }
+
+  virtual int GetTestIterations() OVERRIDE {
+    return kWebPageReplayIterations;
+  }
+
+  virtual void GetTestUrl(const char* name, bool use_http,
+                          GURL *test_url) OVERRIDE {
+    FilePath start_path = GetPageCyclerWprPath("start.html");
+
+    // Add query parameters for iterations and test name.
+    const std::string query_string =
+        "iterations=" + base::IntToString(GetTestIterations()) +
+        "&test=" + name +
+        "&auto=1";
+    GURL::Replacements replacements;
+    replacements.SetQuery(
+        query_string.c_str(),
+        url_parse::Component(0, query_string.length()));
+
+    *test_url = net::FilePathToFileURL(start_path);
+    *test_url = test_url->ReplaceComponents(replacements);
+  }
+
+  void RunTest(const char* graph, const char* name) {
+    FilePath test_path = GetPageCyclerWprPath("tests");
+    test_path = test_path.AppendASCII(name);
+    test_path = test_path.ReplaceExtension(FILE_PATH_LITERAL(".js"));
+    ASSERT_TRUE(file_util::PathExists(test_path))
+        << "Missing test file " << test_path.value();
+
+    const bool use_http = false;  // always use a file
+    PageCyclerTest::RunTestWithSuffix(graph, name, use_http, "");
+  }
+};
+
 // This macro simplifies setting up regular and reference build tests.
 #define PAGE_CYCLER_TESTS(test, name, use_http) \
 TEST_F(PageCyclerTest, name) { \
@@ -497,6 +578,11 @@ TEST_F(PageCyclerExtensionWebRequestTest, name) { \
   RunTest("times", "extension_webrequest", "_extwr", test, false); \
 }
 
+#define PAGE_CYCLER_WEBPAGEREPLAY_TESTS(test, name) \
+TEST_F(PageCyclerWebPageReplayTest, name) { \
+  RunTest("times", test); \
+}
+
 // file-URL tests
 PAGE_CYCLER_FILE_TESTS("moz", MozFile);
 PAGE_CYCLER_EXTENSIONS_FILE_TESTS("moz", MozFile);
@@ -520,6 +606,13 @@ PAGE_CYCLER_HTTP_TESTS("intl1", Intl1Http);
 PAGE_CYCLER_HTTP_TESTS("intl2", Intl2Http);
 PAGE_CYCLER_HTTP_TESTS("dom", DomHttp);
 PAGE_CYCLER_HTTP_TESTS("bloat", BloatHttp);
+
+// Web Page Replay (simulated network) tests.
+// Windows is unsupported because of issues with loopback adapter and
+// dummynet is unavailable on Vista and above.
+#if !defined(OS_WIN)
+PAGE_CYCLER_WEBPAGEREPLAY_TESTS("2012Q2", 2012Q2);
+#endif
 
 // HTML5 database tests
 // These tests are _really_ slow on XP/Vista.
