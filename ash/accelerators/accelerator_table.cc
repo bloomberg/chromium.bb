@@ -153,6 +153,7 @@ const AcceleratorAction kActionsAllowedAtLoginScreen[] = {
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_SCREENSHOT,
   TAKE_PARTIAL_SCREENSHOT,
+  TOGGLE_CAPS_LOCK,
   VOLUME_DOWN,
   VOLUME_MUTE,
   VOLUME_UP,
