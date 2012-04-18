@@ -91,6 +91,10 @@ a4e359a3f98650dab3d2e93f067658e20fa9c0d7
 3360b8517a1f478c4102072e5eadd8ba78be0538
   Fix regression in h264 seeking.
 
+9bb3b7d028395a8fe70148dec89430e8aae7a7e2
+c7c976c6d7051804f96e3106688c1963d1238ae0
+  Fix OOB write during ogg seeking.
+
 Patches still existing from the pre-GIT workflow:
 
 to_upstream/
