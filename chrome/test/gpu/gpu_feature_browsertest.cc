@@ -403,7 +403,7 @@ class ThreadedCompositorTest : public GpuFeatureTest {
 };
 
 // disabled in http://crbug.com/123503
-IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, DISABLED_ThreadedCompositor) {
+IN_PROC_BROWSER_TEST_F(ThreadedCompositorTest, ThreadedCompositor) {
   const FilePath url(FILE_PATH_LITERAL("feature_compositing.html"));
   RunTest(url, EXPECT_GPU_SWAP_BUFFERS);
 }
