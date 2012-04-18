@@ -2030,6 +2030,8 @@ void SyncManager::SyncInternal::RequestNudgeForDataTypes(
     return;
   }
 
+  debug_info_event_listener_.OnNudgeFromDatatype(types.First().Get());
+
   // TODO(lipalani) : Calculate the nudge delay based on all types.
   base::TimeDelta nudge_delay = NudgeStrategy::GetNudgeDelayTimeDelta(
       types.First().Get(),
@@ -2387,6 +2389,7 @@ void SyncManager::SyncInternal::OnIncomingNotification(
     }
     allstatus_.IncrementNotificationsReceived();
     UpdateNotificationInfo(type_payloads);
+    debug_info_event_listener_.OnIncomingNotification(type_payloads);
   } else {
     LOG(WARNING) << "Sync received notification without any type information.";
   }

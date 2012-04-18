@@ -113,6 +113,27 @@ void DebugInfoEventListener::SetCryptographerReady(bool ready) {
   cryptographer_ready_ = ready;
 }
 
+void DebugInfoEventListener::OnNudgeFromDatatype(
+    syncable::ModelType datatype) {
+  sync_pb::DebugEventInfo event_info;
+  event_info.set_nudging_datatype(
+      syncable::GetSpecificsFieldNumberFromModelType(datatype));
+  AddEventToQueue(event_info);
+}
+
+void DebugInfoEventListener::OnIncomingNotification(
+     const syncable::ModelTypePayloadMap& type_payloads) {
+  sync_pb::DebugEventInfo event_info;
+  syncable::ModelTypeSet types = ModelTypePayloadMapToEnumSet(type_payloads);
+
+  for (syncable::ModelTypeSet::Iterator it = types.First();
+       it.Good(); it.Inc()) {
+    event_info.add_datatypes_notified_from_server(
+        syncable::GetSpecificsFieldNumberFromModelType(it.Get()));
+  }
+
+  AddEventToQueue(event_info);
+}
 
 void DebugInfoEventListener::GetAndClearDebugInfo(
     sync_pb::DebugInfo* debug_info) {

@@ -63,8 +63,16 @@ message DebugEventInfo {
     BOOTSTRAP_TOKEN_UPDATED = 9;  // A new cryptographer bootstrap token was
                                   // generated.
   }
+  // In a given |DebugEventInfo| only one of the following would be set.
   optional EventType type = 1;
+
   optional SyncCycleCompletedEventInfo sync_cycle_completed_event_info = 2;
+
+   // Datatype that caused the nudge.
+   optional int32 nudging_datatype = 3;
+
+   // Datatypes that were notified from server.
+   repeated int32 datatypes_notified_from_server = 4;
 }
 
 message DebugInfo {

@@ -53,6 +53,11 @@ class DebugInfoEventListener : public sync_api::SyncManager::Observer,
   virtual void OnActionableError(
       const browser_sync::SyncProtocolError& sync_error) OVERRIDE;
 
+  // Sync manager events.
+  void OnNudgeFromDatatype(syncable::ModelType datatype);
+  void OnIncomingNotification(
+      const syncable::ModelTypePayloadMap& type_payloads);
+
   // DebugInfoGetter Implementation.
   virtual void GetAndClearDebugInfo(sync_pb::DebugInfo* debug_info) OVERRIDE;
 
