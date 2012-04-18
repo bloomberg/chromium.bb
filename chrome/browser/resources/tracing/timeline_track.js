@@ -779,7 +779,8 @@ cr.define('tracing', function() {
 
     decorate: function() {
       this.classList.add('timeline-viewport-track');
-      this.strings_ = {};
+      this.strings_secs_ = [];
+      this.strings_msecs_ = [];
     },
 
     redraw: function() {
@@ -814,12 +815,15 @@ cr.define('tracing', function() {
         majorMarkDistanceWorld = conservativeGuess / divisors[i - 1];
         break;
       }
+      var tickLabels = undefined;
       if (majorMarkDistanceWorld < 100) {
         unit = 'ms';
         unitDivisor = 1;
+        tickLabels = this.strings_msecs_;
       } else {
         unit = 's';
         unitDivisor = 1000;
+        tickLabels = this.strings_secs_;
       }
 
       var numTicksPerMajor = 5;
@@ -851,10 +855,9 @@ cr.define('tracing', function() {
 
         var unitValue = curX / unitDivisor;
         var roundedUnitValue = Math.floor(unitValue * 100000) / 100000;
-        if (!this.strings_[roundedUnitValue])
-          this.strings_[roundedUnitValue] = roundedUnitValue + ' ' + unit;
-        ctx.fillText(this.strings_[roundedUnitValue], curXView + 2, 0);
-
+        if (!tickLabels[roundedUnitValue])
+            tickLabels[roundedUnitValue] = roundedUnitValue + ' ' + unit;
+        ctx.fillText(tickLabels[roundedUnitValue], curXView + 2, 0);
         ctx.beginPath();
 
         // Major mark
