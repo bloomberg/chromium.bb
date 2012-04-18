@@ -32,8 +32,31 @@ EXTRA_ENV = {
   'RELOCATABLE': '0',
   'USE_GOLD' : '0',
 
+  # These are used only for the static cases
+  # For the shared/dynamic case it does not really make sense
+  # to change them as there are assumptions made all over the
+  # place about them.
   'BASE_TEXT': '0x20000',
   'BASE_RODATA': '0x10020000',
+
+  # We consider 4 different gold modes.
+  # NOTE: "shared" implies PIC
+  #       "dynamic" should probbably imply nonPIC to avoid
+  #                 tls related instruction rewrites by the linker
+  # NOTE: gold does not use a linker script so you have to disable
+  #       them besides setting 'USE_GOLD' to '0'.
+  # NOTE: -Tdata is used to influence the placement of the ro segment
+  #       gold has been adjusted accordingly
+  'LD_GOLD_FLAGS_static': '--rosegment --native-client ' +
+                          '--keep-headers-out-of-load-segment ' +
+                          '-Tdata=${BASE_RODATA} -Ttext=${BASE_TEXT}',
+
+  'LD_GOLD_FLAGS_shared': '--rosegment --bsssegment --native-client ' +
+                          '--keep-headers-out-of-load-segment',
+
+  'LD_GOLD_FLAGS_dynamic': '--rosegment  --bsssegment --native-client ' +
+                           '--keep-headers-out-of-load-segment ' +
+                           '-Tdata=0x11000000 -Ttext=0x1000000',
 
   'LD_EMUL'        : '${LD_EMUL_%ARCH%}',
   'LD_EMUL_ARM'    : 'armelf_nacl',
@@ -49,11 +72,7 @@ EXTRA_ENV = {
   # used by libgcc_eh/libgcc_s to avoid doing the sort during runtime.
   # http://www.airs.com/blog/archives/462
   #
-  # -Tdata we use this flag to influence the placement of the ro segment
-  # gold has been adjusted accordingly
-  'LD_GOLD_FLAGS': '--rosegment --native-client ' +
-                   '-Tdata=${BASE_RODATA} -Ttext=${BASE_TEXT} ',
-  'LD_FLAGS'    : '${USE_GOLD ? ${LD_GOLD_FLAGS}} ' +
+  'LD_FLAGS'    : '${USE_GOLD ? ${LD_GOLD_FLAGS_%EMITMODE%}} ' +
                   '-nostdlib -m ${LD_EMUL} --eh-frame-hdr ' +
                   '${#LD_SCRIPT ? -T ${LD_SCRIPT}} ' +
                   '${#SONAME ? -soname=${SONAME}} ' +
@@ -189,6 +208,12 @@ LDPatterns = [
 
 def main(argv):
   env.update(EXTRA_ENV)
+  # this hack is necessary because arg parsing is influenced by
+  # whether we are using gold or not. It can go away once
+  # we have switched over completely.
+  if '-static' in argv and '--pnacl-sb' not in argv:
+    env.set('USE_GOLD', '1')
+
   ParseArgs(argv, LDPatterns)
 
   GetArch(required=True)
@@ -215,6 +240,14 @@ def main(argv):
   env.push()
   env.set('inputs', *inputs)
   env.set('output', output)
+
+  # Eventually we want to switch to gold for everything:
+  # http://code.google.com/p/nativeclient/issues/detail?id=2707
+  if not env.getbool('SANDBOXED') and env.getbool('STATIC'):
+     env.set('USE_GOLD', '1')
+     env.set('LD_SCRIPT', '')
+     env.set('METADATA_FILE', '')
+
   if env.getbool('SANDBOXED') and env.getbool('SRPC'):
     RunLDSRPC()
   else:
