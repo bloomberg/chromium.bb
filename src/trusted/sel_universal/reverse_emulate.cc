@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2012 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -17,7 +17,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
-#include "native_client/src/trusted/sel_universal/primitives.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/srpc_helper.h"
 

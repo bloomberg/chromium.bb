@@ -326,12 +326,6 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'disable_flaky_tests', default=False,
     desc='Do not run potentially flaky tests - used on Chrome bots')
 
-  BitFromArgument(env, 'sdl_sel_universal', default=False,
-    desc='enhance sel_universal with SDL ppapi emulation')
-
-  BitFromArgument(env, '3d_sel_universal', default=False,
-    desc='enhance sel_universal with 3d ppapi emulation')
-
   BitFromArgument(env, 'use_sandboxed_translator', default=False,
     desc='use pnacl sandboxed translator for linking (not available for arm)')
 

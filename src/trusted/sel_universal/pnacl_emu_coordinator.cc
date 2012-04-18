@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Native Client Authors. All rights reserved.
+// Copyright (c) 2012 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -10,7 +10,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/sel_universal/pnacl_emu.h"
-#include "native_client/src/trusted/sel_universal/primitives.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/srpc_helper.h"
 

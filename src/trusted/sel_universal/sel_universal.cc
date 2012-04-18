@@ -4,8 +4,7 @@
  * found in the LICENSE file.
  */
 
-// Second generation sel_universal implemented in C++ and with optional
-// multimedia support via SDL
+// Second generation sel_universal implemented in C++
 
 #include <stdio.h>
 
@@ -26,17 +25,10 @@
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
-#include "native_client/src/trusted/sel_universal/pepper_emu_handler.h"
 #include "native_client/src/trusted/sel_universal/pnacl_emu_handler.h"
 #include "native_client/src/trusted/sel_universal/reverse_emulate.h"
 #include "native_client/src/trusted/sel_universal/replay_handler.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
-
-#if defined(NACL_SEL_UNIVERSAL_INCLUDE_SDL)
-// NOTE: we need to include this so that it can "hijack" main
-#include <SDL/SDL.h>
-#endif
-
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 using std::ifstream;
@@ -109,16 +101,6 @@ static nacl::string ProcessArguments(int argc,
     if (flag == "--help") {
       printf("%s", kUsage);
       exit(0);
-    } else if (flag == "--event_record") {
-      if (argc <= i + 1) {
-        NaClLog(LOG_FATAL, "not enough args for --event_record option\n");
-      }
-      RecordPPAPIEvents(argv[i + 1]);
-    } else if (flag == "--event_replay") {
-      if (argc <= i + 1) {
-        NaClLog(LOG_FATAL, "not enough args for --event_replay option\n");
-      }
-      ReplayPPAPIEvents(argv[i + 1]);
     } else if (flag == "--debug") {
       ++debug_level;
     } else if (flag == "--abort_on_error") {
@@ -148,12 +130,6 @@ static nacl::string ProcessArguments(int argc,
       f.close();
       NaClLog(LOG_INFO, "total commands now: %d\n",
               static_cast<int>(initial_commands.size()));
-    } else if (flag == "--url_alias") {
-      if (argc <= i + 2) {
-        NaClLog(LOG_FATAL, "not enough args for --url_alias option\n");
-      }
-      RegisterFileAliasForUrl(argv[i + 1], argv[i + 2]);
-      i += 2;
     } else if (flag == "--var") {
       if (argc <= i + 2) {
         NaClLog(LOG_FATAL, "not enough args for --var option\n");
@@ -250,14 +226,16 @@ int raii_main(int argc, char* argv[]) {
                        &channel,
                        launcher.socket_addr()->desc());
 
+  // Sample built-in commands accepted by sel_universal:
   //
-  // Pepper sample commands
-  // initialize_pepper pepper
-  //   sdl_initialize OR (replay*; replay_activate)
   // install_upcalls service
   // show_variables
   // show_descriptors
-  // rpc PPP_InitializeModule i(0) l(0) h(pepper) s("${service}") * i(0) i(0)
+  // rpc <name> <in-arg>* "*" <out-arg>*
+  //
+  // TODO(robertm): add more documentation
+  //
+  // More custom command handlers are installed below:
 
   loop.AddHandler("replay_activate", HandlerReplayActivate);
   loop.AddHandler("replay", HandlerReplay);
@@ -275,9 +253,6 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("file_size", HandlerFileSize);
   loop.AddHandler("sync_socket_create", HandlerSyncSocketCreate);
   loop.AddHandler("sync_socket_write", HandlerSyncSocketWrite);
-  // obsolete names
-  loop.AddHandler("sdl_initialize", HandlerPepperEmuInitialize);
-  loop.AddHandler("sdl_event_loop", HandlerPepperEmuEventLoop);
   // new names
   loop.AddHandler("pnacl_emu_initialize", HandlerPnaclEmuInitialize);
   loop.AddHandler("pnacl_emu_add_varname_mapping",
@@ -287,11 +262,6 @@ int raii_main(int argc, char* argv[]) {
   loop.AddHandler("reverse_service_dump_manifest_mappings",
                   HandlerReverseEmuDumpManifestMappings);
   loop.AddHandler("stream_file", HandlerPnaclFileStream);
-
-  loop.AddHandler("pepper_emu_initialize", HandlerPepperEmuInitialize);
-  loop.AddHandler("pepper_emu_event_loop", HandlerPepperEmuEventLoop);
-  loop.AddHandler("pepper_emu_set_quit_message",
-                  HandlerPepperEmuSetQuitMessage);
 
   NaClLog(1, "populating initial vars\n");
   for (map<string, string>::iterator it = initial_vars.begin();

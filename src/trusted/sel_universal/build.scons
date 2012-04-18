@@ -10,77 +10,6 @@ Import('env')
 if env.CrossToolsBuild():
   Return()
 
-def ErrorUnsupportedPlatform(env):
-  import sys
-  print
-  print   "SORRY, SEL_UNIVERSAL/SDL NOT SUPPORTED FOR THIS PLATFORM"
-  print
-  sys.exit(-1)
-
-
-def EnvSDLUpdateLinux(env):
-  import platform
-  # NOTE: you can obtain SDL headers and libs on Ubuntu via:
-  # sudo apt-get install libsdl1.2-dev
-  env.Append(CPPDEFINES=['NACL_SEL_UNIVERSAL_INCLUDE_SDL'])
-    # NOTE: SDLmain.a is a dummy on linux
-  env.Append(LIBS=['SDL'])
-  # When building a 32bit sel_universal with SDL for a 64bit system, do
-  # sudo apt-get install ia32-libs
-  # first which populates /usr/lib32/
-  # Also: there is no /usr/lib32//libSDL.so only  /usr/lib32//libSDL-1.2.so
-  if ('x86-32' == env['BUILD_FULLARCH'] and
-      platform.architecture()[0] == '64bit'):
-    env.FilterOut(LIBS=['SDL'])
-    env.Append(LIBS=['SDL-1.2'])
-    env.Append(LIBPATH=['/usr/lib32'])
-
-
-if env.Bit('sdl_sel_universal'):
-  if env.Bit('host_linux'):
-    EnvSDLUpdateLinux(env)
-  else:
-    ErrorUnsupportedPlatform(env)
-
-  env.ComponentLibrary('sel_universal_sdl',
-                       ['sdl_ppapi_event_translator.cc',
-                        '${SOURCE_ROOT}/native_client/src/shared/ppapi_proxy/' +
-                        'input_event_data.cc',
-                        'primitives_sdl.cc',
-                        ])
-else:
-   env.ComponentLibrary('sel_universal_sdl',
-                        ['primitives_simple.cc',
-                        ])
-
-
-if env.Bit('3d_sel_universal'):
-  # Some of the headers in command_buffer/ and indirectly
-  # pepper_emu_3d.cc do not compile cleanly, hence we need
-  # use this less pedantic environment
-  sloppy_env = env.Clone()
-  sloppy_env.FilterOut(CCFLAGS=['-pedantic', '-Wextra', '-Werror'])
-  sloppy_env.Append(CPPPATH=['${SOURCE_ROOT}/gpu'])
-  sloppy_env.Append(CPPDEFINES=['OS_POSIX=1'])
-  sloppy_env.FilterOut(CCFLAGS=['-std=c++98'])
-  sloppy_env.Append(CCFLAGS=['-std=gnu++98'])
-
-  # Underlay $SOURCE_ROOT/gpu in this directory.
-  Dir('.').addRepository(Dir('#/../gpu'))
-  Dir('.').addRepository(Dir('#/../base'))
-  sloppy_env.ComponentLibrary(
-      'sel_universal_3d',
-      ['pepper_emu_3d.cc',
-       'chrome_glue.cc',
-       'command_buffer/client/cmd_buffer_helper.cc',
-       'command_buffer/common/cmd_buffer_common.cc',
-       'command_buffer/common/gles2_cmd_format.cc',
-       'command_buffer/common/gles2_cmd_utils.cc',
-       'command_buffer/service/command_buffer_service.cc',
-       ])
-else:
-  env.ComponentLibrary('sel_universal_3d', ['pepper_emu_3d_stub.cc'])
-
 
 # NOTE: Probably because of GetPluginDir()
 if env.Bit('linux') and env.Bit('target_x86'):
@@ -90,15 +19,7 @@ if env.Bit('linux') and env.Bit('target_x86'):
 # NOTE: we need Cocoa because of the GetPluginDir() implementation
 #       on mac (nonnacl_util_c)
 env.ComponentProgram('sel_universal',
-                     ['non_standard_pepper_events.cc',
-                      'parsing.cc',
-                      'pepper_emu_fileio.cc',
-                      'pepper_emu_audio.cc',
-                      'pepper_emu_core.cc',
-                      'pepper_emu_handler.cc',
-                      'pepper_emu_2d.cc',
-                      'pepper_emu_helper.cc',
-                      'pepper_emu_postmessage.cc',
+                     ['parsing.cc',
                       'pnacl_emu_coordinator.cc',
                       'pnacl_emu_handler.cc',
                       'pnacl_emu_stream.cc',
@@ -108,9 +29,7 @@ env.ComponentProgram('sel_universal',
                       'rpc_universal.cc',
                       'sel_universal.cc',
                      ],
-                    EXTRA_LIBS=['sel_universal_sdl',
-                                'sel_universal_3d',
-                                'nonnacl_util',
+                    EXTRA_LIBS=['nonnacl_util',
                                 'nonnacl_srpc',
                                 'reverse_service',
                                 'simple_service',

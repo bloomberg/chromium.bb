@@ -19,9 +19,7 @@
         '../src/trusted/nonnacl_util/nonnacl_util.gyp:*',
         '../src/trusted/perf_counter/perf_counter.gyp:*',
         '../src/trusted/platform_qualify/platform_qualify.gyp:*',
-# TODO(robertm): Make sel_universal work without relying on the old input
-# events. See http://code.google.com/p/nativeclient/issues/detail?id=2066
-#        '../src/trusted/sel_universal/sel_universal.gyp:*',
+        '../src/trusted/sel_universal/sel_universal.gyp:*',
         '../src/trusted/service_runtime/service_runtime.gyp:*',
         '../src/untrusted/irt/irt.gyp:irt_core_nexe',
         '../src/untrusted/irt_stub/irt_stub.gyp:*',
