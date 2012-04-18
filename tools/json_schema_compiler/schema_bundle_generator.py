@@ -7,6 +7,7 @@ import cpp_util
 
 import json
 import os
+import re
 
 # TODO(miket/asargent) - parameterize this.
 SOURCE_BASE_PATH = 'chrome/common/extensions/api'
@@ -127,7 +128,8 @@ class SchemaBundleGenerator(object):
       namespace = self._model.namespaces[api.get('namespace')]
       # JSON parsing code expects lists of schemas, so dump a singleton list.
       json_content = json.dumps([api], indent=2)
-      json_content = json_content.replace('"', '\\"')
+      # Escape all double-quotes. Ignore already-escaped double-quotes.
+      json_content = re.sub('(?<!\\\\)"', '\\"', json_content)
       lines = json_content.split('\n')
       c.Append('(*schemas)["%s"] = ' % namespace.name)
       for index, line in enumerate(lines):

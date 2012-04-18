@@ -6,7 +6,7 @@
 
 namespace idl_basics {
   dictionary MyType1 {
-    long x;
+    long x; // This comment tests "double-quotes".
     DOMString y;
   };
 
