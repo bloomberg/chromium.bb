@@ -11,25 +11,6 @@
  * for the x86-64 architecture.
  */
 
-/* Runs the validator to stubout instructions in the code segment
- * that may cause validation errors. Note: Not all validation erros
- * are caught by stubout. After code has been stubbed out, it must
- * still be validated to verify that there aren't validation errors.
- * Paramters are:
- *    guest_addr: The pc address to use.
- *    data - The contents of the code segment to be validated.
- *    size - The size of the code segment to be validated.
- *    bundle_size - The number of bytes in a code bundle.
- *    local_cpu: True if local cpu rules should be applied.
- *           Otherwise, assume no cpu specific rules.
- */
-NaClValidationStatus NaClApplyValidatorStubout_x86_64(
-    uintptr_t guest_addr,
-    uint8_t *data,
-    size_t size,
-    int bundle_size,
-    const NaClCPUFeaturesX86 *cpu_features);
-
 /* Creates a validator state and initializes it. Returns
  * NaClValidationSucceeded if successful. Otherwise, it returns
  * status describing reason for failure.

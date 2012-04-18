@@ -13,7 +13,6 @@
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate_detailed.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_verbose.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
-#include "native_client/src/trusted/validator/x86/32/ncvalidate.h"
 #include <assert.h>
 
 /* Be sure the correct compile flags are defined for this. */

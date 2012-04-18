@@ -23,11 +23,13 @@
 # endif
 #endif
 
-static NaClValidationStatus NCApplyValidatorSilently_x86_32(
+NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
+    enum NaClSBKind sb_kind,
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
     int bundle_size,
+    int stubout_mode,
     int readonly_text,
     const NaClCPUFeaturesX86 *cpu_features,
     struct NaClValidationCache *cache) {
@@ -35,9 +37,26 @@ static NaClValidationStatus NCApplyValidatorSilently_x86_32(
   int validator_result = 0;
   void *query = NULL;
 
+  /* Check that the given parameter values are supported. */
+  if (sb_kind != NACL_SB_DEFAULT)
+    return NaClValidationFailedNotImplemented;
+
+  if (bundle_size != 16 && bundle_size != 32)
+    return NaClValidationFailedNotImplemented;
+
+  if (stubout_mode && readonly_text)
+    return NaClValidationFailedNotImplemented;
+
+  if (!NaClArchSupported(cpu_features))
+    return NaClValidationFailedCpuNotSupported;
+
+  /* Don't cache in stubout mode. */
+  if (stubout_mode)
+    cache = NULL;
+
+  /* If the validation caching interface is available, perform a query. */
   if (cache != NULL)
     query = cache->CreateQuery(cache->handle);
-
   if (query != NULL) {
     const char validator_id[] = "x86-32";
     cache->AddData(query, (uint8_t *) validator_id, sizeof(validator_id));
@@ -49,70 +68,36 @@ static NaClValidationStatus NCApplyValidatorSilently_x86_32(
     }
   }
 
-  vstate = NCValidateInit(guest_addr, size, bundle_size,
-                          readonly_text, cpu_features);
+  /* Init then validator state. */
+  /* TODO(ncbray) make "detailed" a parameter. */
+  if (stubout_mode) {
+    vstate = NCValidateInitDetailed(guest_addr, size, bundle_size,
+                                    cpu_features);
+  } else {
+    vstate = NCValidateInit(guest_addr, size, bundle_size, readonly_text,
+                            cpu_features);
+  }
   if (vstate == NULL) {
     if (query != NULL)
       cache->DestroyQuery(query);
     return NaClValidationFailedOutOfMemory;
   }
+  NCValidateSetStubOutMode(vstate, stubout_mode);
+
+  /* Validate. */
   NCValidateSegment(data, guest_addr, size, vstate);
   validator_result = NCValidateFinish(vstate);
 
+  /* Cache the result if validation succeeded and the code was not modified. */
   if (query != NULL) {
-    /* Don't cache the result if the code is modified. */
     if (validator_result == 0 && !NCValidatorDidStubOut(vstate))
       cache->SetKnownToValidate(query);
     cache->DestroyQuery(query);
   }
 
   NCValidateFreeState(&vstate);
-  return (validator_result == 0)
+  return (validator_result == 0 || stubout_mode)
       ? NaClValidationSucceeded : NaClValidationFailed;
-}
-
-NaClValidationStatus NCApplyValidatorStubout_x86_32(
-    uintptr_t guest_addr,
-    uint8_t *data,
-    size_t size,
-    int bundle_size,
-    const NaClCPUFeaturesX86 *cpu_features) {
-  struct NCValidatorState *vstate;
-
-  vstate = NCValidateInitDetailed(guest_addr, size, bundle_size, cpu_features);
-  if (vstate == NULL) return NaClValidationFailedOutOfMemory;
-  NCValidateSetStubOutMode(vstate, 1);
-  NCValidateSegment(data, guest_addr, size, vstate);
-  NCValidateFinish(vstate);
-  NCValidateFreeState(&vstate);
-  return NaClValidationSucceeded;
-}
-
-NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
-    enum NaClSBKind sb_kind,
-    uintptr_t guest_addr,
-    uint8_t *data,
-    size_t size,
-    int bundle_size,
-    int stubout_mode,
-    int readonly_text,
-    const NaClCPUFeaturesX86 *cpu_features,
-    struct NaClValidationCache *cache) {
-  NaClValidationStatus status = NaClValidationFailedNotImplemented;
-  assert(NACL_SB_DEFAULT == sb_kind);
-  if (bundle_size == 16 || bundle_size == 32) {
-    if (!NaClArchSupported(cpu_features))
-      return NaClValidationFailedCpuNotSupported;
-    if (stubout_mode) {
-      status = NCApplyValidatorStubout_x86_32(
-          guest_addr, data, size, bundle_size, cpu_features);
-    } else {
-      status = NCApplyValidatorSilently_x86_32(
-          guest_addr, data, size, bundle_size,
-          readonly_text, cpu_features, cache);
-    }
-  }
-  return status;
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 32)
@@ -123,16 +108,17 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 32)
      size_t size,
      int bundle_size,
      const NaClCPUFeaturesX86 *cpu_features) {
-  NaClValidationStatus status = NaClValidationFailedNotImplemented;
-  assert(NACL_SB_DEFAULT == sb_kind);
-  if (bundle_size == 16 || bundle_size == 32) {
-    if (!NaClArchSupported(cpu_features)) {
-      status = NaClValidationFailedCpuNotSupported;
-    } else {
-      status = NCValidateSegmentPair(data_old, data_new, guest_addr,
-                                     size, bundle_size, cpu_features)
-        ? NaClValidationSucceeded : NaClValidationFailed;
-    }
-  }
-  return status;
+  /* Check that the given parameter values are supported. */
+  if (sb_kind != NACL_SB_DEFAULT)
+    return NaClValidationFailedNotImplemented;
+
+  if (bundle_size != 16 && bundle_size != 32)
+    return NaClValidationFailedNotImplemented;
+
+  if (!NaClArchSupported(cpu_features))
+    return NaClValidationFailedCpuNotSupported;
+
+  return NCValidateSegmentPair(data_old, data_new, guest_addr,
+                               size, bundle_size, cpu_features)
+      ? NaClValidationSucceeded : NaClValidationFailed;
 }
