@@ -21,7 +21,6 @@ using content::RenderWidgetHost;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewPort;
-using content::WebContents;
 
 WebContentsViewHelper::WebContentsViewHelper() {
   registrar_.Add(this,
@@ -47,7 +46,7 @@ void WebContentsViewHelper::Observe(
 }
 
 WebContentsImpl* WebContentsViewHelper::CreateNewWindow(
-    WebContents* web_contents,
+    WebContentsImpl* web_contents,
     int route_id,
     const ViewHostMsg_CreateWindow_Params& params) {
   bool should_create = true;
@@ -78,7 +77,7 @@ WebContentsImpl* WebContentsViewHelper::CreateNewWindow(
       new WebContentsImpl(web_contents->GetBrowserContext(),
                           site_instance,
                           route_id,
-                          static_cast<WebContentsImpl*>(web_contents),
+                          web_contents,
                           NULL);
   new_contents->set_opener_web_ui_type(
       web_contents->GetWebUITypeForCurrentState());
@@ -123,7 +122,7 @@ WebContentsImpl* WebContentsViewHelper::CreateNewWindow(
 }
 
 RenderWidgetHostView* WebContentsViewHelper::CreateNewWidget(
-    WebContents* web_contents,
+    WebContentsImpl* web_contents,
     int route_id,
     bool is_fullscreen,
     WebKit::WebPopupType popup_type) {
@@ -182,7 +181,7 @@ RenderWidgetHostView* WebContentsViewHelper::GetCreatedWidget(int route_id) {
 }
 
 WebContentsImpl* WebContentsViewHelper::ShowCreatedWindow(
-    WebContents* web_contents,
+    WebContentsImpl* web_contents,
     int route_id,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_pos,
@@ -198,7 +197,7 @@ WebContentsImpl* WebContentsViewHelper::ShowCreatedWindow(
 }
 
 RenderWidgetHostView* WebContentsViewHelper::ShowCreatedWidget(
-    WebContents* web_contents,
+    WebContentsImpl* web_contents,
     int route_id,
     bool is_fullscreen,
     const gfx::Rect& initial_pos) {

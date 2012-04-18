@@ -21,16 +21,11 @@ struct ViewHostMsg_CreateWindow_Params;
 
 namespace content {
 class RenderWidgetHostView;
-class WebContents;
 }
 
 namespace gfx {
 class Rect;
 }
-
-// TODO(avi): Once all the WebContentsViews implementations are in content (I'm
-// looking at you, TabContentsViewViews...) then change the parameters to take
-// WebContentsImpl rather than WebContents.
 
 // Provides helper methods that provide common implementations of some
 // WebContentsView methods.
@@ -42,7 +37,7 @@ class CONTENT_EXPORT WebContentsViewHelper
 
   // Creates a new window; call |ShowCreatedWindow| below to show it.
   WebContentsImpl* CreateNewWindow(
-      content::WebContents* web_contents,
+      WebContentsImpl* web_contents,
       int route_id,
       const ViewHostMsg_CreateWindow_Params& params);
 
@@ -50,13 +45,13 @@ class CONTENT_EXPORT WebContentsViewHelper
   // show it. If |is_fullscreen| is true it is a fullscreen widget, if not then
   // a pop-up. |popup_type| is only meaningful for a pop-up.
   content::RenderWidgetHostView* CreateNewWidget(
-      content::WebContents* web_contents,
+      WebContentsImpl* web_contents,
       int route_id,
       bool is_fullscreen,
       WebKit::WebPopupType popup_type);
 
   // Shows a window created with |CreateNewWindow| above.
-  WebContentsImpl* ShowCreatedWindow(content::WebContents* web_contents,
+  WebContentsImpl* ShowCreatedWindow(WebContentsImpl* web_contents,
                                      int route_id,
                                      WindowOpenDisposition disposition,
                                      const gfx::Rect& initial_pos,
@@ -65,7 +60,7 @@ class CONTENT_EXPORT WebContentsViewHelper
   // Shows a widget created with |CreateNewWidget| above. |initial_pos| is only
   // meaningful for non-fullscreen widgets.
   content::RenderWidgetHostView* ShowCreatedWidget(
-      content::WebContents* web_contents,
+      WebContentsImpl* web_contents,
       int route_id,
       bool is_fullscreen,
       const gfx::Rect& initial_pos);

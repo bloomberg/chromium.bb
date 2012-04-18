@@ -384,16 +384,6 @@ class CONTENT_EXPORT WebContentsImpl
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostManagerTest, PageDoesBackAndReload);
 
-  // Temporary until the view/contents separation is complete.
-  friend class content::WebContentsView;
-#if defined(TOOLKIT_VIEWS)
-  friend class TabContentsViewViews;
-#elif defined(OS_MACOSX)
-  friend class WebContentsViewMac;
-#elif defined(TOOLKIT_GTK)
-  friend class WebContentsViewGtk;
-#endif
-
   // So InterstitialPageImpl can access SetIsLoading.
   friend class InterstitialPageImpl;
 
