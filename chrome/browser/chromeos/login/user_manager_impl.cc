@@ -299,7 +299,8 @@ UserManagerImpl::UserManagerImpl()
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!base::chromeos::IsRunningOnChromeOS() &&
       !command_line->HasSwitch(switches::kLoginManager) &&
-      !command_line->HasSwitch(switches::kLoginPassword)) {
+      !command_line->HasSwitch(switches::kLoginPassword) &&
+      !command_line->HasSwitch(switches::kGuestSession)) {
     StubUserLoggedIn();
   }
 
