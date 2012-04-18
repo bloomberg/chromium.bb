@@ -30,6 +30,7 @@ NNACL_NEWLIB_SDK32=../../../scons-out/nacl-x86-32
 NNACL_NEWLIB_SDK64=../../../scons-out/nacl-x86-64
 
 PNACL_ROOT=$(TC_ROOT)/pnacl_$(BUILD_PLATFORM)_$(BUILD_ARCH)/$(PNACL_LIBMODE)
+PNACL_TRANSLATOR_ROOT=$(TC_ROOT)/pnacl_translator
 ARM_ROOT=$(TC_ROOT)/linux_arm-trusted
 
 CFLAGS = $(CFLAGS_EXTRA)
@@ -221,9 +222,12 @@ $(IT).nacl.dyn.opt.x8664: $(SRC) $(CPPSRC)
 # BITCODE - FRONTEND
 
 PNACL_BIN=$(PNACL_ROOT)/bin
+# Sandboxed translation uses the standalone translator install (which only
+# supports sandboxed translation). This allows it to run on the arm hardware
+# bots, which have no native toolchain build.
 PNACL_TRANSLATOR=$(TIME_TRANSLATE) $(PNACL_BIN)/pnacl-translate --noirtshim
-PNACL_TRANSLATOR_SB=$(TIME_TRANSLATE) $(PNACL_BIN)/pnacl-translate \
-	--pnacl-sb --noirtshim
+PNACL_TRANSLATOR_SB=$(TIME_TRANSLATE) \
+  $(PNACL_TRANSLATOR_ROOT)/bin/pnacl-translate --pnacl-sb --noirtshim
 PNACL_TRANSLATOR_SB_EMU=$(PNACL_TRANSLATOR_SB) --pnacl-use-emulator
 PNACL_CC=$(PNACL_BIN)/pnacl-clang
 PNACL_CXX=$(PNACL_BIN)/pnacl-clang++
