@@ -125,8 +125,8 @@ cr.define('tracing', function() {
       var collapseEl = document.createElement('div');
       collapseEl.classList.add('timeline-track-button');
       collapseEl.classList.add('timeline-track-collapse-button');
-      var minus = "\u2212"; // minus sign;
-      var plus = "\u002b"; // plus sign;
+      var minus = '\u2212'; // minus sign;
+      var plus = '\u002b'; // plus sign;
       collapseEl.textContent = minus;
       var collapsed = false;
       collapseEl.addEventListener('click', function() {
@@ -247,7 +247,7 @@ cr.define('tracing', function() {
       } else {
         for (var i = 0; i < this.tracks_.length; ++i) {
           this.tracks_[i].height = this.tracks_[0].height;
-          this.tracks_[i].style.display = "";
+          this.tracks_[i].style.display = '';
         }
       }
     }
@@ -768,7 +768,7 @@ cr.define('tracing', function() {
 
   var TimelineViewportTrack = cr.ui.define(CanvasBasedTrack);
 
-  const logOf10 = Math.log(10);
+  var logOf10 = Math.log(10);
   function log10(x) {
     return Math.log(x) / logOf10;
   }

@@ -555,7 +555,7 @@ cr.define('tracing', function() {
      * Helper for selection previous or next.
      * @param {boolean} forwardp If true, select one forward (next).
      *   Else, select previous.
-     * @return {boolean} true if current selection changed
+     * @return {boolean} true if current selection changed.
      */
     selectAdjoining_: function(forwardp) {
       var i, track, slice, adjoining;

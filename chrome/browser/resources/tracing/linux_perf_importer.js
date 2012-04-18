@@ -600,7 +600,7 @@ cr.define('tracing', function() {
                   kthread.openSliceTS,
                   {
                     obj: obj,
-                    plane: plane,
+                    plane: plane
                   },
                   ts - kthread.openSliceTS);
 

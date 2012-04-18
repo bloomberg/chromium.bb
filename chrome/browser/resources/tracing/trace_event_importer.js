@@ -403,28 +403,28 @@ cr.define('tracing', function() {
             // Create subSlices for each step.
             for (var j = 1; j < events.length; ++j) {
               var subName = name;
-              if (events[j-1].event.ph == 'T')
-                subName = name + ':' + events[j-1].event.args.step;
+              if (events[j - 1].event.ph == 'T')
+                subName = name + ':' + events[j - 1].event.args.step;
               var subSlice = new tracing.TimelineAsyncSlice(
                   subName,
                   tracing.getStringColorId(name + j),
-                  events[j-1].event.ts / 1000);
+                  events[j - 1].event.ts / 1000);
 
               subSlice.duration =
-                  (events[j].event.ts / 1000) - (events[j-1].event.ts / 1000);
+                  (events[j].event.ts / 1000) - (events[j - 1].event.ts / 1000);
 
-              subSlice.startThread = events[j-1].thread;
+              subSlice.startThread = events[j - 1].thread;
               subSlice.endThread = events[j].thread;
               subSlice.id = id;
-              subSlice.args = events[j-1].event.args;
+              subSlice.args = events[j - 1].event.args;
 
               slice.subSlices.push(subSlice);
             }
 
             // The args for the finish event go in the last subSlice.
-            var lastSlice = slice.subSlices[slice.subSlices.length-1];
+            var lastSlice = slice.subSlices[slice.subSlices.length - 1];
             for (var arg in event.args)
-              lastSlice.args[arg] = event.args[arg]
+              lastSlice.args[arg] = event.args[arg];
 
             // Add |slice| to the start-thread's asyncSlices.
             slice.startThread.asyncSlices.push(slice);
