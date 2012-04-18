@@ -769,11 +769,11 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsPreIme) {
     EXPECT_EQ(0, delegate->handle_next_ime_count());
     EXPECT_FALSE(GetController()->Process(shift_alt_press));
     EXPECT_FALSE(GetController()->Process(shift_alt_press_post));
-    EXPECT_TRUE(GetController()->Process(shift_alt));
+    EXPECT_FALSE(GetController()->Process(shift_alt));  // crbug.com/123720
     EXPECT_EQ(1, delegate->handle_next_ime_count());
     EXPECT_FALSE(GetController()->Process(alt_shift_press));
     EXPECT_FALSE(GetController()->Process(alt_shift_press_post));
-    EXPECT_TRUE(GetController()->Process(alt_shift));
+    EXPECT_FALSE(GetController()->Process(alt_shift));  // crbug.com/123720
     EXPECT_EQ(2, delegate->handle_next_ime_count());
 
     // We should NOT switch IME when e.g. Shift+Alt+X is pressed and X is
