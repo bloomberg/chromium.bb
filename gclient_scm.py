@@ -85,7 +85,10 @@ def CreateSCM(url, root_dir=None, relpath=None):
   scm_name = GetScmName(url)
   if not scm_name in SCM_MAP:
     raise gclient_utils.Error('No SCM found for url %s' % url)
-  return SCM_MAP[scm_name](url, root_dir, relpath)
+  scm_class = SCM_MAP[scm_name]
+  if not scm_class.BinaryExists():
+    raise gclient_utils.Error('%s command not found' % scm_name)
+  return scm_class(url, root_dir, relpath)
 
 
 # SCMWrapper base class
@@ -132,6 +135,18 @@ class GitWrapper(SCMWrapper):
     if url.startswith('git+http://') or url.startswith('git+https://'):
       url = url[4:]
     SCMWrapper.__init__(self, url, root_dir, relpath)
+
+  @staticmethod
+  def BinaryExists():
+    """Returns true if the command exists."""
+    try:
+      # We assume git is newer than 1.7.  See: crbug.com/114483
+      result, version = scm.GIT.AssertVersion('1.7')
+      if not result:
+        raise gclient_utils.Error('Git version is older than 1.7: %s' % version)
+      return result
+    except OSError:
+      return False
 
   def GetRevisionDate(self, revision):
     """Returns the given revision's date in ISO-8601 format (which contains the
@@ -774,6 +789,17 @@ class GitWrapper(SCMWrapper):
 
 class SVNWrapper(SCMWrapper):
   """ Wrapper for SVN """
+
+  @staticmethod
+  def BinaryExists():
+    """Returns true if the command exists."""
+    try:
+      result, version = scm.SVN.AssertVersion('1.4')
+      if not result:
+        raise gclient_utils.Error('SVN version is older than 1.4: %s' % version)
+      return result
+    except OSError:
+      return False
 
   def GetRevisionDate(self, revision):
     """Returns the given revision's date in ISO-8601 format (which contains the

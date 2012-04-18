@@ -64,11 +64,17 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
     self.mox.StubOutWithMock(subprocess2, 'Popen')
     self._scm_wrapper = gclient_scm.CreateSCM
     gclient_scm.scm.SVN.current_version = None
+    self._original_SVNBinaryExists = gclient_scm.SVNWrapper.BinaryExists
+    self._original_GitBinaryExists = gclient_scm.GitWrapper.BinaryExists
+    gclient_scm.SVNWrapper.BinaryExists = staticmethod(lambda : True)
+    gclient_scm.GitWrapper.BinaryExists = staticmethod(lambda : True)
     # Absolute path of the fake checkout directory.
     self.base_path = join(self.root_dir, self.relpath)
 
   def tearDown(self):
     SuperMoxTestBase.tearDown(self)
+    gclient_scm.SVNWrapper.BinaryExists = self._original_SVNBinaryExists
+    gclient_scm.GitWrapper.BinaryExists = self._original_GitBinaryExists
 
 
 class SVNWrapperTestCase(BaseTestCase):
@@ -94,6 +100,7 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testDir(self):
     members = [
+        'BinaryExists',
         'FullUrlForRelativeUrl',
         'GetRevisionDate',
         'GetUsableRev',
@@ -750,16 +757,23 @@ from :3
     self.base_path = join(self.root_dir, self.relpath)
     self.enabled = self.CreateGitRepo(self.sample_git_import, self.base_path)
     StdoutCheck.setUp(self)
+    self._original_GitBinaryExists = gclient_scm.GitWrapper.BinaryExists
+    self._original_SVNBinaryExists = gclient_scm.SVNWrapper.BinaryExists
+    gclient_scm.GitWrapper.BinaryExists = staticmethod(lambda : True)
+    gclient_scm.SVNWrapper.BinaryExists = staticmethod(lambda : True)
 
   def tearDown(self):
     StdoutCheck.tearDown(self)
     TestCaseUtils.tearDown(self)
     unittest.TestCase.tearDown(self)
     rmtree(self.root_dir)
+    gclient_scm.GitWrapper.BinaryExists = self._original_GitBinaryExists
+    gclient_scm.SVNWrapper.BinaryExists = self._original_SVNBinaryExists
 
 class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
   def testDir(self):
     members = [
+        'BinaryExists',
         'FullUrlForRelativeUrl',
         'GetRevisionDate',
         'GetUsableRev',
