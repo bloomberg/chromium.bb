@@ -63,13 +63,13 @@ TEST_F(FlimflamProfileClientTest, PropertyChanged) {
                                 std::vector<std::string>(1, kExampleEntryPath));
 
   // Set expectations.
-  base::ListValue* value = new base::ListValue;
-  value->Append(base::Value::CreateStringValue(kExampleEntryPath));
+  base::ListValue value;
+  value.Append(base::Value::CreateStringValue(kExampleEntryPath));
 
   client_->SetPropertyChangedHandler(dbus::ObjectPath(kDefaultProfilePath),
                                      base::Bind(&ExpectPropertyChanged,
                                                 flimflam::kEntriesProperty,
-                                                value));
+                                                &value));
   // Run the signal callback.
   SendPropertyChangedSignal(&signal);
 
