@@ -337,6 +337,12 @@
                   '|content/public/browser/user_metrics.h'\
                   '|chrome/tools/extract_actions.py'
     },
+    'speech': {
+      'filepath': 'chrome/browser/speech/.*'\
+                  '|content/browser/speech/.*'\
+                  '|content/common/.*speech.*'\
+                  '|content/public/.*speech.*'
+    },
   },
 
   'WATCHLISTS': {
@@ -462,6 +468,7 @@
     'metrics': ['jar@chromium.org',
                 'isherman@chromium.org',
                 'mad@chromium.org'],
+    'speech': ['satish@chromium.org'],
     'installer': ['grt+watch@chromium.org'],
   },
 }
