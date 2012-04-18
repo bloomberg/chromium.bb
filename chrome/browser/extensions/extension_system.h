@@ -20,7 +20,6 @@ class ExtensionInfoMap;
 class ExtensionMessageService;
 class ExtensionNavigationObserver;
 class ExtensionPrefs;
-class ExtensionPrefValueMap;
 class ExtensionProcessManager;
 class ExtensionService;
 class Profile;
@@ -191,6 +190,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
   // access to the ResourceContext owned by |io_data_|.
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_ptr<extensions::AlarmManager> alarm_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionSystemImpl);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_H_

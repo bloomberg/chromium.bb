@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SORTING_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -15,11 +16,12 @@
 
 class ExtensionScopedPrefs;
 class ExtensionServiceInterface;
+class PrefService;
 
 class ExtensionSorting {
  public:
-  explicit ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs,
-                            PrefService* pref_service);
+  ExtensionSorting(ExtensionScopedPrefs* extension_scoped_prefs,
+                   PrefService* pref_service);
   ~ExtensionSorting();
 
   // Set up the ExtensionService to inform of changes that require syncing.

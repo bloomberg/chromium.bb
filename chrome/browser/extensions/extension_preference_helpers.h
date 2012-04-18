@@ -15,9 +15,7 @@ class Profile;
 
 namespace base {
 class ListValue;
-class DictionaryValue;
 };
-
 
 namespace extension_preference_helpers {
 
@@ -43,6 +41,7 @@ void DispatchEventToExtensions(
     ExtensionAPIPermission::ID permission,
     bool incognito,
     const std::string& browser_pref);
-}
+
+} // namespace extension_preference_helpers
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREFERENCE_HELPERS_H_

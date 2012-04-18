@@ -19,6 +19,9 @@ using content::BrowserThread;
 
 namespace {
 
+const char kUnpackedExtensionsBlacklistedError[] =
+    "Loading of unpacked extensions is disabled by the administrator.";
+
 // Manages an ExtensionInstallUI for a particular extension.
 class SimpleExtensionLoadPrompt : public ExtensionInstallUI::Delegate {
  public:
@@ -107,6 +110,11 @@ void UnpackedInstaller::LoadFromCommandLine(const FilePath& path_in) {
   extension_path_ = path_in;
   file_util::AbsolutePath(&extension_path_);
 
+  if (!IsLoadingUnpackedAllowed()) {
+    ReportExtensionLoadError(kUnpackedExtensionsBlacklistedError);
+    return;
+  }
+
   std::string id = Extension::GenerateIdForPath(extension_path_);
   bool allow_file_access =
       Extension::ShouldAlwaysAllowFileAccess(Extension::LOAD);
@@ -127,11 +135,19 @@ void UnpackedInstaller::LoadFromCommandLine(const FilePath& path_in) {
       &error));
 
   if (!extension) {
-    service_weak_->ReportExtensionLoadError(extension_path_, error, true);
+    ReportExtensionLoadError(error);
     return;
   }
 
   OnLoaded(extension);
+}
+
+bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
+  if (!service_weak_)
+    return true;
+  // If there is a "*" in the extension blacklist, then no extensions should be
+  // allowed at all (except explicitly whitelisted extensions).
+  return !service_weak_->extension_prefs()->ExtensionsBlacklistedByDefault();
 }
 
 void UnpackedInstaller::GetAbsolutePath() {
@@ -145,6 +161,14 @@ void UnpackedInstaller::GetAbsolutePath() {
 
 void UnpackedInstaller::CheckExtensionFileAccess() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!service_weak_)
+    return;
+
+  if (!IsLoadingUnpackedAllowed()) {
+    ReportExtensionLoadError(kUnpackedExtensionsBlacklistedError);
+    return;
+  }
+
   std::string id = Extension::GenerateIdForPath(extension_path_);
   // Unpacked extensions default to allowing file access, but if that has been
   // overridden, don't reset the value.

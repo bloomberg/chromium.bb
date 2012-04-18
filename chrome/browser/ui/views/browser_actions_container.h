@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_helpers.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -31,7 +32,6 @@
 #include "ui/views/view.h"
 
 class Browser;
-class BrowserActionOverflowMenuController;
 class BrowserActionsContainer;
 class Extension;
 class ExtensionAction;

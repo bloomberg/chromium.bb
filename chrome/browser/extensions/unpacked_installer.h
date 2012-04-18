@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,6 +46,9 @@ class UnpackedInstaller
 
   explicit UnpackedInstaller(ExtensionService* extension_service);
   virtual ~UnpackedInstaller();
+
+  // Verifies if loading unpacked extensions is allowed.
+  bool IsLoadingUnpackedAllowed() const;
 
   // We change the input extension path to an absolute path, on the file thread.
   // Then we need to check the file access preference, which needs

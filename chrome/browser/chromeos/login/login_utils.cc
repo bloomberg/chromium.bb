@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/login_utils.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "ash/ash_switches.h"
@@ -47,6 +48,7 @@
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"

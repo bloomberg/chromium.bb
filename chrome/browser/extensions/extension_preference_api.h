@@ -12,6 +12,8 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 
+class PrefService;
+
 namespace base {
 class Value;
 }

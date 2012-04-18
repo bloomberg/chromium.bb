@@ -7,9 +7,10 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
@@ -124,6 +125,8 @@ class ComponentLoader : public content::NotificationObserver {
   RegisteredComponentExtensions component_extensions_;
 
   PrefChangeRegistrar pref_change_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(ComponentLoader);
 };
 
 }  // namespace extensions

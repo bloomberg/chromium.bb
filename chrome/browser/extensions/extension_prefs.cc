@@ -10,16 +10,14 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/prefs/pref_notifier.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
-
-using base::Time;
 
 namespace {
 
@@ -620,48 +618,35 @@ void ExtensionPrefs::SetAppNotificationDisabled(
 
 bool ExtensionPrefs::IsExtensionAllowedByPolicy(
     const std::string& extension_id,
-    Extension::Location location) {
-  std::string string_value;
+    Extension::Location location) const {
+  base::StringValue id_value(extension_id);
 
   if (location == Extension::COMPONENT ||
       location == Extension::EXTERNAL_POLICY_DOWNLOAD) {
     return true;
   }
 
-  const ListValue* blacklist =
+  const base::ListValue* blacklist =
       prefs_->GetList(prefs::kExtensionInstallDenyList);
   if (!blacklist || blacklist->empty())
     return true;
 
   // Check the whitelist first.
-  const ListValue* whitelist =
+  const base::ListValue* whitelist =
       prefs_->GetList(prefs::kExtensionInstallAllowList);
-  if (whitelist) {
-    for (ListValue::const_iterator it = whitelist->begin();
-         it != whitelist->end(); ++it) {
-      if (!(*it)->GetAsString(&string_value))
-        LOG(WARNING) << "Failed to read whitelist string.";
-      else if (string_value == extension_id)
-        return true;
-    }
-  }
+  if (whitelist && whitelist->Find(id_value) != whitelist->end())
+    return true;
 
   // Then check the blacklist (the admin blacklist, not the Google blacklist).
-  if (blacklist) {
-    for (ListValue::const_iterator it = blacklist->begin();
-         it != blacklist->end(); ++it) {
-      if (!(*it)->GetAsString(&string_value)) {
-        LOG(WARNING) << "Failed to read blacklist string.";
-      } else {
-        if (string_value == "*")
-          return false;  // Only whitelisted extensions are allowed.
-        if (string_value == extension_id)
-          return false;
-      }
-    }
-  }
+  return blacklist->Find(id_value) == blacklist->end() &&
+         !ExtensionsBlacklistedByDefault();
+}
 
-  return true;
+bool ExtensionPrefs::ExtensionsBlacklistedByDefault() const {
+  const base::ListValue* blacklist =
+      prefs_->GetList(prefs::kExtensionInstallDenyList);
+  base::StringValue wildcard("*");
+  return blacklist && blacklist->Find(wildcard) != blacklist->end();
 }
 
 bool ExtensionPrefs::DidExtensionEscalatePermissions(
@@ -754,7 +739,9 @@ void ExtensionPrefs::UpdateBlacklist(
 namespace {
 
 // Serializes |time| as a string value mapped to |key| in |dictionary|.
-void SaveTime(DictionaryValue* dictionary, const char* key, const Time& time) {
+void SaveTime(DictionaryValue* dictionary,
+              const char* key,
+              const base::Time& time) {
   if (!dictionary)
     return;
   std::string string_value = base::Int64ToString(time.ToInternalValue());
@@ -763,44 +750,44 @@ void SaveTime(DictionaryValue* dictionary, const char* key, const Time& time) {
 
 // The opposite of SaveTime. If |key| is not found, this returns an empty Time
 // (is_null() will return true).
-Time ReadTime(const DictionaryValue* dictionary, const char* key) {
+base::Time ReadTime(const DictionaryValue* dictionary, const char* key) {
   if (!dictionary)
-    return Time();
+    return base::Time();
   std::string string_value;
   int64 value;
   if (dictionary->GetString(key, &string_value)) {
     if (base::StringToInt64(string_value, &value)) {
-      return Time::FromInternalValue(value);
+      return base::Time::FromInternalValue(value);
     }
   }
-  return Time();
+  return base::Time();
 }
 
 }  // namespace
 
-Time ExtensionPrefs::LastPingDay(const std::string& extension_id) const {
+base::Time ExtensionPrefs::LastPingDay(const std::string& extension_id) const {
   DCHECK(Extension::IdIsValid(extension_id));
   return ReadTime(GetExtensionPref(extension_id), kLastPingDay);
 }
 
 void ExtensionPrefs::SetLastPingDay(const std::string& extension_id,
-                                    const Time& time) {
+                                    const base::Time& time) {
   DCHECK(Extension::IdIsValid(extension_id));
   ScopedExtensionPrefUpdate update(prefs_, extension_id);
   SaveTime(update.Get(), kLastPingDay, time);
 }
 
-Time ExtensionPrefs::BlacklistLastPingDay() const {
+base::Time ExtensionPrefs::BlacklistLastPingDay() const {
   return ReadTime(prefs_->GetDictionary(kExtensionsBlacklistUpdate),
                   kLastPingDay);
 }
 
-void ExtensionPrefs::SetBlacklistLastPingDay(const Time& time) {
+void ExtensionPrefs::SetBlacklistLastPingDay(const base::Time& time) {
   DictionaryPrefUpdate update(prefs_, kExtensionsBlacklistUpdate);
   SaveTime(update.Get(), kLastPingDay, time);
 }
 
-Time ExtensionPrefs::LastActivePingDay(const std::string& extension_id) {
+base::Time ExtensionPrefs::LastActivePingDay(const std::string& extension_id) {
   DCHECK(Extension::IdIsValid(extension_id));
   return ReadTime(GetExtensionPref(extension_id), kLastActivePingDay);
 }

@@ -38,6 +38,7 @@
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/chrome_version_service.h"

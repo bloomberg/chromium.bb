@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -35,7 +36,6 @@ class Image;
 namespace ui {
 class ResourceBundle;
 }
-using ui::ResourceBundle;
 
 #ifdef __OBJC__
 @class NSString;
@@ -302,7 +302,7 @@ class ThemeService : public base::NonThreadSafe,
   mutable NSGradientMap nsgradient_cache_;
 #endif
 
-  ResourceBundle& rb_;
+  ui::ResourceBundle& rb_;
   Profile* profile_;
 
   scoped_refptr<BrowserThemePack> theme_pack_;

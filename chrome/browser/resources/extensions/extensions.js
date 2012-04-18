@@ -181,6 +181,8 @@ cr.define('extensions', function() {
       $('extension-settings').classList.remove('dev-mode');
     }
 
+    $('load-unpacked').disabled = extensionsData.loadUnpackedDisabled;
+
     ExtensionsList.prototype.data_ = extensionsData;
     var extensionList = $('extension-settings-list');
     ExtensionsList.decorate(extensionList);

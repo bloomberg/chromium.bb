@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
 #include "chrome/common/chrome_constants.h"
@@ -27,6 +28,7 @@
 
 using content::BrowserThread;
 using content::UserMetricsAction;
+using ui::ResourceBundle;
 
 // Strings used in alignment properties.
 const char* ThemeService::kAlignmentCenter = "center";

@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -385,6 +386,7 @@ void ExtensionSettingsHandler::Observe(
     case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
     case chrome::NOTIFICATION_EXTENSION_WARNING_CHANGED:
     case chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED:
+    case chrome::NOTIFICATION_PREF_CHANGED:
       MaybeUpdateAfterNotification();
       break;
     default:
@@ -485,6 +487,10 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   bool developer_mode =
       profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   results.SetBoolean("developerMode", developer_mode);
+
+  bool load_unpacked_disabled =
+      extension_service_->extension_prefs()->ExtensionsBlacklistedByDefault();
+  results.SetBoolean("loadUnpackedDisabled", load_unpacked_disabled);
 
   web_ui()->CallJavascriptFunction("ExtensionSettings.returnExtensionsData",
                                    results);
@@ -747,6 +753,9 @@ void ExtensionSettingsHandler::MaybeRegisterForNotifications() {
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<ExtensionPrefs>(profile->GetExtensionService()->
                              extension_prefs()));
+
+  pref_registrar_.Init(profile->GetPrefs());
+  pref_registrar_.Add(prefs::kExtensionInstallDenyList, this);
 }
 
 std::vector<ExtensionPage>

@@ -12,16 +12,16 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/time.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_content_settings_store.h"
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/string_ordinal.h"
-#include "googleurl/src/gurl.h"
 
 class ExtensionPrefValueMap;
 class ExtensionSorting;
+class PrefService;
 class URLPatternSet;
 
 // Class for managing global and per-extension preferences.
@@ -200,7 +200,14 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer,
   // Is the extension with |extension_id| allowed by policy (checking both
   // whitelist and blacklist).
   bool IsExtensionAllowedByPolicy(const std::string& extension_id,
-                                  Extension::Location location);
+                                  Extension::Location location) const;
+
+  // Checks if extensions are blacklisted by default, by policy. When true, this
+  // means that even extensions without an ID should be blacklisted (e.g.
+  // from the command line, or when loaded as an unpacked extension).
+  // IsExtensionAllowedByPolicy() also takes this into account, and should be
+  // used instead when the extension ID is known.
+  bool ExtensionsBlacklistedByDefault() const;
 
   // Returns the last value set via SetLastPingDay. If there isn't such a
   // pref, the returned Time will return true for is_null().

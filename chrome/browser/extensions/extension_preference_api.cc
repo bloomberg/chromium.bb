@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/extension_preference_api.h"
 
 #include <map>
+#include <utility>
 
-#include "base/json/json_writer.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_prefs_scope.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_error_utils.h"
