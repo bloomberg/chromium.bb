@@ -177,6 +177,7 @@ bool LinuxPtraceDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {
 
     line_reader->PopLine(line_len);
   }
+  sys_close(fd);
 
   if (info->ppid == -1 || info->tgid == -1)
     return false;
