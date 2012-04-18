@@ -1640,6 +1640,148 @@ class LiveGamePerfTest(BasePerfTest):
                               'AngryBirds', 'angry_birds')
 
 
+class PageCyclerTest(BasePerfTest):
+  """Tests to run various page cyclers."""
+
+  # Page Cycler lives in src/data/page_cycler rather than src/chrome/test/data
+  PC_PATH = os.path.join(BasePerfTest.DataDir(), os.pardir, os.pardir,
+                         os.pardir, 'data', 'page_cycler')
+
+  def ExtraChromeFlags(self):
+    """Ensures Chrome is launched with custom flags.
+
+    Returns:
+      A list of extra flags to pass to Chrome when it is launched.
+    """
+    # Extra flags required to run these tests.
+    # The first two are needed for the test.
+    # The plugins argument is to prevent bad scores due to pop-ups from
+    # running an old version of something (like Flash).
+    return (super(PageCyclerTest, self).ExtraChromeFlags() +
+            ['--js-flags="--expose_gc"',
+             '--enable-file-cookies',
+             '--allow-outdated-plugins'])
+
+  def _PreReadDir(self, dir):
+    """This recursively reads all of the files in a given url directory.
+
+    The intent is to get them into memory before they are used by the benchmark.
+    """
+    def _PreReadDir(dirname, names):
+      for rfile in names:
+        with open(os.path.join(dirname, rfile)) as fp:
+          fp.read()
+
+    for root, dirs, files in os.walk(os.path.dirname(dir)):
+      _PreReadDir(root, files)
+
+  def setUp(self):
+    self._PreReadDir(os.path.join(self.PC_PATH, 'common'))
+    BasePerfTest.setUp(self)
+
+  def _RunPageCyclerTest(self, dirname, iterations, description):
+    """Runs the specified PageCycler test.
+
+    The final score that is calculated is a geometric mean of the
+    arithmetic means of each site's load time, and we drop the upper
+    20% of the times for each site so they don't skew the mean.
+    The Geometric mean is used for the final score because the time
+    range for any given site may be very different, and we don't want
+    slower sites to weight more heavily than others.
+
+    Args:
+      dirname: The directory containing the page cycler test.
+      iterations: How many times to run through the set of pages.
+      description: A string description for the particular test being run.
+    """
+    self._PreReadDir(os.path.join(self.PC_PATH, dirname))
+
+    url = self.GetFileURLForDataPath(os.path.join(self.PC_PATH, dirname),
+                                     'start.html')
+
+    self.NavigateToURL('%s?auto=1&iterations=%d' % (url, iterations))
+
+    # Check cookies for "__pc_done=1" to know the test is over.
+    def IsTestDone():
+      cookies = self.GetCookie(pyauto.GURL(url))  # Window 0, tab 0.
+      return '__pc_done=1' in cookies
+
+    self.assertTrue(
+        self.WaitUntil(IsTestDone, timeout=(60 * iterations), retry_sleep=1),
+        msg='Timed out waiting for page cycler test to complete.')
+
+    # Collect the results from the cookies.
+    site_to_time_list = {}
+    cookies = self.GetCookie(pyauto.GURL(url))  # Window 0, tab 0.
+    site_list = ''
+    time_list = ''
+    for cookie in cookies.split(';'):
+      if '__pc_pages' in cookie:
+        site_list = cookie[cookie.find('=') + 1:]
+      elif '__pc_timings' in cookie:
+        time_list = cookie[cookie.find('=') + 1:]
+    self.assertTrue(site_list and time_list,
+                    msg='Could not find test results in cookies: %s' % cookies)
+    site_list = site_list.split(',')
+    time_list = time_list.split(',')
+    self.assertEqual(iterations, len(time_list) / len(site_list),
+                     msg='Iteration count %d does not match with site/timing '
+                     'lists: %s and %s' % (iterations, site_list, time_list))
+    for site_index, site in enumerate(site_list):
+      site_to_time_list[site] = []
+      for iteration_index in xrange(iterations):
+        site_to_time_list[site].append(
+            float(time_list[iteration_index * len(site_list) + site_index]))
+
+    site_times = []
+    for site, time_list in site_to_time_list.iteritems():
+      sorted_times = sorted(time_list)
+      num_to_drop = int(len(sorted_times) * 0.2)
+      logging.debug('Before dropping %d: ' % num_to_drop)
+      logging.debug(sorted_times)
+      if num_to_drop:
+        sorted_times = sorted_times[:-num_to_drop]
+      logging.debug('After dropping:')
+      logging.debug(sorted_times)
+      # Do an arithmetic mean of the load times for a given page.
+      mean_time = sum(sorted_times) / len(sorted_times)
+      logging.debug('Mean time is: ' + str(mean_time))
+      site_times.append(mean_time)
+
+    logging.info('site times = %s' % site_times)
+    # Compute a geometric mean over the averages for each site.
+    final_result = reduce(lambda x, y: x * y,
+                          site_times) ** (1.0/ len(site_times))
+    logging.info('%s page cycler final result: %f' %
+                 (description, final_result))
+    self._OutputPerfGraphValue(description + '_PageCycler', final_result,
+                               'milliseconds', graph_name='PageCycler')
+
+  def testMoreJSFile(self):
+    self._RunPageCyclerTest('morejs', self._num_iterations, 'MoreJSFile')
+
+  def testAlexaFile(self):
+    self._RunPageCyclerTest('alexa_us', self._num_iterations, 'Alexa_usFile')
+
+  def testBloatFile(self):
+    self._RunPageCyclerTest('bloat', self._num_iterations, 'BloatFile')
+
+  def testDHTMLFile(self):
+    self._RunPageCyclerTest('dhtml', self._num_iterations, 'DhtmlFile')
+
+  def testIntl1File(self):
+    self._RunPageCyclerTest('intl1', self._num_iterations, 'Intl1File')
+
+  def testIntl2File(self):
+    self._RunPageCyclerTest('intl2', self._num_iterations, 'Intl2File')
+
+  def testMozFile(self):
+    self._RunPageCyclerTest('moz', self._num_iterations, 'MozFile')
+
+  def testMoz2File(self):
+    self._RunPageCyclerTest('moz2', self._num_iterations, 'Moz2File')
+
+
 class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   """Request handler for the local performance test server."""
 

@@ -722,6 +722,7 @@
     'chromeos': [
       'perf',
       '-perf.GPUPerfTest',
+      '-perf.PageCyclerTest',
     ],
   },
 
