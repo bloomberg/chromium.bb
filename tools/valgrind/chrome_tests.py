@@ -382,7 +382,7 @@ class ChromeTests:
                           "run_webkit_tests.py")
     script_cmd = ["python", script, "-v",
                   "--run-singly",  # run a separate DumpRenderTree for each test
-                  "--experimental-fully-parallel",
+                  "--fully-parallel",
                   "--time-out-ms=200000",
                   "--noshow-results",
                   "--nocheck-sys-deps"]
