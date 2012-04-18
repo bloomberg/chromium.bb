@@ -49,9 +49,16 @@
         },
       }],
     ],
+    'conditions': [
+      ['OS=="win"', {
+        'variables': {
+          'win_target': 'x64',
+         },
+      }],
+    ],
   },
   'conditions': [
-    ['OS!="win" and target_arch=="x64"', {
+    ['OS=="win" or target_arch=="x64"', {
       'targets': [
         # ----------------------------------------------------------------------
         {
@@ -75,35 +82,6 @@
             'ncvalidate_x86_64',
             '<(DEPTH)/native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_reg_sfi.gyp:ncval_reg_sfi_verbose_x86_64'
           ],
-          'hard_dependency': 1,
-        },
-      ],
-    }],
-    ['OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'ncvalidate_x86_64',
-          'type': 'static_library',
-          'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_reg_sfi.gyp:ncval_reg_sfi_x86_64',
-          ],
-          'variables': {
-            'target_base': 'ncvalidate_x86_64',
-            'win_target': 'x64',
-          },
-          'hard_dependency': 1,
-        },
-        {
-          'target_name': 'ncvalidate_verbose_x86_64',
-          'type': 'static_library',
-          'dependencies': [
-            'ncvalidate_x86_64',
-            '<(DEPTH)/native_client/src/trusted/validator/x86/ncval_reg_sfi/ncval_reg_sfi.gyp:ncval_reg_sfi_verbose_x86_64',
-          ],
-          'variables': {
-            'target_base': 'ncvalidate_verbose_x86_64',
-            'win_target': 'x64',
-          },
           'hard_dependency': 1,
         },
       ],
