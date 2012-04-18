@@ -22,6 +22,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/gl/gl_switches.h"
 
 #if defined(USE_ASH)
@@ -605,6 +606,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAsynchronousSpellChecking)
   },
 #endif
+  {
+    "touch-optimized-ui",
+    IDS_TOUCH_OPTIMIZED_UI_NAME,
+    IDS_TOUCH_OPTIMIZED_UI_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kTouchOptimizedUI)
+  },
 };
 
 const Experiment* experiments = kExperiments;
