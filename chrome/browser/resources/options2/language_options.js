@@ -101,6 +101,12 @@ cr.define('options', function() {
           Preferences.getInstance().addEventListener(
               this.enableSpellCheckPref,
               this.updateEnableSpellCheck_.bind(this));
+
+          var spellCheckLanguageButton = getRequiredElement(
+              'language-options-spell-check-language-button');
+          spellCheckLanguageButton.addEventListener(
+              'click',
+              this.handleSpellCheckLanguageButtonClick_.bind(this));
         }
       }
 
@@ -108,11 +114,6 @@ cr.define('options', function() {
         $('language-options-ui-restart-button').onclick =
             chrome.send.bind(chrome, 'uiLanguageRestart');
       }
-
-      var spellCheckLanguageButton =
-          getRequiredElement('language-options-spell-check-language-button');
-      spellCheckLanguageButton.addEventListener('click',
-          this.handleSpellCheckLanguageButtonClick_.bind(this));
 
       $('language-confirm').onclick =
           OptionsPage.closeOverlay.bind(OptionsPage);
@@ -227,6 +228,7 @@ cr.define('options', function() {
     handleLanguageOptionsListChange_: function(e) {
       var languageOptionsList = $('language-options-list');
       var languageCode = languageOptionsList.getSelectedLanguageCode();
+
       // Select the language if it's specified in the URL hash (ex. lang=ja).
       // Used for automated testing.
       var match = document.location.hash.match(/\blang=([\w-]+)/);
@@ -236,13 +238,18 @@ cr.define('options', function() {
           languageCode = specifiedLanguageCode;
         }
       }
-      this.updateSelectedLanguageName_(languageCode);
+
       if (cr.isWindows || cr.isChromeOS)
         this.updateUiLanguageButton_(languageCode);
-      if (!cr.isMac)
+
+      if (!cr.isMac) {
+        this.updateSelectedLanguageName_(languageCode);
         this.updateSpellCheckLanguageButton_(languageCode);
+      }
+
       if (cr.isChromeOS)
         this.updateInputMethodList_(languageCode);
+
       this.updateLanguageListInAddLanguageOverlay_();
     },
 
@@ -344,18 +351,15 @@ cr.define('options', function() {
           languageCode);
       var languageNativeDisplayName =
           LanguageList.getNativeDisplayNameFromLanguageCode(languageCode);
+
       // If the native name is different, add it.
       if (languageDisplayName != languageNativeDisplayName) {
         languageDisplayName += ' - ' + languageNativeDisplayName;
       }
+
       // Update the currently selected language name.
       var languageName = $('language-options-language-name');
-      if (languageDisplayName) {
-        languageName.hidden = false;
-        languageName.textContent = languageDisplayName;
-      } else {
-        languageName.hidden = true;
-      }
+      languageName.textContent = languageDisplayName;
     },
 
     /**

@@ -22,6 +22,9 @@
         </div>
         <div id="language-options-list-dropmarker"></div>
       </div>
+<!-- Chrome uses the native OS spellchecker in OS X, so don't display the
+     dictionary pane. -->
+<if expr="not is_macosx">
       <div class="language-options-right">
         <h3 id="language-options-language-name"></h3>
 <if expr="os == 'win32' or pp_ifdef('chromeos')">
@@ -62,6 +65,7 @@
         </div>
 </if>
       </div>
+</if>
     </div>
     <div class="language-options-footer">
 <if expr="pp_ifdef('chromeos')">
