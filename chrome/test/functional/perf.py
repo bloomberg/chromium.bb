@@ -180,14 +180,8 @@ class BasePerfTest(pyauto.PyUITest):
         std_dev = math.sqrt(sum(temp_vals) / (len(temp_vals) - 1))
     return avg, std_dev
 
-  # TODO(dennisjeffrey): For all long-running perf results (lists of (x, y)
-  # tuples), make them incremental such that we always add the new tuples to
-  # the previous result, not just completely replace the previous result.  This
-  # change will reduce the total stdio output size of the perf tests.  Once this
-  # change is made, get rid of the |incremental_tuple| parameter in this
-  # function.
   def _OutputDataForStandaloneGraphing(self, graph_name, description, value,
-                                       units, units_x, incremental_tuple=False):
+                                       units, units_x):
     """Outputs perf measurement data to a local folder to be graphed.
 
     This function only applies to Chrome desktop, and assumes that environment
@@ -211,12 +205,6 @@ class BasePerfTest(pyauto.PyUITest):
           with the performance measurements, such as 'iteration' if the x values
           are iteration numbers.  If this argument is specified, then the
           |value| argument must be a list of (x, y) tuples.
-      incremental_tuple: A boolean indicating whether or not long-running
-          performance measurements in |value| are incremental or not.  If the
-          measurements are incremental, they are appended to existing
-          measurements already stored in data files.  If the measurements are
-          not incremental, they replace any existing measurements in the data
-          files.
     """
     # Update graphs.dat.
     existing_graphs = []
@@ -254,12 +242,11 @@ class BasePerfTest(pyauto.PyUITest):
     seen_key = graph_name + '|' + description
     if units_x:
       points = []
-      if incremental_tuple:
-        if seen_key in self._seen_graph_lines:
-          # We've added points previously for this graph line in the current
-          # test execution, so retrieve the original set of points specified in
-          # the most recent revision in the data file.
-          points = eval(existing_lines[0])['traces'][description]
+      if seen_key in self._seen_graph_lines:
+        # We've added points previously for this graph line in the current
+        # test execution, so retrieve the original set of points specified in
+        # the most recent revision in the data file.
+        points = eval(existing_lines[0])['traces'][description]
       for point in value:
         points.append([str(point[0]), str(point[1])])
       new_traces = {
@@ -291,11 +278,8 @@ class BasePerfTest(pyauto.PyUITest):
       f.write('\n'.join(existing_lines))
     os.chmod(data_file, 0755)
 
-  # TODO(dennisjeffrey): Remove the |standalone_graphing_only| parameter once
-  # its use in perf_endure.py is no longer needed.
   def _OutputPerfGraphValue(self, description, value, units,
-                            graph_name, units_x=None,
-                            standalone_graphing_only=False):
+                            graph_name, units_x=None):
     """Outputs a performance value to have it graphed on the performance bots.
 
     The output format differs, depending on whether the current platform is
@@ -326,8 +310,6 @@ class BasePerfTest(pyauto.PyUITest):
           with the performance measurements, such as 'iteration' if the x values
           are iteration numbers.  If this argument is specified, then the
           |value| argument must be a list of (x, y) tuples.
-      standalone_graphing_only: A boolean indicating whether or not we should
-          only output data for standalone graphing.
     """
     if isinstance(value, list):
       assert units_x
@@ -353,25 +335,15 @@ class BasePerfTest(pyauto.PyUITest):
                                         self._PERF_OUTPUT_MARKER_POST)
         sys.stdout.flush()
     else:
-      if not standalone_graphing_only:
-        if units_x:
-          # TODO(dennisjeffrey): Once changes to the Chrome graphing
-          # infrastructure are committed to support graphs for long-running perf
-          # tests (crosbug.com/21881), revise the output format in the following
-          # line if necessary.
-          pyauto_utils.PrintPerfResult(graph_name, description, value,
-                                       units + ' ' + units_x)
-        else:
-          pyauto_utils.PrintPerfResult(graph_name, description, value, units)
+      if units_x:
+        pyauto_utils.PrintPerfResult(graph_name, description, value,
+                                     units + ' ' + units_x)
+      else:
+        pyauto_utils.PrintPerfResult(graph_name, description, value, units)
 
       if self._local_perf_dir:
-        if 'Latency' in description:  # TODO(dennisjeffrey): Remove this hack.
-          self._OutputDataForStandaloneGraphing(
-              graph_name, description, value, units, units_x,
-              incremental_tuple=True)
-        else:
-          self._OutputDataForStandaloneGraphing(
-              graph_name, description, value, units, units_x)
+        self._OutputDataForStandaloneGraphing(
+            graph_name, description, value, units, units_x)
 
   def _PrintSummaryResults(self, description, values, units, graph_name):
     """Logs summary measurement information.

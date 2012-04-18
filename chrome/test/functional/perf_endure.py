@@ -52,11 +52,6 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
         remote_inspector_client.RemoteInspectorClient())
     logging.info('Connection to remote inspector set up successfully.')
 
-    self._dom_node_count_results = []
-    self._event_listener_count_results = []
-    self._browser_process_private_mem_results = []
-    self._tab_process_private_mem_results = []
-    self._v8_mem_used_results = []
     self._test_start_time = 0
     self._num_errors = 0
     self._iteration_num = 0
@@ -199,51 +194,51 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
 
     memory_counts = self._remote_inspector_client.GetMemoryObjectCounts()
 
+    # DOM node count.
     dom_node_count = memory_counts['DOMNodeCount']
-    logging.info('  Total DOM node count: %d nodes' % dom_node_count)
-    self._dom_node_count_results.append((elapsed_time, dom_node_count))
-
-    event_listener_count = memory_counts['EventListenerCount']
-    logging.info('  Event listener count: %d listeners' % event_listener_count)
-    self._event_listener_count_results.append((elapsed_time,
-                                               event_listener_count))
-
-    proc_info = self._GetProcessInfo(tab_title_substring)
-    logging.info('  Browser process private memory: %d KB' %
-                 proc_info['browser_private_mem'])
-    self._browser_process_private_mem_results.append(
-        (elapsed_time, proc_info['browser_private_mem']))
-    logging.info('  Tab process private memory: %d KB' %
-                 proc_info['tab_private_mem'])
-    self._tab_process_private_mem_results.append(
-        (elapsed_time, proc_info['tab_private_mem']))
-
-    v8_info = self.GetV8HeapStats()  # First window, first tab.
-    v8_mem_used = v8_info['v8_memory_used'] / 1024.0  # Convert to KB.
-    logging.info('  V8 memory used: %f KB' % v8_mem_used)
-    self._v8_mem_used_results.append((elapsed_time, v8_mem_used))
-
-    # Output the results seen so far, to be graphed.
     self._OutputPerfGraphValue(
-        'TotalDOMNodeCount', self._dom_node_count_results, 'nodes',
+        'TotalDOMNodeCount', [(elapsed_time, dom_node_count)], 'nodes',
         graph_name='%s%s-Nodes-DOM' % (webapp_name, test_description),
         units_x='seconds')
+
+    # Event listener count.
+    event_listener_count = memory_counts['EventListenerCount']
     self._OutputPerfGraphValue(
-        'EventListenerCount', self._event_listener_count_results, 'listeners',
+        'EventListenerCount', [(elapsed_time, event_listener_count)],
+        'listeners',
         graph_name='%s%s-EventListeners' % (webapp_name, test_description),
         units_x='seconds')
+
+    # Browser process private memory.
+    proc_info = self._GetProcessInfo(tab_title_substring)
     self._OutputPerfGraphValue(
-        'BrowserPrivateMemory', self._browser_process_private_mem_results, 'KB',
+        'BrowserPrivateMemory',
+        [(elapsed_time, proc_info['browser_private_mem'])], 'KB',
         graph_name='%s%s-BrowserMem-Private' % (webapp_name, test_description),
         units_x='seconds')
+
+    # Tab process private memory.
     self._OutputPerfGraphValue(
-        'TabPrivateMemory', self._tab_process_private_mem_results, 'KB',
+        'TabPrivateMemory',
+        [(elapsed_time, proc_info['tab_private_mem'])], 'KB',
         graph_name='%s%s-TabMem-Private' % (webapp_name, test_description),
         units_x='seconds')
+
+    # V8 memory used.
+    v8_info = self.GetV8HeapStats()  # First window, first tab.
+    v8_mem_used = v8_info['v8_memory_used'] / 1024.0  # Convert to KB.
     self._OutputPerfGraphValue(
-        'V8MemoryUsed', self._v8_mem_used_results, 'KB',
+        'V8MemoryUsed', [(elapsed_time, v8_mem_used)], 'KB',
         graph_name='%s%s-V8MemUsed' % (webapp_name, test_description),
         units_x='seconds')
+
+    logging.info('  Total DOM node count: %d nodes' % dom_node_count)
+    logging.info('  Event listener count: %d listeners' % event_listener_count)
+    logging.info('  Browser process private memory: %d KB' %
+                 proc_info['browser_private_mem'])
+    logging.info('  Tab process private memory: %d KB' %
+                 proc_info['tab_private_mem'])
+    logging.info('  V8 memory used: %f KB' % v8_mem_used)
 
   def _GetElement(self, find_by, value):
     """Gets a WebDriver element object from the webpage DOM.
@@ -427,6 +422,9 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
                                     action_description):
     """Clicks a DOM element and records the latency associated with that action.
 
+    To account for scenario warm-up time, latency values during the first
+    minute of test execution are not recorded.
+
     Args:
       element: A selenium.webdriver.remote.WebElement object to click.
       test_description: A string description of what the test does, used for
@@ -444,12 +442,14 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     match = re.search(r'\[(\d+) ms\]', latency_dom_element.text)
     if match:
       latency = int(match.group(1))
-      result = [(self._iteration_num, latency)]
-      self._OutputPerfGraphValue(
-          '%sLatency' % action_description, result, 'msec',
-          graph_name='%s%s-%sLatency' % (self._webapp_name, test_description,
-                                         action_description),
-          units_x='iteration', standalone_graphing_only=True)
+      elapsed_time = time.time() - self._test_start_time
+      elapsed_time = int(round(elapsed_time))
+      if elapsed_time > 60:  # Ignore the first minute of latency measurements.
+        self._OutputPerfGraphValue(
+            '%sLatency' % action_description, [(elapsed_time, latency)], 'msec',
+            graph_name='%s%s-%sLatency' % (self._webapp_name, test_description,
+                                           action_description),
+            units_x='seconds')
     else:
       logging.warning('Could not identify latency value.')
 
