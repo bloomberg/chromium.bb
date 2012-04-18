@@ -10,6 +10,7 @@
 #include <string.h>
 
 // Implementations of instruction classes, for those not completely defined in
+// in the header.
 
 namespace nacl_arm_dec {
 
@@ -17,6 +18,22 @@ const char* ClassDecoder::name() const {
   // This should never be called!
   assert(0);
   return "???";
+}
+
+uint32_t ShiftTypeBits5To6Interface::ComputeDecodeImmShift(
+    uint32_t shift_type, uint32_t imm5_value) {
+  switch (shift_type) {
+    case 0:
+      return imm5_value;
+    case 1:
+    case 2:
+      return imm5_value == 0 ? 32 : imm5_value;
+    case 3:
+      return imm5_value == 0 ? 1 : imm5_value;
+    default:
+      assert(false);  // This should not happen, shift_type is two bits.
+      return imm5_value;
+  }
 }
 
 // A utility function: given a modified-immediate-form instruction, extracts
@@ -40,11 +57,86 @@ bool Breakpoint::is_literal_pool_head(const Instruction i) const {
       && i.bits(3, 0) == 0x7;
 }
 
+// Unary1RegisterImmediateOp
+SafetyLevel Unary1RegisterImmediateOp::safety(const Instruction i) const {
+  if (d_.reg(i) == kRegisterPc) return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary1RegisterImmediateOp::defs(const Instruction i) const {
+  return d_.reg(i) + flags_.reg_if_updated(i);
+}
+
+// Unary2RegisterOp
+SafetyLevel Unary2RegisterOp::safety(const Instruction i) const {
+  // NaCl Constraint.
+  if (d_.reg(i) == kRegisterPc) return FORBIDDEN_OPERANDS;
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary2RegisterOp::defs(const Instruction i) const {
+  return d_.reg(i) + flags_.reg_if_updated(i);
+}
+
+// Binary3RegisterOp
+SafetyLevel Binary3RegisterOp::safety(const Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if ((d_.reg(i) + m_.reg(i) + n_.reg(i))[kRegisterPc]) return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Binary3RegisterOp::defs(const Instruction i) const {
+  return d_.reg(i) + flags_.reg_if_updated(i);
+}
+
+// Unary2RegisterImmedShiftedOp
+SafetyLevel Unary2RegisterImmedShiftedOp::safety(const Instruction i) const {
+  // NaCl Constraint.
+  if (d_.reg(i) == kRegisterPc) return FORBIDDEN_OPERANDS;
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary2RegisterImmedShiftedOp::defs(const Instruction i) const {
+  return d_.reg(i) + flags_.reg_if_updated(i);
+}
+
+// Unary3RegisterShiftedOp
+SafetyLevel Unary3RegisterShiftedOp::safety(Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if ((d_.reg(i) + s_.reg(i) + m_.reg(i))[kRegisterPc]) return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary3RegisterShiftedOp::defs(const Instruction i) const {
+  return d_.reg(i) + flags_.reg_if_updated(i);
+}
+
+// Binary3RegisterImmedShiftedOp
+SafetyLevel Binary3RegisterImmedShiftedOp::safety(const Instruction i) const {
+  // NaCl Constraint.
+  if (d_.reg(i) == kRegisterPc) return FORBIDDEN_OPERANDS;
+  return MAY_BE_SAFE;
+}
+
+RegisterList Binary3RegisterImmedShiftedOp::defs(const Instruction i) const {
+  return d_.reg(i) + flags_.reg_if_updated(i);
+}
+
 // Binary4RegisterShiftedOp
 SafetyLevel Binary4RegisterShiftedOp::safety(Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if ((d_.reg(i) + n_.reg(i) + s_.reg(i) + m_.reg(i))[kRegisterPc])
     return UNPREDICTABLE;
+
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
   // since the ARM restriction doesn't allow it anyway.
   return MAY_BE_SAFE;
@@ -54,17 +146,25 @@ RegisterList Binary4RegisterShiftedOp::defs(const Instruction i) const {
   return d_.reg(i) + flags_.reg_if_updated(i);
 }
 
-// Unary3RegisterShiftedOp
-SafetyLevel Unary3RegisterShiftedOp::safety(Instruction i) const {
-  // Unsafe if any register contains PC (ARM restriction).
-  if ((d_.reg(i) + s_.reg(i) + m_.reg(i))[kRegisterPc]) return UNPREDICTABLE;
-  // Note: We would restrict out PC as well for Rd in NaCl, but no need
-  // since the ARM restriction doesn't allow it anyway.
+// Binary2RegisterImmedShiftedTest
+SafetyLevel Binary2RegisterImmedShiftedTest::safety(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
   return MAY_BE_SAFE;
 }
 
-RegisterList Unary3RegisterShiftedOp::defs(const Instruction i) const {
-  return d_.reg(i) + flags_.reg_if_updated(i);
+RegisterList Binary2RegisterImmedShiftedTest::defs(const Instruction i) const {
+  return flags_.reg_if_updated(i);
+}
+
+// Binary3RegisterShiftedTest
+SafetyLevel Binary3RegisterShiftedTest::safety(Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if ((n_.reg(i) + s_.reg(i) + m_.reg(i))[kRegisterPc]) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
+RegisterList Binary3RegisterShiftedTest::defs(const Instruction i) const {
+  return flags_.reg_if_updated(i);
 }
 
 // Data processing and arithmetic
@@ -77,17 +177,6 @@ SafetyLevel DataProc::safety(const Instruction i) const {
 
 RegisterList DataProc::defs(const Instruction i) const {
   return Rd(i) + (UpdatesFlagsRegister(i) ? kRegisterFlags : kRegisterNone);
-}
-
-// Binary3RegisterShiftedTest
-SafetyLevel Binary3RegisterShiftedTest::safety(Instruction i) const {
-  // Unsafe if any register contains PC (ARM restriction).
-  if ((n_.reg(i) + s_.reg(i) + m_.reg(i))[kRegisterPc]) return UNPREDICTABLE;
-  return MAY_BE_SAFE;
-}
-
-RegisterList Binary3RegisterShiftedTest::defs(const Instruction i) const {
-  return flags_.reg_if_updated(i);
 }
 
 RegisterList Test::defs(const Instruction i) const {

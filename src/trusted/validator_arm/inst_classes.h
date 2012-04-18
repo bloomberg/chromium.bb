@@ -41,6 +41,42 @@ enum SafetyLevel {
   MAY_BE_SAFE
 };
 
+// ------------------------------------------------------------------
+// The following list of Interface classes are "mixed" into the class
+// decoders below as static fields. The point of these interfaces is
+// to control access to data fields within the instruction the class
+// decoder, using higher level symbolic names.
+//
+// For example, register Rn may be located in different bit sequences
+// in different instructions. However, they all refer to the concept
+// of register Rn (some use bits 0..3 while others use bits
+// 16..19). The interfaces for each possible Rn is integrated as a
+// static field named n_. Hence virtuals can now use n_.reg() to get
+// the corresponding register within its virtual functions.
+//
+// Note: These fields are static, and the corresponding methods are
+// static so that the reference to the static field can be optimized
+// out.
+// ------------------------------------------------------------------
+
+// Interface class to pull out shift type from bits 5 through 6
+class ShiftTypeBits5To6Interface {
+ public:
+  inline ShiftTypeBits5To6Interface() {}
+  inline uint32_t value(const Instruction& i) const {
+    return i.bits(6, 5);
+  }
+  // Converts the given immediate value using the shift type specified
+  // by this interface. Defined in A8.4.3, page A8-11.
+  inline uint32_t DecodeImmShift(Instruction insn, uint32_t imm5_value) const {
+    return ComputeDecodeImmShift(value(insn), imm5_value);
+  }
+ private:
+  static uint32_t ComputeDecodeImmShift(uint32_t shift_type,
+                                        uint32_t imm5_value);
+  NACL_DISALLOW_COPY_AND_ASSIGN(ShiftTypeBits5To6Interface);
+};
+
 // Interface class to pull out the condition in bits 28 through 31
 class ConditionBits28To31Interface {
  public:
@@ -54,6 +90,7 @@ class ConditionBits28To31Interface {
   inline bool undefined(const Instruction& i) const {
     return !defined(i);
   }
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ConditionBits28To31Interface);
 };
@@ -68,6 +105,7 @@ class RegDBits12To15Interface {
   inline Register reg(const Instruction& i) const {
     return Register(number(i));
   }
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(RegDBits12To15Interface);
 };
@@ -82,8 +120,39 @@ class RegMBits0To3Interface {
   inline Register reg(const Instruction& i) const {
     return Register(number(i));
   }
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(RegMBits0To3Interface);
+};
+
+// Interface class to pull out Register M from bits 8 through 11.
+class RegMBits8To11Interface {
+ public:
+  inline RegMBits8To11Interface() {}
+  inline uint32_t number(const Instruction& i) const {
+    return i.bits(11, 8);
+  }
+  inline Register reg(const Instruction& i) const {
+    return Register(number(i));
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegMBits8To11Interface);
+};
+
+// Interface class to pull out Register N from bits 0 through 3.
+class RegNBits0To3Interface {
+ public:
+  inline RegNBits0To3Interface() {}
+  inline uint32_t number(const Instruction& i) const {
+    return i.bits(3, 0);
+  }
+  inline Register reg(const Instruction& i) const {
+    return Register(number(i));
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegNBits0To3Interface);
 };
 
 // Interface class to pull out Register n from bits 16 through 19.
@@ -96,6 +165,7 @@ class RegNBits16To19Interface {
   inline Register reg(const Instruction& i) const {
     return Register(number(i));
   }
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(RegNBits16To19Interface);
 };
@@ -110,8 +180,45 @@ class RegSBits8To11Interface {
   inline Register reg(const Instruction& i) const {
     return Register(number(i));
   }
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(RegSBits8To11Interface);
+};
+
+// Interface class to pull out an immediate value in bits 0 through 11.
+class Imm12Bits0To11Interface {
+ public:
+  inline Imm12Bits0To11Interface() {}
+  inline uint32_t value(const Instruction& i) const {
+    return i.bits(11, 0);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm12Bits0To11Interface);
+};
+
+// Interface class to pull out an immediate value in bits 7 through 11.
+class Imm5Bits7To11Interface {
+ public:
+  inline Imm5Bits7To11Interface() {}
+  inline uint32_t value(const Instruction& i) const {
+    return i.bits(11, 7);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm5Bits7To11Interface);
+};
+
+// Interface class to pull out an immediate value in bits 16 through 19.
+class Imm4Bits16To19Interface {
+ public:
+  inline Imm4Bits16To19Interface() {}
+  inline uint32_t value(const Instruction& i) const {
+    return i.bits(19, 16);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm4Bits16To19Interface);
 };
 
 // Interface class to pull out S (update) bit from bit 20, which
@@ -127,19 +234,33 @@ class UpdatesFlagsRegisterBit20Interface {
   inline Register reg_if_updated(const Instruction i) const {
     return is_updated(i) ? kRegisterFlags : kRegisterNone;
   }
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(UpdatesFlagsRegisterBit20Interface);
 };
 
-// Decodes a class of instructions.  Does spooky undefined things if handed
-// instructions that don't belong to its class.  Who defines which instructions
-// these are?  Why, the generated decoder, of course.
+// A class decoder is designed to decode a set of instructions that
+// have the same semantics, in terms of what the validator needs. This
+// includes the bit ranges in the instruction that correspond to
+// assigned registers.  as well as whether the instruction is safe to
+// use within the validator.
 //
-// This is an abstract base class intended to be overridden with the details of
-// particular instruction-classes.
+// The important property of these class decoders is that the
+// corresponding DecoderState (defined in decoder.h) will inspect the
+// instruction bits and then dispatch the appropriate class decoder.
 //
-// ClassDecoders should be stateless, and should provide a no-arg constructor
-// for use by the generated decoder.
+// The virtuals defined in this class are intended to be used solely
+// for the purpose of the validator. For example, for virtual "defs",
+// the class decoder will look at the bits defining the assigned
+// register of the instruction (typically in bits 12 through 15) and
+// add that register to the set of registers returned by the "defs"
+// virtual.
+//
+// There is an underlying assumption that class decoders are constant
+// and only provide implementation details for the instructions they
+// should be applied to. In general, class decoders should not be
+// copied or assigned. Hence, only a no-argument constructor should be
+// provided.
 class ClassDecoder {
  public:
   // Checks how safe this instruction is, in isolation.
@@ -304,16 +425,24 @@ class ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(ClassDecoder);
 };
 
-// Represents an instruction that is forbidden under all circumstances, so we
-// didn't bother decoding it further.
-class Forbidden : public ClassDecoder {
- public:
-  inline Forbidden() {}
-  virtual ~Forbidden() {}
+//----------------------------------------------------------------
+// The following class decoders define common cases, defining a
+// concept that simply associates a non MAY_BE_SAFE with the
+// instructions it processes. As such, they provide default
+// implementation that returns the corresponding safety value, and
+// assumes nothing else interesting happens.
+//----------------------------------------------------------------
 
+class UnsafeClassDecoder : public ClassDecoder {
+ public:
+  inline explicit UnsafeClassDecoder(SafetyLevel safety)
+      : safety_(safety) {}
+  virtual ~UnsafeClassDecoder() {}
+
+  // Return the safety associated with this class.
   virtual SafetyLevel safety(Instruction i) const {
     UNREFERENCED_PARAMETER(i);
-    return FORBIDDEN;
+    return safety_;
   }
 
   // Switch off the def warnings -- it's already forbidden!
@@ -323,44 +452,34 @@ class Forbidden : public ClassDecoder {
   }
 
  private:
+  SafetyLevel safety_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(UnsafeClassDecoder);
+};
+
+class Forbidden : public UnsafeClassDecoder {
+ public:
+  inline Forbidden() : UnsafeClassDecoder(FORBIDDEN) {}
+  virtual ~Forbidden() {}
+
+ private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Forbidden);
 };
 
 // Represents the undefined space in the instruction encoding.
-class Undefined : public ClassDecoder {
+class Undefined : public UnsafeClassDecoder {
  public:
-  inline Undefined() {}
+  inline Undefined() : UnsafeClassDecoder(UNDEFINED) {}
   virtual ~Undefined() {}
-
-  virtual SafetyLevel safety(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return UNDEFINED;
-  }
-  // Switch off the def warnings -- it's already undefined!
-  virtual RegisterList defs(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return kRegisterNone;
-  }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Undefined);
 };
 
 // Represents instructions that have been deprecated in ARMv7.
-class Deprecated : public ClassDecoder {
+class Deprecated : public UnsafeClassDecoder {
  public:
-  inline Deprecated() {}
+  inline Deprecated() : UnsafeClassDecoder(DEPRECATED) {}
   virtual ~Deprecated() {}
-
-  virtual SafetyLevel safety(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return DEPRECATED;
-  }
-  // Switch off the def warnings -- it's already deprecated!
-  virtual RegisterList defs(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return kRegisterNone;
-  }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Deprecated);
@@ -369,24 +488,20 @@ class Deprecated : public ClassDecoder {
 // Represents an unpredictable encoding.  Note that many instructions may
 // *become* unpredictable based on their operands -- this is used only for
 // the case where a large space of the instruction set is unpredictable.
-class Unpredictable : public ClassDecoder {
+class Unpredictable : public UnsafeClassDecoder {
  public:
-  inline Unpredictable() {}
+  inline Unpredictable() : UnsafeClassDecoder(UNPREDICTABLE) {}
   virtual ~Unpredictable() {}
-
-  virtual SafetyLevel safety(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return UNPREDICTABLE;
-  }
-  // Switch off the def warnings -- it's already unpredictable!
-  virtual RegisterList defs(Instruction i) const {
-    UNREFERENCED_PARAMETER(i);
-    return kRegisterNone;
-  }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Unpredictable);
 };
+
+//------------------------------------------------------------------
+// The following classes are the OLD implementations of class
+// decoders. They are deprecated, and are in the process of being
+// removed (or at least reduced).
+//------------------------------------------------------------------
 
 // An instruction that, for modeling purposes, is a no-op.  It has no
 // side effects that are significant to SFI, and has no operand combinations
@@ -478,6 +593,165 @@ class Breakpoint : public Roadblock {
   NACL_DISALLOW_COPY_AND_ASSIGN(Breakpoint);
 };
 
+// Models a 1-register assignment of a 16-bit immediate.
+// Op(S)<c> Rd, #const
+// +--------+--------------+--+--------+--------+------------------------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+--------------+--+--------+--------+------------------------+
+// |  cond  |              | S|  imm4  |   Rd   |         imm12          |
+// +--------+--------------+--+--------+--------+------------------------+
+// Definitions:
+//    Rd = The destination register.
+//    const = ZeroExtend(imm4:imm12, 32)
+//
+// If Rd is R15, the instruction is unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+//
+// Implements:
+//    MOV (immediate) A2 A8-194
+class Unary1RegisterImmediateOp : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const Imm12Bits0To11Interface imm12_;
+  static const RegDBits12To15Interface d_;
+  static const Imm4Bits16To19Interface imm4_;
+  static const UpdatesFlagsRegisterBit20Interface flags_;
+  static const ConditionBits28To31Interface cond_;
+
+  // Methods for class.
+  inline Unary1RegisterImmediateOp() : ClassDecoder() {}
+  virtual ~Unary1RegisterImmediateOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+  // The immediate value stored in the instruction.
+  inline uint32_t ImmediateValue(const Instruction& i) const {
+    return (imm4_.value(i) << 12) | imm12_.value(i);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOp);
+};
+
+// Models a 2 register unary operation of the form:
+// Op(S)<c> <Rd>, <Rm>
+// +--------+--------------+--+--------+--------+----------------+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7 6 5 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+----------------+--------+
+// |  cond  |              | S|        |   Rd   |                |   Rm   |
+// +--------+--------------+--+--------+--------+----------------+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rm - The source register.
+//
+// NaCl disallows writing to PC to cause a jump.
+//
+// Implements:
+//    MOV(register) A1 A8-196 - Shouldn't parse when Rd=15 and S=1;
+//    RRX A1 A8-282
+class Unary2RegisterOp : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegMBits0To3Interface m_;
+  static const RegDBits12To15Interface d_;
+  static const UpdatesFlagsRegisterBit20Interface flags_;
+  static const ConditionBits28To31Interface cond_;
+
+  // Methods for class.
+  inline Unary2RegisterOp() : ClassDecoder() {}
+  virtual ~Unary2RegisterOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterOp);
+};
+
+// Models a 3-register binary operation of the form:
+// Op(S)<c> <Rd>, <Rn>, <Rm>
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |31302918|27262524232221|20|19181716|15141312|1110 9 8| 7 6 4 3| 3 2 1 0|
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// |  cond  |              | S|        |   Rd   |   Rm   |        |   Rn   |
+// +--------+--------------+--+--------+--------+--------+--------+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rn - The first operand register.
+//    Rm - The second operand register.
+//    S - Defines if the flags regsiter is updated.
+//
+// If Rd, Rm, or Rn is R15, the instruction is unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+//
+// Implements:
+//    ASR(register) A1 A8-42
+//    LSL(register) A1 A8-180
+//    LSR(register) A1 A8-184
+//    ROR(register) A1 A8-280
+class Binary3RegisterOp : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegNBits0To3Interface n_;
+  static const RegMBits8To11Interface m_;
+  static const RegDBits12To15Interface d_;
+  static const UpdatesFlagsRegisterBit20Interface flags_;
+  static const ConditionBits28To31Interface cond_;
+
+  // Methods for class.
+  inline Binary3RegisterOp() : ClassDecoder() {}
+  virtual ~Binary3RegisterOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOp);
+};
+
+// Models a 2-register immediate-shifted unary operation of the form:
+// Op(S)<c> <Rd>, <Rm> {,<shift>}
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |  cond  |              | S|        |   Rd   |   imm5   |type|  |   Rm   |
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rm - The source operand that is (optionally) shifted.
+//    shift = DecodeImmShift(type, imm5) is the amount to shift.
+//
+// NaCl disallows writing to PC to cause a jump.
+//
+// Implements:
+//    ASR(immediate) A1 A8-40
+//    LSL(immediate) A1 A8-178 -- Shouldn't parse when imm5=0.
+//    LSR(immediate) A1 A8-182
+//    MVN(register) A8-216     -- Shouldn't parse when Rd=15 and S=1.
+//    ROR(immediate) A1 A8-278 -- Shouldn't parse when imm5=0.
+class Unary2RegisterImmedShiftedOp : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegMBits0To3Interface m_;
+  static const ShiftTypeBits5To6Interface shift_type_;
+  static const Imm5Bits7To11Interface imm_;
+  static const RegDBits12To15Interface d_;
+  static const UpdatesFlagsRegisterBit20Interface flags_;
+  static const ConditionBits28To31Interface cond_;
+
+  // Methods for class.
+  inline Unary2RegisterImmedShiftedOp() : ClassDecoder() {}
+  virtual ~Unary2RegisterImmedShiftedOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+  // The immediate value stored in the instruction.
+  inline uint32_t ImmediateValue(const Instruction& i) const {
+    return shift_type_.DecodeImmShift(i, imm_.value(i));
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary2RegisterImmedShiftedOp);
+};
+
 // Models a 3-register-shifted unary operation of the form:
 // Op(S)<c> <Rd>, <Rm>,  <type> <Rs>
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
@@ -485,19 +759,23 @@ class Breakpoint : public Roadblock {
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
 // |  cond  |              | S|        |   Rd   |   Rs   |  |type|  |   Rm   |
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
-// Note: if Rd, Rs, or Rm is R15, the instruction is unpredictable.
 // Definitions:
 //    Rd - The destination register.
 //    Rm - The register that is shifted and used as the operand.
 //    Rs - The regsiter whose bottom byte contains the amount to shift by.
 //    type - The type of shift to apply (not modeled).
 //    S - Defines if the flags regsiter is updated.
+//
+// if Rd, Rs, or Rm is R15, the instruction is unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+//
 // Implements:
 //    MVN(register-shifted) A1 A8-218
 class Unary3RegisterShiftedOp : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
   static const RegMBits0To3Interface m_;
+  static const ShiftTypeBits5To6Interface shift_type_;
   static const RegSBits8To11Interface s_;
   static const RegDBits12To15Interface d_;
   static const UpdatesFlagsRegisterBit20Interface flags_;
@@ -513,6 +791,56 @@ class Unary3RegisterShiftedOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary3RegisterShiftedOp);
 };
 
+// Models a 3-register immediate-shifted binary operation of the form:
+// Op(S)<c> <Rd>, <Rn>, <Rm> {,<shift>}
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |  cond  |              | S|   Rn   |   Rd   |   imm5   |type|  |   Rm   |
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// Definitions:
+//    Rd - The destination register.
+//    Rn - The first operand register.
+//    Rm - The second operand that is (optionally) shifted.
+//    shift = DecodeImmShift(type, imm5) is the amount to shift.
+//
+// NaCl disallows writing to PC to cause a jump.
+//
+// Implements:
+//    ADC(register) A1 A8-16  -- Shouldn't parse when Rd=15 and S=1.
+//    ADD(register) A1 A8-24  -- Shouldn't parse when Rd=15 and S=1, or Rn=13.
+//    AND(register) A1 A8-36  -- Shouldn't parse when Rd=15 and S=1.
+//    BIC(register) A1 A8-52  -- Shouldn't parse when Rd=15 and S=1.
+//    EOR(register) A1 A8-96  -- Shouldn't parse when Rd=15 and S=1.
+//    ORR(register) A1 A8-230 -- Shouldn't parse when Rd=15 and S=1.
+//    RSB(register) A1 A8-286 -- Shouldn't parse when Rd=15 and S=1.
+//    RSC(register) A1 A8-292 -- Shouldn't parse when Rd=15 and S=1.
+//    SBC(register) A1 A8-304 -- Shouldn't parse when Rd=15 and S=1.
+//    SUB(register) A1 A8-422 -- Shouldn't parse when Rd=15 and S=1, or Rn=13.
+class Binary3RegisterImmedShiftedOp : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const RegMBits0To3Interface m_;
+  static const ShiftTypeBits5To6Interface shift_type_;
+  static const Imm5Bits7To11Interface imm_;
+  static const RegDBits12To15Interface d_;
+  static const RegNBits16To19Interface n_;
+  static const UpdatesFlagsRegisterBit20Interface flags_;
+  static const ConditionBits28To31Interface cond_;
+
+  // Methods for class.
+  inline Binary3RegisterImmedShiftedOp() : ClassDecoder() {}
+  virtual ~Binary3RegisterImmedShiftedOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  // The shift value to use.
+  inline uint32_t ShiftValue(const Instruction& i) const {
+    return shift_type_.DecodeImmShift(i, imm_.value(i));
+  }
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterImmedShiftedOp);
+};
+
 // Models a 4-register-shifted binary operation of the form:
 // Op(S)<c> <Rd>, <Rn>, <Rm>,  <type> <Rs>
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
@@ -520,7 +848,6 @@ class Unary3RegisterShiftedOp : public ClassDecoder {
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
 // |  cond  |              | S|   Rn   |   Rd   |   Rs   |  |type|  |   Rm   |
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
-// Note: if Rn, Rd, Rs, or Rm is R15, the instruction is unpredictable.
 // Definitions:
 //    Rd - The destination register.
 //    Rn - The first operand register.
@@ -528,6 +855,10 @@ class Unary3RegisterShiftedOp : public ClassDecoder {
 //    Rs - The regsiter whose bottom byte contains the amount to shift by.
 //    type - The type of shift to apply (not modeled).
 //    S - Defines if the flags regsiter is updated.
+//
+// if Rn, Rd, Rs, or Rm is R15, the instruction is unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+//
 // Implements:
 //    ADC(register-shifted) A1 A8-18
 //    ADD(register-shifted) A1 A8-26
@@ -559,58 +890,63 @@ class Binary4RegisterShiftedOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterShiftedOp);
 };
 
-// Models the most common class of data processing instructions.  We use this
-// for any operation that
-//  - writes a single register, specified in 15:12;
-//  - does not write memory,
-//  - should not be permitted to cause a jump by writing r15,
-//  - writes flags when bit 20 is set.
+// Models a 2-register immediate-shifted binary operation of the form:
+// Op(S)<c> Rn, Rm {,<shift>}
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |31302928|27262524232221|20|19181716|15141312|1110 9 8 7| 6 5| 4| 3 2 1 0|
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// |  cond  |              | S|   Rn   |        |   imm5   |type|  |   Rm   |
+// +--------+--------------+--+--------+--------+----------+----+--+--------+
+// Definitions:
+//    Rn - The first operand register.
+//    Rm - The second operand that is (optionally) shifted.
+//    shift = DecodeImmShift(type, imm5) is the amount to shift.
 //
-// Includes:
-// MOV (immediate) 16-bit version, MOVT, AND(register),
-// EOR(register), SUB(register),
-// RSB(register), ADD(register),
-// ADC(register), SBC(register),
-// RSC(register), ORR(register),
-// MOV(register), LSL(register), LSL(immediate), LSL(register),
-// LSR(immediate), LSR(register), ASR(immediate), ASR(register),
-// RRX, ROR(register), ROR(immediate), ROR(register), BIC(register),
-// MVN(register), AND(immediate),
-// EOR(immediate), SUB(immediate), ADR, RSB(immediate), ADD(immediate), ADR,
-// ADC(immediate), SBC(immediate), RSC(immediate), ORR(immediate),
-// MOV(immediate), MVN(immediate), MRS, CLZ, SBFX, BFC, BFI, UBFX, UADD16,
-// UASX, USAX, USUB16, UADD8, USUB8, UQADD16, UQASX, UQSAX, UQSUB16, UQADD8,
-// UQSUB8, UHADD16, UHASX, UHSAX, UHSUB16, UHADD8, UHSUB8
-class DataProc : public ClassDecoder {
+// Implements:
+//    CMN(register) A1 A8-76
+//    CMP(register) A1 A8-82
+//    TEQ(register) A1 A8-450
+//    TST(register) A1 A8-456
+class Binary2RegisterImmedShiftedTest : public ClassDecoder {
  public:
-  inline DataProc() {}
-  virtual ~DataProc() {}
+  // Interfaces for components in the instruction.
+  static const RegMBits0To3Interface m_;
+  static const ShiftTypeBits5To6Interface shift_type_;
+  static const Imm5Bits7To11Interface imm_;
+  static const RegNBits16To19Interface n_;
+  static const UpdatesFlagsRegisterBit20Interface flags_;
+  static const ConditionBits28To31Interface cond_;
 
+  // Methods for class.
+  inline Binary2RegisterImmedShiftedTest() : ClassDecoder() {}
+  virtual ~Binary2RegisterImmedShiftedTest() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  // Defines the destination register of the data operation.
-  inline Register Rd(const Instruction& i) const {
-    return i.reg(15, 12);
+  // The shift value to use.
+  inline uint32_t ShiftValue(const Instruction& i) const {
+    return shift_type_.DecodeImmShift(i, imm_.value(i));
   }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(DataProc);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterImmedShiftedTest);
 };
 
 // Models a 3-register-shifted test operation of the form:
-// OpS<c> <Rn>, <Rm>, <type>, <Rs>
+// OpS<c> <Rn>, <Rm>, <type> <Rs>
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
 // |31302928|27262524232221|20|19181716|15141312|1110 9 8| 7| 6 5| 4| 3 2 1 0|
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
 // |  cond  |              | S|   Rn   |        |   Rs   |  |type|  |   Rm   |
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
-// Note: if Rn, Rs, or Rm is R15, the instruction is unpredictable.
 // Definitions:
 //    Rn - The first operand register.
 //    Rm - The register that is shifted and used as the second operand.
 //    Rs - The regsiter whose bottom byte contains the amount to shift by.
 //    type - The type of shift to apply (not modeled).
 //    S - Defines if the flags regsiter is updated.
+//
+// if Rn, Rs, or Rm is R15, the instruction is unpredictable.
+//
 // Implements:
 //    CMN(register-shifted) A1 A8-78
 //    CMP(register-shifted) A1 A8-84
@@ -620,6 +956,7 @@ class Binary3RegisterShiftedTest : public ClassDecoder {
  public:
   // Interfaces for components in the instruction.
   static const RegMBits0To3Interface m_;
+  static const ShiftTypeBits5To6Interface shift_type_;
   static const RegSBits8To11Interface s_;
   static const RegNBits16To19Interface n_;
   static const UpdatesFlagsRegisterBit20Interface flags_;
@@ -633,6 +970,38 @@ class Binary3RegisterShiftedTest : public ClassDecoder {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterShiftedTest);
+};
+
+// Models the most common class of data processing instructions.  We use this
+// for any operation that
+//  - writes a single register, specified in 15:12;
+//  - does not write memory,
+//  - should not be permitted to cause a jump by writing r15,
+//  - writes flags when bit 20 is set.
+//
+// Includes:
+// MOVT,
+// ROR(register),
+// AND(immediate),
+// EOR(immediate), SUB(immediate), ADR, RSB(immediate), ADD(immediate), ADR,
+// ADC(immediate), SBC(immediate), RSC(immediate), ORR(immediate),
+// MOV(immediate), MVN(immediate), MRS, CLZ, SBFX, BFC, BFI, UBFX, UADD16,
+// UASX, USAX, USUB16, UADD8, USUB8, UQADD16, UQASX, UQSAX, UQSUB16, UQADD8,
+// UQSUB8, UHADD16, UHASX, UHSAX, UHSUB16, UHADD8, UHSUB8
+class DataProc : public ClassDecoder {
+ public:
+  inline DataProc() : ClassDecoder() {}
+  virtual ~DataProc() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  // Defines the destination register of the data operation.
+  inline Register Rd(const Instruction& i) const {
+    return i.reg(15, 12);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(DataProc);
 };
 
 // Models the few data-processing instructions that *don't* produce a result,
