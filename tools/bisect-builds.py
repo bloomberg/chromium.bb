@@ -17,7 +17,7 @@ BASE_URL = 'http://commondatastorage.googleapis.com/chromium-browser-snapshots'
 
 # Changelogs URL.
 CHANGELOG_URL = 'http://build.chromium.org/f/chromium/' \
-                'perf/dashboard/ui/changelog.html?url=/trunk/src&range=%d:%d'
+                'perf/dashboard/ui/changelog.html?url=/trunk/src&range=%d%%3A%d'
 
 # DEPS file URL.
 DEPS_FILE= 'http://src.chromium.org/viewvc/chrome/trunk/src/DEPS?revision=%d'
