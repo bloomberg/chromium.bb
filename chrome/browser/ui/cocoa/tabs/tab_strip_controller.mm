@@ -303,13 +303,13 @@ private:
 #pragma mark -
 
 // In general, there is a one-to-one correspondence between TabControllers,
-// TabViews, TabContentsControllers, and the TabContents in the TabStripModel.
-// In the steady-state, the indices line up so an index coming from the model
-// is directly mapped to the same index in the parallel arrays holding our
-// views and controllers. This is also true when new tabs are created (even
-// though there is a small period of animation) because the tab is present
-// in the model while the TabView is animating into place. As a result, nothing
-// special need be done to handle "new tab" animation.
+// TabViews, TabContentsControllers, and the TabContentsWrapper in the
+// TabStripModel. In the steady-state, the indices line up so an index coming
+// from the model is directly mapped to the same index in the parallel arrays
+// holding our views and controllers. This is also true when new tabs are
+// created (even though there is a small period of animation) because the tab is
+// present in the model while the TabView is animating into place. As a result,
+// nothing special need be done to handle "new tab" animation.
 //
 // This all goes out the window with the "close tab" animation. The animation
 // kicks off in |-tabDetachedWithContents:atIndex:| with the notification that
@@ -1648,13 +1648,13 @@ private:
   tabStripModel_->MoveTabContentsAt(from, toIndex, true);
 }
 
-// Drop a given TabContents at the location of the current placeholder. If there
-// is no placeholder, it will go at the end. Used when dragging from another
-// window when we don't have access to the TabContents as part of our strip.
-// |frame| is in the coordinate system of the tab strip view and represents
-// where the user dropped the new tab so it can be animated into its correct
-// location when the tab is added to the model. If the tab was pinned in its
-// previous window, setting |pinned| to YES will propagate that state to the
+// Drop a given TabContentsWrapper at the location of the current placeholder.
+// If there is no placeholder, it will go at the end. Used when dragging from
+// another window when we don't have access to the WebContents as part of our
+// strip. |frame| is in the coordinate system of the tab strip view and
+// represents where the user dropped the new tab so it can be animated into its
+// correct location when the tab is added to the model. If the tab was pinned in
+// its previous window, setting |pinned| to YES will propagate that state to the
 // new window. Mini-tabs are either app or pinned tabs; the app state is stored
 // by the |contents|, but the |pinned| state is the caller's responsibility.
 - (void)dropTabContents:(TabContentsWrapper*)contents

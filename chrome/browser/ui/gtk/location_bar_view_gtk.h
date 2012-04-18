@@ -235,7 +235,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
     bool IsVisible();
 
     // Called to notify the PageAction that it should determine whether to be
-    // visible or hidden. |contents| is the TabContents that is active, |url|
+    // visible or hidden. |contents| is the WebContents that is active, |url|
     // is the current page URL.
     void UpdateVisibility(content::WebContents* contents, const GURL& url);
 

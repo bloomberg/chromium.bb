@@ -39,15 +39,15 @@ string16 FindPrepopulateText(WebContents* contents) {
 
 }  // end namespace
 
-// This test takes two TabContents objects, searches in both of them and
+// This test takes two WebContents objects, searches in both of them and
 // tests the internal state for find_text and find_prepopulate_text.
 TEST_F(FindBackendTest, InternalState) {
   FindTabHelper* find_tab_helper = contents_wrapper()->find_tab_helper();
-  // Initial state for the TabContents is blank strings.
+  // Initial state for the WebContents is blank strings.
   EXPECT_EQ(string16(), FindPrepopulateText(contents()));
   EXPECT_EQ(string16(), find_tab_helper->find_text());
 
-  // Get another TabContents object ready.
+  // Get another WebContents object ready.
   WebContents* contents2 =
       WebContentsTester::CreateTestWebContents(profile(), NULL);
   TabContentsWrapper wrapper2(contents2);
@@ -63,7 +63,7 @@ TEST_F(FindBackendTest, InternalState) {
   string16 search_term2 = ASCIIToUTF16(" but the economy ");
   string16 search_term3 = ASCIIToUTF16(" eated it.       ");
 
-  // Start searching in the first TabContents, searching forwards but not case
+  // Start searching in the first WebContents, searching forwards but not case
   // sensitive (as indicated by the last two params).
   find_tab_helper->StartFinding(search_term1, true, false);
 
@@ -74,7 +74,7 @@ TEST_F(FindBackendTest, InternalState) {
   EXPECT_EQ(search_term1, FindPrepopulateText(contents2));
   EXPECT_EQ(string16(), find_tab_helper2->find_text());
 
-  // Now search in the other TabContents, searching forwards but not case
+  // Now search in the other WebContents, searching forwards but not case
   // sensitive (as indicated by the last two params).
   find_tab_helper2->StartFinding(search_term2, true, false);
 
@@ -85,7 +85,7 @@ TEST_F(FindBackendTest, InternalState) {
   EXPECT_EQ(search_term2, FindPrepopulateText(contents2));
   EXPECT_EQ(search_term2, find_tab_helper2->find_text());
 
-  // Search again in the first TabContents, searching forwards but not case
+  // Search again in the first WebContents, searching forwards but not case
   // find_tab_helper (as indicated by the last two params).
   find_tab_helper->StartFinding(search_term3, true, false);
 

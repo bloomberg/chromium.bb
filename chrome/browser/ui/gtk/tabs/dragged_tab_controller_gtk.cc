@@ -315,9 +315,10 @@ void DraggedTabControllerGtk::MoveAttached(const gfx::Point& screen_point) {
   double ratio = unselected / TabGtk::GetStandardSize().width();
   int threshold = static_cast<int>(ratio * kHorizontalMoveThreshold);
 
-  // Update the model, moving the TabContents from one index to another. Do this
-  // only if we have moved a minimum distance since the last reorder (to prevent
-  // jitter) or if this is the first move and the tabs are not consecutive.
+  // Update the model, moving the TabContentsWrapper from one index to another.
+  // Do this only if we have moved a minimum distance since the last reorder (to
+  // prevent jitter) or if this is the first move and the tabs are not
+  // consecutive.
   if (abs(screen_point.x() - last_move_screen_x_) > threshold ||
       (initial_move_ && !AreTabsConsecutive())) {
     if (initial_move_ && !AreTabsConsecutive()) {
@@ -423,16 +424,16 @@ void DraggedTabControllerGtk::Attach(TabStripGtk* attached_tabstrip,
 
   if (attached_dragged_tabs.size() == 0) {
     // There is no tab in |attached_tabstrip| that corresponds to the dragged
-    // TabContents. We must now create one.
+    // TabContentsWrapper. We must now create one.
 
-    // Remove ourselves as the delegate now that the dragged TabContents is
-    // being inserted back into a Browser.
+    // Remove ourselves as the delegate now that the dragged TabContentsWrapper
+    // is being inserted back into a Browser.
     for (size_t i = 0; i < drag_data_->size(); ++i) {
       drag_data_->get(i)->contents_->web_contents()->SetDelegate(NULL);
       drag_data_->get(i)->original_delegate_ = NULL;
     }
 
-    // Return the TabContents' to normalcy.
+    // Return the TabContentsWrapper to normalcy.
     drag_data_->GetSourceWebContents()->SetCapturingContents(false);
 
     // We need to ask the tabstrip we're attached to ensure that the ideal
@@ -751,7 +752,8 @@ bool DraggedTabControllerGtk::CompleteDrag() {
                    base::Unretained(this)));
     destroy_immediately = false;
   } else {
-    // Compel the model to construct a new window for the detached TabContents.
+    // Compel the model to construct a new window for the detached
+    // TabContentsWrapper.
     BrowserWindowGtk* window = source_tabstrip_->window();
     gfx::Rect window_bounds = window->GetRestoredBounds();
     window_bounds.set_origin(GetWindowCreatePoint());

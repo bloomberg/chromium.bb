@@ -144,7 +144,7 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   // TabStrip, given location of the dragged tab in screen coordinates.
   gfx::Rect GetDraggedViewTabStripBounds(const gfx::Point& screen_point);
 
-  // Returns the index where the dragged TabContents should be inserted into
+  // Returns the index where the dragged WebContents should be inserted into
   // the attached TabStripModel given the DraggedTabView's bounds
   // |dragged_bounds| in coordinates relative to the attached TabStrip.
   int GetInsertionIndexForDraggedBounds(const gfx::Rect& dragged_bounds);
@@ -154,12 +154,12 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   gfx::Point GetDraggedViewPoint(const gfx::Point& screen_point);
 
   // Finds the Tab within the specified TabStrip that corresponds to the
-  // dragged TabContents.
+  // dragged TabContentsWrapper.
   TabGtk* GetTabMatchingDraggedContents(TabStripGtk* tabstrip,
                                         TabContentsWrapper* contents);
 
   // Finds all the tabs within the specified TabStrip that correspond to the
-  // dragged TabContents.
+  // dragged TabContentsWrapper.
   std::vector<TabGtk*> GetTabsMatchingDraggedContents(TabStripGtk* tabstrip);
 
   // Sets the visible and draggging property of all dragged tabs. If |repaint|
@@ -177,7 +177,7 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   // be destroyed immediately, false otherwise.
   bool CompleteDrag();
 
-  // Resets the delegates of the TabContents.
+  // Resets the delegates of the TabContentsWrapper.
   void ResetDelegates();
 
   // Create the DraggedViewGtk if it does not yet exist.

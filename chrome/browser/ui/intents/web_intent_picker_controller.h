@@ -40,7 +40,7 @@ struct WebIntentServiceData;
 }
 
 // Controls the creation of the WebIntentPicker UI and forwards the user's
-// intent handler choice back to the TabContents object.
+// intent handler choice back to the WebContents object.
 class WebIntentPickerController : public content::NotificationObserver,
                                   public WebIntentPickerDelegate,
                                   public WebstoreInstaller::Delegate {

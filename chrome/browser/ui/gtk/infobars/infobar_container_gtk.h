@@ -44,7 +44,7 @@ class InfoBarContainerGtk : public InfoBarContainer {
   // Get the native widget.
   GtkWidget* widget() const { return container_.get(); }
 
-  // Remove the specified InfoBarDelegate from the selected TabContents. This
+  // Remove the specified InfoBarDelegate from the selected WebContents. This
   // will notify us back and cause us to close the View. This is called from
   // the InfoBar's close button handler.
   void RemoveDelegate(InfoBarDelegate* delegate);

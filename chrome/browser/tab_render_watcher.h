@@ -15,7 +15,7 @@ class RenderViewHost;
 class WebContents;
 }
 
-// This class watches given TabContent's loading and rendering state change.
+// This class watches given WebContents's loading and rendering state change.
 class TabRenderWatcher : public content::NotificationObserver {
  public:
   class Delegate {

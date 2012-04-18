@@ -41,7 +41,7 @@ void FindBarController::Show() {
   FindTabHelper* find_tab_helper = tab_contents_->find_tab_helper();
 
   // Only show the animation if we're not already showing a find bar for the
-  // selected TabContents.
+  // selected WebContents.
   if (!find_tab_helper->find_ui_active()) {
     MaybeSetPrepopulateText();
 

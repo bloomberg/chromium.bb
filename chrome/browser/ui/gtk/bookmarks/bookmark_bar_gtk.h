@@ -169,7 +169,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   void PaintEventBox();
 
   // Finds the size of the current tab contents, if it exists and sets |size|
-  // to the correct value. Returns false if there isn't a TabContents, a
+  // to the correct value. Returns false if there isn't a WebContents, a
   // condition that can happen during testing.
   bool GetTabContentsSize(gfx::Size* size);
 

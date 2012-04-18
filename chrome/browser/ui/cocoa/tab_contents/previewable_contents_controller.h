@@ -28,7 +28,7 @@ class WebContents;
   // Container view for the "active" contents.
   IBOutlet NSView* activeContainer_;
 
-  // The preview TabContents.  Will be NULL if no preview is currently showing.
+  // The preview WebContents.  Will be NULL if no preview is currently showing.
   content::WebContents* previewContents_;  // weak
 }
 

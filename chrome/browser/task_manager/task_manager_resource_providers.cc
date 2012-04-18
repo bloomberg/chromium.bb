@@ -363,7 +363,7 @@ TaskManager::Resource* TaskManagerTabContentsResourceProvider::GetResource(
     return NULL;
 
   // If an origin PID was specified then the request originated in a plugin
-  // working on the TabContent's behalf, so ignore it.
+  // working on the WebContents's behalf, so ignore it.
   if (origin_pid)
     return NULL;
 

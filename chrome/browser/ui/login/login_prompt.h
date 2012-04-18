@@ -146,8 +146,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   // This should only be accessed on the UI loop.
   webkit::forms::PasswordForm password_form_;
 
-  // Points to the password manager owned by the TabContents requesting auth.
-  // Can be null if the TabContents is not a TabContents.
+  // Points to the password manager owned by the WebContents requesting auth.
   // This should only be accessed on the UI loop.
   PasswordManager* password_manager_;
 

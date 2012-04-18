@@ -105,8 +105,8 @@ class ThumbnailLoader;
 }
 
 // A CALayer that draws a thumbnail for a TabContentsWrapper object. The layer
-// tries to draw the TabContents's backing store directly if possible, and
-// requests a thumbnail bitmap from the TabContents's renderer process if not.
+// tries to draw the WebContents's backing store directly if possible, and
+// requests a thumbnail bitmap from the WebContents's renderer process if not.
 @interface ThumbnailLayer : CALayer {
   // The TabContentsWrapper the thumbnail is for.
   TabContentsWrapper* contents_;  // weak
@@ -277,9 +277,9 @@ void ThumbnailLoader::LoadThumbnail() {
     return;
   }
 
-  // The size of the TabContent's RenderWidgetHost might not fit to the
+  // The size of the WebContents's RenderWidgetHost might not fit to the
   // current browser window at all, for example if the window was resized while
-  // this TabContents object was not an active tab.
+  // this WebContents object was not an active tab.
   // Compute the required size ourselves. Leave room for eventual infobars and
   // a detached bookmarks bar on the top, and for the devtools on the bottom.
   // Download shelf is not included in the |fullSize| rect, so no need to
@@ -1653,7 +1653,7 @@ void AnimateCALayerOpacityFromTo(
   // While a tab is loading, this is unfortunately called quite often for
   // both the "loading" and the "all" change types, so we don't really want to
   // send thumb requests to the corresponding renderer when this is called.
-  // For now, just make sure that we don't hold on to an invalid TabContents
+  // For now, just make sure that we don't hold on to an invalid WebContents
   // object.
   tabpose::Tile& tile = tileSet_->tile_at(index);
   if (contents == tile.tab_contents()) {

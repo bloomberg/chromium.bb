@@ -27,7 +27,7 @@ TEST_VIEW(PreviewableContentsControllerTest, [controller_ view])
 
 // TODO(rohitrao): Test showing and hiding the preview.  This may require
 // changing the interface to take in a WebContentsView* instead of a
-// TabContents*.
+// WebContents*.
 
 }  // namespace
 

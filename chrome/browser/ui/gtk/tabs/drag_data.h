@@ -36,7 +36,7 @@ struct DraggedTabData {
   // The tab being dragged.
   TabGtk* tab_;
 
-  // The TabContents being dragged.
+  // The TabContentsWrapper being dragged.
   TabContentsWrapper* contents_;
 
   // The original content::WebContentsDelegate of |contents|, before it was

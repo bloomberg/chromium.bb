@@ -354,7 +354,7 @@ class TabStripGtk : public TabStripModelObserver,
   // Calculates the available width for tabs, assuming a Tab is to be closed.
   int GetAvailableWidthForTabs(TabGtk* last_tab) const;
 
-  // Finds the index of the TabContents corresponding to |tab| in our
+  // Finds the index of the WebContents corresponding to |tab| in our
   // associated TabStripModel, or -1 if there is none (e.g. the specified |tab|
   // is being animated closed).
   int GetIndexOfTab(const TabGtk* tab) const;

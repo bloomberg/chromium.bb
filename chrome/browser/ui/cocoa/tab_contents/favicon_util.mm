@@ -16,8 +16,8 @@
 namespace mac {
 
 NSImage* FaviconForTabContents(TabContentsWrapper* contents) {
-  // TabContents returns IDR_DEFAULT_FAVICON, which is a rasterized version of
-  // the Mac PDF. Use the PDF so the icon in the Omnibox matches the default
+  // FaviconTabHelper returns IDR_DEFAULT_FAVICON, which is a rasterized version
+  // of the Mac PDF. Use the PDF so the icon in the Omnibox matches the default
   // favicon.
   if (contents && contents->favicon_tab_helper()->FaviconIsValid()) {
     CGColorSpaceRef color_space = base::mac::GetSystemColorSpace();

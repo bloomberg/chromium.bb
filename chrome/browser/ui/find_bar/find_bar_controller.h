@@ -41,8 +41,9 @@ class FindBarController : public content::NotificationObserver {
   // Accessor for the attached TabContentsWrapper.
   TabContentsWrapper* tab_contents() const { return tab_contents_; }
 
-  // Changes the TabContents that this FindBar is attached to. This occurs when
-  // the user switches tabs in the Browser window. |contents| can be NULL.
+  // Changes the TabContentsWrapper that this FindBar is attached to. This
+  // occurs when the user switches tabs in the Browser window. |contents| can be
+  // NULL.
   void ChangeTabContents(TabContentsWrapper* contents);
 
   // Overridden from content::NotificationObserver:

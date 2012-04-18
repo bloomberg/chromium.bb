@@ -103,9 +103,9 @@ class TabContentsContainerGtk : public content::NotificationObserver,
   // their positions manually set in OnSetFloatingPosition.
   ui::OwnedWidgetGtk floating_;
 
-  // We insert and remove TabContents GtkWidgets into this expanded_. This
+  // We insert and remove WebContents GtkWidgets into this expanded_. This
   // should not be a GtkVBox since there were errors with timing where the vbox
-  // was horizontally split with the top half displaying the current TabContents
+  // was horizontally split with the top half displaying the current WebContents
   // and bottom half displaying the loading page.
   GtkWidget* expanded_;
 

@@ -16,10 +16,10 @@ class ConstrainedWindowTabHelperDelegate {
   // Returns true if constrained windows should be focused. Default is true.
   virtual bool ShouldFocusConstrainedWindow();
 
-  // Changes the blocked state of |wrapper|. TabContents are considered blocked
-  // while displaying a tab modal dialog. During that time renderer host will
-  // ignore any UI interaction within TabContent outside of the currently
-  // displaying dialog.
+  // Changes the blocked state of |wrapper|. TabContentsWrapper are considered
+  // blocked while displaying a tab modal dialog. During that time renderer host
+  // will ignore any UI interaction within TabContentsWrapper outside of the
+  // currently displaying dialog.
   virtual void SetTabContentBlocked(TabContentsWrapper* wrapper, bool blocked);
 
  protected:

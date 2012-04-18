@@ -1329,7 +1329,7 @@ void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
     old_contents->web_contents()->GetView()->StoreFocus();
 
   // Update various elements that are interested in knowing the current
-  // TabContents.
+  // WebContents.
   UpdateDevToolsForContents(new_contents->web_contents());
   infobar_container_->ChangeTabContents(new_contents->infobar_tab_helper());
   contents_container_->SetTab(new_contents);
@@ -1884,7 +1884,7 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_widget_show_all(render_area_floating_container_);
   render_area_event_box_ = gtk_event_box_new();
   // Set a white background so during startup the user sees white in the
-  // content area before we get a TabContents in place.
+  // content area before we get a WebContents in place.
   gtk_widget_modify_bg(render_area_event_box_, GTK_STATE_NORMAL,
                        &ui::kGdkWhite);
   gtk_container_add(GTK_CONTAINER(render_area_event_box_),

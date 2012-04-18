@@ -115,7 +115,7 @@ class LoginHandlerViews : public LoginHandler,
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // Create a new LoginView and set the model for it.  The model
-    // (password manager) is owned by the view's parent TabContents,
+    // (password manager) is owned by the view's parent WebContents,
     // so natural destruction order means we don't have to worry about
     // disassociating the model from the view, because the view will
     // be deleted before the password manager.

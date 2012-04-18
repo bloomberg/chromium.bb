@@ -46,7 +46,7 @@ class FindTabHelper : public content::WebContentsObserver {
     current_find_request_id_ = current_find_request_id;
   }
 
-  // Accessor for find_text_. Used to determine if this TabContents has any
+  // Accessor for find_text_. Used to determine if this WebContents has any
   // active searches.
   string16 find_text() const { return find_text_; }
 

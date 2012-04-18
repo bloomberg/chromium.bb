@@ -84,7 +84,7 @@ using content::WebContents;
 
 - (void)willBecomeSelectedTab {
   // Do not explicitly call Focus() here, as the RWHV may not actually have
-  // focus (for example, if the omnibox has focus instead).  The TabContents
+  // focus (for example, if the omnibox has focus instead).  The WebContents
   // logic will restore focus to the appropriate view.
 }
 
