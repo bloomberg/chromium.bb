@@ -157,7 +157,8 @@ class GitRepoPatch(object):
     except cros_lib.RunCommandError:
       # Cleanup the rebase attempt.
       cros_lib.RunCommandCaptureOutput(
-          ['git', 'rebase', '--abort'], cwd=project_dir, print_cmd=False)
+          ['git', 'rebase', '--abort'], cwd=project_dir, print_cmd=False,
+          error_code_ok=True)
       raise ApplyPatchException(
           self, patch_type=ApplyPatchException.TYPE_REBASE_TO_TOT)
 
