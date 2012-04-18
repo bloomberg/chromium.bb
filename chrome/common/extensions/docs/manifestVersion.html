@@ -260,9 +260,57 @@
     </p>
   </li>
   <li>
-    <p>
-      A variety of previously deprecated features have been removed entirely:
-    </p>
+    <p>Browser action changes:</p>
+    <ul>
+      <li>
+        <p>
+          The <code>browser_actions</code> key in the manifest, and the
+          <code>chrome.browserActions</code> API are gone. Use the singular
+          <a href="browserAction.html">
+            <code>browser_action</code> and <code>chrome.browserAction</code>
+          </a> instead.
+        </p>
+      </li>
+      <li>
+        <p>
+          The <code>icons</code> property of <code>browser_action</code> has
+          been removed. Use <a href="browserAction.html#manifest">
+            the <code>default_icon</code> property
+          </a> or <a href="browserAction.html#method-setIcon">
+            <code>chrome.browserAction.setIcon</code>
+          </a> instead.
+        </p>
+      </li>
+      <li>
+        <p>
+          The <code>name</code> property of <code>browser_action</code> has been
+          removed. Use <a href="browserAction.html#manifest">
+            the <code>default_title</code> property
+          </a> or <a href="browserAction.html#method-setTitle">
+            <code>chrome.browserAction.setTitle</code>
+          </a> instead.
+        </p>
+      </li>
+      <li>
+        <p>
+          The <code>popup</code> property of <code>browser_action</code> has
+          been removed. Use <a href="browserAction.html#manifest">
+            the <code>default_popup</code> property
+          </a> or <a href="browserAction.html#method-setPopup">
+            <code>chrome.browserAction.setPopup</code>
+          </a> instead.
+        </p>
+      </li>
+      <li>
+        <p>
+          The <code>default_popup</code> property of <code>browser_action</code>
+          can no longer be specified as an object. It must be a string.
+        </p>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>Page action changes:</p>
     <ul>
       <li>
         <p>
@@ -271,22 +319,6 @@
           <a href="pageAction.html">
             <code>page_action</code> and <code>chrome.pageAction</code>
           </a> instead.
-        </p>
-      </li>
-      <li>
-        <p>
-          <code>chrome.extension.getTabContentses</code> (!!!) and
-          <code>chrome.extension.getExtensionTabs</code> are gone. Use
-          <a href="extension.html#method-getViews">
-            <code>chrome.extension.getViews({ "type": "tab" })</code>
-          </a> instead.
-        </p>
-      </li>
-      <li>
-        <p>
-          <code>Port.tab</code> is gone. Use
-          <a href="extension.html#type-Port"><code>Port.sender</code></a>
-          instead.
         </p>
       </li>
       <li>
@@ -332,6 +364,22 @@
         </p>
       </li>
     </ul>
+  </li>
+  <li>
+    <p>
+      <code>chrome.extension.getTabContentses</code> (!!!) and
+      <code>chrome.extension.getExtensionTabs</code> are gone. Use
+      <a href="extension.html#method-getViews">
+        <code>chrome.extension.getViews({ "type": "tab" })</code>
+      </a> instead.
+    </p>
+  </li>
+  <li>
+    <p>
+      <code>Port.tab</code> is gone. Use
+      <a href="extension.html#type-Port"><code>Port.sender</code></a>
+      instead.
+    </p>
   </li>
 </ul>
 </div>
