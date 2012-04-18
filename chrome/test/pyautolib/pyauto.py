@@ -1027,7 +1027,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
           if self._GetResultFromJSONRequestDiagnostics():
             # Browser info, worked, that means this hook had a problem
             additional_info = ('The browser process ID %d still exists. '
-                               'PyAuto was able to get obtain browser info. It '
+                               'PyAuto was able to obtain browser info. It '
                                'is possible this hook is broken.'
                                % _BROWSER_PID)
           else:
@@ -4296,6 +4296,11 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'value': value,
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
+  def ForgetAllRememberedNetworks(self):
+    """Forgets all networks that the device has marked as remembered."""
+    for service in self.GetNetworkInfo()['remembered_wifi']:
+      self.ForgetWifiNetwork(service)
 
   def ForgetWifiNetwork(self, service_path):
     """Forget a remembered network by its service path.

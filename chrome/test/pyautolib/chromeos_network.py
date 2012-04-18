@@ -166,11 +166,6 @@ class PyNetworkUITest(pyauto.PyUITest):
     for iface in routes:
       self.default_routes[iface[-1]] = dict(zip(route_table_headers, iface))
 
-  def ForgetAllRememberedNetworks(self):
-    """Forgets all networks that the device has marked as remembered."""
-    for service in self.GetNetworkInfo()['remembered_wifi']:
-      self.ForgetWifiNetwork(service)
-
   def _SetServiceOrder(self, service_order):
     self._GetFlimflamManager().SetServiceOrder(service_order)
     # Flimflam throws a dbus exception if device is already disabled.  This
