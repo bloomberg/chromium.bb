@@ -2616,20 +2616,24 @@ FileManager.prototype = {
     }
 
     if (selection.urls.length == 1) {
-      // We don't have tasks, so try the default browser action.
+      // We don't have tasks, so try the default action (open a directory or
+      // show a file in a browser tab).
       // We only do that for single selection to avoid confusion.
+      if (selection.entries[0].isDirectory) {
+        this.onDirectoryAction(selection.entries[0]);
+      } else {
+        var callback = function(success) {
+          if (!success)
+            this.alert.showHtml(
+                unescape(selection.entries[0].name),
+                strf('NO_ACTION_FOR_FILE', NO_ACTION_FOR_FILE_URL),
+                function() {});
+        }.bind(this);
 
-      var callback = function(success) {
-        if (!success && selection.entries.length == 1)
-          this.alert.showHtml(
-              unescape(selection.entries[0].name),
-              strf('NO_ACTION_FOR_FILE', NO_ACTION_FOR_FILE_URL),
-              function() {});
-      }.bind(this);
-
-      this.executeIfAvailable_(selection.urls, function(urls) {
-        chrome.fileBrowserPrivate.viewFiles(urls, 'default', callback);
-      });
+        this.executeIfAvailable_(selection.urls, function(urls) {
+          chrome.fileBrowserPrivate.viewFiles(urls, 'default', callback);
+        });
+      }
     }
   };
 
