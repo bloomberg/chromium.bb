@@ -34,8 +34,8 @@ namespace {
 // Scroll amount for each wheelscroll event. 53 is also the value used for GTK+.
 const int kWheelScrollAmount = 53;
 
-static const int kMinWheelButton = 4;
-static const int kMaxWheelButton = 7;
+const int kMinWheelButton = 4;
+const int kMaxWheelButton = 7;
 
 // A class to support the detection of scroll events, using X11 valuators.
 class UI_EXPORT CMTEventData {
