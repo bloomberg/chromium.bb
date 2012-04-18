@@ -23,7 +23,7 @@ vars = {
 
   "lcov_rev": "54822",
   "python_26_rev": "53573",
-  "tools_rev": "8151",
+  "tools_rev": "8228",
 
   # These are URL prefixes rather than revision numbers, so keep them separate.
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
@@ -52,6 +52,8 @@ deps = {
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
   "third_party":
     Var("native_client_trunk") + "/src/third_party@" + Var("tools_rev"),
+  "validator_snapshots":
+    Var("native_client_trunk") + "/src/validator_snapshots@" + Var("tools_rev"),
   "third_party/asan":
     Var("chromium_trunk") + "/deps/third_party/asan@" + Var("chrome_rev"),
   "third_party/gles2_book":
