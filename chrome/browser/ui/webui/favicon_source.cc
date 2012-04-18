@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,8 +58,24 @@ void FaviconSource::StartDataRequest(const std::string& path,
       request_size_map_[request_id] = pixel_size;
       url = GURL(path.substr(slash + 1));
     } else {
+      // URL requests prefixed with "origin/" are converted to a form with an
+      // empty path and a valid scheme. (e.g., example.com -->
+      // http://example.com/ or http://example.com/a --> http://example.com/)
+      if (path.size() > 7 && path.substr(0, 7) == "origin/") {
+        std::string originalUrl = path.substr(7);
+
+        // If the original URL does not specify a scheme (e.g., example.com
+        // instead of http://example.com), add "http://" as a default.
+        if (!GURL(originalUrl).has_scheme())
+          originalUrl = "http://" + originalUrl;
+
+        // Strip the path beyond the top-level domain.
+        url = GURL(originalUrl).GetOrigin();
+      } else {
+        url = GURL(path);
+      }
+
       request_size_map_[request_id] = 16;
-      url = GURL(path);
     }
 
     // Intercept requests for prepopulated pages.

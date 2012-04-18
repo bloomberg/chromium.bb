@@ -38,7 +38,14 @@ cr.define('options.passwordManager', function() {
       urlLabel.classList.add('url');
       urlLabel.setAttribute('title', this.url);
       urlLabel.textContent = this.url;
-      urlLabel.style.backgroundImage = url('chrome://favicon/' + this.url);
+
+      // The favicon URL is prefixed with "origin/", which essentially removes
+      // the URL path past the top-level domain and ensures that a scheme (e.g.,
+      // http) is being used. This ensures that the favicon returned is the
+      // default favicon for the domain and that the URL has a scheme if none
+      // is present in the password manager.
+      urlLabel.style.backgroundImage =
+          url('chrome://favicon/origin/' + this.url);
       this.contentElement.appendChild(urlLabel);
 
       // The stored username.
@@ -172,7 +179,14 @@ cr.define('options.passwordManager', function() {
       urlLabel.classList.add('favicon-cell');
       urlLabel.classList.add('weakrtl');
       urlLabel.textContent = this.url;
-      urlLabel.style.backgroundImage = url('chrome://favicon/' + this.url);
+
+      // The favicon URL is prefixed with "origin/", which essentially removes
+      // the URL path past the top-level domain and ensures that a scheme (e.g.,
+      // http) is being used. This ensures that the favicon returned is the
+      // default favicon for the domain and that the URL has a scheme if none
+      // is present in the password manager.
+      urlLabel.style.backgroundImage =
+          url('chrome://favicon/origin/' + this.url);
       this.contentElement.appendChild(urlLabel);
     },
 
