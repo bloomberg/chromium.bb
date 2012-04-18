@@ -1,3 +1,17 @@
+2012-04-18  Christian Egli  <christian.egli@sbs.ch>
+
+
+
+	* tests/pass2_outpos.c:
+	* tests/pass2_inpos.c: Rename test to reflect what it really
+	tests.
+
+	* tests/Makefile.am:
+	* tests/brl_checks.h:
+	* tests/brl_checks.c (check_inpos):
+	* tests/inpos_compbrl.c: Rename check_outpos to check_inpos to
+	reflect the true intention of the function.
+
 2012-04-17  Christian Egli  <christian.egli@sbs.ch>
 
 	* tests/doctests/en-GB-g2.ctb_test.txt:

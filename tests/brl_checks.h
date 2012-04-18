@@ -1,6 +1,6 @@
 #define TRANSLATION_TABLE "en-us-g2.ctb"
 
-int check_outpos(const char *tableList, const char *str, const int *expected_poslist);
+int check_inpos(const char *tableList, const char *str, const int *expected_poslist);
 
 /* Check if the cursor position is where you expect it to be after
    translating str. Return 0 if the translation is as expected and 1

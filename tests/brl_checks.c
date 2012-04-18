@@ -95,7 +95,7 @@ check_translation(const char *tableList, const char *str,
 }
 
 int
-check_outpos(const char *tableList, const char *str, const int *expected_poslist)
+check_inpos(const char *tableList, const char *str, const int *expected_poslist)
 {
   widechar *inbuf;
   widechar *outbuf;
@@ -109,13 +109,12 @@ check_outpos(const char *tableList, const char *str, const int *expected_poslist
   inbuf = malloc(sizeof(widechar) * inlen);
   outbuf = malloc(sizeof(widechar) * outlen);
   inpos = malloc(sizeof(int) * inlen);
-  outpos = malloc(sizeof(int) * inlen);
   for (i = 0; i < inlen; i++)
     {
       inbuf[i] = str[i];
     }
   lou_translate(tableList, inbuf, &inlen, outbuf, &outlen,
-		NULL, NULL, outpos, inpos, NULL, 0);
+		NULL, NULL, NULL, inpos, NULL, 0);
   for (i = 0; i < outlen; i++)
     {
       if (expected_poslist[i] != inpos[i])
@@ -129,7 +128,6 @@ check_outpos(const char *tableList, const char *str, const int *expected_poslist
   free(inbuf);
   free(outbuf);
   free(inpos);
-  free(outpos);
   lou_free();
   return rv;
 

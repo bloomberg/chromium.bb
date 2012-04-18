@@ -39,10 +39,10 @@ pass2_SOURCES =			\
 	brl_checks.h		\
 	pass2.c	
 
-pass2_outpos_SOURCES =		\
+pass2_inpos_SOURCES =		\
 	brl_checks.c		\
 	brl_checks.h		\
-	pass2_outpos.c	
+	pass2_inpos.c	
 
 letterDefTest_SOURCES = 	\
 	brl_checks.c		\
@@ -51,7 +51,7 @@ letterDefTest_SOURCES = 	\
 
 check_PROGRAMS =			\
 	pass2				\
-	pass2_outpos			\
+	pass2_inpos			\
 	present_progressive		\
 	capitalized_word		\
 	capitalized_with_sentance	\
