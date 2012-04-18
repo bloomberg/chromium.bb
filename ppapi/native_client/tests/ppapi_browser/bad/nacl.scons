@@ -62,6 +62,7 @@ node = env.PPAPIBrowserTester(
     'ppapi_bad_browser_test.out',
     url='ppapi_bad.html',
     nmf_names=nmf_names,
+    test_args=[('is_pnacl', int(env.Bit('pnacl_generate_pexe')))],
     files=[env.File(f) for f in ppapi_bad_files],
     args=['--allow_404'])
 
