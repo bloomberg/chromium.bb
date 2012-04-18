@@ -120,13 +120,6 @@
                 'mac_real_dsym': 1,
               },
             }],
-            ['OS=="win"', {
-              'dependencies': [
-                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
-                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:handle_lookup',
-                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle',
-              ],
-            }],
           ],
         },
       ],

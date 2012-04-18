@@ -32,7 +32,6 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/plugin/json_manifest.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
@@ -757,11 +756,6 @@ bool Plugin::NexeIsContentHandler() const {
 
 Plugin* Plugin::New(PP_Instance pp_instance) {
   PLUGIN_PRINTF(("Plugin::New (pp_instance=%"NACL_PRId32")\n", pp_instance));
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
-  if (!NaClHandlePassBrowserCtor()) {
-    return NULL;
-  }
-#endif
   Plugin* plugin = new Plugin(pp_instance);
   PLUGIN_PRINTF(("Plugin::New (plugin=%p)\n", static_cast<void*>(plugin)));
   if (plugin == NULL) {
@@ -891,10 +885,6 @@ Plugin::~Plugin() {
         "NaCl.ModuleUptime.Normal",
         (shutdown_start - ready_time_) / NACL_MICROS_PER_MILLI);
   }
-
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
-  NaClHandlePassBrowserDtor();
-#endif
 
   url_downloaders_.erase(url_downloaders_.begin(), url_downloaders_.end());
 

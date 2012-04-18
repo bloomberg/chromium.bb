@@ -7,7 +7,6 @@
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
-#include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 
@@ -57,12 +56,6 @@ class ModulePpapi : public pp::Module {
     NaClSrpcModuleInit();
 
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
-    // TODO(mseaborn): Remove this call because NaCl's handle_pass
-    // module is replaced by Chrome's BrokerDuplicateHandle()
-    // function.  The call to NaClHandlePassBrowserRememberHandle() on
-    // the NaCl side will have to be removed first.
-    NaClHandlePassBrowserInit();
-
     NaClSetBrokerDuplicateHandleFunc(private_interface_->BrokerDuplicateHandle);
 #endif
 
