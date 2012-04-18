@@ -79,14 +79,14 @@ IBusInputContext* GetInputContext(const std::string& input_context_path,
                                   IBusBus* ibus) {
   GDBusConnection* connection = ibus_bus_get_connection(ibus);
   if (!connection) {
-    LOG(ERROR) << "IBusConnection is null";
+    DVLOG(1) << "IBusConnection is null";
     return NULL;
   }
   // This function does not issue an IBus IPC.
   IBusInputContext* context = ibus_input_context_get_input_context(
       input_context_path.c_str(), connection);
   if (!context)
-    LOG(ERROR) << "IBusInputContext is null: " << input_context_path;
+    DVLOG(1) << "IBusInputContext is null: " << input_context_path;
   return context;
 }
 
@@ -116,13 +116,13 @@ bool ConvertProperty(IBusProperty* ibus_prop,
   // Sanity checks.
   const bool has_sub_props = PropertyHasChildren(ibus_prop);
   if (has_sub_props && (type != PROP_TYPE_MENU)) {
-    LOG(ERROR) << "The property has sub properties, "
-               << "but the type of the property is not PROP_TYPE_MENU";
+    DVLOG(1) << "The property has sub properties, "
+             << "but the type of the property is not PROP_TYPE_MENU";
     return false;
   }
   if ((!has_sub_props) && (type == PROP_TYPE_MENU)) {
     // This is usually not an error. ibus-daemon sometimes sends empty props.
-    VLOG(1) << "Property list is empty";
+    DVLOG(1) << "Property list is empty";
     return false;
   }
   if (type == PROP_TYPE_SEPARATOR || type == PROP_TYPE_MENU) {
@@ -136,24 +136,24 @@ bool ConvertProperty(IBusProperty* ibus_prop,
 
   bool is_selection_item_checked = false;
   if (state == PROP_STATE_INCONSISTENT) {
-    LOG(WARNING) << "The property is in PROP_STATE_INCONSISTENT, "
-                 << "which is not supported.";
+    DVLOG(1) << "The property is in PROP_STATE_INCONSISTENT, "
+             << "which is not supported.";
   } else if ((!is_selection_item) && (state == PROP_STATE_CHECKED)) {
-    LOG(WARNING) << "PROP_STATE_CHECKED is meaningful only if the type is "
-                 << "PROP_TYPE_RADIO.";
+    DVLOG(1) << "PROP_STATE_CHECKED is meaningful only if the type is "
+             << "PROP_TYPE_RADIO.";
   } else {
     is_selection_item_checked = (state == PROP_STATE_CHECKED);
   }
 
   if (!key)
-    LOG(ERROR) << "key is NULL";
+    DVLOG(1) << "key is NULL";
   if (tooltip && !tooltip->text) {
-    LOG(ERROR) << "tooltip is NOT NULL, but tooltip->text IS NULL: key="
-               << Or(key, "");
+    DVLOG(1) << "tooltip is NOT NULL, but tooltip->text IS NULL: key="
+             << Or(key, "");
   }
   if (label && !label->text) {
-    LOG(ERROR) << "label is NOT NULL, but label->text IS NULL: key="
-               << Or(key, "");
+    DVLOG(1) << "label is NOT NULL, but label->text IS NULL: key="
+             << Or(key, "");
   }
 
   // This label will be localized later.
@@ -164,7 +164,7 @@ bool ConvertProperty(IBusProperty* ibus_prop,
     label_to_use = (label && label->text) ? label->text : "";
   }
   if (label_to_use.empty()) {
-    LOG(ERROR) << "The tooltip and label are both empty. Use " << key;
+    DVLOG(1) << "The tooltip and label are both empty. Use " << key;
     label_to_use = Or(key, "");
   }
 
@@ -428,8 +428,8 @@ bool IBusControllerImpl::Stop() {
     }
   } else if (process_handle_ != base::kNullProcessHandle) {
     base::KillProcess(process_handle_, -1, false /* wait */);
-    LOG(ERROR) << "Killing ibus-daemon. PID="
-               << base::GetProcId(process_handle_);
+    DVLOG(1) << "Killing ibus-daemon. PID="
+             << base::GetProcId(process_handle_);
   } else {
     // The daemon hasn't been started yet.
   }
@@ -472,7 +472,7 @@ bool IBusControllerImpl::ChangeInputMethod(const std::string& id) {
   current_input_method_id_ = id;
 
   if (!IBusConnectionsAreAlive()) {
-    LOG(INFO) << "ChangeInputMethod: IBus connection is not alive (yet).";
+    DVLOG(1) << "ChangeInputMethod: IBus connection is not alive (yet).";
     // |id| will become usable shortly since Start() has already been called.
     // Just return true.
   } else {
@@ -484,11 +484,11 @@ bool IBusControllerImpl::ChangeInputMethod(const std::string& id) {
 
 bool IBusControllerImpl::ActivateInputMethodProperty(const std::string& key) {
   if (!IBusConnectionsAreAlive()) {
-    LOG(ERROR) << "ActivateInputMethodProperty: IBus connection is not alive";
+    DVLOG(1) << "ActivateInputMethodProperty: IBus connection is not alive";
     return false;
   }
   if (current_input_context_path_.empty()) {
-    LOG(ERROR) << "Input context is unknown";
+    DVLOG(1) << "Input context is unknown";
     return false;
   }
 
@@ -503,7 +503,7 @@ bool IBusControllerImpl::ActivateInputMethodProperty(const std::string& key) {
     }
   }
   if (i == current_property_list_.size()) {
-    LOG(ERROR) << "ActivateInputMethodProperty: unknown key: " << key;
+    DVLOG(1) << "ActivateInputMethodProperty: unknown key: " << key;
     return false;
   }
 
@@ -530,7 +530,7 @@ bool IBusControllerImpl::ActivateInputMethodProperty(const std::string& key) {
 void IBusControllerImpl::SendHandwritingStroke(
     const HandwritingStroke& stroke) {
   if (stroke.size() < 2) {
-    LOG(WARNING) << "Empty stroke data or a single dot is passed.";
+    DVLOG(1) << "Empty stroke data or a single dot is passed.";
     return;
   }
 
@@ -571,7 +571,7 @@ void IBusControllerImpl::MaybeRestoreConnections() {
     return;
   MaybeRestoreIBusConfig();
   if (IBusConnectionsAreAlive()) {
-    LOG(INFO) << "ibus-daemon and ibus-memconf processes are ready.";
+    DVLOG(1) << "ibus-daemon and ibus-memconf processes are ready.";
     ConnectPanelServiceSignals();
     SendAllInputMethodConfigs();
     if (!current_input_method_id_.empty())
@@ -596,7 +596,7 @@ void IBusControllerImpl::MaybeInitializeIBusBus() {
   ibus_bus_set_watch_dbus_signal(ibus_, TRUE);
 
   if (ibus_bus_is_connected(ibus_)) {
-    LOG(ERROR) << "IBus connection is ready: ibus-daemon is already running?";
+    DVLOG(1) << "IBus connection is ready: ibus-daemon is already running?";
     BusConnected(ibus_);
   }
 }
@@ -613,8 +613,8 @@ void IBusControllerImpl::MaybeRestoreIBusConfig() {
 
   GDBusConnection* ibus_connection = ibus_bus_get_connection(ibus_);
   if (!ibus_connection) {
-    VLOG(1) << "Couldn't create an ibus config object since "
-            << "IBus connection is not ready.";
+    DVLOG(1) << "Couldn't create an ibus config object since "
+             << "IBus connection is not ready.";
     return;
   }
 
@@ -624,8 +624,8 @@ void IBusControllerImpl::MaybeRestoreIBusConfig() {
     // |ibus_| object is not NULL, but the connection between ibus-daemon
     // is not yet established. In this case, we don't create |ibus_config_|
     // object.
-    LOG(ERROR) << "Couldn't create an ibus config object since "
-               << "IBus connection is closed.";
+    DVLOG(1) << "Couldn't create an ibus config object since "
+             << "IBus connection is closed.";
     return;
   }
   // If memconf is not successfully started yet, ibus_config_new() will
@@ -636,7 +636,7 @@ void IBusControllerImpl::MaybeRestoreIBusConfig() {
                                  NULL /* do not cancel the operation */,
                                  NULL /* do not get error information */);
   if (!ibus_config_) {
-    LOG(ERROR) << "ibus_config_new() failed. ibus-memconf is not ready?";
+    DVLOG(1) << "ibus_config_new() failed. ibus-memconf is not ready?";
     return;
   }
 
@@ -644,12 +644,12 @@ void IBusControllerImpl::MaybeRestoreIBusConfig() {
   // libcros to detect the delivery of the "destroy" glib signal the
   // |ibus_config_| object.
   g_object_ref(ibus_config_);
-  VLOG(1) << "ibus_config_ is ready.";
+  DVLOG(1) << "ibus_config_ is ready.";
 }
 
 void IBusControllerImpl::MaybeDestroyIBusConfig() {
   if (!ibus_) {
-    LOG(ERROR) << "MaybeDestroyIBusConfig: ibus_ is NULL";
+    DVLOG(1) << "MaybeDestroyIBusConfig: ibus_ is NULL";
     return;
   }
   if (ibus_config_ && !ibus_bus_is_connected(ibus_)) {
@@ -711,7 +711,7 @@ bool IBusControllerImpl::SetInputMethodConfigInternal(
   }
 
   if (!variant) {
-    LOG(ERROR) << "SendInputMethodConfig: unknown value.type";
+    DVLOG(1) << "SendInputMethodConfig: unknown value.type";
     return false;
   }
   DCHECK(g_variant_is_floating(variant));
@@ -763,7 +763,7 @@ void IBusControllerImpl::ConnectPanelServiceSignals() {
   IBusPanelService* ibus_panel_service = IBUS_PANEL_SERVICE(
       g_object_get_data(G_OBJECT(ibus_), kPanelObjectKey));
   if (!ibus_panel_service) {
-    LOG(ERROR) << "IBusPanelService is NOT available.";
+    DVLOG(1) << "IBusPanelService is NOT available.";
     return;
   }
   // We don't _ref() or _weak_ref() the panel service object, since we're not
@@ -784,12 +784,12 @@ void IBusControllerImpl::ConnectPanelServiceSignals() {
 }
 
 void IBusControllerImpl::BusConnected(IBusBus* bus) {
-  LOG(INFO) << "IBus connection is established.";
+  DVLOG(1) << "IBus connection is established.";
   MaybeRestoreConnections();
 }
 
 void IBusControllerImpl::BusDisconnected(IBusBus* bus) {
-  LOG(INFO) << "IBus connection is terminated.";
+  DVLOG(1) << "IBus connection is terminated.";
   // ibus-daemon might be terminated. Since |ibus_| object will automatically
   // connect to the daemon if it restarts, we don't have to set NULL on ibus_.
   // Call MaybeDestroyIBusConfig() to set |ibus_config_| to NULL temporarily.
@@ -812,8 +812,8 @@ void IBusControllerImpl::BusNameOwnerChanged(IBusBus* bus,
   const std::string empty_string;
   if (old_name != empty_string || new_name == empty_string) {
     // ibus-memconf died?
-    LOG(WARNING) << "Unexpected name owner change: name=" << name
-                 << ", old_name=" << old_name << ", new_name=" << new_name;
+    DVLOG(1) << "Unexpected name owner change: name=" << name
+             << ", old_name=" << old_name << ", new_name=" << new_name;
     // TODO(yusukes): it might be nice to set |ibus_config_| to NULL and call
     // a new callback function like OnDisconnect() here to allow Chrome to
     // recover all input method configurations when ibus-memconf is
@@ -821,7 +821,7 @@ void IBusControllerImpl::BusNameOwnerChanged(IBusBus* bus,
     // stable and unlikely crashes.
     return;
   }
-  VLOG(1) << "IBus config daemon is started. Recovering ibus_config_";
+  DVLOG(1) << "IBus config daemon is started. Recovering ibus_config_";
 
   // Try to recover |ibus_config_|. If the |ibus_config_| object is
   // successfully created, |OnConnectionChange| will be called to
@@ -832,9 +832,9 @@ void IBusControllerImpl::BusNameOwnerChanged(IBusBus* bus,
 void IBusControllerImpl::FocusIn(IBusPanelService* panel,
                                  const gchar* input_context_path) {
   if (!input_context_path)
-    LOG(ERROR) << "NULL context passed";
+    DVLOG(1) << "NULL context passed";
   else
-    VLOG(1) << "FocusIn: " << input_context_path;
+    DVLOG(1) << "FocusIn: " << input_context_path;
   // Remember the current ic path.
   current_input_context_path_ = Or(input_context_path, "");
 }
@@ -842,12 +842,12 @@ void IBusControllerImpl::FocusIn(IBusPanelService* panel,
 void IBusControllerImpl::RegisterProperties(IBusPanelService* panel,
                                             IBusPropList* ibus_prop_list) {
   // Note: |panel| can be NULL. See ChangeInputMethod().
-  VLOG(1) << "RegisterProperties" << (ibus_prop_list ? "" : " (clear)");
+  DVLOG(1) << "RegisterProperties" << (ibus_prop_list ? "" : " (clear)");
 
   current_property_list_.clear();
   if (ibus_prop_list) {
     // You can call
-    //   LOG(INFO) << "\n" << PrintPropList(ibus_prop_list, 0);
+    //   DVLOG(1) << "\n" << PrintPropList(ibus_prop_list, 0);
     // here to dump |ibus_prop_list|.
     if (!FlattenPropertyList(ibus_prop_list, &current_property_list_)) {
       // Clear properties on errors.
@@ -859,17 +859,17 @@ void IBusControllerImpl::RegisterProperties(IBusPanelService* panel,
 
 void IBusControllerImpl::UpdateProperty(IBusPanelService* panel,
                                         IBusProperty* ibus_prop) {
-  VLOG(1) << "UpdateProperty";
+  DVLOG(1) << "UpdateProperty";
   DCHECK(ibus_prop);
 
   // You can call
-  //   LOG(INFO) << "\n" << PrintProp(ibus_prop, 0);
+  //   DVLOG(1) << "\n" << PrintProp(ibus_prop, 0);
   // here to dump |ibus_prop|.
 
   InputMethodPropertyList prop_list;  // our representation.
   if (!FlattenProperty(ibus_prop, &prop_list)) {
     // Don't update the UI on errors.
-    LOG(ERROR) << "Malformed properties are detected";
+    DVLOG(1) << "Malformed properties are detected";
     return;
   }
 
@@ -886,7 +886,7 @@ bool IBusControllerImpl::MaybeLaunchIBusDaemon() {
   static const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";
 
   if (process_handle_ != base::kNullProcessHandle) {
-    LOG(ERROR) << "MaybeLaunchIBusDaemon: ibus-daemon is already running.";
+    DVLOG(1) << "MaybeLaunchIBusDaemon: ibus-daemon is already running.";
     return false;
   }
   if (!should_launch_daemon_)
@@ -899,7 +899,7 @@ bool IBusControllerImpl::MaybeLaunchIBusDaemon() {
   if (!LaunchProcess(ibus_daemon_command_line,
                      &process_handle_,
                      reinterpret_cast<GChildWatchFunc>(OnIBusDaemonExit))) {
-    LOG(ERROR) << "Failed to launch " << ibus_daemon_command_line;
+    DVLOG(1) << "Failed to launch " << ibus_daemon_command_line;
     return false;
   }
   return true;
@@ -914,7 +914,7 @@ bool IBusControllerImpl::LaunchProcess(const std::string& command_line,
   base::SplitString(command_line, ' ', &argv);
 
   if (!base::LaunchProcess(argv, base::LaunchOptions(), &handle)) {
-    LOG(ERROR) << "Could not launch: " << command_line;
+    DVLOG(1) << "Could not launch: " << command_line;
     return false;
   }
 
@@ -925,7 +925,7 @@ bool IBusControllerImpl::LaunchProcess(const std::string& command_line,
   g_child_watch_add(pid, watch_func, this);
 
   *process_handle = handle;
-  VLOG(1) << command_line << "is started. PID=" << pid;
+  DVLOG(1) << command_line << "is started. PID=" << pid;
   return true;
 }
 
@@ -945,7 +945,7 @@ void IBusControllerImpl::SetInputMethodConfigCallback(GObject* source_object,
     if (error && error->message) {
       message = error->message;
     }
-    LOG(ERROR) << "ibus_config_set_value_async failed: " << message;
+    DVLOG(1) << "ibus_config_set_value_async failed: " << message;
   }
 
   if (error)

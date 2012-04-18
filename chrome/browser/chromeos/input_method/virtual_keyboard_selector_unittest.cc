@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ template <size_t L> bool CheckUrls(LayoutToKeyboard::const_iterator start,
   std::set<GURL> expected_url_set;
   for (size_t i = 0; i < L; ++i) {
     if (!expected_url_set.insert(GURL(urls[i])).second) {
-      LOG(ERROR) << "Duplicated URL: " << urls[i];
+      DVLOG(1) << "Duplicated URL: " << urls[i];
       return false;
     }
   }
@@ -35,7 +35,7 @@ template <size_t L> bool CheckUrls(LayoutToKeyboard::const_iterator start,
   std::set<GURL> actual_url_set;
   for (LayoutToKeyboard::const_iterator iter = start; iter != end; ++iter) {
     if (!actual_url_set.insert(iter->second->url()).second) {
-      LOG(ERROR) << "Duplicated URL: " << iter->second->url().spec();
+      DVLOG(1) << "Duplicated URL: " << iter->second->url().spec();
       return false;
     }
   }

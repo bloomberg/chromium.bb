@@ -181,7 +181,7 @@ bool XKeyboardImpl::SetLayoutInternal(const std::string& layout_name,
     const std::string current_layout = CreateFullXkbLayoutName(
         current_layout_name_, current_modifier_map_);
     if (!force && (current_layout == layout_to_set)) {
-      DLOG(INFO) << "The requested layout is already set: " << layout_to_set;
+      DVLOG(1) << "The requested layout is already set: " << layout_to_set;
       return true;
     }
   }
@@ -191,7 +191,7 @@ bool XKeyboardImpl::SetLayoutInternal(const std::string& layout_name,
     SetCapsLockEnabled(false);
   }
 
-  VLOG(1) << (force ? "Reapply" : "Set") << " layout: " << layout_to_set;
+  DVLOG(1) << (force ? "Reapply" : "Set") << " layout: " << layout_to_set;
 
   const bool start_execution = execute_queue_.empty();
   // If no setxkbmap command is in flight (i.e. start_execution is true),
@@ -224,7 +224,7 @@ void XKeyboardImpl::MaybeExecuteSetLayoutCommand() {
   argv.push_back("-synch");
 
   if (!base::LaunchProcess(argv, base::LaunchOptions(), &handle)) {
-    LOG(ERROR) << "Failed to execute setxkbmap: " << layout_to_set;
+    DVLOG(1) << "Failed to execute setxkbmap: " << layout_to_set;
     execute_queue_ = std::queue<std::string>();  // clear the queue.
     return;
   }
@@ -235,7 +235,7 @@ void XKeyboardImpl::MaybeExecuteSetLayoutCommand() {
   g_child_watch_add(pid,
                     reinterpret_cast<GChildWatchFunc>(OnSetLayoutFinish),
                     this);
-  VLOG(1) << "ExecuteSetLayoutCommand: " << layout_to_set << ": pid=" << pid;
+  DVLOG(1) << "ExecuteSetLayoutCommand: " << layout_to_set << ": pid=" << pid;
 }
 
 bool XKeyboardImpl::NumLockIsEnabled() {
@@ -271,7 +271,7 @@ unsigned int XKeyboardImpl::GetNumLockMask() {
         continue;
       if (string_to_find == virtual_mod_str.string()) {
         if (!XkbVirtualModsToReal(xkb_desc, virtual_mod_mask, &real_mask)) {
-          LOG(ERROR) << "XkbVirtualModsToReal failed";
+          DVLOG(1) << "XkbVirtualModsToReal failed";
           real_mask = kBadMask;  // reset the return value, just in case.
         }
         break;
@@ -287,7 +287,7 @@ void XKeyboardImpl::GetLockedModifiers(bool* out_caps_lock_enabled,
   CHECK(CurrentlyOnUIThread());
 
   if (out_num_lock_enabled && !num_lock_mask_) {
-    VLOG(1) << "Cannot get locked modifiers. Num Lock mask unknown.";
+    DVLOG(1) << "Cannot get locked modifiers. Num Lock mask unknown.";
     if (out_caps_lock_enabled) {
       *out_caps_lock_enabled = false;
     }
@@ -314,13 +314,13 @@ std::string XKeyboardImpl::CreateFullXkbLayoutName(
       "abcdefghijklmnopqrstuvwxyz0123456789()-_";
 
   if (layout_name.empty()) {
-    LOG(ERROR) << "Invalid layout_name: " << layout_name;
+    DVLOG(1) << "Invalid layout_name: " << layout_name;
     return "";
   }
 
   if (layout_name.find_first_not_of(kValidLayoutNameCharacters) !=
       std::string::npos) {
-    LOG(ERROR) << "Invalid layout_name: " << layout_name;
+    DVLOG(1) << "Invalid layout_name: " << layout_name;
     return "";
   }
 
@@ -344,13 +344,13 @@ std::string XKeyboardImpl::CreateFullXkbLayoutName(
         break;
     }
     if (!target) {
-      LOG(ERROR) << "We don't support remaping "
-                 << ModifierKeyToString(modifier_map[i].original);
+      DVLOG(1) << "We don't support remaping "
+               << ModifierKeyToString(modifier_map[i].original);
       return "";
     }
     if (!(target->empty())) {
-      LOG(ERROR) << ModifierKeyToString(modifier_map[i].original)
-                 << " appeared twice";
+      DVLOG(1) << ModifierKeyToString(modifier_map[i].original)
+               << " appeared twice";
       return "";
     }
     *target = ModifierKeyToString(modifier_map[i].replacement);
@@ -359,7 +359,7 @@ std::string XKeyboardImpl::CreateFullXkbLayoutName(
   if (use_search_key_as_str.empty() ||
       use_left_control_key_as_str.empty() ||
       use_left_alt_key_as_str.empty()) {
-    LOG(ERROR) << "Incomplete ModifierMap: size=" << modifier_map.size();
+    DVLOG(1) << "Incomplete ModifierMap: size=" << modifier_map.size();
     return "";
   }
 
@@ -382,7 +382,7 @@ void XKeyboardImpl::SetLockedModifiers(ModifierLockStatus new_caps_lock_status,
                                        ModifierLockStatus new_num_lock_status) {
   CHECK(CurrentlyOnUIThread());
   if (!num_lock_mask_) {
-    LOG(ERROR) << "Cannot set locked modifiers. Num Lock mask unknown.";
+    DVLOG(1) << "Cannot set locked modifiers. Num Lock mask unknown.";
     return;
   }
 
@@ -425,7 +425,7 @@ bool XKeyboardImpl::SetCurrentKeyboardLayoutByName(
 
 bool XKeyboardImpl::ReapplyCurrentKeyboardLayout() {
   if (current_layout_name_.empty()) {
-    LOG(ERROR) << "Can't reapply XKB layout: layout unknown";
+    DVLOG(1) << "Can't reapply XKB layout: layout unknown";
     return false;
   }
   return SetLayoutInternal(
@@ -493,10 +493,10 @@ void XKeyboardImpl::OnSetLayoutFinish(pid_t pid,
                                       int status,
                                       XKeyboardImpl* self) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(1) << "OnSetLayoutFinish: pid=" << pid;
+  DVLOG(1) << "OnSetLayoutFinish: pid=" << pid;
   if (self->execute_queue_.empty()) {
-    LOG(ERROR) << "OnSetLayoutFinish: execute_queue_ is empty. "
-               << "base::LaunchProcess failed? pid=" << pid;
+    DVLOG(1) << "OnSetLayoutFinish: execute_queue_ is empty. "
+             << "base::LaunchProcess failed? pid=" << pid;
     return;
   }
   self->execute_queue_.pop();
@@ -513,20 +513,20 @@ bool XKeyboard::SetAutoRepeatEnabled(bool enabled) {
   } else {
     XAutoRepeatOff(ui::GetXDisplay());
   }
-  DLOG(INFO) << "Set auto-repeat mode to: " << (enabled ? "on" : "off");
+  DVLOG(1) << "Set auto-repeat mode to: " << (enabled ? "on" : "off");
   return true;
 }
 
 // static
 bool XKeyboard::SetAutoRepeatRate(const AutoRepeatRate& rate) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DLOG(INFO) << "Set auto-repeat rate to: "
-             << rate.initial_delay_in_ms << " ms delay, "
-             << rate.repeat_interval_in_ms << " ms interval";
+  DVLOG(1) << "Set auto-repeat rate to: "
+           << rate.initial_delay_in_ms << " ms delay, "
+           << rate.repeat_interval_in_ms << " ms interval";
   if (XkbSetAutoRepeatRate(ui::GetXDisplay(), XkbUseCoreKbd,
                            rate.initial_delay_in_ms,
                            rate.repeat_interval_in_ms) != True) {
-    LOG(ERROR) << "Failed to set auto-repeat rate";
+    DVLOG(1) << "Failed to set auto-repeat rate";
     return false;
   }
   return true;

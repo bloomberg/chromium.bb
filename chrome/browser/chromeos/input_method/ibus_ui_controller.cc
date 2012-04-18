@@ -132,7 +132,7 @@ class IBusUiControllerImpl : public IBusUiController {
     bool result = false;
     // Check the IBus connection status.
     if (ibus_bus_is_connected(ibus_)) {
-      LOG(INFO) << "ibus_bus_is_connected(). IBus connection is ready.";
+      DVLOG(1) << "ibus_bus_is_connected(). IBus connection is ready.";
       FOR_EACH_OBSERVER(Observer, observers_, OnConnectionChange(true));
       result = true;
     }
@@ -150,7 +150,7 @@ class IBusUiControllerImpl : public IBusUiController {
     }
 
     if (ibus_panel_service_) {
-      LOG(ERROR) << "IBusPanelService is already available. Remove it first.";
+      DVLOG(1) << "IBusPanelService is already available. Remove it first.";
       g_object_set_data(G_OBJECT(ibus_), kPanelObjectKey, NULL);
       g_object_unref(ibus_panel_service_);
       ibus_panel_service_ = NULL;
@@ -159,17 +159,17 @@ class IBusUiControllerImpl : public IBusUiController {
     // Create an IBusPanelService object.
     GDBusConnection* ibus_connection = ibus_bus_get_connection(ibus_);
     if (!ibus_connection) {
-      LOG(ERROR) << "ibus_bus_get_connection() failed";
+      DVLOG(1) << "ibus_bus_get_connection() failed";
       return false;
     }
     ibus_panel_service_ = ibus_panel_service_new(ibus_connection);
     if (!ibus_panel_service_) {
-      LOG(ERROR) << "ibus_chromeos_panel_service_new() failed";
+      DVLOG(1) << "ibus_chromeos_panel_service_new() failed";
       return false;
     }
     ConnectPanelServiceSignals();
     g_object_set_data(G_OBJECT(ibus_), kPanelObjectKey, ibus_panel_service_);
-    LOG(INFO) << "IBusPanelService object is successfully (re-)created.";
+    DVLOG(1) << "IBusPanelService object is successfully (re-)created.";
 
     // Request the well-known name *asynchronously*.
     ibus_bus_request_name_async(ibus_,
@@ -187,11 +187,11 @@ class IBusUiControllerImpl : public IBusUiController {
                                       int button,
                                       int flags) OVERRIDE {
     if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
-      LOG(ERROR) << "NotifyCandidateClicked: bus is not connected.";
+      DVLOG(1) << "NotifyCandidateClicked: bus is not connected.";
       return;
     }
     if (!ibus_panel_service_) {
-      LOG(ERROR) << "NotifyCandidateClicked: panel service is not available.";
+      DVLOG(1) << "NotifyCandidateClicked: panel service is not available.";
       return;
     }
 
@@ -205,11 +205,11 @@ class IBusUiControllerImpl : public IBusUiController {
   // IBusUiController override.
   virtual void NotifyCursorUp() OVERRIDE {
     if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
-      LOG(ERROR) << "NotifyCursorUp: bus is not connected.";
+      DVLOG(1) << "NotifyCursorUp: bus is not connected.";
       return;
     }
     if (!ibus_panel_service_) {
-      LOG(ERROR) << "NotifyCursorUp: panel service is not available.";
+      DVLOG(1) << "NotifyCursorUp: panel service is not available.";
       return;
     }
 
@@ -220,25 +220,25 @@ class IBusUiControllerImpl : public IBusUiController {
   // IBusUiController override.
   virtual void NotifyCursorDown() OVERRIDE {
     if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
-      LOG(ERROR) << "NotifyCursorDown: bus is not connected.";
+      DVLOG(1) << "NotifyCursorDown: bus is not connected.";
       return;
     }
     if (!ibus_panel_service_) {
-      LOG(ERROR) << "NotifyCursorDown: panel service is not available.";
+      DVLOG(1) << "NotifyCursorDown: panel service is not available.";
       return;
     }
-     /* Send a D-Bus signal to ibus-daemon *asynchronously*. */
+    /* Send a D-Bus signal to ibus-daemon *asynchronously*. */
     ibus_panel_service_cursor_down(ibus_panel_service_);
   }
 
   // IBusUiController override.
   virtual void NotifyPageUp() OVERRIDE {
     if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
-      LOG(ERROR) << "NotifyPageUp: bus is not connected.";
+      DVLOG(1) << "NotifyPageUp: bus is not connected.";
       return;
     }
     if (!ibus_panel_service_) {
-      LOG(ERROR) << "NotifyPageUp: panel service is not available.";
+      DVLOG(1) << "NotifyPageUp: panel service is not available.";
       return;
     }
 
@@ -249,11 +249,11 @@ class IBusUiControllerImpl : public IBusUiController {
   // IBusUiController override.
   virtual void NotifyPageDown() OVERRIDE {
     if (!ibus_ || !ibus_bus_is_connected(ibus_)) {
-      LOG(ERROR) << "NotifyPageDown: bus is not connected.";
+      DVLOG(1) << "NotifyPageDown: bus is not connected.";
       return;
     }
     if (!ibus_panel_service_) {
-      LOG(ERROR) << "NotifyPageDown: panel service is not available.";
+      DVLOG(1) << "NotifyPageDown: panel service is not available.";
       return;
     }
 
@@ -504,9 +504,9 @@ class IBusUiControllerImpl : public IBusUiController {
 
   // Handles "connected" signal from ibus-daemon.
   void IBusBusConnected(IBusBus* bus) {
-    LOG(WARNING) << "IBus connection is recovered.";
+    DVLOG(1) << "IBus connection is recovered.";
     if (!MaybeRestorePanelService()) {
-      LOG(ERROR) << "MaybeRestorePanelService() failed";
+      DVLOG(1) << "MaybeRestorePanelService() failed";
       return;
     }
 
@@ -517,7 +517,7 @@ class IBusUiControllerImpl : public IBusUiController {
   // |ibus_panel_service_| object since the connection the service has will be
   // destroyed soon.
   void IBusBusDisconnected(IBusBus* bus) {
-    LOG(WARNING) << "IBus connection is terminated.";
+    DVLOG(1) << "IBus connection is terminated.";
     if (ibus_panel_service_) {
       DisconnectPanelServiceSignals();
       // Since the connection being disconnected is currently mutex-locked,
@@ -616,7 +616,7 @@ class IBusUiControllerImpl : public IBusUiController {
         g_byte_array_append(
             bytearray, reinterpret_cast<const guint8*>(ptr), size);
         if (!lookup_table.mozc_candidates.ParseFromArray(
-               bytearray->data, bytearray->len)) {
+                bytearray->data, bytearray->len)) {
           lookup_table.mozc_candidates.Clear();
         }
         g_byte_array_unref(bytearray);
@@ -659,7 +659,7 @@ class IBusUiControllerImpl : public IBusUiController {
     lookup_table.page_size = ibus_lookup_table_get_page_size(table);
     // Ensure that the page_size is non-zero to avoid div-by-zero error.
     if (lookup_table.page_size <= 0) {
-      LOG(DFATAL) << "Invalid page size: " << lookup_table.page_size;
+      DVLOG(1) << "Invalid page size: " << lookup_table.page_size;
       lookup_table.page_size = 1;
     }
 
@@ -684,9 +684,9 @@ class IBusUiControllerImpl : public IBusUiController {
       if (error && error->message) {
         message = error->message;
       }
-      LOG(ERROR) << "Failed to register the panel service: " << message;
+      DVLOG(1) << "Failed to register the panel service: " << message;
     } else {
-      LOG(INFO) << "The panel service is registered: ID=" << service_id;
+      DVLOG(1) << "The panel service is registered: ID=" << service_id;
     }
 
     if (error) {

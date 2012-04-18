@@ -387,7 +387,7 @@ class InformationTextArea : public HidableArea {
  public:
   // Specify the alignment and initialize the control.
   InformationTextArea(views::Label::Alignment align, int minWidth)
-  : minWidth_(minWidth) {
+      : minWidth_(minWidth) {
     label_ = new views::Label;
     label_->SetHorizontalAlignment(align);
 
@@ -654,7 +654,7 @@ void CandidateView::Init(int shortcut_column_width,
   layout->AddView(annotation_label_);
   if (orientation_ == InputMethodLookupTable::kVertical) {
     layout->AddView(WrapWithPadding(infolist_label_,
-        gfx::Insets(2, 0, 2, 0)));
+                                    gfx::Insets(2, 0, 2, 0)));
   }
   UpdateLabelBackgroundColors();
 }
@@ -965,7 +965,7 @@ void CandidateWindowView::UpdateCandidates(
     // Compute the index of the current page.
     const int current_page_index = ComputePageIndex(new_lookup_table);
     if (current_page_index < 0) {
-      LOG(ERROR) << "Invalid lookup_table: " << new_lookup_table.ToString();
+      DVLOG(1) << "Invalid lookup_table: " << new_lookup_table.ToString();
       return;
     }
 
@@ -1142,7 +1142,7 @@ bool CandidateWindowView::IsCandidateWindowOpen() const {
 void CandidateWindowView::SelectCandidateAt(int index_in_page) {
   const int current_page_index = ComputePageIndex(lookup_table_);
   if (current_page_index < 0) {
-    LOG(ERROR) << "Invalid lookup_table: " << lookup_table_.ToString();
+    DVLOG(1) << "Invalid lookup_table: " << lookup_table_.ToString();
     return;
   }
 
@@ -1291,7 +1291,7 @@ void InfolistView::Init() {
   // Initialize the column set with three columns.
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                         0, views::GridLayout::FIXED, 200, 0);
+                        0, views::GridLayout::FIXED, 200, 0);
 
   layout->StartRow(0, 0);
   layout->AddView(wrapped_title_label);
@@ -1458,9 +1458,9 @@ void InfolistWindowView::UpdateCandidates(
     InfolistView* infolist_row = new InfolistView(this);
     infolist_row->Init();
     infolist_row->SetTitleText(
-      UTF8ToWide(usages.information(i).title()));
+        UTF8ToWide(usages.information(i).title()));
     infolist_row->SetDescriptionText(
-      UTF8ToWide(usages.information(i).description()));
+        UTF8ToWide(usages.information(i).description()));
     if (usages.has_focused_index() &&
         (static_cast<int>(usages.focused_index()) == i)) {
       infolist_row->Select();
@@ -1607,7 +1607,7 @@ void CandidateWindowControllerImpl::OnSetCursorLocation(
       candidate_window_->cursor_location();
   const int delta_y = abs(last_location.y() - y);
   if ((last_location.x() == x) && (delta_y <= kKeepPositionThreshold)) {
-    DLOG(INFO) << "Ignored set_cursor_location signal to prevent window shake";
+    DVLOG(1) << "Ignored set_cursor_location signal to prevent window shake";
     return;
   }
 
@@ -1651,7 +1651,7 @@ void CandidateWindowControllerImpl::OnUpdateLookupTable(
     infolist_window_->ResizeAndMoveParentFrame();
     if (candidates.has_focused_index() && candidates.candidate_size() > 0) {
       const int focused_row =
-        candidates.focused_index() - candidates.candidate(0).index();
+          candidates.focused_index() - candidates.candidate(0).index();
       if (candidates.candidate_size() >= focused_row &&
           candidates.candidate(focused_row).has_information_id()) {
         infolist_window_->DelayShow(kInfolistShowDelayMilliSeconds);
@@ -1678,8 +1678,8 @@ void CandidateWindowControllerImpl::OnUpdatePreeditText(
 }
 
 void CandidateWindowControllerImpl::OnCandidateCommitted(int index,
-                                                           int button,
-                                                           int flags) {
+                                                         int button,
+                                                         int flags) {
   ibus_ui_controller_->NotifyCandidateClicked(index, button, flags);
 }
 

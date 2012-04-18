@@ -97,7 +97,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
     }
     g_connections_->erase(engine_id_);
     ClearProperties();
-    VLOG(1) << "Removing engine: " << engine_id_;
+    DVLOG(1) << "Removing engine: " << engine_id_;
   }
 
   // Initializes the object. Returns true on success.
@@ -115,7 +115,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
     // engine_id_ must be unique.
     if (g_connections_->find(engine_id_) != g_connections_->end()) {
-      LOG(ERROR) << "ibus engine name already in use: " << engine_id_;
+      DVLOG(1) << "ibus engine name already in use: " << engine_id_;
       return false;
     }
 
@@ -125,17 +125,17 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
     // Check the IBus connection status.
     if (!ibus_) {
-      LOG(ERROR) << "ibus_bus_new() failed";
+      DVLOG(1) << "ibus_bus_new() failed";
       return false;
     }
 
     (*g_connections_)[engine_id_] = this;
-    VLOG(1) << "Adding engine: " << engine_id_;
+    DVLOG(1) << "Adding engine: " << engine_id_;
 
     // Check the IBus connection status.
     bool result = true;
     if (ibus_bus_is_connected(ibus_)) {
-      VLOG(1) << "ibus_bus_is_connected(). IBus connection is ready.";
+      DVLOG(1) << "ibus_bus_is_connected(). IBus connection is ready.";
       result = MaybeCreateComponent();
     }
 
@@ -147,7 +147,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   virtual void SetPreeditText(const char* text, int cursor) {
     if (active_engine_) {
-      VLOG(1) << "SetPreeditText";
+      DVLOG(1) << "SetPreeditText";
       if (preedit_text_) {
         g_object_unref(preedit_text_);
         preedit_text_ = NULL;
@@ -162,7 +162,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   }
 
   virtual void SetPreeditUnderline(int start, int end, int type) {
-    VLOG(1) << "SetPreeditUnderline";
+    DVLOG(1) << "SetPreeditUnderline";
     if (active_engine_ && preedit_text_) {
       // Translate the type to ibus's constants.
       int underline_type;
@@ -201,7 +201,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   virtual void CommitText(const char* text) {
     if (active_engine_) {
-      VLOG(1) << "CommitText";
+      DVLOG(1) << "CommitText";
       // Reset the preedit text when a commit occurs.
       SetPreeditText("", 0);
       if (preedit_text_) {
@@ -217,7 +217,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetTableVisible(bool visible) {
     table_visible_ = visible;
     if (active_engine_) {
-      VLOG(1) << "SetTableVisible";
+      DVLOG(1) << "SetTableVisible";
       ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
                                       active_engine_->table,
                                       table_visible_);
@@ -232,7 +232,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetCursorVisible(bool visible) {
     cursor_visible_ = visible;
     if (active_engine_) {
-      VLOG(1) << "SetCursorVisible";
+      DVLOG(1) << "SetCursorVisible";
       ibus_lookup_table_set_cursor_visible(active_engine_->table, visible);
       ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
                                       active_engine_->table,
@@ -243,7 +243,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetOrientationVertical(bool vertical) {
     vertical_ = vertical;
     if (active_engine_) {
-      VLOG(1) << "SetOrientationVertical";
+      DVLOG(1) << "SetOrientationVertical";
       ibus_lookup_table_set_orientation(active_engine_->table,
                                         vertical ? IBUS_ORIENTATION_VERTICAL :
                                         IBUS_ORIENTATION_HORIZONTAL);
@@ -256,7 +256,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetPageSize(unsigned int size) {
     page_size_ = size;
     if (active_engine_) {
-      VLOG(1) << "SetPageSize";
+      DVLOG(1) << "SetPageSize";
       ibus_lookup_table_set_page_size(active_engine_->table, size);
       ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
                                       active_engine_->table,
@@ -266,7 +266,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   virtual void ClearCandidates() {
     if (active_engine_) {
-      VLOG(1) << "ClearCandidates";
+      DVLOG(1) << "ClearCandidates";
       ibus_lookup_table_clear(active_engine_->table);
       ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
                                       active_engine_->table,
@@ -278,7 +278,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
     // Text with this foreground color will be treated as an annotation.
     const guint kAnnotationForegroundColor = 0x888888;
     if (active_engine_) {
-      VLOG(1) << "SetCandidates";
+      DVLOG(1) << "SetCandidates";
       ibus_lookup_table_clear(active_engine_->table);
 
       for (std::vector<Candidate>::iterator ix = candidates.begin();
@@ -325,7 +325,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetCandidateAuxText(const char* text) {
     aux_text_ = text;
     if (active_engine_) {
-      VLOG(1) << "SetCandidateAuxText";
+      DVLOG(1) << "SetCandidateAuxText";
       IBusText* ibus_text = static_cast<IBusText*>(
           ibus_text_new_from_string(aux_text_.c_str()));
       ibus_engine_update_auxiliary_text(IBUS_ENGINE(active_engine_), ibus_text,
@@ -339,7 +339,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetCandidateAuxTextVisible(bool visible) {
     aux_text_visible_ = visible;
     if (active_engine_) {
-      VLOG(1) << "SetCandidateAuxTextVisible";
+      DVLOG(1) << "SetCandidateAuxTextVisible";
       IBusText* ibus_text = static_cast<IBusText*>(
           ibus_text_new_from_string(aux_text_.c_str()));
       ibus_engine_update_auxiliary_text(IBUS_ENGINE(active_engine_), ibus_text,
@@ -353,7 +353,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   virtual void SetCursorPosition(unsigned int position) {
     cursor_position_ = position;
     if (active_engine_) {
-      VLOG(1) << "SetCursorPosition";
+      DVLOG(1) << "SetCursorPosition";
       ibus_lookup_table_set_cursor_pos(active_engine_->table, position);
       ibus_engine_update_lookup_table(IBUS_ENGINE(active_engine_),
                                       active_engine_->table,
@@ -363,7 +363,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   virtual bool RegisterProperties(
       const std::vector<EngineProperty*>& properties) {
-    VLOG(1) << "RegisterProperties";
+    DVLOG(1) << "RegisterProperties";
     ClearProperties();
     CopyProperties(properties, &properties_);
 
@@ -383,16 +383,16 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   virtual bool UpdateProperties(
       const std::vector<EngineProperty*>& properties) {
-    VLOG(1) << "UpdateProperties";
+    DVLOG(1) << "UpdateProperties";
     return UpdatePropertyList(properties);
   }
 
   void CopyProperties(const std::vector<EngineProperty*>& properties,
                       std::vector<EngineProperty*>* dest) {
     for (std::vector<EngineProperty*>::const_iterator property =
-         properties.begin(); property != properties.end(); ++property) {
+             properties.begin(); property != properties.end(); ++property) {
       if (property_map_.find((*property)->key) != property_map_.end()) {
-        LOG(ERROR) << "Property collision on name: " << (*property)->key;
+        DVLOG(1) << "Property collision on name: " << (*property)->key;
         return;
       }
 
@@ -416,7 +416,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
       const std::vector<EngineProperty*>& properties) {
     IBusPropList *prop_list = ibus_prop_list_new();
     for (std::vector<EngineProperty*>::const_iterator property =
-         properties.begin(); property != properties.end(); ++property) {
+             properties.begin(); property != properties.end(); ++property) {
       IBusPropList *children = NULL;
       if (!(*property)->children.empty()) {
         children = MakePropertyList((*property)->children);
@@ -475,11 +475,11 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   bool UpdatePropertyList(const std::vector<EngineProperty*>& properties) {
     for (std::vector<EngineProperty*>::const_iterator property =
-         properties.begin(); property != properties.end(); ++property) {
+             properties.begin(); property != properties.end(); ++property) {
       std::map<std::string, EngineProperty*>::iterator cur_property =
           property_map_.find((*property)->key);
       if (cur_property == property_map_.end()) {
-        LOG(ERROR) << "Missing property: " << (*property)->key;
+        DVLOG(1) << "Missing property: " << (*property)->key;
         return false;
       }
 
@@ -594,7 +594,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
     if (!ibus_) {
       return;
     }
-    VLOG(1) << "ConnectIBusSignals";
+    DVLOG(1) << "ConnectIBusSignals";
     g_signal_connect(ibus_,
                      "connected",
                      G_CALLBACK(IBusBusConnectedCallback),
@@ -622,20 +622,20 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   // Handles "connected" signal from ibus-daemon.
   static void IBusBusConnectedCallback(IBusBus* bus, gpointer user_data) {
-    LOG(WARNING) << "IBus connection is recovered.";
+    DVLOG(1) << "IBus connection is recovered.";
     g_return_if_fail(user_data);
     IBusEngineControllerImpl* self
         = static_cast<IBusEngineControllerImpl*>(user_data);
     DCHECK(ibus_bus_is_connected(self->ibus_));
     if (!self->MaybeCreateComponent()) {
-      LOG(ERROR) << "MaybeCreateComponent() failed";
+      DVLOG(1) << "MaybeCreateComponent() failed";
       return;
     }
   }
 
   // Handles "disconnected" signal from ibus-daemon.
   static void IBusBusDisconnectedCallback(IBusBus* bus, gpointer user_data) {
-    LOG(WARNING) << "IBus connection is terminated.";
+    DVLOG(1) << "IBus connection is terminated.";
     if (g_factory_) {
       g_object_unref(g_factory_);
       g_factory_ = NULL;
@@ -647,7 +647,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
       return false;
     }
 
-    VLOG(1) << "MaybeCreateComponent";
+    DVLOG(1) << "MaybeCreateComponent";
     IBusComponent* component = ibus_component_new(bus_name_.c_str(),
                                                   description_.c_str(),
                                                   "",
@@ -716,7 +716,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   static void OnProcessKeyEvent(IBusEngine* ibus_engine, guint keyval,
                                 guint keycode, guint modifiers,
                                 GDBusMethodInvocation* key_data) {
-    VLOG(1) << "OnProcessKeyEvent";
+    DVLOG(1) << "OnProcessKeyEvent";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
       engine->connection->observer_->OnKeyEvent(
@@ -730,7 +730,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   }
 
   static void OnReset(IBusEngine* ibus_engine) {
-    VLOG(1) << "OnReset";
+    DVLOG(1) << "OnReset";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
       engine->connection->observer_->OnReset();
@@ -738,7 +738,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   }
 
   static void OnEnable(IBusEngine* ibus_engine) {
-    VLOG(1) << "OnEnable";
+    DVLOG(1) << "OnEnable";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
       engine->connection->active_engine_ = engine;
@@ -752,7 +752,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   }
 
   static void OnDisable(IBusEngine* ibus_engine) {
-    VLOG(1) << "OnDisable";
+    DVLOG(1) << "OnDisable";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
       engine->connection->active_ = false;
@@ -764,7 +764,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   }
 
   static void OnFocusIn(IBusEngine* ibus_engine) {
-    VLOG(1) << "OnFocusIn";
+    DVLOG(1) << "OnFocusIn";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
       engine->connection->focused_ = true;
@@ -776,7 +776,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
   }
 
   static void OnFocusOut(IBusEngine* ibus_engine) {
-    VLOG(1) << "OnFocusOut";
+    DVLOG(1) << "OnFocusOut";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
       engine->connection->focused_ = false;
@@ -804,7 +804,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   static void OnPropertyActivate(IBusEngine* ibus_engine,
                                  const gchar *prop_name, guint prop_state) {
-    VLOG(1) << "OnPropertyActivate";
+    DVLOG(1) << "OnPropertyActivate";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
       engine->connection->observer_->OnPropertyActivate(prop_name, prop_state);
@@ -813,7 +813,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
 
   static void OnCandidateClicked(IBusEngine* ibus_engine, guint index,
                                  guint button, guint state) {
-    VLOG(1) << "OnCandidateClicked";
+    DVLOG(1) << "OnCandidateClicked";
     IBusChromeOSEngine* engine = IBUS_CHROMEOS_ENGINE(ibus_engine);
     if (engine->connection) {
       int pressed_button = 0;
@@ -839,7 +839,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
     const gchar* name = ibus_engine_get_name((IBusEngine*)engine);
     ConnectionMap::iterator connection = g_connections_->find(name);
     if (connection == g_connections_->end()) {
-      LOG(ERROR) << "Connection never created: " << name;
+      DVLOG(1) << "Connection never created: " << name;
       engine->connection = NULL;
       engine->table = NULL;
       return (GObject *) engine;
@@ -875,7 +875,7 @@ class IBusEngineControllerImpl : public IBusEngineController {
     const gchar* name = ibus_engine_get_name((IBusEngine*)chromeos_engine);
     ConnectionMap::iterator connection = g_connections_->find(name);
     if (connection == g_connections_->end()) {
-      LOG(ERROR) << "Connection already destroyed, or never created: " << name;
+      DVLOG(1) << "Connection already destroyed, or never created: " << name;
     } else {
       connection->second->engine_instances_.erase(chromeos_engine);
       if (connection->second->active_engine_ == chromeos_engine) {
@@ -948,8 +948,8 @@ IBusEngineController* IBusEngineController::Create(Observer* observer,
   IBusEngineControllerImpl* connection = new IBusEngineControllerImpl(observer);
   if (!connection->Init(engine_id, engine_name, description, language,
                         layout)) {
-    LOG(ERROR) << "Failed to Init() IBusEngineControllerImpl. "
-               << "Returning NULL";
+    DVLOG(1) << "Failed to Init() IBusEngineControllerImpl. "
+             << "Returning NULL";
     delete connection;
     connection = NULL;
   }

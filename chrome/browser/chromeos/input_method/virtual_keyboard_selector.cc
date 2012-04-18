@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -104,7 +104,7 @@ bool VirtualKeyboardSelector::AddVirtualKeyboard(
 const VirtualKeyboard* VirtualKeyboardSelector::SelectVirtualKeyboard(
     const std::string& layout) {
   if (layout.empty()) {
-    LOG(ERROR) << "No layout is specified";
+    DVLOG(1) << "No layout is specified";
     return NULL;
   }
 
@@ -125,7 +125,7 @@ const VirtualKeyboard* VirtualKeyboardSelector::SelectVirtualKeyboard(
   const VirtualKeyboard* keyboard =
       SelectVirtualKeyboardWithoutPreferences(layout);
   if (!keyboard) {
-    VLOG(1) << "No virtual keyboard for " << layout << " is found";
+    DVLOG(1) << "No virtual keyboard for " << layout << " is found";
     return NULL;
   }
 
@@ -138,13 +138,13 @@ bool VirtualKeyboardSelector::SetUserPreference(
   std::map<GURL, const VirtualKeyboard*>::const_iterator iter =
       url_to_keyboard_.find(url);
   if (iter == url_to_keyboard_.end()) {
-    VLOG(1) << "Can't set user preference: unknown URL";
+    DVLOG(1) << "Can't set user preference: unknown URL";
     return false;
   }
 
   const VirtualKeyboard* keyboard = iter->second;
   if (!keyboard->IsLayoutSupported(layout)) {
-    VLOG(1) << "Requested layout is not supported by requested URL";
+    DVLOG(1) << "Requested layout is not supported by requested URL";
     return false;
   }
 

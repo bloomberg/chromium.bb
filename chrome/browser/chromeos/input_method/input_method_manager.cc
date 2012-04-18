@@ -19,7 +19,7 @@ void InputMethodManager::Initialize() {
   InputMethodManagerImpl* impl = new InputMethodManagerImpl;
   impl->Init();
   g_input_method_manager = impl;
-  VLOG(1) << "InputMethodManager initialized";
+  DVLOG(1) << "InputMethodManager initialized";
 }
 
 // static
@@ -27,14 +27,14 @@ void InputMethodManager::InitializeForTesting(
     InputMethodManager* mock_manager) {
   DCHECK(!g_input_method_manager);
   g_input_method_manager = mock_manager;
-  VLOG(1) << "InputMethodManager for testing initialized";
+  DVLOG(1) << "InputMethodManager for testing initialized";
 }
 
 // static
 void InputMethodManager::Shutdown() {
   delete g_input_method_manager;
   g_input_method_manager = NULL;
-  VLOG(1) << "InputMethodManager shutdown";
+  DVLOG(1) << "InputMethodManager shutdown";
 }
 
 // static

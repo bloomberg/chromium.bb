@@ -532,7 +532,7 @@ bool InputMethodUtil::GetInputMethodIdsFromLanguageCodeInternal(
     }
   }
   if ((type == kAllInputMethods) && !result) {
-    LOG(ERROR) << "Unknown language code: " << normalized_language_code;
+    DVLOG(1) << "Unknown language code: " << normalized_language_code;
   }
   return result;
 }
@@ -596,7 +596,7 @@ void InputMethodUtil::GetLanguageCodesFromInputMethodIds(
     const InputMethodDescriptor* input_method =
         GetInputMethodDescriptorFromId(input_method_id);
     if (!input_method) {
-      LOG(ERROR) << "Unknown input method ID: " << input_method_ids[i];
+      DVLOG(1) << "Unknown input method ID: " << input_method_ids[i];
       continue;
     }
     const std::string language_code = input_method->language_code();
@@ -615,7 +615,7 @@ std::string InputMethodUtil::GetHardwareInputMethodId() const {
 
   if (!(g_browser_process && g_browser_process->local_state())) {
     // This shouldn't happen but just in case.
-    VLOG(1) << "Local state is not yet ready";
+    DVLOG(1) << "Local state is not yet ready";
     return InputMethodDescriptor::GetFallbackInputMethodDescriptor().id();
   }
 
@@ -624,7 +624,7 @@ std::string InputMethodUtil::GetHardwareInputMethodId() const {
     // This could happen in unittests. We register the preference in
     // BrowserMain::InitializeLocalState and that method is not called during
     // unittests.
-    LOG(ERROR) << prefs::kHardwareKeyboardLayout << " is not registered";
+    DVLOG(1) << prefs::kHardwareKeyboardLayout << " is not registered";
     return InputMethodDescriptor::GetFallbackInputMethodDescriptor().id();
   }
 
@@ -641,7 +641,7 @@ std::string InputMethodUtil::GetHardwareInputMethodId() const {
 
 void InputMethodUtil::ReloadInternalMaps() {
   if (supported_input_methods_->size() <= 1) {
-    LOG(ERROR) << "GetSupportedInputMethods returned a fallback ID";
+    DVLOG(1) << "GetSupportedInputMethods returned a fallback ID";
     // TODO(yusukes): Handle this error in nicer way.
   }
 

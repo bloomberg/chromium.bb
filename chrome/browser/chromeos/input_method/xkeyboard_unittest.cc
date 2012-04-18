@@ -197,8 +197,8 @@ TEST_F(XKeyboardTest, TestCreateFullXkbLayoutNameKeepCapsLock) {
                                      kLeftControlKey)).c_str());
   EXPECT_STREQ("gb(extd)+chromeos(disabled_disabled_disabled_keepralt)",
                xkey_->CreateFullXkbLayoutName(
-                    "gb(extd)",
-                    GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
+                   "gb(extd)",
+                   GetMap(kVoidKey, kVoidKey, kVoidKey)).c_str());
 }
 
 TEST_F(XKeyboardTest, TestCreateFullXkbLayoutNameKeepAlt) {
@@ -237,7 +237,7 @@ TEST_F(XKeyboardTest, TestSetCapsLockEnabled) {
     // Do not fail the test to allow developers to run unit_tests without an X
     // server (e.g. via ssh). Note that both try bots and waterfall always have
     // an X server for running browser_tests.
-    LOG(INFO) << "X server is not available. Skip the test.";
+    DVLOG(1) << "X server is not available. Skip the test.";
     return;
   }
   const bool initial_lock_state = xkey_->CapsLockIsEnabled();
@@ -254,7 +254,7 @@ TEST_F(XKeyboardTest, TestSetCapsLockEnabled) {
 
 TEST_F(XKeyboardTest, TestSetNumLockEnabled) {
   if (!DisplayAvailable()) {
-    LOG(INFO) << "X server is not available. Skip the test.";
+    DVLOG(1) << "X server is not available. Skip the test.";
     return;
   }
   const unsigned int num_lock_mask = xkey_->GetNumLockMask();
@@ -274,7 +274,7 @@ TEST_F(XKeyboardTest, TestSetNumLockEnabled) {
 
 TEST_F(XKeyboardTest, TestSetCapsLockAndNumLockAtTheSameTime) {
   if (!DisplayAvailable()) {
-    LOG(INFO) << "X server is not available. Skip the test.";
+    DVLOG(1) << "X server is not available. Skip the test.";
     return;
   }
   const unsigned int num_lock_mask = xkey_->GetNumLockMask();
@@ -350,7 +350,7 @@ TEST_F(XKeyboardTest, TestContainsModifierKeyAsReplacement) {
 
 TEST_F(XKeyboardTest, TestSetAutoRepeatEnabled) {
   if (!DisplayAvailable()) {
-    LOG(INFO) << "X server is not available. Skip the test.";
+    DVLOG(1) << "X server is not available. Skip the test.";
     return;
   }
   const bool state = XKeyboard::GetAutoRepeatEnabledForTesting();
@@ -363,7 +363,7 @@ TEST_F(XKeyboardTest, TestSetAutoRepeatEnabled) {
 
 TEST_F(XKeyboardTest, TestSetAutoRepeatRate) {
   if (!DisplayAvailable()) {
-    LOG(INFO) << "X server is not available. Skip the test.";
+    DVLOG(1) << "X server is not available. Skip the test.";
     return;
   }
   AutoRepeatRate rate;

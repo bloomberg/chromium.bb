@@ -106,7 +106,7 @@ InputMethodDescriptors* InputMethodManagerImpl::GetActiveInputMethods() const {
       if (ix != extra_input_methods_.end())
         result->push_back(ix->second);
       else
-        LOG(ERROR) << "Descriptor is not found for: " << input_method_id;
+        DVLOG(1) << "Descriptor is not found for: " << input_method_id;
     }
   }
   if (result->empty()) {
@@ -144,8 +144,8 @@ void InputMethodManagerImpl::EnableLayouts(const std::string& language_code,
       InputMethodUtil::IsKeyboardLayout(initial_layout)) {
     layouts.push_back(initial_layout);
   } else if (!initial_layout.empty()) {
-    LOG(ERROR) << "EnableLayouts: ignoring non-keyboard or invalid ID: "
-               << initial_layout;
+    DVLOG(1) << "EnableLayouts: ignoring non-keyboard or invalid ID: "
+             << initial_layout;
   }
 
   // Add candidates to layouts, while skipping duplicates.
@@ -174,11 +174,11 @@ bool InputMethodManagerImpl::EnableInputMethods(
     if (util_.IsValidInputMethodId(input_method_id))
       new_active_input_method_ids_filtered.push_back(input_method_id);
     else
-      LOG(ERROR) << "EnableInputMethods: Invalid ID: " << input_method_id;
+      DVLOG(1) << "EnableInputMethods: Invalid ID: " << input_method_id;
   }
 
   if (new_active_input_method_ids_filtered.empty()) {
-    LOG(ERROR) << "EnableInputMethods: No valid input method ID";
+    DVLOG(1) << "EnableInputMethods: No valid input method ID";
     return false;
   }
 
@@ -232,9 +232,9 @@ void InputMethodManagerImpl::ChangeInputMethod(
     DCHECK(!input_methods->empty());
     input_method_id_to_switch = input_methods->at(0).id();
     if (!input_method_id.empty()) {
-      VLOG(1) << "Can't change the current input method to "
-              << input_method_id << " since the engine is not enabled. "
-              << "Switch to " << input_method_id_to_switch << " instead.";
+      DVLOG(1) << "Can't change the current input method to "
+               << input_method_id << " since the engine is not enabled. "
+               << "Switch to " << input_method_id_to_switch << " instead.";
     }
   }
 
@@ -291,7 +291,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     return;
 
   if (!InputMethodUtil::IsExtensionInputMethod(id)) {
-    LOG(ERROR) << id << " is not a valid extension input method ID.";
+    DVLOG(1) << id << " is not a valid extension input method ID.";
     return;
   }
 
@@ -302,8 +302,8 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   if (!Contains(active_input_method_ids_, id)) {
     active_input_method_ids_.push_back(id);
   } else {
-    LOG(ERROR) << "AddInputMethodExtension: alread added: "
-               << id << ", " << name;
+    DVLOG(1) << "AddInputMethodExtension: alread added: "
+             << id << ", " << name;
     // Call Start() anyway, just in case.
   }
 
@@ -314,7 +314,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
 
 void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
   if (!InputMethodUtil::IsExtensionInputMethod(id))
-    LOG(ERROR) << id << " is not a valid extension input method ID.";
+    DVLOG(1) << id << " is not a valid extension input method ID.";
 
   std::vector<std::string>::iterator i = std::find(
       active_input_method_ids_.begin(), active_input_method_ids_.end(), id);
@@ -348,11 +348,11 @@ bool InputMethodManagerImpl::SwitchToNextInputMethod() {
 
   // Sanity checks.
   if (active_input_method_ids_.empty()) {
-    LOG(ERROR) << "active input method is empty";
+    DVLOG(1) << "active input method is empty";
     return false;
   }
   if (current_input_method_.id().empty()) {
-    LOG(ERROR) << "current_input_method_ is unknown";
+    DVLOG(1) << "current_input_method_ is unknown";
     return false;
   }
 
@@ -368,7 +368,7 @@ bool InputMethodManagerImpl::SwitchToPreviousInputMethod() {
 
   // Sanity check.
   if (active_input_method_ids_.empty()) {
-    LOG(ERROR) << "active input method is empty";
+    DVLOG(1) << "active input method is empty";
     return false;
   }
 
@@ -396,7 +396,7 @@ bool InputMethodManagerImpl::SwitchInputMethod(
 
   // Sanity check.
   if (active_input_method_ids_.empty()) {
-    LOG(ERROR) << "active input method is empty";
+    DVLOG(1) << "active input method is empty";
     return false;
   }
 
@@ -425,7 +425,7 @@ bool InputMethodManagerImpl::SwitchInputMethod(
       break;
   }
   if (input_method_ids_to_switch.empty()) {
-    LOG(ERROR) << "Unexpected VKEY: " << accelerator.key_code();
+    DVLOG(1) << "Unexpected VKEY: " << accelerator.key_code();
     return false;
   }
 
@@ -589,7 +589,7 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
   if (candidate_window_controller_->Init())
     candidate_window_controller_->AddObserver(this);
   else
-    LOG(WARNING) << "Failed to initialize the candidate window controller";
+    DVLOG(1) << "Failed to initialize the candidate window controller";
 #endif
 }
 

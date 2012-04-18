@@ -80,13 +80,13 @@ void BrowserStateMonitor::UpdateUserPreferences(
 void BrowserStateMonitor::InputMethodChanged(InputMethodManager* manager) {
   DCHECK_EQ(manager_, manager);
   const std::string current_input_method =
-    manager->GetCurrentInputMethod().id();
+      manager->GetCurrentInputMethod().id();
   // Save the new input method id depending on the current browser state.
   switch (state_) {
     case InputMethodManager::STATE_LOGIN_SCREEN:
       if (!InputMethodUtil::IsKeyboardLayout(current_input_method)) {
-        LOG(ERROR) << "Only keyboard layouts are supported: "
-                   << current_input_method;
+        DVLOG(1) << "Only keyboard layouts are supported: "
+                 << current_input_method;
         return;
       }
       UpdateLocalState(current_input_method);
@@ -121,7 +121,7 @@ void BrowserStateMonitor::Observe(
       // Note that the notification is also sent when Chrome crashes/restarts
       // as of writing, but it might be changed in the future (therefore we need
       // to listen to NOTIFICATION_SESSION_STARTED as well.)
-      VLOG(1) << "Received chrome::NOTIFICATION_LOGIN_USER_CHANGED";
+      DVLOG(1) << "Received chrome::NOTIFICATION_LOGIN_USER_CHANGED";
       SetState(InputMethodManager::STATE_BROWSER_SCREEN);
       break;
     }
@@ -131,7 +131,7 @@ void BrowserStateMonitor::Observe(
       // We should NOT call InitializePrefMembers() here since the notification
       // is sent in the PreProfileInit phase in case when Chrome crashes and
       // restarts.
-      VLOG(1) << "Received chrome::NOTIFICATION_SESSION_STARTED";
+      DVLOG(1) << "Received chrome::NOTIFICATION_SESSION_STARTED";
       SetState(InputMethodManager::STATE_BROWSER_SCREEN);
       break;
     }
