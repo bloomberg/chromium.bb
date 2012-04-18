@@ -6453,22 +6453,50 @@ bool GLES2DecoderImpl::ClearLevel(
     int width,
     int height,
     bool is_texture_immutable) {
-  // Assumes the size has already been checked.
-  uint32 pixels_size = 0;
+  static const uint32 kMaxZeroSize = 1024 * 1024 * 4;
+
+  uint32 size;
+  uint32 padded_row_size;
   if (!GLES2Util::ComputeImageDataSizes(
-      width, height, format, type, unpack_alignment_, &pixels_size, NULL,
-      NULL)) {
+          width, height, format, type, unpack_alignment_, &size,
+          NULL, &padded_row_size)) {
     return false;
   }
-  scoped_array<char> zero(new char[pixels_size]);
-  memset(zero.get(), 0, pixels_size);
-  glBindTexture(bind_target, service_id);
-  if (is_texture_immutable) {
-    glTexSubImage2D(
-        target, level, 0, 0, width, height, format, type, zero.get());
+
+  int tile_height;
+
+  if (size > kMaxZeroSize) {
+    if (kMaxZeroSize < padded_row_size) {
+        // That'd be an awfully large texture.
+        return false;
+    }
+    // We should never have a large total size with a zero row size.
+    DCHECK_GT(padded_row_size, 0U);
+    tile_height = kMaxZeroSize / padded_row_size;
+    if (!GLES2Util::ComputeImageDataSizes(
+            width, tile_height, format, type, unpack_alignment_, &size, NULL,
+            NULL)) {
+      return false;
+    }
   } else {
-    WrappedTexImage2D(
-        target, level, format, width, height, 0, format, type, zero.get());
+    tile_height = height;
+  }
+
+  // Assumes the size has already been checked.
+  scoped_array<char> zero(new char[size]);
+  memset(zero.get(), 0, size);
+  glBindTexture(bind_target, service_id);
+
+  GLint y = 0;
+  while (y < height) {
+    GLint h = y + tile_height > height ? height - y : tile_height;
+    if (is_texture_immutable || h != height) {
+      glTexSubImage2D(target, level, 0, y, width, h, format, type, zero.get());
+    } else {
+      WrappedTexImage2D(
+          target, level, format, width, h, 0, format, type, zero.get());
+    }
+    y += tile_height;
   }
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(bind_target);
   glBindTexture(bind_target, info ? info->service_id() : 0);
