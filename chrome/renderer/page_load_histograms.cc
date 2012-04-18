@@ -586,60 +586,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     }
   }
 
-  // Histograms to determine the PLT impact of the cache's deleted list size.
-  static const bool use_cache_histogram =
-      base::FieldTrialList::TrialExists("CacheListSize");
-  if (use_cache_histogram) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("PLT.Abandoned", "CacheListSize"),
-        abandoned_page ? 1 : 0, 2);
-    switch (load_type) {
-      case DocumentState::RELOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_Reload", "CacheListSize"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::HISTORY_LOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_HistoryLoad", "CacheListSize"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::NORMAL_LOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_NormalLoad", "CacheListSize"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadNormal", "CacheListSize"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadReload", "CacheListSize"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadStaleOk", "CacheListSize"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_CACHE_ONLY:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadCacheOnly", "CacheListSize"),
-            begin_to_finish_all_loads);
-        break;
-      default:
-        break;
-    }
-    if (DocumentState::RELOAD <= load_type &&
-        DocumentState::LINK_LOAD_CACHE_ONLY >= load_type) {
-      PLT_HISTOGRAM(base::FieldTrial::MakeName(
-          "PLT.BeginToFinish", "CacheListSize"),
-           begin_to_finish_all_loads);
-    }
-  }
-
   // TODO(mpcomplete): remove the extension-related histograms after we collect
   // enough data. http://crbug.com/100411
   chrome::ChromeContentRendererClient* client =
