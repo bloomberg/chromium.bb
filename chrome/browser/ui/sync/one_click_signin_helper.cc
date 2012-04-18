@@ -9,9 +9,12 @@
 #include "base/metrics/histogram.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -286,13 +289,26 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   if (!web_contents || !CanOffer(web_contents, true))
     return;
 
+  // If some profile, not just the current one, is already connected to this
+  // account, don't show the infobar.
+  if (g_browser_process) {
+    ProfileManager* manager = g_browser_process->profile_manager();
+    if (manager) {
+      string16 email16 = UTF8ToUTF16(email);
+      ProfileInfoCache& cache = manager->GetProfileInfoCache();
+
+      for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
+        if (email16 == cache.GetUserNameOfProfileAtIndex(i))
+          return;
+      }
+    }
+  }
+
   TabContentsWrapper* wrapper =
       TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
   if (!wrapper)
     return;
 
-  // TODO(rogerta): remove this #if once the dialog is fully implemented for
-  // mac and linux.
   // Save the email in the one-click signin manager.  The manager may
   // not exist if the contents is incognito or if the profile is already
   // connected to a Google account.
