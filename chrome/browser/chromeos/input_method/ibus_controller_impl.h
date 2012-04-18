@@ -45,6 +45,7 @@ class IBusControllerImpl : public IBusControllerBase {
 
   // IBusController overrides:
   virtual bool Start() OVERRIDE;
+  virtual void Reset() OVERRIDE;
   virtual bool Stop() OVERRIDE;
   virtual bool ChangeInputMethod(const std::string& id) OVERRIDE;
   virtual bool ActivateInputMethodProperty(const std::string& key) OVERRIDE;

@@ -411,6 +411,16 @@ bool IBusControllerImpl::Start() {
   return MaybeLaunchIBusDaemon();
 }
 
+void IBusControllerImpl::Reset() {
+  if (!IBusConnectionsAreAlive())
+    return;
+  IBusInputContext* context =
+      GetInputContext(current_input_context_path_, ibus_);
+  if (!context)
+    return;
+  ibus_input_context_reset(context);
+}
+
 bool IBusControllerImpl::Stop() {
   if (IBusConnectionsAreAlive()) {
     // Ask IBus to exit *asynchronously*.

@@ -242,6 +242,7 @@ void InputMethodManagerImpl::ChangeInputMethod(
     FOR_EACH_OBSERVER(InputMethodManager::Observer,
                       observers_,
                       InputMethodPropertyChanged(this));
+    ibus_controller_->Reset();
   } else {
     ibus_controller_->ChangeInputMethod(input_method_id_to_switch);
   }

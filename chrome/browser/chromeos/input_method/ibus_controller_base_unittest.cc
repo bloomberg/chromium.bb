@@ -28,6 +28,8 @@ class TestIBusController : public IBusControllerBase {
   virtual bool Start() OVERRIDE {
     return true;
   }
+  virtual void Reset() OVERRIDE {
+  }
   virtual bool Stop() OVERRIDE {
     return true;
   }

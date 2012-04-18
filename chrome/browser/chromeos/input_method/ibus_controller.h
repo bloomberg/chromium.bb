@@ -39,6 +39,10 @@ class IBusController {
   // Starts the system input method framework. No-op if it's already started.
   virtual bool Start() = 0;
 
+  // Resets the system input method framework. A composition text is discarded,
+  // and a candidate window is closed.
+  virtual void Reset() = 0;
+
   // Stops the system input method framework.
   virtual bool Stop() = 0;
 

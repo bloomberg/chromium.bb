@@ -890,5 +890,19 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
   manager_->RemoveObserver(&observer);
 }
 
+TEST_F(InputMethodManagerImplTest, TestReset) {
+  manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
+  std::vector<std::string> ids;
+  ids.push_back("xkb:us::eng");
+  ids.push_back("mozc");
+  EXPECT_TRUE(manager_->EnableInputMethods(ids));
+  EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
+  EXPECT_EQ(1, controller_->reset_count_);
+  manager_->ChangeInputMethod("mozc");
+  EXPECT_EQ(1, controller_->reset_count_);
+  manager_->ChangeInputMethod("xkb:us::eng");
+  EXPECT_EQ(2, controller_->reset_count_);
+}
+
 }  // namespace input_method
 }  // namespace chromeos
