@@ -674,7 +674,8 @@ FileManager.prototype = {
         'mousemove', this.onListMouseMove_.bind(this));
 
     this.okButton_.addEventListener('click', this.onOk_.bind(this));
-    this.cancelButton_.addEventListener('click', this.onCancel_.bind(this));
+    this.onCancelBound_ = this.onCancel_.bind(this);
+    this.cancelButton_.addEventListener('click', this.onCancelBound_);
 
     this.deleteButton_.addEventListener('click',
         this.onDeleteButtonClick_.bind(this));
@@ -3905,7 +3906,8 @@ FileManager.prototype = {
         return;
 
       case '27':  // Escape => Cancel dialog.
-        if (this.copyManager_.getStatus().totalFiles != 0) {
+        if (this.copyManager_ &&
+            this.copyManager_.getStatus().totalFiles != 0) {
           // If there is a copy in progress, ESC will cancel it.
           event.preventDefault();
           this.copyManager_.requestCancel();
@@ -3922,7 +3924,7 @@ FileManager.prototype = {
         if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
           // If there is nothing else for ESC to do, then cancel the dialog.
           event.preventDefault();
-          this.onCancel_();
+          this.cancelButton_.click();
         }
         break;
     }
