@@ -171,6 +171,17 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   typedef std::vector<std::string> ServiceList;
   const ServiceList& GetServices() const { return service_uuids_; }
 
+  // Indicates whether this device provides the given service.
+  bool ProvidesServiceWithUUID(const std::string& uuid) const;
+
+  // The ProvidesServiceCallback is used by ProvidesServiceWithName to indicate
+  // whether or not a matching service was found.
+  typedef base::Callback<void(bool)> ProvidesServiceCallback;
+
+  // Indicates whether this device provides the given service.
+  void ProvidesServiceWithName(const std::string& name,
+      ProvidesServiceCallback callback);
+
   // Indicates whether the device is currently pairing and expecting a
   // PIN Code to be returned.
   bool ExpectingPinCode() const { return !pincode_callback_.is_null(); }
@@ -303,6 +314,18 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // object path of the adapter that performed the removal.
   void ForgetCallback(ErrorCallback error_callback,
                       const dbus::ObjectPath& adapter_path, bool success);
+
+  // Called by BluetoothDeviceClient when a call to DiscoverServices() that was
+  // initated from ProvidesServiceWithName completes.  The |result_callback| is
+  // called with true if a service with name matching |name| is discovered, or
+  // with false otherwise.  The rest of the parameters are as documented for a
+  // BluetoothDeviceClient::ServicesCallback.
+  void SearchServicesForNameCallback(
+      const std::string& name,
+      ProvidesServiceCallback callback,
+      const dbus::ObjectPath& object_path,
+      const BluetoothDeviceClient::ServiceMap& service_map,
+      bool success);
 
   // BluetoothDeviceClient::Observer override.
   //

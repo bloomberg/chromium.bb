@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_service_record.h"
 #include "chrome/browser/chromeos/dbus/introspect_util.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
@@ -52,7 +53,7 @@ void BluetoothDevice::Update(
   std::string address = properties->address.value();
   std::string name = properties->name.value();
   uint32 bluetooth_class = properties->bluetooth_class.value();
-  const std::vector<std::string> &uuids = properties->uuids.value();
+  const std::vector<std::string>& uuids = properties->uuids.value();
 
   if (!address.empty())
     address_ = address;
@@ -172,6 +173,51 @@ string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
 bool BluetoothDevice::IsConnected() const {
   // TODO(keybuk): examine protocol-specific connected state, such as Input
   return connected_;
+}
+
+bool BluetoothDevice::ProvidesServiceWithUUID(const std::string& uuid) const {
+  const BluetoothDevice::ServiceList& services = GetServices();
+  for (BluetoothDevice::ServiceList::const_iterator j = services.begin();
+      j != services.end(); ++j) {
+    if (*j == uuid)
+      return true;
+  }
+  return false;
+}
+
+void BluetoothDevice::SearchServicesForNameCallback(
+    const std::string& name,
+    ProvidesServiceCallback callback,
+    const dbus::ObjectPath& object_path,
+    const BluetoothDeviceClient::ServiceMap& service_map,
+    bool success) {
+  if (!success) {
+    callback.Run(false);
+    return;
+  }
+
+  for (BluetoothDeviceClient::ServiceMap::const_iterator i =
+      service_map.begin(); i != service_map.end(); ++i) {
+    BluetoothServiceRecord service_record(i->second);
+    if (service_record.name() == name) {
+      callback.Run(true);
+      return;
+    }
+  }
+
+  callback.Run(false);
+}
+
+void BluetoothDevice::ProvidesServiceWithName(const std::string& name,
+    ProvidesServiceCallback callback) {
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+      DiscoverServices(
+          object_path_,
+          "",  // empty pattern to browse all services
+          base::Bind(&BluetoothDevice::SearchServicesForNameCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     name,
+                     callback));
 }
 
 void BluetoothDevice::Connect(PairingDelegate* pairing_delegate,

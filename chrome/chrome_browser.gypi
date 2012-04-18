@@ -413,6 +413,8 @@
         'browser/chromeos/bluetooth/bluetooth_adapter.h',
         'browser/chromeos/bluetooth/bluetooth_device.cc',
         'browser/chromeos/bluetooth/bluetooth_device.h',
+        'browser/chromeos/bluetooth/bluetooth_service_record.cc',
+        'browser/chromeos/bluetooth/bluetooth_service_record.h',
         'browser/chromeos/boot_times_loader.cc',
         'browser/chromeos/boot_times_loader.h',
         'browser/chromeos/choose_mobile_network_dialog.cc',
