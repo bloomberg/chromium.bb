@@ -111,10 +111,7 @@
 #include "chrome/browser/chrome_browser_main_posix.h"
 #endif
 
-#if defined(USE_AURA)
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_aura.h"
-#include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_views.h"
-#elif defined(OS_WIN)
+#if defined(USE_AURA) || defined(OS_WIN)
 #include "chrome/browser/tab_contents/chrome_web_contents_view_delegate_views.h"
 #endif
 
@@ -124,7 +121,6 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/chrome_browser_main_extra_parts_views.h"
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #endif
 
 #if defined(USE_AURA)
@@ -366,30 +362,14 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 content::WebContentsView*
     ChromeContentBrowserClient::OverrideCreateWebContentsView(
         WebContents* web_contents) {
-#if defined(USE_AURA)
-  // TODO(beng): remove this once TCVV is gone.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDisableTCVA)) {
-    return new TabContentsViewViews(web_contents,
-                                    GetWebContentsViewDelegate(web_contents));
-  }
-#endif
   return NULL;
 }
 
 content::WebContentsViewDelegate*
     ChromeContentBrowserClient::GetWebContentsViewDelegate(
         content::WebContents* web_contents) {
-#if defined(OS_WIN) || defined(USE_AURA)
-// TODO(beng): replace all of this once TCVV is removed.
-#if defined(OS_WIN)
+#if defined(USE_AURA) || defined(OS_WIN)
   return new ChromeWebContentsViewDelegateViews(web_contents);
-#elif defined(USE_AURA)
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kDisableTCVA))
-    return new ChromeWebContentsViewDelegateViews(web_contents);
-  return new ChromeWebContentsViewDelegateAura(web_contents);
-#endif
 #elif defined(TOOLKIT_GTK)
   return new ChromeWebContentsViewDelegateGtk(web_contents);
 #elif defined(OS_MACOSX)
