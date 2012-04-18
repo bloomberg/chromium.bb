@@ -136,6 +136,8 @@ struct weston_shader {
 	GLint proj_uniform;
 	GLint tex_uniform;
 	GLint alpha_uniform;
+	GLint brightness_uniform;
+	GLint saturation_uniform;
 	GLint color_uniform;
 	GLint texwidth_uniform;
 };
@@ -292,6 +294,8 @@ struct weston_surface {
 	struct weston_shader *shader;
 	GLfloat color[4];
 	uint32_t alpha;
+	uint32_t brightness;
+	uint32_t saturation;
 
 	/* Surface geometry state, mutable.
 	 * If you change anything, set dirty = 1.
