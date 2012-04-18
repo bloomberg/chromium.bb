@@ -171,8 +171,10 @@ InterfaceList::InterfaceList() {
              INTERFACE_THUNK_NAME(iface_struct)());
 
   #include "ppapi/thunk/interfaces_ppb_public_stable.h"
+#if !defined(OS_NACL)
   #include "ppapi/thunk/interfaces_ppb_public_dev.h"
   #include "ppapi/thunk/interfaces_ppb_private.h"
+#endif
 
   #undef PROXIED_API
   #undef PROXIED_IFACE
@@ -187,6 +189,7 @@ InterfaceList::InterfaceList() {
          PPB_Core_Proxy::GetPPB_Core_Interface());
   AddPPB(PPB_MESSAGELOOP_DEV_INTERFACE_0_1, API_ID_NONE,
          PPB_MessageLoop_Proxy::GetInterface());
+#if !defined(OS_NACL)
   AddPPB(PPB_OPENGLES2_INTERFACE_1_0, API_ID_NONE,
          PPB_OpenGLES2_Shared::GetInterface());
   AddPPB(PPB_OPENGLES2_INSTANCEDARRAYS_DEV_INTERFACE_1_0, API_ID_NONE,
@@ -201,6 +204,7 @@ InterfaceList::InterfaceList() {
          PPB_OpenGLES2_Shared::GetChromiumMapSubInterface());
   AddPPB(PPB_OPENGLES2_QUERY_DEV_INTERFACE_1_0, API_ID_NONE,
          PPB_OpenGLES2_Shared::GetQueryInterface());
+#endif
   AddPPB(PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0, API_ID_NONE,
          PPB_Var_Shared::GetVarArrayBufferInterface1_0());
   AddPPB(PPB_VAR_INTERFACE_1_1, API_ID_NONE,
@@ -208,6 +212,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_VAR_INTERFACE_1_0, API_ID_NONE,
          PPB_Var_Shared::GetVarInterface1_0());
 
+#if !defined(OS_NACL)
   AddFlashInterfaces();
 
   // PPB (browser) interfaces.
@@ -218,6 +223,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Testing_Proxy::GetInfo());
   AddPPB(PPB_URLLoader_Proxy::GetTrustedInfo());
   AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
+#endif
 
   // PPP (plugin) interfaces.
   // TODO(brettw) move these to interface_list*.h
@@ -234,13 +240,15 @@ InterfaceList::InterfaceList() {
   // Old-style GetInfo PPP interfaces.
   // Do not add more stuff here, they should be added to interface_list*.h
   // TODO(brettw) remove these.
-  AddPPP(PPP_Graphics3D_Proxy::GetInfo());
   AddPPP(PPP_InputEvent_Proxy::GetInfo());
-  AddPPP(PPP_Instance_Private_Proxy::GetInfo());
   AddPPP(PPP_Messaging_Proxy::GetInfo());
   AddPPP(PPP_MouseLock_Proxy::GetInfo());
+#if !defined(OS_NACL)
+  AddPPP(PPP_Graphics3D_Proxy::GetInfo());
+  AddPPP(PPP_Instance_Private_Proxy::GetInfo());
   AddPPP(PPP_VideoCapture_Proxy::GetInfo());
   AddPPP(PPP_VideoDecoder_Proxy::GetInfo());
+#endif
 }
 
 InterfaceList::~InterfaceList() {
@@ -291,8 +299,8 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
   return found->second.iface;
 }
 
-void InterfaceList::AddFlashInterfaces() {
 #if !defined(OS_NACL)
+void InterfaceList::AddFlashInterfaces() {
   AddProxy(API_ID_PPB_FLASH, &ProxyFactory<PPB_Flash_Proxy>);
   AddPPB(PPB_FLASH_INTERFACE_11_0, API_ID_PPB_FLASH,
          PPB_Flash_Proxy::GetInterface11());
@@ -335,8 +343,8 @@ void InterfaceList::AddFlashInterfaces() {
   // Only add the interface; PPB_TCPSocket_Private provides the API ID's proxy.
   AddPPB(PPB_FLASH_TCPSOCKET_INTERFACE_0_2, API_ID_PPB_TCPSOCKET_PRIVATE,
          thunk::GetPPB_TCPSocket_Private_0_3_Thunk());
-#endif  // !defined(OS_NACL)
 }
+#endif  // !defined(OS_NACL)
 
 void InterfaceList::AddProxy(ApiID id,
                              InterfaceProxy::Factory factory) {

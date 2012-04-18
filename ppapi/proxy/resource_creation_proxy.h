@@ -38,6 +38,43 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual thunk::ResourceCreationAPI* AsResourceCreationAPI() OVERRIDE;
 
   // ResourceCreationAPI (called in plugin).
+  virtual PP_Resource CreateFileIO(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateFileRef(PP_Resource file_system,
+                                    const char* path) OVERRIDE;
+  virtual PP_Resource CreateFileSystem(PP_Instance instance,
+                                       PP_FileSystemType type) OVERRIDE;
+  virtual PP_Resource CreateKeyboardInputEvent(
+      PP_Instance instance,
+      PP_InputEvent_Type type,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      uint32_t key_code,
+      PP_Var character_text) OVERRIDE;
+  virtual PP_Resource CreateMouseInputEvent(
+      PP_Instance instance,
+      PP_InputEvent_Type type,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      PP_InputEvent_MouseButton mouse_button,
+      const PP_Point* mouse_position,
+      int32_t click_count,
+      const PP_Point* mouse_movement) OVERRIDE;
+  virtual PP_Resource CreateResourceArray(PP_Instance instance,
+                                          const PP_Resource elements[],
+                                          uint32_t size) OVERRIDE;
+  virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
+  virtual PP_Resource CreateURLRequestInfo(
+      PP_Instance instance,
+      const PPB_URLRequestInfo_Data& data) OVERRIDE;
+  virtual PP_Resource CreateWheelInputEvent(
+      PP_Instance instance,
+      PP_TimeTicks time_stamp,
+      uint32_t modifiers,
+      const PP_FloatPoint* wheel_delta,
+      const PP_FloatPoint* wheel_ticks,
+      PP_Bool scroll_by_page) OVERRIDE;
+
+#if !defined(OS_NACL)
   virtual PP_Resource CreateAudio(PP_Instance instance,
                                   PP_Resource config_id,
                                   PPB_Audio_Callback audio_callback,
@@ -63,11 +100,6 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_Instance instance,
       PP_FileChooserMode_Dev mode,
       const char* accept_mime_types) OVERRIDE;
-  virtual PP_Resource CreateFileIO(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateFileRef(PP_Resource file_system,
-                                    const char* path) OVERRIDE;
-  virtual PP_Resource CreateFileSystem(PP_Instance instance,
-                                       PP_FileSystemType type) OVERRIDE;
   virtual PP_Resource CreateFlashMenu(PP_Instance instance,
                                       const PP_Flash_Menu* menu_data) OVERRIDE;
   virtual PP_Resource CreateFlashMessageLoop(PP_Instance instance) OVERRIDE;
@@ -85,29 +117,10 @@ class ResourceCreationProxy : public InterfaceProxy,
                                       PP_ImageDataFormat format,
                                       const PP_Size& size,
                                       PP_Bool init_to_zero) OVERRIDE;
-  virtual PP_Resource CreateKeyboardInputEvent(
-      PP_Instance instance,
-      PP_InputEvent_Type type,
-      PP_TimeTicks time_stamp,
-      uint32_t modifiers,
-      uint32_t key_code,
-      PP_Var character_text) OVERRIDE;
-  virtual PP_Resource CreateMouseInputEvent(
-      PP_Instance instance,
-      PP_InputEvent_Type type,
-      PP_TimeTicks time_stamp,
-      uint32_t modifiers,
-      PP_InputEvent_MouseButton mouse_button,
-      const PP_Point* mouse_position,
-      int32_t click_count,
-      const PP_Point* mouse_movement) OVERRIDE;
   virtual PP_Resource CreateNetworkMonitor(
       PP_Instance instance,
       PPB_NetworkMonitor_Callback callback,
       void* user_data) OVERRIDE;
-  virtual PP_Resource CreateResourceArray(PP_Instance instance,
-                                          const PP_Resource elements[],
-                                          uint32_t size) OVERRIDE;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) OVERRIDE;
   virtual PP_Resource CreateTalk(PP_Instance instance) OVERRIDE;
@@ -118,10 +131,6 @@ class ResourceCreationProxy : public InterfaceProxy,
                                       const char* name,
                                       PP_TransportType type) OVERRIDE;
   virtual PP_Resource CreateUDPSocketPrivate(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateURLLoader(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateURLRequestInfo(
-      PP_Instance instance,
-      const PPB_URLRequestInfo_Data& data) OVERRIDE;
   virtual PP_Resource CreateVideoCapture(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateVideoDecoder(
       PP_Instance instance,
@@ -130,15 +139,9 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateVideoLayer(PP_Instance instance,
                                        PP_VideoLayerMode_Dev mode) OVERRIDE;
   virtual PP_Resource CreateWebSocket(PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateWheelInputEvent(
-      PP_Instance instance,
-      PP_TimeTicks time_stamp,
-      uint32_t modifiers,
-      const PP_FloatPoint* wheel_delta,
-      const PP_FloatPoint* wheel_ticks,
-      PP_Bool scroll_by_page) OVERRIDE;
   virtual PP_Resource CreateX509CertificatePrivate(
       PP_Instance instance) OVERRIDE;
+#endif  // !defined(OS_NACL)
 
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;

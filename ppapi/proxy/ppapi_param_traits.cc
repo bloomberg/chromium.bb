@@ -194,8 +194,126 @@ bool ParamTraits<PP_ObjectProperty>::Read(const Message* m,
 void ParamTraits<PP_ObjectProperty>::Log(const param_type& p, std::string* l) {
 }
 
-// PPBFlash_DrawGlyphs_Params --------------------------------------------------
+// PPB_FileRef_CreateInfo ------------------------------------------------------
+
+// static
+void ParamTraits<ppapi::PPB_FileRef_CreateInfo>::Write(Message* m,
+                                                       const param_type& p) {
+  ParamTraits<ppapi::HostResource>::Write(m, p.resource);
+  ParamTraits<int>::Write(m, p.file_system_type);
+  ParamTraits<std::string>::Write(m, p.path);
+  ParamTraits<std::string>::Write(m, p.name);
+}
+
+// static
+bool ParamTraits<ppapi::PPB_FileRef_CreateInfo>::Read(const Message* m,
+                                                      PickleIterator* iter,
+                                                      param_type* r) {
+  return
+      ParamTraits<ppapi::HostResource>::Read(m, iter, &r->resource) &&
+      ParamTraits<int>::Read(m, iter, &r->file_system_type) &&
+      ParamTraits<std::string>::Read(m, iter, &r->path) &&
+      ParamTraits<std::string>::Read(m, iter, &r->name);
+}
+
+// static
+void ParamTraits<ppapi::PPB_FileRef_CreateInfo>::Log(const param_type& p,
+                                                     std::string* l) {
+}
+
+// HostResource ----------------------------------------------------------------
+
+// static
+void ParamTraits<ppapi::HostResource>::Write(Message* m,
+                                             const param_type& p) {
+  ParamTraits<PP_Instance>::Write(m, p.instance());
+  ParamTraits<PP_Resource>::Write(m, p.host_resource());
+}
+
+// static
+bool ParamTraits<ppapi::HostResource>::Read(const Message* m,
+                                            PickleIterator* iter,
+                                            param_type* r) {
+  PP_Instance instance;
+  PP_Resource resource;
+  if (!ParamTraits<PP_Instance>::Read(m, iter, &instance) ||
+      !ParamTraits<PP_Resource>::Read(m, iter, &resource))
+    return false;
+  r->SetHostResource(instance, resource);
+  return true;
+}
+
+// static
+void ParamTraits<ppapi::HostResource>::Log(const param_type& p,
+                                           std::string* l) {
+}
+
+// SerializedVar ---------------------------------------------------------------
+
+// static
+void ParamTraits<ppapi::proxy::SerializedVar>::Write(Message* m,
+                                                     const param_type& p) {
+  p.WriteToMessage(m);
+}
+
+// static
+bool ParamTraits<ppapi::proxy::SerializedVar>::Read(const Message* m,
+                                                    PickleIterator* iter,
+                                                    param_type* r) {
+  return r->ReadFromMessage(m, iter);
+}
+
+// static
+void ParamTraits<ppapi::proxy::SerializedVar>::Log(const param_type& p,
+                                                   std::string* l) {
+}
+
+// std::vector<SerializedVar> --------------------------------------------------
+
+void ParamTraits< std::vector<ppapi::proxy::SerializedVar> >::Write(
+    Message* m,
+    const param_type& p) {
+  WriteVectorWithoutCopy(m, p);
+}
+
+// static
+bool ParamTraits< std::vector<ppapi::proxy::SerializedVar> >::Read(
+    const Message* m,
+    PickleIterator* iter,
+    param_type* r) {
+  return ReadVectorWithoutCopy(m, iter, r);
+}
+
+// static
+void ParamTraits< std::vector<ppapi::proxy::SerializedVar> >::Log(
+    const param_type& p,
+    std::string* l) {
+}
+
+// std::vector<PPB_FileRef_CreateInfo> -----------------------------------------
+
+void ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> >::Write(
+    Message* m,
+    const param_type& p) {
+  WriteVectorWithoutCopy(m, p);
+}
+
+// static
+bool ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> >::Read(
+    const Message* m,
+    PickleIterator* iter,
+    param_type* r) {
+  return ReadVectorWithoutCopy(m, iter, r);
+}
+
+// static
+void ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> >::Log(
+    const param_type& p,
+    std::string* l) {
+}
+
 #if !defined(OS_NACL)
+// PPBFlash_DrawGlyphs_Params --------------------------------------------------
 // static
 void ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Write(
     Message* m,
@@ -247,39 +365,11 @@ bool ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Read(
       ParamTraits<std::vector<PP_Point> >::Read(m, iter, &r->glyph_advances) &&
       r->glyph_indices.size() == r->glyph_advances.size();
 }
-#endif  // !defined(OS_NACL)
 
 // static
 void ParamTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params>::Log(
     const param_type& p,
     std::string* l) {
-}
-
-// PPB_FileRef_CreateInfo ------------------------------------------------------
-
-// static
-void ParamTraits<ppapi::PPB_FileRef_CreateInfo>::Write(Message* m,
-                                                       const param_type& p) {
-  ParamTraits<ppapi::HostResource>::Write(m, p.resource);
-  ParamTraits<int>::Write(m, p.file_system_type);
-  ParamTraits<std::string>::Write(m, p.path);
-  ParamTraits<std::string>::Write(m, p.name);
-}
-
-// static
-bool ParamTraits<ppapi::PPB_FileRef_CreateInfo>::Read(const Message* m,
-                                                      PickleIterator* iter,
-                                                      param_type* r) {
-  return
-      ParamTraits<ppapi::HostResource>::Read(m, iter, &r->resource) &&
-      ParamTraits<int>::Read(m, iter, &r->file_system_type) &&
-      ParamTraits<std::string>::Read(m, iter, &r->path) &&
-      ParamTraits<std::string>::Read(m, iter, &r->name);
-}
-
-// static
-void ParamTraits<ppapi::PPB_FileRef_CreateInfo>::Log(const param_type& p,
-                                                     std::string* l) {
 }
 
 // PPBURLLoader_UpdateProgress_Params ------------------------------------------
@@ -376,97 +466,6 @@ void ParamTraits<ppapi::proxy::SerializedFontDescription>::Log(
     std::string* l) {
 }
 
-// HostResource ----------------------------------------------------------------
-
-// static
-void ParamTraits<ppapi::HostResource>::Write(Message* m,
-                                             const param_type& p) {
-  ParamTraits<PP_Instance>::Write(m, p.instance());
-  ParamTraits<PP_Resource>::Write(m, p.host_resource());
-}
-
-// static
-bool ParamTraits<ppapi::HostResource>::Read(const Message* m,
-                                            PickleIterator* iter,
-                                            param_type* r) {
-  PP_Instance instance;
-  PP_Resource resource;
-  if (!ParamTraits<PP_Instance>::Read(m, iter, &instance) ||
-      !ParamTraits<PP_Resource>::Read(m, iter, &resource))
-    return false;
-  r->SetHostResource(instance, resource);
-  return true;
-}
-
-// static
-void ParamTraits<ppapi::HostResource>::Log(const param_type& p,
-                                           std::string* l) {
-}
-
-// SerializedVar ---------------------------------------------------------------
-
-// static
-void ParamTraits<ppapi::proxy::SerializedVar>::Write(Message* m,
-                                                     const param_type& p) {
-  p.WriteToMessage(m);
-}
-
-// static
-bool ParamTraits<ppapi::proxy::SerializedVar>::Read(const Message* m,
-                                                    PickleIterator* iter,
-                                                    param_type* r) {
-  return r->ReadFromMessage(m, iter);
-}
-
-// static
-void ParamTraits<ppapi::proxy::SerializedVar>::Log(const param_type& p,
-                                                   std::string* l) {
-}
-
-// std::vector<SerializedVar> --------------------------------------------------
-
-void ParamTraits< std::vector<ppapi::proxy::SerializedVar> >::Write(
-    Message* m,
-    const param_type& p) {
-  WriteVectorWithoutCopy(m, p);
-}
-
-// static
-bool ParamTraits< std::vector<ppapi::proxy::SerializedVar> >::Read(
-    const Message* m,
-    PickleIterator* iter,
-    param_type* r) {
-  return ReadVectorWithoutCopy(m, iter, r);
-}
-
-// static
-void ParamTraits< std::vector<ppapi::proxy::SerializedVar> >::Log(
-    const param_type& p,
-    std::string* l) {
-}
-
-// std::vector<PPB_FileRef_CreateInfo> -----------------------------------------
-
-void ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> >::Write(
-    Message* m,
-    const param_type& p) {
-  WriteVectorWithoutCopy(m, p);
-}
-
-// static
-bool ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> >::Read(
-    const Message* m,
-    PickleIterator* iter,
-    param_type* r) {
-  return ReadVectorWithoutCopy(m, iter, r);
-}
-
-// static
-void ParamTraits< std::vector<ppapi::PPB_FileRef_CreateInfo> >::Log(
-    const param_type& p,
-    std::string* l) {
-}
-
 // SerializedFlashMenu ---------------------------------------------------------
 
 // static
@@ -508,5 +507,6 @@ bool ParamTraits<ppapi::PPB_X509Certificate_Fields>::Read(const Message* m,
 void ParamTraits<ppapi::PPB_X509Certificate_Fields>::Log(const param_type& p,
                                                          std::string* l) {
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace IPC

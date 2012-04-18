@@ -147,6 +147,7 @@ struct PPAPI_PROXY_EXPORT ParamTraits< std::vector<
   static void Log(const param_type& p, std::string* l);
 };
 
+#if !defined(OS_NACL)
 template<>
 struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::proxy::SerializedFlashMenu> {
   typedef ppapi::proxy::SerializedFlashMenu param_type;
@@ -162,6 +163,7 @@ struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::PPB_X509Certificate_Fields> {
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
+#endif  // !defined(OS_NACL)
 
 }  // namespace IPC
 

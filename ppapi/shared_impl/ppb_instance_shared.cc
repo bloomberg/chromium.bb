@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,7 @@ int32_t PPB_Instance_Shared::ValidateRequestInputEvents(
   return PP_OK;
 }
 
+#if !defined(OS_NACL)
 bool PPB_Instance_Shared::ValidateSetCursorParams(PP_MouseCursor_Type type,
                                                   PP_Resource image,
                                                   const PP_Point* hot_spot) {
@@ -97,5 +98,6 @@ bool PPB_Instance_Shared::ValidateSetCursorParams(PP_MouseCursor_Type type,
     return false;
   return true;
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace ppapi
