@@ -545,8 +545,6 @@ cr.define('options', function() {
     this.initialized_ = true;
     uber.onContentFrameLoaded();
 
-    this.fixedHeaders_ = document.querySelectorAll('header');
-
     document.addEventListener('scroll', this.handleScroll_.bind(this));
 
     // Trigger the scroll handler manually to set the initial state.
@@ -583,9 +581,6 @@ cr.define('options', function() {
    */
   OptionsPage.handleScroll_ = function() {
     this.updateAllFrozenElementPositions_();
-    this.updateAllHeaderElementPositions_();
-
-    uber.invokeMethodOnParent('adjustToScroll', document.body.scrollLeft);
   };
 
   /**
@@ -596,17 +591,6 @@ cr.define('options', function() {
     var frozenElements = document.querySelectorAll('.frozen');
     for (var i = 0; i < frozenElements.length; i++)
       this.updateFrozenElementHorizontalPosition_(frozenElements[i]);
-  };
-
-  /**
-   * Update the start margin of all the position: fixed; header elements.
-   * @private
-   */
-  OptionsPage.updateAllHeaderElementPositions_ = function() {
-    var adjust = isRTL() ? 1 : -1;
-    var marginStart = document.body.scrollLeft * adjust + 'px';
-    for (var i = 0; i < this.fixedHeaders_.length; ++i)
-      this.fixedHeaders_[i].style.webkitMarginStart = marginStart;
   };
 
   /**

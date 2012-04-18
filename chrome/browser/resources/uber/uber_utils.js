@@ -8,12 +8,39 @@
  */
 
 cr.define('uber', function() {
+
+  /**
+   * Fixed position header elements on the page to be shifted by handleScroll.
+   * @type {NodeList}
+   */
+  var headerElements;
+
   /**
    * This should be called by uber content pages when DOM content has loaded.
    */
   function onContentFrameLoaded() {
+    headerElements = document.getElementsByTagName('header');
+    document.addEventListener('scroll', handleScroll);
+
+    // Trigger the scroll handler to tell the navigation if our page started
+    // with some scroll (happens when you use tab restore).
+    handleScroll();
+
     window.addEventListener('message', handleWindowMessage);
   }
+
+  /**
+   * Handles scroll events on the document. This adjusts the position of all
+   * headers and updates the parent frame when the page is scrolled.
+   * @private
+   */
+  function handleScroll() {
+    var offset = document.body.scrollLeft * -1;
+    for (var i = 0; i < headerElements.length; i++)
+      headerElements[i].style.webkitTransform = 'translateX(' + offset + 'px)';
+
+    invokeMethodOnParent('adjustToScroll', document.body.scrollLeft);
+  };
 
   /**
    * Handles 'message' events on window.

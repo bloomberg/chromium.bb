@@ -55,16 +55,8 @@ cr.define('extensions', function() {
       $('update-extensions-now').addEventListener('click',
           this.handleUpdateExtensionNow_.bind(this));
 
-      this.pageHeader_ = $('page-header');
-
-      document.addEventListener('scroll', this.handleScroll_.bind(this));
-
       var packExtensionOverlay = extensions.PackExtensionOverlay.getInstance();
       packExtensionOverlay.initializePage();
-
-      // Trigger the scroll handler to tell the navigation if our page started
-      // with some scroll (happens when you use tab restore).
-      this.handleScroll_();
     },
 
     /**
@@ -128,17 +120,6 @@ cr.define('extensions', function() {
           !$('extension-settings').classList.contains('dev-mode')) {
         $('dev-controls').hidden = true;
       }
-    },
-
-    /**
-     * Called when the page is scrolled; moves elements that are position:fixed
-     * but should only behave as if they are fixed for vertical scrolling.
-     * @private
-     */
-    handleScroll_: function() {
-      var offset = document.body.scrollLeft * -1;
-      this.pageHeader_.style.webkitTransform = 'translateX(' + offset + 'px)';
-      uber.invokeMethodOnParent('adjustToScroll', document.body.scrollLeft);
     },
   };
 
