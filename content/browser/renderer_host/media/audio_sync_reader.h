@@ -52,6 +52,12 @@ class AudioSyncReader : public media::AudioOutputController::SyncReader {
   // PrepareForeignSocketHandle() is called and ran successfully.
   scoped_ptr<base::CancelableSyncSocket> foreign_socket_;
 
+  // Protect socket_ access by lock to prevent race condition when audio
+  // controller thread closes the reader and hardware audio thread is reading
+  // data. This way we know that socket would not be deleted while we are
+  // writing data to it.
+  base::Lock lock_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioSyncReader);
 };
 
