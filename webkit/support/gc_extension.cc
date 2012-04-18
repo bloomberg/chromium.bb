@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/extensions/v8/gc_extension.h"
+#include "webkit/support/gc_extension.h"
 
 #include "v8/include/v8.h"
 

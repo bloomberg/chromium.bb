@@ -43,15 +43,6 @@ const char kMultipleLoads[] = "multiple-loads";
 // in the corresponding load.
 const char kJavaScriptFlags[] = "js-flags";
 
-// Run the http cache in record mode.
-const char kRecordMode[] = "record-mode";
-
-// Run the http cache in playback mode.
-const char kPlaybackMode[] = "playback-mode";
-
-// Don't record/playback events when using record & playback.
-const char kNoEvents[] = "no-events";
-
 // Dump stats table on exit.
 const char kDumpStatsTable[] = "stats";
 
@@ -72,12 +63,6 @@ const char kCheckLayoutTestSystemDeps[] = "check-layout-test-sys-deps";
 // If set, we are running under GDB so allow a certain class of errors
 // to happen even if in layout test mode.
 const char kGDB[] = "gdb";
-
-// Make functions of the Profiler class available in javascript
-const char kProfiler[] = "profiler";
-
-// Make functions of the HeapProfiler class available in javascript
-const char kHeapProfiler[] = "heap-profiler";
 
 const char kAllowExternalPages[] = "allow-external-pages";
 

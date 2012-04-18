@@ -770,7 +770,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kExperimentalSpellcheckerFeatures,
       switches::kMemoryProfiling,
       switches::kMessageLoopHistogrammer,
+      switches::kNoJsRandomness,
       switches::kNoRunningInsecureContent,
+      switches::kPlaybackMode,
       switches::kPpapiFlashArgs,
       switches::kPpapiFlashInProcess,
       switches::kPpapiFlashPath,
@@ -778,6 +780,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kProfilingAtStart,
       switches::kProfilingFile,
       switches::kProfilingFlush,
+      switches::kRecordMode,
       switches::kSilentDumpOnDCHECK,
       switches::kWhitelistedExtensionID,
     };

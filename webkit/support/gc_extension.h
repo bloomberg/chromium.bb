@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_EXTENSIONS_V8_GC_EXTENSION_H_
-#define WEBKIT_EXTENSIONS_V8_GC_EXTENSION_H_
+#ifndef WEBKIT_SUPPORT_GC_EXTENSION_H_
+#define WEBKIT_SUPPORT_GC_EXTENSION_H_
 #pragma once
-
-#include "webkit/extensions/webkit_extensions_export.h"
 
 namespace v8 {
 class Extension;
@@ -18,9 +16,9 @@ namespace extensions_v8 {
 // garbage collection. This should only be used for debugging.
 class GCExtension {
  public:
-  WEBKIT_EXTENSIONS_EXPORT static v8::Extension* Get();
+  static v8::Extension* Get();
 };
 
 }  // namespace extensions_v8
 
-#endif  // WEBKIT_EXTENSIONS_V8_GC_EXTENSION_H_
+#endif  // WEBKIT_SUPPORT_GC_EXTENSION_H_

@@ -717,12 +717,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kInProcessWebGL,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
-    switches::kNoJsRandomness,
     switches::kNoReferrers,
     switches::kNoSandbox,
-    switches::kPlaybackMode,
     switches::kPpapiOutOfProcess,
-    switches::kRecordMode,
     switches::kRegisterPepperPlugins,
     switches::kRendererAssertTest,
 #if defined(OS_POSIX)

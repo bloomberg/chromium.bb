@@ -47,6 +47,7 @@
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
+#include "chrome/renderer/playback_extension.h"
 #include "chrome/renderer/plugins/plugin_placeholder.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
@@ -179,12 +180,17 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (search_extension)
     thread->RegisterExtension(search_extension);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBenchmarking))
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableBenchmarking))
     thread->RegisterExtension(extensions_v8::BenchmarkingExtension::Get());
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableIPCFuzzing)) {
+  if (command_line->HasSwitch(switches::kPlaybackMode) ||
+      command_line->HasSwitch(switches::kRecordMode) ||
+      command_line->HasSwitch(switches::kNoJsRandomness)) {
+    thread->RegisterExtension(extensions_v8::PlaybackExtension::Get());
+  }
+
+  if (command_line->HasSwitch(switches::kEnableIPCFuzzing)) {
     thread->GetChannel()->set_outgoing_message_filter(LoadExternalIPCFuzzer());
   }
   // chrome:, chrome-devtools:, and chrome-internal: pages should not be

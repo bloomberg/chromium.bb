@@ -48,11 +48,7 @@ class NodeLeakTest : public TestShellTest {
         TestShell::SetFileTestTimeout(timeout_ms);
     }
 
-    // Optionally use playback mode (for instance if running automated tests).
-    net::HttpCache::Mode mode =
-        parsed_command_line.HasSwitch(test_shell::kPlaybackMode) ?
-        net::HttpCache::PLAYBACK : net::HttpCache::NORMAL;
-    SimpleResourceLoaderBridge::Init(cache_path, mode, false);
+    SimpleResourceLoaderBridge::Init(cache_path, net::HttpCache::NORMAL, false);
 
     TestShellTest::SetUp();
   }
