@@ -25,7 +25,10 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/env.h"
 #include "ui/aura/event.h"
+#include "ui/aura/monitor.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -114,6 +117,34 @@ content::GLHelper* CreateGLHelper(ui::Compositor* compositor) {
       factory->AsContextFactory()->CreateOffscreenContext(compositor);
   DCHECK(context_for_thread);
   return new content::GLHelper(context, context_for_thread);
+}
+
+void GetScreenInfoForWindow(WebKit::WebScreenInfo* results,
+                            const aura::Window* window) {
+  aura::MonitorManager* monitor_manager =
+      aura::Env::GetInstance()->monitor_manager();
+  const aura::Monitor* monitor = window ?
+      monitor_manager->GetMonitorNearestWindow(window) :
+      monitor_manager->GetMonitorAt(0);
+
+  const gfx::Size size = monitor->size();
+  results->rect = WebKit::WebRect(0, 0, size.width(), size.height());
+  results->availableRect = results->rect;
+  // TODO(derat): Don't hardcode this?
+  results->depth = 24;
+  results->depthPerComponent = 8;
+  int default_dpi = monitor->GetDeviceScaleFactor() * 160;
+  // TODO(fsamuel): This is a temporary hack until Monitor code is complete.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kDefaultDeviceScaleFactor)) {
+    int default_device_scale_factor;
+    base::StringToInt(command_line.GetSwitchValueASCII(
+                          switches::kDefaultDeviceScaleFactor),
+                      &default_device_scale_factor);
+    default_dpi = default_device_scale_factor * 160;
+  }
+  results->verticalDPI = default_dpi;
+  results->horizontalDPI = default_dpi;
 }
 
 }  // namespace
@@ -643,7 +674,7 @@ void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
 }
 
 void RenderWidgetHostViewAura::GetScreenInfo(WebKit::WebScreenInfo* results) {
-  GetDefaultScreenInfo(results);
+  GetScreenInfoForWindow(results, window_);
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetRootWindowBounds() {
@@ -1296,22 +1327,5 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
 // static
 void content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
     WebKit::WebScreenInfo* results) {
-  const gfx::Size size = gfx::Screen::GetPrimaryMonitorSize();
-  results->rect = WebKit::WebRect(0, 0, size.width(), size.height());
-  results->availableRect = results->rect;
-  // TODO(derat): Don't hardcode this?
-  results->depth = 24;
-  results->depthPerComponent = 8;
-  // TODO(fsamuel): This is a temporary hack until Monitor code is complete.
-  int default_dpi = 96;
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDefaultDeviceScaleFactor)) {
-    int default_device_scale_factor;
-    base::StringToInt(command_line.GetSwitchValueASCII(
-                          switches::kDefaultDeviceScaleFactor),
-                      &default_device_scale_factor);
-    default_dpi = default_device_scale_factor * 160;
-  }
-  results->verticalDPI = default_dpi;
-  results->horizontalDPI = default_dpi;
+  GetScreenInfoForWindow(results, NULL);
 }
