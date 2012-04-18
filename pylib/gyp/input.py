@@ -383,8 +383,8 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   ProcessToolsetsInDict(build_file_data)
 
   # Apply "pre"/"early" variable expansions and condition evaluations.
-  ProcessVariablesAndConditionsInDict(build_file_data, False, variables,
-                                      build_file_path)
+  ProcessVariablesAndConditionsInDict(
+      build_file_data, PHASE_EARLY, variables, build_file_path)
 
   # Since some toolsets might have been defined conditionally, perform
   # a second round of toolsets expansion now.
@@ -499,6 +499,13 @@ late_variable_re = re.compile(
     '\((?P<is_array>\s*\[?)'
     '(?P<content>.*?)(\]?)\))')
 
+# This matches the same as early_variable_re, but with '^' instead of '<'.
+latelate_variable_re = re.compile(
+    '(?P<replace>(?P<type>[\^](?:(?:!?@?)|\|)?)'
+    '(?P<command_string>[-a-zA-Z0-9_.]+)?'
+    '\((?P<is_array>\s*\[?)'
+    '(?P<content>.*?)(\]?)\))')
+
 # Global cache of results from running commands so they don't have to be run
 # more then once.
 cached_command_results = {}
@@ -513,14 +520,24 @@ def FixupPlatformCommand(cmd):
   return cmd
 
 
-def ExpandVariables(input, is_late, variables, build_file):
+PHASE_EARLY = 0
+PHASE_LATE = 1
+PHASE_LATELATE = 2
+
+
+def ExpandVariables(input, phase, variables, build_file):
   # Look for the pattern that gets expanded into variables
-  if not is_late:
+  if phase == PHASE_EARLY:
     variable_re = early_variable_re
     expansion_symbol = '<'
-  else:
+  elif phase == PHASE_LATE:
     variable_re = late_variable_re
     expansion_symbol = '>'
+  elif phase == PHASE_LATELATE:
+    variable_re = latelate_variable_re
+    expansion_symbol = '^'
+  else:
+    assert False
 
   input_str = str(input)
   # Do a quick scan to determine if an expensive regex search is warranted.
@@ -586,11 +603,11 @@ def ExpandVariables(input, is_late, variables, build_file):
         processed_variables = copy.deepcopy(variables)
         ProcessListFiltersInDict(contents, processed_variables)
         # Recurse to expand variables in the contents
-        contents = ExpandVariables(contents, is_late,
+        contents = ExpandVariables(contents, phase,
                                    processed_variables, build_file)
       else:
         # Recurse to expand variables in the contents
-        contents = ExpandVariables(contents, is_late, variables, build_file)
+        contents = ExpandVariables(contents, phase, variables, build_file)
 
       # Strip off leading/trailing whitespace so that variable matches are
       # simpler below (and because they are rarely needed).
@@ -733,7 +750,7 @@ def ExpandVariables(input, is_late, variables, build_file):
         # Run through the list and handle variable expansions in it.  Since
         # the list is guaranteed not to contain dicts, this won't do anything
         # with conditions sections.
-        ProcessVariablesAndConditionsInList(replacement, is_late, variables,
+        ProcessVariablesAndConditionsInList(replacement, phase, variables,
                                             build_file)
       elif not isinstance(replacement, str) and \
            not isinstance(replacement, int):
@@ -786,10 +803,10 @@ def ExpandVariables(input, is_late, variables, build_file):
         new_output = []
         for item in output:
           new_output.append(
-              ExpandVariables(item, is_late, variables, build_file))
+              ExpandVariables(item, phase, variables, build_file))
         output = new_output
     else:
-      output = ExpandVariables(output, is_late, variables, build_file)
+      output = ExpandVariables(output, phase, variables, build_file)
 
   # Convert all strings that are canonically-represented integers into integers.
   if isinstance(output, list):
@@ -804,9 +821,12 @@ def ExpandVariables(input, is_late, variables, build_file):
   return output
 
 
-def ProcessConditionsInDict(the_dict, is_late, variables, build_file):
+def ProcessConditionsInDict(the_dict, phase, variables, build_file):
   # Process a 'conditions' or 'target_conditions' section in the_dict,
-  # depending on is_late.  If is_late is False, 'conditions' is used.
+  # depending on phase.
+  # early -> conditions
+  # late -> target_conditions
+  # latelate -> no conditions
   #
   # Each item in a conditions list consists of cond_expr, a string expression
   # evaluated as the condition, and true_dict, a dict that will be merged into
@@ -815,13 +835,17 @@ def ProcessConditionsInDict(the_dict, is_late, variables, build_file):
   # cond_expr evaluates to false.
   #
   # Any dict merged into the_dict will be recursively processed for nested
-  # conditionals and other expansions, also according to is_late, immediately
+  # conditionals and other expansions, also according to phase, immediately
   # prior to being merged.
 
-  if not is_late:
+  if phase == PHASE_EARLY:
     conditions_key = 'conditions'
-  else:
+  elif phase == PHASE_LATE:
     conditions_key = 'target_conditions'
+  elif phase == PHASE_LATELATE:
+    return
+  else:
+    assert False
 
   if not conditions_key in the_dict:
     return
@@ -848,7 +872,7 @@ def ProcessConditionsInDict(the_dict, is_late, variables, build_file):
     # contain variable references without needing to resort to GYP expansion
     # syntax, this is of dubious value for variables, but someone might want to
     # use a command expansion directly inside a condition.
-    cond_expr_expanded = ExpandVariables(cond_expr, is_late, variables,
+    cond_expr_expanded = ExpandVariables(cond_expr, phase, variables,
                                          build_file)
     if not isinstance(cond_expr_expanded, str) and \
        not isinstance(cond_expr_expanded, int):
@@ -877,7 +901,7 @@ def ProcessConditionsInDict(the_dict, is_late, variables, build_file):
     if merge_dict != None:
       # Expand variables and nested conditinals in the merge_dict before
       # merging it.
-      ProcessVariablesAndConditionsInDict(merge_dict, is_late,
+      ProcessVariablesAndConditionsInDict(merge_dict, phase,
                                           variables, build_file)
 
       MergeDicts(the_dict, merge_dict, build_file, build_file)
@@ -921,7 +945,7 @@ def LoadVariablesFromVariablesDict(variables, the_dict, the_dict_key):
     variables[variable_name] = value
 
 
-def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables_in,
+def ProcessVariablesAndConditionsInDict(the_dict, phase, variables_in,
                                         build_file, the_dict_key=None):
   """Handle all variable and command expansion and conditional evaluation.
 
@@ -948,7 +972,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables_in,
     # Pass a copy of the variables dict to avoid having it be tainted.
     # Otherwise, it would have extra automatics added for everything that
     # should just be an ordinary variable in this scope.
-    ProcessVariablesAndConditionsInDict(the_dict['variables'], is_late,
+    ProcessVariablesAndConditionsInDict(the_dict['variables'], phase,
                                         variables, build_file, 'variables')
 
   LoadVariablesFromVariablesDict(variables, the_dict, the_dict_key)
@@ -956,7 +980,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables_in,
   for key, value in the_dict.iteritems():
     # Skip "variables", which was already processed if present.
     if key != 'variables' and isinstance(value, str):
-      expanded = ExpandVariables(value, is_late, variables, build_file)
+      expanded = ExpandVariables(value, phase, variables, build_file)
       if not isinstance(expanded, str) and not isinstance(expanded, int):
         raise ValueError, \
               'Variable expansion in this context permits str and int ' + \
@@ -1001,7 +1025,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables_in,
   # 'target_conditions' section, perform appropriate merging and recursive
   # conditional and variable processing, and then remove the conditions section
   # from the_dict if it is present.
-  ProcessConditionsInDict(the_dict, is_late, variables, build_file)
+  ProcessConditionsInDict(the_dict, phase, variables, build_file)
 
   # Conditional processing may have resulted in changes to automatics or the
   # variables dict.  Reload.
@@ -1019,21 +1043,21 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables_in,
     if isinstance(value, dict):
       # Pass a copy of the variables dict so that subdicts can't influence
       # parents.
-      ProcessVariablesAndConditionsInDict(value, is_late, variables,
+      ProcessVariablesAndConditionsInDict(value, phase, variables,
                                           build_file, key)
     elif isinstance(value, list):
       # The list itself can't influence the variables dict, and
       # ProcessVariablesAndConditionsInList will make copies of the variables
       # dict if it needs to pass it to something that can influence it.  No
       # copy is necessary here.
-      ProcessVariablesAndConditionsInList(value, is_late, variables,
+      ProcessVariablesAndConditionsInList(value, phase, variables,
                                           build_file)
     elif not isinstance(value, int):
       raise TypeError, 'Unknown type ' + value.__class__.__name__ + \
                        ' for ' + key
 
 
-def ProcessVariablesAndConditionsInList(the_list, is_late, variables,
+def ProcessVariablesAndConditionsInList(the_list, phase, variables,
                                         build_file):
   # Iterate using an index so that new values can be assigned into the_list.
   index = 0
@@ -1042,11 +1066,11 @@ def ProcessVariablesAndConditionsInList(the_list, is_late, variables,
     if isinstance(item, dict):
       # Make a copy of the variables dict so that it won't influence anything
       # outside of its own scope.
-      ProcessVariablesAndConditionsInDict(item, is_late, variables, build_file)
+      ProcessVariablesAndConditionsInDict(item, phase, variables, build_file)
     elif isinstance(item, list):
-      ProcessVariablesAndConditionsInList(item, is_late, variables, build_file)
+      ProcessVariablesAndConditionsInList(item, phase, variables, build_file)
     elif isinstance(item, str):
-      expanded = ExpandVariables(item, is_late, variables, build_file)
+      expanded = ExpandVariables(item, phase, variables, build_file)
       if isinstance(expanded, str) or isinstance(expanded, int):
         the_list[index] = expanded
       elif isinstance(expanded, list):
@@ -1621,7 +1645,7 @@ def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes,
 
 
 # Initialize this here to speed up MakePathRelative.
-exception_re = re.compile(r'''["']?[-/$<>]''')
+exception_re = re.compile(r'''["']?[-/$<>^]''')
 
 
 def MakePathRelative(to_file, fro_file, item):
@@ -1637,6 +1661,7 @@ def MakePathRelative(to_file, fro_file, item):
   #       "libraries" section)
   #   <   Used for our own variable and command expansions (see ExpandVariables)
   #   >   Used for our own variable and command expansions (see ExpandVariables)
+  #   ^   Used for our own variable and command expansions (see ExpandVariables)
   #
   #   "/' Used when a value is quoted.  If these are present, then we
   #       check the second character instead.
@@ -2391,8 +2416,8 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
   for target in flat_list:
     target_dict = targets[target]
     build_file = gyp.common.BuildFile(target)
-    ProcessVariablesAndConditionsInDict(target_dict, True, variables,
-                                        build_file)
+    ProcessVariablesAndConditionsInDict(
+        target_dict, PHASE_LATE, variables, build_file)
 
   # Move everything that can go into a "configurations" section into one.
   for target in flat_list:
@@ -2403,6 +2428,13 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
   for target in flat_list:
     target_dict = targets[target]
     ProcessListFiltersInDict(target, target_dict)
+
+  # Apply "latelate" variable expansions and condition evaluations.
+  for target in flat_list:
+    target_dict = targets[target]
+    build_file = gyp.common.BuildFile(target)
+    ProcessVariablesAndConditionsInDict(
+        target_dict, PHASE_LATELATE, variables, build_file)
 
   # Make sure that the rules make sense, and build up rule_sources lists as
   # needed.  Not all generators will need to use the rule_sources lists, but

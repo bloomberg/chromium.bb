@@ -3,9 +3,17 @@
 # found in the LICENSE file.
 
 {
+  'includes': ['cross_compile.gypi'],
   'target_defaults': {
-    'sources/': [
-      ['exclude', 'lame'],
+    'variables': {
+      'nix_lame%': 0,
+    },
+    'target_conditions': [
+      ['nix_lame==1', {
+        'sources/': [
+          ['exclude', 'lame'],
+        ],
+      }],
     ],
   },
   'targets': [
@@ -40,6 +48,10 @@
     {
       'target_name': 'cross_program',
       'type': 'none',
+      'variables': {
+        'cross': 1,
+        'nix_lame': 1,
+      },
       'dependencies': ['cross_lib'],
       'sources': [
         'test1.cc',
@@ -47,11 +59,14 @@
         'very_lame.cc',
         '<(SHARED_INTERMEDIATE_DIR)/cross_lib.fake',
       ],
-      'includes': ['cross_compile.gypi'],
     },
     {
       'target_name': 'cross_lib',
       'type': 'none',
+      'variables': {
+        'cross': 1,
+        'nix_lame': 1,
+      },
       'sources': [
         'test3.cc',
         'test4.c',
@@ -63,7 +78,6 @@
         'bogus1.cc',
         'bogus2.c',
       ],
-      'includes': ['cross_compile.gypi'],
     },
   ],
 }
