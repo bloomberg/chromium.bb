@@ -89,8 +89,8 @@ class SyncSocketServerListener : public IPC::Channel::Listener {
 
   void SetHandle(base::SyncSocket::Handle handle) {
     base::SyncSocket sync_socket(handle);
-    EXPECT_EQ(sync_socket.Send(static_cast<const void*>(kHelloString),
-                               kHelloStringLength), kHelloStringLength);
+    EXPECT_EQ(sync_socket.Send(kHelloString, kHelloStringLength),
+              kHelloStringLength);
     IPC::Message* msg = new MsgClassResponse(kHelloString);
     EXPECT_TRUE(chan_->Send(msg));
   }
@@ -206,11 +206,12 @@ TEST_F(SyncSocketTest, SanityTest) {
   base::CloseProcessHandle(server_process);
 }
 
-static void BlockingRead(base::SyncSocket* socket, size_t* received) {
+static void BlockingRead(base::SyncSocket* socket, char* buf,
+                         size_t length, size_t* received) {
+  DCHECK(buf != NULL);
   // Notify the parent thread that we're up and running.
   socket->Send(kHelloString, kHelloStringLength);
-  char buf[0xff]; // Won't ever be filled.
-  *received = socket->Receive(buf, arraysize(buf));
+  *received = socket->Receive(buf, length);
 }
 
 // Tests that we can safely end a blocking Receive operation on one thread
@@ -223,14 +224,15 @@ TEST_F(SyncSocketTest, DisconnectTest) {
   worker.Start();
 
   // Try to do a blocking read from one of the sockets on the worker thread.
+  char buf[0xff];
   size_t received = 1U;  // Initialize to an unexpected value.
   worker.message_loop()->PostTask(FROM_HERE,
-      base::Bind(&BlockingRead, &pair[0], &received));
+      base::Bind(&BlockingRead, &pair[0], &buf[0], arraysize(buf), &received));
 
   // Wait for the worker thread to say hello.
   char hello[kHelloStringLength] = {0};
   pair[1].Receive(&hello[0], sizeof(hello));
-  VLOG(1) << "Received: " << hello;
+  EXPECT_EQ(0, strcmp(hello, kHelloString));
   // Give the worker a chance to start Receive().
   base::PlatformThread::YieldCurrentThread();
 
@@ -241,4 +243,67 @@ TEST_F(SyncSocketTest, DisconnectTest) {
   worker.Stop();
 
   EXPECT_EQ(0U, received);
+}
+
+// Tests that read is a blocking operation.
+TEST_F(SyncSocketTest, BlockingReceiveTest) {
+  base::CancelableSyncSocket pair[2];
+  ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&pair[0], &pair[1]));
+
+  base::Thread worker("BlockingThread");
+  worker.Start();
+
+  // Try to do a blocking read from one of the sockets on the worker thread.
+  char buf[kHelloStringLength] = {0};
+  size_t received = 1U;  // Initialize to an unexpected value.
+  worker.message_loop()->PostTask(FROM_HERE,
+      base::Bind(&BlockingRead, &pair[0], &buf[0],
+                 kHelloStringLength, &received));
+
+  // Wait for the worker thread to say hello.
+  char hello[kHelloStringLength] = {0};
+  pair[1].Receive(&hello[0], sizeof(hello));
+  EXPECT_EQ(0, strcmp(hello, kHelloString));
+  // Give the worker a chance to start Receive().
+  base::PlatformThread::YieldCurrentThread();
+
+  // The socket on the blocking thread is currently blocked on Receive() and
+  // has got nothing.
+  EXPECT_EQ(1U, received);
+
+  // Send a message to the socket on the blocking thead, it should free the
+  // socket from Receive().
+  pair[1].Send(kHelloString, kHelloStringLength);
+  worker.Stop();
+
+  // Verify the socket has received the message.
+  EXPECT_TRUE(strcmp(buf, kHelloString) == 0);
+  EXPECT_EQ(kHelloStringLength, received);
+}
+
+// Tests that the write operation is non-blocking and returns immediately
+// when there is insufficient space in the socket's buffer.
+TEST_F(SyncSocketTest, NonBlockingWriteTest) {
+  base::CancelableSyncSocket pair[2];
+  ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&pair[0], &pair[1]));
+
+  // Fill up the buffer for one of the socket, Send() should not block the
+  // thread even when the buffer is full.
+  while (pair[0].Send(kHelloString, kHelloStringLength) != 0) {}
+
+  // Data should be avialble on another socket.
+  size_t bytes_in_buffer = pair[1].Peek();
+  EXPECT_NE(bytes_in_buffer, 0U);
+
+  // No more data can be written to the buffer since socket has been full,
+  // verify that the amount of avialble data on another socket is unchanged.
+  EXPECT_EQ(0U, pair[0].Send(kHelloString, kHelloStringLength));
+  EXPECT_EQ(bytes_in_buffer, pair[1].Peek());
+
+  // Read from another socket to free some space for a new write.
+  char hello[kHelloStringLength] = {0};
+  pair[1].Receive(&hello[0], sizeof(hello));
+
+  // Should be able to write more data to the buffer now.
+  EXPECT_EQ(kHelloStringLength, pair[0].Send(kHelloString, kHelloStringLength));
 }
