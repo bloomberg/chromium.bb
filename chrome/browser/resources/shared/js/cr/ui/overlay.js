@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file exists to share common overlay behaviors.
-
+/**
+ * @fileoverview Provides dialog-like behaviors for the tracing UI.
+ */
 cr.define('cr.ui.overlay', function() {
 
   /**

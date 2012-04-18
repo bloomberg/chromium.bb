@@ -80,6 +80,7 @@ class JSChecker(object):
         path.join(resources, 'print_preview'),
         path.join(resources, 'profiler'),
         path.join(resources, 'sync_promo'),
+        path.join(resources, 'tracing'),
         path.join(resources, 'uber'),
     )
     if filename.startswith(dirs):

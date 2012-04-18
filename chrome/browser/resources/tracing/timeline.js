@@ -589,7 +589,7 @@ cr.define('tracing', function() {
       // Potentially move the viewport to keep the new selection in view.
       this.viewport_.xPanWorldRangeIntoView(minTime, maxTime,
           this.firstCanvas.width);
-       return true;
+      return true;
     },
 
     get keyHelp() {

@@ -321,7 +321,8 @@ found in the LICENSE file.
     track.thread = thread;
     track.viewport = new TimelineViewport(testEl);
     track.viewport.setPanAndScale(0,
-        track.clientWidth / (1.1 * (thread.maxTimestamp - thread.minTimestamp)));
+        track.clientWidth /
+        (1.1 * (thread.maxTimestamp - thread.minTimestamp)));
   }
 
   function testTimelineThreadTrackWithTallSlices() {
@@ -346,7 +347,8 @@ found in the LICENSE file.
     track.thread = thread;
     track.viewport = new TimelineViewport(testEl);
     track.viewport.setPanAndScale(0,
-        track.clientWidth / (1.1 * (thread.maxTimestamp - thread.minTimestamp)));
+        track.clientWidth
+        / (1.1 * (thread.maxTimestamp - thread.minTimestamp)));
   }
 
   function testTimelineThreadTrackWithRegularAndAsyncSlices() {

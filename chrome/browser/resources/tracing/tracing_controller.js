@@ -269,4 +269,3 @@ cr.define('tracing', function() {
     TracingController: TracingController
   };
 });
-
