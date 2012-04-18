@@ -229,6 +229,33 @@
       ],  # end of 'targets'
     }],  # 'OS=="linux"'
 
+    ['OS=="mac"', {
+      'targets': [
+        {
+          'target_name': 'remoting_host_uninstaller',
+          'type': 'executable',
+          'mac_bundle': 1,
+          'dependencies': [
+            '<(DEPTH)/base/base.gyp:base',
+          ],
+          'sources': [
+            'host/installer/mac/uninstaller/remoting_uninstaller_delegate.mm',
+          ],
+          'xcode_settings': {
+            'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
+            'INFOPLIST_FILE': 'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
+          },
+          'mac_bundle_resources': [
+            'host/installer/mac/uninstaller/remoting_uninstaller.xib',
+            'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
+          ],
+          'mac_bundle_resources!': [
+            'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
+          ],
+        },  # end of target 'remoting_host_uninstaller'
+      ],  # end of 'targets'
+    }],  # 'OS=="mac"'
+    
     ['OS=="win"', {
       'targets': [
         {
