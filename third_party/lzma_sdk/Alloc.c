@@ -1,4 +1,7 @@
-/* Alloc.c */
+/* Alloc.c -- Memory allocation functions
+2008-09-24
+Igor Pavlov
+Public domain */
 
 #ifdef _WIN32
 #include <windows.h>
@@ -22,16 +25,21 @@ void *MyAlloc(size_t size)
   if (size == 0)
     return 0;
   #ifdef _SZ_ALLOC_DEBUG
-  fprintf(stderr, "\nAlloc %10d bytes; count = %10d", size, g_allocCount++);
-  #endif
+  {
+    void *p = malloc(size);
+    fprintf(stderr, "\nAlloc %10d bytes, count = %10d,  addr = %8X", size, g_allocCount++, (unsigned)p);
+    return p;
+  }
+  #else
   return malloc(size);
+  #endif
 }
 
 void MyFree(void *address)
 {
   #ifdef _SZ_ALLOC_DEBUG
   if (address != 0)
-    fprintf(stderr, "\nFree; count = %10d", --g_allocCount);
+    fprintf(stderr, "\nFree; count = %10d,  addr = %8X", --g_allocCount, (unsigned)address);
   #endif
   free(address);
 }
@@ -95,7 +103,7 @@ void *BigAlloc(size_t size)
   #ifdef _7ZIP_LARGE_PAGES
   if (g_LargePageSize != 0 && g_LargePageSize <= (1 << 30) && size >= (1 << 18))
   {
-    void *res = VirtualAlloc(0, (size + g_LargePageSize - 1) & (~(g_LargePageSize - 1)), 
+    void *res = VirtualAlloc(0, (size + g_LargePageSize - 1) & (~(g_LargePageSize - 1)),
         MEM_COMMIT | MEM_LARGE_PAGES, PAGE_READWRITE);
     if (res != 0)
       return res;

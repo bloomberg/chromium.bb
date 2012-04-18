@@ -1,36 +1,43 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 {
   'variables': {
     'lzma_sdk_sources': [
+      '7z.h',
+      '7zAlloc.c',
+      '7zAlloc.h',
+      '7zBuf.c',
+      '7zBuf.h',
       '7zCrc.c',
       '7zCrc.h',
-      'Archive/7z/7zAlloc.c',
-      'Archive/7z/7zAlloc.h',
-      'Archive/7z/7zBuffer.c',
-      'Archive/7z/7zBuffer.h',
-      'Archive/7z/7zDecode.c',
-      'Archive/7z/7zDecode.h',
-      'Archive/7z/7zExtract.c',
-      'Archive/7z/7zExtract.h',
-      'Archive/7z/7zHeader.c',
-      'Archive/7z/7zHeader.h',
-      'Archive/7z/7zIn.c',
-      'Archive/7z/7zIn.h',
-      'Archive/7z/7zItem.c',
-      'Archive/7z/7zItem.h',
-      'Archive/7z/7zMethodID.c',
-      'Archive/7z/7zMethodID.h',
-      'Compress/Branch/BranchTypes.h',
-      'Compress/Branch/BranchX86.c',
-      'Compress/Branch/BranchX86.h',
-      'Compress/Branch/BranchX86_2.c',
-      'Compress/Branch/BranchX86_2.h',
-      'Compress/Lzma/LzmaDecode.c',
-      'Compress/Lzma/LzmaDecode.h',
-      'Compress/Lzma/LzmaTypes.h',
+      '7zCrcOpt.c',
+      '7zDec.c',
+      '7zFile.c',
+      '7zFile.h',
+      '7zIn.c',
+      '7zStream.c',
+      'Alloc.c',
+      'Alloc.h',
+      'Bcj2.c',
+      'Bcj2.h',
+      'Bra.c',
+      'Bra.h',
+      'Bra86.c',
+      'CpuArch.c',
+      'CpuArch.h',
+      'LzFind.c',
+      'LzFind.h',
+      'LzHash.h',
+      'Lzma2Dec.c',
+      'Lzma2Dec.h',
+      'LzmaEnc.c',
+      'LzmaEnc.h',
+      'LzmaDec.c',
+      'LzmaDec.h',
+      'LzmaLib.c',
+      'LzmaLib.h',
       'Types.h',
     ],
   },
@@ -39,20 +46,16 @@
       'target_name': 'lzma_sdk',
       'type': 'static_library',
       'defines': [
+        '_7ZIP_ST',
         '_LZMA_PROB32',
-        '_LZMA_IN_CB',
+      ],
+      'sources': [
+        '<@(lzma_sdk_sources)',
       ],
       'include_dirs': [
         '.',
       ],
-      # TODO:  original configuration had /wd4800, add if
-      # necessary and delete if not.
-      #        '/wd4800',
-      'sources': ['<@(lzma_sdk_sources)'],
       'direct_dependent_settings': {
-        'defines': [
-          '_LZMA_IN_CB',
-        ],
         'include_dirs': [
           '.',
         ],
@@ -66,22 +69,21 @@
           'target_name': 'lzma_sdk64',
           'type': 'static_library',
           'defines': [
+            '_7ZIP_ST',
             '_LZMA_PROB32',
-            '_LZMA_IN_CB',
           ],
           'include_dirs': [
             '.',
           ],
-          'sources': ['<@(lzma_sdk_sources)'],
+          'sources': [
+            '<@(lzma_sdk_sources)',
+          ],
           'configurations': {
             'Common_Base': {
               'msvs_target_platform': 'x64',
             },
           },
           'direct_dependent_settings': {
-            'defines': [
-              '_LZMA_IN_CB',
-            ],
             'include_dirs': [
               '.',
             ],
