@@ -437,6 +437,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableMediaSource)
   },
   {
+    "enable-encrypted-media",
+    IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_NAME,
+    IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableEncryptedMedia)
+  },
+  {
     "enable-pointer-lock",
     IDS_FLAGS_ENABLE_POINTER_LOCK_NAME,
     IDS_FLAGS_ENABLE_POINTER_LOCK_DESCRIPTION,

@@ -84,6 +84,7 @@ extern const char kEnableCssRegions[];
 extern const char kEnableCssShaders[];
 CONTENT_EXPORT extern const char kEnableDeferred2dCanvas[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
+extern const char kEnableEncryptedMedia[];
 extern const char kEnableFastback[];
 CONTENT_EXPORT extern const char kEnableFixedLayout[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];

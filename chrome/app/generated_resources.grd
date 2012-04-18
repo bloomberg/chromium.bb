@@ -5343,6 +5343,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_MEDIA_SOURCE_DESCRIPTION" desc="Description for the flag to enable the Media Source API on &lt;video&gt; elements.">
         Enable experimental Media Source API on the video elements. This API allows JavaScript to send media data directly to a video element.
       </message>
+      <message name="IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_NAME" desc="Title for the flag to enable the Encrypted Media Extensions on &lt;video&gt; elements.">
+        Enable Encrypted Media Extensions on <ph name="VIDEO_HTML">&lt;video&gt;</ph> elements.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ENCRYPTED_MEDIA_DESCRIPTION" desc="Description for the flag to enable the Encrypted Media Extensions on &lt;video&gt; elements.">
+        Enable experimental Encrypted Media Extensions on the video elements.
+      </message>
       <message name="IDS_FLAGS_AURA_TRANSLUCENT_FRAMES_NAME" desc="Title for the flag to enable fancy translucent windows.">
         Translucent windows
       </message>

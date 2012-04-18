@@ -682,6 +682,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableAccessibilityLogging,
     switches::kEnableBrowserPlugin,
     switches::kEnableDCHECK,
+    switches::kEnableEncryptedMedia,
     switches::kEnableFixedLayout,
     switches::kEnableGamepad,
     switches::kEnableGPUServiceLogging,

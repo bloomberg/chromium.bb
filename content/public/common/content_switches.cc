@@ -242,6 +242,10 @@ const char kEnableCssShaders[]              = "enable-css-shaders";
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 
+// Enables support for encrypted media. Current implementation is
+// incomplete and this flag is used for development and testing.
+const char kEnableEncryptedMedia[]          = "enable-encrypted-media";
+
 // Enables the fastback page cache.
 const char kEnableFastback[]                = "enable-fastback";
 
@@ -264,7 +268,7 @@ const char kEnableGamepad[]                 = "enable-gamepad";
 const char kEnableLogging[]                 = "enable-logging";
 
 // Enables Media Source API on <audio>/<video> elements.
-const char kEnableMediaSource[]              = "enable-media-source";
+const char kEnableMediaSource[]             = "enable-media-source";
 
 // Enable media stream in WebKit.
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#mediastream

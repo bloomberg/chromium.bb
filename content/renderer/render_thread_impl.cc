@@ -537,6 +537,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebKit::WebRuntimeFeatures::enableVideoTrack(
       command_line.HasSwitch(switches::kEnableVideoTrack));
 
+  WebKit::WebRuntimeFeatures::enableEncryptedMedia(
+      command_line.HasSwitch(switches::kEnableEncryptedMedia));
+
 #if defined(OS_CHROMEOS)
   // TODO(crogers): enable once Web Audio has been tested and optimized.
   WebRuntimeFeatures::enableWebAudio(false);
