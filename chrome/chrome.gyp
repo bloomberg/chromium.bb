@@ -1100,8 +1100,6 @@
              'test/automation/browser_proxy.h',
              'test/automation/dom_element_proxy.cc',
              'test/automation/dom_element_proxy.h',
-             'test/automation/extension_proxy.cc',
-             'test/automation/extension_proxy.h',
              'test/automation/javascript_execution_controller.cc',
              'test/automation/javascript_execution_controller.h',
              'test/automation/tab_proxy.cc',
