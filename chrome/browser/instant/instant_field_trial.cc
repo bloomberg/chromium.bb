@@ -60,21 +60,20 @@ void InstantFieldTrial::Activate() {
 InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kInstantFieldTrial)) {
+    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 1, 10);
     std::string switch_value =
         command_line->GetSwitchValueASCII(switches::kInstantFieldTrial);
-    Group group = INACTIVE;
     if (switch_value == switches::kInstantFieldTrialInstant)
-      group = INSTANT;
-    else if (switch_value == switches::kInstantFieldTrialSuggest)
-      group = SUGGEST;
-    else if (switch_value == switches::kInstantFieldTrialHidden)
-      group = HIDDEN;
-    else if (switch_value == switches::kInstantFieldTrialSilent)
-      group = SILENT;
-    else if (switch_value == switches::kInstantFieldTrialControl)
-      group = CONTROL;
-    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 1, 10);
-    return group;
+      return INSTANT;
+    if (switch_value == switches::kInstantFieldTrialSuggest)
+      return SUGGEST;
+    if (switch_value == switches::kInstantFieldTrialHidden)
+      return HIDDEN;
+    if (switch_value == switches::kInstantFieldTrialSilent)
+      return SILENT;
+    if (switch_value == switches::kInstantFieldTrialControl)
+      return CONTROL;
+    return INACTIVE;
   }
 
   const int group = base::FieldTrialList::FindValue("Instant");
@@ -106,6 +105,11 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
 
   if (prefs->IsManagedPreference(prefs::kInstantEnabled)) {
     UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 7, 10);
+    return INACTIVE;
+  }
+
+  if (!MetricsServiceHelper::IsMetricsReportingEnabled()) {
+    UMA_HISTOGRAM_ENUMERATION("Instant.FieldTrial.Reason", 8, 10);
     return INACTIVE;
   }
 
@@ -162,19 +166,13 @@ std::string InstantFieldTrial::GetGroupName(Profile* profile) {
 
 // static
 std::string InstantFieldTrial::GetGroupAsUrlParam(Profile* profile) {
-  bool uma = MetricsServiceHelper::IsMetricsReportingEnabled();
   switch (GetGroup(profile)) {
     case INACTIVE: return std::string();
-    case INSTANT: if (uma) return "ix=ui&";
-                           return "ix=ni&";
-    case SUGGEST: if (uma) return "ix=ut&";
-                           return "ix=nt&";
-    case HIDDEN:  if (uma) return "ix=uh&";
-                           return "ix=nh&";
-    case SILENT:  if (uma) return "ix=us&";
-                           return "ix=ns&";
-    case CONTROL: if (uma) return "ix=uc&";
-                           return "ix=nc&";
+    case INSTANT:  return "ix=i9&";
+    case SUGGEST:  return "ix=t9&";
+    case HIDDEN:   return "ix=h9&";
+    case SILENT:   return "ix=s9&";
+    case CONTROL:  return "ix=c9&";
   }
 
   NOTREACHED();
