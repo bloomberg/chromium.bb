@@ -10,6 +10,7 @@ import sys
 import time
 import traceback
 
+from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib as cros_lib
@@ -112,7 +113,8 @@ class BuilderStage(object):
         enter_chroot=True, error_ok=True)
     return binhost.output.rstrip('\n')
 
-  def _GetImportantBuildersForMaster(self, config):
+  # pylint: disable=W0102
+  def _GetSlavesForMaster(self, configs=cbuildbot_config.config):
     """Gets the important builds corresponding to this master builder.
 
     Given that we are a master builder, find all corresponding slaves that
@@ -121,16 +123,52 @@ class BuilderStage(object):
     """
     builders = []
     build_type = self._build_config['build_type']
+    branch_config = self._build_config['branch']
     overlay_config = self._build_config['overlays']
-    use_manifest_version = self._build_config['manifest_version']
-    for build_name, config in config.iteritems():
-      if (config['important'] and config['build_type'] == build_type and
+    assert not self._build_config['unified_manifest_version']
+    assert self._build_config['manifest_version']
+    assert self._build_config['master']
+    for build_name, config in configs.iteritems():
+      if (config['important'] and config['manifest_version'] and
+          not config['unified_manifest_version'] and
+          config['build_type'] == build_type and
           config['chrome_rev'] == self._chrome_rev and
           config['overlays'] == overlay_config and
-          config['manifest_version'] == use_manifest_version):
+          config['branch'] == branch_config):
         builders.append(build_name)
 
     return builders
+
+  # pylint: disable=W0102
+  def _GetSlavesForUnifiedMaster(self, configs=cbuildbot_config.config):
+    """Gets the important builds corresponding to this unified master.
+
+    A unified master has both private and public slaves that read from two
+    separate manifest_versions repositories.
+
+    Returns:
+      A tuple consisting of the public slaves and private slaves for this
+      unified builder.
+    """
+    public_builders = []
+    private_builders = []
+    build_type = self._build_config['build_type']
+    branch_config = self._build_config['branch']
+    assert self._build_config['unified_manifest_version']
+    assert self._build_config['manifest_version']
+    assert self._build_config['master']
+    for build_name, config in configs.iteritems():
+      if (config['important'] and config['unified_manifest_version'] and
+          config['manifest_version'] and
+          config['build_type'] == build_type and
+          config['chrome_rev'] == self._chrome_rev and
+          config['branch'] == branch_config):
+        if config['internal']:
+          private_builders.append(build_name)
+        else:
+          public_builders.append(build_name)
+
+    return public_builders, private_builders
 
   def _Begin(self):
     """Can be overridden.  Called before a stage is performed."""

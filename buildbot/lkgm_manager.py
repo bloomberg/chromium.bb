@@ -299,6 +299,42 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     else:
       raise manifest_version.GenerateBuildSpecException(last_error)
 
+  def CreateFromManifest(self, manifest, retries=manifest_version.NUM_RETRIES):
+    """Sets up an lkgm_manager from the given manifest.
+
+    This method sets up an LKGM manager and publishes a new manifest to the
+    manifest versions repo based on the passed in manifest but filtering
+    internal repositories and changes out of it.
+    Args:
+      manifest: A manifest that possibly contains private changes/projects. It
+        is named with the given version we want to create a new manifest from
+        i.e R20-1920.0.1-rc7.xml where R20-1920.0.1-rc7 is the version.
+      retries: Number of retries for updating the status.
+    Raises:
+      GenerateBuildSpecException in case of failure to check-in the new
+        manifest because of a git error or the manifest is already checked-in.
+    """
+    last_error = None
+    new_manifest = self._FilterCrosInternalProjectsFromManifest(manifest)
+    version_info = self.GetCurrentVersionInfo()
+    for _attempt in range(0, retries + 1):
+      try:
+        self.RefreshManifestCheckout()
+        self.InitializeManifestVariables(version_info)
+
+        cros_lib.CreatePushBranch(manifest_version.PUSH_BRANCH,
+                                  self.manifest_dir, sync=False)
+        version = os.path.splitext(os.path.basename(manifest))[0]
+        self.PublishManifest(new_manifest, version)
+        self.current_version = version
+        return self.GetLocalManifest(version)
+      except cros_lib.RunCommandError as e:
+        err_msg = 'Failed to generate LKGM Candidate. error: %s' % e
+        logging.error(err_msg)
+        last_error = err_msg
+    else:
+      raise manifest_version.GenerateBuildSpecException(last_error)
+
   def GetLatestCandidate(self, retries=manifest_version.NUM_RETRIES):
     """Gets and syncs to the next candiate manifest.
       Args:

@@ -112,12 +112,13 @@ class CBuildBotTest(mox.MoxTestBase):
       overlays = config['overlays']
       push_overlays = config['push_overlays']
       if (overlays and push_overlays and config['uprev'] and config['master']
-          and not build_name.endswith('branch')):
+          and not config['branch'] and not config['unified_manifest_version']):
         other_master = masters.get(push_overlays)
         err_msg = 'Found two masters for push_overlays=%s: %s and %s'
         self.assertFalse(other_master,
             err_msg % (push_overlays, build_name, other_master))
         masters[push_overlays] = build_name
+
     if 'both' in masters:
       self.assertEquals(len(masters), 1, 'Found too many masters.')
 
@@ -229,6 +230,14 @@ class CBuildBotTest(mox.MoxTestBase):
             config['upload_hw_test_artifacts'],
             "%s is trying to run hw tests without uploading payloads." %
             build_name)
+
+  def testValidUnifiedMasterConfig(self):
+    """Make sure any unified master configurations are valid."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if config['unified_manifest_version']:
+        self.assertTrue(
+            config['internal'] and config['manifest_version'],
+            'Unified manifest version config detected with invalid values')
 
   def testFactoryFirmwareValidity(self):
     """Ensures that firmware/factory branches have at least 1 valid name."""

@@ -219,13 +219,19 @@ class SyncStage(bs.BuilderStage):
     # TODO(davidjames): Remove this.
     configure_repo.SetupGerritRemote(self._build_root)
 
+
 class LKGMSyncStage(SyncStage):
   """Stage that syncs to the last known good manifest blessed by builders."""
 
   def GetNextManifest(self):
     """Override: Gets the LKGM."""
+    # TODO(sosa):  Should really use an initialized manager here.
+    if self.internal:
+      mv_dir = 'manifest-versions-internal'
+    else:
+      mv_dir = 'manifest-versions'
 
-    manifest_path = os.path.join(self._build_root, 'manifest-versions')
+    manifest_path = os.path.join(self._build_root, mv_dir)
     manifest_repo = self._GetManifestVersionsRepoUrl(read_only=True)
     manifest_version.RefreshManifestCheckout(manifest_path, manifest_repo)
     return os.path.join(manifest_path, lkgm_manager.LKGMManager.LKGM_PATH)
@@ -257,9 +263,9 @@ class ManifestVersionedSyncStage(SyncStage):
     super(ManifestVersionedSyncStage, self).HandleSkip()
     if self._options.force_version:
       self.Initialize()
-      self._ForceVersion(self._options.force_version)
+      self.ForceVersion(self._options.force_version)
 
-  def _ForceVersion(self, version):
+  def ForceVersion(self, version):
     """Creates a manifest manager from given version and returns manifest."""
     return ManifestVersionedSyncStage.manifest_manager.BootstrapFromVersion(
         version)
@@ -294,7 +300,7 @@ class ManifestVersionedSyncStage(SyncStage):
   def _PerformStage(self):
     self.Initialize()
     if self._options.force_version:
-      next_manifest = self._ForceVersion(self._options.force_version)
+      next_manifest = self.ForceVersion(self._options.force_version)
     else:
       next_manifest = self.GetNextManifest()
 
@@ -316,27 +322,43 @@ class ManifestVersionedSyncStage(SyncStage):
 class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
   """Stage that generates a unique manifest file candidate, and sync's to it."""
 
+  sub_manager = None
+
   def __init__(self, options, build_config):
     super(LKGMCandidateSyncStage, self).__init__(options, build_config)
     # lkgm_manager deals with making sure we're synced to whatever manifest
     # we get back in GetNextManifest so syncing again is redundant.
     self.skip_sync = True
 
-  def Initialize(self):
-    """Override: Creates an LKGMManager rather than a ManifestManager."""
-    dry_run = self._options.debug
-
-    self._InitializeRepo()
-
+  def _GetInitializedManager(self, internal):
+    """Returns an initialized lkgm manager."""
     increment = 'build' if self._tracking_branch == 'master' else 'branch'
-    ManifestVersionedSyncStage.manifest_manager = lkgm_manager.LKGMManager(
+    return lkgm_manager.LKGMManager(
         source_repo=self.repo,
-        manifest_repo=self.manifest_repo,
+        manifest_repo=cbuildbot_config.GetManifestVersionsRepoUrl(
+            internal, read_only=False),
         build_name=self._bot_id,
         build_type=self._build_config['build_type'],
         incr_type=increment,
         force=self._force,
-        dry_run=dry_run)
+        dry_run=self._options.debug)
+
+  def Initialize(self):
+    """Override: Creates an LKGMManager rather than a ManifestManager."""
+    self._InitializeRepo()
+    ManifestVersionedSyncStage.manifest_manager = self._GetInitializedManager(
+        self.internal)
+    if (self._build_config['unified_manifest_version'] and
+        self._build_config['master']):
+      assert self.internal, 'Unified masters must use an internal checkout.'
+      LKGMCandidateSyncStage.sub_manager = self._GetInitializedManager(False)
+
+  def ForceVersion(self, version):
+    manifest = super(LKGMCandidateSyncStage, self).ForceVersion(version)
+    if LKGMCandidateSyncStage.sub_manager:
+      LKGMCandidateSyncStage.sub_manager.BootstrapFromVersion(version)
+
+    return manifest
 
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
@@ -346,7 +368,12 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
         'Manifest manager instantiated with wrong class.'
 
     if self._build_config['master']:
-      return self.manifest_manager.CreateNewCandidate()
+      manifest = self.manifest_manager.CreateNewCandidate()
+      if LKGMCandidateSyncStage.sub_manager:
+        LKGMCandidateSyncStage.sub_manager.CreateFromManifest(manifest)
+
+      return manifest
+
     else:
       return self.manifest_manager.GetLatestCandidate()
 
@@ -435,7 +462,11 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
         cros_lib.Warning(str(e))
         return None
 
-      return self.manifest_manager.CreateNewCandidate(validation_pool=pool)
+      manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool)
+      if LKGMCandidateSyncStage.sub_manager:
+        LKGMCandidateSyncStage.sub_manager.CreateFromManifest(manifest)
+
+      return manifest
     else:
       manifest = self.manifest_manager.GetLatestCandidate()
       if manifest:
@@ -479,15 +510,30 @@ class ImportantBuilderFailedException(Exception):
 class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
 
-  def _GetImportantBuildersStatus(self):
+  def _GetSlavesStatus(self):
     # If debugging or a slave, just check its local status.
     if not self._build_config['master'] or self._options.debug:
-      builders = [self._bot_id]
-    else:
-      builders = self._GetImportantBuildersForMaster(cbuildbot_config.config)
+      return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
+        [self._bot_id], os.path.join(self._build_root, constants.VERSION_FILE))
 
-    return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
-        builders, os.path.join(self._build_root, constants.VERSION_FILE))
+    if not LKGMCandidateSyncStage.sub_manager:
+      return ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
+          self._GetSlavesForMaster(), os.path.join(self._build_root,
+                                                   constants.VERSION_FILE))
+    else:
+      public_builders, private_builders = self._GetSlavesForUnifiedMaster()
+      statuses = {}
+      if public_builders:
+        statuses.update(
+          LKGMCandidateSyncStage.sub_manager.GetBuildersStatus(
+              public_builders, os.path.join(self._build_root,
+                                            constants.VERSION_FILE)))
+      if private_builders:
+        statuses.update(
+            ManifestVersionedSyncStage.manifest_manager.GetBuildersStatus(
+                private_builders, os.path.join(self._build_root,
+                                          constants.VERSION_FILE)))
+      return statuses
 
   def HandleSuccess(self):
     # We only promote for the pfq, not chrome pfq.
@@ -496,6 +542,8 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         ManifestVersionedSyncStage.manifest_manager != None and
         self._build_config['build_type'] != constants.CHROME_PFQ_TYPE):
       ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
+      if LKGMCandidateSyncStage.sub_manager:
+        LKGMCandidateSyncStage.sub_manager.PromoteCandidate()
 
   def HandleValidationFailure(self, failing_builders):
     print '\n@@@STEP_WARNINGS@@@'
@@ -513,7 +561,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     super(LKGMCandidateSyncCompletionStage, self)._PerformStage()
 
     if ManifestVersionedSyncStage.manifest_manager:
-      statuses = self._GetImportantBuildersStatus()
+      statuses = self._GetSlavesStatus()
       failing_builders, inflight_builders = set(), set()
       for builder, status in statuses.iteritems():
         if status == lkgm_manager.LKGMManager.STATUS_FAILED:
@@ -531,6 +579,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         raise bs.NonBacktraceBuildException()  # Suppress redundant output.
       else:
         self.HandleSuccess()
+
 
 class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
@@ -1326,6 +1375,7 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
   option_name = 'prebuilts'
   config_name = 'prebuilts'
 
+  # TODO(sosa): Fix prebuilts for unified build.
   def _PerformStage(self):
     manifest_manager = ManifestVersionedSyncStage.manifest_manager
     overlay_config = self._build_config['overlays']
@@ -1367,7 +1417,7 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
         # behalf.
         builders = []
         if manifest_manager and manifest_manager.current_version:
-          builders = self._GetImportantBuildersForMaster(config)
+          builders = self._GetSlavesForMaster()
 
         for builder in builders:
           builder_config = config[builder]

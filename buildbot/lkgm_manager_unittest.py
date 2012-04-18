@@ -196,6 +196,44 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
     self.mox.VerifyAll()
 
+  def testCreateFromManifest(self):
+    """Tests that we can create a new candidate from another manifest."""
+    # Let's stub out other LKGMManager calls cause they're already
+    # unit tested.
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'GetCurrentVersionInfo')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
+                             'RefreshManifestCheckout')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
+                             'InitializeManifestVariables')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
+                             '_FilterCrosInternalProjectsFromManifest')
+    self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'PublishManifest')
+
+    version = '2010.0.0-rc7'
+    my_info = lkgm_manager._LKGMCandidateInfo('2010.0.0')
+    new_candidate = lkgm_manager._LKGMCandidateInfo(version)
+    manifest = ('/tmp/manifest-versions-internal/paladin/buildspecs/'
+                '20/%s.xml' % version)
+    new_manifest = '/path/to/tmp/file.xml'
+
+    lkgm_manager.LKGMManager._FilterCrosInternalProjectsFromManifest(
+        manifest).AndReturn(new_manifest)
+
+    # Do manifest refresh work.
+    lkgm_manager.LKGMManager.GetCurrentVersionInfo().AndReturn(my_info)
+    lkgm_manager.LKGMManager.RefreshManifestCheckout()
+    lkgm_manager.LKGMManager.InitializeManifestVariables(my_info)
+    cros_lib.CreatePushBranch(mox.IgnoreArg(), mox.IgnoreArg(), sync=False)
+
+    # Publish new candidate.
+    lkgm_manager.LKGMManager.PublishManifest(new_manifest, version)
+
+    self.mox.ReplayAll()
+    candidate_path = self.manager.CreateFromManifest(manifest)
+    self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
+    self.assertEqual(self.manager.current_version, version)
+    self.mox.VerifyAll()
+
   def testCreateNewCandidateReturnNoneIfNoWorkToDo(self):
     """Tests that we return nothing if there is nothing to create."""
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
@@ -234,7 +272,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
-    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
+    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3 - rc12')
 
     # Do manifest refresh work.
     lkgm_manager.LKGMManager.CheckoutSourceCode()
@@ -249,7 +287,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     repository.RepoRepository.Sync(
         self._GetPathToManifest(most_recent_candidate))
 
-    self.manager.latest_unprocessed = '1.2.3-rc12'
+    self.manager.latest_unprocessed = '1.2.3 - rc12'
     self.mox.ReplayAll()
     candidate = self.manager.GetLatestCandidate()
     self.assertEqual(candidate, self._GetPathToManifest(most_recent_candidate))
@@ -268,7 +306,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, 'SetInFlight')
 
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.4')
-    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.4-rc12',
+    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.4 - rc12',
                                                             CHROME_BRANCH)
 
     lkgm_manager.LKGMManager.CheckoutSourceCode()
@@ -291,7 +329,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     repository.RepoRepository.Sync(
         self._GetPathToManifest(most_recent_candidate))
 
-    self.manager.latest_unprocessed = '1.2.4-rc12'
+    self.manager.latest_unprocessed = '1.2.4 - rc12'
     self.mox.ReplayAll()
     candidate = self.manager.GetLatestCandidate()
     self.assertEqual(candidate, self._GetPathToManifest(most_recent_candidate))
@@ -320,11 +358,11 @@ class LKGMManagerTest(mox.MoxTestBase):
 
   def _CreateManifest(self):
     """Returns a created test manifest in tmpdir with its dir_pfx."""
-    self.manager.current_version = '1.2.4-rc21'
+    self.manager.current_version = '1.2.4 - rc21'
     dir_pfx = CHROME_BRANCH
     manifest = os.path.join(self.manager.manifest_dir,
                             self.manager.rel_working_dir, 'buildspecs',
-                            dir_pfx, '1.2.4-rc21.xml')
+                            dir_pfx, '1.2.4 - rc21.xml')
     manifest_version_unittest.TouchFile(manifest)
     return manifest, dir_pfx
 
@@ -355,10 +393,10 @@ class LKGMManagerTest(mox.MoxTestBase):
     print manifest, dir_pfx
     for_build1 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
-                              'build-name', 'build1')
+                              'build - name', 'build1')
     for_build2 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
-                              'build-name', 'build2')
+                              'build - name', 'build2')
 
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail')
     self._FinishBuild(manifest, for_build2, dir_pfx, 'pass')
@@ -379,10 +417,10 @@ class LKGMManagerTest(mox.MoxTestBase):
     manifest, dir_pfx = self._CreateManifest()
     for_build1 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
-                              'build-name', 'build1')
+                              'build - name', 'build1')
     for_build2 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
-                              'build-name', 'build2')
+                              'build - name', 'build2')
 
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail')
     self._FinishBuild(manifest, for_build2, dir_pfx, 'pass', wait=3)
@@ -404,10 +442,10 @@ class LKGMManagerTest(mox.MoxTestBase):
     manifest, dir_pfx = self._CreateManifest()
     for_build1 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
-                              'build-name', 'build1')
+                              'build - name', 'build1')
     for_build2 = os.path.join(self.manager.manifest_dir,
                               self.manager.rel_working_dir,
-                              'build-name', 'build2')
+                              'build - name', 'build2')
 
     self._FinishBuild(manifest, for_build1, dir_pfx, 'fail', wait=3)
     thread = self._FinishBuild(manifest, for_build2, dir_pfx, 'pass', wait=10)

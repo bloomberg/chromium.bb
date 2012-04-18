@@ -124,6 +124,9 @@ _settings = dict(
 # internal -- Whether this is an internal build config.
   internal=False,
 
+# branch -- Whether this is a branched build config. Used for pfq logic.
+  branch=False,
+
 # useflags -- emerge use flags to use while setting up the board, building
 #             packages, making images, etc.
   useflags=None,
@@ -225,6 +228,11 @@ _settings = dict(
 # manifest_version -- Whether we are using the manifest_version repo that stores
 #                     per-build manifests.
   manifest_version=False,
+
+# TODO(sosa): Merge with overlays == both once unified waterfall launched.
+# unified_manifest_version -- If True, publish manifests to both manifest
+# version repositories.
+  unified_manifest_version=False,
 
 # use_lkgm -- Use the Last Known Good Manifest blessed by the pre-flight-queue
   use_lkgm=False,
@@ -623,7 +631,7 @@ _config.add_raw_config('x86-generic-asan',
 
 internal_pfq = internal.derive(pfq, overlays=constants.PRIVATE_OVERLAYS)
 internal_pfq_branch = internal_pfq.derive(overlays=constants.BOTH_OVERLAYS,
-                                          trybot_list=False)
+                                          trybot_list=False, branch=True)
 internal_paladin = internal.derive(paladin, overlays=constants.PRIVATE_OVERLAYS)
 internal_incremental = internal.derive(incremental,
                                        overlays=constants.BOTH_OVERLAYS)
@@ -691,6 +699,25 @@ internal_paladin.add_config('kiev-paladin',
   boards=['kiev'],
   important=False,
   paladin_builder_name='kiev paladin',
+)
+
+# TODO(sosa): Test configs for unified paladin builds.
+internal_paladin.add_config('unified-mario-paladin',
+  master=True,
+  push_overlays=constants.BOTH_OVERLAYS,
+  overlays=constants.BOTH_OVERLAYS,
+  boards=['x86-mario'],
+  prebuilts=None,
+  unified_manifest_version=True,
+  paladin_builder_name='unified mario paladin',
+)
+
+internal_paladin.add_config('unified-x86-generic',
+  overlays=constants.PUBLIC_OVERLAYS,
+  boards=['x86-generic'],
+  prebuilts=None,
+  unified_manifest_version=True,
+  paladin_builder_name='unified x86-generic paladin',
 )
 
 internal_incremental.add_config('mario-incremental',
