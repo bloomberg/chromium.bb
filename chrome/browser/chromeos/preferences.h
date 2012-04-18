@@ -117,8 +117,6 @@ class Preferences : public content::NotificationObserver {
   BooleanPrefMember disable_gdata_hosted_files_;
 
   // Input method preferences.
-  StringPrefMember hotkey_next_engine_in_menu_;
-  StringPrefMember hotkey_previous_engine_;
   StringPrefMember preferred_languages_;
   StringPrefMember preload_engines_;
   StringPrefMember current_input_method_;

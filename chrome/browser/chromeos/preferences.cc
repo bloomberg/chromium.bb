@@ -134,13 +134,6 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod,
                             "",
                             PrefService::UNSYNCABLE_PREF);
-  // We don't sync input method hotkeys since they're not configurable.
-  prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngineInMenu,
-                            language_prefs::kHotkeyNextEngineInMenu,
-                            PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterStringPref(prefs::kLanguageHotkeyPreviousEngine,
-                            language_prefs::kHotkeyPreviousEngine,
-                            PrefService::UNSYNCABLE_PREF);
   // We don't sync the list of input methods and preferred languages since a
   // user might use two or more devices with different hardware keyboards.
   // crosbug.com/15181
@@ -278,10 +271,6 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
                                    prefs, this);
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, this);
-  hotkey_next_engine_in_menu_.Init(
-      prefs::kLanguageHotkeyNextEngineInMenu, prefs, this);
-  hotkey_previous_engine_.Init(
-      prefs::kLanguageHotkeyPreviousEngine, prefs, this);
   preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
                             prefs, this);
   preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, this);
@@ -422,18 +411,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       UMA_HISTOGRAM_BOOLEAN("Mouse.PrimaryButtonRight.Started", right);
   }
 
-  if (!pref_name || *pref_name == prefs::kLanguageHotkeyNextEngineInMenu) {
-    SetLanguageConfigStringListAsCSV(
-        language_prefs::kHotKeySectionName,
-        language_prefs::kNextEngineInMenuConfigName,
-        hotkey_next_engine_in_menu_.GetValue());
-  }
-  if (!pref_name || *pref_name == prefs::kLanguageHotkeyPreviousEngine) {
-    SetLanguageConfigStringListAsCSV(
-        language_prefs::kHotKeySectionName,
-        language_prefs::kPreviousEngineConfigName,
-        hotkey_previous_engine_.GetValue());
-  }
   if (!pref_name || *pref_name == prefs::kLanguagePreferredLanguages) {
     // Unlike kLanguagePreloadEngines and some other input method
     // preferencs, we don't need to send this to ibus-daemon.

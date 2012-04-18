@@ -16,11 +16,6 @@ namespace language_prefs {
 const char kGeneralSectionName[] = "general";
 const char kHotKeySectionName[] = "general/hotkey";
 const char kPreloadEnginesConfigName[] = "preload_engines";
-const char kNextEngineInMenuConfigName[] = "next_engine_in_menu";
-const char kPreviousEngineConfigName[] = "previous_engine";
-// The following two variables are for deleting ibus-daemon's default hotkeys.
-const char kHotkeyNextEngineInMenu[] = "";
-const char kHotkeyPreviousEngine[] = "";
 
 // ---------------------------------------------------------------------------
 // For Traditional Chinese input method (ibus-mozc-chewing)
