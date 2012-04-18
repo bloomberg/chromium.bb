@@ -137,6 +137,13 @@ struct shell_surface {
 
 	struct ping_timer *ping_timer;
 
+	struct {
+		struct weston_animation current;
+		int exists;
+		int fading_in;
+		uint32_t timestamp;
+	} unresponsive_animation;
+
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
 	struct wl_list link;
@@ -293,6 +300,68 @@ static const struct wl_pointer_grab_interface move_grab_interface = {
 	move_grab_button,
 };
 
+static void
+unresponsive_surface_fade(struct shell_surface *shsurf, bool reverse)
+{
+	shsurf->unresponsive_animation.fading_in = reverse ? 0 : 1;
+
+	if(!shsurf->unresponsive_animation.exists) {
+		wl_list_insert(&shsurf->surface->compositor->animation_list,
+		       &shsurf->unresponsive_animation.current.link);
+		shsurf->unresponsive_animation.exists = 1;
+		shsurf->unresponsive_animation.timestamp = weston_compositor_get_time();
+		weston_surface_damage(shsurf->surface);
+	}
+}
+
+static void
+ping_timeout_fade_frame(struct weston_animation *animation,
+		struct weston_output *output, uint32_t msecs)
+{
+	struct shell_surface *shsurf =
+		container_of(animation, struct shell_surface, unresponsive_animation.current);
+	struct weston_surface *surface = shsurf->surface;
+	unsigned int step = 32;
+
+	if (!surface || !shsurf)
+		return;
+
+	if (shsurf->unresponsive_animation.fading_in) {
+		while (step < msecs - shsurf->unresponsive_animation.timestamp) {
+			if (surface->saturation > 1)
+				surface->saturation -= 5;
+			if (surface->brightness > 200)
+				surface->brightness--;
+
+			shsurf->unresponsive_animation.timestamp += step;
+		}
+
+		if (surface->saturation <= 1 && surface->brightness <= 200) {
+			wl_list_remove(&shsurf->unresponsive_animation.current.link);
+			shsurf->unresponsive_animation.exists = 0;
+		}
+	}
+	else {
+		while (step < msecs - shsurf->unresponsive_animation.timestamp) {
+			if (surface->saturation < 255)
+				surface->saturation += 5;
+			if (surface->brightness < 255)
+				surface->brightness++;
+
+			shsurf->unresponsive_animation.timestamp += step;
+		}
+
+		if (surface->saturation >= 255 && surface->brightness >= 255) {
+			surface->saturation = surface->brightness = 255;
+			wl_list_remove(&shsurf->unresponsive_animation.current.link);
+			shsurf->unresponsive_animation.exists = 0;
+		}
+	}
+
+	surface->geometry.dirty = 1;
+	weston_surface_damage(surface);
+}
+
 static int
 ping_timeout_handler(void *data)
 {
@@ -307,6 +376,7 @@ ping_timeout_handler(void *data)
 	} else {
 		/* Client is not responding */
 		shsurf->unresponsive = 1;
+		unresponsive_surface_fade(shsurf, false);
 	}
 
 	return 1;
@@ -349,6 +419,10 @@ shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 		return;
 
 	if (shsurf->ping_timer->serial == serial) {
+		if (shsurf->unresponsive) {
+			/* Received pong from previously unresponsive client */
+			unresponsive_surface_fade(shsurf, true);
+		}
 		shsurf->ping_timer->pong_received = 1;
 		shsurf->unresponsive = 0;
 		free(shsurf->ping_timer);
@@ -1046,6 +1120,9 @@ shell_get_shell_surface(struct wl_client *client,
 	surface->configure = shell_surface_configure;
 
 	shsurf->unresponsive = 0;
+	shsurf->unresponsive_animation.exists = 0;
+	shsurf->unresponsive_animation.fading_in = 0;
+	shsurf->unresponsive_animation.current.frame = ping_timeout_fade_frame;
 
 	shsurf->resource.destroy = destroy_shell_surface;
 	shsurf->resource.object.id = id;
