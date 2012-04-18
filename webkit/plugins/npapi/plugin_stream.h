@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,10 +25,10 @@ class PluginStream : public base::RefCounted<PluginStream> {
  public:
   // Create a new PluginStream object.  If needNotify is true, then the
   // plugin will be notified when the stream has been fully sent.
-  PluginStream(PluginInstance *instance,
-               const char *url,
+  PluginStream(PluginInstance* instance,
+               const char* url,
                bool need_notify,
-               void *notify_data);
+               void* notify_data);
 
   // In case of a redirect, this can be called to update the url.  But it must
   // be called before Open().
@@ -48,7 +48,7 @@ class PluginStream : public base::RefCounted<PluginStream> {
             bool request_is_seekable);
 
   // Writes to the stream.
-  int Write(const char *buf, const int len, int data_offset);
+  int Write(const char* buf, const int len, int data_offset);
 
   // Write the result as a file.
   void WriteAsFile();
@@ -84,6 +84,7 @@ class PluginStream : public base::RefCounted<PluginStream> {
   virtual ~PluginStream();
 
   PluginInstance* instance() { return instance_.get(); }
+
   // Check if the stream is open.
   bool open() { return opened_; }
 
@@ -93,6 +94,8 @@ class PluginStream : public base::RefCounted<PluginStream> {
   std::string pending_redirect_url_;
 
  private:
+  // Per platform method to reset the temporary file name and handle.
+  void ResetTempFilenameAndHandle();
 
   // Open a temporary file for this stream.
   // If successful, will set temp_file_name_, temp_file_handle_, and
@@ -103,32 +106,32 @@ class PluginStream : public base::RefCounted<PluginStream> {
   void CloseTempFile();
 
   // Sends the data to the file. Called From WriteToFile.
-  size_t WriteBytes(const char *buf, size_t length);
+  size_t WriteBytes(const char* buf, size_t length);
 
   // Sends the data to the file if it's open.
-  bool WriteToFile(const char *buf, size_t length);
+  bool WriteToFile(const char* buf, size_t length);
 
   // Sends the data to the plugin.  If it's not ready, handles buffering it
   // and retrying later.
-  bool WriteToPlugin(const char *buf, const int length, const int data_offset);
+  bool WriteToPlugin(const char* buf, const int length, const int data_offset);
 
   // Send the data to the plugin, returning how many bytes it accepted, or -1
   // if an error occurred.
-  int TryWriteToPlugin(const char *buf, const int length,
+  int TryWriteToPlugin(const char* buf, const int length,
                        const int data_offset);
 
   // The callback which calls TryWriteToPlugin.
   void OnDelayDelivery();
 
   // Returns true if the temp file is valid and open for writing.
-  bool TempFileIsValid();
+  bool TempFileIsValid() const;
 
  private:
   NPStream                      stream_;
   std::string                   headers_;
   scoped_refptr<PluginInstance> instance_;
   bool                          notify_needed_;
-  void *                        notify_data_;
+  void*                         notify_data_;
   bool                          close_on_write_data_;
   uint16                        requested_plugin_mode_;
   bool                          opened_;

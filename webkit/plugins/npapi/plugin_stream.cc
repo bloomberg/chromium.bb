@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 // TODO : Support SEEKABLE=true in NewStream
 
 #include "webkit/plugins/npapi/plugin_stream.h"
+
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -19,14 +21,39 @@
 namespace webkit {
 namespace npapi {
 
+PluginStream::PluginStream(
+    PluginInstance* instance,
+    const char* url,
+    bool need_notify,
+    void* notify_data)
+    : instance_(instance),
+      notify_needed_(need_notify),
+      notify_data_(notify_data),
+      close_on_write_data_(false),
+      requested_plugin_mode_(NP_NORMAL),
+      opened_(false),
+      data_offset_(0),
+      seekable_stream_(false) {
+  memset(&stream_, 0, sizeof(stream_));
+  stream_.url = base::strdup(url);
+  ResetTempFilenameAndHandle();
+}
+
 PluginStream::~PluginStream() {
   // always close our temporary files.
   CloseTempFile();
   free(const_cast<char*>(stream_.url));
 }
 
-bool PluginStream::Open(const std::string &mime_type,
-                        const std::string &headers,
+void PluginStream::UpdateUrl(const char* url) {
+  DCHECK(!opened_);
+  free(const_cast<char*>(stream_.url));
+  stream_.url = base::strdup(url);
+  pending_redirect_url_.clear();
+}
+
+bool PluginStream::Open(const std::string& mime_type,
+                        const std::string& headers,
                         uint32 length,
                         uint32 last_modified,
                         bool request_is_seekable) {
@@ -48,7 +75,7 @@ bool PluginStream::Open(const std::string &mime_type,
     }
   }
 
-  const char *char_mime_type = "application/x-unknown-content-type";
+  const char* char_mime_type = "application/x-unknown-content-type";
   std::string temp_mime_type;
   if (!mime_type.empty()) {
     char_mime_type = mime_type.c_str();
@@ -65,7 +92,7 @@ bool PluginStream::Open(const std::string &mime_type,
   }
 
   // Silverlight expects a valid mime type
-  DCHECK(strlen(char_mime_type) != 0);
+  DCHECK_NE(0U, strlen(char_mime_type));
   NPError err = instance_->NPP_NewStream((NPMIMEType)char_mime_type,
                                          &stream_, seekable_stream,
                                          &requested_plugin_mode_);
@@ -82,16 +109,17 @@ bool PluginStream::Open(const std::string &mime_type,
   // If the plugin has requested certain modes, then we need a copy
   // of this file on disk.  Open it and save it as we go.
   if (requested_plugin_mode_ == NP_ASFILEONLY ||
-    requested_plugin_mode_ == NP_ASFILE) {
-    if (OpenTempFile() == false)
+      requested_plugin_mode_ == NP_ASFILE) {
+    if (OpenTempFile() == false) {
       return false;
+    }
   }
 
   mime_type_ = char_mime_type;
   return true;
 }
 
-int PluginStream::Write(const char *buffer, const int length,
+int PluginStream::Write(const char* buffer, const int length,
                         int data_offset) {
   // There may be two streams to write to - the plugin and the file.
   // It is unclear what to do if we cannot write to both.  The rules of
@@ -102,13 +130,14 @@ int PluginStream::Write(const char *buffer, const int length,
 
   DCHECK(opened_);
   if (WriteToFile(buffer, length) &&
-      WriteToPlugin(buffer, length, data_offset))
+      WriteToPlugin(buffer, length, data_offset)) {
     return length;
+  }
 
   return -1;
 }
 
-bool PluginStream::WriteToFile(const char *buf, size_t length) {
+bool PluginStream::WriteToFile(const char* buf, size_t length) {
   // For ASFILEONLY, ASFILE, and SEEK modes, we need to write
   // to the disk
   if (TempFileIsValid() &&
@@ -127,17 +156,18 @@ bool PluginStream::WriteToFile(const char *buf, size_t length) {
   return true;
 }
 
-bool PluginStream::WriteToPlugin(const char *buf, const int length,
+bool PluginStream::WriteToPlugin(const char* buf, const int length,
                                  const int data_offset) {
   // For NORMAL and ASFILE modes, we send the data to the plugin now
   if (requested_plugin_mode_ != NP_NORMAL &&
       requested_plugin_mode_ != NP_ASFILE &&
-      requested_plugin_mode_ != NP_SEEK)
+      requested_plugin_mode_ != NP_SEEK) {
     return true;
+  }
 
   int written = TryWriteToPlugin(buf, length, data_offset);
   if (written == -1)
-      return false;
+    return false;
 
   if (written < length) {
     // Buffer the remaining data.
@@ -156,9 +186,8 @@ bool PluginStream::WriteToPlugin(const char *buf, const int length,
 void PluginStream::OnDelayDelivery() {
   // It is possible that the plugin stream may have closed before the task
   // was hit.
-  if (!opened_) {
+  if (!opened_)
     return;
-  }
 
   int size = static_cast<int>(delivery_data_.size());
   int written = TryWriteToPlugin(&delivery_data_.front(), size,
@@ -170,7 +199,7 @@ void PluginStream::OnDelayDelivery() {
   }
 }
 
-int PluginStream::TryWriteToPlugin(const char *buf, const int length,
+int PluginStream::TryWriteToPlugin(const char* buf, const int length,
                                    const int data_offset) {
   int byte_offset = 0;
 
