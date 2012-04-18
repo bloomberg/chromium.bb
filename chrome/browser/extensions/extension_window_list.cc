@@ -43,7 +43,7 @@ ExtensionWindowController* ExtensionWindowList::FindWindowById(
   for (WindowList::const_iterator iter = windows().begin();
        iter != windows().end(); ++iter) {
     if ((*iter)->MatchesProfile(profile, match_type)) {
-      if ((*iter)->GetSessionId().id() == id)
+      if ((*iter)->GetWindowId() == id)
         return *iter;
     }
   }

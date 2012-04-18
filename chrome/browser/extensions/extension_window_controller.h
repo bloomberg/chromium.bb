@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_WINDOW_CONTROLLER_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
@@ -47,8 +49,11 @@ class ExtensionWindowController {
   // set common properties).
   virtual base::DictionaryValue* CreateWindowValue() const;
 
-  // Return a session id uniquely identifying the window.
-  virtual const SessionID& GetSessionId() const = 0;
+  // Return an id uniquely identifying the window.
+  virtual int GetWindowId() const = 0;
+
+  // Return the type name for the window.
+  virtual std::string GetWindowTypeText() const = 0;
 
   // Populates a dictionary for the Window object, including a list of tabs.
   virtual base::DictionaryValue* CreateWindowValueWithTabs() const = 0;

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/extensions/extension_window_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_view_type.h"
@@ -26,14 +27,14 @@
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
-using content::RenderViewHost;
-
 namespace {
 const int kMinWidth = 100;
 const int kMinHeight = 100;
 const int kDefaultWidth = 200;
 const int kDefaultHeight = 300;
 }
+
+namespace keys = extension_tabs_module_constants;
 
 namespace internal {
 
@@ -68,7 +69,8 @@ class PanelHost : public content::WebContentsDelegate,
                               bool user_gesture) OVERRIDE;
 
   // content::WebContentsObserver implementation:
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReady() OVERRIDE;
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -144,7 +146,7 @@ void PanelHost::AddNewContents(content::WebContents* source,
   browser->AddWebContents(new_contents, disposition, initial_pos, user_gesture);
 }
 
-void PanelHost::RenderViewCreated(RenderViewHost* render_view_host) {
+void PanelHost::RenderViewCreated(content::RenderViewHost* render_view_host) {
 }
 
 void PanelHost::RenderViewReady() {
@@ -177,11 +179,11 @@ class PanelExtensionWindowController : public ExtensionWindowController {
                                  PanelHost* panel_host);
 
   // Overriden from ExtensionWindowController:
-  virtual const SessionID& GetSessionId() const OVERRIDE;
+  virtual int GetWindowId() const OVERRIDE;
+  virtual std::string GetWindowTypeText() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValue() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValueWithTabs() const OVERRIDE;
-  virtual bool CanClose(
-      ExtensionWindowController::Reason* reason) const OVERRIDE;
+  virtual bool CanClose(Reason* reason) const OVERRIDE;
   virtual void SetFullscreenMode(bool is_fullscreen,
                                  const GURL& extension_url) const OVERRIDE;
 
@@ -200,21 +202,17 @@ PanelExtensionWindowController::PanelExtensionWindowController(
       panel_host_(panel_host) {
 }
 
-const SessionID& PanelExtensionWindowController::GetSessionId() const {
-  return panel_view_->session_id();
+int PanelExtensionWindowController::GetWindowId() const {
+  return static_cast<int>(panel_view_->session_id().id());
 }
 
-namespace keys = extension_tabs_module_constants;
+std::string PanelExtensionWindowController::GetWindowTypeText() const {
+  return keys::kWindowTypeValuePanel;
+}
 
 base::DictionaryValue*
 PanelExtensionWindowController::CreateWindowValue() const {
   DictionaryValue* result = ExtensionWindowController::CreateWindowValue();
-
-  result->SetString(keys::kWindowTypeKey, keys::kWindowTypeValuePanel);
-  std::string window_state = window()->IsMinimized() ?
-      keys::kShowStateValueMinimized : keys::kShowStateValueNormal;
-  result->SetString(keys::kShowStateKey, window_state);
-
   return result;
 }
 
@@ -230,8 +228,7 @@ PanelExtensionWindowController::CreateWindowValueWithTabs() const {
   return result;
 }
 
-bool PanelExtensionWindowController::CanClose(
-    ExtensionWindowController::Reason* reason) const {
+bool PanelExtensionWindowController::CanClose(Reason* reason) const {
   return true;
 }
 
@@ -358,6 +355,10 @@ bool PanelViewAura::IsMaximized() const {
 
 bool PanelViewAura::IsMinimized() const {
   return GetWidget()->IsMinimized();
+}
+
+bool PanelViewAura::IsFullscreen() const {
+  return GetWidget()->IsFullscreen();
 }
 
 gfx::Rect PanelViewAura::GetRestoredBounds() const {

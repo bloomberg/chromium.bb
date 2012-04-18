@@ -17,21 +17,25 @@ BrowserExtensionWindowController::BrowserExtensionWindowController(
       browser_(browser) {
 }
 
-const SessionID& BrowserExtensionWindowController::GetSessionId() const {
-  return browser_->session_id();
+int BrowserExtensionWindowController::GetWindowId() const {
+  return static_cast<int>(browser_->session_id().id());
 }
 
 namespace keys = extension_tabs_module_constants;
 
+std::string BrowserExtensionWindowController::GetWindowTypeText() const {
+  if (browser_->is_type_popup())
+    return keys::kWindowTypeValuePopup;
+  if (browser_->is_type_panel())
+    return keys::kWindowTypeValuePanel;
+  if (browser_->is_app())
+    return keys::kWindowTypeValueApp;
+  return keys::kWindowTypeValueNormal;
+}
+
 base::DictionaryValue*
 BrowserExtensionWindowController::CreateWindowValue() const {
   DictionaryValue* result = ExtensionWindowController::CreateWindowValue();
-
-  result->SetString(keys::kWindowTypeKey,
-                    ExtensionTabUtil::GetWindowTypeText(browser_));
-  result->SetString(keys::kShowStateKey,
-                    ExtensionTabUtil::GetWindowShowStateText(browser_));
-
   return result;
 }
 

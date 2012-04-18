@@ -64,6 +64,10 @@ bool ShellWindowCocoa::IsMinimized() const {
   return [window() isMiniaturized];
 }
 
+bool ShellWindowCocoa::IsFullscreen() const {
+  return false;
+}
+
 gfx::Rect ShellWindowCocoa::GetRestoredBounds() const {
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];

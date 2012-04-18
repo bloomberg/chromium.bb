@@ -146,6 +146,10 @@ bool ShellWindowViews::IsMinimized() const {
   return window_->IsMinimized();
 }
 
+bool ShellWindowViews::IsFullscreen() const {
+  return window_->IsFullscreen();
+}
+
 gfx::Rect ShellWindowViews::GetRestoredBounds() const {
   return window_->GetRestoredBounds();
 }

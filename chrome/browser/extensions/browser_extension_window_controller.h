@@ -15,7 +15,8 @@ class BrowserExtensionWindowController : public ExtensionWindowController {
   explicit BrowserExtensionWindowController(Browser* browser);
 
   // ExtensionWindowController implementation.
-  virtual const SessionID& GetSessionId() const OVERRIDE;
+  virtual int GetWindowId() const OVERRIDE;
+  virtual std::string GetWindowTypeText() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValue() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValueWithTabs() const OVERRIDE;
   virtual bool CanClose(Reason* reason) const OVERRIDE;

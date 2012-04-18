@@ -28,6 +28,9 @@ class BaseWindow {
   // Returns true if the window is minimized.
   virtual bool IsMinimized() const = 0;
 
+  // Returns true if the window is full screen.
+  virtual bool IsFullscreen() const = 0;
+
   // Returns the nonmaximized bounds of the window (even if the window is
   // currently maximized or minimized) in terms of the screen coordinates.
   virtual gfx::Rect GetRestoredBounds() const = 0;

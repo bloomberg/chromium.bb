@@ -59,29 +59,6 @@ int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
   return tab ? tab->restore_tab_helper()->window_id().id() : -1;
 }
 
-// Return the type name for a browser window type.
-std::string ExtensionTabUtil::GetWindowTypeText(const Browser* browser) {
-  if (browser->is_type_popup())
-    return keys::kWindowTypeValuePopup;
-  if (browser->is_type_panel())
-    return keys::kWindowTypeValuePanel;
-  if (browser->is_app())
-    return keys::kWindowTypeValueApp;
-  return keys::kWindowTypeValueNormal;
-}
-
-// Return the state name for a browser window state.
-std::string ExtensionTabUtil::GetWindowShowStateText(const Browser* browser) {
-  BrowserWindow* window = browser->window();
-  if (window->IsMinimized())
-    return keys::kShowStateValueMinimized;
-  if (window->IsFullscreen())
-    return keys::kShowStateValueFullscreen;
-  if (window->IsMaximized())
-    return keys::kShowStateValueMaximized;
-  return keys::kShowStateValueNormal;
-}
-
 DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents) {
   // Find the tab strip and index of this guy.
   TabStripModel* tab_strip = NULL;

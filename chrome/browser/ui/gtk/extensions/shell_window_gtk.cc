@@ -80,6 +80,10 @@ bool ShellWindowGtk::IsMinimized() const {
   return (state_ & GDK_WINDOW_STATE_ICONIFIED);
 }
 
+bool ShellWindowGtk::IsFullscreen() const {
+  return false;
+}
+
 gfx::Rect ShellWindowGtk::GetRestoredBounds() const {
   return restored_bounds_;
 }

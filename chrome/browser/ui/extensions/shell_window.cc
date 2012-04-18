@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
@@ -23,7 +24,8 @@ class ShellWindowController : public ExtensionWindowController {
   ShellWindowController(ShellWindow* shell_window, Profile* profile);
 
   // Overriden from ExtensionWindowController
-  virtual const SessionID& GetSessionId() const OVERRIDE;
+  virtual int GetWindowId() const OVERRIDE;
+  virtual std::string GetWindowTypeText() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValue() const OVERRIDE;
   virtual base::DictionaryValue* CreateWindowValueWithTabs() const OVERRIDE;
   virtual bool CanClose(Reason* reason) const OVERRIDE;
@@ -43,26 +45,18 @@ ShellWindowController::ShellWindowController(
       shell_window_(shell_window) {
 }
 
-const SessionID& ShellWindowController::GetSessionId() const {
-  return shell_window_->session_id();
+int ShellWindowController::GetWindowId() const {
+  return static_cast<int>(shell_window_->session_id().id());
 }
 
 namespace keys = extension_tabs_module_constants;
 
+std::string ShellWindowController::GetWindowTypeText() const {
+  return keys::kWindowTypeValueShell;
+}
+
 base::DictionaryValue* ShellWindowController::CreateWindowValue() const {
   DictionaryValue* result = ExtensionWindowController::CreateWindowValue();
-
-  result->SetString(keys::kWindowTypeKey, keys::kWindowTypeValueShell);
-  std::string window_state;
-  if (window()->IsMinimized()) {
-    window_state = keys::kShowStateValueMinimized;
-  } else if (window()->IsMaximized()) {
-    window_state = keys::kShowStateValueMaximized;
-  } else {
-    window_state = keys::kShowStateValueNormal;
-  }
-  result->SetString(keys::kShowStateKey, window_state);
-
   return result;
 }
 

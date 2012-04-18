@@ -915,7 +915,8 @@ bool QueryTabsFunction::RunImpl() {
       continue;
 
     if (!window_type.empty() &&
-        window_type != ExtensionTabUtil::GetWindowTypeText(*browser))
+        window_type !=
+        (*browser)->extension_window_controller()->GetWindowTypeText())
       continue;
 
     TabStripModel* tab_strip = (*browser)->tabstrip_model();

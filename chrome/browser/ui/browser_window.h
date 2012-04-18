@@ -127,7 +127,6 @@ class BrowserWindow : public BaseWindow {
   virtual void UpdateFullscreenExitBubbleContent(
       const GURL& url,
       FullscreenExitBubbleType bubble_type) = 0;
-  virtual bool IsFullscreen() const = 0;
 
   // Returns true if the fullscreen bubble is visible.
   virtual bool IsFullscreenBubbleVisible() const = 0;
