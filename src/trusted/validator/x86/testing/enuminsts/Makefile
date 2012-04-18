@@ -9,12 +9,16 @@
 # To build the 32bit test use:
 #   shell> make BITS=32
 # note: run "make clean" between 32bit and 64bit builds.
+
+# Defines which version (64 vs 32 bit) you are generating.
 BITS=64
 
 # XED - Defines whether the xed decoder should be built into the
 # executable.  NOTE: If this is defined as XED=1, you must have the
 # corresponding PIN tarfile in the same directory, so that it can
 # untar it and add the corresponding library routines.
+
+# NACLV - If defined, the nacl revision number the executable was built using.
 
 # Defines the pin version to use. Can be overridden on the command line,
 # so that other versions can be used.
@@ -29,12 +33,19 @@ NACLDIR=../../../../../..
 NACLSCONS =$(NACLDIR)/scons-out/opt-linux-x86-$(BITS)
 NACLSCONS32 =$(NACLDIR)/scons-out/opt-linux-x86-32
 
+# Define library that must be inserted into NACLLIBS (below) if compiling for 32-bits.
+ifeq ($(BITS),32)
+LIB32INSERT=$(NACLSCONS32)/lib/libncdis_seg_sfi_verbose_x86_32.a
+else
+LIB32INSERT=
+endif
+
 # NOTE: we need to include some print routines from x86-32 that
 # are not in x86-64.
 NACLLIBS=\
 	$(NACLSCONS)/lib/libncdis_util_x86_$(BITS).a \
 	$(NACLSCONS)/lib/libncvalidate_x86_$(BITS).a \
-	$(NACLSCONS32)/lib/libncdis_seg_sfi_verbose_x86_32.a \
+	$(LIB32INSERT) \
 	$(NACLSCONS)/lib/libncval_reg_sfi_x86_$(BITS).a \
 	$(NACLSCONS)/lib/libnc_decoder_x86_$(BITS).a \
 	$(NACLSCONS)/lib/libnc_opcode_modeling_verbose_x86_$(BITS).a \
@@ -52,7 +63,7 @@ NACLLIBS=\
 NACLINCLUDE=-I$(NACLDIR)/..
 NACLDEFS=-DNACL_TARGET_SUBARCH=$(BITS) -DNACL_BUILD_SUBARCH=$(BITS) \
 	 -DNACL_TARGET_ARCH=x86 \
-         -DNACL_LINUX -DNACL_TRUSTED_BUT_NOT_TCB
+         -DNACL_LINUX -DNACL_TRUSTED_BUT_NOT_TCB -DNACL_PINV='"$(PINV)"'
 
 # Define XED specific command line arguments when including NaCl xed decoder:
 #    XEDLIB - libraries containing implementation of xed.
@@ -74,11 +85,20 @@ XEDDEFS=
 XEDSUFFIX=
 endif
 
-SUFFIX=-$(BITS)$(XEDSUFFIX)
+# Define NACLV specific changes when NACLV is defined.
+ifdef NACLV
+NACLVDEFS=-DNACL_REVISION=$(NACLV)
+NACLVSUFFIX=-$(NACLV)
+else
+NACLVDEFS=
+NACLVSUFFIX=
+endif
+
+SUFFIX=-$(BITS)$(XEDSUFFIX)$(NACLVSUFFIX)
 OPTDBG=-O3
 CC=gcc -m$(BITS)
 CXX=g++ -m$(BITS)
-CCARGS = -c $(NACLDEFS) $(XEDDEFS) $(XEDINCLUDE) $(NACLINCLUDE)
+CCARGS = -c $(NACLDEFS) $(NACLVDEFS) $(XEDDEFS) $(XEDINCLUDE) $(NACLINCLUDE)
 
 enuminsts$(SUFFIX):$(XEDLIB) enuminsts$(SUFFIX).o str_utils$(SUFFIX).o \
 		$(XEDDECODER) nacl_tester$(SUFFIX).o input_tester$(SUFFIX).o \

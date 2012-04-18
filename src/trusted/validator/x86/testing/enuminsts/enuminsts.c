@@ -46,6 +46,11 @@ static Bool gSilent = FALSE;
  */
 static Bool gSkipRepeatReports = FALSE;
 
+/* When true, check opcode mnemonic differences when processing each
+ * instruction.
+ */
+static Bool gCheckMnemonics = TRUE;
+
 /* When true, check for operand differences when processing each instruction. */
 static Bool gCheckOperands = FALSE;
 
@@ -135,6 +140,57 @@ static ComparedInstruction gCinst;
 /* The name of the executable (i.e. argv[0] from the command line). */
 static char *gArgv0 = "argv0";
 
+static inline const char* BoolName(Bool b) {
+  return b ? "true" : "false";
+}
+
+/* Print out the bindings to command line arguments. */
+static void PrintBindings(ComparedInstruction* cinst) {
+  size_t i;
+  for (i = 0; i < cinst->_enumerator._num_decoders; ++i) {
+    fprintf(stderr, "--%s\n", cinst->_enumerator._decoder[i]->_id_name);
+  }
+  fprintf(stderr, "--checkmnemonics=%s\n", BoolName(gCheckMnemonics));
+  fprintf(stderr, "--checkoperands=%s\n", BoolName(gCheckOperands));
+  for (i = 0; i < cinst->_enumerator._num_decoders; ++i) {
+      fprintf(stderr, "--%s=%s\n",
+              (cinst->_enumerator._decoder[i]->_legal_only
+               ? "legal" : "illegal"),
+              cinst->_enumerator._decoder[i]->_id_name);
+  }
+  fprintf(stderr, "--nacllegal=%s\n", BoolName(gNaClLegal));
+#ifdef NACL_REVISION
+  fprintf(stderr, "--nacl_revision=%d\n", NACL_REVISION);
+#endif
+  if (gOpcode >= 0) fprintf(stderr, "--opcode=0x%02x\n", gOpcode);
+  for (i = 0; i < cinst->_enumerator._num_decoders; ++i) {
+    if (cinst->_enumerator._decoder[i]->_print_opcode_sequence) {
+      fprintf(stderr, "--opcode_bytes=%s\n",
+              cinst->_enumerator._decoder[i]->_id_name);
+    }
+  }
+  for (i = 0; i < cinst->_enumerator._num_decoders; ++i) {
+    if (cinst->_enumerator._decoder[i]->_print_opcode_sequence_plus_desc) {
+      fprintf(stderr, "--opcode_bytes_plus_desc=%s\n",
+              cinst->_enumerator._decoder[i]->_id_name);
+    }
+  }
+  for (i = 0; i < cinst->_enumerator._num_decoders; ++i) {
+    if (cinst->_enumerator._decoder[i]->_print) {
+      fprintf(stderr, "--print=%s\n", cinst->_enumerator._decoder[i]->_id_name);
+    }
+  }
+#ifdef NACL_XED_DECODER
+  fprintf(stderr, "--pin_version=\"%s\"\n", NACL_PINV);
+#endif
+  if (gPrefix >= 0) fprintf(stderr, "--prefix=0x%08x\n", gPrefix);
+  fprintf(stderr, "--nops=%s\n", BoolName(gNoCompareNops));
+  fprintf(stderr, "--skipcontiguous=%s\n", BoolName(gSkipContiguous));
+  fprintf(stderr, "--verbose=%s\n", BoolName(gVerbose));
+  fprintf(stderr, "--xedimplemented=%s\n", BoolName(gXedImplemented));
+  exit(1);
+}
+
 /* Prints out summary of how to use this executable. and then exits. */
 static void Usage() {
   size_t i;
@@ -158,6 +214,10 @@ static void Usage() {
   }
   fprintf(stderr, "\n");
   fprintf(stderr, "Options are:\n");
+  fprintf(stderr, "    --bindings: Prints out current (command-line) "
+          "bindings\n");
+  fprintf(stderr, "    --checkmnemonics: enables opcode mnemonic "
+          "comparisons\n");
   fprintf(stderr, "    --checkoperands: enables operand comparison (slow)\n");
   fprintf(stderr, "    --ignore_mnemonic=file: ignore mnemonic name "
           "comparison\n");
@@ -175,6 +235,12 @@ static void Usage() {
           "decoder XX\n");
   fprintf(stderr, "    --nacllegal: only compare NaCl legal instructions\n");
   fprintf(stderr, "        that are legal for nacl decoder(s).\n");
+#ifdef NACL_REVISION
+  fprintf(stderr, "    --nacl_revision: print the nacl revision used to build\n"
+          "        the nacl decoder\n");
+#endif
+  fprintf(stderr, "    --opcode=XX: only process given opcode XX for "
+          "each prefix\n");
   fprintf(stderr, "    --opcode_bytes=XX: Prints out opcode bytes for set of\n"
           "        enumerated instructions. To be used by decoder --in\n");
   fprintf(stderr,
@@ -186,9 +252,11 @@ static void Usage() {
   fprintf(stderr, "                for the specified decoder XX (may be "
           "repeated).\n");
   fprintf(stderr, "                Also registers decoder XX if needed.\n");
-  fprintf(stderr, "    --prefix=XX: only process given prefix\n");
-  fprintf(stderr, "    --opcode=XX: only process given opcode for "
-          "each prefix\n");
+#ifdef NACL_XED_DECODER
+  fprintf(stderr, "    --pin_version: Prints out pin version used for xed "
+          "decoder\n");
+#endif
+  fprintf(stderr, "    --prefix=XX: only process given prefix XX\n");
   fprintf(stderr, "    --nops: Don't operand compare nops.\n");
   fprintf(stderr, "    --skipcontiguous: Only skip contiguous errors\n");
   fprintf(stderr, "    --verbose: add verbose comments to output\n");
@@ -625,12 +693,10 @@ static Bool AreInstructionLengthsEqual(ComparedInstruction *cinst) {
   return TRUE;
 }
 
-/* Print out decodings for print only directives. Returns true
- * if print only directives followed. This function is used
- * to short circuit instruction comparison, when printing of
- * filtered instructions on the command line is specified.
+/* Print out decodings if specified on the command line. Returns true
+ * instruction(s) are printed. This function is used
  */
-static Bool PrintInstOnly(ComparedInstruction *cinst) {
+static Bool PrintInst(ComparedInstruction *cinst) {
   Bool result = FALSE;
   size_t i;
   for (i = 0; i < cinst->_enumerator._num_decoders; ++i) {
@@ -685,16 +751,16 @@ static void TryOneInstruction(ComparedInstruction *cinst,
     /* Apply filters */
     if (RemovedByInstLegalFilters(cinst)) break;
 
-    /* Print the instruction if print only option chosen, and then quit. */
-    if (PrintInstOnly(cinst)) break;
-
     /* Apply comparison checks to the decoded instructions. */
     if (!AreInstructionLengthsEqual(cinst)) break;
-    if (!AreInstMnemonicsEqual(cinst)) break;
+    if (gCheckMnemonics && !AreInstMnemonicsEqual(cinst)) break;
     if (gCheckOperands && !AreInstOperandsEqual(cinst)) break;
 #if NACL_TARGET_SUBARCH == 64
     if (BadRegWrite(cinst)) break;
 #endif
+
+    /* Print the instruction if print specified. */
+    if (PrintInst(cinst)) break;
 
     /* no error */
     if (gVerbose) {
@@ -1057,6 +1123,7 @@ static int ParseArgs(ComparedInstruction* cinst, int argc, char *argv[]) {
   uint32_t prefix;
   uint32_t opcode;
   char* cstr_value;
+  Bool bool_value;
   int opcode_bytes_count = 0;
 
   for (i = 1; i < argc; i++) {
@@ -1073,15 +1140,31 @@ static int ParseArgs(ComparedInstruction* cinst, int argc, char *argv[]) {
                    GrokBoolFlag("--skipcontiguous", argv[i],
                                 &gSkipContiguous) ||
                    GrokBoolFlag("--verbose", argv[i], &gVerbose)) {
+        } else if (GrokBoolFlag("--bindings", argv[i], &bool_value) &&
+                   bool_value) {
+          PrintBindings(cinst);
+#ifdef NACL_XED_DECODER
+        } else if (GrokBoolFlag("--pin_version", argv[i], &bool_value) &&
+                   bool_value) {
+          fprintf(stderr, "pin version: %s\n", NACL_PINV);
+#endif
+#ifdef NACL_REVISION
+        } else if (GrokBoolFlag("--nacl_revision", argv[i], &bool_value) &&
+                   bool_value) {
+          fprintf(stderr, "nacl revsion: %d\n", NACL_REVISION);
+#endif
         } else if (GrokCstringFlag("--opcode_bytes", argv[i], &cstr_value)) {
-          NaClRegisterEnumeratorDecoder(cinst, cstr_value)
-              ->_print_opcode_sequence = TRUE;
+          NaClEnumeratorDecoder* decoder =
+              NaClRegisterEnumeratorDecoder(cinst, cstr_value);
+          decoder->_print_opcode_sequence = TRUE;
+          decoder->_print_opcode_sequence_plus_desc = FALSE;
           gSilent = TRUE;
           ++opcode_bytes_count;
         } else if (GrokCstringFlag("--opcode_bytes_plus_desc",
                                    argv[i], &cstr_value)) {
           NaClEnumeratorDecoder* decoder =
               NaClRegisterEnumeratorDecoder(cinst, cstr_value);
+          decoder->_print_opcode_sequence = FALSE;
           decoder->_print_opcode_sequence_plus_desc = TRUE;
           if ((NULL == decoder->_get_inst_mnemonic_fn) ||
               (NULL == decoder->_get_inst_operands_text_fn)) {

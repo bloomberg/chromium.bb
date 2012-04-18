@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# enuminsts-64-baseline ...
+#
+# Runs enuminsts-64-8150 with the appropriate arguments to generate
+# x86-64 opcode sequences for enuminsts-64 with the --in decoder.
+../../../../../../../validator_snapshots/enuminsts-64-8150 \
+   --nacl --nacllegal --nops --xedimplemented \
+   --ignore_mnemonic=ignore_mnemonics_nacl_xex_64.txt --opcode_bytes=nacl

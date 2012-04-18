@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# enuminsts-64-baseline ...
+#
+# Runs enuminsts-64 (with the --in decoder) on the output
+# of a frozen executable that generates the corresponding input.
+# That input corresponds to valid x86-64 instruction opcode sequences.
+./enuminsts-64-legal | ./enuminsts-64 --in $*
