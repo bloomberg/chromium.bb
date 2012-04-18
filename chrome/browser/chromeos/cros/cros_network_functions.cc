@@ -9,8 +9,11 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/gvalue_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/flimflam_device_client.h"
+#include "chromeos/dbus/flimflam_manager_client.h"
 #include "chromeos/dbus/flimflam_profile_client.h"
 #include "dbus/object_path.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -167,10 +170,18 @@ void CrosRequestNetworkServiceConnect(const char* service_path,
 
 void CrosRequestNetworkManagerProperties(
     const NetworkPropertiesCallback& callback) {
-  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
-  chromeos::RequestNetworkManagerProperties(
-      &OnRequestNetworkProperties,
-      new OnRequestNetworkPropertiesCallback(callback));
+  if (g_libcros_network_functions_enabled) {
+    // The newly allocated callback will be deleted in
+    // OnRequestNetworkProperties.
+    chromeos::RequestNetworkManagerProperties(
+        &OnRequestNetworkProperties,
+        new OnRequestNetworkPropertiesCallback(callback));
+  } else {
+    DBusThreadManager::Get()->GetFlimflamManagerClient()->GetProperties(
+        base::Bind(&RunCallbackWithDictionaryValue,
+                   callback,
+                   flimflam::kFlimflamServicePath));
+  }
 }
 
 void CrosRequestNetworkServiceProperties(
@@ -186,11 +197,18 @@ void CrosRequestNetworkServiceProperties(
 void CrosRequestNetworkDeviceProperties(
     const char* device_path,
     const NetworkPropertiesCallback& callback) {
-  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
-  chromeos::RequestNetworkDeviceProperties(
-      device_path,
-      &OnRequestNetworkProperties,
-      new OnRequestNetworkPropertiesCallback(callback));
+  if (g_libcros_network_functions_enabled) {
+    // The newly allocated callback will be deleted in
+    // OnRequestNetworkProperties.
+    chromeos::RequestNetworkDeviceProperties(
+        device_path,
+        &OnRequestNetworkProperties,
+        new OnRequestNetworkPropertiesCallback(callback));
+  } else {
+    DBusThreadManager::Get()->GetFlimflamDeviceClient()->GetProperties(
+        dbus::ObjectPath(device_path),
+        base::Bind(&RunCallbackWithDictionaryValue, callback, device_path));
+  }
 }
 
 void CrosRequestNetworkProfileProperties(
