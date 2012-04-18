@@ -37,7 +37,6 @@
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
-#include "remoting/host/oauth_client.h"
 #include "remoting/host/policy_hack/nat_policy.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
@@ -73,8 +72,7 @@ const int kMaxPortNumber = 12409;
 namespace remoting {
 
 class HostProcess
-    : public OAuthClient::Delegate,
-      public HeartbeatSender::Listener {
+    : public HeartbeatSender::Listener {
  public:
   HostProcess()
       : message_loop_(MessageLoop::TYPE_UI),
@@ -110,10 +108,7 @@ class HostProcess
   }
 
   void ConfigUpdated() {
-    // The auth tokens can't be updated once the host is running, so we don't
-    // need to check the pending state, but it's a required parameter.
-    bool tokens_pending;
-    if (LoadConfig(&tokens_pending)) {
+    if (LoadConfig()) {
       context_->network_message_loop()->PostTask(
           FROM_HERE,
           base::Bind(&HostProcess::CreateAuthenticatorFactory,
@@ -169,23 +164,11 @@ class HostProcess
   }
 
   int Run() {
-    bool tokens_pending = false;
-    if (!LoadConfig(&tokens_pending)) {
+    if (!LoadConfig()) {
       return kInvalidHostConfigurationExitCode;
     }
-    if (tokens_pending) {
-      // If we have an OAuth refresh token, then XmppSignalStrategy can't
-      // handle it directly, so refresh it asynchronously. A task will be
-      // posted on the message loop to start watching the NAT policy when
-      // the access token is available.
-      //
-      // TODO(sergeyu): Move this code to SignalingConnector.
-      oauth_client_.Start(context_->url_request_context_getter(),
-                          oauth_refresh_token_, this,
-                          message_loop_.message_loop_proxy());
-    } else {
-      StartWatchingNatPolicy();
-    }
+
+    StartWatchingNatPolicy();
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
     context_->file_message_loop()->PostTask(
@@ -196,29 +179,6 @@ class HostProcess
     message_loop_.Run();
 
     return exit_code_;
-  }
-
-  // Overridden from OAuthClient::Delegate
-  virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires) OVERRIDE {
-    xmpp_auth_token_ = access_token;
-    // If there's already a signal strategy object, update it ready for the
-    // next time it calls Connect. If not, then this is the initial token
-    // exchange, so proceed to the next stage of connection.
-    if (signal_strategy_.get()) {
-      context_->network_message_loop()->PostTask(
-          FROM_HERE, base::Bind(
-              &XmppSignalStrategy::SetAuthInfo,
-              base::Unretained(signal_strategy_.get()),
-              xmpp_login_, xmpp_auth_token_, xmpp_auth_service_));
-    } else {
-      StartWatchingNatPolicy();
-    }
-  }
-
-  virtual void OnOAuthError() OVERRIDE {
-    LOG(ERROR) << "OAuth: invalid credentials.";
-    Shutdown(kInvalidOauthCredentialsExitCode);
   }
 
   // Overridden from HeartbeatSender::Listener
@@ -236,7 +196,7 @@ class HostProcess
   }
 
   // Read Host config from disk, returning true if successful.
-  bool LoadConfig(bool* tokens_pending) {
+  bool LoadConfig() {
     JsonHostConfig host_config(host_config_path_);
     JsonHostConfig auth_config(auth_config_path_);
 
@@ -280,8 +240,7 @@ class HostProcess
       return false;
     }
 
-    *tokens_pending = oauth_refresh_token_ != "";
-    if (*tokens_pending) {
+    if (!oauth_refresh_token_.empty()) {
       xmpp_auth_token_ = "";  // This will be set to the access token later.
       xmpp_auth_service_ = "oauth2";
     } else if (!auth_config.GetString(kXmppAuthServiceConfigPath,
@@ -324,8 +283,19 @@ class HostProcess
       signal_strategy_.reset(
           new XmppSignalStrategy(context_->jingle_thread(), xmpp_login_,
                                  xmpp_auth_token_, xmpp_auth_service_));
+
       signaling_connector_.reset(
           new SignalingConnector(signal_strategy_.get()));
+
+      if (!oauth_refresh_token_.empty()) {
+        scoped_ptr<SignalingConnector::OAuthCredentials> oauth_credentials(
+            new SignalingConnector::OAuthCredentials(
+                xmpp_login_, oauth_refresh_token_));
+        signaling_connector_->EnableOAuth(
+            oauth_credentials.Pass(),
+            base::Bind(&HostProcess::OnOAuthFailed, base::Unretained(this)),
+            context_->url_request_context_getter());
+      }
     }
 
     if (!desktop_environment_.get()) {
@@ -379,6 +349,10 @@ class HostProcess
     StartHost();
   }
 
+  void OnOAuthFailed() {
+    Shutdown(kInvalidOauthCredentialsExitCode);
+  }
+
   void Shutdown(int exit_code) {
     exit_code_ = exit_code;
     message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
@@ -399,7 +373,6 @@ class HostProcess
   std::string xmpp_auth_service_;
 
   std::string oauth_refresh_token_;
-  OAuthClient oauth_client_;
 
   scoped_ptr<policy_hack::NatPolicy> nat_policy_;
   bool allow_nat_traversal_;

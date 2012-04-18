@@ -287,7 +287,7 @@ class SimpleHost : public HeartbeatSender::Listener {
   std::string xmpp_auth_token_;
   std::string xmpp_auth_service_;
 
-  scoped_ptr<SignalStrategy> signal_strategy_;
+  scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
   scoped_ptr<DesktopEnvironment> desktop_environment_;
   scoped_ptr<LogToServer> log_to_server_;

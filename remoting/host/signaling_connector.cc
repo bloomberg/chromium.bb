@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/url_request_context.h"
 
 namespace remoting {
 
@@ -15,11 +17,22 @@ namespace {
 // to the maximum specified here.
 const int kMaxReconnectDelaySeconds = 10 * 60;
 
+// Time when we we try to update OAuth token before its expiration.
+const int kTokenUpdateTimeBeforeExpirySeconds = 60;
+
 }  // namespace
 
-SignalingConnector::SignalingConnector(SignalStrategy* signal_strategy)
+SignalingConnector::OAuthCredentials::OAuthCredentials(
+    const std::string& login_value,
+    const std::string& refresh_token_value)
+    : login(login_value),
+      refresh_token(refresh_token_value) {
+}
+
+SignalingConnector::SignalingConnector(XmppSignalStrategy* signal_strategy)
     : signal_strategy_(signal_strategy),
-      reconnect_attempts_(0) {
+      reconnect_attempts_(0),
+      refreshing_oauth_token_(false) {
   net::NetworkChangeNotifier::AddOnlineStateObserver(this);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   signal_strategy_->AddListener(this);
@@ -30,6 +43,15 @@ SignalingConnector::~SignalingConnector() {
   signal_strategy_->RemoveListener(this);
   net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+}
+
+void SignalingConnector::EnableOAuth(
+    scoped_ptr<OAuthCredentials> oauth_credentials,
+    const base::Closure& oauth_failed_callback,
+    URLRequestContextGetter* url_context) {
+  oauth_credentials_ = oauth_credentials.Pass();
+  oauth_failed_callback_ = oauth_failed_callback;
+  gaia_oauth_client_.reset(new GaiaOAuthClient(kGaiaOAuth2Url, url_context));
 }
 
 void SignalingConnector::OnSignalStrategyStateChange(
@@ -60,7 +82,48 @@ void SignalingConnector::OnOnlineStateChanged(bool online) {
   }
 }
 
+void SignalingConnector::OnGetTokensResponse(const std::string& refresh_token,
+                                             const std::string& access_token,
+                                             int expires_seconds) {
+  NOTREACHED();
+}
+
+void SignalingConnector::OnRefreshTokenResponse(const std::string& access_token,
+                                                int expires_seconds) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(oauth_credentials_.get());
+  LOG(INFO) << "Received OAuth token.";
+  refreshing_oauth_token_ = false;
+  auth_token_expiry_time_ = base::Time::Now() +
+      base::TimeDelta::FromSeconds(expires_seconds) -
+      base::TimeDelta::FromSeconds(kTokenUpdateTimeBeforeExpirySeconds);
+  signal_strategy_->SetAuthInfo(oauth_credentials_->login,
+                                access_token, "oauth2");
+
+  // Now that we've got the new token, try to connect using it.
+  DCHECK_EQ(signal_strategy_->GetState(), SignalStrategy::DISCONNECTED);
+  signal_strategy_->Connect();
+}
+
+void SignalingConnector::OnOAuthError() {
+  DCHECK(CalledOnValidThread());
+  LOG(ERROR) << "OAuth: invalid credentials.";
+  refreshing_oauth_token_ = false;
+  reconnect_attempts_++;
+  oauth_failed_callback_.Run();
+}
+
+void SignalingConnector::OnNetworkError(int response_code) {
+  DCHECK(CalledOnValidThread());
+  LOG(ERROR) << "Network error when trying to update OAuth token: "
+             << response_code;
+  refreshing_oauth_token_ = false;
+  reconnect_attempts_++;
+  ScheduleTryReconnect();
+}
+
 void SignalingConnector::ScheduleTryReconnect() {
+  DCHECK(CalledOnValidThread());
   if (timer_.IsRunning() || net::NetworkChangeNotifier::IsOffline())
     return;
   int delay_s = std::min(1 << (reconnect_attempts_ * 2),
@@ -70,6 +133,7 @@ void SignalingConnector::ScheduleTryReconnect() {
 }
 
 void SignalingConnector::ResetAndTryReconnect() {
+  DCHECK(CalledOnValidThread());
   signal_strategy_->Disconnect();
   reconnect_attempts_ = 0;
   timer_.Stop();
@@ -79,9 +143,36 @@ void SignalingConnector::ResetAndTryReconnect() {
 void SignalingConnector::TryReconnect() {
   DCHECK(CalledOnValidThread());
   if (signal_strategy_->GetState() == SignalStrategy::DISCONNECTED) {
-    LOG(INFO) << "Attempting to connect signaling.";
-    signal_strategy_->Connect();
+    bool need_new_auth_token = oauth_credentials_.get() &&
+        (auth_token_expiry_time_.is_null() ||
+         base::Time::Now() >= auth_token_expiry_time_);
+    if (need_new_auth_token) {
+      RefreshOAuthToken();
+    } else {
+      LOG(INFO) << "Attempting to connect signaling.";
+      signal_strategy_->Connect();
+    }
   }
+}
+
+void SignalingConnector::RefreshOAuthToken() {
+  DCHECK(CalledOnValidThread());
+  LOG(INFO) << "Refreshing OAuth token.";
+  DCHECK(!refreshing_oauth_token_);
+#ifdef OFFICIAL_BUILD
+  OAuthClientInfo client_info = {
+    "440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.apps.googleusercontent.com",
+    "Bgur6DFiOMM1h8x-AQpuTQlK"
+  };
+#else  // OFFICIAL_BUILD
+  OAuthClientInfo client_info = {
+    "440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.apps.googleusercontent.com",
+    "W2ieEsG-R1gIA4MMurGrgMc_"
+  };
+#endif  // !OFFICIAL_BUILD
+  refreshing_oauth_token_ = true;
+  gaia_oauth_client_->RefreshToken(
+      client_info, oauth_credentials_->refresh_token, 1, this);
 }
 
 }  // namespace remoting

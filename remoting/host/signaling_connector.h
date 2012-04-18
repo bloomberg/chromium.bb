@@ -10,9 +10,12 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
 #include "net/base/network_change_notifier.h"
-#include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/host/gaia_oauth_client.h"
+#include "remoting/jingle_glue/xmpp_signal_strategy.h"
 
 namespace remoting {
+
+class URLRequestContextGetter;
 
 // SignalingConnector listens for SignalStrategy status notifications
 // and attempts to keep it connected when possible. When signalling is
@@ -25,10 +28,24 @@ class SignalingConnector
       public base::NonThreadSafe,
       public SignalStrategy::Listener,
       public net::NetworkChangeNotifier::OnlineStateObserver,
-      public net::NetworkChangeNotifier::IPAddressObserver {
+      public net::NetworkChangeNotifier::IPAddressObserver,
+      public GaiaOAuthClient::Delegate {
  public:
-  SignalingConnector(SignalStrategy* signal_strategy);
+  struct OAuthCredentials {
+    OAuthCredentials(const std::string& login_value,
+                     const std::string& refresh_token_value);
+    std::string login;
+    std::string refresh_token;
+  };
+
+  // OAuth token is updated refreshed when |oauth_credentials| is
+  // not NULL.
+  SignalingConnector(XmppSignalStrategy* signal_strategy);
   virtual ~SignalingConnector();
+
+  void EnableOAuth(scoped_ptr<OAuthCredentials> oauth_credentials,
+                   const base::Closure& oauth_failed_callback,
+                   URLRequestContextGetter* url_context);
 
   // SignalStrategy::Listener interface.
   virtual void OnSignalStrategyStateChange(
@@ -40,15 +57,33 @@ class SignalingConnector
   // NetworkChangeNotifier::OnlineStateObserver interface.
   virtual void OnOnlineStateChanged(bool online) OVERRIDE;
 
+  // GaiaOAuthClient::Delegate interface.
+  virtual void OnGetTokensResponse(const std::string& refresh_token,
+                                   const std::string& access_token,
+                                   int expires_seconds) OVERRIDE;
+  virtual void OnRefreshTokenResponse(const std::string& access_token,
+                                      int expires_seconds) OVERRIDE;
+  virtual void OnOAuthError() OVERRIDE;
+  virtual void OnNetworkError(int response_code) OVERRIDE;
+
  private:
   void ScheduleTryReconnect();
   void ResetAndTryReconnect();
   void TryReconnect();
 
-  SignalStrategy* signal_strategy_;
+  void RefreshOAuthToken();
+
+  XmppSignalStrategy* signal_strategy_;
+
+  scoped_ptr<OAuthCredentials> oauth_credentials_;
+  base::Closure oauth_failed_callback_;
+  scoped_ptr<GaiaOAuthClient> gaia_oauth_client_;
 
   // Number of times we tried to connect without success.
   int reconnect_attempts_;
+
+  bool refreshing_oauth_token_;
+  base::Time auth_token_expiry_time_;
 
   base::OneShotTimer<SignalingConnector> timer_;
 

@@ -828,6 +828,8 @@
         'remoting_protocol',
         'differ_block',
         '../crypto/crypto.gyp:crypto',
+        # TODO(hclam): Remove this dependency once we don't use URLFetcher.
+        '../content/content.gyp:content_common',
       ],
       'sources': [
         'host/capturer.h',
@@ -895,8 +897,6 @@
         'host/local_input_monitor_win.cc',
         'host/log_to_server.cc',
         'host/log_to_server.h',
-        'host/oauth_client.cc',
-        'host/oauth_client.h',
         'host/policy_hack/nat_policy.h',
         'host/policy_hack/nat_policy.cc',
         'host/policy_hack/nat_policy_linux.cc',
@@ -1055,8 +1055,6 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../media/media.gyp:media',
-        # TODO(hclam): Remove this dependency once we don't use URLFetcher.
-        '../content/content.gyp:content_common',
       ],
       'sources': [
         'host/branding.cc',
