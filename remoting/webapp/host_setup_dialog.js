@@ -126,9 +126,13 @@ remoting.HostSetupDialog = function(hostController) {
   };
   /** @param {Event} event A keypress event. */
   var noDigitsInPin = function(event) {
-    if ((event.which < 48) || (event.which > 57)) {
-      event.preventDefault();
+    if (event.which == 13) {
+      return;  // Otherwise the "submit" action can't be triggered by Enter.
     }
+    if ((event.which >= 48) && (event.which <= 57)) {
+      return;
+    }
+    event.preventDefault();
   };
   this.pinEntry_.addEventListener('keypress', onDaemonPinEntryKeyPress, false);
   this.pinEntry_.addEventListener('keypress', noDigitsInPin, false);
