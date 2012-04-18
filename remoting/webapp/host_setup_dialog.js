@@ -373,7 +373,7 @@ remoting.HostSetupDialog.prototype.prepareForPinEntry_ = function() {
  * @return {boolean} Whether the PIN is valid.
  */
 remoting.HostSetupDialog.validPin_ = function(pin) {
-  if (pin.length < 6) {
+  if (pin.length < 4) {
     return false;
   }
   for (var i = 0; i < pin.length; i++) {

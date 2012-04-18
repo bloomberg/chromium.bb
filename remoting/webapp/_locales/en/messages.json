@@ -311,7 +311,7 @@
     "description": "Instructions shown below the access code when it is ready to be conveyed to the client."
   },
   "INVALID_PIN": {
-    "message": "Please enter a PIN consisting of 6 or more digits.",
+    "message": "Please enter a PIN consisting of four or more digits.",
     "description": "An error message displayed if the user enters an invalid PIN while setting up a host."
   },
   "IT2ME_FIRST_RUN": {
