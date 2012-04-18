@@ -72,6 +72,9 @@ void ViewFile(const FilePath& path);
 // Opens file browser on the folder containing the file, with the file selected.
 void ShowFileInFolder(const FilePath& path);
 
+// Opens file browser application.
+void OpenApplication();
+
 // Tries to open |file| directly in the browser. Returns false if the browser
 // can't directly handle this type of file.
 bool TryViewingFile(Profile* profile, const FilePath& path);

@@ -22,6 +22,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;
+  virtual void OpenFileManager() OVERRIDE;
   virtual void Exit() OVERRIDE;
   virtual void NewWindow(bool incognito) OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;

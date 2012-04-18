@@ -25,6 +25,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/background/desktop_background_observer.h"
+#include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
@@ -86,6 +87,12 @@ bool ChromeShellDelegate::IsScreenLocked() const {
   return chromeos::ScreenLocker::default_screen_locker()->locked();
 #else
   return false;
+#endif
+}
+
+void ChromeShellDelegate::OpenFileManager() {
+#if defined(OS_CHROMEOS)
+  file_manager_util::OpenApplication();
 #endif
 }
 

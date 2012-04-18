@@ -34,6 +34,7 @@ enum AcceleratorAction {
   FOCUS_TRAY,
 #if defined(OS_CHROMEOS)
   LOCK_SCREEN,
+  OPEN_FILE_MANAGER,
 #endif
   SELECT_WIN_0,
   SELECT_WIN_1,

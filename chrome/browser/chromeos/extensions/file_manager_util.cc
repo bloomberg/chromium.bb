@@ -416,10 +416,6 @@ void OpenFileBrowser(const FilePath& path,
 
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 
-  FilePath virtual_path;
-  if (!ConvertFileToRelativeFileSystemPath(profile, path, &virtual_path))
-    return;
-
   std::string url = chrome::kChromeUIFileManagerURL;
   if (flag_name.size()) {
     DictionaryValue arg_value;
@@ -428,7 +424,12 @@ void OpenFileBrowser(const FilePath& path,
     base::JSONWriter::Write(&arg_value, &query);
     url += "?" + net::EscapeUrlEncodedData(query, false);
   }
-  url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(), false);
+  if (!path.empty()) {
+    FilePath virtual_path;
+    if (!ConvertFileToRelativeFileSystemPath(profile, path, &virtual_path))
+      return;
+    url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(), false);
+  }
 
   ExtensionService* service = profile->GetExtensionService();
   if (!service)
@@ -458,7 +459,11 @@ void ShowFileInFolder(const FilePath& path) {
 }
 
 void ViewFolder(const FilePath& path) {
-  OpenFileBrowser(path, REUSE_SAME_PATH, "");
+  OpenFileBrowser(path, REUSE_SAME_PATH, std::string());
+}
+
+void OpenApplication() {
+  OpenFileBrowser(FilePath(), REUSE_NEVER, std::string());
 }
 
 class StandaloneExecutor : public FileTaskExecutor {

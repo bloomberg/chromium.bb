@@ -224,7 +224,7 @@
 #include "chrome/browser/download/download_shelf.h"
 #endif
 
-#if defined(FILE_MANAGER_EXTENSION)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #endif
 
@@ -2516,15 +2516,11 @@ void Browser::OpenSearchEngineOptionsDialog() {
   ShowOptionsTab(chrome::kSearchEnginesSubPage);
 }
 
-#if defined(FILE_MANAGER_EXTENSION)
-void Browser::OpenFileManager() {
-  content::RecordAction(UserMetricsAction("OpenFileManager"));
-  OpenURL(OpenURLParams(GURL(chrome::kChromeUIFileManagerURL), Referrer(),
-            NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
-}
-#endif
-
 #if defined(OS_CHROMEOS)
+void Browser::OpenFileManager() {
+  file_manager_util::OpenApplication();
+}
+
 void Browser::LockScreen() {
   content::RecordAction(UserMetricsAction("LockScreen"));
   // Never lock the screen for kiosk mode.

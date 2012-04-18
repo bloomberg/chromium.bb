@@ -50,6 +50,9 @@ class ASH_EXPORT ShellDelegate {
   // Returns true if the screen is currently locked.
   virtual bool IsScreenLocked() const = 0;
 
+  // Invoked when a user uses Ctrl-M to open file manager.
+  virtual void OpenFileManager() = 0;
+
   // Invoked when a user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;
 

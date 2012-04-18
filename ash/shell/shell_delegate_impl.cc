@@ -49,6 +49,9 @@ bool ShellDelegateImpl::IsScreenLocked() const {
   return locked_;
 }
 
+void ShellDelegateImpl::OpenFileManager() {
+}
+
 void ShellDelegateImpl::Exit() {
   MessageLoopForUI::current()->Quit();
 }

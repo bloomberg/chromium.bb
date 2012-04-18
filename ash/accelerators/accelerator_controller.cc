@@ -116,6 +116,14 @@ bool HandleLock() {
   delegate->LockScreen();
   return true;
 }
+
+bool HandleFileManager() {
+  ash::ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
+  if (!delegate)
+    return false;
+  delegate->OpenFileManager();
+  return true;
+}
 #endif
 
 bool HandleExit() {
@@ -336,6 +344,8 @@ bool AcceleratorController::AcceleratorPressed(
 #if defined(OS_CHROMEOS)
     case LOCK_SCREEN:
       return HandleLock();
+    case OPEN_FILE_MANAGER:
+      return HandleFileManager();
 #endif
     case EXIT:
       return HandleExit();

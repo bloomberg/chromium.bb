@@ -37,6 +37,9 @@ bool TestShellDelegate::IsScreenLocked() const {
   return locked_;
 }
 
+void TestShellDelegate::OpenFileManager() {
+}
+
 void TestShellDelegate::Exit() {
 }
 

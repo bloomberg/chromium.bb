@@ -670,10 +670,8 @@ class Browser : public TabHandlerDelegate,
   void OpenAutofillHelpTabAndActivate();
   void OpenPrivacyDashboardTabAndActivate();
   void OpenSearchEngineOptionsDialog();
-#if defined(FILE_MANAGER_EXTENSION)
-  void OpenFileManager();
-#endif
 #if defined(OS_CHROMEOS)
+  void OpenFileManager();
   void LockScreen();
   void Shutdown();
   void ShowDateOptions();

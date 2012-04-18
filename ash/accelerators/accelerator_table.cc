@@ -37,6 +37,8 @@ const AcceleratorData kAcceleratorData[] = {
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_BRIGHTNESS_UP, false, false, false,
     BRIGHTNESS_UP },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, true, true, false, LOCK_SCREEN },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_M, false, true, false,
+    OPEN_FILE_MANAGER },
 #endif
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_Q, true, true, false, EXIT },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_N, true, true, false,
