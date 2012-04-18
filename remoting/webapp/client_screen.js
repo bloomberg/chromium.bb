@@ -193,7 +193,9 @@ function onClientStateChange_(oldState, newState) {
   // automatically retry.
   var clearPin = false;
 
-  if (newState == remoting.ClientSession.State.CREATED) {
+  if (newState == remoting.ClientSession.State.PLUGIN_DISABLED) {
+    showConnectError_(remoting.Error.PLUGIN_DISABLED);
+  } else if (newState == remoting.ClientSession.State.CREATED) {
     console.log('Created plugin');
 
   } else if (newState == remoting.ClientSession.State.BAD_PLUGIN_VERSION) {

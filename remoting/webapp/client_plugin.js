@@ -60,7 +60,7 @@ remoting.ClientPlugin.Feature = {
 remoting.ClientPlugin.prototype.hasFeature = function(feature) {};
 
 /**
- * @return {Element} HTML element that correspods to the plugin.
+ * @return {Element} HTML element that corresponds to the plugin.
  */
 remoting.ClientPlugin.prototype.element = function() {};
 
@@ -134,3 +134,8 @@ remoting.ClientPlugin.prototype.getPerfStats = function() {};
  * @param {string} item The clipboard item.
  */
 remoting.ClientPlugin.prototype.sendClipboardItem = function(mimeType, item) {};
+
+/**
+ * @return {boolean} Whether the plugin is enabled.
+ */
+remoting.ClientPlugin.prototype.isEnabled = function() {};
