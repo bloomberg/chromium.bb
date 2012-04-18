@@ -246,6 +246,13 @@ enum CreateNewUpdateItem {
 
 typedef std::set<int64> MetahandleSet;
 
+// Reason for unlinking.
+enum UnlinkReason {
+  NODE_MANIPULATION, // To be used by any operation manipulating the linked
+                     // list.
+  DATA_TYPE_PURGE    // To be used when purging a dataype.
+};
+
 // TODO(akalin): Move EntryKernel and related into its own header file.
 
 // Why the singular enums?  So the code compile-time dispatches instead of
@@ -920,7 +927,8 @@ class Directory {
   // The semantic checking is implemented higher up.
   bool UnlinkEntryFromOrder(EntryKernel* entry,
                             WriteTransaction* trans,
-                            ScopedKernelLock* lock);
+                            ScopedKernelLock* lock,
+                            UnlinkReason unlink_reason);
 
   DirOpenResult OpenImpl(
       DirectoryBackingStore* store, const std::string& name,

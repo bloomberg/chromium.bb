@@ -933,7 +933,7 @@ void Directory::PurgeEntriesWithTypeIn(ModelTypeSet types) {
         // Note the dance around incrementing |it|, since we sometimes erase().
         if ((IsRealDataType(local_type) && types.Has(local_type)) ||
             (IsRealDataType(server_type) && types.Has(server_type))) {
-          if (!UnlinkEntryFromOrder(*it, NULL, &lock))
+          if (!UnlinkEntryFromOrder(*it, &trans, &lock, DATA_TYPE_PURGE))
             return;
 
           int64 handle = (*it)->ref(META_HANDLE);
@@ -1952,12 +1952,16 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
 
 bool MutableEntry::UnlinkFromOrder() {
   ScopedKernelLock lock(dir());
-  return dir()->UnlinkEntryFromOrder(kernel_, write_transaction(), &lock);
+  return dir()->UnlinkEntryFromOrder(kernel_,
+                                     write_transaction(),
+                                     &lock,
+                                     NODE_MANIPULATION);
 }
 
 bool Directory::UnlinkEntryFromOrder(EntryKernel* entry,
                                      WriteTransaction* trans,
-                                     ScopedKernelLock* lock) {
+                                     ScopedKernelLock* lock,
+                                     UnlinkReason unlink_reason) {
   if (!SyncAssert(!trans || this == trans->directory(),
                   FROM_HERE,
                   "Transaction not pointing to the right directory",
@@ -2002,7 +2006,7 @@ bool Directory::UnlinkEntryFromOrder(EntryKernel* entry,
         return false;
       }
     }
-    if (trans)
+    if (unlink_reason == NODE_MANIPULATION)
       trans->SaveOriginal(previous_entry);
     previous_entry->put(NEXT_ID, old_next);
     previous_entry->mark_dirty(kernel_->dirty_metahandles);
@@ -2016,7 +2020,7 @@ bool Directory::UnlinkEntryFromOrder(EntryKernel* entry,
                     trans)) {
       return false;
     }
-    if (trans)
+    if (unlink_reason == NODE_MANIPULATION)
       trans->SaveOriginal(next_entry);
     next_entry->put(PREV_ID, old_previous);
     next_entry->mark_dirty(kernel_->dirty_metahandles);
