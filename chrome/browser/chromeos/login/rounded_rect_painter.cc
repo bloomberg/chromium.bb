@@ -144,8 +144,8 @@ class RoundedBackground : public views::Background {
  public:
   RoundedBackground(int corner_radius,
                     int stroke_width,
-                    const SkColor& background_color,
-                    const SkColor& stroke_color)
+                    SkColor background_color,
+                    SkColor stroke_color)
       : corner_radius_(corner_radius),
         stroke_width_(stroke_width),
         stroke_color_(stroke_color) {
