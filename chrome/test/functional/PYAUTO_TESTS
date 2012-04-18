@@ -708,6 +708,15 @@
     ],
   },
 
+  # PGO performance suite.
+  'PGO': {
+    'chromeos': [
+      'perf.BenchmarkPerfTest.testV8BenchmarkSuite',
+      'perf.LiveWebappLoadTest.testNewTabGmail',
+      'perf.ScrollTest.testGooglePlusScroll',
+    ],
+  },
+
   # ChromeOS performance tests.
   'CHROMEOS_PERF': {
     'chromeos': [
