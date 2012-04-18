@@ -24,7 +24,7 @@ function createElementWithClassName(type, className) {
 // Escapes a URI as appropriate for CSS.
 function encodeURIForCSS(uri) {
   // CSS URIs need to have '(' and ')' escaped.
-  return uri.replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+  return uri.replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 }
 
 function findAncestorWithClass(node, className) {
@@ -44,9 +44,9 @@ var deleteQueue = [];
 var selectionAnchor = -1;
 var activePage = null;
 
-const MenuButton = cr.ui.MenuButton;
-const Command = cr.ui.Command;
-const Menu = cr.ui.Menu;
+var MenuButton = cr.ui.MenuButton;
+var Command = cr.ui.Command;
+var Menu = cr.ui.Menu;
 
 function createDropDownBgImage(canvasName, colorSpec) {
   var ctx = document.getCSSCanvasContext('2d', canvasName, 6, 4);
@@ -81,7 +81,7 @@ function Page(result, continued, model, id) {
   this.url_ = result.url;
   this.domain_ = this.getDomainFromURL_(this.url_);
   this.starred_ = result.starred;
-  this.snippet_ = result.snippet || "";
+  this.snippet_ = result.snippet || '';
   this.id_ = id;
 
   this.changed = false;
@@ -96,9 +96,9 @@ function Page(result, continued, model, id) {
 
   // See comment in BrowsingHistoryHandler::QueryComplete - we won't always
   // get all of these.
-  this.dateRelativeDay = result.dateRelativeDay || "";
-  this.dateTimeOfDay = result.dateTimeOfDay || "";
-  this.dateShort = result.dateShort || "";
+  this.dateRelativeDay = result.dateRelativeDay || '';
+  this.dateTimeOfDay = result.dateTimeOfDay || '';
+  this.dateShort = result.dateShort || '';
 
   // Whether this is the continuation of a previous day.
   this.continued = continued;
@@ -116,11 +116,13 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
   var entryBox = createElementWithClassName('label', 'entry-box');
   var domain = createElementWithClassName('div', 'domain');
 
+  var dropDownWrapper = createElementWithClassName('label', 'entry-box');
   var dropDown = createElementWithClassName('button', 'drop-down');
   dropDown.value = 'Open action menu';
   dropDown.title = localStrings.getString('actionMenuDescription');
   dropDown.setAttribute('menu', '#action-menu');
   cr.ui.decorate(dropDown, MenuButton);
+  dropDownWrapper.appendChild(dropDown);
 
   // Checkbox is always created, but only visible on hover & when checked.
   var checkbox = document.createElement('input');
@@ -146,14 +148,10 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
   entryBox.setAttribute('for', checkbox.id);
   entryBox.addEventListener('mousedown', entryBoxMousedown, false);
 
-  // Prevent clicks on the drop down from affecting the checkbox.
-  dropDown.addEventListener('click', function(e) { e.preventDefault(); });
-
   // We use a wrapper div so that the entry contents will be shinkwrapped.
   entryBox.appendChild(time);
   entryBox.appendChild(this.getTitleDOM_());
   entryBox.appendChild(domain);
-  entryBox.appendChild(dropDown);
 
   // Let the entryBox be styled appropriately when it contains keyboard focus.
   entryBox.addEventListener('focus', function() {
@@ -164,6 +162,7 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
   }, true);
 
   node.appendChild(entryBox);
+  node.appendChild(dropDownWrapper);
 
   if (searchResultFlag) {
     time.appendChild(document.createTextNode(this.dateShort));
@@ -188,7 +187,7 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
 /**
  * Extracts and returns the domain (and subdomains) from a URL.
  * @param {string} The url
- * @return (string) The domain. An empty string is returned if no domain can
+ * @return {string} The domain. An empty string is returned if no domain can
  *     be found.
  */
 Page.prototype.getDomainFromURL_ = function(url) {
@@ -236,8 +235,8 @@ Page.prototype.getTitleDOM_ = function() {
 
   var link = document.createElement('a');
   link.href = this.url_;
-  link.id = "id-" + this.id_;
-  link.target = "_top";
+  link.id = 'id-' + this.id_;
+  link.target = '_top';
 
   // Add a tooltip, since it might be ellipsized.
   // TODO(dubroy): Find a way to show the tooltip only when necessary.
@@ -293,7 +292,7 @@ Page.prototype.starClicked_ = function(event) {
  * @return {string} The escaped string
  */
 Page.pregQuote_ = function(str) {
-  return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, "\\$1");
+  return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -498,7 +497,7 @@ HistoryModel.prototype.updateSearch_ = function(finished) {
 HistoryModel.prototype.getSearchResults_ = function(depth) {
   this.searchDepth_ = depth || 0;
 
-  if (this.searchText_ == "") {
+  if (this.searchText_ == '') {
     chrome.send('getHistory',
         [String(this.searchDepth_)]);
   } else {
@@ -1031,7 +1030,7 @@ function removeItems() {
  * Toggle state of checkbox and handle Shift modifier.
  */
 function checkboxClicked(event) {
-  var id = Number(this.id.slice("checkbox-".length));
+  var id = Number(this.id.slice('checkbox-'.length));
   if (event.shiftKey && (selectionAnchor != -1)) {
     var checked = this.checked;
     // Set all checkboxes from the anchor up to the clicked checkbox to the
