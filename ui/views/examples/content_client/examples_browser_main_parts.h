@@ -10,12 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 
-namespace aura {
-namespace client {
-class StackingClient;
-}
-}
-
 namespace base {
 class Thread;
 }
@@ -69,7 +63,7 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
   content::ShellDevToolsDelegate* devtools_delegate_;
   scoped_ptr<views::ViewsDelegate> views_delegate_;
 #if defined(USE_AURA)
-  scoped_ptr<aura::client::StackingClient> stacking_client_;
+  scoped_ptr<aura::client::StackingClient> root_window_stacking_client_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesBrowserMainParts);

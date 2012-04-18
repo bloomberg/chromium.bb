@@ -23,13 +23,39 @@
 #include "ui/views/focus/accelerator_handler.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/desktop/desktop_stacking_client.h"
+#include "ui/aura/client/stacking_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#include "ui/gfx/compositor/compositor.h"
+#include "ui/gfx/compositor/test/compositor_test_support.h"
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
 namespace views {
 namespace examples {
+namespace {
+#if defined(USE_AURA)
+class RootWindowStackingClient : public aura::client::StackingClient {
+ public:
+  explicit RootWindowStackingClient() {
+    aura::client::SetStackingClient(this);
+  }
+
+  virtual ~RootWindowStackingClient() {
+    aura::client::SetStackingClient(NULL);
+  }
+
+  // Overridden from aura::client::StackingClient:
+  virtual aura::Window* GetDefaultParent(aura::Window* window) OVERRIDE {
+    return window->GetRootWindow();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RootWindowStackingClient);
+};
+#endif
+}
 
 ExamplesBrowserMainParts::ExamplesBrowserMainParts(
     const content::MainFunctionParams& parameters)
@@ -53,7 +79,10 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext);
 
 #if defined(USE_AURA)
-  stacking_client_.reset(new aura::DesktopStackingClient);
+  // TURN ON THE HAX.
+  views::NativeWidgetAura::set_aura_desktop_hax();
+  ui::CompositorTestSupport::Initialize();
+  root_window_stacking_client_.reset(new RootWindowStackingClient);
 #endif
   views_delegate_.reset(new views::TestViewsDelegate);
 
@@ -67,8 +96,9 @@ void ExamplesBrowserMainParts::PostMainMessageLoopRun() {
   browser_context_.reset();
   views_delegate_.reset();
 #if defined(USE_AURA)
-  stacking_client_.reset();
+  root_window_stacking_client_.reset();
   aura::Env::DeleteInstance();
+  ui::CompositorTestSupport::Terminate();
 #endif
 }
 

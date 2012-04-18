@@ -26,8 +26,6 @@
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
-#elif defined(USE_AURA)
-#include "ui/views/widget/desktop_native_widget_helper_aura.h"
 #endif
 
 namespace {
@@ -159,14 +157,3 @@ void ChromeViewsDelegate::ReleaseRef() {
 int ChromeViewsDelegate::GetDispositionForEvent(int event_flags) {
   return event_utils::DispositionFromEventFlags(event_flags);
 }
-
-#if defined(USE_AURA)
-views::NativeWidgetHelperAura* ChromeViewsDelegate::CreateNativeWidgetHelper(
-    views::NativeWidgetAura* native_widget) {
-#if !defined(USE_ASH)
-  return new views::DesktopNativeWidgetHelperAura(native_widget);
-#else
-  return NULL;
-#endif
-}
-#endif

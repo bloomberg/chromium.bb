@@ -9,9 +9,13 @@
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/window_move_client.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/desktop/desktop_activation_client.h"
+#include "ui/aura/desktop/desktop_dispatcher_client.h"
+#include "ui/aura/desktop/desktop_root_window_event_filter.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -25,10 +29,8 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method_bridge.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_delegate.h"
-#include "ui/views/widget/native_widget_helper_aura.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager_aura.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -45,6 +47,8 @@
 #endif
 
 namespace views {
+
+bool NativeWidgetAura::g_aura_desktop_hax = false;
 
 namespace {
 
@@ -135,10 +139,7 @@ class NativeWidgetAura::ActiveWindowObserver : public aura::WindowObserver {
 
 NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(desktop_helper_(
-          ViewsDelegate::views_delegate ?
-          ViewsDelegate::views_delegate->CreateNativeWidgetHelper(this) :
-          NULL)),
+      root_window_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
@@ -172,9 +173,25 @@ gfx::Font NativeWidgetAura::GetWindowTitleFont() {
 
 void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
+  // TODO(erg): What kind of windows do we want to have their own root windows?
+  if (g_aura_desktop_hax) {
+    gfx::Rect bounds = params.bounds;
+    if (bounds.IsEmpty()) {
+      // We must pass some non-zero value when we initialize a RootWindow. This
+      // will probably be SetBounds()ed soon.
+      bounds.set_size(gfx::Size(100, 100));
+    }
+    root_window_.reset(new aura::RootWindow(bounds));
+    root_window_->SetEventFilter(
+        new aura::DesktopRootWindowEventFilter(root_window_.get()));
+    root_window_->AddRootWindowObserver(this);
 
-  if (desktop_helper_.get())
-    desktop_helper_->PreInitialize(params);
+    aura::client::SetActivationClient(
+        root_window_.get(),
+        new aura::DesktopActivationClient(root_window_.get()));
+    aura::client::SetDispatcherClient(root_window_.get(),
+                                      new aura::DesktopDispatcherClient);
+  }
 
   window_->set_user_data(this);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
@@ -187,8 +204,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     window_->Show();
 
   delegate_->OnNativeWidgetCreated();
-  if (desktop_helper_.get() && desktop_helper_->GetRootWindow()) {
-    window_->SetParent(desktop_helper_->GetRootWindow());
+  if (root_window_.get()) {
+    window_->SetParent(root_window_.get());
   } else if (params.child) {
     window_->SetParent(params.GetParent());
   } else {
@@ -203,7 +220,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
       // client per root window instead. For now, we hax our way around this by
       // forcing the parent to be the root window instead of passing NULL as
       // the parent which will dispatch to the stacking client.
-      if (desktop_helper_.get())
+      if (g_aura_desktop_hax)
         parent = parent->GetRootWindow();
       else
         parent = NULL;
@@ -236,9 +253,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   aura::client::SetActivationDelegate(window_, this);
 
-  // TODO(erg): Move this somewhere else?
-  if (desktop_helper_.get())
-    desktop_helper_->ShowRootWindow();
+  if (root_window_.get())
+    root_window_->ShowRootWindow();
 }
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {
@@ -455,8 +471,11 @@ gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
 void NativeWidgetAura::SetBounds(const gfx::Rect& in_bounds) {
   gfx::Rect bounds = in_bounds;
 
-  if (desktop_helper_.get())
-    bounds = desktop_helper_->ModifyAndSetBounds(bounds);
+  if (root_window_.get() && !bounds.IsEmpty()) {
+    root_window_->SetHostBounds(bounds);
+    bounds.set_x(0);
+    bounds.set_y(0);
+  }
 #if defined(ENABLE_DIP)
   bounds = ConvertRectToMonitor(bounds);
 #endif
@@ -851,6 +870,23 @@ void NativeWidgetAura::OnWindowDestroyed() {
 
 void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
   delegate_->OnNativeWidgetVisibilityChanged(visible);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetAura, aura::RootWindowObserver implementation:
+
+void NativeWidgetAura::OnRootWindowResized(const aura::RootWindow* root,
+                                           const gfx::Size& old_size) {
+  // This case can only happen if we have our own aura::RootWindow*. When that
+  // happens, our main window should be at the origin and sized to the
+  // RootWindow.
+  DCHECK_EQ(root, root_window_.get());
+  SetBounds(gfx::Rect(root->GetHostSize()));
+}
+
+void NativeWidgetAura::OnRootWindowHostClosed(const aura::RootWindow* root) {
+  DCHECK_EQ(root, root_window_.get());
+  GetWidget()->Close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

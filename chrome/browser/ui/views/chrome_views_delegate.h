@@ -46,11 +46,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 
   virtual int GetDispositionForEvent(int event_flags) OVERRIDE;
 
-#if defined(USE_AURA)
-  virtual views::NativeWidgetHelperAura* CreateNativeWidgetHelper(
-      views::NativeWidgetAura* native_widget) OVERRIDE;
-#endif
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeViewsDelegate);
 };

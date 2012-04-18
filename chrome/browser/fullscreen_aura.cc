@@ -4,16 +4,34 @@
 
 #include "chrome/browser/fullscreen.h"
 
+#include "ash/shell.h"
 #include "base/logging.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#include "ui/base/ui_base_types.h"
 
-#if !defined(USE_ASH)
+namespace {
 
-bool IsFullScreenMode() {
-  // TODO(erg): An implementation here would have to check all existing
-  // RootWindows instead of just recursively walking the Shell's RootWindow as
-  // in the ash implementaiton.
-  NOTIMPLEMENTED();
+bool CheckIfFullscreenWindowExists(aura::Window* window) {
+  if (window->GetProperty(aura::client::kShowStateKey) ==
+      ui::SHOW_STATE_FULLSCREEN)
+    return true;
+  aura::Window::Windows children = window->children();
+  for (aura::Window::Windows::const_iterator i = children.begin();
+       i != children.end();
+       ++i) {
+    if (CheckIfFullscreenWindowExists(*i))
+      return true;
+  }
   return false;
 }
 
-#endif
+}  // namespace
+
+bool IsFullScreenMode() {
+  // This is used only by notification_ui_manager.cc. On aura, notification
+  // will be managed in panel. This is temporary to get certain feature running
+  // until we implement it for aura.
+  return CheckIfFullscreenWindowExists(ash::Shell::GetRootWindow());
+}

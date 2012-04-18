@@ -59,11 +59,6 @@ class TestViewsDelegate : public ViewsDelegate {
 
   virtual int GetDispositionForEvent(int event_flags) OVERRIDE;
 
-#if defined(USE_AURA)
-  virtual views::NativeWidgetHelperAura* CreateNativeWidgetHelper(
-      views::NativeWidgetAura* native_widget) OVERRIDE;
-#endif
-
  private:
   mutable scoped_ptr<ui::Clipboard> clipboard_;
   bool use_transparent_windows_;

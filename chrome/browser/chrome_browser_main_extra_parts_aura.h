@@ -9,26 +9,13 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
-#if !defined(USE_ASH)
-#include "base/memory/scoped_ptr.h"
-#endif
-
-namespace aura {
-class DesktopStackingClient;
-}
-
 class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsAura();
 
-  virtual void PreProfileInit() OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
-#if !defined(USE_ASH)
-  scoped_ptr<aura::DesktopStackingClient> stacking_client_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAura);
 };
 
