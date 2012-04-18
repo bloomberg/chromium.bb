@@ -363,6 +363,8 @@
         '../third_party/skia/src/gpu/GrBufferAllocPool.cpp',
         '../third_party/skia/src/gpu/GrBufferAllocPool.h',
         '../third_party/skia/src/gpu/GrClip.cpp',
+        '../third_party/skia/src/gpu/GrClipMaskManager.cpp',
+        '../third_party/skia/src/gpu/GrClipMaskManager.h',
         '../third_party/skia/src/gpu/GrContext.cpp',
         '../third_party/skia/src/gpu/GrDefaultPathRenderer.cpp',
         '../third_party/skia/src/gpu/GrDefaultPathRenderer.h',
@@ -845,7 +847,6 @@
             '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
             '../third_party/skia/src/ports/SkFontHost_TryeType_Tables.cpp',
             '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
-            '../third_party/skia/src/ports/SkFontHost_tables.cpp',
           ],
         }],
         [ 'OS == "android"', {
@@ -930,6 +931,11 @@
           },
           'sources': [
             '../third_party/skia/src/utils/mac/SkStream_mac.cpp',
+          ],
+          'sources!': [
+            # The mac's fonthost implements the table methods natively,
+            # so no need for these generic versions.
+            '../third_party/skia/src/ports/SkFontHost_tables.cpp',
           ],
           'conditions': [
              [ 'use_skia == 0', {
