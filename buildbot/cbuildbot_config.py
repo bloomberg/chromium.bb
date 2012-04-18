@@ -695,7 +695,7 @@ official = _config(
   chromeos_official=True,
 )
 
-_internal_toolchain = _toolchain.derive(internal, full, official,
+_internal_toolchain = _toolchain.derive(internal, official,
   use_lkgm=True,
   useflags=['chrome_internal'],
   build_tests=True,
@@ -710,7 +710,7 @@ _internal_toolchain.add_config('arm-tegra2_kaen-toolchain',
   boards=['tegra2_kaen'],
 )
 
-_internal_toolchain_minor = _toolchain_minor.derive(internal, full, official,
+_internal_toolchain_minor = _toolchain_minor.derive(internal, official,
   use_lkgm=True,
   useflags=['chrome_internal'],
   build_tests=True,
