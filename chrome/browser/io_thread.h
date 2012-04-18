@@ -25,6 +25,10 @@ class PrefProxyConfigTrackerImpl;
 class PrefService;
 class SystemURLRequestContextGetter;
 
+namespace chrome_browser_net {
+class HttpPipeliningCompatibilityClient;
+}
+
 namespace net {
 class CertVerifier;
 class CookieStore;
@@ -91,6 +95,8 @@ class IOThread : public content::BrowserThreadDelegate {
     scoped_ptr<net::ServerBoundCertService> system_server_bound_cert_service;
     scoped_refptr<ExtensionEventRouterForwarder>
         extension_event_router_forwarder;
+    scoped_ptr<chrome_browser_net::HttpPipeliningCompatibilityClient>
+        http_pipelining_compatibility_client;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.

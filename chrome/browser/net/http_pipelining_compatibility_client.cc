@@ -437,24 +437,18 @@ internal::PipelineTestRequest::Status ProcessStatsResponse(
 
 namespace {
 
-void DeleteClient(HttpPipeliningCompatibilityClient* client) {
-  delete client;
-}
-
-void DelayedDeleteClient(HttpPipeliningCompatibilityClient* client, int rv) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&DeleteClient, client));
+void DeleteClient(IOThread* io_thread, int /* rv */) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  io_thread->globals()->http_pipelining_compatibility_client.reset();
 }
 
 void CollectPipeliningCapabilityStatsOnIOThread(
     const std::string& pipeline_test_server,
-    net::URLRequestContextGetter* url_request_context_getter) {
+    IOThread* io_thread) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   net::URLRequestContext* url_request_context =
-      url_request_context_getter->GetURLRequestContext();
+      io_thread->globals()->system_request_context.get();
   if (!url_request_context->proxy_service()->config().proxy_rules().empty()) {
     // Pipelining with explicitly configured proxies is disabled for now.
     return;
@@ -516,8 +510,9 @@ void CollectPipeliningCapabilityStatsOnIOThread(
       new HttpPipeliningCompatibilityClient(NULL);
   client->Start(pipeline_test_server, requests,
                 HttpPipeliningCompatibilityClient::PIPE_TEST_CANARY_AND_STATS,
-                base::Bind(&DelayedDeleteClient, client),
-                url_request_context_getter->GetURLRequestContext());
+                base::Bind(&DeleteClient, io_thread),
+                url_request_context);
+  io_thread->globals()->http_pipelining_compatibility_client.reset(client);
 }
 
 }  // anonymous namespace
@@ -533,8 +528,7 @@ void CollectPipeliningCapabilityStatsOnUIThread(
       FROM_HERE,
       base::Bind(&CollectPipeliningCapabilityStatsOnIOThread,
                  pipeline_test_server,
-                 make_scoped_refptr(
-                     io_thread->system_url_request_context_getter())));
+                 io_thread));
 }
 
 }  // namespace chrome_browser_net

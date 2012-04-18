@@ -24,6 +24,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/connect_interceptor.h"
+#include "chrome/browser/net/http_pipelining_compatibility_client.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
@@ -286,7 +287,9 @@ SystemURLRequestContextGetter::GetIOMessageLoopProxy() const {
 
 IOThread::Globals::Globals() {}
 
-IOThread::Globals::~Globals() {}
+IOThread::Globals::~Globals() {
+  system_request_context->AssertNoURLRequests();
+}
 
 // |local_state| is passed in explicitly in order to (1) reduce implicit
 // dependencies and (2) make IOThread more flexible for testing.
@@ -464,8 +467,6 @@ void IOThread::CleanUp() {
 #if defined(USE_NSS)
   net::ShutdownNSSHttpIO();
 #endif  // defined(USE_NSS)
-
-  globals_->system_request_context->AssertNoURLRequests();
 
   system_url_request_context_getter_ = NULL;
 

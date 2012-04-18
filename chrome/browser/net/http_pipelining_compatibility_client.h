@@ -141,14 +141,14 @@ class HttpPipeliningCompatibilityClient
   virtual void ReportNetworkError(int request_id, int error_code) OVERRIDE;
   virtual void ReportResponseCode(int request_id, int response_code) OVERRIDE;
 
+  scoped_refptr<net::URLRequestContext> url_request_context_;
+  scoped_ptr<net::HttpTransactionFactory> http_transaction_factory_;
   scoped_ptr<internal::PipelineTestRequest::Factory> factory_;
   ScopedVector<internal::PipelineTestRequest> requests_;
   scoped_ptr<internal::PipelineTestRequest> canary_request_;
   net::CompletionCallback finished_callback_;
   size_t num_finished_;
   size_t num_succeeded_;
-  scoped_ptr<net::HttpTransactionFactory> http_transaction_factory_;
-  scoped_refptr<net::URLRequestContext> url_request_context_;
 };
 
 void CollectPipeliningCapabilityStatsOnUIThread(
