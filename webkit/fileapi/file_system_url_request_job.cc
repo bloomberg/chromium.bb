@@ -4,6 +4,8 @@
 
 #include "webkit/fileapi/file_system_url_request_job.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -23,9 +25,8 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
-#include "webkit/blob/local_file_reader.h"
-#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_file_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
 
@@ -73,8 +74,7 @@ void FileSystemURLRequestJob::Start() {
 }
 
 void FileSystemURLRequestJob::Kill() {
-  if (reader_.get() != NULL)
-    reader_.reset();
+  reader_.reset();
   URLRequestJob::Kill();
   weak_factory_.InvalidateWeakPtrs();
 }
@@ -157,6 +157,7 @@ int FileSystemURLRequestJob::GetResponseCode() const {
 void FileSystemURLRequestJob::StartAsync() {
   if (!request_)
     return;
+  DCHECK(!reader_.get());
   FileSystemOperationInterface* operation =
       file_system_context_->CreateFileSystemOperation(
           request_->url(),
@@ -166,16 +167,16 @@ void FileSystemURLRequestJob::StartAsync() {
                                 net::ERR_INVALID_URL));
     return;
   }
-  operation->CreateSnapshotFile(
+  operation->GetMetadata(
       request_->url(),
-      base::Bind(&FileSystemURLRequestJob::DidCreateSnapshot, this));
+      base::Bind(&FileSystemURLRequestJob::DidGetMetadata,
+                 weak_factory_.GetWeakPtr()));
 }
 
-void FileSystemURLRequestJob::DidCreateSnapshot(
+void FileSystemURLRequestJob::DidGetMetadata(
     base::PlatformFileError error_code,
     const base::PlatformFileInfo& file_info,
-    const FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
+    const FilePath& platform_path) {
   if (error_code != base::PLATFORM_FILE_OK) {
     NotifyFailed(error_code == base::PLATFORM_FILE_ERROR_INVALID_URL ?
                  net::ERR_INVALID_URL : net::ERR_FILE_NOT_FOUND);
@@ -187,9 +188,6 @@ void FileSystemURLRequestJob::DidCreateSnapshot(
     return;
 
   is_directory_ = file_info.is_directory;
-
-  // Keep the reference (if it's non-null) so that the file won't go away.
-  snapshot_ref_ = file_ref;
 
   if (!byte_range_.ComputeBounds(file_info.size)) {
     NotifyFailed(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
@@ -206,10 +204,11 @@ void FileSystemURLRequestJob::DidCreateSnapshot(
   DCHECK_GE(remaining_bytes_, 0);
 
   DCHECK(!reader_.get());
-  reader_.reset(new LocalFileReader(
-      file_thread_proxy_, platform_path,
-      byte_range_.first_byte_position(),
-      base::Time()));
+  reader_.reset(new FileSystemFileReader(
+          file_thread_proxy_,
+          file_system_context_,
+          request_->url(),
+          byte_range_.first_byte_position()));
 
   set_expected_content_size(remaining_bytes_);
   response_info_.reset(new net::HttpResponseInfo());

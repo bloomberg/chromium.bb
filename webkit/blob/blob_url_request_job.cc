@@ -239,7 +239,7 @@ void BlobURLRequestJob::DidGetFileItemLength(size_t index, int64 result) {
   // in the real time.
   int64 item_length = static_cast<int64>(item.length);
   if (item_length == -1)
-    item_length = result;
+    item_length = result - item.offset;
 
   // Cache the size and add it to the total size.
   DCHECK_LT(index, item_length_list_.size());

@@ -9,28 +9,27 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "base/platform_file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "net/base/completion_callback.h"
 #include "webkit/blob/blob_export.h"
+#include "webkit/blob/file_reader.h"
 
 namespace base {
 class MessageLoopProxy;
-}
-
-namespace net {
-class FileStream;
-class IOBuffer;
 }
 
 namespace webkit_blob {
 
 // A thin wrapper of net::FileStream with range support for sliced file
 // handling.
-class BLOB_EXPORT LocalFileReader {
+class BLOB_EXPORT LocalFileReader : public FileReader {
  public:
   typedef base::Callback<void(int error, scoped_ptr<net::FileStream> stream)>
       OpenFileStreamCallback;
+
+  // A convenient method to translate platform file error to net error code.
+  static int PlatformFileErrorToNetError(base::PlatformFileError file_error);
 
   // Creates a new FileReader for a local file |file_path|.
   // |initial_offset| specifies the offset in the file where the first read
@@ -42,22 +41,20 @@ class BLOB_EXPORT LocalFileReader {
   // actual modification time to see if the file has been modified, and if
   // it does any succeeding read operations should fail with
   // ERR_UPLOAD_FILE_CHANGED error.
+  // TODO(kinuko): Consider using SequencedWorkerPool.
   LocalFileReader(base::MessageLoopProxy* file_thread_proxy,
                   const FilePath& file_path,
                   int64 initial_offset,
                   const base::Time& expected_modification_time);
+  virtual ~LocalFileReader();
 
-  ~LocalFileReader();
+  // FileReader overrides.
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   const net::CompletionCallback& callback) OVERRIDE;
 
-  // Reads from the current cursor position asynchronously.
-  // This works mostly same as how net::FileStream::Read() works except that
-  // it internally opens (and seeks) the file if it is not opened yet.
-  // It is invalid to call Read while there is an in-flight Read operation.
-  int Read(net::IOBuffer* buf, int buf_len,
-           const net::CompletionCallback& callback);
-
-  // Returns the number of bytes available to read from the beginning of
-  // the file (or initial_offset) until the end of the file (rv >= 0 cases).
+  // Returns the length of the file if it could successfully retrieve the
+  // file info *and* its last modification time equals to
+  // expected_modification_time_ (rv >= 0 cases).
   // Otherwise, a negative error code is returned (rv < 0 cases).
   int GetLength(const net::Int64CompletionCallback& callback);
 

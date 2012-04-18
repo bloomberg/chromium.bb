@@ -21,19 +21,6 @@ const int kOpenFlagsForRead = base::PLATFORM_FILE_OPEN |
                               base::PLATFORM_FILE_READ |
                               base::PLATFORM_FILE_ASYNC;
 
-int PlatformFileErrorToNetError(base::PlatformFileError file_error) {
-  switch (file_error) {
-    case base::PLATFORM_FILE_OK:
-      return net::OK;
-    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
-      return net::ERR_FILE_NOT_FOUND;
-    case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
-      return net::ERR_ACCESS_DENIED;
-    default:
-      return net::ERR_FAILED;
-  }
-}
-
 // Verify if the underlying file has not been modified.
 bool VerifySnapshotTime(const base::Time& expected_modification_time,
                         const base::PlatformFileInfo& file_info) {
@@ -44,7 +31,6 @@ bool VerifySnapshotTime(const base::Time& expected_modification_time,
 
 void DidGetFileInfoForGetLength(const net::Int64CompletionCallback& callback,
                                 const base::Time& expected_modification_time,
-                                int64 initial_offset,
                                 base::PlatformFileError error,
                                 const base::PlatformFileInfo& file_info) {
   if (file_info.is_directory) {
@@ -52,14 +38,14 @@ void DidGetFileInfoForGetLength(const net::Int64CompletionCallback& callback,
     return;
   }
   if (error != base::PLATFORM_FILE_OK) {
-    callback.Run(PlatformFileErrorToNetError(error));
+    callback.Run(LocalFileReader::PlatformFileErrorToNetError(error));
     return;
   }
   if (!VerifySnapshotTime(expected_modification_time, file_info)) {
     callback.Run(net::ERR_UPLOAD_FILE_CHANGED);
     return;
   }
-  callback.Run(file_info.size - initial_offset);
+  callback.Run(file_info.size);
 }
 
 void DidSeekFile(const LocalFileReader::OpenFileStreamCallback& callback,
@@ -77,6 +63,21 @@ void DidSeekFile(const LocalFileReader::OpenFileStreamCallback& callback,
 void EmptyCompletionCallback(int) {}
 
 }  // namespace
+
+// static
+int LocalFileReader::PlatformFileErrorToNetError(
+    base::PlatformFileError file_error) {
+  switch (file_error) {
+    case base::PLATFORM_FILE_OK:
+      return net::OK;
+    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
+      return net::ERR_FILE_NOT_FOUND;
+    case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
+      return net::ERR_ACCESS_DENIED;
+    default:
+      return net::ERR_FAILED;
+  }
+}
 
 // A helper class to open, verify and seek a file stream for a given path.
 class LocalFileReader::OpenFileStreamHelper {
@@ -173,7 +174,7 @@ int LocalFileReader::GetLength(const net::Int64CompletionCallback& callback) {
   const bool posted = base::FileUtilProxy::GetFileInfo(
       file_thread_proxy_, file_path_,
       base::Bind(&DidGetFileInfoForGetLength, callback,
-                 expected_modification_time_, initial_offset_));
+                 expected_modification_time_));
   DCHECK(posted);
   return net::ERR_IO_PENDING;
 }

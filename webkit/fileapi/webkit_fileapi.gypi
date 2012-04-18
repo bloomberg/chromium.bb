@@ -24,6 +24,8 @@
         'file_system_dir_url_request_job.h',
         'file_system_directory_database.cc',
         'file_system_directory_database.h',
+        'file_system_file_reader.cc',
+        'file_system_file_reader.h',
         'file_system_file_util.cc',
         'file_system_file_util.h',
         'file_system_file_util_proxy.cc',
