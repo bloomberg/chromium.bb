@@ -94,24 +94,6 @@ TEST(EventsXTest, ButtonEvents) {
   EXPECT_TRUE(ui::IsMouseEvent(&event));
   EXPECT_EQ(0, ui::GetMouseWheelOffset(&event));
 
-#if defined(OS_CHROMEOS)
-  // Scroll up.
-  InitButtonEvent(&event, true, location, 8, 0);
-  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(&event));
-  EXPECT_TRUE(ui::IsMouseEvent(&event));
-  EXPECT_GT(ui::GetMouseWheelOffset(&event), 0);
-
-  // Scroll down.
-  InitButtonEvent(&event, true, location, 9, 0);
-  EXPECT_EQ(ui::ET_MOUSEWHEEL, ui::EventTypeFromNative(&event));
-  EXPECT_EQ(0, ui::EventFlagsFromNative(&event));
-  EXPECT_EQ(location, ui::EventLocationFromNative(&event));
-  EXPECT_TRUE(ui::IsMouseEvent(&event));
-  EXPECT_LT(ui::GetMouseWheelOffset(&event), 0);
-#endif
-
   // TODO(derat): Test XInput code.
 }
 

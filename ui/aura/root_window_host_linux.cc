@@ -14,6 +14,7 @@
 #include "base/message_pump_x.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
+#include "ui/aura/client/user_gesture_client.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
@@ -32,6 +33,10 @@ using std::min;
 namespace aura {
 
 namespace {
+
+// Standard Linux mouse buttons for going back and forward.
+const int kBackMouseButton = 8;
+const int kForwardMouseButton = 9;
 
 // The events reported for slave devices can have incorrect information for some
 // fields. This utility function is used to check for such inconsistencies.
@@ -406,7 +411,20 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       root_window_->DispatchKeyEvent(&keyup_event);
       break;
     }
-    case ButtonPress:
+    case ButtonPress: {
+      if (static_cast<int>(xev->xbutton.button) == kBackMouseButton ||
+          static_cast<int>(xev->xbutton.button) == kForwardMouseButton) {
+        client::UserGestureClient* gesture_client =
+            client::GetUserGestureClient(root_window_);
+        if (gesture_client) {
+          gesture_client->OnUserGesture(
+              static_cast<int>(xev->xbutton.button) == kBackMouseButton ?
+              client::UserGestureClient::GESTURE_BACK :
+              client::UserGestureClient::GESTURE_FORWARD);
+        }
+        break;
+      }
+    }  // fallthrough
     case ButtonRelease: {
       MouseEvent mouseev(xev);
       root_window_->DispatchMouseEvent(&mouseev);
@@ -444,8 +462,6 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
         break;
 
       ui::EventType type = ui::EventTypeFromNative(xev);
-      // If this is a motion event we want to coalesce all pending motion
-      // events that are at the top of the queue.
       XEvent last_event;
       int num_coalesced = 0;
 
@@ -458,18 +474,37 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
           break;
         }
         case ui::ET_MOUSE_MOVED:
-        case ui::ET_MOUSE_DRAGGED: {
-          // If this is a motion event we want to coalesce all pending motion
-          // events that are at the top of the queue.
-          num_coalesced = CoalescePendingXIMotionEvents(xev, &last_event);
-          if (num_coalesced > 0)
-            xev = &last_event;
-        }
+        case ui::ET_MOUSE_DRAGGED:
         case ui::ET_MOUSE_PRESSED:
         case ui::ET_MOUSE_RELEASED:
         case ui::ET_MOUSEWHEEL:
         case ui::ET_MOUSE_ENTERED:
         case ui::ET_MOUSE_EXITED: {
+          if (type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_DRAGGED) {
+            // If this is a motion event, we want to coalesce all pending motion
+            // events that are at the top of the queue.
+            num_coalesced = CoalescePendingXIMotionEvents(xev, &last_event);
+            if (num_coalesced > 0)
+              xev = &last_event;
+          } else if (type == ui::ET_MOUSE_PRESSED) {
+            XIDeviceEvent* xievent =
+                static_cast<XIDeviceEvent*>(xev->xcookie.data);
+            int button = xievent->detail;
+            if (button == kBackMouseButton || button == kForwardMouseButton) {
+              client::UserGestureClient* gesture_client =
+                  client::GetUserGestureClient(root_window_);
+              if (gesture_client) {
+                bool reverse_direction =
+                    ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();
+                gesture_client->OnUserGesture(
+                    (button == kBackMouseButton && !reverse_direction) ||
+                    (button == kForwardMouseButton && reverse_direction) ?
+                    client::UserGestureClient::GESTURE_BACK :
+                    client::UserGestureClient::GESTURE_FORWARD);
+              }
+              break;
+            }
+          }
           MouseEvent mouseev(xev);
           root_window_->DispatchMouseEvent(&mouseev);
           break;

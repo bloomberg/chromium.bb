@@ -7,7 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+
+class UserGestureHandler;
 
 class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
  public:
@@ -18,6 +21,8 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
+  scoped_ptr<UserGestureHandler> gesture_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };
 

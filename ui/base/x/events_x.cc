@@ -34,18 +34,8 @@ namespace {
 // Scroll amount for each wheelscroll event. 53 is also the value used for GTK+.
 const int kWheelScrollAmount = 53;
 
-const int kMinWheelButton = 4;
-#if defined(OS_CHROMEOS)
-// TODO(davemoore) For now use the button to decide how much to scroll by.
-// When we go to XI2 scroll events this won't be necessary. If this doesn't
-// happen for some reason we can better detect which devices are touchpads.
-const int kTouchpadScrollAmount = 3;
-
-// Chrome OS also uses buttons 8 and 9 for scrolling.
-const int kMaxWheelButton = 9;
-#else
-const int kMaxWheelButton = 7;
-#endif
+static const int kMinWheelButton = 4;
+static const int kMaxWheelButton = 7;
 
 // A class to support the detection of scroll events, using X11 valuators.
 class UI_EXPORT CMTEventData {
@@ -133,8 +123,18 @@ class UI_EXPORT CMTEventData {
     XIFreeDeviceInfo(info_list);
   }
 
+  bool natural_scroll_enabled() const { return natural_scroll_enabled_; }
   void set_natural_scroll_enabled(bool enabled) {
     natural_scroll_enabled_ = enabled;
+  }
+
+  bool IsTouchpadXInputEvent(const base::NativeEvent& native_event) {
+    if (native_event->type != GenericEvent)
+      return false;
+
+    XIDeviceEvent* xievent =
+        static_cast<XIDeviceEvent*>(native_event->xcookie.data);
+    return touchpads_[xievent->sourceid];
   }
 
   float GetNaturalScrollFactor(int deviceid) {
@@ -515,6 +515,12 @@ Atom GetNoopEventAtom() {
 
 namespace ui {
 
+void UpdateDeviceList() {
+  Display* display = GetXDisplay();
+  CMTEventData::GetInstance()->UpdateDeviceList(display);
+  TouchFactory::GetInstance()->UpdateDeviceList(display);
+}
+
 EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   switch (native_event->type) {
     case KeyPress:
@@ -748,19 +754,9 @@ int GetMouseWheelOffset(const base::NativeEvent& native_event) {
 
   switch (button) {
     case 4:
-#if defined(OS_CHROMEOS)
-      return kTouchpadScrollAmount;
-    case 8:
-#endif
       return kWheelScrollAmount;
-
     case 5:
-#if defined(OS_CHROMEOS)
-      return -kTouchpadScrollAmount;
-    case 9:
-#endif
       return -kWheelScrollAmount;
-
     default:
       // TODO(derat): Do something for horizontal scrolls (buttons 6 and 7)?
       return 0;
@@ -852,10 +848,12 @@ void SetNaturalScroll(bool enabled) {
   CMTEventData::GetInstance()->set_natural_scroll_enabled(enabled);
 }
 
-void UpdateDeviceList() {
-  Display* display = GetXDisplay();
-  CMTEventData::GetInstance()->UpdateDeviceList(display);
-  TouchFactory::GetInstance()->UpdateDeviceList(display);
+bool IsNaturalScrollEnabled() {
+  return CMTEventData::GetInstance()->natural_scroll_enabled();
+}
+
+bool IsTouchpadEvent(const base::NativeEvent& event) {
+  return CMTEventData::GetInstance()->IsTouchpadXInputEvent(event);
 }
 
 bool IsNoopEvent(const base::NativeEvent& event) {

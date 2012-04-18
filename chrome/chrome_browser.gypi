@@ -3222,6 +3222,8 @@
         'browser/ui/views/ash/screen_orientation_listener.h',
         'browser/ui/views/ash/screenshot_taker.cc',
         'browser/ui/views/ash/screenshot_taker.h',
+        'browser/ui/views/ash/user_gesture_handler.cc',
+        'browser/ui/views/ash/user_gesture_handler.h',
         'browser/ui/views/ash/volume_controller_chromeos.cc',
         'browser/ui/views/ash/volume_controller_chromeos.h',
         'browser/ui/views/ash/window_positioner.cc',

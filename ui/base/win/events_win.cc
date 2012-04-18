@@ -127,6 +127,10 @@ int MouseStateFlagsFromNative(const base::NativeEvent& native_event) {
 
 namespace ui {
 
+void UpdateDeviceList() {
+  NOTIMPLEMENTED();
+}
+
 EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   switch (native_event.message) {
     case WM_KEYDOWN:
@@ -276,8 +280,14 @@ void SetNaturalScroll(bool enabled) {
   NOTIMPLEMENTED();
 }
 
-void UpdateDeviceList() {
+bool IsNaturalScrollEnabled() {
   NOTIMPLEMENTED();
+  return false;
+}
+
+bool IsTouchpadEvent(const base::NativeEvent& event) {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 bool IsNoopEvent(const base::NativeEvent& event) {

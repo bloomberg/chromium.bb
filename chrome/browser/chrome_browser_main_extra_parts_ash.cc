@@ -17,8 +17,10 @@
 #include "chrome/browser/ui/views/ash/key_rewriter.h"
 #include "chrome/browser/ui/views/ash/screen_orientation_listener.h"
 #include "chrome/browser/ui/views/ash/screenshot_taker.h"
+#include "chrome/browser/ui/views/ash/user_gesture_handler.h"
 #include "ui/aura/env.h"
 #include "ui/aura/aura_switches.h"
+#include "ui/aura/client/user_gesture_client.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/compositor/compositor_setup.h"
@@ -79,6 +81,10 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 
   // Make sure the singleton ScreenOrientationListener object is created.
   ScreenOrientationListener::GetInstance();
+
+  gesture_handler_.reset(new UserGestureHandler);
+  aura::client::SetUserGestureClient(
+      ash::Shell::GetRootWindow(), gesture_handler_.get());
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
