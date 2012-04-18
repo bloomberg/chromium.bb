@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -4478,11 +4478,147 @@ unsigned long ContentEncoding::GetEncryptionCount() const {
   return static_cast<unsigned long>(count);
 }
 
-void ContentEncoding::ParseEncryptionEntry(
+long ContentEncoding::ParseContentEncAESSettingsEntry(
     long long start,
     long long size,
-    IMkvReader* const pReader,
-    ContentEncryption* const encryption) {
+    IMkvReader* pReader,
+    ContentEncAESSettings* aes) {
+  assert(pReader);
+  assert(aes);
+
+  long long pos = start;
+  const long long stop = start + size;
+
+  while (pos < stop) {
+    long long id, size;
+    const long status = ParseElementHeader(pReader,
+                                           pos,
+                                           stop,
+                                           id,
+                                           size);
+    if (status < 0)  //error
+      return status;
+
+    if (id == 0x7E8) {
+      // AESSettingsCipherMode
+      aes->cipher_mode = UnserializeUInt(pReader, pos, size);
+      if (aes->cipher_mode != 1)
+        return E_FILE_FORMAT_INVALID;
+    }
+
+    pos += size;  //consume payload
+    assert(pos <= stop);
+  }
+
+  return 0;
+}
+
+long ContentEncoding::ParseContentEncodingEntry(long long start,
+                                                long long size,
+                                                IMkvReader* pReader) {
+  assert(pReader);
+
+  long long pos = start;
+  const long long stop = start + size;
+
+  // Count ContentCompression and ContentEncryption elements.
+  int compression_count = 0;
+  int encryption_count = 0;
+
+  while (pos < stop) {
+    long long id, size;
+    const long status = ParseElementHeader(pReader,
+                                           pos,
+                                           stop,
+                                           id,
+                                           size);
+    if (status < 0)  //error
+      return status;
+
+    if (id == 0x1034)  // ContentCompression ID
+      ++compression_count;
+
+    if (id == 0x1035)  // ContentEncryption ID
+      ++encryption_count;
+
+    pos += size;  //consume payload
+    assert(pos <= stop);
+  }
+
+  if (compression_count <= 0 && encryption_count <= 0)
+    return -1;
+
+  if (compression_count > 0) {
+    compression_entries_ =
+        new (std::nothrow) ContentCompression*[compression_count];
+    if (!compression_entries_)
+      return -1;
+    compression_entries_end_ = compression_entries_;
+  }
+
+  if (encryption_count > 0) {
+    encryption_entries_ =
+        new (std::nothrow) ContentEncryption*[encryption_count];
+    if (!encryption_entries_) {
+      delete [] compression_entries_;
+      return -1;
+    }
+    encryption_entries_end_ = encryption_entries_;
+  }
+
+  pos = start;
+  while (pos < stop) {
+    long long id, size;
+    long status = ParseElementHeader(pReader,
+                                     pos,
+                                     stop,
+                                     id,
+                                     size);
+    if (status < 0)  //error
+      return status;
+
+    if (id == 0x1031) {
+      // ContentEncodingOrder
+      encoding_order_ = UnserializeUInt(pReader, pos, size);
+    } else if (id == 0x1032) {
+      // ContentEncodingScope
+      encoding_scope_ = UnserializeUInt(pReader, pos, size);
+      if (encoding_scope_ < 1)
+        return -1;
+    } else if (id == 0x1033) {
+      // ContentEncodingType
+      encoding_type_ = UnserializeUInt(pReader, pos, size);
+    } else if (id == 0x1034) {
+      // ContentCompression ID
+      // TODO(fgaligan): Add code to parse ContentCompression elements.
+    } else if (id == 0x1035) {
+      // ContentEncryption ID
+      ContentEncryption* const encryption =
+          new (std::nothrow) ContentEncryption();
+      if (!encryption)
+        return -1;
+
+      status = ParseEncryptionEntry(pos, size, pReader, encryption);
+      if (status) {
+        delete encryption;
+        return status;
+      }
+      *encryption_entries_end_++ = encryption;
+    }
+
+    pos += size;  //consume payload
+    assert(pos <= stop);
+  }
+
+  assert(pos == stop);
+  return 0;
+}
+
+long ContentEncoding::ParseEncryptionEntry(
+    long long start,
+    long long size,
+    IMkvReader* pReader,
+    ContentEncryption* encryption) {
   assert(pReader);
   assert(encryption);
 
@@ -4490,166 +4626,111 @@ void ContentEncoding::ParseEncryptionEntry(
   const long long stop = start + size;
 
   while (pos < stop) {
-#ifdef _DEBUG
-    long len;
-    const long long id = ReadUInt(pReader, pos, len);
-    assert(id >= 0);  //TODO: handle error case
-    assert((pos + len) <= stop);
-#endif
+    long long id, size;
+    const long status = ParseElementHeader(pReader,
+                                           pos,
+                                           stop,
+                                           id,
+                                           size);
+    if (status < 0)  //error
+      return status;
 
-    long long value;
-    unsigned char* buf;
-    size_t buf_len;
-
-    if (Match(pReader, pos, 0x7E1, value)) {
+    if (id == 0x7E1) {
       // ContentEncAlgo
-      encryption->algo = value;
-    } else if (Match(pReader, pos, 0x7E2, buf, buf_len)) {
+      encryption->algo = UnserializeUInt(pReader, pos, size);
+      if (encryption->algo != 5)
+        return E_FILE_FORMAT_INVALID;
+    } else if (id == 0x7E2) {
       // ContentEncKeyID
-      encryption->key_id = buf;
-      encryption->key_id_len = buf_len;
-    } else if (Match(pReader, pos, 0x7E3, buf, buf_len)) {
-      // ContentSignature
-      encryption->signature = buf;
-      encryption->signature_len = buf_len;
-    } else if (Match(pReader, pos, 0x7E4, buf, buf_len)) {
-      // ContentSigKeyID
-      encryption->sig_key_id = buf;
-      encryption->sig_key_id_len = buf_len;
-    } else if (Match(pReader, pos, 0x7E5, value)) {
-      // ContentSigAlgo
-      encoding_type_ = value;
-    } else if (Match(pReader, pos, 0x7E6, value)) {
-      // ContentSigHashAlgo
-      encoding_type_ = value;
-    } else {
-      long len;
-      const long long id = ReadUInt(pReader, pos, len);
-      assert(id >= 0);  //TODO: handle error case
-      assert((pos + len) <= stop);
+      delete[] encryption->key_id;
+      encryption->key_id = NULL;
+      encryption->key_id_len = 0;
 
-      pos += len;  //consume id
+      if (size <= 0)
+        return E_FILE_FORMAT_INVALID;
 
-      const long long size = ReadUInt(pReader, pos, len);
-      assert(size >= 0);  //TODO: handle error case
-      assert((pos + len) <= stop);
+      const size_t buflen = static_cast<size_t>(size);
+      typedef unsigned char* buf_t;
+      const buf_t buf = new (std::nothrow) unsigned char[buflen];
+      if (buf == NULL)
+        return -1;
 
-      pos += len;  //consume length of size
-      assert((pos + size) <= stop);
-
-      pos += size;  //consume payload
-      assert(pos <= stop);
-    }
-  }
-}
-
-bool ContentEncoding::ParseContentEncodingEntry(long long start,
-                                                long long size,
-                                                IMkvReader* const pReader) {
-  assert(pReader);
-
-  long long pos = start;
-  const long long stop = start + size;
-
-  // Count ContentCompression and ContentEncryption elements.
-  long long pos1 = start;
-  int compression_count = 0;
-  int encryption_count = 0;
-
-  while (pos1 < stop) {
-    long len;
-    const long long id = ReadUInt(pReader, pos1, len);
-    assert(id >= 0);
-    assert((pos1 + len) <= stop);
-
-    pos1 += len;  //consume id
-
-    const long long size = ReadUInt(pReader, pos1, len);
-    assert(size >= 0);
-    assert((pos1 + len) <= stop);
-
-    pos1 += len;  //consume length of size
-
-    //pos now designates start of element
-    if (id == 0x1034)  // ContentCompression ID
-      ++compression_count;
-
-    if (id == 0x1035)  // ContentEncryption ID
-      ++encryption_count;
-
-    pos1 += size;  //consume payload
-    assert(pos1 <= stop);
-  }
-
-  if (compression_count <= 0 && encryption_count <= 0)
-    return false;
-
-  if (compression_count > 0) {
-    compression_entries_ = new ContentCompression*[compression_count];
-    compression_entries_end_ = compression_entries_;
-  }
-
-  if (encryption_count > 0) {
-    encryption_entries_ = new ContentEncryption*[encryption_count];
-    encryption_entries_end_ = encryption_entries_;
-  }
-
-  while (pos < stop) {
-#ifdef _DEBUG
-    long len;
-    const long long id = ReadUInt(pReader, pos, len);
-    assert(id >= 0);  //TODO: handle error case
-    assert((pos + len) <= stop);
-#endif
-
-    long long value;
-    if (Match(pReader, pos, 0x1031, value)) {
-      // ContentEncodingOrder
-      encoding_order_ = value;
-    } else if (Match(pReader, pos, 0x1032, value)) {
-      // ContentEncodingScope
-      encoding_scope_ = value;
-      assert(encoding_scope_ > 0);
-    } else if (Match(pReader, pos, 0x1033, value)) {
-      // ContentEncodingType
-      encoding_type_ = value;
-    } else {
-      long len;
-      const long long id = ReadUInt(pReader, pos, len);
-      assert(id >= 0);  //TODO: handle error case
-      assert((pos + len) <= stop);
-
-      pos += len;  //consume id
-
-      const long long size = ReadUInt(pReader, pos, len);
-      assert(size >= 0);  //TODO: handle error case
-      assert((pos + len) <= stop);
-
-      pos += len;  //consume length of size
-      assert((pos + size) <= stop);
-
-      //pos now designates start of payload
-
-      if (id == 0x1034) {
-        // ContentCompression ID
-        // TODO(fgaligan): Add code to parse ContentCompression elements.
-      } else if (id == 0x1035) {
-        // ContentEncryption ID
-        ContentEncryption* const encryption = new ContentEncryption();
-
-        ParseEncryptionEntry(pos, size, pReader, encryption);
-        *encryption_entries_end_ = encryption;
-        ++encryption_entries_end_;
+      const int read_status = pReader->Read(pos, buflen, buf);
+      if (read_status) {
+        delete [] buf;
+        return status;
       }
 
-      pos += size;  //consume payload
-      assert(pos <= stop);
+      encryption->key_id = buf;
+      encryption->key_id_len = buflen;
+    } else if (id == 0x7E3) {
+      // ContentSignature
+      delete[] encryption->signature;
+      encryption->signature = NULL;
+      encryption->signature_len = 0;
+
+      if (size <= 0)
+        return E_FILE_FORMAT_INVALID;
+
+      const size_t buflen = static_cast<size_t>(size);
+      typedef unsigned char* buf_t;
+      const buf_t buf = new (std::nothrow) unsigned char[buflen];
+      if (buf == NULL)
+        return -1;
+
+      const int read_status = pReader->Read(pos, buflen, buf);
+      if (read_status) {
+        delete [] buf;
+        return status;
+      }
+
+      encryption->signature = buf;
+      encryption->signature_len = buflen;
+    } else if (id == 0x7E4) {
+      // ContentSigKeyID
+      delete[] encryption->sig_key_id;
+      encryption->sig_key_id = NULL;
+      encryption->sig_key_id_len = 0;
+
+      if (size <= 0)
+        return E_FILE_FORMAT_INVALID;
+
+      const size_t buflen = static_cast<size_t>(size);
+      typedef unsigned char* buf_t;
+      const buf_t buf = new (std::nothrow) unsigned char[buflen];
+      if (buf == NULL)
+        return -1;
+
+      const int read_status = pReader->Read(pos, buflen, buf);
+      if (read_status) {
+        delete [] buf;
+        return status;
+      }
+
+      encryption->sig_key_id = buf;
+      encryption->sig_key_id_len = buflen;
+    } else if (id == 0x7E5) {
+      // ContentSigAlgo
+      encryption->sig_algo = UnserializeUInt(pReader, pos, size);
+    } else if (id == 0x7E6) {
+      // ContentSigHashAlgo
+      encryption->sig_hash_algo = UnserializeUInt(pReader, pos, size);
+    } else if (id == 0x7E7) {
+      // ContentEncAESSettings
+      const long status = ParseContentEncAESSettingsEntry(
+          pos,
+          size,
+          pReader,
+          &encryption->aes_settings);
+      if (status)
+        return status;
     }
+
+    pos += size;  //consume payload
+    assert(pos <= stop);
   }
 
-  assert(pos == stop);
-
-  return true;
+  return 0;
 }
 
 Track::Track(
@@ -5038,7 +5119,7 @@ unsigned long Track::GetContentEncodingCount() const {
   return static_cast<unsigned long>(count);
 }
 
-void Track::ParseContentEncodingsEntry(long long start, long long size) {
+long Track::ParseContentEncodingsEntry(long long start, long long size) {
   IMkvReader* const pReader = m_pSegment->m_pReader;
   assert(pReader);
 
@@ -5046,70 +5127,71 @@ void Track::ParseContentEncodingsEntry(long long start, long long size) {
   const long long stop = start + size;
 
   // Count ContentEncoding elements.
-  long long pos1 = start;
   int count = 0;
+  while (pos < stop) {
+    long long id, size;
+    const long status = ParseElementHeader(pReader,
+                                           pos,
+                                           stop,
+                                           id,
+                                           size);
+    if (status < 0)  //error
+      return status;
 
-  while (pos1 < stop) {
-    long len;
-    const long long id = ReadUInt(pReader, pos1, len);
-    assert(id >= 0);
-    assert((pos1 + len) <= stop);
-
-    pos1 += len;  //consume id
-
-    const long long size = ReadUInt(pReader, pos1, len);
-    assert(size >= 0);
-    assert((pos1 + len) <= stop);
-
-    pos1 += len;  //consume length of size
 
     //pos now designates start of element
     if (id == 0x2240)  // ContentEncoding ID
       ++count;
 
-    pos1 += size;  //consume payload
-    assert(pos1 <= stop);
+    pos += size;  //consume payload
+    assert(pos <= stop);
   }
 
   if (count <= 0)
-    return;
+    return -1;
 
-  content_encoding_entries_ = new ContentEncoding*[count];
+  content_encoding_entries_ = new (std::nothrow) ContentEncoding*[count];
+  if (!content_encoding_entries_)
+    return -1;
+
   content_encoding_entries_end_ = content_encoding_entries_;
 
+  pos = start;
   while (pos < stop) {
-    long len;
-    const long long id = ReadUInt(pReader, pos, len);
-    assert(id >= 0);
-    assert((pos + len) <= stop);
-
-    pos += len;  //consume id
-
-    const long long size1 = ReadUInt(pReader, pos, len);
-    assert(size1 >= 0);
-    assert((pos + len) <= stop);
-
-    pos += len;  //consume length of size
+    long long id, size;
+    long status = ParseElementHeader(pReader,
+                                     pos,
+                                     stop,
+                                     id,
+                                     size);
+    if (status < 0)  //error
+      return status;
 
     //pos now designates start of element
     if (id == 0x2240) { // ContentEncoding ID
-      ContentEncoding* const content_encoding = new ContentEncoding();
+      ContentEncoding* const content_encoding =
+          new (std::nothrow) ContentEncoding();
+      if (!content_encoding)
+        return -1;
 
-      if (!content_encoding->ParseContentEncodingEntry(pos, size1, pReader)) {
+      status = content_encoding->ParseContentEncodingEntry(pos,
+                                                           size,
+                                                           pReader);
+      if (status) {
         delete content_encoding;
-      } else {
-        *content_encoding_entries_end_ = content_encoding;
-        ++content_encoding_entries_end_;
+        return status;
       }
+
+      *content_encoding_entries_end_++ = content_encoding;
     }
 
-    pos += size1;  //consume payload
+    pos += size;  //consume payload
     assert(pos <= stop);
   }
 
   assert(pos == stop);
 
-  return;
+  return 0;
 }
 
 Track::EOSBlock::EOSBlock() :

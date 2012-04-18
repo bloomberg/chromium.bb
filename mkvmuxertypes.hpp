@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -19,6 +19,7 @@
 namespace mkvmuxer {
 
 typedef unsigned char      uint8;
+typedef short              int16;
 typedef int                int32;
 typedef unsigned int       uint32;
 typedef long long          int64;

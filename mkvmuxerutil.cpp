@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -22,7 +22,6 @@
 namespace mkvmuxer {
 
 int32 GetCodedUIntSize(uint64 value) {
-
   if (value < 0x000000000000007FULL)
     return 1;
   else if (value < 0x0000000000003FFFULL)
@@ -41,7 +40,6 @@ int32 GetCodedUIntSize(uint64 value) {
 }
 
 int32 GetUIntSize(uint64 value) {
-
   if (value < 0x0000000000000100ULL)
     return 1;
   else if (value < 0x0000000000010000ULL)
@@ -309,9 +307,8 @@ uint64 WriteSimpleBlock(IMkvWriter* writer,
                         const uint8* data,
                         uint64 length,
                         char track_number,
-                        short timecode,
+                        int16 timecode,
                         bool is_key) {
-
   if (!writer || !data || length < 1 || track_number < 1 || timecode < 0)
     return false;
 
@@ -329,7 +326,7 @@ uint64 WriteSimpleBlock(IMkvWriter* writer,
     return 0;
 
   uint64 flags = 0;
-  if(is_key)
+  if (is_key)
     flags |= 0x80;
 
   if (SerializeInt(writer, flags, 1))
@@ -380,11 +377,11 @@ uint64 WriteVoidElement(IMkvWriter* writer, uint64 size) {
   return void_size;
 }
 
-void GetVersion(int32& major, int32& minor, int32& build, int32& revision) {
-  major = 0;
-  minor = 0;
-  build = 1;
-  revision = 0;
+void GetVersion(int32* major, int32* minor, int32* build, int32* revision) {
+  *major = 0;
+  *minor = 1;
+  *build = 0;
+  *revision = 0;
 }
 
 }  // namespace mkvmuxer

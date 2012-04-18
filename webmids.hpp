@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -101,6 +101,9 @@ enum MkvId {
   kMkvContentEncryption       = 0x5035,
   kMkvContentEncAlgo          = 0x47E1,
   kMkvContentEncKeyID         = 0x47E2,
+  kMkvContentEncAESSettings   = 0x47E7,
+  kMkvAESSettingsCipherMode   = 0x47E8,
+  kMkvAESSettingsCipherInitData = 0x47E9,
   //end ContentEncodings
   //Cueing Data
   kMkvCues                    = 0x1C53BB6B,

@@ -77,7 +77,8 @@ Frame::~Frame() {
 }
 
 bool Frame::Init(const uint8* frame, uint64 length) {
-  uint8* const data = new (std::nothrow) uint8[static_cast<size_t>(length)];
+  uint8* const data =
+      new (std::nothrow) uint8[static_cast<size_t>(length)];  // NOLINT
   if (!data)
     return false;
 
@@ -198,7 +199,8 @@ bool Cues::AddCue(CuePoint* cue) {
     if (new_capacity < 1)
       return false;
 
-    CuePoint** const cues = new (std::nothrow) CuePoint*[new_capacity];
+    CuePoint** const cues =
+        new (std::nothrow) CuePoint*[new_capacity];  // NOLINT
     if (!cues)
       return false;
 
@@ -267,6 +269,45 @@ bool Cues::Write(IMkvWriter* writer) const {
 
 ///////////////////////////////////////////////////////////////
 //
+// ContentEncAESSettings Class
+
+ContentEncAESSettings::ContentEncAESSettings() : cipher_mode_(kCTR) {}
+
+uint64 ContentEncAESSettings::Size() const {
+  const uint64 payload = PayloadSize();
+  const uint64 size =
+      EbmlMasterElementSize(kMkvContentEncAESSettings, payload) + payload;
+  return size;
+}
+
+bool ContentEncAESSettings::Write(IMkvWriter* writer) const {
+  const uint64 payload = PayloadSize();
+
+  if (!WriteEbmlMasterElement(writer, kMkvContentEncAESSettings, payload))
+    return false;
+
+  const int64 payload_position = writer->Position();
+  if (payload_position < 0)
+    return false;
+
+  if (!WriteEbmlElement(writer, kMkvAESSettingsCipherMode, cipher_mode_))
+    return false;
+
+  const int64 stop_position = writer->Position();
+  if (stop_position < 0 ||
+      stop_position - payload_position != static_cast<int64>(payload))
+    return false;
+
+  return true;
+}
+
+uint64 ContentEncAESSettings::PayloadSize() const {
+  uint64 size = EbmlElementSize(kMkvAESSettingsCipherMode, cipher_mode_);
+  return size;
+}
+
+///////////////////////////////////////////////////////////////
+//
 // ContentEncoding Class
 
 ContentEncoding::ContentEncoding()
@@ -288,7 +329,8 @@ bool ContentEncoding::SetEncryptionID(const uint8* id, uint64 length) {
 
   delete [] enc_key_id_;
 
-  enc_key_id_ = new (std::nothrow) uint8[static_cast<size_t>(length)];
+  enc_key_id_ =
+      new (std::nothrow) uint8[static_cast<size_t>(length)];  // NOLINT
   if (!enc_key_id_)
     return false;
 
@@ -338,6 +380,9 @@ bool ContentEncoding::Write(IMkvWriter* writer) const {
                         enc_key_id_length_))
     return false;
 
+  if (!enc_aes_settings_.Write(writer))
+    return false;
+
   const int64 stop_position = writer->Position();
   if (stop_position < 0 ||
       stop_position - payload_position != static_cast<int64>(size))
@@ -367,12 +412,14 @@ uint64 ContentEncoding::EncodingSize(uint64 compresion_size,
 }
 
 uint64 ContentEncoding::EncryptionSize() const {
+  const uint64 aes_size = enc_aes_settings_.Size();
+
   uint64 encryption_size = EbmlElementSize(kMkvContentEncKeyID,
                                            enc_key_id_,
                                            enc_key_id_length_);
   encryption_size += EbmlElementSize(kMkvContentEncAlgo, enc_algo_);
 
-  return encryption_size;
+  return encryption_size + aes_size;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -411,12 +458,12 @@ bool Track::AddContentEncoding() {
   const uint32 count = content_encoding_entries_size_ + 1;
 
   ContentEncoding** const content_encoding_entries =
-      new (std::nothrow) ContentEncoding*[count];
+      new (std::nothrow) ContentEncoding*[count];  // NOLINT
   if (!content_encoding_entries)
     return false;
 
   ContentEncoding* const content_encoding =
-      new (std::nothrow) ContentEncoding();
+      new (std::nothrow) ContentEncoding();  // NOLINT
   if (!content_encoding) {
     delete [] content_encoding_entries;
     return false;
@@ -572,7 +619,7 @@ bool Track::SetCodecPrivate(const uint8* codec_private, uint64 length) {
   delete [] codec_private_;
 
   codec_private_ =
-      new (std::nothrow) uint8[static_cast<size_t>(length)];
+      new (std::nothrow) uint8[static_cast<size_t>(length)];  // NOLINT
   if (!codec_private_)
     return false;
 
@@ -587,7 +634,7 @@ void Track::set_codec_id(const char* codec_id) {
     delete [] codec_id_;
 
     const size_t length = strlen(codec_id) + 1;
-    codec_id_ = new (std::nothrow) char[length];
+    codec_id_ = new (std::nothrow) char[length];  // NOLINT
     if (codec_id_) {
 #ifdef _MSC_VER
       strcpy_s(codec_id_, length, codec_id);
@@ -604,7 +651,7 @@ void Track::set_language(const char* language) {
     delete [] language_;
 
     const size_t length = strlen(language) + 1;
-    language_ = new (std::nothrow) char[length];
+    language_ = new (std::nothrow) char[length];  // NOLINT
     if (language_) {
 #ifdef _MSC_VER
       strcpy_s(language_, length, language);
@@ -620,7 +667,7 @@ void Track::set_name(const char* name) {
     delete [] name_;
 
     const size_t length = strlen(name) + 1;
-    name_ = new (std::nothrow) char[length];
+    name_ = new (std::nothrow) char[length];  // NOLINT
     if (name_) {
 #ifdef _MSC_VER
       strcpy_s(name_, length, name);
@@ -842,7 +889,7 @@ bool Tracks::AddTrack(Track* track, int32 number) {
 
   const uint32 count = track_entries_size_ + 1;
 
-  Track** const track_entries = new (std::nothrow) Track*[count];
+  Track** const track_entries = new (std::nothrow) Track*[count];  // NOLINT
   if (!track_entries)
     return false;
 
@@ -977,7 +1024,7 @@ bool Cluster::Init(IMkvWriter* ptr_writer) {
 bool Cluster::AddFrame(const uint8* frame,
                        uint64 length,
                        uint64 track_number,
-                       short timecode,
+                       int16 timecode,
                        bool is_key) {
   if (finalized_)
     return false;
@@ -1191,7 +1238,7 @@ bool SegmentInfo::Init() {
   int32 minor;
   int32 build;
   int32 revision;
-  GetVersion(major, minor, build, revision);
+  GetVersion(&major, &minor, &build, &revision);
   char temp[256];
 #ifdef _MSC_VER
   sprintf_s(temp,
@@ -1215,7 +1262,7 @@ bool SegmentInfo::Init() {
 
   delete [] muxing_app_;
 
-  muxing_app_ = new (std::nothrow) char[app_len];
+  muxing_app_ = new (std::nothrow) char[app_len];  // NOLINT
   if (!muxing_app_)
     return false;
 
@@ -1304,7 +1351,7 @@ void SegmentInfo::set_writing_app(const char* app) {
     delete [] writing_app_;
 
     const size_t length = strlen(app) + 1;
-    writing_app_ = new (std::nothrow) char[length];
+    writing_app_ = new (std::nothrow) char[length];  // NOLINT
     if (writing_app_) {
 #ifdef _MSC_VER
       strcpy_s(writing_app_, length, app);
@@ -1483,7 +1530,7 @@ uint64 Segment::AddVideoTrack(int32 width, int32 height) {
 }
 
 uint64 Segment::AddVideoTrack(int32 width, int32 height, int32 number) {
-  VideoTrack* const vid_track = new (std::nothrow) VideoTrack();
+  VideoTrack* const vid_track = new (std::nothrow) VideoTrack();  // NOLINT
   if (!vid_track)
     return 0;
 
@@ -1505,7 +1552,7 @@ uint64 Segment::AddAudioTrack(int32 sample_rate, int32 channels) {
 uint64 Segment::AddAudioTrack(int32 sample_rate,
                               int32 channels,
                               int32 number) {
-  AudioTrack* const aud_track = new (std::nothrow) AudioTrack();
+  AudioTrack* const aud_track = new (std::nothrow) AudioTrack();  // NOLINT
   if (!aud_track)
     return 0;
 
@@ -1584,7 +1631,8 @@ bool Segment::AddFrame(const uint8* frame,
       if (new_capacity < 1)
         return false;
 
-      Cluster** const clusters = new (std::nothrow) Cluster*[new_capacity];
+      Cluster** const clusters =
+          new (std::nothrow) Cluster*[new_capacity];  // NOLINT
       if (!clusters)
         return false;
 
@@ -1636,7 +1684,7 @@ bool Segment::AddFrame(const uint8* frame,
     }
 
     cluster_list_[cluster_list_size_] =
-        new (std::nothrow) Cluster(timecode, MaxOffset());
+        new (std::nothrow) Cluster(timecode, MaxOffset());  // NOLINT
 
     if (!cluster_list_[cluster_list_size_])
       return false;
@@ -1676,7 +1724,7 @@ bool Segment::AddFrame(const uint8* frame,
   if (!cluster->AddFrame(frame,
                          length,
                          track_number,
-                         static_cast<short>(block_timecode),
+                         static_cast<int16>(block_timecode),
                          is_key))
     return false;
 
@@ -1703,7 +1751,7 @@ bool Segment::SetChunking(bool chunking, const char* filename) {
       return true;
 
     const size_t name_length = strlen(filename) + 1;
-    char* const temp = new (std::nothrow) char[name_length];
+    char* const temp = new (std::nothrow) char[name_length];  // NOLINT
     if (!temp)
       return false;
 
@@ -1720,19 +1768,19 @@ bool Segment::SetChunking(bool chunking, const char* filename) {
       return false;
 
     if (!chunk_writer_cluster_) {
-      chunk_writer_cluster_ = new (std::nothrow) MkvWriter();
+      chunk_writer_cluster_ = new (std::nothrow) MkvWriter();  // NOLINT
       if (!chunk_writer_cluster_)
         return false;
     }
 
     if (!chunk_writer_cues_) {
-      chunk_writer_cues_ = new (std::nothrow) MkvWriter();
+      chunk_writer_cues_ = new (std::nothrow) MkvWriter();  // NOLINT
       if (!chunk_writer_cues_)
         return false;
     }
 
     if (!chunk_writer_header_) {
-      chunk_writer_header_ = new (std::nothrow) MkvWriter();
+      chunk_writer_header_ = new (std::nothrow) MkvWriter();  // NOLINT
       if (!chunk_writer_header_)
         return false;
     }
@@ -1741,7 +1789,7 @@ bool Segment::SetChunking(bool chunking, const char* filename) {
       return false;
 
     const size_t header_length = strlen(filename) + strlen(".hdr") + 1;
-    char* const header = new (std::nothrow) char[header_length];
+    char* const header = new (std::nothrow) char[header_length];  // NOLINT
     if (!header)
       return false;
 
@@ -1877,7 +1925,7 @@ bool Segment::AddCuePoint(uint64 timestamp) {
   if (!cluster)
     return false;
 
-  CuePoint* const cue = new (std::nothrow) CuePoint();
+  CuePoint* const cue = new (std::nothrow) CuePoint();  // NOLINT
   if (!cue)
     return false;
 
@@ -1898,13 +1946,13 @@ bool Segment::UpdateChunkName(const char* ext, char** name) const {
 
   char ext_chk[64];
 #ifdef _MSC_VER
-  sprintf_s(ext_chk, 64, "_%06d.%s", chunk_count_, ext);
+  sprintf_s(ext_chk, sizeof(ext_chk), "_%06d.%s", chunk_count_, ext);
 #else
-  snprintf(ext_chk, 64, "_%06d.%s", chunk_count_, ext);
+  snprintf(ext_chk, sizeof(ext_chk), "_%06d.%s", chunk_count_, ext);
 #endif
 
   const size_t length = strlen(chunking_base_name_) + strlen(ext_chk) + 1;
-  char* const str = new (std::nothrow) char[length];
+  char* const str = new (std::nothrow) char[length];  // NOLINT
   if (!str)
     return false;
 
@@ -1951,7 +1999,7 @@ bool Segment::QueueFrame(Frame* frame) {
     if (new_capacity < 1)
       return false;
 
-    Frame** const frames = new (std::nothrow) Frame*[new_capacity];
+    Frame** const frames = new (std::nothrow) Frame*[new_capacity];  // NOLINT
     if (!frames)
       return false;
 
@@ -1997,7 +2045,7 @@ bool Segment::WriteFramesAll() {
       if (!cluster->AddFrame(frame->frame(),
                              frame->length(),
                              frame->track_number(),
-                             static_cast<short>(block_timecode),
+                             static_cast<int16>(block_timecode),
                              frame->is_key()))
         return false;
 
@@ -2053,7 +2101,7 @@ bool Segment::WriteFramesLessThan(uint64 timestamp) {
       if (!cluster->AddFrame(frame_prev->frame(),
                              frame_prev->length(),
                              frame_prev->track_number(),
-                             static_cast<short>(block_timecode),
+                             static_cast<int16>(block_timecode),
                              frame_prev->is_key()))
         return false;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -203,6 +203,10 @@ private:
 // compressed with zlib or header stripping.
 class ContentEncoding {
 public:
+    enum {
+      kCTR = 1
+    };
+
     ContentEncoding();
     ~ContentEncoding();
 
@@ -213,6 +217,14 @@ public:
 
         unsigned long long algo;
         unsigned char* settings;
+    };
+
+    // ContentEncAESSettings element names
+    struct ContentEncAESSettings {
+      ContentEncAESSettings() : cipher_mode(kCTR) {}
+      ~ContentEncAESSettings() {}
+
+      unsigned long long cipher_mode;
     };
 
     // ContentEncryption element names
@@ -229,6 +241,8 @@ public:
         long long sig_key_id_len;
         unsigned long long sig_algo;
         unsigned long long sig_hash_algo;
+
+        ContentEncAESSettings aes_settings;
     };
 
     // Returns ContentCompression represented by |idx|. Returns NULL if |idx|
@@ -247,21 +261,30 @@ public:
     // element.
     unsigned long GetEncryptionCount() const;
 
+    // Parses the ContentEncAESSettings element from |pReader|. |start| is the
+    // starting offset of the ContentEncAESSettings payload. |size| is the
+    // size in bytes of the ContentEncAESSettings payload. |encryption| is
+    // where the parsed values will be stored.
+    long ParseContentEncAESSettingsEntry(long long start,
+                                         long long size,
+                                         IMkvReader* pReader,
+                                         ContentEncAESSettings* aes);
+
     // Parses the ContentEncoding element from |pReader|. |start| is the
     // starting offset of the ContentEncoding payload. |size| is the size in
     // bytes of the ContentEncoding payload. Returns true on success.
-    bool ParseContentEncodingEntry(long long start,
+    long ParseContentEncodingEntry(long long start,
                                    long long size,
-                                   IMkvReader* const pReader);
+                                   IMkvReader* pReader);
 
     // Parses the ContentEncryption element from |pReader|. |start| is the
     // starting offset of the ContentEncryption payload. |size| is the size in
     // bytes of the ContentEncryption payload. |encryption| is where the parsed
     // values will be stored.
-    void ParseEncryptionEntry(long long start,
+    long ParseEncryptionEntry(long long start,
                               long long size,
-                              IMkvReader* const pReader,
-                              ContentEncryption* const encryption);
+                              IMkvReader* pReader,
+                              ContentEncryption* encryption);
 
     unsigned long long encoding_order() const { return encoding_order_; }
     unsigned long long encoding_scope() const { return encoding_scope_; }
@@ -349,7 +372,7 @@ public:
     const ContentEncoding* GetContentEncodingByIndex(unsigned long idx) const;
     unsigned long GetContentEncodingCount() const;
 
-    void ParseContentEncodingsEntry(long long start, long long size);
+    long ParseContentEncodingsEntry(long long start, long long size);
 
 protected:
     Track(

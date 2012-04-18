@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The WebM project authors. All Rights Reserved.
+// Copyright (c) 2012 The WebM project authors. All Rights Reserved.
 //
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file in the root of the source
@@ -9,7 +9,7 @@
 #include "mkvwriter.hpp"
 
 #ifdef _MSC_VER
-#include <share.h> // for _SH_DENYWR
+#include <share.h>  // for _SH_DENYWR
 #endif
 
 #include <new>

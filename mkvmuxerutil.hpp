@@ -75,7 +75,7 @@ uint64 WriteVoidElement(IMkvWriter* writer, uint64 size);
 
 // Returns the version number of the muxer in |major|, |minor|, |build|,
 // and |revision|.
-void GetVersion(int32& major, int32& minor, int32& build, int32& revision);
+void GetVersion(int32* major, int32* minor, int32* build, int32* revision);
 
 }  //end namespace mkvmuxer
 
