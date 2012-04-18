@@ -324,9 +324,9 @@ mode-buildbot-arm() {
   # TODO(dschuff): Enable more sandboxed tests on hardware
   build-sbtc-prerequisites "arm"
 
-  scons-build-test "arm" \
-    "${qemuflags} use_sandboxed_translator=1 translate_in_build_step=0" \
-    "toolchain_tests"
+  scons-stage "arm" \
+    "${qemuflags} use_sandboxed_translator=1 translate_in_build_step=0 \
+    do_not_run_tests=1" "toolchain_tests"
 
   browser-tests "arm" "${mode}"
   ad-hoc-shared-lib-tests "arm"
