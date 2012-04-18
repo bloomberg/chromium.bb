@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/string16.h"
@@ -46,9 +47,22 @@ namespace browser {
 
 namespace {
 
+// Record a time in seconds, over a potential interval of about a day. Must be a
+// macro and not a function because the histograms system requires a unique
+// static variable at the site of each call.
+#define HISTOGRAM_SECONDS(name, sample) HISTOGRAM_CUSTOM_COUNTS( \
+    name, sample, 1, 10000, 50)
+// Record a size in megabytes, over a potential interval up to 32 GB.
+#define HISTOGRAM_MEGABYTES(name, sample) HISTOGRAM_CUSTOM_COUNTS( \
+    name, sample, 1, 32768, 50)
+
 // The default interval in seconds after which to adjust the oom_score_adj
 // value.
 const int kAdjustmentIntervalSeconds = 10;
+
+// If there has been no priority adjustment in this interval, we assume the
+// machine was suspended and correct our timing statistics.
+const int kSuspendThresholdSeconds = kAdjustmentIntervalSeconds * 4;
 
 // The default interval in milliseconds to wait before setting the score of
 // currently focused tab.
@@ -58,29 +72,6 @@ const int kFocusedTabScoreAdjustIntervalMs = 500;
 // the WebContents could be deleted if the user closed the tab.
 int64 IdFromTabContents(WebContents* web_contents) {
   return reinterpret_cast<int64>(web_contents);
-}
-
-// Discards a tab with the given unique ID.  Returns true if discard occurred.
-bool DiscardTabById(int64 target_web_contents_id) {
-  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
-       browser_iterator != BrowserList::end(); ++browser_iterator) {
-    Browser* browser = *browser_iterator;
-    TabStripModel* model = browser->tabstrip_model();
-    for (int idx = 0; idx < model->count(); idx++) {
-      // Can't discard tabs that are already discarded.
-      if (model->IsTabDiscarded(idx))
-        continue;
-      WebContents* web_contents = model->GetTabContentsAt(idx)->web_contents();
-      int64 web_contents_id = IdFromTabContents(web_contents);
-      if (web_contents_id == target_web_contents_id) {
-        LOG(WARNING) << "Discarding tab " << idx
-            << " id " << target_web_contents_id;
-        model->DiscardTabContentsAt(idx);
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 }  // namespace
@@ -100,7 +91,9 @@ OomPriorityManager::TabStats::~TabStats() {
 }
 
 OomPriorityManager::OomPriorityManager()
-  : focused_tab_pid_(0), low_memory_observer_(new LowMemoryObserver) {
+    : focused_tab_pid_(0),
+      low_memory_observer_(new LowMemoryObserver),
+      discard_count_(0) {
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllBrowserContextsAndSources());
@@ -124,6 +117,7 @@ void OomPriorityManager::Start() {
                  &OomPriorityManager::AdjustOomPriorities);
   }
   low_memory_observer_->Start();
+  start_time_ = TimeTicks::Now();
 }
 
 void OomPriorityManager::Stop() {
@@ -165,6 +159,76 @@ bool OomPriorityManager::DiscardTab() {
       return true;
   }
   return false;
+}
+
+bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
+  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
+       browser_iterator != BrowserList::end(); ++browser_iterator) {
+    Browser* browser = *browser_iterator;
+    TabStripModel* model = browser->tabstrip_model();
+    for (int idx = 0; idx < model->count(); idx++) {
+      // Can't discard tabs that are already discarded.
+      if (model->IsTabDiscarded(idx))
+        continue;
+      WebContents* web_contents = model->GetTabContentsAt(idx)->web_contents();
+      int64 web_contents_id = IdFromTabContents(web_contents);
+      if (web_contents_id == target_web_contents_id) {
+        LOG(WARNING) << "Discarding tab " << idx
+            << " id " << target_web_contents_id;
+        // Record statistics before discarding because we want to capture the
+        // memory state that lead to the discard.
+        RecordDiscardStatistics();
+        model->DiscardTabContentsAt(idx);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+void OomPriorityManager::RecordDiscardStatistics() {
+  // Record a raw count so we can compare to discard reloads.
+  discard_count_++;
+  HISTOGRAM_COUNTS_10000("Tabs.Discard.DiscardCount", discard_count_);
+
+  // TODO(jamescook): Maybe incorporate extension count?
+  HISTOGRAM_COUNTS_100("Tabs.Discard.TabCount", GetTabCount());
+
+  // TODO(jamescook): If the time stats prove too noisy, then divide up users
+  // based on how heavily they use Chrome using tab count as a proxy.
+  // Bin into <= 1, <= 2, <= 4, <= 8, etc.
+  if (last_discard_time_.is_null()) {
+    // This is the first discard this session.
+    TimeDelta interval = TimeTicks::Now() - start_time_;
+    int interval_seconds = static_cast<int>(interval.InSeconds());
+    HISTOGRAM_SECONDS("Tabs.Discard.InitialTime", interval_seconds);
+  } else {
+    // Not the first discard, so compute time since last discard.
+    TimeDelta interval = TimeTicks::Now() - last_discard_time_;
+    int interval_seconds = static_cast<int>(interval.InSeconds());
+    HISTOGRAM_SECONDS("Tabs.Discard.IntervalTime", interval_seconds);
+  }
+  // Record Chrome's concept of system memory usage at the time of the discard.
+  base::SystemMemoryInfoKB memory;
+  if (base::GetSystemMemoryInfo(&memory)) {
+    int mem_anonymous_kb = memory.active_anon + memory.inactive_anon;
+    HISTOGRAM_MEGABYTES("Tabs.Discard.MemAnonymousMB", mem_anonymous_kb / 1024);
+    int mem_available_kb =
+        memory.active_file + memory.inactive_file + memory.free;
+    HISTOGRAM_MEGABYTES("Tabs.Discard.MemAvailableMB", mem_available_kb / 1024);
+  }
+  // Set up to record the next interval.
+  last_discard_time_ = TimeTicks::Now();
+}
+
+int OomPriorityManager::GetTabCount() const {
+  int tab_count = 0;
+  for (BrowserList::const_iterator browser_it = BrowserList::begin();
+      browser_it != BrowserList::end(); ++browser_it) {
+    Browser* browser = *browser_it;
+    tab_count += browser->tabstrip_model()->count();
+  }
+  return tab_count;
 }
 
 // Returns true if |first| is considered less desirable to be killed
@@ -269,6 +333,20 @@ void OomPriorityManager::Observe(int type,
 void OomPriorityManager::AdjustOomPriorities() {
   if (BrowserList::size() == 0)
     return;
+
+  // Check for a discontinuity in time caused by the machine being suspended.
+  if (!last_adjust_time_.is_null()) {
+    TimeDelta suspend_time = TimeTicks::Now() - last_adjust_time_;
+    if (suspend_time.InSeconds() > kSuspendThresholdSeconds) {
+      // We were probably suspended, move our event timers forward in time so
+      // when we subtract them out later we are counting "uptime".
+      start_time_ += suspend_time;
+      if (!last_discard_time_.is_null())
+        last_discard_time_ += suspend_time;
+    }
+  }
+  last_adjust_time_ = TimeTicks::Now();
+
   TabStatsList stats_list = GetTabStatsOnUIThread();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

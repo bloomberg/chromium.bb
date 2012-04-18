@@ -3539,8 +3539,9 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
         base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
     if (parsed_command_line.HasSwitch(switches::kReloadKilledTabs)) {
-      // Log to track down crash crbug.com/119068
       LOG(WARNING) << "Reloading killed tab at " << index;
+      static int reload_count = 0;
+      HISTOGRAM_COUNTS_10000("Tabs.SadTab.ReloadCount", ++reload_count);
       Reload(CURRENT_TAB);
       did_reload = true;
     }
@@ -3548,9 +3549,9 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
 
   // Discarded tabs always get reloaded.
   if (!did_reload && IsTabDiscarded(index)) {
-    // Log to track down crash crbug.com/119068
-    LOG(WARNING) << "Reloading discarded tab at " << index
-        << " gesture " << user_gesture;
+    LOG(WARNING) << "Reloading discarded tab at " << index;
+    static int reload_count = 0;
+    HISTOGRAM_COUNTS_10000("Tabs.Discard.ReloadCount", ++reload_count);
     Reload(CURRENT_TAB);
   }
 

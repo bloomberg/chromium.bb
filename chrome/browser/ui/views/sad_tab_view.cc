@@ -59,7 +59,28 @@ SadTabView::SadTabView(WebContents* web_contents, Kind kind)
 
   // Sometimes the user will never see this tab, so keep track of the total
   // number of creation events to compare to display events.
+  // TODO(jamescook): Remove this after R20 stable.  Keep it for now so we can
+  // compare R20 to earlier versions.
   UMA_HISTOGRAM_COUNTS("SadTab.Created", kind_);
+
+  // These stats should use the same counting approach and bucket size used for
+  // tab discard events in chrome/browser/oom_priority_manager.cc so they can be
+  // directly compared.
+  // TODO(jamescook): Maybe track time between sad tabs?
+  switch (kind_) {
+    case CRASHED: {
+      static int crashed = 0;
+      HISTOGRAM_COUNTS_10000("Tabs.SadTab.CrashCreated", ++crashed);
+      break;
+    }
+    case KILLED: {
+      static int killed = 0;
+      HISTOGRAM_COUNTS_10000("Tabs.SadTab.KillCreated", ++killed);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
 
   // Set the background color.
   set_background(views::Background::CreateSolidBackground(
@@ -180,7 +201,27 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
 void SadTabView::OnPaint(gfx::Canvas* canvas) {
   if (!painted_) {
     // User actually saw the error, keep track for user experience stats.
+    // TODO(jamescook): Remove this after R20 stable.  Keep it for now so we can
+    // compare R20 to earlier versions.
     UMA_HISTOGRAM_COUNTS("SadTab.Displayed", kind_);
+
+    // These stats should use the same counting approach and bucket size used
+    // for tab discard events in chrome/browser/oom_priority_manager.cc so they
+    // can be directly compared.
+    switch (kind_) {
+      case CRASHED: {
+        static int crashed = 0;
+        HISTOGRAM_COUNTS_10000("Tabs.SadTab.CrashDisplayed", ++crashed);
+        break;
+      }
+      case KILLED: {
+        static int killed = 0;
+        HISTOGRAM_COUNTS_10000("Tabs.SadTab.KillDisplayed", ++killed);
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
     painted_ = true;
   }
   View::OnPaint(canvas);
