@@ -164,8 +164,6 @@ ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     : ChromeBrowserMainParts(parameters) {
   if (base::win::GetMetroModule()) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kForceRendererAccessibility);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableTouchEvents);
   }
 }
