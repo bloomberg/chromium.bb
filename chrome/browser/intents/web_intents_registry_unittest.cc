@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
@@ -132,12 +133,10 @@ class WebIntentsRegistryTest : public testing::Test {
 
 // Simple consumer for WebIntentsRegistry notifications. Stores result data and
 // terminates UI thread when callback is invoked.
-class TestConsumer: public WebIntentsRegistry::Consumer {
+class TestConsumer {
  public:
-   virtual void OnIntentsQueryDone(
-       WebIntentsRegistry::QueryID id,
+   void OnIntentsQueryDone(
        const std::vector<webkit_glue::WebIntentServiceData>& services) {
-     DCHECK(id == expected_id_);
      services_ = services;
 
      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -152,10 +151,8 @@ class TestConsumer: public WebIntentsRegistry::Consumer {
      return false;
    }
 
-   virtual void OnIntentsDefaultsQueryDone(
-       WebIntentsRegistry::QueryID id,
+   void OnIntentsDefaultsQueryDone(
        const DefaultWebIntentService& default_service) {
-     DCHECK(id == expected_id_);
      default_ = default_service;
 
      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -168,9 +165,6 @@ class TestConsumer: public WebIntentsRegistry::Consumer {
      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
      MessageLoop::current()->Run();
    }
-
-   // QueryID callback is tied to.
-   WebIntentsRegistry::QueryID expected_id_;
 
    // Result data from callback.
    std::vector<webkit_glue::WebIntentServiceData> services_;
@@ -196,15 +190,15 @@ TEST_F(WebIntentsRegistryTest, BasicTests) {
   registry_.RegisterIntentService(service);
 
   TestConsumer consumer;
-  consumer.expected_id_ = registry_.GetIntentServices(ASCIIToUTF16("share"),
-                                                       ASCIIToUTF16("*"),
-                                                       &consumer);
+  registry_.GetIntentServices(ASCIIToUTF16("share"), ASCIIToUTF16("*"),
+                              base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                         base::Unretained(&consumer)));
   consumer.WaitForData();
   EXPECT_EQ(2U, consumer.services_.size());
 
-  consumer.expected_id_ = registry_.GetIntentServices(ASCIIToUTF16("search"),
-                                                       ASCIIToUTF16("*"),
-                                                       &consumer);
+  registry_.GetIntentServices(ASCIIToUTF16("search"), ASCIIToUTF16("*"),
+                              base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                         base::Unretained(&consumer)));
   consumer.WaitForData();
   EXPECT_EQ(1U, consumer.services_.size());
 
@@ -212,9 +206,9 @@ TEST_F(WebIntentsRegistryTest, BasicTests) {
   service.type = ASCIIToUTF16("image/*");
   registry_.UnregisterIntentService(service);
 
-  consumer.expected_id_ = registry_.GetIntentServices(ASCIIToUTF16("share"),
-                                                       ASCIIToUTF16("*"),
-                                                       &consumer);
+  registry_.GetIntentServices(ASCIIToUTF16("share"), ASCIIToUTF16("*"),
+                              base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                         base::Unretained(&consumer)));
   consumer.WaitForData();
   EXPECT_EQ(1U, consumer.services_.size());
 }
@@ -229,11 +223,12 @@ TEST_F(WebIntentsRegistryTest, GetIntentServicesForExtensionFilter) {
   ASSERT_EQ(2U, extensions_.size());
 
   TestConsumer consumer;
-  consumer.expected_id_ = registry_.GetIntentServicesForExtensionFilter(
+  registry_.GetIntentServicesForExtensionFilter(
       ASCIIToUTF16("http://webintents.org/edit"),
       ASCIIToUTF16("image/*"),
       edit_extension->id(),
-      &consumer);
+      base::Bind(&TestConsumer::OnIntentsQueryDone,
+          base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
 }
@@ -250,7 +245,8 @@ TEST_F(WebIntentsRegistryTest, GetAllIntents) {
   registry_.RegisterIntentService(service);
 
   TestConsumer consumer;
-  consumer.expected_id_ = registry_.GetAllIntentServices(&consumer);
+  registry_.GetAllIntentServices(base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                            base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(2U, consumer.services_.size());
 
@@ -270,7 +266,8 @@ TEST_F(WebIntentsRegistryTest, GetExtensionIntents) {
   ASSERT_EQ(2U, extensions_.size());
 
   TestConsumer consumer;
-  consumer.expected_id_ = registry_.GetAllIntentServices(&consumer);
+  registry_.GetAllIntentServices(base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                            base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(2U, consumer.services_.size());
 }
@@ -281,9 +278,10 @@ TEST_F(WebIntentsRegistryTest, GetSomeExtensionIntents) {
   ASSERT_EQ(2U, extensions_.size());
 
   TestConsumer consumer;
-  consumer.expected_id_ = registry_.GetIntentServices(
-      ASCIIToUTF16("http://webintents.org/edit"), ASCIIToUTF16("*"),
-      &consumer);
+  registry_.GetIntentServices(ASCIIToUTF16("http://webintents.org/edit"),
+                              ASCIIToUTF16("*"),
+                              base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                         base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
 }
@@ -301,15 +299,17 @@ TEST_F(WebIntentsRegistryTest, GetIntentsFromMixedSources) {
   registry_.RegisterIntentService(service);
 
   TestConsumer consumer;
-  consumer.expected_id_ = registry_.GetIntentServices(
+  registry_.GetIntentServices(
       ASCIIToUTF16("http://webintents.org/edit"), ASCIIToUTF16("*"),
-      &consumer);
+      base::Bind(&TestConsumer::OnIntentsQueryDone,
+          base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(2U, consumer.services_.size());
 
-  consumer.expected_id_ = registry_.GetIntentServices(
-      ASCIIToUTF16("http://webintents.org/share"), ASCIIToUTF16("*"),
-      &consumer);
+  registry_.GetIntentServices(ASCIIToUTF16("http://webintents.org/share"),
+                              ASCIIToUTF16("*"),
+                              base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                         base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
 }
@@ -391,43 +391,48 @@ TEST_F(WebIntentsRegistryTest, GetIntentsWithMimeAndLiteralMatching) {
   TestConsumer consumer;
 
   // Test specific match on both sides.
-  consumer.expected_id_ = registry_.GetIntentServices(
-      ASCIIToUTF16("http://webintents.org/share"),
-      ASCIIToUTF16("text/uri-list"), &consumer);
+  registry_.GetIntentServices(ASCIIToUTF16("http://webintents.org/share"),
+                              ASCIIToUTF16("text/uri-list"),
+                              base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                         base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
   EXPECT_EQ(services[2], consumer.services_[0]);
 
   // Test specific query, wildcard registration.
-  consumer.expected_id_ = registry_.GetIntentServices(
-      ASCIIToUTF16("http://webintents.org/share"),
-      ASCIIToUTF16("image/png"), &consumer);
+  registry_.GetIntentServices(ASCIIToUTF16("http://webintents.org/share"),
+                              ASCIIToUTF16("image/png"),
+                              base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                         base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
   EXPECT_EQ(services[0], consumer.services_[0]);
 
   // Test wildcard query, specific registration.
-  consumer.expected_id_ = registry_.GetIntentServices(
-      ASCIIToUTF16("http://webintents.org/share"),
-      ASCIIToUTF16("text/*"), &consumer);
+  registry_.GetIntentServices(ASCIIToUTF16("http://webintents.org/share"),
+                              ASCIIToUTF16("text/*"),
+                              base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                         base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(2U, consumer.services_.size());
   EXPECT_EQ(services[2], consumer.services_[0]);
   EXPECT_EQ(services[3], consumer.services_[1]);
 
   // Test wildcard query, wildcard registration.
-  consumer.expected_id_ = registry_.GetIntentServices(
-      ASCIIToUTF16("http://webintents.org/share"),
-      ASCIIToUTF16("image/*"), &consumer);
+  registry_.GetIntentServices(ASCIIToUTF16("http://webintents.org/share"),
+                              ASCIIToUTF16("image/*"),
+                              base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                         base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(2U, consumer.services_.size());
   EXPECT_EQ(services[0], consumer.services_[0]);
   EXPECT_EQ(services[1], consumer.services_[1]);
 
   // Test "catch-all" query.
-  consumer.expected_id_ = registry_.GetIntentServices(
-      ASCIIToUTF16("http://webintents.org/share"),
-      ASCIIToUTF16("*"), &consumer);
+  registry_.GetIntentServices(ASCIIToUTF16("http://webintents.org/share"),
+                              ASCIIToUTF16("*"),
+                              base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                         base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(5U, consumer.services_.size());
   EXPECT_TRUE(consumer.ServicesContains(services[0]));
@@ -437,32 +442,39 @@ TEST_F(WebIntentsRegistryTest, GetIntentsWithMimeAndLiteralMatching) {
   EXPECT_TRUE(consumer.ServicesContains(services[12]));
 
   // Test retrieve string literal match.
-  consumer.expected_id_ = registry_.GetIntentServices(
-      ASCIIToUTF16("http://webintents.org/share"),
-      ASCIIToUTF16("elsewhere"), &consumer);
+  registry_.GetIntentServices(
+      ASCIIToUTF16("http://webintents.org/share"), ASCIIToUTF16("elsewhere"),
+      base::Bind(&TestConsumer::OnIntentsQueryDone,
+                 base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
   EXPECT_EQ(services[4], consumer.services_[0]);
 
   // Test retrieve MIME-looking type but actually isn't
   // doesn't wildcard match.
-  consumer.expected_id_ = registry_.GetIntentServices(
+  registry_.GetIntentServices(
       ASCIIToUTF16("http://webintents.org/share"),
-      ASCIIToUTF16("nota/mimetype"), &consumer);
+      ASCIIToUTF16("nota/mimetype"),
+      base::Bind(&TestConsumer::OnIntentsQueryDone,
+                 base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(0U, consumer.services_.size());
 
   // Also a MIME-ish type that actually isn't.
-  consumer.expected_id_ = registry_.GetIntentServices(
+  registry_.GetIntentServices(
       ASCIIToUTF16("http://webintents.org/share"),
-      ASCIIToUTF16("x-/mimetype"), &consumer);
+      ASCIIToUTF16("x-/mimetype"),
+      base::Bind(&TestConsumer::OnIntentsQueryDone,
+                 base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(0U, consumer.services_.size());
 
   // Extension MIME type will match wildcard.
-  consumer.expected_id_ = registry_.GetIntentServices(
+  registry_.GetIntentServices(
       ASCIIToUTF16("http://webintents.org/share"),
-      ASCIIToUTF16("x-type/mimetype"), &consumer);
+      ASCIIToUTF16("x-type/mimetype"),
+      base::Bind(&TestConsumer::OnIntentsQueryDone,
+                       base::Unretained(&consumer)));
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
 }
@@ -480,11 +492,11 @@ TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
   TestConsumer consumer;
 
   // Test we can retrieve default entries by action.
-  consumer.expected_id_ = registry_.GetDefaultIntentService(
-      ASCIIToUTF16("share"),
-      ASCIIToUTF16("text/plain"),
+  registry_.GetDefaultIntentService(
+      ASCIIToUTF16("share"), ASCIIToUTF16("text/plain"),
       GURL("http://www.google.com/"),
-      &consumer);
+      base::Bind(&TestConsumer::OnIntentsDefaultsQueryDone,
+                 base::Unretained(&consumer)));
 
   consumer.WaitForData();
 
@@ -496,11 +508,11 @@ TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
   // default entries.
   consumer.default_ = DefaultWebIntentService();
   ASSERT_EQ("", consumer.default_.service_url);
-  consumer.expected_id_ = registry_.GetDefaultIntentService(
-      ASCIIToUTF16("no-share"),
-      ASCIIToUTF16("text/plain"),
+  registry_.GetDefaultIntentService(
+      ASCIIToUTF16("no-share"), ASCIIToUTF16("text/plain"),
       GURL("http://www.google.com/"),
-      &consumer);
+      base::Bind(&TestConsumer::OnIntentsDefaultsQueryDone,
+                 base::Unretained(&consumer)));
 
   consumer.WaitForData();
 
@@ -510,11 +522,11 @@ TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
   // default entries (they get filtered out).
   consumer.default_ = DefaultWebIntentService();
   ASSERT_EQ("", consumer.default_.service_url);
-  consumer.expected_id_ = registry_.GetDefaultIntentService(
-      ASCIIToUTF16("share"),
-      ASCIIToUTF16("image/plain"),
+  registry_.GetDefaultIntentService(
+      ASCIIToUTF16("share"), ASCIIToUTF16("image/plain"),
       GURL("http://www.google.com/"),
-      &consumer);
+      base::Bind(&TestConsumer::OnIntentsDefaultsQueryDone,
+                 base::Unretained(&consumer)));
 
   consumer.WaitForData();
 
@@ -523,11 +535,12 @@ TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
   // Check that a string-literal type won't match.
   consumer.default_ = DefaultWebIntentService();
   ASSERT_EQ("", consumer.default_.service_url);
-  consumer.expected_id_ = registry_.GetDefaultIntentService(
+  registry_.GetDefaultIntentService(
       ASCIIToUTF16("share"),
       ASCIIToUTF16("literal"),
       GURL("http://www.google.com/"),
-      &consumer);
+      base::Bind(&TestConsumer::OnIntentsDefaultsQueryDone,
+                 base::Unretained(&consumer)));
 
   consumer.WaitForData();
 
@@ -609,9 +622,11 @@ TEST_F(WebIntentsRegistryTest, GetIntentsCollapsesEquivalentIntents) {
   registry_.RegisterIntentService(services[1]);
 
   TestConsumer consumer;
-  consumer.expected_id_ = registry_.GetIntentServices(
-      ASCIIToUTF16("http://webintents.org/share"),
-      ASCIIToUTF16("image/*"), &consumer);
+  registry_.GetIntentServices(ASCIIToUTF16("http://webintents.org/share"),
+                              ASCIIToUTF16("image/*"),
+                              base::Bind(&TestConsumer::OnIntentsQueryDone,
+                                         base::Unretained(&consumer)));
+
   consumer.WaitForData();
   ASSERT_EQ(1U, consumer.services_.size());
   EXPECT_EQ(ASCIIToUTF16("image/png,image/jpg"), consumer.services_[0].type);

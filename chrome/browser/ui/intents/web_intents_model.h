@@ -77,8 +77,7 @@ class ServiceTreeNode : public WebIntentsTreeNode {
 };
 
 // UI-backing tree model of the data in the WebIntentsRegistry.
-class WebIntentsModel : public ui::TreeNodeModel<WebIntentsTreeNode>,
-                        public WebIntentsRegistry::Consumer {
+class WebIntentsModel : public ui::TreeNodeModel<WebIntentsTreeNode> {
  public:
   // Because nodes are fetched in a background thread, they are not
   // present at the time the Model is created. The Model then notifies its
@@ -102,13 +101,8 @@ class WebIntentsModel : public ui::TreeNodeModel<WebIntentsTreeNode>,
   void GetWebIntentsTreeNodeDictionary(const WebIntentsTreeNode& node,
                                        base::DictionaryValue* dict);
 
-  virtual void OnIntentsQueryDone(
-      WebIntentsRegistry::QueryID query_id,
-      const std::vector<webkit_glue::WebIntentServiceData>& services) OVERRIDE;
-
-  virtual void OnIntentsDefaultsQueryDone(
-      WebIntentsRegistry::QueryID query_id,
-      const DefaultWebIntentService& default_service) OVERRIDE;
+  void OnIntentsQueryDone(
+      const std::vector<webkit_glue::WebIntentServiceData>& services);
 
  private:
   // Loads the data model from the WebIntentsRegistry.

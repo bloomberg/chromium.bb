@@ -22,31 +22,15 @@ class WebIntentsRegistry
     : public WebDataServiceConsumer,
       public ProfileKeyedService {
  public:
-  // Unique identifier for service queries.
-  typedef int QueryID;
-
   typedef std::vector<webkit_glue::WebIntentServiceData> IntentServiceList;
 
-  // An interface the WebIntentsRegistry uses to notify its clients when
-  // it has finished loading service data from the web database.
-  class Consumer {
-   public:
-    // Notifies the observer that the request has been
-    // completed.
-    virtual void OnIntentsQueryDone(
-        QueryID query_id,
-        const IntentServiceList& services) = 0;
+  // Callback used by WebIntentsRegistry to return results of data fetch.
+  typedef base::Callback<void(const IntentServiceList&)>
+      QueryCallback;
 
-    // Notifies the observer that a request for intents default service
-    // has been completed. If no default is found, the |default_service|
-    // service_url field will be empty.
-    virtual void OnIntentsDefaultsQueryDone(
-        QueryID query_id,
-        const DefaultWebIntentService& default_service) = 0;
-
-   protected:
-    virtual ~Consumer() {}
-  };
+  // Callback to return results of a defaults query.
+  typedef base::Callback<void(const DefaultWebIntentService&)>
+      DefaultQueryCallback;
 
   // Initializes, binds to a valid WebDataService.
   void Initialize(scoped_refptr<WebDataService> wds,
@@ -62,29 +46,31 @@ class WebIntentsRegistry
 
   // Requests all services matching |action| and |mimetype|.
   // |mimetype| can contain wildcards, i.e. "image/*" or "*".
-  // |consumer| must not be NULL.
-  QueryID GetIntentServices(const string16& action,
-                            const string16& mimetype,
-                            Consumer* consumer);
+  // |callback| must not be null.
+  void GetIntentServices(const string16& action,
+                         const string16& mimetype,
+                         const QueryCallback& callback);
 
-  // Requests all services. |consumer| must not be NULL
-  QueryID GetAllIntentServices(Consumer* consumer);
+  // Requests all services.
+  // |callback| must not be null.
+  void GetAllIntentServices(const QueryCallback& callback);
 
   // Tests for the existence of the given |service|. Calls the
   // provided |callback| with true if it exists, false if it does not.
   // Checks for |service| equality with ==.
-  QueryID IntentServiceExists(
+  // |callback| must not be null.
+  void IntentServiceExists(
       const webkit_glue::WebIntentServiceData& service,
       const base::Callback<void(bool)>& callback);
 
   // Requests all extension services matching |action|, |mimetype| and
   // |extension_id|.
   // |mimetype| must conform to definition as outlined for GetIntentServices.
-  // |consumer| must not be NULL.
-  QueryID GetIntentServicesForExtensionFilter(const string16& action,
+  // |callback| must not be null.
+  void GetIntentServicesForExtensionFilter(const string16& action,
                                               const string16& mimetype,
                                               const std::string& extension_id,
-                                              Consumer* consumer);
+                                              const QueryCallback& callback);
 
   // Record the given default service entry.
   virtual void RegisterDefaultIntentService(
@@ -97,10 +83,11 @@ class WebIntentsRegistry
 
   // Requests the best default intent service for the given invocation
   // parameters.
-  QueryID GetDefaultIntentService(const string16& action,
+  // |callback| must not be null.
+  void GetDefaultIntentService(const string16& action,
                                   const string16& type,
                                   const GURL& invoking_url,
-                                  Consumer* consumer);
+                                  const DefaultQueryCallback& callback);
 
  protected:
   // Make sure that only WebIntentsRegistryFactory can create an instance of
@@ -144,9 +131,6 @@ class WebIntentsRegistry
 
   // Map for all in-flight web data requests/intent queries.
   QueryMap queries_;
-
-  // Unique identifier for next intent query.
-  QueryID next_query_id_;
 
   // Local reference to Web Data Service.
   scoped_refptr<WebDataService> wds_;

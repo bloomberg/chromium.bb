@@ -133,11 +133,11 @@ WebIntentsTreeNode* WebIntentsModel::GetNodeForHost(const std::string& host) {
 
 void WebIntentsModel::LoadModel() {
   NotifyObserverBeginBatch();
-  intents_registry_->GetAllIntentServices(this);
+  intents_registry_->GetAllIntentServices(
+      base::Bind(&WebIntentsModel::OnIntentsQueryDone, base::Unretained(this)));
 }
 
 void WebIntentsModel::OnIntentsQueryDone(
-    WebIntentsRegistry::QueryID query_id,
     const std::vector<webkit_glue::WebIntentServiceData>& services) {
   for (size_t i = 0; i < services.size(); ++i) {
     WebIntentsTreeNode* n = GetNodeForHost(services[i].service_url.host());
@@ -153,11 +153,6 @@ void WebIntentsModel::OnIntentsQueryDone(
   }
 
   NotifyObserverEndBatch();
-}
-
-void WebIntentsModel::OnIntentsDefaultsQueryDone(
-    WebIntentsRegistry::QueryID query_id,
-    const DefaultWebIntentService& default_service) {
 }
 
 void WebIntentsModel::NotifyObserverBeginBatch() {

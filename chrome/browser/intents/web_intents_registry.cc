@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/string_util.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/default_web_intent_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -108,6 +109,22 @@ void FilterServicesByMimetype(const string16& mimetype,
   }
 }
 
+// Callback for existence checks. Converts a callback for a list of services
+// into a callback that returns true if the list contains a specific service.
+void ExistenceCallback(const webkit_glue::WebIntentServiceData& service,
+                       const base::Callback<void(bool)>& callback,
+                       const WebIntentsRegistry::IntentServiceList& list) {
+  for (WebIntentsRegistry::IntentServiceList::const_iterator i = list.begin();
+       i != list.end(); ++i) {
+    if (*i == service) {
+      callback.Run(true);
+      return;
+    }
+  }
+
+  callback.Run(false);
+}
+
 // Functor object for intent ordering.
 struct IntentOrdering {
   // Implements StrictWeakOrdering for intents, based on intent-equivalence.
@@ -146,14 +163,14 @@ using webkit_glue::WebIntentServiceData;
 
 // Internal object representing all data associated with a single query.
 struct WebIntentsRegistry::IntentsQuery {
-  // Unique query identifier.
-  QueryID query_id_;
-
   // Underlying data query.
   WebDataService::Handle pending_query_;
 
-  // The consumer for this particular query.
-  Consumer* consumer_;
+  // The callback for this particular query.
+  QueryCallback callback_;
+
+  // Callback for a query for defaults.
+  DefaultQueryCallback default_callback_;
 
   // The particular action to filter for while searching through extensions.
   // If |action_| is empty, return all extension-provided services.
@@ -167,22 +184,21 @@ struct WebIntentsRegistry::IntentsQuery {
   GURL url_;
 
   // Create a new IntentsQuery for services with the specified action/type.
-  IntentsQuery(QueryID id, Consumer* consumer,
+  IntentsQuery(const QueryCallback& callback,
                const string16& action, const string16& type)
-      : query_id_(id), consumer_(consumer), action_(action), type_(type) {}
+      : callback_(callback), action_(action), type_(type) {}
 
   // Create a new IntentsQuery for all intent services or for existence checks.
-  IntentsQuery(QueryID id, Consumer* consumer)
-      : query_id_(id), consumer_(consumer), type_(ASCIIToUTF16("*")) {}
+  explicit IntentsQuery(const QueryCallback callback)
+      : callback_(callback), type_(ASCIIToUTF16("*")) {}
 
   // Create a new IntentsQuery for default services.
-  IntentsQuery(QueryID id, Consumer* consumer,
+  IntentsQuery(const DefaultQueryCallback& callback,
                const string16& action, const string16& type, const GURL& url)
-      : query_id_(id), consumer_(consumer),
-        action_(action), type_(type), url_(url) {}
+      : default_callback_(callback), action_(action), type_(type), url_(url) {}
 };
 
-WebIntentsRegistry::WebIntentsRegistry() : next_query_id_(0) {}
+WebIntentsRegistry::WebIntentsRegistry() {}
 
 WebIntentsRegistry::~WebIntentsRegistry() {
   // Cancel all pending queries, since we can't handle them any more.
@@ -238,7 +254,7 @@ void WebIntentsRegistry::OnWebDataServiceRequestDone(
   // Collapse intents that are equivalent for all but |type|.
   CollapseIntents(&matching_services);
 
-  query->consumer_->OnIntentsQueryDone(query->query_id_, matching_services);
+  query->callback_.Run(matching_services);
   delete query;
 }
 
@@ -298,105 +314,59 @@ void WebIntentsRegistry::OnWebDataServiceDefaultsRequestDone(
       default_service = *iter;
   }
 
-  query->consumer_->OnIntentsDefaultsQueryDone(query->query_id_,
-                                               default_service);
+  query->default_callback_.Run(default_service);
   delete query;
 }
 
-WebIntentsRegistry::QueryID WebIntentsRegistry::GetIntentServices(
-    const string16& action, const string16& mimetype, Consumer* consumer) {
-  DCHECK(consumer);
+void WebIntentsRegistry::GetIntentServices(
+    const string16& action, const string16& mimetype,
+    const QueryCallback& callback) {
   DCHECK(wds_.get());
+  DCHECK(!callback.is_null());
 
-  IntentsQuery* query =
-      new IntentsQuery(next_query_id_++, consumer, action, mimetype);
+  IntentsQuery* query = new IntentsQuery(callback, action, mimetype);
   query->pending_query_ = wds_->GetWebIntentServices(action, this);
   queries_[query->pending_query_] = query;
-
-  return query->query_id_;
 }
 
-WebIntentsRegistry::QueryID WebIntentsRegistry::GetAllIntentServices(
-    Consumer* consumer) {
-  DCHECK(consumer);
+void WebIntentsRegistry::GetAllIntentServices(
+    const QueryCallback& callback) {
   DCHECK(wds_.get());
+  DCHECK(!callback.is_null());
 
-  IntentsQuery* query = new IntentsQuery(next_query_id_++, consumer);
+  IntentsQuery* query = new IntentsQuery(callback);
   query->pending_query_ = wds_->GetAllWebIntentServices(this);
   queries_[query->pending_query_] = query;
-
-  return query->query_id_;
 }
 
-// Trampoline consumer for calls to IntentServiceExists. Forwards existence
-// of the provided |service| to the provided |callback|.
-class ServiceCheckConsumer : public WebIntentsRegistry::Consumer {
- public:
-  ServiceCheckConsumer(const WebIntentServiceData& service,
-                       const base::Callback<void(bool)>& callback)
-      : callback_(callback),
-        service_(service) {}
-  virtual ~ServiceCheckConsumer() {}
-
-  // Gets the list of all services for a particular action. Check them all
-  // to see if |service_| is already registered.
-  virtual void OnIntentsQueryDone(
-      WebIntentsRegistry::QueryID id,
-      const WebIntentsRegistry::IntentServiceList& list) OVERRIDE {
-    scoped_ptr<ServiceCheckConsumer> self_deleter(this);
-
-    for (WebIntentsRegistry::IntentServiceList::const_iterator i = list.begin();
-         i != list.end(); ++i) {
-      if (*i == service_) {
-        callback_.Run(true);
-        return;
-      }
-    }
-
-    callback_.Run(false);
-  }
-
-  virtual void OnIntentsDefaultsQueryDone(
-      WebIntentsRegistry::QueryID query_id,
-      const DefaultWebIntentService& default_service) {}
-
- private:
-  base::Callback<void(bool)> callback_;
-  WebIntentServiceData service_;
-};
-
-WebIntentsRegistry::QueryID WebIntentsRegistry::IntentServiceExists(
+void WebIntentsRegistry::IntentServiceExists(
     const WebIntentServiceData& service,
     const base::Callback<void(bool)>& callback) {
+  DCHECK(!callback.is_null());
+
   IntentsQuery* query = new IntentsQuery(
-      next_query_id_++, new ServiceCheckConsumer(service, callback));
+      base::Bind(&ExistenceCallback, service, callback));
   query->pending_query_ = wds_->GetWebIntentServicesForURL(
       UTF8ToUTF16(service.service_url.spec()), this);
   queries_[query->pending_query_] = query;
-
-  return query->query_id_;
 }
 
-WebIntentsRegistry::QueryID
-    WebIntentsRegistry::GetIntentServicesForExtensionFilter(
+void WebIntentsRegistry::GetIntentServicesForExtensionFilter(
         const string16& action,
         const string16& mimetype,
         const std::string& extension_id,
-        Consumer* consumer) {
-  DCHECK(consumer);
+        const QueryCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   scoped_ptr<IntentsQuery> query(
-      new IntentsQuery(next_query_id_++, consumer, action, mimetype));
-  int query_id = query->query_id_;
+      new IntentsQuery(callback, action, mimetype));
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(&WebIntentsRegistry::DoGetIntentServicesForExtensionFilter,
                  base::Unretained(this),
                  base::Passed(&query), extension_id));
-
-  return query_id;
 }
 
 void WebIntentsRegistry::DoGetIntentServicesForExtensionFilter(
@@ -413,7 +383,7 @@ void WebIntentsRegistry::DoGetIntentServicesForExtensionFilter(
     FilterServicesByMimetype(query->type_, &matching_services);
   }
 
-  query->consumer_->OnIntentsQueryDone(query->query_id_, matching_services);
+  query->callback_.Run(matching_services);
 }
 
 void WebIntentsRegistry::RegisterDefaultIntentService(
@@ -428,18 +398,18 @@ void WebIntentsRegistry::UnregisterDefaultIntentService(
   wds_->RemoveDefaultWebIntentService(default_service);
 }
 
-WebIntentsRegistry::QueryID WebIntentsRegistry::GetDefaultIntentService(
+void WebIntentsRegistry::GetDefaultIntentService(
     const string16& action,
     const string16& type,
     const GURL& invoking_url,
-    Consumer* consumer) {
+    const DefaultQueryCallback& callback) {
+  DCHECK(!callback.is_null());
+
   IntentsQuery* query =
-      new IntentsQuery(next_query_id_++, consumer, action, type, invoking_url);
+      new IntentsQuery(callback, action, type, invoking_url);
   query->pending_query_ =
       wds_->GetDefaultWebIntentServicesForAction(action, this);
   queries_[query->pending_query_] = query;
-
-  return query->query_id_;
 }
 
 void WebIntentsRegistry::RegisterIntentService(

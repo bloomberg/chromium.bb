@@ -97,45 +97,6 @@ string16 GetIntentActionString(const std::string& action) {
     return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_CHOOSE_SERVICE);
 }
 
-// Self-deleting trampoline that forwards a WebIntentsRegistry response to a
-// callback.
-class WebIntentsRegistryTrampoline : public WebIntentsRegistry::Consumer {
- public:
-  typedef std::vector<webkit_glue::WebIntentServiceData> IntentServices;
-  typedef base::Callback<void(const IntentServices&)> ForwardingCallback;
-
-  explicit WebIntentsRegistryTrampoline(const ForwardingCallback& callback);
-  ~WebIntentsRegistryTrampoline();
-
-  // WebIntentsRegistry::Consumer implementation.
-  virtual void OnIntentsQueryDone(
-      WebIntentsRegistry::QueryID,
-      const std::vector<webkit_glue::WebIntentServiceData>& services) OVERRIDE;
-  virtual void OnIntentsDefaultsQueryDone(
-      WebIntentsRegistry::QueryID,
-      const DefaultWebIntentService& default_service) OVERRIDE {}
-
- private:
-  // Forwarding callback from |OnIntentsQueryDone|.
-  ForwardingCallback callback_;
-};
-
-WebIntentsRegistryTrampoline::WebIntentsRegistryTrampoline(
-    const ForwardingCallback& callback)
-    : callback_(callback) {
-}
-
-WebIntentsRegistryTrampoline::~WebIntentsRegistryTrampoline() {
-}
-
-void WebIntentsRegistryTrampoline::OnIntentsQueryDone(
-    WebIntentsRegistry::QueryID,
-    const std::vector<webkit_glue::WebIntentServiceData>& services) {
-  DCHECK(!callback_.is_null());
-  callback_.Run(services);
-  delete this;
-}
-
 // Self-deleting trampoline that forwards A URLFetcher response to a callback.
 class URLFetcherTrampoline : public content::URLFetcherDelegate {
  public:
@@ -227,10 +188,8 @@ void WebIntentPickerController::ShowDialog(Browser* browser,
   pending_async_count_+= 2;
   GetWebIntentsRegistry(wrapper_)->GetIntentServices(
       action, type,
-      // WebIntentsRegistryTrampoline is self-deleting.
-      new WebIntentsRegistryTrampoline(
           base::Bind(&WebIntentPickerController::OnWebIntentServicesAvailable,
-              weak_ptr_factory_.GetWeakPtr())));
+              weak_ptr_factory_.GetWeakPtr()));
   GetCWSIntentsRegistry(wrapper_)->GetIntentServices(
       action, type,
       base::Bind(&WebIntentPickerController::OnCWSIntentServicesAvailable,
@@ -344,10 +303,9 @@ void WebIntentPickerController::OnExtensionInstallSuccess(
       picker_model_->action(),
       picker_model_->mimetype(),
       id,
-      new WebIntentsRegistryTrampoline(
-          base::Bind(
-              &WebIntentPickerController::OnExtensionInstallServiceAvailable,
-              weak_ptr_factory_.GetWeakPtr())));
+      base::Bind(
+          &WebIntentPickerController::OnExtensionInstallServiceAvailable,
+          weak_ptr_factory_.GetWeakPtr()));
   AsyncOperationFinished();
 }
 
