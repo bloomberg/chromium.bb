@@ -52,6 +52,13 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
     return true;
   }
 
+  views::NativeWidgetHelperAura* CreateNativeWidgetHelper(
+      views::NativeWidgetAura* native_widget) OVERRIDE {
+    // The default behavior of the test delegate is to work in desktop
+    // mode. Return NULL here so NativeWidgetAura uses our RootWindow instead.
+    return NULL;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellViewsDelegate);
 };

@@ -7,6 +7,10 @@
 #include "base/logging.h"
 #include "ui/base/clipboard/clipboard.h"
 
+#if defined(USE_AURA)
+#include "ui/views/widget/desktop_native_widget_helper_aura.h"
+#endif
+
 namespace views {
 
 TestViewsDelegate::TestViewsDelegate()
@@ -56,5 +60,12 @@ bool TestViewsDelegate::UseTransparentWindows() const {
 int TestViewsDelegate::GetDispositionForEvent(int event_flags) {
   return 0;
 }
+
+#if defined(USE_AURA)
+views::NativeWidgetHelperAura* TestViewsDelegate::CreateNativeWidgetHelper(
+    views::NativeWidgetAura* native_widget) {
+  return new views::DesktopNativeWidgetHelperAura(native_widget);
+}
+#endif
 
 }  // namespace views
