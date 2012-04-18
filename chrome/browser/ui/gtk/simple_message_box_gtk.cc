@@ -48,7 +48,7 @@ void ShowErrorBox(gfx::NativeWindow parent,
                   const string16& message) {
   GtkWidget* dialog = gtk_message_dialog_new(parent,
                                              GTK_DIALOG_MODAL,
-                                             GTK_MESSAGE_ERROR,
+                                             GTK_MESSAGE_WARNING,
                                              GTK_BUTTONS_OK,
                                              "%s",
                                              UTF16ToUTF8(message).c_str());
