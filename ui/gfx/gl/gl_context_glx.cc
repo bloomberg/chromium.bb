@@ -129,7 +129,6 @@ bool GLContextGLX::Initialize(
 
   if (!context_) {
     LOG(ERROR) << "Couldn't create GL context.";
-    Destroy();
     return false;
   }
 
@@ -169,11 +168,14 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
   SetCurrent(this, surface);
   if (!InitializeExtensionBindings()) {
     ReleaseCurrent(surface);
+    Destroy();
     return false;
   }
 
   if (!surface->OnMakeCurrent(this)) {
     LOG(ERROR) << "Could not make current.";
+    ReleaseCurrent(surface);
+    Destroy();
     return false;
   }
 
@@ -185,7 +187,8 @@ void GLContextGLX::ReleaseCurrent(GLSurface* surface) {
     return;
 
   SetCurrent(NULL, NULL);
-  glXMakeContextCurrent(display_, 0, 0, NULL);
+  if (!glXMakeCurrent(display_, 0, 0))
+    LOG(ERROR) << "glXMakeCurrent failed in ReleaseCurrent";
 }
 
 bool GLContextGLX::IsCurrent(GLSurface* surface) {
