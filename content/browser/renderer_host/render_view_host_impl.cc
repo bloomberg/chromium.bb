@@ -917,8 +917,8 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopLoading, OnMsgDidStopLoading)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeLoadProgress,
                         OnMsgDidChangeLoadProgress)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
-                        OnMsgDocumentAvailableInMainFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInFrame,
+                        OnMsgDocumentAvailableInFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
                         OnMsgDocumentOnLoadCompletedInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContextMenu, OnMsgContextMenu)
@@ -961,7 +961,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Notifications,
@@ -1207,8 +1206,10 @@ void RenderViewHostImpl::OnMsgDidChangeLoadProgress(double load_progress) {
   delegate_->DidChangeLoadProgress(load_progress);
 }
 
-void RenderViewHostImpl::OnMsgDocumentAvailableInMainFrame() {
-  delegate_->DocumentAvailableInMainFrame(this);
+void RenderViewHostImpl::OnMsgDocumentAvailableInFrame(
+    bool main_frame,
+    const GURL& source_url) {
+  delegate_->DocumentAvailableInFrame(this, main_frame, source_url);
 }
 
 void RenderViewHostImpl::OnMsgDocumentOnLoadCompletedInMainFrame(
@@ -1800,12 +1801,6 @@ void RenderViewHostImpl::OnMsgShowPopup(
 void RenderViewHostImpl::OnRunFileChooser(
     const content::FileChooserParams& params) {
   delegate_->RunFileChooser(this, params);
-}
-
-void RenderViewHostImpl::OnWebUISend(const GURL& source_url,
-                                 const std::string& name,
-                                 const base::ListValue& args) {
-  delegate_->WebUISend(this, source_url, name, args);
 }
 
 void RenderViewHostImpl::OnDomOperationResponse(

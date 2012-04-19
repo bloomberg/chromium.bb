@@ -79,22 +79,21 @@ bool WebUIImpl::OnMessageReceived(const IPC::Message& message) {
 void WebUIImpl::OnWebUISend(const GURL& source_url,
                             const std::string& message,
                             const ListValue& args) {
+  // If the URL comes from a url where the document is not available, that can
+  // only mean that the page navigated or reloaded while a WebUISend IPC was in
+  // flight. We should not handle these orphaned WebUISends.
+  if (document_available_origins_.find(source_url.GetOrigin()) ==
+      document_available_origins_.end()) {
+    return;
+  }
+
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->
           HasWebUIBindings(web_contents_->GetRenderProcessHost()->GetID())) {
     NOTREACHED() << "Blocked unauthorized use of WebUIBindings.";
     return;
   }
 
-  if (controller_->OverrideHandleWebUIMessage(source_url, message,args))
-    return;
-
-  // Look up the callback for this message.
-  MessageCallbackMap::const_iterator callback =
-      message_callbacks_.find(message);
-  if (callback != message_callbacks_.end()) {
-    // Forward this message and content on.
-    callback->second.Run(&args);
-  }
+  ProcessWebUIMessage(source_url, message, args);
 }
 
 void WebUIImpl::RenderViewCreated(content::RenderViewHost* render_view_host) {
@@ -117,6 +116,10 @@ void WebUIImpl::RenderViewCreated(content::RenderViewHost* render_view_host) {
   // (http://crbug.com/105380).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTouchOptimizedUI))
     render_view_host->SetWebUIProperty("touchOptimized", "true");
+}
+
+void WebUIImpl::DocumentAvailableInFrame(const GURL& source_url) {
+  document_available_origins_.insert(source_url.GetOrigin());
 }
 
 WebContents* WebUIImpl::GetWebContents() const {
@@ -248,7 +251,16 @@ void WebUIImpl::RegisterMessageCallback(const std::string &message,
 void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
                                     const std::string& message,
                                     const base::ListValue& args) {
-  OnWebUISend(source_url, message, args);
+  if (controller_->OverrideHandleWebUIMessage(source_url, message, args))
+    return;
+
+  // Look up the callback for this message.
+  MessageCallbackMap::const_iterator callback =
+      message_callbacks_.find(message);
+  if (callback != message_callbacks_.end()) {
+    // Forward this message and content on.
+    callback->second.Run(&args);
+  }
 }
 
 // WebUIImpl, protected: -------------------------------------------------------

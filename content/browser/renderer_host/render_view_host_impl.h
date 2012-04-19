@@ -447,7 +447,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgDidStartLoading();
   void OnMsgDidStopLoading();
   void OnMsgDidChangeLoadProgress(double load_progress);
-  void OnMsgDocumentAvailableInMainFrame();
+  void OnMsgDocumentAvailableInFrame(bool main_frame,
+                                     const GURL& source_url);
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
   void OnMsgContextMenu(const ContextMenuParams& params);
   void OnMsgToggleFullscreen(bool enter_fullscreen);
@@ -509,8 +510,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const ShowDesktopNotificationHostMsgParams& params);
   void OnCancelDesktopNotification(int notification_id);
   void OnRunFileChooser(const FileChooserParams& params);
-  void OnWebUISend(const GURL& source_url, const std::string& name,
-                   const base::ListValue& args);
   void OnDomOperationResponse(const std::string& json_string,
                               int automation_id);
 

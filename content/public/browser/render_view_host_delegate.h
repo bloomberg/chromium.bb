@@ -274,9 +274,11 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // entirely loaded).
   virtual void DidChangeLoadProgress(double progress) {}
 
-  // The RenderView's main frame document element is ready. This happens when
-  // the document has finished parsing.
-  virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) {}
+  // Some frame in the current RenderView has a ready document element. This
+  // happens when the document has finished parsing.
+  virtual void DocumentAvailableInFrame(RenderViewHost* render_view_host,
+                                        bool main_frame,
+                                        const GURL& source_url) {}
 
   // The onload handler in the RenderView's main frame has completed.
   virtual void DocumentOnLoadCompletedInMainFrame(
@@ -394,11 +396,6 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // The contents auto-resized and the container should match it.
   virtual void ResizeDueToAutoResize(const gfx::Size& new_size) {}
 
-  // Notification message from HTML UI.
-  virtual void WebUISend(RenderViewHost* render_view_host,
-                         const GURL& source_url,
-                         const std::string& name,
-                         const base::ListValue& args) {}
   // Requests to lock the mouse. Once the request is approved or rejected,
   // GotResponseToLockMouseRequest() will be called on the requesting render
   // view host.

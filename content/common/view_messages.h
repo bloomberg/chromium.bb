@@ -1393,10 +1393,12 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStopLoading)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeLoadProgress,
                     double /* load_progress */)
 
-// Sent when the document element is available for the toplevel frame.  This
+// Sent when the document element is available for a frame.  This
 // happens after the page starts loading, but before all resources are
 // finished.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DocumentAvailableInMainFrame)
+IPC_MESSAGE_ROUTED2(ViewHostMsg_DocumentAvailableInFrame,
+                    bool /* true if it is the main frame */,
+                    GURL /* frame_source_url */)
 
 // Sent when after the onload handler has been invoked for the document
 // in the toplevel frame.

@@ -578,6 +578,7 @@ bool WebContentsImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetSelectedColorInColorChooser,
                         OnSetSelectedColorInColorChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PepperPluginHung, OnPepperPluginHung)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -1026,14 +1027,6 @@ void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {
 void WebContentsImpl::ResizeDueToAutoResize(const gfx::Size& new_size) {
   if (delegate_)
     delegate_->ResizeDueToAutoResize(this, new_size);
-}
-
-void WebContentsImpl::WebUISend(RenderViewHost* render_view_host,
-                                const GURL& source_url,
-                                const std::string& name,
-                                const base::ListValue& args) {
-  if (delegate_)
-    delegate_->WebUISend(this, source_url, name, args);
 }
 
 WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
@@ -1779,6 +1772,15 @@ void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
     delegate_->PluginHungStatusChanged(this, plugin_child_id, path, is_hung);
 }
 
+// This exists for render views that don't have a WebUI, but do have WebUI
+// bindings enabled.
+void WebContentsImpl::OnWebUISend(const GURL& source_url,
+                                  const std::string& name,
+                                  const base::ListValue& args) {
+  if (delegate_)
+    delegate_->WebUISend(this, source_url, name, args);
+}
+
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void WebContentsImpl::SetIsLoading(bool is_loading,
@@ -2270,10 +2272,17 @@ void WebContentsImpl::DidChangeLoadProgress(double progress) {
     delegate_->LoadProgressChanged(progress);
 }
 
-void WebContentsImpl::DocumentAvailableInMainFrame(
-    RenderViewHost* render_view_host) {
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DocumentAvailableInMainFrame());
+void WebContentsImpl::DocumentAvailableInFrame(
+    RenderViewHost* render_view_host,
+    bool main_frame,
+    const GURL& source_url) {
+  if (main_frame) {
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                      DocumentAvailableInMainFrame());
+  }
+
+  if (render_manager_.web_ui())
+    render_manager_.web_ui()->DocumentAvailableInFrame(source_url);
 }
 
 void WebContentsImpl::DocumentOnLoadCompletedInMainFrame(

@@ -277,8 +277,10 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidStopLoading() OVERRIDE;
   virtual void DidCancelLoading() OVERRIDE;
   virtual void DidChangeLoadProgress(double progress) OVERRIDE;
-  virtual void DocumentAvailableInMainFrame(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+  virtual void DocumentAvailableInFrame(
+      content::RenderViewHost* render_view_host,
+      bool main_frame,
+      const GURL& source_url) OVERRIDE;
   virtual void DocumentOnLoadCompletedInMainFrame(
       content::RenderViewHost* render_view_host,
       int32 page_id) OVERRIDE;
@@ -334,10 +336,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool IsFullscreenForCurrentTab() const OVERRIDE;
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
   virtual void ResizeDueToAutoResize(const gfx::Size& new_size) OVERRIDE;
-  virtual void WebUISend(content::RenderViewHost* render_view_host,
-                         const GURL& source_url,
-                         const std::string& name,
-                         const base::ListValue& args) OVERRIDE;
   virtual void RequestToLockMouse() OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
 
@@ -396,7 +394,7 @@ class CONTENT_EXPORT WebContentsImpl
                       bool success,
                       const string16& user_input);
 
-  // Message handlers.
+  // IPC message handlers.
   void OnRegisterIntentService(const string16& action,
                                const string16& type,
                                const string16& href,
@@ -453,6 +451,9 @@ class CONTENT_EXPORT WebContentsImpl
   void OnPepperPluginHung(int plugin_child_id,
                           const FilePath& path,
                           bool is_hung);
+  void OnWebUISend(const GURL& source_url,
+                   const std::string& name,
+                   const base::ListValue& args);
 
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
