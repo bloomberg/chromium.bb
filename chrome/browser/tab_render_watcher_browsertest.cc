@@ -5,10 +5,11 @@
 #include "base/message_loop.h"
 #include "chrome/browser/tab_render_watcher.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/dom_view.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -59,19 +60,18 @@ class TabRenderWatcherTest : public InProcessBrowserTest,
 // Migrated from HtmlDialogBrowserTest.TestStateTransition, which times out
 // about 5~10% of runs. See crbug.com/86059.
 IN_PROC_BROWSER_TEST_F(TabRenderWatcherTest, DISABLED_TestStateTransition) {
-  DOMView* dom_view = new DOMView;
-  dom_view->Init(browser()->profile(), NULL);
-  CreateWindowForContents(dom_view);
-  dom_view->GetWidget()->Show();
+  views::WebView* webview = new views::WebView(browser()->profile());
+  CreateWindowForContents(webview);
+  webview->GetWidget()->Show();
 
   scoped_ptr<TabRenderWatcher> watcher(
-      new TabRenderWatcher(dom_view->dom_contents()->web_contents(), this));
+      new TabRenderWatcher(webview->GetWebContents(), this));
 
   EXPECT_FALSE(host_created_);
   EXPECT_FALSE(main_frame_loaded_);
   EXPECT_FALSE(main_frame_rendered_);
 
-  dom_view->LoadURL(GURL(chrome::kChromeUIChromeURLsURL));
+  webview->LoadInitialURL(GURL(chrome::kChromeUIChromeURLsURL));
   EXPECT_TRUE(host_created_);
 
   // OnTabMainFrameLoaded() will Quit().
@@ -82,5 +82,5 @@ IN_PROC_BROWSER_TEST_F(TabRenderWatcherTest, DISABLED_TestStateTransition) {
   MessageLoopForUI::current()->Run();
   EXPECT_TRUE(main_frame_rendered_);
 
-  dom_view->GetWidget()->Close();
+  webview->GetWidget()->Close();
 }

@@ -30,6 +30,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
@@ -44,7 +45,7 @@ const char kCaptivePortalStartURL[] = "http://client3.google.com/generate_204";
 const int kLocationBarHeight = 35;
 // Margin between screen edge and CaptivePortalView border.
 const int kExternalMargin = 50;
-// Margin between DomView and CaptivePortalView border.
+// Margin between WebView and CaptivePortalView border.
 const int kInnerMargin = 2;
 
 class ToolbarRowView : public views::View {
@@ -125,7 +126,7 @@ CaptivePortalView::CaptivePortalView(Profile* profile,
       forward_(NULL),
       reload_(NULL),
       location_bar_(NULL),
-      dom_view_(NULL),
+      web_view_(NULL),
       bubble_model_delegate_(new StubBubbleModelDelegate) {
   command_updater_.reset(new CommandUpdater(this));
   command_updater_->UpdateCommandEnabled(IDC_BACK, true);
@@ -136,20 +137,19 @@ CaptivePortalView::CaptivePortalView(Profile* profile,
 }
 
 CaptivePortalView::~CaptivePortalView() {
-  if (dom_view_container_.get()) {
-    // DomView can't be deleted immediately, because it could be on the stack.
-    dom_view_->dom_contents()->web_contents()->SetDelegate(NULL);
+  if (web_view_container_.get()) {
+    // WebView can't be deleted immediately, because it could be on the stack.
+    web_view_->web_contents()->SetDelegate(NULL);
     MessageLoop::current()->DeleteSoon(
-        FROM_HERE, dom_view_container_.release());
+        FROM_HERE, web_view_container_.release());
   }
 }
 
 void CaptivePortalView::StartLoad() {
-  dom_view_container_.reset(new DOMView);
-  dom_view_ = dom_view_container_.get();
-  dom_view_->Init(profile_, NULL);
-  dom_view_->dom_contents()->web_contents()->SetDelegate(this);
-  dom_view_->LoadURL(GURL(kCaptivePortalStartURL));
+  web_view_container_.reset(new views::WebView(profile_));
+  web_view_ = web_view_container_.get();
+  web_view_->GetWebContents()->SetDelegate(this);
+  web_view_->LoadInitialURL(GURL(kCaptivePortalStartURL));
 }
 
 void CaptivePortalView::Init() {
@@ -219,11 +219,11 @@ void CaptivePortalView::Init() {
   layout->AddPaddingRow(0, kInnerMargin);
 
   layout->StartRow(1, 1);
-  layout->AddView(dom_view_container_.release());
+  layout->AddView(web_view_container_.release());
   layout->AddPaddingRow(0, kInnerMargin);
 
   location_bar_->Init();
-  UpdateReload(dom_view_->dom_contents()->web_contents()->IsLoading(), true);
+  UpdateReload(web_view_->web_contents()->IsLoading(), true);
 
   Layout();
 }
@@ -255,7 +255,7 @@ views::View* CaptivePortalView::GetContentsView() {
 }
 
 views::View* CaptivePortalView::GetInitiallyFocusedView() {
-  return dom_view_;
+  return web_view_;
 }
 
 bool CaptivePortalView::ShouldShowWindowTitle() const {
@@ -298,7 +298,7 @@ void CaptivePortalView::LoadingStateChanged(WebContents* source) {
 }
 
 TabContentsWrapper* CaptivePortalView::GetTabContentsWrapper() const {
-  return dom_view_->dom_contents();
+  return NULL;
 }
 
 InstantController* CaptivePortalView::GetInstant() {
@@ -344,13 +344,13 @@ void CaptivePortalView::OnInputInProgress(bool in_progress) {
 }
 
 content::WebContents* CaptivePortalView::GetActiveWebContents() const {
-  return dom_view_->dom_contents()->web_contents();
+  return web_view_->web_contents();
 }
 
 void CaptivePortalView::ExecuteCommandWithDisposition(
     int id,
     WindowOpenDisposition) {
-  WebContents* web_contents = dom_view_->dom_contents()->web_contents();
+  WebContents* web_contents = web_view_->web_contents();
   switch (id) {
     case IDC_BACK:
       if (web_contents->GetController().CanGoBack()) {
@@ -414,7 +414,7 @@ void CaptivePortalView::LoadImages() {
 
 void CaptivePortalView::UpdateButtons() {
   const content::NavigationController& navigation_controller =
-      dom_view_->dom_contents()->web_contents()->GetController();
+      web_view_->web_contents()->GetController();
   back_->SetEnabled(navigation_controller.CanGoBack());
   forward_->SetEnabled(navigation_controller.CanGoForward());
 }

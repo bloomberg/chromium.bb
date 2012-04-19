@@ -18,7 +18,7 @@ LockWindow* LockWindow::Create() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LockWindow implementation:
-void LockWindowAura::Grab(DOMView* dom_view) {
+void LockWindowAura::Grab() {
   // We already have grab from the lock screen container, just call the ready
   // callback immediately.
   if (observer_)

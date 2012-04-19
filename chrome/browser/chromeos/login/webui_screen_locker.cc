@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
@@ -55,7 +54,7 @@ void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
   lock_window_->Show();
   OnWindowCreated();
   LoadURL(GURL(kLoginURL));
-  lock_window->Grab(webui_login_);
+  lock_window->Grab();
 
   // User list consisting of a single logged-in user.
   UserList users(1, &chromeos::UserManager::Get()->GetLoggedInUser());

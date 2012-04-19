@@ -18,7 +18,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-class DOMView;
 class GURL;
 
 namespace content {
@@ -27,13 +26,14 @@ class WebUI;
 
 namespace views {
 class View;
+class WebView;
 class Widget;
 }
 
 namespace chromeos {
 
 // View used to render a WebUI supporting Widget. This widget is used for the
-// WebUI based start up and lock screens. It contains a DOMView.
+// WebUI based start up and lock screens. It contains a WebView.
 class WebUILoginView : public views::WidgetDelegateView,
                        public content::WebContentsDelegate,
                        public content::NotificationObserver,
@@ -94,8 +94,8 @@ class WebUILoginView : public views::WidgetDelegateView,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // DOMView for rendering a webpage as a webui login.
-  DOMView* webui_login_;
+  // WebView for rendering a webpage as a webui login.
+  views::WebView* webui_login_;
 
  private:
   // Map type for the accelerator-to-identifier map.

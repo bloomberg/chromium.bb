@@ -16,7 +16,7 @@ class LockWindowAura : public views::Widget,
                        public LockWindow {
  public:
   // LockWindow implementation:
-  virtual void Grab(DOMView* dom_view) OVERRIDE;
+  virtual void Grab() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
 
  private:

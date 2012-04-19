@@ -21,6 +21,8 @@ class VIEWS_EXPORT WebView : public View,
                              public content::NotificationObserver,
                              public content::WebContentsDelegate {
  public:
+  static const char kViewClassName[];
+
   explicit WebView(content::BrowserContext* browser_context);
   virtual ~WebView();
 
@@ -28,11 +30,24 @@ class VIEWS_EXPORT WebView : public View,
   // WebView owns this implicitly created WebContents.
   content::WebContents* GetWebContents();
 
+  // Creates a WebContents if none is yet assocaited with this WebView, with the
+  // specified site instance. The WebView owns this WebContents.
+  void CreateWebContentsWithSiteInstance(content::SiteInstance* site_instance);
+
   // WebView does not assume ownership of WebContents set via this method, only
   // those it implicitly creates via GetWebContents() above.
   void SetWebContents(content::WebContents* web_contents);
 
   content::WebContents* web_contents() { return web_contents_; }
+
+  content::BrowserContext* browser_context() { return browser_context_; }
+
+  // Loads the initial URL to display in the attached WebContents. Creates the
+  // WebContents if none is attached yet. Note that this is intended as a
+  // convenience for loading the initial URL, and so URLs are navigated with
+  // PAGE_TRANSITION_START_PAGE, so this is not intended as a general purpose
+  // navigation method - use WebContents' API directly.
+  void LoadInitialURL(const GURL& url);
 
   // Controls how the attached WebContents is resized.
   // false = WebContents' views' bounds are updated continuously as the
@@ -48,6 +63,9 @@ class VIEWS_EXPORT WebView : public View,
   //             WebContents is attached, and not rely on the delegate to
   //             forward this notification.
   void OnWebContentsFocused(content::WebContents* web_contents);
+
+  // Overridden from View:
+  virtual std::string GetClassName() const OVERRIDE;
 
  private:
   // Overridden from View:

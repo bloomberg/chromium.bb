@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
-#include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
@@ -29,6 +28,7 @@
 #include "content/public/browser/web_ui.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_VIRTUAL_KEYBOARD)
@@ -157,12 +157,10 @@ WebUILoginView::~WebUILoginView() {
 
 void WebUILoginView::Init(views::Widget* login_window) {
   login_window_ = login_window;
-  webui_login_ = new DOMView();
+  webui_login_ = new views::WebView(ProfileManager::GetDefaultProfile());
   AddChildView(webui_login_);
-  webui_login_->Init(ProfileManager::GetDefaultProfile(), NULL);
-  webui_login_->SetVisible(true);
 
-  WebContents* web_contents = webui_login_->dom_contents()->web_contents();
+  WebContents* web_contents = webui_login_->GetWebContents();
   web_contents->SetDelegate(this);
 
   tab_watcher_.reset(new TabRenderWatcher(web_contents, this));
@@ -202,12 +200,12 @@ void WebUILoginView::UpdateWindowType() {
 }
 
 void WebUILoginView::LoadURL(const GURL & url) {
-  webui_login_->LoadURL(url);
+  webui_login_->LoadInitialURL(url);
   webui_login_->RequestFocus();
 }
 
 content::WebUI* WebUILoginView::GetWebUI() {
-  return webui_login_->dom_contents()->web_contents()->GetWebUI();
+  return webui_login_->web_contents()->GetWebUI();
 }
 
 void WebUILoginView::OpenProxySettings() {
@@ -243,8 +241,7 @@ void WebUILoginView::ChildPreferredSizeChanged(View* child) {
 
 void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   // Return the focus to the web contents.
-  webui_login_->dom_contents()->web_contents()->
-      FocusThroughTabTraversal(reverse);
+  webui_login_->web_contents()->FocusThroughTabTraversal(reverse);
   GetWidget()->Activate();
 }
 
@@ -325,8 +322,7 @@ bool WebUILoginView::TakeFocus(bool reverse) {
 
 void WebUILoginView::ReturnFocus(bool reverse) {
   // Return the focus to the web contents.
-  webui_login_->dom_contents()->web_contents()->
-      FocusThroughTabTraversal(reverse);
+  webui_login_->web_contents()->FocusThroughTabTraversal(reverse);
   GetWidget()->Activate();
 }
 

@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
-#include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/gfx/size.h"
@@ -23,6 +22,7 @@ class ReloadButton;
 class ToolbarModel;
 
 namespace views {
+class WebView;
 class Widget;
 }
 
@@ -112,10 +112,10 @@ class CaptivePortalView : public views::ButtonListener,
   views::ImageButton* forward_;
   ReloadButton* reload_;
   LocationBarView* location_bar_;
-  DOMView* dom_view_;
+  views::WebView* web_view_;
 
-  // Contains |dom_view_| while it isn't owned by the view.
-  scoped_ptr<DOMView> dom_view_container_;
+  // Contains |web_view_| while it isn't owned by the view.
+  scoped_ptr<views::WebView> web_view_container_;
 
   scoped_ptr<StubBubbleModelDelegate> bubble_model_delegate_;
 

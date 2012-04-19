@@ -5,6 +5,7 @@
 #include "ui/views/controls/webview/webview.h"
 
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -18,6 +19,10 @@
 #include "ui/views/focus/focus_manager.h"
 
 namespace views {
+
+// static
+const char WebView::kViewClassName[] =
+    "ui/views/WebView";
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, public:
@@ -33,9 +38,15 @@ WebView::~WebView() {
 }
 
 content::WebContents* WebView::GetWebContents() {
+  CreateWebContentsWithSiteInstance(NULL);
+  return web_contents_;
+}
+
+void WebView::CreateWebContentsWithSiteInstance(
+    content::SiteInstance* site_instance) {
   if (!web_contents_) {
     wc_owner_.reset(content::WebContents::Create(browser_context_,
-                                                 NULL,
+                                                 site_instance,
                                                  MSG_ROUTING_NONE,
                                                  NULL,
                                                  NULL));
@@ -43,7 +54,6 @@ content::WebContents* WebView::GetWebContents() {
     web_contents_->SetDelegate(this);
     AttachWebContents();
   }
-  return web_contents_;
 }
 
 void WebView::SetWebContents(content::WebContents* web_contents) {
@@ -53,6 +63,12 @@ void WebView::SetWebContents(content::WebContents* web_contents) {
   wc_owner_.reset();
   web_contents_ = web_contents;
   AttachWebContents();
+}
+
+void WebView::LoadInitialURL(const GURL& url) {
+  GetWebContents()->GetController().LoadURL(
+      url, content::Referrer(), content::PAGE_TRANSITION_START_PAGE,
+      std::string());
 }
 
 void WebView::SetFastResize(bool fast_resize) {
@@ -67,6 +83,10 @@ void WebView::OnWebContentsFocused(content::WebContents* web_contents) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, View overrides:
+
+std::string WebView::GetClassName() const {
+  return kViewClassName;
+}
 
 void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   wcv_holder_->SetSize(bounds().size());

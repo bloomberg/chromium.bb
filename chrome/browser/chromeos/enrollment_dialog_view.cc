@@ -8,12 +8,12 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/themes/theme_service.h"
-#include "chrome/browser/ui/views/dom_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -33,8 +33,8 @@ namespace {
 const int kDefaultWidth = 640;
 const int kDefaultHeight = 480;
 
-// Border around the DOMView
-const int kDOMBorderWidth = 1;
+// Border around the WebView
+const int kWebViewBorderSize = 1;
 
 // TODO(gspencer): Move this into ui/views/layout, perhaps just adding insets
 // to FillLayout.
@@ -198,23 +198,23 @@ void EnrollmentDialogView::InitDialog() {
   label->SetMultiLine(true);
   label->SetAllowCharacterBreak(true);
 
-  // In order to get a border that shows around the DOMView, we need to embed it
+  // In order to get a border that shows around the WebView, we need to embed it
   // into another view because it hosts a native window that fills the view.
-  View* dom_border_view = new View();
-  dom_border_view->SetLayoutManager(
-      new BorderLayout(gfx::Insets(kDOMBorderWidth,
-                                   kDOMBorderWidth,
-                                   kDOMBorderWidth,
-                                   kDOMBorderWidth)));
+  View* web_view_border_view = new View();
+  web_view_border_view->SetLayoutManager(
+      new BorderLayout(gfx::Insets(kWebViewBorderSize,
+                                   kWebViewBorderSize,
+                                   kWebViewBorderSize,
+                                   kWebViewBorderSize)));
   SkColor frame_color = ThemeService::GetDefaultColor(
       ThemeService::COLOR_FRAME);
-  Border* border = views::Border::CreateSolidBorder(kDOMBorderWidth,
+  Border* border = views::Border::CreateSolidBorder(kWebViewBorderSize,
                                                     frame_color);
-  dom_border_view->set_border(border);
-  DOMView* dom_view = new DOMView();
-  dom_view->Init(ProfileManager::GetLastUsedProfile(), NULL);
-  dom_border_view->AddChildView(dom_view);
-  dom_view->SetVisible(true);
+  web_view_border_view->set_border(border);
+  views::WebView* web_view =
+      new views::WebView(ProfileManager::GetLastUsedProfile());
+  web_view_border_view->AddChildView(web_view);
+  web_view->SetVisible(true);
 
   GridLayout* grid_layout = GridLayout::CreatePanel(this);
   SetLayoutManager(grid_layout);
@@ -242,10 +242,10 @@ void EnrollmentDialogView::InitDialog() {
   grid_layout->AddView(label);
   grid_layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   grid_layout->StartRow(100.0f, 0);
-  grid_layout->AddView(dom_border_view);
+  grid_layout->AddView(web_view_border_view);
   grid_layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   grid_layout->Layout(this);
-  dom_view->LoadURL(target_uri_);
+  web_view->LoadInitialURL(target_uri_);
 }
 
 }  // namespace chromeos
