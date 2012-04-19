@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -107,7 +107,7 @@ class ExtensionAction {
   }
 
   // Set this action's badge text color on a specific tab.
-  void SetBadgeTextColor(int tab_id, const SkColor& text_color) {
+  void SetBadgeTextColor(int tab_id, SkColor text_color) {
     SetValue(&badge_text_color_, tab_id, text_color);
   }
   // Get the text color for a tab, or the default color if no text color
@@ -117,7 +117,7 @@ class ExtensionAction {
   }
 
   // Set this action's badge background color on a specific tab.
-  void SetBadgeBackgroundColor(int tab_id, const SkColor& color) {
+  void SetBadgeBackgroundColor(int tab_id, SkColor color) {
     SetValue(&badge_background_color_, tab_id, color);
   }
   // Get the badge background color for a tab, or the default if no color
