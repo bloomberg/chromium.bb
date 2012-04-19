@@ -189,6 +189,28 @@ function bb_compile {
   bb_goma_make
 }
 
+# Re-gyp and compile with unit test bundles configured as shlibs for
+# the native test runner.  Experimental for now.  Once the native test
+# loader is on by default, this entire function becomes obsolete.
+function bb_native_test_compile_run_tests {
+  echo "@@@BUILD_STEP Re-gyp for the native test runner@@@"
+  GYP_DEFINES="$GYP_DEFINES gtest_target_type=shared_library" android_gyp
+
+  echo "@@@BUILD_STEP Native test runner compile@@@"
+  bb_goma_make
+
+  # Make sure running the template prints an expected failure.
+  echo "@@@BUILD_STEP Native test runner template test@@@"
+  tempfile=/tmp/tempfile-$$.txt
+  build/android/run_tests.py --xvfb --verbose \
+    -s out/Release/replaceme_apk/ChromeNativeTests-debug.apk \
+    | sed 's/@@@STEP_FAILURE@@@//g' | tee $tempfile
+  happy_failure=$(cat $tempfile | grep RUNNER_FAILED | wc -l)
+  if [[ $happy_failure -eq 0 ]] ; then
+    echo "@@@STEP_FAILURE@@@"
+  fi
+}
+
 # Experimental compile step; does not turn the tree red if it fails.
 function bb_compile_experimental {
   # Linking DumpRenderTree appears to hang forever?

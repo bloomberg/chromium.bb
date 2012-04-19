@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -58,13 +58,15 @@ class TestResults(object):
     self.disabled = []
     self.unexpected_pass = []
     self.timed_out = False
+    self.overall_fail = False
 
   @staticmethod
-  def FromOkAndFailed(ok, failed, timed_out=False):
+  def FromOkAndFailed(ok, failed, timed_out, overall_fail):
     ret = TestResults()
     ret.ok = ok
     ret.failed = failed
     ret.timed_out = timed_out
+    ret.overall_fail = overall_fail
     return ret
 
   @staticmethod
@@ -80,6 +82,8 @@ class TestResults(object):
       ret.unexpected_pass += t.unexpected_pass
       if t.timed_out:
         ret.timed_out = True
+      if t.overall_fail:
+        ret.overall_fail = True
     return ret
 
   def _Log(self, sorted_list):

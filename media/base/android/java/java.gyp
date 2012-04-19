@@ -19,10 +19,11 @@
             '<(DEPTH)/base/android/java/java.gyp:base_java',
           ],
           'outputs': [
-            'dist/lib/chromium_media.jar',
+            '$(PRODUCT_DIR)/chromium_media.jar',
           ],
           'action': [
             'ant',
+            '-DPRODUCT_DIR=<(PRODUCT_DIR)',
             '-buildfile',
             'media.xml',
           ]

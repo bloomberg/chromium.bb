@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -32,7 +32,7 @@
   'targets': [
     {
       'target_name': 'ipc_tests',
-      'type': 'executable',
+      'type': '<(gtest_target_type)',
       'dependencies': [
         'ipc',
         '../base/base.gyp:base',
@@ -63,6 +63,11 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
+        ['OS=="android" and "<(gtest_target_type)"=="shared_library"', {
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
         ['os_posix == 1 and OS != "mac" and OS != "android"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
@@ -86,5 +91,49 @@
         'ipc_test_sink.h',
       ],
     },
+  ],
+  'conditions': [
+    # Special target to wrap a <(gtest_target_type)==shared_library
+    # ipc_tests into an android apk for execution.
+    # See base.gyp for TODO(jrg)s about this strategy.
+    ['OS=="android" and "<(gtest_target_type)"=="shared_library"', {
+      'targets': [
+        {
+          'target_name': 'ipc_tests_apk',
+          'type': 'none',
+          'dependencies': [
+            'ipc_tests',
+          ],
+          'actions': [
+            {
+              # Generate apk files (including source and antfile) from
+              # a template, and builds them.
+              'action_name': 'generate_and_build',
+              'inputs': [
+                '../testing/android/generate_native_test.py',
+                '<(PRODUCT_DIR)/lib.target/libipc_tests.so',
+                '<(PRODUCT_DIR)/chromium_base.jar'
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/ChromeNativeTests_ipc_tests-debug.apk',
+              ],
+              'action': [ 
+                '../testing/android/generate_native_test.py',
+                '--native_library',
+                '<(PRODUCT_DIR)/lib.target/libipc_tests.so',
+                # TODO(jrg): find a better way to specify jar
+                # dependencies.  Hard coding seems fragile.
+                '--jar',
+                '<(PRODUCT_DIR)/chromium_base.jar',
+                '--output',
+                '<(PRODUCT_DIR)/ipc_tests_apk',
+                '--ant-args', 
+                '-DPRODUCT_DIR=<(PRODUCT_DIR)',
+                '--ant-compile'
+              ],
+            },
+          ],
+        }],
+    }],
   ],
 }

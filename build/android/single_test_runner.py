@@ -9,6 +9,7 @@ import sys
 from base_test_runner import BaseTestRunner
 import debug_info
 import run_tests_helper
+from test_package_apk import TestPackageApk
 from test_package_executable import TestPackageExecutable
 from test_result import TestResults
 
@@ -46,9 +47,16 @@ class SingleTestRunner(BaseTestRunner):
       self.dump_debug_info = None
     self.fast_and_loose = fast_and_loose
 
-    self.test_package = TestPackageExecutable(self.adb, device,
-        test_suite, timeout, rebaseline, performance_test, cleanup_test_files,
-        tool, self.dump_debug_info)
+    if os.path.splitext(test_suite)[1] == '.apk':
+      self.test_package = TestPackageApk(
+          self.adb, device,
+          test_suite, timeout, rebaseline, performance_test, cleanup_test_files,
+          tool, self.dump_debug_info)
+    else:
+      self.test_package = TestPackageExecutable(
+          self.adb, device,
+          test_suite, timeout, rebaseline, performance_test, cleanup_test_files,
+          tool, self.dump_debug_info)
 
   def _GetHttpServerDocumentRootForTestSuite(self):
     """Returns the document root needed by the test suite."""
@@ -265,7 +273,8 @@ class SingleTestRunner(BaseTestRunner):
         break
     self.test_results = TestResults.FromOkAndFailed(list(executed_results -
                                                          failed_results),
-                                                    list(failed_results))
+                                                    list(failed_results),
+                                                    False, False)
 
   def RunTests(self):
     """Runs all tests (in rebaseline mode, runs each test in isolation).

@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -35,6 +35,7 @@ class TestPackage(object):
                performance_test, cleanup_test_files, tool, dump_debug_info):
     self.adb = adb
     self.device = device
+    self.test_suite_full = test_suite
     self.test_suite = os.path.splitext(test_suite)[0]
     self.test_suite_basename = os.path.basename(self.test_suite)
     self.test_suite_dirname = os.path.dirname(self.test_suite)
@@ -129,13 +130,20 @@ class TestPackage(object):
     ok_tests = []
     failed_tests = []
     timed_out = False
+    overall_fail = False
     re_run = re.compile('\[ RUN      \] ?(.*)\r\n')
     re_fail = re.compile('\[  FAILED  \] ?(.*)\r\n')
+    re_runner_fail = re.compile('\[ RUNNER_FAILED \] ?(.*)\r\n')
     re_ok = re.compile('\[       OK \] ?(.*)\r\n')
     (io_stats_before, ready_to_continue) = self._BeginGetIOStats()
     while ready_to_continue:
-      found = p.expect([re_run, pexpect.EOF], timeout=self.timeout)
+      found = p.expect([re_run, pexpect.EOF, re_runner_fail],
+                       timeout=self.timeout)
       if found == 1:  # matched pexpect.EOF
+        break
+      if found == 2:  # RUNNER_FAILED
+        logging.error('RUNNER_FAILED')
+        overall_fail = True
         break
       if self.dump_debug_info:
         self.dump_debug_info.TakeScreenshot('_Test_Start_Run_')
@@ -165,4 +173,5 @@ class TestPackage(object):
                                         '\npexpect.after: %s'
                                         % (p.before,
                                            p.after))]
-    return TestResults.FromOkAndFailed(ok_tests, failed_tests, timed_out)
+    return TestResults.FromOkAndFailed(ok_tests, failed_tests,
+                                       timed_out, overall_fail)

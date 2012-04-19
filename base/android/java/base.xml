@@ -9,8 +9,12 @@
     two should be unified. -->
   <property name="sdk.version" value="${env.ANDROID_SDK_VERSION}"/>
   <property name="src" location="."/>
-  <property name="build" location="build"/>
   <property name="dist" location="dist"/>
+  <property name="out.dir" location="${PRODUCT_DIR}"/>
+  <!-- TODO(jrg): establish a standard for the intermediate java
+       directories.  Settle on a standard once ant/jar build files
+       like this are androidified -->
+  <property name="dest.dir" location="${PRODUCT_DIR}/java/base"/>
 
   <!-- Set path depending on the type of repository. If ANDROID_BUILD_TOP is
     set then build using the provided location. Otherwise, assume the build
@@ -25,13 +29,20 @@
     <!-- Create the time stamp -->
     <tstamp/>
     <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${build}"/>
+    <mkdir dir="${out.dir}"/>
+    <mkdir dir="${dest.dir}"/>
   </target>
 
   <target name="compile" depends="init"
           description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac srcdir="${src}" destdir="${build}">
+    <!-- TODO(jrg): adapting this to a proper android antfile will
+         remove warnings like this:
+           base.xml:23: warning: 'includeantruntime' was not set, 
+           defaulting to build.sysclasspath=last; 
+           set to false for repeatable builds
+      -->
+    <javac srcdir="${src}" destdir="${dest.dir}">
       <classpath>
         <path location="${location.base}/android.jar"/>
       </classpath>
@@ -43,14 +54,13 @@
     <!-- Create the distribution directory -->
     <mkdir dir="${dist}/lib"/>
 
-    <!-- Put everything in ${build} into the chromium_base.jar file -->
-    <jar jarfile="${dist}/lib/chromium_base.jar" basedir="${build}"/>
+    <jar jarfile="${out.dir}/chromium_base.jar" basedir="${dest.dir}"/>
   </target>
 
   <target name="clean"
           description="clean up" >
-    <!-- Delete the ${build} and ${dist} directory trees -->
-    <delete dir="${build}"/>
+    <!-- Delete the appropriate directory trees -->
+    <delete dir="${dest.dir}"/>
     <delete dir="${dist}"/>
   </target>
 </project>

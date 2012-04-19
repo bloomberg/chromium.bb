@@ -16,3 +16,4 @@ bb_baseline_setup "${ROOT}"/../..
 bb_install_build_deps "${ROOT}"/../..
 bb_compile
 bb_run_tests
+bb_native_test_compile_run_tests
