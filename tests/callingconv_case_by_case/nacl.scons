@@ -67,6 +67,8 @@ if not env.Bit('bitcode'):
   envlist, link_env = MakeSelfTestEnv(env, ['-msse2'])
   test_configurations.append((envlist, link_env, ''))
 else:
+  envlist, link_env = MakeSelfTestEnv(env, [])
+  test_configurations.append((envlist, link_env, '_self'))
   if env.Bit('target_arm'):
     # For arm, there is no gcc, so just test pnacl (via native objects).
     native_env = env.Clone()
