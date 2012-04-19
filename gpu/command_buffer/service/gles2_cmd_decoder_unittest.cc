@@ -3525,9 +3525,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMask) {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -3581,9 +3579,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferDepthMask) {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -3635,10 +3631,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferStencilMask) {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
-
+      false);  // stencil enabled
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();
@@ -3690,9 +3683,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -3738,10 +3729,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
-
+      false);  // stencil enabled
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();
@@ -3767,9 +3755,7 @@ TEST_F(GLES2DecoderRGBBackbufferTest, RGBBackbufferColorMaskFBO) {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
+      false);  // stencil enabled
 
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
@@ -3992,10 +3978,7 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithDepth) {
       true,    // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
-
+      false);  // stencil enabled
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();
@@ -4052,10 +4035,7 @@ TEST_F(GLES2DecoderManualInitTest, DepthEnableWithoutRequestedDepth) {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
-
+      false);  // stencil enabled
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();
@@ -4112,10 +4092,7 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithStencil) {
       false,   // depth enabled
       -1,      // front stencil mask
       -1,      // back stencil mask
-      true,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
-
+      true);   // stencil enabled
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();
@@ -4172,10 +4149,7 @@ TEST_F(GLES2DecoderManualInitTest, StencilEnableWithoutRequestedStencil) {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
-
+      false);  // stencil enabled
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();
@@ -5927,10 +5901,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterTexImage2DNULLInFBO) {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
-
+      false);  // stencil enabled
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();
@@ -6092,10 +6063,7 @@ TEST_F(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnClear) {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
-
+      false);  // stencil enabled
   EXPECT_CALL(*gl_, Clear(GL_COLOR_BUFFER_BIT))
       .Times(1)
       .RetiresOnSaturation();
@@ -6248,10 +6216,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawClearsAfterRenderbufferStorageInFBO) {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
-
+      false);  // stencil enabled
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();
@@ -6363,10 +6328,7 @@ TEST_F(GLES2DecoderWithShaderTest,
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
-
+      false);  // stencil enabled
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();
@@ -6583,10 +6545,7 @@ TEST_F(GLES2DecoderWithShaderTest,
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false,   // stencil enabled
-      false,   // cull_face_enabled
-      false);  // scissor_test_enabled
-
+      false);  // stencil enabled
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
       .Times(1)
       .RetiresOnSaturation();

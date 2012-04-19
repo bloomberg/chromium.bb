@@ -9524,54 +9524,6 @@ COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, ioSurfaceId) == 16,
 COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, plane) == 20,
                OffsetOf_TexImageIOSurface2DCHROMIUM_plane_not_20);
 
-struct CopyTextureCHROMIUM {
-  typedef CopyTextureCHROMIUM ValueType;
-  static const CommandId kCmdId = kCopyTextureCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(GLenum _target, GLenum _source_id, GLenum _dest_id, GLint _level) {
-    SetHeader();
-    target = _target;
-    source_id = _source_id;
-    dest_id = _dest_id;
-    level = _level;
-  }
-
-  void* Set(
-      void* cmd, GLenum _target, GLenum _source_id, GLenum _dest_id,
-      GLint _level) {
-    static_cast<ValueType*>(cmd)->Init(_target, _source_id, _dest_id, _level);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32 target;
-  uint32 source_id;
-  uint32 dest_id;
-  int32 level;
-};
-
-COMPILE_ASSERT(sizeof(CopyTextureCHROMIUM) == 20,
-               Sizeof_CopyTextureCHROMIUM_is_not_20);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, header) == 0,
-               OffsetOf_CopyTextureCHROMIUM_header_not_0);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, target) == 4,
-               OffsetOf_CopyTextureCHROMIUM_target_not_4);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, source_id) == 8,
-               OffsetOf_CopyTextureCHROMIUM_source_id_not_8);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, dest_id) == 12,
-               OffsetOf_CopyTextureCHROMIUM_dest_id_not_12);
-COMPILE_ASSERT(offsetof(CopyTextureCHROMIUM, level) == 16,
-               OffsetOf_CopyTextureCHROMIUM_level_not_16);
-
 struct DrawArraysInstancedANGLE {
   typedef DrawArraysInstancedANGLE ValueType;
   static const CommandId kCmdId = kDrawArraysInstancedANGLE;

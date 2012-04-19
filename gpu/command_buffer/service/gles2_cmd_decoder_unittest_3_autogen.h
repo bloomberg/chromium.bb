@@ -30,7 +30,6 @@
 // TODO(gman): GetTranslatedShaderSourceANGLE
 // TODO(gman): PostSubBufferCHROMIUM
 // TODO(gman): TexImageIOSurface2DCHROMIUM
-// TODO(gman): CopyTextureCHROMIUM
 // TODO(gman): DrawArraysInstancedANGLE
 // TODO(gman): DrawElementsInstancedANGLE
 // TODO(gman): VertexAttribDivisorANGLE

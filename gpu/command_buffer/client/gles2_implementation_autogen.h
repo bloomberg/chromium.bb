@@ -1546,13 +1546,6 @@ void TexImageIOSurface2DCHROMIUM(
       target, width, height, ioSurfaceId, plane);
 }
 
-void CopyTextureCHROMIUM(
-    GLenum target, GLenum source_id, GLenum dest_id, GLint level) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << this << "] glCopyTextureCHROMIUM(" << GLES2Util::GetStringEnum(target) << ", " << GLES2Util::GetStringEnum(source_id) << ", " << GLES2Util::GetStringEnum(dest_id) << ", " << level << ")");  // NOLINT
-  helper_->CopyTextureCHROMIUM(target, source_id, dest_id, level);
-}
-
 void DrawArraysInstancedANGLE(
     GLenum mode, GLint first, GLsizei count, GLsizei primcount);
 

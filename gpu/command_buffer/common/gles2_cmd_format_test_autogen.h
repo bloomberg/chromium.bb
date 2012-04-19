@@ -3701,25 +3701,6 @@ TEST_F(GLES2FormatTest, TexImageIOSurface2DCHROMIUM) {
       next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, CopyTextureCHROMIUM) {
-  CopyTextureCHROMIUM& cmd = *GetBufferAs<CopyTextureCHROMIUM>();
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLenum>(11),
-      static_cast<GLenum>(12),
-      static_cast<GLenum>(13),
-      static_cast<GLint>(14));
-  EXPECT_EQ(static_cast<uint32>(CopyTextureCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLenum>(12), cmd.source_id);
-  EXPECT_EQ(static_cast<GLenum>(13), cmd.dest_id);
-  EXPECT_EQ(static_cast<GLint>(14), cmd.level);
-  CheckBytesWrittenMatchesExpectedSize(
-      next_cmd, sizeof(cmd));
-}
-
 TEST_F(GLES2FormatTest, DrawArraysInstancedANGLE) {
   DrawArraysInstancedANGLE& cmd = *GetBufferAs<DrawArraysInstancedANGLE>();
   void* next_cmd = cmd.Set(

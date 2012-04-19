@@ -289,11 +289,9 @@ static GLES2Util::EnumToString enum_to_string_table[] = {
   { 0x8DF2, "GL_HIGH_FLOAT", },
   { 0x8826, "GL_DRAW_BUFFER1_NV", },
   { 0x8827, "GL_DRAW_BUFFER2_NV", },
-  { 0x9243, "GL_UNPACK_COLORSPACE_CONVERSION_CHROMIUM", },
   { 0x8DF3, "GL_LOW_INT", },
   { 0x8B53, "GL_INT_VEC2", },
   { 0x0C02, "GL_READ_BUFFER_NV", },
-  { 0x9241, "GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM", },
   { 0x8B52, "GL_FLOAT_VEC4", },
   { 0x9240, "GL_UNPACK_FLIP_Y_CHROMIUM", },
   { 0x8B51, "GL_FLOAT_VEC3", },
@@ -889,9 +887,6 @@ std::string GLES2Util::GetStringPixelStore(uint32 value) {
   static EnumToString string_table[] = {
     { GL_PACK_ALIGNMENT, "GL_PACK_ALIGNMENT" },
     { GL_UNPACK_ALIGNMENT, "GL_UNPACK_ALIGNMENT" },
-    { GL_UNPACK_FLIP_Y_CHROMIUM, "GL_UNPACK_FLIP_Y_CHROMIUM" },
-    { GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
-    "GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM" },
   };
   return GLES2Util::GetQualifiedEnumString(
       string_table, arraysize(string_table), value);

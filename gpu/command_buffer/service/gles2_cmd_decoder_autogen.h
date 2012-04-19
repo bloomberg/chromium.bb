@@ -2509,7 +2509,7 @@ error::Error GLES2DecoderImpl::HandleViewport(
     SetGLError(GL_INVALID_VALUE, "glViewport: height < 0");
     return error::kNoError;
   }
-  DoViewport(x, y, width, height);
+  glViewport(x, y, width, height);
   return error::kNoError;
 }
 
@@ -2723,16 +2723,6 @@ error::Error GLES2DecoderImpl::HandleTexImageIOSurface2DCHROMIUM(
     return error::kNoError;
   }
   DoTexImageIOSurface2DCHROMIUM(target, width, height, ioSurfaceId, plane);
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleCopyTextureCHROMIUM(
-    uint32 immediate_data_size, const gles2::CopyTextureCHROMIUM& c) {
-  GLenum target = static_cast<GLenum>(c.target);
-  GLenum source_id = static_cast<GLenum>(c.source_id);
-  GLenum dest_id = static_cast<GLenum>(c.dest_id);
-  GLint level = static_cast<GLint>(c.level);
-  DoCopyTextureCHROMIUM(target, source_id, dest_id, level);
   return error::kNoError;
 }
 
