@@ -91,6 +91,9 @@ void SetMenuMargins(views::MenuItemView* menu_item_view, int top, int bottom) {
 // Activate a cellular network.
 void ActivateCellular(const chromeos::CellularNetwork* cellular) {
   DCHECK(cellular);
+  if (!chromeos::UserManager::Get()->IsUserLoggedIn())
+    return;
+
   Browser* browser = Browser::GetOrCreateTabbedBrowser(
       ProfileManager::GetDefaultProfileOrOffTheRecord());
   browser->OpenMobilePlanTabAndActivate();
