@@ -1319,7 +1319,6 @@ create_output_for_connector(struct drm_compositor *ec,
 
 	return 0;
 
-	eglDestroySurface(ec->base.display, output->egl_surface);
 err_surface:
 	gbm_surface_destroy(output->surface);
 err_free:
