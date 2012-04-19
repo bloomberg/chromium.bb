@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/debug/leak_tracker.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -285,11 +286,23 @@ SystemURLRequestContextGetter::GetIOMessageLoopProxy() const {
   return io_message_loop_proxy_;
 }
 
-IOThread::Globals::Globals() {}
-
-IOThread::Globals::~Globals() {
-  system_request_context->AssertNoURLRequests();
+IOThread::Globals::
+SystemRequestContextLeakChecker::SystemRequestContextLeakChecker(
+    Globals* globals)
+    : globals_(globals) {
+  DCHECK(globals_);
 }
+
+IOThread::Globals::
+SystemRequestContextLeakChecker::~SystemRequestContextLeakChecker() {
+  if (globals_->system_request_context.get())
+    globals_->system_request_context->AssertNoURLRequests();
+}
+
+IOThread::Globals::Globals()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(
+        system_request_context_leak_checker(this)) {}
+IOThread::Globals::~Globals() {}
 
 // |local_state| is passed in explicitly in order to (1) reduce implicit
 // dependencies and (2) make IOThread more flexible for testing.
