@@ -55,6 +55,8 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
 
   Browser* browser() { return browser_; }
 
+  ExtensionToolbarModel* model() { return model_; }
+
   // Returns the currently selected tab ID, or -1 if there is none.
   int GetCurrentTabId();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class Browser;
 class ExtensionService;
 class PrefService;
 
@@ -35,6 +36,11 @@ class ExtensionToolbarModel : public content::NotificationObserver {
     // The browser action button for |extension| has been moved to |index|.
     virtual void BrowserActionMoved(const Extension* extension, int index) {}
 
+    // The browser action button for |extension_id| (which was not a popup) was
+    // clicked, executing it.
+    virtual void BrowserActionExecuted(const std::string& extension_id,
+                                       Browser* browser) {}
+
     // Called when the model has finished loading.
     virtual void ModelLoaded() {}
 
@@ -46,6 +52,7 @@ class ExtensionToolbarModel : public content::NotificationObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   void MoveBrowserAction(const Extension* extension, int index);
+  void ExecuteBrowserAction(const std::string& extension_id, Browser* browser);
   // If count == size(), this will set the visible icon count to -1, meaning
   // "show all actions".
   void SetVisibleIconCount(int count);

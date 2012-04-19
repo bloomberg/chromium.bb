@@ -313,11 +313,8 @@ class BrowserActionButton : public content::NotificationObserver,
     if (action->ShowPopup())
       return;
 
-    ExtensionService* service =
-        action->toolbar_->browser()->profile()->GetExtensionService();
-    service->browser_event_router()->BrowserActionExecuted(
-        action->toolbar_->browser()->profile(), action->extension_->id(),
-        action->toolbar_->browser());
+    action->toolbar_->model()->ExecuteBrowserAction(
+        action->extension_->id(), action->toolbar_->browser());
   }
 
   static gboolean OnExposeEvent(GtkWidget* widget,
@@ -791,9 +788,7 @@ void BrowserActionsToolbarGtk::ExecuteCommand(int command_id) {
     ExtensionPopupGtk::Show(
         browser_action->GetPopupUrl(tab_id), browser(), chevron());
   } else {
-    ExtensionService* service = browser()->profile()->GetExtensionService();
-    service->browser_event_router()->BrowserActionExecuted(
-        browser()->profile(), extension->id(), browser());
+    model_->ExecuteBrowserAction(extension->id(), browser());
   }
 }
 

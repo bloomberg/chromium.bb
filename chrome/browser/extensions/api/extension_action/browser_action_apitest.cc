@@ -76,8 +76,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
       test_server()->GetURL("files/extensions/test_file.txt"));
 
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  service->browser_event_router()->BrowserActionExecuted(
-      browser()->profile(), action->extension_id(), browser());
+  service->toolbar_model()->ExecuteBrowserAction(
+      action->extension_id(), browser());
 
   // Verify the command worked.
   WebContents* tab = browser()->GetSelectedWebContents();
@@ -400,9 +400,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
       content::NotificationService::AllSources());
 
   // Click the browser action.
-  browser()->profile()->GetExtensionService()->browser_event_router()->
-      BrowserActionExecuted(
-          browser()->profile(), action->extension_id(), browser());
+  browser()->profile()->GetExtensionService()->toolbar_model()->
+      ExecuteBrowserAction(action->extension_id(), browser());
 
   // It can take a moment for the background page to actually get destroyed
   // so we wait for the notification before checking that it's really gone

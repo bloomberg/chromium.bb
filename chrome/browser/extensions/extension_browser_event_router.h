@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/public/browser/notification_registrar.h"
@@ -37,13 +38,14 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                                     public ui::ActiveWindowWatcherXObserver,
 #endif
                                     public BrowserList::Observer,
+                                    public ExtensionToolbarModel::Observer,
                                     public content::NotificationObserver {
  public:
   explicit ExtensionBrowserEventRouter(Profile* profile);
   virtual ~ExtensionBrowserEventRouter();
 
   // Must be called once. Subsequent calls have no effect.
-  void Init();
+  void Init(ExtensionToolbarModel* model);
 
   // BrowserList::Observer
   virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
@@ -94,10 +96,6 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                           int tab_id,
                           const std::string& url,
                           int button);
-  // Browser Actions execute event.
-  void BrowserActionExecuted(Profile* profile,
-                             const std::string& extension_id,
-                             Browser* browser);
 
   // A keyboard shortcut resulted in an extension command.
   void CommandExecuted(Profile* profile,
@@ -115,6 +113,10 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   // Internal processing of tab updated events. Is called by both TabChangedAt
   // and Observe/NAV_ENTRY_COMMITTED.
   void TabUpdated(content::WebContents* contents, bool did_navigate);
+
+  // ExtensionToolbarModel::Observer. Browser Actions execute event.
+  virtual void BrowserActionExecuted(const std::string& extension_id,
+                                     Browser* browser) OVERRIDE;
 
   // The DispatchEvent methods forward events to the |profile|'s event router.
   // The ExtensionBrowserEventRouter listens to events for all profiles,

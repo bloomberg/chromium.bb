@@ -71,9 +71,10 @@ DictionaryValue* ExtensionBrowserEventRouter::TabEntry::DidNavigate(
   return changed_properties;
 }
 
-void ExtensionBrowserEventRouter::Init() {
+void ExtensionBrowserEventRouter::Init(ExtensionToolbarModel* model) {
   if (initialized_)
     return;
+  model->AddObserver(this);
   BrowserList::AddObserver(this);
 #if defined(TOOLKIT_VIEWS)
   views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
@@ -628,6 +629,17 @@ void ExtensionBrowserEventRouter::DispatchOldPageActionEvent(
   DispatchEventToExtension(profile, extension_id, "pageActions", json_args);
 }
 
+void ExtensionBrowserEventRouter::BrowserActionExecuted(
+    const std::string& extension_id, Browser* browser) {
+  Profile* profile = browser->profile();
+  TabContentsWrapper* tab_contents = NULL;
+  int tab_id = 0;
+  if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
+    return;
+  DispatchEventWithTab(profile, extension_id, "browserAction.onClicked",
+                       tab_contents->web_contents(), true);
+}
+
 void ExtensionBrowserEventRouter::PageActionExecuted(
     Profile* profile,
     const std::string& extension_id,
@@ -643,16 +655,6 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
     return;
   }
   DispatchEventWithTab(profile, extension_id, "pageAction.onClicked",
-                       tab_contents->web_contents(), true);
-}
-
-void ExtensionBrowserEventRouter::BrowserActionExecuted(
-    Profile* profile, const std::string& extension_id, Browser* browser) {
-  TabContentsWrapper* tab_contents = NULL;
-  int tab_id = 0;
-  if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
-    return;
-  DispatchEventWithTab(profile, extension_id, "browserAction.onClicked",
                        tab_contents->web_contents(), true);
 }
 

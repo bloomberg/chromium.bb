@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -736,9 +736,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
                         arrowLocation:info_bubble::kTopRight
                               devMode:NO];
   } else {
-    ExtensionService* service = profile_->GetExtensionService();
-    service->browser_event_router()->BrowserActionExecuted(
-       profile_, action->extension_id(), browser_);
+    toolbarModel_->ExecuteBrowserAction(action->extension_id(), browser_);
   }
 }
 
