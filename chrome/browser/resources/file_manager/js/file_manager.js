@@ -1317,8 +1317,6 @@ FileManager.prototype = {
         cr.ui.TouchHandler.EventType.TAP,
         this.onDetailDoubleClickOrTap_.bind(this));
     cr.ui.contextMenuHandler.setContextMenu(this.grid_, this.fileContextMenu_);
-    this.grid_.addEventListener('mousedown',
-                                this.onGridOrTableMouseDown_.bind(this));
   };
 
   /**
@@ -1378,9 +1376,6 @@ FileManager.prototype = {
 
     cr.ui.contextMenuHandler.setContextMenu(this.table_.querySelector('.list'),
         this.fileContextMenu_);
-
-    this.table_.addEventListener('mousedown',
-                                 this.onGridOrTableMouseDown_.bind(this));
   };
 
   FileManager.prototype.initButter_ = function() {
@@ -3505,11 +3500,6 @@ FileManager.prototype = {
     this.updateBreadcrumbs_();
     this.updateColumnModel_();
 
-    // Updated when a user clicks on the label of a file, used to detect
-    // when a click is eligible to trigger a rename.  Can be null, or
-    // an object with 'path' and 'date' properties.
-    this.lastLabelClick_ = null;
-
     // Sometimes we rescan the same directory (when mounting GData lazily first,
     // then for real). Do not update the location then.
     if (event.newDirEntry.fullPath != event.previousDirEntry.fullPath) {
@@ -3573,18 +3563,6 @@ FileManager.prototype = {
     return item && this.currentList_.isItem(item) ? item : null;
   };
 
-  FileManager.prototype.onGridOrTableMouseDown_ = function(event) {
-    var item = this.findListItemForEvent_(event);
-    if (!item)
-      return;
-
-    if (this.allowRenameClick_(event, item)) {
-      event.preventDefault();
-      this.directoryModel_.fileListSelection.selectedIndex = item.listIndex;
-      this.initiateRename_();
-    }
-  };
-
   /**
    * Unload handler for the page.  May be called manually for the file picker
    * dialog, because it closes by calling extension API functions that do not
@@ -3607,47 +3585,6 @@ FileManager.prototype = {
     // We receive a lot of events even in folders we are not interested in.
     if (encodeURI(event.fileUrl) == this.getCurrentDirectoryURL())
       this.directoryModel_.rescanLater();
-  };
-
-  /**
-   * Determine whether or not a click should initiate a rename.
-   *
-   * Renames can happen on mouse click if the user clicks on a label twice,
-   * at least a half second apart.
-   * @param {MouseEvent} event Click on the item.
-   * @param {cr.ui.ListItem} item Clicked item.
-   */
-  FileManager.prototype.allowRenameClick_ = function(event, item) {
-    // Renaming only enabled for full-page mode.
-    if (this.dialogType_ != FileManager.DialogType.FULL_PAGE)
-      return false;
-
-    // Didn't click on the label.
-    if (!event.srcElement.classList.contains('filename-label'))
-      return false;
-
-    // Wrong button or using a keyboard modifier.
-    if (event.button != 0 || event.shiftKey || event.metaKey || event.altKey) {
-      this.lastLabelClick_ = null;
-      return false;
-    }
-
-    var now = new Date();
-    var lastLabelClick = this.lastLabelClick_;
-    this.lastLabelClick_ = {index: item.listIndex, date: now};
-
-    if (!this.canExecute_('rename'))
-      return false;
-
-    if (lastLabelClick && lastLabelClick.index == item.listIndex) {
-      var delay = now - lastLabelClick.date;
-      if (delay > 500 && delay < 2000) {
-        this.lastLabelClick_ = null;
-        return true;
-      }
-    }
-
-    return false;
   };
 
   FileManager.prototype.initiateRename_ = function() {
@@ -3750,7 +3687,6 @@ FileManager.prototype = {
 
   FileManager.prototype.cancelRename_ = function() {
     this.renameInput_.currentEntry = null;
-    this.lastLabelClick_ = null;
 
     var parent = this.renameInput_.parentNode;
     if (parent) {
@@ -3969,6 +3905,13 @@ FileManager.prototype = {
 
       case 'Ctrl-69':  // Ctrl-E => Rename.
         handleCommand('rename');
+        break;
+
+      case 'Ctrl-13':  // Ctrl+Enter
+        if (!this.isRenamingInProgress()) {
+          event.preventDefault();
+          this.initiateRename_();
+        }
         break;
 
       case '8':  // Backspace => Up one directory.
