@@ -719,6 +719,9 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
     const unsigned char* init_data,
     unsigned init_data_length,
     const WebString& session_id) {
+  DCHECK(key);
+  DCHECK_GT(key_length, 0u);
+
   if (!IsSupportedKeySystem(key_system))
     return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
@@ -730,10 +733,8 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
                           static_cast<size_t>(init_data_length))
            << " [" << session_id.utf8().data() << "]";
 
-  // TODO(ddorwin): Add the key to the decrypter and fire keyAdded when it
-  // completes. Check the key length there.
-  // Everything from here until the return should probably be handled by
-  // the decrypter - see http://crbug.com/123260.
+  // TODO(ddorwin): Everything from here until the return should probably be
+  // handled by the decrypter - see http://crbug.com/123260.
   // Temporarily, fire an error for invalid key length so we can test the error
   // event and fire the keyAdded event in all other cases.
   const unsigned kSupportedKeyLength = 16;  // 128-bit key.
@@ -747,6 +748,16 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
         WebKit::WebMediaPlayerClient::MediaKeyErrorCodeUnknown,
         0));
   } else {
+    // TODO(ddorwin): Fix the decrypter to accept no |init_data|. See
+    // http://crbug.com/123265. Until then, ensure a non-empty value is passed.
+    static const unsigned char kDummyInitData[1] = {0};
+    if (!init_data) {
+      init_data = kDummyInitData;
+      init_data_length = arraysize(kDummyInitData);
+    }
+    proxy_->video_decoder()->decryptor()->AddKey(init_data, init_data_length,
+                                                 key, key_length);
+
     MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &WebKit::WebMediaPlayerClient::keyAdded,
         base::Unretained(GetClient()),
