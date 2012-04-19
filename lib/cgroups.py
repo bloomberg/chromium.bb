@@ -526,7 +526,7 @@ class Cgroup(object):
 
       if my_pid in pids:
         raise Exception("Bad API usage: asked to kill cgroup %s, but "
-                        "current pid %i is in that group.  Effectively "
+                        "current pid %s is in that group.  Effectively "
                         "asked to kill ourselves."
                         % (self.namespace, my_pid))
 
