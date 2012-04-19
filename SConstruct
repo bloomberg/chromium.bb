@@ -172,8 +172,6 @@ ACCEPTABLE_ARGUMENTS = set([
     # Run browser tests under this tool. See
     # tools/browser_tester/browsertester/browserlauncher.py for tool names.
     'browser_test_tool',
-    # enable use of SDL
-    'sdl',
     # set target platform
     'targetplatform',
     # activates buildbot-specific presets
@@ -2525,10 +2523,6 @@ def MakeBaseTrustedEnv():
 
   base_env.Replace(
       NACL_BUILD_FAMILY = 'TRUSTED',
-
-      SDL_HERMETIC_LINUX_DIR='${MAIN_DIR}/../third_party/sdl/linux/v1_2_13',
-      SDL_HERMETIC_MAC_DIR='${MAIN_DIR}/../third_party/sdl/osx/v1_2_13',
-      SDL_HERMETIC_WINDOWS_DIR='${MAIN_DIR}/../third_party/sdl/win/v1_2_13',
   )
 
   # Add optional scons files if present in the directory tree.
@@ -2577,12 +2571,6 @@ Targets to build untrusted code destined for the SDK:
 
 Options:
 --------
-
-sdl=<mode>        where <mode>:
-
-                    'none': don't use SDL (default)
-                    'local': use locally installed SDL
-                    'hermetic': use the hermetic SDL copy
 
 naclsdk_mode=<mode>   where <mode>:
 
@@ -2725,24 +2713,6 @@ def MakeWindowsEnv():
 
 (windows_debug_env,
  windows_optimized_env) = GenerateOptimizationLevels(MakeWindowsEnv())
-
-if ARGUMENTS.get('sdl', 'none') != 'none':
-  # These will only apply to sdl!=none builds!
-  windows_debug_env.Append(CPPDEFINES = ['_DLL', '_MT'])
-  windows_optimized_env.Append(CPPDEFINES = ['_DLL', '_MT'])
-  # SDL likes DLLs
-  if '/MT' in windows_optimized_env['CCFLAGS']:
-    windows_optimized_env.FilterOut(CCFLAGS=['/MT']);
-    windows_optimized_env.Append(CCFLAGS=['/MD']);
-  if '/MTd' in windows_debug_env['CCFLAGS']:
-    windows_debug_env.FilterOut(CCFLAGS=['/MTd']);
-    windows_debug_env.Append(CCFLAGS=['/MDd']);
-    # this doesn't feel right, but fixes dbg-win
-    windows_debug_env.Append(LINKFLAGS = ['/NODEFAULTLIB:msvcrt'])
-  # make source level debugging a little easier
-  if '/Z7' not in windows_debug_env['CCFLAGS']:
-    if '/Zi' not in windows_debug_env['CCFLAGS']:
-      windows_debug_env.Append(CCFLAGS=['/Z7'])
 
 # TODO(bradnelson): This does not quite work yet (c.f.
 # service_runtime/build.scons)
