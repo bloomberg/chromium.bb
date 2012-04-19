@@ -323,6 +323,12 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   AddChildView(source_label_);
   options_menu_button_ = new views::MenuButton(NULL, string16(), this, false);
   AddChildView(options_menu_button_);
+#if defined(OS_CHROMEOS)
+  // Disable and hide the options menu on ChromeOS. This is a short term fix
+  // for a crash (long term we're redesigning notifications).
+  options_menu_button_->SetEnabled(false);
+  options_menu_button_->SetVisible(false);
+#endif
   close_button_ = new views::ImageButton(this);
   close_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_NOTIFICATION_BALLOON_DISMISS_LABEL));
