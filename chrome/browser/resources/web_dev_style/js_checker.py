@@ -53,7 +53,8 @@ class JSChecker(object):
   def GetElementByIdCheck(self, i, line):
     """Checks for use of 'document.getElementById' instead of '$'."""
     return self.RegexCheck(i, line, r"(document\.getElementById)\('",
-        "Use $('id') instead of document.getElementById('id')")
+        "Use $('id'), from chrome://resources/js/util.js, instead of "
+        "document.getElementById('id'))")
 
   def error_highlight(self, start, length):
     """Takes a start position and a length, and produces a row of '^'s to
