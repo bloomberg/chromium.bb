@@ -4,8 +4,10 @@
 
 #include "content/common/net/url_fetcher_impl.h"
 
+#include "base/bind.h"
 #include "base/message_loop_proxy.h"
 #include "content/common/net/url_fetcher_core.h"
+#include "content/common/net/url_request_user_data.h"
 #include "content/public/common/url_fetcher_factory.h"
 
 static content::URLFetcherFactory* g_factory = NULL;
@@ -96,12 +98,25 @@ void URLFetcherImpl::SetRequestContext(
   core_->SetRequestContext(request_context_getter);
 }
 
+namespace {
+
+base::SupportsUserData::Data* CreateURLRequestUserData(
+    int render_process_id,
+    int render_view_id) {
+  return new URLRequestUserData(render_process_id, render_view_id);
+}
+
+}  // namespace
+
 void URLFetcherImpl::AssociateWithRenderView(
     const GURL& first_party_for_cookies,
     int render_process_id,
     int render_view_id) {
-  core_->AssociateWithRenderView(
-      first_party_for_cookies, render_process_id, render_view_id);
+  core_->SetFirstPartyForCookies(first_party_for_cookies);
+  core_->SetURLRequestUserData(
+      URLRequestUserData::kUserDataKey,
+      base::Bind(&CreateURLRequestUserData,
+                 render_process_id, render_view_id));
 }
 
 void URLFetcherImpl::SetAutomaticallyRetryOn5xx(bool retry) {

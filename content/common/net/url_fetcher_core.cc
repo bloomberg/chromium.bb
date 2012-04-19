@@ -11,7 +11,6 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/tracked_objects.h"
-#include "content/common/net/url_request_user_data.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -256,8 +255,6 @@ URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
       load_flags_(net::LOAD_NORMAL),
       response_code_(URLFetcher::RESPONSE_CODE_INVALID),
       buffer_(new net::IOBuffer(kBufferSize)),
-      render_process_id_(-1),
-      render_view_id_(-1),
       was_fetched_via_proxy_(false),
       is_chunked_upload_(false),
       num_retries_(0),
@@ -400,18 +397,18 @@ void URLFetcherCore::SetRequestContext(
   request_context_getter_ = request_context_getter;
 }
 
-void URLFetcherCore::AssociateWithRenderView(
-    const GURL& first_party_for_cookies,
-    int render_process_id,
-    int render_view_id) {
+void URLFetcherCore::SetFirstPartyForCookies(
+    const GURL& first_party_for_cookies) {
   DCHECK(first_party_for_cookies_.is_empty());
-  DCHECK_EQ(render_process_id_, -1);
-  DCHECK_EQ(render_view_id_, -1);
-  DCHECK_GE(render_process_id, 0);
-  DCHECK_GE(render_view_id, 0);
   first_party_for_cookies_ = first_party_for_cookies;
-  render_process_id_ = render_process_id;
-  render_view_id_ = render_view_id;
+}
+
+void URLFetcherCore::SetURLRequestUserData(
+    const void* key, const CreateDataCallback& create_data_callback) {
+  DCHECK(key);
+  DCHECK(!create_data_callback.is_null());
+  url_request_data_key_ = key;
+  url_request_create_data_callback_ = create_data_callback;
 }
 
 void URLFetcherCore::SetAutomaticallyRetryOn5xx(bool retry) {
@@ -672,9 +669,9 @@ void URLFetcherCore::RetryOrCompleteUrlFetch() {
     backoff_delay = base::TimeDelta();
   }
   request_context_getter_ = NULL;
-  render_process_id_ = -1;
-  render_view_id_ = -1;
   first_party_for_cookies_ = GURL();
+  url_request_data_key_ = NULL;
+  url_request_create_data_callback_.Reset();
   bool posted = delegate_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&URLFetcherCore::OnCompletedURLRequest, this, backoff_delay));
@@ -725,10 +722,9 @@ void URLFetcherCore::StartURLRequest() {
   request_->set_referrer(referrer_);
   request_->set_first_party_for_cookies(first_party_for_cookies_.is_empty() ?
       original_url_ : first_party_for_cookies_);
-  if (render_process_id_ != -1 && render_view_id_ != -1) {
-    request_->SetUserData(
-        URLRequestUserData::kUserDataKey,
-        new URLRequestUserData(render_process_id_, render_view_id_));
+  if (url_request_data_key_ && !url_request_create_data_callback_.is_null()) {
+    request_->SetUserData(url_request_data_key_,
+                          url_request_create_data_callback_.Run());
   }
 
   switch (request_type_) {
@@ -820,9 +816,9 @@ void URLFetcherCore::CancelURLRequest() {
   // delete the object, but we cannot delay the destruction of the request
   // context.
   request_context_getter_ = NULL;
-  render_process_id_ = -1;
-  render_view_id_ = -1;
   first_party_for_cookies_ = GURL();
+  url_request_data_key_ = NULL;
+  url_request_create_data_callback_.Reset();
   was_cancelled_ = true;
   file_writer_.reset();
 }

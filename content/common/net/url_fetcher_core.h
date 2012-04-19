@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/lazy_instance.h"
@@ -17,6 +18,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "base/supports_user_data.h"
 #include "base/timer.h"
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
@@ -44,6 +46,10 @@ class URLFetcherCore
     : public base::RefCountedThreadSafe<URLFetcherCore>,
       public net::URLRequest::Delegate {
  public:
+  // Used by SetURLRequestUserData.  The callback should make a fresh
+  // Data* object every time it's called.
+  typedef base::Callback<base::SupportsUserData::Data*()> CreateDataCallback;
+
   URLFetcherCore(URLFetcher* fetcher,
                  const GURL& original_url,
                  URLFetcher::RequestType request_type,
@@ -80,11 +86,12 @@ class URLFetcherCore
   void AddExtraRequestHeader(const std::string& header_line);
   void GetExtraRequestHeaders(net::HttpRequestHeaders* headers) const;
   void SetRequestContext(net::URLRequestContextGetter* request_context_getter);
-  // TODO(akalin): When we move this class to net/, this has to stay
-  // in content/ somehow.
-  void AssociateWithRenderView(const GURL& first_party_for_cookies,
-                               int render_process_id,
-                               int render_view_id);
+  void SetFirstPartyForCookies(const GURL& first_party_for_cookies);
+  // Whenever a URLRequest object is created, SetUserData() will be
+  // called on it with the given key and the result of the given
+  // callback.
+  void SetURLRequestUserData(
+      const void* key, const CreateDataCallback& create_data_callback);
   void SetAutomaticallyRetryOn5xx(bool retry);
   void SetMaxRetries(int max_retries);
   int GetMaxRetries() const;
@@ -311,9 +318,10 @@ class URLFetcherCore
                                      // Read buffer
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
                                      // Cookie/cache info for the request
-  int render_process_id_;            // The RenderView associated with the
-  int render_view_id_;               // request
   GURL first_party_for_cookies_;     // The first party URL for the request
+  // The user data to add to each newly-created URLRequest.
+  const void* url_request_data_key_;
+  CreateDataCallback url_request_create_data_callback_;
   net::ResponseCookies cookies_;     // Response cookies
   net::HttpRequestHeaders extra_request_headers_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
