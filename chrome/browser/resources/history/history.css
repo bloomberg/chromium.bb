@@ -146,12 +146,12 @@ html[dir='rtl'] .entry .title {
   opacity: 0;
 }
 
-.entry:hover input[type=checkbox],
-.entry input[type=checkbox]:focus {
+.entry-box:hover input[type=checkbox],
+.entry-box input[type=checkbox]:focus {
   opacity: 1;
 }
 
-.entry input[type=checkbox]:focus {
+.entry-box input[type=checkbox]:focus {
   -webkit-transition: opacity 150ms;
 }
 
