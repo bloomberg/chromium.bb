@@ -181,7 +181,14 @@ class WebMediaPlayerImpl
 
   virtual WebKit::WebAudioSourceProvider* audioSourceProvider();
 
+  virtual AddIdStatus sourceAddId(const WebKit::WebString& id,
+                                  const WebKit::WebString& type);
+  virtual bool sourceRemoveId(const WebKit::WebString& id);
+  // TODO(acolwell): Remove non-id version when http://webk.it/83788 fix lands.
   virtual bool sourceAppend(const unsigned char* data, unsigned length);
+  virtual bool sourceAppend(const WebKit::WebString& id,
+                            const unsigned char* data,
+                            unsigned length);
   virtual void sourceEndOfStream(EndOfStreamStatus status);
 
   // As we are closing the tab or even the browser, |main_loop_| is destroyed
