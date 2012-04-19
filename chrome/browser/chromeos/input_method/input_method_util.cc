@@ -95,11 +95,12 @@ const struct EnglishToResouceId {
   { "Hanja mode", IDS_STATUSBAR_IME_KOREAN_HANJA_INPUT_MODE },
   { "Hangul mode", IDS_STATUSBAR_IME_KOREAN_HANGUL_INPUT_MODE },
 
-  // For ibus-pinyin.
+  // For ibus-mozc-pinyin.
   { "Full/Half width",
     IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF },
   { "Full/Half width punctuation",
     IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_FULL_HALF_PUNCTUATION },
+  // TODO(hsumita): Fixes a typo
   { "Simplfied/Traditional Chinese",
     IDS_STATUSBAR_IME_CHINESE_PINYIN_TOGGLE_S_T_CHINESE },
   { "Chinese",

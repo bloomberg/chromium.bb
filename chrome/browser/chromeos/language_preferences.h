@@ -111,7 +111,7 @@ extern const HangulKeyboardNameIDPair kHangulKeyboardNameIDPairs[];
 const size_t kNumHangulKeyboardNameIDPairs = 5;
 
 // ---------------------------------------------------------------------------
-// For Simplified Chinese input method (ibus-pinyin)
+// For Simplified Chinese input method (ibus-mozc-pinyin)
 // ---------------------------------------------------------------------------
 extern const char kPinyinSectionName[];
 

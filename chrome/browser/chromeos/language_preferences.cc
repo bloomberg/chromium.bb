@@ -159,12 +159,12 @@ COMPILE_ASSERT(kNumHangulKeyboardNameIDPairs ==
                TheSizeShouldMatch);
 
 // ---------------------------------------------------------------------------
-// For Simplified Chinese input method (ibus-pinyin)
+// For Simplified Chinese input method (ibus-mozc-pinyin)
 // ---------------------------------------------------------------------------
 const char kPinyinSectionName[] = "engine/Pinyin";
 
 // We have to sync the |ibus_config_name|s with those in
-// ibus-pinyin/files/src/Config.cc.
+// ibus-mozc-pinyin/files/languages/pinyin/unix/ibus/config_updater.cc.
 const LanguageBooleanPrefs kPinyinBooleanPrefs[] = {
   { prefs::kLanguagePinyinCorrectPinyin, true, "CorrectPinyin",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_CORRECT_PINYIN,
