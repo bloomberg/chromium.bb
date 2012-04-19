@@ -2115,6 +2115,9 @@
         'test/data/unit/framework_unittest.gtestjs',
         'test/logging/win/mof_data_parser_unittest.cc',
         'tools/convert_dict/convert_dict_unittest.cc',
+        '../ash/test/test_launcher_delegate.cc',
+        '../ash/test/test_launcher_delegate.h',
+        '../ash/test/test_shell_delegate.cc',
         '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
         '../tools/json_schema_compiler/test/additional_properties_unittest.cc',
@@ -2141,7 +2144,6 @@
         '../webkit/fileapi/mock_file_system_options.h',
         '../webkit/quota/mock_storage_client.cc',
         '../webkit/quota/mock_storage_client.h',
-        '../ash/test/test_shell_delegate.cc',
       ],
       'conditions': [
         ['enable_background==0', {
