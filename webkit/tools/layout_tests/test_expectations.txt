@@ -54,3 +54,4 @@ BUGCR123680 : fast/repaint/shadow-multiple-vertical.html = IMAGE
 BUGCR123680 : svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
 BUGCR123809 : fast/borders/border-radius-groove-02.html = IMAGE
 
+BUGWK82983 : media/encrypted-media/ = PASS

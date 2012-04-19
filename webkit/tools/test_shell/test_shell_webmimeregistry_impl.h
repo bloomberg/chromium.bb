@@ -29,6 +29,7 @@ class TestShellWebMimeRegistryImpl
   // layout tests.
   virtual WebKit::WebMimeRegistry::SupportsType supportsMediaMIMEType(
       const WebKit::WebString&,
+      const WebKit::WebString&,
       const WebKit::WebString&) OVERRIDE;
 
  private:

@@ -184,6 +184,23 @@ class WebMediaPlayerImpl
   virtual bool sourceAppend(const unsigned char* data, unsigned length);
   virtual void sourceEndOfStream(EndOfStreamStatus status);
 
+  virtual MediaKeyException generateKeyRequest(
+      const WebKit::WebString& key_system,
+      const unsigned char* init_data,
+      unsigned init_data_length);
+
+  virtual MediaKeyException addKey(const WebKit::WebString& key_system,
+                                   const unsigned char* key,
+                                   unsigned key_length,
+                                   const unsigned char* init_data,
+                                   unsigned init_data_length,
+                                   const WebKit::WebString& session_id);
+
+  virtual MediaKeyException cancelKeyRequest(
+      const WebKit::WebString& key_system,
+      const WebKit::WebString& session_id);
+
+
   // As we are closing the tab or even the browser, |main_loop_| is destroyed
   // even before this object gets destructed, so we need to know when
   // |main_loop_| is being destroyed and we can stop posting repaint task

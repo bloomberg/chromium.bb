@@ -35,7 +35,8 @@ TestShellWebMimeRegistryImpl::~TestShellWebMimeRegistryImpl() {}
 WebMimeRegistry::SupportsType
 TestShellWebMimeRegistryImpl::supportsMediaMIMEType(
     const WebString& mime_type,
-    const WebString& codecs) {
+    const WebString& codecs,
+    const WebKit::WebString& key_system) {
   if (IsBlacklistedMediaMimeType(ToASCIIOrEmpty(mime_type)))
     return IsNotSupported;
 
@@ -44,7 +45,8 @@ TestShellWebMimeRegistryImpl::supportsMediaMIMEType(
   if (HasBlacklistedMediaCodecs(parsed_codecs))
     return IsNotSupported;
 
-  return SimpleWebMimeRegistryImpl::supportsMediaMIMEType(mime_type, codecs);
+  return SimpleWebMimeRegistryImpl::supportsMediaMIMEType(
+      mime_type, codecs, key_system);
 }
 
 bool TestShellWebMimeRegistryImpl::IsBlacklistedMediaMimeType(

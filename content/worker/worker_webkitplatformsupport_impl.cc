@@ -242,6 +242,13 @@ WorkerWebKitPlatformSupportImpl::supportsMediaMIMEType(
 }
 
 WebMimeRegistry::SupportsType
+WorkerWebKitPlatformSupportImpl::supportsMediaMIMEType(
+    const WebString&, const WebString&, const WebString&) {
+  NOTREACHED();
+  return WebMimeRegistry::IsSupported;
+}
+
+WebMimeRegistry::SupportsType
 WorkerWebKitPlatformSupportImpl::supportsNonImageMIMEType(
     const WebString&) {
   NOTREACHED();

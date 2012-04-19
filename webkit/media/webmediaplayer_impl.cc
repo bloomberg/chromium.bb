@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "base/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/filter_collection.h"
@@ -26,10 +27,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "v8/include/v8.h"
 #include "webkit/media/buffered_data_source.h"
 #include "webkit/media/filter_helpers.h"
+#include "webkit/media/key_systems.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_proxy.h"
 #include "webkit/media/webvideoframe_impl.h"
@@ -38,6 +41,7 @@ using WebKit::WebCanvas;
 using WebKit::WebMediaPlayer;
 using WebKit::WebRect;
 using WebKit::WebSize;
+using WebKit::WebString;
 using media::NetworkEvent;
 using media::PipelineStatus;
 
@@ -666,6 +670,102 @@ void WebMediaPlayerImpl::sourceEndOfStream(
   }
 
   proxy_->DemuxerEndOfStream(pipeline_status);
+}
+
+WebKit::WebMediaPlayer::MediaKeyException
+WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
+                                       const unsigned char* init_data,
+                                       unsigned init_data_length) {
+  if (!IsSupportedKeySystem(key_system))
+    return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+
+  // Every request call creates a unique ID.
+  // TODO(ddorwin): Move this to the CDM implementations since the CDMs may
+  // create their own IDs and since CDMs supporting multiple renderer processes
+  // need globally unique IDs.
+  // Everything from here until the return should probably be handled by
+  // the decrypter - see http://crbug.com/123260.
+  static uint32_t next_available_session_id = 1;
+  uint32_t session_id = next_available_session_id++;
+
+  WebString session_id_string(base::UintToString16(session_id));
+
+  DVLOG(1) << "generateKeyRequest: " << key_system.utf8().data() << ": "
+           << std::string(reinterpret_cast<const char*>(init_data),
+                          static_cast<size_t>(init_data_length))
+           << " [" << session_id_string.utf8().data() << "]";
+
+  // TODO(ddorwin): Generate a key request in the decrypter and fire
+  // keyMessage when it completes.
+  // For now, just fire the event with the init_data as the request.
+  const unsigned char* message = init_data;
+  unsigned message_length = init_data_length;
+
+  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      &WebKit::WebMediaPlayerClient::keyMessage,
+      base::Unretained(GetClient()),
+      key_system,
+      session_id_string,
+      message,
+      message_length));
+
+  return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
+}
+
+WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
+    const WebString& key_system,
+    const unsigned char* key,
+    unsigned key_length,
+    const unsigned char* init_data,
+    unsigned init_data_length,
+    const WebString& session_id) {
+  if (!IsSupportedKeySystem(key_system))
+    return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+
+
+  DVLOG(1) << "addKey: " << key_system.utf8().data() << ": "
+           << std::string(reinterpret_cast<const char*>(key),
+                          static_cast<size_t>(key_length)) << ", "
+           << std::string(reinterpret_cast<const char*>(init_data),
+                          static_cast<size_t>(init_data_length))
+           << " [" << session_id.utf8().data() << "]";
+
+  // TODO(ddorwin): Add the key to the decrypter and fire keyAdded when it
+  // completes. Check the key length there.
+  // Everything from here until the return should probably be handled by
+  // the decrypter - see http://crbug.com/123260.
+  // Temporarily, fire an error for invalid key length so we can test the error
+  // event and fire the keyAdded event in all other cases.
+  const unsigned kSupportedKeyLength = 16;  // 128-bit key.
+  if (key_length != kSupportedKeyLength) {
+    DLOG(ERROR) << "addKey: invalid key length: " << key_length;
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        &WebKit::WebMediaPlayerClient::keyError,
+        base::Unretained(GetClient()),
+        key_system,
+        session_id,
+        WebKit::WebMediaPlayerClient::MediaKeyErrorCodeUnknown,
+        0));
+  } else {
+    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        &WebKit::WebMediaPlayerClient::keyAdded,
+        base::Unretained(GetClient()),
+        key_system,
+        session_id));
+  }
+
+  return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
+}
+
+WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
+    const WebString& key_system,
+    const WebString& session_id) {
+  if (!IsSupportedKeySystem(key_system))
+    return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+
+  // TODO(ddorwin): Cancel the key request in the decrypter.
+
+  return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
 void WebMediaPlayerImpl::WillDestroyCurrentMessageLoop() {

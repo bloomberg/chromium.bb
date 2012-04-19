@@ -10,6 +10,7 @@
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/media/key_systems.h"
 
 using WebKit::WebString;
 using WebKit::WebMimeRegistry;
@@ -45,25 +46,49 @@ WebMimeRegistry::SupportsType
       WebMimeRegistry::IsSupported : WebMimeRegistry::IsNotSupported;
 }
 
+// When debugging layout tests failures in the test shell,
+// see TestShellWebMimeRegistryImpl.
+WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMediaMIMEType(
+    const WebString& mime_type, const WebString& codecs) {
+  return supportsMediaMIMEType(mime_type, codecs, WebString());
+}
+
 WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMediaMIMEType(
     const WebString& mime_type,
-    const WebString& codecs) {
+    const WebString& codecs,
+    const WebString& key_system) {
+  const std::string mime_type_ascii = ToASCIIOrEmpty(mime_type);
   // Not supporting the container is a flat-out no.
-  if (!net::IsSupportedMediaMimeType(ToASCIIOrEmpty(mime_type)))
+  if (!net::IsSupportedMediaMimeType(mime_type_ascii))
     return IsNotSupported;
 
+  if (!key_system.isEmpty()) {
+    // Check whether the key system is supported with the mime_type and codecs.
+
+    // Not supporting the key system is a flat-out no.
+    if (!webkit_media::IsSupportedKeySystem(key_system))
+      return IsNotSupported;
+
+    std::vector<std::string> strict_codecs;
+    net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, false);
+
+    if (!webkit_media::IsSupportedKeySystemWithMediaMimeType(
+            mime_type_ascii, strict_codecs, ToASCIIOrEmpty(key_system)))
+      return IsNotSupported;
+
+    // Continue processing the mime_type and codecs.
+  }
+
   // Check list of strict codecs to see if it is supported.
-  if (net::IsStrictMediaMimeType(ToASCIIOrEmpty(mime_type))) {
+  if (net::IsStrictMediaMimeType(mime_type_ascii)) {
     // We support the container, but no codecs were specified.
     if (codecs.isNull())
       return MayBeSupported;
 
     // Check if the codecs are a perfect match.
     std::vector<std::string> strict_codecs;
-    net::ParseCodecString(ToASCIIOrEmpty(codecs).c_str(), &strict_codecs,
-                          false);
-    if (!net::IsSupportedStrictMediaMimeType(ToASCIIOrEmpty(mime_type),
-                                             strict_codecs))
+    net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, false);
+    if (!net::IsSupportedStrictMediaMimeType(mime_type_ascii, strict_codecs))
       return IsNotSupported;
 
     // Good to go!
@@ -72,7 +97,7 @@ WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMediaMIMEType(
 
   // If we don't recognize the codec, it's possible we support it.
   std::vector<std::string> parsed_codecs;
-  net::ParseCodecString(ToASCIIOrEmpty(codecs).c_str(), &parsed_codecs, true);
+  net::ParseCodecString(ToASCIIOrEmpty(codecs), &parsed_codecs, true);
   if (!net::AreSupportedMediaCodecs(parsed_codecs))
     return MayBeSupported;
 

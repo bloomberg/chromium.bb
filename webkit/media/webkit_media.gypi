@@ -25,6 +25,8 @@
         'buffered_resource_loader.h',
         'filter_helpers.cc',
         'filter_helpers.h',
+        'key_systems.cc',
+        'key_systems.h',
         'media_stream_client.h',
         'preload.h',
         'skcanvas_video_renderer.cc',
