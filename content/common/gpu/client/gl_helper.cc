@@ -191,6 +191,22 @@ class ScopedTextureBinder : ScopedBinder<target> {
           &WebKit::WebGraphicsContext3D::bindTexture) {}
 };
 
+class ScopedFlush {
+ public:
+  ScopedFlush(WebKit::WebGraphicsContext3D* context)
+      : context_(context) {
+  }
+
+  virtual ~ScopedFlush() {
+    context_->flush();
+  }
+
+ private:
+  WebKit::WebGraphicsContext3D* context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedFlush);
+};
+
 void ReadBackFramebuffer(
     WebKit::WebGraphicsContext3D* context,
     unsigned char* pixels,
@@ -202,6 +218,7 @@ void ReadBackFramebuffer(
     return;
   if (context->isContextLost())
     return;
+  ScopedFlush flush(context);
   ScopedFramebuffer dst_framebuffer(context, context->createFramebuffer());
   {
     ScopedFramebufferBinder<GL_DRAW_FRAMEBUFFER> framebuffer_binder(
@@ -220,7 +237,6 @@ void ReadBackFramebuffer(
         static_cast<WebKit::WebGLId>(dst_framebuffer),
         size.width(),
         size.height());
-  context->flush();
 }
 
 void ReadBackFramebufferComplete(WebKit::WebGraphicsContext3D* context,
@@ -230,6 +246,7 @@ void ReadBackFramebufferComplete(WebKit::WebGraphicsContext3D* context,
   callback.Run(*result);
   if (*dst_texture != 0) {
     context->deleteTexture(*dst_texture);
+    context->flush();
     *dst_texture = 0;
   }
 }
@@ -454,6 +471,7 @@ bool GLHelper::CopyTextureToImpl::CopyTextureTo(
     const gfx::Size& src_size,
     const gfx::Size& dst_size,
     unsigned char* out) {
+  ScopedFlush flush(context_);
   ScopedTexture dst_texture(context_,
                             ScaleTexture(src_texture, src_size, dst_size));
   ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());

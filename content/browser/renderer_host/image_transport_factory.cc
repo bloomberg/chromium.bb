@@ -299,6 +299,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
           surface.parent_context_id == context_id) {
         data->shared_context->deleteTexture(surface.parent_texture_id[0]);
         data->shared_context->deleteTexture(surface.parent_texture_id[1]);
+        data->shared_context->flush();
         break;
       }
     }
