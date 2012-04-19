@@ -247,7 +247,9 @@
   bug_123112
   ThreadSanitizer:Race
   fun:media::AUAudioOutputStream::Stop
+  fun:media::AudioOutputDispatcherImpl::StopStream
   fun:media::AudioOutputProxy::Stop
   fun:media::AudioOutputController::DoStopCloseAndClearStream
   fun:media::AudioOutputController::DoClose
+  fun:base::internal::RunnableAdapter::Run
 }
