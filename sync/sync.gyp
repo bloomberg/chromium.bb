@@ -184,6 +184,50 @@
       ],
     },
 
+    # The sync notifications library.
+    {
+      'target_name': 'sync_notifier',
+      'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../jingle/jingle.gyp:notifier',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+        '../third_party/libjingle/libjingle.gyp:libjingle',
+        'sync',
+      ],
+      'export_dependent_settings': [
+        '../jingle/jingle.gyp:notifier',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+      ],
+      'sources': [
+        'notifier/cache_invalidation_packet_handler.cc',
+        'notifier/cache_invalidation_packet_handler.h',
+        'notifier/chrome_invalidation_client.cc',
+        'notifier/chrome_invalidation_client.h',
+        'notifier/chrome_system_resources.cc',
+        'notifier/chrome_system_resources.h',
+        'notifier/invalidation_notifier.h',
+        'notifier/invalidation_notifier.cc',
+        'notifier/invalidation_util.cc',
+        'notifier/invalidation_util.h',
+        'notifier/invalidation_version_tracker.h',
+        'notifier/non_blocking_invalidation_notifier.h',
+        'notifier/non_blocking_invalidation_notifier.cc',
+        'notifier/p2p_notifier.h',
+        'notifier/p2p_notifier.cc',
+        'notifier/registration_manager.cc',
+        'notifier/registration_manager.h',
+        'notifier/state_writer.h',
+        'notifier/sync_notifier.h',
+        'notifier/sync_notifier_factory.h',
+        'notifier/sync_notifier_factory.cc',
+      ],
+    },
+
     # Test support files for the 'sync' target.
     {
       'target_name': 'test_support_sync',
@@ -240,6 +284,28 @@
         'test/test_directory_backing_store.h',
         'util/test_unrecoverable_error_handler.cc',
         'util/test_unrecoverable_error_handler.h',
+      ],
+    },
+
+    # Test support files for the 'sync_notifier' target.
+    {
+      'target_name': 'test_support_sync_notifier',
+      'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../testing/gmock.gyp:gmock',
+        'sync_notifier',
+      ],
+      'export_dependent_settings': [
+        '../testing/gmock.gyp:gmock',
+        'sync_notifier',
+      ],
+      'sources': [
+        'notifier/mock_sync_notifier_observer.cc',
+        'notifier/mock_sync_notifier_observer.h',
       ],
     },
 
@@ -323,6 +389,59 @@
       },
     },
 
+    # Unit tests for the 'sync_notifier' target.  This cannot be a static
+    # library because the unit test files have to be compiled directly
+    # into the executable, so we push the target files to the
+    # depending executable target via direct_dependent_settings.
+    {
+      'target_name': 'sync_notifier_tests',
+      'type': 'none',
+      # We only want unit test executables to include this target.
+      'suppress_wildcard': 1,
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../jingle/jingle.gyp:notifier_test_util',
+        '../net/net.gyp:net_test_support',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+        '../third_party/libjingle/libjingle.gyp:libjingle',
+        'sync',
+        'sync_notifier',
+        'test_support_sync_notifier',
+      ],
+      # Propagate all dependencies since the actual compilation
+      # happens in the dependents.
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+        '../jingle/jingle.gyp:notifier_test_util',
+        '../net/net.gyp:net_test_support',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+        '../third_party/libjingle/libjingle.gyp:libjingle',
+        'sync',
+        'sync_notifier',
+        'test_support_sync_notifier',
+      ],
+      'direct_dependent_settings': {
+        'variables': { 'enable_wexit_time_destructors': 1, },
+        'include_dirs': [
+          '..',
+        ],
+        'sources': [
+          'notifier/cache_invalidation_packet_handler_unittest.cc',
+          'notifier/chrome_invalidation_client_unittest.cc',
+          'notifier/chrome_system_resources_unittest.cc',
+          'notifier/invalidation_notifier_unittest.cc',
+          'notifier/non_blocking_invalidation_notifier_unittest.cc',
+          'notifier/p2p_notifier_unittest.cc',
+          'notifier/registration_manager_unittest.cc',
+          'notifier/sync_notifier_factory_unittest.cc',
+        ],
+      },
+    },
+
     # The unit test executable for sync tests.  Currently this isn't
     # automatically run, as there is already a sync_unit_tests
     # executable in chrome.gyp; this is just to make sure that all the
@@ -337,6 +456,7 @@
       'dependencies': [
         '../base/base.gyp:run_all_unittests',
         'sync_tests',
+        'sync_notifier_tests',
       ],
       # TODO(akalin): This is needed because histogram.cc uses
       # leak_annotations.h, which pulls this in.  Make 'base'

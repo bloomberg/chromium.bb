@@ -318,8 +318,8 @@
         '../net/net.gyp:net',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/sync.gyp:sync_notifier',
         '../sync/sync.gyp:sync',
-        'sync_notifier',
       ],
       'export_dependent_settings': [
         '../sync/protocol/sync_proto.gyp:sync_proto',
@@ -363,51 +363,6 @@
       # need to export a hard dependency since we explicitly avoid
       # including the generated proto header files from this target's
       # header files.
-    },
-    # A library for sending and receiving server-issued notifications.
-    {
-      'target_name': 'sync_notifier',
-      'type': 'static_library',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'sources': [
-        'browser/sync/notifier/cache_invalidation_packet_handler.cc',
-        'browser/sync/notifier/cache_invalidation_packet_handler.h',
-        'browser/sync/notifier/chrome_invalidation_client.cc',
-        'browser/sync/notifier/chrome_invalidation_client.h',
-        'browser/sync/notifier/chrome_system_resources.cc',
-        'browser/sync/notifier/chrome_system_resources.h',
-        'browser/sync/notifier/invalidation_notifier.h',
-        'browser/sync/notifier/invalidation_notifier.cc',
-        'browser/sync/notifier/invalidation_util.cc',
-        'browser/sync/notifier/invalidation_util.h',
-        'browser/sync/notifier/invalidation_version_tracker.h',
-        'browser/sync/notifier/non_blocking_invalidation_notifier.h',
-        'browser/sync/notifier/non_blocking_invalidation_notifier.cc',
-        'browser/sync/notifier/p2p_notifier.h',
-        'browser/sync/notifier/p2p_notifier.cc',
-        'browser/sync/notifier/registration_manager.cc',
-        'browser/sync/notifier/registration_manager.h',
-        'browser/sync/notifier/state_writer.h',
-        'browser/sync/notifier/sync_notifier.h',
-        'browser/sync/notifier/sync_notifier_factory.h',
-        'browser/sync/notifier/sync_notifier_factory.cc',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        '../sync/sync.gyp:sync',
-        '../jingle/jingle.gyp:notifier',
-        '../net/net.gyp:net',
-        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
-      ],
-      # This target exports a hard dependency because it depends on
-      # cacheinvalidation (which itself has hard_dependency set).
-      'hard_dependency': 1,
-      'export_dependent_settings': [
-        '../jingle/jingle.gyp:notifier',
-        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
-      ],
     },
     {
       'target_name': 'service',

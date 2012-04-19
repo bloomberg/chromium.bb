@@ -396,21 +396,6 @@
       ],
     },
     {
-      'target_name': 'test_support_sync_notifier',
-      'type': 'static_library',
-      'dependencies': [
-        '../testing/gmock.gyp:gmock',
-        'sync_notifier',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'browser/sync/notifier/mock_sync_notifier_observer.cc',
-        'browser/sync/notifier/mock_sync_notifier_observer.h',
-      ],
-    },
-    {
       'target_name': 'test_support_unit',
       'type': 'static_library',
       'dependencies': [
@@ -1138,9 +1123,9 @@
         '../testing/gtest.gyp:gtest',
         'test_support_common',
         '../sync/sync.gyp:test_support_sync',
+        '../sync/sync.gyp:test_support_sync_notifier',
         'test_support_syncapi',
         'test_support_syncapi_service',
-        'test_support_sync_notifier',
         'test_support_unit',
         # 3) anything tests directly depend on
         '../skia/skia.gyp:skia',
@@ -3843,14 +3828,6 @@
         'browser/sync/internal_api/syncapi_unittest.cc',
         'browser/sync/internal_api/js_mutation_event_observer_unittest.cc',
         'browser/sync/internal_api/js_sync_manager_observer_unittest.cc',
-        'browser/sync/notifier/cache_invalidation_packet_handler_unittest.cc',
-        'browser/sync/notifier/chrome_invalidation_client_unittest.cc',
-        'browser/sync/notifier/chrome_system_resources_unittest.cc',
-        'browser/sync/notifier/invalidation_notifier_unittest.cc',
-        'browser/sync/notifier/non_blocking_invalidation_notifier_unittest.cc',
-        'browser/sync/notifier/p2p_notifier_unittest.cc',
-        'browser/sync/notifier/registration_manager_unittest.cc',
-        'browser/sync/notifier/sync_notifier_factory_unittest.cc',
       ],
       'include_dirs': [
         '..',
@@ -3858,17 +3835,15 @@
       'dependencies': [
         '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
-        '../jingle/jingle.gyp:notifier_test_util',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
+        '../sync/sync.gyp:sync_notifier_tests',
         '../sync/sync.gyp:sync_tests',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         'syncapi_core',
-        'sync_notifier',
         'test_support_syncapi',
         'test_support_syncapi_service',
-        'test_support_sync_notifier',
       ],
 
       # TODO(akalin): This is needed because histogram.cc uses

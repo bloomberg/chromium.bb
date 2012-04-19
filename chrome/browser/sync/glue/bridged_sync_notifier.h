@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/sync/notifier/sync_notifier.h"
+#include "sync/notifier/sync_notifier.h"
 
 namespace browser_sync {
 

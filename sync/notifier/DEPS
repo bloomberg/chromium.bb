@@ -1,0 +1,16 @@
+include_rules = [
+  "+google/cacheinvalidation",
+  "+jingle/notifier",
+  "+net/url_request/url_request_context.h",
+  "+net/url_request/url_request_test_util.h",
+
+  "+sync/syncable/model_type.h",
+  "+sync/syncable/model_type_payload_map.h",
+  "+sync/protocol/service_constants.h",
+  "+sync/util",
+
+  # unit tests depend on talk/base.
+  "+talk/base",
+  # sync_notifier depends on the xmpp part of libjingle.
+  "+talk/xmpp",
+]

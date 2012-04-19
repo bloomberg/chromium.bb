@@ -13,8 +13,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "content/public/browser/notification_observer.h"
+#include "sync/notifier/invalidation_version_tracker.h"
 #include "sync/syncable/model_type.h"
 
 class PrefService;

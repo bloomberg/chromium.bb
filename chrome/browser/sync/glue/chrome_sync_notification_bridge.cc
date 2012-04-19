@@ -4,10 +4,10 @@
 
 #include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 
-#include "chrome/browser/sync/notifier/sync_notifier_observer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "sync/notifier/sync_notifier_observer.h"
 
 using content::BrowserThread;
 
