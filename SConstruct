@@ -1476,7 +1476,6 @@ def GetMainProgramFromManifest(env, manifest):
   else:
     return program_dict[env.subst('${TARGET_FULLARCH}')]['url']
 
-manifest_map = {}
 
 # Returns scons node for generated manifest.
 def GeneratedManifestNode(env, manifest):
@@ -1488,17 +1487,8 @@ def GeneratedManifestNode(env, manifest):
   # For nacl_glibc, generating the mapping of shared libraries is non-trivial.
   # For pnacl, the manifest currently hosts a sha for the pexe.
   if not env.Bit('nacl_glibc') and not env.Bit('pnacl_generate_pexe'):
-    if manifest_base_name not in manifest_map:
-      env.Install('${STAGING_DIR}', manifest)
-      manifest_map[manifest_base_name] = main_program
-    # fall through
-  if manifest_base_name in manifest_map:
-    if manifest_map[manifest_base_name] != main_program:
-      print main_program
-      print manifest_map[manifest_base_name]
-      raise Exception("Two manifest files with the same name")
+    env.Install('${STAGING_DIR}', manifest)
     return result
-  manifest_map[manifest_base_name] = main_program
   if env.Bit('pnacl_generate_pexe'):
     return GenerateManifestPnacl(
         env,
