@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
 
 class RenderViewImpl;
 
@@ -43,22 +42,20 @@ class RendererAccessibility : public content::RenderViewObserver {
   virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
 
   // Called when an accessibility notification occurs in WebKit.
-  virtual void PostAccessibilityNotification(
+  void PostAccessibilityNotification(
       const WebKit::WebAccessibilityObject& obj,
       WebKit::WebAccessibilityNotification notification);
 
  private:
-  // One accessibility notification from WebKit. These are queued up and
-  // used to send tree updates and notification messages from the
-  // renderer to the browser.
-  struct Notification {
-   public:
-    // The id of the accessibility object.
-    int32 id;
+  // Post an accessibility notification to be sent to the browser process.
+  void PostAccessibilityNotification(
+      const WebKit::WebAccessibilityObject& obj,
+      AccessibilityNotification notification);
 
-    // The accessibility notification type.
-    WebKit::WebAccessibilityNotification type;
-  };
+#ifndef NDEBUG
+  const std::string AccessibilityNotificationToString(
+      AccessibilityNotification notification);
+#endif
 
   // In order to keep track of what nodes the browser knows about, we keep a
   // representation of the browser tree - just IDs and parent/child
@@ -94,7 +91,8 @@ class RendererAccessibility : public content::RenderViewObserver {
 
   // Whether or not this notification typically needs to send
   // updates to its children, too.
-  bool ShouldIncludeChildren(const Notification& notification);
+  bool ShouldIncludeChildren(
+      const AccessibilityHostMsg_NotificationParams& notification);
 
   // Returns the main top-level document for this page, or NULL if there's
   // no view or frame.
@@ -122,7 +120,7 @@ class RendererAccessibility : public content::RenderViewObserver {
 
   // Notifications from WebKit are collected until they are ready to be
   // sent to the browser.
-  std::vector<Notification> pending_notifications_;
+  std::vector<AccessibilityHostMsg_NotificationParams> pending_notifications_;
 
   // Our representation of the browser tree.
   BrowserTreeNode* browser_root_;

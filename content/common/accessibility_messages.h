@@ -32,6 +32,9 @@ enum AccessibilityNotification {
   // An alert appeared.
   AccessibilityNotificationAlert,
 
+  // A node has lost focus.
+  AccessibilityNotificationBlur,
+
   // The node checked state has changed.
   AccessibilityNotificationCheckStateChanged,
 
@@ -84,7 +87,7 @@ enum AccessibilityNotification {
   AccessibilityNotificationTextRemoved,
 
   // The node value has changed.
-  AccessibilityNotificationValueChangedD,
+  AccessibilityNotificationValueChanged,
 };
 
 #endif  // CONTENT_COMMON_ACCESSIBILITY_MESSAGES_H_

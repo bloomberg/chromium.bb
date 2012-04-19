@@ -264,9 +264,7 @@ struct WEBKIT_GLUE_EXPORT WebAccessibility {
             bool include_children);
 
 #ifndef NDEBUG
-  std::string DebugString(bool recursive,
-                          int render_routing_id,
-                          int notification_type) const;
+  std::string DebugString(bool recursive) const;
 #endif
 
  private:

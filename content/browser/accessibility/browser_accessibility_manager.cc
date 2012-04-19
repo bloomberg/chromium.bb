@@ -152,7 +152,8 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
       continue;
     }
 
-    if (param.notification_type == AccessibilityNotificationFocusChanged) {
+    int notification_type = param.notification_type;
+    if (notification_type == AccessibilityNotificationFocusChanged) {
       SetFocus(node, false);
 
       // Don't send a native focus event if the window itself doesn't
@@ -162,10 +163,10 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
     }
 
     // Send the notification event to the operating system.
-    NotifyAccessibilityEvent(param.notification_type, node);
+    NotifyAccessibilityEvent(notification_type, node);
 
     // Set initial focus when a page is loaded.
-    if (param.notification_type == AccessibilityNotificationLoadComplete) {
+    if (notification_type == AccessibilityNotificationLoadComplete) {
       if (!focus_)
         SetFocus(root_, false);
       if (!delegate_ || delegate_->HasFocus())
@@ -293,9 +294,10 @@ void BrowserAccessibilityManager::UpdateNode(
   // If the only reference to the focused node is focus_ itself, then the
   // focused node is no longer in the tree, so set the focus to the root.
   if (focus_ && focus_->ref_count() == 1) {
-    SetFocus(root_, true);
-    if (!delegate_ || delegate_->HasFocus())
-      NotifyAccessibilityEvent(AccessibilityNotificationFocusChanged, focus_);
+    SetFocus(root_, false);
+
+    if (delegate_ && delegate_->HasFocus())
+      NotifyAccessibilityEvent(AccessibilityNotificationBlur, focus_);
   }
 }
 

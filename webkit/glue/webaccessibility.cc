@@ -25,18 +25,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
-#ifndef NDEBUG
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
-#endif
-
 using base::DoubleToString;
 using base::IntToString;
 using WebKit::WebAccessibilityRole;
 using WebKit::WebAccessibilityObject;
-
-#ifndef NDEBUG
-using WebKit::WebAccessibilityNotification;
-#endif
 
 namespace {
 
@@ -340,73 +332,9 @@ WebAccessibility::~WebAccessibility() {
 }
 
 #ifndef NDEBUG
-std::string WebAccessibility::DebugString(bool recursive,
-                                          int render_routing_id,
-                                          int notification) const {
+std::string WebAccessibility::DebugString(bool recursive) const {
   std::string result;
   static int indent = 0;
-
-  if (render_routing_id != 0) {
-    WebKit::WebAccessibilityNotification notification_type =
-        static_cast<WebKit::WebAccessibilityNotification>(notification);
-    result += "routing id=";
-    result += IntToString(render_routing_id);
-    result += " notification=";
-
-    switch (notification_type) {
-      case WebKit::WebAccessibilityNotificationActiveDescendantChanged:
-        result += "active descendant changed";
-        break;
-      case WebKit::WebAccessibilityNotificationCheckedStateChanged:
-        result += "check state changed";
-        break;
-      case WebKit::WebAccessibilityNotificationChildrenChanged:
-        result += "children changed";
-        break;
-      case WebKit::WebAccessibilityNotificationFocusedUIElementChanged:
-        result += "focus changed";
-        break;
-      case WebKit::WebAccessibilityNotificationLayoutComplete:
-        result += "layout complete";
-        break;
-      case WebKit::WebAccessibilityNotificationLiveRegionChanged:
-        result += "live region changed";
-        break;
-      case WebKit::WebAccessibilityNotificationLoadComplete:
-        result += "load complete";
-        break;
-      case WebKit::WebAccessibilityNotificationMenuListValueChanged:
-        result += "menu list changed";
-        break;
-      case WebKit::WebAccessibilityNotificationRowCountChanged:
-        result += "row count changed";
-        break;
-      case WebKit::WebAccessibilityNotificationRowCollapsed:
-        result += "row collapsed";
-        break;
-      case WebKit::WebAccessibilityNotificationRowExpanded:
-        result += "row expanded";
-        break;
-      case WebKit::WebAccessibilityNotificationScrolledToAnchor:
-        result += "scrolled to anchor";
-        break;
-      case WebKit::WebAccessibilityNotificationSelectedChildrenChanged:
-        result += "selected children changed";
-        break;
-      case WebKit::WebAccessibilityNotificationSelectedTextChanged:
-        result += "selected text changed";
-        break;
-      case WebKit::WebAccessibilityNotificationValueChanged:
-        result += "value changed";
-        break;
-      case WebKit::WebAccessibilityNotificationInvalid:
-        result += "invalid notification";
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
   result += "\n";
   for (int i = 0; i < indent; ++i)
     result += "  ";
@@ -763,7 +691,7 @@ std::string WebAccessibility::DebugString(bool recursive,
     result += "\n";
     ++indent;
     for (size_t i = 0; i < children.size(); ++i)
-      result += children[i].DebugString(true, 0, 0);
+      result += children[i].DebugString(true);
     --indent;
   }
 

@@ -40,6 +40,9 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     case AccessibilityNotificationAlert:
       // Not used on Mac.
       return;
+    case AccessibilityNotificationBlur:
+      // A no-op on Mac.
+      return;
     case AccessibilityNotificationCheckStateChanged:
       // Not used on Mac.
       return;
@@ -91,7 +94,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     case AccessibilityNotificationTextRemoved:
       // Not used on Mac.
       return;
-    case AccessibilityNotificationValueChangedD:
+    case AccessibilityNotificationValueChanged:
       event_id = NSAccessibilityValueChangedNotification;
       break;
   }
