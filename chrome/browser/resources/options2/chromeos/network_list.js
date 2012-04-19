@@ -292,6 +292,10 @@ cr.define('options.network', function() {
           buttonLabel.textContent = entry.label;
           button.appendChild(buttonLabel);
           button.addEventListener('click', entry.command);
+          button.addEventListener('mousedown', function(e) {
+            // Prevent blurring of list, which would close the menu.
+            e.preventDefault();
+          });
           MenuItem.decorate(button);
           menu.appendChild(button);
         }
@@ -324,12 +328,8 @@ cr.define('options.network', function() {
         activeMenu_ = menuId;
         this.menu_.style.setProperty('top', top + 'px');
         this.menu_.hidden = false;
-        setTimeout(function() {
-          $('settings').addEventListener('click', closeMenu_);
-        }, 0);
       }
     },
-
   };
 
   /**
@@ -566,12 +566,18 @@ cr.define('options.network', function() {
       } else if (command != null) {
         callback = function() {
           command(data);
+          closeMenu_();
         };
       }
-      if (callback != null)
+      if (callback != null) {
         button.addEventListener('click', callback);
-      else
+        button.addEventListener('mousedown', function(e) {
+          // Prevent blurring of list, which would close the menu.
+          e.preventDefault();
+        });
+      } else {
         buttonLabel.classList.add('network-disabled-control');
+      }
       MenuItem.decorate(button);
       menu.appendChild(button);
       return button;
@@ -697,11 +703,13 @@ cr.define('options.network', function() {
     },
 
     /**
-     * When the list loses focus, unselect all items in the list.
+     * When the list loses focus, unselect all items in the list and close the
+     * active menu.
      * @private
      */
     onBlur_: function() {
       this.selectionModel.unselectAll();
+      closeMenu_();
     },
 
     /**
@@ -945,7 +953,6 @@ cr.define('options.network', function() {
     if (activeMenu_) {
       $(activeMenu_).hidden = true;
       activeMenu_ = null;
-      $('settings').removeEventListener('click', closeMenu_);
     }
   }
 
