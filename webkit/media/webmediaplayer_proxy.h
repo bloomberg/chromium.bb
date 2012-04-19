@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "media/base/pipeline.h"
-#include "media/filters/chunk_demuxer.h"
 #include "media/filters/chunk_demuxer_client.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "webkit/media/buffered_data_source.h"
@@ -89,10 +88,7 @@ class WebMediaPlayerProxy
 
   // Methods for Demuxer communication.
   void DemuxerFlush();
-  media::ChunkDemuxer::Status DemuxerAddId(const std::string& id,
-                                           const std::string& type);
-  bool DemuxerRemoveId(const std::string& id);
-  bool DemuxerAppend(const std::string& id, const uint8* data, size_t length);
+  bool DemuxerAppend(const uint8* data, size_t length);
   void DemuxerEndOfStream(media::PipelineStatus status);
   void DemuxerShutdown();
 
