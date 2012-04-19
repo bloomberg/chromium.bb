@@ -1001,8 +1001,8 @@ glibc-copy() {
   for lib in libc libpthread; do
     cp -a "${naclgcc_base}"/lib32/${lib}.so "${INSTALL_GLIBC_LIB_ARCH}"x86-32
     cp -a "${naclgcc_base}"/lib/${lib}.so "${INSTALL_GLIBC_LIB_ARCH}"x86-64
-    make-glibc-link all ${lib}.so.${ver} ${lib}-2.9.so
-    make-glibc-link all ${lib}.so.${ver} ${lib}.so.${ver}
+    make-glibc-pso-stubs ${lib}.so.${ver} ${lib}-2.9.so
+    make-glibc-pso-stubs ${lib}.so.${ver} ${lib}.so.${ver}
   done
 
   # Make pso stubs for other libraries.
