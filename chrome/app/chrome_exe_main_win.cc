@@ -26,12 +26,6 @@ int RunChrome(HINSTANCE instance) {
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
   content::InitializeSandboxInfo(&sandbox_info);
 
-  // The exit manager is in charge of calling the dtors of singletons.
-  base::AtExitManager exit_manager;
-
-  // Initialize the commandline singleton from the environment.
-  CommandLine::Init(0, NULL);
-
   // Load and launch the chrome dll. *Everything* happens inside.
   MainDllLoader* loader = MakeMainDllLoader();
   int rc = loader->Launch(instance, &sandbox_info);
@@ -41,6 +35,11 @@ int RunChrome(HINSTANCE instance) {
 }
 
 int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
+  // Initialize the commandline singleton from the environment.
+  CommandLine::Init(0, NULL);
+  // The exit manager is in charge of calling the dtors of singletons.
+  base::AtExitManager exit_manager;
+
   MetroDriver metro_driver;
   if (metro_driver.in_metro_mode())
     return metro_driver.RunInMetro(instance, &RunChrome);
