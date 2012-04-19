@@ -947,7 +947,10 @@ int UserManagerImpl::GetUserWallpaperIndex() {
   if (!user_wallpapers->GetIntegerWithoutPathExpansion(username, &index))
     index = current_user_wallpaper_index_;
 
-  DCHECK(index >=0 && index < ash::GetWallpaperCount());
+  if (index < 0 || index >= ash::GetWallpaperCount()) {
+    index = ash::GetDefaultWallpaperIndex();
+    SaveUserWallpaperIndex(index);
+  }
   return index;
 }
 

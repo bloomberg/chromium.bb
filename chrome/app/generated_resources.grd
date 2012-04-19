@@ -13009,7 +13009,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Choose a picture to display on your background.
       </message>
       <message name="IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT" desc="Author label.">
-        Attribution:
+        Photo by
       </message>
       <message name="IDS_OPTIONS_SET_WALLPAPER_RANDOM1" desc="Label for option to randomly choose wallpaper at login.">
         Random
