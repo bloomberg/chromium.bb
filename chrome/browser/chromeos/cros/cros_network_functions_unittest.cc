@@ -18,6 +18,7 @@
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::SaveArg;
 using ::testing::StrEq;
 
 namespace chromeos {
@@ -647,6 +648,24 @@ TEST_F(CrosNetworkFunctionsTest, CrosDeleteServiceFromProfile) {
               DeleteEntry(dbus::ObjectPath(profile_path), service_path, _))
       .Times(1);
   CrosDeleteServiceFromProfile(profile_path.c_str(), service_path.c_str());
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkManagerProperties) {
+  const std::string key = "key";
+  const int kValue = 42;
+  const base::FundamentalValue value(kValue);
+  // Start monitoring.
+  FlimflamClientHelper::PropertyChangedHandler handler;
+  EXPECT_CALL(*mock_manager_client_, SetPropertyChangedHandler(_))
+      .WillOnce(SaveArg<0>(&handler));
+  CrosNetworkWatcher* watcher = CrosMonitorNetworkManagerProperties(
+      MockNetworkPropertiesWatcherCallback::CreateCallback(
+          flimflam::kFlimflamServicePath, key, value));
+  // Call callback.
+  handler.Run(key, value);
+  // Stop monitoring.
+  EXPECT_CALL(*mock_manager_client_, ResetPropertyChangedHandler()).Times(1);
+  delete watcher;
 }
 
 TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkManagerProperties) {

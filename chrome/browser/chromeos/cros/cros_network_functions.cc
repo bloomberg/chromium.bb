@@ -43,6 +43,21 @@ class CrosNetworkManagerPropertiesWatcher : public CrosNetworkWatcher {
   NetworkPropertiesMonitor monitor_;
 };
 
+// Class to watch network manager's properties without Libcros.
+class NetworkManagerPropertiesWatcher : public CrosNetworkWatcher {
+ public:
+  NetworkManagerPropertiesWatcher(
+      const NetworkPropertiesWatcherCallback& callback) {
+    DBusThreadManager::Get()->GetFlimflamManagerClient()->
+        SetPropertyChangedHandler(base::Bind(callback,
+                                             flimflam::kFlimflamServicePath));
+  }
+  virtual ~NetworkManagerPropertiesWatcher() {
+    DBusThreadManager::Get()->GetFlimflamManagerClient()->
+        ResetPropertyChangedHandler();
+  }
+};
+
 // Class to watch network service's properties with Libcros.
 class CrosNetworkServicePropertiesWatcher : public CrosNetworkWatcher {
  public:
@@ -92,7 +107,7 @@ class CrosDataPlanUpdateWatcher : public CrosNetworkWatcher {
   DataPlanUpdateMonitor monitor_;
 };
 
-// Class to watch sms Libcros.
+// Class to watch sms with Libcros.
 class CrosSMSWatcher : public CrosNetworkWatcher {
  public:
   CrosSMSWatcher(const std::string& modem_device_path,
@@ -219,7 +234,10 @@ void CrosRequestCellularDataPlanUpdate(const char* modem_service_path) {
 
 CrosNetworkWatcher* CrosMonitorNetworkManagerProperties(
     const NetworkPropertiesWatcherCallback& callback) {
-  return new CrosNetworkManagerPropertiesWatcher(callback);
+  if (g_libcros_network_functions_enabled)
+    return new CrosNetworkManagerPropertiesWatcher(callback);
+  else
+    return new NetworkManagerPropertiesWatcher(callback);
 }
 
 CrosNetworkWatcher* CrosMonitorNetworkServiceProperties(
