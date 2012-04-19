@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,10 +117,9 @@ void BubbleFrameView::MirrorArrowIfOffScreen(
         bubble_border_->GetBounds(anchor_rect, client_size);
     // Restore the original arrow if mirroring doesn't show more of the bubble.
     if (GetOffScreenLength(monitor_rect, mirror_bounds, vertical) >=
-        GetOffScreenLength(monitor_rect, window_bounds, vertical))
+        GetOffScreenLength(monitor_rect, window_bounds, vertical)) {
       bubble_border_->set_arrow_location(arrow);
-    else
-      SchedulePaint();
+    }
   }
 }
 
