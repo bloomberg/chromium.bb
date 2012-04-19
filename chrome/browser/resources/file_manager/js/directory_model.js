@@ -5,6 +5,8 @@
 // If directory files changes too often, don't rescan directory more than once
 // per specified interval
 var SIMULTANEOUS_RESCAN_INTERVAL = 1000;
+// Used for operations that require almost instant rescan.
+var SHORT_RESCAN_INTERVAL = 100;
 
 /**
  * Data model of the file manager.
@@ -40,8 +42,9 @@ function DirectoryModel(root, singleSelection, showGData) {
   this.rootsListSelection_.addEventListener(
       'change', this.onRootsSelectionChanged_.bind(this));
 
-  // True if we should filter out files that start with a dot.
-  this.filterHidden_ = true;
+  // The map 'name' -> callback. Callbacks are function(entry) -> boolean.
+  this.filters_ = {};
+  this.filterHidden = true;
 
   // Readonly status.
   this.readonly_ = false;
@@ -164,13 +167,15 @@ DirectoryModel.prototype = {
   },
 
   get filterHidden() {
-    return this.filterHidden_;
+    return !!this.filters_['hidden'];
   },
 
   set filterHidden(value) {
-    if (this.filterHidden_ != value) {
-      this.filterHidden_ = value;
-      this.rescan();
+    if (value) {
+      this.addFilter('hidden',
+                     function(e) {return e.name.substr(0, 1) != '.';});
+    } else {
+      this.removeFilter('hidden');
     }
   },
 
@@ -244,12 +249,47 @@ DirectoryModel.prototype = {
 };
 
 /**
- * Schedule rescan with delay. If another rescan has been scheduled does
- * nothing. Designed to handle directory change notification. File operation
- * may cause a few notifications what should cause a single refresh.
+ * Add a filter for directory contents.
+ * @param {string} name An identifier of the filter (used when removing it).
+ * @param {function(Entry):boolean} filter Hide file if false.
+ */
+DirectoryModel.prototype.addFilter = function(name, filter) {
+  this.filters_[name] = filter;
+  this.rescanSoon();
+};
+
+/**
+ * Remove one of the directory contents filters, specified by name.
+ * @param {string} name Identifier of a filter.
+ */
+DirectoryModel.prototype.removeFilter = function(name) {
+  delete this.filters_[name];
+  this.rescanSoon();
+};
+
+/**
+ * Schedule rescan with short delay.
+ */
+DirectoryModel.prototype.rescanSoon = function() {
+  this.scheduleRescan(SHORT_RESCAN_INTERVAL);
+};
+
+/**
+ * Schedule rescan with delay. Designed to handle directory change
+ * notification.
  */
 DirectoryModel.prototype.rescanLater = function() {
-  if (this.rescanTimeout_)
+  this.scheduleRescan(SIMULTANEOUS_RESCAN_INTERVAL);
+};
+
+/**
+ * Schedule rescan with delay. If another rescan has been scheduled does
+ * nothing. File operation may cause a few notifications what should cause
+ * a single refresh.
+ * @param {number} delay Delay in ms after which the rescan will be performed.
+ */
+DirectoryModel.prototype.scheduleRescan = function(delay) {
+  if (this.rescanTimeout_ && this.rescanTimeout_ <= delay)
     return;  // Rescan already scheduled.
 
   var self = this;
@@ -257,7 +297,7 @@ DirectoryModel.prototype.rescanLater = function() {
     self.rescanTimeout_ = undefined;
     self.rescan();
   }
-  this.rescanTimeout_ = setTimeout(onTimeout, SIMULTANEOUS_RESCAN_INTERVAL);
+  this.rescanTimeout_ = setTimeout(onTimeout, delay);
 };
 
 /**
@@ -318,7 +358,7 @@ DirectoryModel.prototype.createScanner_ = function(list, successCallback) {
       onSuccess,
       onFailure,
       this.prefetchCacheForSorting_.bind(this),
-      this.filterHidden_);
+      this.filters_);
 };
 
 /**
@@ -1112,24 +1152,25 @@ DirectoryModel.isRootPath = function(path) {
 };
 
 /**
-  * @constructor
-  * @extends cr.EventTarget
-  * @param {DirectoryEntry} dir Directory to scan.
-  * @param {Array.<Entry>|cr.ui.ArrayDataModel} list Target to put the files.
-  * @param {function} successCallback Callback to call when (and if) scan
-  *     successfully completed.
-  * @param {function} errorCallback Callback to call in case of IO error.
-  * @param {function(Array.<Entry>):void, Function)} preprocessChunk
-  *     Callback to preprocess each chunk of files.
-  * @param {boolean} filterHidden True if files started with dots are ignored.
-  */
+ * @constructor
+ * @extends cr.EventTarget
+ * @param {DirectoryEntry} dir Directory to scan.
+ * @param {Array.<Entry>|cr.ui.ArrayDataModel} list Target to put the files.
+ * @param {function} successCallback Callback to call when (and if) scan
+ *     successfully completed.
+ * @param {function} errorCallback Callback to call in case of IO error.
+ * @param {function(Array.<Entry>):void, Function)} preprocessChunk
+ *     Callback to preprocess each chunk of files.
+ * @param {Object.<string, function(Entry):Boolean>} filters The map of filters
+ *     for file entries.
+ */
 DirectoryModel.Scanner = function(dir, list, successCallback, errorCallback,
-                                  preprocessChunk, filterHidden) {
+                                  preprocessChunk, filters) {
   this.cancelled_ = false;
   this.list_ = list;
   this.dir_ = dir;
   this.reader_ = null;
-  this.filterHidden_ = !!filterHidden;
+  this.filters_ = filters;
   this.preprocessChunk_ = preprocessChunk;
   this.successCallback_ = successCallback;
   this.errorCallback_ = errorCallback;
@@ -1183,13 +1224,8 @@ DirectoryModel.Scanner.prototype.onChunkComplete_ = function(entries) {
   // rather than as an array, so we need to perform some acrobatics...
   var spliceArgs = [].slice.call(entries);
 
-  // Hide files that start with a dot ('.').
-  // TODO(rginda): User should be able to override this. Support for other
-  // commonly hidden patterns might be nice too.
-  if (this.filterHidden_) {
-    spliceArgs = spliceArgs.filter(function(e) {
-      return e.name.substr(0, 1) != '.';
-    });
+  for (filterName in this.filters_) {
+    spliceArgs = spliceArgs.filter(this.filters_[filterName]);
   }
 
   var self = this;

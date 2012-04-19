@@ -113,6 +113,7 @@ FileManager.prototype = {
     get label() {
       return this.querySelector('filename-label').textContent;
     },
+
     set label(value) {
       // Grid sets it to entry. Ignore.
     }
@@ -716,6 +717,9 @@ FileManager.prototype = {
       this.dialogDom_.setAttribute('ash', 'true');
 
     this.filePopup_ = null;
+
+    this.dialogDom_.querySelector('#search-box').addEventListener(
+        'input', this.onSearchBoxUpdate_.bind(this));
 
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, localStrings.templateData);
@@ -4337,6 +4341,19 @@ FileManager.prototype = {
       event.target.removeAttribute('checked');
     } else {
       event.target.setAttribute('checked', 'checked');
+    }
+  };
+
+  FileManager.prototype.onSearchBoxUpdate_ = function(event) {
+    var searchString = this.dialogDom_.querySelector('#search-box').value;
+    if (searchString) {
+      this.directoryModel_.addFilter(
+          'searchbox',
+          function(e) {
+            return e.name.substr(0, searchString.length) == searchString;
+          });
+    } else {
+      this.directoryModel_.removeFilter('searchbox');
     }
   };
 

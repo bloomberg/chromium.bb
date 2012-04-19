@@ -398,6 +398,7 @@ div.root-eject:hover {
   background-position: center center;
   background-repeat: no-repeat;
   border: 1px solid transparent;
+  border-radius: 2px;
   height: 29px;
   width: 29px;
 }
@@ -416,6 +417,16 @@ div.root-eject:hover {
 
 .dialog-header div[role=button][disabled] {
   background-color: #f1f1f1;
+}
+
+#search-box {
+  background: url('../images/icon_search.png') no-repeat scroll 3px 3px;
+  border: 1px solid #BBB;
+  border-radius: 2px;
+  display: -webkit-box;
+  height: 20px;
+  margin-right: 10px;
+  padding-left: 22px;
 }
 
 /* button:hover and button[disabled]:hover rules must be override by placing
