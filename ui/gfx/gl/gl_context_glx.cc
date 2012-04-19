@@ -151,11 +151,11 @@ void GLContextGLX::Destroy() {
 }
 
 bool GLContextGLX::MakeCurrent(GLSurface* surface) {
-  TRACE_EVENT0("gpu", "GLContextGLX::MakeCurrent");
   DCHECK(context_);
   if (IsCurrent(surface))
     return true;
 
+  TRACE_EVENT0("gpu", "GLContextGLX::MakeCurrent");
   if (!glXMakeCurrent(
       display_,
       reinterpret_cast<GLXDrawable>(surface->GetHandle()),
