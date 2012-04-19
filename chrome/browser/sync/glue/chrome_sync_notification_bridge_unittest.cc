@@ -166,12 +166,13 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
       ADD_FAILURE() << "Timed out waiting for IO thread.";
   }
 
-  void TriggerRefreshNotification() {
-    const syncable::ModelType type = syncable::SESSIONS;
+  void TriggerRefreshNotification(
+      int type,
+      const syncable::ModelTypePayloadMap& payload_map) {
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_SYNC_REFRESH,
+        type,
         content::Source<Profile>(&mock_profile_),
-        content::Details<const syncable::ModelType>(&type));
+        content::Details<const syncable::ModelTypePayloadMap>(&payload_map));
   }
 
   MessageLoop ui_loop_;
@@ -185,9 +186,9 @@ class ChromeSyncNotificationBridgeTest : public testing::Test {
   base::WaitableEvent done_;
 };
 
-// Adds an observer on the UI thread, triggers a refresh notification, and
+// Adds an observer on the UI thread, triggers a local refresh notification, and
 // ensures the bridge posts a LOCAL_NOTIFICATION with the proper payload to it.
-TEST_F(ChromeSyncNotificationBridgeTest, Basic) {
+TEST_F(ChromeSyncNotificationBridgeTest, LocalNotification) {
   syncable::ModelTypePayloadMap payload_map;
   payload_map[syncable::SESSIONS] = "";
   StrictMock<sync_notifier::MockSyncNotifierObserver> observer;
@@ -195,7 +196,69 @@ TEST_F(ChromeSyncNotificationBridgeTest, Basic) {
               OnIncomingNotification(payload_map,
                                      sync_notifier::LOCAL_NOTIFICATION));
   bridge_.AddObserver(&observer);
-  TriggerRefreshNotification();
+  TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
+                             payload_map);
+  ui_loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(&observer);
+}
+
+// Adds an observer on the UI thread, triggers a remote refresh notification,
+// and ensures the bridge posts a REMOTE_NOTIFICATION with the proper payload
+// to it.
+TEST_F(ChromeSyncNotificationBridgeTest, RemoteNotification) {
+  syncable::ModelTypePayloadMap payload_map;
+  payload_map[syncable::BOOKMARKS] = "";
+  StrictMock<sync_notifier::MockSyncNotifierObserver> observer;
+  EXPECT_CALL(observer,
+              OnIncomingNotification(payload_map,
+                                     sync_notifier::REMOTE_NOTIFICATION));
+  bridge_.AddObserver(&observer);
+  TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
+                             payload_map);
+  ui_loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(&observer);
+}
+
+// Adds an observer on the UI thread, triggers a local refresh notification
+// with empty payload map and ensures the bridge posts a
+// LOCAL_NOTIFICATION with the proper payload to it.
+TEST_F(ChromeSyncNotificationBridgeTest, LocalNotificationEmptyPayloadMap) {
+  const syncable::ModelTypeSet enabled_types(
+      syncable::BOOKMARKS, syncable::PASSWORDS);
+  const syncable::ModelTypePayloadMap enabled_types_payload_map =
+      syncable::ModelTypePayloadMapFromEnumSet(enabled_types, std::string());
+
+  StrictMock<sync_notifier::MockSyncNotifierObserver> observer;
+  EXPECT_CALL(observer,
+              OnIncomingNotification(enabled_types_payload_map,
+                                     sync_notifier::LOCAL_NOTIFICATION));
+  bridge_.AddObserver(&observer);
+  // Set enabled types on the bridge.
+  bridge_.UpdateEnabledTypes(enabled_types);
+  TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
+                             syncable::ModelTypePayloadMap());
+  ui_loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(&observer);
+}
+
+// Adds an observer on the UI thread, triggers a remote refresh notification
+// with empty payload map and ensures the bridge posts a
+// REMOTE_NOTIFICATION with the proper payload to it.
+TEST_F(ChromeSyncNotificationBridgeTest, RemoteNotificationEmptyPayloadMap) {
+  const syncable::ModelTypeSet enabled_types(
+      syncable::BOOKMARKS, syncable::TYPED_URLS);
+  const syncable::ModelTypePayloadMap enabled_types_payload_map =
+      syncable::ModelTypePayloadMapFromEnumSet(enabled_types, std::string());
+
+  StrictMock<sync_notifier::MockSyncNotifierObserver> observer;
+  EXPECT_CALL(observer,
+              OnIncomingNotification(enabled_types_payload_map,
+                                     sync_notifier::REMOTE_NOTIFICATION));
+  bridge_.AddObserver(&observer);
+  // Set enabled types on the bridge.
+  bridge_.UpdateEnabledTypes(enabled_types);
+  TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
+                             syncable::ModelTypePayloadMap());
   ui_loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
 }
@@ -207,7 +270,8 @@ TEST_F(ChromeSyncNotificationBridgeTest, BasicThreaded) {
   syncable::ModelTypePayloadMap payload_map;
   payload_map[syncable::SESSIONS] = "";
   CreateObserverWithExpectedPayload(payload_map);
-  TriggerRefreshNotification();
+  TriggerRefreshNotification(chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
+                             payload_map);
   VerifyAndDestroyObserver();
 }
 

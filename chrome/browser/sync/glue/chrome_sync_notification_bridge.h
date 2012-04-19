@@ -10,6 +10,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "sync/syncable/model_type.h"
 
 class Profile;
 
@@ -20,15 +21,18 @@ class SyncNotifierObserver;
 namespace browser_sync {
 
 // A thread-safe bridge for chrome events that can trigger sync notifications.
-// Currently only listens to NOTIFICATION_SYNC_REFRESH, triggering each
-// observer's OnIncomingNotification method. Only the SESSIONS datatype is
-// currently expected to be able to trigger this notification.
+// Listens to NOTIFICATION_SYNC_REFRESH_LOCAL and
+// NOTIFICATION_SYNC_REFRESH_REMOTE and triggers each observer's
+// OnIncomingNotification method on these notifications.
 // Note: Notifications are expected to arrive on the UI thread, but observers
 // may live on any thread.
 class ChromeSyncNotificationBridge : public content::NotificationObserver {
  public:
   explicit ChromeSyncNotificationBridge(const Profile* profile);
   virtual ~ChromeSyncNotificationBridge();
+
+  // Must be called on UI thread.
+  void UpdateEnabledTypes(const syncable::ModelTypeSet enabled_types);
 
   // These can be called on any thread.
   virtual void AddObserver(sync_notifier::SyncNotifierObserver* observer);
@@ -41,6 +45,7 @@ class ChromeSyncNotificationBridge : public content::NotificationObserver {
 
  private:
   content::NotificationRegistrar registrar_;
+  syncable::ModelTypeSet enabled_types_;
 
   // Because [Add/Remove]Observer can be called from any thread, we need a
   // thread-safe observerlist.

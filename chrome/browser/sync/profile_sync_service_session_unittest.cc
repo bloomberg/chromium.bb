@@ -182,7 +182,7 @@ class ProfileSyncServiceSessionTest
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
         content::NotificationService::AllSources());
-    registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH,
+    registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
         content::NotificationService::AllSources());
   }
 
@@ -193,7 +193,7 @@ class ProfileSyncServiceSessionTest
       case chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED:
         notified_of_update_ = true;
         break;
-      case chrome::NOTIFICATION_SYNC_REFRESH:
+      case chrome::NOTIFICATION_SYNC_REFRESH_LOCAL:
         notified_of_refresh_ = true;
         break;
       default:
@@ -942,8 +942,8 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_ValidTabs) {
       GetEntryAtIndex(0)->GetVirtualURL());
 }
 
-// Verify that AttemptSessionsDataRefresh triggers the NOTIFICATION_SYNC_REFRESH
-// notification.
+// Verify that AttemptSessionsDataRefresh triggers the
+// NOTIFICATION_SYNC_REFRESH_LOCAL notification.
 // TODO(zea): Once we can have unit tests that are able to open to the NTP,
 // test that the NTP/#opentabs URL triggers a refresh as well (but only when
 // it is the active tab).

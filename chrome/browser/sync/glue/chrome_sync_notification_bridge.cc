@@ -19,11 +19,19 @@ ChromeSyncNotificationBridge::ChromeSyncNotificationBridge(
         new ObserverListThreadSafe<sync_notifier::SyncNotifierObserver>()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
-  registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH,
+  registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
+                 content::Source<Profile>(profile));
+  registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_REMOTE,
                  content::Source<Profile>(profile));
 }
 
 ChromeSyncNotificationBridge::~ChromeSyncNotificationBridge() {}
+
+void ChromeSyncNotificationBridge::UpdateEnabledTypes(
+    const syncable::ModelTypeSet types) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  enabled_types_ = types;
+}
 
 void ChromeSyncNotificationBridge::AddObserver(
     sync_notifier::SyncNotifierObserver* observer) {
@@ -40,17 +48,30 @@ void ChromeSyncNotificationBridge::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(type, chrome::NOTIFICATION_SYNC_REFRESH);
-  content::Details<const syncable::ModelType> model_type_details(details);
-  const syncable::ModelType model_type = *(model_type_details.ptr());
 
-  // Currently, we only expect SESSIONS to trigger this notification.
-  DCHECK_EQ(syncable::SESSIONS, model_type);
-  syncable::ModelTypePayloadMap payload_map;
-  payload_map[model_type] = "";
+  sync_notifier::IncomingNotificationSource notification_source;
+  if (type == chrome::NOTIFICATION_SYNC_REFRESH_LOCAL) {
+    notification_source = sync_notifier::LOCAL_NOTIFICATION;
+  } else if (type == chrome::NOTIFICATION_SYNC_REFRESH_REMOTE) {
+    notification_source = sync_notifier::REMOTE_NOTIFICATION;
+  } else {
+    NOTREACHED() << "Unexpected notification type:" << type;
+    return;
+  }
+
+  content::Details<const syncable::ModelTypePayloadMap>
+      payload_details(details);
+  syncable::ModelTypePayloadMap payload_map = *(payload_details.ptr());
+
+  if (payload_map.empty()) {
+    // No model types to invalidate, invalidating all enabled types.
+    payload_map =
+        syncable::ModelTypePayloadMapFromEnumSet(enabled_types_, std::string());
+  }
+
   observers_->Notify(
       &sync_notifier::SyncNotifierObserver::OnIncomingNotification,
-      payload_map, sync_notifier::LOCAL_NOTIFICATION);
+      payload_map, notification_source);
 }
 
 }  // namespace browser_sync

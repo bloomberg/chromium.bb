@@ -42,6 +42,7 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "sync/engine/model_safe_worker.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/session_state.h"
@@ -737,16 +738,18 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   SDVLOG(1) << "Syncer in config mode. SBH executing "
             << "FinishConfigureDataTypesOnFrontendLoop";
 
+
+  ModelSafeRoutingInfo routing_info;
+  registrar_->GetModelSafeRoutingInfo(&routing_info);
+  const syncable::ModelTypeSet enabled_types =
+      GetRoutingInfoTypes(routing_info);
+
+  // Update |chrome_sync_notification_bridge_|'s enabled types here as it has
+  // to happen on the UI thread.
+  chrome_sync_notification_bridge_.UpdateEnabledTypes(enabled_types);
+
   if (pending_config_mode_state_->added_types.Empty() &&
       !core_->sync_manager()->InitialSyncEndedForAllEnabledTypes()) {
-
-    syncable::ModelTypeSet enabled_types;
-    ModelSafeRoutingInfo routing_info;
-    registrar_->GetModelSafeRoutingInfo(&routing_info);
-    for (ModelSafeRoutingInfo::const_iterator i = routing_info.begin();
-         i != routing_info.end(); ++i) {
-      enabled_types.Put(i->first);
-    }
 
     // TODO(tim): Log / UMA / count this somehow?
     // Add only the types with empty progress markers. Note: it is possible

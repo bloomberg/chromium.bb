@@ -236,14 +236,14 @@ class SyncedTabDelegateMock : public SyncedTabDelegate {
 class SyncRefreshListener : public content::NotificationObserver {
  public:
   SyncRefreshListener() : notified_of_refresh_(false) {
-    registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH,
+    registrar_.Add(this, chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
         content::NotificationService::AllSources());
   }
 
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) {
-    if (type == chrome::NOTIFICATION_SYNC_REFRESH) {
+    if (type == chrome::NOTIFICATION_SYNC_REFRESH_LOCAL) {
       notified_of_refresh_ = true;
     }
   }
@@ -257,8 +257,8 @@ class SyncRefreshListener : public content::NotificationObserver {
 
 }  // namespace.
 
-// Test that AttemptSessionsDataRefresh() triggers the NOTIFICATION_SYNC_REFRESH
-// notification.
+// Test that AttemptSessionsDataRefresh() triggers the
+// NOTIFICATION_SYNC_REFRESH_LOCAL notification.
 TEST_F(SyncSessionModelAssociatorTest, TriggerSessionRefresh) {
   SyncRefreshListener refresh_listener;
 

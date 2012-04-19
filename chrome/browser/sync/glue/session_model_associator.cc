@@ -35,6 +35,8 @@
 #include "content/public/browser/notification_service.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/syncable/syncable.h"
+#include "sync/syncable/model_type.h"
+#include "sync/syncable/model_type_payload_map.h"
 #include "sync/util/get_session_name.h"
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -1185,10 +1187,12 @@ void SessionModelAssociator::TabNodePool::FreeTabNode(int64 sync_id) {
 void SessionModelAssociator::AttemptSessionsDataRefresh() const {
   DVLOG(1) << "Triggering sync refresh for sessions datatype.";
   const syncable::ModelType type = syncable::SESSIONS;
+  syncable::ModelTypePayloadMap payload_map;
+  payload_map[type] = "";
   content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SYNC_REFRESH,
+      chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
       content::Source<Profile>(profile_),
-      content::Details<const syncable::ModelType>(&type));
+      content::Details<const syncable::ModelTypePayloadMap>(&payload_map));
 }
 
 bool SessionModelAssociator::GetLocalSession(

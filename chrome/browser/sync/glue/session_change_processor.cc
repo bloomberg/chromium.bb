@@ -26,6 +26,8 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "sync/protocol/session_specifics.pb.h"
+#include "sync/syncable/model_type.h"
+#include "sync/syncable/model_type_payload_map.h"
 
 using content::BrowserThread;
 using content::NavigationController;
@@ -219,10 +221,12 @@ void SessionChangeProcessor::Observe(
         entry->GetVirtualURL().spec() == kNTPOpenTabSyncURL) {
       DVLOG(1) << "Triggering sync refresh for sessions datatype.";
       const syncable::ModelType type = syncable::SESSIONS;
+      syncable::ModelTypePayloadMap payload_map;
+      payload_map[type] = "";
       content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_SYNC_REFRESH,
+          chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
           content::Source<Profile>(profile_),
-          content::Details<const syncable::ModelType>(&type));
+          content::Details<const syncable::ModelTypePayloadMap>(&payload_map));
     }
   }
 
