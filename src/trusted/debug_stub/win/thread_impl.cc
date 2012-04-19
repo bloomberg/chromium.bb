@@ -284,8 +284,6 @@ class Thread : public IThread {
     uint32_t clen = GetSizeofRegInCtx(index);
     void* src = GetPointerToRegInCtx(&context_, index);
 
-    if ((state_ == RUNNING) || (state_ == DEAD)) return false;
-
     // TODO(noelallen) we assume big endian
     if (clen < len) len = clen;
     memcpy(dst, src, len);
@@ -296,9 +294,6 @@ class Thread : public IThread {
   virtual bool SetRegister(uint32_t index, void* src, uint32_t len) {
     uint32_t clen = GetSizeofRegInCtx(index);
     void* dst = GetPointerToRegInCtx(&context_, index);
-
-    if ((state_ == RUNNING) || (state_ == DEAD) ||
-        (state_ != SYSCALL)) return false;
 
     // TODO(noelallen) we assume big endian
     if (clen < len) len = clen;

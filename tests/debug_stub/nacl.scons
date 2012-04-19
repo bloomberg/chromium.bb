@@ -19,7 +19,7 @@ if env.Bit('bitcode'):
   Return()
 
 debug_stub_works = (env.Bit('host_linux') or
-                    (env.Bit('windows') and env.Bit('build_x86_64')))
+                    (env.Bit('host_windows') and env.Bit('build_x86_64')))
 
 test_prog = env.ComponentProgram('debugger_test', 'debugger_test.c',
                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
