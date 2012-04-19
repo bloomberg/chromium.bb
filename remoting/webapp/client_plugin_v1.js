@@ -260,10 +260,3 @@ remoting.ClientPluginV1.prototype.remapKey =
     function(fromKeycode, toKeycode) {
   return;
 };
-
-/**
- * @return {boolean} Whether the plugin is enabled.
- */
-remoting.ClientPluginV1.prototype.isEnabled = function() {
-  return true;
-};

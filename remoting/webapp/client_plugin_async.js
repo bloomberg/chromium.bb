@@ -356,10 +356,3 @@ remoting.ClientPluginAsync.prototype.sendClipboardItem =
       { method: 'sendClipboardItem',
         data: { mimeType: mimeType, item: item }}));
 };
-
-/**
- * @return {boolean} Whether the plugin is enabled.
- */
-remoting.ClientPluginAsync.prototype.isEnabled = function() {
-  return (this.plugin.postMessage != undefined);
-}

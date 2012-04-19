@@ -96,7 +96,6 @@ remoting.ClientSession = function(hostJid, hostPublicKey, sharedSecret,
 // no corresponding plugin state transition.
 /** @enum {number} */
 remoting.ClientSession.State = {
-  PLUGIN_DISABLED: -4,
   CREATED: -3,
   BAD_PLUGIN_VERSION: -2,
   UNKNOWN_PLUGIN_ERROR: -1,
@@ -242,13 +241,6 @@ remoting.ClientSession.prototype.pluginLostFocus_ = function() {
 remoting.ClientSession.prototype.createPluginAndConnect =
     function(container, oauth2AccessToken) {
   this.plugin = this.createClientPlugin_(container, this.PLUGIN_ID);
-
-  if (!this.plugin.isEnabled()) {
-    this.plugin.cleanup();
-    delete this.plugin;
-    this.setState_(remoting.ClientSession.State.PLUGIN_DISABLED);
-    return;
-  }
 
   this.plugin.element().focus();
 

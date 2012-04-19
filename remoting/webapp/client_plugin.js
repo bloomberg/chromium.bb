@@ -134,8 +134,3 @@ remoting.ClientPlugin.prototype.getPerfStats = function() {};
  * @param {string} item The clipboard item.
  */
 remoting.ClientPlugin.prototype.sendClipboardItem = function(mimeType, item) {};
-
-/**
- * @return {boolean} Whether the plugin is enabled.
- */
-remoting.ClientPlugin.prototype.isEnabled = function() {};
