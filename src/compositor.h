@@ -43,6 +43,7 @@ struct weston_transform {
 };
 
 struct weston_surface;
+struct shell_surface;
 struct weston_input_device;
 struct weston_output;
 
@@ -51,6 +52,15 @@ struct weston_mode {
 	int32_t width, height;
 	uint32_t refresh;
 	struct wl_list link;
+};
+
+struct weston_shell_interface {
+	void *shell;			/* either desktop or tablet */
+
+	void (*create_shell_surface)(void *shell,
+				     struct weston_surface *surface,
+				     struct shell_surface **ret);
+	void (*set_toplevel)(struct shell_surface *shsurf);
 };
 
 struct weston_border {
@@ -194,6 +204,7 @@ struct weston_compositor {
 	struct weston_shader solid_shader;
 	struct weston_shader *current_shader;
 	struct wl_display *wl_display;
+	struct weston_shell_interface shell_interface;
 
 	struct wl_signal activate_signal;
 	struct wl_signal lock_signal;

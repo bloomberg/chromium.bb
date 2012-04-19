@@ -36,8 +36,6 @@
 #include "desktop-shell-server-protocol.h"
 #include "../shared/config-parser.h"
 
-struct shell_surface;
-
 struct desktop_shell {
 	struct weston_compositor *compositor;
 
@@ -676,16 +674,22 @@ reset_shell_surface_type(struct shell_surface *surface)
 }
 
 static void
+set_toplevel(struct shell_surface *shsurf)
+{
+       if (reset_shell_surface_type(shsurf))
+               return;
+
+       shsurf->type = SHELL_SURFACE_TOPLEVEL;
+}
+
+static void
 shell_surface_set_toplevel(struct wl_client *client,
 			   struct wl_resource *resource)
 
 {
 	struct shell_surface *surface = resource->data;
 
-	if (reset_shell_surface_type(surface))
-		return;
-
-	surface->type = SHELL_SURFACE_TOPLEVEL;
+	set_toplevel(surface);
 }
 
 static void
@@ -1055,10 +1059,8 @@ static const struct wl_shell_surface_interface shell_surface_implementation = {
 };
 
 static void
-destroy_shell_surface(struct wl_resource *resource)
+destroy_shell_surface(struct shell_surface *shsurf)
 {
-	struct shell_surface *shsurf = resource->data;
-
 	if (shsurf->popup.grab.input_device)
 		wl_input_device_end_pointer_grab(shsurf->popup.grab.input_device);
 
@@ -1083,13 +1085,25 @@ destroy_shell_surface(struct wl_resource *resource)
 }
 
 static void
+shell_destroy_shell_surface(struct wl_resource *resource)
+{
+	struct shell_surface *shsurf = resource->data;
+
+	destroy_shell_surface(shsurf);
+}
+
+static void
 shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 {
 	struct shell_surface *shsurf = container_of(listener,
 						    struct shell_surface,
 						    surface_destroy_listener);
 
-	wl_resource_destroy(&shsurf->resource);
+	/* tricky way to check if resource was in fact created */
+	if (shsurf->resource.object.implementation != 0)
+		wl_resource_destroy(&shsurf->resource);
+	else
+		destroy_shell_surface(shsurf);
 }
 
 static struct shell_surface *
@@ -1110,49 +1124,30 @@ static void
 shell_surface_configure(struct weston_surface *, int32_t, int32_t);
 
 static void
-shell_get_shell_surface(struct wl_client *client,
-			struct wl_resource *resource,
-			uint32_t id,
-			struct wl_resource *surface_resource)
+create_shell_surface(void *shell, struct weston_surface *surface,
+		     struct shell_surface **ret)
 {
-	struct weston_surface *surface = surface_resource->data;
 	struct shell_surface *shsurf;
 
-	if (get_shell_surface(surface)) {
-		wl_resource_post_error(surface_resource,
-			WL_DISPLAY_ERROR_INVALID_OBJECT,
-			"desktop_shell::get_shell_surface already requested");
-		return;
-	}
-
 	if (surface->configure) {
-		wl_resource_post_error(surface_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "surface->configure already set");
+		fprintf(stderr, "surface->configure already set\n");
 		return;
 	}
 
 	shsurf = calloc(1, sizeof *shsurf);
 	if (!shsurf) {
-		wl_resource_post_no_memory(resource);
+		fprintf(stderr, "no memory to allocate shell surface\n");
 		return;
 	}
 
 	surface->configure = shell_surface_configure;
+	surface->compositor->shell_interface.shell = shell;
 
+	shsurf->shell = (struct desktop_shell *) shell;
 	shsurf->unresponsive = 0;
 	shsurf->unresponsive_animation.exists = 0;
 	shsurf->unresponsive_animation.fading_in = 0;
 	shsurf->unresponsive_animation.current.frame = unresponsive_fade_frame;
-
-	shsurf->resource.destroy = destroy_shell_surface;
-	shsurf->resource.object.id = id;
-	shsurf->resource.object.interface = &wl_shell_surface_interface;
-	shsurf->resource.object.implementation =
-		(void (**)(void)) &shell_surface_implementation;
-	shsurf->resource.data = shsurf;
-
-	shsurf->shell = resource->data;
 	shsurf->saved_position_valid = false;
 	shsurf->surface = surface;
 	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
@@ -1161,6 +1156,7 @@ shell_get_shell_surface(struct wl_client *client,
 	shsurf->ping_timer = NULL;
 	wl_list_init(&shsurf->fullscreen.transform.link);
 
+	wl_signal_init(&shsurf->resource.destroy_signal);
 	shsurf->surface_destroy_listener.notify = shell_handle_surface_destroy;
 	wl_signal_add(&surface->surface.resource.destroy_signal,
 		      &shsurf->surface_destroy_listener);
@@ -1174,7 +1170,42 @@ shell_get_shell_surface(struct wl_client *client,
 
 	shsurf->type = SHELL_SURFACE_NONE;
 
-	wl_client_add_resource(client, &shsurf->resource);
+	*ret = shsurf;
+}
+
+static void
+shell_get_shell_surface(struct wl_client *client,
+			struct wl_resource *resource,
+			uint32_t id,
+			struct wl_resource *surface_resource)
+{
+	struct weston_surface *surface = surface_resource->data;
+	struct desktop_shell *shell = resource->data;
+	struct shell_surface *shsurf;
+
+	if (get_shell_surface(surface)) {
+		wl_resource_post_error(surface_resource,
+			WL_DISPLAY_ERROR_INVALID_OBJECT,
+			"desktop_shell::get_shell_surface already requested");
+		return;
+	}
+
+       create_shell_surface(shell, surface, &shsurf);
+       if (!shsurf) {
+	       wl_resource_post_error(surface_resource,
+				      WL_DISPLAY_ERROR_INVALID_OBJECT,
+				      "surface->configure already set");
+	       return;
+       }
+
+       shsurf->resource.destroy = shell_destroy_shell_surface;
+       shsurf->resource.object.id = id;
+       shsurf->resource.object.interface = &wl_shell_surface_interface;
+       shsurf->resource.object.implementation =
+	       (void (**)(void)) &shell_surface_implementation;
+       shsurf->resource.data = shsurf;
+
+       wl_client_add_resource(client, &shsurf->resource);
 }
 
 static const struct wl_shell_interface shell_implementation = {
@@ -2474,6 +2505,8 @@ shell_init(struct weston_compositor *ec)
 	shell->unlock_listener.notify = unlock;
 	wl_signal_add(&ec->unlock_signal, &shell->unlock_listener);
 	ec->ping_handler = ping_handler;
+	ec->shell_interface.create_shell_surface = create_shell_surface;
+	ec->shell_interface.set_toplevel = set_toplevel;
 
 	wl_list_init(&shell->backgrounds);
 	wl_list_init(&shell->panels);

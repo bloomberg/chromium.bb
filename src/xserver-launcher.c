@@ -118,6 +118,7 @@ struct weston_wm {
 struct weston_wm_window {
 	xcb_window_t id;
 	struct weston_surface *surface;
+	struct shell_surface *shsurf;
 	struct wl_listener surface_destroy_listener;
 	char *class;
 	char *name;
@@ -1516,6 +1517,8 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 	struct weston_wm *wm = wxs->wm;
 	struct wl_surface *surface = surface_resource->data;
 	struct weston_wm_window *window;
+	struct weston_shell_interface *shell_interface =
+		&wm->server->compositor->shell_interface;
 
 	if (client != wxs->client)
 		return;
@@ -1532,6 +1535,14 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 	window->surface_destroy_listener.notify = surface_destroy;
 	wl_signal_add(&surface->resource.destroy_signal,
 		      &window->surface_destroy_listener);
+
+	if (shell_interface->create_shell_surface) {
+		shell_interface->create_shell_surface(shell_interface->shell,
+						      window->surface,
+						      &window->shsurf);
+
+		shell_interface->set_toplevel(window->shsurf);
+	}
 }
 
 static const struct xserver_interface xserver_implementation = {
