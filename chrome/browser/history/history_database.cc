@@ -28,7 +28,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // or database without *too* many bad effects.
-static const int kCurrentVersionNumber = 21;
+static const int kCurrentVersionNumber = 22;
 static const int kCompatibleVersionNumber = 16;
 static const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
@@ -322,6 +322,16 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
     meta_table_.SetVersionNumber(cur_version);
   }
 
+  if (cur_version == 21) {
+    // The android_urls table's data schemal was changed in version 21.
+#if defined(OS_ANDROID)
+    if (!MigrateToVersion22()) {
+      LOG(WARNING) << "Unable to migrate the android_urls table to version 22";
+    }
+#endif
+    ++cur_version;
+    meta_table_.SetVersionNumber(cur_version);
+  }
   // When the version is too old, we just try to continue anyway, there should
   // not be a released product that makes a database too old for us to handle.
   LOG_IF(WARNING, cur_version < GetCurrentVersion()) <<
