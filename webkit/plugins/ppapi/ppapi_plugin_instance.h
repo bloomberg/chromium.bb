@@ -430,20 +430,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
 
   // Queries the plugin for supported print formats and sets |format| to the
   // best format to use. Returns false if the plugin does not support any
-  // print format that we can handle (we can handle raster and PDF).
+  // print format that we can handle (we can handle only PDF).
   bool GetPreferredPrintOutputFormat(PP_PrintOutputFormat_Dev* format);
   bool PrintPDFOutput(PP_Resource print_output, WebKit::WebCanvas* canvas);
-  bool PrintRasterOutput(PP_Resource print_output, WebKit::WebCanvas* canvas);
-#if defined(OS_WIN)
-  bool DrawJPEGToPlatformDC(const SkBitmap& bitmap,
-                            const gfx::Rect& printable_area,
-                            WebKit::WebCanvas* canvas);
-#elif defined(OS_MACOSX) && !defined(USE_SKIA)
-  // Draws the given kARGB_8888_Config bitmap to the specified canvas starting
-  // at the specified destination rect.
-  void DrawSkBitmapToCanvas(const SkBitmap& bitmap, WebKit::WebCanvas* canvas,
-                            const gfx::Rect& dest_rect, int canvas_height);
-#endif  // OS_MACOSX
 
   // Get the bound graphics context as a concrete 2D graphics context or returns
   // null if the context is not 2D.

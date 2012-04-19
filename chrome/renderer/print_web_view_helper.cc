@@ -31,6 +31,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginDocument.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
@@ -70,6 +72,8 @@ using WebKit::WebDocument;
 using WebKit::WebElement;
 using WebKit::WebFrame;
 using WebKit::WebNode;
+using WebKit::WebPlugin;
+using WebKit::WebPluginDocument;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
@@ -309,8 +313,10 @@ void CalculatePrintCanvasSize(const PrintMsg_Print_Params& print_params,
 bool PrintingNodeOrPdfFrame(const WebFrame* frame, const WebNode& node) {
   if (!node.isNull())
     return true;
-  std::string mime(frame->dataSource()->response().mimeType().utf8());
-  return mime == "application/pdf";
+  if (!frame->document().isPluginDocument())
+    return false;
+  WebPlugin* plugin = frame->document().to<WebPluginDocument>().plugin();
+  return plugin && plugin->supportsPaginatedPrint();
 }
 
 bool PrintingFrameHasPageSizeStyle(WebFrame* frame, int total_page_count) {

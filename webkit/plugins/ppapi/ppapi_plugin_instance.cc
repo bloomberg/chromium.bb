@@ -1118,9 +1118,6 @@ bool PluginInstance::GetPreferredPrintOutputFormat(
   if (supported_formats & PP_PRINTOUTPUTFORMAT_PDF) {
     *format = PP_PRINTOUTPUTFORMAT_PDF;
     return true;
-  } else if (supported_formats & PP_PRINTOUTPUTFORMAT_RASTER) {
-    *format = PP_PRINTOUTPUTFORMAT_RASTER;
-    return true;
   }
   return false;
 }
@@ -1207,8 +1204,6 @@ bool PluginInstance::PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
 
   if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_PDF)
     ret = PrintPDFOutput(print_output, canvas);
-  else if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_RASTER)
-    ret = PrintRasterOutput(print_output, canvas);
 
   // Now we need to release the print output resource.
   PluginModule::GetCore()->ReleaseResource(print_output);
@@ -1508,144 +1503,6 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
 
   return ret;
 }
-
-bool PluginInstance::PrintRasterOutput(PP_Resource print_output,
-                                       WebKit::WebCanvas* canvas) {
-  EnterResourceNoLock<PPB_ImageData_API> enter(print_output, true);
-  if (enter.failed())
-    return false;
-  PPB_ImageData_Impl* image =
-      static_cast<PPB_ImageData_Impl*>(enter.object());
-
-  if (!image->Map())
-    return false;
-
-  const SkBitmap* bitmap = image->GetMappedBitmap();
-  if (!bitmap)
-    return false;
-
-  // Draw the printed image into the supplied canvas.
-  SkIRect src_rect;
-  src_rect.set(0, 0, bitmap->width(), bitmap->height());
-  SkRect dest_rect;
-  dest_rect.set(
-      SkIntToScalar(current_print_settings_.printable_area.point.x),
-      SkIntToScalar(current_print_settings_.printable_area.point.y),
-      SkIntToScalar(current_print_settings_.printable_area.point.x +
-                    current_print_settings_.printable_area.size.width),
-      SkIntToScalar(current_print_settings_.printable_area.point.y +
-                    current_print_settings_.printable_area.size.height));
-  bool draw_to_canvas = true;
-  gfx::Rect dest_rect_gfx;
-  dest_rect_gfx.set_x(current_print_settings_.printable_area.point.x);
-  dest_rect_gfx.set_y(current_print_settings_.printable_area.point.y);
-  dest_rect_gfx.set_width(current_print_settings_.printable_area.size.width);
-  dest_rect_gfx.set_height(current_print_settings_.printable_area.size.height);
-
-#if defined(OS_WIN)
-  // Since this is a raster output, the size of the bitmap can be
-  // huge (especially at high printer DPIs). On Windows, this can
-  // result in a HUGE EMF (on Mac and Linux the output goes to PDF
-  // which appears to Flate compress the bitmap). So, if this bitmap
-  // is larger than 20 MB, we save the bitmap as a JPEG into the EMF
-  // DC. Note: We chose JPEG over PNG because JPEG compression seems
-  // way faster (about 4 times faster).
-  static const int kCompressionThreshold = 20 * 1024 * 1024;
-  if (bitmap->getSize() > kCompressionThreshold) {
-    DrawJPEGToPlatformDC(*bitmap, dest_rect_gfx, canvas);
-    draw_to_canvas = false;
-  }
-#endif  // defined(OS_WIN)
-#if defined(OS_MACOSX) && !defined(USE_SKIA)
-  draw_to_canvas = false;
-  DrawSkBitmapToCanvas(*bitmap, canvas, dest_rect_gfx,
-                       current_print_settings_.printable_area.size.height);
-  // See comments in the header file.
-  last_printed_page_ = image;
-#else  // defined(OS_MACOSX) && !defined(USE_SKIA)
-  if (draw_to_canvas)
-    canvas->drawBitmapRect(*bitmap, &src_rect, dest_rect);
-#endif  // defined(OS_MACOSX) && !defined(USE_SKIA)
-  return true;
-}
-
-#if defined(OS_WIN)
-bool PluginInstance::DrawJPEGToPlatformDC(
-    const SkBitmap& bitmap,
-    const gfx::Rect& printable_area,
-    WebKit::WebCanvas* canvas) {
-  // Ideally we should add JPEG compression to the VectorPlatformDevice class
-  // However, Skia currently has no JPEG compression code and we cannot
-  // depend on gfx/jpeg_codec.h in Skia. So we do the compression here.
-  SkAutoLockPixels lock(bitmap);
-  DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
-  const uint32_t* pixels =
-      static_cast<const uint32_t*>(bitmap.getPixels());
-  std::vector<unsigned char> compressed_image;
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  bool encoded = gfx::JPEGCodec::Encode(
-      reinterpret_cast<const unsigned char*>(pixels),
-      gfx::JPEGCodec::FORMAT_BGRA, bitmap.width(), bitmap.height(),
-      static_cast<int>(bitmap.rowBytes()), 100, &compressed_image);
-  UMA_HISTOGRAM_TIMES("PepperPluginPrint.RasterBitmapCompressTime",
-                      base::TimeTicks::Now() - start_time);
-  if (!encoded) {
-    NOTREACHED();
-    return false;
-  }
-
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas);
-  HDC dc = scoped_platform_paint.GetPlatformSurface();
-  DrawEmptyRectangle(dc);
-  BITMAPINFOHEADER bmi = {0};
-  gfx::CreateBitmapHeader(bitmap.width(), bitmap.height(), &bmi);
-  bmi.biCompression = BI_JPEG;
-  bmi.biSizeImage = compressed_image.size();
-  bmi.biHeight = -bmi.biHeight;
-  StretchDIBits(dc, printable_area.x(), printable_area.y(),
-                printable_area.width(), printable_area.height(),
-                0, 0, bitmap.width(), bitmap.height(),
-                &compressed_image.front(),
-                reinterpret_cast<const BITMAPINFO*>(&bmi),
-                DIB_RGB_COLORS, SRCCOPY);
-  return true;
-}
-#endif  // OS_WIN
-
-#if defined(OS_MACOSX) && !defined(USE_SKIA)
-void PluginInstance::DrawSkBitmapToCanvas(
-    const SkBitmap& bitmap, WebKit::WebCanvas* canvas,
-    const gfx::Rect& dest_rect,
-    int canvas_height) {
-  SkAutoLockPixels lock(bitmap);
-  DCHECK(bitmap.config() == SkBitmap::kARGB_8888_Config);
-  base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
-      CGDataProviderCreateWithData(
-          NULL, bitmap.getAddr32(0, 0),
-          bitmap.rowBytes() * bitmap.height(), NULL));
-  base::mac::ScopedCFTypeRef<CGImageRef> image(
-      CGImageCreate(
-          bitmap.width(), bitmap.height(),
-          8, 32, bitmap.rowBytes(),
-          base::mac::GetSystemColorSpace(),
-          kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
-          data_provider, NULL, false, kCGRenderingIntentDefault));
-
-  // Flip the transform
-  CGContextSaveGState(canvas);
-  CGContextTranslateCTM(canvas, 0, canvas_height);
-  CGContextScaleCTM(canvas, 1.0, -1.0);
-
-  CGRect bounds;
-  bounds.origin.x = dest_rect.x();
-  bounds.origin.y = canvas_height - dest_rect.y() - dest_rect.height();
-  bounds.size.width = dest_rect.width();
-  bounds.size.height = dest_rect.height();
-
-  CGContextDrawImage(canvas, bounds, image);
-  CGContextRestoreGState(canvas);
-}
-#endif  // defined(OS_MACOSX) && !defined(USE_SKIA)
 
 PPB_Graphics2D_Impl* PluginInstance::GetBoundGraphics2D() const {
   if (bound_graphics_.get() == NULL)

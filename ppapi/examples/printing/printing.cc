@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/dev/printing_dev.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/instance.h"
@@ -11,17 +12,32 @@
 
 namespace {
 
-void FillRect(pp::ImageData* image, int left, int top, int width, int height,
-              uint32_t color) {
-  for (int y = std::max(0, top);
-       y < std::min(image->size().height(), top + height);
-       y++) {
-    for (int x = std::max(0, left);
-         x < std::min(image->size().width(), left + width);
-         x++)
-      *image->GetAddr32(pp::Point(x, y)) = color;
-  }
-}
+const char pdf_data[] = "%PDF-1.4\r"
+"%    \r"
+"1 0 obj<</Type/FontDescriptor/FontBBox[-50 -207 1447 1000]/FontName/Verdana/Flags 32/StemV 92/CapHeight 734/XHeight 546/Ascent 1005/Descent -209/ItalicAngle 0/FontFamily(Verdana)/FontStretch/Normal/FontWeight 400>>\r"
+"2 0 obj<</Type/Font/Subtype/TrueType/Encoding/UniCNS-UTF16-H/BaseFont/Verdana/Name/Verdana/FontDescriptor 1 0 R/FirstChar 72/LastChar 114/Widths[ 750 420 454 692 556 843 748 787 602 787 695 684 616 731 684 989 685 614 685 454 454 454 818 635 635 600 623 521 623 595 351 623 633 274 343 591 274 972 633 607 623 623 426]>>\r"
+"4 0 obj<</Type/Page/Parent 3 0 R/MediaBox[0 0 612 792]/Contents 5 0 R/Resources<</ProcSet[/PDF/Text/ColorC]/Font<</N2 2 0 R>> >> >>endobj\r"
+"5 0 obj<</Length 70>>stream\r"
+"BT/N2 24 Tf 100 692 Td(Hello)Tj ET\r"
+"BT/N2 24 Tf 200 692 Td(World)Tj ET\r"
+"\r"
+"endstream\r"
+"endobj\r"
+"3 0 obj<</Type/Pages/Kids[ 4 0 R]/Count 1>>endobj\r"
+"6 0 obj<</Type/Catalog/Pages 3 0 R>>endobj\r"
+"xref\r"
+"0 7\r"
+"0000000000 65535 f \r"
+"0000000015 00000 n \r"
+"0000000230 00000 n \r"
+"0000000805 00000 n \r"
+"0000000551 00000 n \r"
+"0000000689 00000 n \r"
+"0000000855 00000 n \r"
+"trailer<</Size 7/Root 6 0 R>>\r"
+"startxref\r"
+"898\r"
+"%%EOF";
 
 }  // namespace
 
@@ -38,7 +54,7 @@ class MyInstance : public pp::Instance, public pp::Printing_Dev {
   }
 
   virtual uint32_t QuerySupportedPrintOutputFormats() {
-    return PP_PRINTOUTPUTFORMAT_RASTER;
+    return PP_PRINTOUTPUTFORMAT_PDF;
   }
 
   virtual int32_t PrintBegin(const PP_PrintSettings_Dev& print_settings) {
@@ -48,13 +64,11 @@ class MyInstance : public pp::Instance, public pp::Printing_Dev {
   virtual pp::Resource PrintPages(
       const PP_PrintPageNumberRange_Dev* page_ranges,
       uint32_t page_range_count) {
-    pp::Size size(100, 100);
-    pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, true);
-    FillRect(&image, 0, 0, size.width(), size.height(), 0xFFFFFFFF);
+    size_t pdf_len = strlen(pdf_data);
+    pp::Buffer_Dev buffer(this, pdf_len);
 
-    FillRect(&image, 0, 0, 10, 10, 0xFF000000);
-    FillRect(&image, size.width() - 11, size.height() - 11, 10, 10, 0xFF000000);
-    return image;
+    memcpy(buffer.data(), pdf_data, pdf_len);
+    return buffer;
   }
 
   virtual void PrintEnd() {

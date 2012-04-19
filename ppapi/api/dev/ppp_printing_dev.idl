@@ -34,6 +34,7 @@ struct PP_PrintSettings_Dev {
   int32_t dpi;
   PP_PrintOrientation_Dev orientation;
   PP_Bool grayscale;
+  /** Note that Chrome currently only supports PDF printing. */
   PP_PrintOutputFormat_Dev format;
 };
 
@@ -50,14 +51,14 @@ struct PP_PrintPageNumberRange_Dev {
 interface PPP_Printing_Dev {
   /**
    *  Returns a bit field representing the supported print output formats.  For
-   *  example, if only Raster and PostScript are supported,
+   *  example, if only PDF and PostScript are supported,
    *  QuerySupportedFormats returns a value equivalent to:
-   *  (PP_PRINTOUTPUTFORMAT_RASTER | PP_PRINTOUTPUTFORMAT_POSTSCRIPT)
+   *  (PP_PRINTOUTPUTFORMAT_PDF | PP_PRINTOUTPUTFORMAT_POSTSCRIPT)
    */
   uint32_t QuerySupportedFormats([in] PP_Instance instance);
 
   /**
-   * Begins a print session with the given print settings. Calls to PrintPage
+   * Begins a print session with the given print settings. Calls to PrintPages
    * can only be made after a successful call to Begin. Returns the number of
    * pages required for the print output at the given page size (0 indicates
    * a failure).
@@ -67,16 +68,14 @@ interface PPP_Printing_Dev {
 
   /**
    * Prints the specified pages using the format specified in Begin.
-   * Returns a resource that represents the printed output.
-   * This is a PPB_ImageData resource if the output format is
-   * PP_PrintOutputFormat_Raster and a PPB_Buffer otherwise. Returns 0 on
-   * failure.
+   * Returns a PPB_Buffer resource that represents the printed output. Returns
+   * 0 on failure.
    */
   PP_Resource PrintPages([in] PP_Instance instance,
                          [in] PP_PrintPageNumberRange_Dev page_ranges,
                          [in] uint32_t page_range_count);
 
-  /** Ends the print session. Further calls to PrintPage will fail. */
+  /** Ends the print session. Further calls to PrintPages will fail. */
   void End([in] PP_Instance instance);
 
   /**
