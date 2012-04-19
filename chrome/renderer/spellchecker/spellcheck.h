@@ -7,16 +7,20 @@
 #pragma once
 
 #include <string>
+#include <queue>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "unicode/uscript.h"
 
 class Hunspell;
@@ -26,9 +30,28 @@ namespace file_util {
 class MemoryMappedFile;
 }
 
+namespace WebKit {
+class WebTextCheckingCompletion;
+struct WebTextCheckingResult;
+}
+
+namespace spellcheck {
+// Converts vector<SpellCheckResult> to WebVector<WebTextCheckingResult>
+// for WebKit.
+void ToWebResultList(
+    int offset,
+    const std::vector<SpellCheckResult>& results,
+    WebKit::WebVector<WebKit::WebTextCheckingResult>* web_results);
+
+WebKit::WebVector<WebKit::WebTextCheckingResult> ToWebResultList(
+    int offset,
+    const std::vector<SpellCheckResult>& results);
+}
+
 // TODO(morrita): Needs reorg with SpellCheckProvider.
 // See http://crbug.com/73699.
-class SpellCheck : public content::RenderProcessObserver {
+class SpellCheck : public content::RenderProcessObserver,
+                   public base::SupportsWeakPtr<SpellCheck> {
  public:
   SpellCheck();
   virtual ~SpellCheck();
@@ -57,10 +80,7 @@ class SpellCheck : public content::RenderProcessObserver {
   // SpellCheck a paragrpah.
   // Returns true if |text| is correctly spelled, false otherwise.
   // If the spellchecker failed to initialize, always returns true.
-  // The |tag| parameter should either be a unique identifier for the document,
-  // or 0.
   bool SpellCheckParagraph(const string16& text,
-                           int tag,
                            std::vector<SpellCheckResult>* results);
 
   // Find a possible correctly spelled word for a misspelled word. Computes an
@@ -71,6 +91,12 @@ class SpellCheck : public content::RenderProcessObserver {
   // behind its command line flag.
   string16 GetAutoCorrectionWord(const string16& word, int tag);
 
+  // Requests to spellcheck the specified text in the background. This function
+  // posts a background task and calls SpellCheckParagraph() in the task.
+  void RequestTextChecking(const string16& text,
+                           int offset,
+                           WebKit::WebTextCheckingCompletion* completion);
+
   // Returns true if the spellchecker delegate checking to a system-provided
   // checker on the browser process.
   bool is_using_platform_spelling_engine() const {
@@ -79,6 +105,10 @@ class SpellCheck : public content::RenderProcessObserver {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SpellCheckTest, GetAutoCorrectionWord_EN_US);
+  FRIEND_TEST_ALL_PREFIXES(SpellCheckTest,
+      RequestSpellCheckMultipleTimesWithoutInitialization);
+
+  class SpellCheckRequestParam;
 
   // RenderProcessObserver implementation:
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -106,6 +136,12 @@ class SpellCheck : public content::RenderProcessObserver {
   // When called, relays the request to check the spelling to the proper
   // backend, either hunspell or a platform-specific backend.
   bool CheckSpelling(const string16& word_to_check, int tag);
+
+  // Posts delayed spellcheck task and clear it if any.
+  void PostDelayedSpellCheckTask();
+
+  // Performs spell checking from the request queue.
+  void PerformSpellCheck();
 
   // When called, relays the request to fill the list with suggestions to
   // the proper backend, either hunspell or a platform-specific backend.
@@ -147,11 +183,25 @@ class SpellCheck : public content::RenderProcessObserver {
   // and False if hunspell is being used.
   bool is_using_platform_spelling_engine_;
 
-  // This flags whether we have ever been initialized, or have asked the browser
-  // for a dictionary. The value indicates whether we should request a
+  // This flags is true if we have been intialized.
+  // The value indicates whether we should request a
   // dictionary from the browser when the render view asks us to check the
   // spelling of a word.
   bool initialized_;
+
+  // This flags is true if we have requested dictionary.
+  bool dictionary_requested_;
+
+  // The parameters of a pending background-spellchecking request. When WebKit
+  // sends a background-spellchecking request before initializing hunspell,
+  // we save its parameters and start spellchecking after we finish initializing
+  // hunspell. (When WebKit sends two or more requests, we cancel the previous
+  // requests so we do not have to use vectors.)
+  scoped_refptr<SpellCheckRequestParam> pending_request_param_;
+
+  // The set of params already requested. When finishing the request, the params
+  // should be removed from the set.
+  std::queue<scoped_refptr<SpellCheckRequestParam> > requested_params_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheck);
 };

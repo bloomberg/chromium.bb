@@ -18,6 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
+using spellcheck::ToWebResultList;
 using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebTextCheckingCompletion;
@@ -41,34 +42,6 @@ COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeCorrection) ==
                int(SpellCheckResult::CORRECTION), mismatching_enums);
 COMPILE_ASSERT(int(WebKit::WebTextCheckingTypeShowCorrectionPanel) ==
                int(SpellCheckResult::SHOWCORRECTIONPANEL), mismatching_enums);
-
-namespace {
-
-void ToWebResultList(
-    int offset,
-    const std::vector<SpellCheckResult>& results,
-    WebVector<WebTextCheckingResult>* web_results) {
-  WebVector<WebTextCheckingResult> list(results.size());
-  for (size_t i = 0; i < results.size(); ++i) {
-    list[i] = WebTextCheckingResult(
-        static_cast<WebTextCheckingType>(results[i].type),
-        results[i].location + offset,
-        results[i].length,
-        results[i].replacement);
-  }
-
-  list.swap(*web_results);
-}
-
-WebVector<WebTextCheckingResult> ToWebResultList(
-    int offset,
-    const std::vector<SpellCheckResult>& results) {
-  WebVector<WebTextCheckingResult> web_results;
-  ToWebResultList(offset, results, &web_results);
-  return web_results;
-}
-
-} // namespace
 
 SpellCheckProvider::SpellCheckProvider(
     content::RenderView* render_view,
@@ -118,6 +91,7 @@ void SpellCheckProvider::RequestTextChecking(
     completion->didFinishCheckingText(std::vector<WebTextCheckingResult>());
     return;
   }
+
   last_line_ = line;
   Send(new SpellCheckHostMsg_CallSpellingService(
       routing_id(),
@@ -210,7 +184,6 @@ void SpellCheckProvider::checkTextOfParagraph(
   std::vector<SpellCheckResult> tmp_results;
   chrome_content_renderer_client_->spellcheck()->SpellCheckParagraph(
       string16(text),
-      document_tag_,
       &tmp_results);
   ToWebResultList(0, tmp_results, results);
 #endif
@@ -257,12 +230,25 @@ void SpellCheckProvider::updateSpellingUIWithMisspelledWord(
 void SpellCheckProvider::OnRespondSpellingService(
     int identifier,
     int offset,
+    bool succeeded,
+    const string16& text,
     const std::vector<SpellCheckResult>& results) {
   WebTextCheckingCompletion* completion =
       text_check_completions_.Lookup(identifier);
   if (!completion)
     return;
   text_check_completions_.Remove(identifier);
+
+  // If |succeeded| is false, we use local spellcheck as a fallback.
+  if (!succeeded) {
+    // |chrome_content_renderer_client| may be NULL in unit tests.
+    if (chrome_content_renderer_client_) {
+      chrome_content_renderer_client_->spellcheck()->RequestTextChecking(
+          text, offset, completion);
+      return;
+    }
+  }
+
   completion->didFinishCheckingText(ToWebResultList(offset, results));
 }
 

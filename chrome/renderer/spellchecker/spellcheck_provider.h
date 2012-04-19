@@ -81,6 +81,8 @@ class SpellCheckProvider : public content::RenderViewObserver,
   void OnRespondSpellingService(
       int identifier,
       int offset,
+      bool succeeded,
+      const string16& text,
       const std::vector<SpellCheckResult>& results);
 
   // Returns whether |text| has word characters after |index|, i.e. whether a

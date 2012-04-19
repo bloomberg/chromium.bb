@@ -15,6 +15,8 @@
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_result.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingCompletion.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextCheckingResult.h"
 
 
 namespace {
@@ -39,7 +41,14 @@ class SpellCheckTest : public testing::Test {
 
   void ReinitializeSpellCheck(const std::string& language) {
     spell_check_.reset(new SpellCheck());
+    InitializeSpellCheck(language);
+  }
 
+  void UninitializeSpellCheck() {
+    spell_check_.reset(new SpellCheck());
+  }
+
+  void InitializeSpellCheck(const std::string& language) {
     FilePath hunspell_directory = GetHunspellDirectory();
     EXPECT_FALSE(hunspell_directory.empty());
     base::PlatformFile file = base::CreatePlatformFile(
@@ -61,7 +70,6 @@ class SpellCheckTest : public testing::Test {
       const std::vector<SpellCheckResult>& expected) {
     std::vector<SpellCheckResult> results;
     spell_check()->SpellCheckParagraph(input,
-                                       0,
                                        &results);
 
     EXPECT_EQ(results.size(), expected.size());
@@ -76,6 +84,24 @@ class SpellCheckTest : public testing::Test {
 
  private:
   scoped_ptr<SpellCheck> spell_check_;
+  MessageLoop loop;
+};
+
+// A fake completion object for verification.
+class MockTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {
+ public:
+  MockTextCheckingCompletion()
+      : completion_count_(0) {
+  }
+
+  virtual void didFinishCheckingText(
+      const WebKit::WebVector<WebKit::WebTextCheckingResult>& results) {
+    completion_count_++;
+    last_results_ = results;
+  }
+
+  size_t completion_count_;
+  WebKit::WebVector<WebKit::WebTextCheckingResult> last_results_;
 };
 
 // Operates unit tests for the webkit_glue::SpellCheckWord() function
@@ -808,4 +834,136 @@ TEST_F(SpellCheckTest, SpellCheckParagraphLongSentenceMultipleMisspellings) {
 
   TestSpellCheckParagraph(text, expected);
 }
+
+// We also skip RequestSpellCheck tests on Mac, because a system spellchecker
+// is used on Mac instead of SpellCheck::RequestTextChecking.
+
+// Make sure RequestTextChecking does not crash if input is empty.
+TEST_F(SpellCheckTest, RequestSpellCheckWithEmptyString) {
+  MockTextCheckingCompletion completion;
+
+  const string16 text = ASCIIToUTF16("");
+  spell_check()->RequestTextChecking(text, 0, &completion);
+
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(completion.completion_count_, 1U);
+}
+
+// A simple test case having no misspellings.
+TEST_F(SpellCheckTest, RequestSpellCheckWithoutMisspelling) {
+  MockTextCheckingCompletion completion;
+
+  const string16 text = ASCIIToUTF16("hello");
+  spell_check()->RequestTextChecking(text, 0, &completion);
+
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(completion.completion_count_, 1U);
+}
+
+// A simple test case having one misspelling.
+TEST_F(SpellCheckTest, RequestSpellCheckWithSingleMisspelling) {
+  MockTextCheckingCompletion completion;
+
+  const string16 text = ASCIIToUTF16("apple, zz");
+  spell_check()->RequestTextChecking(text, 0, &completion);
+
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(completion.completion_count_, 1U);
+  EXPECT_EQ(completion.last_results_.size(), 1U);
+  EXPECT_EQ(completion.last_results_[0].location, 7);
+  EXPECT_EQ(completion.last_results_[0].length, 2);
+}
+
+// A simple test case having a few misspellings.
+TEST_F(SpellCheckTest, RequestSpellCheckWithMisspellings) {
+  MockTextCheckingCompletion completion;
+
+  const string16 text = ASCIIToUTF16("apple, zz, orange, zz");
+  spell_check()->RequestTextChecking(text, 0, &completion);
+
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(completion.completion_count_, 1U);
+  EXPECT_EQ(completion.last_results_.size(), 2U);
+  EXPECT_EQ(completion.last_results_[0].location, 7);
+  EXPECT_EQ(completion.last_results_[0].length, 2);
+  EXPECT_EQ(completion.last_results_[1].location, 19);
+  EXPECT_EQ(completion.last_results_[1].length, 2);
+}
+
+// A test case that multiple requests comes at once. Make sure all
+// requests are processed.
+TEST_F(SpellCheckTest, RequestSpellCheckWithMultipleRequests) {
+  MockTextCheckingCompletion completion[3];
+
+  const string16 text[3] = {
+    ASCIIToUTF16("what, zz"),
+    ASCIIToUTF16("apple, zz"),
+    ASCIIToUTF16("orange, zz")
+  };
+
+  for (int i = 0; i < 3; ++i)
+    spell_check()->RequestTextChecking(text[i], 0, &completion[i]);
+
+  MessageLoop::current()->RunAllPending();
+
+  for (int i = 0; i < 3; ++i) {
+    EXPECT_EQ(completion[i].completion_count_, 1U);
+    EXPECT_EQ(completion[i].last_results_.size(), 1U);
+    EXPECT_EQ(completion[i].last_results_[0].location, 6 + i);
+    EXPECT_EQ(completion[i].last_results_[0].length, 2);
+  }
+}
+
+// A test case that spellchecking is requested before initializing.
+// In this case, we postpone to post a request.
+TEST_F(SpellCheckTest, RequestSpellCheckWithoutInitialization) {
+  UninitializeSpellCheck();
+
+  MockTextCheckingCompletion completion;
+  const string16 text = ASCIIToUTF16("zz");
+
+  spell_check()->RequestTextChecking(text, 0, &completion);
+
+  // The task will not be posted yet.
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(completion.completion_count_, 0U);
+}
+
+// Requests several spellchecking before initializing. Except the last one,
+// posting requests is cancelled and text is rendered as correct one.
+TEST_F(SpellCheckTest, RequestSpellCheckMultipleTimesWithoutInitialization) {
+  UninitializeSpellCheck();
+
+  MockTextCheckingCompletion completion[3];
+  const string16 text[3] = {
+    ASCIIToUTF16("what, zz"),
+    ASCIIToUTF16("apple, zz"),
+    ASCIIToUTF16("orange, zz")
+  };
+
+  // Calls RequestTextchecking a few times.
+  for (int i = 0; i < 3; ++i)
+    spell_check()->RequestTextChecking(text[i], 0, &completion[i]);
+
+  // The last task will be posted after initialization, however the other
+  // requests should be pressed without spellchecking.
+  MessageLoop::current()->RunAllPending();
+  for (int i = 0; i < 2; ++i)
+    EXPECT_EQ(completion[i].completion_count_, 1U);
+  EXPECT_EQ(completion[2].completion_count_, 0U);
+
+  // Checks the last request is processed after initialization.
+  InitializeSpellCheck("en-US");
+
+  // Calls PostDelayedSpellCheckTask instead of OnInit here for simplicity.
+  spell_check()->PostDelayedSpellCheckTask();
+  MessageLoop::current()->RunAllPending();
+  for (int i = 0; i < 3; ++i)
+    EXPECT_EQ(completion[i].completion_count_, 1U);
+}
+
 #endif

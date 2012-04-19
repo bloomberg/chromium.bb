@@ -107,6 +107,8 @@ void SpellCheckMessageFilter::OnCallSpellingService(
     Send(new SpellCheckMsg_RespondSpellingService(route_id,
                                                   identifier,
                                                   document_tag,
+                                                  false,
+                                                  text,
                                                   results));
     return;
   }
@@ -120,6 +122,8 @@ void SpellCheckMessageFilter::OnTextCheckComplete(
   Send(new SpellCheckMsg_RespondSpellingService(route_id_,
                                                 identifier_,
                                                 tag,
+                                                true,
+                                                string16(),
                                                 results));
   client_.reset();
 }
