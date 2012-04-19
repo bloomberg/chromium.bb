@@ -151,6 +151,7 @@ cr.define('options', function() {
     initializeInputMethodList_: function() {
       var inputMethodList = $('language-options-input-method-list');
       var inputMethodListData = templateData.inputMethodList;
+      var inputMethodPrototype = $('language-options-input-method-proto');
 
       // Add all input methods, but make all of them invisible here. We'll
       // change the visibility in handleLanguageOptionsListChange_() based
@@ -158,30 +159,27 @@ cr.define('options', function() {
       // input methods, so creating DOM nodes at once here should be ok.
       for (var i = 0; i < inputMethodListData.length; i++) {
         var inputMethod = inputMethodListData[i];
-        var input = document.createElement('input');
-        input.type = 'checkbox';
+        var element = inputMethodPrototype.cloneNode(true);
+        element.id = '';
+        element.languageCodeSet = inputMethod.languageCodeSet;
+        var input = element.querySelectorAll('input')[0];
         input.inputMethodId = inputMethod.id;
+        var span = element.querySelectorAll('span')[0];
+        span.textContent = inputMethod.displayName;
+
         // Listen to user clicks.
         input.addEventListener('click',
                                this.handleCheckboxClick_.bind(this));
-        var label = document.createElement('label');
-        label.appendChild(input);
-        // Adding a space between the checkbox and the text. This is a bit
-        // dirty, but we rely on a space character for all other checkboxes.
-        label.appendChild(document.createTextNode(
-            ' ' + inputMethod.displayName));
-        label.style.display = 'none';
-        label.languageCodeSet = inputMethod.languageCodeSet;
+
         // Add the configure button if the config page is present for this
         // input method.
         if (inputMethod.id in INPUT_METHOD_ID_TO_CONFIG_PAGE_NAME) {
           var pageName = INPUT_METHOD_ID_TO_CONFIG_PAGE_NAME[inputMethod.id];
           var button = this.createConfigureInputMethodButton_(inputMethod.id,
                                                               pageName);
-          label.appendChild(button);
+          element.appendChild(button);
         }
-
-        inputMethodList.appendChild(label);
+        inputMethodList.appendChild(element);
       }
       // Listen to pref change once the input method list is initialized.
       Preferences.getInstance().addEventListener(this.preloadEnginesPref,
@@ -456,18 +454,18 @@ cr.define('options', function() {
       // Change the visibility of the input method list. Input methods that
       // matches |languageCode| will become visible.
       var inputMethodList = $('language-options-input-method-list');
-      var labels = inputMethodList.querySelectorAll('label');
-      for (var i = 0; i < labels.length; i++) {
-        var label = labels[i];
-        if (languageCode in label.languageCodeSet) {
-          label.style.display = 'block';
-          var input = label.childNodes[0];
+      var methods = inputMethodList.querySelectorAll('.input-method');
+      for (var i = 0; i < methods.length; i++) {
+        var method = methods[i];
+        if (languageCode in method.languageCodeSet) {
+          method.hidden = false;
+          var input = method.querySelectorAll('input')[0];
           // Give it focus if the ID matches.
           if (input.inputMethodId == focusInputMethodId) {
             input.focus();
           }
         } else {
-          label.style.display = 'none';
+          method.hidden = true;
         }
       }
 
