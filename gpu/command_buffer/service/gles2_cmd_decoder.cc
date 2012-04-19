@@ -33,6 +33,7 @@
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -726,6 +727,12 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     GLuint io_surface_id,
     GLuint plane);
 
+  void DoCopyTextureCHROMIUM(
+    GLenum target,
+    GLuint source_id,
+    GLuint target_id,
+    GLint level);
+
   // Wrapper for TexStorage2DEXT.
   void DoTexStorage2DEXT(
     GLenum target,
@@ -1132,6 +1139,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void DoVertexAttrib3fv(GLuint index, const GLfloat *v);
   void DoVertexAttrib4fv(GLuint index, const GLfloat *v);
 
+  // Wrapper for glViewport
+  void DoViewport(GLint x, GLint y, GLsizei width, GLsizei height);
+
   // Wrapper for glUseProgram
   void DoUseProgram(GLuint program);
 
@@ -1166,7 +1176,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // simulated.
   bool SimulateAttrib0(
       GLuint max_vertex_accessed, bool* simulated);
-  void RestoreStateForSimulatedAttrib0();
+  void RestoreStateForAttrib(GLuint attrib);
 
   // Returns true if textures were set.
   bool SetBlackTextureForNonRenderableTextures();
@@ -1332,6 +1342,12 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // unpack alignment as last set by glPixelStorei
   GLint unpack_alignment_;
 
+  // unpack flip y as last set by glPixelStorei
+  bool unpack_flip_y_;
+
+  // unpack premultiply alpha as last set by glPixelStorei
+  bool unpack_premultiply_alpha_;
+
   // The currently bound array buffer. If this is 0 it is illegal to call
   // glVertexAttribPointer.
   BufferManager::BufferInfo::Ref bound_array_buffer_;
@@ -1384,6 +1400,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   GLuint mask_stencil_back_;
   GLclampf clear_depth_;
   GLboolean mask_depth_;
+  bool enable_cull_face_;
   bool enable_scissor_test_;
   bool enable_depth_test_;
   bool enable_stencil_test_;
@@ -1486,6 +1503,13 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   typedef std::vector<GLES2DecoderImpl*> ChildList;
   ChildList children_;
+
+  scoped_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_CHROMIUM_;
+
+  // Cached values of the currently assigned viewport dimensions.
+  GLint viewport_x_, viewport_y_;
+  GLsizei viewport_width_, viewport_height_;
+  GLsizei viewport_max_width_, viewport_max_height_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -1830,6 +1854,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       error_bits_(0),
       pack_alignment_(4),
       unpack_alignment_(4),
+      unpack_flip_y_(false),
+      unpack_premultiply_alpha_(false),
       attrib_0_buffer_id_(0),
       attrib_0_buffer_matches_value_(true),
       attrib_0_size_(0),
@@ -1849,6 +1875,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       mask_stencil_back_(-1),
       clear_depth_(1.0f),
       mask_depth_(true),
+      enable_cull_face_(false),
       enable_scissor_test_(false),
       enable_depth_test_(false),
       enable_stencil_test_(false),
@@ -1877,7 +1904,13 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       needs_glsl_built_in_function_emulation_(false),
       force_webgl_glsl_validation_(false),
       derivatives_explicitly_enabled_(false),
-      compile_shader_always_succeeds_(false) {
+      compile_shader_always_succeeds_(false),
+      viewport_x_(0),
+      viewport_y_(0),
+      viewport_width_(0),
+      viewport_height_(0),
+      viewport_max_width_(0),
+      viewport_max_height_(0) {
   DCHECK(group);
 
   attrib_0_value_.v[0] = 0.0f;
@@ -1959,8 +1992,12 @@ bool GLES2DecoderImpl::Initialize(
     Destroy();
     return false;
   }
-
   CHECK_GL_ERROR();
+
+  copy_texture_CHROMIUM_.reset(new CopyTextureCHROMIUMResourceManager());
+  copy_texture_CHROMIUM_->Initialize();
+  CHECK_GL_ERROR();
+
   disallowed_features_ = disallowed_features;
 
   vertex_attrib_manager_.reset(new VertexAttribManager());
@@ -2179,6 +2216,17 @@ bool GLES2DecoderImpl::Initialize(
   if (!InitializeShaderTranslator()) {
     return false;
   }
+
+  GLint viewport_params[4];
+  glGetIntegerv(GL_VIEWPORT, viewport_params);
+  viewport_x_ = viewport_params[0];
+  viewport_y_ = viewport_params[1];
+  viewport_width_ = viewport_params[2];
+  viewport_height_ = viewport_params[3];
+
+  glGetIntegerv(GL_MAX_VIEWPORT_DIMS, viewport_params);
+  viewport_max_width_ = viewport_params[0];
+  viewport_max_height_ = viewport_params[0];
 
   return true;
 }
@@ -2686,6 +2734,8 @@ void GLES2DecoderImpl::Destroy() {
   bound_renderbuffer_ = NULL;
 
   if (have_context) {
+    copy_texture_CHROMIUM_->Destroy();
+
     if (current_program_) {
       program_manager()->UnuseProgram(shader_manager(), current_program_);
       current_program_ = NULL;
@@ -2736,6 +2786,7 @@ void GLES2DecoderImpl::Destroy() {
     if (offscreen_resolved_color_texture_.get())
       offscreen_resolved_color_texture_->Invalidate();
   }
+  copy_texture_CHROMIUM_.reset();
 
   if (query_manager_.get()) {
     query_manager_->Destroy(have_context);
@@ -3206,6 +3257,8 @@ void GLES2DecoderImpl::ApplyDirtyState() {
     glStencilMaskSeparate(GL_FRONT, have_stencil ? mask_stencil_front_ : 0);
     glStencilMaskSeparate(GL_BACK, have_stencil ? mask_stencil_back_ : 0);
     EnableDisable(GL_STENCIL_TEST, enable_stencil_test_ && have_stencil);
+    EnableDisable(GL_CULL_FACE, enable_cull_face_);
+    EnableDisable(GL_SCISSOR_TEST, enable_scissor_test_);
     state_dirty_ = false;
   }
 }
@@ -4016,6 +4069,9 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
 
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
+    case GL_CULL_FACE:
+      enable_cull_face_ = enabled;
+      return true;
     case GL_SCISSOR_TEST:
       enable_scissor_test_ = enabled;
       return true;
@@ -5004,19 +5060,25 @@ bool GLES2DecoderImpl::SimulateAttrib0(
   return true;
 }
 
-void GLES2DecoderImpl::RestoreStateForSimulatedAttrib0() {
+void GLES2DecoderImpl::RestoreStateForAttrib(GLuint attrib) {
   const VertexAttribManager::VertexAttribInfo* info =
-      vertex_attrib_manager_->GetVertexAttribInfo(0);
+      vertex_attrib_manager_->GetVertexAttribInfo(attrib);
   const void* ptr = reinterpret_cast<const void*>(info->offset());
   BufferManager::BufferInfo* buffer_info = info->buffer();
   glBindBuffer(GL_ARRAY_BUFFER, buffer_info ? buffer_info->service_id() : 0);
   glVertexAttribPointer(
-      0, info->size(), info->type(), info->normalized(), info->gl_stride(),
+      attrib, info->size(), info->type(), info->normalized(), info->gl_stride(),
       ptr);
   if (info->divisor())
-    glVertexAttribDivisorANGLE(0, info->divisor());
+    glVertexAttribDivisorANGLE(attrib, info->divisor());
   glBindBuffer(GL_ARRAY_BUFFER,
                bound_array_buffer_ ? bound_array_buffer_->service_id() : 0);
+
+  if (info->enabled()) {
+    glEnableVertexAttribArray(attrib);
+  } else {
+    glDisableVertexAttribArray(attrib);
+  }
 }
 
 bool GLES2DecoderImpl::SimulateFixedAttribs(
@@ -5189,7 +5251,7 @@ error::Error GLES2DecoderImpl::DoDrawArrays(bool instanced,
       }
     }
     if (simulated_attrib_0) {
-      RestoreStateForSimulatedAttrib0();
+      RestoreStateForAttrib(0);
     }
     if (WasContextLost()) {
       LOG(ERROR) << "  GLES2DecoderImpl: Context lost during DrawArrays.";
@@ -5300,7 +5362,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(bool instanced,
       }
     }
     if (simulated_attrib_0) {
-      RestoreStateForSimulatedAttrib0();
+      RestoreStateForAttrib(0);
     }
     if (WasContextLost()) {
       LOG(ERROR) << "  GLES2DecoderImpl: Context lost during DrawElements.";
@@ -5940,6 +6002,15 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
   return error::kNoError;
 }
 
+void GLES2DecoderImpl::DoViewport(GLint x, GLint y, GLsizei width,
+                                  GLsizei height) {
+  viewport_x_ = x;
+  viewport_y_ = y;
+  viewport_width_ = std::min(width, viewport_max_width_);
+  viewport_height_ = std::min(height, viewport_max_height_);
+  glViewport(x, y, width, height);
+}
+
 error::Error GLES2DecoderImpl::HandleVertexAttribDivisorANGLE(
     uint32 immediate_data_size, const gles2::VertexAttribDivisorANGLE& c) {
   if (!feature_info_->feature_flags().angle_instanced_arrays) {
@@ -6137,6 +6208,12 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
       break;
   case GL_UNPACK_ALIGNMENT:
       unpack_alignment_ = param;
+      break;
+  case GL_UNPACK_FLIP_Y_CHROMIUM:
+      unpack_flip_y_ = (param != 0);
+      break;
+  case GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM:
+      unpack_premultiply_alpha_ = (param != 0);
       break;
   default:
       // Validation should have prevented us from getting here.
@@ -8250,6 +8327,89 @@ static GLenum ExtractFormatFromStorageFormat(GLenum internalformat) {
     default:
       return GL_NONE;
   }
+}
+
+void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
+    GLenum target, GLuint source_id, GLuint dest_id, GLint level) {
+  TextureManager::TextureInfo* dest_info = GetTextureInfo(dest_id);
+  TextureManager::TextureInfo* source_info = GetTextureInfo(source_id);
+
+  if (!source_info || !dest_info) {
+    SetGLError(GL_INVALID_VALUE, "glCopyTextureCHROMIUM: unknown texture id");
+    return;
+  }
+
+  if (GL_TEXTURE_2D != target) {
+    SetGLError(GL_INVALID_VALUE,
+               "glCopyTextureCHROMIUM: invalid texture target");
+    return;
+  }
+
+  int source_width, source_height, dest_width, dest_height;
+  if (!source_info->GetLevelSize(GL_TEXTURE_2D, 0, &source_width,
+                                 &source_height)) {
+    SetGLError(GL_INVALID_VALUE,
+               "glCopyTextureChromium: source texture has no level 0");
+    return;
+  }
+
+  if (!dest_info->GetLevelSize(GL_TEXTURE_2D, level, &dest_width,
+                               &dest_height)) {
+    SetGLError(GL_INVALID_VALUE,
+        "glCopyTextureChromium: destination texture level does not exist");
+    return;
+  }
+
+  // Check that this type of texture is allowed.
+  if (!texture_manager()->ValidForTarget(GL_TEXTURE_2D, level, source_width,
+                                         source_height, 1)) {
+    SetGLError(GL_INVALID_VALUE,
+             "glCopyTextureCHROMIUM: Bad dimensions");
+    return;
+  }
+
+  // Resize the destination texture to the dimensions of the source texture.
+  if (dest_width != source_width && dest_height != source_height) {
+    GLenum type;
+    GLenum internal_format;
+    dest_info->GetLevelType(GL_TEXTURE_2D, level, &type, &internal_format);
+
+    // Ensure that the glTexImage2D succeeds.
+    CopyRealGLErrorsToWrapper();
+    WrappedTexImage2D(
+        GL_TEXTURE_2D, level, internal_format, source_width, source_height,
+        0, internal_format, type, NULL);
+    GLenum error = PeekGLError();
+    if (error != GL_NO_ERROR)
+      return;
+
+    texture_manager()->SetLevelInfo(
+        dest_info, GL_TEXTURE_2D, level, internal_format, source_width,
+        source_height, 1, 0, internal_format, type, true);
+  }
+
+  state_dirty_ = true;
+  glViewport(0, 0, dest_width, dest_height);
+  copy_texture_CHROMIUM_->DoCopyTexture(target, source_info->service_id(),
+                                        dest_info->service_id(), level,
+                                        unpack_flip_y_,
+                                        unpack_premultiply_alpha_);
+  glViewport(viewport_x_, viewport_y_, viewport_width_, viewport_height_);
+
+  // Restore all of the state touched by the extension.
+  if (current_program_)
+    glUseProgram(current_program_->service_id());
+  else
+    glUseProgram(0);
+
+  RestoreCurrentFramebufferBindings();
+  RestoreCurrentTexture2DBindings();
+  RestoreStateForAttrib(
+      CopyTextureCHROMIUMResourceManager::kVertexPositionAttrib);
+  RestoreStateForAttrib(
+      CopyTextureCHROMIUMResourceManager::kVertexTextureAttrib);
+
+  ApplyDirtyState();
 }
 
 static GLenum ExtractTypeFromStorageFormat(GLenum internalformat) {

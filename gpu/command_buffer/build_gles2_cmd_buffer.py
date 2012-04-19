@@ -587,6 +587,8 @@ _ENUM_LISTS = {
     'valid': [
       'GL_PACK_ALIGNMENT',
       'GL_UNPACK_ALIGNMENT',
+      'GL_UNPACK_FLIP_Y_CHROMIUM',
+      'GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM',
     ],
     'invalid': [
       'GL_PACK_SWAP_BYTES',
@@ -1510,6 +1512,9 @@ _FUNCTION_INFO = {
                   'GLsizei stride, GLuint offset',
       'client_test': False,
   },
+  'Viewport': {
+    'decoder_func': 'DoViewport',
+  },
   'ResizeCHROMIUM': {
       'type': 'Custom',
       'impl_func': False,
@@ -1560,6 +1565,12 @@ _FUNCTION_INFO = {
    },
   'TexImageIOSurface2DCHROMIUM': {
     'decoder_func': 'DoTexImageIOSurface2DCHROMIUM',
+    'unit_test': False,
+    'extension': True,
+    'chromium': True,
+  },
+  'CopyTextureCHROMIUM': {
+    'decoder_func': 'DoCopyTextureCHROMIUM',
     'unit_test': False,
     'extension': True,
     'chromium': True,

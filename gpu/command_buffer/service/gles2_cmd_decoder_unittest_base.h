@@ -300,7 +300,9 @@ class GLES2DecoderTestBase : public testing::Test {
       bool depth_enabled,
       GLuint front_stencil_mask,
       GLuint back_stencil_mask,
-      bool stencil_enabled);
+      bool stencil_enabled,
+      bool cull_face_enabled,
+      bool scissor_test_enabled);
 
   void SetupExpectationsForApplyingDefaultDirtyState();
 
@@ -326,6 +328,9 @@ class GLES2DecoderTestBase : public testing::Test {
   }
 
  protected:
+  static const int kBackBufferWidth = 128;
+  static const int kBackBufferHeight = 64;
+
   static const GLint kMaxTextureSize = 2048;
   static const GLint kMaxCubeMapTextureSize = 256;
   static const GLint kNumVertexAttribs = 16;
@@ -335,6 +340,13 @@ class GLES2DecoderTestBase : public testing::Test {
   static const GLint kMaxFragmentUniformVectors = 16;
   static const GLint kMaxVaryingVectors = 8;
   static const GLint kMaxVertexUniformVectors = 128;
+  static const GLint kMaxViewportWidth = 8192;
+  static const GLint kMaxViewportHeight = 8192;
+
+  static const GLint kViewportX = 0;
+  static const GLint kViewportY = 0;
+  static const GLint kViewportWidth = kBackBufferWidth;
+  static const GLint kViewportHeight = kBackBufferHeight;
 
   static const GLuint kServiceAttrib0BufferId = 801;
   static const GLuint kServiceFixedAttribBufferId = 802;
@@ -360,11 +372,18 @@ class GLES2DecoderTestBase : public testing::Test {
   static const uint32 kNewServiceId = 502;
   static const uint32 kInvalidClientId = 601;
 
-  static const int kBackBufferWidth = 128;
-  static const int kBackBufferHeight = 64;
-
   static const GLuint kServiceVertexShaderId = 321;
   static const GLuint kServiceFragmentShaderId = 322;
+
+  static const GLuint kServiceCopyTextureChromiumShaderId = 701;
+  static const GLuint kServiceCopyTextureChromiumProgramId = 721;
+
+  static const GLuint kServiceCopyTextureChromiumTextureBufferId = 751;
+  static const GLuint kServiceCopyTextureChromiumVertexBufferId = 752;
+  static const GLuint kServiceCopyTextureChromiumFBOId = 753;
+  static const GLuint kServiceCopyTextureChromiumPositionAttrib = 761;
+  static const GLuint kServiceCopyTextureChromiumTexAttrib = 762;
+  static const GLuint kServiceCopyTextureChromiumSamplerLocation = 763;
 
   static const GLsizei kNumVertices = 100;
   static const GLsizei kNumIndices = 10;
@@ -484,6 +503,8 @@ class GLES2DecoderTestBase : public testing::Test {
     Buffer valid_buffer_;
     Buffer invalid_buffer_;
   };
+
+  void AddExpectationsForCopyTextureCHROMIUM();
 
   scoped_ptr< ::testing::StrictMock<MockCommandBufferEngine> > engine_;
   ContextGroup::Ref group_;

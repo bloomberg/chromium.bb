@@ -26,6 +26,7 @@ using ::testing::MatcherCast;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SetArrayArgument;
+using ::testing::SetArgPointee;
 using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
@@ -63,6 +64,125 @@ void GLES2DecoderTestBase::SetUp() {
       true);   // bind generates resource
 }
 
+// Setup the expectations required for the inialiazation of the resources
+// used by the GL_CHROMIUM_copy_texture extension.
+void GLES2DecoderTestBase::AddExpectationsForCopyTextureCHROMIUM() {
+  static GLuint copy_texture_chromium_buffer_ids[] = {
+    kServiceCopyTextureChromiumVertexBufferId,
+    kServiceCopyTextureChromiumTextureBufferId
+  };
+  EXPECT_CALL(*gl_, GenBuffersARB(arraysize(copy_texture_chromium_buffer_ids),
+                                  _))
+      .WillOnce(SetArrayArgument<1>(copy_texture_chromium_buffer_ids,
+          copy_texture_chromium_buffer_ids + arraysize(
+              copy_texture_chromium_buffer_ids)))
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER,
+                               kServiceCopyTextureChromiumVertexBufferId))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, BufferData(GL_ARRAY_BUFFER, 16 * sizeof(GLfloat), _,
+                               GL_STATIC_DRAW))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER,
+                               kServiceCopyTextureChromiumTextureBufferId))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, BufferData(GL_ARRAY_BUFFER, 8 * sizeof(GLfloat), _,
+                               GL_STATIC_DRAW))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  static GLuint copy_texture_chromium_fbo_ids[] = {
+    kServiceCopyTextureChromiumFBOId
+  };
+  EXPECT_CALL(*gl_, GenFramebuffersEXT(arraysize(copy_texture_chromium_fbo_ids),
+                                       _))
+      .WillOnce(SetArrayArgument<1>(copy_texture_chromium_fbo_ids,
+          copy_texture_chromium_fbo_ids + arraysize(
+              copy_texture_chromium_fbo_ids)))
+      .RetiresOnSaturation();
+
+  for (int shader = 0; shader < 5; ++shader) {
+    EXPECT_CALL(*gl_, CreateShader(
+        shader == 0 ? GL_VERTEX_SHADER : GL_FRAGMENT_SHADER))
+        .WillOnce(Return(kServiceCopyTextureChromiumShaderId + shader))
+        .RetiresOnSaturation();
+
+    EXPECT_CALL(*gl_, ShaderSource(kServiceCopyTextureChromiumShaderId + shader,
+                                   1, _, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+
+    EXPECT_CALL(*gl_, CompileShader(
+        kServiceCopyTextureChromiumShaderId + shader))
+        .Times(1)
+        .RetiresOnSaturation();
+#ifndef NDEBUG
+    EXPECT_CALL(*gl_, GetShaderiv(kServiceCopyTextureChromiumShaderId + shader,
+                                  GL_COMPILE_STATUS, _))
+        .WillOnce(SetArgPointee<2>(GL_TRUE))
+        .RetiresOnSaturation();
+#endif
+  }
+
+  for (int program = 0; program < 4; ++program) {
+    EXPECT_CALL(*gl_, CreateProgram())
+        .WillOnce(Return(kServiceCopyTextureChromiumProgramId + program))
+        .RetiresOnSaturation();
+
+    EXPECT_CALL(*gl_, AttachShader(
+        kServiceCopyTextureChromiumProgramId + program,
+        kServiceCopyTextureChromiumShaderId))
+        .Times(1)
+        .RetiresOnSaturation();
+
+    EXPECT_CALL(*gl_, AttachShader(
+        kServiceCopyTextureChromiumProgramId + program,
+        kServiceCopyTextureChromiumShaderId + program + 1))
+        .Times(1)
+        .RetiresOnSaturation();
+
+    EXPECT_CALL(*gl_, BindAttribLocation(
+        kServiceCopyTextureChromiumProgramId + program, 0, _))
+        .Times(1)
+        .RetiresOnSaturation();
+
+    EXPECT_CALL(*gl_, BindAttribLocation(
+        kServiceCopyTextureChromiumProgramId + program, 1, _))
+        .Times(1)
+        .RetiresOnSaturation();
+
+    EXPECT_CALL(*gl_, LinkProgram(
+        kServiceCopyTextureChromiumProgramId + program))
+        .Times(1)
+        .RetiresOnSaturation();
+
+#ifndef NDEBUG
+    EXPECT_CALL(*gl_, GetProgramiv(
+        kServiceCopyTextureChromiumProgramId + program, GL_LINK_STATUS, _))
+        .WillOnce(SetArgPointee<2>(true))
+        .RetiresOnSaturation();
+#endif
+
+    EXPECT_CALL(*gl_, GetUniformLocation(
+        kServiceCopyTextureChromiumProgramId + program, _))
+        .WillOnce(Return(kServiceCopyTextureChromiumSamplerLocation))
+        .RetiresOnSaturation();
+  }
+
+  for (int shader = 0; shader < 5; ++shader)
+    EXPECT_CALL(*gl_,
+                DeleteShader(kServiceCopyTextureChromiumShaderId + shader))
+        .Times(1)
+        .RetiresOnSaturation();
+}
+
 void GLES2DecoderTestBase::InitDecoder(
     const char* extensions,
     bool has_alpha,
@@ -82,6 +202,8 @@ void GLES2DecoderTestBase::InitDecoder(
       DisallowedFeatures(), extensions);
 
   EXPECT_TRUE(group_->Initialize(DisallowedFeatures(), NULL));
+
+  AddExpectationsForCopyTextureCHROMIUM();
 
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
       .Times(1)
@@ -171,6 +293,26 @@ void GLES2DecoderTestBase::InitDecoder(
       .RetiresOnSaturation();
 #endif
 
+  static GLint viewport_dims[] = {
+    kViewportX,
+    kViewportY,
+    kViewportWidth,
+    kViewportHeight,
+  };
+  EXPECT_CALL(*gl_, GetIntegerv(GL_VIEWPORT, _))
+      .WillOnce(SetArrayArgument<1>(viewport_dims,
+                                    viewport_dims + arraysize(viewport_dims)))
+      .RetiresOnSaturation();
+
+  static GLint max_viewport_dims[] = {
+    kMaxViewportWidth,
+    kMaxViewportHeight
+  };
+  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VIEWPORT_DIMS, _))
+      .WillOnce(SetArrayArgument<1>(
+          max_viewport_dims, max_viewport_dims + arraysize(max_viewport_dims)))
+      .RetiresOnSaturation();
+
   engine_.reset(new StrictMock<MockCommandBufferEngine>());
   Buffer buffer = engine_->GetSharedMemoryBuffer(kSharedMemoryId);
   shared_memory_offset_ = kSharedMemoryOffset;
@@ -231,11 +373,27 @@ void GLES2DecoderTestBase::InitDecoder(
 }
 
 void GLES2DecoderTestBase::TearDown() {
+  InSequence sequence;
+
   // All Tests should have read all their GLErrors before getting here.
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1,
+      Pointee(kServiceCopyTextureChromiumFBOId)))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, DeleteProgram(_))
+      .Times(4)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, DeleteBuffersARB(2, _))
+      .Times(1)
+      .RetiresOnSaturation();
+
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, _))
       .Times(2)
       .RetiresOnSaturation();
+
   decoder_->Destroy();
   decoder_.reset();
   group_->Destroy(false);
@@ -505,7 +663,9 @@ void GLES2DecoderTestBase::SetupExpectationsForApplyingDirtyState(
     bool depth_enabled,
     GLuint front_stencil_mask,
     GLuint back_stencil_mask,
-    bool stencil_enabled) {
+    bool stencil_enabled,
+    bool cull_face_enabled,
+    bool scissor_test_enabled) {
   EXPECT_CALL(*gl_, ColorMask(
       (color_bits & 0x1000) != 0,
       (color_bits & 0x0100) != 0,
@@ -540,6 +700,24 @@ void GLES2DecoderTestBase::SetupExpectationsForApplyingDirtyState(
         .Times(1)
         .RetiresOnSaturation();
   }
+  if (cull_face_enabled) {
+    EXPECT_CALL(*gl_, Enable(GL_CULL_FACE))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, Disable(GL_CULL_FACE))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  if (scissor_test_enabled) {
+      EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
+          .Times(1)
+          .RetiresOnSaturation();
+  } else {
+      EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
+          .Times(1)
+          .RetiresOnSaturation();
+  }
 }
 
 void GLES2DecoderTestBase::SetupExpectationsForApplyingDefaultDirtyState() {
@@ -552,7 +730,9 @@ void GLES2DecoderTestBase::SetupExpectationsForApplyingDefaultDirtyState() {
       false,   // depth enabled
       0,       // front stencil mask
       0,       // back stencil mask
-      false);  // stencil enabled
+      false,   // stencil enabled
+      false,   // cull_face_enabled
+      false);  // scissor_test_enabled
 }
 
 void GLES2DecoderTestBase::DoBindFramebuffer(
@@ -776,6 +956,9 @@ void GLES2DecoderTestBase::DoVertexAttribDivisorANGLE(
 
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
+const int GLES2DecoderTestBase::kBackBufferWidth;
+const int GLES2DecoderTestBase::kBackBufferHeight;
+
 const GLint GLES2DecoderTestBase::kMaxTextureSize;
 const GLint GLES2DecoderTestBase::kMaxCubeMapTextureSize;
 const GLint GLES2DecoderTestBase::kNumVertexAttribs;
@@ -785,6 +968,13 @@ const GLint GLES2DecoderTestBase::kMaxVertexTextureImageUnits;
 const GLint GLES2DecoderTestBase::kMaxFragmentUniformVectors;
 const GLint GLES2DecoderTestBase::kMaxVaryingVectors;
 const GLint GLES2DecoderTestBase::kMaxVertexUniformVectors;
+const GLint GLES2DecoderTestBase::kMaxViewportWidth;
+const GLint GLES2DecoderTestBase::kMaxViewportHeight;
+
+const GLint GLES2DecoderTestBase::kViewportX;
+const GLint GLES2DecoderTestBase::kViewportY;
+const GLint GLES2DecoderTestBase::kViewportWidth;
+const GLint GLES2DecoderTestBase::kViewportHeight;
 
 const GLuint GLES2DecoderTestBase::kServiceAttrib0BufferId;
 const GLuint GLES2DecoderTestBase::kServiceFixedAttribBufferId;
@@ -810,11 +1000,18 @@ const uint32 GLES2DecoderTestBase::kNewClientId;
 const uint32 GLES2DecoderTestBase::kNewServiceId;
 const uint32 GLES2DecoderTestBase::kInvalidClientId;
 
-const int GLES2DecoderTestBase::kBackBufferWidth;
-const int GLES2DecoderTestBase::kBackBufferHeight;
-
 const GLuint GLES2DecoderTestBase::kServiceVertexShaderId;
 const GLuint GLES2DecoderTestBase::kServiceFragmentShaderId;
+
+const GLuint GLES2DecoderTestBase::kServiceCopyTextureChromiumShaderId;
+const GLuint GLES2DecoderTestBase::kServiceCopyTextureChromiumProgramId;
+
+const GLuint GLES2DecoderTestBase::kServiceCopyTextureChromiumTextureBufferId;
+const GLuint GLES2DecoderTestBase::kServiceCopyTextureChromiumVertexBufferId;
+const GLuint GLES2DecoderTestBase::kServiceCopyTextureChromiumFBOId;
+const GLuint GLES2DecoderTestBase::kServiceCopyTextureChromiumPositionAttrib;
+const GLuint GLES2DecoderTestBase::kServiceCopyTextureChromiumTexAttrib;
+const GLuint GLES2DecoderTestBase::kServiceCopyTextureChromiumSamplerLocation;
 
 const GLsizei GLES2DecoderTestBase::kNumVertices;
 const GLsizei GLES2DecoderTestBase::kNumIndices;
@@ -1172,6 +1369,10 @@ void GLES2DecoderTestBase::AddExpectationsForSimulatedAttrib0WithError(
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, buffer_id))
+        .Times(1)
+        .RetiresOnSaturation();
+
+    EXPECT_CALL(*gl_, DisableVertexAttribArray(0))
         .Times(1)
         .RetiresOnSaturation();
   }

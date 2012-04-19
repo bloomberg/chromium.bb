@@ -239,6 +239,8 @@ static GLenum valid_index_type_table[] = {
 static GLenum valid_pixel_store_table[] = {
   GL_PACK_ALIGNMENT,
   GL_UNPACK_ALIGNMENT,
+  GL_UNPACK_FLIP_Y_CHROMIUM,
+  GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
 };
 
 static GLint valid_pixel_store_alignment_table[] = {

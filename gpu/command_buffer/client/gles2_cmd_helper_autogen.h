@@ -1717,6 +1717,14 @@
     }
   }
 
+  void CopyTextureCHROMIUM(
+      GLenum target, GLenum source_id, GLenum dest_id, GLint level) {
+    gles2::CopyTextureCHROMIUM* c = GetCmdSpace<gles2::CopyTextureCHROMIUM>();
+    if (c) {
+      c->Init(target, source_id, dest_id, level);
+    }
+  }
+
   void DrawArraysInstancedANGLE(
       GLenum mode, GLint first, GLsizei count, GLsizei primcount) {
     gles2::DrawArraysInstancedANGLE* c =
