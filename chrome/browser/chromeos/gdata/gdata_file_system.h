@@ -19,6 +19,7 @@
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_params.h"
@@ -491,6 +492,16 @@ class GDataFileSystem : public GDataFileSystemInterface,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Used in tests to inject mock document service.
+  void SetDocumentsServiceForTesting(DocumentsServiceInterface*
+      new_document_service) {
+    documents_service_.reset(new_document_service);
+  }
+
+  // Used in tests to set cache root path to a test directory.
+  // It should be called before cache is initialized (it will fail otherwise).
+  bool SetCacheRootPathForTesting(const FilePath& root_path);
+
  private:
   friend class GDataUploader;
   friend class GDataFileSystemTest;
@@ -592,6 +603,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Finds file object by |file_path| and returns the file info.
   // Returns NULL if it does not find the file.
   GDataFileBase* GetGDataFileInfoFromPath(const FilePath& file_path);
+
+  // Inits cache directory paths in the provided root.
+  // Should be called before cache is initialized.
+  void SetCachePaths(const FilePath& root_path);
 
   // Initiates upload operation of file defined with |file_name|,
   // |content_type| and |content_length|. The operation will place the newly

@@ -724,14 +724,7 @@ void GDataFileSystem::Initialize() {
   chrome::GetUserCacheDirectory(profile_->GetPath(), &cache_base_path);
   gdata_cache_path_ = cache_base_path.Append(chrome::kGDataCacheDirname);
   gdata_cache_path_ = gdata_cache_path_.Append(kGDataCacheVersionDir);
-  // Insert into |cache_paths_| in order defined in enum CacheSubDirectoryType.
-  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheMetaDir));
-  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCachePinnedDir));
-  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheOutgoingDir));
-  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCachePersistentDir));
-  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheTmpDir));
-  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheTmpDownloadsDir));
-  cache_paths_.push_back(gdata_cache_path_.Append(kGDataCacheTmpDocumentsDir));
+  SetCachePaths(gdata_cache_path_);
 
   documents_service_->Initialize(profile_);
 
@@ -742,6 +735,14 @@ void GDataFileSystem::Initialize() {
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
 
   InitializePreferenceObserver();
+}
+
+bool GDataFileSystem::SetCacheRootPathForTesting(const FilePath& root_path) {
+  if (cache_initialization_started_)
+    return false;
+  cache_paths_.clear();
+  SetCachePaths(root_path);
+  return true;
 }
 
 GDataFileSystem::~GDataFileSystem() {
@@ -1780,6 +1781,19 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
                  params));
 }
 
+void GDataFileSystem::SetCachePaths(const FilePath& root_path) {
+  DCHECK(cache_paths_.empty() && !cache_initialization_started_);
+
+  // Insert into |cache_paths_| in order defined in enum CacheSubDirectoryType.
+  cache_paths_.push_back(root_path.Append(kGDataCacheMetaDir));
+  cache_paths_.push_back(root_path.Append(kGDataCachePinnedDir));
+  cache_paths_.push_back(root_path.Append(kGDataCacheOutgoingDir));
+  cache_paths_.push_back(root_path.Append(kGDataCachePersistentDir));
+  cache_paths_.push_back(root_path.Append(kGDataCacheTmpDir));
+  cache_paths_.push_back(root_path.Append(kGDataCacheTmpDownloadsDir));
+  cache_paths_.push_back(root_path.Append(kGDataCacheTmpDocumentsDir));
+}
+
 void GDataFileSystem::InitiateUpload(
     const std::string& file_name,
     const std::string& content_type,
@@ -1848,7 +1862,6 @@ void GDataFileSystem::OnResumeUpload(
     message_loop_proxy->PostTask(FROM_HERE,
         base::Bind(callback, response, base::Passed(&new_entry)));
 }
-
 
 void GDataFileSystem::UnsafeFindFileByPath(
     const FilePath& file_path,

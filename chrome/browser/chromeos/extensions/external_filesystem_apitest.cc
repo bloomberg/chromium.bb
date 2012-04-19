@@ -2,13 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/platform_file.h"
+#include "base/json/json_file_value_serializer.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "base/stringprintf.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
+#include "base/threading/worker_pool.h"
+#include "base/values.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
+#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
+#include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/gdata_errorcode.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/chromeos/gdata/mock_gdata_documents_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,17 +30,21 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "webkit/chromeos/fileapi/remote_file_system_proxy.h"
 
 using ::testing::_;
+using ::testing::Return;
 using content::BrowserContext;
 
+namespace {
+
 // These should match the counterparts in remote.js.
-const char kTestDirPath[] = "/test_dir";
-const char kTestFilePath[] = "/test_dir/hello.txt";
 const char kTestFileContents[] = "hello, world";
 
-namespace {
+// Contains a folder entry for the folder 'Folder' that will be 'created'.
+const char kTestDirectory[] = "remote_file_system_apitest_folder_entry.json";
+
+// Contains a folder named Folder that has a file File.aBc inside of it.
+const char kTestRootFeed[] = "remote_file_system_apitest_root_feed.json";
 
 // The ID of the file browser extension.
 const char kFileBrowserExtensionId[] = "ddammdhioacbehjngdmkjcjbnfginlla";
@@ -66,82 +80,61 @@ class BackgroundObserver {
   ui_test_utils::WindowedNotificationObserver page_closed_;
 };
 
-// Returns the expected URL for the given path.
-GURL GetExpectedURL(const std::string& path) {
-  return GURL(
-      base::StringPrintf(
-          "filesystem:chrome-extension://%s/external/%s",
-          kFileBrowserExtensionId,
-          path.c_str()));
+// TODO(tbarzic): We should probably share GetTestFilePath and LoadJSONFile
+// with gdata_file_system_unittest.
+// Generates file path in gdata test directory for a file with name |filename|.
+FilePath GetTestFilePath(const FilePath::StringType& filename) {
+  FilePath path;
+  std::string error;
+  PathService::Get(chrome::DIR_TEST_DATA, &path);
+   path = path.AppendASCII("chromeos")
+       .AppendASCII("gdata")
+       .AppendASCII(filename);
+  EXPECT_TRUE(file_util::PathExists(path)) <<
+      "Couldn't find " << path.value();
+  return path;
+}
+
+// Loads and deserializes a json file in gdata test directory whose name is
+// |filename|. Returns new Value object the file is deserialized to.
+base::Value* LoadJSONFile(const std::string& filename) {
+  FilePath path = GetTestFilePath(filename);
+  std::string error;
+  JSONFileValueSerializer serializer(path);
+  Value* value = serializer.Deserialize(NULL, &error);
+  EXPECT_TRUE(value) <<
+      "Parse error " << path.value() << ": " << error;
+  return value;
 }
 
 // Action used to set mock expectations for CreateDirectory().
-ACTION_P(MockCreateDirectory, status) {
-  arg3.Run(status);
+ACTION_P2(MockCreateDirectoryCallback, status, value) {
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(arg2, status, base::Passed(value)));
 }
 
-// Action used to set mock expectations for GetFileInfo().
-ACTION_P3(MockGetFileInfo, status, file_info, path) {
-  arg1.Run(status, file_info, path);
+// Action used to set mock expecteations for GetDocuments.
+ACTION_P2(MockGetDocumentsCallback, status, value) {
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(arg2, status, base::Passed(value)));
 }
 
-// Action used to set mock expectations for CreateSnapshotFile().
-ACTION_P4(MockCreateSnapshotFile, status, file_info, path, file_ref) {
-  arg1.Run(status, file_info, path, file_ref);
+// Creates a cache representation of the test file with predetermined content.
+void CreateDownloadFile(const FilePath& path) {
+  int file_content_size = static_cast<int>(sizeof(kTestFileContents));
+  ASSERT_EQ(file_content_size,
+            file_util::WriteFile(path, kTestFileContents, file_content_size));
 }
 
-// The mock is used to add a remote mount point, and write tests for it.
-class MockRemoteFileSystemProxy :
-      public fileapi::RemoteFileSystemProxyInterface {
- public:
-  MockRemoteFileSystemProxy() {}
-  virtual ~MockRemoteFileSystemProxy() {}
-
-  MOCK_METHOD2(
-      GetFileInfo,
-      void(const GURL& path,
-           const fileapi::FileSystemOperationInterface::GetMetadataCallback&
-           callback));
-  MOCK_METHOD3(
-      Copy,
-      void(const GURL& src_path,
-           const GURL& dest_path,
-           const fileapi::FileSystemOperationInterface::StatusCallback&
-           callback));
-  MOCK_METHOD3(
-      Move,
-      void(const GURL& src_path,
-           const GURL& dest_path,
-           const fileapi::FileSystemOperationInterface::StatusCallback&
-           callback));
-  MOCK_METHOD2(
-      ReadDirectory,
-      void(const GURL& path,
-           const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
-           callback));
-  MOCK_METHOD3(
-      Remove,
-      void(const GURL& path,
-           bool recursive,
-           const fileapi::FileSystemOperationInterface::StatusCallback&
-           callback));
-  MOCK_METHOD4(
-      CreateDirectory,
-      void(const GURL& file_url,
-           bool exclusive,
-           bool recursive,
-           const fileapi::FileSystemOperationInterface::StatusCallback&
-           callback));
-  MOCK_METHOD2(
-      CreateSnapshotFile,
-      void(const GURL& path,
-           const fileapi::FileSystemOperationInterface::SnapshotFileCallback&
-           callback));
-};
-
-const char kExpectedWriteError[] =
-    "Got unexpected error: File handler error: SECURITY_ERR";
+// Action used to set mock expectations for DownloadFile().
+ACTION_P(MockDownloadFileCallback, status) {
+  ASSERT_TRUE(base::WorkerPool::PostTaskAndReply(FROM_HERE,
+      base::Bind(&CreateDownloadFile, arg1),
+      base::Bind(arg3, status, arg2, arg1),
+      false));
 }
+
+}  // namespace
 
 class FileSystemExtensionApiTest : public ExtensionApiTest {
  public:
@@ -180,51 +173,39 @@ class FileSystemExtensionApiTest : public ExtensionApiTest {
 
 class RemoteFileSystemExtensionApiTest : public ExtensionApiTest {
  public:
-  RemoteFileSystemExtensionApiTest()
-      : mock_remote_file_system_proxy_(NULL) {
-  }
+  RemoteFileSystemExtensionApiTest() {}
 
   virtual ~RemoteFileSystemExtensionApiTest() {}
 
   virtual void SetUp() OVERRIDE {
     FilePath tmp_dir_path;
     PathService::Get(base::DIR_TEMP, &tmp_dir_path);
+    ASSERT_TRUE(test_cache_root_.CreateUniqueTempDirUnderPath(tmp_dir_path));
 
-    ASSERT_TRUE(test_mount_point_.CreateUniqueTempDirUnderPath(tmp_dir_path));
-
-    file_util::CreateTemporaryFileInDir(test_mount_point_.path(),
-                                        &test_file_path_);
-    file_util::WriteFile(test_file_path_,
-                         kTestFileContents,
-                         sizeof(kTestFileContents) - 1);
-    file_util::GetFileInfo(test_file_path_, &test_file_info_);
-
-    // ExtensionApiTest::SetUp() should be called at the end. For some
-    // reason, ExtensionApiTest::SetUp() starts running tests, so any
-    // setup has to be done before calling this.
     ExtensionApiTest::SetUp();
   }
 
-  // Adds a remote mount point at at mount point /tmp.
-  void AddTmpMountPoint() {
-    fileapi::ExternalFileSystemMountPointProvider* provider =
-        BrowserContext::GetFileSystemContext(browser()->profile())->
-            external_provider();
-    mock_remote_file_system_proxy_ = new MockRemoteFileSystemProxy;
-    // Take the ownership of mock_remote_file_system_proxy_.
-    provider->AddRemoteMountPoint(test_mount_point_.path(),
-                                mock_remote_file_system_proxy_);
-  }
+  // Sets up GDataFileSystem that will be used in the test.
+  // NOTE: Remote mount point should get added to mount poitn provider when
+  // getLocalFileSystem is called from filebrowser_component extension.
+  virtual void SetupGDataFileSystemForTest() {
+    gdata::GDataSystemService* system_service =
+        gdata::GDataSystemServiceFactory::GetForProfile(browser()->profile());
+    EXPECT_TRUE(system_service && system_service->file_system());
 
-  std::string GetPathOnMountPoint(const std::string& path) {
-    return test_mount_point_.path().BaseName().value() + path;
+    mock_documents_service_ = new gdata::MockDocumentsService();
+    operation_registry_.reset(new gdata::GDataOperationRegistry());
+    system_service->file_system()->SetDocumentsServiceForTesting(
+        mock_documents_service_);
+
+    EXPECT_TRUE(system_service->file_system()->SetCacheRootPathForTesting(
+        test_cache_root_.path()));
   }
 
  protected:
-  base::PlatformFileInfo test_file_info_;
-  FilePath test_file_path_;
-  ScopedTempDir test_mount_point_;
-  MockRemoteFileSystemProxy* mock_remote_file_system_proxy_;
+  ScopedTempDir test_cache_root_;
+  gdata::MockDocumentsService* mock_documents_service_;
+  scoped_ptr<gdata::GDataOperationRegistry> operation_registry_;
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest, LocalFileSystem) {
@@ -272,34 +253,44 @@ IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest, RemoteMountPoint) {
-  AddTmpMountPoint();
-  // The test directory is created first.
-  const GURL test_dir_url =
-      GetExpectedURL(GetPathOnMountPoint(kTestDirPath));
-  EXPECT_CALL(*mock_remote_file_system_proxy_,
-              CreateDirectory(test_dir_url, false, false, _))
-      .WillOnce(MockCreateDirectory(base::PLATFORM_FILE_OK));
+  SetupGDataFileSystemForTest();
 
-  // Then GetFileInfo() is called over "tmp/test_dir/hello.txt".
-  const std::string expected_path = GetPathOnMountPoint(kTestFilePath);
-  GURL expected_url = GetExpectedURL(expected_path);
-  EXPECT_CALL(*mock_remote_file_system_proxy_,
-              GetFileInfo(expected_url, _))
-      .WillOnce(MockGetFileInfo(
-          base::PLATFORM_FILE_OK,
-          test_file_info_,
-          FilePath::FromUTF8Unsafe(expected_path)));
+  EXPECT_CALL(*mock_documents_service_, GetAccountMetadata(_)).Times(1);
 
-  // Then CreateSnapshotFile() is called over "tmp/test_dir/hello.txt".
-  EXPECT_CALL(*mock_remote_file_system_proxy_,
-              CreateSnapshotFile(expected_url, _))
-      .WillOnce(MockCreateSnapshotFile(
-          base::PLATFORM_FILE_OK,
-          test_file_info_,
-          // Returns the path to the temporary file on the local drive.
-          test_file_path_,
-          scoped_refptr<webkit_blob::ShareableFileReference>(NULL)));
-  ASSERT_TRUE(RunExtensionSubtest(
-      "filebrowser_component", "remote.html#" + GetPathOnMountPoint(""),
+  // First, file browser will try to create new directory.
+  scoped_ptr<base::Value> dir_value(LoadJSONFile(kTestDirectory));
+  EXPECT_CALL(*mock_documents_service_,
+              CreateDirectory(_, _, _))
+      .WillOnce(MockCreateDirectoryCallback(gdata::HTTP_SUCCESS, &dir_value));
+
+  // Then the test will try to read an existing file file.
+  // Remote filesystem should first request root feed from gdata server.
+  scoped_ptr<base::Value> documents_value(LoadJSONFile(kTestRootFeed));
+  EXPECT_CALL(*mock_documents_service_,
+              GetDocuments(_, _, _))
+      .WillOnce(MockGetDocumentsCallback(gdata::HTTP_SUCCESS,
+                                         &documents_value));
+
+  // When file browser tries to read the file, remote filesystem should detect
+  // that the cached file is not present on the disk and download it. Mocked
+  // download file will create file with the cached name and predetermined
+  // content. This is the file file browser will read content from.
+  // Later in the test, file handler will try to open the same file on gdata
+  // mount point. This time, DownloadFile should not be called because local
+  // copy is already present in the cache.
+  EXPECT_CALL(*mock_documents_service_,
+              DownloadFile(_, _, _, _))
+      .WillOnce(MockDownloadFileCallback(gdata::HTTP_SUCCESS));
+
+  // On exit, all operations in progress should be cancelled.
+  EXPECT_CALL(*mock_documents_service_, CancelAll());
+  // This one is called on exit, but we don't care much about it, as long as it
+  // retunrs something valid (i.e. not NULL).
+  EXPECT_CALL(*mock_documents_service_, operation_registry()).
+      WillOnce(Return(operation_registry_.get()));
+
+  // All is set... RUN THE TEST.
+  EXPECT_TRUE(RunExtensionTest("filesystem_handler")) << message_;
+  EXPECT_TRUE(RunExtensionSubtest("filebrowser_component", "remote.html",
       kComponentFlags)) << message_;
 }

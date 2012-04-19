@@ -2744,6 +2744,8 @@
         'browser/chromeos/extensions/echo_private_apitest.cc',
         'browser/chromeos/extensions/external_filesystem_apitest.cc',
         'browser/chromeos/gdata/gdata_documents_service_browsertest.cc',
+        'browser/chromeos/gdata/mock_gdata_documents_service.cc',
+        'browser/chromeos/gdata/mock_gdata_documents_service.h',
         'browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.cc',
         'browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.h',
         'browser/chromeos/login/enrollment/enterprise_enrollment_screen_browsertest.cc',
