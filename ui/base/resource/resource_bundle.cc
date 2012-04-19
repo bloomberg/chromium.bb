@@ -152,6 +152,17 @@ std::string ResourceBundle::LoadLocaleResources(
   return app_locale;
 }
 
+void ResourceBundle::LoadTestResources(const FilePath& path) {
+  // Use the given resource pak for both common and localized resources.
+  scoped_ptr<DataPack> data_pack(new DataPack());
+  if (data_pack->Load(path))
+    data_packs_.push_back(data_pack.release());
+
+  data_pack.reset(new DataPack());
+  if (data_pack->Load(path))
+    locale_resources_data_.reset(data_pack.release());
+}
+
 void ResourceBundle::UnloadLocaleResources() {
   locale_resources_data_.reset();
 }

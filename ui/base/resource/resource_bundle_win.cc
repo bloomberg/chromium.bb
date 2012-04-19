@@ -27,11 +27,6 @@ void ResourceBundle::LoadCommonResources() {
   data_packs_.push_back(new ResourceDataDLL(GetCurrentResourceDLL()));
 }
 
-void ResourceBundle::LoadTestResources(const FilePath& path) {
-  // On Windows, the test resources are normally compiled into the binary
-  // itself.
-}
-
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
   // Flipped image is not used on Windows.
   DCHECK_EQ(rtl, RTL_DISABLED);
