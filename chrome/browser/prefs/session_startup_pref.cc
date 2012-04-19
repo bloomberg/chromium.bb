@@ -191,7 +191,7 @@ bool SessionStartupPref::DidStartupPrefChange(Profile* profile) {
   if (prefs->FindPreference(prefs::kRestoreOnStartup)->IsDefaultValue())
     return false;
 #endif
-  return prefs_watcher->DidPrefChange(prefs::kRestoreOnStartup);
+  return prefs_watcher->DidPrefChange(prefs::kURLsToRestoreOnStartup);
 }
 
 // static
