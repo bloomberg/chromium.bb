@@ -34,16 +34,10 @@ EXTRA_ENV = {
   'STRIP_FLAGS_all'  : '-s',
   'STRIP_FLAGS_debug': '-S',
 
-  'NOBITCODE': '0', # True if there are no bitcode objects in the link.
-                    # (native link only)
   'TRANSLATE_FLAGS': '${PIC ? -fPIC} ${!STDLIB ? -nostdlib} ' +
                      '${STATIC ? -static} ' +
-                     # The intermediate bitcode file normally encodes
-                     # these flags. But if there is no bitcode, then
-                     # we must pass these flags manually to
-                     # pnacl-translate.
-                     '${NOBITCODE && SHARED ? -shared} ' +
-                     '${NOBITCODE && #SONAME ? -Wl,--soname=${SONAME}} ' +
+                     '${SHARED ? -shared} ' +
+                     '${#SONAME ? -Wl,--soname=${SONAME}} ' +
                      '${TRANSLATE_FLAGS_USER}',
 
   # Extra pnacl-translate flags specified by the user using -Wt
@@ -316,7 +310,6 @@ def main(argv):
     elif env.getone('STRIP_MODE') != 'none':
       chain.add(DoStrip, 'stripped.' + bitcode_type)
   else:
-    env.set('NOBITCODE', '1')
     chain = DriverChain('', output, tng)
 
   # If -arch is also specified, invoke pnacl-translate afterwards.

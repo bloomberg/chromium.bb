@@ -168,6 +168,18 @@ TranslatorPatterns = [
 def main(argv):
   env.update(EXTRA_ENV)
   driver_tools.ParseArgs(argv, TranslatorPatterns)
+  if env.getbool('SHARED'):
+    env.set('PIC', '1')
+
+  if env.getbool('LIBMODE_NEWLIB'):
+    env.set('STATIC', '1')
+  # we currently force PIC for dynamic images in llc but would like
+  # to change this. Below we are "reforcing" PIC, so we can take it out
+  # of llc without breaking anything.
+  # This should be removed once we not longer build dynamic images with PIC.
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2351
+  if not env.getbool('STATIC') and env.getbool('LIBMODE_GLIBC'):
+    env.set('PIC', '1')
 
   if env.getbool('SHARED') and env.getbool('STATIC'):
     Log.Fatal('Cannot mix -static and -shared')
@@ -229,6 +241,28 @@ def main(argv):
   # Get bitcode type and metadata
   if bcfile:
     bctype = driver_tools.FileType(bcfile)
+    # sanity checking
+    if bctype == 'pso':
+      assert not env.getbool('STATIC')
+      assert env.getbool('SHARED')
+      assert env.getbool('PIC')
+      assert env.get('ARCH') != 'arm' and "no glibc support for arm yet"
+    elif bctype == 'pexe':
+      if env.getbool('LIBMODE_GLIBC'):   # this is our proxy for dynamic images
+        assert not env.getbool('STATIC')
+        assert not env.getbool('SHARED')
+        # NOTE: we would like to assert non-PIC in the not too
+        # distant future here c.f. comment at the beginning of main()
+        assert env.getbool('PIC')
+        assert env.get('ARCH') != 'arm' and "no glibc support for arm yet"
+      else:
+        assert env.getbool('LIBMODE_NEWLIB')
+        assert env.getbool('STATIC')
+        assert not env.getbool('SHARED')
+        # for static images we tolerate both PIC and non-PIC
+    else:
+      assert False
+
     metadata = driver_tools.GetBitcodeMetadata(bcfile)
 
   # Determine the output type, in this order of precedence:
@@ -259,31 +293,16 @@ def main(argv):
   if bcfile:
     ApplyBitcodeConfig(metadata, bctype)
 
-  # Default to -static for newlib.
-  # TODO(pdox): This shouldn't be necessary.
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
-  if env.getbool('LIBMODE_NEWLIB'):
-    if env.getbool('SHARED'):
-      Log.Fatal('Cannot handle -shared with newlib toolchain')
-    env.set('STATIC', '1')
-
   assert output_type in ('so','nexe')
   RunLD(ofile, output)
   return 0
 
 def ApplyBitcodeConfig(metadata, bctype):
-  if bctype == 'pso':
-    env.set('SHARED', '1')
-
-  if env.getbool('SHARED'):
-    env.set('PIC', '1')
-
   # Normally, only pso files need to be translated with PIC, but since we
   # are linking executables with unresolved symbols, dynamic nexe's
   # also need to be PIC to be able to generate the correct relocations.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2351
   if bctype == 'pexe' and env.getbool('LIBMODE_GLIBC'):
-    env.set('PIC', '1')
     env.append('LD_FLAGS', '--unresolved-symbols=ignore-all')
 
   # Read the bitcode metadata to extract library
