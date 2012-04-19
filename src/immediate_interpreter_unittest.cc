@@ -505,6 +505,64 @@ TEST(ImmediateInterpreterTest, DelayedStartScrollTest) {
   EXPECT_EQ(kGestureTypeScroll, gs->type);
 }
 
+// This is based on a log from Dave Moore. He put one finger down, which put
+// it into move mode, then put a second finger down a bit later, but it was
+// stuck in move mode. This tests that it does switch to scroll mode.
+TEST(ImmediateInterpreterTest, OneFingerThenTwoDelayedStartScrollTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // tripletap
+    0,  // semi-mt
+    1  // is button pad
+  };
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    // Consistent movement for 4 frames
+    {0, 0, 0, 0, 20, 0, 40, 85, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 85, 1, 0},
+    {0, 0, 0, 0, 20, 0, 60, 83, 2, 0},
+
+    {0, 0, 0, 0, 20, 0, 40, 85, 1, 0},
+    {0, 0, 0, 0, 20, 0, 60, 75, 2, 0},
+
+  };
+  HardwareState hardware_states[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 1.00, 0, 1, 1, &finger_states[0] },
+    { 1.20, 0, 2, 2, &finger_states[1] },
+    { 2.00, 0, 2, 2, &finger_states[1] },
+    { 2.01, 0, 2, 2, &finger_states[3] },
+    { 2.03, 0, 0, 0, NULL },
+  };
+
+  ii.SetHardwareProperties(hwprops);
+
+  size_t idx = 0;
+
+  // Consistent movement
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+  EXPECT_EQ(NULL, ii.SyncInterpret(&hardware_states[idx++], NULL));
+
+  Gesture* gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  EXPECT_EQ(reinterpret_cast<Gesture*>(NULL), gs);
+
+  gs = ii.SyncInterpret(&hardware_states[idx++], NULL);
+  ASSERT_NE(reinterpret_cast<Gesture*>(NULL), gs);
+  EXPECT_EQ(kGestureTypeScroll, gs->type);
+}
+
 struct HardwareStateAnScrollExpectations {
   HardwareState hs;
   float dx;
