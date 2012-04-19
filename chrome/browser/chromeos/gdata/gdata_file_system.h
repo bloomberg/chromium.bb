@@ -38,6 +38,10 @@ namespace gdata {
 class DocumentsServiceInterface;
 struct UploadFileInfo;
 
+namespace {
+struct LoadRootFeedParams;
+}
+
 // Used for file operations like removing files.
 typedef base::Callback<void(base::PlatformFileError error)>
     FileOperationCallback;
@@ -569,18 +573,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
     FindFileCallback callback;
   };
 
-  // Defines set of parameters sent to callback OnGetDocuments().
-  struct LoadRootFeedParams {
-    LoadRootFeedParams(FilePath search_file_path,
-                       bool should_load_from_server,
-                       const FindFileCallback& callback);
-    ~LoadRootFeedParams();
-
-    FilePath search_file_path;
-    bool should_load_from_server;
-    const FindFileCallback callback;
-  };
-
   typedef std::map<std::string /* resource_id */, GDataFileBase*>
       FileResourceIdMap;
 
@@ -934,9 +926,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                          base::Value* result);
 
   // Callback for handling root directory refresh from the cache.
-  void OnProtoLoaded(LoadRootFeedParams* params,
-                     base::PlatformFileError* error,
-                     std::string* proto);
+  void OnProtoLoaded(LoadRootFeedParams* params);
 
   // Save filesystem as proto file.
   void SaveFileSystemAsProto();

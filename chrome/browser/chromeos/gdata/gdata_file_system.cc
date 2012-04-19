@@ -78,6 +78,65 @@ const FilePath::CharType kFilesystemProtoFile[] =
     FILE_PATH_LITERAL("file_system.pb");
 const FilePath::CharType kSymLinkToDevNull[] = FILE_PATH_LITERAL("/dev/null");
 
+// Schedule for dumping root file system proto buffers to disk depending its
+// total protobuffer size in MB.
+typedef struct {
+  double size;
+  int timeout;
+} SerializationTimetable;
+
+SerializationTimetable kSerializeTimetable[] = {
+#ifndef NDEBUG
+    {0.5, 0},    // Less than 0.5MB, dump immediately.
+    {-1,  1},    // Any size, dump if older than 1 minue.
+#else
+    {0.5, 0},    // Less than 0.5MB, dump immediately.
+    {1.0, 15},   // Less than 1.0MB, dump after 15 minutes.
+    {2.0, 30},
+    {4.0, 60},
+    {-1,  120},  // Any size, dump if older than 120 minues.
+#endif
+};
+
+// Defines set of parameters sent to callback OnProtoLoaded().
+struct LoadRootFeedParams {
+  LoadRootFeedParams(
+        FilePath search_file_path,
+        bool should_load_from_server,
+        const FindFileCallback& callback)
+        : search_file_path(search_file_path),
+          should_load_from_server(should_load_from_server),
+          load_error(base::PLATFORM_FILE_OK),
+          callback(callback) {
+    }
+  ~LoadRootFeedParams() {
+  }
+
+  FilePath search_file_path;
+  bool should_load_from_server;
+  std::string proto;
+  base::PlatformFileError load_error;
+  base::Time last_modified;
+  const FindFileCallback callback;
+};
+
+// Returns true if file system is due to be serialized on disk based on it
+// |serialized_size| and |last_serialized| timestamp.
+bool ShouldSerializeFileSystemNow(size_t serialized_size,
+                                  const base::Time& last_serialized) {
+  const double size_in_mb = serialized_size / 1048576.0;
+  const int last_proto_dump_in_min =
+      (base::Time::Now() - last_serialized).InMinutes();
+  for (size_t i = 0; i < arraysize(kSerializeTimetable); i++) {
+    if ((size_in_mb < kSerializeTimetable[i].size ||
+         kSerializeTimetable[i].size == -1) &&
+        last_proto_dump_in_min >= kSerializeTimetable[i].timeout) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Returns the home directory path, or an empty string if the home directory
 // is not found.
 // Copied from webkit/chromeos/cros_mount_point_provider.h.
@@ -497,12 +556,18 @@ void SaveProtoOnIOThreadPool(const FilePath& path,
 // Loads the file at |path| into the string |serialized_proto| on a blocking
 // thread.
 void LoadProtoOnIOThreadPool(const FilePath& path,
-                             std::string* serialized_proto,
-    base::PlatformFileError* error) {
-  if (!file_util::ReadFileToString(path, serialized_proto)) {
-    LOG(WARNING) << "Proto file not found at " << path.value();
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+                             LoadRootFeedParams* params) {
+  base::PlatformFileInfo info;
+  if (!file_util::GetFileInfo(path, &info)) {
+    params->load_error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return;
   }
+  params->last_modified = info.last_modified;
+  if (!file_util::ReadFileToString(path, &params->proto)) {
+    LOG(WARNING) << "Proto file not found at " << path.value();
+    params->load_error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  }
+  params->load_error = base::PLATFORM_FILE_OK;
 }
 
 }  // namespace
@@ -584,20 +649,6 @@ GDataFileSystem::GetDocumentsParams::GetDocumentsParams(
 
 GDataFileSystem::GetDocumentsParams::~GetDocumentsParams() {
   STLDeleteElements(feed_list.get());
-}
-
-// GDataFileSystem::LoadRootFeedParams struct implementation.
-
-GDataFileSystem::LoadRootFeedParams::LoadRootFeedParams(
-    FilePath search_file_path,
-    bool should_load_from_server,
-    const FindFileCallback& callback)
-    : search_file_path(search_file_path),
-      should_load_from_server(should_load_from_server),
-      callback(callback) {
-}
-
-GDataFileSystem::LoadRootFeedParams::~LoadRootFeedParams() {
 }
 
 // GDataFileSystem::CreateDirectoryParams struct implementation.
@@ -2184,7 +2235,7 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
     return;
   }
 
-  // Save serialized filesystem to disk.
+  // Save file system metadata to disk.
   SaveFileSystemAsProto();
 
   // If we had someone to report this too, then this retrieval was done in a
@@ -2201,25 +2252,17 @@ void GDataFileSystem::LoadRootFeedFromCache(
   const FilePath path =
       cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
           kFilesystemProtoFile);
-  std::string* serialized_proto(new std::string());
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  LoadRootFeedParams* params = new LoadRootFeedParams(search_file_path,
+                                                      should_load_from_server,
+                                                      callback);
   BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
-      base::Bind(&LoadProtoOnIOThreadPool, path, serialized_proto, error),
+      base::Bind(&LoadProtoOnIOThreadPool, path, params),
       base::Bind(&GDataFileSystem::OnProtoLoaded,
                  GetWeakPtrForCurrentThread(),
-                 base::Owned(
-                     new LoadRootFeedParams(
-                         search_file_path,
-                         should_load_from_server,
-                         callback)),
-                 base::Owned(error),
-                 base::Owned(serialized_proto)));
+                 base::Owned(params)));
 }
 
-void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params,
-                                    base::PlatformFileError* error,
-                                    std::string* proto) {
+void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
   {
     base::AutoLock lock(lock_);
     // If we have already received updates from the server, bail out.
@@ -2229,14 +2272,16 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params,
   int local_changestamp = 0;
   // Update directory structure only if everything is OK and we haven't yet
   // received the feed from the server yet.
-  if (*error == base::PLATFORM_FILE_OK) {
+  if (params->load_error == base::PLATFORM_FILE_OK) {
     DVLOG(1) << "ParseFromString";
     base::AutoLock lock(lock_);  // To access root_.
-    if (root_->ParseFromString(*proto)) {
+    if (root_->ParseFromString(params->proto)) {
+      root_->set_last_serialized(params->last_modified);
+      root_->set_serialized_size(params->proto.size());
       NotifyInitialLoadFinished();
       local_changestamp = root_->largest_changestamp();
     } else {
-      *error = base::PLATFORM_FILE_ERROR_FAILED;
+      params->load_error = base::PLATFORM_FILE_ERROR_FAILED;
       LOG(WARNING) << "Parse of cached proto file failed";
     }
   }
@@ -2244,7 +2289,7 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params,
   FindFileCallback callback = params->callback;
   // If we got feed content from cache, try search over it.
   if (!params->should_load_from_server ||
-      (*error == base::PLATFORM_FILE_OK && !callback.is_null())) {
+      (params->load_error == base::PLATFORM_FILE_OK && !callback.is_null())) {
     // Continue file content search operation if the delegate hasn't terminated
     // this search branch already.
     FindFileByPathOnCallingThread(params->search_file_path, callback);
@@ -2270,14 +2315,21 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params,
 }
 
 void GDataFileSystem::SaveFileSystemAsProto() {
+  DVLOG(1) << "SaveFileSystemAsProto";
   base::AutoLock lock(lock_);  // To access root_.
 
-  DVLOG(1) << "SaveFileSystemAsProto";
+  if (!ShouldSerializeFileSystemNow(root_->serialized_size(),
+                                    root_->last_serialized())) {
+    return;
+  }
+
   const FilePath path =
       cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
           kFilesystemProtoFile);
   scoped_ptr<std::string> serialized_proto(new std::string());
   root_->SerializeToString(serialized_proto.get());
+  root_->set_last_serialized(base::Time::Now());
+  root_->set_serialized_size(serialized_proto->size());
   PostBlockingPoolSequencedTask(kGDataFileSystemToken, FROM_HERE,
       base::Bind(&SaveProtoOnIOThreadPool, path,
                  base::Passed(serialized_proto.Pass())));

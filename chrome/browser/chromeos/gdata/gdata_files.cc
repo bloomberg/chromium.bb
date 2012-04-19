@@ -393,7 +393,7 @@ std::string GDataRootDirectory::CacheEntry::ToString() const {
 
 GDataRootDirectory::GDataRootDirectory()
     : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, this)),
-      largest_changestamp_(0) {
+      largest_changestamp_(0), serialized_size_(0) {
 }
 
 GDataRootDirectory::~GDataRootDirectory() {

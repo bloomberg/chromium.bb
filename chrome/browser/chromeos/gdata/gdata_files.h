@@ -376,6 +376,12 @@ class GDataRootDirectory : public GDataDirectory {
   // state of the root directory.
   int largest_changestamp() const { return largest_changestamp_; }
   void set_largest_changestamp(int value) { largest_changestamp_ = value; }
+  // Last time when we dumped serialized file system to disk.
+  const base::Time& last_serialized() const { return last_serialized_; }
+  void set_last_serialized(const base::Time& time) { last_serialized_ = time; }
+  // Size of serialized file system on disk in bytes.
+  const size_t serialized_size() const { return serialized_size_; }
+  void set_serialized_size(size_t size) { serialized_size_ = size; }
 
   // GDataFileBase implementation.
 
@@ -429,7 +435,9 @@ class GDataRootDirectory : public GDataDirectory {
   ResourceMap resource_map_;
   CacheMap cache_map_;
 
+  base::Time last_serialized_;
   int largest_changestamp_;
+  size_t serialized_size_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataRootDirectory);
 };
