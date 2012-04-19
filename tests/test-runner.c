@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
 	if (argc == 2) {
 		t = find_test(argv[1]);
 		if (t == NULL) {
-			fprintf(stderr, "uknown test: \"%s\"\n", argv[1]);
+			fprintf(stderr, "unknown test: \"%s\"\n", argv[1]);
 			exit(EXIT_FAILURE);
 		}
 
@@ -98,27 +98,37 @@ int main(int argc, char *argv[])
 
 	pass = 0;
 	for (t = &__start_test_section; t < &__stop_test_section; t++) {
+		int success = 0;
+
 		pid = fork();
 		assert(pid >= 0);
+
 		if (pid == 0)
-			run_test(t);
+			run_test(t); /* never returns */
+
 		if (waitid(P_ALL, 0, &info, WEXITED)) {
 			fprintf(stderr, "waitid failed: %m\n");
 			abort();
 		}
 
-		fprintf(stderr, "test \"%s\"... ", t->name);
+		fprintf(stderr, "test \"%s\":\t", t->name);
 		switch (info.si_code) {
 		case CLD_EXITED:
-			fprintf(stderr, "exit status %d\n", info.si_status);
+			fprintf(stderr, "exit status %d", info.si_status);
 			if (info.si_status == EXIT_SUCCESS)
-				pass++;
+				success = 1;
 			break;
 		case CLD_KILLED:
 		case CLD_DUMPED:
-			fprintf(stderr, "signal %d\n", info.si_status);
+			fprintf(stderr, "signal %d", info.si_status);
 			break;
 		}
+
+		if (success) {
+			pass++;
+			fprintf(stderr, ", pass.\n");
+		} else
+			fprintf(stderr, ", fail.\n");
 	}
 
 	total = &__stop_test_section - &__start_test_section;
