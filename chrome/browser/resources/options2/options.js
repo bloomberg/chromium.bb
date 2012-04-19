@@ -27,6 +27,7 @@ var ManageProfileOverlay = options.ManageProfileOverlay;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
 var SessionRestoreOverlay = options.SessionRestoreOverlay;
+var SpellingConfirmOverlay = options.SpellingConfirmOverlay;
 var StartupOverlay = options.StartupOverlay;
 var SyncSetupOverlay = options.SyncSetupOverlay;
 var VirtualKeyboardManager = options.VirtualKeyboardManager;
@@ -107,6 +108,8 @@ function load() {
                               BrowserOptions.getInstance(),
                               [$('manage-default-search-engines')]);
   OptionsPage.registerOverlay(SessionRestoreOverlay.getInstance(),
+                              BrowserOptions.getInstance());
+  OptionsPage.registerOverlay(SpellingConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(StartupOverlay.getInstance(),
                               BrowserOptions.getInstance());

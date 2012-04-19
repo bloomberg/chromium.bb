@@ -1193,6 +1193,9 @@ const char kPluginMessageResponseTimeout[] =
 // String which represents the dictionary name for our spell-checker.
 const char kSpellCheckDictionary[] = "spellcheck.dictionary";
 
+// Boolean pref indicating whether the spelling confirm dialog has been shown.
+const char kSpellCheckConfirmDialogShown[] = "spellcheck.confirm_dialog_shown";
+
 // String which represents whether we use the spelling service.
 const char kSpellCheckUseSpellingService[] = "spellcheck.use_spelling_service";
 

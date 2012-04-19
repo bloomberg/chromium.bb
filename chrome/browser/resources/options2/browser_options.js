@@ -41,6 +41,13 @@ cr.define('options', function() {
     sessionOnlyCookies_: undefined,
 
     /**
+     * The cached value of the spellcheck.confirm_dialog_shown preference.
+     * @type {bool}
+     * @private
+     */
+    spellcheckConfirmDialogShown_: false,
+
+    /**
      * True if the "clear cookies and other site data on exit" setting is
      * selected. Used for deciding whether to show the session restore info
      * dialog. The value is undefined until the preference has been read.
@@ -272,6 +279,20 @@ cr.define('options', function() {
         OptionsPage.navigateToPage('clearBrowserData');
         chrome.send('coreOptionsUserMetricsAction', ['Options_ClearData']);
       };
+      // 'spelling-enabled-control' element is only present on Chrome branded
+      // builds.
+      if ($('spelling-enabled-control')) {
+        $('spelling-enabled-control').customChangeHandler = function(event) {
+          if (this.checked && !self.spellcheckConfirmDialogShown_) {
+            OptionsPage.showPageByName('spellingConfirm', false);
+            return true;
+          }
+          return false;
+        };
+        Preferences.getInstance().addEventListener(
+            'spellcheck.confirm_dialog_shown',
+            this.onSpellcheckConfirmDialogShownChanged_.bind(this));
+      }
       // 'metricsReportingEnabled' element is only present on Chrome branded
       // builds.
       if ($('metricsReportingEnabled')) {
@@ -760,6 +781,16 @@ cr.define('options', function() {
      */
     onSessionRestoreDialogShownChanged_: function(event) {
       this.sessionRestoreDialogShown_ = event.value['value'];
+    },
+
+    /**
+     * Called when the value of the spellcheck.confirm_dialog_shown preference
+     * changes. Cache this value.
+     * @param {Event} event Change event.
+     * @private
+     */
+    onSpellcheckConfirmDialogShownChanged_: function(event) {
+      this.spellcheckConfirmDialogShown_ = event.value['value'];
     },
 
     /**

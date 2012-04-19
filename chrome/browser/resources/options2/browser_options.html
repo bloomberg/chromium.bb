@@ -244,6 +244,13 @@
         </label>
       </div>
 <if expr="pp_ifdef('_google_chrome')">
+      <div class="checkbox">
+        <label id="spelling-label">
+          <input id="spelling-enabled-control" type="checkbox"
+              pref="spellcheck.use_spelling_service">
+          <span i18n-content="spellingPref"></span>
+        </label>
+      </div>
       <div id="metricsReportingSetting" class="checkbox">
         <label>
 <if expr="pp_ifdef('chromeos')">
