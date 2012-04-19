@@ -332,6 +332,7 @@ extern const char kWindowSize[];
 extern const char kWinHttpProxyResolver[];
 
 #if defined(OS_CHROMEOS)
+// Keep switches in alphabetical order.
 extern const char kDisableGData[];
 extern const char kDisableLibcros[];
 extern const char kSkipOAuthLogin[];
@@ -352,6 +353,7 @@ extern const char kTestLoadLibcros[];
 extern const char kLoginProfile[];
 extern const char kLoginUser[];
 extern const char kLoginPassword[];
+extern const char kNoDiscardTabs[];
 extern const char kGuestSession[];
 extern const char kEchoExtensionPath[];
 extern const char kShowVolumeStatus[];

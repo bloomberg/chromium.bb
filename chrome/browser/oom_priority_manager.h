@@ -108,6 +108,8 @@ class OomPriorityManager : public content::NotificationObserver {
   ProcessScoreMap pid_to_oom_score_;
   base::ProcessHandle focused_tab_pid_;
 
+  // Observer for the kernel low memory signal.  NULL if tab discarding is
+  // disabled.
   scoped_ptr<LowMemoryObserver> low_memory_observer_;
 
   // Wall-clock time when the priority manager started running.

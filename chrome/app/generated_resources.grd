@@ -5514,6 +5514,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_ASYNCHRONOUS_SPELLCHECKING_DESCRIPTION" desc="Description for the flag to enable asynchronous spellchecking.">
         Enable experimental asynchronous spellchecking, which allows Chrome to use a web service to get spellchecking results.
       </message>
+      <message name="IDS_FLAGS_NO_DISCARD_TABS_NAME" desc="Name for the flag to disable the tab discarding feature.">
+        Don't discard tabs.
+      </message>
+      <message name="IDS_FLAGS_NO_DISCARD_TABS_DESCRIPTION" desc="Description for the flag to disable the tab discarding feature.">
+        Turns off tab discarding, a feature that discards infrequently used tabs under low memory conditions.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

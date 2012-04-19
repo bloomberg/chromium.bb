@@ -1281,6 +1281,11 @@ const char kLoginUser[]                     = "login-user";
 // Specifies a password to be used to login (along with login-user).
 const char kLoginPassword[]                 = "login-password";
 
+// Disables tab discard in low memory conditions, a feature which silently
+// closes inactive tabs to free memory and to attempt to avoid the kernel's
+// out-of-memory process killer.
+const char kNoDiscardTabs[]                 = "no-discard-tabs";
+
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
 const char kGuestSession[]                  = "bwsi";

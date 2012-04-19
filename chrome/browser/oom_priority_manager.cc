@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/process_util.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -92,8 +94,11 @@ OomPriorityManager::TabStats::~TabStats() {
 
 OomPriorityManager::OomPriorityManager()
     : focused_tab_pid_(0),
-      low_memory_observer_(new LowMemoryObserver),
       discard_count_(0) {
+  // We only need the low memory observer if we want to discard tabs.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoDiscardTabs))
+    low_memory_observer_.reset(new LowMemoryObserver);
+
   registrar_.Add(this,
       content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllBrowserContextsAndSources());
@@ -116,13 +121,15 @@ void OomPriorityManager::Start() {
                  this,
                  &OomPriorityManager::AdjustOomPriorities);
   }
-  low_memory_observer_->Start();
+  if (low_memory_observer_.get())
+    low_memory_observer_->Start();
   start_time_ = TimeTicks::Now();
 }
 
 void OomPriorityManager::Stop() {
   timer_.Stop();
-  low_memory_observer_->Stop();
+  if (low_memory_observer_.get())
+    low_memory_observer_->Stop();
 }
 
 std::vector<string16> OomPriorityManager::GetTabTitles() {

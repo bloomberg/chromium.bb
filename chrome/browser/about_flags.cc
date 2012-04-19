@@ -620,6 +620,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kTouchOptimizedUI)
   },
+#if defined(OS_CHROMEOS)
+  {
+    "no-discard-tabs",
+    IDS_FLAGS_NO_DISCARD_TABS_NAME,
+    IDS_FLAGS_NO_DISCARD_TABS_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kNoDiscardTabs)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;
