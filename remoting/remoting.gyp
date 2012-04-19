@@ -621,6 +621,11 @@
             # duplicate string once
             # http://code.google.com/p/gyp/issues/detail?id=243 is fixed.
             'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)" HOST_PLUGIN_NAME="<(host_plugin_name)" HOST_PLUGIN_DESCRIPTION="<(host_plugin_description)"',
+
+            # TODO(thakis): Remove this once remoting no longer depends on
+            # webkit (through content through urlfetcher),
+            # http://crbug.com/124041
+            'DEAD_CODE_STRIPPING': 'YES',  # -Wl,-dead_strip
           },
           # TODO(mark): Come up with a fancier way to do this.  It should
           # only be necessary to list host_plugin-Info.plist once, not the
