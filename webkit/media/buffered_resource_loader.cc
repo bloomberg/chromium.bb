@@ -230,7 +230,7 @@ void BufferedResourceLoader::Read(
   if (instance_size_ != kPositionNotSpecified &&
       instance_size_ <= read_position_) {
     DVLOG(1) << "Appear to have seeked beyond EOS; returning 0.";
-    DoneRead(kOK, 0);
+    DoneRead(kOk, 0);
     return;
   }
 
@@ -381,7 +381,7 @@ void BufferedResourceLoader::didReceiveResponse(
       range_supported_ = (accept_ranges.find("bytes") != std::string::npos);
 
       // If we have verified the partial response and it is correct, we will
-      // return kOK. It's also possible for a server to support range requests
+      // return kOk. It's also possible for a server to support range requests
       // without advertising "Accept-Ranges: bytes".
       if (partial_response && VerifyPartialResponse(response)) {
         range_supported_ = true;
@@ -415,7 +415,7 @@ void BufferedResourceLoader::didReceiveResponse(
   }
 
   // Calls with a successful response.
-  DoneStart(kOK);
+  DoneStart(kOk);
 }
 
 void BufferedResourceLoader::didReceiveData(
@@ -487,7 +487,7 @@ void BufferedResourceLoader::didFinishLoading(
   if (!start_cb_.is_null()) {
     DCHECK(read_cb_.is_null())
         << "Shouldn't have a read callback during start";
-    DoneStart(kOK);
+    DoneStart(kOk);
     return;
   }
 
@@ -696,7 +696,7 @@ void BufferedResourceLoader::ReadInternal() {
   offset_ += first_offset_ + read;
 
   // And report with what we have read.
-  DoneRead(kOK, read);
+  DoneRead(kOk, read);
 }
 
 // static

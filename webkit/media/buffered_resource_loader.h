@@ -48,7 +48,7 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Status codes for start/read operations on BufferedResourceLoader.
   enum Status {
     // Everything went as planned.
-    kOK,
+    kOk,
 
     // The operation failed, which may have been due to:
     //   - Page navigation
@@ -103,7 +103,7 @@ class BufferedResourceLoader : public WebKit::WebURLLoaderClient {
   // Copies |read_size| bytes from |position| into |buffer|, executing |read_cb|
   // when the operation has completed.
   //
-  // The callback will contain the number of bytes read iff the status is kOK,
+  // The callback will contain the number of bytes read iff the status is kOk,
   // zero otherwise.
   //
   // If necessary will temporarily increase forward capacity of buffer to

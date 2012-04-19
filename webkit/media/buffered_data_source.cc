@@ -367,7 +367,7 @@ void BufferedDataSource::HttpInitialStartCallback(
     return;
   }
 
-  bool success = status == BufferedResourceLoader::kOK;
+  bool success = status == BufferedResourceLoader::kOk;
   if (success) {
     // TODO(hclam): Needs more thinking about supporting servers without range
     // request or their partial response is not complete.
@@ -424,7 +424,7 @@ void BufferedDataSource::NonHttpInitialStartCallback(
   }
 
   int64 instance_size = loader_->instance_size();
-  bool success = status == BufferedResourceLoader::kOK &&
+  bool success = status == BufferedResourceLoader::kOk &&
      instance_size != kPositionNotSpecified;
 
   if (success) {
@@ -468,7 +468,7 @@ void BufferedDataSource::PartialReadStartCallback(
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
 
-  if (status == BufferedResourceLoader::kOK) {
+  if (status == BufferedResourceLoader::kOk) {
     // Once the request has started successfully, we can proceed with
     // reading from it.
     ReadInternal();
@@ -497,7 +497,7 @@ void BufferedDataSource::ReadCallback(
     int bytes_read) {
   DCHECK(MessageLoop::current() == render_loop_);
 
-  if (status != BufferedResourceLoader::kOK) {
+  if (status != BufferedResourceLoader::kOk) {
     // Stop the resource load if it failed.
     loader_->Stop();
 
