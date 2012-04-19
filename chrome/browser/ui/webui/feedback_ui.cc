@@ -92,26 +92,8 @@ void GetSavedScreenshots(std::vector<std::string>* saved_screenshots,
     return;
   }
 
-  file_util::FileEnumerator screenshots(fileshelf_path, false,
-                                        file_util::FileEnumerator::FILES,
-                                        std::string(kScreenshotPattern));
-  FilePath screenshot = screenshots.Next();
-
-  std::vector<std::string> screenshot_filepaths;
-  while (!screenshot.empty()) {
-    screenshot_filepaths.push_back(screenshot.BaseName().value());
-    screenshot = screenshots.Next();
-  }
-
-  size_t sort_size =
-      std::min(kMaxSavedScreenshots, screenshot_filepaths.size());
-  std::partial_sort(screenshot_filepaths.begin(),
-                    screenshot_filepaths.begin() + sort_size,
-                    screenshot_filepaths.end(),
-                    ScreenshotTimestampComp);
-  for (size_t i = 0; i < sort_size; ++i)
-    saved_screenshots->push_back(std::string(kSavedScreenshotsUrl) +
-                                   screenshot_filepaths[i]);
+  FeedbackUI::GetMostRecentScreenshots(fileshelf_path, saved_screenshots,
+                                       kMaxSavedScreenshots);
   done->Signal();
 }
 
@@ -599,3 +581,31 @@ FeedbackUI::FeedbackUI(content::WebUI* web_ui) : HtmlDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   profile->GetChromeURLDataManager()->AddDataSource(html_source);
 }
+
+#if defined(OS_CHROMEOS)
+// static
+void FeedbackUI::GetMostRecentScreenshots(
+    const FilePath& filepath,
+    std::vector<std::string>* saved_screenshots,
+    size_t max_saved) {
+  file_util::FileEnumerator screenshots(filepath, false,
+                                        file_util::FileEnumerator::FILES,
+                                        std::string(kScreenshotPattern));
+  FilePath screenshot = screenshots.Next();
+
+  std::vector<std::string> screenshot_filepaths;
+  while (!screenshot.empty()) {
+    screenshot_filepaths.push_back(screenshot.BaseName().value());
+    screenshot = screenshots.Next();
+  }
+
+  size_t sort_size = std::min(max_saved, screenshot_filepaths.size());
+  std::partial_sort(screenshot_filepaths.begin(),
+                    screenshot_filepaths.begin() + sort_size,
+                    screenshot_filepaths.end(),
+                    ScreenshotTimestampComp);
+  for (size_t i = 0; i < sort_size; ++i)
+    saved_screenshots->push_back(std::string(kSavedScreenshotsUrl) +
+                                   screenshot_filepaths[i]);
+}
+#endif

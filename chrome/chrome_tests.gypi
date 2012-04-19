@@ -2270,6 +2270,9 @@
             ['exclude', '^browser/password_manager/native_backend_kwallet_x_unittest.cc'],
             ['exclude', '^browser/safe_browsing/download_protection_service_unittest.cc' ],
           ],
+          'sources': [
+            'browser/ui/webui/feedback_ui_unittest.cc',
+          ],
         }, { # else: chromeos == 0
           'sources/': [
             ['exclude', '^browser/chromeos/'],

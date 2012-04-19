@@ -21,6 +21,13 @@ class FeedbackUI : public HtmlDialogUI {
  public:
   explicit FeedbackUI(content::WebUI* web_ui);
 
+#if defined(OS_CHROMEOS)
+  static void GetMostRecentScreenshots(
+      const FilePath& filepath,
+      std::vector<std::string>* saved_screenshots,
+      size_t max_saved);
+#endif
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FeedbackUI);
 };
