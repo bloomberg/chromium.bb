@@ -19,11 +19,15 @@ const char kEnableGPUCommandLogging[]       = "enable-gpu-command-logging";
 // Turn on Calling GL Error after every command.
 const char kEnableGPUDebugging[]            = "enable-gpu-debugging";
 
+// Enforce GL minimums.
+const char kEnforceGLMinimums[]             = "enforce-gl-minimums";
+
 const char* kGpuSwitches[] = {
   kCompileShaderAlwaysSucceeds,
   kDisableGLSLTranslator,
   kEnableGPUCommandLogging,
   kEnableGPUDebugging,
+  kEnforceGLMinimums,
 };
 
 const int kNumGpuSwitches = arraysize(kGpuSwitches);

@@ -112,8 +112,14 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   IdAllocatorInterface* GetIdAllocator(unsigned namespace_id);
 
  private:
+  bool CheckGLFeature(GLint min_required, GLint* v);
+  bool CheckGLFeatureU(GLint min_required, uint32* v);
+  bool QueryGLFeature(GLenum pname, GLint min_required, GLint* v);
+  bool QueryGLFeatureU(GLenum pname, GLint min_required, uint32* v);
+
   // Whether or not this context is initialized.
   int num_contexts_;
+  bool enforce_gl_minimums_;
   bool bind_generates_resource_;
 
   uint32 max_vertex_attribs_;
