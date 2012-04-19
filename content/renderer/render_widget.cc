@@ -1169,13 +1169,14 @@ void RenderWidget::scheduleComposite() {
 }
 
 void RenderWidget::scheduleAnimation() {
+  if (animation_update_pending_)
+    return;
+
   TRACE_EVENT0("gpu", "RenderWidget::scheduleAnimation");
-  if (!animation_update_pending_) {
-    animation_update_pending_ = true;
-    if (!animation_timer_.IsRunning()) {
-      animation_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(0), this,
-                             &RenderWidget::AnimationCallback);
-    }
+  animation_update_pending_ = true;
+  if (!animation_timer_.IsRunning()) {
+    animation_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(0), this,
+                           &RenderWidget::AnimationCallback);
   }
 }
 
