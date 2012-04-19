@@ -86,48 +86,6 @@ class NonActivatableSettingsBubble : public views::BubbleDelegateView {
   DISALLOW_COPY_AND_ASSIGN(NonActivatableSettingsBubble);
 };
 
-// A ToggleImageButton with fixed size, paddings and hover effects. These
-// buttons are used in the header.
-class HeaderButton : public views::ToggleImageButton {
- public:
-  HeaderButton(views::ButtonListener* listener,
-               int enabled_resource_id,
-               int disabled_resource_id)
-      : views::ToggleImageButton(listener) {
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    SetImage(views::CustomButton::BS_NORMAL,
-        bundle.GetImageNamed(enabled_resource_id).ToSkBitmap());
-    SetToggledImage(views::CustomButton::BS_NORMAL,
-        bundle.GetImageNamed(disabled_resource_id).ToSkBitmap());
-    SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                      views::ImageButton::ALIGN_MIDDLE);
-    set_background(views::Background::CreateSolidBackground(
-        ash::kHeaderBackgroundColor));
-  }
-
-  virtual ~HeaderButton() {}
-
- private:
-  // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(ash::kTrayPopupItemHeight, ash::kTrayPopupItemHeight);
-  }
-
-  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE {
-    // Left border.
-    canvas->FillRect(gfx::Rect(0, 0, 1, height()), ash::kBorderDarkColor);
-  }
-
-  // Overridden from views::CustomButton.
-  virtual void StateChanged() OVERRIDE {
-    set_background(views::Background::CreateSolidBackground(
-        IsHotTracked() ? ash::kHeaderHoverBackgroundColor :
-                         ash::kHeaderBackgroundColor));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(HeaderButton);
-};
-
 }  // namespace
 
 namespace ash {
@@ -275,21 +233,21 @@ class NetworkDetailedView : public views::View,
     header_buttons_->SetLayoutManager(new
         views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
-    button_wifi_ = new HeaderButton(this,
+    button_wifi_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_WIFI_ENABLED,
         IDR_AURA_UBER_TRAY_WIFI_DISABLED);
     button_wifi_->SetToggled(!delegate->GetWifiEnabled());
     header_buttons_->AddChildView(button_wifi_);
 
     if (delegate->GetCellularAvailable()) {
-      button_cellular_ = new HeaderButton(this,
+      button_cellular_ = new TrayPopupHeaderButton(this,
           IDR_AURA_UBER_TRAY_CELLULAR_ENABLED,
           IDR_AURA_UBER_TRAY_CELLULAR_DISABLED);
       button_cellular_->SetToggled(!delegate->GetCellularEnabled());
       header_buttons_->AddChildView(button_cellular_);
     }
 
-    info_icon_ = new HeaderButton(this,
+    info_icon_ = new TrayPopupHeaderButton(this,
         IDR_AURA_UBER_TRAY_NETWORK_INFO,
         IDR_AURA_UBER_TRAY_NETWORK_INFO);
     header_buttons_->AddChildView(info_icon_);

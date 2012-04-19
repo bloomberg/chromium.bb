@@ -19,7 +19,7 @@
 #include "ui/views/layout/box_layout.h"
 
 namespace {
-const int kDeviceListHeight = 190;
+const int kDeviceListHeight = 276;
 }
 
 namespace ash {
@@ -52,11 +52,13 @@ class BluetoothDefaultView : public TrayItemMore {
 };
 
 class BluetoothDetailedView : public views::View,
-                              public ViewClickListener {
+                              public ViewClickListener,
+                              public views::ButtonListener {
  public:
   explicit BluetoothDetailedView(user::LoginStatus login)
       : login_(login),
         header_(NULL),
+        header_text_(NULL),
         add_device_(NULL),
         toggle_bluetooth_(NULL) {
     SetLayoutManager(new views::BoxLayout(
@@ -74,6 +76,7 @@ class BluetoothDetailedView : public views::View,
     RemoveAllChildViews(true);
 
     header_ = NULL;
+    header_text_ = NULL;
     add_device_ = NULL;
     toggle_bluetooth_ = NULL;
 
@@ -86,8 +89,26 @@ class BluetoothDetailedView : public views::View,
 
  private:
   void AppendHeaderEntry() {
-    header_ = CreateDetailedHeaderEntry(IDS_ASH_STATUS_TRAY_BLUETOOTH, this);
+    header_ = new views::View;
+    header_->SetLayoutManager(new
+        views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
     AddChildView(header_);
+
+    header_text_ = CreateDetailedHeaderEntry(IDS_ASH_STATUS_TRAY_BLUETOOTH,
+                                             this);
+    header_->AddChildView(header_text_);
+
+    if (login_ == user::LOGGED_IN_LOCKED)
+      return;
+
+    // Do not allow toggling bluetooth in the lock screen.
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    toggle_bluetooth_ = new TrayPopupHeaderButton(this,
+        IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED,
+        IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED);
+    toggle_bluetooth_->SetToggled(!delegate->GetBluetoothEnabled());
+    header_->AddChildView(toggle_bluetooth_);
   }
 
   void AppendDeviceList(const BluetoothDeviceList& list) {
@@ -98,6 +119,7 @@ class BluetoothDetailedView : public views::View,
 
     for (size_t i = 0; i < list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
+      container->set_fixed_height(kTrayPopupItemHeight);
       container->AddLabel(list[i].display_name,
           list[i].connected ? gfx::Font::BOLD : gfx::Font::NORMAL);
       devices->AddChildView(container);
@@ -117,30 +139,36 @@ class BluetoothDetailedView : public views::View,
 
   // Add settings entries.
   void AppendSettingsEntries() {
-    // If screen is locked, hide all settings entries as user should not be able
-    // to modify state.
-    if (login_ == user::LOGGED_IN_LOCKED)
+    // Add bluetooth device requires a browser window, hide it for non logged in
+    // user.
+    if (login_ == user::LOGGED_IN_NONE ||
+        login_ == user::LOGGED_IN_LOCKED)
       return;
 
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
-    HoverHighlightView* container = new HoverHighlightView(this);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    HoverHighlightView* container = new HoverHighlightView(this);
+    container->set_fixed_height(kTrayPopupItemHeight);
     container->AddLabel(rb.GetLocalizedString(
-        delegate->GetBluetoothEnabled() ?
-            IDS_ASH_STATUS_TRAY_DISABLE_BLUETOOTH :
-            IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH), gfx::Font::NORMAL);
+        IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE), gfx::Font::NORMAL);
+    container->SetEnabled(delegate->GetBluetoothEnabled());
     AddChildView(container);
-    toggle_bluetooth_ = container;
+    add_device_ = container;
+  }
 
-    // Add bluetooth device requires a browser window, hide it for non logged in
-    // user.
-    if (login_ != user::LOGGED_IN_NONE) {
-      container = new HoverHighlightView(this);
-      container->AddLabel(rb.GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE), gfx::Font::NORMAL);
-      AddChildView(container);
-      add_device_ = container;
+  // Overridden from views::View.
+  virtual void Layout() OVERRIDE {
+    views::View::Layout();
+    if (toggle_bluetooth_) {
+      // Right-align the toggle-bluetooth button.
+      gfx::Rect header_bounds = header_->bounds();
+      gfx::Size button_size = toggle_bluetooth_->size();
+
+      toggle_bluetooth_->SetBounds(header_->width() - button_size.width(), 0,
+          button_size.width(), header_->height());
+      header_text_->SetBounds(0, 0, header_->width() - button_size.width(),
+          header_->height());
     }
   }
 
@@ -148,10 +176,8 @@ class BluetoothDetailedView : public views::View,
   virtual void ClickedOn(views::View* sender) OVERRIDE {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
-    if (sender == header_) {
+    if (sender == header_text_) {
       Shell::GetInstance()->tray()->ShowDefaultView();
-    } else if (sender == toggle_bluetooth_) {
-      delegate->ToggleBluetooth();
     } else if (sender == add_device_) {
       delegate->AddBluetoothDevice();
     } else {
@@ -164,12 +190,24 @@ class BluetoothDetailedView : public views::View,
     }
   }
 
+  // Overridden from ButtonListener.
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE {
+    ash::SystemTrayDelegate* delegate =
+        ash::Shell::GetInstance()->tray_delegate();
+    if (sender == toggle_bluetooth_)
+      delegate->ToggleBluetooth();
+    else
+      NOTREACHED();
+  }
+
   user::LoginStatus login_;
 
   std::map<views::View*, std::string> device_map_;
   views::View* header_;
+  views::View* header_text_;
   views::View* add_device_;
-  views::View* toggle_bluetooth_;
+  TrayPopupHeaderButton* toggle_bluetooth_;
   views::View* settings_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDetailedView);

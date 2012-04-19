@@ -276,6 +276,40 @@ void TrayPopupTextButtonContainer::AddTextButton(TrayPopupTextButton* button) {
   AddChildView(button);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// TrayPopupTextButtonContainer
+
+TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
+                                             int enabled_resource_id,
+                                             int disabled_resource_id)
+    : views::ToggleImageButton(listener) {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  SetImage(views::CustomButton::BS_NORMAL,
+      bundle.GetImageNamed(enabled_resource_id).ToSkBitmap());
+  SetToggledImage(views::CustomButton::BS_NORMAL,
+      bundle.GetImageNamed(disabled_resource_id).ToSkBitmap());
+  SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                    views::ImageButton::ALIGN_MIDDLE);
+  set_background(views::Background::CreateSolidBackground(
+      ash::kHeaderBackgroundColor));
+}
+
+TrayPopupHeaderButton::~TrayPopupHeaderButton() {}
+
+gfx::Size TrayPopupHeaderButton::GetPreferredSize() {
+  return gfx::Size(ash::kTrayPopupItemHeight, ash::kTrayPopupItemHeight);
+}
+
+void TrayPopupHeaderButton::OnPaintBorder(gfx::Canvas* canvas) {
+  // Left border.
+  canvas->FillRect(gfx::Rect(0, 0, 1, height()), ash::kBorderDarkColor);
+}
+
+void TrayPopupHeaderButton::StateChanged() {
+  set_background(views::Background::CreateSolidBackground(
+      IsHotTracked() ? ash::kHeaderHoverBackgroundColor :
+                       ash::kHeaderBackgroundColor));
+}
 
 views::View* CreateDetailedHeaderEntry(int string_id,
                                        ViewClickListener* listener) {

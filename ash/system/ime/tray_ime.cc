@@ -101,6 +101,7 @@ class IMEDetailedView : public views::View,
         views::BoxLayout::kVertical, 0, 0, 1));
     for (size_t i = 0; i < list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
+      container->set_fixed_height(kTrayPopupItemHeight);
       container->AddLabel(list[i].name,
           list[i].selected ? gfx::Font::BOLD : gfx::Font::NORMAL);
       imes->AddChildView(container);
@@ -118,6 +119,7 @@ class IMEDetailedView : public views::View,
         views::BoxLayout::kVertical, 0, 0, 1));
     for (size_t i = 0; i < property_list.size(); i++) {
       HoverHighlightView* container = new HoverHighlightView(this);
+      container->set_fixed_height(kTrayPopupItemHeight);
       container->AddLabel(
           property_list[i].name,
           property_list[i].selected ? gfx::Font::BOLD : gfx::Font::NORMAL);
@@ -131,6 +133,7 @@ class IMEDetailedView : public views::View,
 
   void AppendSettings() {
     HoverHighlightView* container = new HoverHighlightView(this);
+    container->set_fixed_height(kTrayPopupItemHeight);
     container->AddLabel(ui::ResourceBundle::GetSharedInstance().
         GetLocalizedString(IDS_ASH_STATUS_TRAY_IME_SETTINGS),
         gfx::Font::NORMAL);

@@ -8,6 +8,7 @@
 
 #include "ui/gfx/font.h"
 #include "ui/gfx/size.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/scroll_view.h"
@@ -172,6 +173,26 @@ class TrayPopupTextButtonContainer : public views::View {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TrayPopupTextButtonContainer);
+};
+
+// A ToggleImageButton with fixed size, paddings and hover effects. These
+// buttons are used in the header.
+class TrayPopupHeaderButton : public views::ToggleImageButton {
+ public:
+  TrayPopupHeaderButton(views::ButtonListener* listener,
+                        int enabled_resource_id,
+                        int disabled_resource_id);
+  virtual ~TrayPopupHeaderButton();
+
+ private:
+  // Overridden from views::View.
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
+
+  // Overridden from views::CustomButton.
+  virtual void StateChanged() OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(TrayPopupHeaderButton);
 };
 
 // Creates a container for the various detailed popups. Clicking on the view
