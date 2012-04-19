@@ -30,6 +30,15 @@
 using installer::MasterPreferences;
 
 namespace {
+
+const wchar_t kCommandExecuteImplUuid[] =
+    L"{A2DF06F9-A21A-44A8-8A99-8B9C84F29160}";
+const wchar_t kDelegateExecuteLibUuid[] =
+    L"{7779FB70-B399-454A-AA1A-BAA850032B10}";
+const wchar_t kDelegateExecuteLibVersion[] = L"1.0";
+const wchar_t kICommandExecuteImplUuid[] =
+    L"{0BA0D4E9-2259-4963-B9AE-A839F7CB7544}";
+
 // The BrowserDistribution objects are never freed.
 BrowserDistribution* g_browser_distribution = NULL;
 BrowserDistribution* g_chrome_frame_distribution = NULL;
@@ -234,8 +243,15 @@ bool BrowserDistribution::GetDelegateExecuteHandlerData(
     string16* type_lib_uuid,
     string16* type_lib_version,
     string16* interface_uuid) {
-  // TODO(grt): http://crbug.com/123727 Return values for Chromium.
-  return false;
+  if (handler_class_uuid)
+    *handler_class_uuid = kCommandExecuteImplUuid;
+  if (type_lib_uuid)
+    *type_lib_uuid = kDelegateExecuteLibUuid;
+  if (type_lib_version)
+    *type_lib_version = kDelegateExecuteLibVersion;
+  if (interface_uuid)
+    *interface_uuid = kICommandExecuteImplUuid;
+  return true;
 }
 
 void BrowserDistribution::UpdateInstallStatus(bool system_install,
