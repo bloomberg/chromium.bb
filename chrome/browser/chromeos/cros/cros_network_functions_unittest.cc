@@ -12,6 +12,7 @@
 #include "chromeos/dbus/mock_flimflam_device_client.h"
 #include "chromeos/dbus/mock_flimflam_manager_client.h"
 #include "chromeos/dbus/mock_flimflam_profile_client.h"
+#include "chromeos/dbus/mock_flimflam_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -600,6 +601,8 @@ class CrosNetworkFunctionsTest : public testing::Test {
         mock_dbus_thread_manager->mock_flimflam_manager_client();
     mock_profile_client_ =
         mock_dbus_thread_manager->mock_flimflam_profile_client();
+    mock_service_client_ =
+        mock_dbus_thread_manager->mock_flimflam_service_client();
     SetLibcrosNetworkFunctionsEnabled(false);
   }
 
@@ -633,6 +636,7 @@ class CrosNetworkFunctionsTest : public testing::Test {
   MockFlimflamDeviceClient* mock_device_client_;
   MockFlimflamManagerClient* mock_manager_client_;
   MockFlimflamProfileClient* mock_profile_client_;
+  MockFlimflamServiceClient* mock_service_client_;
   const base::DictionaryValue* dictionary_value_result_;
 };
 
@@ -664,6 +668,28 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkManagerProperties) {
   CrosRequestNetworkManagerProperties(
       MockNetworkPropertiesCallback::CreateCallback(
           flimflam::kFlimflamServicePath, result));
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkServiceProperties) {
+  const std::string service_path = "/service/path";
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  // Set expectations.
+  dictionary_value_result_ = &result;
+  EXPECT_CALL(*mock_service_client_,
+              GetProperties(dbus::ObjectPath(service_path), _)).WillOnce(
+                  Invoke(this, &CrosNetworkFunctionsTest::OnGetProperties));
+
+  CrosRequestNetworkServiceProperties(
+      service_path.c_str(),
+      MockNetworkPropertiesCallback::CreateCallback(service_path.c_str(),
+                                                    result));
 }
 
 TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkDeviceProperties) {

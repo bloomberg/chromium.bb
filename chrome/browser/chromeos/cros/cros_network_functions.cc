@@ -12,6 +12,7 @@
 #include "chromeos/dbus/flimflam_device_client.h"
 #include "chromeos/dbus/flimflam_manager_client.h"
 #include "chromeos/dbus/flimflam_profile_client.h"
+#include "chromeos/dbus/flimflam_service_client.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -269,11 +270,18 @@ void CrosRequestNetworkManagerProperties(
 void CrosRequestNetworkServiceProperties(
     const char* service_path,
     const NetworkPropertiesCallback& callback) {
-  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
-  chromeos::RequestNetworkServiceProperties(
-      service_path,
-      &OnRequestNetworkProperties,
-      new OnRequestNetworkPropertiesCallback(callback));
+  if (g_libcros_network_functions_enabled) {
+    // The newly allocated callback will be deleted in
+    // OnRequestNetworkProperties.
+    chromeos::RequestNetworkServiceProperties(
+        service_path,
+        &OnRequestNetworkProperties,
+        new OnRequestNetworkPropertiesCallback(callback));
+  } else {
+    DBusThreadManager::Get()->GetFlimflamServiceClient()->GetProperties(
+        dbus::ObjectPath(service_path),
+        base::Bind(&RunCallbackWithDictionaryValue, callback, service_path));
+  }
 }
 
 void CrosRequestNetworkDeviceProperties(
