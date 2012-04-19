@@ -238,7 +238,9 @@ def run_tha_test(manifest, cache_dir, remote, max_cache_size, min_free_space):
       if not os.path.isdir(outfiledir):
         os.makedirs(outfiledir)
       link_file(outfile, cache.path(infile), HARDLINK)
-      os.chmod(outfile, properties['mode'])
+      if 'mode' in properties:
+        # It's not set on Windows.
+        os.chmod(outfile, properties['mode'])
 
     cwd = os.path.join(outdir, manifest['relative_cwd'])
     if not os.path.isdir(cwd):

@@ -88,15 +88,11 @@ class IsolateBase(unittest.TestCase):
 
   @staticmethod
   def _fix_file_mode(filename, read_only):
-    if sys.platform == 'win32':
-      # Deterministic file mode for a deterministic OS.
-      return 420
-    else:
-      # 4 modes are supported, 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r)
-      min_mode = 0444
-      if not read_only:
-        min_mode |= 0200
-      return (min_mode | 0111) if filename.endswith('.py') else min_mode
+    """4 modes are supported, 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r)."""
+    min_mode = 0444
+    if not read_only:
+      min_mode |= 0200
+    return (min_mode | 0111) if filename.endswith('.py') else min_mode
 
   def _gen_files(self, read_only):
     root_dir = ROOT_DIR
@@ -107,7 +103,8 @@ class IsolateBase(unittest.TestCase):
 
     if self.LEVEL >= isolate.STATS_ONLY:
       for k, v in files.iteritems():
-        v[u'mode'] = self._fix_file_mode(k, read_only)
+        if isolate.trace_inputs.get_flavor() != 'win':
+          v[u'mode'] = self._fix_file_mode(k, read_only)
         filestats = os.stat(os.path.join(root_dir, k))
         v[u'size'] = filestats.st_size
         # Used the skip recalculating the hash. Use the most recent update

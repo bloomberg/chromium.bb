@@ -157,7 +157,8 @@ def process_inputs(prevdict, indir, infiles, level, read_only):
   sha-1 of the file's content.
 
   The file mode is manipulated if read_only is True. In practice, we only save
-  one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r).
+  one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r). On windows, mode
+  is not set since all files are 'executable' by default.
   """
   assert level in (NO_INFO, STATS_ONLY, WITH_HASH)
   outdict = {}
@@ -166,16 +167,17 @@ def process_inputs(prevdict, indir, infiles, level, read_only):
     outdict[infile] = {}
     if level >= STATS_ONLY:
       filestats = os.stat(filepath)
-      filemode = stat.S_IMODE(filestats.st_mode)
-      # Remove write access for non-owner.
-      filemode &= ~(stat.S_IWGRP | stat.S_IWOTH)
-      if read_only:
-        filemode &= ~stat.S_IWUSR
-      if filemode & stat.S_IXUSR:
-        filemode |= (stat.S_IXGRP | stat.S_IXOTH)
-      else:
-        filemode &= ~(stat.S_IXGRP | stat.S_IXOTH)
-      outdict[infile]['mode'] = filemode
+      if trace_inputs.get_flavor() != 'win':
+        filemode = stat.S_IMODE(filestats.st_mode)
+        # Remove write access for non-owner.
+        filemode &= ~(stat.S_IWGRP | stat.S_IWOTH)
+        if read_only:
+          filemode &= ~stat.S_IWUSR
+        if filemode & stat.S_IXUSR:
+          filemode |= (stat.S_IXGRP | stat.S_IXOTH)
+        else:
+          filemode &= ~(stat.S_IXGRP | stat.S_IXOTH)
+        outdict[infile]['mode'] = filemode
       outdict[infile]['size'] = filestats.st_size
       # Used to skip recalculating the hash. Use the most recent update time.
       outdict[infile]['timestamp'] = int(round(filestats.st_mtime))
