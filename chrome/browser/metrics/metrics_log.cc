@@ -782,13 +782,14 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
   }
   WriteCommonEventAttributes();
 
+  std::vector<string16> terms;
+  const int num_terms =
+      static_cast<int>(Tokenize(log.text, kWhitespaceUTF16, &terms));
   {
     OPEN_ELEMENT_FOR_SCOPE("autocomplete");
 
     WriteIntAttribute("typedlength", static_cast<int>(log.text.length()));
-    std::vector<string16> terms;
-    WriteIntAttribute("numterms",
-        static_cast<int>(Tokenize(log.text, kWhitespaceUTF16, &terms)));
+    WriteIntAttribute("numterms", num_terms);
     WriteIntAttribute("selectedindex", static_cast<int>(log.selected_index));
     WriteIntAttribute("completedlength",
                       static_cast<int>(log.inline_autocompleted_length));
@@ -824,8 +825,15 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
     omnibox_event->set_tab_id(log.tab_id);
   }
   omnibox_event->set_typed_length(log.text.length());
+  omnibox_event->set_num_typed_terms(num_terms);
   omnibox_event->set_selected_index(log.selected_index);
   omnibox_event->set_completed_length(log.inline_autocompleted_length);
+  if (log.elapsed_time_since_user_first_modified_omnibox !=
+      base::TimeDelta::FromMilliseconds(-1)) {
+    // Only upload the typing duration if it is set/valid.
+    omnibox_event->set_typing_duration_ms(
+        log.elapsed_time_since_user_first_modified_omnibox.InMilliseconds());
+  }
   omnibox_event->set_input_type(AsOmniboxEventInputType(log.input_type));
   for (AutocompleteResult::const_iterator i(log.result.begin());
        i != log.result.end(); ++i) {
