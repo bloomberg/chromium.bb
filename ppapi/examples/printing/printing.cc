@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string.h>
+
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/dev/printing_dev.h"
 #include "ppapi/cpp/image_data.h"
