@@ -412,7 +412,8 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
 
 // Tests scripts panel showing.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
+// Disabled - see http://crbug.com/124300
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
@@ -462,8 +463,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 }
 
 // Tests that scripts are not duplicated after Scripts Panel switch.
+// Disabled - see http://crbug.com/124300
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       TestNoScriptDuplicatesOnPanelSwitch) {
+                       DISABLED_TestNoScriptDuplicatesOnPanelSwitch) {
   RunTest("testNoScriptDuplicatesOnPanelSwitch", kDebuggerTestPage);
 }
 
