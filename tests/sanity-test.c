@@ -22,8 +22,41 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <unistd.h>
+
 #include "test-runner.h"
 #include "../src/wayland-util.h"
+
+TEST(empty)
+{
+}
+
+TEST(exit_success)
+{
+	exit(EXIT_SUCCESS);
+}
+
+FAIL_TEST(exit_failure)
+{
+	exit(EXIT_FAILURE);
+}
+
+FAIL_TEST(fail_abort)
+{
+	abort();
+}
+
+FAIL_TEST(fail_kill)
+{
+	kill(getpid(), SIGTERM);
+}
+
+FAIL_TEST(fail_segv)
+{
+	* (char **) 0 = "Goodbye, world";
+}
 
 FAIL_TEST(sanity_assert)
 {
