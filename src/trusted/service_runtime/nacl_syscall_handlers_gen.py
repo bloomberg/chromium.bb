@@ -244,7 +244,7 @@ def ArgList(architecture, alist):
 
 def MemoryArgStruct(architecture, name, alist):
   if not alist:
-    return ''
+    return '  NaClCopyInDropLock(natp->nap);'
 
   # Note: although this return value might be computed more
   # concisely with a list comprehension, we instead use a
@@ -265,7 +265,8 @@ def MemoryArgStruct(architecture, name, alist):
   struct %(name)sArgs {
 %(members)s
   } p;
-  if (!NaClCopyInFromUser(natp->nap, &p, natp->usr_syscall_args, sizeof p)) {
+  if (!NaClCopyInFromUserAndDropLock(natp->nap, &p, natp->usr_syscall_args,
+                                     sizeof p)) {
     return -NACL_ABI_EFAULT;
   }
 

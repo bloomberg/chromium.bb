@@ -201,13 +201,16 @@ win32_untrusted_crash_exit = [
 win64_exit_via_ntdll_patch = [
     MungeWindowsErrorExit(STATUS_PRIVILEGED_INSTRUCTION)]
 
+
 # Mac OS X returns SIGBUS in most of the cases where Linux returns
 # SIGSEGV, except for actual x86 segmentation violations.
 status_map = {
     'sigabrt' : {
-        # This is not used on Windows.
         'linux2': [-6], # SIGABRT
         'darwin': [-6], # SIGABRT
+        # In Windows, NaClAbort invokes TerminateProcess with -SIGABRT.
+        'win32': [-6],  # simulated SIGABRT
+        'win64': [-6],  # simulated SIGABRT
         },
     'naclabort_coverage' : {
         # This case is here because NaClAbort() behaves differently when
