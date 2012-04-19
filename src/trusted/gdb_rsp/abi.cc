@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/gdb_rsp/abi.h"
 #include "native_client/src/trusted/port/platform.h"
 
@@ -178,15 +179,17 @@ const Abi* Abi::Get() {
   static const Abi* abi = NULL;
 
   if ((NULL == abi) && AbiIsAvailable()) {
-#ifdef GDB_RSP_ABI_ARM
-    abi = Abi::Find("iwmmxt");
-#elif GDB_RSP_ABI_X86_64
-    abi = Abi::Find("i386:x86-64");
-#elif GDB_RSP_ABI_X86
-    abi = Abi::Find("i386");
-#else
-#error "Unknown CPU architecture."
-#endif
+    if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
+        NACL_BUILD_SUBARCH == 64) {
+      abi = Abi::Find("i386:x86-64");
+    } else if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
+               NACL_BUILD_SUBARCH == 32) {
+      abi = Abi::Find("i386");
+    } else if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm) {
+      abi = Abi::Find("iwmmxt");
+    } else {
+      NaClLog(LOG_FATAL, "Abi::Get: Unknown CPU architecture\n");
+    }
   }
 
   return abi;
