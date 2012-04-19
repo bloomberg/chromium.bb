@@ -324,7 +324,7 @@
                       <var><span>name</span></var></span><span class="null"><span>, </span><span>AlarmCreateInfo</span>
                       <var><span>alarmInfo</span></var></span>)</div>
               <div class="description">
-                <p>Creates an alarm. After the delay is expired, the onAlarm event is fired. If there is another alarm with the same name (or no name if none is specified), it will be cancelled and replaced by this alarm.</p>
+                <p>Creates an alarm. After the delay is elapsed, the onAlarm event is fired. If there is another alarm with the same name (or no name if none is specified), it will be cancelled and replaced by this alarm. string.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -346,7 +346,7 @@
                 </div>
               </em>
           </dt>
-          <dd>Optional name to identify this alarm. Defaults to the empty string.</dd>
+          <dd>Optional name to identify this alarm. Defaults to the empty</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -668,10 +668,10 @@
               <h4>onAlarm</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.alarms.</span><span>onAlarm</span><span class="subdued">.addListener</span>(function(<span>string name</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.alarms.</span><span>onAlarm</span><span class="subdued">.addListener</span>(function(<span>Alarm alarm</span>) <span class="subdued">{...}</span><span></span>);
               </div>
               <div class="description">
-                <p>Fired when an alarm has expired. Useful for transient background pages.</p>
+                <p>Fired when an alarm has elapsed. Useful for transient background pages.</p>
                 <!-- LISTENER PARAMETERS -->
                 <div>
                   <h4>Listener parameters</h4>
@@ -679,22 +679,21 @@
                     <div>
                       <div>
           <dt>
-            <var>name</var>
+            <var>alarm</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
+                        <a href="experimental.alarms.html#type-Alarm">Alarm</a>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>The name of the alarm that has expired.</dd>
+          <dd>The alarm that has elapsed.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

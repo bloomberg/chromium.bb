@@ -39,10 +39,11 @@ namespace experimental.alarms {
   callback AlarmListCallback = void (Alarm[] alarms);
 
   interface Functions {
-    // Creates an alarm. After the delay is expired, the onAlarm event is
+    // Creates an alarm. After the delay is elapsed, the onAlarm event is
     // fired. If there is another alarm with the same name (or no name if none
     // is specified), it will be cancelled and replaced by this alarm.
-    // |name|: Optional name to identify this alarm. Defaults to the empty string.
+    // |name|: Optional name to identify this alarm. Defaults to the empty
+    // string.
     static void create(optional DOMString name, AlarmCreateInfo alarmInfo);
 
     // Retrieves details about the specified alarm.
@@ -61,8 +62,8 @@ namespace experimental.alarms {
   };
 
   interface Events {
-    // Fired when an alarm has expired. Useful for transient background pages.
-    // |name|: The name of the alarm that has expired.
-    static void onAlarm(optional DOMString name);
+    // Fired when an alarm has elapsed. Useful for transient background pages.
+    // |alarm|: The alarm that has elapsed.
+    static void onAlarm(Alarm alarm);
   };
 };

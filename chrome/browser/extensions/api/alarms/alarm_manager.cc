@@ -27,7 +27,7 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
                        const AlarmManager::Alarm& alarm) {
     ListValue args;
     std::string json_args;
-    args.Append(base::Value::CreateStringValue(alarm.name));
+    args.Append(alarm.ToValue().release());
     base::JSONWriter::Write(&args, &json_args);
     ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
         extension_id, kOnAlarmEvent, json_args, NULL, GURL());
