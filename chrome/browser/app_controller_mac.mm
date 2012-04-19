@@ -23,7 +23,6 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/virtual_driver_install_helper.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
