@@ -764,7 +764,6 @@
         'test/automation/automation_proxy_uitest.h',
         'test/base/chrome_process_util_uitest.cc',
         'test/reliability/automated_ui_test_test.cc',
-        'test/ui/history_uitest.cc',
         'test/ui/layout_plugin_uitest.cc',
         'test/ui/named_interface_uitest.cc',
         'test/ui/npapi_uitest.cc',
