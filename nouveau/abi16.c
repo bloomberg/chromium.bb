@@ -66,6 +66,7 @@ abi16_chan_nvc0(struct nouveau_object *obj)
 
 	nvc0->base.channel = req.channel;
 	nvc0->base.pushbuf = req.pushbuf_domains;
+	nvc0->notify = req.notifier_handle;
 	nvc0->base.object->handle = req.channel;
 	nvc0->base.object->length = sizeof(*nvc0);
 	return 0;

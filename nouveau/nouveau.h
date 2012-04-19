@@ -38,6 +38,7 @@ struct nv04_fifo {
 
 struct nvc0_fifo {
 	struct nouveau_fifo base;
+	uint32_t notify;
 };
 
 struct nv04_notify {
