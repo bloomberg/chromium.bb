@@ -352,6 +352,12 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty tap_move_dist_;
   // Minimum pressure a finger must have for it to click when tap to click is on
   DoubleProperty tap_min_pressure_;
+  // If three finger click should be enabled. This is a temporary flag so that
+  // we can deploy this feature behind a file while we work out the bugs.
+  BoolProperty three_finger_click_enable_;
+  // If T5R2 should support three-finger click/tap, which can in some situations
+  // be unreliable.
+  BoolProperty t5r2_three_finger_click_enable_;
   // Maximum pressure above which a finger is considered a palm
   DoubleProperty palm_pressure_;
   // The smaller of two widths around the edge for palm detection. Any contact

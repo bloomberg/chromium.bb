@@ -1186,6 +1186,13 @@ set<short, kMaxGesturingFingers> MkSet(short id1, short id2) {
   ret.insert(id2);
   return ret;
 }
+set<short, kMaxGesturingFingers> MkSet(short id1, short id2, short id3) {
+  set<short, kMaxGesturingFingers> ret;
+  ret.insert(id1);
+  ret.insert(id2);
+  ret.insert(id3);
+  return ret;
+}
 }  // namespace{}
 
 TEST(ImmediateInterpreterTest, TapRecordTest) {
@@ -1252,15 +1259,21 @@ TEST(ImmediateInterpreterTest, TapRecordTest) {
 
 namespace {
 
-enum HWStateFlag {
-  S,  // Start
-  C,  // Continue
-  D,  // Start; also start of slow double tap test
-  T,  // Start; also start of T5R2 tests
-};
+const long HWStateFlagStart          = 0x01000000;  // Start
+const long HWStateFlagContinue       = 0x02000000;  // Continue
+// Start; also start of slow double tap test:
+const long HWStateFlagStartDoubleTap = 0x04000000;
+// Start; also start of T5R2 tests:
+const long HWStateFlagStartT5R2      = 0x08000000;
+const long HWStateFlagMask           = 0xff000000;
+
+#define S (__LINE__ + HWStateFlagStart)
+#define C (__LINE__ + HWStateFlagContinue)
+#define D (__LINE__ + HWStateFlagStartDoubleTap)
+#define T (__LINE__ + HWStateFlagStartT5R2)
 
 struct HWStateGs {
-  HWStateFlag flag;
+  long line_number_and_flags;
   HardwareState hws;
   stime_t callback_now;
   set<short, kMaxGesturingFingers> gs;
@@ -1268,11 +1281,20 @@ struct HWStateGs {
   unsigned expected_up;
   ImmediateInterpreter::TapToClickState expected_state;
   bool timeout;
+
+  bool IsStart() {
+    return line_number_and_flags & (HWStateFlagStart |
+                                    HWStateFlagStartDoubleTap |
+                                    HWStateFlagStartT5R2);
+  }
+  long LineNumber() {
+    return line_number_and_flags & ~HWStateFlagMask;
+  }
 };
 
 size_t NonT5R2States(const HWStateGs* states, size_t length) {
   for (size_t i = 0; i < length; i++)
-    if (states[i].flag == T)
+    if (states[i].line_number_and_flags & HWStateFlagStartT5R2)
       return i;
   return length;
 }
@@ -1289,6 +1311,7 @@ const TapState kDrg = ImmediateInterpreter::kTtcDrag;
 const TapState kDRl = ImmediateInterpreter::kTtcDragRelease;
 const TapState kDRt = ImmediateInterpreter::kTtcDragRetouch;
 const unsigned kBL = GESTURES_BUTTON_LEFT;
+const unsigned kBM = GESTURES_BUTTON_MIDDLE;
 const unsigned kBR = GESTURES_BUTTON_RIGHT;
 
 TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
@@ -1347,6 +1370,10 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
 
     {0, 0, 0, 0, 50, 0, 4, 1, 97, 0},  // 27
     {0, 0, 0, 0,  3, 0, 9, 1, 98, 0},
+
+    {0, 0, 0, 0, 50, 0,  4, 1, 97, 0},  // 29
+    {0, 0, 0, 0, 50, 0,  9, 1, 98, 0},
+    {0, 0, 0, 0, 50, 0, 14, 1, 99, 0},
   };
   HWStateGs hwsgs[] = {
     // Simple 1-finger tap
@@ -1422,6 +1449,10 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {S,{ 0.00, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98), 0, 0, kFTB, false },
     {C,{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),       kBR, kBR, kIdl, false },
     {C,{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),         0,   0, kIdl, false },
+    // 3-finger tap (middle click)
+    {S,{ 0.00, 0, 3, 3, &fs[29] }, -1,  MkSet(97, 98, 99), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),       kBM, kBM, kIdl, false },
+    {C,{ 0.07, 0, 0, 0, NULL    }, .07, MkSet(),         0,   0, kIdl, false },
     // 2-finger tap, but one finger is very very light, so left tap
     {S,{ 0.00, 0, 2, 2, &fs[27] }, -1,  MkSet(97, 98), 0, 0, kFTB, false },
     {C,{ 0.01, 0, 0, 0, NULL    }, -1,  MkSet(),     0,   0, kTpC, true },
@@ -1447,6 +1478,12 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     // right tap, left tap
     {S,{ 0.00, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98),  0, 0, kFTB, false },
     {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
+    {C,{ 0.02, 0, 1, 1, &fs[0] },  -1,  MkSet(91),       0,   0, kFTB, false },
+    {C,{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
+    {C,{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),       kBL, kBL, kIdl, false },
+    // middle tap, left tap
+    {S,{ 0.00, 0, 3, 3, &fs[29] }, -1,  MkSet(97, 98, 99), 0, 0, kFTB, false },
+    {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBM, kBM, kIdl, false },
     {C,{ 0.02, 0, 1, 1, &fs[0] },  -1,  MkSet(91),       0,   0, kFTB, false },
     {C,{ 0.03, 0, 0, 0, NULL   },  -1,  MkSet(),         0,   0, kTpC, true },
     {C,{ 0.09, 0, 0, 0, NULL    }, .09, MkSet(),       kBL, kBL, kIdl, false },
@@ -1555,17 +1592,17 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     // 3f tap w/o resting thumb
     {S,{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
     {C,{ 0.01, 0, 0, 1, NULL   }, -1,  MkSet(),       0, 0, kFTB, false },
-    {C,{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
+    {C,{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBM, kBM, kIdl, false },
     // 3f tap w/o resting thumb (slightly different)
     {S,{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
     {C,{ 0.01, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
-    {C,{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBR, kBR, kIdl, false },
+    {C,{ 0.02, 0, 0, 0, NULL   }, -1,  MkSet(),   kBM, kBM, kIdl, false },
     // 3f tap w/ resting thumb
     {S,{ 0.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
     {C,{ 1.00, 0, 1, 1, &fs[16] }, -1, MkSet(70),   0,   0, kIdl, false },
     {C,{ 1.01, 0, 1, 4, &fs[16] }, -1, MkSet(70),   0,   0, kFTB, false },
     {C,{ 1.02, 0, 2, 4, &fs[16] }, -1, MkSet(70, 91), 0, 0, kFTB, false },
-    {C,{ 1.03, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBR, kBR, kIdl, false },
+    {C,{ 1.03, 0, 1, 1, &fs[16] }, -1, MkSet(70), kBM, kBM, kIdl, false },
     // 4f tap w/o resting thumb
     {S,{ 0.00, 0, 2, 3, &fs[0] }, -1,  MkSet(91, 92), 0, 0, kFTB, false },
     {C,{ 0.01, 0, 1, 4, &fs[0] }, -1,  MkSet(91),     0, 0, kFTB, false },
@@ -1599,15 +1636,20 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
 
   vector<vector<FingerState> > thumb_fs(arraysize(hwsgs));
   const FingerState& fs_thumb = fs[18];
+  bool thumb_gestures = true;
   for (size_t i = 0; i < kT5R2TestFirstIndex; ++i) {
     HardwareState* hs = &hwsgs_full[i + arraysize(hwsgs)].hws;
+    if (hwsgs_full[i].IsStart())
+      thumb_gestures = true;  // Start out w/ thumb being able to gesture
+    if (hs->finger_cnt > 0)
+      thumb_gestures = false;  // Once a finger is present, thumb can't gesture
     vector<FingerState>& newfs = thumb_fs[i];
     newfs.resize(hs->finger_cnt + 1);
     newfs[0] = fs_thumb;
     for (size_t j = 0; j < hs->finger_cnt; ++j)
       newfs[j + 1] = hs->fingers[j];
     set<short, kMaxGesturingFingers>& gs = hwsgs_full[i + arraysize(hwsgs)].gs;
-    if (gs.empty())
+    if (thumb_gestures)
       gs.insert(fs_thumb.tracking_id);
     hs->fingers = &thumb_fs[i][0];
     hs->finger_cnt++;
@@ -1617,9 +1659,12 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
   for (size_t i = 0; i < hwsgs_full_size; ++i) {
     string desc;
     if (i < arraysize(hwsgs))
-      desc = StringPrintf("State %zu", i);
+      desc = StringPrintf("State %zu, Line Number %ld", i,
+                          hwsgs[i].LineNumber());
     else
-      desc = StringPrintf("State %zu (resting thumb)", i - arraysize(hwsgs));
+      desc = StringPrintf("State %zu (resting thumb), Line Number %ld",
+                          i - arraysize(hwsgs),
+                          hwsgs[i - arraysize(hwsgs)].LineNumber());
 
     unsigned bdown = 0;
     unsigned bup = 0;
@@ -1645,8 +1690,10 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
       ii->tap_enable_.val_ = 1;
       ii->tap_move_dist_.val_ = 1.0;
       ii->tap_timeout_.val_ = ii->inter_tap_timeout_.val_ = 0.05;
+      ii->three_finger_click_enable_.val_ = 1;
+      ii->t5r2_three_finger_click_enable_.val_ = 1;
       // For the slow tap case, we need to make tap_timeout_ bigger
-      if (hwsgs_full[i].flag == D)
+      if (hwsgs_full[i].line_number_and_flags & HWStateFlagStartDoubleTap)
         ii->tap_timeout_.val_ = 0.11;
       EXPECT_EQ(kIdl, ii->tap_to_click_state_);
     } else {

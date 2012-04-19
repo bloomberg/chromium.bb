@@ -184,10 +184,16 @@ bool TapRecord::MinTapPressureMet() const {
 }
 
 int TapRecord::TapType() const {
-  // TODO(adlr): use better logic here
   size_t touched_size =
       t5r2_ ? t5r2_touched_size_ : min_cotap_pressure_met_.size();
-  return touched_size > 1 ? GESTURES_BUTTON_RIGHT : GESTURES_BUTTON_LEFT;
+  int ret = GESTURES_BUTTON_LEFT;
+  if (touched_size > 1)
+    ret = GESTURES_BUTTON_RIGHT;
+  if (touched_size == 3 &&
+      immediate_interpreter_->three_finger_click_enable_.val_ &&
+      (!t5r2_ || immediate_interpreter_->t5r2_three_finger_click_enable_.val_))
+    ret = GESTURES_BUTTON_MIDDLE;
+  return ret;
 }
 
 // static
@@ -241,6 +247,10 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       drag_lock_enable_(prop_reg, "Tap Drag Lock Enable", 0),
       tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
       tap_min_pressure_(prop_reg, "Tap Minimum Pressure", 25.0),
+      three_finger_click_enable_(prop_reg, "Three Finger Click Enable", 0),
+      t5r2_three_finger_click_enable_(prop_reg,
+                                      "T5R2 Three Finger Click Enable",
+                                      0),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
       palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 8.0),
       palm_edge_width_(prop_reg, "Palm Edge Zone Width", 14.0),
@@ -871,7 +881,7 @@ void ImmediateInterpreter::UpdateTapState(
     // See if fingers were added
     for (set<short, kMaxGesturingFingers>::const_iterator it =
              tap_gs_fingers.begin(), e = tap_gs_fingers.end(); it != e; ++it)
-      if (!prev_state_.GetFingerState(*it)) {
+      if (!SetContainsValue(prev_tap_gs_fingers_, *it)) {
         // Gesturing finger wasn't in prev state. It's new.
         const FingerState* fs = hwstate->GetFingerState(*it);
         if (FingerTooCloseToTap(*hwstate, *fs) ||
@@ -1163,13 +1173,19 @@ void ImmediateInterpreter::FillStartPositions(const HardwareState& hwstate) {
 
 int ImmediateInterpreter::EvaluateButtonType(
     const HardwareState& hwstate) {
-  if (hw_props_.supports_t5r2 && hwstate.touch_cnt > 2)
+  if (hw_props_.supports_t5r2 && hwstate.touch_cnt > 2) {
+    if (hwstate.touch_cnt - thumb_.size() == 3 &&
+        three_finger_click_enable_.val_ && t5r2_three_finger_click_enable_.val_)
+      return GESTURES_BUTTON_MIDDLE;
     return GESTURES_BUTTON_RIGHT;
+  }
   int num_pointing = pointing_.size();
   if (num_pointing <= 1)
     return GESTURES_BUTTON_LEFT;
   if (current_gesture_type_ == kGestureTypeScroll)
     return GESTURES_BUTTON_RIGHT;
+  if (num_pointing == 3 && three_finger_click_enable_.val_)
+    return GESTURES_BUTTON_MIDDLE;
   if (num_pointing > 2) {
     Log("TODO: handle more advanced touchpads.");
     return GESTURES_BUTTON_LEFT;
