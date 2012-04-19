@@ -69,6 +69,11 @@ class CrosMountPointProvider
       const FilePath& virtual_path,
       base::MessageLoopProxy* file_proxy,
       fileapi::FileSystemContext* context) const OVERRIDE;
+  virtual webkit_blob::FileReader* CreateFileReader(
+    const GURL& path,
+    int64 offset,
+    base::MessageLoopProxy* file_proxy,
+    fileapi::FileSystemContext* context) const OVERRIDE;
 
   // fileapi::ExternalFileSystemMountPointProvider overrides.
   virtual void GrantFullAccessToExtension(

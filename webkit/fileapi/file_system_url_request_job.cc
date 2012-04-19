@@ -25,15 +25,14 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "webkit/blob/file_reader.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/file_system_file_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
 
 using net::URLRequest;
 using net::URLRequestJob;
 using net::URLRequestStatus;
-using webkit_blob::LocalFileReader;
 
 namespace fileapi {
 
@@ -204,11 +203,11 @@ void FileSystemURLRequestJob::DidGetMetadata(
   DCHECK_GE(remaining_bytes_, 0);
 
   DCHECK(!reader_.get());
-  reader_.reset(new FileSystemFileReader(
-          file_thread_proxy_,
-          file_system_context_,
+  reader_.reset(
+      file_system_context_->CreateFileReader(
           request_->url(),
-          byte_range_.first_byte_position()));
+          byte_range_.first_byte_position(),
+          file_thread_proxy_));
 
   set_expected_content_size(remaining_bytes_);
   response_info_.reset(new net::HttpResponseInfo());

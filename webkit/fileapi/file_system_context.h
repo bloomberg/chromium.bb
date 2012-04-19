@@ -25,6 +25,10 @@ namespace quota {
 class QuotaManagerProxy;
 }
 
+namespace webkit_blob {
+class FileReader;
+}
+
 namespace fileapi {
 
 class ExternalFileSystemMountPointProvider;
@@ -112,6 +116,17 @@ class FileSystemContext
   // depending on the filesystem type pointed by the |url|.
   FileSystemOperationInterface* CreateFileSystemOperation(
       const GURL& url,
+      base::MessageLoopProxy* file_proxy);
+
+  // Creates new FileReader instance to read a file pointed by the given
+  // filesystem URL |url| starting from |offset|.
+  // This method internally cracks the |url|, get an appropriate
+  // MountPointProvider for the URL and call the provider's CreateFileReader.
+  // The resolved MountPointProvider could perform further specialization
+  // depending on the filesystem type pointed by the |url|.
+  webkit_blob::FileReader* CreateFileReader(
+      const GURL& url,
+      int64 offset,
       base::MessageLoopProxy* file_proxy);
 
  private:

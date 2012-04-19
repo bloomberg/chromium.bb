@@ -190,4 +190,20 @@ FileSystemOperationInterface* FileSystemContext::CreateFileSystemOperation(
       origin_url, file_system_type, file_path, file_proxy, this);
 }
 
+webkit_blob::FileReader* FileSystemContext::CreateFileReader(
+    const GURL& url,
+    int64 offset,
+    base::MessageLoopProxy* file_proxy) {
+  GURL origin_url;
+  FileSystemType file_system_type = kFileSystemTypeUnknown;
+  FilePath file_path;
+  if (!CrackFileSystemURL(url, &origin_url, &file_system_type, &file_path))
+    return NULL;
+  FileSystemMountPointProvider* mount_point_provider =
+      GetMountPointProvider(file_system_type);
+  if (!mount_point_provider)
+    return NULL;
+  return mount_point_provider->CreateFileReader(url, offset, file_proxy, this);
+}
+
 }  // namespace fileapi

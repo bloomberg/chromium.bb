@@ -18,6 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/chromeos/fileapi/file_access_permissions.h"
 #include "webkit/chromeos/fileapi/remote_file_system_operation.h"
+#include "webkit/fileapi/file_system_file_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/native_file_util.h"
@@ -250,6 +251,17 @@ CrosMountPointProvider::CreateFileSystemOperation(
     return new chromeos::RemoteFileSystemOperation(mount_point->remote_proxy);
 
   return new fileapi::FileSystemOperation(file_proxy, context);
+}
+
+webkit_blob::FileReader* CrosMountPointProvider::CreateFileReader(
+    const GURL& url,
+    int64 offset,
+    base::MessageLoopProxy* file_proxy,
+    fileapi::FileSystemContext* context) const {
+  // For now we return a generic Reader implementation which utilizes
+  // CreateSnapshotFile internally (i.e. will download everything first).
+  // TODO(satorux,zel): implement more efficient reader for remote cases.
+  return new fileapi::FileSystemFileReader(file_proxy, context, url, offset);
 }
 
 bool CrosMountPointProvider::GetVirtualPath(const FilePath& filesystem_path,

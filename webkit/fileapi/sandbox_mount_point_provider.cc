@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "webkit/fileapi/file_system_file_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_options.h"
@@ -431,6 +432,14 @@ SandboxMountPointProvider::CreateFileSystemOperation(
     base::MessageLoopProxy* file_proxy,
     FileSystemContext* context) const {
   return new FileSystemOperation(file_proxy, context);
+}
+
+webkit_blob::FileReader* SandboxMountPointProvider::CreateFileReader(
+    const GURL& url,
+    int64 offset,
+    base::MessageLoopProxy* file_proxy,
+    FileSystemContext* context) const {
+  return new FileSystemFileReader(file_proxy, context, url, offset);
 }
 
 FilePath SandboxMountPointProvider::old_base_path() const {
