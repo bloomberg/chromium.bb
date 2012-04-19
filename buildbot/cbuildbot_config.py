@@ -61,21 +61,28 @@ def OverrideConfigForTrybot(build_config, remote_trybot):
   return copy_config
 
 
-def GetManifestVersionsRepoUrl(internal_build, read_only=False):
+def GetManifestVersionsRepoUrl(internal_build, read_only=False, test=False):
   """Returns the url to the manifest versions repository.
 
   Args:
     internal_build: Whether to use the internal repo.
     read_only: Whether the URL may be read only.  If read_only is True,
       pushing changes (even with dryrun option) may not work.
+    test: Whether we should use the corresponding test repositories. These
+      should be used when staging experimental features.
   """
   if internal_build:
-    return (constants.GERRIT_INT_SSH_URL +
+    url = (constants.GERRIT_INT_SSH_URL +
             constants.MANIFEST_VERSIONS_INT_SUFFIX)
   elif read_only:
-    return constants.GIT_HTTP_URL + constants.MANIFEST_VERSIONS_SUFFIX
+    url = constants.GIT_HTTP_URL + constants.MANIFEST_VERSIONS_SUFFIX
   else:
-    return constants.GERRIT_SSH_URL + constants.MANIFEST_VERSIONS_SUFFIX
+    url = constants.GERRIT_SSH_URL + constants.MANIFEST_VERSIONS_SUFFIX
+
+  if test:
+    url += '-test'
+
+  return url
 
 
 def IsPFQType(b_type):
@@ -732,17 +739,20 @@ internal_paladin.add_config('unified-mario-paladin',
   push_overlays=constants.BOTH_OVERLAYS,
   overlays=constants.BOTH_OVERLAYS,
   boards=['x86-mario'],
-  prebuilts=None,
   unified_manifest_version=True,
   paladin_builder_name='unified mario paladin',
+  # TODO(sosa): Temporary workarounds.
+  vm_tests=None,
+  prebuilts=None,
 )
 
 internal_paladin.add_config('unified-x86-generic',
   overlays=constants.PUBLIC_OVERLAYS,
   boards=['x86-generic'],
-  prebuilts=None,
   unified_manifest_version=True,
   paladin_builder_name='unified x86-generic paladin',
+  vm_tests=None,
+  prebuilts=None,
 )
 
 internal_incremental.add_config('mario-incremental',
