@@ -66,12 +66,24 @@ static void SIGSYS_Handler(int signal, siginfo_t* info, void* void_context) {
   if (!void_context)
     return;
   ucontext_t* context = reinterpret_cast<ucontext_t*>(void_context);
-  unsigned int syscall = context->uc_mcontext.gregs[REG_RAX];
+  uintptr_t syscall = context->uc_mcontext.gregs[REG_RAX];
   if (syscall >= 1024)
     syscall = 0;
+  // Encode 8-bits of the 1st two arguments too, so we can discern which socket
+  // type, which fcntl, ... etc., without being likely to hit a mapped
+  // address.
+  // Do not encode more bits here without thinking about increasing the
+  // likelihood of collision with mapped pages.
+  syscall |= ((context->uc_mcontext.gregs[REG_RDI] & 0xffUL) << 12);
+  syscall |= ((context->uc_mcontext.gregs[REG_RSI] & 0xffUL) << 20);
   // Purposefully dereference the syscall as an address so it'll show up very
   // clearly and easily in crash dumps.
   volatile char* addr = reinterpret_cast<volatile char*>(syscall);
+  *addr = '\0';
+  // In case we hit a mapped address, hit the null page with just the syscall,
+  // for paranoia.
+  syscall &= 0xfffUL;
+  addr = reinterpret_cast<volatile char*>(syscall);
   *addr = '\0';
   _exit(1);
 }
@@ -191,6 +203,8 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_munlock, program);
   EmitAllowSyscall(__NR_exit, program);
   EmitAllowSyscall(__NR_exit_group, program);
+  EmitAllowSyscall(__NR_getpid, program);
+  EmitAllowSyscall(__NR_getppid, program);
 
   EmitFailSyscall(__NR_open, ENOENT, program);
   EmitFailSyscall(__NR_access, ENOENT, program);
