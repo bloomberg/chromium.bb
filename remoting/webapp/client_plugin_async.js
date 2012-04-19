@@ -58,6 +58,10 @@ remoting.ClientPluginAsync = function(plugin) {
   this.plugin.addEventListener('message', function(event) {
       that.handleMessage_(event.data);
     }, false);
+  var showPluginForClickToPlay = function() {
+    that.showPluginForClickToPlay_();
+  };
+  window.setTimeout(showPluginForClickToPlay, 500);
 };
 
 /**
@@ -93,6 +97,9 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(message_str) {
   }
 
   if (message.method == 'hello') {
+    // Reset the size in case we had to enlarge it to support click-to-play.
+    this.plugin.width = 0;
+    this.plugin.height = 0;
     if (typeof message.data['apiVersion'] != 'number' ||
         typeof message.data['apiMinVersion'] != 'number') {
       console.error('Received invalid hello message: ' + message_str);
@@ -355,4 +362,25 @@ remoting.ClientPluginAsync.prototype.sendClipboardItem =
   this.plugin.postMessage(JSON.stringify(
       { method: 'sendClipboardItem',
         data: { mimeType: mimeType, item: item }}));
+};
+
+/**
+ * If we haven't yet received a "hello" message from the plugin, change its
+ * size so that the user can confirm it if click-to-play is enabled, or can
+ * see the "this plugin is disabled" message if it is actually disabled.
+ * @private
+ */
+remoting.ClientPluginAsync.prototype.showPluginForClickToPlay_ = function() {
+  if (!this.helloReceived_) {
+    var width = 200;
+    var height = 200;
+    this.plugin.width = width;
+    this.plugin.height = height;
+    // Center the plugin just underneath the "Connnecting..." dialog.
+    var parentNode = this.plugin.parentNode;
+    var dialog = document.getElementById('client-dialog');
+    var dialogRect = dialog.getBoundingClientRect();
+    parentNode.style.top = (dialogRect.bottom + 16) + 'px';
+    parentNode.style.left = (window.innerWidth - width) / 2 + 'px';
+  }
 };
