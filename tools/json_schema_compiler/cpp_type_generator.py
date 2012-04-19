@@ -263,3 +263,45 @@ class CppTypeGenerator(object):
         for p in prop.properties.values():
           deps |= self._PropertyTypeDependencies(p)
     return deps
+
+  def GeneratePropertyValues(self, property, line, nodoc=False):
+    """Generates the Code to display all value-containing properties.
+    """
+    c = Code()
+    if not nodoc:
+      c.Comment(property.description)
+
+    if property.has_value:
+      c.Append(line % {
+          "type": self._GetPrimitiveType(property.type_),
+          "name": property.name,
+          "value": property.value
+        })
+    else:
+      has_child_code = False
+      c.Sblock('namespace %s {' % property.name)
+      for child_property in property.properties.values():
+        child_code = self.GeneratePropertyValues(
+            child_property,
+            line,
+            nodoc=nodoc)
+        if child_code:
+          has_child_code = True
+          c.Concat(child_code)
+      c.Eblock('}  // namespace %s' % property.name)
+      if not has_child_code:
+        c = None
+    return c
+
+  def _GetPrimitiveType(self, type_):
+    """Like |GetType| but only accepts and returns C++ primitive types.
+    """
+    if type_ == PropertyType.BOOLEAN:
+      return 'bool'
+    elif type_ == PropertyType.INTEGER:
+      return 'int'
+    elif type_ == PropertyType.DOUBLE:
+      return 'double'
+    elif type_ == PropertyType.STRING:
+      return 'char*'
+    raise Exception(type_ + ' is not primitive')

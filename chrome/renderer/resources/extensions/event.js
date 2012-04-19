@@ -205,7 +205,7 @@
           results.push(result);
       } catch (e) {
         console.error("Error in event handler for '" + this.eventName_ +
-                      "': " + e.stack);
+                      "': " + e.message + ' ' + e.stack);
       }
     }
     if (results.length)

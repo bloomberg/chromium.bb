@@ -21,6 +21,7 @@
           'browserAction.json',
           'experimental.declarative.json',
           'permissions.json',
+          'storage.json',
           'tabs.json',
           'windows.json',
         ],

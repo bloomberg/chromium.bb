@@ -522,9 +522,14 @@
 
           var value = propertyDef.value;
           if (value) {
-            if (propertyDef.type === 'integer') {
+            // Values may just have raw types as defined in the JSON, such
+            // as "WINDOW_ID_NONE": { "value": -1 }. We handle this here.
+            // TODO(kalman): enforce that things with a "value" property can't
+            // define their own types.
+            var type = propertyDef.type || typeof(value);
+            if (type === 'integer' || type === 'number') {
               value = parseInt(value);
-            } else if (propertyDef.type === 'boolean') {
+            } else if (type === 'boolean') {
               value = value === "true";
             } else if (propertyDef["$ref"]) {
               var constructor = customTypes[propertyDef["$ref"]];
@@ -539,15 +544,13 @@
               constructor.apply(value, args);
               // Recursively add properties.
               addProperties(value, propertyDef);
-            } else if (propertyDef.type === 'object') {
+            } else if (type === 'object') {
               // Recursively add properties.
               addProperties(value, propertyDef);
-            } else if (propertyDef.type !== 'string') {
-              throw "NOT IMPLEMENTED (extension_api.json error): Cannot " +
-                  "parse values for type \"" + propertyDef.type + "\"";
+            } else if (type !== 'string') {
+              throw new Error("NOT IMPLEMENTED (extension_api.json error): " +
+                  "Cannot parse values for type \"" + type + "\"");
             }
-          }
-          if (value) {
             m[propertyName] = value;
           }
         });

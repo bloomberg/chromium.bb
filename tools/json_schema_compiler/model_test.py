@@ -37,9 +37,9 @@ class ModelTest(unittest.TestCase):
     self.assertEquals(['Window'], self.windows.types.keys())
 
   def testHasProperties(self):
-    self.assertEquals(["active", "fav_icon_url", "highlighted", "id",
+    self.assertEquals(["active", "favIconUrl", "highlighted", "id",
         "incognito", "index", "pinned", "selected", "status", "title", "url",
-        "window_id"],
+        "windowId"],
         sorted(self.tabs.types['Tab'].properties.keys()))
 
   def testProperties(self):
@@ -55,7 +55,7 @@ class ModelTest(unittest.TestCase):
     self.assertEquals(model.PropertyType.OBJECT, object_prop.type_)
     self.assertEquals(
         ["active", "highlighted", "pinned", "status", "title", "url",
-         "window_id", "window_type"],
+         "windowId", "windowType"],
         sorted(object_prop.properties.keys()))
 
   def testChoices(self):
@@ -100,7 +100,7 @@ class ModelTest(unittest.TestCase):
       'foo.barBAZ': 'foo_bar_baz'
       }
     for name in expectations:
-      self.assertEquals(expectations[name], model.UnixName(name));
+      self.assertEquals(expectations[name], model._UnixName(name));
 
 if __name__ == '__main__':
   unittest.main()

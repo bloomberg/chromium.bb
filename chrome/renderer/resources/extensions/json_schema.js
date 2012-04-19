@@ -137,8 +137,8 @@ chromeHidden.JSONSchemaValidator.getType = function(value) {
  */
 chromeHidden.JSONSchemaValidator.prototype.addTypes = function(typeOrTypeList) {
   function addType(validator, type) {
-    if(!type.id)
-      throw "Attempt to addType with missing 'id' property";
+    if (!type.id)
+      throw new Error("Attempt to addType with missing 'id' property");
     validator.types[type.id] = type;
   }
 

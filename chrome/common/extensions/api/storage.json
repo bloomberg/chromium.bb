@@ -175,18 +175,15 @@
         "value": [ "sync" ],
         "properties": {
           "QUOTA_BYTES": {
-            "type": "integer",
-            "value": "102400",
+            "value": 102400,
             "description": "The maximum total amount (in bytes) of data that can be stored in sync storage."
           },
           "QUOTA_BYTES_PER_ITEM": {
-            "type": "integer",
-            "value": "2048",
+            "value": 2048,
             "description": "The maximum size (in bytes) of each individual item in sync storage."
           },
           "MAX_ITEMS": {
-            "type": "integer",
-            "value": "512",
+            "value": 512,
             "description": "The maximum number of items that can be stored in sync storage."
           }
         }
@@ -197,8 +194,7 @@
         "value": [ "local" ],
         "properties": {
           "QUOTA_BYTES": {
-            "type": "integer",
-            "value": "5242880",
+            "value": 5242880,
             "description": "The maximum amount (in bytes) of data that can be stored in local storage. This value will be ignored if the extension has the <code>unlimitedStorage</code> permission."
           }
         }

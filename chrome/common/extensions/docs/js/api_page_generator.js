@@ -645,25 +645,28 @@ function getTypeName(schema) {
 }
 
 function hasPrimitiveValue(schema) {
-  return typeof(schema.value) === 'string';
+  var type = typeof(schema.value);
+  return type === 'string' || type === 'number';
 }
 
 function getPrimitiveValue(schema) {
-  if (schema.type === 'string') {
-    return '"' + schema.value + '"';
-  } else if (schema.type === 'integer') {
-    // Comma-separate large numbers (e.g. 5,000,000), easier to read.
-    var value = String(schema.value);
-    var groupsOfThree = [];
-    while (value.length > 3) {
-      groupsOfThree.unshift(value.slice(value.length - 3));
-      value = value.slice(0, value.length - 3);
-    }
-    groupsOfThree.unshift(value);
-    return groupsOfThree.join(',');
-  } else {
-    return schema.value;
+  switch (typeof(schema.value)) {
+    case 'string':
+      return '"' + schema.value + '"';
+
+    case 'number':
+      // Comma-separate large numbers (e.g. 5,000,000), easier to read.
+      var value = String(schema.value);
+      var groupsOfThree = [];
+      while (value.length > 3) {
+        groupsOfThree.unshift(value.slice(value.length - 3));
+        value = value.slice(0, value.length - 3);
+      }
+      groupsOfThree.unshift(value);
+      return groupsOfThree.join(',');
   }
+
+  return undefined;
 }
 
 function getSignatureString(parameters) {

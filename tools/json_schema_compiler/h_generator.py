@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from code import Code
 from model import PropertyType
-import code
 import cpp_util
 import model
 import os
@@ -18,9 +18,9 @@ class HGenerator(object):
         self._cpp_type_generator.GetCppNamespaceName(self._namespace))
 
   def Generate(self):
-    """Generates a code.Code object with the .h for a single namespace.
+    """Generates a Code object with the .h for a single namespace.
     """
-    c = code.Code()
+    c = Code()
     (c.Append(cpp_util.CHROMIUM_LICENSE)
       .Append()
       .Append(cpp_util.GENERATED_FILE_MESSAGE % self._namespace.source_file)
@@ -59,6 +59,18 @@ class HGenerator(object):
 
     c.Concat(self._cpp_type_generator.GetNamespaceStart())
     c.Append()
+    if self._namespace.properties:
+      (c.Append('//')
+        .Append('// Properties')
+        .Append('//')
+        .Append()
+      )
+      for property in self._namespace.properties.values():
+        property_code = self._cpp_type_generator.GeneratePropertyValues(
+            property,
+            'extern const %(type)s %(name)s;')
+        if property_code:
+          c.Concat(property_code).Append()
     if self._namespace.types:
       (c.Append('//')
         .Append('// Types')
@@ -111,7 +123,7 @@ class HGenerator(object):
     """Generate the declaration of a C++ enum for the given property and
     values.
     """
-    c = code.Code()
+    c = Code()
     c.Sblock('enum %s {' % enum_name)
     if prop.optional:
       c.Append(self._cpp_type_generator.GetEnumNoneValue(prop) + ',')
@@ -125,7 +137,7 @@ class HGenerator(object):
   def _GenerateFields(self, props):
     """Generates the field declarations when declaring a type.
     """
-    c = code.Code()
+    c = Code()
     # Generate the enums needed for any fields with "choices"
     for prop in props:
       if prop.type_ == PropertyType.CHOICES:
@@ -145,7 +157,7 @@ class HGenerator(object):
     """Generates a struct for a type.
     """
     classname = cpp_util.Classname(type_.name)
-    c = code.Code()
+    c = Code()
 
     if type_.functions:
       # Types with functions are not instantiable in C++ because they are
@@ -203,7 +215,7 @@ class HGenerator(object):
   def _GenerateFunction(self, function):
     """Generates the structs for a function.
     """
-    c = code.Code()
+    c = Code()
     (c.Sblock('namespace %s {' % cpp_util.Classname(function.name))
         .Concat(self._GenerateFunctionParams(function))
         .Append()
@@ -219,7 +231,7 @@ class HGenerator(object):
   def _GenerateFunctionParams(self, function):
     """Generates the struct for passing parameters into a function.
     """
-    c = code.Code()
+    c = Code()
 
     if function.params:
       (c.Sblock('struct Params {')
@@ -242,7 +254,7 @@ class HGenerator(object):
     """Generate the structures required by a property such as OBJECT classes
     and enums.
     """
-    c = code.Code()
+    c = Code()
     for prop in props:
       if prop.type_ == PropertyType.OBJECT:
         c.Concat(self._GenerateType(prop))
@@ -266,7 +278,7 @@ class HGenerator(object):
   def _GenerateFunctionResult(self, function):
     """Generates functions for passing a function's result back.
     """
-    c = code.Code()
+    c = Code()
 
     c.Sblock('namespace Result {')
     params = function.callback.params

@@ -38,11 +38,11 @@ chromeHidden.handleResponse = function(requestId, name,
       if (chromeHidden.validateCallbacks && !error) {
         try {
           if (!request.callbackSchema.parameters) {
-            throw "No callback schemas defined";
+            throw new Error("No callback schemas defined");
           }
 
           if (request.callbackSchema.parameters.length > 1) {
-            throw "Callbacks may only define one parameter";
+            throw new Error("Callbacks may only define one parameter");
           }
 
           chromeHidden.validate(callbackArgs,

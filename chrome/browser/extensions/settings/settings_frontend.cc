@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
 #include "chrome/browser/extensions/settings/weak_unlimited_settings_storage.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/extension_api.h"
+#include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
@@ -88,36 +88,20 @@ void CallbackWithUnlimitedStorage(
   callback.Run(&unlimited_storage);
 }
 
-// Returns the integer at |path| in |dict| as a size_t, or a default value if
-// there's nothing found at that path.
-size_t GetStringAsInteger(
-    const DictionaryValue& dict, const std::string& path, size_t default_size) {
-  std::string as_string;
-  if (!dict.GetString(path, &as_string))
-    return default_size;
-  size_t as_integer = default_size;
-  CHECK(base::StringToSizeT(as_string, &as_integer));
-  return as_integer;
+SettingsStorageQuotaEnforcer::Limits GetLocalLimits() {
+  SettingsStorageQuotaEnforcer::Limits limits = {
+    api::storage::local::QUOTA_BYTES,
+    UINT_MAX,
+    UINT_MAX
+  };
+  return limits;
 }
 
-// Constructs a |Limits| configuration by looking up the QUOTA_BYTES,
-// QUOTA_BYTES_PER_ITEM, and MAX_ITEMS properties of a storage area defined
-// in chrome/common/extensions/api/storage.json (via ExtensionAPI).
-SettingsStorageQuotaEnforcer::Limits GetLimitsFromExtensionAPI(
-    const std::string& storage_area_id) {
-  const DictionaryValue* storage_schema =
-      ExtensionAPI::GetSharedInstance()->GetSchema("storage");
-  CHECK(storage_schema);
-
-  DictionaryValue* properties = NULL;
-  storage_schema->GetDictionary(
-      "properties." + storage_area_id + ".properties", &properties);
-  CHECK(properties);
-
+SettingsStorageQuotaEnforcer::Limits GetSyncLimits() {
   SettingsStorageQuotaEnforcer::Limits limits = {
-    GetStringAsInteger(*properties, "QUOTA_BYTES.value", UINT_MAX),
-    GetStringAsInteger(*properties, "QUOTA_BYTES_PER_ITEM.value", UINT_MAX),
-    GetStringAsInteger(*properties, "MAX_ITEMS.value", UINT_MAX),
+    api::storage::sync::QUOTA_BYTES,
+    api::storage::sync::QUOTA_BYTES_PER_ITEM,
+    api::storage::sync::MAX_ITEMS
   };
   return limits;
 }
@@ -232,8 +216,8 @@ SettingsFrontend* SettingsFrontend::Create(
 
 SettingsFrontend::SettingsFrontend(
     const scoped_refptr<SettingsStorageFactory>& factory, Profile* profile)
-    : local_quota_limit_(GetLimitsFromExtensionAPI("local")),
-      sync_quota_limit_(GetLimitsFromExtensionAPI("sync")),
+    : local_quota_limit_(GetLocalLimits()),
+      sync_quota_limit_(GetSyncLimits()),
       profile_(profile),
       observers_(new SettingsObserverList()),
       profile_observer_(new DefaultObserver(profile)) {
