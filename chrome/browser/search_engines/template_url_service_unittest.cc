@@ -40,7 +40,7 @@ TemplateURL* CreatePreloadedTemplateURL(bool safe_for_autoreplace,
   TemplateURLData data;
   data.short_name = ASCIIToUTF16("unittest");
   data.SetKeyword(ASCIIToUTF16("unittest"));
-  data.SetURL("http://www.unittest.com/");
+  data.SetURL("http://www.unittest.com/{searchTerms}");
   data.favicon_url = GURL("http://favicon.url");
   data.show_in_default_list = true;
   data.safe_for_autoreplace = safe_for_autoreplace;
@@ -614,8 +614,9 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProvider) {
   // Add a new TemplateURL.
   test_util_.VerifyLoad();
   const size_t initial_count = model()->GetTemplateURLs().size();
-  TemplateURL* t_url = AddKeywordWithDate("name1", "key1", false, "http://foo1",
-      "http://sugg1", "http://icon1", true, "UTF-8;UTF-16", Time(), Time());
+  TemplateURL* t_url = AddKeywordWithDate("name1", "key1", false,
+      "http://foo1/{searchTerms}", "http://sugg1", "http://icon1", true,
+      "UTF-8;UTF-16", Time(), Time());
   test_util_.ResetObserverCount();
 
   model()->SetDefaultSearchProvider(t_url);
@@ -718,7 +719,7 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   TemplateURLData data;
   data.short_name = ASCIIToUTF16("a");
   data.safe_for_autoreplace = true;
-  data.SetURL("http://url");
+  data.SetURL("http://url/{searchTerms}");
   data.suggestions_url = "http://url2";
   data.instant_url = "http://instant";
   data.date_created = Time::FromTimeT(100);
@@ -740,7 +741,7 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   const TemplateURL* default_turl = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_turl);
   EXPECT_EQ(ASCIIToUTF16("a"), default_turl->short_name());
-  EXPECT_EQ("http://url", default_turl->url());
+  EXPECT_EQ("http://url/{searchTerms}", default_turl->url());
   EXPECT_EQ("http://url2", default_turl->suggestions_url());
   EXPECT_EQ("http://instant", default_turl->instant_url());
   EXPECT_EQ(id, default_turl->id());
@@ -1087,7 +1088,21 @@ TEST_F(TemplateURLServiceTest, LoadEnsuresDefaultSearchProviderExists) {
   // Reset the model and load it. There should be a default search provider.
   test_util_.ResetModel(true);
 
-  EXPECT_TRUE(model()->GetDefaultSearchProvider());
+  ASSERT_TRUE(model()->GetDefaultSearchProvider());
+  EXPECT_TRUE(model()->GetDefaultSearchProvider()->SupportsReplacement());
+
+  // Make default search provider unusable (no search terms).
+  model()->ResetTemplateURL(model()->GetDefaultSearchProvider(),
+                            ASCIIToUTF16("test"), ASCIIToUTF16("test"),
+                            "http://example.com/");
+  test_util_.BlockTillServiceProcessesRequests();
+
+  // Reset the model and load it. There should be a usable default search
+  // provider.
+  test_util_.ResetModel(true);
+
+  ASSERT_TRUE(model()->GetDefaultSearchProvider());
+  EXPECT_TRUE(model()->GetDefaultSearchProvider()->SupportsReplacement());
 }
 
 // Make sure that the load does update of auto-keywords correctly.
@@ -1141,8 +1156,8 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
 
   // Set a regular default search provider.
   TemplateURL* regular_default = AddKeywordWithDate("name1", "key1", false,
-      "http://foo1", "http://sugg1", "http://icon1", true, "UTF-8;UTF-16",
-      Time(), Time());
+      "http://foo1/{searchTerms}", "http://sugg1", "http://icon1", true,
+      "UTF-8;UTF-16", Time(), Time());
   VerifyObserverCount(1);
   model()->SetDefaultSearchProvider(regular_default);
   // Adding the URL and setting the default search provider should have caused
@@ -1240,8 +1255,9 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   // First, remove the preferences, reset the model, and set a default.
   test_util_.RemoveManagedDefaultSearchPreferences();
   test_util_.ResetModel(true);
-  TemplateURL* t_url = AddKeywordWithDate("name1", "key1", false, "http://foo1",
-      "http://sugg1", "http://icon1", true, "UTF-8;UTF-16", Time(), Time());
+  TemplateURL* t_url = AddKeywordWithDate("name1", "key1", false,
+      "http://foo1/{searchTerms}", "http://sugg1", "http://icon1", true,
+      "UTF-8;UTF-16", Time(), Time());
   model()->SetDefaultSearchProvider(t_url);
   EXPECT_EQ(t_url, model()->GetDefaultSearchProvider());
 

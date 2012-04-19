@@ -275,11 +275,11 @@ void TemplateURLTableModel::ModifyTemplateURL(int index,
   DCHECK(index >= 0 && index <= RowCount());
   DCHECK(!url.empty());
   const TemplateURL* template_url = GetTemplateURL(index);
+  // The default search provider should support replacement.
+  DCHECK(template_url_service_->GetDefaultSearchProvider() != template_url ||
+         template_url->SupportsReplacement());
   template_url_service_->RemoveObserver(this);
   template_url_service_->ResetTemplateURL(template_url, title, keyword, url);
-  // The default search provider should support replacement.
-  CHECK(template_url_service_->GetDefaultSearchProvider() != template_url ||
-        template_url->SupportsReplacement());
   template_url_service_->AddObserver(this);
   ReloadIcon(index);  // Also calls NotifyChanged().
 }

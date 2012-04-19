@@ -121,6 +121,10 @@ class DefaultSearchProviderChange : public BaseSettingChange,
   const TemplateURL* SetDefaultSearchProvider(
       scoped_ptr<TemplateURL>* search_provider);
 
+  // Returns true if |new_search_provider_| can be used as the default search
+  // provider.
+  bool NewSearchProviderValid() const;
+
   // Opens the Search engine settings page in a new tab.
   void OpenSearchEngineSettings(Browser* browser);
 
@@ -186,7 +190,8 @@ bool DefaultSearchProviderChange::Init(Profile* profile) {
   if (!BaseSettingChange::Init(profile))
     return false;
 
-  if (!backup_search_provider_.get()) {
+  if (!backup_search_provider_.get() ||
+      !backup_search_provider_->SupportsReplacement()) {
     // Fallback to a prepopulated default search provider, ignoring any
     // overrides in Prefs.
     backup_search_provider_.reset(
@@ -246,7 +251,7 @@ void DefaultSearchProviderChange::Apply(Browser* browser) {
       kProtectorMaxSearchProviderID);
 
   GetTemplateURLService()->RemoveObserver(this);
-  if (new_search_provider_) {
+  if (NewSearchProviderValid()) {
     GetTemplateURLService()->SetDefaultSearchProvider(new_search_provider_);
   } else {
     // Open settings page in case the new setting is invalid.
@@ -302,7 +307,7 @@ string16 DefaultSearchProviderChange::GetBubbleMessage() const {
 }
 
 string16 DefaultSearchProviderChange::GetApplyButtonText() const {
-  if (new_search_provider_) {
+  if (NewSearchProviderValid()) {
     // If backup search engine is lost and fallback was made to the current
     // search provider then there is no need to show this button.
     if (fallback_is_new_)
@@ -333,7 +338,7 @@ string16 DefaultSearchProviderChange::GetDiscardButtonText() const {
 
 BaseSettingChange::DisplayName
 DefaultSearchProviderChange::GetApplyDisplayName() const {
-  if (new_search_provider_ &&
+  if (NewSearchProviderValid() &&
       new_search_provider_->short_name().length() <= kMaxDisplayedNameLength) {
     return DisplayName(kDefaultSearchProviderChangeNamePriority,
                        new_search_provider_->short_name());
@@ -348,7 +353,7 @@ GURL DefaultSearchProviderChange::GetNewSettingURL() const {
     // and Discard behaviour is pretty different.
     return GURL();
   }
-  if (!new_search_provider_)
+  if (!NewSearchProviderValid())
     return GURL();
   return TemplateURLService::GenerateSearchURL(new_search_provider_);
 }
@@ -408,6 +413,10 @@ const TemplateURL* DefaultSearchProviderChange::SetDefaultSearchProvider(
           << new_default_provider->short_name();
   url_service->SetDefaultSearchProvider(new_default_provider);
   return new_default_provider;
+}
+
+bool DefaultSearchProviderChange::NewSearchProviderValid() const {
+  return new_search_provider_ && new_search_provider_->SupportsReplacement();
 }
 
 void DefaultSearchProviderChange::OpenSearchEngineSettings(Browser* browser) {

@@ -1115,8 +1115,13 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
 }
 
 TEST_F(TemplateURLServiceSyncTest, SyncedDefaultGUIDArrivesFirst) {
-  model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-                                    CreateInitialSyncData(), PassProcessor());
+  SyncDataList initial_data = CreateInitialSyncData();
+  // The default search provider should support replacement.
+  scoped_ptr<TemplateURL> turl(CreateTestTemplateURL(ASCIIToUTF16("key2"),
+      "http://key2.com/{searchTerms}", "key2", 90));
+  initial_data[1] = TemplateURLService::CreateSyncDataFromTemplateURL(*turl);
+  model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
+                                    PassProcessor());
   model()->SetDefaultSearchProvider(model()->GetTemplateURLForGUID("key2"));
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
@@ -1145,7 +1150,7 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultGUIDArrivesFirst) {
   // the default has changed to the new search engine.
   SyncChangeList changes2;
   changes2.push_back(CreateTestSyncChange(SyncChange::ACTION_ADD,
-      CreateTestTemplateURL(ASCIIToUTF16("new"), "http://new.com",
+      CreateTestTemplateURL(ASCIIToUTF16("new"), "http://new.com/{searchTerms}",
                             "newdefault")));
   model()->ProcessSyncChanges(FROM_HERE, changes2);
 
@@ -1157,7 +1162,8 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultGUIDArrivesFirst) {
 TEST_F(TemplateURLServiceSyncTest, SyncedDefaultArrivesAfterStartup) {
   // Start with the default set to something in the model before we start
   // syncing.
-  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("what"), "http://thewhat.com",
+  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("what"),
+                                     "http://thewhat.com/{searchTerms}",
                                      "initdefault"));
   model()->SetDefaultSearchProvider(
       model()->GetTemplateURLForGUID("initdefault"));
@@ -1175,8 +1181,13 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultArrivesAfterStartup) {
 
   // Now sync the initial data, which will include the search engine entry
   // destined to become the new default.
-  model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-                                    CreateInitialSyncData(), PassProcessor());
+  SyncDataList initial_data = CreateInitialSyncData();
+  // The default search provider should support replacement.
+  scoped_ptr<TemplateURL> turl(CreateTestTemplateURL(ASCIIToUTF16("key2"),
+      "http://key2.com/{searchTerms}", "key2", 90));
+  initial_data[1] = TemplateURLService::CreateSyncDataFromTemplateURL(*turl);
+  model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
+                                    PassProcessor());
 
   // Ensure that the new default has been set.
   EXPECT_EQ(4U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
@@ -1188,7 +1199,8 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultAlreadySetOnStartup) {
   // Start with the default set to something in the model before we start
   // syncing.
   const char kGUID[] = "initdefault";
-  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("what"), "http://thewhat.com",
+  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("what"),
+                                     "http://thewhat.com/{searchTerms}",
                                      kGUID));
   model()->SetDefaultSearchProvider(model()->GetTemplateURLForGUID(kGUID));
 
@@ -1236,7 +1248,8 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithManagedDefaultSearch) {
   // being managed.
   SyncChangeList changes;
   changes.push_back(CreateTestSyncChange(SyncChange::ACTION_ADD,
-      CreateTestTemplateURL(ASCIIToUTF16("newkeyword"), "http://new.com",
+      CreateTestTemplateURL(ASCIIToUTF16("newkeyword"),
+                            "http://new.com/{searchTerms}",
                             "newdefault")));
   model()->ProcessSyncChanges(FROM_HERE, changes);
 
@@ -1264,13 +1277,18 @@ TEST_F(TemplateURLServiceSyncTest, SyncMergeDeletesDefault) {
   // If the value from Sync is a duplicate of the local default and is newer, it
   // should safely replace the local value and set as the new default.
   TemplateURL* default_turl = CreateTestTemplateURL(ASCIIToUTF16("key1"),
-      "http://key1.com", "whateverguid", 10);
+      "http://key1.com/{searchTerms}", "whateverguid", 10);
   model()->Add(default_turl);
   model()->SetDefaultSearchProvider(default_turl);
 
+  SyncDataList initial_data = CreateInitialSyncData();
   // The key1 entry should be a duplicate of the default.
+  scoped_ptr<TemplateURL> turl(CreateTestTemplateURL(ASCIIToUTF16("key1"),
+      "http://key1.com/{searchTerms}", "key1", 90));
+  initial_data[0] = TemplateURLService::CreateSyncDataFromTemplateURL(*turl);
+
   model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES,
-                                    CreateInitialSyncData(), PassProcessor());
+                                    initial_data, PassProcessor());
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
   EXPECT_FALSE(model()->GetTemplateURLForGUID("whateverguid"));

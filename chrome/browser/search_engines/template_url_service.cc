@@ -493,10 +493,11 @@ const TemplateURL* TemplateURLService::FindNewDefaultSearchProvider() {
     if ((*i)->prepopulate_id() == prepopulated_default->prepopulate_id())
       return *i;
   }
-  // If not, use the first non-extension keyword of the templates.
+  // If not, use the first non-extension keyword of the templates that supports
+  // search term replacement.
   for (TemplateURLVector::const_iterator i(template_urls_.begin());
        i != template_urls_.end(); ++i) {
-    if (!(*i)->IsExtensionKeyword())
+    if (!(*i)->IsExtensionKeyword() && (*i)->SupportsReplacement())
       return *i;
   }
   return NULL;
@@ -657,6 +658,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
   if (new_resource_keyword_version)
     service_->SetBuiltinKeywordVersion(new_resource_keyword_version);
 
+  bool check_if_default_search_valid = !is_default_search_managed_;
+
 #if defined(ENABLE_PROTECTOR_SERVICE)
   // Don't do anything if the default search provider has been changed since the
   // check at the beginning (overridden by Sync).
@@ -678,14 +681,19 @@ void TemplateURLService::OnWebDataServiceRequestDone(
       // every time when keywords are loaded until a search provider is added.
       service_->SetDefaultSearchProvider(default_search_provider_);
     }
+    // The default search provider sanity check makes no sense in this case
+    // because ProtectorService is going to change default search eventually.
+    check_if_default_search_valid = false;
   }
 #endif
 
-  if (!is_default_search_managed_) {
+  if (check_if_default_search_valid) {
+    bool has_default_search_provider = default_search_provider_ != NULL &&
+        default_search_provider_->SupportsReplacement();
     UMA_HISTOGRAM_BOOLEAN("Search.HasDefaultSearchProvider",
-                          default_search_provider_ != NULL);
+                          has_default_search_provider);
     // Ensure that default search provider exists. See http://crbug.com/116952.
-    if (!default_search_provider_)
+    if (!has_default_search_provider)
       SetDefaultSearchProviderNoNotify(FindNewDefaultSearchProvider());
   }
 
@@ -1951,8 +1959,8 @@ void TemplateURLService::SetDefaultSearchProviderIfNewlySynced(
     // Make sure this actually exists. We should not be calling this unless we
     // really just added this TemplateURL.
     const TemplateURL* turl_from_sync = GetTemplateURLForGUID(guid);
-    CHECK(turl_from_sync);
-    SetDefaultSearchProvider(turl_from_sync);
+    if (turl_from_sync && turl_from_sync->SupportsReplacement())
+      SetDefaultSearchProvider(turl_from_sync);
     pending_synced_default_search_ = false;
   }
 }

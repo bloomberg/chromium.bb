@@ -34,10 +34,14 @@ namespace {
 const string16 example_info = ASCIIToUTF16("Example.info");
 const string16 example_info_long = ASCIIToUTF16("ExampleSearchEngine.info");
 const std::string http_example_info = "http://example.info/?q={searchTerms}";
+const std::string http_example_info_no_search_terms =
+    "http://example.net/";
 const std::string example_info_domain = "example.info";
 const string16 example_com = ASCIIToUTF16("Example.com");
 const string16 example_com_long = ASCIIToUTF16("ExampleSearchEngine.com");
 const std::string http_example_com = "http://example.com/?q={searchTerms}";
+const std::string http_example_com_no_search_terms =
+    "http://example.com/";
 const std::string example_com_domain = "example.com";
 const string16 example_net = ASCIIToUTF16("Example.net");
 const std::string http_example_net = "http://example.net/?q={searchTerms}";
@@ -302,6 +306,63 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupInvalid) {
             turl_service_->GetDefaultSearchProvider());
 }
 
+
+IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
+                       BackupValidCannotBeDefault) {
+  // Backup is a valid keyword but cannot be the default search provider (has no
+  // search terms), current search provider exists, fallback to the prepopulated
+  // default search, which exists among keywords.
+  TemplateURL* backup_url =
+      MakeTemplateURL(example_info, ASCIIToUTF16("a"),
+                      http_example_info_no_search_terms);
+  int prepopulated_histogram_id =
+      protector::GetSearchProviderHistogramID(prepopulated_url_.get());
+  TemplateURL* current_url =
+      MakeTemplateURL(example_com, ASCIIToUTF16("b"), http_example_com);
+  int current_histogram_id =
+      protector::GetSearchProviderHistogramID(current_url);
+
+  AddAndSetDefault(current_url);
+
+  // Prepopulated default search must exist.
+  ASSERT_TRUE(FindTemplateURL(prepopulated_url_->url()));
+
+  scoped_ptr<BaseSettingChange> change(
+      CreateDefaultSearchProviderChange(current_url, backup_url));
+  ASSERT_TRUE(change.get());
+  ASSERT_TRUE(change->Init(browser()->profile()));
+
+  // Verify that the prepopulated default search is active.
+  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()),
+            turl_service_->GetDefaultSearchProvider());
+
+  // Verify histograms.
+  ExpectHistogramCount(kProtectorHistogramSearchProviderHijacked,
+                       current_histogram_id, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
+                       prepopulated_histogram_id, 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderFallback,
+                       prepopulated_histogram_id, 1);
+
+  // Verify text messages.
+  EXPECT_EQ(GetBubbleMessage(prepopulated_url_->short_name()),
+            change->GetBubbleMessage());
+  EXPECT_EQ(GetChangeSearchButtonText(example_com),
+            change->GetApplyButtonText());
+  EXPECT_EQ(GetOpenSettingsButtonText(), change->GetDiscardButtonText());
+
+  // Verify that search engine settings are opened by Discard.
+  ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
+  change->Discard(browser());
+  EXPECT_EQ(FindTemplateURL(prepopulated_url_->url()),
+            turl_service_->GetDefaultSearchProvider());
+
+  // Verify that Apply switches back to |current_url|.
+  change->Apply(browser());
+  EXPECT_EQ(FindTemplateURL(http_example_com),
+            turl_service_->GetDefaultSearchProvider());
+}
+
 IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
                        BackupInvalidFallbackRemoved) {
   // Backup is invalid, current search provider exists, fallback to the
@@ -384,6 +445,57 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   // Verify histograms.
   ExpectHistogramCount(kProtectorHistogramSearchProviderHijacked,
                        protector::GetSearchProviderHistogramID(NULL), 1);
+  ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
+                       backup_histogram_id, 1);
+
+  // Verify text messages.
+  EXPECT_EQ(GetBubbleMessage(), change->GetBubbleMessage());
+  EXPECT_EQ(GetOpenSettingsButtonText(), change->GetApplyButtonText());
+  EXPECT_EQ(GetKeepSearchButtonText(example_info),
+            change->GetDiscardButtonText());
+  EXPECT_EQ(GURL(), change->GetNewSettingURL());
+  EXPECT_EQ(kNoDisplayName, change->GetApplyDisplayName());
+
+  // Discard does nothing - backup was already active.
+  change->Discard(browser());
+  EXPECT_EQ(FindTemplateURL(http_example_info),
+            turl_service_->GetDefaultSearchProvider());
+
+   // Verify that search engine settings are opened by Apply (no other changes).
+  ExpectSettingsOpened(chrome::kSearchEnginesSubPage);
+  change->Apply(browser());
+  EXPECT_EQ(FindTemplateURL(http_example_info),
+            turl_service_->GetDefaultSearchProvider());
+}
+
+IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
+                       BackupValidCurrentCannotBeDefault) {
+  // Backup is valid, current search provider has no search terms.
+  TemplateURL* backup_url =
+      MakeTemplateURL(example_info, ASCIIToUTF16("a"), http_example_info);
+  int backup_histogram_id = protector::GetSearchProviderHistogramID(backup_url);
+  TemplateURL* current_url =
+      MakeTemplateURL(example_com, ASCIIToUTF16("b"),
+                      http_example_com_no_search_terms);
+  int current_histogram_id =
+      protector::GetSearchProviderHistogramID(current_url);
+
+  turl_service_->Add(new TemplateURL(backup_url->data()));
+  // TODO(ivankr): this may become unsupported soon.
+  AddAndSetDefault(current_url);
+
+  scoped_ptr<BaseSettingChange> change(
+      CreateDefaultSearchProviderChange(current_url, backup_url));
+  ASSERT_TRUE(change.get());
+  ASSERT_TRUE(change->Init(browser()->profile()));
+
+  // Verify that backup is active.
+  EXPECT_EQ(FindTemplateURL(http_example_info),
+            turl_service_->GetDefaultSearchProvider());
+
+  // Verify histograms.
+  ExpectHistogramCount(kProtectorHistogramSearchProviderHijacked,
+                       current_histogram_id, 1);
   ExpectHistogramCount(kProtectorHistogramSearchProviderRestored,
                        backup_histogram_id, 1);
 
