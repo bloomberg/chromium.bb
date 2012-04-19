@@ -160,8 +160,8 @@ void NetworkChangeNotifierChromeos::UpdateConnectivityState(
   bool was_online = (connection_state_ == chromeos::STATE_ONLINE);
   bool is_portal = (new_connection_state == chromeos::STATE_PORTAL);
   bool was_portal = (connection_state_ == chromeos::STATE_PORTAL);
-  VLOG(2) << "UpdateConnectivityState: " << network->name()
-          << ", new_cs = " << new_connection_state
+  VLOG(2) << " UpdateConnectivityState2: "
+          << "new_cs = " << new_connection_state
           << ", is_online = " << is_online
           << ", was_online = " << was_online
           << ", is_portal = " << is_portal
@@ -170,8 +170,8 @@ void NetworkChangeNotifierChromeos::UpdateConnectivityState(
   if (is_online != was_online || is_portal != was_portal) {
     ReportOnlineStateChange(IsOnline(connection_state_));
   }
-  VLOG(2) << "UpdateConnectivityState: " << network->name()
-          << ", new_cs = " << new_connection_state
+  VLOG(2) << " UpdateConnectivityState3: "
+          << "new_cs = " << new_connection_state
           << ", end_cs_ = " << connection_state_;
 }
 
