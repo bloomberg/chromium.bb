@@ -670,10 +670,6 @@ SrpcClient* ServiceRuntime::SetupAppChannel() {
   }
 }
 
-bool ServiceRuntime::Kill() {
-  return subprocess_->KillChildProcess();
-}
-
 bool ServiceRuntime::Log(int severity, nacl::string msg) {
   NaClSrpcResultCodes rpc_result =
       NaClSrpcInvokeBySignature(&command_channel_,
@@ -684,9 +680,6 @@ bool ServiceRuntime::Log(int severity, nacl::string msg) {
 }
 
 void ServiceRuntime::Shutdown() {
-  if (subprocess_ != NULL) {
-    Kill();
-  }
   rev_interface_->ShutDown();
   anchor_->Abandon();
   // Abandon callbacks, tell service threads to quit if they were
@@ -701,8 +694,8 @@ void ServiceRuntime::Shutdown() {
 
   NaClSrpcDtor(&command_channel_);
 
-  // subprocess_ killed, but threads waiting on messages from the
-  // service runtime may not have noticed yet.  The low-level
+  // subprocess_ has been shut down, but threads waiting on messages
+  // from the service runtime may not have noticed yet.  The low-level
   // NaClSimpleRevService code takes care to refcount the data objects
   // that it needs, and reverse_service_ is also refcounted.  We wait
   // for the service threads to get their EOF indications.
