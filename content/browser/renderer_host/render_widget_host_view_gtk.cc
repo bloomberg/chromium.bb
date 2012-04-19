@@ -51,8 +51,18 @@
 
 namespace {
 
-const int kMaxWindowWidth = 4000;
-const int kMaxWindowHeight = 4000;
+// Paint rects on Linux are bounded by the maximum size of a shared memory
+// region. By default that's 32MB, but many distros increase it significantly
+// (i.e. to 256MB).
+//
+// We fetch the maximum value from /proc/sys/kernel/shmmax at runtime and, if
+// we exceed that, then we limit the height of the paint rect in the renderer.
+//
+// These constants are here to ensure that, in the event that we exceed it, we
+// end up with something a little more square. Previously we had 4000x4000, but
+// people's monitor setups are actually exceeding that these days.
+const int kMaxWindowWidth = 10000;
+const int kMaxWindowHeight = 10000;
 
 // See WebInputEventFactor.cpp for a reason for this being the default
 // scroll size for linux.
