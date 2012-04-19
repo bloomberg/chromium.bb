@@ -26,6 +26,11 @@ input[type='search'] {
   margin: 12px 0;
 }
 
+li > button.link-button {
+  padding-bottom: 8px;
+  padding-top: 8px;
+}
+
 button:not(.custom-appearance):not(.link-button),
 input[type=button]:not(.custom-appearance),
 input[type=submit]:not(.custom-appearance),

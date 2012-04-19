@@ -131,12 +131,12 @@
 }
 
 #add-language-overlay-page {
-  padding: 20px;
   width: 800px;
 }
 
 #add-language-overlay-page button.link-button {
-  padding: 0;
+  padding-left: 0;
+  padding-right: 0;
   text-align: left;
 }
 

@@ -8348,7 +8348,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Default
       </message>
       <message name="IDS_OPTIONS_LANGUAGES_ADD_TITLE" desc="The title for the add language dialog.">
-        Add language:
+        Add language
       </message>
       <message name="IDS_OPTIONS_LANGUAGES_ADD_SELECT_LABEL" desc="The label for the add language select control.">
         Language:
