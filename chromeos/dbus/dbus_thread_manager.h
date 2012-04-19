@@ -36,6 +36,7 @@ class FlimflamManagerClient;
 class FlimflamNetworkClient;
 class FlimflamProfileClient;
 class FlimflamServiceClient;
+class GsmSMSClient;
 class ImageBurnerClient;
 class IntrospectableClient;
 class PowerManagerClient;
@@ -157,6 +158,11 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
   virtual FlimflamServiceClient* GetFlimflamServiceClient() = 0;
+
+  // Returns the SMS client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  virtual GsmSMSClient* GetGsmSMSClient() = 0;
 
   // Returns the image burner client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManger is shut

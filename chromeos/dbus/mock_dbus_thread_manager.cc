@@ -19,6 +19,7 @@
 #include "chromeos/dbus/mock_flimflam_network_client.h"
 #include "chromeos/dbus/mock_flimflam_profile_client.h"
 #include "chromeos/dbus/mock_flimflam_service_client.h"
+#include "chromeos/dbus/mock_gsm_sms_client.h"
 #include "chromeos/dbus/mock_image_burner_client.h"
 #include "chromeos/dbus/mock_introspectable_client.h"
 #include "chromeos/dbus/mock_power_manager_client.h"
@@ -48,6 +49,7 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_flimflam_network_client_(new MockFlimflamNetworkClient),
       mock_flimflam_profile_client_(new MockFlimflamProfileClient),
       mock_flimflam_service_client_(new MockFlimflamServiceClient),
+      mock_gsm_sms_client_(new MockGsmSMSClient),
       mock_image_burner_client_(new MockImageBurnerClient),
       mock_introspectable_client_(new MockIntrospectableClient),
       mock_power_manager_client_(new MockPowerManagerClient),
@@ -84,6 +86,8 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_flimflam_profile_client()));
   EXPECT_CALL(*this, GetFlimflamServiceClient())
       .WillRepeatedly(Return(mock_flimflam_service_client()));
+  EXPECT_CALL(*this, GetGsmSMSClient())
+      .WillRepeatedly(Return(mock_gsm_sms_client()));
   EXPECT_CALL(*this, GetImageBurnerClient())
       .WillRepeatedly(Return(mock_image_burner_client()));
   EXPECT_CALL(*this, GetIntrospectableClient())

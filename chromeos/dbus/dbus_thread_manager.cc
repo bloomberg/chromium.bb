@@ -22,6 +22,7 @@
 #include "chromeos/dbus/flimflam_network_client.h"
 #include "chromeos/dbus/flimflam_profile_client.h"
 #include "chromeos/dbus/flimflam_service_client.h"
+#include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -97,6 +98,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create the Flimflam Service client.
     flimflam_service_client_.reset(
         FlimflamServiceClient::Create(client_type, system_bus_.get()));
+    // Create the SMS cilent.
+    gsm_sms_client_.reset(
+        GsmSMSClient::Create(client_type, system_bus_.get()));
     // Create the image burner client.
     image_burner_client_.reset(ImageBurnerClient::Create(client_type,
                                                          system_bus_.get()));
@@ -207,6 +211,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   }
 
   // DBusThreadManager override.
+  virtual GsmSMSClient* GetGsmSMSClient() OVERRIDE {
+    return gsm_sms_client_.get();
+  }
+
+  // DBusThreadManager override.
   virtual ImageBurnerClient* GetImageBurnerClient() OVERRIDE {
     return image_burner_client_.get();
   }
@@ -253,6 +262,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<FlimflamNetworkClient> flimflam_network_client_;
   scoped_ptr<FlimflamProfileClient> flimflam_profile_client_;
   scoped_ptr<FlimflamServiceClient> flimflam_service_client_;
+  scoped_ptr<GsmSMSClient> gsm_sms_client_;
   scoped_ptr<ImageBurnerClient> image_burner_client_;
   scoped_ptr<IntrospectableClient> introspectable_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;
