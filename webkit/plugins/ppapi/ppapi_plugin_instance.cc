@@ -445,7 +445,8 @@ void PluginInstance::InstanceCrashed() {
   // Free any associated graphics.
   SetFullscreen(false);
   FlashSetFullscreen(false, false);
-  bound_graphics_ = NULL;
+  // Unbind current 2D or 3D graphics context.
+  BindGraphics(pp_instance(), 0);
   InvalidateRect(gfx::Rect());
 
   delegate()->PluginCrashed(this);
