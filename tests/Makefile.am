@@ -2,6 +2,7 @@ TESTS = $(check_PROGRAMS)
 
 
 check_PROGRAMS =				\
+	sanity-test				\
 	array-test				\
 	map-test				\
 	list-test				\
@@ -11,6 +12,7 @@ check_PROGRAMS =				\
 
 test_runner_src = test-runner.c test-runner.h
 
+sanity_test_SOURCES = sanity-test.c $(test_runner_src)
 map_test_SOURCES = map-test.c $(test_runner_src)
 array_test_SOURCES = array-test.c $(test_runner_src)
 list_test_SOURCES = list-test.c $(test_runner_src)
