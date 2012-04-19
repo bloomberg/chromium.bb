@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/ui/idle_logout_dialog_view.h"
 
-#include "base/message_loop.h"
 #include "chrome/browser/chromeos/kiosk_mode/mock_kiosk_mode_settings.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 
 namespace chromeos {
 
@@ -81,14 +81,23 @@ IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest, ShowDialogAndClose) {
   ExpectClosedDialog();
 }
 
-// TODO(rkc@chromium.org): Fix test on Linux ChromeOS
-// http://crbug.com/121655
-IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest, FAILS_ShowDialogAndCloseView) {
+IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest, ShowDialogAndCloseView) {
   IdleLogoutDialogView::ShowDialog();
   EXPECT_NO_FATAL_FAILURE(ExpectOpenDialog());
 
   IdleLogoutDialogView::current_instance()->Close();
-  MessageLoop::current()->RunAllPending();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  ExpectClosedDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest, ShowDialogAndCloseViewClose) {
+  IdleLogoutDialogView::ShowDialog();
+  EXPECT_NO_FATAL_FAILURE(ExpectOpenDialog());
+
+  IdleLogoutDialogView::current_instance()->Close();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  IdleLogoutDialogView::CloseDialog();
+
   ExpectClosedDialog();
 }
 
@@ -108,14 +117,12 @@ IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest,
   ExpectClosedDialog();
 }
 
-// TODO(rkc@chromium.org): Fix test on Linux ChromeOS
-// http://crbug.com/121655
 IN_PROC_BROWSER_TEST_F(IdleLogoutDialogViewTest,
-                       FAILS_ShowDialogAndFinishCountdown) {
+                       ShowDialogAndFinishCountdown) {
   IdleLogoutDialogView::ShowDialog();
   EXPECT_NO_FATAL_FAILURE(ExpectOpenDialog());
 
-  MessageLoop::current()->RunAllPending();
+  ui_test_utils::RunAllPendingInMessageLoop();
   ExpectClosedDialog();
 }
 

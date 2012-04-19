@@ -49,27 +49,24 @@ class IdleLogoutDialogView : public views::DialogDelegateView {
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
-  virtual void DeleteDelegate() OVERRIDE;
 
  private:
   friend class MockIdleLogoutSettingsProvider;
   friend class IdleLogoutDialogViewTest;
   FRIEND_TEST_ALL_PREFIXES(IdleLogoutDialogViewTest, ShowDialogAndCloseView);
+  FRIEND_TEST_ALL_PREFIXES(IdleLogoutDialogViewTest,
+                           ShowDialogAndCloseViewClose);
 
   IdleLogoutDialogView();
   virtual ~IdleLogoutDialogView();
 
   // Adds the labels and adds them to the layout.
-  void Init();
+  void InitAndShow();
 
   void Show();
   void Close();
 
   void UpdateCountdown();
-
-  // Indicate that this instance has been 'closed' and should not be used.
-  void set_closed() { is_closed_ = true; }
-  bool is_closed() const { return is_closed_; }
 
   // For testing.
   static IdleLogoutDialogView* current_instance();
@@ -82,8 +79,6 @@ class IdleLogoutDialogView : public views::DialogDelegateView {
   base::Time countdown_end_time_;
 
   base::RepeatingTimer<IdleLogoutDialogView> timer_;
-
-  bool is_closed_;
 
   base::WeakPtrFactory<IdleLogoutDialogView> weak_ptr_factory_;
 

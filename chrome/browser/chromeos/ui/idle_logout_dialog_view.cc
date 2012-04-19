@@ -65,18 +65,14 @@ void IdleLogoutDialogView::ShowDialog() {
   // called, in which case we reset g_instance there if not already reset.
   if (!g_instance) {
     g_instance = new IdleLogoutDialogView();
-    g_instance->Init();
-    g_instance->Show();
+    g_instance->InitAndShow();
   }
 }
 
 // static
 void IdleLogoutDialogView::CloseDialog() {
-  if (g_instance) {
-    g_instance->set_closed();
+  if (g_instance)
     g_instance->Close();
-    g_instance = NULL;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,22 +93,6 @@ views::View* IdleLogoutDialogView::GetContentsView() {
   return this;
 }
 
-void IdleLogoutDialogView::DeleteDelegate() {
-  // There isn't a delegate method that is called on close and is 'not' called
-  // async; this can cause an issue with us setting the g_instance to NULL
-  // 'after' another Show call has been called on it. So instead, we rely on
-  // CloseIdleLogoutDialog to set g_instance to NULL; in the case that we get
-  // closed by any other way than CloseIdleLogoutDialog, we check if our
-  // 'closed' state is set - if not, then we set it and set g_instance to null,
-  // since that means that CloseIdleLogoutDialog was never called.
-  if (!this->is_closed()) {
-    g_instance->set_closed();
-    g_instance = NULL;
-  }
-
-  delete this;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // IdleLogoutDialog private methods
 IdleLogoutDialogView::IdleLogoutDialogView()
@@ -124,13 +104,15 @@ IdleLogoutDialogView::IdleLogoutDialogView()
 }
 
 IdleLogoutDialogView::~IdleLogoutDialogView() {
+  if (this == g_instance)
+    g_instance = NULL;
 }
 
-void IdleLogoutDialogView::Init() {
+void IdleLogoutDialogView::InitAndShow() {
   KioskModeSettings* settings =
       IdleLogoutDialogView::provider_->GetKioskModeSettings();
   if (!settings->is_initialized()) {
-    settings->Initialize(base::Bind(&IdleLogoutDialogView::Init,
+    settings->Initialize(base::Bind(&IdleLogoutDialogView::InitAndShow,
                                     weak_ptr_factory_.GetWeakPtr()));
     return;
   }
@@ -159,6 +141,9 @@ void IdleLogoutDialogView::Init() {
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   layout->StartRow(0, 0);
   layout->AddView(restart_label_);
+
+  // We're initialized, can safely show the dialog now.
+  Show();
 }
 
 void IdleLogoutDialogView::Show() {
@@ -195,6 +180,10 @@ void IdleLogoutDialogView::Close() {
   if (timer_.IsRunning())
     timer_.Stop();
   GetWidget()->Close();
+
+  // We just closed our dialog. The global
+  // instance is invalid now, set it to null.
+  g_instance = NULL;
 }
 
 void IdleLogoutDialogView::UpdateCountdown() {
