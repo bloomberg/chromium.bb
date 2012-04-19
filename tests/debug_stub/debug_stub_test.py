@@ -83,8 +83,8 @@ SP_REG = {
 
 def DecodeRegs(reply):
   defs = REG_DEFS[ARCH]
-  names = [reg_name for reg_name,reg_fmt in defs]
-  fmt = ''.join([reg_fmt for reg_name,reg_fmt in defs])
+  names = [reg_name for reg_name, reg_fmt in defs]
+  fmt = ''.join([reg_fmt for reg_name, reg_fmt in defs])
 
   values = struct.unpack_from(fmt, DecodeHex(reply))
   return dict(zip(names, values))
@@ -92,8 +92,8 @@ def DecodeRegs(reply):
 
 def EncodeRegs(regs):
   defs = REG_DEFS[ARCH]
-  names = [reg_name for reg_name,reg_fmt in defs]
-  fmt = ''.join([reg_fmt for reg_name,reg_fmt in defs])
+  names = [reg_name for reg_name, reg_fmt in defs]
+  fmt = ''.join([reg_fmt for reg_name, reg_fmt in defs])
 
   values = [regs[r] for r in names]
   return EncodeHex(struct.pack(fmt, *values))
