@@ -2,6 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+html.col-resize * {
+  cursor: col-resize !important;
+}
+
 /* Outer frame of the dialog. */
 body {
    -webkit-box-flex: 1;
@@ -187,16 +191,22 @@ input[type='submit'][disabled]:hover {
 /* Roots list at the left. */
 .dialog-sidebar {
   -webkit-box-flex: 0;
-  -webkit-transition: margin-left 180ms ease;
   background-color: #e6e6e6;
-  margin-left: -168px;
   overflow: hidden;
   position: relative;
   width: 168px;
 }
 
-.dialog-container[sidebar] .dialog-sidebar {
-  margin-left: 0;
+/* A vertical splitter between the roots list and the file list. It is actually
+  a transparent area centered on the roots list right border.*/
+div.sidebar-splitter {
+  -webkit-box-flex: 0;
+  cursor: col-resize;
+  margin-left: -4px;  /* +1px to accomodate the roots list border */
+  margin-right: -3px;
+  position: relative;
+  width: 7px;
+  z-index: 2;
 }
 
 /* Roots list at the left. */
@@ -240,20 +250,12 @@ list.roots-list li.root-item {
   padding-left: 11px;
 }
 
-li.root-item > * {
-  display: block;
-  margin-right: 5px;
-}
-
 li.root-item > .root-label {
-  max-width: 90px;
+  -webkit-box-flex: 1;
+  margin-right: 5px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-li.root-item > .spacer {
-  -webkit-box-flex: 1;
 }
 
 .root-label {
@@ -262,48 +264,22 @@ li.root-item > .spacer {
   background-repeat: no-repeat;
 }
 
-.breadcrumbs .root-label {
-  -webkit-padding-start: 34px;
-  background-position: left center;
-}
-
 .root-label[icon=downloads] {
   background-image: url('../images/downloads_28x28.png');
-}
-
-.breadcrumbs .root-label[icon=downloads] {
-  background-image: url('../images/downloads_24x24.png');
 }
 
 .root-label[icon=gdata] {
   background-image: url('../images/gdata_28x28.png');
 }
 
-.breadcrumbs .root-label[icon=gdata] {
-  background-image: url('../images/gdata_24x24.png');
-}
-
 .root-label[icon=archive] {
   background-image: url('../images/archive_28x28.png');
-}
-
-.breadcrumbs .root-label[icon=archive] {
-  background-image: url('../images/archive_24x24.png');
 }
 
 .root-label[icon=removable],
 .root-label[icon=unreadable] {
   background-image: url('../images/usb_source_28x28.png');
   background-position: 0 -3px;
-}
-
-.breadcrumbs .root-label[icon=removable] {
-  background-image: url('../images/usb_source_24x24.png');
-}
-
-.dialog-container[sidebar] .breadcrumbs .root-label {
-  -webkit-padding-start: 0;
-  background-image: none;
 }
 
 div.root-eject {
@@ -314,8 +290,6 @@ div.root-eject {
   background-size: 10px 8px;
   cursor: pointer;
   height: 20px;
-  margin-bottom: 2px;
-  margin-right: 3px;
   opacity: 0.5;
   width: 20px;
 }
@@ -331,60 +305,9 @@ div.root-eject:hover {
   -webkit-transition: all 180ms ease;
   display: -webkit-box;
   margin-bottom: 7px;
+  margin-left: 0;
   margin-right: 10px;
   margin-top: 5px;
- }
-
-/* Container for the detail and thumbnail (not implemented yet) list views. */
-.dialog-container[sidebar] .dialog-header {
-  margin-left: 0;
-}
-
-/* Close sidebar button. */
-div.close-sidebar {
-  background-color: white;
-  background-image: url('../images/close_sidebar.png');
-  background-position: center center;
-  background-repeat: no-repeat;
-  border: 1px solid #d2d2d2;
-  border-right: none;
-  cursor: pointer;
-  display: none;
-  height: 26px;
-  position: absolute;
-  right: 0;
-  top: 6px;
-  width: 14px;
-  z-index: 10;
-}
-
-div.close-sidebar:hover {
-  background-color: rgba(240, 240, 240, 1);
-}
-
-/* Open sidebar button. */
-div.dialog-header div.open-sidebar {
-  background-color: white;
-  background-image: url('../images/open_sidebar.png');
-  background-position: center center;
-  background-repeat: no-repeat;
-  cursor: pointer;
-  height: 28px;
-  margin-right: 10px;
-  margin-top: 1px;
-  width: 15px;
-}
-
-div.open-sidebar:hover {
-  background-color: rgba(240, 240, 240, 1);
-}
-
-.dialog-container[sidebar] div.open-sidebar {
-  display: none;
-}
-
-.dialog-container[sidebar] div.close-sidebar {
-  display: block;
 }
 
 /* Container for the detail and thumbnail list views. */
@@ -395,11 +318,6 @@ div.open-sidebar:hover {
   border-top: 1px solid #d4d4d4;
   display: -webkit-box;
   overflow: hidden;
-}
-
-.dialog-container[sidebar] .dialog-body {
-  -webkit-border-bottom-left-radius: 0;
-  -webkit-border-top-left-radius: 0;
 }
 
 /* Container for the ok/cancel buttons. */
@@ -433,6 +351,7 @@ div.open-sidebar:hover {
   -webkit-box-flex: 1;
   -webkit-box-orient: horizontal;
   -webkit-margin-end: 5px;
+  -webkit-margin-start: 10px;
   display: -webkit-box;
   line-height: 20px;
   overflow: hidden;
@@ -445,10 +364,6 @@ div.open-sidebar:hover {
 
 .breadcrumbs > [collapsed] {
   width: 1em;
-}
-
-.dialog-container[sidebar] .breadcrumbs {
-  margin-left: 10px;
 }
 
 /* A single directory name in the list of path breadcrumbs. */

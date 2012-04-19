@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Setting the src of an img to an empty string can crash the browser, so we
-// use an empty 1x1 gif instead.
-
 /**
  * FileManager constructor.
  *
@@ -682,14 +679,9 @@ FileManager.prototype = {
     this.deleteButton_.addEventListener('keypress',
         this.onDeleteButtonKeyPress_.bind(this));
 
-    this.dialogDom_.querySelector('div.open-sidebar').addEventListener(
-        'click', this.onToggleSidebar_.bind(this));
-    this.dialogDom_.querySelector('div.open-sidebar').addEventListener(
-        'keypress', this.onToggleSidebarPress_.bind(this));
-    this.dialogDom_.querySelector('div.close-sidebar').addEventListener(
-        'click', this.onToggleSidebar_.bind(this));
-    this.dialogDom_.querySelector('div.close-sidebar').addEventListener(
-        'keypress', this.onToggleSidebarPress_.bind(this));
+    this.decorateSplitter(
+        this.dialogDom_.querySelector('div.sidebar-splitter'));
+
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
     this.dialogDom_.querySelector('div.detail-view').addEventListener(
         'click', this.onDetailViewButtonClick_.bind(this));
@@ -1954,10 +1946,6 @@ FileManager.prototype = {
 
     if (rootType == DirectoryModel.RootType.ARCHIVE ||
         rootType == DirectoryModel.RootType.REMOVABLE) {
-      var spacer = this.document_.createElement('div');
-      spacer.className = 'spacer';
-      li.appendChild(spacer);
-
       var eject = this.document_.createElement('div');
       eject.className = 'root-eject';
       eject.addEventListener('click', function(event) {
@@ -2987,17 +2975,7 @@ FileManager.prototype = {
       path = path + '/';
       div.path = path;
 
-      if (i == 0) {
-        div.classList.add('root-label');
-        div.setAttribute('icon', DirectoryModel.getRootType(rootPath));
-
-        // Wrapper with zero margins.
-        var wrapper = doc.createElement('div');
-        wrapper.appendChild(div);
-        bc.appendChild(wrapper);
-      } else {
-        bc.appendChild(div);
-      }
+      bc.appendChild(div);
 
       if (i == pathNames.length - 1) {
         div.classList.add('breadcrumb-last');
@@ -3720,28 +3698,6 @@ FileManager.prototype = {
     }, 0);
   };
 
-  /**
-   * Handles a keypress on the toggle sidebar button.  It has the same effect as
-   * a mouseclick if enter or space is pressed.
-   *
-   * @param {KeyboardEvent} event Information on the key event.
-   */
-  FileManager.prototype.onToggleSidebarPress_ = function(event) {
-    // Check if Enter (13) or Space (32) is pressed.
-    if (event.keyCode == 13 || event.keyCode == 32)
-      this.onToggleSidebar_(event);
-  }
-
-  FileManager.prototype.onToggleSidebar_ = function(event) {
-    if (this.dialogContainer_.hasAttribute('sidebar')) {
-      this.dialogContainer_.removeAttribute('sidebar');
-    } else {
-      this.dialogContainer_.setAttribute('sidebar', 'sidebar');
-    }
-    // TODO(dgozman): make table header css-resizable.
-    setTimeout(this.onResize_.bind(this), 300);
-  };
-
   FileManager.prototype.cancelSpinnerTimeout_ = function() {
     if (this.showSpinnerTimeout_) {
       clearTimeout(this.showSpinnerTimeout_);
@@ -4382,5 +4338,34 @@ FileManager.prototype = {
     } else {
       event.target.setAttribute('checked', 'checked');
     }
+  };
+
+  FileManager.prototype.decorateSplitter = function(splitterElement) {
+    var self = this;
+
+    var Splitter = cr.ui.Splitter;
+
+    var customSplitter = cr.ui.define('div');
+
+    customSplitter.prototype = {
+      __proto__: Splitter.prototype,
+
+      handleSplitterDragStart: function(e) {
+        Splitter.prototype.handleSplitterDragStart.apply(this, arguments);
+        this.ownerDocument.documentElement.classList.add('col-resize');
+      },
+
+      handleSplitterDragMove: function(deltaX) {
+        Splitter.prototype.handleSplitterDragMove.apply(this, arguments);
+        self.onResize_();
+      },
+
+      handleSplitterDragEnd: function(e) {
+        Splitter.prototype.handleSplitterDragEnd.apply(this, arguments);
+        this.ownerDocument.documentElement.classList.remove('col-resize');
+      }
+    };
+
+    customSplitter.decorate(splitterElement);
   };
 })();
