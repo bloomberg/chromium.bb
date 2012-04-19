@@ -455,18 +455,19 @@ void LookaheadFilterInterpreter::CombineGestures(Gesture* gesture,
     }
     return;
   }
-  if (addend->type != kGestureTypeButtonsChange) {
-    // Either |gesture| is a button gesture, or neither is. Either way, keep
-    // |gesture| as is.
-    Err("Losing gesture");
-    return;
-  }
-  // |addend| must be a button gesture if we get to here.
   if (gesture->type != kGestureTypeButtonsChange) {
+    // Either |addend| is a button gesture, or neither is. Either way, use
+    // |addend|.
     Log("Losing gesture");
     *gesture = *addend;
     return;
   }
+  // |gesture| must be a button gesture if we get to here.
+  if (addend->type != kGestureTypeButtonsChange) {
+    Err("Losing gesture");
+    return;
+  }
+
   // We have 2 button events. merge them
   unsigned buttons[] = { GESTURES_BUTTON_LEFT,
                          GESTURES_BUTTON_MIDDLE,
