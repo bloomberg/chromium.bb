@@ -433,12 +433,30 @@ IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_IndexGetObject,
                             int32, /* transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 
+// WebIDBIndex::getObjectByRange() message.
+IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_IndexGetObjectByRange,
+                            int32, /* idb_index_id */
+                            int32, /* thread_id */
+                            int32, /* response_id */
+                            IndexedDBKeyRange, /* key */
+                            int32, /* transaction_id */
+                            WebKit::WebExceptionCode /* ec */)
+
 // WebIDBIndex::getKey() message.
 IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_IndexGetKey,
                             int32, /* idb_index_id */
                             int32, /* thread_id */
                             int32, /* response_id */
                             IndexedDBKey, /* key */
+                            int32, /* transaction_id */
+                            WebKit::WebExceptionCode /* ec */)
+
+// WebIDBIndex::getKeyByRange() message.
+IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_IndexGetKeyByRange,
+                            int32, /* idb_index_id */
+                            int32, /* thread_id */
+                            int32, /* response_id */
+                            IndexedDBKeyRange, /* key */
                             int32, /* transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 
@@ -467,6 +485,15 @@ IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_ObjectStoreGet,
                             int32, /* thread_id */
                             int32, /* response_id */
                             IndexedDBKey, /* key */
+                            int32, /* transaction_id */
+                            WebKit::WebExceptionCode /* ec */)
+
+// WebIDBObjectStore::get() message.
+IPC_SYNC_MESSAGE_CONTROL5_1(IndexedDBHostMsg_ObjectStoreGetByRange,
+                            int32, /* idb_object_store_id */
+                            int32, /* thread_id */
+                            int32, /* response_id */
+                            IndexedDBKeyRange, /* key_range */
                             int32, /* transaction_id */
                             WebKit::WebExceptionCode /* ec */)
 

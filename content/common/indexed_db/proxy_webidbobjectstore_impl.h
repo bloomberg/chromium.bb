@@ -32,6 +32,10 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
                    WebKit::WebIDBCallbacks* callbacks,
                    const WebKit::WebIDBTransaction& transaction,
                    WebKit::WebExceptionCode& ec);
+  virtual void get(const WebKit::WebIDBKeyRange& key_range,
+                   WebKit::WebIDBCallbacks* callbacks,
+                   const WebKit::WebIDBTransaction& transaction,
+                   WebKit::WebExceptionCode& ec);
   virtual void put(const WebKit::WebSerializedScriptValue& value,
                    const WebKit::WebIDBKey& key,
                    PutMode put_mode,

@@ -80,6 +80,18 @@ void RendererWebIDBObjectStoreImpl::get(
       IndexedDBKey(key), callbacks, idb_object_store_id_, transaction, &ec);
 }
 
+void RendererWebIDBObjectStoreImpl::get(
+    const WebIDBKeyRange& key_range,
+    WebIDBCallbacks* callbacks,
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance();
+  dispatcher->RequestIDBObjectStoreGetByRange(
+      IndexedDBKeyRange(key_range), callbacks,
+      idb_object_store_id_, transaction, &ec);
+}
+
 void RendererWebIDBObjectStoreImpl::put(
     const WebSerializedScriptValue& value,
     const WebIDBKey& key,

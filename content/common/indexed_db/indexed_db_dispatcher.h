@@ -148,17 +148,38 @@ class CONTENT_EXPORT IndexedDBDispatcher
                                 const WebKit::WebIDBTransaction& transaction,
                                  WebKit::WebExceptionCode* ec);
 
+  void RequestIDBIndexGetObjectByRange(
+      const IndexedDBKeyRange& key_range,
+      WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_index_id,
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode* ec);
+
   void RequestIDBIndexGetKey(const IndexedDBKey& key,
                              WebKit::WebIDBCallbacks* callbacks,
                              int32 idb_index_id,
                              const WebKit::WebIDBTransaction& transaction,
                              WebKit::WebExceptionCode* ec);
 
+  void RequestIDBIndexGetKeyByRange(
+      const IndexedDBKeyRange& key_range,
+      WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_index_id,
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode* ec);
+
   void RequestIDBObjectStoreGet(const IndexedDBKey& key,
                                 WebKit::WebIDBCallbacks* callbacks,
                                 int32 idb_object_store_id,
                                 const WebKit::WebIDBTransaction& transaction,
                                 WebKit::WebExceptionCode* ec);
+
+  void RequestIDBObjectStoreGetByRange(
+      const IndexedDBKeyRange& key_range,
+      WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_object_store_id,
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStorePut(const content::SerializedScriptValue& value,
                                 const IndexedDBKey& key,

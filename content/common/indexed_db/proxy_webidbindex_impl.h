@@ -40,7 +40,15 @@ class RendererWebIDBIndexImpl : public WebKit::WebIDBIndex {
                          WebKit::WebIDBCallbacks* callbacks,
                          const WebKit::WebIDBTransaction& transaction,
                          WebKit::WebExceptionCode& ec);
+  virtual void getObject(const WebKit::WebIDBKeyRange& key_range,
+                         WebKit::WebIDBCallbacks* callbacks,
+                         const WebKit::WebIDBTransaction& transaction,
+                         WebKit::WebExceptionCode& ec);
   virtual void getKey(const WebKit::WebIDBKey& key,
+                      WebKit::WebIDBCallbacks* callbacks,
+                      const WebKit::WebIDBTransaction& transaction,
+                      WebKit::WebExceptionCode& ec);
+  virtual void getKey(const WebKit::WebIDBKeyRange& key_range,
                       WebKit::WebIDBCallbacks* callbacks,
                       const WebKit::WebIDBTransaction& transaction,
                       WebKit::WebExceptionCode& ec);
