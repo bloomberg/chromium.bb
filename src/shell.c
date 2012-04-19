@@ -97,7 +97,6 @@ enum shell_surface_type {
 
 struct ping_timer {
 	struct wl_event_source *source;
-	uint32_t pong_received;
 	uint32_t serial;
 };
 
@@ -315,13 +314,13 @@ unresponsive_surface_fade(struct shell_surface *shsurf, bool reverse)
 }
 
 static void
-ping_timeout_fade_frame(struct weston_animation *animation,
+unresponsive_fade_frame(struct weston_animation *animation,
 		struct weston_output *output, uint32_t msecs)
 {
 	struct shell_surface *shsurf =
 		container_of(animation, struct shell_surface, unresponsive_animation.current);
 	struct weston_surface *surface = shsurf->surface;
-	unsigned int step = 32;
+	unsigned int step = 8;
 
 	if (!surface || !shsurf)
 		return;
@@ -362,22 +361,27 @@ ping_timeout_fade_frame(struct weston_animation *animation,
 	weston_surface_damage(surface);
 }
 
+static void
+ping_timer_destroy(struct shell_surface *shsurf)
+{
+	if (!shsurf || !shsurf->ping_timer)
+		return;
+
+	if (shsurf->ping_timer->source)
+		wl_event_source_remove(shsurf->ping_timer->source);
+
+	free(shsurf->ping_timer);
+	shsurf->ping_timer = NULL;
+}
+
 static int
 ping_timeout_handler(void *data)
 {
 	struct shell_surface *shsurf = data;
 
-	if (!shsurf || !shsurf->ping_timer)
-		return 1;
-
-	if (shsurf->ping_timer->pong_received) {
-		free(shsurf->ping_timer);
-		shsurf->ping_timer = NULL;
-	} else {
-		/* Client is not responding */
-		shsurf->unresponsive = 1;
-		unresponsive_surface_fade(shsurf, false);
-	}
+	/* Client is not responding */
+	shsurf->unresponsive = 1;
+	unresponsive_surface_fade(shsurf, false);
 
 	return 1;
 }
@@ -388,7 +392,7 @@ ping_handler(struct weston_surface *surface, uint32_t serial)
 	struct shell_surface *shsurf;
 	shsurf = get_shell_surface(surface);
 	struct wl_event_loop *loop;
-	int ping_timeout = 15000;
+	int ping_timeout = 2500;
 
 	if (!shsurf)
 		return;
@@ -399,7 +403,6 @@ ping_handler(struct weston_surface *surface, uint32_t serial)
 			return;
 
 		shsurf->ping_timer->serial = serial;
-		shsurf->ping_timer->pong_received = 0;
 		loop = wl_display_get_event_loop(surface->compositor->wl_display);
 		shsurf->ping_timer->source =
 			wl_event_loop_add_timer(loop, ping_timeout_handler, shsurf);
@@ -415,18 +418,13 @@ shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 {
 	struct shell_surface *shsurf = resource->data;
 
-	if (!shsurf || !shsurf->ping_timer)
-		return;
-
 	if (shsurf->ping_timer->serial == serial) {
 		if (shsurf->unresponsive) {
 			/* Received pong from previously unresponsive client */
 			unresponsive_surface_fade(shsurf, true);
 		}
-		shsurf->ping_timer->pong_received = 1;
 		shsurf->unresponsive = 0;
-		free(shsurf->ping_timer);
-		shsurf->ping_timer = NULL;
+		ping_timer_destroy(shsurf);
 	}
 }
 
@@ -1054,8 +1052,7 @@ destroy_shell_surface(struct wl_resource *resource)
 	 */
 	wl_list_remove(&shsurf->surface_destroy_listener.link);
 	shsurf->surface->configure = NULL;
-	if (shsurf->ping_timer)
-		free(shsurf->ping_timer);
+	ping_timer_destroy(shsurf);
 
 	wl_list_remove(&shsurf->link);
 	free(shsurf);
@@ -1122,7 +1119,7 @@ shell_get_shell_surface(struct wl_client *client,
 	shsurf->unresponsive = 0;
 	shsurf->unresponsive_animation.exists = 0;
 	shsurf->unresponsive_animation.fading_in = 0;
-	shsurf->unresponsive_animation.current.frame = ping_timeout_fade_frame;
+	shsurf->unresponsive_animation.current.frame = unresponsive_fade_frame;
 
 	shsurf->resource.destroy = destroy_shell_surface;
 	shsurf->resource.object.id = id;
@@ -2380,21 +2377,11 @@ debug_repaint_binding(struct wl_input_device *device, uint32_t time,
 static void
 shell_destroy(struct wl_listener *listener, void *data)
 {
-	struct weston_surface *surface;
-	struct shell_surface *shsurf;
 	struct desktop_shell *shell =
 		container_of(listener, struct desktop_shell, destroy_listener);
 
 	if (shell->child.client)
 		wl_client_destroy(shell->child.client);
-
-	wl_list_for_each(surface, &shell->compositor->surface_list, link) {
-		shsurf = get_shell_surface(surface);
-		if (!shsurf)
-			continue;
-		if (shsurf->ping_timer)
-			free(shsurf->ping_timer);
-	}
 
 	free(shell->screensaver.path);
 	free(shell);
