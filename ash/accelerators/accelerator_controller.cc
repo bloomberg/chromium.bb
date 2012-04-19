@@ -394,10 +394,6 @@ bool AcceleratorController::AcceleratorPressed(
       if (volume_control_delegate_.get())
         return volume_control_delegate_->HandleVolumeUp(accelerator);
       break;
-    case FOCUS_LAUNCHER:
-      if (shell->launcher())
-        return shell->focus_cycler()->FocusWidget(shell->launcher()->widget());
-      break;
     case FOCUS_TRAY:
       if (shell->tray())
         return shell->focus_cycler()->FocusWidget(shell->tray()->GetWidget());
