@@ -29,7 +29,6 @@ PrefService* GetPrefService() {
 BrowserStateMonitor::BrowserStateMonitor(InputMethodManager* manager)
     : manager_(manager),
       state_(InputMethodManager::STATE_LOGIN_SCREEN),
-      initialized_(false),
       pref_service_(NULL) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_USER_CHANGED,
@@ -69,13 +68,24 @@ void BrowserStateMonitor::UpdateLocalState(
 
 void BrowserStateMonitor::UpdateUserPreferences(
     const std::string& current_input_method) {
-  InitializePrefMembers();
+  PrefService* pref_service = pref_service_ ? pref_service_ : GetPrefService();
+  DCHECK(pref_service);
+
+  // Even though we're DCHECK'ing to catch this on debug builds, we don't
+  // want to crash a release build in case the pref service is no longer
+  // available.
+  if (!pref_service)
+    return;
+
   const std::string current_input_method_on_pref =
-      current_input_method_pref_.GetValue();
+      pref_service->GetString(prefs::kLanguageCurrentInputMethod);
   if (current_input_method_on_pref == current_input_method)
     return;
-  previous_input_method_pref_.SetValue(current_input_method_on_pref);
-  current_input_method_pref_.SetValue(current_input_method);
+
+  pref_service->SetString(prefs::kLanguagePreviousInputMethod,
+                          current_input_method_on_pref);
+  pref_service->SetString(prefs::kLanguageCurrentInputMethod,
+                          current_input_method);
 }
 
 void BrowserStateMonitor::InputMethodChanged(InputMethodManager* manager) {
@@ -177,20 +187,6 @@ void BrowserStateMonitor::SetState(InputMethodManager::State new_state) {
   state_ = new_state;
   if (old_state != state_)
     manager_->SetState(state_);
-}
-
-void BrowserStateMonitor::InitializePrefMembers() {
-  if (initialized_)
-    return;
-
-  initialized_ = true;
-  PrefService* pref_service = pref_service_ ? pref_service_ : GetPrefService();
-  DCHECK(pref_service);
-  DCHECK_EQ(InputMethodManager::STATE_BROWSER_SCREEN, state_);
-  previous_input_method_pref_.Init(
-      prefs::kLanguagePreviousInputMethod, pref_service, this);
-  current_input_method_pref_.Init(
-      prefs::kLanguageCurrentInputMethod, pref_service, this);
 }
 
 }  // namespace input_method
