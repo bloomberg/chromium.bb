@@ -24,6 +24,7 @@ import json
 import logging
 import optparse
 import os
+import posixpath
 import re
 import stat
 import subprocess
@@ -462,50 +463,49 @@ def main():
     parser.error('--mode is required')
   if len(args) != 1:
     parser.error('Use only one argument which should be a .isolate file')
+
   input_file = os.path.abspath(args[0])
+  isolate_dir = os.path.dirname(input_file)
 
   # Extract the variables.
   variables = dict(i.split('=', 1) for i in options.variables)
-  if not variables.get('DEPTH'):
-    parser.error('--variable DEPTH=<base dir> is required')
-
-  PATH_VARIABLES = ('DEPTH', 'PRODUCT_DIR')
   # Process path variables as a special case. First normalize it, verifies it
-  # exists, convert it to an absolute path, then calculate relative_dir, and
-  # finally convert it back to a relative value from relative_dir.
-  abs_variables = {}
-  for i in PATH_VARIABLES:
+  # exists, convert it to an absolute path, then set it as relative to
+  # isolate_dir.
+  for i in ('PRODUCT_DIR',):
     if i not in variables:
       continue
-    abs_variables[i] = os.path.normpath(variables[i])
-    if not os.path.isdir(abs_variables[i]):
-      parser.error('%s is not a directory' % abs_variables[i])
-    abs_variables[i] = os.path.abspath(abs_variables[i])
+    variable = os.path.normpath(variables[i])
+    if not os.path.isdir(variable):
+      parser.error('%s=%s is not a directory' % (i, variable))
+    variable = os.path.abspath(variable)
+    # All variables are relative to the input file.
+    variables[i] = os.path.relpath(variable, isolate_dir)
 
+  command, infiles, read_only = load_isolate(
+      open(input_file, 'r').read(), variables, parser.error)
+
+  # The trick used to determine the root directory is to look at "how far" back
+  # up it is looking up.
+  root_dir = isolate_dir.replace(os.path.sep, '/')
+  for i in infiles:
+    i = i.replace(os.path.sep, '/')
+    x = isolate_dir.replace(os.path.sep, '/')
+    while i.startswith('../'):
+      i = i[3:]
+      assert not i.startswith('/')
+      x = posixpath.dirname(x)
+    if root_dir.startswith(x):
+      root_dir = x
+  root_dir = root_dir.replace('/', os.path.sep)
   # The relative directory is automatically determined by the relative path
-  # between DEPTH and the directory containing the .isolate file.
-  isolate_dir = os.path.dirname(os.path.abspath(input_file))
-  relative_dir = os.path.relpath(isolate_dir, abs_variables['DEPTH'])
+  # between root_dir and the directory containing the .isolate file.
+  relative_dir = os.path.relpath(isolate_dir, root_dir)
   logging.debug('relative_dir: %s' % relative_dir)
-
-  # Directories are _relative_ to relative_dir.
-  for i in PATH_VARIABLES:
-    if i not in variables:
-      continue
-    variables[i] = os.path.relpath(abs_variables[i], isolate_dir)
 
   logging.debug(
       'variables: %s' % ', '.join(
         '%s=%s' % (k, v) for k, v in variables.iteritems()))
-
-  # TODO(maruel): Case insensitive file systems.
-  if not input_file.startswith(abs_variables['DEPTH']):
-    parser.error(
-        '%s must be under %s, as it is used as the relative start directory.' %
-        (args[0], abs_variables['DEPTH']))
-
-  command, infiles, read_only = load_isolate(
-      open(input_file, 'r').read(), variables, parser.error)
   logging.debug('command: %s' % command)
   logging.debug('infiles: %s' % infiles)
   logging.debug('read_only: %s' % read_only)
@@ -515,7 +515,7 @@ def main():
   try:
     return isolate(
         options.outdir,
-        abs_variables['DEPTH'],
+        root_dir,
         infiles,
         options.mode,
         read_only,

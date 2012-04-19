@@ -148,16 +148,10 @@ class IsolateBase(unittest.TestCase):
         case,
         self.case() + '.isolate',
         'Rename the test case to test_%s()' % case)
-    # TODO(maruel): This is going away, temporary until DEPTH support is
-    # removed.
-    depth = os.path.join('data', 'isolate')
-    if RELATIVE_CWD[self.case()] != '.':
-      depth = '.'
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
       '--result', self.result,
       '--outdir', self.outdir,
-      '-V', 'DEPTH=%s' % depth,
       self.filename(),
       '--mode', self.mode(),
     ]
