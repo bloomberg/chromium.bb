@@ -244,7 +244,10 @@ ProfileImplIOData::LazyParams::~LazyParams() {}
 ProfileImplIOData::ProfileImplIOData()
     : ProfileIOData(false),
       clear_local_state_on_exit_(false) {}
-ProfileImplIOData::~ProfileImplIOData() {}
+ProfileImplIOData::~ProfileImplIOData() {
+  if (media_request_context_)
+    media_request_context_->AssertNoURLRequests();
+}
 
 void ProfileImplIOData::LazyInitializeInternal(
     ProfileParams* profile_params) const {

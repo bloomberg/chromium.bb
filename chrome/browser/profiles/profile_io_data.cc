@@ -266,6 +266,19 @@ ProfileIOData::ProfileIOData(bool is_incognito)
 ProfileIOData::~ProfileIOData() {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO))
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+#if 0
+  // TODO(willchan): If I am ever able to enable this assertion and have it
+  // stick, I'm going to party like it's 2008.
+  if (main_request_context_)
+    main_request_context_->AssertNoURLRequests();
+#endif
+  if (extensions_request_context_)
+    extensions_request_context_->AssertNoURLRequests();
+  for (AppRequestContextMap::iterator it = app_request_context_map_.begin();
+       it != app_request_context_map_.end(); ++it) {
+    it->second->AssertNoURLRequests();
+  }
 }
 
 // static
