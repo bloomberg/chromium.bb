@@ -38,7 +38,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/root_view.h"
-#include "ui/views/widget/widget.h"
 
 #if defined(USE_ASH)
 #include "ash/wm/property_util.h"
@@ -314,7 +313,7 @@ TabDragController2::TabDragController2()
       end_run_loop_behavior_(END_RUN_LOOP_STOP_DRAGGING),
       waiting_for_run_loop_to_exit_(false),
       tab_strip_to_attach_to_after_exit_(NULL),
-      move_loop_browser_view_(NULL),
+      move_loop_widget_(NULL),
       destroyed_(NULL) {
   instance_ = this;
 }
@@ -326,10 +325,9 @@ TabDragController2::~TabDragController2() {
   if (destroyed_)
     *destroyed_ = true;
 
-  if (move_loop_browser_view_) {
-    move_loop_browser_view_->set_move_observer(NULL);
-    SetTrackedByWorkspace(
-        move_loop_browser_view_->GetWidget()->GetNativeView(), true);
+  if (move_loop_widget_) {
+    move_loop_widget_->RemoveObserver(this);
+    SetTrackedByWorkspace(move_loop_widget_->GetNativeView(), true);
   }
 
   if (source_tabstrip_)
@@ -467,7 +465,7 @@ void TabDragController2::DidProcessEvent(const base::NativeEvent& event) {
 }
 #endif
 
-void TabDragController2::OnWidgetMoved() {
+void TabDragController2::OnWidgetMove(views::Widget* widget) {
   Drag();
 }
 
@@ -603,21 +601,21 @@ void TabDragController2::ContinueDragging() {
       // ReleaseMouseCapture() is going to result in calling back to us (because
       // it results in a move). That'll cause all sorts of problems.  Reset the
       // observer so we don't get notified and process the event.
-      move_loop_browser_view_->set_move_observer(NULL);
-      move_loop_browser_view_ = NULL;
+      move_loop_widget_->RemoveObserver(this);
+      move_loop_widget_ = NULL;
 #endif
-      BrowserView* browser_view = GetAttachedBrowserView();
+      views::Widget* browser_widget = GetAttachedBrowserWidget();
       // Need to release the drag controller before starting the move loop as
       // it's going to trigger capture lost, which cancels drag.
       attached_tabstrip_->ReleaseDragController();
       target_tabstrip->OwnDragController(this);
       // Disable animations so that we don't see a close animation on aero.
-      browser_view->GetWidget()->SetVisibilityChangedAnimationsEnabled(false);
-      browser_view->GetWidget()->ReleaseMouseCapture();
+      browser_widget->SetVisibilityChangedAnimationsEnabled(false);
+      browser_widget->ReleaseMouseCapture();
       // EndMoveLoop is going to snap the window back to its original location.
       // Hide it so users don't see this.
-      browser_view->GetWidget()->Hide();
-      browser_view->GetWidget()->EndMoveLoop();
+      browser_widget->Hide();
+      browser_widget->EndMoveLoop();
 
       // Ideally we would always swap the tabs now, but on windows it seems that
       // running the move loop implicitly activates the window when done,
@@ -982,9 +980,8 @@ void TabDragController2::DetachIntoNewBrowserAndRunMoveLoop(
 }
 
 void TabDragController2::RunMoveLoop() {
-  move_loop_browser_view_ = GetAttachedBrowserView();
-  DCHECK(move_loop_browser_view_);
-  move_loop_browser_view_->set_move_observer(this);
+  move_loop_widget_ = GetAttachedBrowserWidget();
+  move_loop_widget_->AddObserver(this);
   is_dragging_window_ = true;
   bool destroyed = false;
   destroyed_ = &destroyed;
@@ -994,8 +991,7 @@ void TabDragController2::RunMoveLoop() {
   attached_tabstrip_->ReleaseDragController();
   attached_tabstrip_->GetWidget()->ReleaseMouseCapture();
   attached_tabstrip_->OwnDragController(this);
-  views::Widget::MoveLoopResult result =
-      move_loop_browser_view_->GetWidget()->RunMoveLoop();
+  views::Widget::MoveLoopResult result = move_loop_widget_->RunMoveLoop();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_DRAG_LOOP_DONE,
       content::NotificationService::AllBrowserContextsAndSources(),
@@ -1004,10 +1000,10 @@ void TabDragController2::RunMoveLoop() {
   if (destroyed)
     return;
   destroyed_ = NULL;
-  // Under chromeos we immediately set the |move_loop_browser_view_| to NULL.
-  if (move_loop_browser_view_) {
-    move_loop_browser_view_->set_move_observer(NULL);
-    move_loop_browser_view_ = NULL;
+  // Under chromeos we immediately set the |move_loop_widget_| to NULL.
+  if (move_loop_widget_) {
+    move_loop_widget_->RemoveObserver(this);
+    move_loop_widget_ = NULL;
   }
   is_dragging_window_ = false;
   waiting_for_run_loop_to_exit_ = false;
@@ -1129,13 +1125,11 @@ void TabDragController2::EndDragImpl(EndDragType type) {
   bring_to_front_timer_.Stop();
 
   if (is_dragging_window_) {
-    if (type == NORMAL || (type == TAB_DESTROYED && drag_data_.size() > 1)) {
-      SetTrackedByWorkspace(
-          GetAttachedBrowserView()->GetWidget()->GetNativeView(), true);
-    }
+    if (type == NORMAL || (type == TAB_DESTROYED && drag_data_.size() > 1))
+      SetTrackedByWorkspace(GetAttachedBrowserWidget()->GetNativeView(), true);
 
     // End the nested drag loop.
-    GetAttachedBrowserView()->GetWidget()->EndMoveLoop();
+    GetAttachedBrowserWidget()->EndMoveLoop();
     waiting_for_run_loop_to_exit_ = true;
   }
 
@@ -1384,9 +1378,9 @@ TabStripModel* TabDragController2::GetModel(TabStrip* tabstrip) {
       model();
 }
 
-BrowserView* TabDragController2::GetAttachedBrowserView() {
+views::Widget* TabDragController2::GetAttachedBrowserWidget() {
   return BrowserView::GetBrowserViewForNativeWindow(
-      attached_tabstrip_->GetWidget()->GetNativeView());
+      attached_tabstrip_->GetWidget()->GetNativeView())->GetWidget();
 }
 
 bool TabDragController2::AreTabsConsecutive() {

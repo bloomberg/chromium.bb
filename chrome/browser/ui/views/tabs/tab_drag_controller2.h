@@ -14,18 +14,18 @@
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
-#include "chrome/browser/ui/views/frame/browser_window_move_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 class View;
-}
+}  // namespace views
+
 class BaseTab;
 class Browser;
-class BrowserView;
 class TabContentsWrapper;
 struct TabRendererData;
 class TabStripModel;
@@ -34,7 +34,7 @@ class TabStripModel;
 class TabDragController2 : public TabDragController,
                            public content::NotificationObserver,
                            public MessageLoopForUI::Observer,
-                           public BrowserWindowMoveObserver,
+                           public views::Widget::Observer,
                            public TabStripModelObserver {
  public:
   TabDragController2();
@@ -138,8 +138,8 @@ class TabDragController2 : public TabDragController,
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 #endif
 
-  // Overriden from BrowserWindowMoveObserver:
-  virtual void OnWidgetMoved() OVERRIDE;
+  // Overriden from views::Widget::Observer:
+  virtual void OnWidgetMove(views::Widget* widget) OVERRIDE;
 
   // Overriden from TabStripModelObserver:
   virtual void TabStripEmpty() OVERRIDE;
@@ -271,8 +271,8 @@ class TabDragController2 : public TabDragController,
   // Returns the TabStripModel for the specified tabstrip.
   static TabStripModel* GetModel(TabStrip* tabstrip);
 
-  // Returns the BrowserView of the currently attached TabStrip.
-  BrowserView* GetAttachedBrowserView();
+  // Returns the Widget of the currently attached TabStrip's BrowserView.
+  views::Widget* GetAttachedBrowserWidget();
 
   // Creates and returns a new Browser to handle the drag.
   Browser* CreateBrowserForDrag(TabStrip* source,
@@ -384,7 +384,7 @@ class TabDragController2 : public TabDragController,
   TabStrip* tab_strip_to_attach_to_after_exit_;
 
   // Non-null for the duration of RunMoveLoop.
-  BrowserView* move_loop_browser_view_;
+  views::Widget* move_loop_widget_;
 
   // If non-null set to true from destructor.
   bool* destroyed_;
