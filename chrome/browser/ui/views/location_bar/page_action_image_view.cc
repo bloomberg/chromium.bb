@@ -80,8 +80,7 @@ PageActionImageView::~PageActionImageView() {
   HidePopup();
 }
 
-void PageActionImageView::ExecuteAction(int button,
-                                        bool inspect_with_devtools) {
+void PageActionImageView::ExecuteAction(int button) {
   if (current_tab_id_ < 0) {
     NOTREACHED() << "No current tab.";
     return;
@@ -104,8 +103,7 @@ void PageActionImageView::ExecuteAction(int button,
         page_action_->GetPopupUrl(current_tab_id_),
         browser_,
         this,
-        arrow_location,
-        inspect_with_devtools);
+        arrow_location);
     popup_->GetWidget()->AddObserver(this);
   } else {
     Profile* profile = owner_->profile();
@@ -142,13 +140,13 @@ void PageActionImageView::OnMouseReleased(const views::MouseEvent& event) {
     return;
   }
 
-  ExecuteAction(button, false);  // inspect_with_devtools
+  ExecuteAction(button);
 }
 
 bool PageActionImageView::OnKeyPressed(const views::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
-    ExecuteAction(1, false);
+    ExecuteAction(1);
     return true;
   }
   return false;
@@ -204,7 +202,7 @@ bool PageActionImageView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   DCHECK(visible());  // Should not have happened due to CanHandleAccelerator.
 
-  ExecuteAction(1, false);  // 1 means left-click, false means "don't inspect".
+  ExecuteAction(1);  // 1 means left-click.
   return true;
 }
 

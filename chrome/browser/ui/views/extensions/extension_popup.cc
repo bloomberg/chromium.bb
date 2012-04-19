@@ -60,11 +60,10 @@ ExtensionPopup::ExtensionPopup(
     Browser* browser,
     ExtensionHost* host,
     views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation arrow_location,
-    bool inspect_with_devtools)
+    views::BubbleBorder::ArrowLocation arrow_location)
     : BubbleDelegateView(anchor_view, arrow_location),
       extension_host_(host),
-      inspect_with_devtools_(inspect_with_devtools),
+      inspect_with_devtools_(false),
       close_bubble_factory_(this) {
   // Adjust the margin so that contents fit better.
   set_margin(views::BubbleBorder::GetCornerRadius() / 2);
@@ -82,17 +81,15 @@ ExtensionPopup::ExtensionPopup(
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(host->profile()));
 
+  // Listen for the dev tools opening on this popup, so we can stop it going
+  // away when the dev tools get focus.
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
+                 content::Source<Profile>(host->profile()));
+
   // Listen for the dev tools closing, so we can close this window if it is
   // being inspected and the inspector is closed.
   registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
       content::Source<content::BrowserContext>(host->profile()));
-
-  if (!inspect_with_devtools_) {
-    // Listen for the dev tools opening on this popup, so we can stop it going
-    // away when the dev tools get focus.
-    registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_WINDOW_OPENING,
-                   content::Source<Profile>(host->profile()));
-  }
 }
 
 ExtensionPopup::~ExtensionPopup() {
@@ -172,13 +169,12 @@ ExtensionPopup* ExtensionPopup::ShowPopup(
     const GURL& url,
     Browser* browser,
     views::View* anchor_view,
-    views::BubbleBorder::ArrowLocation arrow_location,
-    bool inspect_with_devtools) {
+    views::BubbleBorder::ArrowLocation arrow_location) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
   ExtensionHost* host = manager->CreatePopupHost(url, browser);
   ExtensionPopup* popup = new ExtensionPopup(browser, host, anchor_view,
-      arrow_location, inspect_with_devtools);
+      arrow_location);
   views::BubbleDelegateView::CreateBubble(popup);
 
   // If the host had somehow finished loading, then we'd miss the notification

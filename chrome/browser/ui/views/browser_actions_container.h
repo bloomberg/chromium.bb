@@ -322,8 +322,7 @@ class BrowserActionsContainer
   size_t VisibleBrowserActions() const;
 
   // Called when the user clicks on the browser action icon.
-  void OnBrowserActionExecuted(BrowserActionButton* button,
-                               bool inspect_with_devtools);
+  void OnBrowserActionExecuted(BrowserActionButton* button);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

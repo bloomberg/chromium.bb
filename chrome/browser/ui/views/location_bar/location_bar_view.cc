@@ -1256,8 +1256,7 @@ void LocationBarView::TestPageActionPressed(size_t index) {
     if (page_action_views_[i]->visible()) {
       if (current == index) {
         const int kLeftMouseButton = 1;
-        page_action_views_[i]->image_view()->ExecuteAction(kLeftMouseButton,
-            false);  // inspect_with_devtools
+        page_action_views_[i]->image_view()->ExecuteAction(kLeftMouseButton);
         return;
       }
       ++current;

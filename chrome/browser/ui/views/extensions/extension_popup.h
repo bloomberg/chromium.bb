@@ -40,8 +40,7 @@ class ExtensionPopup : public views::BubbleDelegateView,
       const GURL& url,
       Browser* browser,
       views::View* anchor_view,
-      views::BubbleBorder::ArrowLocation arrow_location,
-      bool inspect_with_devtools);
+      views::BubbleBorder::ArrowLocation arrow_location);
 
   ExtensionHost* host() const { return extension_host_.get(); }
 
@@ -70,8 +69,7 @@ class ExtensionPopup : public views::BubbleDelegateView,
   ExtensionPopup(Browser* browser,
                  ExtensionHost* host,
                  views::View* anchor_view,
-                 views::BubbleBorder::ArrowLocation arrow_location,
-                 bool inspect_with_devtools);
+                 views::BubbleBorder::ArrowLocation arrow_location);
 
   // Show the bubble, focus on its content, and register listeners.
   void ShowBubble();

@@ -76,7 +76,7 @@ class PageActionImageView : public views::ImageView,
   void UpdateVisibility(content::WebContents* contents, const GURL& url);
 
   // Either notify listeners or show a popup depending on the page action.
-  void ExecuteAction(int button, bool inspect_with_devtools);
+  void ExecuteAction(int button);
 
  private:
   // Hides the active popup, if there is one.

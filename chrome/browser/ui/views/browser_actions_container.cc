@@ -133,7 +133,7 @@ void BrowserActionButton::ViewHierarchyChanged(
 
 void BrowserActionButton::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
-  panel_->OnBrowserActionExecuted(this, false);
+  panel_->OnBrowserActionExecuted(this);
 }
 
 void BrowserActionButton::OnImageLoaded(const gfx::Image& image,
@@ -220,7 +220,7 @@ bool BrowserActionButton::Activate() {
   if (!IsPopup())
     return true;
 
-  panel_->OnBrowserActionExecuted(this, false);
+  panel_->OnBrowserActionExecuted(this);
 
   // TODO(erikkay): Run a nested modal loop while the mouse is down to
   // enable menu-like drag-select behavior.
@@ -291,7 +291,7 @@ void BrowserActionButton::ShowContextMenu(const gfx::Point& p,
 
 bool BrowserActionButton::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
-  panel_->OnBrowserActionExecuted(this, false);
+  panel_->OnBrowserActionExecuted(this);
   return true;
 }
 
@@ -503,8 +503,7 @@ size_t BrowserActionsContainer::VisibleBrowserActions() const {
 }
 
 void BrowserActionsContainer::OnBrowserActionExecuted(
-    BrowserActionButton* button,
-    bool inspect_with_devtools) {
+    BrowserActionButton* button) {
   ExtensionAction* browser_action = button->browser_action();
 
   // Popups just display.  No notification to the extension.
@@ -533,7 +532,7 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
   views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
       views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
   popup_ = ExtensionPopup::ShowPopup(button->GetPopupUrl(), browser_,
-               reference_view, arrow_location, inspect_with_devtools);
+               reference_view, arrow_location);
   popup_->GetWidget()->AddObserver(this);
   popup_button_ = button;
   popup_button_->SetButtonPushed();
@@ -846,7 +845,7 @@ void BrowserActionsContainer::HidePopup() {
 
 void BrowserActionsContainer::TestExecuteBrowserAction(int index) {
   BrowserActionButton* button = browser_action_views_[index]->button();
-  OnBrowserActionExecuted(button, false);
+  OnBrowserActionExecuted(button);
 }
 
 void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {

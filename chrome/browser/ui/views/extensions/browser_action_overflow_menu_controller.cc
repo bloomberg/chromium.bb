@@ -88,8 +88,7 @@ void BrowserActionOverflowMenuController::CancelMenu() {
 
 void BrowserActionOverflowMenuController::ExecuteCommand(int id) {
   BrowserActionView* view = (*views_)[start_index_ + id - 1];
-  owner_->OnBrowserActionExecuted(view->button(),
-                                  false);  // inspect_with_devtools
+  owner_->OnBrowserActionExecuted(view->button());
 }
 
 bool BrowserActionOverflowMenuController::ShowContextMenu(
