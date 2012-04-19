@@ -91,7 +91,6 @@ remoting.HostController.prototype.setTooltips = function() {
   }
   document.getElementById('this-host-name').title = connectStr;
   document.getElementById('this-host-icon').title = connectStr;
-  document.getElementById('this-host-spacer').title = connectStr;
 };
 
 /**
