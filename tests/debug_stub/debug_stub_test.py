@@ -143,7 +143,6 @@ class DebugStubTest(unittest.TestCase):
     regs = DecodeRegs(connection.RspRequest('g'))
 
     # Change a register.
-    old_value = regs[reg_name]
     regs[reg_name] += 1
     new_value = regs[reg_name]
 
@@ -179,7 +178,8 @@ class DebugStubTest(unittest.TestCase):
   def test_debugger_test(self):
     gdb_rsp.EnsurePortIsAvailable()
     proc = subprocess.Popen([os.environ['NACL_SEL_LDR'], '-g',
-                             os.environ['DEBUGGER_TEST_PROG']])
+                             os.environ['DEBUGGER_TEST_PROG'],
+                             'test_getting_registers'])
     try:
       connection = gdb_rsp.GdbRspConnection()
       # Tell the process to continue, because it starts at the
@@ -197,6 +197,18 @@ class DebugStubTest(unittest.TestCase):
       proc.kill()
       proc.wait()
 
+  def test_exit_code(self):
+    gdb_rsp.EnsurePortIsAvailable()
+    proc = subprocess.Popen([os.environ['NACL_SEL_LDR'], '-g',
+                             os.environ['DEBUGGER_TEST_PROG'],
+                             'test_exit_code'])
+    try:
+      connection = gdb_rsp.GdbRspConnection()
+      reply = connection.RspRequest('c')
+      self.assertEquals(reply, 'W02')
+    finally:
+      proc.kill()
+      proc.wait()
 
 if __name__ == '__main__':
   # TODO(mseaborn): Remove the global variable.  It is currently here

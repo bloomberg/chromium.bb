@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -98,6 +98,9 @@ class Target {
   // be visible to the host.
   void IgnoreThread(port::IThread *thread);
 
+  // Send exit packet to gdb.
+  void Exit(int err_code);
+
  protected:
   // This function always succeedes, since all errors
   // are reported as an error string of "E<##>" where
@@ -132,6 +135,8 @@ class Target {
 
   // This value is set if the exception cather is requesting a continue signal
   bool send_done_;
+
+  Session *session_;
 
   ThreadMap_t threads_;
   ThreadMap_t::const_iterator threadItr_;

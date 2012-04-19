@@ -73,7 +73,7 @@ enum NaClDebugStatus {
 
 struct NaClDebugState {
   NaClDebugState() : target_(NULL), app_(NULL),
-                     errCode_(0), status_(NDS_DISABLED) {}
+                     status_(NDS_DISABLED) {}
 
   bool Init() {
     NaClDebugStubInit();
@@ -95,7 +95,6 @@ struct NaClDebugState {
 
   Target* target_;
   struct NaClApp *app_;
-  volatile int errCode_;
   NaClDebugStatus status_;
   std::vector<const char *> arg_;
   std::vector<const char *> env_;
@@ -241,8 +240,8 @@ void NaClDebugStop(int ErrCode) throw() {
    * STOPPED to prevent it from getting recreated.
    */
   if (NaClDebugIsEnabled()) {
+    g_nacl_debug_state->target_->Exit(ErrCode);
     g_nacl_debug_state->status_ = NDS_STOPPED;
-    g_nacl_debug_state->errCode_ = ErrCode;
     try {
       NaClDebugStubFini();
     } DBG_CATCH_ALL

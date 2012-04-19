@@ -4,6 +4,10 @@
  * found in the LICENSE file.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 void set_registers_and_stop() {
   /*
    * We set most registers to fixed values before faulting, so that we
@@ -46,6 +50,10 @@ void set_registers_and_stop() {
 #endif
 }
 
+int non_zero_return() {
+  return 2;
+}
+
 int main(int argc, char **argv) {
   /*
    * This will crash if the entry-point breakpoint has been mishandled such
@@ -54,6 +62,16 @@ int main(int argc, char **argv) {
    */
   argv[argc] = 0;
 
-  set_registers_and_stop();
+  if (argc < 2) {
+    printf("Usage: debugger_test.nexe test_name\n");
+    return 1;
+  }
+
+  if (strcmp(argv[1], "test_getting_registers") == 0) {
+    set_registers_and_stop();
+    return 0;
+  } else if (strcmp(argv[1], "test_exit_code") == 0) {
+    return non_zero_return();
+  }
   return 1;
 }

@@ -38,6 +38,7 @@ Target::Target(const Abi* abi)
     sig_start_(NULL),
     sig_done_(NULL),
     send_done_(false),
+    session_(NULL),
     ctx_(NULL),
     cur_signal_(-1),
     sig_thread_(0),
@@ -169,6 +170,9 @@ void Target::Signal(uint32_t id, int8_t sig, bool wait) {
 
 void Target::Run(Session *ses) {
   bool first = true;
+  mutex_->Lock();
+  session_ = ses;
+  mutex_->Unlock();
   do {
     // Give everyone else a chance to use the lock
     IPlatform::Relinquish(100);
@@ -288,6 +292,9 @@ void Target::Run(Session *ses) {
 
     // Continue running until the connection is lost.
   } while (ses->Connected());
+  mutex_->Lock();
+  session_ = NULL;
+  mutex_->Unlock();
 }
 
 
@@ -605,6 +612,16 @@ void Target::IgnoreThread(IThread* thread) {
   mutex_->Unlock();
 }
 
+void Target::Exit(int err_code) {
+  mutex_->Lock();
+  if (session_ != NULL) {
+    Packet exit_packet;
+    exit_packet.AddRawChar('W');
+    exit_packet.AddWord8(err_code);
+    session_->SendPacket(&exit_packet);
+  }
+  mutex_->Unlock();
+}
 
 void Target::Detach() {
   port::IPlatform::LogInfo("Requested Detach.\n");
