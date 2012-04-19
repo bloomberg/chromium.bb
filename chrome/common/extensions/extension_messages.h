@@ -331,9 +331,7 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RemoveLazyListener,
                      std::string /* name */)
 
 // Notify the browser that an event has finished being dispatched.
-IPC_MESSAGE_CONTROL1(ExtensionHostMsg_ExtensionEventAck,
-                     std::string /* extension_id */)
-
+IPC_MESSAGE_ROUTED0(ExtensionHostMsg_EventAck)
 
 // Open a channel to all listening contexts owned by the extension with
 // the given ID.  This always returns a valid port ID which can be used for
@@ -417,13 +415,11 @@ IPC_MESSAGE_CONTROL1(ExtensionHostMsg_UnloadAck,
 
 // Informs the browser to increment the keepalive count for the lazy background
 // page, keeping it alive.
-IPC_MESSAGE_CONTROL1(ExtensionHostMsg_IncrementLazyKeepaliveCount,
-                     std::string /* extension_id */)
+IPC_MESSAGE_ROUTED0(ExtensionHostMsg_IncrementLazyKeepaliveCount)
 
 // Informs the browser there is one less thing keeping the lazy background page
 // alive.
-IPC_MESSAGE_CONTROL1(ExtensionHostMsg_DecrementLazyKeepaliveCount,
-                     std::string /* extension_id */)
+IPC_MESSAGE_ROUTED0(ExtensionHostMsg_DecrementLazyKeepaliveCount)
 
 // Fetches a globally unique ID (for the lifetime of the browser) from the
 // browser process.

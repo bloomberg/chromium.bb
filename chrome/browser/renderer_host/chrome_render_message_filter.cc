@@ -91,16 +91,11 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnExtensionAddLazyListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveLazyListener,
                         OnExtensionRemoveLazyListener)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_ExtensionEventAck, OnExtensionEventAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_CloseChannel, OnExtensionCloseChannel)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestForIOThread,
                         OnExtensionRequestForIOThread)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_ShouldUnloadAck,
                         OnExtensionShouldUnloadAck)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_IncrementLazyKeepaliveCount,
-                        OnExtensionIncrementLazyKeepaliveCount)
-    IPC_MESSAGE_HANDLER(ExtensionHostMsg_DecrementLazyKeepaliveCount,
-                        OnExtensionDecrementLazyKeepaliveCount)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_GenerateUniqueID,
                         OnExtensionGenerateUniqueID)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_UnloadAck, OnExtensionUnloadAck)
@@ -150,12 +145,9 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
     case ExtensionHostMsg_RemoveListener::ID:
     case ExtensionHostMsg_AddLazyListener::ID:
     case ExtensionHostMsg_RemoveLazyListener::ID:
-    case ExtensionHostMsg_ExtensionEventAck::ID:
     case ExtensionHostMsg_CloseChannel::ID:
     case ExtensionHostMsg_ShouldUnloadAck::ID:
     case ExtensionHostMsg_UnloadAck::ID:
-    case ExtensionHostMsg_IncrementLazyKeepaliveCount::ID:
-    case ExtensionHostMsg_DecrementLazyKeepaliveCount::ID:
     case ChromeViewHostMsg_UpdatedCacheStats::ID:
       *thread = BrowserThread::UI;
       break;
@@ -388,13 +380,6 @@ void ChromeRenderMessageFilter::OnExtensionRemoveLazyListener(
         event_name, extension_id);
 }
 
-void ChromeRenderMessageFilter::OnExtensionEventAck(
-    const std::string& extension_id) {
-  if (profile_->GetExtensionEventRouter())
-    profile_->GetExtensionEventRouter()->OnExtensionEventAck(
-        profile_, extension_id);
-}
-
 void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id,
                                                         bool connection_error) {
   if (!content::RenderProcessHost::FromID(render_process_id_))
@@ -427,32 +412,6 @@ void ChromeRenderMessageFilter::OnExtensionUnloadAck(
      const std::string& extension_id) {
   if (profile_->GetExtensionProcessManager())
     profile_->GetExtensionProcessManager()->OnUnloadAck(extension_id);
-}
-
-void ChromeRenderMessageFilter::OnExtensionIncrementLazyKeepaliveCount(
-    const std::string& extension_id) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  ExtensionProcessManager* process_manager =
-      ExtensionSystem::Get(profile_)->process_manager();
-  if (process_manager && service) {
-    const Extension* extension = service->extensions()->GetByID(extension_id);
-    if (extension)
-      process_manager->IncrementLazyKeepaliveCount(extension);
-  }
-}
-
-void ChromeRenderMessageFilter::OnExtensionDecrementLazyKeepaliveCount(
-    const std::string& extension_id) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  ExtensionProcessManager* process_manager =
-      ExtensionSystem::Get(profile_)->process_manager();
-  if (process_manager && service) {
-    const Extension* extension = service->extensions()->GetByID(extension_id);
-    if (extension)
-      process_manager->DecrementLazyKeepaliveCount(extension);
-  }
 }
 
 void ChromeRenderMessageFilter::OnExtensionGenerateUniqueID(int* unique_id) {

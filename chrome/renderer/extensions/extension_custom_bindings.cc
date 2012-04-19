@@ -14,96 +14,15 @@
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/render_view_visitor.h"
 #include "grit/renderer_resources.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "v8/include/v8.h"
 #include "webkit/glue/webkit_glue.h"
+#include "v8/include/v8.h"
 
 namespace extensions {
 
 namespace {
-
-// A RenderViewVisitor class that iterates through the set of available
-// views, looking for a view of the given type, in the given browser window
-// and within the given extension.
-// Used to accumulate the list of views associated with an extension.
-class ExtensionViewAccumulator : public content::RenderViewVisitor {
- public:
-  ExtensionViewAccumulator(const std::string& extension_id,
-                           int browser_window_id,
-                           content::ViewType view_type)
-      : extension_id_(extension_id),
-        browser_window_id_(browser_window_id),
-        view_type_(view_type),
-        views_(v8::Array::New()),
-        index_(0) {
-  }
-
-  v8::Local<v8::Array> views() { return views_; }
-
-  virtual bool Visit(content::RenderView* render_view) {
-    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-    if (!ViewTypeMatches(helper->view_type(), view_type_))
-      return true;
-
-    GURL url = render_view->GetWebView()->mainFrame()->document().url();
-    if (!url.SchemeIs(chrome::kExtensionScheme))
-      return true;
-    const std::string& extension_id = url.host();
-    if (extension_id != extension_id_)
-      return true;
-
-    if (browser_window_id_ != extension_misc::kUnknownWindowId &&
-        helper->browser_window_id() != browser_window_id_) {
-      return true;
-    }
-
-    v8::Local<v8::Context> context =
-        render_view->GetWebView()->mainFrame()->mainWorldScriptContext();
-    if (!context.IsEmpty()) {
-      v8::Local<v8::Value> window = context->Global();
-      DCHECK(!window.IsEmpty());
-
-      if (!OnMatchedView(window))
-        return false;
-    }
-    return true;
-  }
-
- private:
-  // Called on each view found matching the search criteria.  Returns false
-  // to terminate the iteration.
-  bool OnMatchedView(v8::Local<v8::Value> view_window) {
-    views_->Set(v8::Integer::New(index_), view_window);
-    index_++;
-
-    if (view_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
-      return false;  // There can be only one...
-
-    return true;
-  }
-
-  // Returns true is |type| "isa" |match|.
-  static bool ViewTypeMatches(content::ViewType type, content::ViewType match) {
-    if (type == match)
-      return true;
-
-    // INVALID means match all.
-    if (match == content::VIEW_TYPE_INVALID)
-      return true;
-
-    return false;
-  }
-
-  std::string extension_id_;
-  int browser_window_id_;
-  content::ViewType view_type_;
-  v8::Local<v8::Array> views_;
-  int index_;
-};
 
 }  // namespace
 
@@ -159,10 +78,21 @@ v8::Handle<v8::Value> ExtensionCustomBindings::GetExtensionViews(
   if (!extension)
     return v8::Undefined();
 
-  ExtensionViewAccumulator accumulator(extension->id(), browser_window_id,
-                                       view_type);
-  content::RenderView::ForEach(&accumulator);
-  return accumulator.views();
+  std::vector<content::RenderView*> views = ExtensionHelper::GetExtensionViews(
+      extension->id(), browser_window_id, view_type);
+  v8::Local<v8::Array> v8_views = v8::Array::New();
+  int v8_index = 0;
+  for (size_t i = 0; i < views.size(); ++i) {
+    v8::Local<v8::Context> context =
+        views[i]->GetWebView()->mainFrame()->mainWorldScriptContext();
+    if (!context.IsEmpty()) {
+      v8::Local<v8::Value> window = context->Global();
+      DCHECK(!window.IsEmpty());
+      v8_views->Set(v8::Integer::New(v8_index++), window);
+    }
+  }
+
+  return v8_views;
 }
 
 // static

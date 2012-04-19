@@ -373,6 +373,12 @@ bool ExtensionProcessManager::HasExtensionHost(ExtensionHost* host) const {
   return all_hosts_.find(host) != all_hosts_.end();
 }
 
+bool ExtensionProcessManager::IsBackgroundHostClosing(
+    const std::string& extension_id) {
+  ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
+  return (host && background_page_data_[extension_id].is_closing);
+}
+
 int ExtensionProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
   if (!extension->has_lazy_background_page())
     return 0;
@@ -397,15 +403,10 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
   if (!extension->has_lazy_background_page())
     return 0;
 
-  // Don't decrement the count if the background page has gone away. This can
-  // happen e.g. if an event was dispatched while unloading the page, or if
-  // the process is killed/closed while a message port remains open.
-  // TODO(mpcomplete): This might be insufficient.. what if the page goes away
-  // and comes back before we get here? Then we'll have an imbalanced
-  // keepalive count.
-  ExtensionHost* host = GetBackgroundHostForExtension(extension->id());
-  if (!host)
-    return 0;
+  // This should never be called if the background page isn't active.
+  // Otherwise, the count can get out of sync, because we reset it when the
+  // page unloads.
+  CHECK(GetBackgroundHostForExtension(extension->id()));
 
   int& count = background_page_data_[extension->id()].lazy_keepalive_count;
   DCHECK_GT(count, 0);

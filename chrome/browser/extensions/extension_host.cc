@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -470,6 +471,11 @@ bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionHost, message)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_Request, OnRequest)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_EventAck, OnEventAck)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_IncrementLazyKeepaliveCount,
+                        OnIncrementLazyKeepaliveCount)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_DecrementLazyKeepaliveCount,
+                        OnDecrementLazyKeepaliveCount)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -478,6 +484,27 @@ bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
 void ExtensionHost::OnRequest(const ExtensionHostMsg_Request_Params& params) {
   extension_function_dispatcher_.Dispatch(params, render_view_host());
 }
+
+void ExtensionHost::OnEventAck() {
+  ExtensionEventRouter* router = ExtensionSystem::Get(profile_)->event_router();
+  if (router)
+    router->OnEventAck(profile_, extension_id());
+}
+
+void ExtensionHost::OnIncrementLazyKeepaliveCount() {
+  ExtensionProcessManager* pm =
+      ExtensionSystem::Get(profile_)->process_manager();
+  if (pm)
+    pm->IncrementLazyKeepaliveCount(extension());
+}
+
+void ExtensionHost::OnDecrementLazyKeepaliveCount() {
+  ExtensionProcessManager* pm =
+      ExtensionSystem::Get(profile_)->process_manager();
+  if (pm)
+    pm->DecrementLazyKeepaliveCount(extension());
+}
+
 
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host_ = render_view_host;

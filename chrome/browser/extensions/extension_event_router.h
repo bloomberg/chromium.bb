@@ -121,7 +121,7 @@ class ExtensionEventRouter : public content::NotificationObserver {
       const GURL& event_url);
 
   // Record the Event Ack from the renderer. (One less event in-flight.)
-  void OnExtensionEventAck(Profile* profile, const std::string& extension_id);
+  void OnEventAck(Profile* profile, const std::string& extension_id);
 
  private:
   // The details of an event to be dispatched.

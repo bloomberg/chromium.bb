@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 
 #include "base/callback.h"
+#include "base/message_loop.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -43,10 +44,12 @@ bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
     Profile* profile, const Extension* extension) {
   DCHECK(extension);
   if (extension->has_lazy_background_page()) {
-    ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
+    ExtensionProcessManager* pm =
+         ExtensionSystem::Get(profile)->process_manager();
     ExtensionHost* background_host =
         pm->GetBackgroundHostForExtension(extension->id());
-    if (!background_host || !background_host->did_stop_loading())
+    if (!background_host || !background_host->did_stop_loading() ||
+        pm->IsBackgroundHostClosing(extension->id()))
       return true;
   }
 
@@ -64,21 +67,35 @@ void LazyBackgroundTaskQueue::AddPendingTask(
     tasks_list = new PendingTasksList();
     pending_tasks_[key] = linked_ptr<PendingTasksList>(tasks_list);
 
-    // If this is the first enqueued task, ensure the background page
-    // is loaded.
-    const Extension* extension =
-        ExtensionSystem::Get(profile)->extension_service()->
-            extensions()->GetByID(extension_id);
-    DCHECK(extension->has_lazy_background_page());
-    ExtensionProcessManager* pm =
-        ExtensionSystem::Get(profile)->process_manager();
-    pm->IncrementLazyKeepaliveCount(extension);
-    pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+    // If this is the first enqueued task, and we're not waiting for the
+    // background page to unload, ensure the background page is loaded.
+    if (pending_page_loads_.count(key) == 0)
+      StartLazyBackgroundPage(profile, extension_id);
   } else {
     tasks_list = it->second.get();
   }
 
   tasks_list->push_back(task);
+}
+
+void LazyBackgroundTaskQueue::StartLazyBackgroundPage(
+    Profile* profile, const std::string& extension_id) {
+  ExtensionProcessManager* pm =
+       ExtensionSystem::Get(profile)->process_manager();
+  if (pm->IsBackgroundHostClosing(extension_id)) {
+    // When the background host finishes closing, we will reload it.
+    pending_page_loads_.insert(PendingTasksKey(profile, extension_id));
+    return;
+  }
+
+  const Extension* extension =
+      ExtensionSystem::Get(profile)->extension_service()->
+          extensions()->GetByID(extension_id);
+  DCHECK(extension->has_lazy_background_page());
+  pm->IncrementLazyKeepaliveCount(extension);
+  pm->CreateBackgroundHost(extension, extension->GetBackgroundURL());
+
+  pending_page_loads_.erase(PendingTasksKey(profile, extension_id));
 }
 
 void LazyBackgroundTaskQueue::ProcessPendingTasks(
@@ -130,15 +147,24 @@ void LazyBackgroundTaskQueue::Observe(
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
-      // Notify consumers about the load failure when the background host dies.
-      // This can happen if the extension crashes. This is not strictly
-      // necessary, since we also unload the extension in that case (which
-      // dispatches the tasks below), but is a good extra precaution.
       Profile* profile = content::Source<Profile>(source).ptr();
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       if (host->extension_host_type() ==
               chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-        ProcessPendingTasks(NULL, profile, host->extension());
+        PendingTasksKey key(profile,  host->extension()->id());
+        if (pending_page_loads_.count(key) > 0) {
+          // We were waiting for the background page to unload. We can start it
+          // up again and dispatch any queued events.
+          MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+              &LazyBackgroundTaskQueue::StartLazyBackgroundPage,
+              AsWeakPtr(), profile, host->extension()->id()));
+        } else {
+          // This may be a load failure (e.g. a crash). In that case, notify
+          // consumers about the load failure. This is not strictly necessary,
+          // since we also unload the extension in that case (which dispatches
+          // the tasks below), but is a good extra precaution.
+          ProcessPendingTasks(NULL, profile, host->extension());
+        }
       }
       break;
     }

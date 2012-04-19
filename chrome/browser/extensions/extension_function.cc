@@ -152,7 +152,7 @@ UIThreadExtensionFunction::UIThreadExtensionFunction()
 }
 
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
-  if (dispatcher())
+  if (dispatcher() && render_view_host())
     dispatcher()->OnExtensionFunctionCompleted(GetExtension());
 }
 

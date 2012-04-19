@@ -36,6 +36,18 @@ class ExtensionHelper
     : public content::RenderViewObserver,
       public content::RenderViewObserverTracker<ExtensionHelper> {
  public:
+  // Returns a list of extension RenderViews that match the given filter
+  // criteria. If |browser_window_id| is not extension_misc::kUnknownWindowId,
+  // the list is restricted to views in that browser window.
+  static std::vector<content::RenderView*> GetExtensionViews(
+      const std::string& extension_id,
+      int browser_window_id,
+      content::ViewType view_type);
+
+  // Returns the given extension's background page, or NULL if none.
+  static content::RenderView* GetBackgroundPage(
+      const std::string& extension_id);
+
   ExtensionHelper(content::RenderView* render_view,
                   ExtensionDispatcher* extension_dispatcher);
   virtual ~ExtensionHelper();

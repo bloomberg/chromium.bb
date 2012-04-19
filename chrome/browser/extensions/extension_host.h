@@ -188,6 +188,9 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
+  void OnEventAck();
+  void OnIncrementLazyKeepaliveCount();
+  void OnDecrementLazyKeepaliveCount();
 
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
   // Platform specific implementation may override this method to handle the

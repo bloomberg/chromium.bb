@@ -89,6 +89,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // Returns true if |host| is managed by this process manager.
   bool HasExtensionHost(ExtensionHost* host) const;
 
+  // Returns true if the (lazy) background host for the given extension has
+  // already been sent the unload event and is shutting down.
+  bool IsBackgroundHostClosing(const std::string& extension_id);
+
   // Getter and setter for the lazy background page's keepalive count. This is
   // the count of how many outstanding "things" are keeping the page alive.
   // When this reaches 0, we will begin the process of shutting down the page.

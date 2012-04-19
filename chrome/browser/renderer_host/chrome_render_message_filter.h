@@ -117,7 +117,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                                   const std::string& event_name);
   void OnExtensionRemoveLazyListener(const std::string& extension_id,
                                      const std::string& event_name);
-  void OnExtensionEventAck(const std::string& extension_id);
   void OnExtensionCloseChannel(int port_id, bool connection_error);
   void OnExtensionRequestForIOThread(
       int routing_id,
@@ -125,8 +124,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionShouldUnloadAck(const std::string& extension_id,
                                   int sequence_id);
   void OnExtensionUnloadAck(const std::string& extension_id);
-  void OnExtensionIncrementLazyKeepaliveCount(const std::string& extension_id);
-  void OnExtensionDecrementLazyKeepaliveCount(const std::string& extension_id);
   void OnExtensionGenerateUniqueID(int* unique_id);
 #if defined(USE_TCMALLOC)
   void OnRendererTcmalloc(const std::string& output);

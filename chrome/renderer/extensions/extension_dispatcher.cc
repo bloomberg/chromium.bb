@@ -45,6 +45,7 @@
 #include "chrome/renderer/native_handler.h"
 #include "chrome/renderer/resource_bundle_source_map.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -141,10 +142,12 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
   v8::Handle<v8::Value> IncrementKeepaliveCount(const v8::Arguments& args) {
     ChromeV8Context* context =
         extension_dispatcher()->v8_context_set().GetCurrent();
-    if (IsCurrentContextLazyBackgroundPage(context->extension())) {
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_IncrementLazyKeepaliveCount(
-              context->extension()->id()));
+    if (!context)
+      return v8::Undefined();
+    content::RenderView* render_view = context->GetRenderView();
+    if (IsContextLazyBackgroundPage(render_view, context->extension())) {
+      render_view->Send(new ExtensionHostMsg_IncrementLazyKeepaliveCount(
+          render_view->GetRoutingID()));
     }
     return v8::Undefined();
   }
@@ -152,17 +155,19 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
   v8::Handle<v8::Value> DecrementKeepaliveCount(const v8::Arguments& args) {
     ChromeV8Context* context =
         extension_dispatcher()->v8_context_set().GetCurrent();
-    if (IsCurrentContextLazyBackgroundPage(context->extension())) {
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_DecrementLazyKeepaliveCount(
-              context->extension()->id()));
+    if (!context)
+      return v8::Undefined();
+    content::RenderView* render_view = context->GetRenderView();
+    if (IsContextLazyBackgroundPage(render_view, context->extension())) {
+      render_view->Send(new ExtensionHostMsg_DecrementLazyKeepaliveCount(
+          render_view->GetRoutingID()));
     }
     return v8::Undefined();
   }
 
  private:
-  bool IsCurrentContextLazyBackgroundPage(const Extension* extension) {
-    content::RenderView* render_view = GetCurrentRenderView();
+  bool IsContextLazyBackgroundPage(content::RenderView* render_view,
+                                   const Extension* extension) {
     if (!render_view)
       return false;
 
@@ -305,12 +310,17 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
         kInitialExtensionIdleHandlerDelayMs);
   }
 
+  // Tell the browser process when an event has been dispatched with a lazy
+  // background page active.
   const Extension* extension = extensions_.GetByID(extension_id);
-  // Tell the browser process that the event is dispatched and we're idle.
   if (extension && extension->has_lazy_background_page() &&
       function_name == kEventDispatchFunction) {
-    RenderThread::Get()->Send(
-        new ExtensionHostMsg_ExtensionEventAck(extension_id));
+    content::RenderView* background_view =
+        ExtensionHelper::GetBackgroundPage(extension_id);
+    if (background_view) {
+      background_view->Send(new ExtensionHostMsg_EventAck(
+          background_view->GetRoutingID()));
+    }
   }
 }
 

@@ -22,7 +22,9 @@
 #include "chrome/renderer/extensions/user_script_scheduler.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_view_visitor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedUserGesture.h"
@@ -48,6 +50,91 @@ namespace {
 typedef std::map<WebFrame*, UserScriptScheduler*> SchedulerMap;
 static base::LazyInstance<SchedulerMap> g_schedulers =
     LAZY_INSTANCE_INITIALIZER;
+
+// A RenderViewVisitor class that iterates through the set of available
+// views, looking for a view of the given type, in the given browser window
+// and within the given extension.
+// Used to accumulate the list of views associated with an extension.
+class ExtensionViewAccumulator : public content::RenderViewVisitor {
+ public:
+  ExtensionViewAccumulator(const std::string& extension_id,
+                           int browser_window_id,
+                           content::ViewType view_type)
+      : extension_id_(extension_id),
+        browser_window_id_(browser_window_id),
+        view_type_(view_type) {
+  }
+
+  std::vector<content::RenderView*> views() { return views_; }
+
+  // Returns false to terminate the iteration.
+  virtual bool Visit(content::RenderView* render_view) {
+    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+    if (!ViewTypeMatches(helper->view_type(), view_type_))
+      return true;
+
+    GURL url = render_view->GetWebView()->mainFrame()->document().url();
+    if (!url.SchemeIs(chrome::kExtensionScheme))
+      return true;
+    const std::string& extension_id = url.host();
+    if (extension_id != extension_id_)
+      return true;
+
+    if (browser_window_id_ != extension_misc::kUnknownWindowId &&
+        helper->browser_window_id() != browser_window_id_) {
+      return true;
+    }
+
+    views_.push_back(render_view);
+
+    if (view_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
+      return false;  // There can be only one...
+    return true;
+  }
+
+ private:
+  // Returns true if |type| "isa" |match|.
+  static bool ViewTypeMatches(content::ViewType type, content::ViewType match) {
+    if (type == match)
+      return true;
+
+    // INVALID means match all.
+    if (match == content::VIEW_TYPE_INVALID)
+      return true;
+
+    return false;
+  }
+
+  std::string extension_id_;
+  int browser_window_id_;
+  content::ViewType view_type_;
+  std::vector<content::RenderView*> views_;
+};
+
+}
+
+// static
+std::vector<content::RenderView*> ExtensionHelper::GetExtensionViews(
+    const std::string& extension_id,
+    int browser_window_id,
+    content::ViewType view_type) {
+  ExtensionViewAccumulator accumulator(
+      extension_id, browser_window_id, view_type);
+  content::RenderView::ForEach(&accumulator);
+  return accumulator.views();
+}
+
+// static
+content::RenderView* ExtensionHelper::GetBackgroundPage(
+    const std::string& extension_id) {
+  ExtensionViewAccumulator accumulator(
+      extension_id, extension_misc::kUnknownWindowId,
+      chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+  content::RenderView::ForEach(&accumulator);
+  CHECK_LE(accumulator.views().size(), 1u);
+  if (accumulator.views().size() == 0)
+    return NULL;
+  return accumulator.views()[0];
 }
 
 ExtensionHelper::ExtensionHelper(content::RenderView* render_view,

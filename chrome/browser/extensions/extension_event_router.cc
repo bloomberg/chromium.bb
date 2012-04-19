@@ -405,20 +405,27 @@ void ExtensionEventRouter::MaybeLoadLazyBackgroundPage(
 
 void ExtensionEventRouter::IncrementInFlightEvents(
     Profile* profile, const Extension* extension) {
+  // Only increment in-flight events if the lazy background page is active,
+  // because that's the only time we'll get an ACK.
   if (extension->has_lazy_background_page()) {
-    profile->GetExtensionProcessManager()->IncrementLazyKeepaliveCount(
-        extension);
+    ExtensionProcessManager* pm =
+        ExtensionSystem::Get(profile)->process_manager();
+    ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
+    if (host)
+      pm->IncrementLazyKeepaliveCount(extension);
   }
 }
 
-void ExtensionEventRouter::OnExtensionEventAck(
+void ExtensionEventRouter::OnEventAck(
     Profile* profile, const std::string& extension_id) {
-  const Extension* extension = profile->GetExtensionService()->extensions()->
-      GetByID(extension_id);
-  if (extension && extension->has_lazy_background_page()) {
-    profile->GetExtensionProcessManager()->DecrementLazyKeepaliveCount(
-        extension);
-  }
+  ExtensionProcessManager* pm =
+      ExtensionSystem::Get(profile)->process_manager();
+  ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id);
+  // The event ACK is routed to the background host, so this should never be
+  // NULL.
+  CHECK(host);
+  CHECK(host->extension()->has_lazy_background_page());
+  pm->DecrementLazyKeepaliveCount(host->extension());
 }
 
 void ExtensionEventRouter::DispatchPendingEvent(
