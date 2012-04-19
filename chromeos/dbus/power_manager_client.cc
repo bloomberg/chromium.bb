@@ -353,6 +353,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
     status.line_power_on = protobuf.line_power_on();
     status.battery_seconds_to_empty = protobuf.battery_time_to_empty();
     status.battery_seconds_to_full = protobuf.battery_time_to_full();
+    status.averaged_battery_time_to_empty =
+        protobuf.averaged_battery_time_to_empty();
+    status.averaged_battery_time_to_full =
+        protobuf.averaged_battery_time_to_full();
     status.battery_percentage = protobuf.battery_percentage();
     status.battery_is_present = protobuf.battery_is_present();
     status.battery_is_full = protobuf.battery_is_charged();
