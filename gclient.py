@@ -55,12 +55,13 @@ import copy
 import logging
 import optparse
 import os
+import platform
 import posixpath
 import pprint
 import re
 import sys
-import urlparse
 import urllib
+import urlparse
 
 import breakpad  # pylint: disable=W0611
 
@@ -1498,8 +1499,11 @@ def GenUsage(parser, command):
 def Parser():
   """Returns the default parser."""
   parser = optparse.OptionParser(version='%prog ' + __version__)
-  # cygwin has issues with parallel sync
-  jobs = 1 if sys.platform == 'cygwin' else 8
+  # cygwin and some arm boards have issues with parallel sync.
+  if sys.platform == 'cygwin' or platform.machine().startswith('arm'):
+    jobs = 1
+  else:
+    jobs = 8
   parser.add_option('-j', '--jobs', default=jobs, type='int',
                     help='Specify how many SCM commands can run in parallel; '
                           'default=%default')
