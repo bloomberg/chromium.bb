@@ -36,6 +36,8 @@ FAIL_TEST(sanity_malloc_direct)
 	void *p;
 
 	p = malloc(10);	/* memory leak */
+	assert(p);	/* assert that we got memory, also prevents
+			 * the malloc from getting optimized away. */
 	free(NULL);	/* NULL must not be counted */
 }
 
