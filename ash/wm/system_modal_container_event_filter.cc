@@ -18,13 +18,15 @@ SystemModalContainerEventFilter::SystemModalContainerEventFilter(
 SystemModalContainerEventFilter::~SystemModalContainerEventFilter() {
 }
 
-bool SystemModalContainerEventFilter::PreHandleKeyEvent(aura::Window* target,
-                                            aura::KeyEvent* event) {
+bool SystemModalContainerEventFilter::PreHandleKeyEvent(
+    aura::Window* target,
+    aura::KeyEvent* event) {
   return !delegate_->CanWindowReceiveEvents(target);
 }
 
-bool SystemModalContainerEventFilter::PreHandleMouseEvent(aura::Window* target,
-                                              aura::MouseEvent* event) {
+bool SystemModalContainerEventFilter::PreHandleMouseEvent(
+    aura::Window* target,
+    aura::MouseEvent* event) {
   return !delegate_->CanWindowReceiveEvents(target);
 }
 

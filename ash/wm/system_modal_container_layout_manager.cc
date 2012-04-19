@@ -146,6 +146,11 @@ bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
 // SystemModalContainerLayoutManager, private:
 
 void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
+  if (modal_windows_.empty()) {
+    aura::RootWindow* root = container_->GetRootWindow();
+    if (root->capture_window())
+      root->capture_window()->ReleaseCapture();
+  }
   modal_windows_.push_back(window);
   CreateModalScreen();
 }

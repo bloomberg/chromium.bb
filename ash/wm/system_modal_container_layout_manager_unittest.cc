@@ -65,6 +65,29 @@ class TestWindow : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(TestWindow);
 };
 
+class CaptureTrackingView : public views::View {
+ public:
+  CaptureTrackingView() : got_press_(false), got_capture_lost_(false) {}
+
+  bool got_press() const { return got_press_; }
+  bool got_capture_lost() const { return got_capture_lost_; }
+
+  // Overridden from views::View
+  virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
+    got_press_ = true;
+    return true;
+  }
+  virtual void OnMouseCaptureLost() OVERRIDE {
+    got_capture_lost_ = true;
+  }
+
+ private:
+  bool got_press_;
+  bool got_capture_lost_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptureTrackingView);
+};
+
 class EventTestWindow : public TestWindow {
  public:
   explicit EventTestWindow(bool modal) : TestWindow(modal),
@@ -266,6 +289,27 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowModalWhileHidden) {
       TestWindow::OpenTestWindow(parent.get(), true));
   parent->Show();
   modal_window->Show();
+}
+
+// Verifies we generate a capture lost when showing a modal window.
+TEST_F(SystemModalContainerLayoutManagerTest, ChangeCapture) {
+  views::Widget* widget =
+      views::Widget::CreateWindowWithParent(new TestWindow(false), NULL);
+  scoped_ptr<aura::Window> widget_window(widget->GetNativeView());
+  CaptureTrackingView* view = new CaptureTrackingView;
+  widget->GetContentsView()->AddChildView(view);
+  view->SetBoundsRect(widget->GetContentsView()->bounds());
+  widget->Show();
+
+  gfx::Point center(view->width() / 2, view->height() / 2);
+  views::View::ConvertPointToScreen(view, &center);
+  aura::test::EventGenerator generator(Shell::GetRootWindow(), center);
+  generator.PressLeftButton();
+  EXPECT_TRUE(view->got_press());
+  scoped_ptr<aura::Window> modal_window(
+      TestWindow::OpenTestWindow(widget->GetNativeView(), true));
+  modal_window->Show();
+  EXPECT_TRUE(view->got_capture_lost());
 }
 
 }  // namespace test
