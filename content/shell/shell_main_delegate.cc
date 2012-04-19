@@ -97,7 +97,10 @@ void ShellMainDelegate::InitializeShellContentClient(
   if (process_type.empty()) {
     browser_client_.reset(new content::ShellContentBrowserClient);
     content::GetContentClient()->set_browser(browser_client_.get());
-  } else if (process_type == switches::kRendererProcess) {
+  }
+
+  if (process_type == switches::kRendererProcess ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
     renderer_client_.reset(new content::ShellContentRendererClient);
     content::GetContentClient()->set_renderer(renderer_client_.get());
   } else if (process_type == switches::kPluginProcess) {

@@ -13,6 +13,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/notification_service_impl.h"
 #include "content/common/child_process.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 
@@ -46,6 +47,9 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
     // child process (e.g. when launched by PyAuto).
     if (parameters.command_line.HasSwitch(switches::kWaitForDebugger))
       ChildProcess::WaitForDebugger("Browser");
+
+    if (parameters.command_line.HasSwitch(switches::kSingleProcess))
+      content::RenderProcessHost::set_run_renderer_in_process(true);
 
     statistics_.reset(new base::StatisticsRecorder);
 

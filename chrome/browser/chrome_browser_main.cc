@@ -98,6 +98,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/app_locale_settings.h"
@@ -1111,6 +1112,13 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 // content::BrowserMainParts implementation ------------------------------------
 
 void ChromeBrowserMainParts::PreEarlyInitialization() {
+  // Single-process is an unsupported and not fully tested mode, so
+  // don't enable it for official Chrome builds (by not setting the client, the
+#if defined(GOOGLE_CHROME_BUILD)
+  if (content::RenderProcessHost::run_renderer_in_process())
+    content::RenderProcessHost::set_run_renderer_in_process(false);
+#endif  // GOOGLE_CHROME_BUILD
+
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreEarlyInitialization();
 }

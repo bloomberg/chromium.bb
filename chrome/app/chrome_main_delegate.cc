@@ -30,7 +30,6 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "content/common/content_counters.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -580,14 +579,8 @@ void ChromeMainDelegate::PreSandboxStartup() {
   if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))
     MessageLoop::EnableHistogrammer(true);
 
-  // Single-process is an unsupported and not fully tested mode, so
-  // don't enable it for official Chrome builds.
-#if !defined(GOOGLE_CHROME_BUILD)
-  if (command_line.HasSwitch(switches::kSingleProcess)) {
-    content::RenderProcessHost::set_run_renderer_in_process(true);
+  if (command_line.HasSwitch(switches::kSingleProcess))
     InitializeChromeContentRendererClient();
-  }
-#endif  // GOOGLE_CHROME_BUILD
 
   logging::OldFileDeletionState file_state =
       logging::APPEND_TO_OLD_LOG_FILE;
