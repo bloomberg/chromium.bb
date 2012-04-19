@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
@@ -190,7 +191,9 @@ void WebIntentPickerGtk::OnExtensionIconChanged(WebIntentPickerModel* model,
 void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
                                              const GURL& url) {
   content::WebContents* web_contents = content::WebContents::Create(
-      browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+      browser_->profile(),
+      tab_util::GetSiteInstanceForNewTab(NULL, browser_->profile(), url),
+      MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(this));

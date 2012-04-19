@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -160,7 +161,9 @@ void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model,
                                                const GURL& url) {
   DCHECK(browser_);
   content::WebContents* web_contents = content::WebContents::Create(
-      browser_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+      browser_->profile(),
+      tab_util::GetSiteInstanceForNewTab(NULL, browser_->profile(), url),
+      MSG_ROUTING_NONE, NULL, NULL);
   inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(this));

@@ -7,6 +7,7 @@
 
 #include "base/time.h"
 #include "base/memory/scoped_vector.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
@@ -762,6 +763,9 @@ class WebIntentPickerViews : public views::ButtonListener,
   // prevent laying out the inline disposition widgets twice.
   bool displaying_web_contents_;
 
+  // Ownership of the WebContents we are displaying in the inline disposition.
+  scoped_ptr<WebContents> inline_web_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerViews);
 };
 
@@ -960,6 +964,13 @@ void WebIntentPickerViews::OnExtensionIconChanged(
 
 void WebIntentPickerViews::OnInlineDisposition(
     WebIntentPickerModel* model, const GURL& url) {
+  inline_web_contents_.reset(WebContents::Create(
+      browser_->profile(),
+      tab_util::GetSiteInstanceForNewTab(NULL, browser_->profile(), url),
+      MSG_ROUTING_NONE, NULL, NULL));
+  // Does not take ownership, so we keep a scoped_ptr
+  // for the WebContents locally.
+  webview_->SetWebContents(inline_web_contents_.get());
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(this));
   content::WebContents* web_contents = webview_->GetWebContents();
