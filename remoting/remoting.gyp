@@ -174,7 +174,6 @@
       'host/installer/mac/PrivilegedHelperTools/org.chromium.chromoting.me2me.sh',
       'host/installer/mac/Scripts/keystone_install.sh',
       'host/installer/mac/Scripts/remoting_postflight.sh',
-      'host/installer/mac/Scripts/uninstall.sh',
       #'host/installer/mac/Keystone/GoogleSoftwareUpdate.pkg.zip',
     ],
   },

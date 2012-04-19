@@ -13,7 +13,8 @@
 
 PKG_DIR=build
 PKGPROJ_CHROMOTING='Chromoting.packproj'
-PKGPROJ_CHROME_REMOTE_DESKTOP='Chrome Remote Desktop.packproj'
+PKGPROJ_CRD='ChromeRemoteDesktop.packproj'
+PKGPROJ_CRD_UNINSTALLER='ChromeRemoteDesktopUninstaller.packproj'
 PKG_CHROMOTING='Chromoting.pkg'
 PKG_CRD='Chrome Remote Desktop.mpkg'
 
@@ -29,23 +30,25 @@ rm -rf "$DMG_TEMP"   # In case previous build failed.
 
 # Copy latest release build.
 # TODO(garykac): Get from proper location.
-HOST_BINARY=PrivilegedHelperTools/org.chromium.chromoting.me2me_host
-cp ../../../../out/Release/remoting_me2me_host ./$HOST_BINARY
+TARGET_DIR="../../../../out/Release"
+HOST_SRC="$TARGET_DIR/remoting_me2me_host"
+HOST_DST="PrivilegedHelperTools/org.chromium.chromoting.me2me_host"
+cp "$HOST_SRC" "./$HOST_DST"
+UNINSTALLER_SRC="$TARGET_DIR/remoting_host_uninstaller.app"
+UNINSTALLER_DST="Applications/Chrome Remote Desktop Host Uninstaller.app"
+ditto "$UNINSTALLER_SRC" "$UNINSTALLER_DST"
 
 # Build the .pkg.
 echo "Building .pkg..."
 freeze "$PKGPROJ_CHROMOTING"
-freeze "$PKGPROJ_CHROME_REMOTE_DESKTOP"
+freeze "$PKGPROJ_CRD_UNINSTALLER"
+freeze "$PKGPROJ_CRD"
 
 # Create the .dmg.
 echo "Building .dmg..."
 mkdir -p "$DMG_DIR/$PKG_CRD"
 # Copy .mpkg installer.
 ditto "$PKG_DIR/$PKG_CRD" "$DMG_DIR/$PKG_CRD"
-# Copy uninstall script.
-# TODO(garykac): This should be made into a proper App and installed in the
-# Applications directory.
-cp Scripts/uninstall.sh "$DMG_DIR"
 # Copy .keystone_install script to top level of .dmg.
 # Keystone calls this script during upgrades.
 cp Scripts/keystone_install.sh "$DMG_DIR/.keystone_install"
