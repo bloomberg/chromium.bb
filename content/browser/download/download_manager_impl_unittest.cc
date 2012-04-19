@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
@@ -22,6 +23,7 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/mock_download_file.h"
+#include "content/browser/power_save_blocker.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -349,6 +351,7 @@ DownloadFileWithErrors::DownloadFileWithErrors(DownloadCreateInfo* info,
                        new DownloadRequestHandle(),
                        manager,
                        calculate_hash,
+                       scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
                        net::BoundNetLog()),
       forced_error_(net::OK) {
 }
@@ -539,7 +542,9 @@ TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
 
     DownloadFile* download_file(
         new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
-                             download_manager_, false, net::BoundNetLog()));
+                             download_manager_, false,
+                             scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
+                             net::BoundNetLog()));
     AddDownloadToFileManager(info->download_id.local(), download_file);
     download_file->Initialize();
     download_manager_->StartDownload(info->download_id.local());
@@ -1184,7 +1189,9 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
   // properly.
   DownloadFile* download_file(
       new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
-                           download_manager_, false, net::BoundNetLog()));
+                           download_manager_, false,
+                           scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
+                           net::BoundNetLog()));
   download_file->Rename(cr_path);
   // This creates the .temp version of the file.
   download_file->Initialize();
@@ -1258,7 +1265,9 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   // properly.
   DownloadFile* download_file(
       new DownloadFileImpl(info.get(), new DownloadRequestHandle(),
-                           download_manager_, false, net::BoundNetLog()));
+                           download_manager_, false,
+                           scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
+                           net::BoundNetLog()));
   download_file->Rename(cr_path);
   // This creates the .temp version of the file.
   download_file->Initialize();

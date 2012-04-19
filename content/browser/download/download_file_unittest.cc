@@ -9,18 +9,12 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_request_handle.h"
+#include "content/browser/power_save_blocker.h"
 #include "content/public/browser/download_manager.h"
 #include "content/test/mock_download_manager.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_LINUX)
-// http://crbug.com/110886 for Linux
-#define MAYBE_RenameFileFinal DISABLED_RenameFileFinal
-#else
-#define MAYBE_RenameFileFinal RenameFileFinal
-#endif
 
 using content::BrowserThread;
 using content::BrowserThreadImpl;
@@ -77,6 +71,7 @@ class DownloadFileTest : public testing::Test {
     file->reset(
         new DownloadFileImpl(&info, new DownloadRequestHandle(),
                              download_manager_, calculate_hash,
+                             scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
                              net::BoundNetLog()));
   }
 
@@ -139,7 +134,7 @@ const int DownloadFileTest::kDummyRequestId = 67;
 
 // Rename the file before any data is downloaded, after some has, after it all
 // has, and after it's closed.
-TEST_F(DownloadFileTest, MAYBE_RenameFileFinal) {
+TEST_F(DownloadFileTest, RenameFileFinal) {
   CreateDownloadFile(&download_file_, 0, true);
   ASSERT_EQ(net::OK, download_file_->Initialize());
   FilePath initial_path(download_file_->FullPath());

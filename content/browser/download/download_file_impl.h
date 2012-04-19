@@ -9,8 +9,11 @@
 #include "content/browser/download/download_file.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/download_request_handle.h"
+
+class PowerSaveBlocker;
 
 struct DownloadCreateInfo;
 
@@ -26,6 +29,7 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
                    DownloadRequestHandleInterface* request_handle,
                    content::DownloadManager* download_manager,
                    bool calculate_hash,
+                   scoped_ptr<PowerSaveBlocker> power_save_blocker,
                    const net::BoundNetLog& bound_net_log);
   virtual ~DownloadFileImpl();
 
@@ -64,6 +68,9 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
 
   // DownloadManager this download belongs to.
   scoped_refptr<content::DownloadManager> download_manager_;
+
+  // RAII handle to keep the system from sleeping while we're downloading.
+  scoped_ptr<PowerSaveBlocker> power_save_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileImpl);
 };

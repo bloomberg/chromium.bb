@@ -215,7 +215,6 @@ BaseFile::BaseFile(const FilePath& full_path,
       file_stream_(file_stream),
       bytes_so_far_(received_bytes),
       start_tick_(base::TimeTicks::Now()),
-      power_save_blocker_(PowerSaveBlocker::kPowerSaveBlockPreventSystemSleep),
       calculate_hash_(calculate_hash),
       detached_(false),
       bound_net_log_(bound_net_log) {

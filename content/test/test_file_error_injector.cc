@@ -11,6 +11,7 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_file_manager.h"
+#include "content/browser/power_save_blocker.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_id.h"
@@ -83,6 +84,7 @@ DownloadFileWithErrors::DownloadFileWithErrors(
                            request_handle,
                            download_manager,
                            calculate_hash,
+                           scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
                            bound_net_log),
           source_url_(info->url()),
           error_info_(error_info),

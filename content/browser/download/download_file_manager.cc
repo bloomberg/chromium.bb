@@ -19,6 +19,7 @@
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/power_save_blocker.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -56,10 +57,13 @@ DownloadFile* DownloadFileFactoryImpl::CreateFile(
     DownloadManager* download_manager,
     bool calculate_hash,
     const net::BoundNetLog& bound_net_log) {
-  return new DownloadFileImpl(info,
-                              new DownloadRequestHandle(request_handle),
-                              download_manager, calculate_hash,
-                              bound_net_log);
+  return new DownloadFileImpl(
+      info, new DownloadRequestHandle(request_handle),
+      download_manager, calculate_hash,
+      scoped_ptr<PowerSaveBlocker>(
+          new PowerSaveBlocker(
+              PowerSaveBlocker::kPowerSaveBlockPreventSystemSleep)).Pass(),
+      bound_net_log);
 }
 
 }  // namespace

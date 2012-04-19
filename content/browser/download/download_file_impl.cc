@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "content/browser/download/download_create_info.h"
+#include "content/browser/power_save_blocker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 
@@ -20,6 +21,7 @@ DownloadFileImpl::DownloadFileImpl(
     DownloadRequestHandleInterface* request_handle,
     DownloadManager* download_manager,
     bool calculate_hash,
+    scoped_ptr<PowerSaveBlocker> power_save_blocker,
     const net::BoundNetLog& bound_net_log)
         : file_(info->save_info.file_path,
                 info->url(),
@@ -31,7 +33,8 @@ DownloadFileImpl::DownloadFileImpl(
                 bound_net_log),
           id_(info->download_id),
           request_handle_(request_handle),
-          download_manager_(download_manager) {
+          download_manager_(download_manager),
+          power_save_blocker_(power_save_blocker.Pass()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
