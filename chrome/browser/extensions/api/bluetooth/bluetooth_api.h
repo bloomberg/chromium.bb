@@ -12,6 +12,7 @@
 namespace chromeos {
 
 class BluetoothAdapter;
+class BluetoothDevice;
 
 }  // namespace chromeos
 #endif
@@ -23,6 +24,15 @@ class BluetoothExtensionFunction : public SyncExtensionFunction {
  protected:
 #if defined(OS_CHROMEOS)
   const chromeos::BluetoothAdapter* adapter() const;
+  chromeos::BluetoothAdapter* GetMutableAdapter();
+#endif
+};
+
+class AsyncBluetoothExtensionFunction : public AsyncExtensionFunction {
+ protected:
+#if defined(OS_CHROMEOS)
+  const chromeos::BluetoothAdapter* adapter() const;
+  chromeos::BluetoothAdapter* GetMutableAdapter();
 #endif
 };
 
@@ -44,12 +54,30 @@ class BluetoothGetAddressFunction : public BluetoothExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getAddress")
 };
 
-class BluetoothGetDevicesWithServiceFunction
+class BluetoothGetDevicesWithServiceUUIDFunction
     : public BluetoothExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.bluetooth.getDevicesWithService")
+      "experimental.bluetooth.getDevicesWithServiceUUID")
+};
+
+class BluetoothGetDevicesWithServiceNameFunction
+    : public AsyncBluetoothExtensionFunction {
+ public:
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.bluetooth.getDevicesWithServiceName")
+
+#if defined(OS_CHROMEOS)
+  BluetoothGetDevicesWithServiceNameFunction();
+
+ private:
+  void AddDeviceIfTrue(
+      ListValue* list, const chromeos::BluetoothDevice* device, bool result);
+
+  int callbacks_pending_;
+#endif
 };
 
 class BluetoothDisconnectFunction : public BluetoothExtensionFunction {

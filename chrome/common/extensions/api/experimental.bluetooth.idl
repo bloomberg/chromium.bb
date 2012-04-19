@@ -57,9 +57,16 @@
     // Get a list of bluetooth devices that support a service.
     // |service|  : The UUID of the desired service.
     // |callback| : Called with an array of Device objects, all of which
-    //              provide |service|.
-    static void getDevicesWithService(
-        DOMString service, DevicesCallback callback);
+    //              provide a service with UUID equal to |uuid|.
+    static void getDevicesWithServiceUUID(
+        DOMString uuid, DevicesCallback callback);
+
+    // Get a list of bluetooth devices that support a service.
+    // |service|  : The name of the desired service.
+    // |callback| : Called with an array of Device objects, all of which
+    //              provide a service with name equal to |name|.
+    static void getDevicesWithServiceName(
+        DOMString name, DevicesCallback callback);
 
     // Connect to a service on a device.
     // |device|   : The target device.

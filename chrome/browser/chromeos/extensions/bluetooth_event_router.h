@@ -19,6 +19,7 @@ class ExtensionBluetoothEventRouter
   virtual ~ExtensionBluetoothEventRouter();
 
   const chromeos::BluetoothAdapter* adapter() const { return adapter_.get(); }
+  chromeos::BluetoothAdapter* GetMutableAdapter() { return adapter_.get(); }
 
   // Override from chromeos::BluetoothAdapter::Observer
   virtual void AdapterPresentChanged(

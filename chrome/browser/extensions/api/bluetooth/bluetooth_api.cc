@@ -8,25 +8,47 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/experimental.bluetooth.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/extensions/bluetooth_event_router.h"
 
 using chromeos::BluetoothAdapter;
 using chromeos::BluetoothDevice;
+
 #endif
 
-namespace GetDevicesWithService =
-    extensions::api::experimental_bluetooth::GetDevicesWithService;
+namespace GetDevicesWithServiceUUID =
+    extensions::api::experimental_bluetooth::GetDevicesWithServiceUUID;
+namespace GetDevicesWithServiceName =
+    extensions::api::experimental_bluetooth::GetDevicesWithServiceName;
 
 namespace extensions {
 namespace api {
 
 #if defined(OS_CHROMEOS)
+
 const chromeos::BluetoothAdapter* BluetoothExtensionFunction::adapter() const {
   return profile()->GetExtensionService()->bluetooth_event_router()->adapter();
+}
+
+chromeos::BluetoothAdapter* BluetoothExtensionFunction::GetMutableAdapter() {
+  return profile()->GetExtensionService()->bluetooth_event_router()->
+      GetMutableAdapter();
+}
+
+const chromeos::BluetoothAdapter*
+AsyncBluetoothExtensionFunction::adapter() const {
+  return profile()->GetExtensionService()->bluetooth_event_router()->adapter();
+}
+
+chromeos::BluetoothAdapter*
+AsyncBluetoothExtensionFunction::GetMutableAdapter() {
+  return profile()->GetExtensionService()->bluetooth_event_router()->
+      GetMutableAdapter();
 }
 
 bool BluetoothIsAvailableFunction::RunImpl() {
@@ -44,28 +66,72 @@ bool BluetoothGetAddressFunction::RunImpl() {
   return true;
 }
 
-bool BluetoothGetDevicesWithServiceFunction::RunImpl() {
-  scoped_ptr<GetDevicesWithService::Params> params(
-      GetDevicesWithService::Params::Create(*args_));
+bool BluetoothGetDevicesWithServiceUUIDFunction::RunImpl() {
+  scoped_ptr<GetDevicesWithServiceUUID::Params> params(
+      GetDevicesWithServiceUUID::Params::Create(*args_));
 
-  BluetoothAdapter::ConstDeviceList devices = adapter()->GetDevices();
-
+  const BluetoothAdapter::ConstDeviceList& devices = adapter()->GetDevices();
   ListValue* matches = new ListValue;
   for (BluetoothAdapter::ConstDeviceList::const_iterator i =
       devices.begin(); i != devices.end(); ++i) {
-    const BluetoothDevice::ServiceList& services = (*i)->GetServices();
-    for (BluetoothDevice::ServiceList::const_iterator j = services.begin();
-        j != services.end(); ++j) {
-      if (*j == params->service) {
-        experimental_bluetooth::Device device;
-        device.name = UTF16ToUTF8((*i)->GetName());
-        device.address = (*i)->address();
-        matches->Append(device.ToValue().release());
-      }
+    if ((*i)->ProvidesServiceWithUUID(params->uuid)) {
+      experimental_bluetooth::Device device;
+      device.name = UTF16ToUTF8((*i)->GetName());
+      device.address = (*i)->address();
+      matches->Append(device.ToValue().release());
     }
   }
-
   result_.reset(matches);
+
+  return true;
+}
+
+BluetoothGetDevicesWithServiceNameFunction::
+    BluetoothGetDevicesWithServiceNameFunction() : callbacks_pending_(0) {}
+
+void BluetoothGetDevicesWithServiceNameFunction::AddDeviceIfTrue(
+    ListValue* list, const BluetoothDevice* device, bool result) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (result) {
+    experimental_bluetooth::Device device_result;
+    device_result.name = UTF16ToUTF8(device->GetName());
+    device_result.address = device->address();
+    list->Append(device_result.ToValue().release());
+  }
+
+  callbacks_pending_--;
+  if (callbacks_pending_ == 0) {
+    SendResponse(true);
+    Release();  // Added in RunImpl
+  }
+}
+
+bool BluetoothGetDevicesWithServiceNameFunction::RunImpl() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  scoped_ptr<GetDevicesWithServiceName::Params> params(
+      GetDevicesWithServiceName::Params::Create(*args_));
+
+  ListValue* matches = new ListValue;
+  result_.reset(matches);
+
+  BluetoothAdapter::DeviceList devices = GetMutableAdapter()->GetDevices();
+  callbacks_pending_ = 0;
+  for (BluetoothAdapter::DeviceList::iterator i = devices.begin();
+      i != devices.end(); ++i) {
+    (*i)->ProvidesServiceWithName(params->name,
+        base::Bind(&BluetoothGetDevicesWithServiceNameFunction::AddDeviceIfTrue,
+                   this,
+                   matches,
+                   *i));
+    callbacks_pending_++;
+  }
+
+  if (callbacks_pending_) {
+    AddRef();  // Released in AddDeviceIfTrue when callbacks_pending_ == 0
+  }
+
   return true;
 }
 
@@ -89,7 +155,12 @@ bool BluetoothGetAddressFunction::RunImpl() {
   return false;
 }
 
-bool BluetoothGetDevicesWithServiceFunction::RunImpl() {
+bool BluetoothGetDevicesWithServiceUUIDFunction::RunImpl() {
+  NOTREACHED() << "Not implemented yet";
+  return false;
+}
+
+bool BluetoothGetDevicesWithServiceNameFunction::RunImpl() {
   NOTREACHED() << "Not implemented yet";
   return false;
 }
