@@ -23,6 +23,7 @@ class DictionaryValue;
 namespace dbus {
 
 class Bus;
+class ObjectPath;
 
 }  // namespace dbus
 
@@ -45,14 +46,23 @@ class CHROMEOS_EXPORT FlimflamNetworkClient {
 
   // Sets PropertyChanged signal handler.
   virtual void SetPropertyChangedHandler(
+      const dbus::ObjectPath& network_path,
       const PropertyChangedHandler& handler) = 0;
 
   // Resets PropertyChanged signal handler.
-  virtual void ResetPropertyChangedHandler() = 0;
+  virtual void ResetPropertyChangedHandler(
+      const dbus::ObjectPath& network_path) = 0;
 
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.
-  virtual void GetProperties(const DictionaryValueCallback& callback) = 0;
+  virtual void GetProperties(const dbus::ObjectPath& network_path,
+                             const DictionaryValueCallback& callback) = 0;
+
+  // DEPRECATED DO NOT USE: Calls GetProperties method and blocks until the
+  // method call finishes.  The caller is responsible to delete the result.
+  // Thie method returns NULL when method call fails.
+  virtual base::DictionaryValue* CallGetPropertiesAndBlock(
+      const dbus::ObjectPath& network_path) = 0;
 
  protected:
   // Create() should be used instead.

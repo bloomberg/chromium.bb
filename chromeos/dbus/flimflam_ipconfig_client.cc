@@ -52,7 +52,7 @@ FlimflamIPConfigClientImpl::FlimflamIPConfigClientImpl(dbus::Bus* bus)
     : proxy_(bus->GetObjectProxy(
         flimflam::kFlimflamServiceName,
         dbus::ObjectPath(flimflam::kFlimflamServicePath))),
-      helper_(proxy_) {
+      helper_(bus, proxy_) {
   helper_.MonitorPropertyChanged(flimflam::kFlimflamIPConfigInterface);
 }
 

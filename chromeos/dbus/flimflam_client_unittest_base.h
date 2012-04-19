@@ -111,6 +111,11 @@ class FlimflamClientUnittestBase : public testing::Test {
       int timeout_ms,
       const dbus::ObjectProxy::ResponseCallback& response_callback);
 
+  // Checks the content of the method call and returns the response.
+  // Used to implement the mock proxy.
+  dbus::Response* OnCallMethodAndBlock(dbus::MethodCall* method_call,
+                                       int timeout_ms);
+
   // The interface name.
   const std::string interface_name_;
   // The object path.

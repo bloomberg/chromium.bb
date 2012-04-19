@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/dbus/blocking_method_caller.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace base {
@@ -21,6 +22,7 @@ class DictionaryValue;
 
 namespace dbus {
 
+class Bus;
 class MessageWriter;
 class MethodCall;
 class ObjectPath;
@@ -52,7 +54,7 @@ class FlimflamClientHelper {
       DBusMethodCallStatus call_status,
       const base::DictionaryValue& result)> DictionaryValueCallback;
 
-  explicit FlimflamClientHelper(dbus::ObjectProxy* proxy);
+  FlimflamClientHelper(dbus::Bus* bus, dbus::ObjectProxy* proxy);
 
   virtual ~FlimflamClientHelper();
 
@@ -76,6 +78,12 @@ class FlimflamClientHelper {
   // Calls a method with a dictionary value result.
   void CallDictionaryValueMethod(dbus::MethodCall* method_call,
                                  const DictionaryValueCallback& callback);
+
+  // DEPRECATED DO NOT USE: Calls a method with a dictionary value result.
+  // The caller is responsible to delete the result.
+  // This method returns NULL when method call fails.
+  base::DictionaryValue* CallDictionaryValueMethodAndBlock(
+      dbus::MethodCall* method_call);
 
   // Appends the value (basic types and string-to-string dictionary) to the
   // writer as a variant.
@@ -103,6 +111,8 @@ class FlimflamClientHelper {
                                dbus::Response* response);
 
   base::WeakPtrFactory<FlimflamClientHelper> weak_ptr_factory_;
+  // TODO(hashimoto): Remove this when we no longer need to make blocking calls.
+  BlockingMethodCaller blocking_method_caller_;
   dbus::ObjectProxy* proxy_;
   PropertyChangedHandler property_changed_handler_;
 

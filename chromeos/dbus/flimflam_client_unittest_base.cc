@@ -20,6 +20,16 @@ using ::testing::Return;
 
 namespace chromeos {
 
+namespace {
+
+// Runs the given task.  This function is used to implement the mock bus.
+void RunTask(const tracked_objects::Location& from_here,
+             const base::Closure& task) {
+  task.Run();
+}
+
+}  // namespace
+
 FlimflamClientUnittestBase::FlimflamClientUnittestBase(
     const std::string& interface_name,
     const dbus::ObjectPath& object_path)
@@ -42,6 +52,12 @@ void FlimflamClientUnittestBase::SetUp() {
       flimflam::kFlimflamServiceName,
       object_path_);
 
+  // Set an expectation so mock_proxy's CallMethodAndBlock() will use
+  // OnCallMethodAndBlock() to return responses.
+  EXPECT_CALL(*mock_proxy_, CallMethodAndBlock(_, _))
+      .WillRepeatedly(Invoke(
+          this, &FlimflamClientUnittestBase::OnCallMethodAndBlock));
+
   // Set an expectation so mock_proxy's CallMethod() will use OnCallMethod()
   // to return responses.
   EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
@@ -60,6 +76,11 @@ void FlimflamClientUnittestBase::SetUp() {
   EXPECT_CALL(*mock_bus_, GetObjectProxy(flimflam::kFlimflamServiceName,
                                          object_path_))
       .WillOnce(Return(mock_proxy_.get()));
+
+  // Set an expectation so mock_bus's PostTaskToDBusThread() will run the
+  // given task.
+  EXPECT_CALL(*mock_bus_, PostTaskToDBusThread(_, _))
+      .WillRepeatedly(Invoke(&RunTask));
 
   // ShutdownAndBlock() will be called in TearDown().
   EXPECT_CALL(*mock_bus_, ShutdownAndBlock()).WillOnce(Return());
@@ -185,6 +206,17 @@ void FlimflamClientUnittestBase::OnCallMethod(
   argument_checker_.Run(&reader);
   message_loop_.PostTask(FROM_HERE,
                          base::Bind(response_callback, response_));
+}
+
+dbus::Response* FlimflamClientUnittestBase::OnCallMethodAndBlock(
+    dbus::MethodCall* method_call,
+    int timeout_ms) {
+  EXPECT_EQ(interface_name_, method_call->GetInterface());
+  EXPECT_EQ(expected_method_name_, method_call->GetMember());
+  dbus::MessageReader reader(method_call);
+  argument_checker_.Run(&reader);
+  return dbus::Response::FromRawMessage(
+      dbus_message_copy(response_->raw_message()));
 }
 
 }  // namespace chromeos

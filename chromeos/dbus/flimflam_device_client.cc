@@ -164,7 +164,7 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
     // There is no helper for the profile, create it.
     dbus::ObjectProxy* object_proxy =
         bus_->GetObjectProxy(flimflam::kFlimflamServiceName, device_path);
-    FlimflamClientHelper* helper = new FlimflamClientHelper(object_proxy);
+    FlimflamClientHelper* helper = new FlimflamClientHelper(bus_, object_proxy);
     helper->MonitorPropertyChanged(flimflam::kFlimflamDeviceInterface);
     helpers_.insert(HelperMap::value_type(device_path.value(), helper));
     return helper;

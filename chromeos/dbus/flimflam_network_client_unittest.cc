@@ -13,12 +13,18 @@
 
 namespace chromeos {
 
+namespace {
+
+const char kExampleNetworkPath[] = "/foo/bar";
+
+}  // namespace
+
 class FlimflamNetworkClientTest : public FlimflamClientUnittestBase {
  public:
   FlimflamNetworkClientTest()
       : FlimflamClientUnittestBase(
           flimflam::kFlimflamNetworkInterface,
-          dbus::ObjectPath(flimflam::kFlimflamServicePath)) {
+          dbus::ObjectPath(kExampleNetworkPath)) {
   }
 
   virtual void SetUp() {
@@ -48,14 +54,15 @@ TEST_F(FlimflamNetworkClientTest, PropertyChanged) {
   dbus::AppendBasicTypeValueDataAsVariant(&writer, kConnected);
 
   // Set expectations.
-  client_->SetPropertyChangedHandler(base::Bind(&ExpectPropertyChanged,
+  client_->SetPropertyChangedHandler(dbus::ObjectPath(kExampleNetworkPath),
+                                     base::Bind(&ExpectPropertyChanged,
                                                 flimflam::kConnectedProperty,
                                                 &kConnected));
   // Run the signal callback.
   SendPropertyChangedSignal(&signal);
 
   // Reset the handler.
-  client_->ResetPropertyChangedHandler();
+  client_->ResetPropertyChangedHandler(dbus::ObjectPath(kExampleNetworkPath));
 }
 
 TEST_F(FlimflamNetworkClientTest, GetProperties) {
@@ -118,10 +125,43 @@ TEST_F(FlimflamNetworkClientTest, GetProperties) {
                        base::Bind(&ExpectNoArgument),
                        response.get());
   // Call method.
-  client_->GetProperties(base::Bind(&ExpectDictionaryValueResult,
-                                    &value));
+  client_->GetProperties(dbus::ObjectPath(kExampleNetworkPath),
+                         base::Bind(&ExpectDictionaryValueResult, &value));
   // Run the message loop.
   message_loop_.RunAllPending();
+}
+
+TEST_F(FlimflamNetworkClientTest, CallGetPropertiesAndBlock) {
+  const char kName[] = "name";
+
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  dbus::MessageWriter array_writer(NULL);
+  writer.OpenArray("{sv}", &array_writer);
+  dbus::MessageWriter entry_writer(NULL);
+  array_writer.OpenDictEntry(&entry_writer);
+  entry_writer.AppendString(flimflam::kNameProperty);
+  entry_writer.AppendVariantOfString(kName);
+  array_writer.CloseContainer(&entry_writer);
+  writer.CloseContainer(&array_writer);
+
+  // Create the expected value.
+  base::DictionaryValue value;
+  value.SetWithoutPathExpansion(flimflam::kNameProperty,
+                                base::Value::CreateStringValue(kName));
+
+  // Set expectations.
+  PrepareForMethodCall(flimflam::kGetPropertiesFunction,
+                       base::Bind(&ExpectNoArgument),
+                       response.get());
+  // Call method.
+  scoped_ptr<base::DictionaryValue> result(
+      client_->CallGetPropertiesAndBlock(
+          dbus::ObjectPath(kExampleNetworkPath)));
+
+  ASSERT_TRUE(result.get());
+  EXPECT_TRUE(result->Equals(&value));
 }
 
 }  // namespace chromeos

@@ -13,8 +13,10 @@
 
 namespace chromeos {
 
-FlimflamClientHelper::FlimflamClientHelper(dbus::ObjectProxy* proxy)
+FlimflamClientHelper::FlimflamClientHelper(dbus::Bus* bus,
+                                           dbus::ObjectProxy* proxy)
     : weak_ptr_factory_(this),
+      blocking_method_caller_(bus, proxy),
       proxy_(proxy) {
 }
 
@@ -66,6 +68,23 @@ void FlimflamClientHelper::CallDictionaryValueMethod(
                      base::Bind(&FlimflamClientHelper::OnDictionaryValueMethod,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 callback));
+}
+
+base::DictionaryValue* FlimflamClientHelper::CallDictionaryValueMethodAndBlock(
+    dbus::MethodCall* method_call) {
+  scoped_ptr<dbus::Response> response(
+      blocking_method_caller_.CallMethodAndBlock(method_call));
+  if (!response.get())
+    return NULL;
+
+  dbus::MessageReader reader(response.get());
+  base::Value* value = dbus::PopDataAsValue(&reader);
+  base::DictionaryValue* result = NULL;
+  if (!value || !value->GetAsDictionary(&result)) {
+    delete value;
+    return NULL;
+  }
+  return result;
 }
 
 // static

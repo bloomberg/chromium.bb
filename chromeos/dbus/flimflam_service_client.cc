@@ -118,7 +118,7 @@ class FlimflamServiceClientImpl : public FlimflamServiceClient {
     // There is no helper for the profile, create it.
     dbus::ObjectProxy* object_proxy =
         bus_->GetObjectProxy(flimflam::kFlimflamServiceName, service_path);
-    FlimflamClientHelper* helper = new FlimflamClientHelper(object_proxy);
+    FlimflamClientHelper* helper = new FlimflamClientHelper(bus_, object_proxy);
     helper->MonitorPropertyChanged(flimflam::kFlimflamServiceInterface);
     helpers_.insert(HelperMap::value_type(service_path.value(), helper));
     return helper;
