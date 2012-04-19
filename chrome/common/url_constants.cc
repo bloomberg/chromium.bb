@@ -17,6 +17,7 @@ namespace chrome {
 
 #if defined(OS_CHROMEOS)
 const char kCrosScheme[] = "cros";
+const char kGDataScheme[] = "gdata";
 #endif
 
 const char kAboutPluginsURL[] = "about:plugins";
@@ -204,7 +205,6 @@ const char kChromeUIActiveDownloadsHost[] = "active-downloads";
 const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
 const char kChromeUICryptohomeHost[] = "cryptohome";
 const char kChromeUIDiscardsHost[] = "discards";
-const char kChromeUIGDataHost[] = "gdata";
 const char kChromeUIIdleLogoutDialogHost[] = "idle-logout";
 const char kChromeUIImageBurnerHost[] = "imageburner";
 const char kChromeUIKeyboardOverlayHost[] = "keyboardoverlay";
@@ -422,6 +422,7 @@ void RegisterChromeSchemes() {
   url_util::AddStandardScheme(kExtensionScheme);
 #if defined(OS_CHROMEOS)
   url_util::AddStandardScheme(kCrosScheme);
+  url_util::AddStandardScheme(kGDataScheme);
 #endif
 
   // This call will also lock the list of standard schemes.

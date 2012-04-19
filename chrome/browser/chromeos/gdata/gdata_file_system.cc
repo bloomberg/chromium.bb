@@ -29,18 +29,22 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
+#include "chrome/browser/chromeos/gdata/gdata_protocol_handler.h"
 #include "chrome/browser/chromeos/gdata/gdata_sync_client.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "net/base/mime_util.h"
+#include "net/url_request/url_request_filter.h"
 
 using content::BrowserThread;
 
@@ -659,6 +663,12 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
 
 void GDataFileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  net::URLRequestFilter::GetInstance()->AddHostnameHandler(
+      chrome::kGDataScheme,
+      util::kGDataViewFileHostnameUrl,
+      &GDataProtocolHandler::CreateJob);
+
   FilePath cache_base_path;
   chrome::GetUserCacheDirectory(profile_->GetPath(), &cache_base_path);
   gdata_cache_path_ = cache_base_path.Append(chrome::kGDataCacheDirname);

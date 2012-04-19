@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/libxml_utils.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -127,7 +128,9 @@ const FilePath& GetSpecialRemoteRootPath() {
 GURL GetFileResourceUrl(const std::string& resource_id,
                         const std::string& file_name) {
   return GURL(base::StringPrintf(
-      "chrome://gdata/%s/%s",
+      "%s://%s/%s/%s",
+      chrome::kGDataScheme,
+      kGDataViewFileHostnameUrl,
       net::EscapePath(resource_id).c_str(),
       net::EscapePath(file_name).c_str()));
 }

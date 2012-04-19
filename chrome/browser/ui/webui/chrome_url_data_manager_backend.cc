@@ -95,9 +95,6 @@ class ChromeURLContentSecurityPolicyObjectTagSet
  public:
   ChromeURLContentSecurityPolicyObjectTagSet() : std::set<std::string>() {
     insert(chrome::kChromeUIPrintHost);
-#if defined(OS_CHROMEOS)
-    insert(chrome::kChromeUIGDataHost);
-#endif
   }
 };
 

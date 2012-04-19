@@ -17,6 +17,8 @@ class Profile;
 namespace gdata {
 namespace util {
 
+const char kGDataViewFileHostnameUrl[] = "viewfile";
+
 // Returns the GData mount point path, which looks like "/special/gdata".
 const FilePath& GetGDataMountPointPath();
 

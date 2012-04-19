@@ -195,7 +195,6 @@ extern const char kChromeUIActiveDownloadsHost[];
 extern const char kChromeUIChooseMobileNetworkHost[];
 extern const char kChromeUICryptohomeHost[];
 extern const char kChromeUIDiscardsHost[];
-extern const char kChromeUIGDataHost[];
 extern const char kChromeUIIdleLogoutDialogHost[];
 extern const char kChromeUIImageBurnerHost[];
 extern const char kChromeUIKeyboardOverlayHost[];
@@ -344,6 +343,9 @@ extern int kNumberOfChromeDebugURLs;
 
 // Canonical schemes you can use as input to GURL.SchemeIs().
 extern const char kExtensionScheme[];
+#if defined(OS_CHROMEOS)
+extern const char kGDataScheme[];
+#endif  // defined(OS_CHROMEOS)
 
 // Call near the beginning of startup to register Chrome's internal URLs that
 // should be parsed as "standard" with the googleurl library.
