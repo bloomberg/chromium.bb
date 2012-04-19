@@ -131,8 +131,11 @@ bool SystemKeyEventListener::ProcessedXEvent(XEvent* xevent) {
       enabled = (xkey_event->state.locked_mods) & num_lock_mask_;
       if (num_lock_is_on_ != enabled) {
         num_lock_is_on_ = enabled;
-        new_num_lock_state =
-            enabled ? input_method::kEnableLock : input_method::kDisableLock;
+        if (num_lock_is_on_) {
+          // TODO(yusukes,adlr): Let the user know that num lock is unsupported.
+        }
+        // Force turning off Num Lock. crosbug.com/29169
+        new_num_lock_state = input_method::kDisableLock;
       }
 
       // Propagate the keyboard LED change to _ALL_ keyboards

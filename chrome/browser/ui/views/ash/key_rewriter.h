@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/root_window_observer.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/device_hierarchy_observer.h"
@@ -42,6 +43,8 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
                                    const std::string& device_name);
   // Calls RewriteCommandToControl.
   void RewriteCommandToControlForTesting(aura::KeyEvent* event);
+  // Calls RewriteNumPadKeys.
+  void RewriteNumPadKeysForTesting(aura::KeyEvent* event);
 
   const std::map<int, DeviceType>& device_id_to_type_for_testing() const {
     return device_id_to_type_;
@@ -68,13 +71,25 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   virtual void DeviceRemoved(int device_id) OVERRIDE;
   virtual void DeviceKeyPressedOrReleased(int device_id) OVERRIDE;
 
-  // Updates |*_keycode_| in response to a keyboard map change.
+  // Updates |*_xkeycode_| in response to a keyboard map change.
   void RefreshKeycodes();
 #endif
 
   // Rewrites Comment-L/R key presses on an Apple keyboard to Control-L/R. Only
-  // OS_CHROMEOS implementation is available at this point.
-  void RewriteCommandToControl(aura::KeyEvent* event);
+  // OS_CHROMEOS implementation is available at this point. Returns true when
+  // |event| is rewritten.
+  bool RewriteCommandToControl(aura::KeyEvent* event);
+
+  // Rewrites a NumPad key press/release without Num Lock to a corresponding key
+  // press/release with the lock.  Returns true when |event| is rewritten.
+  bool RewriteNumPadKeys(aura::KeyEvent* event);
+
+  // Overwrites |event| with the keycodes and flags.
+  void Rewrite(aura::KeyEvent* event,
+               unsigned int new_native_keycode,
+               unsigned int new_native_state,
+               ui::KeyboardCode new_keycode,
+               int new_flags);
 
   // Checks the type of the |device_name|, and inserts a new entry to
   // |device_id_to_type_|.
@@ -87,6 +102,17 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   // X keycodes corresponding to various keysyms.
   unsigned int control_l_xkeycode_;
   unsigned int control_r_xkeycode_;
+  unsigned int kp_0_xkeycode_;
+  unsigned int kp_1_xkeycode_;
+  unsigned int kp_2_xkeycode_;
+  unsigned int kp_3_xkeycode_;
+  unsigned int kp_4_xkeycode_;
+  unsigned int kp_5_xkeycode_;
+  unsigned int kp_6_xkeycode_;
+  unsigned int kp_7_xkeycode_;
+  unsigned int kp_8_xkeycode_;
+  unsigned int kp_9_xkeycode_;
+  unsigned int kp_decimal_xkeycode_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(KeyRewriter);

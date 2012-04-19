@@ -52,6 +52,7 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_ISO_Enter:
       return VKEY_RETURN;
     case XK_Clear:
+    case XK_KP_Begin:  // NumPad 5 without Num Lock, for crosbug.com/29169.
       return VKEY_CLEAR;
     case XK_KP_Space:
     case XK_space:

@@ -10,7 +10,7 @@ namespace input_method {
 MockXKeyboard::MockXKeyboard()
     : set_current_keyboard_layout_by_name_count_(0),
       caps_lock_is_enabled_(false),
-      num_lock_is_enabled_(true) {
+      num_lock_is_enabled_(false) {
 }
 
 bool MockXKeyboard::SetCurrentKeyboardLayoutByName(

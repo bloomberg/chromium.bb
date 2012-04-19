@@ -12,7 +12,6 @@
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 
 #if defined(OS_CHROMEOS)
 #include <X11/extensions/XInput2.h>
@@ -87,6 +86,10 @@ void KeyRewriter::RewriteCommandToControlForTesting(aura::KeyEvent* event) {
   RewriteCommandToControl(event);
 }
 
+void KeyRewriter::RewriteNumPadKeysForTesting(aura::KeyEvent* event) {
+  RewriteNumPadKeys(event);
+}
+
 ash::KeyRewriterDelegate::Action KeyRewriter::RewriteOrFilterKeyEvent(
     aura::KeyEvent* event) {
   const ash::KeyRewriterDelegate::Action kActionRewrite =
@@ -96,7 +99,11 @@ ash::KeyRewriterDelegate::Action KeyRewriter::RewriteOrFilterKeyEvent(
     return kActionRewrite;
   }
 
-  RewriteCommandToControl(event);
+  if (RewriteCommandToControl(event))
+    return kActionRewrite;
+  if (RewriteNumPadKeys(event))
+    return kActionRewrite;
+
   // TODO(yusukes): Implement crbug.com/115112 (Search/Ctrl/Alt remapping) and
   // crosbug.com/27167 (allow sending function keys) here.
 
@@ -157,26 +164,39 @@ void KeyRewriter::DeviceKeyPressedOrReleased(int device_id) {
 }
 
 void KeyRewriter::RefreshKeycodes() {
-  control_l_xkeycode_ = XKeysymToKeycode(ui::GetXDisplay(), XK_Control_L);
-  control_r_xkeycode_ = XKeysymToKeycode(ui::GetXDisplay(), XK_Control_R);
+  Display* display = ui::GetXDisplay();
+  control_l_xkeycode_ = XKeysymToKeycode(display, XK_Control_L);
+  control_r_xkeycode_ = XKeysymToKeycode(display, XK_Control_R);
+  kp_0_xkeycode_ = XKeysymToKeycode(display, XK_KP_0);
+  kp_1_xkeycode_ = XKeysymToKeycode(display, XK_KP_1);
+  kp_2_xkeycode_ = XKeysymToKeycode(display, XK_KP_2);
+  kp_3_xkeycode_ = XKeysymToKeycode(display, XK_KP_3);
+  kp_4_xkeycode_ = XKeysymToKeycode(display, XK_KP_4);
+  kp_5_xkeycode_ = XKeysymToKeycode(display, XK_KP_5);
+  kp_6_xkeycode_ = XKeysymToKeycode(display, XK_KP_6);
+  kp_7_xkeycode_ = XKeysymToKeycode(display, XK_KP_7);
+  kp_8_xkeycode_ = XKeysymToKeycode(display, XK_KP_8);
+  kp_9_xkeycode_ = XKeysymToKeycode(display, XK_KP_9);
+  kp_decimal_xkeycode_ = XKeysymToKeycode(display, XK_KP_Decimal);
 }
 #endif
 
-void KeyRewriter::RewriteCommandToControl(aura::KeyEvent* event) {
+bool KeyRewriter::RewriteCommandToControl(aura::KeyEvent* event) {
+  bool rewritten = false;
   if (last_device_id_ == kBadDeviceId)
-    return;
+    return rewritten;
 
   // Check which device generated |event|.
   std::map<int, DeviceType>::const_iterator iter =
       device_id_to_type_.find(last_device_id_);
   if (iter == device_id_to_type_.end()) {
     LOG(ERROR) << "Device ID " << last_device_id_ << " is unknown.";
-    return;
+    return rewritten;
   }
 
   const DeviceType type = iter->second;
   if (type != kDeviceAppleKeyboard)
-    return;
+    return rewritten;
 
 #if defined(OS_CHROMEOS)
   XEvent* xev = event->native_event();
@@ -190,21 +210,19 @@ void KeyRewriter::RewriteCommandToControl(aura::KeyEvent* event) {
     event->set_flags(event->flags() | ui::EF_CONTROL_DOWN);
   }
 
-  KeySym keysym = XLookupKeysym(xkey, 0);
+  const KeySym keysym = XLookupKeysym(xkey, 0);
   switch (keysym) {
     case XK_Super_L:
       // left Command -> left Control
-      xkey->keycode = control_l_xkeycode_;
-      event->set_key_code(ui::VKEY_LCONTROL);
-      event->set_character(ui::GetCharacterFromKeyCode(event->key_code(),
-                                                       event->flags()));
+      Rewrite(event, control_l_xkeycode_, xkey->state,
+              ui::VKEY_LCONTROL, event->flags());
+      rewritten = true;
       break;
     case XK_Super_R:
       // right Command -> right Control
-      xkey->keycode = control_r_xkeycode_;
-      event->set_key_code(ui::VKEY_RCONTROL);
-      event->set_character(ui::GetCharacterFromKeyCode(event->key_code(),
-                                                       event->flags()));
+      Rewrite(event, control_r_xkeycode_, xkey->state,
+              ui::VKEY_RCONTROL, event->flags());
+      rewritten = true;
       break;
     default:
       break;
@@ -214,7 +232,108 @@ void KeyRewriter::RewriteCommandToControl(aura::KeyEvent* event) {
   DCHECK_NE(ui::VKEY_RWIN, ui::KeyboardCodeFromXKeyEvent(xev));
 #else
   // TODO(yusukes): Support Ash on other platforms if needed.
-  NOTIMPLEMENTED();
+#endif
+  return rewritten;
+}
+
+bool KeyRewriter::RewriteNumPadKeys(aura::KeyEvent* event) {
+  bool rewritten = false;
+#if defined(OS_CHROMEOS)
+  XEvent* xev = event->native_event();
+  XKeyEvent* xkey = &(xev->xkey);
+
+  const KeySym keysym = XLookupKeysym(xkey, 0);
+  switch (keysym) {
+    case XK_KP_Insert:
+      Rewrite(event, kp_0_xkeycode_, xkey->state | Mod2Mask,
+              ui::VKEY_NUMPAD0, event->flags());
+      rewritten = true;
+      break;
+    case XK_KP_Delete:
+      Rewrite(event, kp_decimal_xkeycode_, xkey->state | Mod2Mask,
+              ui::VKEY_DECIMAL, event->flags());
+      rewritten = true;
+      break;
+    case XK_KP_End:
+      Rewrite(event, kp_1_xkeycode_, xkey->state | Mod2Mask,
+              ui::VKEY_NUMPAD1, event->flags());
+      rewritten = true;
+      break;
+    case XK_KP_Down:
+      Rewrite(event, kp_2_xkeycode_, xkey->state | Mod2Mask,
+              ui::VKEY_NUMPAD2, event->flags());
+      rewritten = true;
+      break;
+    case XK_KP_Next:
+      Rewrite(event, kp_3_xkeycode_, xkey->state | Mod2Mask,
+              ui::VKEY_NUMPAD3, event->flags());
+      rewritten = true;
+      break;
+    case XK_KP_Left:
+      Rewrite(event, kp_4_xkeycode_, xkey->state | Mod2Mask,
+              ui::VKEY_NUMPAD4, event->flags());
+      rewritten = true;
+      break;
+    case XK_KP_Begin:
+      Rewrite(event, kp_5_xkeycode_, xkey->state | Mod2Mask,
+              ui::VKEY_NUMPAD5, event->flags());
+      rewritten = true;
+      break;
+    case XK_KP_Right:
+      Rewrite(event, kp_6_xkeycode_, xkey->state | Mod2Mask,
+              ui::VKEY_NUMPAD6, event->flags());
+      rewritten = true;
+      break;
+    case XK_KP_Home:
+      Rewrite(event, kp_7_xkeycode_, xkey->state | Mod2Mask,
+              ui::VKEY_NUMPAD7, event->flags());
+      rewritten = true;
+      break;
+    case XK_KP_Up:
+      Rewrite(event, kp_8_xkeycode_, xkey->state | Mod2Mask,
+              ui::VKEY_NUMPAD8, event->flags());
+      rewritten = true;
+      break;
+    case XK_KP_Prior:
+      Rewrite(event, kp_9_xkeycode_, xkey->state | Mod2Mask,
+              ui::VKEY_NUMPAD9, event->flags());
+      rewritten = true;
+      break;
+    case XK_KP_Divide:
+    case XK_KP_Multiply:
+    case XK_KP_Subtract:
+    case XK_KP_Add:
+    case XK_KP_Enter:
+      // Add Mod2Mask for consistency.
+      Rewrite(event, xkey->keycode, xkey->state | Mod2Mask,
+              event->key_code(), event->flags());
+      rewritten = true;
+      break;
+    default:
+      break;
+  }
+#else
+  // TODO(yusukes): Support Ash on other platforms if needed.
+#endif
+  return rewritten;
+}
+
+void KeyRewriter::Rewrite(aura::KeyEvent* event,
+                          unsigned int new_native_keycode,
+                          unsigned int new_native_state,
+                          ui::KeyboardCode new_keycode,
+                          int new_flags) {
+#if defined(OS_CHROMEOS)
+  XEvent* xev = event->native_event();
+  XKeyEvent* xkey = &(xev->xkey);
+  xkey->keycode = new_native_keycode;
+  xkey->state = new_native_state;
+  event->set_key_code(new_keycode);
+  event->set_character(ui::GetCharacterFromKeyCode(event->key_code(),
+                                                   new_flags));
+  event->set_flags(new_flags);
+#else
+  // TODO(yusukes): Support Ash on other platforms if needed.
 #endif
 }
 
