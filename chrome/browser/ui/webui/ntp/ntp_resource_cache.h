@@ -40,6 +40,11 @@ class NTPResourceCache : public content::NotificationObserver,
   void CreateNewTabHTML();
   scoped_refptr<RefCountedMemory> new_tab_html_;
 
+  // Helper to determine if the resource cache should be invalidated.
+  // This is called on every page load, and can be used to check values that
+  // don't generate a notification when changed (e.g., system preferences).
+  bool NewTabCacheNeedsRefresh();
+
 #if !defined(OS_ANDROID)
   // Returns a message describing any newly-added sync types, or an empty
   // string if all types have already been acknowledged.
@@ -56,6 +61,8 @@ class NTPResourceCache : public content::NotificationObserver,
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 #endif
+
+  bool is_swipe_tracking_from_scroll_events_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };

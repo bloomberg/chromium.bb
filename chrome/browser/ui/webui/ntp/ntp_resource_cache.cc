@@ -58,6 +58,10 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_gtk.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/platform_util.h"
+#endif
+
 using base::Time;
 using content::BrowserThread;
 
@@ -195,13 +199,28 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
 
 NTPResourceCache::~NTPResourceCache() {}
 
+bool NTPResourceCache::NewTabCacheNeedsRefresh() {
+#if defined(OS_MACOSX)
+  // Invalidate if the current value is different from the cached value.
+  bool is_enabled = platform_util::IsSwipeTrackingFromScrollEventsEnabled();
+  if (is_enabled != is_swipe_tracking_from_scroll_events_enabled_) {
+    is_swipe_tracking_from_scroll_events_enabled_ = is_enabled;
+    return true;
+  }
+#endif
+  return false;
+}
+
 RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (is_incognito) {
     if (!new_tab_incognito_html_.get())
       CreateNewTabIncognitoHTML();
   } else {
-    if (!new_tab_html_.get())
+    // Refresh the cached HTML if necessary.
+    // NOTE: NewTabCacheNeedsRefresh() must be called every time the new tab
+    // HTML is fetched, because it needs to initialize cached values.
+    if (NewTabCacheNeedsRefresh() || !new_tab_html_.get())
       CreateNewTabHTML();
   }
   return is_incognito ? new_tab_incognito_html_.get() :
@@ -364,6 +383,12 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetBoolean("showApps", NewTabUI::ShouldShowApps());
   localized_strings.SetString("hideSessionMenuItemText",
       l10n_util::GetStringUTF16(IDS_POLICY_HIDE));
+
+  // On Mac OS X 10.7+, horizontal scrolling can be treated as a back or
+  // forward gesture. Pass through a flag that indicates whether or not that
+  // feature is enabled.
+  localized_strings.SetBoolean("isSwipeTrackingFromScrollEventsEnabled",
+                               is_swipe_tracking_from_scroll_events_enabled_);
 
 #if defined(OS_CHROMEOS)
   localized_strings.SetString("expandMenu",

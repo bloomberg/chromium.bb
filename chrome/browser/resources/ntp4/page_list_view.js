@@ -169,7 +169,7 @@ cr.define('ntp', function() {
       }
 
       document.addEventListener('keydown', this.onDocKeyDown_.bind(this));
-      // Prevent touch events from triggering any sort of native scrolling
+      // Prevent touch events from triggering any sort of native scrolling.
       document.addEventListener('touchmove', function(e) {
         e.preventDefault();
       }, true);
@@ -177,11 +177,25 @@ cr.define('ntp', function() {
       this.tilePages = this.pageList.getElementsByClassName('tile-page');
       this.appsPages = this.pageList.getElementsByClassName('apps-page');
 
-      // Initialize the cardSlider without any cards at the moment
+      // Initialize the cardSlider without any cards at the moment.
       this.sliderFrame = cardSliderFrame;
       this.cardSlider = new cr.ui.CardSlider(this.sliderFrame, this.pageList,
           this.sliderFrame.offsetWidth);
-      this.cardSlider.initialize();
+
+      // Handle mousewheel events anywhere in the card slider, so that wheel
+      // events on the page switchers will still scroll the page.
+      // This listener must be added before the card slider is initialized,
+      // because it needs to be called before the card slider's handler.
+      var cardSlider = this.cardSlider;
+      cardSliderFrame.addEventListener('mousewheel', function(e) {
+        if (cardSlider.currentCardValue.handleMouseWheel(e)) {
+          e.preventDefault();  // Prevent default scroll behavior.
+          e.stopImmediatePropagation();  // Prevent horizontal card flipping.
+        }
+      });
+
+      this.cardSlider.initialize(
+          templateData.isSwipeTrackingFromScrollEventsEnabled);
 
       // Handle events from the card slider.
       this.pageList.addEventListener('cardSlider:card_changed',
@@ -191,7 +205,7 @@ cr.define('ntp', function() {
       this.pageList.addEventListener('cardSlider:card_removed',
                                      this.onCardRemoved_.bind(this));
 
-      // Ensure the slider is resized appropriately with the window
+      // Ensure the slider is resized appropriately with the window.
       window.addEventListener('resize', this.onWindowResize_.bind(this));
 
       // Update apps when online state changes.

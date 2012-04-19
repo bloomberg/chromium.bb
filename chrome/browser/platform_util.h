@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,13 @@ void ActivateWindow(gfx::NativeWindow window);
 // platform-specific, but it is generally not "visible to the user", rather
 // whether the view has the visible attribute set.
 bool IsVisible(gfx::NativeView view);
+
+#if defined(OS_MACOSX)
+// On 10.7+, back and forward swipe gestures can be triggered using a scroll
+// gesture, if enabled in System Preferences. This function returns true if
+// the feature is supported and enabled, and false otherwise.
+bool IsSwipeTrackingFromScrollEventsEnabled();
+#endif
 
 }  // platform_util
 

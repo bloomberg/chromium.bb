@@ -448,7 +448,6 @@ cr.define('ntp', function() {
       this.addEventListener('DOMNodeInsertedIntoDocument',
                             this.onNodeInsertedIntoDocument_);
 
-      this.addEventListener('mousewheel', this.onMouseWheel_);
       this.content_.addEventListener('scroll', this.onScroll_.bind(this));
 
       this.dragWrapper_ = new cr.ui.DragWrapper(this.tileGrid_, this);
@@ -1067,28 +1066,21 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Scrolls the page in response to a mousewheel event.
+     * Scrolls the page in response to an mousewheel event, although the event
+     * may have been triggered on a different element. Return true if the
+     * event triggered scrolling, and false otherwise.
+     * This is called explicitly, which allows a consistent experience whether
+     * the user scrolls on the page or on the page switcher, because this
+     * function provides a common conversion factor between wheel delta and
+     * scroll delta.
      * @param {Event} e The mousewheel event.
      */
     handleMouseWheel: function(e) {
-      this.content_.scrollTop -= e.wheelDeltaY / 3;
-    },
-
-    /**
-     * Handles mouse wheels on |this|. We handle this explicitly because we want
-     * a consistent experience whether the user scrolls on the page or on the
-     * page switcher (handleMouseWheel provides a common conversion factor
-     * between wheel delta and scroll delta).
-     * @param {Event} e The mousewheel event.
-     * @private
-     */
-    onMouseWheel_: function(e) {
       if (e.wheelDeltaY == 0)
-        return;
+        return false;
 
-      this.handleMouseWheel(e);
-      e.preventDefault();
-      e.stopPropagation();
+      this.content_.scrollTop -= e.wheelDeltaY / 3;
+      return true;
     },
 
     /**

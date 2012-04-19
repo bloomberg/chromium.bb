@@ -154,4 +154,10 @@ bool IsVisible(gfx::NativeView view) {
           [[view window] isVisible]);
 }
 
+bool IsSwipeTrackingFromScrollEventsEnabled() {
+  SEL selector = @selector(isSwipeTrackingFromScrollEventsEnabled);
+  return [NSEvent respondsToSelector:selector]
+      && [NSEvent performSelector:selector];
+}
+
 }  // namespace platform_util

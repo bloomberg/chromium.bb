@@ -104,8 +104,10 @@ cr.define('cr.ui', function() {
     /**
      * Initialize all elements and event handlers. Must call after construction
      * and before usage.
+     * @param {boolean} ignoreMouseWheelEvents If true, horizontal mouse wheel
+     *     events will be ignored, rather than flipping between pages.
      */
-    initialize: function() {
+    initialize: function(ignoreMouseWheelEvents) {
       var view = this.container_.ownerDocument.defaultView;
       assert(view.getComputedStyle(this.container_).display == '-webkit-box',
           'Container should be display -webkit-box.');
@@ -120,8 +122,10 @@ cr.define('cr.ui', function() {
       this.mouseWheelCardSelected_ = false;
       this.mouseWheelIsContinuous_ = false;
       this.scrollClearTimeout_ = null;
-      this.frame_.addEventListener('mousewheel',
-                                   this.onMouseWheel_.bind(this));
+      if (!ignoreMouseWheelEvents) {
+        this.frame_.addEventListener('mousewheel',
+                                     this.onMouseWheel_.bind(this));
+      }
       this.container_.addEventListener(
           'webkitTransitionEnd', this.onWebkitTransitionEnd_.bind(this));
 
@@ -235,9 +239,6 @@ cr.define('cr.ui', function() {
     onMouseWheel_: function(e) {
       if (e.wheelDeltaX == 0)
         return;
-
-      // Prevent OS X 10.7+ history swiping on the NTP.
-      e.preventDefault();
 
       // Continuous devices such as an Apple Touchpad or Apple MagicMouse will
       // send arbitrary delta values. Conversly, standard mousewheels will

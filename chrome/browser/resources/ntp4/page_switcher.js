@@ -19,7 +19,6 @@ cr.define('ntp', function() {
       el.__proto__ = PageSwitcher.template;
 
       el.addEventListener('click', el.activate_);
-      el.addEventListener('mousewheel', el.onMouseWheel_);
 
       el.direction_ = el.id == 'page-switcher-start' ? -1 : 1;
 
@@ -35,18 +34,6 @@ cr.define('ntp', function() {
       var index = cardSlider.currentCard + this.direction_;
       var numCards = cardSlider.cardCount - 1;
       cardSlider.selectCard(Math.max(0, Math.min(index, numCards)), true);
-    },
-
-    /**
-     * Handler for the mousewheel event on a pager. We pass through the scroll
-     * to the page. This is necssary because the page is our sibling in the DOM
-     * hierarchy, so the event won't naturally pass through to it.
-     * @param {Event} e The mousewheel event.
-     * @private
-     */
-    onMouseWheel_: function(e) {
-      var page = ntp.getCardSlider().currentCardValue;
-      page.handleMouseWheel(e);
     },
 
     shouldAcceptDrag: function(e) {

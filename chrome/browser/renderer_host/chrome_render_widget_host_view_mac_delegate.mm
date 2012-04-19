@@ -174,20 +174,10 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
     return NO;
   }
 
-  BOOL suppressWheelEvent = NO;
-  Browser* browser = BrowserList::FindBrowserWithWindow([theEvent window]);
-  if (browser && [NSEvent isSwipeTrackingFromScrollEventsEnabled]) {
-    content::WebContents* contents = browser->GetSelectedWebContents();
-    if (contents && contents->GetURL() == GURL(chrome::kChromeUINewTabURL)) {
-      // Always do history navigation on the NTP if it's enabled.
-      gotUnhandledWheelEvent_ = YES;
-      suppressWheelEvent = YES;
-    }
-  }
-
   if (gotUnhandledWheelEvent_ &&
       [NSEvent isSwipeTrackingFromScrollEventsEnabled] &&
       [theEvent phase] == NSEventPhaseChanged) {
+    Browser* browser = BrowserList::FindBrowserWithWindow([theEvent window]);
     totalScrollDelta_.width += [theEvent scrollingDeltaX];
     totalScrollDelta_.height += [theEvent scrollingDeltaY];
 
@@ -283,7 +273,7 @@ class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
       return YES;
     }
   }
-  return suppressWheelEvent;
+  return NO;
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
