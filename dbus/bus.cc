@@ -186,7 +186,8 @@ Bus::Bus(const Options& options)
       async_operations_set_up_(false),
       shutdown_completed_(false),
       num_pending_watches_(0),
-      num_pending_timeouts_(0) {
+      num_pending_timeouts_(0),
+      address_(options.address) {
   // This is safe to call multiple times.
   dbus_threads_init_default();
   // The origin message loop is unnecessary if the client uses synchronous
@@ -288,11 +289,19 @@ bool Bus::Connect() {
     return true;
 
   ScopedDBusError error;
-  const DBusBusType dbus_bus_type = static_cast<DBusBusType>(bus_type_);
-  if (connection_type_ == PRIVATE) {
-    connection_ = dbus_bus_get_private(dbus_bus_type, error.get());
+  if (bus_type_ == CUSTOM_ADDRESS) {
+    if (connection_type_ == PRIVATE) {
+      connection_ = dbus_connection_open_private(address_.c_str(), error.get());
+    } else {
+      connection_ = dbus_connection_open(address_.c_str(), error.get());
+    }
   } else {
-    connection_ = dbus_bus_get(dbus_bus_type, error.get());
+    const DBusBusType dbus_bus_type = static_cast<DBusBusType>(bus_type_);
+    if (connection_type_ == PRIVATE) {
+      connection_ = dbus_bus_get_private(dbus_bus_type, error.get());
+    } else {
+      connection_ = dbus_bus_get(dbus_bus_type, error.get());
+    }
   }
   if (!connection_) {
     LOG(ERROR) << "Failed to connect to the bus: "

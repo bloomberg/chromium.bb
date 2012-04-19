@@ -135,10 +135,12 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
  public:
   // Specifies the bus type. SESSION is used to communicate with per-user
   // services like GNOME applications. SYSTEM is used to communicate with
-  // system-wide services like NetworkManager.
+  // system-wide services like NetworkManager. CUSTOM_ADDRESS is used to
+  // communicate with an user specified address.
   enum BusType {
     SESSION = DBUS_BUS_SESSION,
-    SYSTEM  = DBUS_BUS_SYSTEM,
+    SYSTEM = DBUS_BUS_SYSTEM,
+    CUSTOM_ADDRESS,
   };
 
   // Specifies the connection type. PRIVATE should usually be used unless
@@ -170,6 +172,24 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
     // 1) Already running.
     // 2) Has a MessageLoopForIO.
     scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy;
+
+    // Specifies the server addresses to be connected. If you want to
+    // communicate with non dbus-daemon such as ibus-daemon, set |bus_type| to
+    // CUSTOM_ADDRESS, and |address| to the D-Bus server address you want to
+    // connect to. The format of this address value is the dbus address style
+    // which is described in
+    // http://dbus.freedesktop.org/doc/dbus-specification.html#addresses
+    //
+    // EXAMPLE USAGE:
+    //   dbus::Bus::Options options;
+    //   options.bus_type = CUSTOM_ADDRESS;
+    //   options.address.assign("unix:path=/tmp/dbus-XXXXXXX");
+    //   // Set up other options
+    //   dbus::Bus bus(options);
+    //
+    //   // Do something.
+    //
+    std::string address;
   };
 
   // Creates a Bus object. The actual connection will be established when
@@ -525,6 +545,8 @@ class Bus : public base::RefCountedThreadSafe<Bus> {
   // OnAddTimeout()/OnRemoveTimeou() are balanced.
   int num_pending_watches_;
   int num_pending_timeouts_;
+
+  std::string address_;
 
   DISALLOW_COPY_AND_ASSIGN(Bus);
 };
