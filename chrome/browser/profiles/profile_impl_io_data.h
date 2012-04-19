@@ -135,6 +135,9 @@ class ProfileImplIOData : public ProfileIOData {
           scoped_refptr<ChromeURLRequestContext> main_context,
           const std::string& app_id) const OVERRIDE;
 
+  // Clears the networking history since |time|.
+  void ClearNetworkingHistorySinceOnIOThread(base::Time time);
+
   // Lazy initialization params.
   mutable scoped_ptr<LazyParams> lazy_params_;
 

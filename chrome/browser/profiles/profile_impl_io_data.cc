@@ -32,17 +32,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-void ClearNetworkingHistorySinceOnIOThread(
-    ProfileImplIOData* io_data, base::Time time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  io_data->transport_security_state()->DeleteSince(time);
-  io_data->http_server_properties_manager()->Clear();
-}
-
-}  // namespace
-
 ProfileImplIOData::Handle::Handle(Profile* profile)
     : io_data_(new ProfileImplIOData),
       profile_(profile),
@@ -216,8 +205,8 @@ void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(
-          &ClearNetworkingHistorySinceOnIOThread,
-          io_data_,
+          &ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread,
+          base::Unretained(io_data_),
           time));
 }
 
@@ -512,4 +501,15 @@ ProfileImplIOData::AcquireIsolatedAppRequestContext(
       InitializeAppRequestContext(main_context, app_id);
   DCHECK(app_request_context);
   return app_request_context;
+}
+
+void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
+    base::Time time) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  LazyInitialize();
+
+  DCHECK(transport_security_state());
+  transport_security_state()->DeleteSince(time);
+  DCHECK(http_server_properties_manager());
+  http_server_properties_manager()->Clear();
 }
