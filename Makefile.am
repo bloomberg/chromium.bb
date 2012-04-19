@@ -370,12 +370,12 @@ src_tools_linux_md2core_minidump_2_core_SOURCES = \
 src_tools_linux_symupload_minidump_upload_SOURCES = \
 	src/common/linux/http_upload.cc \
 	src/tools/linux/symupload/minidump_upload.cc
-src_tools_linux_symupload_minidump_upload_LDFLAGS = -ldl
+src_tools_linux_symupload_minidump_upload_LDADD = -ldl
 
 src_tools_linux_symupload_sym_upload_SOURCES = \
 	src/common/linux/http_upload.cc \
 	src/tools/linux/symupload/sym_upload.cc
-src_tools_linux_symupload_sym_upload_LDFLAGS = -ldl
+src_tools_linux_symupload_sym_upload_LDADD = -ldl
 
 src_common_dumper_unittest_SOURCES = \
 	src/common/byte_cursor_unittest.cc \
