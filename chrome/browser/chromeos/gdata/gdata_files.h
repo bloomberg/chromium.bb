@@ -27,16 +27,11 @@ namespace gdata {
 class GDataFile;
 class GDataDirectory;
 class GDataRootDirectory;
-class GDataFileSystem;
 
 class GDataFileBaseProto;
 class GDataFileProto;
 class GDataDirectoryProto;
 class GDataRootDirectoryProto;
-
-// Callback for GetCacheState operation.
-typedef base::Callback<void(base::PlatformFileError error,
-                            int cache_state)> GetCacheStateCallback;
 
 // Directory content origin.
 enum ContentOrigin {
@@ -216,8 +211,6 @@ class GDataFile : public GDataFileBase {
   const std::string& etag() const { return etag_; }
   const std::string& id() const { return id_; }
   const std::string& file_md5() const { return file_md5_; }
-  // The |callback| is invoked with a bitmask of CacheState enum values.
-  void GetCacheState(const GetCacheStateCallback& callback);
   const std::string& document_extension() const { return document_extension_; }
   bool is_hosted_document() const { return is_hosted_document_; }
 
@@ -376,7 +369,7 @@ class GDataRootDirectory : public GDataDirectory {
   // A map table of file's resource string to its GDataFile* entry.
   typedef std::map<std::string, GDataFileBase*> ResourceMap;
 
-  explicit GDataRootDirectory(GDataFileSystem* file_system);
+  GDataRootDirectory();
   virtual ~GDataRootDirectory();
 
   // Largest change timestamp that was the source of content for the current
@@ -421,12 +414,6 @@ class GDataRootDirectory : public GDataDirectory {
   CacheEntry* GetCacheEntry(const std::string& resource_id,
                             const std::string& md5);
 
-  // Gets the state of the cache file corresponding to |resource_id| and |md5|
-  // asynchronously where |callback| will be invoked with the cache state.
-  void GetCacheState(const std::string& resource_id,
-                     const std::string& md5,
-                     const GetCacheStateCallback& callback);
-
   // Remove temporary files (files in CACHE_TYPE_TMP) from the cache map.
   void RemoveTemporaryFilesFromCacheMap();
 
@@ -441,9 +428,6 @@ class GDataRootDirectory : public GDataDirectory {
  private:
   ResourceMap resource_map_;
   CacheMap cache_map_;
-
-  // Weak pointer to GDataFileSystem that owns us.
-  GDataFileSystem* file_system_;
 
   int largest_changestamp_;
 

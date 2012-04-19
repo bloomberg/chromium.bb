@@ -12,7 +12,7 @@
 namespace gdata {
 
 TEST(GDataRootDirectoryTest, RemoveTemporaryFilesFromCacheMap) {
-  scoped_ptr<GDataRootDirectory> root(new GDataRootDirectory(NULL));
+  scoped_ptr<GDataRootDirectory> root(new GDataRootDirectory);
   GDataRootDirectory::CacheMap cache_map;
   cache_map.insert(std::make_pair(
       "<resource_id_1>",

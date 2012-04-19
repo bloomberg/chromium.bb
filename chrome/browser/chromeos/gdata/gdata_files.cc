@@ -11,7 +11,6 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "net/base/escape.h"
 
@@ -211,10 +210,6 @@ GDataFileBase* GDataFile::FromDocumentEntry(GDataDirectory* parent,
   return file;
 }
 
-void GDataFile::GetCacheState(const GetCacheStateCallback& callback) {
-  root_->GetCacheState(resource_id(), file_md5(), callback);
-}
-
 // GDataDirectory class implementation.
 
 GDataDirectory::GDataDirectory(GDataDirectory* parent, GDataRootDirectory* root)
@@ -396,9 +391,9 @@ std::string GDataRootDirectory::CacheEntry::ToString() const {
 
 // GDataRootDirectory class implementation.
 
-GDataRootDirectory::GDataRootDirectory(GDataFileSystem* file_system)
+GDataRootDirectory::GDataRootDirectory()
     : ALLOW_THIS_IN_INITIALIZER_LIST(GDataDirectory(NULL, this)),
-      file_system_(file_system), largest_changestamp_(0) {
+      largest_changestamp_(0) {
 }
 
 GDataRootDirectory::~GDataRootDirectory() {
@@ -527,14 +522,6 @@ GDataRootDirectory::CacheEntry* GDataRootDirectory::GetCacheEntry(
            << ", " << entry->ToString();
 
   return entry;
-}
-
-void GDataRootDirectory::GetCacheState(
-    const std::string& resource_id,
-    const std::string& md5,
-    const GetCacheStateCallback& callback) {
-  if (file_system_)
-    file_system_->GetCacheState(resource_id, md5, callback);
 }
 
 void GDataRootDirectory::RemoveTemporaryFilesFromCacheMap() {

@@ -1616,9 +1616,14 @@ void GetGDataFilePropertiesFunction::OnFileProperties(
 
   property_dict->SetBoolean("isHosted", file->is_hosted_document());
 
-  file->GetCacheState(base::Bind(
-      &GetGDataFilePropertiesFunction::CacheStateReceived,
-      this, property_dict));
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  system_service->file_system()->GetCacheState(
+      file->resource_id(),
+      file->file_md5(),
+      base::Bind(
+          &GetGDataFilePropertiesFunction::CacheStateReceived,
+          this, property_dict));
 }
 
 void GetGDataFilePropertiesFunction::CacheStateReceived(

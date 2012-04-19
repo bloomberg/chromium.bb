@@ -92,6 +92,10 @@ typedef base::Callback<void(const ResumeUploadResponse& response,
 typedef base::Callback<void(const std::string& resource_id)>
     GetDocumentResourceIdCallback;
 
+// Callback for GetCacheState operation.
+typedef base::Callback<void(base::PlatformFileError error,
+                            int cache_state)> GetCacheStateCallback;
+
 // Delegate class used to deal with results synchronous read-only search
 // over virtual file system.
 class FindFileDelegate {
