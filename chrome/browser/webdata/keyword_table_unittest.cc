@@ -405,3 +405,41 @@ TEST_F(KeywordTableTest, KeywordWithNoFavicon) {
             restored_keyword.safe_for_autoreplace);
   EXPECT_EQ(keyword.id, restored_keyword.id);
 }
+
+TEST_F(KeywordTableTest, SanitizeURLs) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+  KeywordTable* keyword_table = db.GetKeywordTable();
+
+  TemplateURLData keyword;
+  keyword.short_name = ASCIIToUTF16("legit");
+  keyword.SetKeyword(ASCIIToUTF16("legit"));
+  keyword.SetURL("http://url/");
+  keyword.id = 1000;
+  TemplateURL url(keyword);
+  EXPECT_TRUE(keyword_table->AddKeyword(url));
+
+  keyword.short_name = ASCIIToUTF16("bogus");
+  keyword.SetKeyword(ASCIIToUTF16("bogus"));
+  keyword.id = 2000;
+  TemplateURL url2(keyword);
+  EXPECT_TRUE(keyword_table->AddKeyword(url2));
+
+  KeywordTable::Keywords keywords;
+  EXPECT_TRUE(keyword_table->GetKeywords(&keywords));
+  EXPECT_EQ(2U, keywords.size());
+  keywords.clear();
+
+  // Erase the URL field for the second keyword to simulate having bogus data
+  // previously saved into the database.
+  sql::Statement s(keyword_table->db_->GetUniqueStatement(
+      "UPDATE keywords SET url=? WHERE id=?"));
+  s.BindString16(0, string16());
+  s.BindInt64(1, 2000);
+  EXPECT_TRUE(s.Run());
+  EXPECT_TRUE(keyword_table->UpdateBackupSignature());
+
+  // GetKeywords() should erase the entry with the empty URL field.
+  EXPECT_TRUE(keyword_table->GetKeywords(&keywords));
+  EXPECT_EQ(1U, keywords.size());
+}

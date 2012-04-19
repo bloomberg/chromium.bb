@@ -15,8 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/table_model_observer.h"
 
@@ -70,24 +69,20 @@ class KeywordEditorControllerTest : public testing::Test,
   void SimulateDefaultSearchIsManaged(const std::string& url) {
     ASSERT_FALSE(url.empty());
     TestingPrefService* service = profile_->GetTestingPrefService();
-    service->SetManagedPref(
-        prefs::kDefaultSearchProviderEnabled,
-        Value::CreateBooleanValue(true));
-    service->SetManagedPref(
-        prefs::kDefaultSearchProviderSearchURL,
-        Value::CreateStringValue(url));
-    service->SetManagedPref(
-        prefs::kDefaultSearchProviderName,
-        Value::CreateStringValue("managed"));
+    service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
+                            Value::CreateBooleanValue(true));
+    service->SetManagedPref(prefs::kDefaultSearchProviderSearchURL,
+                            Value::CreateStringValue(url));
+    service->SetManagedPref(prefs::kDefaultSearchProviderName,
+                            Value::CreateStringValue("managed"));
     // Clear the IDs that are not specified via policy.
-    service->SetManagedPref(
-        prefs::kDefaultSearchProviderID, new StringValue(""));
-    service->SetManagedPref(
-        prefs::kDefaultSearchProviderPrepopulateID, new StringValue(""));
-    model_->Observe(
-        chrome::NOTIFICATION_PREF_CHANGED,
-        content::Source<PrefService>(profile_->GetTestingPrefService()),
-        content::Details<std::string>(NULL));
+    service->SetManagedPref(prefs::kDefaultSearchProviderID,
+                            new StringValue(std::string()));
+    service->SetManagedPref(prefs::kDefaultSearchProviderPrepopulateID,
+                            new StringValue(std::string()));
+    model_->Observe(chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
+                    content::NotificationService::AllSources(),
+                    content::NotificationService::NoDetails());
   }
 
   TemplateURLTableModel* table_model() const {

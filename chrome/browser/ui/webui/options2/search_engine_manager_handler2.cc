@@ -310,7 +310,12 @@ void SearchEngineManagerHandler::EditCompleted(const ListValue* args) {
     NOTREACHED();
     return;
   }
-  edit_controller_->AcceptAddOrEdit(name, keyword, url);
+  // Recheck validity.  It's possible to get here with invalid input if e.g. the
+  // user calls the right JS functions directly from the web inspector.
+  if (edit_controller_->IsTitleValid(name) &&
+      edit_controller_->IsKeywordValid(keyword) &&
+      edit_controller_->IsURLValid(url))
+    edit_controller_->AcceptAddOrEdit(name, keyword, url);
 }
 
 }  // namespace options2

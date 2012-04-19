@@ -578,6 +578,7 @@ TemplateURLData::TemplateURLData()
       usage_count(0),
       prepopulate_id(0),
       sync_guid(guid::GenerateGUID()),
+      url_("x"),
       autogenerate_keyword_(false),
       keyword_generated_(false) {
 }
@@ -615,6 +616,7 @@ void TemplateURLData::EnsureKeyword(const TemplateURL* t_url) const {
 }
 
 void TemplateURLData::SetURL(const std::string& url) {
+  DCHECK(!url.empty());
   url_ = url;
 }
 

@@ -270,7 +270,7 @@ struct TemplateURLData {
   void EnsureKeyword(const TemplateURL* t_url) const;
 
   // The raw URL for the TemplateURL, which may not be valid as-is (e.g. because
-  // it requires substitutions first).
+  // it requires substitutions first).  This must be non-empty.
   void SetURL(const std::string& url);
   const std::string& url() const { return url_; }
 
@@ -335,9 +335,9 @@ struct TemplateURLData {
   std::string sync_guid;
 
  private:
-  // Private so we can enforce using the setters.
-  // TODO(pkasting): For now these setters are not critical, but later we will
-  // begin using them to ensure that these fields are non-empty.
+  // Private so we can enforce using the setters and thus enforce that these
+  // fields are never empty.
+  // TODO(pkasting): |keyword_| is temporarily still allowed to be empty.
   mutable string16 keyword_;
   std::string url_;
 

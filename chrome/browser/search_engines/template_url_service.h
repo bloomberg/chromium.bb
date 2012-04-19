@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/template_url_id.h"
@@ -27,7 +28,6 @@
 class Extension;
 class GURL;
 class PrefService;
-class PrefSetObserver;
 class Profile;
 class SearchHostToURLsMap;
 class SearchTermsData;
@@ -300,9 +300,15 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Creates a new heap-allocated TemplateURL* which is populated by overlaying
   // |sync_data| atop |existing_turl|.  |existing_turl| may be NULL; if not it
   // remains unmodified.  The caller owns the returned TemplateURL*.
+  //
+  // If the created TemplateURL is migrated in some way from out-of-date sync
+  // data, an appropriate SyncChange is added to |change_list|.  If the sync
+  // data is bad for some reason, an ACTION_DELETE change is added and the
+  // function returns NULL.
   static TemplateURL* CreateTemplateURLFromTemplateURLAndSyncData(
       const TemplateURL* existing_turl,
-      const SyncData& sync_data);
+      const SyncData& sync_data,
+      SyncChangeList* change_list);
 
   // Returns a map mapping Sync GUIDs to pointers to SyncData.
   static SyncDataMap CreateGUIDToSyncDataMap(const SyncDataList& sync_data);
@@ -521,7 +527,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // where old entries were being pushed to Sync without a sync_guid.
   void PatchMissingSyncGUIDs(std::vector<TemplateURL*>* template_urls);
 
-  content::NotificationRegistrar registrar_;
+  content::NotificationRegistrar notification_registrar_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Mapping from keyword to the TemplateURL.
   KeywordToTemplateMap keyword_to_template_map_;
@@ -567,10 +574,6 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Whether the default search is managed via policy.
   bool is_default_search_managed_;
-
-  // The set of preferences observer we use to find if the default search
-  // preferences have changed.
-  scoped_ptr<PrefSetObserver> default_search_prefs_;
 
   // ID assigned to next TemplateURL added to this model. This is an ever
   // increasing integer that is initialized from the database.

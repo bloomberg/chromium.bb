@@ -1648,7 +1648,7 @@ std::vector<GURL> BrowserInit::GetURLsFromCommandLine(
       const TemplateURL* default_provider =
           TemplateURLServiceFactory::GetForProfile(profile)->
           GetDefaultSearchProvider();
-      if (default_provider && !default_provider->url().empty()) {
+      if (default_provider) {
         const TemplateURLRef& search_url = default_provider->url_ref();
         DCHECK(search_url.SupportsReplacement());
         string16 search_term = param.LossyDisplayName().substr(2);

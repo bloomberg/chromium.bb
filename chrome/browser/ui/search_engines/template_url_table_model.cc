@@ -253,6 +253,7 @@ void TemplateURLTableModel::Add(int index,
                                 const string16& keyword,
                                 const std::string& url) {
   DCHECK(index >= 0 && index <= RowCount());
+  DCHECK(!url.empty());
   template_url_service_->RemoveObserver(this);
   TemplateURLData data;
   data.short_name = short_name;
@@ -272,6 +273,7 @@ void TemplateURLTableModel::ModifyTemplateURL(int index,
                                               const string16& keyword,
                                               const std::string& url) {
   DCHECK(index >= 0 && index <= RowCount());
+  DCHECK(!url.empty());
   const TemplateURL* template_url = GetTemplateURL(index);
   template_url_service_->RemoveObserver(this);
   template_url_service_->ResetTemplateURL(template_url, title, keyword, url);

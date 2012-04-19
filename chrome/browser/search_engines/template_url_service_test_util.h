@@ -78,6 +78,20 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   // Set the google base url.  |base_url| must be valid.
   void SetGoogleBaseURL(const GURL& base_url) const;
 
+  // Set the managed preferences for the default search provider and trigger
+  // notification.
+  void SetManagedDefaultSearchPreferences(bool enabled,
+                                          const std::string& name,
+                                          const std::string& keyword,
+                                          const std::string& search_url,
+                                          const std::string& suggest_url,
+                                          const std::string& icon_url,
+                                          const std::string& encodings);
+
+  // Remove all the managed preferences for the default search provider and
+  // trigger notification.
+  void RemoveManagedDefaultSearchPreferences();
+
   // Returns the TemplateURLService.
   TemplateURLService* model() const;
 
@@ -96,7 +110,6 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   // properly.
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TemplateURLServiceTestingProfile> profile_;
-  scoped_ptr<TestingTemplateURLService> model_;
   int changed_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLServiceTestUtil);

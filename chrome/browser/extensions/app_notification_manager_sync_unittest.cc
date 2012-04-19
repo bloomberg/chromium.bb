@@ -52,7 +52,7 @@ class TestChangeProcessor : public SyncChangeProcessor {
     return change_map_[guid];
   }
 
-  int change_list_size() { return change_map_.size(); }
+  size_t change_list_size() { return change_map_.size(); }
 
  private:
   // Track the changes received in ProcessSyncChanges.
@@ -306,7 +306,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothEmpty) {
       PassProcessor());
 
   EXPECT_EQ(0U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
-  EXPECT_EQ(0, processor()->change_list_size());
+  EXPECT_EQ(0U, processor()->change_list_size());
 }
 
 // Model assocation: empty sync model and non-empty local model.
@@ -335,7 +335,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocModelEmpty) {
     EXPECT_TRUE(notif1->Equals(*notif2));
   }
 
-  EXPECT_EQ(0, processor()->change_list_size());
+  EXPECT_EQ(0U, processor()->change_list_size());
 }
 
 // Model has some notifications, some of them are local only. Sync has some
@@ -374,7 +374,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyNoOverlap) {
   EXPECT_TRUE(model()->GetNotification(n2->extension_id(), n2->guid()));
   EXPECT_TRUE(model()->GetNotification(n3->extension_id(), n3->guid()));
 
-  EXPECT_EQ(2, processor()->change_list_size());
+  EXPECT_EQ(2U, processor()->change_list_size());
   EXPECT_TRUE(processor()->ContainsGuid(n1->guid()));
   EXPECT_EQ(SyncChange::ACTION_ADD,
             processor()->GetChangeByGuid(n1->guid()).change_type());
@@ -426,7 +426,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptySomeOverlap) {
   EXPECT_TRUE(model()->GetNotification(n3->extension_id(), n3->guid()));
   EXPECT_TRUE(model()->GetNotification(n4->extension_id(), n4->guid()));
 
-  EXPECT_EQ(1, processor()->change_list_size());
+  EXPECT_EQ(1U, processor()->change_list_size());
   EXPECT_FALSE(processor()->ContainsGuid(n1->guid()));
   EXPECT_FALSE(processor()->ContainsGuid(n2->guid()));
   EXPECT_TRUE(processor()->ContainsGuid(n3->guid()));
@@ -460,7 +460,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyTitleMismatch) {
 
   EXPECT_TRUE(sync_error.IsSet());
   EXPECT_EQ(syncable::APP_NOTIFICATIONS, sync_error.type());
-  EXPECT_EQ(0, processor()->change_list_size());
+  EXPECT_EQ(0U, processor()->change_list_size());
 }
 
 // When an item in sync matches with a local-only item in model, an error
@@ -484,7 +484,7 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyMatchesLocal) {
 
   EXPECT_TRUE(sync_error.IsSet());
   EXPECT_EQ(syncable::APP_NOTIFICATIONS, sync_error.type());
-  EXPECT_EQ(0, processor()->change_list_size());
+  EXPECT_EQ(0U, processor()->change_list_size());
 }
 
 // Process sync changes when model is empty.
@@ -507,7 +507,7 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesEmptyModel) {
   model()->ProcessSyncChanges(FROM_HERE, changes);
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
-  EXPECT_EQ(0, processor()->change_list_size());
+  EXPECT_EQ(0U, processor()->change_list_size());
 }
 
 // Process sync changes when model is not empty.
@@ -532,7 +532,7 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesNonEmptyModel) {
   model()->ProcessSyncChanges(FROM_HERE, changes);
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
-  EXPECT_EQ(2, processor()->change_list_size());
+  EXPECT_EQ(2U, processor()->change_list_size());
 }
 
 // Process sync changes should ignore a bad ADD.
@@ -555,7 +555,7 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadAdd) {
   EXPECT_FALSE(error.IsSet());
 
   EXPECT_EQ(2U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
-  EXPECT_EQ(2, processor()->change_list_size());
+  EXPECT_EQ(2U, processor()->change_list_size());
 }
 
 // Process sync changes should ignore a bad DELETE.
@@ -578,7 +578,7 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadDelete) {
   EXPECT_FALSE(error.IsSet());
 
   EXPECT_EQ(2U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
-  EXPECT_EQ(2, processor()->change_list_size());
+  EXPECT_EQ(2U, processor()->change_list_size());
 }
 
 // Process sync changes should ignore bad UPDATEs.
@@ -605,7 +605,7 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadUpdates) {
   EXPECT_FALSE(error.IsSet());
 
   EXPECT_EQ(2U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
-  EXPECT_EQ(2, processor()->change_list_size());
+  EXPECT_EQ(2U, processor()->change_list_size());
 }
 
 // Process over 15 changes when model is not empty.
@@ -644,7 +644,7 @@ TEST_F(AppNotificationManagerSyncTest,
   SyncError sync_error = model()->ProcessSyncChanges(FROM_HERE, changes);
   EXPECT_TRUE(sync_error.IsSet());
   EXPECT_EQ(syncable::APP_NOTIFICATIONS, sync_error.type());
-  EXPECT_EQ(0, processor()->change_list_size());
+  EXPECT_EQ(0U, processor()->change_list_size());
 }
 
 // Stop syncing sets state correctly.
@@ -679,7 +679,7 @@ TEST_F(AppNotificationManagerSyncTest, AddsGetsSynced) {
   AppNotification* n3 = CreateNotification(true, 2);
   model()->Add(n3);
 
-  EXPECT_EQ(2, processor()->change_list_size());
+  EXPECT_EQ(2U, processor()->change_list_size());
   EXPECT_TRUE(processor()->ContainsGuid(n1->guid()));
   SyncChange c1 = processor()->GetChangeByGuid(n1->guid());
   AssertSyncChange(c1, SyncChange::ACTION_ADD, *n1);
@@ -711,7 +711,7 @@ TEST_F(AppNotificationManagerSyncTest, ClearAllGetsSynced) {
 
   model()->ClearAll(ext_id);
 
-  EXPECT_EQ(3, processor()->change_list_size());
+  EXPECT_EQ(3U, processor()->change_list_size());
   EXPECT_TRUE(processor()->ContainsGuid(n1->guid()));
   SyncChange c1 = processor()->GetChangeByGuid(n1->guid());
   AssertSyncChange(c1, SyncChange::ACTION_DELETE, *n1);

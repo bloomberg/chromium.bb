@@ -37,11 +37,6 @@ class PrefSetObserver : public content::NotificationObserver {
       PrefService* pref_service,
       content::NotificationObserver* observer);
 
-  // Create a pref set observer for all preferences relevant to default search.
-  static PrefSetObserver* CreateDefaultSearchPrefSetObserver(
-      PrefService* pref_service,
-      content::NotificationObserver* observer);
-
   // Create a pref set observer for preferences accessed by ProtectorService.
   static PrefSetObserver* CreateProtectedPrefSetObserver(
       PrefService* pref_service,

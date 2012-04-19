@@ -341,6 +341,10 @@ enum NotificationType {
   // Profile, and the details the id of the TemplateURL being removed.
   NOTIFICATION_TEMPLATE_URL_REMOVED,
 
+  // Sent when the prefs relating to the default search engine have changed due
+  // to policy.  Source and details are unused.
+  NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
+
   // This is sent to a pref observer when a pref is changed. The source is the
   // PrefService and the details a std::string of the changed path.
   NOTIFICATION_PREF_CHANGED,

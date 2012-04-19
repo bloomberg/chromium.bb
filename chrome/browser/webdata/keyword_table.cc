@@ -4,6 +4,8 @@
 
 #include "chrome/browser/webdata/keyword_table.h"
 
+#include <set>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -149,11 +151,19 @@ bool KeywordTable::GetKeywords(Keywords* keywords) {
                     " FROM keywords ORDER BY id ASC");
   sql::Statement s(db_->GetUniqueStatement(query.c_str()));
 
+  std::set<TemplateURLID> bad_entries;
   while (s.Step()) {
     keywords->push_back(TemplateURLData());
-    GetKeywordDataFromStatement(s, &keywords->back());
+    if (!GetKeywordDataFromStatement(s, &keywords->back())) {
+      bad_entries.insert(s.ColumnInt64(0));
+      keywords->pop_back();
+    }
   }
-  return s.Succeeded();
+  bool succeeded = s.Succeeded();
+  for (std::set<TemplateURLID>::const_iterator i(bad_entries.begin());
+       i != bad_entries.end(); ++i)
+    succeeded &= RemoveKeyword(*i);
+  return succeeded;
 }
 
 bool KeywordTable::UpdateKeyword(const TemplateURL& url) {
@@ -203,7 +213,9 @@ bool KeywordTable::GetDefaultSearchProviderBackup(TemplateURLData* backup) {
     return NULL;
   }
 
-  GetKeywordDataFromStatement(s, backup);
+  if (!GetKeywordDataFromStatement(s, backup))
+    return false;
+
   // ID has no meaning for the backup and should be kInvalidTemplateURLID in
   // case the TemplateURL will be added to keywords if missing.
   backup->id = kInvalidTemplateURLID;
@@ -330,12 +342,18 @@ bool KeywordTable::MigrateToVersion44AddDefaultSearchProviderBackup() {
 }
 
 // static
-void KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
+bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
                                                TemplateURLData* data) {
   DCHECK(data);
   data->short_name = s.ColumnString16(1);
   data->SetKeyword(s.ColumnString16(2));
   data->SetAutogenerateKeyword(s.ColumnBool(13));
+  // Due to past bugs, we might have persisted entries with empty URLs.  Avoid
+  // reading these out.  (GetKeywords() will delete these entries on return.)
+  // NOTE: This code should only be needed as long as we might be reading such
+  // potentially-old data and can be removed afterward.
+  if (s.ColumnString(4).empty())
+    return false;
   data->SetURL(s.ColumnString(4));
   data->suggestions_url = s.ColumnString(11);
   data->instant_url = s.ColumnString(16);
@@ -351,6 +369,7 @@ void KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
   data->usage_count = s.ColumnInt(8);
   data->prepopulate_id = s.ColumnInt(12);
   data->sync_guid = s.ColumnString(18);
+  return true;
 }
 
 bool KeywordTable::GetSignatureData(std::string* backup) {

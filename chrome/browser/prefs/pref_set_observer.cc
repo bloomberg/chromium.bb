@@ -54,24 +54,6 @@ PrefSetObserver* PrefSetObserver::CreateProxyPrefSetObserver(
 }
 
 // static
-PrefSetObserver* PrefSetObserver::CreateDefaultSearchPrefSetObserver(
-    PrefService* pref_service,
-    content::NotificationObserver* observer) {
-  PrefSetObserver* pref_set = new PrefSetObserver(pref_service, observer);
-  pref_set->AddPref(prefs::kDefaultSearchProviderEnabled);
-  pref_set->AddPref(prefs::kDefaultSearchProviderName);
-  pref_set->AddPref(prefs::kDefaultSearchProviderKeyword);
-  pref_set->AddPref(prefs::kDefaultSearchProviderSearchURL);
-  pref_set->AddPref(prefs::kDefaultSearchProviderSuggestURL);
-  pref_set->AddPref(prefs::kDefaultSearchProviderIconURL);
-  pref_set->AddPref(prefs::kDefaultSearchProviderInstantURL);
-  pref_set->AddPref(prefs::kDefaultSearchProviderEncodings);
-  pref_set->AddPref(prefs::kSyncedDefaultSearchProviderGUID);
-
-  return pref_set;
-}
-
-// static
 PrefSetObserver* PrefSetObserver::CreateProtectedPrefSetObserver(
     PrefService* pref_service,
     content::NotificationObserver* observer) {

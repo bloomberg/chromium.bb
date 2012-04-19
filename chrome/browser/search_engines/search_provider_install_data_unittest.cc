@@ -224,9 +224,9 @@ void SearchProviderInstallDataTest::SimulateDefaultSearchIsManaged(
                           new StringValue(std::string()));
   service->SetManagedPref(prefs::kDefaultSearchProviderPrepopulateID,
                           new StringValue(std::string()));
-  util_.model()->Observe(chrome::NOTIFICATION_PREF_CHANGED,
-      content::Source<PrefService>(util_.profile()->GetTestingPrefService()),
-      content::Details<std::string>(NULL));
+  util_.model()->Observe(chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
+                         content::NotificationService::AllSources(),
+                         content::NotificationService::NoDetails());
 }
 
 TemplateURL* SearchProviderInstallDataTest::AddNewTemplateURL(

@@ -207,9 +207,6 @@ TemplateURLParsingContext::TemplateURLParsingContext(
       derive_image_from_url_(false) {
   if (kElementNameToElementTypeMap == NULL)
     InitMapping();
-  // When combined with proscriptions elsewhere against updating data_->url_ to
-  // the empty string, this call ensures data_->url() will never be NULL.
-  data_.SetURL("x");
 }
 
 // static

@@ -24,8 +24,10 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 
@@ -514,44 +516,48 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     prefs->SetString(prefs::kDefaultSearchProviderEncodings, std::string());
     prefs->SetString(prefs::kDefaultSearchProviderKeyword, std::string());
     prefs->SetString(prefs::kDefaultSearchProviderInstantURL, std::string());
-    return;
+  } else {
+    // The search URL is required.  The other entries are optional.  Just make
+    // sure that they are all specified via policy, so that the regular prefs
+    // aren't used.
+    const Value* dummy;
+    std::string url;
+    if (DefaultSearchURLIsValid(policies, &dummy, &url)) {
+      for (std::vector<ConfigurationPolicyHandler*>::const_iterator handler =
+           handlers_.begin(); handler != handlers_.end(); ++handler)
+        (*handler)->ApplyPolicySettings(policies, prefs);
+
+      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderSuggestURL);
+      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderIconURL);
+      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderEncodings);
+      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderKeyword);
+      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderInstantURL);
+
+      // For the name and keyword, default to the host if not specified.  If
+      // there is no host (file: URLs?  Not sure), use "_" to guarantee that the
+      // keyword is non-empty.
+      std::string name, keyword;
+      std::string host(GURL(url).host());
+      if (host.empty())
+        host = "_";
+      if (!prefs->GetString(prefs::kDefaultSearchProviderName, &name) ||
+          name.empty())
+        prefs->SetString(prefs::kDefaultSearchProviderName, host);
+      if (!prefs->GetString(prefs::kDefaultSearchProviderKeyword, &keyword) ||
+          keyword.empty())
+        prefs->SetString(prefs::kDefaultSearchProviderKeyword, host);
+
+      // And clear the IDs since these are not specified via policy.
+      prefs->SetString(prefs::kDefaultSearchProviderID, std::string());
+      prefs->SetString(prefs::kDefaultSearchProviderPrepopulateID,
+                       std::string());
+    }
   }
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 
-  // The search URL is required.  The other entries are optional.  Just make
-  // sure that they are all specified via policy, so that the regular prefs
-  // aren't used.
-  const Value* dummy;
-  std::string url;
-  if (DefaultSearchURLIsValid(policies, &dummy, &url)) {
-    std::vector<ConfigurationPolicyHandler*>::const_iterator handler;
-    for (handler = handlers_.begin() ; handler != handlers_.end(); ++handler)
-      (*handler)->ApplyPolicySettings(policies, prefs);
-
-    EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderSuggestURL);
-    EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderIconURL);
-    EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderEncodings);
-    EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderKeyword);
-    EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderInstantURL);
-
-    // For the name and keyword, default to the host if not specified.  If there
-    // is no host (file: URLs?  Not sure), use "_" to guarantee that the keyword
-    // is non-empty.
-    std::string name, keyword;
-    std::string host(GURL(url).host());
-    if (host.empty())
-      host = "_";
-    if (!prefs->GetString(prefs::kDefaultSearchProviderName, &name) ||
-        name.empty())
-      prefs->SetString(prefs::kDefaultSearchProviderName, host);
-    if (!prefs->GetString(prefs::kDefaultSearchProviderKeyword, &keyword) ||
-        keyword.empty())
-      prefs->SetString(prefs::kDefaultSearchProviderKeyword, host);
-
-    // And clear the IDs since these are not specified via policy.
-    prefs->SetString(prefs::kDefaultSearchProviderID, std::string());
-    prefs->SetString(prefs::kDefaultSearchProviderPrepopulateID,
-                     std::string());
-  }
 }
 
 bool DefaultSearchPolicyHandler::CheckIndividualPolicies(
@@ -585,9 +591,8 @@ bool DefaultSearchPolicyHandler::DefaultSearchProviderIsDisabled(
   const Value* provider_enabled =
       policies.GetValue(key::kDefaultSearchProviderEnabled);
   bool enabled = true;
-  return provider_enabled &&
-         provider_enabled->GetAsBoolean(&enabled) &&
-         !enabled;
+  return provider_enabled && provider_enabled->GetAsBoolean(&enabled) &&
+      !enabled;
 }
 
 bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
@@ -595,7 +600,8 @@ bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
     const Value** url_value,
     std::string* url_string) {
   *url_value = policies.GetValue(key::kDefaultSearchProviderSearchURL);
-  if (!*url_value || !(*url_value)->GetAsString(url_string))
+  if (!*url_value || !(*url_value)->GetAsString(url_string) ||
+      url_string->empty())
     return false;
   TemplateURLData data;
   data.SetURL(*url_string);

@@ -150,13 +150,16 @@ class KeywordTable : public WebDatabaseTable {
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, DefaultSearchProviderBackup);
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContents);
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContentsOrdering);
+  FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, SanitizeURLs);
 
   // NOTE: Since the table columns have changed in different versions, many
   // functions below take a |table_version| argument which dictates which
   // version number's column set to use.
 
-  // Fills |data| with the data in |s|.
-  static void GetKeywordDataFromStatement(const sql::Statement& s,
+  // Fills |data| with the data in |s|.  Returns false if we couldn't fill
+  // |data| for some reason, e.g. |s| tried to set one of the fields to an
+  // illegal value.
+  static bool GetKeywordDataFromStatement(const sql::Statement& s,
                                           TemplateURLData* data);
 
   // Returns contents of |keywords_backup| table and default search provider
