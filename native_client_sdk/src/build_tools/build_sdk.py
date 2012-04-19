@@ -21,7 +21,6 @@ import optparse
 import os
 import platform
 import sys
-import zipfile
 
 # local includes
 import buildbot_common
@@ -437,7 +436,8 @@ def BuildUpdater():
 
   # Make zip
   buildbot_common.RemoveFile(os.path.join(OUT_DIR, 'nacl_sdk.zip'))
-  buildbot_common.Run(['zip', '-r', 'nacl_sdk.zip'] +
+  buildbot_common.Run([sys.executable, oshelpers.__file__, 'zip',
+                       'nacl_sdk.zip'] +
                       [out_file for in_file, out_file in UPDATER_FILES],
                       cwd=OUT_DIR)
 
