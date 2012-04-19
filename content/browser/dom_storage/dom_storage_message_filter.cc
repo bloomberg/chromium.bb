@@ -9,6 +9,7 @@
 #include "base/nullable_string16.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/common/dom_storage_messages.h"
 #include "googleurl/src/gurl.h"
@@ -17,6 +18,7 @@
 #include "webkit/dom_storage/dom_storage_task_runner.h"
 
 using content::BrowserThread;
+using content::UserMetricsAction;
 using dom_storage::DomStorageTaskRunner;
 using WebKit::WebStorageArea;
 
@@ -24,7 +26,7 @@ DOMStorageMessageFilter::DOMStorageMessageFilter(
     int unused,
     DOMStorageContextImpl* context)
     : context_(context->context()),
-      is_dispatching_message_(false) {
+      connection_dispatching_message_for_(0) {
 }
 
 DOMStorageMessageFilter::~DOMStorageMessageFilter() {
@@ -74,7 +76,12 @@ bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message,
     return false;
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(host_.get());
-  AutoReset<bool> auto_reset(&is_dispatching_message_, true);
+  DCHECK_EQ(0, connection_dispatching_message_for_);
+
+  // The connection_id is always the first param.
+  int connection_id = IPC::MessageIterator(message).NextInt();
+  AutoReset<int> auto_reset(&connection_dispatching_message_for_,
+                            connection_id);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(DOMStorageMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(DOMStorageHostMsg_OpenStorageArea, OnOpenStorageArea)
@@ -90,31 +97,34 @@ bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-void DOMStorageMessageFilter::OnOpenStorageArea(int64 namespace_id,
-                                                const string16& origin,
-                                                int64* connection_id) {
+void DOMStorageMessageFilter::OnOpenStorageArea(int connection_id,
+                                                int64 namespace_id,
+                                                const GURL& origin) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-  *connection_id = host_->OpenStorageArea(namespace_id, GURL(origin));
+  if (!host_->OpenStorageArea(connection_id, namespace_id, origin)) {
+    content::RecordAction(UserMetricsAction("BadMessageTerminate_DSMF"));
+    BadMessageReceived();
+  }
 }
 
-void DOMStorageMessageFilter::OnCloseStorageArea(int64 connection_id) {
+void DOMStorageMessageFilter::OnCloseStorageArea(int connection_id) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   host_->CloseStorageArea(connection_id);
 }
 
-void DOMStorageMessageFilter::OnLength(int64 connection_id,
+void DOMStorageMessageFilter::OnLength(int connection_id,
                                        unsigned* length) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   *length = host_->GetAreaLength(connection_id);
 }
 
-void DOMStorageMessageFilter::OnKey(int64 connection_id, unsigned index,
+void DOMStorageMessageFilter::OnKey(int connection_id, unsigned index,
                                     NullableString16* key) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   *key = host_->GetAreaKey(connection_id, index);
 }
 
-void DOMStorageMessageFilter::OnGetItem(int64 connection_id,
+void DOMStorageMessageFilter::OnGetItem(int connection_id,
                                         const string16& key,
                                         NullableString16* value) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -122,7 +132,7 @@ void DOMStorageMessageFilter::OnGetItem(int64 connection_id,
 }
 
 void DOMStorageMessageFilter::OnSetItem(
-    int64 connection_id, const string16& key,
+    int connection_id, const string16& key,
     const string16& value, const GURL& page_url,
     WebKit::WebStorageArea::Result* result, NullableString16* old_value) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -134,7 +144,7 @@ void DOMStorageMessageFilter::OnSetItem(
 }
 
 void DOMStorageMessageFilter::OnRemoveItem(
-    int64 connection_id, const string16& key, const GURL& pageUrl,
+    int connection_id, const string16& key, const GURL& pageUrl,
     NullableString16* old_value) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   string16 old_string_value;
@@ -144,7 +154,7 @@ void DOMStorageMessageFilter::OnRemoveItem(
     *old_value = NullableString16(true);
 }
 
-void DOMStorageMessageFilter::OnClear(int64 connection_id, const GURL& page_url,
+void DOMStorageMessageFilter::OnClear(int connection_id, const GURL& page_url,
                                       bool* something_cleared) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   *something_cleared = host_->ClearArea(connection_id, page_url);
@@ -189,14 +199,10 @@ void DOMStorageMessageFilter::SendDomStorageEvent(
     const NullableString16& new_value,
     const NullableString16& old_value) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Only send if this renderer is not the source of the event.
-  if (is_dispatching_message_)
-    return;
   DOMStorageMsg_Event_Params params;
-  // TODO(michaeln): change the origin type to be GURL in ipc params.
-  params.origin = UTF8ToUTF16(area->origin().spec());
+  params.origin = area->origin();
   params.page_url = page_url;
-  params.namespace_id = dom_storage::kLocalStorageNamespaceId;
+  params.connection_id = connection_dispatching_message_for_;
   params.key = key;
   params.new_value = new_value;
   params.old_value = old_value;

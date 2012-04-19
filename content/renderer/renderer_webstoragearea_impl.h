@@ -12,6 +12,8 @@
 
 class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
  public:
+  static RendererWebStorageAreaImpl* FromConnectionId(int id);
+
   RendererWebStorageAreaImpl(int64 namespace_id,
                              const WebKit::WebString& origin);
   virtual ~RendererWebStorageAreaImpl();
@@ -30,8 +32,7 @@ class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
   virtual void clear(const WebKit::WebURL& url, bool& cleared_something);
 
  private:
-  // The ID we use for all IPC.
-  int64 storage_area_id_;
+  int connection_id_;
 };
 
 #endif  // CONTENT_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_

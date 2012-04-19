@@ -31,7 +31,8 @@ class DomStorageHost {
   explicit DomStorageHost(DomStorageContext* context);
   ~DomStorageHost();
 
-  int OpenStorageArea(int namespace_id, const GURL& origin);
+  bool OpenStorageArea(int connection_id, int namespace_id,
+                       const GURL& origin);
   void CloseStorageArea(int connection_id);
 
   unsigned GetAreaLength(int connection_id);
@@ -58,7 +59,6 @@ class DomStorageHost {
 
   DomStorageArea* GetOpenArea(int connection_id);
 
-  int last_connection_id_;
   scoped_refptr<DomStorageContext> context_;
   AreaMap connections_;
 };

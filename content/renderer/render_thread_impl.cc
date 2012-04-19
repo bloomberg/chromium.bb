@@ -56,6 +56,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/renderer/renderer_webstoragearea_impl.h"
 #include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
@@ -816,9 +817,28 @@ void RenderThreadImpl::OnDOMStorageEvent(
     EnsureWebKitInitialized();
     dom_storage_event_dispatcher_.reset(WebStorageEventDispatcher::create());
   }
-  dom_storage_event_dispatcher_->dispatchStorageEvent(params.key,
-      params.old_value, params.new_value, params.origin, params.page_url,
-      params.namespace_id == dom_storage::kLocalStorageNamespaceId);
+
+  // TODO(michaeln): Return early until webkit/webcore is modified to not
+  // raise LocalStorage events internally. Looks like i have some multi-side
+  // patch engineering in front of me todo.
+  if (params.connection_id)
+    return;
+
+  // TODO(michaeln): fix the webkit api so we don't need to convert from
+  // string types to url types and to pass in the 'area' which
+  // caused this event to occur and to get rid of the is_local param.
+  // RendererWebStorageAreaImpl* originating_area =
+  //     RendererWebStorageAreaImpl::FromConnectionId(params.connection_id);
+
+  // SessionStorage events are always raised internally by webkit/webcore.
+  const bool kIsLocalStorage = true;
+  dom_storage_event_dispatcher_->dispatchStorageEvent(
+      params.key,
+      params.old_value,
+      params.new_value,
+      UTF8ToUTF16(params.origin.spec()),
+      params.page_url,
+      kIsLocalStorage);
 }
 
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {

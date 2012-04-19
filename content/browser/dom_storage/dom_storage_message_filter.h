@@ -46,20 +46,20 @@ class DOMStorageMessageFilter
                                  bool* message_was_ok) OVERRIDE;
 
   // Message Handlers.
-  void OnOpenStorageArea(int64 namespace_id, const string16& origin,
-                         int64* storage_area_id);
-  void OnCloseStorageArea(int64 storage_area_id);
-  void OnLength(int64 storage_area_id, unsigned* length);
-  void OnKey(int64 storage_area_id, unsigned index, NullableString16* key);
-  void OnGetItem(int64 storage_area_id, const string16& key,
+  void OnOpenStorageArea(int connection_id, int64 namespace_id,
+                         const GURL& origin);
+  void OnCloseStorageArea(int connection_id);
+  void OnLength(int connection_id, unsigned* length);
+  void OnKey(int connection_id, unsigned index, NullableString16* key);
+  void OnGetItem(int connection_id, const string16& key,
                  NullableString16* value);
-  void OnSetItem(int64 storage_area_id, const string16& key,
+  void OnSetItem(int connection_id, const string16& key,
                  const string16& value, const GURL& url,
                  WebKit::WebStorageArea::Result* result,
                  NullableString16* old_value);
-  void OnRemoveItem(int64 storage_area_id, const string16& key,
+  void OnRemoveItem(int connection_id, const string16& key,
                     const GURL& url, NullableString16* old_value);
-  void OnClear(int64 storage_area_id, const GURL& url, bool* something_cleared);
+  void OnClear(int connection_id, const GURL& url, bool* something_cleared);
 
   // DomStorageContext::EventObserver implementation which
   // sends events back to our renderer process.
@@ -87,7 +87,7 @@ class DOMStorageMessageFilter
 
   scoped_refptr<dom_storage::DomStorageContext> context_;
   scoped_ptr<dom_storage::DomStorageHost> host_;
-  bool is_dispatching_message_;
+  int connection_dispatching_message_for_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageMessageFilter);
 };

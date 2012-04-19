@@ -121,8 +121,10 @@ SimpleDomStorageSystem::AreaImpl::AreaImpl(
     int namespace_id, const GURL& origin)
     : parent_(parent),
       connection_id_(0) {
-  if (Host())
-    connection_id_ = Host()->OpenStorageArea(namespace_id, origin);
+  if (Host()) {
+    connection_id_ = (parent_->next_connection_id_)++;
+    Host()->OpenStorageArea(connection_id_, namespace_id, origin);
+  }
 }
 
 SimpleDomStorageSystem::AreaImpl::~AreaImpl() {
@@ -193,7 +195,8 @@ SimpleDomStorageSystem* SimpleDomStorageSystem::g_instance_;
 SimpleDomStorageSystem::SimpleDomStorageSystem()
     : weak_factory_(this),
       context_(new DomStorageContext(FilePath(), FilePath(), NULL, NULL)),
-      host_(new DomStorageHost(context_)) {
+      host_(new DomStorageHost(context_)),
+      next_connection_id_(1) {
   DCHECK(!g_instance_);
   g_instance_ = this;
 }

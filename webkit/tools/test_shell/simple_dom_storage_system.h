@@ -49,6 +49,7 @@ class SimpleDomStorageSystem {
   base::WeakPtrFactory<SimpleDomStorageSystem> weak_factory_;
   scoped_refptr<dom_storage::DomStorageContext> context_;
   scoped_ptr<dom_storage::DomStorageHost> host_;
+  int next_connection_id_;
 
   static SimpleDomStorageSystem* g_instance_;
 };
