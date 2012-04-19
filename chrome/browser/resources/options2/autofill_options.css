@@ -46,6 +46,7 @@
   vertical-align: top;
 }
 
-#autofill-options div[role='listitem']:not(:hover) .list-inline-button {
+#autofill-options div[role='listitem']:not(:hover):not([selected])
+    .list-inline-button {
   display: none;
 }
