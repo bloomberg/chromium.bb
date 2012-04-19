@@ -55,9 +55,11 @@ const char kOnResultEvent[] = "experimental.speechInput.onResult";
 const char kOnSoundStartEvent[] = "experimental.speechInput.onSoundStart";
 const char kOnSoundEndEvent[] = "experimental.speechInput.onSoundEnd";
 
-// Caller id provided to the speech recognizer. Since only one extension can
+// Session id provided to the speech recognizer. Since only one extension can
 // be recording on the same time a constant value is enough as id.
-static const int kSpeechCallerId = 1;
+// TODO(primiano) this will not be valid anymore once speech input extension
+// will use the SpeechRecognitionManager and not the SpeechRecognizer directly.
+static const int kSpeechInputSessionId = 1;
 
 // Wrap an SpeechInputExtensionManager using scoped_refptr to avoid
 // assertion failures on destruction because of not using release().
@@ -239,10 +241,10 @@ void SpeechInputExtensionManager::ResetToIdleState() {
 }
 
 void SpeechInputExtensionManager::OnRecognitionResult(
-    int caller_id,
+    int session_id,
     const content::SpeechRecognitionResult& result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(caller_id, kSpeechCallerId);
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 
   // Stopping will start the disassociation with the extension.
   // Make a copy to report the results to the proper one.
@@ -284,26 +286,26 @@ void SpeechInputExtensionManager::SetRecognitionResultOnUIThread(
   DispatchEventToExtension(extension_id, kOnResultEvent, json_args);
 }
 
-void SpeechInputExtensionManager::OnRecognitionStart(int caller_id) {
-  DCHECK_EQ(caller_id, kSpeechCallerId);
+void SpeechInputExtensionManager::OnRecognitionStart(int session_id) {
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 }
 
-void SpeechInputExtensionManager::OnAudioStart(int caller_id) {
+void SpeechInputExtensionManager::OnAudioStart(int session_id) {
   VLOG(1) << "OnAudioStart";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(caller_id, kSpeechCallerId);
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread,
       this));
 }
 
-void SpeechInputExtensionManager::OnAudioEnd(int caller_id) {
-  DCHECK_EQ(caller_id, kSpeechCallerId);
+void SpeechInputExtensionManager::OnAudioEnd(int session_id) {
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 }
 
-void SpeechInputExtensionManager::OnRecognitionEnd(int caller_id) {
-  DCHECK_EQ(caller_id, kSpeechCallerId);
+void SpeechInputExtensionManager::OnRecognitionEnd(int session_id) {
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 }
 
 void SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread() {
@@ -341,9 +343,9 @@ void SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread() {
 }
 
 void SpeechInputExtensionManager::OnRecognitionError(
-    int caller_id, const content::SpeechRecognitionError& error) {
+    int session_id, const content::SpeechRecognitionError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(caller_id, kSpeechCallerId);
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
   VLOG(1) << "OnRecognitionError: " << error.code;
 
   base::AutoLock auto_lock(state_lock_);
@@ -401,13 +403,13 @@ void SpeechInputExtensionManager::OnRecognitionError(
 }
 
 void SpeechInputExtensionManager::OnEnvironmentEstimationComplete(
-    int caller_id) {
-  DCHECK_EQ(caller_id, kSpeechCallerId);
+    int session_id) {
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
 }
 
-void SpeechInputExtensionManager::OnSoundStart(int caller_id) {
+void SpeechInputExtensionManager::OnSoundStart(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(caller_id, kSpeechCallerId);
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
   VLOG(1) << "OnSoundStart";
 
   std::string json_args;
@@ -417,9 +419,9 @@ void SpeechInputExtensionManager::OnSoundStart(int caller_id) {
       json_args));
 }
 
-void SpeechInputExtensionManager::OnSoundEnd(int caller_id) {
+void SpeechInputExtensionManager::OnSoundEnd(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_EQ(caller_id, kSpeechCallerId);
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
   VLOG(1) << "OnSoundEnd";
 
   std::string json_args;
@@ -565,7 +567,7 @@ void SpeechInputExtensionManager::StartOnIOThread(
   }
 
   GetSpeechInputExtensionInterface()->StartRecording(
-      this, context_getter, kSpeechCallerId, language, grammar,
+      this, context_getter, kSpeechInputSessionId, language, grammar,
       filter_profanities);
 }
 
@@ -609,14 +611,14 @@ void SpeechInputExtensionManager::IsRecordingOnUIThread(
 void SpeechInputExtensionManager::StartRecording(
     content::SpeechRecognitionEventListener* listener,
     net::URLRequestContextGetter* context_getter,
-    int caller_id,
+    int session_id,
     const std::string& language,
     const std::string& grammar,
     bool filter_profanities) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!recognizer_);
   recognizer_ = content::SpeechRecognizer::Create(
-      listener, caller_id, language, grammar, context_getter,
+      listener, session_id, language, grammar, context_getter,
       filter_profanities, "", "");
   recognizer_->StartRecognition();
 }
@@ -713,10 +715,10 @@ void SpeechInputExtensionManager::StopSucceededOnUIThread() {
       content::Details<std::string>(&extension_id));
 }
 
-void SpeechInputExtensionManager::OnAudioLevelsChange(int caller_id,
-                                                      float volume,
-                                                      float noise_volume) {
-  DCHECK_EQ(caller_id, kSpeechCallerId);
+void SpeechInputExtensionManager::OnAudioLevelsChange(int session_id,
+                                                       float volume,
+                                                       float noise_volume) {
+  DCHECK_EQ(session_id, kSpeechInputSessionId);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::SetInputVolumeOnUIThread,

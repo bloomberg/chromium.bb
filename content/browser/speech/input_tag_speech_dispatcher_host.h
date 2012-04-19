@@ -31,19 +31,18 @@ class SpeechRecognitionManagerImpl;
 class CONTENT_EXPORT InputTagSpeechDispatcherHost
     : public content::BrowserMessageFilter {
  public:
-  class Callers;
+  class Sessions;
 
   InputTagSpeechDispatcherHost(
       int render_process_id,
       net::URLRequestContextGetter* context_getter,
-      content::SpeechRecognitionPreferences* recognition_preferences,
-      media::AudioManager* audio_manager);
+      content::SpeechRecognitionPreferences* recognition_preferences);
 
   // Methods called by SpeechRecognitionManagerImpl.
-  void SetRecognitionResult(int caller_id,
+  void SetRecognitionResult(int session_id,
                             const content::SpeechRecognitionResult& result);
-  void DidCompleteRecording(int caller_id);
-  void DidCompleteRecognition(int caller_id);
+  void DidCompleteRecording(int session_id);
+  void DidCompleteRecognition(int session_id);
 
   // content::BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -69,7 +68,6 @@ class CONTENT_EXPORT InputTagSpeechDispatcherHost
 
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
   scoped_refptr<content::SpeechRecognitionPreferences> recognition_preferences_;
-  media::AudioManager* audio_manager_;
 
   static SpeechRecognitionManagerImpl* manager_;
 

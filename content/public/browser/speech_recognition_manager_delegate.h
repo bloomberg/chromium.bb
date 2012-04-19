@@ -38,34 +38,34 @@ class SpeechRecognitionManagerDelegate {
   // the view port for the given caller. The embedder should call the
   // StartRecognition or CancelRecognition methods on SpeechInutManager in
   // response.
-  virtual void ShowRecognitionRequested(int caller_id,
+  virtual void ShowRecognitionRequested(int session_id,
                                         int render_process_id,
                                         int render_view_id,
                                         const gfx::Rect& element_rect) = 0;
 
   // Called when recognition is starting up.
-  virtual void ShowWarmUp(int caller_id) = 0;
+  virtual void ShowWarmUp(int session_id) = 0;
 
   // Called when recognition has started.
-  virtual void ShowRecognizing(int caller_id) = 0;
+  virtual void ShowRecognizing(int session_id) = 0;
 
   // Called when recording has started.
-  virtual void ShowRecording(int caller_id) = 0;
+  virtual void ShowRecording(int session_id) = 0;
 
   // Continuously updated with the current input volume.
-  virtual void ShowInputVolume(int caller_id,
+  virtual void ShowInputVolume(int session_id,
                                float volume,
                                float noise_volume) = 0;
 
   // Called when no microphone has been found.
-  virtual void ShowMicError(int caller_id, MicError error) = 0;
+  virtual void ShowMicError(int session_id, MicError error) = 0;
 
   // Called when there has been a error with the recognition.
-  virtual void ShowRecognizerError(int caller_id,
+  virtual void ShowRecognizerError(int session_id,
                                    SpeechRecognitionErrorCode error) = 0;
 
   // Called when recognition has ended or has been canceled.
-  virtual void DoClose(int caller_id) = 0;
+  virtual void DoClose(int session_id) = 0;
 };
 
 }  // namespace content

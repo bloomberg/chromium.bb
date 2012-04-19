@@ -95,7 +95,7 @@ class SpeechRecognitionBubbleControllerTest
   }
 
   // SpeechRecognitionBubbleControllerDelegate methods.
-  virtual void InfoBubbleButtonClicked(int caller_id,
+  virtual void InfoBubbleButtonClicked(int session_id,
                                        SpeechRecognitionBubble::Button button) {
     VLOG(1) << "Received InfoBubbleButtonClicked for button " << button;
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -107,7 +107,7 @@ class SpeechRecognitionBubbleControllerTest
     message_loop()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
-  virtual void InfoBubbleFocusChanged(int caller_id) {
+  virtual void InfoBubbleFocusChanged(int session_id) {
     VLOG(1) << "Received InfoBubbleFocusChanged";
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     focus_changed_ = true;
@@ -131,9 +131,9 @@ class SpeechRecognitionBubbleControllerTest
   static void ActivateBubble() {
     if (MockSpeechRecognitionBubble::type() ==
         MockSpeechRecognitionBubble::BUBBLE_TEST_FOCUS_CHANGED) {
-      test_fixture_->controller_->SetBubbleWarmUpMode(kBubbleCallerId);
+      test_fixture_->controller_->SetBubbleWarmUpMode(kBubbleSessionId);
     } else {
-      test_fixture_->controller_->SetBubbleMessage(kBubbleCallerId,
+      test_fixture_->controller_->SetBubbleMessage(kBubbleSessionId,
                                                    ASCIIToUTF16("Test"));
     }
   }
@@ -149,7 +149,7 @@ class SpeechRecognitionBubbleControllerTest
     MessageLoop::current()->PostTask(FROM_HERE,
                                      base::Bind(&ActivateBubble));
 
-    // The |tab_contents| parameter would be NULL since the dummy caller id
+    // The |tab_contents| parameter would be NULL since the dummy session id
     // passed to CreateBubble would not have matched any active tab. So get a
     // real WebContents pointer from the test fixture and pass that, because
     // the bubble controller registers for tab close notifications which need
@@ -171,14 +171,14 @@ class SpeechRecognitionBubbleControllerTest
   bool focus_changed_;
   scoped_refptr<SpeechRecognitionBubbleController> controller_;
 
-  static const int kBubbleCallerId;
+  static const int kBubbleSessionId;
   static SpeechRecognitionBubbleControllerTest* test_fixture_;
 };
 
 SpeechRecognitionBubbleControllerTest*
 SpeechRecognitionBubbleControllerTest::test_fixture_ = NULL;
 
-const int SpeechRecognitionBubbleControllerTest::kBubbleCallerId = 1;
+const int SpeechRecognitionBubbleControllerTest::kBubbleSessionId = 1;
 
 MockSpeechRecognitionBubble::BubbleType MockSpeechRecognitionBubble::type_ =
     MockSpeechRecognitionBubble::BUBBLE_TEST_FOCUS_CHANGED;
@@ -189,12 +189,12 @@ TEST_F(SpeechRecognitionBubbleControllerTest, TestFocusChanged) {
   MockSpeechRecognitionBubble::set_type(
       MockSpeechRecognitionBubble::BUBBLE_TEST_FOCUS_CHANGED);
 
-  controller_->CreateBubble(kBubbleCallerId, 1, 1, gfx::Rect(1, 1));
+  controller_->CreateBubble(kBubbleSessionId, 1, 1, gfx::Rect(1, 1));
   MessageLoop::current()->Run();
   EXPECT_TRUE(focus_changed_);
   EXPECT_FALSE(cancel_clicked_);
   EXPECT_FALSE(try_again_clicked_);
-  controller_->CloseBubble(kBubbleCallerId);
+  controller_->CloseBubble(kBubbleSessionId);
 }
 
 // Test that the speech bubble UI gets created in the UI thread and that the
@@ -203,12 +203,12 @@ TEST_F(SpeechRecognitionBubbleControllerTest, TestRecognitionCancelled) {
   MockSpeechRecognitionBubble::set_type(
       MockSpeechRecognitionBubble::BUBBLE_TEST_CLICK_CANCEL);
 
-  controller_->CreateBubble(kBubbleCallerId, 1, 1, gfx::Rect(1, 1));
+  controller_->CreateBubble(kBubbleSessionId, 1, 1, gfx::Rect(1, 1));
   MessageLoop::current()->Run();
   EXPECT_TRUE(cancel_clicked_);
   EXPECT_FALSE(try_again_clicked_);
   EXPECT_FALSE(focus_changed_);
-  controller_->CloseBubble(kBubbleCallerId);
+  controller_->CloseBubble(kBubbleSessionId);
 }
 
 // Test that the speech bubble UI gets created in the UI thread and that the
@@ -217,12 +217,12 @@ TEST_F(SpeechRecognitionBubbleControllerTest, TestTryAgainClicked) {
   MockSpeechRecognitionBubble::set_type(
       MockSpeechRecognitionBubble::BUBBLE_TEST_CLICK_TRY_AGAIN);
 
-  controller_->CreateBubble(kBubbleCallerId, 1, 1, gfx::Rect(1, 1));
+  controller_->CreateBubble(kBubbleSessionId, 1, 1, gfx::Rect(1, 1));
   MessageLoop::current()->Run();
   EXPECT_FALSE(cancel_clicked_);
   EXPECT_TRUE(try_again_clicked_);
   EXPECT_FALSE(focus_changed_);
-  controller_->CloseBubble(kBubbleCallerId);
+  controller_->CloseBubble(kBubbleSessionId);
 }
 
 }  // namespace speech

@@ -23,28 +23,28 @@ class ChromeSpeechRecognitionManagerDelegate
 
   // SpeechRecognitionBubbleControllerDelegate methods.
   virtual void InfoBubbleButtonClicked(
-      int caller_id, SpeechRecognitionBubble::Button button) OVERRIDE;
-  virtual void InfoBubbleFocusChanged(int caller_id) OVERRIDE;
+      int session_id, SpeechRecognitionBubble::Button button) OVERRIDE;
+  virtual void InfoBubbleFocusChanged(int session_id) OVERRIDE;
 
  protected:
   // SpeechRecognitionManagerDelegate methods.
   virtual void GetRequestInfo(bool* can_report_metrics,
                               std::string* request_info) OVERRIDE;
-  virtual void ShowRecognitionRequested(int caller_id,
+  virtual void ShowRecognitionRequested(int session_id,
                                         int render_process_id,
                                         int render_view_id,
                                         const gfx::Rect& element_rect) OVERRIDE;
-  virtual void ShowWarmUp(int caller_id) OVERRIDE;
-  virtual void ShowRecognizing(int caller_id) OVERRIDE;
-  virtual void ShowRecording(int caller_id) OVERRIDE;
-  virtual void ShowInputVolume(int caller_id,
+  virtual void ShowWarmUp(int session_id) OVERRIDE;
+  virtual void ShowRecognizing(int session_id) OVERRIDE;
+  virtual void ShowRecording(int session_id) OVERRIDE;
+  virtual void ShowInputVolume(int session_id,
                                float volume,
                                float noise_volume) OVERRIDE;
-  virtual void ShowMicError(int caller_id,
+  virtual void ShowMicError(int session_id,
                             MicError error) OVERRIDE;
   virtual void ShowRecognizerError(
-      int caller_id, content::SpeechRecognitionErrorCode error) OVERRIDE;
-  virtual void DoClose(int caller_id) OVERRIDE;
+      int session_id, content::SpeechRecognitionErrorCode error) OVERRIDE;
+  virtual void DoClose(int session_id) OVERRIDE;
 
  private:
   class OptionalRequestInfo;

@@ -40,7 +40,7 @@ class SpeechInputExtensionInterface {
   virtual void StartRecording(
       content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
-      int caller_id,
+      int session_id,
       const std::string& language,
       const std::string& grammar,
       bool filter_profanities) = 0;
@@ -117,19 +117,19 @@ class SpeechInputExtensionManager
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Methods from SpeechRecognitionEventListener.
-  virtual void OnRecognitionStart(int caller_id) OVERRIDE;
-  virtual void OnAudioStart(int caller_id) OVERRIDE;
-  virtual void OnEnvironmentEstimationComplete(int caller_id) OVERRIDE;
-  virtual void OnSoundStart(int caller_id) OVERRIDE;
-  virtual void OnSoundEnd(int caller_id) OVERRIDE;
-  virtual void OnAudioEnd(int caller_id) OVERRIDE;
+  virtual void OnRecognitionStart(int session_id) OVERRIDE;
+  virtual void OnAudioStart(int session_id) OVERRIDE;
+  virtual void OnEnvironmentEstimationComplete(int session_id) OVERRIDE;
+  virtual void OnSoundStart(int session_id) OVERRIDE;
+  virtual void OnSoundEnd(int session_id) OVERRIDE;
+  virtual void OnAudioEnd(int session_id) OVERRIDE;
   virtual void OnRecognitionResult(
-      int caller_id, const content::SpeechRecognitionResult& result) OVERRIDE;
+      int session_id, const content::SpeechRecognitionResult& result) OVERRIDE;
   virtual void OnRecognitionError(
-      int caller_id, const content::SpeechRecognitionError& error) OVERRIDE;
-  virtual void OnAudioLevelsChange(int caller_id, float volume,
+      int session_id, const content::SpeechRecognitionError& error) OVERRIDE;
+  virtual void OnAudioLevelsChange(int session_id, float volume,
                                    float noise_volume) OVERRIDE;
-  virtual void OnRecognitionEnd(int caller_id) OVERRIDE;
+  virtual void OnRecognitionEnd(int session_id) OVERRIDE;
 
   // Methods for API testing.
   void SetSpeechInputExtensionInterface(
@@ -144,7 +144,7 @@ class SpeechInputExtensionManager
   virtual void StartRecording(
       content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
-      int caller_id,
+      int session_id,
       const std::string& language,
       const std::string& grammar,
       bool filter_profanities) OVERRIDE;

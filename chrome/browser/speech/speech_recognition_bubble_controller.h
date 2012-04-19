@@ -38,11 +38,11 @@ class SpeechRecognitionBubbleController
    public:
     // Invoked when the user clicks on a button in the speech recognition UI.
     virtual void InfoBubbleButtonClicked(
-        int caller_id, SpeechRecognitionBubble::Button button) = 0;
+        int session_id, SpeechRecognitionBubble::Button button) = 0;
 
     // Invoked when the user clicks outside the speech recognition info bubble
     // causing it to close and input focus to change.
-    virtual void InfoBubbleFocusChanged(int caller_id) = 0;
+    virtual void InfoBubbleFocusChanged(int session_id) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -53,31 +53,31 @@ class SpeechRecognitionBubbleController
 
   // Creates a new speech recognition UI bubble. One of the SetXxxx methods
   // below need to be called to specify what to display.
-  void CreateBubble(int caller_id,
+  void CreateBubble(int session_id,
                     int render_process_id,
                     int render_view_id,
                     const gfx::Rect& element_rect);
 
   // Indicates to the user that audio hardware is warming up. This also makes
   // the bubble visible if not already visible.
-  void SetBubbleWarmUpMode(int caller_id);
+  void SetBubbleWarmUpMode(int session_id);
 
   // Indicates to the user that audio recording is in progress. This also makes
   // the bubble visible if not already visible.
-  void SetBubbleRecordingMode(int caller_id);
+  void SetBubbleRecordingMode(int session_id);
 
   // Indicates to the user that recognition is in progress. If the bubble is
   // hidden, |Show| must be called to make it appear on screen.
-  void SetBubbleRecognizingMode(int caller_id);
+  void SetBubbleRecognizingMode(int session_id);
 
   // Displays the given string with the 'Try again' and 'Cancel' buttons. If the
   // bubble is hidden, |Show| must be called to make it appear on screen.
-  void SetBubbleMessage(int caller_id, const string16& text);
+  void SetBubbleMessage(int session_id, const string16& text);
 
   // Updates the current captured audio volume displayed on screen.
-  void SetBubbleInputVolume(int caller_id, float volume, float noise_volume);
+  void SetBubbleInputVolume(int session_id, float volume, float noise_volume);
 
-  void CloseBubble(int caller_id);
+  void CloseBubble(int session_id);
 
   // SpeechRecognitionBubble::Delegate methods.
   virtual void InfoBubbleButtonClicked(
@@ -105,10 +105,10 @@ class SpeechRecognitionBubbleController
     BUBBLE_REMOVED
   };
 
-  void InvokeDelegateButtonClicked(int caller_id,
+  void InvokeDelegateButtonClicked(int session_id,
                                    SpeechRecognitionBubble::Button button);
-  void InvokeDelegateFocusChanged(int caller_id);
-  void ProcessRequestInUiThread(int caller_id,
+  void InvokeDelegateFocusChanged(int session_id);
+  void ProcessRequestInUiThread(int session_id,
                                 RequestType type,
                                 const string16& text,
                                 float volume,
@@ -119,7 +119,7 @@ class SpeechRecognitionBubbleController
   // the WebContents if this was the first bubble for the tab. Similarly if the
   // bubble was being removed, this method unregisters from WebContents if this
   // was the last bubble associated with that tab.
-  void UpdateTabContentsSubscription(int caller_id,
+  void UpdateTabContentsSubscription(int session_id,
                                      ManageSubscriptionAction action);
 
   // Only accessed in the IO thread.
@@ -127,14 +127,14 @@ class SpeechRecognitionBubbleController
 
   // *** The following are accessed only in the UI thread.
 
-  // The caller id for currently visible bubble (since only one bubble is
+  // The session id for currently visible bubble (since only one bubble is
   // visible at any time).
-  int current_bubble_caller_id_;
+  int current_bubble_session_id_;
 
-  // Map of caller-ids to bubble objects. The bubbles are weak pointers owned by
-  // this object and get destroyed by |CloseBubble|.
-  typedef std::map<int, SpeechRecognitionBubble*> BubbleCallerIdMap;
-  BubbleCallerIdMap bubbles_;
+  // Map of session-ids to bubble objects. The bubbles are weak pointers owned
+  // by this object and get destroyed by |CloseBubble|.
+  typedef std::map<int, SpeechRecognitionBubble*> BubbleSessionIdMap;
+  BubbleSessionIdMap bubbles_;
 
   scoped_ptr<content::NotificationRegistrar> registrar_;
 };

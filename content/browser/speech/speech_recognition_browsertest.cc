@@ -35,7 +35,7 @@ const char kTestResult[] = "Pictures of the moon";
 class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
  public:
   FakeSpeechRecognitionManager()
-      : caller_id_(0),
+      : session_id_(0),
         delegate_(NULL),
         did_cancel_all_(false),
         should_send_fake_response_(true),
@@ -65,7 +65,7 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
   // SpeechRecognitionManager methods.
   virtual void StartRecognition(
       InputTagSpeechDispatcherHost* delegate,
-      int caller_id,
+      int session_id,
       int render_process_id,
       int render_view_id,
       const gfx::Rect& element_rect,
@@ -75,9 +75,9 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
       net::URLRequestContextGetter* context_getter,
       content::SpeechRecognitionPreferences* recognition_prefs) OVERRIDE {
     VLOG(1) << "StartRecognition invoked.";
-    EXPECT_EQ(0, caller_id_);
+    EXPECT_EQ(0, session_id_);
     EXPECT_EQ(NULL, delegate_);
-    caller_id_ = caller_id;
+    session_id_ = session_id;
     delegate_ = delegate;
     grammar_ = grammar;
     if (should_send_fake_response_) {
@@ -93,15 +93,15 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
     }
     recognition_started_event_.Signal();
   }
-  virtual void CancelRecognition(int caller_id) OVERRIDE {
+  virtual void CancelRecognition(int session_id) OVERRIDE {
     VLOG(1) << "CancelRecognition invoked.";
-    EXPECT_EQ(caller_id_, caller_id);
-    caller_id_ = 0;
+    EXPECT_EQ(session_id_, session_id);
+    session_id_ = 0;
     delegate_ = NULL;
   }
-  virtual void StopRecording(int caller_id) OVERRIDE {
+  virtual void StopRecording(int session_id) OVERRIDE {
     VLOG(1) << "StopRecording invoked.";
-    EXPECT_EQ(caller_id_, caller_id);
+    EXPECT_EQ(session_id_, session_id);
     // Nothing to do here since we aren't really recording.
   }
   virtual void CancelAllRequestsWithDelegate(
@@ -116,21 +116,21 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
 
  private:
   void SetFakeRecognitionResult() {
-    if (caller_id_) {  // Do a check in case we were cancelled..
+    if (session_id_) {  // Do a check in case we were cancelled..
       VLOG(1) << "Setting fake recognition result.";
-      delegate_->DidCompleteRecording(caller_id_);
+      delegate_->DidCompleteRecording(session_id_);
       content::SpeechRecognitionResult results;
       results.hypotheses.push_back(content::SpeechRecognitionHypothesis(
           ASCIIToUTF16(kTestResult), 1.0));
-      delegate_->SetRecognitionResult(caller_id_, results);
-      delegate_->DidCompleteRecognition(caller_id_);
-      caller_id_ = 0;
+      delegate_->SetRecognitionResult(session_id_, results);
+      delegate_->DidCompleteRecognition(session_id_);
+      session_id_ = 0;
       delegate_ = NULL;
       VLOG(1) << "Finished setting fake recognition result.";
     }
   }
 
-  int caller_id_;
+  int session_id_;
   InputTagSpeechDispatcherHost* delegate_;
   std::string grammar_;
   bool did_cancel_all_;

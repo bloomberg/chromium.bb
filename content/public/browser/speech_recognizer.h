@@ -25,13 +25,9 @@ class SpeechRecognitionEventListener;
 class SpeechRecognizer : public base::RefCountedThreadSafe<SpeechRecognizer> {
  public:
 
-  // TODO(primiano) Create(...) is transitional (until we fix speech input
-  // extensions) and should be removed soon. The manager should be the only one
-  // knowing the existence of SpeechRecognizer, thus the only one in charge of
-  // instantiating it.
   CONTENT_EXPORT static SpeechRecognizer* Create(
       SpeechRecognitionEventListener* event_listener,
-      int caller_id,
+      int session_id,
       const std::string& language,
       const std::string& grammar,
       net::URLRequestContextGetter* context_getter,

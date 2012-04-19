@@ -147,52 +147,52 @@ class SpeechRecognizerImplTest : public content::SpeechRecognitionEventListener,
   }
 
   // Overridden from content::SpeechRecognitionEventListener:
-  virtual void OnAudioStart(int caller_id) OVERRIDE {
+  virtual void OnAudioStart(int session_id) OVERRIDE {
     audio_started_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnAudioEnd(int caller_id) OVERRIDE {
+  virtual void OnAudioEnd(int session_id) OVERRIDE {
     audio_ended_ = true;
     CheckEventsConsistency();
   }
 
   virtual void OnRecognitionResult(
-      int caller_id, const content::SpeechRecognitionResult& result) OVERRIDE {
+      int session_id, const content::SpeechRecognitionResult& result) OVERRIDE {
     result_received_ = true;
   }
 
   virtual void OnRecognitionError(
-      int caller_id, const content::SpeechRecognitionError& error) OVERRIDE {
+      int session_id, const content::SpeechRecognitionError& error) OVERRIDE {
     EXPECT_TRUE(recognition_started_);
     EXPECT_FALSE(recognition_ended_);
     error_ = error.code;
   }
 
-  virtual void OnAudioLevelsChange(int caller_id, float volume,
+  virtual void OnAudioLevelsChange(int session_id, float volume,
                                    float noise_volume) OVERRIDE {
     volume_ = volume;
     noise_volume_ = noise_volume;
   }
 
-  virtual void OnRecognitionEnd(int caller_id) OVERRIDE {
+  virtual void OnRecognitionEnd(int session_id) OVERRIDE {
     recognition_ended_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnRecognitionStart(int caller_id) OVERRIDE {
+  virtual void OnRecognitionStart(int session_id) OVERRIDE {
     recognition_started_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnEnvironmentEstimationComplete(int caller_id) OVERRIDE {}
+  virtual void OnEnvironmentEstimationComplete(int session_id) OVERRIDE {}
 
-  virtual void OnSoundStart(int caller_id) OVERRIDE {
+  virtual void OnSoundStart(int session_id) OVERRIDE {
     sound_started_ = true;
     CheckEventsConsistency();
   }
 
-  virtual void OnSoundEnd(int caller_id) OVERRIDE {
+  virtual void OnSoundEnd(int session_id) OVERRIDE {
     sound_ended_ = true;
     CheckEventsConsistency();
   }

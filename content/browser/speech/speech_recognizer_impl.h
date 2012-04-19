@@ -18,11 +18,9 @@
 
 namespace content {
 class SpeechRecognitionEventListener;
-struct SpeechRecognitionResult;
 }
 
 namespace media {
-class AudioInputController;
 class AudioManager;
 }
 
@@ -32,7 +30,7 @@ namespace speech {
 // /content/public/browser/speech_recognizer.h interface since this class should
 // not be visible outside (currently we need it for speech input extension API).
 
-// Handles speech recognition for a session (identified by |caller_id|), taking
+// Handles speech recognition for a session (identified by |session_id|), taking
 // care of audio capture, silence detection/endpointer and interaction with the
 // SpeechRecognitionEngine.
 class CONTENT_EXPORT SpeechRecognizerImpl
@@ -48,7 +46,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
 
   SpeechRecognizerImpl(
       content::SpeechRecognitionEventListener* listener,
-      int caller_id,
+      int session_id,
       SpeechRecognitionEngine* engine);
   virtual ~SpeechRecognizerImpl();
 
@@ -152,7 +150,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   scoped_ptr<SpeechRecognitionEngine> recognition_engine_;
   Endpointer endpointer_;
   scoped_refptr<media::AudioInputController> audio_controller_;
-  int caller_id_;
+  int session_id_;
   int num_samples_recorded_;
   float audio_level_;
   bool is_dispatching_event_;

@@ -77,7 +77,7 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
   virtual void StartRecording(
       content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
-      int caller_id,
+      int session_id,
       const std::string& language,
       const std::string& grammar,
       bool filter_profanities) OVERRIDE;
@@ -107,7 +107,7 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
   };
 
  private:
-  void ProvideResults(int caller_id);
+  void ProvideResults(int session_id);
 
   bool recording_devices_available_;
   bool recognizer_is_valid_;
@@ -131,7 +131,7 @@ SpeechInputExtensionApiTest::~SpeechInputExtensionApiTest() {
 void SpeechInputExtensionApiTest::StartRecording(
       content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
-      int caller_id,
+      int session_id,
       const std::string& language,
       const std::string& grammar,
       bool filter_profanities) {
@@ -143,7 +143,7 @@ void SpeechInputExtensionApiTest::StartRecording(
       FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::OnAudioStart,
                  GetManager(),
-                 caller_id),
+                 session_id),
       base::TimeDelta());
 
   // Notify sound start in the input device.
@@ -151,7 +151,7 @@ void SpeechInputExtensionApiTest::StartRecording(
       FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::OnSoundStart,
                  GetManager(),
-                 caller_id),
+                 session_id),
       base::TimeDelta());
 
   if (result_delay_ms_ != kDontDispatchCall) {
@@ -160,7 +160,7 @@ void SpeechInputExtensionApiTest::StartRecording(
         FROM_HERE,
         base::Bind(&SpeechInputExtensionApiTest::ProvideResults,
                    this,
-                   caller_id),
+                   session_id),
         base::TimeDelta::FromMilliseconds(result_delay_ms_));
   }
 }
@@ -170,17 +170,17 @@ void SpeechInputExtensionApiTest::StopRecording(bool recognition_failed) {
   recognizer_is_valid_ = false;
 }
 
-void SpeechInputExtensionApiTest::ProvideResults(int caller_id) {
+void SpeechInputExtensionApiTest::ProvideResults(int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (next_error_ != content::SPEECH_RECOGNITION_ERROR_NONE) {
-    GetManager()->OnRecognitionError(caller_id, next_error_);
+    GetManager()->OnRecognitionError(session_id, next_error_);
     return;
   }
 
-  GetManager()->OnSoundEnd(caller_id);
-  GetManager()->OnAudioEnd(caller_id);
-  GetManager()->OnRecognitionResult(caller_id, next_result_);
+  GetManager()->OnSoundEnd(session_id);
+  GetManager()->OnAudioEnd(session_id);
+  GetManager()->OnRecognitionResult(session_id, next_result_);
 }
 
 // Every test should leave the manager in the idle state when finished.

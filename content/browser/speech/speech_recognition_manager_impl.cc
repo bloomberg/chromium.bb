@@ -33,7 +33,7 @@ namespace speech {
 struct SpeechRecognitionManagerImpl::SpeechRecognitionParams {
   SpeechRecognitionParams(
       InputTagSpeechDispatcherHost* delegate,
-      int caller_id,
+      int session_id,
       int render_process_id,
       int render_view_id,
       const gfx::Rect& element_rect,
@@ -43,7 +43,7 @@ struct SpeechRecognitionManagerImpl::SpeechRecognitionParams {
       net::URLRequestContextGetter* context_getter,
       content::SpeechRecognitionPreferences* recognition_prefs)
       : delegate(delegate),
-        caller_id(caller_id),
+        session_id(session_id),
         render_process_id(render_process_id),
         render_view_id(render_view_id),
         element_rect(element_rect),
@@ -55,7 +55,7 @@ struct SpeechRecognitionManagerImpl::SpeechRecognitionParams {
   }
 
   InputTagSpeechDispatcherHost* delegate;
-  int caller_id;
+  int session_id;
   int render_process_id;
   int render_view_id;
   gfx::Rect element_rect;
@@ -72,7 +72,7 @@ SpeechRecognitionManagerImpl* SpeechRecognitionManagerImpl::GetInstance() {
 
 SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl()
     : can_report_metrics_(false),
-      recording_caller_id_(0) {
+      recording_session_id_(0) {
   delegate_.reset(content::GetContentClient()->browser()->
                   GetSpeechRecognitionManagerDelegate());
 }
@@ -94,13 +94,13 @@ string16 SpeechRecognitionManagerImpl::GetAudioInputDeviceModel() {
   return BrowserMainLoop::GetAudioManager()->GetAudioInputDeviceModel();
 }
 
-bool SpeechRecognitionManagerImpl::HasPendingRequest(int caller_id) const {
-  return requests_.find(caller_id) != requests_.end();
+bool SpeechRecognitionManagerImpl::HasPendingRequest(int session_id) const {
+  return requests_.find(session_id) != requests_.end();
 }
 
 InputTagSpeechDispatcherHost* SpeechRecognitionManagerImpl::GetDelegate(
-    int caller_id) const {
-  return requests_.find(caller_id)->second.delegate;
+    int session_id) const {
+  return requests_.find(session_id)->second.delegate;
 }
 
 void SpeechRecognitionManagerImpl::ShowAudioInputSettings() {
@@ -122,7 +122,7 @@ void SpeechRecognitionManagerImpl::ShowAudioInputSettings() {
 
 void SpeechRecognitionManagerImpl::StartRecognition(
     InputTagSpeechDispatcherHost* delegate,
-    int caller_id,
+    int session_id,
     int render_process_id,
     int render_view_id,
     const gfx::Rect& element_rect,
@@ -138,7 +138,7 @@ void SpeechRecognitionManagerImpl::StartRecognition(
           &SpeechRecognitionManagerImpl::CheckRenderViewTypeAndStartRecognition,
           base::Unretained(this),
           SpeechRecognitionParams(
-              delegate, caller_id, render_process_id, render_view_id,
+              delegate, session_id, render_process_id, render_view_id,
               element_rect, language, grammar, origin_url, context_getter,
               recognition_prefs)));
 }
@@ -170,78 +170,78 @@ void SpeechRecognitionManagerImpl::CheckRenderViewTypeAndStartRecognition(
 void SpeechRecognitionManagerImpl::ProceedStartingRecognition(
     const SpeechRecognitionParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!HasPendingRequest(params.caller_id));
+  DCHECK(!HasPendingRequest(params.session_id));
 
   if (delegate_.get()) {
     delegate_->ShowRecognitionRequested(
-        params.caller_id, params.render_process_id, params.render_view_id,
+        params.session_id, params.render_process_id, params.render_view_id,
         params.element_rect);
     delegate_->GetRequestInfo(&can_report_metrics_, &request_info_);
   }
 
-  Request* request = &requests_[params.caller_id];
+  Request* request = &requests_[params.session_id];
   request->delegate = params.delegate;
   request->recognizer = content::SpeechRecognizer::Create(
-      this, params.caller_id, params.language, params.grammar,
+      this, params.session_id, params.language, params.grammar,
       params.context_getter, params.recognition_prefs->FilterProfanities(),
       request_info_, can_report_metrics_ ? params.origin_url : "");
   request->is_active = false;
 
-  StartRecognitionForRequest(params.caller_id);
+  StartRecognitionForRequest(params.session_id);
 }
 
-void SpeechRecognitionManagerImpl::StartRecognitionForRequest(int caller_id) {
-  SpeechRecognizerMap::iterator request = requests_.find(caller_id);
+void SpeechRecognitionManagerImpl::StartRecognitionForRequest(int session_id) {
+  SpeechRecognizerMap::iterator request = requests_.find(session_id);
   if (request == requests_.end()) {
     NOTREACHED();
     return;
   }
 
-  // We should not currently be recording for the caller.
-  CHECK(recording_caller_id_ != caller_id);
+  // We should not currently be recording for the session.
+  CHECK(recording_session_id_ != session_id);
 
-  // If we are currently recording audio for another caller, abort that cleanly.
-  if (recording_caller_id_)
-    CancelRecognitionAndInformDelegate(recording_caller_id_);
-  recording_caller_id_ = caller_id;
-  requests_[caller_id].is_active = true;
-  requests_[caller_id].recognizer->StartRecognition();
+  // If we are currently recording audio for another session, abort it cleanly.
+  if (recording_session_id_)
+    CancelRecognitionAndInformDelegate(recording_session_id_);
+  recording_session_id_ = session_id;
+  requests_[session_id].is_active = true;
+  requests_[session_id].recognizer->StartRecognition();
   if (delegate_.get())
-    delegate_->ShowWarmUp(caller_id);
+    delegate_->ShowWarmUp(session_id);
 }
 
-void SpeechRecognitionManagerImpl::CancelRecognitionForRequest(int caller_id) {
-  // Ignore if the caller id was not in our active recognizers list because the
+void SpeechRecognitionManagerImpl::CancelRecognitionForRequest(int session_id) {
+  // Ignore if the session id was not in our active recognizers list because the
   // user might have clicked more than once, or recognition could have been
   // ended due to other reasons before the user click was processed.
-  if (!HasPendingRequest(caller_id))
+  if (!HasPendingRequest(session_id))
     return;
 
-  CancelRecognitionAndInformDelegate(caller_id);
+  CancelRecognitionAndInformDelegate(session_id);
 }
 
-void SpeechRecognitionManagerImpl::FocusLostForRequest(int caller_id) {
+void SpeechRecognitionManagerImpl::FocusLostForRequest(int session_id) {
   // See above comment.
-  if (!HasPendingRequest(caller_id))
+  if (!HasPendingRequest(session_id))
     return;
 
   // If this is an ongoing recording or if we were displaying an error message
   // to the user, abort it since user has switched focus. Otherwise
   // recognition has started and keep that going so user can start speaking to
   // another element while this gets the results in parallel.
-  if (recording_caller_id_ == caller_id || !requests_[caller_id].is_active)
-    CancelRecognitionAndInformDelegate(caller_id);
+  if (recording_session_id_ == session_id || !requests_[session_id].is_active)
+    CancelRecognitionAndInformDelegate(session_id);
 }
 
-void SpeechRecognitionManagerImpl::CancelRecognition(int caller_id) {
-  DCHECK(HasPendingRequest(caller_id));
-  if (requests_[caller_id].is_active)
-    requests_[caller_id].recognizer->AbortRecognition();
-  requests_.erase(caller_id);
-  if (recording_caller_id_ == caller_id)
-    recording_caller_id_ = 0;
+void SpeechRecognitionManagerImpl::CancelRecognition(int session_id) {
+  DCHECK(HasPendingRequest(session_id));
+  if (requests_[session_id].is_active)
+    requests_[session_id].recognizer->AbortRecognition();
+  requests_.erase(session_id);
+  if (recording_session_id_ == session_id)
+    recording_session_id_ = 0;
   if (delegate_.get())
-    delegate_->DoClose(caller_id);
+    delegate_->DoClose(session_id);
 }
 
 void SpeechRecognitionManagerImpl::CancelAllRequestsWithDelegate(
@@ -258,101 +258,101 @@ void SpeechRecognitionManagerImpl::CancelAllRequestsWithDelegate(
   }
 }
 
-void SpeechRecognitionManagerImpl::StopRecording(int caller_id) {
+void SpeechRecognitionManagerImpl::StopRecording(int session_id) {
   // No pending requests on extension popups.
-  if (!HasPendingRequest(caller_id))
+  if (!HasPendingRequest(session_id))
     return;
 
-  requests_[caller_id].recognizer->StopAudioCapture();
+  requests_[session_id].recognizer->StopAudioCapture();
 }
 
 // -------- SpeechRecognitionEventListener interface implementation. ---------
 
 void SpeechRecognitionManagerImpl::OnRecognitionResult(
-    int caller_id, const content::SpeechRecognitionResult& result) {
-  DCHECK(HasPendingRequest(caller_id));
-  GetDelegate(caller_id)->SetRecognitionResult(caller_id, result);
+    int session_id, const content::SpeechRecognitionResult& result) {
+  DCHECK(HasPendingRequest(session_id));
+  GetDelegate(session_id)->SetRecognitionResult(session_id, result);
 }
 
-void SpeechRecognitionManagerImpl::OnAudioEnd(int caller_id) {
-  if (recording_caller_id_ != caller_id)
+void SpeechRecognitionManagerImpl::OnAudioEnd(int session_id) {
+  if (recording_session_id_ != session_id)
     return;
-  DCHECK_EQ(recording_caller_id_, caller_id);
-  DCHECK(HasPendingRequest(caller_id));
-  if (!requests_[caller_id].is_active)
+  DCHECK_EQ(recording_session_id_, session_id);
+  DCHECK(HasPendingRequest(session_id));
+  if (!requests_[session_id].is_active)
     return;
-  recording_caller_id_ = 0;
-  GetDelegate(caller_id)->DidCompleteRecording(caller_id);
+  recording_session_id_ = 0;
+  GetDelegate(session_id)->DidCompleteRecording(session_id);
   if (delegate_.get())
-    delegate_->ShowRecognizing(caller_id);
+    delegate_->ShowRecognizing(session_id);
 }
 
-void SpeechRecognitionManagerImpl::OnRecognitionEnd(int caller_id) {
-  if (!HasPendingRequest(caller_id) || !requests_[caller_id].is_active)
+void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
+  if (!HasPendingRequest(session_id) || !requests_[session_id].is_active)
     return;
-  GetDelegate(caller_id)->DidCompleteRecognition(caller_id);
-  requests_.erase(caller_id);
+  GetDelegate(session_id)->DidCompleteRecognition(session_id);
+  requests_.erase(session_id);
   if (delegate_.get())
-    delegate_->DoClose(caller_id);
+    delegate_->DoClose(session_id);
 }
 
-void SpeechRecognitionManagerImpl::OnSoundStart(int caller_id) {
+void SpeechRecognitionManagerImpl::OnSoundStart(int session_id) {
 }
 
-void SpeechRecognitionManagerImpl::OnSoundEnd(int caller_id) {
+void SpeechRecognitionManagerImpl::OnSoundEnd(int session_id) {
 }
 
 void SpeechRecognitionManagerImpl::OnRecognitionError(
-    int caller_id, const content::SpeechRecognitionError& error) {
-  DCHECK(HasPendingRequest(caller_id));
-  if (caller_id == recording_caller_id_)
-    recording_caller_id_ = 0;
-  requests_[caller_id].is_active = false;
+    int session_id, const content::SpeechRecognitionError& error) {
+  DCHECK(HasPendingRequest(session_id));
+  if (session_id == recording_session_id_)
+    recording_session_id_ = 0;
+  requests_[session_id].is_active = false;
   if (delegate_.get()) {
     if (error.code == content::SPEECH_RECOGNITION_ERROR_AUDIO &&
         error.details == content::SPEECH_AUDIO_ERROR_DETAILS_NO_MIC) {
-      delegate_->ShowMicError(caller_id,
+      delegate_->ShowMicError(session_id,
           SpeechRecognitionManagerDelegate::MIC_ERROR_NO_DEVICE_AVAILABLE);
     } else if (error.code == content::SPEECH_RECOGNITION_ERROR_AUDIO &&
                error.details == content::SPEECH_AUDIO_ERROR_DETAILS_IN_USE) {
-      delegate_->ShowMicError(
-          caller_id, SpeechRecognitionManagerDelegate::MIC_ERROR_DEVICE_IN_USE);
+      delegate_->ShowMicError(session_id,
+          SpeechRecognitionManagerDelegate::MIC_ERROR_DEVICE_IN_USE);
     } else {
-      delegate_->ShowRecognizerError(caller_id, error.code);
+      delegate_->ShowRecognizerError(session_id, error.code);
     }
   }
 }
 
-void SpeechRecognitionManagerImpl::OnAudioStart(int caller_id) {
-  DCHECK(HasPendingRequest(caller_id));
-  DCHECK_EQ(recording_caller_id_, caller_id);
+void SpeechRecognitionManagerImpl::OnAudioStart(int session_id) {
+  DCHECK(HasPendingRequest(session_id));
+  DCHECK_EQ(recording_session_id_, session_id);
   if (delegate_.get())
-    delegate_->ShowRecording(caller_id);
+    delegate_->ShowRecording(session_id);
 }
 
-void SpeechRecognitionManagerImpl::OnRecognitionStart(int caller_id) {
+void SpeechRecognitionManagerImpl::OnRecognitionStart(int session_id) {
 }
 
 void SpeechRecognitionManagerImpl::OnEnvironmentEstimationComplete(
-    int caller_id) {
-  DCHECK(HasPendingRequest(caller_id));
-  DCHECK_EQ(recording_caller_id_, caller_id);
+    int session_id) {
+  DCHECK(HasPendingRequest(session_id));
+  DCHECK_EQ(recording_session_id_, session_id);
 }
 
 void SpeechRecognitionManagerImpl::OnAudioLevelsChange(
-    int caller_id, float volume, float noise_volume) {
-  DCHECK(HasPendingRequest(caller_id));
-  DCHECK_EQ(recording_caller_id_, caller_id);
+    int session_id, float volume, float noise_volume) {
+  DCHECK(HasPendingRequest(session_id));
+  DCHECK_EQ(recording_session_id_, session_id);
   if (delegate_.get())
-    delegate_->ShowInputVolume(caller_id, volume, noise_volume);
+    delegate_->ShowInputVolume(session_id, volume, noise_volume);
 }
 
 void SpeechRecognitionManagerImpl::CancelRecognitionAndInformDelegate(
-    int caller_id) {
-  InputTagSpeechDispatcherHost* cur_delegate = GetDelegate(caller_id);
-  CancelRecognition(caller_id);
-  cur_delegate->DidCompleteRecording(caller_id);
-  cur_delegate->DidCompleteRecognition(caller_id);
+    int session_id) {
+  InputTagSpeechDispatcherHost* cur_delegate = GetDelegate(session_id);
+  CancelRecognition(session_id);
+  cur_delegate->DidCompleteRecording(session_id);
+  cur_delegate->DidCompleteRecognition(session_id);
 }
 
 SpeechRecognitionManagerImpl::Request::Request()

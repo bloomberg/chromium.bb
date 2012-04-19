@@ -40,9 +40,9 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
   static SpeechRecognitionManagerImpl* GetInstance();
 
   // SpeechRecognitionManager implementation:
-  virtual void StartRecognitionForRequest(int caller_id) OVERRIDE;
-  virtual void CancelRecognitionForRequest(int caller_id) OVERRIDE;
-  virtual void FocusLostForRequest(int caller_id) OVERRIDE;
+  virtual void StartRecognitionForRequest(int session_id) OVERRIDE;
+  virtual void CancelRecognitionForRequest(int session_id) OVERRIDE;
+  virtual void FocusLostForRequest(int session_id) OVERRIDE;
   virtual bool HasAudioInputDevices() OVERRIDE;
   virtual bool IsCapturingAudio() OVERRIDE;
   virtual string16 GetAudioInputDeviceModel() OVERRIDE;
@@ -58,7 +58,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
   // input (in page coordinates).
   virtual void StartRecognition(
       InputTagSpeechDispatcherHost* delegate,
-      int caller_id,
+      int session_id,
       int render_process_id,
       int render_view_id,
       const gfx::Rect& element_rect,
@@ -67,25 +67,25 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
       const std::string& origin_url,
       net::URLRequestContextGetter* context_getter,
       content::SpeechRecognitionPreferences* speech_recognition_prefs);
-  virtual void CancelRecognition(int caller_id);
+  virtual void CancelRecognition(int session_id);
   virtual void CancelAllRequestsWithDelegate(
       InputTagSpeechDispatcherHost* delegate);
-  virtual void StopRecording(int caller_id);
+  virtual void StopRecording(int session_id);
 
   // SpeechRecognitionEventListener methods.
-  virtual void OnRecognitionStart(int caller_id) OVERRIDE;
-  virtual void OnAudioStart(int caller_id) OVERRIDE;
-  virtual void OnEnvironmentEstimationComplete(int caller_id) OVERRIDE;
-  virtual void OnSoundStart(int caller_id) OVERRIDE;
-  virtual void OnSoundEnd(int caller_id) OVERRIDE;
-  virtual void OnAudioEnd(int caller_id) OVERRIDE;
-  virtual void OnRecognitionEnd(int caller_id) OVERRIDE;
+  virtual void OnRecognitionStart(int session_id) OVERRIDE;
+  virtual void OnAudioStart(int session_id) OVERRIDE;
+  virtual void OnEnvironmentEstimationComplete(int session_id) OVERRIDE;
+  virtual void OnSoundStart(int session_id) OVERRIDE;
+  virtual void OnSoundEnd(int session_id) OVERRIDE;
+  virtual void OnAudioEnd(int session_id) OVERRIDE;
+  virtual void OnRecognitionEnd(int session_id) OVERRIDE;
   virtual void OnRecognitionResult(
-      int caller_id, const content::SpeechRecognitionResult& result) OVERRIDE;
+      int session_id, const content::SpeechRecognitionResult& result) OVERRIDE;
   virtual void OnRecognitionError(
-      int caller_id, const content::SpeechRecognitionError& error) OVERRIDE;
+      int session_id, const content::SpeechRecognitionError& error) OVERRIDE;
   virtual void OnAudioLevelsChange(
-      int caller_id, float volume, float noise_volume) OVERRIDE;
+      int session_id, float volume, float noise_volume) OVERRIDE;
 
  protected:
   // Private constructor to enforce singleton.
@@ -93,7 +93,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
   SpeechRecognitionManagerImpl();
   virtual ~SpeechRecognitionManagerImpl();
 
-  bool HasPendingRequest(int caller_id) const;
+  bool HasPendingRequest(int session_id) const;
 
  private:
   struct Request {
@@ -107,19 +107,19 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
 
   struct SpeechRecognitionParams;
 
-  InputTagSpeechDispatcherHost* GetDelegate(int caller_id) const;
+  InputTagSpeechDispatcherHost* GetDelegate(int session_id) const;
 
   void CheckRenderViewTypeAndStartRecognition(
       const SpeechRecognitionParams& params);
   void ProceedStartingRecognition(const SpeechRecognitionParams& params);
 
-  void CancelRecognitionAndInformDelegate(int caller_id);
+  void CancelRecognitionAndInformDelegate(int session_id);
 
   typedef std::map<int, Request> SpeechRecognizerMap;
   SpeechRecognizerMap requests_;
   std::string request_info_;
   bool can_report_metrics_;
-  int recording_caller_id_;
+  int recording_session_id_;
   scoped_ptr<content::SpeechRecognitionManagerDelegate> delegate_;
 };
 

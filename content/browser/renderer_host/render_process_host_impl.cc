@@ -500,8 +500,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if defined(ENABLE_INPUT_SPEECH)
   channel_->AddFilter(new speech::InputTagSpeechDispatcherHost(
       GetID(), browser_context->GetRequestContext(),
-      browser_context->GetSpeechRecognitionPreferences(),
-      content::BrowserMainLoop::GetAudioManager()));
+      browser_context->GetSpeechRecognitionPreferences()));
 #endif
   channel_->AddFilter(new FileAPIMessageFilter(
       GetID(),

@@ -20,14 +20,14 @@ class SpeechRecognitionManager {
   CONTENT_EXPORT static SpeechRecognitionManager* GetInstance();
 
   // Starts/restarts recognition for an existing request.
-  virtual void StartRecognitionForRequest(int caller_id) = 0;
+  virtual void StartRecognitionForRequest(int session_id) = 0;
 
   // Cancels recognition for an existing request.
-  virtual void CancelRecognitionForRequest(int caller_id) = 0;
+  virtual void CancelRecognitionForRequest(int session_id) = 0;
 
   // Called when the user clicks outside the speech input UI causing it to close
   // and possibly have speech input go to another element.
-  virtual void FocusLostForRequest(int caller_id) = 0;
+  virtual void FocusLostForRequest(int session_id) = 0;
 
   // Returns true if the OS reports existence of audio recording devices.
   virtual bool HasAudioInputDevices() = 0;

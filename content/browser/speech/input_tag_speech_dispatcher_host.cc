@@ -14,12 +14,16 @@ using content::BrowserThread;
 
 namespace speech {
 
-//----------------------------- Callers -----------------------------
+//----------------------------- Sessions -----------------------------
+
+// TODO(primiano) Remove session handling from here in the next CL. The manager
+// shall be the only one in charge of keeping all the context information for
+// all recognition sessions.
 
 // A singleton class to map the tuple
 // (render-process-id, render-view-id, requestid) to a single ID which is passed
 // through rest of the speech code.
-class InputTagSpeechDispatcherHost::Callers {
+class InputTagSpeechDispatcherHost::Sessions {
  public:
   // Creates a new ID for a given tuple.
   int CreateId(int render_process_id, int render_view_id, int request_id);
@@ -36,32 +40,32 @@ class InputTagSpeechDispatcherHost::Callers {
   int request_id(int id);
 
  private:
-  struct CallerInfo {
+  struct SessionInfo {
     int render_process_id;
     int render_view_id;
     int request_id;
   };
-  friend struct base::DefaultLazyInstanceTraits<Callers>;
+  friend struct base::DefaultLazyInstanceTraits<Sessions>;
 
-  Callers();
+  Sessions();
 
-  std::map<int, CallerInfo> callers_;
+  std::map<int, SessionInfo> sessions_;
   int next_id_;
 };
 
-static base::LazyInstance<InputTagSpeechDispatcherHost::Callers>
-    g_callers = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<InputTagSpeechDispatcherHost::Sessions>
+    g_sessions = LAZY_INSTANCE_INITIALIZER;
 
-InputTagSpeechDispatcherHost::Callers::Callers()
+InputTagSpeechDispatcherHost::Sessions::Sessions()
     : next_id_(1) {
 }
 
-int InputTagSpeechDispatcherHost::Callers::GetId(int render_process_id,
+int InputTagSpeechDispatcherHost::Sessions::GetId(int render_process_id,
                                                  int render_view_id,
                                                  int request_id) {
-  for (std::map<int, CallerInfo>::iterator it = callers_.begin();
-      it != callers_.end(); it++) {
-    const CallerInfo& item = it->second;
+  for (std::map<int, SessionInfo>::iterator it = sessions_.begin();
+      it != sessions_.end(); it++) {
+    const SessionInfo& item = it->second;
     if (item.render_process_id == render_process_id &&
         item.render_view_id == render_view_id &&
         item.request_id == request_id) {
@@ -76,33 +80,33 @@ int InputTagSpeechDispatcherHost::Callers::GetId(int render_process_id,
   return 0;
 }
 
-int InputTagSpeechDispatcherHost::Callers::CreateId(int render_process_id,
+int InputTagSpeechDispatcherHost::Sessions::CreateId(int render_process_id,
                                                     int render_view_id,
                                                     int request_id) {
-  CallerInfo info;
+  SessionInfo info;
   info.render_process_id = render_process_id;
   info.render_view_id = render_view_id;
   info.request_id = request_id;
-  callers_[next_id_] = info;
+  sessions_[next_id_] = info;
   return next_id_++;
 }
 
-void InputTagSpeechDispatcherHost::Callers::RemoveId(int id) {
-  callers_.erase(id);
+void InputTagSpeechDispatcherHost::Sessions::RemoveId(int id) {
+  sessions_.erase(id);
 }
 
-int InputTagSpeechDispatcherHost::Callers::render_process_id(
+int InputTagSpeechDispatcherHost::Sessions::render_process_id(
     int id) {
-  return callers_[id].render_process_id;
+  return sessions_[id].render_process_id;
 }
 
-int InputTagSpeechDispatcherHost::Callers::render_view_id(
+int InputTagSpeechDispatcherHost::Sessions::render_view_id(
     int id) {
-  return callers_[id].render_view_id;
+  return sessions_[id].render_view_id;
 }
 
-int InputTagSpeechDispatcherHost::Callers::request_id(int id) {
-  return callers_[id].request_id;
+int InputTagSpeechDispatcherHost::Sessions::request_id(int id) {
+  return sessions_[id].request_id;
 }
 
 //----------------------- InputTagSpeechDispatcherHost ----------------------
@@ -117,13 +121,11 @@ void InputTagSpeechDispatcherHost::set_manager(
 InputTagSpeechDispatcherHost::InputTagSpeechDispatcherHost(
     int render_process_id,
     net::URLRequestContextGetter* context_getter,
-    content::SpeechRecognitionPreferences* recognition_preferences,
-    media::AudioManager* audio_manager)
+    content::SpeechRecognitionPreferences* recognition_preferences)
     : render_process_id_(render_process_id),
       may_have_pending_requests_(false),
       context_getter_(context_getter),
-      recognition_preferences_(recognition_preferences),
-      audio_manager_(audio_manager) {
+      recognition_preferences_(recognition_preferences) {
   // This is initialized by Browser. Do not add any non-trivial
   // initialization here, instead do it lazily when required (e.g. see the
   // method |manager()|) or add an Init() method.
@@ -171,9 +173,9 @@ bool InputTagSpeechDispatcherHost::OnMessageReceived(
 void InputTagSpeechDispatcherHost::OnStartRecognition(
     const InputTagSpeechHostMsg_StartRecognition_Params &params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  int caller_id = g_callers.Get().CreateId(
+  int session_id = g_sessions.Get().CreateId(
       render_process_id_, params.render_view_id, params.request_id);
-  manager()->StartRecognition(this, caller_id,
+  manager()->StartRecognition(this, session_id,
                               render_process_id_,
                               params.render_view_id, params.element_rect,
                               params.language, params.grammar,
@@ -184,55 +186,55 @@ void InputTagSpeechDispatcherHost::OnStartRecognition(
 
 void InputTagSpeechDispatcherHost::OnCancelRecognition(int render_view_id,
                                                        int request_id) {
-  int caller_id = g_callers.Get().GetId(
+  int session_id = g_sessions.Get().GetId(
       render_process_id_, render_view_id, request_id);
-  if (caller_id) {
-    manager()->CancelRecognition(caller_id);
+  if (session_id) {
+    manager()->CancelRecognition(session_id);
     // Request sequence ended so remove mapping.
-    g_callers.Get().RemoveId(caller_id);
+    g_sessions.Get().RemoveId(session_id);
   }
 }
 
 void InputTagSpeechDispatcherHost::OnStopRecording(int render_view_id,
                                                    int request_id) {
-  int caller_id = g_callers.Get().GetId(
+  int session_id = g_sessions.Get().GetId(
       render_process_id_, render_view_id, request_id);
-  if (caller_id)
-    manager()->StopRecording(caller_id);
+  if (session_id)
+    manager()->StopRecording(session_id);
 }
 
 void InputTagSpeechDispatcherHost::SetRecognitionResult(
-    int caller_id, const content::SpeechRecognitionResult& result) {
+    int session_id, const content::SpeechRecognitionResult& result) {
   VLOG(1) << "InputTagSpeechDispatcherHost::SetRecognitionResult enter";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  int caller_render_view_id = g_callers.Get().render_view_id(caller_id);
-  int caller_request_id = g_callers.Get().request_id(caller_id);
-  Send(new InputTagSpeechMsg_SetRecognitionResult(caller_render_view_id,
-                                                  caller_request_id,
+  int session_render_view_id = g_sessions.Get().render_view_id(session_id);
+  int session_request_id = g_sessions.Get().request_id(session_id);
+  Send(new InputTagSpeechMsg_SetRecognitionResult(session_render_view_id,
+                                                  session_request_id,
                                                   result));
   VLOG(1) << "InputTagSpeechDispatcherHost::SetRecognitionResult exit";
 }
 
-void InputTagSpeechDispatcherHost::DidCompleteRecording(int caller_id) {
+void InputTagSpeechDispatcherHost::DidCompleteRecording(int session_id) {
   VLOG(1) << "InputTagSpeechDispatcherHost::DidCompleteRecording enter";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  int caller_render_view_id = g_callers.Get().render_view_id(caller_id);
-  int caller_request_id = g_callers.Get().request_id(caller_id);
-  Send(new InputTagSpeechMsg_RecordingComplete(caller_render_view_id,
-                                               caller_request_id));
+  int session_render_view_id = g_sessions.Get().render_view_id(session_id);
+  int session_request_id = g_sessions.Get().request_id(session_id);
+  Send(new InputTagSpeechMsg_RecordingComplete(session_render_view_id,
+                                               session_request_id));
   VLOG(1) << "InputTagSpeechDispatcherHost::DidCompleteRecording exit";
 }
 
-void InputTagSpeechDispatcherHost::DidCompleteRecognition(int caller_id) {
+void InputTagSpeechDispatcherHost::DidCompleteRecognition(int session_id) {
   VLOG(1) << "InputTagSpeechDispatcherHost::DidCompleteRecognition enter";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  int caller_render_view_id =
-    g_callers.Get().render_view_id(caller_id);
-  int caller_request_id = g_callers.Get().request_id(caller_id);
-  Send(new InputTagSpeechMsg_RecognitionComplete(caller_render_view_id,
-                                                 caller_request_id));
+  int session_render_view_id =
+    g_sessions.Get().render_view_id(session_id);
+  int session_request_id = g_sessions.Get().request_id(session_id);
+  Send(new InputTagSpeechMsg_RecognitionComplete(session_render_view_id,
+                                                 session_request_id));
   // Request sequence ended, so remove mapping.
-  g_callers.Get().RemoveId(caller_id);
+  g_sessions.Get().RemoveId(session_id);
   VLOG(1) << "InputTagSpeechDispatcherHost::DidCompleteRecognition exit";
 }
 
