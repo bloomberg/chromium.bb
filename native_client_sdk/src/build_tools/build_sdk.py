@@ -408,6 +408,7 @@ UPDATER_FILES = [
   # SDK tools
   ('build_tools/sdk_tools/cacerts.txt', 'nacl_sdk/sdk_tools/cacerts.txt'),
   ('build_tools/sdk_tools/sdk_update.py', 'nacl_sdk/sdk_tools/sdk_update.py'),
+  ('build_tools/manifest_util.py', 'nacl_sdk/sdk_tools/manifest_util.py'),
   ('build_tools/sdk_tools/third_party/__init__.py',
       'nacl_sdk/sdk_tools/third_party/__init__.py'),
   ('build_tools/sdk_tools/third_party/fancy_urllib/__init__.py',
@@ -565,7 +566,7 @@ def main(args):
         buildbot_common.Run(['make', 'all', '-j8'],
                             cwd=os.path.abspath(dirnode), shell=True)
 
-# Build SDK Tools
+  # Build SDK Tools
   if not skip_update:
     BuildUpdater()
 

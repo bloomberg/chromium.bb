@@ -11,6 +11,7 @@ import errno
 import exceptions
 import hashlib
 import json
+import manifest_util
 import optparse
 import os
 import shutil
@@ -28,7 +29,7 @@ import urlparse
 
 # Bump the MINOR_REV every time you check this file in.
 MAJOR_REV = 2
-MINOR_REV = 16
+MINOR_REV = 17
 
 GLOBAL_HELP = '''Usage: naclsdk [options] command [command_options]
 
@@ -52,28 +53,6 @@ SDK_TOOLS='sdk_tools'  # the name for this tools directory
 USER_DATA_DIR='sdk_cache'
 
 HTTP_CONTENT_LENGTH = 'Content-Length'  # HTTP Header field for content length
-
-# Some commonly-used key names.
-ARCHIVES_KEY = 'archives'
-BUNDLES_KEY = 'bundles'
-NAME_KEY = 'name'
-REVISION_KEY = 'revision'
-VERSION_KEY = 'version'
-
-# Valid values for bundle.stability field
-STABILITY_LITERALS = [
-    'obsolete', 'post_stable', 'stable', 'beta', 'dev', 'canary']
-# Valid values for the archive.host_os field
-HOST_OS_LITERALS = frozenset(['mac', 'win', 'linux', 'all'])
-# Valid values for bundle-recommended field.
-YES_NO_LITERALS = ['yes', 'no']
-# Valid keys for various sdk objects, used for validation.
-VALID_ARCHIVE_KEYS = frozenset(['host_os', 'size', 'checksum', 'url'])
-VALID_BUNDLES_KEYS = frozenset([
-    ARCHIVES_KEY, NAME_KEY, VERSION_KEY, REVISION_KEY,
-    'description', 'desc_url', 'stability', 'recommended', 'repath',
-    ])
-VALID_MANIFEST_KEYS = frozenset(['manifest_version', BUNDLES_KEY])
 
 
 #------------------------------------------------------------------------------
@@ -311,455 +290,96 @@ def DownloadAndComputeHash(from_stream, to_stream=None, progress_func=None):
   return sha1_hash.hexdigest(), size
 
 
-class Archive(dict):
-  ''' A placeholder for sdk archive information. We derive Archive from
-      dict so that it is easily serializable. '''
-  def __init__(self, host_os_name):
-    ''' Create a new archive for the given host-os name. '''
-    self['host_os'] = host_os_name
+def LoadManifestFromFile(path):
+  '''Returns a manifest loaded from the JSON file at |path|.
 
-  def CopyFrom(self, dict):
-    ''' Update the content of the archive by copying values from the given
-        dictionary.
+  If the path does not exist or is invalid, returns an empty manifest.'''
+  if not os.path.exists(path):
+    return manifest_util.SDKManifest()
 
-    Args:
-      dict: The dictionary whose values must be copied to the archive.'''
-    for key, value in dict.items():
-      self[key] = value
+  with open(path, 'r') as f:
+    json_string = f.read()
+  if not json_string:
+    return manifest_util.SDKManifest()
 
-  def Validate(self):
-    ''' Validate the content of the archive object. Raise an Error if
-        an invalid or missing field is found.
-    Returns: True if self is a valid bundle.
-    '''
-    host_os = self.get('host_os', None)
-    if host_os and host_os not in HOST_OS_LITERALS:
-      raise Error('Invalid host-os name in archive')
-    # Ensure host_os has a valid string. We'll use it for pretty printing.
-    if not host_os:
-      host_os = 'all (default)'
-    if not self.get('url', None):
-      raise Error('Archive "%s" has no URL' % host_os)
-    # Verify that all key names are valid.
-    for key, val in self.iteritems():
-      if key not in VALID_ARCHIVE_KEYS:
-        raise Error('Archive "%s" has invalid attribute "%s"' % (host_os, key))
+  manifest = manifest_util.SDKManifest()
+  manifest.LoadManifestString(json_string)
+  return manifest
 
-  def _OpenURLStream(self):
-    ''' Open a file-like stream for the archives's url. Raises an Error if the
-        url can't be opened.
 
-    Return:
-      A file-like object from which the archive's data can be read.'''
+def LoadManifestFromURL(url):
+  '''Returns a manifest loaded from |url|.'''
+  try:
+    url_stream = UrlOpen(url)
+  except urllib2.URLError as e:
+    raise Error('Unable to open %s. [%s]' % (url, e))
+
+  manifest_stream = cStringIO.StringIO()
+  sha1, size = DownloadAndComputeHash(
+      url_stream, manifest_stream)
+  manifest = manifest_util.SDKManifest()
+  manifest.LoadManifestString(manifest_stream.getvalue())
+
+  def BundleFilter(bundle):
+    # Only add this bundle if it's supported on this platform.
+    return bundle.GetArchive(GetHostOS())
+
+  manifest.FilterBundles(BundleFilter)
+  return manifest
+
+
+def WriteManifestToFile(manifest, path):
+  '''Write |manifest| to a JSON file at |path|.'''
+  json_string = manifest.GetManifestString()
+
+  # Write the JSON data to a temp file.
+  temp_file_name = None
+  # TODO(dspringer): Use file locks here so that multiple sdk_updates can
+  # run at the same time.
+  with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+    f.write(json_string)
+    temp_file_name = f.name
+  # Move the temp file to the actual file.
+  if os.path.exists(path):
+    os.remove(path)
+  shutil.move(temp_file_name, path)
+
+
+def DownloadArchiveToFile(archive, dest_path):
+  '''Download the archive's data to a file at dest_path.
+
+  As a side effect, computes the sha1 hash and data size, both returned as a
+  tuple. Raises an Error if the url can't be opened, or an IOError exception if
+  dest_path can't be opened.
+
+  Args:
+    dest_path: Path for the file that will receive the data.
+  Return:
+    A tuple (sha1, size) with the sha1 hash and data size respectively.'''
+  sha1 = None
+  size = 0
+  with open(dest_path, 'wb') as to_stream:
+    from_stream = None
     try:
-      url_stream = UrlOpen(self['url'])
+      from_stream = UrlOpen(archive.url)
     except urllib2.URLError:
       raise Error('Cannot open "%s" for archive %s' %
-          (self['url'], self['host_os']))
-
-    return url_stream
-
-  def ComputeSha1AndSize(self):
-    ''' Compute the sha1 hash and size of the archive's data. Raises
-        an Error if the url can't be opened.
-
-    Return:
-      A tuple (sha1, size) with the sha1 hash and data size respectively.'''
-    stream = None
-    sha1 = None
-    size = 0
+          (archive.url, archive.host_os))
     try:
-      print 'Scanning archive to generate sha1 and size info:'
-      stream = self._OpenURLStream()
-      content_length = int(stream.info()[HTTP_CONTENT_LENGTH])
-      sha1, size = DownloadAndComputeHash(from_stream=stream,
-                                          progress_func=ShowProgress)
+      content_length = int(from_stream.info()[HTTP_CONTENT_LENGTH])
+      progress_function = ProgressFunction(content_length).GetProgressFunction()
+      InfoPrint('Downloading %s' % archive.url)
+      sha1, size = DownloadAndComputeHash(
+          from_stream,
+          to_stream=to_stream,
+          progress_func=progress_function)
       if size != content_length:
         raise Error('Download size mismatch for %s.\n'
                     'Expected %s bytes but got %s' %
-                    (self['url'], content_length, size))
+                    (archive.url, content_length, size))
     finally:
-      if stream: stream.close()
-    return sha1, size
-
-  def DownloadToFile(self, dest_path):
-    ''' Download the archive's data to a file at dest_path. As a side effect,
-        computes the sha1 hash and data size, both returned as a tuple. Raises
-        an Error if the url can't be opened, or an IOError exception if
-        dest_path can't be opened.
-
-    Args:
-      dest_path: Path for the file that will receive the data.
-    Return:
-      A tuple (sha1, size) with the sha1 hash and data size respectively.'''
-    sha1 = None
-    size = 0
-    with open(dest_path, 'wb') as to_stream:
-      from_stream = None
-      try:
-        from_stream = self._OpenURLStream()
-        content_length = int(from_stream.info()[HTTP_CONTENT_LENGTH])
-        progress_function = ProgressFunction(
-            content_length).GetProgressFunction()
-        InfoPrint('Downloading %s' % self['url'])
-        sha1, size = DownloadAndComputeHash(
-            from_stream,
-            to_stream=to_stream,
-            progress_func=progress_function)
-        if size != content_length:
-          raise Error('Download size mismatch for %s.\n'
-                      'Expected %s bytes but got %s' %
-                      (self['url'], content_length, size))
-      finally:
-        if from_stream: from_stream.close()
-    return sha1, size
-
-  def Update(self, url):
-    ''' Update the archive with the new url. Automatically update the
-        archive's size and checksum fields. Raises an Error if the url is
-        is invalid. '''
-    self['url'] = url
-    sha1, size = self.ComputeSha1AndSize()
-    self['size'] = size
-    self['checksum'] = {'sha1': sha1}
-
-  def GetUrl(self):
-    '''Returns the URL of this Archive'''
-    return self['url']
-
-  def GetSize(self):
-    '''Returns the size of this archive, in bytes'''
-    return int(self['size'])
-
-  def GetChecksum(self, type='sha1'):
-    '''Returns a given cryptographic checksum of the archive'''
-    return self['checksum'][type]
-
-
-class Bundle(dict):
-  ''' A placeholder for sdk bundle information. We derive Bundle from
-      dict so that it is easily serializable.'''
-  def __init__(self, obj):
-    ''' Create a new bundle with the given bundle name.'''
-    if isinstance(obj, str) or isinstance(obj, unicode):
-      dict.__init__(self, [(ARCHIVES_KEY, []), (NAME_KEY, obj)])
-    else:
-      dict.__init__(self, obj)
-
-  def MergeWithBundle(self, bundle):
-    '''Merge this bundle with |bundle|.
-
-    Merges dict in |bundle| with this one in such a way that keys are not
-    duplicated: the values of the keys in |bundle| take precedence in the
-    returned dictionary.
-
-    Any keys in either the symlink or links dictionaries that also exist in
-    either of the files or dicts sets are removed from the latter, meaning that
-    symlinks or links which overlap file or directory entries take precedence.
-
-    Args:
-      bundle: The other bundle.  Must be a dict.
-    Returns:
-      A dict which is the result of merging the two Bundles.
-    '''
-    return Bundle(self.items() + bundle.items())
-
-  def CopyFrom(self, dict):
-    ''' Update the content of the bundle by copying values from the given
-        dictionary.
-
-    Args:
-      dict: The dictionary whose values must be copied to the bundle.'''
-    for key, value in dict.items():
-      if key == ARCHIVES_KEY:
-        archives = []
-        for a in value:
-          new_archive = Archive(a['host_os'])
-          new_archive.CopyFrom(a)
-          archives.append(new_archive)
-        self[ARCHIVES_KEY] = archives
-      else:
-        self[key] = value
-
-  def Validate(self):
-    ''' Validate the content of the bundle. Raise an Error if an invalid or
-        missing field is found. '''
-    # Check required fields.
-    if not self.get(NAME_KEY, None):
-      raise Error('Bundle has no name')
-    if self.get(REVISION_KEY, None) == None:
-      raise Error('Bundle "%s" is missing a revision number' % self[NAME_KEY])
-    if self.get(VERSION_KEY, None) == None:
-      raise Error('Bundle "%s" is missing a version number' % self[NAME_KEY])
-    if not self.get('description', None):
-      raise Error('Bundle "%s" is missing a description' % self[NAME_KEY])
-    if not self.get('stability', None):
-      raise Error('Bundle "%s" is missing stability info' % self[NAME_KEY])
-    if self.get('recommended', None) == None:
-      raise Error('Bundle "%s" is missing the recommended field' %
-                  self[NAME_KEY])
-    # Check specific values
-    if self['stability'] not in STABILITY_LITERALS:
-      raise Error('Bundle "%s" has invalid stability field: "%s"' %
-                  (self[NAME_KEY], self['stability']))
-    if self['recommended'] not in YES_NO_LITERALS:
-      raise Error(
-          'Bundle "%s" has invalid recommended field: "%s"' %
-          (self[NAME_KEY], self['recommended']))
-    # Verify that all key names are valid.
-    for key, val in self.iteritems():
-      if key not in VALID_BUNDLES_KEYS:
-        raise Error('Bundle "%s" has invalid attribute "%s"' %
-                    (self[NAME_KEY], key))
-    # Validate the archives
-    for archive in self[ARCHIVES_KEY]:
-      archive.Validate()
-
-  def GetArchive(self, host_os_name):
-    ''' Retrieve the archive for the given host os.
-
-    Args:
-      host_os_name: name of host os whose archive must be retrieved.
-    Return:
-      An Archive instance or None if it doesn't exist.'''
-    for archive in self[ARCHIVES_KEY]:
-      if archive['host_os'] == host_os_name:
-        return archive
-    return None
-
-  def UpdateArchive(self, host_os, url):
-    ''' Update or create  the archive for host_os with the new url.
-        Automatically updates the archive size and checksum info by downloading
-        the data from the given archive. Raises an Error if the url is invalid.
-
-    Args:
-      host_os: name of host os whose archive must be updated or created.
-      url: the new url for the archive.'''
-    archive = self.GetArchive(host_os)
-    if not archive:
-      archive = Archive(host_os_name=host_os)
-      self[ARCHIVES_KEY].append(archive)
-    archive.Update(url)
-
-  def GetArchives(self):
-    '''Returns all the archives in this bundle'''
-    return self[ARCHIVES_KEY]
-
-
-class SDKManifest(object):
-  '''This class contains utilities for manipulation an SDK manifest string
-
-  For ease of unit-testing, this class should not contain any file I/O.
-  '''
-
-  def __init__(self):
-    '''Create a new SDKManifest object with default contents'''
-    self.MANIFEST_VERSION = MAJOR_REV
-    self._manifest_data = {
-        "manifest_version": self.MANIFEST_VERSION,
-        "bundles": [],
-        }
-
-  def _ValidateManifest(self):
-    '''Validate the Manifest file and raises an exception for problems'''
-    # Validate the manifest top level
-    if self._manifest_data["manifest_version"] > self.MANIFEST_VERSION:
-      raise Error("Manifest version too high: %s" %
-                              self._manifest_data["manifest_version"])
-    # Verify that all key names are valid.
-    for key, val in self._manifest_data.iteritems():
-      if key not in VALID_MANIFEST_KEYS:
-        raise Error('Manifest has invalid attribute "%s"' % key)
-    # Validate each bundle
-    for bundle in self._manifest_data[BUNDLES_KEY]:
-      bundle.Validate()
-
-  def GetBundle(self, name):
-    ''' Get a bundle from the array of bundles.
-
-    Args:
-      name: the name of the bundle to return.
-    Return:
-      The first bundle with the given name, or None if it is not found.'''
-    if not BUNDLES_KEY in self._manifest_data:
-      return None
-    bundles = filter(lambda b: b[NAME_KEY] == name,
-                     self._manifest_data[BUNDLES_KEY])
-    if len(bundles) > 1:
-      WarningPrint("More than one bundle with name '%s' exists." % name)
-    return bundles[0] if len(bundles) > 0 else None
-
-  def SetBundle(self, new_bundle):
-    '''Replace named bundle.  Add if absent.
-
-    Args:
-      name: Name of the bundle to replace or add.
-      bundle: The bundle.
-    '''
-    name = new_bundle[NAME_KEY]
-    if not BUNDLES_KEY in self._manifest_data:
-      self._manifest_data[BUNDLES_KEY] = []
-    bundles = self._manifest_data[BUNDLES_KEY]
-    # Delete any bundles from the list, then add the new one.  This has the
-    # effect of replacing the bundle if it already exists.  It also removes all
-    # duplicate bundles.
-    for i, bundle in enumerate(bundles):
-      if bundle[NAME_KEY] == name:
-        del bundles[i]
-    bundles.append(new_bundle)
-
-  def LoadManifestString(self, json_string, all_hosts=False):
-    ''' Load a JSON manifest string. Raises an exception if json_string
-        is not well-formed JSON.
-
-    Args:
-      json_string: a JSON-formatted string containing the previous manifest
-      all_hosts: True indicates that we should load bundles for all hosts.
-          False (default) says to only load bundles for the current host'''
-    new_manifest = json.loads(json_string)
-    for key, value in new_manifest.items():
-      if key == BUNDLES_KEY:
-        # Remap each bundle in |value| to a Bundle instance
-        bundles = []
-        for b in value:
-          new_bundle = Bundle(b[NAME_KEY])
-          new_bundle.CopyFrom(b)
-          # Only add this archive if it's supported on this platform.
-          # However, the sdk_tools bundle might not have an archive entry,
-          # but is still always valid.
-          if (all_hosts or new_bundle.GetArchive(GetHostOS()) or
-              b[NAME_KEY] == 'sdk_tools'):
-            bundles.append(new_bundle)
-        self._manifest_data[key] = bundles
-      else:
-        self._manifest_data[key] = value
-    self._ValidateManifest()
-
-  def GetManifestString(self):
-    '''Returns the current JSON manifest object, pretty-printed'''
-    pretty_string = json.dumps(self._manifest_data, sort_keys=False, indent=2)
-    # json.dumps sometimes returns trailing whitespace and does not put
-    # a newline at the end.  This code fixes these problems.
-    pretty_lines = pretty_string.split('\n')
-    return '\n'.join([line.rstrip() for line in pretty_lines]) + '\n'
-
-
-class SDKManifestFile(object):
-  ''' This class provides basic file I/O support for manifest objects.'''
-
-  def __init__(self, json_filepath):
-    '''Create a new SDKManifest object with default contents.
-
-    If |json_filepath| is specified, and it exists, its contents are loaded and
-    used to initialize the internal manifest.
-
-    Args:
-      json_filepath: path to jason file to read/write, or None to write a new
-          manifest file to stdout.
-    '''
-    self._json_filepath = json_filepath
-    self._manifest = SDKManifest()
-    if self._json_filepath:
-      self._LoadFile()
-
-  def _LoadFile(self):
-    '''Load the manifest from the JSON file.
-
-    This function returns quietly if the file doesn't exit.
-    '''
-    if not os.path.exists(self._json_filepath):
-      return
-
-    with open(self._json_filepath, 'r') as f:
-      json_string = f.read()
-    if json_string:
-      self._manifest.LoadManifestString(json_string, all_hosts=True)
-
-  def WriteFile(self):
-    '''Write the json data to the file. If not file name was specified, the
-       data is written to stdout.'''
-    json_string = self._manifest.GetManifestString()
-    if not self._json_filepath:
-      # No file is specified; print the json data to stdout
-      sys.stdout.write(json_string)
-    else:
-      # Write the JSON data to a temp file.
-      temp_file_name = None
-      # TODO(dspringer): Use file locks here so that multiple sdk_updates can
-      # run at the same time.
-      with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
-        f.write(json_string)
-        temp_file_name = f.name
-      # Move the temp file to the actual file.
-      if os.path.exists(self._json_filepath):
-        os.remove(self._json_filepath)
-      shutil.move(temp_file_name, self._json_filepath)
-
-  def GetBundles(self):
-    '''Return all the bundles in |_manifest|'''
-    return self._manifest._manifest_data[BUNDLES_KEY]
-
-  def GetBundleNamed(self, name):
-    '''Return the first bundle named |name| or None if it doesn't exist'''
-    return self._manifest.GetBundle(name)
-
-  def BundleNeedsUpdate(self, bundle):
-    '''Decides if a bundle needs to be updated.
-
-    A bundle needs to be updated if it is not installed (doesn't exist in this
-    manifest file) or if its revision is later than the revision in this file.
-
-    Args:
-      bundle: The Bundle to test.
-    Returns:
-      True if Bundle needs to be updated.
-    '''
-    if NAME_KEY not in bundle:
-      raise KeyError("Bundle must have a 'name' key.")
-    local_bundle = self.GetBundleNamed(bundle[NAME_KEY])
-    return (local_bundle == None) or (
-           (local_bundle[VERSION_KEY], local_bundle[REVISION_KEY]) <
-           (bundle[VERSION_KEY], bundle[REVISION_KEY]))
-
-  def MergeBundle(self, bundle):
-    '''Merge a Bundle into this manifest.
-
-    The new bundle is added if not present, or merged into the existing bundle.
-
-    Args:
-      bundle: The bundle to merge.
-    '''
-    if NAME_KEY not in bundle:
-      raise KeyError("Bundle must have a 'name' key.")
-    local_bundle = self.GetBundleNamed(bundle[NAME_KEY])
-    if not local_bundle:
-      self._manifest.SetBundle(bundle)
-    else:
-      self._manifest.SetBundle(local_bundle.MergeWithBundle(bundle))
-
-
-class ManifestTools(object):
-  '''Wrapper class for supporting the SDK manifest file'''
-
-  def __init__(self, options):
-    self._options = options
-    self._manifest = SDKManifest()
-
-  def LoadManifest(self):
-    DebugPrint("Running LoadManifest")
-    try:
-      # TODO(mball): Add certificate validation on the server
-      url_stream = UrlOpen(self._options.manifest_url)
-    except urllib2.URLError, e:
-      raise Error('Unable to open %s. [%s]' % (self._options.manifest_url, e))
-
-    manifest_stream = cStringIO.StringIO()
-    sha1, size = DownloadAndComputeHash(
-        url_stream, manifest_stream)
-    self._manifest.LoadManifestString(manifest_stream.getvalue())
-
-  def GetBundles(self):
-    return self._manifest._manifest_data[BUNDLES_KEY]
+      if from_stream: from_stream.close()
+  return sha1, size
 
 
 #------------------------------------------------------------------------------
@@ -772,26 +392,23 @@ def List(options, argv):
   Lists the available SDK bundles that are available for download.'''
   def PrintBundles(bundles):
     for bundle in bundles:
-      InfoPrint('  %s' % bundle[NAME_KEY])
+      InfoPrint('  %s' % bundle.name)
       for key, value in bundle.iteritems():
-        if key not in [ARCHIVES_KEY, NAME_KEY]:
+        if key not in (manifest_util.ARCHIVES_KEY, manifest_util.NAME_KEY):
           InfoPrint('    %s: %s' % (key, value))
 
   DebugPrint("Running List command with: %s, %s" %(options, argv))
 
   parser = optparse.OptionParser(usage=List.__doc__)
   (list_options, args) = parser.parse_args(argv)
-  tools = ManifestTools(options)
-  tools.LoadManifest()
-  bundles = tools.GetBundles()
+  manifest = LoadManifestFromURL(options.manifest_url)
   InfoPrint('Available bundles:')
-  PrintBundles(bundles)
+  PrintBundles(manifest.GetBundles())
   # Print the local information.
-  local_manifest = SDKManifestFile(os.path.join(options.user_data_dir,
-                                                options.manifest_filename))
-  bundles = local_manifest.GetBundles()
+  manifest_path = os.path.join(options.user_data_dir, options.manifest_filename)
+  local_manifest = LoadManifestFromFile(manifest_path)
   InfoPrint('\nCurrently installed bundles:')
-  PrintBundles(bundles)
+  PrintBundles(local_manifest.GetBundles())
 
 
 def Update(options, argv):
@@ -831,16 +448,24 @@ def Update(options, argv):
   (update_options, args) = parser.parse_args(argv)
   if len(args) == 0:
     args = [RECOMMENDED]
-  tools = ManifestTools(options)
-  tools.LoadManifest()
-  bundles = tools.GetBundles()
-  local_manifest = SDKManifestFile(os.path.join(options.user_data_dir,
-                                                options.manifest_filename))
+  manifest = LoadManifestFromURL(options.manifest_url)
+  bundles = manifest.GetBundles()
+  local_manifest_path = os.path.join(options.user_data_dir,
+                                     options.manifest_filename)
+  local_manifest = LoadManifestFromFile(local_manifest_path)
+
+  # Validate the arg list against the available bundle names.  Raises an
+  # error if any invalid bundle names or args are detected.
+  valid_args = set([ALL, RECOMMENDED] + [bundle.name for bundle in bundles])
+  bad_args = set(args) - valid_args
+  if len(bad_args) > 0:
+    raise Error("Unrecognized bundle name or argument: '%s'" %
+                ', '.join(bad_args))
+
   for bundle in bundles:
-    bundle_name = bundle[NAME_KEY]
-    bundle_path = os.path.join(options.sdk_root_dir, bundle_name)
+    bundle_path = os.path.join(options.sdk_root_dir, bundle.name)
     bundle_update_path = '%s_update' % bundle_path
-    if not (bundle_name in args or
+    if not (bundle.name in args or
             ALL in args or (RECOMMENDED in args and
                             bundle[RECOMMENDED] == 'yes')):
       continue
@@ -849,18 +474,17 @@ def Update(options, argv):
       archive = bundle.GetArchive(GetHostOS())
       (scheme, host, path, _, _, _) = urlparse.urlparse(archive['url'])
       dest_filename = os.path.join(options.user_data_dir, path.split('/')[-1])
-      sha1, size = archive.DownloadToFile(os.path.join(options.user_data_dir,
-                                                       dest_filename))
-      if sha1 != archive['checksum']['sha1']:
+      sha1, size = DownloadArchiveToFile(archive, dest_filename)
+      if sha1 != archive.GetChecksum():
         raise Error("SHA1 checksum mismatch on '%s'.  Expected %s but got %s" %
-                    (bundle_name, archive['checksum']['sha1'], sha1))
-      if size != archive['size']:
+                    (bundle.name, archive.GetChecksum(), sha1))
+      if size != archive.size:
         raise Error("Size mismatch on Archive.  Expected %s but got %s bytes" %
-                    (archive['size'], size))
+                    (archive.size, size))
       InfoPrint('Updating bundle %s to version %s, revision %s' % (
-                (bundle_name, bundle[VERSION_KEY], bundle[REVISION_KEY])))
+                (bundle.name, bundle.version, bundle.revision)))
       ExtractInstaller(dest_filename, bundle_update_path)
-      if bundle_name != SDK_TOOLS:
+      if bundle.name != SDK_TOOLS:
         repath = bundle.get('repath', None)
         if repath:
           bundle_move_path = os.path.join(bundle_update_path, repath)
@@ -871,32 +495,23 @@ def Update(options, argv):
           RemoveDir(bundle_update_path)
       os.remove(dest_filename)
       local_manifest.MergeBundle(bundle)
-      local_manifest.WriteFile()
+      WriteManifestToFile(local_manifest, local_manifest_path)
     # Test revision numbers, update the bundle accordingly.
     # TODO(dspringer): The local file should be refreshed from disk each
     # iteration thought this loop so that multiple sdk_updates can run at the
     # same time.
     if local_manifest.BundleNeedsUpdate(bundle):
       if (not update_options.force and os.path.exists(bundle_path) and
-          bundle_name != SDK_TOOLS):
+          bundle.name != SDK_TOOLS):
         WarningPrint('%s already exists, but has an update available.\n'
                      'Run update with the --force option to overwrite the '
                      'existing directory.\nWarning: This will overwrite any '
                      'modifications you have made within this directory.'
-                     % bundle_name)
+                     % bundle.name)
       else:
         UpdateBundle()
     else:
-      InfoPrint('%s is already up-to-date.' % bundle_name)
-
-  # Validate the arg list against the available bundle names.  Raises an
-  # error if any invalid bundle names or args are detected.
-  valid_args = set([ALL, RECOMMENDED] +
-                   [bundle[NAME_KEY] for bundle in bundles])
-  bad_args = set(args) - valid_args
-  if len(bad_args) > 0:
-    raise Error("Unrecognized bundle name or argument: '%s'" %
-                ', '.join(bad_args))
+      InfoPrint('%s is already up-to-date.' % bundle.name)
 
 
 #------------------------------------------------------------------------------

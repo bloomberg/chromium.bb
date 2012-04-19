@@ -1,0 +1,353 @@
+#!/usr/bin/env python
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import json
+
+MANIFEST_VERSION = 2
+
+# Some commonly-used key names.
+ARCHIVES_KEY = 'archives'
+BUNDLES_KEY = 'bundles'
+NAME_KEY = 'name'
+REVISION_KEY = 'revision'
+VERSION_KEY = 'version'
+
+# Valid values for the archive.host_os field
+HOST_OS_LITERALS = frozenset(['mac', 'win', 'linux', 'all'])
+
+# Valid keys for various sdk objects, used for validation.
+VALID_ARCHIVE_KEYS = frozenset(['host_os', 'size', 'checksum', 'url'])
+
+# Valid values for bundle.stability field
+STABILITY_LITERALS = [
+    'obsolete', 'post_stable', 'stable', 'beta', 'dev', 'canary']
+
+# Valid values for bundle-recommended field.
+YES_NO_LITERALS = ['yes', 'no']
+VALID_BUNDLES_KEYS = frozenset([
+    ARCHIVES_KEY, NAME_KEY, VERSION_KEY, REVISION_KEY,
+    'description', 'desc_url', 'stability', 'recommended', 'repath',
+    ])
+
+VALID_MANIFEST_KEYS = frozenset(['manifest_version', BUNDLES_KEY])
+
+
+class Error(Exception):
+  """Generic error/exception for manifest_util module"""
+  pass
+
+
+class Archive(dict):
+  """A placeholder for sdk archive information. We derive Archive from
+     dict so that it is easily serializable. """
+
+  def __init__(self, host_os_name):
+    """ Create a new archive for the given host-os name. """
+    self['host_os'] = host_os_name
+
+  def CopyFrom(self, dict):
+    """Update the content of the archive by copying values from the given
+       dictionary.
+
+    Args:
+      dict: The dictionary whose values must be copied to the archive."""
+    for key, value in dict.items():
+      self[key] = value
+
+  def Validate(self):
+    """Validate the content of the archive object. Raise an Error if
+       an invalid or missing field is found.
+
+    Returns: True if self is a valid bundle.
+    """
+    host_os = self.get('host_os', None)
+    if host_os and host_os not in HOST_OS_LITERALS:
+      raise Error('Invalid host-os name in archive')
+    # Ensure host_os has a valid string. We'll use it for pretty printing.
+    if not host_os:
+      host_os = 'all (default)'
+    if not self.get('url', None):
+      raise Error('Archive "%s" has no URL' % host_os)
+    # Verify that all key names are valid.
+    for key, val in self.iteritems():
+      if key not in VALID_ARCHIVE_KEYS:
+        raise Error('Archive "%s" has invalid attribute "%s"' % (host_os, key))
+
+  @property
+  def url(self):
+    """Returns the URL of this archive"""
+    return self['url']
+
+  @property
+  def size(self):
+    """Returns the size of this archive, in bytes"""
+    return self['size']
+
+  @property
+  def host_os(self):
+    """Returns the host OS of this archive"""
+    return self['host_os']
+
+  def GetChecksum(self, type='sha1'):
+    """Returns a given cryptographic checksum of the archive"""
+    return self['checksum'][type]
+
+
+class Bundle(dict):
+  """A placeholder for sdk bundle information. We derive Bundle from
+     dict so that it is easily serializable."""
+
+  def __init__(self, obj):
+    """ Create a new bundle with the given bundle name."""
+    if isinstance(obj, str) or isinstance(obj, unicode):
+      dict.__init__(self, [(ARCHIVES_KEY, []), (NAME_KEY, obj)])
+    else:
+      dict.__init__(self, obj)
+
+  def MergeWithBundle(self, bundle):
+    """Merge this bundle with |bundle|.
+
+    Merges dict in |bundle| with this one in such a way that keys are not
+    duplicated: the values of the keys in |bundle| take precedence in the
+    returned dictionary.
+
+    Any keys in either the symlink or links dictionaries that also exist in
+    either of the files or dicts sets are removed from the latter, meaning that
+    symlinks or links which overlap file or directory entries take precedence.
+
+    Args:
+      bundle: The other bundle.  Must be a dict.
+    Returns:
+      A dict which is the result of merging the two Bundles.
+    """
+    return Bundle(self.items() + bundle.items())
+
+  def CopyFrom(self, dict):
+    """Update the content of the bundle by copying values from the given
+       dictionary.
+
+    Args:
+      dict: The dictionary whose values must be copied to the bundle."""
+    for key, value in dict.items():
+      if key == ARCHIVES_KEY:
+        archives = []
+        for a in value:
+          new_archive = Archive(a['host_os'])
+          new_archive.CopyFrom(a)
+          archives.append(new_archive)
+        self[ARCHIVES_KEY] = archives
+      else:
+        self[key] = value
+
+  def Validate(self):
+    """Validate the content of the bundle. Raise an Error if an invalid or
+       missing field is found. """
+    # Check required fields.
+    if not self.get(NAME_KEY, None):
+      raise Error('Bundle has no name')
+    if self.get(REVISION_KEY, None) == None:
+      raise Error('Bundle "%s" is missing a revision number' % self[NAME_KEY])
+    if self.get(VERSION_KEY, None) == None:
+      raise Error('Bundle "%s" is missing a version number' % self[NAME_KEY])
+    if not self.get('description', None):
+      raise Error('Bundle "%s" is missing a description' % self[NAME_KEY])
+    if not self.get('stability', None):
+      raise Error('Bundle "%s" is missing stability info' % self[NAME_KEY])
+    if self.get('recommended', None) == None:
+      raise Error('Bundle "%s" is missing the recommended field' %
+                  self[NAME_KEY])
+    # Check specific values
+    if self['stability'] not in STABILITY_LITERALS:
+      raise Error('Bundle "%s" has invalid stability field: "%s"' %
+                  (self[NAME_KEY], self['stability']))
+    if self['recommended'] not in YES_NO_LITERALS:
+      raise Error(
+          'Bundle "%s" has invalid recommended field: "%s"' %
+          (self[NAME_KEY], self['recommended']))
+    # Verify that all key names are valid.
+    for key, val in self.iteritems():
+      if key not in VALID_BUNDLES_KEYS:
+        raise Error('Bundle "%s" has invalid attribute "%s"' %
+                    (self[NAME_KEY], key))
+    # Validate the archives
+    for archive in self[ARCHIVES_KEY]:
+      archive.Validate()
+
+  def GetArchive(self, host_os_name):
+    """Retrieve the archive for the given host os.
+
+    Args:
+      host_os_name: name of host os whose archive must be retrieved.
+    Return:
+      An Archive instance or None if it doesn't exist."""
+    for archive in self[ARCHIVES_KEY]:
+      if archive.host_os == host_os_name:
+        return archive
+    return None
+
+  def GetArchives(self):
+    """Returns all the archives in this bundle"""
+    return self[ARCHIVES_KEY]
+
+  @property
+  def name(self):
+    """Returns the name of this bundle"""
+    return self[NAME_KEY]
+
+  @property
+  def version(self):
+    """Returns the version of this bundle"""
+    return self[VERSION_KEY]
+
+  @property
+  def revision(self):
+    """Returns the revision of this bundle"""
+    return self[REVISION_KEY]
+
+  @property
+  def recommended(self):
+    """Returns whether this bundle is recommended"""
+    return self['recommended']
+
+
+class SDKManifest(object):
+  """This class contains utilities for manipulation an SDK manifest string
+
+  For ease of unit-testing, this class should not contain any file I/O.
+  """
+
+  def __init__(self):
+    """Create a new SDKManifest object with default contents"""
+    self._manifest_data = {
+        "manifest_version": MANIFEST_VERSION,
+        "bundles": [],
+        }
+
+  def Validate(self):
+    """Validate the Manifest file and raises an exception for problems"""
+    # Validate the manifest top level
+    if self._manifest_data["manifest_version"] > MANIFEST_VERSION:
+      raise Error("Manifest version too high: %s" %
+                  self._manifest_data["manifest_version"])
+    # Verify that all key names are valid.
+    for key, val in self._manifest_data.iteritems():
+      if key not in VALID_MANIFEST_KEYS:
+        raise Error('Manifest has invalid attribute "%s"' % key)
+    # Validate each bundle
+    for bundle in self._manifest_data[BUNDLES_KEY]:
+      bundle.Validate()
+
+  def GetBundle(self, name):
+    """Get a bundle from the array of bundles.
+
+    Args:
+      name: the name of the bundle to return.
+    Return:
+      The first bundle with the given name, or None if it is not found."""
+    if not BUNDLES_KEY in self._manifest_data:
+      return None
+    bundles = [bundle for bundle in self._manifest_data[BUNDLES_KEY]
+               if bundle[NAME_KEY] == name]
+    if len(bundles) > 1:
+      WarningPrint("More than one bundle with name '%s' exists." % name)
+    return bundles[0] if len(bundles) > 0 else None
+
+  def GetBundles(self):
+    """Return all the bundles in the manifest."""
+    return self._manifest_data[BUNDLES_KEY]
+
+  def SetBundle(self, new_bundle):
+    """Replace named bundle.  Add if absent.
+
+    Args:
+      bundle: The bundle.
+    """
+    name = new_bundle[NAME_KEY]
+    if not BUNDLES_KEY in self._manifest_data:
+      self._manifest_data[BUNDLES_KEY] = []
+    bundles = self._manifest_data[BUNDLES_KEY]
+    # Delete any bundles from the list, then add the new one.  This has the
+    # effect of replacing the bundle if it already exists.  It also removes all
+    # duplicate bundles.
+    for i, bundle in enumerate(bundles):
+      if bundle[NAME_KEY] == name:
+        del bundles[i]
+    bundles.append(new_bundle)
+
+  def BundleNeedsUpdate(self, bundle):
+    """Decides if a bundle needs to be updated.
+
+    A bundle needs to be updated if it is not installed (doesn't exist in this
+    manifest file) or if its revision is later than the revision in this file.
+
+    Args:
+      bundle: The Bundle to test.
+    Returns:
+      True if Bundle needs to be updated.
+    """
+    if NAME_KEY not in bundle:
+      raise KeyError("Bundle must have a 'name' key.")
+    local_bundle = self.GetBundle(bundle[NAME_KEY])
+    return (local_bundle == None) or (
+           (local_bundle[VERSION_KEY], local_bundle[REVISION_KEY]) <
+           (bundle[VERSION_KEY], bundle[REVISION_KEY]))
+
+  def MergeBundle(self, bundle):
+    """Merge a Bundle into this manifest.
+
+    The new bundle is added if not present, or merged into the existing bundle.
+
+    Args:
+      bundle: The bundle to merge.
+    """
+    if NAME_KEY not in bundle:
+      raise KeyError("Bundle must have a 'name' key.")
+    local_bundle = self.GetBundle(bundle.name)
+    if not local_bundle:
+      self.SetBundle(bundle)
+    else:
+      self.SetBundle(local_bundle.MergeWithBundle(bundle))
+
+  def FilterBundles(self, predicate):
+    """Filter the list of bundles by |predicate|.
+
+    For all bundles in this manifest, if predicate(bundle) is False, the bundle
+    is removed from the manifest.
+
+    Args:
+      predicate: a function that take a bundle and returns whether True to keep
+      it or False to remove it.
+    """
+    self._manifest_data[BUNDLES_KEY] = filter(predicate, self.GetBundles())
+
+  def LoadManifestString(self, json_string):
+    """Load a JSON manifest string. Raises an exception if json_string
+       is not well-formed JSON.
+
+    Args:
+      json_string: a JSON-formatted string containing the previous manifest
+      all_hosts: True indicates that we should load bundles for all hosts.
+          False (default) says to only load bundles for the current host"""
+    new_manifest = json.loads(json_string)
+    for key, value in new_manifest.items():
+      if key == BUNDLES_KEY:
+        # Remap each bundle in |value| to a Bundle instance
+        bundles = []
+        for b in value:
+          new_bundle = Bundle(b[NAME_KEY])
+          new_bundle.CopyFrom(b)
+          bundles.append(new_bundle)
+        self._manifest_data[key] = bundles
+      else:
+        self._manifest_data[key] = value
+    self.Validate()
+
+  def GetManifestString(self):
+    """Returns the current JSON manifest object, pretty-printed"""
+    pretty_string = json.dumps(self._manifest_data, sort_keys=False, indent=2)
+    # json.dumps sometimes returns trailing whitespace and does not put
+    # a newline at the end.  This code fixes these problems.
+    pretty_lines = pretty_string.split('\n')
+    return '\n'.join([line.rstrip() for line in pretty_lines]) + '\n'
