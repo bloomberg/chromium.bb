@@ -188,6 +188,14 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
     return;
   }
 
+  // Get the GetInterface function (required).
+  get_plugin_interface_ = reinterpret_cast<PP_GetInterface_Func>(
+      library.GetFunctionPointer("PPP_GetInterface"));
+  if (!get_plugin_interface_) {
+    LOG(WARNING) << "No PPP_GetInterface in plugin library";
+    return;
+  }
+
   if (is_broker_) {
     // Get the InitializeBroker function (required).
     InitializeBrokerFunc init_broker =
@@ -208,15 +216,6 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
       return;
     }
   } else {
-    // Get the GetInterface function (required).
-    get_plugin_interface_ =
-        reinterpret_cast<PP_GetInterface_Func>(
-            library.GetFunctionPointer("PPP_GetInterface"));
-    if (!get_plugin_interface_) {
-      LOG(WARNING) << "No PPP_GetInterface in plugin library";
-      return;
-    }
-
 #if defined(OS_MACOSX)
     // We need to do this after getting |PPP_GetInterface()| (or presumably
     // doing something nontrivial with the library), else the sandbox
@@ -226,7 +225,7 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path) {
     }
 #endif
 
-    // Get the InitializeModule function (required).
+    // Get the InitializeModule function (required for non-broker code).
     PP_InitializeModule_Func init_module =
         reinterpret_cast<PP_InitializeModule_Func>(
             library.GetFunctionPointer("PPP_InitializeModule"));
