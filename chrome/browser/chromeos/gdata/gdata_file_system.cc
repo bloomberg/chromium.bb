@@ -650,7 +650,7 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
     : profile_(profile),
       documents_service_(documents_service),
       on_io_completed_(new base::WaitableEvent(
-          true /* manual reset */, false /* initially not signaled */)),
+          true /* manual reset */, true /* initially signaled */)),
       cache_initialization_started_(false),
       num_pending_tasks_(0),
       hide_hosted_docs_(false),
@@ -721,21 +721,14 @@ GDataFileSystem::~GDataFileSystem() {
   // TODO(satorux): Remove the waitable event (crosbug.com/28501).
   on_io_weak_ptr_factory_reset.Wait();
 
-  // In case an IO task is in progress, wait for its completion before
-  // destructing because it accesses data members.
-  bool need_to_wait = false;
-  {
-    // We should wait if there is any pending tasks posted to the worker
-    // thread pool.
-    base::AutoLock lock(num_pending_tasks_lock_);
-    need_to_wait = (num_pending_tasks_ > 0);
-    // Note that by the time need_to_wait is checked outside the block below,
-    // it's possible that num_pending_tasks_ is decreased to 0, but Signal()
-    // is called anyway so it's fine.
-  }
-
-  if (need_to_wait)
-    on_io_completed_->Wait();
+  // We should wait if there is any pending tasks posted to the worker
+  // thread pool. on_io_completed_ won't be signaled iff |num_pending_tasks_|
+  // is greater that 0.
+  // We don't have to lock with |num_pending_tasks_lock_| here, since number of
+  // pending tasks can only decrease at this point (Number of pending class can
+  // be increased only on UI and IO thread. We are on UI thread, and there will
+  // be no more tasks run on IO thread.
+  on_io_completed_->Wait();
 
   // Now that we are sure that there are no more pending tasks bound to this on
   // other threads, we are safe to destroy the data members.
@@ -748,6 +741,10 @@ GDataFileSystem::~GDataFileSystem() {
   // Lock to let root destroy cache map and resource map.
   base::AutoLock lock(lock_);
   root_.reset(NULL);
+
+  // Let's make sure that num_pending_tasks_lock_ has been released on all
+  // other threads.
+  base::AutoLock tasks_lock(num_pending_tasks_lock_);
 }
 
 void GDataFileSystem::ResetIOWeakPtrFactoryOnIOThread(
