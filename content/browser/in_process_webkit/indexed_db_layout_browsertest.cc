@@ -39,6 +39,7 @@ static const char* kBasicTests[] = {
 
 static const char* kComplexTests[] = {
   "prefetch-bugfix-108071.html",
+  "pending-version-change-stuck-works-with-terminate.html",
   NULL
 };
 
