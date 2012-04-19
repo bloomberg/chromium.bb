@@ -124,6 +124,9 @@ int main(int argc, char *argv[])
 			break;
 		}
 
+		if (t->must_fail)
+			success = !success;
+
 		if (success) {
 			pass++;
 			fprintf(stderr, ", pass.\n");

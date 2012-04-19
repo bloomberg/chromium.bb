@@ -8,14 +8,25 @@
 struct test {
 	const char *name;
 	void (*run)(void);
-};
+	int must_fail;
+} __attribute__ ((aligned (16)));
 
 #define TEST(name)						\
 	static void name(void);					\
 								\
-	const struct test test##name			\
+	const struct test test##name				\
 		 __attribute__ ((section ("test_section"))) = {	\
-		#name, name					\
+		#name, name, 0					\
+	};							\
+								\
+	static void name(void)
+
+#define FAIL_TEST(name)						\
+	static void name(void);					\
+								\
+	const struct test test##name				\
+		 __attribute__ ((section ("test_section"))) = {	\
+		#name, name, 1					\
 	};							\
 								\
 	static void name(void)
