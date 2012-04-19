@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include <shobjidl.h>
 
 #include "base/file_path.h"
+#include "base/win/metro.h"
 #include "base/path_service.h"
 #include "base/win/scoped_co_mem.h"
 #include "chrome/common/chrome_constants.h"
@@ -23,6 +24,8 @@ bool GetDefaultUserDataDirectory(FilePath* result) {
     return false;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   *result = result->Append(dist->GetInstallSubDir());
+  if (base::win::GetMetroModule())
+    *result = result->Append(kMetroChromeUserDataSubDir);
   *result = result->Append(chrome::kUserDataDirname);
   return true;
 }

@@ -130,6 +130,8 @@ extern const int kHighestRendererOomScore;
 #if defined(OS_WIN)
 // This is used by the PreRead experiment.
 extern const char kPreReadEnvironmentVariable[];
+// Used by Metro Chrome to create the profile under a custom subdirectory.
+extern const wchar_t kMetroChromeUserDataSubDir[];
 #endif
 
 }  // namespace chrome
