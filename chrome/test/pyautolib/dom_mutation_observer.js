@@ -13,11 +13,14 @@
  *  observer_id: Id of the observer who will be receiving the messages.
  *  observer_type: One of 'add', 'remove', 'change', or 'exists'.
  *  xpath: XPath used to specify the DOM node of interest.
- *  expected_value: If not null, regular expression matching text contents
- *      expected after the mutation.
+ *  attribute: If |expected_value| is provided, check if this attribute of the
+ *      DOM node matches |expected value|.
+ *  expected_value: If not null, regular expression to match with the value of
+ *      |attribute| after the mutation.
  */
 
-function(automation_id, observer_id, observer_type, xpath, expected_value) {
+function(automation_id, observer_id, observer_type, xpath, attribute,
+         expected_value) {
 
   /* Raise an event for the DomMutationEventObserver. */
   function raiseEvent() {
@@ -40,7 +43,7 @@ function(automation_id, observer_id, observer_type, xpath, expected_value) {
       for (var i=0; i<mutations[j].addedNodes.length; i++) {
         var node = mutations[j].addedNodes[i];
         if (xpathMatchesNode(node, xpath) &&
-            nodeValueTextEquals(node, expected_value)) {
+            nodeAttributeValueEquals(node, attribute, expected_value)) {
           raiseEvent();
           observer.disconnect();
           delete observer;
@@ -73,7 +76,8 @@ function(automation_id, observer_id, observer_type, xpath, expected_value) {
    */
   function changeNodeCallback(mutations, observer) {
     for (var j=0; j<mutations.length; j++) {
-      if (nodeValueTextEquals(mutations[j].target, expected_value)) {
+      if (nodeAttributeValueEquals(mutations[j].target, attribute,
+                                   expected_value)) {
         raiseEvent();
         observer.disconnect();
         delete observer;
@@ -90,7 +94,7 @@ function(automation_id, observer_id, observer_type, xpath, expected_value) {
    */
   function existsNodeCallback(mutations, observer) {
     var node = firstXPathNode(xpath);
-    if (node && nodeValueTextEquals(node, expected_value)) {
+    if (node && nodeAttributeValueEquals(node, attribute, expected_value)) {
       raiseEvent();
       observer.disconnect();
       delete observer;
@@ -127,17 +131,18 @@ function(automation_id, observer_id, observer_type, xpath, expected_value) {
         XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
   }
 
-  /* Returns true if the node has a textContent attribute equal to
-   * expected_value.
+  /* Returns true if the node's |attribute| value is matched by the regular
+   * expression |expected_value|, false otherwise.
    *
    * Args:
    *  node: A node object from the DOM.
+   *  attribute: The attribute to match |expected_value| against.
    *  expected_value: A regular expression to match with the node's
-   *      textContent attribute.
+   *      textContent attribute. If null the test always passes.
    */
-  function nodeValueTextEquals(node, expected_value) {
+  function nodeAttributeValueEquals(node, attribute, expected_value) {
     return expected_value == null ||
-        (node.textContent && RegExp(expected_value, "").test(node.textContent));
+        (node[attribute] && RegExp(expected_value, "").test(node[attribute]));
   }
 
   /* Watch for a node matching xpath to be added to the DOM.
@@ -148,7 +153,7 @@ function(automation_id, observer_id, observer_type, xpath, expected_value) {
   function observeAdd(xpath) {
     window.domAutomationController.send("success");
     var node = firstXPathNode(xpath);
-    if (node && nodeValueTextEquals(node, expected_value)) {
+    if (node && nodeAttributeValueEquals(node, attribute, expected_value)) {
       raiseEvent();
       console.log("Matching node in DOM, assuming it was previously added.");
       return;
@@ -213,7 +218,7 @@ function(automation_id, observer_id, observer_type, xpath, expected_value) {
   function observeExists(xpath) {
     window.domAutomationController.send("success");
     var node = firstXPathNode(xpath);
-    if (node && nodeValueTextEquals(node, expected_value)) {
+    if (node && nodeAttributeValueEquals(node, attribute, expected_value)) {
       raiseEvent();
       console.log("Node already exists in DOM.");
       return;

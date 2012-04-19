@@ -26,9 +26,9 @@ class PyAutoEventsTest(pyauto.PyUITest):
     """Basic tests for WaitForDomNode."""
     url = self.GetHttpURLForDataPath('apptest', 'dom_mutations.html')
     self.NavigateToURL(url)
-    self.WaitForDomNode('id("login")', 'Log In')
+    self.WaitForDomNode('id("login")', expected_value='Log In')
     self.NewWebDriver().find_element_by_id('login').click()
-    self.WaitForDomNode('id("console")', '.*succeeded.*')
+    self.WaitForDomNode('id("console")', expected_value='.*succeeded.*')
 
   def testDomMutationObservers(self):
     """Tests for the various types of Dom Mutation observers."""
@@ -36,9 +36,9 @@ class PyAutoEventsTest(pyauto.PyUITest):
     self.NavigateToURL(url)
     self.GetNextEvent(self.AddDomMutationObserver('exists', '/html/body'))
     self.GetNextEvent(self.AddDomMutationObserver('add', 'id("login")',
-                                                  'Log In'))
+                                                  expected_value='Log In'))
     success_id = self.AddDomMutationObserver('change', 'id("console")',
-                                             '.*succeeded.*')
+                                             expected_value='.*succeeded.*')
     self.NewWebDriver().find_element_by_id('login').click()
     self.GetNextEvent(self.AddDomMutationObserver('remove', 'id("fail")/a'))
     self.GetNextEvent(success_id)
