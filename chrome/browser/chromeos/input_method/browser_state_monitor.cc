@@ -29,7 +29,8 @@ PrefService* GetPrefService() {
 BrowserStateMonitor::BrowserStateMonitor(InputMethodManager* manager)
     : manager_(manager),
       state_(InputMethodManager::STATE_LOGIN_SCREEN),
-      initialized_(false) {
+      initialized_(false),
+      pref_service_(NULL) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                               content::NotificationService::AllSources());
