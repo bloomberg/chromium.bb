@@ -846,6 +846,7 @@ AutocompleteController::AutocompleteController(
     Profile* profile,
     AutocompleteControllerDelegate* delegate)
     : delegate_(delegate),
+      keyword_provider_(NULL),
       done_(true),
       in_start_(false),
       profile_(profile) {
