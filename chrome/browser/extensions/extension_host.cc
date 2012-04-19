@@ -393,13 +393,6 @@ void ExtensionHost::DocumentAvailableInMainFrame() {
   }
 }
 
-void ExtensionHost::DocumentLoadedInFrame(int64 frame_id) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_EXTENSION_HOST_DOM_CONTENT_LOADED,
-      content::Source<Profile>(profile_),
-      content::Details<ExtensionHost>(this));
-}
-
 void ExtensionHost::CloseContents(WebContents* contents) {
   // TODO(mpcomplete): is this check really necessary?
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP ||
