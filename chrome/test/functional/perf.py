@@ -465,6 +465,17 @@ class BasePerfTest(pyauto.PyUITest):
     return ((float(time_non_idling_end) - time_non_idling_start) /
             (total_time_end - total_time_start))
 
+  def ExtraChromeFlags(self):
+    """Ensures Chrome is launched with custom flags.
+
+    Returns:
+      A list of extra flags to pass to Chrome when it is launched.
+    """
+    flags = super(BasePerfTest, self).ExtraChromeFlags()
+    if 'USE_PGO' in os.environ:
+      flags = flags + ['--renderer-clean-exit', '--no-sandbox']
+    return flags
+
 
 class TabPerfTest(BasePerfTest):
   """Tests that involve opening tabs."""
