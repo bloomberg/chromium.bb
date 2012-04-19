@@ -70,13 +70,13 @@ LRESULT CALLBACK StatusTrayWin::WndProc(HWND hwnd,
       case WM_CONTEXTMENU:
         // Walk our icons, find which one was clicked on, and invoke its
         // HandleClickEvent() method.
-        for (StatusIconList::const_iterator iter = status_icons().begin();
-             iter != status_icons().end();
-             ++iter) {
-          StatusIconWin* win_icon = static_cast<StatusIconWin*>(*iter);
+        for (StatusIconList::const_iterator i(status_icons().begin());
+             i != status_icons().end(); ++i) {
+          StatusIconWin* win_icon = static_cast<StatusIconWin*>(*i);
           if (win_icon->icon_id() == wparam) {
             gfx::Point cursor_pos(gfx::Screen::GetCursorScreenPoint());
             win_icon->HandleClickEvent(cursor_pos, lparam == WM_LBUTTONDOWN);
+            break;
           }
         }
         return TRUE;

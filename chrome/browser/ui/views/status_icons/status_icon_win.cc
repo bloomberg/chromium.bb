@@ -9,14 +9,15 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/point.h"
-#if !defined(USE_AURA)
-#include "ui/views/controls/menu/menu_2.h"
-#endif
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 
 StatusIconWin::StatusIconWin(UINT id, HWND window, UINT message)
     : icon_id_(id),
       window_(window),
-      message_id_(message) {
+      message_id_(message),
+      menu_model_(NULL) {
   NOTIFYICONDATA icon_data;
   InitIconData(&icon_data);
   icon_data.uFlags = NIF_MESSAGE;
@@ -112,18 +113,8 @@ void StatusIconWin::DisplayBalloon(const SkBitmap& icon,
 }
 
 void StatusIconWin::UpdatePlatformContextMenu(ui::MenuModel* menu) {
-#if defined(USE_AURA)
-  // crbug.com/99489.
-  NOTIMPLEMENTED();
-#else
-  // If no items are passed, blow away our context menu.
-  if (!menu) {
-    context_menu_.reset();
-    return;
-  }
-  // Create context menu with the new contents.
-  context_menu_.reset(new views::Menu2(menu));
-#endif
+  DCHECK(menu);
+  menu_model_ = menu;
 }
 
 void StatusIconWin::HandleClickEvent(const gfx::Point& cursor_pos,
@@ -133,18 +124,21 @@ void StatusIconWin::HandleClickEvent(const gfx::Point& cursor_pos,
     DispatchClickEvent();
     return;
   }
-#if defined(USE_AURA)
-  // crbug.com/99489.
-  NOTIMPLEMENTED();
-#else
-  // Event not sent to the observer, so display the context menu if one exists.
-  if (context_menu_.get()) {
-    // Set our window as the foreground window, so the context menu closes when
-    // we click away from it.
-    SetForegroundWindow(window_);
-    context_menu_->RunContextMenuAt(cursor_pos);
-  }
-#endif
+
+  if (!menu_model_)
+    return;
+
+  // Set our window as the foreground window, so the context menu closes when
+  // we click away from it.
+  if (!SetForegroundWindow(window_))
+    return;
+
+  views::MenuModelAdapter adapter(menu_model_);
+  menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+
+  ignore_result(menu_runner_->RunMenuAt(NULL, NULL,
+      gfx::Rect(cursor_pos, gfx::Size()), views::MenuItemView::TOPLEFT,
+      views::MenuRunner::HAS_MNEMONICS));
 }
 
 void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {

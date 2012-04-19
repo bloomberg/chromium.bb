@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <shellapi.h>
 
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_gdi_object.h"
@@ -19,7 +20,7 @@ class Point;
 }
 
 namespace views {
-class Menu2;
+class MenuRunner;
 }
 
 class StatusIconWin : public StatusIcon {
@@ -36,10 +37,6 @@ class StatusIconWin : public StatusIcon {
                               const string16& title,
                               const string16& contents) OVERRIDE;
 
-  UINT icon_id() const { return icon_id_; }
-
-  UINT message_id() const { return message_id_; }
-
   // Handles a click event from the user - if |left_button_click| is true and
   // there is a registered observer, passes the click event to the observer,
   // otherwise displays the context menu if there is one.
@@ -48,9 +45,13 @@ class StatusIconWin : public StatusIcon {
   // Re-creates the status tray icon now after the taskbar has been created.
   void ResetIcon();
 
+  UINT icon_id() const { return icon_id_; }
+
+  UINT message_id() const { return message_id_; }
+
  protected:
-  // Overridden from StatusIcon.
-  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu);
+  // Overridden from StatusIcon:
+  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) OVERRIDE;
 
  private:
   void InitIconData(NOTIFYICONDATA* icon_data);
@@ -70,10 +71,11 @@ class StatusIconWin : public StatusIcon {
   // The currently-displayed icon for the notification balloon.
   base::win::ScopedHICON balloon_icon_;
 
-#if !defined(USE_AURA)
+  // Not owned.
+  ui::MenuModel* menu_model_;
+
   // Context menu associated with this icon (if any).
-  scoped_ptr<views::Menu2> context_menu_;
-#endif
+  scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconWin);
 };
