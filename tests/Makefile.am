@@ -10,7 +10,7 @@ check_PROGRAMS =				\
 	event-loop-test				\
 	client-test
 
-test_runner_src = test-runner.c test-runner.h
+test_runner_src = test-runner.c test-runner.h test-helpers.c
 
 sanity_test_SOURCES = sanity-test.c $(test_runner_src)
 map_test_SOURCES = map-test.c $(test_runner_src)

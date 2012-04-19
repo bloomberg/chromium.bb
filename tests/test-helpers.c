@@ -20,76 +20,33 @@
  * OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
 #include <assert.h>
-#include <sys/types.h>
-#include <signal.h>
-#include <unistd.h>
+#include <errno.h>
+#include <dirent.h>
 
 #include "test-runner.h"
-#include "../src/wayland-util.h"
 
-TEST(empty)
+int
+count_open_fds(void)
 {
+	DIR *dir;
+	struct dirent *ent;
+	int count = 0;
+
+	dir = opendir("/proc/self/fd");
+	assert(dir && "opening /proc/self/fd failed.");
+
+	errno = 0;
+	while ((ent = readdir(dir))) {
+		const char *s = ent->d_name;
+		if (s[0] == '.' && (s[1] == 0 || (s[1] == '.' && s[2] == 0)))
+			continue;
+		count++;
+	}
+	assert(errno == 0 && "reading /proc/self/fd failed.");
+
+	closedir(dir);
+
+	return count;
 }
 
-TEST(exit_success)
-{
-	exit(EXIT_SUCCESS);
-}
-
-FAIL_TEST(exit_failure)
-{
-	exit(EXIT_FAILURE);
-}
-
-FAIL_TEST(fail_abort)
-{
-	abort();
-}
-
-FAIL_TEST(fail_kill)
-{
-	kill(getpid(), SIGTERM);
-}
-
-FAIL_TEST(fail_segv)
-{
-	* (char **) 0 = "Goodbye, world";
-}
-
-FAIL_TEST(sanity_assert)
-{
-	/* must fail */
-	assert(0);
-}
-
-FAIL_TEST(sanity_malloc_direct)
-{
-	void *p;
-
-	p = malloc(10);	/* memory leak */
-	assert(p);	/* assert that we got memory, also prevents
-			 * the malloc from getting optimized away. */
-	free(NULL);	/* NULL must not be counted */
-}
-
-FAIL_TEST(sanity_malloc_indirect)
-{
-	struct wl_array array;
-
-	wl_array_init(&array);
-
-	/* call into library that calls malloc */
-	wl_array_add(&array, 14);
-
-	/* not freeing array, must leak */
-}
-
-FAIL_TEST(sanity_fd_leak)
-{
-	int fd[2];
-
-	/* leak 2 file descriptors */
-	pipe(fd);
-}

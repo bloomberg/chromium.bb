@@ -30,6 +30,7 @@
 #include <string.h>
 #include <assert.h>
 #include <dlfcn.h>
+#include <errno.h>
 #include "test-runner.h"
 
 static int num_alloc;
@@ -69,9 +70,12 @@ static void
 run_test(const struct test *t)
 {
 	int cur_alloc = num_alloc;
+	int cur_fds;
 
+	cur_fds = count_open_fds();
 	t->run();
 	assert(cur_alloc == num_alloc && "memory leak detected in test.");
+	assert(cur_fds == count_open_fds() && "fd leak detected");
 	exit(EXIT_SUCCESS);
 }
 

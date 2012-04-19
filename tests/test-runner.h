@@ -31,4 +31,7 @@ struct test {
 								\
 	static void name(void)
 
+int
+count_open_fds(void);
+
 #endif
