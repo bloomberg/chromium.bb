@@ -145,10 +145,10 @@ static const VersionRangeDefinition kJavaVersionRange[] = {
     { "7", "", "10.3" }  // JDK7u3 identifies itself as 10.3
 };
 // This is up to date with
-// http://www.adobe.com/support/security/bulletins/apsb12-01.html
+// http://www.adobe.com/support/security/bulletins/apsb12-08.html
 static const VersionRangeDefinition kAdobeReaderVersionRange[] = {
-    { "10", "11", "10.1.2" },
-    { "0", "10", "9.5" }
+    { "10", "11", "10.1.3" },
+    { "0", "10", "9.5.1" }
 };
 static const VersionRangeDefinition kDivXVersionRange[] = {
     { "", "", "1.4.3.4" }
