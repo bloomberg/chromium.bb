@@ -43,6 +43,7 @@ class TabbedLauncherButton : public LauncherButton {
   // Sets the images to display for this entry.
   void SetTabImage(const SkBitmap& image);
 
+  // This only defines how the icon is drawn. Do not use it for other purposes.
   IncognitoState is_incognito() const { return is_incognito_; }
 
  protected:
@@ -103,8 +104,8 @@ class TabbedLauncherButton : public LauncherButton {
     return static_cast<IconView*>(icon_view());
   }
 
-  // Indicates if the tabbed browser associated with this is an incognito
-  // window.
+  // Indicates how the icon is drawn. If true an Incognito symbol will be
+  // drawn. It does not necessarily indicate if the window is 'incognito'.
   const IncognitoState is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedLauncherButton);

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -33,7 +34,7 @@ LauncherUpdater::LauncherUpdater(aura::Window* window,
       type_(type),
       app_id_(app_id),
       is_incognito_(tab_model->profile()->GetOriginalProfile() !=
-                    tab_model->profile()),
+                    tab_model->profile() && !Profile::IsGuestSession()),
       item_id_(-1) {
 }
 

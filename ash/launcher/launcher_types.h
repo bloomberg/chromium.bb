@@ -54,7 +54,8 @@ struct ASH_EXPORT LauncherItem {
 
   LauncherItemType type;
 
-  // Whether it is incognito. Only used if this is TYPE_TABBED.
+  // Whether it is drawn as an incognito icon or not. Only used if this is
+  // TYPE_TABBED. Note: This cannot be used for identifying incognito windows.
   bool is_incognito;
 
   // Image to display in the launcher. If this item is TYPE_TABBED the image is
