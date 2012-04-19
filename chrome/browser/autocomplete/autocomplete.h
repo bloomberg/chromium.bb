@@ -38,10 +38,21 @@
 // happen on the same thread.  AutocompleteProviders are responsible for doing
 // their own thread management when they need to return matches asynchronously.
 //
-// The AutocompleteProviders each return different kinds of matches, such as
-// history or search matches.  These matches are given "relevance" scores.
-// Higher scores are better matches than lower scores.  The relevance scores and
-// classes providing the respective matches are as follows:
+// The AutocompleteProviders each return different kinds of matches,
+// such as history or search matches.  These matches are given
+// "relevance" scores.  Higher scores are better matches than lower
+// scores.  The relevance scores and classes providing the respective
+// matches are as listed below.
+//
+// IMPORTANT CAVEAT: The tables below are NOT COMPLETE.  Developers
+// often forget to keep these tables in sync with the code when they
+// change scoring algorithms or add new providers.  For example,
+// neither the HistoryQuickProvider (which is a provider that appears
+// often) nor the ShortcutsProvider are listed here.  For the best
+// idea of how scoring works and what providers are affecting which
+// queries, play with chrome://omnibox/ for a while.  While the tables
+// below may have some utility, nothing compares with first-hand
+// investigation and experience.
 //
 // UNKNOWN input type:
 // --------------------------------------------------------------------|-----
