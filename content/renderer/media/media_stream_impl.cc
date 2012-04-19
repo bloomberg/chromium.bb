@@ -25,6 +25,7 @@
 #include "media/base/message_loop_factory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
@@ -142,14 +143,6 @@ MediaStreamImpl::CreatePeerConnectionHandlerJsep(
 void MediaStreamImpl::ClosePeerConnection(
     PeerConnectionHandlerBase* pc_handler) {
   DCHECK(CalledOnValidThread());
-  VideoRendererMap::iterator vr_it = video_renderers_.begin();
-  while (vr_it != video_renderers_.end()) {
-    if (vr_it->second.second == pc_handler) {
-      video_renderers_.erase(vr_it++);
-    } else {
-      ++vr_it;
-    }
-  }
   peer_connection_handlers_.remove(pc_handler);
 }
 
@@ -213,74 +206,31 @@ scoped_refptr<media::VideoDecoder> MediaStreamImpl::GetVideoDecoder(
   if (descriptor.isNull())
     return NULL;  // This is not a valid stream.
 
-  // We must find out if this is a local or remote stream. We extract the
-  // MediaStreamManager stream label and if found in the dispatcher we have a
-  // local stream, otherwise we have a remote stream. There will be changes soon
-  // so that we don't have to bother about the type of stream here. Hence this
-  // solution is OK for now.
+  WebKit::WebVector<WebKit::WebMediaStreamComponent> components_vector;
+  descriptor.videoSources(components_vector);
 
-  WebKit::WebVector<WebKit::WebMediaStreamSource> source_vector;
-  descriptor.sources(source_vector);
-  std::string msm_label;
-  for (size_t i = 0; i < source_vector.size(); ++i) {
-    if (source_vector[i].type() == WebKit::WebMediaStreamSource::TypeVideo) {
-      // We assume there is one video track only.
-      msm_label = ExtractManagerStreamLabel(UTF16ToUTF8(source_vector[i].id()));
-      break;
+  // TODO(perkj): Implement track selection. For now, render the first
+  // available source.
+
+  for (size_t i = 0; i < components_vector.size(); ++i) {
+    const WebKit::WebMediaStreamSource& source = components_vector[i].source();
+    std::string source_id = UTF16ToUTF8(source.id());
+    if (IsLocalSource(source_id)) {
+      return CreateLocalVideoDecoder(source_id, message_loop_factory);
+    }
+    PeerConnectionHandlerBase* pc_handler =
+        FindPeerConnectionBySource(source_id);
+    if (pc_handler != NULL) {
+      return CreateRemoteVideoDecoder(source_id,
+                                      pc_handler,
+                                      url,
+                                      message_loop_factory);
     }
   }
-  if (msm_label.empty())
-    return NULL;
 
-  scoped_refptr<media::VideoDecoder> decoder;
-  if (media_stream_dispatcher_->IsStream(msm_label)) {
-    // It's a local stream.
-    int video_session_id =
-        media_stream_dispatcher_->video_session_id(msm_label, 0);
-    media::VideoCaptureCapability capability;
-    capability.width = kVideoCaptureWidth;
-    capability.height = kVideoCaptureHeight;
-    capability.frame_rate = kVideoCaptureFramePerSecond;
-    capability.expected_capture_delay = 0;
-    capability.color = media::VideoFrame::I420;
-    capability.interlaced = false;
-    decoder = new CaptureVideoDecoder(
-        message_loop_factory->GetMessageLoopProxy("CaptureVideoDecoderThread"),
-        video_session_id,
-        vc_manager_.get(),
-        capability);
-  } else {
-    // It's a remote stream.
-    std::string desc_label = UTF16ToUTF8(descriptor.label());
-    PeerConnectionHandlerBase* pc_handler = NULL;
-    std::list<PeerConnectionHandlerBase*>::iterator it;
-    for (it = peer_connection_handlers_.begin();
-         it != peer_connection_handlers_.end(); ++it) {
-      if ((*it)->HasStream(desc_label)) {
-        pc_handler = *it;
-        break;
-      }
-    }
-    DCHECK(it != peer_connection_handlers_.end());
-    // TODO(grunell): We are not informed when a renderer should be deleted.
-    // When this has been fixed, ensure we delete it. For now, we hold on
-    // to all renderers until a PeerConnectionHandler is closed or we are
-    // deleted (then all renderers are deleted), so it sort of leaks.
-    // TODO(grunell): There is no support for multiple decoders per stream, this
-    // code will need to be updated when that is supported.
-    talk_base::scoped_refptr<VideoRendererWrapper> video_renderer =
-        new talk_base::RefCountedObject<VideoRendererWrapper>();
-    RTCVideoDecoder* rtc_video_decoder = new RTCVideoDecoder(
-        message_loop_factory->GetMessageLoop("RtcVideoDecoderThread"),
-        url.spec());
-    decoder = rtc_video_decoder;
-    video_renderer->SetVideoDecoder(rtc_video_decoder);
-    pc_handler->SetVideoRenderer(desc_label, video_renderer);
-    video_renderers_.erase(desc_label);  // Remove old renderer if exists.
-    video_renderers_.insert(
-        std::make_pair(desc_label, std::make_pair(video_renderer, pc_handler)));
-  }
-  return decoder;
+  // WebKit claim this is MediaStream url but there is no valid source.
+  NOTREACHED();
+  return NULL;
 }
 
 void MediaStreamImpl::OnStreamGenerated(
@@ -496,11 +446,67 @@ bool MediaStreamImpl::EnsurePeerConnectionFactory() {
   return true;
 }
 
-MediaStreamImpl::VideoRendererWrapper::VideoRendererWrapper() {}
+bool MediaStreamImpl::IsLocalSource(const std::string& source_id) {
+  std::string msm_label = ExtractManagerStreamLabel(source_id);
+  if (msm_label.empty())
+    return false;
+  return media_stream_dispatcher_->IsStream(msm_label);
+}
 
-MediaStreamImpl::VideoRendererWrapper::~VideoRendererWrapper() {}
+scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateLocalVideoDecoder(
+    const std::string& source_id,
+    media::MessageLoopFactory* message_loop_factory) {
+  std::string msm_label = ExtractManagerStreamLabel(source_id);
+  if (msm_label.empty())
+    return NULL;
 
-void MediaStreamImpl::VideoRendererWrapper::SetVideoDecoder(
-    RTCVideoDecoder* decoder) {
-  rtc_video_decoder_ = decoder;
+  int video_session_id =
+      media_stream_dispatcher_->video_session_id(msm_label, 0);
+  media::VideoCaptureCapability capability;
+  capability.width = kVideoCaptureWidth;
+  capability.height = kVideoCaptureHeight;
+  capability.frame_rate = kVideoCaptureFramePerSecond;
+  capability.expected_capture_delay = 0;
+  capability.color = media::VideoFrame::I420;
+  capability.interlaced = false;
+  return new CaptureVideoDecoder(
+      message_loop_factory->GetMessageLoopProxy("CaptureVideoDecoderThread"),
+      video_session_id,
+      vc_manager_.get(),
+      capability);
+}
+
+PeerConnectionHandlerBase* MediaStreamImpl::FindPeerConnectionBySource(
+    const std::string& source_id) {
+  std::list<PeerConnectionHandlerBase*>::iterator it;
+  for (it = peer_connection_handlers_.begin();
+       it != peer_connection_handlers_.end(); ++it) {
+    if ((*it)->HasRemoteVideoTrack(source_id)) {
+      return *it;
+    }
+  }
+  return NULL;
+}
+
+scoped_refptr<media::VideoDecoder> MediaStreamImpl::CreateRemoteVideoDecoder(
+    const std::string& source_id,
+    PeerConnectionHandlerBase* pc_handler,
+    const GURL& url,
+    media::MessageLoopFactory* message_loop_factory) {
+  RTCVideoDecoder* rtc_video_decoder = new RTCVideoDecoder(
+      message_loop_factory->GetMessageLoop("RtcVideoDecoderThread"),
+      url.spec());
+  talk_base::scoped_refptr<webrtc::VideoRendererWrapperInterface> renderer(
+      new talk_base::RefCountedObject<VideoRendererWrapper>(rtc_video_decoder));
+
+  pc_handler->SetRemoteVideoRenderer(source_id, renderer);
+  return rtc_video_decoder;
+}
+
+MediaStreamImpl::VideoRendererWrapper::VideoRendererWrapper(
+    RTCVideoDecoder* decoder)
+    : rtc_video_decoder_(decoder) {
+}
+
+MediaStreamImpl::VideoRendererWrapper::~VideoRendererWrapper() {
 }

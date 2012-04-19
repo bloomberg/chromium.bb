@@ -23,27 +23,24 @@ PeerConnectionHandlerBase::PeerConnectionHandlerBase(
 PeerConnectionHandlerBase::~PeerConnectionHandlerBase() {
 }
 
-bool PeerConnectionHandlerBase::HasStream(const std::string& stream_label) {
-  webrtc::MediaStreamInterface* stream =
-      native_peer_connection_->remote_streams()->find(stream_label);
-  return stream != NULL;
+bool PeerConnectionHandlerBase::HasRemoteVideoTrack(
+    const std::string& source_id) {
+  return FindRemoteVideoTrack(source_id) != NULL;
 }
 
-void PeerConnectionHandlerBase::SetVideoRenderer(
-    const std::string& stream_label,
+void PeerConnectionHandlerBase::SetRemoteVideoRenderer(
+    const std::string& source_id,
     webrtc::VideoRendererWrapperInterface* renderer) {
-  webrtc::MediaStreamInterface* stream =
-      native_peer_connection_->remote_streams()->find(stream_label);
-  webrtc::VideoTracks* video_tracks = stream->video_tracks();
-  // We assume there is only one enabled video track.
-  for (size_t i = 0; i < video_tracks->count(); ++i) {
-    webrtc::VideoTrackInterface* video_track = video_tracks->at(i);
-    if (video_track->enabled()) {
-      video_track->SetRenderer(renderer);
-      return;
-    }
+  webrtc::VideoTrackInterface* remote_track = FindRemoteVideoTrack(source_id);
+  if (remote_track) {
+    remote_track->SetRenderer(renderer);
+    // TODO(perkj): Remove video_renderers_ from this class when it's not longer
+    // needed. See http://code.google.com/p/webrtc/issues/detail?id=447
+    video_renderers_.erase(source_id);  // Remove old renderer if exists.
+    video_renderers_.insert(std::make_pair(source_id, renderer));
+  } else {
+    NOTREACHED();
   }
-  DVLOG(1) << "No enabled video track.";
 }
 
 void PeerConnectionHandlerBase::AddStream(
@@ -121,3 +118,21 @@ PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
 
   return descriptor;
 }
+
+webrtc::VideoTrackInterface* PeerConnectionHandlerBase::FindRemoteVideoTrack(
+    const std::string& source_id) {
+  talk_base::scoped_refptr<webrtc::StreamCollectionInterface> streams =
+      native_peer_connection_->remote_streams();
+  for (size_t i = 0; i < streams->count(); ++i) {
+    webrtc::VideoTracks* track_list =streams->at(i)->video_tracks();
+    for(size_t j =0; j < track_list->count(); ++j) {
+      if (track_list->at(i)->label() == source_id) {
+        return track_list->at(j);
+      }
+    }
+  }
+  return NULL;
+}
+
+
+

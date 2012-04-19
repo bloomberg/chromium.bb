@@ -126,11 +126,10 @@ class CONTENT_EXPORT MediaStreamImpl
 
   class VideoRendererWrapper : public webrtc::VideoRendererWrapperInterface {
    public:
-    VideoRendererWrapper();
+    explicit VideoRendererWrapper(RTCVideoDecoder* decoder);
     virtual cricket::VideoRenderer* renderer() OVERRIDE {
       return rtc_video_decoder_.get();
     }
-    void SetVideoDecoder(RTCVideoDecoder* decoder);
 
    protected:
     virtual ~VideoRendererWrapper();
@@ -139,14 +138,27 @@ class CONTENT_EXPORT MediaStreamImpl
     scoped_refptr<RTCVideoDecoder> rtc_video_decoder_;
   };
 
-  void InitializeWorkerThread(
-      talk_base::Thread** thread,
-      base::WaitableEvent* event);
+  void InitializeWorkerThread(talk_base::Thread** thread,
+                              base::WaitableEvent* event);
 
-  void CreateIpcNetworkManagerOnWorkerThread(base::WaitableEvent*);
+  void CreateIpcNetworkManagerOnWorkerThread(base::WaitableEvent* event);
   void DeleteIpcNetworkManager();
 
   bool EnsurePeerConnectionFactory();
+
+  bool IsLocalSource(const std::string& source_id);
+  // Returns the PeerConnectionHandlerBase with a video track with a label
+  // that matches |source_id|.
+  PeerConnectionHandlerBase* FindPeerConnectionBySource(
+      const std::string& source_id);
+  scoped_refptr<media::VideoDecoder> CreateLocalVideoDecoder(
+      const std::string& source_id,
+      media::MessageLoopFactory* message_loop_factory);
+  scoped_refptr<media::VideoDecoder> CreateRemoteVideoDecoder(
+      const std::string& source_id,
+      PeerConnectionHandlerBase* pc_handler,
+      const GURL& url,
+      media::MessageLoopFactory* message_loop_factory);
 
   scoped_ptr<MediaStreamDependencyFactory> dependency_factory_;
 
@@ -176,15 +188,6 @@ class CONTENT_EXPORT MediaStreamImpl
       MediaStreamTrackPtr;
   typedef std::map<std::string, MediaStreamTrackPtr> MediaStreamTrackPtrMap;
   MediaStreamTrackPtrMap local_tracks_;
-
-  // Native PeerConnection only supports 1:1 mapping between MediaStream and
-  // video tag/renderer, so we restrict to this too.  The key in
-  // VideoRendererMap is the stream label.
-  typedef talk_base::scoped_refptr<VideoRendererWrapper> VideoRendererPtr;
-  typedef std::pair<VideoRendererPtr, PeerConnectionHandlerBase*>
-      VideoRendererPair;
-  typedef std::map<std::string, VideoRendererPair> VideoRendererMap;
-  VideoRendererMap video_renderers_;
 
   // PeerConnection threads. signaling_thread_ is created from the
   // "current" chrome thread.

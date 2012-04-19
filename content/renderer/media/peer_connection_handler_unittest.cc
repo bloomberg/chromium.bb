@@ -127,9 +127,10 @@ TEST(PeerConnectionHandlerTest, Basic) {
   pc_handler->OnAddStream(remote_stream);
   EXPECT_EQ(remote_stream_label, mock_client->stream_label());
 
+  EXPECT_TRUE(pc_handler->HasRemoteVideoTrack(remote_video_track_label));
   talk_base::scoped_refptr<webrtc::MockVideoRendererWrapper> renderer(
       new talk_base::RefCountedObject<webrtc::MockVideoRendererWrapper>());
-  pc_handler->SetVideoRenderer(remote_stream_label, renderer);
+  pc_handler->SetRemoteVideoRenderer(remote_video_track_label, renderer);
   EXPECT_EQ(renderer, static_cast<webrtc::MockLocalVideoTrack*>(
       remote_video_track.get())->renderer());
 
