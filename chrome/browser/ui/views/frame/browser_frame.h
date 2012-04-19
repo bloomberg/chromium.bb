@@ -66,7 +66,6 @@ class BrowserFrame : public views::Widget {
   void TabStripDisplayModeChanged();
 
   // Overridden from views::Widget:
-  virtual bool IsMaximized() const OVERRIDE;
   virtual views::internal::RootView* CreateRootView() OVERRIDE;
   virtual views::NonClientFrameView* CreateNonClientFrameView() OVERRIDE;
   virtual bool GetAccelerator(int command_id,

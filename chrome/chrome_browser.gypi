@@ -3570,8 +3570,6 @@
         'browser/ui/webui/chrome_web_ui_controller_factory.h',
         'browser/ui/webui/chrome_web_ui_data_source.cc',
         'browser/ui/webui/chrome_web_ui_data_source.h',
-        'browser/ui/webui/chromeos/active_downloads_ui.cc',
-        'browser/ui/webui/chromeos/active_downloads_ui.h',
         'browser/ui/webui/chromeos/choose_mobile_network_ui.cc',
         'browser/ui/webui/chromeos/choose_mobile_network_ui.h',
         'browser/ui/webui/chromeos/imageburner/imageburner_ui.cc',

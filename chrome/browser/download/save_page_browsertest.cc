@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/webui/chromeos/active_downloads_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -98,33 +97,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
         GetOriginalUrl();
   }
 
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-  const ActiveDownloadsUI::DownloadList& GetDownloads() const {
-    Browser* popup = ActiveDownloadsUI::GetPopup();
-    EXPECT_TRUE(popup);
-    ActiveDownloadsUI* downloads_ui = static_cast<ActiveDownloadsUI*>(
-        popup->GetSelectedWebContents()->GetWebUI()->GetController());
-    EXPECT_TRUE(downloads_ui);
-    return downloads_ui->GetDownloads();
-  }
-#endif
-
   void CheckDownloadUI(const FilePath& download_path) const {
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-    const ActiveDownloadsUI::DownloadList& downloads = GetDownloads();
-    EXPECT_EQ(downloads.size(), 1U);
-
-    bool found = false;
-    for (size_t i = 0; i < downloads.size(); ++i) {
-      if (downloads[i]->GetFullPath() == download_path) {
-        found = true;
-        break;
-      }
-    }
-    EXPECT_TRUE(found);
-#else
     EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-#endif
   }
 
   DownloadManager* GetDownloadManager() const {
@@ -320,10 +294,6 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
   CheckDownloadHistory(url, full_file_name, 1);  // a.htm is 1 file.
 
   EXPECT_EQ(GetDownloadManager()->RemoveAllDownloads(), 1);
-
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-  EXPECT_EQ(GetDownloads().size(), 0U);
-#endif
 
   // Should not be in history.
   QueryDownloadHistory();

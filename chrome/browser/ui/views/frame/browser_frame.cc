@@ -111,16 +111,6 @@ void BrowserFrame::TabStripDisplayModeChanged() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::Widget overrides:
 
-bool BrowserFrame::IsMaximized() const {
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-  if (base::chromeos::IsRunningOnChromeOS()) {
-    return !IsFullscreen() &&
-        (browser_view_->IsBrowserTypeNormal() || Widget::IsMaximized());
-  }
-#endif
-  return Widget::IsMaximized();
-}
-
 views::internal::RootView* BrowserFrame::CreateRootView() {
   root_view_ = new BrowserRootView(browser_view_, this);
   return root_view_;

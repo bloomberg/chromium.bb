@@ -45,6 +45,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
@@ -211,17 +212,12 @@
 #if defined(USE_AURA)
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #endif
-#include "chrome/browser/ui/webui/chromeos/active_downloads_ui.h"
 #endif
 
 #if defined(USE_ASH)
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/views/ash/panel_view_aura.h"
-#endif
-
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
-#include "chrome/browser/download/download_shelf.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1439,17 +1435,6 @@ gfx::NativeWindow Browser::BrowserShowHtmlDialog(
     HtmlDialogUIDelegate* delegate,
     gfx::NativeWindow parent_window,
     DialogStyle style) {
-#if defined(OS_CHROMEOS)
-  // For Chrome OS, first try to parent the dialog over the current browser --
-  // it's likely to be maximized onscreen.  If it isn't tabbed (e.g. it's a
-  // panel), find a browser that is.
-  parent_window = window_->GetNativeHandle();
-  if (!is_type_tabbed()) {
-    Browser* tabbed_browser = BrowserList::FindTabbedBrowser(profile_, true);
-    if (tabbed_browser && tabbed_browser->window())
-      parent_window = tabbed_browser->window()->GetNativeHandle();
-  }
-#endif  // defined(OS_CHROMEOS)
   if (!parent_window)
     parent_window = window_->GetNativeHandle();
 
@@ -1646,13 +1631,7 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
       window_->IsFullscreen();
 #endif
 
-  unsigned int features = FEATURE_INFOBAR;
-
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
-  // Chrome OS opens a FileBrowse pop up instead of using download shelf.
-  // So FEATURE_DOWNLOADSHELF is only added for non-chromeos platforms.
-  features |= FEATURE_DOWNLOADSHELF;
-#endif  // !defined(OS_CHROMEOS) || defined(USE_AURA)
+  unsigned int features = FEATURE_INFOBAR | FEATURE_DOWNLOADSHELF;
 
   if (is_type_tabbed())
     features |= FEATURE_BOOKMARKBAR;
@@ -2397,14 +2376,11 @@ void Browser::ShowHistoryTab() {
 
 void Browser::ShowDownloadsTab() {
   content::RecordAction(UserMetricsAction("ShowDownloads"));
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
-  // ChromiumOS (non-Aura) uses ActiveDownloadsUI instead of of DownloadShelf.
   if (window()) {
     DownloadShelf* shelf = window()->GetDownloadShelf();
     if (shelf->IsShowing())
       shelf->Close();
   }
-#endif
   ShowSingletonTabOverwritingNTP(
       GetSingletonTabNavigateParams(GURL(chrome::kChromeUIDownloadsURL)));
 }
@@ -3982,10 +3958,6 @@ void Browser::OnStartDownload(WebContents* source,
     return;
 
   if (DisplayOldDownloadsUI()) {
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-    if (ActiveDownloadsUI::ShouldShowPopup(profile_, download))
-      ActiveDownloadsUI::OpenPopup(profile_);
-#else
     // GetDownloadShelf creates the download shelf if it was not yet created.
     DownloadShelf* shelf = window()->GetDownloadShelf();
     shelf->AddDownload(new DownloadItemModel(download));
@@ -4003,7 +3975,6 @@ void Browser::OnStartDownload(WebContents* source,
         ui::Animation::ShouldRenderRichAnimation()) {
       DownloadStartedAnimation::Show(shelf_tab);
     }
-#endif
   }
 
   // If the download occurs in a new tab, close it.

@@ -602,11 +602,8 @@ class BrowserView : public BrowserWindow,
   // The Bookmark Bar View for this window. Lazily created.
   scoped_ptr<BookmarkBarView> bookmark_bar_view_;
 
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
-  // The download shelf view (view at the bottom of the page).  ChromiumOS
-  // uses ActiveDownloadsUI instead.
+  // The download shelf view (view at the bottom of the page).
   scoped_ptr<DownloadShelfView> download_shelf_;
-#endif
 
   // The InfoBarContainerView that contains InfoBars for the current tab.
   InfoBarContainerView* infobar_container_;

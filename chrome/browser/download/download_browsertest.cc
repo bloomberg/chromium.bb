@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/webui/chromeos/active_downloads_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -582,40 +581,10 @@ class DownloadTest : public InProcessBrowserTest {
   // is present in the UI (currently only on chromeos).
   void CheckDownloadUI(Browser* browser, bool expected_non_cros,
       bool expected_cros, const FilePath& filename) {
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-    Browser* popup = ActiveDownloadsUI::GetPopup();
-    EXPECT_EQ(expected_cros, popup != NULL);
-    if (!popup || filename.empty())
-      return;
-
-    ActiveDownloadsUI* downloads_ui = static_cast<ActiveDownloadsUI*>(
-        popup->GetSelectedWebContents()->GetWebUI()->GetController());
-
-    ASSERT_TRUE(downloads_ui);
-    const ActiveDownloadsUI::DownloadList& downloads =
-        downloads_ui->GetDownloads();
-    EXPECT_EQ(downloads.size(), 1U);
-
-    FilePath full_path(DestinationFile(browser, filename));
-    bool exists = false;
-    for (size_t i = 0; i < downloads.size(); ++i) {
-      if (downloads[i]->GetFullPath() == full_path) {
-        exists = true;
-        break;
-      }
-    }
-    EXPECT_TRUE(exists);
-#else
     EXPECT_EQ(expected_non_cros, browser->window()->IsDownloadShelfVisible());
     // TODO: Check for filename match in download shelf.
-#endif
   }
   static void ExpectWindowCountAfterDownload(size_t expected) {
-#if defined(OS_CHROMEOS) && !defined(USE_AURA)
-    // On ChromeOS, a download panel is created to display
-    // download information, and this counts as a window.
-    expected++;
-#endif
     EXPECT_EQ(expected, BrowserList::size());
   }
 
@@ -1068,8 +1037,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ContentDisposition) {
   CheckDownloadUI(browser(), true, true, download_file);
 }
 
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
-// Download shelf is not per-window on ChromeOS.
 // Test that the download shelf is per-window by starting a download in one
 // tab, opening a second tab, closing the shelf, going back to the first tab,
 // and checking that the shelf is closed.
@@ -1106,9 +1073,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
   // The download shelf should not be visible.
   CheckDownloadUI(browser(), false, false, FilePath());
 }
-#endif  // !OS_CHROMEOS
 
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
 // Check whether the downloads shelf is closed when the downloads tab is
 // invoked.
 IN_PROC_BROWSER_TEST_F(DownloadTest, CloseShelfOnDownloadsTab) {
@@ -1128,7 +1093,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseShelfOnDownloadsTab) {
   // The shelf should now be closed.
   CheckDownloadUI(browser(), false, false, FilePath());
 }
-#endif
 
 // UnknownSize and KnownSize are tests which depend on
 // URLRequestSlowDownloadJob to serve content in a certain way. Data will be

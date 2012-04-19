@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/webui/chromeos/active_downloads_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -317,14 +316,6 @@ class BrowserCloseTest : public InProcessBrowserTest {
         return false;
     }
     ui_test_utils::RunAllPendingInMessageLoop();
-
-#if defined(OS_CHROMEOS)
-    // Get rid of downloads panel on ChromeOS
-    Browser* panel = ActiveDownloadsUI::GetPopup();
-    if (panel)
-      panel->CloseWindow();
-    ui_test_utils::RunAllPendingInMessageLoop();
-#endif
 
     // All that work, for this one little test.
     EXPECT_TRUE((check_case.window_to_probe ==

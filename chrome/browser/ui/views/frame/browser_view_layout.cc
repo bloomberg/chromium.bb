@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
+#include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
@@ -20,9 +21,6 @@
 #include "ui/gfx/size.h"
 #include "ui/views/controls/single_split_view.h"
 
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
-#include "chrome/browser/ui/views/download/download_shelf_view.h"
-#endif
 
 namespace {
 
@@ -229,11 +227,7 @@ void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
       infobar_container_ = view;
       break;
     case VIEW_ID_DOWNLOAD_SHELF:
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
       download_shelf_ = static_cast<DownloadShelfView*>(view);
-#else
-      NOTREACHED();
-#endif
       break;
     case VIEW_ID_BOOKMARK_BAR:
       active_bookmark_bar_ = static_cast<BookmarkBarView*>(view);
@@ -435,10 +429,8 @@ int BrowserViewLayout::GetTopMarginForActiveContent() {
 }
 
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
   // Re-layout the shelf either if it is visible or if its close animation
-  // is currently running.  ChromiumOS uses ActiveDownloadsUI instead of
-  // DownloadShelf.
+  // is currently running.
   if (browser_view_->IsDownloadShelfVisible() ||
       (download_shelf_ && download_shelf_->IsClosing())) {
     bool visible = browser()->SupportsWindowFeature(
@@ -451,7 +443,6 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
     download_shelf_->Layout();
     bottom -= height;
   }
-#endif
   return bottom;
 }
 
