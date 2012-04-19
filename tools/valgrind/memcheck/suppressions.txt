@@ -4115,7 +4115,7 @@
    fun:_ZN7WebCoreL18makeExternalStringERKN3WTF6StringE
    fun:_ZN7WebCore11StringCache20v8ExternalStringSlowEPN3WTF10StringImplE
    fun:_ZN7WebCore11StringCache16v8ExternalStringEPN3WTF10StringImplE
-   fun:_ZN7WebCore16v8ExternalStringERKN3WTF6StringE
+   fun:_ZN7WebCore16v8ExternalStringERKN3WTF6String*
 }
 {
    bug_101146a
@@ -5741,6 +5741,16 @@
    fun:_ZN7WebCore11V8DOMWindow19postMessageCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internalL19HandleApiCallHelperILb0EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
+}
+{
+   bug_124156
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN26SimpleResourceLoaderBridge6CreateERKN11webkit_glue20ResourceLoaderBridge11RequestInfoE
+   fun:_ZN25TestWebKitPlatformSupport20CreateResourceLoaderERKN11webkit_glue20ResourceLoaderBridge11RequestInfoE
+   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context5StartERKN6WebKit13WebURLRequestEPNS_20ResourceLoaderBridge16SyncLoadResponseEPNS_25WebKitPlatformSupportImplE
+   fun:_ZN11webkit_glue16WebURLLoaderImpl18loadAsynchronouslyERKN6WebKit13WebURLRequestEPNS1_18WebURLLoaderClientE
+   fun:_ZN7WebCore22ResourceHandleInternal5startEv
 }
 
 #-----------------------------------------------------------------------
