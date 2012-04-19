@@ -118,22 +118,20 @@ class ThemeServiceGtk : public ThemeService {
   GtkWidget* fake_label() { return fake_label_.get(); }
 
   // Returns colors that we pass to webkit to match the system theme.
-  const SkColor& get_focus_ring_color() const { return focus_ring_color_; }
-  const SkColor& get_thumb_active_color() const { return thumb_active_color_; }
-  const SkColor& get_thumb_inactive_color() const {
-    return thumb_inactive_color_;
-  }
-  const SkColor& get_track_color() const { return track_color_; }
-  const SkColor& get_active_selection_bg_color() const {
+  SkColor get_focus_ring_color() const { return focus_ring_color_; }
+  SkColor get_thumb_active_color() const { return thumb_active_color_; }
+  SkColor get_thumb_inactive_color() const { return thumb_inactive_color_; }
+  SkColor get_track_color() const { return track_color_; }
+  SkColor get_active_selection_bg_color() const {
     return active_selection_bg_color_;
   }
-  const SkColor& get_active_selection_fg_color() const {
+  SkColor get_active_selection_fg_color() const {
     return active_selection_fg_color_;
   }
-  const SkColor& get_inactive_selection_bg_color() const {
+  SkColor get_inactive_selection_bg_color() const {
     return inactive_selection_bg_color_;
   }
-  const SkColor& get_inactive_selection_fg_color() const {
+  SkColor get_inactive_selection_fg_color() const {
     return inactive_selection_fg_color_;
   }
 
