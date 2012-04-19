@@ -19,7 +19,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/common/metrics/metrics_service_base.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/url_fetcher_delegate.h"
@@ -367,11 +366,6 @@ class MetricsService : public content::NotificationObserver,
 
   // The HTTP pipelining test server.
   std::string http_pipelining_test_server_;
-
-  // The IOThread for accessing global HostResolver to resolve
-  // network_stats_server_ host. |io_thread_| is accessed on IO thread and it is
-  // safe to access it on IO thread.
-  IOThread* io_thread_;
 
   // The identifier that's sent to the server with the log reports.
   std::string client_id_;

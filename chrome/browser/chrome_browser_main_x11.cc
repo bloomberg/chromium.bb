@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/debug/debugger.h"
+#include "base/message_loop.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/ui/browser_list.h"
