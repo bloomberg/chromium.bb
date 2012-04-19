@@ -9,12 +9,14 @@ check_PROGRAMS =				\
 	event-loop-test				\
 	client-test
 
-map_test_SOURCES = map-test.c test-runner.c test-runner.h
-array_test_SOURCES = array-test.c test-runner.c
-list_test_SOURCES = list-test.c test-runner.c
-connection_test_SOURCES = connection-test.c test-runner.c
-event_loop_test_SOURCES = event-loop-test.c test-runner.c
-client_test_SOURCES = client-test.c test-runner.c
+test_runner_src = test-runner.c test-runner.h
+
+map_test_SOURCES = map-test.c $(test_runner_src)
+array_test_SOURCES = array-test.c $(test_runner_src)
+list_test_SOURCES = list-test.c $(test_runner_src)
+connection_test_SOURCES = connection-test.c $(test_runner_src)
+event_loop_test_SOURCES = event-loop-test.c $(test_runner_src)
+client_test_SOURCES = client-test.c $(test_runner_src)
 
 AM_CFLAGS = $(GCC_CFLAGS)
 LDADD = $(top_builddir)/src/libwayland-util.la \
