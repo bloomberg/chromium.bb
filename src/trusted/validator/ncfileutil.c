@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -140,9 +140,6 @@ static int nc_load(ncfile *ncf, int fd) {
       return -1;
     }
   }
-
-  /* We now support only 32-byte bundle alignment.  */
-  ncf->ncalign = 32;
 
   /* Read the program header table */
   if (phnum <= 0 || phnum > kMaxPhnum) {

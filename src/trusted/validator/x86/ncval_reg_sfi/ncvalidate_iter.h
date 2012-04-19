@@ -97,7 +97,6 @@ typedef struct NaClValidatorState NaClValidatorState;
  * Parameters.
  *   vbase - The virtual address for the contents of the code segment.
  *   sz - The number of bytes in the code segment.
- *   alignment: 16 or 32, specifying alignment.
  *   base_register - OperandKind defining value for base register (or
  *     RegUnknown if not defined).
  *   readonly - Whether the text should be treated as read-only.
@@ -109,7 +108,6 @@ typedef struct NaClValidatorState NaClValidatorState;
 NaClValidatorState* NaClValidatorStateCreate(
     const NaClPcAddress vbase,
     const NaClMemorySize codesize,
-    const uint8_t alignment,
     const NaClOpKind base_register,
     const int readonly, /* Bool */
     const NaClCPUFeaturesX86 *features);

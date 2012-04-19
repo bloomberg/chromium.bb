@@ -348,7 +348,7 @@ if test_env.Bit('ncval_testing') and test_env.Bit('target_x86_64'):
     __AddNcvalTestingTests(report_errors)
 
 # Run segment sandboxing tests using ncval on test files.
-def __AddNcvalSegmentTests(test_cpuid_all, test_stats, detailed, align_16):
+def __AddNcvalSegmentTests(test_cpuid_all, test_stats, detailed):
   if env.Bit('target_x86_32'):
     options = ['--hex_text=-',
                '--max_errors=-1']
@@ -361,11 +361,6 @@ def __AddNcvalSegmentTests(test_cpuid_all, test_stats, detailed, align_16):
     if (test_stats):
       ext += 's'
       options.append('--stats')
-    if (align_16):
-      ext += '16'
-      options.append('--alignment=16')
-    else:
-      options.append('--alignment=32')
     if test_cpuid_all:
       options.append('--cpuid-all')
     else:
@@ -385,9 +380,7 @@ def __AddNcvalSegmentTests(test_cpuid_all, test_stats, detailed, align_16):
 for cpu_features_all in [False, True]:
   for test_stats in [False, True]:
     for detailed in [False, True]:
-      for align_16 in [False, True]:
-        __AddNcvalSegmentTests(cpu_features_all, test_stats,
-                               detailed, align_16)
+      __AddNcvalSegmentTests(cpu_features_all, test_stats, detailed)
 
 # Run tests for stubout on test files. The input file uses extension hex.
 def __AddNcValStuboutTests():

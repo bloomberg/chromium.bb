@@ -72,7 +72,6 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                NACL_TARGET_SUBARCH)(
                                    sb_kind,
                                    guest_addr, data, size,
-                                   nap->bundle_size,
                                    TRUE, /* stub out */
                                    FALSE, /* text is not read-only */
                                    &nap->cpu_features,
@@ -86,7 +85,6 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                                NACL_TARGET_SUBARCH)(
                                    sb_kind,
                                    guest_addr, data, size,
-                                   nap->bundle_size,
                                    FALSE, /* do not stub out */
                                    readonly_text,
                                    &nap->cpu_features,
@@ -111,8 +109,7 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
       NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
                         NACL_TARGET_ARCH,
                         NACL_TARGET_SUBARCH)
-      (sb_kind, guest_addr, data_old, data_new, size, nap->bundle_size,
-       &nap->cpu_features));
+      (sb_kind, guest_addr, data_old, data_new, size, &nap->cpu_features));
 }
 
 int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
@@ -129,8 +126,7 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
       NACL_SUBARCH_NAME(ApplyValidatorCopy,
                         NACL_TARGET_ARCH,
                         NACL_TARGET_SUBARCH)
-      (sb_kind, guest_addr, data_old, data_new, size, nap->bundle_size,
-       &nap->cpu_features));
+      (sb_kind, guest_addr, data_old, data_new, size, &nap->cpu_features));
 }
 
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {

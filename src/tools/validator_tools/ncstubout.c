@@ -27,7 +27,6 @@
 static Bool FixUpSection(uintptr_t load_address,
                          unsigned char *code,
                          size_t code_size) {
-  int bundle_size = 32;
   enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
   NaClValidationStatus status;
   NaClCPUFeatures cpu_features;
@@ -39,7 +38,7 @@ static Bool FixUpSection(uintptr_t load_address,
   status = NACL_SUBARCH_NAME(ApplyValidator,
                              NACL_TARGET_ARCH,
                              NACL_TARGET_SUBARCH)
-      (sb_kind, load_address, code, code_size, bundle_size,
+      (sb_kind, load_address, code, code_size,
        /* stubout_mode= */ TRUE, /* readonly_text= */ FALSE,
        &cpu_features, NULL);
   if (status == NaClValidationSucceeded) {
@@ -50,7 +49,7 @@ static Bool FixUpSection(uintptr_t load_address,
     status = NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
                                NACL_TARGET_ARCH,
                                NACL_TARGET_SUBARCH)
-        (sb_kind, load_address, code, code_size, bundle_size, &cpu_features);
+        (sb_kind, load_address, code, code_size, &cpu_features);
   }
 
   switch (status) {

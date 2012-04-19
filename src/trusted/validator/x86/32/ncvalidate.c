@@ -28,7 +28,6 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
-    int bundle_size,
     int stubout_mode,
     int readonly_text,
     const NaClCPUFeaturesX86 *cpu_features,
@@ -39,9 +38,6 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
 
   /* Check that the given parameter values are supported. */
   if (sb_kind != NACL_SB_DEFAULT)
-    return NaClValidationFailedNotImplemented;
-
-  if (bundle_size != 16 && bundle_size != 32)
     return NaClValidationFailedNotImplemented;
 
   if (stubout_mode && readonly_text)
@@ -71,11 +67,9 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
   /* Init then validator state. */
   /* TODO(ncbray) make "detailed" a parameter. */
   if (stubout_mode) {
-    vstate = NCValidateInitDetailed(guest_addr, size, bundle_size,
-                                    cpu_features);
+    vstate = NCValidateInitDetailed(guest_addr, size, cpu_features);
   } else {
-    vstate = NCValidateInit(guest_addr, size, bundle_size, readonly_text,
-                            cpu_features);
+    vstate = NCValidateInit(guest_addr, size, readonly_text, cpu_features);
   }
   if (vstate == NULL) {
     if (query != NULL)
@@ -106,19 +100,15 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 32)
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
-     int bundle_size,
      const NaClCPUFeaturesX86 *cpu_features) {
   /* Check that the given parameter values are supported. */
   if (sb_kind != NACL_SB_DEFAULT)
-    return NaClValidationFailedNotImplemented;
-
-  if (bundle_size != 16 && bundle_size != 32)
     return NaClValidationFailedNotImplemented;
 
   if (!NaClArchSupported(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 
   return NCValidateSegmentPair(data_old, data_new, guest_addr,
-                               size, bundle_size, cpu_features)
+                               size, cpu_features)
       ? NaClValidationSucceeded : NaClValidationFailed;
 }

@@ -40,7 +40,7 @@
  *
  *   if (!NaClArchSupported()) fail;
  *   NaClValidatorState* state =
- *     NaClValidatorStateCreateDetailed(base, limit - base, 32, RegR15);
+ *     NaClValidatorStateCreateDetailed(base, limit - base, RegR15, features);
  *   if (state == NULL) fail;
  *   for each section:
  *     NaClValidateSegment(maddr, vaddr, size, state);
@@ -63,7 +63,6 @@
  * Parameters.
  *   vbase - The virtual address for the contents of the code segment.
  *   sz - The number of bytes in the code segment
- *   alignment: 16 or 32, specifying alignment.
  *   base_register - OperandKind defining value for base register (or
  *     RegUnknown if not defined).
  *   features - The CPU features to use. Uses local features of machine if NULL.
@@ -74,7 +73,6 @@
 NaClValidatorState* NaClValidatorStateCreateDetailed(
     const NaClPcAddress vbase,
     const NaClMemorySize sz,
-    const uint8_t alignment,
     const NaClOpKind base_register,
     const NaClCPUFeaturesX86* features);
 

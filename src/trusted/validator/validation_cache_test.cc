@@ -105,7 +105,6 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
   MockContext context;
   NaClValidationCache cache;
   NaClCPUFeatures cpu_features;
-  int bundle_size;
 
   unsigned char code_buffer[CODE_SIZE];
 
@@ -124,8 +123,6 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
 
     NaClSetAllCPUFeatures(&cpu_features);
 
-    bundle_size = 32;
-
     memset(code_buffer, 0x90, sizeof(code_buffer));
   }
 
@@ -135,7 +132,7 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
                              NACL_TARGET_SUBARCH)(
                                  NACL_SB_DEFAULT,
                                  0, code_buffer, 32,
-                                 bundle_size, /* stubout_mode= */ FALSE,
+                                 /* stubout_mode= */ FALSE,
                                  /* readonly_test= */ FALSE, &cpu_features,
                                  &cache);
   }
@@ -157,7 +154,7 @@ TEST_F(ValidationCachingInterfaceTests, NoCache) {
                         NACL_TARGET_SUBARCH)(
                             NACL_SB_DEFAULT,
                             0, code_buffer, CODE_SIZE,
-                            bundle_size, /* stubout_mode= */ FALSE,
+                            /* stubout_mode= */ FALSE,
                             /* readonly_test= */ FALSE, &cpu_features,
                             NULL);
   EXPECT_EQ(NaClValidationSucceeded, status);

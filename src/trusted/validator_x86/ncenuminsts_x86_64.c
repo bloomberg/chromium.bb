@@ -135,8 +135,8 @@ Bool NaClInstValidates(uint8_t* mbase,
   NaClCPUFeaturesX86 cpu_features;
 
   NaClGetCurrentCPUFeatures(&cpu_features);
-  state = NaClValidatorStateCreate(vbase, (NaClMemorySize) size,
-                                   32, RegR15, FALSE, &cpu_features);
+  state = NaClValidatorStateCreate(vbase, (NaClMemorySize) size, RegR15, FALSE,
+                                   &cpu_features);
   do {
     NaClSegmentInitialize(mbase, vbase, (NaClMemorySize) size, &segment);
     iter = NaClInstIterCreate(kNaClDecoderTables, &segment);
@@ -165,7 +165,7 @@ Bool NaClSegmentValidates(uint8_t* mbase,
   /* check if NaCl thinks the given code segment is valid. */
   NaClSetAllCPUFeatures(&cpu_features);
   status = NaCl_ApplyValidator_x86_64(
-      NACL_SB_DEFAULT, vbase, mbase, size, 32,
+      NACL_SB_DEFAULT, vbase, mbase, size,
       /* stubout_mode= */ FALSE, /* readonly_text= */ FALSE, &cpu_features,
       NULL);
   switch (status) {

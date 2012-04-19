@@ -28,12 +28,11 @@ static NaClValidationStatus NCApplyValidatorVerbosely_x86_32(
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
-    int bundle_size,
     const NaClCPUFeaturesX86 *cpu_features) {
   int validator_result = 0;
   struct NCValidatorState *vstate;
 
-  vstate = NCValidateInitDetailed(guest_addr, size, bundle_size, cpu_features);
+  vstate = NCValidateInitDetailed(guest_addr, size, cpu_features);
   if (vstate == NULL) return NaClValidationFailedOutOfMemory;
   NCValidateSetNumDiagnostics(vstate, -1);  /* Reports all errors. */
   NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
@@ -49,15 +48,12 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 32)
      uintptr_t guest_addr,
      uint8_t *data,
      size_t size,
-     int bundle_size,
      const NaClCPUFeaturesX86 *cpu_features) {
-  NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
-  if (bundle_size == 16 || bundle_size == 32) {
-    if (!NaClArchSupported(cpu_features))
-      return NaClValidationFailedCpuNotSupported;
-    status = NCApplyValidatorVerbosely_x86_32(
-        guest_addr, data, size, bundle_size, cpu_features);
-  }
-  return status;
+
+  if (!NaClArchSupported(cpu_features))
+    return NaClValidationFailedCpuNotSupported;
+
+  return NCApplyValidatorVerbosely_x86_32(
+      guest_addr, data, size, cpu_features);
 }

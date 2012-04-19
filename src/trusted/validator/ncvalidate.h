@@ -73,7 +73,6 @@ typedef enum NaClValidationStatus {
  *           will be used by objdump.
  *    data - The contents of the code segment to be validated.
  *    size - The size of the code segment to be validated.
- *    bundle_size - The number of bytes in a code bundle.
  *    stubout_mode - Whether the validator should stub out disallowed
  *           instructions. This applies the validator silently, stubbing out
  *           instructions that may not validate with a suitable halt
@@ -94,7 +93,6 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
     uintptr_t               guest_addr,
     uint8_t                 *data,
     size_t                  size,
-    int                     bundle_size,
     int                     stubout_mode,
     int                     readonly_text,
     const NaClCPUFeatures   *cpu_features,
@@ -111,7 +109,6 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
  *           will be used by objdump.
  *    data - The contents of the code segment to be validated.
  *    size - The size of the code segment to be validated.
- *    bundle_size - The number of bytes in a code bundle.
  *    cpu_features - The CPU features to support while validating.
  */
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
@@ -121,7 +118,6 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
     uintptr_t               guest_addr,
     uint8_t                 *data,
     size_t                  size,
-    int                     bundle_size,
     const NaClCPUFeatures   *cpu_features);
 
 /* Applies validator to new code segment, assuming that it was updated
@@ -135,7 +131,6 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely,
  *    data_old - The contents of the original code segment.
  *    data_new - The contents of the new code segment that should be validated.
  *    size - The size of the passed code segments.
- *    bundle_size - The number of bytes in a code bundle.
  *    cpu_features - The CPU features to support while validating.
  */
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
@@ -146,7 +141,6 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
       uint8_t               *data_old,
       uint8_t               *data_new,
       size_t                size,
-      int                   bundle_size,
       const NaClCPUFeatures *cpu_features);
 
 /* Runs the validator to copy code from an existing code segment to a new
@@ -163,7 +157,6 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
  *    data_new - The addres of the new code segment for which the original
  *           code segment should be copied into.
  *    size - The size of the passed code segments.
- *    bundle_size - The number of bytes in a code bundle.
  *    cpu_features - The CPU features to support while validating.
  */
 extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
@@ -174,7 +167,6 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
     uint8_t               *data_old,
     uint8_t               *data_new,
     size_t                size,
-    int                   bundle_size,
     const NaClCPUFeatures *cpu_features);
 
 EXTERN_C_END

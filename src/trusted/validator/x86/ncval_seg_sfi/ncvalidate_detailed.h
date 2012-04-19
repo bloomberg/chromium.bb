@@ -33,7 +33,7 @@
  *
  * Basic usage:
  *   if (!NaClArchSuppported()) fail
- *   vstate = NCValidateInitDetailed(base, size, 16)
+ *   vstate = NCValidateInitDetailed(base, size, cpu_features)
  *   if vstate == 0 fail
  *   for each section:
  *     NCValidateSegment(maddr, base, size, vstate);
@@ -57,7 +57,6 @@
  * Parameters:
  *    vbase: base virtual address for code segment
  *    codesize: size in bytes of code segment
- *    alignment: 16 or 32, specifying alignment
  *    features: the features supported by the CPU that will run the code
  * Returns:
  *    an initialized struct NCValidatorState * if everything is okay,
@@ -66,7 +65,6 @@
 struct NCValidatorState *NCValidateInitDetailed(
     const NaClPcAddress vbase,
     const NaClMemorySize codesize,
-    const uint8_t alignment,
     const NaClCPUFeaturesX86* features);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_SEG_SFI_NCVALIDATE_DETAILED_H__ */

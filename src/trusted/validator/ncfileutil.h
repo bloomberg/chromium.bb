@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -39,7 +39,6 @@ typedef struct {
   Elf_Phdr* pheaders;    /* copy of the Elf program headers */
   Elf_Half shnum;        /* number of Elf section headers */
   Elf_Shdr* sheaders;    /* copy of the Elf section headers */
-  int ncalign;
   nc_loadfile_error_fn error_fn;  /* The error printing routine to use. */
 } ncfile;
 

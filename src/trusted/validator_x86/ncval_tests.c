@@ -20,6 +20,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/gio/gio.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncdecode_verbose.h"
 #include "native_client/src/trusted/validator/x86/ncval_seg_sfi/ncvalidate.h"
@@ -72,202 +73,6 @@ struct NCValTestCase NCValTests[] = {
     "c9 \n"                             /* leave                           */
     "c3 \n"                             /* ret                             */
     "00 00 f4 \n"
-  },
-  {
-    "test 4",
-    "a big chunk of code whose origin is not clear",
-    /* sawfailure= */ 0, /* illegalinst= */ 0,
-    /* instructions= */ 90,
-    /* vaddr= */ 0x8054600,
-    "8d 4c 24 04 \n"                    /* lea    0x4(%esp),%ecx           */
-    "83 e4 f0 \n"                       /* and    $0xfffffff0,%esp         */
-    "ff 71 fc \n"                       /* pushl  -0x4(%ecx)               */
-    "55 \n"                             /* push   %ebp                     */
-    "89 e5 \n"                          /* mov    %esp,%ebp                */
-    "51 \n"                             /* push   %ecx                     */
-    "66 90 \n"                          /* xchg   %ax,%ax                  */
-    "83 ec 24 \n"                       /* sub    $0x24,%esp               */
-    "89 4d e8 \n"                       /* mov    %ecx,-0x18(%ebp)         */
-    "c7 45 f4 0a 00 00 00 \n"           /* movl   $0xa,-0xc(%ebp)          */
-    "8b 45 e8 \n"                       /* mov    -0x18(%ebp),%eax         */
-    "83 38 01 \n"                       /* cmpl   $0x1,(%eax)              */
-    "7f 2b \n"                          /* jg     0x2d                     */
-    "8b 55 e8 \n"                       /* mov    -0x18(%ebp),%edx         */
-    "8b 42 04 \n"                       /* mov    0x4(%edx),%eax           */
-    "8b 00 \n"                          /* mov    (%eax),%eax              */
-    "8d 76 00 \n"                       /* lea    0x0(%esi),%esi           */
-    "89 44 24 04 \n"                    /* mov    %eax,0x4(%esp)           */
-    "c7 04 24 54 14 00 08 \n"           /* movl   $0x8001454,(%esp)        */
-    "e8 c0 02 00 00 \n"                 /* call   0x2c5                    */
-    "c7 04 24 01 00 00 00 \n"           /* movl   $0x1,(%esp)              */
-    "8d 74 26 00 \n"                    /* lea    0x0(%esi),%esi           */
-    "e8 c0 01 00 00 \n"                 /* call   0x1c5                    */
-    "8b 55 e8 \n"                       /* mov    -0x18(%ebp),%edx         */
-    "8b 42 04 \n"                       /* mov    0x4(%edx),%eax           */
-    "83 c0 04 \n"                       /* add    $0x4,%eax                */
-    "8b 00 \n"                          /* mov    (%eax),%eax              */
-    "89 04 24 \n"                       /* mov    %eax,(%esp)              */
-    "66 90 \n"                          /* xchg   %ax,%ax                  */
-    "8d 74 26 00 \n"                    /* lea    0x0(%esi),%esi           */
-    "8d bc 27 00 00 00 00 \n"           /* lea    0x0(%edi),%edi           */
-    "e8 90 09 00 00 \n"                 /* call   0x995                    */
-    "89 45 f8 \n"                       /* mov    %eax,-0x8(%ebp)          */
-    "8b 45 e8 \n"                       /* mov    -0x18(%ebp),%eax         */
-    "83 38 02 \n"                       /* cmpl   $0x2,(%eax)              */
-    "7e 25 \n"                          /* jle    0x27                     */
-    "8b 55 e8 \n"                       /* mov    -0x18(%ebp),%edx         */
-    "66 90 \n"                          /* xchg   %ax,%ax                  */
-    "8b 42 04 \n"                       /* mov    0x4(%edx),%eax           */
-    "83 c0 08 \n"                       /* add    $0x8,%eax                */
-    "8b 00 \n"                          /* mov    (%eax),%eax              */
-    "89 04 24 \n"                       /* mov    %eax,(%esp)              */
-    "e8 70 09 00 00 \n"                 /* call   0x975                    */
-    "89 45 f4 \n"                       /* mov    %eax,-0xc(%ebp)          */
-    "8d b6 00 00 00 00 \n"              /* lea    0x0(%esi),%esi           */
-    "8d bc 27 00 00 00 00 \n"           /* lea    0x0(%edi),%edi           */
-    "8b 45 f4 \n"                       /* mov    -0xc(%ebp),%eax          */
-    "a3 28 2f 00 08 \n"                 /* mov    %eax,0x8002f28           */
-    "eb 26 \n"                          /* jmp    0x28                     */
-    "8d b6 00 00 00 00 \n"              /* lea    0x0(%esi),%esi           */
-    "c7 44 24 08 03 00 00 00 \n"        /* movl   $0x3,0x8(%esp)           */
-    "c7 44 24 04 01 00 00 00 \n"        /* movl   $0x1,0x4(%esp)           */
-    "8b 45 f4 \n"                       /* mov    -0xc(%ebp),%eax          */
-    "89 04 24 \n"                       /* mov    %eax,(%esp)              */
-    "90 \n"                             /* nop                             */
-    "8d 74 26 00 \n"                    /* lea    0x0(%esi),%esi           */
-    "e8 20 00 00 00 \n"                 /* call   0x25                     */
-    "83 7d f8 00 \n"                    /* cmpl   $0x0,-0x8(%ebp)          */
-    "0f 9f c0 \n"                       /* setg   %al                      */
-    "83 6d f8 01 \n"                    /* subl   $0x1,-0x8(%ebp)          */
-    "84 c0 \n"                          /* test   %al,%al                  */
-    "8d 76 00 \n"                       /* lea    0x0(%esi),%esi           */
-    "75 ce \n"                          /* jne    0xffffffd0               */
-    "c7 04 24 00 00 00 00 \n"           /* movl   $0x0,(%esp)              */
-    "66 90 \n"                          /* xchg   %ax,%ax                  */
-    "e8 20 01 00 00 \n"                 /* call   0x125                    */
-    "55 \n"                             /* push   %ebp                     */
-    "89 e5 \n"                          /* mov    %esp,%ebp                */
-    "83 ec 1c \n"                       /* sub    $0x1c,%esp               */
-    "83 7d 08 01 \n"                    /* cmpl   $0x1,0x8(%ebp)           */
-    "75 44 \n"                          /* jne    0x46                     */
-    "8b 55 0c \n"                       /* mov    0xc(%ebp),%edx           */
-    "90 \n"                             /* nop                             */
-    "8b 04 95 24 2f 00 08 \n"           /* mov    0x8002f24(,%edx,4),%eax  */
-    "83 e8 01 \n"                       /* sub    $0x1,%eax                */
-    "8d b6 00 00 00 00 \n"              /* lea    0x0(%esi),%esi           */
-    "89 04 95 24 2f 00 08 \n"           /* mov    %eax,0x8002f24(,%edx,4)  */
-    "8b 55 10 \n"                       /* mov    0x10(%ebp),%edx          */
-    "8d b6 00 00 00 00 \n"              /* lea    0x0(%esi),%esi           */
-    "8b 04 95 24 2f 00 08 \n"           /* mov    0x8002f24(,%edx,4),%eax  */
-    "83 c0 01 \n"                       /* add    $0x1,%eax                */
-    "8d b6 00 00 00 00 \n"              /* lea    0x0(%esi),%esi           */
-    "89 04 95 24 2f 00 08 \n"           /* mov    %eax,0x8002f24(,%edx,4)  */
-    "eb 77 \n"                          /* jmp    0x79                     */
-    "8d b4 26 00 00 00 00 \n"           /* lea    0x0(%esi),%esi           */
-    "8b 45 10 \n"                       /* mov    0x10(%ebp),%eax          */
-    "8b 55 0c \n"                       /* mov    0xc(%ebp),%edx           */
-    "01 c2 \n"                          /* add    %eax,%edx                */
-    "b8 06 00 00 00 \n"                 /* mov    $0x6,%eax                */
-    "29 d0 \n"                          /* sub    %edx,%eax                */
-    "f4 \n"                             /* hlt                             */
-  },
-  {
-    "test 5",
-    "a big chunk of code whose origin is not clear",
-    /* sawfailure= */ 0, /* illegalinst= */ 0,
-    /* instructions= */ 90,
-    /* vaddr= */ 0x8054600,
-    "8d 4c 24 04 \n"                    /* lea    0x4(%esp),%ecx           */
-    "83 e4 f0 \n"                       /* and    $0xfffffff0,%esp         */
-    "ff 71 fc \n"                       /* pushl  -0x4(%ecx)               */
-    "55 \n"                             /* push   %ebp                     */
-    "89 e5 \n"                          /* mov    %esp,%ebp                */
-    "51 \n"                             /* push   %ecx                     */
-    "66 90 \n"                          /* xchg   %ax,%ax                  */
-    "83 ec 24 \n"                       /* sub    $0x24,%esp               */
-    "89 4d e8 \n"                       /* mov    %ecx,-0x18(%ebp)         */
-    "c7 45 f4 0a 00 00 00 \n"           /* movl   $0xa,-0xc(%ebp)          */
-    "8b 45 e8 \n"                       /* mov    -0x18(%ebp),%eax         */
-    "83 38 01 \n"                       /* cmpl   $0x1,(%eax)              */
-    "7f 2b \n"                          /* jg     0x2d                     */
-    "8b 55 e8 \n"                       /* mov    -0x18(%ebp),%edx         */
-    "8b 42 04 \n"                       /* mov    0x4(%edx),%eax           */
-    "8b 00 \n"                          /* mov    (%eax),%eax              */
-    "8d 76 00 \n"                       /* lea    0x0(%esi),%esi           */
-    "89 44 24 04 \n"                    /* mov    %eax,0x4(%esp)           */
-    "c7 04 24 54 14 00 08 \n"           /* movl   $0x8001454,(%esp)        */
-    "e8 c0 02 00 00 \n"                 /* call   0x2c5                    */
-    "c7 04 24 01 00 00 00 \n"           /* movl   $0x1,(%esp)              */
-    "8d 74 26 00 \n"                    /* lea    0x0(%esi),%esi           */
-    "e8 c0 01 00 00 \n"                 /* call   0x1c5                    */
-    "8b 55 e8 \n"                       /* mov    -0x18(%ebp),%edx         */
-    "8b 42 04 \n"                       /* mov    0x4(%edx),%eax           */
-    "83 c0 04 \n"                       /* add    $0x4,%eax                */
-    "8b 00 \n"                          /* mov    (%eax),%eax              */
-    "89 04 24 \n"                       /* mov    %eax,(%esp)              */
-    "66 90 \n"                          /* xchg   %ax,%ax                  */
-    "8d 74 26 00 \n"                    /* lea    0x0(%esi),%esi           */
-    "8d bc 27 00 00 00 00 \n"           /* lea    0x0(%edi),%edi           */
-    "e8 90 09 00 00 \n"                 /* call   0x995                    */
-    "89 45 f8 \n"                       /* mov    %eax,-0x8(%ebp)          */
-    "8b 45 e8 \n"                       /* mov    -0x18(%ebp),%eax         */
-    "83 38 02 \n"                       /* cmpl   $0x2,(%eax)              */
-    "7e 25 \n"                          /* jle    0x27                     */
-    "8b 55 e8 \n"                       /* mov    -0x18(%ebp),%edx         */
-    "66 90 \n"                          /* xchg   %ax,%ax                  */
-    "8b 42 04 \n"                       /* mov    0x4(%edx),%eax           */
-    "83 c0 08 \n"                       /* add    $0x8,%eax                */
-    "8b 00 \n"                          /* mov    (%eax),%eax              */
-    "89 04 24 \n"                       /* mov    %eax,(%esp)              */
-    "e8 70 09 00 00 \n"                 /* call   0x975                    */
-    "89 45 f4 \n"                       /* mov    %eax,-0xc(%ebp)          */
-    "8d b6 00 00 00 00 \n"              /* lea    0x0(%esi),%esi           */
-    "8d bc 27 00 00 00 00 \n"           /* lea    0x0(%edi),%edi           */
-    "8b 45 f4 \n"                       /* mov    -0xc(%ebp),%eax          */
-    "a3 28 2f 00 08 \n"                 /* mov    %eax,0x8002f28           */
-    "eb 26 \n"                          /* jmp    0x28                     */
-    "8d b6 00 00 00 00 \n"              /* lea    0x0(%esi),%esi           */
-    "c7 44 24 08 03 00 00 00 \n"        /* movl   $0x3,0x8(%esp)           */
-    "c7 44 24 04 01 00 00 00 \n"        /* movl   $0x1,0x4(%esp)           */
-    "8b 45 f4 \n"                       /* mov    -0xc(%ebp),%eax          */
-    "89 04 24 \n"                       /* mov    %eax,(%esp)              */
-    "90 \n"                             /* nop                             */
-    "8d 74 26 00 \n"                    /* lea    0x0(%esi),%esi           */
-    "e8 20 00 00 00 \n"                 /* call   0x25                     */
-    "83 7d f8 00 \n"                    /* cmpl   $0x0,-0x8(%ebp)          */
-    "0f 9f c0 \n"                       /* setg   %al                      */
-    "83 6d f8 01 \n"                    /* subl   $0x1,-0x8(%ebp)          */
-    "84 c0 \n"                          /* test   %al,%al                  */
-    "8d 76 00 \n"                       /* lea    0x0(%esi),%esi           */
-    "75 ce \n"                          /* jne    0xffffffd0               */
-    "c7 04 24 00 00 00 00 \n"           /* movl   $0x0,(%esp)              */
-    "66 90 \n"                          /* xchg   %ax,%ax                  */
-    "e8 20 01 00 00 \n"                 /* call   0x125                    */
-    "55 \n"                             /* push   %ebp                     */
-    "89 e5 \n"                          /* mov    %esp,%ebp                */
-    "83 ec 1c \n"                       /* sub    $0x1c,%esp               */
-    "83 7d 08 01 \n"                    /* cmpl   $0x1,0x8(%ebp)           */
-    "75 44 \n"                          /* jne    0x46                     */
-    "8b 55 0c \n"                       /* mov    0xc(%ebp),%edx           */
-    "90 \n"                             /* nop                             */
-    "8b 04 95 24 2f 00 08 \n"           /* mov    0x8002f24(,%edx,4),%eax  */
-    "83 e8 01 \n"                       /* sub    $0x1,%eax                */
-    "8d b6 00 00 00 00 \n"              /* lea    0x0(%esi),%esi           */
-    "89 04 95 24 2f 00 08 \n"           /* mov    %eax,0x8002f24(,%edx,4)  */
-    "8b 55 10 \n"                       /* mov    0x10(%ebp),%edx          */
-    "8d b6 00 00 00 00 \n"              /* lea    0x0(%esi),%esi           */
-    "8b 04 95 24 2f 00 08 \n"           /* mov    0x8002f24(,%edx,4),%eax  */
-    "83 c0 01 \n"                       /* add    $0x1,%eax                */
-    "8d b6 00 00 00 00 \n"              /* lea    0x0(%esi),%esi           */
-    "89 04 95 24 2f 00 08 \n"           /* mov    %eax,0x8002f24(,%edx,4)  */
-    "00 00 \n"                          /* add    %al,(%eax)               */
-    "8d b4 26 00 00 00 00 \n"           /* lea    0x0(%esi),%esi           */
-    "8b 45 10 \n"                       /* mov    0x10(%ebp),%eax          */
-    "8b 55 0c \n"                       /* mov    0xc(%ebp),%edx           */
-    "01 c2 \n"                          /* add    %eax,%edx                */
-    "b8 06 00 00 00 \n"                 /* mov    $0x6,%eax                */
-    "29 d0 \n"                          /* sub    %edx,%eax                */
-    "f4 \n"                             /* hlt                             */
   },
   {
     "test 6",
@@ -429,7 +234,7 @@ struct NCValTestCase NCValTests[] = {
     /* sawfailure= */ 0, /* illegalinst= */ 0,
     /* instructions= */ 2,
     /* vaddr= */ 0x80000000,
-    "83 e0 f0 ff e0 f4 \n"
+    "83 e0 e0 ff e0 f4 \n"
   },
   {
     "test 25",
@@ -914,7 +719,7 @@ struct NCValTestCase NCValTests[] = {
     /* vaddr= */ 0x80000000,
     "90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 \n"
     "90 90 90 90 90 90 90 90 90 90 90 \n"
-    "83 e2 f0 \n"                       /* and */
+    "83 e2 e0 \n"                       /* and */
     "ff 12 \n"                          /* call (*edx) */
     "90 f4 \n"                          /* nop halt */
   },
@@ -926,7 +731,7 @@ struct NCValTestCase NCValTests[] = {
     /* vaddr= */ 0x80000000,
     "90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 90 \n"
     "90 90 90 90 90 90 90 90 90 90 90 \n"
-    "83 e2 f0 \n"                       /* and */
+    "83 e2 e0 \n"                       /* and */
     "ff d2 \n"                          /* call *edx */
     "90 f4 \n"                          /* nop halt */
   },
@@ -1153,7 +958,7 @@ static void TestValidator(struct NCValTestCase *vtest, int didstubout) {
    */
   assert(byte0[data_size - 1] == 0xf4 /* HLT */);
 
-  vstate = NCValidateInit(vtest->vaddr, data_size - 1, 16,
+  vstate = NCValidateInit(vtest->vaddr, data_size - 1,
                           FALSE, &g_ncval_cpu_features);
   assert (vstate != NULL);
   NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
@@ -1171,6 +976,7 @@ static void TestValidator(struct NCValTestCase *vtest, int didstubout) {
     if (vtest->instructions != vstate->stats.instructions) break;
     if (vtest->illegalinst != vstate->stats.illegalinst) break;
     Info("*** %s passed (%s)\n", vtest->name, vtest->description);
+    printf("\n");
     NCValidateFreeState(&vstate);
     return;
   } while (0);
@@ -1183,20 +989,17 @@ static void TestValidator(struct NCValTestCase *vtest, int didstubout) {
 void test_fail_on_bad_alignment() {
   struct NCValidatorState *vstate;
 
-  vstate = NCValidateInit(0x80000000, 0x1000, 16, FALSE,
+   printf("Running test_fail_on_bad_alignment...\n");
+
+  vstate = NCValidateInit(0x80000000, 0x1000, FALSE,
                           &g_ncval_cpu_features);
-  assert (vstate != NULL);
+  CHECK(vstate != NULL);
   NCValidateFreeState(&vstate);
 
   /* Unaligned start addresses are not allowed. */
-  vstate = NCValidateInit(0x80000001, 0x1000, 16, FALSE,
+  vstate = NCValidateInit(0x80000001, 0x1000, FALSE,
                           &g_ncval_cpu_features);
-  assert (vstate == NULL);
-
-  /* Only alignments of 32 and 64 bytes are supported. */
-  vstate = NCValidateInit(0x80000000, 0x1000, 64, FALSE,
-                          &g_ncval_cpu_features);
-  assert (vstate == NULL);
+  CHECK(vstate == NULL);
 }
 
 void test_stubout() {
@@ -1209,6 +1012,8 @@ void test_stubout() {
     /* vaddr= */ 0x80000000,
     "0f 60 00 f4 \n" /* punpcklbw (%eax),%mm0 */
   };
+
+  printf("Running test_stubout...\n");
 
   /* If MMX instructions are not allowed, stubout will occur. */
   NaClSetCPUFeature(&g_ncval_cpu_features, NaClCPUFeature_MMX, FALSE);

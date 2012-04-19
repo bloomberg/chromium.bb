@@ -91,9 +91,6 @@ static NaClCPUFeaturesX86 ncval_cpu_features;
 /* Define whether timing should be applied when running the validator. */
 static Bool NACL_FLAGS_print_timing = FALSE;
 
-/* Define the block alignment size to use. */
-static int NACL_FLAGS_block_alignment = 32;
-
 /* Define what level of errors will be printed.
  * Note: If multiple flags are true, the one with
  * the highest severity will be selected.
@@ -336,11 +333,10 @@ int AnalyzeSegmentSections(ncfile *ncf, struct NCValidatorState *vstate) {
  * messages if selected.
  */
 struct NCValidatorState* NCValInit(const NaClPcAddress vbase,
-                                   const NaClMemorySize codesize,
-                                   const uint8_t alignment) {
+                                   const NaClMemorySize codesize) {
   return NACL_FLAGS_detailed_errors
-      ? NCValidateInitDetailed(vbase, codesize, alignment, &ncval_cpu_features)
-      : NCValidateInit(vbase, codesize, alignment, FALSE, &ncval_cpu_features);
+      ? NCValidateInitDetailed(vbase, codesize, &ncval_cpu_features)
+      : NCValidateInit(vbase, codesize, FALSE, &ncval_cpu_features);
 }
 
 
@@ -350,7 +346,7 @@ static Bool AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
   Bool result;
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
-  vstate = NCValInit(vbase, vlimit - vbase, ncf->ncalign);
+  vstate = NCValInit(vbase, vlimit - vbase);
   if (vstate == NULL) return FALSE;
   NCValidateSetErrorReporter(vstate, &kNCVerboseErrorReporter);
   if (AnalyzeSegmentSections(ncf, vstate) < 0) {
@@ -382,13 +378,12 @@ static NaClOpKind nacl_base_register =
 struct NaClValidatorState* NaClValStateCreate(
     const NaClPcAddress vbase,
     const NaClMemorySize sz,
-    const uint8_t alignment,
     const NaClOpKind base_register) {
   return
       NACL_FLAGS_detailed_errors
-      ? NaClValidatorStateCreateDetailed(vbase, sz, alignment, base_register,
+      ? NaClValidatorStateCreateDetailed(vbase, sz, base_register,
                                          &ncval_cpu_features)
-      : NaClValidatorStateCreate(vbase, sz, alignment, base_register,
+      : NaClValidatorStateCreate(vbase, sz, base_register,
                                  FALSE, &ncval_cpu_features);
 }
 
@@ -463,8 +458,7 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
   Bool return_value = TRUE;
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
-  vstate = NaClValStateCreate(vbase, vlimit - vbase,
-                              ncf->ncalign, nacl_base_register);
+  vstate = NaClValStateCreate(vbase, vlimit - vbase, nacl_base_register);
   if (vstate == NULL) {
     NaClValidatorMessage(LOG_ERROR, vstate, "Unable to create validator state");
     return FALSE;
@@ -526,7 +520,6 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
   NaClValidatorState* state;
   state = NaClValStateCreate(data->base,
                              data->num_bytes,
-                             (uint8_t) NACL_FLAGS_block_alignment,
                              nacl_base_register);
   if (NULL == state) {
     NaClValidatorMessage(LOG_ERROR, NULL, "Unable to create validator state");
@@ -547,8 +540,7 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
   NaClReportSafety(return_value, "");
 #else
   struct NCValidatorState *vstate;
-  vstate = NCValInit(data->base, data->num_bytes,
-                     (uint8_t) NACL_FLAGS_block_alignment);
+  vstate = NCValInit(data->base, data->num_bytes);
   if (vstate == NULL) {
     printf("Unable to create validator state, quitting!\n");
   } else {
@@ -837,7 +829,6 @@ static Bool GrokAnIntFlag(const char *arg) {
     const char *flag_name;
     int *flag_ptr;
   } flags[] = {
-    { "--alignment" , &NACL_FLAGS_block_alignment },
     { "--max_errors", &NACL_FLAGS_max_reported_errors},
     { "--attempts"  , &NACL_FLAGS_validate_attempts },
   };

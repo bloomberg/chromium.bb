@@ -10,12 +10,10 @@
 NaClValidatorState* NaClValidatorStateCreateDetailed(
     const NaClPcAddress vbase,
     const NaClMemorySize sz,
-    const uint8_t alignment,
     const NaClOpKind base_register,
     const NaClCPUFeaturesX86* features) {
   NaClValidatorState* state =
-      NaClValidatorStateCreate(vbase, sz, alignment, base_register,
-                               FALSE, features);
+      NaClValidatorStateCreate(vbase, sz, base_register, FALSE, features);
   if (state != NULL) {
     state->do_detailed = TRUE;
   }

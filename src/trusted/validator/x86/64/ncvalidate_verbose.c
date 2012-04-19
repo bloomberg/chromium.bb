@@ -27,12 +27,10 @@ static NaClValidationStatus NaClApplyValidatorVerbosely_x86_64(
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
-    int bundle_size,
     const NaClCPUFeaturesX86 *cpu_features) {
   struct NaClValidatorState *vstate;
   NaClValidationStatus status =
-      NaClValidatorSetup_x86_64(guest_addr, size, bundle_size, FALSE,
-                                cpu_features, &vstate);
+      NaClValidatorSetup_x86_64(guest_addr, size, FALSE, cpu_features, &vstate);
   if (status != NaClValidationSucceeded) return status;
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
   NaClValidatorStateSetMaxReportedErrors(vstate, -1);  /* Report all errors. */
@@ -49,15 +47,12 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 64)
      uintptr_t guest_addr,
      uint8_t *data,
      size_t size,
-     int bundle_size,
      const NaClCPUFeaturesX86 *cpu_features) {
-  NaClValidationStatus status = NaClValidationFailedNotImplemented;
   assert(NACL_SB_DEFAULT == sb_kind);
-  if (bundle_size == 16 || bundle_size == 32) {
-    if (!NaClArchSupported(cpu_features))
-      return NaClValidationFailedCpuNotSupported;
-    status = NaClApplyValidatorVerbosely_x86_64(
-        guest_addr, data, size, bundle_size, cpu_features);
-  }
-  return status;
+
+  if (!NaClArchSupported(cpu_features))
+    return NaClValidationFailedCpuNotSupported;
+
+  return NaClApplyValidatorVerbosely_x86_64(
+      guest_addr, data, size, cpu_features);
 }
