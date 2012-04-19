@@ -4,13 +4,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface CRDAppDelegate : NSObject <NSApplicationDelegate>
+@interface RemotingUninstallerAppDelegate : NSObject {
+}
 
-@property (assign) IBOutlet NSWindow *window;
-
-- (IBAction)uninstall:(NSButton *)sender;
+- (IBAction)uninstall:(id)sender;
 - (IBAction)cancel:(id)sender;
 
-- (IBAction)handleMenuClose:(NSMenuItem *)sender;
-
+- (IBAction)handleMenuClose:(NSMenuItem*)sender;
 @end

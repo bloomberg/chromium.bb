@@ -2,27 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/installer/mac/uninstaller/remoting_uninstaller_delegate.h"
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_cftyperef.h"
 
-@interface AppDelegate : NSObject {
-  NSWindow* _window;
-}
-
-@property (assign) IBOutlet NSWindow* window;
-
-- (IBAction)uninstall:(NSButton*)sender;
-- (IBAction)cancel:(id)sender;
-
-- (IBAction)handleMenuClose:(NSMenuItem*)sender;
-
-@end
-
-@implementation AppDelegate
-
-@synthesize window = _window;
+@implementation RemotingUninstallerAppDelegate
 
 NSString* const kServiceName = @"org.chromium.chromoting";
 NSString* const kLaunchAgentsDir = @"/Library/LaunchAgents";
