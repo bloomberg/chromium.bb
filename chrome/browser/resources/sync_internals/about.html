@@ -1,27 +1,44 @@
 <script src="chrome://sync-internals/about.js"></script>
 
 <style>
-div.column {
-  display: inline-block;
-  padding-right: 5em;
-  vertical-align: top;
+div#aboutInfo {
+  -webkit-columns: 3;
 }
 
 div#aboutInfo h2 {
   color: #4a8ee6;
   font-size: 100%;
+  margin-bottom: 0;
 }
 
 div#aboutInfo .err {
   color: red;
 }
 
-table#aboutDetails tr:nth-child(odd) {
+div#aboutInfo div.section {
+  display: inline-block;
+  width: 100%;
+  -webkit-column-break-inside: avoid;
+}
+
+table.aboutDetails {
+  width: 100%;
+}
+
+table.aboutDetails tr:nth-child(odd) {
   background: #eff3ff;
 }
 
 table#routingInfo tr:nth-child(odd) {
   background: #ccffcc;
+}
+
+div#aboutInfo div.section > td#detail {
+  width: 50%;
+}
+
+div#aboutInfo div.section > td#value {
+  width: 50%;
 }
 
 @-webkit-keyframes highlight1 {
@@ -34,71 +51,61 @@ table#routingInfo tr:nth-child(odd) {
   100% { background: #eff3ff; }
 }
 
-table#aboutDetails tr[highlighted] {
+table.aboutDetails tr[highlighted] {
   -webkit-animation-name: highlight1;
   -webkit-animation-duration: 3s;
   -webkit-animation-timing-function: linear;
 }
 
-table#aboutDetails tr[highlighted]:nth-child(odd) {
+table.aboutDetails tr[highlighted]:nth-child(odd) {
   -webkit-animation-name: highlight2;
   -webkit-animation-duration: 3s;
   -webkit-animation-timing-function: linear;
 }
-
 </style>
 
 <div id='aboutInfo'>
-<div class="column">
-  <h2>Summary</h2>
-  <p jscontent="summary"/>
-  <p jsdisplay="unrecoverable_error_detected">
-    <span class="err" jscontent="unrecoverable_error_message"></span>
-  </p>
-
-  <p jsdisplay="failed_data_types_detected">
-    <span class="err" jscontent="failed_data_types"></span>
-  </p>
-
-  <h2>Sync URL</h2>
-  <p jscontent="service_url"/>
-
-  <h2>Details</h2>
-  <table id="aboutDetails">
-    <tr>
-      <td>Version</td>
-      <td jscontent="version"/>
-    </tr>
-    <tr>
-      <td>Last Synced</td>
-      <td jscontent="time_since_sync"/>
-    </tr>
-    <tr jsselect="details" jseval='highlightIfChanged(this, this.children[1].innerText, stat_value)'>
-      <td jscontent="stat_name"/>
-      <td jscontent="stat_value"/>
-    </tr>
-  </table>
-</div>
-
-<div class="column">
-  <h2>Routing Info</h2>
-  <table id="routingInfo">
-    <tr jsselect="routing_info">
-      <td jscontent="model_type"/>
-      <td jscontent="group"/>
-    </tr>
-  </table>
-</div>
-
-<div class="column">
-  <p jsdisplay="actionable_error_detected">
-    <h2 jsdisplay="actionable_error_detected">Actionable Error</h2>
-    <table id="actionableError">
-      <tr jsselect="actionable_error">
-        <td jscontent="stat_name"/>
-        <td jscontent="stat_value"/>
+  <div class="section" jsselect="details">
+    <h2 jscontent="title"></h2>
+    <table class="aboutDetails">
+      <tr jsselect="data" jseval='highlightIfChanged(this, this.children[1].innerText, stat_value)'>
+        <td class="detail" jscontent="stat_name" width=50%></td>
+        <td class="value" jscontent="stat_value" width=50%></td>
       </tr>
     </table>
-  </p>
-</div>
+  </div>
+
+  <div class="section">
+    <h2>Routing Info</h2>
+    <table id="routingInfo">
+      <tr jsselect="routing_info">
+        <td jscontent="model_type"/>
+        <td jscontent="group"/>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section" jsdisplay="unrecoverable_error_detected">
+    <p>
+      <span class="err" jscontent="unrecoverable_error_message"></span>
+    </p>
+  </div>
+
+  <div class="section" jsdisplay="failed_data_types_detected">
+    <p>
+      <span class="err" jscontent="failed_data_types"></span>
+    </p>
+  </div>
+
+  <div class="section" jsdisplay="actionable_error_detected">
+    <p jsdisplay="actionable_error_detected">
+      <h2 jsdisplay="actionable_error_detected">Actionable Error</h2>
+      <table id="actionableError">
+        <tr jsselect="actionable_error">
+          <td jscontent="stat_name"/>
+          <td jscontent="stat_value"/>
+        </tr>
+      </table>
+    </p>
+  </div>
 </div>

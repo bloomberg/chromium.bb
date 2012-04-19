@@ -465,11 +465,29 @@ void AddBoolSyncDetail(ListValue* details,
 }
 
 void AddStringSyncDetails(ListValue* details, const std::string& stat_name,
+                          const string16& stat_value) {
+  DictionaryValue* val = new DictionaryValue;
+  val->SetString("stat_name", stat_name);
+  val->SetString("stat_value", stat_value);
+  details->Append(val);
+}
+
+void AddStringSyncDetails(ListValue* details, const std::string& stat_name,
                           const std::string& stat_value) {
   DictionaryValue* val = new DictionaryValue;
   val->SetString("stat_name", stat_name);
   val->SetString("stat_value", stat_value);
   details->Append(val);
+}
+
+ListValue* AddSyncDetailsSection(ListValue* details,
+                                  const std::string& name) {
+  DictionaryValue* val = new DictionaryValue;
+  details->Append(val);
+  val->SetString("title", name);
+  ListValue* list = new ListValue;
+  val->Set("data", list);
+  return list;
 }
 
 void AddIntSyncDetail(ListValue* details, const std::string& stat_name,
@@ -508,151 +526,213 @@ std::string MakeSyncAuthErrorText(
 
 void ConstructAboutInformation(ProfileSyncService* service,
                                DictionaryValue* strings) {
+
+  ListValue* details = new ListValue();
+  strings->Set("details", details);
+  ListValue* sync_summary = AddSyncDetailsSection(details, "Summary");
+
   CHECK(strings);
   if (!service) {
-    strings->SetString("summary", "Sync service does not exist");
+    sync_ui_util::AddStringSyncDetails(sync_summary, "Summary",
+                                       "Sync service does not exist");
   } else {
+    // This bypasses regular inter-thread communication mechanisms to grab a
+    // very recent snapshot from the syncer thread.  It should be up to date
+    // with the last snapshot emitted by the syncer.  Keep in mind, though, that
+    // not all events that update these values will ping the UI thread, so you
+    // might not see all intermediate values.
     sync_api::SyncManager::Status full_status(
         service->QueryDetailedSyncStatus());
 
-    strings->SetString("service_url", service->sync_service_url().spec());
-    strings->SetString("summary", service->QuerySyncStatusSummary());
-
-    strings->SetString("version", GetVersionString());
-    strings->SetString("auth_problem",
-                       sync_ui_util::MakeSyncAuthErrorText(
-                       service->GetAuthError().state()));
-
-    strings->SetString("time_since_sync", service->GetLastSyncedTimeString());
-
-    ListValue* details = new ListValue();
-    strings->Set("details", details);
-    sync_ui_util::AddBoolSyncDetail(details, "Sync Initialized",
-                                    service->sync_initialized());
-    sync_ui_util::AddBoolSyncDetail(details, "Sync Setup Has Completed",
-                                    service->HasSyncSetupCompleted());
-    sync_ui_util::AddStringSyncDetails(
-        details,
-        "Client ID",
-        full_status.unique_id.empty() ? "none" : full_status.unique_id);
-    sync_ui_util::AddBoolSyncDetail(details,
-                                    "Notifications Enabled",
-                                    full_status.notifications_enabled);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Notifications Received",
-                                   full_status.notifications_received);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Unsynced Count",
-                                   full_status.unsynced_count);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Encryption Conflicts Detected (this cycle)",
-                                   full_status.encryption_conflicts);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Hierarchy Conflicts Detected (this cycle)",
-                                   full_status.hierarchy_conflicts);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Simple Conflicts Detected (this cycle)",
-                                   full_status.simple_conflicts);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Server Conflicts Detected (this cycle)",
-                                   full_status.server_conflicts);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Committed Items (this session)",
-                                   full_status.committed_count);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Local Overwrites",
-                                   full_status.num_local_overwrites_total);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Server Overwrites",
-                                   full_status.num_server_overwrites_total);
-    sync_ui_util::AddBoolSyncDetail(details, "Syncing", full_status.syncing);
-    sync_ui_util::AddBoolSyncDetail(details,
-                                    "Initial Sync Ended",
-                                    full_status.initial_sync_ended);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Updates Available",
-                                   full_status.updates_available);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Updates Downloaded (All)",
-                                   full_status.updates_received);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Updates Downloaded (Tombstones)",
-                                   full_status.tombstone_updates_received);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Updates Downloaded (Reflections)",
-                                   full_status.reflected_updates_received);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Empty GetUpdates",
-                                   full_status.empty_get_updates);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Nonempty GetUpdates",
-                                   full_status.nonempty_get_updates);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Sync Cycles with Successful Commits",
-                                   full_status.sync_cycles_with_commits);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Sync Cycles without Successful Commits",
-                                   full_status.sync_cycles_without_commits);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Useless Sync Cycles",
-                                   full_status.useless_sync_cycles);
-    sync_ui_util::AddIntSyncDetail(details,
-                                   "Useful Sync Cycles",
-                                   full_status.useful_sync_cycles);
-    // Only safe to call IsUsingSecondaryPassphrase() if the backend is
-    // initialized already - otherwise, we have no idea whether we are
-    // using a secondary passphrase or not.
-    if (service->sync_initialized()) {
-      sync_ui_util::AddBoolSyncDetail(details,
-                                      "Explicit Passphrase",
-                                      service->IsUsingSecondaryPassphrase());
-    }
-    sync_ui_util::AddBoolSyncDetail(details,
-                                    "Passphrase Required",
-                                    service->IsPassphraseRequired());
-    sync_ui_util::AddBoolSyncDetail(details,
-                                    "Cryptographer Ready",
-                                    full_status.cryptographer_ready);
-    sync_ui_util::AddBoolSyncDetail(details,
-                                    "Cryptographer Has Pending Keys",
-                                    full_status.crypto_has_pending_keys);
-    sync_ui_util::AddStringSyncDetails(details,
-        "Encrypted Types",
-        syncable::ModelTypeSetToString(full_status.encrypted_types));
-
+    // This is a cache of the last snapshot of type SYNC_CYCLE_ENDED where
+    // !snapshot->has_more_to_sync.  In other words, it's the last in this
+    // series of sync cycles.  The series ends only when we've done all we can
+    // to resolve conflicts and there is nothing left to commit, or an error
+    // occurs.
+    //
+    // Despite the fact that it is updated only at the end of a series of
+    // commits, its values do not reflect the series.  Its counters are based on
+    // the values from a single sync cycle.
+    //
+    // |snapshot| could be NULL if sync is not yet initialized.
     const browser_sync::sessions::SyncSessionSnapshot* snapshot =
         service->sync_initialized() ?
         service->GetLastSessionSnapshot() : NULL;
 
-    // |snapshot| could be NULL if sync is not yet initialized.
+    sync_ui_util::AddStringSyncDetails(sync_summary, "Summary",
+                                       service->QuerySyncStatusSummary());
+
+    ListValue* sync_url = AddSyncDetailsSection(details, "Sync URL");
+    sync_ui_util::AddStringSyncDetails(sync_url, "URL",
+                                       service->sync_service_url().spec());
+
+    ListValue* local_state = AddSyncDetailsSection(details, "Client ID");
+
+    sync_ui_util::AddStringSyncDetails(local_state, "Version",
+                                       GetVersionString());
+    sync_ui_util::AddStringSyncDetails(local_state, "Client Info",
+        full_status.unique_id.empty() ? "none" : full_status.unique_id);
+    sync_ui_util::AddStringSyncDetails(local_state, "Last Synced",
+                                       service->GetLastSyncedTimeString());
+
+    // Some global status indicators.  These will change only in exceptional
+    // circumstances, like encryption changes, new data types, throttling, etc.
+    sync_ui_util::AddBoolSyncDetail(local_state,
+                                    "Sync First-Time Setup Complete",
+                                    service->HasSyncSetupCompleted());
+    sync_ui_util::AddBoolSyncDetail(local_state, "Initial Download Complete",
+                                    full_status.initial_sync_ended);
+    sync_ui_util::AddBoolSyncDetail(local_state, "Sync Backend Initialized",
+                                    service->sync_initialized());
+
+    // Whether or not we're currently syncing.  Will almost always be false
+    // because we do not usually update about:sync until a sync cycle has
+    // completed.
+    sync_ui_util::AddBoolSyncDetail(local_state, "Syncing",
+                                    full_status.syncing);
+
+    // Network status indicators.
+    ListValue* network = AddSyncDetailsSection(details, "Network");
     if (snapshot) {
-      sync_ui_util::AddIntSyncDetail(details, "Download Count (This Session)",
-          snapshot->syncer_status.num_updates_downloaded_total);
-      sync_ui_util::AddIntSyncDetail(details, "Commit Count (This Session)",
-          snapshot->syncer_status.num_successful_commits);
-      sync_ui_util::AddStringSyncDetails(details, "Last Sync Source",
+      sync_ui_util::AddBoolSyncDetail(network, "Throttled",
+                                      snapshot->is_silenced);
+    }
+    sync_ui_util::AddBoolSyncDetail(network, "Notifications Enabled",
+                                    full_status.notifications_enabled);
+
+    // Encryption status indicators.
+    //
+    // Only safe to call IsUsingSecondaryPassphrase() if the backend is
+    // initialized already - otherwise, we have no idea whether we are
+    // using a secondary passphrase or not.
+    ListValue* encryption = AddSyncDetailsSection(details, "Encryption");
+    if (service->sync_initialized()) {
+      sync_ui_util::AddBoolSyncDetail(encryption,
+                                      "Explicit Passphrase",
+                                      service->IsUsingSecondaryPassphrase());
+    }
+    sync_ui_util::AddBoolSyncDetail(encryption,
+                                    "Passphrase Required",
+                                    service->IsPassphraseRequired());
+    sync_ui_util::AddBoolSyncDetail(encryption,
+                                    "Cryptographer Ready",
+                                    full_status.cryptographer_ready);
+    sync_ui_util::AddBoolSyncDetail(encryption,
+                                    "Cryptographer Has Pending Keys",
+                                    full_status.crypto_has_pending_keys);
+    sync_ui_util::AddStringSyncDetails(encryption,
+        "Encrypted Types",
+        syncable::ModelTypeSetToString(full_status.encrypted_types));
+
+
+    ListValue* cycles = AddSyncDetailsSection(
+        details, "Status from Last Completed Session");
+    if (snapshot) {
+      sync_ui_util::AddStringSyncDetails(
+          cycles, "Sync Source",
           browser_sync::GetUpdatesSourceString(
           snapshot->source.updates_source));
       sync_ui_util::AddStringSyncDetails(
-          details, "Last Sync's GetUpdates Result",
+          cycles, "Download Updates",
           GetSyncerErrorString(snapshot->errors.last_download_updates_result));
       sync_ui_util::AddStringSyncDetails(
-          details, "Last Sync's Post Commit Result",
+          cycles, "Post Commit",
           GetSyncerErrorString(snapshot->errors.last_post_commit_result));
       sync_ui_util::AddStringSyncDetails(
-          details, "Last Sync's Process Commit Response Result",
+          cycles, "Process Commit Response",
           GetSyncerErrorString(
               snapshot->errors.last_process_commit_response_result));
+    }
 
-      // Print the count of entries from snapshot. Warning: This might be
-      // slightly out of date if there are client side changes that are yet
-      // unsynced  However if we query the latest count here we will
-      // have to hold the transaction which means we cannot display this page
-      // when syncing.
-      sync_ui_util::AddIntSyncDetail(details, "Entries" ,
+    // Strictly increasing counters.
+    ListValue* counters = AddSyncDetailsSection(details, "Running Totals");
+    sync_ui_util::AddIntSyncDetail(counters,
+                                   "Notifications Received",
+                                   full_status.notifications_received);
+
+    sync_ui_util::AddIntSyncDetail(counters,
+                                   "Cycles Without Updates",
+                                   full_status.empty_get_updates);
+    sync_ui_util::AddIntSyncDetail(counters,
+                                   "Cycles With Updates",
+                                   full_status.nonempty_get_updates);
+    sync_ui_util::AddIntSyncDetail(counters,
+                                   "Cycles Without Commits",
+                                   full_status.sync_cycles_with_commits);
+    sync_ui_util::AddIntSyncDetail(counters,
+                                   "Cycles With Commits",
+                                   full_status.sync_cycles_without_commits);
+    sync_ui_util::AddIntSyncDetail(counters,
+                                   "Cycles Without Commits or Updates",
+                                   full_status.useful_sync_cycles);
+    sync_ui_util::AddIntSyncDetail(counters,
+                                   "Cycles With Commit or Update",
+                                   full_status.useless_sync_cycles);
+
+    sync_ui_util::AddIntSyncDetail(counters,
+                                   "Updates Downloaded",
+                                   full_status.updates_received);
+    sync_ui_util::AddIntSyncDetail(
+        counters, "Tombstone Updates",
+        full_status.tombstone_updates_received);
+    sync_ui_util::AddIntSyncDetail(
+        counters, "Reflected Updates",
+        full_status.reflected_updates_received);
+
+    sync_ui_util::AddIntSyncDetail(
+        counters, "Conflict Resolved: Client Wins",
+        full_status.num_local_overwrites_total);
+    sync_ui_util::AddIntSyncDetail(
+        counters, "Conflict Resolved: Server Wins",
+        full_status.num_server_overwrites_total);
+
+    // This is counted when we prepare the commit message.
+    ListValue* transient_cycle = AddSyncDetailsSection(
+        details, "Transient Counters (this cycle)");
+    sync_ui_util::AddIntSyncDetail(transient_cycle,
+                                   "Unsynced Count (before commit)",
+                                   full_status.unsynced_count);
+
+    // These are counted during the ApplyUpdates step.
+    sync_ui_util::AddIntSyncDetail(
+        transient_cycle, "Encryption Conflicts",
+        full_status.encryption_conflicts);
+    sync_ui_util::AddIntSyncDetail(
+        transient_cycle, "Hierarchy Conflicts",
+        full_status.hierarchy_conflicts);
+    sync_ui_util::AddIntSyncDetail(
+        transient_cycle, "Simple Conflicts",
+        full_status.simple_conflicts);
+    sync_ui_util::AddIntSyncDetail(
+        transient_cycle, "Server Conflicts",
+        full_status.server_conflicts);
+
+    sync_ui_util::AddIntSyncDetail(
+        transient_cycle, "Committed Items",
+        full_status.committed_count);
+    sync_ui_util::AddIntSyncDetail(
+        transient_cycle, "Updates Remaining",
+        full_status.updates_available);
+
+    ListValue* transient_session = AddSyncDetailsSection(
+        details, "Transient Counters (last cycle of last completed session)");
+    if (snapshot) {
+      sync_ui_util::AddIntSyncDetail(
+          transient_session, "Updates Downloaded",
+          snapshot->syncer_status.num_updates_downloaded_total);
+      sync_ui_util::AddIntSyncDetail(
+          transient_session, "Committed Count",
+          snapshot->syncer_status.num_successful_commits);
+    }
+
+    if (snapshot) {
+      // This counter is stale.  The warnings related to the snapshot still
+      // apply, see the comments near call to GetLastSessionSnapshot() above.
+      // Also, because this is updated only following a complete sync cycle,
+      // local changes affecting this count will not be displayed until the
+      // syncer has attempted to commit those changes.
+      sync_ui_util::AddIntSyncDetail(transient_session, "Entries",
                                      snapshot->num_entries);
-      sync_ui_util::AddBoolSyncDetail(details, "Throttled",
-                                      snapshot->is_silenced);
     }
 
     // Now set the actionable errors.

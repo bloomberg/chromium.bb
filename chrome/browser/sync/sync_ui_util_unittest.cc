@@ -84,9 +84,6 @@ TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
   EXPECT_CALL(service, QueryDetailedSyncStatus())
               .WillOnce(Return(status));
 
-  GoogleServiceAuthError auth_error(GoogleServiceAuthError::NONE);
-  EXPECT_CALL(service, GetAuthError()).WillOnce(ReturnRef(auth_error));
-
   EXPECT_CALL(service, unrecoverable_error_detected())
              .WillOnce(Return(true));
 
