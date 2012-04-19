@@ -207,6 +207,8 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     //    GL_CHROMIUM_framebuffer_multisample
     case GL_MAX_SAMPLES_EXT:
       return 1;
+    case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT:
+      return 1;
 
     // -- glGetBufferParameteriv
     case GL_BUFFER_SIZE:
@@ -289,6 +291,8 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     case GL_TEXTURE_WRAP_S:
       return 1;
     case GL_TEXTURE_WRAP_T:
+      return 1;
+    case GL_TEXTURE_MAX_ANISOTROPY_EXT:
       return 1;
 
     // -- glGetVertexAttribfv, glGetVertexAttribiv
