@@ -171,19 +171,30 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
   return new BubbleFrameView(arrow_location(), color(), margin());
 }
 
+void BubbleDelegateView::OnWidgetClosing(Widget* widget) {
+  if (anchor_view() && anchor_view()->GetWidget() == widget)
+    anchor_view_ = NULL;
+}
+
 void BubbleDelegateView::OnWidgetVisibilityChanged(Widget* widget,
                                                    bool visible) {
-  if (widget == GetWidget()) {
-    if (visible) {
-      if (border_widget_)
-        border_widget_->Show();
-      GetFocusManager()->SetFocusedView(GetInitiallyFocusedView());
-      Widget* anchor_widget = anchor_view() ? anchor_view()->GetWidget() : NULL;
-      if (anchor_widget && anchor_widget->GetTopLevelWidget())
-        anchor_widget->GetTopLevelWidget()->DisableInactiveRendering();
-    } else if (border_widget_) {
+  if (widget != GetWidget())
+    return;
+
+  Widget* anchor_widget = anchor_view() ? anchor_view()->GetWidget() : NULL;
+  if (visible) {
+    if (border_widget_)
+      border_widget_->Show();
+    if (anchor_widget)
+      anchor_widget->AddObserver(this);
+    GetFocusManager()->SetFocusedView(GetInitiallyFocusedView());
+    if (anchor_widget && anchor_widget->GetTopLevelWidget())
+      anchor_widget->GetTopLevelWidget()->DisableInactiveRendering();
+  } else {
+    if (border_widget_)
       border_widget_->Hide();
-    }
+    if (anchor_widget)
+      anchor_widget->RemoveObserver(this);
   }
 }
 
@@ -191,6 +202,11 @@ void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
                                                    bool active) {
   if (close_on_deactivate() && widget == GetWidget() && !active)
     GetWidget()->Close();
+}
+
+void BubbleDelegateView::OnWidgetMoved(Widget* widget) {
+  if (anchor_view() && anchor_view()->GetWidget() == widget)
+    SizeToContents();
 }
 
 gfx::Rect BubbleDelegateView::GetAnchorRect() {

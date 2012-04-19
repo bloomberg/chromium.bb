@@ -72,6 +72,9 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // Returns the largest size the window can be resized to by the user.
   virtual gfx::Size GetMaximumSize() = 0;
 
+  // Called when the NativeWidget changed position.
+  virtual void OnNativeWidgetMove() = 0;
+
   // Called when the NativeWidget changed size to |new_size|.
   virtual void OnNativeWidgetSizeChanged(const gfx::Size& new_size) = 0;
 

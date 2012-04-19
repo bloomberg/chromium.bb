@@ -1613,14 +1613,12 @@ LRESULT NativeWidgetWin::OnMouseRange(UINT message,
 }
 
 void NativeWidgetWin::OnMove(const CPoint& point) {
-  // TODO(beng): move to Widget.
-  GetWidget()->widget_delegate()->OnWidgetMove();
+  delegate_->OnNativeWidgetMove();
   SetMsgHandled(FALSE);
 }
 
 void NativeWidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
-  // TODO(beng): move to Widget.
-  GetWidget()->widget_delegate()->OnWidgetMove();
+  delegate_->OnNativeWidgetMove();
 }
 
 LRESULT NativeWidgetWin::OnNCActivate(BOOL active) {
