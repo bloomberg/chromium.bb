@@ -70,12 +70,14 @@ SadTabView::SadTabView(WebContents* web_contents, Kind kind)
   switch (kind_) {
     case CRASHED: {
       static int crashed = 0;
-      HISTOGRAM_COUNTS_10000("Tabs.SadTab.CrashCreated", ++crashed);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Tabs.SadTab.CrashCreated", ++crashed, 1, 1000, 50);
       break;
     }
     case KILLED: {
       static int killed = 0;
-      HISTOGRAM_COUNTS_10000("Tabs.SadTab.KillCreated", ++killed);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Tabs.SadTab.KillCreated", ++killed, 1, 1000, 50);
       break;
     }
     default:
@@ -211,12 +213,14 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
     switch (kind_) {
       case CRASHED: {
         static int crashed = 0;
-        HISTOGRAM_COUNTS_10000("Tabs.SadTab.CrashDisplayed", ++crashed);
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Tabs.SadTab.CrashDisplayed", ++crashed, 1, 1000, 50);
         break;
       }
       case KILLED: {
         static int killed = 0;
-        HISTOGRAM_COUNTS_10000("Tabs.SadTab.KillDisplayed", ++killed);
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Tabs.SadTab.KillDisplayed", ++killed, 1, 1000, 50);
         break;
       }
       default:

@@ -3272,7 +3272,8 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
     if (parsed_command_line.HasSwitch(switches::kReloadKilledTabs)) {
       LOG(WARNING) << "Reloading killed tab at " << index;
       static int reload_count = 0;
-      HISTOGRAM_COUNTS_10000("Tabs.SadTab.ReloadCount", ++reload_count);
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Tabs.SadTab.ReloadCount", ++reload_count, 1, 1000, 50);
       Reload(CURRENT_TAB);
       did_reload = true;
     }
@@ -3282,7 +3283,8 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
   if (!did_reload && IsTabDiscarded(index)) {
     LOG(WARNING) << "Reloading discarded tab at " << index;
     static int reload_count = 0;
-    HISTOGRAM_COUNTS_10000("Tabs.Discard.ReloadCount", ++reload_count);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Tabs.Discard.ReloadCount", ++reload_count, 1, 1000, 50);
     Reload(CURRENT_TAB);
   }
 
