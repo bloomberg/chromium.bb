@@ -89,20 +89,44 @@ chrome.test.runTests([
   },
 
   function setDefaultFontSize() {
+    var pixelSize = 22;
+    chrome.test.listenOnce(fs.onDefaultFontSizeChanged, function(details) {
+      chrome.test.assertEq(details, {
+        pixelSize: pixelSize,
+        levelOfControl: 'controlled_by_this_extension'
+      });
+    });
+
     fs.setDefaultFontSize({
-      pixelSize: 22
+      pixelSize: pixelSize
     }, chrome.test.callbackPass());
   },
 
   function setDefaultFixedFontSize() {
+    var pixelSize = 42;
+    chrome.test.listenOnce(fs.onDefaultFixedFontSizeChanged, function(details) {
+      chrome.test.assertEq(details, {
+        pixelSize: pixelSize,
+        levelOfControl: 'controlled_by_this_extension'
+      });
+    });
+
     fs.setDefaultFixedFontSize({
-      pixelSize: 42
+      pixelSize: pixelSize
     }, chrome.test.callbackPass());
   },
 
   function setMinimumFontSize() {
+    var pixelSize = 7;
+    chrome.test.listenOnce(fs.onMinimumFontSizeChanged, function(details) {
+      chrome.test.assertEq(details, {
+        pixelSize: pixelSize,
+        levelOfControl: 'controlled_by_this_extension'
+      });
+    });
+
     fs.setMinimumFontSize({
-      pixelSize: 7
+      pixelSize: pixelSize
     }, chrome.test.callbackPass());
   },
 

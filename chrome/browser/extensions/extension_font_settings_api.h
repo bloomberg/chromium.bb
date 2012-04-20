@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_FONT_SETTINGS_API_H__
 #pragma once
 
+#include <map>
+
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 
@@ -17,12 +19,26 @@ class ExtensionFontSettingsEventRouter : public content::NotificationObserver {
   void Init();
 
  private:
+  typedef std::map<std::string, std::string> PrefEventMap;
+
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+  void OnFontNamePrefChanged(PrefService* pref_service,
+                             const std::string& pref_key,
+                             const std::string& generic_family,
+                             const std::string& script,
+                             bool incognito);
+  void OnFontSizePrefChanged(PrefService* pref_service,
+                             const std::string& pref_key,
+                             const std::string& event_name,
+                             bool incognito);
 
   PrefChangeRegistrar registrar_;
+
+  // Map of pref key to event name.
+  std::map<std::string, std::string> pref_event_map_;
 
   // Weak, owns us (transitively via ExtensionService).
   Profile* profile_;

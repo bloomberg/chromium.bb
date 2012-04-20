@@ -36,6 +36,12 @@
         "type": "string",
         "enum": ["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"],
         "description": "A CSS generic font family."
+      },
+      {
+        "id": "LevelOfControl",
+        "description": "One of<br><var>not_controllable</var>: cannot be controlled by any extension<br><var>controlled_by_other_extensions</var>: controlled by extensions with higher precedence<br><var>controllable_by_this_extension</var>: can be controlled by this extension<br><var>controlled_by_this_extension</var>: controlled by this extension",
+        "type": "string",
+        "enum": ["not_controllable", "controlled_by_other_extensions", "controllable_by_this_extension", "controlled_by_this_extension"]
       }
     ],
     "functions": [
@@ -299,9 +305,68 @@
                 "description": "The generic font family for which the font setting has changed."
               },
               "levelOfControl": {
-                "description": "One of<br><var>not_controllable</var>: cannot be controlled by any extension<br><var>controlled_by_other_extensions</var>: controlled by extensions with higher precedence<br><var>controllable_by_this_extension</var>: can be controlled by this extension<br><var>controlled_by_this_extension</var>: controlled by this extension",
-                "type": "string",
-                "enum": ["not_controllable", "controlled_by_other_extensions", "controllable_by_this_extension", "controlled_by_this_extension"]
+                "$ref": "LevelOfControl",
+                "description": "The level of control this extension has over the setting."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "onDefaultFontSizeChanged",
+        "description": "Fired when the default font size setting changes.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "pixelSize": {
+                "type": "integer",
+                "description": "The font size in pixels."
+              },
+              "levelOfControl": {
+                "$ref": "LevelOfControl",
+                "description": "The level of control this extension has over the setting."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "onDefaultFixedFontSizeChanged",
+        "description": "Fired when the default fixed font size setting changes.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "pixelSize": {
+                "type": "integer",
+                "description": "The font size in pixels."
+              },
+              "levelOfControl": {
+                "$ref": "LevelOfControl",
+                "description": "The level of control this extension has over the setting."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "onMinimumFontSizeChanged",
+        "description": "Fired when the minimum font size setting changes.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "pixelSize": {
+                "type": "integer",
+                "description": "The font size in pixels."
+              },
+              "levelOfControl": {
+                "$ref": "LevelOfControl",
+                "description": "The level of control this extension has over the setting."
               }
             }
           }

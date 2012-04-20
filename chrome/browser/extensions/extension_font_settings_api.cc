@@ -35,7 +35,13 @@ const char kLocalizedNameKey[] = "localizedName";
 const char kPixelSizeKey[] = "pixelSize";
 const char kScriptKey[] = "script";
 
+const char kOnDefaultFixedFontSizeChanged[] =
+    "experimental.fontSettings.onDefaultFixedFontSizeChanged";
+const char kOnDefaultFontSizeChanged[] =
+    "experimental.fontSettings.onDefaultFontSizeChanged";
 const char kOnFontChanged[] = "experimental.fontSettings.onFontChanged";
+const char kOnMinimumFontSizeChanged[] =
+    "experimental.fontSettings.onMinimumFontSizeChanged";
 
 // Format for per-script font preference keys.
 // E.g., "webkit.webprefs.fonts.standard.Hrkt"
@@ -133,6 +139,19 @@ ExtensionFontSettingsEventRouter::~ExtensionFontSettingsEventRouter() {}
 
 void ExtensionFontSettingsEventRouter::Init() {
   registrar_.Init(profile_->GetPrefs());
+
+  registrar_.Add(prefs::kWebKitGlobalDefaultFixedFontSize, this);
+  pref_event_map_[prefs::kWebKitGlobalDefaultFixedFontSize] =
+      kOnDefaultFixedFontSizeChanged;
+
+  registrar_.Add(prefs::kWebKitGlobalDefaultFontSize, this);
+  pref_event_map_[prefs::kWebKitGlobalDefaultFontSize] =
+      kOnDefaultFontSizeChanged;
+
+  registrar_.Add(prefs::kWebKitGlobalMinimumFontSize, this);
+  pref_event_map_[prefs::kWebKitGlobalMinimumFontSize] =
+      kOnMinimumFontSizeChanged;
+
   registrar_.Add(prefs::kWebKitGlobalStandardFontFamily, this);
   registrar_.Add(prefs::kWebKitGlobalSerifFontFamily, this);
   registrar_.Add(prefs::kWebKitGlobalSansSerifFontFamily, this);
@@ -162,21 +181,38 @@ void ExtensionFontSettingsEventRouter::Observe(
     return;
   }
 
-  const std::string* pref_key =
-      content::Details<const std::string>(details).ptr();
-  std::string generic_family;
-  std::string script;
-  if (!ParseFontNamePrefPath(*pref_key, &generic_family, &script)) {
-    NOTREACHED();
-    return;
-  }
-
   PrefService* pref_service = content::Source<PrefService>(source).ptr();
   bool incognito = (pref_service != profile_->GetPrefs());
   // We're only observing pref changes on the regular profile.
   DCHECK(!incognito);
+  const std::string* pref_key =
+      content::Details<const std::string>(details).ptr();
+
+  PrefEventMap::iterator iter = pref_event_map_.find(*pref_key);
+  if (iter != pref_event_map_.end()) {
+    OnFontSizePrefChanged(pref_service, *pref_key, iter->second, incognito);
+    return;
+  }
+
+  std::string generic_family;
+  std::string script;
+  if (ParseFontNamePrefPath(*pref_key, &generic_family, &script)) {
+    OnFontNamePrefChanged(pref_service, *pref_key, generic_family, script,
+                          incognito);
+    return;
+  }
+
+  NOTREACHED();
+}
+
+void ExtensionFontSettingsEventRouter::OnFontNamePrefChanged(
+    PrefService* pref_service,
+    const std::string& pref_key,
+    const std::string& generic_family,
+    const std::string& script,
+    bool incognito) {
   const PrefService::Preference* pref = pref_service->FindPreference(
-      pref_key->c_str());
+      pref_key.c_str());
   CHECK(pref);
 
   std::string font_name;
@@ -200,7 +236,36 @@ void ExtensionFontSettingsEventRouter::Observe(
       &args,
       ExtensionAPIPermission::kExperimental,
       incognito,
-      *pref_key);
+      pref_key);
+}
+
+void ExtensionFontSettingsEventRouter::OnFontSizePrefChanged(
+    PrefService* pref_service,
+    const std::string& pref_key,
+    const std::string& event_name,
+    bool incognito) {
+  const PrefService::Preference* pref = pref_service->FindPreference(
+      pref_key.c_str());
+  CHECK(pref);
+
+  int size;
+  if (!pref->GetValue()->GetAsInteger(&size)) {
+    NOTREACHED();
+    return;
+  }
+
+  ListValue args;
+  DictionaryValue* dict = new DictionaryValue();
+  args.Append(dict);
+  dict->SetInteger(kPixelSizeKey, size);
+
+  extension_preference_helpers::DispatchEventToExtensions(
+      profile_,
+      event_name,
+      &args,
+      ExtensionAPIPermission::kExperimental,
+      incognito,
+      pref_key);
 }
 
 bool GetFontFunction::RunImpl() {
