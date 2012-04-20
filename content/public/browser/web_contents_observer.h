@@ -93,6 +93,19 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Channel::Listener,
   virtual void AppCacheAccessed(const GURL& manifest_url,
                                 bool blocked_by_policy) {}
 
+  // Notification that a plugin has crashed.
+  virtual void PluginCrashed(const FilePath& plugin_path) {}
+
+  // Notication that the given plugin has hung or become unhung. This
+  // notification is only for Pepper plugins.
+  //
+  // The plugin_child_id is the unique child process ID from the plugin. Note
+  // that this ID is supplied by the renderer, so should be validated before
+  // it's used for anything in case there's an exploited renderer.
+  virtual void PluginHungStatusChanged(int plugin_child_id,
+                                       const FilePath& plugin_path,
+                                       bool is_hung) {}
+
   // Invoked when the WebContents is being destroyed. Gives subclasses a chance
   // to cleanup. At the time this is invoked |web_contents()| returns NULL.
   // It is safe to delete 'this' from here.

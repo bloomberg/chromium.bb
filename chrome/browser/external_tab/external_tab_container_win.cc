@@ -768,11 +768,6 @@ void ExternalTabContainer::FindReply(WebContents* tab,
                            active_match_ordinal, final_update);
 }
 
-void ExternalTabContainer::CrashedPlugin(WebContents* tab,
-                                         const FilePath& plugin_path) {
-  Browser::CrashedPluginHelper(tab, plugin_path);
-}
-
 bool ExternalTabContainer::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExternalTabContainer, message)

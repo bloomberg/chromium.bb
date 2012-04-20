@@ -29,6 +29,7 @@ class PluginObserver : public content::WebContentsObserver {
   virtual ~PluginObserver();
 
   // content::WebContentsObserver implementation.
+  virtual void PluginCrashed(const FilePath& plugin_path) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)

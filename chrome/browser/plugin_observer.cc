@@ -15,10 +15,12 @@
 #include "chrome/browser/plugin_infobar_delegates.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
+#include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -36,6 +38,7 @@
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
 using content::OpenURLParams;
+using content::PluginService;
 using content::Referrer;
 using content::WebContents;
 
@@ -167,6 +170,22 @@ PluginObserver::~PluginObserver() {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   STLDeleteValues(&plugin_placeholders_);
 #endif
+}
+
+void PluginObserver::PluginCrashed(const FilePath& plugin_path) {
+  DCHECK(!plugin_path.value().empty());
+
+  string16 plugin_name =
+      PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
+  gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_INFOBAR_PLUGIN_CRASHED);
+  InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+  infobar_helper->AddInfoBar(
+      new SimpleAlertInfoBarDelegate(
+          infobar_helper,
+          icon,
+          l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
+          true));
 }
 
 bool PluginObserver::OnMessageReceived(const IPC::Message& message) {

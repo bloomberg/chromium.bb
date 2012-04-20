@@ -755,10 +755,6 @@ class Browser : public TabHandlerDelegate,
                               int active_match_ordinal,
                               bool final_update);
 
-  // Helper function to handle crashed plugin notifications.
-  static void CrashedPluginHelper(content::WebContents* tab,
-                                  const FilePath& plugin_path);
-
   // Helper function to handle url update notifications.
   static void UpdateTargetURLHelper(content::WebContents* tab, int32 page_id,
                                     const GURL& url);
@@ -1079,13 +1075,6 @@ class Browser : public TabHandlerDelegate,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
-
-  virtual void CrashedPlugin(content::WebContents* tab,
-                             const FilePath& plugin_path) OVERRIDE;
-  virtual void PluginHungStatusChanged(content::WebContents* tab,
-                                       int plugin_child_id,
-                                       const FilePath& plugin_path,
-                                       bool is_hung) OVERRIDE;
 
   virtual void RequestToLockMouse(content::WebContents* tab) OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;

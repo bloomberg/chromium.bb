@@ -141,7 +141,7 @@ HungPluginTabHelper::PluginState::~PluginState() {
 // -----------------------------------------------------------------------------
 
 HungPluginTabHelper::HungPluginTabHelper(content::WebContents* contents)
-    : contents_(contents) {
+    : content::WebContentsObserver(contents) {
 }
 
 HungPluginTabHelper::~HungPluginTabHelper() {
@@ -261,7 +261,7 @@ void HungPluginTabHelper::CloseBar(PluginState* state) {
 
 InfoBarTabHelper* HungPluginTabHelper::GetInfoBarHelper() {
   TabContentsWrapper* tcw =
-      TabContentsWrapper::GetCurrentWrapperForContents(contents_);
+      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
   if (!tcw)
     return NULL;
   return tcw->infobar_tab_helper();

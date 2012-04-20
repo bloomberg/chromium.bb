@@ -374,21 +374,6 @@ class CONTENT_EXPORT WebContentsDelegate {
                          int active_match_ordinal,
                          bool final_update) {}
 
-  // Notification that a plugin has crashed.
-  virtual void CrashedPlugin(WebContents* web_contents,
-                             const FilePath& plugin_path) {}
-
-  // Notication that the given plugin has hung or become unhung. This
-  // notification is only for Pepper plugins.
-  //
-  // The plugin_child_id is the unique child process ID from the plugin. Note
-  // that this ID is supplied by the renderer, so should be validated before
-  // it's used for anything in case there's an exploited renderer.
-  virtual void PluginHungStatusChanged(WebContents* web_contents,
-                                       int plugin_child_id,
-                                       const FilePath& plugin_path,
-                                       bool is_hung) {}
-
   // Invoked when the preferred size of the contents has been changed.
   virtual void UpdatePreferredSize(WebContents* web_contents,
                                    const gfx::Size& pref_size) {}

@@ -1737,7 +1737,8 @@ void WebContentsImpl::OnFindReply(int request_id,
 }
 
 void WebContentsImpl::OnCrashedPlugin(const FilePath& plugin_path) {
-  delegate_->CrashedPlugin(this, plugin_path);
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    PluginCrashed(plugin_path));
 }
 
 void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
@@ -1768,8 +1769,8 @@ void WebContentsImpl::OnSetSelectedColorInColorChooser(int color_chooser_id,
 void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
                                          const FilePath& path,
                                          bool is_hung) {
-  if (delegate_)
-    delegate_->PluginHungStatusChanged(this, plugin_child_id, path, is_hung);
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    PluginHungStatusChanged(plugin_child_id, path, is_hung));
 }
 
 // This exists for render views that don't have a WebUI, but do have WebUI

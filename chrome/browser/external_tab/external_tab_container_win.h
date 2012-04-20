@@ -191,8 +191,6 @@ class ExternalTabContainer : public content::WebContentsDelegate,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
-  virtual void CrashedPlugin(content::WebContents* tab,
-                             const FilePath& plugin_path) OVERRIDE;
 
   void RegisterRenderViewHost(content::RenderViewHost* render_view_host);
   void UnregisterRenderViewHost(content::RenderViewHost* render_view_host);

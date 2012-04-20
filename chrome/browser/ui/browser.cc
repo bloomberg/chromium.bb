@@ -2884,33 +2884,6 @@ void Browser::FindReplyHelper(WebContents* tab,
 }
 
 // static
-void Browser::CrashedPluginHelper(WebContents* tab,
-                                  const FilePath& plugin_path) {
-  TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
-      tab);
-  if (!tcw)
-    return;
-
-  // Tell the hung plugin infobars about this crash so they can close any
-  // related ones.
-  tcw->hung_plugin_tab_helper()->PluginCrashed(plugin_path);
-
-  DCHECK(!plugin_path.value().empty());
-
-  string16 plugin_name =
-      PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
-  gfx::Image* icon = &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_PLUGIN_CRASHED);
-  InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
-  infobar_helper->AddInfoBar(
-      new SimpleAlertInfoBarDelegate(
-          infobar_helper,
-          icon,
-          l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
-          true));
-}
-
-// static
 void Browser::UpdateTargetURLHelper(WebContents* tab, int32 page_id,
                                     const GURL& url) {
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
@@ -4239,20 +4212,6 @@ void Browser::FindReply(WebContents* tab,
                         bool final_update) {
   FindReplyHelper(tab, request_id, number_of_matches, selection_rect,
                   active_match_ordinal, final_update);
-}
-
-void Browser::CrashedPlugin(WebContents* tab, const FilePath& plugin_path) {
-  CrashedPluginHelper(tab, plugin_path);
-}
-
-void Browser::PluginHungStatusChanged(WebContents* tab,
-                                      int plugin_child_id,
-                                      const FilePath& plugin_path,
-                                      bool is_hung) {
-  TabContentsWrapper* tcw =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  tcw->hung_plugin_tab_helper()->PluginHungStatusChanged(
-      plugin_child_id, plugin_path, is_hung);
 }
 
 void Browser::UpdatePreferredSize(WebContents* source,
