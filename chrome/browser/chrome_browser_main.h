@@ -126,6 +126,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // computer startup has on retention and usage of Chrome.
   void AutoLaunchChromeFieldTrial();
 
+  // Field trial for testing domain bound certs.
+  void DomainBoundCertsFieldTrial();
+
   // Methods for |SetupMetricsAndFieldTrials()| --------------------------------
 
   // Constructs metrics service and does related initialization, including
