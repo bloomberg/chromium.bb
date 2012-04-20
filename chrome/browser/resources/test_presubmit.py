@@ -445,7 +445,10 @@ div,a {
     width: 100px;
   }
 }
-.animating {
+
+.media-button.play > .state0.active,
+.media-button[state='0'] > .state0.normal /* blah */, /* blee */
+.media-button[state='0']:not(.disabled):hover > .state0.hover {
   -webkit-animation: anim 0s;
   -webkit-animation-duration: anim 0ms;
   -webkit-transform: scale(0%),

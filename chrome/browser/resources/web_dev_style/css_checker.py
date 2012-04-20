@@ -124,11 +124,16 @@ class CSSChecker(object):
       return ' (replace with #%s)' % (h[0] + h[2] + h[4])
 
     hsl = r'hsl\([^\)]*(?:[, ]|(?<=\())(?:0?\.?)?0%'
-    zeros = (r'(?:^|\D)'
+    zeros = (r'^.*(?:^|\D)'
              r'(?:\.0|0(?:\.0?|px|em|%|in|cm|mm|pc|pt|ex|deg|g?rad|m?s|k?hz))'
-             r'(?:\D|$)(?!\s*\{)')
-    def zero_length_values(line):
-      return (re.search(zeros, line) and not re.search(hsl, line))
+             r'(?:\D|$)(?=[^{}]+?}).*$')
+    def zero_length_values(contents):
+      errors = []
+      for z in re.finditer(re.compile(zeros, re.MULTILINE), contents):
+        first_line = z.group(0).strip().splitlines()[0]
+        if not re.search(hsl, first_line):
+          errors.append('    ' + first_line)
+      return errors
 
     added_or_modified_files_checks = [
         { 'desc': 'Alphabetize properties and list vendor specific (i.e. '
@@ -178,6 +183,7 @@ class CSSChecker(object):
         { 'desc': 'Make all zero length terms (i.e. 0px) 0 unless inside of '
                   'hsl() or part of @keyframe.',
           'test': zero_length_values,
+          'multiline': True,
         },
     ]
 
