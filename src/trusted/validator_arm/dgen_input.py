@@ -1,8 +1,8 @@
 #!/usr/bin/python
 #
-# Copyright 2012 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 
 """
@@ -11,124 +11,306 @@ A simple recursive-descent parser for the table file format.
 The grammar implemented here is roughly (taking some liberties with whitespace
 and comment parsing):
 
-table_file ::= ( BLANK_LINE | table_def ) end_of_file ;
-table_def ::= "--" IDENT CITATION NL
-    table_header
-    ( table_row )+ ;
-table_header ::= ( IDENT "(" BITRANGE ")" )+ ;
-table_row ::= ( PATTERN )+ ACTION ;
+table_file ::= table+ eof ;
 
-IDENT = /[a-z0-9_]+/
-CITATION = "(" /[^)]+/ ")"
-BITRANGE = /[0-9]+/ (":" /[0-9]+/)?
-PATTERN = /[10x_]+/
-ACTION = ( "=" IDENT | "->" IDENT ) ( "(" IDENT ")" )?
-NL = a newline
-BLANK_LINE = what you might expect it to be
+action         ::= decoder_action arch | decoder_method | '"'
+arch           ::= '(' word+ ')'
+citation       ::= '(' word+ ')'
+decoder_action ::= id (id (word (id)?)?)?
+decoder_method ::= '->' id
+footer         ::= '+' '-' '-'
+header         ::= "|" (id '(' int (':' int)? ')')+
+int            ::= word     (where word is a sequence of digits)
+id             ::= word     (where word is sequence of letters, digits and _)
+parenthesized_exp ::= '(' (word | punctuation)+ ')'
+pattern ::= 'word' | '-' | '"'
+row ::= '|' pattern+ action
+table ::= table_desc header row+ footer
+table_desc ::= '+' '-' '-' id citation?
+
+If a decoder_action has more than one element, the interpretation is as follows:
+   id[0] = action (plus optional architecture) to apply.
+   id[1] = Arm rule action corresponds to.
+   word = Bit pattern of rule.
+   id[3] = Name defining additional constraints for match.
 """
 
 import re
 import dgen_core
 
-# These globals track the parser state.
-_in = None
-_line_no = None
-_tables = None
-_line = None
-_last_row = None
-
-
 def parse_tables(input):
-    """Entry point for the parser.  Input should be a file or file-like."""
-    global _in, _line_no, _tables
-    _in = input
-    _line_no = 0
-    _tables = []
-    next_line()
+  """Entry point for the parser.  Input should be a file or file-like."""
+  parser = Parser()
+  return parser.parse(input)
 
-    while not end_of_file():
-        blank_line() or table_def() or unexpected()
+class Token(object):
+  """Holds a (characterized) unit of text for the parser."""
 
-    return _tables
+  def __init__(self, kind, value=None):
+    self.kind = kind
+    self.value = value if value else kind
 
+class Parser(object):
+  """Parses a set of tables from the input file."""
 
-def blank_line():
-    if _line:
-        return False
+  def parse(self, input):
+    self.input = input             # The remaining input to parse
+    decoder = dgen_core.Decoder()  # The generated decoder of parse tables.
+    # Read tables while there.
+    while self._next_token().kind == '+':
+      self._table(decoder)
 
-    next_line();
-    return True
+    if not self._next_token().kind == 'eof':
+      self._unexpected('unrecognized input found')
+    if not decoder.primary:
+      self._unexpected('No primary table defined')
+    if not decoder.tables():
+      self._unexpected('No tables defined')
+    return decoder
 
+  def __init__(self):
+    self._words = []             # Words left on current line, not yet parsed.
+    self._line_no = 0            # The current line being parsed
+    self._token = None           # The next token from the input.
+    self._reached_eof = False    # True when end of file reached
+    # Punctuation allowed. Must be ordered such that if
+    # p1 != p2 are in the list, and p1.startswith(p2), then
+    # p1 must appear before p2.
+    self._punctuation = ['->', '-', '+', '(', ')', '=', ':', '"', '|']
 
-def table_def():
-    global _last_row
+  def _action(self, last_action, last_arch):
+    """ action ::= decoder_action arch | decoder_method | '"' """
+    if self._next_token().kind == '"':
+      self._read_token('"')
+      return (last_action, last_arch)
+    if self._next_token().kind == '=':
+      action = self._decoder_action()
+      arch = None
+      if self._next_token().kind == '(':
+        arch = self._arch()
+      return (action, arch)
+    elif self._next_token().kind == '->':
+      return (self._decoder_method(), None)
+    else:
+      self._unexpected("Row doesn't define an action")
 
-    m = re.match(r'^-- ([^ ]+) \(([^)]+)\)', _line)
-    if not m: return False
+  def _pattern(self, col_no, last_patterns, last_action, last_arch):
+    pass
 
-    table = dgen_core.Table(m.group(1), m.group(2))
-    next_line()
-    while blank_line(): pass
+  def _arch(self):
+    """ arch ::= '(' word+ ')' """
+    return ' '.join(self._parenthesized_exp())
 
-    table_header(table)
-    _last_row = None
-    while not end_of_file() and not blank_line():
-        table_row(table)
+  def _citation(self):
+    """ citation ::= '(' word+ ')' """
+    return ' '.join(self._parenthesized_exp())
 
-    _tables.append(table)
-    return True
+  def _read_id_or_none(self, read_id):
+    if self._next_token().kind in ['|', '+', '(']:
+      return None
+    id = self._id() if read_id else self._read_token('word').value
+    return None if id and id == 'None' else id
 
+  def _decoder_action(self):
+    """ decoder_action ::= id (id (word (id)?)?)? """
+    self._read_token('=')
+    name = self._read_id_or_none(True)
+    rule = self._read_id_or_none(True)
+    pattern = self._read_id_or_none(False)
+    constraints = self._read_id_or_none(True)
+    return dgen_core.DecoderAction(name, rule, pattern, constraints)
 
-def table_header(table):
-    for col in _line.split():
-        m = re.match(r'^([a-z0-9_]+)\(([0-9]+)(:([0-9]+))?\)$', col, re.I)
-        if not m: raise Exception('Invalid column header: %s' % col)
+  def _decoder_method(self):
+    """ decoder_method ::= '->' id """
+    self._read_token('->')
+    name = self._id()
+    return dgen_core.DecoderMethod(name)
 
-        hi_bit = int(m.group(2))
-        if m.group(4):
-            lo_bit = int(m.group(4))
-        else:
-            lo_bit = hi_bit
-        table.add_column(m.group(1), hi_bit, lo_bit)
-    next_line()
+  def _footer(self):
+    """ footer ::= '+' '-' '-' """
+    self._read_token('+')
+    self._read_token('-')
+    self._read_token('-')
 
+  def _header(self, table):
+    """ header ::= "|" (id '(' int (':' int)? ')')+ """
+    self._read_token('|')
+    while not self._next_token().kind == '|':
+      name = self._read_token('word').value
+      self._read_token('(')
+      hi_bit = self._int()
+      lo_bit = hi_bit
+      if self._next_token().kind == ':':
+        self._read_token(':')
+        lo_bit = self._int()
+      self._read_token(')')
+      table.add_column(name, hi_bit, lo_bit)
 
-def table_row(table):
-    global _last_row
+  def _int(self):
+    """ int ::= word
 
-    row = _line.split()
-    for i in range(0, len(row)):
-        if row[i] == '"': row[i] = _last_row[i]
-    _last_row = row
+    Int is a sequence of digits. Returns the corresponding integer.
+    """
+    word = self._read_token('word').value
+    m = re.match(r'^([0-9]+)$', word)
+    if m:
+      return int(word)
+    else:
+      self._unexpected('integer expected but found "%s"' % word)
 
-    action = row[-1]
-    patterns = row[:-1]
-    table.add_row(patterns, action)
-    next_line()
+  def _id(self):
+    """ id ::= word
 
+    Word starts with a letter, and followed by letters, digits,
+    and underscores. Returns the corresponding identifier.
+    """
+    ident = self._read_token('word').value
+    m = re.match(r'^[a-zA-z][a-zA-z0-9_]*$', ident)
+    if not m:
+      self._unexpected('"%s" is not a valid identifier' % ident)
+    return ident
 
-def end_of_file():
-    return _line is None
+  def _parenthesized_exp(self, minlength=1):
+    """ parenthesized_exp ::= '(' (word | punctuation)+ ')'
 
+    The punctuation doesn't include ')'.
+    Returns the sequence of token values parsed.
+    """
+    self._read_token('(')
+    words = []
+    while not self._at_eof() and self._next_token().kind != ')':
+      words.append(self._read_token().value)
+    if len(words) < minlength:
+      self._unexpected("len(parenthesized expresssion) < %s" % minlength)
+    self._read_token(')')
+    return words
 
-def next_line():
-    "Reads the next non-comment line"
-    global _line_no, _line
+  def _pattern(self, last_pattern):
+    """ pattern ::= 'word' | '-' | '"'
 
-    _line_no += 1
-    _line = _in.readline()
-    while True:
-      if _line:
-        if _line[0] == '#':
-          # skip comment line and continue search.
-          _line_no += 1
-          _line = _in.readline()
-          continue
-        _line = re.sub(r'#.*', '', _line).strip()
+    Arguments are:
+      col_no - The current column entry being read.
+      last_patterns - The list of patterns defined on the last row.
+      last_action - The action defined on the last row.
+      last_arch - The architecture defined on the last row..
+    """
+    if self._next_token().kind == '"':
+      self._read_token('"')
+      return last_pattern
+    if self._next_token().kind in ['-', 'word']:
+      return self._read_token().value
+    self._unexpected('Malformed pattern')
+
+  def _row(self, table, last_patterns=None,
+           last_action=None, last_arch= None):
+    """ row ::= '|' pattern+ (decoder_action arch? | decoder_method)?
+
+    Passed in sequence of patterns and action from last row,
+    and returns list of patterns and action from this row.
+    """
+    patterns = []             # Patterns as found on input.
+    expanded_patterns = []    # Patterns after being expanded.
+    self._read_token('|')
+    num_patterns = 0
+    num_patterns_last = len(last_patterns) if last_patterns else None
+    while self._next_token().kind not in ['=', '->', '|', '+']:
+      if not last_patterns or num_patterns < num_patterns_last:
+        last_pattern = last_patterns[num_patterns] if last_patterns else None
+        pattern = self._pattern(last_pattern)
+        patterns.append(pattern)
+        expanded_patterns.append(table.define_pattern(pattern, num_patterns))
+        num_patterns += 1
       else:
-        _line = None
-      # if reached, found line.
-      return
+        # Processed patterns in this row, since width is now the
+        # same as last row.
+        break;
 
-def unexpected():
-    raise Exception('Line %d: Unexpected line in input: %s' % (_line_no, _line))
+    (action, arch) = self._action(last_action, last_arch)
+    table.add_row(expanded_patterns, action, arch)
+    return (patterns, action, arch)
+
+  def _table(self, decoder):
+    """ table ::= table_desc header row+ footer """
+    table = self._table_desc()
+    print 'Reading table %s...' % table.name
+    self._header(table)
+    (pattern, action, arch) = self._row(table)
+    while not self._next_token().kind == '+':
+      (pattern, action, arch) = self._row(table, pattern, action, arch)
+    if not decoder.add(table):
+      self._unexpected('Multiple tables with name %s' % table.name)
+    self._footer()
+
+  def _table_desc(self):
+    """ table_desc ::= '+' '-' '-' id citation? """
+    self._read_token('+')
+    self._read_token('-')
+    self._read_token('-')
+    name = self._id()
+    citation = None
+    if self._next_token().kind == '(':
+      citation = self._citation()
+    return dgen_core.Table(name, citation)
+
+  def _at_eof(self):
+    """Returns true if next token is the eof token."""
+    return self._next_token().kind == 'eof'
+
+  def _read_token(self, kind=None):
+    """Reads and returns the next token from input."""
+    token = self._next_token()
+    self._token = None
+    if kind and kind != token.kind:
+      self._unexpected('Expected "%s" but found "%s"'
+                       % (kind, token.kind))
+    return token
+
+  def _next_token(self):
+    """Returns the next token from the input."""
+    # First seee if cached.
+    if self._token: return self._token
+
+    # If no more tokens left on the current line. read
+    # input till more tokens are found
+    while not self._reached_eof and not self._words:
+      self._words = self._read_line().split()
+
+    if self._words:
+      # More tokens found. Convert the first word to a token.
+      word = self._words.pop(0)
+      # First remove any applicable punctuation.
+      for p in self._punctuation:
+        index = word.find(p)
+        if index == 0:
+          # Found punctuation, return it.
+          self._pushback(word[len(p):])
+          self._token = Token(p)
+          return self._token
+        elif index > 0:
+          self._pushback(word[index:])
+          word = word[:index]
+      # if reached, word doesn't contain any punctuation, so return it.
+      self._token = Token('word', word)
+    else:
+      # No more tokens found, assume eof.
+      self._token = Token('eof')
+    return self._token
+
+  def _pushback(self, word):
+    """Puts word back onto the list of words."""
+    if word:
+      self._words.insert(0, word)
+
+  def _read_line(self):
+    """Reads the next line of input, and returns it. Otherwise None."""
+    self._line_no += 1
+    line = self.input.readline()
+    if line:
+      return re.sub(r'#.*', '', line).strip()
+    else:
+      self._reached_eof = True
+      return ''
+
+  def _unexpected(self, context='Unexpected line in input'):
+    """"Reports that we didn't find the expected context. """
+    raise Exception('Line %d: %s' % (self._line_no, context))

@@ -1,80 +1,218 @@
+
+
 /*
  * Copyright 2012 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
 
-/*
- * DO NOT EDIT: GENERATED CODE
- */
+// DO NOT EDIT: GENERATED CODE
+
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_GEN_ARM32_DECODE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_GEN_ARM32_DECODE_H_
 
 #include "native_client/src/trusted/validator_arm/decode.h"
+#include "native_client/src/trusted/validator_arm/inst_classes.h"
 
 namespace nacl_arm_dec {
 
-/*
- * Defines a stateless decoder class selector for instructions
- */
-/*
- * Define the class decoders used by this decoder state.
- */
+// Defines a decoder class selector for instructions.
 class Arm32DecoderState : DecoderState {
  public:
-  // Generates an instance of a decoder state.
-  explicit Arm32DecoderState();
-  virtual ~Arm32DecoderState();
-  
-  // Parses the given instruction, returning the decoder to use.
-  virtual const class ClassDecoder &decode(const Instruction) const;
-  
-  // Define the decoders to use in this decoder state
-  CoprocessorOp CoprocessorOp_instance_;
-  ImmediateBic ImmediateBic_instance_;
-  LoadMultiple LoadMultiple_instance_;
-  LoadCoprocessor LoadCoprocessor_instance_;
-  LoadDoubleExclusive LoadDoubleExclusive_instance_;
-  Branch Branch_instance_;
-  Test Test_instance_;
-  StoreRegister StoreRegister_instance_;
-  MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
-  TestImmediate TestImmediate_instance_;
-  BxBlx BxBlx_instance_;
-  EffectiveNoOp EffectiveNoOp_instance_;
-  LongMultiply LongMultiply_instance_;
-  Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
-  Breakpoint Breakpoint_instance_;
-  Multiply Multiply_instance_;
-  PackSatRev PackSatRev_instance_;
-  LoadExclusive LoadExclusive_instance_;
-  VectorStore VectorStore_instance_;
-  Unary3RegisterShiftedOp Unary3RegisterShiftedOp_instance_;
-  Undefined Undefined_instance_;
-  DataProc DataProc_instance_;
-  Deprecated Deprecated_instance_;
-  LoadImmediate LoadImmediate_instance_;
-  StoreCoprocessor StoreCoprocessor_instance_;
-  Roadblock Roadblock_instance_;
-  LoadDoubleR LoadDoubleR_instance_;
-  StoreExclusive StoreExclusive_instance_;
-  StoreImmediate StoreImmediate_instance_;
-  MoveFromCoprocessor MoveFromCoprocessor_instance_;
-  LoadRegister LoadRegister_instance_;
-  LoadDoubleI LoadDoubleI_instance_;
-  Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
-  Unpredictable Unpredictable_instance_;
-  Forbidden Forbidden_instance_;
-  VectorLoad VectorLoad_instance_;
-  MoveToStatusRegister MoveToStatusRegister_instance_;
-  SatAddSub SatAddSub_instance_;
-  
+   explicit Arm32DecoderState();
+   virtual ~Arm32DecoderState();
+
+   // Parses the given instruction, returning the decoder to use.
+   virtual const ClassDecoder& decode(const Instruction) const;
+
  private:
-  // Don't allow the following!
-  explicit Arm32DecoderState(const Arm32DecoderState&);
-  void operator=(const Arm32DecoderState&);
+
+  // The following list of methods correspond to each decoder table,
+  // and implements the pattern matching of the corresponding bit
+  // patterns. After matching the corresponding bit patterns, they
+  // either call other methods in this list (corresponding to another
+  // decoder table), or they return the instance field that implements
+  // the class decoder that should be used to decode the particular
+  // instruction.
+
+  inline const ClassDecoder& decode_ARMv7(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_branch_block_xfer(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_dp_immed(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_dp_misc(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_dp_reg(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_dp_reg_shifted(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_extra_load_store(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_half_mult(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_load_store_word_byte(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_media(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_misc(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_misc_hints_simd(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_msr_and_hints(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_mult(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_pack_sat_rev(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_parallel_add_sub(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_sat_add_sub(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_signed_mult(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_simd_dp(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_simd_dp_1imm(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_simd_dp_2misc(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_simd_dp_2scalar(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_simd_dp_2shift(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_simd_dp_3diff(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_simd_dp_3same(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_simd_load_store(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_simd_load_store_l0(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_simd_load_store_l1(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_super_cop(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_sync(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_unconditional(
+      const Instruction insn) const;
+
+  // The following fields define the set of class decoders
+  // that can be returned by the API function "decode". They
+  // are created once as instance fields, and then returned
+  // by the table methods above. This speeds up the code since
+  // the class decoders need to only be built once (and reused
+  // for each call to "decode").
+
+  const Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
+
+  const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
+
+  const Branch Branch_instance_;
+
+  const Breakpoint Breakpoint_instance_;
+
+  const BxBlx BxBlx_instance_;
+
+  const CoprocessorOp CoprocessorOp_instance_;
+
+  const DataProc DataProc_instance_;
+
+  const Deprecated Deprecated_instance_;
+
+  const EffectiveNoOp EffectiveNoOp_instance_;
+
+  const Forbidden Forbidden_instance_;
+
+  const ImmediateBic ImmediateBic_instance_;
+
+  const LoadCoprocessor LoadCoprocessor_instance_;
+
+  const LoadDoubleExclusive LoadDoubleExclusive_instance_;
+
+  const LoadDoubleI LoadDoubleI_instance_;
+
+  const LoadDoubleR LoadDoubleR_instance_;
+
+  const LoadExclusive LoadExclusive_instance_;
+
+  const LoadImmediate LoadImmediate_instance_;
+
+  const LoadMultiple LoadMultiple_instance_;
+
+  const LoadRegister LoadRegister_instance_;
+
+  const LongMultiply LongMultiply_instance_;
+
+  const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
+
+  const MoveFromCoprocessor MoveFromCoprocessor_instance_;
+
+  const MoveToStatusRegister MoveToStatusRegister_instance_;
+
+  const Multiply Multiply_instance_;
+
+  const PackSatRev PackSatRev_instance_;
+
+  const Roadblock Roadblock_instance_;
+
+  const SatAddSub SatAddSub_instance_;
+
+  const StoreCoprocessor StoreCoprocessor_instance_;
+
+  const StoreExclusive StoreExclusive_instance_;
+
+  const StoreImmediate StoreImmediate_instance_;
+
+  const StoreRegister StoreRegister_instance_;
+
+  const Test Test_instance_;
+
+  const TestImmediate TestImmediate_instance_;
+
+  const Unary3RegisterShiftedOp Unary3RegisterShiftedOp_instance_;
+
+  const Undefined Undefined_instance_;
+
+  const Unpredictable Unpredictable_instance_;
+
+  const VectorLoad VectorLoad_instance_;
+
+  const VectorStore VectorStore_instance_;
+
 };
 
-}  // namespace
+}  // namespace nacl_arm_dec
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_GEN_ARM32_DECODE_H_

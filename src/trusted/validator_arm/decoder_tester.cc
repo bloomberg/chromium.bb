@@ -8,6 +8,10 @@
  * Tests the decoder.
  */
 
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error This file is not meant for use in the TCB
+#endif
+
 #include "native_client/src/trusted/validator_arm/decoder_tester.h"
 
 #include <string>
@@ -15,7 +19,6 @@
 
 using nacl_arm_dec::kArm32InstSize;
 using nacl_arm_dec::kThumbWordSize;
-using nacl_arm_dec::ClassDecoder;
 using nacl_arm_dec::Instruction;
 using nacl_arm_dec::MAY_BE_SAFE;
 
@@ -25,7 +28,7 @@ DecoderTester::DecoderTester()
 {}
 
 void DecoderTester::ApplySanityChecks(Instruction inst,
-                                      const ClassDecoder& decoder) {
+                                      const NamedClassDecoder& decoder) {
   UNREFERENCED_PARAMETER(inst);
   EXPECT_EQ(&decoder, &ExpectedDecoder())
       << "Expected " << ExpectedDecoder().name() << " but found "
@@ -128,7 +131,8 @@ void DecoderTester::TestAtIndexExpandFill4(int index, int length, bool value) {
   TestAtIndexExpandFillAll(index, stride, length, value);
 }
 
-Arm32DecoderTester::Arm32DecoderTester(const ClassDecoder& expected_decoder)
+Arm32DecoderTester::Arm32DecoderTester(
+    const NamedClassDecoder& expected_decoder)
     : DecoderTester(),
       expected_decoder_(expected_decoder),
       pattern_(""),
@@ -147,7 +151,7 @@ void Arm32DecoderTester::Test(const char* pattern) {
   TestAtIndex(kArm32InstSize-1);
 }
 
-const ClassDecoder& Arm32DecoderTester::ExpectedDecoder() const {
+const NamedClassDecoder& Arm32DecoderTester::ExpectedDecoder() const {
   return expected_decoder_;
 }
 
@@ -170,7 +174,7 @@ char Arm32DecoderTester::Pattern(int index) const {
 
 void Arm32DecoderTester::ProcessMatch() {
   // Completed pattern, decode and test resulting state.
-  const ClassDecoder& decoder = state_.decode(inst_);
+  const NamedClassDecoder& decoder = state_.decode_named(inst_);
   if (MAY_BE_SAFE == decoder.safety(inst_)) ApplySanityChecks(inst_, decoder);
   return;
 }
@@ -212,7 +216,7 @@ void ThumbWord1DecoderTester::Test() {
   TestAtIndex(kThumbWordSize-1);
 }
 
-const ClassDecoder& ThumbWord1DecoderTester::ExpectedDecoder() const {
+const NamedClassDecoder& ThumbWord1DecoderTester::ExpectedDecoder() const {
   return thumb_tester_->ExpectedDecoder();
 }
 
@@ -266,7 +270,7 @@ void ThumbWord2DecoderTester::Test() {
   TestAtIndex(kThumbWordSize);
 }
 
-const ClassDecoder& ThumbWord2DecoderTester::ExpectedDecoder() const {
+const NamedClassDecoder& ThumbWord2DecoderTester::ExpectedDecoder() const {
   return thumb_tester_->ExpectedDecoder();
 }
 
@@ -304,7 +308,8 @@ void ThumbWord2DecoderTester::SetBitRange(
                                       (uint16_t) value);
 }
 
-ThumbDecoderTester::ThumbDecoderTester(const ClassDecoder& expected_decoder)
+ThumbDecoderTester::ThumbDecoderTester(
+    const NamedClassDecoder& expected_decoder)
     : expected_decoder_(expected_decoder),
       pattern_(""),
       state_(),
@@ -332,7 +337,7 @@ void ThumbDecoderTester::Test(const char* pattern) {
   word1_tester_.Test();
 }
 
-const ClassDecoder& ThumbDecoderTester::ExpectedDecoder() const {
+const NamedClassDecoder& ThumbDecoderTester::ExpectedDecoder() const {
   return expected_decoder_;
 }
 
@@ -359,7 +364,7 @@ char ThumbDecoderTester::Pattern(int index) const {
 
 void ThumbDecoderTester::ProcessMatch() {
   // Completed pattern, decode and test resulting state.
-  const ClassDecoder& decoder = state_.decode(inst_);
+  const NamedClassDecoder& decoder = state_.decode_named(inst_);
   if (MAY_BE_SAFE == decoder.safety(inst_)) ApplySanityChecks(inst_, decoder);
   return;
 }

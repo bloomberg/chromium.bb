@@ -396,10 +396,6 @@ class ClassDecoder {
     return false;
   }
 
-  // Returns a c-string containing the name of the class. Used for
-  // testing only.
-  virtual const char* name() const;
-
   // Many instructions define control bits in bits 20-24. The useful bits
   // are defined here.
 

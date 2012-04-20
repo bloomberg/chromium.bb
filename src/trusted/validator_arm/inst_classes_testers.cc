@@ -3,35 +3,41 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error This file is not meant for use in the TCB
+#endif
 
 #include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
 
 #include "gtest/gtest.h"
-#include "native_client/src/trusted/validator_arm/gen/arm32_decode_named.h"
+#include "native_client/src/trusted/validator_arm/decoder_tester.h"
 
 using nacl_arm_dec::kRegisterFlags;
 using nacl_arm_dec::kRegisterNone;
 using nacl_arm_dec::kRegisterPc;
-using nacl_arm_dec::ClassDecoder;
 using nacl_arm_dec::Instruction;
-using nacl_arm_dec::NamedBinary4RegisterShiftedOp;
 
 namespace nacl_arm_test {
 
 Binary4RegisterShiftedOpTester::Binary4RegisterShiftedOpTester()
-      : Arm32DecoderTester(state_.Binary4RegisterShiftedOp_instance_) {}
+    : Arm32DecoderTester(state_.Binary4RegisterShiftedOp_instance_)
+{}
+
+Binary4RegisterShiftedOpTester::Binary4RegisterShiftedOpTester(
+    const NamedBinary4RegisterShiftedOp& decoder)
+      : Arm32DecoderTester(decoder) {}
 
 void Binary4RegisterShiftedOpTester::
-ApplySanityChecks(Instruction inst, const ClassDecoder& decoder) {
-  NamedBinary4RegisterShiftedOp &expected_decoder =
-      state_.Binary4RegisterShiftedOp_instance_;
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary4RegisterShiftedOp expected_decoder;
 
   // Check that condition is defined correctly.
   EXPECT_EQ(expected_decoder.cond_.value(inst), inst.bits(31, 28));
 
   // Didn't parse undefined conditional.
   if (expected_decoder.cond_.undefined(inst) &&
-      (&expected_decoder != &decoder)) return;
+      (&state_.Binary4RegisterShiftedOp_instance_ != &decoder)) return;
 
   // Check if expected class name found.
   Arm32DecoderTester::ApplySanityChecks(inst, decoder);
@@ -47,6 +53,23 @@ ApplySanityChecks(Instruction inst, const ClassDecoder& decoder) {
   } else {
     EXPECT_EQ(expected_decoder.flags_.reg_if_updated(inst), kRegisterNone);
   }
+}
+
+Binary4RegisterShiftedOpTesterRegsNotPc::
+Binary4RegisterShiftedOpTesterRegsNotPc()
+    : Binary4RegisterShiftedOpTester() {}
+
+Binary4RegisterShiftedOpTesterRegsNotPc::
+Binary4RegisterShiftedOpTesterRegsNotPc(
+    const NamedBinary4RegisterShiftedOp& decoder)
+      : Binary4RegisterShiftedOpTester(decoder) {}
+
+void Binary4RegisterShiftedOpTesterRegsNotPc::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary4RegisterShiftedOp expected_decoder;
+
+  Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder);
 
   // Other ARM constraints about this instruction.
   EXPECT_NE(expected_decoder.n_.reg(inst), kRegisterPc)

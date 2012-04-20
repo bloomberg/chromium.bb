@@ -1,0 +1,647 @@
+#!/usr/bin/python
+#
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+
+"""
+Responsible for generating the testing decoders based on
+parsed table representations.
+"""
+
+# This file generates testing code for our class decoder. The decoder
+# tables are specifically written to minimize the number of decoder
+# classes needed to parse valid ARM instructions. For testing, this is
+# a problem. We can't (easily) tell if the intended instruction rules
+# of ARM are being met, since there is not a one-to-one mapping from
+# class decoders to rules.
+#
+# For example, consider the following two rows (from armv7.table):
+#
+# | 0011x      -        = Binary4RegisterShiftedOp
+#                         Rsb_Rule_144_A1_P288
+#                         cccc0000011snnnnddddssss0tt1mmmm
+#                         RegsNotPc
+# | 0100x      -        = Binary4RegisterShiftedOp
+#                         Add_Rule_7_A1_P26
+#                         cccc0000100snnnnddddssss0tt1mmmm
+#                         RegsNotPc
+#
+# Both rows state to return a Binary4RegisterShiftedOp class decoder.
+# The sequence of four symbols correspond to (in order presented):
+#
+#    name - The name of the class decoder to use in sel_ldr
+#    rule - A unique name identifying the rule from the manual that
+#       defines what the selected class decoder is to decode.
+#    pattern - The sequence of bits defines by the rule (above)
+#    constraints - Any additional constraints assumed by the rule.
+#
+# All but the name is optional. The remaining fields provide
+# additional documentation and information for testing (which is
+# used by this file).
+#
+# If these two rows had a mergable bit pattern (which they do not),
+# these rows would still not mergable since the actions are
+# different. However, for sel_ldr, they both state to use a
+# Binary4RegisterShiftedOp. The remaining identifiers are added data
+# for testing only.
+#
+# We fix this by defining a notion of "action_filter" where one can
+# choose to keep only those fields that are applicable. For sel_ldr,
+# it's only 'name'. For testing, it will include other fields,
+# depending on the context.
+#
+# Note: The current ARM instruction table has both new and old
+# actions. Old actions only define the 'InstClass' entry. If the
+# remaining fields are omitted, the corresponding testing for those
+# entries are omitted.
+#
+# Note: See dgen_decoder_output.py for more details on how we build a
+# decoder for sel_ldr.
+#
+# For testing, we would like to know the specific instruction rule
+# that was being tested. Further, we would like to know what
+# instruction rule was chosen for each decoder class selection made by
+# the parse tables.  To do this, we do two levels of wrapping.
+#
+# This file generates a set of wrapper classes, each a subclass of
+# NamedClassDecoder. One is generated for each InstClass needed by
+# sel_ldr (i.e. only the 'name' field). These named classes correspond
+# to what sel_ldr will select.
+#
+# The named version of each named InstClass is:
+#
+#  class NamedInstClass : public NamedClassDecoder {
+#   public:
+#    inline NamedInstClass()
+#        : NamedClassDecoder(decoder_, "InstClass")
+#    {}
+#  virtual ~NamedInstClass() {}
+# protected:
+#   explicit inline NamedInstClass(const char* name)
+#       : NamedClassDecoder(decoder_, name) {}
+# private:
+#  Binary3RegisterShiftedTest decoder_;
+#};
+#
+# This makes sure that each decoder class can be identified using a
+# separate class decoder. The public constructor is for table rows
+# that don't have rule names. The protected constructor is for table
+# rows that have a rule name, and will be a subclass of this class.
+# The class defined for rows with a Rule name is:
+#
+# class NamedRuleInstClass : public NamedInstClass {
+#  public:
+#   inline NamedRuleInstClass()
+#    : NamedInstClass("RuleInstClass")
+#   {}
+#  virtual ~NamedRuleInstClass() {}
+#};
+#
+# The base class for NamedClassDecoder is specified in
+# "named_class_decoder.h".  This file defines a class that takes a
+# ClassDecoder (reference) C and a print name NAME, and builds a
+# corresponding ClassDecoder that acts like C, but will print out
+# NAME. The behaviour of C is maintained by dispatching each virtual
+# on the NamedClassDecoder to the corresponding virtual on C.
+#
+# We then define the class decoder Decoder, by defining a derived
+# instance of DecoderState as follows:
+#
+# class NamedDecoder : DecoderState {
+#  public:
+#   explicit NamedDecoder();
+#   virtual ~NamedDecoder();
+#  const NamedClassDecoder& decode_named(const Instruction) const;
+#  virtual const ClassDecoder& decode(const Instruction) const;
+#  ...
+# };
+#
+# The method decode is the expected API for the NamedDecoder, which is
+# an instance of DecoderState (defined in decode.h). The method
+# decode_named is the same, but returns NamedClassDecoder's so that
+# good error messages can be generated by the test harnesses for
+# ClassDecoder's (see decoder_tester.h for more details on
+# ClassDecoder test harnesses).
+#
+# To the NamedDecoder, we add a constant field NamedClassDecoder for
+# each possible class decoder method decode_named could return, or
+# that we could use in automatically generated tests. These fields
+# allow us to only create the corresponding decoder classes once
+# (during constructor initialization).
+#
+# Finally, we add a method corresponding to each defined decoder
+# table.  The forms of these decoders is:
+#
+#  inline const NamedClassDecoder& decode_TABLE(
+#     const nacl_arm_dec::Instruction insn) const;
+#
+# Each of these methods are defined as inline methods so that they can
+# be optimized away in the corresponding top level methods (i.e.
+# decode_named and decode).
+#
+# For testing, there are three files generated:
+#
+#     decoder_named_classes.h
+#     decoder_named_decoder.h
+#     decoder_named.cc
+#     decoder_tests.cc
+#
+# File decoder_named_classes.h defines the class declarations for the
+# generated Rule classes, and named class decoder classes. File
+# decoder_named_decoder.h defines the decoder class NamedDecoder
+# (discussed above). decoder_named.cc contains the corresponding
+# implementations of the constructors and methods of these classes.
+#
+# decoder_tests.cc generates an automatic test harness executable,
+# that will test each instruction Rule. Each test generates all
+# possible matches the the corresponding Pattern of the table rule,
+# and calls the corresponding tester associated with the class decoder
+# of that row. By default, the tester is presumed to be named.
+#
+#    InstClassTester
+#
+# If the row defines a Constraints identifier, then the tester
+#
+#    InstClassTesterConstraints
+#
+# is used instead.
+
+import dgen_opt
+import dgen_output
+
+# Defines the header for decoder_named_classes.h
+NAMED_CLASSES_H_HEADER="""
+%(FILE_HEADER)s
+%(NOT_TCB_MESSAGE)s
+
+#ifndef %(IFDEF_NAME)s
+#define %(IFDEF_NAME)s
+
+#include "native_client/src/trusted/validator_arm/named_class_decoder.h"
+
+"""
+
+RULE_CLASSES_HEADER="""
+/*
+ * Define rule decoder classes.
+ */
+namespace nacl_arm_dec {
+"""
+
+RULE_CLASS="""
+class %(rule)s%(decoder)s
+   : public %(decoder)s {
+ public:
+  virtual ~%(rule)s%(decoder)s() {}
+};
+
+"""
+
+RULE_CLASSES_FOOTER="""
+}  // nacl_arm_dec
+"""
+
+NAMED_H_NAMESPACE="""
+namespace nacl_arm_test {
+"""
+
+NAMED_DECODERS_HEADER="""
+/*
+ * Define named class decoders for each class decoder.
+ * The main purpose of these classes is to introduce
+ * instances that are named specifically to the class decoder
+ * and/or rule that was used to parse them. This makes testing
+ * much easier in that error messages use these named classes
+ * to clarify what row in the corresponding table was used
+ * to select this decoder. Without these names, debugging the
+ * output of the test code would be nearly impossible
+ */
+
+"""
+
+NAMED_DECODER_DECLARE="""
+class Named%(decoder)s : public NamedClassDecoder {
+ public:
+  inline Named%(decoder)s()
+    : NamedClassDecoder(decoder_, "%(decoder)s")
+  {}
+  virtual ~Named%(decoder)s() {}
+ protected:
+  explicit inline Named%(decoder)s(const char* name)
+    : NamedClassDecoder(decoder_, name) {}
+ private:
+  nacl_arm_dec::%(decoder)s decoder_;
+};
+
+"""
+
+NAMED_RULE_DECLARE="""
+class Named%(rule)s%(decoder)s
+    : public Named%(decoder)s {
+ public:
+  inline Named%(rule)s%(decoder)s()
+    : Named%(decoder)s("%(rule)s%(decoder)s")
+  {}
+  virtual ~Named%(rule)s%(decoder)s() {}
+};
+
+"""
+
+NAMED_CLASSES_H_FOOTER="""
+} // namespace nacl_arm_test
+#endif  // %(IFDEF_NAME)s
+"""
+
+def generate_named_classes_h(decoder, decoder_name, filename, out):
+  """Defines named classes needed for decoder testing.
+
+  Args:
+    tables: list of Table objects to process.
+    decoder_name: The name of the decoder state to build.
+    filename: The (localized) name for the .h file.
+    out: a COutput object to write to.
+  """
+  if not decoder.primary: raise Exception('No tables provided.')
+
+  values = {
+      'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
+      'NOT_TCB_MESSAGE' : dgen_output.NOT_TCB_BOILERPLATE,
+      'IFDEF_NAME' : dgen_output.ifdef_name(filename),
+      'decoder_name': decoder_name,
+      }
+  out.write(NAMED_CLASSES_H_HEADER % values)
+  _generate_rule_classes(decoder, values, out)
+  out.write(NAMED_H_NAMESPACE)
+  _generate_named_decoder_classes(decoder, values, out)
+  out.write(NAMED_CLASSES_H_FOOTER % values)
+
+def _generate_named_decoder_classes(decoder, values, out):
+  out.write(NAMED_DECODERS_HEADER)
+  # Generate one for each type of decoder in the decoder.
+  for d in decoder.action_filter(['name']).decoders():
+    values['decoder'] = d.name
+    values['rule'] = ''
+    out.write(NAMED_DECODER_DECLARE % values)
+  # Now generate one for each decoder that has a rule associated with it.
+  for d in decoder.action_filter(['name', 'rule']).rules():
+    values['decoder'] = d.name
+    values['rule'] = d.rule
+    out.write(NAMED_RULE_DECLARE % values)
+
+def _generate_rule_classes(decoder, values, out):
+  # Note: we generate these classes in nacl_arm_dec, so that
+  # all decoder classes generated by the pareser are in the
+  # same namesapce.
+  out.write(RULE_CLASSES_HEADER)
+  for action in decoder.action_filter(['name', 'rule']).rules():
+    values['decoder'] = action.name
+    values['rule'] = action.rule
+    out.write(RULE_CLASS % values)
+  out.write(RULE_CLASSES_FOOTER)
+
+NAMED_DECODER_H_HEADER="""
+%(FILE_HEADER)s
+%(NOT_TCB_MESSAGE)s
+
+#ifndef %(IFDEF_NAME)s
+#define %(IFDEF_NAME)s
+
+#include "native_client/src/trusted/validator_arm/decode.h"
+#include "%(FILENAME_BASE)s_classes.h"
+#include "native_client/src/trusted/validator_arm/named_class_decoder.h"
+
+namespace nacl_arm_test {
+"""
+
+DECODER_STATE_HEADER="""
+// Defines a (named) decoder class selector for instructions
+class Named%(decoder_name)s : nacl_arm_dec::DecoderState {
+ public:
+  explicit Named%(decoder_name)s();
+  virtual ~Named%(decoder_name)s();
+
+  // Parses the given instruction, returning the named class
+  // decoder to use.
+  const NamedClassDecoder& decode_named(
+     const nacl_arm_dec::Instruction) const;
+
+  // Parses the given instruction, returning the class decoder
+  // to use.
+  virtual const nacl_arm_dec::ClassDecoder& decode(
+     const nacl_arm_dec::Instruction) const;
+"""
+
+DECODER_STATE_FIELD_COMMENTS="""
+  // The following fields define the set of class decoders
+  // that can be returned by the API function "decode_named". They
+  // are created once as instance fields, and then returned
+  // by the table methods above. This speeds up the code since
+  // the class decoders need to only be bulit once (and reused
+  // for each call to "decode_named").
+"""
+
+DECODER_STATE_FIELD="""
+  const Named%(rule)s%(decoder)s %(rule)s%(decoder)s_instance_;
+"""
+
+DECODER_STATE_PRIVATE="""
+ private:
+"""
+
+DECODER_STATE_DECODER_COMMENTS="""
+  // The following list of methods correspond to each decoder table,
+  // and implements the pattern matching of the corresponding bit
+  // patterns. After matching the corresponding bit patterns, they
+  // either call other methods in this list (corresponding to another
+  // decoder table), or they return the instance field that implements
+  // the class decoder that should be used to decode the particular
+  // instruction.
+"""
+
+DECODER_STATE_DECODER="""
+  inline const NamedClassDecoder& decode_%(table)s(
+      const nacl_arm_dec::Instruction insn) const;
+"""
+
+DECODER_STATE_FOOTER="""
+};
+"""
+
+NAMED_DECODER_H_FOOTER="""
+} // namespace nacl_arm_test
+#endif  // %(IFDEF_NAME)s
+"""
+
+def generate_named_decoder_h(decoder, decoder_name, filename, out):
+    """Generates the named decoder for testing.
+
+    Args:
+        tables: list of Table objects to process.
+        decoder_name: The name of the decoder state to build.
+        filename: The (localized) name for the .h file.
+        out: a COutput object to write to.
+    """
+    if not decoder.primary: raise Exception('No tables provided.')
+    assert filename.endswith('_decoder.h')
+
+    values = {
+        'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
+        'NOT_TCB_MESSAGE' : dgen_output.NOT_TCB_BOILERPLATE,
+        'IFDEF_NAME' : dgen_output.ifdef_name(filename),
+        'FILENAME_BASE': filename[:-len('_decoder.h')],
+        'decoder_name': decoder_name,
+        }
+    out.write(NAMED_DECODER_H_HEADER % values)
+    _generate_decoder_state_class(decoder, values, out)
+    out.write(NAMED_DECODER_H_FOOTER % values)
+
+def _generate_decoder_state_class(decoder, values, out):
+  # Generate a field for each type of decoder in the decoder.
+  out.write(DECODER_STATE_HEADER % values)
+  out.write(DECODER_STATE_FIELD_COMMENTS);
+  for d in decoder.action_filter(['name']).decoders():
+    values['decoder'] = d.name
+    values['rule'] = ''
+    out.write(DECODER_STATE_FIELD % values)
+  # Now generate one for each decoder that has a rule associated with it.
+  for d in decoder.action_filter(['name', 'rule']).rules():
+    values['decoder'] = d.name
+    values['rule'] = d.rule
+    out.write(DECODER_STATE_FIELD % values)
+  out.write(DECODER_STATE_PRIVATE);
+  out.write(DECODER_STATE_DECODER_COMMENTS)
+  for table in decoder.tables():
+    values['table'] = table.name
+    out.write(DECODER_STATE_DECODER % values)
+  out.write(DECODER_STATE_FOOTER % values)
+
+# Defines the source for DECODER_named.cc
+NAMED_CC_HEADER="""
+%(FILE_HEADER)s
+%(NOT_TCB_MESSAGE)s
+#include "%(FILENAME_BASE)s_decoder.h"
+
+#include <stdio.h>
+
+using nacl_arm_dec::ClassDecoder;
+using nacl_arm_dec::Instruction;
+
+namespace nacl_arm_test {
+"""
+
+PARSE_CONSTRUCT_HEADER="""
+Named%(decoder_name)s::Named%(decoder_name)s()
+  : nacl_arm_dec::DecoderState()
+"""
+
+PARSE_CONSTRUCT_FIELDS="""
+  , %(rule)s%(decoder)s_instance_()
+"""
+
+PARSE_CONSTRUCT_FOOTER="""
+{}
+
+Named%(decoder_name)s::~Named%(decoder_name)s() {}
+"""
+
+PARSE_TABLE_METHOD_HEADER="""
+/*
+ * Implementation of table %(table_name)s.
+ * Specified by: %(citation)s
+ */
+const NamedClassDecoder& Named%(decoder_name)s::decode_%(table_name)s(
+     const nacl_arm_dec::Instruction insn) const {
+"""
+
+PARSE_TABLE_METHOD_ROW="""
+  if (%(tests)s) {
+   return %(action)s;
+  }
+"""
+
+PARSE_TABLE_METHOD_FOOTER="""
+  // Catch any attempt to fall through...
+  fprintf(stderr, "TABLE IS INCOMPLETE: %(table_name)s could not parse %%08X",
+          insn.bits(31,0));
+  return Forbidden_instance_;
+}
+
+"""
+
+NAMED_CC_FOOTER="""
+const NamedClassDecoder& Named%(decoder_name)s::
+decode_named(const nacl_arm_dec::Instruction insn) const {
+  return decode_%(entry_table_name)s(insn);
+}
+
+const nacl_arm_dec::ClassDecoder& Named%(decoder_name)s::
+decode(const nacl_arm_dec::Instruction insn) const {
+  return decode_named(insn).named_decoder();
+}
+
+}  // namespace nacl_arm_test
+"""
+
+def generate_named_cc(decoder, decoder_name, filename, out):
+    """Implementation of the test decoder in .cc file
+
+    Args:
+        tables: list of Table objects to process.
+        decoder_name: The name of the decoder state to build.
+        filename: The (localized) name for the .h file.
+        out: a COutput object to write to.
+    """
+    if not decoder.primary: raise Exception('No tables provided.')
+    assert filename.endswith('.cc')
+
+    values = {
+        'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
+        'NOT_TCB_MESSAGE' : dgen_output.NOT_TCB_BOILERPLATE,
+        'FILENAME_BASE' : filename[:-len('.cc')],
+        'decoder_name': decoder_name,
+        'entry_table_name': decoder.primary.name,
+        }
+    out.write(NAMED_CC_HEADER % values)
+    _generate_decoder_constructors(decoder, values, out)
+    _generate_decoder_method_bodies(decoder, values, out)
+    out.write(NAMED_CC_FOOTER % values)
+
+def _generate_decoder_constructors(decoder, values, out):
+  out.write(PARSE_CONSTRUCT_HEADER % values)
+  # Initialize each type of decoder in the decoder.
+  for d in decoder.action_filter(['name']).decoders():
+    values['decoder'] = d.name
+    values['rule'] = ''
+    out.write(PARSE_CONSTRUCT_FIELDS % values)
+  # Now initialize fields for each decoder with a rule.
+  for d in decoder.action_filter(['name', 'rule']).rules():
+    values['decoder'] = d.name
+    values['rule'] = d.rule
+    out.write(PARSE_CONSTRUCT_FIELDS % values)
+  out.write(PARSE_CONSTRUCT_FOOTER % values)
+
+def _generate_decoder_method_bodies(decoder, values, out):
+  for table in decoder.tables():
+    opt_rows = dgen_opt.optimize_rows(
+        table.action_filter(['name', 'rule']).rows)
+    print ("Table %s: %d rows minimized to %d"
+           % (table.name, len(table.rows), len(opt_rows)))
+
+    values['table_name'] = table.name
+    values['citation'] = table.citation,
+    out.write(PARSE_TABLE_METHOD_HEADER % values)
+
+    # Add message to stop compilation warnings if this table
+    # doesn't require subtables to select a class decoder.
+    if not [r for r in opt_rows
+            if r.action.__class__.__name__ == 'DecoderMethod']:
+      out.write("  UNREFERENCED_PARAMETER(insn);")
+
+    for row in opt_rows:
+      if row.action.__class__.__name__ == 'DecoderAction':
+        values['decoder'] = row.action.name
+        values['rule'] = row.action.rule if row.action.rule else ''
+        action = '%(rule)s%(decoder)s_instance_' % values
+      elif row.action.__class__.__name__ == 'DecoderMethod':
+        action = 'decode_%s(insn)' % row.action.name
+      else:
+        raise Exception('Bad table action: %s' % row.action)
+      # Each row consists of a set of bit patterns defining if the row
+      # is applicable. Convert this into a sequence of anded C test
+      # expressions. For example, convert the following pair of bit
+      # patterns:
+      #
+      #   xxxx1010xxxxxxxxxxxxxxxxxxxxxxxx
+      #   xxxxxxxxxxxxxxxxxxxxxxxxxxxx0101
+      #
+      # Each instruction is masked to get the the bits, and then
+      # tested against the corresponding expected bits. Hence, the
+      # above example is converted to:
+      #
+      #    ((insn & 0x0F000000) != 0x0C000000) &&
+      #    ((insn & 0x0000000F) != 0x00000005)
+      values['tests'] = ' && '.join(['(%s)' % p.to_c_expr('insn')
+                                     for p in row.patterns])
+      values['action'] = action
+      out.write(PARSE_TABLE_METHOD_ROW % values)
+    out.write(PARSE_TABLE_METHOD_FOOTER % values)
+
+# Define the source for DECODER_tests.cc
+TEST_CC_HEADER="""
+%(FILE_HEADER)s
+%(NOT_TCB_MESSAGE)s
+
+#include "gtest/gtest.h"
+#include "native_client/src/trusted/validator_arm/inst_classes_testers.h"
+
+namespace nacl_arm_test {
+
+"""
+
+TESTER_CLASS="""
+class %(rule)s%(decoder)sTester%(constraints)s
+    : public %(decoder)sTester%(constraints)s {
+ public:
+  %(rule)s%(decoder)sTester%(constraints)s()
+    : %(decoder)sTester%(constraints)s(
+      state_.%(rule)s%(decoder)s_instance_)
+  {}
+};
+"""
+
+TEST_HARNESS="""
+// Defines a gtest testing harness for tests.
+class %(decoder_name)sTests : public ::testing::Test {
+ protected:
+  %(decoder_name)sTests() {}
+};
+"""
+
+TEST_FUNCTION="""
+TEST_F(%(decoder_name)sTests,
+       %(rule)s%(decoder)s%(constraints)s_%(pattern)s_Test) {
+  %(rule)s%(decoder)sTester%(constraints)s tester;
+  tester.Test("%(pattern)s");
+}
+"""
+
+
+TEST_CC_FOOTER="""
+}  // namespace nacl_arm_test
+
+int main(int argc, char* argv[]) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
+"""
+
+def generate_tests_cc(decoder, decoder_name, out):
+  if not decoder.primary: raise Exception('No tables provided.')
+  values = {
+      'FILE_HEADER': dgen_output.HEADER_BOILERPLATE,
+      'NOT_TCB_MESSAGE' : dgen_output.NOT_TCB_BOILERPLATE,
+      'decoder_name': decoder_name,
+      }
+  out.write(TEST_CC_HEADER % values)
+  _generate_rule_testers(decoder, values, out)
+  out.write(TEST_HARNESS % values)
+  _generate_test_patterns(decoder, values, out)
+  out.write(TEST_CC_FOOTER % values)
+
+def _generate_rule_testers(decoder, values, out):
+  for d in decoder.action_filter(['name', 'rule', 'constraints']).rules():
+    values['decoder'] = d.name
+    values['rule'] = d.rule
+    values['constraints'] = d.constraints if d.constraints else ''
+    out.write(TESTER_CLASS % values)
+
+def _generate_test_patterns(decoder, values, out):
+  for d in decoder.decoders():
+    if d.pattern:
+      values['decoder'] = d.name
+      values['rule'] = d.rule if d.rule else ''
+      values['constraints'] = d.constraints if d.constraints else ''
+      values['pattern'] = d.pattern
+      out.write(TEST_FUNCTION % values)

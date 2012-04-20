@@ -11,7 +11,12 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_DECODER_TESTER_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_DECODER_TESTER_H_
 
-#include "native_client/src/trusted/validator_arm/gen/arm32_decode_named.h"
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error This file is not meant for use in the TCB
+#endif
+
+#include "native_client/src/trusted/validator_arm/named_class_decoder.h"
+#include "native_client/src/trusted/validator_arm/gen/arm32_decode_named_decoder.h"
 
 namespace nacl_arm_test {
 
@@ -48,11 +53,12 @@ class DecoderTester {
   // sanity checks on the matched decoder. The default checks that the
   // expected class name matches the name of the decoder, and that
   // the safety level MAY_BE_SAFE.
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const nacl_arm_dec::ClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
 
   // Returns the expected decoder.
-  virtual const nacl_arm_dec::ClassDecoder& ExpectedDecoder() const = 0;
+  virtual const NamedClassDecoder& ExpectedDecoder() const = 0;
 
   // Returns a printable version of the contents of the tested instruction.
   // Used to print out useful test failures.
@@ -108,12 +114,12 @@ class DecoderTester {
 class Arm32DecoderTester : public DecoderTester {
  public:
   explicit Arm32DecoderTester(
-      const nacl_arm_dec::ClassDecoder& expected_decoder);
+      const NamedClassDecoder& expected_decoder);
   virtual ~Arm32DecoderTester();
   void Test(const char* pattern);
 
  protected:
-  virtual const nacl_arm_dec::ClassDecoder& ExpectedDecoder() const;
+  virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual const char* InstContents() const;
   virtual char Pattern(int index) const;
   virtual void ProcessMatch();
@@ -121,13 +127,13 @@ class Arm32DecoderTester : public DecoderTester {
   virtual void SetBitRange(int index, int length, uint32_t value);
 
   // The expected decoder class.
-  const nacl_arm_dec::ClassDecoder& expected_decoder_;
+  const NamedClassDecoder& expected_decoder_;
 
   // The pattern being enumerated.
   const char* pattern_;
 
   // The decoder to use.
-  nacl_arm_dec::NamedArm32DecoderState state_;
+  NamedArm32DecoderState state_;
 
   // The instruction currently being enumerated.
   nacl_arm_dec::Instruction inst_;
@@ -154,7 +160,7 @@ class ThumbWord1DecoderTester : public DecoderTester {
   void Test();
 
  protected:
-  virtual const nacl_arm_dec::ClassDecoder& ExpectedDecoder() const;
+  virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual const char* InstContents() const;
   virtual char Pattern(int index) const;
   virtual void ProcessMatch();
@@ -190,7 +196,7 @@ class ThumbWord2DecoderTester : public DecoderTester {
   void Test();
 
  protected:
-  virtual const nacl_arm_dec::ClassDecoder& ExpectedDecoder() const;
+  virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual const char* InstContents() const;
   virtual char Pattern(int index) const;
   virtual void ProcessMatch();
@@ -220,12 +226,12 @@ class ThumbDecoderTester : public DecoderTester {
   friend class ThumbWord2DecoderTester;
  public:
   explicit ThumbDecoderTester(
-      const nacl_arm_dec::ClassDecoder& expected_decoder);
+      const NamedClassDecoder& expected_decoder);
   virtual ~ThumbDecoderTester();
   void Test(const char* pattern);
 
  protected:
-  virtual const nacl_arm_dec::ClassDecoder& ExpectedDecoder() const;
+  virtual const NamedClassDecoder& ExpectedDecoder() const;
   virtual const char* InstContents() const;
   virtual char Pattern(int index) const;
   virtual void ProcessMatch();
@@ -233,14 +239,14 @@ class ThumbDecoderTester : public DecoderTester {
   virtual void SetBitRange(int index, int length, uint32_t value);
 
   // The expected decoder class name.
-  const nacl_arm_dec::ClassDecoder& expected_decoder_;
+  const NamedClassDecoder& expected_decoder_;
 
   // The pattern being enumerated.
   const char* pattern_;
 
   // TODO(karl): replace with thumb decoder state once defined.
   // The decoder to use.
-  nacl_arm_dec::NamedArm32DecoderState state_;
+  NamedArm32DecoderState state_;
 
   // The instruction currently being enumerated.
   nacl_arm_dec::Instruction inst_;

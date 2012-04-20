@@ -9,6 +9,11 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_INST_CLASSES_TESTERS_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_INST_CLASSES_TESTERS_H_
 
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error This file is not meant for use in the TCB
+#endif
+
+#include "native_client/src/trusted/validator_arm/gen/arm32_decode_named_classes.h"
 #include "native_client/src/trusted/validator_arm/decoder_tester.h"
 
 namespace nacl_arm_test {
@@ -20,7 +25,6 @@ namespace nacl_arm_test {
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
 // |  cond  |              | S|   Rn   |   Rd   |   Rs   |  |type|  |   Rm   |
 // +--------+--------------+--+--------+--------+--------+--+----+--+--------+
-// Note: if Rn, Rd, Rs, or Rm is R15, the instruction is unpredictable.
 // Definitions:
 //    Rd - The destination register.
 //    Rn - The first operand register.
@@ -31,8 +35,27 @@ namespace nacl_arm_test {
 class Binary4RegisterShiftedOpTester : public Arm32DecoderTester {
  public:
   explicit Binary4RegisterShiftedOpTester();
-  virtual void ApplySanityChecks(nacl_arm_dec::Instruction inst,
-                                 const nacl_arm_dec::ClassDecoder& decoder);
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+ protected:
+  explicit Binary4RegisterShiftedOpTester(
+      const NamedBinary4RegisterShiftedOp &decoder);
+};
+
+// Implements a decoder tester for decoder Binary4RegisterShiftedOp
+// with the constraint that if Rn, Rd, Rs, or Rm is R15, the instruction
+// is unpredictable.
+class Binary4RegisterShiftedOpTesterRegsNotPc
+    : public Binary4RegisterShiftedOpTester {
+ public:
+  explicit Binary4RegisterShiftedOpTesterRegsNotPc();
+  virtual void ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+ protected:
+  explicit Binary4RegisterShiftedOpTesterRegsNotPc(
+      const NamedBinary4RegisterShiftedOp &decoder);
 };
 
 }  // namespace

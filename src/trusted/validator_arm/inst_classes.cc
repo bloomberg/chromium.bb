@@ -14,12 +14,6 @@
 
 namespace nacl_arm_dec {
 
-const char* ClassDecoder::name() const {
-  // This should never be called!
-  assert(0);
-  return "???";
-}
-
 uint32_t ShiftTypeBits5To6Interface::ComputeDecodeImmShift(
     uint32_t shift_type, uint32_t imm5_value) {
   switch (shift_type) {
@@ -85,6 +79,7 @@ RegisterList Unary2RegisterOp::defs(const Instruction i) const {
 SafetyLevel Binary3RegisterOp::safety(const Instruction i) const {
   // Unsafe if any register contains PC (ARM restriction).
   if ((d_.reg(i) + m_.reg(i) + n_.reg(i))[kRegisterPc]) return UNPREDICTABLE;
+
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
   // since the ARM restriction doesn't allow it anyway.

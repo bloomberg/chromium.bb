@@ -1,13 +1,16 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
- * Copyright 2009, Google Inc.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
  * A simple test for AddressSet.
  */
+
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error This file is not meant for use in the TCB
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

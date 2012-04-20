@@ -19,7 +19,8 @@ state (with the given decoder name) to decode instructions, while the
 import re
 import sys
 import dgen_input
-import dgen_output
+import dgen_decoder_output
+import dgen_test_output
 
 def _localize_filename(filename):
   """ Strips off directories above 'native_client', returning
@@ -39,38 +40,34 @@ def main(argv):
 
     print "Decoder Generator reading ", table_filename
     f = open(table_filename, 'r')
-    tables = dgen_input.parse_tables(f)
+    decoder = dgen_input.parse_tables(f)
     f.close()
 
-    print "Successful - got %d tables." % len(tables)
+    print "Successful - got %d tables." % len(decoder.tables())
 
     print "Generating %s..." % output_filename
     f = open(output_filename, 'w')
 
-    if output_filename.endswith('named.h'):
-      dgen_output.generate_decoder_h(tables,
-                                     decoder_name,
-                                     _localize_filename(output_filename),
-                                     True,
-                                     dgen_output.COutput(f))
+    if output_filename.endswith('tests.cc'):
+      dgen_test_output.generate_tests_cc(decoder,
+                                         decoder_name,
+                                         f)
+    elif output_filename.endswith('named_classes.h'):
+      dgen_test_output.generate_named_classes_h(
+          decoder, decoder_name, _localize_filename(output_filename),
+                                                f)
+    elif output_filename.endswith('named_decoder.h'):
+      dgen_test_output.generate_named_decoder_h(
+          decoder, decoder_name, _localize_filename(output_filename), f)
     elif output_filename.endswith('.h'):
-      dgen_output.generate_decoder_h(tables,
-                                     decoder_name,
-                                     _localize_filename(output_filename),
-                                     False,
-                                     dgen_output.COutput(f))
+      dgen_decoder_output.generate_h(
+          decoder, decoder_name, _localize_filename(output_filename), f)
     elif output_filename.endswith('named.cc'):
-      dgen_output.generate_decoder_cc(tables,
-                                      decoder_name,
-                                      _localize_filename(output_filename),
-                                      True,
-                                      dgen_output.COutput(f))
+      dgen_test_output.generate_named_cc(
+          decoder, decoder_name, _localize_filename(output_filename), f)
     elif output_filename.endswith('.cc'):
-      dgen_output.generate_decoder_cc(tables,
-                                      decoder_name,
-                                      _localize_filename(output_filename),
-                                      False,
-                                      dgen_output.COutput(f))
+      dgen_decoder_output.generate_cc(
+          decoder, decoder_name, _localize_filename(output_filename), f)
     else:
       print 'Error: output filename not of form "*.{h,cc}"'
     f.close()

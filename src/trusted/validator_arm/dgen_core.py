@@ -1,17 +1,14 @@
 #!/usr/bin/python
 #
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-# Copyright 2009, Google Inc.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 
 """
 The core object model for the Decoder Generator.  The dg_input and dg_output
 modules both operate in terms of these classes.
 """
-
-import re
 
 def _popcount(int):
     """Returns the number of 1 bits in the input."""
@@ -84,6 +81,17 @@ class BitPattern(object):
         mask = mask << lo_bit
         value = value << lo_bit
         return BitPattern(mask, value, op)
+
+    @staticmethod
+    def parse_catch(pattern, hi_bit, lo_bit):
+        """"Calls parse with given arguments, and catches exceptions
+            raised. Prints raised exceptions and returns None.
+        """
+        try:
+            return BitPattern.parse(pattern, hi_bit, lo_bit);
+        except Exception as ex:
+            print "Error: %s" % ex
+            return None
 
     def __init__(self, mask, value, op):
         """Initializes a BitPattern.
@@ -206,28 +214,122 @@ class Table(object):
         """
         self._columns.append( (name, hi_bit, lo_bit) )
 
-    def add_row(self, col_patterns, action_string):
+    def add_row(self, patterns, action, arch):
         """Adds a row to the table.
         Args:
-            col_patterns: a list containing a BitPattern for every column in the
+            patterns: a list containing a BitPattern for every column in the
                 table.
-            action_string: a string indicating the action to take; must begin
-                with '=' for a terminal instruction class, or '->' for a
-                table-change.  The action may end with an arch revision in
-                parentheses.
+            action: The action associated  with the row. Must either be
+                a DecoderAction or a DecoderMethod.
+            arch: a string defining the architectures it applies to. None
+                implies all.
         """
-        arch = None
-        m = re.match(r'^(=[A-Za-z0-9_]+)\(([^)]+)\)$', action_string)
-        if m:
-            action_string = m.group(1)
-            arch = m.group(2)
+        self.rows.append(Row(patterns, action, arch))
 
-        parsed = []
-        for i in range(0, len(col_patterns)):
-            col = self._columns[i]
-            parsed.append(BitPattern.parse(col_patterns[i], col[1], col[2]))
-        self.rows.append(Row(parsed, action_string, arch))
+    def define_pattern(self, pattern, column):
+        """Converts the given input pattern (for the given column) to the
+           internal form. Returns None if pattern is bad.
+        """
+        if column >= len(self._columns): return None
+        col = self._columns[column]
+        return BitPattern.parse_catch(pattern, col[1], col[2])
 
+    def action_filter(self, names):
+        """Returns a table with DecoderActions reduced to the given field names.
+           Used to optimize out duplicates, depending on context.
+        """
+        table = Table(self.name, self.citation)
+        table._columns = self._columns
+        for r in self.rows:
+          table.add_row(r.patterns, r.action.action_filter(names), r.arch)
+        return table
+
+class DecoderAction:
+  """An action defining a class decoder to apply.
+
+  Corresponds to the parsed decoder action:
+      decoder_action ::= id (id (word (id)?)?)?
+
+  Fields are:
+      name - Name of class decoder selected.
+      rule - Name of the rule in ARM manual that defines
+             the decoder action.
+      pattern - The placement of 0/1's within any instruction
+             that is matched by the corresponding rule.
+      constraints - Additional constraints that apply to the rule.
+  """
+  def __init__(self, name, rule, pattern, constraints):
+    self.name = name
+    self.rule = rule
+    self.pattern = pattern
+    self.constraints = constraints
+
+  def action_filter(self, names):
+    return DecoderAction(
+        self.name if 'name' in names else None,
+        self.rule if 'rule' in names else None,
+        self.pattern if 'pattern' in names else None,
+        self.constraints if 'constraints' in names else None)
+
+  def __eq__(self, other):
+    return (other.__class__.__name__ == 'DecoderAction'
+            and self.name == other.name
+            and self.rule == other.rule
+            and self.pattern == other.pattern
+            and self.constraints == other.constraints)
+
+  def __cmp__(self, other):
+    # Order lexicographically on type/fields.
+    value = cmp(other.__class__.__name__, 'DecoderAction')
+    if value != 0: return value
+    value = cmp(self.name, other.name)
+    if value != 0: return value
+    value = cmp(self.rule, other.rule)
+    if value != 0: return value
+    value = cmp(self.pattern, other.pattern)
+    if value != 0: return value
+    return cmp(self.constraints, other.constraints)
+
+  def __hash__(self):
+    return (hash('DecoderAction') + hash(self.name) + hash(self.rule) +
+            hash(self.pattern) + hash(self.constraints))
+
+  def __repr__(self):
+    return '=%s %s %s %s' % (self.name, self.rule,
+                             self.pattern, self.constraints)
+
+class DecoderMethod(object):
+  """An action defining a parse method to call.
+
+  Corresponds to the parsed decoder method:
+      decoder_method ::= '->' id
+
+  Fields are:
+      name - The name of the corresponding table (i.e. method) that
+          should be used to continue searching for a matching class
+          decoder.
+  """
+  def __init__(self, name):
+    self.name = name
+
+  def action_filter(self, unused_names):
+    return self
+
+  def __eq__(self, other):
+    return (self.__class__.__name__ == 'DecoderMethod'
+            and self.name == other.name)
+
+  def __cmp__(self, other):
+    # Lexicographically compare types/fields.
+    value = cmp(other.__class__.__name__, 'DecoderMethod')
+    if value != 0: return value
+    return cmp(self.name, other.name)
+
+  def __hash__(self):
+    return hash('DecoderMethod') + hash(self.name)
+
+  def __repr__(self):
+    return '->%s' % self.name
 
 class Row(object):
     """ A row in a Table."""
@@ -277,3 +379,71 @@ class Row(object):
 
     def __repr__(self):
         return 'Row(%s, %s)' % (repr(self.patterns), repr(self.action))
+
+class Decoder(object):
+  """Defines a class decoder which consists of set of tables.
+
+  A decoder has a primary (i.e. start) table to parse intructions (and
+  select the proper ClassDecoder), as well as a set of additional
+  tables to complete the selection of a class decoder. Instances of
+  this class correspond to the internal representation of parsed
+  decoder tables recognized by dgen_input.py (see that file for
+  details).
+
+  Fields are:
+      primary - The entry parse table to find a class decoder.
+      tables - The (sorted) set of tables defined by a decoder.
+
+  Note: maintains restriction that tables have unique names.
+  """
+
+  def __init__(self):
+    self.primary = None
+    self._is_sorted = False
+    self._tables = []
+
+  def add(self, table):
+    """Adds the table to the set of tables. Returns true if successful.
+    """
+    if filter(lambda(t): t.name == table.name, self._tables):
+      # Table with name already defined, report error.
+      return False
+    else:
+      if not self._tables:
+        self.primary = table
+      self._tables.append(table)
+      self.is_sorted = False
+      return True
+
+  def tables(self):
+    """Returns the sorted (by table name) list of tables"""
+    if self._is_sorted: return self._tables
+    self._tables = sorted(self._tables, key=lambda(tbl): tbl.name)
+    self._is_sorted = True
+    return self._tables
+
+  def action_filter(self, names):
+    """Returns a new set of tables with actions reduced to the set of
+    field names.
+    """
+    decoder = Decoder()
+    decoder._tables = sorted([ t.action_filter(names) for t in self._tables ],
+                             key=lambda(tbl): tbl.name)
+    decoder.primary = filter(
+        lambda(t): t.name == self.primary.name, self._tables)[0]
+    return decoder
+
+  def decoders(self):
+    """Returns the sorted sequence of DecoderAction's defined in the tables."""
+    decoders = set()
+    for t in self._tables:
+        for r in t.rows:
+            if r.action.__class__.__name__ == 'DecoderAction':
+                decoders.add(r.action)
+    return sorted(decoders)
+
+  def rules(self):
+    """Returns the sorted sequence of DecoderActions that define
+       the rule field.
+    """
+    return sorted(filter(lambda (r): r.rule, self.decoders()))
