@@ -2485,12 +2485,12 @@ FileManager.prototype = {
           // TODO(serya): This hack needed until task.iconUrl is working
           //             (see GetFileTasksFileBrowserFunction::RunImpl).
           task.iconUrl =
-              chrome.extension.getURL('images/icon_play_16x16.png');
+              chrome.extension.getURL('images/filetype_audio.png');
           task.title = str('ACTION_LISTEN');
           this.playTask_ = task;
         } else if (task_parts[1] == 'mount-archive') {
           task.iconUrl =
-              chrome.extension.getURL('images/icon_mount_archive_16x16.png');
+              chrome.extension.getURL('images/filetype_archive.png');
           task.title = str('MOUNT_ARCHIVE');
         } else if (task_parts[1] == 'gallery') {
           if (selection.urls.filter(FileType.isImage).length) {

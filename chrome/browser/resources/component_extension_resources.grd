@@ -43,11 +43,6 @@
         <include name="IDR_FILE_MANAGER_SEQUENCE" file="file_manager/js/metadata/function_sequence.js" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_16" file="file_manager/images/icon16.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_128" file="file_manager/images/icon128.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_PREVIEW_ICON" file="file_manager/images/icon_preview_16x16.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIA_PLAY_ICON" file="file_manager/images/icon_play_16x16.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_MEDIA_ENQUEUE_ICON" file="file_manager/images/icon_add_to_queue_16x16.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_ARCHIVE_MOUNT_ICON" file="file_manager/images/icon_mount_archive_16x16.png" type="BINDATA" />
-        <include name="IDR_FILE_MANAGER_ARCHIVE_UNMOUNT_ICON" file="file_manager/images/icon_unmount_archive_16x16.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_OPEN_SIDEBAR_ICON" file="file_manager/images/open_sidebar.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_CLOSE_SIDEBAR_ICON" file="file_manager/images/close_sidebar.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_EJECT_ICON" file="file_manager/images/eject.png" type="BINDATA" />

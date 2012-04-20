@@ -32,7 +32,7 @@
     {
       "id": "play",
       "default_title": "__MSG_PLAY_MEDIA__",
-      "default_icon": "images/icon_play_16x16.png",
+      "default_icon": "images/filetype_audio.png",
       "file_filters": [
         "filesystem:*.flac",
         "filesystem:*.m4a",
@@ -45,7 +45,7 @@
     {
       "id": "mount-archive",
       "default_title": "__MSG_MOUNT_ARCHIVE__",
-      "default_icon": "images/icon_mount_archive_16x16.png",
+      "default_icon": "images/filetype_archive.png",
       "file_filters": [
         "filesystem:*.rar",
         "filesystem:*.tar",
@@ -117,7 +117,7 @@
     {
       "id": "open-hosted",
       "default_title": "__MSG_HOSTED__",
-      "default_icon": "images/icon_preview_16x16.png",
+      "default_icon": "images/filetype_generic.png",
       "file_filters": [
         "filesystem:*.gdoc",
         "filesystem:*.gsheet",
