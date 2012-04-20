@@ -8,10 +8,8 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "base/command_line.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif
@@ -29,14 +27,6 @@ namespace browser {
 
 views::Widget* CreateFramelessViewsWindow(gfx::NativeWindow parent,
                                           views::WidgetDelegate* delegate) {
-  return CreateFramelessWindowWithParentAndBounds(delegate,
-      parent, gfx::Rect());
-}
-
-views::Widget* CreateFramelessWindowWithParentAndBounds(
-    views::WidgetDelegate* delegate,
-    gfx::NativeWindow parent,
-    const gfx::Rect& bounds) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -46,7 +36,6 @@ views::Widget* CreateFramelessWindowWithParentAndBounds(
   params.parent = parent;
 #endif
   // No frame so does not need params.transparent = true
-  params.bounds = bounds;
   widget->Init(params);
   return widget;
 }
