@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
@@ -162,7 +163,16 @@ void IqRequest::OnTimeout() {
 }
 
 void IqRequest::OnResponse(const buzz::XmlElement* stanza) {
-  CallCallback(stanza);
+  // It's unsafe to delete signal strategy here, and the callback may
+  // want to do that, so we post task to invoke the callback later.
+  scoped_ptr<buzz::XmlElement> stanza_copy(new buzz::XmlElement(*stanza));
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(&IqRequest::DeliverResponse, AsWeakPtr(),
+                            base::Passed(&stanza_copy)));
+}
+
+void IqRequest::DeliverResponse(scoped_ptr<buzz::XmlElement> stanza) {
+  CallCallback(stanza.get());
 }
 
 }  // namespace remoting

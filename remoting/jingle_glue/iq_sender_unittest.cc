@@ -39,6 +39,10 @@ class MockCallback {
   MOCK_METHOD2(OnReply, void(IqRequest* request, const XmlElement* reply));
 };
 
+MATCHER_P(XmlEq, expected, "") {
+  return arg->Str() == expected->Str();
+}
+
 }  // namespace
 
 class IqSenderTest : public testing::Test {
@@ -95,8 +99,10 @@ TEST_F(IqSenderTest, SendIq) {
       QName("test:namespace", "response-body"));
   response->AddElement(result);
 
-  EXPECT_CALL(callback_, OnReply(request_.get(), response.get()));
   EXPECT_TRUE(sender_->OnSignalStrategyIncomingStanza(response.get()));
+
+  EXPECT_CALL(callback_, OnReply(request_.get(), XmlEq(response.get())));
+  message_loop_.RunAllPending();
 }
 
 TEST_F(IqSenderTest, Timeout) {
@@ -125,9 +131,10 @@ TEST_F(IqSenderTest, InvalidFrom) {
       QName("test:namespace", "response-body"));
   response->AddElement(result);
 
-  EXPECT_CALL(callback_, OnReply(request_.get(), response.get()))
+  EXPECT_CALL(callback_, OnReply(_, _))
       .Times(0);
   EXPECT_FALSE(sender_->OnSignalStrategyIncomingStanza(response.get()));
+  message_loop_.RunAllPending();
 }
 
 TEST_F(IqSenderTest, IdMatchingHack) {
@@ -144,8 +151,10 @@ TEST_F(IqSenderTest, IdMatchingHack) {
       QName("test:namespace", "response-body"));
   response->AddElement(result);
 
-  EXPECT_CALL(callback_, OnReply(request_.get(), response.get()));
   EXPECT_TRUE(sender_->OnSignalStrategyIncomingStanza(response.get()));
+
+  EXPECT_CALL(callback_, OnReply(request_.get(), XmlEq(response.get())));
+  message_loop_.RunAllPending();
 }
 
 }  // namespace remoting

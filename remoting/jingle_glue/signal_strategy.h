@@ -40,7 +40,9 @@ class SignalStrategy {
     // Called after state of the connection has changed.
     virtual void OnSignalStrategyStateChange(State state) {}
 
-    // Must return true if the stanza was handled, false otherwise.
+    // Must return true if the stanza was handled, false
+    // otherwise. The signal strategy must not be deleted from a
+    // handler of this message.
     virtual bool OnSignalStrategyIncomingStanza(
         const buzz::XmlElement* stanza) { return false; }
   };

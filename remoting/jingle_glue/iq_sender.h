@@ -99,6 +99,8 @@ class IqRequest : public  base::SupportsWeakPtr<IqRequest> {
   // Called by IqSender when a response is received.
   void OnResponse(const buzz::XmlElement* stanza);
 
+  void DeliverResponse(scoped_ptr<buzz::XmlElement> stanza);
+
   IqSender* sender_;
   IqSender::ReplyCallback callback_;
   std::string addressee_;
