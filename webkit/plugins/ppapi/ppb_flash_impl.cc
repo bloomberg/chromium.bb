@@ -267,7 +267,7 @@ void UpdateActivity(PP_Instance pp_instance) {
 }
 
 PP_Var GetDeviceID(PP_Instance pp_instance) {
-  // TODO(brettw) implement me.
+  // Not supported in-process.
   return PP_MakeUndefined();
 }
 

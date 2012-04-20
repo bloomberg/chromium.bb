@@ -90,6 +90,8 @@ void PepperMessageFilter::OverrideThreadForMessage(
       message.type() == PpapiHostMsg_PPBTCPServerSocket_Listen::ID ||
       message.type() == PpapiHostMsg_PPBHostResolver_Resolve::ID) {
     *thread = BrowserThread::UI;
+  } else if (message.type() == PpapiHostMsg_PPBFlash_GetDeviceID::ID) {
+    *thread = BrowserThread::FILE;
   }
 }
 
@@ -140,6 +142,9 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
     // X509 certificate messages.
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBX509Certificate_ParseDER,
                         OnX509CertificateParseDER);
+
+    // Flash messages.
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetDeviceID, OnGetDeviceID)
 
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -605,6 +610,11 @@ void PepperMessageFilter::OnX509CertificateParseDER(
     *succeeded = false;
   *succeeded = PepperTCPSocket::GetCertificateFields(&der[0], der.size(),
                                                      result);
+}
+
+void PepperMessageFilter::OnGetDeviceID(std::string* id) {
+  // TODO(brettw) implement this.
+  *id = "<undefined>";
 }
 
 void PepperMessageFilter::GetFontFamiliesComplete(

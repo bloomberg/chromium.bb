@@ -210,6 +210,7 @@ class PepperMessageFilter
   void OnX509CertificateParseDER(const std::vector<char>& der,
                                  bool* succeeded,
                                  ppapi::PPB_X509Certificate_Fields* result);
+  void OnGetDeviceID(std::string* id);
 
   // Callback when the font list has been retrieved on a background thread.
   void GetFontFamiliesComplete(IPC::Message* reply_msg,

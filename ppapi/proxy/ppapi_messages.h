@@ -1175,6 +1175,8 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_IsRectTopmost,
                            PP_Instance /* instance */,
                            PP_Rect /* rect */,
                            PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED0_1(PpapiHostMsg_PPBFlash_GetDeviceID,
+                           std::string /* id */)
 
 // PPB_Flash_Clipboard.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlashClipboard_IsFormatAvailable,

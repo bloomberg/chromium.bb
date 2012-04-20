@@ -223,8 +223,10 @@ void UpdateActivity(PP_Instance instance) {
 }
 
 PP_Var GetDeviceID(PP_Instance instance) {
-  // TODO(brettw) implement me.
-  return PP_MakeUndefined();
+  std::string id;
+  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+      new PpapiHostMsg_PPBFlash_GetDeviceID(API_ID_PPB_FLASH, &id));
+  return StringVar::StringToPPVar(id);
 }
 
 const PPB_Flash_11 flash_interface_11 = {
