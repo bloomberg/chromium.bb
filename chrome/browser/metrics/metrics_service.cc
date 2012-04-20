@@ -927,7 +927,7 @@ void MetricsService::StartFinalLogInfoCollection() {
 
   scoped_refptr<MetricsMemoryDetails> details(
       new MetricsMemoryDetails(callback));
-  details->StartFetch();
+  details->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
 
   // Collect WebCore cache information to put into a histogram.
   for (content::RenderProcessHost::iterator i(

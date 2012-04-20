@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -35,6 +36,7 @@
 #include "content/public/browser/zygote_host_linux.h"
 #endif
 
+using base::StringPrintf;
 using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
 using content::NavigationEntry;
@@ -115,10 +117,11 @@ ProcessData& ProcessData::operator=(const ProcessData& rhs) {
 // one task run for that long on the UI or IO threads.  So, we run the
 // expensive parts of this operation over on the file thread.
 //
-void MemoryDetails::StartFetch() {
+void MemoryDetails::StartFetch(UserMetricsMode user_metrics_mode) {
   // This might get called from the UI or FILE threads, but should not be
   // getting called from the IO thread.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  user_metrics_mode_ = user_metrics_mode;
 
   // In order to process this request, we need to use the plugin information.
   // However, plugin process information is only available from the IO thread.
@@ -128,6 +131,33 @@ void MemoryDetails::StartFetch() {
 }
 
 MemoryDetails::~MemoryDetails() {}
+
+std::string MemoryDetails::ToLogString() {
+  std::string log;
+  log.reserve(4096);
+  const ProcessData& chrome = *ChromeBrowser();
+  for (ProcessMemoryInformationList::const_iterator iter1 =
+           chrome.processes.begin();
+       iter1 != chrome.processes.end(); ++iter1) {
+    log += ProcessMemoryInformation::GetFullTypeNameInEnglish(
+            iter1->type, iter1->renderer_type);
+    if (!iter1->titles.empty()) {
+      log += " [";
+      for (std::vector<string16>::const_iterator iter2 =
+               iter1->titles.begin();
+           iter2 != iter1->titles.end(); ++iter2) {
+        if (iter2 != iter1->titles.begin())
+          log += "|";
+        log += UTF16ToUTF8(*iter2);
+      }
+      log += "]";
+    }
+    log += StringPrintf(" %d MB private, %d MB shared\n",
+                        static_cast<int>(iter1->working_set.priv) / 1024,
+                        static_cast<int>(iter1->working_set.shared) / 1024);
+  }
+  return log;
+}
 
 void MemoryDetails::CollectChildInfoOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -322,7 +352,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
     }
   }
 
-  UpdateHistograms();
+  if (user_metrics_mode_ == UPDATE_USER_METRICS)
+    UpdateHistograms();
 
   OnDetailsAvailable();
 }

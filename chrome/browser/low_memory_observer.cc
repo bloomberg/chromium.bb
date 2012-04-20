@@ -90,7 +90,7 @@ class LowMemoryObserverImpl
     static void DiscardTab() {
       CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
       if (g_browser_process && g_browser_process->oom_priority_manager())
-        g_browser_process->oom_priority_manager()->DiscardTab();
+        g_browser_process->oom_priority_manager()->LogMemoryAndDiscardTab();
     }
    private:
     LowMemoryObserverImpl* owner_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,8 @@ enum {
   MAX_BROWSERS
 } BrowserProcess;
 
-MemoryDetails::MemoryDetails() {
+MemoryDetails::MemoryDetails()
+    : user_metrics_mode_(UPDATE_USER_METRICS) {
   static const std::wstring google_browser_name =
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   struct {

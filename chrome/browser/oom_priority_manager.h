@@ -50,6 +50,11 @@ class OomPriorityManager : public content::NotificationObserver {
   // Returns true if it successfully found a tab and discarded it.
   bool DiscardTab();
 
+  // Log memory statistics for the running processes, then discards a tab.
+  // Tab discard happens sometime later, as collecting the statistics touches
+  // multiple threads and takes time.
+  void LogMemoryAndDiscardTab();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, Comparator);
 

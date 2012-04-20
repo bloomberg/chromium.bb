@@ -20,7 +20,9 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/low_memory_observer.h"
+#include "chrome/browser/memory_details.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -74,6 +76,43 @@ const int kFocusedTabScoreAdjustIntervalMs = 500;
 // the WebContents could be deleted if the user closed the tab.
 int64 IdFromTabContents(WebContents* web_contents) {
   return reinterpret_cast<int64>(web_contents);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// OomMemoryDetails logs details about all Chrome processes during an out-of-
+// memory event in an attempt to identify the culprit, then discards a tab and
+// deletes itself.
+class OomMemoryDetails : public MemoryDetails {
+ public:
+  OomMemoryDetails();
+
+  // MemoryDetails overrides:
+  virtual void OnDetailsAvailable() OVERRIDE;
+
+ private:
+  virtual ~OomMemoryDetails() {}
+
+  TimeTicks start_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(OomMemoryDetails);
+};
+
+OomMemoryDetails::OomMemoryDetails() {
+  AddRef();  // Released in OnDetailsAvailable().
+  start_time_ = TimeTicks::Now();
+}
+
+void OomMemoryDetails::OnDetailsAvailable() {
+  TimeDelta delta = TimeTicks::Now() - start_time_;
+  // These logs are collected by user feedback reports.  We want them to help
+  // diagnose user-reported problems with frequently discarded tabs.
+  LOG(INFO) << "OOM details (" << delta.InMilliseconds() << " ms):\n"
+      << ToLogString();
+  if (g_browser_process && g_browser_process->oom_priority_manager())
+    g_browser_process->oom_priority_manager()->DiscardTab();
+  // Delete ourselves so we don't have to worry about OomPriorityManager
+  // deleting us when we're still working.
+  Release();
 }
 
 }  // namespace
@@ -166,6 +205,12 @@ bool OomPriorityManager::DiscardTab() {
       return true;
   }
   return false;
+}
+
+void OomPriorityManager::LogMemoryAndDiscardTab() {
+  // Deletes itself upon completion.
+  OomMemoryDetails* details = new OomMemoryDetails();
+  details->StartFetch(MemoryDetails::SKIP_USER_METRICS);
 }
 
 bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {

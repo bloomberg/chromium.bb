@@ -2955,7 +2955,8 @@ void TestingAutomationProvider::GetProcessInfo(
     IPC::Message* reply_message) {
   scoped_refptr<ProcessInfoObserver>
       proc_observer(new ProcessInfoObserver(this, reply_message));
-  proc_observer->StartFetch();
+  // TODO(jamescook): Maybe this shouldn't update UMA stats?
+  proc_observer->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
 }
 
 // Sample json input: { "command": "GetNavigationInfo" }

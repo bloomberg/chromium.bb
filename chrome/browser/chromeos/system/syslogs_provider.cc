@@ -1,11 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 
-#include <functional>
-#include <set>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -16,8 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -252,41 +248,7 @@ class SyslogsMemoryHandler : public MemoryDetails {
   }
 
   virtual void OnDetailsAvailable() OVERRIDE {
-    const ProcessData& chrome = processes()[0];  // Chrome is the first entry.
-    // Process info, sorted by memory used (highest to lowest).
-    typedef std::pair<int, std::string> ProcInfo;
-    typedef std::set<ProcInfo, std::greater<ProcInfo> > ProcInfoSet;
-    ProcInfoSet process_info;
-    for (ProcessMemoryInformationList::const_iterator iter1 =
-             chrome.processes.begin();
-         iter1 != chrome.processes.end(); ++iter1) {
-      std::string process_string(
-          ProcessMemoryInformation::GetFullTypeNameInEnglish(
-              iter1->type, iter1->renderer_type));
-      if (!iter1->titles.empty()) {
-        std::string titles(" [");
-        for (std::vector<string16>::const_iterator iter2 =
-                 iter1->titles.begin();
-             iter2 != iter1->titles.end(); ++iter2) {
-          if (iter2 != iter1->titles.begin())
-            titles += "|";
-          titles += UTF16ToUTF8(*iter2);
-        }
-        titles += "]";
-        process_string += titles;
-      }
-      // Use private working set for memory used calculation.
-      int ws_mbytes = static_cast<int>(iter1->working_set.priv) / 1024;
-      process_info.insert(std::make_pair(ws_mbytes, process_string));
-    }
-    // Add one line for each reverse-sorted entry.
-    std::string mem_string;
-    for (ProcInfoSet::iterator iter = process_info.begin();
-         iter != process_info.end(); ++iter) {
-      mem_string +=
-          iter->second + base::StringPrintf(": %d MB", iter->first) + "\n";
-    }
-    (*logs_)["mem_usage"] = mem_string;
+    (*logs_)["mem_usage"] = ToLogString();
     // This will call the callback on the calling thread.
     request_->ForwardResult(logs_, zip_content_);
   }
@@ -339,7 +301,8 @@ void SyslogsProviderImpl::ReadSyslogs(
   // request->ForwardResult(logs, zip_content).
   scoped_refptr<SyslogsMemoryHandler>
       handler(new SyslogsMemoryHandler(request, logs, zip_content));
-  handler->StartFetch();
+  // TODO(jamescook): Maybe we don't need to update histograms here?
+  handler->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
 }
 
 void SyslogsProviderImpl::LoadCompressedLogs(const FilePath& zip_file,

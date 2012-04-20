@@ -573,7 +573,7 @@ std::string AboutDiscardsRun() {
   output.append(StringPrintf("<meta http-equiv=\"refresh\" content=\"2;%s\">",
                              chrome::kChromeUIDiscardsURL));
   output.append(WrapWithTag("p", "Discarding a tab..."));
-  g_browser_process->oom_priority_manager()->DiscardTab();
+  g_browser_process->oom_priority_manager()->LogMemoryAndDiscardTab();
   AppendFooter(&output);
   return output;
 }
@@ -868,7 +868,8 @@ void FinishMemoryDataRequest(const std::string& path,
     // the refcount to be greater than 0.
     scoped_refptr<AboutMemoryHandler>
         handler(new AboutMemoryHandler(source, request_id));
-    handler->StartFetch();
+    // TODO(jamescook): Maybe this shouldn't update UMA?
+    handler->StartFetch(MemoryDetails::UPDATE_USER_METRICS);
   } else {
     source->FinishDataRequest(
         ResourceBundle::GetSharedInstance().GetRawDataResource(

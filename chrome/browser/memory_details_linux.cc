@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,7 +67,8 @@ static const struct {
   { "", MAX_BROWSERS },
 };
 
-MemoryDetails::MemoryDetails() {
+MemoryDetails::MemoryDetails()
+    : user_metrics_mode_(UPDATE_USER_METRICS) {
 }
 
 ProcessData* MemoryDetails::ChromeBrowser() {
