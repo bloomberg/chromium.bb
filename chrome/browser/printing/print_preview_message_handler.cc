@@ -46,8 +46,8 @@ void StopWorker(int document_cookie) {
   }
 }
 
-RefCountedBytes* GetDataFromHandle(base::SharedMemoryHandle handle,
-                                   uint32 data_size) {
+base::RefCountedBytes* GetDataFromHandle(base::SharedMemoryHandle handle,
+                                         uint32 data_size) {
   scoped_ptr<base::SharedMemory> shared_buf(
       new base::SharedMemory(handle, true));
   if (!shared_buf->Map(data_size)) {
@@ -58,7 +58,7 @@ RefCountedBytes* GetDataFromHandle(base::SharedMemoryHandle handle,
   char* preview_data = static_cast<char*>(shared_buf->memory());
   std::vector<unsigned char> data(data_size);
   memcpy(&data[0], preview_data, data_size);
-  return RefCountedBytes::TakeVector(&data);
+  return base::RefCountedBytes::TakeVector(&data);
 }
 
 }  // namespace
@@ -132,7 +132,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
   if (!print_preview_ui)
     return;
 
-  RefCountedBytes* data_bytes =
+  base::RefCountedBytes* data_bytes =
       GetDataFromHandle(params.metafile_data_handle, params.data_size);
   DCHECK(data_bytes);
 
@@ -169,7 +169,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   // TODO(joth): This seems like a good match for using RefCountedStaticMemory
   // to avoid the memory copy, but the SetPrintPreviewData call chain below
   // needs updating to accept the RefCountedMemory* base class.
-  RefCountedBytes* data_bytes =
+  base::RefCountedBytes* data_bytes =
       GetDataFromHandle(params.metafile_data_handle, params.data_size);
   if (!data_bytes)
     return;

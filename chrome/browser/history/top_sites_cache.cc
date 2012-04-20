@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,7 +33,7 @@ bool TopSitesCache::GetPageThumbnail(const GURL& url,
   std::map<GURL, Images>::const_iterator found =
       images_.find(GetCanonicalURL(url));
   if (found != images_.end()) {
-    RefCountedBytes* data = found->second.thumbnail.get();
+    base::RefCountedBytes* data = found->second.thumbnail.get();
     if (data) {
       *bytes = data;
       return true;

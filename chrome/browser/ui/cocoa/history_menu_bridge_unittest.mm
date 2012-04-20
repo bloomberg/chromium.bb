@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -372,7 +372,7 @@ TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
   // Pretend to be called back.
   history::FaviconData favicon;
   favicon.known_icon = true;
-  favicon.image_data = new RefCountedBytes(raw);
+  favicon.image_data = new base::RefCountedBytes(raw);
   favicon.expired = false;
   favicon.icon_url = GURL();
   favicon.icon_type = history::FAVICON;

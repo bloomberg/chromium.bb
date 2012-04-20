@@ -613,7 +613,7 @@ bool CloudPrintHtmlDialogDelegate::HandleContextMenu(
   return true;
 }
 
-void CreatePrintDialogForBytesImpl(scoped_refptr<RefCountedBytes> data,
+void CreatePrintDialogForBytesImpl(scoped_refptr<base::RefCountedBytes> data,
                                    const string16& print_job_title,
                                    const string16& print_ticket,
                                    const std::string& file_type,
@@ -786,7 +786,7 @@ void CreateCloudPrintSigninDialog(const base::Closure& callback) {
                  callback));
 }
 
-void CreatePrintDialogForBytes(scoped_refptr<RefCountedBytes> data,
+void CreatePrintDialogForBytes(scoped_refptr<base::RefCountedBytes> data,
                                const string16& print_job_title,
                                const string16& print_ticket,
                                const std::string& file_type,
@@ -794,7 +794,8 @@ void CreatePrintDialogForBytes(scoped_refptr<RefCountedBytes> data,
   // TODO(abodenha@chromium.org) Avoid cloning the PDF data.  Make use of a
   // shared memory object instead.
   // http://code.google.com/p/chromium/issues/detail?id=44093
-  scoped_refptr<RefCountedBytes> cloned_data(new RefCountedBytes(data->data()));
+  scoped_refptr<base::RefCountedBytes> cloned_data =
+      new base::RefCountedBytes(data->data());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&internal_cloud_print_helpers::CreatePrintDialogForBytesImpl,

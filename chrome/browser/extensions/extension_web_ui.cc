@@ -97,7 +97,7 @@ class ExtensionWebUIImageLoadingTracker : public ImageLoadingTracker::Observer {
                                              &image_data)) {
         NOTREACHED() << "Could not encode extension favicon";
       }
-      ForwardResult(RefCountedBytes::TakeVector(&image_data));
+      ForwardResult(base::RefCountedBytes::TakeVector(&image_data));
     } else {
       ForwardResult(NULL);
     }

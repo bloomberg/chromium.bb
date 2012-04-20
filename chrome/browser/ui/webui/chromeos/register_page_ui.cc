@@ -159,7 +159,7 @@ void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
   // OOBE wizard lifetime and when device has not been registered yet.
   if (!chromeos::WizardController::default_controller() ||
       chromeos::WizardController::IsDeviceRegistered()) {
-    scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes);
+    scoped_refptr<base::RefCountedBytes> empty_bytes(new base::RefCountedBytes);
     SendResponse(request_id, empty_bytes);
     return;
   }

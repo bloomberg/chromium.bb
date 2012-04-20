@@ -498,7 +498,7 @@ void HistoryService::SetFavicon(const GURL& page_url,
 
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetFavicon,
       page_url, icon_url,
-      scoped_refptr<RefCountedMemory>(new RefCountedBytes(image_data)),
+      scoped_refptr<RefCountedMemory>(new base::RefCountedBytes(image_data)),
       icon_type);
 }
 

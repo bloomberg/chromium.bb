@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
@@ -108,12 +109,13 @@ PrintPreviewUI::~PrintPreviewUI() {
 
 void PrintPreviewUI::GetPrintPreviewDataForIndex(
     int index,
-    scoped_refptr<RefCountedBytes>* data) {
+    scoped_refptr<base::RefCountedBytes>* data) {
   print_preview_data_service()->GetDataEntry(preview_ui_addr_str_, index, data);
 }
 
-void PrintPreviewUI::SetPrintPreviewDataForIndex(int index,
-                                                 const RefCountedBytes* data) {
+void PrintPreviewUI::SetPrintPreviewDataForIndex(
+    int index,
+    const base::RefCountedBytes* data) {
   print_preview_data_service()->SetDataEntry(preview_ui_addr_str_, index, data);
 }
 

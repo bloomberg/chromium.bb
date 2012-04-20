@@ -31,7 +31,7 @@ void CreatePrintDialogForFile(const FilePath& path_to_file,
 // Creates a print dialog to print data in RAM.
 // Called on the FILE or UI thread. Even though this may start up a modal
 // dialog, it will return immediately. The dialog is handled asynchronously.
-void CreatePrintDialogForBytes(scoped_refptr<RefCountedBytes> data,
+void CreatePrintDialogForBytes(scoped_refptr<base::RefCountedBytes> data,
                                const string16& print_job_title,
                                const string16& print_ticket,
                                const std::string& file_type,

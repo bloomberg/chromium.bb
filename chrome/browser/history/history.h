@@ -390,7 +390,7 @@ class HistoryService : public CancelableRequestProvider,
   //
   // This function will be called even on error conditions or if there is no
   // thumbnail for that page. In these cases, the data pointer will be NULL.
-  typedef base::Callback<void(Handle, scoped_refptr<RefCountedBytes>)>
+  typedef base::Callback<void(Handle, scoped_refptr<base::RefCountedBytes>)>
       ThumbnailDataCallback;
 
   // Requests a page thumbnail. See ThumbnailDataCallback definition above.

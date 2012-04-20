@@ -451,7 +451,7 @@ void MobileSetupUIHTMLSource::StartDataRequest(const std::string& path,
   // If we are activating, shutting down, or logging in, |network| may not
   // be available.
   if (!network || !network->SupportsActivation()) {
-    scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+    scoped_refptr<base::RefCountedBytes> html_bytes(new base::RefCountedBytes);
     SendResponse(request_id, html_bytes);
     return;
   }

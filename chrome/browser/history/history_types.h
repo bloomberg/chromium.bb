@@ -640,11 +640,11 @@ struct Images {
   Images();
   ~Images();
 
-  scoped_refptr<RefCountedBytes> thumbnail;
+  scoped_refptr<base::RefCountedBytes> thumbnail;
   ThumbnailScore thumbnail_score;
 
   // TODO(brettw): this will eventually store the favicon.
-  // scoped_refptr<RefCountedBytes> favicon;
+  // scoped_refptr<base::RefCountedBytes> favicon;
 };
 
 typedef std::vector<MostVisitedURL> MostVisitedURLList;
@@ -665,7 +665,7 @@ struct TopSitesDelta {
   MostVisitedURLWithRankList moved;
 };
 
-typedef std::map<GURL, scoped_refptr<RefCountedBytes> > URLToThumbnailMap;
+typedef std::map<GURL, scoped_refptr<base::RefCountedBytes> > URLToThumbnailMap;
 
 // Used when migrating most visited thumbnails out of history and into topsites.
 struct ThumbnailMigration {

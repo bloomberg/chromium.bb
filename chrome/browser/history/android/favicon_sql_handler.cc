@@ -38,7 +38,7 @@ bool FaviconSQLHandler::Update(const HistoryAndBookmarkRow& row,
       return false;
 
     scoped_refptr<RefCountedMemory> image_data =
-        new RefCountedBytes(row.favicon());
+        new base::RefCountedBytes(row.favicon());
     if (!thumbnail_db_->SetFavicon(favicon_id, image_data, Time::Now()))
       return false;
   }
@@ -114,7 +114,7 @@ bool FaviconSQLHandler::Insert(HistoryAndBookmarkRow* row) {
     return false;
 
   scoped_refptr<RefCountedMemory> image_data =
-      new RefCountedBytes(row->favicon());
+      new base::RefCountedBytes(row->favicon());
   if (!thumbnail_db_->SetFavicon(id, image_data, Time::Now()))
     return false;
   return thumbnail_db_->AddIconMapping(row->url(), id);

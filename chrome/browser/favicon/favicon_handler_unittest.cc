@@ -328,7 +328,7 @@ TEST_F(FaviconHandlerTest, GetFaviconFromHistory) {
   history_handler->favicon_data_.icon_type = history::FAVICON;
   history_handler->favicon_data_.expired = false;
   history_handler->favicon_data_.icon_url = icon_url;
-  scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
   FillBitmap(gfx::kFaviconSize, gfx::kFaviconSize, &data->data());
   history_handler->favicon_data_.image_data = data;
 
@@ -445,7 +445,7 @@ TEST_F(FaviconHandlerTest, UpdateAndDownloadFavicon) {
   history_handler->favicon_data_.icon_type = history::FAVICON;
   history_handler->favicon_data_.expired = false;
   history_handler->favicon_data_.icon_url = icon_url;
-  scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
   FillBitmap(gfx::kFaviconSize, gfx::kFaviconSize, &data->data());
   history_handler->favicon_data_.image_data = data;
 
@@ -535,7 +535,7 @@ TEST_F(FaviconHandlerTest, UpdateFavicon) {
   history_handler->favicon_data_.icon_type = history::FAVICON;
   history_handler->favicon_data_.expired = false;
   history_handler->favicon_data_.icon_url = icon_url;
-  scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
   FillBitmap(gfx::kFaviconSize, gfx::kFaviconSize, &data->data());
   history_handler->favicon_data_.image_data = data;
 
@@ -679,7 +679,7 @@ TEST_F(FaviconHandlerTest, Download2ndFaviconURLCandidate) {
   history_handler->favicon_data_.icon_type = history::TOUCH_ICON;
   history_handler->favicon_data_.expired = true;
   history_handler->favicon_data_.icon_url = new_icon_url;
-  scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
   FillBitmap(gfx::kFaviconSize, gfx::kFaviconSize, &data->data());
   history_handler->favicon_data_.image_data = data;
   history_handler->InvokeCallback();
@@ -808,7 +808,7 @@ TEST_F(FaviconHandlerTest, UpdateDuringDownloading) {
   handler->favicon_data_.expired = false;
   handler->favicon_data_.icon_type = history::TOUCH_ICON;
   handler->favicon_data_.icon_url = latest_icon_url;
-  scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
   FillBitmap(gfx::kFaviconSize, gfx::kFaviconSize, &data->data());
   handler->favicon_data_.image_data = data;
 
@@ -840,7 +840,7 @@ TEST_F(FaviconHandlerTest, MultipleFavicon) {
   history_handler->favicon_data_.icon_type = history::FAVICON;
   history_handler->favicon_data_.expired = false;
   history_handler->favicon_data_.icon_url = icon_url;
-  scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
   FillBitmap(gfx::kFaviconSize, gfx::kFaviconSize, &data->data());
   history_handler->favicon_data_.image_data = data;
 
@@ -915,7 +915,7 @@ TEST_F(FaviconHandlerTest, FirstFavicon) {
   history_handler->favicon_data_.icon_type = history::FAVICON;
   history_handler->favicon_data_.expired = false;
   history_handler->favicon_data_.icon_url = icon_url;
-  scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
   FillBitmap(gfx::kFaviconSize, gfx::kFaviconSize, &data->data());
   history_handler->favicon_data_.image_data = data;
 

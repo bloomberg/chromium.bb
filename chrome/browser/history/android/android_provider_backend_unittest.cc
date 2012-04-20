@@ -210,7 +210,10 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   // Set favicon to url2.
   std::vector<unsigned char> data;
   data.push_back('1');
-  history_backend->SetFavicon(url2, GURL(), new RefCountedBytes(data), FAVICON);
+  history_backend->SetFavicon(url2,
+                              GURL(),
+                              new base::RefCountedBytes(data),
+                              FAVICON);
   history_backend->Closing();
   }
 
@@ -333,7 +336,10 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   // Set favicon to url2.
   std::vector<unsigned char> data;
   data.push_back('1');
-  history_backend->SetFavicon(url2, GURL(), new RefCountedBytes(data), FAVICON);
+  history_backend->SetFavicon(url2,
+                              GURL(),
+                              new base::RefCountedBytes(data),
+                              FAVICON);
   history_backend->Closing();
   }
 

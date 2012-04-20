@@ -10,7 +10,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/time.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
@@ -18,6 +17,10 @@
 class PrintPreviewDataService;
 class PrintPreviewHandler;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
+
+namespace base {
+class RefCountedBytes;
+}
 
 namespace gfx {
 class Rect;
@@ -36,12 +39,13 @@ class PrintPreviewUI : public ConstrainedHtmlUI {
   // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to get the entire preview
   // document.
   void GetPrintPreviewDataForIndex(int index,
-                                   scoped_refptr<RefCountedBytes>* data);
+                                   scoped_refptr<base::RefCountedBytes>* data);
 
   // Sets the print preview |data|. |index| is zero-based, and can be
   // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to set the entire preview
   // document.
-  void SetPrintPreviewDataForIndex(int index, const RefCountedBytes* data);
+  void SetPrintPreviewDataForIndex(int index,
+                                   const base::RefCountedBytes* data);
 
   // Clear the existing print preview data.
   void ClearAllPreviewData();

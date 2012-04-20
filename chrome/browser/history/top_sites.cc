@@ -102,7 +102,7 @@ class LoadThumbnailsFromHistoryTask : public HistoryDBTask {
     for (size_t i = 0; i < data_.most_visited.size(); ++i) {
       const GURL& url = data_.most_visited[i].url;
       if (ShouldFetchThumbnailFor(url)) {
-        scoped_refptr<RefCountedBytes> data;
+        scoped_refptr<base::RefCountedBytes> data;
         backend->GetPageThumbnailDirectly(url, &data);
         data_.url_to_thumbnail_map[url] = data;
       }
@@ -200,7 +200,7 @@ bool TopSites::SetPageThumbnail(const GURL& url,
   if (!HistoryService::CanAddURL(url))
     return false;  // It's not a real webpage.
 
-  scoped_refptr<RefCountedBytes> thumbnail_data;
+  scoped_refptr<base::RefCountedBytes> thumbnail_data;
   if (!EncodeBitmap(thumbnail, &thumbnail_data))
     return false;
 
@@ -500,7 +500,7 @@ TopSites::~TopSites() {
 }
 
 bool TopSites::SetPageThumbnailNoDB(const GURL& url,
-                                    const RefCountedBytes* thumbnail_data,
+                                    const base::RefCountedBytes* thumbnail_data,
                                     const ThumbnailScore& score) {
   // This should only be invoked when we know about the url.
   DCHECK(cache_->IsKnownURL(url));
@@ -521,7 +521,7 @@ bool TopSites::SetPageThumbnailNoDB(const GURL& url,
       image->thumbnail.get())
     return false;  // The one we already have is better.
 
-  image->thumbnail = const_cast<RefCountedBytes*>(thumbnail_data);
+  image->thumbnail = const_cast<base::RefCountedBytes*>(thumbnail_data);
   image->thumbnail_score = new_score_with_redirects;
 
   ResetThreadSafeImageCache();
@@ -529,7 +529,7 @@ bool TopSites::SetPageThumbnailNoDB(const GURL& url,
 }
 
 bool TopSites::SetPageThumbnailEncoded(const GURL& url,
-                                       const RefCountedBytes* thumbnail,
+                                       const base::RefCountedBytes* thumbnail,
                                        const ThumbnailScore& score) {
   if (!SetPageThumbnailNoDB(url, thumbnail, score))
     return false;
@@ -548,10 +548,10 @@ bool TopSites::SetPageThumbnailEncoded(const GURL& url,
 
 // static
 bool TopSites::EncodeBitmap(gfx::Image* bitmap,
-                            scoped_refptr<RefCountedBytes>* bytes) {
+                            scoped_refptr<base::RefCountedBytes>* bytes) {
   if (!bitmap)
     return false;
-  *bytes = new RefCountedBytes();
+  *bytes = new base::RefCountedBytes();
   std::vector<unsigned char> data;
   if (!gfx::JPEGEncodedDataFromImage(*bitmap, kTopSitesImageQuality, &data))
     return false;
@@ -574,14 +574,14 @@ void TopSites::RemoveTemporaryThumbnailByURL(const GURL& url) {
 }
 
 void TopSites::AddTemporaryThumbnail(const GURL& url,
-                                     const RefCountedBytes* thumbnail,
+                                     const base::RefCountedBytes* thumbnail,
                                      const ThumbnailScore& score) {
   if (temp_images_.size() == kMaxTempTopImages)
     temp_images_.erase(temp_images_.begin());
 
   TempImage image;
   image.first = url;
-  image.second.thumbnail = const_cast<RefCountedBytes*>(thumbnail);
+  image.second.thumbnail = const_cast<base::RefCountedBytes*>(thumbnail);
   image.second.thumbnail_score = score;
   temp_images_.push_back(image);
 }

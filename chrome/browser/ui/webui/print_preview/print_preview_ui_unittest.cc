@@ -67,14 +67,15 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
       preview_tab->web_contents()->GetWebUI()->GetController());
   ASSERT_TRUE(preview_ui != NULL);
 
-  scoped_refptr<RefCountedBytes> data;
+  scoped_refptr<base::RefCountedBytes> data;
   preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
       &data);
   EXPECT_EQ(NULL, data.get());
 
   std::vector<unsigned char> preview_data(blob1, blob1 + sizeof(blob1));
-  scoped_refptr<RefCountedBytes> dummy_data(new RefCountedBytes(preview_data));
+  scoped_refptr<base::RefCountedBytes> dummy_data =
+      new base::RefCountedBytes(preview_data);
 
   preview_ui->SetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
@@ -86,7 +87,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
   EXPECT_EQ(dummy_data.get(), data.get());
 
   // This should not cause any memory leaks.
-  dummy_data = new RefCountedBytes();
+  dummy_data = new base::RefCountedBytes();
   preview_ui->SetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX,
                                           dummy_data);
 
@@ -121,12 +122,13 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
       preview_tab->web_contents()->GetWebUI()->GetController());
   ASSERT_TRUE(preview_ui != NULL);
 
-  scoped_refptr<RefCountedBytes> data;
+  scoped_refptr<base::RefCountedBytes> data;
   preview_ui->GetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX, &data);
   EXPECT_EQ(NULL, data.get());
 
   std::vector<unsigned char> preview_data(blob1, blob1 + sizeof(blob1));
-  scoped_refptr<RefCountedBytes> dummy_data(new RefCountedBytes(preview_data));
+  scoped_refptr<base::RefCountedBytes> dummy_data =
+      new base::RefCountedBytes(preview_data);
 
   preview_ui->SetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX,
                                           dummy_data.get());

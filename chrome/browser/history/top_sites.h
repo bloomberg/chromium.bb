@@ -212,19 +212,19 @@ class TopSites
   // reading last known top sites from the DB.
   // Returns true if the thumbnail was set, false if the existing one is better.
   bool SetPageThumbnailNoDB(const GURL& url,
-                            const RefCountedBytes* thumbnail_data,
+                            const base::RefCountedBytes* thumbnail_data,
                             const ThumbnailScore& score);
 
   // A version of SetPageThumbnail that takes RefCountedBytes as
   // returned by HistoryService.
   bool SetPageThumbnailEncoded(const GURL& url,
-                               const RefCountedBytes* thumbnail,
+                               const base::RefCountedBytes* thumbnail,
                                const ThumbnailScore& score);
 
   // Encodes the bitmap to bytes for storage to the db. Returns true if the
   // bitmap was successfully encoded.
   static bool EncodeBitmap(gfx::Image* bitmap,
-                           scoped_refptr<RefCountedBytes>* bytes);
+                           scoped_refptr<base::RefCountedBytes>* bytes);
 
   // Removes the cached thumbnail for url. Does nothing if |url| if not cached
   // in |temp_images_|.
@@ -232,7 +232,7 @@ class TopSites
 
   // Add a thumbnail for an unknown url. See temp_thumbnails_map_.
   void AddTemporaryThumbnail(const GURL& url,
-                             const RefCountedBytes* thumbnail,
+                             const base::RefCountedBytes* thumbnail,
                              const ThumbnailScore& score);
 
   // Called by our timer. Starts the query for the most visited sites.

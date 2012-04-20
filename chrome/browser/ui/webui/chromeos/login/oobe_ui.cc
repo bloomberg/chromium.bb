@@ -86,7 +86,8 @@ void OobeUIHTMLSource::StartDataRequest(const std::string& path,
   if (UserManager::Get()->IsUserLoggedIn() &&
       !UserManager::Get()->IsLoggedInAsStub() &&
       !ScreenLocker::default_screen_locker()) {
-    scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes());
+    scoped_refptr<base::RefCountedBytes> empty_bytes =
+        new base::RefCountedBytes();
     SendResponse(request_id, empty_bytes);
     return;
   }

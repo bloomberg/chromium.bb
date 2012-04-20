@@ -1678,7 +1678,7 @@ void HistoryBackend::GetPageThumbnail(
   if (request->canceled())
     return;
 
-  scoped_refptr<RefCountedBytes> data;
+  scoped_refptr<base::RefCountedBytes> data;
   GetPageThumbnailDirectly(page_url, &data);
 
   request->ForwardResult(request->handle(), data);
@@ -1686,9 +1686,9 @@ void HistoryBackend::GetPageThumbnail(
 
 void HistoryBackend::GetPageThumbnailDirectly(
     const GURL& page_url,
-    scoped_refptr<RefCountedBytes>* data) {
+    scoped_refptr<base::RefCountedBytes>* data) {
   if (thumbnail_db_.get()) {
-    *data = new RefCountedBytes;
+    *data = new base::RefCountedBytes;
 
     // Time the result.
     TimeTicks beginning_time = TimeTicks::Now();
@@ -1831,7 +1831,7 @@ void HistoryBackend::SetImportedFavicons(
       if (!favicon_id)
         continue;  // Unable to add the favicon.
       thumbnail_db_->SetFavicon(favicon_id,
-          new RefCountedBytes(favicon_usage[i].png_data), now);
+          new base::RefCountedBytes(favicon_usage[i].png_data), now);
     }
 
     // Save the mapping from all the URLs to the favicon.
@@ -1894,7 +1894,7 @@ void HistoryBackend::UpdateFaviconMappingAndFetchImpl(
         thumbnail_db_->GetFaviconIDForFaviconURL(
             icon_url, icon_types, &favicon.icon_type);
     if (favicon_id) {
-      scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+      scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
       favicon.known_icon = true;
       Time last_updated;
       if (thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data->data(),
@@ -2464,7 +2464,7 @@ bool HistoryBackend::GetFaviconFromDB(
 bool HistoryBackend::GetFaviconFromDB(FaviconID favicon_id,
                                       FaviconData* favicon) {
   Time last_updated;
-  scoped_refptr<RefCountedBytes> data = new RefCountedBytes();
+  scoped_refptr<base::RefCountedBytes> data = new base::RefCountedBytes();
 
   if (!thumbnail_db_->GetFavicon(favicon_id, &last_updated, &data->data(),
                                  &favicon->icon_url, &favicon->icon_type))

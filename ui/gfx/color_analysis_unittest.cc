@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,8 +134,8 @@ TEST_F(ColorAnalysisTest, CalculatePNGKMeanAllWhite) {
   MockKMeanImageSampler test_sampler;
   test_sampler.AddSample(0);
 
-  scoped_refptr<RefCountedBytes> png(
-      new RefCountedBytes(
+  scoped_refptr<base::RefCountedBytes> png(
+      new base::RefCountedBytes(
           std::vector<unsigned char>(
               k1x1White,
               k1x1White + sizeof(k1x1White) / sizeof(unsigned char))));
@@ -151,8 +151,8 @@ TEST_F(ColorAnalysisTest, CalculatePNGKMeanIgnoreWhite) {
   test_sampler.AddSample(1);
   test_sampler.AddSample(2);
 
-  scoped_refptr<RefCountedBytes> png(
-     new RefCountedBytes(
+  scoped_refptr<base::RefCountedBytes> png(
+     new base::RefCountedBytes(
          std::vector<unsigned char>(
              k1x3BlueWhite,
              k1x3BlueWhite + sizeof(k1x3BlueWhite) / sizeof(unsigned char))));
@@ -168,8 +168,8 @@ TEST_F(ColorAnalysisTest, CalculatePNGKMeanPickMostCommon) {
   test_sampler.AddSample(1);
   test_sampler.AddSample(2);
 
-  scoped_refptr<RefCountedBytes> png(
-     new RefCountedBytes(
+  scoped_refptr<base::RefCountedBytes> png(
+     new base::RefCountedBytes(
          std::vector<unsigned char>(
              k1x3BlueRed,
              k1x3BlueRed + sizeof(k1x3BlueRed) / sizeof(unsigned char))));

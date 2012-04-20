@@ -159,7 +159,7 @@ void PrintPreviewDataSource::StartDataRequest(const std::string& path,
   }
 
   // Print Preview data.
-  scoped_refptr<RefCountedBytes> data;
+  scoped_refptr<base::RefCountedBytes> data;
   std::vector<std::string> url_substr;
   base::SplitString(path, '/', &url_substr);
   int page_index = 0;
@@ -172,6 +172,6 @@ void PrintPreviewDataSource::StartDataRequest(const std::string& path,
     return;
   }
   // Invalid request.
-  scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes);
+  scoped_refptr<base::RefCountedBytes> empty_bytes(new base::RefCountedBytes);
   SendResponse(request_id, empty_bytes);
 }

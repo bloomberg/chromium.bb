@@ -236,7 +236,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Exposed for testing reasons.
   void GetPageThumbnailDirectly(
       const GURL& page_url,
-      scoped_refptr<RefCountedBytes>* data);
+      scoped_refptr<base::RefCountedBytes>* data);
 
   void MigrateThumbnailsDatabase();
 

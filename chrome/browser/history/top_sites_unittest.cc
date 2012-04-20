@@ -270,7 +270,7 @@ class TopSitesTest : public HistoryUnitTestBase {
 
   // Returns true if the thumbnail equals the specified bytes.
   bool ThumbnailEqualsBytes(const gfx::Image& image, RefCountedMemory* bytes) {
-    scoped_refptr<RefCountedBytes> encoded_image;
+    scoped_refptr<base::RefCountedBytes> encoded_image;
     gfx::Image copy(image);  // EncodeBitmap() doesn't accept const images.
     TopSites::EncodeBitmap(&copy, &encoded_image);
     return ThumbnailsAreEqual(encoded_image, bytes);

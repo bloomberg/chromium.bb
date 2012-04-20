@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,8 @@ class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
   PrintPreviewDataStore() {}
 
   // Get the preview page for the specified |index|.
-  void GetPreviewDataForIndex(int index, scoped_refptr<RefCountedBytes>* data) {
+  void GetPreviewDataForIndex(int index,
+                              scoped_refptr<base::RefCountedBytes>* data) {
     if (index != printing::COMPLETE_PREVIEW_DOCUMENT_INDEX &&
         index < printing::FIRST_PAGE_INDEX) {
       return;
@@ -40,13 +41,13 @@ class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
   }
 
   // Set/Update the preview data entry for the specified |index|.
-  void SetPreviewDataForIndex(int index, const RefCountedBytes* data) {
+  void SetPreviewDataForIndex(int index, const base::RefCountedBytes* data) {
     if (index != printing::COMPLETE_PREVIEW_DOCUMENT_INDEX &&
         index < printing::FIRST_PAGE_INDEX) {
       return;
     }
 
-    page_data_map_[index] = const_cast<RefCountedBytes*>(data);
+    page_data_map_[index] = const_cast<base::RefCountedBytes*>(data);
   }
 
   // Returns the available draft page count.
@@ -67,7 +68,8 @@ class PrintPreviewDataStore : public base::RefCounted<PrintPreviewDataStore> {
   // |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent complete preview
   // document.
   // Value: Preview data.
-  typedef std::map<int, scoped_refptr<RefCountedBytes> > PreviewPageDataMap;
+  typedef std::map<int, scoped_refptr<base::RefCountedBytes> >
+      PreviewPageDataMap;
 
   ~PrintPreviewDataStore() {}
 
@@ -90,7 +92,7 @@ PrintPreviewDataService::~PrintPreviewDataService() {
 void PrintPreviewDataService::GetDataEntry(
     const std::string& preview_ui_addr_str,
     int index,
-    scoped_refptr<RefCountedBytes>* data_bytes) {
+    scoped_refptr<base::RefCountedBytes>* data_bytes) {
   *data_bytes = NULL;
   PreviewDataStoreMap::iterator it = data_store_map_.find(preview_ui_addr_str);
   if (it != data_store_map_.end())
@@ -100,7 +102,7 @@ void PrintPreviewDataService::GetDataEntry(
 void PrintPreviewDataService::SetDataEntry(
     const std::string& preview_ui_addr_str,
     int index,
-    const RefCountedBytes* data_bytes) {
+    const base::RefCountedBytes* data_bytes) {
   PreviewDataStoreMap::iterator it = data_store_map_.find(preview_ui_addr_str);
   if (it == data_store_map_.end())
     data_store_map_[preview_ui_addr_str] = new PrintPreviewDataStore();

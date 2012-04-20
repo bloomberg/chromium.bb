@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
@@ -143,7 +144,7 @@ void TopSitesDatabase::GetPageThumbnails(MostVisitedURLList* urls,
     statement.ColumnBlobAsVector(3, &data);
     Images thumbnail;
     if (!data.empty())
-      thumbnail.thumbnail = RefCountedBytes::TakeVector(&data);
+      thumbnail.thumbnail = base::RefCountedBytes::TakeVector(&data);
     thumbnail.thumbnail_score.boring_score = statement.ColumnDouble(5);
     thumbnail.thumbnail_score.good_clipping = statement.ColumnBool(6);
     thumbnail.thumbnail_score.at_top = statement.ColumnBool(7);
@@ -309,7 +310,7 @@ bool TopSitesDatabase::GetPageThumbnail(const GURL& url,
 
   std::vector<unsigned char> data;
   statement.ColumnBlobAsVector(0, &data);
-  thumbnail->thumbnail = RefCountedBytes::TakeVector(&data);
+  thumbnail->thumbnail = base::RefCountedBytes::TakeVector(&data);
   thumbnail->thumbnail_score.boring_score = statement.ColumnDouble(1);
   thumbnail->thumbnail_score.good_clipping = statement.ColumnBool(2);
   thumbnail->thumbnail_score.at_top = statement.ColumnBool(3);

@@ -90,7 +90,7 @@ void FileIconSource::FetchFileIcon(const FilePath& path,
   gfx::Image* icon = im->LookupIcon(path, icon_size);
 
   if (icon) {
-    scoped_refptr<RefCountedBytes> icon_data(new RefCountedBytes);
+    scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);
     gfx::PNGCodec::EncodeBGRASkBitmap(*icon->ToSkBitmap(), false,
                                       &icon_data->data());
 
@@ -127,7 +127,7 @@ void FileIconSource::OnFileIconDataAvailable(IconManager::Handle handle,
   int request_id = cancelable_consumer_.GetClientData(im, handle);
 
   if (icon) {
-    scoped_refptr<RefCountedBytes> icon_data(new RefCountedBytes);
+    scoped_refptr<base::RefCountedBytes> icon_data(new base::RefCountedBytes);
     gfx::PNGCodec::EncodeBGRASkBitmap(*icon->ToSkBitmap(), false,
                                       &icon_data->data());
 

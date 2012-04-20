@@ -36,7 +36,7 @@ std::string GetScreenshotFileName() {
 
 // |is_logged_in| is used only for ChromeOS.  Otherwise it is always true.
 void SaveScreenshot(bool is_logged_in,
-                    scoped_refptr<RefCountedBytes> png_data) {
+                    scoped_refptr<base::RefCountedBytes> png_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   std::string screenshot_filename = GetScreenshotFileName();
@@ -85,7 +85,7 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
     aura::Window* window, const gfx::Rect& rect) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  scoped_refptr<RefCountedBytes> png_data(new RefCountedBytes);
+  scoped_refptr<base::RefCountedBytes> png_data(new base::RefCountedBytes);
 
   bool is_logged_in = true;
 #if defined(OS_CHROMEOS)

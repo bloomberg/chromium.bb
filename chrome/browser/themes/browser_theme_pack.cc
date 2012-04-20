@@ -297,7 +297,7 @@ RefCountedMemory* ReadFileData(const FilePath& path) {
         raw_data.resize(size);
         char* data = reinterpret_cast<char*>(&(raw_data.front()));
         if (file.ReadUntilComplete(data, size) == avail)
-          return RefCountedBytes::TakeVector(&raw_data);
+          return base::RefCountedBytes::TakeVector(&raw_data);
       }
     }
   }
@@ -1028,7 +1028,8 @@ void BrowserThemePack::RepackImages(const ImageCache& images,
       NOTREACHED() << "Image file for resource " << it->first
                    << " could not be encoded.";
     } else {
-      (*reencoded_images)[it->first] = RefCountedBytes::TakeVector(&image_data);
+      (*reencoded_images)[it->first] =
+          base::RefCountedBytes::TakeVector(&image_data);
     }
   }
 }
