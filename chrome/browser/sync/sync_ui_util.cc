@@ -562,16 +562,22 @@ void ConstructAboutInformation(ProfileSyncService* service,
     sync_ui_util::AddStringSyncDetails(sync_summary, "Summary",
                                        service->QuerySyncStatusSummary());
 
-    ListValue* sync_url = AddSyncDetailsSection(details, "Sync URL");
-    sync_ui_util::AddStringSyncDetails(sync_url, "URL",
+    ListValue* version_info = AddSyncDetailsSection(details, "Version Info");
+    sync_ui_util::AddStringSyncDetails(version_info, "Client Version",
+                                       GetVersionString());
+    sync_ui_util::AddStringSyncDetails(version_info, "Server URL",
                                        service->sync_service_url().spec());
 
-    ListValue* local_state = AddSyncDetailsSection(details, "Client ID");
-
-    sync_ui_util::AddStringSyncDetails(local_state, "Version",
-                                       GetVersionString());
-    sync_ui_util::AddStringSyncDetails(local_state, "Client Info",
+    ListValue* user_state = AddSyncDetailsSection(details, "Credentials");
+    sync_ui_util::AddStringSyncDetails(user_state, "Client ID",
         full_status.unique_id.empty() ? "none" : full_status.unique_id);
+    sync_ui_util::AddStringSyncDetails(
+        user_state, "Username",
+        service->signin() ? service->signin()->GetAuthenticatedUsername() : "");
+    sync_ui_util::AddBoolSyncDetail(
+        user_state, "Sync Token Available", service->AreCredentialsAvailable());
+
+    ListValue* local_state = AddSyncDetailsSection(details, "Local State");
     sync_ui_util::AddStringSyncDetails(local_state, "Last Synced",
                                        service->GetLastSyncedTimeString());
 
