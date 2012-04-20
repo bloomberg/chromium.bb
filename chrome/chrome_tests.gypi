@@ -1441,6 +1441,7 @@
         'browser/history/android/android_history_types_unittest.cc',
         'browser/history/android/android_provider_backend_unittest.cc',
         'browser/history/android/android_urls_database_unittest.cc',
+        'browser/history/android/bookmark_model_sql_handler_unittest.cc',
         'browser/history/android/urls_sql_handler_unittest.cc',
         'browser/history/android/visit_sql_handler_unittest.cc',
         'browser/history/expire_history_backend_unittest.cc',
