@@ -116,6 +116,8 @@ class UI_EXPORT GestureConfiguration {
     rail_start_proportion_ = val;
   }
 
+  static void use_test_values();
+
  private:
   // These are listed in alphabetical order ignoring underscores, to
   // align with the associated list of preferences in

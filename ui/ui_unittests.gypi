@@ -192,6 +192,11 @@
         }],
         ['use_aura==1 or toolkit_views==1', {
           'sources': [
+            'base/gestures/gesture_sequence_test_base.cc',
+            'base/gestures/gesture_sequence_test_base.h',
+            'base/gestures/gesture_sequence_unittest.cc',
+            'base/test/test_gesture_sequence.cc',
+            'base/test/test_gesture_sequence.h',
             'base/gestures/velocity_calculator_unittest.cc',
           ],
         }],
