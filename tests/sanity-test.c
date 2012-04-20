@@ -93,3 +93,25 @@ FAIL_TEST(sanity_fd_leak)
 	/* leak 2 file descriptors */
 	pipe(fd);
 }
+
+FAIL_TEST(sanity_fd_leak_exec)
+{
+	int fd[2];
+	int nr_fds = count_open_fds();
+
+	/* leak 2 file descriptors */
+	pipe(fd);
+
+	exec_fd_leak_check(nr_fds);
+}
+
+TEST(sanity_fd_exec)
+{
+	int fd[2];
+	int nr_fds = count_open_fds();
+
+	/* create 2 file descriptors, that should pass over exec */
+	pipe(fd);
+
+	exec_fd_leak_check(nr_fds + 2);
+}

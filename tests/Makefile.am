@@ -1,7 +1,4 @@
-TESTS = $(check_PROGRAMS)
-
-
-check_PROGRAMS =				\
+my_check_programs =				\
 	sanity-test				\
 	array-test				\
 	map-test				\
@@ -9,6 +6,12 @@ check_PROGRAMS =				\
 	connection-test				\
 	event-loop-test				\
 	client-test
+
+TESTS = $(my_check_programs)
+
+check_PROGRAMS =				\
+	$(my_check_programs)			\
+	exec-fd-leak-checker
 
 test_runner_src = test-runner.c test-runner.h test-helpers.c
 
@@ -25,3 +28,8 @@ LDADD = $(top_builddir)/src/libwayland-util.la \
 	$(top_builddir)/src/libwayland-server.la \
 	-lrt -ldl $(FFI_LIBS)
 
+exec_fd_leak_checker_SOURCES =			\
+	exec-fd-leak-checker.c			\
+	test-runner.h				\
+	test-helpers.c
+exec_fd_leak_checker_LDADD =

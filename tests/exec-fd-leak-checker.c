@@ -20,45 +20,56 @@
  * OF THIS SOFTWARE.
  */
 
-#include <assert.h>
-#include <errno.h>
-#include <dirent.h>
+#include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
+#include <errno.h>
+#include <limits.h>
 
 #include "test-runner.h"
 
-int
-count_open_fds(void)
+static int
+parse_count(const char *str, int *value)
 {
-	DIR *dir;
-	struct dirent *ent;
-	int count = 0;
-
-	dir = opendir("/proc/self/fd");
-	assert(dir && "opening /proc/self/fd failed.");
+	char *end;
+	long v;
 
 	errno = 0;
-	while ((ent = readdir(dir))) {
-		const char *s = ent->d_name;
-		if (s[0] == '.' && (s[1] == 0 || (s[1] == '.' && s[2] == 0)))
-			continue;
-		count++;
+	v = strtol(str, &end, 0);
+	if ((errno == ERANGE && (v == LONG_MAX || v == LONG_MIN)) ||
+	    (errno != 0 && v == 0) ||
+	    (end == str) ||
+	    (*end != '\0')) {
+		return -1;
 	}
-	assert(errno == 0 && "reading /proc/self/fd failed.");
 
-	closedir(dir);
+	if (v < 0 || v > INT_MAX) {
+		return -1;
+	}
 
-	return count;
+	*value = v;
+	return 0;
 }
 
-void
-exec_fd_leak_check(int nr_expected_fds)
+int main(int argc, char *argv[])
 {
-	const char *exe = "./exec-fd-leak-checker";
-	char number[16] = { 0 };
+	int expected;
 
-	snprintf(number, sizeof number - 1, "%d", nr_expected_fds);
-	execl(exe, exe, number, (char *)NULL);
-	assert(0 && "execing fd leak checker failed");
+	if (argc != 2)
+		goto help_out;
+
+	if (parse_count(argv[1], &expected) < 0)
+		goto help_out;
+
+	if (count_open_fds() == expected)
+		return EXIT_SUCCESS;
+	else
+		return EXIT_FAILURE;
+
+help_out:
+	fprintf(stderr, "Usage: %s N\n"
+		"where N is the expected number of open file descriptors.\n"
+		"This program exits with a failure if the number "
+		"does not match exactly.\n", argv[0]);
+
+	return EXIT_FAILURE;
 }
