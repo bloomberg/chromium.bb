@@ -41,7 +41,7 @@ if [ "$intype" = "bzip2" ]; then
   # Expand to the bzip2ed file within
   zlogs="$(bzcat "$infile" | uudecode -o - | tar xvf -)"
   # take newest log and reduce to next case
-  mv "$(ls -t $zlogs | head -n 1)" log.gz
+  mv "$(ls -t $zlogs | grep touchpad_activity | head -n 1)" log.gz
   rm -f $zlogs
   infile="log.gz"
   intype="gzip"
