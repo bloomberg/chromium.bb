@@ -450,10 +450,9 @@ InstallStatus InstallOrUpdateProduct(
             installer::master_preferences::kAutoLaunchChrome,
             &auto_launch_chrome);
         if (auto_launch_chrome) {
-          auto_launch_util::SetWillLaunchAtLogin(
-              true,
-              installer_state.target_path(),
-              ASCIIToUTF16(chrome::kInitialProfile));
+          auto_launch_util::EnableForegroundStartAtLogin(
+              ASCIIToUTF16(chrome::kInitialProfile),
+              installer_state.target_path());
         }
       }
     }

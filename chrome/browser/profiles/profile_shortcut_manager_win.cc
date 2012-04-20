@@ -208,10 +208,11 @@ void UpdateChromeDesktopShortcutForProfile(
 
 void DeleteAutoLaunchValueForProfile(
     const FilePath& profile_path) {
-  if (auto_launch_util::WillLaunchAtLogin(FilePath(),
-                                          profile_path.BaseName().value())) {
-      auto_launch_util::SetWillLaunchAtLogin(
-          false, FilePath(), profile_path.BaseName().value());
+  if (auto_launch_util::AutoStartRequested(profile_path.BaseName().value(),
+                                           true,  // Window requested.
+                                           FilePath())) {
+    auto_launch_util::DisableForegroundStartAtLogin(
+        profile_path.BaseName().value());
   }
 }
 

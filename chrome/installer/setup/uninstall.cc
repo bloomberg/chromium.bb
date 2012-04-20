@@ -777,12 +777,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   if (is_chrome) {
     ClearRlzProductState();
 
-    if (auto_launch_util::WillLaunchAtLogin(
-        installer_state.target_path(),
-        ASCIIToUTF16(chrome::kInitialProfile))) {
-      auto_launch_util::SetWillLaunchAtLogin(
-          false, FilePath(), ASCIIToUTF16(chrome::kInitialProfile));
-    }
+    auto_launch_util::DisableAllAutoStartFeatures(
+        ASCIIToUTF16(chrome::kInitialProfile));
   }
 
   // First delete shortcuts from Start->Programs, Desktop & Quick Launch.

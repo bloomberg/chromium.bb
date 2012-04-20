@@ -252,14 +252,11 @@ bool AutolaunchInfoBarDelegate::Cancel() {
   auto_launch_trial::UpdateInfobarResponseMetric(
       auto_launch_trial::INFOBAR_CUT_IT_OUT);
   // Also make sure we keep track of how many disable and how many enable.
-  const bool auto_launch = false;
-  auto_launch_trial::UpdateToggleAutoLaunchMetric(auto_launch);
+  auto_launch_trial::UpdateToggleAutoLaunchMetric(false);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&auto_launch_util::SetWillLaunchAtLogin,
-                 auto_launch,
-                 FilePath(),
+      base::Bind(&auto_launch_util::DisableForegroundStartAtLogin,
                  profile_->GetPath().BaseName().value()));
   return true;
 }
@@ -376,11 +373,13 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
 }
 
 #if defined(OS_WIN)
-void CheckAutoLaunchCallback() {
+void CheckAutoLaunchCallback(Profile* profile) {
   if (!auto_launch_trial::IsInAutoLaunchGroup())
     return;
 
-  Browser* browser = BrowserList::GetLastActive();
+  // We must not use GetLastActive here because this is at Chrome startup and
+  // no window might have been made active yet. We'll settle for any window.
+  Browser* browser = BrowserList::FindAnyBrowser(profile, true);
   TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
 
   // Don't show the info-bar if there are already info-bars showing.
@@ -1073,9 +1072,13 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
     bool process_startup,
     const std::vector<GURL>& urls_to_open) {
   // If we're starting up in "background mode" (no open browser window) then
-  // don't open any browser windows.
-  if (process_startup && command_line_.HasSwitch(switches::kNoStartupWindow))
+  // don't open any browser windows, unless kAutoLaunchAtStartup is also
+  // specified.
+  if (process_startup &&
+      command_line_.HasSwitch(switches::kNoStartupWindow) &&
+      !command_line_.HasSwitch(switches::kAutoLaunchAtStartup)) {
     return;
+  }
 
   if (process_startup && ProcessStartupURLs(urls_to_open)) {
     // ProcessStartupURLs processed the urls, nothing else to do.
@@ -1570,7 +1573,7 @@ bool BrowserInit::LaunchWithProfile::CheckIfAutoLaunched(Profile* profile) {
   if (command_line.HasSwitch(switches::kAutoLaunchAtStartup) ||
       first_run::IsChromeFirstRun()) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&CheckAutoLaunchCallback));
+                            base::Bind(&CheckAutoLaunchCallback, profile));
     return true;
   }
 #endif
@@ -1733,7 +1736,8 @@ bool BrowserInit::ProcessCmdLineImpl(
     // If there are any extra parameters, we expect each one to generate a
     // new tab; if there are none then we get one homepage tab.
     int expected_tab_count = 1;
-    if (command_line.HasSwitch(switches::kNoStartupWindow)) {
+    if (command_line.HasSwitch(switches::kNoStartupWindow) &&
+        !command_line.HasSwitch(switches::kAutoLaunchAtStartup)) {
       expected_tab_count = 0;
 #if defined(OS_CHROMEOS)
     // kLoginManager will cause Chrome to start up with the ChromeOS login

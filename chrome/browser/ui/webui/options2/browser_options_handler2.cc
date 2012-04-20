@@ -652,9 +652,10 @@ void BrowserOptionsHandler::CheckAutoLaunch(
       base::Bind(&BrowserOptionsHandler::CheckAutoLaunchCallback,
                  weak_this,
                  auto_launch_trial::IsInAutoLaunchGroup(),
-                 auto_launch_util::WillLaunchAtLogin(
-                     FilePath(),
-                     profile_path.BaseName().value())));
+                 auto_launch_util::AutoStartRequested(
+                     profile_path.BaseName().value(),
+                     true,  // Window requested.
+                     FilePath())));
 #endif
 }
 
@@ -887,8 +888,10 @@ void BrowserOptionsHandler::ToggleAutoLaunch(const ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&auto_launch_util::SetWillLaunchAtLogin, enable,
-                 FilePath(), profile->GetPath().BaseName().value()));
+      enable ? base::Bind(&auto_launch_util::EnableForegroundStartAtLogin,
+                          profile->GetPath().BaseName().value(), FilePath()) :
+               base::Bind(&auto_launch_util::DisableForegroundStartAtLogin,
+                          profile->GetPath().BaseName().value()));
 #endif  // OS_WIN
 }
 

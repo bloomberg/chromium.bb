@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/background/background_mode_manager.h"
+#include "chrome/installer/util/auto_launch_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/chromium_strings.h"
@@ -20,64 +21,15 @@
 
 using content::BrowserThread;
 
-namespace {
-
-const HKEY kBackgroundModeRegistryRootKey = HKEY_CURRENT_USER;
-const wchar_t* kBackgroundModeRegistrySubkey =
-    L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
-const wchar_t* kBackgroundModeRegistryKeyName = L"chromium";
-
-void DisableLaunchOnStartupCallback() {
-  const wchar_t* key_name = kBackgroundModeRegistryKeyName;
-  base::win::RegKey read_key(kBackgroundModeRegistryRootKey,
-                             kBackgroundModeRegistrySubkey, KEY_READ);
-  base::win::RegKey write_key(kBackgroundModeRegistryRootKey,
-                              kBackgroundModeRegistrySubkey, KEY_WRITE);
-  if (read_key.HasValue(key_name)) {
-    LONG result = write_key.DeleteValue(key_name);
-    DCHECK_EQ(ERROR_SUCCESS, result) <<
-        "Failed to deregister launch on login. error: " << result;
-  }
-}
-
-void EnableLaunchOnStartupCallback() {
-  // TODO(rickcam): Bug 53597: Make RegKey mockable.
-  // TODO(rickcam): Bug 53600: Use distinct registry keys per flavor+profile.
-  const wchar_t* key_name = kBackgroundModeRegistryKeyName;
-  base::win::RegKey read_key(kBackgroundModeRegistryRootKey,
-                             kBackgroundModeRegistrySubkey, KEY_READ);
-  base::win::RegKey write_key(kBackgroundModeRegistryRootKey,
-                              kBackgroundModeRegistrySubkey, KEY_WRITE);
-  FilePath executable;
-  if (!PathService::Get(base::FILE_EXE, &executable))
-    return;
-  std::wstring new_value = executable.value() +
-      L" --" + ASCIIToUTF16(switches::kNoStartupWindow);
-  if (read_key.HasValue(key_name)) {
-    std::wstring current_value;
-    if ((read_key.ReadValue(key_name, &current_value) == ERROR_SUCCESS) &&
-        (current_value == new_value)) {
-      return;
-    }
-  }
-  LONG result = write_key.WriteValue(key_name, new_value.c_str());
-  DCHECK_EQ(ERROR_SUCCESS, result) <<
-      "Failed to register launch on login. error: " << result;
-}
-
-}  // namespace
-
 void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   // This functionality is only defined for default profile, currently.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
     return;
-  if (should_launch) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(EnableLaunchOnStartupCallback));
-  } else {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(DisableLaunchOnStartupCallback));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      should_launch ?
+          base::Bind(auto_launch_util::EnableBackgroundStartAtLogin) :
+          base::Bind(auto_launch_util::DisableBackgroundStartAtLogin));
 }
 
 void BackgroundModeManager::DisplayAppInstalledNotification(
