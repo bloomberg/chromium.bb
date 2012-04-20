@@ -185,7 +185,7 @@ void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name,
       reporting_hint != enterprise_reporting_hint_) {
     enterprise_domain_text_ = domain_name;
     enterprise_status_text_ = status_text;
-    enterprise_reporting_hint_ = enterprise_reporting_hint_;
+    enterprise_reporting_hint_ = reporting_hint;
     UpdateVersionLabel();
 
     // Update the notification about device status reporting.
