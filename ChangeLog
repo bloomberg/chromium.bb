@@ -1,6 +1,12 @@
+2012-04-20  Christian Egli  <christian.egli@sbs.ch>
+
+	* tables/nl-BE.dis:
+	* tables/Makefile.am (table_files):
+	* tests/doctests/Makefile.am:
+	* tests/doctests/nl-BE-g1.ctb_test.txt: Added a doctest for the
+	dutch tables
+
 2012-04-18  Christian Egli  <christian.egli@sbs.ch>
-
-
 
 	* tests/pass2_outpos.c:
 	* tests/pass2_inpos.c: Rename test to reflect what it really
