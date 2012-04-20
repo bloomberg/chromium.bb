@@ -36,9 +36,8 @@ const char* const kDrawAttentionTitleMarkupPrefix =
     "<span fgcolor='#ffffff'>";
 const char* const kDrawAttentionTitleMarkupSuffix = "</span>";
 
-// Set minimium width for window really small so it can be reduced to icon only
-// size in overflow expansion state.
-const int kMinWindowWidth = 2;
+// Set minimium width for window really small.
+const int kMinWindowWidth = 26;
 
 }  // namespace
 
@@ -56,8 +55,7 @@ PanelBrowserWindowGtk::PanelBrowserWindowGtk(Browser* browser,
     : BrowserWindowGtk(browser),
       panel_(panel),
       bounds_(bounds),
-      is_drawing_attention_(false),
-      show_close_button_(true) {
+      is_drawing_attention_(false) {
 }
 
 PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
@@ -133,10 +131,8 @@ bool PanelBrowserWindowGtk::HandleTitleBarLeftMousePress(
   DCHECK_EQ(1U, event->button);
   DCHECK_EQ(GDK_BUTTON_PRESS, event->type);
 
-  if (panel_->draggable()) {
-    EnsureDragHelperCreated();
-    drag_helper_->InitialTitlebarMousePress(event, titlebar_widget());
-  }
+  EnsureDragHelperCreated();
+  drag_helper_->InitialTitlebarMousePress(event, titlebar_widget());
   return TRUE;
 }
 
@@ -253,6 +249,7 @@ void PanelBrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
       content::Source<Panel>(panel_.get()),
       content::NotificationService::NoDetails());
+  panel_->OnActiveStateChanged();
 }
 
 BrowserWindowGtk::TitleDecoration PanelBrowserWindowGtk::GetWindowTitle(
@@ -274,10 +271,6 @@ BrowserWindowGtk::TitleDecoration PanelBrowserWindowGtk::GetWindowTitle(
   } else {
     return BrowserWindowGtk::GetWindowTitle(title);
   }
-}
-
-bool PanelBrowserWindowGtk::ShouldShowCloseButton() const {
-  return show_close_button_;
 }
 
 void PanelBrowserWindowGtk::Observe(
@@ -327,12 +320,6 @@ void PanelBrowserWindowGtk::SetBoundsInternal(const gfx::Rect& bounds,
                                               bool animate) {
   if (bounds == bounds_)
     return;
-
-  bool old_show_close_button = show_close_button_;
-  show_close_button_ =
-      bounds.width() > panel_->manager()->overflow_strip_width();
-  if (show_close_button_ != old_show_close_button)
-    titlebar()->UpdateCustomFrame(true);
 
   if (!bounds_.width() || !bounds_.height()) {
     // If the old bounds are 0 in either dimension, we need to show the

@@ -463,8 +463,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   panel->SetExpansionState(Panel::EXPANDED);
   EXPECT_EQ(panel->GetBounds(), panel->GetRestoredBounds());
 
-  // Verify that changing the panel bounds only affects restored height
-  // when panel is expanded.
+  // Verify that changing the panel bounds does not affect the restored height.
   int saved_restored_height = restored.height();
   panel->SetExpansionState(Panel::MINIMIZED);
   bounds = gfx::Rect(10, 20, 300, 400);
@@ -479,6 +478,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   panel->SetExpansionState(Panel::EXPANDED);
   bounds = gfx::Rect(40, 60, 300, 400);
   panel->SetPanelBounds(bounds);
+  EXPECT_EQ(saved_restored_height, panel->GetRestoredBounds().height());
+  panel->set_full_size(bounds.size());
   EXPECT_NE(saved_restored_height, panel->GetRestoredBounds().height());
 
   panel->Close();

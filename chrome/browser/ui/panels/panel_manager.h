@@ -19,7 +19,6 @@
 class Browser;
 class DetachedPanelStrip;
 class DockedPanelStrip;
-class OverflowPanelStrip;
 class PanelDragController;
 class PanelResizeController;
 class PanelMouseWatcher;
@@ -77,12 +76,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
                         PanelStrip::Type new_layout,
                         PanelStrip::PositioningMask positioning_mask);
 
-  // Move all panels up to, and including, the |last_panel_to_move| to overflow.
-  void MovePanelsToOverflow(Panel* last_panel_to_move);
-
-  // Moves as many panels out of overflow as space allows.
-  void MovePanelsOutOfOverflowIfCanFit();
-
   // Returns true if we should bring up the titlebars, given the current mouse
   // point.
   bool ShouldBringUpTitlebars(int mouse_x, int mouse_y) const;
@@ -124,13 +117,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
     return docked_strip_.get();
   }
 
-  OverflowPanelStrip* overflow_strip() const {
-    return overflow_strip_.get();
-  }
-
-  // Width of the overflow strip in compact state i.e mouse not hovering over.
-  int overflow_strip_width() const;
-
   // Reduces time interval in tests to shorten test run time.
   // Wrapper should be used around all time intervals in panels code.
   static inline double AdjustTimeInterval(double interval) {
@@ -145,9 +131,7 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
     return auto_sizing_enabled_;
   }
 
-  // Called from native level when panel animation ends. This may trigger
-  // other pending actions - for example, moving the panel into the overflow
-  // strip after finishing initial bounds animation.
+  // Called from native level when panel animation ends.
   void OnPanelAnimationEnded(Panel* panel);
 
 #ifdef UNIT_TEST
@@ -189,7 +173,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
 
   scoped_ptr<DetachedPanelStrip> detached_strip_;
   scoped_ptr<DockedPanelStrip> docked_strip_;
-  scoped_ptr<OverflowPanelStrip> overflow_strip_;
 
   scoped_ptr<PanelDragController> drag_controller_;
   scoped_ptr<PanelResizeController> resize_controller_;
@@ -205,10 +188,6 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
   // changed. The testing code could set this flag to false so that other tests
   // will not be affected.
   bool auto_sizing_enabled_;
-
-  // True only while moving panels to overflow. Used to prevent moving panels
-  // out of overflow while in the process of moving panels to overflow.
-  bool is_processing_overflow_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelManager);
 };

@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/panels/overflow_panel_strip.h"
 #include "chrome/browser/ui/panels/panel_drag_controller.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
@@ -46,6 +45,14 @@ const int kDelayBeforeCollapsingFromTitleOnlyStateMs = 2000;
 #else
 const int kDelayBeforeCollapsingFromTitleOnlyStateMs = 0;
 #endif
+
+// After focus changed, one panel lost active status, another got it,
+// we refresh layout with a delay.
+const int kRefreshLayoutAfterActivePanelChangeDelayMs = 200;  // arbitrary
+
+// The minimum panel width when it is "squeezed" in the docked strip
+// due to lack of space.
+const int kMinPanelWidthForDisplay = 26;
 }  // namespace
 
 // static
@@ -59,14 +66,14 @@ DockedPanelStrip::DockedPanelStrip(PanelManager* panel_manager)
       are_titlebars_up_(false),
       minimizing_all_(false),
       delayed_titlebar_action_(NO_ACTION),
-      titlebar_action_factory_(this) {
+      titlebar_action_factory_(this),
+      refresh_action_factory_(this) {
   dragging_panel_current_iterator_ = panels_.end();
   panel_manager_->display_settings_provider()->AddDesktopBarObserver(this);
 }
 
 DockedPanelStrip::~DockedPanelStrip() {
   DCHECK(panels_.empty());
-  DCHECK(panels_in_temporary_layout_.empty());
   DCHECK_EQ(0, minimized_panel_count_);
   panel_manager_->display_settings_provider()->RemoveDesktopBarObserver(this);
 }
@@ -86,6 +93,9 @@ void DockedPanelStrip::SetDisplayArea(const gfx::Rect& display_area) {
 
 void DockedPanelStrip::AddPanel(Panel* panel,
                                 PositioningMask positioning_mask) {
+  // This method does not handle minimized panels.
+  DCHECK_EQ(Panel::EXPANDED, panel->expansion_state());
+
   DCHECK_NE(this, panel->panel_strip());
   panel->SetPanelStrip(this);
 
@@ -99,8 +109,17 @@ void DockedPanelStrip::AddPanel(Panel* panel,
     DCHECK(update_bounds);
     InsertExistingPanelAtKnownPosition(panel);
   } else {
+    DCHECK(!known_position);
     InsertExistingPanelAtDefaultPosition(panel, update_bounds);
   }
+}
+
+gfx::Point DockedPanelStrip::GetDefaultPositionForPanel(
+    const gfx::Size& full_size) const {
+  return gfx::Point(
+      std::max(GetRightMostAvailablePosition() - full_size.width(),
+               display_area_.x()),
+      display_area_.bottom() - full_size.height());
 }
 
 void DockedPanelStrip::InsertNewlyCreatedPanel(Panel* panel) {
@@ -108,11 +127,13 @@ void DockedPanelStrip::InsertNewlyCreatedPanel(Panel* panel) {
 
   int max_panel_width = GetMaxPanelWidth();
   int max_panel_height = GetMaxPanelHeight();
-  gfx::Size restored_size = panel->restored_size();
-  int height = restored_size.height();
-  int width = restored_size.width();
+  gfx::Size full_size = panel->full_size();
+  int height = full_size.height();
+  int width = full_size.width();
 
   // Initialize the newly created panel. Does not bump any panels from strip.
+  // We need to come up with some temporary position and dimensions
+  // for this panel -- they may be changed at RefreshLayout time.
   if (height == 0 && width == 0 && panel_manager_->auto_sizing_enabled()) {
     // Auto resizable is enabled only if no initial size is provided.
     panel->SetAutoResizable(true);
@@ -134,29 +155,17 @@ void DockedPanelStrip::InsertNewlyCreatedPanel(Panel* panel) {
   else if (height > max_panel_height)
     height = max_panel_height;
 
-  panel->set_restored_size(gfx::Size(width, height));
-  int x = GetRightMostAvailablePosition() - width;
-  int y = display_area_.bottom() - height;
+  full_size = gfx::Size(width, height);
+  panel->set_full_size(full_size);
+  gfx::Point pt = GetDefaultPositionForPanel(full_size);
 
-  // Keep panel visible in the strip even if overlap would occur.
-  // The panel will be moved into overflow strip after its initial animation
-  // is completed. See PanelManager::OnPanelAnimationEnded().
-  if (x < display_area_.x()) {
-    x = display_area_.x();
-    panel->set_has_temporary_layout(true);
-  }
-  panel->Initialize(gfx::Rect(x, y, width, height));
+  panel->Initialize(gfx::Rect(pt.x(), pt.y(), width, height));
 
-  if (panel->has_temporary_layout())
-    panels_in_temporary_layout_.insert(panel);
-  else
-    panels_.push_back(panel);
+  InsertExistingPanelAtDefaultPosition(panel, true /*update_bounds*/);
 }
 
 void DockedPanelStrip::InsertExistingPanelAtKnownPosition(Panel* panel) {
   DCHECK(panel->initialized());
-
-  FitPanelWithWidth(panel->GetBounds().width());
 
   int x = panel->GetBounds().x();
   Panels::iterator iter = panels_.begin();
@@ -164,47 +173,24 @@ void DockedPanelStrip::InsertExistingPanelAtKnownPosition(Panel* panel) {
     if (x > (*iter)->GetBounds().x())
       break;
   panels_.insert(iter, panel);
-  UpdateMinimizedPanelCount();
 
   // This will automatically update all affected panels due to the insertion.
-  if (iter != panels_.end())
-    RefreshLayout();
+  RefreshLayout();
 }
 
-void DockedPanelStrip::InsertExistingPanelAtDefaultPosition(
-    Panel* panel, bool update_bounds) {
+void DockedPanelStrip::InsertExistingPanelAtDefaultPosition(Panel* panel,
+    bool update_bounds) {
   DCHECK(panel->initialized());
 
-  gfx::Size restored_size = panel->restored_size();
-  int height = restored_size.height();
-  int width = restored_size.width();
-
-  int x = FitPanelWithWidth(width);
-  if (update_bounds) {
-    Panel::ExpansionState expansion_state_to_restore;
-    if (panel->expansion_state() == Panel::EXPANDED) {
-      expansion_state_to_restore = Panel::EXPANDED;
-    } else {
-      if (are_titlebars_up_ || panel->IsDrawingAttention()) {
-        expansion_state_to_restore = Panel::TITLE_ONLY;
-        height = panel->TitleOnlyHeight();
-      } else {
-        expansion_state_to_restore = Panel::MINIMIZED;
-        height = Panel::kMinimizedPanelHeight;
-      }
-    }
-    int y =
-        GetBottomPositionForExpansionState(expansion_state_to_restore) - height;
-    panel->SetPanelBounds(gfx::Rect(x, y, width, height));
-
-    // Update the minimized state to reflect current titlebar mode.
-    // Do this AFTER setting panel bounds to avoid an extra bounds change.
-    if (panel->expansion_state() != Panel::EXPANDED)
-      panel->SetExpansionState(expansion_state_to_restore);
-  }
+  gfx::Size full_size = panel->full_size();
+  gfx::Point pt = GetDefaultPositionForPanel(full_size);
+  panel->SetPanelBounds(gfx::Rect(pt, full_size));
 
   panels_.push_back(panel);
-  UpdateMinimizedPanelCount();
+
+  // This will automatically update all affected panels due to the insertion.
+  if (update_bounds)
+    RefreshLayout();
 }
 
 int DockedPanelStrip::GetMaxPanelWidth() const {
@@ -228,11 +214,6 @@ void DockedPanelStrip::RemovePanel(Panel* panel) {
   DCHECK_EQ(this, panel->panel_strip());
   panel->SetPanelStrip(NULL);
 
-  if (panel->has_temporary_layout()) {
-    panels_in_temporary_layout_.erase(panel);
-    return;
-  }
-
   // Removing an element from the list will invalidate the iterator that refers
   // to it. We need to update the iterator in that case.
   DCHECK(dragging_panel_current_iterator_ == panels_.end() ||
@@ -243,39 +224,28 @@ void DockedPanelStrip::RemovePanel(Panel* panel) {
   if (panels_.back() == panel) {
     panels_.pop_back();
 
-  // Update the saved panel placement if needed. This is because we might remove
-  // |saved_panel_placement_.left_panel|.
-  // Note: if |left_panel| moves to overflow and then comes back, it is OK to
-  // restore the panel to the end of list since we do not want to deal with
-  // this case specially.
-  if (saved_panel_placement_.panel &&
-      saved_panel_placement_.left_panel == panel)
-    saved_panel_placement_.left_panel = NULL;
+    // Update the saved panel placement if needed. This is because
+    // we might remove |saved_panel_placement_.left_panel|.
+    if (saved_panel_placement_.panel &&
+        saved_panel_placement_.left_panel == panel)
+      saved_panel_placement_.left_panel = NULL;
 
-    // No need to refresh layout as the remaining panels are unaffected.
-    // Just check if other panels can now fit in the freed up space.
-    panel_manager_->MovePanelsOutOfOverflowIfCanFit();
   } else {
     Panels::iterator iter = find(panels_.begin(), panels_.end(), panel);
     DCHECK(iter != panels_.end());
     iter = panels_.erase(iter);
 
-  // Update the saved panel placement if needed. This is because we might remove
-  // |saved_panel_placement_.left_panel|.
-  if (saved_panel_placement_.panel &&
-      saved_panel_placement_.left_panel == panel)
-    saved_panel_placement_.left_panel = *iter;
-
-    RefreshLayout();
+    // Update the saved panel placement if needed. This is because
+    // we might remove |saved_panel_placement_.left_panel|.
+    if (saved_panel_placement_.panel &&
+        saved_panel_placement_.left_panel == panel)
+      saved_panel_placement_.left_panel = *iter;
   }
 
   if (panel->expansion_state() != Panel::EXPANDED)
     UpdateMinimizedPanelCount();
-}
 
-bool DockedPanelStrip::CanShowPanelAsActive(const Panel* panel) const {
-  // Panels with temporary layout cannot be shown as active.
-  return !panel->has_temporary_layout();
+  RefreshLayout();
 }
 
 void DockedPanelStrip::SavePanelPlacement(Panel* panel) {
@@ -328,11 +298,6 @@ void DockedPanelStrip::DiscardSavedPanelPlacement() {
   DCHECK(saved_panel_placement_.panel);
   saved_panel_placement_.panel = NULL;
   saved_panel_placement_.left_panel = NULL;
-}
-
-bool DockedPanelStrip::CanDragPanel(const Panel* panel) const {
-  // Only the panels having temporary layout can't be dragged.
-  return !panel->has_temporary_layout();
 }
 
 void DockedPanelStrip::StartDraggingPanelWithinStrip(Panel* panel) {
@@ -426,64 +391,70 @@ void DockedPanelStrip::DragRight(Panel* dragging_panel) {
 void DockedPanelStrip::EndDraggingPanelWithinStrip(Panel* panel, bool aborted) {
   dragging_panel_current_iterator_ = panels_.end();
 
-  // Calls RefreshLayout to update the dragging panel to its final position
-  // when the drag ends normally. Otherwise, the drag within this strip is
-  // aborted because either the drag enters other strip or the drag is
-  // cancelled. Either way, we don't need to do anything here and let the drag
-  // controller handle the inter-strip transition or the drag cancellation.
+  // If the drag is aborted, the panel will be removed from this strip
+  // or returned to its original position, causing RefreshLayout()
   if (!aborted)
     RefreshLayout();
 }
 
+void DockedPanelStrip::ClearDraggingStateWhenPanelClosed() {
+  dragging_panel_current_iterator_ = panels_.end();
+}
+
 panel::Resizability DockedPanelStrip::GetPanelResizability(
     const Panel* panel) const {
-  return (!panel->has_temporary_layout() &&
-          panel->expansion_state() == Panel::EXPANDED) ?
+  return (panel->expansion_state() == Panel::EXPANDED) ?
       panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM : panel::NOT_RESIZABLE;
 }
 
 void DockedPanelStrip::OnPanelResizedByMouse(Panel* panel,
                                              const gfx::Rect& new_bounds) {
   DCHECK_EQ(this, panel->panel_strip());
+  panel->set_full_size(new_bounds.size());
   panel->SetPanelBoundsInstantly(new_bounds);
 }
 
-
 void DockedPanelStrip::OnPanelExpansionStateChanged(Panel* panel) {
-  gfx::Size size = panel->restored_size();
+  gfx::Rect panel_bounds = panel->GetBounds();
+  AdjustPanelBoundsPerExpansionState(panel, &panel_bounds);
+  panel->SetPanelBounds(panel_bounds);
+
+  UpdateMinimizedPanelCount();
+
+  // Ensure minimized panel does not get the focus. If minimizing all,
+  // the active panel will be deactivated once when all panels are minimized
+  // rather than per minimized panel.
+  if (panel->expansion_state() != Panel::EXPANDED && !minimizing_all_ &&
+      panel->IsActive()) {
+    panel->Deactivate();
+    // The layout will refresh itself in response
+    // to (de)activation notification.
+  }
+}
+
+void DockedPanelStrip::AdjustPanelBoundsPerExpansionState(Panel* panel,
+                                                          gfx::Rect* bounds) {
   Panel::ExpansionState expansion_state = panel->expansion_state();
   switch (expansion_state) {
     case Panel::EXPANDED:
+      bounds->set_height(panel->full_size().height());
 
       break;
     case Panel::TITLE_ONLY:
-      size.set_height(panel->TitleOnlyHeight());
+      bounds->set_height(panel->TitleOnlyHeight());
 
       break;
     case Panel::MINIMIZED:
-      size.set_height(Panel::kMinimizedPanelHeight);
+      bounds->set_height(Panel::kMinimizedPanelHeight);
 
       break;
     default:
       NOTREACHED();
       break;
   }
-  UpdateMinimizedPanelCount();
 
   int bottom = GetBottomPositionForExpansionState(expansion_state);
-  gfx::Rect bounds = panel->GetBounds();
-  panel->SetPanelBounds(
-      gfx::Rect(bounds.right() - size.width(),
-                bottom - size.height(),
-                size.width(),
-                size.height()));
-
-  // Ensure minimized panel does not get the focus. If minimizing all,
-  // the active panel will be deactivated once when all panels are minimized
-  // rather than per minimized panel.
-  if (expansion_state != Panel::EXPANDED && !minimizing_all_ &&
-      panel->IsActive())
-    panel->Deactivate();
+  bounds->set_y(bottom - bounds->height());
 }
 
 void DockedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
@@ -515,6 +486,9 @@ void DockedPanelStrip::ActivatePanel(Panel* panel) {
   // Make sure the panel is expanded when activated so the user input
   // does not go into a collapsed window.
   panel->SetExpansionState(Panel::EXPANDED);
+
+  // If the layout needs to be refreshed, it will happen in response to
+  // the activation notification (and with a slight delay to let things settle).
 }
 
 void DockedPanelStrip::MinimizePanel(Panel* panel) {
@@ -573,47 +547,27 @@ void DockedPanelStrip::ToggleMinimizeAll(Panel* panel) {
   // the deactivation is only done once after all panels are minimized,
   // rather than per minimized panel, both for efficiency and to avoid
   // temporary activations of random not-yet-minimized panels.
-  if (minimized_active_panel)
+  if (minimized_active_panel) {
     minimized_active_panel->Deactivate();
+    // Layout will be refreshed in response to (de)activation notification.
+  }
 }
 
 void DockedPanelStrip::ResizePanelWindow(
     Panel* panel,
     const gfx::Size& preferred_window_size) {
+  DCHECK_EQ(this, panel->panel_strip());
   // Make sure the new size does not violate panel's size restrictions.
   gfx::Size new_size(preferred_window_size.width(),
                      preferred_window_size.height());
   panel->ClampSize(&new_size);
 
-  if (new_size != panel->restored_size())
-    panel->set_restored_size(new_size);
+  if (new_size == panel->full_size())
+    return;
 
-  gfx::Rect bounds = panel->GetBounds();
-  int delta_x = bounds.width() - new_size.width();
+  panel->set_full_size(new_size);
 
-  // Only need to adjust current bounds if panel is in the dock.
-  if (panel->panel_strip() == this) {
-    // Only need to adjust bounds height when panel is expanded.
-    Panel::ExpansionState expansion_state = panel->expansion_state();
-    if (new_size.height() != bounds.height() &&
-        expansion_state == Panel::EXPANDED) {
-      bounds.set_y(bounds.bottom() - new_size.height());
-      bounds.set_height(new_size.height());
-    }
-
-    if (delta_x != 0) {
-      bounds.set_width(new_size.width());
-      bounds.set_x(bounds.x() + delta_x);
-    }
-
-    if (bounds != panel->GetBounds())
-      panel->SetPanelBounds(bounds);
-  }
-
-  // Only need to rearrange if panel's width changed. Rearrange even if panel
-  // is in overflow because there may now be room to fit that panel.
-  if (delta_x != 0)
-    RefreshLayout();
+  RefreshLayout();
 }
 
 bool DockedPanelStrip::ShouldBringUpTitlebars(int mouse_x, int mouse_y) const {
@@ -800,75 +754,97 @@ void DockedPanelStrip::OnFullScreenModeChanged(bool is_full_screen) {
   }
 }
 
-bool DockedPanelStrip::CanFitPanel(const Panel* panel) const {
-  int width = panel->GetRestoredBounds().width();
-  return GetRightMostAvailablePosition() - width >= display_area_.x();
-}
-
-int DockedPanelStrip::FitPanelWithWidth(int width) {
-  int x = GetRightMostAvailablePosition() - width;
-  if (x < display_area_.x()) {
-    // Insufficient space for the requested width. Bump panels to overflow.
-    Panel* last_panel_to_send_to_overflow;
-    for (Panels::reverse_iterator iter = panels_.rbegin();
-         iter != panels_.rend(); ++iter) {
-      last_panel_to_send_to_overflow = *iter;
-      x = last_panel_to_send_to_overflow->GetRestoredBounds().right() - width;
-      if (x >= display_area_.x()) {
-        panel_manager_->MovePanelsToOverflow(last_panel_to_send_to_overflow);
-        break;
-      }
-    }
-  }
-  return x;
-}
-
 void DockedPanelStrip::RefreshLayout() {
-  int rightmost_position = StartingRightPosition();
+  int total_inactive_width = 0;
+  int total_active_width = 0;
 
-  Panels::const_iterator panel_iter = panels_.begin();
-  for (; panel_iter != panels_.end(); ++panel_iter) {
+  for (Panels::const_iterator panel_iter = panels_.begin();
+       panel_iter != panels_.end(); ++panel_iter) {
     Panel* panel = *panel_iter;
-    gfx::Rect new_bounds(panel->GetBounds());
+    if (panel->IsActive())
+      total_active_width += panel->full_size().width();
+    else
+      total_inactive_width += panel->full_size().width();
+  }
+
+  double display_width_for_inactive_panels =
+      display_area_.width() - total_active_width -
+      kPanelsHorizontalSpacing * panels_.size();
+  double overflow_squeeze_factor = (total_inactive_width > 0) ?
+      std::min(display_width_for_inactive_panels / total_inactive_width, 1.0) :
+      1.0;
+
+  // We want to calculate all bounds first, then apply them in a specific order.
+  typedef std::pair<Panel*, gfx::Rect> PanelBoundsInfo;
+  std::vector<PanelBoundsInfo> right_of_active;
+  std::queue<PanelBoundsInfo> left_of_active;
+  bool active_panel_found = false;
+
+  int rightmost_position = StartingRightPosition();
+  for (Panels::const_iterator panel_iter = panels_.begin();
+       panel_iter != panels_.end(); ++panel_iter) {
+    Panel* panel = *panel_iter;
+    gfx::Rect new_bounds = panel->GetBounds();
+    AdjustPanelBoundsPerExpansionState(panel, &new_bounds);
+
+    new_bounds.set_width(
+      WidthToDisplayPanelInStrip(panel->IsActive(),
+                                 overflow_squeeze_factor,
+                                 panel->full_size().width()));
     int x = rightmost_position - new_bounds.width();
+    new_bounds.set_x(x);
 
-    if (x < display_area_.x())
-      break;
+    if (panel->IsActive())
+      active_panel_found = true;
 
-    // Don't update the docked panel that is in preview mode.
-    if (!panel->in_preview_mode()) {
-      new_bounds.set_x(x);
-      new_bounds.set_y(
-          GetBottomPositionForExpansionState(panel->expansion_state()) -
-              new_bounds.height());
-      panel->SetPanelBounds(new_bounds);
-    }
+    if (active_panel_found)
+      left_of_active.push(std::make_pair(panel, new_bounds));
+    else
+      right_of_active.push_back(std::make_pair(panel, new_bounds));
 
     rightmost_position = x - kPanelsHorizontalSpacing;
   }
 
-  // Add/remove panels from/to overflow. A change in work area or the
-  // resize/removal of a panel may affect how many panels fit in the strip.
-  // TODO(jianli): Need to handle the case that panel in preview mode could be
-  // moved to overflow. (http://crbug.com/117574)
-  if (panel_iter != panels_.end())
-    panel_manager_->MovePanelsToOverflow(*panel_iter);
-  else
-    panel_manager_->MovePanelsOutOfOverflowIfCanFit();
+  // Update panels starting from the active one going in both directions.
+  // This is important on Mac where bounds changes are slow and you see a
+  // "wave" instead of a smooth sliding effect.
+  // When no panel is active, we'll start from the left.
+  int num_processed = 0;
+  while (!right_of_active.empty() || !left_of_active.empty()) {
+    PanelBoundsInfo bounds_info;
+    // Alternate between processing the panels to the left and to the right
+    // of the active one, based on parity of num_processed.
+    bool take_panel_on_right =
+        ((num_processed & 1) && !right_of_active.empty()) ||
+        left_of_active.empty();
+    if (take_panel_on_right) {
+      bounds_info = right_of_active.back();
+      right_of_active.pop_back();
+    } else {
+      bounds_info = left_of_active.front();
+      left_of_active.pop();
+    }
+
+    // Don't update the docked panel that is in preview mode.
+    Panel* panel = bounds_info.first;
+    if (!panel->in_preview_mode())
+      panel->SetPanelBounds(bounds_info.second);  // Animates.
+
+    ++num_processed;
+  }
 }
 
-void DockedPanelStrip::DelayedMovePanelToOverflow(Panel* panel) {
-  if (panels_in_temporary_layout_.erase(panel)) {
-      DCHECK(panel->has_temporary_layout());
-      panel_manager_->MovePanelToStrip(panel,
-                                       PanelStrip::IN_OVERFLOW,
-                                       PanelStrip::DEFAULT_POSITION);
-  }
+int DockedPanelStrip::WidthToDisplayPanelInStrip(bool is_for_active_panel,
+                                                 double squeeze_factor,
+                                                 int full_width) const {
+  if (is_for_active_panel)
+    return full_width;
+  return std::max(kMinPanelWidthForDisplay,
+      static_cast<int>(floor(full_width * squeeze_factor)));
 }
 
 void DockedPanelStrip::CloseAll() {
   // This should only be called at the end of tests to clean up.
-  DCHECK(panels_in_temporary_layout_.empty());
 
   // Make a copy of the iterator as closing panels can modify the vector.
   Panels panels_copy = panels_;
@@ -892,3 +868,17 @@ void DockedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
   panel->SetAlwaysOnTop(true);
   panel->EnableResizeByMouse(true);
 }
+
+void DockedPanelStrip::OnPanelActiveStateChanged(Panel* panel) {
+  // Refresh layout, but wait till active states settle.
+  // This lets us avoid refreshing too many times when one panel loses
+  // focus and another gains it.
+  refresh_action_factory_.InvalidateWeakPtrs();
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&DockedPanelStrip::RefreshLayout,
+          refresh_action_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(PanelManager::AdjustTimeInterval(
+          kRefreshLayoutAfterActivePanelChangeDelayMs)));
+}
+

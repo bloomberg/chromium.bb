@@ -20,7 +20,6 @@ class PanelStrip {
   enum Type {
     DETACHED,  // free-floating panels
     DOCKED,    // panels are 'docked' along the window's edge
-    IN_OVERFLOW,  // panels that cannot fit in the 'docked' panels area
   };
 
   // Masks that control how the panel is added and positioned.
@@ -85,6 +84,9 @@ class PanelStrip {
   virtual void OnPanelTitlebarClicked(Panel* panel,
                                       panel::ClickModifier modifier) = 0;
 
+  // Called when a panel in the strip becomes active or inactive.
+  virtual void OnPanelActiveStateChanged(Panel* panel) = 0;
+
   // Updates the display to show |panel| as active.
   virtual void ActivatePanel(Panel* panel) = 0;
 
@@ -94,9 +96,6 @@ class PanelStrip {
 
   virtual bool IsPanelMinimized(const Panel* panel) const = 0;
 
-  // Returns true if |panel| can be shown as active.
-  virtual bool CanShowPanelAsActive(const Panel* panel) const = 0;
-
   // Saves/restores/discards the placement information of |panel|. This is
   // useful in bringing back the dragging panel to its original positioning
   // when the drag is cancelled. After the placement information is saved,
@@ -105,9 +104,6 @@ class PanelStrip {
   virtual void SavePanelPlacement(Panel* panel) = 0;
   virtual void RestorePanelToSavedPlacement() = 0;
   virtual void DiscardSavedPanelPlacement() = 0;
-
-  // Returns true if |panel| is draggable.
-  virtual bool CanDragPanel(const Panel* panel) const = 0;
 
   // Starts dragging |panel| within this strip. The panel should already be
   // in this strip.
@@ -127,6 +123,9 @@ class PanelStrip {
   // The drag controller is responsible for restoring the panel back to its
   // original strip and position when the drag gets cancelled.
   virtual void EndDraggingPanelWithinStrip(Panel* panel, bool aborted) = 0;
+
+  // Ends dragging and clears dragging state when the dragged panel has closed.
+  virtual void ClearDraggingStateWhenPanelClosed() = 0;
 
   // When a panel is added to this strip, some modifications to its visual
   // style or underlying implementation may be in order. Each strip decides

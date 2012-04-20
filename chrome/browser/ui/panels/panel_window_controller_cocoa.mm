@@ -732,10 +732,6 @@ enum {
              afterDelay:0];
 }
 
-- (BOOL)isDraggable {
-  return windowShim_->panel()->draggable();
-}
-
 - (void)startDrag:(NSPoint)mouseLocation {
   // Convert from Cocoa's screen coordinates to platform-indepedent screen
   // coordinates because PanelManager method takes platform-indepedent screen
@@ -928,6 +924,7 @@ enum {
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
       content::Source<Panel>(windowShim_->panel()),
       content::NotificationService::NoDetails());
+  windowShim_->panel()->OnActiveStateChanged();
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
@@ -950,6 +947,7 @@ enum {
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
       content::Source<Panel>(windowShim_->panel()),
       content::NotificationService::NoDetails());
+  windowShim_->panel()->OnActiveStateChanged();
 }
 
 - (void)deactivate {

@@ -35,8 +35,8 @@ class DockedPanelStrip : public PanelStrip,
   // PanelStrip OVERRIDES:
   virtual void SetDisplayArea(const gfx::Rect& display_area) OVERRIDE;
 
-  // Rearranges the positions of the panels in the strip.
-  // Handles moving panels to/from overflow area as needed.
+  // Rearranges the positions of the panels in the strip
+  // and reduces their width when there is not enough room.
   // This is called when the display space has been changed, i.e. working
   // area being changed or a panel being closed.
   virtual void RefreshLayout() OVERRIDE;
@@ -61,19 +61,18 @@ class DockedPanelStrip : public PanelStrip,
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
   virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
-  virtual bool CanShowPanelAsActive(const Panel* panel) const OVERRIDE;
   virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
   virtual void RestorePanelToSavedPlacement() OVERRIDE;
   virtual void DiscardSavedPanelPlacement() OVERRIDE;
-  virtual bool CanDragPanel(const Panel* panel) const OVERRIDE;
   virtual void StartDraggingPanelWithinStrip(Panel* panel) OVERRIDE;
   virtual void DragPanelWithinStrip(Panel* panel,
                                     int delta_x,
                                     int delta_y) OVERRIDE;
   virtual void EndDraggingPanelWithinStrip(Panel* panel,
                                            bool aborted) OVERRIDE;
-
+  virtual void ClearDraggingStateWhenPanelClosed() OVERRIDE;
   virtual void UpdatePanelOnStripChange(Panel* panel) OVERRIDE;
+  virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
 
   // Invoked when a panel's expansion state changes.
   void OnPanelExpansionStateChanged(Panel* panel);
@@ -91,8 +90,12 @@ class DockedPanelStrip : public PanelStrip,
   int GetBottomPositionForExpansionState(
       Panel::ExpansionState expansion_state) const;
 
-  // num_panels() and panels() only includes panels in the panel strip that
-  // do NOT have a temporary layout.
+  // Returns panel width to be used, taking into account possible "squeezing"
+  // due to lack of space in the strip.
+  int WidthToDisplayPanelInStrip(bool is_for_active_panel,
+                                 double squeeze_factor,
+                                 int full_width) const;
+
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }
   Panel* last_panel() const { return panels_.empty() ? NULL : panels_.back(); }
@@ -105,21 +108,7 @@ class DockedPanelStrip : public PanelStrip,
 
   void OnFullScreenModeChanged(bool is_full_screen);
 
-  // Returns |true| if panel can fit in the dock strip.
-  bool CanFitPanel(const Panel* panel) const;
-
-  // Called by PanelManager after a delay to move a newly created panel from
-  // the panel strip to overflow because the panel could not fit
-  // within the bounds of the panel strip. New panels are first displayed
-  // in the panel strip, then moved to overflow so that all created
-  // panels are (at least briefly) visible before entering overflow.
-  void DelayedMovePanelToOverflow(Panel* panel);
-
 #ifdef UNIT_TEST
-  int num_temporary_layout_panels() const {
-    return panels_in_temporary_layout_.size();
-  }
-
   int minimized_panel_count() const {return minimized_panel_count_; }
 #endif
 
@@ -133,8 +122,7 @@ class DockedPanelStrip : public PanelStrip,
   struct PanelPlacement {
     Panel* panel;
     // Used to remember the panel to the left of |panel|, if any, for use when
-    // restoring the position of |panel|. Will be updated if this panel is
-    // closed or moved out of the dock (e.g. to overflow)..
+    // restoring the position of |panel|.
     Panel* left_panel;
 
     PanelPlacement() : panel(NULL), left_panel(NULL) { }
@@ -149,12 +137,19 @@ class DockedPanelStrip : public PanelStrip,
       DisplaySettingsProvider::DesktopBarVisibility visibility) OVERRIDE;
 
   // Helper methods to put the panel to the collection.
+  gfx::Point GetDefaultPositionForPanel(const gfx::Size& full_size) const;
   void InsertNewlyCreatedPanel(Panel* panel);
   void InsertExistingPanelAtKnownPosition(Panel* panel);
-  void InsertExistingPanelAtDefaultPosition(Panel* panel, bool refresh_bounds);
+  void InsertExistingPanelAtDefaultPosition(Panel* panel, bool update_bounds);
 
   // Keep track of the minimized panels to control mouse watching.
   void UpdateMinimizedPanelCount();
+
+  // Makes sure the panel's bounds reflect its expansion state and the
+  // panel is aligned at the bottom of the strip. Does not touch the x
+  // coordinate.
+  void AdjustPanelBoundsPerExpansionState(Panel* panel,
+      gfx::Rect* panel_bounds);
 
   // Minimizes/Restores all panels in the strip depending on the current
   // state of |panel|.
@@ -172,22 +167,12 @@ class DockedPanelStrip : public PanelStrip,
 
   int GetRightMostAvailablePosition() const;
 
-  // Determines position in strip where a panel of |width| will fit.
-  // Other panels in the strip may be moved to overflow to make room.
-  // Returns x position where a panel of |width| wide can fit.
-  // |width| is in screen coordinates.
-  int FitPanelWithWidth(int width);
-
   PanelManager* panel_manager_;  // Weak, owns us.
 
   // All panels in the panel strip must fit within this area.
   gfx::Rect display_area_;
 
   Panels panels_;
-
-  // Stores newly created panels that have a temporary layout until they
-  // are moved to overflow after a delay.
-  std::set<Panel*> panels_in_temporary_layout_;
 
   int minimized_panel_count_;
   bool are_titlebars_up_;
@@ -204,6 +189,9 @@ class DockedPanelStrip : public PanelStrip,
 
   // Owned by MessageLoop after posting.
   base::WeakPtrFactory<DockedPanelStrip> titlebar_action_factory_;
+
+  // Owned by MessageLoop after posting.
+  base::WeakPtrFactory<DockedPanelStrip> refresh_action_factory_;
 
   // Used to save the placement information for a panel.
   PanelPlacement saved_panel_placement_;

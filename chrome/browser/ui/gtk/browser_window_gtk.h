@@ -66,10 +66,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // Returns the type of text used for title.
   virtual TitleDecoration GetWindowTitle(std::string* title) const;
 
-  // Gives a derived class a way to control visibility of close button.
-  // Returns true if close button should be visible.
-  virtual bool ShouldShowCloseButton() const;
-
   // Overridden from BrowserWindow:
   virtual void Show() OVERRIDE;
   virtual void ShowInactive() OVERRIDE;

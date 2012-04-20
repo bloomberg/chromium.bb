@@ -121,6 +121,11 @@ void PanelBrowserWindowCocoa::setBoundsInternal(const gfx::Rect& bounds,
 
   bounds_ = bounds;
 
+  // Safely ignore calls to animate bounds before the panel is shown to
+  // prevent the window from loading prematurely.
+  if (animate && !is_shown_)
+    return;
+
   NSRect frame = cocoa_utils::ConvertRectToCocoaCoordinates(bounds);
   [controller_ setPanelFrame:frame animate:animate];
 }

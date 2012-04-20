@@ -31,8 +31,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual TitleDecoration GetWindowTitle(std::string* title) const OVERRIDE;
 
-  virtual bool ShouldShowCloseButton() const OVERRIDE;
-
   // Overrides BrowserWindowGtk::NotificationObserver::Observe
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -157,9 +155,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   // current one completes. In this case, we want to start the new animation
   // from where the last one left.
   gfx::Rect last_animation_progressed_bounds_;
-
-  // The close button is not shown when panel is in icon only mode in overflow.
-  bool show_close_button_;
 
   content::NotificationRegistrar registrar_;
 

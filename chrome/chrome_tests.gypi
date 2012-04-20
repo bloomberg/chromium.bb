@@ -530,7 +530,6 @@
         'browser/ui/panels/panel_browsertest.cc',
         'browser/ui/panels/panel_drag_browsertest.cc',
         'browser/ui/panels/panel_resize_browsertest.cc',
-        'browser/ui/panels/panel_overflow_browsertest.cc',
         'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
         'browser/ui/views/button_dropdown_test.cc',
         'browser/ui/views/constrained_window_views_browsertest.cc',
@@ -635,7 +634,6 @@
             'browser/ui/panels/panel_browsertest.cc',
             'browser/ui/panels/panel_drag_browsertest.cc',
             'browser/ui/panels/panel_resize_browsertest.cc',
-            'browser/ui/panels/panel_overflow_browsertest.cc',
           ],
         }],
         ['OS=="win"', {

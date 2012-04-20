@@ -45,19 +45,18 @@ class DetachedPanelStrip : public PanelStrip {
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
   virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
-  virtual bool CanShowPanelAsActive(const Panel* panel) const OVERRIDE;
   virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
   virtual void RestorePanelToSavedPlacement() OVERRIDE;
   virtual void DiscardSavedPanelPlacement()  OVERRIDE;
-  virtual bool CanDragPanel(const Panel* panel) const OVERRIDE;
   virtual void StartDraggingPanelWithinStrip(Panel* panel) OVERRIDE;
   virtual void DragPanelWithinStrip(Panel* panel,
                                     int delta_x,
                                     int delta_y) OVERRIDE;
   virtual void EndDraggingPanelWithinStrip(Panel* panel,
                                            bool aborted) OVERRIDE;
-
+  virtual void ClearDraggingStateWhenPanelClosed() OVERRIDE;
   virtual void UpdatePanelOnStripChange(Panel* panel) OVERRIDE;
+  virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
 
   bool HasPanel(Panel* panel) const;
 

@@ -403,8 +403,7 @@ void PanelBrowserFrameView::OnThemeChanged() {
 }
 
 gfx::Size PanelBrowserFrameView::GetMinimumSize() {
-  // This makes the panel be able to shrink to very small, like minimized panel
-  // or overflow panel.
+  // This makes the panel be able to shrink to very small, like minimized panel.
   return gfx::Size();
 }
 
@@ -419,14 +418,10 @@ void PanelBrowserFrameView::Layout() {
 
   // Check if the width is only enough to show only the icon, or both icon
   // and title. Hide corresponding controls accordingly.
+  // TODO(aburago) Make sure the close button is always visible even if the
+  // panel is too narrow.
   bool show_close_button = true;
   bool show_title_label = true;
-  if (panel_strip->type() == PanelStrip::IN_OVERFLOW) {
-    if (width() <= IconOnlyWidth()) {
-      show_close_button = false;
-      show_title_label = false;
-    }
-  }
 
   close_button_->SetVisible(show_close_button);
   title_label_->SetVisible(show_title_label);

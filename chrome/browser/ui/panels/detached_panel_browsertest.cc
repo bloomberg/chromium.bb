@@ -26,9 +26,6 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   EXPECT_TRUE(detached_strip->HasPanel(panel1));
   EXPECT_TRUE(detached_strip->HasPanel(panel2));
 
-  EXPECT_TRUE(panel1->draggable());
-  EXPECT_TRUE(panel2->draggable());
-
   EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel1->CanResizeByMouse());
   EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel2->CanResizeByMouse());
 

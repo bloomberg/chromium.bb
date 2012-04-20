@@ -28,7 +28,6 @@ PanelDragController::~PanelDragController() {
 void PanelDragController::StartDragging(Panel* panel,
                                         const gfx::Point& mouse_location) {
   DCHECK(!dragging_panel_);
-  DCHECK(panel->draggable());
 
   last_mouse_location_ = mouse_location;
   offset_from_mouse_location_on_drag_start_ =
@@ -56,7 +55,8 @@ void PanelDragController::Drag(const gfx::Point& mouse_location) {
       mouse_location, &target_panel_bounds);
   if (target_strip != current_strip) {
     // End the dragging in old strip.
-    current_strip->EndDraggingPanelWithinStrip(dragging_panel_, true);
+    current_strip->EndDraggingPanelWithinStrip(dragging_panel_,
+        true /*aborted*/);
 
     // Apply new panel position.
     dragging_panel_->SetPanelBounds(target_panel_bounds);
@@ -84,7 +84,8 @@ void PanelDragController::EndDragging(bool cancelled) {
   PanelStrip* current_strip = dragging_panel_->panel_strip();
   if (cancelled) {
     // Abort the drag in current strip.
-    current_strip->EndDraggingPanelWithinStrip(dragging_panel_, true);
+    current_strip->EndDraggingPanelWithinStrip(dragging_panel_,
+        true /*aborted*/);
 
     // Restore the dragging panel to its original strip if needed.
     // Note that the bounds of dragging panel is updated later by calling
@@ -113,7 +114,8 @@ void PanelDragController::EndDragging(bool cancelled) {
 
     // End the drag. This will cause the panel to be moved to its finalized
     // position.
-    current_strip->EndDraggingPanelWithinStrip(dragging_panel_, false);
+    current_strip->EndDraggingPanelWithinStrip(dragging_panel_,
+        false /*not aborted*/);
   }
 
   dragging_panel_ = NULL;
@@ -178,6 +180,9 @@ bool PanelDragController::CanDragToDetachedStrip(
   target_panel_bounds.set_origin(
       mouse_location.Subtract(offset_from_mouse_location_on_drag_start_));
 
+  // Panels in the detached strip are always at their full size.
+  target_panel_bounds.set_size(dragging_panel()->full_size());
+
   // The panel should be dragged up high enough to pass certain threshold.
   if (panel_manager_->docked_strip()->display_area().bottom() -
           target_panel_bounds.bottom() <
@@ -193,6 +198,13 @@ void PanelDragController::OnPanelClosed(Panel* panel) {
     return;
 
   // If the dragging panel is closed, abort the drag.
-  if (dragging_panel_ == panel)
-    EndDragging(false);
+  if (dragging_panel_ == panel) {
+    // The saved placement is no longer needed.
+    dragging_panel_original_strip_->DiscardSavedPanelPlacement();
+
+    // Clear the dragging state.
+    dragging_panel_->panel_strip()->ClearDraggingStateWhenPanelClosed();
+
+    dragging_panel_ = NULL;
+  }
 }

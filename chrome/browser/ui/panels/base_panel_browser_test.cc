@@ -284,12 +284,7 @@ void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   if (!panel_testing->IsAnimatingBounds())
     return;
   signal.Wait();
-  // TODO(dimich) This fires when animations are sequential, and the end of one
-  // starts another. In this case, since the Wait() does not exit the loop
-  // immediately, the next anumation may start before the Wait() actually exits.
-  // Either figure out the best way for tests to wait on 'end of animations' or
-  // remove this check.
-  // EXPECT_TRUE(!panel_testing->IsAnimatingBounds());
+  EXPECT_TRUE(!panel_testing->IsAnimatingBounds());
 }
 
 void BasePanelBrowserTest::WaitForLayoutModeChanged(
@@ -424,17 +419,6 @@ Panel* BasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
   // detached.
   panel->SetPanelBounds(bounds);
   WaitForBoundsAnimationFinished(panel);
-  return panel;
-}
-
-Panel* BasePanelBrowserTest::CreateOverflowPanel(const std::string& name,
-                                                 const gfx::Rect& bounds) {
-  // The overflow panel is always shown as inactive even though we pass
-  // SHOW_AS_ACTIVE.
-  CreatePanelParams params(name, bounds, SHOW_AS_ACTIVE);
-  params.expected_active_state = SHOW_AS_INACTIVE;
-  Panel* panel = CreatePanelWithParams(params);
-  WaitForLayoutModeChanged(panel, PanelStrip::IN_OVERFLOW);
   return panel;
 }
 

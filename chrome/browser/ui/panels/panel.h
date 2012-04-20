@@ -79,10 +79,6 @@ class Panel : public BrowserWindow,
 
   int TitleOnlyHeight() const;
 
-  // Returns the size of the panel when it is iconified, as shown on the
-  // overflow area.
-  gfx::Size IconOnlySize() const;
-
   // BrowserWindow overrides.
   virtual void Show() OVERRIDE;
   virtual void ShowInactive() OVERRIDE;
@@ -249,8 +245,6 @@ class Panel : public BrowserWindow,
 
   bool in_preview_mode() const { return in_preview_mode_; }
 
-  bool draggable() const;
-
   panel::Resizability CanResizeByMouse() const;
 
   AttentionMode attention_mode() const { return attention_mode_; }
@@ -258,9 +252,10 @@ class Panel : public BrowserWindow,
     attention_mode_ = attention_mode;
   }
 
-  // The restored size is the size of the panel when it is expanded.
-  gfx::Size restored_size() const { return restored_size_; }
-  void set_restored_size(const gfx::Size& size) { restored_size_ = size; }
+  // The full size is the size of the panel when it is detached or expanded
+  // in the docked strip and squeezing mode is not on.
+  gfx::Size full_size() const { return full_size_; }
+  void set_full_size(const gfx::Size& size) { full_size_ = size; }
 
   // Panel must be initialized to be "fully created" and ready for use.
   // Only called by PanelManager.
@@ -297,15 +292,11 @@ class Panel : public BrowserWindow,
   // enables the resize mouse cursors when mouse is hovering over the edges.
   void EnableResizeByMouse(bool enable);
 
-  // Newly created panels may be placed in a temporary layout until their
-  // final position is determined.
-  bool has_temporary_layout() const { return has_temporary_layout_; }
-  void set_has_temporary_layout(bool temporary) {
-    has_temporary_layout_ = temporary;
-  }
-
   // Changes the preferred size to acceptable based on min_size() and max_size()
   void ClampSize(gfx::Size* size) const;
+
+  // Called when the panel's active state changes.
+  void OnActiveStateChanged();
 
  protected:
   virtual void DestroyBrowser() OVERRIDE;
@@ -335,13 +326,9 @@ class Panel : public BrowserWindow,
 
   bool initialized_;
 
-  // Newly created panels may be placed in a temporary layout until their
-  // final position is determined.
-  bool has_temporary_layout_;
-
   // Stores the full size of the panel so we can restore it after it's
-  // been minimized.
-  gfx::Size restored_size_;
+  // been minimized or squeezed due to lack of space in the strip.
+  gfx::Size full_size_;
 
   // This is the minimum size that the panel can shrink to.
   gfx::Size min_size_;

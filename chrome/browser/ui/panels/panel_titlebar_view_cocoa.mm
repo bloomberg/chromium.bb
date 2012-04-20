@@ -401,13 +401,11 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)mouseDown:(NSEvent*)event {
-  if ([controller_ isDraggable]) {
-    dragState_ = PANEL_DRAG_CAN_START;
-    NSWindow* window = [self window];
-    NSPoint mouseLocationInWindow = [event locationInWindow];
-    dragStartLocation_ = [window convertBaseToScreen:mouseLocationInWindow];
-    dragStartYOffset_ = NSMaxY([window frame]) - dragStartLocation_.y;
-  }
+  dragState_ = PANEL_DRAG_CAN_START;
+  NSWindow* window = [self window];
+  NSPoint mouseLocationInWindow = [event locationInWindow];
+  dragStartLocation_ = [window convertBaseToScreen:mouseLocationInWindow];
+  dragStartYOffset_ = NSMaxY([window frame]) - dragStartLocation_.y;
 }
 
 - (void)mouseUp:(NSEvent*)event {

@@ -2559,10 +2559,6 @@ BrowserWindowGtk::TitleDecoration BrowserWindowGtk::GetWindowTitle(
   return PLAIN_TEXT;
 }
 
-bool BrowserWindowGtk::ShouldShowCloseButton() const {
-  return true;
-}
-
 // static
 bool BrowserWindowGtk::GetCustomFramePrefDefault() {
   // Ideally, we'd use the custom frame by default and just fall back on using

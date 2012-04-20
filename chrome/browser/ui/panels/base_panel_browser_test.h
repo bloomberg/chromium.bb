@@ -80,9 +80,6 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
 
   Panel* CreateDockedPanel(const std::string& name, const gfx::Rect& bounds);
   Panel* CreateDetachedPanel(const std::string& name, const gfx::Rect& bounds);
-  // The caller should have already created enough docked panels to trigger
-  // overflow.
-  Panel* CreateOverflowPanel(const std::string& name, const gfx::Rect& bounds);
 
   void WaitForPanelAdded(Panel* panel);
   void WaitForPanelRemoved(Panel* panel);

@@ -709,13 +709,9 @@ void BrowserTitlebar::UpdateTitlebarAlignment() {
       gtk_widget_show(top_padding_right_);
   }
   if (close_button_.get()) {
-    if (browser_window_->ShouldShowCloseButton()) {
-      gtk_widget_set_size_request(close_button_->widget(),
-                                  close_button_req.width,
-                                  close_button_req.height);
-    } else {
-      gtk_widget_hide(close_button_->widget());
-    }
+    gtk_widget_set_size_request(close_button_->widget(),
+                                close_button_req.width,
+                                close_button_req.height);
   }
   if (minimize_button_.get()) {
     gtk_widget_set_size_request(minimize_button_->widget(),

@@ -101,7 +101,6 @@ class PanelBrowserWindowCocoa;
 
 // Used by PanelTitlebarViewCocoa when user rearranges the Panels by dragging.
 // |mouseLocation| is in Cocoa's screen coordinates.
-- (BOOL)isDraggable;
 - (void)startDrag:(NSPoint)mouseLocation;
 - (void)endDrag:(BOOL)cancelled;
 - (void)drag:(NSPoint)mouseLocation;

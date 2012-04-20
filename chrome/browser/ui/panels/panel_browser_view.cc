@@ -216,6 +216,7 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
       chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
       content::Source<Panel>(panel()),
       content::NotificationService::NoDetails());
+  panel()->OnActiveStateChanged();
 }
 
 bool PanelBrowserView::AcceleratorPressed(
@@ -488,9 +489,6 @@ bool PanelBrowserView::OnTitlebarMouseDragged(
     const gfx::Point& mouse_location) {
   if (!mouse_pressed_)
     return false;
-
-  if (!panel_->draggable())
-    return true;
 
   int delta_x = mouse_location.x() - last_mouse_location_.x();
   int delta_y = mouse_location.y() - last_mouse_location_.y();

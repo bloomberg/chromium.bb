@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/panels/panel.h"
 
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -33,8 +35,7 @@ Panel::Panel(Browser* browser, const gfx::Size& requested_size)
     : browser_(browser),
       panel_strip_(NULL),
       initialized_(false),
-      has_temporary_layout_(false),
-      restored_size_(requested_size),
+      full_size_(requested_size),
       auto_resizable_(false),
       always_on_top_(false),
       in_preview_mode_(false),
@@ -67,10 +68,6 @@ PanelManager* Panel::manager() const {
   return PanelManager::GetInstance();
 }
 
-bool Panel::draggable() const {
-  return panel_strip_ && panel_strip_->CanDragPanel(this);
-}
-
 panel::Resizability Panel::CanResizeByMouse() const {
   if (!panel_strip_)
     return panel::NOT_RESIZABLE;
@@ -78,15 +75,7 @@ panel::Resizability Panel::CanResizeByMouse() const {
   return panel_strip_->GetPanelResizability(this);
 }
 
-// TODO(jennb): do not update restored_size here as there's no knowledge
-// at this point whether the bounds change is due to the content window
-// being resized vs a change in current display bounds, e.g. from overflow
-// size change. Change this when refactoring panel resize logic.
 void Panel::SetPanelBounds(const gfx::Rect& bounds) {
-  if (panel_strip_ && panel_strip_->type() == PanelStrip::DOCKED &&
-      expansion_state_ == Panel::EXPANDED)
-    restored_size_ = bounds.size();
-
   native_panel_->SetPanelBounds(bounds);
 
   content::NotificationService::current()->Notify(
@@ -96,10 +85,6 @@ void Panel::SetPanelBounds(const gfx::Rect& bounds) {
 }
 
 void Panel::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
-  if (panel_strip_ && panel_strip_->type() == PanelStrip::DOCKED &&
-      expansion_state_ == Panel::EXPANDED)
-    restored_size_ = bounds.size();
-
   native_panel_->SetPanelBoundsInstantly(bounds);
 
   content::NotificationService::current()->Notify(
@@ -126,7 +111,7 @@ void Panel::SetAutoResizable(bool resizable) {
       // NULL might be returned if the tab has not been added.
       RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
       if (render_view_host)
-        render_view_host->DisableAutoResize(restored_size_);
+        render_view_host->DisableAutoResize(full_size_);
     }
   }
 }
@@ -220,10 +205,7 @@ void Panel::Show() {
   if (manager()->display_settings_provider()->is_full_screen() || !panel_strip_)
     return;
 
-  if (panel_strip_->CanShowPanelAsActive(this))
     native_panel_->ShowPanel();
-  else
-    ShowInactive();
 }
 
 void Panel::ShowInactive() {
@@ -325,9 +307,9 @@ void Panel::SetStarredState(bool is_starred) {
 
 gfx::Rect Panel::GetRestoredBounds() const {
   gfx::Rect bounds = native_panel_->GetPanelBounds();
-  bounds.set_y(bounds.bottom() - restored_size_.height());
-  bounds.set_x(bounds.right() - restored_size_.width());
-  bounds.set_size(restored_size_);
+  bounds.set_y(bounds.bottom() - full_size_.height());
+  bounds.set_x(bounds.right() - full_size_.width());
+  bounds.set_size(full_size_);
   return bounds;
 }
 
@@ -337,10 +319,6 @@ gfx::Rect Panel::GetBounds() const {
 
 int Panel::TitleOnlyHeight() const {
   return native_panel_->TitleOnlyHeight();
-}
-
-gfx::Size Panel::IconOnlySize() const {
-  return native_panel_->IconOnlySize();
 }
 
 void Panel::EnsureFullyVisible() {
@@ -708,8 +686,13 @@ void Panel::EnableWebContentsAutoResize(WebContents* web_contents) {
 void Panel::Observe(int type,
                     const content::NotificationSource& source,
                     const content::NotificationDetails& details) {
-  DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_SWAPPED);
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_SWAPPED, type);
   ConfigureAutoResize(content::Source<WebContents>(source).ptr());
+}
+
+void Panel::OnActiveStateChanged() {
+  if (panel_strip_)
+    panel_strip_->OnPanelActiveStateChanged(this);
 }
 
 void Panel::ConfigureAutoResize(WebContents* web_contents) {

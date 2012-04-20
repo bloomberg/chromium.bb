@@ -80,8 +80,8 @@ void DetachedPanelStrip::ResizePanelWindow(
   panel->ClampSize(&new_size);
 
   // Update restored size.
-  if (new_size != panel->restored_size())
-    panel->set_restored_size(new_size);
+  if (new_size != panel->full_size())
+    panel->set_full_size(new_size);
 
   gfx::Rect bounds = panel->GetBounds();
 
@@ -116,11 +116,6 @@ bool DetachedPanelStrip::IsPanelMinimized(const Panel* panel) const {
   return false;
 }
 
-bool DetachedPanelStrip::CanShowPanelAsActive(const Panel* panel) const {
-  // All detached panels can be shown as active.
-  return true;
-}
-
 void DetachedPanelStrip::SavePanelPlacement(Panel* panel) {
   DCHECK(!saved_panel_placement_.panel);
   saved_panel_placement_.panel = panel;
@@ -142,11 +137,6 @@ void DetachedPanelStrip::DiscardSavedPanelPlacement() {
   saved_panel_placement_.panel = NULL;
 }
 
-bool DetachedPanelStrip::CanDragPanel(const Panel* panel) const {
-  // All detached panels are draggable.
-  return true;
-}
-
 void DetachedPanelStrip::StartDraggingPanelWithinStrip(Panel* panel) {
   DCHECK(HasPanel(panel));
 }
@@ -163,6 +153,10 @@ void DetachedPanelStrip::EndDraggingPanelWithinStrip(Panel* panel,
                                                      bool aborted) {
 }
 
+void DetachedPanelStrip::ClearDraggingStateWhenPanelClosed() {
+}
+
+
 panel::Resizability DetachedPanelStrip::GetPanelResizability(
     const Panel* panel) const {
   return panel::RESIZABLE_ALL_SIDES;
@@ -171,9 +165,10 @@ panel::Resizability DetachedPanelStrip::GetPanelResizability(
 void DetachedPanelStrip::OnPanelResizedByMouse(Panel* panel,
                                                const gfx::Rect& new_bounds) {
   DCHECK_EQ(this, panel->panel_strip());
+  panel->set_full_size(new_bounds.size());
+
   panel->SetPanelBoundsInstantly(new_bounds);
 }
-
 
 bool DetachedPanelStrip::HasPanel(Panel* panel) const {
   return panels_.find(panel) != panels_.end();
@@ -186,3 +181,7 @@ void DetachedPanelStrip::UpdatePanelOnStripChange(Panel* panel) {
   panel->SetAlwaysOnTop(false);
   panel->EnableResizeByMouse(true);
 }
+
+void DetachedPanelStrip::OnPanelActiveStateChanged(Panel* panel) {
+}
+
