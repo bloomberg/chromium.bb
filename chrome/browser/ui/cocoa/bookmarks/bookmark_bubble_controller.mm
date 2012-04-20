@@ -22,44 +22,6 @@
 
 using content::UserMetricsAction;
 
-
-// Simple class to watch for tab creation/destruction and close the bubble.
-// Bridge between Chrome-style notifications and ObjC-style notifications.
-class BookmarkBubbleNotificationBridge : public content::NotificationObserver {
- public:
-  BookmarkBubbleNotificationBridge(BookmarkBubbleController* controller,
-                                   SEL selector);
-  virtual ~BookmarkBubbleNotificationBridge() {}
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details);
- private:
-  content::NotificationRegistrar registrar_;
-  BookmarkBubbleController* controller_;  // weak; owns us.
-  SEL selector_;   // SEL sent to controller_ on notification.
-};
-
-BookmarkBubbleNotificationBridge::BookmarkBubbleNotificationBridge(
-  BookmarkBubbleController* controller, SEL selector)
-    : controller_(controller), selector_(selector) {
-  // registrar_ will automatically RemoveAll() when destroyed so we
-  // don't need to do so explicitly.
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 content::NotificationService::AllSources());
-}
-
-// At this time all notifications instigate the same behavior (go
-// away) so we don't bother checking which notification came in.
-void BookmarkBubbleNotificationBridge::Observe(
-  int type,
-  const content::NotificationSource& source,
-  const content::NotificationDetails& details) {
-  [controller_ performSelector:selector_ withObject:controller_];
-}
-
-
 // An object to represent the ChooseAnotherFolder item in the pop up.
 @interface ChooseAnotherFolder : NSObject
 @end
@@ -167,7 +129,6 @@ void BookmarkBubbleNotificationBridge::Observe(
 - (void)windowWillClose:(NSNotification*)notification {
   // We caught a close so we don't need to watch for the parent closing.
   bookmark_observer_.reset(NULL);
-  chrome_observer_.reset(NULL);
   [self stopPulsingBookmarkButton];
   [super windowWillClose:notification];
 }
@@ -213,8 +174,6 @@ void BookmarkBubbleNotificationBridge::Observe(
                                node_, model_,
                                self,
                                @selector(dismissWithoutEditing:)));
-  chrome_observer_.reset(new BookmarkBubbleNotificationBridge(
-                             self, @selector(dismissWithoutEditing:)));
 
   // Pulse something interesting on the bookmark bar.
   [self startPulsingBookmarkButton:node_];

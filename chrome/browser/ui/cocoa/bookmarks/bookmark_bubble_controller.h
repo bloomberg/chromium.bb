@@ -9,11 +9,9 @@
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 
-class BookmarkBubbleNotificationBridge;
 class BookmarkModel;
 class BookmarkNode;
 @class BookmarkBubbleController;
-
 
 // Controller for the bookmark bubble.  The bookmark bubble is a
 // bubble that pops up when clicking on the STAR next to the URL to
@@ -32,9 +30,6 @@ class BookmarkNode;
 
   // Ping me when the bookmark model changes out from under us.
   scoped_ptr<BookmarkModelObserverForCocoa> bookmark_observer_;
-
-  // Ping me when other Chrome things change out from under us.
-  scoped_ptr<BookmarkBubbleNotificationBridge> chrome_observer_;
 
   IBOutlet NSTextField* bigTitle_;   // "Bookmark" or "Bookmark Added!"
   IBOutlet NSTextField* nameTextField_;

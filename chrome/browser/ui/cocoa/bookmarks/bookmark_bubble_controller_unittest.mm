@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -454,36 +454,6 @@ TEST_F(BookmarkBubbleControllerTest, TestMenuIndentation) {
         << "Unexpected indent for menu item #" << itemNo;
   }
 }
-
-// Confirm bubble goes away when a new tab is created.
-TEST_F(BookmarkBubbleControllerTest, BubbleGoesAwayOnNewTab) {
-
-  BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
-                                           0,
-                                           ASCIIToUTF16("Bookie markie title"),
-                                           GURL("http://www.google.com"));
-  EXPECT_EQ(edits_, 0);
-
-  BookmarkBubbleController* controller = ControllerForNode(node);
-  EXPECT_TRUE(controller);
-  EXPECT_FALSE(IsWindowClosing());
-
-  // We can't actually create a new tab here, e.g.
-  //   browser()->AddTabWithURL(...);
-  // Many of our browser objects (Browser, Profile, RequestContext)
-  // are "just enough" to run tests without being complete.  Instead
-  // we fake the notification that would be triggered by a tab
-  // creation. See WebContents::NotifyConnected().
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
-      content::Source<WebContents>(NULL),
-      content::NotificationService::NoDetails());
-
-  // Confirm bubble going bye-bye.
-  EXPECT_TRUE(IsWindowClosing());
-}
-
 
 }  // namespace
 
