@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 
@@ -120,7 +121,13 @@ class CloudPolicyController : public CloudPolicyDataStore::Observer {
   void SetState(ControllerState new_state);
 
   // Computes the policy refresh delay to use.
-  int64 GetRefreshDelay();
+  base::TimeDelta GetRefreshDelay();
+
+  // Schedules a DoWork() invocation |delay| time units later.
+  void ScheduleDelayedWorkTask(const base::TimeDelta& delay);
+
+  // Gets the last refresh time, defaulting to |now| if there is none.
+  base::Time GetLastRefreshTime(const base::Time& now);
 
   DeviceManagementService* service_;
   CloudPolicyCacheBase* cache_;
