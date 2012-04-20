@@ -6,6 +6,9 @@
 
 namespace switches {
 
+// Enable support for touch events.
+const char kEnableTouchEvents[]             = "enable-touch-events";
+
 // The language file that we want to try to open. Of the form
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[]                          = "lang";

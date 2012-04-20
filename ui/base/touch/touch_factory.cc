@@ -10,9 +10,11 @@
 #include <X11/extensions/XIproto.h>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/base/x/x11_util.h"
 
 namespace {
@@ -84,6 +86,7 @@ TouchFactory* TouchFactory::GetInstance() {
 
 TouchFactory::TouchFactory()
     : is_cursor_visible_(true),
+      touch_events_allowed_(false),
       cursor_timer_(),
       pointer_device_lookup_(),
       touch_device_available_(false),
@@ -122,6 +125,12 @@ TouchFactory::TouchFactory()
   evmask.mask_len = sizeof(mask);
   evmask.mask = mask;
   XISelectEvents(display, ui::GetX11RootWindow(), &evmask, 1);
+
+  CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(switches::kTouchOptimizedUI) ||
+      cmdline->HasSwitch(switches::kEnableTouchEvents)) {
+    touch_events_allowed_ = true;
+  }
 }
 
 TouchFactory::~TouchFactory() {
@@ -215,7 +224,7 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
   if (event->evtype == XI_TouchBegin ||
       event->evtype == XI_TouchUpdate ||
       event->evtype == XI_TouchEnd) {
-    return touch_device_lookup_[xiev->sourceid];
+    return touch_events_allowed_ && IsTouchDevice(xiev->deviceid);
   }
 #endif
   if (event->evtype != XI_ButtonPress &&
@@ -223,7 +232,10 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
       event->evtype != XI_Motion)
     return true;
 
-  return pointer_device_lookup_[xiev->deviceid];
+  if (!pointer_device_lookup_[xiev->deviceid])
+    return false;
+
+  return IsTouchDevice(xiev->deviceid) ? touch_events_allowed_ : true;
 }
 
 void TouchFactory::SetupXI2ForXWindow(Window window) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,6 +154,10 @@ class UI_EXPORT TouchFactory {
   // idle for a while. Once there is some event from a mouse device, the cursor
   // is immediately displayed.
   bool is_cursor_visible_;
+
+  // Touch events are currently disabled by default. It can be turned on using
+  // |kEnableTouchEvents| switch.
+  bool touch_events_allowed_;
 
   // The cursor is hidden if it is idle for a certain amount time. This timer
   // is used to keep track of the idleness.

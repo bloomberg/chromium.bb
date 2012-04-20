@@ -5048,6 +5048,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOUCH_OPTIMIZED_UI_DESCRIPTION" desc="Description of the touch-optimized UI flag.">
         Enables experimental layout refinements to improve user experience with touch screens.
       </message>
+      <message name="IDS_ENABLE_TOUCH_EVENTS_NAME" desc="Title of the enable touch-events flag." >
+        Enable touch events
+      </message>
+      <message name="IDS_ENABLE_TOUCH_EVENTS_DESCRIPTION" desc="Description of the enable touch-events flag.">
+        Enables experimental support for touch screens.
+      </message>
       <message name="IDS_FLAGS_CONFLICTS_CHECK_NAME" desc="Title of the run conflicts check flag">
         Check for known conflicts with 3rd party modules.
       </message>

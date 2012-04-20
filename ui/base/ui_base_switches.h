@@ -13,6 +13,7 @@
 
 namespace switches {
 
+UI_EXPORT extern const char kEnableTouchEvents[];
 UI_EXPORT extern const char kLang[];
 UI_EXPORT extern const char kLocalePak[];
 UI_EXPORT extern const char kNoMessageBox[];

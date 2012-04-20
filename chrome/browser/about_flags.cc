@@ -620,6 +620,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kTouchOptimizedUI)
   },
+  {
+    "enable-touch-events",
+    IDS_ENABLE_TOUCH_EVENTS_NAME,
+    IDS_ENABLE_TOUCH_EVENTS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableTouchEvents)
+  },
 #if defined(OS_CHROMEOS)
   {
     "no-discard-tabs",

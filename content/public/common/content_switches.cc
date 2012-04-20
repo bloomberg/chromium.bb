@@ -339,9 +339,6 @@ const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
-// Enable support for JavaScript touch events.
-const char kEnableTouchEvents[]             = "enable-touch-events";
-
 // Enables support for video tracks. Current implementation is
 // incomplete and this flag is used for development and testing.
 const char kEnableVideoTrack[]              = "enable-video-track";

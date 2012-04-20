@@ -81,6 +81,7 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/compositor/compositor_switches.h"
 #include "ui/gfx/gl/gl_switches.h"
 
@@ -1053,6 +1054,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       switches::kEnableSensors,
       switches::kEnableSmoothScrolling,
       switches::kEnableThreadedCompositing,
+      switches::kEnableTouchEvents,
       switches::kDisableThreadedCompositing,
       switches::kForceCompositingMode,
       switches::kLoginProfile,
