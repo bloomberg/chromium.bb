@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,26 +165,6 @@ void GetWindowsMediaDirectory(std::set<FilePath>* plugin_dirs) {
   FilePath path;
   if (GetInstalledPath(kRegistryWindowsMedia, &path))
     plugin_dirs->insert(path);
-
-  // If the Windows Media Player Firefox plugin is installed before Firefox,
-  // the plugin will get written under PFiles\Plugins on one the drives
-  // (usually, but not always, the last letter).
-  int size = GetLogicalDriveStrings(0, NULL);
-  if (size) {
-    scoped_array<wchar_t> strings(new wchar_t[size]);
-    if (GetLogicalDriveStrings(size, strings.get())) {
-      wchar_t* next_drive = strings.get();
-      while (*next_drive) {
-        if (GetDriveType(next_drive) == DRIVE_FIXED) {
-          FilePath pfiles(next_drive);
-          pfiles = pfiles.Append(L"PFiles\\Plugins");
-          if (file_util::PathExists(pfiles))
-            plugin_dirs->insert(pfiles);
-        }
-        next_drive = &next_drive[wcslen(next_drive) + 1];
-      }
-    }
-  }
 }
 
 // Hardcoded logic to detect Java plugin location.
