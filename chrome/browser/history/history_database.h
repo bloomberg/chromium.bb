@@ -154,6 +154,7 @@ class HistoryDatabase : public DownloadDatabase,
 #if defined(OS_ANDROID)
   // AndroidProviderBackend uses the |db_|.
   friend class AndroidProviderBackend;
+  FRIEND_TEST_ALL_PREFIXES(AndroidURLsMigrationTest, MigrateToVersion22);
 #endif
   friend class InMemoryURLIndexTest;
   FRIEND_TEST_ALL_PREFIXES(IconMappingMigrationTest, TestIconMappingMigration);
