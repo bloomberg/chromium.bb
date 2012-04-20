@@ -389,7 +389,8 @@ TEST_F(SyncNewNonFrontendDataTypeControllerTest, AbortDuringAssociation) {
 // Start the DTC while the backend tasks are blocked. Then stop the DTC before
 // the backend tasks get a chance to run. The DTC should have no interaction
 // with the profile sync factory or profile sync service once stopped.
-TEST_F(SyncNewNonFrontendDataTypeControllerTest, StartAfterSyncShutdown) {
+// This test is flaky under memory tools, see http://crbug.com/117796
+TEST_F(SyncNewNonFrontendDataTypeControllerTest, FLAKY_StartAfterSyncShutdown) {
   new_non_frontend_dtc_->BlockBackendTasks();
 
   SetStartExpectations();
