@@ -668,6 +668,50 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkManagerProperties) {
   delete watcher;
 }
 
+TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkServiceProperties) {
+  const dbus::ObjectPath path("/path");
+  const std::string key = "key";
+  const int kValue = 42;
+  const base::FundamentalValue value(kValue);
+  // Start monitoring.
+  FlimflamClientHelper::PropertyChangedHandler handler;
+  EXPECT_CALL(*mock_service_client_, SetPropertyChangedHandler(path, _))
+      .WillOnce(SaveArg<1>(&handler));
+  NetworkPropertiesWatcherCallback callback =
+      MockNetworkPropertiesWatcherCallback::CreateCallback(path.value().c_str(),
+                                                           key, value);
+  CrosNetworkWatcher* watcher = CrosMonitorNetworkServiceProperties(
+      callback, path.value().c_str());
+  // Call callback.
+  handler.Run(key, value);
+  // Stop monitoring.
+  EXPECT_CALL(*mock_service_client_,
+              ResetPropertyChangedHandler(path)).Times(1);
+  delete watcher;
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkDeviceProperties) {
+  const dbus::ObjectPath path("/path");
+  const std::string key = "key";
+  const int kValue = 42;
+  const base::FundamentalValue value(kValue);
+  // Start monitoring.
+  FlimflamClientHelper::PropertyChangedHandler handler;
+  EXPECT_CALL(*mock_device_client_, SetPropertyChangedHandler(path, _))
+      .WillOnce(SaveArg<1>(&handler));
+  NetworkPropertiesWatcherCallback callback =
+      MockNetworkPropertiesWatcherCallback::CreateCallback(path.value().c_str(),
+                                                           key, value);
+  CrosNetworkWatcher* watcher = CrosMonitorNetworkDeviceProperties(
+      callback, path.value().c_str());
+  // Call callback.
+  handler.Run(key, value);
+  // Stop monitoring.
+  EXPECT_CALL(*mock_device_client_,
+              ResetPropertyChangedHandler(path)).Times(1);
+  delete watcher;
+}
+
 TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkManagerProperties) {
   const std::string key1 = "key1";
   const std::string value1 = "value1";

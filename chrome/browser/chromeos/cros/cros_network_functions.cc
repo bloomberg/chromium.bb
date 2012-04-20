@@ -76,6 +76,25 @@ class CrosNetworkServicePropertiesWatcher : public CrosNetworkWatcher {
   NetworkPropertiesMonitor monitor_;
 };
 
+// Class to watch network service's properties without Libcros.
+class NetworkServicePropertiesWatcher : public CrosNetworkWatcher {
+ public:
+  NetworkServicePropertiesWatcher(
+      const NetworkPropertiesWatcherCallback& callback,
+      const std::string& service_path) : service_path_(service_path) {
+    DBusThreadManager::Get()->GetFlimflamServiceClient()->
+        SetPropertyChangedHandler(dbus::ObjectPath(service_path),
+                                  base::Bind(callback, service_path));
+  }
+  virtual ~NetworkServicePropertiesWatcher() {
+    DBusThreadManager::Get()->GetFlimflamServiceClient()->
+        ResetPropertyChangedHandler(dbus::ObjectPath(service_path_));
+  }
+
+ private:
+  std::string service_path_;
+};
+
 // Class to watch network device's properties with Libcros.
 class CrosNetworkDevicePropertiesWatcher : public CrosNetworkWatcher {
  public:
@@ -92,6 +111,25 @@ class CrosNetworkDevicePropertiesWatcher : public CrosNetworkWatcher {
  private:
   NetworkPropertiesWatcherCallback callback_;
   NetworkPropertiesMonitor monitor_;
+};
+
+// Class to watch network device's properties without Libcros.
+class NetworkDevicePropertiesWatcher : public CrosNetworkWatcher {
+ public:
+  NetworkDevicePropertiesWatcher(
+      const NetworkPropertiesWatcherCallback& callback,
+      const std::string& device_path) : device_path_(device_path) {
+    DBusThreadManager::Get()->GetFlimflamDeviceClient()->
+        SetPropertyChangedHandler(dbus::ObjectPath(device_path),
+                                  base::Bind(callback, device_path));
+  }
+  virtual ~NetworkDevicePropertiesWatcher() {
+    DBusThreadManager::Get()->GetFlimflamDeviceClient()->
+        ResetPropertyChangedHandler(dbus::ObjectPath(device_path_));
+  }
+
+ private:
+  std::string device_path_;
 };
 
 // Class to watch data plan update with Libcros.
@@ -243,13 +281,19 @@ CrosNetworkWatcher* CrosMonitorNetworkManagerProperties(
 CrosNetworkWatcher* CrosMonitorNetworkServiceProperties(
     const NetworkPropertiesWatcherCallback& callback,
     const std::string& service_path) {
-  return new CrosNetworkServicePropertiesWatcher(callback, service_path);
+  if (g_libcros_network_functions_enabled)
+    return new CrosNetworkServicePropertiesWatcher(callback, service_path);
+  else
+    return new NetworkServicePropertiesWatcher(callback, service_path);
 }
 
 CrosNetworkWatcher* CrosMonitorNetworkDeviceProperties(
     const NetworkPropertiesWatcherCallback& callback,
     const std::string& device_path) {
-  return new CrosNetworkDevicePropertiesWatcher(callback, device_path);
+  if (g_libcros_network_functions_enabled)
+    return new CrosNetworkDevicePropertiesWatcher(callback, device_path);
+  else
+    return new NetworkDevicePropertiesWatcher(callback, device_path);
 }
 
 CrosNetworkWatcher* CrosMonitorCellularDataPlan(
