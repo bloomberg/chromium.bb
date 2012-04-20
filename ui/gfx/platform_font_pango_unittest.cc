@@ -10,9 +10,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/pango_util.h"
 
+// Fails on Chrome OS: http://crbug.com/124451
+#if defined(OS_CHROMEOS)
+#define MAYBE_FamilyList FAILS_FamilyList
+#else
+#define MAYBE_FamilyList FamilyList
+#endif
+
 // Test that PlatformFontPango is able to cope with PangoFontDescriptions
 // containing multiple font families.  The first family should be preferred.
-TEST(PlatformFontPangoTest, FamilyList) {
+TEST(PlatformFontPangoTest, MAYBE_FamilyList) {
   PangoFontDescription* desc =
       pango_font_description_from_string("Arial,Times New Roman, 13px");
   scoped_refptr<gfx::PlatformFontPango> font(new gfx::PlatformFontPango(desc));
