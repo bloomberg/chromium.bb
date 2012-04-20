@@ -20,29 +20,9 @@ if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']
 
-# This duplicates the library list in src/trusted/service_runtime/build.scons.
-# We would not have to do this if we could get Scons to track dependencies
-# between libraries.
 runner = trusted_env.ComponentProgram(
     'crash_filter_test', ['crash_filter_test.c'],
-    EXTRA_LIBS=['sel',
-                'sel_debug_dummy',
-                'manifest_proxy',
-                'simple_service',
-                'thread_interface',
-                'gio_wrapped_desc',
-                'nonnacl_srpc',
-                'nrd_xfer',
-                'nacl_perf_counter',
-                'nacl_base',
-                'imc',
-                'container',
-                'nacl_fault_inject',
-                'nacl_interval',
-                'platform',
-                'platform_qual_lib',
-                'gio',
-                ])
+    EXTRA_LIBS=['sel', 'sel_debug_dummy'])
 
 untrusted_crash_nexe = env.File('${STAGING_DIR}/crash_test${PROGSUFFIX}')
 trusted_crash_nexe = env.File('${STAGING_DIR}/crash_in_syscall${PROGSUFFIX}')

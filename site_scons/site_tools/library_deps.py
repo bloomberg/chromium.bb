@@ -4,34 +4,40 @@
 
 """Simple harness for defining library dependencies for scons files."""
 
+
 # The following is a map from a library, to the corresponding
 # list of dependent libraries that must be included after that library, in
 # the list of libraries.
-# Note: These are default rules that are used if platform specific rules are
-# not specified below in PLATFORM_LIBRARY_DEPENDENCIES.
 LIBRARY_DEPENDENCIES_DEFAULT = {
     'platform': [
         'gio',
         ],
+    'sel': [
+        'manifest_proxy',
+        'simple_service',
+        'thread_interface',
+        'gio_wrapped_desc',
+        'nonnacl_srpc',
+        'nrd_xfer',
+        'nacl_perf_counter',
+        'nacl_base',
+        'imc',
+        'container',
+        'nacl_fault_inject',
+        'nacl_interval',
+        'platform',
+        'platform_qual_lib',
+        'gio',
+        ],
     }
 
-def _AddDefaultLibraryDependencies(dependencies):
-  """ Adds default library dependencies to library dependencies.
-
-  Takes the contents of the platform-specific library dependencies, and
-  adds default dependencies if needed.
-  """
-  for key in LIBRARY_DEPENDENCIES_DEFAULT:
-    if key not in dependencies:
-      dependencies[key] = LIBRARY_DEPENDENCIES_DEFAULT[key]
-  return dependencies
 
 # Platform specific library dependencies. Mapping from a platform,
 # to a map from a library, to the corresponding list of dependendent
 # libraries that must be included after that library, in the list
 # of libraries.
 PLATFORM_LIBRARY_DEPENDENCIES = {
-    'x86-32': _AddDefaultLibraryDependencies({
+    'x86-32': {
         'nc_decoder_x86_32': [
             'ncval_base_x86_32',
             'nc_opcode_modeling_x86_32',
@@ -84,8 +90,8 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'sel': [
             'ncvalidate_x86_32',
             ],
-        }),
-    'x86-64': _AddDefaultLibraryDependencies({
+        },
+    'x86-64': {
         'nc_decoder_x86_64': [
             'ncval_base_x86_64',
             'nc_opcode_modeling_x86_64',
@@ -138,21 +144,22 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
         'sel': [
             'ncvalidate_x86_64',
             ],
-        }),
-    'arm': _AddDefaultLibraryDependencies({
+        },
+    'arm': {
         'ncvalidate_arm_v2': [
             'arm_validator_core',
             ],
         'sel': [
             'ncvalidate_arm_v2',
             ],
-        }),
-    'arm-thumb2': _AddDefaultLibraryDependencies({
+        },
+    'arm-thumb2': {
         'ncvalidate_arm_v2': [
             'arm_validator_core',
             ],
-        }),
+        },
     }
+
 
 def AddLibDeps(platform, libraries):
   """ Adds dependent libraries to list of libraries.
@@ -166,47 +173,28 @@ def AddLibDeps(platform, libraries):
   Note: Keeps libraries (in same order) as given
   in the argument list. This includes duplicates if specified.
   """
-  if not libraries: return []
-
   visited = set()                    # Nodes already visited
   closure = []                       # Collected closure
-  if platform in PLATFORM_LIBRARY_DEPENDENCIES:
-    # Use platform specific library dependencies.
-    dependencies = PLATFORM_LIBRARY_DEPENDENCIES[platform]
-  else:
-    # No specific library dependencies defined, use default.
-    dependencies = LIBRARY_DEPENDENCIES_DEFAULT
 
-  # Add dependencies of each library to the closure, then add the library to
-  # the closure.
-  for lib in reversed(libraries):
-    # Be sure to remove the library if it is already there, so that it will be
-    # added again.
-    if lib in visited: visited.remove(lib)
-    to_visit = [lib]                 # Nodes needing dependencies added.
-    expanding = []                   # libraries with expanded dependencies,
-                                     # but not yet added to the closure.
-    while to_visit:
-      lib = to_visit.pop()
-      if lib in visited:
-        if expanding and lib is expanding[-1]:
-          # Second visit, so we know that dependencies have been added.
-          # It is now safe to add lib.
-          closure.append(lib)
-          expanding.pop()
-      else:
-        visited.add(lib)
-        if lib in dependencies:
-          # Must process library dependencies first.
-          # Be sure to add library to list of nodes to visit,
-          # so that we can add it to the closure once all
-          # dependencies have been added.
-          to_visit.append(lib)
-          for dep in dependencies[lib]:
-            to_visit.append(dep)
-          expanding.append(lib)
-        else:
-          # No dependent library, just add.
-          closure.append(lib)
+  # If library A depends on library B, B must appear in the link line
+  # after A.  This is why we reverse the list and reverse it back
+  # again later.
+  def VisitList(libraries):
+    for library in reversed(libraries):
+      if library not in visited:
+        VisitLibrary(library)
+
+  def VisitLibrary(library):
+    visited.add(library)
+    VisitList(LIBRARY_DEPENDENCIES_DEFAULT.get(library, []))
+    VisitList(PLATFORM_LIBRARY_DEPENDENCIES.get(platform, {}).get(library, []))
+    closure.append(library)
+
+  # Ideally we would just do "VisitList(libraries)" here, but some
+  # PPAPI tests (specifically, tests/ppapi_gles_book) list "ppapi_cpp"
+  # twice in the link line, and we need to maintain these duplicates.
+  for library in reversed(libraries):
+    VisitLibrary(library)
+
   closure.reverse()
   return closure

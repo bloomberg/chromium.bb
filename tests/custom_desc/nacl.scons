@@ -9,29 +9,9 @@ if 'TRUSTED_ENV' not in env:
   Return()
 trusted_env = env['TRUSTED_ENV']
 
-# This duplicates the library list in src/trusted/service_runtime/build.scons.
-# We would not have to do this if we could get Scons to track dependencies
-# between libraries.
 test_host = trusted_env.ComponentProgram(
     'desc_test_host', ['desc_test_host.c'],
-    EXTRA_LIBS=['sel',
-                'nacl_interval',
-                'sel_debug_dummy',
-                'manifest_proxy',
-                'simple_service',
-                'thread_interface',
-                'gio_wrapped_desc',
-                'nonnacl_srpc',
-                'nrd_xfer',
-                'nacl_perf_counter',
-                'nacl_base',
-                'imc',
-                'container',
-                'nacl_fault_inject',
-                'platform',
-                'platform_qual_lib',
-                'gio',
-                ])
+    EXTRA_LIBS=['sel', 'sel_debug_dummy'])
 
 test_guest = env.ComponentProgram(
     'desc_test_guest', ['desc_test_guest.c'],
