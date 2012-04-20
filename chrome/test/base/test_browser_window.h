@@ -135,7 +135,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ShowAvatarBubbleFromAvatarButton() OVERRIDE {}
 
 #if defined(OS_CHROMEOS)
-  virtual void ShowMobileSetup() OVERRIDE {}
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE {}
 #endif
 

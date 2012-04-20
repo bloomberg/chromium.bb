@@ -189,7 +189,6 @@ class Panel : public BrowserWindow,
       const gfx::Rect& bounds) OVERRIDE;
   virtual FindBar* CreateFindBar() OVERRIDE;
 #if defined(OS_CHROMEOS)
-  virtual void ShowMobileSetup() OVERRIDE;
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) OVERRIDE;
 #endif
   virtual void ResizeDueToAutoResize(content::WebContents* web_contents,
