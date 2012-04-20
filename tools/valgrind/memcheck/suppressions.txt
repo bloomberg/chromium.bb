@@ -5752,39 +5752,6 @@
    fun:_ZN11webkit_glue16WebURLLoaderImpl18loadAsynchronouslyERKN6WebKit13WebURLRequestEPNS1_18WebURLLoaderClientE
    fun:_ZN7WebCore22ResourceHandleInternal5startEv
 }
-{
-   bug_124274a
-   Memcheck:Uninitialized
-   fun:memcpy
-   fun:_ZNSs6appendEPK*
-   ...
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEi
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEi
-   fun:_ZN4base10JSONWriter16WriteWithOptionsEPKNS_5ValueEiPSs
-   fun:_ZN25JSONStringValueSerializer17SerializeInternalERKN4base5ValueEb
-   fun:_ZN25JSONStringValueSerializer9SerializeERKN4base5ValueE
-   fun:_ZN18jstemplate_builder12AppendJsonJSEPKN4base15DictionaryValueEPSs
-   fun:_ZN18jstemplate_builder14AppendJsonHtmlEPKN4base15DictionaryValueEPSs
-   fun:_ZN18jstemplate_builder19GetI18nTemplateHtmlERKN4base16BasicStringPieceISsEEPKNS0_15DictionaryValueE
-   fun:_ZN16NTPResourceCache16CreateNewTabHTMLEv
-   fun:_ZN16NTPResourceCache13GetNewTabHTMLEb
-   fun:_ZN8NewTabUI16NewTabHTMLSource16StartDataRequestERKSsbi
-}
-{
-   bug_124274b
-   Memcheck:Uninitialized
-   fun:*strlen
-   fun:_ZNSs6appendEPKc
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEi
-   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEi
-   fun:_ZN4base10JSONWriter16WriteWithOptionsEPKNS_5ValueEiPSs
-   fun:_ZN25JSONStringValueSerializer17SerializeInternalERKN4base5ValueEb
-   fun:_ZN25JSONStringValueSerializer9SerializeERKN4base5ValueE
-   fun:_ZN18jstemplate_builder12AppendJsonJSEPKN4base15DictionaryValueEPSs
-   fun:_ZN18jstemplate_builder14AppendJsonHtmlEPKN4base15DictionaryValueEPSs
-   fun:_ZN18jstemplate_builder19GetI18nTemplateHtmlERKN4base16BasicStringPieceISsEEPKNS0_15DictionaryValueE
-   fun:_ZN16NTPResourceCache16CreateNewTabHTMLEv
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
