@@ -1920,21 +1920,28 @@ void ResourceDispatcherHostImpl::ResponseCompleted(net::URLRequest* request) {
   // If the load for a main frame has failed, track it in a histogram,
   // since it will probably cause the user to see an error page.
   if (!request->status().is_success() &&
-      info->GetResourceType() == ResourceType::MAIN_FRAME &&
       request->status().error() != net::ERR_ABORTED) {
-    // This enumeration has "2" appended to its name to distinguish it from
-    // its original version. We changed the buckets at one point (added
-    // guard buckets by using CustomHistogram::ArrayToCustomRanges).
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-        "Net.ErrorCodesForMainFrame2",
-        -request->status().error(),
-        base::CustomHistogram::ArrayToCustomRanges(
-            kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
-
-    if (request->url().SchemeIsSecure() &&
-        request->url().host() == "www.google.com") {
+    if (info->GetResourceType() == ResourceType::MAIN_FRAME) {
+      // This enumeration has "2" appended to its name to distinguish it from
+      // its original version. We changed the buckets at one point (added
+      // guard buckets by using CustomHistogram::ArrayToCustomRanges).
       UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-          "Net.ErrorCodesForHTTPSGoogleMainFrame",
+          "Net.ErrorCodesForMainFrame2",
+          -request->status().error(),
+          base::CustomHistogram::ArrayToCustomRanges(
+              kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+
+      if (request->url().SchemeIsSecure() &&
+          request->url().host() == "www.google.com") {
+        UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+            "Net.ErrorCodesForHTTPSGoogleMainFrame",
+            -request->status().error(),
+            base::CustomHistogram::ArrayToCustomRanges(
+                kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));
+      }
+    } else {
+      UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+          "Net.ErrorCodesForSubresources",
           -request->status().error(),
           base::CustomHistogram::ArrayToCustomRanges(
               kAllNetErrorCodes, arraysize(kAllNetErrorCodes)));

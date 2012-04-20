@@ -289,13 +289,14 @@ void DownloadResourceHandler::OnResponseCompletedInternal(
   net::Error error_code = net::OK;
   if (status.status() == net::URLRequestStatus::FAILED)
     error_code = static_cast<net::Error>(status.error());  // Normal case.
-  // ERR_CONNECTION_CLOSED is allowed since a number of servers in the wild
-  // advertise a larger Content-Length than the amount of bytes in the message
-  // body, and then close the connection. Other browsers - IE8, Firefox 4.0.1,
-  // and Safari 5.0.4 - treat the download as complete in this case, so we
-  // follow their lead.
-  if (error_code == net::ERR_CONNECTION_CLOSED)
+  // ERR_CONTENT_LENGTH_MISMATCH and ERR_INCOMPLETE_CHUNKED_ENCODING are
+  // allowed since a number of servers in the wild close the connection too
+  // early by mistake. Other browsers - IE9, Firefox 11.0, and Safari 5.1.4 -
+  // treat downloads as complete in both cases, so we follow their lead.
+  if (error_code == net::ERR_CONTENT_LENGTH_MISMATCH ||
+      error_code == net::ERR_INCOMPLETE_CHUNKED_ENCODING) {
     error_code = net::OK;
+  }
   content::DownloadInterruptReason reason =
       content::ConvertNetErrorToInterruptReason(
         error_code, content::DOWNLOAD_INTERRUPT_FROM_NETWORK);
