@@ -2365,6 +2365,9 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 
 	wl_list_init(&output->frame_callback_list);
 
+	output->id = ffs(~output->compositor->output_id_pool) - 1;
+	output->compositor->output_id_pool |= 1 << output->id;
+
 	output->global =
 		wl_display_add_global(c->wl_display, &wl_output_interface,
 				      output, bind_output);
@@ -2392,6 +2395,8 @@ weston_compositor_init(struct weston_compositor *ec, struct wl_display *display)
 	wl_signal_init(&ec->lock_signal);
 	wl_signal_init(&ec->unlock_signal);
 	ec->launcher_sock = weston_environment_get_fd("WESTON_LAUNCHER_SOCK");
+
+	ec->output_id_pool = 0;
 
 	if (!wl_display_add_global(display, &wl_compositor_interface,
 				   ec, compositor_bind))

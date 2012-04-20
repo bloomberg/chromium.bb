@@ -73,6 +73,8 @@ enum dpms_enum {
 };
 
 struct weston_output {
+	uint32_t id;
+
 	struct wl_list link;
 	struct wl_global *global;
 	struct weston_compositor *compositor;
@@ -240,6 +242,8 @@ struct weston_compositor {
 
 	struct screenshooter *screenshooter;
 	int launcher_sock;
+
+	uint32_t output_id_pool;
 };
 
 #define MODIFIER_CTRL	(1 << 8)
