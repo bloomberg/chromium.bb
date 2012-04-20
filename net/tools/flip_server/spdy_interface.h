@@ -45,11 +45,6 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
                                 std::string remote_ip,
                                 bool use_ssl) OVERRIDE;
 
-  static bool disable_data_compression() { return disable_data_compression_; }
-  static void set_disable_data_compression(bool value) {
-    disable_data_compression_ = value;
-  }
-
  private:
   virtual void set_is_request() OVERRIDE {}
   SMInterface* NewConnectionInterface();
@@ -157,7 +152,6 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
   StreamToSmif stream_to_smif_;
   bool close_on_error_;
 
-  static bool disable_data_compression_;
   static std::string forward_ip_header_;
 };
 
