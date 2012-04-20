@@ -2736,14 +2736,22 @@ FileManager.prototype = {
 
     chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
       self.setMountPoints_(mountPoints);
+
       if (event.eventType == 'mount') {
         // Mount request finished - remove it.
+        // Currently we only request mounts for archive files.
         var index = self.mountRequests_.indexOf(event.sourceUrl);
         if (index != -1) {
           self.mountRequests_.splice(index, 1);
-          // Go to mounted directory, if request was initiated from this tab.
-          if (event.status == 'success')
+          if (event.status == 'success') {
+            // Successful mount requested from this tab, go to the drive root.
             changeDirectoryTo = event.mountPath;
+          } else {
+            // Request initiated from this tab failed, report the error.
+            var fileName = event.sourceUrl.split('/').pop();
+            self.alert.show(
+                strf('ARCHIVE_MOUNT_FAILED', fileName, event.status));
+          }
         }
       }
 
@@ -2755,28 +2763,22 @@ FileManager.prototype = {
           if (event.status != 'success')
             self.alert.show(strf('UNMOUNT_FAILED', event.status));
         }
-      }
 
-      if (event.eventType == 'mount' && event.status != 'success' &&
-          event.mountType == 'file') {
-        // Report mount error.
-        var fileName = event.sourceUrl.substr(
-            event.sourceUrl.lastIndexOf('/') + 1);
-        self.alert.show(strf('ARCHIVE_MOUNT_FAILED', fileName,
-                             event.status));
-      }
-
-      if (event.eventType == 'unmount' && event.status == 'success' &&
-          event.mountPath == self.directoryModel_.rootPath) {
-        if (self.params_.mountTriggered) {
-          // window.close() sometimes doesn't work.
-          chrome.tabs.getCurrent(function(tab) {
-            chrome.tabs.remove(tab.id);
-          });
-          return;
+        if (event.status == 'success' &&
+            event.mountPath == self.directoryModel_.rootPath) {
+          if (self.params_.mountTriggered && index == -1) {
+            // This device mount was the reason this File Manager instance was
+            // created. Now the device is unmounted from another instance
+            // or the user removed the device manually. Close this instance.
+            // window.close() sometimes doesn't work.
+            chrome.tabs.getCurrent(function(tab) {
+              chrome.tabs.remove(tab.id);
+            });
+            return;
+          }
+          // Current directory just unmounted. Move to the 'Downloads'.
+          changeDirectoryTo = '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
         }
-        // Current durectory just unmounted. Move to the 'Downloads'.
-        changeDirectoryTo = '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
       }
 
       // Even if something failed root list should be rescanned.

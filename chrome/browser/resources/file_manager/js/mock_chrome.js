@@ -6,10 +6,18 @@ function MockEventSource() {
   this.listeners_ = [];
 }
 
+/**
+ * Add a listener. There is no remove.
+ * @param {function} listener A callback function.
+ */
 MockEventSource.prototype.addListener = function(listener) {
   this.listeners_.push(listener);
 };
 
+/**
+ * Notify listeners in a fresh call stack.
+ * @param {Object...} var_args Arguments.
+ */
 MockEventSource.prototype.notify = function(var_args) {
   setTimeout(function(args) {
     for (var i = 0; i != this.listeners_.length; i++) {
@@ -88,6 +96,7 @@ chrome.fileBrowserPrivate = {
 
   /**
    * Returns common tasks for a given list of files.
+   * @return {Array.<Object>} Array of task descriptors.
    */
   getFileTasks: function(urlList, callback) {
     if (urlList.length == 0)
@@ -102,8 +111,8 @@ chrome.fileBrowserPrivate = {
     var emptyIcon = 'data:image/gif;base64,' +
         'R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw%3D%3D';
 
-    var tasks =
-    [ { taskId: extensionId + '|play',
+    var tasks = [
+      { taskId: extensionId + '|play',
         title: 'Listen',
         regexp: /\.(flac|m4a|mp3|oga|ogg|wav)$/i,
         iconUrl: emptyIcon
@@ -242,26 +251,30 @@ chrome.fileBrowserPrivate = {
     });
   },
 
-  removeMount: function(mountPoint) {
+  removeMount: function(sourceUrl) {
+    var mountPath = chrome.fileBrowserPrivate.fileUrlToLocalPath_(sourceUrl);
     for (var i = 0; i != chrome.fileBrowserPrivate.mountPoints_.length; i++) {
-      if (chrome.fileBrowserPrivate.fileUrlToLocalPath_(mountPoint) ==
-          chrome.fileBrowserPrivate.mountPoints_[i].mountPath) {
+      if (mountPath == chrome.fileBrowserPrivate.mountPoints_[i].mountPath) {
         chrome.fileBrowserPrivate.mountPoints_.splice(i, 1);
         break;
       }
     }
-    function notify() {
+    function notify(status) {
       chrome.fileBrowserPrivate.onMountCompleted.notify({
         eventType: 'unmount',
-        status: 'success',
-        mountPoint: mountPoint,
-        sourceUrl: mountPoint
+        status: status,
+        mountPath: mountPath,
+        sourceUrl: sourceUrl
       });
     }
-    webkitResolveLocalFileSystemURL(mountPoint, function(entry) {
-      util.removeFileOrDirectory(entry,
-          util.flog('Deleted a mock mount at ' + entry.fullPath, notify),
-          util.flog('Error deleting a mock mount at' + entry.fullPath, notify));
+
+    webkitResolveLocalFileSystemURL(sourceUrl, function(entry) {
+      util.removeFileOrDirectory(
+          entry,
+          util.flog('Deleted a mock mount at ' + entry.fullPath,
+              notify.bind(null, 'success'),
+          util.flog('Error deleting a mock mount at' + entry.fullPath,
+              notify)));
     });
   },
 
@@ -336,7 +349,7 @@ chrome.fileBrowserPrivate = {
     // extension_file_browser_private_api.cc!
     callback({
       // These two are from locale_settings*.grd
-      WEB_FONT_FAMILY: 'Open Sans,Chrome Droid Sans,'+
+      WEB_FONT_FAMILY: 'Open Sans,Chrome Droid Sans,' +
                        'Droid Sans Fallback,sans-serif',
       WEB_FONT_SIZE: '84%',
 
@@ -435,6 +448,7 @@ chrome.fileBrowserPrivate = {
       COPY_BUTTON_LABEL: 'Copy',
       CUT_BUTTON_LABEL: 'Cut',
 
+      UNMOUNT_FAILED: 'Unable to eject: $1',
       UNMOUNT_DEVICE_BUTTON_LABEL: 'Unmount',
       FORMAT_DEVICE_BUTTON_LABEL: 'Format',
 
@@ -486,7 +500,7 @@ chrome.fileBrowserPrivate = {
       CONFIRM_DELETE_ONE: 'Are you sure you want to delete "$1"?',
       CONFIRM_DELETE_SOME: 'Are you sure you want to delete $1 items?',
 
-      UNKNOWN_FILESYSTEM_WARNING:'This device cannot be opened because its' +
+      UNKNOWN_FILESYSTEM_WARNING: 'This device cannot be opened because its' +
           ' filesystem was not recognized.',
       UNSUPPORTED_FILESYSTEM_WARNING: 'This device cannot be opened because' +
           ' its filesystem is not supported.',
@@ -537,12 +551,22 @@ chrome.fileBrowserPrivate = {
   }
 };
 
+/**
+ * Mock object for |chrome.extension|.
+ */
 chrome.extension = {
+  /**
+   * @param {string} path Extension-relative path.
+   * @return {string} Usable url.
+   */
   getURL: function(path) {
     return path || document.location.href;
   }
 };
 
+/**
+ * Mock object for |chrome.test|.
+ */
 chrome.test = {
   verbose: false,
 
@@ -552,16 +576,31 @@ chrome.test = {
   }
 };
 
+/**
+ * Mock object for |chrome.fileBrowserHandler|.
+ */
 chrome.fileBrowserHandler = {
   onExecute: new MockEventSource()
 };
 
+/**
+ * Mock object for |chrome.tabs|.
+ */
 chrome.tabs = {
   create: function(createOptions) {
     window.open(createOptions.url);
+  },
+  remove: function(id) {
+    console.log('tabs.remove(' + id + ')');
+  },
+  getCurrent: function(callback) {
+    callback({id: 0});
   }
 };
 
+/**
+ * Mock object for |chrome.metricsPrivate|.
+ */
 chrome.metricsPrivate = {
   recordMediumCount: function() {},
   recordSmallCount: function() {},
@@ -570,6 +609,9 @@ chrome.metricsPrivate = {
   recordValue: function() {}
 };
 
+/**
+ * Mock object for |chrome.mediaPlayerPrivate|.
+ */
 chrome.mediaPlayerPrivate = {
 
   onPlaylistChanged: new MockEventSource(),
@@ -597,7 +639,7 @@ chrome.mediaPlayerPrivate = {
       win.AudioPlayer.load();
     }.bind(this);
 
-    this.popup_.src = "mediaplayer.html?no_auto_load";
+    this.popup_.src = 'mediaplayer.html?no_auto_load';
   },
 
   getPlaylist: function(callback) {
