@@ -167,14 +167,14 @@
     ],
     'remoting_host_installer_mac_root': 'host/installer/mac/',
     'remoting_host_installer_mac_files': [
-      #'host/installer/mac/ChromeRemoteDesktop.packproj',
+      'host/installer/mac/ChromeRemoteDesktop.packproj',
       'host/installer/mac/Chromoting.packproj',
       'host/installer/mac/LaunchAgents/org.chromium.chromoting.plist',
       'host/installer/mac/PrivilegedHelperTools/org.chromium.chromoting.json',
       'host/installer/mac/PrivilegedHelperTools/org.chromium.chromoting.me2me.sh',
       'host/installer/mac/Scripts/keystone_install.sh',
       'host/installer/mac/Scripts/remoting_postflight.sh',
-      #'host/installer/mac/Keystone/GoogleSoftwareUpdate.pkg.zip',
+      'host/installer/mac/Keystone/GoogleSoftwareUpdate.pkg.zip',
     ],
   },
 

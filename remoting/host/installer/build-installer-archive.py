@@ -61,16 +61,49 @@ def copyFileIntoArchive(src_file, out_dir, files_root, dst_file):
     src_file: Full or relative path to source file to copy.
     out_dir: Target directory where files are copied.
     files_root: Path prefix which is stripped of dst_file before appending
-                it to the temp_dir.
+                it to the out_dir.
     dst_file: Relative path (and filename) where src_file should be copied.
   """
   root_len = len(files_root)
-  local_path = dst_file[root_len:]
-  full_dst_file = os.path.join(out_dir, local_path)
+  local_file_path = dst_file[root_len:]
+  full_dst_file = os.path.join(out_dir, local_file_path)
   dst_dir = os.path.dirname(full_dst_file)
   if not os.path.exists(dst_dir):
     os.makedirs(dst_dir, 0775)
   shutil.copy2(src_file, full_dst_file)
+
+
+def copyZipIntoArchive(out_dir, files_root, zip_file):
+  """Expands the zip_file into the out_dir, preserving the directory structure.
+
+  Args:
+    out_dir: Target directory where unzipped files are copied.
+    files_root: Path prefix which is stripped of zip_file before appending
+                it to the out_dir.
+    zip_file: Relative path (and filename) to the zip file.
+  """
+  # Unzip into correct dir in out_dir.
+  zip_archive = zipfile.ZipFile(zip_file, 'r')
+  root_len = len(files_root)
+  relative_zip_path = zip_file[root_len:]
+  out_zip_path = os.path.join(out_dir, relative_zip_path)
+  out_zip_dir = os.path.dirname(out_zip_path)
+  if not os.path.exists(out_zip_dir):
+    os.makedirs(out_zip_dir, 0775)
+
+  # Ideally, we'd simply do:
+  #  zip_archive.extractall(out_zip_dir)
+  # but http://bugs.python.org/issue4710 bites us because the some 'bots (like
+  # mac_rel) are still running Python 2.6.
+  # See http://stackoverflow.com/questions/639962/unzipping-directory-structure-with-python
+  # for workarounds.
+  # TODO(garykac): Remove this once all bots are > 2.6.
+  for f in zip_archive.namelist():
+    if f.endswith('/'):
+      if not os.path.exists(f):
+        os.makedirs(os.path.join(out_zip_dir, f))
+    else:
+      zip_archive.extract(f, out_zip_dir)
 
 
 def buildHostArchive(temp_dir, zip_path, source_files_root, source_files,
@@ -91,12 +124,9 @@ def buildHostArchive(temp_dir, zip_path, source_files_root, source_files,
 
   for file in source_files:
     base_file = os.path.basename(file)
-    if base_file == '*':
-      # Copy entire directory tree.
-      for (root, dirs, files) in os.walk(os.path.dirname(file)):
-        for f in files:
-          full_path = os.path.join(root, f)
-          copyFileIntoArchive(full_path, temp_dir, files_root, full_path)
+    (base, ext) = os.path.splitext(file)
+    if ext == '.zip':
+      copyZipIntoArchive(temp_dir, source_files_root, file)
     else:
       copyFileIntoArchive(file, temp_dir, source_files_root, file)
 
