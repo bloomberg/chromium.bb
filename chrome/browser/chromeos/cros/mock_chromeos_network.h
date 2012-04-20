@@ -91,6 +91,11 @@ class MockChromeOSNetwork {
                     const char* provider_type,
                     NetworkPropertiesGValueCallback callback,
                     void* object));
+  MOCK_METHOD1(RequestNetworkServiceDisconnect, void(const char* service_path));
+  MOCK_METHOD1(RequestRemoveNetworkService, void(const char* service_path));
+  MOCK_METHOD1(RequestNetworkScan, void(const char* network_type));
+  MOCK_METHOD2(RequestNetworkDeviceEnable, void(const char* network_type,
+                                                bool enable));
   MOCK_METHOD4(ConfigureService,
                void(const char* identifier,
                     const GHashTable* properties,

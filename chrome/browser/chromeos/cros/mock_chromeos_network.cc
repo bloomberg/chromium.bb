@@ -168,6 +168,26 @@ void CallMockRequestVirtualNetworkProperties(
       service_name, server_hostname, provider_type, callback, object);
 }
 
+// Calls mock RequestNetworkServiceDisconnect.
+void CallMockRequestNetworkServiceDisconnect(const char* service_path) {
+  g_mock_chromeos_network->RequestNetworkServiceDisconnect(service_path);
+}
+
+// Calls mock RequestRemoveNetworkService.
+void CallMockRequestRemoveNetworkService(const char* service_path) {
+  g_mock_chromeos_network->RequestRemoveNetworkService(service_path);
+}
+
+// Calls mock RequestNetworkScan.
+void CallMockRequestNetworkScan(const char* network_type) {
+  g_mock_chromeos_network->RequestNetworkScan(network_type);
+}
+
+// Calls mock RequestNetworkDeviceEnable.
+void CallMockRequestNetworkDeviceEnable(const char* network_type, bool enable) {
+  g_mock_chromeos_network->RequestNetworkDeviceEnable(network_type, enable);
+}
+
 // Calls mock ConfigureService.
 void CallMockConfigureService(const char* identifier,
                               const GHashTable* properties,
@@ -229,6 +249,12 @@ void MockChromeOSNetwork::Initialize() {
         &CallMockRequestHiddenWifiNetworkProperties;
     chromeos::RequestVirtualNetworkProperties =
         &CallMockRequestVirtualNetworkProperties;
+    chromeos::RequestNetworkServiceDisconnect =
+        &CallMockRequestNetworkServiceDisconnect;
+    chromeos::RequestRemoveNetworkService =
+        &CallMockRequestRemoveNetworkService;
+    chromeos::RequestNetworkScan = &CallMockRequestNetworkScan;
+    chromeos::RequestNetworkDeviceEnable = &CallMockRequestNetworkDeviceEnable;
     chromeos::ConfigureService = &CallMockConfigureService;
   } else {
     LOG(ERROR) << "CrosLibrary is initialized.";
@@ -258,6 +284,10 @@ void MockChromeOSNetwork::Shutdown() {
     chromeos::RequestNetworkProfileEntryProperties = NULL;
     chromeos::RequestHiddenWifiNetworkProperties = NULL;
     chromeos::RequestVirtualNetworkProperties = NULL;
+    chromeos::RequestNetworkServiceDisconnect = NULL;
+    chromeos::RequestRemoveNetworkService = NULL;
+    chromeos::RequestNetworkScan = NULL;
+    chromeos::RequestNetworkDeviceEnable = NULL;
     chromeos::ConfigureService = NULL;
   } else {
     LOG(ERROR) << "CrosLibrary is initialized.";

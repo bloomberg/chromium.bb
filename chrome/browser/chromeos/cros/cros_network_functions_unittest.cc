@@ -553,6 +553,34 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestVirtualNetworkProperties) {
       MockNetworkPropertiesCallback::CreateCallback(kExamplePath, result));
 }
 
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkServiceDisconnect) {
+  const char kServicePath[] = "/service/path";
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              RequestNetworkServiceDisconnect(kServicePath)).Times(1);
+  CrosRequestNetworkServiceDisconnect(kServicePath);
+}
+
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestRemoveNetworkService) {
+  const char kServicePath[] = "/service/path";
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              RequestRemoveNetworkService(kServicePath)).Times(1);
+  CrosRequestRemoveNetworkService(kServicePath);
+}
+
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkScan) {
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              RequestNetworkScan(flimflam::kTypeWifi)).Times(1);
+  CrosRequestNetworkScan(flimflam::kTypeWifi);
+}
+
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkDeviceEnable) {
+  const bool kEnable = true;
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              RequestNetworkDeviceEnable(flimflam::kTypeWifi, kEnable))
+      .Times(1);
+  CrosRequestNetworkDeviceEnable(flimflam::kTypeWifi, kEnable);
+}
+
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosConfigureService) {
   const char identifier[] = "identifier";
   EXPECT_CALL(*MockChromeOSNetwork::Get(),
@@ -859,6 +887,38 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkProfileEntryProperties) {
       profile_path.c_str(), profile_entry_path.c_str(),
       MockNetworkPropertiesCallback::CreateCallback(profile_entry_path.c_str(),
                                                     result));
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkServiceDisconnect) {
+  const char kServicePath[] = "/service/path";
+  EXPECT_CALL(*mock_service_client_,
+              Disconnect(dbus::ObjectPath(kServicePath), _)).Times(1);
+  CrosRequestNetworkServiceDisconnect(kServicePath);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestRemoveNetworkService) {
+  const char kServicePath[] = "/service/path";
+  EXPECT_CALL(*mock_service_client_,
+              Remove(dbus::ObjectPath(kServicePath), _)).Times(1);
+  CrosRequestRemoveNetworkService(kServicePath);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkScan) {
+  EXPECT_CALL(*mock_manager_client_,
+              RequestScan(flimflam::kTypeWifi, _)).Times(1);
+  CrosRequestNetworkScan(flimflam::kTypeWifi);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkDeviceEnable) {
+  const bool kEnable = true;
+  EXPECT_CALL(*mock_manager_client_,
+              EnableTechnology(flimflam::kTypeWifi, _)).Times(1);
+  CrosRequestNetworkDeviceEnable(flimflam::kTypeWifi, kEnable);
+
+  const bool kDisable = false;
+  EXPECT_CALL(*mock_manager_client_,
+              DisableTechnology(flimflam::kTypeWifi, _)).Times(1);
+  CrosRequestNetworkDeviceEnable(flimflam::kTypeWifi, kDisable);
 }
 
 }  // namespace chromeos

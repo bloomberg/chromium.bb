@@ -451,19 +451,44 @@ void CrosRequestVirtualNetworkProperties(
 }
 
 void CrosRequestNetworkServiceDisconnect(const char* service_path) {
-  chromeos::RequestNetworkServiceDisconnect(service_path);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::RequestNetworkServiceDisconnect(service_path);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamServiceClient()->Disconnect(
+        dbus::ObjectPath(service_path), base::Bind(&DoNothing));
+  }
 }
 
 void CrosRequestRemoveNetworkService(const char* service_path) {
-  chromeos::RequestRemoveNetworkService(service_path);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::RequestRemoveNetworkService(service_path);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamServiceClient()->Remove(
+        dbus::ObjectPath(service_path), base::Bind(&DoNothing));
+  }
 }
 
 void CrosRequestNetworkScan(const char* network_type) {
-  chromeos::RequestNetworkScan(network_type);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::RequestNetworkScan(network_type);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamManagerClient()->RequestScan(
+        network_type, base::Bind(&DoNothing));
+  }
 }
 
 void CrosRequestNetworkDeviceEnable(const char* network_type, bool enable) {
-  chromeos::RequestNetworkDeviceEnable(network_type, enable);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::RequestNetworkDeviceEnable(network_type, enable);
+  } else {
+    if (enable) {
+      DBusThreadManager::Get()->GetFlimflamManagerClient()->EnableTechnology(
+          network_type, base::Bind(&DoNothing));
+    } else {
+      DBusThreadManager::Get()->GetFlimflamManagerClient()->DisableTechnology(
+          network_type, base::Bind(&DoNothing));
+    }
+  }
 }
 
 void CrosRequestRequirePin(const char* device_path,
