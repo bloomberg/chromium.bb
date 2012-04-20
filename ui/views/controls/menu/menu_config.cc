@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ui/views/controls/menu/menu_config.h"
 
+#include "base/command_line.h"
 #include "build/build_config.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace views {
 
@@ -34,6 +36,12 @@ MenuConfig::MenuConfig()
       scroll_arrow_height(3),
       label_to_accelerator_padding(10),
       show_accelerators(true) {
+  // Use 40px tall menu items when running in touch optimized mode.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kTouchOptimizedUI)) {
+    item_top_margin = item_no_icon_top_margin = 12;
+    item_bottom_margin = item_no_icon_bottom_margin = 13;
+  }
 }
 
 MenuConfig::~MenuConfig() {}
