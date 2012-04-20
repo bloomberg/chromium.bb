@@ -277,7 +277,7 @@ void ExtensionHelper::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
 
 void ExtensionHelper::OnExtensionResponse(int request_id,
                                           bool success,
-                                          const std::string& response,
+                                          const base::ListValue& response,
                                           const std::string& error) {
   extension_dispatcher_->OnExtensionResponse(request_id,
                                              success,
@@ -287,7 +287,7 @@ void ExtensionHelper::OnExtensionResponse(int request_id,
 
 void ExtensionHelper::OnExtensionMessageInvoke(const std::string& extension_id,
                                                const std::string& function_name,
-                                               const ListValue& args,
+                                               const base::ListValue& args,
                                                const GURL& event_url,
                                                bool user_gesture) {
   scoped_ptr<WebScopedUserGesture> web_user_gesture;

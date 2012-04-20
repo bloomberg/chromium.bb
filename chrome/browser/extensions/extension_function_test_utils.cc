@@ -123,8 +123,7 @@ std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                       RunFunctionFlags flags) {
   scoped_refptr<ExtensionFunction> function_owner(function);
   RunFunction(function, args, browser, flags);
-  EXPECT_FALSE(function->GetResultValue()) << "Unexpected function result " <<
-      function->GetResult();
+  EXPECT_FALSE(function->GetResultValue()) << "Did not expect a result";
   return function->GetError();
 }
 

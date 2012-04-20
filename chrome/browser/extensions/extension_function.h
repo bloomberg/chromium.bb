@@ -78,7 +78,7 @@ class ExtensionFunction
 
   // Execute the API. Clients should initialize the ExtensionFunction using
   // SetArgs(), set_request_id(), and the other setters before calling this
-  // method. Derived classes should be ready to return GetResult() and
+  // method. Derived classes should be ready to return GetResultValue() and
   // GetError() before returning from this function.
   // Note that once Run() returns, dispatcher() can be NULL, so be sure to
   // NULL-check.
@@ -98,12 +98,8 @@ class ExtensionFunction
   // Specifies the raw arguments to the function, as a JSON value.
   virtual void SetArgs(const base::ListValue* args);
 
-  // Retrieves the results of the function as a JSON-encoded string (may
-  // be empty).
-  virtual const std::string GetResult();
-
   // Retrieves the results of the function as a Value.
-  base::Value* GetResultValue();
+  const base::Value* GetResultValue();
 
   // Retrieves any error string from the function.
   virtual const std::string GetError();

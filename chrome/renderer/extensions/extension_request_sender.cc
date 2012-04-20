@@ -10,9 +10,12 @@
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
+
+using content::V8ValueConverter;
 
 // Contains info relevant to a pending API request.
 struct PendingRequest {
@@ -122,7 +125,7 @@ void ExtensionRequestSender::StartRequest(
 
 void ExtensionRequestSender::HandleResponse(int request_id,
                                             bool success,
-                                            const std::string& response,
+                                            const base::ListValue& response,
                                             const std::string& error) {
   linked_ptr<PendingRequest> request = RemoveRequest(request_id);
 
@@ -138,11 +141,24 @@ void ExtensionRequestSender::HandleResponse(int request_id,
     return;  // The frame went away.
 
   v8::HandleScope handle_scope;
+  v8::Handle<v8::Value> response_value = v8::Undefined();
+  DCHECK(response.GetSize() <= 1);
+  if (response.GetSize() == 1) {
+    // We use a ListValue as a wrapper (our IPC system can't handle Value
+    // directly since it has a private constructor) so we need to extract the
+    // value at index 0.
+    Value* value = NULL;
+    CHECK(response.Get(0, &value));
+    CHECK(value);
+    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    response_value = converter->ToV8Value(value, v8_context->v8_context());
+  }
+
   v8::Handle<v8::Value> argv[5];
   argv[0] = v8::Integer::New(request_id);
   argv[1] = v8::String::New(request->name.c_str());
   argv[2] = v8::Boolean::New(success);
-  argv[3] = v8::String::New(response.c_str());
+  argv[3] = response_value;
   argv[4] = v8::String::New(error.c_str());
 
   v8::Handle<v8::Value> retval;

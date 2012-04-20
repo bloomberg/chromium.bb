@@ -863,7 +863,7 @@ Feature::Context ExtensionDispatcher::ClassifyJavaScriptContext(
 
 void ExtensionDispatcher::OnExtensionResponse(int request_id,
                                               bool success,
-                                              const std::string& response,
+                                              const base::ListValue& response,
                                               const std::string& error) {
   request_sender_->HandleResponse(request_id, success, response, error);
 }

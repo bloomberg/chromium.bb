@@ -59,7 +59,6 @@ class MockFunction : public ExtensionFunction {
   virtual void SetArgs(const ListValue* args) OVERRIDE {}
   virtual const std::string GetError() OVERRIDE { return std::string(); }
   virtual void SetError(const std::string& error) OVERRIDE {}
-  virtual const std::string GetResult() OVERRIDE { return std::string(); }
   virtual void Run() OVERRIDE {}
   virtual void Destruct() const OVERRIDE { delete this; }
   virtual bool RunImpl() OVERRIDE { return true; }

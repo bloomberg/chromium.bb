@@ -85,20 +85,12 @@ void ExtensionFunction::OnQuotaExceeded() {
   SendResponse(false);
 }
 
-void ExtensionFunction::SetArgs(const ListValue* args) {
+void ExtensionFunction::SetArgs(const base::ListValue* args) {
   DCHECK(!args_.get());  // Should only be called once.
   args_.reset(args->DeepCopy());
 }
 
-const std::string ExtensionFunction::GetResult() {
-  std::string json;
-  // Some functions might not need to return any results.
-  if (result_.get())
-    base::JSONWriter::Write(result_.get(), &json);
-  return json;
-}
-
-Value* ExtensionFunction::GetResultValue() {
+const Value* ExtensionFunction::GetResultValue() {
   return result_.get();
 }
 
@@ -130,8 +122,14 @@ void ExtensionFunction::SendResponseImpl(base::ProcessHandle process,
     return;
   }
 
+  // Value objects can't be directly serialized in our IPC code, so we wrap the
+  // result_ Value with a ListValue (also transferring ownership of result_).
+  base::ListValue result_wrapper;
+  if (result_.get())
+    result_wrapper.Append(result_.release());
+
   ipc_sender->Send(new ExtensionMsg_Response(
-      routing_id, request_id_, success, GetResult(), GetError()));
+      routing_id, request_id_, success, result_wrapper, GetError()));
 }
 
 void ExtensionFunction::HandleBadMessage(base::ProcessHandle process) {

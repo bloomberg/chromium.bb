@@ -15,9 +15,8 @@ chromeHidden.registerCustomHook('pageCapture', function(bindingsAPI) {
 
   apiFunctions.setCustomCallback('saveAsMHTML',
                                  function(name, request, response) {
-    var params = chromeHidden.JSON.parse(response);
-    var path = params.mhtmlFilePath;
-    var size = params.mhtmlFileLength;
+    var path = response.mhtmlFilePath;
+    var size = response.mhtmlFileLength;
 
     if (request.callback)
       request.callback(CreateBlob(path, size));

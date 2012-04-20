@@ -14,10 +14,9 @@ chromeHidden.registerCustomHook('fileBrowserPrivate', function(bindingsAPI) {
 
   apiFunctions.setCustomCallback('requestLocalFileSystem',
                                  function(name, request, response) {
-    var resp = response ? [chromeHidden.JSON.parse(response)] : [];
     var fs = null;
-    if (!resp[0].error)
-      fs = GetLocalFileSystem(resp[0].name, resp[0].path);
+    if (response && !response.error)
+      fs = GetLocalFileSystem(response.name, response.path);
     if (request.callback)
       request.callback(fs);
     request.callback = null;

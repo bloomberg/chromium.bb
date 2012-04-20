@@ -29,7 +29,7 @@ chromeHidden.handleResponse = function(requestId, name,
 
     if (request.callback) {
       // Callbacks currently only support one callback argument.
-      var callbackArgs = response ? [chromeHidden.JSON.parse(response)] : [];
+      var callbackArgs = typeof(response) != "undefined" ? [response] : [];
 
       // Validate callback in debug only -- and only when the
       // caller has provided a callback. Implementations of api
@@ -44,7 +44,6 @@ chromeHidden.handleResponse = function(requestId, name,
           if (request.callbackSchema.parameters.length > 1) {
             throw new Error("Callbacks may only define one parameter");
           }
-
           chromeHidden.validate(callbackArgs,
               request.callbackSchema.parameters);
         } catch (exception) {
@@ -53,7 +52,7 @@ chromeHidden.handleResponse = function(requestId, name,
         }
       }
 
-      if (response) {
+      if (typeof(response) != "undefined") {
         request.callback(callbackArgs[0]);
       } else {
         request.callback();

@@ -102,7 +102,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
   void OnExtensionResponse(int request_id,
                            bool success,
-                           const std::string& response,
+                           const base::ListValue& response,
                            const std::string& error);
 
   // Checks that the current context contains an extension that has permission
