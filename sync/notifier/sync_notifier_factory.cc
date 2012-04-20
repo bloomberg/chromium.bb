@@ -43,6 +43,7 @@ SyncNotifier* CreateDefaultSyncNotifier(
 
 }  // namespace
 
+// TODO(akalin): Remove the dependency on jingle if OS_ANDROID is defined.
 SyncNotifierFactory::SyncNotifierFactory(
     const notifier::NotifierOptions& notifier_options,
     const std::string& client_info,
@@ -61,9 +62,14 @@ SyncNotifierFactory::~SyncNotifierFactory() {
 }
 
 SyncNotifier* SyncNotifierFactory::CreateSyncNotifier() {
+#if defined(OS_ANDROID)
+  // Android uses ChromeSyncNotificationBridge exclusively.
+  return NULL;
+#else
   return CreateDefaultSyncNotifier(notifier_options_,
                                    initial_max_invalidation_versions_,
                                    invalidation_version_tracker_,
                                    client_info_);
+#endif
 }
 }  // namespace sync_notifier

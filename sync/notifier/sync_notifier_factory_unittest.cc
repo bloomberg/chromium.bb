@@ -56,9 +56,13 @@ TEST_F(SyncNotifierFactoryTest, Basic) {
       "test client info",
       base::WeakPtr<sync_notifier::InvalidationVersionTracker>());
   scoped_ptr<SyncNotifier> notifier(factory.CreateSyncNotifier());
+#if defined(OS_ANDROID)
+  ASSERT_FALSE(notifier.get());
+#else
   ASSERT_TRUE(notifier.get());
   notifier->AddObserver(&mock_observer_);
   notifier->RemoveObserver(&mock_observer_);
+#endif
 }
 
 // Test basic creation of a P2PNotifier.
@@ -69,9 +73,13 @@ TEST_F(SyncNotifierFactoryTest, Basic_P2P) {
       "test client info",
       base::WeakPtr<sync_notifier::InvalidationVersionTracker>());
   scoped_ptr<SyncNotifier> notifier(factory.CreateSyncNotifier());
+#if defined(OS_ANDROID)
+  ASSERT_FALSE(notifier.get());
+#else
   ASSERT_TRUE(notifier.get());
   notifier->AddObserver(&mock_observer_);
   notifier->RemoveObserver(&mock_observer_);
+#endif
 }
 
 }  // namespace
