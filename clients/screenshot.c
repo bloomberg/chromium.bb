@@ -26,13 +26,13 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <limits.h>
+#include <sys/param.h>
 #include <sys/mman.h>
 #include <cairo.h>
 
 #include <wayland-client.h>
 #include "screenshooter-client-protocol.h"
-
-#define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 /* The screenshooter is a good example of a custom object exposed by
  * the compositor and serves as a test bed for implementing client
@@ -41,6 +41,7 @@
 static struct wl_shm *shm;
 static struct screenshooter *screenshooter;
 static struct wl_list output_list;
+int min_x, min_y, max_x, max_y;
 int buffer_copy_done;
 
 struct screenshooter_output {
@@ -182,7 +183,8 @@ write_png(int width, int height)
 	wl_list_for_each_safe(output, next, &output_list, link) {
 		output_stride = output->width * 4;
 		s = output->data;
-		d = data + output->offset_y * buffer_stride + output->offset_x * 4;
+		d = data + (output->offset_y - min_y) * buffer_stride +
+			   (output->offset_x - min_x) * 4;
 
 		for (i = 0; i < output->height; i++) {
 			memcpy(d, s, output_stride);
@@ -201,11 +203,34 @@ write_png(int width, int height)
 	free(data);
 }
 
+static int
+set_buffer_size(int *width, int *height)
+{
+	struct screenshooter_output *output;
+	min_x = min_y = INT_MAX;
+	max_x = max_y = INT_MIN;
+
+	wl_list_for_each(output, &output_list, link) {
+		min_x = MIN(min_x, output->offset_x);
+		min_y = MIN(min_y, output->offset_y);
+		max_x = MAX(max_x, output->offset_x + output->width);
+		max_y = MAX(max_y, output->offset_y + output->height);
+	}
+
+	if (max_x <= min_x || max_y <= min_y)
+		return -1;
+
+	*width = max_x - min_x;
+	*height = max_y - min_y;
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
 	struct screenshooter_output *output;
-	int width = 0, height = 0;
+	int width, height;
 
 	display = wl_display_connect(NULL);
 	if (display == NULL) {
@@ -224,12 +249,13 @@ int main(int argc, char *argv[])
 
 	screenshooter_add_listener(screenshooter, &screenshooter_listener, screenshooter);
 
+	if (set_buffer_size(&width, &height))
+		return -1;
+
 
 	wl_list_for_each(output, &output_list, link) {
 		output->buffer = create_shm_buffer(output->width, output->height, &output->data);
 		screenshooter_shoot(screenshooter, output->output, output->buffer);
-		width = MAX(width, output->offset_x + output->width);
-		height = MAX(height, output->offset_y + output->height);
 		buffer_copy_done = 0;
 		while (!buffer_copy_done)
 			wl_display_roundtrip(display);
