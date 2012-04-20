@@ -2389,6 +2389,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->mm_width = width;
 	output->mm_height = height;
 	output->dirty = 1;
+	wl_list_init(&output->read_pixels_list);
 
 	output->zoom.active = 0;
 	output->zoom.increment = 0.05;
@@ -2410,6 +2411,20 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->global =
 		wl_display_add_global(c->wl_display, &wl_output_interface,
 				      output, bind_output);
+}
+
+WL_EXPORT void
+weston_output_do_read_pixels(struct weston_output *output)
+{
+	struct weston_read_pixels *r, *next;
+
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	wl_list_for_each_safe(r, next, &output->read_pixels_list, link) {
+		glReadPixels(r->x, r->y, r->width, r->height,
+			     output->compositor->read_format,
+			     GL_UNSIGNED_BYTE, r->data);
+		r->done(r, output);
+	}
 }
 
 static void

@@ -357,6 +357,8 @@ wayland_output_repaint(struct weston_output *output_base,
 
 	draw_border(output);
 
+	weston_output_do_read_pixels(&output->base);
+
 	eglSwapBuffers(compositor->base.display, output->egl_surface);
 	callback = wl_surface_frame(output->parent.surface);
 	wl_callback_add_listener(callback, &frame_listener, output);
@@ -375,21 +377,6 @@ wayland_output_destroy(struct weston_output *output_base)
 	free(output);
 
 	return;
-}
-
-static void
-wayland_output_read_pixels(struct weston_output *output_base, void *data)
-{
-	struct wayland_output *output = (struct wayland_output *) output_base;
-	struct wayland_compositor *compositor =
-		(struct wayland_compositor *) output->base.compositor;
-
-	eglMakeCurrent(compositor->base.display, output->egl_surface,
-			output->egl_surface, compositor->base.context);
-
-	glReadPixels(0, 0, output_base->current->width,
-		     output_base->current->height,
-		     compositor->base.read_format, GL_UNSIGNED_BYTE, data);
 }
 
 static int
@@ -460,7 +447,6 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	output->base.repaint = wayland_output_repaint;
 	output->base.destroy = wayland_output_destroy;
 	output->base.assign_planes = NULL;
-	output->base.read_pixels = wayland_output_read_pixels;
 	output->base.set_backlight = NULL;
 	output->base.set_dpms = NULL;
 	output->base.switch_mode = NULL;

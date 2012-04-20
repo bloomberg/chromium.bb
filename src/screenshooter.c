@@ -36,6 +36,12 @@ struct screenshooter {
 	struct wl_listener destroy_listener;
 };
 
+struct screenshooter_read_pixels {
+	struct weston_read_pixels base;
+	struct wl_buffer *buffer;
+	struct wl_resource *resource;
+};
+
 static void
 copy_bgra_yflip(uint8_t *dst, uint8_t *src, int height,
 		int dst_stride, int src_stride)
@@ -82,37 +88,20 @@ copy_rgba_yflip(uint8_t *dst, uint8_t *src, int height,
 }
 
 static void
-screenshooter_shoot(struct wl_client *client,
-		    struct wl_resource *resource,
-		    struct wl_resource *output_resource,
-		    struct wl_resource *buffer_resource)
+screenshooter_read_pixels_done(struct weston_read_pixels *base,
+			       struct weston_output *output)
 {
-	struct weston_output *output = output_resource->data;
-	struct wl_buffer *buffer = buffer_resource->data;
-	uint8_t *tmp, *d, *s;
+	struct screenshooter_read_pixels *r =
+		(struct screenshooter_read_pixels *) base;
 	int32_t buffer_stride, output_stride;
+	uint8_t *d, *s;
 
-	if (!wl_buffer_is_shm(buffer))
-		return;
-
-	if (buffer->width < output->current->width ||
-	    buffer->height < output->current->height)
-		return;
-
-	buffer_stride = wl_shm_buffer_get_stride(buffer);
+	buffer_stride = wl_shm_buffer_get_stride(r->buffer);
 	output_stride = output->current->width * 4;
-	tmp = malloc(output_stride * output->current->height);
-	if (tmp == NULL) {
-		wl_resource_post_no_memory(resource);
-		return;
-	}
 
-	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	output->read_pixels(output, tmp);
-
-	d = wl_shm_buffer_get_data(buffer) + output->y * buffer_stride +
-							output->x * 4;
-	s = tmp + output_stride * (output->current->height - 1);
+	d = wl_shm_buffer_get_data(r->buffer) +
+		output->y * buffer_stride + output->x * 4;
+	s = r->base.data + output_stride * (output->current->height - 1);
 
 	switch (output->compositor->read_format) {
 	case GL_BGRA_EXT:
@@ -127,7 +116,56 @@ screenshooter_shoot(struct wl_client *client,
 		break;
 	}
 
-	free(tmp);
+	wl_list_remove(&r->base.link);
+
+	screenshooter_send_done(r->resource);
+	free(r->base.data);
+	free(r);
+
+}
+
+static void
+screenshooter_shoot(struct wl_client *client,
+		    struct wl_resource *resource,
+		    struct wl_resource *output_resource,
+		    struct wl_resource *buffer_resource)
+{
+	struct weston_output *output = output_resource->data;
+	struct screenshooter_read_pixels *r;
+	struct wl_buffer *buffer = buffer_resource->data;
+	int32_t stride;
+
+	if (!wl_buffer_is_shm(buffer))
+		return;
+
+	if (buffer->width < output->current->width ||
+	    buffer->height < output->current->height)
+		return;
+
+	r = malloc(sizeof *r);
+	if (r == NULL) {
+		wl_resource_post_no_memory(resource);
+		return;
+	}
+
+	r->base.x = 0;
+	r->base.y = 0;
+	r->base.width = output->current->width;
+	r->base.height = output->current->height;
+	r->base.done = screenshooter_read_pixels_done;
+	r->buffer = buffer;
+	r->resource = resource;
+	stride = buffer->width * 4;
+	r->base.data = malloc(stride * buffer->height);
+
+	if (r->base.data == NULL) {
+		free(r);
+		wl_resource_post_no_memory(resource);
+		return;
+	}
+
+	wl_list_insert(output->read_pixels_list.prev, &r->base.link);
+	weston_compositor_schedule_repaint(output->compositor);
 }
 
 struct screenshooter_interface screenshooter_implementation = {

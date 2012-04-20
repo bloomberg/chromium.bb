@@ -41,6 +41,7 @@
 static struct wl_shm *shm;
 static struct screenshooter *screenshooter;
 static struct wl_list output_list;
+int buffer_copy_done;
 
 struct screenshooter_output {
 	struct wl_output *output;
@@ -91,6 +92,16 @@ display_handle_mode(void *data,
 static const struct wl_output_listener output_listener = {
 	display_handle_geometry,
 	display_handle_mode
+};
+
+static void
+screenshot_done(void *data, struct screenshooter *screenshooter)
+{
+	buffer_copy_done = 1;
+}
+
+static const struct screenshooter_listener screenshooter_listener = {
+	screenshot_done
 };
 
 static void
@@ -188,6 +199,9 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	screenshooter_add_listener(screenshooter, &screenshooter_listener, screenshooter);
+
+
 	wl_list_for_each(output, &output_list, link) {
 		width = MAX(width, output->offset_x + output->width);
 		height = MAX(height, output->offset_y + output->height);
@@ -197,10 +211,11 @@ int main(int argc, char *argv[])
 
 	wl_list_for_each_safe(output, next, &output_list, link) {
 		screenshooter_shoot(screenshooter, output->output, buffer);
+		buffer_copy_done = 0;
+		while (!buffer_copy_done)
+			wl_display_roundtrip(display);
 		free(output);
 	}
-
-	wl_display_roundtrip(display);
 
 	write_png(width, height, data);
 

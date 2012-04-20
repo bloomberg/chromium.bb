@@ -44,6 +44,7 @@ struct weston_transform {
 
 struct weston_surface;
 struct weston_input_device;
+struct weston_output;
 
 struct weston_mode {
 	uint32_t flags;
@@ -72,6 +73,14 @@ enum dpms_enum {
 	WESTON_DPMS_OFF
 };
 
+struct weston_read_pixels {
+	void *data;
+	int x, y, width, height;
+	void (*done)(struct weston_read_pixels *read_pixels,
+		     struct weston_output *output);
+	struct wl_list link;
+};
+
 struct weston_output {
 	uint32_t id;
 
@@ -90,6 +99,7 @@ struct weston_output {
 	int repaint_scheduled;
 	struct weston_output_zoom zoom;
 	int dirty;
+	struct wl_list read_pixels_list;
 
 	char *make, *model;
 	uint32_t subpixel;
@@ -102,7 +112,6 @@ struct weston_output {
 			pixman_region32_t *damage);
 	void (*destroy)(struct weston_output *output);
 	void (*assign_planes)(struct weston_output *output);
-	void (*read_pixels)(struct weston_output *output, void *data);
 	int (*switch_mode)(struct weston_output *output, struct weston_mode *mode);
 
 	/* backlight values are on 0-255 range, where higher is brighter */
@@ -423,6 +432,8 @@ void
 weston_output_finish_frame(struct weston_output *output, int msecs);
 void
 weston_output_damage(struct weston_output *output);
+void
+weston_output_do_read_pixels(struct weston_output *output);
 void
 weston_compositor_repick(struct weston_compositor *compositor);
 void
