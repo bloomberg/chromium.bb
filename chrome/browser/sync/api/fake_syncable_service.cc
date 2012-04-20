@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/api/fake_syncable_service.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
 
 #include "base/location.h"
 
@@ -30,7 +31,8 @@ bool FakeSyncableService::syncing() const {
 SyncError FakeSyncableService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor,
+    scoped_ptr<SyncErrorFactory> sync_error_factory) {
   sync_processor_ = sync_processor.Pass();
   type_ = type;
   if (!merge_data_and_start_syncing_error_.IsSet()) {

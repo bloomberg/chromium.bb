@@ -391,6 +391,8 @@
       'sources': [
         'browser/sync/api/fake_syncable_service.cc',
         'browser/sync/api/fake_syncable_service.h',
+        'browser/sync/api/sync_error_factory_mock.cc',
+        'browser/sync/api/sync_error_factory_mock.h',
       ],
     },
     {
@@ -2664,6 +2666,7 @@
         'common/extensions/api/api.gyp:api',
         'renderer',
         'test_support_common',
+        'test_support_syncapi_service',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:test_support_base',

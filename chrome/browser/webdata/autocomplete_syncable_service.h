@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class ProfileSyncServiceAutofillTest;
+class SyncErrorFactory;
 
 namespace sync_pb {
 class AutofillSpecifics;
@@ -51,7 +52,8 @@ class AutocompleteSyncableService
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor) OVERRIDE;
+      scoped_ptr<SyncChangeProcessor> sync_processor,
+      scoped_ptr<SyncErrorFactory> error_handler) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
   virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
   virtual SyncError ProcessSyncChanges(
@@ -136,6 +138,10 @@ class AutocompleteSyncableService
   // We receive ownership of |sync_processor_| in MergeDataAndStartSyncing() and
   // destroy it in StopSyncing().
   scoped_ptr<SyncChangeProcessor> sync_processor_;
+
+  // We receive ownership of |error_handler_| in MergeDataAndStartSyncing() and
+  // destroy it in StopSyncing().
+  scoped_ptr<SyncErrorFactory> error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteSyncableService);
 };

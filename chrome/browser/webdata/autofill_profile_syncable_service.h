@@ -51,7 +51,8 @@ class AutofillProfileSyncableService
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor) OVERRIDE;
+      scoped_ptr<SyncChangeProcessor> sync_processor,
+      scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
   virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
   virtual SyncError ProcessSyncChanges(
@@ -163,6 +164,8 @@ class AutofillProfileSyncableService
   GUIDToProfileMap profiles_map_;
 
   scoped_ptr<SyncChangeProcessor> sync_processor_;
+
+  scoped_ptr<SyncErrorFactory> sync_error_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileSyncableService);
 };

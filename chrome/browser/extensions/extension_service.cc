@@ -75,6 +75,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sync/api/sync_change.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -1277,17 +1278,22 @@ void ExtensionService::CheckForUpdatesSoon() {
 SyncError ExtensionService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor,
+    scoped_ptr<SyncErrorFactory> sync_error_factory) {
   CHECK(sync_processor.get());
+  CHECK(sync_error_factory.get());
 
   switch (type) {
     case syncable::EXTENSIONS:
       extension_sync_bundle_.SetupSync(sync_processor.release(),
+                                       sync_error_factory.release(),
                                        initial_sync_data);
       break;
 
     case syncable::APPS:
-      app_sync_bundle_.SetupSync(sync_processor.release(), initial_sync_data);
+      app_sync_bundle_.SetupSync(sync_processor.release(),
+                                 sync_error_factory.release(),
+                                 initial_sync_data);
       break;
 
     default:

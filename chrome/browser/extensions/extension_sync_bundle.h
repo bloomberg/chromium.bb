@@ -20,6 +20,7 @@ class SyncChangeProcessor;
 class Extension;
 class ExtensionService;
 class ExtensionSet;
+class SyncErrorFactory;
 
 namespace extensions {
 
@@ -31,6 +32,7 @@ class ExtensionSyncBundle {
 
   // Setup this bundle to be sync extension data.
   void SetupSync(SyncChangeProcessor* sync_processor,
+                 SyncErrorFactory* sync_error_factory,
                  const SyncDataList& initial_sync_data);
 
   // Resets this class back to it default values, which will disable all syncing
@@ -89,6 +91,7 @@ class ExtensionSyncBundle {
 
   ExtensionService* extension_service_;  // Owns us.
   scoped_ptr<SyncChangeProcessor> sync_processor_;
+  scoped_ptr<SyncErrorFactory> sync_error_factory_;
 
   std::set<std::string> synced_extensions_;
   std::map<std::string, ExtensionSyncData> pending_sync_data_;

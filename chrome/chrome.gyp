@@ -345,6 +345,8 @@
         'browser/sync/api/sync_change_processor.cc',
         'browser/sync/api/sync_error.h',
         'browser/sync/api/sync_error.cc',
+        'browser/sync/api/sync_error_factory.h',
+        'browser/sync/api/sync_error_factory.cc',
       ],
       'include_dirs': [
         '..',

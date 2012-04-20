@@ -52,6 +52,8 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
+#include "chrome/browser/sync/api/sync_error_factory_mock.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -4005,7 +4007,8 @@ TEST_F(ExtensionServiceTest, GetSyncData) {
   ASSERT_TRUE(extension);
 
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   SyncDataList list = service_->GetAllSyncData(syncable::EXTENSIONS);
   ASSERT_EQ(list.size(), 1U);
@@ -4028,7 +4031,8 @@ TEST_F(ExtensionServiceTest, GetSyncDataTerminated) {
 
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   SyncDataList list = service_->GetAllSyncData(syncable::EXTENSIONS);
   ASSERT_EQ(list.size(), 1U);
@@ -4050,7 +4054,8 @@ TEST_F(ExtensionServiceTest, GetSyncDataFilter) {
 
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::APPS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   SyncDataList list = service_->GetAllSyncData(syncable::EXTENSIONS);
   ASSERT_EQ(list.size(), 0U);
@@ -4064,7 +4069,8 @@ TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
 
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   {
     SyncDataList list = service_->GetAllSyncData(syncable::EXTENSIONS);
@@ -4111,7 +4117,8 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettings) {
 
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::APPS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   StringOrdinal initial_ordinal = StringOrdinal::CreateInitialOrdinal();
   {
@@ -4159,7 +4166,8 @@ TEST_F(ExtensionServiceTest, GetSyncAppDataUserSettingsOnExtensionMoved) {
 
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::APPS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   service_->OnExtensionMoved(apps[0]->id(), apps[1]->id(), apps[2]->id());
   {
@@ -4197,9 +4205,11 @@ TEST_F(ExtensionServiceTest, GetSyncDataList) {
 
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::APPS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   service_->DisableExtension(page_action, Extension::DISABLE_USER_ACTION);
   TerminateExtension(theme2_crx);
@@ -4212,7 +4222,8 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataUninstall) {
   InitializeEmptyExtensionService();
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
@@ -4287,7 +4298,8 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
   InitializeExtensionProcessManager();
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
@@ -4341,7 +4353,8 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataTerminatedExtension) {
   InitializeExtensionServiceWithUpdater();
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   TerminateExtension(good_crx);
@@ -4372,7 +4385,8 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataVersionCheck) {
   InitializeRequestContext();
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   EXPECT_TRUE(service_->IsExtensionEnabled(good_crx));
@@ -4429,7 +4443,8 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   InitializeRequestContext();
   TestSyncProcessorStub processor;
   service_->MergeDataAndStartSyncing(syncable::EXTENSIONS, SyncDataList(),
-      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub));
+      scoped_ptr<SyncChangeProcessor>(new TestSyncProcessorStub),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();

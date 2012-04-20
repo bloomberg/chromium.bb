@@ -19,7 +19,8 @@ SharedChangeProcessor::SharedChangeProcessor()
     : disconnected_(false),
       type_(syncable::UNSPECIFIED),
       sync_service_(NULL),
-      generic_change_processor_(NULL) {
+      generic_change_processor_(NULL),
+      error_handler_(NULL) {
   // We're always created on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -59,6 +60,7 @@ base::WeakPtr<SyncableService> SharedChangeProcessor::Connect(
     return base::WeakPtr<SyncableService>();
   type_ = type;
   sync_service_ = sync_service;
+  error_handler_ = error_handler;
   base::WeakPtr<SyncableService> local_service =
       sync_factory->GetSyncableServiceForType(type);
   if (!local_service.get()) {
@@ -79,6 +81,7 @@ bool SharedChangeProcessor::Disconnect() {
   AutoLock lock(monitor_lock_);
   bool was_connected = !disconnected_;
   disconnected_ = true;
+  error_handler_ = NULL;
   return was_connected;
 }
 
@@ -145,6 +148,17 @@ void SharedChangeProcessor::ActivateDataType(
   sync_service_->ActivateDataType(type_,
                                   model_safe_group,
                                   generic_change_processor_);
+}
+
+SyncError SharedChangeProcessor::CreateAndUploadError(
+    const tracked_objects::Location& location,
+    const std::string& message) {
+  AutoLock lock(monitor_lock_);
+  if (!disconnected_) {
+    return error_handler_->CreateAndUploadError(location, message, type_);
+  } else {
+    return SyncError(location, message, type_);
+  }
 }
 
 }  // namespace browser_sync

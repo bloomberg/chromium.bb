@@ -11,6 +11,7 @@
 #include "chrome/browser/autofill/form_group.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -59,16 +60,18 @@ AutofillProfileSyncableService::AutofillProfileSyncableService()
 SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor,
+    scoped_ptr<SyncErrorFactory> sync_error_factory) {
   DCHECK(CalledOnValidThread());
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
+  DCHECK(sync_error_factory.get());
   DVLOG(1) << "Associating Autofill: MergeDataAndStartSyncing";
 
+  sync_error_factory_ = sync_error_factory.Pass();
   if (!LoadAutofillData(&profiles_.get())) {
-    return SyncError(
-        FROM_HERE, "Could not get the autofill data from WebDatabase.",
-        model_type());
+    return sync_error_factory_->CreateAndUploadError(
+        FROM_HERE, "Could not get the autofill data from WebDatabase.");
   }
 
   if (DLOG_IS_ON(INFO)) {
@@ -126,8 +129,11 @@ SyncError AutofillProfileSyncableService::MergeDataAndStartSyncing(
     }
   }
 
-  if (!SaveChangesToWebData(bundle))
-    return SyncError(FROM_HERE, "Failed to update webdata.", model_type());
+  if (!SaveChangesToWebData(bundle)) {
+    return sync_error_factory_->CreateAndUploadError(
+        FROM_HERE,
+        "Failed to update webdata.");
+  }
 
   SyncChangeList new_changes;
   for (GUIDToProfileMap::iterator i = remaining_profiles.begin();
@@ -157,6 +163,7 @@ void AutofillProfileSyncableService::StopSyncing(syncable::ModelType type) {
   DCHECK_EQ(type, syncable::AUTOFILL_PROFILE);
 
   sync_processor_.reset();
+  sync_error_factory_.reset();
   profiles_.reset();
   profiles_map_.clear();
 }
@@ -204,14 +211,18 @@ SyncError AutofillProfileSyncableService::ProcessSyncChanges(
       } break;
       default:
         NOTREACHED() << "Unexpected sync change state.";
-        return SyncError(FROM_HERE, "ProcessSyncChanges failed on ChangeType " +
-                         SyncChange::ChangeTypeToString(i->change_type()),
-                         syncable::AUTOFILL_PROFILE);
+        return sync_error_factory_->CreateAndUploadError(
+              FROM_HERE,
+              "ProcessSyncChanges failed on ChangeType " +
+                  SyncChange::ChangeTypeToString(i->change_type()));
     }
   }
 
-  if (!SaveChangesToWebData(bundle))
-    return SyncError(FROM_HERE, "Failed to update webdata.", model_type());
+  if (!SaveChangesToWebData(bundle)) {
+    return sync_error_factory_->CreateAndUploadError(
+        FROM_HERE,
+        "Failed to update webdata.");
+  }
 
   WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
 

@@ -98,6 +98,7 @@ class DataTypeController
   virtual State state() const = 0;
 
   // Partial implementation of DataTypeErrorHandler.
+  // This is thread safe.
   virtual SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
       const std::string& message,

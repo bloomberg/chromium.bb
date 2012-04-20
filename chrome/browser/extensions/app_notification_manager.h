@@ -24,6 +24,7 @@
 
 class PerfTimer;
 class Profile;
+class SyncErrorFactory;
 
 // This class keeps track of notifications for installed apps.
 class AppNotificationManager
@@ -73,7 +74,8 @@ class AppNotificationManager
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor) OVERRIDE;
+      scoped_ptr<SyncChangeProcessor> sync_processor,
+      scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
 
  private:
@@ -156,6 +158,10 @@ class AppNotificationManager
 
   // Sync change processor we use to push all our changes.
   scoped_ptr<SyncChangeProcessor> sync_processor_;
+
+  // Sync error handler that we use to create errors from.
+  scoped_ptr<SyncErrorFactory> sync_error_factory_;
+
   // Whether the sync model is associated with the local model.
   // In other words, whether we are ready to apply sync changes.
   bool models_associated_;

@@ -13,6 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "chrome/browser/sync/api/sync_error.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "sync/engine/model_safe_worker.h"
 
@@ -86,6 +87,10 @@ class SharedChangeProcessor
   // Does nothing if |disconnected_| is true.
   virtual void ActivateDataType(browser_sync::ModelSafeGroup model_safe_group);
 
+  virtual SyncError CreateAndUploadError(
+      const tracked_objects::Location& location,
+      const std::string& message);
+
  protected:
   friend class base::RefCountedThreadSafe<SharedChangeProcessor>;
   virtual ~SharedChangeProcessor();
@@ -111,6 +116,8 @@ class SharedChangeProcessor
 
   // Used only on |backend_loop_|.
   GenericChangeProcessor* generic_change_processor_;
+
+  DataTypeErrorHandler* error_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedChangeProcessor);
 };

@@ -131,6 +131,8 @@ void UIDataTypeController::Associate() {
       type(),
       initial_sync_data,
       scoped_ptr<SyncChangeProcessor>(
+          new SharedChangeProcessorRef(shared_change_processor_)),
+      scoped_ptr<SyncErrorFactory>(
           new SharedChangeProcessorRef(shared_change_processor_)));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (error.IsSet()) {

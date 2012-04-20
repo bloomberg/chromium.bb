@@ -17,6 +17,8 @@
 #include "chrome/browser/extensions/settings/syncable_settings_storage.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 
+class SyncErrorFactory;
+
 namespace extensions {
 
 // Manages SettingsStorage objects for extensions, including routing
@@ -48,7 +50,8 @@ class SettingsBackend : public SyncableService {
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor) OVERRIDE;
+      scoped_ptr<SyncChangeProcessor> sync_processor,
+      scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) OVERRIDE;
@@ -93,6 +96,9 @@ class SettingsBackend : public SyncableService {
 
   // Current sync processor, if any.
   scoped_ptr<SyncChangeProcessor> sync_processor_;
+
+  // Current sync error handler if any.
+  scoped_ptr<SyncErrorFactory> sync_error_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsBackend);
 };

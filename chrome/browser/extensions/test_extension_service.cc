@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/test_extension_service.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TestExtensionService::~TestExtensionService() {}
@@ -73,7 +74,8 @@ void TestExtensionService::CheckForUpdatesSoon() {
 SyncError TestExtensionService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor,
+    scoped_ptr<SyncErrorFactory> sync_error_factory) {
   ADD_FAILURE();
   return SyncError();
 }

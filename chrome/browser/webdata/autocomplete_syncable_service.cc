@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
@@ -110,17 +111,20 @@ AutocompleteSyncableService::AutocompleteSyncableService()
 SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor,
+    scoped_ptr<SyncErrorFactory> error_handler) {
   DCHECK(CalledOnValidThread());
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
+  DCHECK(error_handler.get());
   VLOG(1) << "Associating Autocomplete: MergeDataAndStartSyncing";
 
+  error_handler_ = error_handler.Pass();
   std::vector<AutofillEntry> entries;
   if (!LoadAutofillData(&entries)) {
-    return SyncError(
-        FROM_HERE, "Could not get the autocomplete data from WebDatabase.",
-        model_type());
+    return error_handler_->CreateAndUploadError(
+        FROM_HERE,
+        "Could not get the autocomplete data from WebDatabase.");
   }
 
   AutocompleteEntryMap new_db_entries;
@@ -145,8 +149,11 @@ SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
   // Check if newly received items need culling.
   bool need_to_cull_data = !synced_expired_entries.empty();
 
-  if (!SaveChangesToWebData(new_synced_entries))
-    return SyncError(FROM_HERE, "Failed to update webdata.", model_type());
+  if (!SaveChangesToWebData(new_synced_entries)) {
+    return error_handler_->CreateAndUploadError(
+        FROM_HERE,
+        "Failed to update webdata.");
+  }
 
   WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
   keys_to_ignore_.clear();
@@ -198,6 +205,7 @@ void AutocompleteSyncableService::StopSyncing(syncable::ModelType type) {
   DCHECK_EQ(syncable::AUTOFILL, type);
 
   sync_processor_.reset(NULL);
+  error_handler_.reset();
 }
 
 SyncDataList AutocompleteSyncableService::GetAllSyncData(
@@ -248,10 +256,9 @@ SyncError AutocompleteSyncableService::ProcessSyncChanges(
       case SyncChange::ACTION_UPDATE:
         if (!db_entries.get()) {
           if (!LoadAutofillData(&entries)) {
-            return SyncError(
+            return error_handler_->CreateAndUploadError(
                 FROM_HERE,
-                "Could not get the autocomplete data from WebDatabase.",
-                model_type());
+                "Could not get the autocomplete data from WebDatabase.");
           }
           db_entries.reset(new AutocompleteEntryMap);
           for (std::vector<AutofillEntry>::iterator it = entries.begin();
@@ -277,14 +284,18 @@ SyncError AutocompleteSyncableService::ProcessSyncChanges(
       } break;
       default:
         NOTREACHED() << "Unexpected sync change state.";
-        return SyncError(FROM_HERE, "ProcessSyncChanges failed on ChangeType " +
-                         SyncChange::ChangeTypeToString(i->change_type()),
-                         syncable::AUTOFILL);
+        return error_handler_->CreateAndUploadError(
+            FROM_HERE,
+            "ProcessSyncChanges failed on ChangeType " +
+                 SyncChange::ChangeTypeToString(i->change_type()));
     }
   }
 
-  if (!SaveChangesToWebData(new_entries))
-    return SyncError(FROM_HERE, "Failed to update webdata.", model_type());
+  if (!SaveChangesToWebData(new_entries)) {
+    return error_handler_->CreateAndUploadError(
+        FROM_HERE,
+        "Failed to update webdata.");
+  }
 
   // Remove already expired data.
   for (size_t i = 0; i < ignored_entries.size(); ++i) {
@@ -416,9 +427,9 @@ SyncError AutocompleteSyncableService::AutofillEntryDelete(
     const sync_pb::AutofillSpecifics& autofill) {
   if (!web_data_service_->GetDatabase()->GetAutofillTable()->RemoveFormElement(
           UTF8ToUTF16(autofill.name()), UTF8ToUTF16(autofill.value()))) {
-    return SyncError(FROM_HERE,
-                     "Could not remove autocomplete entry from WebDatabase.",
-                     model_type());
+    return error_handler_->CreateAndUploadError(
+        FROM_HERE,
+        "Could not remove autocomplete entry from WebDatabase.");
   }
   return SyncError();
 }

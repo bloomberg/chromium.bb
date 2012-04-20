@@ -43,7 +43,8 @@ class PrefModelAssociator
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor) OVERRIDE;
+      scoped_ptr<SyncChangeProcessor> sync_processor,
+      scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
 
   // Returns the list of preference names that are registered as syncable, and
@@ -142,6 +143,9 @@ class PrefModelAssociator
 
   // Sync's SyncChange handler. We push all our changes through this.
   scoped_ptr<SyncChangeProcessor> sync_processor_;
+
+  // Sync's error handler. We use this to create sync errors.
+  scoped_ptr<SyncErrorFactory> sync_error_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };

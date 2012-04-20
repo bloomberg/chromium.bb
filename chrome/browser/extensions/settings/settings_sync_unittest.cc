@@ -18,6 +18,8 @@
 #include "chrome/browser/extensions/settings/syncable_settings_storage.h"
 #include "chrome/browser/extensions/settings/testing_settings_storage.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
+#include "chrome/browser/sync/api/sync_error_factory_mock.h"
 #include "content/test/test_browser_thread.h"
 
 using content::BrowserThread;
@@ -281,7 +283,8 @@ TEST_F(ExtensionSettingsSyncTest, NoDataDoesNotInvokeSync) {
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
       SyncDataList(),
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   AddExtensionAndGetStorage("s2", type);
   EXPECT_EQ(0u, GetAllSyncData(model_type).size());
@@ -322,7 +325,8 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
 
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type, sync_data,
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   // Already in sync, so no changes.
   EXPECT_EQ(0u, sync_processor_->changes().size());
@@ -358,7 +362,8 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
       SyncDataList(),
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   // All settings should have been pushed to sync.
   EXPECT_EQ(2u, sync_processor_->changes().size());
@@ -395,7 +400,8 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
       "s2", "bar", value2, model_type));
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type, sync_data,
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
   expected1.Set("foo", value1.DeepCopy());
   expected2.Set("bar", value2.DeepCopy());
 
@@ -436,7 +442,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
 
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type, sync_data,
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
   expected2.Set("bar", value2.DeepCopy());
 
   // Make sync add some settings.
@@ -509,7 +516,8 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
 
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type, sync_data,
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   // Add something locally.
   storage1->Set(DEFAULTS, "bar", value2);
@@ -658,7 +666,8 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
   GetSyncableService(syncable::EXTENSION_SETTINGS)->MergeDataAndStartSyncing(
       syncable::EXTENSION_SETTINGS,
       sync_data,
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
   GetSyncableService(syncable::EXTENSION_SETTINGS)->
       StopSyncing(syncable::EXTENSION_SETTINGS);
   EXPECT_EQ(0u, sync_processor_->changes().size());
@@ -672,7 +681,8 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
   GetSyncableService(syncable::APP_SETTINGS)->MergeDataAndStartSyncing(
       syncable::APP_SETTINGS,
       sync_data,
-      app_settings_delegate_.PassAs<SyncChangeProcessor>());
+      app_settings_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
   GetSyncableService(syncable::APP_SETTINGS)->
       StopSyncing(syncable::APP_SETTINGS);
   EXPECT_EQ(0u, sync_processor_->changes().size());
@@ -706,7 +716,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
     GetSyncableService(model_type)->MergeDataAndStartSyncing(
         model_type,
         sync_data,
-        sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+        sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+        scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
   }
   testing_factory->GetExisting("bad")->SetFailAllRequests(false);
 
@@ -823,7 +834,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
       SyncDataList(),
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   // Local settings will have been pushed to sync, since it's empty (in this
   // test; presumably it wouldn't be live, since we've been getting changes).
@@ -900,7 +912,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
     GetSyncableService(model_type)->MergeDataAndStartSyncing(
         model_type,
         sync_data,
-        sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+        sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+        scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
   }
 
   EXPECT_EQ(0u, sync_processor_->changes().size());
@@ -1005,7 +1018,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
       SyncDataList(),
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   EXPECT_EQ(
       SyncChange::ACTION_ADD,
@@ -1051,7 +1065,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
       SyncDataList(),
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
   testing_factory->GetExisting("bad")->SetFailAllRequests(false);
 
   EXPECT_EQ(
@@ -1102,7 +1117,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
       SyncDataList(),
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   EXPECT_EQ(
       SyncChange::ACTION_ADD,
@@ -1152,7 +1168,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
       SyncDataList(),
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
   sync_processor_->SetFailAllRequests(false);
 
   // Changes from good will be send to sync, changes from bad won't.
@@ -1195,7 +1212,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
       SyncDataList(),
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   EXPECT_EQ(
       SyncChange::ACTION_ADD,
@@ -1238,7 +1256,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
       SyncDataList(),
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   // bad will fail to send changes.
   good->Set(DEFAULTS, "foo", fooValue);
@@ -1291,7 +1310,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
       SyncDataList(),
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   EXPECT_EQ(
       SyncChange::ACTION_ADD,
@@ -1332,7 +1352,8 @@ TEST_F(ExtensionSettingsSyncTest,
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
       SyncDataList(),
-      sync_processor_delegate_.PassAs<SyncChangeProcessor>());
+      sync_processor_delegate_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   // Large local change rejected and doesn't get sent out.
   SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);

@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
@@ -305,9 +306,11 @@ SyncError AppNotificationManager::ProcessSyncChanges(
     const SyncChangeList& change_list) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(loaded());
-  if (!models_associated_)
-    return SyncError(FROM_HERE, "Models not yet associated.",
-                     syncable::APP_NOTIFICATIONS);
+  if (!models_associated_) {
+    return sync_error_factory_->CreateAndUploadError(
+        FROM_HERE,
+        "Models not yet associated.");
+  }
 
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
@@ -328,10 +331,10 @@ SyncError AppNotificationManager::ProcessSyncChanges(
         new_notif->extension_id(), new_notif->guid());
     if (existing_notif && existing_notif->is_local()) {
       NOTREACHED() << "Matched with notification marked as local";
-      error = SyncError(FROM_HERE,
+      error = sync_error_factory_->CreateAndUploadError(
+          FROM_HERE,
           "ProcessSyncChanges received a local only notification" +
-          SyncChange::ChangeTypeToString(change_type),
-          syncable::APP_NOTIFICATIONS);
+              SyncChange::ChangeTypeToString(change_type));
       continue;
     }
 
@@ -382,7 +385,8 @@ SyncError AppNotificationManager::ProcessSyncChanges(
 SyncError AppNotificationManager::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor,
+    scoped_ptr<SyncErrorFactory> sync_error_factory) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // AppNotificationDataTypeController ensures that modei is fully should before
   // this method is called by waiting until the load notification is received
@@ -391,7 +395,9 @@ SyncError AppNotificationManager::MergeDataAndStartSyncing(
   DCHECK_EQ(type, syncable::APP_NOTIFICATIONS);
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
+  DCHECK(sync_error_factory.get());
   sync_processor_ = sync_processor.Pass();
+  sync_error_factory_ = sync_error_factory.Pass();
 
   // We may add, or remove notifications here, so ensure we don't step on
   // our own toes.
@@ -415,10 +421,10 @@ SyncError AppNotificationManager::MergeDataAndStartSyncing(
       // Local notification should always match with sync notification as
       // notifications are immutable.
       if (local_notif->is_local() || !sync_notif->Equals(*local_notif)) {
-        return SyncError(FROM_HERE,
+        return sync_error_factory_->CreateAndUploadError(
+             FROM_HERE,
             "MergeDataAndStartSyncing failed: local notification and sync "
-            "notification have same guid but different data.",
-            syncable::APP_NOTIFICATIONS);
+            "notification have same guid but different data.");
       }
     } else {
       // Sync model has a notification that local model does not, add it.
@@ -444,6 +450,7 @@ void AppNotificationManager::StopSyncing(syncable::ModelType type) {
   DCHECK_EQ(type, syncable::APP_NOTIFICATIONS);
   models_associated_ = false;
   sync_processor_.reset();
+  sync_error_factory_.reset();
 }
 
 void AppNotificationManager::SyncAddChange(const AppNotification& notif) {

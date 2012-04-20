@@ -14,6 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
+#include "chrome/browser/sync/api/sync_error_factory_mock.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -162,7 +164,9 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
         kModelType,
         SyncDataList(),
         scoped_ptr<SyncChangeProcessor>(
-            new SyncChangeProcessorDelegate(sync_processor))).IsSet());
+            new SyncChangeProcessorDelegate(sync_processor)),
+        scoped_ptr<SyncErrorFactory>(
+            new SyncErrorFactoryMock())).IsSet());
   }
 
   void SendChangesToSyncableService(

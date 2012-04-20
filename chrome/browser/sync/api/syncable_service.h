@@ -16,6 +16,8 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "sync/syncable/model_type.h"
 
+class SyncErrorFactory;
+
 typedef std::vector<SyncData> SyncDataList;
 
 // TODO(zea): remove SupportsWeakPtr in favor of having all SyncableService
@@ -36,7 +38,8 @@ class SyncableService : public SyncChangeProcessor,
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor) = 0;
+      scoped_ptr<SyncChangeProcessor> sync_processor,
+      scoped_ptr<SyncErrorFactory> error_handler) = 0;
 
   // Stop syncing the specified type and reset state.
   virtual void StopSyncing(syncable::ModelType type) = 0;

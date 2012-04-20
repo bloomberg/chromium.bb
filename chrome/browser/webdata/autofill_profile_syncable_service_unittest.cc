@@ -6,6 +6,8 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
+#include "chrome/browser/sync/api/sync_error_factory_mock.h"
 #include "chrome/browser/sync/internal_api/read_node_mock.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
@@ -170,7 +172,8 @@ TEST_F(AutofillProfileSyncableServiceTest, MergeDataAndStartSyncing) {
   // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
       syncable::AUTOFILL_PROFILE, data_list,
-      sync_processor_.PassAs<SyncChangeProcessor>());
+      sync_processor_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
   autofill_syncable_service_.StopSyncing(syncable::AUTOFILL_PROFILE);
 }
 
@@ -201,7 +204,8 @@ TEST_F(AutofillProfileSyncableServiceTest, GetAllSyncData) {
   // Takes ownership of sync_processor_.
   autofill_syncable_service_.MergeDataAndStartSyncing(
       syncable::AUTOFILL_PROFILE, data_list,
-      sync_processor_.PassAs<SyncChangeProcessor>());
+      sync_processor_.PassAs<SyncChangeProcessor>(),
+      scoped_ptr<SyncErrorFactory>(new SyncErrorFactoryMock()));
 
   SyncDataList data =
       autofill_syncable_service_.GetAllSyncData(syncable::AUTOFILL_PROFILE);

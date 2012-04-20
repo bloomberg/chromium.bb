@@ -8,6 +8,8 @@
 
 #include "chrome/browser/sync/api/syncable_service.h"
 
+class SyncErrorFactory;
+
 // A fake SyncableService that can return arbitrary values and maintains the
 // syncing status.
 class FakeSyncableService : public SyncableService {
@@ -27,7 +29,8 @@ class FakeSyncableService : public SyncableService {
   virtual SyncError MergeDataAndStartSyncing(
       syncable::ModelType type,
       const SyncDataList& initial_sync_data,
-      scoped_ptr<SyncChangeProcessor> sync_processor) OVERRIDE;
+      scoped_ptr<SyncChangeProcessor> sync_processor,
+      scoped_ptr<SyncErrorFactory> sync_error_factory) OVERRIDE;
   virtual void StopSyncing(syncable::ModelType type) OVERRIDE;
   virtual SyncDataList GetAllSyncData(syncable::ModelType type) const OVERRIDE;
   virtual SyncError ProcessSyncChanges(

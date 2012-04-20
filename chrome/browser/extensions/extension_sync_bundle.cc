@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 
@@ -19,8 +20,10 @@ ExtensionSyncBundle::ExtensionSyncBundle(ExtensionService* extension_service)
 ExtensionSyncBundle::~ExtensionSyncBundle() {}
 
 void ExtensionSyncBundle::SetupSync(SyncChangeProcessor* sync_processor,
+                                    SyncErrorFactory* sync_error_factory,
                                     const SyncDataList& initial_sync_data) {
   sync_processor_.reset(sync_processor);
+  sync_error_factory_.reset(sync_error_factory);
 
   for (SyncDataList::const_iterator i = initial_sync_data.begin();
        i != initial_sync_data.end();
@@ -33,6 +36,7 @@ void ExtensionSyncBundle::SetupSync(SyncChangeProcessor* sync_processor,
 
 void ExtensionSyncBundle::Reset() {
   sync_processor_.reset();
+  sync_error_factory_.reset();
   synced_extensions_.clear();
   pending_sync_data_.clear();
 }

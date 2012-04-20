@@ -34,6 +34,7 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/sync/api/sync_change.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
@@ -846,9 +847,10 @@ SyncError TemplateURLService::ProcessSyncChanges(
       //  . Trying to DELETE or UPDATE a non-existent search engine.
       //  . Trying to ADD a search engine that already exists.
       NOTREACHED() << "Unexpected sync change state.";
-      error = SyncError(FROM_HERE, "ProcessSyncChanges failed on ChangeType " +
-          SyncChange::ChangeTypeToString(iter->change_type()),
-          syncable::SEARCH_ENGINES);
+      error = sync_error_factory_->CreateAndUploadError(
+            FROM_HERE,
+            "ProcessSyncChanges failed on ChangeType " +
+                SyncChange::ChangeTypeToString(iter->change_type()));
     }
   }
 
@@ -865,12 +867,15 @@ SyncError TemplateURLService::ProcessSyncChanges(
 SyncError TemplateURLService::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor,
+    scoped_ptr<SyncErrorFactory> sync_error_factory) {
   DCHECK(loaded());
   DCHECK_EQ(type, syncable::SEARCH_ENGINES);
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
+  DCHECK(sync_error_factory.get());
   sync_processor_ = sync_processor.Pass();
+  sync_error_factory_ = sync_error_factory.Pass();
 
   // We just started syncing, so set our wait-for-default flag if we are
   // expecting a default from Sync.
@@ -972,6 +977,7 @@ void TemplateURLService::StopSyncing(syncable::ModelType type) {
   DCHECK_EQ(type, syncable::SEARCH_ENGINES);
   models_associated_ = false;
   sync_processor_.reset();
+  sync_error_factory_.reset();
 }
 
 void TemplateURLService::ProcessTemplateURLChange(

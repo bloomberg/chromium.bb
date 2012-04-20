@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/api/sync_change.h"
+#include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "sync/protocol/preference_specifics.pb.h"
@@ -107,13 +108,16 @@ void PrefModelAssociator::InitPrefAndAssociate(
 SyncError PrefModelAssociator::MergeDataAndStartSyncing(
     syncable::ModelType type,
     const SyncDataList& initial_sync_data,
-    scoped_ptr<SyncChangeProcessor> sync_processor) {
+    scoped_ptr<SyncChangeProcessor> sync_processor,
+    scoped_ptr<SyncErrorFactory> sync_error_factory) {
   DCHECK_EQ(type, PREFERENCES);
   DCHECK(CalledOnValidThread());
   DCHECK(pref_service_);
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
+  DCHECK(sync_error_factory.get());
   sync_processor_ = sync_processor.Pass();
+  sync_error_factory_ = sync_error_factory.Pass();
 
   SyncChangeList new_changes;
   std::set<std::string> remaining_preferences = registered_preferences_;
@@ -161,6 +165,7 @@ void PrefModelAssociator::StopSyncing(syncable::ModelType type) {
   DCHECK_EQ(type, PREFERENCES);
   models_associated_ = false;
   sync_processor_.reset();
+  sync_error_factory_.reset();
 }
 
 Value* PrefModelAssociator::MergePreference(

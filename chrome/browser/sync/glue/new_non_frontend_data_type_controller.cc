@@ -129,6 +129,8 @@ void NewNonFrontendDataTypeController::
       type(),
       initial_sync_data,
       scoped_ptr<SyncChangeProcessor>(
+          new SharedChangeProcessorRef(shared_change_processor)),
+      scoped_ptr<SyncErrorFactory>(
           new SharedChangeProcessorRef(shared_change_processor)));
   RecordAssociationTime(base::TimeTicks::Now() - start_time);
   if (error.IsSet()) {
