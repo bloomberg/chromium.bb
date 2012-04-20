@@ -135,6 +135,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, GetURLRequest404Response) {
 // Tests if a plugin executing a self deleting script using Invoke with
 // a modal dialog showing works without crashing or hanging
 // Disabled, flakily exceeds timeout, http://crbug.com/46257.
+#if !defined(OS_LINUX)  // Times out on Linux.
 IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvokeAlert) {
   ui_test_utils::NavigateToURL(
       browser(), GetURL("self_delete_plugin_invoke_alert.html"));
@@ -148,6 +149,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, SelfDeletePluginInvokeAlert) {
 
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
+#endif
 
 // Test passing arguments to a plugin.
 IN_PROC_BROWSER_TEST_F(PluginTest, Arguments) {
