@@ -5,6 +5,7 @@
 #include "chrome/nacl/nacl_validation_query.h"
 
 #include "base/logging.h"
+#include "crypto/nss_util.h"
 #include "chrome/nacl/nacl_validation_db.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 
@@ -34,6 +35,12 @@ NaClValidationQuery::NaClValidationQuery(NaClValidationDB* db,
       hasher_(crypto::HMAC::SHA256),
       db_(db),
       buffer_length_(0) {
+  // Without this line on Linux, HMAC::Init will instantiate a singleton that
+  // in turn attempts to open a file.  Disabling this behavior avoids a ~70 ms
+  // stall the first time HMAC is used.
+#if defined(OS_LINUX)
+  crypto::ForceNSSNoDBInit();
+#endif
   CHECK(hasher_.Init(profile_key));
 }
 
