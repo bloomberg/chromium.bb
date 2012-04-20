@@ -284,14 +284,11 @@ int NCCopyCode(uint8_t *dst, uint8_t *src, NaClPcAddress vbase,
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
                                        NACL_TARGET_ARCH,
                                        NACL_TARGET_SUBARCH)
-    (enum NaClSBKind sb_kind,
-     uintptr_t guest_addr,
+    (uintptr_t guest_addr,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
      const NaClCPUFeaturesX86 *cpu_features) {
-  assert(NACL_SB_DEFAULT == sb_kind);
-
   if (!NaClArchSupported(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 
@@ -371,14 +368,11 @@ int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy,
                                        NACL_TARGET_ARCH,
                                        NACL_TARGET_SUBARCH)
-    (enum NaClSBKind sb_kind,
-     uintptr_t guest_addr,
+    (uintptr_t guest_addr,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
      const NaClCPUFeaturesX86 *cpu_features) {
-  assert(NACL_SB_DEFAULT == sb_kind);
-
   if (!NaClArchSupported(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 

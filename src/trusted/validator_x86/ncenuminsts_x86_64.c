@@ -165,7 +165,7 @@ Bool NaClSegmentValidates(uint8_t* mbase,
   /* check if NaCl thinks the given code segment is valid. */
   NaClSetAllCPUFeatures(&cpu_features);
   status = NaCl_ApplyValidator_x86_64(
-      NACL_SB_DEFAULT, vbase, mbase, size,
+      vbase, mbase, size,
       /* stubout_mode= */ FALSE, /* readonly_text= */ FALSE, &cpu_features,
       NULL);
   switch (status) {

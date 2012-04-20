@@ -66,7 +66,6 @@ int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
-    enum NaClSBKind sb_kind,
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
@@ -75,7 +74,6 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
     const NaClCPUFeaturesArm *cpu_features,
     struct NaClValidationCache *cache) {
   UNREFERENCED_PARAMETER(cpu_features);
-  UNREFERENCED_PARAMETER(sb_kind);
   /* The ARM validator is currently unsafe w.r.t. caching. */
   UNREFERENCED_PARAMETER(cache);
 
@@ -89,13 +87,11 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, arm, 32) (
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, arm, 32)
-    (enum NaClSBKind sb_kind,
-     uintptr_t guest_addr,
+    (uintptr_t guest_addr,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
      const NaClCPUFeaturesArm *cpu_features) {
-  UNREFERENCED_PARAMETER(sb_kind);
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(data_old);
   UNREFERENCED_PARAMETER(data_new);
@@ -105,13 +101,11 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, arm, 32)
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCopy, arm, 32)
-    (enum NaClSBKind sb_kind,
-     uintptr_t guest_addr,
+    (uintptr_t guest_addr,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
      const NaClCPUFeaturesArm *cpu_features) {
-  UNREFERENCED_PARAMETER(sb_kind);
   UNREFERENCED_PARAMETER(guest_addr);
   UNREFERENCED_PARAMETER(data_old);
   UNREFERENCED_PARAMETER(data_new);

@@ -24,7 +24,6 @@
 #endif
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
-    enum NaClSBKind sb_kind,
     uintptr_t guest_addr,
     uint8_t *data,
     size_t size,
@@ -37,9 +36,6 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
   void *query = NULL;
 
   /* Check that the given parameter values are supported. */
-  if (sb_kind != NACL_SB_DEFAULT)
-    return NaClValidationFailedNotImplemented;
-
   if (stubout_mode && readonly_text)
     return NaClValidationFailedNotImplemented;
 
@@ -95,16 +91,12 @@ NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator, NACL_TARGET_ARCH, 32) (
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement, x86, 32)
-    (enum NaClSBKind sb_kind,
-     uintptr_t guest_addr,
+    (uintptr_t guest_addr,
      uint8_t *data_old,
      uint8_t *data_new,
      size_t size,
      const NaClCPUFeaturesX86 *cpu_features) {
   /* Check that the given parameter values are supported. */
-  if (sb_kind != NACL_SB_DEFAULT)
-    return NaClValidationFailedNotImplemented;
-
   if (!NaClArchSupported(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 

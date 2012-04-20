@@ -130,7 +130,6 @@ class ValidationCachingInterfaceTests : public ::testing::Test {
     return NACL_SUBARCH_NAME(ApplyValidator,
                              NACL_TARGET_ARCH,
                              NACL_TARGET_SUBARCH)(
-                                 NACL_SB_DEFAULT,
                                  0, code_buffer, 32,
                                  /* stubout_mode= */ FALSE,
                                  /* readonly_test= */ FALSE, &cpu_features,
@@ -152,7 +151,6 @@ TEST_F(ValidationCachingInterfaceTests, NoCache) {
       NACL_SUBARCH_NAME(ApplyValidator,
                         NACL_TARGET_ARCH,
                         NACL_TARGET_SUBARCH)(
-                            NACL_SB_DEFAULT,
                             0, code_buffer, CODE_SIZE,
                             /* stubout_mode= */ FALSE,
                             /* readonly_test= */ FALSE, &cpu_features,

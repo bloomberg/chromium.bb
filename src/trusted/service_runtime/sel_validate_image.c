@@ -30,7 +30,6 @@ static int NaClValidateStatus(NaClValidationStatus status) {
 int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {
   NaClValidationStatus status = NaClValidationSucceeded;
-  enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
 
   struct NaClValidationCache *cache = nap->validation_cache;
 
@@ -70,7 +69,6 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     status = NACL_SUBARCH_NAME(ApplyValidator,
                                NACL_TARGET_ARCH,
                                NACL_TARGET_SUBARCH)(
-                                   sb_kind,
                                    guest_addr, data, size,
                                    TRUE, /* stub out */
                                    FALSE, /* text is not read-only */
@@ -83,7 +81,6 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     status = NACL_SUBARCH_NAME(ApplyValidator,
                                NACL_TARGET_ARCH,
                                NACL_TARGET_SUBARCH)(
-                                   sb_kind,
                                    guest_addr, data, size,
                                    FALSE, /* do not stub out */
                                    readonly_text,
@@ -96,7 +93,6 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
 int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
                                 uint8_t *data_old, uint8_t *data_new,
                                 size_t size) {
-  enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
   if (nap->validator_stub_out_mode) return LOAD_BAD_FILE;
   if (nap->fixed_feature_cpu_mode) return LOAD_BAD_FILE;
 
@@ -109,13 +105,12 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
       NACL_SUBARCH_NAME(ApplyValidatorCodeReplacement,
                         NACL_TARGET_ARCH,
                         NACL_TARGET_SUBARCH)
-      (sb_kind, guest_addr, data_old, data_new, size, &nap->cpu_features));
+      (guest_addr, data_old, data_new, size, &nap->cpu_features));
 }
 
 int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
-  enum NaClSBKind sb_kind = NACL_SB_DEFAULT;
   /* Fixed-feature mode disables any code copying for now. Currently
    * the only use of NaClCodeCopy() seems to be for dynamic code
    * modification, which should fail in NaClValidateCodeReplacement()
@@ -126,7 +121,7 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
       NACL_SUBARCH_NAME(ApplyValidatorCopy,
                         NACL_TARGET_ARCH,
                         NACL_TARGET_SUBARCH)
-      (sb_kind, guest_addr, data_old, data_new, size, &nap->cpu_features));
+      (guest_addr, data_old, data_new, size, &nap->cpu_features));
 }
 
 NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {

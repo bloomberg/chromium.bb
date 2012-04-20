@@ -44,13 +44,10 @@ static NaClValidationStatus NCApplyValidatorVerbosely_x86_32(
 }
 
 NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidatorVerbosely, x86, 32)
-    (enum NaClSBKind sb_kind,
-     uintptr_t guest_addr,
+    (uintptr_t guest_addr,
      uint8_t *data,
      size_t size,
      const NaClCPUFeaturesX86 *cpu_features) {
-  assert(NACL_SB_DEFAULT == sb_kind);
-
   if (!NaClArchSupported(cpu_features))
     return NaClValidationFailedCpuNotSupported;
 
