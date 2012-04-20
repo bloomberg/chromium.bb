@@ -26,6 +26,8 @@ class MockChromeOSNetwork {
                void(const char* service_path,
                     const char* property,
                     const GValue* gvalue));
+  MOCK_METHOD2(ClearNetworkServiceProperty,
+               void(const char* service_path, const char* property));
   MOCK_METHOD3(SetNetworkDevicePropertyGValue,
                void(const char* device_path,
                     const char* property,

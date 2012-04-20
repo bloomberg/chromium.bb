@@ -225,21 +225,38 @@ bool CrosActivateCellularModem(const char* service_path, const char* carrier) {
 void CrosSetNetworkServiceProperty(const char* service_path,
                                    const char* property,
                                    const base::Value& value) {
-  ScopedGValue gvalue(ConvertValueToGValue(value));
-  chromeos::SetNetworkServicePropertyGValue(service_path, property,
-                                            gvalue.get());
+  if (g_libcros_network_functions_enabled) {
+    ScopedGValue gvalue(ConvertValueToGValue(value));
+    chromeos::SetNetworkServicePropertyGValue(service_path, property,
+                                              gvalue.get());
+  } else {
+    DBusThreadManager::Get()->GetFlimflamServiceClient()->SetProperty(
+        dbus::ObjectPath(service_path), property, value,
+        base::Bind(&DoNothing));
+  }
 }
 
 void CrosClearNetworkServiceProperty(const char* service_path,
                                      const char* property) {
-  chromeos::ClearNetworkServiceProperty(service_path, property);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::ClearNetworkServiceProperty(service_path, property);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamServiceClient()->ClearProperty(
+        dbus::ObjectPath(service_path), property, base::Bind(&DoNothing));
+  }
 }
 
 void CrosSetNetworkDeviceProperty(const char* device_path,
                                   const char* property,
                                   const base::Value& value) {
-  ScopedGValue gvalue(ConvertValueToGValue(value));
-  chromeos::SetNetworkDevicePropertyGValue(device_path, property, gvalue.get());
+  if (g_libcros_network_functions_enabled) {
+    ScopedGValue gvalue(ConvertValueToGValue(value));
+    chromeos::SetNetworkDevicePropertyGValue(device_path, property,
+                                             gvalue.get());
+  } else {
+    DBusThreadManager::Get()->GetFlimflamDeviceClient()->SetProperty(
+        dbus::ObjectPath(device_path), property, value, base::Bind(&DoNothing));
+  }
 }
 
 void CrosSetNetworkIPConfigProperty(const char* ipconfig_path,
@@ -252,8 +269,13 @@ void CrosSetNetworkIPConfigProperty(const char* ipconfig_path,
 
 void CrosSetNetworkManagerProperty(const char* property,
                                    const base::Value& value) {
-  ScopedGValue gvalue(ConvertValueToGValue(value));
-  chromeos::SetNetworkManagerPropertyGValue(property, gvalue.get());
+  if (g_libcros_network_functions_enabled) {
+    ScopedGValue gvalue(ConvertValueToGValue(value));
+    chromeos::SetNetworkManagerPropertyGValue(property, gvalue.get());
+  } else {
+    DBusThreadManager::Get()->GetFlimflamManagerClient()->SetProperty(
+        property, value, base::Bind(&DoNothing));
+  }
 }
 
 void CrosDeleteServiceFromProfile(const char* profile_path,

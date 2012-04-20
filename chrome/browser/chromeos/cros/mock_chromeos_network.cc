@@ -20,6 +20,12 @@ void CallMockSetNetworkServicePropertyGValue(const char* service_path,
                                                            property, gvalue);
 }
 
+// Calls mock ClearNetworkServiceProperty.
+void CallMockClearNetworkServiceProperty(const char* service_path,
+                                         const char* property) {
+  g_mock_chromeos_network->ClearNetworkServiceProperty(service_path, property);
+}
+
 // Calls mock SetNetworkDevicePropertyGValue.
 void CallMockSetNetworkDevicePropertyGValue(const char* device_path,
                                             const char* property,
@@ -187,13 +193,15 @@ void MockChromeOSNetwork::Initialize() {
 
   if (!CrosLibrary::Get()) {
     chromeos::SetNetworkServicePropertyGValue =
-      &CallMockSetNetworkServicePropertyGValue;
+        &CallMockSetNetworkServicePropertyGValue;
+    chromeos::ClearNetworkServiceProperty =
+        &CallMockClearNetworkServiceProperty;
     chromeos::SetNetworkDevicePropertyGValue =
-      &CallMockSetNetworkDevicePropertyGValue;
+        &CallMockSetNetworkDevicePropertyGValue;
     chromeos::SetNetworkIPConfigPropertyGValue =
-      &CallMockSetNetworkIPConfigPropertyGValue;
+        &CallMockSetNetworkIPConfigPropertyGValue;
     chromeos::SetNetworkManagerPropertyGValue =
-      &CallMockSetNetworkManagerPropertyGValue;
+        &CallMockSetNetworkManagerPropertyGValue;
     chromeos::MonitorNetworkManagerProperties =
         &CallMockMonitorNetworkManagerProperties;
     chromeos::MonitorNetworkServiceProperties =
@@ -231,6 +239,7 @@ void MockChromeOSNetwork::Initialize() {
 void MockChromeOSNetwork::Shutdown() {
   if (!CrosLibrary::Get()) {
     chromeos::SetNetworkServicePropertyGValue = NULL;
+    chromeos::ClearNetworkServiceProperty = NULL;
     chromeos::SetNetworkDevicePropertyGValue = NULL;
     chromeos::SetNetworkIPConfigPropertyGValue = NULL;
     chromeos::SetNetworkManagerPropertyGValue = NULL;

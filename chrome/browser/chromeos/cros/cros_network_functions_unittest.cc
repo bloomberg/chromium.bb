@@ -18,8 +18,12 @@
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::Pointee;
 using ::testing::SaveArg;
 using ::testing::StrEq;
+
+// Matcher to match base::Value.
+MATCHER_P(IsEqualTo, value, "") { return arg.Equals(value); }
 
 namespace chromeos {
 
@@ -36,28 +40,18 @@ class MockNetworkPropertiesCallback {
       const char* expected_path,
       const base::DictionaryValue& expected_result) {
     MockNetworkPropertiesCallback* mock_callback =
-        new MockNetworkPropertiesCallback(expected_result);
+        new MockNetworkPropertiesCallback;
 
-    EXPECT_CALL(*mock_callback, Run(StrEq(expected_path), _)).WillOnce(
-        Invoke(mock_callback, &MockNetworkPropertiesCallback::CheckResult));
+    EXPECT_CALL(*mock_callback,
+                Run(StrEq(expected_path), Pointee(IsEqualTo(&expected_result))))
+        .Times(1);
 
     return base::Bind(&MockNetworkPropertiesCallback::Run,
                       base::Owned(mock_callback));
   }
 
- private:
-  explicit MockNetworkPropertiesCallback(
-      const base::DictionaryValue& expected_result)
-      : expected_result_(expected_result) {}
-
   MOCK_METHOD2(Run, void(const char* path,
                          const base::DictionaryValue* result));
-
-  void CheckResult(const char* path, const base::DictionaryValue* result) {
-    EXPECT_TRUE(expected_result_.Equals(result));
-  }
-
-  const base::DictionaryValue& expected_result_;
 };
 
 // A mock to check arguments of NetworkPropertiesWatcherCallback and ensure that
@@ -70,31 +64,19 @@ class MockNetworkPropertiesWatcherCallback {
       const std::string& expected_key,
       const base::Value& expected_value) {
     MockNetworkPropertiesWatcherCallback* mock_callback =
-        new MockNetworkPropertiesWatcherCallback(expected_value);
+        new MockNetworkPropertiesWatcherCallback;
 
-    EXPECT_CALL(*mock_callback, Run(expected_path, expected_key, _)).WillOnce(
-        Invoke(mock_callback,
-               &MockNetworkPropertiesWatcherCallback::CheckValue));
+    EXPECT_CALL(*mock_callback,
+                Run(expected_path, expected_key, IsEqualTo(&expected_value)))
+        .Times(1);
 
     return base::Bind(&MockNetworkPropertiesWatcherCallback::Run,
                       base::Owned(mock_callback));
   }
 
- private:
-  explicit MockNetworkPropertiesWatcherCallback(
-      const base::Value& expected_value) : expected_value_(expected_value) {}
-
   MOCK_METHOD3(Run, void(const std::string& expected_path,
                          const std::string& expected_key,
                          const base::Value& value));
-
-  void CheckValue(const std::string& expected_path,
-                  const std::string& expected_key,
-                  const base::Value& value) {
-    EXPECT_TRUE(expected_value_.Equals(&value));
-  }
-
-  const base::Value& expected_value_;
 };
 
 }  // namespace
@@ -225,6 +207,14 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetNetworkServiceProperty) {
       g_hash_table_lookup(ghash_table, key1)));
   EXPECT_EQ(string2, static_cast<const char*>(
       g_hash_table_lookup(ghash_table, key2)));
+}
+
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosClearNetworkServiceProperty) {
+  const char service_path[] = "/";
+  const char property[] = "property";
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              ClearNetworkServiceProperty(service_path, property)).Times(1);
+  CrosClearNetworkServiceProperty(service_path, property);
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetNetworkDeviceProperty) {
@@ -640,6 +630,55 @@ class CrosNetworkFunctionsTest : public testing::Test {
   MockFlimflamServiceClient* mock_service_client_;
   const base::DictionaryValue* dictionary_value_result_;
 };
+
+TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkServiceProperty) {
+  const char service_path[] = "/";
+  const char property[] = "property";
+  const char key1[] = "key1";
+  const std::string string1 = "string1";
+  const char key2[] = "key2";
+  const std::string string2 = "string2";
+  base::DictionaryValue value;
+  value.SetString(key1, string1);
+  value.SetString(key2, string2);
+  EXPECT_CALL(*mock_service_client_,
+              SetProperty(dbus::ObjectPath(service_path), property,
+                          IsEqualTo(&value), _)).Times(1);
+
+  CrosSetNetworkServiceProperty(service_path, property, value);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosClearNetworkServiceProperty) {
+  const char service_path[] = "/";
+  const char property[] = "property";
+  EXPECT_CALL(*mock_service_client_,
+              ClearProperty(dbus::ObjectPath(service_path), property, _))
+      .Times(1);
+
+  CrosClearNetworkServiceProperty(service_path, property);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkDeviceProperty) {
+  const char device_path[] = "/";
+  const char property[] = "property";
+  const bool kBool = true;
+  const base::FundamentalValue value(kBool);
+  EXPECT_CALL(*mock_device_client_,
+              SetProperty(dbus::ObjectPath(device_path), property,
+                          IsEqualTo(&value), _)).Times(1);
+
+  CrosSetNetworkDeviceProperty(device_path, property, value);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkManagerProperty) {
+  const char property[] = "property";
+  const std::string kString = "string";
+  const base::StringValue value(kString);
+  EXPECT_CALL(*mock_manager_client_,
+              SetProperty(property, IsEqualTo(&value), _)).Times(1);
+
+  CrosSetNetworkManagerProperty(property, value);
+}
 
 TEST_F(CrosNetworkFunctionsTest, CrosDeleteServiceFromProfile) {
   const std::string profile_path("/profile/path");
