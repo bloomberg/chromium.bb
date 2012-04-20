@@ -84,6 +84,11 @@ class PepperWidget : public WebWidget {
     widget_->plugin()->Paint(canvas, plugin_rect, rect);
   }
 
+#if WEBWIDGET_HAS_SETCOMPOSITORSURFACEREADY
+  virtual void setCompositorSurfaceReady() {
+  }
+#endif
+
   virtual void composite(bool finish) {
     if (!widget_->plugin())
       return;

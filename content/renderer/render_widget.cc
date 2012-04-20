@@ -186,6 +186,10 @@ void RenderWidget::CompleteInit(gfx::NativeViewId parent_hwnd) {
   host_window_ = parent_hwnd;
   host_window_set_ = true;
 
+#if WEBWIDGET_HAS_SETCOMPOSITORSURFACEREADY
+  if (webwidget_)
+      webwidget_->setCompositorSurfaceReady();
+#endif
   DoDeferredUpdate();
 
   Send(new ViewHostMsg_RenderViewReady(routing_id_));
