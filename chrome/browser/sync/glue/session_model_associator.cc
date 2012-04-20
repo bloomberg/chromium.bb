@@ -716,6 +716,8 @@ SyncError SessionModelAssociator::DisassociateModels() {
   current_machine_tag_ = "";
   current_session_name_ = "";
   load_consumer_.CancelAllRequests();
+  synced_favicons_.clear();
+  synced_favicon_pages_.clear();
 
   // There is no local model stored with which to disassociate, just notify
   // foreign session handlers.
@@ -755,6 +757,21 @@ void SessionModelAssociator::OnSessionNameInitialized(
   // Only use the default machine name if it hasn't already been set.
   if (current_session_name_.empty())
     current_session_name_ = name;
+}
+
+bool SessionModelAssociator::GetSyncedFaviconForPageURL(
+    const std::string& url,
+    std::string* png_favicon) const {
+  std::map<std::string, std::string>::const_iterator iter =
+      synced_favicon_pages_.find(url);
+  if (iter == synced_favicon_pages_.end())
+    return false;
+  DCHECK(synced_favicons_.find(iter->second) != synced_favicons_.end());
+  const std::string& favicon =
+      synced_favicons_.find(iter->second)->second->data;
+  png_favicon->assign(favicon);
+  DCHECK_GT(favicon.size(), 0U);
+  return true;
 }
 
 void SessionModelAssociator::InitializeCurrentSessionName() {
@@ -877,14 +894,72 @@ void SessionModelAssociator::AssociateForeignSpecifics(
     SessionID::id_type tab_id = tab_s.tab_id();
     SessionTab* tab =
         synced_session_tracker_.GetTab(foreign_session_tag, tab_id);
+
+    // Figure out what the previous url for this tab was (may be empty string
+    // if this is a new tab).
+    std::string previous_url;
+    if (tab->navigations.size() > 0) {
+      int selected_index = tab->current_navigation_index;
+      selected_index = std::max(
+          0,
+          std::min(selected_index,
+                   static_cast<int>(tab->navigations.size() - 1)));
+      if (tab->navigations[selected_index].virtual_url().is_valid())
+        previous_url = tab->navigations[selected_index].virtual_url().spec();
+    }
+
+    // Update SessionTab based on protobuf.
     PopulateSessionTabFromSpecifics(tab_s, modification_time, tab);
+
+    // Loads the tab favicon, increments the usage counter, and updates
+    // synced_favicon_pages_.
     LoadForeignTabFavicon(tab_s);
+
+    // Now check to see if the favicon associated with the previous url is no
+    // longer in use. This will have no effect if the current url matches the
+    // previous url (LoadForeignTabFavicon increments, this decrements, no net
+    // change in usage), or if the previous_url was not set (new tab).
+    DecrementAndCleanFaviconForURL(previous_url);
+
+    // Update the last modified time.
     if (foreign_session->modified_time < modification_time)
       foreign_session->modified_time = modification_time;
   } else {
     LOG(WARNING) << "Ignoring foreign session node with missing header/tab "
                  << "fields and tag " << foreign_session_tag << ".";
   }
+}
+
+void SessionModelAssociator::DecrementAndCleanFaviconForURL(
+    const std::string& page_url) {
+  if (page_url.empty())
+    return;
+  std::map<std::string, std::string>::const_iterator iter =
+      synced_favicon_pages_.find(page_url);
+  if (iter != synced_favicon_pages_.end()) {
+    const std::string& favicon_url = iter->second;
+    DCHECK_GT(synced_favicons_[favicon_url]->usage_count, 0);
+    --(synced_favicons_[favicon_url]->usage_count);
+    if (synced_favicons_[favicon_url]->usage_count <= 0) {
+      // No more tabs using this favicon. Erase it.
+      synced_favicons_.erase(favicon_url);
+      // Erase the page mappings to the favicon url. We iterate through all
+      // page urls in case multiple pages share the same favicon.
+      std::map<std::string, std::string>::iterator page_iter;
+      for (page_iter = synced_favicon_pages_.begin();
+           page_iter != synced_favicon_pages_.end();) {
+        std::map<std::string, std::string>::iterator to_delete = page_iter;
+        ++page_iter;
+        if (to_delete->second == favicon_url) {
+          synced_favicon_pages_.erase(to_delete);
+        }
+      }
+    }
+  }
+}
+
+size_t SessionModelAssociator::NumFaviconsForTesting() const {
+  return synced_favicons_.size();
 }
 
 bool SessionModelAssociator::DisassociateForeignSession(
@@ -1084,39 +1159,38 @@ void SessionModelAssociator::LoadForeignTabFavicon(
     const sync_pb::SessionTab& tab) {
   if (!tab.has_favicon() || tab.favicon().empty())
     return;
-  if (tab.favicon_type() != sync_pb::SessionTab::TYPE_WEB_FAVICON) {
+  if (!tab.has_favicon_type() ||
+      tab.favicon_type() != sync_pb::SessionTab::TYPE_WEB_FAVICON) {
     DVLOG(1) << "Ignoring non-web favicon.";
     return;
   }
-  int current_navigation_index = tab.current_navigation_index();
-  if (current_navigation_index < 0 ||
-      current_navigation_index >= tab.navigation_size()) {
+  if (tab.navigation_size() == 0)
     return;
-  }
-  GURL navigation_url(tab.navigation(current_navigation_index).virtual_url());
+  int selected_index = tab.current_navigation_index();
+  selected_index = std::max(
+      0,
+      std::min(selected_index,
+               static_cast<int>(tab.navigation_size() - 1)));
+  GURL navigation_url(tab.navigation(selected_index).virtual_url());
   if (!navigation_url.is_valid())
     return;
   GURL favicon_source(tab.favicon_source());
   if (!favicon_source.is_valid())
     return;
 
-  HistoryService* history =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  FaviconService* favicon_service =
-      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
-  if (!history || !favicon_service)
-    return;
-  std::vector<unsigned char> icon_bytes;
   const std::string& favicon = tab.favicon();
-  icon_bytes.assign(reinterpret_cast<const unsigned char*>(favicon.data()),
-                    reinterpret_cast<const unsigned char*>(favicon.data() +
-                                                           favicon.length()));
   DVLOG(1) << "Storing synced favicon for url " << navigation_url.spec()
-           << " with size " << icon_bytes.size() << " bytes.";
-  favicon_service->SetFavicon(navigation_url,
-                              favicon_source,
-                              icon_bytes,
-                              history::FAVICON);
+           << " with size " << favicon.size() << " bytes.";
+  std::map<std::string, linked_ptr<SyncedFaviconInfo> >::iterator favicon_iter;
+  favicon_iter = synced_favicons_.find(favicon_source.spec());
+  if (favicon_iter == synced_favicons_.end()) {
+    synced_favicons_[favicon_source.spec()] =
+        make_linked_ptr<SyncedFaviconInfo>(new SyncedFaviconInfo(favicon));
+  } else {
+    favicon_iter->second->data = favicon;
+    ++favicon_iter->second->usage_count;
+  }
+  synced_favicon_pages_[navigation_url.spec()] = favicon_source.spec();
 }
 
 bool SessionModelAssociator::UpdateSyncModelDataFromClient(SyncError* error) {

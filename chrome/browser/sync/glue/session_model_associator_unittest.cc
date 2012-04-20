@@ -34,12 +34,24 @@ class SyncSessionModelAssociatorTest : public testing::Test {
  public:
   SyncSessionModelAssociatorTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        sync_service_(&profile_) {}
-  virtual void SetUp() OVERRIDE {
-    model_associator_.reset(new SessionModelAssociator(&sync_service_, true));
+        sync_service_(&profile_),
+        model_associator_(&sync_service_, true) {}
+
+  // Helper methods to avoid having to friend individual tests.
+  bool GetFavicon(std::string page_url, std::string* favicon) {
+    return model_associator_.GetSyncedFaviconForPageURL(page_url, favicon);
   }
-  virtual void TearDown() OVERRIDE {
-    model_associator_.reset();
+
+  void LoadTabFavicon(const sync_pb::SessionTab& tab) {
+    model_associator_.LoadForeignTabFavicon(tab);
+  }
+
+  size_t NumFavicons() {
+    return model_associator_.NumFaviconsForTesting();
+  }
+
+  void DecrementFavicon(std::string url) {
+    model_associator_.DecrementAndCleanFaviconForURL(url);
   }
 
  protected:
@@ -47,7 +59,7 @@ class SyncSessionModelAssociatorTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   NiceMock<ProfileMock> profile_;
   NiceMock<ProfileSyncServiceMock> sync_service_;
-  scoped_ptr<SessionModelAssociator> model_associator_;
+  SessionModelAssociator model_associator_;
 };
 
 TEST_F(SyncSessionModelAssociatorTest, SessionWindowHasNoTabsToSync) {
@@ -263,7 +275,7 @@ TEST_F(SyncSessionModelAssociatorTest, TriggerSessionRefresh) {
   SyncRefreshListener refresh_listener;
 
   EXPECT_FALSE(refresh_listener.notified_of_refresh());
-  model_associator_->AttemptSessionsDataRefresh();
+  model_associator_.AttemptSessionsDataRefresh();
   EXPECT_TRUE(refresh_listener.notified_of_refresh());
 }
 
@@ -278,7 +290,7 @@ TEST_F(SyncSessionModelAssociatorTest, ValidTabs) {
       Return((content::NavigationEntry *)NULL));
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(1));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-  EXPECT_FALSE(model_associator_->ShouldSyncTab(tab_mock));
+  EXPECT_FALSE(model_associator_.ShouldSyncTab(tab_mock));
 
   // A chrome:// entry isn't valid.
   scoped_ptr<content::NavigationEntry> entry(
@@ -289,7 +301,7 @@ TEST_F(SyncSessionModelAssociatorTest, ValidTabs) {
   EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(Return(entry.get()));
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(1));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-  EXPECT_FALSE(model_associator_->ShouldSyncTab(tab_mock));
+  EXPECT_FALSE(model_associator_.ShouldSyncTab(tab_mock));
 
   // A file:// entry isn't valid, even in addition to another entry.
   scoped_ptr<content::NavigationEntry> entry2(
@@ -302,7 +314,7 @@ TEST_F(SyncSessionModelAssociatorTest, ValidTabs) {
       Return(entry2.get()));
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(2));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-  EXPECT_FALSE(model_associator_->ShouldSyncTab(tab_mock));
+  EXPECT_FALSE(model_associator_.ShouldSyncTab(tab_mock));
 
   // Add a valid scheme entry to tab, making the tab valid.
   scoped_ptr<content::NavigationEntry> entry3(
@@ -318,7 +330,214 @@ TEST_F(SyncSessionModelAssociatorTest, ValidTabs) {
       Return(entry3.get()));
   EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
   EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
-  EXPECT_TRUE(model_associator_->ShouldSyncTab(tab_mock));
+  EXPECT_TRUE(model_associator_.ShouldSyncTab(tab_mock));
+}
+
+// Create tab specifics with an empty favicon. Ensure it gets ignored and not
+// stored into the synced favicon lookups.
+TEST_F(SyncSessionModelAssociatorTest, LoadEmptyFavicon) {
+  std::string favicon = "";
+  std::string favicon_url = "http://www.faviconurl.com/favicon.ico";
+  std::string page_url = "http://www.faviconurl.com/page.html";
+  sync_pb::SessionTab tab;
+  tab.set_favicon(favicon);
+  tab.set_favicon_source(favicon_url);
+  tab.set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
+  sync_pb::TabNavigation* navigation = tab.add_navigation();
+  navigation->set_index(0);
+  navigation->set_virtual_url(page_url);
+  tab.set_current_navigation_index(0);
+
+  std::string synced_favicon;
+  EXPECT_FALSE(GetFavicon(page_url, &synced_favicon));
+  EXPECT_TRUE(synced_favicon.empty());
+  LoadTabFavicon(tab);
+  EXPECT_FALSE(GetFavicon(page_url, &synced_favicon));
+  EXPECT_TRUE(synced_favicon.empty());
+}
+
+// Create tab specifics with a non-web favicon. Ensure it gets ignored and not
+// stored into the synced favicon lookups.
+TEST_F(SyncSessionModelAssociatorTest, LoadNonWebFavicon) {
+  std::string favicon = "these are icon synced_favicon";
+  std::string favicon_url = "http://www.faviconurl.com/favicon.ico";
+  std::string page_url = "http://www.faviconurl.com/page.html";
+  sync_pb::SessionTab tab;
+  tab.set_favicon(favicon);
+  tab.set_favicon_source(favicon_url);
+  // Set favicon type to an unsupported value (1 == WEB_FAVICON).
+   tab.mutable_unknown_fields()->AddVarint(9, 2);
+  sync_pb::TabNavigation* navigation = tab.add_navigation();
+  navigation->set_index(0);
+  navigation->set_virtual_url(page_url);
+  tab.set_current_navigation_index(0);
+
+  std::string synced_favicon;
+  EXPECT_FALSE(GetFavicon(page_url, &synced_favicon));
+  EXPECT_TRUE(synced_favicon.empty());
+  LoadTabFavicon(tab);
+  EXPECT_FALSE(GetFavicon(page_url, &synced_favicon));
+  EXPECT_TRUE(synced_favicon.empty());
+}
+
+// Create tab specifics with a valid favicon. Ensure it gets stored in the
+// synced favicon lookups and is accessible by the page url.
+TEST_F(SyncSessionModelAssociatorTest, LoadValidFavicon) {
+  std::string favicon = "these are icon synced_favicon";
+  std::string favicon_url = "http://www.faviconurl.com/favicon.ico";
+  std::string page_url = "http://www.faviconurl.com/page.html";
+  sync_pb::SessionTab tab;
+  tab.set_favicon(favicon);
+  tab.set_favicon_source(favicon_url);
+  tab.set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
+  sync_pb::TabNavigation* navigation = tab.add_navigation();
+  navigation->set_index(0);
+  navigation->set_virtual_url(page_url);
+  tab.set_current_navigation_index(0);
+
+  std::string synced_favicon;
+  EXPECT_FALSE(GetFavicon(page_url, &synced_favicon));
+  EXPECT_TRUE(synced_favicon.empty());
+  LoadTabFavicon(tab);
+  EXPECT_TRUE(GetFavicon(page_url, &synced_favicon));
+  ASSERT_FALSE(synced_favicon.empty());
+  EXPECT_EQ(favicon, synced_favicon);
+}
+
+// Create tab specifics with a valid favicon, load it, then load tab specifics
+// with a new favicon for the same favicon source but different page. Ensure the
+// new favicon overwrites the old favicon for both page urls.
+TEST_F(SyncSessionModelAssociatorTest, UpdateValidFavicon) {
+  std::string favicon_url = "http://www.faviconurl.com/favicon.ico";
+
+  std::string favicon = "these are icon synced_favicon";
+  std::string page_url = "http://www.faviconurl.com/page.html";
+  sync_pb::SessionTab tab;
+  tab.set_favicon(favicon);
+  tab.set_favicon_source(favicon_url);
+  tab.set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
+  sync_pb::TabNavigation* navigation = tab.add_navigation();
+  navigation->set_index(0);
+  navigation->set_virtual_url(page_url);
+  tab.set_current_navigation_index(0);
+
+  std::string synced_favicon;
+  EXPECT_FALSE(GetFavicon(page_url, &synced_favicon));
+  EXPECT_TRUE(synced_favicon.empty());
+  LoadTabFavicon(tab);
+  EXPECT_TRUE(GetFavicon(page_url, &synced_favicon));
+  ASSERT_FALSE(synced_favicon.empty());
+  EXPECT_EQ(favicon, synced_favicon);
+
+  // Now have a new page with same favicon source but newer favicon data.
+  std::string favicon2 = "these are new icon synced_favicon";
+  std::string page_url2 = "http://www.faviconurl.com/page2.html";
+  sync_pb::SessionTab tab2;
+  tab2.set_favicon(favicon2);
+  tab2.set_favicon_source(favicon_url);
+  tab2.set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
+  sync_pb::TabNavigation* navigation2 = tab2.add_navigation();
+  navigation2->set_index(0);
+  navigation2->set_virtual_url(page_url2);
+  tab2.set_current_navigation_index(0);
+
+  // Verify the favicons for both pages match the newest favicon.
+  synced_favicon.clear();
+  EXPECT_FALSE(GetFavicon(page_url2, &synced_favicon));
+  EXPECT_TRUE(synced_favicon.empty());
+  LoadTabFavicon(tab2);
+  EXPECT_TRUE(GetFavicon(page_url2, &synced_favicon));
+  ASSERT_FALSE(synced_favicon.empty());
+  EXPECT_EQ(favicon2, synced_favicon);
+  EXPECT_NE(favicon, synced_favicon);
+  synced_favicon.clear();
+  EXPECT_TRUE(GetFavicon(page_url, &synced_favicon));
+  ASSERT_FALSE(synced_favicon.empty());
+  EXPECT_EQ(favicon2, synced_favicon);
+  EXPECT_NE(favicon, synced_favicon);
+}
+
+// Ensure that favicon cleanup cleans up favicons no longer being used and
+// doesn't touch those favicons still in use.
+TEST_F(SyncSessionModelAssociatorTest, FaviconCleanup) {
+  EXPECT_EQ(NumFavicons(), 0U);
+
+  std::string double_favicon = "these are icon synced_favicon";
+  std::string double_favicon_url = "http://www.faviconurl.com/favicon.ico";
+  std::string page_url = "http://www.faviconurl.com/page.html";
+  sync_pb::SessionTab tab;
+  tab.set_favicon(double_favicon);
+  tab.set_favicon_source(double_favicon_url);
+  tab.set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
+  sync_pb::TabNavigation* navigation = tab.add_navigation();
+  navigation->set_index(0);
+  navigation->set_virtual_url(page_url);
+  tab.set_current_navigation_index(0);
+  LoadTabFavicon(tab);
+  EXPECT_EQ(1U, NumFavicons());
+
+  // Add another page using the first favicon.
+  std::string page_url2 = "http://www.faviconurl.com/page2.html";
+  tab.mutable_navigation(0)->set_virtual_url(page_url2);
+  LoadTabFavicon(tab);
+  EXPECT_EQ(1U, NumFavicons());
+
+  // Add a favicon with a single user.
+  std::string single_favicon = "different favicon synced_favicon";
+  std::string single_favicon_url = "http://www.single_favicon_page.com/x.ico";
+  std::string single_favicon_page = "http://www.single_favicon_page.com/x.html";
+  tab.set_favicon(single_favicon);
+  tab.set_favicon_source(single_favicon_url);
+  tab.mutable_navigation(0)->set_virtual_url(single_favicon_page);
+  LoadTabFavicon(tab);
+  EXPECT_EQ(2U, NumFavicons());
+
+  // Decrementing a favicon used by one page should remove it.
+  std::string synced_favicon;
+  EXPECT_TRUE(GetFavicon(single_favicon_page, &synced_favicon));
+  EXPECT_EQ(synced_favicon, single_favicon);
+  DecrementFavicon(single_favicon_page);
+  synced_favicon.clear();
+  EXPECT_FALSE(GetFavicon(single_favicon_page, &synced_favicon));
+  EXPECT_TRUE(synced_favicon.empty());
+  EXPECT_EQ(1U, NumFavicons());
+
+  // Decrementing a favicon used by two pages shouldn't remove it.
+  synced_favicon.clear();
+  EXPECT_TRUE(GetFavicon(page_url, &synced_favicon));
+  EXPECT_EQ(synced_favicon, double_favicon);
+  synced_favicon.clear();
+  EXPECT_TRUE(GetFavicon(page_url2, &synced_favicon));
+  EXPECT_EQ(synced_favicon, double_favicon);
+  DecrementFavicon(page_url);
+  EXPECT_EQ(1U, NumFavicons());
+  synced_favicon.clear();
+  EXPECT_TRUE(GetFavicon(page_url, &synced_favicon));
+  EXPECT_EQ(synced_favicon, double_favicon);
+  synced_favicon.clear();
+  EXPECT_TRUE(GetFavicon(page_url2, &synced_favicon));
+  EXPECT_EQ(synced_favicon, double_favicon);
+  EXPECT_EQ(1U, NumFavicons());
+
+  // Attempting to decrement a page that's already removed should do nothing.
+  DecrementFavicon(single_favicon_page);
+  EXPECT_EQ(1U, NumFavicons());
+
+  // Attempting to decrement an empty url should do nothing.
+  DecrementFavicon("");
+  EXPECT_EQ(1U, NumFavicons());
+
+  // Decrementing the second and only remaining page should remove the favicon.
+  // Both pages that referred to it should now fail to look up their favicon.
+  DecrementFavicon(page_url2);
+  synced_favicon.clear();
+  EXPECT_FALSE(GetFavicon(page_url, &synced_favicon));
+  EXPECT_TRUE(synced_favicon.empty());
+  EXPECT_EQ(0U, NumFavicons());
+  synced_favicon.clear();
+  EXPECT_FALSE(GetFavicon(page_url2, &synced_favicon));
+  EXPECT_TRUE(synced_favicon.empty());
+  EXPECT_EQ(0U, NumFavicons());
 }
 
 }  // namespace browser_sync
