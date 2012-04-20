@@ -106,6 +106,12 @@ static void EmitLoad(int offset, std::vector<struct sock_filter>* program) {
   program->push_back(filter);
 }
 
+static void EmitLoadArg(int arg, std::vector<struct sock_filter>* program) {
+  // Each argument is 8 bytes, independent of architecture, and start at
+  // an offset of 16 bytes, indepdendent of architecture.
+  EmitLoad(((arg - 1) * 8) + 16, program);
+}
+
 static void EmitJEQJT1(int value, std::vector<struct sock_filter>* program) {
   struct sock_filter filter;
   filter.code = BPF_JMP+BPF_JEQ+BPF_K;
@@ -115,11 +121,13 @@ static void EmitJEQJT1(int value, std::vector<struct sock_filter>* program) {
   program->push_back(filter);
 }
 
-static void EmitJEQJF1(int value, std::vector<struct sock_filter>* program) {
+static void EmitJEQJF(int value,
+                      int jf,
+                      std::vector<struct sock_filter>* program) {
   struct sock_filter filter;
   filter.code = BPF_JMP+BPF_JEQ+BPF_K;
   filter.jt = 0;
-  filter.jf = 1;
+  filter.jf = jf;
   filter.k = value;
   program->push_back(filter);
 }
@@ -146,18 +154,37 @@ static void EmitPreamble(std::vector<struct sock_filter>* program) {
 }
 
 static void EmitAllowSyscall(int nr, std::vector<struct sock_filter>* program) {
-  EmitJEQJF1(nr, program);
+  EmitJEQJF(nr, 1, program);
   EmitRet(SECCOMP_RET_ALLOW, program);
+}
+
+static void EmitAllowSyscallArgN(int nr,
+                                 int arg_nr,
+                                 int arg_val,
+                                 std::vector<struct sock_filter>* program) {
+  // Jump forward 4 on no-match so that we also skip the unneccessary reload of
+  // syscall_nr. (It is unneccessary because we have not trashed it yet.)
+  EmitJEQJF(nr, 4, program);
+  EmitLoadArg(arg_nr, program);
+  EmitJEQJF(arg_val, 1, program);
+  EmitRet(SECCOMP_RET_ALLOW, program);
+  // We trashed syscall_nr so put it back in the accumulator.
+  EmitLoad(0, program);
 }
 
 static void EmitFailSyscall(int nr, int err,
                             std::vector<struct sock_filter>* program) {
-  EmitJEQJF1(nr, program);
+  EmitJEQJF(nr, 1, program);
   EmitRet(SECCOMP_RET_ERRNO | err, program);
 }
 
 static void EmitTrap(std::vector<struct sock_filter>* program) {
   EmitRet(SECCOMP_RET_TRAP, program);
+}
+
+static void EmitAllowKillSelf(int signal,
+                              std::vector<struct sock_filter>* program) {
+  EmitAllowSyscallArgN(__NR_kill, 2, signal, program);
 }
 
 static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
@@ -203,8 +230,9 @@ static void ApplyGPUPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_munlock, program);
   EmitAllowSyscall(__NR_exit, program);
   EmitAllowSyscall(__NR_exit_group, program);
-  EmitAllowSyscall(__NR_getpid, program);
-  EmitAllowSyscall(__NR_getppid, program);
+  EmitAllowSyscall(__NR_getpid, program);  // Seen in Nvidia binary driver.
+  EmitAllowSyscall(__NR_getppid, program);  // Seen in ATI binary driver.
+  EmitAllowKillSelf(SIGTERM, program);  // GPU watchdog.
 
   EmitFailSyscall(__NR_open, ENOENT, program);
   EmitFailSyscall(__NR_access, ENOENT, program);
