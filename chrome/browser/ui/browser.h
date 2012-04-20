@@ -148,15 +148,15 @@ class Browser : public TabHandlerDelegate,
   };
 
   struct CreateParams {
+    CreateParams();
+    CreateParams(Type type, Profile* profile);
+
     static CreateParams CreateForApp(Type type,
                                      const std::string& app_name,
                                      const gfx::Rect& window_bounds,
                                      Profile* profile);
 
     static CreateParams CreateForDevTools(Profile* profile);
-
-    CreateParams();
-    CreateParams(Type type, Profile* profile);
 
     // The browser type.
     Type type;
@@ -475,6 +475,7 @@ class Browser : public TabHandlerDelegate,
       bool pin,
       bool from_last_session,
       content::SessionStorageNamespace* storage_namespace);
+
   // Creates a new tab with the already-created WebContents 'new_contents'.
   // The window for the added contents will be reparented correctly when this
   // method returns.  If |disposition| is NEW_POPUP, |pos| should hold the
@@ -646,7 +647,6 @@ class Browser : public TabHandlerDelegate,
   void OpenBookmarkManager();
   void OpenBookmarkManagerForNode(int64 node_id);
   void OpenBookmarkManagerEditNode(int64 node_id);
-  void OpenBookmarkManagerAddNodeIn(int64 node_id);
   void ShowAppMenu();
   void ShowAvatarMenu();
   void ShowHistoryTab();
