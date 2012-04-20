@@ -60,4 +60,4 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
 
 }  // namespace remoting
 
-#endif  // CHROME_SERVICE_NET_SERVICE_URL_REQUEST_CONTEXT_H_
+#endif  // REMOTING_HOST_URL_REQUEST_CONTEXT_H_

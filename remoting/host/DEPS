@@ -1,11 +1,11 @@
 include_rules = [
   "+ui",
   "+base/crypto",
-  "+content/public/common",
   "+net/base",
   "+net/ftp",
   "+net/http",
   "+net/proxy",
+  "+net/test",
   "+net/url_request",
 
   "+remoting/protocol",

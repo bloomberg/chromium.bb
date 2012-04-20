@@ -36,35 +36,21 @@ class GaiaOAuthClient {
    public:
     virtual ~Delegate() { }
 
-    // Invoked on a successful response to the GetTokensFromAuthCode request.
-    virtual void OnGetTokensResponse(const std::string& refresh_token,
-                                     const std::string& access_token,
-                                     int expires_in_seconds) = 0;
     // Invoked on a successful response to the RefreshToken request.
     virtual void OnRefreshTokenResponse(const std::string& access_token,
                                         int expires_in_seconds) = 0;
     // Invoked when there is an OAuth error with one of the requests.
     virtual void OnOAuthError() = 0;
-    // Invoked when there is a network error or upon receiving an invalid
-    // response. This is invoked when the maximum number of retries have been
-    // exhausted. If max_retries is -1, this is never invoked.
+    // Invoked when there is a network error or upon receiving an
+    // invalid response.
     virtual void OnNetworkError(int response_code) = 0;
   };
   GaiaOAuthClient(const std::string& gaia_url,
                   net::URLRequestContextGetter* context_getter);
   ~GaiaOAuthClient();
 
-  // In the below methods, |max_retries| specifies the maximum number of times
-  // we should retry on a network error in invalid response. This does not
-  // apply in the case of an OAuth error (i.e. there was something wrong with
-  // the input arguments). Setting |max_retries| to -1 implies infinite retries.
-  void GetTokensFromAuthCode(const OAuthClientInfo& oauth_client_info,
-                             const std::string& auth_code,
-                             int max_retries,
-                             Delegate* delegate);
   void RefreshToken(const OAuthClientInfo& oauth_client_info,
                     const std::string& refresh_token,
-                    int max_retries,
                     Delegate* delegate);
 
  private:
@@ -73,6 +59,7 @@ class GaiaOAuthClient {
   scoped_refptr<Core> core_;
   DISALLOW_COPY_AND_ASSIGN(GaiaOAuthClient);
 };
+
 }  // namespace remoting
 
 #endif  // CHROME_COMMON_NET_GAIA_GAIA_OAUTH_CLIENT_H_

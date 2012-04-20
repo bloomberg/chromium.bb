@@ -620,11 +620,6 @@
             # duplicate string once
             # http://code.google.com/p/gyp/issues/detail?id=243 is fixed.
             'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'HOST_PLUGIN_MIME_TYPE="<(host_plugin_mime_type)" HOST_PLUGIN_NAME="<(host_plugin_name)" HOST_PLUGIN_DESCRIPTION="<(host_plugin_description)"',
-
-            # TODO(thakis): Remove this once remoting no longer depends on
-            # webkit (through content through urlfetcher),
-            # http://crbug.com/124041
-            'DEAD_CODE_STRIPPING': 'YES',  # -Wl,-dead_strip
           },
           # TODO(mark): Come up with a fancier way to do this.  It should
           # only be necessary to list host_plugin-Info.plist once, not the
@@ -832,8 +827,6 @@
         'remoting_protocol',
         'differ_block',
         '../crypto/crypto.gyp:crypto',
-        # TODO(hclam): Remove this dependency once we don't use URLFetcher.
-        '../content/content.gyp:content_common',
       ],
       'sources': [
         'host/capturer.h',
@@ -922,6 +915,8 @@
         'host/scoped_thread_desktop_win.h',
         'host/ui_strings.cc',
         'host/ui_strings.h',
+        'host/url_fetcher.cc',
+        'host/url_fetcher.h',
         'host/url_request_context.cc',
         'host/url_request_context.h',
         'host/usb_keycode_map.h',
@@ -1449,6 +1444,7 @@
         'host/capturer_win_unittest.cc',
         'host/remote_input_filter_unittest.cc',
         'host/test_key_pair.h',
+        'host/url_fetcher_unittest.cc',
         'jingle_glue/fake_signal_strategy.cc',
         'jingle_glue/fake_signal_strategy.h',
         'jingle_glue/iq_sender_unittest.cc',

@@ -58,9 +58,6 @@ class SignalingConnector
   virtual void OnOnlineStateChanged(bool online) OVERRIDE;
 
   // GaiaOAuthClient::Delegate interface.
-  virtual void OnGetTokensResponse(const std::string& refresh_token,
-                                   const std::string& access_token,
-                                   int expires_seconds) OVERRIDE;
   virtual void OnRefreshTokenResponse(const std::string& access_token,
                                       int expires_seconds) OVERRIDE;
   virtual void OnOAuthError() OVERRIDE;

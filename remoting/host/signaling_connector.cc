@@ -82,12 +82,6 @@ void SignalingConnector::OnOnlineStateChanged(bool online) {
   }
 }
 
-void SignalingConnector::OnGetTokensResponse(const std::string& refresh_token,
-                                             const std::string& access_token,
-                                             int expires_seconds) {
-  NOTREACHED();
-}
-
 void SignalingConnector::OnRefreshTokenResponse(const std::string& access_token,
                                                 int expires_seconds) {
   DCHECK(CalledOnValidThread());
@@ -172,7 +166,7 @@ void SignalingConnector::RefreshOAuthToken() {
 #endif  // !OFFICIAL_BUILD
   refreshing_oauth_token_ = true;
   gaia_oauth_client_->RefreshToken(
-      client_info, oauth_credentials_->refresh_token, 1, this);
+      client_info, oauth_credentials_->refresh_token, this);
 }
 
 }  // namespace remoting
