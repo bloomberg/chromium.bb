@@ -77,6 +77,7 @@ struct desktop_shell {
 		struct weston_process process;
 	} screensaver;
 
+	uint32_t binding_modifier;
 	struct weston_surface *debug_repaint_surface;
 };
 
@@ -227,16 +228,34 @@ static void
 center_on_output(struct weston_surface *surface,
 		 struct weston_output *output);
 
+static uint32_t
+get_modifier(char *modifier)
+{
+	if (!modifier)
+		return MODIFIER_SUPER;
+
+	if (!strcmp("ctrl", modifier))
+		return MODIFIER_CTRL;
+	else if (!strcmp("alt", modifier))
+		return MODIFIER_ALT;
+	else if (!strcmp("super", modifier))
+		return MODIFIER_SUPER;
+	else
+		return MODIFIER_SUPER;
+}
+
 static void
 shell_configuration(struct desktop_shell *shell)
 {
 	char *config_file;
 	char *path = NULL;
 	int duration = 60;
+	char *modifier = NULL;
 
 	struct config_key saver_keys[] = {
 		{ "path",       CONFIG_KEY_STRING,  &path },
 		{ "duration",   CONFIG_KEY_INTEGER, &duration },
+		{ "binding-modifier",   CONFIG_KEY_STRING, &modifier },
 	};
 
 	struct config_section cs[] = {
@@ -249,6 +268,7 @@ shell_configuration(struct desktop_shell *shell)
 
 	shell->screensaver.path = path;
 	shell->screensaver.duration = duration;
+	shell->binding_modifier = get_modifier(modifier);
 }
 
 static void
@@ -2276,7 +2296,7 @@ switcher_key(struct wl_keyboard_grab *grab,
 	struct weston_input_device *device =
 		(struct weston_input_device *) grab->input_device;
 
-	if ((device->modifier_state & MODIFIER_SUPER) == 0) {
+	if ((device->modifier_state & switcher->shell->binding_modifier) == 0) {
 		switcher_destroy(switcher, time);
 	} else if (key == KEY_TAB && state) {
 		switcher_next(switcher);
@@ -2387,6 +2407,47 @@ shell_destroy(struct wl_listener *listener, void *data)
 	free(shell);
 }
 
+static void
+shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
+{
+	uint32_t mod;
+
+	/* fixed bindings */
+	weston_compositor_add_binding(ec, KEY_BACKSPACE, 0, 0,
+				      MODIFIER_CTRL | MODIFIER_ALT,
+				      terminate_binding, ec);
+	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, 0,
+				      click_to_activate_binding, shell);
+	weston_compositor_add_binding(ec, 0, 0,
+				      WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL,
+				      MODIFIER_SUPER | MODIFIER_ALT,
+				      surface_opacity_binding, NULL);
+	weston_compositor_add_binding(ec, 0, 0,
+				      WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL,
+				      MODIFIER_SUPER, zoom_binding, NULL);
+
+	/* configurable bindings */
+	mod = shell->binding_modifier;
+	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, mod,
+				      move_binding, shell);
+	weston_compositor_add_binding(ec, 0, BTN_MIDDLE, 0, mod,
+				      resize_binding, shell);
+	weston_compositor_add_binding(ec, 0, BTN_RIGHT, 0, mod,
+				      rotate_binding, NULL);
+	weston_compositor_add_binding(ec, KEY_TAB, 0, 0, mod,
+				      switcher_binding, shell);
+	weston_compositor_add_binding(ec, KEY_F9, 0, 0, mod,
+				      backlight_binding, ec);
+	weston_compositor_add_binding(ec, KEY_BRIGHTNESSDOWN, 0, 0, 0,
+				      backlight_binding, ec);
+	weston_compositor_add_binding(ec, KEY_F10, 0, 0, mod,
+				      backlight_binding, ec);
+	weston_compositor_add_binding(ec, KEY_BRIGHTNESSUP, 0, 0, 0,
+				      backlight_binding, ec);
+	weston_compositor_add_binding(ec, KEY_SPACE, 0, 0, mod,
+				      debug_repaint_binding, shell);
+}
+
 int
 shell_init(struct weston_compositor *ec);
 
@@ -2440,38 +2501,7 @@ shell_init(struct weston_compositor *ec)
 	if (launch_desktop_shell_process(shell) != 0)
 		return -1;
 
-	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, MODIFIER_SUPER,
-					move_binding, shell);
-	weston_compositor_add_binding(ec, 0, BTN_MIDDLE, 0, MODIFIER_SUPER,
-					resize_binding, shell);
-	weston_compositor_add_binding(ec, KEY_BACKSPACE, 0, 0,
-					MODIFIER_CTRL | MODIFIER_ALT,
-					terminate_binding, ec);
-	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0, 0,
-					click_to_activate_binding, shell);
-	weston_compositor_add_binding(ec, 0, 0, WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL,
-					MODIFIER_SUPER | MODIFIER_ALT,
-					surface_opacity_binding, NULL);
-	weston_compositor_add_binding(ec, 0, 0, WL_INPUT_DEVICE_AXIS_VERTICAL_SCROLL,
-					MODIFIER_SUPER, zoom_binding, NULL);
-	weston_compositor_add_binding(ec, 0, BTN_LEFT, 0,
-					MODIFIER_SUPER | MODIFIER_ALT,
-					rotate_binding, NULL);
-	weston_compositor_add_binding(ec, KEY_TAB, 0, 0, MODIFIER_SUPER,
-					switcher_binding, shell);
-
-	/* brightness */
-	weston_compositor_add_binding(ec, KEY_F9, 0, 0, MODIFIER_CTRL,
-					backlight_binding, ec);
-	weston_compositor_add_binding(ec, KEY_BRIGHTNESSDOWN, 0, 0, 0,
-					backlight_binding, ec);
-	weston_compositor_add_binding(ec, KEY_F10, 0, 0, MODIFIER_CTRL,
-					backlight_binding, ec);
-	weston_compositor_add_binding(ec, KEY_BRIGHTNESSUP, 0, 0, 0,
-					backlight_binding, ec);
-
-	weston_compositor_add_binding(ec, KEY_SPACE, 0, 0, MODIFIER_SUPER,
-					debug_repaint_binding, shell);
+	shell_add_bindings(ec, shell);
 
 	return 0;
 }
