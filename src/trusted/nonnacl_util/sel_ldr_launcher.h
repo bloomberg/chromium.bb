@@ -148,7 +148,13 @@ struct SelLdrLauncher {
   nacl::string GetSelLdrBootstrapPathName();
   void CloseHandlesAfterLaunch();
 
+  // On Windows, child_process_ is a handle for the process.  On Unix,
+  // child_process_ is a process ID.  Inside Chromium, we don't get a
+  // handle or a process ID for the process.
+#if defined(NACL_STANDALONE)
   Handle child_process_;
+#endif
+
   Handle channel_;
 
   // The following members are used to initialize and build the command line.

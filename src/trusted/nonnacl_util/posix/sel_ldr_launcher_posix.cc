@@ -32,6 +32,7 @@ namespace nacl {
 
 SelLdrLauncher::~SelLdrLauncher() {
   CloseHandlesAfterLaunch();
+#if defined(NACL_STANDALONE)
   if (kInvalidHandle != child_process_) {
     int status;
     // Ensure child process (service runtime) is kaput.  NB: we might
@@ -45,6 +46,7 @@ SelLdrLauncher::~SelLdrLauncher() {
     KillChildProcess();
     waitpid(child_process_, &status, 0);
   }
+#endif
   if (kInvalidHandle != channel_) {
     Close(channel_);
   }
@@ -83,6 +85,7 @@ Handle SelLdrLauncher::CreateBootstrapSocket(nacl::string* dest_fd) {
 
 const size_t kMaxExecArgs = 64;
 
+#if defined(NACL_STANDALONE)
 bool SelLdrLauncher::StartViaCommandLine(
     const vector<nacl::string>& prefix,
     const vector<nacl::string>& sel_ldr_argv,
@@ -126,8 +129,10 @@ bool SelLdrLauncher::StartViaCommandLine(
   CloseHandlesAfterLaunch();
   return true;
 }
+#endif
 
 bool SelLdrLauncher::KillChildProcess() {
+#if defined(NACL_STANDALONE)
   if (kInvalidHandle == child_process_) {
     // It is incorrect to use the kill syscall on kInvalidHandle as
     // the pid, since using -1 as pid is defined by POSIX.1-2001 to
@@ -139,6 +144,9 @@ bool SelLdrLauncher::KillChildProcess() {
   return 0 == kill(child_process_, SIGKILL);
   // We cannot set child_process_ to kInvalidHandle since we will want to wait
   // on its exit status.
+#else
+  return false;
+#endif
 }
 
 }  // namespace nacl

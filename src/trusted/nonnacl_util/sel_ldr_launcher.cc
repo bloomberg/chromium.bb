@@ -30,7 +30,10 @@ using std::vector;
 namespace nacl {
 
 SelLdrLauncher::SelLdrLauncher()
-  : child_process_(kInvalidHandle),
+  :
+#if defined(NACL_STANDALONE)
+    child_process_(kInvalidHandle),
+#endif
     channel_(kInvalidHandle),
     bootstrap_socket_(NULL),
     socket_addr_(NULL),
@@ -38,7 +41,10 @@ SelLdrLauncher::SelLdrLauncher()
 }
 
 SelLdrLauncher::SelLdrLauncher(SelLdrLocator* sel_ldr_locator)
-  : child_process_(kInvalidHandle),
+  :
+#if defined(NACL_STANDALONE)
+    child_process_(kInvalidHandle),
+#endif
     channel_(kInvalidHandle),
     bootstrap_socket_(NULL),
     socket_addr_(NULL),

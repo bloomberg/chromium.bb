@@ -25,6 +25,7 @@ namespace nacl {
 
 SelLdrLauncher::~SelLdrLauncher() {
   CloseHandlesAfterLaunch();
+#if defined(NACL_STANDALONE)
   if (kInvalidHandle != child_process_) {
     // Ensure child process (service runtime) is kaput.  NB: we might
     // close the command channel (or use the hard_shutdown RPC) rather
@@ -37,6 +38,7 @@ SelLdrLauncher::~SelLdrLauncher() {
     KillChildProcess();
     CloseHandle(child_process_);
   }
+#endif
   if (kInvalidHandle != channel_) {
     Close(channel_);
   }
@@ -100,6 +102,7 @@ Handle SelLdrLauncher::CreateBootstrapSocket(nacl::string* dest_fd) {
   return pair[0];
 }
 
+#if defined(NACL_STANDALONE)
 bool SelLdrLauncher::StartViaCommandLine(
     const vector<nacl::string>& prefix,
     const vector<nacl::string>& sel_ldr_argv,
@@ -138,13 +141,18 @@ bool SelLdrLauncher::StartViaCommandLine(
   child_process_ = process_infomation.hProcess;
   return true;
 }
+#endif
 
 bool SelLdrLauncher::KillChildProcess() {
+#if defined(NACL_STANDALONE)
   if (kInvalidHandle == child_process_)
     return false;
   return 0 != TerminateProcess(child_process_, 9);
   // 9 is the exit code for the child_process_.  The value is actually not
   // material, since (currently) the launcher does not collect/report it.
+#else
+  return false;
+#endif
 }
 
 void PluginSelLdrLocator::GetDirectory(char* buffer, size_t len) {

@@ -6,6 +6,10 @@
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 
+#if NACL_WINDOWS
+# include <windows.h>
+#endif
+
 LaunchNaClProcessFunc launch_nacl_process = NULL;
 
 #if !defined(NACL_STANDALONE)
@@ -29,8 +33,12 @@ bool SelLdrLauncher::Start(const char* url) {
   }
 
   CloseHandlesAfterLaunch();
-  // TODO(gregoryd): the handle is currently returned on Windows only.
-  child_process_ = nacl_proc_handle;
+#if NACL_WINDOWS
+  if (nacl_proc_handle != kInvalidHandle &&
+      nacl_proc_handle != NULL) {
+    CloseHandle(nacl_proc_handle);
+  }
+#endif
   return true;
 }
 
