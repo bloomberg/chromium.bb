@@ -538,7 +538,14 @@ void FeedbackHandler::HandleCancel(const ListValue*) {
 
 void FeedbackHandler::HandleOpenSystemTab(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  BrowserList::GetLastActive()->OpenSystemTabAndActivate();
+  Browser* last_active = BrowserList::GetLastActive();
+  last_active->OpenURL(
+      content::OpenURLParams(GURL(chrome::kChromeUISystemInfoURL),
+                             content::Referrer(),
+                             NEW_FOREGROUND_TAB,
+                             content::PAGE_TRANSITION_LINK,
+                             false));
+  last_active->window()->Activate();
 #endif
 }
 

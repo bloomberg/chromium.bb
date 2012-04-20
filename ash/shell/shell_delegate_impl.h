@@ -26,9 +26,13 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;
-  virtual void OpenFileManager() OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
   virtual void Exit() OVERRIDE;
   virtual void NewWindow(bool incognito) OVERRIDE;
+  virtual void Search() OVERRIDE;
+  virtual void OpenFileManager() OVERRIDE;
+  virtual void OpenCrosh() OVERRIDE;
+  virtual void OpenMobileSetup() OVERRIDE;
   virtual ash::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual void StartPartialScreenshot(
       ash::ScreenshotDelegate* screenshot_delegate) OVERRIDE;

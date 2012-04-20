@@ -206,22 +206,12 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
-#include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/power_manager_client.h"
-#if defined(USE_AURA)
-#include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
-#endif
 #endif
 
 #if defined(USE_ASH)
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/views/ash/panel_view_aura.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #endif
 
 using base::TimeDelta;
@@ -316,13 +306,8 @@ bool ParseCommaSeparatedIntegers(const std::string& str,
 }
 
 bool AllowPanels(const std::string& app_name) {
-#if (!defined(OS_CHROMEOS) || defined(USE_AURA))
-  if (!PanelManager::ShouldUsePanels(
-          web_app::GetExtensionIdFromApplicationName(app_name))) {
-    return false;
-  }
-#endif  // !OS_CHROMEOS || USE_AURA
-  return true;
+  return PanelManager::ShouldUsePanels(
+      web_app::GetExtensionIdFromApplicationName(app_name));
 }
 
 }  // namespace
@@ -1152,8 +1137,8 @@ string16 Browser::GetWindowTitleForCurrentTab() const {
   if (title.empty())
     title = CoreTabHelper::GetDefaultTitle();
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  // On Mac or ChromeOS, we don't want to suffix the page title with
+#if defined(OS_MACOSX) || defined(USE_ASH)
+  // On Mac or Ash, we don't want to suffix the page title with
   // the application name.
   return title;
 #else
@@ -1918,29 +1903,6 @@ void Browser::TogglePresentationMode() {
 #endif
 
 #if defined(OS_CHROMEOS)
-void Browser::Search() {
-  // Exit fullscreen to show omnibox.
-  if (window_->IsFullscreen()) {
-    ToggleFullscreenMode();
-    // ToggleFullscreenMode is asynchronous, so we don't have omnibox
-    // visible at this point. Wait for next event cycle which toggles
-    // the visibility of omnibox before creating new tab.
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&Browser::Search, weak_factory_.GetWeakPtr()));
-    return;
-  }
-
-  const GURL& url = GetSelectedWebContents()->GetURL();
-  if (url.SchemeIs(chrome::kChromeUIScheme) &&
-      url.host() == chrome::kChromeUINewTabHost) {
-    // If the NTP is showing, focus the omnibox.
-    window_->SetFocusToLocationBar(true);
-  } else {
-    // Otherwise, open the NTP.
-    NewTab();
-  }
-}
-
 void Browser::ShowKeyboardOverlay() {
   window_->ShowKeyboardOverlay(window_->GetNativeHandle());
 }
@@ -2492,79 +2454,6 @@ void Browser::OpenSearchEngineOptionsDialog() {
   ShowOptionsTab(chrome::kSearchEnginesSubPage);
 }
 
-#if defined(OS_CHROMEOS)
-void Browser::OpenFileManager() {
-  file_manager_util::OpenApplication();
-}
-
-void Browser::LockScreen() {
-  content::RecordAction(UserMetricsAction("LockScreen"));
-  // Never lock the screen for kiosk mode.
-  if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
-    return;
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      NotifyScreenLockRequested();
-}
-
-void Browser::Shutdown() {
-  content::RecordAction(UserMetricsAction("Shutdown"));
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-      RequestShutdown();
-}
-
-void Browser::ShowDateOptions() {
-  content::RecordAction(UserMetricsAction("ShowDateOptions"));
-  std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
-      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
-  ShowOptionsTab(sub_page);
-}
-
-void Browser::OpenInternetOptionsDialog() {
-  content::RecordAction(UserMetricsAction("OpenInternetOptionsDialog"));
-  ShowOptionsTab(chrome::kInternetOptionsSubPage);
-}
-
-void Browser::OpenLanguageOptionsDialog() {
-  content::RecordAction(UserMetricsAction("OpenLanguageOptionsDialog"));
-  ShowOptionsTab(chrome::kLanguageOptionsSubPage);
-}
-
-void Browser::OpenSystemTabAndActivate() {
-  OpenURL(OpenURLParams(
-      GURL(chrome::kChromeUISystemInfoURL), Referrer(), NEW_FOREGROUND_TAB,
-      content::PAGE_TRANSITION_LINK, false));
-  window_->Activate();
-}
-
-void Browser::OpenMobilePlanTabAndActivate() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMobileSetupDialog)) {
-    window_->ShowMobileSetup();
-  } else {
-    OpenURL(OpenURLParams(
-        GURL(chrome::kChromeUIMobileSetupURL), Referrer(), NEW_FOREGROUND_TAB,
-        content::PAGE_TRANSITION_LINK, false));
-    window_->Activate();
-  }
-}
-
-void Browser::OpenAddBluetoothDeviceDialog() {
-  content::RecordAction(UserMetricsAction("OpenAddBluetoothDeviceDialog"));
-  ShowOptionsTab(chrome::kBluetoothAddDeviceSubPage);
-}
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS) && defined(USE_AURA)
-void Browser::OpenCrosh() {
-  GURL crosh_url = TerminalExtensionHelper::GetCroshExtensionURL(profile_);
-  if (!crosh_url.is_valid())
-    return;
-  OpenURL(OpenURLParams(crosh_url, Referrer(), NEW_FOREGROUND_TAB,
-          content::PAGE_TRANSITION_GENERATED,
-          false));
-}
-#endif
-
 void Browser::OpenPluginsTabAndActivate() {
   OpenURL(OpenURLParams(
       GURL(chrome::kChromeUIPluginsURL), Referrer(), NEW_FOREGROUND_TAB,
@@ -3074,7 +2963,6 @@ void Browser::ExecuteCommandWithDisposition(
 #endif
     case IDC_EXIT:                  Exit();                           break;
 #if defined(OS_CHROMEOS)
-    case IDC_SEARCH:                Search();                         break;
     case IDC_SHOW_KEYBOARD_OVERLAY: ShowKeyboardOverlay();            break;
 #endif
 
@@ -3184,16 +3072,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_UPGRADE_DIALOG:        OpenUpdateChromeDialog();         break;
     case IDC_VIEW_INCOMPATIBILITIES: ShowAboutConflictsTab();         break;
     case IDC_HELP_PAGE:             ShowHelpTab();                    break;
-#if defined(OS_CHROMEOS)
-    case IDC_LOCK_SCREEN:           LockScreen();                     break;
-    case IDC_SHUTDOWN:              Shutdown();                       break;
-    case IDC_FILE_MANAGER:          OpenFileManager();                break;
-    case IDC_INTERNET_OPTIONS:      OpenInternetOptionsDialog();      break;
-    case IDC_LANGUAGE_OPTIONS:      OpenLanguageOptionsDialog();      break;
-#endif
-#if defined(OS_CHROMEOS) && defined(USE_AURA)
-    case IDC_NEW_CROSH_TAB:         OpenCrosh();                    break;
-#endif
     case IDC_SHOW_SYNC_SETUP:       ShowSyncSetup(SyncPromoUI::SOURCE_MENU);
                                     break;
     case IDC_TOGGLE_SPEECH_INPUT:   ToggleSpeechInput();              break;
@@ -4618,9 +4496,6 @@ void Browser::InitCommandState() {
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
-#if defined(OS_CHROMEOS) && defined(USE_AURA)
-  command_updater_.UpdateCommandEnabled(IDC_NEW_CROSH_TAB, true);
-#endif
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB, false);
@@ -4685,15 +4560,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARKS_MENU, true);
 
 #if defined(OS_CHROMEOS)
-  // Don't allow screen lock for guest sessions.
-  command_updater_.UpdateCommandEnabled(
-      IDC_LOCK_SCREEN,
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession));
-  command_updater_.UpdateCommandEnabled(IDC_SHUTDOWN, true);
-  command_updater_.UpdateCommandEnabled(IDC_FILE_MANAGER, true);
-  command_updater_.UpdateCommandEnabled(IDC_SEARCH, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_KEYBOARD_OVERLAY, true);
-  command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
 #endif
   command_updater_.UpdateCommandEnabled(
       IDC_SHOW_SYNC_SETUP, profile_->GetOriginalProfile()->IsSyncAccessible());

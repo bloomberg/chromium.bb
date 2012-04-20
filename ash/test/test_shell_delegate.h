@@ -22,9 +22,13 @@ class TestShellDelegate : public ShellDelegate {
   virtual void LockScreen() OVERRIDE;
   virtual void UnlockScreen() OVERRIDE;
   virtual bool IsScreenLocked() const OVERRIDE;
-  virtual void OpenFileManager() OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
   virtual void Exit() OVERRIDE;
   virtual void NewWindow(bool incognito) OVERRIDE;
+  virtual void Search() OVERRIDE;
+  virtual void OpenFileManager() OVERRIDE;
+  virtual void OpenCrosh() OVERRIDE;
+  virtual void OpenMobileSetup() OVERRIDE;
   virtual AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual void StartPartialScreenshot(
       ScreenshotDelegate* screenshot_delegate) OVERRIDE;

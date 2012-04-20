@@ -25,7 +25,7 @@ enum AcceleratorAction {
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TAKE_SCREENSHOT,
   TAKE_PARTIAL_SCREENSHOT,
-  TOGGLE_APP_LIST,
+  SEARCH_KEY,
   TOGGLE_CAPS_LOCK,
   VOLUME_DOWN,
   VOLUME_MUTE,
@@ -35,6 +35,7 @@ enum AcceleratorAction {
 #if defined(OS_CHROMEOS)
   LOCK_SCREEN,
   OPEN_FILE_MANAGER,
+  OPEN_CROSH,
 #endif
   SELECT_WIN_0,
   SELECT_WIN_1,

@@ -579,7 +579,6 @@ class Browser : public TabHandlerDelegate,
 #endif
   void Exit();
 #if defined(OS_CHROMEOS)
-  void Search();
   void ShowKeyboardOverlay();
 #endif
 
@@ -670,20 +669,6 @@ class Browser : public TabHandlerDelegate,
   void OpenAutofillHelpTabAndActivate();
   void OpenPrivacyDashboardTabAndActivate();
   void OpenSearchEngineOptionsDialog();
-#if defined(OS_CHROMEOS)
-  void OpenFileManager();
-  void LockScreen();
-  void Shutdown();
-  void ShowDateOptions();
-  void OpenInternetOptionsDialog();
-  void OpenLanguageOptionsDialog();
-  void OpenSystemTabAndActivate();
-  void OpenMobilePlanTabAndActivate();
-  void OpenAddBluetoothDeviceDialog();
-#endif
-#if defined(OS_CHROMEOS) && defined(USE_AURA)
-  void OpenCrosh();
-#endif
   void OpenPluginsTabAndActivate();
   void ShowSyncSetup(SyncPromoUI::Source source);
   void ToggleSpeechInput();

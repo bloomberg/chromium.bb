@@ -51,10 +51,12 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -252,11 +254,16 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowDateSettings() OVERRIDE {
-    GetAppropriateBrowser()->ShowDateOptions();
+    content::RecordAction(content::UserMetricsAction("ShowDateOptions"));
+    std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
+        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
+    GetAppropriateBrowser()->ShowOptionsTab(sub_page);
   }
 
   virtual void ShowNetworkSettings() OVERRIDE {
-    GetAppropriateBrowser()->OpenInternetOptionsDialog();
+    content::RecordAction(
+        content::UserMetricsAction("OpenInternetOptionsDialog"));
+    GetAppropriateBrowser()->ShowOptionsTab(chrome::kInternetOptionsSubPage);
   }
 
   virtual void ShowBluetoothSettings() OVERRIDE {
@@ -264,7 +271,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowIMESettings() OVERRIDE {
-    GetAppropriateBrowser()->OpenLanguageOptionsDialog();
+    content::RecordAction(
+        content::UserMetricsAction("OpenLanguageOptionsDialog"));
+    GetAppropriateBrowser()->ShowOptionsTab(chrome::kLanguageOptionsSubPage);
   }
 
   virtual void ShowHelp() OVERRIDE {
@@ -524,7 +533,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void AddBluetoothDevice() OVERRIDE {
     // Open the Bluetooth device dialog, which automatically starts the
     // discovery process.
-    GetAppropriateBrowser()->OpenAddBluetoothDeviceDialog();
+    content::RecordAction(
+        content::UserMetricsAction("OpenAddBluetoothDeviceDialog"));
+    GetAppropriateBrowser()->ShowOptionsTab(chrome::kBluetoothAddDeviceSubPage);
   }
 
   virtual void ToggleAirplaneMode() OVERRIDE {

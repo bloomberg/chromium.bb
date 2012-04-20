@@ -169,9 +169,6 @@ void ToolsMenuModel::Build(Browser* browser) {
 #endif
 
   AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
-#if defined(OS_CHROMEOS)
-  AddItemWithStringId(IDC_FILE_MANAGER, IDS_FILE_MANAGER);
-#endif
   AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
 

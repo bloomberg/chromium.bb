@@ -39,6 +39,7 @@ const AcceleratorData kAcceleratorData[] = {
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, true, true, false, LOCK_SCREEN },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_M, false, true, false,
     OPEN_FILE_MANAGER },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_T, false, true, true, OPEN_CROSH },
 #endif
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_Q, true, true, false, EXIT },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_N, true, true, false,
@@ -54,7 +55,7 @@ const AcceleratorData kAcceleratorData[] = {
     TAKE_SCREENSHOT },
   // On Chrome OS, Search key is mapped to LWIN.
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_LWIN, false, true, false,
-    TOGGLE_APP_LIST },
+    SEARCH_KEY },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_LWIN, true, false, false,
     TOGGLE_CAPS_LOCK },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F6, false, false, false,

@@ -124,7 +124,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
-#include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #endif
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
@@ -1339,10 +1338,6 @@ FindBar* BrowserView::CreateFindBar() {
 }
 
 #if defined(OS_CHROMEOS)
-void BrowserView::ShowMobileSetup() {
-  MobileSetupDialog::Show();
-}
-
 void BrowserView::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
   KeyboardOverlayDialogView::ShowDialog(owning_window, this);
 }
@@ -2454,7 +2449,6 @@ void BrowserView::CreateLauncherIcon() {
 #endif  // defined(USE_AURA)
 }
 
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
 // static
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   // Create the view and the frame. The frame will attach itself via the view
@@ -2465,7 +2459,6 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   return view;
 }
-#endif
 
 void BrowserView::ShowAvatarBubble(WebContents* web_contents,
                                    const gfx::Rect& rect) {

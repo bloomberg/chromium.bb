@@ -176,38 +176,3 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   ASSERT_EQ(url2, browser()->GetSelectedWebContents()->GetURL());
 }
 
-// Tests IDC_SEARCH (the Search key on Chrome OS devices).
-#if defined(OS_CHROMEOS)
-
-namespace chromeos {
-
-TEST_F(BrowserCommandsTest, Search) {
-  ScopedMockUserManagerEnabler mock_user_manager;
-  EXPECT_CALL(*mock_user_manager.user_manager(), IsLoggedInAsGuest())
-      .Times(1).WillRepeatedly(::testing::Return(false));
-
-  // Load a non-NTP URL.
-  GURL non_ntp_url("http://foo/");
-  AddTab(browser(), non_ntp_url);
-  ASSERT_EQ(1, browser()->tab_count());
-  EXPECT_EQ(non_ntp_url, browser()->GetSelectedWebContents()->GetURL());
-
-  // Pressing the Search key should open a new tab containing the NTP.
-  browser()->Search();
-  ASSERT_EQ(2, browser()->tab_count());
-  ASSERT_EQ(1, browser()->active_index());
-  GURL current_url = browser()->GetSelectedWebContents()->GetURL();
-  EXPECT_TRUE(current_url.SchemeIs(chrome::kChromeUIScheme));
-  EXPECT_EQ(chrome::kChromeUINewTabHost, current_url.host());
-
-  // Pressing it a second time while the NTP is open shouldn't change anything.
-  browser()->Search();
-  ASSERT_EQ(2, browser()->tab_count());
-  ASSERT_EQ(1, browser()->active_index());
-  current_url = browser()->GetSelectedWebContents()->GetURL();
-  EXPECT_TRUE(current_url.SchemeIs(chrome::kChromeUIScheme));
-  EXPECT_EQ(chrome::kChromeUINewTabHost, current_url.host());
-}
-
-}  // namespace chromeos
-#endif

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/network_message_observer.h"
 
+#include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
@@ -79,9 +81,7 @@ bool NetworkMessageObserver::IsApplicableBackupPlan(
 }
 
 void NetworkMessageObserver::OpenMobileSetupPage(const ListValue* args) {
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
-  browser->OpenMobilePlanTabAndActivate();
+  ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
 }
 
 void NetworkMessageObserver::OpenMoreInfoPage(const ListValue* args) {

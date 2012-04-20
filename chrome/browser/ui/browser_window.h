@@ -329,9 +329,6 @@ class BrowserWindow : public BaseWindow {
   virtual FindBar* CreateFindBar() = 0;
 
 #if defined(OS_CHROMEOS)
-  // Shows the mobile setup dialog.
-  virtual void ShowMobileSetup() = 0;
-
   // Shows the keyboard overlay dialog box.
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) = 0;
 #endif

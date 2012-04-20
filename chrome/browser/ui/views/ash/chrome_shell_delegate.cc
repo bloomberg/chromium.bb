@@ -10,6 +10,7 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -19,7 +20,11 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
+#include "grit/generated_resources.h"
 #include "ui/aura/window.h"
 
 #if defined(OS_CHROMEOS)
@@ -29,6 +34,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
+#include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #endif
@@ -37,7 +43,8 @@
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
 
 ChromeShellDelegate::ChromeShellDelegate()
-    : window_positioner_(new WindowPositioner()) {
+    : window_positioner_(new WindowPositioner()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   instance_ = this;
 #if defined(OS_CHROMEOS)
   registrar_.Add(
@@ -90,9 +97,11 @@ bool ChromeShellDelegate::IsScreenLocked() const {
 #endif
 }
 
-void ChromeShellDelegate::OpenFileManager() {
+void ChromeShellDelegate::Shutdown() {
 #if defined(OS_CHROMEOS)
-  file_manager_util::OpenApplication();
+  content::RecordAction(content::UserMetricsAction("Shutdown"));
+  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
+      RequestShutdown();
 #endif
 }
 
@@ -102,12 +111,82 @@ void ChromeShellDelegate::Exit() {
 
 void ChromeShellDelegate::NewWindow(bool is_incognito) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
-  Browser::NewEmptyWindow(is_incognito ? profile->GetOffTheRecordProfile() :
-      profile);
+  Browser::NewEmptyWindow(
+      is_incognito ? profile->GetOffTheRecordProfile() : profile);
+}
+
+void ChromeShellDelegate::Search() {
+  // Exit fullscreen to show omnibox.
+  Browser* last_active = BrowserList::GetLastActive();
+  if (last_active) {
+    if (last_active->window()->IsFullscreen()) {
+      last_active->ToggleFullscreenMode();
+      // ToggleFullscreenMode is asynchronous, so we don't have omnibox
+      // visible at this point. Wait for next event cycle which toggles
+      // the visibility of omnibox before creating new tab.
+      MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&ChromeShellDelegate::Search,
+                                weak_factory_.GetWeakPtr()));
+      return;
+    }
+  }
+
+  Browser* target_browser = Browser::GetOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  const GURL& url = target_browser->GetSelectedWebContents()->GetURL();
+  if (url.SchemeIs(chrome::kChromeUIScheme) &&
+      url.host() == chrome::kChromeUINewTabHost) {
+    // If the NTP is showing, focus the omnibox.
+    target_browser->window()->SetFocusToLocationBar(true);
+  } else {
+    target_browser->NewTab();
+  }
+}
+
+void ChromeShellDelegate::OpenFileManager() {
+#if defined(OS_CHROMEOS)
+  file_manager_util::OpenApplication();
+#endif
+}
+
+void ChromeShellDelegate::OpenCrosh() {
+#if defined(OS_CHROMEOS)
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  GURL crosh_url = TerminalExtensionHelper::GetCroshExtensionURL(
+      browser->profile());
+  if (!crosh_url.is_valid())
+    return;
+  browser->OpenURL(
+      content::OpenURLParams(crosh_url,
+                             content::Referrer(),
+                             NEW_FOREGROUND_TAB,
+                             content::PAGE_TRANSITION_GENERATED,
+                             false));
+#endif
+}
+
+void ChromeShellDelegate::OpenMobileSetup() {
+#if defined(OS_CHROMEOS)
+  Browser* browser = Browser::GetOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableMobileSetupDialog)) {
+    MobileSetupDialog::Show();
+  } else {
+    browser->OpenURL(
+        content::OpenURLParams(GURL(chrome::kChromeUIMobileSetupURL),
+                               content::Referrer(),
+                               NEW_FOREGROUND_TAB,
+                               content::PAGE_TRANSITION_LINK,
+                               false));
+    browser->window()->Activate();
+  }
+#endif
 }
 
 ash::AppListViewDelegate*
-ChromeShellDelegate::CreateAppListViewDelegate() {
+    ChromeShellDelegate::CreateAppListViewDelegate() {
   // Shell will own the created delegate.
   return new AppListViewDelegate;
 }

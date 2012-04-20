@@ -49,7 +49,7 @@ bool ShellDelegateImpl::IsScreenLocked() const {
   return locked_;
 }
 
-void ShellDelegateImpl::OpenFileManager() {
+void ShellDelegateImpl::Shutdown() {
 }
 
 void ShellDelegateImpl::Exit() {
@@ -61,6 +61,18 @@ void ShellDelegateImpl::NewWindow(bool incognito) {
   create_params.can_resize = true;
   create_params.can_maximize = true;
   ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
+}
+
+void ShellDelegateImpl::Search() {
+}
+
+void ShellDelegateImpl::OpenFileManager() {
+}
+
+void ShellDelegateImpl::OpenCrosh() {
+}
+
+void ShellDelegateImpl::OpenMobileSetup() {
 }
 
 ash::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {

@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -94,9 +96,7 @@ void ActivateCellular(const chromeos::CellularNetwork* cellular) {
   if (!chromeos::UserManager::Get()->IsUserLoggedIn())
     return;
 
-  Browser* browser = Browser::GetOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
-  browser->OpenMobilePlanTabAndActivate();
+  ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
 }
 
 // Decides whether a network should be highlighted in the UI.

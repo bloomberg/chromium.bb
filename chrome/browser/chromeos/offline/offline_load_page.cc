@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 
+#include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
 #include "base/string_piece.h"
@@ -189,9 +191,7 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
     DCHECK(browser);
     browser->ShowOptionsTab(chrome::kInternetOptionsSubPage);
   } else if (command == "open_activate_broadband") {
-    Browser* browser = BrowserList::GetLastActive();
-    DCHECK(browser);
-    browser->OpenMobilePlanTabAndActivate();
+    ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
   } else {
     LOG(WARNING) << "Unknown command:" << cmd;
   }

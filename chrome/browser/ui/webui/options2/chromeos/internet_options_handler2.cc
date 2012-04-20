@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -526,10 +528,7 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(const ListValue* args) {
 void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
   if (!web_ui())
     return;
-  Browser* browser = BrowserList::FindBrowserWithFeature(
-      Profile::FromWebUI(web_ui()), Browser::FEATURE_TABSTRIP);
-  if (browser)
-    browser->OpenMobilePlanTabAndActivate();
+  ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
 }
 
 void InternetOptionsHandler::SetApnCallback(const ListValue* args) {
@@ -1102,9 +1101,7 @@ void InternetOptionsHandler::HandleCellularButtonClick(
     } else if (command == "disconnect") {
       cros_->DisconnectFromNetwork(cellular);
     } else if (command == "activate") {
-      Browser* browser = BrowserList::GetLastActive();
-      if (browser)
-        browser->OpenMobilePlanTabAndActivate();
+      ash::Shell::GetInstance()->delegate()->OpenMobileSetup();
     } else if (command == "options") {
       PopulateDictionaryDetails(cellular);
     }

@@ -38,13 +38,25 @@ bool TestShellDelegate::IsScreenLocked() const {
   return locked_;
 }
 
-void TestShellDelegate::OpenFileManager() {
+void TestShellDelegate::Shutdown() {
 }
 
 void TestShellDelegate::Exit() {
 }
 
 void TestShellDelegate::NewWindow(bool incognito) {
+}
+
+void TestShellDelegate::Search() {
+}
+
+void TestShellDelegate::OpenFileManager() {
+}
+
+void TestShellDelegate::OpenCrosh() {
+}
+
+void TestShellDelegate::OpenMobileSetup() {
 }
 
 AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {

@@ -110,18 +110,17 @@ void HandleCycleWindowLinear(ash::WindowCycleController::Direction direction) {
 
 #if defined(OS_CHROMEOS)
 bool HandleLock() {
-  ash::ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
-  if (!delegate)
-    return false;
-  delegate->LockScreen();
+  ash::Shell::GetInstance()->delegate()->LockScreen();
   return true;
 }
 
 bool HandleFileManager() {
-  ash::ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
-  if (!delegate)
-    return false;
-  delegate->OpenFileManager();
+  ash::Shell::GetInstance()->delegate()->OpenFileManager();
+  return true;
+}
+
+bool HandleCrosh() {
+  ash::Shell::GetInstance()->delegate()->OpenCrosh();
   return true;
 }
 #endif
@@ -346,6 +345,8 @@ bool AcceleratorController::AcceleratorPressed(
       return HandleLock();
     case OPEN_FILE_MANAGER:
       return HandleFileManager();
+    case OPEN_CROSH:
+      return HandleCrosh();
 #endif
     case EXIT:
       return HandleExit();
@@ -367,8 +368,8 @@ bool AcceleratorController::AcceleratorPressed(
       // Return true to prevent propagation of the key event because
       // this key combination is reserved for partial screenshot.
       return true;
-    case TOGGLE_APP_LIST:
-      ash::Shell::GetInstance()->ToggleAppList();
+    case SEARCH_KEY:
+      ash::Shell::GetInstance()->delegate()->Search();
       break;
     case TOGGLE_CAPS_LOCK:
       if (caps_lock_delegate_.get())

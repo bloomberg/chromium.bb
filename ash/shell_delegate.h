@@ -50,14 +50,26 @@ class ASH_EXPORT ShellDelegate {
   // Returns true if the screen is currently locked.
   virtual bool IsScreenLocked() const = 0;
 
-  // Invoked when a user uses Ctrl-M to open file manager.
-  virtual void OpenFileManager() = 0;
+  // Shuts down the environment.
+  virtual void Shutdown() = 0;
 
-  // Invoked when a user uses Ctrl-Shift-Q to close chrome.
+  // Invoked when the user uses Ctrl-Shift-Q to close chrome.
   virtual void Exit() = 0;
 
-  // Invoked when a user uses Ctrl-N or Ctrl-Shift-N to open a new window.
+  // Invoked when the user uses Ctrl-N or Ctrl-Shift-N to open a new window.
   virtual void NewWindow(bool incognito) = 0;
+
+  // Invoked when the user presses the Search key.
+  virtual void Search() = 0;
+
+  // Invoked when the user uses Ctrl-M to open file manager.
+  virtual void OpenFileManager() = 0;
+
+  // Invoked when the user opens Crosh.
+  virtual void OpenCrosh() = 0;
+
+  // Invoked when the user needs to set up mobile networking.
+  virtual void OpenMobileSetup() = 0;
 
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
