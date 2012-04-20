@@ -1,11 +1,15 @@
 #!/usr/bin/python
 
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011-2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Module that contains unittests for validation_pool module."""
 
+import contextlib
+import copy
+import functools
+import itertools
 import mox
 import os
 import pickle
@@ -13,8 +17,6 @@ import sys
 import time
 import unittest
 import urllib
-import copy
-import itertools
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
@@ -27,9 +29,12 @@ from chromite.buildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 
-_CountingSource = itertools.count()
+_GetNumber = iter(itertools.count()).next
 
-# pylint: disable=E1120
+class MockPatch(mox.MockObject):
+
+  def __eq__(self, other):
+    return self.id == getattr(other, 'id')
 
 def GetTestJson(change_id=None):
   """Get usable fake Gerrit patch json data
@@ -47,6 +52,9 @@ def GetTestJson(change_id=None):
 class TestValidationPool(mox.MoxTestBase):
   """Tests methods in validation_pool.ValidationPool."""
 
+
+class base_mixin(object):
+
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(validation_pool, '_RunCommand')
@@ -55,115 +63,184 @@ class TestValidationPool(mox.MoxTestBase):
     # Supress all gerrit access; having this occur is generally a sign
     # the code is either misbehaving, or the tests are bad.
     self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'Query')
+    self._patch_counter = (itertools.count(1)).next
+    self.build_root = 'fakebuildroot'
 
-  def MockPatch(self, change_id, patch_number=None):
-    patch = self.mox.CreateMock(cros_patch.GerritPatch)
+  def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
+                project='chromiumos/chromite'):
+    # pylint: disable=W0201
+    # We have to use a custom mock class to fix some brain behaviour of
+    # pymox where multiple separate mocks can easily equal each other
+    # (or not; the behaviour varies depending on stubs used).
+    patch = MockPatch(cros_patch.GerritPatch)
+    self.mox._mock_objects.append(patch)
 
     patch.internal = False
+    if change_id is None:
+      change_id = self._patch_counter()
     patch.change_id = patch.id = 'ChangeId%i' % (change_id,)
     patch.gerrit_number = change_id
     patch.patch_number = (patch_number if patch_number is not None else
-                          _CountingSource.next())
+                          _GetNumber())
     patch.url = 'fake_url/%i' % (change_id,)
     patch.apply_error_message = None
-    patch.project = 'chromiumos/chromite'
+    patch.project = project
+    patch.sha1 = 'sha1-%s' % (patch.change_id,)
+    patch.IsAlreadyMerged = lambda:is_merged
     return patch
 
-  def GetPool(self, *args, **kwds):
-    kwds.setdefault('helper_pool', validation_pool.HelperPool.SimpleCreate())
-    pool = validation_pool.ValidationPool(*args, **kwds)
-    self.mox.StubOutWithMock(pool, '_SendNotification')
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, '_SqlQuery')
+  def GetPatches(self, how_many=1):
+    l = [self.MockPatch() for _ in xrange(how_many)]
+    if how_many == 1:
+      return l[0]
+    return l
+
+  def MakeHelper(self, internal=None, external=None):
+    if internal:
+      internal = self.mox.CreateMock(gerrit_helper.GerritHelper)
+      internal.version = '2.1'
+      internal.internal = True
+    if external:
+      external = self.mox.CreateMock(gerrit_helper.GerritHelper)
+      external.internal = False
+      external.version = '2.1'
+    return validation_pool.HelperPool(internal=internal, external=external)
+
+
+# pylint: disable=W0212,R0904
+class TestPatchSeries(base_mixin, mox.MoxTestBase):
+  """Tests the core resolution and applying logic of
+  validation_pool.ValidationPool."""
+
+  def setUp(self):
+    base_mixin.setUp(self)
+    # All tests should set their content merging projects via
+    # SetContentMergingProjects since FindContentMergingProjects
+    # requires admin rights in gerrit.
     self.mox.StubOutWithMock(gerrit_helper.GerritHelper,
                              'FindContentMergingProjects')
-    return pool
 
   @staticmethod
-  def SetPoolsContentMergingProjects(pool, *projects):
-    gerrit_helper.GerritHelper.FindContentMergingProjects().AndReturn(
-        frozenset(projects))
+  def SetContentMergingProjects(series, projects=(), internal=False):
+    helper = series._helper_pool.GetHelper(internal)
+    series._content_merging[helper] = frozenset(projects)
 
-  def testSimpleDepApplyPoolIntoRepo(self):
+  @contextlib.contextmanager
+  def _ValidateTransactionCall(self, build_root, _changes):
+    self.assertEqual(build_root, self.build_root)
+    yield
+
+  def GetPatchSeries(self, helper_pool=None, force_content_merging=False):
+    if helper_pool is None:
+      helper_pool = self.MakeHelper(internal=True, external=True)
+    series = validation_pool.PatchSeries(helper_pool, force_content_merging)
+
+    # Suppress transactions.
+    series._Transaction = self._ValidateTransactionCall
+
+    return series
+
+  def assertPath(self, _patch, return_value, path):
+    self.assertEqual(path, self.build_root)
+    if isinstance(return_value, Exception):
+      raise return_value
+    return return_value
+
+  def SetPatchDeps(self, patch, parents=(), cq=()):
+    patch.GerritDependencies = functools.partial(
+        self.assertPath, patch, parents)
+    patch.PaladinDependencies = functools.partial(
+        self.assertPath, patch, cq)
+    patch.Fetch = functools.partial(
+        self.assertPath, patch, patch.sha1)
+
+  def assertResults(self, series, changes, applied=(), failed_tot=(),
+                    failed_inflight=(), frozen=True, dryrun=False):
+    # Convenience; set the content pool as necessary.
+    for internal in set(x.internal for x in changes):
+      helper = series._helper_pool.GetHelper(internal)
+      series._content_merging.setdefault(helper, frozenset())
+
+    manifest = self.mox.CreateMock(cros_build_lib.ManifestCheckout)
+    manifest.root = self.build_root
+    result = series.Apply(manifest.root, changes, dryrun=dryrun,
+                          frozen=frozen, manifest=manifest)
+
+    _GetIds = lambda seq:[x.id for x in seq]
+    _GetFailedIds = lambda seq:_GetIds(x.patch for x in seq)
+
+    applied_result = _GetIds(result[0])
+    failed_tot_result, failed_inflight_result = map(_GetFailedIds, result[1:])
+
+    applied = _GetIds(applied)
+    failed_tot = _GetIds(failed_tot)
+    failed_inflight = _GetIds(failed_inflight)
+
+    self.assertEqual(
+        [applied, failed_tot, failed_inflight],
+        [applied_result, failed_tot_result, failed_inflight_result])
+
+  def testApplyWithDeps(self):
     """Test that we can apply changes correctly and respect deps.
 
     This tests a simple out-of-order change where change1 depends on change2
     but tries to get applied before change2.  What should happen is that
     we should notice change2 is a dep of change1 and apply it first.
     """
-    patch1 = self.MockPatch(1)
-    patch2 = self.MockPatch(2)
+    series = self.GetPatchSeries()
 
-    build_root = 'fakebuildroot'
+    patch1, patch2 = patches = self.GetPatches(2)
 
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    pool.changes = [patch1, patch2]
-    self.SetPoolsContentMergingProjects(pool)
+    self.SetPatchDeps(patch2)
+    self.SetPatchDeps(patch1, [patch2.id])
 
-    patch1.GerritDependencies(build_root).AndReturn(['ChangeId2'])
-    patch1.PaladinDependencies(build_root).AndReturn([])
-
-    patch2.Apply(build_root, trivial=True)
-    pool.HandleApplied(patch2)
-    patch1.Apply(build_root, trivial=True)
-    pool.HandleApplied(patch1)
+    patch2.Apply(self.build_root, trivial=True)
+    patch1.Apply(self.build_root, trivial=True)
 
     self.mox.ReplayAll()
-    self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
+    self.assertResults(series, patches, [patch2, patch1])
     self.mox.VerifyAll()
 
-  def testSimpleNoApplyPoolIntoRepo(self):
+  @staticmethod
+  def _SetQuery(series, change):
+    helper = series._helper_pool.GetHelper(change.internal)
+    return helper.QuerySingleRecord(change.id, must_match=True)
+
+  def testApplyMissingDep(self):
     """Test that we don't try to apply a change without met dependencies.
 
     Patch2 is in the validation pool that depends on Patch1 (which is not)
     Nothing should get applied.
     """
-    patch1 = self.MockPatch(1)
-    patch2 = self.MockPatch(2)
-    patch2.project = 'fake_project'
-    build_root = 'fakebuildroot'
+    series = self.GetPatchSeries()
 
-    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
-    helper_pool = validation_pool.HelperPool(external=helper)
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name',
-                        True, False, helper_pool=helper_pool)
-    pool.changes = [patch2]
+    patch1, patch2 = self.GetPatches(2)
 
-    patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
-    patch2.PaladinDependencies(build_root).AndReturn([])
-    helper.IsChangeCommitted(patch1.id, must_match=False).AndReturn(False)
-    pool._SendNotification(patch2, mox.StrContains('dependent change'))
-    helper.RemoveCommitReady(patch2, dryrun=False)
+    self.SetPatchDeps(patch2, [patch1.id])
+    self._SetQuery(series, patch1).AndReturn(patch1)
 
     self.mox.ReplayAll()
-    self.assertFalse(pool.ApplyPoolIntoRepo(build_root))
+    self.assertResults(series, [patch2],
+                       [], [patch2])
     self.mox.VerifyAll()
 
-  def testSimpleDepApplyWhenAlreadySubmitted(self):
+  def testApplyWithCommittedDeps(self):
     """Test that we apply a change with dependency already committed."""
-    patch1 = self.MockPatch(1)
+    series = self.GetPatchSeries()
+
+    patch1 = self.MockPatch(1, is_merged=True)
     patch2 = self.MockPatch(2)
-    patch2.project = 'fake_project'
-    build_root = 'fakebuildroot'
 
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    pool.changes = [patch2]
-    patch2.project = '3way-project'
-    self.SetPoolsContentMergingProjects(pool, '3way-project')
+    self.SetPatchDeps(patch2, [patch1.id])
+    self._SetQuery(series, patch1).AndReturn(patch1)
 
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'IsChangeCommitted')
-    gerrit_helper.GerritHelper.IsChangeCommitted(
-        patch1.id, must_match=False).AndReturn(True)
-
-    patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
-    patch2.PaladinDependencies(build_root).AndReturn([])
-    patch2.Apply(build_root, trivial=False)
-    pool.HandleApplied(patch2)
+    patch2.Apply(self.build_root, trivial=True)
 
     self.mox.ReplayAll()
-    self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
+    self.assertResults(series, [patch2], [patch2])
     self.mox.VerifyAll()
 
-  def testSimpleDepFailedApplyPoolIntoRepo(self):
+  def testApplyPartialFailures(self):
     """Test that can apply changes correctly when one change fails to apply.
 
     This tests a simple change order where 1 depends on 2 and 1 fails to apply.
@@ -173,87 +250,44 @@ class TestValidationPool(mox.MoxTestBase):
     Since patch1 fails to apply, we should also get a call to handle the
     failure.
     """
-    patch1 = self.MockPatch(1)
-    patch2 = self.MockPatch(2)
-    patch3 = self.MockPatch(3)
-    patch4 = self.MockPatch(4)
-    patch5 = self.MockPatch(5)
-    build_root = 'fakebuildroot'
+    series = self.GetPatchSeries()
 
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    pool.changes = [patch1, patch2, patch3, patch4, patch5]
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'RemoveCommitReady')
-    self.SetPoolsContentMergingProjects(pool)
-    pool.build_log = 'log'
+    patch1, patch2, patch3, patch4 = patches = self.GetPatches(4)
 
-    patch1.GerritDependencies(build_root).AndReturn([])
-    patch1.PaladinDependencies(build_root).AndReturn([])
-    patch1.Apply(build_root, trivial=True).AndRaise(
+    self.SetPatchDeps(patch1)
+    self.SetPatchDeps(patch2, [patch1.id])
+    self.SetPatchDeps(patch3)
+    self.SetPatchDeps(patch4)
+
+    patch1.Apply(self.build_root, trivial=True).AndRaise(
         cros_patch.ApplyPatchException(patch1))
 
-    patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
-    patch2.PaladinDependencies(build_root).AndReturn([])
-    patch3.GerritDependencies(build_root).AndReturn([])
-    patch3.PaladinDependencies(build_root).AndReturn([])
-    patch3.Apply(build_root, trivial=True)
-    pool.HandleApplied(patch3)
-
-    # This one should be handled later (not where patch1 is handled.
-    patch4.GerritDependencies(build_root).AndReturn([])
-    patch4.PaladinDependencies(build_root).AndReturn([])
-    patch4.Apply(build_root, trivial=True).AndRaise(
+    patch3.Apply(self.build_root, trivial=True)
+    patch4.Apply(self.build_root, trivial=True).AndRaise(
         cros_patch.ApplyPatchException(patch1, inflight=True))
 
-    patch5.GerritDependencies(build_root).AndReturn([])
-    patch5.PaladinDependencies(build_root).AndReturn([])
-    patch5.Apply(build_root, trivial=True).AndRaise(
-        cros_patch.PatchException())
-
-    validation_pool.MarkChangeFailedToT(patch1)
-    pool.HandleCouldNotApply(patch1)
-    validation_pool.MarkChangeFailedToT(patch5)
-    pool.HandleCouldNotApply(patch5)
-
     self.mox.ReplayAll()
-    # TODO(ferringb): remove the need for this.
-    # Reset before re-running so the error messages don't persist; they're
-    # currently stored on the instances themselves, although that'll be
-    # rectified soon enough
-    for patch in pool.changes:
-      patch.apply_error_message = None
-    self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
-    self.assertTrue(patch4 in pool.changes_that_failed_to_apply_earlier)
+    self.assertResults(series, patches,
+                       [patch3], [patch2, patch1], [patch4])
     self.mox.VerifyAll()
 
-  def testSimpleApplyButMissingChangeIDIntoRepo(self):
+  def testApplyMissingChangeId(self):
     """Test that applies changes correctly with a dep with missing changeid."""
-    patch1 = self.MockPatch(1)
-    patch2 = self.MockPatch(2)
-    build_root = 'fakebuildroot'
+    series = self.GetPatchSeries()
 
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    self.mox.StubOutWithMock(pool, 'HandleCouldNotApply')
+    patch1, patch2 = patches = self.GetPatches(2)
 
-    pool.changes = [patch1, patch2]
-    pool.build_log = 'log'
-    self.SetPoolsContentMergingProjects(pool)
+    patch1.GerritDependencies(self.build_root).AndRaise(
+        cros_patch.BrokenChangeID(patch1, 'Could not find changeid'))
+    self.SetPatchDeps(patch2)
 
-    patch1.GerritDependencies(build_root).AndRaise(
-        cros_patch.MissingChangeIDException('Could not find changeid'))
-
-    patch2.GerritDependencies(build_root).AndReturn([])
-    patch2.PaladinDependencies(build_root).AndReturn([])
-    patch2.Apply(build_root, trivial=True)
-
-    pool.HandleApplied(patch2)
-    pool.HandleCouldNotApply(patch1)
+    patch2.Apply(self.build_root, trivial=True)
 
     self.mox.ReplayAll()
-    self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
-    self.assertEqual([patch2.id], [x.id for x in pool.changes])
+    self.assertResults(series, patches, [patch2], [patch1], [])
     self.mox.VerifyAll()
 
-  def testMoreComplexDepApplyPoolIntoRepo(self):
+  def testComplexApply(self):
     """More complex deps test.
 
     This tests a total of 2 change chains where the first change we see
@@ -264,128 +298,227 @@ class TestValidationPool(mox.MoxTestBase):
     This test also checks the patch order to verify that Apply re-orders
     correctly based on the chain.
     """
-    patch1 = self.MockPatch(1)
-    patch2 = self.MockPatch(2)
-    patch3 = self.MockPatch(3)
-    patch4 = self.MockPatch(4)
-    patch5 = self.MockPatch(5)
+    series = self.GetPatchSeries()
 
-    build_root = 'fakebuildroot'
+    patch1, patch2, patch3, patch4, patch5 = patches = self.GetPatches(5)
 
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    pool.changes = [patch1, patch2, patch3, patch4, patch5]
+    self.SetPatchDeps(patch1, [patch2.id])
+    self.SetPatchDeps(patch2)
+    self.SetPatchDeps(patch3, [patch1.id, patch2.id])
+    self.SetPatchDeps(patch4, cq=[patch5.id])
+    self.SetPatchDeps(patch5)
 
-    self.SetPoolsContentMergingProjects(pool)
-
-    patch1.GerritDependencies(build_root).AndReturn(['ChangeId2'])
-    patch1.PaladinDependencies(build_root).AndReturn([])
-    patch3.GerritDependencies(build_root).AndReturn(['ChangeId1', 'ChangeId2'])
-    patch3.PaladinDependencies(build_root).AndReturn([])
-    patch4.GerritDependencies(build_root).AndReturn([])
-    patch4.PaladinDependencies(build_root).AndReturn(['ChangeId5'])
-
-    patch2.Apply(build_root, trivial=True)
-    pool.HandleApplied(patch2)
-    patch1.Apply(build_root, trivial=True)
-    pool.HandleApplied(patch1)
-    patch3.Apply(build_root, trivial=True)
-    pool.HandleApplied(patch3)
-    patch5.Apply(build_root, trivial=True)
-    pool.HandleApplied(patch5)
-    patch4.Apply(build_root, trivial=True)
-    pool.HandleApplied(patch4)
+    for patch in (patch2, patch1, patch3, patch4, patch5):
+      patch.Apply(self.build_root, trivial=True)
 
     self.mox.ReplayAll()
-    self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
-    # Check order.
-    self.assertEquals([x.id for x in pool.changes],
-                      [y.id for y in [patch2, patch1, patch3, patch5, patch4]])
+    self.assertResults(
+        series, patches, [patch2, patch1, patch3, patch4, patch5])
     self.mox.VerifyAll()
 
-  def testNoDepsApplyPoolIntoRepo(self):
+  def testApplyStandalonePatches(self):
     """Simple apply of two changes with no dependent CL's."""
-    patch1 = self.MockPatch(1)
-    patch2 = self.MockPatch(2)
-    build_root = 'fakebuildroot'
+    series = self.GetPatchSeries()
 
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    pool.changes = [patch1, patch2]
-    self.SetPoolsContentMergingProjects(pool)
+    patches = self.GetPatches(3)
 
-    patch1.GerritDependencies(build_root).AndReturn([])
-    patch1.PaladinDependencies(build_root).AndReturn([])
-    patch2.GerritDependencies(build_root).AndReturn([])
-    patch2.PaladinDependencies(build_root).AndReturn([])
+    for patch in patches:
+      self.SetPatchDeps(patch)
 
-    patch1.Apply(build_root, trivial=True)
-    pool.HandleApplied(patch1)
-
-    patch2.Apply(build_root, trivial=True)
-    pool.HandleApplied(patch2)
+    for patch in patches:
+      patch.Apply(self.build_root, trivial=True)
 
     self.mox.ReplayAll()
-    self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
+    self.assertResults(series, patches, patches)
     self.mox.VerifyAll()
 
-  def testSubmitPoolWithSomeFailures(self):
-    """Tests submitting a pool when some changes fail to be submitted.
 
-    Tests what happens when we try to submit 3 patches with 2 patches failing
-    to submit correctly (one with submit failure and the other not showing up
-    as submitted in Gerrit.
+# pylint: disable=W0212,R0904
+class TestCoreLogic(base_mixin, mox.MoxTestBase):
+  """Tests the core resolution and applying logic of
+  validation_pool.ValidationPool."""
+
+  def setUp(self):
+    base_mixin.setUp(self)
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, '_SqlQuery')
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper,
+                             'FindContentMergingProjects')
+
+  def MakePool(self, overlays=constants.PUBLIC_OVERLAYS, build_number=1,
+               builder_name='foon', is_master=True, dryrun=True, **kwds):
+    handlers = kwds.pop('handlers', False)
+    kwds.setdefault('helper_pool', validation_pool.HelperPool.SimpleCreate())
+    kwds.setdefault('changes', [])
+
+    pool = validation_pool.ValidationPool(
+        overlays, build_number, builder_name, is_master, dryrun, **kwds)
+    self.mox.StubOutWithMock(pool, '_SendNotification')
+    if handlers:
+      self.mox.StubOutWithMock(pool, '_HandleApplySuccess')
+      self.mox.StubOutWithMock(pool, '_HandleApplyFailure')
+      self.mox.StubOutWithMock(pool, '_HandleCouldNotApply')
+    self.mox.StubOutWithMock(pool, '_patch_series')
+    return pool
+
+  def MakeFailure(self, patch, inflight=True):
+    return cros_patch.ApplyPatchException(patch, inflight=inflight)
+
+  def GetPool(self, changes, applied=(), tot=(),
+              inflight=(), dryrun=True, **kwds):
+    pool = self.MakePool(changes=changes, **kwds)
+    applied = list(applied)
+    tot = [self.MakeFailure(x, inflight=False) for x in tot]
+    inflight = [self.MakeFailure(x, inflight=True) for x in inflight]
+    pool._patch_series.Apply(
+        self.build_root, changes, dryrun, manifest=mox.IgnoreArg()
+        ).AndReturn((applied, tot, inflight))
+
+    for patch in applied:
+      pool._HandleApplySuccess(patch).AndReturn(None)
+
+    if tot:
+      pool._HandleApplyFailure(tot).AndReturn(None)
+
+    # We stash this on the pool object so we can reuse it during validation.
+    # We could stash this in the test instances, but that would break
+    # for any tests that do multiple pool instances.
+
+    pool._test_data = (changes, applied, tot, inflight)
+
+    return pool
+
+  def runApply(self, pool, result):
+    self.assertEqual(result, pool.ApplyPoolIntoRepo(self.build_root))
+    self.assertEqual(pool.changes, pool._test_data[1])
+    failed_inflight = pool.changes_that_failed_to_apply_earlier
+    expected_inflight = set(pool._test_data[3])
+    # Intersect the results, since it's possible there were results failed
+    # results that weren't related to the ApplyPoolIntoRepo call.
+    self.assertEqual(set(failed_inflight).intersection(expected_inflight),
+                     expected_inflight)
+
+    # Ensure that no old code/pathways are setting apply_error_message.
+    for patch in pool._test_data[0]:
+      if getattr(patch, 'apply_error_message', None) is not None:
+        raise AssertionError(
+            "patch %s has an apply_error_message that is not None: %s"
+            % (patch, patch.apply_error_message))
+
+    self.assertEqual(pool.changes, pool._test_data[1])
+
+  def testPatchSeriesInteraction(self):
+    """Verify the interaction between PatchSeries and ValidationPool.
+
+    Effectively, this validates data going into PatchSeries, and coming back
+    out; verifies the hand off to _Handle* functions, but no deeper.
     """
-    patch1 = self.MockPatch(1)
-    patch2 = self.MockPatch(2)
-    patch3 = self.MockPatch(3)
+    patches = self.GetPatches(3)
 
-    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
+    apply_pool = self.GetPool(patches, applied=patches, handlers=True)
+    all_inflight = self.GetPool(patches, inflight=patches, handlers=True)
+    all_tot = self.GetPool(patches, tot=patches, handlers=True)
+    mixed = self.GetPool(patches, tot=patches[0:1], inflight=patches[1:2],
+                         applied=patches[2:3], handlers=True)
 
-    build_root = 'fakebuildroot'
+    self.mox.ReplayAll()
+    self.runApply(apply_pool, True)
+    self.runApply(all_inflight, False)
+    self.runApply(all_tot, False)
+    self.runApply(mixed, True)
+    self.mox.VerifyAll()
 
-    validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False,
-                        helper_pool=validation_pool.HelperPool(external=helper,
-                                                               internal=None))
-    pool.changes = [patch1, patch2, patch3]
-    pool.dryrun = False
+  def testHandleApplySuccess(self):
+    """Validate steps taken for successfull application."""
+    patch = self.GetPatches(1)
+    pool = self.MakePool()
+    pool._SendNotification(patch, mox.StrContains('has picked up your change'))
+    self.mox.ReplayAll()
+    pool._HandleApplySuccess(patch)
+    self.mox.VerifyAll()
 
-    self.mox.StubOutWithMock(pool, 'SubmitChange')
-    self.mox.StubOutWithMock(helper, 'RemoveCommitReady')
-    pool.SubmitChange(patch1)
-    helper.IsChangeCommitted(str(patch1.gerrit_number), False).AndReturn(False)
-    pool.HandleCouldNotSubmit(patch1)
-    result = cros_build_lib.CommandResult(cmd='cmd', returncode=1)
-    pool.SubmitChange(patch2).AndRaise(
-        cros_build_lib.RunCommandError('Failed to submit', result))
-    pool.HandleCouldNotSubmit(patch2)
-    pool.SubmitChange(patch3)
-    helper.IsChangeCommitted(str(patch3.gerrit_number), False).AndReturn(True)
+  def testHandleApplyFailure(self):
+    failures = [cros_patch.ApplyPatchException(x) for x in self.GetPatches(4)]
+
+    notified_patches = failures[:2]
+    unnotified_patches = failures[2:]
+    master_pool = self.MakePool(dryrun=False)
+    slave_pool = self.MakePool(is_master=False)
+
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'RemoveCommitReady')
+
+    for failure in notified_patches:
+      master_pool._SendNotification(
+          failure.patch,
+          mox.StrContains('failed to apply your change'),
+          failure=mox.IgnoreArg())
+      # This pylint suppressin shouldn't be necessary, but pylint is invalidly
+      # thinking that the first arg isn't passed in; we suppress it to suppress
+      # the pylnt bug.
+      # pylint: disable=E1120
+      gerrit_helper.GerritHelper.RemoveCommitReady(failure.patch, dryrun=False)
+
+    self.mox.ReplayAll()
+    master_pool._HandleApplyFailure(notified_patches)
+    slave_pool._HandleApplyFailure(unnotified_patches)
+    self.mox.VerifyAll()
+
+  def testSubmitPoolFailures(self):
+    pool = self.MakePool(dryrun=False)
+    patch1, patch2, patch3 = patches = self.GetPatches(3)
+    failed = self.GetPatches(3)
+    pool.changes = patches[:]
+    # While we don't do anything w/ these patches, that's
+    # intentional; we're verifying that it isn't submitted
+    # if there is a failure.
+    pool.changes_that_failed_to_apply_earlier = failed[:]
+
+    self.mox.StubOutWithMock(pool, '_SubmitChange')
+    self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
+
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'IsChangeCommitted')
+
+    pool._SubmitChange(patch1).AndReturn(None)
+    gerrit_helper.GerritHelper.IsChangeCommitted(
+        str(patch1.gerrit_number), False).AndReturn(True)
+
+    pool._SubmitChange(patch2).AndReturn(None)
+    gerrit_helper.GerritHelper.IsChangeCommitted(
+        str(patch2.gerrit_number), False).InAnyOrder().AndReturn(False)
+
+    pool._HandleCouldNotSubmit(patch2).InAnyOrder()
+
+    pool._SubmitChange(patch3).AndRaise(
+        cros_build_lib.RunCommandError('blah', None))
+    pool._HandleCouldNotSubmit(patch3).InAnyOrder().AndReturn(None)
+
+    pool._IsTreeOpen().AndReturn(True)
 
     self.mox.ReplayAll()
     self.assertRaises(validation_pool.FailedToSubmitAllChangesException,
-                      validation_pool.ValidationPool.SubmitPool, (pool))
+                      pool.SubmitPool)
     self.mox.VerifyAll()
 
-  def testSimpleSubmitPool(self):
-    """Tests the ability to submit a list of changes."""
-    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
+  def testSubmitPool(self):
+    pool = self.MakePool(dryrun=False)
+    passed = self.GetPatches(3)
+    failed = self.GetPatches(3)
+    pool.changes = passed
+    pool.changes_that_failed_to_apply_earlier = failed[:]
 
-    patch1 = self.MockPatch(1)
-    patch2 = self.MockPatch(2)
-    build_root = 'fakebuildroot'
+    self.mox.StubOutWithMock(pool, '_SubmitChange')
+    self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
+    self.mox.StubOutWithMock(pool, '_HandleApplyFailure')
 
-    validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False,
-                        helper_pool=validation_pool.HelperPool(external=helper,
-                                                               internal=None))
-    pool.changes = [patch1, patch2]
-    pool.dryrun = False
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'IsChangeCommitted')
 
-    self.mox.StubOutWithMock(pool, 'SubmitChange')
-    pool.SubmitChange(patch1)
-    helper.IsChangeCommitted(str(patch1.gerrit_number), False).AndReturn(True)
-    pool.SubmitChange(patch2)
-    helper.IsChangeCommitted(str(patch2.gerrit_number), False).AndReturn(True)
+    for patch in passed:
+      pool._SubmitChange(patch).AndReturn(None)
+      gerrit_helper.GerritHelper.IsChangeCommitted(
+          str(patch.gerrit_number), False).AndReturn(True)
+
+    pool._HandleApplyFailure(failed)
+
+    pool._IsTreeOpen().AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitPool()
@@ -393,23 +526,24 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testSubmitNonManifestChanges(self):
     """Simple test to make sure we can submit non-manifest changes."""
-    patch1 = self.MockPatch(1)
-    patch2 = self.MockPatch(2)
-    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
-    build_root = 'fakebuildroot'
+    pool = self.MakePool(dryrun=False)
+    patch1, patch2 = passed = self.GetPatches(2)
+    pool.non_manifest_changes = passed[:]
 
-    validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False,
-                        helper_pool=validation_pool.HelperPool(external=helper,
-                                                               internal=None))
-    pool.non_manifest_changes = [patch1, patch2]
-    pool.dryrun = False
+    self.mox.StubOutWithMock(pool, '_SubmitChange')
+    self.mox.StubOutWithMock(pool, '_HandleCouldNotSubmit')
 
-    self.mox.StubOutWithMock(pool, 'SubmitChange')
-    pool.SubmitChange(patch1)
-    helper.IsChangeCommitted(str(patch1.gerrit_number), False).AndReturn(True)
-    pool.SubmitChange(patch2)
-    helper.IsChangeCommitted(str(patch2.gerrit_number), False).AndReturn(True)
+    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'IsChangeCommitted')
+
+    pool._SubmitChange(patch1).AndReturn(None)
+    gerrit_helper.GerritHelper.IsChangeCommitted(
+        str(patch1.gerrit_number), False).AndReturn(True)
+
+    pool._SubmitChange(patch2).AndReturn(None)
+    gerrit_helper.GerritHelper.IsChangeCommitted(
+        str(patch2.gerrit_number), False).AndReturn(True)
+
+    pool._IsTreeOpen().AndReturn(True)
 
     self.mox.ReplayAll()
     pool.SubmitNonManifestChanges()
@@ -417,117 +551,42 @@ class TestValidationPool(mox.MoxTestBase):
 
   def testGerritSubmit(self):
     """Tests submission review string looks correct."""
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
+    pool = self.MakePool(dryrun=False)
 
-    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
-    validation_pool._RunCommand(
-        'ssh -p 29418 gerrit.chromium.org gerrit review '
-        '--submit 1112,2'.split(), False).AndReturn(None)
+    patch = self.GetPatches(1)
+    cmd = ('ssh -p 29418 gerrit.chromium.org gerrit review '
+           '--submit %i,%i' % (patch.gerrit_number, patch.patch_number))
+    validation_pool._RunCommand(cmd.split(), False).AndReturn(None)
     self.mox.ReplayAll()
-    pool.SubmitChange(my_patch)
-    self.mox.VerifyAll()
-
-  def testGerritHandleApplied(self):
-    """Tests review string looks correct."""
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-
-    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
-    pool._SendNotification(my_patch, mox.IgnoreArg())
-
-    self.mox.ReplayAll()
-    pool.HandleApplied(my_patch)
-    self.mox.VerifyAll()
-
-  def testGerritHandleApplyError(self):
-    """Tests review string looks correct."""
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    gerrit_helper.GerritHelper._SqlQuery(
-        mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
-        is_command=True).AndReturn(None)
-
-    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
-    pool._SendNotification(my_patch, mox.IgnoreArg())
-
-    self.mox.ReplayAll()
-    pool.HandleCouldNotApply(my_patch)
-    self.mox.VerifyAll()
-
-  def testGerritHandleSubmitError(self):
-    """Tests review string looks correct."""
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    gerrit_helper.GerritHelper._SqlQuery(
-        mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
-        is_command=True).AndReturn(None)
-
-    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
-    pool._SendNotification(my_patch, mox.IgnoreArg())
-
-    self.mox.ReplayAll()
-    pool.HandleCouldNotSubmit(my_patch)
-    self.mox.VerifyAll()
-
-  def testGerritHandleVerifyError(self):
-    """Tests review string looks correct."""
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    gerrit_helper.GerritHelper._SqlQuery(
-        mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
-        is_command=True).AndReturn(None)
-
-    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
-    pool._SendNotification(my_patch, mox.IgnoreArg(), detail=mox.IgnoreArg())
-
-    self.mox.ReplayAll()
-    pool.HandleCouldNotVerify(my_patch)
-    self.mox.VerifyAll()
-
-  def testGerritHandleVerifyErrorWithException(self):
-    """Tests review string looks correct."""
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    gerrit_helper.GerritHelper._SqlQuery(
-        mox.IgnoreArg(), dryrun=mox.IgnoreArg(),
-        is_command=True).AndReturn(None)
-
-    my_patch = cros_patch.GerritPatch(GetTestJson(), False)
-    failed_stage = 'BuildTarget'
-    error = 'Error compiling chromeos-base/update_engine'
-    pool._SendNotification(my_patch, mox.IgnoreArg(),
-                           detail=mox.And(mox.StrContains(error),
-                                          mox.StrContains(failed_stage)))
-
-    self.mox.ReplayAll()
-    pool.HandleCouldNotVerify(my_patch, failed_stage, Exception(error))
+    pool._SubmitChange(patch)
     self.mox.VerifyAll()
 
   def testUnhandledExceptions(self):
     """Test that CQ doesn't loop due to unhandled Exceptions."""
-    patch1 = self.MockPatch(1)
-    patch2 = self.MockPatch(2)
-    build_root = 'fakebuildroot'
+    pool = self.MakePool(dryrun=False)
+    patches = self.GetPatches(2)
+    pool.changes = patches[:]
 
     class MyException(Exception):
       pass
 
-    pool = self.GetPool(constants.PUBLIC_OVERLAYS, 1, 'build_name', True, False)
-    pool.changes = [patch1, patch2]
-    self.mox.StubOutWithMock(gerrit_helper.GerritHelper, 'RemoveCommitReady')
-    self.SetPoolsContentMergingProjects(pool)
-    pool.build_log = 'log'
+    self.mox.StubOutWithMock(pool._patch_series, 'Apply')
+    # Suppressed because pylint can't tell that we just replaced Apply via mox.
+    # pylint: disable=E1101
+    pool._patch_series.Apply(
+        self.build_root, patches, False, manifest=mox.IgnoreArg()).AndRaise(
+        MyException)
 
-    patch1.GerritDependencies(build_root).AndReturn([])
-    patch1.PaladinDependencies(build_root).AndReturn([])
-    patch1.Apply(build_root, trivial=True).AndRaise(MyException())
-
-    pool.HandleCouldNotApply(patch1)
-    pool.HandleCouldNotApply(patch2)
+    def _ValidateExceptioN(changes):
+      for patch in changes:
+        self.assertTrue(isinstance(patch, validation_pool.InternalCQError),
+                        msg="Expected %s to be type InternalCQError, got %r" %
+                        (patch, type(patch)))
+      self.assertEqual(set(patches),
+                       set(x.patch for x in changes))
 
     self.mox.ReplayAll()
-    # TODO(ferringb): remove the need for this.
-    # Reset before re-running so the error messages don't persist; they're
-    # currently stored on the instances themselves, although that'll be
-    # rectified soon enough
-    for patch in pool.changes:
-      patch.apply_error_message = None
-    self.assertRaises(MyException, pool.ApplyPoolIntoRepo, build_root)
+    self.assertRaises(MyException, pool.ApplyPoolIntoRepo, self.build_root)
     self.mox.VerifyAll()
 
 
@@ -555,7 +614,7 @@ class TestTreeStatus(mox.MoxTestBase):
     self.mox.StubOutWithMock(urllib, 'urlopen')
     status_url = 'https://chromiumos-status.appspot.com/current?format=json'
     backoff = 1
-    for attempt in range(retries_500):
+    for _attempt in range(retries_500):
       urllib.urlopen(status_url).AndReturn(return_status)
       return_status.getcode().AndReturn(500)
       time.sleep(backoff)
@@ -660,6 +719,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     changes = [cros_patch.GerritPatch(GetTestJson(ids[0]), True)]
     non_os = [cros_patch.GerritPatch(GetTestJson(ids[1]), False)]
     conflicting = [cros_patch.GerritPatch(GetTestJson(ids[2]), True)]
+    conflicting = [cros_patch.PatchException(x) for x in conflicting]
     pool = validation_pool.ValidationPool(
         constants.PUBLIC_OVERLAYS, 1, 'testing', True, True,
         changes=changes, non_os_changes=non_os,
@@ -670,14 +730,15 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
   def _CheckTestData(data):
     results = pickle.loads(data)
     pool, changes, non_os, conflicting = results
-    def _f(source, value):
+    def _f(source, value, getter=lambda x:x):
       assert len(source) == len(value)
       for s_item, v_item in zip(source, value):
-        assert s_item.id == v_item.id
-        assert s_item.internal == v_item.internal
+        assert getter(s_item).id == getter(v_item).id
+        assert getter(s_item).internal == getter(v_item).internal
     _f(pool.changes, changes)
     _f(pool.non_manifest_changes, non_os)
-    _f(pool.changes_that_failed_to_apply_earlier, conflicting)
+    _f(pool.changes_that_failed_to_apply_earlier, conflicting,
+       getter=lambda s:getattr(s, 'patch', s))
     return ''
 
 

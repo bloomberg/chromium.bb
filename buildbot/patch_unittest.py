@@ -13,7 +13,6 @@ import os
 import sys
 import copy
 import shutil
-import tempfile
 import time
 import unittest
 
@@ -261,7 +260,7 @@ I am the first commit.
     self.assertEqual(patch.GerritDependencies(git1), [cid2, cid1])
 
     patch = self.CommitChangeIdFile(git1, cid3, content='the glass walls.')
-    self.assertRaises(cros_patch.MissingChangeIDException,
+    self.assertRaises(cros_patch.BrokenChangeID,
                       patch.GerritDependencies, git1)
 
   def _CheckPaladin(self, repo, master_id, ids, extra):
@@ -508,7 +507,7 @@ class PrepareLocalPatchesTests(mox.MoxTestBase):
     self.mox.ReplayAll()
 
     self.assertRaises(
-        cros_patch.PatchException,
+        SystemExit,
         cros_patch.PrepareLocalPatches,
         self.manifest, self.patches)
 

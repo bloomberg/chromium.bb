@@ -8,6 +8,7 @@ The validation pool is the set of commits that are ready to be validated i.e.
 ready for the commit queue to try.
 """
 
+import contextlib
 import json
 import logging
 import sys
@@ -32,16 +33,9 @@ except ImportError:
   mox = None
 
 
-def _RunCommand(cmd, dryrun):
-  """Runs the specified shell cmd if dryrun=False."""
-  if dryrun:
-    logging.info('Would have run: %s', ' '.join(cmd))
-  else:
-    cros_build_lib.RunCommand(cmd, error_ok=True)
-
-
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
+
   def __init__(self):
     super(TreeIsClosedException, self).__init__(
         'TREE IS CLOSED.  PLEASE SET TO OPEN OR THROTTLED TO COMMIT')
@@ -49,32 +43,48 @@ class TreeIsClosedException(Exception):
 
 class FailedToSubmitAllChangesException(Exception):
   """Raised if we fail to submit any changes."""
+
   def __init__(self, changes):
     super(FailedToSubmitAllChangesException, self).__init__(
         'FAILED TO SUBMIT ALL CHANGES:  Could not verify that changes %s were '
         'submitted' % ' '.join(str(c) for c in changes))
 
 
+class InternalCQError(cros_patch.PatchException):
+  """Exception thrown when CQ has an unexpected/unhandled error."""
+
+  def __init__(self, patch, message):
+    cros_patch.PatchException.__init__(self, patch, message=message)
+
+  def __str__(self):
+    return "Patch %s failed to apply due to a CQ issue: %s" % (
+        self.patch, self.message)
+
+
 class NoMatchingChangeFoundException(Exception):
   """Raised if we try to apply a non-existent change."""
-  pass
 
 
-def MarkChangeFailedInflight(change):
-  """Set an appropriate error message for an inflight apply failure."""
-  change.apply_error_message = (
-      'Your change conflicted with another change being tested '
-      'in the last validation pool.  Please re-sync, rebase and '
-      're-upload.')
-  return change
+class DependencyNotReadyForCommit(cros_patch.PatchException):
+  """Exception thrown when a required dep isn't satisfied."""
+
+  def __init__(self, patch, unsatisfied_dep):
+    cros_patch.PatchException.__init__(self, patch)
+    self.unsatisfied_dep = unsatisfied_dep
+    self.args += (unsatisfied_dep,)
+
+  def __str__(self):
+    return ("Change %s isn't ready for CQ/commit since its dependency "
+            "%s isn't committed, or marked as Commit-Ready."
+            % (self.patch, self.unsatisfied_dep))
 
 
-def MarkChangeFailedToT(change):
-  """Set an appropriate error message for a ToT apply failure."""
-  change.apply_error_message = (
-      'Your change no longer cleanly applies against ToT.  '
-      'Please re-sync, rebase, and re-upload your change.')
-  return change
+def _RunCommand(cmd, dryrun):
+  """Runs the specified shell cmd if dryrun=False."""
+  if dryrun:
+    logging.info('Would have run: %s', ' '.join(cmd))
+  else:
+    cros_build_lib.RunCommand(cmd, error_ok=True)
 
 
 class HelperPool(object):
@@ -103,6 +113,7 @@ class HelperPool(object):
     Returns:
       An appropriately configured HelperPool instance.
     """
+
     external = gerrit_helper.GerritHelper(internal=False) if external else None
     internal = gerrit_helper.GerritHelper(internal=True) if internal else None
     return cls(internal=internal, external=external)
@@ -112,7 +123,14 @@ class HelperPool(object):
 
     If no helper is configured, an Exception is raised.
     """
-    if change.internal:
+    return self.GetHelper(change.internal)
+
+  def GetHelper(self, internal=False):
+    """Return the helper to use for internal versus external.
+
+    If no helper is configured, an Exception is raised.
+    """
+    if internal:
       if self._internal:
         return self._internal
     elif self._external:
@@ -122,7 +140,7 @@ class HelperPool(object):
         'Asked for an internal=%r helper, but none are allowed in this '
         'configuration.  This strongly points at the possibility of an '
         'internal bug.'
-        % (change.internal,))
+        % (internal,))
 
   def __iter__(self):
     for helper in (self._external, self._internal):
@@ -130,18 +148,54 @@ class HelperPool(object):
         yield helper
 
 
-class PatchSeries(object):
+def _PatchWrapException(functor):
+  """Decorator to intercept patch exceptions and wrap them.
 
+  Specifically, for known/handled Exceptions, it intercepts and
+  converts it into a DependencyError- via that, preserving the
+  cause, while casting it into an easier to use form (one that can
+  be chained in addition)."""
+  def f(self, parent, *args, **kwds):
+    try:
+      return functor(self, parent, *args, **kwds)
+    except gerrit_helper.GerritException, e:
+      new_exc = cros_patch.PatchException(parent, e)
+      raise new_exc.__class__, new_exc, sys.exc_info()[2]
+    except cros_patch.PatchException, e:
+      if e.patch.id == parent.id:
+        raise
+      new_exc = cros_patch.DependencyError(parent, e)
+      raise new_exc.__class__, new_exc, sys.exc_info()[2]
+
+  f.__name__ = functor.__name__
+  return f
+
+
+class PatchSeries(object):
   """Class representing a set of patches applied to a repository."""
 
-  def __init__(self, helper_pool=None):
+  def __init__(self, helper_pool=None, force_content_merging=False):
+    self.applied = []
+    self.failed = []
+    self.failed_tot = {}
+    self.force_content_merging = force_content_merging
     self._content_merging = {}
     if helper_pool is None:
       helper_pool = HelperPool.SimpleCreate(internal=True, external=True)
     self._helper_pool = helper_pool
+    # A mapping of ChangeId to exceptions if the patch failed against
+    # ToT.  Primarily used to keep the resolution/applying from going
+    # down known bad paths.
+    self._committed_cache = {}
+    self._lookup_cache = {}
+    self._change_deps_cache = {}
 
   def IsContentMerging(self, change, manifest):
     """Discern if the given change has Content Merging enabled in gerrit.
+
+    Note if the instance was created w/ force_content_merging=True,
+    then this function will lie and always return True to avoid the
+    admin-level access required of <=gerrit-2.1.
 
     Raises:
       AssertionError: If the gerrit helper requested is disallowed.
@@ -149,6 +203,8 @@ class PatchSeries(object):
     Returns:
       True if the change's project has content merging enabled, False if not.
     """
+    if self.force_content_merging:
+      return True
     helper = self._helper_pool.ForChange(change)
 
     if not helper.version.startswith('2.1'):
@@ -163,144 +219,357 @@ class PatchSeries(object):
 
     return change.project in projects
 
-  def Apply(self, buildroot, changes, dryrun=False):
-    """Applies changes from pool into the directory specified by the buildroot.
+  def _GetGerritPatch(self, change, query):
+    """Query the configured helpers looking for a given change.
 
-    This method applies changes in the order specified.  It also respects
-    dependency order.
+    Args:
+      change: A cros_patch.GitRepoPatch derivative that we're querying
+        on behalf of.
+      query: The ChangeId or Change Number we're searching for.
+    """
+    helper = self._helper_pool.ForChange(change)
+    change = helper.QuerySingleRecord(query, must_match=True)
+    self.InjectLookupCache([change])
+    return change
+
+  @_PatchWrapException
+  def _LookupAndFilterChanges(self, parent, merged, deps, frozen=False):
+    """Given a set of deps (changes), return unsatisfied dependencies.
+
+    Args:
+      parent: The change we're resolving for.
+      merged: A container of changes we should consider as merged already.
+      deps: A sequence of dependencies for the parent that we need to identify
+        as either merged, or needing resolving.
+      frozen: If True, then raise an DependencyNotReady exception if any
+        new dependencies are required by this change that weren't already
+        supplied up front. This is used by the Commit Queue to notify users
+        when a change they have marked as 'Commit Ready' requires a change that
+        has not yet been marked as 'Commit Ready'.
+    Returns:
+      A sequence of cros_patch.GitRepoPatch instances (or derivatives) that
+      need to be resolved for this change to be mergable.
+    """
+    unsatisfied = []
+    for dep in deps:
+      if dep in self._committed_cache:
+        continue
+
+      dep_change = self._lookup_cache.get(dep)
+      if dep_change is not None:
+        if dep_change not in merged and dep_change not in unsatisfied:
+          unsatisfied.append(dep_change)
+        continue
+
+      dep_change = self._GetGerritPatch(parent, dep)
+      if dep_change.IsAlreadyMerged():
+        self.InjectCommittedPatches([dep_change])
+      elif frozen:
+        raise DependencyNotReadyForCommit(parent, dep)
+
+      if dep_change is not None:
+        assert dep == dep_change.id
+
+      unsatisfied.append(dep_change)
+    return unsatisfied
+
+  def CreateTransaction(self, change, buildroot, frozen=False):
+    """Given a change, resolve it into a transaction.
+
+    In this case, a transaction is defined as a group of commits that
+    must land for the given change to be merged- specifically its
+    parent deps, and its CQ-DEPENDS.
+
+    Args:
+      change: A cros_patch.GitRepoPatch instance to generate a transaction
+        for.
+      buildroot: Pathway to the root of a repo checkout to work on.
+      frozen: If True, then resolution is limited purely to what is in
+        the set of allowed changes; essentially, CQ mode.  If False,
+        arbitrary resolution is allowed, pulling changes as necessary
+        to create the transaction.
+    Returns:
+      A sequency of the necessary cros_patch.GitRepoPatch objects for
+      this transaction.
+    """
+    plan, stack = [], []
+    self._ResolveChange(change, buildroot,  plan, stack, frozen=frozen)
+    return plan
+
+  def _ResolveChange(self, change, buildroot, plan, stack, frozen=False):
+    """Helper for resolving a node and its dependencies into the plan.
+
+    No external code should call this; all internal code should invoke this
+    rather than ResolveTransaction since this maintains the necessary stack
+    tracking that is used to detect and handle cyclic dependencies.
+
+    Raises:
+      If the change couldn't be resolved, a DependencyError or
+      cros_patch.PatchException can be raised.
+    """
+    if change.id in self._committed_cache:
+      return
+    if change in stack:
+      # If the requested change is already in the stack, then immediately
+      # return- it's a cycle (requires CQ-DEPEND for it to occur); if
+      # the earlier resolution attempt succeeds, than implicitly this
+      # attempt will.
+      # TODO(ferringb,sosa): this check actually doesn't handle gerrit
+      # change numbers; support for that is broken currently anyways,
+      # but this is one of the spots that needs fixing for that support.
+      return
+    stack.append(change)
+    try:
+      self._PerformResolveChange(buildroot, change, plan,
+                                 stack, frozen=frozen)
+    finally:
+      stack.pop(-1)
+
+  @_PatchWrapException
+  def _GetDepsForChange(self, change, buildroot):
+    """Look up the gerrit/paladin deps for a change
+
+    Raises:
+      DependencyError: Thrown if there is an issue w/ the commits
+        metadata (either couldn't find the parent, or bad CQ-DEPEND).
 
     Returns:
-      A tuple of changes-applied, changes that failed against tot, and
-      changes that failed inflight.
+      A tuple of the change's GerritDependencies(), and PaladinDependencies()
     """
-    # Sets are used for performance reasons where changes_list is used to
-    # maintain ordering when applying changes.
-    changes_that_failed_to_apply_against_other_changes = set()
-    changes_that_failed_to_apply_to_tot = set()
-    changes_applied = set()
-    changes_list = []
+    # TODO(sosa, ferringb): Modify helper logic to allows deps to be specified
+    # across different gerrit instances.
+    val = self._change_deps_cache.get(change)
+    if val is None:
+      val = self._change_deps_cache[change] = (
+          change.GerritDependencies(buildroot),
+          change.PaladinDependencies(buildroot))
+    return val
+
+  def _PerformResolveChange(self, buildroot, change, plan, stack, frozen=False):
+    """Resolve and ultimately add a change into the plan."""
+    # Pull all deps up front, then process them.  Simplifies flow, and
+    # localizes the error closer to the cause.
+    gdeps, pdeps = self._GetDepsForChange(change, buildroot)
+    gdeps = self._LookupAndFilterChanges(change, plan, gdeps, frozen=frozen)
+    pdeps = self._LookupAndFilterChanges(change, plan, pdeps, frozen=frozen)
+
+    def _ProcessDeps(deps):
+      for dep in deps:
+        if dep in plan:
+          continue
+        try:
+          self._ResolveChange(dep, buildroot, plan, stack, frozen=frozen)
+        except cros_patch.PatchException, e:
+          raise cros_patch.DependencyError, \
+                cros_patch.DependencyError(change, e), \
+                sys.exc_info()[2]
+
+    _ProcessDeps(gdeps)
+    plan.append(change)
+    _ProcessDeps(pdeps)
+
+  def InjectCommittedPatches(self, changes):
+    """Record that the given patches are already committed.
+
+    This is primarily useful for external code to notify this object
+    that changes were applied to the tree outside its purview- specifically
+    useful for dependency resolution."""
+    for change in changes:
+      self._committed_cache[change.id] = change
+
+  def InjectLookupCache(self, changes):
+    """Inject into the internal lookup cache the given changes, using them
+    (rather than asking gerrit for them) as needed for dependencies.
+    """
+    for change in changes:
+      self._lookup_cache[change.id] = change
+
+  def Apply(self, buildroot, changes, dryrun=False, frozen=True, manifest=None):
+    """Applies changes from pool into the directory specified by the buildroot.
+
+    This method resolves each given change down into a set of transactions-
+    the change and its dependencies- that must go in, then tries to apply
+    the largest transaction first, working its way down.
+
+    If a transaction cannot be applied, then it is rolled back
+    in full- note that if a change is involved in multiple transactions,
+    if an earlier attempt fails, that change can be retried in a new
+    transaction if the failure wasn't caused by the patch being incompatible
+    to ToT.
+
+    Returns:
+      A tuple of changes-applied, Exceptions for the changes that failed
+      against ToT, and Exceptions that failed inflight;  These exceptions
+      are cros_patch.PatchException instances.
+    """
 
     # Used by content merging checks when we're operating against
     # >=gerrit-2.2.
-    manifest = cros_build_lib.ManifestCheckout.Cached(buildroot)
+    if manifest is None:
+      manifest = cros_build_lib.ManifestCheckout.Cached(buildroot)
 
-    # Maps Change numbers to GerritPatch object for lookup of dependent
-    # changes.
-    change_map = dict((change.id, change) for change in changes)
+    self.InjectLookupCache(changes)
+    resolved, applied, failed = [], [], []
     for change in changes:
-      logging.debug('Trying change %s', change.id)
-      helper = self._helper_pool.ForChange(change)
-      # We've already attempted this change because it was a dependent change
-      # of another change that was ready.
-      if (change in changes_that_failed_to_apply_to_tot or
-          change in changes_applied):
-        continue
-
-      # Change stacks consists of the change plus its dependencies in the order
-      # that they should be applied.
-      change_stack = [change]
-      apply_chain = True
-      deps = []
-
-      dependency_exc = None
-
-      # TODO(sosa): Modify helper logic to allows deps to be specified across
-      # different gerrit instances.
       try:
-        deps.extend(change.GerritDependencies(buildroot))
-        deps.extend(change.PaladinDependencies(buildroot))
-      except cros_patch.MissingChangeIDException as dependency_exc:
-        change.apply_error_message = (
-            'Could not apply change %s because change has a Gerrit Dependency '
-            'that does not contain a ChangeId.  Please remove this dependency '
-            'or update the dependency with a ChangeId.' % change.id)
-      except cros_patch.BrokenCQDepends as dependency_exc:
-        change.apply_error_message = (
-            'Could not apply change %s because change has a malformed '
-            'CQ-DEPEND. CQ-DEPEND must either be the long form Change-ID, '
-            'or the change number.' % change.id)
-      except cros_patch.BrokenChangeID as dependency_exc:
-        change.apply_error_message = (
-            'Could not apply change %s because a parent change has a malformed '
-            'Change-ID.  Please fix and retry.' % change.id)
+        resolved.append((change, self.CreateTransaction(change, buildroot,
+                                                        frozen=frozen)))
+      except cros_patch.PatchException, e:
+        logging.info("Failed creating transaction for %s: %s", change, e)
+        failed.append(e)
 
-      if dependency_exc:
-        logging.error(change.apply_error_message)
-        logging.error(str(dependency_exc))
-        changes_that_failed_to_apply_to_tot.add(change)
-        apply_chain = False
+    if not resolved:
+      # No work to do; either no changes were given to us, or all failed
+      # to be resolved.
+      return [], failed, []
+
+    # Sort by length, falling back to the order the changes were given to us.
+    # This is done to prefer longer transactions (more painful to rebase) over
+    # shorter transactions.
+    position = dict((change, idx) for idx, change in enumerate(changes))
+    def mk_key(data):
+      ids = [x.id for x in data[1]]
+      return -len(ids), position[data[0]]
+    resolved.sort(key=mk_key)
+
+    for inducing_change, transaction_changes in resolved:
+      try:
+        with self._Transaction(buildroot, transaction_changes):
+          logging.debug("Attempting transaction for %s: changes: %s",
+                        inducing_change,
+                        ', '.join(map(str, transaction_changes)))
+          self._ApplyChanges(inducing_change, manifest, transaction_changes,
+                             dryrun=dryrun)
+      except cros_patch.PatchException, e:
+        logging.info("Failed applying transaction for %s: %s",
+                     inducing_change, e)
+        failed.append(e)
+      else:
+        applied.extend(transaction_changes)
+        self.InjectCommittedPatches(transaction_changes)
+
+    # Uniquify while maintaining order.
+    def _uniq(l):
+      s = set()
+      for x in l:
+        if x not in s:
+          yield x
+          s.add(x)
+
+    applied = list(_uniq(applied))
+
+    failed = [x for x in failed if x.patch not in applied]
+    failed_tot = [x for x in failed if not x.inflight]
+    failed_inflight = [x for x in failed if x.inflight]
+    return applied, failed_tot, failed_inflight
+
+  @contextlib.contextmanager
+  def _Transaction(self, buildroot, commits):
+    """ContextManager used to rollback changes to a buildroot if necessary.
+
+    Specifically, if an unhandled non system exception occurs, this context
+    manager will roll back all relevant modifications to the git repos
+    involved.
+
+    Args:
+      buildroot: The manifest checkout we're operating upon, specifically
+        the root of it.
+      commits: A sequence of cros_patch.GitRepoPatch instances that compromise
+        this transaction- this is used to identify exactly what may be changed,
+        thus what needs to be tracked and rolled back if the transaction fails.
+    """
+    # First, the book keeping code; gather required data so we know what
+    # to rollback to should this transaction fail.  Specifically, we track
+    # what was checked out for each involved repo, and if it was a branch,
+    # the sha1 of the branch; that information is enough to rewind us back
+    # to the original repo state.
+    project_state = set(commit.ProjectDir(buildroot) for commit in commits)
+    resets, checkouts = [], []
+    for project_dir in project_state:
+      current_sha1 = cros_build_lib.RunGitCommand(
+          project_dir, ['rev-list', '-n1', 'HEAD']).output.strip()
+      assert current_sha1
+
+      result = cros_build_lib.RunGitCommand(
+          project_dir, ['symbolic-ref', 'HEAD'], error_code_ok=True)
+      if result.returncode == 128: # Detached HEAD.
+        checkouts.append((project_dir, current_sha1))
+      elif result.returncode == 0:
+        checkouts.append((project_dir, result.output.strip()))
+        resets.append((project_dir, current_sha1))
+      else:
+        raise Exception(
+            'Unexpected state from git symbolic-ref HEAD: exit %i\n'
+            'stdout: %s\nstderr: %s'
+            % (result.returncode, result.output, result.error))
+
+    committed_cache = self._committed_cache.copy()
+
+    try:
+      yield
+      # Reaching here means it was applied cleanly, thus return.
+      return
+    except (MemoryError, RuntimeError):
+      # Skip transactional rollback; if these occur, at least via
+      # the scenarios where they're *supposed* to be raised, we really
+      # should let things fail hard here.
+      raise
+    except:
+      # pylint: disable=W0702
+      logging.info("Rewinding transaction: failed changes: %s .",
+                   ', '.join(map(str, commits)))
+      for project_dir, ref in checkouts:
+        cros_build_lib.RunGitCommand(project_dir, ['checkout', ref])
+
+      for project_dir, sha1 in resets:
+        cros_build_lib.RunGitCommand(project_dir, ['reset', '--hard', sha1])
+
+      self._committed_cache = committed_cache
+      raise
+
+  @_PatchWrapException
+  def _ApplyChanges(self, _inducing_change, manifest, changes, dryrun=False):
+    """Apply a given ordered sequence of changes.
+
+    Args:
+      _inducing_change: The core GitRepoPatch instance that lead to this
+        sequence of changes; basically what this transaction was computed from.
+        Needs to be passed in so that the exception wrapping machinery can
+        convert any failures, assigning blame appropriately.
+      manifest: A ManifestCheckout instance representing what we're working on.
+      changes: A ordered sequence of GitRepoPatch instances to apply.
+      dryrun: Whether or not this is considered a production run.
+    """
+    # Bail immediately if we know one of the requisite patches won't apply.
+    for change in changes:
+      failure = self.failed_tot.get(change.id)
+      if failure is not None:
+        raise failure
+
+    applied = []
+    for change in changes:
+      if change.id in self._committed_cache:
         continue
 
-      for dep in deps:
-        dep_change = change_map.get(dep)
-        if not dep_change:
-          # The dep may have been committed already.
-          try:
-            if not helper.IsChangeCommitted(dep, must_match=False):
-              message = ('Could not apply change %s because dependent '
-                         'change %s is not ready to be committed.' % (
-                          change.id, dep))
-              logging.info(message)
-              change.apply_error_message = message
-              changes_that_failed_to_apply_to_tot.add(change)
-              apply_chain = False
-              break
-          except gerrit_helper.QueryNotSpecific:
-            message = ('Change %s could not be handled due to its dependency '
-                       '%s matching multiple branches.' % (change.id, dep))
-            logging.info(message)
-            change.apply_error_message = message
-            changes_that_failed_to_apply_to_tot.add(change)
-            apply_chain = False
-            break
-        else:
-          change_stack.insert(0, dep_change)
-
-      # Should we apply the chain -- i.e. all deps are ready.
-      if not apply_chain:
-        continue
-
-      # Apply changes in change_stack.  For chains that were aborted early,
-      # we still want to apply changes in change_stack because they were
-      # ready to be committed (o/w wouldn't have been in the change_map).
-      for change in change_stack:
-        try:
-          if change in changes_applied:
-            continue
-          elif change in changes_that_failed_to_apply_to_tot:
-            break
-
-          # If we're in dryrun mode, then 3way is always allowed.
-          # Otherwise, allow 3way only if the gerrit project allows it.
-          trivial = False if dryrun else not self.IsContentMerging(change,
-                                                                   manifest)
-
-          change.Apply(buildroot, trivial=trivial)
-
-        except cros_patch.ApplyPatchException as e:
-          if e.inflight:
-            changes_that_failed_to_apply_against_other_changes.add(
-                MarkChangeFailedInflight(change))
-          else:
-            changes_that_failed_to_apply_to_tot.add(
-                MarkChangeFailedToT(change))
-
-        except cros_patch.PatchException, e:
-          changes_that_failed_to_apply_to_tot.add(MarkChangeFailedToT(change))
-        else:
-          # We applied the change successfully.
-          changes_applied.add(change)
-          changes_list.append(change)
-          cros_build_lib.PrintBuildbotLink(str(change), change.url)
-          continue
-        break
+      # If we're in dryrun mode, than force content-merging; else, ask
+      # gerrit (or the underlying git configuration) if content-merging
+      # is allowed for this specific project.
+      if dryrun:
+        force_trivial = False
+      else:
+        force_trivial = not self.IsContentMerging(change, manifest)
+      try:
+        change.Apply(manifest.root, trivial=force_trivial)
+      except cros_patch.PatchException, e:
+        if not e.inflight:
+          self.failed_tot[change.id] = e
+        raise
+      applied.append(change)
+      if hasattr(change, 'url'):
+        cros_build_lib.PrintBuildbotLink(str(change), change.url)
 
     logging.debug('Done investigating changes.  Applied %s',
-                  ' '.join([c.id for c in changes_list]))
-
-    return (changes_list,
-            changes_that_failed_to_apply_to_tot,
-            changes_that_failed_to_apply_against_other_changes)
+                  ' '.join([c.id for c in applied]))
 
 
 class ValidationPool(object):
@@ -359,15 +628,21 @@ class ValidationPool(object):
       raise ValueError("Invalid builder_name: %r" % (builder_name,))
 
     for changes_name, changes_value in (
-        ('changes', changes), ('non_os_changes', non_os_changes),
-        ('conflicting_changes', conflicting_changes)):
-      if changes_value is None:
+        ('changes', changes), ('non_os_changes', non_os_changes)):
+      if not changes_value:
         continue
       if not all(isinstance(x, cros_patch.GitRepoPatch) for x in changes_value):
         raise ValueError(
             'Invalid %s: all elements must be a GitRepoPatch derivative, got %r'
             % (changes_name, changes_value))
 
+    if conflicting_changes and not all(
+        isinstance(x, cros_patch.PatchException)
+        for x in conflicting_changes):
+      raise ValueError(
+          'Invalid conflicting_changes: all elements must be a '
+          'cros_patch.PatchException derivative, got %r'
+          % (conflicting_changes,))
 
     build_dashboard = self.GetBuildDashboardForOverlays(overlays)
 
@@ -380,6 +655,10 @@ class ValidationPool(object):
     # See optional args for types of changes.
     self.changes = changes or []
     self.non_manifest_changes = non_os_changes or []
+    # Note, we hold onto these CLs since they conflict against our current CLs
+    # being tested; if our current ones succeed, we notify the user to deal
+    # w/ the conflict.  If the CLs we're testing fail, then there is no
+    # reason we can't try these again in the next run.
     self.changes_that_failed_to_apply_earlier = conflicting_changes or []
 
     # Private vars only used for pickling.
@@ -600,7 +879,7 @@ class ValidationPool(object):
 
     return changes_in_manifest, changes_not_in_manifest
 
-  def ApplyPoolIntoRepo(self, buildroot):
+  def ApplyPoolIntoRepo(self, buildroot, manifest=None):
     """Applies changes from pool into the directory specified by the buildroot.
 
     This method applies changes in the order specified.  It also respects
@@ -611,7 +890,7 @@ class ValidationPool(object):
     """
     try:
       applied, failed_tot, failed_inflight = self._patch_series.Apply(
-          buildroot, self.changes, self.dryrun)
+          buildroot, self.changes, self.dryrun, manifest=manifest)
     except (KeyboardInterrupt, RuntimeError, SystemExit):
       raise
     except Exception, e:
@@ -621,14 +900,17 @@ class ValidationPool(object):
       # Stash a copy of the tb guts, since the next set of steps can
       # wipe it.
       exc = sys.exc_info()
-      cros_build_lib.Error(
-          "Unhandled Exception occured during CQ's Apply: %s\n"
+      msg = (
+          "Unhandled Exception occurred during CQ's Apply: %s\n"
           "Failing the entire series to prevent CQ from going into an "
-          "infinite loop hanging on these CLs.\n"
-          "Affected patches: %s"
-          % (e, ' '.join(x.change_id for x in self.changes)))
+          "infinite loop hanging on these CLs." % (e,))
+      cros_build_lib.Error(
+          "%s\nAffected Patches are: %s", msg,
+          ', '.join(x.change_id for x in self.changes))
       try:
-        self.HandleApplicationFailure(self.changes)
+        self._HandleApplyFailure(
+            [InternalCQError(patch, msg) for patch in self.changes])
+      # pylint: disable=W0703
       except Exception, e:
         if mox is None or not isinstance(e, mox.Error):
           # If it's not a mox error, let it fly.
@@ -637,12 +919,21 @@ class ValidationPool(object):
 
     if self.is_master:
       for change in applied:
-        self.HandleApplied(change)
+        self._HandleApplySuccess(change)
 
     if failed_tot:
-      logging.info('Changes %s could not be applied cleanly.',
-                  ' '.join([c.id for c in failed_tot]))
-      self.HandleApplicationFailure(failed_tot)
+      logging.info(
+          'The following changes could not cleanly be applied to ToT: %s',
+          ' '.join([c.patch.id for c in failed_tot]))
+      self._HandleApplyFailure(failed_tot)
+
+    if failed_inflight:
+      logging.info(
+          'The following changes could not cleanly be applied against the '
+          'current stack of patches; if this stack fails, they will be tried '
+          'in the next run.  Inflight failed changes: %s',
+          ' '.join([c.patch.id for c in failed_inflight]))
+
     self.changes_that_failed_to_apply_earlier.extend(failed_inflight)
     self.changes = applied
 
@@ -667,29 +958,28 @@ class ValidationPool(object):
     # We use the default timeout here as while we want some robustness against
     # the tree status being red i.e. flakiness, we don't want to wait too long
     # as validation can become stale.
-    if self.dryrun or ValidationPool._IsTreeOpen():
-      for change in changes:
-        was_change_submitted = False
-        logging.info('Change %s will be submitted', change)
-        try:
-          self.SubmitChange(change)
-          was_change_submitted = self._helper_pool.ForChange(
-              change).IsChangeCommitted(str(change.gerrit_number), self.dryrun)
-        except cros_build_lib.RunCommandError:
-          logging.error('gerrit review --submit failed for change.')
-        finally:
-          if not was_change_submitted:
-            logging.error('Could not submit %s', str(change))
-            self.HandleCouldNotSubmit(change)
-            changes_that_failed_to_submit.append(change)
-
-      if changes_that_failed_to_submit:
-        raise FailedToSubmitAllChangesException(changes_that_failed_to_submit)
-
-    else:
+    if not self.dryrun and not self._IsTreeOpen():
       raise TreeIsClosedException()
 
-  def SubmitChange(self, change):
+    for change in changes:
+      was_change_submitted = False
+      logging.info('Change %s will be submitted', change)
+      try:
+        self._SubmitChange(change)
+        was_change_submitted = self._helper_pool.ForChange(
+            change).IsChangeCommitted(str(change.gerrit_number), self.dryrun)
+      except cros_build_lib.RunCommandError:
+        logging.error('gerrit review --submit failed for change.')
+      finally:
+        if not was_change_submitted:
+          logging.error('Could not submit %s', str(change))
+          self._HandleCouldNotSubmit(change)
+          changes_that_failed_to_submit.append(change)
+
+    if changes_that_failed_to_submit:
+      raise FailedToSubmitAllChangesException(changes_that_failed_to_submit)
+
+  def _SubmitChange(self, change):
     """Submits patch using Gerrit Review."""
     cmd = self._helper_pool.ForChange(change).GetGerritReviewCommand(
         ['--submit', '%s,%s' % (change.gerrit_number, change.patch_number)])
@@ -712,27 +1002,49 @@ class ValidationPool(object):
       TreeIsClosedException: if the tree is closed.
       FailedToSubmitAllChangesException: if we can't submit a change.
     """
+    # Note that _SubmitChanges can throw an exception if it can't
+    # submit all changes; in that particular case, don't mark the inflight
+    # failures patches as failed in gerrit- some may apply next time we do
+    # a CQ run (since the# submit state has changed, we have no way of
+    # knowing).  They *likely* will still fail, but this approach tries
+    # to minimize wasting the developers time.
     self._SubmitChanges(self.changes)
     if self.changes_that_failed_to_apply_earlier:
-      self.HandleApplicationFailure(self.changes_that_failed_to_apply_earlier)
+      self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
 
-  def HandleApplicationFailure(self, changes):
+  def _HandleApplyFailure(self, failures):
     """Handles changes that were not able to be applied cleanly.
 
     Args:
       changes: GerritPatch's to handle.
     """
-    for change in changes:
-      logging.info('Change %s did not apply cleanly.', change.change_id)
+    for failure in failures:
+      logging.info('Change %s did not apply cleanly.', failure.patch)
       if self.is_master:
-        self.HandleCouldNotApply(change)
+        self._HandleCouldNotApply(failure)
+
+  def _HandleCouldNotApply(self, failure):
+    """Handler for when Paladin fails to apply a change.
+
+    This handler notifies set CodeReview-2 to the review forcing the developer
+    to re-upload a rebased change.
+
+    Args:
+      change: GerritPatch instance to operate upon.
+    """
+    msg = 'The Commit Queue failed to apply your change in %(build_log)s .'
+    msg += '  %(failure)s'
+    self._SendNotification(failure.patch, msg, failure=failure)
+    self._helper_pool.ForChange(failure.patch).RemoveCommitReady(
+        failure.patch, dryrun=self.dryrun)
 
   def HandleValidationFailure(self, failed_stage=None, exception=None):
     """Handles failed changes by removing them from next Validation Pools."""
     logging.info('Validation failed for all changes.')
     for change in self.changes:
       logging.info('Validation failed for change %s.', change)
-      self.HandleCouldNotVerify(change, failed_stage, exception)
+      self._HandleCouldNotVerify(change, failed_stage=failed_stage,
+                                 exception=exception)
 
   def HandleValidationTimeout(self):
     """Handles changes that timed out."""
@@ -749,11 +1061,20 @@ class ValidationPool(object):
           change, dryrun=self.dryrun)
 
   def _SendNotification(self, change, msg, **kwargs):
-    msg %= dict(build_log=self.build_log, **kwargs)
+    d = dict(build_log=self.build_log, **kwargs)
+    try:
+      msg %= d
+    except (TypeError, ValueError), e:
+      logging.error(
+          "Generation of message %s for change %s failed: dict was %r, "
+          "exception %s", msg, change, d, e)
+      raise e.__class__(
+          "Generation of message %s for change %s failed: dict was %r, "
+          "exception %s" % (msg, change, d, e))
     PaladinMessage(msg, change, self._helper_pool.ForChange(change)).Send(
         self.dryrun)
 
-  def HandleCouldNotSubmit(self, change):
+  def _HandleCouldNotSubmit(self, change):
     """Handler that is called when Paladin can't submit a change.
 
     This should be rare, but if an admin overrides the commit queue and commits
@@ -770,7 +1091,7 @@ class ValidationPool(object):
     self._helper_pool.ForChange(change).RemoveCommitReady(
         change, dryrun=self.dryrun)
 
-  def HandleCouldNotVerify(self, change, failed_stage=None, exception=None):
+  def _HandleCouldNotVerify(self, change, failed_stage=None, exception=None):
     """Handler for when Paladin fails to validate a change.
 
     This handler notifies set Verified-1 to the review forcing the developer
@@ -783,49 +1104,19 @@ class ValidationPool(object):
       exception: The exception object thrown by the first failure.
     """
     if failed_stage and exception:
-      detail = (
-        'Oops! The %s stage failed: '
-        '%s' % (failed_stage, exception)
-      )
+      detail = 'Oops!  The %s stage failed: %s' % (failed_stage, exception)
     else:
-      detail = 'Oops! The Commit Queue failed to verify your change.'
+      detail = 'Oops!  The commit queue failed to verify your change.'
 
-    self._SendNotification(change,
+    self._SendNotification(
+        change,
         '%(detail)s\n\nPlease check whether the failure is your fault: '
         '%(build_log)s . If your change is not at fault, you may mark it as '
-        'ready again.', detail=detail
-    )
+        'ready again.', detail=detail)
     self._helper_pool.ForChange(change).RemoveCommitReady(
         change, dryrun=self.dryrun)
 
-  def HandleCouldNotApply(self, change):
-    """Handler for when Paladin fails to apply a change.
-
-    This handler notifies set CodeReview-2 to the review forcing the developer
-    to re-upload a rebased change.
-
-    Args:
-      change: GerritPatch instance to operate upon.
-    """
-    msg = 'The Commit Queue failed to apply your change in %(build_log)s . '
-    # This is written this way to protect against bugs in CQ itself.  We log
-    # it both to the build output, and mark the change w/ it.
-    extra_msg = getattr(change, 'apply_error_message', None)
-    if extra_msg is None:
-      logging.error(
-          'Change %s was passed to HandleCouldNotApply without an appropriate '
-          'apply_error_message set.  Internal bug.', change)
-      extra_msg = (
-          'Internal CQ issue: extra error info was not given,  Please contact '
-          'the build team and ensure they are aware of this specific change '
-          'failing.')
-
-    msg += extra_msg
-    self._SendNotification(change, msg)
-    self._helper_pool.ForChange(change).RemoveCommitReady(
-        change, dryrun=self.dryrun)
-
-  def HandleApplied(self, change):
+  def _HandleApplySuccess(self, change):
     """Handler for when Paladin successfully applies a change.
 
     This handler notifies a developer that their change is being tried as

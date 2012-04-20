@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2011-2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,37 +12,83 @@ import re
 
 from chromite.lib import cros_build_lib
 
+
 class PatchException(Exception):
-  """Exception thrown by GetGerritPatchInfo."""
+  """Base exception class all patch exception derive from."""
+
+  # Unless instances override it, default all exceptions to ToT.
+  inflight = False
+
+  def __init__(self, patch, message=None):
+    Exception.__init__(self)
+    self.patch = patch
+    self.message = message
+    self.args = (patch,)
+    if message is not None:
+      self.args += (message,)
+
+  def __str__(self):
+    return "Change %s failed: %s" % (self.patch, self.message)
 
 
-class ApplyPatchException(Exception):
+class ApplyPatchException(PatchException):
   """Exception thrown if we fail to apply a patch."""
 
   def __init__(self, patch, inflight=False):
-    super(ApplyPatchException, self).__init__()
-    self.patch = patch
+    PatchException.__init__(self, patch)
     self.inflight = inflight
+    self.args += (inflight,)
 
   def __str__(self):
-    return 'Failed to apply patch %s to %s' % (
+    return 'Change %s no longer cleanly applies against %s.' % (
         self.patch, 'current patch series' if self.inflight else 'ToT')
 
 
-class MalformedChange(Exception):
-  pass
+class DependencyError(PatchException):
+
+  """Exception thrown when a change cannot be applied due to a failure in a
+  dependency."""
+
+  def __init__(self, patch, error):
+    """
+    Args:
+      patch: The GitRepoPatch instance that this exception concerns.
+      error: A PatchException object that can be stringified to describe
+        the error.
+    """
+    PatchException.__init__(self, patch)
+    self.inflight = error.inflight
+    self.error = error
+    self.args += (error,)
+
+  def __str__(self):
+    return "Patch %s depends on %s which has an error: %s" % (
+        self.patch, self.error.patch.id, self.error)
 
 
-class MissingChangeIDException(MalformedChange):
-  """Raised if a patch is missing a Change-ID."""
-
-
-class BrokenCQDepends(MalformedChange):
+class BrokenCQDepends(PatchException):
   """Raised if a patch has a CQ-DEPEND line that is ill formated."""
 
+  def __init__(self, patch, text):
+    PatchException.__init__(self, patch)
+    self.text = text
+    self.args += (text,)
 
-class BrokenChangeID(MalformedChange):
-  """Raised if a patch has an invalid Change-ID."""
+  def __str__(self):
+    return "Change %s has a malformed CQ-DEPEND target: %s" % (
+        self.patch, self.text)
+
+
+class BrokenChangeID(PatchException):
+  """Raised if a patch has an invalid or missing Change-ID."""
+
+  def __init__(self, patch, message):
+    PatchException.__init__(self, patch)
+    self.message = message
+    self.args += (message,)
+
+  def __str__(self):
+    return "Change %s has a broken ChangeId: %s" % (self.patch, self.message)
 
 
 def MakeChangeId(unusable=False):
@@ -322,7 +368,7 @@ class GitRepoPatch(object):
     Returns:
       An ordered list of Gerrit revisions that this patch depends on.
     Raises:
-      MissingChangeIDException: If a dependent change is missing its ChangeID.
+      BrokenChangeID: If a dependent change is missing its ChangeID.
     """
     dependencies = []
     logging.info('Checking for Gerrit dependencies for change %s', self)
@@ -383,7 +429,7 @@ class GitRepoPatch(object):
       return self.id
     try:
       self.change_id = self.id = self._ParseChangeId(commit_message)
-    except MissingChangeIDException:
+    except BrokenChangeID:
       logging.warning(
           'Change %s, sha1 %s lacks a change-id in its commit '
           'message.  CQ-DEPEND against this rev will not work, nor '
@@ -403,7 +449,7 @@ class GitRepoPatch(object):
     git_metadata = re.split('\n{2,}', data.rstrip())[-1]
     change_id_match = self._GIT_CHANGE_ID_RE.findall(git_metadata)
     if not change_id_match:
-      raise MissingChangeIDException('Missing Change-Id in %s', data)
+      raise BrokenChangeID(self, 'Missing Change-Id in %s' % (data,))
 
     # Now, validate it.  This has no real effect on actual gerrit patches,
     # but for local patches the validation is useful for general sanity
@@ -440,7 +486,7 @@ class GitRepoPatch(object):
       for chunk in chunks:
         if not chunk.isdigit():
           if not self._VALID_CHANGE_ID_RE.match(chunk):
-            raise BrokenCQDepends(self, match, chunk)
+            raise BrokenCQDepends(self, chunk)
           chunk = FormatChangeId(chunk)
         if chunk not in dependencies:
           dependencies.append(chunk)
@@ -635,7 +681,7 @@ class GerritPatch(GitRepoPatch):
             'Change-Id yielded: %s'
             % (self.change_id, self.sha1, parsed_id))
 
-    except MissingChangeIDException:
+    except BrokenChangeID:
       logging.warning(
           'Change %s, Change-Id %s, sha1 %s lacks a change-id in its commit '
           'message.  This breaks the ability for any dependencies '
@@ -669,10 +715,6 @@ def PrepareLocalPatches(manifest, patches):
   Args:
     manifest: The manifest object for the checkout in question.
     patches:  A list of user-specified patches, in project[:branch] form.
-
-  Raises:
-    PatchException if:
-      1. The project branch isn't specified and the project isn't on a branch.
   """
   patch_info = []
   for patch in patches:
@@ -686,7 +728,7 @@ def PrepareLocalPatches(manifest, patches):
     sha1 = result.output.strip()
 
     if not sha1:
-      raise PatchException('No changes found in %s:%s' % (project, branch))
+      cros_build_lib.Die('No changes found in %s:%s' % (project, branch))
 
     patch_info.append(LocalPatch(os.path.join(project_dir, '.git'),
                                         project, branch, tracking_branch,
@@ -718,16 +760,17 @@ def PrepareRemotePatches(patches):
     try:
       project, original_branch, ref, tracking_branch, tag = patch.split(':')
     except ValueError:
-      raise PatchException("Unexpected tryjob format.  You may be running an "
-                           "older version of chromite.  Run 'repo sync "
-                           "chromiumos/chromite'.")
+      cros_build_lib.Die(
+          "Unexpected tryjob format.  You may be running an "
+          "older version of chromite.  Run 'repo sync "
+          "chromiumos/chromite'.")
 
     if tag == constants.EXTERNAL_PATCH_TAG:
       push_url = constants.GERRIT_SSH_URL
     elif tag == constants.INTERNAL_PATCH_TAG:
       push_url = constants.GERRIT_INT_SSH_URL
     else:
-      raise PatchException('Bad remote patch format.  Unknown tag %s' % tag)
+      raise ValueError('Bad remote patch format.  Unknown tag %s' % tag)
 
     patch_info.append(UploadedLocalPatch(os.path.join(push_url, project),
                                          project, ref, tracking_branch,
