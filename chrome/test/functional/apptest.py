@@ -34,7 +34,6 @@ class PyAutoEventsTest(pyauto.PyUITest):
     """Tests for the various types of Dom Mutation observers."""
     url = self.GetHttpURLForDataPath('apptest', 'dom_mutations.html')
     self.NavigateToURL(url)
-    self.GetNextEvent(self.AddDomMutationObserver('exists', '/html/body'))
     self.GetNextEvent(self.AddDomMutationObserver('add', 'id("login")',
                                                   expected_value='Log In'))
     success_id = self.AddDomMutationObserver('change', 'id("console")',

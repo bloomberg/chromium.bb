@@ -18,7 +18,6 @@
  *  expected_value: If not null, regular expression to match with the value of
  *      |attribute| after the mutation.
  */
-
 function(automation_id, observer_id, observer_type, xpath, attribute,
          expected_value) {
 
@@ -232,22 +231,28 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
   }
 
   /* Interpret arguments and launch the requested observer function. */
-  var observer;
-  switch (observer_type) {
-    case "add":
-      observeAdd(xpath);
-      break;
-    case "remove":
-      observeRemove(xpath);
-      break;
-    case "change":
-      observeChange(xpath);
-      break;
-    case "exists":
-      observeExists(xpath);
-      break;
+  function installMutationObserver() {
+    switch (observer_type) {
+      case "add":
+        observeAdd(xpath);
+        break;
+      case "remove":
+        observeRemove(xpath);
+        break;
+      case "change":
+        observeChange(xpath);
+        break;
+      case "exists":
+        observeExists(xpath);
+        break;
+    }
+    console.log("MutationObserver javscript injection completed.");
   }
 
-  console.log("MutationObserver javscript injection completed.");
-
+  /* Ensure the DOM is loaded before attempting to create MutationObservers. */
+  if (document.body) {
+    installMutationObserver();
+  } else {
+    window.addEventListener("DOMContentLoaded", installMutationObserver, true);
+  }
 }
