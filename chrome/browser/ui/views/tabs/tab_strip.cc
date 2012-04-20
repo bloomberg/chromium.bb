@@ -35,6 +35,7 @@
 #include "ui/base/touch/touch_mode_support.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/controls/image_view.h"
@@ -354,24 +355,18 @@ void TabStrip::RemoveTabDelegate::HighlightCloseButton() {
     return;
   }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
   views::Widget* widget = tabstrip_->GetWidget();
   // This can be null during shutdown. See http://crbug.com/42737.
   if (!widget)
     return;
 
   widget->ResetLastMouseMoveFlag();
-
-  // Force the close button (that slides under the mouse) to highlight by
-  // saying the mouse just moved, but sending the same coordinates.
-  DWORD pos = GetMessagePos();
-  POINT cursor_point = {GET_X_LPARAM(pos), GET_Y_LPARAM(pos)};
-  MapWindowPoints(NULL, widget->GetNativeView(), &cursor_point, 1);
-  SendMessage(widget->GetNativeView(), WM_MOUSEMOVE, 0,
-              MAKELPARAM(cursor_point.x, cursor_point.y));
-#else
-  NOTIMPLEMENTED();
-#endif
+  gfx::Point position = gfx::Screen::GetCursorScreenPoint();
+  views::View* root_view = widget->GetRootView();
+  views::View::ConvertPointFromScreen(root_view, &position);
+  views::MouseEvent mouse_event(
+      ui::ET_MOUSE_MOVED, position.x(), position.y(), 0);
+  root_view->OnMouseMoved(mouse_event);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
