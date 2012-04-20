@@ -39,3 +39,6 @@ DnsConfigServiceTest.*GetSystemConfig
 
 # See http://crbug.com/50346
 DiskCacheEntryTest.*
+
+# Times out occasionally, http://crbug.com/124452
+HostResolverImplTest.StartWithinCallback
