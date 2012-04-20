@@ -9,7 +9,6 @@
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/test/test_launcher_delegate.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/window.h"
 
@@ -59,7 +58,7 @@ void TestShellDelegate::StartPartialScreenshot(
 
 LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(
     ash::LauncherModel* model) {
-  return new TestLauncherDelegate(model);
+  return NULL;
 }
 
 SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate(

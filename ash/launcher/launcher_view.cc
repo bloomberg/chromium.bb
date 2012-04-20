@@ -6,7 +6,6 @@
 
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_delegate.h"
-#include "ash/launcher/launcher_icon_observer.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/tabbed_launcher_button.h"
 #include "ash/shell.h"
@@ -256,7 +255,6 @@ LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
     : model_(model),
       delegate_(delegate),
       view_model_(new views::ViewModel),
-      last_visible_index_(-1),
       overflow_button_(NULL),
       dragging_(NULL),
       drag_view_(NULL),
@@ -307,7 +305,7 @@ void LauncherView::Init() {
 
 gfx::Rect LauncherView::GetIdealBoundsOfItemIcon(LauncherID id) {
   int index = model_->ItemIndexByID(id);
-  if (index == -1 || index > last_visible_index_)
+  if (index == -1 || !view_model_->view_at(index)->visible())
     return gfx::Rect();
   const gfx::Rect& ideal_bounds(view_model_->ideal_bounds(index));
   DCHECK_NE(TYPE_APP_LIST, model_->items()[index].type);
@@ -366,19 +364,19 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   }
 
   bounds->overflow_bounds.set_size(gfx::Size(kButtonWidth, kButtonHeight));
-  last_visible_index_ = DetermineLastVisibleIndex(
+  int last_visible_index = DetermineLastVisibleIndex(
       available_width - kLeadingInset - bounds->overflow_bounds.width() -
       kButtonSpacing - kButtonWidth);
   bool show_overflow =
-      (last_visible_index_ + 1 != view_model_->view_size());
+      (last_visible_index + 1 != view_model_->view_size());
   int app_list_index = view_model_->view_size() - 1;
   if (overflow_button_->visible() != show_overflow) {
     // Only change visibility of the views if the visibility of the overflow
     // button changes. Otherwise we'll effect the insertion animation, which
     // changes the visibility.
-    for (int i = 0; i <= last_visible_index_; ++i)
+    for (int i = 0; i <= last_visible_index; ++i)
       view_model_->view_at(i)->SetVisible(true);
-    for (int i = last_visible_index_ + 1; i < view_model_->view_size(); ++i) {
+    for (int i = last_visible_index + 1; i < view_model_->view_size(); ++i) {
       if (i != app_list_index)
         view_model_->view_at(i)->SetVisible(false);
     }
@@ -388,8 +386,8 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     DCHECK_NE(0, view_model_->view_size());
     // We always want the app list visible.
     gfx::Rect app_list_bounds = view_model_->ideal_bounds(app_list_index);
-    x = last_visible_index_ == -1 ?
-        kLeadingInset : view_model_->ideal_bounds(last_visible_index_).right();
+    x = last_visible_index == -1 ?
+        kLeadingInset : view_model_->ideal_bounds(last_visible_index).right();
     app_list_bounds.set_x(x);
     view_model_->set_ideal_bounds(app_list_index, app_list_bounds);
     x = app_list_bounds.right() + kButtonSpacing;
@@ -404,14 +402,6 @@ int LauncherView::DetermineLastVisibleIndex(int max_x) {
   while (index >= 0 && view_model_->ideal_bounds(index).right() > max_x)
     index--;
   return index;
-}
-
-void LauncherView::AddIconObserver(LauncherIconObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void LauncherView::RemoveIconObserver(LauncherIconObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void LauncherView::AnimateToIdealBounds() {
@@ -551,9 +541,6 @@ void LauncherView::ContinueDrag(const views::MouseEvent& event) {
   view_model_->Move(current_index, target_index);
   AnimateToIdealBounds();
   bounds_animator_->StopAnimatingView(drag_view_);
-
-  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
-                    OnLauncherIconPositionsChanged());
 }
 
 bool LauncherView::SameDragType(LauncherItemType typea,
@@ -675,8 +662,6 @@ gfx::Size LauncherView::GetPreferredSize() {
 
 void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   LayoutToIdealBounds();
-  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
-                    OnLauncherIconPositionsChanged());
 }
 
 views::FocusTraversable* LauncherView::GetPaneFocusTraversable() {
@@ -708,9 +693,6 @@ void LauncherView::LauncherItemAdded(int model_index) {
     bounds_animator_->SetAnimationDelegate(
         view, new StartFadeAnimationDelegate(this, view), true);
   }
-
-  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
-                    OnLauncherIconPositionsChanged());
 }
 
 void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
@@ -726,14 +708,6 @@ void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
   bounds_animator_->AnimateViewTo(view, view->bounds());
   bounds_animator_->SetAnimationDelegate(
       view, new FadeOutAnimationDelegate(this, view), true);
-
-  // The animation will eventually update the ideal bounds, but we want to
-  // force an update immediately so we can notify launcher icon observers.
-  IdealBounds ideal_bounds;
-  CalculateIdealBounds(&ideal_bounds);
-
-  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
-                    OnLauncherIconPositionsChanged());
 }
 
 void LauncherView::LauncherItemChanged(int model_index,
@@ -783,8 +757,6 @@ void LauncherView::LauncherItemChanged(int model_index,
 void LauncherView::LauncherItemMoved(int start_index, int target_index) {
   view_model_->Move(start_index, target_index);
   AnimateToIdealBounds();
-  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
-                    OnLauncherIconPositionsChanged());
 }
 
 void LauncherView::LauncherItemWillChange(int index) {

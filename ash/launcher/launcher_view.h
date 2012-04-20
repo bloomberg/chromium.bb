@@ -11,7 +11,6 @@
 
 #include "ash/launcher/launcher_button_host.h"
 #include "ash/launcher/launcher_model_observer.h"
-#include "base/observer_list.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
@@ -28,7 +27,6 @@ namespace ash {
 
 class LauncherDelegate;
 struct LauncherItem;
-class LauncherIconObserver;
 class LauncherModel;
 
 namespace internal {
@@ -67,9 +65,6 @@ class ASH_EXPORT LauncherView : public views::View,
   // Returns the ideal bounds of the specified item, or an empty rect if id
   // isn't know.
   gfx::Rect GetIdealBoundsOfItemIcon(LauncherID id);
-
-  void AddIconObserver(LauncherIconObserver* observer);
-  void RemoveIconObserver(LauncherIconObserver* observer);
 
   // Returns true if we're showing a menu.
   bool IsShowingMenu() const;
@@ -174,10 +169,6 @@ class ASH_EXPORT LauncherView : public views::View,
   // item in |model_|.
   scoped_ptr<views::ViewModel> view_model_;
 
-  // Last index of a launcher button that is visible
-  // (does not go into overflow).
-  int last_visible_index_;
-
   scoped_ptr<views::BoundsAnimator> bounds_animator_;
 
   views::ImageButton* overflow_button_;
@@ -206,8 +197,6 @@ class ASH_EXPORT LauncherView : public views::View,
 
   scoped_ptr<views::MenuRunner> launcher_menu_runner_;
 #endif
-
-  ObserverList<LauncherIconObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherView);
 };
