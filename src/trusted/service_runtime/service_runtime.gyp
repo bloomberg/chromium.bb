@@ -246,13 +246,6 @@
             '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
           ],
         }],
-        ['nacl_standalone==0 and OS=="win"', {
-          'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:handle_lookup',
-            '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
-            '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle',
-          ],
-        }],
       ],
     }, {
       'target_name': 'container',
@@ -344,15 +337,6 @@
             '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common64',
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
-          ],
-          'conditions': [
-            ['nacl_standalone==0 and OS=="win"', {
-              'dependencies': [
-                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:handle_lookup64',
-                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle64',
-                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle64',
-              ],
-            }],
           ],
         }, {
           'target_name': 'container64',

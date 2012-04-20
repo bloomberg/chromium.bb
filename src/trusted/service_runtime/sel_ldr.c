@@ -30,7 +30,6 @@
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
 #include "native_client/src/trusted/gio/gio_nacl_desc.h"
 #include "native_client/src/trusted/gio/gio_shm.h"
-#include "native_client/src/trusted/handle_pass/ldr_handle.h"
 #include "native_client/src/trusted/interval_multiset/nacl_interval_range_tree_intern.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"

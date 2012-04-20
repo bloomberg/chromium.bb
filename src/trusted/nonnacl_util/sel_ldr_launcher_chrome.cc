@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 

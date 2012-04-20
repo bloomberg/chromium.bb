@@ -24,7 +24,6 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
-#include "native_client/src/trusted/handle_pass/handle_lookup.h"
 
 
 namespace {

@@ -2474,7 +2474,6 @@ def MakeBaseTrustedEnv():
       'src/trusted/fault_injection/build.scons',
       'src/trusted/gdb_rsp/build.scons',
       'src/trusted/gio/build.scons',
-      'src/trusted/handle_pass/build.scons',
       'src/trusted/interval_multiset/build.scons',
       'src/trusted/manifest_name_service_proxy/build.scons',
       'src/trusted/nacl_base/build.scons',

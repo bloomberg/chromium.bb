@@ -107,13 +107,6 @@
           'dependencies': [
             'sel_ldr_launcher',
           ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
-              ],
-            }],
-          ],
         },
       ],
     }],
@@ -128,13 +121,6 @@
           },
           'dependencies': [
             'sel_ldr_launcher64',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle64',
-              ],
-            }],
           ],
         },
       ],

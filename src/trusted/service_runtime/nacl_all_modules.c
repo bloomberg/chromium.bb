@@ -11,7 +11,6 @@
 #include "native_client/src/trusted/debug_stub/debug_stub.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
-#include "native_client/src/trusted/handle_pass/ldr_handle.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
