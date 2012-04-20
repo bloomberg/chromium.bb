@@ -114,6 +114,7 @@ class WebstoreInlineInstaller
   std::string id_;
   GURL requestor_url_;
   Delegate* delegate_;
+  scoped_ptr<ExtensionInstallUI> install_ui_;
 
   // For fetching webstore JSON data.
   scoped_ptr<content::URLFetcher> webstore_data_url_fetcher_;

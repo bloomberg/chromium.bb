@@ -373,20 +373,17 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
   prompt.SetInlineInstallWebstoreData(localized_user_count_,
                                       average_rating_,
                                       rating_count_);
-
-  if (!ShowExtensionInstallDialogForManifest(profile,
-                                             this,
-                                             manifest,
-                                             id_,
-                                             localized_name_,
-                                             localized_description_,
-                                             &icon_,
-                                             prompt,
-                                             &dummy_extension_)) {
-    CompleteInstall(kInvalidManifestError);
+  std::string error;
+  dummy_extension_ = ExtensionInstallUI::GetLocalizedExtensionForDisplay(
+      manifest, id_, localized_name_, localized_description_, &error);
+  if (!dummy_extension_) {
+    OnWebstoreParseFailure(id_, WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
+                           kInvalidManifestError);
     return;
   }
 
+  install_ui_.reset(new ExtensionInstallUI(profile));
+  install_ui_->ConfirmInlineInstall(this, dummy_extension_, &icon_, prompt);
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }
 

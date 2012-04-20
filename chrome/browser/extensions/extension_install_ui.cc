@@ -33,6 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/url_constants.h"
@@ -211,13 +212,43 @@ string16 ExtensionInstallUI::Prompt::GetPermission(size_t index) const {
       IDS_EXTENSION_PERMISSION_LINE, permissions_[index]);
 }
 
+// static
+scoped_refptr<Extension> ExtensionInstallUI::GetLocalizedExtensionForDisplay(
+    const DictionaryValue* manifest,
+    const std::string& id,
+    const std::string& localized_name,
+    const std::string& localized_description,
+    std::string* error) {
+  scoped_ptr<DictionaryValue> localized_manifest;
+  if (!localized_name.empty() || !localized_description.empty()) {
+    localized_manifest.reset(manifest->DeepCopy());
+    if (!localized_name.empty()) {
+      localized_manifest->SetString(extension_manifest_keys::kName,
+                                    localized_name);
+    }
+    if (!localized_description.empty()) {
+      localized_manifest->SetString(extension_manifest_keys::kDescription,
+                                    localized_description);
+    }
+  }
+
+  return Extension::Create(
+      FilePath(),
+      Extension::INTERNAL,
+      localized_manifest.get() ? *localized_manifest.get() : *manifest,
+      Extension::NO_FLAGS,
+      id,
+      error);
+}
+
 ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
     : profile_(profile),
       ui_loop_(MessageLoop::current()),
       previous_using_native_theme_(false),
       extension_(NULL),
       delegate_(NULL),
-      prompt_type_(NUM_PROMPT_TYPES),
+      prompt_(UNSET_PROMPT_TYPE),
+      prompt_type_(UNSET_PROMPT_TYPE),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)),
       use_app_installed_bubble_(false),
       skip_post_install_ui_(false) {
@@ -235,12 +266,51 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
 ExtensionInstallUI::~ExtensionInstallUI() {
 }
 
+void ExtensionInstallUI::ConfirmBundleInstall(
+    extensions::BundleInstaller* bundle,
+    const ExtensionPermissionSet* permissions) {
+  DCHECK(ui_loop_ == MessageLoop::current());
+  bundle_ = bundle;
+  permissions_ = permissions;
+  delegate_ = bundle;
+  prompt_type_ = BUNDLE_INSTALL_PROMPT;
+
+  ShowConfirmation();
+}
+
+void ExtensionInstallUI::ConfirmInlineInstall(
+    Delegate* delegate,
+    const Extension* extension,
+    SkBitmap* icon,
+    ExtensionInstallUI::Prompt prompt) {
+  DCHECK(ui_loop_ == MessageLoop::current());
+  extension_ = extension;
+  permissions_ = extension->GetActivePermissions();
+  delegate_ = delegate;
+  prompt_ = prompt;
+  prompt_type_ = INLINE_INSTALL_PROMPT;
+
+  SetIcon(icon);
+  ShowConfirmation();
+}
+
+void ExtensionInstallUI::ConfirmWebstoreInstall(Delegate* delegate,
+                                                const Extension* extension,
+                                                const SkBitmap* icon) {
+  // SetIcon requires |extension_| to be set. ConfirmInstall will setup the
+  // remaining fields.
+  extension_ = extension;
+  SetIcon(icon);
+  ConfirmInstall(delegate, extension);
+}
+
 void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
                                         const Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
   permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
+  prompt_type_ = INSTALL_PROMPT;
 
   // We special-case themes to not show any confirm UI. Instead they are
   // immediately installed, and then we show an infobar (see OnInstallSuccess)
@@ -250,7 +320,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
     return;
   }
 
-  ShowConfirmation(INSTALL_PROMPT);
+  LoadImageIfNeeded();
 }
 
 void ExtensionInstallUI::ConfirmReEnable(Delegate* delegate,
@@ -259,8 +329,9 @@ void ExtensionInstallUI::ConfirmReEnable(Delegate* delegate,
   extension_ = extension;
   permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
+  prompt_type_ = RE_ENABLE_PROMPT;
 
-  ShowConfirmation(RE_ENABLE_PROMPT);
+  LoadImageIfNeeded();
 }
 
 void ExtensionInstallUI::ConfirmPermissions(
@@ -271,8 +342,9 @@ void ExtensionInstallUI::ConfirmPermissions(
   extension_ = extension;
   permissions_ = permissions;
   delegate_ = delegate;
+  prompt_type_ = PERMISSIONS_PROMPT;
 
-  ShowConfirmation(PERMISSIONS_PROMPT);
+  LoadImageIfNeeded();
 }
 
 void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
@@ -344,28 +416,7 @@ void ExtensionInstallUI::OnImageLoaded(const gfx::Image& image,
                                        const std::string& extension_id,
                                        int index) {
   SetIcon(image.IsEmpty() ? NULL : image.ToSkBitmap());
-
-  switch (prompt_type_) {
-    case PERMISSIONS_PROMPT:
-    case RE_ENABLE_PROMPT:
-    case INSTALL_PROMPT: {
-      content::NotificationService* service =
-          content::NotificationService::current();
-      service->Notify(chrome::NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
-          content::Source<ExtensionInstallUI>(this),
-          content::NotificationService::NoDetails());
-
-      Prompt prompt(prompt_type_);
-      prompt.SetPermissions(permissions_->GetWarningMessages());
-      prompt.set_extension(extension_);
-      prompt.set_icon(gfx::Image(new SkBitmap(icon_)));
-      ShowExtensionInstallDialog(profile_, delegate_, prompt);
-      break;
-    }
-    default:
-      NOTREACHED() << "Unknown message";
-      break;
-  }
+  ShowConfirmation();
 }
 
 // static
@@ -444,15 +495,45 @@ void ExtensionInstallUI::ShowThemeInfoBar(const std::string& previous_theme_id,
     infobar_helper->AddInfoBar(new_delegate);
 }
 
-void ExtensionInstallUI::ShowConfirmation(PromptType prompt_type) {
+void ExtensionInstallUI::LoadImageIfNeeded() {
+  // Bundle install prompts do not have an icon.
+  if (!icon_.empty()) {
+    ShowConfirmation();
+    return;
+  }
+
   // Load the image asynchronously. For the response, check OnImageLoaded.
-  prompt_type_ = prompt_type;
   ExtensionResource image =
       extension_->GetIconResource(ExtensionIconSet::EXTENSION_ICON_LARGE,
                                   ExtensionIconSet::MATCH_BIGGER);
   tracker_.LoadImage(extension_, image,
                      gfx::Size(kIconSize, kIconSize),
                      ImageLoadingTracker::DONT_CACHE);
+}
+
+void ExtensionInstallUI::ShowConfirmation() {
+  prompt_.set_type(prompt_type_);
+  prompt_.SetPermissions(permissions_->GetWarningMessages());
+
+  switch (prompt_type_) {
+    case PERMISSIONS_PROMPT:
+    case RE_ENABLE_PROMPT:
+    case INLINE_INSTALL_PROMPT:
+    case INSTALL_PROMPT: {
+      prompt_.set_extension(extension_);
+      prompt_.set_icon(gfx::Image(new SkBitmap(icon_)));
+      ShowExtensionInstallDialog(profile_, delegate_, prompt_);
+      break;
+    }
+    case BUNDLE_INSTALL_PROMPT: {
+      prompt_.set_bundle(bundle_);
+      ShowExtensionInstallDialog(profile_, delegate_, prompt_);
+      break;
+    }
+    default:
+      NOTREACHED() << "Unknown message";
+      break;
+  }
 }
 
 InfoBarDelegate* ExtensionInstallUI::GetNewThemeInstalledInfoBarDelegate(

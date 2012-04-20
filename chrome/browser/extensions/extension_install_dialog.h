@@ -29,25 +29,4 @@ void ShowExtensionInstallDialogImpl(Profile* profile,
                                     ExtensionInstallUI::Delegate* delegate,
                                     const ExtensionInstallUI::Prompt& prompt);
 
-// Wrapper around ShowExtensionInstallDialog that shows the install dialog for
-// a given manifest (that corresponds to an extension about to be installed with
-// ID |id|). If the name or description in the manifest is a localized
-// placeholder, it may be overidden with |localized_name| or
-// |localized_description| (which may be empty). The Extension instance
-// that's parsed is returned via |dummy_extension|. |prompt| should be fully
-// populated except for the permissions field, which will be extracted from the
-// extension.
-// Returns true if |dummy_extension| is valid and delegate methods will be
-// called.
-bool ShowExtensionInstallDialogForManifest(
-    Profile *profile,
-    ExtensionInstallUI::Delegate* delegate,
-    const base::DictionaryValue* manifest,
-    const std::string& id,
-    const std::string& localized_name,
-    const std::string& localized_description,
-    SkBitmap* icon,
-    const ExtensionInstallUI::Prompt& prompt,
-    scoped_refptr<Extension>* dummy_extension);
-
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_DIALOG_H_

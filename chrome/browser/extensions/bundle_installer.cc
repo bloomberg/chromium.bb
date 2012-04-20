@@ -266,12 +266,8 @@ void BundleInstaller::ShowPrompt() {
   } else if (g_auto_approve_for_test == ABORT) {
     InstallUIAbort(true);
   } else {
-    ExtensionInstallUI::Prompt prompt(
-        ExtensionInstallUI::BUNDLE_INSTALL_PROMPT);
-    prompt.SetPermissions(permissions->GetWarningMessages());
-    prompt.set_bundle(this);
-
-    ShowExtensionInstallDialog(profile_, this, prompt);
+    install_ui_.reset(new ExtensionInstallUI(profile_));
+    install_ui_->ConfirmBundleInstall(this, permissions);
   }
 }
 

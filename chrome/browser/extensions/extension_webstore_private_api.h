@@ -140,6 +140,9 @@ class BeginInstallWithManifestFunction
   // ExtensionInstallUI to prompt for confirmation of the install.
   scoped_refptr<Extension> dummy_extension_;
 
+  // The class that displays the install prompt.
+  scoped_ptr<ExtensionInstallUI> install_ui_;
+
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.beginInstallWithManifest3");
 };
 

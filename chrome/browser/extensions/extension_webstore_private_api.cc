@@ -249,7 +249,7 @@ void InstallBundleFunction::OnBundleInstallCompleted() {
 }
 
 BeginInstallWithManifestFunction::BeginInstallWithManifestFunction()
-  : use_app_installed_bubble_(false) {}
+    : use_app_installed_bubble_(false) {}
 
 BeginInstallWithManifestFunction::~BeginInstallWithManifestFunction() {}
 
@@ -356,23 +356,18 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
   icon_ = icon;
   parsed_manifest_.reset(parsed_manifest);
 
-  ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INSTALL_PROMPT);
+  std::string error;
+  dummy_extension_ = ExtensionInstallUI::GetLocalizedExtensionForDisplay(
+      parsed_manifest_.get(), id, localized_name_, "", &error);
 
-  if (!ShowExtensionInstallDialogForManifest(
-      profile(),
-      this,
-      parsed_manifest,
-      id_,
-      localized_name_,
-      "", // no localized description
-      &icon_,
-      prompt,
-      &dummy_extension_)) {
+  if (!dummy_extension_) {
     OnWebstoreParseFailure(id_, WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
                            kInvalidManifestError);
     return;
   }
 
+  install_ui_.reset(new ExtensionInstallUI(profile()));
+  install_ui_->ConfirmWebstoreInstall(this, dummy_extension_, &icon_);
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }
 

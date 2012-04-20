@@ -25,6 +25,10 @@ class Profile;
 class InfoBarDelegate;
 class TabContentsWrapper;
 
+namespace base {
+class DictionaryValue;
+}  // namespace base
+
 namespace extensions {
 class BundleInstaller;
 }  // namespace extensions
@@ -57,6 +61,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
                                       int rating_count);
 
     PromptType type() const { return type_; }
+    void set_type(PromptType type) { type_ = type; }
 
     // Getters for UI element labels.
     string16 GetDialogTitle() const;
@@ -131,6 +136,15 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     virtual ~Delegate() {}
   };
 
+  // Creates a dummy extension from the |manifest|, replacing the name and
+  // description with the localizations if provided.
+  static scoped_refptr<Extension> GetLocalizedExtensionForDisplay(
+      const base::DictionaryValue* manifest,
+      const std::string& id,
+      const std::string& localized_name,
+      const std::string& localized_description,
+      std::string* error);
+
   explicit ExtensionInstallUI(Profile* profile);
   virtual ~ExtensionInstallUI();
 
@@ -146,6 +160,30 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   void set_skip_post_install_ui(bool skip_ui) {
     skip_post_install_ui_ = skip_ui;
   }
+
+  // This is called by the bundle installer to verify whether the bundle
+  // should be installed.
+  //
+  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
+  virtual void ConfirmBundleInstall(extensions::BundleInstaller* bundle,
+                                    const ExtensionPermissionSet* permissions);
+
+  // This is called by the inline installer to verify whether the inline
+  // install from the webstore should proceed.
+  //
+  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
+  virtual void ConfirmInlineInstall(Delegate* delegate,
+                                    const Extension* extension,
+                                    SkBitmap* icon,
+                                    Prompt prompt);
+
+  // This is called by the installer to verify whether the installation from
+  // the webstore should proceed.
+  //
+  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
+  virtual void ConfirmWebstoreInstall(Delegate* delegate,
+                                      const Extension* extension,
+                                      const SkBitmap* icon);
 
   // This is called by the installer to verify whether the installation should
   // proceed. This is declared virtual for testing.
@@ -182,7 +220,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   static void OpenAppInstalledUI(Browser* browser, const std::string& app_id);
 
  protected:
-  friend class ExtensionWebstorePrivateApiTest;
+  friend class ExtensionNoConfirmWebstorePrivateApiTest;
   friend class WebstoreInlineInstallUnpackFailureTest;
 
   // Disables showing UI (ErrorBox, etc.) for install failures. To be used only
@@ -206,7 +244,10 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // Starts the process of showing a confirmation UI, which is split into two.
   // 1) Set off a 'load icon' task.
   // 2) Handle the load icon response and show the UI (OnImageLoaded).
-  void ShowConfirmation(PromptType prompt_type);
+  void LoadImageIfNeeded();
+
+  // Shows the actual UI (the icon should already be loaded).
+  void ShowConfirmation();
 
   // Returns the delegate to control the browser's info bar. This is
   // within its own function due to its platform-specific nature.
@@ -229,11 +270,17 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // The extension we are showing the UI for.
   const Extension* extension_;
 
+  // The bundle we are showing the UI for, if type BUNDLE_INSTALL_PROMPT.
+  const extensions::BundleInstaller* bundle_;
+
   // The permissions being prompted for.
   scoped_refptr<const ExtensionPermissionSet> permissions_;
 
   // The delegate we will call Proceed/Abort on after confirmation UI.
   Delegate* delegate_;
+
+  // A pre-filled prompt.
+  Prompt prompt_;
 
   // The type of prompt we are going to show.
   PromptType prompt_type_;

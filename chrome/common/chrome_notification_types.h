@@ -175,10 +175,6 @@ enum NotificationType {
   // match was found or not found.
   NOTIFICATION_FIND_RESULT_AVAILABLE,
 
-  // Sent just before the installation confirm dialog is shown. The source
-  // is the ExtensionInstallUI, the details are NoDetails.
-  NOTIFICATION_EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
-
   // BackgroundContents ------------------------------------------------------
 
   // A new background contents was opened by script. The source is the parent

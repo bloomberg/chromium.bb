@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/webstore_installer.h"
@@ -183,6 +184,9 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
 
   // The profile that the bundle should be installed in.
   Profile* profile_;
+
+  // The UI that shows the confirmation prompt.
+  scoped_ptr<ExtensionInstallUI> install_ui_;
 
   Delegate* delegate_;
 
