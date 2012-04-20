@@ -660,6 +660,24 @@
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
    fun:ChromeMain
 }
+{
+   Occasional leak inside gdk_init()
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_nl_find_domain
+   fun:__dcigettext
+   fun:gdk_screen_class_intern_init
+   fun:g_type_class_ref
+   fun:g_type_class_ref
+   fun:g_object_newv
+   fun:g_object_new
+   fun:_gdk_x11_screen_new
+   fun:gdk_display_open
+   fun:gdk_display_open_default_libgtk_only
+   fun:gdk_init_check
+   fun:gdk_init
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -3094,7 +3112,7 @@
    fun:_Znw*
    ...
    fun:_ZN6chrome26ChromeContentBrowserClient24RenderProcessHostCreatedEPN7content17RenderProcessHostE
-   fun:_ZN21RenderProcessHostImpl4InitEb
+   fun:_ZN21RenderProcessHostImpl4Init*
    ...
    fun:_ZN15WebContentsImpl32CreateRenderViewForRenderManagerEP*
    fun:_ZN21RenderViewHostManager14InitRenderViewEP*
@@ -3160,12 +3178,12 @@
    bug_84224_a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocator*MessageLoop11PendingTaskEE8allocate*
-   fun:_ZN*_Deque_baseIN11MessageLoop11PendingTaskESaIS1_*_M_allocate_*
+   fun:_ZN9__gnu_cxx13new_allocator*PendingTaskEE8allocate*
+   fun:_ZN*_Deque_baseIN*PendingTaskESaIS1_*_M_allocate_*
    ...
-   fun:_ZNSt5dequeIN11MessageLoop11PendingTaskESaIS1_EE9push_backERKS1_
-   fun:_ZNSt5queueIN11MessageLoop11PendingTaskESt5dequeIS1_SaIS1_EEE4pushERKS1_
-   fun:_ZN11MessageLoop18AddToIncomingQueueEPNS_11PendingTaskE
+   fun:_ZNSt5dequeIN*PendingTaskESaIS1_EE*push_back*
+   fun:_ZNSt5queueIN4*PendingTask*deque*push*
+   fun:_ZN11MessageLoop18AddToIncomingQueueEPN*PendingTaskE
 }
 {
    bug_84224_b
@@ -5692,6 +5710,16 @@
    fun:_ZN13safe_browsing24PhishingClassifierFilter18OnSetPhishingModelERKSs
 }
 {
+   bug_122733b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN13safe_browsing15ClientSideModel27MergePartialFromCodedStreamEPN6google8protobuf2io16CodedInputStreamE
+   fun:_ZN6google8protobuf11MessageLite14ParseFromArrayEPKvi
+   fun:_ZN13safe_browsing6Scorer6CreateERKN4base16BasicStringPieceISsEE
+   fun:_ZN13safe_browsing24PhishingClassifierFilter18OnSetPhishingModelERKSs
+}
+{
    bug_122752a
    Memcheck:Unaddressable
    fun:_ZN6WebKit12CCThreadImpl8postTaskEN3WTF10PassOwnPtrIN7WebCore8CCThread4TaskEEE
@@ -5773,6 +5801,40 @@
    fun:_ZN6webkit3gpu18GLInProcessContext10InitializeERKN3gfx4SizeEPS1_PKcPKiNS2_13GpuPreferenceE
    fun:_ZN6webkit3gpu18GLInProcessContext22CreateOffscreenContextEPS1_RKN3gfx4SizeES2_PKcPKiNS3_13GpuPreferenceE
    fun:_ZN6webkit3gpu46WebGraphicsContext3DInProcessCommandBufferImpl10InitializeEN6WebKit20WebGraphicsContext3D10AttributesEPS3_
+}
+{
+   bug_124494
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlsym
+   fun:_ZN29RuntimeLibNSSFunctionPointersC1Ev
+   fun:_ZN22DefaultSingletonTraitsI29RuntimeLibNSSFunctionPointersE3NewEv
+   fun:_ZN9SingletonI29RuntimeLibNSSFunctionPointers22DefaultSingletonTraitsIS0_ES0_E3getEv
+   fun:_ZN29RuntimeLibNSSFunctionPointers11GetInstanceEv
+   fun:_ZL43GetCacheOCSPResponseFromSideChannelFunctionv
+   fun:_ZL23IsOCSPStaplingSupportedv
+}
+{
+   bug_124496
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN8notifier26ProxyResolvingClientSocket23ProcessProxyResolveDoneEi
+}
+{
+   bug_124500
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIN6webkit17WebPluginMimeTypeEE8allocateEmPKv
+   fun:_ZNSt12_Vector_baseIN6webkit17WebPluginMimeTypeESaIS1_EE11_M_allocateEm
+   fun:_ZNSt6vectorIN6webkit17WebPluginMimeTypeESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_
+   fun:_ZNSt6vectorIN6webkit17WebPluginMimeTypeESaIS1_EE9push_backERKS1_
+   fun:_ZN6webkit5npapi9PluginLib20ParseMIMEDescriptionERKSsPSt6vectorINS_17WebPluginMimeTypeESaIS5_EE
+   fun:_ZN6webkit5npapi9PluginLib17ReadWebPluginInfoERK8FilePathPNS_13WebPluginInfoE
+   fun:_ZN6webkit5npapi10PluginList14ReadPluginInfoERK8FilePathPNS_13WebPluginInfoEPPKNS0_17PluginEntryPointsE
+   fun:_ZN6webkit5npapi10PluginList10LoadPluginERK8FilePathP12ScopedVectorINS0_11PluginGroupEEPNS_13WebPluginInfoE
+   fun:_ZN17UtilityThreadImpl13OnLoadPluginsERKSt6vectorI8FilePathSaIS1_EE
 }
 
 #-----------------------------------------------------------------------
