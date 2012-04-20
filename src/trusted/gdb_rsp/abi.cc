@@ -18,7 +18,7 @@ using port::IPlatform;
 namespace gdb_rsp {
 
 #define MINIDEF(x, name, purpose) { #name, sizeof(x), Abi::purpose, 0, 0 }
-#define BPDEF(x) { sizeof(x), x }
+#define BPDEF(x, after) { sizeof(x), x, after }
 
 static Abi::RegDef RegsX86_64[] = {
   MINIDEF(uint64_t, rax, GENERAL),
@@ -85,29 +85,9 @@ static Abi::RegDef RegsArm[] = {
   MINIDEF(uint32_t, pc, INST_PTR),
 };
 
-/*
- * TODO(mcgrathr): This is hlt rather than the canonical int3.  This is a
- * workaround for http://code.google.com/p/nativeclient/issues/detail?id=1730.
- * The only actual use of this is in the temporary breakpoint inserted
- * implicitly at the entry point to catch startup.  The stub code doesn't
- * really keep track of the fact that the trap is its own expected
- * breakpoint hit, so it has no place that knows to adjust for it having
- * it.  When the int3 trap hits, the PC is left after the int3 instruction,
- * i.e. one byte past the place where the breakpoint was inserted.  (This
- * is the hardware behavior, and at least Linux is known not to fiddle the
- * register state left by the hardware.)  If we remove the breakpoint and
- * resume without adjusting the PC back by one byte, then we are executing
- * one byte ahead of where we should be.  That's either in the middle of an
- * instruction, making it an invalid instruction, or skipping a one-byte
- * instruction, breaking the computation by omitting the first instruction
- * of the program.  Since hlt generates a fault-type exception rather than
- * a trap-type, it will leave the PC at the beginning of the instruction.
- * Since nobody cares what exception we actually got, this works around the
- * problem.
- */
-static uint8_t BPCodeX86[] = { 0xf4 };
+static uint8_t BPCodeX86[] = { 0xcc };
 
-static Abi::BPDef BPX86 = BPDEF(BPCodeX86);
+static Abi::BPDef BPX86 = BPDEF(BPCodeX86, true);
 
 static AbiMap_t *GetAbis() {
   static AbiMap_t *_abis = new AbiMap_t();

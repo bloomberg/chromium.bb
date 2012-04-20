@@ -75,7 +75,7 @@ class Target {
   // just before we stop running to prevent the debugger from
   // seeing the modified memory.
   bool AddTemporaryBreakpoint(uint64_t address);
-  bool RemoveTemporaryBreakpoints();
+  bool RemoveTemporaryBreakpoints(port::IThread *thread);
 
   // This function should be called by a tracked thread when it takes
   // an exception.  It takes sig_start_ to prevent other exceptions

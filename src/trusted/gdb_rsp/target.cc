@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "native_client/src/shared/platform/nacl_log.h"
+
 #include "native_client/src/trusted/gdb_rsp/abi.h"
 #include "native_client/src/trusted/gdb_rsp/packet.h"
 #include "native_client/src/trusted/gdb_rsp/target.h"
@@ -114,8 +116,19 @@ bool Target::AddTemporaryBreakpoint(uint64_t address) {
   return true;
 }
 
-bool Target::RemoveTemporaryBreakpoints() {
-  const Abi::BPDef *bp = abi_->GetBreakpointDef();
+bool Target::RemoveTemporaryBreakpoints(IThread *thread) {
+  const Abi::BPDef *bp_def = abi_->GetBreakpointDef();
+  const Abi::RegDef *ip_def = abi_->GetRegisterType(Abi::INST_PTR);
+  uint64_t new_ip = 0;
+
+  if (bp_def->after_) {
+    // Instruction pointer needs adjustment.
+    // WARNING! Little-endian only, as we are fetching a potentially 32-bit
+    // value into uint64_t! Do we need to worry about big-endian?
+    // TODO(eaeltsin): fix register access functions to avoid this problem!
+    thread->GetRegister(ip_def->index_, &new_ip, ip_def->bytes_);
+    new_ip -= bp_def->size_;
+  }
 
   // Iterate through the map, removing breakpoints
   while (!breakMap_.empty()) {
@@ -128,9 +141,32 @@ bool Target::RemoveTemporaryBreakpoints() {
     breakMap_.erase(cur);
 
     // Copy back the old code, and free the data
-    if (!IPlatform::SetMemory(addr, bp->size_, data))
+    if (!IPlatform::SetMemory(addr, bp_def->size_, data))
       port::IPlatform::LogError("Failed to undo breakpoint.\n");
     delete[] data;
+
+    if (bp_def->after_) {
+      // Adjust thread instruction pointer.
+      // WARNING:
+      // - addr contains trusted address
+      if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
+          NACL_BUILD_SUBARCH == 64) {
+        // - rip contains trusted address
+        if (addr == new_ip) {
+          thread->SetRegister(ip_def->index_, &new_ip, ip_def->bytes_);
+        }
+      } else if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 &&
+                 NACL_BUILD_SUBARCH == 32) {
+        // - eip contains untrusted address
+        if (addr == new_ip + mem_base_) {
+          thread->SetRegister(ip_def->index_, &new_ip, ip_def->bytes_);
+        }
+      } else {
+        NaClLog(
+            LOG_FATAL,
+            "Target::RemoveTemporaryBreakpoints: Unknown CPU architecture\n");
+      }
+    }
   }
 
   return true;
@@ -212,11 +248,9 @@ void Target::Run(Session *ses) {
       // Reset single stepping.
       IThread *thread = threads_[id];
       thread->SetStep(false);
-    }
 
-    // If we got this far, then there is some kind of signal.
-    // So first, remove the breakpoints
-    RemoveTemporaryBreakpoints();
+      RemoveTemporaryBreakpoints(thread);
+    }
 
     // Next update the current thread info
     char tmp[16];
