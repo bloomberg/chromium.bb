@@ -1300,9 +1300,3 @@ ole32.dll!CoTaskMemAlloc
 urlmon.dll!...
 urlmon.dll!CreateUri
 IEFRAME.dll!*
-
-# Win-only test leak.
-LEAK
-name=http://crbug.com/123867
-...
-*!*DhcpProxyScriptFetcherWin_*_Test::*
