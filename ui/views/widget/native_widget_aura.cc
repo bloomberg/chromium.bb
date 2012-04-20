@@ -719,7 +719,7 @@ gfx::Size NativeWidgetAura::GetMinimumSize() const {
 void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds) {
   if (old_bounds.origin() != new_bounds.origin())
-    delegate_->OnNativeWidgetMove();
+    GetWidget()->widget_delegate()->OnWidgetMove();
   if (old_bounds.size() != new_bounds.size()) {
 #if defined(ENABLE_DIP)
     delegate_->OnNativeWidgetSizeChanged(

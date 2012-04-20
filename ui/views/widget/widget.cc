@@ -959,11 +959,6 @@ gfx::Size Widget::GetMaximumSize() {
   return non_client_view_ ? non_client_view_->GetMaximumSize() : gfx::Size();
 }
 
-void Widget::OnNativeWidgetMove() {
-  widget_delegate_->OnWidgetMove();
-  FOR_EACH_OBSERVER(Observer, observers_, OnWidgetMoved(this));
-}
-
 void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   root_view_->SetSize(new_size);
 
