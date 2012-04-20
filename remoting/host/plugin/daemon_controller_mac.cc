@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
@@ -75,7 +76,7 @@ class DaemonControllerMac : public remoting::DaemonController {
                          int tries_remaining,
                          const base::TimeDelta& sleep);
 
-  bool RunToolScriptAsRoot(const char* command);
+  bool RunToolScriptAsRoot(const char* command, const std::string& input_data);
   bool StopService();
 
   // The API for gaining root privileges is blocking (it prompts the user for
@@ -165,24 +166,12 @@ void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {
 void DaemonControllerMac::DoSetConfigAndStart(
     scoped_ptr<base::DictionaryValue> config,
     const CompletionCallback& done_callback) {
-  // JsonHostConfig doesn't provide a way to save on the current thread, wait
-  // for completion, and know whether the save succeeded.  Instead, use
-  // base::JSONWriter directly.
-
-  // TODO(lambroslambrou): Improve the JsonHostConfig interface.
   std::string file_content;
   base::JSONWriter::Write(config.get(), &file_content);
-  if (file_util::WriteFile(FilePath(kHostConfigFile), file_content.c_str(),
-                           file_content.size()) !=
-      static_cast<int>(file_content.size())) {
-    LOG(ERROR) << "Failed to write config file: " << kHostConfigFile;
-    done_callback.Run(RESULT_FAILED);
-    return;
-  }
 
   // Creating the trigger file causes launchd to start the service, so the
   // extra step performed in DoStop() is not necessary here.
-  bool result = RunToolScriptAsRoot("--enable");
+  bool result = RunToolScriptAsRoot("--enable", file_content);
   done_callback.Run(result ? RESULT_OK : RESULT_FAILED);
 }
 
@@ -203,7 +192,10 @@ void DaemonControllerMac::DoUpdateConfig(
     }
     config_file.SetString(*key, value);
   }
-  bool success = config_file.Save();
+
+  std::string file_content = config_file.GetSerializedData();
+  bool success = RunToolScriptAsRoot("--save-config", file_content);
+
   done_callback.Run(success ? RESULT_OK : RESULT_FAILED);
   pid_t job_pid = base::mac::PIDForJob(kServiceName);
   if (job_pid > 0) {
@@ -212,7 +204,7 @@ void DaemonControllerMac::DoUpdateConfig(
 }
 
 void DaemonControllerMac::DoStop(const CompletionCallback& done_callback) {
-  if (!RunToolScriptAsRoot("--disable")) {
+  if (!RunToolScriptAsRoot("--disable", "")) {
     done_callback.Run(RESULT_FAILED);
     return;
   }
@@ -253,7 +245,8 @@ void DaemonControllerMac::NotifyWhenStopped(
   }
 }
 
-bool DaemonControllerMac::RunToolScriptAsRoot(const char* command) {
+bool DaemonControllerMac::RunToolScriptAsRoot(const char* command,
+                                              const std::string& input_data) {
   // TODO(lambroslambrou): Supply a localized prompt string here.
   base::mac::ScopedAuthorizationRef authorization(
       base::mac::AuthorizationCreateToRunAsRoot(CFSTR("")));
@@ -270,24 +263,51 @@ bool DaemonControllerMac::RunToolScriptAsRoot(const char* command) {
   // TODO(lambroslambrou): Use sandbox-exec to minimize exposure -
   // http://crbug.com/120903
   const char* arguments[] = { command, NULL };
-  int exit_status;
-  OSStatus status = base::mac::ExecuteWithPrivilegesAndWait(
+  FILE* pipe = NULL;
+  pid_t pid;
+  OSStatus status = base::mac::ExecuteWithPrivilegesAndGetPID(
       authorization.get(),
       kStartStopTool,
       kAuthorizationFlagDefaults,
       arguments,
-      NULL,
-      &exit_status);
+      &pipe,
+      &pid);
   if (status != errAuthorizationSuccess) {
     OSSTATUS_LOG(ERROR, status) << "AuthorizationExecuteWithPrivileges";
     return false;
   }
-  if (exit_status != 0) {
-    LOG(ERROR) << kStartStopTool << " failed with exit status " << exit_status;
+  if (pid == -1) {
+    LOG(ERROR) << "Failed to get child PID";
     return false;
   }
 
-  return true;
+  DCHECK(pipe);
+  if (!input_data.empty()) {
+    size_t bytes_written = fwrite(input_data.data(), sizeof(char),
+                                  input_data.size(), pipe);
+    // According to the fwrite manpage, a partial count is returned only if a
+    // write error has occurred.
+    if (bytes_written != input_data.size()) {
+      LOG(ERROR) << "Failed to write data to child process";
+    }
+    // Need to close, since the child waits for EOF on its stdin.
+    if (fclose(pipe) != 0) {
+      PLOG(ERROR) << "fclose";
+    }
+  }
+
+  int exit_status;
+  pid_t wait_result = HANDLE_EINTR(waitpid(pid, &exit_status, 0));
+  if (wait_result != pid) {
+    PLOG(ERROR) << "waitpid";
+    return false;
+  }
+  if (WIFEXITED(exit_status) && WEXITSTATUS(exit_status) == 0) {
+    return true;
+  } else {
+    LOG(ERROR) << kStartStopTool << " failed with exit status " << exit_status;
+    return false;
+  }
 }
 
 bool DaemonControllerMac::StopService() {

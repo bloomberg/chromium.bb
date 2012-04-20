@@ -8,6 +8,7 @@ NAME=org.chromium.chromoting
 CONFIG_DIR=/Library/PrivilegedHelperTools
 HOST_EXE=$CONFIG_DIR/$NAME.me2me_host
 ENABLED_FILE=$CONFIG_DIR/$NAME.me2me_enabled
+CONFIG_FILE=$CONFIG_DIR/$NAME.json
 
 if [ "$1" = "--disable" ]; then
   # This script is executed from base::mac::ExecuteWithPrivilegesAndWait(),
@@ -17,9 +18,13 @@ if [ "$1" = "--disable" ]; then
   rm -f "$ENABLED_FILE"
 elif [ "$1" = "--enable" ]; then
   echo $$
+  cat > "$CONFIG_FILE"
   touch "$ENABLED_FILE"
+elif [ "$1" = "--save-config" ]; then
+  echo $$
+  cat > "$CONFIG_FILE"
 else
   exec "$HOST_EXE" \
-    --auth-config="$CONFIG_DIR/$NAME.json" \
-    --host-config="$CONFIG_DIR/$NAME.json"
+    --auth-config="$CONFIG_FILE" \
+    --host-config="$CONFIG_FILE"
 fi

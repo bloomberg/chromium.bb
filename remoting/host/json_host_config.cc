@@ -45,14 +45,17 @@ bool JsonHostConfig::Read() {
 bool JsonHostConfig::Save() {
   DCHECK(CalledOnValidThread());
 
-  std::string file_content;
-  base::JSONWriter::WriteWithOptions(values_.get(),
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &file_content);
+  std::string file_content = GetSerializedData();
   // TODO(sergeyu): Move ImportantFileWriter to base and use it here.
-  int result = file_util::WriteFile(filename_, file_content.c_str(),
+  int result = file_util::WriteFile(filename_, file_content.data(),
                                     file_content.size());
   return result == static_cast<int>(file_content.size());
+}
+
+std::string JsonHostConfig::GetSerializedData() {
+  std::string data;
+  base::JSONWriter::Write(values_.get(), &data);
+  return data;
 }
 
 }  // namespace remoting

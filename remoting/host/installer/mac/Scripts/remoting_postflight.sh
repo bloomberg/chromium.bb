@@ -6,7 +6,7 @@
 
 HELPERTOOLS=/Library/PrivilegedHelperTools
 NAME=org.chromium.chromoting
-AUTH_FILE="$HELPERTOOLS/$NAME.json"
+CONFIG_FILE="$HELPERTOOLS/$NAME.json"
 PLIST=/Library/LaunchAgents/org.chromium.chromoting.plist
 ENABLED_FILE="$HELPERTOOLS/$NAME.me2me_enabled"
 ENABLED_FILE_BACKUP="$ENABLED_FILE.backup"
@@ -26,10 +26,10 @@ function onexit {
 
 # Create auth file (with correct owner and permissions) if it doesn't already
 # exist.
-if [[ ! -f "$AUTH_FILE" ]]; then
-  touch "$AUTH_FILE"
-  chown $USER "$AUTH_FILE"
-  chmod 600 "$AUTH_FILE"
+if [[ ! -f "$CONFIG_FILE" ]]; then
+  touch "$CONFIG_FILE"
+  chmod 600 "$CONFIG_FILE"
+  chmod +a "$USER:allow:read" "$CONFIG_FILE"
 fi
 
 # Load the service.

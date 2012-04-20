@@ -27,6 +27,8 @@ class JsonHostConfig : public InMemoryHostConfig {
   // MutableHostConfig interface.
   virtual bool Save() OVERRIDE;
 
+  std::string GetSerializedData();
+
  private:
   FilePath filename_;
 

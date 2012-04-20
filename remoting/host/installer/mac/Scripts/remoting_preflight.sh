@@ -6,7 +6,7 @@
 
 HELPERTOOLS=/Library/PrivilegedHelperTools
 NAME=org.chromium.chromoting
-AUTH_FILE="$HELPERTOOLS/$NAME.json"
+CONFIG_FILE="$HELPERTOOLS/$NAME.json"
 PLIST=/Library/LaunchAgents/org.chromium.chromoting.plist
 ENABLED_FILE="$HELPERTOOLS/$NAME.me2me_enabled"
 ENABLED_FILE_BACKUP="$ENABLED_FILE.backup"
