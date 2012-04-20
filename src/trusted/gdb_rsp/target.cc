@@ -121,6 +121,11 @@ bool Target::RemoveTemporaryBreakpoints(IThread *thread) {
   const Abi::RegDef *ip_def = abi_->GetRegisterType(Abi::INST_PTR);
   uint64_t new_ip = 0;
 
+  // If this ABI does not support breakpoints then fail.
+  if (!bp_def) {
+    return false;
+  }
+
   if (bp_def->after_) {
     // Instruction pointer needs adjustment.
     // WARNING! Little-endian only, as we are fetching a potentially 32-bit
