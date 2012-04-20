@@ -104,11 +104,13 @@ void DetachableToolbarView::PaintContentAreaBorder(
 }
 
 // static
-void DetachableToolbarView::PaintVerticalDivider(
-    gfx::Canvas* canvas, int x, int height, int vertical_padding,
-    const SkColor& top_color,
-    const SkColor& middle_color,
-    const SkColor& bottom_color) {
+void DetachableToolbarView::PaintVerticalDivider(gfx::Canvas* canvas,
+                                                 int x,
+                                                 int height,
+                                                 int vertical_padding,
+                                                 SkColor top_color,
+                                                 SkColor middle_color,
+                                                 SkColor bottom_color) {
   // Draw the upper half of the divider.
   SkPaint paint;
   SkSafeUnref(paint.setShader(gfx::CreateGradientShader(vertical_padding + 1,

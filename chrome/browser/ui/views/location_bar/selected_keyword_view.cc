@@ -16,7 +16,7 @@
 
 SelectedKeywordView::SelectedKeywordView(const int background_images[],
                                          int contained_image,
-                                         const SkColor& color,
+                                         SkColor color,
                                          Profile* profile)
     : IconLabelBubbleView(background_images, contained_image, color),
       profile_(profile) {

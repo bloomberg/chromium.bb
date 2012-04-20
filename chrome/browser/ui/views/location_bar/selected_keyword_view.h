@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ class SelectedKeywordView : public IconLabelBubbleView {
  public:
   SelectedKeywordView(const int background_images[],
                       int contained_image,
-                      const SkColor& color,
+                      SkColor color,
                       Profile* profile);
   virtual ~SelectedKeywordView();
 

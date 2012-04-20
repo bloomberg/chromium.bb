@@ -25,7 +25,7 @@
 
 namespace {
 
-StringValue* SkColorToCss(const SkColor& color) {
+StringValue* SkColorToCss(SkColor color) {
   return new StringValue(base::StringPrintf("rgb(%d, %d, %d)",
                                             SkColorGetR(color),
                                             SkColorGetG(color),

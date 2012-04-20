@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,9 +79,9 @@ class DetachableToolbarView : public views::AccessiblePaneView {
                                    int x,
                                    int height,
                                    int vertical_padding,
-                                   const SkColor& top_color,
-                                   const SkColor& middle_color,
-                                   const SkColor& bottom_color);
+                                   SkColor top_color,
+                                   SkColor middle_color,
+                                   SkColor bottom_color);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DetachableToolbarView);

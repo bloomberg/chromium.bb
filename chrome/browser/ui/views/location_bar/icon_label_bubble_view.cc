@@ -21,7 +21,7 @@ static const int kLabelPadding = 5;
 
 IconLabelBubbleView::IconLabelBubbleView(const int background_images[],
                                          int contained_image,
-                                         const SkColor& color)
+                                         SkColor color)
     : background_painter_(background_images),
       is_extension_icon_(false) {
   image_ = new views::ImageView();
