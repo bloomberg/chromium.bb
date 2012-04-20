@@ -25,7 +25,7 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
   LoadAndExpectError(
       "init_invalid_platform_app_3.json",
       "Feature 'platform_app' is not accessible. "
-          "Requires manifest version of at least 2.");
+          "'platform_app' requires manifest version of at least 2.");
 }
 
 TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {

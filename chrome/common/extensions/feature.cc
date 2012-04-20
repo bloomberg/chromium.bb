@@ -215,27 +215,44 @@ std::string Feature::GetErrorMessage(Feature::Availability result) {
     case IS_AVAILABLE:
       return "";
     case NOT_FOUND_IN_WHITELIST:
-      return "Not allowed for specified extension ID.";
+      return base::StringPrintf(
+          "'%s' is not allowed for specified extension ID.",
+          name().c_str());
     case INVALID_TYPE:
-      return "Not allowed for specified package type (theme, app, etc.).";
+      return base::StringPrintf(
+          "'%s' is not allowed for specified package type (theme, app, etc.).",
+          name().c_str());
     case INVALID_CONTEXT:
-      return "Not allowed for specified context type content script, extension "
-          "page, web page, etc.).";
+      return base::StringPrintf(
+          "'%s' is not allowed for specified context type content script, "
+          " extension page, web page, etc.).",
+          name().c_str());
     case INVALID_LOCATION:
-      return "Not allowed for specified install location.";
+      return base::StringPrintf(
+          "'%s' is not allowed for specified install location.",
+          name().c_str());
     case INVALID_PLATFORM:
-      return "Not allowed for specified platform.";
+      return base::StringPrintf(
+          "'%s' is not allowed for specified platform.",
+          name().c_str());
     case INVALID_MIN_MANIFEST_VERSION:
-      return base::StringPrintf("Requires manifest version of at least %d.",
-                                min_manifest_version_);
+      return base::StringPrintf(
+          "'%s' requires manifest version of at least %d.",
+          name().c_str(),
+          min_manifest_version_);
     case INVALID_MAX_MANIFEST_VERSION:
-      return base::StringPrintf("Requires manifest version of %d or lower.",
-                                max_manifest_version_);
+      return base::StringPrintf(
+          "'%s' requires manifest version of %d or lower.",
+          name().c_str(),
+          max_manifest_version_);
     case NOT_PRESENT:
-      return "Requires a different Feature that is not present.";
+      return base::StringPrintf(
+          "'%s' requires a different Feature that is not present.",
+          name().c_str());
     case UNSUPPORTED_CHANNEL:
       return base::StringPrintf(
-          "Google Chrome %s channel or newer is required, but current is %s.",
+          "'%s' requires Google Chrome %s channel or newer but current is %s.",
+          name().c_str(),
           GetChannelName(channel_).c_str(),
           GetChannelName(g_channel.Get().channel).c_str());
   }

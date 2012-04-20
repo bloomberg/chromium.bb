@@ -6,12 +6,12 @@
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_H_
 #pragma once
 
+#include <algorithm>
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
-#include <algorithm>
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -615,6 +615,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const ExtensionPermissionSet* required_permission_set() const {
     return required_permission_set_.get();
   }
+  const std::vector<std::string>& install_warnings() const {
+    return install_warnings_;
+  }
   const GURL& update_url() const { return update_url_; }
   const ExtensionIconSet& icons() const { return icons_; }
   const extensions::Manifest* manifest() const {
@@ -907,6 +910,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The extension's required / default set of permissions.
   scoped_refptr<const ExtensionPermissionSet> required_permission_set_;
+
+  // Any warnings that occurred when trying to create/parse the extension.
+  std::vector<std::string> install_warnings_;
 
   // The icons for the extension.
   ExtensionIconSet icons_;

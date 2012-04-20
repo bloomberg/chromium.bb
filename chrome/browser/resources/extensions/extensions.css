@@ -169,11 +169,23 @@ html[dir='rtl'] .extension-list-item {
   display: inline-block;
 }
 
-.butter-bar {
-  background: rgb(255, 242, 153);
+.butter-bar,
+.install-warnings {
   border-radius: 3px;
   margin-top: 5px;
   padding: 2px 5px;
+}
+
+.butter-bar {
+  background: rgb(255, 242, 153);
+}
+
+.install-warnings {
+  background: pink;
+}
+
+.install-warnings ul {
+  margin: 0;
 }
 
 #font-measuring-div {

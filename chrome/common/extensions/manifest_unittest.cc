@@ -74,6 +74,7 @@ TEST_F(ManifestTest, Extension) {
   EXPECT_FALSE(manifest->ValidateManifest(&error));
   {
     Feature feature;
+    feature.set_name("background_page");
     feature.set_max_manifest_version(1);
     EXPECT_EQ(ExtensionErrorUtils::FormatErrorMessageUTF16(
         errors::kFeatureNotAllowed,

@@ -231,6 +231,17 @@ cr.define('options', function() {
           }
         });
       }
+
+      // The install warnings.
+      if (extension.installWarnings) {
+        var panel = node.querySelector('.install-warnings');
+        panel.hidden = false;
+        var list = panel.querySelector('ul');
+        extension.installWarnings.forEach(function(warning) {
+          list.appendChild(document.createElement('li')).innerText = warning;
+        });
+      }
+
       this.appendChild(node);
     },
   };

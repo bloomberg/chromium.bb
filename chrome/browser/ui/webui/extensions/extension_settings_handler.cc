@@ -202,6 +202,18 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   }
   extension_data->Set("warnings", warnings_list);
 
+  // Add install warnings (these are not the same as warnings!).
+  const std::vector<std::string>& install_warnings =
+      extension->install_warnings();
+  if (!install_warnings.empty()) {
+    scoped_ptr<ListValue> list(new ListValue());
+    for (std::vector<std::string>::const_iterator it = install_warnings.begin();
+         it != install_warnings.end(); ++it) {
+      list->Append(Value::CreateStringValue(*it));
+    }
+    extension_data->Set("installWarnings", list.release());
+  }
+
   return extension_data;
 }
 
@@ -233,6 +245,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_PATH));
   localized_strings->SetString("extensionSettingsInspectViews",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSPECT_VIEWS));
+  localized_strings->SetString("extensionSettingsInstallWarnings",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALL_WARNINGS));
   localized_strings->SetString("viewIncognito",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INCOGNITO));
   localized_strings->SetString("viewInactive",

@@ -4,8 +4,6 @@
 
 #include "chrome/common/extensions/extension.h"
 
-#include <algorithm>
-
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -20,6 +18,7 @@
 #include "base/string_piece.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -3321,14 +3320,11 @@ bool Extension::ParsePermissions(const char* key,
                 extensions::Feature::ConvertLocation(location()),
                 manifest_version());
         if (availability != extensions::Feature::IS_AVAILABLE) {
-          // We special case hosted apps because some old versions of Chrome did
-          // not return errors here and we ended up with extensions in the store
-          // containing bad data: crbug.com/101993.
-          if (availability != extensions::Feature::INVALID_TYPE ||
-              !is_hosted_app()) {
-            *error = ASCIIToUTF16(feature->GetErrorMessage(availability));
-            return false;
-          }
+          // Don't fail, but warn the developer that the manifest contains
+          // unrecognized permissions. This may happen legitimately if the
+          // extensions requests platform- or channel-specific permissions.
+          install_warnings_.push_back(feature->GetErrorMessage(availability));
+          continue;
         }
 
         if (permission->id() == ExtensionAPIPermission::kExperimental) {
@@ -3339,6 +3335,7 @@ bool Extension::ParsePermissions(const char* key,
         }
 
         api_permissions->insert(permission->id());
+        continue;
       }
 
       // Check if it's a host pattern permission.
@@ -3367,17 +3364,14 @@ bool Extension::ParsePermissions(const char* key,
         }
 
         host_permissions->AddPattern(pattern);
+        continue;
       }
 
-      // If it's not a host permission, then it's probably an unknown API
-      // permission. Do not throw an error so extensions can retain
-      // backwards compatability (http://crbug.com/42742).
-      // TODO(jstritar): We can improve error messages by adding better
-      // validation of API permissions here.
-      // TODO(skerner): Consider showing the reason |permission_str| is not
-      // a valid URL pattern if it is almost valid.  For example, if it has
-      // a valid scheme, and failed to parse because it has a port, show an
-      // error.
+      // It's probably an unknown API permission. Do not throw an error so
+      // extensions can retain backwards compatability (http://crbug.com/42742).
+      install_warnings_.push_back(base::StringPrintf(
+          "Permission '%s' is unknown or URL pattern is malformed.",
+          permission_str.c_str()));
     }
   }
   return true;

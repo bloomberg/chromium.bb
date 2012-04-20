@@ -19,12 +19,18 @@ TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
     base_manifest.Set(keys::kPermissions, permissions);
   }
 
-  std::string kManifestVersionError("Requires manifest version of at least 2.");
+  std::string kManifestVersionError =
+      "'storage' requires manifest version of at least 2.";
 
   // Extension with no manifest version cannot use storage API.
   {
     Manifest manifest(&base_manifest, "test");
-    LoadAndExpectError(manifest, kManifestVersionError);
+    scoped_refptr<Extension> extension = LoadAndExpectSuccess(manifest);
+    if (extension.get()) {
+      std::vector<std::string> warnings;
+      warnings.push_back(kManifestVersionError);
+      EXPECT_EQ(warnings, extension->install_warnings());
+    }
   }
 
   // Extension with manifest version 1 cannot use storage API.
@@ -34,7 +40,12 @@ TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
     manifest_with_version.MergeDictionary(&base_manifest);
 
     Manifest manifest(&manifest_with_version, "test");
-    LoadAndExpectError(manifest, kManifestVersionError);
+    scoped_refptr<Extension> extension = LoadAndExpectSuccess(manifest);
+    if (extension.get()) {
+      std::vector<std::string> warnings;
+      warnings.push_back(kManifestVersionError);
+      EXPECT_EQ(warnings, extension->install_warnings());
+    }
   }
 
   // Extension with manifest version 2 *can* use storage API.
@@ -44,6 +55,10 @@ TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
     manifest_with_version.MergeDictionary(&base_manifest);
 
     Manifest manifest(&manifest_with_version, "test");
-    LoadAndExpectSuccess(manifest);
+    scoped_refptr<Extension> extension = LoadAndExpectSuccess(manifest);
+    if (extension.get()) {
+      std::vector<std::string> empty;
+      EXPECT_EQ(empty, extension->install_warnings());
+    }
   }
 }
