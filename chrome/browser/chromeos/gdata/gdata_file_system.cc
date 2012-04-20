@@ -572,6 +572,109 @@ void LoadProtoOnIOThreadPool(const FilePath& path,
   params->load_error = base::PLATFORM_FILE_OK;
 }
 
+// Loads json file content content from |file_path| on IO thread pool.
+void LoadJsonFileOnIOThreadPool(
+    const FilePath& file_path,
+    base::PlatformFileError* error,
+    base::Value* result) {
+  scoped_ptr<base::Value> root_value;
+  std::string contents;
+  if (!file_util::ReadFileToString(file_path, &contents)) {
+    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return;
+  }
+
+  int unused_error_code = -1;
+  std::string unused_error_message;
+  root_value.reset(base::JSONReader::ReadAndReturnError(
+      contents, base::JSON_PARSE_RFC, &unused_error_code,
+      &unused_error_message));
+
+  bool has_root = root_value.get();
+  if (!has_root)
+    LOG(WARNING) << "Cached content read failed for file " << file_path.value();
+
+  if (!has_root) {
+    *error = base::PLATFORM_FILE_ERROR_FAILED;
+    return;
+  }
+
+  base::ListValue* result_list = NULL;
+  base::DictionaryValue* result_dict = NULL;
+  if (result->GetAsList(&result_list) &&
+      root_value->GetType() == Value::TYPE_LIST) {
+    *error = base::PLATFORM_FILE_OK;
+    result_list->Swap(reinterpret_cast<base::ListValue*>(root_value.get()));
+  } else if (result->GetAsDictionary(&result_dict) &&
+             root_value->GetType() == Value::TYPE_DICTIONARY) {
+    *error = base::PLATFORM_FILE_OK;
+    result_dict->Swap(
+        reinterpret_cast<base::DictionaryValue*>(root_value.get()));
+  } else {
+    *error = base::PLATFORM_FILE_ERROR_FAILED;
+  }
+}
+
+// Saves json file content content in |feed| to |file_pathname| on IO thread
+// pool.
+void SaveFeedOnIOThreadPool(
+    const FilePath& file_path,
+    scoped_ptr<base::Value> feed) {
+  std::string json;
+#ifndef NDEBUG
+  base::JSONWriter::WriteWithOptions(feed.get(),
+                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &json);
+#else
+  base::JSONWriter::Write(feed.get(), &json);
+#endif
+
+  int file_size = static_cast<int>(json.length());
+  if (file_util::WriteFile(file_path, json.data(), file_size) != file_size) {
+    LOG(WARNING) << "GData metadata file can't be stored at "
+                 << file_path.value();
+    if (!file_util::Delete(file_path, true)) {
+      LOG(WARNING) << "GData metadata file can't be deleted at "
+                   << file_path.value();
+      return;
+    }
+  }
+}
+
+// Reads properties of |local_file| and fills in values of UploadFileInfo.
+// TODO(satorux,achuith): We should just get the file size in this function.
+// The rest of the work can be done on UI/IO thread.
+void CreateUploadFileInfoOnIOThreadPool(
+    const FilePath& local_file,
+    const FilePath& remote_dest_file,
+    base::PlatformFileError* error,
+    UploadFileInfo* upload_file_info) {
+  DCHECK(error);
+  DCHECK(upload_file_info);
+
+  int64 file_size = 0;
+  if (!file_util::GetFileSize(local_file, &file_size)) {
+    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return;
+  }
+
+  upload_file_info->file_path = local_file;
+  upload_file_info->file_size = file_size;
+  // Extract the final path from DownloadItem.
+  upload_file_info->gdata_path = remote_dest_file;
+  // Use the file name as the title.
+  upload_file_info->title = remote_dest_file.BaseName().value();
+  upload_file_info->content_length = file_size;
+  upload_file_info->all_bytes_present = true;
+  std::string mime_type;
+  if (!net::GetMimeTypeFromExtension(local_file.Extension(),
+                                     &upload_file_info->content_type)) {
+    upload_file_info->content_type= kMimeTypeOctetStream;
+  }
+
+  *error = base::PLATFORM_FILE_OK;
+}
+
 }  // namespace
 
 // FindEntryDelegate class implementation.
@@ -1067,7 +1170,7 @@ void GDataFileSystem::TransferRegularFile(
   PostBlockingPoolSequencedTaskAndReply(
       kGDataFileSystemToken,
       FROM_HERE,
-      base::Bind(&GDataFileSystem::CreateUploadFileInfoOnIOThreadPool,
+      base::Bind(&CreateUploadFileInfoOnIOThreadPool,
                  local_file_path,
                  remote_dest_file_path,
                  error,
@@ -1151,38 +1254,6 @@ void GDataFileSystem::OnTransferCompleted(
       GDataSystemServiceFactory::GetForProfile(profile_);
   if (service)
     service->uploader()->DeleteUpload(upload_file_info);
-}
-
-// static.
-void GDataFileSystem::CreateUploadFileInfoOnIOThreadPool(
-    const FilePath& local_file,
-    const FilePath& remote_dest_file,
-    base::PlatformFileError* error,
-    UploadFileInfo* upload_file_info) {
-  DCHECK(error);
-  DCHECK(upload_file_info);
-
-  int64 file_size = 0;
-  if (!file_util::GetFileSize(local_file, &file_size)) {
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    return;
-  }
-
-  upload_file_info->file_path = local_file;
-  upload_file_info->file_size = file_size;
-  // Extract the final path from DownloadItem.
-  upload_file_info->gdata_path = remote_dest_file;
-  // Use the file name as the title.
-  upload_file_info->title = remote_dest_file.BaseName().value();
-  upload_file_info->content_length = file_size;
-  upload_file_info->all_bytes_present = true;
-  std::string mime_type;
-  if (!net::GetMimeTypeFromExtension(local_file.Extension(),
-                                     &upload_file_info->content_type)) {
-    upload_file_info->content_type= kMimeTypeOctetStream;
-  }
-
-  *error = base::PLATFORM_FILE_OK;
 }
 
 void GDataFileSystem::Copy(const FilePath& src_file_path,
@@ -2351,49 +2422,6 @@ void GDataFileSystem::SaveFileSystemAsProto() {
                  base::Passed(serialized_proto.Pass())));
 }
 
-// static.
-void GDataFileSystem::LoadJsonFileOnIOThreadPool(
-    const FilePath& file_path,
-    base::PlatformFileError* error,
-    base::Value* result) {
-  scoped_ptr<base::Value> root_value;
-  std::string contents;
-  if (!file_util::ReadFileToString(file_path, &contents)) {
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    return;
-  }
-
-  int unused_error_code = -1;
-  std::string unused_error_message;
-  root_value.reset(base::JSONReader::ReadAndReturnError(
-      contents, base::JSON_PARSE_RFC, &unused_error_code,
-      &unused_error_message));
-
-  bool has_root = root_value.get();
-  if (!has_root)
-    LOG(WARNING) << "Cached content read failed for file " << file_path.value();
-
-  if (!has_root) {
-    *error = base::PLATFORM_FILE_ERROR_FAILED;
-    return;
-  }
-
-  base::ListValue* result_list = NULL;
-  base::DictionaryValue* result_dict = NULL;
-  if (result->GetAsList(&result_list) &&
-      root_value->GetType() == Value::TYPE_LIST) {
-    *error = base::PLATFORM_FILE_OK;
-    result_list->Swap(reinterpret_cast<base::ListValue*>(root_value.get()));
-  } else if (result->GetAsDictionary(&result_dict) &&
-             root_value->GetType() == Value::TYPE_DICTIONARY) {
-    *error = base::PLATFORM_FILE_OK;
-    result_dict->Swap(
-        reinterpret_cast<base::DictionaryValue*>(root_value.get()));
-  } else {
-    *error = base::PLATFORM_FILE_ERROR_FAILED;
-  }
-}
-
 void GDataFileSystem::OnFilePathUpdated(const FileOperationCallback& callback,
                                         base::PlatformFileError error,
                                         const FilePath& file_path) {
@@ -2507,37 +2535,10 @@ void GDataFileSystem::SaveFeed(scoped_ptr<base::Value> feed,
   PostBlockingPoolSequencedTask(
       kGDataFileSystemToken,
       FROM_HERE,
-      base::Bind(&GDataFileSystem::SaveFeedOnIOThreadPool,
-                 cache_paths_[GDataRootDirectory::CACHE_TYPE_META],
-                 base::Passed(&feed),
-                 name));
-}
-
-// Static.
-void GDataFileSystem::SaveFeedOnIOThreadPool(
-    const FilePath& meta_cache_path,
-    scoped_ptr<base::Value> feed,
-    const FilePath& name) {
-  FilePath file_name = meta_cache_path.Append(name);
-  std::string json;
-#ifndef NDEBUG
-  base::JSONWriter::WriteWithOptions(feed.get(),
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &json);
-#else
-  base::JSONWriter::Write(feed.get(), &json);
-#endif
-
-  int file_size = static_cast<int>(json.length());
-  if (file_util::WriteFile(file_name, json.data(), file_size) != file_size) {
-    LOG(WARNING) << "GData metadata file can't be stored at "
-                 << file_name.value();
-    if (!file_util::Delete(file_name, true)) {
-      LOG(WARNING) << "GData metadata file can't be deleted at "
-                   << file_name.value();
-      return;
-    }
-  }
+      base::Bind(&SaveFeedOnIOThreadPool,
+                 cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
+                     name),
+                 base::Passed(&feed)));
 }
 
 void GDataFileSystem::OnRemovedDocument(

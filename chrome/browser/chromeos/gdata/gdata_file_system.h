@@ -935,11 +935,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                              const FilePath& search_file_path,
                              const FindEntryCallback& callback);
 
-  // Loads json file content content from |file_path| on IO thread pool.
-  static void LoadJsonFileOnIOThreadPool(const FilePath& meta_cache_path,
-                                         base::PlatformFileError* error,
-                                         base::Value* result);
-
   // Callback for handling root directory refresh from the cache.
   void OnProtoLoaded(LoadRootFeedParams* params);
 
@@ -950,10 +945,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // <user_profile_dir>/GCache/v1/meta/|name| for later reloading when offline.
   void SaveFeed(scoped_ptr<base::Value> feed_vector,
                 const FilePath& name);
-  static void SaveFeedOnIOThreadPool(
-      const FilePath& meta_cache_path,
-      scoped_ptr<base::Value> feed_vector,
-      const FilePath& name);
 
   // Finds and returns upload url of a given directory. Returns empty url
   // if directory can't be found.
@@ -978,13 +969,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Kicks off file upload once it receives |upload_file_info|.
   void StartFileUploadOnUIThread(
       const FileOperationCallback& callback,
-      base::PlatformFileError* error,
-      UploadFileInfo* upload_file_info);
-
-  // Reads properties of |local_file| and fills in values of UploadFileInfo.
-  static void CreateUploadFileInfoOnIOThreadPool(
-      const FilePath& local_file,
-      const FilePath& remote_dest_file,
       base::PlatformFileError* error,
       UploadFileInfo* upload_file_info);
 
