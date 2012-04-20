@@ -111,7 +111,7 @@ mkdir -p "$target"
           exit 3
           ;;
       esac
-      wget "http://commondatastorage.googleapis.com/$patchname" -O- |
+      wget "http://commondatastorage.googleapis.com$patchname" -O- |
       "$uncompress" -d |
       patch -p1
     done
