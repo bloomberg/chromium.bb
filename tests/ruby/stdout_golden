@@ -1,9 +1,0 @@
-3
-rubyEval RESULTS:   s("3\n")
-rubyEval RESULTS:   s("")
-5
-rubyEval RESULTS:   s("5\n")
-lala
-lala
-lala
-rubyEval RESULTS:   s("lala\nlala\nlala\n")

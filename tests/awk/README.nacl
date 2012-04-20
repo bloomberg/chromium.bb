@@ -1,9 +1,0 @@
-Experimental Native Client awk Demo
-
-To build:
-* download the awk sources by just running 'make download nacl' (you will
-  need wget or curl).
-* build the module with 'make debug nacl' or 'make release nacl'
-
-TODO: plumbing to use awk from a web page
-

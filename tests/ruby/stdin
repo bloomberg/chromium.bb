@@ -1,4 +1,0 @@
-rpc rubyEval s("puts 3") * s("")
-rpc rubyEval s("a=5") * s("")
-rpc rubyEval s("puts a") * s("")
-rpc rubyEval s("3.times{ puts 'lala' }") * s("")
