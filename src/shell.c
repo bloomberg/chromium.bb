@@ -252,13 +252,17 @@ shell_configuration(struct desktop_shell *shell)
 	int duration = 60;
 	char *modifier = NULL;
 
-	struct config_key saver_keys[] = {
-		{ "path",       CONFIG_KEY_STRING,  &path },
-		{ "duration",   CONFIG_KEY_INTEGER, &duration },
+	struct config_key shell_keys[] = {
 		{ "binding-modifier",   CONFIG_KEY_STRING, &modifier },
 	};
 
+	struct config_key saver_keys[] = {
+		{ "path",       CONFIG_KEY_STRING,  &path },
+		{ "duration",   CONFIG_KEY_INTEGER, &duration },
+	};
+
 	struct config_section cs[] = {
+		{ "shell", shell_keys, ARRAY_LENGTH(shell_keys), NULL },
 		{ "screensaver", saver_keys, ARRAY_LENGTH(saver_keys), NULL },
 	};
 
