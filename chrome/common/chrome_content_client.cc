@@ -232,6 +232,10 @@ void AddPepperFlash(std::vector<content::PepperPluginInfo>* plugins) {
 #if defined(FLAPPER_AVAILABLE)
     if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &plugin.path))
       return;
+    // It is an error to have FLAPPER_AVAILABLE defined but then not having the
+    // plugin file in place, but this happens in Chrome OS builds.
+    // Use --disable-bundled-ppapi-flash to skip this.
+    DCHECK(file_util::PathExists(plugin.path));
     flash_version = FLAPPER_VERSION_STRING;
 #else
     LOG(ERROR) << "PPAPI Flash not included at build time.";
