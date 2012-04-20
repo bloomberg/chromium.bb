@@ -45,6 +45,16 @@ static base::LazyInstance<TabSpecificList> g_tab_specific =
     LAZY_INSTANCE_INITIALIZER;
 }
 
+TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
+    TabSpecificContentSettings* tab_specific_content_settings)
+    : tab_specific_content_settings_(tab_specific_content_settings) {
+  tab_specific_content_settings_->AddSiteDataObserver(this);
+}
+
+TabSpecificContentSettings::SiteDataObserver::~SiteDataObserver() {
+  tab_specific_content_settings_->RemoveSiteDataObserver(this);
+}
+
 TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
     : content::WebContentsObserver(tab),
       profile_(Profile::FromBrowserContext(tab->GetBrowserContext())),
@@ -269,6 +279,8 @@ void TabSpecificContentSettings::OnCookiesRead(
         url, cookie_list);
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
+
+  NotifySiteDataObservers();
 }
 
 void TabSpecificContentSettings::OnCookieChanged(
@@ -286,6 +298,8 @@ void TabSpecificContentSettings::OnCookieChanged(
         url, cookie_line, options);
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
+
+  NotifySiteDataObservers();
 }
 
 void TabSpecificContentSettings::OnIndexedDBAccessed(
@@ -301,6 +315,8 @@ void TabSpecificContentSettings::OnIndexedDBAccessed(
         url, description);
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
+
+  NotifySiteDataObservers();
 }
 
 void TabSpecificContentSettings::OnLocalStorageAccessed(
@@ -317,6 +333,8 @@ void TabSpecificContentSettings::OnLocalStorageAccessed(
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   else
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
+
+  NotifySiteDataObservers();
 }
 
 void TabSpecificContentSettings::OnWebDatabaseAccessed(
@@ -333,6 +351,8 @@ void TabSpecificContentSettings::OnWebDatabaseAccessed(
         url, UTF16ToUTF8(name), UTF16ToUTF8(display_name));
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
+
+  NotifySiteDataObservers();
 }
 
 void TabSpecificContentSettings::OnFileSystemAccessed(
@@ -347,7 +367,10 @@ void TabSpecificContentSettings::OnFileSystemAccessed(
         fileapi::kFileSystemTypeTemporary, 0);
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
+
+  NotifySiteDataObservers();
 }
+
 void TabSpecificContentSettings::OnGeolocationPermissionSet(
     const GURL& requesting_origin,
     bool allowed) {
@@ -476,4 +499,18 @@ void TabSpecificContentSettings::Observe(
                                    &rules);
     Send(new ChromeViewMsg_SetContentSettingRules(rules));
   }
+}
+
+void TabSpecificContentSettings::AddSiteDataObserver(
+    SiteDataObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void TabSpecificContentSettings::RemoveSiteDataObserver(
+    SiteDataObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void TabSpecificContentSettings::NotifySiteDataObservers() {
+   FOR_EACH_OBSERVER(SiteDataObserver, observer_list_, OnSiteDataAccessed());
 }

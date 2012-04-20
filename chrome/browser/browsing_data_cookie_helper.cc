@@ -147,6 +147,10 @@ bool CannedBrowsingDataCookieHelper::empty() const {
   return cookie_list_.empty();
 }
 
+size_t CannedBrowsingDataCookieHelper::GetCookieCount() const {
+  return cookie_list_.size();
+}
+
 void CannedBrowsingDataCookieHelper::StartFetching(
     const net::CookieMonster::GetCookieListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

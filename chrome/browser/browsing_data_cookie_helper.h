@@ -108,6 +108,9 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
   virtual void StartFetching(
       const net::CookieMonster::GetCookieListCallback& callback) OVERRIDE;
 
+  // Returns the currently stored number of cookies.
+  size_t GetCookieCount() const;
+
  private:
   // Check if the cookie list contains a cookie with the same name,
   // domain, and path as the newly created cookie. Delete the old cookie

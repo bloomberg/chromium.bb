@@ -252,6 +252,10 @@ bool CannedBrowsingDataFileSystemHelper::empty() const {
   return file_system_info_.empty();
 }
 
+size_t CannedBrowsingDataFileSystemHelper::GetFileSystemCount() const {
+  return file_system_info_.size();
+}
+
 void CannedBrowsingDataFileSystemHelper::StartFetching(
     const base::Callback<void(const std::list<FileSystemInfo>&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

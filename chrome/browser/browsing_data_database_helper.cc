@@ -187,6 +187,10 @@ bool CannedBrowsingDataDatabaseHelper::empty() const {
   return database_info_.empty() && pending_database_info_.empty();
 }
 
+size_t CannedBrowsingDataDatabaseHelper::GetDatabaseCount() const {
+  return pending_database_info_.size();
+}
+
 void CannedBrowsingDataDatabaseHelper::StartFetching(
     const base::Callback<void(const std::list<DatabaseInfo>&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

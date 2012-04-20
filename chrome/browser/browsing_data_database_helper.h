@@ -117,6 +117,9 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
   // True if no databases are currently stored.
   bool empty() const;
 
+  // Returns the number of currently stored databases.
+  size_t GetDatabaseCount() const;
+
   // BrowsingDataDatabaseHelper implementation.
   virtual void StartFetching(
       const base::Callback<void(const std::list<DatabaseInfo>&)>& callback)

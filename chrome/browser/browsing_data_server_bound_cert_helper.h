@@ -68,6 +68,9 @@ class CannedBrowsingDataServerBoundCertHelper
   // True if no ServerBoundCerts are currently stored.
   bool empty() const;
 
+  // Returns the current number of server bound certificates.
+  size_t GetCertCount() const;
+
   // BrowsingDataServerBoundCertHelper methods.
   virtual void StartFetching(const FetchResultCallback& callback) OVERRIDE;
   virtual void DeleteServerBoundCert(const std::string& server_id) OVERRIDE;

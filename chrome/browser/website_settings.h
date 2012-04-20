@@ -7,6 +7,7 @@
 
 #include "base/string16.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "googleurl/src/gurl.h"
@@ -27,7 +28,7 @@ class WebsiteSettingsUI;
 // information and allows users to change the permissions. |WebsiteSettings|
 // objects must be created on the heap. They destroy themselves after the UI is
 // closed.
-class WebsiteSettings {
+class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
  public:
   // Status of a connection to a website.
   enum SiteConnectionStatus {
@@ -78,6 +79,7 @@ class WebsiteSettings {
   // |WebsiteSettings| takes ownership of the |ui|.
   WebsiteSettings(WebsiteSettingsUI* ui,
                   Profile* profile,
+                  TabSpecificContentSettings* tab_specific_content_settings,
                   const GURL& url,
                   const content::SSLStatus& ssl,
                   content::CertStore* cert_store);
@@ -112,8 +114,11 @@ class WebsiteSettings {
     return organization_name_;
   }
 
+  // SiteDataObserver implementation.
+  virtual void OnSiteDataAccessed() OVERRIDE;
+
  private:
-  ~WebsiteSettings();
+  virtual ~WebsiteSettings();
 
   // Initializes the |WebsiteSettings|.
   void Init(Profile* profile,
@@ -122,6 +127,9 @@ class WebsiteSettings {
 
   // Sets (presents) the information about the site's permissions in the |ui_|.
   void PresentSitePermissions();
+
+  // Sets (presents) the information about the site's data in the |ui_|.
+  void PresentSiteData();
 
   // The website settings UI displays information and controls for site
   // specific data (local stored objects like cookies), site specific

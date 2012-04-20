@@ -121,6 +121,9 @@ class CannedBrowsingDataLocalStorageHelper
   // True if no local storages are currently stored.
   bool empty() const;
 
+  // Returns the number of local storages currently stored.
+  size_t GetLocalStorageCount() const;
+
   // BrowsingDataLocalStorageHelper implementation.
   virtual void StartFetching(
       const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback)

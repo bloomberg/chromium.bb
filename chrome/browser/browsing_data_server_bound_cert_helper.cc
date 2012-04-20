@@ -158,6 +158,10 @@ bool CannedBrowsingDataServerBoundCertHelper::empty() const {
   return server_bound_cert_map_.empty();
 }
 
+size_t CannedBrowsingDataServerBoundCertHelper::GetCertCount() const {
+  return server_bound_cert_map_.size();
+}
+
 void CannedBrowsingDataServerBoundCertHelper::StartFetching(
     const FetchResultCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

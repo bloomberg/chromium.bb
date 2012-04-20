@@ -10,8 +10,15 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browsing_data_cookie_helper.h"
+#include "chrome/browser/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "chrome/browser/browsing_data_indexed_db_helper.h"
+#include "chrome/browser/browsing_data_file_system_helper.h"
+#include "chrome/browser/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -45,15 +52,31 @@ ContentSettingsType kPermissionType[] = {
   CONTENT_SETTINGS_TYPE_GEOLOCATION,
 };
 
+size_t GetLocalStoredObjectCount(
+    const LocalSharedObjectsContainer& local_shared_objects) {
+  size_t count = 0;
+  count += local_shared_objects.cookies()->GetCookieCount();
+  count += local_shared_objects.databases()->GetDatabaseCount();
+  count += local_shared_objects.file_systems()->GetFileSystemCount();
+  count += local_shared_objects.indexed_dbs()->GetIndexedDBCount();
+  count += local_shared_objects.local_storages()->GetLocalStorageCount();
+  count += local_shared_objects.server_bound_certs()->GetCertCount();
+  count += local_shared_objects.session_storages()->GetLocalStorageCount();
+  return count;
+}
+
 }  // namespace
 
 WebsiteSettings::WebsiteSettings(
     WebsiteSettingsUI* ui,
     Profile* profile,
+    TabSpecificContentSettings* tab_specific_content_settings,
     const GURL& url,
     const content::SSLStatus& ssl,
     content::CertStore* cert_store)
-    : ui_(ui),
+    : TabSpecificContentSettings::SiteDataObserver(
+          tab_specific_content_settings),
+      ui_(ui),
       site_url_(url),
       site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
       site_connection_status_(SITE_CONNECTION_STATUS_UNKNOWN),
@@ -85,40 +108,76 @@ WebsiteSettings::WebsiteSettings(
   ui_->SetSiteInfo(site_info);
 
   PresentSitePermissions();
+  PresentSiteData();
 }
 
 WebsiteSettings::~WebsiteSettings() {
 }
 
-void WebsiteSettings::PresentSitePermissions() {
-  PermissionInfoList permission_info_list;
+void WebsiteSettings::OnUIClosing() {
+  ui_->SetPresenter(NULL);
+  delete this;
+}
 
-  WebsiteSettingsUI::PermissionInfo permission_info;
-  for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
-    permission_info.type = kPermissionType[i];
-
-    content_settings::SettingInfo info;
-    scoped_ptr<Value> value(content_settings_->GetWebsiteSetting(
-        site_url_, site_url_, permission_info.type, "", &info));
-    DCHECK(value.get());
-    permission_info.setting =
-        content_settings::ValueToContentSetting(value.get());
-
-    if (permission_info.setting != CONTENT_SETTING_ASK) {
-      if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
-          info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
-        permission_info.default_setting = permission_info.setting;
-        permission_info.setting = CONTENT_SETTING_DEFAULT;
-      } else {
-        permission_info.default_setting =
-            content_settings_->GetDefaultContentSetting(permission_info.type,
-                                                        NULL);
-      }
-      permission_info_list.push_back(permission_info);
-    }
+void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
+                                              ContentSetting setting) {
+  ContentSettingsPattern primary_pattern;
+  ContentSettingsPattern secondary_pattern;
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      // TODO(markusheintz): The rule we create here should also change the
+      // location permission for iframed content.
+      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
+      secondary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
+      break;
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
+      secondary_pattern = ContentSettingsPattern::Wildcard();
+      break;
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      primary_pattern = ContentSettingsPattern::FromURL(site_url_);
+      secondary_pattern = ContentSettingsPattern::Wildcard();
+      break;
+    default:
+      NOTREACHED() << "ContentSettingsType " << type << "is not supported.";
+      break;
   }
 
-  ui_->SetPermissionInfo(permission_info_list);
+  // Permission settings are specified via rules. There exists always at least
+  // one rule for the default setting. Get the rule that currently defines
+  // the permission for the given permission |type|. Then test whether the
+  // existing rule is more specific than the rule we are about to create. If
+  // the existing rule is more specific, than change the existing rule instead
+  // of creating a new rule that would be hidden behind the existing rule.
+  content_settings::SettingInfo info;
+  scoped_ptr<Value> v(content_settings_->GetWebsiteSetting(
+      site_url_, site_url_, type, "", &info));
+  DCHECK(info.source == content_settings::SETTING_SOURCE_USER);
+  ContentSettingsPattern::Relation r1 =
+      info.primary_pattern.Compare(primary_pattern);
+  DCHECK(r1 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
+         r1 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
+  if (r1 == ContentSettingsPattern::PREDECESSOR) {
+    primary_pattern = info.primary_pattern;
+  } else if (r1 == ContentSettingsPattern::IDENTITY) {
+    ContentSettingsPattern::Relation r2 =
+        info.secondary_pattern.Compare(secondary_pattern);
+    DCHECK(r2 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
+           r2 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
+    if (r2 == ContentSettingsPattern::PREDECESSOR)
+      secondary_pattern = info.secondary_pattern;
+  }
+
+  Value* value = NULL;
+  if (setting != CONTENT_SETTING_DEFAULT)
+    value = Value::CreateIntegerValue(setting);
+  content_settings_->SetWebsiteSetting(
+      primary_pattern, secondary_pattern, type, "", value);
+}
+
+void WebsiteSettings::OnSiteDataAccessed() {
+  PresentSiteData();
 }
 
 void WebsiteSettings::Init(Profile* profile,
@@ -342,66 +401,48 @@ void WebsiteSettings::Init(Profile* profile,
   }
 }
 
-void WebsiteSettings::OnUIClosing() {
-  ui_->SetPresenter(NULL);
-  delete this;
+void WebsiteSettings::PresentSitePermissions() {
+  PermissionInfoList permission_info_list;
+
+  WebsiteSettingsUI::PermissionInfo permission_info;
+  for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
+    permission_info.type = kPermissionType[i];
+
+    content_settings::SettingInfo info;
+    scoped_ptr<Value> value(content_settings_->GetWebsiteSetting(
+        site_url_, site_url_, permission_info.type, "", &info));
+    DCHECK(value.get());
+    permission_info.setting =
+        content_settings::ValueToContentSetting(value.get());
+
+    if (permission_info.setting != CONTENT_SETTING_ASK) {
+      if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+          info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
+        permission_info.default_setting = permission_info.setting;
+        permission_info.setting = CONTENT_SETTING_DEFAULT;
+      } else {
+        permission_info.default_setting =
+            content_settings_->GetDefaultContentSetting(permission_info.type,
+                                                        NULL);
+      }
+      permission_info_list.push_back(permission_info);
+    }
+  }
+
+  ui_->SetPermissionInfo(permission_info_list);
 }
 
-void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
-                                              ContentSetting setting) {
-  ContentSettingsPattern primary_pattern;
-  ContentSettingsPattern secondary_pattern;
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      // TODO(markusheintz): The rule we create here should also change the
-      // location permission for iframed content.
-      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
-      secondary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
-      break;
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      primary_pattern = ContentSettingsPattern::FromURLNoWildcard(site_url_);
-      secondary_pattern = ContentSettingsPattern::Wildcard();
-      break;
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
-    case CONTENT_SETTINGS_TYPE_POPUPS:
-      primary_pattern = ContentSettingsPattern::FromURL(site_url_);
-      secondary_pattern = ContentSettingsPattern::Wildcard();
-      break;
-    default:
-      NOTREACHED() << "ContentSettingsType " << type << "is not supported.";
-      break;
-  }
+void WebsiteSettings::PresentSiteData() {
+  CookieInfoList cookie_info_list;
+  WebsiteSettingsUI::CookieInfo cookie_info;
+  cookie_info.cookie_source = site_url_.host();
+  cookie_info.allowed = GetLocalStoredObjectCount(
+      tab_specific_content_settings()->allowed_local_shared_objects());
+  cookie_info.blocked = GetLocalStoredObjectCount(
+      tab_specific_content_settings()->blocked_local_shared_objects());
+  cookie_info_list.push_back(cookie_info);
 
-  // Permission settings are specified via rules. There exists always at least
-  // one rule for the default setting. Get the rule that currently defines
-  // the permission for the given permission |type|. Then test whether the
-  // existing rule is more specific than the rule we are about to create. If
-  // the existing rule is more specific, than change the existing rule instead
-  // of creating a new rule that would be hidden behind the existing rule.
-  content_settings::SettingInfo info;
-  scoped_ptr<Value> v(content_settings_->GetWebsiteSetting(
-      site_url_, site_url_, type, "", &info));
-  DCHECK(info.source == content_settings::SETTING_SOURCE_USER);
-  ContentSettingsPattern::Relation r1 =
-      info.primary_pattern.Compare(primary_pattern);
-  DCHECK(r1 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
-         r1 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
-  if (r1 == ContentSettingsPattern::PREDECESSOR) {
-    primary_pattern = info.primary_pattern;
-  } else if (r1 == ContentSettingsPattern::IDENTITY) {
-    ContentSettingsPattern::Relation r2 =
-        info.secondary_pattern.Compare(secondary_pattern);
-    DCHECK(r2 != ContentSettingsPattern::DISJOINT_ORDER_POST &&
-           r2 != ContentSettingsPattern::DISJOINT_ORDER_PRE);
-    if (r2 == ContentSettingsPattern::PREDECESSOR)
-      secondary_pattern = info.secondary_pattern;
-  }
-
-  Value* value = NULL;
-  if (setting != CONTENT_SETTING_DEFAULT)
-    value = Value::CreateIntegerValue(setting);
-  content_settings_->SetWebsiteSetting(
-      primary_pattern, secondary_pattern, type, "", value);
+  ui_->SetCookieInfo(cookie_info_list);
 }
 
 // static
@@ -414,8 +455,9 @@ void WebsiteSettings::Show(gfx::NativeWindow parent,
   // The WebsiteSettingsModel will delete itself after the UI is closed.
   new WebsiteSettings(new WebsiteSettingsPopupGtk(parent,
                                                   profile,
-                                                 tab_contents_wrapper),
+                                                  tab_contents_wrapper),
                       profile,
+                      tab_contents_wrapper->content_settings(),
                       url,
                       ssl,
                       content::CertStore::GetInstance());

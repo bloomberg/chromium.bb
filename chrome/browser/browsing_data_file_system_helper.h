@@ -130,6 +130,9 @@ class CannedBrowsingDataFileSystemHelper
   // True if no filesystems are currently stored.
   bool empty() const;
 
+  // Returns the number of currently stored filesystems.
+  size_t GetFileSystemCount() const;
+
   // BrowsingDataFileSystemHelper implementation.
   virtual void StartFetching(const base::Callback<
       void(const std::list<FileSystemInfo>&)>& callback) OVERRIDE;

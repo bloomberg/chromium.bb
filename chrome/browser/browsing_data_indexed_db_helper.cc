@@ -200,6 +200,10 @@ bool CannedBrowsingDataIndexedDBHelper::empty() const {
   return indexed_db_info_.empty() && pending_indexed_db_info_.empty();
 }
 
+size_t CannedBrowsingDataIndexedDBHelper::GetIndexedDBCount() const {
+  return pending_indexed_db_info_.size();
+}
+
 void CannedBrowsingDataIndexedDBHelper::StartFetching(
     const base::Callback<void(const std::list<IndexedDBInfo>&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

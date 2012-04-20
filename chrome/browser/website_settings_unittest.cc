@@ -8,9 +8,11 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/website_settings_ui.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
@@ -61,23 +63,22 @@ class MockWebsiteSettingsUI : public WebsiteSettingsUI {
                void(const PermissionInfoList& permission_info_list));
 };
 
-class WebsiteSettingsTest : public testing::Test {
+class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
  public:
   WebsiteSettingsTest()
-      : testing::Test(),
-        message_loop_(MessageLoop::TYPE_UI),
-        ui_thread_(content::BrowserThread::UI, &message_loop_),
-        file_thread_(content::BrowserThread::FILE, &message_loop_),
-        profile_(new TestingProfile()),
+      : website_settings_(NULL),
+        mock_ui_(NULL),
         cert_id_(0),
-        url_("http://www.example.com"),
-        website_settings_(NULL) {
+        browser_thread_(content::BrowserThread::UI, &message_loop_),
+        tab_specific_content_settings_(NULL),
+        url_("http://www.example.com") {
   }
 
   virtual ~WebsiteSettingsTest() {
   }
 
   virtual void SetUp() {
+    ChromeRenderViewHostTestHarness::SetUp();
     // Setup stub SSLStatus.
     ssl_.security_style = content::SECURITY_STYLE_UNAUTHENTICATED;
 
@@ -91,103 +92,135 @@ class WebsiteSettingsTest : public testing::Test {
                                      start_date,
                                      expiration_date);
 
+    tab_specific_content_settings_.reset(
+        new TabSpecificContentSettings(contents()));
+
     // Setup the mock cert store.
     EXPECT_CALL(cert_store_, RetrieveCert(cert_id_, _) )
         .Times(AnyNumber())
         .WillRepeatedly(DoAll(SetArgPointee<1>(cert_), Return(true)));
+
+    // Setup mock ui.
+    mock_ui_ = new MockWebsiteSettingsUI();
   }
 
   virtual void TearDown() {
     ASSERT_TRUE(website_settings_) << "No WebsiteSettings instance created.";
     // Call OnUIClosing to destroy the |website_settings| object.
+    EXPECT_CALL(*mock_ui_, SetPresenter(NULL));
     website_settings_->OnUIClosing();
+    RenderViewHostTestHarness::TearDown();
   }
 
-  WebsiteSettingsUI* CreateMockUI() {
-    MockWebsiteSettingsUI* ui = new MockWebsiteSettingsUI();
-    EXPECT_CALL(*ui, SetPermissionInfo(_)).Times(AnyNumber());
-    EXPECT_CALL(*ui, SetSiteInfo(_)).Times(AnyNumber());
-    EXPECT_CALL(*ui, SetPresenter(_)).Times(AnyNumber());
-    EXPECT_CALL(*ui, SetCookieInfo(_)).Times(AnyNumber());
-    return ui;
+  void SetDefaultUIExpectations(MockWebsiteSettingsUI* mock_ui) {
+    // During creation |WebsiteSettings| makes the following calls to the ui.
+    EXPECT_CALL(*mock_ui, SetPermissionInfo(_));
+    EXPECT_CALL(*mock_ui, SetSiteInfo(_));
+    EXPECT_CALL(*mock_ui, SetPresenter(_));
+    EXPECT_CALL(*mock_ui, SetCookieInfo(_));
   }
 
-  Profile* profile() const { return profile_.get(); }
+  const GURL& url() const { return url_; }
+  MockCertStore* cert_store() { return &cert_store_; }
+  int cert_id() { return cert_id_; }
+  MockWebsiteSettingsUI* mock_ui() { return mock_ui_; }
+  const SSLStatus& ssl() { return ssl_; }
+  TabSpecificContentSettings* tab_specific_content_settings() {
+    return tab_specific_content_settings_.get();
+  }
 
-  MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  WebsiteSettings* website_settings() {
+    if (!website_settings_) {
+      website_settings_ = new WebsiteSettings(
+          mock_ui(), profile(), tab_specific_content_settings_.get(), url(),
+          ssl(), cert_store());
+    }
+    return website_settings_;
+  }
 
-  scoped_ptr<Profile> profile_;
+  SSLStatus ssl_;
+
+ private:
+  // The |Website_settings| object deletes itself after the OnUIClosing()
+  // method is called.
+  WebsiteSettings* website_settings_;  // Weak pointer.
+  // The UI is owned by |web_site_settings_|.
+  MockWebsiteSettingsUI* mock_ui_;  // Weak pointer.
   int cert_id_;
   scoped_refptr<net::X509Certificate> cert_;
+  content::TestBrowserThread browser_thread_;
+  scoped_ptr<TabSpecificContentSettings> tab_specific_content_settings_;
   MockCertStore cert_store_;
   GURL url_;
-  SSLStatus ssl_;
-  WebsiteSettings* website_settings_;
 };
 
 }  // namespace
 
 TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
-  MockWebsiteSettingsUI* ui = new MockWebsiteSettingsUI();
-  EXPECT_CALL(*ui, SetPermissionInfo(_));
-  EXPECT_CALL(*ui, SetSiteInfo(_));
-  EXPECT_CALL(*ui, SetPresenter(_)).Times(2);
-
+  // Setup site permissions.
   HostContentSettingsMap* content_settings =
       profile()->GetHostContentSettingsMap();
   ContentSetting setting = content_settings->GetContentSetting(
-      url_, url_, CONTENT_SETTINGS_TYPE_POPUPS, "");
+      url(), url(), CONTENT_SETTINGS_TYPE_POPUPS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
   setting = content_settings->GetContentSetting(
-      url_, url_, CONTENT_SETTINGS_TYPE_PLUGINS, "");
+      url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
   setting = content_settings->GetContentSetting(
-      url_, url_, CONTENT_SETTINGS_TYPE_GEOLOCATION, "");
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
   setting = content_settings->GetContentSetting(
-      url_, url_, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "");
+      url(), url(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ASK);
 
-  website_settings_ = new WebsiteSettings(ui, profile(), url_, ssl_,
-                                          &cert_store_);
-  website_settings_->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_POPUPS,
-                                             CONTENT_SETTING_ALLOW);
-  website_settings_->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                             CONTENT_SETTING_BLOCK);
-  website_settings_->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                                             CONTENT_SETTING_ALLOW);
-  website_settings_->OnSitePermissionChanged(
+  SetDefaultUIExpectations(mock_ui());
+
+  // Execute code under tests.
+  website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_POPUPS,
+                                              CONTENT_SETTING_ALLOW);
+  website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                              CONTENT_SETTING_BLOCK);
+  website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              CONTENT_SETTING_ALLOW);
+  website_settings()->OnSitePermissionChanged(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
 
+  // Verify that the site permissions were changed correctly.
   setting = content_settings->GetContentSetting(
-      url_, url_, CONTENT_SETTINGS_TYPE_POPUPS, "");
+      url(), url(), CONTENT_SETTINGS_TYPE_POPUPS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
   setting = content_settings->GetContentSetting(
-      url_, url_, CONTENT_SETTINGS_TYPE_PLUGINS, "");
+      url(), url(), CONTENT_SETTINGS_TYPE_PLUGINS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
   setting = content_settings->GetContentSetting(
-      url_, url_, CONTENT_SETTINGS_TYPE_GEOLOCATION, "");
+      url(), url(), CONTENT_SETTINGS_TYPE_GEOLOCATION, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
   setting = content_settings->GetContentSetting(
-      url_, url_, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "");
+      url(), url(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "");
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 }
 
+TEST_F(WebsiteSettingsTest, OnSiteDataAccessed) {
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_));
+  EXPECT_CALL(*mock_ui(), SetSiteInfo(_));
+  EXPECT_CALL(*mock_ui(), SetPresenter(_));
+  EXPECT_CALL(*mock_ui(), SetCookieInfo(_)).Times(2);
+
+  website_settings()->OnSiteDataAccessed();
+}
+
 TEST_F(WebsiteSettingsTest, HTTPConnection) {
-  website_settings_ = new WebsiteSettings(CreateMockUI(), profile(), url_, ssl_,
-                                          &cert_store_);
+  SetDefaultUIExpectations(mock_ui());
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED,
-            website_settings_->site_connection_status());
+            website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT,
-            website_settings_->site_identity_status());
-  EXPECT_EQ(string16(), website_settings_->organization_name());
+            website_settings()->site_identity_status());
+  EXPECT_EQ(string16(), website_settings()->organization_name());
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSConnection) {
   ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
-  ssl_.cert_id = cert_id_;
+  ssl_.cert_id = cert_id();
   ssl_.cert_status = 0;
   ssl_.security_bits = 81;  // No error if > 80.
   int status = 0;
@@ -195,18 +228,18 @@ TEST_F(WebsiteSettingsTest, HTTPSConnection) {
   status = SetSSLCipherSuite(status, TLS_RSA_WITH_AES_256_CBC_SHA256);
   ssl_.connection_status = status;
 
-  website_settings_ = new WebsiteSettings(CreateMockUI(), profile(), url_, ssl_,
-                                          &cert_store_);
+  SetDefaultUIExpectations(mock_ui());
+
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
-            website_settings_->site_connection_status());
+            website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT,
-            website_settings_->site_identity_status());
-  EXPECT_EQ(string16(), website_settings_->organization_name());
+            website_settings()->site_identity_status());
+  EXPECT_EQ(string16(), website_settings()->organization_name());
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSMixedContent) {
   ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
-  ssl_.cert_id = cert_id_;
+  ssl_.cert_id = cert_id();
   ssl_.cert_status = 0;
   ssl_.security_bits = 81;  // No error if > 80.
   ssl_.content_status = SSLStatus::DISPLAYED_INSECURE_CONTENT;
@@ -215,13 +248,13 @@ TEST_F(WebsiteSettingsTest, HTTPSMixedContent) {
   status = SetSSLCipherSuite(status, TLS_RSA_WITH_AES_256_CBC_SHA256);
   ssl_.connection_status = status;
 
-  website_settings_ = new WebsiteSettings(CreateMockUI(), profile(), url_, ssl_,
-                                          &cert_store_);
+  SetDefaultUIExpectations(mock_ui());
+
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT,
-            website_settings_->site_connection_status());
+            website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT,
-            website_settings_->site_identity_status());
-  EXPECT_EQ(string16(), website_settings_->organization_name());
+            website_settings()->site_identity_status());
+  EXPECT_EQ(string16(), website_settings()->organization_name());
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
@@ -230,7 +263,7 @@ TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
           reinterpret_cast<const char*>(google_der),
           sizeof(google_der));
   int ev_cert_id = 1;
-  EXPECT_CALL(cert_store_, RetrieveCert(ev_cert_id, _)).WillRepeatedly(
+  EXPECT_CALL(*cert_store(), RetrieveCert(ev_cert_id, _)).WillRepeatedly(
       DoAll(SetArgPointee<1>(ev_cert), Return(true)));
 
   ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
@@ -243,18 +276,18 @@ TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
   status = SetSSLCipherSuite(status, TLS_RSA_WITH_AES_256_CBC_SHA256);
   ssl_.connection_status = status;
 
-  website_settings_ = new WebsiteSettings(CreateMockUI(), profile(), url_, ssl_,
-                          &cert_store_);
+  SetDefaultUIExpectations(mock_ui());
+
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT,
-            website_settings_->site_connection_status());
+            website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT,
-            website_settings_->site_identity_status());
-  EXPECT_EQ(UTF8ToUTF16("Google Inc"), website_settings_->organization_name());
+            website_settings()->site_identity_status());
+  EXPECT_EQ(UTF8ToUTF16("Google Inc"), website_settings()->organization_name());
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSRevocationError) {
   ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
-  ssl_.cert_id = cert_id_;
+  ssl_.cert_id = cert_id();
   ssl_.cert_status = net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
   ssl_.security_bits = 81;  // No error if > 80.
   int status = 0;
@@ -262,18 +295,18 @@ TEST_F(WebsiteSettingsTest, HTTPSRevocationError) {
   status = SetSSLCipherSuite(status, TLS_RSA_WITH_AES_256_CBC_SHA256);
   ssl_.connection_status = status;
 
-  website_settings_ = new WebsiteSettings(CreateMockUI(), profile(), url_, ssl_,
-                                          &cert_store_);
+  SetDefaultUIExpectations(mock_ui());
+
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
-            website_settings_->site_connection_status());
+            website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN,
-            website_settings_->site_identity_status());
-  EXPECT_EQ(string16(), website_settings_->organization_name());
+            website_settings()->site_identity_status());
+  EXPECT_EQ(string16(), website_settings()->organization_name());
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
   ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
-  ssl_.cert_id = cert_id_;
+  ssl_.cert_id = cert_id();
   ssl_.cert_status = 0;
   ssl_.security_bits = 1;
   int status = 0;
@@ -281,11 +314,11 @@ TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
   status = SetSSLCipherSuite(status, TLS_RSA_WITH_AES_256_CBC_SHA256);
   ssl_.connection_status = status;
 
-  website_settings_ = new WebsiteSettings(CreateMockUI(), profile(), url_, ssl_,
-                                          &cert_store_);
+  SetDefaultUIExpectations(mock_ui());
+
   EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED_ERROR,
-            website_settings_->site_connection_status());
+            website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_CERT,
-            website_settings_->site_identity_status());
-  EXPECT_EQ(string16(), website_settings_->organization_name());
+            website_settings()->site_identity_status());
+  EXPECT_EQ(string16(), website_settings()->organization_name());
 }

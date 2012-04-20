@@ -164,6 +164,10 @@ bool CannedBrowsingDataLocalStorageHelper::empty() const {
   return local_storage_info_.empty() && pending_local_storage_info_.empty();
 }
 
+size_t CannedBrowsingDataLocalStorageHelper::GetLocalStorageCount() const {
+  return pending_local_storage_info_.size();
+}
+
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
     const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

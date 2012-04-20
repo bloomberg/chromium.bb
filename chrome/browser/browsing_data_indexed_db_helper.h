@@ -84,6 +84,9 @@ class CannedBrowsingDataIndexedDBHelper
   // True if no indexed databases are currently stored.
   bool empty() const;
 
+  // Returns the number of currently stored indexed databases.
+  size_t GetIndexedDBCount() const;
+
   // BrowsingDataIndexedDBHelper methods.
   virtual void StartFetching(
       const base::Callback<void(const std::list<IndexedDBInfo>&)>&
