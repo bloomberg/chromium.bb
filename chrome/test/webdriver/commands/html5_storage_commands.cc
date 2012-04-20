@@ -22,6 +22,10 @@ bool LocalStorageCommand::DoesGet() {
   return true;
 }
 
+bool LocalStorageCommand::DoesPost() {
+  return true;
+}
+
 bool LocalStorageCommand::DoesDelete() {
   return true;
 }
@@ -34,6 +38,22 @@ void LocalStorageCommand::ExecuteGet(Response* const response) {
     return;
   }
   response->SetValue(keys);
+}
+
+void LocalStorageCommand::ExecutePost(Response* const response) {
+  // "/session/$sessionId/local_storage"
+  std::string key;
+  std::string value;
+  if (!GetStringParameter("key", &key) ||
+      !GetStringParameter("value", &value)) {
+    response->SetError(new Error(
+        kBadRequest, "('key', 'value') parameter is missing or invalid"));
+    return;
+  }
+
+  Error* error = session_->SetStorageItem(kLocalStorageType, key, value);
+  if (error)
+    response->SetError(error);
 }
 
 void LocalStorageCommand::ExecuteDelete(Response* const response) {
@@ -53,10 +73,6 @@ bool LocalStorageKeyCommand::DoesGet() {
   return true;
 }
 
-bool LocalStorageKeyCommand::DoesPost() {
-  return true;
-}
-
 bool LocalStorageKeyCommand::DoesDelete() {
   return true;
 }
@@ -71,22 +87,6 @@ void LocalStorageKeyCommand::ExecuteGet(Response* const response) {
     return;
   }
   response->SetValue(new base::StringValue(value));
-}
-
-void LocalStorageKeyCommand::ExecutePost(Response* const response) {
-  // "/session/$sessionId/local_storage/key"
-  std::string key;
-  std::string value;
-  if (!GetStringParameter("key", &key) ||
-      !GetStringParameter("value", &value)) {
-    response->SetError(new Error(
-        kBadRequest, "('key', 'value') parameter is missing or invalid"));
-    return;
-  }
-
-  Error* error = session_->SetStorageItem(kLocalStorageType, key, value);
-  if (error)
-    response->SetError(error);
 }
 
 void LocalStorageKeyCommand::ExecuteDelete(Response* const response) {
@@ -133,6 +133,10 @@ bool SessionStorageCommand::DoesGet() {
   return true;
 }
 
+bool SessionStorageCommand::DoesPost() {
+  return true;
+}
+
 bool SessionStorageCommand::DoesDelete() {
   return true;
 }
@@ -145,6 +149,22 @@ void SessionStorageCommand::ExecuteGet(Response* const response) {
     return;
   }
   response->SetValue(keys);
+}
+
+void SessionStorageCommand::ExecutePost(Response* const response) {
+  // "/session/$sessionId/session_storage"
+  std::string key;
+  std::string value;
+  if (!GetStringParameter("key", &key) ||
+      !GetStringParameter("value", &value)) {
+    response->SetError(new Error(
+        kBadRequest, "('key', 'value') parameter is missing or invalid"));
+    return;
+  }
+
+  Error* error = session_->SetStorageItem(kSessionStorageType, key, value);
+  if (error)
+    response->SetError(error);
 }
 
 void SessionStorageCommand::ExecuteDelete(Response* const response) {
@@ -164,10 +184,6 @@ bool SessionStorageKeyCommand::DoesGet() {
   return true;
 }
 
-bool SessionStorageKeyCommand::DoesPost() {
-  return true;
-}
-
 bool SessionStorageKeyCommand::DoesDelete() {
   return true;
 }
@@ -182,22 +198,6 @@ void SessionStorageKeyCommand::ExecuteGet(Response* const response) {
     return;
   }
   response->SetValue(new base::StringValue(value));
-}
-
-void SessionStorageKeyCommand::ExecutePost(Response* const response) {
-  // "/session/$sessionId/session_storage/key"
-  std::string key;
-  std::string value;
-  if (!GetStringParameter("key", &key) ||
-      !GetStringParameter("value", &value)) {
-    response->SetError(new Error(
-        kBadRequest, "('key', 'value') parameter is missing or invalid"));
-    return;
-  }
-
-  Error* error = session_->SetStorageItem(kSessionStorageType, key, value);
-  if (error)
-    response->SetError(error);
 }
 
 void SessionStorageKeyCommand::ExecuteDelete(Response* const response) {

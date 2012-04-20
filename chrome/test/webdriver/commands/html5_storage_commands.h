@@ -25,10 +25,14 @@ class LocalStorageCommand : public WebDriverCommand {
   virtual ~LocalStorageCommand();
 
   virtual bool DoesGet() OVERRIDE;
+  virtual bool DoesPost() OVERRIDE;
   virtual bool DoesDelete() OVERRIDE;
 
   // Returns the list of all keys in the HTML5 localStorage object.
   virtual void ExecuteGet(Response* const response) OVERRIDE;
+
+  // Sets the value of an item in the HTML5 localStorage.
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
   // Deletes all items from the localStorage object.
   virtual void ExecuteDelete(Response* const response) OVERRIDE;
@@ -44,14 +48,10 @@ class LocalStorageKeyCommand : public WebDriverCommand {
   virtual ~LocalStorageKeyCommand();
 
   virtual bool DoesGet() OVERRIDE;
-  virtual bool DoesPost() OVERRIDE;
   virtual bool DoesDelete() OVERRIDE;
 
   // Returns the value of an item in the HTML5 localStorage.
   virtual void ExecuteGet(Response* const response) OVERRIDE;
-
-  // Sets the value of an item in the HTML5 localStorage.
-  virtual void ExecutePost(Response* const response) OVERRIDE;
 
   // Deletes an item in the HTML5 localStorage and returns the value.
   virtual void ExecuteDelete(Response* const response) OVERRIDE;
@@ -82,10 +82,14 @@ class SessionStorageCommand : public WebDriverCommand {
   virtual ~SessionStorageCommand();
 
   virtual bool DoesGet() OVERRIDE;
+  virtual bool DoesPost() OVERRIDE;
   virtual bool DoesDelete() OVERRIDE;
 
   // Returns the key of all items in the HTML5 sessionStorage object.
   virtual void ExecuteGet(Response* const response) OVERRIDE;
+
+  // Set the value of an item in the HTML5 sessionStorage.
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
   // Deletes all items from the sessionStorage object.
   virtual void ExecuteDelete(Response* const response) OVERRIDE;
@@ -101,14 +105,10 @@ class SessionStorageKeyCommand : public WebDriverCommand {
   virtual ~SessionStorageKeyCommand();
 
   virtual bool DoesGet() OVERRIDE;
-  virtual bool DoesPost() OVERRIDE;
   virtual bool DoesDelete() OVERRIDE;
 
   // Returns the value of an item in the HTML5 sessionStorage.
   virtual void ExecuteGet(Response* const response) OVERRIDE;
-
-  // Set the value of an item in the HTML5 sessionStorage.
-  virtual void ExecutePost(Response* const response) OVERRIDE;
 
   // Deletes an item in the HTML5 sessionStorage and returns the value.
   virtual void ExecuteDelete(Response* const response) OVERRIDE;
