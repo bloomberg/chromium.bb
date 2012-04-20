@@ -1,7 +1,11 @@
 <html>
 
 <head>
-<script src="npapi.js"></script>
+<script>
+function onSuccess(name, id) {
+  window.opener.document.title = "OK";
+}
+</script>
 </head>
 
 

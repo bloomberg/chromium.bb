@@ -147,7 +147,7 @@ NPError PluginGetURLTest::NewStream(NPMIMEType type, NPStream* stream,
       return NPERR_NO_ERROR;
     }
 
-    std::string script = "javascript:alert('Hi there from plugin');";
+    std::string script = "javascript:document.title=\"OK\"";
     NPString script_string;
     script_string.UTF8Characters = script.c_str();
     script_string.UTF8Length = static_cast<unsigned int>(script.length());

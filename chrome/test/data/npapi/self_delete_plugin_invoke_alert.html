@@ -14,7 +14,7 @@ function SuccessCallback() {
 function TimeoutCallback() {
   var plg = window.document["plg"];
   var plg2 = window.document["plg2"];
-  plg.testCallbackAndGetValue("DeletePluginWithinScript");
+  plg.testCallback("DeletePluginWithinScript");
   plg2.testCallback("SuccessCallback");  // will fail if the plugin crashed
 }
 </script>

@@ -1,7 +1,14 @@
 <html>
 
 <head>
-<script src="npapi.js"></script>
+<script>
+count = 0;
+function onSuccess(name, id) {
+  count++;
+  if (count == 15)
+    document.title = "OK";
+}
+</script>
 </head>
 
 

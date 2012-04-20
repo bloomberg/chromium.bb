@@ -64,6 +64,7 @@ class WebContents;
 
 namespace gfx {
 class Point;
+class Rect;
 class Size;
 }
 
@@ -203,6 +204,7 @@ GURL GetFileUrlWithQuery(const FilePath& path, const std::string& query_string);
 
 // Blocks until an application modal dialog is showns and returns it.
 AppModalDialog* WaitForAppModalDialog();
+void WaitForAppModalDialogAndCloseIt();
 
 // Causes the specified tab to crash. Blocks until it is crashed.
 void CrashTab(content::WebContents* tab);
@@ -219,6 +221,10 @@ int FindInPage(TabContentsWrapper* tab,
 // Simulates clicking at the specified position in the given tab. Unlike
 // ClickOnView, this works even if the browser isn't in the foreground.
 void SimulateMouseClick(content::WebContents* tab, int x, int y);
+
+#if defined OS_MACOSX
+void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds);
+#endif
 
 // Returns true if the View is focused.
 bool IsViewFocused(const Browser* browser, ViewID vid);
@@ -243,8 +249,7 @@ void WaitForHistoryToLoad(Browser* browser);
 
 // Puts the native window for |browser| in |native_window|. Returns true on
 // success.
-bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window)
-    WARN_UNUSED_RESULT;
+bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window);
 
 // Brings the native window for |browser| to the foreground. Returns true on
 // success.

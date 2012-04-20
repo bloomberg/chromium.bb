@@ -331,8 +331,6 @@
         'test/reliability/automated_ui_test_base.cc',
         'test/reliability/automated_ui_test_base.h',
         'test/ui/javascript_test_util.cc',
-        'test/ui/npapi_test_helper.cc',
-        'test/ui/npapi_test_helper.h',
         'test/ui/run_all_unittests.cc',
         'test/ui/ui_perf_test.cc',
         'test/ui/ui_perf_test.h',
@@ -522,7 +520,6 @@
         'browser/mouseleave_interactive_uitest.cc',
         'browser/printing/print_dialog_cloud_interative_uitest.cc',
         'browser/notifications/notifications_interactive_uitest.cc',
-        'browser/npapi_interactive_test.cc',
         'browser/task_manager/task_manager_browsertest_util.cc',
         'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
         'browser/ui/omnibox/omnibox_view_browsertest.cc',
@@ -565,7 +562,6 @@
         ['toolkit_uses_gtk == 1 and toolkit_views == 0', {
           'sources!': [
             # TODO(port)
-            'browser/npapi_interactive_test.cc',
             'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/button_dropdown_test.cc',
@@ -580,21 +576,12 @@
         ['OS=="linux" and toolkit_views==1', {
           'sources!': [
             # TODO(port)
-            'browser/npapi_interactive_test.cc',
-
             'browser/ui/gtk/bookmarks/bookmark_bar_gtk_interactive_uitest.cc',
           ],
         }],
-        ['target_arch!="arm"', {
-          'dependencies': [
-            # run time dependency
-            '../webkit/webkit.gyp:npapi_test_plugin',
-          ],
-        }],  # target_arch
         ['OS=="mac"', {
           'sources!': [
             # TODO(port)
-            'browser/npapi_interactive_test.cc',
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/button_dropdown_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
@@ -762,19 +749,12 @@
         'test/automation/automation_proxy_uitest.h',
         'test/base/chrome_process_util_uitest.cc',
         'test/reliability/automated_ui_test_test.cc',
-        'test/ui/layout_plugin_uitest.cc',
         'test/ui/named_interface_uitest.cc',
-        'test/ui/npapi_uitest.cc',
         'test/ui/sandbox_uitests.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_uitest.cc',
         # DON'T ADD NEW FILES! SEE NOTE AT TOP OF SECTION.
       ],
       'conditions': [
-        ['target_arch!="arm"', {
-          'dependencies': [
-            '../webkit/webkit.gyp:copy_npapi_test_plugin',
-          ],
-        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
@@ -793,7 +773,6 @@
         ['use_aura==1', {
           'sources!': [
             'test/automation/automation_proxy_uitest.cc',
-            'test/ui/npapi_uitest.cc',
           ],
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
@@ -3089,6 +3068,7 @@
         '../content/browser/in_process_webkit/indexed_db_layout_browsertest.cc',
         '../content/browser/indexed_db/idbbindingutilities_browsertest.cc',
         '../content/browser/media_browsertest.cc',
+        '../content/browser/plugin_browsertest.cc',
         '../content/browser/plugin_data_remover_impl_browsertest.cc',
         '../content/browser/plugin_service_impl_browsertest.cc',
         '../content/browser/renderer_host/render_process_host_browsertest.cc',

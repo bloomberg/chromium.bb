@@ -103,8 +103,8 @@ int16 WindowlessPluginTest::HandleEvent(void* event) {
              test_name() == "convert_point") {
       ConvertPoint(browser);
 #endif
-  } else if (IsMouseMoveEvent(np_event) &&
-             test_name() == "execute_script_delete_in_mouse_move") {
+  } else if (IsMouseUpEvent(np_event) &&
+             test_name() == "execute_script_delete_in_mouse_up") {
     ExecuteScript(browser, id(), "DeletePluginWithinScript();", NULL);
     SignalTestCompleted();
   } else if (IsMouseUpEvent(np_event) &&

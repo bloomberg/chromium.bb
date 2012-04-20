@@ -7,7 +7,7 @@
 function DeletePluginWithinScript() {
   var plugin_div = document.getElementById("PluginDiv");
   plugin_div.innerHTML = "Object Deleted";
-  onSuccess("execute_script_delete_in_mouse_move", 1); 
+  onSuccess("execute_script_delete_in_mouse_up", 1); 
 }
 </script>
 </head>
@@ -26,7 +26,7 @@ of a synchronous mouse event.
 <DIV ID=PluginDiv>
 <embed	type="application/vnd.npapi-test" 
 	src="foo"
-	name="execute_script_delete_in_mouse_move"
+	name="execute_script_delete_in_mouse_up"
 	id="1"
 	mode="np_embed"
 >

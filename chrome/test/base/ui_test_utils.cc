@@ -31,6 +31,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -54,6 +55,7 @@
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/test/test_navigation_observer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -589,6 +591,11 @@ AppModalDialog* WaitForAppModalDialog() {
   return content::Source<AppModalDialog>(observer.source()).ptr();
 }
 
+void WaitForAppModalDialogAndCloseIt() {
+  AppModalDialog* dialog = WaitForAppModalDialog();
+  dialog->CloseModalDialog();
+}
+
 void CrashTab(WebContents* tab) {
   content::RenderProcessHost* rph = tab->GetRenderProcessHost();
   base::KillProcess(rph->GetHandle(), 0, false);
@@ -613,6 +620,11 @@ void SimulateMouseClick(content::WebContents* tab, int x, int y) {
   mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
   mouse_event.x = x;
   mouse_event.y = y;
+  // Mac needs globalX/globalY for events to plugins.
+  gfx::Rect offset;
+  tab->GetView()->GetContainerBounds(&offset);
+  mouse_event.globalX = x + offset.x();
+  mouse_event.globalY = y + offset.y();
   mouse_event.clickCount = 1;
   tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
   mouse_event.type = WebKit::WebInputEvent::MouseUp;

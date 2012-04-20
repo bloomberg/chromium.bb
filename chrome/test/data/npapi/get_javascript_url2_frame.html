@@ -1,6 +1,10 @@
 <html>
 <head>
-<script src="npapi.js"></script>
+<script>
+function onSuccess(name, id) {
+  parent.document.title = "OK";
+}
+</script>
 </head>
 <body>
 <div id="statusPanel" style="border: 1px solid red; width: 100%">

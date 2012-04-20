@@ -16,11 +16,10 @@ function Init() {
   var plg = window.document["plg"];
   // Create the NPObjectStub in the plugin process first.  This object's
   // deallocate function will release the NPObject below.
-  test_object = plg.testCreateTestObject();
 
   // Then create an NPObjectProxy in the plugin process that holds on to the
   // dummyMethod function above.
-  test_object.pageTestObject();
+  plg.remember(dummyMethod);
 }
 </script>
 </head>

@@ -46,7 +46,7 @@ PluginTest* CreatePluginTest(const std::string& test_name,
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // TODO(port): plugin_windowless_test.*.
   } else if (test_name == "execute_script_delete_in_paint" ||
-             test_name == "execute_script_delete_in_mouse_move" ||
+             test_name == "execute_script_delete_in_mouse_up" ||
              test_name == "delete_frame_test" ||
              test_name == "multiple_instances_sync_calls" ||
              test_name == "no_hang_if_init_crashes" ||

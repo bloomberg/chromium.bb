@@ -168,6 +168,30 @@ TEST_F(ClickToPlayPluginTest, Flash) {
   WaitForFinish(TestTimeouts::action_max_timeout_ms(), true);
 }
 
+TEST_F(ClickToPlayPluginTest, LoadAllBlockedPlugins) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  ASSERT_TRUE(browser->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                                CONTENT_SETTING_BLOCK));
+
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(FILE_PATH_LITERAL("npapi/load_all_blocked_plugins.html"))));
+  ASSERT_NO_FATAL_FAILURE(NavigateToURL(url));
+
+  scoped_refptr<TabProxy> tab(browser->GetTab(0));
+  ASSERT_TRUE(tab.get());
+
+  ASSERT_TRUE(tab->LoadBlockedPlugins());
+
+  UITest::WaitForFinish("setup", "1", url, "status", "OK",
+                        TestTimeouts::action_max_timeout_ms());
+
+  ASSERT_TRUE(tab->ExecuteJavaScript("window.inject()"));
+
+  UITest::WaitForFinish("setup", "2", url, "status", "OK",
+                        TestTimeouts::action_max_timeout_ms());
+}
+
 #if defined(OS_WIN)
 // Flaky on Windows, see http://crbug.com/113057
 #define MAYBE_FlashDocument DISABLED_FlashDocument

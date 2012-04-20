@@ -3,14 +3,14 @@
 plugins
 </title>
 
-<script src="npapi.js"></script>
-
 <script>
 function onLoad() {
-  if (document.referrer == "http://mock.http/dummy_plugin_referrer")
-    onSuccess("plugin_referrer_test", 1);
-  else
+  if (document.referrer == "http://mock.http/dummy_plugin_referrer") {
+    window.opener.document.title = "OK";
+  } else {
     onFailure("plugin_referrer_test", 1, "Unexpected referrer value");
+    window.opener.document.title = "FAIL";
+  }
 }
 </script>
 </head>

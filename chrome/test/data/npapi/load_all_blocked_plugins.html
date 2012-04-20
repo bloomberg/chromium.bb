@@ -1,7 +1,19 @@
 <html>
 <head>
-<script src="npapi.js"></script>
 <script>
+function onSuccess(name, id) {
+  setTimeout(onFinished, 0, name, id, "OK");
+}
+
+function onFailure(name, id, status) {
+  setTimeout(onFinished, 0, name, id, status);
+}
+
+function onFinished(name, id, result) {
+  var cookie = name + "." + id + ".status=" + result + "; path=/";
+  document.cookie = cookie;
+}
+
 var id = 1;
 function inject() {
   var child = document.createElement("div");
