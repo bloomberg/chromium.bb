@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,15 @@ ExtensionResource::ExtensionResource(const std::string& extension_id,
                                      const FilePath& relative_path)
     : extension_id_(extension_id),
       extension_root_(extension_root),
-      relative_path_(relative_path) {
+      relative_path_(relative_path),
+      follow_symlinks_anywhere_(false) {
 }
 
 ExtensionResource::~ExtensionResource() {}
+
+void ExtensionResource::set_follow_symlinks_anywhere() {
+  follow_symlinks_anywhere_ = true;
+}
 
 const FilePath& ExtensionResource::GetFilePath() const {
   if (extension_root_.empty() || relative_path_.empty()) {
@@ -31,14 +36,18 @@ const FilePath& ExtensionResource::GetFilePath() const {
   if (!full_resource_path_.empty())
     return full_resource_path_;
 
-  full_resource_path_ =
-      GetFilePath(extension_root_, relative_path_);
+  full_resource_path_ = GetFilePath(
+      extension_root_, relative_path_,
+      follow_symlinks_anywhere_ ?
+          FOLLOW_SYMLINKS_ANYWHERE : SYMLINKS_MUST_RESOLVE_WITHIN_ROOT);
   return full_resource_path_;
 }
 
 // static
 FilePath ExtensionResource::GetFilePath(
-    const FilePath& extension_root, const FilePath& relative_path) {
+    const FilePath& extension_root,
+    const FilePath& relative_path,
+    SymlinkPolicy symlink_policy) {
   // We need to resolve the parent references in the extension_root
   // path on its own because IsParent doesn't like parent references.
   FilePath clean_extension_root(extension_root);
@@ -46,6 +55,26 @@ FilePath ExtensionResource::GetFilePath(
     return FilePath();
 
   FilePath full_path = clean_extension_root.Append(relative_path);
+
+  // If we are allowing the file to be a symlink outside of the root, then the
+  // path before resolving the symlink must still be within it.
+  if (symlink_policy == FOLLOW_SYMLINKS_ANYWHERE) {
+    std::vector<FilePath::StringType> components;
+    relative_path.GetComponents(&components);
+    int depth = 0;
+
+    for (std::vector<FilePath::StringType>::const_iterator
+         i = components.begin(); i != components.end(); i++) {
+      if (*i == FilePath::kParentDirectory) {
+        depth--;
+      } else {
+        depth++;
+      }
+      if (depth < 0) {
+        return FilePath();
+      }
+    }
+  }
 
   // We must resolve the absolute path of the combined path when
   // the relative path contains references to a parent folder (i.e., '..').
@@ -56,7 +85,8 @@ FilePath ExtensionResource::GetFilePath(
   // TODO(mad): Fix this once AbsolutePath is unified.
   if (file_util::AbsolutePath(&full_path) &&
       file_util::PathExists(full_path) &&
-      clean_extension_root.IsParent(full_path)) {
+      (symlink_policy == FOLLOW_SYMLINKS_ANYWHERE ||
+       clean_extension_root.IsParent(full_path))) {
     return full_path;
   }
 

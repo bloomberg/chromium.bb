@@ -101,11 +101,12 @@ bool ExtensionCreator::ValidateManifest(const FilePath& extension_dir,
   // Load the extension once. We don't really need it, but this does a lot of
   // useful validation of the structure.
   scoped_refptr<Extension> extension(
-      extension_file_util::LoadExtension(extension_dir,
-                                         extension_id,
-                                         Extension::INTERNAL,
-                                         Extension::STRICT_ERROR_CHECKS,
-                                         &error_message_));
+      extension_file_util::LoadExtension(
+          extension_dir,
+          extension_id,
+          Extension::INTERNAL,
+          Extension::STRICT_ERROR_CHECKS | Extension::FOLLOW_SYMLINKS_ANYWHERE,
+          &error_message_));
   return !!extension.get();
 }
 

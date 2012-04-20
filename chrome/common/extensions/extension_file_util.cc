@@ -19,8 +19,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -231,13 +231,22 @@ bool ValidateExtension(const Extension* extension, std::string* error) {
 
   // Validate that claimed script resources actually exist,
   // and are UTF-8 encoded.
+  ExtensionResource::SymlinkPolicy symlink_policy;
+  if ((extension->creation_flags() &
+       Extension::FOLLOW_SYMLINKS_ANYWHERE) != 0) {
+    symlink_policy = ExtensionResource::FOLLOW_SYMLINKS_ANYWHERE;
+  } else {
+    symlink_policy = ExtensionResource::SYMLINKS_MUST_RESOLVE_WITHIN_ROOT;
+  }
+
   for (size_t i = 0; i < extension->content_scripts().size(); ++i) {
     const UserScript& script = extension->content_scripts()[i];
 
     for (size_t j = 0; j < script.js_scripts().size(); j++) {
       const UserScript::File& js_script = script.js_scripts()[j];
       const FilePath& path = ExtensionResource::GetFilePath(
-          js_script.extension_root(), js_script.relative_path());
+          js_script.extension_root(), js_script.relative_path(),
+          symlink_policy);
       if (!IsScriptValid(path, js_script.relative_path(),
                          IDS_EXTENSION_LOAD_JAVASCRIPT_FAILED, error))
         return false;
@@ -246,7 +255,8 @@ bool ValidateExtension(const Extension* extension, std::string* error) {
     for (size_t j = 0; j < script.css_scripts().size(); j++) {
       const UserScript::File& css_script = script.css_scripts()[j];
       const FilePath& path = ExtensionResource::GetFilePath(
-          css_script.extension_root(), css_script.relative_path());
+          css_script.extension_root(), css_script.relative_path(),
+          symlink_policy);
       if (!IsScriptValid(path, css_script.relative_path(),
                          IDS_EXTENSION_LOAD_CSS_FAILED, error))
         return false;

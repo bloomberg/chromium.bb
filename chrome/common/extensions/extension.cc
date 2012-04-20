@@ -2895,12 +2895,20 @@ ExtensionResource Extension::GetResource(
 #elif defined(OS_WIN)
   FilePath relative_file_path(UTF8ToWide(new_path));
 #endif
-  return ExtensionResource(id(), path(), relative_file_path);
+  ExtensionResource r(id(), path(), relative_file_path);
+  if ((creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE)) {
+    r.set_follow_symlinks_anywhere();
+  }
+  return r;
 }
 
 ExtensionResource Extension::GetResource(
     const FilePath& relative_file_path) const {
-  return ExtensionResource(id(), path(), relative_file_path);
+  ExtensionResource r(id(), path(), relative_file_path);
+  if ((creation_flags() & Extension::FOLLOW_SYMLINKS_ANYWHERE)) {
+    r.set_follow_symlinks_anywhere();
+  }
+  return r;
 }
 
 // TODO(rafaelw): Move ParsePEMKeyBytes, ProducePEM & FormatPEMForOutput to a

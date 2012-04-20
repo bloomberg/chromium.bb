@@ -245,6 +245,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // |FROM_BOOKMARK| indicates the extension was created using a mock App
     // created from a bookmark.
     FROM_BOOKMARK = 1 << 5,
+
+    // |FOLLOW_SYMLINKS_ANYWHERE| means that resources can be symlinks to
+    // anywhere in the filesystem, rather than being restricted to the
+    // extension directory.
+    FOLLOW_SYMLINKS_ANYWHERE = 1 << 6,
   };
 
   static scoped_refptr<Extension> Create(const FilePath& path,
