@@ -51,9 +51,11 @@ class CashewClientImpl : public CashewClient {
   }
 
   // CashewClient override.
-  virtual void RequestDataPlansUpdate() OVERRIDE {
+  virtual void RequestDataPlansUpdate(const std::string& service) OVERRIDE {
     dbus::MethodCall method_call(cashew::kCashewServiceInterface,
                                  cashew::kRequestDataPlanFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(service);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&DoNothing));
   }
@@ -107,7 +109,7 @@ class CashewClientStubImpl : public CashewClient {
   virtual void ResetDataPlansUpdateHandler() OVERRIDE {}
 
   // CashewClient override.
-  virtual void RequestDataPlansUpdate() OVERRIDE {}
+  virtual void RequestDataPlansUpdate(const std::string& service) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CashewClientStubImpl);

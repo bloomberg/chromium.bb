@@ -51,7 +51,7 @@ class CHROMEOS_EXPORT CashewClient {
   virtual void ResetDataPlansUpdateHandler() = 0;
 
   // Calls RequestDataPlansUpdate method.
-  virtual void RequestDataPlansUpdate() = 0;
+  virtual void RequestDataPlansUpdate(const std::string& service) = 0;
 
  protected:
   // Create() should be used instead.

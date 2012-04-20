@@ -12,7 +12,7 @@ namespace chromeos {
 
 class MockChromeOSNetwork {
  public:
-  // Initializes the global instance and sets the replaces chromeos_network
+  // Initializes the global instance and replaces the chromeos_network
   // functions with mocks.
   static void Initialize();
 
@@ -39,6 +39,8 @@ class MockChromeOSNetwork {
   MOCK_METHOD2(SetNetworkManagerPropertyGValue,
                void(const char* property,
                     const GValue* gvalue));
+  MOCK_METHOD1(RequestCellularDataPlanUpdate,
+               void(const char* modem_service_path));
   MOCK_METHOD2(MonitorNetworkManagerProperties,
                NetworkPropertiesMonitor(MonitorPropertyGValueCallback callback,
                                         void* object));

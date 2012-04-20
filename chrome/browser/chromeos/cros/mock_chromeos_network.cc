@@ -48,6 +48,11 @@ void CallMockSetNetworkManagerPropertyGValue(const char* property,
   g_mock_chromeos_network->SetNetworkManagerPropertyGValue(property, gvalue);
 }
 
+// Calls mock RequestCellularDataPlanUpdate.
+void CallMockRequestCellularDataPlanUpdate(const char* modem_service_path) {
+  g_mock_chromeos_network->RequestCellularDataPlanUpdate(modem_service_path);
+}
+
 // Calls mock MonitorNetworkManagerProperties.
 NetworkPropertiesMonitor CallMockMonitorNetworkManagerProperties(
     MonitorPropertyGValueCallback callback, void* object) {
@@ -222,6 +227,8 @@ void MockChromeOSNetwork::Initialize() {
         &CallMockSetNetworkIPConfigPropertyGValue;
     chromeos::SetNetworkManagerPropertyGValue =
         &CallMockSetNetworkManagerPropertyGValue;
+    chromeos::RequestCellularDataPlanUpdate =
+        &CallMockRequestCellularDataPlanUpdate;
     chromeos::MonitorNetworkManagerProperties =
         &CallMockMonitorNetworkManagerProperties;
     chromeos::MonitorNetworkServiceProperties =
@@ -277,6 +284,7 @@ void MockChromeOSNetwork::Shutdown() {
     chromeos::DisconnectDataPlanUpdateMonitor = NULL;
     chromeos::MonitorSMS = NULL;
     chromeos::DisconnectSMSMonitor = NULL;
+    chromeos::RequestCellularDataPlanUpdate = NULL;
     chromeos::RequestNetworkManagerProperties = NULL;
     chromeos::RequestNetworkServiceProperties = NULL;
     chromeos::RequestNetworkDeviceProperties = NULL;

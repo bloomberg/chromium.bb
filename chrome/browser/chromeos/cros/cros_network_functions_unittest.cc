@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/cros/cros_network_functions.h"
 #include "chrome/browser/chromeos/cros/gvalue_util.h"
 #include "chrome/browser/chromeos/cros/mock_chromeos_network.h"
+#include "chromeos/dbus/mock_cashew_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_flimflam_device_client.h"
 #include "chromeos/dbus/mock_flimflam_manager_client.h"
@@ -257,6 +258,13 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetNetworkManagerProperty) {
   const base::StringValue value(kString);
   CrosSetNetworkManagerProperty(property, value);
   EXPECT_EQ(kString, g_value_get_string(argument_gvalue_.get()));
+}
+
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestCellularDataPlanUpdate) {
+  const char kModemServicePath[] = "/modem/service/path";
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              RequestCellularDataPlanUpdate(kModemServicePath)).Times(1);
+  CrosRequestCellularDataPlanUpdate(kModemServicePath);
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosMonitorNetworkManagerProperties) {
@@ -614,6 +622,7 @@ class CrosNetworkFunctionsTest : public testing::Test {
   virtual void SetUp() {
     MockDBusThreadManager* mock_dbus_thread_manager = new MockDBusThreadManager;
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
+    mock_cashew_client_ = mock_dbus_thread_manager->mock_cashew_client();
     mock_device_client_ =
         mock_dbus_thread_manager->mock_flimflam_device_client();
     mock_manager_client_ =
@@ -652,6 +661,7 @@ class CrosNetworkFunctionsTest : public testing::Test {
   }
 
  protected:
+  MockCashewClient* mock_cashew_client_;
   MockFlimflamDeviceClient* mock_device_client_;
   MockFlimflamManagerClient* mock_manager_client_;
   MockFlimflamProfileClient* mock_profile_client_;
@@ -715,6 +725,13 @@ TEST_F(CrosNetworkFunctionsTest, CrosDeleteServiceFromProfile) {
               DeleteEntry(dbus::ObjectPath(profile_path), service_path, _))
       .Times(1);
   CrosDeleteServiceFromProfile(profile_path.c_str(), service_path.c_str());
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestCellularDataPlanUpdate) {
+  const char kModemServicePath[] = "/modem/service/path";
+  EXPECT_CALL(*mock_cashew_client_,
+              RequestDataPlansUpdate(kModemServicePath)).Times(1);
+  CrosRequestCellularDataPlanUpdate(kModemServicePath);
 }
 
 TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkManagerProperties) {

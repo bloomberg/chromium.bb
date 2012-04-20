@@ -19,7 +19,7 @@ class MockCashewClient : public CashewClient {
   MOCK_METHOD1(SetDataPlansUpdateHandler,
                void(const DataPlansUpdateHandler& handler));
   MOCK_METHOD0(ResetDataPlansUpdateHandler, void());
-  MOCK_METHOD0(RequestDataPlansUpdate, void());
+  MOCK_METHOD1(RequestDataPlansUpdate, void(const std::string& service));
 };
 
 }  // namespace chromeos

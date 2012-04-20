@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/gvalue_util.h"
+#include "chromeos/dbus/cashew_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/flimflam_device_client.h"
 #include "chromeos/dbus/flimflam_manager_client.h"
@@ -289,7 +290,12 @@ void CrosDeleteServiceFromProfile(const char* profile_path,
 }
 
 void CrosRequestCellularDataPlanUpdate(const char* modem_service_path) {
-  chromeos::RequestCellularDataPlanUpdate(modem_service_path);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::RequestCellularDataPlanUpdate(modem_service_path);
+  } else {
+    DBusThreadManager::Get()->GetCashewClient()->RequestDataPlansUpdate(
+        modem_service_path);
+  }
 }
 
 CrosNetworkWatcher* CrosMonitorNetworkManagerProperties(
