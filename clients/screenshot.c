@@ -47,6 +47,7 @@ struct screenshooter_output {
 	struct wl_output *output;
 	struct wl_buffer *buffer;
 	int width, height, offset_x, offset_y;
+	void *data;
 	struct wl_list link;
 };
 
@@ -165,23 +166,45 @@ create_shm_buffer(int width, int height, void **data_out)
 }
 
 static void
-write_png(int width, int height, void *data)
+write_png(int width, int height)
 {
+	int output_stride, buffer_stride, i;
 	cairo_surface_t *surface;
+	void *data, *d, *s;
+	struct screenshooter_output *output, *next;
+
+	buffer_stride = width * 4;
+
+	data = malloc(buffer_stride * height);
+	if (!data)
+		return;
+
+	wl_list_for_each_safe(output, next, &output_list, link) {
+		output_stride = output->width * 4;
+		s = output->data;
+		d = data + output->offset_y * buffer_stride + output->offset_x * 4;
+
+		for (i = 0; i < output->height; i++) {
+			memcpy(d, s, output_stride);
+			d += buffer_stride;
+			s += output_stride;
+		}
+
+		free(output);
+	}
 
 	surface = cairo_image_surface_create_for_data(data,
 						      CAIRO_FORMAT_ARGB32,
-						      width, height, width * 4);
+						      width, height, buffer_stride);
 	cairo_surface_write_to_png(surface, "wayland-screenshot.png");
 	cairo_surface_destroy(surface);
+	free(data);
 }
 
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
-	struct wl_buffer *buffer;
-	void *data = NULL;
-	struct screenshooter_output *output, *next;
+	struct screenshooter_output *output;
 	int width = 0, height = 0;
 
 	display = wl_display_connect(NULL);
@@ -203,21 +226,16 @@ int main(int argc, char *argv[])
 
 
 	wl_list_for_each(output, &output_list, link) {
+		output->buffer = create_shm_buffer(output->width, output->height, &output->data);
+		screenshooter_shoot(screenshooter, output->output, output->buffer);
 		width = MAX(width, output->offset_x + output->width);
 		height = MAX(height, output->offset_y + output->height);
-	}
-
-	buffer = create_shm_buffer(width, height, &data);
-
-	wl_list_for_each_safe(output, next, &output_list, link) {
-		screenshooter_shoot(screenshooter, output->output, buffer);
 		buffer_copy_done = 0;
 		while (!buffer_copy_done)
 			wl_display_roundtrip(display);
-		free(output);
 	}
 
-	write_png(width, height, data);
+	write_png(width, height);
 
 	return 0;
 }

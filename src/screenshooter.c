@@ -43,16 +43,15 @@ struct screenshooter_read_pixels {
 };
 
 static void
-copy_bgra_yflip(uint8_t *dst, uint8_t *src, int height,
-		int dst_stride, int src_stride)
+copy_bgra_yflip(uint8_t *dst, uint8_t *src, int height, int stride)
 {
 	uint8_t *end;
 
-	end = dst + height * dst_stride;
+	end = dst + height * stride;
 	while (dst < end) {
-		memcpy(dst, src, src_stride);
-		dst += dst_stride;
-		src -= src_stride;
+		memcpy(dst, src, stride);
+		dst += stride;
+		src -= stride;
 	}
 }
 
@@ -74,16 +73,15 @@ copy_row_swap_RB(void *vdst, void *vsrc, int bytes)
 }
 
 static void
-copy_rgba_yflip(uint8_t *dst, uint8_t *src, int height,
-		int dst_stride, int src_stride)
+copy_rgba_yflip(uint8_t *dst, uint8_t *src, int height, int stride)
 {
 	uint8_t *end;
 
-	end = dst + height * dst_stride;
+	end = dst + height * stride;
 	while (dst < end) {
-		copy_row_swap_RB(dst, src, src_stride);
-		dst += dst_stride;
-		src -= src_stride;
+		copy_row_swap_RB(dst, src, stride);
+		dst += stride;
+		src -= stride;
 	}
 }
 
@@ -93,24 +91,20 @@ screenshooter_read_pixels_done(struct weston_read_pixels *base,
 {
 	struct screenshooter_read_pixels *r =
 		(struct screenshooter_read_pixels *) base;
-	int32_t buffer_stride, output_stride;
+	int32_t stride;
 	uint8_t *d, *s;
 
-	buffer_stride = wl_shm_buffer_get_stride(r->buffer);
-	output_stride = output->current->width * 4;
+	stride = wl_shm_buffer_get_stride(r->buffer);
 
-	d = wl_shm_buffer_get_data(r->buffer) +
-		output->y * buffer_stride + output->x * 4;
-	s = r->base.data + output_stride * (output->current->height - 1);
+	d = wl_shm_buffer_get_data(r->buffer);
+	s = r->base.data + stride * (r->buffer->height - 1);
 
 	switch (output->compositor->read_format) {
 	case GL_BGRA_EXT:
-		copy_bgra_yflip(d, s, output->current->height,
-				buffer_stride, output_stride);
+		copy_bgra_yflip(d, s, output->current->height, stride);
 		break;
 	case GL_RGBA:
-		copy_rgba_yflip(d, s, output->current->height,
-				buffer_stride, output_stride);
+		copy_rgba_yflip(d, s, output->current->height, stride);
 		break;
 	default:
 		break;
