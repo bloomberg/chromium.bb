@@ -459,13 +459,17 @@ ProfileImpl::~ProfileImpl() {
       chrome::NOTIFICATION_PROFILE_DESTROYED,
       content::Source<Profile>(this),
       content::NotificationService::NoDetails());
-  SessionStartupPref pref = SessionStartupPref::GetStartupPref(this);
+  bool prefs_loaded = prefs_->GetInitializationStatus() !=
+      PrefService::INITIALIZATION_STATUS_WAITING;
   // Honor the "clear local state" setting. If it's not set, keep the session
   // data if we're going to continue the session upon startup.
-  if (clear_local_state_on_exit_)
+  if (clear_local_state_on_exit_) {
     BrowserContext::ClearLocalOnDestruction(this);
-  else if (session_restore_enabled_ && pref.type == SessionStartupPref::LAST)
-    BrowserContext::SaveSessionState(this);
+  } else if (session_restore_enabled_ && prefs_loaded) {
+    SessionStartupPref pref = SessionStartupPref::GetStartupPref(this);
+    if (pref.type == SessionStartupPref::LAST)
+      BrowserContext::SaveSessionState(this);
+  }
 
 #if defined(ENABLE_SESSION_SERVICE)
   StopCreateSessionServiceTimer();
@@ -536,7 +540,8 @@ ProfileImpl::~ProfileImpl() {
     host_content_settings_map_->ShutdownOnUIThread();
 
   // This causes the Preferences file to be written to disk.
-  MarkAsCleanShutdown();
+  if (prefs_loaded)
+    MarkAsCleanShutdown();
 }
 
 std::string ProfileImpl::GetProfileName() {

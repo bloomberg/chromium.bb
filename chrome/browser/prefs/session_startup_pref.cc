@@ -51,10 +51,8 @@ void SetNewURLList(PrefService* prefs) {
 void URLListToPref(const base::ListValue* url_list, SessionStartupPref* pref) {
   pref->urls.clear();
   for (size_t i = 0; i < url_list->GetSize(); ++i) {
-    Value* value = NULL;
-    CHECK(url_list->Get(i, &value));
     std::string url_text;
-    if (value->GetAsString(&url_text)) {
+    if (url_list->GetString(i, &url_text)) {
       GURL fixed_url = URLFixerUpper::FixupURL(url_text, "");
       pref->urls.push_back(fixed_url);
     }
