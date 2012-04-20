@@ -188,7 +188,7 @@ draw_border(struct wayland_output *output)
 	glUniformMatrix4fv(shader->proj_uniform,
 			   1, GL_FALSE, output->base.matrix.d);
 
-	glUniform1i(shader->tex_uniform, 0);
+	glUniform1i(shader->tex_uniforms[0], 0);
 	glUniform1f(shader->alpha_uniform, 1);
 	glUniform1f(shader->texwidth_uniform, 1);
 

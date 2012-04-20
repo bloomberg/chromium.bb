@@ -728,7 +728,8 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 {
 	struct weston_surface *es = (struct weston_surface *) surface;
 	struct weston_compositor *ec = es->compositor;
-	int i;
+	EGLint attribs[3], components;
+	int i, num_planes;
 
 	if (es->buffer) {
 		weston_buffer_post_release(es->buffer);
@@ -774,20 +775,56 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 			es->blend = 0;
 		else
 			es->blend = 1;
-	} else {
-		if (es->images[0] != EGL_NO_IMAGE_KHR)
+	} else if (ec->query_buffer(ec->egl_display, buffer,
+				    EGL_WAYLAND_BUFFER_COMPONENTS_WL,
+				    &components)) {
+		for (i = 0; i < es->num_images; i++)
 			ec->destroy_image(ec->egl_display, es->images[0]);
-		es->images[0] = ec->create_image(ec->egl_display, NULL,
-						 EGL_WAYLAND_BUFFER_WL,
-						 buffer, NULL);
-		es->num_images = 1;
+		es->num_images = 0;
 
-		ensure_textures(es, 1);
-		glBindTexture(GL_TEXTURE_2D, es->textures[0]);
-		ec->image_target_texture_2d(GL_TEXTURE_2D, es->images[0]);
+		switch (components) {
+		case EGL_WAYLAND_BUFFER_RGB_WL:
+		case EGL_WAYLAND_BUFFER_RGBA_WL:
+		default:
+			num_planes = 1;
+			es->shader = &ec->texture_shader_rgba;
+			break;
+		case EGL_WAYLAND_BUFFER_Y_UV_WL:
+			num_planes = 2;
+			es->shader = &ec->texture_shader_y_uv;
+			break;
+		case EGL_WAYLAND_BUFFER_Y_U_V_WL:
+			num_planes = 3;
+			es->shader = &ec->texture_shader_y_u_v;
+			break;
+		case EGL_WAYLAND_BUFFER_Y_XUXV_WL:
+			num_planes = 2;
+			es->shader = &ec->texture_shader_y_xuxv;
+			break;
+		}
+
+		ensure_textures(es, num_planes);
+		for (i = 0; i < num_planes; i++) {
+			attribs[0] = EGL_WAYLAND_PLANE_WL;
+			attribs[1] = i;
+			attribs[2] = EGL_NONE;
+			es->images[i] = ec->create_image(ec->egl_display,
+							 NULL,
+							 EGL_WAYLAND_BUFFER_WL,
+							 buffer, attribs);
+			if (!es->images[i])
+				continue;
+			es->num_images++;
+
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, es->textures[i]);
+			ec->image_target_texture_2d(GL_TEXTURE_2D,
+						    es->images[i]);
+		}
 
 		es->pitch = buffer->width;
-		es->shader = &ec->texture_shader_rgba;
+	} else {
+		/* unhandled buffer type */
 	}
 }
 
@@ -856,7 +893,7 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 	GLfloat *v;
 	pixman_region32_t repaint;
 	GLint filter;
-	int n;
+	int i, n;
 
 	pixman_region32_init(&repaint);
 	pixman_region32_intersect(&repaint,
@@ -879,7 +916,6 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 
 	glUniformMatrix4fv(es->shader->proj_uniform,
 			   1, GL_FALSE, output->matrix.d);
-	glUniform1i(es->shader->tex_uniform, 0);
 	glUniform4fv(es->shader->color_uniform, 1, es->color);
 	glUniform1f(es->shader->alpha_uniform, es->alpha);
 	glUniform1f(es->shader->texwidth_uniform,
@@ -896,9 +932,13 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 
 	n = texture_region(es, &repaint);
 
-	glBindTexture(GL_TEXTURE_2D, es->textures[0]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+	for (i = 0; i < es->num_textures; i++) {
+		glUniform1i(es->shader->tex_uniforms[i], i);
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, es->textures[i]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+	}
 
 	v = ec->vertices.data;
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof *v, &v[0]);
@@ -2898,7 +2938,9 @@ weston_shader_init(struct weston_shader *shader,
 	}
 
 	shader->proj_uniform = glGetUniformLocation(shader->program, "proj");
-	shader->tex_uniform = glGetUniformLocation(shader->program, "tex");
+	shader->tex_uniforms[0] = glGetUniformLocation(shader->program, "tex");
+	shader->tex_uniforms[1] = glGetUniformLocation(shader->program, "tex1");
+	shader->tex_uniforms[2] = glGetUniformLocation(shader->program, "tex2");
 	shader->alpha_uniform = glGetUniformLocation(shader->program, "alpha");
 	shader->color_uniform = glGetUniformLocation(shader->program, "color");
 	shader->texwidth_uniform = glGetUniformLocation(shader->program, "texwidth");
@@ -3158,6 +3200,8 @@ weston_compositor_init_gl(struct weston_compositor *ec)
 		(void *) eglGetProcAddress("eglBindWaylandDisplayWL");
 	ec->unbind_display =
 		(void *) eglGetProcAddress("eglUnbindWaylandDisplayWL");
+	ec->query_buffer =
+		(void *) eglGetProcAddress("eglQueryWaylandBufferWL");
 
 	extensions = (const char *) glGetString(GL_EXTENSIONS);
 	if (!extensions) {

@@ -244,7 +244,7 @@ struct weston_shader {
 	GLuint program;
 	GLuint vertex_shader, fragment_shader;
 	GLint proj_uniform;
-	GLint tex_uniform;
+	GLint tex_uniforms[3];
 	GLint alpha_uniform;
 	GLint color_uniform;
 	GLint texwidth_uniform;
@@ -331,6 +331,7 @@ struct weston_compositor {
 
 	PFNEGLBINDWAYLANDDISPLAYWL bind_display;
 	PFNEGLUNBINDWAYLANDDISPLAYWL unbind_display;
+	PFNEGLQUERYWAYLANDBUFFERWL query_buffer;
 	int has_bind_display;
 
 	void (*destroy)(struct weston_compositor *ec);
