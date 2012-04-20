@@ -17,6 +17,7 @@ import optparse
 import os
 import pprint
 import sys
+import time
 
 from chromite.buildbot import builderstage as bs
 from chromite.buildbot import cbuildbot_background as background
@@ -680,6 +681,8 @@ def _CreateParser():
                     default=False,
                     help=('List the suggested trybot configs to use.  Use '
                           '--all to list all of the available configs.'))
+  parser.add_option('--local', default=False, action='store_true',
+                    help=('Specifies that this tryjob should be run locally.'))
   parser.add_option('-p', '--local-patches', action='append', default=[],
                     metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
                     help=('Space-separated list of project branches with '
@@ -822,6 +825,9 @@ def _FinishParsing(options, args):
       cros_lib.Die('Chrome rev must not be %s if chrome_version is not set.' %
                    constants.CHROME_REV_SPEC)
 
+  if options.local and options.remote:
+   cros_lib.Die('Cannot specify both --remote and --local')
+
   if options.remote and not (options.gerrit_patches or options.local_patches):
     cros_lib.Die('Must provide patches when running with --remote.')
 
@@ -830,6 +836,9 @@ def _FinishParsing(options, args):
 
   if options.buildbot and options.remote_trybot:
     cros_lib.Die('--buildbot and --remote-trybot cannot be used together.')
+
+  if options.buildbot and (options.remote or options.local):
+   cros_lib.Die('--remote and --local do not apply when using --buildbot.')
 
   # Record whether --debug was set explicitly vs. it was inferred.
   options.debug_forced = False
@@ -882,6 +891,10 @@ def _ParseCommandLine(parser, argv):
   # Strip out null arguments.
   # TODO(rcui): Remove when buildbot is fixed
   args = [arg for arg in args if arg]
+  if options.list:
+    _PrintValidConfigs(options.print_all)
+    sys.exit(0)
+
   _FinishParsing(options, args)
   return options, args
 
@@ -895,10 +908,6 @@ def main(argv):
 
   parser = _CreateParser()
   (options, args) = _ParseCommandLine(parser, argv)
-
-  if options.list:
-    _PrintValidConfigs(options.print_all)
-    sys.exit(0)
 
   _PostParseCheck(options, args)
 
@@ -920,6 +929,13 @@ def main(argv):
     print ('Go to %s to view the status of your job.'
            % tryjob.GetTrybotWaterfallLink())
     sys.exit(0)
+  elif (not options.buildbot and not options.remote_trybot
+        and not options.resume and not options.local):
+    cros_lib.Warning('Running in LOCAL TRYBOT mode!  Use --remote to submit '
+                     'REMOTE tryjobs.  Use --local to suppress this message.')
+    cros_lib.Warning('Starting April 30th, --local will be required to run the '
+                     'local trybot.')
+    time.sleep(5)
 
   if args:
     # Only expecting one config

@@ -180,10 +180,11 @@ class InterfaceTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     self.parser = cbuildbot._CreateParser()
+    self.mox.StubOutWithMock(cros_lib, 'Die')
 
   def testDebugBuildBotSetByDefault(self):
     """Test that debug and buildbot flags are set by default."""
-    args = ['-r', self._BUILD_ROOT, self._X86_PREFLIGHT]
+    args = ['--local', '-r', self._BUILD_ROOT, self._X86_PREFLIGHT]
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.assertEquals(options.debug, True)
     self.assertEquals(options.buildbot, False)
@@ -242,7 +243,6 @@ class InterfaceTest(mox.MoxTestBase):
 
   def testValidateClobberProtectRunningChromite(self):
     """User should not be clobbering our own source."""
-    self.mox.StubOutWithMock(cros_lib, 'Die')
     cwd = os.path.dirname(os.path.realpath(__file__))
     buildroot = os.path.dirname(cwd)
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
@@ -252,12 +252,11 @@ class InterfaceTest(mox.MoxTestBase):
 
   def testBuildBotWithBadChromeRevOption(self):
     """chrome_rev can't be passed an invalid option after chrome_root."""
-    args = [
+    args = ['--local',
         '--buildroot=/tmp',
         '--chrome_root=.',
         '--chrome_rev=%s' % constants.CHROME_REV_TOT,
         self._X86_PREFLIGHT]
-    self.mox.StubOutWithMock(cros_lib, 'Die')
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
@@ -265,12 +264,11 @@ class InterfaceTest(mox.MoxTestBase):
 
   def testBuildBotWithBadChromeRootOption(self):
     """chrome_root can't get passed after non-local chrome_rev."""
-    args = [
+    args = ['--local',
         '--buildroot=/tmp',
         '--chrome_rev=%s' % constants.CHROME_REV_TOT,
         '--chrome_root=.',
         self._X86_PREFLIGHT]
-    self.mox.StubOutWithMock(cros_lib, 'Die')
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
@@ -278,11 +276,10 @@ class InterfaceTest(mox.MoxTestBase):
 
   def testBuildBotWithBadChromeRevOptionLocal(self):
     """chrome_rev can't be local without chrome_root."""
-    args = [
+    args = ['--local',
         '--buildroot=/tmp',
         '--chrome_rev=%s' % constants.CHROME_REV_LOCAL,
         self._X86_PREFLIGHT]
-    self.mox.StubOutWithMock(cros_lib, 'Die')
     cros_lib.Die(mox.IgnoreArg()).AndRaise(Exception)
     self.mox.ReplayAll()
     self.assertRaises(Exception, cbuildbot._ParseCommandLine, self.parser, args)
@@ -290,11 +287,10 @@ class InterfaceTest(mox.MoxTestBase):
 
   def testBuildBotWithGoodChromeRootOption(self):
     """chrome_root can be set without chrome_rev."""
-    args = [
+    args = ['--local',
         '--buildroot=/tmp',
         '--chrome_root=.',
         self._X86_PREFLIGHT]
-    self.mox.StubOutWithMock(cros_lib, 'Die')
     self.mox.ReplayAll()
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.mox.VerifyAll()
@@ -303,7 +299,7 @@ class InterfaceTest(mox.MoxTestBase):
 
   def testBuildBotWithGoodChromeRevAndRootOption(self):
     """chrome_rev can get reset around chrome_root."""
-    args = [
+    args = ['--local',
         '--buildroot=/tmp',
         '--chrome_rev=%s' % constants.CHROME_REV_LATEST,
         '--chrome_rev=%s' % constants.CHROME_REV_STICKY,
@@ -316,7 +312,6 @@ class InterfaceTest(mox.MoxTestBase):
         '--chrome_rev=%s' % constants.CHROME_REV_TOT,
         '--chrome_rev=%s' % constants.CHROME_REV_LOCAL,
         self._X86_PREFLIGHT]
-    self.mox.StubOutWithMock(cros_lib, 'Die')
     self.mox.ReplayAll()
     (options, args) = cbuildbot._ParseCommandLine(self.parser, args)
     self.mox.VerifyAll()
@@ -385,14 +380,15 @@ class FullInterfaceTest(unittest.TestCase):
   def testNullArgsStripped(self):
     """Test that null args are stripped out and don't cause error."""
     self.mox.ReplayAll()
-    cbuildbot.main(['-r', self._BUILD_ROOT, '', '',
+    cbuildbot.main(['--local', '-r', self._BUILD_ROOT, '', '',
                     'x86-generic-paladin'])
 
   def testMultipleConfigsError(self):
     """Test that multiple configs cause error if --remote is not used."""
     self.mox.ReplayAll()
     self.assertRaises(TestExitedException, cbuildbot.main,
-                     ['-r', self._BUILD_ROOT,
+                     ['--local',
+                      '-r', self._BUILD_ROOT,
                       'arm-generic-paladin',
                       'x86-generic-paladin'])
 
@@ -411,7 +407,7 @@ class FullInterfaceTest(unittest.TestCase):
 
     self.mox.ReplayAll()
     self.assertRaises(TestHaltedException, cbuildbot.main,
-                      ['x86-generic-paladin'])
+                      ['--local', 'x86-generic-paladin'])
 
   def testInferInternalBuildRoot(self):
     """Test that we default to correct buildroot for internal config."""
@@ -422,7 +418,7 @@ class FullInterfaceTest(unittest.TestCase):
 
     self.mox.ReplayAll()
     self.assertRaises(TestHaltedException, cbuildbot.main,
-                      ['mario-paladin'])
+                      ['--local', 'mario-paladin'])
 
   def testInferBuildRootPromptNo(self):
     """Test that a 'no' answer on the prompt halts execution."""
@@ -431,7 +427,7 @@ class FullInterfaceTest(unittest.TestCase):
 
     self.mox.ReplayAll()
     self.assertRaises(TestExitedException, cbuildbot.main,
-                      ['x86-generic-paladin'])
+                      ['--local', 'x86-generic-paladin'])
 
   def testInferBuildRootExists(self):
     """Test that we don't prompt the user if buildroot already exists."""
@@ -440,7 +436,7 @@ class FullInterfaceTest(unittest.TestCase):
         .AndRaise(TestFailedException()))
 
     self.mox.ReplayAll()
-    cbuildbot.main(['x86-generic-paladin'])
+    cbuildbot.main(['--local', 'x86-generic-paladin'])
 
   def testBuildbotDiesInChroot(self):
     """Buildbot should quit if run inside a chroot."""
@@ -452,7 +448,8 @@ class FullInterfaceTest(unittest.TestCase):
     cros_lib.IsInsideChroot = new_is_inside_chroot
     self.mox.ReplayAll()
     self.assertRaises(TestExitedException, cbuildbot.main,
-                      ['-r', self._BUILD_ROOT, 'x86-generic-paladin'])
+                      ['--local', '-r', self._BUILD_ROOT,
+                       'x86-generic-paladin'])
 
 
 if __name__ == '__main__':
