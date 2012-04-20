@@ -178,6 +178,13 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_valgrind.sh newlib',
     'nacl-lucid64_glibc_dbg_valgrind':
         'bash buildbot/buildbot_valgrind.sh glibc',
+    # Coverage trybots.
+    'nacl-mac10.6-newlib-coverage': 'bash buildbot/buildbot_coverage_mac.sh',
+    'nacl-lucid-64-32-newlib-coverage':
+        'bash buildbot/buildbot_coverage_linux.sh 32',
+    'nacl-lucid-64-64-newlib-coverage':
+        'bash buildbot/buildbot_coverage_linux.sh 64',
+    'nacl-win32-newlib-coverage': 'buildbot\\buildbot_coverage_win.bat',
     # Clang trybots.
     'nacl-lucid_64-newlib-dbg-clang':
         python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
