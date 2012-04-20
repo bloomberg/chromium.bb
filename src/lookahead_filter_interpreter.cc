@@ -60,7 +60,7 @@ Gesture* LookaheadFilterInterpreter::SyncInterpret(HardwareState* hwstate,
     node->output_ids_ = queue_.Tail()->output_ids_;
   // At this point, if ExtraVariableDelay() > 0, queue_.Tail()->due_ may have
   // ExtraVariableDelay() applied, but node->due_ does not, yet.
-  if (!queue_.Empty() && queue_.Tail()->due_ > node->due_ &&
+  if (!queue_.Empty() &&
       (queue_.Tail()->due_ - node->due_ > ExtraVariableDelay())) {
     Err("Clock changed backwards. Clearing queue.");
     do {
