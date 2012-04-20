@@ -30,6 +30,7 @@ class FocusCycler;
 class LauncherView;
 }
 
+class LauncherIconObserver;
 class LauncherDelegate;
 class LauncherModel;
 
@@ -55,6 +56,9 @@ class ASH_EXPORT Launcher : public internal::BackgroundAnimatorDelegate {
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
   gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);
+
+  void AddIconObserver(LauncherIconObserver* observer);
+  void RemoveIconObserver(LauncherIconObserver* observer);
 
   // Returns true if the Launcher is showing a context menu.
   bool IsShowingMenu() const;

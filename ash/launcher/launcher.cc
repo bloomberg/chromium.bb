@@ -186,6 +186,14 @@ gfx::Rect Launcher::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
                    bounds.height());
 }
 
+void Launcher::AddIconObserver(LauncherIconObserver* observer) {
+  launcher_view_->AddIconObserver(observer);
+}
+
+void Launcher::RemoveIconObserver(LauncherIconObserver* observer) {
+  launcher_view_->RemoveIconObserver(observer);
+}
+
 bool Launcher::IsShowingMenu() const {
   return launcher_view_->IsShowingMenu();
 }
