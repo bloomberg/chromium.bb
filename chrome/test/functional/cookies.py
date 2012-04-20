@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import logging
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
