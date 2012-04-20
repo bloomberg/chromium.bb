@@ -123,6 +123,10 @@ class DeveloperProtocolHandler
     return NULL;
   }
 
+  virtual bool WillHandleProtocol(const std::string& protocol) const {
+    return protocol == chrome::kChromeUIScheme;
+  }
+
  private:
   AppCacheService* appcache_service_;
   BlobStorageController* blob_storage_controller_;

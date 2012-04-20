@@ -145,10 +145,7 @@ class FakeMainDelegate : public content::ContentMainDelegate {
   virtual bool BasicStartupComplete(int* exit_code) OVERRIDE {
     logging_win::InstallTestLogCollector(
         testing::UnitTest::GetInstance());
-    return false;
-  }
 
-  virtual void PreSandboxStartup() OVERRIDE {
     // Initialize the content client.
     content::SetContentClient(&g_chrome_content_client.Get());
 
@@ -157,8 +154,11 @@ class FakeMainDelegate : public content::ContentMainDelegate {
     // FakeContentBrowserClient, to override CreateBrowserMainParts.  Must
     // be done before any tabs are created.
     content::GetContentClient()->set_browser(&g_browser_client.Get());
-
     content::GetContentClient()->set_renderer(&g_renderer_client.Get());
+    return false;
+  }
+
+  virtual void PreSandboxStartup() OVERRIDE {
   }
 
   virtual void SandboxInitialized(const std::string& process_type) OVERRIDE {}

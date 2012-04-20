@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/url_constants.h"
 #include "grit/common_resources.h"
@@ -345,6 +346,17 @@ void ChromeContentClient::AddPepperPlugins(
 
 void ChromeContentClient::AddNPAPIPlugins(
     webkit::npapi::PluginList* plugin_list) {
+}
+
+void ChromeContentClient::AddAdditionalSchemes(
+    std::vector<std::string>* standard_schemes,
+    std::vector<std::string>* savable_schemes) {
+  standard_schemes->push_back(kExtensionScheme);
+  savable_schemes->push_back(kExtensionScheme);
+#if defined(OS_CHROMEOS)
+  standard_schemes->push_back(kCrosScheme);
+  standard_schemes->push_back(kGDataScheme);
+#endif
 }
 
 bool ChromeContentClient::HasWebUIScheme(const GURL& url) const {

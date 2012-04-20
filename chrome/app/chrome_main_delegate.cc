@@ -447,6 +447,12 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.HasSwitch(switches::kEnableBenchmarking)) {
     base::FieldTrial::EnableBenchmarking();
   }
+
+  std::string process_type =  command_line.GetSwitchValueASCII(
+      switches::kProcessType);
+  content::SetContentClient(&chrome_content_client_);
+  InitializeChromeContentClient(process_type);
+
   return false;
 }
 
@@ -543,11 +549,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
-  // Initialize the content client which that code uses to talk to Chrome.
-  content::SetContentClient(&chrome_content_client_);
-  InitializeChromeContentClient(process_type);
-
-  // Initialize the Chrome path provider.
   chrome::RegisterPathProvider();
 
 #if defined(OS_MACOSX)
@@ -588,12 +589,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
     file_state = logging::DELETE_OLD_LOG_FILE;
   }
   logging::InitChromeLogging(command_line, file_state);
-
-  // Register internal Chrome schemes so they'll be parsed correctly. This
-  // must happen before we process any URLs with the affected schemes, and
-  // must be done in all processes that work with these URLs (i.e. including
-  // renderers).
-  chrome::RegisterChromeSchemes();
 
 #if defined(OS_WIN)
   // TODO(darin): Kill this once http://crbug.com/52609 is fixed.

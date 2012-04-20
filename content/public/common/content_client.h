@@ -94,6 +94,12 @@ class CONTENT_EXPORT ContentClient {
   virtual void AddNPAPIPlugins(
       webkit::npapi::PluginList* plugin_list) = 0;
 
+  // Gives the embedder a chance to register its own standard and saveable
+  // url schemes early on in the startup sequence.
+  virtual void AddAdditionalSchemes(
+      std::vector<std::string>* standard_schemes,
+      std::vector<std::string>* savable_schemes) = 0;
+
   // Returns true if the url has a scheme for WebUI.  See also
   // WebUIControllerFactory::UseWebUIForURL in the browser process.
   virtual bool HasWebUIScheme(const GURL& url) const = 0;

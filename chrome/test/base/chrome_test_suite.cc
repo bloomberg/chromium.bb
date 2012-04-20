@@ -166,7 +166,10 @@ void ChromeTestSuite::Initialize() {
 
   base::TestSuite::Initialize();
 
-  chrome::RegisterChromeSchemes();
+  chrome::ChromeContentClient client_for_init;
+  content::SetContentClient(&client_for_init);
+  content::RegisterContentSchemes(false);
+  content::SetContentClient(NULL);
 
   chrome::RegisterPathProvider();
   content::RegisterPathProvider();

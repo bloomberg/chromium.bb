@@ -35,6 +35,11 @@ void TestContentClient::AddNPAPIPlugins(
     webkit::npapi::PluginList* plugin_list) {
 }
 
+void TestContentClient::AddAdditionalSchemes(
+    std::vector<std::string>* standard_schemes,
+    std::vector<std::string>* savable_schemes) {
+}
+
 bool TestContentClient::HasWebUIScheme(const GURL& url) const {
   return false;
 }

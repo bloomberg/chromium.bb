@@ -66,12 +66,17 @@ extern const char kSwappedOutURL[];
 // invoked on any thread.
 CONTENT_EXPORT const char** GetSavableSchemes();
 
-// Call near the beginning of startup to register the content layer's internal
-// URLs that should be parsed as "standard" with the googleurl library. The
-// embedder can pass a 0-terminated list of additional schemes that should be
-// savable, or NULL if the standard list is sufficient.
-CONTENT_EXPORT void RegisterContentSchemes(
-    const char** additional_savable_schemes);
+// Note: ContentMainRunner calls this method internally as part of main
+// initialziation, so this function generally should not be called by
+// embedders. It's exported to facilitate test harnesses that do not
+// utilize ContentMainRunner and that do not wish to lock the set
+// of standard schemes at init time.
+//
+// Called near the beginning of startup to register URL schemes that should
+// be parsed as "standard" with the googleurl library. Optionally, the set
+// of standard schemes is locked down. The embedder can add additional
+// schemes by overriding the ContentClient::AddAdditionalSchemes method.
+CONTENT_EXPORT void RegisterContentSchemes(bool lock_standard_schemes);
 
 }  // namespace content
 

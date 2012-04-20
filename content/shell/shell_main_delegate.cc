@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/shell/shell_browser_main.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/shell/shell_content_plugin_client.h"
@@ -30,6 +31,12 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #if defined(OS_MACOSX)
   OverrideFrameworkBundlePath();
 #endif
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  content::SetContentClient(&content_client_);
+  InitializeShellContentClient(process_type);
+
   return false;
 }
 
@@ -37,14 +44,6 @@ void ShellMainDelegate::PreSandboxStartup() {
 #if defined(OS_MACOSX)
   OverrideChildProcessPath();
 #endif  // OS_MACOSX
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
-  content::SetContentClient(&content_client_);
-  InitializeShellContentClient(process_type);
-
   InitializeResourceBundle();
 }
 

@@ -10,6 +10,7 @@
 #include "content/browser/notification_service_impl.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/url_constants.h"
 #include "content/test/test_content_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
@@ -70,6 +71,11 @@ void ContentTestSuite::Initialize() {
 #endif
 
   base::TestSuite::Initialize();
+
+  TestContentClient client_for_init;
+  content::SetContentClient(&client_for_init);
+  content::RegisterContentSchemes(false);
+  content::SetContentClient(NULL);
 
   content::RegisterPathProvider();
   ui::RegisterPathProvider();

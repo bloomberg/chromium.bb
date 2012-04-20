@@ -6,13 +6,6 @@
 
 #include "googleurl/src/url_util.h"
 
-namespace {
-const char* kSavableSchemes[] = {
-  chrome::kExtensionScheme,
-  NULL
-};
-}  // namespace
-
 namespace chrome {
 
 #if defined(OS_CHROMEOS)
@@ -417,16 +410,5 @@ const char* const kChromeDebugURLs[] = {
 int kNumberOfChromeDebugURLs = static_cast<int>(arraysize(kChromeDebugURLs));
 
 const char kExtensionScheme[] = "chrome-extension";
-
-void RegisterChromeSchemes() {
-  url_util::AddStandardScheme(kExtensionScheme);
-#if defined(OS_CHROMEOS)
-  url_util::AddStandardScheme(kCrosScheme);
-  url_util::AddStandardScheme(kGDataScheme);
-#endif
-
-  // This call will also lock the list of standard schemes.
-  content::RegisterContentSchemes(kSavableSchemes);
-}
 
 }  // namespace chrome

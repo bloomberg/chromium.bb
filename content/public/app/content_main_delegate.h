@@ -19,11 +19,11 @@ class ContentMainDelegate {
  public:
   virtual ~ContentMainDelegate() {}
 
-  // Tells the embedder that the absolute basic startup has been done, i.e. it's
-  // now safe to create singletons and check the command line. Return true if
-  // the process should exit afterwards, and if so, |exit_code| should be set.
-  // This is the place for embedder to do the things that must happen at the
-  // start. Most of its startup code should be in the methods below.
+  // Tells the embedder that the absolute basic startup has been done, i.e.
+  // it's now safe to create singletons and check the command line. Return true
+  // if the process should exit afterwards, and if so, |exit_code| should be
+  // set. This is the place for embedder to do the things that must happen at
+  // the start. Most of its startup code should be in the methods below.
   virtual bool BasicStartupComplete(int* exit_code) = 0;
 
   // This is where the embedder puts all of its startup code that needs to run

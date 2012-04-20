@@ -27,6 +27,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/public/common/url_constants.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media.h"
@@ -383,6 +384,8 @@ class ContentMainRunnerImpl : public content::ContentMainRunner {
     int exit_code;
     if (delegate && delegate->BasicStartupComplete(&exit_code))
       return exit_code;
+    DCHECK(!delegate || content::GetContentClient()) <<
+        "BasicStartupComplete didn't set the content client";
 
     completed_basic_startup_ = true;
 
@@ -444,6 +447,7 @@ class ContentMainRunnerImpl : public content::ContentMainRunner {
 
     ui::RegisterPathProvider();
     content::RegisterPathProvider();
+    content::RegisterContentSchemes(true);
 
     CHECK(icu_util::Initialize());
 

@@ -347,10 +347,6 @@ extern const char kExtensionScheme[];
 extern const char kGDataScheme[];
 #endif  // defined(OS_CHROMEOS)
 
-// Call near the beginning of startup to register Chrome's internal URLs that
-// should be parsed as "standard" with the googleurl library.
-void RegisterChromeSchemes();
-
 #if defined(OS_CHROMEOS)
 // "Learn more" URL for the Cloud Print section under Options.
 extern const char kCloudPrintLearnMoreURL[];
