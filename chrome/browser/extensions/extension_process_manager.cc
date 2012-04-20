@@ -403,11 +403,6 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
   if (!extension->has_lazy_background_page())
     return 0;
 
-  // This should never be called if the background page isn't active.
-  // Otherwise, the count can get out of sync, because we reset it when the
-  // page unloads.
-  CHECK(GetBackgroundHostForExtension(extension->id()));
-
   int& count = background_page_data_[extension->id()].lazy_keepalive_count;
   DCHECK_GT(count, 0);
   if (--count == 0)
