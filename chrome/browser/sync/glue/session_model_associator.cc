@@ -755,8 +755,13 @@ void SessionModelAssociator::OnSessionNameInitialized(
     const std::string& name) {
   DCHECK(CalledOnValidThread());
   // Only use the default machine name if it hasn't already been set.
-  if (current_session_name_.empty())
+  if (current_session_name_.empty()) {
     current_session_name_ = name;
+    // Force a reassociation so we update our header node with the current name.
+    // TODO(zea): Pull the name from somewhere shared with the sync manager.
+    // crbug.com/124287
+    SessionModelAssociator::AssociateWindows(false, NULL);
+  }
 }
 
 bool SessionModelAssociator::GetSyncedFaviconForPageURL(
@@ -777,7 +782,13 @@ bool SessionModelAssociator::GetSyncedFaviconForPageURL(
 void SessionModelAssociator::InitializeCurrentSessionName() {
   DCHECK(CalledOnValidThread());
   if (setup_for_test_) {
-    OnSessionNameInitialized("TestSessionName");
+    // We post this task to break out of any transactional locks a caller may be
+    // holding.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&SessionModelAssociator::OnSessionNameInitialized,
+                   AsWeakPtr(),
+                   std::string("TestSessionName")));
   } else {
     browser_sync::GetSessionName(
         BrowserThread::GetBlockingPool(),
