@@ -49,8 +49,7 @@ bool UrlsSQLHandler::Insert(HistoryAndBookmarkRow* row) {
   if (!row->is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME)) {
     if (row->is_value_set_explicitly(HistoryAndBookmarkRow::CREATED))
       url_row.set_last_visit(row->created());
-    else if (row->is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT) &&
-             row->visit_count() > 0)
+    else if (row->is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT))
       url_row.set_last_visit(Time::Now());
   }
 

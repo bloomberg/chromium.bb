@@ -74,8 +74,8 @@ bool IsHistoryAndBookmarkRowValid(const HistoryAndBookmarkRow& row) {
   //    than 2.
   // d. The difference between created and last visit time is less than
   //    visit_count.
-  // e. Visit count is 0, but any one of last visit time and created time is
-  //    set and not equal to 0.
+  // e. Visit count is 0 or 1 and both last visit time and created time are set
+  //    explicitly, but the time is different or created time is not UnixEpoch.
   if (row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME) &&
       row.last_visit_time() > Time::Now())
     return false;
@@ -89,23 +89,19 @@ bool IsHistoryAndBookmarkRowValid(const HistoryAndBookmarkRow& row) {
     if (row.created() > row.last_visit_time())
       return false;
 
-    if (row.is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT)) {
-      if ((row.created() != row.last_visit_time() &&
-           row.visit_count() < 2) ||
-          (row.last_visit_time().ToInternalValue() -
-           row.created().ToInternalValue() < row.visit_count()))
-      return false;
+    if (row.is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT) &&
+        row.is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) &&
+        row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME)) {
+      if (row.created() != row.last_visit_time() &&
+          row.created() != Time::UnixEpoch() &&
+          (row.visit_count() == 0 || row.visit_count() == 1))
+        return false;
+
+      if (row.last_visit_time().ToInternalValue() -
+          row.created().ToInternalValue() < row.visit_count())
+        return false;
     }
   }
-
-  if (row.is_value_set_explicitly(HistoryAndBookmarkRow::VISIT_COUNT) &&
-      row.visit_count() == 0 &&
-      ((row.is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) &&
-        row.created() != Time()) ||
-       (row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME) &&
-        row.last_visit_time() != Time())))
-    return false;
-
   return true;
 }
 
@@ -414,7 +410,7 @@ bool AndroidProviderBackend::DeleteHistoryAndBookmarks(
     return true;
   }
 
-  if (!DeleteHistoryInternal(ids_set, notifications))
+  if (!DeleteHistoryInternal(ids_set, true, notifications))
     return false;
 
   *deleted_count = ids_set.size();
@@ -441,30 +437,36 @@ bool AndroidProviderBackend::DeleteHistory(
 
   *deleted_count = ids_set.size();
 
-  // Get the rows bookmarked.
-  TableIDRows bookmark_rows;
+  // Get the bookmarked rows.
+  std::vector<HistoryAndBookmarkRow> bookmarks;
   for (TableIDRows::const_iterator i = ids_set.begin(); i != ids_set.end();
        ++i) {
-    if (i->bookmarked)
-      bookmark_rows.push_back(*i);
+    if (i->bookmarked) {
+      AndroidURLRow android_url_row;
+      if (!history_db_->GetAndroidURLRow(i->url_id, &android_url_row))
+        return false;
+      HistoryAndBookmarkRow row;
+      row.set_raw_url(android_url_row.raw_url);
+      row.set_url(i->url);
+      // Set the visit time to the UnixEpoch since that's when the Android
+      // system time starts.
+      row.set_last_visit_time(Time::UnixEpoch());
+      row.set_visit_count(0);
+      // We don't want to change the bookmark model, so set_is_bookmark() is
+      // not called.
+      bookmarks.push_back(row);
+    }
   }
 
-  if (!DeleteHistoryInternal(ids_set, notifications))
+  // Don't delete the bookmark from bookmark model when deleting the history.
+  if (!DeleteHistoryInternal(ids_set, false, notifications))
     return false;
 
-  scoped_ptr<URLsModifiedDetails> modified(new URLsModifiedDetails);
-  for (TableIDRows::const_iterator i = bookmark_rows.begin();
-       i != bookmark_rows.end(); ++i) {
-    URLRow row(i->url);
-    // Set visit time as UnixEpoch because the Android's system time start from
-    // the unix epoch.
-    row.set_last_visit(Time::UnixEpoch());
-    if (!history_db_->AddURL(row))
+  for (std::vector<HistoryAndBookmarkRow>::const_iterator i = bookmarks.begin();
+       i != bookmarks.end(); ++i) {
+    if (!InsertHistoryAndBookmark(*i, notifications))
       return false;
-    modified->changed_urls.push_back(row);
   }
-  notifications->push_back(HistoryNotification(
-      chrome::NOTIFICATION_HISTORY_URLS_MODIFIED, modified.release()));
 
   return true;
 }
@@ -1044,6 +1046,7 @@ AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarksInternal(
 
 bool AndroidProviderBackend::DeleteHistoryInternal(
     const TableIDRows& urls,
+    bool delete_bookmarks,
     HistoryNotifications* notifications) {
   scoped_ptr<URLsDeletedDetails> deleted_details(new URLsDeletedDetails);
   scoped_ptr<FaviconChangeDetails> favicon(new FaviconChangeDetails);
@@ -1056,10 +1059,13 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
       favicon->urls.insert(url_row.url());
   }
 
+  // Only invoke Delete on the BookmarkModelHandler if we need
+  // to delete bookmarks.
   for (std::vector<SQLHandler*>::iterator i =
        sql_handlers_.begin(); i != sql_handlers_.end(); ++i) {
-    if (!(*i)->Delete(urls))
-      return false;
+    if ((*i) != bookmark_model_handler_.get() || delete_bookmarks)
+      if (!(*i)->Delete(urls))
+        return false;
   }
 
   notifications->push_back(HistoryNotification(

@@ -300,9 +300,11 @@ class AndroidProviderBackend {
       const std::string& sort_order);
 
   // Delete the given urls' history, returns true on success, or false on error.
+  // If |delete_bookmarks| is set, the bookmarks are deleted as well.
   // The notifications are returned in |notifications| and the ownership of them
   // is transfered to caller.
   bool DeleteHistoryInternal(const TableIDRows& urls,
+                             bool delete_bookmarks,
                              HistoryNotifications* notifications);
 
   void BroadcastNotifications(const HistoryNotifications& notifications);

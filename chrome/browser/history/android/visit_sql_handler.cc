@@ -52,6 +52,9 @@ bool VisitSQLHandler::Update(const HistoryAndBookmarkRow& row,
       return false;
     int visit_count_needed = url_row.visit_count();
 
+    if (visit_count_needed == 0)
+      return Delete(ids_set);
+
     // If created time is updated or new visit count is less than the current
     // one, delete all visit rows.
     if (row.is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) ||
@@ -83,6 +86,9 @@ bool VisitSQLHandler::Insert(HistoryAndBookmarkRow* row) {
     return false;
 
   int visit_count = url_row.visit_count();
+
+  if (visit_count == 0)
+    return true;
 
   // Add a row if the last visit time is different from created time.
   if (row->is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) &&
