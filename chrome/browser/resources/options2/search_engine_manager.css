@@ -18,6 +18,7 @@
 .search-engine-list .favicon {
   height: 16px;
   padding: 1px 7px 0 7px;
+  width: 16px;
 }
 
 .search-engine-list .name-column {
