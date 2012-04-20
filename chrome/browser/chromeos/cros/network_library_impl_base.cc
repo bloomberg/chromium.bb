@@ -1577,7 +1577,7 @@ void NetworkLibraryImplBase::NotifyNetworkManagerChanged(bool force_update) {
         FROM_HERE,
         base::Bind(&NetworkLibraryImplBase::SignalNetworkManagerObservers,
                    notify_manager_weak_factory_.GetWeakPtr()),
-        kNetworkNotifyDelayMs);
+        base::TimeDelta::FromMilliseconds(kNetworkNotifyDelayMs));
   }
 }
 

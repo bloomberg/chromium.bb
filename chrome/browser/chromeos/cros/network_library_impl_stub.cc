@@ -462,7 +462,7 @@ void NetworkLibraryImplStub::CallConnectToNetwork(Network* network) {
         BrowserThread::UI, FROM_HERE,
         base::Bind(&NetworkLibraryImplStub::ConnectToNetwork,
                    base::Unretained(this), network),
-        connect_delay_ms_);
+        base::TimeDelta::FromMilliseconds(connect_delay_ms_));
     SignalNetworkManagerObservers();
     NotifyNetworkChanged(network);
   } else {

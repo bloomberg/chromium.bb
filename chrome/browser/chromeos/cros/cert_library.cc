@@ -432,7 +432,8 @@ class CertLibraryImpl
         request_task_ = base::Bind(&CertLibraryImpl::RequestCertificatesTask,
                                    weak_ptr_factory_.GetWeakPtr());
         BrowserThread::PostDelayedTask(
-            BrowserThread::UI, FROM_HERE, request_task_, kRequestDelayMs);
+            BrowserThread::UI, FROM_HERE, request_task_,
+            base::TimeDelta::FromMilliseconds(kRequestDelayMs));
       }
       return;
     }
