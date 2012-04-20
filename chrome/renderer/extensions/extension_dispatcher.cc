@@ -449,7 +449,7 @@ bool ExtensionDispatcher::AllowScriptExtension(
 void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
                                                  ChromeV8Context* context) {
   module_system->RegisterNativeHandler("event_bindings",
-      scoped_ptr<NativeHandler>(new EventBindings(this)));
+      scoped_ptr<NativeHandler>(EventBindings::Get(this)));
   module_system->RegisterNativeHandler("miscellaneous_bindings",
       scoped_ptr<NativeHandler>(MiscellaneousBindings::Get(this)));
   module_system->RegisterNativeHandler("apiDefinitions",

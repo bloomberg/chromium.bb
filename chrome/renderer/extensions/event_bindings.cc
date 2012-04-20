@@ -15,6 +15,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
+#include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_dispatcher.h"
 #include "chrome/renderer/extensions/extension_helper.h"
@@ -46,94 +47,108 @@ typedef std::map<std::string, int> EventListenerCounts;
 base::LazyInstance<std::map<std::string, EventListenerCounts> >
     g_listener_counts = LAZY_INSTANCE_INITIALIZER;
 
+// TODO(koz): Merge this into EventBindings.
+class ExtensionImpl : public ChromeV8Extension {
+ public:
+
+  explicit ExtensionImpl(ExtensionDispatcher* dispatcher)
+      : ChromeV8Extension(dispatcher) {
+    RouteStaticFunction("AttachEvent", &AttachEvent);
+    RouteStaticFunction("DetachEvent", &DetachEvent);
+  }
+  ~ExtensionImpl() {}
+
+  // Attach an event name to an object.
+  static v8::Handle<v8::Value> AttachEvent(const v8::Arguments& args) {
+    DCHECK(args.Length() == 1);
+    // TODO(erikkay) should enforce that event name is a string in the bindings
+    DCHECK(args[0]->IsString() || args[0]->IsUndefined());
+
+    if (args[0]->IsString()) {
+      ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
+      const ChromeV8ContextSet& context_set =
+          self->extension_dispatcher()->v8_context_set();
+      ChromeV8Context* context = context_set.GetCurrent();
+      CHECK(context);
+      std::string event_name(*v8::String::AsciiValue(args[0]));
+
+      ExtensionDispatcher* extension_dispatcher = self->extension_dispatcher();
+      if (!extension_dispatcher->CheckCurrentContextAccessToExtensionAPI(
+              event_name))
+        return v8::Undefined();
+
+      std::string extension_id = context->GetExtensionID();
+      EventListenerCounts& listener_counts =
+          g_listener_counts.Get()[extension_id];
+      if (++listener_counts[event_name] == 1) {
+        content::RenderThread::Get()->Send(
+            new ExtensionHostMsg_AddListener(extension_id, event_name));
+      }
+
+      // This is called the first time the page has added a listener. Since
+      // the background page is the only lazy page, we know this is the first
+      // time this listener has been registered.
+      if (self->IsLazyBackgroundPage(context->extension())) {
+        content::RenderThread::Get()->Send(
+            new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
+      }
+    }
+
+    return v8::Undefined();
+  }
+
+  static v8::Handle<v8::Value> DetachEvent(const v8::Arguments& args) {
+    DCHECK(args.Length() == 2);
+    // TODO(erikkay) should enforce that event name is a string in the bindings
+    DCHECK(args[0]->IsString() || args[0]->IsUndefined());
+
+    if (args[0]->IsString() && args[1]->IsBoolean()) {
+      ExtensionImpl* self = GetFromArguments<ExtensionImpl>(args);
+      const ChromeV8ContextSet& context_set =
+          self->extension_dispatcher()->v8_context_set();
+      ChromeV8Context* context = context_set.GetCurrent();
+      if (!context)
+        return v8::Undefined();
+
+      std::string extension_id = context->GetExtensionID();
+      EventListenerCounts& listener_counts =
+          g_listener_counts.Get()[extension_id];
+      std::string event_name(*v8::String::AsciiValue(args[0]));
+      bool is_manual = args[1]->BooleanValue();
+
+      if (--listener_counts[event_name] == 0) {
+        content::RenderThread::Get()->Send(
+            new ExtensionHostMsg_RemoveListener(extension_id, event_name));
+      }
+
+      // DetachEvent is called when the last listener for the context is
+      // removed. If the context is the background page, and it removes the
+      // last listener manually, then we assume that it is no longer interested
+      // in being awakened for this event.
+      if (is_manual && self->IsLazyBackgroundPage(context->extension())) {
+        content::RenderThread::Get()->Send(
+            new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
+      }
+    }
+
+    return v8::Undefined();
+  }
+
+ private:
+
+  bool IsLazyBackgroundPage(const Extension* extension) {
+    content::RenderView* render_view = GetCurrentRenderView();
+    if (!render_view)
+      return false;
+
+    ExtensionHelper* helper = ExtensionHelper::Get(render_view);
+    return (extension && extension->has_lazy_background_page() &&
+            helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+  }
+};
+
 }  // namespace
 
-EventBindings::EventBindings(ExtensionDispatcher* dispatcher)
-    : ChromeV8Extension(dispatcher) {
-  RouteFunction("AttachEvent", base::Bind(&EventBindings::AttachEvent,
-                                          base::Unretained(this)));
-  RouteFunction("DetachEvent", base::Bind(&EventBindings::DetachEvent,
-                                          base::Unretained(this)));
-}
-
-v8::Handle<v8::Value> EventBindings::AttachEvent(const v8::Arguments& args) {
-  DCHECK(args.Length() == 1);
-  // TODO(erikkay) should enforce that event name is a string in the bindings
-  DCHECK(args[0]->IsString() || args[0]->IsUndefined());
-
-  if (args[0]->IsString()) {
-    const ChromeV8ContextSet& context_set =
-        extension_dispatcher()->v8_context_set();
-    ChromeV8Context* context = context_set.GetCurrent();
-    CHECK(context);
-    std::string event_name(*v8::String::AsciiValue(args[0]));
-
-    if (!extension_dispatcher()->CheckCurrentContextAccessToExtensionAPI(
-            event_name))
-      return v8::Undefined();
-
-    std::string extension_id = context->GetExtensionID();
-    EventListenerCounts& listener_counts =
-        g_listener_counts.Get()[extension_id];
-    if (++listener_counts[event_name] == 1) {
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_AddListener(extension_id, event_name));
-    }
-
-    // This is called the first time the page has added a listener. Since
-    // the background page is the only lazy page, we know this is the first
-    // time this listener has been registered.
-    if (IsLazyBackgroundPage(context->extension())) {
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
-    }
-  }
-
-  return v8::Undefined();
-}
-
-v8::Handle<v8::Value> EventBindings::DetachEvent(const v8::Arguments& args) {
-  DCHECK(args.Length() == 2);
-  // TODO(erikkay) should enforce that event name is a string in the bindings
-  DCHECK(args[0]->IsString() || args[0]->IsUndefined());
-
-  if (args[0]->IsString() && args[1]->IsBoolean()) {
-    const ChromeV8ContextSet& context_set =
-        extension_dispatcher()->v8_context_set();
-    ChromeV8Context* context = context_set.GetCurrent();
-    if (!context)
-      return v8::Undefined();
-
-    std::string extension_id = context->GetExtensionID();
-    EventListenerCounts& listener_counts =
-        g_listener_counts.Get()[extension_id];
-    std::string event_name(*v8::String::AsciiValue(args[0]));
-    bool is_manual = args[1]->BooleanValue();
-
-    if (--listener_counts[event_name] == 0) {
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_RemoveListener(extension_id, event_name));
-    }
-
-    // DetachEvent is called when the last listener for the context is
-    // removed. If the context is the background page, and it removes the
-    // last listener manually, then we assume that it is no longer interested
-    // in being awakened for this event.
-    if (is_manual && IsLazyBackgroundPage(context->extension())) {
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
-    }
-  }
-
-  return v8::Undefined();
-}
-
-bool EventBindings::IsLazyBackgroundPage(const Extension* extension) {
-  content::RenderView* render_view = GetCurrentRenderView();
-  if (!render_view)
-    return false;
-
-  ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-  return (extension && extension->has_lazy_background_page() &&
-          helper->view_type() == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+ChromeV8Extension* EventBindings::Get(ExtensionDispatcher* dispatcher) {
+  return new ExtensionImpl(dispatcher);
 }
