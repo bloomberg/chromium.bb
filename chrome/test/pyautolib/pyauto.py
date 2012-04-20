@@ -1636,6 +1636,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
               Valid inputs are:
               - "dismiss": closes the infobar (for all infobars)
               - "accept", "cancel": click accept / cancel (for confirm infobars)
+              - "allow", "deny": click allow / deny (for media stream infobars)
       infobar_index: 0-based index of the infobar on which to perform the action
       windex: 0-based window index  Defaults to 0 (first window)
       tab_index: 0-based tab index.  Defaults to 0 (first tab)
@@ -1649,7 +1650,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'infobar_index': infobar_index,
       'tab_index': tab_index,
     }
-    if action not in ('dismiss', 'accept', 'cancel'):
+    if action not in ('dismiss', 'accept', 'allow', 'deny', 'cancel'):
       raise JSONInterfaceError('Invalid action %s' % action)
     self._GetResultFromJSONRequest(cmd_dict, windex=windex)
 

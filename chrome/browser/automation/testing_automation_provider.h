@@ -376,7 +376,7 @@ class TestingAutomationProvider : public AutomationProvider,
       base::DictionaryValue*,
       IPC::Message*);
 
-    // Set window dimensions.
+  // Set window dimensions.
   // Uses the JSON interface for input/output.
   void SetWindowDimensions(Browser* browser,
                            base::DictionaryValue* args,
@@ -389,6 +389,13 @@ class TestingAutomationProvider : public AutomationProvider,
   ListValue* GetInfobarsInfo(content::WebContents* tc);
 
   // Perform actions on an infobar like dismiss, accept, cancel.
+  // This method can handle dismiss for all infobars. It can also handle
+  // accept / cancel (where it will assume the infobar is a confirm infobar) and
+  // allow / deny (where it will assume the infobar is a media stream infobar).
+  // For the media stream infobar, passing 'allow' will just select the first
+  // video and audio device available to the bar, or report an error if there
+  // are no devices available.
+  //
   // Uses the JSON interface for input/output.
   void PerformActionOnInfobar(Browser* browser,
                               base::DictionaryValue* args,

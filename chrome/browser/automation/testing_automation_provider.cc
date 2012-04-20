@@ -104,6 +104,7 @@
 #include "chrome/browser/ui/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/login/login_prompt.h"
+#include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
@@ -2686,6 +2687,32 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     } else if ("cancel" == action) {
       if (confirm_infobar->Cancel())
         infobar_helper->RemoveInfoBar(infobar);
+    }
+    reply.SendSuccess(NULL);
+    return;
+  }
+  if ("allow" == action || "deny" == action) {
+    MediaStreamInfoBarDelegate* media_stream_infobar;
+    if (!(media_stream_infobar = infobar->AsMediaStreamInfobarDelegate())) {
+      reply.SendError("Not a media stream infobar.");
+      return;
+    }
+    if ("allow" == action) {
+      content::MediaStreamDevices video_devices =
+          media_stream_infobar->GetVideoDevices();
+      content::MediaStreamDevices audio_devices =
+          media_stream_infobar->GetAudioDevices();
+      if (video_devices.empty() || audio_devices.empty()) {
+        reply.SendError("No available audio/video devices to autoselect.");
+        return;
+      }
+
+      media_stream_infobar->Accept(audio_devices[0].device_id,
+                                   video_devices[0].device_id);
+      infobar_helper->RemoveInfoBar(infobar);
+    } else if ("deny" == action) {
+      media_stream_infobar->Deny();
+      infobar_helper->RemoveInfoBar(infobar);
     }
     reply.SendSuccess(NULL);
     return;
