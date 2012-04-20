@@ -3400,6 +3400,11 @@
             '../content/common/socket_stream_dispatcher.cc',
           ]},
         ],
+        ['use_aura==1', {
+          'sources!': [
+            '../content/browser/plugin_browsertest.cc',
+          ]},
+        ],
       ],  # conditions
     },  # target browser_tests
     {
