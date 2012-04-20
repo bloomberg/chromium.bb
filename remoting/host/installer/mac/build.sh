@@ -11,6 +11,11 @@
 # * Chromoting installer package
 # * Keystone (Google auto-update)
 
+error_exit() {
+  echo "ERROR - $@" 1>&2;
+  exit 1;
+}
+
 PKG_DIR=build
 PKGPROJ_CHROMOTING='Chromoting.packproj'
 PKGPROJ_CRD='ChromeRemoteDesktop.packproj'
@@ -30,13 +35,38 @@ rm -rf "$DMG_TEMP"   # In case previous build failed.
 
 # Copy latest release build.
 # TODO(garykac): Get from proper location.
-TARGET_DIR="../../../../out/Release"
+TARGET_DIR="../../../../xcodebuild/Release"
 HOST_SRC="$TARGET_DIR/remoting_me2me_host"
-HOST_DST="PrivilegedHelperTools/org.chromium.chromoting.me2me_host"
-cp "$HOST_SRC" "./$HOST_DST"
+HOST_DST="./PrivilegedHelperTools/org.chromium.chromoting.me2me_host"
+if [[ ! -f "$HOST_SRC" ]]; then
+  error_exit "Unable to find $HOST_SRC";
+fi
+cp "$HOST_SRC" "$HOST_DST"
+
 UNINSTALLER_SRC="$TARGET_DIR/remoting_host_uninstaller.app"
-UNINSTALLER_DST="Applications/Chrome Remote Desktop Host Uninstaller.app"
+UNINSTALLER_DST="./Applications/Chrome Remote Desktop Host Uninstaller.app"
+if [[ ! -d "$UNINSTALLER_SRC" ]]; then
+  error_exit "Unable to find $UNINSTALLER_SRC";
+fi
 ditto "$UNINSTALLER_SRC" "$UNINSTALLER_DST"
+
+# Verify that the host is the official build
+OFFICIAL_CLIENTID=440925447803-avn2sj1kc099s0r7v62je5s339mu0am1
+UNOFFICIAL_CLIENTID=440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj
+grep -qF "$OFFICIAL_CLIENTID" "$HOST_DST"
+if [[ "$?" != "0" ]]; then
+  grep -qF "$UNOFFICIAL_CLIENTID" "$HOST_DST"
+  if [[ "$?" == "0" ]]; then
+    error_exit "Attempting to build with unoffical build";
+  else
+    error_exit "Unable to determine build type";
+  fi
+fi
+
+# Unzip Keystone.
+cd Keystone
+unzip -qq -o GoogleSoftwareUpdate.pkg.zip
+cd ..
 
 # Build the .pkg.
 echo "Building .pkg..."
