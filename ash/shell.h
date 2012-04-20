@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/system/user/login_status.h"
 #include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -172,6 +173,16 @@ class ASH_EXPORT Shell {
   // Remove this.
   void SetMonitorWorkAreaInsets(aura::Window* window,
                                 const gfx::Insets& insets);
+
+  // Called when the user logs in.
+  void OnLoginStateChanged(user::LoginStatus status);
+
+  // Called when the application is exiting.
+  void OnAppTerminating();
+
+  // Called when the screen is locked (after the lock window is visible) or
+  // unlocked.
+  void OnLockStateChanged(bool locked);
 
   // Initializes |launcher_|.  Does nothing if it's already initialized.
   void CreateLauncher();

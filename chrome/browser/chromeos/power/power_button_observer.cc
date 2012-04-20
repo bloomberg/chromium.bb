@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 
 #include "ash/shell.h"
+#include "ash/system/user/login_status.h"
 #include "ash/wm/power_button_controller.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -17,10 +18,24 @@
 
 namespace chromeos {
 
+namespace {
+
+ash::user::LoginStatus GetCurrentLoginStatus() {
+  const UserManager* user_manager = UserManager::Get();
+  if (!user_manager->IsUserLoggedIn())
+    return ash::user::LOGGED_IN_NONE;
+
+  if (user_manager->GetLoggedInUser().is_guest())
+    return ash::user::LOGGED_IN_GUEST;
+
+  return ash::user::LOGGED_IN_USER;
+}
+
+}  // namespace
+
 PowerButtonObserver::PowerButtonObserver() {
-  ash::PowerButtonController* controller =
-      ash::Shell::GetInstance()->power_button_controller();
-  controller->set_delegate(new PowerButtonControllerDelegateChromeos);
+  ash::Shell::GetInstance()->power_button_controller()->
+      set_delegate(new PowerButtonControllerDelegateChromeos);
 
   registrar_.Add(
       this,
@@ -38,14 +53,11 @@ PowerButtonObserver::PowerButtonObserver() {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 
   // Tell the controller about the initial state.
-  const UserManager* user_manager = UserManager::Get();
-  bool logged_in = user_manager->IsUserLoggedIn();
-  bool is_guest = logged_in && user_manager->GetLoggedInUser().is_guest();
-  controller->OnLoginStateChange(logged_in, is_guest);
+  ash::Shell::GetInstance()->OnLoginStateChanged(GetCurrentLoginStatus());
 
   const ScreenLocker* locker = ScreenLocker::default_screen_locker();
   bool locked = locker && locker->locked();
-  controller->OnLockStateChange(locked);
+  ash::Shell::GetInstance()->OnLockStateChanged(locked);
 }
 
 PowerButtonObserver::~PowerButtonObserver() {
@@ -57,18 +69,15 @@ void PowerButtonObserver::Observe(int type,
                                   const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
-      const User* user = &UserManager::Get()->GetLoggedInUser();
-      ash::Shell::GetInstance()->power_button_controller()->
-          OnLoginStateChange(true /* logged_in */, user->is_guest());
+      ash::Shell::GetInstance()->OnLoginStateChanged(GetCurrentLoginStatus());
       break;
     }
     case content::NOTIFICATION_APP_TERMINATING:
-      ash::Shell::GetInstance()->power_button_controller()->OnExit();
+      ash::Shell::GetInstance()->OnAppTerminating();
       break;
     case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
       bool locked = *content::Details<bool>(details).ptr();
-      ash::Shell::GetInstance()->power_button_controller()->
-          OnLockStateChange(locked);
+      ash::Shell::GetInstance()->OnLockStateChanged(locked);
       break;
     }
     default:

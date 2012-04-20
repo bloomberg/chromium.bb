@@ -276,9 +276,8 @@ bool PowerButtonController::TestApi::BackgroundLayerIsVisible() const {
 }
 
 PowerButtonController::PowerButtonController()
-    : logged_in_(false),
-      is_guest_(false),
-      locked_(false),
+    : login_status_(user::LOGGED_IN_NONE),
+      unlocked_login_status_(user::LOGGED_IN_NONE),
       power_button_down_(false),
       lock_button_down_(false),
       shutting_down_(false),
@@ -290,12 +289,12 @@ PowerButtonController::PowerButtonController()
 PowerButtonController::~PowerButtonController() {
 }
 
-void PowerButtonController::OnLoginStateChange(bool logged_in, bool is_guest) {
-  logged_in_ = logged_in;
-  is_guest_ = is_guest;
+void PowerButtonController::OnLoginStateChanged(user::LoginStatus status) {
+  login_status_ = status;
+  unlocked_login_status_ = user::LOGGED_IN_NONE;
 }
 
-void PowerButtonController::OnExit() {
+void PowerButtonController::OnAppTerminating() {
   // If we hear that Chrome is exiting but didn't request it ourselves, all we
   // can really hope for is that we'll have time to clear the screen.
   if (!shutting_down_) {
@@ -308,11 +307,18 @@ void PowerButtonController::OnExit() {
   }
 }
 
-void PowerButtonController::OnLockStateChange(bool locked) {
-  if (shutting_down_ || locked_ == locked)
+void PowerButtonController::OnLockStateChanged(bool locked) {
+  if (shutting_down_ || (login_status_ == user::LOGGED_IN_LOCKED) == locked)
     return;
 
-  locked_ = locked;
+  if (!locked && login_status_ == user::LOGGED_IN_LOCKED) {
+    login_status_ = unlocked_login_status_;
+    unlocked_login_status_ = user::LOGGED_IN_NONE;
+  } else {
+    unlocked_login_status_ = login_status_;
+    login_status_ = user::LOGGED_IN_LOCKED;
+  }
+
   if (locked) {
     StartAnimation(SCREEN_LOCKER_CONTAINERS, ANIMATION_FADE_IN);
     lock_timer_.Stop();
@@ -333,7 +339,7 @@ void PowerButtonController::OnLockStateChange(bool locked) {
 }
 
 void PowerButtonController::OnStartingLock() {
-  if (shutting_down_ || locked_)
+  if (shutting_down_ || login_status_ == user::LOGGED_IN_LOCKED)
     return;
 
   // Ensure that the background layer is visible -- if the screen was locked via
@@ -361,7 +367,7 @@ void PowerButtonController::OnPowerButtonEvent(
     // immediately.
     if (down) {
       ShowBackgroundLayer();
-      if (logged_in_as_non_guest() && !locked_) {
+      if (LoggedInAsNonGuest() && login_status_ != user::LOGGED_IN_LOCKED) {
         StartAnimation(ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
                        ANIMATION_SLOW_CLOSE);
         OnLockTimeout();
@@ -375,19 +381,20 @@ void PowerButtonController::OnPowerButtonEvent(
       if (lock_fail_timer_.IsRunning())
         return;
 
-      if (logged_in_as_non_guest() && !locked_)
+      if (LoggedInAsNonGuest() && login_status_ != user::LOGGED_IN_LOCKED)
         StartLockTimer();
       else
         StartShutdownTimer();
     } else {  // Button is up.
       if (lock_timer_.IsRunning() || shutdown_timer_.IsRunning())
         StartAnimation(
-            locked_ ? SCREEN_LOCKER_AND_RELATED_CONTAINERS : ALL_CONTAINERS,
+            (login_status_ == user::LOGGED_IN_LOCKED) ?
+            SCREEN_LOCKER_AND_RELATED_CONTAINERS : ALL_CONTAINERS,
             ANIMATION_UNDO_SLOW_CLOSE);
 
       // Drop the background layer after the undo animation finishes.
       if (lock_timer_.IsRunning() ||
-          (shutdown_timer_.IsRunning() && !logged_in_as_non_guest())) {
+          (shutdown_timer_.IsRunning() && !LoggedInAsNonGuest())) {
         hide_background_layer_timer_.Stop();
         hide_background_layer_timer_.Start(
             FROM_HERE,
@@ -406,14 +413,15 @@ void PowerButtonController::OnLockButtonEvent(
     bool down, const base::TimeTicks& timestamp) {
   lock_button_down_ = down;
 
-  if (shutting_down_ || !logged_in_as_non_guest())
+  if (shutting_down_ || !LoggedInAsNonGuest())
     return;
 
   // Bail if we're already locked or are in the process of locking.  Also give
   // the power button precedence over the lock button (we don't expect both
   // buttons to be present, so this is just making sure that we don't do
   // something completely stupid if that assumption changes later).
-  if (locked_ || lock_fail_timer_.IsRunning() || power_button_down_)
+  if (login_status_ == user::LOGGED_IN_LOCKED ||
+      lock_fail_timer_.IsRunning() || power_button_down_)
     return;
 
   if (down) {
@@ -443,6 +451,15 @@ void PowerButtonController::OnRootWindowResized(const aura::RootWindow* root,
     background_layer_->SetBounds(gfx::Rect(root->bounds().size()));
 }
 
+bool PowerButtonController::LoggedInAsNonGuest() const {
+  if (login_status_ == user::LOGGED_IN_NONE)
+    return false;
+  if (login_status_ == user::LOGGED_IN_GUEST)
+    return false;
+  // TODO(mukai): think about kiosk mode.
+  return true;
+}
+
 void PowerButtonController::OnLockTimeout() {
   delegate_->RequestLockScreen();
   lock_fail_timer_.Start(
@@ -452,7 +469,7 @@ void PowerButtonController::OnLockTimeout() {
 }
 
 void PowerButtonController::OnLockFailTimeout() {
-  DCHECK(!locked_);
+  DCHECK_NE(login_status_, user::LOGGED_IN_LOCKED);
   LOG(ERROR) << "Screen lock request timed out";
   StartAnimation(ALL_BUT_SCREEN_LOCKER_AND_RELATED_CONTAINERS,
                  ANIMATION_RESTORE);
@@ -460,7 +477,7 @@ void PowerButtonController::OnLockFailTimeout() {
 }
 
 void PowerButtonController::OnLockToShutdownTimeout() {
-  DCHECK(locked_);
+  DCHECK_EQ(login_status_, user::LOGGED_IN_LOCKED);
   StartShutdownTimer();
 }
 
@@ -502,7 +519,7 @@ void PowerButtonController::StartShutdownAnimationAndRequestShutdown() {
   Shell::GetRootWindow()->ShowCursor(false);
 
   ShowBackgroundLayer();
-  if (!logged_in_ || locked_) {
+  if (login_status_ != user::LOGGED_IN_NONE) {
     // Hide the other containers before starting the animation.
     // ANIMATION_FAST_CLOSE will make the screen locker windows partially
     // transparent, and we don't want the other windows to show through.

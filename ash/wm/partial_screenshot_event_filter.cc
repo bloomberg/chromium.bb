@@ -32,7 +32,7 @@ bool PartialScreenshotEventFilter::PreHandleKeyEvent(
   }
 
   if (event->key_code() == ui::VKEY_ESCAPE)
-    view_->Cancel();
+    Cancel();
 
   // Always handled: other windows shouldn't receive input while we're
   // taking a screenshot.
@@ -54,6 +54,19 @@ ui::GestureStatus PartialScreenshotEventFilter::PreHandleGestureEvent(
   return ui::GESTURE_STATUS_UNKNOWN;  // Not handled.
 }
 
+void PartialScreenshotEventFilter::OnLoginStateChanged(
+    user::LoginStatus status) {
+  Cancel();
+}
+
+void PartialScreenshotEventFilter::OnAppTerminating() {
+  Cancel();
+}
+
+void PartialScreenshotEventFilter::OnLockStateChanged(bool locked) {
+  Cancel();
+}
+
 void PartialScreenshotEventFilter::Activate(PartialScreenshotView* view) {
   view_ = view;
 }
@@ -62,5 +75,9 @@ void PartialScreenshotEventFilter::Deactivate() {
   view_ = NULL;
 }
 
+void PartialScreenshotEventFilter::Cancel() {
+  if (view_)
+    view_->Cancel();
+}
 }  // namespace internal
 }  // namespace ash

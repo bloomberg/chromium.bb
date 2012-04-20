@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
@@ -38,7 +39,8 @@ class ASH_EXPORT PowerButtonControllerDelegate {
 
 // Displays onscreen animations and locks or suspends the system in response to
 // the power button being pressed or released.
-class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
+class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver,
+                                         public ShellObserver {
  public:
   // Animations that can be applied to groups of containers.
   // Exposed here for TestApi::ContainerGroupIsAnimated().
@@ -135,16 +137,6 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
     has_legacy_power_button_ = legacy;
   }
 
-  // Called when the user logs in.
-  void OnLoginStateChange(bool logged_in, bool is_guest);
-
-  // Called when the application is exiting.
-  void OnExit();
-
-  // Called when the screen is locked (after the lock window is visible) or
-  // unlocked.
-  void OnLockStateChange(bool locked);
-
   // Called when Chrome gets a request to display the lock screen.
   void OnStartingLock();
 
@@ -159,8 +151,13 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
   virtual void OnRootWindowResized(const aura::RootWindow* root,
                                    const gfx::Size& old_size) OVERRIDE;
 
+  // ShellObserver overrides:
+  virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;
+  virtual void OnAppTerminating() OVERRIDE;
+  virtual void OnLockStateChanged(bool locked) OVERRIDE;
+
  private:
-  bool logged_in_as_non_guest() const { return logged_in_ && !is_guest_; }
+  bool LoggedInAsNonGuest() const;
 
   // Requests that the screen be locked and starts |lock_fail_timer_|.
   void OnLockTimeout();
@@ -191,15 +188,11 @@ class ASH_EXPORT PowerButtonController : public aura::RootWindowObserver {
 
   scoped_ptr<PowerButtonControllerDelegate> delegate_;
 
-  // True if the user is currently logged in.
-  bool logged_in_;
+  // The current login status.
+  user::LoginStatus login_status_;
 
-  // True if a guest user is currently logged in.  Unused if |logged_in_| is
-  // false.
-  bool is_guest_;
-
-  // True if the screen is currently locked.
-  bool locked_;
+  // Original login status during locked.  LOGGED_IN_NONE if it's not locked.
+  user::LoginStatus unlocked_login_status_;
 
   // Are the power or lock buttons currently held?
   bool power_button_down_;

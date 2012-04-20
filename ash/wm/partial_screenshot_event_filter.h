@@ -6,6 +6,7 @@
 #define ASH_WM_PARTIAL_SCREENSHOT_EVENT_FILTER_H_
 #pragma once
 
+#include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
@@ -20,7 +21,8 @@ namespace internal {
 // main task of this event filter is just to stop propagation of any
 // key events during activation, and also signal cancellation when Esc is
 // pressed.
-class PartialScreenshotEventFilter : public aura::EventFilter {
+class PartialScreenshotEventFilter : public aura::EventFilter,
+                                     public ShellObserver {
  public:
   PartialScreenshotEventFilter();
   virtual ~PartialScreenshotEventFilter();
@@ -34,7 +36,10 @@ class PartialScreenshotEventFilter : public aura::EventFilter {
   // End the filtering of events.
   void Deactivate();
 
-  // Overridden from aura::EventFilter:
+  // Cancels the partial screenshot UI.  Do nothing if it's not activated.
+  void Cancel();
+
+  // aura::EventFilter overrides:
   virtual bool PreHandleKeyEvent(
       aura::Window* target, aura::KeyEvent* event) OVERRIDE;
   virtual bool PreHandleMouseEvent(
@@ -43,6 +48,11 @@ class PartialScreenshotEventFilter : public aura::EventFilter {
       aura::Window* target, aura::TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus PreHandleGestureEvent(
       aura::Window* target, aura::GestureEvent* event) OVERRIDE;
+
+  // ShellObserver overrides:
+  virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;
+  virtual void OnAppTerminating() OVERRIDE;
+  virtual void OnLockStateChanged(bool locked) OVERRIDE;
 
  private:
   PartialScreenshotView* view_;

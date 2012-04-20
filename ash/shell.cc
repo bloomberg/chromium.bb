@@ -657,6 +657,7 @@ void Shell::Init() {
   DCHECK_EQ(1U, GetRootWindowEventFilterCount());
   partial_screenshot_filter_.reset(new internal::PartialScreenshotEventFilter);
   AddRootWindowEventFilter(partial_screenshot_filter_.get());
+  AddShellObserver(partial_screenshot_filter_.get());
 
   // Then AcceleratorFilter and InputMethodEventFilter must be added (in this
   // order) since they have the second highest priority.
@@ -772,6 +773,7 @@ void Shell::Init() {
 
   drag_drop_controller_.reset(new internal::DragDropController);
   power_button_controller_.reset(new PowerButtonController);
+  AddShellObserver(power_button_controller_.get());
   video_detector_.reset(new VideoDetector);
   window_cycle_controller_.reset(new WindowCycleController);
   monitor_controller_.reset(new internal::MonitorController);
@@ -858,6 +860,18 @@ void Shell::SetMonitorWorkAreaInsets(Window* contains,
   monitor->set_work_area_insets(insets);
   FOR_EACH_OBSERVER(ShellObserver, observers_,
                     OnMonitorWorkAreaInsetsChanged());
+}
+
+void Shell::OnLoginStateChanged(user::LoginStatus status) {
+  FOR_EACH_OBSERVER(ShellObserver, observers_, OnLoginStateChanged(status));
+}
+
+void Shell::OnAppTerminating() {
+  FOR_EACH_OBSERVER(ShellObserver, observers_, OnAppTerminating());
+}
+
+void Shell::OnLockStateChanged(bool locked) {
+  FOR_EACH_OBSERVER(ShellObserver, observers_, OnLockStateChanged(locked));
 }
 
 void Shell::CreateLauncher() {
