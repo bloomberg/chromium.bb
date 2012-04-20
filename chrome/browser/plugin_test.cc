@@ -95,6 +95,11 @@ class PluginTest : public UITest {
       launch_arguments_.AppendSwitchASCII(switches::kTestSandbox,
                                           "security_tests.dll");
     }
+#elif defined(OS_MACOSX)
+    // The plugins directory isn't read by default on the Mac, so it needs to be
+    // explicitly registered.
+    launch_arguments_.AppendSwitchPath(
+        switches::kExtraPluginDir, browser_directory_.AppendASCII("plugins"));
 #endif  // defined(OS_WIN)
 
     launch_arguments_.AppendSwitch(switches::kAllowOutdatedPlugins);
