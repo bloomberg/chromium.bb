@@ -425,21 +425,15 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
     Profile* profile,
     FaviconService::GetFaviconRequest* request,
     const GURL& page_url) const {
-  // Before determining whether page_url is an extension url, we must handle
-  // overrides. This changes urls in |kChromeUIScheme| to extension urls, and
-  // allows to use ExtensionWebUI::GetFaviconForURL.
-  GURL url(page_url);
-  ExtensionWebUI::HandleChromeURLOverride(&url, profile);
-
   // All extensions but the bookmark manager get their favicon from the icons
   // part of the manifest.
-  if (url.SchemeIs(chrome::kExtensionScheme) &&
-      url.host() != extension_misc::kBookmarkManagerId) {
-    ExtensionWebUI::GetFaviconForURL(profile, request, url);
+  if (page_url.SchemeIs(chrome::kExtensionScheme) &&
+      page_url.host() != extension_misc::kBookmarkManagerId) {
+    ExtensionWebUI::GetFaviconForURL(profile, request, page_url);
   } else {
     history::FaviconData favicon;
     favicon.image_data = scoped_refptr<RefCountedMemory>(
-        GetFaviconResourceBytes(url));
+        GetFaviconResourceBytes(page_url));
     favicon.known_icon = favicon.image_data.get() != NULL &&
                              favicon.image_data->size() > 0;
     favicon.icon_type = history::FAVICON;
