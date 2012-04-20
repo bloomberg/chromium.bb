@@ -482,5 +482,22 @@
         }],
       ],
     },
+
+    # A tool to listen to sync notifications and print them out.
+    {
+      'target_name': 'sync_listen_notifications',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../jingle/jingle.gyp:notifier',
+        '../net/net.gyp:net',
+        '../net/net.gyp:net_test_support',
+        'sync',
+        'sync_notifier',
+      ],
+      'sources': [
+        'tools/sync_listen_notifications.cc',
+      ],
+    },
   ],
 }

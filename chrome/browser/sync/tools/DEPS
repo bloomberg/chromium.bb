@@ -1,4 +1,0 @@
-include_rules = [
-  "+jingle/notifier/base",
-  "+sync/notifier",
-]

@@ -1,0 +1,8 @@
+include_rules = [
+  "+jingle/notifier/base",
+  "+net/base/host_port_pair.h",
+  "+net/url_request/url_request_test_util.h",
+  "+sync/notifier",
+  "+sync/syncable/model_type.h",
+  "+sync/syncable/model_type_payload_map.h",
+]
