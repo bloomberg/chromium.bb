@@ -750,7 +750,6 @@
         'test/base/chrome_process_util_uitest.cc',
         'test/reliability/automated_ui_test_test.cc',
         'test/ui/named_interface_uitest.cc',
-        'test/ui/sandbox_uitests.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_uitest.cc',
         # DON'T ADD NEW FILES! SEE NOTE AT TOP OF SECTION.
       ],
@@ -789,7 +788,6 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'dependencies': [
-            'security_tests',  # run time dependency
             'test_support_common',
             '../google_update/google_update.gyp:google_update',
           ],
@@ -3047,6 +3045,7 @@
         'test/data/webui/print_preview.h',
         'test/data/webui/print_preview.js',
         'test/gpu/gpu_feature_browsertest.cc',
+        'test/security_tests/sandbox_browsertest.cc',
         'test/ui/ppapi_uitest.cc',
         # TODO(craig): Rename this and run from base_unittests when the test
         # is safe to run there. See http://crbug.com/78722 for details.
@@ -3263,6 +3262,7 @@
           'dependencies': [
             'chrome_version_resources',
             'installer_util_strings',
+            'security_tests',  # run time dependency
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../sandbox/sandbox.gyp:sandbox',
           ],
