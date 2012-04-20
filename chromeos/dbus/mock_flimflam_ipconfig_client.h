@@ -7,6 +7,7 @@
 
 #include "base/values.h"
 #include "chromeos/dbus/flimflam_ipconfig_client.h"
+#include "dbus/object_path.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -16,16 +17,25 @@ class MockFlimflamIPConfigClient : public FlimflamIPConfigClient {
   MockFlimflamIPConfigClient();
   virtual ~MockFlimflamIPConfigClient();
 
-  MOCK_METHOD1(SetPropertyChangedHandler,
-               void(const PropertyChangedHandler& handler));
-  MOCK_METHOD0(ResetPropertyChangedHandler, void());
-  MOCK_METHOD1(GetProperties, void(const DictionaryValueCallback& callback));
-  MOCK_METHOD3(SetProperty, void(const std::string& name,
+  MOCK_METHOD2(SetPropertyChangedHandler,
+               void(const dbus::ObjectPath& ipconfig_path,
+                    const PropertyChangedHandler& handler));
+  MOCK_METHOD1(ResetPropertyChangedHandler,
+               void(const dbus::ObjectPath& ipconfig_path));
+  MOCK_METHOD2(GetProperties, void(const dbus::ObjectPath& ipconfig_path,
+                                   const DictionaryValueCallback& callback));
+  MOCK_METHOD1(CallGetPropertiesAndBlock,
+               base::DictionaryValue*(const dbus::ObjectPath& ipconfig_path));
+  MOCK_METHOD4(SetProperty, void(const dbus::ObjectPath& ipconfig_path,
+                                 const std::string& name,
                                  const base::Value& value,
                                  const VoidCallback& callback));
-  MOCK_METHOD2(ClearProperty, void(const std::string& name,
+  MOCK_METHOD3(ClearProperty, void(const dbus::ObjectPath& ipconfig_path,
+                                   const std::string& name,
                                    const VoidCallback& callback));
-  MOCK_METHOD1(Remove, void(const VoidCallback& callback));
+  MOCK_METHOD2(Remove, void(const dbus::ObjectPath& ipconfig_path,
+                            const VoidCallback& callback));
+  MOCK_METHOD1(CallRemoveAndBlock, bool(const dbus::ObjectPath& ipconfig_path));
 };
 
 }  // namespace chromeos

@@ -158,6 +158,7 @@
         'dbus/flimflam_client_unittest_base.cc',
         'dbus/flimflam_client_unittest_base.h',
         'dbus/flimflam_device_client_unittest.cc',
+        'dbus/flimflam_ipconfig_client_unittest.cc',
         'dbus/flimflam_manager_client_unittest.cc',
         'dbus/flimflam_network_client_unittest.cc',
         'dbus/flimflam_profile_client_unittest.cc',

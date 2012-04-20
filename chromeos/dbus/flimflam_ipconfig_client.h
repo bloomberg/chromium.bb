@@ -46,29 +46,49 @@ class CHROMEOS_EXPORT FlimflamIPConfigClient {
 
   // Sets PropertyChanged signal handler.
   virtual void SetPropertyChangedHandler(
+      const dbus::ObjectPath& ipconfig_path,
       const PropertyChangedHandler& handler) = 0;
 
   // Resets PropertyChanged signal handler.
-  virtual void ResetPropertyChangedHandler() = 0;
+  virtual void ResetPropertyChangedHandler(
+      const dbus::ObjectPath& ipconfig_path) = 0;
 
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.
-  virtual void GetProperties(const DictionaryValueCallback& callback) = 0;
+  virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
+                             const DictionaryValueCallback& callback) = 0;
+
+  // DEPRECATED DO NOT USE: Calls GetProperties method and blocks until the
+  // method call finishes.  The caller is responsible to delete the result.
+  // Thie method returns NULL when method call fails.
+  //
+  // TODO(hashimoto): Refactor CrosListIPConfigs to remove this method.
+  virtual base::DictionaryValue* CallGetPropertiesAndBlock(
+      const dbus::ObjectPath& ipconfig_path) = 0;
 
   // Calls SetProperty method.
   // |callback| is called after the method call succeeds.
-  virtual void SetProperty(const std::string& name,
+  virtual void SetProperty(const dbus::ObjectPath& ipconfig_path,
+                           const std::string& name,
                            const base::Value& value,
                            const VoidCallback& callback) = 0;
 
   // Calls ClearProperty method.
   // |callback| is called after the method call succeeds.
-  virtual void ClearProperty(const std::string& name,
+  virtual void ClearProperty(const dbus::ObjectPath& ipconfig_path,
+                             const std::string& name,
                              const VoidCallback& callback) = 0;
 
   // Calls Remove method.
   // |callback| is called after the method call succeeds.
-  virtual void Remove(const VoidCallback& callback) = 0;
+  //
+  // TODO(hashimoto): Refactor CrosRemoveIPConfig to remove this method.
+  virtual void Remove(const dbus::ObjectPath& ipconfig_path,
+                      const VoidCallback& callback) = 0;
+
+  // DEPRECATED DO NOT USE: Calls Remove method and blocks until the method call
+  // finishes.
+  virtual bool CallRemoveAndBlock(const dbus::ObjectPath& ipconfig_path) = 0;
 
  protected:
   // Create() should be used instead.

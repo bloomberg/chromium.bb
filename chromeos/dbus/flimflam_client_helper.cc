@@ -70,6 +70,15 @@ void FlimflamClientHelper::CallDictionaryValueMethod(
                                 callback));
 }
 
+bool FlimflamClientHelper::CallVoidMethodAndBlock(
+    dbus::MethodCall* method_call) {
+  scoped_ptr<dbus::Response> response(
+      blocking_method_caller_.CallMethodAndBlock(method_call));
+  if (!response.get())
+    return false;
+  return true;
+}
+
 base::DictionaryValue* FlimflamClientHelper::CallDictionaryValueMethodAndBlock(
     dbus::MethodCall* method_call) {
   scoped_ptr<dbus::Response> response(
