@@ -3402,6 +3402,8 @@ if nacl_irt_env.Bit('target_x86_64') or nacl_irt_env.Bit('target_x86_32'):
   nacl_irt_env.ClearBits('bitcode')
 # The irt is not subject to the pexe contraint!
 nacl_irt_env.ClearBits('pnacl_generate_pexe')
+# do not build the irt using the sandboxed translator
+nacl_irt_env.ClearBits('use_sandboxed_translator')
 nacl_irt_env.Tool('naclsdk')
 # These are unfortunately clobbered by running Tool, which
 # we needed to do to get the destination directory reset.
