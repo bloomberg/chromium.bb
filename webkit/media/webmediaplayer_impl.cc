@@ -645,38 +645,10 @@ void WebMediaPlayerImpl::putCurrentFrame(
   }
 }
 
-#define COMPILE_ASSERT_MATCHING_STATUS_ENUM(webkit_name, chromium_name) \
-    COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayer::webkit_name) == \
-                   static_cast<int>(media::ChunkDemuxer::chromium_name), \
-                   mismatching_status_enums)
-COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddIdStatusOk, kOk);
-COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddIdStatusNotSupported, kNotSupported);
-COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddIdStatusReachedIdLimit, kReachedIdLimit);
-
-WebKit::WebMediaPlayer::AddIdStatus WebMediaPlayerImpl::sourceAddId(
-    const WebKit::WebString& id,
-    const WebKit::WebString& type) {
-    DCHECK_EQ(main_loop_, MessageLoop::current());
-    return static_cast<WebKit::WebMediaPlayer::AddIdStatus>(
-        proxy_->DemuxerAddId(id.utf8().data(), type.utf8().data()));
-}
-
-bool WebMediaPlayerImpl::sourceRemoveId(const WebKit::WebString& id) {
-  DCHECK(!id.isEmpty());
-  return proxy_->DemuxerRemoveId(id.utf8().data());
-}
-
 bool WebMediaPlayerImpl::sourceAppend(const unsigned char* data,
                                       unsigned length) {
-  return sourceAppend(WebKit::WebString::fromUTF8("DefaultSourceId"),
-                      data, length);
-}
-
-bool WebMediaPlayerImpl::sourceAppend(const WebKit::WebString& id,
-                                      const unsigned char* data,
-                                      unsigned length) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  return proxy_->DemuxerAppend(id.utf8().data(), data, length);
+  return proxy_->DemuxerAppend(data, length);
 }
 
 void WebMediaPlayerImpl::sourceEndOfStream(
