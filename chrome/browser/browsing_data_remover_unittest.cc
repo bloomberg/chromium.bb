@@ -438,6 +438,9 @@ class BrowsingDataRemoverTest : public testing::Test,
     registrar_.RemoveAll();
   }
 
+ protected:
+  RemoveQuotaManagedDataTester tester_;
+
  private:
   scoped_ptr<BrowsingDataRemover::NotificationDetails> called_with_details_;
   content::NotificationRegistrar registrar_;
@@ -612,13 +615,10 @@ TEST_F(BrowsingDataRemoverTest, QuotaClientMaskGeneration) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
-  scoped_ptr<RemoveQuotaManagedDataTester> tester(
-      new RemoveQuotaManagedDataTester());
-
-  tester->PopulateTestQuotaManagedData(GetMockManager());
+  tester_.PopulateTestQuotaManagedData(GetMockManager());
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, tester.get());
+      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
@@ -637,13 +637,10 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
-  scoped_ptr<RemoveQuotaManagedDataTester> tester(
-      new RemoveQuotaManagedDataTester());
-
-  tester->PopulateTestQuotaManagedTemporaryData(GetMockManager());
+  tester_.PopulateTestQuotaManagedTemporaryData(GetMockManager());
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, tester.get());
+      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
@@ -662,13 +659,10 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
-  scoped_ptr<RemoveQuotaManagedDataTester> tester(
-      new RemoveQuotaManagedDataTester());
-
-  tester->PopulateTestQuotaManagedPersistentData(GetMockManager());
+  tester_.PopulateTestQuotaManagedPersistentData(GetMockManager());
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, tester.get());
+      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
@@ -687,13 +681,10 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
-  scoped_ptr<RemoveQuotaManagedDataTester> tester(
-      new RemoveQuotaManagedDataTester());
-
   GetMockManager();  // Creates the QuotaManager instance.
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, tester.get());
+      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
@@ -712,16 +703,14 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
-  scoped_ptr<RemoveQuotaManagedDataTester> tester(
-      new RemoveQuotaManagedDataTester());
-  tester->PopulateTestQuotaManagedData(GetMockManager());
+  tester_.PopulateTestQuotaManagedData(GetMockManager());
 
   // Remove Origin 1.
   BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
       BrowsingDataRemover::REMOVE_INDEXEDDB |
-      BrowsingDataRemover::REMOVE_WEBSQL, kOrigin1, tester.get());
+      BrowsingDataRemover::REMOVE_WEBSQL, kOrigin1, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
@@ -742,13 +731,11 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
-  scoped_ptr<RemoveQuotaManagedDataTester> tester(
-      new RemoveQuotaManagedDataTester());
-  tester->PopulateTestQuotaManagedData(GetMockManager());
+  tester_.PopulateTestQuotaManagedData(GetMockManager());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_HOUR,
       BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, tester.get());
+      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
@@ -767,13 +754,11 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastWeek) {
-  scoped_ptr<RemoveQuotaManagedDataTester> tester(
-      new RemoveQuotaManagedDataTester());
-  tester->PopulateTestQuotaManagedData(GetMockManager());
+  tester_.PopulateTestQuotaManagedData(GetMockManager());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::LAST_WEEK,
       BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, tester.get());
+      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
@@ -798,13 +783,11 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
   mock_policy->AddProtected(kOrigin1.GetOrigin());
   GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
 
-  scoped_ptr<RemoveQuotaManagedDataTester> tester(
-      new RemoveQuotaManagedDataTester());
-  tester->PopulateTestQuotaManagedData(GetMockManager());
+  tester_.PopulateTestQuotaManagedData(GetMockManager());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, tester.get());
+      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SITE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
@@ -829,16 +812,14 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedSpecificOrigin) {
   mock_policy->AddProtected(kOrigin1.GetOrigin());
   GetProfile()->SetExtensionSpecialStoragePolicy(mock_policy);
 
-  scoped_ptr<RemoveQuotaManagedDataTester> tester(
-      new RemoveQuotaManagedDataTester());
-  tester->PopulateTestQuotaManagedData(GetMockManager());
+  tester_.PopulateTestQuotaManagedData(GetMockManager());
 
   // Try to remove kOrigin1. Expect failure.
   BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
       BrowsingDataRemover::REMOVE_INDEXEDDB |
-      BrowsingDataRemover::REMOVE_WEBSQL, kOrigin1, tester.get());
+      BrowsingDataRemover::REMOVE_WEBSQL, kOrigin1, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
@@ -859,15 +840,13 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedSpecificOrigin) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedIgnoreExtensionsAndDevTools) {
-  scoped_ptr<RemoveQuotaManagedDataTester> tester(
-      new RemoveQuotaManagedDataTester());
-  tester->PopulateTestQuotaManagedNonBrowsingData(GetMockManager());
+  tester_.PopulateTestQuotaManagedNonBrowsingData(GetMockManager());
 
   BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
       BrowsingDataRemover::REMOVE_INDEXEDDB |
-      BrowsingDataRemover::REMOVE_WEBSQL, tester.get());
+      BrowsingDataRemover::REMOVE_WEBSQL, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
