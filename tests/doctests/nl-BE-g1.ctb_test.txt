@@ -58,6 +58,9 @@ Liblouis tests for Dutch language
     >>> t.braille(u'r')
     u'r'
 
+Tests that have the '#doctest:+SKIP' annotation are skipped. They are
+known problems.
+
     >>> t.braille(u's ß') #doctest:+SKIP
     u's ~'
 
