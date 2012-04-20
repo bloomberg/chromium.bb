@@ -199,6 +199,13 @@ views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TrayIME::CreateDefaultView(user::LoginStatus status) {
+  SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
+  IMEInfoList list;
+  IMEPropertyInfoList property_list;
+  delegate->GetAvailableIMEList(&list);
+  delegate->GetCurrentIMEProperties(&property_list);
+  if (list.size() <= 1 && property_list.size() <= 1)
+    return NULL;
   default_.reset(new tray::IMEDefaultView(this));
   return default_.get();
 }
