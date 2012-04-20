@@ -41,10 +41,6 @@ ShellMainDelegate::~ShellMainDelegate() {
 }
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
-  return false;
-}
-
-void ShellMainDelegate::PreSandboxStartup() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
@@ -52,6 +48,10 @@ void ShellMainDelegate::PreSandboxStartup() {
   content::SetContentClient(&content_client_);
   InitializeShellContentClient(process_type);
 
+  return false;
+}
+
+void ShellMainDelegate::PreSandboxStartup() {
   InitializeResourceBundle();
 }
 
