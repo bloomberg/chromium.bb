@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -336,10 +336,12 @@ int NaClXlateNaClSyncStatus(NaClSyncStatus status) {
   switch (status) {
 #define MAP(S, E) case S: do { return E; } while (0)
     MAP(NACL_SYNC_OK, 0);
-    MAP(NACL_SYNC_INTERNAL_ERROR, NACL_ABI_EINVAL); /* generic error */
+    case NACL_SYNC_INTERNAL_ERROR:
+      NaClLog(LOG_FATAL,
+              "NaClXlateNaClSyncStatus: NACL_SYNC_INTERNAL_ERROR\n");
     MAP(NACL_SYNC_BUSY, NACL_ABI_EBUSY);
-    MAP(NACL_SYNC_MUTEX_INVALID, NACL_ABI_EBADF);
-    MAP(NACL_SYNC_MUTEX_DEADLOCK, NACL_ABI_EINVAL);
+    MAP(NACL_SYNC_MUTEX_INVALID, NACL_ABI_EINVAL);
+    MAP(NACL_SYNC_MUTEX_DEADLOCK, NACL_ABI_EDEADLK);
     MAP(NACL_SYNC_MUTEX_PERMISSION, NACL_ABI_EPERM);
     MAP(NACL_SYNC_MUTEX_INTERRUPTED, NACL_ABI_EINTR);
     MAP(NACL_SYNC_CONDVAR_TIMEDOUT, NACL_ABI_ETIMEDOUT);
@@ -348,6 +350,8 @@ int NaClXlateNaClSyncStatus(NaClSyncStatus status) {
     MAP(NACL_SYNC_SEM_RANGE_ERROR, NACL_ABI_ERANGE);
 #undef MAP
   }
+  NaClLog(LOG_FATAL,
+          "NaClXlateNaClSyncStatus: status %d\n", (int) status);
   return NACL_ABI_EINVAL;  /* catch all */
 }
 
