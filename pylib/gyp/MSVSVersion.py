@@ -240,6 +240,17 @@ def _DetectVisualStudioVersions(versions_to_check, force_express):
         # Add this one.
         versions.append(_CreateVersion(version_to_year[version] + 'e',
             os.path.join(path, '..', '..')))
+
+    # The old method above does not work when only SDK is installed.
+    keys = [r'HKLM\Software\Microsoft\VisualStudio\SxS\VC7',
+            r'HKLM\Software\Wow6432Node\Microsoft\VisualStudio\SxS\VC7']
+    for index in range(len(keys)):
+      path = _RegistryGetValue(keys[index], version)
+      if not path:
+        continue
+      versions.append(_CreateVersion(version_to_year[version] + 'e',
+          os.path.join(path, '..')))
+
   return versions
 
 
