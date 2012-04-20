@@ -2778,6 +2778,12 @@ static const char vertex_shader[] =
 	"      gl_FragColor.a = 1.0;\n"					\
 	"   gl_FragColor = alpha * gl_FragColor;\n"
 
+#define FRAGMENT_CONVERT_YUV						\
+	"  gl_FragColor.r = y + 1.59602678 * v;\n"			\
+	"  gl_FragColor.g = y - 0.39176229 * u - 0.81296764 * v;\n"	\
+	"  gl_FragColor.b = y + 2.01723214 * u;\n"			\
+	"  gl_FragColor.a = 1.0;\n"
+
 static const char texture_fragment_shader_rgba[] =
 	"precision mediump float;\n"
 	"varying vec2 v_texcoord;\n"
@@ -2787,6 +2793,52 @@ static const char texture_fragment_shader_rgba[] =
 	"{\n"
 	FRAGMENT_SHADER_INIT
 	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
+	FRAGMENT_SHADER_EXIT
+	"}\n";
+
+static const char texture_fragment_shader_y_uv[] =
+	"precision mediump float;\n"
+	"uniform sampler2D tex;\n"
+	"uniform sampler2D tex1;\n"
+	"varying vec2 v_texcoord;\n"
+	FRAGMENT_SHADER_UNIFORMS
+	"void main() {\n"
+	FRAGMENT_SHADER_INIT
+	"  float y = 1.16438356 * (texture2D(tex, v_texcoord).x - 0.0625);\n"
+	"  float u = texture2D(tex1, v_texcoord).r - 0.5;\n"
+	"  float v = texture2D(tex1, v_texcoord).g - 0.5;\n"
+	FRAGMENT_CONVERT_YUV
+	FRAGMENT_SHADER_EXIT
+	"}\n";
+
+static const char texture_fragment_shader_y_u_v[] =
+	"precision mediump float;\n"
+	"uniform sampler2D tex;\n"
+	"uniform sampler2D tex1;\n"
+	"uniform sampler2D tex2;\n"
+	"varying vec2 v_texcoord;\n"
+	FRAGMENT_SHADER_UNIFORMS
+	"void main() {\n"
+	FRAGMENT_SHADER_INIT
+	"  float y = 1.16438356 * (texture2D(tex, v_texcoord).x - 0.0625);\n"
+	"  float u = texture2D(tex1, v_texcoord).x - 0.5;\n"
+	"  float v = texture2D(tex2, v_texcoord).x - 0.5;\n"
+	FRAGMENT_CONVERT_YUV
+	FRAGMENT_SHADER_EXIT
+	"}\n";
+
+static const char texture_fragment_shader_y_xuxv[] =
+	"precision mediump float;\n"
+	"uniform sampler2D tex;\n"
+	"uniform sampler2D tex1;\n"
+	"varying vec2 v_texcoord;\n"
+	FRAGMENT_SHADER_UNIFORMS
+	"void main() {\n"
+	FRAGMENT_SHADER_INIT
+	"  float y = 1.16438356 * (texture2D(tex, v_texcoord).x - 0.0625);\n"
+	"  float u = texture2D(tex1, v_texcoord).g - 0.5;\n"
+	"  float v = texture2D(tex1, v_texcoord).a - 0.5;\n"
+	FRAGMENT_CONVERT_YUV
 	FRAGMENT_SHADER_EXIT
 	"}\n";
 
@@ -3148,6 +3200,15 @@ weston_compositor_init_gl(struct weston_compositor *ec)
 
 	if (weston_shader_init(&ec->texture_shader_rgba,
 			     vertex_shader, texture_fragment_shader_rgba) < 0)
+		return -1;
+	if (weston_shader_init(&ec->texture_shader_y_uv,
+			       vertex_shader, texture_fragment_shader_y_uv) < 0)
+		return -1;
+	if (weston_shader_init(&ec->texture_shader_y_u_v,
+			       vertex_shader, texture_fragment_shader_y_u_v) < 0)
+		return -1;
+	if (weston_shader_init(&ec->texture_shader_y_xuxv,
+			       vertex_shader, texture_fragment_shader_y_xuxv) < 0)
 		return -1;
 	if (weston_shader_init(&ec->solid_shader,
 			     vertex_shader, solid_fragment_shader) < 0)
