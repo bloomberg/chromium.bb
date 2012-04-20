@@ -17,6 +17,7 @@ import cStringIO  # Exposed through the API.
 import fnmatch
 import glob
 import inspect
+import json  # Exposed through the API.
 import logging
 import marshal  # Exposed through the API.
 import optparse
@@ -32,16 +33,6 @@ import types
 import unittest  # Exposed through the API.
 import urllib2  # Exposed through the API.
 from warnings import warn
-
-try:
-  import simplejson as json  # pylint: disable=F0401
-except ImportError:
-  try:
-    import json  # pylint: disable=F0401
-  except ImportError:
-    # Import the one included in depot_tools.
-    sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
-    import simplejson as json  # pylint: disable=F0401
 
 # Local imports.
 import fix_encoding

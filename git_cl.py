@@ -7,6 +7,7 @@
 
 """A git-command for integrating reviews on Rietveld."""
 
+import json
 import logging
 import optparse
 import os
@@ -22,16 +23,6 @@ try:
   import readline  # pylint: disable=F0401,W0611
 except ImportError:
   pass
-
-try:
-  import simplejson as json  # pylint: disable=F0401
-except ImportError:
-  try:
-    import json  # pylint: disable=F0401
-  except ImportError:
-    # Fall back to the packaged version.
-    sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
-    import simplejson as json  # pylint: disable=F0401
 
 
 from third_party import upload

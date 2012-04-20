@@ -7,7 +7,6 @@
 Includes support for svn, git-svn and git.
 """
 
-from __future__ import with_statement
 import ConfigParser
 import fnmatch
 import logging

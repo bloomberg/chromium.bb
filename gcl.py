@@ -8,6 +8,7 @@ Wrapper script around Rietveld's upload.py that simplifies working with groups
 of files.
 """
 
+import json
 import optparse
 import os
 import random
@@ -20,15 +21,6 @@ import urllib2
 
 import breakpad  # pylint: disable=W0611
 
-try:
-  import simplejson as json  # pylint: disable=F0401
-except ImportError:
-  try:
-    import json  # pylint: disable=F0401
-  except ImportError:
-    # Import the one included in depot_tools.
-    sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
-    import simplejson as json  # pylint: disable=F0401
 
 import fix_encoding
 import gclient_utils

@@ -8,7 +8,6 @@
 See gclient_smoketest.py for integration tests.
 """
 
-from __future__ import with_statement
 import Queue
 import logging
 import os

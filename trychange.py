@@ -11,6 +11,7 @@ to the server by HTTP.
 import datetime
 import errno
 import getpass
+import json
 import logging
 import optparse
 import os
@@ -20,16 +21,6 @@ import shutil
 import sys
 import tempfile
 import urllib
-
-try:
-  import simplejson as json  # pylint: disable=F0401
-except ImportError:
-  try:
-    import json  # pylint: disable=F0401
-  except ImportError:
-    # Import the one included in depot_tools.
-    sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
-    import simplejson as json  # pylint: disable=F0401
 
 import breakpad  # pylint: disable=W0611
 
@@ -744,8 +735,6 @@ def TryChange(argv,
     elif options.issue and options.patchset is None:
       # Retrieve the patch from rietveld when the diff is not specified.
       # When patchset is specified, it's because it's done by gcl/git-try.
-      if json is None:
-        parser.error('json or simplejson library is missing, please install.')
       api_url = '%s/api/%d' % (options.rietveld_url, options.issue)
       logging.debug(api_url)
       contents = json.loads(urllib.urlopen(api_url).read())

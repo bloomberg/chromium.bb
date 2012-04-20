@@ -13,22 +13,11 @@ The following hypothesis are made:
   - A patch set cannot be modified
 """
 
+import json
 import logging
-import os
 import re
-import sys
 import time
 import urllib2
-
-try:
-  import simplejson as json  # pylint: disable=F0401
-except ImportError:
-  try:
-    import json  # pylint: disable=F0401
-  except ImportError:
-    # Import the one included in depot_tools.
-    sys.path.append(os.path.join(os.path.dirname(__file__), 'third_party'))
-    import simplejson as json  # pylint: disable=F0401
 
 from third_party import upload
 import patch

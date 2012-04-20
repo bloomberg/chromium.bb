@@ -695,9 +695,6 @@ def CheckRietveldTryJobExecution(input_api, output_api, host_url, platforms,
 
 def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
     ignored):
-  if not input_api.json:
-    return [output_api.PresubmitPromptWarning(
-      'Please install simplejson or upgrade to python 2.6+')]
   try:
     connection = input_api.urllib2.urlopen(url)
     raw_data = connection.read()
