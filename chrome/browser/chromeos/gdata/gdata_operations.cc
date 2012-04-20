@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/common/libxml_utils.h"
@@ -140,7 +141,7 @@ void AuthOperation::Start() {
   scopes.push_back(kSpreadsheetsScope);
   scopes.push_back(kUserContentScope);
   oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
-      this, profile_->GetRequestContext()));
+      this, g_browser_process->system_request_context()));
   NotifyStart();
   oauth2_access_token_fetcher_->Start(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
@@ -227,7 +228,7 @@ void UrlFetchOperationBase::Start(const std::string& auth_token) {
   DVLOG(1) << "URL: " << url.spec();
 
   url_fetcher_.reset(URLFetcher::Create(url, GetRequestType(), this));
-  url_fetcher_->SetRequestContext(profile_->GetRequestContext());
+  url_fetcher_->SetRequestContext(g_browser_process->system_request_context());
   // Always set flags to neither send nor save cookies.
   url_fetcher_->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
