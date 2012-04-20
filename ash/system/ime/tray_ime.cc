@@ -12,7 +12,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_views.h"
-#include "ash/wm/shelf_layout_manager.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
@@ -236,8 +235,6 @@ void TrayIME::OnIMERefresh() {
     default_->UpdateLabel(current);
   if (detailed_.get())
     detailed_->Update(list, property_list);
-  else if (!Shell::GetInstance()->shelf()->IsVisible())
-    PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
 }
 
 }  // namespace internal
