@@ -163,7 +163,7 @@ void WebView::Observe(int type,
 void WebView::WebContentsFocused(content::WebContents* web_contents) {
   DCHECK(wc_owner_.get());
   // The WebView is only the delegate of WebContentses it creates itself.
-  WebContentsFocused(web_contents_);
+  OnWebContentsFocused(web_contents_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
