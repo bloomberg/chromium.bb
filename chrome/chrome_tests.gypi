@@ -2035,7 +2035,6 @@
         'common/mac/mock_launchd.h',
         'common/mac/objc_method_swizzle_unittest.mm',
         'common/mac/objc_zombie_unittest.mm',
-        'common/metrics/experiments_helper_unittest.cc',
         'common/metrics/metrics_log_base_unittest.cc',
         'common/metrics/metrics_log_manager_unittest.cc',
         'common/multi_process_lock_unittest.cc',

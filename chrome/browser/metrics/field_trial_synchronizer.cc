@@ -20,7 +20,7 @@ FieldTrialSynchronizer::FieldTrialSynchronizer() {
   field_trial_synchronizer_ = this;
   base::FieldTrialList::AddObserver(this);
 
-  experiments_helper::SetChildProcessLoggingExperimentList();
+  ExperimentsHelper::SetChildProcessLoggingExperimentList();
 }
 
 FieldTrialSynchronizer::~FieldTrialSynchronizer() {
@@ -52,7 +52,7 @@ void FieldTrialSynchronizer::OnFieldTrialGroupFinalized(
                  this,
                  field_trial_name,
                  group_name));
-  experiments_helper::SetChildProcessLoggingExperimentList();
+  ExperimentsHelper::SetChildProcessLoggingExperimentList();
 }
 
 // static
