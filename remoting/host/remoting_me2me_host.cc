@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
@@ -78,6 +79,7 @@ class HostProcess
       : message_loop_(MessageLoop::TYPE_UI),
         allow_nat_traversal_(true),
         restarting_(false),
+        shutting_down_(false),
         exit_code_(kSuccessExitCode) {
     context_.reset(
         new ChromotingHostContext(message_loop_.message_loop_proxy()));
@@ -177,6 +179,11 @@ class HostProcess
                    base::Unretained(this)));
 #endif
     message_loop_.Run();
+
+    base::WaitableEvent done_event(true, false);
+    nat_policy_->StopWatching(&done_event);
+    done_event.Wait();
+    nat_policy_.reset();
 
     return exit_code_;
   }
@@ -325,10 +332,14 @@ class HostProcess
     CreateAuthenticatorFactory();
   }
 
+  void OnOAuthFailed() {
+    Shutdown(kInvalidOauthCredentialsExitCode);
+  }
+
   void RestartHost() {
     DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
-    if (restarting_)
+    if (restarting_ || shutting_down_)
       return;
 
     restarting_ = true;
@@ -340,7 +351,6 @@ class HostProcess
     DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
     restarting_ = false;
-
     host_ = NULL;
     log_to_server_.reset();
     host_event_logger_.reset();
@@ -349,12 +359,28 @@ class HostProcess
     StartHost();
   }
 
-  void OnOAuthFailed() {
-    Shutdown(kInvalidOauthCredentialsExitCode);
+  void Shutdown(int exit_code) {
+    DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+
+    if (shutting_down_)
+      return;
+    shutting_down_ = true;
+    exit_code_ = exit_code;
+    host_->Shutdown(base::Bind(
+        &HostProcess::OnShutdownFinished, base::Unretained(this)));
   }
 
-  void Shutdown(int exit_code) {
-    exit_code_ = exit_code;
+  void OnShutdownFinished() {
+    DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+
+    // Destroy networking objects while we are on the network thread.
+    host_ = NULL;
+    host_event_logger_.reset();
+    log_to_server_.reset();
+    heartbeat_sender_.reset();
+    signaling_connector_.reset();
+    signal_strategy_.reset();
+
     message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
@@ -380,6 +406,7 @@ class HostProcess
   scoped_ptr<base::DelayTimer<HostProcess> > config_updated_timer_;
 
   bool restarting_;
+  bool shutting_down_;
 
   scoped_ptr<XmppSignalStrategy> signal_strategy_;
   scoped_ptr<SignalingConnector> signaling_connector_;
@@ -441,4 +468,4 @@ int CALLBACK WinMain(HINSTANCE instance,
   return main(0, NULL);
 }
 
-#endif
+#endif  // defined(OS_WIN)
