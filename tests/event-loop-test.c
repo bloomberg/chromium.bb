@@ -120,4 +120,9 @@ TEST(free_source_with_data)
 	if (context.source2)
 		wl_event_source_remove(context.source2);
 	wl_event_loop_destroy(loop);
+
+	assert(close(context.p1[0]) == 0);
+	assert(close(context.p1[1]) == 0);
+	assert(close(context.p2[0]) == 0);
+	assert(close(context.p2[1]) == 0);
 }
