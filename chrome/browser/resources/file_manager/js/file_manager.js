@@ -29,6 +29,7 @@ function FileManager(dialogDom) {
   this.butterLastShowTime_ = 0;
 
   this.watchedDirectoryUrl_ = null;
+  this.metadataObserverId_ = null;
 
   this.commands_ = {};
 
@@ -274,39 +275,6 @@ FileManager.prototype = {
     }
   }
 
-  /**
-   * Get the size and mtime of a file/directory, caching the result.
-   *
-   * When this method completes, the fileEntry object will get a
-   * 'cachedSize_' and 'cachedMtime_' properties (if it doesn't already
-   * have one) containing the last modified time of the entry as a Date object.
-   *
-   * @param {Entry} entry An HTML5 Entry object.
-   * @param {function(Entry)} successCallback The function to invoke once the
-   *     mtime is known.
-   * @param {function=} opt_errorCallback Error callback.
-   * @param {boolean=} opt_sync True, if callback should be called sync instead
-   *     of async.
-   */
-  function cacheEntryDateAndSize(entry, successCallback, opt_errorCallback,
-      opt_sync) {
-    if ('cachedSize_' in entry) {
-      invokeCallback(successCallback, !!opt_sync, entry);
-      return;
-    }
-
-    function callback(success, metadata) {
-      entry.cachedMtime_ = metadata.modificationTime;
-      entry.cachedSize_ = entry.isFile ? (metadata.size || 0) : -1;
-      if (success && successCallback) successCallback(entry);
-      if (!success && opt_errorCallback) opt_errorCallback();
-    }
-
-    batchAsyncCall(entry, 'getMetadata',
-        callback.bind(null, true),
-        callback.bind(null, false, {}));
-  }
-
   function cacheGDataProps(entry, successCallback,
                            opt_errorCallback, opt_sync) {
     if ('gdata_' in entry) {
@@ -447,6 +415,8 @@ FileManager.prototype = {
     metrics.startInterval('Load.DOM');
     this.initCommands_();
 
+    this.metadataCache_ = MetadataCache.createFull();
+
     this.shortDateFormatter_ =
       this.locale_.createDateTimeFormat({'dateType': 'medium'});
 
@@ -488,6 +458,10 @@ FileManager.prototype = {
         this.showSpinnerLater_.bind(this));
     this.directoryModel_.addEventListener('scan-completed',
         this.showSpinner_.bind(this, false));
+    this.directoryModel_.addEventListener('scan-completed',
+        this.refreshCurrentDirectoryMetadata_.bind(this));
+    this.directoryModel_.addEventListener('rescan-completed',
+        this.refreshCurrentDirectoryMetadata_.bind(this));
     this.addEventListener('selection-summarized',
                           this.onSelectionSummarized_.bind(this));
 
@@ -606,7 +580,7 @@ FileManager.prototype = {
     cr.ui.Menu.decorate(this.docsSettingsMenu_);
 
     this.document_.addEventListener('command', this.onCommand_.bind(this));
-  }
+  };
 
   /**
    * One-time initialization of dialogs.
@@ -743,16 +717,19 @@ FileManager.prototype = {
     this.directoryModel_ = new DirectoryModel(
         this.filesystem_.root,
         sigleSelection,
-        str('ENABLE_GDATA') == '1');
+        str('ENABLE_GDATA') == '1',
+        this.metadataCache_);
 
     var dataModel = this.directoryModel_.fileList;
     var collator = this.collator_;
+    // TODO(dgozman): refactor comparison functions together with
+    // render/update/display.
     dataModel.setCompareFunction('name', function(a, b) {
       return collator.compare(a.name, b.name);
     });
-    dataModel.setCompareFunction('cachedMtime_',
+    dataModel.setCompareFunction('modificationTime',
                                  this.compareMtime_.bind(this));
-    dataModel.setCompareFunction('cachedSize_',
+    dataModel.setCompareFunction('size',
                                  this.compareSize_.bind(this));
     dataModel.setCompareFunction('type',
                                  this.compareType_.bind(this));
@@ -767,13 +744,6 @@ FileManager.prototype = {
 
     this.directoryModel_.autoSelectIndex =
         this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ? -1 : 0;
-
-    // TODO(serya): temporary solution.
-    this.directoryModel_.cacheEntryDateAndSize = cacheEntryDateAndSize;
-    this.directoryModel_.cacheEntryFileType =
-        this.cacheEntryFileType.bind(this);
-    this.directoryModel_.cacheEntryIconType =
-        this.cacheEntryIconType.bind(this);
 
     this.initTable_();
     this.initGrid_();
@@ -906,64 +876,6 @@ FileManager.prototype = {
     learnMore.appendChild(learnMoreLink);
   };
 
-  /**
-   * Get the icon type for a given Entry.
-   *
-   * @param {Entry} entry An Entry subclass (FileEntry or DirectoryEntry).
-   * @return {string} Icon type.
-   */
-  FileManager.prototype.getIconType = function(entry) {
-    if (!('cachedIconType_' in entry))
-      entry.cachedIconType_ = this.computeIconType_(entry);
-    return entry.cachedIconType_;
-  };
-
-  FileManager.prototype.computeIconType_ = function(entry) {
-    if (entry.isDirectory)
-      return 'folder';
-
-    var fileType = FileType.getType(entry.name);
-    return fileType.icon || fileType.type;
-  };
-
-  /**
-   * Get the file type for a given Entry.
-   *
-   * @param {Entry} entry An Entry subclass (FileEntry or DirectoryEntry).
-   * @return {string} One of the values from FileType.typeInfo, 'FOLDER',
-   *                  'DEVICE' or undefined.
-   */
-  FileManager.prototype.getFileType = function(entry) {
-    if (!('cachedFileType_' in entry))
-      entry.cachedFileType_ = this.computeFileType_(entry);
-    return entry.cachedFileType_;
-  };
-
-  FileManager.prototype.computeFileType_ = function(entry) {
-    if (entry.isDirectory) {
-      return {name: 'FOLDER', type: '.folder'};
-    }
-
-    return FileType.getType(entry.name);
-  };
-
-  /**
-   * Get the icon type of a file, caching the result.
-   *
-   * When this method completes, the entry object will get a
-   * 'cachedIconType_' property (if it doesn't already have one) containing the
-   * icon type of the file as a string.
-   *
-   * @param {Entry} entry An HTML5 Entry object.
-   * @param {function(Entry)} successCallback The function to invoke once the
-   *     icon type is known.
-   */
-  FileManager.prototype.cacheEntryIconType = function(entry, successCallback) {
-    this.getIconType(entry);
-    if (successCallback)
-      setTimeout(function() { successCallback(entry) }, 0);
-  };
-
   FileManager.prototype.onDataModelSplice_ = function(event) {
     var checkbox = this.document_.querySelector('#select-all-checkbox');
     if (checkbox)
@@ -978,31 +890,15 @@ FileManager.prototype = {
   };
 
   /**
-   * Get the file type of the entry, caching the result.
-   *
-   * When this method completes, the entry object will get a
-   * 'cachedIconType_' property (if it doesn't already have one) containing the
-   * icon type of the file as a string.
-   *
-   * @param {Entry} entry An HTML5 Entry object.
-   * @param {function(Entry)} successCallback The function to invoke once the
-   *     file size is known.
-   * @param {boolean=} opt_sync If true, we are safe to do synchronous callback.
-   */
-  FileManager.prototype.cacheEntryFileType = function(
-      entry, successCallback, opt_sync) {
-    this.getFileType(entry);
-    invokeCallback(successCallback, !!opt_sync, entry);
-  };
-
-  /**
    * Compare by mtime first, then by name.
    */
   FileManager.prototype.compareMtime_ = function(a, b) {
-    if (a.cachedMtime_ > b.cachedMtime_)
+    var aTime = this.metadataCache_.getCached(a, 'filesystem').modificationTime;
+    var bTime = this.metadataCache_.getCached(b, 'filesystem').modificationTime;
+    if (aTime > bTime)
       return 1;
 
-    if (a.cachedMtime_ < b.cachedMtime_)
+    if (aTime < bTime)
       return -1;
 
     return this.collator_.compare(a.name, b.name);
@@ -1012,12 +908,9 @@ FileManager.prototype = {
    * Compare by size first, then by name.
    */
   FileManager.prototype.compareSize_ = function(a, b) {
-    if (a.cachedSize_ > b.cachedSize_)
-      return 1;
-
-    if (a.cachedSize_ < b.cachedSize_)
-      return -1;
-
+    var aSize = this.metadataCache_.getCached(a, 'filesystem').size;
+    var bSize = this.metadataCache_.getCached(b, 'filesystem').size;
+    if (aSize != bSize) return aSize - bSize;
     return this.collator_.compare(a.name, b.name);
   };
 
@@ -1025,15 +918,18 @@ FileManager.prototype = {
    * Compare by type first, then by subtype and then by name.
    */
   FileManager.prototype.compareType_ = function(a, b) {
-    // Files of unknows type follows all the others.
-    var result = this.collator_.compare(a.cachedFileType_.type || 'Z',
-                                        b.cachedFileType_.type || 'Z');
+    var aType = this.metadataCache_.getCached(a, 'filesystem').fileType;
+    var bType = this.metadataCache_.getCached(b, 'filesystem').fileType;
+
+    // Files of unknown type follows all the others.
+    var result = this.collator_.compare(aType.type || 'Z',
+                                        bType.type || 'Z');
     if (result != 0)
       return result;
 
     // If types are same both subtypes are defined of both are undefined.
-    result = this.collator_.compare(a.cachedFileType_.subtype || '',
-                                    b.cachedFileType_.subtype || '');
+    result = this.collator_.compare(aType.subtype || '',
+                                    bType.subtype || '');
     if (result != 0)
       return result;
 
@@ -1331,14 +1227,16 @@ FileManager.prototype = {
     var columns = [
         new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
                                     fullPage ? 64 : 324),
-        new cr.ui.table.TableColumn('cachedSize_', str('SIZE_COLUMN_LABEL'),
+        new cr.ui.table.TableColumn('size', str('SIZE_COLUMN_LABEL'),
                                     fullPage ? 15.5 : 92, true),
         new cr.ui.table.TableColumn('type', str('TYPE_COLUMN_LABEL'),
-                                     fullPage ? 15.5 : 160),
-        new cr.ui.table.TableColumn('cachedMtime_', str('DATE_COLUMN_LABEL'),
-                                     fullPage ? 21 : 210)
+                                    fullPage ? 15.5 : 160),
+        new cr.ui.table.TableColumn('modificationTime',
+                                    str('DATE_COLUMN_LABEL'),
+                                    fullPage ? 21 : 210)
     ];
 
+    // TODO(dgozman): refactor render/update/display stuff.
     columns[0].renderFunction = this.renderName_.bind(this);
     columns[1].renderFunction = this.renderSize_.bind(this);
     columns[2].renderFunction = this.renderType_.bind(this);
@@ -1861,7 +1759,8 @@ FileManager.prototype = {
       self.applyImageTransformation_(box, transform);
     }
 
-   var cached = this.thumbnailUrlCache_[entry.fullPath];
+    // TODO(dgozman): move to new metadata cache.
+    var cached = this.thumbnailUrlCache_[entry.fullPath];
     if (cached)
       onThumbnailURL(cached.iconType, cached.url, cached.transform);
     else
@@ -1893,8 +1792,9 @@ FileManager.prototype = {
   FileManager.prototype.renderIconType_ = function(entry, columnId, table) {
     var icon = this.document_.createElement('div');
     icon.className = 'detail-icon';
-    this.getIconType(entry);
-    icon.setAttribute('iconType', entry.cachedIconType_);
+    this.metadataCache_.get(entry, 'filesystem', function(filesystem) {
+      icon.setAttribute('iconType', filesystem.icon);
+    });
     return icon;
   };
 
@@ -2068,17 +1968,20 @@ FileManager.prototype = {
     if (navigator.language == 'he')
       div.className = 'align-end-weakrtl';
     div.textContent = '...';
-    var self = this;
-    cacheEntryDateAndSize(entry, function(entry) {
-      if (entry.cachedSize_ == -1) {
-        div.textContent = '';
-      } else if (entry.cachedSize_ == 0 &&
-                 self.getFileType(entry).type == 'hosted') {
-        div.textContent = '--';
-      } else {
-        div.textContent = util.bytesToSi(entry.cachedSize_);
-      }
-    }, null, true);
+    this.displaySizeInDiv_(
+        div, this.metadataCache_.getCached(entry, 'filesystem'));
+  };
+
+  FileManager.prototype.displaySizeInDiv_ = function(div, filesystemProps) {
+    if (!filesystemProps) return;
+    if (filesystemProps.size == -1) {
+      div.textContent = '';
+    } else if (filesystemProps.size == 0 &&
+               filesystemProps.fileType.type == 'hosted') {
+      div.textContent = '--';
+    } else {
+      div.textContent = util.bytesToSi(filesystemProps.size);
+    }
   };
 
   /**
@@ -2096,16 +1999,21 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.updateType_ = function(div, entry) {
-    this.cacheEntryFileType(entry, function(entry) {
-      var info = entry.cachedFileType_;
-      if (info.name) {
-        if (info.subtype)
-          div.textContent = strf(info.name, info.subtype);
-        else
-          div.textContent = str(info.name);
-      } else
-        div.textContent = '';
-    }, true);
+    this.displayTypeInDiv_(
+        div, this.metadataCache_.getCached(entry, 'filesystem'));
+  };
+
+  FileManager.prototype.displayTypeInDiv_ = function(div, filesystemProps) {
+    if (!filesystemProps) return;
+    var fileType = filesystemProps.fileType;
+    if (fileType.name) {
+      if (fileType.subtype)
+        div.textContent = strf(fileType.name, fileType.subtype);
+      else
+        div.textContent = str(fileType.name);
+    } else {
+      div.textContent = '';
+    }
   };
 
   /**
@@ -2124,18 +2032,21 @@ FileManager.prototype = {
 
   FileManager.prototype.updateDate_ = function(div, entry) {
     div.textContent = '...';
+    this.displayDateInDiv_(
+        div, this.metadataCache_.getCached(entry, 'filesystem'));
+  };
 
-    var self = this;
-    cacheEntryDateAndSize(entry, function(entry) {
-      if (self.directoryModel_.isSystemDirectoy &&
-          entry.cachedMtime_.getTime() == 0) {
-        // Mount points for FAT volumes have this time associated with them.
-        // We'd rather display nothing than this bogus date.
-        div.textContent = '';
-      } else {
-        div.textContent = self.shortDateFormatter_.format(entry.cachedMtime_);
-      }
-    }, null, true);
+  FileManager.prototype.displayDateInDiv_ = function(div, filesystemProps) {
+    if (!filesystemProps) return;
+    if (this.directoryModel_.isSystemDirectoy &&
+        filesystemProps.modificationTime.getTime() == 0) {
+      // Mount points for FAT volumes have this time associated with them.
+      // We'd rather display nothing than this bogus date.
+      div.textContent = '';
+    } else {
+      div.textContent =
+          this.shortDateFormatter_.format(filesystemProps.modificationTime);
+    }
   };
 
   FileManager.prototype.renderOffline_ = function(entry, columnId, table) {
@@ -2160,6 +2071,38 @@ FileManager.prototype = {
       });
     }
     return div;
+  };
+
+  FileManager.prototype.refreshCurrentDirectoryMetadata_ = function() {
+    var entries = this.directoryModel_.fileList.slice();
+    this.metadataCache_.clear(entries, 'filesystem');
+    // We don't pass callback here. When new metadata arrives, we have an
+    // observer registered to update the UI.
+    this.metadataCache_.get(entries, 'filesystem', null);
+  };
+
+  FileManager.prototype.updateFilesystemPropertiesInUI_ = function(
+      urls, properties) {
+    if (this.listType_ != FileManager.ListType.DETAIL) return;
+
+    var items = {};
+    var dm = this.directoryModel_.fileList;
+    for (var index = 0; index < dm.length; index++) {
+      var listItem = this.currentList_.getListItemByIndex(index);
+      if (!listItem) continue;
+      var entry = dm.item(index);
+      items[entry.toURL()] = listItem;
+    }
+
+    for (var index = 0; index < urls.length; index++) {
+      var url = urls[index];
+      if (!(url in items)) continue;
+      var listItem = items[url];
+      var props = properties[index];
+      this.displayDateInDiv_(listItem.querySelector('.date'), props);
+      this.displaySizeInDiv_(listItem.querySelector('.size'), props);
+      this.displayTypeInDiv_(listItem.querySelector('.type'), props);
+    }
   };
 
   /**
@@ -2222,8 +2165,6 @@ FileManager.prototype = {
     this.previewSummary_.textContent = str('COMPUTING_SELECTION');
     var thumbnails = this.document_.createDocumentFragment();
 
-    var fileCount = 0;
-    var byteCount = 0;
     var pendingFiles = [];
     var thumbnailCount = 0;
     var thumbnailLoaded = -1;
@@ -2257,14 +2198,6 @@ FileManager.prototype = {
       selection.entries.push(entry);
       selection.urls.push(entry.toURL());
 
-      if (selection.iconType == null) {
-        selection.iconType = this.getIconType(entry);
-      } else if (selection.iconType != 'unknown') {
-        var iconType = this.getIconType(entry);
-        if (selection.iconType != iconType)
-          selection.iconType = 'unknown';
-      }
-
       if (thumbnailCount < MAX_PREVIEW_THUMBAIL_COUNT) {
         var box = this.document_.createElement('div');
         function imageLoadCalback(index, box, img, transform) {
@@ -2283,24 +2216,12 @@ FileManager.prototype = {
         thumbnails.appendChild(box);
       }
 
-      selection.totalCount++;
-
       if (entry.isFile) {
         selection.fileCount += 1;
-        if (!('cachedSize_' in entry)) {
-          // Any file that hasn't been rendered may be missing its cachedSize_
-          // property.  For example, visit a large file list, and press ctrl-a
-          // to select all.  In this case, we need to asynchronously get the
-          // sizes for these files before telling the world the selection has
-          // been summarized.  See the 'computeNextFile' logic below.
-          pendingFiles.push(entry);
-        } else {
-          selection.bytes += entry.cachedSize_;
-          selection.showBytes |= this.getFileType(entry).type != 'hosted';
-        }
       } else {
         selection.directoryCount += 1;
       }
+      selection.totalCount++;
     }
 
     // Now this.selection is complete. Update buttons.
@@ -2308,22 +2229,6 @@ FileManager.prototype = {
     this.updatePreviewPanelVisibility_();
     forcedShowTimeout = setTimeout(showThumbnails, 100);
     onThumbnailLoaded();
-
-    function cacheNextFile(fileEntry) {
-      if (fileEntry) {
-        // We're careful to modify the 'selection', rather than 'self.selection'
-        // here, just in case the selection has changed since this summarization
-        // began.
-        selection.bytes += fileEntry.cachedSize_;
-        selection.showBytes |= self.getFileType(fileEntry).type != 'hosted';
-      }
-
-      if (pendingFiles.length) {
-        cacheEntryDateAndSize(pendingFiles.pop(), cacheNextFile);
-      } else {
-        self.dispatchEvent(new cr.Event('selection-summarized'));
-      }
-    }
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
       // Some internal tasks cannot be defined in terms of file patterns,
@@ -2339,7 +2244,27 @@ FileManager.prototype = {
       }
     }
 
-    cacheNextFile();
+    this.metadataCache_.get(selection.entries, 'filesystem', function(props) {
+      for (var index = 0; index < selection.entries.length; index++) {
+        var entry = selection.entries[index];
+        var filesystem = props[index];
+
+        if (selection.iconType == null) {
+          selection.iconType = filesystem.icon;
+        } else if (selection.iconType != 'unknown') {
+          var iconType = filesystem.icon;
+          if (selection.iconType != iconType)
+            selection.iconType = 'unknown';
+        }
+
+        if (entry.isFile) {
+          selection.bytes += filesystem.size;
+          selection.showBytes |= filesystem.fileType.type != 'hosted';
+        }
+      }
+
+      this.dispatchEvent(new cr.Event('selection-summarized'));
+    }.bind(this));
   };
 
   /**
@@ -3095,27 +3020,30 @@ FileManager.prototype = {
     if (!entry)
       return;
 
-    var iconType = this.getIconType(entry);
+    this.metadataCache_.get(entry, 'filesystem', function(filesystem) {
 
-    function returnStockIcon() {
-      callback(iconType, FileType.getPreviewArt(iconType));
-    }
+      var iconType = filesystem.icon;
 
-    this.getMetadataProvider().fetch(entry.toURL(), function(metadata) {
-      if (metadata.thumbnailURL) {
-        callback(iconType, metadata.thumbnailURL, metadata.thumbnailTransform);
-      } else if (iconType == 'image') {
-        cacheEntryDateAndSize(entry, function() {
-          if (FileType.canUseImageUrlForPreview(metadata, entry.cachedSize_)) {
+      function returnStockIcon() {
+        callback(iconType, FileType.getPreviewArt(iconType));
+      }
+
+      this.getMetadataProvider().fetch(entry.toURL(), function(metadata) {
+        if (metadata.thumbnailURL) {
+          callback(iconType, metadata.thumbnailURL,
+                   metadata.thumbnailTransform);
+        } else if (iconType == 'image') {
+          if (FileType.canUseImageUrlForPreview(metadata, filesystem.size)) {
             callback(iconType, entry.toURL(), metadata.imageTransform);
           } else {
             returnStockIcon();
           }
-        }, returnStockIcon);
-      } else {
-        returnStockIcon();
-      }
-    });
+        } else {
+          returnStockIcon();
+        }
+      });
+
+    }.bind(this));
   };
 
   FileManager.prototype.focusCurrentList_ = function() {
@@ -3244,10 +3172,10 @@ FileManager.prototype = {
     function callback(props) {
       if (props.errorCode) {
         // TODO(serya): Do not show the message if unpin failed.
-        cacheEntryDateAndSize(entry, function() {
+        self.metadataCache_.get(entry, 'filesystem', function(filesystem) {
           self.alert.showHtml(str('GDATA_OUT_OF_SPACE_HEADER'),
               strf('GDATA_OUT_OF_SPACE_MESSAGE',
-                  util.bytesToSi(entry.cachedSize_)));
+                  util.bytesToSi(filesystem.size)));
         });
       }
       checkbox.checked = entry.gdata_.isPinned = props[0].isPinned;
@@ -3499,6 +3427,15 @@ FileManager.prototype = {
 
     // TODO(dgozman): title may be better than this.
     this.document_.title = this.getCurrentDirectory().substr(1);
+
+    if (this.metadataObserverId_)
+      this.metadataCache_.removeObserver(this.metadataObserverId_);
+
+    this.metadataObserverId_ = this.metadataCache_.addObserver(
+        this.directoryModel_.currentEntry,
+        MetadataCache.CHILDREN,
+        'filesystem',
+        this.updateFilesystemPropertiesInUI_.bind(this));
 
     var self = this;
 

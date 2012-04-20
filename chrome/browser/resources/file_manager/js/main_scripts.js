@@ -57,6 +57,7 @@
 //<include src="file_type.js"/>
 //<include src="file_transfer_controller.js"/>
 //<include src="metadata/metadata_provider.js"/>
+//<include src="metadata/metadata_cache.js"/>
 // // For accurate load performance tracking place main.js should be
 // // the last include to include.
 //<include src="main.js"/>

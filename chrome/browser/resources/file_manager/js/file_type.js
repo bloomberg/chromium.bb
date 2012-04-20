@@ -111,6 +111,11 @@ FileType.previewArt = {
 };
 
 /**
+ * A special type for directory.
+ */
+FileType.DIRECTORY = {name: 'FOLDER', type: '.folder', icon: 'folder'};
+
+/**
  * Get the file type object that matches a given url.
  *
  * @param {string} url Reference to the file.

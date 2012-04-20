@@ -17,9 +17,11 @@ var SHORT_RESCAN_INTERVAL = 100;
  *                                  at the time.
  * @param {boolean} showGData Defines whether GData root should be should
  *   (regardless of its mounts status).
+ * @param {MetadataCache} metadataCache The metadata cache service.
  */
-function DirectoryModel(root, singleSelection, showGData) {
+function DirectoryModel(root, singleSelection, showGData, metadataCache) {
   this.root_ = root;
+  this.metadataCache_ = metadataCache;
   this.fileList_ = new cr.ui.ArrayDataModel([]);
   this.fileListSelection_ = singleSelection ?
       new cr.ui.ListSingleSelectionModel() : new cr.ui.ListSelectionModel();
@@ -437,7 +439,6 @@ DirectoryModel.prototype.prefetchCacheForSorting_ = function(entries,
     this.prepareSortEntries_(entries, field, callback);
   } else {
     callback();
-    return;
   }
 };
 
@@ -877,41 +878,9 @@ DirectoryModel.prototype.prepareSort_ = function(field, callback) {
  */
 DirectoryModel.prototype.prepareSortEntries_ = function(entries, field,
                                                         callback) {
-  var cacheFunction;
-
-  if (field == 'name' || field == 'cachedMtime_') {
-    // Mtime is the tie-breaker for a name sort, so we need to resolve
-    // it for both mtime and name sorts.
-    cacheFunction = this.cacheEntryDateAndSize;
-  } else if (field == 'cachedSize_') {
-    cacheFunction = this.cacheEntryDateAndSize;
-  } else if (field == 'type') {
-    cacheFunction = this.cacheEntryFileType;
-  } else if (field == 'cachedIconType_') {
-    cacheFunction = this.cacheEntryIconType;
-  } else {
-    setTimeout(callback, 0);
-    return;
-  }
-
-  // Start one fake wait to prevent calling the callback twice.
-  var waitCount = 1;
-  for (var i = 0; i < entries.length; i++) {
-    var entry = entries[i];
-    if (!(field in entry)) {
-      waitCount++;
-      cacheFunction(entry, onCacheDone, onCacheDone);
-    }
-  }
-  onCacheDone();  // Finish the fake callback.
-
-  function onCacheDone() {
-    waitCount--;
-    // If all caching functions finished synchronously or entries.length = 0
-    // call the callback synchronously.
-    if (waitCount == 0)
-      setTimeout(callback, 0);
-  }
+  this.metadataCache_.get(entries, 'filesystem', function(properties) {
+    callback();
+  });
 };
 
 /**
