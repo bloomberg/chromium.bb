@@ -15,7 +15,6 @@
 #include "chrome/browser/chrome_to_mobile_service.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/views/window.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/animation/throb_animation.h"

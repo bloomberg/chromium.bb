@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
-#include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"

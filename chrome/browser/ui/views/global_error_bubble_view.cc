@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
-#include "chrome/browser/ui/views/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/text_button.h"

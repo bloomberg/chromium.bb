@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
-#include "chrome/browser/ui/views/window.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/selected_file_info.h"
 

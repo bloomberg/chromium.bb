@@ -10,7 +10,6 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/dialog_style.h"
-#include "chrome/browser/ui/views/window.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "googleurl/src/gurl.h"

@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
-#include "chrome/browser/ui/views/window.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/web_contents.h"

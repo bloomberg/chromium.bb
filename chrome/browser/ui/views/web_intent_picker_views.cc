@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/time.h"
 #include "base/memory/scoped_vector.h"
+#include "base/time.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
-#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"

@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/window.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/animation/slide_animation.h"

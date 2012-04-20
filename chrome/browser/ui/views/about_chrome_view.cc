@@ -21,7 +21,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/dialog_style.h"
-#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"

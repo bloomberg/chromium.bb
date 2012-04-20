@@ -35,7 +35,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/dialog_style.h"
-#include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

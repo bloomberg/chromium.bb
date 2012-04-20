@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/password_generator.h"
-#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/autofill_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/views/controls/button/text_button.h"

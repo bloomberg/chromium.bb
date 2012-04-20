@@ -8,7 +8,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

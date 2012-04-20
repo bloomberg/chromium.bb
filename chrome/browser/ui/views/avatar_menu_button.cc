@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
 

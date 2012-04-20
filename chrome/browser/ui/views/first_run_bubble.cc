@@ -8,7 +8,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/window.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

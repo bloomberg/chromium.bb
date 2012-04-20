@@ -86,7 +86,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/webui/options2/chromeos/system_settings_provider2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif  // defined(OS_CHROMEOS)

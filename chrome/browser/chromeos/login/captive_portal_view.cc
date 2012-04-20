@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/reload_button.h"
-#include "chrome/browser/ui/views/window.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"

@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
-#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
