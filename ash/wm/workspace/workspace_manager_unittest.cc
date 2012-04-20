@@ -51,8 +51,7 @@ class WorkspaceManagerTest : public test::AshTestBase {
   }
 
   aura::Window* GetViewport() {
-    return Shell::GetInstance()->GetContainer(
-        internal::kShellWindowId_DefaultContainer);
+    return Shell::GetInstance()->GetContainer(kShellWindowId_DefaultContainer);
   }
 
   const std::vector<Workspace*>& workspaces() const {
@@ -84,10 +83,10 @@ class WorkspaceManagerTest : public test::AshTestBase {
   }
 
  protected:
-  internal::WorkspaceManager* manager_;
+  WorkspaceManager* manager_;
 
  private:
-  scoped_ptr<internal::ActivationController> activation_controller_;
+  scoped_ptr<ActivationController> activation_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceManagerTest);
 };
@@ -585,6 +584,37 @@ TEST_F(WorkspaceManagerTest, ShowMinimizedPersistWindow) {
   EXPECT_FALSE(w1->IsVisible());
   w1->Show();
   EXPECT_TRUE(w1->IsVisible());
+}
+
+// Test that we report we're in the fullscreen state even if the fullscreen
+// window isn't being managed by us (http://crbug.com/123931).
+TEST_F(WorkspaceManagerTest, GetWindowStateWithUnmanagedFullscreenWindow) {
+  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+
+  // We need to create a regular window first so there's an active workspace.
+  scoped_ptr<Window> w1(CreateTestWindow());
+  w1->Show();
+
+  scoped_ptr<Window> w2(CreateTestWindow());
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  SetPersistsAcrossAllWorkspaces(
+      w2.get(),
+      WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_YES);
+  w2->Show();
+
+  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+  ASSERT_FALSE(manager_->IsManagedWindow(w2.get()));
+  EXPECT_EQ(WorkspaceManager::WINDOW_STATE_FULL_SCREEN,
+            manager_->GetWindowState());
+
+  w2->Hide();
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
+
+  w2->Show();
+  EXPECT_EQ(ShelfLayoutManager::HIDDEN, shelf->visibility_state());
+
+  w2.reset();
+  EXPECT_EQ(ShelfLayoutManager::VISIBLE, shelf->visibility_state());
 }
 
 }  // namespace internal

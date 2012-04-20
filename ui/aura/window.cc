@@ -335,6 +335,8 @@ void Window::RemoveChild(Window* child) {
     layer_->Remove(child->layer_);
   children_.erase(i);
   child->OnParentChanged();
+  if (layout_manager_.get())
+    layout_manager_->OnWindowRemovedFromLayout(child);
 }
 
 bool Window::Contains(const Window* other) const {

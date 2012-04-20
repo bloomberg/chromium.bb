@@ -107,6 +107,9 @@ void PanelLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   Relayout();
 }
 
+void PanelLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
+}
+
 void PanelLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                         bool visible) {
   Relayout();

@@ -37,6 +37,9 @@ void StatusAreaLayoutManager::OnWillRemoveWindowFromLayout(
     aura::Window* child) {
 }
 
+void StatusAreaLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
+}
+
 void StatusAreaLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child, bool visible) {
 }

@@ -1603,6 +1603,7 @@ class StackingMadrigalLayoutManager : public LayoutManager {
   virtual void OnWindowResized() OVERRIDE {}
   virtual void OnWindowAddedToLayout(Window* child) OVERRIDE {}
   virtual void OnWillRemoveWindowFromLayout(Window* child) OVERRIDE {}
+  virtual void OnWindowRemovedFromLayout(Window* child) OVERRIDE {}
   virtual void OnChildWindowVisibilityChanged(Window* child,
                                               bool visible) OVERRIDE {
     Window::Windows::const_iterator it = root_window_->children().begin();

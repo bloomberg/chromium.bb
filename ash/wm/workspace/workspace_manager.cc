@@ -66,7 +66,8 @@ WorkspaceManager::~WorkspaceManager() {
 
 bool WorkspaceManager::IsManagedWindow(aura::Window* window) const {
   return window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-         !window->transient_parent() && ash::GetTrackedByWorkspace(window) &&
+         !window->transient_parent() &&
+         ash::GetTrackedByWorkspace(window) &&
          !ash::GetPersistsAcrossAllWorkspaces(window);
 }
 
@@ -121,7 +122,6 @@ void WorkspaceManager::RemoveWindow(aura::Window* window) {
     return;
   workspace->RemoveWindow(window);
   CleanupWorkspace(workspace);
-  UpdateShelfVisibility();
 }
 
 void WorkspaceManager::SetActiveWorkspaceByWindow(aura::Window* window) {
@@ -145,8 +145,6 @@ WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {
   bool window_overlaps_launcher = false;
   for (aura::Window::Windows::const_iterator i = windows.begin();
        i != windows.end(); ++i) {
-    if (!IsManagingWindow(*i))
-      continue;
     ui::Layer* layer = (*i)->layer();
     if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)
       continue;

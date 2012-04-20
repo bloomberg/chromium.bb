@@ -90,6 +90,9 @@ void BaseLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   child->RemoveObserver(this);
 }
 
+void BaseLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
+}
+
 void BaseLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                        bool visible) {
   if (visible && wm::IsWindowMinimized(child)) {

@@ -264,6 +264,9 @@ void ShelfLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
 void ShelfLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 }
 
+void ShelfLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
+}
+
 void ShelfLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                         bool visible) {
 }

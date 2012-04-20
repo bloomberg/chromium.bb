@@ -65,6 +65,9 @@ void RootWindowLayoutManager::OnWillRemoveWindowFromLayout(
     aura::Window* child) {
 }
 
+void RootWindowLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
+}
+
 void RootWindowLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {

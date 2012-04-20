@@ -93,6 +93,10 @@ void SystemModalContainerLayoutManager::OnWillRemoveWindowFromLayout(
     RemoveModalWindow(child);
 }
 
+void SystemModalContainerLayoutManager::OnWindowRemovedFromLayout(
+    aura::Window* child) {
+}
+
 void SystemModalContainerLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {

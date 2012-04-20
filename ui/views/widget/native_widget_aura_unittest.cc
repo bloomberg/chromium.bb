@@ -113,6 +113,8 @@ class TestLayoutManager : public aura::LayoutManager {
   }
   virtual void OnWillRemoveWindowFromLayout(aura::Window* child) OVERRIDE {
   }
+  virtual void OnWindowRemovedFromLayout(aura::Window* child) OVERRIDE {
+  }
   virtual void OnChildWindowVisibilityChanged(aura::Window* child,
                                               bool visible) OVERRIDE {
   }

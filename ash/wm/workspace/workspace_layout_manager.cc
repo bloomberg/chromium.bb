@@ -39,26 +39,35 @@ void WorkspaceLayoutManager::OnWindowResized() {
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   BaseLayoutManager::OnWindowAddedToLayout(child);
-  if (!workspace_manager_->IsManagedWindow(child))
+  if (!workspace_manager_->IsManagedWindow(child)) {
+    if (child->IsVisible())
+      workspace_manager_->UpdateShelfVisibility();
     return;
-
-  if (child->IsVisible()) {
-    workspace_manager_->AddWindow(child);
   }
+
+  if (child->IsVisible())
+    workspace_manager_->AddWindow(child);
 }
 
-void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(
-    aura::Window* child) {
+void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   workspace_manager_->RemoveWindow(child);
   BaseLayoutManager::OnWillRemoveWindowFromLayout(child);
+}
+
+void WorkspaceLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
+  workspace_manager_->UpdateShelfVisibility();
+  BaseLayoutManager::OnWindowRemovedFromLayout(child);
 }
 
 void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(
     aura::Window* child,
     bool visible) {
   BaseLayoutManager::OnChildWindowVisibilityChanged(child, visible);
-  if (!workspace_manager_->IsManagedWindow(child))
+  if (!workspace_manager_->IsManagedWindow(child)) {
+    workspace_manager_->UpdateShelfVisibility();
     return;
+  }
+
   if (visible)
     workspace_manager_->AddWindow(child);
   else
@@ -91,13 +100,15 @@ void WorkspaceLayoutManager::ShowStateChanged(
     aura::Window* window,
     ui::WindowShowState last_show_state) {
   if (workspace_manager_->IsManagedWindow(window)) {
-    if (wm::IsWindowMinimized(window))
+    if (wm::IsWindowMinimized(window)) {
       workspace_manager_->RemoveWindow(window);
-    else if ((window->TargetVisibility() ||
-              (last_show_state == ui::SHOW_STATE_MINIMIZED)) &&
-             !workspace_manager_->IsManagingWindow(window)) {
+    } else if ((window->TargetVisibility() ||
+                last_show_state == ui::SHOW_STATE_MINIMIZED) &&
+               !workspace_manager_->IsManagingWindow(window)) {
       workspace_manager_->AddWindow(window);
     }
+  } else {
+    workspace_manager_->UpdateShelfVisibility();
   }
   BaseLayoutManager::ShowStateChanged(window, last_show_state);
   workspace_manager_->ShowStateChanged(window);
