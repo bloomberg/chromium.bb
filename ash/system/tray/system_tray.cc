@@ -373,9 +373,11 @@ class SystemTrayBubble : public views::BubbleDelegateView {
 
   // Overridden from views::View.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
-    state->role = ui::AccessibilityTypes::ROLE_WINDOW;
-    state->name = l10n_util::GetStringUTF16(
-        IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
+    if (can_activate_) {
+      state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+      state->name = l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
+    }
   }
 
   virtual bool CanActivate() const OVERRIDE {
