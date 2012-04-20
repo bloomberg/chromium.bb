@@ -34,10 +34,6 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
-#if defined(TOOLKIT_GTK)
-#include "ui/gfx/gtk_util.h"
-#endif
-
 #if defined(OS_LINUX)
 #include "content/public/common/sandbox_init.h"
 #endif
@@ -61,9 +57,6 @@ int GpuMain(const content::MainFunctionParams& parameters) {
         SEM_NOOPENFILEERRORBOX);
 #elif defined(USE_X11)
     ui::SetDefaultX11ErrorHandlers();
-#endif
-#if defined(TOOLKIT_GTK)
-    gfx::GdkInitFromCommandLine(*CommandLine::ForCurrentProcess());
 #endif
   }
 
