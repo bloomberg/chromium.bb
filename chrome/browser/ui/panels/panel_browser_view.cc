@@ -290,6 +290,7 @@ void PanelBrowserView::OnWindowBeginUserBoundsChange() {
 
 void PanelBrowserView::OnWindowEndUserBoundsChange() {
   bounds_ = GetBounds();
+  panel_->set_full_size(bounds_.size());
   panel_->SetPreviewMode(false);
   panel_->panel_strip()->RefreshLayout();
 }
