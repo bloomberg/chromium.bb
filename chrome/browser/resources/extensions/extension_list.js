@@ -178,7 +178,7 @@ cr.define('options', function() {
       // 'Remove' button.
       var trashTemplate = $('template-collection').querySelector('.trash');
       var trash = trashTemplate.cloneNode(true);
-      trash.title = templateData.extensionUninstall;
+      trash.title = loadTimeData.getString('extensionUninstall');
       trash.addEventListener('click', function(e) {
         chrome.send('extensionSettingsUninstall', [extension.id]);
       });
@@ -211,9 +211,9 @@ cr.define('options', function() {
         extension.views.forEach(function(view, i) {
           var label = view.path +
               (view.incognito ?
-                  ' ' + localStrings.getString('viewIncognito') : '') +
+                  ' ' + loadTimeData.getString('viewIncognito') : '') +
               (view.renderProcessId == -1 ?
-                  ' ' + localStrings.getString('viewInactive') : '');
+                  ' ' + loadTimeData.getString('viewInactive') : '');
           link.textContent = label;
           link.addEventListener('click', function(e) {
             // TODO(estade): remove conversion to string?

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,10 @@ class ChromeWebUIDataSource : public ChromeURLDataManager::DataSource {
   // Sets the path which will return the JSON strings.
   void set_json_path(const std::string& path) { json_path_ = path; }
 
+  // Sets the data source to use a slightly different format for json data. Some
+  // day this should become the default.
+  void set_use_json_js_format_v2() { json_js_format_v2_ = true; }
+
   // Adds a mapping between a path name and a resource to return.
   void add_resource_path(const std::string &path, int resource_id) {
     path_to_idr_map_[path] = resource_id;
@@ -66,6 +70,7 @@ class ChromeWebUIDataSource : public ChromeURLDataManager::DataSource {
 
  private:
   int default_resource_;
+  bool json_js_format_v2_;
   std::string json_path_;
   std::map<std::string, int> path_to_idr_map_;
   DictionaryValue localized_strings_;

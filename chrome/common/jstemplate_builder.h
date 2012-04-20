@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,9 +51,12 @@ std::string GetTemplatesHtml(const base::StringPiece& html_template,
 // assigned to it.
 void AppendJsonHtml(const base::DictionaryValue* json, std::string* output);
 
-// Same as AppendJsonHtml(), execpt does not include the <script></script>
+// Same as AppendJsonHtml(), except does not include the <script></script>
 // tag wrappers.
 void AppendJsonJS(const base::DictionaryValue* json, std::string* output);
+// Same as above, but uses a slightly different format which should some day
+// become the default.
+void AppendJsonJS2(const base::DictionaryValue* json, std::string* output);
 
 // Appends the source for JsTemplates in a script tag.
 void AppendJsTemplateSourceHtml(std::string* output);

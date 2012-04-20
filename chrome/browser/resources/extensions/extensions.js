@@ -10,8 +10,6 @@
 // tests.
 var webui_responded_ = false;
 
-var localStrings = new LocalStrings();
-
 cr.define('extensions', function() {
   var ExtensionsList = options.ExtensionsList;
 
@@ -35,7 +33,7 @@ cr.define('extensions', function() {
       measureCheckboxStrings();
 
       // Set the title.
-      var title = localStrings.getString('extensionSettings');
+      var title = loadTimeData.getString('extensionSettings');
       uber.invokeMethodOnParent('setTitle', {title: title});
 
       // This will request the data to show on the page and will get a response
@@ -179,10 +177,10 @@ cr.define('extensions', function() {
     };
 
     alertOverlay.setValues(
-        localStrings.getString('packExtensionWarningTitle'),
+        loadTimeData.getString('packExtensionWarningTitle'),
         message,
-        localStrings.getString('packExtensionProceedAnyway'),
-        localStrings.getString('cancel'),
+        loadTimeData.getString('packExtensionProceedAnyway'),
+        loadTimeData.getString('cancel'),
         function() {
           chrome.send('pack', [crx_path, pem_path, overrideFlags]);
           closeAlert();
@@ -219,13 +217,13 @@ cr.define('extensions', function() {
     var trashWidth = 30;
     var measuringDiv = $('font-measuring-div');
     measuringDiv.textContent =
-        localStrings.getString('extensionSettingsEnabled');
+        loadTimeData.getString('extensionSettingsEnabled');
     var pxWidth = measuringDiv.clientWidth + trashWidth;
     measuringDiv.textContent =
-        localStrings.getString('extensionSettingsEnable');
+        loadTimeData.getString('extensionSettingsEnable');
     pxWidth = Math.max(measuringDiv.clientWidth + trashWidth, pxWidth);
     measuringDiv.textContent =
-        localStrings.getString('extensionSettingsDeveloperMode');
+        loadTimeData.getString('extensionSettingsDeveloperMode');
     pxWidth = Math.max(measuringDiv.clientWidth, pxWidth);
 
     var style = document.createElement('style');

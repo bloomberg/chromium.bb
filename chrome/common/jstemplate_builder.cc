@@ -72,6 +72,18 @@ void AppendJsonJS(const DictionaryValue* json, std::string* output) {
   output->append(";");
 }
 
+void AppendJsonJS2(const DictionaryValue* json, std::string* output) {
+  // Convert the template data to a json string.
+  DCHECK(json) << "must include json data structure";
+
+  std::string jstext;
+  JSONStringValueSerializer serializer(&jstext);
+  serializer.Serialize(*json);
+  output->append("loadTimeData.data = ");
+  output->append(jstext);
+  output->append(";");
+}
+
 void AppendJsTemplateSourceHtml(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
   static const base::StringPiece jstemplate_src(

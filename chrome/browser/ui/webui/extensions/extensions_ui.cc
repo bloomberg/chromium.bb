@@ -23,6 +23,7 @@ ChromeWebUIDataSource* CreateExtensionsHTMLSource() {
   ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIExtensionsFrameHost);
 
+  source->set_use_json_js_format_v2();
   source->set_json_path("strings.js");
   source->add_resource_path("extensions.js", IDR_EXTENSIONS_JS);
   source->add_resource_path("extension_list.js", IDR_EXTENSION_LIST_JS);

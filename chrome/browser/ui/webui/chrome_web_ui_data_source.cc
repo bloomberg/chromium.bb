@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,13 +14,15 @@
 
 ChromeWebUIDataSource::ChromeWebUIDataSource(const std::string& source_name)
     : DataSource(source_name, MessageLoop::current()),
-      default_resource_(-1) {
+      default_resource_(-1),
+      json_js_format_v2_(false) {
 }
 
 ChromeWebUIDataSource::ChromeWebUIDataSource(const std::string& source_name,
                                              MessageLoop* loop)
     : DataSource(source_name, loop),
-      default_resource_(-1) {
+      default_resource_(-1),
+      json_js_format_v2_(false) {
 }
 
 ChromeWebUIDataSource::~ChromeWebUIDataSource() {
@@ -73,7 +75,10 @@ void ChromeWebUIDataSource::StartDataRequest(const std::string& path,
 void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(int request_id) {
   std::string template_data;
   SetFontAndTextDirection(&localized_strings_);
-  jstemplate_builder::AppendJsonJS(&localized_strings_, &template_data);
+  if (json_js_format_v2_)
+    jstemplate_builder::AppendJsonJS2(&localized_strings_, &template_data);
+  else
+    jstemplate_builder::AppendJsonJS(&localized_strings_, &template_data);
   SendResponse(request_id, base::RefCountedString::TakeString(&template_data));
 }
 
