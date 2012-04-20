@@ -238,7 +238,6 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->surface.resource.client = NULL;
 
 	surface->compositor = compositor;
-	surface->image = EGL_NO_IMAGE_KHR;
 	surface->alpha = 1.0;
 	surface->blend = 1;
 	surface->opaque_rect[0] = 0.0;
@@ -246,6 +245,9 @@ weston_surface_create(struct weston_compositor *compositor)
 	surface->opaque_rect[2] = 0.0;
 	surface->opaque_rect[3] = 0.0;
 	surface->pitch = 1;
+
+	surface->num_textures = 0;
+	surface->num_images = 0;
 
 	surface->buffer = NULL;
 	surface->output = NULL;
@@ -661,6 +663,8 @@ weston_surface_unmap(struct weston_surface *surface)
 static void
 destroy_surface(struct wl_resource *resource)
 {
+	int i;
+
 	struct weston_surface *surface =
 		container_of(resource,
 			     struct weston_surface, surface.resource);
@@ -669,15 +673,14 @@ destroy_surface(struct wl_resource *resource)
 	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
 
-	if (surface->texture)
-		glDeleteTextures(1, &surface->texture);
+	glDeleteTextures(surface->num_textures, surface->textures);
 
 	if (surface->buffer)
 		wl_list_remove(&surface->buffer_destroy_listener.link);
 
-	if (surface->image != EGL_NO_IMAGE_KHR)
+	for (i = 0; i < surface->num_images; i++)
 		compositor->destroy_image(compositor->egl_display,
-					  surface->image);
+					  surface->images[i]);
 
 	pixman_region32_fini(&surface->transform.boundingbox);
 	pixman_region32_fini(&surface->damage);
@@ -701,10 +704,31 @@ weston_surface_destroy(struct weston_surface *surface)
 }
 
 static void
+ensure_textures(struct weston_surface *es, int num_textures)
+{
+	int i;
+
+	if (num_textures <= es->num_textures)
+		return;
+
+	for (i = es->num_textures; i < num_textures; i++) {
+		glGenTextures(1, &es->textures[i]);
+		glBindTexture(GL_TEXTURE_2D, es->textures[i]);
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D,
+				GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	}
+	es->num_textures = num_textures;
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+static void
 weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 {
 	struct weston_surface *es = (struct weston_surface *) surface;
 	struct weston_compositor *ec = es->compositor;
+	int i;
 
 	if (es->buffer) {
 		weston_buffer_post_release(es->buffer);
@@ -716,14 +740,13 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 	if (!buffer) {
 		if (weston_surface_is_mapped(es))
 			weston_surface_unmap(es);
-		if (es->image != EGL_NO_IMAGE_KHR) {
-			ec->destroy_image(ec->egl_display, es->image);
-			es->image = NULL;
+		for (i = 0; i < es->num_images; i++) {
+			ec->destroy_image(ec->egl_display, es->images[i]);
+			es->images[i] = NULL;
 		}
-		if (es->texture) {
-			glDeleteTextures(1, &es->texture);
-			es->texture = 0;
-		}
+		es->num_images = 0;
+		glDeleteTextures(es->num_textures, es->textures);
+		es->num_textures = 0;
 		return;
 	}
 
@@ -738,20 +761,12 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 		pixman_region32_init(&es->opaque);
 	}
 
-	if (!es->texture) {
-		glGenTextures(1, &es->texture);
-		glBindTexture(GL_TEXTURE_2D, es->texture);
-		glTexParameteri(GL_TEXTURE_2D,
-				GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D,
-				GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		es->shader = &ec->texture_shader;
-	} else {
-		glBindTexture(GL_TEXTURE_2D, es->texture);
-	}
-
 	if (wl_buffer_is_shm(buffer)) {
 		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
+		es->shader = &ec->texture_shader;
+
+		ensure_textures(es, 1);
+		glBindTexture(GL_TEXTURE_2D, es->textures[0]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
 			     es->pitch, es->buffer->height, 0,
 			     GL_BGRA_EXT, GL_UNSIGNED_BYTE, NULL);
@@ -760,15 +775,19 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 		else
 			es->blend = 1;
 	} else {
-		if (es->image != EGL_NO_IMAGE_KHR)
-			ec->destroy_image(ec->egl_display, es->image);
-		es->image = ec->create_image(ec->egl_display, NULL,
-					     EGL_WAYLAND_BUFFER_WL,
-					     buffer, NULL);
+		if (es->images[0] != EGL_NO_IMAGE_KHR)
+			ec->destroy_image(ec->egl_display, es->images[0]);
+		es->images[0] = ec->create_image(ec->egl_display, NULL,
+						 EGL_WAYLAND_BUFFER_WL,
+						 buffer, NULL);
+		es->num_images = 1;
 
-		ec->image_target_texture_2d(GL_TEXTURE_2D, es->image);
+		ensure_textures(es, 1);
+		glBindTexture(GL_TEXTURE_2D, es->textures[0]);
+		ec->image_target_texture_2d(GL_TEXTURE_2D, es->images[0]);
 
 		es->pitch = buffer->width;
+		es->shader = &ec->texture_shader;
 	}
 }
 
@@ -877,7 +896,7 @@ weston_surface_draw(struct weston_surface *es, struct weston_output *output,
 
 	n = texture_region(es, &repaint);
 
-	glBindTexture(GL_TEXTURE_2D, es->texture);
+	glBindTexture(GL_TEXTURE_2D, es->textures[0]);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
 
@@ -980,7 +999,7 @@ update_shm_texture(struct weston_surface *surface)
 	int i, n;
 #endif
 
-	glBindTexture(GL_TEXTURE_2D, surface->texture);
+	glBindTexture(GL_TEXTURE_2D, surface->textures[0]);
 
 	if (!surface->compositor->has_unpack_subimage) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,

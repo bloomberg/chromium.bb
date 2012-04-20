@@ -385,7 +385,8 @@ enum {
 struct weston_surface {
 	struct wl_surface surface;
 	struct weston_compositor *compositor;
-	GLuint texture;
+	GLuint textures[3];
+	int num_textures;
 	pixman_region32_t clip;
 	pixman_region32_t damage;
 	pixman_region32_t opaque;
@@ -446,7 +447,8 @@ struct weston_surface {
 
 	struct wl_list frame_callback_list;
 
-	EGLImageKHR image;
+	EGLImageKHR images[3];
+	int num_images;
 
 	struct wl_buffer *buffer;
 	struct wl_listener buffer_destroy_listener;

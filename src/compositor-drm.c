@@ -257,12 +257,12 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 	    es->geometry.width != output->base.current->width ||
 	    es->geometry.height != output->base.current->height ||
 	    es->transform.enabled ||
-	    es->image == EGL_NO_IMAGE_KHR)
+	    es->images[0] == EGL_NO_IMAGE_KHR)
 		return -1;
 
 	bo = gbm_bo_create_from_egl_image(c->gbm,
 					  c->base.egl_display,
-					  es->image,
+					  es->images[0],
 					  es->geometry.width,
 					  es->geometry.height,
 					  GBM_BO_USE_SCANOUT);
@@ -567,7 +567,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (surface_is_primary(ec, es))
 		return -1;
 
-	if (es->image == EGL_NO_IMAGE_KHR)
+	if (es->num_images != 1 || es->images[0] == EGL_NO_IMAGE_KHR)
 		return -1;
 
 	if (!drm_surface_transform_supported(es))
@@ -591,7 +591,7 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 		return -1;
 
 	bo = gbm_bo_create_from_egl_image(c->gbm, c->base.egl_display,
-					  es->image, es->geometry.width,
+					  es->images[0], es->geometry.width,
 					  es->geometry.height,
 					  GBM_BO_USE_SCANOUT);
 	format = gbm_bo_get_format(bo);
