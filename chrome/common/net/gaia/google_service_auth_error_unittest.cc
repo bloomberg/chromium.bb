@@ -54,7 +54,7 @@ TEST_F(GoogleServiceAuthErrorTest, ConnectionFailed) {
 
 TEST_F(GoogleServiceAuthErrorTest, CaptchaChallenge) {
   GoogleServiceAuthError error(
-      GoogleServiceAuthError::FromCaptchaChallenge(
+      GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
           "captcha_token", GURL("http://www.google.com"),
           GURL("http://www.bing.com")));
   scoped_ptr<DictionaryValue> value(error.ToValue());
@@ -64,8 +64,45 @@ TEST_F(GoogleServiceAuthErrorTest, CaptchaChallenge) {
   EXPECT_TRUE(value->GetDictionary("captcha", &captcha_value));
   ASSERT_TRUE(captcha_value);
   ExpectDictStringValue("captcha_token", *captcha_value, "token");
+  ExpectDictStringValue("", *captcha_value, "audioUrl");
   ExpectDictStringValue("http://www.google.com/", *captcha_value, "imageUrl");
   ExpectDictStringValue("http://www.bing.com/", *captcha_value, "unlockUrl");
+  ExpectDictIntegerValue(0, *captcha_value, "imageWidth");
+  ExpectDictIntegerValue(0, *captcha_value, "imageHeight");
+}
+
+TEST_F(GoogleServiceAuthErrorTest, CaptchaChallenge2) {
+  GoogleServiceAuthError error(
+      GoogleServiceAuthError::FromCaptchaChallenge(
+          "captcha_token", GURL("http://www.audio.com"),
+          GURL("http://www.image.com"), 320, 200));
+  scoped_ptr<DictionaryValue> value(error.ToValue());
+  EXPECT_EQ(2u, value->size());
+  ExpectDictStringValue("CAPTCHA_REQUIRED", *value, "state");
+  DictionaryValue* captcha_value = NULL;
+  EXPECT_TRUE(value->GetDictionary("captcha", &captcha_value));
+  ASSERT_TRUE(captcha_value);
+  ExpectDictStringValue("captcha_token", *captcha_value, "token");
+  ExpectDictStringValue("http://www.audio.com/", *captcha_value, "audioUrl");
+  ExpectDictStringValue("http://www.image.com/", *captcha_value, "imageUrl");
+  ExpectDictIntegerValue(320, *captcha_value, "imageWidth");
+  ExpectDictIntegerValue(200, *captcha_value, "imageHeight");
+}
+
+TEST_F(GoogleServiceAuthErrorTest, TwoFactorChallenge) {
+  GoogleServiceAuthError error(
+      GoogleServiceAuthError::FromSecondFactorChallenge(
+          "two_factor_token", "prompt_text", "alternate_text", 10));
+  scoped_ptr<DictionaryValue> value(error.ToValue());
+  EXPECT_EQ(2u, value->size());
+  ExpectDictStringValue("TWO_FACTOR", *value, "state");
+  DictionaryValue* two_factor_value = NULL;
+  EXPECT_TRUE(value->GetDictionary("two_factor", &two_factor_value));
+  ASSERT_TRUE(two_factor_value);
+  ExpectDictStringValue("two_factor_token", *two_factor_value, "token");
+  ExpectDictStringValue("prompt_text", *two_factor_value, "promptText");
+  ExpectDictStringValue("alternate_text", *two_factor_value, "alternateText");
+  ExpectDictIntegerValue(10, *two_factor_value, "fieldLength");
 }
 
 }  // namespace

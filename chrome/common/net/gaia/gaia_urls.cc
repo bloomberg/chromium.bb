@@ -77,6 +77,7 @@ GaiaUrls::GaiaUrls() {
   oauth_user_info_url_ = "https://www.googleapis.com/oauth2/v1/userinfo";
   oauth_wrap_bridge_user_info_scope_ =
       "https://www.googleapis.com/auth/userinfo.email";
+  client_oauth_url_ = "https://accounts.google.com/ClientOAuth";
 
   oauth2_chrome_client_id_ = kOAuth2ChromeClientId;
   oauth2_chrome_client_secret_ = kOAuth2ChromeClientSecret;
@@ -149,6 +150,10 @@ const std::string& GaiaUrls::oauth1_login_scope() {
 
 const std::string& GaiaUrls::oauth_wrap_bridge_user_info_scope() {
   return oauth_wrap_bridge_user_info_scope_;
+}
+
+const std::string& GaiaUrls::client_oauth_url() {
+  return client_oauth_url_;
 }
 
 const std::string& GaiaUrls::oauth2_chrome_client_id() {

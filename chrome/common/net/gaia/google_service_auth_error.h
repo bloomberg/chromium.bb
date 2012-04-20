@@ -6,7 +6,7 @@
 // error from an attempt to authenticate with a Google service.
 // It could be from Google Accounts itself, or any service using Google
 // Accounts (e.g expired credentials).  It may contain additional data such as
-// captcha challenges.
+// captcha or OTP challenges.
 
 // A GoogleServiceAuthError without additional data is just a State, defined
 // below. A case could be made to have this relation implicit, to allow raising
@@ -82,10 +82,46 @@ class GoogleServiceAuthError {
 
   // Additional data for CAPTCHA_REQUIRED errors.
   struct Captcha {
-    Captcha(const std::string& t, const GURL& img, const GURL& unlock);
+    Captcha();
+    Captcha(const std::string& token,
+            const GURL& audio,
+            const GURL& img,
+            const GURL& unlock,
+            int width,
+            int height);
+    ~Captcha();
+    // For test only.
+    bool operator==(const Captcha &b) const;
+
     std::string token;  // Globally identifies the specific CAPTCHA challenge.
+    GURL audio_url;     // The CAPTCHA audio to use instead of image.
     GURL image_url;     // The CAPTCHA image to show the user.
     GURL unlock_url;    // Pretty unlock page containing above captcha.
+    int image_width;    // Width of captcha image.
+    int image_height;   // Height of capture image.
+  };
+
+  // Additional data for TWO_FACTOR errors.
+  struct SecondFactor {
+    SecondFactor();
+    SecondFactor(const std::string& token,
+                 const std::string& prompt,
+                 const std::string& alternate,
+                 int length);
+    ~SecondFactor();
+    // For test only.
+    bool operator==(const SecondFactor &b) const;
+
+    // Globally identifies the specific second-factor challenge.
+    std::string token;
+    // Localised prompt text, eg Enter the verification code sent to your
+    // phone number ending in XXX.
+    std::string prompt_text;
+    // Localized text describing an alternate option, eg Get a verification
+    // code in a text message.
+    std::string alternate_text;
+    // Character length for the challenge field.
+    int field_length;
   };
 
   // For test only.
@@ -98,11 +134,30 @@ class GoogleServiceAuthError {
   // It will be created with CONNECTION_FAILED set.
   static GoogleServiceAuthError FromConnectionError(int error);
 
-  // Construct a CAPTCHA_REQUIRED error with CAPTCHA challenge data.
-  static GoogleServiceAuthError FromCaptchaChallenge(
+  // Construct a CAPTCHA_REQUIRED error with CAPTCHA challenge data from the
+  // the ClientLogin endpoint.
+  // TODO(rogerta): once ClientLogin is no longer used, may be able to get
+  // rid of this function.
+  static GoogleServiceAuthError FromClientLoginCaptchaChallenge(
       const std::string& captcha_token,
       const GURL& captcha_image_url,
       const GURL& captcha_unlock_url);
+
+  // Construct a CAPTCHA_REQUIRED error with CAPTCHA challenge data from the
+  // ClientOAuth endpoint.
+  static GoogleServiceAuthError FromCaptchaChallenge(
+      const std::string& captcha_token,
+      const GURL& captcha_audio_url,
+      const GURL& captcha_image_url,
+      int image_width,
+      int image_height);
+
+  // Construct a TWO_FACTOR error with second-factor challenge data.
+  static GoogleServiceAuthError FromSecondFactorChallenge(
+      const std::string& captcha_token,
+      const std::string& prompt_text,
+      const std::string& alternate_text,
+      int field_length);
 
   // Provided for convenience for clients needing to reset an instance to NONE.
   // (avoids err_ = GoogleServiceAuthError(GoogleServiceAuthError::NONE), due
@@ -110,8 +165,9 @@ class GoogleServiceAuthError {
   static GoogleServiceAuthError None();
 
   // The error information.
-  const State& state() const;
+  State state() const;
   const Captcha& captcha() const;
+  const SecondFactor& second_factor() const;
   int network_error() const;
 
   // Returns info about this object in a dictionary.  Caller takes
@@ -125,11 +181,20 @@ class GoogleServiceAuthError {
   GoogleServiceAuthError(State s, int error);
 
   GoogleServiceAuthError(State s, const std::string& captcha_token,
+                         const GURL& captcha_audio_url,
                          const GURL& captcha_image_url,
-                         const GURL& captcha_unlock_url);
+                         const GURL& captcha_unlock_url,
+                         int image_width,
+                         int image_height);
+
+  GoogleServiceAuthError(State s, const std::string& captcha_token,
+                         const std::string& prompt_text,
+                         const std::string& alternate_text,
+                         int field_length);
 
   State state_;
   Captcha captcha_;
+  SecondFactor second_factor_;
   int network_error_;
 };
 

@@ -246,7 +246,7 @@ TEST_F(OnlineAttemptTest, LoginServiceUnavailable) {
 
 TEST_F(OnlineAttemptTest, CaptchaErrorOutputted) {
   GoogleServiceAuthError auth_error =
-      GoogleServiceAuthError::FromCaptchaChallenge(
+      GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
           "CCTOKEN",
           GURL("http://www.google.com/accounts/Captcha?ctoken=CCTOKEN"),
           GURL("http://www.google.com/login/captcha"));

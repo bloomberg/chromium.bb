@@ -467,8 +467,9 @@ TEST_F(SyncSetupHandlerTest, HandleCaptcha) {
   handler_->OpenSyncSetup(false);
   // Fake a failed signin attempt that requires a captcha.
   handler_->TryLogin(kTestUser, kTestPassword, "", "");
-  GoogleServiceAuthError error = GoogleServiceAuthError::FromCaptchaChallenge(
-      "token", GURL(kTestCaptchaImageUrl), GURL(kTestCaptchaUnlockUrl));
+  GoogleServiceAuthError error =
+      GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
+          "token", GURL(kTestCaptchaImageUrl), GURL(kTestCaptchaUnlockUrl));
   handler_->SigninFailed(error);
   ASSERT_EQ(2U, web_ui_.call_data().size());
   // Validate the second JS call (the first call was already tested by

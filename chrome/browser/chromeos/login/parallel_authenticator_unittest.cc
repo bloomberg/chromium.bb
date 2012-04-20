@@ -704,7 +704,7 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
 
   // After the request below completes, OnLoginSuccess gets called again.
   failure = LoginFailure::FromNetworkAuthFailure(
-      GoogleServiceAuthError::FromCaptchaChallenge(
+      GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
           CaptchaFetcher::GetCaptchaToken(),
           GURL(CaptchaFetcher::GetCaptchaUrl()),
           GURL(CaptchaFetcher::GetUnlockUrl())));
