@@ -29,8 +29,9 @@ TEST(TimeConversion, Time) {
 
   // Units should be in seconds.
   base::Time one_second_from_now = now + base::TimeDelta::FromSeconds(1);
-  EXPECT_DOUBLE_EQ(1.0, ppapi::TimeToPPTime(one_second_from_now) -
-                        ppapi::TimeToPPTime(now));
+  double converted_one_second_from_now =
+      ppapi::TimeToPPTime(one_second_from_now) - ppapi::TimeToPPTime(now);
+  EXPECT_GE(kTimeSecondsSlop, fabs(converted_one_second_from_now - 1));
 }
 
 TEST(TimeConversion, EventTime) {
