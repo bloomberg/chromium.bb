@@ -1125,6 +1125,19 @@ surface_destroy(struct wl_client *client, struct wl_resource *resource)
 	wl_resource_destroy(resource);
 }
 
+static struct wl_resource *
+find_resource_for_client(struct wl_list *list, struct wl_client *client)
+{
+        struct wl_resource *r;
+
+        wl_list_for_each(r, list, link) {
+                if (r->client == client)
+                        return r;
+        }
+
+        return NULL;
+}
+
 WL_EXPORT void
 weston_surface_assign_output(struct weston_surface *es)
 {
@@ -1769,23 +1782,6 @@ notify_keyboard_focus(struct wl_input_device *device, struct wl_array *keys)
 	}
 }
 
-/* TODO: share this function with wayland-server.c */
-static struct wl_resource *
-find_resource_for_surface(struct wl_list *list, struct wl_surface *surface)
-{
-        struct wl_resource *r;
-
-        if (!surface)
-                return NULL;
-
-        wl_list_for_each(r, list, link) {
-                if (r->client == surface->resource.client)
-                        return r;
-        }
-
-        return NULL;
-}
-
 static void
 lose_touch_focus_resource(struct wl_listener *listener, void *data)
 {
@@ -1818,8 +1814,8 @@ touch_set_focus(struct weston_input_device *device,
 
 	if (surface) {
 		resource =
-			find_resource_for_surface(&input_device->resource_list,
-						  surface);
+			find_resource_for_client(&input_device->resource_list,
+						 surface->resource.client);
 		if (!resource) {
 			fprintf(stderr, "couldn't find resource\n");
 			return;
