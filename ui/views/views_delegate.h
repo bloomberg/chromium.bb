@@ -31,6 +31,11 @@ class NonClientFrameView;
 class View;
 class Widget;
 
+#if defined(USE_AURA)
+class NativeWidgetAura;
+class NativeWidgetHelperAura;
+#endif
+
 // ViewsDelegate is an interface implemented by an object using the views
 // framework. It is used to obtain various high level application utilities
 // and perform some actions such as window placement saving.
@@ -96,6 +101,13 @@ class VIEWS_EXPORT ViewsDelegate {
 
   // Converts views::Event::flags to a WindowOpenDisposition.
   virtual int GetDispositionForEvent(int event_flags) = 0;
+
+#if defined(USE_AURA)
+  // Creates an object that implements desktop integration behavior. Returned
+  // object is owned by the NativeWidgetAura passed in. May return NULL.
+  virtual NativeWidgetHelperAura* CreateNativeWidgetHelper(
+      NativeWidgetAura* native_widget) = 0;
+#endif
 };
 
 }  // namespace views

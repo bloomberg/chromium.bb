@@ -57,6 +57,8 @@
         'desktop/desktop_dispatcher_client.h',
         'desktop/desktop_root_window_event_filter.cc',
         'desktop/desktop_root_window_event_filter.h',
+        'desktop/desktop_stacking_client.cc',
+        'desktop/desktop_stacking_client.h',
         'dispatcher_linux.cc',
         'dispatcher_linux.h',
         'dispatcher_win.cc',

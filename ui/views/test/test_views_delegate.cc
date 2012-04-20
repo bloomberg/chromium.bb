@@ -57,4 +57,11 @@ int TestViewsDelegate::GetDispositionForEvent(int event_flags) {
   return 0;
 }
 
+#if defined(USE_AURA)
+views::NativeWidgetHelperAura* TestViewsDelegate::CreateNativeWidgetHelper(
+    views::NativeWidgetAura* native_widget) {
+  return NULL;
+}
+#endif
+
 }  // namespace views

@@ -4,43 +4,9 @@
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
-#include "ash/shell.h"
-#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#include "ui/gfx/compositor/layer.h"
 
-// DockInfo -------------------------------------------------------------------
-
-namespace {
-
-aura::Window* GetLocalProcessWindowAtPointImpl(
-    const gfx::Point& screen_point,
-    const std::set<gfx::NativeView>& ignore,
-    aura::Window* window) {
-  if (ignore.find(window) != ignore.end())
-    return NULL;
-
-  if (!window->IsVisible())
-    return NULL;
-
-  if (window->layer()->type() == ui::LAYER_TEXTURED) {
-    gfx::Point window_point(screen_point);
-    aura::Window::ConvertPointToWindow(ash::Shell::GetRootWindow(), window,
-                                       &window_point);
-    return gfx::Rect(window->bounds().size()).Contains(window_point) ?
-        window : NULL;
-  }
-  for (aura::Window::Windows::const_reverse_iterator i =
-           window->children().rbegin(); i != window->children().rend(); ++i) {
-    aura::Window* result =
-        GetLocalProcessWindowAtPointImpl(screen_point, ignore, *i);
-    if (result)
-      return result;
-  }
-  return NULL;
-}
-
-}  // namespace
+#if !defined(USE_ASH)
 
 // static
 DockInfo DockInfo::GetDockInfoAtPoint(const gfx::Point& screen_point,
@@ -54,8 +20,8 @@ DockInfo DockInfo::GetDockInfoAtPoint(const gfx::Point& screen_point,
 gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<gfx::NativeView>& ignore) {
-  return GetLocalProcessWindowAtPointImpl(
-      screen_point, ignore, ash::Shell::GetRootWindow());
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {
@@ -68,3 +34,5 @@ bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {
 void DockInfo::SizeOtherWindowTo(const gfx::Rect& bounds) const {
   window_->SetBounds(bounds);
 }
+
+#endif

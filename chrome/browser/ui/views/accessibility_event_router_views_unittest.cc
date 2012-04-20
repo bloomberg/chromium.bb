@@ -82,6 +82,13 @@ class AccessibilityViewsDelegate : public views::ViewsDelegate {
     return 0;
   }
 
+#if defined(USE_AURA)
+  virtual views::NativeWidgetHelperAura* CreateNativeWidgetHelper(
+      views::NativeWidgetAura* native_widget) OVERRIDE {
+    return NULL;
+  }
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(AccessibilityViewsDelegate);
 };
 

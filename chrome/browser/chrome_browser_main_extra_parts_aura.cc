@@ -6,11 +6,26 @@
 
 #include "ui/aura/env.h"
 
+#if !defined(USE_ASH)
+#include "ui/aura/desktop/desktop_stacking_client.h"
+#include "ui/views/widget/native_widget_aura.h"
+#endif  // !USE_ASH
+
 ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
     : ChromeBrowserMainExtraParts() {
 }
 
+void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
+#if !defined(USE_ASH)
+  stacking_client_.reset(new aura::DesktopStackingClient);
+#endif  // !USE_ASH
+}
+
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
+#if !defined(USE_ASH)
+  stacking_client_.reset();
+#endif
+
   // aura::Env instance is deleted in BrowserProcessImpl::StartTearDown
   // after the metrics service is deleted.
 }

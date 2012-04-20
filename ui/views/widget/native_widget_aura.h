@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/activation_delegate.h"
 #include "ui/aura/client/drag_drop_delegate.h"
-#include "ui/aura/root_window_observer.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events.h"
 #include "ui/views/views_export.h"
@@ -18,7 +17,6 @@
 
 namespace aura {
 class Monitor;
-class RootWindow;
 class Window;
 }
 namespace gfx {
@@ -28,18 +26,16 @@ class Font;
 namespace views {
 
 class DropHelper;
+class NativeWidgetHelperAura;
 class TooltipManagerAura;
 
 class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
                                       public aura::WindowDelegate,
-                                      public aura::RootWindowObserver,
                                       public aura::client::ActivationDelegate,
                                       public aura::client::DragDropDelegate {
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetAura();
-
-  static void set_aura_desktop_hax() { g_aura_desktop_hax = true; }
 
   // TODO(beng): Find a better place for this, and the similar method on
   //             NativeWidgetWin.
@@ -152,11 +148,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
-  // Overridden from aura::RootWindowObserver:
-  virtual void OnRootWindowResized(const aura::RootWindow* root,
-                                   const gfx::Size& old_size) OVERRIDE;
-  virtual void OnRootWindowHostClosed(const aura::RootWindow* root) OVERRIDE;
-
   // Overridden from aura::client::ActivationDelegate:
   virtual bool ShouldActivate(const aura::Event* event) OVERRIDE;
   virtual void OnActivated() OVERRIDE;
@@ -191,7 +182,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   internal::NativeWidgetDelegate* delegate_;
 
-  scoped_ptr<aura::RootWindow> root_window_;
+  scoped_ptr<NativeWidgetHelperAura> desktop_helper_;
+
   aura::Window* window_;
 
   // See class documentation for Widget in widget.h for a note about ownership.
@@ -215,8 +207,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
 
   scoped_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;
-
-  static bool g_aura_desktop_hax;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };
