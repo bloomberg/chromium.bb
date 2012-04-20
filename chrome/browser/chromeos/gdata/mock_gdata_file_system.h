@@ -22,13 +22,13 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
   MOCK_METHOD1(Authenticate, void(const AuthStatusCallback& callback));
-  MOCK_METHOD2(FindFileByPathAsync,
+  MOCK_METHOD2(FindEntryByPathAsync,
                void(const FilePath& file_path,
-                    const FindFileCallback& callback));
-  MOCK_METHOD2(FindFileByPathSync, void(const FilePath& file_path,
-                                        FindFileDelegate* delegate));
-  MOCK_METHOD2(FindFileByResourceIdSync, void(const std::string& resource_id,
-                                              FindFileDelegate* delegate));
+                    const FindEntryCallback& callback));
+  MOCK_METHOD2(FindEntryByPathSync, void(const FilePath& file_path,
+                                         FindEntryDelegate* delegate));
+  MOCK_METHOD2(FindEntryByResourceIdSync, void(const std::string& resource_id,
+                                               FindEntryDelegate* delegate));
   MOCK_METHOD3(TransferFile, void(const FilePath& local_file_path,
                                   const FilePath& remote_dest_file_path,
                                   const FileOperationCallback& callback));

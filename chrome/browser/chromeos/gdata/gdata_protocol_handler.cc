@@ -101,7 +101,7 @@ void CancelGDataDownloadOnUIThread(const FilePath& gdata_file_path) {
 }
 
 // Class delegate to find file by resource id and extract relevant file info.
-class GetFileInfoDelegate : public gdata::FindFileDelegate {
+class GetFileInfoDelegate : public gdata::FindEntryDelegate {
  public:
   GetFileInfoDelegate() {}
   virtual ~GetFileInfoDelegate() {}
@@ -111,14 +111,14 @@ class GetFileInfoDelegate : public gdata::FindFileDelegate {
   const FilePath& gdata_file_path() const { return gdata_file_path_; }
 
  private:
-  // GDataFileSystem::FindFileDelegate overrides.
+  // GDataFileSystem::FindEntryDelegate overrides.
   virtual void OnDone(base::PlatformFileError error,
                       const FilePath& directory_path,
-                      gdata::GDataFileBase* file) OVERRIDE {
-    if (error == base::PLATFORM_FILE_OK && file && file->AsGDataFile()) {
-      mime_type_ = file->AsGDataFile()->content_mime_type();
-      file_name_ = file->AsGDataFile()->file_name();
-      gdata_file_path_= file->GetFilePath();
+                      gdata::GDataEntry* entry) OVERRIDE {
+    if (error == base::PLATFORM_FILE_OK && entry && entry->AsGDataFile()) {
+      mime_type_ = entry->AsGDataFile()->content_mime_type();
+      file_name_ = entry->AsGDataFile()->file_name();
+      gdata_file_path_= entry->GetFilePath();
     }
   }
 
@@ -290,7 +290,7 @@ bool GDataURLRequestJob::GetMimeType(std::string* mime_type) const {
   }
 
   GetFileInfoDelegate delegate;
-  file_system_->FindFileByResourceIdSync(resource_id, &delegate);
+  file_system_->FindEntryByResourceIdSync(resource_id, &delegate);
   mime_type->assign(delegate.mime_type());
   return !mime_type->empty();
 }
@@ -410,7 +410,7 @@ void GDataURLRequestJob::StartAsync(GDataFileSystem** file_system) {
 
   // First, check if file metadata is matching our expectations.
   GetFileInfoDelegate delegate;
-  file_system_->FindFileByResourceIdSync(resource_id, &delegate);
+  file_system_->FindEntryByResourceIdSync(resource_id, &delegate);
   if (delegate.file_name() != file_name) {
     LOG(WARNING) << "Failed to start request: "
                  << "filename in request url and file system are different";

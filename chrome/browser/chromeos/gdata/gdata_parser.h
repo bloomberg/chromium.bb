@@ -266,10 +266,10 @@ class Content {
 };
 
 // Base class for feed entries.
-class GDataEntry {
+class FeedEntry {
  public:
-  GDataEntry();
-  virtual ~GDataEntry();
+  FeedEntry();
+  virtual ~FeedEntry();
 
   // Returns a link of a given |type| for this entry. If not found, it returns
   // NULL.
@@ -298,7 +298,7 @@ class GDataEntry {
   // Registers the mapping between JSON field names and the members in
   // this class.
   static void RegisterJSONConverter(
-      base::JSONValueConverter<GDataEntry>* converter);
+      base::JSONValueConverter<FeedEntry>* converter);
 
  protected:
   std::string etag_;
@@ -314,11 +314,11 @@ class GDataEntry {
   static const char kUpdatedField[];
   static const char kETagField[];
 
-  DISALLOW_COPY_AND_ASSIGN(GDataEntry);
+  DISALLOW_COPY_AND_ASSIGN(FeedEntry);
 };
 
 // Document feed entry.
-class DocumentEntry : public GDataEntry {
+class DocumentEntry : public FeedEntry {
  public:
   enum EntryKind {
     UNKNOWN       = 0x000000,
@@ -495,7 +495,7 @@ class DocumentEntry : public GDataEntry {
 // Document feed represents a list of entries. The feed is paginated and
 // the rest of the feed can be fetched by retrieving the remaining parts of the
 // feed from URLs provided by GetNextFeedURL() method.
-class DocumentFeed : public GDataEntry {
+class DocumentFeed : public FeedEntry {
  public:
   virtual ~DocumentFeed();
 

@@ -28,7 +28,7 @@ class GDataFile;
 class GDataDirectory;
 class GDataRootDirectory;
 
-class GDataFileBaseProto;
+class GDataEntryProto;
 class GDataFileProto;
 class GDataDirectoryProto;
 class GDataRootDirectoryProto;
@@ -55,22 +55,22 @@ enum GDataFileType {
 
 // Base class for representing files and directories in gdata virtual file
 // system.
-class GDataFileBase {
+class GDataEntry {
  public:
-  explicit GDataFileBase(GDataDirectory* parent, GDataRootDirectory* root);
-  virtual ~GDataFileBase();
+  explicit GDataEntry(GDataDirectory* parent, GDataRootDirectory* root);
+  virtual ~GDataEntry();
   virtual GDataFile* AsGDataFile();
   virtual GDataDirectory* AsGDataDirectory();
   virtual GDataRootDirectory* AsGDataRootDirectory();
 
-  // Converts DocumentEntry into GDataFileBase.
-  static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
+  // Converts DocumentEntry into GDataEntry.
+  static GDataEntry* FromDocumentEntry(GDataDirectory* parent,
                                           DocumentEntry* doc,
                                           GDataRootDirectory* root);
 
   // Convert to/from proto.
-  void FromProto(const GDataFileBaseProto& proto);
-  void ToProto(GDataFileBaseProto* proto) const;
+  void FromProto(const GDataEntryProto& proto);
+  void ToProto(GDataEntryProto* proto) const;
 
   // Escapes forward slashes from file names with magic unicode character
   // \u2215 pretty much looks the same in UI.
@@ -114,15 +114,15 @@ class GDataFileBase {
   FilePath GetFilePath();
 
   // Sets |file_name_| based on the value of |title_| without name
-  // de-duplication (see AddFile() for details on de-duplication).
+  // de-duplication (see AddEntry() for details on de-duplication).
   virtual void SetFileNameFromTitle();
 
  protected:
-  // GDataDirectory::TakeFile() needs to call GDataFileBase::set_parent().
+  // GDataDirectory::TakeEntry() needs to call GDataEntry::set_parent().
   friend class GDataDirectory;
 
   // Sets the parent directory of this file system entry.
-  // It is intended to be used by GDataDirectory::AddFile() only.
+  // It is intended to be used by GDataDirectory::AddEntry() only.
   void set_parent(GDataDirectory* parent) { parent_ = parent; }
 
   base::PlatformFileInfo file_info_;
@@ -147,14 +147,14 @@ class GDataFileBase {
   std::string parent_resource_id_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(GDataFileBase);
+  DISALLOW_COPY_AND_ASSIGN(GDataEntry);
 };
 
-typedef std::map<FilePath::StringType, GDataFileBase*> GDataFileCollection;
+typedef std::map<FilePath::StringType, GDataEntry*> GDataFileCollection;
 
 // Represents "file" in in a GData virtual file system. On gdata feed side,
 // this could be either a regular file or a server side document.
-class GDataFile : public GDataFileBase {
+class GDataFile : public GDataEntry {
  public:
   // This is used as a bitmask for the cache state.
   enum CacheState {
@@ -168,7 +168,7 @@ class GDataFile : public GDataFileBase {
   virtual ~GDataFile();
   virtual GDataFile* AsGDataFile() OVERRIDE;
 
-  static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
+  static GDataEntry* FromDocumentEntry(GDataDirectory* parent,
                                           DocumentEntry* doc,
                                           GDataRootDirectory* root);
 
@@ -214,7 +214,7 @@ class GDataFile : public GDataFileBase {
   const std::string& document_extension() const { return document_extension_; }
   bool is_hosted_document() const { return is_hosted_document_; }
 
-  // Overrides GDataFileBase::SetFileNameFromTitle() to set |file_name_| based
+  // Overrides GDataEntry::SetFileNameFromTitle() to set |file_name_| based
   // on the value of |title_| as well as |is_hosted_document_| and
   // |document_extension_| for hosted documents.
   virtual void SetFileNameFromTitle() OVERRIDE;
@@ -236,13 +236,13 @@ class GDataFile : public GDataFileBase {
 
 // Represents "directory" in a GData virtual file system. Maps to gdata
 // collection element.
-class GDataDirectory : public GDataFileBase {
+class GDataDirectory : public GDataEntry {
  public:
   GDataDirectory(GDataDirectory* parent, GDataRootDirectory* root);
   virtual ~GDataDirectory();
   virtual GDataDirectory* AsGDataDirectory() OVERRIDE;
 
-  static GDataFileBase* FromDocumentEntry(GDataDirectory* parent,
+  static GDataEntry* FromDocumentEntry(GDataDirectory* parent,
                                           DocumentEntry* doc,
                                           GDataRootDirectory* root);
 
@@ -254,19 +254,19 @@ class GDataDirectory : public GDataFileBase {
   // object. The method will also do name de-duplication to ensure that the
   // exposed presentation path does not have naming conflicts. Two files with
   // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
-  void AddFile(GDataFileBase* file);
+  void AddEntry(GDataEntry* entry);
 
-  // Takes the ownership of |file| from its current parent. If this directory
+  // Takes the ownership of |entry| from its current parent. If this directory
   // is already the current parent of |file|, this method effectively goes
   // through the name de-duplication for |file| based on the current state of
   // the file system.
-  bool TakeFile(GDataFileBase* file);
+  bool TakeEntry(GDataEntry* entry);
 
-  // Takes over all files from |dir|.
-  bool TakeOverFiles(GDataDirectory* dir);
+  // Takes over all entries from |dir|.
+  bool TakeOverEntries(GDataDirectory* dir);
 
-  // Removes the file from its children list and destroys the file instance.
-  bool RemoveFile(GDataFileBase* file);
+  // Removes the entry from its children list and destroys the entry instance.
+  bool RemoveEntry(GDataEntry* entry);
 
   // Removes children elements.
   void RemoveChildren();
@@ -287,16 +287,16 @@ class GDataDirectory : public GDataFileBase {
   // It corresponds to resumable-create-media link from gdata feed.
   const GURL& upload_url() const { return upload_url_; }
   void set_upload_url(const GURL& url) { upload_url_ = url; }
-  // Collection of children GDataFileBase items.
+  // Collection of children GDataEntry items.
   const GDataFileCollection& children() const { return children_; }
   // Directory content origin.
   const ContentOrigin origin() const { return origin_; }
   void set_origin(ContentOrigin value) { origin_ = value; }
 
  private:
-  // Removes the file from its children list without destroying the
-  // file instance.
-  bool RemoveFileFromChildrenList(GDataFileBase* file);
+  // Removes the entry from its children list without destroying the
+  // entry instance.
+  bool RemoveEntryFromChildrenList(GDataEntry* entry);
 
   base::Time refresh_time_;
   // Url for this feed.
@@ -310,7 +310,7 @@ class GDataDirectory : public GDataFileBase {
   // Directory content origin.
   ContentOrigin origin_;
 
-  // Collection of children GDataFileBase items.
+  // Collection of children GDataEntry items.
   GDataFileCollection children_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataDirectory);
@@ -367,7 +367,7 @@ class GDataRootDirectory : public GDataDirectory {
   typedef std::map<std::string, CacheEntry*> CacheMap;
 
   // A map table of file's resource string to its GDataFile* entry.
-  typedef std::map<std::string, GDataFileBase*> ResourceMap;
+  typedef std::map<std::string, GDataEntry*> ResourceMap;
 
   GDataRootDirectory();
   virtual ~GDataRootDirectory();
@@ -383,21 +383,21 @@ class GDataRootDirectory : public GDataDirectory {
   const size_t serialized_size() const { return serialized_size_; }
   void set_serialized_size(size_t size) { serialized_size_ = size; }
 
-  // GDataFileBase implementation.
+  // GDataEntry implementation.
 
   virtual GDataRootDirectory* AsGDataRootDirectory() OVERRIDE;
 
-  // Add file to resource map.
-  void AddFileToResourceMap(GDataFileBase* file);
+  // Add the entry to resource map.
+  void AddEntryToResourceMap(GDataEntry* entry);
 
-  // Remove file from resource map.
-  void RemoveFileFromResourceMap(GDataFileBase* file);
+  // Remove the entry from resource map.
+  void RemoveEntryFromResourceMap(GDataEntry* entry);
 
-  // Remove files from resource map.
-  void RemoveFilesFromResourceMap(const GDataFileCollection& children);
+  // Remove the entries from resource map.
+  void RemoveEntriesFromResourceMap(const GDataFileCollection& children);
 
-  // Returns the GDataFileBase* with the corresponding |resource_id|.
-  GDataFileBase* GetFileByResourceId(const std::string& resource_id);
+  // Returns the GDataEntry* with the corresponding |resource_id|.
+  GDataEntry* GetEntryByResourceId(const std::string& resource_id);
 
   // Set |cache_map_| data member to formal parameter |new_cache_map|.
   void SetCacheMap(const CacheMap& new_cache_map);

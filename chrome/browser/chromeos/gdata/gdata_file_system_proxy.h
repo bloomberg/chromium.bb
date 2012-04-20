@@ -12,7 +12,7 @@ class Profile;
 
 namespace gdata {
 
-class GDataFileBase;
+class GDataEntry;
 class GDataFileSystemInterface;
 
 // The interface class for remote file system proxy.
@@ -68,7 +68,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
           callback,
       base::PlatformFileError error,
       const FilePath& directory_path,
-      GDataFileBase* file);
+      GDataEntry* entry);
 
   // Helper callback for relaying reply for ReadDirectory() to the calling
   // thread. The callback is invoked while |file| is kept under lock
@@ -81,7 +81,7 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
           callback,
       base::PlatformFileError error,
       const FilePath& directory_path,
-      GDataFileBase* file);
+      GDataEntry* entry);
 
   // GDataFileSystemProxy is owned by Profile, which outlives
   // GDataFileSystemProxy, which is owned by CrosMountPointProvider (i.e. by

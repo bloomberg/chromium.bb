@@ -215,7 +215,7 @@ DictionaryValue* ProgessStatusToDictionaryValue(
   return result.release();
 }
 
-class GetFilePropertiesDelegate : public gdata::FindFileDelegate {
+class GetFilePropertiesDelegate : public gdata::FindEntryDelegate {
  public:
   explicit GetFilePropertiesDelegate() {}
   virtual ~GetFilePropertiesDelegate() {}
@@ -225,14 +225,14 @@ class GetFilePropertiesDelegate : public gdata::FindFileDelegate {
   const GURL& edit_url() const { return edit_url_; }
 
  private:
-  // GDataFileSystem::FindFileDelegate overrides.
+  // GDataFileSystem::FindEntryDelegate overrides.
   virtual void OnDone(base::PlatformFileError error,
                       const FilePath& directory_path,
-                      gdata::GDataFileBase* file) OVERRIDE {
-    if (error == base::PLATFORM_FILE_OK && file && file->AsGDataFile()) {
-      resource_id_ = file->AsGDataFile()->resource_id();
-      file_name_ = file->AsGDataFile()->file_name();
-      edit_url_ = file->AsGDataFile()->alternate_url();
+                      gdata::GDataEntry* entry) OVERRIDE {
+    if (error == base::PLATFORM_FILE_OK && entry && entry->AsGDataFile()) {
+      resource_id_ = entry->AsGDataFile()->resource_id();
+      file_name_ = entry->AsGDataFile()->file_name();
+      edit_url_ = entry->AsGDataFile()->alternate_url();
     }
   }
 
@@ -615,7 +615,7 @@ bool TryViewingFile(Profile* profile, const FilePath& path) {
         return false;
 
       GetFilePropertiesDelegate delegate;
-      system_service->file_system()->FindFileByPathSync(
+      system_service->file_system()->FindEntryByPathSync(
           gdata::util::ExtractGDataPath(path), &delegate);
       if (delegate.resource_id().empty())
         return false;
@@ -637,7 +637,7 @@ bool TryViewingFile(Profile* profile, const FilePath& path) {
         return false;
 
       GetFilePropertiesDelegate delegate;
-      system_service->file_system()->FindFileByPathSync(
+      system_service->file_system()->FindEntryByPathSync(
           gdata::util::ExtractGDataPath(path), &delegate);
       if (delegate.edit_url().spec().empty())
         return false;

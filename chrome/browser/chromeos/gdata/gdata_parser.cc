@@ -347,7 +347,7 @@ Category* Category::CreateFromXml(XmlReader* xml_reader) {
   return category;
 }
 
-const Link* GDataEntry::GetLinkByType(Link::LinkType type) const {
+const Link* FeedEntry::GetLinkByType(Link::LinkType type) const {
   for (size_t i = 0; i < links_.size(); ++i) {
     if (links_[i]->type() == type)
       return links_[i];
@@ -389,36 +389,36 @@ Content* Content::CreateFromXml(XmlReader* xml_reader) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// GDataEntry implementation
+// FeedEntry implementation
 
-const char GDataEntry::kTimeParsingDelimiters[] = "-:.TZ";
-const char GDataEntry::kAuthorField[] = "author";
-const char GDataEntry::kLinkField[] = "link";
-const char GDataEntry::kCategoryField[] = "category";
-const char GDataEntry::kETagField[] = "gd$etag";
-const char GDataEntry::kUpdatedField[] = "updated.$t";
+const char FeedEntry::kTimeParsingDelimiters[] = "-:.TZ";
+const char FeedEntry::kAuthorField[] = "author";
+const char FeedEntry::kLinkField[] = "link";
+const char FeedEntry::kCategoryField[] = "category";
+const char FeedEntry::kETagField[] = "gd$etag";
+const char FeedEntry::kUpdatedField[] = "updated.$t";
 
-GDataEntry::GDataEntry() {
+FeedEntry::FeedEntry() {
 }
 
-GDataEntry::~GDataEntry() {
+FeedEntry::~FeedEntry() {
 }
 
 // static
-void GDataEntry::RegisterJSONConverter(
-    base::JSONValueConverter<GDataEntry>* converter) {
-  converter->RegisterStringField(kETagField, &GDataEntry::etag_);
-  converter->RegisterRepeatedMessage(kAuthorField, &GDataEntry::authors_);
-  converter->RegisterRepeatedMessage(kLinkField, &GDataEntry::links_);
-  converter->RegisterRepeatedMessage(kCategoryField, &GDataEntry::categories_);
+void FeedEntry::RegisterJSONConverter(
+    base::JSONValueConverter<FeedEntry>* converter) {
+  converter->RegisterStringField(kETagField, &FeedEntry::etag_);
+  converter->RegisterRepeatedMessage(kAuthorField, &FeedEntry::authors_);
+  converter->RegisterRepeatedMessage(kLinkField, &FeedEntry::links_);
+  converter->RegisterRepeatedMessage(kCategoryField, &FeedEntry::categories_);
   converter->RegisterCustomField<base::Time>(
       kUpdatedField,
-      &GDataEntry::updated_time_,
-      &GDataEntry::GetTimeFromString);
+      &FeedEntry::updated_time_,
+      &FeedEntry::GetTimeFromString);
 }
 
 // static
-bool GDataEntry::GetTimeFromString(const base::StringPiece& raw_value,
+bool FeedEntry::GetTimeFromString(const base::StringPiece& raw_value,
                                    base::Time* time) {
   std::vector<base::StringPiece> parts;
   if (Tokenize(raw_value, kTimeParsingDelimiters, &parts) != 7)
@@ -511,15 +511,15 @@ bool DocumentEntry::HasFieldPresent(const base::Value* value,
 void DocumentEntry::RegisterJSONConverter(
     base::JSONValueConverter<DocumentEntry>* converter) {
   // inheritant the parent registrations.
-  GDataEntry::RegisterJSONConverter(
-      reinterpret_cast<base::JSONValueConverter<GDataEntry>*>(converter));
+  FeedEntry::RegisterJSONConverter(
+      reinterpret_cast<base::JSONValueConverter<FeedEntry>*>(converter));
   converter->RegisterStringField(
       kResourceIdField, &DocumentEntry::resource_id_);
   converter->RegisterStringField(kIDField, &DocumentEntry::id_);
   converter->RegisterStringField(kTitleField, &DocumentEntry::title_);
   converter->RegisterCustomField<base::Time>(
       kPublishedField, &DocumentEntry::published_time_,
-      &GDataEntry::GetTimeFromString);
+      &FeedEntry::GetTimeFromString);
   converter->RegisterRepeatedMessage(
       kFeedLinkField, &DocumentEntry::feed_links_);
   converter->RegisterNestedField(kContentField, &DocumentEntry::content_);
@@ -718,8 +718,8 @@ DocumentFeed::~DocumentFeed() {
 void DocumentFeed::RegisterJSONConverter(
     base::JSONValueConverter<DocumentFeed>* converter) {
   // inheritance
-  GDataEntry::RegisterJSONConverter(
-      reinterpret_cast<base::JSONValueConverter<GDataEntry>*>(converter));
+  FeedEntry::RegisterJSONConverter(
+      reinterpret_cast<base::JSONValueConverter<FeedEntry>*>(converter));
   // TODO(zelidrag): Once we figure out where these will be used, we should
   // check for valid start_index_ and items_per_page_ values.
   converter->RegisterCustomField<int>(

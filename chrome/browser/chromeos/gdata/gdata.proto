@@ -20,8 +20,8 @@ message PlatformFileInfoProto {
   optional int64 creation_time = 6;
 }
 
-// Represents GDataFileBase.
-message GDataFileBaseProto {
+// Represents GDataEntry.
+message GDataEntryProto {
   optional PlatformFileInfoProto file_info = 1;
   optional string file_name = 2;
   optional string title = 3;
@@ -32,7 +32,7 @@ message GDataFileBaseProto {
 
 // Represents GDataFile.
 message GDataFileProto {
-  optional GDataFileBaseProto gdata_file_base = 1;
+  optional GDataEntryProto gdata_entry = 1;
   optional uint32 kind = 2;
   optional string thumbnail_url = 3;
   optional string alternate_url = 4;
@@ -46,7 +46,7 @@ message GDataFileProto {
 
 // Represents GDataDirectory.
 message GDataDirectoryProto {
-  optional GDataFileBaseProto gdata_file_base = 1;
+  optional GDataEntryProto gdata_entry = 1;
   optional int64 refresh_time = 2;
   optional string start_feed_url = 3;
   optional string next_feed_url = 4;

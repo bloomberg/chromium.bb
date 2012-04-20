@@ -412,7 +412,7 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
   void OnFileProperties(base::DictionaryValue* property_dict,
                         base::PlatformFileError error,
                         const FilePath& directory_path,
-                        gdata::GDataFileBase* file);
+                        gdata::GDataEntry* entry);
 
   void CacheStateReceived(base::DictionaryValue* property_dict,
                           base::PlatformFileError error,

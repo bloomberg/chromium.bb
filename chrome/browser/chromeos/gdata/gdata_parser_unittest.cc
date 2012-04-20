@@ -82,7 +82,7 @@ TEST_F(GDataParserTest, DocumentFeedJsonParser) {
   scoped_ptr<DocumentFeed> feed(DocumentFeed::CreateFrom(feed_value));
 
   base::Time update_time;
-  ASSERT_TRUE(GDataEntry::GetTimeFromString("2011-12-14T01:03:21.151Z",
+  ASSERT_TRUE(FeedEntry::GetTimeFromString("2011-12-14T01:03:21.151Z",
                                             &update_time));
 
   EXPECT_EQ(1, feed->start_index());
@@ -121,9 +121,9 @@ TEST_F(GDataParserTest, DocumentFeedJsonParser) {
   EXPECT_EQ(ASCIIToUTF16("Entry 1 Title"), folder_entry->title());
   base::Time entry1_update_time;
   base::Time entry1_publish_time;
-  ASSERT_TRUE(GDataEntry::GetTimeFromString("2011-04-01T18:34:08.234Z",
+  ASSERT_TRUE(FeedEntry::GetTimeFromString("2011-04-01T18:34:08.234Z",
                                               &entry1_update_time));
-  ASSERT_TRUE(GDataEntry::GetTimeFromString("2010-11-07T05:03:54.719Z",
+  ASSERT_TRUE(FeedEntry::GetTimeFromString("2010-11-07T05:03:54.719Z",
                                               &entry1_publish_time));
   ASSERT_EQ(entry1_update_time, folder_entry->updated_time());
   ASSERT_EQ(entry1_publish_time, folder_entry->published_time());
@@ -187,9 +187,9 @@ TEST_F(GDataParserTest, DocumentEntryXmlParser) {
   EXPECT_EQ(ASCIIToUTF16("Xml Entry File Title.tar"), entry->title());
   base::Time entry1_update_time;
   base::Time entry1_publish_time;
-  ASSERT_TRUE(GDataEntry::GetTimeFromString("2011-04-01T18:34:08.234Z",
+  ASSERT_TRUE(FeedEntry::GetTimeFromString("2011-04-01T18:34:08.234Z",
                                               &entry1_update_time));
-  ASSERT_TRUE(GDataEntry::GetTimeFromString("2010-11-07T05:03:54.719Z",
+  ASSERT_TRUE(FeedEntry::GetTimeFromString("2010-11-07T05:03:54.719Z",
                                               &entry1_publish_time));
   ASSERT_EQ(entry1_update_time, entry->updated_time());
   ASSERT_EQ(entry1_publish_time, entry->published_time());

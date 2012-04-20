@@ -103,7 +103,7 @@ struct LoadRootFeedParams {
   LoadRootFeedParams(
         FilePath search_file_path,
         bool should_load_from_server,
-        const FindFileCallback& callback)
+        const FindEntryCallback& callback)
         : search_file_path(search_file_path),
           should_load_from_server(should_load_from_server),
           load_error(base::PLATFORM_FILE_OK),
@@ -117,7 +117,7 @@ struct LoadRootFeedParams {
   std::string proto;
   base::PlatformFileError load_error;
   base::Time last_modified;
-  const FindFileCallback callback;
+  const FindEntryCallback callback;
 };
 
 // Returns true if file system is due to be serialized on disk based on it
@@ -410,7 +410,7 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
 }
 
 // Recursively extracts the paths set of all sub-directories of |entry|.
-void GetChildDirectoryPaths(GDataFileBase* entry,
+void GetChildDirectoryPaths(GDataEntry* entry,
                             std::set<FilePath>* changed_dirs) {
   GDataDirectory* dir = entry->AsGDataDirectory();
   if (!dir)
@@ -430,13 +430,14 @@ void GetChildDirectoryPaths(GDataFileBase* entry,
 // Helper function for removing |entry| from |directory|. If |entry| is a
 // directory too, it will collect all its children file paths into
 // |changed_dirs| as well.
-void RemoveEntryFromDirectory(GDataDirectory* directory,
-                              GDataFileBase* entry,
-                              std::set<FilePath>* changed_dirs) {
+void RemoveEntryFromDirectoryAndCollectChangedDirectories(
+    GDataDirectory* directory,
+    GDataEntry* entry,
+    std::set<FilePath>* changed_dirs) {
   // Get the list of all sub-directory paths, so we can notify their listeners
   // that they are smoked.
   GetChildDirectoryPaths(entry, changed_dirs);
-  directory->RemoveFile(entry);
+  directory->RemoveEntry(entry);
 }
 
 // Helper function for adding new |file| from the feed into |directory|. It
@@ -444,13 +445,14 @@ void RemoveEntryFromDirectory(GDataDirectory* directory,
 // opertation needs to raise directory notification update. If file is being
 // added to |orphaned_entries_dir| such notifications are not raised since
 // we ignore such files and don't add them to the file system now.
-void AddEntryToDirectory(GDataFileBase* file,
-                         GDataDirectory* directory,
-                         GDataRootDirectory* orphaned_entries_dir,
-                         std::set<FilePath>* changed_dirs) {
-  directory->AddFile(file);
-  if (file->AsGDataDirectory() && directory != orphaned_entries_dir)
-    changed_dirs->insert(file->GetFilePath());
+void AddEntryToDirectoryAndCollectChangedDirectories(
+    GDataEntry* entry,
+    GDataDirectory* directory,
+    GDataRootDirectory* orphaned_entries_dir,
+    std::set<FilePath>* changed_dirs) {
+  directory->AddEntry(entry);
+  if (entry->AsGDataDirectory() && directory != orphaned_entries_dir)
+    changed_dirs->insert(entry->GetFilePath());
 }
 
 // Invoked upon completion of TransferRegularFile initiated by Copy.
@@ -572,56 +574,56 @@ void LoadProtoOnIOThreadPool(const FilePath& path,
 
 }  // namespace
 
-// FindFileDelegate class implementation.
+// FindEntryDelegate class implementation.
 
-FindFileDelegate::~FindFileDelegate() {
+FindEntryDelegate::~FindEntryDelegate() {
 }
 
-// FindFileCallbackRelayDelegate class implementation.
+// FindEntryCallbackRelayDelegate class implementation.
 // This class is used to relay calls between sync and async versions
 // of FindFileByPath(Sync|Async) calls.
-class FindFileCallbackRelayDelegate : public FindFileDelegate {
+class FindEntryCallbackRelayDelegate : public FindEntryDelegate {
  public:
-  explicit FindFileCallbackRelayDelegate(const FindFileCallback& callback);
-  virtual ~FindFileCallbackRelayDelegate();
+  explicit FindEntryCallbackRelayDelegate(const FindEntryCallback& callback);
+  virtual ~FindEntryCallbackRelayDelegate();
 
  private:
-  // FindFileDelegate overrides.
+  // FindEntryDelegate overrides.
   virtual void OnDone(base::PlatformFileError error,
                       const FilePath& directory_path,
-                      GDataFileBase* file) OVERRIDE;
+                      GDataEntry* entry) OVERRIDE;
 
-  const FindFileCallback callback_;
+  const FindEntryCallback callback_;
 };
 
-FindFileCallbackRelayDelegate::FindFileCallbackRelayDelegate(
-    const FindFileCallback& callback) : callback_(callback) {
+FindEntryCallbackRelayDelegate::FindEntryCallbackRelayDelegate(
+    const FindEntryCallback& callback) : callback_(callback) {
 }
 
-FindFileCallbackRelayDelegate::~FindFileCallbackRelayDelegate() {
+FindEntryCallbackRelayDelegate::~FindEntryCallbackRelayDelegate() {
 }
 
-void FindFileCallbackRelayDelegate::OnDone(base::PlatformFileError error,
-                                           const FilePath& directory_path,
-                                           GDataFileBase* file) {
+void FindEntryCallbackRelayDelegate::OnDone(base::PlatformFileError error,
+                                            const FilePath& directory_path,
+                                            GDataEntry* entry) {
   if (!callback_.is_null()) {
-    callback_.Run(error, directory_path, file);
+    callback_.Run(error, directory_path, entry);
   }
 }
 
-// ReadOnlyFindFileDelegate class implementation.
+// ReadOnlyFindEntryDelegate class implementation.
 
-ReadOnlyFindFileDelegate::ReadOnlyFindFileDelegate() : file_(NULL) {
+ReadOnlyFindEntryDelegate::ReadOnlyFindEntryDelegate() : entry_(NULL) {
 }
 
-void ReadOnlyFindFileDelegate::OnDone(base::PlatformFileError error,
-                                      const FilePath& directory_path,
-                                      GDataFileBase* file) {
-  DCHECK(!file_);
+void ReadOnlyFindEntryDelegate::OnDone(base::PlatformFileError error,
+                                       const FilePath& directory_path,
+                                       GDataEntry* entry) {
+  DCHECK(!entry_);
   if (error == base::PLATFORM_FILE_OK)
-    file_ = file;
+    entry_ = entry;
   else
-    file_ = NULL;
+    entry_ = NULL;
 }
 
 // GDataFileProperties struct implementation.
@@ -639,7 +641,7 @@ GDataFileSystem::GetDocumentsParams::GetDocumentsParams(
     int root_feed_changestamp,
     std::vector<DocumentFeed*>* feed_list,
     const FilePath& search_file_path,
-    const FindFileCallback& callback)
+    const FindEntryCallback& callback)
     : start_changestamp(start_changestamp),
       root_feed_changestamp(root_feed_changestamp),
       feed_list(feed_list),
@@ -824,22 +826,22 @@ void GDataFileSystem::Authenticate(const AuthStatusCallback& callback) {
   documents_service_->Authenticate(callback);
 }
 
-void GDataFileSystem::FindFileByPathSync(
+void GDataFileSystem::FindEntryByPathSync(
     const FilePath& search_file_path,
-    FindFileDelegate* delegate) {
+    FindEntryDelegate* delegate) {
   base::AutoLock lock(lock_);
-  UnsafeFindFileByPath(search_file_path, delegate);
+  UnsafeFindEntryByPath(search_file_path, delegate);
 }
 
-void GDataFileSystem::FindFileByResourceIdSync(
+void GDataFileSystem::FindEntryByResourceIdSync(
     const std::string& resource_id,
-    FindFileDelegate* delegate) {
+    FindEntryDelegate* delegate) {
   base::AutoLock lock(lock_);  // To access the cache map.
 
   GDataFile* file = NULL;
-  GDataFileBase* file_base = root_->GetFileByResourceId(resource_id);
-  if (file_base)
-    file = file_base->AsGDataFile();
+  GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
+  if (entry)
+    file = entry->AsGDataFile();
 
   if (file) {
     delegate->OnDone(base::PLATFORM_FILE_OK, file->parent()->GetFilePath(),
@@ -849,9 +851,9 @@ void GDataFileSystem::FindFileByResourceIdSync(
   }
 }
 
-void GDataFileSystem::FindFileByPathAsync(
+void GDataFileSystem::FindEntryByPathAsync(
     const FilePath& search_file_path,
-    const FindFileCallback& callback) {
+    const FindEntryCallback& callback) {
   base::AutoLock lock(lock_);
   if (root_->origin() == INITIALIZING) {
     // If root feed is not initialized but the initilization process has
@@ -859,7 +861,7 @@ void GDataFileSystem::FindFileByPathAsync(
     // the end of the initialization.
     AddObserver(new InitialLoadObserver(
         this,
-        base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
+        base::Bind(&GDataFileSystem::FindEntryByPathOnCallingThread,
                    GetWeakPtrForCurrentThread(),
                    search_file_path,
                    callback)));
@@ -885,27 +887,27 @@ void GDataFileSystem::FindFileByPathAsync(
   }
 
   // Post a task to the same thread, rather than calling it here, as
-  // FindFileByPathAsync() is asynchronous.
+  // FindEntryByPathAsync() is asynchronous.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::FindFileByPathOnCallingThread,
+      base::Bind(&GDataFileSystem::FindEntryByPathOnCallingThread,
                  GetWeakPtrForCurrentThread(),
                  search_file_path,
                  callback));
 }
 
-void GDataFileSystem::FindFileByPathOnCallingThread(
+void GDataFileSystem::FindEntryByPathOnCallingThread(
     const FilePath& search_file_path,
-    const FindFileCallback& callback) {
-  FindFileCallbackRelayDelegate delegate(callback);
-  FindFileByPathSync(search_file_path, &delegate);
+    const FindEntryCallback& callback) {
+  FindEntryCallbackRelayDelegate delegate(callback);
+  FindEntryByPathSync(search_file_path, &delegate);
 }
 
 void GDataFileSystem::ReloadFeedFromServerIfNeeded(
     ContentOrigin initial_origin,
     int local_changestamp,
     const FilePath& search_file_path,
-    const FindFileCallback& callback) {
+    const FindEntryCallback& callback) {
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
   documents_service_->GetAccountMetadata(
@@ -921,7 +923,7 @@ void GDataFileSystem::OnGetAccountMetadata(
     ContentOrigin initial_origin,
     int local_changestamp,
     const FilePath& search_file_path,
-    const FindFileCallback& callback,
+    const FindEntryCallback& callback,
     GDataErrorCode status,
     scoped_ptr<base::Value> feed_data) {
   base::PlatformFileError error = GDataToPlatformError(status);
@@ -958,7 +960,7 @@ void GDataFileSystem::OnGetAccountMetadata(
   // No changes detected, continue with search as planned.
   if (!changes_detected) {
     if (!callback.is_null())
-      FindFileByPathOnCallingThread(search_file_path, callback);
+      FindEntryByPathOnCallingThread(search_file_path, callback);
 
     NotifyInitialLoadFinished();
     return;
@@ -977,7 +979,7 @@ void GDataFileSystem::LoadFeedFromServer(
     int start_changestamp,
     int root_feed_changestamp,
     const FilePath& search_file_path,
-    const FindFileCallback& callback) {
+    const FindEntryCallback& callback) {
   // ...then also kick off document feed fetching from the server as well.
   // |feed_list| will contain the list of all collected feed updates that
   // we will receive through calls of DocumentsService::GetDocuments().
@@ -1004,7 +1006,7 @@ void GDataFileSystem::TransferFile(const FilePath& local_file_path,
 
   base::AutoLock lock(lock_);
   // Make sure the destination directory exists
-  GDataFileBase* dest_dir = GetGDataFileInfoFromPath(
+  GDataEntry* dest_dir = GetGDataEntryFromPath(
       remote_dest_file_path.DirName());
   if (!dest_dir || !dest_dir->AsGDataDirectory()) {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
@@ -1193,20 +1195,20 @@ void GDataFileSystem::Copy(const FilePath& src_file_path,
   bool src_file_is_hosted_document = false;
   {
     base::AutoLock lock(lock_);
-    GDataFileBase* src_file = GetGDataFileInfoFromPath(src_file_path);
-    GDataFileBase* dest_parent = GetGDataFileInfoFromPath(dest_parent_path);
-    if (!src_file || !dest_parent) {
+    GDataEntry* src_entry = GetGDataEntryFromPath(src_file_path);
+    GDataEntry* dest_parent = GetGDataEntryFromPath(dest_parent_path);
+    if (!src_entry || !dest_parent) {
       error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
     } else if (!dest_parent->AsGDataDirectory()) {
       error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
-    } else if (!src_file->AsGDataFile()) {
+    } else if (!src_entry->AsGDataFile()) {
       // TODO(benchan): Implement copy for directories. In the interim,
       // we handle recursive directory copy in the file manager.
       error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
     } else {
-      src_file_resource_id = src_file->resource_id();
+      src_file_resource_id = src_entry->resource_id();
       src_file_is_hosted_document =
-          src_file->AsGDataFile()->is_hosted_document();
+          src_entry->AsGDataFile()->is_hosted_document();
     }
   }
 
@@ -1274,7 +1276,7 @@ void GDataFileSystem::CopyDocumentToDirectory(
     const FilePath::StringType& new_name,
     const FileOperationCallback& callback) {
   FilePathUpdateCallback add_file_to_directory_callback =
-      base::Bind(&GDataFileSystem::AddFileToDirectory,
+      base::Bind(&GDataFileSystem::AddEntryToDirectory,
                  GetWeakPtrForCurrentThread(),
                  dir_path,
                  callback);
@@ -1298,8 +1300,8 @@ void GDataFileSystem::Rename(const FilePath& file_path,
   }
 
   base::AutoLock lock(lock_);
-  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
-  if (!file) {
+  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  if (!entry) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(FROM_HERE,
           base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND, file_path));
@@ -1311,15 +1313,15 @@ void GDataFileSystem::Rename(const FilePath& file_path,
   // renamed is a hosted document and |new_name| has the same .g<something>
   // extension as the file.
   FilePath::StringType file_name = new_name;
-  if (file->AsGDataFile() && file->AsGDataFile()->is_hosted_document()) {
+  if (entry->AsGDataFile() && entry->AsGDataFile()->is_hosted_document()) {
     FilePath new_file(file_name);
-    if (new_file.Extension() == file->AsGDataFile()->document_extension()) {
+    if (new_file.Extension() == entry->AsGDataFile()->document_extension()) {
       file_name = new_file.RemoveExtension().value();
     }
   }
 
   documents_service_->RenameResource(
-      file->edit_url(),
+      entry->edit_url(),
       file_name,
       base::Bind(&GDataFileSystem::OnRenameResourceCompleted,
                  GetWeakPtrForCurrentThread(),
@@ -1337,9 +1339,9 @@ void GDataFileSystem::Move(const FilePath& src_file_path,
   {
     // This scoped lock needs to be released before calling Rename() below.
     base::AutoLock lock(lock_);
-    GDataFileBase* src_file = GetGDataFileInfoFromPath(src_file_path);
-    GDataFileBase* dest_parent = GetGDataFileInfoFromPath(dest_parent_path);
-    if (!src_file || !dest_parent) {
+    GDataEntry* src_entry = GetGDataEntryFromPath(src_file_path);
+    GDataEntry* dest_parent = GetGDataEntryFromPath(dest_parent_path);
+    if (!src_entry || !dest_parent) {
       error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
     } else {
       if (!dest_parent->AsGDataDirectory())
@@ -1377,13 +1379,13 @@ void GDataFileSystem::Move(const FilePath& src_file_path,
   //    effectively moves the file from the root directory to the parent
   //    directory of |dest_file_path|.
   FilePathUpdateCallback add_file_to_directory_callback =
-      base::Bind(&GDataFileSystem::AddFileToDirectory,
+      base::Bind(&GDataFileSystem::AddEntryToDirectory,
                  GetWeakPtrForCurrentThread(),
                  dest_file_path.DirName(),
                  callback);
 
   FilePathUpdateCallback remove_file_from_directory_callback =
-      base::Bind(&GDataFileSystem::RemoveFileFromDirectory,
+      base::Bind(&GDataFileSystem::RemoveEntryFromDirectory,
                  GetWeakPtrForCurrentThread(),
                  src_file_path.DirName(),
                  add_file_to_directory_callback);
@@ -1392,24 +1394,25 @@ void GDataFileSystem::Move(const FilePath& src_file_path,
          remove_file_from_directory_callback);
 }
 
-void GDataFileSystem::AddFileToDirectory(const FilePath& dir_path,
-                                         const FileOperationCallback& callback,
-                                         base::PlatformFileError error,
-                                         const FilePath& file_path) {
+void GDataFileSystem::AddEntryToDirectory(
+    const FilePath& dir_path,
+    const FileOperationCallback& callback,
+    base::PlatformFileError error,
+    const FilePath& file_path) {
   base::AutoLock lock(lock_);
-  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
-  GDataFileBase* dir = GetGDataFileInfoFromPath(dir_path);
+  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  GDataEntry* dir_entry = GetGDataEntryFromPath(dir_path);
   if (error == base::PLATFORM_FILE_OK) {
-    if (!file || !dir) {
+    if (!entry || !dir_entry) {
       error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
     } else {
-      if (!dir->AsGDataDirectory())
+      if (!dir_entry->AsGDataDirectory())
         error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
     }
   }
 
   // Returns if there is an error or |dir_path| is the root directory.
-  if (error != base::PLATFORM_FILE_OK || dir->AsGDataRootDirectory()) {
+  if (error != base::PLATFORM_FILE_OK || dir_entry->AsGDataRootDirectory()) {
     if (!callback.is_null())
       MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, error));
 
@@ -1417,25 +1420,25 @@ void GDataFileSystem::AddFileToDirectory(const FilePath& dir_path,
   }
 
   documents_service_->AddResourceToDirectory(
-      dir->content_url(),
-      file->edit_url(),
-      base::Bind(&GDataFileSystem::OnAddFileToDirectoryCompleted,
+      dir_entry->content_url(),
+      entry->edit_url(),
+      base::Bind(&GDataFileSystem::OnAddEntryToDirectoryCompleted,
                  GetWeakPtrForCurrentThread(),
                  callback,
                  file_path,
                  dir_path));
 }
 
-void GDataFileSystem::RemoveFileFromDirectory(
+void GDataFileSystem::RemoveEntryFromDirectory(
     const FilePath& dir_path,
     const FilePathUpdateCallback& callback,
     base::PlatformFileError error,
     const FilePath& file_path) {
   base::AutoLock lock(lock_);
-  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
-  GDataFileBase* dir = GetGDataFileInfoFromPath(dir_path);
+  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  GDataEntry* dir = GetGDataEntryFromPath(dir_path);
   if (error == base::PLATFORM_FILE_OK) {
-    if (!file || !dir) {
+    if (!entry || !dir) {
       error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
     } else {
       if (!dir->AsGDataDirectory())
@@ -1454,9 +1457,9 @@ void GDataFileSystem::RemoveFileFromDirectory(
 
   documents_service_->RemoveResourceFromDirectory(
       dir->content_url(),
-      file->edit_url(),
-      file->resource_id(),
-      base::Bind(&GDataFileSystem::OnRemoveFileFromDirectoryCompleted,
+      entry->edit_url(),
+      entry->resource_id(),
+      base::Bind(&GDataFileSystem::OnRemoveEntryFromDirectoryCompleted,
                  GetWeakPtrForCurrentThread(),
                  callback,
                  file_path,
@@ -1467,8 +1470,8 @@ void GDataFileSystem::Remove(const FilePath& file_path,
     bool is_recursive,
     const FileOperationCallback& callback) {
   base::AutoLock lock(lock_);
-  GDataFileBase* file_info = GetGDataFileInfoFromPath(file_path);
-  if (!file_info) {
+  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  if (!entry) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
@@ -1478,7 +1481,7 @@ void GDataFileSystem::Remove(const FilePath& file_path,
   }
 
   documents_service_->DeleteDocument(
-      file_info->edit_url(),
+      entry->edit_url(),
       base::Bind(&GDataFileSystem::OnRemovedDocument,
                  GetWeakPtrForCurrentThread(),
                  callback,
@@ -1656,9 +1659,9 @@ void GDataFileSystem::GetFileForResourceId(
   FilePath file_path;
   {
     base::AutoLock lock(lock_);  // To access the cache map.
-    GDataFileBase* file_base = root_->GetFileByResourceId(resource_id);
-    if (file_base) {
-      GDataFile* file = file_base->AsGDataFile();
+    GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
+    if (entry) {
+      GDataFile* file = entry->AsGDataFile();
       if (file)
         file_path = file->GetFilePath();
     }
@@ -1711,9 +1714,9 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
   int64 file_size = 0;
   {
     base::AutoLock lock(lock_);  // To access the root directory.
-    GDataFileBase* file_base = root_->GetFileByResourceId(resource_id);
-    if (file_base)
-      file_size = file_base->file_info().size;
+    GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
+    if (entry)
+      file_size = entry->file_info().size;
   }
 
   bool* has_enough_space = new bool(false);
@@ -1863,9 +1866,9 @@ void GDataFileSystem::OnResumeUpload(
         base::Bind(callback, response, base::Passed(&new_entry)));
 }
 
-void GDataFileSystem::UnsafeFindFileByPath(
+void GDataFileSystem::UnsafeFindEntryByPath(
     const FilePath& file_path,
-    FindFileDelegate* delegate) {
+    FindEntryDelegate* delegate) {
   DCHECK(delegate);
   lock_.AssertAcquired();
 
@@ -1918,14 +1921,14 @@ bool GDataFileSystem::GetFileInfoFromPath(
     const FilePath& file_path, GDataFileProperties* properties) {
   DCHECK(properties);
   base::AutoLock lock(lock_);
-  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
-  if (!file)
+  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  if (!entry)
     return false;
 
-  properties->file_info = file->file_info();
-  properties->resource_id = file->resource_id();
+  properties->file_info = entry->file_info();
+  properties->resource_id = entry->resource_id();
 
-  GDataFile* regular_file = file->AsGDataFile();
+  GDataFile* regular_file = entry->AsGDataFile();
   if (regular_file) {
     properties->file_md5 = regular_file->file_md5();
     properties->mime_type = regular_file->content_mime_type();
@@ -1972,13 +1975,13 @@ base::WeakPtr<GDataFileSystem> GDataFileSystem::GetWeakPtrForCurrentThread() {
   return ui_weak_ptr_factory_->GetWeakPtr();
 }
 
-GDataFileBase* GDataFileSystem::GetGDataFileInfoFromPath(
+GDataEntry* GDataFileSystem::GetGDataEntryFromPath(
     const FilePath& file_path) {
   lock_.AssertAcquired();
   // Find directory element within the cached file system snapshot.
-  ReadOnlyFindFileDelegate find_delegate;
-  UnsafeFindFileByPath(file_path, &find_delegate);
-  return find_delegate.file();
+  ReadOnlyFindEntryDelegate find_delegate;
+  UnsafeFindEntryByPath(file_path, &find_delegate);
+  return find_delegate.entry();
 }
 
 void GDataFileSystem::GetFromCacheForPath(
@@ -1987,13 +1990,13 @@ void GDataFileSystem::GetFromCacheForPath(
   std::string resource_id;
   std::string md5;
 
-  {  // Lock to use GetGDataFileInfoFromPath and returned pointer, but need to
+  {  // Lock to use GetGDataEntryFromPath and returned pointer, but need to
      // release before GetFromCache.
     base::AutoLock lock(lock_);
-    GDataFileBase* file_base = GetGDataFileInfoFromPath(gdata_file_path);
+    GDataEntry* entry = GetGDataEntryFromPath(gdata_file_path);
 
-    if (file_base && file_base->AsGDataFile()) {
-      GDataFile* file = file_base->AsGDataFile();
+    if (entry && entry->AsGDataFile()) {
+      GDataFile* file = entry->AsGDataFile();
       resource_id = file->resource_id();
       md5 = file->file_md5();
     } else {
@@ -2056,8 +2059,8 @@ void GDataFileSystem::SetPinState(const FilePath& file_path, bool to_pin,
   std::string resource_id, md5;
   {
     base::AutoLock lock(lock_);
-    GDataFileBase* file_base = GetGDataFileInfoFromPath(file_path);
-    GDataFile* file = file_base ? file_base->AsGDataFile() : NULL;
+    GDataEntry* entry = GetGDataEntryFromPath(file_path);
+    GDataFile* file = entry ? entry->AsGDataFile() : NULL;
 
     if (!file) {
       if (!callback.is_null()) {
@@ -2194,7 +2197,7 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
   if (error != base::PLATFORM_FILE_OK) {
     if (!params->callback.is_null()) {
       params->callback.Run(error, FilePath(),
-                          reinterpret_cast<GDataFileBase*>(NULL));
+                          reinterpret_cast<GDataEntry*>(NULL));
     }
 
     return;
@@ -2207,7 +2210,7 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
   if (!current_feed.get()) {
     if (!params->callback.is_null()) {
       params->callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath(),
-                           reinterpret_cast<GDataFileBase*>(NULL));
+                           reinterpret_cast<GDataEntry*>(NULL));
     }
 
     return;
@@ -2242,7 +2245,7 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
   if (error != base::PLATFORM_FILE_OK) {
     if (!params->callback.is_null()) {
       params->callback.Run(error, FilePath(),
-               reinterpret_cast<GDataFileBase*>(NULL));
+               reinterpret_cast<GDataEntry*>(NULL));
     }
 
     return;
@@ -2254,14 +2257,14 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
   // If we had someone to report this too, then this retrieval was done in a
   // context of search... so continue search.
   if (!params->callback.is_null()) {
-    FindFileByPathOnCallingThread(params->search_file_path, params->callback);
+    FindEntryByPathOnCallingThread(params->search_file_path, params->callback);
   }
 }
 
 void GDataFileSystem::LoadRootFeedFromCache(
     bool should_load_from_server,
     const FilePath& search_file_path,
-    const FindFileCallback& callback) {
+    const FindEntryCallback& callback) {
   const FilePath path =
       cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
           kFilesystemProtoFile);
@@ -2299,13 +2302,13 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
     }
   }
 
-  FindFileCallback callback = params->callback;
+  FindEntryCallback callback = params->callback;
   // If we got feed content from cache, try search over it.
   if (!params->should_load_from_server ||
       (params->load_error == base::PLATFORM_FILE_OK && !callback.is_null())) {
     // Continue file content search operation if the delegate hasn't terminated
     // this search branch already.
-    FindFileByPathOnCallingThread(params->search_file_path, callback);
+    FindEntryByPathOnCallingThread(params->search_file_path, callback);
     callback.Reset();
   }
 
@@ -2437,8 +2440,8 @@ void GDataFileSystem::OnCopyDocumentCompleted(
     return;
   }
 
-  scoped_ptr<DocumentEntry> entry(DocumentEntry::CreateFrom(entry_value));
-  if (!entry.get()) {
+  scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::CreateFrom(entry_value));
+  if (!doc_entry.get()) {
     if (!callback.is_null())
       callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());
 
@@ -2448,16 +2451,17 @@ void GDataFileSystem::OnCopyDocumentCompleted(
   FilePath file_path;
   {
     base::AutoLock lock(lock_);
-    GDataFileBase* file =
-        GDataFileBase::FromDocumentEntry(root_.get(), entry.get(), root_.get());
-    if (!file) {
+    GDataEntry* entry =
+        GDataEntry::FromDocumentEntry(
+            root_.get(), doc_entry.get(), root_.get());
+    if (!entry) {
       if (!callback.is_null())
         callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());
 
       return;
     }
-    root_->AddFile(file);
-    file_path = file->GetFilePath();
+    root_->AddEntry(entry);
+    file_path = entry->GetFilePath();
   }
 
   NotifyDirectoryChanged(file_path.DirName());
@@ -2466,7 +2470,7 @@ void GDataFileSystem::OnCopyDocumentCompleted(
     callback.Run(error, file_path);
 }
 
-void GDataFileSystem::OnAddFileToDirectoryCompleted(
+void GDataFileSystem::OnAddEntryToDirectoryCompleted(
     const FileOperationCallback& callback,
     const FilePath& file_path,
     const FilePath& dir_path,
@@ -2474,13 +2478,13 @@ void GDataFileSystem::OnAddFileToDirectoryCompleted(
     const GURL& document_url) {
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error == base::PLATFORM_FILE_OK)
-    error = AddFileToDirectoryOnFilesystem(file_path, dir_path);
+    error = AddEntryToDirectoryOnFilesystem(file_path, dir_path);
 
   if (!callback.is_null())
     callback.Run(error);
 }
 
-void GDataFileSystem::OnRemoveFileFromDirectoryCompleted(
+void GDataFileSystem::OnRemoveEntryFromDirectoryCompleted(
     const FilePathUpdateCallback& callback,
     const FilePath& file_path,
     const FilePath& dir_path,
@@ -2489,8 +2493,8 @@ void GDataFileSystem::OnRemoveFileFromDirectoryCompleted(
   FilePath updated_file_path = file_path;
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error == base::PLATFORM_FILE_OK)
-    error = RemoveFileFromDirectoryOnFilesystem(file_path, dir_path,
-                                                &updated_file_path);
+    error = RemoveEntryFromDirectoryOnFilesystem(file_path, dir_path,
+                                                 &updated_file_path);
 
   if (!callback.is_null())
     callback.Run(error, updated_file_path);
@@ -2544,7 +2548,7 @@ void GDataFileSystem::OnRemovedDocument(
   base::PlatformFileError error = GDataToPlatformError(status);
 
   if (error == base::PLATFORM_FILE_OK)
-    error = RemoveFileFromFileSystem(file_path);
+    error = RemoveEntryFromFileSystem(file_path);
 
   if (!callback.is_null()) {
     callback.Run(error);
@@ -2635,81 +2639,81 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
   DCHECK(updated_file_path);
 
   base::AutoLock lock(lock_);
-  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
-  if (!file)
+  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  if (!entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-  DCHECK(file->parent());
-  file->set_title(new_name);
-  // After changing the title of the file, call TakeFile() to remove the
-  // file from its parent directory and then add it back in order to go
+  DCHECK(entry->parent());
+  entry->set_title(new_name);
+  // After changing the title of the entry, call TakeFile() to remove the
+  // entry from its parent directory and then add it back in order to go
   // through the file name de-duplication.
-  if (!file->parent()->TakeFile(file))
+  if (!entry->parent()->TakeEntry(entry))
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  *updated_file_path = file->GetFilePath();
+  *updated_file_path = entry->GetFilePath();
 
   NotifyDirectoryChanged(updated_file_path->DirName());
   return base::PLATFORM_FILE_OK;
 }
 
-base::PlatformFileError GDataFileSystem::AddFileToDirectoryOnFilesystem(
+base::PlatformFileError GDataFileSystem::AddEntryToDirectoryOnFilesystem(
     const FilePath& file_path, const FilePath& dir_path) {
   base::AutoLock lock(lock_);
-  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
-  if (!file)
+  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  if (!entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-  DCHECK_EQ(root_.get(), file->parent());
+  DCHECK_EQ(root_.get(), entry->parent());
 
-  GDataFileBase* dir_file = GetGDataFileInfoFromPath(dir_path);
-  if (!dir_file)
+  GDataEntry* dir_entry = GetGDataEntryFromPath(dir_path);
+  if (!dir_entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-  GDataDirectory* dir = dir_file->AsGDataDirectory();
+  GDataDirectory* dir = dir_entry->AsGDataDirectory();
   if (!dir)
     return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
-  if (!dir->TakeFile(file))
+  if (!dir->TakeEntry(entry))
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   NotifyDirectoryChanged(dir_path);
   return base::PLATFORM_FILE_OK;
 }
 
-base::PlatformFileError GDataFileSystem::RemoveFileFromDirectoryOnFilesystem(
+base::PlatformFileError GDataFileSystem::RemoveEntryFromDirectoryOnFilesystem(
     const FilePath& file_path, const FilePath& dir_path,
     FilePath* updated_file_path) {
   DCHECK(updated_file_path);
 
   base::AutoLock lock(lock_);
-  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
-  if (!file)
+  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  if (!entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-  GDataFileBase* dir = GetGDataFileInfoFromPath(dir_path);
+  GDataEntry* dir = GetGDataEntryFromPath(dir_path);
   if (!dir)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   if (!dir->AsGDataDirectory())
     return base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
-  DCHECK_EQ(dir->AsGDataDirectory(), file->parent());
+  DCHECK_EQ(dir->AsGDataDirectory(), entry->parent());
 
-  if (!root_->TakeFile(file))
+  if (!root_->TakeEntry(entry))
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  *updated_file_path = file->GetFilePath();
+  *updated_file_path = entry->GetFilePath();
 
   NotifyDirectoryChanged(updated_file_path->DirName());
   return base::PLATFORM_FILE_OK;
 }
 
-base::PlatformFileError GDataFileSystem::RemoveFileFromFileSystem(
+base::PlatformFileError GDataFileSystem::RemoveEntryFromFileSystem(
     const FilePath& file_path) {
 
   std::string resource_id;
-  base::PlatformFileError error = RemoveFileFromGData(file_path, &resource_id);
+  base::PlatformFileError error = RemoveEntryFromGData(file_path, &resource_id);
   if (error != base::PLATFORM_FILE_OK)
     return error;
 
@@ -2740,7 +2744,7 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
    DVLOG(1) << "Updating directory with a feed";
 
   bool is_delta_feed = start_changestamp != 0;
-  // We need to lock here as well (despite FindFileByPath lock) since directory
+  // We need to lock here as well (despite FindEntryByPath lock) since directory
   // instance below is a 'live' object.
   base::AutoLock lock(lock_);
   bool should_notify_initial_load = root_->origin() == INITIALIZING;
@@ -2800,9 +2804,9 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
   // snapshot of the file system.
   for (FileResourceIdMap::const_iterator it = file_map.begin();
        it != file_map.end(); ++it) {
-    scoped_ptr<GDataFileBase> entry(it->second);
+    scoped_ptr<GDataEntry> entry(it->second);
     DCHECK_EQ(it->first, entry->resource_id());
-    GDataFileBase* old_entry = root_->GetFileByResourceId(entry->resource_id());
+    GDataEntry* old_entry = root_->GetEntryByResourceId(entry->resource_id());
     GDataDirectory* dest_dir = NULL;
     if (entry->is_deleted()) {  // Deleted file/directory.
       DVLOG(1) << "Removing file " << entry->file_name();
@@ -2814,7 +2818,8 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
         NOTREACHED();
         continue;
       }
-      RemoveEntryFromDirectory(dest_dir, old_entry, &changed_dirs);
+      RemoveEntryFromDirectoryAndCollectChangedDirectories(
+          dest_dir, old_entry, &changed_dirs);
     } else if (old_entry) {  // Change or move of existing entry.
       // Please note that entry rename is just a special case of change here
       // since name is just one of the properties that can change.
@@ -2826,11 +2831,12 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
       }
       // Move children files over if we are dealing with directories.
       if (old_entry->AsGDataDirectory() && entry->AsGDataDirectory()) {
-        entry->AsGDataDirectory()->TakeOverFiles(
+        entry->AsGDataDirectory()->TakeOverEntries(
             old_entry->AsGDataDirectory());
       }
       // Remove the old instance of this entry.
-      RemoveEntryFromDirectory(dest_dir, old_entry, &changed_dirs);
+      RemoveEntryFromDirectoryAndCollectChangedDirectories(
+          dest_dir, old_entry, &changed_dirs);
       // Did we actually move the new file to another directory?
       if (dest_dir->resource_id() != entry->parent_resource_id()) {
         changed_dirs.insert(dest_dir->GetFilePath());
@@ -2839,19 +2845,21 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
                                             orphaned_entries_dir.get());
       }
       DCHECK(dest_dir);
-      AddEntryToDirectory(entry.release(),
-                          dest_dir,
-                          orphaned_entries_dir.get(),
-                          &changed_dirs);
+      AddEntryToDirectoryAndCollectChangedDirectories(
+          entry.release(),
+          dest_dir,
+          orphaned_entries_dir.get(),
+          &changed_dirs);
     } else {  // Adding a new file.
       dest_dir = FindDirectoryForNewEntry(entry.get(),
                                           file_map,
                                           orphaned_entries_dir.get());
       DCHECK(dest_dir);
-      AddEntryToDirectory(entry.release(),
-                          dest_dir,
-                          orphaned_entries_dir.get(),
-                          &changed_dirs);
+      AddEntryToDirectoryAndCollectChangedDirectories(
+          entry.release(),
+          dest_dir,
+          orphaned_entries_dir.get(),
+          &changed_dirs);
     }
 
     // Record changed directory if this was a delta feed and the parent
@@ -2871,7 +2879,7 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
 }
 
 GDataDirectory* GDataFileSystem::FindDirectoryForNewEntry(
-    GDataFileBase* new_entry,
+    GDataEntry* new_entry,
     const FileResourceIdMap& file_map,
     GDataRootDirectory* orphaned_entries_dir) {
   GDataDirectory* dir = NULL;
@@ -2881,7 +2889,7 @@ GDataDirectory* GDataFileSystem::FindDirectoryForNewEntry(
     dir = root_.get();
     DVLOG(1) << "Root parent for " << new_entry->file_name();
   } else {
-    GDataFileBase* entry = root_->GetFileByResourceId(parent_id);
+    GDataEntry* entry = root_->GetEntryByResourceId(parent_id);
     dir = entry ? entry->AsGDataDirectory() : NULL;
     if (!dir) {
       // The parent directory was also added with this set of feeds.
@@ -2930,7 +2938,7 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
              feed->entries().begin();
          iter != feed->entries().end(); ++iter) {
       DocumentEntry* doc = *iter;
-      GDataFileBase* entry = GDataFileBase::FromDocumentEntry(NULL, doc,
+      GDataEntry* entry = GDataEntry::FromDocumentEntry(NULL, doc,
                                                              root_.get());
       // Some document entries don't map into files (i.e. sites).
       if (!entry)
@@ -2948,8 +2956,8 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
           file_map->find(entry->resource_id());
 
       // An entry with the same self link may already exist, so we need to
-      // release the existing GDataFileBase instance before overwriting the
-      // entry with another GDataFileBase instance.
+      // release the existing GDataEntry instance before overwriting the
+      // entry with another GDataEntry instance.
       if (map_entry != file_map->end()) {
         LOG(WARNING) << "Found duplicate file "
                      << map_entry->second->file_name();
@@ -2958,12 +2966,12 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
         file_map->erase(map_entry);
       }
       file_map->insert(
-          std::pair<std::string, GDataFileBase*>(entry->resource_id(), entry));
+          std::pair<std::string, GDataEntry*>(entry->resource_id(), entry));
     }
   }
 
   if (error != base::PLATFORM_FILE_OK) {
-    // If the code above fails to parse a feed, any GDataFileBase instance
+    // If the code above fails to parse a feed, any GDataEntry instance
     // added to |file_by_url| is not managed by a GDataDirectory instance,
     // so we need to explicitly release them here.
     STLDeleteValues(file_map);
@@ -3059,34 +3067,34 @@ base::PlatformFileError GDataFileSystem::AddNewDirectory(
   if (!entry_value)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  scoped_ptr<DocumentEntry> entry(DocumentEntry::CreateFrom(entry_value));
+  scoped_ptr<DocumentEntry> doc_entry(DocumentEntry::CreateFrom(entry_value));
 
-  if (!entry.get())
+  if (!doc_entry.get())
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  // We need to lock here as well (despite FindFileByPath lock) since directory
+  // We need to lock here as well (despite FindEntryByPath lock) since directory
   // instance below is a 'live' object.
   base::AutoLock lock(lock_);
 
   // Find parent directory element within the cached file system snapshot.
-  GDataFileBase* file = GetGDataFileInfoFromPath(directory_path);
-  if (!file)
+  GDataEntry* entry = GetGDataEntryFromPath(directory_path);
+  if (!entry)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   // Check if parent is a directory since in theory since this is a callback
   // something could in the meantime have nuked the parent dir and created a
   // file with the exact same name.
-  GDataDirectory* parent_dir = file->AsGDataDirectory();
+  GDataDirectory* parent_dir = entry->AsGDataDirectory();
   if (!parent_dir)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  GDataFileBase* new_file = GDataFileBase::FromDocumentEntry(parent_dir,
-                                                             entry.get(),
-                                                             root_.get());
-  if (!new_file)
+  GDataEntry* new_entry = GDataEntry::FromDocumentEntry(parent_dir,
+                                                        doc_entry.get(),
+                                                        root_.get());
+  if (!new_entry)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  parent_dir->AddFile(new_file);
+  parent_dir->AddEntry(new_entry);
 
   NotifyDirectoryChanged(directory_path);
   return base::PLATFORM_FILE_OK;
@@ -3108,10 +3116,10 @@ GDataFileSystem::FindFirstMissingParentDirectory(
           path_parts.begin();
        iter != path_parts.end(); ++iter) {
     current_path = current_path.Append(*iter);
-    GDataFileBase* file = GetGDataFileInfoFromPath(current_path);
-    if (file) {
-      if (file->file_info().is_directory) {
-        *last_dir_content_url = file->content_url();
+    GDataEntry* entry = GetGDataEntryFromPath(current_path);
+    if (entry) {
+      if (entry->file_info().is_directory) {
+        *last_dir_content_url = entry->content_url();
       } else {
         // Huh, the segment found is a file not a directory?
         return FOUND_INVALID;
@@ -3128,36 +3136,36 @@ GURL GDataFileSystem::GetUploadUrlForDirectory(
     const FilePath& destination_directory) {
   // Find directory element within the cached file system snapshot.
   base::AutoLock lock(lock_);
-  GDataFileBase* file = GetGDataFileInfoFromPath(destination_directory);
-  GDataDirectory* dir = file ? file->AsGDataDirectory() : NULL;
+  GDataEntry* entry = GetGDataEntryFromPath(destination_directory);
+  GDataDirectory* dir = entry ? entry->AsGDataDirectory() : NULL;
   return dir ? dir->upload_url() : GURL();
 }
 
-base::PlatformFileError GDataFileSystem::RemoveFileFromGData(
+base::PlatformFileError GDataFileSystem::RemoveEntryFromGData(
     const FilePath& file_path, std::string* resource_id) {
   resource_id->clear();
 
-  // We need to lock here as well (despite FindFileByPath lock) since
+  // We need to lock here as well (despite FindEntryByPath lock) since
   // directory instance below is a 'live' object.
   base::AutoLock lock(lock_);
 
   // Find directory element within the cached file system snapshot.
-  GDataFileBase* file = GetGDataFileInfoFromPath(file_path);
+  GDataEntry* entry = GetGDataEntryFromPath(file_path);
 
-  if (!file)
+  if (!entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   // You can't remove root element.
-  if (!file->parent())
+  if (!entry->parent())
     return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
 
   // If it's a file (only files have resource id), get its resource id so that
   // we can remove it after releasing the auto lock.
-  if (file->AsGDataFile())
-    *resource_id = file->AsGDataFile()->resource_id();
+  if (entry->AsGDataFile())
+    *resource_id = entry->AsGDataFile()->resource_id();
 
-  GDataDirectory* parent_dir = file->parent();
-  if (!parent_dir->RemoveFile(file))
+  GDataDirectory* parent_dir = entry->parent();
+  if (!parent_dir->RemoveEntry(entry))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   NotifyDirectoryChanged(parent_dir->GetFilePath());
@@ -3179,24 +3187,24 @@ void GDataFileSystem::AddUploadedFile(const FilePath& virtual_dir_path,
   std::string md5;
   {
     base::AutoLock lock(lock_);
-    GDataFileBase* dir_file = GetGDataFileInfoFromPath(virtual_dir_path);
-    if (!dir_file)
+    GDataEntry* dir_entry = GetGDataEntryFromPath(virtual_dir_path);
+    if (!dir_entry)
       return;
 
-    GDataDirectory* parent_dir  = dir_file->AsGDataDirectory();
+    GDataDirectory* parent_dir  = dir_entry->AsGDataDirectory();
     if (!parent_dir)
       return;
 
-    scoped_ptr<GDataFileBase> new_file(
-        GDataFileBase::FromDocumentEntry(parent_dir, entry, root_.get()));
-    if (!new_file.get())
+    scoped_ptr<GDataEntry> new_entry(
+        GDataEntry::FromDocumentEntry(parent_dir, entry, root_.get()));
+    if (!new_entry.get())
       return;
 
-    GDataFile* file = new_file->AsGDataFile();
+    GDataFile* file = new_entry->AsGDataFile();
     DCHECK(file);
     resource_id = file->resource_id();
     md5 = file->file_md5();
-    parent_dir->AddFile(new_file.release());
+    parent_dir->AddEntry(new_entry.release());
   }
   NotifyDirectoryChanged(virtual_dir_path);
 
@@ -3251,14 +3259,14 @@ FilePath GDataFileSystem::GetCacheFilePath(
   // Runs on any thread.
   // Filename is formatted as resource_id.md5, i.e. resource_id is the base
   // name and md5 is the extension.
-  std::string base_name = GDataFileBase::EscapeUtf8FileName(resource_id);
+  std::string base_name = GDataEntry::EscapeUtf8FileName(resource_id);
   if (file_origin == CACHED_FILE_LOCALLY_MODIFIED) {
     DCHECK(sub_dir_type == GDataRootDirectory::CACHE_TYPE_PERSISTENT);
     base_name += FilePath::kExtensionSeparator;
     base_name += kLocallyModifiedFileExtension;
   } else if (!md5.empty()) {
     base_name += FilePath::kExtensionSeparator;
-    base_name += GDataFileBase::EscapeUtf8FileName(md5);
+    base_name += GDataEntry::EscapeUtf8FileName(md5);
   }
   return cache_paths_[sub_dir_type].Append(base_name);
 }
@@ -3525,8 +3533,8 @@ void GDataFileSystem::GetCacheStateOnIOThreadPool(
   *cache_state = GDataFile::CACHE_STATE_NONE;
 
   // Get file object for |resource_id|.
-  GDataFileBase* file_base = root_->GetFileByResourceId(resource_id);
-  if (!file_base || !file_base->AsGDataFile()) {
+  GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
+  if (!entry || !entry->AsGDataFile()) {
     *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
   } else {
     // Get cache state of file corresponding to |resource_id| and |md5|.
@@ -4211,14 +4219,14 @@ void GDataFileSystem::ScanCacheDirectory(
     // Pinned and outgoing symlinks have no extension.
     if (sub_dir_type == GDataRootDirectory::CACHE_TYPE_PINNED ||
         sub_dir_type == GDataRootDirectory::CACHE_TYPE_OUTGOING) {
-      resource_id = GDataFileBase::UnescapeUtf8FileName(base_name.value());
+      resource_id = GDataEntry::UnescapeUtf8FileName(base_name.value());
     } else {
       FilePath::StringType extension = base_name.Extension();
       if (!extension.empty()) {
         // FilePath::Extension returns ".", so strip it.
-        md5 = GDataFileBase::UnescapeUtf8FileName(extension.substr(1));
+        md5 = GDataEntry::UnescapeUtf8FileName(extension.substr(1));
       }
-      resource_id = GDataFileBase::UnescapeUtf8FileName(
+      resource_id = GDataEntry::UnescapeUtf8FileName(
           base_name.RemoveExtension().value());
     }
 

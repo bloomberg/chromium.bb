@@ -55,17 +55,17 @@ void CallSnapshotFileCallback(
 
 namespace gdata {
 
-base::FileUtilProxy::Entry GDataFileToFileUtilProxyEntry(
-    const GDataFileBase& file) {
+base::FileUtilProxy::Entry GDataEntryToFileUtilProxyEntry(
+    const GDataEntry& gdata_entry) {
   base::FileUtilProxy::Entry entry;
-  entry.is_directory = file.file_info().is_directory;
+  entry.is_directory = gdata_entry.file_info().is_directory;
 
   // TODO(zelidrag): Add file name modification logic to enforce uniquness of
   // file paths across this file system.
-  entry.name = file.file_name();
+  entry.name = gdata_entry.file_name();
 
-  entry.size = file.file_info().size;
-  entry.last_modified_time = file.file_info().last_modified;
+  entry.size = gdata_entry.file_info().size;
+  entry.last_modified_time = gdata_entry.file_info().last_modified;
   return entry;
 }
 
@@ -98,7 +98,7 @@ void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,
     return;
   }
 
-  file_system_->FindFileByPathAsync(
+  file_system_->FindEntryByPathAsync(
       file_path,
       base::Bind(&GDataFileSystemProxy::OnGetMetadata,
                  this,
@@ -154,7 +154,7 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
     return;
   }
 
-  file_system_->FindFileByPathAsync(
+  file_system_->FindEntryByPathAsync(
       file_path,
       base::Bind(&GDataFileSystemProxy::OnReadDirectory,
                  this,
@@ -231,7 +231,7 @@ void GDataFileSystemProxy::OnGetMetadata(
     const FileSystemOperationInterface::GetMetadataCallback& callback,
     base::PlatformFileError error,
     const FilePath& directory_path,
-    GDataFileBase* file) {
+    GDataEntry* entry) {
   if (error != base::PLATFORM_FILE_OK) {
     proxy->PostTask(FROM_HERE,
                     base::Bind(callback,
@@ -244,7 +244,7 @@ void GDataFileSystemProxy::OnGetMetadata(
   proxy->PostTask(FROM_HERE,
                   base::Bind(callback,
                              base::PLATFORM_FILE_OK,
-                             file->file_info(),
+                             entry->file_info(),
                              file_path));
 }
 
@@ -254,10 +254,10 @@ void GDataFileSystemProxy::OnReadDirectory(
     const FileSystemOperationInterface::ReadDirectoryCallback& callback,
     base::PlatformFileError error,
     const FilePath& directory_path,
-    GDataFileBase* file) {
-  DCHECK(file || error != base::PLATFORM_FILE_OK);
+    GDataEntry* entry) {
+  DCHECK(entry || error != base::PLATFORM_FILE_OK);
 
-  GDataDirectory* directory = file ? file->AsGDataDirectory() : NULL;
+  GDataDirectory* directory = entry ? entry->AsGDataDirectory() : NULL;
   if (!directory && error == base::PLATFORM_FILE_OK)
     error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
 
@@ -280,7 +280,7 @@ void GDataFileSystemProxy::OnReadDirectory(
         continue;
     }
 
-    entries.push_back(GDataFileToFileUtilProxyEntry(*(iter->second)));
+    entries.push_back(GDataEntryToFileUtilProxyEntry(*(iter->second)));
   }
 
   proxy->PostTask(FROM_HERE,

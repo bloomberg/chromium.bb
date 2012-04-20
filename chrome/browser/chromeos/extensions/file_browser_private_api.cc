@@ -200,25 +200,25 @@ FilePath GetVirtualPathFromURL(const GURL& file_url) {
 }
 
 // gdata::GDataFileBase* parameter is safe to be used since it's
-// run directly from FindFileDelegate::OnDone()
+// run directly from FindEntryDelegate::OnDone()
 typedef base::Callback<void(base::PlatformFileError,
                             const FilePath&,
-                            gdata::GDataFileBase*)>
+                            gdata::GDataEntry*)>
     FilePropertiesCallback;
 
 // Delegate used to find file properties.
-class FilePropertiesDelegate : public gdata::FindFileDelegate {
+class FilePropertiesDelegate : public gdata::FindEntryDelegate {
  public:
   explicit FilePropertiesDelegate(FilePropertiesCallback const& callback) :
       callback_(callback) {}
   virtual ~FilePropertiesDelegate() {}
 
  private:
-  // GDataFileSystem::FindFileDelegate overrides.
+  // GDataFileSystem::FindEntryDelegate overrides.
   virtual void OnDone(base::PlatformFileError error,
                       const FilePath& directory_path,
-                      gdata::GDataFileBase* file) OVERRIDE {
-    callback_.Run(error, directory_path, file);
+                      gdata::GDataEntry* entry) OVERRIDE {
+    callback_.Run(error, directory_path, entry);
   }
 
   FilePropertiesCallback callback_;
@@ -1584,22 +1584,22 @@ void GetGDataFilePropertiesFunction::OnOperationComplete(
 
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-  system_service->file_system()->FindFileByPathSync(path,
-                                                    &property_delegate);
+  system_service->file_system()->FindEntryByPathSync(path,
+                                                     &property_delegate);
 }
 
 void GetGDataFilePropertiesFunction::OnFileProperties(
     base::DictionaryValue* property_dict,
     base::PlatformFileError error,
     const FilePath& directory_path,
-    gdata::GDataFileBase* file_base) {
+    gdata::GDataEntry* entry) {
   if (error != base::PLATFORM_FILE_OK) {
     property_dict->SetInteger("errorCode", error);
     CompleteGetFileProperties();
     return;
   }
 
-  gdata::GDataFile* file = file_base->AsGDataFile();
+  gdata::GDataFile* file = entry->AsGDataFile();
   if (!file) {
     LOG(WARNING) << "Reading properties of a non-file at "
                  << directory_path.value();
