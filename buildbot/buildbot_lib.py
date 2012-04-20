@@ -74,7 +74,8 @@ def ParseStandardCommandLine(context):
   context['platform'] = platform
   context['mode'] = mode
   context['bits'] = bits
-  context['clang'] = options.clang
+  # ASan is Clang, so set the flag to simplify other checks.
+  context['clang'] = options.clang or options.asan
   context['validator'] = options.validator
   context['asan'] = options.asan
   # TODO(ncbray) turn derived values into methods.
