@@ -96,6 +96,16 @@ Response* ObjectProxy::CallMethodAndBlock(MethodCall* method_call,
 void ObjectProxy::CallMethod(MethodCall* method_call,
                              int timeout_ms,
                              ResponseCallback callback) {
+  CallMethodWithErrorCallback(method_call, timeout_ms, callback,
+                              base::Bind(&ObjectProxy::OnCallMethodError,
+                                         this,
+                                         callback));
+}
+
+void ObjectProxy::CallMethodWithErrorCallback(MethodCall* method_call,
+                                              int timeout_ms,
+                                              ResponseCallback callback,
+                                              ErrorCallback error_callback) {
   bus_->AssertOnOriginThread();
 
   method_call->SetDestination(service_name_);
@@ -112,6 +122,7 @@ void ObjectProxy::CallMethod(MethodCall* method_call,
                                   timeout_ms,
                                   request_message,
                                   callback,
+                                  error_callback,
                                   start_time);
   // Wait for the response in the D-Bus thread.
   bus_->PostTaskToDBusThread(FROM_HERE, task);
@@ -161,9 +172,11 @@ ObjectProxy::ResponseCallback ObjectProxy::EmptyResponseCallback() {
 ObjectProxy::OnPendingCallIsCompleteData::OnPendingCallIsCompleteData(
     ObjectProxy* in_object_proxy,
     ResponseCallback in_response_callback,
+    ErrorCallback in_error_callback,
     base::TimeTicks in_start_time)
     : object_proxy(in_object_proxy),
       response_callback(in_response_callback),
+      error_callback(in_error_callback),
       start_time(in_start_time) {
 }
 
@@ -173,19 +186,22 @@ ObjectProxy::OnPendingCallIsCompleteData::~OnPendingCallIsCompleteData() {
 void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
                                        DBusMessage* request_message,
                                        ResponseCallback response_callback,
+                                       ErrorCallback error_callback,
                                        base::TimeTicks start_time) {
   bus_->AssertOnDBusThread();
 
   if (!bus_->Connect() || !bus_->SetUpAsyncOperations()) {
-    // In case of a failure, run the callback with NULL response, that
-    // indicates a failure.
+    // In case of a failure, run the error callback with NULL.
     DBusMessage* response_message = NULL;
     base::Closure task = base::Bind(&ObjectProxy::RunResponseCallback,
                                     this,
                                     response_callback,
+                                    error_callback,
                                     start_time,
                                     response_message);
     bus_->PostTaskToOriginThread(FROM_HERE, task);
+
+    dbus_message_unref(request_message);
     return;
   }
 
@@ -196,7 +212,8 @@ void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
   // Prepare the data we'll be passing to OnPendingCallIsCompleteThunk().
   // The data will be deleted in OnPendingCallIsCompleteThunk().
   OnPendingCallIsCompleteData* data =
-      new OnPendingCallIsCompleteData(this, response_callback, start_time);
+      new OnPendingCallIsCompleteData(this, response_callback, error_callback,
+                                      start_time);
 
   // This returns false only when unable to allocate memory.
   const bool success = dbus_pending_call_set_notify(
@@ -213,6 +230,7 @@ void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
 
 void ObjectProxy::OnPendingCallIsComplete(DBusPendingCall* pending_call,
                                           ResponseCallback response_callback,
+                                          ErrorCallback error_callback,
                                           base::TimeTicks start_time) {
   bus_->AssertOnDBusThread();
 
@@ -220,12 +238,14 @@ void ObjectProxy::OnPendingCallIsComplete(DBusPendingCall* pending_call,
   base::Closure task = base::Bind(&ObjectProxy::RunResponseCallback,
                                   this,
                                   response_callback,
+                                  error_callback,
                                   start_time,
                                   response_message);
   bus_->PostTaskToOriginThread(FROM_HERE, task);
 }
 
 void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
+                                      ErrorCallback error_callback,
                                       base::TimeTicks start_time,
                                       DBusMessage* response_message) {
   bus_->AssertOnOriginThread();
@@ -233,19 +253,13 @@ void ObjectProxy::RunResponseCallback(ResponseCallback response_callback,
   bool method_call_successful = false;
   if (!response_message) {
     // The response is not received.
-    response_callback.Run(NULL);
+    error_callback.Run(NULL);
   } else if (dbus_message_get_type(response_message) ==
              DBUS_MESSAGE_TYPE_ERROR) {
     // This will take |response_message| and release (unref) it.
     scoped_ptr<dbus::ErrorResponse> error_response(
         dbus::ErrorResponse::FromRawMessage(response_message));
-    // Error message may contain the error message as string.
-    dbus::MessageReader reader(error_response.get());
-    std::string error_message;
-    reader.PopString(&error_message);
-    LogMethodCallFailure(error_response->GetErrorName(), error_message);
-    // We don't give the error message to the callback.
-    response_callback.Run(NULL);
+    error_callback.Run(error_response.get());
   } else {
     // This will take |response_message| and release (unref) it.
     scoped_ptr<dbus::Response> response(
@@ -270,6 +284,7 @@ void ObjectProxy::OnPendingCallIsCompleteThunk(DBusPendingCall* pending_call,
   ObjectProxy* self = data->object_proxy;
   self->OnPendingCallIsComplete(pending_call,
                                 data->response_callback,
+                                data->error_callback,
                                 data->start_time);
   delete data;
 }
@@ -427,6 +442,18 @@ void ObjectProxy::LogMethodCallFailure(
     return;
   LOG(ERROR) << "Failed to call method: " << error_name
              << ": " << error_message;
+}
+
+void ObjectProxy::OnCallMethodError(ResponseCallback response_callback,
+                                    ErrorResponse* error_response) {
+  if (error_response) {
+    // Error message may contain the error message as string.
+    dbus::MessageReader reader(error_response);
+    std::string error_message;
+    reader.PopString(&error_message);
+    LogMethodCallFailure(error_response->GetErrorName(), error_message);
+  }
+  response_callback.Run(NULL);
 }
 
 }  // namespace dbus

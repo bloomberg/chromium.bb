@@ -118,6 +118,28 @@ class EndToEndAsyncTest : public testing::Test {
   }
 
  protected:
+  // Replaces the bus with a broken one.
+  void SetUpBrokenBus() {
+    // Shut down the existing bus.
+    bus_->ShutdownOnDBusThreadAndBlock();
+
+    // Create new bus with invalid address.
+    const char kInvalidAddress[] = "";
+    dbus::Bus::Options bus_options;
+    bus_options.bus_type = dbus::Bus::CUSTOM_ADDRESS;
+    bus_options.address = kInvalidAddress;
+    bus_options.connection_type = dbus::Bus::PRIVATE;
+    bus_options.dbus_thread_message_loop_proxy =
+        dbus_thread_->message_loop_proxy();
+    bus_ = new dbus::Bus(bus_options);
+    ASSERT_TRUE(bus_->HasDBusThread());
+
+    // Create new object proxy.
+    object_proxy_ = bus_->GetObjectProxy(
+        "org.chromium.TestService",
+        dbus::ObjectPath("/org/chromium/TestObject"));
+  }
+
   // Calls the method asynchronously. OnResponse() will be called once the
   // response is received.
   void CallMethod(dbus::MethodCall* method_call,
@@ -126,6 +148,17 @@ class EndToEndAsyncTest : public testing::Test {
                               timeout_ms,
                               base::Bind(&EndToEndAsyncTest::OnResponse,
                                          base::Unretained(this)));
+  }
+
+  // Calls the method asynchronously. OnResponse() will be called once the
+  // response is received without error, otherwise OnError() will be called.
+  void CallMethodWithErrorCallback(dbus::MethodCall* method_call,
+                                   int timeout_ms) {
+    object_proxy_->CallMethodWithErrorCallback(
+        method_call,
+        timeout_ms,
+        base::Bind(&EndToEndAsyncTest::OnResponse, base::Unretained(this)),
+        base::Bind(&EndToEndAsyncTest::OnError, base::Unretained(this)));
   }
 
   // Wait for the give number of responses.
@@ -149,6 +182,26 @@ class EndToEndAsyncTest : public testing::Test {
     }
     message_loop_.Quit();
   };
+
+  // Wait for the given number of errors.
+  void WaitForErrors(size_t num_errors) {
+    while (error_names_.size() < num_errors) {
+      message_loop_.Run();
+    }
+  }
+
+  // Called when an error is received.
+  void OnError(dbus::ErrorResponse* error) {
+    // |error| will be deleted on exit of the function. Copy the payload to
+    // |error_names_|.
+    if (error) {
+      ASSERT_NE("", error->GetErrorName());
+      error_names_.push_back(error->GetErrorName());
+    } else {
+      error_names_.push_back("");
+    }
+    message_loop_.Quit();
+  }
 
   // Called when the "Test" signal is received, in the main thread.
   // Copy the string payload to |test_signal_string_|.
@@ -189,6 +242,7 @@ class EndToEndAsyncTest : public testing::Test {
 
   MessageLoop message_loop_;
   std::vector<std::string> response_strings_;
+  std::vector<std::string> error_names_;
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> bus_;
   dbus::ObjectProxy* object_proxy_;
@@ -217,6 +271,24 @@ TEST_F(EndToEndAsyncTest, Echo) {
   EXPECT_EQ(kHello, response_strings_[0]);
 }
 
+TEST_F(EndToEndAsyncTest, EchoWithErrorCallback) {
+  const char* kHello = "hello";
+
+  // Create the method call.
+  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendString(kHello);
+
+  // Call the method.
+  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
+  CallMethodWithErrorCallback(&method_call, timeout_ms);
+
+  // Check the response.
+  WaitForResponses(1);
+  EXPECT_EQ(kHello, response_strings_[0]);
+  EXPECT_TRUE(error_names_.empty());
+}
+
 // Call Echo method three times.
 TEST_F(EndToEndAsyncTest, EchoThreeTimes) {
   const char* kMessages[] = { "foo", "bar", "baz" };
@@ -241,6 +313,47 @@ TEST_F(EndToEndAsyncTest, EchoThreeTimes) {
   EXPECT_EQ("foo", response_strings_[2]);
 }
 
+TEST_F(EndToEndAsyncTest, BrokenBus) {
+  const char* kHello = "hello";
+
+  // Set up a broken bus.
+  SetUpBrokenBus();
+
+  // Create the method call.
+  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendString(kHello);
+
+  // Call the method.
+  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
+  CallMethod(&method_call, timeout_ms);
+  WaitForResponses(1);
+
+  // Should fail because of the broken bus.
+  ASSERT_EQ("", response_strings_[0]);
+}
+
+TEST_F(EndToEndAsyncTest, BrokenBusWithErrorCallback) {
+  const char* kHello = "hello";
+
+  // Set up a broken bus.
+  SetUpBrokenBus();
+
+  // Create the method call.
+  dbus::MethodCall method_call("org.chromium.TestInterface", "Echo");
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendString(kHello);
+
+  // Call the method.
+  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
+  CallMethodWithErrorCallback(&method_call, timeout_ms);
+  WaitForErrors(1);
+
+  // Should fail because of the broken bus.
+  ASSERT_TRUE(response_strings_.empty());
+  ASSERT_EQ("", error_names_[0]);
+}
+
 TEST_F(EndToEndAsyncTest, Timeout) {
   const char* kHello = "hello";
 
@@ -256,6 +369,24 @@ TEST_F(EndToEndAsyncTest, Timeout) {
 
   // Should fail because of timeout.
   ASSERT_EQ("", response_strings_[0]);
+}
+
+TEST_F(EndToEndAsyncTest, TimeoutWithErrorCallback) {
+  const char* kHello = "hello";
+
+  // Create the method call.
+  dbus::MethodCall method_call("org.chromium.TestInterface", "SlowEcho");
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendString(kHello);
+
+  // Call the method with timeout of 0ms.
+  const int timeout_ms = 0;
+  CallMethodWithErrorCallback(&method_call, timeout_ms);
+  WaitForErrors(1);
+
+  // Should fail because of timeout.
+  ASSERT_TRUE(response_strings_.empty());
+  ASSERT_EQ(DBUS_ERROR_NO_REPLY, error_names_[0]);
 }
 
 // Tests calling a method that sends its reply asynchronously.
@@ -287,6 +418,18 @@ TEST_F(EndToEndAsyncTest, NonexistentMethod) {
   ASSERT_EQ("", response_strings_[0]);
 }
 
+TEST_F(EndToEndAsyncTest, NonexistentMethodWithErrorCallback) {
+  dbus::MethodCall method_call("org.chromium.TestInterface", "Nonexistent");
+
+  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
+  CallMethodWithErrorCallback(&method_call, timeout_ms);
+  WaitForErrors(1);
+
+  // Should fail because the method is nonexistent.
+  ASSERT_TRUE(response_strings_.empty());
+  ASSERT_EQ(DBUS_ERROR_UNKNOWN_METHOD, error_names_[0]);
+}
+
 TEST_F(EndToEndAsyncTest, BrokenMethod) {
   dbus::MethodCall method_call("org.chromium.TestInterface", "BrokenMethod");
 
@@ -296,6 +439,18 @@ TEST_F(EndToEndAsyncTest, BrokenMethod) {
 
   // Should fail because the method is broken.
   ASSERT_EQ("", response_strings_[0]);
+}
+
+TEST_F(EndToEndAsyncTest, BrokenMethodWithErrorCallback) {
+  dbus::MethodCall method_call("org.chromium.TestInterface", "BrokenMethod");
+
+  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
+  CallMethodWithErrorCallback(&method_call, timeout_ms);
+  WaitForErrors(1);
+
+  // Should fail because the method is broken.
+  ASSERT_TRUE(response_strings_.empty());
+  ASSERT_EQ(DBUS_ERROR_FAILED, error_names_[0]);
 }
 
 TEST_F(EndToEndAsyncTest, EmptyResponseCallback) {

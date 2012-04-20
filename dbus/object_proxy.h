@@ -21,6 +21,7 @@
 namespace dbus {
 
 class Bus;
+class ErrorResponse;
 class MethodCall;
 class Response;
 class Signal;
@@ -58,6 +59,10 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
     TIMEOUT_USE_DEFAULT = -1,
     TIMEOUT_INFINITE = 0x7fffffff,
   };
+
+  // Called when an error response is returned or no response is returned.
+  // Used for CallMethodWithErrorCallback().
+  typedef base::Callback<void(ErrorResponse*)> ErrorCallback;
 
   // Called when the response is returned. Used for CallMethod().
   typedef base::Callback<void(Response*)> ResponseCallback;
@@ -99,6 +104,26 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
                           int timeout_ms,
                           ResponseCallback callback);
 
+  // Requests to call the method of the remote object.
+  //
+  // |callback| and |error_callback| will be called in the origin thread, once
+  // the method call is complete. As it's called in the origin thread,
+  // |callback| can safely reference objects in the origin thread (i.e.
+  // UI thread in most cases). If the caller is not interested in the response
+  // from the method (i.e. calling a method that does not return a value),
+  // EmptyResponseCallback() can be passed to the |callback| parameter.
+  //
+  // If the method call is successful, a pointer to Response object will
+  // be passed to the callback. If unsuccessful, the error callback will be
+  // called and a pointer to ErrorResponse object will be passed to the error
+  // callback if available, otherwise NULL will be passed.
+  //
+  // Must be called in the origin thread.
+  virtual void CallMethodWithErrorCallback(MethodCall* method_call,
+                                           int timeout_ms,
+                                           ResponseCallback callback,
+                                           ErrorCallback error_callback);
+
   // Requests to connect to the signal from the remote object, replacing
   // any previous |signal_callback| connected to that signal.
   //
@@ -138,11 +163,13 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   struct OnPendingCallIsCompleteData {
     OnPendingCallIsCompleteData(ObjectProxy* in_object_proxy,
                                 ResponseCallback in_response_callback,
+                                ErrorCallback error_callback,
                                 base::TimeTicks start_time);
     ~OnPendingCallIsCompleteData();
 
     ObjectProxy* object_proxy;
     ResponseCallback response_callback;
+    ErrorCallback error_callback;
     base::TimeTicks start_time;
   };
 
@@ -151,15 +178,18 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   void StartAsyncMethodCall(int timeout_ms,
                             DBusMessage* request_message,
                             ResponseCallback response_callback,
+                            ErrorCallback error_callback,
                             base::TimeTicks start_time);
 
   // Called when the pending call is complete.
   void OnPendingCallIsComplete(DBusPendingCall* pending_call,
                                ResponseCallback response_callback,
+                               ErrorCallback error_callback,
                                base::TimeTicks start_time);
 
   // Runs the response callback with the given response object.
   void RunResponseCallback(ResponseCallback response_callback,
+                           ErrorCallback error_callback,
                            base::TimeTicks start_time,
                            DBusMessage* response_message);
 
@@ -198,6 +228,10 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   // Helper method for logging response errors appropriately.
   void LogMethodCallFailure(const base::StringPiece& error_name,
                             const base::StringPiece& error_message) const;
+
+  // Used as ErrorCallback by CallMethod().
+  void OnCallMethodError(ResponseCallback response_callback,
+                         ErrorResponse* error_response);
 
   scoped_refptr<Bus> bus_;
   std::string service_name_;
