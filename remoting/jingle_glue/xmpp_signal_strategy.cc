@@ -13,7 +13,13 @@
 #include "third_party/libjingle/source/talk/xmpp/saslcookiemechanism.h"
 
 namespace {
+
 const char kDefaultResourceName[] = "chromoting";
+
+// Use 58 seconds keep-alive interval, in case routers terminate
+// connections that are idle for more than a minute.
+const int kKeepAliveIntervalSeconds = 50;
+
 }  // namespace
 
 namespace remoting {
@@ -149,6 +155,9 @@ void XmppSignalStrategy::OnConnectionStateChanged(
     buzz::XmppEngine::State state) {
   DCHECK(CalledOnValidThread());
   if (state == buzz::XmppEngine::STATE_OPEN) {
+    keep_alive_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(kKeepAliveIntervalSeconds),
+        this, &XmppSignalStrategy::SendKeepAlive);
     SetState(CONNECTED);
   } else if (state == buzz::XmppEngine::STATE_CLOSED) {
     // Make sure we dump errors to the log.
@@ -156,6 +165,8 @@ void XmppSignalStrategy::OnConnectionStateChanged(
     buzz::XmppEngine::Error error = xmpp_client_->GetError(&subcode);
     LOG(INFO) << "XMPP connection was closed: error=" << error
               << ", subcode=" << subcode;
+
+    keep_alive_timer_.Stop();
 
     // Client is destroyed by the TaskRunner after the client is
     // closed. Reset the pointer so we don't try to use it later.
@@ -170,6 +181,10 @@ void XmppSignalStrategy::SetState(State new_state) {
     FOR_EACH_OBSERVER(Listener, listeners_,
                       OnSignalStrategyStateChange(new_state));
   }
+}
+
+void XmppSignalStrategy::SendKeepAlive() {
+  xmpp_client_->SendRaw(" ");
 }
 
 // static
