@@ -506,6 +506,12 @@ void DockedPanelStrip::RestorePanel(Panel* panel) {
   panel->SetExpansionState(Panel::EXPANDED);
 }
 
+bool DockedPanelStrip::CanMinimizePanel(const Panel* panel) const {
+  DCHECK_EQ(this, panel->panel_strip());
+  // Docked panels can be minimized.
+  return true;
+}
+
 bool DockedPanelStrip::IsPanelMinimized(const Panel* panel) const {
   return panel->expansion_state() != Panel::EXPANDED;
 }
@@ -882,3 +888,6 @@ void DockedPanelStrip::OnPanelActiveStateChanged(Panel* panel) {
           kRefreshLayoutAfterActivePanelChangeDelayMs)));
 }
 
+bool DockedPanelStrip::HasPanel(Panel* panel) const {
+  return find(panels_.begin(), panels_.end(), panel) != panels_.end();
+}

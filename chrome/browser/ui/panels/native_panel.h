@@ -100,6 +100,12 @@ class NativePanel {
 // native panel used only by test automation.
 class NativePanelTesting {
  public:
+  enum TitlebarButtonType {
+    CLOSE_BUTTON,
+    MINIMIZE_BUTTON,
+    RESTORE_BUTTON
+  };
+
   static NativePanelTesting* Create(NativePanel* native_panel);
   virtual ~NativePanelTesting() {}
 
@@ -129,6 +135,7 @@ class NativePanelTesting {
 
   virtual bool IsWindowSizeKnown() const = 0;
   virtual bool IsAnimatingBounds() const = 0;
+  virtual bool IsButtonVisible(TitlebarButtonType button_type) const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_PANELS_NATIVE_PANEL_H_

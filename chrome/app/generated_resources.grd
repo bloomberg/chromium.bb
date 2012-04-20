@@ -15820,9 +15820,17 @@ Battery full
     </if>
 
     <!-- Panel windows -->
-    <message name="IDS_PANEL_WINDOW_SETTINGS_BUTTON_TOOLTIP"
-             desc="Text for the tooltip on panel window settings buttons.">
-      Settings
+    <message name="IDS_PANEL_CLOSE_TOOLTIP"
+             desc="Text for the tooltip on panel window close button.">
+      Close
+    </message>
+    <message name="IDS_PANEL_MINIMIZE_TOOLTIP"
+             desc="Text for the tooltip on panel window minimize button.">
+      Collapse
+    </message>
+    <message name="IDS_PANEL_RESTORE_TOOLTIP"
+           desc="Text for the tooltip on panel window restore button.">
+      Expand
     </message>
 
     <!-- Bluetooth device class strings -->

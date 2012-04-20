@@ -68,6 +68,14 @@ PanelManager* Panel::manager() const {
   return PanelManager::GetInstance();
 }
 
+bool Panel::CanMinimize() const {
+  return panel_strip_ && panel_strip_->CanMinimizePanel(this) && !IsMinimized();
+}
+
+bool Panel::CanRestore() const {
+  return panel_strip_ && panel_strip_->CanMinimizePanel(this) && IsMinimized();
+}
+
 panel::Resizability Panel::CanResizeByMouse() const {
   if (!panel_strip_)
     return panel::NOT_RESIZABLE;

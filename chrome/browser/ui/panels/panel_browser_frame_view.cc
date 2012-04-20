@@ -79,6 +79,10 @@ const int kTitleSpacing = 8;
 // The spacing in pixels between the close button and the right border.
 const int kCloseButtonAndBorderSpacing = 8;
 
+// The spacing in pixels between the close button and the minimize/restore
+// button.
+const int kMinimizeButtonAndCloseButtonSpacing = 8;
+
 // Colors used to draw active titlebar under default theme.
 const SkColor kActiveTitleTextDefaultColor = SK_ColorBLACK;
 const SkColor kActiveBackgroundDefaultColorStart = 0xfff0f8fa;
@@ -107,21 +111,16 @@ const SkColor kDividerColor = 0xffb5b5b5;
 
 struct ButtonResources {
   SkBitmap* normal_image;
-  SkBitmap* mask_image;
   SkBitmap* hover_image;
-  SkBitmap* pushed_image;
+  string16 tooltip_text;
 
-  ButtonResources(int normal_image_id, int mask_image_id, int hover_image_id,
-                  int pushed_image_id)
+  ButtonResources(int normal_image_id, int hover_image_id, int tooltip_id)
       : normal_image(NULL),
-        mask_image(NULL),
-        hover_image(NULL),
-        pushed_image(NULL) {
+        hover_image(NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     normal_image = rb.GetBitmapNamed(normal_image_id);
-    mask_image = mask_image_id ? rb.GetBitmapNamed(mask_image_id) : NULL;
     hover_image = rb.GetBitmapNamed(hover_image_id);
-    pushed_image = rb.GetBitmapNamed(pushed_image_id);
+    tooltip_text = l10n_util::GetStringUTF16(tooltip_id);
   }
 };
 
@@ -176,8 +175,29 @@ SkBitmap* CreateGradientBitmap(SkColor start_color, SkColor end_color) {
 const ButtonResources& GetCloseButtonResources() {
   static ButtonResources* buttons = NULL;
   if (!buttons) {
-    buttons = new ButtonResources(IDR_TAB_CLOSE, IDR_TAB_CLOSE_MASK,
-                                  IDR_TAB_CLOSE_H, IDR_TAB_CLOSE_P);
+    buttons = new ButtonResources(IDR_PANEL_CLOSE,
+                                  IDR_PANEL_CLOSE_H,
+                                  IDS_PANEL_CLOSE_TOOLTIP);
+  }
+  return *buttons;
+}
+
+const ButtonResources& GetMinimizeButtonResources() {
+  static ButtonResources* buttons = NULL;
+  if (!buttons) {
+    buttons = new ButtonResources(IDR_PANEL_MINIMIZE,
+                                  IDR_PANEL_MINIMIZE_H,
+                                  IDS_PANEL_MINIMIZE_TOOLTIP);
+  }
+  return *buttons;
+}
+
+const ButtonResources& GetRestoreButtonResources() {
+  static ButtonResources* buttons = NULL;
+  if (!buttons) {
+    buttons = new ButtonResources(IDR_PANEL_RESTORE,
+                                  IDR_PANEL_RESTORE_H,
+                                  IDS_PANEL_RESTORE_TOOLTIP);
   }
   return *buttons;
 }
@@ -256,6 +276,8 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       panel_browser_view_(browser_view),
       paint_state_(NOT_PAINTED),
       close_button_(NULL),
+      minimize_button_(NULL),
+      restore_button_(NULL),
       title_icon_(NULL),
       title_label_(NULL) {
   frame->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
@@ -266,13 +288,31 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
                           close_button_resources.normal_image);
   close_button_->SetImage(views::CustomButton::BS_HOT,
                           close_button_resources.hover_image);
-  close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                          close_button_resources.pushed_image);
-  close_button_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_TOOLTIP_CLOSE_TAB));
-  close_button_->SetAccessibleName(
-      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+  close_button_->SetTooltipText(close_button_resources.tooltip_text);
+  close_button_->SetAccessibleName(close_button_resources.tooltip_text);
   AddChildView(close_button_);
+
+  const ButtonResources& minimize_button_resources =
+      GetMinimizeButtonResources();
+  minimize_button_ = new views::ImageButton(this);
+  minimize_button_->SetImage(views::CustomButton::BS_NORMAL,
+                             minimize_button_resources.normal_image);
+  minimize_button_->SetImage(views::CustomButton::BS_HOT,
+                             minimize_button_resources.hover_image);
+  minimize_button_->SetTooltipText(minimize_button_resources.tooltip_text);
+  minimize_button_->SetAccessibleName(minimize_button_resources.tooltip_text);
+  AddChildView(minimize_button_);
+
+  const ButtonResources& restore_button_resources =
+      GetRestoreButtonResources();
+  restore_button_ = new views::ImageButton(this);
+  restore_button_->SetImage(views::CustomButton::BS_NORMAL,
+                            restore_button_resources.normal_image);
+  restore_button_->SetImage(views::CustomButton::BS_HOT,
+                            restore_button_resources.hover_image);
+  restore_button_->SetTooltipText(restore_button_resources.tooltip_text);
+  restore_button_->SetAccessibleName(restore_button_resources.tooltip_text);
+  AddChildView(restore_button_);
 
   title_icon_ = new TabIconView(this);
   title_icon_->set_is_light(true);
@@ -337,6 +377,14 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (close_button_->visible() &&
       close_button_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
+
+  if (minimize_button_->visible() &&
+      minimize_button_->GetMirroredBounds().Contains(point))
+    return HTMINBUTTON;
+
+  if (restore_button_->visible() &&
+      restore_button_->GetMirroredBounds().Contains(point))
+    return HTMAXBUTTON;
 
   int window_component = GetHTComponentForFrame(point,
       NonClientBorderThickness(), NonClientBorderThickness(),
@@ -412,7 +460,8 @@ gfx::Size PanelBrowserFrameView::GetMaximumSize() {
 }
 
 void PanelBrowserFrameView::Layout() {
-  PanelStrip* panel_strip = panel_browser_view_->panel()->panel_strip();
+  Panel* panel = panel_browser_view_->panel();
+  PanelStrip* panel_strip = panel->panel_strip();
   if (!panel_strip)
     return;
 
@@ -422,8 +471,12 @@ void PanelBrowserFrameView::Layout() {
   // panel is too narrow.
   bool show_close_button = true;
   bool show_title_label = true;
+  bool show_restore_button = panel->CanRestore();
+  bool show_minimize_button = panel->CanMinimize();
 
   close_button_->SetVisible(show_close_button);
+  minimize_button_->SetVisible(show_minimize_button);
+  restore_button_->SetVisible(show_restore_button);
   title_label_->SetVisible(show_title_label);
 
   // Layout the close button.
@@ -437,6 +490,22 @@ void PanelBrowserFrameView::Layout() {
         close_button_size.width(),
         close_button_size.height());
     right = close_button_->x();
+  }
+
+  // Layout the minimize/restore button.
+  views::ImageButton* minimize_or_restore_button = NULL;
+  if (show_minimize_button)
+    minimize_or_restore_button = minimize_button_;
+  else if (show_restore_button)
+    minimize_or_restore_button = restore_button_;
+  if (minimize_or_restore_button) {
+    gfx::Size button_size = minimize_or_restore_button->GetPreferredSize();
+    minimize_or_restore_button->SetBounds(
+        right - kMinimizeButtonAndCloseButtonSpacing - button_size.width(),
+        (NonClientTopBorderHeight() - button_size.height()) / 2,
+        button_size.width(),
+        button_size.height());
+    right = minimize_or_restore_button->x();
   }
 
   // Layout the icon.
@@ -517,6 +586,10 @@ void PanelBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
   if (sender == close_button_)
     frame()->Close();
+  else if (sender == minimize_button_)
+    panel_browser_view_->panel()->Minimize();
+  else if (sender == restore_button_)
+    panel_browser_view_->panel()->Restore();
 }
 
 bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
@@ -612,7 +685,15 @@ void PanelBrowserFrameView::UpdateControlStyles(PaintState paint_state) {
 
   close_button_->SetBackground(title_color,
                                GetCloseButtonResources().normal_image,
-                               GetCloseButtonResources().mask_image);
+                               NULL);
+
+  minimize_button_->SetBackground(title_color,
+                                  GetMinimizeButtonResources().normal_image,
+                                  NULL);
+
+  restore_button_->SetBackground(title_color,
+                                 GetRestoreButtonResources().normal_image,
+                                 NULL);
 }
 
 void PanelBrowserFrameView::PaintFrameBackground(gfx::Canvas* canvas) {

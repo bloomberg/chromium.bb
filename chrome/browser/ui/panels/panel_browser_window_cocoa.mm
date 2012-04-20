@@ -364,6 +364,7 @@ class NativePanelTestingCocoa : public NativePanelTesting {
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
+  virtual bool IsButtonVisible(TitlebarButtonType button_type) const OVERRIDE;
 
  private:
   PanelTitlebarViewCocoa* titlebar() const;
@@ -434,4 +435,10 @@ bool NativePanelTestingCocoa::IsWindowSizeKnown() const {
 
 bool NativePanelTestingCocoa::IsAnimatingBounds() const {
   return [native_panel_window_->controller_ isAnimatingBounds];
+}
+
+bool NativePanelTestingCocoa::IsButtonVisible(
+    TitlebarButtonType button_type) const {
+  NOTIMPLEMENTED();
+  return true;
 }

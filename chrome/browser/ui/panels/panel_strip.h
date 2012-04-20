@@ -94,6 +94,7 @@ class PanelStrip {
   virtual void MinimizePanel(Panel* panel) = 0;
   virtual void RestorePanel(Panel* panel) = 0;
 
+  virtual bool CanMinimizePanel(const Panel* panel) const = 0;
   virtual bool IsPanelMinimized(const Panel* panel) const = 0;
 
   // Saves/restores/discards the placement information of |panel|. This is

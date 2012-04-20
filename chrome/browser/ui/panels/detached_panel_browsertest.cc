@@ -16,24 +16,31 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
 
-  // Create 2 panels.
-  Panel* panel1 = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
-  Panel* panel2 = CreateDetachedPanel("2", gfx::Rect(350, 180, 300, 200));
+  Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
+  scoped_ptr<NativePanelTesting> panel_testing(
+      NativePanelTesting::Create(panel->native_panel()));
 
-  EXPECT_EQ(2, panel_manager->num_panels());
-  EXPECT_EQ(2, detached_strip->num_panels());
+  EXPECT_EQ(1, panel_manager->num_panels());
+  EXPECT_TRUE(detached_strip->HasPanel(panel));
 
-  EXPECT_TRUE(detached_strip->HasPanel(panel1));
-  EXPECT_TRUE(detached_strip->HasPanel(panel2));
+  EXPECT_FALSE(panel->always_on_top());
 
-  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel1->CanResizeByMouse());
-  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel2->CanResizeByMouse());
+  // TODO(jianli): Enable the following checks when IsButtonVisible check is
+  // supported.
+#if !defined(OS_MACOSX) && !defined(TOOLKIT_GTK)
+  EXPECT_TRUE(panel_testing->IsButtonVisible(NativePanelTesting::CLOSE_BUTTON));
+  EXPECT_FALSE(panel_testing->IsButtonVisible(
+      NativePanelTesting::MINIMIZE_BUTTON));
+  EXPECT_FALSE(panel_testing->IsButtonVisible(
+      NativePanelTesting::RESTORE_BUTTON));
+#endif
+
+  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel->CanResizeByMouse());
 
   Panel::AttentionMode expected_attention_mode =
       static_cast<Panel::AttentionMode>(Panel::USE_PANEL_ATTENTION |
                                          Panel::USE_SYSTEM_ATTENTION);
-  EXPECT_EQ(expected_attention_mode, panel1->attention_mode());
-  EXPECT_EQ(expected_attention_mode, panel2->attention_mode());
+  EXPECT_EQ(expected_attention_mode, panel->attention_mode());
 
   panel_manager->CloseAll();
 }

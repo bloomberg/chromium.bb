@@ -79,6 +79,15 @@ class Panel : public BrowserWindow,
 
   int TitleOnlyHeight() const;
 
+  // Returns the size of the panel when it is iconified, as shown on the
+  // overflow area.
+  gfx::Size IconOnlySize() const;
+
+  // Returns true if the panel can be minimized or restored, depending on the
+  // strip the panel is in.
+  bool CanMinimize() const;
+  bool CanRestore() const;
+
   // BrowserWindow overrides.
   virtual void Show() OVERRIDE;
   virtual void ShowInactive() OVERRIDE;

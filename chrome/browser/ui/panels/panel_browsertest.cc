@@ -261,6 +261,80 @@ class PanelBrowserTest : public BasePanelBrowserTest {
   }
 };
 
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
+  PanelManager* panel_manager = PanelManager::GetInstance();
+  DockedPanelStrip* docked_strip = panel_manager->docked_strip();
+
+  // Create 3 docked panels that are in expanded, title-only or minimized states
+  // respectively.
+  Panel* panel1 = CreatePanelWithBounds("1", gfx::Rect(0, 0, 100, 100));
+  Panel* panel2 = CreatePanelWithBounds("2", gfx::Rect(0, 0, 100, 100));
+  panel2->SetExpansionState(Panel::TITLE_ONLY);
+  WaitForExpansionStateChanged(panel2, Panel::TITLE_ONLY);
+  Panel* panel3 = CreatePanelWithBounds("3", gfx::Rect(0, 0, 100, 100));
+  panel3->SetExpansionState(Panel::MINIMIZED);
+  WaitForExpansionStateChanged(panel3, Panel::MINIMIZED);
+  scoped_ptr<NativePanelTesting> panel1_testing(
+      NativePanelTesting::Create(panel1->native_panel()));
+  scoped_ptr<NativePanelTesting> panel2_testing(
+      NativePanelTesting::Create(panel2->native_panel()));
+  scoped_ptr<NativePanelTesting> panel3_testing(
+      NativePanelTesting::Create(panel3->native_panel()));
+
+  // Ensure that the layout message can get a chance to be processed so that
+  // the button visibility can be updated.
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(3, panel_manager->num_panels());
+  EXPECT_TRUE(docked_strip->HasPanel(panel1));
+  EXPECT_TRUE(docked_strip->HasPanel(panel2));
+  EXPECT_TRUE(docked_strip->HasPanel(panel3));
+
+  EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
+  EXPECT_EQ(Panel::TITLE_ONLY, panel2->expansion_state());
+  EXPECT_EQ(Panel::MINIMIZED, panel3->expansion_state());
+
+  EXPECT_TRUE(panel1->always_on_top());
+  EXPECT_TRUE(panel2->always_on_top());
+  EXPECT_TRUE(panel3->always_on_top());
+
+  // TODO(jianli): Enable the following checks when IsButtonVisible check is
+  // supported.
+#if !defined(OS_MACOSX) && !defined(TOOLKIT_GTK)
+  EXPECT_TRUE(panel1_testing->IsButtonVisible(
+      NativePanelTesting::CLOSE_BUTTON));
+  EXPECT_TRUE(panel2_testing->IsButtonVisible(
+      NativePanelTesting::CLOSE_BUTTON));
+  EXPECT_TRUE(panel3_testing->IsButtonVisible(
+      NativePanelTesting::CLOSE_BUTTON));
+
+  EXPECT_TRUE(panel1_testing->IsButtonVisible(
+      NativePanelTesting::MINIMIZE_BUTTON));
+  EXPECT_FALSE(panel2_testing->IsButtonVisible(
+      NativePanelTesting::MINIMIZE_BUTTON));
+  EXPECT_FALSE(panel3_testing->IsButtonVisible(
+      NativePanelTesting::MINIMIZE_BUTTON));
+
+  EXPECT_FALSE(panel1_testing->IsButtonVisible(
+      NativePanelTesting::RESTORE_BUTTON));
+  EXPECT_TRUE(panel2_testing->IsButtonVisible(
+      NativePanelTesting::RESTORE_BUTTON));
+  EXPECT_TRUE(panel3_testing->IsButtonVisible(
+      NativePanelTesting::RESTORE_BUTTON));
+#endif
+
+  EXPECT_EQ(panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM,
+            panel1->CanResizeByMouse());
+  EXPECT_EQ(panel::NOT_RESIZABLE, panel2->CanResizeByMouse());
+  EXPECT_EQ(panel::NOT_RESIZABLE, panel3->CanResizeByMouse());
+
+  EXPECT_EQ(Panel::USE_PANEL_ATTENTION, panel1->attention_mode());
+  EXPECT_EQ(Panel::USE_PANEL_ATTENTION, panel2->attention_mode());
+  EXPECT_EQ(Panel::USE_PANEL_ATTENTION, panel3->attention_mode());
+
+  panel_manager->CloseAll();
+}
+
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.

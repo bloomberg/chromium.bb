@@ -96,6 +96,14 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     return GetBrowserView(panel)->GetFrameView()->close_button_;
   }
 
+  views::Button* GetMinimizeButton(Panel* panel) const {
+    return GetBrowserView(panel)->GetFrameView()->minimize_button_;
+  }
+
+  views::Button* GetRestoreButton(Panel* panel) const {
+    return GetBrowserView(panel)->GetFrameView()->restore_button_;
+  }
+
   bool ContainsControl(Panel* panel, views::View* control) const {
     return GetBrowserView(panel)->GetFrameView()->Contains(control);
   }
@@ -390,17 +398,24 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, PanelLayout) {
   views::View* title_icon = GetTitleIcon(panel);
   views::View* title_text = GetTitleText(panel);
   views::View* close_button = GetCloseButton(panel);
+  views::View* minimize_button = GetMinimizeButton(panel);
+  views::View* restore_button = GetRestoreButton(panel);
 
-  // We should have icon, text, settings button and close button.
-  EXPECT_EQ(3, GetControlCount(panel));
+  // We should have icon, text, minimize, restore and close buttons. Only one of
+  // minimize and restore buttons are visible.
+  EXPECT_EQ(5, GetControlCount(panel));
   EXPECT_TRUE(ContainsControl(panel, title_icon));
   EXPECT_TRUE(ContainsControl(panel, title_text));
   EXPECT_TRUE(ContainsControl(panel, close_button));
+  EXPECT_TRUE(ContainsControl(panel, minimize_button));
+  EXPECT_TRUE(ContainsControl(panel, restore_button));
 
   // These controls should be visible.
   EXPECT_TRUE(title_icon->visible());
   EXPECT_TRUE(title_text->visible());
   EXPECT_TRUE(close_button->visible());
+  EXPECT_TRUE(minimize_button->visible());
+  EXPECT_FALSE(restore_button->visible());
 
   // Validate their layouts.
   int titlebar_height = GetTitlebarHeight(panel);
@@ -410,11 +425,15 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, PanelLayout) {
   EXPECT_GT(title_text->width(), 0);
   EXPECT_GT(title_text->height(), 0);
   EXPECT_LT(title_text->height(), titlebar_height);
+  EXPECT_GT(minimize_button->width(), 0);
+  EXPECT_GT(minimize_button->height(), 0);
+  EXPECT_LT(minimize_button->height(), titlebar_height);
   EXPECT_GT(close_button->width(), 0);
   EXPECT_GT(close_button->height(), 0);
   EXPECT_LT(close_button->height(), titlebar_height);
   EXPECT_LT(title_icon->x() + title_icon->width(), title_text->x());
-  EXPECT_LT(title_text->x() + title_text->width(), close_button->x());
+  EXPECT_LT(title_text->x() + title_text->width(), minimize_button->x());
+  EXPECT_LT(minimize_button->x() + minimize_button->width(), close_button->x());
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest, SetBoundsAnimation) {

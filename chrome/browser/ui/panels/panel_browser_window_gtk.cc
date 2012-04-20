@@ -627,6 +627,7 @@ class NativePanelTestingGtk : public NativePanelTesting {
   virtual void WaitForWindowCreationToComplete() const OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
+  virtual bool IsButtonVisible(TitlebarButtonType button_type) const OVERRIDE;
 
   PanelBrowserWindowGtk* panel_browser_window_gtk_;
 };
@@ -731,4 +732,10 @@ bool NativePanelTestingGtk::IsWindowSizeKnown() const {
 
 bool NativePanelTestingGtk::IsAnimatingBounds() const {
   return panel_browser_window_gtk_->IsAnimatingBounds();
+}
+
+bool NativePanelTestingGtk::IsButtonVisible(
+    TitlebarButtonType button_type) const {
+  NOTIMPLEMENTED();
+  return true;
 }

@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
@@ -649,6 +650,7 @@ class NativePanelTestingWin : public NativePanelTesting {
   virtual bool VerifyActiveState(bool is_active) OVERRIDE;
   virtual bool IsWindowSizeKnown() const OVERRIDE;
   virtual bool IsAnimatingBounds() const OVERRIDE;
+  virtual bool IsButtonVisible(TitlebarButtonType button_type) const OVERRIDE;
 
   PanelBrowserView* panel_browser_view_;
 };
@@ -746,4 +748,21 @@ bool NativePanelTestingWin::IsWindowSizeKnown() const {
 
 bool NativePanelTestingWin::IsAnimatingBounds() const {
   return panel_browser_view_->IsAnimatingBounds();
+}
+
+bool NativePanelTestingWin::IsButtonVisible(
+    TitlebarButtonType button_type) const {
+  PanelBrowserFrameView* frame_view = panel_browser_view_->GetFrameView();
+
+  switch (button_type) {
+    case CLOSE_BUTTON:
+      return frame_view->close_button_->visible();
+    case MINIMIZE_BUTTON:
+      return frame_view->minimize_button_->visible();
+    case RESTORE_BUTTON:
+      return frame_view->restore_button_->visible();
+    default:
+      NOTREACHED();
+  }
+  return false;
 }

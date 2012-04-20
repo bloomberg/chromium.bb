@@ -130,6 +130,8 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
   PaintState paint_state_;
   views::ImageButton* close_button_;
+  views::ImageButton* minimize_button_;
+  views::ImageButton* restore_button_;
   TabIconView* title_icon_;
   views::Label* title_label_;
   gfx::Rect client_view_bounds_;

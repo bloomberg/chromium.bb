@@ -60,6 +60,7 @@ class DockedPanelStrip : public PanelStrip,
   virtual void ActivatePanel(Panel* panel) OVERRIDE;
   virtual void MinimizePanel(Panel* panel) OVERRIDE;
   virtual void RestorePanel(Panel* panel) OVERRIDE;
+  virtual bool CanMinimizePanel(const Panel* panel) const OVERRIDE;
   virtual bool IsPanelMinimized(const Panel* panel) const OVERRIDE;
   virtual void SavePanelPlacement(Panel* panel) OVERRIDE;
   virtual void RestorePanelToSavedPlacement() OVERRIDE;
@@ -96,6 +97,10 @@ class DockedPanelStrip : public PanelStrip,
                                  double squeeze_factor,
                                  int full_width) const;
 
+  bool HasPanel(Panel* panel) const;
+
+  // num_panels() and panels() only includes panels in the panel strip that
+  // do NOT have a temporary layout.
   int num_panels() const { return panels_.size(); }
   const Panels& panels() const { return panels_; }
   Panel* last_panel() const { return panels_.empty() ? NULL : panels_.back(); }
