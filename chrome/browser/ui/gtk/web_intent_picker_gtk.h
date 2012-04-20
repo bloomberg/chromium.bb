@@ -30,7 +30,7 @@ class TabContentsWrapper;
 class ThrobberGtk;
 class WebIntentPickerDelegate;
 
-// Gtk implementation of WebIntentPicker.
+// GTK implementation of WebIntentPicker.
 class WebIntentPickerGtk : public WebIntentPicker,
                            public WebIntentPickerModelObserver,
                            public ConstrainedWindowGtkDelegate,
@@ -61,6 +61,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   virtual GtkWidget* GetWidgetRoot() OVERRIDE;
   virtual GtkWidget* GetFocusWidget() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
+  virtual bool ShouldHaveBorderPadding() const OVERRIDE;
 
    // content::NotificationObserver implementation.
    virtual void Observe(int type,
@@ -103,10 +104,6 @@ class WebIntentPickerGtk : public WebIntentPicker,
 
   // Removes the added throbber.
   void RemoveThrobber();
-
-  // Create a new widget displaying |rating| as 5 star images. Rating should be
-  // in the range [0, 5].
-  GtkWidget* CreateStarsWidget(double rating);
 
   // A weak pointer to the tab contents on which to display the picker UI.
   TabContentsWrapper* wrapper_;

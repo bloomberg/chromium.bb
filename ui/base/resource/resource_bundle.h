@@ -66,7 +66,7 @@ class UI_EXPORT ResourceBundle {
   // Initialize the ResourceBundle for this process.  Returns the language
   // selected.
   // NOTE: Mac ignores this and always loads up resources for the language
-  // defined by the Cocoa UI (ie-NSBundle does the langange work).
+  // defined by the Cocoa UI (i.e., NSBundle does the language work).
   static std::string InitSharedInstanceWithLocale(
       const std::string& pref_locale);
 

@@ -52,12 +52,11 @@ namespace {
 // button on the right.
 const int kMainContentWidth = 400;
 
-// The length in pixels of the label at the bottom of the picker. Text longer
-// than this width will wrap.
-const int kWebStoreLabelLength = 400;
-
 // The pixel size of the header label when using a non-native theme.
 const int kHeaderLabelPixelSize = 15;
+
+// The pixel size of the font of the main content of the dialog.
+const int kMainContentPixelSize = 13;
 
 // The maximum width in pixels of a suggested extension's title link.
 const int kTitleLinkMaxWidth = 130;
@@ -80,6 +79,22 @@ void SetServiceButtonImage(GtkWidget* button, GdkPixbuf* pixbuf) {
   gtk_button_set_image_position(GTK_BUTTON(button), GTK_POS_LEFT);
 }
 
+void SetWidgetFontSizeCallback(GtkWidget* widget, gpointer data) {
+  if (GTK_IS_LABEL(widget)) {
+    int* size = static_cast<int*>(data);
+    gtk_util::ForceFontSizePixels(widget, *size);
+    return;
+  }
+
+  if (GTK_IS_CONTAINER(widget))
+    gtk_container_forall(GTK_CONTAINER(widget), SetWidgetFontSizeCallback,
+                         data);
+}
+
+void SetWidgetFontSize(GtkWidget* widget, int size) {
+  gtk_container_forall(GTK_CONTAINER(widget), SetWidgetFontSizeCallback, &size);
+}
+
 // Get the index of the row containing |widget|. Assume the widget is the child
 // of an hbox, which is a child of a vbox. The hbox represents a row, and the
 // vbox the full table.
@@ -98,6 +113,25 @@ size_t GetExtensionWidgetRow(GtkWidget* widget) {
 // A gtk_container_foreach callback to enable/disable a widget.
 void EnableWidgetCallback(GtkWidget* widget, gpointer data) {
   gtk_widget_set_sensitive(widget, *static_cast<gboolean*>(data));
+}
+
+// Create a new widget displaying |rating| as |kNumStarsPerRating| star images.
+// Rating should be in the range [0, kNumStarsPerRating].
+GtkWidget* CreateStarsWidget(double rating) {
+  const int kNumStarsPerRating = 5;  // Number of stars in a rating.
+  const int kStarSpacing = 1;  // Spacing between stars in pixels.
+  GtkWidget* hbox = gtk_hbox_new(FALSE, kStarSpacing);
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  for (int i = 0; i < kNumStarsPerRating; ++i) {
+    GdkPixbuf* star = rb.GetNativeImageNamed(
+        WebIntentPicker::GetNthStarImageIdFromCWSRating(rating, i),
+        ui::ResourceBundle::RTL_ENABLED).ToGdkPixbuf();
+    gtk_box_pack_start(GTK_BOX(hbox), gtk_image_new_from_pixbuf(star),
+                       FALSE, FALSE, 0);
+  }
+
+  return hbox;
 }
 
 } // namespace
@@ -260,6 +294,10 @@ void WebIntentPickerGtk::DeleteDelegate() {
   delegate_->OnClosing();
 }
 
+bool WebIntentPickerGtk::ShouldHaveBorderPadding() const {
+  return false;
+}
+
 void WebIntentPickerGtk::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
@@ -343,14 +381,33 @@ void WebIntentPickerGtk::InitContents() {
   ThemeServiceGtk* theme_service = GetThemeService(wrapper_);
 
   // Main contents vbox.
-  contents_ = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
-  gtk_container_set_border_width(GTK_CONTAINER(contents_),
-                                 ui::kContentAreaBorder);
+  contents_ = gtk_vbox_new(FALSE, 0);
   gtk_widget_set_size_request(contents_, kMainContentWidth, -1);
 
-  // Hbox containing label and close button.
-  GtkWidget* header_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(contents_), header_hbox, TRUE, TRUE, 0);
+  // Hbox containing the close button.
+  GtkWidget* close_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(contents_), close_hbox, TRUE, TRUE, 0);
+
+  close_button_.reset(
+      CustomDrawButton::CloseButton(GetThemeService(wrapper_)));
+  g_signal_connect(close_button_->widget(), "clicked",
+                   G_CALLBACK(OnCloseButtonClickThunk), this);
+  gtk_widget_set_can_focus(close_button_->widget(), FALSE);
+  gtk_box_pack_end(GTK_BOX(close_hbox), close_button_->widget(),
+                   FALSE, FALSE, 0);
+
+  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_alignment_set_padding(
+      GTK_ALIGNMENT(alignment), 0, ui::kContentAreaBorder,
+      ui::kContentAreaBorder, ui::kContentAreaBorder);
+  gtk_box_pack_end(GTK_BOX(contents_), alignment, TRUE, TRUE, 0);
+
+  GtkWidget* sub_contents = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
+  gtk_container_add(GTK_CONTAINER(alignment), sub_contents);
+
+  // Hbox containing the header label.
+  GtkWidget* header_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(sub_contents), header_hbox, TRUE, TRUE, 0);
 
   // Label text will be set in the call to SetActionString().
   header_label_ = theme_service->BuildLabel(std::string(), ui::kGdkBlack);
@@ -358,53 +415,62 @@ void WebIntentPickerGtk::InitContents() {
   gtk_box_pack_start(GTK_BOX(header_hbox), header_label_, TRUE, TRUE, 0);
   gtk_misc_set_alignment(GTK_MISC(header_label_), 0, 0);
 
-  close_button_.reset(
-      CustomDrawButton::CloseButton(GetThemeService(wrapper_)));
-  g_signal_connect(close_button_->widget(),
-                   "clicked",
-                   G_CALLBACK(OnCloseButtonClickThunk),
-                   this);
-  gtk_widget_set_can_focus(close_button_->widget(), FALSE);
-  gtk_box_pack_end(GTK_BOX(header_hbox), close_button_->widget(),
-      FALSE, FALSE, 0);
 
-  // Alignment for service button vbox.
-  GtkWidget* button_alignment = gtk_alignment_new(0, 0.5f, 0.3f, 0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(button_alignment), 0, 0,
-                            ui::kGroupIndent, 0);
-  gtk_widget_set_no_show_all(button_alignment, TRUE);
+  // Add separation between the installed services list and the app suggestions.
+  GtkWidget* button_alignment = gtk_alignment_new(0.5, 0, 0, 0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(button_alignment), 0,
+                            kMainContentPixelSize * 2, 0, 0);
 
   // Vbox containing all service buttons.
   button_vbox_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
   gtk_container_add(GTK_CONTAINER(button_alignment), button_vbox_);
-  gtk_box_pack_start(GTK_BOX(contents_), button_alignment, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(sub_contents), button_alignment, TRUE, TRUE, 0);
 
   // Chrome Web Store label.
   cws_label_ = theme_service->BuildLabel(
       l10n_util::GetStringUTF8(IDS_INTENT_PICKER_GET_MORE_SERVICES).c_str(),
       ui::kGdkBlack);
-  gtk_box_pack_start(GTK_BOX(contents_), cws_label_, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(sub_contents), cws_label_, TRUE, TRUE, 0);
   gtk_misc_set_alignment(GTK_MISC(cws_label_), 0, 0);
   gtk_widget_set_no_show_all(cws_label_, TRUE);
-  gtk_util::SetLabelWidth(cws_label_, kWebStoreLabelLength);
+
+  // Set the label width to the size of |sub_contents|, which we don't have
+  // access to yet, by calculating the main content width minus borders.
+  gtk_util::SetLabelWidth(cws_label_,
+                          kMainContentWidth - 2 * ui::kContentAreaBorder);
+  gtk_util::ForceFontSizePixels(cws_label_, kMainContentPixelSize);
 
   // Suggested extensions vbox.
   extensions_vbox_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
-  GtkWidget* indent_extensions = gtk_util::IndentWidget(extensions_vbox_);
+  GtkWidget* indent_extensions = gtk_alignment_new(0.0, 0.5, 1.0, 1.0);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(indent_extensions), 0, 0,
+                            ui::kGroupIndent, ui::kGroupIndent);
+  gtk_container_add(GTK_CONTAINER(indent_extensions), extensions_vbox_);
   gtk_widget_set_no_show_all(indent_extensions, TRUE);
-  gtk_box_pack_start(GTK_BOX(contents_), indent_extensions, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(sub_contents), indent_extensions, TRUE, TRUE, 0);
 
-  // Left-aligned link button.
-  GtkWidget* link_alignment = gtk_alignment_new(0, 0.5f, 0, 0);
+  // Chrome Web Store icon.
+  GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
+  SkBitmap* bmp = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_WEBSTORE_ICON_16);
+  GtkWidget* icon = gtk_image_new_from_pixbuf(gfx::GdkPixbufFromSkBitmap(bmp));
+  gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
+
+  // CWS 'More Suggestions' link.
   GtkWidget* more_suggestions_link = theme_service->BuildChromeLinkButton(
       l10n_util::GetStringUTF8(IDS_INTENT_PICKER_MORE_SUGGESTIONS).c_str());
-  gtk_container_add(GTK_CONTAINER(link_alignment), more_suggestions_link);
+  gtk_box_pack_start(GTK_BOX(hbox), more_suggestions_link, FALSE, FALSE, 0);
   gtk_chrome_link_button_set_use_gtk_theme(
       GTK_CHROME_LINK_BUTTON(more_suggestions_link),
       theme_service->UsingNativeTheme());
+  gtk_util::ForceFontSizePixels(
+      GTK_CHROME_LINK_BUTTON(more_suggestions_link)->label,
+      kMainContentPixelSize);
   g_signal_connect(more_suggestions_link, "clicked",
                    G_CALLBACK(OnMoreSuggestionsLinkClickThunk), this);
-  gtk_box_pack_start(GTK_BOX(contents_), link_alignment, FALSE, FALSE, 0);
+
+  GtkWidget* indent_hbox = gtk_util::IndentWidget(hbox);
+  gtk_box_pack_start(GTK_BOX(sub_contents), indent_hbox, TRUE, TRUE, 0);
 
   // Throbber, which will be added to the hierarchy when necessary.
   throbber_.reset(new ThrobberGtk(theme_service));
@@ -431,13 +497,15 @@ void WebIntentPickerGtk::UpdateInstalledServices() {
                          UTF16ToUTF8(installed_service.title).c_str());
     gtk_button_set_alignment(GTK_BUTTON(button), 0, 0);
 
-    gtk_box_pack_start(GTK_BOX(button_vbox_), button, FALSE, FALSE, 0);
-    g_signal_connect(button,
-                     "clicked",
-                     G_CALLBACK(OnServiceButtonClickThunk),
+    gtk_container_add(GTK_CONTAINER(button_vbox_), button);
+    g_signal_connect(button, "clicked", G_CALLBACK(OnServiceButtonClickThunk),
                      this);
 
     SetServiceButtonImage(button, installed_service.favicon.ToGdkPixbuf());
+
+    // Must be called after SetServiceButtonImage as the internal label widget
+    // is replaced in that call.
+    SetWidgetFontSize(button, kMainContentPixelSize);
   }
 
   gtk_widget_show_all(button_vbox_);
@@ -450,8 +518,8 @@ void WebIntentPickerGtk::UpdateCWSLabel() {
     gtk_label_set_text(GTK_LABEL(cws_label_), l10n_util::GetStringUTF8(
         IDS_INTENT_PICKER_GET_MORE_SERVICES_NONE_INSTALLED).c_str());
   } else {
-    gtk_label_set_text(GTK_LABEL(cws_label_),
-        l10n_util::GetStringUTF8(IDS_INTENT_PICKER_GET_MORE_SERVICES).c_str());
+    gtk_label_set_text(GTK_LABEL(cws_label_), l10n_util::GetStringUTF8(
+        IDS_INTENT_PICKER_GET_MORE_SERVICES).c_str());
     gtk_widget_show(gtk_widget_get_parent(button_vbox_));
   }
 
@@ -485,14 +553,14 @@ void WebIntentPickerGtk::UpdateSuggestedExtensions() {
     gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
 
     // Title link.
-    string16 elided_title = ui::ElideText(extension.title,
-                                          gfx::Font(),
-                                          kTitleLinkMaxWidth,
-                                          ui::ELIDE_AT_END);
+    string16 elided_title = ui::ElideText(extension.title, gfx::Font(),
+                                          kTitleLinkMaxWidth, ui::ELIDE_AT_END);
     GtkWidget* title_link = theme_service->BuildChromeLinkButton(
         UTF16ToUTF8(elided_title).c_str());
     gtk_chrome_link_button_set_use_gtk_theme(GTK_CHROME_LINK_BUTTON(title_link),
                                              theme_service->UsingNativeTheme());
+    gtk_util::ForceFontSizePixels(GTK_CHROME_LINK_BUTTON(title_link)->label,
+                                  kMainContentPixelSize);
     g_signal_connect(title_link, "clicked",
                      G_CALLBACK(OnExtensionLinkClickThunk), this);
     gtk_box_pack_start(GTK_BOX(hbox), title_link, FALSE, FALSE, 0);
@@ -506,6 +574,8 @@ void WebIntentPickerGtk::UpdateSuggestedExtensions() {
     gtk_button_set_label(
         GTK_BUTTON(install_button),
         l10n_util::GetStringUTF8(IDS_INTENT_PICKER_INSTALL_EXTENSION).c_str());
+    GtkWidget* label = gtk_bin_get_child(GTK_BIN(install_button));
+    gtk_util::ForceFontSizePixels(label, kMainContentPixelSize);
     g_signal_connect(install_button, "clicked",
                      G_CALLBACK(OnExtensionInstallButtonClickThunk), this);
     gtk_box_pack_end(GTK_BOX(hbox), install_button, FALSE, FALSE, 0);
@@ -517,11 +587,9 @@ void WebIntentPickerGtk::UpdateSuggestedExtensions() {
 
 void WebIntentPickerGtk::SetWidgetsEnabled(bool enabled) {
   gboolean data = enabled;
-  gtk_container_foreach(GTK_CONTAINER(button_vbox_),
-                        EnableWidgetCallback,
+  gtk_container_foreach(GTK_CONTAINER(button_vbox_), EnableWidgetCallback,
                         &data);
-  gtk_container_foreach(GTK_CONTAINER(extensions_vbox_),
-                        EnableWidgetCallback,
+  gtk_container_foreach(GTK_CONTAINER(extensions_vbox_), EnableWidgetCallback,
                         &data);
 }
 
@@ -544,22 +612,4 @@ void WebIntentPickerGtk::RemoveThrobber() {
   gtk_container_remove(GTK_CONTAINER(alignment), throbber_->widget());
   gtk_widget_destroy(alignment);
   throbber_->Stop();
-}
-
-GtkWidget* WebIntentPickerGtk::CreateStarsWidget(double rating) {
-  const int kStarSpacing = 1;  // Spacing between stars in pixels.
-  GtkWidget* hbox = gtk_hbox_new(FALSE, kStarSpacing);
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  for (int i = 0; i < 5; ++i) {
-    const gfx::Image& image = rb.GetNativeImageNamed(
-        WebIntentPicker::GetNthStarImageIdFromCWSRating(rating, i),
-        ui::ResourceBundle::RTL_ENABLED);
-    gtk_box_pack_start(
-        GTK_BOX(hbox),
-        gtk_image_new_from_pixbuf(image.ToGdkPixbuf()),
-        FALSE, FALSE, 0);
-  }
-
-  return hbox;
 }
