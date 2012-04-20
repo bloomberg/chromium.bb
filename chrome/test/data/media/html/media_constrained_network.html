@@ -40,7 +40,6 @@
 
     video.addEventListener('ended', setEPP, false);
     video.addEventListener('error', end, false);
-    video.addEventListener('abort', end, false);
 
     var events = ['loadstart', 'progress', 'suspend', 'waiting', 'emptied',
                   'stalled', 'play', 'pause', 'loadedmetadata', 'loadeddata',
@@ -59,7 +58,7 @@
 
     function logEvent(evt) {
       var d = new Date();
-      eventsMsg += d.toLocaleTimeString() + '.' + d.getMilliseconds() + ' ' + 
+      eventsMsg += d.toLocaleTimeString() + '.' + d.getMilliseconds() + ' ' +
                    evt.target + ' ' + evt.type + ' event fired.\n';
     }
 
@@ -82,6 +81,10 @@
     // Called by the PyAuto controller to initiate testing.
     function startTest(src) {
       loadTime = new Date().getTime();
+      epp = ttp = vpp = -1;
+      eventsMsg = '';
+      endTest = false;
+
       video.src = src;
       video.play();
 
