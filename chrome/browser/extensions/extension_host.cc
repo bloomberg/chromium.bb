@@ -210,10 +210,13 @@ bool ExtensionHost::IsRenderViewLive() const {
 }
 
 void ExtensionHost::CreateRenderViewSoon() {
-  if (render_process_host() && render_process_host()->HasConnection()) {
+  if ((render_process_host() && render_process_host()->HasConnection()) ||
+      extension_->is_platform_app()) {
     // If the process is already started, go ahead and initialize the RenderView
     // synchronously. The process creation is the real meaty part that we want
     // to defer.
+    // We also skip the ratelimiting in the platform app case. This is a hack
+    // (see crbug.com/124350 for details).
     CreateRenderViewNow();
   } else {
     ProcessCreationQueue::GetInstance()->CreateSoon(this);
