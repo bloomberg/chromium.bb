@@ -49,6 +49,7 @@ WHITELIST_FILES = [
     '/build/mac/strip_from_xcode',
     '/build/mac/strip_save_dsym',
     '/chrome/installer/mac/pkg-dmg',
+    '/chrome/test/data/webrtc/linux/peerconnection_server',
     '/chrome/tools/build/linux/chrome-wrapper',
     '/chrome/tools/build/mac/build_app_dmg',
     '/chrome/tools/build/mac/clean_up_old_versions',
