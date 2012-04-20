@@ -26,12 +26,6 @@ trusted_env = env['TRUSTED_ENV']
 # This duplicates the library list in src/trusted/service_runtime/build.scons.
 # We would not have to do this if we could get Scons to track dependencies
 # between libraries.
-VALIDATOR_LIBS = []
-if trusted_env.Bit('target_x86'):
-  VALIDATOR_LIBS += [trusted_env.NaClTargetArchSuffix('ncvalidate')]
-elif trusted_env.Bit('target_arm'):
-  VALIDATOR_LIBS += ['ncvalidate_arm_v2']
-
 runner = trusted_env.ComponentProgram(
     'test_host', ['test_host.c'],
     EXTRA_LIBS=['sel',
@@ -52,7 +46,7 @@ runner = trusted_env.ComponentProgram(
                 'platform_qual_lib',
                 'gio',
                 'dbghelp.lib', # Windows library
-                ] + VALIDATOR_LIBS)
+                ])
 
 node = env.CommandTest(
     'windows_crash_in_syscall_test.out', [runner, test_prog],

@@ -288,14 +288,6 @@ if env.Bit('windows'):
       ],
   )
 
-if env.Bit('target_x86'):
-  VALIDATOR_LIB = env.NaClTargetArchSuffix('ncvalidate')
-elif env.Bit('target_arm'):
-  VALIDATOR_LIB = 'ncvalidate_arm_v2'
-else:
-  # Unknown architecture
-  raise AssertionError('Unknown architecture')
-
 r_debug_objs = []
 if env.Bit('linux'):
   r_debug_objs += [env.ComponentObject('linux/r_debug.c')]
@@ -317,7 +309,6 @@ sel_ldr_libs = ['sel',
                 'nacl_interval',
                 'platform',
                 'platform_qual_lib',
-                VALIDATOR_LIB,
                 ] + DEBUG_LIBS
 if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
@@ -463,7 +454,6 @@ if (not env.CrossToolsBuild() and
                   'nacl_fault_inject',
                   'nacl_interval',
                   'platform',
-                  VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
   gtest_env.Requires(unit_tests_exe, crt)
 
@@ -521,7 +511,6 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'nacl_fault_inject',
                   'nacl_interval',
                   'platform',
-                  VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
   env.Requires(mmap_test_exe, crt)
 
@@ -565,7 +554,6 @@ nacl_sync_cond_test_exe = env.ComponentProgram(
                 'nacl_fault_inject',
                 'nacl_interval',
                 'platform',
-                VALIDATOR_LIB,
                 ] + DEBUG_LIBS)
 env.Requires(nacl_sync_cond_test_exe, crt)
 node = env.CommandTest(
@@ -792,7 +780,6 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
                   'platform',
                   'nacl_xdr',
                   'container',
-                  VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
 
   node = env.CommandTest(
@@ -944,7 +931,6 @@ if (not env.CrossToolsBuild() and
                   'nacl_fault_inject',
                   'nacl_interval',
                   'platform',
-                  VALIDATOR_LIB,
                   ] + DEBUG_LIBS)
 
   # NaClAbort() behaves differently when code coverage is enabled: it

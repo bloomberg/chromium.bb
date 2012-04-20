@@ -16,12 +16,6 @@ trusted_env = env['TRUSTED_ENV']
 # This duplicates the library list in src/trusted/service_runtime/build.scons.
 # We would not have to do this if we could get Scons to track dependencies
 # between libraries.
-VALIDATOR_LIBS = []
-if trusted_env.Bit('target_x86'):
-  VALIDATOR_LIBS += [trusted_env.NaClTargetArchSuffix('ncvalidate_verbose')]
-elif trusted_env.Bit('target_arm'):
-  VALIDATOR_LIBS += ['ncvalidate_arm_v2']
-
 runner = trusted_env.ComponentProgram(
     'multidomain_test_host', ['multidomain_test_host.c'],
     EXTRA_LIBS=['sel',
@@ -41,7 +35,7 @@ runner = trusted_env.ComponentProgram(
                 'platform',
                 'platform_qual_lib',
                 'gio',
-                ] + VALIDATOR_LIBS)
+                ])
 
 test_prog = env.ComponentProgram(
     'multidomain_test_guest', ['multidomain_test_guest.c'],

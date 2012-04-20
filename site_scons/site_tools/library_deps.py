@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -81,6 +81,9 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             # or decoder, add the following:
             #'nc_opcode_modeling_verbose_x86_32',
             ],
+        'sel': [
+            'ncvalidate_x86_32',
+            ],
         }),
     'x86-64': _AddDefaultLibraryDependencies({
         'nc_decoder_x86_64': [
@@ -132,10 +135,16 @@ PLATFORM_LIBRARY_DEPENDENCIES = {
             'ncdis_seg_sfi_x86_64',
             'ncval_base_x86_64',
             ],
+        'sel': [
+            'ncvalidate_x86_64',
+            ],
         }),
     'arm': _AddDefaultLibraryDependencies({
         'ncvalidate_arm_v2': [
             'arm_validator_core',
+            ],
+        'sel': [
+            'ncvalidate_arm_v2',
             ],
         }),
     'arm-thumb2': _AddDefaultLibraryDependencies({
