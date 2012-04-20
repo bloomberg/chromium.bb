@@ -1138,19 +1138,48 @@ find_resource_for_client(struct wl_list *list, struct wl_client *client)
         return NULL;
 }
 
+static void
+weston_surface_update_output_mask(struct weston_surface *es, uint32_t mask)
+{
+	uint32_t different = es->output_mask ^ mask;
+	uint32_t entered = mask & different;
+	uint32_t left = es->output_mask & different;
+	struct weston_output *output;
+	struct wl_resource *resource;
+	struct wl_client *client = es->surface.resource.client;
+
+	if (es->surface.resource.client == NULL)
+		return;
+	if (different == 0)
+		return;
+
+	es->output_mask = mask;
+	wl_list_for_each(output, &es->compositor->output_list, link) {
+		if (1 << output->id & different)
+			resource =
+				find_resource_for_client(&output->resource_list,
+							 client);
+		if (1 << output->id & entered)
+			wl_surface_send_enter(&es->surface.resource, resource);
+		if (1 << output->id & left)
+			wl_surface_send_leave(&es->surface.resource, resource);
+	}
+}
+
 WL_EXPORT void
 weston_surface_assign_output(struct weston_surface *es)
 {
 	struct weston_compositor *ec = es->compositor;
 	struct weston_output *output, *new_output;
 	pixman_region32_t region;
-	uint32_t max, area;
+	uint32_t max, area, mask;
 	pixman_box32_t *e;
 
 	weston_surface_update_transform(es);
 
 	new_output = NULL;
 	max = 0;
+	mask = 0;
 	pixman_region32_init(&region);
 	wl_list_for_each(output, &ec->output_list, link) {
 		pixman_region32_intersect(&region, &es->transform.boundingbox,
@@ -1158,6 +1187,9 @@ weston_surface_assign_output(struct weston_surface *es)
 
 		e = pixman_region32_extents(&region);
 		area = (e->x2 - e->x1) * (e->y2 - e->y1);
+
+		if (area > 0)
+			mask |= 1 << output->id;
 
 		if (area >= max) {
 			new_output = output;
@@ -1167,6 +1199,8 @@ weston_surface_assign_output(struct weston_surface *es)
 	pixman_region32_fini(&region);
 
 	es->output = new_output;
+	weston_surface_update_output_mask(es, mask);
+
 	if (!wl_list_empty(&es->frame_callback_list)) {
 		wl_list_insert_list(new_output->frame_callback_list.prev,
 				    &es->frame_callback_list);
@@ -1962,7 +1996,7 @@ handle_drag_surface_destroy(struct wl_listener *listener, void *data)
 	device->drag_surface = NULL;
 }
 
-static void unbind_input_device(struct wl_resource *resource)
+static void unbind_resource(struct wl_resource *resource)
 {
 	wl_list_remove(&resource->link);
 	free(resource);
@@ -1978,7 +2012,7 @@ bind_input_device(struct wl_client *client,
 	resource = wl_client_add_object(client, &wl_input_device_interface,
 					&input_device_interface, id, data);
 	wl_list_insert(&device->resource_list, &resource->link);
-	resource->destroy = unbind_input_device;
+	resource->destroy = unbind_resource;
 }
 
 static void
@@ -2152,6 +2186,9 @@ bind_output(struct wl_client *client,
 	resource = wl_client_add_object(client,
 					&wl_output_interface, NULL, id, data);
 
+	wl_list_insert(&output->resource_list, &resource->link);
+	resource->destroy = unbind_resource;
+
 	wl_output_send_geometry(resource,
 				output->x,
 				output->y,
@@ -2275,6 +2312,7 @@ weston_output_destroy(struct weston_output *output)
 
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
+	output->compositor->output_id_pool &= ~(1 << output->id);
 
 	wl_display_remove_global(c->wl_display, output->global);
 }
@@ -2364,6 +2402,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	weston_output_damage(output);
 
 	wl_list_init(&output->frame_callback_list);
+	wl_list_init(&output->resource_list);
 
 	output->id = ffs(~output->compositor->output_id_pool) - 1;
 	output->compositor->output_id_pool |= 1 << output->id;

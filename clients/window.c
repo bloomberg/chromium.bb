@@ -2176,6 +2176,23 @@ window_damage(struct window *window, int32_t x, int32_t y,
 	wl_surface_damage(window->surface, x, y, width, height);
 }
 
+static void
+surface_enter(void *data,
+	      struct wl_surface *wl_surface, struct wl_output *output)
+{
+}
+
+static void
+surface_leave(void *data,
+	      struct wl_surface *wl_surface, struct wl_output *output)
+{
+}
+
+static const struct wl_surface_listener surface_listener = {
+	surface_enter,
+	surface_leave
+};
+
 static struct window *
 window_create_internal(struct display *display, struct window *parent)
 {
@@ -2189,6 +2206,7 @@ window_create_internal(struct display *display, struct window *parent)
 	window->display = display;
 	window->parent = parent;
 	window->surface = wl_compositor_create_surface(display->compositor);
+	wl_surface_add_listener(window->surface, &surface_listener, window);
 	if (display->shell) {
 		window->shell_surface =
 			wl_shell_get_shell_surface(display->shell,

@@ -76,6 +76,7 @@ struct weston_output {
 	uint32_t id;
 
 	struct wl_list link;
+	struct wl_list resource_list;
 	struct wl_global *global;
 	struct weston_compositor *compositor;
 	struct weston_matrix matrix;
@@ -338,6 +339,12 @@ struct weston_surface {
 	 * Must be NULL, if 'link' is not in weston_compositor::surface_list.
 	 */
 	struct weston_output *output;
+
+	/*
+	 * A more complete representation of all outputs this surface is
+	 * displayed on.
+	 */
+	uint32_t output_mask;
 
 	struct wl_list frame_callback_list;
 
