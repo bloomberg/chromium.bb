@@ -36,6 +36,8 @@ const char kPresentationTerm[] = "presentation";
 
 const char kSchemeLabels[] = "http://schemas.google.com/g/2005/labels";
 
+const char kFeedField[] = "feed";
+
 struct EntryKindMap {
   DocumentEntry::EntryKind kind;
   const char* entry;
@@ -733,9 +735,9 @@ void DocumentFeed::RegisterJSONConverter(
      &base::StringToInt);
 }
 
-bool DocumentFeed::Parse(base::Value* value) {
+bool DocumentFeed::Parse(const base::Value& value) {
   base::JSONValueConverter<DocumentFeed> converter;
-  if (!converter.Convert(*value, this)) {
+  if (!converter.Convert(value, this)) {
     DVLOG(1) << "Invalid document feed!";
     return false;
   }
@@ -750,14 +752,26 @@ bool DocumentFeed::Parse(base::Value* value) {
 }
 
 // static
-DocumentFeed* DocumentFeed::CreateFrom(base::Value* value) {
+scoped_ptr<DocumentFeed> DocumentFeed::ExtractAndParse(
+    const base::Value& value) {
+  const base::DictionaryValue* as_dict = NULL;
+  base::DictionaryValue* feed_dict = NULL;
+  if (value.GetAsDictionary(&as_dict) &&
+      as_dict->GetDictionary(kFeedField, &feed_dict)) {
+    return DocumentFeed::CreateFrom(*feed_dict);
+  }
+  return scoped_ptr<DocumentFeed>(NULL);
+}
+
+// static
+scoped_ptr<DocumentFeed> DocumentFeed::CreateFrom(const base::Value& value) {
   scoped_ptr<DocumentFeed> feed(new DocumentFeed());
   if (!feed->Parse(value)) {
     DVLOG(1) << "Invalid document feed!";
-    return NULL;
+    return scoped_ptr<DocumentFeed>(NULL);
   }
 
-  return feed.release();
+  return feed.Pass();
 }
 
 bool DocumentFeed::GetNextFeedURL(GURL* url) {
@@ -808,19 +822,20 @@ void AccountMetadataFeed::RegisterJSONConverter(
 }
 
 // static
-AccountMetadataFeed* AccountMetadataFeed::CreateFrom(base::Value* value) {
+scoped_ptr<AccountMetadataFeed> AccountMetadataFeed::CreateFrom(
+    const base::Value& value) {
   scoped_ptr<AccountMetadataFeed> feed(new AccountMetadataFeed());
   if (!feed->Parse(value)) {
     LOG(ERROR) << "Unable to create: Invalid account metadata feed!";
-    return NULL;
+    return scoped_ptr<AccountMetadataFeed>(NULL);
   }
 
-  return feed.release();
+  return feed.Pass();
 }
 
-bool AccountMetadataFeed::Parse(base::Value* value) {
+bool AccountMetadataFeed::Parse(const base::Value& value) {
   base::JSONValueConverter<AccountMetadataFeed> converter;
-  if (!converter.Convert(*value, this)) {
+  if (!converter.Convert(value, this)) {
     LOG(ERROR) << "Unable to parse: Invalid account metadata feed!";
     return false;
   }

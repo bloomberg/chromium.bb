@@ -852,10 +852,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Return PLATFORM_FILE_OK if successful.
   base::PlatformFileError RemoveEntryFromFileSystem(const FilePath& file_path);
 
-  // Parses the content of |feed_data| and returns DocumentFeed instance
-  // representing it.
-  static DocumentFeed* ParseDocumentFeed(base::Value* feed_data);
-
   // Updates whole directory structure feeds collected in |feed_list|.
   // On success, returns PLATFORM_FILE_OK. Record file statistics as UMA
   // histograms.

@@ -55,7 +55,6 @@ const char kMimeTypeJson[] = "application/json";
 const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("gdata");
-const char kFeedField[] = "feed";
 const char kWildCard[] = "*";
 const char kLocallyModifiedFileExtension[] = "local";
 
@@ -1038,7 +1037,7 @@ void GDataFileSystem::OnGetAccountMetadata(
 
   scoped_ptr<AccountMetadataFeed> feed;
   if (feed_data.get())
-      feed.reset(AccountMetadataFeed::CreateFrom(feed_data.get()));
+      feed = AccountMetadataFeed::CreateFrom(*feed_data);
   if (!feed.get()) {
     LoadFeedFromServer(local_changestamp + 1, 0, search_file_path, callback);
     return;
@@ -2179,7 +2178,7 @@ void GDataFileSystem::OnGetAvailableSpace(
 
   scoped_ptr<AccountMetadataFeed> feed;
   if (data.get())
-      feed.reset(AccountMetadataFeed::CreateFrom(data.get()));
+      feed = AccountMetadataFeed::CreateFrom(*data);
   if (!feed.get()) {
     callback.Run(base::PLATFORM_FILE_ERROR_FAILED, -1, -1);
     return;
@@ -2277,7 +2276,7 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
   // TODO(zelidrag): Find a faster way to get next url rather than parsing
   // the entire feed.
   GURL next_feed_url;
-  scoped_ptr<DocumentFeed> current_feed(ParseDocumentFeed(data.get()));
+  scoped_ptr<DocumentFeed> current_feed(DocumentFeed::ExtractAndParse(*data));
   if (!current_feed.get()) {
     if (!params->callback.is_null()) {
       params->callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath(),
@@ -2723,18 +2722,6 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromFileSystem(
     RemoveFromCache(resource_id, CacheOperationCallback());
 
   return base::PLATFORM_FILE_OK;
-}
-
-// static
-DocumentFeed* GDataFileSystem::ParseDocumentFeed(base::Value* feed_data) {
-  DCHECK(feed_data->IsType(Value::TYPE_DICTIONARY));
-  base::DictionaryValue* feed_dict = NULL;
-  if (!static_cast<base::DictionaryValue*>(feed_data)->GetDictionary(
-          kFeedField, &feed_dict)) {
-    return NULL;
-  }
-  // Parse the document feed.
-  return DocumentFeed::CreateFrom(feed_dict);
 }
 
 base::PlatformFileError GDataFileSystem::UpdateFromFeed(

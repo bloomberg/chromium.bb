@@ -75,11 +75,8 @@ TEST_F(GDataParserTest, DocumentFeedJsonParser) {
   scoped_ptr<Value> document(LoadJSONFile("basic_feed.json"));
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
-  Value* feed_value;
-  ASSERT_TRUE(reinterpret_cast<DictionaryValue*>(document.get())->Get(
-      std::string("feed"), &feed_value));
-  ASSERT_TRUE(feed_value);
-  scoped_ptr<DocumentFeed> feed(DocumentFeed::CreateFrom(feed_value));
+  scoped_ptr<DocumentFeed> feed(DocumentFeed::ExtractAndParse(*document));
+  ASSERT_TRUE(feed.get());
 
   base::Time update_time;
   ASSERT_TRUE(FeedEntry::GetTimeFromString("2011-12-14T01:03:21.151Z",
@@ -251,7 +248,7 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
   ASSERT_TRUE(entry_value);
 
   scoped_ptr<AccountMetadataFeed> feed(
-      AccountMetadataFeed::CreateFrom(document.get()));
+      AccountMetadataFeed::CreateFrom(*document));
   EXPECT_EQ(1234, feed->quota_bytes_used());
   EXPECT_EQ(12345, feed->quota_bytes_total());
   EXPECT_EQ(654321, feed->largest_changestamp());

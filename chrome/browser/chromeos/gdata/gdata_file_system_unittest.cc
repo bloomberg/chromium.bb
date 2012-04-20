@@ -199,7 +199,7 @@ class GDataFileSystemTest : public testing::Test {
     ASSERT_TRUE(document.get());
     ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
     scoped_ptr<DocumentFeed> document_feed(
-        GDataFileSystem::ParseDocumentFeed(document.get()));
+        DocumentFeed::ExtractAndParse(*document));
     ASSERT_TRUE(document_feed.get());
     std::vector<DocumentFeed*> feed_list;
     feed_list.push_back(document_feed.get());

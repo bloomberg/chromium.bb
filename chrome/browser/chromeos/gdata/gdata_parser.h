@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string_piece.h"
 #include "base/time.h"
@@ -499,12 +500,23 @@ class DocumentFeed : public FeedEntry {
  public:
   virtual ~DocumentFeed();
 
+  // Extracts "feed" dictionary from the JSON value, and parse the contents,
+  // using CreateFrom(). Returns NULL on failure. The input JSON data, coming
+  // from the gdata server, looks like:
+  //
+  // {
+  //   "encoding": "UTF-8",
+  //   "feed": { ... },   // This function will extract this and parse.
+  //   "version": "1.0"
+  // }
+  static scoped_ptr<DocumentFeed> ExtractAndParse(const base::Value& value);
+
   // Creates feed from parsed JSON Value.  You should call this
   // instead of instantiating JSONValueConverter by yourself because
   // this method does some post-process for some fields.  See
   // FillRemainingFields comment and implementation in DocumentEntry
   // class for the details.
-  static DocumentFeed* CreateFrom(base::Value* value);
+  static scoped_ptr<DocumentFeed> CreateFrom(const base::Value& value);
 
   // Registers the mapping between JSON field names and the members in
   // this class.
@@ -536,7 +548,7 @@ class DocumentFeed : public FeedEntry {
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
-  bool Parse(base::Value* value);
+  bool Parse(const base::Value& value);
 
   ScopedVector<DocumentEntry> entries_;
   int start_index_;
@@ -564,7 +576,7 @@ class AccountMetadataFeed {
   // this method does some post-process for some fields.  See
   // FillRemainingFields comment and implementation in DocumentEntry
   // class for the details.
-  static AccountMetadataFeed* CreateFrom(base::Value* value);
+  static scoped_ptr<AccountMetadataFeed> CreateFrom(const base::Value& value);
 
   int64 quota_bytes_total() const {
     return quota_bytes_total_;
@@ -588,7 +600,7 @@ class AccountMetadataFeed {
 
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
-  bool Parse(base::Value* value);
+  bool Parse(const base::Value& value);
 
   int64 quota_bytes_total_;
   int64 quota_bytes_used_;
