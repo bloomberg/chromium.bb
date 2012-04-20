@@ -763,7 +763,7 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 
 	if (wl_buffer_is_shm(buffer)) {
 		es->pitch = wl_shm_buffer_get_stride(buffer) / 4;
-		es->shader = &ec->texture_shader;
+		es->shader = &ec->texture_shader_rgba;
 
 		ensure_textures(es, 1);
 		glBindTexture(GL_TEXTURE_2D, es->textures[0]);
@@ -787,7 +787,7 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 		ec->image_target_texture_2d(GL_TEXTURE_2D, es->images[0]);
 
 		es->pitch = buffer->width;
-		es->shader = &ec->texture_shader;
+		es->shader = &ec->texture_shader_rgba;
 	}
 }
 
@@ -2760,23 +2760,34 @@ static const char vertex_shader[] =
 	"   v_texcoord = texcoord;\n"
 	"}\n";
 
-static const char texture_fragment_shader[] =
+/* Declare common fragment shader uniforms */
+#define FRAGMENT_SHADER_UNIFORMS		\
+	"uniform float alpha;\n"		\
+	"uniform float texwidth;\n"		\
+	"uniform vec4 opaque;\n"
+
+/* Common fragment shader init code (check texture bounds) */
+#define FRAGMENT_SHADER_INIT						\
+	"   if (v_texcoord.x < 0.0 || v_texcoord.x > texwidth ||\n"	\
+	"       v_texcoord.y < 0.0 || v_texcoord.y > 1.0)\n"		\
+	"      discard;\n"
+
+#define FRAGMENT_SHADER_EXIT						\
+	"   if (opaque.x <= v_texcoord.x && v_texcoord.x < opaque.y &&\n" \
+	"       opaque.z <= v_texcoord.y && v_texcoord.y < opaque.w)\n"	\
+	"      gl_FragColor.a = 1.0;\n"					\
+	"   gl_FragColor = alpha * gl_FragColor;\n"
+
+static const char texture_fragment_shader_rgba[] =
 	"precision mediump float;\n"
 	"varying vec2 v_texcoord;\n"
 	"uniform sampler2D tex;\n"
-	"uniform float alpha;\n"
-	"uniform float texwidth;\n"
-	"uniform vec4 opaque;\n"
+	FRAGMENT_SHADER_UNIFORMS
 	"void main()\n"
 	"{\n"
-	"   if (v_texcoord.x < 0.0 || v_texcoord.x > texwidth ||\n"
-	"       v_texcoord.y < 0.0 || v_texcoord.y > 1.0)\n"
-	"      discard;\n"
+	FRAGMENT_SHADER_INIT
 	"   gl_FragColor = texture2D(tex, v_texcoord)\n;"
-	"   if (opaque.x <= v_texcoord.x && v_texcoord.x < opaque.y &&\n"
-	"       opaque.z <= v_texcoord.y && v_texcoord.y < opaque.w)\n"
-	"      gl_FragColor.a = 1.0;\n"
-	"   gl_FragColor = alpha * gl_FragColor;\n"
+	FRAGMENT_SHADER_EXIT
 	"}\n";
 
 static const char solid_fragment_shader[] =
@@ -3135,8 +3146,8 @@ weston_compositor_init_gl(struct weston_compositor *ec)
 
 	glActiveTexture(GL_TEXTURE0);
 
-	if (weston_shader_init(&ec->texture_shader,
-			     vertex_shader, texture_fragment_shader) < 0)
+	if (weston_shader_init(&ec->texture_shader_rgba,
+			     vertex_shader, texture_fragment_shader_rgba) < 0)
 		return -1;
 	if (weston_shader_init(&ec->solid_shader,
 			     vertex_shader, solid_fragment_shader) < 0)

@@ -177,7 +177,7 @@ draw_border(struct wayland_output *output)
 {
 	struct wayland_compositor *c =
 		(struct wayland_compositor *) output->base.compositor;
-	struct weston_shader *shader = &c->base.texture_shader;
+	struct weston_shader *shader = &c->base.texture_shader_rgba;
 	GLfloat *v;
 	int n;
 

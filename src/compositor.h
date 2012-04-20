@@ -270,7 +270,7 @@ struct weston_compositor {
 	EGLContext egl_context;
 	EGLConfig egl_config;
 	GLuint fbo;
-	struct weston_shader texture_shader;
+	struct weston_shader texture_shader_rgba;
 	struct weston_shader solid_shader;
 	struct weston_shader *current_shader;
 	struct wl_display *wl_display;
