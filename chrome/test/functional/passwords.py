@@ -310,6 +310,21 @@ class PasswordTest(pyauto.PyUITest):
                      msg='Password field not empty for new username.')
     test_utils.ClearPasswords(self)
 
+  def testPasswordInfobarShowsForBlockedDomain(self):
+    """Verify that password infobar shows when cookies are blocked.
+
+    Password infobar should be shown if cookies are blocked for Google
+    accounts domain.
+    """
+    creds = self.GetPrivateInfo()['test_google_account']
+    username = creds['username']
+    password = creds['password']
+    # Block cookies for Google accounts domain.
+    self.SetPrefs(pyauto.kContentSettingsPatternPairs,
+                  {'https://accounts.google.com/': {'cookies': 2}})
+    test_utils.GoogleAccountsLogin(self, username, password)
+    test_utils.WaitForInfobarTypeAndGetIndex(self, self.INFOBAR_TYPE)
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
