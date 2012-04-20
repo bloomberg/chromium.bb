@@ -32,7 +32,23 @@ void AuraTestBase::SetUp() {
   // Changing the parameters for gesture recognition shouldn't cause
   // tests to fail, so we use a separate set of parameters for unit
   // testing.
-  ui::GestureConfiguration::use_test_values();
+  ui::GestureConfiguration::set_long_press_time_in_seconds(0.5);
+  ui::GestureConfiguration::set_max_seconds_between_double_click(0.7);
+  ui::GestureConfiguration::
+      set_max_separation_for_gesture_touches_in_pixels(150);
+  ui::GestureConfiguration::
+      set_max_touch_down_duration_in_seconds_for_click(0.8);
+  ui::GestureConfiguration::set_max_touch_move_in_pixels_for_click(20);
+  ui::GestureConfiguration::set_min_distance_for_pinch_scroll_in_pixels(20);
+  ui::GestureConfiguration::set_min_flick_speed_squared(550.f * 550.f);
+  ui::GestureConfiguration::set_min_pinch_update_distance_in_pixels(5);
+  ui::GestureConfiguration::set_min_rail_break_velocity(200);
+  ui::GestureConfiguration::set_min_scroll_delta_squared(5 * 5);
+  ui::GestureConfiguration::
+      set_min_touch_down_duration_in_seconds_for_click(0.01);
+  ui::GestureConfiguration::set_points_buffered_for_velocity(10);
+  ui::GestureConfiguration::set_rail_break_proportion(15);
+  ui::GestureConfiguration::set_rail_start_proportion(2);
 
   Env::GetInstance()->SetMonitorManager(new SingleMonitorManager);
   root_window_.reset(Env::GetInstance()->monitor_manager()->

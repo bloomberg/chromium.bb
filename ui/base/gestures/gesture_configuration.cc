@@ -32,25 +32,4 @@ int GestureConfiguration::points_buffered_for_velocity_ = 10;
 double GestureConfiguration::rail_break_proportion_ = 15;
 double GestureConfiguration::rail_start_proportion_ = 2;
 
-// Use a separate set of value for unit testing, so that changing the
-// real values won't cause tests to fail.
-void GestureConfiguration::use_test_values() {
-  long_press_time_in_seconds_ = 0.5;
-  max_seconds_between_double_click_ = 0.7;
-  max_separation_for_gesture_touches_in_pixels_ = 150;
-  max_swipe_deviation_ratio_ = 3;
-  max_touch_down_duration_in_seconds_for_click_ = 0.8;
-  max_touch_move_in_pixels_for_click_ = 20;
-  min_distance_for_pinch_scroll_in_pixels_ = 20;
-  min_flick_speed_squared_ = 550.f * 550.f;
-  min_pinch_update_distance_in_pixels_ = 5;
-  min_rail_break_velocity_ = 200;
-  min_scroll_delta_squared_ = 5 * 5;
-  min_swipe_speed_ = 20;
-  min_touch_down_duration_in_seconds_for_click_ = 0.01;
-  points_buffered_for_velocity_ = 10;
-  rail_break_proportion_ = 15;
-  rail_start_proportion_ = 2;
-}
-
 }  // namespace ui

@@ -56,9 +56,6 @@ class UI_EXPORT GestureSequence {
     return long_press_timer_.get();
   }
 
-  // Current state of gesture recognizer.
-  GestureState state_;
-
  private:
   void Reset();
 
@@ -148,6 +145,9 @@ class UI_EXPORT GestureSequence {
   bool ThreeFingerSwipeUpdate(const TouchEvent& event,
                               const GesturePoint& point,
                               Gestures* gestures);
+
+  // Current state of gesture recognizer.
+  GestureState state_;
 
   // ui::EventFlags.
   int flags_;
