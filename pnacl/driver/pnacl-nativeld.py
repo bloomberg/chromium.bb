@@ -211,7 +211,9 @@ def main(argv):
   # this hack is necessary because arg parsing is influenced by
   # whether we are using gold or not. It can go away once
   # we have switched over completely.
-  if '-static' in argv and '--pnacl-sb' not in argv:
+  if (('-static' in argv or env.getbool('STATIC')) and
+      '--pnacl-sb' not in argv and
+      not env.getbool('SANDBOXED')):
     env.set('USE_GOLD', '1')
 
   ParseArgs(argv, LDPatterns)
