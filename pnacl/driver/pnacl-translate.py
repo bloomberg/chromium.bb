@@ -318,21 +318,37 @@ def ApplyBitcodeConfig(metadata, bctype):
     if soname:
       env.append('LD_FLAGS', '-soname=' + soname)
 
-  # Certain libraries still need to be linked directly.
+  # For the current LD final linker, native libraries still need to be
+  # linked directly, since --add-extra-dt-needed isn't enough.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2451
-  direct_libs = ['libsrpc',
-                 'libppapi_cpp',
-                 'libstdc++',
-                 'libm',
-                 'libc',
-                 'libpthread']
-  for name in direct_libs:
-    for needed in metadata['NeedsLibrary']:
-      if needed.startswith(name):
-        env.append('LINKER_HACK', '-l:'+needed)
-        if name == 'libc' or name == 'libpthread':
-          env.append('LINKER_HACK', '-l:%s_nonshared.a' % name)
-        break
+  # For the under-construction gold final linker, it expects to have
+  # the needed libraries on the commandline as "-llib1 -llib2", which actually
+  # refer to the stub metadata file.
+  # TODO(jvoung): replace "LINKER_HACK" with just LD_FLAGS once that is
+  # the expected behavior.
+  for needed in metadata['NeedsLibrary']:
+    # Specify the ld-nacl-${arch}.so as the --dynamic-linker to set PT_INTERP.
+    # Also, the original libc.so linker script had it listed as --as-needed,
+    # so let's do that.
+    if needed.startswith('ld-nacl-'):
+      env.append('LINKER_HACK', '--dynamic-linker=' + needed)
+      env.append('LINKER_HACK',
+                 '--as-needed',
+                 # We normally would have a symlink between
+                 # ld-2.9 <-> ld-nacl-${arch}.so, but our native lib directory
+                 # has no symlinks (to make windows + cygwin happy).
+                 # So, specify it as ld-2.9.so for now...
+                 '-l:ld-2.9.so',
+                 '--no-as-needed')
+    else:
+      env.append('LINKER_HACK', '-l:' + needed)
+    # libc and libpthread may need the nonshared components too.
+    # Normally these are enclosed in --start-group and --end-group...
+    if needed.startswith('libc.so'):
+      env.append('LINKER_HACK', '-l:libc_nonshared.a')
+    elif needed.startswith('libpthread.so'):
+      env.append('LINKER_HACK', '-l:libpthread_nonshared.a')
+
 
 def RunAS(infile, outfile):
   driver_tools.RunDriver('as', [infile, '-o', outfile])

@@ -52,7 +52,8 @@ EXTRA_ENV = {
                           '-Tdata=${BASE_RODATA} -Ttext=${BASE_TEXT}',
 
   'LD_GOLD_FLAGS_shared': '--rosegment --bsssegment --native-client ' +
-                          '--keep-headers-out-of-load-segment',
+                          '--keep-headers-out-of-load-segment ' +
+                          '-Tdata=0x10000000',
 
   'LD_GOLD_FLAGS_dynamic': '--rosegment  --bsssegment --native-client ' +
                            '--keep-headers-out-of-load-segment ' +
@@ -180,6 +181,7 @@ LDPatterns = [
   ( '(--print-gc-sections)',      PassThrough),
   ( '(-gc-sections)',             PassThrough),
   ( '(--unresolved-symbols=.*)',  PassThrough),
+  ( '(--dynamic-linker=.*)',      PassThrough),
 
   ( '-melf_nacl',          "env.set('ARCH', 'X8632')"),
   ( ('-m','elf_nacl'),     "env.set('ARCH', 'X8632')"),
@@ -246,9 +248,12 @@ def main(argv):
   # Eventually we want to switch to gold for everything:
   # http://code.google.com/p/nativeclient/issues/detail?id=2707
   if not env.getbool('SANDBOXED') and env.getbool('STATIC'):
-     env.set('USE_GOLD', '1')
-     env.set('LD_SCRIPT', '')
-     env.set('METADATA_FILE', '')
+    env.set('USE_GOLD', '1')
+  if env.getbool('USE_GOLD'):
+    # We need to disable the linker script more elegantly for Gold.
+    env.set('LD_SCRIPT', '')
+    # METADATA_FILE needs to switch from ELF blob to Gold format.
+    env.set('METADATA_FILE', '')
 
   if env.getbool('SANDBOXED') and env.getbool('SRPC'):
     RunLDSRPC()
@@ -303,7 +308,9 @@ def MakeSelUniversalScriptForLD(ld_flags,
 
   # Need to include the linker script file as a linker resource for glibc.
   files_to_map = list(files)
-  if env.getbool('LIBMODE_GLIBC') and env.getbool('STDLIB'):
+  if (env.getbool('LIBMODE_GLIBC') and
+      env.getbool('STDLIB') and
+      not env.getbool('USE_GOLD')):
     ld_script = env.getone('LD_SCRIPT')
     assert(ld_script != '')
     files_to_map.append(ld_script)
