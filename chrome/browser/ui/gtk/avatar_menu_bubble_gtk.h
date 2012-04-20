@@ -64,6 +64,9 @@ class AvatarMenuBubbleGtk : public BubbleDelegateGtk,
   // Create all widgets in this bubble.
   void InitContents();
 
+  // Close the bubble and set bubble_ to NULL.
+  void CloseBubble();
+
   // A model of all the profile information to be displayed in the menu.
   scoped_ptr<AvatarMenuModel> avatar_menu_model_;
 

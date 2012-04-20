@@ -8,7 +8,6 @@
 
 #include <gtk/gtk.h>
 
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -38,9 +37,6 @@ class AvatarMenuItemGtk : public content::NotificationObserver {
                     size_t item_index,
                     ThemeServiceGtk* theme_service);
   virtual ~AvatarMenuItemGtk();
-
-  void OpenProfile();
-  void EditProfile();
 
   // Returns the root widget for this menu item.
   GtkWidget* widget() { return widget_.get(); }
@@ -110,8 +106,6 @@ class AvatarMenuItemGtk : public content::NotificationObserver {
   // The unhighlighted color. Depending on the theme, this is either NULL or a
   // pointer to static data.
   const GdkColor* unhighlighted_color_;
-
-  base::WeakPtrFactory<AvatarMenuItemGtk> weak_factory_;
 
   content::NotificationRegistrar registrar_;
 

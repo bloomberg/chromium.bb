@@ -54,8 +54,7 @@ AvatarMenuItemGtk::AvatarMenuItemGtk(Delegate* delegate,
       theme_service_(theme_service),
       status_label_(NULL),
       link_alignment_(NULL),
-      edit_profile_link_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      edit_profile_link_(NULL) {
   Init(theme_service_);
 
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -67,42 +66,21 @@ AvatarMenuItemGtk::~AvatarMenuItemGtk() {
   widget_.Destroy();
 }
 
-void AvatarMenuItemGtk::OpenProfile() {
-  delegate_->OpenProfile(item_index_);
-}
-
 gboolean AvatarMenuItemGtk::OnProfileClick(GtkWidget* widget,
                                            GdkEventButton* event) {
-  // delegate_->EditProfile() will close the avatar bubble which in turn
-  // try to destroy this AvatarMenuItemGtk.
-  // This is not OK to do this from the signal handler, so we'll
-  // defer it.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AvatarMenuItemGtk::OpenProfile,
-                 weak_factory_.GetWeakPtr()));
+  delegate_->OpenProfile(item_index_);
   return FALSE;
 }
 
 gboolean AvatarMenuItemGtk::OnProfileKeyPress(GtkWidget* widget,
                                               GdkEventKey* event) {
-  // delegate_->EditProfile() will close the avatar bubble which in turn
-  // try to destroy this AvatarMenuItemGtk.
-  // This is not OK to do this from the signal handler, so we'll
-  // defer it.
   if (event->keyval == GDK_Return ||
       event->keyval == GDK_ISO_Enter ||
       event->keyval == GDK_KP_Enter) {
     if (item_.active)
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&AvatarMenuItemGtk::EditProfile,
-                     weak_factory_.GetWeakPtr()));
+      delegate_->EditProfile(item_index_);
     else
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&AvatarMenuItemGtk::OpenProfile,
-                     weak_factory_.GetWeakPtr()));
+      delegate_->OpenProfile(item_index_);
   }
 
   return FALSE;
@@ -158,10 +136,6 @@ gboolean AvatarMenuItemGtk::OnProfileLeave(GtkWidget* widget,
   return FALSE;
 }
 
-void AvatarMenuItemGtk::EditProfile() {
-  delegate_->EditProfile(item_index_);
-}
-
 void AvatarMenuItemGtk::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
@@ -189,14 +163,7 @@ void AvatarMenuItemGtk::Observe(int type,
 }
 
 void AvatarMenuItemGtk::OnEditProfileLinkClicked(GtkWidget* link) {
-  // delegate_->EditProfile() will close the avatar bubble which in turn
-  // try to destroy this AvatarMenuItemGtk.
-  // This is not OK to do this from the signal handler, so we'll
-  // defer it.
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&AvatarMenuItemGtk::EditProfile,
-                 weak_factory_.GetWeakPtr()));
+  delegate_->EditProfile(item_index_);
 }
 
 gboolean AvatarMenuItemGtk::OnEventBoxExpose(GtkWidget* widget,

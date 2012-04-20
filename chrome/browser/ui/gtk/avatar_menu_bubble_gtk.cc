@@ -90,17 +90,21 @@ void AvatarMenuBubbleGtk::OnAvatarMenuModelChanged(
 }
 
 void AvatarMenuBubbleGtk::OpenProfile(size_t profile_index) {
+  if (!bubble_)
+    return;
   GdkModifierType modifier_state;
   gtk_get_current_event_state(&modifier_state);
   guint modifier_state_uint = modifier_state;
   avatar_menu_model_->SwitchToProfile(profile_index,
       event_utils::DispositionFromGdkState(modifier_state_uint) == NEW_WINDOW);
-  bubble_->Close();
+  CloseBubble();
 }
 
 void AvatarMenuBubbleGtk::EditProfile(size_t profile_index) {
+  if (!bubble_)
+    return;
   avatar_menu_model_->EditProfile(profile_index);
-  bubble_->Close();
+  CloseBubble();
 }
 
 void AvatarMenuBubbleGtk::Observe(int type,
@@ -122,8 +126,10 @@ void AvatarMenuBubbleGtk::OnSizeRequest(GtkWidget* widget,
 }
 
 void AvatarMenuBubbleGtk::OnNewProfileLinkClicked(GtkWidget* link) {
+  if (!bubble_)
+    return;
   avatar_menu_model_->AddNewProfile();
-  bubble_->Close();
+  CloseBubble();
 }
 
 void AvatarMenuBubbleGtk::InitContents() {
@@ -165,4 +171,9 @@ void AvatarMenuBubbleGtk::InitContents() {
   gtk_container_add(GTK_CONTAINER(link_align), new_profile_link_);
 
   gtk_box_pack_start(GTK_BOX(contents_), link_align, FALSE, FALSE, 0);
+}
+
+void AvatarMenuBubbleGtk::CloseBubble() {
+  bubble_->Close();
+  bubble_ = NULL;
 }
