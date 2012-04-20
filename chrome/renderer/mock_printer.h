@@ -143,6 +143,9 @@ class MockPrinter {
   bool print_to_pdf_;
   int preview_request_id_;
 
+  // True if we want to fit the html/pdf source to paper size.
+  bool fit_to_paper_size_;
+
   // Used for displaying headers and footers.
   bool display_header_footer_;
   string16 date_;

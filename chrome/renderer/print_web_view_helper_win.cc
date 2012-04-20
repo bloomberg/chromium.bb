@@ -220,8 +220,8 @@ Metafile* PrintWebViewHelper::RenderPage(
   printing::PageSizeMargins page_layout_in_points;
   double css_scale_factor = 1.0f;
   ComputePageLayoutInPointsForCss(frame, page_number, params,
-                                  ignore_css_margins_, fit_to_page_,
-                                  &css_scale_factor, &page_layout_in_points);
+                                  ignore_css_margins_, &css_scale_factor,
+                                  &page_layout_in_points);
   gfx::Size page_size;
   gfx::Rect content_area;
   GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, &page_size,

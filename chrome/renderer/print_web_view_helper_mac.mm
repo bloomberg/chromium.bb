@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,8 +142,8 @@ void PrintWebViewHelper::RenderPage(
   gfx::Rect content_area;
 
   ComputePageLayoutInPointsForCss(frame, page_number, params,
-                                  ignore_css_margins_, fit_to_page_,
-                                  &scale_factor, &page_layout_in_points);
+                                  ignore_css_margins_, &scale_factor,
+                                  &page_layout_in_points);
   GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, page_size,
                                           &content_area);
   if (content_rect)

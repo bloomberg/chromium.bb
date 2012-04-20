@@ -41,6 +41,7 @@ struct PrintMsg_Print_Params {
   std::string preview_ui_addr;
   int preview_request_id;
   bool is_first_request;
+  bool fit_to_paper_size;
   bool print_to_pdf;
   bool display_header_footer;
   string16 date;

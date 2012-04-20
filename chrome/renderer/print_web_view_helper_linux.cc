@@ -143,7 +143,7 @@ bool PrintWebViewHelper::RenderPages(const PrintMsg_PrintPages_Params& params,
                                      printing::Metafile* metafile) {
   PrintMsg_Print_Params print_params = params.params;
   UpdateFrameAndViewFromCssPageLayout(frame, node, prepare, print_params,
-                                      ignore_css_margins_, fit_to_page_);
+                                      ignore_css_margins_);
 
   *page_count = prepare->GetExpectedPageCount();
   if (!*page_count)
@@ -183,8 +183,8 @@ void PrintWebViewHelper::PrintPageInternal(
   printing::PageSizeMargins page_layout_in_points;
   double scale_factor = 1.0f;
   ComputePageLayoutInPointsForCss(frame, params.page_number, params.params,
-                                  ignore_css_margins_, fit_to_page_,
-                                  &scale_factor, &page_layout_in_points);
+                                  ignore_css_margins_, &scale_factor,
+                                  &page_layout_in_points);
   gfx::Size page_size;
   gfx::Rect content_area;
   GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, &page_size,

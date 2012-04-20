@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@ PrintMsg_Print_Params::PrintMsg_Print_Params()
     preview_ui_addr(),
     preview_request_id(0),
     is_first_request(false),
+    fit_to_paper_size(true),
     print_to_pdf(false),
     display_header_footer(false),
     date(),
@@ -49,6 +50,7 @@ void PrintMsg_Print_Params::Reset() {
   preview_ui_addr = std::string();
   preview_request_id = 0;
   is_first_request = false;
+  fit_to_paper_size = true;
   print_to_pdf = false;
   display_header_footer = false;
   date = string16();

@@ -133,6 +133,8 @@ bool PrintMsg_Print_Params_IsEqual(
              newParams.params.supports_alpha_blend &&
          oldParams.pages.size() == newParams.pages.size() &&
          oldParams.params.print_to_pdf == newParams.params.print_to_pdf &&
+         oldParams.params.fit_to_paper_size ==
+             newParams.params.fit_to_paper_size &&
          oldParams.params.display_header_footer ==
              newParams.params.display_header_footer &&
          oldParams.params.date == newParams.params.date &&
@@ -669,7 +671,6 @@ PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view)
       is_preview_enabled_(IsPrintPreviewEnabled()),
       is_print_ready_metafile_sent_(false),
       ignore_css_margins_(false),
-      fit_to_page_(true),
       user_cancelled_scripted_print_count_(0),
       is_scripted_printing_blocked_(false),
       notify_browser_of_print_failure_(true),
@@ -893,15 +894,14 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
   PrintMsg_Print_Params print_params = print_pages_params_->params;
   const std::vector<int>& pages = print_pages_params_->pages;
   if (!print_preview_context_.CreatePreviewDocument(&print_params, pages,
-                                                    ignore_css_margins_,
-                                                    fit_to_page_)) {
+                                                    ignore_css_margins_)) {
     return false;
   }
 
   PageSizeMargins default_page_layout;
   ComputePageLayoutInPointsForCss(print_preview_context_.frame(), 0,
-                                  print_params, ignore_css_margins_,
-                                  fit_to_page_, NULL, &default_page_layout);
+                                  print_params, ignore_css_margins_, NULL,
+                                  &default_page_layout);
 
   if (!old_print_pages_params_.get() ||
       !PageLayoutIsEqual(*old_print_pages_params_, *print_pages_params_)) {
@@ -1171,8 +1171,7 @@ bool PrintWebViewHelper::PrintPages(WebFrame* frame, const WebNode& node) {
   const PrintMsg_Print_Params& print_params = params.params;
   PrepareFrameAndViewForPrint prep_frame_view(print_params, frame, node);
   UpdateFrameAndViewFromCssPageLayout(frame, node, &prep_frame_view,
-                                      print_params, ignore_css_margins_,
-                                      fit_to_page_);
+                                      print_params, ignore_css_margins_);
 
   int page_count = prep_frame_view.GetExpectedPageCount();
   if (!page_count)
@@ -1211,14 +1210,11 @@ void PrintWebViewHelper::ComputePageLayoutInPointsForCss(
     int page_index,
     const PrintMsg_Print_Params& page_params,
     bool ignore_css_margins,
-    bool fit_to_page,
     double* scale_factor,
     PageSizeMargins* page_layout_in_points) {
-  PrintMsg_Print_Params params = CalculatePrintParamsForCss(frame, page_index,
-                                                            page_params,
-                                                            ignore_css_margins,
-                                                            fit_to_page,
-                                                            scale_factor);
+  PrintMsg_Print_Params params = CalculatePrintParamsForCss(
+      frame, page_index, page_params, ignore_css_margins,
+      page_params.fit_to_paper_size, scale_factor);
   CalculatePageLayoutFromPrintParams(params, page_layout_in_points);
 }
 
@@ -1228,13 +1224,12 @@ void PrintWebViewHelper::UpdateFrameAndViewFromCssPageLayout(
     const WebNode& node,
     PrepareFrameAndViewForPrint* prepare,
     const PrintMsg_Print_Params& params,
-    bool ignore_css_margins,
-    bool fit_to_page) {
+    bool ignore_css_margins) {
   if (PrintingNodeOrPdfFrame(frame, node))
     return;
   PrintMsg_Print_Params print_params = CalculatePrintParamsForCss(
-      frame, 0, params, ignore_css_margins, ignore_css_margins && fit_to_page,
-      NULL);
+      frame, 0, params, ignore_css_margins,
+      ignore_css_margins && params.fit_to_paper_size, NULL);
   prepare->UpdatePrintParams(print_params);
 }
 
@@ -1258,7 +1253,7 @@ bool PrintWebViewHelper::InitPrintSettings() {
 
   // Reset to default values.
   ignore_css_margins_ = false;
-  fit_to_page_ = true;
+  settings.params.fit_to_paper_size = true;
   settings.pages.clear();
 
   print_pages_params_.reset(new PrintMsg_PrintPages_Params(settings));
@@ -1282,7 +1277,7 @@ bool PrintWebViewHelper::InitPrintSettingsAndPrepareFrame(
                                                  frame, node));
   UpdateFrameAndViewFromCssPageLayout(frame, node, prepare->get(),
                                       print_pages_params_->params,
-                                      ignore_css_margins_, fit_to_page_);
+                                      ignore_css_margins_);
   Send(new PrintHostMsg_DidGetDocumentCookie(
         routing_id(), print_pages_params_->params.document_cookie));
   return true;
@@ -1385,7 +1380,10 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 
     settings.params.print_to_pdf = IsPrintToPdfRequested(*job_settings);
     UpdateFrameMarginsCssInfo(*job_settings);
-    fit_to_page_ = source_is_html && !IsPrintToPdfRequested(*job_settings);
+
+    // Fit to paper size.
+    settings.params.fit_to_paper_size = source_is_html &&
+                                        !IsPrintToPdfRequested(*job_settings);
 
     // Header/Footer: Set |header_footer_info_|.
     if (settings.params.display_header_footer) {
@@ -1639,8 +1637,7 @@ void PrintWebViewHelper::PrintPreviewContext::OnPrintPreview() {
 bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
     PrintMsg_Print_Params* print_params,
     const std::vector<int>& pages,
-    bool ignore_css_margins,
-    bool fit_to_page) {
+    bool ignore_css_margins) {
   DCHECK_EQ(INITIALIZED, state_);
   state_ = RENDERING;
 
@@ -1655,8 +1652,7 @@ bool PrintWebViewHelper::PrintPreviewContext::CreatePreviewDocument(
   prep_frame_view_.reset(new PrepareFrameAndViewForPrint(*print_params, frame(),
                                                          node()));
   UpdateFrameAndViewFromCssPageLayout(frame_, node_, prep_frame_view_.get(),
-                                      *print_params, ignore_css_margins,
-                                      fit_to_page);
+                                      *print_params, ignore_css_margins);
 
   print_params_.reset(new PrintMsg_Print_Params(*print_params));
 
