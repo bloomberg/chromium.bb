@@ -219,7 +219,8 @@ int32_t InvokePrinting(PP_Instance instance) {
 }
 
 void UpdateActivity(PP_Instance instance) {
-  // TODO(viettrungluu): Implement me.
+  PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+      new PpapiHostMsg_PPBFlash_UpdateActivity(API_ID_PPB_FLASH));
 }
 
 PP_Var GetDeviceID(PP_Instance instance) {

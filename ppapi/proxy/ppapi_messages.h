@@ -1175,6 +1175,7 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_IsRectTopmost,
                            PP_Instance /* instance */,
                            PP_Rect /* rect */,
                            PP_Bool /* result */)
+IPC_MESSAGE_ROUTED0(PpapiHostMsg_PPBFlash_UpdateActivity)
 IPC_SYNC_MESSAGE_ROUTED0_1(PpapiHostMsg_PPBFlash_GetDeviceID,
                            std::string /* id */)
 

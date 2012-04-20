@@ -15,6 +15,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/pepper_lookup_request.h"
 #include "content/browser/renderer_host/pepper_tcp_server_socket.h"
 #include "content/browser/renderer_host/pepper_tcp_socket.h"
@@ -40,6 +41,10 @@
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/private/net_address_private_impl.h"
 #include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
+
+#ifdef OS_WIN
+#include <windows.h>
+#endif
 
 using content::BrowserThread;
 using content::RenderViewHostImpl;
@@ -144,6 +149,7 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                         OnX509CertificateParseDER);
 
     // Flash messages.
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_UpdateActivity, OnUpdateActivity)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetDeviceID, OnGetDeviceID)
 
   IPC_MESSAGE_UNHANDLED(handled = false)
@@ -610,6 +616,20 @@ void PepperMessageFilter::OnX509CertificateParseDER(
     *succeeded = false;
   *succeeded = PepperTCPSocket::GetCertificateFields(&der[0], der.size(),
                                                      result);
+}
+
+void PepperMessageFilter::OnUpdateActivity() {
+#if defined(OS_WIN)
+  // Reading then writing back the same value to the screensaver timeout system
+  // setting resets the countdown which prevents the screensaver from turning
+  // on "for a while". As long as the plugin pings us with this message faster
+  // than the screensaver timeout, it won't go on.
+  int value = 0;
+  if (SystemParametersInfo(SPI_GETSCREENSAVETIMEOUT, 0, &value, 0))
+    SystemParametersInfo(SPI_SETSCREENSAVETIMEOUT, value, NULL, 0);
+#else
+  // TODO(brettw) implement this for other platforms.
+#endif
 }
 
 void PepperMessageFilter::OnGetDeviceID(std::string* id) {

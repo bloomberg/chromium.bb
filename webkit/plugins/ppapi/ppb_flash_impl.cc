@@ -263,7 +263,7 @@ int32_t InvokePrinting(PP_Instance pp_instance) {
 }
 
 void UpdateActivity(PP_Instance pp_instance) {
-  // TODO(viettrungluu): Implement me.
+  // Not supported in-process.
 }
 
 PP_Var GetDeviceID(PP_Instance pp_instance) {
