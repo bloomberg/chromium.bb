@@ -26,12 +26,13 @@ void SerialConnection::Close() {
   // TODO(miket): implement
 }
 
-int SerialConnection::Read(unsigned char* byte) {
+int SerialConnection::Read(uint8* byte) {
   // TODO(miket): implement
   return -1;
 }
 
-int SerialConnection::Write(const std::string& data) {
+int SerialConnection::Write(scoped_refptr<net::IOBuffer> io_buffer,
+                            int byte_count) {
   // TODO(miket): implement
   return -1;
 }

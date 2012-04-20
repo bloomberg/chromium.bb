@@ -10,12 +10,16 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_resource.h"
+#include "net/base/io_buffer.h"
 
 FORWARD_DECLARE_TEST(SerialConnectionTest, ValidPortNamePatterns);
 FORWARD_DECLARE_TEST(SerialConnectionTest, InvalidPortNamePatterns);
 
 namespace extensions {
+
+extern const char kSerialConnectionNotFoundError[];
 
 class APIResourceEventNotifier;
 
@@ -30,8 +34,8 @@ class SerialConnection : public APIResource {
   bool Open();
   void Close();
 
-  int Read(unsigned char* byte);
-  int Write(const std::string& data);
+  int Read(uint8* byte);
+  int Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count);
 
   typedef std::set<std::string> StringSet;
 

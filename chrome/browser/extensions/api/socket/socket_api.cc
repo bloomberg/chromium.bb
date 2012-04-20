@@ -165,7 +165,7 @@ SocketWriteFunction::~SocketWriteFunction() {
 
 bool SocketWriteFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
-  base::ListValue *data_list_value;
+  base::ListValue* data_list_value = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(1, &data_list_value));
 
   size_t size = data_list_value->GetSize();

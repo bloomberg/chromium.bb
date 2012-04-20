@@ -101,9 +101,31 @@ bool SerialReadFunction::Respond() {
   return true;
 }
 
+SerialWriteFunction::SerialWriteFunction()
+    : connection_id_(-1), io_buffer_(NULL) {
+}
+
+SerialWriteFunction::~SerialWriteFunction() {
+}
+
 bool SerialWriteFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &connection_id_));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &data_));
+  base::ListValue* data_list_value = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetList(1, &data_list_value));
+  size_t size = data_list_value->GetSize();
+  if (size != 0) {
+    io_buffer_ = new net::IOBufferWithSize(size);
+    uint8* data_buffer =
+        reinterpret_cast<uint8*>(io_buffer_->data());
+    for (size_t i = 0; i < size; ++i) {
+      int int_value = -1;
+      data_list_value->GetInteger(i, &int_value);
+      DCHECK(int_value < 256);
+      DCHECK(int_value >= 0);
+      uint8 truncated_int = static_cast<uint8>(int_value);
+      *data_buffer++ = truncated_int;
+    }
+  }
   return true;
 }
 
@@ -112,7 +134,10 @@ void SerialWriteFunction::Work() {
   SerialConnection* serial_connection =
       controller()->GetSerialConnection(connection_id_);
   if (serial_connection)
-    bytes_written = serial_connection->Write(data_);
+    bytes_written = serial_connection->Write(io_buffer_, io_buffer_->size());
+  else
+    error_ = kSerialConnectionNotFoundError;
+
   DictionaryValue* result = new DictionaryValue();
   result->SetInteger(kBytesWrittenKey, bytes_written);
   result_.reset(result);

@@ -42,12 +42,13 @@ void SerialConnection::Close() {
   }
 }
 
-int SerialConnection::Read(unsigned char* byte) {
+int SerialConnection::Read(uint8* byte) {
   return read(fd_, byte, 1);
 }
 
-int SerialConnection::Write(const std::string& data) {
-  return write(fd_, data.c_str(), data.length());
+int SerialConnection::Write(scoped_refptr<net::IOBuffer> io_buffer,
+                            int byte_count) {
+  return write(fd_, io_buffer.get(), byte_count);
 }
 
 // static

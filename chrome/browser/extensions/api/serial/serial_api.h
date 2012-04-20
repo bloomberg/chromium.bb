@@ -8,7 +8,9 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
+#include "net/base/io_buffer.h"
 
 namespace extensions {
 
@@ -55,6 +57,10 @@ class SerialReadFunction : public AsyncIOAPIFunction {
 };
 
 class SerialWriteFunction : public AsyncIOAPIFunction {
+ public:
+  SerialWriteFunction();
+  virtual ~SerialWriteFunction();
+
  protected:
   virtual bool Prepare() OVERRIDE;
   virtual void Work() OVERRIDE;
@@ -62,7 +68,7 @@ class SerialWriteFunction : public AsyncIOAPIFunction {
 
  private:
   int connection_id_;
-  std::string data_;
+  scoped_refptr<net::IOBufferWithSize> io_buffer_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.serial.write")
 };

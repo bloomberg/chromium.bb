@@ -8,6 +8,8 @@
 
 namespace extensions {
 
+const char kSerialConnectionNotFoundError[] = "Serial conenction not found";
+
 // static
 bool SerialConnection::DoesPortExist(const StringSet& name_set,
                                      const std::string& port_name) {
