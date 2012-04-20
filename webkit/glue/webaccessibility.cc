@@ -11,14 +11,12 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityRole.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebAttribute.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocumentType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebNamedNodeMap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
@@ -757,10 +755,10 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     // a WebElement method that returns the original lower cased tagName.
     string_attributes[ATTR_HTML_TAG] =
         StringToLowerASCII(string16(element.tagName()));
-    for (unsigned i = 0; i < element.attributes().length(); ++i) {
+    for (unsigned i = 0; i < element.attributeCount(); ++i) {
       string16 name = StringToLowerASCII(string16(
-          element.attributes().attributeItem(i).localName()));
-      string16 value = element.attributes().attributeItem(i).value();
+          element.attributeLocalName(i)));
+      string16 value = element.attributeValue(i);
       html_attributes.push_back(std::pair<string16, string16>(name, value));
     }
 
