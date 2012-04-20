@@ -20,7 +20,8 @@
    fun:MOZ_Z_deflate
 }
 {
-   gtk developers don't like cleaning up one-time leaks.  See http://mail.gnome.org/archives/gtk-devel-list/2004-April/msg00230.html
+   #gtk developers don't like cleaning up one-time leaks.  See http://mail.gnome.org/archives/gtk-devel-list/2004-April/msg00230.html
+   gtk_init_check leak (Third Party)
    Memcheck:Leak
    ...
    fun:gtk_init_check
@@ -5743,6 +5744,15 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
+   bug_123453
+   Memcheck:Unaddressable
+   fun:_ZN9GrTexture14asRenderTargetEv
+   fun:_ZN9GrContext12gaussianBlurEP9GrTextureP20GrAutoScratchTextureS3_RK6SkRectff
+   fun:_ZL14filter_textureP9GrContextP9GrTextureP13SkImageFilterRK6SkRect
+   fun:_ZN11SkGpuDevice10drawSpriteERK6SkDrawRK8SkBitmapiiRK7SkPaint
+   fun:_ZN8SkCanvas10drawSpriteERK8SkBitmapiiPK7SkPaint
+}
+{
    bug_124156
    Memcheck:Leak
    fun:_Znw*
@@ -5751,6 +5761,18 @@
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context5StartERKN6WebKit13WebURLRequestEPNS_20ResourceLoaderBridge16SyncLoadResponseEPNS_25WebKitPlatformSupportImplE
    fun:_ZN11webkit_glue16WebURLLoaderImpl18loadAsynchronouslyERKN6WebKit13WebURLRequestEPNS1_18WebURLLoaderClientE
    fun:_ZN7WebCore22ResourceHandleInternal5startEv
+}
+{
+   bug_124488
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   ...
+   fun:_ZN34CopyTextureCHROMIUMResourceManager10InitializeEv
+   fun:_ZN3gpu5gles216GLES2DecoderImpl10InitializeERK13scoped_refptrIN3gfx9GLSurfaceEERKS2_INS3_9GLContextEERKNS3_4SizeERKNS0_18DisallowedFeaturesEPKcRKSt6vectorIiSaIiEE
+   fun:_ZN6webkit3gpu18GLInProcessContext10InitializeERKN3gfx4SizeEPS1_PKcPKiNS2_13GpuPreferenceE
+   fun:_ZN6webkit3gpu18GLInProcessContext22CreateOffscreenContextEPS1_RKN3gfx4SizeES2_PKcPKiNS3_13GpuPreferenceE
+   fun:_ZN6webkit3gpu46WebGraphicsContext3DInProcessCommandBufferImpl10InitializeEN6WebKit20WebGraphicsContext3D10AttributesEPS3_
 }
 
 #-----------------------------------------------------------------------
