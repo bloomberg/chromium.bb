@@ -9,6 +9,8 @@
 namespace ash {
 
 const AcceleratorData kAcceleratorData[] = {
+  // EventType, KeyboardCode, shift, control, alt, AcceleratorAction
+
   // Accelerators that should be processed before a key is sent to an IME.
   { ui::ET_KEY_RELEASED, ui::VKEY_MENU, true, false, true, NEXT_IME },
   { ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, true, false, true, NEXT_IME },
@@ -73,6 +75,8 @@ const AcceleratorData kAcceleratorData[] = {
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F10, false, false, false, VOLUME_UP },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_VOLUME_UP, false, false, false,
     VOLUME_UP },
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, true, false, true,
+    FOCUS_LAUNCHER },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_S, true, false, true, FOCUS_TRAY },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F1, true, true, false, SHOW_OAK },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_1, false, false, true,
@@ -142,6 +146,7 @@ const AcceleratorData kAcceleratorData[] = {
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F4, true, true, false,
     CYCLE_MONITOR },
 #endif
+  // EventType, KeyboardCode, shift, control, alt, AcceleratorAction
 };
 
 const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
