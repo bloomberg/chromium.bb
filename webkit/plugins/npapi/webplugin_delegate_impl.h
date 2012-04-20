@@ -95,6 +95,8 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   static bool IsPluginDelegateWindow(gfx::NativeWindow window);
   static bool GetPluginNameFromWindow(gfx::NativeWindow window,
                                       string16* plugin_name);
+  static bool GetPluginVersionFromWindow(gfx::NativeWindow window,
+                                         string16* plugin_version);
 
   // Returns true if the window handle passed in is that of the dummy
   // activation window for windowless plugins.

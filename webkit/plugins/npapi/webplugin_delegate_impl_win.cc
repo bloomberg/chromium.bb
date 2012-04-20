@@ -48,6 +48,7 @@ namespace {
 
 const wchar_t kWebPluginDelegateProperty[] = L"WebPluginDelegateProperty";
 const wchar_t kPluginNameAtomProperty[] = L"PluginNameAtom";
+const wchar_t kPluginVersionAtomProperty[] = L"PluginVersionAtom";
 const wchar_t kDummyActivationWindowName[] = L"DummyWindowForActivation";
 const wchar_t kPluginFlashThrottle[] = L"FlashThrottle";
 
@@ -263,6 +264,22 @@ int GetPluginMajorVersion(const WebPluginInfo& plugin_info) {
   return major_version;
 }
 
+bool GetPluginPropertyFromWindow(
+    HWND window, const wchar_t* plugin_atom_property,
+    string16* plugin_property) {
+  ATOM plugin_atom = reinterpret_cast<ATOM>(
+      GetPropW(window, plugin_atom_property));
+  if (plugin_atom != 0) {
+    WCHAR plugin_property_local[MAX_PATH] = {0};
+    GlobalGetAtomNameW(plugin_atom,
+                       plugin_property_local,
+                       ARRAYSIZE(plugin_property_local));
+    *plugin_property = plugin_property_local;
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 bool WebPluginDelegateImpl::IsPluginDelegateWindow(HWND window) {
@@ -276,23 +293,17 @@ bool WebPluginDelegateImpl::IsPluginDelegateWindow(HWND window) {
 // static
 bool WebPluginDelegateImpl::GetPluginNameFromWindow(
     HWND window, string16* plugin_name) {
-  if (NULL == plugin_name) {
-    return false;
-  }
-  if (!IsPluginDelegateWindow(window)) {
-    return false;
-  }
-  ATOM plugin_name_atom = reinterpret_cast<ATOM>(
-      GetPropW(window, kPluginNameAtomProperty));
-  if (plugin_name_atom != 0) {
-    WCHAR plugin_name_local[MAX_PATH] = {0};
-    GlobalGetAtomNameW(plugin_name_atom,
-                       plugin_name_local,
-                       ARRAYSIZE(plugin_name_local));
-    *plugin_name = plugin_name_local;
-    return true;
-  }
-  return false;
+  return IsPluginDelegateWindow(window) &&
+      GetPluginPropertyFromWindow(
+          window, kPluginNameAtomProperty, plugin_name);
+}
+
+// static
+bool WebPluginDelegateImpl::GetPluginVersionFromWindow(
+    HWND window, string16* plugin_version) {
+  return IsPluginDelegateWindow(window) &&
+      GetPluginPropertyFromWindow(
+          window, kPluginVersionAtomProperty, plugin_version);
 }
 
 bool WebPluginDelegateImpl::IsDummyActivationWindow(HWND window) {
@@ -695,9 +706,9 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
 
   BOOL result = SetProp(windowed_handle_, kWebPluginDelegateProperty, this);
   DCHECK(result == TRUE) << "SetProp failed, last error = " << GetLastError();
-  // Get the name of the plugin, create an atom and set that in a window
-  // property. Use an atom so that other processes can access the name of
-  // the plugin that this window is hosting
+  // Get the name and version of the plugin, create atoms and set them in a
+  // window property. Use atoms so that other processes can access the name and
+  // version of the plugin that this window is hosting.
   if (instance_ != NULL) {
     PluginLib* plugin_lib = instance()->plugin_lib();
     if (plugin_lib != NULL) {
@@ -708,6 +719,16 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
         result = SetProp(windowed_handle_,
             kPluginNameAtomProperty,
             reinterpret_cast<HANDLE>(plugin_name_atom));
+        DCHECK(result == TRUE) << "SetProp failed, last error = " <<
+            GetLastError();
+      }
+      string16 plugin_version = plugin_lib->plugin_info().version;
+      if (!plugin_version.empty()) {
+        ATOM plugin_version_atom = GlobalAddAtomW(plugin_version.c_str());
+        DCHECK(0 != plugin_version_atom);
+        result = SetProp(windowed_handle_,
+            kPluginVersionAtomProperty,
+            reinterpret_cast<HANDLE>(plugin_version_atom));
         DCHECK(result == TRUE) << "SetProp failed, last error = " <<
             GetLastError();
       }
@@ -1207,6 +1228,10 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
           RemoveProp(hwnd, kPluginNameAtomProperty));
       if (plugin_name_atom != 0)
         GlobalDeleteAtom(plugin_name_atom);
+      ATOM plugin_version_atom = reinterpret_cast<ATOM>(
+          RemoveProp(hwnd, kPluginVersionAtomProperty));
+      if (plugin_version_atom != 0)
+        GlobalDeleteAtom(plugin_version_atom);
       ClearThrottleQueueForWindow(hwnd);
     }
   }

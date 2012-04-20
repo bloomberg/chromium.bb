@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,55 @@
 
 #include "chrome/browser/hang_monitor/hung_plugin_action.h"
 
+#include "base/metrics/histogram.h"
+#include "base/version.h"
 #include "chrome/browser/simple_message_box.h"
 #include "chrome/common/logging_chrome.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/hwnd_util.h"
+#include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
+
+namespace {
+
+const wchar_t kGTalkPluginName[] = L"Google Talk Plugin";
+const int kGTalkPluginLogMinVersion = 26;  // For version 2.6 and below.
+
+enum GTalkPluginLogVersion {
+  GTALK_PLUGIN_VERSION_MIN = 0,
+  GTALK_PLUGIN_VERSION_27,
+  GTALK_PLUGIN_VERSION_28,
+  GTALK_PLUGIN_VERSION_29,
+  GTALK_PLUGIN_VERSION_30,
+  GTALK_PLUGIN_VERSION_31,
+  GTALK_PLUGIN_VERSION_32,
+  GTALK_PLUGIN_VERSION_33,
+  GTALK_PLUGIN_VERSION_34,
+  GTALK_PLUGIN_VERSION_MAX
+};
+
+// Converts the version string of Google Talk Plugin to a version enum. The
+// version format is "major(1 digit).minor(1 digit).sub(1 or 2 digits)",
+// for example, "2.7.10" and "2.8.1". Converts the string to a number as
+// 10 * major + minor - kGTalkPluginLogMinVersion.
+GTalkPluginLogVersion GetGTalkPluginVersion(const string16& version) {
+  int gtalk_plugin_version = GTALK_PLUGIN_VERSION_MIN;
+  scoped_ptr<Version> plugin_version(
+      webkit::npapi::PluginGroup::CreateVersionFromString(version));
+  if (plugin_version.get() && plugin_version->components().size() >= 2) {
+    gtalk_plugin_version = 10 * plugin_version->components()[0] +
+        plugin_version->components()[1] - kGTalkPluginLogMinVersion;
+  }
+
+  if (gtalk_plugin_version < GTALK_PLUGIN_VERSION_MIN)
+    return GTALK_PLUGIN_VERSION_MIN;
+  if (gtalk_plugin_version > GTALK_PLUGIN_VERSION_MAX)
+    return GTALK_PLUGIN_VERSION_MAX;
+  return static_cast<GTalkPluginLogVersion>(gtalk_plugin_version);
+}
+
+}  // namespace
 
 HungPluginAction::HungPluginAction() : current_hung_plugin_window_(NULL) {
 }
@@ -38,17 +81,24 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
 
   *action = HungWindowNotification::HUNG_WINDOW_IGNORE;
   if (top_level_window_process_id != hung_window_process_id) {
+    string16 plugin_name;
+    string16 plugin_version;
+    GetPluginNameAndVersion(hung_window,
+                            top_level_window_process_id,
+                            &plugin_name,
+                            &plugin_version);
+    if (plugin_name.empty()) {
+      plugin_name = l10n_util::GetStringUTF16(IDS_UNKNOWN_PLUGIN_NAME);
+    } else if (kGTalkPluginName == plugin_name) {
+      UMA_HISTOGRAM_ENUMERATION("GTalkPlugin.Hung",
+          GetGTalkPluginVersion(plugin_version),
+          GTALK_PLUGIN_VERSION_MAX + 1);
+    }
+
     if (logging::DialogsAreSuppressed()) {
       NOTREACHED() << "Terminated a hung plugin process.";
       *action = HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS;
     } else {
-      string16 plugin_name;
-      GetPluginName(hung_window,
-                    top_level_window_process_id,
-                    &plugin_name);
-      if (plugin_name.empty()) {
-        plugin_name = l10n_util::GetStringUTF16(IDS_UNKNOWN_PLUGIN_NAME);
-      }
       string16 msg = l10n_util::GetStringFUTF16(IDS_BROWSER_HANGMONITOR,
                                                 plugin_name);
       string16 title = l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_TITLE);
@@ -107,10 +157,12 @@ void HungPluginAction::OnWindowResponsive(HWND window) {
   }
 }
 
-bool HungPluginAction::GetPluginName(HWND plugin_window,
-                                     DWORD browser_process_id,
-                                     std::wstring* plugin_name) {
+bool HungPluginAction::GetPluginNameAndVersion(HWND plugin_window,
+                                               DWORD browser_process_id,
+                                               string16* plugin_name,
+                                               string16* plugin_version) {
   DCHECK(plugin_name);
+  DCHECK(plugin_version);
   HWND window_to_check = plugin_window;
   while (NULL != window_to_check) {
     DWORD process_id = 0;
@@ -122,6 +174,8 @@ bool HungPluginAction::GetPluginName(HWND plugin_window,
     }
     if (webkit::npapi::WebPluginDelegateImpl::GetPluginNameFromWindow(
             window_to_check, plugin_name)) {
+      webkit::npapi::WebPluginDelegateImpl::GetPluginVersionFromWindow(
+          window_to_check, plugin_version);
       return true;
     }
     window_to_check = GetParent(window_to_check);

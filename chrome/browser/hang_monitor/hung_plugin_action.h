@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_HANG_MONITOR_HUNG_PLUGIN_ACTION_H__
 #pragma once
 
+#include "base/string16.h"
 #include "chrome/browser/hang_monitor/hung_window_detector.h"
+
 // This class provides an implementation the
 // HungWindowDetector::HungWindowNotification callback interface.
 // It checks to see if the hung window belongs to a process different
@@ -36,9 +38,10 @@ class HungPluginAction : public HungWindowDetector::HungWindowNotification {
   static BOOL CALLBACK DismissMessageBox(HWND window, LPARAM ignore);
 
  protected:
-  bool GetPluginName(HWND plugin_window,
-                     DWORD browser_process_id,
-                     std::wstring *plugin_name);
+  bool GetPluginNameAndVersion(HWND plugin_window,
+                               DWORD browser_process_id,
+                               string16* plugin_name,
+                               string16* plugin_version);
   // The currently hung plugin window that we are prompting the user about
   HWND current_hung_plugin_window_;
 };
