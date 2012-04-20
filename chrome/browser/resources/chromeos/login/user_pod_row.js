@@ -237,7 +237,7 @@ cr.define('login', function() {
       this.signedInIndicatorElement.hidden = !this.user_.signedIn;
 
       if (this.isGuest) {
-        this.imageElement.title = this.user_.displayName;
+        this.imageElement.title = '';
         this.enterButtonElement.hidden = false;
         this.passwordElement.hidden = true;
         this.signinButtonElement.hidden = true;
