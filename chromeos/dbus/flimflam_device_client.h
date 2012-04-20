@@ -60,6 +60,14 @@ class CHROMEOS_EXPORT FlimflamDeviceClient {
   virtual void GetProperties(const dbus::ObjectPath& device_path,
                              const DictionaryValueCallback& callback) = 0;
 
+  // DEPRECATED DO NOT USE: Calls GetProperties method and blocks until the
+  // method call finishes.  The caller is responsible to delete the result.
+  // Thie method returns NULL when method call fails.
+  //
+  // TODO(hashimoto): Refactor CrosGetDeviceNetworkList and remove this method.
+  virtual base::DictionaryValue* CallGetPropertiesAndBlock(
+      const dbus::ObjectPath& device_path) = 0;
+
   // Calls ProposeScan method.
   // |callback| is called after the method call finishes.
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
@@ -83,6 +91,15 @@ class CHROMEOS_EXPORT FlimflamDeviceClient {
   virtual void AddIPConfig(const dbus::ObjectPath& device_path,
                            const std::string& method,
                            const ObjectPathCallback& callback) = 0;
+
+  // DEPRECATED DO NOT USE: Calls AddIPConfig method and blocks until the method
+  // call finishes.
+  // This method returns an empty path when method call fails.
+  //
+  // TODO(hashimoto): Refactor CrosAddIPConfig and remove this method.
+  virtual dbus::ObjectPath CallAddIPConfigAndBlock(
+      const dbus::ObjectPath& device_path,
+      const std::string& method) = 0;
 
   // Calls RequirePin method.
   // |callback| is called after the method call finishes.

@@ -82,6 +82,9 @@ class FlimflamClientHelper {
   // DEPRECATED DO NOT USE: Calls a method without results.
   bool CallVoidMethodAndBlock(dbus::MethodCall* method_call);
 
+  // DEPRECATED DO NOT USE: Calls a method with an object path result.
+  dbus::ObjectPath CallObjectPathMethodAndBlock(dbus::MethodCall* method_call);
+
   // DEPRECATED DO NOT USE: Calls a method with a dictionary value result.
   // The caller is responsible to delete the result.
   // This method returns NULL when method call fails.

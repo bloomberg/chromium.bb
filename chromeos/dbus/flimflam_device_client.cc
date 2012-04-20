@@ -49,6 +49,15 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
   }
 
   // FlimflamProfileClient override.
+  virtual base::DictionaryValue* CallGetPropertiesAndBlock(
+      const dbus::ObjectPath& device_path) OVERRIDE {
+    dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
+                                 flimflam::kGetPropertiesFunction);
+    return GetHelper(device_path)->CallDictionaryValueMethodAndBlock(
+        &method_call);
+  }
+
+  // FlimflamProfileClient override.
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
                            const VoidCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
@@ -89,6 +98,17 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(method);
     GetHelper(device_path)->CallObjectPathMethod(&method_call, callback);
+  }
+
+  // FlimflamProfileClient override.
+  virtual dbus::ObjectPath CallAddIPConfigAndBlock(
+      const dbus::ObjectPath& device_path,
+      const std::string& method) OVERRIDE {
+    dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
+                                 flimflam::kAddIPConfigFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(method);
+    return GetHelper(device_path)->CallObjectPathMethodAndBlock(&method_call);
   }
 
   // FlimflamProfileClient override.
@@ -203,6 +223,12 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
                    callback));
   }
 
+  // FlimflamDeviceClient override.
+  virtual base::DictionaryValue* CallGetPropertiesAndBlock(
+      const dbus::ObjectPath& device_path) OVERRIDE {
+    return new base::DictionaryValue;
+  }
+
   // FlimflamProfileClient override.
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
                            const VoidCallback& callback) OVERRIDE {
@@ -232,6 +258,13 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
                                      base::Bind(callback,
                                                 DBUS_METHOD_CALL_SUCCESS,
                                                 dbus::ObjectPath()));
+  }
+
+  // FlimflamDeviceClient override.
+  virtual dbus::ObjectPath CallAddIPConfigAndBlock(
+      const dbus::ObjectPath& device_path,
+      const std::string& method) OVERRIDE {
+    return dbus::ObjectPath();
   }
 
   // FlimflamDeviceClient override.

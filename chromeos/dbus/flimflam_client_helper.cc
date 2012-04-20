@@ -79,6 +79,21 @@ bool FlimflamClientHelper::CallVoidMethodAndBlock(
   return true;
 }
 
+dbus::ObjectPath FlimflamClientHelper::CallObjectPathMethodAndBlock(
+    dbus::MethodCall* method_call) {
+  scoped_ptr<dbus::Response> response(
+      blocking_method_caller_.CallMethodAndBlock(method_call));
+  if (!response.get())
+    return dbus::ObjectPath();
+
+  dbus::MessageReader reader(response.get());
+  dbus::ObjectPath result;
+  if (!reader.PopObjectPath(&result))
+    return dbus::ObjectPath();
+
+  return result;
+}
+
 base::DictionaryValue* FlimflamClientHelper::CallDictionaryValueMethodAndBlock(
     dbus::MethodCall* method_call) {
   scoped_ptr<dbus::Response> response(

@@ -121,6 +121,34 @@ TEST_F(FlimflamDeviceClientTest, GetProperties) {
   message_loop_.RunAllPending();
 }
 
+TEST_F(FlimflamDeviceClientTest, CallGetPropertiesAndBlock) {
+  const bool kValue = true;
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  dbus::MessageWriter array_writer(NULL);
+  writer.OpenArray("{sv}", &array_writer);
+  dbus::MessageWriter entry_writer(NULL);
+  array_writer.OpenDictEntry(&entry_writer);
+  entry_writer.AppendString(flimflam::kCellularAllowRoamingProperty);
+  entry_writer.AppendVariantOfBool(kValue);
+  array_writer.CloseContainer(&entry_writer);
+  writer.CloseContainer(&array_writer);
+
+  // Set expectations.
+  base::DictionaryValue value;
+  value.SetWithoutPathExpansion(flimflam::kCellularAllowRoamingProperty,
+                                base::Value::CreateBooleanValue(kValue));
+  PrepareForMethodCall(flimflam::kGetPropertiesFunction,
+                       base::Bind(&ExpectNoArgument),
+                       response.get());
+  // Call method.
+  scoped_ptr<base::DictionaryValue> result(
+      client_->CallGetPropertiesAndBlock(dbus::ObjectPath(kExampleDevicePath)));
+  ASSERT_TRUE(result.get());
+  EXPECT_TRUE(result->Equals(&value));
+}
+
 TEST_F(FlimflamDeviceClientTest, ProposeScan) {
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
@@ -172,6 +200,42 @@ TEST_F(FlimflamDeviceClientTest, ClearProperty) {
                          base::Bind(&ExpectNoResultValue));
   // Run the message loop.
   message_loop_.RunAllPending();
+}
+
+TEST_F(FlimflamDeviceClientTest, AddIPConfig) {
+  const dbus::ObjectPath expected_result("/result/path");
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendObjectPath(expected_result);
+
+  // Set expectations.
+  PrepareForMethodCall(flimflam::kAddIPConfigFunction,
+                       base::Bind(&ExpectStringArgument, flimflam::kTypeDHCP),
+                       response.get());
+  // Call method.
+  client_->AddIPConfig(dbus::ObjectPath(kExampleDevicePath),
+                       flimflam::kTypeDHCP,
+                       base::Bind(&ExpectObjectPathResult, expected_result));
+  // Run the message loop.
+  message_loop_.RunAllPending();
+}
+
+TEST_F(FlimflamDeviceClientTest, CallAddIPConfigAndBlock) {
+  const dbus::ObjectPath expected_result("/result/path");
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendObjectPath(expected_result);
+
+  // Set expectations.
+  PrepareForMethodCall(flimflam::kAddIPConfigFunction,
+                       base::Bind(&ExpectStringArgument, flimflam::kTypeDHCP),
+                       response.get());
+  // Call method.
+  const dbus::ObjectPath result = client_->CallAddIPConfigAndBlock(
+      dbus::ObjectPath(kExampleDevicePath), flimflam::kTypeDHCP);
+  EXPECT_EQ(expected_result, result);
 }
 
 TEST_F(FlimflamDeviceClientTest, RequirePin) {
