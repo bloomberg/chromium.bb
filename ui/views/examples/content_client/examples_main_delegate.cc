@@ -41,17 +41,16 @@ ExamplesMainDelegate::~ExamplesMainDelegate() {
 }
 
 bool ExamplesMainDelegate::BasicStartupComplete(int* exit_code) {
-  return false;
-}
-
-void ExamplesMainDelegate::PreSandboxStartup() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
   content::SetContentClient(&content_client_);
   InitializeShellContentClient(process_type);
+  return false;
+}
 
+void ExamplesMainDelegate::PreSandboxStartup() {
   InitializeResourceBundle();
 }
 
