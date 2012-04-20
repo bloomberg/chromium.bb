@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,9 @@
 #include "content/common/content_export.h"
 #include "content/common/geoposition.h"
 #include "content/public/browser/access_token_store.h"
-#include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
 
 class GeolocationArbitratorDependencyFactory;
-class GURL;
 class LocationProviderBase;
 
 namespace content {
@@ -58,7 +56,7 @@ class CONTENT_EXPORT GeolocationArbitrator
   // infobar prompt) or inferred from a persisted site permission.
   // The arbitrator will inform all providers of this, which may in turn use
   // this information to modify their internal policy.
-  void OnPermissionGranted(const GURL& requesting_frame);
+  void OnPermissionGranted();
 
   // Returns true if this arbitrator has received at least one call to
   // OnPermissionGranted().
@@ -98,7 +96,7 @@ class CONTENT_EXPORT GeolocationArbitrator
   GeolocationObserverOptions current_provider_options_;
   // The provider which supplied the current |position_|
   const LocationProviderBase* position_provider_;
-  GURL most_recent_authorized_frame_;
+  bool is_permission_granted_;
   // The current best estimate of our position.
   Geoposition position_;
 

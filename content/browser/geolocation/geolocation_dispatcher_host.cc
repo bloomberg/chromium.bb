@@ -23,15 +23,15 @@ using content::RenderViewHostImpl;
 
 namespace {
 
-void NotifyArbitratorPermissionGranted(
-    const GURL& requesting_frame) {
+void NotifyArbitratorPermissionGranted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  GeolocationProvider::GetInstance()->OnPermissionGranted(requesting_frame);
+  GeolocationProvider::GetInstance()->OnPermissionGranted();
 }
 
-void SendGeolocationPermissionResponse(
-    const GURL& requesting_frame, int render_process_id, int render_view_id,
-    int bridge_id, bool allowed) {
+void SendGeolocationPermissionResponse(int render_process_id,
+                                       int render_view_id,
+                                       int bridge_id,
+                                       bool allowed) {
   RenderViewHostImpl* r = RenderViewHostImpl::FromID(
       render_process_id, render_view_id);
   if (!r)
@@ -41,7 +41,7 @@ void SendGeolocationPermissionResponse(
   if (allowed) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&NotifyArbitratorPermissionGranted, requesting_frame));
+        base::Bind(&NotifyArbitratorPermissionGranted));
   }
 }
 
@@ -144,7 +144,7 @@ void GeolocationDispatcherHostImpl::OnRequestPermission(
       render_process_id_, render_view_id, bridge_id,
       requesting_frame,
       base::Bind(
-          &SendGeolocationPermissionResponse, requesting_frame,
+          &SendGeolocationPermissionResponse,
           render_process_id_, render_view_id, bridge_id));
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@ MockLocationProvider* MockLocationProvider::instance_ = NULL;
 
 MockLocationProvider::MockLocationProvider(MockLocationProvider** self_ref)
     : state_(STOPPED),
+      is_permission_granted_(false),
       self_ref_(self_ref),
       provider_loop_(base::MessageLoopProxy::current()) {
   CHECK(self_ref_);
@@ -58,8 +59,8 @@ void MockLocationProvider::GetPosition(Geoposition* position) {
   *position = position_;
 }
 
-void MockLocationProvider::OnPermissionGranted(const GURL& requesting_frame) {
-  permission_granted_url_ = requesting_frame;
+void MockLocationProvider::OnPermissionGranted() {
+  is_permission_granted_ = true;
 }
 
 // Mock location provider that automatically calls back its client at most
@@ -92,8 +93,8 @@ class AutoMockLocationProvider : public MockLocationProvider {
     return true;
   }
 
-  void OnPermissionGranted(const GURL& requesting_frame) {
-    MockLocationProvider::OnPermissionGranted(requesting_frame);
+  void OnPermissionGranted() {
+    MockLocationProvider::OnPermissionGranted();
     if (requires_permission_to_start_) {
       UpdateListenersIfNeeded();
     }

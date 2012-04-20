@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,6 @@ namespace {
 
 // Constants used in multiple tests.
 const char kTestServerUrl[] = "https://www.geolocation.test/service";
-const char kTestHost[] = "myclienthost.test";
-const char kTestHostUrl[] = "http://myclienthost.test/some/path";
 const char kTestJson[] = "?browser=chromium&sensor=true";
 const char kTestBrowser[] = "browser=chromium";
 const char kTestSensor[] = "sensor=true";
@@ -141,7 +139,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
         test_server_url_,
         access_token_store_->access_token_set_[test_server_url_]);
     if (set_permission_granted)
-      provider->OnPermissionGranted(GURL(kTestHostUrl));
+      provider->OnPermissionGranted();
     return provider;
   }
 
@@ -497,7 +495,7 @@ TEST_F(GeolocationNetworkProviderTest, NetworkRequestDeferredForPermission) {
   EXPECT_TRUE(provider->StartProvider(false));
   TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   EXPECT_FALSE(fetcher);
-  provider->OnPermissionGranted(GURL(kTestHostUrl));
+  provider->OnPermissionGranted();
 
   fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
@@ -522,7 +520,7 @@ TEST_F(GeolocationNetworkProviderTest,
   fetcher = get_url_fetcher_and_advance_id();
   EXPECT_FALSE(fetcher);
 
-  provider->OnPermissionGranted(GURL(kTestHostUrl));
+  provider->OnPermissionGranted();
 
   fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);

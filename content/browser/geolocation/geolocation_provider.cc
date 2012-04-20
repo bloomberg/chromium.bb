@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@ GeolocationProvider* GeolocationProvider::GetInstance() {
 GeolocationProvider::GeolocationProvider()
     : base::Thread("Geolocation"),
       client_loop_(base::MessageLoopProxy::current()),
+      is_permission_granted_(false),
       arbitrator_(NULL) {
 }
 
@@ -53,7 +54,7 @@ void GeolocationProvider::OnObserversChanged() {
     if (!IsRunning()) {
       Start();
       if (HasPermissionBeenGranted())
-        InformProvidersPermissionGranted(most_recent_authorized_frame_);
+        InformProvidersPermissionGranted();
     }
 
     // The high accuracy requirement may have changed.
@@ -91,27 +92,25 @@ void GeolocationProvider::StopProviders() {
   arbitrator_->StopProviders();
 }
 
-void GeolocationProvider::OnPermissionGranted(const GURL& requesting_frame) {
+void GeolocationProvider::OnPermissionGranted() {
   DCHECK(OnClientThread());
-  most_recent_authorized_frame_ = requesting_frame;
+  is_permission_granted_ = true;
   if (IsRunning())
-    InformProvidersPermissionGranted(requesting_frame);
+    InformProvidersPermissionGranted();
 }
 
-void GeolocationProvider::InformProvidersPermissionGranted(
-    const GURL& requesting_frame) {
+void GeolocationProvider::InformProvidersPermissionGranted() {
   DCHECK(IsRunning());
-  DCHECK(requesting_frame.is_valid());
   if (!OnGeolocationThread()) {
     message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&GeolocationProvider::InformProvidersPermissionGranted,
-                   base::Unretained(this), requesting_frame));
+                   base::Unretained(this)));
     return;
   }
   DCHECK(OnGeolocationThread());
   DCHECK(arbitrator_);
-  arbitrator_->OnPermissionGranted(requesting_frame);
+  arbitrator_->OnPermissionGranted();
 }
 
 void GeolocationProvider::Init() {
@@ -136,7 +135,7 @@ void GeolocationProvider::OnLocationUpdate(const Geoposition& position) {
 
 bool GeolocationProvider::HasPermissionBeenGranted() const {
   DCHECK(OnClientThread());
-  return most_recent_authorized_frame_.is_valid();
+  return is_permission_granted_;
 }
 
 bool GeolocationProvider::OnClientThread() const {

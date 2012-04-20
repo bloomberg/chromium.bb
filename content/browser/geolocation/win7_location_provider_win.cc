@@ -75,10 +75,6 @@ void Win7LocationProvider::UpdatePosition() {
   ScheduleNextPoll(0);
 }
 
-void Win7LocationProvider::OnPermissionGranted(
-  const GURL& requesting_frame) {
-}
-
 void Win7LocationProvider::DoPollTask() {
   Geoposition new_position;
   api_->GetPosition(&new_position);

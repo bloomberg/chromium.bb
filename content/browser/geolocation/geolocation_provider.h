@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "content/browser/geolocation/geolocation_observer.h"
 #include "content/common/content_export.h"
 #include "content/common/geoposition.h"
-#include "googleurl/src/gurl.h"
 
 class GeolocationArbitrator;
 
@@ -43,7 +42,7 @@ class CONTENT_EXPORT GeolocationProvider
   // via AddObserver(). Returns true if the observer was removed.
   bool RemoveObserver(GeolocationObserver* delegate);
 
-  void OnPermissionGranted(const GURL& requesting_frame);
+  void OnPermissionGranted();
   bool HasPermissionBeenGranted() const;
 
   // GeolocationObserver
@@ -77,7 +76,7 @@ class CONTENT_EXPORT GeolocationProvider
   void StartProviders(const GeolocationObserverOptions& options);
 
   // Update the providers on the geolocation thread, which must be running.
-  void InformProvidersPermissionGranted(const GURL& requesting_frame);
+  void InformProvidersPermissionGranted();
 
   // Notifies observers when a new position fix is available.
   void NotifyObservers(const Geoposition& position);
@@ -90,7 +89,7 @@ class CONTENT_EXPORT GeolocationProvider
 
   // Only used on client thread
   ObserverMap observers_;
-  GURL most_recent_authorized_frame_;
+  bool is_permission_granted_;
   Geoposition position_;
 
   // Only to be used on the geolocation thread.

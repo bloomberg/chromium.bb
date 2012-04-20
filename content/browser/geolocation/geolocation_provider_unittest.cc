@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,7 +61,7 @@ class GeolocationProviderTest : public testing::Test {
 // Regression test for http://crbug.com/59377
 TEST_F(GeolocationProviderTest, OnPermissionGrantedWithoutObservers) {
   EXPECT_FALSE(provider_->HasPermissionBeenGranted());
-  provider_->OnPermissionGranted(GURL("http://example.com"));
+  provider_->OnPermissionGranted();
   EXPECT_TRUE(provider_->HasPermissionBeenGranted());
 }
 

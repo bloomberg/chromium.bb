@@ -155,7 +155,7 @@ TEST_F(GeolocationLocationArbitratorTest, CreateDestroy) {
 
 TEST_F(GeolocationLocationArbitratorTest, OnPermissionGranted) {
   EXPECT_FALSE(arbitrator_->HasPermissionBeenGranted());
-  arbitrator_->OnPermissionGranted(GURL("http://frame.test"));
+  arbitrator_->OnPermissionGranted();
   EXPECT_TRUE(arbitrator_->HasPermissionBeenGranted());
   // Can't check the provider has been notified without going through the
   // motions to create the provider (see next test).
@@ -188,16 +188,11 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_EQ(cell()->position_.latitude,
             observer_->last_position_.latitude);
 
-  EXPECT_FALSE(
-      cell()->permission_granted_url_.is_valid());
+  EXPECT_FALSE(cell()->is_permission_granted_);
   EXPECT_FALSE(arbitrator_->HasPermissionBeenGranted());
-  GURL frame_url("http://frame.test");
-  arbitrator_->OnPermissionGranted(frame_url);
+  arbitrator_->OnPermissionGranted();
   EXPECT_TRUE(arbitrator_->HasPermissionBeenGranted());
-  EXPECT_TRUE(
-      cell()->permission_granted_url_.is_valid());
-  EXPECT_EQ(frame_url,
-            cell()->permission_granted_url_);
+  EXPECT_TRUE(cell()->is_permission_granted_);
 }
 
 TEST_F(GeolocationLocationArbitratorTest, SetObserverOptions) {

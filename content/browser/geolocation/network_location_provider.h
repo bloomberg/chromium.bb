@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #pragma once
 
 #include <list>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -79,7 +78,7 @@ class NetworkLocationProvider
   virtual void StopProvider() OVERRIDE;
   virtual void GetPosition(Geoposition *position) OVERRIDE;
   virtual void UpdatePosition() OVERRIDE;
-  virtual void OnPermissionGranted(const GURL& requesting_frame) OVERRIDE;
+  virtual void OnPermissionGranted() OVERRIDE;
 
  private:
   // Satisfies a position request from cache or network.
@@ -123,9 +122,10 @@ class NetworkLocationProvider
   // The current best position estimate.
   Geoposition position_;
 
-  bool is_new_data_available_;
+  // Whether permission has been granted for the provider to operate.
+  bool is_permission_granted_;
 
-  std::string most_recent_authorized_host_;
+  bool is_new_data_available_;
 
   // The network location request object, and the url it uses.
   scoped_ptr<NetworkLocationRequest> request_;

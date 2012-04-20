@@ -1,12 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_NETWORK_LOCATION_REQUEST_H_
 #define CONTENT_BROWSER_GEOLOCATION_NETWORK_LOCATION_REQUEST_H_
 #pragma once
-
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -53,8 +51,7 @@ class NetworkLocationRequest : private content::URLFetcherDelegate {
 
   // Makes a new request. Returns true if the new request was successfully
   // started. In all cases, any currently pending request will be canceled.
-  bool MakeRequest(const std::string& host,
-                   const string16& access_token,
+  bool MakeRequest(const string16& access_token,
                    const RadioData& radio_data,
                    const WifiData& wifi_data,
                    const base::Time& timestamp);

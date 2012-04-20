@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "content/browser/geolocation/arbitrator_dependency_factory.h"
 #include "content/public/browser/access_token_store.h"
+#include "googleurl/src/gurl.h"
 
 using content::AccessTokenStore;
 
@@ -32,7 +33,8 @@ GeolocationArbitrator::GeolocationArbitrator(
       access_token_store_(dependency_factory->NewAccessTokenStore()),
       get_time_now_(dependency_factory->GetTimeFunction()),
       observer_(observer),
-      position_provider_(NULL) {
+      position_provider_(NULL),
+      is_permission_granted_(false) {
 
 }
 
@@ -51,12 +53,11 @@ GeolocationArbitrator* GeolocationArbitrator::Create(
   return arbitrator;
 }
 
-void GeolocationArbitrator::OnPermissionGranted(
-    const GURL& requesting_frame) {
-  most_recent_authorized_frame_ = requesting_frame;
+void GeolocationArbitrator::OnPermissionGranted() {
+  is_permission_granted_ = true;
   for (ScopedVector<LocationProviderBase>::iterator i = providers_.begin();
       i != providers_.end(); ++i) {
-    (*i)->OnPermissionGranted(requesting_frame);
+    (*i)->OnPermissionGranted();
   }
 }
 
@@ -113,8 +114,8 @@ void GeolocationArbitrator::RegisterProvider(
   if (!provider)
     return;
   provider->RegisterListener(this);
-  if (most_recent_authorized_frame_.is_valid())
-    provider->OnPermissionGranted(most_recent_authorized_frame_);
+  if (is_permission_granted_)
+    provider->OnPermissionGranted();
   providers_->push_back(provider);
 }
 
@@ -159,7 +160,7 @@ bool GeolocationArbitrator::IsNewPositionBetter(
 }
 
 bool GeolocationArbitrator::HasPermissionBeenGranted() const {
-  return most_recent_authorized_frame_.is_valid();
+  return is_permission_granted_;
 }
 
 void GeolocationArbitrator::SetDependencyFactoryForTest(

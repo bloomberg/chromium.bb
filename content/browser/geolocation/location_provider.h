@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ class CONTENT_EXPORT LocationProviderBase
   virtual void UpdatePosition() {}
   // Delegated to the provider by GeolocationArbitrator. See the corresponding
   // method on that class for more details.
-  virtual void OnPermissionGranted(const GURL& requesting_frame) {}
+  virtual void OnPermissionGranted() {}
 
   bool has_listeners() const;
 

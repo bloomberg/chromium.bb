@@ -91,10 +91,6 @@ void GpsLocationProviderLinux::UpdatePosition() {
   ScheduleNextGpsPoll(0);
 }
 
-void GpsLocationProviderLinux::OnPermissionGranted(
-    const GURL& requesting_frame) {
-}
-
 void GpsLocationProviderLinux::DoGpsPollTask() {
   if (!gps_->Start()) {
     DLOG(WARNING) << "Couldn't start GPS provider.";

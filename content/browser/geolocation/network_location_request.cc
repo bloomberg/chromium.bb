@@ -5,6 +5,7 @@
 #include "content/browser/geolocation/network_location_request.h"
 
 #include <set>
+#include <string>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -72,8 +73,7 @@ NetworkLocationRequest::NetworkLocationRequest(
 NetworkLocationRequest::~NetworkLocationRequest() {
 }
 
-bool NetworkLocationRequest::MakeRequest(const std::string& host_name,
-                                         const string16& access_token,
+bool NetworkLocationRequest::MakeRequest(const string16& access_token,
                                          const RadioData& radio_data,
                                          const WifiData& wifi_data,
                                          const base::Time& timestamp) {
