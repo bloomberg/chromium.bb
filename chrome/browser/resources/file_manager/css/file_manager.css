@@ -287,15 +287,25 @@ div.root-eject {
   background-image: url('../images/eject.png');
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: 10px 8px;
   cursor: pointer;
   height: 20px;
-  opacity: 0.5;
+  margin-right: 6px;
+  opacity: 0;
   width: 20px;
 }
 
 div.root-eject:hover {
   opacity: 1;
+}
+
+.root-item[selected] > div.root-eject:not(:hover),
+.root-item:hover > div.root-eject:not(:hover) {
+  opacity: 0.7;
+}
+
+.root-item[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 /* Breadcrumbs and things under the title but above the list view. */

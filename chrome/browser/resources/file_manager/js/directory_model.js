@@ -605,7 +605,6 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
  * Changes directory. Causes 'directory-change' event.
  *
  * @param {string} path New current directory path.
- * @return {undefined}
  */
 DirectoryModel.prototype.changeDirectory = function(path) {
   var onDirectoryResolved = function(dirEntry) {
@@ -625,8 +624,10 @@ DirectoryModel.prototype.changeDirectory = function(path) {
     return;
   }
 
-  if (path == '/')
-    return onDirectoryResolved(this.root_);
+  if (path == '/') {
+    onDirectoryResolved(this.root_);
+    return;
+  }
 
   this.root_.getDirectory(
       path, {create: false},
@@ -1027,18 +1028,27 @@ DirectoryModel.prototype.onRootsSelectionChanged_ = function(event) {
 };
 
 /**
+ * Find roots list item by root path.
+ *
+ * @param {string} path Root path.
+ * @return {number} Index of the item.
+ * @private
+ */
+DirectoryModel.prototype.findRootsListItem_ = function(path) {
+  var roots = this.rootsList_;
+  for (var index = 0; index < roots.length; index++) {
+    if (roots.item(index).fullPath == path)
+      return index;
+  }
+  return -1;
+};
+
+/**
  * @private
  */
 DirectoryModel.prototype.updateRootsListSelection_ = function() {
-  var roots = this.rootsList_;
-  var rootPath = this.rootPath;
-  for (var index = 0; index < roots.length; index++) {
-    if (roots.item(index).fullPath == rootPath) {
-      this.rootsListSelection.selectedIndex = index;
-      return;
-    }
-  }
-  this.rootsListSelection.selectedIndex = -1;
+  this.rootsListSelection.selectedIndex =
+      this.findRootsListItem_(this.rootPath);
 };
 
 /**
@@ -1084,6 +1094,33 @@ DirectoryModel.prototype.updateVolumeMetadata_ = function() {
         });
       });
     }
+  }
+};
+
+/**
+ * Prepare the root for the unmount.
+ *
+ * @param {string} rootPath
+ */
+DirectoryModel.prototype.prepareUnmount = function(rootPath) {
+  var index = this.findRootsListItem_(rootPath);
+  if (index == -1) {
+    console.error('Unknown root entry', rootPath);
+    return;
+  }
+  var entry = this.rootsList_.item(index);
+
+  // We never need to remove this attribute because even if the unmount fails
+  // the onMountCompleted handler calls updateRoots which creates a new entry
+  // object for this volume.
+  entry.unmounting = true;
+
+  // Re-place the entry into the roots data model to force re-rendering.
+  this.rootsList_.splice(index, 1, entry);
+
+  if (rootPath == this.rootPath) {
+    // TODO(kaznacheev): Consider changing to the most recently used root.
+    this.changeDirectory('/' + DirectoryModel.DOWNLOADS_DIRECTORY);
   }
 };
 

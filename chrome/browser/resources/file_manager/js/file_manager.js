@@ -1950,18 +1950,22 @@ FileManager.prototype = {
 
     if (rootType == DirectoryModel.RootType.ARCHIVE ||
         rootType == DirectoryModel.RootType.REMOVABLE) {
-      var eject = this.document_.createElement('div');
-      eject.className = 'root-eject';
-      eject.addEventListener('click', function(event) {
-        event.stopPropagation();
-        this.unmountVolume_(entry);
-      }.bind(this));
-      // Block other mouse handlers.
-      eject.addEventListener('mouseup', function(e) { e.stopPropagation() });
-      eject.addEventListener('mousedown', function(e) { e.stopPropagation() });
-      li.appendChild(eject);
+      if (entry.unmounting) {
+        li.setAttribute('disabled', 'disabled');
+      } else {
+        var eject = this.document_.createElement('div');
+        eject.className = 'root-eject';
+        eject.addEventListener('click', function(event) {
+          event.stopPropagation();
+          this.unmountVolume_(entry);
+        }.bind(this));
+        // Block other mouse handlers.
+        eject.addEventListener('mouseup', function(e) { e.stopPropagation() });
+        eject.addEventListener('mousedown', function(e) { e.stopPropagation() });
+        li.appendChild(eject);
 
-      cr.ui.contextMenuHandler.setContextMenu(li, this.rootsContextMenu_);
+        cr.ui.contextMenuHandler.setContextMenu(li, this.rootsContextMenu_);
+      }
     }
 
     cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
@@ -1983,9 +1987,10 @@ FileManager.prototype = {
 
   /**
    * Unmounts device.
-   * @param {string} url The url of removable storage to unmount.
+   * @param {Entry} entry The entry to unmount.
    */
   FileManager.prototype.unmountVolume_ = function(entry) {
+    this.directoryModel_.prepareUnmount(entry.fullPath);
     this.unmountRequests_.push(entry.fullPath);
     chrome.fileBrowserPrivate.removeMount(entry.toURL());
   };

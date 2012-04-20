@@ -17,7 +17,7 @@ var util = {
       var ary = Array.apply(null, arguments);
       console.log(msg + ': ' + ary.join(', '));
       if (opt_callback)
-        opt_callback.call(arguments);
+        opt_callback.apply(null, arguments);
     };
   },
 
