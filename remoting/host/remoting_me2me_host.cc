@@ -350,6 +350,9 @@ class HostProcess
   void RestartOnHostShutdown() {
     DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
+    if (shutting_down_)
+      return;
+
     restarting_ = false;
     host_ = NULL;
     log_to_server_.reset();
@@ -364,6 +367,7 @@ class HostProcess
 
     if (shutting_down_)
       return;
+
     shutting_down_ = true;
     exit_code_ = exit_code;
     host_->Shutdown(base::Bind(
