@@ -296,7 +296,7 @@ void MockTransferBuffer::FreePendingToken(void* p, unsigned int /* token */) {
 class GLES2ImplementationTest : public testing::Test {
  protected:
   static const uint8 kInitialValue = 0xBD;
-  static const int32 kNumCommandEntries = 400;
+  static const int32 kNumCommandEntries = 500;
   static const int32 kCommandBufferSizeBytes =
       kNumCommandEntries * sizeof(CommandBufferEntry);
   static const size_t kTransferBufferSize = 256;
@@ -1910,6 +1910,8 @@ TEST_F(GLES2ImplementationTest, TexImage2D) {
       pixels, mem1.ptr));
 
   ClearCommands();
+  gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
+
   ExpectedMemoryInfo mem2 = GetExpectedMemory(sizeof(pixels));
   Cmds2 expected2;
   expected2.tex_image_2d.Init(
@@ -1917,7 +1919,6 @@ TEST_F(GLES2ImplementationTest, TexImage2D) {
       mem2.id, mem2.offset);
   expected2.set_token.Init(GetNextToken());
   const void* commands2 = GetPut();
-  gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
   gl_->TexImage2D(
       kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
       pixels);
@@ -1997,6 +1998,7 @@ TEST_F(GLES2ImplementationTest, TexImage2D2Writes) {
       pixels.get() + kHeight / 2 * padded_row_size, mem2.ptr));
 
   ClearCommands();
+  gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
   const void* commands2 = GetPut();
   ExpectedMemoryInfo mem3 = GetExpectedMemory(half_size);
   ExpectedMemoryInfo mem4 = GetExpectedMemory(half_size);
@@ -2020,7 +2022,6 @@ TEST_F(GLES2ImplementationTest, TexImage2D2Writes) {
   //         GetExpectedTransferAddressFromOffsetAs<uint8>(offset3, half_size)))
   //     .RetiresOnSaturation();
 
-  gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
   gl_->TexImage2D(
       kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
       pixels.get());
@@ -2048,6 +2049,7 @@ TEST_F(GLES2ImplementationTest, TexSubImage2DFlipY) {
   struct Cmds {
     PixelStorei pixel_store_i1;
     TexImage2D tex_image_2d;
+    PixelStorei pixel_store_i2;
     TexSubImage2D tex_sub_image_2d1;
     cmd::SetToken set_token1;
     TexSubImage2D tex_sub_image_2d2;
@@ -2067,6 +2069,7 @@ TEST_F(GLES2ImplementationTest, TexSubImage2DFlipY) {
   expected.tex_image_2d.Init(
       kTarget, kLevel, kFormat, kTextureWidth, kTextureHeight, kBorder, kFormat,
       kType, 0, 0);
+  expected.pixel_store_i2.Init(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
   expected.tex_sub_image_2d1.Init(kTarget, kLevel, kSubImageXOffset,
       kSubImageYOffset + 2, kSubImageWidth, 2, kFormat, kType,
       mem1.id, mem1.offset, false);
@@ -2080,12 +2083,11 @@ TEST_F(GLES2ImplementationTest, TexSubImage2DFlipY) {
   gl_->TexImage2D(
       kTarget, kLevel, kFormat, kTextureWidth, kTextureHeight, kBorder, kFormat,
       kType, NULL);
-  // this call should not emit commands (handled client-side)
   gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
   scoped_array<uint32> pixels(new uint32[kSubImageWidth * kSubImageHeight]);
   for (int y = 0; y < kSubImageHeight; ++y) {
     for (int x = 0; x < kSubImageWidth; ++x) {
-        pixels.get()[kSubImageWidth * y + x] = x | (y << 16);
+      pixels.get()[kSubImageWidth * y + x] = x | (y << 16);
     }
   }
   gl_->TexSubImage2D(
@@ -2125,11 +2127,13 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
 
   struct {
     PixelStorei pixel_store_i;
+    PixelStorei pixel_store_i2;
     TexImage2D tex_image_2d;
   } texImageExpected;
 
   struct  {
     PixelStorei pixel_store_i;
+    PixelStorei pixel_store_i2;
     TexImage2D tex_image_2d;
     TexSubImage2D tex_sub_image_2d;
   } texSubImageExpected;
@@ -2172,6 +2176,8 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
               src_pixels.get());
           texSubImageExpected.pixel_store_i.Init(
               GL_UNPACK_ALIGNMENT, alignment);
+          texSubImageExpected.pixel_store_i2.Init(
+              GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
           texSubImageExpected.tex_image_2d.Init(
               GL_TEXTURE_2D, kLevel, kFormat, kTexWidth, kTexHeight, kBorder,
               kFormat, kType, 0, 0);
@@ -2187,6 +2193,8 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
               kSrcSubImageWidth, kSrcSubImageHeight, kBorder, kFormat, kType,
               src_pixels.get());
           texImageExpected.pixel_store_i.Init(GL_UNPACK_ALIGNMENT, alignment);
+          texImageExpected.pixel_store_i2.Init(
+              GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
           texImageExpected.tex_image_2d.Init(
               GL_TEXTURE_2D, kLevel, kFormat, kSrcSubImageWidth,
               kSrcSubImageHeight, kBorder, kFormat, kType, mem.id, mem.offset);

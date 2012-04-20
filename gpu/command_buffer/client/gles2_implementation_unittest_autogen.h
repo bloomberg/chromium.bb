@@ -1634,6 +1634,17 @@ TEST_F(GLES2ImplementationTest, TexImageIOSurface2DCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, CopyTextureCHROMIUM) {
+  struct Cmds {
+    CopyTextureCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2, 3, 4);
+
+  gl_->CopyTextureCHROMIUM(1, 2, 3, 4);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, DrawArraysInstancedANGLE) {
   struct Cmds {
     DrawArraysInstancedANGLE cmd;

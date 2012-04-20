@@ -1254,7 +1254,7 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
         return;
     case GL_UNPACK_FLIP_Y_CHROMIUM:
         unpack_flip_y_ = (param != 0);
-        return;
+        break;
     case GL_PACK_REVERSE_ROW_ORDER_ANGLE:
         pack_reverse_row_order_ =
             IsAnglePackReverseRowOrderAvailable() ? (param != 0) : false;
