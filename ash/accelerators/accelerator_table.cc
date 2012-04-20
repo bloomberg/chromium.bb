@@ -127,9 +127,9 @@ const AcceleratorData kAcceleratorData[] = {
     TOGGLE_DESKTOP_BACKGROUND_MODE },
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_F11, false, true, false,
     TOGGLE_ROOT_WINDOW_FULL_SCREEN },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, false, false, true,
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, true, true, true,
     PRINT_LAYER_HIERARCHY },
-  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_L, true, false, true,
+  { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_W, true, true, true,
     PRINT_WINDOW_HIERARCHY },
   // For testing on systems where Alt-Tab is already mapped.
   { ui::ET_TRANSLATED_KEY_PRESS, ui::VKEY_W, false, false, true,
