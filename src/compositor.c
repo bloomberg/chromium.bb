@@ -1959,6 +1959,7 @@ input_device_attach(struct wl_client *client,
 		buffer = buffer_resource->data;
 
 	weston_surface_attach(&device->sprite->surface, buffer);
+	empty_region(&device->sprite->input);
 
 	if (!buffer)
 		return;
