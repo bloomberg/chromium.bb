@@ -193,10 +193,6 @@ class CONTENT_EXPORT DownloadFileManager
   // A map of all in progress downloads.  It owns the download files.
   DownloadFileMap downloads_;
 
-  // Schedule periodic updates of the download progress. This timer
-  // is controlled from the FILE thread, and posts updates to the UI thread.
-  scoped_ptr<base::RepeatingTimer<DownloadFileManager> > update_timer_;
-
   scoped_ptr<DownloadFileFactory> download_file_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileManager);

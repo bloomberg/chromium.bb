@@ -16,6 +16,8 @@ using content::BrowserThread;
 using content::DownloadId;
 using content::DownloadManager;
 
+const int kUpdatePeriodMs = 500;
+
 DownloadFileImpl::DownloadFileImpl(
     const DownloadCreateInfo* info,
     DownloadRequestHandleInterface* request_handle,
@@ -44,11 +46,17 @@ DownloadFileImpl::~DownloadFileImpl() {
 
 // BaseFile delegated functions.
 net::Error DownloadFileImpl::Initialize() {
+  update_timer_.reset(new base::RepeatingTimer<DownloadFileImpl>());
   return file_.Initialize();
 }
 
 net::Error DownloadFileImpl::AppendDataToFile(const char* data,
                                               size_t data_len) {
+  if (!update_timer_->IsRunning()) {
+    update_timer_->Start(FROM_HERE,
+                         base::TimeDelta::FromMilliseconds(kUpdatePeriodMs),
+                         this, &DownloadFileImpl::SendUpdate);
+  }
   return file_.AppendDataToFile(data, data_len);
 }
 
@@ -66,6 +74,7 @@ void DownloadFileImpl::Cancel() {
 
 void DownloadFileImpl::Finish() {
   file_.Finish();
+  update_timer_.reset();
 }
 
 void DownloadFileImpl::AnnotateWithSourceInformation() {
@@ -124,4 +133,14 @@ std::string DownloadFileImpl::DebugString() const {
                             id_.local(),
                             request_handle_->DebugString().c_str(),
                             file_.DebugString().c_str());
+}
+
+void DownloadFileImpl::SendUpdate() {
+  if (download_manager_.get()) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DownloadManager::UpdateDownload,
+                   download_manager_, id_.local(),
+                   BytesSoFar(), CurrentSpeed(), GetHashState()));
+  }
 }

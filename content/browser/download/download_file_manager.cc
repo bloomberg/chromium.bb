@@ -34,10 +34,6 @@ using content::DownloadManager;
 
 namespace {
 
-// Throttle updates to the UI thread so that a fast moving download doesn't
-// cause it to become unresponsive (in milliseconds).
-const int kUpdatePeriodMs = 500;
-
 class DownloadFileFactoryImpl
     : public DownloadFileManager::DownloadFileFactory {
  public:
@@ -87,7 +83,6 @@ void DownloadFileManager::Shutdown() {
 
 void DownloadFileManager::OnShutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  StopUpdateTimer();
   STLDeleteValues(&downloads_);
 }
 
@@ -126,8 +121,6 @@ void DownloadFileManager::CreateDownloadFile(
 
     // The file is now ready, we can un-pause the request and start saving data.
     request_handle.ResumeRequest();
-
-    StartUpdateTimer();
   }
 
   BrowserThread::PostTask(
@@ -140,24 +133,6 @@ DownloadFile* DownloadFileManager::GetDownloadFile(
     DownloadId global_id) {
   DownloadFileMap::iterator it = downloads_.find(global_id);
   return it == downloads_.end() ? NULL : it->second;
-}
-
-void DownloadFileManager::StartUpdateTimer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (!update_timer_.get())
-    update_timer_.reset(new base::RepeatingTimer<DownloadFileManager>());
-  if (!update_timer_->IsRunning()) {
-    update_timer_->Start(FROM_HERE,
-                         base::TimeDelta::FromMilliseconds(kUpdatePeriodMs),
-                         this, &DownloadFileManager::UpdateInProgressDownloads);
-  }
-}
-
-void DownloadFileManager::StopUpdateTimer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  // Destroy the timer now. We can't wait until ~DownloadFileManager, because it
-  // may happen on another thread and timers don't allow that.
-  update_timer_.reset();
 }
 
 void DownloadFileManager::UpdateInProgressDownloads() {
@@ -495,7 +470,4 @@ void DownloadFileManager::EraseDownload(DownloadId global_id) {
   downloads_.erase(global_id);
 
   delete download_file;
-
-  if (downloads_.empty())
-    StopUpdateTimer();
 }

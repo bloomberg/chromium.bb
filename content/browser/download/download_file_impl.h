@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/timer.h"
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/download_request_handle.h"
 
@@ -55,12 +56,18 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   virtual std::string DebugString() const OVERRIDE;
 
  private:
+  // Send updates on our progress.
+  void SendUpdate();
+
   // The base file instance.
   BaseFile file_;
 
   // The unique identifier for this download, assigned at creation by
   // the DownloadFileManager for its internal record keeping.
   content::DownloadId id_;
+
+  // Used to trigger progress updates.
+  scoped_ptr<base::RepeatingTimer<DownloadFileImpl> > update_timer_;
 
   // The handle to the request information.  Used for operations outside the
   // download system, specifically canceling a download.
