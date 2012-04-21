@@ -9,11 +9,14 @@ found in the LICENSE file.
 <title>All Tracing Tests</title>
 <script>
   tests = [
+    'overlay_test.html',
     'timeline_model_test.html',
     'timeline_track_test.html',
     'linux_perf_importer_test.html',
     'trace_event_importer_test.html',
     'profiling_view_test.html',
+    'timeline_test.html',
+    'timeline_view_test.html',
   ];
 </script>
 <script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
@@ -28,6 +31,7 @@ found in the LICENSE file.
     var testRunner = new goog.testing.MultiTestRunner()
         .setName(document.title)
         .setBasePath('./')
+        .setPoolSize(8)
         .setStatsBucketSizes(5, 500)
         .setHidePasses(true)
         .addTests(tests);

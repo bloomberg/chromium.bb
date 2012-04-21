@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
 
 /**
  * @fileoverview TimelineModel is a parsed representation of the
@@ -212,7 +213,6 @@ cr.define('tracing', function() {
           ', tid: ' + this.tid +
           (this.name ? ', name: ' + this.name : '');
     }
-
   };
 
   /**
@@ -579,7 +579,6 @@ cr.define('tracing', function() {
       }
       return groups;
     }
-
   };
 
   /**
@@ -1006,7 +1005,7 @@ cr.define('tracing', function() {
       if (opt_zeroAndBoost === undefined)
         opt_zeroAndBoost = true;
 
-      activeImporters = [];
+      var activeImporters = [];
       var importer = this.importOneTrace_(eventData, false);
       activeImporters.push(importer);
       if (opt_additionalEventData) {
@@ -1036,6 +1035,24 @@ cr.define('tracing', function() {
     }
   };
 
+  /**
+   * @constructor A filter that can be passed into
+   * Timeline.findAllObjectsMatchingFilter
+   */
+  function TimelineFilter(text) {
+    this.text_ = text;
+  }
+  TimelineFilter.prototype = {
+    __proto__: Object.prototype,
+
+    matchSlice: function(slice) {
+      if (this.text_.length == 0)
+        return false;
+      return slice.title.indexOf(this.text_) != -1;
+    }
+
+  };
+
   return {
     getPallette: getPallette,
     getPalletteHighlightIdBoost: getPalletteHighlightIdBoost,
@@ -1051,7 +1068,8 @@ cr.define('tracing', function() {
     TimelineProcess: TimelineProcess,
     TimelineCpu: TimelineCpu,
     TimelineAsyncSliceGroup: TimelineAsyncSliceGroup,
-    TimelineModel: TimelineModel
+    TimelineModel: TimelineModel,
+    TimelineFilter: TimelineFilter
   };
 
 });

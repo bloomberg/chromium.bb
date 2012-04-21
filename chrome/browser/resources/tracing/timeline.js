@@ -194,6 +194,13 @@ cr.define('tracing', function() {
         this.xPanWorldPosToViewPos(worldMax, 'right', viewWidth);
     },
 
+    xSetWorldRange: function(worldMin, worldMax, viewWidth) {
+      var worldRange = worldMax - worldMin;
+      var scaleX = viewWidth / worldRange;
+      var panX = -worldMin;
+      this.setPanAndScale(panX, scaleX);
+    },
+
     get gridEnabled() {
       return this.gridEnabled_;
     },
@@ -415,13 +422,25 @@ cr.define('tracing', function() {
 
       // Set up a reasonable viewport.
       this.viewport_.setWhenPossible(function() {
-        var rangeTimestamp = this.model_.maxTimestamp -
-            this.model_.minTimestamp;
         var w = this.firstCanvas.width;
-        var scaleX = w / rangeTimestamp;
-        var panX = -this.model_.minTimestamp;
-        this.viewport_.setPanAndScale(panX, scaleX);
+        this.viewport_.xSetWorldRange(this.model_.minTimestamp,
+                                      this.model_.maxTimestamp,
+                                      w);
       }.bind(this));
+    },
+
+    /**
+     * @return {Array} An array of objects that match the provided
+     * TimelineFilter.
+     */
+    findAllObjectsMatchingFilter: function(filter) {
+      var hits = [];
+      for (var i = 0; i < this.tracks_.children.length; ++i) {
+        var trackHits =
+          this.tracks_.children[i].findAllObjectsMatchingFilter(filter);
+        Array.prototype.push.apply(hits, trackHits);
+      }
+      return hits;
     },
 
     /**
@@ -444,6 +463,8 @@ cr.define('tracing', function() {
     },
 
     get listenToKeys_() {
+      if (!this.viewport_.isAttachedToDocument_)
+        return false;
       if (!this.focusElement_)
         return true;
       if (this.focusElement.tabIndex >= 0)
@@ -586,6 +607,7 @@ cr.define('tracing', function() {
         return false;
       }
       this.selection = selection;
+
       // Potentially move the viewport to keep the new selection in view.
       this.viewport_.xPanWorldRangeIntoView(minTime, maxTime,
           this.firstCanvas.width);
@@ -628,6 +650,39 @@ cr.define('tracing', function() {
       for (i = 0; i < this.selection_.length; i++)
         this.selection_[i].slice.selected = true;
       this.viewport_.dispatchChangeEvent(); // Triggers a redraw.
+    },
+
+    getSelectionRange: function() {
+      var wmin = Infinity;
+      var wmax = -wmin;
+      for (var i = 0; i < this.selection_.length; i++) {
+        var hit = this.selection_[i];
+        if (hit.slice) {
+          wmin = Math.min(wmin, hit.slice.start);
+          wmax = Math.max(wmax, hit.slice.end);
+        }
+      }
+      return {
+        min: wmin,
+        max: wmax
+      };
+    },
+
+    setSelectionAndMakeVisible: function(selection, zoomAllowed) {
+      this.selection = selection;
+      var range = this.getSelectionRange();
+      var size = this.viewport_.xWorldVectorToView(range.max - range.min);
+      if (zoomAllowed && size < 50) {
+        var worldCenter = range.min + (range.max - range.min) * 0.5;
+        var worldRange = (range.max - range.min) * 5;
+        this.viewport_.xSetWorldRange(worldCenter - worldRange * 0.5,
+                                      worldCenter + worldRange * 0.5,
+                                      this.firstCanvas.width);
+        return;
+      }
+
+      this.viewport_.xPanWorldRangeIntoView(range.min, range.max,
+                                            this.firstCanvas.width);
     },
 
     get firstCanvas() {

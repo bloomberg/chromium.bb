@@ -5,8 +5,8 @@
 'use strict';
 
 /**
- * @fileoverview ProfilingView visualizes TRACE_EVENT events using the
- * tracing.Timeline component.
+ * @fileoverview ProfilingView glues the TimelineView control to
+ * TracingController.
  */
 cr.define('tracing', function() {
   /**
@@ -27,13 +27,6 @@ cr.define('tracing', function() {
       this.classList.add('profiling-view');
 
       // make the <list>/add/save/record element
-      this.controlDiv_ = document.createElement('div');
-      this.controlDiv_.className = 'control';
-      this.appendChild(this.controlDiv_);
-
-      var tracingEl = document.createElement('span');
-      tracingEl.textContent = 'Tracing: ';
-
       this.recordBn_ = document.createElement('button');
       this.recordBn_.className = 'record';
       this.recordBn_.textContent = 'Record';
@@ -47,16 +40,6 @@ cr.define('tracing', function() {
       this.loadBn_.textContent = 'Load';
       this.loadBn_.addEventListener('click', this.onLoad_.bind(this));
 
-      this.container_ = document.createElement('div');
-      this.container_.className = 'container';
-
-      this.timelineView_ = new tracing.TimelineView();
-
-      this.controlDiv_.appendChild(tracingEl);
-      this.controlDiv_.appendChild(this.recordBn_);
-      this.controlDiv_.appendChild(this.loadBn_);
-      this.controlDiv_.appendChild(this.saveBn_);
-
       if (cr.isChromeOS) {
         this.systemTracingBn_ = document.createElement('input');
         this.systemTracingBn_.type = 'checkbox';
@@ -66,12 +49,16 @@ cr.define('tracing', function() {
         systemTracingLabelEl.className = 'label';
         systemTracingLabelEl.textContent = 'System events';
         systemTracingLabelEl.appendChild(this.systemTracingBn_);
-
-        this.controlDiv_.appendChild(systemTracingLabelEl);
       }
 
-      this.container_.appendChild(this.timelineView_);
-      this.appendChild(this.container_);
+      this.timelineView_ = new tracing.TimelineView();
+      this.timelineView_.leftControls.appendChild(this.recordBn_);
+      this.timelineView_.leftControls.appendChild(this.saveBn_);
+      this.timelineView_.leftControls.appendChild(this.loadBn_);
+      if (cr.isChromeOS)
+        this.timelineView_.leftControls.appendChild(this.systemTracingBn_);
+
+      this.appendChild(this.timelineView_);
 
       document.addEventListener('keypress', this.onKeypress_.bind(this));
 

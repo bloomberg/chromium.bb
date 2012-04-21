@@ -108,6 +108,18 @@ cr.define('tracing', function() {
         if (a <= b)
           this.tracks_[i].pickRange(loWX, hiWX, loY, hiY, onHitCallback);
       }
+    },
+
+    /**
+     * @return {Array} Objects matching the given filter.
+     */
+    findAllObjectsMatchingFilter: function(filter) {
+      var hits = [];
+      for (var i = 0; i < this.tracks_.length; i++) {
+        var trackHits = this.tracks_[i].findAllObjectsMatchingFilter(filter);
+        Array.prototype.push.apply(hits, trackHits);
+      }
+      return hits;
     }
   };
 
@@ -756,8 +768,16 @@ cr.define('tracing', function() {
       else if ((index != undefined) && (index > 0))
         index--;
       return index != undefined ? this.slices_[index] : undefined;
-    }
+    },
 
+    findAllObjectsMatchingFilter: function(filter) {
+      var hits = [];
+      for (var i = 0; i < this.slices_.length; ++i)
+        if (filter.matchSlice(this.slices_[i]))
+          hits.push({track: this,
+                     slice: this.slices_[i]});
+      return hits;
+    }
   };
 
   /**
@@ -905,6 +925,10 @@ cr.define('tracing', function() {
     pickRange: function(loWX, hiWX, loY, hiY, onHitCallback) {
       // Does nothing. There's nothing interesting to pick on the viewport
       // track.
+    },
+
+    findAllObjectsMatchingFilter: function(filter) {
+      return [];
     }
 
   };
@@ -1051,6 +1075,10 @@ cr.define('tracing', function() {
      *     intersecting the interval.
      */
     pickRange: function(loWX, hiWX, loY, hiY, onHitCallback) {
+    },
+
+    findAllObjectsMatchingFilter: function(filter) {
+      return [];
     }
 
   };

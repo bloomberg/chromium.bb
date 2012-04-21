@@ -6,96 +6,87 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 <head i18n-values="dir:textdirection;">
-<title>Interactive Timeline Tests</title>
+<title>Timeline tests</title>
+<link rel="stylesheet" href="overlay.css">
+<link rel="stylesheet" href="timeline_view.css">
 <link rel="stylesheet" href="timeline.css">
+<link rel="stylesheet" href="../shared/css/tabs.css">
+<script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
 <script src="../shared/js/cr.js"></script>
 <script src="../shared/js/cr/event_target.js"></script>
 <script src="../shared/js/cr/ui.js"></script>
-<script src="../shared/js/util.js"></script>
+<script src="../shared/js/cr/ui/tabs.js"></script>
+<script src="overlay.js"></script>
+<script src="measuring_stick.js"></script>
+<script src="profiling_view.js"></script>
+<script src="timeline_view.js"></script>
 <script src="timeline_model.js"></script>
 <script src="linux_perf_importer.js"></script>
 <script src="trace_event_importer.js"></script>
-<script src="sorted_array_utils.js"></script>
-<script src="measuring_stick.js"></script>
 <script src="timeline.js"></script>
 <script src="timeline_track.js"></script>
+<script src="sorted_array_utils.js"></script>
 <script src="fast_rect_renderer.js"></script>
 <script src="test_utils.js"></script>
+<script>
+  goog.require('goog.testing.jsunit');
+</script>
+<style>
+</style>
 </head>
 <body>
-  <div class="timeline-test" src="./tests/trivial_trace.json" create-detached=1>
-  </div>
-
-  <div class="timeline-test" src="./tests/trivial_trace.json">
-  </div>
-
-  <div class="timeline-test" src="./tests/simple_trace.json">
-  </div>
-
-  <div class="timeline-test" src="./tests/instance_counters.json">
-  </div>
-
-  <div class="timeline-test" src="./tests/tall_trace.json">
-  </div>
-
-  <div class="timeline-test" src="./tests/big_trace.json">
-  </div>
-
-  <div class="timeline-test" src="./tests/huge_trace.json">
-  </div>
-
-  <div class="timeline-test" src="./tests/main_thread_has_unclosed_slices.json">
-  </div>
-
-  <div class="timeline-test" src="./tests/async_begin_end.json">
-  </div>
-
   <script>
-  function load(parentEl) {
-    var src = parentEl.getAttribute('src');
-    if (document.location.hash && document.location.hash.substring(1) != src) {
-      parentEl.hidden = true;
-      return;
+    'use strict';
+
+    /*
+     * This test just instantiates a TimelineView and adds it to the DOM
+     * to help with non-unittest UI work.
+     */
+    function testInstantiateTimeline() {
+      var events = [
+        {name: 'a', args: {}, pid: 52, ts: 520, cat: 'foo', tid: 53, ph: 'B'},
+        {name: 'a', args: {}, pid: 52, ts: 560, cat: 'foo', tid: 53, ph: 'E'},
+        {name: 'b', args: {}, pid: 52, ts: 629, cat: 'foo', tid: 53, ph: 'B'},
+        {name: 'b', args: {}, pid: 52, ts: 631, cat: 'foo', tid: 53, ph: 'E'}
+      ];
+      var model = new tracing.TimelineModel();
+      model.importEvents(events);
+      var timeline = new tracing.Timeline();
+      timeline.model = model;
+      document.body.appendChild(timeline);
     }
-    parentEl.hidden = false;
-    parentEl.textContent = '';
-    var titleEl = document.createElement('h3');
-    var linkEl = document.createElement('a');
-    linkEl.textContent = src;
-    linkEl.href = '#' + src;
-    titleEl.appendChild(linkEl);
 
-    var containerEl = document.createElement('div');
-    containerEl.tabIndex = 0;
-    containerEl.style.border = '1px solid red';
+    function testFindAllObjectsMatching() {
+      var model = new tracing.TimelineModel();
+      var p1 = model.getOrCreateProcess(1);
+      var t1 = p1.getOrCreateThread(1);
 
-    var timelineEl = document.createElement('div');
-    cr.ui.decorate(timelineEl, tracing.Timeline);
-    timelineEl.focusElement = containerEl;
+      t1.subRows[0].push(new tracing.TimelineThreadSlice('a', 0, 1, {}, 3));
+      t1.subRows[0].push(new tracing.TimelineThreadSlice('b', 0, 1, {}, 3));
 
-    parentEl.appendChild(titleEl);
-    parentEl.appendChild(containerEl);
+      var t1asg = t1.asyncSlices;
+      t1asg.slices.push(test_utils.newAsyncSliceNamed('a', 0, 1, t1, t1));
+      t1asg.slices.push(test_utils.newAsyncSliceNamed('b', 1, 2, t1, t1));
 
-    // Creating attached vs detached stress tests the canvas- and viewport-
-    // setup code.
-    var create_detached = parentEl.getAttribute('create-attached') == 1;
-    function createModel(data) {
-      timelineEl.model = new tracing.TimelineModel(data);
-      if (!create_detached)
-        containerEl.appendChild(timelineEl);
+
+      var timeline = new tracing.Timeline();
+      timeline.model = model;
+
+      var expected = [{slice: t1asg.slices[0].subSlices[0]},
+                      {slice: t1.subRows[0][0]}];
+      var result = timeline.findAllObjectsMatchingFilter(new tracing.TimelineFilter('a'));
+      assertEquals(2, result.length);
+      assertEquals(expected[0].slice, result[0].slice);
+      assertEquals(expected[1].slice, result[1].slice);
+
+      var expected = [{slice: t1asg.slices[1].subSlices[0]},
+                      {slice: t1.subRows[0][1]}];
+      var result = timeline.findAllObjectsMatchingFilter(new tracing.TimelineFilter('b'));
+      assertEquals(2, result.length);
+      assertEquals(expected[0].slice, result[0].slice);
+      assertEquals(expected[1].slice, result[1].slice);
     }
-    if (create_detached)
-      containerEl.appendChild(timelineEl);
-    test_utils.getAsync(src, createModel);
-  }
 
-  function onLoad() {
-    Array.prototype.forEach.call(document.querySelectorAll('.timeline-test'),
-                                 load);
-  }
-
-  document.addEventListener('DOMContentLoaded', onLoad);
-  window.addEventListener('hashchange', onLoad);
   </script>
 </body>
 </html>
