@@ -502,6 +502,8 @@ def OutputJson(keyboard_glyph_data, hotkey_data, layouts, var_name, outdir):
   json_data =  json.dumps(data, sort_keys=True, indent=2)
   # Remove redundant spaces after ','
   json_data = json_data.replace(', \n', ',\n')
+  # Replace double quotes with single quotes to avoid lint warnings.
+  json_data = json_data.replace('\"', '\'')
   snippet = 'var %s = %s;\n' % (var_name, json_data)
   OutputFile(outpath, snippet)
 
