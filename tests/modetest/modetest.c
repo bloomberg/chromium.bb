@@ -199,17 +199,16 @@ void dump_connectors(void)
 			printf("%s%d", j > 0 ? ", " : "", connector->encoders[j]);
 		printf("\n");
 
-		if (!connector->count_modes)
-			continue;
+		if (connector->count_modes) {
+			printf("  modes:\n");
+			printf("  name refresh (Hz) hdisp hss hse htot vdisp "
+			       "vss vse vtot)\n");
+			for (j = 0; j < connector->count_modes; j++)
+				dump_mode(&connector->modes[j]);
 
-		printf("  modes:\n");
-		printf("  name refresh (Hz) hdisp hss hse htot vdisp "
-		       "vss vse vtot)\n");
-		for (j = 0; j < connector->count_modes; j++)
-			dump_mode(&connector->modes[j]);
-
-		printf("  props:\n");
-		dump_props(connector);
+			printf("  props:\n");
+			dump_props(connector);
+		}
 
 		drmModeFreeConnector(connector);
 	}
