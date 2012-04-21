@@ -3188,6 +3188,13 @@ void TestingAutomationProvider::PerformActionOnDownload(
     return;
   }
 
+  // We need to be IN_PROGRESS for these actions.
+  if ((action == "toggle_pause" || action == "cancel") &&
+      !selected_item->IsInProgress()) {
+    AutomationJSONReply(this, reply_message)
+        .SendError("Selected DownloadItem is not in progress.");
+  }
+
   if (action == "open") {
     selected_item->AddObserver(
         new AutomationProviderDownloadUpdatedObserver(
