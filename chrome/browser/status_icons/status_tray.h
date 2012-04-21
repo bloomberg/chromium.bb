@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,19 +28,17 @@ class StatusTray {
   // StatusIcon. Returns NULL if the StatusIcon could not be created.
   StatusIcon* CreateStatusIcon();
 
-  // Removes the current status icon associated with this identifier, if any.
+  // Removes |icon| from this status tray.
   void RemoveStatusIcon(StatusIcon* icon);
 
  protected:
+  typedef std::vector<StatusIcon*> StatusIconList;
+
   StatusTray();
+
   // Factory method for creating a status icon for this platform.
   virtual StatusIcon* CreatePlatformStatusIcon() = 0;
 
-  // Removes all StatusIcons (used by derived classes to clean up in case they
-  // track external state used by the StatusIcons).
-  void RemoveAllIcons();
-
-  typedef std::vector<StatusIcon*> StatusIconList;
   // Returns the list of active status icons so subclasses can operate on them.
   const StatusIconList& status_icons() { return status_icons_; }
 

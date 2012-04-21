@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,10 +13,6 @@ StatusTray::StatusTray() {
 }
 
 StatusTray::~StatusTray() {
-  RemoveAllIcons();
-}
-
-void StatusTray::RemoveAllIcons() {
   STLDeleteElements(&status_icons_);
 }
 
@@ -28,11 +24,13 @@ StatusIcon* StatusTray::CreateStatusIcon() {
 }
 
 void StatusTray::RemoveStatusIcon(StatusIcon* icon) {
-  StatusIconList::iterator iter = std::find(
-      status_icons_.begin(), status_icons_.end(), icon);
-  if (iter != status_icons_.end()) {
-    // Free the StatusIcon from the list.
-    delete *iter;
-    status_icons_.erase(iter);
+  StatusIconList::iterator i(std::find(status_icons_.begin(),
+                                       status_icons_.end(), icon));
+  if (i == status_icons_.end()) {
+    NOTREACHED();
+    return;
   }
+
+  delete *i;
+  status_icons_.erase(i);
 }
