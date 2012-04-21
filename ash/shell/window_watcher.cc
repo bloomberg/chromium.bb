@@ -7,18 +7,14 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ui/aura/window.h"
 
 namespace ash {
 namespace shell {
 
 WindowWatcher::WindowWatcher()
-    : window_(ash::Shell::GetInstance()->launcher()->window_container()),
-      panel_container_(ash::Shell::GetInstance()->GetContainer(
-          ash::internal::kShellWindowId_PanelContainer)) {
+    : window_(ash::Shell::GetInstance()->launcher()->window_container()) {
   window_->AddObserver(this);
-  panel_container_->AddObserver(this);
 }
 
 WindowWatcher::~WindowWatcher() {
@@ -41,8 +37,7 @@ ash::LauncherID WindowWatcher::GetIDByWindow(aura::Window* window) const {
 
 // aura::WindowObserver overrides:
 void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
-  if (new_window->type() != aura::client::WINDOW_TYPE_NORMAL &&
-      new_window->type() != aura::client::WINDOW_TYPE_PANEL)
+  if (new_window->type() != aura::client::WINDOW_TYPE_NORMAL)
     return;
 
   static int image_count = 0;

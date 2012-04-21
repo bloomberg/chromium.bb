@@ -71,7 +71,6 @@ class FocusCycler;
 class InputMethodEventFilter;
 class KeyRewriterEventFilter;
 class MonitorController;
-class PanelLayoutManager;
 class PartialScreenshotEventFilter;
 class ResizeShadowController;
 class RootWindowEventFilter;
@@ -356,9 +355,6 @@ class ASH_EXPORT Shell {
   // mode. Shell does not own the shelf. Instead, it is owned by container of
   // the status area.
   internal::ShelfLayoutManager* shelf_;
-
-  // Manages layout of panels. Owned by PanelContainer.
-  internal::PanelLayoutManager* panel_layout_manager_;
 
   ObserverList<ShellObserver> observers_;
 

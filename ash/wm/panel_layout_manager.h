@@ -9,7 +9,6 @@
 #include <list>
 
 #include "ash/ash_export.h"
-#include "ash/launcher/launcher_icon_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/layout_manager.h"
@@ -23,8 +22,6 @@ class Rect;
 }
 
 namespace ash {
-class Launcher;
-
 namespace internal {
 
 // PanelLayoutManager is responsible for organizing panels within the
@@ -36,8 +33,7 @@ namespace internal {
 // its layout manager to this instance, e.g.:
 // panel_container->SetLayoutManager(new PanelLayoutManager(panel_container));
 
-class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
-                                      public ash::LauncherIconObserver {
+class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager {
  public:
   explicit PanelLayoutManager(aura::Window* panel_container);
   virtual ~PanelLayoutManager();
@@ -46,8 +42,6 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
   void FinishDragging();
 
   void ToggleMinimize(aura::Window* panel);
-
-  void SetLauncher(ash::Launcher* launcher);
 
   // Overridden from aura::LayoutManager:
   virtual void OnWindowResized() OVERRIDE;
@@ -58,9 +52,6 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
                                               bool visibile) OVERRIDE;
   virtual void SetChildBounds(aura::Window* child,
                               const gfx::Rect& requested_bounds) OVERRIDE;
-
-  // Overriden from ash::LauncherIconObserver
-  virtual void OnLauncherIconPositionsChanged() OVERRIDE;
 
  private:
   typedef std::list<aura::Window*> PanelList;
@@ -76,8 +67,6 @@ class ASH_EXPORT PanelLayoutManager : public aura::LayoutManager,
   PanelList panel_windows_;
 
   aura::Window* dragged_panel_;
-
-  Launcher* launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManager);
 };
