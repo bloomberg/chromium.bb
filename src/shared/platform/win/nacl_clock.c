@@ -26,6 +26,8 @@
  * NaClPlatformInit.
  */
 
+#define MAGIC_OFFSET    (0xd00f05)  /* random offset so monotonic != real */
+
 static int              g_NaClClock_is_initialized = 0;
 struct NaClMutex        g_nacl_clock_mu;
 struct nacl_abi_timeval g_nacl_clock_tv;
@@ -119,7 +121,7 @@ int NaClClockGetTime(nacl_clockid_t           clk_id,
         if (t_mono_cur_us >= t_mono_cur_us) {
           g_nacl_clock_tv = tv;
         }
-        tp->tv_sec = g_nacl_clock_tv.nacl_abi_tv_sec;
+        tp->tv_sec = g_nacl_clock_tv.nacl_abi_tv_sec + MAGIC_OFFSET;
         tp->tv_nsec = g_nacl_clock_tv.nacl_abi_tv_usec * 1000;
         NaClXMutexUnlock(&g_nacl_clock_mu);
         rv = 0;
