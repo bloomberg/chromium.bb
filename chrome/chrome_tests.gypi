@@ -752,7 +752,6 @@
         'test/base/chrome_process_util_uitest.cc',
         'test/reliability/automated_ui_test_test.cc',
         'test/ui/named_interface_uitest.cc',
-        '../content/browser/renderer_host/resource_dispatcher_host_uitest.cc',
         # DON'T ADD NEW FILES! SEE NOTE AT TOP OF SECTION.
       ],
       'conditions': [
