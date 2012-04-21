@@ -25,6 +25,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
+#include "chrome/browser/simple_message_box.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/uninstall_view.h"
 #include "chrome/common/chrome_constants.h"
@@ -84,11 +85,10 @@ void RecordBreakpadStatusUMA(MetricsService* metrics) {
 
 void WarnAboutMinimumSystemRequirements() {
   if (base::win::GetVersion() < base::win::VERSION_XP) {
-    // Display a warning message if the user is running chrome on Windows 2000.
-    const string16 text =
+    const string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+    const string16 message =
         l10n_util::GetStringUTF16(IDS_UNSUPPORTED_OS_PRE_WIN_XP);
-    const string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-    ui::MessageBox(NULL, text, caption, MB_OK | MB_ICONWARNING | MB_TOPMOST);
+    browser::ShowErrorBox(NULL, title, message);
   }
 }
 
@@ -112,10 +112,9 @@ int AskForUninstallConfirmation() {
 }
 
 void ShowCloseBrowserFirstMessageBox() {
-  const string16 text = l10n_util::GetStringUTF16(IDS_UNINSTALL_CLOSE_APP);
-  const string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  const UINT flags = MB_OK | MB_ICONWARNING | MB_TOPMOST;
-  ui::MessageBox(NULL, text, caption, flags);
+  const string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  const string16 message = l10n_util::GetStringUTF16(IDS_UNINSTALL_CLOSE_APP);
+  browser::ShowErrorBox(NULL, title, message);
 }
 
 int DoUninstallTasks(bool chrome_still_running) {
