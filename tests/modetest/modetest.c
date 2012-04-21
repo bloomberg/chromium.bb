@@ -71,7 +71,7 @@ struct type_name {
 
 #define type_name_fn(res) \
 char * res##_str(int type) {			\
-	int i;						\
+	unsigned int i;					\
 	for (i = 0; i < ARRAY_SIZE(res##_names); i++) { \
 		if (res##_names[i].type == type)	\
 			return res##_names[i].name;	\
@@ -272,7 +272,7 @@ static void dump_planes(void)
 {
 	drmModePlaneRes *plane_resources;
 	drmModePlane *ovr;
-	int i, j;
+	unsigned int i, j;
 
 	plane_resources = drmModeGetPlaneResources(fd);
 	if (!plane_resources) {
@@ -681,7 +681,8 @@ set_plane(struct kms_driver *kms, struct connector *c, struct plane *p)
 	uint32_t plane_id = 0;
 	struct kms_bo *plane_bo;
 	uint32_t plane_flags = 0, format;
-	int i, ret, crtc_x, crtc_y, crtc_w, crtc_h;
+	int ret, crtc_x, crtc_y, crtc_w, crtc_h;
+	unsigned int i;
 
 	/* find an unused plane which can be connected to our crtc */
 	plane_resources = drmModeGetPlaneResources(fd);
@@ -995,7 +996,7 @@ void usage(char *name)
 
 #define dump_resource(res) if (res) dump_##res()
 
-static int page_flipping_supported(int fd)
+static int page_flipping_supported(void)
 {
 	/*FIXME: generic ioctl needed? */
 	return 1;
@@ -1022,8 +1023,8 @@ int main(int argc, char **argv)
 	int encoders = 0, connectors = 0, crtcs = 0, planes = 0, framebuffers = 0;
 	int test_vsync = 0;
 	char *modules[] = { "i915", "radeon", "nouveau", "vmwgfx", "omapdrm" };
-	char *modeset = NULL;
-	int i, count = 0, plane_count = 0;
+	unsigned int i;
+	int count = 0, plane_count = 0;
 	struct connector con_args[2];
 	struct plane plane_args[2] = {0};
 	
@@ -1050,7 +1051,6 @@ int main(int argc, char **argv)
 			test_vsync = 1;
 			break;
 		case 's':
-			modeset = strdup(optarg);
 			con_args[count].crtc = -1;
 			if (sscanf(optarg, "%d:%64s",
 				   &con_args[count].id,
@@ -1096,7 +1096,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (test_vsync && !page_flipping_supported(fd)) {
+	if (test_vsync && !page_flipping_supported()) {
 		fprintf(stderr, "page flipping not supported by drm.\n");
 		return -1;
 	}
