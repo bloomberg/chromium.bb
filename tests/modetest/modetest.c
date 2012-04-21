@@ -307,6 +307,7 @@ static void dump_planes(void)
 	}
 	printf("\n");
 
+	drmModeFreePlaneResources(plane_resources);
 	return;
 }
 
