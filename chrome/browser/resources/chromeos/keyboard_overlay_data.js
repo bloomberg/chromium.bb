@@ -15821,6 +15821,7 @@ var keyboardOverlayData = {
     'j<>CTRL': 'keyboardOverlayDownloads',
     'j<>CTRL<>SHIFT': 'keyboardOverlayJavascriptConsole',
     'k<>CTRL': 'keyboardOverlayFocusAddressBarInSearchMode',
+    'l<>ALT<>SHIFT': 'keyboardOverlayFocusLauncher',
     'l<>CTRL': 'keyboardOverlayFocusAddressBar',
     'l<>CTRL<>SHIFT': 'keyboardOverlayLockScreen',
     'left<>ALT': 'keyboardOverlayGoBack',
