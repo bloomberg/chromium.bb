@@ -5,9 +5,9 @@
 #include "content/test/test_launcher.h"
 
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_temp_dir.h"
+#include "base/test/test_file_util.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
@@ -84,7 +84,7 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
     // We Take() the directory and delete it ourselves so that the next
     // CreateUniqueTempDir will succeed even if deleting the directory fails.
     if (!temp_dir_.path().empty() &&
-        !file_util::Delete(temp_dir_.Take(), true)) {
+        !file_util::DieFileDie(temp_dir_.Take(), true)) {
       LOG(ERROR) << "Error deleting previous temp profile directory";
     }
 
