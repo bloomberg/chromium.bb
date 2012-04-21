@@ -197,7 +197,7 @@ void GDataFileSystemProxy::CreateSnapshotFile(
   base::PlatformFileInfo file_info;
   GDataFileProperties file_properties;
   if (!ValidateUrl(file_url, &file_path) ||
-      !file_system_->GetFileInfoFromPath(file_path, &file_properties)) {
+      !file_system_->GetFileInfoByPath(file_path, &file_properties)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback,
                     base::PLATFORM_FILE_ERROR_NOT_FOUND,
@@ -207,10 +207,10 @@ void GDataFileSystemProxy::CreateSnapshotFile(
     return;
   }
 
-  file_system_->GetFile(file_path,
-                        base::Bind(&CallSnapshotFileCallback,
-                                   callback,
-                                   file_properties.file_info));
+  file_system_->GetFileByPath(file_path,
+                              base::Bind(&CallSnapshotFileCallback,
+                                         callback,
+                                         file_properties.file_info));
 }
 
 // static.

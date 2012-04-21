@@ -493,9 +493,9 @@ void RunCacheOperationCallbackHelper(
     callback.Run(*error, resource_id, md5);
 }
 
-// Ditto for GetFromCacheCallback.
-void RunGetFromCacheCallbackHelper(
-    const GetFromCacheCallback& callback,
+// Ditto for GetFileFromCacheCallback.
+void RunGetFileFromCacheCallbackHelper(
+    const GetFileFromCacheCallback& callback,
     base::PlatformFileError* error,
     const std::string& resource_id,
     const std::string& md5,
@@ -1108,7 +1108,7 @@ void GDataFileSystem::TransferFile(const FilePath& local_file_path,
 
   base::AutoLock lock(lock_);
   // Make sure the destination directory exists
-  GDataEntry* dest_dir = GetGDataEntryFromPath(
+  GDataEntry* dest_dir = GetGDataEntryByPath(
       remote_dest_file_path.DirName());
   if (!dest_dir || !dest_dir->AsGDataDirectory()) {
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,
@@ -1265,8 +1265,8 @@ void GDataFileSystem::Copy(const FilePath& src_file_path,
   bool src_file_is_hosted_document = false;
   {
     base::AutoLock lock(lock_);
-    GDataEntry* src_entry = GetGDataEntryFromPath(src_file_path);
-    GDataEntry* dest_parent = GetGDataEntryFromPath(dest_parent_path);
+    GDataEntry* src_entry = GetGDataEntryByPath(src_file_path);
+    GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
     if (!src_entry || !dest_parent) {
       error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
     } else if (!dest_parent->AsGDataDirectory()) {
@@ -1301,7 +1301,7 @@ void GDataFileSystem::Copy(const FilePath& src_file_path,
 
   // TODO(benchan): Reimplement this once the server API supports
   // copying of regular files directly on the server side.
-  GetFile(src_file_path,
+  GetFileByPath(src_file_path,
           base::Bind(&GDataFileSystem::OnGetFileCompleteForCopy,
                      GetWeakPtrForCurrentThread(),
                      dest_file_path,
@@ -1370,7 +1370,7 @@ void GDataFileSystem::Rename(const FilePath& file_path,
   }
 
   base::AutoLock lock(lock_);
-  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(FROM_HERE,
@@ -1409,8 +1409,8 @@ void GDataFileSystem::Move(const FilePath& src_file_path,
   {
     // This scoped lock needs to be released before calling Rename() below.
     base::AutoLock lock(lock_);
-    GDataEntry* src_entry = GetGDataEntryFromPath(src_file_path);
-    GDataEntry* dest_parent = GetGDataEntryFromPath(dest_parent_path);
+    GDataEntry* src_entry = GetGDataEntryByPath(src_file_path);
+    GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
     if (!src_entry || !dest_parent) {
       error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
     } else {
@@ -1470,8 +1470,8 @@ void GDataFileSystem::AddEntryToDirectory(
     base::PlatformFileError error,
     const FilePath& file_path) {
   base::AutoLock lock(lock_);
-  GDataEntry* entry = GetGDataEntryFromPath(file_path);
-  GDataEntry* dir_entry = GetGDataEntryFromPath(dir_path);
+  GDataEntry* entry = GetGDataEntryByPath(file_path);
+  GDataEntry* dir_entry = GetGDataEntryByPath(dir_path);
   if (error == base::PLATFORM_FILE_OK) {
     if (!entry || !dir_entry) {
       error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -1505,8 +1505,8 @@ void GDataFileSystem::RemoveEntryFromDirectory(
     base::PlatformFileError error,
     const FilePath& file_path) {
   base::AutoLock lock(lock_);
-  GDataEntry* entry = GetGDataEntryFromPath(file_path);
-  GDataEntry* dir = GetGDataEntryFromPath(dir_path);
+  GDataEntry* entry = GetGDataEntryByPath(file_path);
+  GDataEntry* dir = GetGDataEntryByPath(dir_path);
   if (error == base::PLATFORM_FILE_OK) {
     if (!entry || !dir) {
       error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -1540,7 +1540,7 @@ void GDataFileSystem::Remove(const FilePath& file_path,
     bool is_recursive,
     const FileOperationCallback& callback) {
   base::AutoLock lock(lock_);
-  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(
@@ -1656,10 +1656,10 @@ void GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool(
       temp_file_path->clear();
 }
 
-void GDataFileSystem::GetFile(const FilePath& file_path,
-                              const GetFileCallback& callback) {
+void GDataFileSystem::GetFileByPath(const FilePath& file_path,
+                                    const GetFileCallback& callback) {
   GDataFileProperties file_properties;
-  if (!GetFileInfoFromPath(file_path, &file_properties)) {
+  if (!GetFileInfoByPath(file_path, &file_properties)) {
     if (!callback.is_null()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
@@ -1709,21 +1709,23 @@ void GDataFileSystem::GetFile(const FilePath& file_path,
                                              file_properties.file_md5,
                                              GDataRootDirectory::CACHE_TYPE_TMP,
                                              CACHED_FILE_FROM_SERVER);
-  GetFromCache(file_properties.resource_id, file_properties.file_md5,
-               base::Bind(
-                   &GDataFileSystem::OnGetFileFromCache,
-                   GetWeakPtrForCurrentThread(),
-                   GetFileFromCacheParams(file_path,
-                                          local_tmp_path,
-                                          file_properties.content_url,
-                                          file_properties.resource_id,
-                                          file_properties.file_md5,
-                                          file_properties.mime_type,
-                                          base::MessageLoopProxy::current(),
-                                          callback)));
+  GetFileFromCacheByResourceIdAndMd5(
+      file_properties.resource_id,
+      file_properties.file_md5,
+      base::Bind(
+          &GDataFileSystem::OnGetFileFromCache,
+          GetWeakPtrForCurrentThread(),
+          GetFileFromCacheParams(file_path,
+                                 local_tmp_path,
+                                 file_properties.content_url,
+                                 file_properties.resource_id,
+                                 file_properties.file_md5,
+                                 file_properties.mime_type,
+                                 base::MessageLoopProxy::current(),
+                                 callback)));
 }
 
-void GDataFileSystem::GetFileForResourceId(
+void GDataFileSystem::GetFileByResourceId(
     const std::string& resource_id,
     const GetFileCallback& callback) {
   FilePath file_path;
@@ -1752,7 +1754,7 @@ void GDataFileSystem::GetFileForResourceId(
     return;
   }
 
-  GetFile(file_path, callback);
+  GetFileByPath(file_path, callback);
 }
 
 void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
@@ -1987,11 +1989,11 @@ void GDataFileSystem::UnsafeFindEntryByPath(
   delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
 }
 
-bool GDataFileSystem::GetFileInfoFromPath(
+bool GDataFileSystem::GetFileInfoByPath(
     const FilePath& file_path, GDataFileProperties* properties) {
   DCHECK(properties);
   base::AutoLock lock(lock_);
-  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry)
     return false;
 
@@ -2045,7 +2047,7 @@ base::WeakPtr<GDataFileSystem> GDataFileSystem::GetWeakPtrForCurrentThread() {
   return ui_weak_ptr_factory_->GetWeakPtr();
 }
 
-GDataEntry* GDataFileSystem::GetGDataEntryFromPath(
+GDataEntry* GDataFileSystem::GetGDataEntryByPath(
     const FilePath& file_path) {
   lock_.AssertAcquired();
   // Find directory element within the cached file system snapshot.
@@ -2054,16 +2056,16 @@ GDataEntry* GDataFileSystem::GetGDataEntryFromPath(
   return find_delegate.entry();
 }
 
-void GDataFileSystem::GetFromCacheForPath(
+void GDataFileSystem::GetFileFromCacheByPath(
     const FilePath& gdata_file_path,
-    const GetFromCacheCallback& callback) {
+    const GetFileFromCacheCallback& callback) {
   std::string resource_id;
   std::string md5;
 
-  {  // Lock to use GetGDataEntryFromPath and returned pointer, but need to
-     // release before GetFromCache.
+  {  // Lock to use GetGDataEntryByPath and returned pointer, but need to
+     // release before GetFileFromCacheByResourceIdAndMd5.
     base::AutoLock lock(lock_);
-    GDataEntry* entry = GetGDataEntryFromPath(gdata_file_path);
+    GDataEntry* entry = GetGDataEntryByPath(gdata_file_path);
 
     if (entry && entry->AsGDataFile()) {
       GDataFile* file = entry->AsGDataFile();
@@ -2085,7 +2087,8 @@ void GDataFileSystem::GetFromCacheForPath(
     }
   }
 
-  GetFromCacheInternal(resource_id, md5, gdata_file_path, callback);
+  GetFileFromCacheByResourceIdAndMd5Internal(
+      resource_id, md5, gdata_file_path, callback);
 }
 
 void GDataFileSystem::GetCacheState(const std::string& resource_id,
@@ -2129,7 +2132,7 @@ void GDataFileSystem::SetPinState(const FilePath& file_path, bool to_pin,
   std::string resource_id, md5;
   {
     base::AutoLock lock(lock_);
-    GDataEntry* entry = GetGDataEntryFromPath(file_path);
+    GDataEntry* entry = GetGDataEntryByPath(file_path);
     GDataFile* file = entry ? entry->AsGDataFile() : NULL;
 
     if (!file) {
@@ -2639,7 +2642,7 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
   DCHECK(updated_file_path);
 
   base::AutoLock lock(lock_);
-  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
@@ -2660,13 +2663,13 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
 base::PlatformFileError GDataFileSystem::AddEntryToDirectoryOnFilesystem(
     const FilePath& file_path, const FilePath& dir_path) {
   base::AutoLock lock(lock_);
-  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
   DCHECK_EQ(root_.get(), entry->parent());
 
-  GDataEntry* dir_entry = GetGDataEntryFromPath(dir_path);
+  GDataEntry* dir_entry = GetGDataEntryByPath(dir_path);
   if (!dir_entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
@@ -2687,11 +2690,11 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromDirectoryOnFilesystem(
   DCHECK(updated_file_path);
 
   base::AutoLock lock(lock_);
-  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
-  GDataEntry* dir = GetGDataEntryFromPath(dir_path);
+  GDataEntry* dir = GetGDataEntryByPath(dir_path);
   if (!dir)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 
@@ -3065,7 +3068,7 @@ base::PlatformFileError GDataFileSystem::AddNewDirectory(
   base::AutoLock lock(lock_);
 
   // Find parent directory element within the cached file system snapshot.
-  GDataEntry* entry = GetGDataEntryFromPath(directory_path);
+  GDataEntry* entry = GetGDataEntryByPath(directory_path);
   if (!entry)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
@@ -3104,7 +3107,7 @@ GDataFileSystem::FindFirstMissingParentDirectory(
           path_parts.begin();
        iter != path_parts.end(); ++iter) {
     current_path = current_path.Append(*iter);
-    GDataEntry* entry = GetGDataEntryFromPath(current_path);
+    GDataEntry* entry = GetGDataEntryByPath(current_path);
     if (entry) {
       if (entry->file_info().is_directory) {
         *last_dir_content_url = entry->content_url();
@@ -3124,7 +3127,7 @@ GURL GDataFileSystem::GetUploadUrlForDirectory(
     const FilePath& destination_directory) {
   // Find directory element within the cached file system snapshot.
   base::AutoLock lock(lock_);
-  GDataEntry* entry = GetGDataEntryFromPath(destination_directory);
+  GDataEntry* entry = GetGDataEntryByPath(destination_directory);
   GDataDirectory* dir = entry ? entry->AsGDataDirectory() : NULL;
   return dir ? dir->upload_url() : GURL();
 }
@@ -3138,7 +3141,7 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromGData(
   base::AutoLock lock(lock_);
 
   // Find directory element within the cached file system snapshot.
-  GDataEntry* entry = GetGDataEntryFromPath(file_path);
+  GDataEntry* entry = GetGDataEntryByPath(file_path);
 
   if (!entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -3175,7 +3178,7 @@ void GDataFileSystem::AddUploadedFile(const FilePath& virtual_dir_path,
   std::string md5;
   {
     base::AutoLock lock(lock_);
-    GDataEntry* dir_entry = GetGDataEntryFromPath(virtual_dir_path);
+    GDataEntry* dir_entry = GetGDataEntryByPath(virtual_dir_path);
     if (!dir_entry)
       return;
 
@@ -3259,10 +3262,12 @@ FilePath GDataFileSystem::GetCacheFilePath(
   return cache_paths_[sub_dir_type].Append(base_name);
 }
 
-void GDataFileSystem::GetFromCache(const std::string& resource_id,
-                                   const std::string& md5,
-                                   const GetFromCacheCallback& callback) {
-  GetFromCacheInternal(resource_id, md5, FilePath(), callback);
+void GDataFileSystem::GetFileFromCacheByResourceIdAndMd5(
+    const std::string& resource_id,
+    const std::string& md5,
+    const GetFileFromCacheCallback& callback) {
+  GetFileFromCacheByResourceIdAndMd5Internal(
+      resource_id, md5, FilePath(), callback);
 }
 
 void GDataFileSystem::StoreToCache(const std::string& resource_id,
@@ -3339,9 +3344,10 @@ void GDataFileSystem::Unpin(const std::string& resource_id,
                  callback));
 }
 
-void GDataFileSystem::MarkDirtyInCache(const std::string& resource_id,
-                                       const std::string& md5,
-                                       const GetFromCacheCallback& callback) {
+void GDataFileSystem::MarkDirtyInCache(
+    const std::string& resource_id,
+    const std::string& md5,
+    const GetFileFromCacheCallback& callback) {
   InitializeCacheIfNecessary();
 
   base::PlatformFileError* error =
@@ -3357,7 +3363,7 @@ void GDataFileSystem::MarkDirtyInCache(const std::string& resource_id,
                  FILE_OPERATION_MOVE,
                  error,
                  cache_file_path),
-      base::Bind(&RunGetFromCacheCallbackHelper,
+      base::Bind(&RunGetFileFromCacheCallbackHelper,
                  callback,
                  base::Owned(error),
                  resource_id,
@@ -3479,7 +3485,7 @@ void GDataFileSystem::InitializeCacheOnIOThreadPool() {
   NotifyCacheInitialized();
 }
 
-void GDataFileSystem::GetFromCacheOnIOThreadPool(
+void GDataFileSystem::GetFileFromCacheOnIOThreadPool(
     const std::string& resource_id,
     const std::string& md5,
     const FilePath& gdata_file_path,
@@ -4260,11 +4266,11 @@ void GDataFileSystem::ScanCacheDirectory(
   }
 }
 
-void GDataFileSystem::GetFromCacheInternal(
+void GDataFileSystem::GetFileFromCacheByResourceIdAndMd5Internal(
     const std::string& resource_id,
     const std::string& md5,
     const FilePath& gdata_file_path,
-    const GetFromCacheCallback& callback) {
+    const GetFileFromCacheCallback& callback) {
   InitializeCacheIfNecessary();
 
   base::PlatformFileError* error =
@@ -4273,14 +4279,14 @@ void GDataFileSystem::GetFromCacheInternal(
   PostBlockingPoolSequencedTaskAndReply(
       kGDataFileSystemToken,
       FROM_HERE,
-      base::Bind(&GDataFileSystem::GetFromCacheOnIOThreadPool,
+      base::Bind(&GDataFileSystem::GetFileFromCacheOnIOThreadPool,
                  base::Unretained(this),
                  resource_id,
                  md5,
                  gdata_file_path,
                  error,
                  cache_file_path),
-      base::Bind(&RunGetFromCacheCallbackHelper,
+      base::Bind(&RunGetFileFromCacheCallbackHelper,
                  callback,
                  base::Owned(error),
                  resource_id,

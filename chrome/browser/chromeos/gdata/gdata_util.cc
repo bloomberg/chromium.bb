@@ -198,7 +198,7 @@ void InsertGDataCachePathsPermissions(
     return;
 
   GDataFileProperties file_properties;
-  file_system->GetFileInfoFromPath(gdata_path, &file_properties);
+  file_system->GetFileInfoByPath(gdata_path, &file_properties);
 
   std::string resource_id = file_properties.resource_id;
   std::string file_md5 = file_properties.file_md5;

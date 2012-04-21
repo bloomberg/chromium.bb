@@ -150,11 +150,11 @@ class GDataURLRequestJob : public net::URLRequestJob {
   void StartAsync(GDataFileSystem** file_system);
 
   // Helper callback for handling async responses from
-  // GDataFileSystem::GetFileForResourceId().
-  void OnGetFileForResourceId(base::PlatformFileError error,
-                              const FilePath& local_file_path,
-                              const std::string& mime_type,
-                              GDataFileType file_type);
+  // GDataFileSystem::GetFileByResourceId().
+  void OnGetFileByResourceId(base::PlatformFileError error,
+                             const FilePath& local_file_path,
+                             const std::string& mime_type,
+                             GDataFileType file_type);
 
   // Helper callback for GetFileSizeOnIOThreadPool that sets |remaining_bytes_|
   // to |file_size|, and notifies result for Start().
@@ -261,7 +261,7 @@ void GDataURLRequestJob::Kill() {
   CloseFileStream();
 
   // If download operation for gdata file (via
-  // GDataFileSystem::GetFileForResourceId) is still in progress (i.e.
+  // GDataFileSystem::GetFileByResourceId) is still in progress (i.e.
   // |local_file_path_| is still empty), cancel it by posting a task on the UI
   // thread.
   if (file_system_ && !gdata_file_path_.empty() && local_file_path_.empty()) {
@@ -422,13 +422,13 @@ void GDataURLRequestJob::StartAsync(GDataFileSystem** file_system) {
   mime_type_ = delegate.mime_type();
   gdata_file_path_ = delegate.gdata_file_path();
 
-  file_system_->GetFileForResourceId(
+  file_system_->GetFileByResourceId(
       resource_id,
-      base::Bind(&GDataURLRequestJob::OnGetFileForResourceId,
+      base::Bind(&GDataURLRequestJob::OnGetFileByResourceId,
                  weak_factory_.GetWeakPtr()));
 }
 
-void GDataURLRequestJob::OnGetFileForResourceId(
+void GDataURLRequestJob::OnGetFileByResourceId(
     base::PlatformFileError error,
     const FilePath& local_file_path,
     const std::string& mime_type,

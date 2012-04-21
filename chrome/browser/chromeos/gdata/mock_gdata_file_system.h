@@ -46,14 +46,14 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                     bool is_exclusive,
                     bool is_recursive,
                     const FileOperationCallback& callback));
-  MOCK_METHOD2(GetFile, void(const FilePath& file_path,
-                             const GetFileCallback& callback));
-  MOCK_METHOD2(GetFileForResourceId,
+  MOCK_METHOD2(GetFileByPath, void(const FilePath& file_path,
+                                   const GetFileCallback& callback));
+  MOCK_METHOD2(GetFileByResourceId,
                void(const std::string& resource_id,
                     const GetFileCallback& callback));
-  MOCK_METHOD2(GetFromCacheForPath,
+  MOCK_METHOD2(GetFileFromCacheByPath,
                void(const FilePath& gdata_file_path,
-                    const GetFromCacheCallback& callback));
+                    const GetFileFromCacheCallback& callback));
   MOCK_METHOD0(GetProgressStatusList,
                std::vector<GDataOperationRegistry::ProgressStatus>());
   MOCK_METHOD1(CancelOperation, bool(const FilePath& file_path));
@@ -64,8 +64,8 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD3(GetCacheState, void(const std::string& resource_id,
                                    const std::string& md5,
                                    const GetCacheStateCallback& callback));
-  MOCK_METHOD2(GetFileInfoFromPath, bool(const FilePath& gdata_file_path,
-                                         GDataFileProperties* properties));
+  MOCK_METHOD2(GetFileInfoByPath, bool(const FilePath& gdata_file_path,
+                                       GDataFileProperties* properties));
   MOCK_CONST_METHOD0(GetGDataCacheTmpDirectory, FilePath());
   MOCK_CONST_METHOD0(GetGDataTempDownloadFolderPath, FilePath());
   MOCK_CONST_METHOD0(GetGDataTempDocumentFolderPath, FilePath());

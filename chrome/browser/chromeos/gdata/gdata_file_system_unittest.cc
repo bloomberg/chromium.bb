@@ -349,26 +349,27 @@ class GDataFileSystemTest : public testing::Test {
     RunAllPendingForIO();
   }
 
-  void TestGetFromCache(const std::string& resource_id,
-                        const std::string& md5,
-                        base::PlatformFileError expected_error,
-                        const std::string& expected_file_extension) {
+  void TestGetFileFromCacheByResourceIdAndMd5(
+      const std::string& resource_id,
+      const std::string& md5,
+      base::PlatformFileError expected_error,
+      const std::string& expected_file_extension) {
     expected_error_ = expected_error;
     expected_file_extension_ = expected_file_extension;
 
-    file_system_->GetFromCache(resource_id, md5,
+    file_system_->GetFileFromCacheByResourceIdAndMd5(resource_id, md5,
         base::Bind(&GDataFileSystemTest::VerifyGetFromCache,
                    base::Unretained(this)));
 
     RunAllPendingForIO();
   }
 
-  void TestGetFromCacheForPath(const FilePath& gdata_file_path,
-                               base::PlatformFileError expected_error) {
+  void TestGetFileFromCacheByPath(const FilePath& gdata_file_path,
+                                  base::PlatformFileError expected_error) {
     expected_error_ = expected_error;
     expected_file_extension_.clear();
 
-    file_system_->GetFromCacheForPath(gdata_file_path,
+    file_system_->GetFileFromCacheByPath(gdata_file_path,
         base::Bind(&GDataFileSystemTest::VerifyGetFromCache,
                    base::Unretained(this)));
 
@@ -706,11 +707,13 @@ class GDataFileSystemTest : public testing::Test {
       const struct InitialCacheResource& resource = initial_cache_resources[i];
       // Check cache file.
       num_callback_invocations_ = 0;
-      TestGetFromCache(resource.resource_id, resource.md5,
-                       GDataFile::IsCachePresent(resource.cache_state) ?
-                           base::PLATFORM_FILE_OK :
-                           base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                       resource.expected_file_extension);
+      TestGetFileFromCacheByResourceIdAndMd5(
+          resource.resource_id,
+          resource.md5,
+          GDataFile::IsCachePresent(resource.cache_state) ?
+          base::PLATFORM_FILE_OK :
+          base::PLATFORM_FILE_ERROR_NOT_FOUND,
+          resource.expected_file_extension);
       EXPECT_EQ(1, num_callback_invocations_);
 
       // Verify cache state.
@@ -2038,21 +2041,23 @@ TEST_F(GDataFileSystemTest, GetFromCacheSimple) {
 
   // Then try to get the existing file from cache.
   num_callback_invocations_ = 0;
-  TestGetFromCache(resource_id, md5, base::PLATFORM_FILE_OK, md5);
+  TestGetFileFromCacheByResourceIdAndMd5(
+      resource_id, md5, base::PLATFORM_FILE_OK, md5);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Get file from cache with same resource id as existing file but different
   // md5.
   num_callback_invocations_ = 0;
-  TestGetFromCache(resource_id, "9999", base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                   md5);
+  TestGetFileFromCacheByResourceIdAndMd5(
+      resource_id, "9999", base::PLATFORM_FILE_ERROR_NOT_FOUND, md5);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Get file from cache with different resource id from existing file but same
   // md5.
   num_callback_invocations_ = 0;
   resource_id = "document:1a2b";
-  TestGetFromCache(resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND, md5);
+  TestGetFileFromCacheByResourceIdAndMd5(
+      resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND, md5);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
@@ -2196,7 +2201,8 @@ TEST_F(GDataFileSystemTest, GetFromCachePinned) {
 
   // Get the non-existent pinned file from cache.
   num_callback_invocations_ = 0;
-  TestGetFromCache(resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND, md5);
+  TestGetFileFromCacheByResourceIdAndMd5(
+      resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND, md5);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Store an existing file to the previously pinned non-existent file.
@@ -2208,7 +2214,8 @@ TEST_F(GDataFileSystemTest, GetFromCachePinned) {
 
   // Get the previously pinned and stored file from cache.
   num_callback_invocations_ = 0;
-  TestGetFromCache(resource_id, md5, base::PLATFORM_FILE_OK, md5);
+  TestGetFileFromCacheByResourceIdAndMd5(
+      resource_id, md5, base::PLATFORM_FILE_OK, md5);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
@@ -2601,24 +2608,24 @@ TEST_F(GDataFileSystemTest, InitializeCache) {
   TestInitializeCache();
 }
 
-TEST_F(GDataFileSystemTest, GetGDataEntryFromPath) {
+TEST_F(GDataFileSystemTest, GetGDataEntryByPath) {
   LoadRootFeedDocument("root_feed.json");
 
-  // Lock to call GetGDataEntryFromPath.
+  // Lock to call GetGDataEntryByPath.
   base::AutoLock lock(file_system_->lock_);
-  GDataEntry* entry = file_system_->GetGDataEntryFromPath(
+  GDataEntry* entry = file_system_->GetGDataEntryByPath(
       FilePath(FILE_PATH_LITERAL("gdata/File 1.txt")));
   ASSERT_TRUE(entry != NULL);
   EXPECT_EQ("https://file1_link_self/file:2_file_resource_id",
             entry->edit_url().spec());
   EXPECT_EQ("https://file_content_url/", entry->content_url().spec());
 
-  GDataEntry* non_existent = file_system_->GetGDataEntryFromPath(
+  GDataEntry* non_existent = file_system_->GetGDataEntryByPath(
       FilePath(FILE_PATH_LITERAL("gdata/Nonexistent.txt")));
   ASSERT_TRUE(non_existent == NULL);
 }
 
-TEST_F(GDataFileSystemTest, GetFromCacheForPath) {
+TEST_F(GDataFileSystemTest, GetFileFromCacheByPath) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
 
   LoadRootFeedDocument("root_feed.json");
@@ -2626,10 +2633,10 @@ TEST_F(GDataFileSystemTest, GetFromCacheForPath) {
   // First make sure the file exists in GData.
   FilePath gdata_file_path = FilePath(FILE_PATH_LITERAL("gdata/File 1.txt"));
   GDataFile* file = NULL;
-  {  // Lock to call GetGDataEntryFromPath.
+  {  // Lock to call GetGDataEntryByPath.
     base::AutoLock lock(file_system_->lock_);
     GDataEntry* entry =
-        file_system_->GetGDataEntryFromPath(gdata_file_path);
+        file_system_->GetGDataEntryByPath(gdata_file_path);
     ASSERT_TRUE(entry != NULL);
     file = entry->AsGDataFile();
     ASSERT_TRUE(file != NULL);
@@ -2637,7 +2644,8 @@ TEST_F(GDataFileSystemTest, GetFromCacheForPath) {
 
   // A file that exists in GData but not in cache.
   num_callback_invocations_ = 0;
-  TestGetFromCacheForPath(gdata_file_path, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+  TestGetFileFromCacheByPath(
+      gdata_file_path, base::PLATFORM_FILE_ERROR_NOT_FOUND);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Store a file corresponding to resource and md5 of "gdata/File 1.txt" to
@@ -2651,13 +2659,14 @@ TEST_F(GDataFileSystemTest, GetFromCacheForPath) {
 
   // Now the file should exist in cache.
   num_callback_invocations_ = 0;
-  TestGetFromCacheForPath(gdata_file_path, base::PLATFORM_FILE_OK);
+  TestGetFileFromCacheByPath(gdata_file_path, base::PLATFORM_FILE_OK);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // A file that doesn't exist in gdata.
   num_callback_invocations_ = 0;
-  TestGetFromCacheForPath(FilePath(FILE_PATH_LITERAL("gdata/Nonexistent.txt")),
-                          base::PLATFORM_FILE_ERROR_NOT_FOUND);
+  TestGetFileFromCacheByPath(
+      FilePath(FILE_PATH_LITERAL("gdata/Nonexistent.txt")),
+      base::PLATFORM_FILE_ERROR_NOT_FOUND);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
@@ -2681,7 +2690,7 @@ TEST_F(GDataFileSystemTest, CreateDirectoryWithService) {
   // EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
 }
 
-TEST_F(GDataFileSystemTest, GetFile_FromGData_EnoughSpace) {
+TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpace) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
 
   LoadRootFeedDocument("root_feed.json");
@@ -2708,7 +2717,7 @@ TEST_F(GDataFileSystemTest, GetFile_FromGData_EnoughSpace) {
                            _))
       .Times(1);
 
-  file_system_->GetFile(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback);
   RunAllPendingForIO();  // Try to get from the cache.
   RunAllPendingForIO();  // Check if we have space before downloading.
   RunAllPendingForIO();  // Check if we have space after downloading.
@@ -2719,7 +2728,7 @@ TEST_F(GDataFileSystemTest, GetFile_FromGData_EnoughSpace) {
             callback_helper_->download_path_.value());
 }
 
-TEST_F(GDataFileSystemTest, GetFile_FromGData_NoSpaceAtAll) {
+TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoSpaceAtAll) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
 
   LoadRootFeedDocument("root_feed.json");
@@ -2746,7 +2755,7 @@ TEST_F(GDataFileSystemTest, GetFile_FromGData_NoSpaceAtAll) {
                            _))
       .Times(0);
 
-  file_system_->GetFile(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback);
   RunAllPendingForIO();  // Try to get from the cache.
   RunAllPendingForIO();  // Check if we have space before downloading.
 
@@ -2754,7 +2763,7 @@ TEST_F(GDataFileSystemTest, GetFile_FromGData_NoSpaceAtAll) {
             callback_helper_->last_error_);
 }
 
-TEST_F(GDataFileSystemTest, GetFile_FromGData_NoEnoughSpaceButCanFreeUp) {
+TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_NoEnoughSpaceButCanFreeUp) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
 
   LoadRootFeedDocument("root_feed.json");
@@ -2796,7 +2805,7 @@ TEST_F(GDataFileSystemTest, GetFile_FromGData_NoEnoughSpaceButCanFreeUp) {
                            _))
       .Times(1);
 
-  file_system_->GetFile(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback);
   RunAllPendingForIO();  // Try to get from the cache.
   RunAllPendingForIO();  // Check if we have space before downloading.
   RunAllPendingForIO();  // Check if we have space after downloading
@@ -2812,7 +2821,7 @@ TEST_F(GDataFileSystemTest, GetFile_FromGData_NoEnoughSpaceButCanFreeUp) {
   ASSERT_FALSE(CacheFileExists("<resource_id>", "<md5>"));
 }
 
-TEST_F(GDataFileSystemTest, GetFile_FromGData_EnoughSpaceButBecomeFull) {
+TEST_F(GDataFileSystemTest, GetFileByPath_FromGData_EnoughSpaceButBecomeFull) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
 
   LoadRootFeedDocument("root_feed.json");
@@ -2844,7 +2853,7 @@ TEST_F(GDataFileSystemTest, GetFile_FromGData_EnoughSpaceButBecomeFull) {
                            _))
       .Times(1);
 
-  file_system_->GetFile(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback);
   RunAllPendingForIO();  // Try to get from the cache.
   RunAllPendingForIO();  // Check if we have space before downloading.
   RunAllPendingForIO();  // Check if we have space after downloading.
@@ -2853,7 +2862,7 @@ TEST_F(GDataFileSystemTest, GetFile_FromGData_EnoughSpaceButBecomeFull) {
             callback_helper_->last_error_);
 }
 
-TEST_F(GDataFileSystemTest, GetFile_FromCache) {
+TEST_F(GDataFileSystemTest, GetFileByPath_FromCache) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
 
   LoadRootFeedDocument("root_feed.json");
@@ -2883,7 +2892,7 @@ TEST_F(GDataFileSystemTest, GetFile_FromCache) {
                            _))
       .Times(0);
 
-  file_system_->GetFile(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback);
   RunAllPendingForIO();
 
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);
@@ -2891,7 +2900,7 @@ TEST_F(GDataFileSystemTest, GetFile_FromCache) {
             callback_helper_->download_path_.value());
 }
 
-TEST_F(GDataFileSystemTest, GetFile_HostedDocument) {
+TEST_F(GDataFileSystemTest, GetFileByPath_HostedDocument) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
 
   LoadRootFeedDocument("root_feed.json");
@@ -2904,7 +2913,7 @@ TEST_F(GDataFileSystemTest, GetFile_HostedDocument) {
   GDataEntry* entry = NULL;
   EXPECT_TRUE((entry = FindEntry(file_in_root)) != NULL);
 
-  file_system_->GetFile(file_in_root, callback);
+  file_system_->GetFileByPath(file_in_root, callback);
   RunAllPendingForIO();
 
   EXPECT_EQ(HOSTED_DOCUMENT, callback_helper_->file_type_);
@@ -2927,7 +2936,7 @@ TEST_F(GDataFileSystemTest, GetFile_HostedDocument) {
   EXPECT_EQ(entry->resource_id(), resource_id);
 }
 
-TEST_F(GDataFileSystemTest, GetFileForResourceId) {
+TEST_F(GDataFileSystemTest, GetFileByResourceId) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())
       .Times(AtLeast(1)).WillRepeatedly(Return(kLotsOfSpace));
@@ -2952,7 +2961,7 @@ TEST_F(GDataFileSystemTest, GetFileForResourceId) {
                            _))
       .Times(1);
 
-  file_system_->GetFileForResourceId(file->resource_id(),
+  file_system_->GetFileByResourceId(file->resource_id(),
                                      callback);
   RunAllPendingForIO();  // Try to get from the cache.
   RunAllPendingForIO();  // Check if we have space before downloading.
@@ -2963,7 +2972,7 @@ TEST_F(GDataFileSystemTest, GetFileForResourceId) {
             callback_helper_->download_path_.value());
 }
 
-TEST_F(GDataFileSystemTest, GetFileForResourceId_FromCache) {
+TEST_F(GDataFileSystemTest, GetFileByResourceId_FromCache) {
   EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
 
   LoadRootFeedDocument("root_feed.json");
@@ -2990,8 +2999,8 @@ TEST_F(GDataFileSystemTest, GetFileForResourceId_FromCache) {
   EXPECT_CALL(*mock_doc_service_, DownloadFile(_, _, _, _))
       .Times(0);
 
-  file_system_->GetFileForResourceId(file->resource_id(),
-                                     callback);
+  file_system_->GetFileByResourceId(file->resource_id(),
+                                    callback);
   RunAllPendingForIO();
 
   EXPECT_EQ(REGULAR_FILE, callback_helper_->file_type_);

@@ -134,7 +134,7 @@ void GDataSyncClient::DoFetchLoop() {
   queue_.pop_front();
 
   DVLOG(1) << "Fetching " << resource_id;
-  file_system_->GetFileForResourceId(
+  file_system_->GetFileByResourceId(
       resource_id,
       base::Bind(&GDataSyncClient::OnFetchFileComplete,
                  weak_ptr_factory_.GetWeakPtr(),

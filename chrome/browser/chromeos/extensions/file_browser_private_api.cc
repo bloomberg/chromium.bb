@@ -1778,7 +1778,7 @@ void GetGDataFilesFunction::GetFileOrSendResponse() {
 
   // Get the file on the top of the queue.
   FilePath gdata_path = remaining_gdata_paths_.front();
-  system_service->file_system()->GetFile(
+  system_service->file_system()->GetFileByPath(
       gdata_path,
       base::Bind(&GetGDataFilesFunction::OnFileReady, this));
 }
