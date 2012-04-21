@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -145,7 +146,7 @@ void dump_encoders(void)
 
 void dump_mode(drmModeModeInfo *mode)
 {
-	printf("  %s %d %d %d %d %d %d %d %d %d\n",
+	printf("\t%s %d %d %d %d %d %d %d %d %d\n",
 	       mode->name,
 	       mode->vrefresh,
 	       mode->hdisplay,
@@ -159,16 +160,90 @@ void dump_mode(drmModeModeInfo *mode)
 }
 
 static void
-dump_props(drmModeConnector *connector)
+dump_blob(uint32_t blob_id)
 {
-	drmModePropertyPtr props;
-	int i;
+	uint32_t i;
+	unsigned char *blob_data;
+	drmModePropertyBlobPtr blob;
 
-	for (i = 0; i < connector->count_props; i++) {
-		props = drmModeGetProperty(fd, connector->props[i]);
-		printf("\t%s, flags %d\n", props->name, props->flags);
-		drmModeFreeProperty(props);
+	blob = drmModeGetPropertyBlob(fd, blob_id);
+	if (!blob)
+		return;
+
+	blob_data = blob->data;
+
+	for (i = 0; i < blob->length; i++) {
+		if (i % 16 == 0)
+			printf("\n\t\t\t");
+		printf("%.2hhx", blob_data[i]);
 	}
+	printf("\n");
+
+	drmModeFreePropertyBlob(blob);
+}
+
+static void
+dump_prop(uint32_t prop_id, uint64_t value)
+{
+	int i;
+	drmModePropertyPtr prop;
+
+	prop = drmModeGetProperty(fd, prop_id);
+
+	printf("\t%d", prop_id);
+	if (!prop) {
+		printf("\n");
+		return;
+	}
+
+	printf(" %s:\n", prop->name);
+
+	printf("\t\tflags:");
+	if (prop->flags & DRM_MODE_PROP_PENDING)
+		printf(" pending");
+	if (prop->flags & DRM_MODE_PROP_RANGE)
+		printf(" range");
+	if (prop->flags & DRM_MODE_PROP_IMMUTABLE)
+		printf(" immutable");
+	if (prop->flags & DRM_MODE_PROP_ENUM)
+		printf(" enum");
+	if (prop->flags & DRM_MODE_PROP_BLOB)
+		printf(" blob");
+	printf("\n");
+
+	if (prop->flags & DRM_MODE_PROP_RANGE) {
+		printf("\t\tvalues:");
+		for (i = 0; i < prop->count_values; i++)
+			printf(" %"PRIu64, prop->values[i]);
+		printf("\n");
+	}
+
+	if (prop->flags & DRM_MODE_PROP_ENUM) {
+		printf("\t\tenums:");
+		for (i = 0; i < prop->count_enums; i++)
+			printf(" %s=%llu", prop->enums[i].name,
+			       prop->enums[i].value);
+		printf("\n");
+	} else {
+		assert(prop->count_enums == 0);
+	}
+
+	if (prop->flags & DRM_MODE_PROP_BLOB) {
+		printf("\t\tblobs:\n");
+		for (i = 0; i < prop->count_blobs; i++)
+			dump_blob(prop->blob_ids[i]);
+		printf("\n");
+	} else {
+		assert(prop->count_blobs == 0);
+	}
+
+	printf("\t\tvalue:");
+	if (prop->flags & DRM_MODE_PROP_BLOB)
+		dump_blob(value);
+	else
+		printf(" %"PRIu64"\n", value);
+
+	drmModeFreeProperty(prop);
 }
 
 void dump_connectors(void)
@@ -201,13 +276,15 @@ void dump_connectors(void)
 
 		if (connector->count_modes) {
 			printf("  modes:\n");
-			printf("  name refresh (Hz) hdisp hss hse htot vdisp "
+			printf("\tname refresh (Hz) hdisp hss hse htot vdisp "
 			       "vss vse vtot)\n");
 			for (j = 0; j < connector->count_modes; j++)
 				dump_mode(&connector->modes[j]);
 
 			printf("  props:\n");
-			dump_props(connector);
+			for (j = 0; j < connector->count_props; j++)
+				dump_prop(connector->props[j],
+					  connector->prop_values[j]);
 		}
 
 		drmModeFreeConnector(connector);
