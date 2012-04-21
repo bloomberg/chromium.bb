@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   CheckTitleTest(GetMockURL("content-sniffer-test3.html"),
                  "Content Sniffer Test 3", 1);
   EXPECT_EQ(1, browser()->tab_count());
-  ASSERT_EQ(false, got_downloads());
+  ASSERT_FALSE(got_downloads());
 }
 
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
       test_server()->GetURL("files/title2.html"),
       "Title Of Awesomeness", 1);
 
-  ASSERT_EQ(false, got_downloads());
+  ASSERT_FALSE(got_downloads());
 }
 
 // Tests that onunload is run for cross-site requests.  (Bug 1114994)
