@@ -106,6 +106,7 @@ size_t GetExtensionWidgetRow(GtkWidget* widget) {
   GList* hbox_list = gtk_container_get_children(GTK_CONTAINER(vbox));
   gint index = g_list_index(hbox_list, hbox);
   DCHECK(index != -1);
+  g_list_free(hbox_list);
 
   return index;
 }
@@ -203,6 +204,7 @@ void WebIntentPickerGtk::OnExtensionInstallFailure(const std::string& id) {
 
   RemoveThrobber();
   gtk_widget_show_all(hbox);
+  g_list_free(vbox_list);
   SetWidgetsEnabled(true);
 }
 
@@ -352,6 +354,8 @@ void WebIntentPickerGtk::OnExtensionInstallButtonClick(GtkWidget* button) {
   GtkAllocation allocation;
   gtk_widget_get_allocation(install_button, &allocation);
   gtk_widget_hide(install_button);
+  g_list_free(hbox_list);
+  g_list_free(vbox_list);
 
   // Show the throbber with the same size as the install button.
   GtkWidget* throbber = AddThrobberToExtensionAt(index);
@@ -369,6 +373,7 @@ void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {
   GList* button_list = gtk_container_get_children(GTK_CONTAINER(button_vbox_));
   gint index = g_list_index(button_list, button);
   DCHECK(index != -1);
+  g_list_free(button_list);
 
   const WebIntentPickerModel::InstalledService& installed_service =
       model_->GetInstalledServiceAt(index);
@@ -602,6 +607,7 @@ GtkWidget* WebIntentPickerGtk::AddThrobberToExtensionAt(size_t index) {
   GtkWidget* alignment = gtk_alignment_new(0.5, 0.5, 0, 0);
   gtk_container_add(GTK_CONTAINER(alignment), throbber_->widget());
   gtk_box_pack_end(GTK_BOX(hbox), alignment, FALSE, FALSE, 0);
+  g_list_free(vbox_list);
   throbber_->Start();
   return alignment;
 }
