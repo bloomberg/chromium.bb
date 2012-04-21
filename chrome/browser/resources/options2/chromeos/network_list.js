@@ -511,10 +511,11 @@ cr.define('options.network', function() {
                        data: {}});
         }
       }
+      if (!empty)
+        menu.appendChild(networkGroup);
       if (addendum.length > 0) {
         var separator = false;
         if (!empty) {
-          menu.appendChild(networkGroup);
           menu.appendChild(MenuItem.createSeparator());
           separator = true;
         }
