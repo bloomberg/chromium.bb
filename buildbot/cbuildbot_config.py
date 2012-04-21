@@ -496,7 +496,7 @@ paladin.add_config('amd64-generic-paladin',
   paladin_builder_name='amd64 generic paladin',
 )
 
-chrome_pfq = _config(
+chromium_pfq = _config(
   build_type=constants.CHROME_PFQ_TYPE,
   important=True,
   chrome_tests=True,
@@ -505,21 +505,21 @@ chrome_pfq = _config(
   manifest_version=True,
 )
 
-chrome_pfq.add_config('x86-generic-chrome-pre-flight-queue',
+chromium_pfq.add_config('x86-generic-chromium-pfq',
   boards=['x86-generic'],
   master=True,
   push_overlays=constants.PUBLIC_OVERLAYS,
   chrome_rev=constants.CHROME_REV_LATEST,
-  chrome_tests=False,
+  chrome_tests=False, # TODO(build-team): Use chrome tests
 )
 
-chrome_pfq.add_config('arm-tegra2-chrome-pre-flight-queue',
+chromium_pfq.add_config('tegra2-chromium-pfq',
   arm,
   boards=['tegra2'],
   chrome_rev=constants.CHROME_REV_LATEST,
 )
 
-chrome_pfq.add_config('amd64-generic-chrome-pre-flight-queue',
+chromium_pfq.add_config('amd64-generic-chromium-pfq',
   amd64,
   boards=['amd64-generic'],
   chrome_rev=constants.CHROME_REV_LATEST,
@@ -527,8 +527,30 @@ chrome_pfq.add_config('amd64-generic-chrome-pre-flight-queue',
   vm_tests=None,
 )
 
+chrome_pfq = chromium_pfq.derive(
+  important=False, # for now...
+  chrome_tests=False, # TODO(build-team): Use chrome tests
+  overlays=constants.BOTH_OVERLAYS,
+  prebuilts=False,
+)
 
-chrome_pfq_info = chrome_pfq.derive(
+chrome_pfq.add_config('alex-chrome-pfq',
+  boards=['x86-alex'],
+)
+
+chrome_pfq.add_config('alex32-chrome-pfq',
+  boards=['x86-alex32'],
+)
+
+chrome_pfq.add_config('lumpy-chrome-pfq',
+  boards=['lumpy'],
+  # lumpy changes optimization relevant flags from x86-generic, so we should
+  # ignore target pkgs built on parent/other boards.  Setup_board packages
+  # are OK, since we aren't profiling them.
+  usepkg_build_packages=False,
+)
+
+chromium_pfq_info = chromium_pfq.derive(
   chrome_rev=constants.CHROME_REV_TOT,
   use_lkgm=True,
   important=False,
@@ -536,13 +558,14 @@ chrome_pfq_info = chrome_pfq.derive(
   vm_tests=constants.SMOKE_SUITE_TEST_TYPE,
 )
 
-chrome_pfq_info.add_config('x86-generic-tot-chrome-pfq-informational',
+# TODO(petermayo): We may want to update the -chrome-pfq-i... as above.
+chromium_pfq_info.add_config('x86-generic-tot-chrome-pfq-informational',
   boards=['x86-generic'],
   chrome_tests=False,
 )
 
 cpfq_arm = \
-chrome_pfq_info.add_config('arm-generic-tot-chrome-pfq-informational',
+chromium_pfq_info.add_config('arm-generic-tot-chrome-pfq-informational',
   arm,
   boards=['arm-generic'],
 )
@@ -551,12 +574,12 @@ cpfq_arm.add_config('arm-tegra2-tot-chrome-pfq-informational',
   boards=['tegra2'],
 )
 
-chrome_pfq_info.add_config('amd64-corei7-tot-chrome-pfq-informational',
+chromium_pfq_info.add_config('amd64-corei7-tot-chrome-pfq-informational',
   amd64,
   boards=['amd64-corei7'],
 )
 
-chrome_pfq_info.add_config('amd64-generic-tot-chrome-pfq-informational',
+chromium_pfq_info.add_config('amd64-generic-tot-chrome-pfq-informational',
   amd64,
   boards=['amd64-generic'],
 )
