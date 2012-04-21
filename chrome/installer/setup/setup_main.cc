@@ -1023,7 +1023,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
             installer::switches::kRegisterURLProtocol);
         // ShellUtil::RegisterChromeForProtocol performs all registration
         // done by ShellUtil::RegisterChromeBrowser, as well as registering
-        // with Winows as capable of handling the supplied protocol.
+        // with Windows as capable of handling the supplied protocol.
         if (ShellUtil::RegisterChromeForProtocol(chrome_install->distribution(),
             chrome_exe, suffix, protocol, false))
           status = installer::IN_USE_UPDATED;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -10,8 +10,7 @@
 
 #include <shlobj.h>
 
-#include <string>
-
+#include "base/string16.h"
 #include "chrome/installer/util/util_constants.h"
 
 class BrowserDistribution;
@@ -29,7 +28,7 @@ class Product;
 // |root| is the registry root (HKLM|HKCU) and |browser_entry_suffix| is the
 // suffix for default browser entry name in the registry (optional).
 bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
-                                  const std::wstring& browser_entry_suffix,
+                                  const string16& browser_entry_suffix,
                                   const FilePath& target_path,
                                   InstallStatus* exit_code);
 

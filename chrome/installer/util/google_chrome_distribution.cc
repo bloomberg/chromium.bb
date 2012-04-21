@@ -538,10 +538,14 @@ bool GoogleChromeDistribution::GetDelegateExecuteHandlerData(
     string16* type_lib_uuid,
     string16* type_lib_version,
     string16* interface_uuid) {
-  *handler_class_uuid = kCommandExecuteImplUuid;
-  *type_lib_uuid = kDelegateExecuteLibUuid;
-  *type_lib_version = kDelegateExecuteLibVersion;
-  *interface_uuid = kICommandExecuteImplUuid;
+  if (handler_class_uuid)
+    *handler_class_uuid = kCommandExecuteImplUuid;
+  if (type_lib_uuid)
+    *type_lib_uuid = kDelegateExecuteLibUuid;
+  if (type_lib_version)
+    *type_lib_version = kDelegateExecuteLibVersion;
+  if (interface_uuid)
+    *interface_uuid = kICommandExecuteImplUuid;
   return true;
 }
 

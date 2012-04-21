@@ -31,9 +31,16 @@ default_apps\*.crx: %(VersionDir)s\default_apps\
 default_apps\external_extensions.json: %(VersionDir)s\default_apps\
 
 [GOOGLE_CHROME]
+splash-620x300.png: %(ChromeDir)s\
+Logo.png: %(ChromeDir)s\
+SmallLogo.png: %(ChromeDir)s\
+VisualElementsManifest.xml: %(ChromeDir)s\
+delegate_execute.exe: %(VersionDir)s\
 gcswf32.dll: %(VersionDir)s\
+#metro_driver.dll will go in the VersionDir once we fix http://crbug.com/123316
+metro_driver.dll: %(ChromeDir)s\
 plugin.vch: %(VersionDir)s\
-FlashPlayerCPLApp.cpl: %(VersionDir)s\
 FlashPlayerApp.exe: %(VersionDir)s\
+FlashPlayerCPLApp.cpl: %(VersionDir)s\
 PepperFlash\pepflashplayer.dll: %(VersionDir)s\PepperFlash\
 PepperFlash\manifest.json: %(VersionDir)s\PepperFlash\

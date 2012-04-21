@@ -121,6 +121,7 @@ class BrowserDistribution {
   // |handler_class_uuid| is the CommandExecuteImpl class UUID.
   // |type_lib_uuid| and |type_lib_version| identify its type library.
   // |interface_uuid| is the ICommandExecuteImpl interface UUID.
+  // Only non-null parameters will be set, others will be ignored.
   virtual bool GetDelegateExecuteHandlerData(string16* handler_class_uuid,
                                              string16* type_lib_uuid,
                                              string16* type_lib_version,
