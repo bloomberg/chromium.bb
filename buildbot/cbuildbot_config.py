@@ -496,7 +496,9 @@ paladin.add_config('amd64-generic-paladin',
   paladin_builder_name='amd64 generic paladin',
 )
 
-chromium_pfq = _config(
+# TODO(davidjames): Convert this to an external config once the unified master
+# logic is ready.
+chromium_pfq = internal.derive(
   build_type=constants.CHROME_PFQ_TYPE,
   important=True,
   chrome_tests=True,
