@@ -273,7 +273,8 @@ class GerritHelper():
 
         yield query, result
 
-    id_queries = sorted(x.lower() for x in queries if not x.isdigit())
+    id_queries = sorted(cros_patch.FormatChangeId(x)
+                        for x in queries if not x.isdigit())
 
     if not id_queries:
       return
@@ -285,8 +286,9 @@ class GerritHelper():
     for query, result in itertools.izip_longest(id_queries, results):
       # case insensitivity to ensure that if someone queries for IABC
       # and gerrit returns Iabc, we still properly match.
-      result_id = result.id if result is not None else ''
-      result_id = result_id.lower()
+      result_id = ''
+      if result:
+        result_id = cros_patch.FormatChangeId(result.id)
 
       if result is None or (query and not result_id.startswith(query)):
         if last_patch_id and result_id.startswith(last_patch_id):
@@ -391,6 +393,13 @@ def GetGerritPatchInfo(patches):
   internal_patches = [x for x in patches if x.startswith('*')]
   external_patches = [x for x in patches if not x.startswith('*')]
 
+  def _FixupFormatting(item):
+    if not item.isdigit():
+      item = cros_patch.FormatChangeId(item)
+    return item
+  internal_patches = map(_FixupFormatting, internal_patches)
+  external_patches = map(_FixupFormatting, external_patches)
+
   if internal_patches:
     # feed it id's w/ * stripped off, but bind them back
     # so that we can return patches in the supplied ordering.
@@ -413,7 +422,7 @@ def GetGerritPatchInfo(patches):
     # return a unique list, while maintaining the ordering of the first
     # seen instance of each patch.  Do this to ensure whatever ordering
     # the user is trying to enforce, we honor; lest it break on cherry-picking
-    gpatch = parsed_patches[query.lower()]
+    gpatch = parsed_patches[query]
     if gpatch.id not in seen:
       results.append(gpatch)
       seen.add(gpatch.id)

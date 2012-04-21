@@ -45,6 +45,17 @@ class BrokenChangeID(MalformedChange):
   """Raised if a patch has an invalid Change-ID."""
 
 
+def FormatChangeId(text):
+  """Format a Change-ID into a standardized form.  Use this anywhere
+  we're accepting user input of Change-IDs."""
+  if not text:
+    raise ValueError("FormatChangeId invoked w/ an empty value: %r" % (text,))
+  elif not text[0] in 'iI':
+    raise ValueError("FormatChangeId invoked w/ a malformed Change-Id: %r"
+                     (text,))
+  return 'I%s' % text[1:].lower()
+
+
 class GitRepoPatch(object):
   """Representing a patch from a branch of a local or remote git repository."""
 
@@ -325,7 +336,7 @@ class GerritPatch(GitRepoPatch):
     self.patch_dict = patch_dict
     self.internal = internal
     # id - The CL's ChangeId
-    self.id = patch_dict['id']
+    self.id = FormatChangeId(patch_dict['id'])
     # revision - The CL's SHA1 hash.
     self.revision = patch_dict['currentPatchSet']['revision']
     self.patch_number = patch_dict['currentPatchSet']['number']
@@ -411,7 +422,10 @@ class GerritPatch(GitRepoPatch):
       change_id_match = change_id_match[-1]
       if not self._VALID_CHANGE_ID_RE.match(change_id_match):
         raise BrokenChangeID(self, change_id_match)
-      dependencies.append(change_id_match)
+
+      # Force a standard for the formatting; I must be caps, force the rest
+      # of the hex to lower case.
+      dependencies.append(FormatChangeId(change_id_match))
 
     if dependencies:
       logging.info('Found %s Gerrit dependencies for change %s', dependencies,
@@ -441,10 +455,11 @@ class GerritPatch(GitRepoPatch):
       chunks = ' '.join(match.split(','))
       chunks = chunks.split()
       for chunk in chunks:
-        if not (self._VALID_CHANGE_ID_RE.match(chunk) or chunk.isdigit()):
-          raise BrokenCQDepends(self, match, chunk)
-
-      dependencies.extend(chunks)
+        if not chunk.isdigit():
+          if not self._VALID_CHANGE_ID_RE.match(chunk):
+            raise BrokenCQDepends(self, match, chunk)
+          chunk = FormatChangeId(chunk)
+        dependencies.append(chunk)
 
     if dependencies:
       logging.info('Found %s Paladin dependencies for change %s', dependencies,
