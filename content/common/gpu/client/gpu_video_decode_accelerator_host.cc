@@ -13,6 +13,10 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 
+#if defined(OS_WIN)
+#include "content/public/common/sandbox_init.h"
+#endif  // OS_WIN
+
 using media::VideoDecodeAccelerator;
 
 GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
@@ -65,9 +69,20 @@ bool GpuVideoDecodeAcceleratorHost::Initialize(
 void GpuVideoDecodeAcceleratorHost::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(CalledOnValidThread());
+  base::SharedMemoryHandle buffer_handle = bitstream_buffer.handle();
+#if defined(OS_WIN)
+  if (!content::BrokerDuplicateHandle(bitstream_buffer.handle(),
+                                      channel_->gpu_pid(),
+                                      &buffer_handle, 0,
+                                      DUPLICATE_SAME_ACCESS)) {
+    NOTREACHED() << "Failed to duplicate buffer handler";
+    return;
+  }
+#endif  // OS_WIN
+
   Send(new AcceleratedVideoDecoderMsg_Decode(
-      decoder_route_id_, bitstream_buffer.handle(),
-      bitstream_buffer.id(), bitstream_buffer.size()));
+      decoder_route_id_, buffer_handle, bitstream_buffer.id(),
+      bitstream_buffer.size()));
 }
 
 void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
