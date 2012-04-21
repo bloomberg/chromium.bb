@@ -58,7 +58,8 @@ gles_book_examples = {
 
 for demo, sources in gles_book_examples.iteritems():
     nexe_name = env.ProgramNameForNmf('ppapi_gles_book_%s' % demo)
-    nmf_name = 'ppapi_gles_book_' + demo + '.nmf'
+    nmf_name_base = 'ppapi_gles_book_' + demo
+    nmf_name = nmf_name_base + '.nmf'
     nexe = env.ComponentProgram(
         nexe_name,
         ['demos/gles2_book/demo_' + demo + '.cc'] + sources,
@@ -73,7 +74,7 @@ for demo, sources in gles_book_examples.iteritems():
     test = env.PPAPIBrowserTester(
         'ppapi_gles_book_' + demo + '.out',
         url='ppapi_gles_book.html?manifest=' + nmf_name,
-        nmfs=['${TEST_DIR}/' + nmf_name],
+        nmf_names=[nmf_name_base],
         files=[nexe,
                env.File('ppapi_gles_book.html')],
         browser_flags=['--enable-accelerated-plugins'])
