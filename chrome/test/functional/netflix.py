@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import logging
+import os
 import time
 
 import pyauto_functional
@@ -92,7 +93,7 @@ class NetflixTestHelper():
     self._pyauto.assertTrue(netflix_infobar_status,
                             msg='Netflix infobar did not show up')
          
-  def _CurrentPlaybackTime(self):
+  def CurrentPlaybackTime(self):
     """Returns the current playback time in seconds."""
     time = self._pyauto.ExecuteJavascript("""
         time = nrdp.video.currentTime;
@@ -100,23 +101,23 @@ class NetflixTestHelper():
     """)
     return int(float(time))
 
-  def _SignOut(self):
-    """Sing out from Netflix Login."""
+  def SignOut(self):
+    """Sign out from Netflix Login."""
     self._pyauto.NavigateToURL(self.SIGNOUT_PAGE)
 
-  def _LoginAndStartPlaying(self):
+  def LoginAndStartPlaying(self):
     """Login and start playing the video."""
     self._pyauto.assertTrue(self._pyauto._IsNetflixPluginEnabled(), 
                             msg='Netflix plugin is disabled or not available.')
     self._pyauto._LoginToNetflix()
     self._pyauto.assertTrue(self._pyauto.WaitUntil(
-        lambda:self._pyauto.GetActiveTabURL().spec(),
+        lambda: self._pyauto.GetActiveTabURL().spec(),
         expect_retval=self.TITLE_HOMEPAGE),
         msg='Login to Netflix failed.')
     self._pyauto.NavigateToURL(self.VIDEO_URL)
     self._pyauto._HandleInfobars()
 
-  def _CheckNetflixPlaying(self, expected_result, error_msg):
+  def CheckNetflixPlaying(self, expected_result, error_msg):
     """Check if Netflix is playing the video or not.
 
     Args:
@@ -145,27 +146,30 @@ class NetflixTest(pyauto.PyUITest, NetflixTestHelper):
     logging.info('Logged in as %s' % credentials['username'])
     login_info = self.GetLoginInfo()
     self.assertTrue(login_info['is_logged_in'], msg='Login failed.')
+    self.assertFalse(login_info['is_guest'],
+                     msg='Should not be logged in as guest.')
+
+  def setUp(self):
+    assert os.geteuid() == 0, 'Run test as root since we might need to logout'
+    pyauto.PyUITest.setUp(self)
+    if self.GetLoginInfo()['is_logged_in']:
+      self.Logout()
+    self._Login()
 
   def tearDown(self):
-    self._SignOut()
-    # We have a test which runs in Guest mode, but other tests must run in
-    # Normal mode since Netflix only runs in Normal mode.
-    # Adding logout part here in case GuestMode test fails in between.
-    if self.GetLoginInfo()['is_guest']:
-      self.Logout()
-      self._Login()
-    pyauto.PyUITest.tearDown(self) 
+    self.SignOut()
+    pyauto.PyUITest.tearDown(self)
 
   def testPlayerLoadsAndPlays(self):
     """Test that Netflix player loads and plays the title."""
-    self._LoginAndStartPlaying()
-    self._CheckNetflixPlaying(self.IS_PLAYING,
+    self.LoginAndStartPlaying()
+    self.CheckNetflixPlaying(self.IS_PLAYING,
                               'Player did not start playing the title.')
 
   def testPlaying(self):
     """Test that title playing progresses."""
-    self._LoginAndStartPlaying()
-    self._CheckNetflixPlaying(self.IS_PLAYING,
+    self.LoginAndStartPlaying()
+    self.CheckNetflixPlaying(self.IS_PLAYING,
                               'Player did not start playing the title.')
     title_length =  self.ExecuteJavascript("""
         time = nrdp.video.duration;
@@ -180,7 +184,7 @@ class NetflixTest(pyauto.PyUITest, NetflixTestHelper):
       count = count + 1
       if count == 10:
         break
-      current_time = self._CurrentPlaybackTime()
+      current_time = self.CurrentPlaybackTime()
       self.assertTrue(prev_time <= current_time,
           msg='Prev playing time %s is greater than current time %s.'
           % (prev_time, current_time))
@@ -193,17 +197,33 @@ class NetflixTest(pyauto.PyUITest, NetflixTestHelper):
     self.assertTrue(current_time > 0,
                     msg='Netflix player did not start playing.')
 
-  def testGuestMode(self):
-    """Test that Netflix doesn't play in Guest mode login"""
-    login_info = self.GetLoginInfo()
-    if login_info['is_logged_in']:
+
+class NetflixGuestModeTest(pyauto.PyUITest, NetflixTestHelper):
+  """Netflix in guest mode."""
+
+  def __init__(self, methodName='runTest', **kwargs):
+    pyauto.PyUITest.__init__(self, methodName, **kwargs)
+    NetflixTestHelper.__init__(self, self)
+
+  def setUp(self):
+    assert os.geteuid() == 0, 'Run test as root since we might need to logout'
+    pyauto.PyUITest.setUp(self)
+    if self.GetLoginInfo()['is_logged_in']:
       self.Logout()
     self.LoginAsGuest()
     login_info = self.GetLoginInfo()
     self.assertTrue(login_info['is_logged_in'], msg='Not logged in at all.')
     self.assertTrue(login_info['is_guest'], msg='Not logged in as guest.')
-    self._LoginAndStartPlaying()
-    self._CheckNetflixPlaying(
+
+  def tearDown(self):
+    self.SignOut()
+    self.Logout()
+    pyauto.PyUITest.tearDown(self)
+
+  def testGuestMode(self):
+    """Test that Netflix doesn't play in guest mode login."""
+    self.LoginAndStartPlaying()
+    self.CheckNetflixPlaying(
         self.IS_GUEST_MODE_ERROR,
         'Netflix player did not return a Guest mode error.')
     # Page contents parsing doesn't work : crosbug.com/27977
