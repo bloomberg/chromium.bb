@@ -299,7 +299,6 @@ RootWindowHostLinux::RootWindowHostLinux(const gfx::Rect& bounds)
       current_cursor_(ui::kCursorNull),
       cursor_shown_(true),
       bounds_(bounds),
-      has_set_bounds_once_(false),
       focus_when_shown_(false),
       pointer_barriers_(NULL) {
   XSetWindowAttributes swa;
@@ -602,6 +601,14 @@ gfx::AcceleratedWidget RootWindowHostLinux::GetAcceleratedWidget() {
 }
 
 void RootWindowHostLinux::Show() {
+  // Before we map the window, set size hints. Otherwise, some window managers
+  // will ignore toplevel XMoveWindow commands.
+  XSizeHints size_hints;
+  size_hints.flags = PPosition;
+  size_hints.x = bounds_.x();
+  size_hints.y = bounds_.y();
+  XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
+
   XMapWindow(xdisplay_, xwindow_);
 }
 
@@ -615,35 +622,16 @@ gfx::Rect RootWindowHostLinux::GetBounds() const {
 
 void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   bool size_changed = bounds_.size() != bounds.size();
-  if (has_set_bounds_once_ && bounds == bounds_) {
+  if (bounds == bounds_) {
     root_window_->SchedulePaintInRect(root_window_->bounds());
     return;
   }
 
-  bool set_hints = false;
-  XSizeHints size_hints;
-  size_hints.flags = 0;
-
-  if (!has_set_bounds_once_ || bounds.size() != bounds_.size()) {
+  if (bounds.size() != bounds_.size())
     XResizeWindow(xdisplay_, xwindow_, bounds.width(), bounds.height());
 
-    size_hints.flags |= PMinSize;
-    size_hints.min_width = bounds.width();
-    size_hints.min_height = bounds.height();
-    set_hints = true;
-  }
-
-  if (!has_set_bounds_once_ || bounds.origin() != bounds_.origin()) {
+  if (bounds.origin() != bounds_.origin())
     XMoveWindow(xdisplay_, xwindow_, bounds.x(), bounds.y());
-
-    size_hints.flags |= PPosition;
-    size_hints.x = bounds.x();
-    size_hints.y = bounds.y();
-    set_hints = true;
-  }
-
-  if (set_hints)
-    XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
 
   // Assume that the resize will go through as requested, which should be the
   // case if we're running without a window manager.  If there's a window
@@ -651,7 +639,6 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_| later.
   bounds_ = bounds;
-  has_set_bounds_once_ = true;
   if (size_changed)
     root_window_->OnHostResized(bounds.size());
 }

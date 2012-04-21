@@ -8,6 +8,8 @@
 
 #if !defined(USE_ASH)
 #include "ui/aura/desktop/desktop_stacking_client.h"
+#include "ui/aura/env.h"
+#include "ui/aura/single_monitor_manager.h"
 #include "ui/views/widget/native_widget_aura.h"
 #endif  // !USE_ASH
 
@@ -17,6 +19,7 @@ ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura()
 
 void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 #if !defined(USE_ASH)
+  aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
   stacking_client_.reset(new aura::DesktopStackingClient);
 #endif  // !USE_ASH
 }

@@ -24,6 +24,7 @@
 
 #if defined(USE_AURA)
 #if !defined(USE_ASH)
+#include "ui/aura/single_monitor_manager.h"
 #include "ui/views/widget/desktop_native_widget_helper_aura.h"
 #endif
 #include "ui/aura/desktop/desktop_stacking_client.h"
@@ -68,6 +69,9 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext);
 
 #if defined(USE_AURA)
+#if !defined(USE_ASH)
+  aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
+#endif
   stacking_client_.reset(new aura::DesktopStackingClient);
 #endif
   views_delegate_.reset(new ExamplesViewsDelegate);

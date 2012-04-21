@@ -77,11 +77,6 @@ class RootWindowHostLinux : public RootWindowHost,
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
 
-  // We have to keep track of whether we've set bounds before, because at least
-  // metacity ignores the initial position given to XCreateWindow() and demands
-  // a XMoveWindow().
-  bool has_set_bounds_once_;
-
   // Names of cached atoms that we fetch during the constructor to minimize
   // round trips to the X11 server.
   enum AtomList {
