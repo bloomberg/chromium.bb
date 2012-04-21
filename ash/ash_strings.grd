@@ -165,7 +165,7 @@ This file contains the strings for ash.
       nontranslateable parts and create placeholders for them. -->
       <!-- TODO(zork): Only include these in Aura builds -->
       <message name="IDS_AURA_APP_LIST_TITLE" desc="The title used for the Aura app list in the launcher">
-        Applications
+        Apps
       </message>
       <message name="IDS_AURA_NEW_TAB" desc="The text label of the New Tab menu item">
         New tab
