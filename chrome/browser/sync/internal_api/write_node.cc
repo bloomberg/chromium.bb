@@ -265,45 +265,53 @@ WriteNode::~WriteNode() {
 
 // Find an existing node matching the ID |id|, and bind this WriteNode to it.
 // Return true on success.
-bool WriteNode::InitByIdLookup(int64 id) {
+BaseNode::InitByLookupResult WriteNode::InitByIdLookup(int64 id) {
   DCHECK(!entry_) << "Init called twice";
   DCHECK_NE(id, kInvalidId);
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::GET_BY_HANDLE, id);
-  return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary());
+  if (!entry_->good())
+    return INIT_FAILED_ENTRY_NOT_GOOD;
+  if (entry_->Get(syncable::IS_DEL))
+    return INIT_FAILED_ENTRY_IS_DEL;
+  return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
 
 // Find a node by client tag, and bind this WriteNode to it.
 // Return true if the write node was found, and was not deleted.
 // Undeleting a deleted node is possible by ClientTag.
-bool WriteNode::InitByClientTagLookup(syncable::ModelType model_type,
-                                      const std::string& tag) {
+BaseNode::InitByLookupResult WriteNode::InitByClientTagLookup(
+    syncable::ModelType model_type,
+    const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
   if (tag.empty())
-    return false;
+    return INIT_FAILED_PRECONDITION;
 
   const std::string hash = GenerateSyncableHash(model_type, tag);
 
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::GET_BY_CLIENT_TAG, hash);
-  return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary());
+  if (!entry_->good())
+    return INIT_FAILED_ENTRY_NOT_GOOD;
+  if (entry_->Get(syncable::IS_DEL))
+    return INIT_FAILED_ENTRY_IS_DEL;
+  return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
 
-bool WriteNode::InitByTagLookup(const std::string& tag) {
+BaseNode::InitByLookupResult WriteNode::InitByTagLookup(
+    const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
   if (tag.empty())
-    return false;
+    return INIT_FAILED_PRECONDITION;
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::GET_BY_SERVER_TAG, tag);
   if (!entry_->good())
-    return false;
+    return INIT_FAILED_ENTRY_NOT_GOOD;
   if (entry_->Get(syncable::IS_DEL))
-    return false;
+    return INIT_FAILED_ENTRY_IS_DEL;
   syncable::ModelType model_type = GetModelType();
   DCHECK_EQ(syncable::NIGORI, model_type);
-  return true;
+  return INIT_OK;
 }
 
 void WriteNode::PutModelType(syncable::ModelType model_type) {

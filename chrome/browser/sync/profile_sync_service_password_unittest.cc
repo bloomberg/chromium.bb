@@ -141,7 +141,8 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   void AddPasswordSyncNode(const PasswordForm& entry) {
     sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode password_root(&trans);
-    ASSERT_TRUE(password_root.InitByTagLookup(browser_sync::kPasswordTag));
+    ASSERT_EQ(sync_api::BaseNode::INIT_OK,
+              password_root.InitByTagLookup(browser_sync::kPasswordTag));
 
     sync_api::WriteNode node(&trans);
     std::string tag = PasswordModelAssociator::MakeTag(entry);
@@ -245,12 +246,14 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   void GetPasswordEntriesFromSyncDB(std::vector<PasswordForm>* entries) {
     sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode password_root(&trans);
-    ASSERT_TRUE(password_root.InitByTagLookup(browser_sync::kPasswordTag));
+    ASSERT_EQ(sync_api::BaseNode::INIT_OK,
+              password_root.InitByTagLookup(browser_sync::kPasswordTag));
 
     int64 child_id = password_root.GetFirstChildId();
     while (child_id != sync_api::kInvalidId) {
       sync_api::ReadNode child_node(&trans);
-      ASSERT_TRUE(child_node.InitByIdLookup(child_id));
+      ASSERT_EQ(sync_api::BaseNode::INIT_OK,
+                child_node.InitByIdLookup(child_id));
 
       const sync_pb::PasswordSpecificsData& password =
           child_node.GetPasswordSpecifics();

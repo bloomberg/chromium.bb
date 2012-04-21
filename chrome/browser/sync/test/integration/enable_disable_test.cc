@@ -34,7 +34,8 @@ bool DoesTopLevelNodeExist(sync_api::UserShare* user_share,
                            syncable::ModelType type) {
     sync_api::ReadTransaction trans(FROM_HERE, user_share);
     sync_api::ReadNode node(&trans);
-    return node.InitByTagLookup(syncable::ModelTypeToRootTag(type));
+    return node.InitByTagLookup(syncable::ModelTypeToRootTag(type)) ==
+        sync_api::BaseNode::INIT_OK;
 }
 
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {

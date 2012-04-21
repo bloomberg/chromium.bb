@@ -171,7 +171,8 @@ SyncError TypedUrlModelAssociator::AssociateModels() {
   {
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
-    if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
+    if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
+            sync_api::BaseNode::INIT_OK) {
       return error_handler_->CreateAndUploadError(
           FROM_HERE,
           "Server did not create the top-level typed_url node. We "
@@ -190,7 +191,8 @@ SyncError TypedUrlModelAssociator::AssociateModels() {
       history::VisitVector& visits = visit_vectors[ix->id()];
 
       sync_api::ReadNode node(&trans);
-      if (node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
+      if (node.InitByClientTagLookup(syncable::TYPED_URLS, tag) ==
+              sync_api::BaseNode::INIT_OK) {
         // Same URL exists in sync data and in history data - compare the
         // entries to see if there's any difference.
         sync_pb::TypedUrlSpecifics typed_url(
@@ -209,7 +211,8 @@ SyncError TypedUrlModelAssociator::AssociateModels() {
             MergeUrls(typed_url, *ix, &visits, &new_url, &added_visits);
         if (difference & DIFF_UPDATE_NODE) {
           sync_api::WriteNode write_node(&trans);
-          if (!write_node.InitByClientTagLookup(syncable::TYPED_URLS, tag)) {
+          if (write_node.InitByClientTagLookup(syncable::TYPED_URLS, tag) !=
+                  sync_api::BaseNode::INIT_OK) {
             return error_handler_->CreateAndUploadError(
                 FROM_HERE,
                 "Failed to edit typed_url sync node.",
@@ -268,7 +271,8 @@ SyncError TypedUrlModelAssociator::AssociateModels() {
       if (IsAbortPending())
         return SyncError();
       sync_api::ReadNode sync_child_node(&trans);
-      if (!sync_child_node.InitByIdLookup(sync_child_id)) {
+      if (sync_child_node.InitByIdLookup(sync_child_id) !=
+              sync_api::BaseNode::INIT_OK) {
         return error_handler_->CreateAndUploadError(
             FROM_HERE,
             "Failed to fetch child node.",
@@ -331,7 +335,7 @@ SyncError TypedUrlModelAssociator::AssociateModels() {
           if (IsAbortPending())
             return SyncError();
         sync_api::WriteNode sync_node(&trans);
-        if (!sync_node.InitByIdLookup(*it)) {
+        if (sync_node.InitByIdLookup(*it) != sync_api::BaseNode::INIT_OK) {
           return error_handler_->CreateAndUploadError(
               FROM_HERE,
               "Failed to fetch obsolete node.",
@@ -419,14 +423,16 @@ bool TypedUrlModelAssociator::DeleteAllNodes(
 
   // Just walk through all our child nodes and delete them.
   sync_api::ReadNode typed_url_root(trans);
-  if (!typed_url_root.InitByTagLookup(kTypedUrlTag)) {
+  if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
+          sync_api::BaseNode::INIT_OK) {
     LOG(ERROR) << "Could not lookup root node";
     return false;
   }
   int64 sync_child_id = typed_url_root.GetFirstChildId();
   while (sync_child_id != sync_api::kInvalidId) {
     sync_api::WriteNode sync_child_node(trans);
-    if (!sync_child_node.InitByIdLookup(sync_child_id)) {
+    if (sync_child_node.InitByIdLookup(sync_child_id) !=
+            sync_api::BaseNode::INIT_OK) {
       LOG(ERROR) << "Typed url node lookup failed.";
       return false;
     }
@@ -455,7 +461,7 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   *has_nodes = false;
   sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode sync_node(&trans);
-  if (!sync_node.InitByTagLookup(kTypedUrlTag)) {
+  if (sync_node.InitByTagLookup(kTypedUrlTag) != sync_api::BaseNode::INIT_OK) {
     LOG(ERROR) << "Server did not create the top-level typed_url node. We "
                << "might be running against an out-of-date server.";
     return false;

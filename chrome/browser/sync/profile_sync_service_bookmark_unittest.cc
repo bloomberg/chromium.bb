@@ -42,11 +42,12 @@
 
 namespace browser_sync {
 
+using content::BrowserThread;
+using sync_api::BaseNode;
 using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
 using testing::StrictMock;
-using content::BrowserThread;
 
 class TestBookmarkModelAssociator : public BookmarkModelAssociator {
  public:
@@ -73,7 +74,8 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
 
       sync_api::ReadNode root(&trans);
       root_exists = root.InitByTagLookup(
-          ProfileSyncServiceTestHelper::GetTagForType(type));
+          ProfileSyncServiceTestHelper::GetTagForType(type)) ==
+              BaseNode::INIT_OK;
     }
 
     if (!root_exists) {
@@ -87,7 +89,7 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
 
     sync_api::WriteTransaction trans(FROM_HERE, user_share_);
     sync_api::ReadNode root(&trans);
-    EXPECT_TRUE(root.InitByTagLookup(
+    EXPECT_EQ(BaseNode::INIT_OK, root.InitByTagLookup(
         ProfileSyncServiceTestHelper::GetTagForType(type)));
 
     // First, try to find a node with the title among the root's children.
@@ -96,7 +98,7 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
     int64 last_child_id = sync_api::kInvalidId;
     for (int64 id = root.GetFirstChildId(); id != sync_api::kInvalidId; /***/) {
       sync_api::ReadNode child(&trans);
-      child.InitByIdLookup(id);
+      EXPECT_EQ(BaseNode::INIT_OK, child.InitByIdLookup(id));
       last_child_id = id;
       if (tag_str == child.GetTitle()) {
         *sync_id = id;
@@ -108,7 +110,8 @@ class TestBookmarkModelAssociator : public BookmarkModelAssociator {
     sync_api::ReadNode predecessor_node(&trans);
     sync_api::ReadNode* predecessor = NULL;
     if (last_child_id != sync_api::kInvalidId) {
-      predecessor_node.InitByIdLookup(last_child_id);
+      EXPECT_EQ(BaseNode::INIT_OK,
+                predecessor_node.InitByIdLookup(last_child_id));
       predecessor = &predecessor_node;
     }
     sync_api::WriteNode node(&trans);
@@ -147,13 +150,13 @@ class FakeServerChange {
             int64 parent_id,
             int64 predecessor_id) {
     sync_api::ReadNode parent(trans_);
-    EXPECT_TRUE(parent.InitByIdLookup(parent_id));
+    EXPECT_EQ(BaseNode::INIT_OK, parent.InitByIdLookup(parent_id));
     sync_api::WriteNode node(trans_);
     if (predecessor_id == 0) {
       EXPECT_TRUE(node.InitByCreation(syncable::BOOKMARKS, parent, NULL));
     } else {
       sync_api::ReadNode predecessor(trans_);
-      EXPECT_TRUE(predecessor.InitByIdLookup(predecessor_id));
+      EXPECT_EQ(BaseNode::INIT_OK, predecessor.InitByIdLookup(predecessor_id));
       EXPECT_EQ(predecessor.GetParentId(), parent.GetId());
       EXPECT_TRUE(node.InitByCreation(syncable::BOOKMARKS, parent,
                                       &predecessor));
@@ -191,14 +194,14 @@ class FakeServerChange {
     {
       // Delete the sync node.
       sync_api::WriteNode node(trans_);
-      EXPECT_TRUE(node.InitByIdLookup(id));
+      EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
       EXPECT_FALSE(node.GetFirstChildId());
       node.Remove();
     }
     {
       // Verify the deletion.
       sync_api::ReadNode node(trans_);
-      EXPECT_FALSE(node.InitByIdLookup(id));
+      EXPECT_EQ(BaseNode::INIT_FAILED_ENTRY_IS_DEL, node.InitByIdLookup(id));
     }
 
     sync_api::ChangeRecord record;
@@ -215,7 +218,7 @@ class FakeServerChange {
   // Set a new title value, and return the old value.
   std::wstring ModifyTitle(int64 id, const std::wstring& new_title) {
     sync_api::WriteNode node(trans_);
-    EXPECT_TRUE(node.InitByIdLookup(id));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
     std::string old_title = node.GetTitle();
     node.SetTitle(new_title);
     SetModified(id);
@@ -227,15 +230,15 @@ class FakeServerChange {
   // very useful for assertions.
   int64 ModifyPosition(int64 id, int64 parent_id, int64 predecessor_id) {
     sync_api::ReadNode parent(trans_);
-    EXPECT_TRUE(parent.InitByIdLookup(parent_id));
+    EXPECT_EQ(BaseNode::INIT_OK, parent.InitByIdLookup(parent_id));
     sync_api::WriteNode node(trans_);
-    EXPECT_TRUE(node.InitByIdLookup(id));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
     int64 old_parent_id = node.GetParentId();
     if (predecessor_id == 0) {
       EXPECT_TRUE(node.SetPosition(parent, NULL));
     } else {
       sync_api::ReadNode predecessor(trans_);
-      EXPECT_TRUE(predecessor.InitByIdLookup(predecessor_id));
+      EXPECT_EQ(BaseNode::INIT_OK, predecessor.InitByIdLookup(predecessor_id));
       EXPECT_EQ(predecessor.GetParentId(), parent.GetId());
       EXPECT_TRUE(node.SetPosition(parent, &predecessor));
     }
@@ -512,7 +515,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
       ExpectBrowserNodeMatching(trans, id);
 
       sync_api::ReadNode gnode(trans);
-      ASSERT_TRUE(gnode.InitByIdLookup(id));
+      ASSERT_EQ(BaseNode::INIT_OK, gnode.InitByIdLookup(id));
       stack.push(gnode.GetFirstChildId());
       stack.push(gnode.GetSuccessorId());
     }

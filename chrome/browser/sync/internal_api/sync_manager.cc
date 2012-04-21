@@ -1080,7 +1080,7 @@ void SyncManager::SyncInternal::UpdateCryptographerAndNigoriCallback(
     Cryptographer* cryptographer = trans.GetCryptographer();
     WriteNode node(&trans);
 
-    if (node.InitByTagLookup(kNigoriTag)) {
+    if (node.InitByTagLookup(kNigoriTag) == sync_api::BaseNode::INIT_OK) {
       sync_pb::NigoriSpecifics nigori(node.GetNigoriSpecifics());
       Cryptographer::UpdateResult result = cryptographer->Update(nigori);
       if (result == Cryptographer::NEEDS_PASSPHRASE) {
@@ -1253,7 +1253,7 @@ void SyncManager::SyncInternal::MaybeSetSyncTabsInNigoriNode(
   if (initialized_ && enabled_types.Has(syncable::SESSIONS)) {
     WriteTransaction trans(FROM_HERE, GetUserShare());
     WriteNode node(&trans);
-    if (!node.InitByTagLookup(kNigoriTag)) {
+    if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
       LOG(WARNING) << "Unable to set 'sync_tabs' bit because Nigori node not "
                    << "found.";
       return;
@@ -1279,7 +1279,7 @@ void SyncManager::SyncInternal::SetEncryptionPassphrase(
   Cryptographer* cryptographer = trans.GetCryptographer();
   KeyParams key_params = {"localhost", "dummy", passphrase};
   WriteNode node(&trans);
-  if (!node.InitByTagLookup(kNigoriTag)) {
+  if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
     // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
     NOTREACHED();
     return;
@@ -1393,7 +1393,7 @@ void SyncManager::SyncInternal::SetDecryptionPassphrase(
   Cryptographer* cryptographer = trans.GetCryptographer();
   KeyParams key_params = {"localhost", "dummy", passphrase};
   WriteNode node(&trans);
-  if (!node.InitByTagLookup(kNigoriTag)) {
+  if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
     // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
     NOTREACHED();
     return;
@@ -1582,7 +1582,7 @@ void SyncManager::SyncInternal::FinishSetPassphrase(
 bool SyncManager::SyncInternal::IsUsingExplicitPassphrase() {
   ReadTransaction trans(FROM_HERE, &share_);
   ReadNode node(&trans);
-  if (!node.InitByTagLookup(kNigoriTag)) {
+  if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
     // TODO(albertb): Plumb an UnrecoverableError all the way back to the PSS.
     NOTREACHED();
     return false;
@@ -1596,7 +1596,7 @@ void SyncManager::SyncInternal::RefreshEncryption() {
 
   WriteTransaction trans(FROM_HERE, GetUserShare());
   WriteNode node(&trans);
-  if (!node.InitByTagLookup(kNigoriTag)) {
+  if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
     NOTREACHED() << "Unable to set encrypted datatypes because Nigori node not "
                  << "found.";
     return;
@@ -1643,7 +1643,7 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
       continue;
     ReadNode type_root(trans);
     tag = syncable::ModelTypeToRootTag(iter.Get());
-    if (!type_root.InitByTagLookup(tag)) {
+    if (type_root.InitByTagLookup(tag) != sync_api::BaseNode::INIT_OK) {
       // This can happen when we enable a datatype for the first time on restart
       // (for example when we upgrade) and therefore haven't done the initial
       // download for that type at the time we RefreshEncryption. There's
@@ -1662,7 +1662,7 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
         continue;
 
       WriteNode child(trans);
-      if (!child.InitByIdLookup(child_id)) {
+      if (child.InitByIdLookup(child_id) != sync_api::BaseNode::INIT_OK) {
         NOTREACHED();
         continue;
       }
@@ -1685,11 +1685,12 @@ void SyncManager::SyncInternal::ReEncryptEverything(WriteTransaction* trans) {
         syncable::ModelTypeToRootTag(syncable::PASSWORDS);
     // It's possible we'll have the password routing info and not the password
     // root if we attempted to set a passphrase before passwords was enabled.
-    if (passwords_root.InitByTagLookup(passwords_tag)) {
+    if (passwords_root.InitByTagLookup(passwords_tag) ==
+            sync_api::BaseNode::INIT_OK) {
       int64 child_id = passwords_root.GetFirstChildId();
       while (child_id != kInvalidId) {
         WriteNode child(trans);
-        if (!child.InitByIdLookup(child_id)) {
+        if (child.InitByIdLookup(child_id) != sync_api::BaseNode::INIT_OK) {
           NOTREACHED();
           return;
         }
@@ -2092,7 +2093,8 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       // that the nigori node is up to date at the end of each cycle.
       WriteTransaction trans(FROM_HERE, GetUserShare());
       WriteNode nigori_node(&trans);
-      if (nigori_node.InitByTagLookup(kNigoriTag)) {
+      if (nigori_node.InitByTagLookup(kNigoriTag) ==
+              sync_api::BaseNode::INIT_OK) {
         Cryptographer* cryptographer = trans.GetCryptographer();
         UpdateNigoriEncryptionState(cryptographer, &nigori_node);
       }
@@ -2272,7 +2274,7 @@ JsArgList GetNodeInfoById(const JsArgList& args,
         continue;
       }
       ReadNode node(&trans);
-      if (!node.InitByIdLookup(id)) {
+      if (node.InitByIdLookup(id) != sync_api::BaseNode::INIT_OK) {
         continue;
       }
       node_summaries->Append((node.*info_getter)());
@@ -2480,7 +2482,7 @@ bool SyncManager::ReceivedExperimentalTypes(syncable::ModelTypeSet* to_add)
     const {
   ReadTransaction trans(FROM_HERE, GetUserShare());
   ReadNode node(&trans);
-  if (!node.InitByTagLookup(kNigoriTag)) {
+  if (node.InitByTagLookup(kNigoriTag) != sync_api::BaseNode::INIT_OK) {
     DVLOG(1) << "Couldn't find Nigori node.";
     return false;
   }

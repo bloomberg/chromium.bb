@@ -54,9 +54,10 @@ class WriteNode : public BaseNode {
   // populate the node.
 
   // BaseNode implementation.
-  virtual bool InitByIdLookup(int64 id) OVERRIDE;
-  virtual bool InitByClientTagLookup(syncable::ModelType model_type,
-                                     const std::string& tag) OVERRIDE;
+  virtual InitByLookupResult InitByIdLookup(int64 id) OVERRIDE;
+  virtual InitByLookupResult InitByClientTagLookup(
+      syncable::ModelType model_type,
+      const std::string& tag) OVERRIDE;
 
   // Create a new node with the specified parent and predecessor.  |model_type|
   // dictates the type of the item, and controls which EntitySpecifics proto
@@ -81,7 +82,7 @@ class WriteNode : public BaseNode {
   // Each server-created permanent node is tagged with a unique string.
   // Look up the node with the particular tag.  If it does not exist,
   // return false.
-  bool InitByTagLookup(const std::string& tag);
+  InitByLookupResult InitByTagLookup(const std::string& tag);
 
   // These Set() functions correspond to the Get() functions of BaseNode.
   void SetIsFolder(bool folder);

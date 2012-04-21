@@ -28,9 +28,10 @@ class ReadNode : public BaseNode {
   // populate the node.
 
   // BaseNode implementation.
-  virtual bool InitByIdLookup(int64 id) OVERRIDE;
-  virtual bool InitByClientTagLookup(syncable::ModelType model_type,
-                                     const std::string& tag) OVERRIDE;
+  virtual InitByLookupResult InitByIdLookup(int64 id) OVERRIDE;
+  virtual InitByLookupResult InitByClientTagLookup(
+      syncable::ModelType model_type,
+      const std::string& tag) OVERRIDE;
 
   // There is always a root node, so this can't fail.  The root node is
   // never mutable, so root lookup is only possible on a ReadNode.
@@ -39,7 +40,7 @@ class ReadNode : public BaseNode {
   // Each server-created permanent node is tagged with a unique string.
   // Look up the node with the particular tag.  If it does not exist,
   // return false.
-  bool InitByTagLookup(const std::string& tag);
+  InitByLookupResult InitByTagLookup(const std::string& tag);
 
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const OVERRIDE;

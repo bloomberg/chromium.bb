@@ -44,7 +44,7 @@ ThemeModelAssociator::~ThemeModelAssociator() {}
 SyncError ThemeModelAssociator::AssociateModels() {
   sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
-  if (!root.InitByTagLookup(kThemesTag)) {
+  if (root.InitByTagLookup(kThemesTag) != sync_api::BaseNode::INIT_OK) {
     return error_handler_->CreateAndUploadError(FROM_HERE,
                                                 kNoThemesFolderError,
                                                 model_type());
@@ -55,7 +55,8 @@ SyncError ThemeModelAssociator::AssociateModels() {
   // TODO(akalin): When we have timestamps, we may want to do
   // something more intelligent than preferring the sync data over our
   // local data.
-  if (node.InitByClientTagLookup(syncable::THEMES, kCurrentThemeClientTag)) {
+  if (node.InitByClientTagLookup(syncable::THEMES, kCurrentThemeClientTag) ==
+      sync_api::BaseNode::INIT_OK) {
     // Update the current theme from the sync data.
     // TODO(akalin): If the sync data does not have
     // use_system_theme_by_default and we do, update that flag on the
@@ -93,7 +94,7 @@ bool ThemeModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   *has_nodes = false;
   sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
-  if (!root.InitByTagLookup(kThemesTag)) {
+  if (root.InitByTagLookup(kThemesTag) != sync_api::BaseNode::INIT_OK) {
     LOG(ERROR) << kNoThemesFolderError;
     return false;
   }

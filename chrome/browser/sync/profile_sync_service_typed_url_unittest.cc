@@ -145,7 +145,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                            const history::VisitVector& visits) {
     sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
-    ASSERT_TRUE(typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag));
+    ASSERT_EQ(sync_api::BaseNode::INIT_OK,
+              typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag));
 
     sync_api::WriteNode node(&trans);
     std::string tag = url.url().spec();
@@ -230,13 +231,14 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     urls->clear();
     sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode typed_url_root(&trans);
-    if (!typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag))
+    if (typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag) !=
+            sync_api::BaseNode::INIT_OK)
       return;
 
     int64 child_id = typed_url_root.GetFirstChildId();
     while (child_id != sync_api::kInvalidId) {
       sync_api::ReadNode child_node(&trans);
-      if (!child_node.InitByIdLookup(child_id))
+      if (child_node.InitByIdLookup(child_id) != sync_api::BaseNode::INIT_OK)
         return;
 
       const sync_pb::TypedUrlSpecifics& typed_url(

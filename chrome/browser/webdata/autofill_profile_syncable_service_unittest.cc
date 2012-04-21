@@ -8,7 +8,6 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/sync/api/sync_error_factory.h"
 #include "chrome/browser/sync/api/sync_error_factory_mock.h"
-#include "chrome/browser/sync/internal_api/read_node_mock.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 #include "content/test/test_browser_thread.h"

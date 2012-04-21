@@ -315,7 +315,8 @@ TEST_F(ProfileSyncServiceSessionTest, WriteSessionToNode) {
   // Check that we can get the correct session specifics back from the node.
   sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode node(&trans);
-  ASSERT_TRUE(node.InitByClientTagLookup(syncable::SESSIONS, machine_tag));
+  ASSERT_EQ(sync_api::BaseNode::INIT_OK,
+            node.InitByClientTagLookup(syncable::SESSIONS, machine_tag));
   const sync_pb::SessionSpecifics& specifics(node.GetSessionSpecifics());
   ASSERT_EQ(machine_tag, specifics.session_tag());
   ASSERT_TRUE(specifics.has_header());

@@ -66,7 +66,8 @@ void PasswordChangeProcessor::Observe(
   sync_api::WriteTransaction trans(FROM_HERE, share_handle());
 
   sync_api::ReadNode password_root(&trans);
-  if (!password_root.InitByTagLookup(kPasswordTag)) {
+  if (password_root.InitByTagLookup(kPasswordTag) !=
+          sync_api::BaseNode::INIT_OK) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
         "Server did not create the top-level password node. "
         "We might be running against an out-of-date server.");
@@ -103,7 +104,8 @@ void PasswordChangeProcessor::Observe(
                 "Unable to create or retrieve password node");
             return;
           }
-          if (!sync_node.InitByIdLookup(sync_id)) {
+          if (sync_node.InitByIdLookup(sync_id) !=
+                  sync_api::BaseNode::INIT_OK) {
             error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Unable to create or retrieve password node");
             return;
@@ -120,7 +122,8 @@ void PasswordChangeProcessor::Observe(
               "Unexpected notification for: ");
           return;
         } else {
-          if (!sync_node.InitByIdLookup(sync_id)) {
+          if (sync_node.InitByIdLookup(sync_id) !=
+                  sync_api::BaseNode::INIT_OK) {
             error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Password node lookup failed.");
             return;
@@ -140,7 +143,8 @@ void PasswordChangeProcessor::Observe(
           LOG(WARNING) << "Trying to delete nonexistent password sync node!";
           return;
         } else {
-          if (!sync_node.InitByIdLookup(sync_id)) {
+          if (sync_node.InitByIdLookup(sync_id) !=
+                  sync_api::BaseNode::INIT_OK) {
             error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Password node lookup failed.");
             return;
@@ -162,7 +166,8 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     return;
 
   sync_api::ReadNode password_root(trans);
-  if (!password_root.InitByTagLookup(kPasswordTag)) {
+  if (password_root.InitByTagLookup(kPasswordTag) !=
+          sync_api::BaseNode::INIT_OK) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
         "Password root node lookup failed.");
     return;
@@ -189,7 +194,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
     }
 
     sync_api::ReadNode sync_node(trans);
-    if (!sync_node.InitByIdLookup(it->id)) {
+    if (sync_node.InitByIdLookup(it->id) != sync_api::BaseNode::INIT_OK) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Password node lookup failed.");
       return;

@@ -55,7 +55,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
           SyncChange::ACTION_ADD : SyncChange::ACTION_UPDATE;
       // Need to load specifics from node.
       sync_api::ReadNode read_node(trans);
-      if (!read_node.InitByIdLookup(it->id)) {
+      if (read_node.InitByIdLookup(it->id) != sync_api::BaseNode::INIT_OK) {
         error_handler()->OnUnrecoverableError(
             FROM_HERE,
             "Failed to look up data for received change with id " +
@@ -97,7 +97,8 @@ SyncError GenericChangeProcessor::GetSyncDataForType(
   std::string type_name = syncable::ModelTypeToString(type);
   sync_api::ReadTransaction trans(FROM_HERE, share_handle());
   sync_api::ReadNode root(&trans);
-  if (!root.InitByTagLookup(syncable::ModelTypeToRootTag(type))) {
+  if (root.InitByTagLookup(syncable::ModelTypeToRootTag(type)) !=
+          sync_api::BaseNode::INIT_OK) {
     SyncError error(FROM_HERE,
                     "Server did not create the top-level " + type_name +
                     " node. We might be running against an out-of-date server.",
@@ -111,7 +112,8 @@ SyncError GenericChangeProcessor::GetSyncDataForType(
   int64 sync_child_id = root.GetFirstChildId();
   while (sync_child_id != sync_api::kInvalidId) {
     sync_api::ReadNode sync_child_node(&trans);
-    if (!sync_child_node.InitByIdLookup(sync_child_id)) {
+    if (sync_child_node.InitByIdLookup(sync_child_id) !=
+            sync_api::BaseNode::INIT_OK) {
       SyncError error(FROM_HERE,
                       "Failed to fetch child node for type " + type_name + ".",
                        type);
@@ -133,12 +135,14 @@ bool AttemptDelete(const SyncChange& change, sync_api::WriteNode* node) {
     if (tag.empty()) {
       return false;
     }
-    if (!node->InitByClientTagLookup(
-            change.sync_data().GetDataType(), tag)) {
+    if (node->InitByClientTagLookup(
+            change.sync_data().GetDataType(), tag) !=
+            sync_api::BaseNode::INIT_OK) {
       return false;
     }
   } else {
-    if (!node->InitByIdLookup(change.sync_data().GetRemoteId())) {
+    if (node->InitByIdLookup(change.sync_data().GetRemoteId()) !=
+            sync_api::BaseNode::INIT_OK) {
       return false;
     }
   }
@@ -176,8 +180,9 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
       // TODO(sync): Handle other types of creation (custom parents, folders,
       // etc.).
       sync_api::ReadNode root_node(&trans);
-      if (!root_node.InitByTagLookup(
-              syncable::ModelTypeToRootTag(change.sync_data().GetDataType()))) {
+      if (root_node.InitByTagLookup(
+              syncable::ModelTypeToRootTag(change.sync_data().GetDataType())) !=
+                  sync_api::BaseNode::INIT_OK) {
         NOTREACHED();
         SyncError error(FROM_HERE,
                         "Failed to look up root node for type " + type_str,
@@ -201,8 +206,9 @@ SyncError GenericChangeProcessor::ProcessSyncChanges(
       sync_node.SetEntitySpecifics(change.sync_data().GetSpecifics());
     } else if (change.change_type() == SyncChange::ACTION_UPDATE) {
       if (change.sync_data().GetTag() == "" ||
-          !sync_node.InitByClientTagLookup(change.sync_data().GetDataType(),
-                                           change.sync_data().GetTag())) {
+          sync_node.InitByClientTagLookup(change.sync_data().GetDataType(),
+                                          change.sync_data().GetTag()) !=
+              sync_api::BaseNode::INIT_OK) {
         NOTREACHED();
         SyncError error(FROM_HERE,
                         "Failed to update " + type_str + " node.",
@@ -240,7 +246,8 @@ bool GenericChangeProcessor::SyncModelHasUserCreatedNodes(
   *has_nodes = false;
   sync_api::ReadTransaction trans(FROM_HERE, share_handle());
   sync_api::ReadNode type_root_node(&trans);
-  if (!type_root_node.InitByTagLookup(syncable::ModelTypeToRootTag(type))) {
+  if (type_root_node.InitByTagLookup(syncable::ModelTypeToRootTag(type)) !=
+          sync_api::BaseNode::INIT_OK) {
     LOG(ERROR) << err_str;
     return false;
   }

@@ -34,34 +34,38 @@ void ReadNode::InitByRootLookup() {
     DCHECK(false) << "Could not lookup root node for reading.";
 }
 
-bool ReadNode::InitByIdLookup(int64 id) {
+BaseNode::InitByLookupResult ReadNode::InitByIdLookup(int64 id) {
   DCHECK(!entry_) << "Init called twice";
   DCHECK_NE(id, kInvalidId);
   syncable::BaseTransaction* trans = transaction_->GetWrappedTrans();
   entry_ = new syncable::Entry(trans, syncable::GET_BY_HANDLE, id);
   if (!entry_->good())
-    return false;
+    return INIT_FAILED_ENTRY_NOT_GOOD;
   if (entry_->Get(syncable::IS_DEL))
-    return false;
+    return INIT_FAILED_ENTRY_IS_DEL;
   syncable::ModelType model_type = GetModelType();
   LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
                   model_type == syncable::TOP_LEVEL_FOLDER)
       << "SyncAPI InitByIdLookup referencing unusual object.";
-  return DecryptIfNecessary();
+  return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
 
-bool ReadNode::InitByClientTagLookup(syncable::ModelType model_type,
-                                     const std::string& tag) {
+BaseNode::InitByLookupResult ReadNode::InitByClientTagLookup(
+    syncable::ModelType model_type,
+    const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
   if (tag.empty())
-    return false;
+    return INIT_FAILED_PRECONDITION;
 
   const std::string hash = GenerateSyncableHash(model_type, tag);
 
   entry_ = new syncable::Entry(transaction_->GetWrappedTrans(),
                                syncable::GET_BY_CLIENT_TAG, hash);
-  return (entry_->good() && !entry_->Get(syncable::IS_DEL) &&
-          DecryptIfNecessary());
+  if (!entry_->good())
+    return INIT_FAILED_ENTRY_NOT_GOOD;
+  if (entry_->Get(syncable::IS_DEL))
+    return INIT_FAILED_ENTRY_IS_DEL;
+  return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
 
 const syncable::Entry* ReadNode::GetEntry() const {
@@ -72,21 +76,22 @@ const BaseTransaction* ReadNode::GetTransaction() const {
   return transaction_;
 }
 
-bool ReadNode::InitByTagLookup(const std::string& tag) {
+BaseNode::InitByLookupResult ReadNode::InitByTagLookup(
+    const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
   if (tag.empty())
-    return false;
+    return INIT_FAILED_PRECONDITION;
   syncable::BaseTransaction* trans = transaction_->GetWrappedTrans();
   entry_ = new syncable::Entry(trans, syncable::GET_BY_SERVER_TAG, tag);
   if (!entry_->good())
-    return false;
+    return INIT_FAILED_ENTRY_NOT_GOOD;
   if (entry_->Get(syncable::IS_DEL))
-    return false;
+    return INIT_FAILED_ENTRY_IS_DEL;
   syncable::ModelType model_type = GetModelType();
   LOG_IF(WARNING, model_type == syncable::UNSPECIFIED ||
                   model_type == syncable::TOP_LEVEL_FOLDER)
       << "SyncAPI InitByTagLookup referencing unusually typed object.";
-  return DecryptIfNecessary();
+  return DecryptIfNecessary() ? INIT_OK : INIT_FAILED_DECRYPT_IF_NECESSARY;
 }
 
 }  // namespace sync_api

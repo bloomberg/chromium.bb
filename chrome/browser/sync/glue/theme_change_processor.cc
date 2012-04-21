@@ -43,8 +43,9 @@ void ThemeChangeProcessor::Observe(
 
   sync_api::WriteTransaction trans(FROM_HERE, share_handle());
   sync_api::WriteNode node(&trans);
-  if (!node.InitByClientTagLookup(syncable::THEMES,
-                                  kCurrentThemeClientTag)) {
+  if (node.InitByClientTagLookup(syncable::THEMES,
+                                 kCurrentThemeClientTag) !=
+          sync_api::BaseNode::INIT_OK) {
     std::string err = "Could not create node with client tag: ";
     error_handler()->OnUnrecoverableError(FROM_HERE,
                                           err + kCurrentThemeClientTag);
@@ -99,7 +100,7 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
   // ThemeSpecifics, which would cause the default theme to be set.
   if (change.action != sync_api::ChangeRecord::ACTION_DELETE) {
     sync_api::ReadNode node(trans);
-    if (!node.InitByIdLookup(change.id)) {
+    if (node.InitByIdLookup(change.id) != sync_api::BaseNode::INIT_OK) {
       error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
           "Theme node lookup failed.");
       return;

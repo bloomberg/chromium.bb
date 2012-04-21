@@ -82,6 +82,7 @@ using syncable::SPECIFICS;
 using syncable::UNITTEST;
 using syncable::WriterTag;
 using syncable::WriteTransaction;
+using sync_api::BaseNode;
 using testing::_;
 using testing::DoAll;
 using testing::DoDefault;
@@ -436,9 +437,11 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   bool AddAutofillSyncNode(const AutofillEntry& entry) {
     sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
-    if (!autofill_root.InitByTagLookup(
-            syncable::ModelTypeToRootTag(syncable::AUTOFILL)))
+    if (autofill_root.InitByTagLookup(
+            syncable::ModelTypeToRootTag(syncable::AUTOFILL)) !=
+                BaseNode::INIT_OK) {
       return false;
+    }
 
     sync_api::WriteNode node(&trans);
     std::string tag = AutocompleteSyncableService::KeyToTag(
@@ -457,8 +460,10 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   bool AddAutofillSyncNode(const AutofillProfile& profile) {
     sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
-    if (!autofill_root.InitByTagLookup(kAutofillProfileTag))
+    if (autofill_root.InitByTagLookup(kAutofillProfileTag) !=
+            BaseNode::INIT_OK) {
       return false;
+    }
     sync_api::WriteNode node(&trans);
     std::string tag = profile.guid();
     if (!node.InitUniqueByCreation(syncable::AUTOFILL_PROFILE,
@@ -476,14 +481,16 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
                                     std::vector<AutofillProfile>* profiles) {
     sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
-    if (!autofill_root.InitByTagLookup(
-            syncable::ModelTypeToRootTag(syncable::AUTOFILL)))
+    if (autofill_root.InitByTagLookup(
+            syncable::ModelTypeToRootTag(syncable::AUTOFILL)) !=
+                BaseNode::INIT_OK) {
       return false;
+    }
 
     int64 child_id = autofill_root.GetFirstChildId();
     while (child_id != sync_api::kInvalidId) {
       sync_api::ReadNode child_node(&trans);
-      if (!child_node.InitByIdLookup(child_id))
+      if (child_node.InitByIdLookup(child_id) != BaseNode::INIT_OK)
         return false;
 
       const sync_pb::AutofillSpecifics& autofill(
@@ -514,13 +521,15 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
       std::vector<AutofillProfile>* profiles) {
     sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode autofill_root(&trans);
-    if (!autofill_root.InitByTagLookup(kAutofillProfileTag))
+    if (autofill_root.InitByTagLookup(kAutofillProfileTag) !=
+            BaseNode::INIT_OK) {
       return false;
+    }
 
     int64 child_id = autofill_root.GetFirstChildId();
     while (child_id != sync_api::kInvalidId) {
       sync_api::ReadNode child_node(&trans);
-      if (!child_node.InitByIdLookup(child_id))
+      if (child_node.InitByIdLookup(child_id) != BaseNode::INIT_OK)
         return false;
 
       const sync_pb::AutofillProfileSpecifics& autofill(

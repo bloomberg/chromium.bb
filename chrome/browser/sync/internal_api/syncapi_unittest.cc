@@ -144,7 +144,7 @@ int64 MakeNodeWithParent(UserShare* share,
                          int64 parent_id) {
   WriteTransaction trans(FROM_HERE, share);
   ReadNode parent_node(&trans);
-  EXPECT_TRUE(parent_node.InitByIdLookup(parent_id));
+  EXPECT_EQ(BaseNode::INIT_OK, parent_node.InitByIdLookup(parent_id));
   WriteNode node(&trans);
   EXPECT_TRUE(node.InitUniqueByCreation(model_type, parent_node, client_tag));
   node.SetIsFolder(false);
@@ -159,7 +159,7 @@ int64 MakeFolderWithParent(UserShare* share,
                            BaseNode* predecessor) {
   WriteTransaction trans(FROM_HERE, share);
   ReadNode parent_node(&trans);
-  EXPECT_TRUE(parent_node.InitByIdLookup(parent_id));
+  EXPECT_EQ(BaseNode::INIT_OK, parent_node.InitByIdLookup(parent_id));
   WriteNode node(&trans);
   EXPECT_TRUE(node.InitByCreation(model_type, parent_node, predecessor));
   node.SetIsFolder(true);
@@ -256,7 +256,7 @@ TEST_F(SyncApiTest, SanityCheckTest) {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
     ReadNode node(&trans);
     // Metahandle 1 can be root, sanity check 2
-    EXPECT_FALSE(node.InitByIdLookup(2));
+    EXPECT_EQ(BaseNode::INIT_FAILED_ENTRY_NOT_GOOD, node.InitByIdLookup(2));
   }
 }
 
@@ -274,8 +274,8 @@ TEST_F(SyncApiTest, BasicTagWrite) {
   {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS,
-        "testtag"));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, "testtag"));
 
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
@@ -319,16 +319,19 @@ TEST_F(SyncApiTest, ModelTypesSiloed) {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
 
     ReadNode bookmarknode(&trans);
-    EXPECT_TRUE(bookmarknode.InitByClientTagLookup(syncable::BOOKMARKS,
-        "collideme"));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              bookmarknode.InitByClientTagLookup(syncable::BOOKMARKS,
+                  "collideme"));
 
     ReadNode prefnode(&trans);
-    EXPECT_TRUE(prefnode.InitByClientTagLookup(syncable::PREFERENCES,
-        "collideme"));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              prefnode.InitByClientTagLookup(syncable::PREFERENCES,
+                  "collideme"));
 
     ReadNode autofillnode(&trans);
-    EXPECT_TRUE(autofillnode.InitByClientTagLookup(syncable::AUTOFILL,
-        "collideme"));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              autofillnode.InitByClientTagLookup(syncable::AUTOFILL,
+                  "collideme"));
 
     EXPECT_NE(bookmarknode.GetId(), prefnode.GetId());
     EXPECT_NE(autofillnode.GetId(), prefnode.GetId());
@@ -340,14 +343,16 @@ TEST_F(SyncApiTest, ReadMissingTagsFails) {
   {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
     ReadNode node(&trans);
-    EXPECT_FALSE(node.InitByClientTagLookup(syncable::BOOKMARKS,
-        "testtag"));
+    EXPECT_EQ(BaseNode::INIT_FAILED_ENTRY_NOT_GOOD,
+              node.InitByClientTagLookup(syncable::BOOKMARKS,
+                  "testtag"));
   }
   {
     WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
     WriteNode node(&trans);
-    EXPECT_FALSE(node.InitByClientTagLookup(syncable::BOOKMARKS,
-        "testtag"));
+    EXPECT_EQ(BaseNode::INIT_FAILED_ENTRY_NOT_GOOD,
+              node.InitByClientTagLookup(syncable::BOOKMARKS,
+                  "testtag"));
   }
 }
 
@@ -382,8 +387,9 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
   {
     WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
     WriteNode wnode(&trans);
-    EXPECT_TRUE(wnode.InitByClientTagLookup(syncable::BOOKMARKS,
-        "testtag"));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              wnode.InitByClientTagLookup(syncable::BOOKMARKS,
+                  "testtag"));
     EXPECT_FALSE(wnode.GetIsFolder());
     EXPECT_EQ(wnode.GetTitle(), test_title);
 
@@ -395,8 +401,9 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
   {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
     ReadNode node(&trans);
-    EXPECT_FALSE(node.InitByClientTagLookup(syncable::BOOKMARKS,
-        "testtag"));
+    EXPECT_EQ(BaseNode::INIT_FAILED_ENTRY_IS_DEL,
+              node.InitByClientTagLookup(syncable::BOOKMARKS,
+                  "testtag"));
     // Note that for proper function of this API this doesn't need to be
     // filled, we're checking just to make sure the DB worked in this test.
     EXPECT_EQ(node.GetTitle(), test_title);
@@ -405,7 +412,7 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
   {
     WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
     ReadNode folder_node(&trans);
-    EXPECT_TRUE(folder_node.InitByIdLookup(folder_id));
+    EXPECT_EQ(BaseNode::INIT_OK, folder_node.InitByIdLookup(folder_id));
 
     WriteNode wnode(&trans);
     // This will undelete the tag.
@@ -422,8 +429,9 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
   {
     ReadTransaction trans(FROM_HERE, test_user_share_.user_share());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS,
-        "testtag"));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS,
+                    "testtag"));
     EXPECT_EQ(node.GetTitle(), test_title);
     EXPECT_EQ(node.GetModelType(), syncable::BOOKMARKS);
   }
@@ -453,8 +461,9 @@ TEST_F(SyncApiTest, WriteAndReadPassword) {
     root_node.InitByRootLookup();
 
     ReadNode password_node(&trans);
-    EXPECT_TRUE(password_node.InitByClientTagLookup(syncable::PASSWORDS,
-                                                    "foo"));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              password_node.InitByClientTagLookup(syncable::PASSWORDS,
+                                                  "foo"));
     const sync_pb::PasswordSpecificsData& data =
         password_node.GetPasswordSpecifics();
     EXPECT_EQ("secret", data.password_value());
@@ -489,15 +498,17 @@ TEST_F(SyncApiTest, WriteEncryptedTitle) {
     root_node.InitByRootLookup();
 
     ReadNode bookmark_node(&trans);
-    EXPECT_TRUE(bookmark_node.InitByClientTagLookup(syncable::BOOKMARKS,
-                                                    "foo"));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              bookmark_node.InitByClientTagLookup(syncable::BOOKMARKS,
+                                                  "foo"));
     EXPECT_EQ("foo", bookmark_node.GetTitle());
     EXPECT_EQ(kEncryptedString,
               bookmark_node.GetEntry()->Get(syncable::NON_UNIQUE_NAME));
 
     ReadNode pref_node(&trans);
-    EXPECT_TRUE(pref_node.InitByClientTagLookup(syncable::PREFERENCES,
-                                                "bar"));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              pref_node.InitByClientTagLookup(syncable::PREFERENCES,
+                                              "bar"));
     EXPECT_EQ(kEncryptedString, pref_node.GetTitle());
   }
 }
@@ -507,7 +518,7 @@ TEST_F(SyncApiTest, BaseNodeSetSpecifics) {
                             syncable::BOOKMARKS, "testtag");
   WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
   WriteNode node(&trans);
-  EXPECT_TRUE(node.InitByIdLookup(child_id));
+  EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(child_id));
 
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_bookmark()->set_url("http://www.google.com");
@@ -524,7 +535,7 @@ TEST_F(SyncApiTest, BaseNodeSetSpecificsPreservesUnknownFields) {
                             syncable::BOOKMARKS, "testtag");
   WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
   WriteNode node(&trans);
-  EXPECT_TRUE(node.InitByIdLookup(child_id));
+  EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(child_id));
   EXPECT_TRUE(node.GetEntitySpecifics().unknown_fields().empty());
 
   sync_pb::EntitySpecifics entity_specifics;
@@ -618,7 +629,8 @@ TEST_F(SyncApiTest, EmptyTags) {
   std::string empty_tag;
   EXPECT_FALSE(node.InitUniqueByCreation(
       syncable::TYPED_URLS, root_node, empty_tag));
-  EXPECT_FALSE(node.InitByTagLookup(empty_tag));
+  EXPECT_EQ(BaseNode::INIT_FAILED_PRECONDITION,
+            node.InitByTagLookup(empty_tag));
 }
 
 namespace {
@@ -841,7 +853,7 @@ class SyncManagerTest : public testing::Test,
       cryptographer->GetKeys(nigori.mutable_encrypted());
       cryptographer->UpdateNigoriFromEncryptedTypes(&nigori);
       WriteNode node(&trans);
-      EXPECT_TRUE(node.InitByIdLookup(nigori_id));
+      EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(nigori_id));
       node.SetNigoriSpecifics(nigori);
     }
     return cryptographer->is_ready();
@@ -942,7 +954,8 @@ TEST_F(SyncManagerTest, DoNotSyncTabsInNigoriNode) {
 
   ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
   ReadNode node(&trans);
-  ASSERT_TRUE(node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
+  ASSERT_EQ(BaseNode::INIT_OK,
+            node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
   EXPECT_FALSE(node.GetNigoriSpecifics().sync_tabs());
 }
 
@@ -952,7 +965,8 @@ TEST_F(SyncManagerTest, SyncTabsInNigoriNode) {
 
   ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
   ReadNode node(&trans);
-  ASSERT_TRUE(node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
+  ASSERT_EQ(BaseNode::INIT_OK,
+            node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
   EXPECT_TRUE(node.GetNigoriSpecifics().sync_tabs());
 }
 
@@ -1014,7 +1028,7 @@ void CheckGetNodesByIdReturnArgs(const SyncManager& sync_manager,
   ASSERT_TRUE(node_info);
   ReadTransaction trans(FROM_HERE, sync_manager.GetUserShare());
   ReadNode node(&trans);
-  EXPECT_TRUE(node.InitByIdLookup(id));
+  EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(id));
   CheckNodeValue(node, *node_info, is_detailed);
 }
 
@@ -1331,7 +1345,8 @@ TEST_F(SyncManagerTest, RefreshEncryptionReady) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
     sync_pb::NigoriSpecifics nigori = node.GetNigoriSpecifics();
     EXPECT_TRUE(nigori.has_encrypted());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1370,7 +1385,8 @@ TEST_F(SyncManagerTest, RefreshEncryptionEmptyNigori) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByIdLookup(GetIdForDataType(syncable::NIGORI)));
     sync_pb::NigoriSpecifics nigori = node.GetNigoriSpecifics();
     EXPECT_TRUE(nigori.has_encrypted());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -1515,7 +1531,7 @@ TEST_F(SyncManagerTest, SetInitialGaiaPass) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByTagLookup(kNigoriTag));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
     sync_pb::NigoriSpecifics nigori = node.GetNigoriSpecifics();
     Cryptographer* cryptographer = trans.GetCryptographer();
     EXPECT_TRUE(cryptographer->is_ready());
@@ -1591,8 +1607,9 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
     EXPECT_FALSE(verifier.CanDecrypt(encrypted));
 
     ReadNode password_node(&trans);
-    EXPECT_TRUE(password_node.InitByClientTagLookup(syncable::PASSWORDS,
-                                                    "foo"));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              password_node.InitByClientTagLookup(syncable::PASSWORDS,
+                                                  "foo"));
     const sync_pb::PasswordSpecificsData& data =
         password_node.GetPasswordSpecifics();
     EXPECT_EQ("secret", data.password_value());
@@ -1618,7 +1635,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
     KeyParams params = {"localhost", "dummy", "passphrase2"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByTagLookup(kNigoriTag));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
     sync_pb::NigoriSpecifics nigori;
     other_cryptographer.GetKeys(nigori.mutable_encrypted());
     cryptographer->Update(nigori);
@@ -1662,7 +1679,7 @@ TEST_F(SyncManagerTest, SupplyPendingOldGAIAPass) {
     KeyParams params = {"localhost", "dummy", "old_gaia"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByTagLookup(kNigoriTag));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
     sync_pb::NigoriSpecifics nigori;
     other_cryptographer.GetKeys(nigori.mutable_encrypted());
     node.SetNigoriSpecifics(nigori);
@@ -1733,7 +1750,7 @@ TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
     KeyParams params = {"localhost", "dummy", "explicit"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByTagLookup(kNigoriTag));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
     sync_pb::NigoriSpecifics nigori;
     other_cryptographer.GetKeys(nigori.mutable_encrypted());
     cryptographer->Update(nigori);
@@ -1772,7 +1789,7 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPassUserProvided) {
     KeyParams params = {"localhost", "dummy", "passphrase"};
     other_cryptographer.AddKey(params);
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByTagLookup(kNigoriTag));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByTagLookup(kNigoriTag));
     sync_pb::NigoriSpecifics nigori;
     other_cryptographer.GetKeys(nigori.mutable_encrypted());
     node.SetNigoriSpecifics(nigori);
@@ -1813,13 +1830,15 @@ TEST_F(SyncManagerTest, SetPassphraseWithEmptyPasswordNode) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode password_node(&trans);
-    EXPECT_FALSE(password_node.InitByClientTagLookup(syncable::PASSWORDS,
-                                                     tag));
+    EXPECT_EQ(BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY,
+              password_node.InitByClientTagLookup(syncable::PASSWORDS,
+                                                  tag));
   }
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode password_node(&trans);
-    EXPECT_FALSE(password_node.InitByIdLookup(node_id));
+    EXPECT_EQ(BaseNode::INIT_FAILED_DECRYPT_IF_NECESSARY,
+              password_node.InitByIdLookup(node_id));
   }
 }
 
@@ -1858,7 +1877,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByIdLookup(node_id1));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(node_id1));
 
     sync_pb::EntitySpecifics entity_specifics;
     entity_specifics.mutable_bookmark()->set_url(url);
@@ -1869,7 +1888,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
     node_entry->Put(syncable::NON_UNIQUE_NAME, title);
 
     WriteNode node2(&trans);
-    EXPECT_TRUE(node2.InitByIdLookup(node_id2));
+    EXPECT_EQ(BaseNode::INIT_OK, node2.InitByIdLookup(node_id2));
 
     sync_pb::EntitySpecifics entity_specifics2;
     entity_specifics2.mutable_bookmark()->set_url(url2);
@@ -1883,14 +1902,14 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByIdLookup(node_id1));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(node_id1));
     EXPECT_EQ(syncable::BOOKMARKS, node.GetModelType());
     EXPECT_EQ(title, node.GetTitle());
     EXPECT_EQ(title, node.GetBookmarkSpecifics().title());
     EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
 
     ReadNode node2(&trans);
-    EXPECT_TRUE(node2.InitByIdLookup(node_id2));
+    EXPECT_EQ(BaseNode::INIT_OK, node2.InitByIdLookup(node_id2));
     EXPECT_EQ(syncable::BOOKMARKS, node2.GetModelType());
     // We should de-canonicalize the title in GetTitle(), but the title in the
     // specifics should be stored in the server legal form.
@@ -1926,14 +1945,14 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
         true /* is encrypted */));
 
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByIdLookup(node_id1));
+    EXPECT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(node_id1));
     EXPECT_EQ(syncable::BOOKMARKS, node.GetModelType());
     EXPECT_EQ(title, node.GetTitle());
     EXPECT_EQ(title, node.GetBookmarkSpecifics().title());
     EXPECT_EQ(url, node.GetBookmarkSpecifics().url());
 
     ReadNode node2(&trans);
-    EXPECT_TRUE(node2.InitByIdLookup(node_id2));
+    EXPECT_EQ(BaseNode::INIT_OK, node2.InitByIdLookup(node_id2));
     EXPECT_EQ(syncable::BOOKMARKS, node2.GetModelType());
     // We should de-canonicalize the title in GetTitle(), but the title in the
     // specifics should be stored in the server legal form.
@@ -1966,7 +1985,7 @@ TEST_F(SyncManagerTest, CreateLocalBookmark) {
     int64 child_id = root_node.GetFirstChildId();
 
     ReadNode node(&trans);
-    ASSERT_TRUE(node.InitByIdLookup(child_id));
+    ASSERT_EQ(BaseNode::INIT_OK, node.InitByIdLookup(child_id));
     EXPECT_FALSE(node.GetIsFolder());
     EXPECT_EQ(title, node.GetTitle());
     EXPECT_EQ(url, node.GetURL());
@@ -1990,7 +2009,8 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     node.SetEntitySpecifics(entity_specifics);
   }
   EXPECT_FALSE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
@@ -2007,7 +2027,8 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
     EXPECT_TRUE(specifics.has_encrypted());
@@ -2028,7 +2049,8 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
     EXPECT_TRUE(specifics.has_encrypted());
@@ -2050,7 +2072,8 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
     EXPECT_TRUE(specifics.has_encrypted());
@@ -2065,7 +2088,8 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     node.SetEntitySpecifics(entity_specifics);
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
@@ -2084,7 +2108,8 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
     entity_specifics.mutable_bookmark()->set_title("title2");
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     node.SetEntitySpecifics(entity_specifics);
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
@@ -2125,7 +2150,8 @@ TEST_F(SyncManagerTest, UpdatePasswordSetEntitySpecificsNoChange) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PASSWORDS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::PASSWORDS, client_tag));
     node.SetEntitySpecifics(entity_specifics);
   }
   EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
@@ -2159,7 +2185,8 @@ TEST_F(SyncManagerTest, UpdatePasswordSetPasswordSpecifics) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PASSWORDS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::PASSWORDS, client_tag));
     node.SetPasswordSpecifics(node.GetPasswordSpecifics());
   }
   EXPECT_FALSE(ResetUnsyncedEntry(syncable::PASSWORDS, client_tag));
@@ -2168,7 +2195,8 @@ TEST_F(SyncManagerTest, UpdatePasswordSetPasswordSpecifics) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PASSWORDS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::PASSWORDS, client_tag));
     Cryptographer* cryptographer = trans.GetCryptographer();
     sync_pb::PasswordSpecificsData data;
     data.set_password_value("secret2");
@@ -2260,7 +2288,8 @@ TEST_F(SyncManagerTest, SetBookmarkTitle) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     node.SetTitle(UTF8ToWide(client_tag));
   }
   EXPECT_FALSE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
@@ -2269,7 +2298,8 @@ TEST_F(SyncManagerTest, SetBookmarkTitle) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     node.SetTitle(UTF8ToWide("title2"));
   }
   EXPECT_TRUE(ResetUnsyncedEntry(syncable::BOOKMARKS, client_tag));
@@ -2305,7 +2335,8 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     node.SetTitle(UTF8ToWide(client_tag));
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
@@ -2319,7 +2350,8 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     node.SetTitle(UTF8ToWide("title2"));
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
@@ -2349,7 +2381,8 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitle) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
     node.SetTitle(UTF8ToWide(client_tag));
   }
   EXPECT_FALSE(ResetUnsyncedEntry(syncable::PREFERENCES, client_tag));
@@ -2358,7 +2391,8 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitle) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
     node.SetTitle(UTF8ToWide("title2"));
   }
   EXPECT_TRUE(ResetUnsyncedEntry(syncable::PREFERENCES, client_tag));
@@ -2396,7 +2430,8 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
     node.SetTitle(UTF8ToWide(client_tag));
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
@@ -2410,7 +2445,8 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::PREFERENCES, client_tag));
     node.SetTitle(UTF8ToWide("title2"));
     const syncable::Entry* node_entry = node.GetEntry();
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
@@ -2450,7 +2486,8 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     // Verify the data.
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     EXPECT_EQ(title, node.GetTitle());
     EXPECT_EQ(GURL(url), node.GetURL());
   }
@@ -2459,7 +2496,8 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     // Overwrite the url (which overwrites the specifics).
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     WriteNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     node.SetURL(GURL(url2));
   }
 
@@ -2467,7 +2505,8 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     // Verify it's still encrypted and it has the most recent url.
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
+    EXPECT_EQ(BaseNode::INIT_OK,
+              node.InitByClientTagLookup(syncable::BOOKMARKS, client_tag));
     EXPECT_EQ(title, node.GetTitle());
     EXPECT_EQ(GURL(url2), node.GetURL());
     const syncable::Entry* node_entry = node.GetEntry();

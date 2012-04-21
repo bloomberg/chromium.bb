@@ -77,8 +77,9 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
   // Initializes the given sync node from the given chrome node id.
   // Returns false if no sync node was found for the given chrome node id or
   // if the initialization of sync node fails.
-  virtual bool InitSyncNodeFromChromeId(const IDType& node_id,
-                                        sync_api::BaseNode* sync_node) = 0;
+  virtual bool InitSyncNodeFromChromeId(
+      const IDType& node_id,
+      sync_api::BaseNode* sync_node) = 0;
 
   // Associates the given chrome node with the given sync id.
   virtual void Associate(const Node* node, int64 sync_id) = 0;

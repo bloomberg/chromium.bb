@@ -459,7 +459,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
       passed_deletes = true;
 
       sync_api::ReadNode src(trans);
-      if (!src.InitByIdLookup(it->id)) {
+      if (src.InitByIdLookup(it->id) != sync_api::BaseNode::INIT_OK) {
         error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
             "ApplyModelChanges was passed a bad ID");
         return;
@@ -474,7 +474,8 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
         // fail). Therefore, we add special logic here just to detect the
         // Synced Bookmarks folder.
         sync_api::ReadNode synced_bookmarks(trans);
-        if (synced_bookmarks.InitByTagLookup(kMobileBookmarksTag) &&
+        if (synced_bookmarks.InitByTagLookup(kMobileBookmarksTag) ==
+                sync_api::BaseNode::INIT_OK &&
             synced_bookmarks.GetId() == it->id) {
           // This is a newly created Synced Bookmarks node. Associate it.
           model_associator_->Associate(model->mobile_node(), it->id);

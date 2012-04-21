@@ -151,7 +151,7 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
       if (i->second == OP_ADD ||
           i->second == OP_UPDATE_POSITION_AND_PROPERTIES) {
         ReadNode node(sync_trans);
-        CHECK(node.InitByIdLookup(i->first));
+        CHECK_EQ(BaseNode::INIT_OK, node.InitByIdLookup(i->first));
 
         // We only care about parents of entry's with position-sensitive models.
         if (syncable::ShouldMaintainPosition(

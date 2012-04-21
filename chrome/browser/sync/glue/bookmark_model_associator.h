@@ -78,8 +78,9 @@ class BookmarkModelAssociator
   // Initializes the given sync node from the given bookmark node id.
   // Returns false if no sync node was found for the given bookmark node id or
   // if the initialization of sync node fails.
-  virtual bool InitSyncNodeFromChromeId(const int64& node_id,
-                                        sync_api::BaseNode* sync_node) OVERRIDE;
+  virtual bool InitSyncNodeFromChromeId(
+      const int64& node_id,
+      sync_api::BaseNode* sync_node) OVERRIDE;
 
   // Associates the given bookmark node with the given sync id.
   virtual void Associate(const BookmarkNode* node, int64 sync_id) OVERRIDE;

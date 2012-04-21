@@ -56,15 +56,30 @@ static const int64 kInvalidId = 0;
 // int64 metahandle, which we call an ID here.
 class BaseNode {
  public:
+  // Enumerates the possible outcomes of trying to initialize a sync node.
+  enum InitByLookupResult {
+    INIT_OK,
+    // Could not find an entry matching the lookup criteria.
+    INIT_FAILED_ENTRY_NOT_GOOD,
+    // Found an entry, but it is already deleted.
+    INIT_FAILED_ENTRY_IS_DEL,
+    // Found an entry, but was unable to decrypt.
+    INIT_FAILED_DECRYPT_IF_NECESSARY,
+    // A precondition was not met for calling init, such as legal input
+    // arguments.
+    INIT_FAILED_PRECONDITION,
+  };
+
   // All subclasses of BaseNode must provide a way to initialize themselves by
   // doing an ID lookup.  Returns false on failure.  An invalid or deleted
   // ID will result in failure.
-  virtual bool InitByIdLookup(int64 id) = 0;
+  virtual InitByLookupResult InitByIdLookup(int64 id) = 0;
 
   // All subclasses of BaseNode must also provide a way to initialize themselves
   // by doing a client tag lookup. Returns false on failure. A deleted node
   // will return FALSE.
-  virtual bool InitByClientTagLookup(syncable::ModelType model_type,
+  virtual InitByLookupResult InitByClientTagLookup(
+      syncable::ModelType model_type,
       const std::string& tag) = 0;
 
   // Each object is identified by a 64-bit id (internally, the syncable

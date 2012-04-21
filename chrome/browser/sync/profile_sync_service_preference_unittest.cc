@@ -63,16 +63,18 @@ class ProfileSyncServicePreferenceTest
   int64 SetSyncedValue(const std::string& name, const Value& value) {
     sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode root(&trans);
-    if (!root.InitByTagLookup(
-        syncable::ModelTypeToRootTag(syncable::PREFERENCES))) {
+    if (root.InitByTagLookup(syncable::ModelTypeToRootTag(
+            syncable::PREFERENCES)) != sync_api::BaseNode::INIT_OK) {
       return sync_api::kInvalidId;
     }
 
     sync_api::WriteNode tag_node(&trans);
     sync_api::WriteNode node(&trans);
 
-    if (tag_node.InitByClientTagLookup(syncable::PREFERENCES, name))
+    if (tag_node.InitByClientTagLookup(syncable::PREFERENCES, name) ==
+            sync_api::BaseNode::INIT_OK) {
       return WriteSyncedValue(name, value, &tag_node);
+    }
     if (node.InitUniqueByCreation(syncable::PREFERENCES, root, name))
       return WriteSyncedValue(name, value, &node);
 
@@ -158,8 +160,10 @@ class ProfileSyncServicePreferenceTest
     sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode node(&trans);
 
-    if (!node.InitByClientTagLookup(syncable::PREFERENCES, name))
+    if (node.InitByClientTagLookup(syncable::PREFERENCES, name) !=
+            sync_api::BaseNode::INIT_OK) {
       return NULL;
+    }
 
     const sync_pb::PreferenceSpecifics& specifics(
         node.GetEntitySpecifics().preference());

@@ -144,7 +144,7 @@ bool SessionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   *has_nodes = false;
   sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
-  if (!root.InitByTagLookup(kSessionsTag)) {
+  if (root.InitByTagLookup(kSessionsTag) != sync_api::BaseNode::INIT_OK) {
     LOG(ERROR) << kNoSessionsFolderError;
     return false;
   }
@@ -163,7 +163,7 @@ int64 SessionModelAssociator::GetSyncIdFromSessionTag(const std::string& tag) {
   DCHECK(CalledOnValidThread());
   sync_api::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode node(&trans);
-  if (!node.InitByClientTagLookup(SESSIONS, tag))
+  if (node.InitByClientTagLookup(SESSIONS, tag) != sync_api::BaseNode::INIT_OK)
     return sync_api::kInvalidId;
   return node.GetId();
 }
@@ -272,7 +272,8 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs,
 
   sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::WriteNode header_node(&trans);
-  if (!header_node.InitByIdLookup(local_session_syncid_)) {
+  if (header_node.InitByIdLookup(local_session_syncid_) !=
+          sync_api::BaseNode::INIT_OK) {
     if (error) {
       *error = error_handler_->CreateAndUploadError(
            FROM_HERE,
@@ -427,7 +428,7 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(TabLink* tab_link,
 
   sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::WriteNode tab_node(&trans);
-  if (!tab_node.InitByIdLookup(sync_id)) {
+  if (tab_node.InitByIdLookup(sync_id) != sync_api::BaseNode::INIT_OK) {
     if (error) {
       *error = error_handler_->CreateAndUploadError(
           FROM_HERE,
@@ -501,7 +502,8 @@ void SessionModelAssociator::OnFaviconDataAvailable(
     // Load the sync tab node and update the favicon data.
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     sync_api::WriteNode tab_node(&trans);
-    if (!tab_node.InitByIdLookup(tab_link->sync_id())) {
+    if (tab_node.InitByIdLookup(tab_link->sync_id()) !=
+            sync_api::BaseNode::INIT_OK) {
       LOG(WARNING) << "Failed to load sync tab node for tab id " << tab_id
                    << " and url " << tab_link->url().spec();
       return;
@@ -659,7 +661,8 @@ SyncError SessionModelAssociator::AssociateModels() {
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
 
     sync_api::ReadNode root(&trans);
-    if (!root.InitByTagLookup(syncable::ModelTypeToRootTag(model_type()))) {
+    if (root.InitByTagLookup(syncable::ModelTypeToRootTag(model_type())) !=
+            sync_api::BaseNode::INIT_OK) {
       return error_handler_->CreateAndUploadError(
           FROM_HERE,
           kNoSessionsFolderError,
@@ -809,7 +812,7 @@ bool SessionModelAssociator::UpdateAssociationsFromSyncModel(
   int64 id = root.GetFirstChildId();
   while (id != sync_api::kInvalidId) {
     sync_api::WriteNode sync_node(trans);
-    if (!sync_node.InitByIdLookup(id)) {
+    if (sync_node.InitByIdLookup(id) != sync_api::BaseNode::INIT_OK) {
       if (error) {
         *error = error_handler_->CreateAndUploadError(
             FROM_HERE,
@@ -1230,7 +1233,7 @@ int64 SessionModelAssociator::TabNodePool::GetFreeTabNode() {
     // Tab pool has no free nodes, allocate new one.
     sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
     sync_api::ReadNode root(&trans);
-    if (!root.InitByTagLookup(kSessionsTag)) {
+    if (root.InitByTagLookup(kSessionsTag) != sync_api::BaseNode::INIT_OK) {
       LOG(ERROR) << kNoSessionsFolderError;
       return sync_api::kInvalidId;
     }
@@ -1363,14 +1366,14 @@ void SessionModelAssociator::DeleteForeignSession(const std::string& tag) {
 
   sync_api::WriteTransaction trans(FROM_HERE, sync_service_->GetUserShare());
   sync_api::ReadNode root(&trans);
-  if (!root.InitByTagLookup(kSessionsTag)) {
+  if (root.InitByTagLookup(kSessionsTag) != sync_api::BaseNode::INIT_OK) {
     LOG(ERROR) << kNoSessionsFolderError;
     return;
   }
   int64 id = root.GetFirstChildId();
   while (id != sync_api::kInvalidId) {
     sync_api::WriteNode sync_node(&trans);
-    if (!sync_node.InitByIdLookup(id)) {
+    if (sync_node.InitByIdLookup(id) != sync_api::BaseNode::INIT_OK) {
       LOG(ERROR) << "Failed to fetch sync node for id " << id;
       continue;
     }
