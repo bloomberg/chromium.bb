@@ -357,12 +357,10 @@ if (env.Bit('linux') and not env.CrossToolsBuild() and
   bootstrap_env.Append(CCFLAGS=['-fno-pic', '-fno-PIC', '-fno-pie', '-fno-pie',
                                 '-fno-stack-protector'])
 
-  # TODO(bbudge) Remove -Qunused-arguments when Clang supports -fno-pic.
   if env.Bit('clang'):
     bootstrap_env.Append(CCFLAGS=['-ffreestanding',
                                   '-U__STDC_HOSTED__',
-                                  '-D__STDC_HOSTED__=1',
-                                  '-Qunused-arguments'])
+                                  '-D__STDC_HOSTED__=1'])
   if env.Bit('target_x86_64'):
     ld_emul = 'elf_x86_64'
     defsym = ''

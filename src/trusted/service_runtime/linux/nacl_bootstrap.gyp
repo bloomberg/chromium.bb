@@ -99,8 +99,6 @@
             '-ffreestanding',
             # But make its <limits.h> still work!
             '-U__STDC_HOSTED__', '-D__STDC_HOSTED__=1',
-            # TODO(bbudge) Remove this when Clang supports -fno-pic.
-            '-Qunused-arguments',
           ],
         }],
       ],
