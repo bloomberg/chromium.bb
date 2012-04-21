@@ -36,23 +36,30 @@ namespace internal {
 PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
     : panel_container_(panel_container),
       in_layout_(false),
-      dragged_panel_(NULL) {
+      dragged_panel_(NULL),
+      launcher_(NULL) {
   DCHECK(panel_container);
 }
 
 PanelLayoutManager::~PanelLayoutManager() {
+  if (launcher_)
+    launcher_->RemoveIconObserver(this);
 }
 
 void PanelLayoutManager::StartDragging(aura::Window* panel) {
-  DCHECK(dragged_panel_ == NULL);
+  DCHECK(!dragged_panel_);
   DCHECK(panel->parent() == panel_container_);
   dragged_panel_ = panel;
 }
 
 void PanelLayoutManager::FinishDragging() {
-  DCHECK(dragged_panel_ != NULL);
+  DCHECK(dragged_panel_);
   dragged_panel_ = NULL;
   Relayout();
+}
+
+void PanelLayoutManager::SetLauncher(ash::Launcher* launcher) {
+  launcher->AddIconObserver(this);
 }
 
 void PanelLayoutManager::ToggleMinimize(aura::Window* panel) {
@@ -64,7 +71,7 @@ void PanelLayoutManager::ToggleMinimize(aura::Window* panel) {
 
     gfx::Rect new_bounds(old_bounds);
     const gfx::Rect* restore_bounds = GetRestoreBounds(panel);
-    if (restore_bounds != NULL) {
+    if (restore_bounds) {
       new_bounds.set_height(restore_bounds->height());
       new_bounds.set_y(old_bounds.bottom() - restore_bounds->height());
       SetChildBounds(panel, new_bounds);
@@ -149,46 +156,46 @@ void PanelLayoutManager::SetChildBounds(aura::Window* child,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PanelLayoutManager, aura::LauncherIconObserver implementation:
+
+void PanelLayoutManager::OnLauncherIconPositionsChanged() {
+  Relayout();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager private implementation:
 
-// This is a rough outline of a simple panel layout manager.
 void PanelLayoutManager::Relayout() {
   if (in_layout_)
     return;
   AutoReset<bool> auto_reset_in_layout(&in_layout_, true);
 
-  // Panels are currently laid out just above the launcher (if it exists),
-  // otherwise at the bottom of the root window.
-  int right, bottom;
   ash::Shell* shell = ash::Shell::GetInstance();
-  if (shell->launcher() && shell->launcher()->widget()->IsVisible()) {
-    const gfx::Rect& bounds =
-        shell->launcher()->widget()->GetWindowScreenBounds();
-    right = bounds.width() - 1 - kPanelMarginEdge;
-    bottom = bounds.y() - 1;
-  } else {
-    const gfx::Rect& bounds = panel_container_->GetRootWindow()->bounds();
-    right = bounds.width() - 1 - kPanelMarginEdge;
-    bottom = bounds.bottom() - 1;
-  }
 
-  // Layout the panel windows right to left.
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
     aura::Window* panel_win = *iter;
-    if (!panel_win->IsVisible())
+    if (!panel_win->IsVisible() || panel_win == dragged_panel_)
       continue;
-    int x = right - panel_win->bounds().width();
-    int y = bottom - panel_win->bounds().height();
 
-    // Do not relayout dragged panel, but pretend it is in place
-    if (panel_win != dragged_panel_) {
-      gfx::Rect bounds(x, y,
-                       panel_win->bounds().width(),
-                       panel_win->bounds().height());
-      SetChildBoundsDirect(panel_win, bounds);
-    }
-    right = x - kPanelMarginMiddle;
+    gfx::Rect icon_bounds =
+        shell->launcher()->GetScreenBoundsOfItemIconForWindow(panel_win);
+
+    // An empty rect indicates that there is no icon for the panel in the
+    // launcher. Just use the current bounds, as there's no icon to draw the
+    // panel above.
+    if (icon_bounds.IsEmpty())
+      continue;
+
+    gfx::Point icon_origin = icon_bounds.origin();
+    aura::Window::ConvertPointToWindow(panel_container_->GetRootWindow(),
+                                       panel_container_, &icon_origin);
+
+    gfx::Rect bounds = panel_win->bounds();
+    bounds.set_x(
+        icon_origin.x() + icon_bounds.width() / 2 - bounds.width() / 2);
+    bounds.set_y(icon_origin.y() - bounds.height());
+    SetChildBoundsDirect(panel_win, bounds);
   }
 }
 
