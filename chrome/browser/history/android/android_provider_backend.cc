@@ -713,10 +713,19 @@ bool AndroidProviderBackend::UpdateVisitedURLs() {
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE,
                                                    kURLUpdateClause));
   while (statement.Step()) {
-    if (!history_db_->AddBookmarkCacheRow(
-            Time::FromInternalValue(statement.ColumnInt64(2)),
-            Time::FromInternalValue(statement.ColumnInt64(1)),
-            statement.ColumnInt64(0)))
+    // The last_visit_time and the created time should be same when the visit
+    // count is 0, this behavior is also required by the Android CTS.
+    // The created_time could be set to the last_visit_time only when the type
+    // of the 'created' column is NULL because the left join is used in query
+    // and there is no row in the visit table when the visit count is 0.
+    Time last_visit_time = Time::FromInternalValue(statement.ColumnInt64(1));
+    Time created_time = last_visit_time;
+
+    if (statement.ColumnType(2) != sql::COLUMN_TYPE_NULL)
+      created_time = Time::FromInternalValue(statement.ColumnInt64(2));
+
+    if (!history_db_->AddBookmarkCacheRow(created_time, last_visit_time,
+                                          statement.ColumnInt64(0)))
       return false;
   }
   return true;

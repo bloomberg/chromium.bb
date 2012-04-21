@@ -1636,4 +1636,41 @@ TEST_F(AndroidProviderBackendTest, TestMultipleNestingTransaction) {
   EXPECT_EQ(thumbnail_transaction, thumbnail_db_.transaction_nesting());
 }
 
+TEST_F(AndroidProviderBackendTest, TestAndroidCTSComplianceForZeroVisitCount) {
+  // This is to verify the last visit time and created time are same when visit
+  // count is 0.
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
+  ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
+                                             &history_db_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_,
+                                 &thumbnail_db_, &bookmark_model_, &delegate_));
+  URLRow url_row(GURL("http://www.google.com"));
+  url_row.set_last_visit(Time::Now());
+  url_row.set_visit_count(0);
+  history_db_.AddURL(url_row);
+
+  std::vector<HistoryAndBookmarkRow::ColumnID> projections;
+
+  projections.push_back(HistoryAndBookmarkRow::ID);
+  projections.push_back(HistoryAndBookmarkRow::URL);
+  projections.push_back(HistoryAndBookmarkRow::TITLE);
+  projections.push_back(HistoryAndBookmarkRow::CREATED);
+  projections.push_back(HistoryAndBookmarkRow::LAST_VISIT_TIME);
+  projections.push_back(HistoryAndBookmarkRow::VISIT_COUNT);
+  projections.push_back(HistoryAndBookmarkRow::FAVICON);
+  projections.push_back(HistoryAndBookmarkRow::BOOKMARK);
+
+  scoped_ptr<AndroidStatement> statement(backend->QueryHistoryAndBookmarks(
+      projections, std::string(), std::vector<string16>(),
+      std::string("url ASC")));
+
+  ASSERT_TRUE(statement->statement()->Step());
+  EXPECT_EQ(ToDatabaseTime(url_row.last_visit()),
+            statement->statement()->ColumnInt64(3));
+  EXPECT_EQ(ToDatabaseTime(url_row.last_visit()),
+            statement->statement()->ColumnInt64(4));
+  EXPECT_EQ(url_row.visit_count(), statement->statement()->ColumnInt(5));
+}
+
 }  // namespace history
