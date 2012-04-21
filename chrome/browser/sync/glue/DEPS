@@ -3,9 +3,8 @@ include_rules = [
   "-sync/sessions",
   "-sync/syncable",
 
+  "+sync/internal_api",
   "+sync/util",
-
-  "+chrome/browser/sync/internal_api",
 
   "+jingle/notifier/base",
 
@@ -23,7 +22,6 @@ include_rules = [
 
   # Mocks/tests.
   "+sync/engine/syncapi_mock.h",
-  "+chrome/browser/sync/notifier/mock_sync_notifier_observer.h",
   "+sync/syncable/model_type_test_util.h",
   "+sync/syncable/syncable_mock.h",
 

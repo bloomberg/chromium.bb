@@ -11,11 +11,11 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/theme_util.h"
-#include "chrome/browser/sync/internal_api/read_node.h"
-#include "chrome/browser/sync/internal_api/read_transaction.h"
-#include "chrome/browser/sync/internal_api/write_node.h"
-#include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "sync/internal_api/read_node.h"
+#include "sync/internal_api/read_transaction.h"
+#include "sync/internal_api/write_node.h"
+#include "sync/internal_api/write_transaction.h"
 #include "sync/protocol/theme_specifics.pb.h"
 
 namespace browser_sync {

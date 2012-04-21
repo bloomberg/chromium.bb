@@ -384,7 +384,6 @@
         '../chrome/chrome.gyp:browser',
         '../chrome/chrome.gyp:debugger',
         '../chrome/chrome.gyp:renderer',
-        '../chrome/chrome.gyp:syncapi_core',
         '../chrome/chrome.gyp:test_support_common',
         '../chrome/chrome_resources.gyp:chrome_resources',
         '../content/content.gyp:content_app',
@@ -393,6 +392,7 @@
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
+        '../sync/sync.gyp:syncapi_core',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -774,11 +774,11 @@
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
-            # Make the archive build happy.
-            '../chrome/chrome.gyp:syncapi_core',
             # Installer
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
+            # Make the archive build happy.
+            '../sync/sync.gyp:syncapi_core',
             # Crash Reporting
             'crash_reporting/crash_reporting.gyp:crash_report',
           ],
@@ -893,11 +893,11 @@
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler_dll',
             '../chrome/chrome.gyp:automation',
-            # Make the archive build happy.
-            '../chrome/chrome.gyp:syncapi_core',
             # Installer
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
+            # Make the archive build happy.
+            '../sync/sync.gyp:syncapi_core',
             # Crash Reporting
             'crash_reporting/crash_reporting.gyp:crash_report',
           ],

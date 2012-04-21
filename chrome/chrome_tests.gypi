@@ -354,27 +354,6 @@
       ],
     },
     {
-      'target_name': 'test_support_syncapi',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        'syncapi_core',
-        '../sync/sync.gyp:test_support_sync',
-      ],
-      'export_dependent_settings': [
-        '../base/base.gyp:base',
-        'syncapi_core',
-        '../sync/sync.gyp:test_support_sync',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'browser/sync/test/engine/test_user_share.cc',
-        'browser/sync/test/engine/test_user_share.h',
-      ],
-    },
-    {
       'target_name': 'test_support_syncapi_service',
       'type': 'static_library',
       'dependencies': [
@@ -481,11 +460,11 @@
       'type': 'executable',
       'dependencies': [
         '../sync/protocol/sync_proto.gyp:sync_proto',
+        '../sync/sync.gyp:syncapi_core',
         'chrome',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         'debugger',
-        'syncapi_core',
         'test_support_common',
         'test_support_ui',
         '../third_party/hunspell/hunspell.gyp:hunspell',
@@ -854,12 +833,12 @@
         'chrome_resources.gyp:chrome_strings',
         'chromedriver_support',
         'common',
-        'syncapi_core',
         'test_support_ui',
         '../base/base.gyp:base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
+        '../sync/sync.gyp:syncapi_core',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -1099,7 +1078,7 @@
         'test_support_common',
         '../sync/sync.gyp:test_support_sync',
         '../sync/sync.gyp:test_support_sync_notifier',
-        'test_support_syncapi',
+        '../sync/sync.gyp:test_support_syncapi_core',
         'test_support_syncapi_service',
         'test_support_unit',
         # 3) anything tests directly depend on
@@ -1645,6 +1624,8 @@
         'browser/status_icons/status_tray_unittest.cc',
         'browser/sync/abstract_profile_sync_service_test.cc',
         'browser/sync/abstract_profile_sync_service_test.h',
+        'browser/sync/api/sync_change_unittest.cc',
+        'browser/sync/api/sync_error_unittest.cc',
         'browser/sync/backend_migrator_unittest.cc',
         'browser/sync/glue/app_notification_data_type_controller_unittest.cc',
         'browser/sync/glue/autofill_data_type_controller_unittest.cc',
@@ -3810,47 +3791,6 @@
       ],
     },
     {
-      'target_name': 'sync_unit_tests',
-      'type': 'executable',
-      'sources': [
-        'browser/sync/api/sync_change_unittest.cc',
-        'browser/sync/api/sync_error_unittest.cc',
-        'browser/sync/internal_api/change_record_unittest.cc',
-        'browser/sync/internal_api/debug_info_event_listener_unittest.cc',
-        'browser/sync/internal_api/syncapi_server_connection_manager_unittest.cc',
-        'browser/sync/internal_api/syncapi_unittest.cc',
-        'browser/sync/internal_api/js_mutation_event_observer_unittest.cc',
-        'browser/sync/internal_api/js_sync_manager_observer_unittest.cc',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        '../base/base.gyp:run_all_unittests',
-        '../base/base.gyp:test_support_base',
-        '../net/net.gyp:net',
-        '../net/net.gyp:net_test_support',
-        '../sync/sync.gyp:sync_notifier_tests',
-        '../sync/sync.gyp:sync_tests',
-        '../testing/gmock.gyp:gmock',
-        '../testing/gtest.gyp:gtest',
-        'syncapi_core',
-        'test_support_syncapi',
-        'test_support_syncapi_service',
-      ],
-
-      # TODO(akalin): This is needed because histogram.cc uses
-      # leak_annotations.h, which pulls this in.  Make 'base'
-      # propagate this dependency.
-      'conditions': [
-        ['OS=="linux" and linux_use_tcmalloc==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
-      ],
-    },
-    {
       'target_name': 'sync_integration_tests',
       'type': 'executable',
       'dependencies': [
@@ -4351,10 +4291,10 @@
             'test_support_common',
             'browser',
             'renderer',
-            'syncapi_core',
             '../base/base.gyp:base',
             '../net/net.gyp:net_test_support',
             '../skia/skia.gyp:skia',
+            '../sync/sync.gyp:syncapi_core',
           ],
           'include_dirs': [
             '..',
@@ -4416,9 +4356,9 @@
             'chrome_resources.gyp:chrome_strings',
             'chrome_resources.gyp:theme_resources',
             'debugger',
-            'syncapi_core',
             'test_support_common',
             '../skia/skia.gyp:skia',
+            '../sync/sync.gyp:syncapi_core',
             '../testing/gtest.gyp:gtest',
           ],
           'export_dependent_settings': [

@@ -235,6 +235,68 @@
       ],
     },
 
+    # The sync internal API library.
+    {
+      'target_name': 'syncapi_core',
+      'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../net/net.gyp:net',
+        'protocol/sync_proto.gyp:sync_proto',
+        'sync_notifier',
+        'sync',
+      ],
+      'export_dependent_settings': [
+        # Propagate sync_proto since our headers include its generated
+        # files.
+        'protocol/sync_proto.gyp:sync_proto',
+        'sync_notifier',
+        'sync',
+      ],
+      'sources': [
+        'internal_api/all_status.cc',
+        'internal_api/all_status.h',
+        'internal_api/base_node.cc',
+        'internal_api/base_node.h',
+        'internal_api/base_transaction.cc',
+        'internal_api/base_transaction.h',
+        'internal_api/change_record.cc',
+        'internal_api/change_record.h',
+        'internal_api/change_reorder_buffer.cc',
+        'internal_api/change_reorder_buffer.h',
+        'internal_api/configure_reason.h',
+        'internal_api/debug_info_event_listener.cc',
+        'internal_api/debug_info_event_listener.h',
+        'internal_api/http_post_provider_factory.h',
+        'internal_api/http_post_provider_interface.h',
+        'internal_api/js_mutation_event_observer.cc',
+        'internal_api/js_mutation_event_observer.h',
+        'internal_api/js_sync_manager_observer.cc',
+        'internal_api/js_sync_manager_observer.h',
+        'internal_api/read_node.cc',
+        'internal_api/read_node.h',
+        'internal_api/read_transaction.cc',
+        'internal_api/read_transaction.h',
+        'internal_api/syncapi_internal.cc',
+        'internal_api/syncapi_internal.h',
+        'internal_api/syncapi_server_connection_manager.cc',
+        'internal_api/syncapi_server_connection_manager.h',
+        'internal_api/sync_manager.cc',
+        'internal_api/sync_manager.h',
+        'internal_api/user_share.cc',
+        'internal_api/user_share.h',
+        'internal_api/write_node.cc',
+        'internal_api/write_node.h',
+        'internal_api/write_transaction.cc',
+        'internal_api/write_transaction.h',
+      ],
+    },
+
     # Test support files for the 'sync' target.
     {
       'target_name': 'test_support_sync',
@@ -313,6 +375,31 @@
       'sources': [
         'notifier/mock_sync_notifier_observer.cc',
         'notifier/mock_sync_notifier_observer.h',
+      ],
+    },
+
+    # Test support files for the 'syncapi_core' target.
+    {
+      'target_name': 'test_support_syncapi_core',
+      'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+        'syncapi_core',
+        'test_support_sync',
+      ],
+      'export_dependent_settings': [
+        '../testing/gtest.gyp:gtest',
+        'syncapi_core',
+        'test_support_sync',
+      ],
+      'sources': [
+        'internal_api/test_user_share.cc',
+        'internal_api/test_user_share.h',
       ],
     },
 
@@ -455,21 +542,64 @@
       },
     },
 
-    # The unit test executable for sync tests.  Currently this isn't
-    # automatically run, as there is already a sync_unit_tests
-    # executable in chrome.gyp; this is just to make sure that all the
-    # link-time dependencies for the files in the targets above
-    # resolve.
-    #
-    # TODO(akalin): Rename this to sync_unit_tests once we've moved
-    # everything from chrome.gyp.
+    # Unit tests for the 'syncapi_core' target.  This cannot be a static
+    # library because the unit test files have to be compiled directly
+    # into the executable, so we push the target files to the
+    # depending executable target via direct_dependent_settings.
     {
-      'target_name': 'sync_unit_tests_canary',
+      'target_name': 'syncapi_core_tests',
+      'type': 'none',
+      # We only want unit test executables to include this target.
+      'suppress_wildcard': 1,
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        'protocol/sync_proto.gyp:sync_proto',
+        'sync',
+        'sync_notifier',
+        'syncapi_core',
+        'test_support_syncapi_core',
+      ],
+      # Propagate all dependencies since the actual compilation
+      # happens in the dependents.
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        'protocol/sync_proto.gyp:sync_proto',
+        'sync',
+        'sync_notifier',
+        'syncapi_core',
+        'test_support_syncapi_core',
+      ],
+      'direct_dependent_settings': {
+        'variables': { 'enable_wexit_time_destructors': 1, },
+        'include_dirs': [
+          '..',
+        ],
+        'sources': [
+          'internal_api/change_record_unittest.cc',
+          'internal_api/debug_info_event_listener_unittest.cc',
+          'internal_api/js_mutation_event_observer_unittest.cc',
+          'internal_api/js_sync_manager_observer_unittest.cc',
+          'internal_api/syncapi_server_connection_manager_unittest.cc',
+          'internal_api/syncapi_unittest.cc',
+        ],
+      },
+    },
+
+    # The unit test executable for sync tests.
+    {
+      'target_name': 'sync_unit_tests',
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:run_all_unittests',
         'sync_tests',
         'sync_notifier_tests',
+        'syncapi_core_tests',
       ],
       # TODO(akalin): This is needed because histogram.cc uses
       # leak_annotations.h, which pulls this in.  Make 'base'

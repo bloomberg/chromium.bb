@@ -14,12 +14,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/sync/internal_api/http_post_provider_factory.h"
-#include "chrome/browser/sync/internal_api/http_post_provider_interface.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "sync/internal_api/http_post_provider_factory.h"
+#include "sync/internal_api/http_post_provider_interface.h"
 
 class MessageLoop;
 class HttpBridgeTest;

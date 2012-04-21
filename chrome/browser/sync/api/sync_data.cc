@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/sync/internal_api/base_node.h"
+#include "sync/internal_api/base_node.h"
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/model_type.h"

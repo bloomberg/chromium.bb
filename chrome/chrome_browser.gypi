@@ -27,8 +27,6 @@
         'installer_util',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
-        # TODO(sync): Make browser not depend on syncapi_core directly.
-        'syncapi_core',
         'syncapi_service',
         'feedback_proto',
         'gdata_proto',
@@ -40,6 +38,7 @@
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',  # For PpapiMsg_LoadPlugin
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
+        '../sync/sync.gyp:syncapi_core',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cld/cld.gyp:cld',
         '../third_party/expat/expat.gyp:expat',

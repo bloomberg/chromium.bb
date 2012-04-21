@@ -13,8 +13,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "sync/engine/model_safe_worker.h"
+#include "sync/internal_api/sync_manager.h"
 #include "sync/syncable/model_type.h"
 
 class MessageLoop;

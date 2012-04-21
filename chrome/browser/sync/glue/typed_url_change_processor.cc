@@ -11,13 +11,13 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
-#include "chrome/browser/sync/internal_api/change_record.h"
-#include "chrome/browser/sync/internal_api/read_node.h"
-#include "chrome/browser/sync/internal_api/write_node.h"
-#include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
+#include "sync/internal_api/change_record.h"
+#include "sync/internal_api/read_node.h"
+#include "sync/internal_api/write_node.h"
+#include "sync/internal_api/write_transaction.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
 
 using content::BrowserThread;

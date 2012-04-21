@@ -2,7 +2,7 @@ include_rules = [
   "-chrome",
 
   "+chrome/browser/sync/api",
-  "+chrome/browser/sync/internal_api/base_node.h",
+  "+sync/internal_api/base_node.h",
   "+sync/protocol",
   "+sync/syncable/model_type.h",
   "+sync/util/immutable.h",
