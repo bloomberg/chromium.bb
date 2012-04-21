@@ -549,13 +549,25 @@ bool NativeNetworkDeviceParser::ParseSimLockStateFromDictionary(
     int* out_retries,
     bool* out_enabled) {
   std::string state_string;
+  // Since RetriesLeft is sent as a uint32, which may overflow int32 range, from
+  // Flimflam, it may be stored as an integer or a double in DictionaryValue.
+  base::Value* retries_value = NULL;
   if (!info.GetString(flimflam::kSIMLockTypeProperty, &state_string) ||
-      !info.GetInteger(flimflam::kSIMLockRetriesLeftProperty, out_retries) ||
-      !info.GetBoolean(flimflam::kSIMLockEnabledProperty, out_enabled)) {
+      !info.GetBoolean(flimflam::kSIMLockEnabledProperty, out_enabled) ||
+      !info.Get(flimflam::kSIMLockRetriesLeftProperty, &retries_value) ||
+      (retries_value->GetType() != base::Value::TYPE_INTEGER &&
+       retries_value->GetType() != base::Value::TYPE_DOUBLE)) {
     LOG(ERROR) << "Error parsing SIMLock state";
     return false;
   }
   *out_state = ParseSimLockState(state_string);
+  if (retries_value->GetType() == base::Value::TYPE_INTEGER) {
+    retries_value->GetAsInteger(out_retries);
+  } else if (retries_value->GetType() == base::Value::TYPE_DOUBLE) {
+    double retries_double = 0;
+    retries_value->GetAsDouble(&retries_double);
+    *out_retries = retries_double;
+  }
   return true;
 }
 
