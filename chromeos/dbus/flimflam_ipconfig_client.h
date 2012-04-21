@@ -81,13 +81,13 @@ class CHROMEOS_EXPORT FlimflamIPConfigClient {
 
   // Calls Remove method.
   // |callback| is called after the method call succeeds.
-  //
-  // TODO(hashimoto): Refactor CrosRemoveIPConfig to remove this method.
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
                       const VoidCallback& callback) = 0;
 
   // DEPRECATED DO NOT USE: Calls Remove method and blocks until the method call
   // finishes.
+  //
+  // TODO(hashimoto): Refactor CrosRemoveIPConfig to remove this method.
   virtual bool CallRemoveAndBlock(const dbus::ObjectPath& ipconfig_path) = 0;
 
  protected:

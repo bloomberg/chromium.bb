@@ -11,6 +11,7 @@
 #include "chromeos/dbus/cashew_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/flimflam_device_client.h"
+#include "chromeos/dbus/flimflam_ipconfig_client.h"
 #include "chromeos/dbus/flimflam_manager_client.h"
 #include "chromeos/dbus/flimflam_profile_client.h"
 #include "chromeos/dbus/flimflam_service_client.h"
@@ -263,9 +264,15 @@ void CrosSetNetworkDeviceProperty(const char* device_path,
 void CrosSetNetworkIPConfigProperty(const char* ipconfig_path,
                                     const char* property,
                                     const base::Value& value) {
-  ScopedGValue gvalue(ConvertValueToGValue(value));
-  chromeos::SetNetworkIPConfigPropertyGValue(ipconfig_path, property,
-                                             gvalue.get());
+  if (g_libcros_network_functions_enabled) {
+    ScopedGValue gvalue(ConvertValueToGValue(value));
+    chromeos::SetNetworkIPConfigPropertyGValue(ipconfig_path, property,
+                                               gvalue.get());
+  } else {
+    DBusThreadManager::Get()->GetFlimflamIPConfigClient()->SetProperty(
+        dbus::ObjectPath(ipconfig_path), property, value,
+        base::Bind(&DoNothing));
+  }
 }
 
 void CrosSetNetworkManagerProperty(const char* property,
@@ -552,7 +559,12 @@ bool CrosAddIPConfig(const char* device_path, IPConfigType type) {
 }
 
 bool CrosRemoveIPConfig(IPConfig* config) {
-  return chromeos::RemoveIPConfig(config);
+  if (g_libcros_network_functions_enabled) {
+    return chromeos::RemoveIPConfig(config);
+  } else {
+    return DBusThreadManager::Get()->GetFlimflamIPConfigClient()->
+        CallRemoveAndBlock(dbus::ObjectPath(config->path));
+  }
 }
 
 void CrosFreeIPConfigStatus(IPConfigStatus* status) {

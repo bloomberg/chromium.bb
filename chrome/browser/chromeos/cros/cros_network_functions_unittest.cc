@@ -11,6 +11,7 @@
 #include "chromeos/dbus/mock_cashew_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_flimflam_device_client.h"
+#include "chromeos/dbus/mock_flimflam_ipconfig_client.h"
 #include "chromeos/dbus/mock_flimflam_manager_client.h"
 #include "chromeos/dbus/mock_flimflam_profile_client.h"
 #include "chromeos/dbus/mock_flimflam_service_client.h"
@@ -589,6 +590,14 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkDeviceEnable) {
   CrosRequestNetworkDeviceEnable(flimflam::kTypeWifi, kEnable);
 }
 
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRemoveIPConfig) {
+  IPConfig config = {};
+  config.path = "/path";
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              RemoveIPConfig(&config)).Times(1);
+  CrosRemoveIPConfig(&config);
+}
+
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosConfigureService) {
   const char identifier[] = "identifier";
   EXPECT_CALL(*MockChromeOSNetwork::Get(),
@@ -625,6 +634,8 @@ class CrosNetworkFunctionsTest : public testing::Test {
     mock_cashew_client_ = mock_dbus_thread_manager->mock_cashew_client();
     mock_device_client_ =
         mock_dbus_thread_manager->mock_flimflam_device_client();
+    mock_ipconfig_client_ =
+        mock_dbus_thread_manager->mock_flimflam_ipconfig_client();
     mock_manager_client_ =
         mock_dbus_thread_manager->mock_flimflam_manager_client();
     mock_profile_client_ =
@@ -663,6 +674,7 @@ class CrosNetworkFunctionsTest : public testing::Test {
  protected:
   MockCashewClient* mock_cashew_client_;
   MockFlimflamDeviceClient* mock_device_client_;
+  MockFlimflamIPConfigClient* mock_ipconfig_client_;
   MockFlimflamManagerClient* mock_manager_client_;
   MockFlimflamProfileClient* mock_profile_client_;
   MockFlimflamServiceClient* mock_service_client_;
@@ -706,6 +718,17 @@ TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkDeviceProperty) {
                           IsEqualTo(&value), _)).Times(1);
 
   CrosSetNetworkDeviceProperty(device_path, property, value);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkIPConfigProperty) {
+  const char ipconfig_path[] = "/";
+  const char property[] = "property";
+  const int kInt = 1234;
+  const base::FundamentalValue value(kInt);
+  EXPECT_CALL(*mock_ipconfig_client_,
+              SetProperty(dbus::ObjectPath(ipconfig_path), property,
+                          IsEqualTo(&value), _)).Times(1);
+  CrosSetNetworkIPConfigProperty(ipconfig_path, property, value);
 }
 
 TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkManagerProperty) {
@@ -936,6 +959,14 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkDeviceEnable) {
   EXPECT_CALL(*mock_manager_client_,
               DisableTechnology(flimflam::kTypeWifi, _)).Times(1);
   CrosRequestNetworkDeviceEnable(flimflam::kTypeWifi, kDisable);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRemoveIPConfig) {
+  IPConfig config = {};
+  config.path = "/path";
+  EXPECT_CALL(*mock_ipconfig_client_,
+              CallRemoveAndBlock(dbus::ObjectPath(config.path))).Times(1);
+  CrosRemoveIPConfig(&config);
 }
 
 }  // namespace chromeos
