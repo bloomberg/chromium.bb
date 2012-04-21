@@ -797,6 +797,18 @@ _config.add_group('x86-alex-release-group',
   ),
 )
 
+_config.add_group('x86-alex32-release-group',
+  _release.add_config('x86-alex32-release',
+    boards=['x86-alex32'],
+  ),
+  _release.add_config('x86-alex32_he-release',
+    boards=['x86-alex32_he'],
+    vm_tests=None,
+    unittests=None,
+    upload_hw_test_artifacts=False,
+  ),
+)
+
 _config.add_group('x86-zgb-release-group',
   _release.add_config('x86-zgb-release',
     boards=['x86-zgb'],
@@ -807,7 +819,19 @@ _config.add_group('x86-zgb-release-group',
     vm_tests=None,
     unittests=None,
     upload_hw_test_artifacts=False,
-  )
+  ),
+)
+
+_config.add_group('x86-zgb32-release-group',
+  _release.add_config('x86-zgb32-release',
+    boards=['x86-zgb32'],
+  ),
+  _release.add_config('x86-zgb32_he-release',
+    boards=['x86-zgb32_he'],
+    vm_tests=None,
+    unittests=None,
+    upload_hw_test_artifacts=False,
+  ),
 )
 
 _release.add_config('stumpy-release',
