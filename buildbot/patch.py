@@ -194,8 +194,8 @@ class GitRepoPatch(object):
   def __str__(self):
     """Returns custom string to identify this patch."""
     s = '%s:%s' % (self.project, self.ref)
-    if self.sha1:
-      s = '%s:%s' % (s, self.sha1)
+    if self.sha1 is not None:
+      s = '%s:%s' % (s, self.sha1[:8])
     return s
 
 
@@ -415,7 +415,10 @@ class GerritPatch(GitRepoPatch):
 
   def __str__(self):
     """Returns custom string to identify this patch."""
-    return '%s:%s' % (self.owner, self.gerrit_number)
+    s = '%s:%s' % (self.owner, self.gerrit_number)
+    if self.sha1 is not None:
+      s = '%s:%s' % (s, self.sha1[:8])
+    return s
 
   # Define methods to use patches in sets.  We uniquely identify patches
   # by Gerrit change numbers.
