@@ -167,7 +167,7 @@ class CrosSMSWatcher : public CrosNetworkWatcher {
 void DoNothing(DBusMethodCallStatus call_status) {}
 
 // Callback used by OnRequestNetworkProperties.
-typedef base::Callback<void(const char* path,
+typedef base::Callback<void(const std::string& path,
                             const base::DictionaryValue* properties)
                        > OnRequestNetworkPropertiesCallback;
 
@@ -205,7 +205,7 @@ void OnNetworkPropertiesChanged(void* object,
 
 // A callback used to implement CrosRequest*Properties functions.
 void RunCallbackWithDictionaryValue(const NetworkPropertiesCallback& callback,
-                                    const char* path,
+                                    const std::string& path,
                                     DBusMethodCallStatus call_status,
                                     const base::DictionaryValue& value) {
   callback.Run(path, call_status == DBUS_METHOD_CALL_SUCCESS ? &value : NULL);
@@ -231,16 +231,18 @@ void SetLibcrosNetworkFunctionsEnabled(bool enabled) {
   g_libcros_network_functions_enabled = enabled;
 }
 
-bool CrosActivateCellularModem(const char* service_path, const char* carrier) {
-  return chromeos::ActivateCellularModem(service_path, carrier);
+bool CrosActivateCellularModem(const std::string& service_path,
+                               const std::string& carrier) {
+  return chromeos::ActivateCellularModem(service_path.c_str(), carrier.c_str());
 }
 
-void CrosSetNetworkServiceProperty(const char* service_path,
-                                   const char* property,
+void CrosSetNetworkServiceProperty(const std::string& service_path,
+                                   const std::string& property,
                                    const base::Value& value) {
   if (g_libcros_network_functions_enabled) {
     ScopedGValue gvalue(ConvertValueToGValue(value));
-    chromeos::SetNetworkServicePropertyGValue(service_path, property,
+    chromeos::SetNetworkServicePropertyGValue(service_path.c_str(),
+                                              property.c_str(),
                                               gvalue.get());
   } else {
     DBusThreadManager::Get()->GetFlimflamServiceClient()->SetProperty(
@@ -249,22 +251,24 @@ void CrosSetNetworkServiceProperty(const char* service_path,
   }
 }
 
-void CrosClearNetworkServiceProperty(const char* service_path,
-                                     const char* property) {
+void CrosClearNetworkServiceProperty(const std::string& service_path,
+                                     const std::string& property) {
   if (g_libcros_network_functions_enabled) {
-    chromeos::ClearNetworkServiceProperty(service_path, property);
+    chromeos::ClearNetworkServiceProperty(service_path.c_str(),
+                                          property.c_str());
   } else {
     DBusThreadManager::Get()->GetFlimflamServiceClient()->ClearProperty(
         dbus::ObjectPath(service_path), property, base::Bind(&DoNothing));
   }
 }
 
-void CrosSetNetworkDeviceProperty(const char* device_path,
-                                  const char* property,
+void CrosSetNetworkDeviceProperty(const std::string& device_path,
+                                  const std::string& property,
                                   const base::Value& value) {
   if (g_libcros_network_functions_enabled) {
     ScopedGValue gvalue(ConvertValueToGValue(value));
-    chromeos::SetNetworkDevicePropertyGValue(device_path, property,
+    chromeos::SetNetworkDevicePropertyGValue(device_path.c_str(),
+                                             property.c_str(),
                                              gvalue.get());
   } else {
     DBusThreadManager::Get()->GetFlimflamDeviceClient()->SetProperty(
@@ -272,12 +276,13 @@ void CrosSetNetworkDeviceProperty(const char* device_path,
   }
 }
 
-void CrosSetNetworkIPConfigProperty(const char* ipconfig_path,
-                                    const char* property,
+void CrosSetNetworkIPConfigProperty(const std::string& ipconfig_path,
+                                    const std::string& property,
                                     const base::Value& value) {
   if (g_libcros_network_functions_enabled) {
     ScopedGValue gvalue(ConvertValueToGValue(value));
-    chromeos::SetNetworkIPConfigPropertyGValue(ipconfig_path, property,
+    chromeos::SetNetworkIPConfigPropertyGValue(ipconfig_path.c_str(),
+                                               property.c_str(),
                                                gvalue.get());
   } else {
     DBusThreadManager::Get()->GetFlimflamIPConfigClient()->SetProperty(
@@ -286,30 +291,31 @@ void CrosSetNetworkIPConfigProperty(const char* ipconfig_path,
   }
 }
 
-void CrosSetNetworkManagerProperty(const char* property,
+void CrosSetNetworkManagerProperty(const std::string& property,
                                    const base::Value& value) {
   if (g_libcros_network_functions_enabled) {
     ScopedGValue gvalue(ConvertValueToGValue(value));
-    chromeos::SetNetworkManagerPropertyGValue(property, gvalue.get());
+    chromeos::SetNetworkManagerPropertyGValue(property.c_str(), gvalue.get());
   } else {
     DBusThreadManager::Get()->GetFlimflamManagerClient()->SetProperty(
         property, value, base::Bind(&DoNothing));
   }
 }
 
-void CrosDeleteServiceFromProfile(const char* profile_path,
-                                  const char* service_path) {
+void CrosDeleteServiceFromProfile(const std::string& profile_path,
+                                  const std::string& service_path) {
   if (g_libcros_network_functions_enabled) {
-    chromeos::DeleteServiceFromProfile(profile_path, service_path);
+    chromeos::DeleteServiceFromProfile(profile_path.c_str(),
+                                       service_path.c_str());
   } else {
     DBusThreadManager::Get()->GetFlimflamProfileClient()->DeleteEntry(
         dbus::ObjectPath(profile_path), service_path, base::Bind(&DoNothing));
   }
 }
 
-void CrosRequestCellularDataPlanUpdate(const char* modem_service_path) {
+void CrosRequestCellularDataPlanUpdate(const std::string& modem_service_path) {
   if (g_libcros_network_functions_enabled) {
-    chromeos::RequestCellularDataPlanUpdate(modem_service_path);
+    chromeos::RequestCellularDataPlanUpdate(modem_service_path.c_str());
   } else {
     DBusThreadManager::Get()->GetCashewClient()->RequestDataPlansUpdate(
         modem_service_path);
@@ -353,10 +359,11 @@ CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,
   return new CrosSMSWatcher(modem_device_path, callback, object);
 }
 
-void CrosRequestNetworkServiceConnect(const char* service_path,
+void CrosRequestNetworkServiceConnect(const std::string& service_path,
                                       NetworkActionCallback callback,
                                       void* object) {
-  chromeos::RequestNetworkServiceConnect(service_path, callback, object);
+  chromeos::RequestNetworkServiceConnect(service_path.c_str(), callback,
+                                         object);
 }
 
 void CrosRequestNetworkManagerProperties(
@@ -376,13 +383,13 @@ void CrosRequestNetworkManagerProperties(
 }
 
 void CrosRequestNetworkServiceProperties(
-    const char* service_path,
+    const std::string& service_path,
     const NetworkPropertiesCallback& callback) {
   if (g_libcros_network_functions_enabled) {
     // The newly allocated callback will be deleted in
     // OnRequestNetworkProperties.
     chromeos::RequestNetworkServiceProperties(
-        service_path,
+        service_path.c_str(),
         &OnRequestNetworkProperties,
         new OnRequestNetworkPropertiesCallback(callback));
   } else {
@@ -393,13 +400,13 @@ void CrosRequestNetworkServiceProperties(
 }
 
 void CrosRequestNetworkDeviceProperties(
-    const char* device_path,
+    const std::string& device_path,
     const NetworkPropertiesCallback& callback) {
   if (g_libcros_network_functions_enabled) {
     // The newly allocated callback will be deleted in
     // OnRequestNetworkProperties.
     chromeos::RequestNetworkDeviceProperties(
-        device_path,
+        device_path.c_str(),
         &OnRequestNetworkProperties,
         new OnRequestNetworkPropertiesCallback(callback));
   } else {
@@ -410,13 +417,13 @@ void CrosRequestNetworkDeviceProperties(
 }
 
 void CrosRequestNetworkProfileProperties(
-    const char* profile_path,
+    const std::string& profile_path,
     const NetworkPropertiesCallback& callback) {
   if (g_libcros_network_functions_enabled) {
     // The newly allocated callback will be deleted in
     // OnRequestNetworkProperties.
     chromeos::RequestNetworkProfileProperties(
-        profile_path,
+        profile_path.c_str(),
         &OnRequestNetworkProperties,
         new OnRequestNetworkPropertiesCallback(callback));
   } else {
@@ -427,15 +434,15 @@ void CrosRequestNetworkProfileProperties(
 }
 
 void CrosRequestNetworkProfileEntryProperties(
-    const char* profile_path,
-    const char* profile_entry_path,
+    const std::string& profile_path,
+    const std::string& profile_entry_path,
     const NetworkPropertiesCallback& callback) {
   if (g_libcros_network_functions_enabled) {
     // The newly allocated callback will be deleted in
     // OnRequestNetworkProperties.
     chromeos::RequestNetworkProfileEntryProperties(
-        profile_path,
-        profile_entry_path,
+        profile_path.c_str(),
+        profile_entry_path.c_str(),
         &OnRequestNetworkProperties,
         new OnRequestNetworkPropertiesCallback(callback));
   } else {
@@ -449,61 +456,62 @@ void CrosRequestNetworkProfileEntryProperties(
 }
 
 void CrosRequestHiddenWifiNetworkProperties(
-    const char* ssid,
-    const char* security,
+    const std::string& ssid,
+    const std::string& security,
     const NetworkPropertiesCallback& callback) {
   // The newly allocated callback will be deleted in OnRequestNetworkProperties.
   chromeos::RequestHiddenWifiNetworkProperties(
-      ssid,
-      security,
+      ssid.c_str(),
+      security.c_str(),
       &OnRequestNetworkProperties,
       new OnRequestNetworkPropertiesCallback(callback));
 }
 
 void CrosRequestVirtualNetworkProperties(
-    const char* service_name,
-    const char* server_hostname,
-    const char* provider_type,
+    const std::string& service_name,
+    const std::string& server_hostname,
+    const std::string& provider_type,
     const NetworkPropertiesCallback& callback) {
   // The newly allocated callback will be deleted in OnRequestNetworkProperties.
   chromeos::RequestVirtualNetworkProperties(
-      service_name,
-      server_hostname,
-      provider_type,
+      service_name.c_str(),
+      server_hostname.c_str(),
+      provider_type.c_str(),
       &OnRequestNetworkProperties,
       new OnRequestNetworkPropertiesCallback(callback));
 }
 
-void CrosRequestNetworkServiceDisconnect(const char* service_path) {
+void CrosRequestNetworkServiceDisconnect(const std::string& service_path) {
   if (g_libcros_network_functions_enabled) {
-    chromeos::RequestNetworkServiceDisconnect(service_path);
+    chromeos::RequestNetworkServiceDisconnect(service_path.c_str());
   } else {
     DBusThreadManager::Get()->GetFlimflamServiceClient()->Disconnect(
         dbus::ObjectPath(service_path), base::Bind(&DoNothing));
   }
 }
 
-void CrosRequestRemoveNetworkService(const char* service_path) {
+void CrosRequestRemoveNetworkService(const std::string& service_path) {
   if (g_libcros_network_functions_enabled) {
-    chromeos::RequestRemoveNetworkService(service_path);
+    chromeos::RequestRemoveNetworkService(service_path.c_str());
   } else {
     DBusThreadManager::Get()->GetFlimflamServiceClient()->Remove(
         dbus::ObjectPath(service_path), base::Bind(&DoNothing));
   }
 }
 
-void CrosRequestNetworkScan(const char* network_type) {
+void CrosRequestNetworkScan(const std::string& network_type) {
   if (g_libcros_network_functions_enabled) {
-    chromeos::RequestNetworkScan(network_type);
+    chromeos::RequestNetworkScan(network_type.c_str());
   } else {
     DBusThreadManager::Get()->GetFlimflamManagerClient()->RequestScan(
         network_type, base::Bind(&DoNothing));
   }
 }
 
-void CrosRequestNetworkDeviceEnable(const char* network_type, bool enable) {
+void CrosRequestNetworkDeviceEnable(const std::string& network_type,
+                                    bool enable) {
   if (g_libcros_network_functions_enabled) {
-    chromeos::RequestNetworkDeviceEnable(network_type, enable);
+    chromeos::RequestNetworkDeviceEnable(network_type.c_str(), enable);
   } else {
     if (enable) {
       DBusThreadManager::Get()->GetFlimflamManagerClient()->EnableTechnology(
@@ -515,58 +523,62 @@ void CrosRequestNetworkDeviceEnable(const char* network_type, bool enable) {
   }
 }
 
-void CrosRequestRequirePin(const char* device_path,
-                           const char* pin,
+void CrosRequestRequirePin(const std::string& device_path,
+                           const std::string& pin,
                            bool enable,
                            NetworkActionCallback callback,
                            void* object) {
-  chromeos::RequestRequirePin(device_path, pin, enable, callback, object);
+  chromeos::RequestRequirePin(device_path.c_str(), pin.c_str(), enable,
+                              callback, object);
 }
 
-void CrosRequestEnterPin(const char* device_path,
-                         const char* pin,
+void CrosRequestEnterPin(const std::string& device_path,
+                         const std::string& pin,
                          NetworkActionCallback callback,
                          void* object) {
-  chromeos::RequestEnterPin(device_path, pin, callback, object);
+  chromeos::RequestEnterPin(device_path.c_str(), pin.c_str(), callback, object);
 }
 
-void CrosRequestUnblockPin(const char* device_path,
-                           const char* unblock_code,
-                           const char* pin,
+void CrosRequestUnblockPin(const std::string& device_path,
+                           const std::string& unblock_code,
+                           const std::string& pin,
                            NetworkActionCallback callback,
                            void* object) {
-  chromeos::RequestUnblockPin(device_path, unblock_code, pin, callback, object);
+  chromeos::RequestUnblockPin(device_path.c_str(), unblock_code.c_str(),
+                              pin.c_str(), callback, object);
 }
 
-void CrosRequestChangePin(const char* device_path,
-                          const char* old_pin,
-                          const char* new_pin,
+void CrosRequestChangePin(const std::string& device_path,
+                          const std::string& old_pin,
+                          const std::string& new_pin,
                           NetworkActionCallback callback,
                           void* object) {
-  chromeos::RequestChangePin(device_path, old_pin, new_pin, callback, object);
+  chromeos::RequestChangePin(device_path.c_str(), old_pin.c_str(),
+                             new_pin.c_str(), callback, object);
 }
 
-void CrosProposeScan(const char* device_path) {
-  chromeos::ProposeScan(device_path);
+void CrosProposeScan(const std::string& device_path) {
+  chromeos::ProposeScan(device_path.c_str());
 }
 
-void CrosRequestCellularRegister(const char* device_path,
-                                 const char* network_id,
+void CrosRequestCellularRegister(const std::string& device_path,
+                                 const std::string& network_id,
                                  chromeos::NetworkActionCallback callback,
                                  void* object) {
-  chromeos::RequestCellularRegister(device_path, network_id, callback, object);
+  chromeos::RequestCellularRegister(device_path.c_str(), network_id.c_str(),
+                                    callback, object);
 }
 
 bool CrosSetOfflineMode(bool offline) {
   return chromeos::SetOfflineMode(offline);
 }
 
-IPConfigStatus* CrosListIPConfigs(const char* device_path) {
-  return chromeos::ListIPConfigs(device_path);
+IPConfigStatus* CrosListIPConfigs(const std::string& device_path) {
+  return chromeos::ListIPConfigs(device_path.c_str());
 }
 
-bool CrosAddIPConfig(const char* device_path, IPConfigType type) {
-  return chromeos::AddIPConfig(device_path, type);
+bool CrosAddIPConfig(const std::string& device_path, IPConfigType type) {
+  return chromeos::AddIPConfig(device_path.c_str(), type);
 }
 
 bool CrosRemoveIPConfig(IPConfig* config) {

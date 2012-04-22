@@ -25,7 +25,7 @@ namespace chromeos {
 
 // Callback for asynchronous getters.
 typedef base::Callback<void(
-    const char* path,
+    const std::string& path,
     const base::DictionaryValue* properties)> NetworkPropertiesCallback;
 
 // Callback for network properties watchers.
@@ -51,43 +51,44 @@ void SetLibcrosNetworkFunctionsEnabled(bool enabled);
 // |carrier| is NULL or an empty string, this will activate with the currently
 // active carrier.
 // Returns false on failure and true on success.
-bool CrosActivateCellularModem(const char* service_path, const char* carrier);
+bool CrosActivateCellularModem(const std::string& service_path,
+                               const std::string& carrier);
 
 
 // Sets a property of a service to the provided value.
 // Success is indicated by the receipt of a matching PropertyChanged signal.
-void CrosSetNetworkServiceProperty(const char* service_path,
-                                   const char* property,
+void CrosSetNetworkServiceProperty(const std::string& service_path,
+                                   const std::string& property,
                                    const base::Value& value);
 
 // Clears a property of a service.
-void CrosClearNetworkServiceProperty(const char* service_path,
-                                     const char* property);
+void CrosClearNetworkServiceProperty(const std::string& service_path,
+                                     const std::string& property);
 
 // Sets a property of a device to the provided value.
 // Success is indicated by the receipt of a matching PropertyChanged signal.
-void CrosSetNetworkDeviceProperty(const char* device_path,
-                                  const char* property,
+void CrosSetNetworkDeviceProperty(const std::string& device_path,
+                                  const std::string& property,
                                   const base::Value& value);
 
 // Sets a property of an ip config to the provided value.
 // Success is indicated by the receipt of a matching PropertyChanged signal.
-void CrosSetNetworkIPConfigProperty(const char* ipconfig_path,
-                                    const char* property,
+void CrosSetNetworkIPConfigProperty(const std::string& ipconfig_path,
+                                    const std::string& property,
                                     const base::Value& value);
 
 // Sets a property of a manager to the provided value.
 // Success is indicated by the receipt of a matching PropertyChanged signal.
-void CrosSetNetworkManagerProperty(const char* property,
+void CrosSetNetworkManagerProperty(const std::string& property,
                                    const base::Value& value);
 
 // Deletes a remembered service from a profile.
-void CrosDeleteServiceFromProfile(const char* profile_path,
-                                  const char* service_path);
+void CrosDeleteServiceFromProfile(const std::string& profile_path,
+                                  const std::string& service_path);
 
 // Requests an update of the data plans. A callback will be received by any
 // object that invoked MonitorCellularDataPlan when up to date data is ready.
-void CrosRequestCellularDataPlanUpdate(const char* modem_service_path);
+void CrosRequestCellularDataPlanUpdate(const std::string& modem_service_path);
 
 // Sets up monitoring of the PropertyChanged signal on the flimflam manager.
 // The provided |callback| will be called whenever a manager property changes.
@@ -119,7 +120,7 @@ CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,
 // the connection process has started. You will have to query the
 // connection state to determine if the connection was established
 // successfully.
-void CrosRequestNetworkServiceConnect(const char* service_path,
+void CrosRequestNetworkServiceConnect(const std::string& service_path,
                                       NetworkActionCallback callback,
                                       void* object);
 
@@ -129,89 +130,90 @@ void CrosRequestNetworkManagerProperties(
 
 // Retrieves the latest info for a service.
 void CrosRequestNetworkServiceProperties(
-    const char* service_path,
+    const std::string& service_path,
     const NetworkPropertiesCallback& callback);
 
 // Retrieves the latest info for a particular device.
 void CrosRequestNetworkDeviceProperties(
-    const char* device_path,
+    const std::string& device_path,
     const NetworkPropertiesCallback& callback);
 
 // Retrieves the list of remembered services for a profile.
 void CrosRequestNetworkProfileProperties(
-    const char* profile_path,
+    const std::string& profile_path,
     const NetworkPropertiesCallback& callback);
 
 // Retrieves the latest info for a profile service entry.
 void CrosRequestNetworkProfileEntryProperties(
-    const char* profile_path,
-    const char* profile_entry_path,
+    const std::string& profile_path,
+    const std::string& profile_entry_path,
     const NetworkPropertiesCallback& callback);
 
 // Requests a wifi service not in the network list (i.e. hidden).
 void CrosRequestHiddenWifiNetworkProperties(
-    const char* ssid,
-    const char* security,
+    const std::string& ssid,
+    const std::string& security,
     const NetworkPropertiesCallback& callback);
 
 // Requests a new VPN service.
 void CrosRequestVirtualNetworkProperties(
-    const char* service_name,
-    const char* server_hostname,
-    const char* provider_type,
+    const std::string& service_name,
+    const std::string& server_hostname,
+    const std::string& provider_type,
     const NetworkPropertiesCallback& callback);
 
 // Disconnects from network service asynchronously.
-void CrosRequestNetworkServiceDisconnect(const char* service_path);
+void CrosRequestNetworkServiceDisconnect(const std::string& service_path);
 
 // Removes an exisiting network service (e.g. after forgetting a VPN).
-void CrosRequestRemoveNetworkService(const char* service_path);
+void CrosRequestRemoveNetworkService(const std::string& service_path);
 
 // Requests a scan of services of |type|.
 // |type| should be is a string recognized by flimflam's Manager API.
-void CrosRequestNetworkScan(const char* network_type);
+void CrosRequestNetworkScan(const std::string& network_type);
 
 // Requests enabling or disabling a device.
-void CrosRequestNetworkDeviceEnable(const char* network_type, bool enable);
+void CrosRequestNetworkDeviceEnable(const std::string& network_type,
+                                    bool enable);
 
 // Enables or disables PIN protection for a SIM card.
-void CrosRequestRequirePin(const char* device_path,
-                           const char* pin,
+void CrosRequestRequirePin(const std::string& device_path,
+                           const std::string& pin,
                            bool enable,
                            NetworkActionCallback callback,
                            void* object);
 
 // Enters a PIN to unlock a SIM card.
-void CrosRequestEnterPin(const char* device_path,
-                         const char* pin,
+void CrosRequestEnterPin(const std::string& device_path,
+                         const std::string& pin,
                          NetworkActionCallback callback,
                          void* object);
 
 // Enters a PUK to unlock a SIM card whose PIN has been entered
 // incorrectly too many times. A new |pin| must be supplied
 // along with the |unblock_code| (PUK).
-void CrosRequestUnblockPin(const char* device_path,
-                           const char* unblock_code,
-                           const char* pin,
+void CrosRequestUnblockPin(const std::string& device_path,
+                           const std::string& unblock_code,
+                           const std::string& pin,
                            NetworkActionCallback callback,
                            void* object);
 
 // Changes the PIN used to unlock a SIM card.
-void CrosRequestChangePin(const char* device_path,
-                          const char* old_pin,
-                          const char* new_pin,
+void CrosRequestChangePin(const std::string& device_path,
+                          const std::string& old_pin,
+                          const std::string& new_pin,
                           NetworkActionCallback callback,
                           void* object);
 
 // Proposes to trigger a scan transaction. For cellular networks scan result
 // is set in the property Cellular.FoundNetworks.
-void CrosProposeScan(const char* device_path);
+void CrosProposeScan(const std::string& device_path);
 
 // Initiates registration on the network specified by network_id, which is in
 // the form MCCMNC. If the network ID is the empty string, then switch back to
 // automatic registration mode before initiating registration.
-void CrosRequestCellularRegister(const char* device_path,
-                                 const char* network_id,
+void CrosRequestCellularRegister(const std::string& device_path,
+                                 const std::string& network_id,
                                  NetworkActionCallback callback,
                                  void* object);
 
@@ -221,10 +223,10 @@ void CrosRequestCellularRegister(const char* device_path,
 bool CrosSetOfflineMode(bool offline);
 
 // Gets a list of all the IPConfigs using a given device path
-IPConfigStatus* CrosListIPConfigs(const char* device_path);
+IPConfigStatus* CrosListIPConfigs(const std::string& device_path);
 
 // Adds a IPConfig of the given type to the device
-bool CrosAddIPConfig(const char* device_path, IPConfigType type);
+bool CrosAddIPConfig(const std::string& device_path, IPConfigType type);
 
 // Removes an existing IP Config
 bool CrosRemoveIPConfig(IPConfig* config);

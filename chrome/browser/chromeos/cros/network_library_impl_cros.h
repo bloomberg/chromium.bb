@@ -109,11 +109,11 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
   static void WifiServiceUpdateAndConnect(
       void* object,
-      const char* service_path,
+      const std::string& service_path,
       const base::DictionaryValue* properties);
   static void VPNServiceUpdateAndConnect(
       void* object,
-      const char* service_path,
+      const std::string& service_path,
       const base::DictionaryValue* properties);
 
   static void NetworkManagerStatusChangedHandler(void* object,
@@ -121,7 +121,7 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
                                                  const std::string& key,
                                                  const base::Value& value);
   static void NetworkManagerUpdate(void* object,
-                                   const char* manager_path,
+                                   const std::string& manager_path,
                                    const base::DictionaryValue* properties);
 
   static void DataPlanUpdateHandler(
@@ -130,17 +130,17 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
       const chromeos::CellularDataPlanList* data_plan_list);
 
   static void NetworkServiceUpdate(void* object,
-                                   const char* service_path,
+                                   const std::string& service_path,
                                    const base::DictionaryValue* properties);
   static void RememberedNetworkServiceUpdate(
       void* object,
-      const char* service_path,
+      const std::string& service_path,
       const base::DictionaryValue* properties);
   static void ProfileUpdate(void* object,
-                            const char* profile_path,
+                            const std::string& profile_path,
                             const base::DictionaryValue* properties);
   static void NetworkDeviceUpdate(void* object,
-                                  const char* device_path,
+                                  const std::string& device_path,
                                   const base::DictionaryValue* properties);
 
  private:
@@ -160,7 +160,7 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
   void UpdateRememberedNetworks(const ListValue* profiles);
   void RequestRememberedNetworksUpdate();
-  void UpdateRememberedServiceList(const char* profile_path,
+  void UpdateRememberedServiceList(const std::string& profile_path,
                                    const ListValue* profile_entries);
   Network* ParseRememberedNetwork(const std::string& service_path,
                                   const DictionaryValue& info);
