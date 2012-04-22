@@ -422,6 +422,9 @@ wl_closure_vmarshal(struct wl_closure *closure,
 	end = &closure->buffer[ARRAY_LENGTH(closure->buffer)];
 	p = &start[2];
 
+	closure->types[0] = &ffi_type_pointer;
+	closure->types[1] = &ffi_type_pointer;
+
 	for (i = 2; i < count; i++) {
 		switch (message->signature[i - 2]) {
 		case 'u':
@@ -537,6 +540,9 @@ wl_closure_vmarshal(struct wl_closure *closure,
 	closure->start = start;
 	closure->message = message;
 	closure->count = count;
+
+	ffi_prep_cif(&closure->cif, FFI_DEFAULT_ABI,
+		     closure->count, &ffi_type_void, closure->types);
 
 	return 0;
 
@@ -723,6 +729,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 	}
 
 	closure->count = i;
+
 	ffi_prep_cif(&closure->cif, FFI_DEFAULT_ABI,
 		     closure->count, &ffi_type_void, closure->types);
 
