@@ -496,9 +496,7 @@ paladin.add_config('amd64-generic-paladin',
   paladin_builder_name='amd64 generic paladin',
 )
 
-# TODO(davidjames): Convert this to an external config once the unified master
-# logic is ready.
-chromium_pfq = internal.derive(
+chromium_pfq = _config(
   build_type=constants.CHROME_PFQ_TYPE,
   important=True,
   chrome_tests=True,
@@ -507,7 +505,11 @@ chromium_pfq = internal.derive(
   manifest_version=True,
 )
 
-chromium_pfq.add_config('x86-generic-chromium-pfq',
+# TODO(davidjames): Convert this to an external config once the unified master
+# logic is ready.
+internal_chromium_pfq = internal.derive(chromium_pfq)
+
+internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
   boards=['x86-generic'],
   master=True,
   push_overlays=constants.PUBLIC_OVERLAYS,
@@ -515,13 +517,13 @@ chromium_pfq.add_config('x86-generic-chromium-pfq',
   chrome_tests=False, # TODO(build-team): Use chrome tests
 )
 
-chromium_pfq.add_config('tegra2-chromium-pfq',
+internal_chromium_pfq.add_config('tegra2-chromium-pfq',
   arm,
   boards=['tegra2'],
   chrome_rev=constants.CHROME_REV_LATEST,
 )
 
-chromium_pfq.add_config('amd64-generic-chromium-pfq',
+internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
   amd64,
   boards=['amd64-generic'],
   chrome_rev=constants.CHROME_REV_LATEST,
