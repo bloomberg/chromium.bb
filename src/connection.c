@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sys/uio.h>
-#include <ffi.h>
 #include <assert.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -47,16 +46,6 @@ struct wl_buffer {
 };
 
 #define MASK(i) ((i) & 4095)
-
-struct wl_closure {
-	int count;
-	const struct wl_message *message;
-	ffi_type *types[20];
-	ffi_cif cif;
-	void *args[20];
-	uint32_t buffer[256];
-	uint32_t *start;
-};
 
 #define MAX_FDS_OUT	28
 #define CLEN		(CMSG_LEN(MAX_FDS_OUT * sizeof(int32_t)))
@@ -412,13 +401,12 @@ wl_connection_put_fd(struct wl_connection *connection, int32_t fd)
 	return 0;
 }
 
-struct wl_closure *
-wl_connection_vmarshal(struct wl_connection *connection,
-		       struct wl_object *sender,
-		       uint32_t opcode, va_list ap,
-		       const struct wl_message *message)
+int
+wl_closure_vmarshal(struct wl_closure *closure,
+		    struct wl_object *sender,
+		    uint32_t opcode, va_list ap,
+		    const struct wl_message *message)
 {
-	struct wl_closure *closure = &connection->send_closure;
 	struct wl_object **objectp, *object;
 	uint32_t length, *p, *start, size, *end;
 	int dup_fd;
@@ -550,17 +538,18 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	closure->message = message;
 	closure->count = count;
 
-	return closure;
+	return 0;
 
 err:
 	printf("request too big to marshal, maximum size is %zu\n",
 	       sizeof closure->buffer);
 	errno = ENOMEM;
-	return NULL;
+	return -1;
 }
 
-struct wl_closure *
+int
 wl_connection_demarshal(struct wl_connection *connection,
+			struct wl_closure *closure,
 			uint32_t size,
 			struct wl_map *objects,
 			const struct wl_message *message)
@@ -571,14 +560,13 @@ wl_connection_demarshal(struct wl_connection *connection,
 	unsigned int i, count, extra_space;
 	struct wl_object **object;
 	struct wl_array **array;
-	struct wl_closure *closure = &connection->receive_closure;
 
 	count = strlen(message->signature) + 2;
 	if (count > ARRAY_LENGTH(closure->types)) {
 		printf("too many args (%d)\n", count);
 		errno = EINVAL;
 		wl_connection_consume(connection, size);
-		return NULL;
+		return -1;
 	}
 
 	extra_space = wl_message_size_extra(message);
@@ -587,7 +575,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 		       sizeof closure->buffer, size + extra_space);
 		errno = ENOMEM;
 		wl_connection_consume(connection, size);
-		return NULL;
+		return -1;
 	}
 
 	closure->message = message;
@@ -740,14 +728,14 @@ wl_connection_demarshal(struct wl_connection *connection,
 
 	wl_connection_consume(connection, size);
 
-	return closure;
+	return 0;
 
  err:
 	closure->count = i;
 	wl_closure_destroy(closure);
 	wl_connection_consume(connection, size);
 
-	return NULL;
+	return -1;
 }
 
 void

@@ -25,6 +25,7 @@
 #define WAYLAND_PRIVATE_H
 
 #include <stdarg.h>
+#include <ffi.h>
 #include "wayland-util.h"
 
 #define WL_ZOMBIE_OBJECT ((void *) 2)
@@ -69,17 +70,29 @@ int wl_connection_write(struct wl_connection *connection, const void *data, size
 int wl_connection_queue(struct wl_connection *connection,
 			const void *data, size_t count);
 
-struct wl_closure *
-wl_connection_vmarshal(struct wl_connection *connection,
-		       struct wl_object *sender,
-		       uint32_t opcode, va_list ap,
-		       const struct wl_message *message);
+struct wl_closure {
+	int count;
+	const struct wl_message *message;
+	ffi_type *types[20];
+	ffi_cif cif;
+	void *args[20];
+	uint32_t buffer[256];
+	uint32_t *start;
+};
 
-struct wl_closure *
+int
+wl_closure_vmarshal(struct wl_closure *closure,
+		    struct wl_object *sender,
+		    uint32_t opcode, va_list ap,
+		    const struct wl_message *message);
+
+int
 wl_connection_demarshal(struct wl_connection *connection,
+			struct wl_closure *closure,
 			uint32_t size,
 			struct wl_map *objects,
 			const struct wl_message *message);
+
 void
 wl_closure_invoke(struct wl_closure *closure,
 		  struct wl_object *target, void (*func)(void), void *data);
