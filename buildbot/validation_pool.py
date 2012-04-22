@@ -10,7 +10,6 @@ ready for the commit queue to try.
 
 import json
 import logging
-import os
 import time
 import urllib
 from xml.dom import minidom
@@ -347,8 +346,7 @@ class ValidationPool(object):
     # First we filter to only Chromium OS repositories.
     changes = [c for c in changes if IsCrosReview(c)]
 
-    manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
-    handler = cros_build_lib.ManifestHandler.ParseManifest(manifest_path)
+    handler = cros_build_lib.ParseFullManifest(buildroot)
     projects = handler.projects
 
     changes_in_manifest = []

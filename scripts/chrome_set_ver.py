@@ -8,7 +8,6 @@
 import optparse
 import os
 import re
-import sys
 
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
@@ -147,12 +146,9 @@ class Project(object):
 
   def _PrepareProject(self):
     """Make sure the project is synced properly and is ready for pinning."""
-    repo_config_dir = os.path.join(self.repo_root, '.repo')
-    handler = cros_lib.ManifestHandler.ParseManifest(
-        os.path.join(repo_config_dir, 'manifests/full.xml'))
-    path_to_project_dict = dict(
-        ([attrs['path'], project])
-        for project, attrs in handler.projects.iteritems())
+    handler = cros_lib.ParseFullManifest(self.repo_root)
+    path_to_project_dict = dict(([attrs['path'], project]) for project, attrs
+                                in handler.projects.iteritems())
 
     # TODO(rcui): Handle case where a dependency never makes it to the manifest
     # (i.e., dep path added as double checkout, and then gets deleted). We need

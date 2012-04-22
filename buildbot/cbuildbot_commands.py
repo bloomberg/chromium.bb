@@ -107,16 +107,9 @@ def BuildRootGitCleanup(buildroot):
             print '@@@STEP_WARNINGS@@@'
             return
 
-  # Build list of directories to cleanup.
-  result = cros_lib.RunCommandCaptureOutput(['repo', 'list'], print_cmd=False,
-                                            cwd=buildroot)
-  dirs = []
-  for line in result.output.splitlines():
-    subdir, _ = line.split(' ', 1)
-    cwd = os.path.join(buildroot, subdir)
-    dirs.append([cwd])
-
   # Cleanup all of the directories.
+  dirs = [[os.path.join(buildroot, attrs['path'])] for attrs in
+          cros_lib.ParseFullManifest(buildroot).projects.values()]
   background.RunTasksInProcessPool(RunCleanupCommands, dirs)
 
 

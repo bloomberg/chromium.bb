@@ -643,8 +643,7 @@ def FindRepoCheckoutRoot(path=None):
 def IsProjectInternal(cwd, project):
   """Checks if project is internal."""
   build_root = FindRepoCheckoutRoot(cwd)
-  manifest_path = os.path.join(build_root, '.repo', 'manifests/full.xml')
-  handler = ManifestHandler.ParseManifest(manifest_path)
+  handler = ParseFullManifest(build_root)
   remote = handler.GetAttributeForProject(project, 'remote')
   if not remote:
     raise Exception('Project %s has no remotes specified in manifest!'
@@ -664,8 +663,7 @@ def DoesProjectExist(cwd, project):
     project: the name of the project
   """
   build_root = FindRepoCheckoutRoot(cwd)
-  manifest_path = os.path.join(build_root, '.repo', 'manifests/full.xml')
-  handler = ManifestHandler.ParseManifest(manifest_path)
+  handler = ParseFullManifest(build_root)
   return project in handler.projects
 
 
@@ -677,8 +675,7 @@ def GetProjectDir(cwd, project):
     project: the name of the project to get the path for.
   """
   build_root = FindRepoCheckoutRoot(cwd)
-  manifest_path = os.path.join(build_root, '.repo', 'manifests/full.xml')
-  handler = ManifestHandler.ParseManifest(manifest_path)
+  handler = ParseFullManifest(build_root)
   return os.path.join(build_root, handler.projects[project]['path'])
 
 
@@ -801,6 +798,19 @@ class ManifestHandler(xml.sax.handler.ContentHandler):
     return self.projects[project].get(attribute, self.default.get(attribute))
 
 
+def ParseFullManifest(buildroot):
+  """Parse the full manifest for the specified buildroot.
+
+  Args:
+    buildroot: The root directory of the repo-managed checkout.
+
+  Returns:
+    A ManifestHandler object, pointing at the full manifest.
+  """
+  manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
+  return ManifestHandler.ParseManifest(manifest_path)
+
+
 def GetProjectManifestBranch(buildroot, project):
   """Return the branch specified in the manifest for a project.
 
@@ -812,10 +822,7 @@ def GetProjectManifestBranch(buildroot, project):
     A tuple of the remote and ref name specified in the manifest - i.e.,
     ('cros', 'refs/heads/master').
   """
-  # We can't use .repo/manifest.xml since it may be overwritten by sync stage
-  manifest_path = os.path.join(buildroot, '.repo', 'manifests/full.xml')
-  handler = ManifestHandler.ParseManifest(manifest_path)
-
+  handler = ParseFullManifest(buildroot)
   return tuple(handler.GetAttributeForProject(project, key)
                for key in ['remote', 'revision'])
 
