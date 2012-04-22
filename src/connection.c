@@ -533,11 +533,6 @@ wl_connection_vmarshal(struct wl_connection *connection,
 				abort();
 			}
 			*fd_ptr = dup_fd;
-			if (wl_connection_put_fd(connection, dup_fd)) {
-				printf("request could not be mashaled: "
-				       "can't send file descriptor");
-				return NULL;
-			}
 			break;
 		default:
 			fprintf(stderr, "unhandled format code: '%c'\n",
@@ -767,10 +762,37 @@ wl_closure_invoke(struct wl_closure *closure,
 	ffi_call(&closure->cif, func, &result, closure->args);
 }
 
+static int
+copy_fds_to_connection(struct wl_closure *closure,
+		       struct wl_connection *connection)
+{
+	const struct wl_message *message = closure->message;
+	uint32_t i, count;
+	int *fd;
+
+	count = strlen(message->signature) + 2;
+	for (i = 2; i < count; i++) {
+		if (message->signature[i - 2] != 'h')
+			continue;
+
+		fd = closure->args[i];
+		if (wl_connection_put_fd(connection, *fd)) {
+			fprintf(stderr, "request could not be marshaled: "
+				"can't send file descriptor");
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 int
 wl_closure_send(struct wl_closure *closure, struct wl_connection *connection)
 {
 	uint32_t size;
+
+	if (copy_fds_to_connection(closure, connection))
+		return -1;
 
 	size = closure->start[1] >> 16;
 
@@ -781,6 +803,9 @@ int
 wl_closure_queue(struct wl_closure *closure, struct wl_connection *connection)
 {
 	uint32_t size;
+
+	if (copy_fds_to_connection(closure, connection))
+		return -1;
 
 	size = closure->start[1] >> 16;
 
