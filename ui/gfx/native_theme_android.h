@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,101 +6,33 @@
 #define UI_GFX_NATIVE_THEME_ANDROID_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "skia/ext/platform_canvas.h"
+#include "ui/gfx/native_theme.h"
 
 namespace gfx {
 class Rect;
 class Size;
 
 // Android theming API.
-class NativeThemeAndroid {
+class NativeThemeAndroid : public NativeTheme {
  public:
-  // The part to be painted / sized.
-  enum Part {
-    SCROLLBAR_DOWN_ARROW,
-    SCROLLBAR_LEFT_ARROW,
-    SCROLLBAR_RIGHT_ARROW,
-    SCROLLBAR_UP_ARROW,
-    CHECKBOX,
-    RADIO,
-    PUSH_BUTTON,
-    TEXTFIELD,
-    MENU_LIST,
-    SLIDER_TRACK,
-    SLIDER_THUMB,
-    INNER_SPIN_BUTTON,
-    PROGRESS_BAR,
-  };
-
-  // The state of the part.
-  enum State {
-    DISABLED,
-    HOVERED,
-    NORMAL,
-    PRESSED,
-  };
-
-  struct ButtonExtraParams {
-    bool checked;
-    bool indeterminate;  // Whether the button state is indeterminate.
-    bool is_default;     // Whether the button is default button.
-    bool has_border;
-    SkColor background_color;
-  };
-
-  struct TextFieldExtraParams {
-    bool is_text_area;
-    bool is_listbox;
-    SkColor background_color;
-  };
-
-  struct MenuListExtraParams {
-    bool has_border;
-    bool has_border_radius;
-    int arrow_x;
-    int arrow_y;
-    SkColor background_color;
-  };
-
-  struct SliderExtraParams {
-    bool vertical;
-    bool in_drag;
-  };
-
-  struct InnerSpinButtonExtraParams {
-    bool spin_up;
-    bool read_only;
-  };
-
-  struct ProgressBarExtraParams {
-    bool determinate;
-    int value_rect_x;
-    int value_rect_y;
-    int value_rect_width;
-    int value_rect_height;
-  };
-
-  union ExtraParams {
-    ButtonExtraParams button;
-    MenuListExtraParams menu_list;
-    SliderExtraParams slider;
-    TextFieldExtraParams text_field;
-    InnerSpinButtonExtraParams inner_spin;
-    ProgressBarExtraParams progress_bar;
-  };
-
   // Gets our singleton instance.
-  static NativeThemeAndroid* instance();
+  static const NativeThemeAndroid* instance();
 
   // Return the size of the part.
-  gfx::Size GetPartSize(Part part) const;
+  virtual Size GetPartSize(Part part,
+                           State state,
+                           const ExtraParams& extra) const OVERRIDE;
 
   // Paint the part to the canvas.
-  void Paint(SkCanvas* canvas,
-             Part part,
-             State state,
-             const gfx::Rect& rect,
-             const ExtraParams& extra);
+  virtual void Paint(SkCanvas* canvas,
+                     Part part,
+                     State state,
+                     const gfx::Rect& rect,
+                     const ExtraParams& extra) const OVERRIDE;
+
+  virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
 
  private:
   NativeThemeAndroid();
@@ -110,63 +42,63 @@ class NativeThemeAndroid {
   void PaintArrowButton(SkCanvas* gc,
                         const gfx::Rect& rect,
                         Part direction,
-                        State state);
+                        State state) const;
 
   // Draw the checkbox.
   void PaintCheckbox(SkCanvas* canvas,
                      State state,
                      const gfx::Rect& rect,
-                     const ButtonExtraParams& button);
+                     const ButtonExtraParams& button) const;
 
   // Draw the radio.
   void PaintRadio(SkCanvas* canvas,
                   State state,
                   const gfx::Rect& rect,
-                  const ButtonExtraParams& button);
+                  const ButtonExtraParams& button) const;
 
   // Draw the push button.
   void PaintButton(SkCanvas* canvas,
                    State state,
                    const gfx::Rect& rect,
-                   const ButtonExtraParams& button);
+                   const ButtonExtraParams& button) const;
 
   // Draw the text field.
   void PaintTextField(SkCanvas* canvas,
                       State state,
                       const gfx::Rect& rect,
-                      const TextFieldExtraParams& text);
+                      const TextFieldExtraParams& text) const;
 
   // Draw the menu list.
   void PaintMenuList(SkCanvas* canvas,
                      State state,
                      const gfx::Rect& rect,
-                     const MenuListExtraParams& menu_list);
+                     const MenuListExtraParams& menu_list) const;
 
   // Draw the slider track.
   void PaintSliderTrack(SkCanvas* canvas,
                         State state,
                         const gfx::Rect& rect,
-                        const SliderExtraParams& slider);
+                        const SliderExtraParams& slider) const;
 
   // Draw the slider thumb.
   void PaintSliderThumb(SkCanvas* canvas,
                         State state,
                         const gfx::Rect& rect,
-                        const SliderExtraParams& slider);
+                        const SliderExtraParams& slider) const;
 
   // Draw the inner spin button.
   void PaintInnerSpinButton(
       SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const InnerSpinButtonExtraParams& spin_button);
+      const InnerSpinButtonExtraParams& spin_button) const;
 
   // Draw the progress bar.
   void PaintProgressBar(
       SkCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const ProgressBarExtraParams& progress_bar);
+      const ProgressBarExtraParams& progress_bar) const;
 
   // Return true if there is intersection between the |canvas| and the given
   // rectangle.
@@ -174,7 +106,7 @@ class NativeThemeAndroid {
                              int x,
                              int y,
                              int w,
-                             int h);
+                             int h) const;
 
   // Draw the dest rectangle with the given bitmap which might be scaled if its
   // size is not same as target rectangle.
@@ -187,7 +119,7 @@ class NativeThemeAndroid {
                      int dest_x,
                      int dest_y,
                      int dest_w,
-                     int dest_h);
+                     int dest_h) const;
 
   // Draw the target rectangle with the |bitmap| accroding the given
   // |tile_scale_x| and |tile_scale_y|

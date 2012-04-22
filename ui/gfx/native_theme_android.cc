@@ -52,33 +52,42 @@ static SkColor BrightenColor(const color_utils::HSL& hsl,
 }
 
 // static
-NativeThemeAndroid* NativeThemeAndroid::instance() {
+const NativeTheme* NativeTheme::instance() {
+  return NativeThemeAndroid::instance();
+}
+
+// static
+const NativeThemeAndroid* NativeThemeAndroid::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeAndroid, s_native_theme, ());
   return &s_native_theme;
 }
 
-gfx::Size NativeThemeAndroid::GetPartSize(Part part) const {
+gfx::Size NativeThemeAndroid::GetPartSize(Part part,
+                                          State state,
+                                          const ExtraParams& extra) const {
   switch (part) {
-    case SCROLLBAR_DOWN_ARROW:
-    case SCROLLBAR_UP_ARROW:
+    case kScrollbarDownArrow:
+    case kScrollbarUpArrow:
       return gfx::Size(kScrollbarWidth, kButtonLength);
-    case SCROLLBAR_LEFT_ARROW:
-    case SCROLLBAR_RIGHT_ARROW:
+    case kScrollbarLeftArrow:
+    case kScrollbarRightArrow:
       return gfx::Size(kButtonLength, kScrollbarWidth);
-    case CHECKBOX:
-    case RADIO:
+    case kCheckbox:
+    case kRadio:
       return gfx::Size(kCheckboxAndRadioWidth, kCheckboxAndRadioHeight);
-    case SLIDER_THUMB:
+    case kSliderThumb:
       // These sizes match the sizes in Chromium Win.
       return gfx::Size(kSliderThumbWidth, kSliderThumbHeight);
-    case INNER_SPIN_BUTTON:
+    case kInnerSpinButton:
       return gfx::Size(kScrollbarWidth, 0);
-    case PUSH_BUTTON:
-    case TEXTFIELD:
-    case MENU_LIST:
-    case SLIDER_TRACK:
-    case PROGRESS_BAR:
+    case kPushButton:
+    case kTextField:
+    case kMenuList:
+    case kSliderTrack:
+    case kProgressBar:
       return gfx::Size();  // No default size.
+    default:
+      NOTREACHED();
   }
   return gfx::Size();
 }
@@ -87,44 +96,49 @@ void NativeThemeAndroid::Paint(SkCanvas* canvas,
                                Part part,
                                State state,
                                const gfx::Rect& rect,
-                               const ExtraParams& extra) {
+                               const ExtraParams& extra) const {
   switch (part) {
-    case SCROLLBAR_DOWN_ARROW:
-    case SCROLLBAR_UP_ARROW:
-    case SCROLLBAR_LEFT_ARROW:
-    case SCROLLBAR_RIGHT_ARROW:
+    case kScrollbarDownArrow:
+    case kScrollbarUpArrow:
+    case kScrollbarLeftArrow:
+    case kScrollbarRightArrow:
       PaintArrowButton(canvas, rect, part, state);
       break;
-    case CHECKBOX:
+    case kCheckbox:
       PaintCheckbox(canvas, state, rect, extra.button);
       break;
-    case RADIO:
+    case kRadio:
       PaintRadio(canvas, state, rect, extra.button);
       break;
-    case PUSH_BUTTON:
+    case kPushButton:
       PaintButton(canvas, state, rect, extra.button);
       break;
-    case TEXTFIELD:
+    case kTextField:
       PaintTextField(canvas, state, rect, extra.text_field);
       break;
-    case MENU_LIST:
+    case kMenuList:
       PaintMenuList(canvas, state, rect, extra.menu_list);
       break;
-    case SLIDER_TRACK:
+    case kSliderTrack:
       PaintSliderTrack(canvas, state, rect, extra.slider);
       break;
-    case SLIDER_THUMB:
+    case kSliderThumb:
       PaintSliderThumb(canvas, state, rect, extra.slider);
       break;
-    case INNER_SPIN_BUTTON:
+    case kInnerSpinButton:
       PaintInnerSpinButton(canvas, state, rect, extra.inner_spin);
       break;
-    case PROGRESS_BAR:
+    case kProgressBar:
       PaintProgressBar(canvas, state, rect, extra.progress_bar);
       break;
     default:
       NOTREACHED();
   }
+}
+
+SkColor NativeThemeAndroid::GetSystemColor(ColorId color_id) const {
+  NOTIMPLEMENTED();
+  return SK_ColorBLACK;
 }
 
 NativeThemeAndroid::NativeThemeAndroid() {
@@ -136,11 +150,11 @@ NativeThemeAndroid::~NativeThemeAndroid() {
 void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
                                           const gfx::Rect& rect,
                                           Part direction,
-                                          State state) {
+                                          State state) const {
   int widthMiddle;
   int lengthMiddle;
   SkPaint paint;
-  if (direction == SCROLLBAR_UP_ARROW || direction == SCROLLBAR_DOWN_ARROW) {
+  if (direction == kScrollbarUpArrow || direction == kScrollbarDownArrow) {
     widthMiddle = rect.width() / 2 + 1;
     lengthMiddle = rect.height() / 2 + 1;
   } else {
@@ -153,11 +167,11 @@ void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
   SkColorToHSV(kTrackColor, trackHSV);
   SkColor buttonColor = SaturateAndBrighten(trackHSV, 0, 0.2);
   SkColor backgroundColor = buttonColor;
-  if (state == PRESSED) {
+  if (state == kPressed) {
     SkScalar buttonHSV[3];
     SkColorToHSV(buttonColor, buttonHSV);
     buttonColor = SaturateAndBrighten(buttonHSV, 0, -0.1);
-  } else if (state == HOVERED) {
+  } else if (state == kHovered) {
     SkScalar buttonHSV[3];
     SkColorToHSV(buttonColor, buttonHSV);
     buttonColor = SaturateAndBrighten(buttonHSV, 0, 0.05);
@@ -173,7 +187,7 @@ void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
   // Paint the button's outline and fill the middle
   SkPath outline;
   switch (direction) {
-    case SCROLLBAR_UP_ARROW:
+    case kScrollbarUpArrow:
       outline.moveTo(rect.x() + 0.5, rect.y() + rect.height() + 0.5);
       outline.rLineTo(0, -(rect.height() - 2));
       outline.rLineTo(2, -2);
@@ -181,7 +195,7 @@ void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
       outline.rLineTo(2, 2);
       outline.rLineTo(0, rect.height() - 2);
       break;
-    case SCROLLBAR_DOWN_ARROW:
+    case kScrollbarDownArrow:
       outline.moveTo(rect.x() + 0.5, rect.y() - 0.5);
       outline.rLineTo(0, rect.height() - 2);
       outline.rLineTo(2, 2);
@@ -189,7 +203,7 @@ void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
       outline.rLineTo(2, -2);
       outline.rLineTo(0, -(rect.height() - 2));
       break;
-    case SCROLLBAR_RIGHT_ARROW:
+    case kScrollbarRightArrow:
       outline.moveTo(rect.x() - 0.5, rect.y() + 0.5);
       outline.rLineTo(rect.width() - 2, 0);
       outline.rLineTo(2, 2);
@@ -197,7 +211,7 @@ void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
       outline.rLineTo(-2, 2);
       outline.rLineTo(-(rect.width() - 2), 0);
       break;
-    case SCROLLBAR_LEFT_ARROW:
+    case kScrollbarLeftArrow:
       outline.moveTo(rect.x() + rect.width() + 0.5, rect.y() + 0.5);
       outline.rLineTo(-(rect.width() - 2), 0);
       outline.rLineTo(-2, 2);
@@ -223,7 +237,7 @@ void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
 
   // If the button is disabled or read-only, the arrow is drawn with the
   // outline color.
-  if (state != DISABLED)
+  if (state != kDisabled)
     paint.setColor(SK_ColorBLACK);
 
   paint.setAntiAlias(false);
@@ -233,22 +247,22 @@ void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
   // The constants in this block of code are hand-tailored to produce good
   // looking arrows without anti-aliasing.
   switch (direction) {
-    case SCROLLBAR_UP_ARROW:
+    case kScrollbarUpArrow:
       path.moveTo(rect.x() + widthMiddle - 4, rect.y() + lengthMiddle + 2);
       path.rLineTo(7, 0);
       path.rLineTo(-4, -4);
       break;
-    case SCROLLBAR_DOWN_ARROW:
+    case kScrollbarDownArrow:
       path.moveTo(rect.x() + widthMiddle - 4, rect.y() + lengthMiddle - 3);
       path.rLineTo(7, 0);
       path.rLineTo(-4, 4);
       break;
-    case SCROLLBAR_RIGHT_ARROW:
+    case kScrollbarRightArrow:
       path.moveTo(rect.x() + lengthMiddle - 3, rect.y() + widthMiddle - 4);
       path.rLineTo(0, 7);
       path.rLineTo(4, -4);
       break;
-    case SCROLLBAR_LEFT_ARROW:
+    case kScrollbarLeftArrow:
       path.moveTo(rect.x() + lengthMiddle + 1, rect.y() + widthMiddle - 5);
       path.rLineTo(0, 9);
       path.rLineTo(-4, -4);
@@ -264,19 +278,19 @@ void NativeThemeAndroid::PaintArrowButton(SkCanvas* canvas,
 void NativeThemeAndroid::PaintCheckbox(SkCanvas* canvas,
                                        State state,
                                        const gfx::Rect& rect,
-                                       const ButtonExtraParams& button) {
+                                       const ButtonExtraParams& button) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SkBitmap* image = NULL;
   if (button.indeterminate) {
-    image = state == DISABLED ?
+    image = state == kDisabled ?
         rb.GetBitmapNamed(IDR_CHECKBOX_DISABLED_INDETERMINATE) :
         rb.GetBitmapNamed(IDR_CHECKBOX_INDETERMINATE);
   } else if (button.checked) {
-    image = state == DISABLED ?
+    image = state == kDisabled ?
         rb.GetBitmapNamed(IDR_CHECKBOX_DISABLED_ON) :
         rb.GetBitmapNamed(IDR_CHECKBOX_ON);
   } else {
-    image = state == DISABLED ?
+    image = state == kDisabled ?
         rb.GetBitmapNamed(IDR_CHECKBOX_DISABLED_OFF) :
         rb.GetBitmapNamed(IDR_CHECKBOX_OFF);
   }
@@ -289,10 +303,10 @@ void NativeThemeAndroid::PaintCheckbox(SkCanvas* canvas,
 void NativeThemeAndroid::PaintRadio(SkCanvas* canvas,
                                     State state,
                                     const gfx::Rect& rect,
-                                    const ButtonExtraParams& button) {
+                                    const ButtonExtraParams& button) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SkBitmap* image = NULL;
-  if (state == DISABLED) {
+  if (state == kDisabled) {
     image = button.checked ?
         rb.GetBitmapNamed(IDR_RADIO_DISABLED_ON) :
         rb.GetBitmapNamed(IDR_RADIO_DISABLED_OFF);
@@ -310,7 +324,7 @@ void NativeThemeAndroid::PaintRadio(SkCanvas* canvas,
 void NativeThemeAndroid::PaintButton(SkCanvas* canvas,
                                      State state,
                                      const gfx::Rect& rect,
-                                     const ButtonExtraParams& button) {
+                                     const ButtonExtraParams& button) const {
   SkPaint paint;
   SkRect skrect;
   int kRight = rect.right();
@@ -333,7 +347,7 @@ void NativeThemeAndroid::PaintButton(SkCanvas* canvas,
   }
 
   if (button.has_border) {
-    int kBorderAlpha = state == HOVERED ? 0x80 : 0x55;
+    int kBorderAlpha = state == kHovered ? 0x80 : 0x55;
     paint.setARGB(kBorderAlpha, 0, 0, 0);
     canvas->drawLine(rect.x() + 1, rect.y(), kRight - 1, rect.y(), paint);
     canvas->drawLine(kRight - 1, rect.y() + 1, kRight - 1, kBottom - 1, paint);
@@ -342,7 +356,7 @@ void NativeThemeAndroid::PaintButton(SkCanvas* canvas,
   }
 
   paint.setColor(SK_ColorBLACK);
-  int kLightEnd = state == PRESSED ? 1 : 0;
+  int kLightEnd = state == kPressed ? 1 : 0;
   int kDarkEnd = !kLightEnd;
   SkPoint gradient_bounds[2];
   gradient_bounds[kLightEnd].iset(rect.x(), rect.y());
@@ -374,10 +388,11 @@ void NativeThemeAndroid::PaintButton(SkCanvas* canvas,
   }
 }
 
-void NativeThemeAndroid::PaintTextField(SkCanvas* canvas,
-                                        State state,
-                                        const gfx::Rect& rect,
-                                        const TextFieldExtraParams& text) {
+void NativeThemeAndroid::PaintTextField(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const TextFieldExtraParams& text) const {
   // The following drawing code simulates the user-agent css border for
   // text area and text input so that we do not break layout tests. Once we
   // have decided the desired looks, we should update the code here and
@@ -464,10 +479,11 @@ void NativeThemeAndroid::PaintTextField(SkCanvas* canvas,
   }
 }
 
-void NativeThemeAndroid::PaintMenuList(SkCanvas* canvas,
-                                       State state,
-                                       const gfx::Rect& rect,
-                                       const MenuListExtraParams& menu_list) {
+void NativeThemeAndroid::PaintMenuList(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuListExtraParams& menu_list) const {
   // If a border radius is specified, we let the WebCore paint the background
   // and the border of the control.
   if (!menu_list.has_border_radius) {
@@ -490,10 +506,11 @@ void NativeThemeAndroid::PaintMenuList(SkCanvas* canvas,
   canvas->drawPath(path, paint);
 }
 
-void NativeThemeAndroid::PaintSliderTrack(SkCanvas* canvas,
-                                          State state,
-                                          const gfx::Rect& rect,
-                                          const SliderExtraParams& slider) {
+void NativeThemeAndroid::PaintSliderTrack(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const SliderExtraParams& slider) const {
   int kMidX = rect.x() + rect.width() / 2;
   int kMidY = rect.y() + rect.height() / 2;
 
@@ -515,11 +532,12 @@ void NativeThemeAndroid::PaintSliderTrack(SkCanvas* canvas,
   canvas->drawRect(skrect, paint);
 }
 
-void NativeThemeAndroid::PaintSliderThumb(SkCanvas* canvas,
-                                          State state,
-                                          const gfx::Rect& rect,
-                                          const SliderExtraParams& slider) {
-  bool hovered = (state == HOVERED) || slider.in_drag;
+void NativeThemeAndroid::PaintSliderThumb(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const SliderExtraParams& slider) const {
+  bool hovered = (state == kHovered) || slider.in_drag;
   int kMidX = rect.x() + rect.width() / 2;
   int kMidY = rect.y() + rect.height() / 2;
 
@@ -557,30 +575,30 @@ void NativeThemeAndroid::PaintInnerSpinButton(
     SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const InnerSpinButtonExtraParams& spin_button) {
+    const InnerSpinButtonExtraParams& spin_button) const {
   if (spin_button.read_only)
-    state = DISABLED;
+    state = kDisabled;
 
   State north_state = state;
   State south_state = state;
   if (spin_button.spin_up)
-    south_state = south_state != DISABLED ? NORMAL : DISABLED;
+    south_state = south_state != kDisabled ? kNormal : kDisabled;
   else
-    north_state = north_state != DISABLED ? NORMAL : DISABLED;
+    north_state = north_state != kDisabled ? kNormal : kDisabled;
 
   gfx::Rect half = rect;
   half.set_height(rect.height() / 2);
-  PaintArrowButton(canvas, half, SCROLLBAR_UP_ARROW, north_state);
+  PaintArrowButton(canvas, half, kScrollbarUpArrow, north_state);
 
   half.set_y(rect.y() + rect.height() / 2);
-  PaintArrowButton(canvas, half, SCROLLBAR_DOWN_ARROW, south_state);
+  PaintArrowButton(canvas, half, kScrollbarDownArrow, south_state);
 }
 
 void NativeThemeAndroid::PaintProgressBar(
     SkCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const ProgressBarExtraParams& progress_bar) {
+    const ProgressBarExtraParams& progress_bar) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SkBitmap* bar_image = rb.GetBitmapNamed(IDR_PROGRESS_BAR);
   SkBitmap* left_border_image = rb.GetBitmapNamed(IDR_PROGRESS_BORDER_LEFT);
@@ -628,7 +646,7 @@ bool NativeThemeAndroid::IntersectsClipRectInt(SkCanvas* canvas,
                                                int x,
                                                int y,
                                                int w,
-                                               int h) {
+                                               int h) const {
   SkRect clip;
   return canvas->getClipBounds(&clip) &&
       clip.intersect(SkIntToScalar(x), SkIntToScalar(y), SkIntToScalar(x + w),
@@ -644,7 +662,7 @@ void NativeThemeAndroid::DrawBitmapInt(SkCanvas* canvas,
                                        int dest_x,
                                        int dest_y,
                                        int dest_w,
-                                       int dest_h) {
+                                       int dest_h) const {
   DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
               src_y + src_h < std::numeric_limits<int16_t>::max());
   if (src_w <= 0 || src_h <= 0 || dest_w <= 0 || dest_h <= 0) {
