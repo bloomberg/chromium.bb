@@ -187,7 +187,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     for patch in patches:
       pending_commit = manifest_dom.createElement(PALADIN_COMMIT_ELEMENT)
       pending_commit.setAttribute(PALADIN_PROJECT_ATTR, patch.project)
-      pending_commit.setAttribute(PALADIN_CHANGE_ID_ATTR, patch.id)
+      pending_commit.setAttribute(PALADIN_CHANGE_ID_ATTR, patch.change_id)
       pending_commit.setAttribute(PALADIN_COMMIT_ATTR, patch.commit)
       manifest_dom.documentElement.appendChild(pending_commit)
 

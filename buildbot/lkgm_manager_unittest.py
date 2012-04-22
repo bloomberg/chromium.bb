@@ -548,7 +548,7 @@ class LKGMManagerTest(mox.MoxTestBase):
 
       gerrit_patch = self.mox.CreateMock(patch.GerritPatch)
       gerrit_patch.project = 'chromite/tacos'
-      gerrit_patch.id = '1234567890'
+      gerrit_patch.change_id = '1234567890'
       gerrit_patch.commit = '0987654321'
       self.manager._AddPatchesToManifest(tmp_manifest, [gerrit_patch])
 

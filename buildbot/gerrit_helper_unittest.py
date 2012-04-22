@@ -102,9 +102,12 @@ class GerritHelperTest(mox.MoxTestBase):
     helper = gerrit_helper.GerritHelper(False)
     changes = helper.GrabChangesReadyForCommit()
     self.assertEqual(len(changes), 3)
-    self.assertEqual(changes[0].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025f')
-    self.assertEqual(changes[1].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025d')
-    self.assertEqual(changes[2].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e')
+    self.assertEqual(changes[0].change_id,
+                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025f')
+    self.assertEqual(changes[1].change_id,
+                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025d')
+    self.assertEqual(changes[2].change_id,
+                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e')
     self.mox.VerifyAll()
 
   def testParseFakeResultsWithInternalURL(self):
@@ -118,9 +121,12 @@ class GerritHelperTest(mox.MoxTestBase):
     helper = gerrit_helper.GerritHelper(True)
     changes = helper.GrabChangesReadyForCommit()
     self.assertEqual(len(changes), 3)
-    self.assertEqual(changes[0].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025f')
-    self.assertEqual(changes[1].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025d')
-    self.assertEqual(changes[2].id, 'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e')
+    self.assertEqual(changes[0].change_id,
+                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025f')
+    self.assertEqual(changes[1].change_id,
+                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025d')
+    self.assertEqual(changes[2].change_id,
+                     'Iee5c89d929f1850d7d4e1a4ff5f21adda800025e')
     self.mox.VerifyAll()
 
   def _PrintChanges(self, changes):

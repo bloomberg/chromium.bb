@@ -288,7 +288,7 @@ class GerritHelper():
       # and gerrit returns Iabc, we still properly match.
       result_id = ''
       if result:
-        result_id = cros_patch.FormatChangeId(result.id)
+        result_id = cros_patch.FormatChangeId(result.change_id)
 
       if result is None or (query and not result_id.startswith(query)):
         if last_patch_id and result_id.startswith(last_patch_id):
@@ -424,9 +424,9 @@ def GetGerritPatchInfo(patches):
     # seen instance of each patch.  Do this to ensure whatever ordering
     # the user is trying to enforce, we honor; lest it break on cherry-picking
     gpatch = parsed_patches[query]
-    if gpatch.id not in seen:
+    if gpatch.change_id not in seen:
       results.append(gpatch)
-      seen.add(gpatch.id)
+      seen.add(gpatch.change_id)
 
   return results
 

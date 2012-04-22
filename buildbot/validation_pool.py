@@ -360,8 +360,9 @@ class ValidationPool(object):
     changes_applied = set()
     changes_list = []
 
-    # Maps Change numbers to GerritPatch object for lookup of dependent
-    # changes.
+    # Maps internal ID numbers to GerritPatch object for lookup of dependent
+    # changes.  All code w/in this function needs to use .id rather than
+    # .change_id.
     change_map = dict((change.id, change) for change in self.changes)
     for change in self.changes:
       logging.debug('Trying change %s', change.id)
@@ -422,7 +423,8 @@ class ValidationPool(object):
               break
           except gerrit_helper.QueryNotSpecific:
             message = ('Change %s could not be handled due to its dependency '
-                       '%s matching multiple branches.' % (change.id, dep))
+                       '%s matching multiple branches.'
+                       % (change.id, dep))
             logging.info(message)
             change.apply_error_message = message
             changes_that_failed_to_apply_to_tot.add(change)
@@ -484,6 +486,10 @@ class ValidationPool(object):
     self.changes_that_failed_to_apply_earlier = list(
         changes_that_failed_to_apply_against_other_changes)
     return len(self.changes) > 0
+
+  # Note: All submit code, all gerrit code, and basically everything other
+  # than patch resolution/applying needs to use .change_id from patch objects.
+  # Basically all code from this point forward.
 
   def _SubmitChanges(self, changes):
     """Submits given changes to Gerrit.
@@ -556,7 +562,7 @@ class ValidationPool(object):
       changes: GerritPatch's to handle.
     """
     for change in changes:
-      logging.info('Change %s did not apply cleanly.', change.id)
+      logging.info('Change %s did not apply cleanly.', change.change_id)
       if self.is_master:
         self.HandleCouldNotApply(change)
 

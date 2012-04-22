@@ -7,6 +7,7 @@
 import constants
 import logging
 import os
+import random
 import re
 
 from chromite.lib import cros_build_lib as cros_lib
@@ -45,6 +46,21 @@ class BrokenChangeID(MalformedChange):
   """Raised if a patch has an invalid Change-ID."""
 
 
+def MakeChangeId(unusable=False):
+  """Create a random Change-Id.
+
+  Args:
+    unusable: If set to True, return a Change-Id like string that gerrit
+      will explicitly fail on.  This is primarily used for internal ids,
+      as a fallback when a Change-Id could not be parsed.
+  """
+  s = "%x" % (random.randint(0, 2**160),)
+  s = s.rjust(40, '0')
+  if unusable:
+    return 'Fake-ID %s' % s
+  return 'I%s' % s
+
+
 def FormatChangeId(text):
   """Format a Change-ID into a standardized form.  Use this anywhere
   we're accepting user input of Change-IDs."""
@@ -59,7 +75,15 @@ def FormatChangeId(text):
 class GitRepoPatch(object):
   """Representing a patch from a branch of a local or remote git repository."""
 
-  def __init__(self, project_url, project, ref, tracking_branch, sha1=None):
+  # Note the selective case insensitivity; gerrit allows only this.
+  _VALID_CHANGE_ID_RE = re.compile(r'^I[0-9a-fA-F]{40}$')
+  _GIT_CHANGE_ID_RE = re.compile(r'^Change-Id:[\t ]*(\w+)\s*$',
+                                 re.I|re.MULTILINE)
+  _PALADIN_DEPENDENCY_RE = re.compile(r'^CQ-DEPEND=(.*)$', re.MULTILINE)
+  _PALADIN_BUG_RE = re.compile(r'(\w+)')
+
+  def __init__(self, project_url, project, ref, tracking_branch, sha1=None,
+               change_id=None):
     """Initialization of abstract Patch class.
 
     Args:
@@ -69,8 +93,12 @@ class GitRepoPatch(object):
       ref: The refspec to pull from the git repo.
       tracking_branch:  The remote branch of the project the patch applies to.
       sha1: The sha1 of the commit, if known.  This *must* be accurate.  Can
-        be None if not yet known- which case Fetch will update it.
+        be None if not yet known- in which case Fetch will update it.
+      change_id: The Change-Id of the commit, if known.  This *must* be
+        accurate.  Can be None if not yet known- in which case Fetch will
+        parse it.
     """
+    self._commit_message = None
     self.project_url = project_url
     self.project = project
     self.ref = ref
@@ -82,45 +110,78 @@ class GitRepoPatch(object):
     # attribute, instead leaving it purely for validation_pool and friends
     # to mutate.
     self.apply_error_message = None
+    # change_id must always be a valid Change-Id (local or gerrit), or None.
+    # id is an internal value- if change-id exists, we use that.  If not,
+    # we make up a fake change-id to keep internal apis happy/simple.
+    self.change_id = self.id = change_id
+    self._is_fetched = set()
+    self._projectdir_cache = {}
 
   def ProjectDir(self, buildroot):
     """Returns the local directory where this patch will be applied."""
-    return cros_lib.GetProjectDir(buildroot, self.project)
+    buildroot = os.path.normpath(buildroot)
+    val = self._projectdir_cache.get(buildroot)
+    if val is None:
+      val = cros_lib.GetProjectDir(buildroot, self.project)
+      self._projectdir_cache[buildroot] = val
+    return val
 
   def Fetch(self, target_repo):
     """Fetch this patch into the target repository.
 
     FETCH_HEAD is implicitly reset by this operation.  Additionally,
     if the sha1 of the patch was not yet known, it is pulled and stored
-    on this object.
+    on this object and the target_repo is updated w/ the requested git
+    object.
+
+    While doing so, we'll load the commit message and Change-Id if not
+    already known.
 
     Finally, if the sha1 is known and it's already available in the target
     repository, this will skip the actual fetch operation (it's unneeded).
     """
 
-    if self.sha1 is not None:
+    target_repo = os.path.normpath(target_repo)
+    if target_repo in self._is_fetched:
+      return self.sha1
+
+    def _PullData(rev):
       ret = cros_lib.RunCommandCaptureOutput(
-          ['git', 'show', self.sha1], cwd=target_repo, print_cmd=False,
-          error_code_ok=True).returncode
-      if ret == 0:
+          ['git', 'log', '--format=%H%x00%B', '-n1', rev], print_cmd=False,
+          error_code_ok=True, cwd=target_repo)
+      if ret.returncode != 0:
+        return None, None
+      output = ret.output.split('\0')
+      if len(output) != 2:
+        return None, None
+      return [x.strip() for x in output]
+
+    if self.sha1 is not None:
+      # See if we've already got the object
+      sha1, msg = _PullData(self.sha1)
+      if sha1 is not None:
+        assert sha1 == self.sha1
+        self._commit_message = msg
+        self._EnsureId(msg)
         return self.sha1
 
     cros_lib.RunCommand(['git', 'fetch', self.project_url, self.ref],
                         cwd=target_repo, print_cmd=False)
 
+    sha1, msg = _PullData('FETCH_HEAD')
+
     # Even if we know the sha1, still do a sanity check to ensure we
     # actually just fetched it.
-    ret = cros_lib.RunCommand(['git', 'rev-list', '-n1', 'FETCH_HEAD'],
-                              cwd=target_repo, redirect_stdout=True,
-                              print_cmd=False)
-    ret = ret.output.strip()
     if self.sha1 is not None:
-      if ret != self.sha1:
+      if sha1 != self.sha1:
         raise PatchException('Patch %s specifies sha1 %s, yet in fetching from '
                              '%s we could not find that sha1.  Internal error '
                              'most likely.' % (self, self.sha1, self.ref))
     else:
-      self.sha1 = ret
+      self.sha1 = sha1
+    self._commit_message = msg
+    self._EnsureId(msg)
+    self._is_fetched.add(target_repo)
     return self.sha1
 
   def _RebaseOnto(self, branch, upstream, project_dir, rev, trivial):
@@ -224,6 +285,129 @@ class GitRepoPatch(object):
                           print_cmd=False)
     self._RebasePatch(buildroot, project_dir, rev, trivial)
 
+  def GerritDependencies(self, buildroot):
+    """Returns an ordered list of dependencies from Gerrit.
+
+    The list of changes are in order from FETCH_HEAD back to m/master.
+
+    Arguments:
+      buildroot: The buildroot.
+    Returns:
+      An ordered list of Gerrit revisions that this patch depends on.
+    Raises:
+      MissingChangeIDException: If a dependent change is missing its ChangeID.
+    """
+    dependencies = []
+    logging.info('Checking for Gerrit dependencies for change %s', self)
+    project_dir = self.ProjectDir(buildroot)
+
+    rev = self.Fetch(project_dir)
+
+    manifest_branch = self._GetUpstreamBranch(buildroot)
+    return_obj = cros_lib.RunCommand(
+        ['git', 'log', '--format=%B%x00', '%s..%s^' % (manifest_branch, rev)],
+        cwd=project_dir, redirect_stdout=True, print_cmd=False)
+
+    patches = []
+    if return_obj.output:
+      # Only do this if we have output; else it leads
+      # to an invalid [''] result which we can't identify
+      # as differing from actual output for a single patch that
+      # lacks a commit message.
+      # Because the explicit null addition, strip off the last record.
+      patches = return_obj.output.split('\0')[:-1]
+
+    for patch_output in patches:
+      change_id = self._ParseChangeId(patch_output)
+      dependencies.append(change_id)
+
+    if dependencies:
+      logging.info('Found %s Gerrit dependencies for change %s', dependencies,
+                   self)
+
+    return dependencies
+
+  def _EnsureId(self, commit_message):
+    """Ensure we have a usable Change-Id.  This will parse the Change-Id out
+    of the given commit message- if it cannot find one, it logs a warning
+    and creates a fake ID.
+
+    By it's nature, that fake ID is useless- it's created to simplify API
+    usage for patch consumers.
+
+    If CQ were to see and try operating on one of these, it would fail for
+    example."""
+    if self.id is not None:
+      return self.id
+    try:
+      self.change_id = self.id = self._ParseChangeId(commit_message)
+    except MissingChangeIDException:
+      logging.warning(
+          'Change %s, sha1 %s lacks a change-id in its commit '
+          'message.  CQ-DEPEND against this rev will not work, nor '
+          'will any gerrit querying.  Please add the appropriate '
+          'Change-Id into the commit message to resolve this.',
+          self, self.sha1)
+
+      # We still need an internal id to address it via- thus we
+      # make a fake one to keep our caches/resolvers happy, while
+      # leaving the authoritive .change_id set to None.
+      self.id = MakeChangeId(unusable=True)
+    return self.id
+
+  def _ParseChangeId(self, data):
+    """Parse a Change-Id out of a block of text."""
+    # Grab just the last pararaph.
+    git_metadata = re.split('\n{2,}', data.rstrip())[-1]
+    change_id_match = self._GIT_CHANGE_ID_RE.findall(git_metadata)
+    if not change_id_match:
+      raise MissingChangeIDException('Missing Change-Id in %s', data)
+
+    # Now, validate it.  This has no real effect on actual gerrit patches,
+    # but for local patches the validation is useful for general sanity
+    # enforcement.
+    change_id_match = change_id_match[-1]
+    if not self._VALID_CHANGE_ID_RE.match(change_id_match):
+      raise BrokenChangeID(self, change_id_match)
+
+    # Force a standard for the formatting; I must be caps, force the rest
+    # of the hex to lower case.
+    return FormatChangeId(change_id_match)
+
+  def PaladinDependencies(self, buildroot):
+    """Returns an ordered list of dependencies based on the Commit Message.
+
+    Parses the Commit message for this change looking for lines that follow
+    the format:
+
+    CQ-DEPEND:change_num+ e.g.
+
+    A commit which depends on a couple others.
+
+    BUG=blah
+    TEST=blah
+    CQ-DEPEND=10001,10002
+    """
+    dependencies = []
+    logging.info('Checking for CQ-DEPEND dependencies for change %s', self)
+    self.Fetch(self.ProjectDir(buildroot))
+    matches = self._PALADIN_DEPENDENCY_RE.findall(self._commit_message)
+    for match in matches:
+      chunks = ' '.join(match.split(','))
+      chunks = chunks.split()
+      for chunk in chunks:
+        if not chunk.isdigit():
+          if not self._VALID_CHANGE_ID_RE.match(chunk):
+            raise BrokenCQDepends(self, match, chunk)
+          chunk = FormatChangeId(chunk)
+        if chunk not in dependencies:
+          dependencies.append(chunk)
+
+    if dependencies:
+      logging.info('Found %s Paladin dependencies for change %s', dependencies,
+                   self)
+    return dependencies
+
   def __str__(self):
     """Returns custom string to identify this patch."""
     s = '%s:%s' % (self.project, self.ref)
@@ -326,12 +510,6 @@ class LocalGitRepoPatch(GitRepoPatch):
 class GerritPatch(GitRepoPatch):
   """Object that represents a Gerrit CL."""
   _PUBLIC_URL = os.path.join(constants.GERRIT_HTTP_URL, 'gerrit/p')
-  # Note the selective case insensitivity; gerrit allows only this.
-  _VALID_CHANGE_ID_RE = re.compile(r'^I[0-9a-fA-F]{40}$')
-  _GIT_CHANGE_ID_RE = re.compile(r'^Change-Id:[\t ]*(\w+)\s*$',
-                                 re.I|re.MULTILINE)
-  _PALADIN_DEPENDENCY_RE = re.compile(r'^CQ-DEPEND=(.*)$', re.MULTILINE)
-  _PALADIN_BUG_RE = re.compile('(\w+)')
 
   def __init__(self, patch_dict, internal):
     """Construct a GerritPatch object from Gerrit query results.
@@ -349,11 +527,11 @@ class GerritPatch(GitRepoPatch):
         patch_dict['project'],
         patch_dict['currentPatchSet']['ref'],
         patch_dict['branch'],
-        sha1=patch_dict['currentPatchSet']['revision'])
+        sha1=patch_dict['currentPatchSet']['revision'],
+        change_id=FormatChangeId(patch_dict['id']))
 
     self.internal = internal
     # id - The CL's ChangeId
-    self.id = FormatChangeId(patch_dict['id'])
     # revision - The CL's SHA1 hash.
     self.revision = patch_dict['currentPatchSet']['revision']
     self.patch_number = patch_dict['currentPatchSet']['number']
@@ -383,106 +561,38 @@ class GerritPatch(GitRepoPatch):
 
     return os.path.join(url_prefix, project)
 
-  def CommitMessage(self, buildroot):
-    """Returns the commit message for the patch as a string."""
-    project_dir = self.ProjectDir(buildroot)
+  def _EnsureId(self, commit_message):
+    """Ensure we have a usable Change-Id, validating what we received
+    from gerrit against what the commit message states."""
+    # GerritPatch instances get their Change-Id from gerrit
+    # directly; for this to fail, there is an internal bug.
+    assert self.id is not None
 
-    rev = self.Fetch(project_dir)
+    # For GerritPatches, we still parse the ID- this is
+    # primarily so we can throw an appropriate warning,
+    # and also validate our parsing against gerrit's in
+    # the process.
+    try:
+      parsed_id = self._ParseChangeId(commit_message)
+      if parsed_id != self.change_id:
+        raise AssertionError(
+            'For Change-Id %s, sha %s, our parsing of the Change-Id did not '
+            'match what gerrit told us.  This is an internal bug: either our '
+            "parsing no longer matches gerrit's, or somehow this instance's "
+            'stored change_id was invalidly modified.  Our parsing of the '
+            'Change-Id yielded: %s'
+            % (self.change_id, self.sha1, parsed_id))
 
-    return_obj = cros_lib.RunCommand(['git', 'log', '--format=%B', '-n1', rev],
-                                     cwd=project_dir, redirect_stdout=True,
-                                     print_cmd=False)
-    return return_obj.output
+    except MissingChangeIDException:
+      logging.warning(
+          'Change %s, Change-Id %s, sha1 %s lacks a change-id in its commit '
+          'message.  This breaks the ability for any dependencies '
+          'to be committed as a batch (instead having to be committed one '
+          'by one through CQ).  Please add the appropriate '
+          'Change-Id into the commit message to resolve this.',
+          self, self.change_id, self.sha1)
 
-  def GerritDependencies(self, buildroot):
-    """Returns an ordered list of dependencies from Gerrit.
-
-    The list of changes are in order from FETCH_HEAD back to m/master.
-
-    Arguments:
-      buildroot: The buildroot.
-    Returns:
-      An ordered list of Gerrit revisions that this patch depends on.
-    Raises:
-      MissingChangeIDException: If a dependent change is missing its ChangeID.
-    """
-    dependencies = []
-    logging.info('Checking for Gerrit dependencies for change %s', self)
-    project_dir = self.ProjectDir(buildroot)
-
-    rev = self.Fetch(project_dir)
-
-    manifest_branch = self._GetUpstreamBranch(buildroot)
-    return_obj = cros_lib.RunCommand(
-        ['git', 'log', '--format=%B%x00', '%s..%s^' % (manifest_branch, rev)],
-        cwd=project_dir, redirect_stdout=True, print_cmd=False)
-
-    patches = []
-    if return_obj.output:
-      # Only do this if we have output; else it leads
-      # to an invalid [''] result which we can't identify
-      # as differing from actual output for a single patch that
-      # lacks a commit message.
-      # Because the explicit null addition, strip off the last record.
-      patches = return_obj.output.split('\0')[:-1]
-
-    for patch_output in patches:
-      # Grab just the last pararaph.
-      git_metadata = filter(None, re.split('\n{2,}', patch_output))[-1]
-      change_id_match = self._GIT_CHANGE_ID_RE.findall(git_metadata)
-      if not change_id_match:
-        raise MissingChangeIDException('Missing Change-Id in %s' % patch_output)
-
-      # Now, validate it.  This has no real effect on actual gerrit patches,
-      # but for local patches the validation is useful for general sanity
-      # enforcement.
-      change_id_match = change_id_match[-1]
-      if not self._VALID_CHANGE_ID_RE.match(change_id_match):
-        raise BrokenChangeID(self, change_id_match)
-
-      # Force a standard for the formatting; I must be caps, force the rest
-      # of the hex to lower case.
-      dependencies.append(FormatChangeId(change_id_match))
-
-    if dependencies:
-      logging.info('Found %s Gerrit dependencies for change %s', dependencies,
-                   self)
-
-    return dependencies
-
-  def PaladinDependencies(self, buildroot):
-    """Returns an ordered list of dependencies based on the Commit Message.
-
-    Parses the Commit message for this change looking for lines that follow
-    the format:
-
-    CQ-DEPEND:change_num+ e.g.
-
-    A commit which depends on a couple others.
-
-    BUG=blah
-    TEST=blah
-    CQ-DEPEND=10001,10002
-    """
-    dependencies = []
-    logging.info('Checking for CQ-DEPEND dependencies for change %s', self)
-    commit_message = self.CommitMessage(buildroot)
-    matches = self._PALADIN_DEPENDENCY_RE.findall(commit_message)
-    for match in matches:
-      chunks = ' '.join(match.split(','))
-      chunks = chunks.split()
-      for chunk in chunks:
-        if not chunk.isdigit():
-          if not self._VALID_CHANGE_ID_RE.match(chunk):
-            raise BrokenCQDepends(self, match, chunk)
-          chunk = FormatChangeId(chunk)
-        if chunk not in dependencies:
-          dependencies.append(chunk)
-
-    if dependencies:
-      logging.info('Found %s Paladin dependencies for change %s', dependencies,
-                   self)
-    return dependencies
+    return self.id
 
   def __str__(self):
     """Returns custom string to identify this patch."""

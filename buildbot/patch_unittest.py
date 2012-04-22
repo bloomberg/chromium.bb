@@ -12,7 +12,6 @@ import mox
 import os
 import sys
 import copy
-import random
 import shutil
 import tempfile
 import time
@@ -75,6 +74,24 @@ class TestGitRepoPatch(cros_test_lib.TempDirMixin, unittest.TestCase):
 
   class patch_kls(_PatchSuppression, cros_patch.GitRepoPatch):
     pass
+
+  COMMIT_TEMPLATE = (
+"""commit abcdefgh
+
+Author: Fake person
+Date:  Tue Oct 99
+
+I am the first commit.
+
+%(extra)s
+
+%(change-id)s
+"""
+  )
+
+  # Boolean controlling whether the target class natively knows its
+  # ChangeId; only GerritPatches do.
+  has_native_change_id = False
 
   def _CreateSourceRepo(self, path):
     """Generate a new repo with a single commit."""
@@ -142,6 +159,8 @@ class TestGitRepoPatch(cros_test_lib.TempDirMixin, unittest.TestCase):
     _writefile(os.path.join(repo, filename), content)
     self._run(['git', 'add', filename], repo)
     sha1 = self._MakeCommit(repo, commit=commit)
+    if not self.has_native_change_id:
+      kwds.pop('ChangeId', None)
     patch = self._MkPatch(repo, sha1, **kwds)
     self.assertEqual(patch.sha1, sha1)
     return patch
@@ -203,6 +222,90 @@ class TestGitRepoPatch(cros_test_lib.TempDirMixin, unittest.TestCase):
       raise AssertionError("patch1.Apply didn't throw a failing "
                            "exception.")
 
+  def MakeChangeId(self, how_many=1):
+    l = [cros_patch.MakeChangeId() for _ in xrange(how_many)]
+    if how_many == 1:
+      return l[0]
+    return l
+
+  def CommitChangeIdFile(self, repo, changeid=None, extra=None,
+                         filename='monkeys', content='flinging',
+                         raw_changeid_text=None):
+    template = self.COMMIT_TEMPLATE
+    if changeid is None:
+      changeid = self.MakeChangeId()
+    if raw_changeid_text is None:
+      raw_changeid_text = 'Change-Id: %s' % (changeid,)
+    if extra is None:
+      extra = ''
+    commit = template % {'change-id':raw_changeid_text, 'extra':extra}
+
+    return self.CommitFile(repo, filename, content, commit=commit,
+                           ChangeId=changeid)
+
+  def testGerritDependencies(self):
+    git1 = self._MakeRepo('git1', self.source)
+    cid1, cid2, cid3 = self.MakeChangeId(3)
+    patch = self.CommitChangeIdFile(git1, cid1)
+    # Since it's parent is ToT, there are no deps.
+    self.assertEqual(patch.GerritDependencies(git1), [])
+    patch = self.CommitChangeIdFile(git1, cid2, content='poo')
+    self.assertEqual(patch.GerritDependencies(git1), [cid1])
+
+    # Check the behaviour for missing ChangeId in a parent next.
+    patch = self.CommitChangeIdFile(git1, cid1, content='thus',
+                                    raw_changeid_text='')
+
+    # Note the ordering; leftmost needs to be the nearest child of the commit.
+    self.assertEqual(patch.GerritDependencies(git1), [cid2, cid1])
+
+    patch = self.CommitChangeIdFile(git1, cid3, content='the glass walls.')
+    self.assertRaises(cros_patch.MissingChangeIDException,
+                      patch.GerritDependencies, git1)
+
+  def _CheckPaladin(self, repo, master_id, ids, extra):
+    patch = self.CommitChangeIdFile(
+        repo, master_id, extra=extra,
+        filename='paladincheck', content=str(_GetNumber()))
+    deps = patch.PaladinDependencies(repo)
+    # Assert that are parsing unique'ifies the results.
+    self.assertEqual(len(deps), len(set(deps)))
+    deps = set(deps)
+    ids = set(ids)
+    self.assertEqual(ids, deps)
+    self.assertEqual(
+        set(cros_patch.FormatChangeId(x) for x in deps if x[0] in 'Ii'),
+        set(x for x in ids if x[0] in 'Ii'))
+    return patch
+
+  def testPaladinDependencies(self):
+    git1 = self._MakeRepo('git1', self.source)
+    cid1, cid2, cid3, cid4 = self.MakeChangeId(4)
+    # Verify it handles nonexistant CQ-DEPEND.
+    self._CheckPaladin(git1, cid1, [], '')
+    # Single key, single value.
+    self._CheckPaladin(git1, cid1, [cid2],
+                       'CQ-DEPEND=%s' % cid2)
+    # Single key, multiple values
+    self._CheckPaladin(git1, cid1, [cid2, cid3],
+                       'CQ-DEPEND=%s %s' % (cid2, cid3))
+    # Dumb comma behaviour
+    self._CheckPaladin(git1, cid1, [cid2, cid3],
+                      'CQ-DEPEND=%s, %s,' % (cid2, cid3))
+    # Multiple keys.
+    self._CheckPaladin(git1, cid1, [cid2, cid3, cid4],
+                      'CQ-DEPEND=%s, %s\nCQ-DEPEND=%s' % (cid2, cid3, cid4))
+
+    # Ensure it goes boom on invalid data.
+    self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
+                      git1, cid1, [], 'CQ-DEPEND=monkeys')
+    self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
+                      git1, cid1, [], 'CQ-DEPEND=%s monkeys' % (cid2,))
+    # Validate numeric is allowed.
+    self._CheckPaladin(git1, cid1, [cid2, '1'], 'CQ-DEPEND=1 %s' % cid2)
+    # Validate that it unique'ifies the results.
+    self._CheckPaladin(git1, cid1, ['1'], 'CQ-DEPEND=1 1')
+
 
 class TestLocalGitRepoPatchGit(TestGitRepoPatch):
 
@@ -248,19 +351,7 @@ class TestLocalGitRepoPatchGit(TestGitRepoPatch):
 
 class TestGerritPatch(TestGitRepoPatch):
 
-  COMMIT_TEMPLATE = (
-"""commit abcdefgh
-
-Author: Fake person
-Date:  Tue Oct 99
-
-I am the first commit.
-
-%(extra)s
-
-%(change-id)s
-"""
-  )
+  has_native_change_id = True
 
   class patch_kls(_PatchSuppression, cros_patch.GerritPatch):
     # Suppress the behaviour pointing the project url at actual gerrit,
@@ -332,95 +423,9 @@ I am the first commit.
     self.assertFalse(abandoned.IsAlreadyMerged())
     self.assertFalse(still_open.IsAlreadyMerged())
 
-  def MakeChangeId(self, how_many=1):
-    l = []
-    for _ in xrange(how_many):
-      s = "%x" % (random.randint(0, 2**160),)
-      l.append('I%s' % s.rjust(40, '0'))
-    if how_many == 1:
-      l = l[0]
-    return l
-
   @property
   def test_json(self):
     return copy.deepcopy(FAKE_PATCH_JSON)
-
-  def CommitChangeIdFile(self, repo, changeid=None, extra=None,
-                         filename='monkeys', content='flinging',
-                         raw_changeid_text=None):
-    template = self.COMMIT_TEMPLATE
-    if changeid is None:
-      changeid = self.MakeChangeId()
-    if raw_changeid_text is None:
-      raw_changeid_text = 'Change-Id: %s' % (changeid,)
-    if extra is None:
-      extra = ''
-    commit = template % {'change-id':raw_changeid_text, 'extra':extra}
-
-    return self.CommitFile(repo, filename, content, commit=commit,
-                           ChangeId=changeid)
-
-  def testGerritDependencies(self):
-    git1 = self._MakeRepo('git1', self.source)
-    cid1, cid2, cid3 = self.MakeChangeId(3)
-    patch = self.CommitChangeIdFile(git1, cid1)
-    # Since it's parent is ToT, there are no deps.
-    self.assertEqual(patch.GerritDependencies(git1), [])
-    patch = self.CommitChangeIdFile(git1, cid2, content='poo')
-    self.assertEqual(patch.GerritDependencies(git1), [cid1])
-
-    # Check the behaviour for missing ChangeId in a parent next.
-    patch = self.CommitChangeIdFile(git1, cid1, content='thus',
-                                    raw_changeid_text='')
-
-    # Note the ordering; leftmost needs to be the nearest child of the commit.
-    self.assertEqual(patch.GerritDependencies(git1), [cid2, cid1])
-
-    patch = self.CommitChangeIdFile(git1, cid3, content='the glass walls.')
-    self.assertRaises(cros_patch.MissingChangeIDException,
-                      patch.GerritDependencies, git1)
-
-  def _CheckPaladin(self, repo, master_id, ids, extra):
-    patch = self.CommitChangeIdFile(
-        repo, master_id, extra=extra, filename='paladincheck',
-        content=str(_GetNumber()))
-    deps = patch.PaladinDependencies(repo)
-    # Assert that are parsing unique'ifies the results.
-    self.assertEqual(len(deps), len(set(deps)))
-    deps = set(deps)
-    ids = set(ids)
-    self.assertEqual(ids, deps)
-    self.assertEqual(
-        set(cros_patch.FormatChangeId(x) for x in deps if x[0] in 'Ii'),
-        set(x for x in ids if x[0] in 'Ii'))
-    return patch
-
-  def testPaladinDependencies(self):
-    git1 = self._MakeRepo('git1', self.source)
-    cid1, cid2, cid3, cid4 = self.MakeChangeId(4)
-    # Verify it handles nonexistant CQ-DEPEND.
-    self._CheckPaladin(git1, cid1, [], '')
-    # Single key, single value.
-    self._CheckPaladin(git1, cid1, [cid2], 'CQ-DEPEND=%s' % cid2)
-    # Single key, multiple values
-    self._CheckPaladin(git1, cid1, [cid2, cid3],
-                       'CQ-DEPEND=%s %s' % (cid2, cid3))
-    # Dumb comma behaviour
-    self._CheckPaladin(git1, cid1, [cid2, cid3],
-                       'CQ-DEPEND=%s, %s,' % (cid2, cid3))
-    # Multiple keys.
-    self._CheckPaladin(git1, cid1, [cid2, cid3, cid4],
-                       'CQ-DEPEND=%s, %s\nCQ-DEPEND=%s' % (cid2, cid3, cid4))
-
-    # Ensure it goes boom on invalid data.
-    self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
-                      git1, cid1, [], 'CQ-DEPEND=monkeys')
-    self.assertRaises(cros_patch.BrokenCQDepends, self._CheckPaladin,
-                      git1, cid1, [], 'CQ-DEPEND=%s monkeys' % (cid2,))
-    # Validate numeric is allowed.
-    self._CheckPaladin(git1, cid1, [cid2, '1'], 'CQ-DEPEND=1 %s' % cid2)
-    # Validate that it unique'ifies the results.
-    self._CheckPaladin(git1, cid1, ['1'], 'CQ-DEPEND=1 1')
 
 
 class PrepareLocalPatchesTests(mox.MoxTestBase):

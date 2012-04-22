@@ -257,8 +257,8 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
 
-    patch1.id = 'ChangeId1'
-    patch2.id = 'ChangeId2'
+    patch1.change_id = patch1.id = 'ChangeId1'
+    patch2.change_id = patch2.id = 'ChangeId2'
     patch1.internal = False
     patch2.internal = False
     patch1.project = 'fake_project1'

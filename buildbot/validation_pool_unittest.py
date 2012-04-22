@@ -44,7 +44,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch = self.mox.CreateMock(cros_patch.GerritPatch)
 
     patch.internal = False
-    patch.id = 'ChangeId%i' % (change_id,)
+    patch.change_id = patch.id = 'ChangeId%i' % (change_id,)
     patch.gerrit_number = change_id
     patch.patch_number = (patch_number if patch_number is not None else
                           _CountingSource.next())
