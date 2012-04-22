@@ -577,90 +577,13 @@ weston_xserver_surface_activate(struct wl_listener *listener, void *data)
 				     XCB_TIME_CURRENT_TIME);
 }
 
-/* We reuse some predefined, but otherwise useles atoms */
-#define TYPE_WM_PROTOCOLS XCB_ATOM_CUT_BUFFER0
-
 static void
 weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 {
-#define F(field) offsetof(struct weston_wm_window, field)
-	const struct {
-		xcb_atom_t atom;
-		xcb_atom_t type;
-		int offset;
-	} props[] = {
-		{ XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, F(class) },
-		{ XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, F(transient_for) },
-		{ wm->atom.wm_protocols, TYPE_WM_PROTOCOLS, F(protocols) },
-		{ wm->atom.net_wm_window_type, XCB_ATOM_ATOM, F(type) },
-		{ wm->atom.net_wm_name, XCB_ATOM_STRING, F(name) },
-	};
-#undef F
-
 	xcb_map_request_event_t *map_request =
 		(xcb_map_request_event_t *) event;
-	xcb_get_property_cookie_t cookie[ARRAY_LENGTH(props)];
-	xcb_get_property_reply_t *reply;
-	struct weston_wm_window *window;
-	void *p;
-	uint32_t *xid;
-	xcb_atom_t *atom;
-	uint32_t i;
 
 	fprintf(stderr, "XCB_MAP_REQUEST (window %d)\n", map_request->window);
-
-	dump_window_properties(wm, map_request->window);
-
-	window = hash_table_lookup(wm->window_hash, map_request->window);
-
-	for (i = 0; i < ARRAY_LENGTH(props); i++)
-		cookie[i] = xcb_get_property(wm->conn,
-					     0, /* delete */
-					     window->id,
-					     props[i].atom,
-					     XCB_ATOM_ANY, 0, 2048);
-
-	for (i = 0; i < ARRAY_LENGTH(props); i++)  {
-		reply = xcb_get_property_reply(wm->conn, cookie[i], NULL);
-		if (!reply)
-			/* Bad window, typically */
-			continue;
-		if (reply->type == XCB_ATOM_NONE) {
-			/* No such property */
-			free(reply);
-			continue;
-		}
-
-		p = ((char *) window + props[i].offset);
-
-		switch (props[i].type) {
-		case XCB_ATOM_STRING:
-			/* FIXME: We're using this for both string and
-			   utf8_string */
-			*(char **) p =
-				strndup(xcb_get_property_value(reply),
-					xcb_get_property_value_length(reply));
-			break;
-		case XCB_ATOM_WINDOW:
-			xid = xcb_get_property_value(reply);
-			*(struct weston_wm_window **) p =
-				hash_table_lookup(wm->window_hash, *xid);
-			break;
-		case XCB_ATOM_ATOM:
-			atom = xcb_get_property_value(reply);
-			*(xcb_atom_t *) p = *atom;
-			break;
-		case TYPE_WM_PROTOCOLS:
-			break;
-		default:
-			break;
-		}
-		free(reply);
-	}
-
-	fprintf(stderr, "window %d: name %s, class %s, transient_for %d\n",
-		window->id, window->name, window->class,
-		window->transient_for ? window->transient_for->id : 0);
 
 	xcb_map_window(wm->conn, map_request->window);
 }
@@ -1178,6 +1101,7 @@ wxs_wm_get_resources(struct weston_wm *wm)
 		{ "text/plain;charset=utf-8",	F(atom.text_plain_utf8) },
 		{ "text/plain",		F(atom.text_plain) },
 	};
+#undef F
 
 	xcb_xfixes_query_version_cookie_t xfixes_cookie;
 	xcb_xfixes_query_version_reply_t *xfixes_reply;
@@ -1511,6 +1435,85 @@ get_wm_window(struct weston_surface *surface)
 	return NULL;
 }
 
+/* We reuse some predefined, but otherwise useles atoms */
+#define TYPE_WM_PROTOCOLS XCB_ATOM_CUT_BUFFER0
+
+static void
+read_window_properties(struct weston_wm *wm, struct weston_wm_window *window)
+{
+#define F(field) offsetof(struct weston_wm_window, field)
+	const struct {
+		xcb_atom_t atom;
+		xcb_atom_t type;
+		int offset;
+	} props[] = {
+		{ XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, F(class) },
+		{ XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, F(transient_for) },
+		{ wm->atom.wm_protocols, TYPE_WM_PROTOCOLS, F(protocols) },
+		{ wm->atom.net_wm_window_type, XCB_ATOM_ATOM, F(type) },
+		{ wm->atom.net_wm_name, XCB_ATOM_STRING, F(name) },
+	};
+#undef F
+
+	xcb_get_property_cookie_t cookie[ARRAY_LENGTH(props)];
+	xcb_get_property_reply_t *reply;
+	void *p;
+	uint32_t *xid;
+	xcb_atom_t *atom;
+	uint32_t i;
+
+	dump_window_properties(wm, window->id);
+
+	for (i = 0; i < ARRAY_LENGTH(props); i++)
+		cookie[i] = xcb_get_property(wm->conn,
+					     0, /* delete */
+					     window->id,
+					     props[i].atom,
+					     XCB_ATOM_ANY, 0, 2048);
+
+	for (i = 0; i < ARRAY_LENGTH(props); i++)  {
+		reply = xcb_get_property_reply(wm->conn, cookie[i], NULL);
+		if (!reply)
+			/* Bad window, typically */
+			continue;
+		if (reply->type == XCB_ATOM_NONE) {
+			/* No such property */
+			free(reply);
+			continue;
+		}
+
+		p = ((char *) window + props[i].offset);
+
+		switch (props[i].type) {
+		case XCB_ATOM_STRING:
+			/* FIXME: We're using this for both string and
+			   utf8_string */
+			*(char **) p =
+				strndup(xcb_get_property_value(reply),
+					xcb_get_property_value_length(reply));
+			break;
+		case XCB_ATOM_WINDOW:
+			xid = xcb_get_property_value(reply);
+			*(struct weston_wm_window **) p =
+				hash_table_lookup(wm->window_hash, *xid);
+			break;
+		case XCB_ATOM_ATOM:
+			atom = xcb_get_property_value(reply);
+			*(xcb_atom_t *) p = *atom;
+			break;
+		case TYPE_WM_PROTOCOLS:
+			break;
+		default:
+			break;
+		}
+		free(reply);
+	}
+
+	fprintf(stderr, "window %d: name %s, class %s, transient_for %d\n",
+		window->id, window->name, window->class,
+		window->transient_for ? window->transient_for->id : 0);
+}
+
 static void
 xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 		      struct wl_resource *surface_resource, uint32_t id)
@@ -1532,6 +1535,8 @@ xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	fprintf(stderr, "set_window_id %d for surface %p\n", id, surface);
+
+	read_window_properties(wm, window);
 
 	window->surface = (struct weston_surface *) surface;
 	window->surface_destroy_listener.notify = surface_destroy;
