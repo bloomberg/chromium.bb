@@ -34,8 +34,12 @@ class PrerenderTabHelper : public content::WebContentsObserver {
       const GURL& validated_url,
       bool is_error_page,
       content::RenderViewHost* render_view_host) OVERRIDE;
-
-  // Called when this prerendered WebContents has just been swapped in.
+ virtual void DidCommitProvisionalLoadForFrame(
+      int64 frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      content::PageTransition transition_type) OVERRIDE;
+  // Called when this prerendered TabContents has just been swapped in.
   void PrerenderSwappedIn();
 
   void UpdateTargetURL(int32 page_id, const GURL& url);

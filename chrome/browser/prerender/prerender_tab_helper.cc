@@ -189,7 +189,21 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
   if (prerender_manager->IsWebContentsPrerendering(web_contents()))
     return;
   prerender_manager->MarkWebContentsAsNotPrerendered(web_contents());
-  prerender_manager->RecordNavigation(url);
+}
+
+void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
+    int64 frame_id,
+    bool is_main_frame,
+    const GURL& validated_url,
+    content::PageTransition transition_type) {
+  if (!is_main_frame)
+    return;
+  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
+  if (!prerender_manager)
+    return;
+  if (prerender_manager->IsWebContentsPrerendering(web_contents()))
+    return;
+  prerender_manager->RecordNavigation(validated_url);
 }
 
 void PrerenderTabHelper::UpdateTargetURL(int32 page_id, const GURL& url) {
