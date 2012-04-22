@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,63 +9,68 @@
 #include "base/utf_string_conversions.h"
 
 extern "C" {
-#include "third_party/lzma_sdk/Archive/7z/7zExtract.h"
-#include "third_party/lzma_sdk/Archive/7z/7zIn.h"
+#include "third_party/lzma_sdk/7z.h"
+#include "third_party/lzma_sdk/7zAlloc.h"
 #include "third_party/lzma_sdk/7zCrc.h"
+#include "third_party/lzma_sdk/7zFile.h"
 }
 
 
 namespace {
 
-typedef struct _CFileInStream {
-  ISzInStream InStream;
-  HANDLE File;
-} CFileInStream;
-
-
-size_t LzmaReadFile(HANDLE file, void *data, size_t size) {
-  if (size == 0)
-    return 0;
+SRes LzmaReadFile(HANDLE file, void *data, size_t *size) {
+  if (*size == 0)
+    return SZ_OK;
 
   size_t processedSize = 0;
+  DWORD maxSize = *size;
   do {
     DWORD processedLoc = 0;
-    BOOL res = ReadFile(file, data, (DWORD) size, &processedLoc, NULL);
+    BOOL res = ReadFile(file, data, maxSize, &processedLoc, NULL);
     data = (void *)((unsigned char *) data + processedLoc);
-    size -= processedLoc;
+    maxSize -= processedLoc;
     processedSize += processedLoc;
-    if (!res || processedLoc == 0)
-      break;
-  } while (size > 0);
+    if (processedLoc == 0) {
+      if (res)
+        return SZ_ERROR_READ;
+      else
+        break;
+    }
+  } while (maxSize > 0);
 
-  return processedSize;
+  *size = processedSize;
+  return SZ_OK;
 }
 
-SZ_RESULT SzFileSeekImp(void *object, CFileSize pos) {
+SRes SzFileSeekImp(void *object, Int64 *pos, ESzSeek origin) {
   CFileInStream *s = (CFileInStream *) object;
   LARGE_INTEGER value;
-  value.LowPart = (DWORD) pos;
-  value.HighPart = (LONG) ((UInt64) pos >> 32);
-  value.LowPart = SetFilePointer(s->File, value.LowPart, &value.HighPart,
-                                 FILE_BEGIN);
+  value.LowPart = (DWORD) *pos;
+  value.HighPart = (LONG) ((UInt64) *pos >> 32);
+  DWORD moveMethod;
+  switch (origin) {
+    case SZ_SEEK_SET:
+      moveMethod = FILE_BEGIN;
+      break;
+    case SZ_SEEK_CUR:
+      moveMethod = FILE_CURRENT;
+      break;
+    case SZ_SEEK_END:
+      moveMethod = FILE_END;
+      break;
+    default:
+      return SZ_ERROR_PARAM;
+  }
+  value.LowPart = SetFilePointer(s->file.handle, value.LowPart, &value.HighPart,
+                                 moveMethod);
+  *pos = ((Int64)value.HighPart << 32) | value.LowPart;
   return ((value.LowPart == 0xFFFFFFFF) && (GetLastError() != NO_ERROR)) ?
-      SZE_FAIL : SZ_OK;
+      SZ_ERROR_FAIL : SZ_OK;
 }
 
-SZ_RESULT SzFileReadImp(void *object, void **buffer,
-                        size_t maxRequiredSize, size_t *processedSize) {
-  const int kBufferSize = 1 << 12;
-  static Byte g_Buffer[kBufferSize];
-  if (maxRequiredSize > kBufferSize)
-    maxRequiredSize = kBufferSize;
-
+SRes SzFileReadImp(void *object, void *buffer, size_t *size) {
   CFileInStream *s = (CFileInStream *) object;
-  size_t processedSizeLoc;
-  processedSizeLoc = LzmaReadFile(s->File, g_Buffer, maxRequiredSize);
-  *buffer = g_Buffer;
-  if (processedSize != 0)
-    *processedSize = processedSizeLoc;
-  return SZ_OK;
+  return LzmaReadFile(s->file.handle, buffer, size);
 }
 
 }  // namespace
@@ -122,50 +127,66 @@ DWORD LzmaUtil::UnPack(const std::wstring& location,
     return ERROR_INVALID_HANDLE;
 
   CFileInStream archiveStream;
+  CLookToRead lookStream;
+  CSzArEx db;
   ISzAlloc allocImp;
   ISzAlloc allocTempImp;
-  CArchiveDatabaseEx db;
   DWORD ret = NO_ERROR;
 
-  archiveStream.File = archive_handle_;
-  archiveStream.InStream.Read = SzFileReadImp;
-  archiveStream.InStream.Seek = SzFileSeekImp;
+  archiveStream.file.handle = archive_handle_;
+  archiveStream.s.Read = SzFileReadImp;
+  archiveStream.s.Seek = SzFileSeekImp;
+  LookToRead_CreateVTable(&lookStream, false);
+  lookStream.realStream = &archiveStream.s;
+
   allocImp.Alloc = SzAlloc;
   allocImp.Free = SzFree;
   allocTempImp.Alloc = SzAllocTemp;
   allocTempImp.Free = SzFreeTemp;
 
   CrcGenerateTable();
-  SzArDbExInit(&db);
-  if ((ret = SzArchiveOpen(&archiveStream.InStream, &db,
-                           &allocImp, &allocTempImp)) != SZ_OK) {
+  SzArEx_Init(&db);
+  if ((ret = SzArEx_Open(&db, &lookStream.s,
+                         &allocImp, &allocTempImp)) != SZ_OK) {
     LOG(ERROR) << L"Error returned by SzArchiveOpen: " << ret;
-    return ret;
+    return ERROR_INVALID_HANDLE;
   }
 
   Byte *outBuffer = 0; // it must be 0 before first call for each new archive
   UInt32 blockIndex = 0xFFFFFFFF; // can have any value if outBuffer = 0
   size_t outBufferSize = 0;  // can have any value if outBuffer = 0
 
-  for (unsigned int i = 0; i < db.Database.NumFiles; i++) {
+  for (unsigned int i = 0; i < db.db.NumFiles; i++) {
     DWORD written;
     size_t offset;
     size_t outSizeProcessed;
-    CFileItem *f = db.Database.Files + i;
+    CSzFileItem *f = db.db.Files + i;
 
-    if ((ret = SzExtract(&archiveStream.InStream, &db, i, &blockIndex,
+    if ((ret = SzArEx_Extract(&db, &lookStream.s, i, &blockIndex,
                          &outBuffer, &outBufferSize, &offset, &outSizeProcessed,
                          &allocImp, &allocTempImp)) != SZ_OK) {
       LOG(ERROR) << L"Error returned by SzExtract: " << ret;
+      ret = ERROR_INVALID_HANDLE;
       break;
     }
 
-    FilePath file_path = FilePath(location).Append(UTF8ToWide(f->Name));
+    size_t file_name_length = SzArEx_GetFileNameUtf16(&db, i, NULL);
+    if (file_name_length < 1) {
+      LOG(ERROR) << L"Couldn't get file name";
+      ret = ERROR_INVALID_HANDLE;
+      break;
+    }
+    std::vector<UInt16> file_name(file_name_length);
+    SzArEx_GetFileNameUtf16(&db, i, &file_name[0]);
+    // |file_name| is NULL-terminated.
+    FilePath file_path = FilePath(location).Append(
+        FilePath::StringType(file_name.begin(), file_name.end() - 1));
+
     if (output_file)
       *output_file = file_path.value();
 
     // If archive entry is directory create it and move on to the next entry.
-    if (f->IsDirectory) {
+    if (f->IsDir) {
       CreateDirectory(file_path);
       continue;
     }
@@ -190,9 +211,9 @@ DWORD LzmaUtil::UnPack(const std::wstring& location,
       break;
     }
 
-    if (f->IsLastWriteTimeDefined) {
+    if (f->MTimeDefined) {
       if (!SetFileTime(hFile, NULL, NULL,
-                       (const FILETIME *)&(f->LastWriteTime))) {
+                       (const FILETIME *)&(f->MTime))) {
         ret = GetLastError();
         CloseHandle(hFile);
         LOG(ERROR) << L"Error returned by SetFileTime: " << ret;
@@ -206,8 +227,8 @@ DWORD LzmaUtil::UnPack(const std::wstring& location,
     }
   }  // for loop
 
-  allocImp.Free(outBuffer);
-  SzArDbExFree(&db, allocImp.Free);
+  IAlloc_Free(&allocImp, outBuffer);
+  SzArEx_Free(&db, &allocImp);
   return ret;
 }
 

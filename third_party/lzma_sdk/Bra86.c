@@ -1,29 +1,30 @@
-/* BranchX86.c */
+/* Bra86.c -- Converter for x86 code (BCJ)
+2008-10-04 : Igor Pavlov : Public domain */
 
-#include "BranchX86.h"
+#include "Bra.h"
 
 #define Test86MSByte(b) ((b) == 0 || (b) == 0xFF)
 
 const Byte kMaskToAllowedStatus[8] = {1, 1, 1, 0, 1, 0, 0, 0};
 const Byte kMaskToBitNumber[8] = {0, 1, 2, 2, 3, 3, 3, 3};
 
-SizeT x86_Convert(Byte *buffer, SizeT endPos, UInt32 nowPos, UInt32 *prevMaskMix, int encoding)
+SizeT x86_Convert(Byte *data, SizeT size, UInt32 ip, UInt32 *state, int encoding)
 {
   SizeT bufferPos = 0, prevPosT;
-  UInt32 prevMask = *prevMaskMix & 0x7;
-  if (endPos < 5)
+  UInt32 prevMask = *state & 0x7;
+  if (size < 5)
     return 0;
-  nowPos += 5;
+  ip += 5;
   prevPosT = (SizeT)0 - 1;
 
-  for(;;)
+  for (;;)
   {
-    Byte *p = buffer + bufferPos;
-    Byte *limit = buffer + endPos - 4;
+    Byte *p = data + bufferPos;
+    Byte *limit = data + size - 4;
     for (; p < limit; p++)
       if ((*p & 0xFE) == 0xE8)
         break;
-    bufferPos = (SizeT)(p - buffer);
+    bufferPos = (SizeT)(p - data);
     if (p >= limit)
       break;
     prevPosT = bufferPos - prevPosT;
@@ -55,9 +56,9 @@ SizeT x86_Convert(Byte *buffer, SizeT endPos, UInt32 nowPos, UInt32 *prevMaskMix
         Byte b;
         int index;
         if (encoding)
-          dest = (nowPos + (UInt32)bufferPos) + src;
+          dest = (ip + (UInt32)bufferPos) + src;
         else
-          dest = src - (nowPos + (UInt32)bufferPos);
+          dest = src - (ip + (UInt32)bufferPos);
         if (prevMask == 0)
           break;
         index = kMaskToBitNumber[prevMask] * 8;
@@ -79,6 +80,6 @@ SizeT x86_Convert(Byte *buffer, SizeT endPos, UInt32 nowPos, UInt32 *prevMaskMix
     }
   }
   prevPosT = bufferPos - prevPosT;
-  *prevMaskMix = ((prevPosT > 3) ? 0 : ((prevMask << ((int)prevPosT - 1)) & 0x7));
+  *state = ((prevPosT > 3) ? 0 : ((prevMask << ((int)prevPosT - 1)) & 0x7));
   return bufferPos;
 }
