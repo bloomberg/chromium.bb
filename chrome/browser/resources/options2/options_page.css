@@ -37,6 +37,11 @@ body {
   min-width: 600px;
 }
 
+body.uber-frame #searchBox {
+  position: fixed;
+  z-index: 4;
+}
+
 div.disabled {
   color: #999;
 }

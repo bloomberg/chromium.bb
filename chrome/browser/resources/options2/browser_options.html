@@ -1,12 +1,6 @@
 <div id="settings" class="page" hidden>
   <header>
     <h1 i18n-content="settingsTitle"></h1>
-    <span id="browser-options-search-field-container"
-        class="search-field-container">
-      <input id="search-field" type="search"
-          i18n-values="placeholder:searchPlaceholder;
-                       aria-label:searchPlaceholder" incremental>
-    </span>
   </header>
 <if expr="not pp_ifdef('chromeos')">
   <include src="sync_section.html">

@@ -230,11 +230,8 @@ cr.define('options', function() {
 
       if (active) {
         this.setSearchText_(this.searchField.value);
-        $('search-page-search-field-container').appendChild(this.searchField);
         this.searchField.focus();
       } else {
-        $('browser-options-search-field-container').appendChild(
-            this.searchField);
         // After hiding all page content, remove any search results.
         this.unhighlightMatches_();
         this.removeSearchBubbles_();
