@@ -112,9 +112,9 @@ typedef int		FcBool;
 #define FC_DECORATIVE	    "decorative"	/* Bool - true if style is a decorative variant */
 #define FC_LCD_FILTER	    "lcdfilter"		/* Int */
 
-#define FC_CACHE_SUFFIX		    ".cache-"FC_CACHE_VERSION
-#define FC_DIR_CACHE_FILE	    "fonts.cache-"FC_CACHE_VERSION
-#define FC_USER_CACHE_FILE	    ".fonts.cache-"FC_CACHE_VERSION
+#define FC_CACHE_SUFFIX		    ".cache-" FC_CACHE_VERSION
+#define FC_DIR_CACHE_FILE	    "fonts.cache-" FC_CACHE_VERSION
+#define FC_USER_CACHE_FILE	    ".fonts.cache-" FC_CACHE_VERSION
 
 /* Adjust outline rasterizer */
 #define FC_CHAR_WIDTH	    "charwidth"	/* Int */
