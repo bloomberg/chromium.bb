@@ -577,25 +577,13 @@ weston_xserver_surface_activate(struct wl_listener *listener, void *data)
 				     XCB_TIME_CURRENT_TIME);
 }
 
-static void
-weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
-{
-	xcb_map_request_event_t *map_request =
-		(xcb_map_request_event_t *) event;
-
-	fprintf(stderr, "XCB_MAP_REQUEST (window %d)\n", map_request->window);
-
-	xcb_map_window(wm->conn, map_request->window);
-}
-
 /* We reuse some predefined, but otherwise useles atoms */
 #define TYPE_WM_PROTOCOLS XCB_ATOM_CUT_BUFFER0
 
 static void
-weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
+weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 {
 #define F(field) offsetof(struct weston_wm_window, field)
-
 	const struct {
 		xcb_atom_t atom;
 		xcb_atom_t type;
@@ -609,7 +597,8 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	};
 #undef F
 
-	xcb_map_notify_event_t *map_notify = (xcb_map_notify_event_t *) event;
+	xcb_map_request_event_t *map_request =
+		(xcb_map_request_event_t *) event;
 	xcb_get_property_cookie_t cookie[ARRAY_LENGTH(props)];
 	xcb_get_property_reply_t *reply;
 	struct weston_wm_window *window;
@@ -618,11 +607,11 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_atom_t *atom;
 	uint32_t i;
 
-	fprintf(stderr, "XCB_MAP_NOTIFY (window %d)\n", map_notify->window);
+	fprintf(stderr, "XCB_MAP_REQUEST (window %d)\n", map_request->window);
 
-	dump_window_properties(wm, map_notify->window);
+	dump_window_properties(wm, map_request->window);
 
-	window = hash_table_lookup(wm->window_hash, map_notify->window);
+	window = hash_table_lookup(wm->window_hash, map_request->window);
 
 	for (i = 0; i < ARRAY_LENGTH(props); i++)
 		cookie[i] = xcb_get_property(wm->conn,
@@ -672,6 +661,19 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	fprintf(stderr, "window %d: name %s, class %s, transient_for %d\n",
 		window->id, window->name, window->class,
 		window->transient_for ? window->transient_for->id : 0);
+
+	xcb_map_window(wm->conn, map_request->window);
+}
+
+static void
+weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
+{
+	xcb_map_notify_event_t *map_notify = (xcb_map_notify_event_t *) event;
+	struct weston_wm_window *window;
+
+	fprintf(stderr, "XCB_MAP_NOTIFY (window %d)\n", map_notify->window);
+
+	window = hash_table_lookup(wm->window_hash, map_notify->window);
 	weston_wm_activate(wm, window, XCB_TIME_CURRENT_TIME);
 }
 
