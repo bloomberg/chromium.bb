@@ -578,7 +578,44 @@ IPConfigStatus* CrosListIPConfigs(const std::string& device_path) {
 }
 
 bool CrosAddIPConfig(const std::string& device_path, IPConfigType type) {
-  return chromeos::AddIPConfig(device_path.c_str(), type);
+  if (g_libcros_network_functions_enabled) {
+    return chromeos::AddIPConfig(device_path.c_str(), type);
+  } else {
+    std::string type_str;
+    switch (type) {
+      case IPCONFIG_TYPE_IPV4:
+        type_str = flimflam::kTypeIPv4;
+        break;
+      case IPCONFIG_TYPE_IPV6:
+        type_str = flimflam::kTypeIPv6;
+        break;
+      case IPCONFIG_TYPE_DHCP:
+        type_str = flimflam::kTypeDHCP;
+        break;
+      case IPCONFIG_TYPE_BOOTP:
+        type_str = flimflam::kTypeBOOTP;
+        break;
+      case IPCONFIG_TYPE_ZEROCONF:
+        type_str = flimflam::kTypeZeroConf;
+        break;
+      case IPCONFIG_TYPE_DHCP6:
+        type_str = flimflam::kTypeDHCP6;
+        break;
+      case IPCONFIG_TYPE_PPP:
+        type_str = flimflam::kTypePPP;
+        break;
+      default:
+        return false;
+    };
+    const dbus::ObjectPath result =
+        DBusThreadManager::Get()->GetFlimflamDeviceClient()->
+        CallAddIPConfigAndBlock(dbus::ObjectPath(device_path), type_str);
+    if (result.value().empty()) {
+      LOG(WARNING) <<"Add IPConfig failed: ";
+      return false;
+    }
+    return true;
+  }
 }
 
 bool CrosRemoveIPConfig(IPConfig* config) {

@@ -21,6 +21,7 @@
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Pointee;
+using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrEq;
 
@@ -595,6 +596,13 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkDeviceEnable) {
   CrosRequestNetworkDeviceEnable(flimflam::kTypeWifi, kEnable);
 }
 
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosAddIPConfig) {
+  const std::string device_path = "/device/path";
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              AddIPConfig(StrEq(device_path), IPCONFIG_TYPE_DHCP)).Times(1);
+  CrosAddIPConfig(device_path, IPCONFIG_TYPE_DHCP);
+}
+
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRemoveIPConfig) {
   IPConfig config = {};
   config.path = "/path";
@@ -959,6 +967,16 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkDeviceEnable) {
   EXPECT_CALL(*mock_manager_client_,
               DisableTechnology(flimflam::kTypeWifi, _)).Times(1);
   CrosRequestNetworkDeviceEnable(flimflam::kTypeWifi, kDisable);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosAddIPConfig) {
+  const std::string device_path = "/device/path";
+  const dbus::ObjectPath result_path("/result/path");
+  EXPECT_CALL(*mock_device_client_,
+              CallAddIPConfigAndBlock(dbus::ObjectPath(device_path),
+                                      flimflam::kTypeDHCP))
+      .WillOnce(Return(result_path));
+  EXPECT_TRUE(CrosAddIPConfig(device_path, IPCONFIG_TYPE_DHCP));
 }
 
 TEST_F(CrosNetworkFunctionsTest, CrosRemoveIPConfig) {

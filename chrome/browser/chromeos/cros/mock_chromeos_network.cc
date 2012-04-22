@@ -193,6 +193,11 @@ void CallMockRequestNetworkDeviceEnable(const char* network_type, bool enable) {
   g_mock_chromeos_network->RequestNetworkDeviceEnable(network_type, enable);
 }
 
+// Calls mock AddIPConfig.
+bool CallMockAddIPConfig(const char* device_path, IPConfigType type) {
+  return g_mock_chromeos_network->AddIPConfig(device_path, type);
+}
+
 // Calls mock RemoveIPConfig.
 bool CallMockRemoveIPConfig(IPConfig* config) {
   return g_mock_chromeos_network->RemoveIPConfig(config);
@@ -267,6 +272,7 @@ void MockChromeOSNetwork::Initialize() {
         &CallMockRequestRemoveNetworkService;
     chromeos::RequestNetworkScan = &CallMockRequestNetworkScan;
     chromeos::RequestNetworkDeviceEnable = &CallMockRequestNetworkDeviceEnable;
+    chromeos::AddIPConfig = &CallMockAddIPConfig;
     chromeos::RemoveIPConfig = &CallMockRemoveIPConfig;
     chromeos::ConfigureService = &CallMockConfigureService;
   } else {
@@ -302,6 +308,7 @@ void MockChromeOSNetwork::Shutdown() {
     chromeos::RequestRemoveNetworkService = NULL;
     chromeos::RequestNetworkScan = NULL;
     chromeos::RequestNetworkDeviceEnable = NULL;
+    chromeos::AddIPConfig = NULL;
     chromeos::RemoveIPConfig = NULL;
     chromeos::ConfigureService = NULL;
   } else {
