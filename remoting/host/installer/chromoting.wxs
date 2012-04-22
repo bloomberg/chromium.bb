@@ -84,8 +84,7 @@
     </Directory>
 
     <DirectoryRef Id="binaries" FileSource="$(var.FileSource)">
-      <Component Id="sas.dll"
-                 Guid="3c33dd97-3750-467f-8ec6-730611d346d4">
+      <Component Id="sas.dll" Guid="*">
         <File Id="sas.dll"
               DiskId="1"
               Name="sas.dll"
@@ -93,8 +92,7 @@
               Vital="yes"/>
       </Component>
 
-      <Component Id="remoting_host"
-                 Guid="8b5f7392-dfa9-4fa3-83ac-87bd6676da50">
+      <Component Id="remoting_service" Guid="*">
         <File Id="remoting_service.exe"
               DiskId="1"
               KeyPath="yes"
@@ -107,7 +105,7 @@
                         Name="$(var.ServiceName)"
                         DisplayName="@[#remoting_service.exe],-101"
                         Description="@[#remoting_service.exe],-102"
-                        Arguments="--host-binary=&quot;[#remoting_me2me_host.exe]&quot; --auth-config=&quot;[config_files]host.json&quot; --host-config=&quot;[config_files]host.json&quot;"
+                        Arguments="--host-binary=&quot;[binaries]remoting_me2me_host.exe&quot; --auth-config=&quot;[config_files]host.json&quot; --host-config=&quot;[config_files]host.json&quot;"
                         Start="demand"
                         Account="LocalSystem"
                         ErrorControl="ignore"
@@ -118,7 +116,9 @@
                         Remove="uninstall"
                         Name="$(var.ServiceName)"
                         Wait="yes" />
+      </Component>
 
+      <Component Id="remoting_me2me_host" Guid="*">
         <File Id="remoting_me2me_host.exe"
               DiskId="1"
               Name="remoting_me2me_host.exe"
@@ -142,8 +142,7 @@
       </Component>
 
       <?ifdef OfficialBuild ?>
-        <Component Id="omaha_registration"
-                   Guid="9a14673d-9518-4cf3-b737-52f09f02a10b">
+        <Component Id="omaha_registration" Guid="*">
           <RegistryKey Id="omaha_client_key"
                        Root="HKLM"
                        Key="SOFTWARE\Google\Update\Clients\$(var.OmahaAppid)"
@@ -159,8 +158,7 @@
         </Component>
       <?endif?>
 
-      <Component Id="service_controller"
-                 Guid="a559f5ba-4b11-4a6e-a1e9-70d9166cb8fc">
+      <Component Id="service_controller" Guid="*">
         <File Id="$(var.ControllerBinary)"
               DiskId="1"
               Name="$(var.ControllerBinary)"
@@ -324,7 +322,8 @@
       <?ifdef OfficialBuild ?>
         <ComponentRef Id="omaha_registration"/>
       <?endif?>
-      <ComponentRef Id="remoting_host"/>
+      <ComponentRef Id="remoting_me2me_host"/>
+      <ComponentRef Id="remoting_service"/>
       <ComponentRef Id="sas.dll"/>
       <ComponentRef Id="service_controller"/>
     </Feature>
