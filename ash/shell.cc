@@ -162,18 +162,9 @@ void CreateSpecialContainers(aura::RootWindow* root_window) {
       new ToplevelWindowEventFilter(always_on_top_container));
   SetChildWindowVisibilityChangesAnimated(always_on_top_container);
 
-  aura::Window* panel_container = CreateContainer(
-      internal::kShellWindowId_PanelContainer,
-      "PanelContainer",
-      non_lock_screen_containers);
-  if (CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kAuraPanelManager)) {
-    internal::PanelLayoutManager* layout_manager =
-        new internal::PanelLayoutManager(panel_container);
-    panel_container->SetEventFilter(
-        new internal::PanelWindowEventFilter(panel_container, layout_manager));
-    panel_container->SetLayoutManager(layout_manager);
-  }
+  CreateContainer(internal::kShellWindowId_PanelContainer,
+                  "PanelContainer",
+                  non_lock_screen_containers);
 
   CreateContainer(internal::kShellWindowId_AppListContainer,
                   "AppListContainer",
@@ -538,6 +529,7 @@ Shell::Shell(ShellDelegate* delegate)
       root_filter_(NULL),
       delegate_(delegate),
       shelf_(NULL),
+      panel_layout_manager_(NULL),
       root_window_layout_(NULL),
       status_widget_(NULL) {
   gfx::Screen::SetInstance(screen_);
@@ -884,6 +876,8 @@ void Shell::CreateLauncher() {
 
   launcher_->SetFocusCycler(focus_cycler_.get());
   shelf_->SetLauncher(launcher_.get());
+  if (panel_layout_manager_)
+    panel_layout_manager_->SetLauncher(launcher_.get());
 
   launcher_->widget()->Show();
 }
@@ -951,6 +945,19 @@ void Shell::InitLayoutManagers() {
 
   // Create desktop background widget.
   desktop_background_controller_->SetDesktopBackgroundImageMode();
+
+  // Create Panel layout manager
+  if (CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kAuraPanelManager)) {
+    aura::Window* panel_container = GetContainer(
+        internal::kShellWindowId_PanelContainer);
+    panel_layout_manager_ =
+        new internal::PanelLayoutManager(panel_container);
+    panel_container->SetEventFilter(
+        new internal::PanelWindowEventFilter(
+            panel_container, panel_layout_manager_));
+    panel_container->SetLayoutManager(panel_layout_manager_);
+  }
 }
 
 void Shell::DisableWorkspaceGridLayout() {
