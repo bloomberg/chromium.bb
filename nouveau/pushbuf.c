@@ -341,11 +341,8 @@ pushbuf_submit(struct nouveau_pushbuf *push, struct nouveau_object *chan)
 			pushbuf_dump(krec, krec_id++, fifo->channel);
 
 #ifndef SIMULATE
-		do {
-			ret = drmCommandWriteRead(dev->fd,
-						  DRM_NOUVEAU_GEM_PUSHBUF,
-						  &req, sizeof(req));
-		} while (ret == -EAGAIN);
+		ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_GEM_PUSHBUF,
+					  &req, sizeof(req));
 		nvpb->suffix0 = req.suffix0;
 		nvpb->suffix1 = req.suffix1;
 		dev->vram_limit = (req.vram_available * 80) / 100;

@@ -461,12 +461,8 @@ nouveau_bo_wait(struct nouveau_bo *bo, uint32_t access,
 	if (access & NOUVEAU_BO_NOBLOCK)
 		req.flags |= NOUVEAU_GEM_CPU_PREP_NOWAIT;
 
-	do {
-		ret = drmCommandWrite(bo->device->fd,
-				      DRM_NOUVEAU_GEM_CPU_PREP,
-				      &req, sizeof(req));
-	} while (ret == -EAGAIN);
-
+	ret = drmCommandWrite(bo->device->fd, DRM_NOUVEAU_GEM_CPU_PREP,
+			      &req, sizeof(req));
 	if (ret == 0)
 		nvbo->access = 0;
 	return ret;
