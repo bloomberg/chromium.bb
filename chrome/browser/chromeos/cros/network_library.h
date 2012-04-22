@@ -1180,19 +1180,7 @@ struct CellTower {
                          // Each unit is roughly 550 meters.
 };
 
-struct WifiAccessPoint {
-  WifiAccessPoint();
-
-  std::string mac_address;  // The mac address of the WiFi node.
-  std::string name;         // The SSID of the WiFi node.
-  base::Time timestamp;     // Timestamp when this AP was detected.
-  int signal_strength;      // Radio signal strength measured in dBm.
-  int signal_to_noise;      // Current signal to noise ratio measured in dB.
-  int channel;              // Wifi channel number.
-};
-
 typedef std::vector<CellTower> CellTowerVector;
-typedef std::vector<WifiAccessPoint> WifiAccessPointVector;
 
 // IP Configuration.
 struct NetworkIPConfig {

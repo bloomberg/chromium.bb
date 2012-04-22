@@ -10,6 +10,8 @@
 // All calls to functions in chromeos_network.h should be made through
 // functions provided by this header.
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/cros/chromeos_network.h"
@@ -42,6 +44,19 @@ class CrosNetworkWatcher {
  protected:
   CrosNetworkWatcher() {}
 };
+
+struct WifiAccessPoint {
+  WifiAccessPoint();
+
+  std::string mac_address;  // The mac address of the WiFi node.
+  std::string name;         // The SSID of the WiFi node.
+  base::Time timestamp;     // Timestamp when this AP was detected.
+  int signal_strength;      // Radio signal strength measured in dBm.
+  int signal_to_noise;      // Current signal to noise ratio measured in dB.
+  int channel;              // Wifi channel number.
+};
+
+typedef std::vector<WifiAccessPoint> WifiAccessPointVector;
 
 // Enables/Disables Libcros network functions.
 void SetLibcrosNetworkFunctionsEnabled(bool enabled);
@@ -234,16 +249,13 @@ bool CrosRemoveIPConfig(IPConfig* config);
 // Frees out a full status
 void CrosFreeIPConfigStatus(IPConfigStatus* status);
 
-// Retrieves the list of visible network objects. This structure is not cached
-// within the DLL, and is fetched via d-bus on each call.
-// Ownership of the DeviceNetworkList is returned to the caller; use
-// FreeDeviceNetworkList to release it.
-DeviceNetworkList* CrosGetDeviceNetworkList();
-
-// Deletes a DeviceNetworkList type that was allocated in the ChromeOS dll. We
-// need to do this to safely pass data over the dll boundary between our .so
-// and Chrome.
-void CrosFreeDeviceNetworkList(DeviceNetworkList* network_list);
+// Reads out the results of the last wifi scan. These results are not
+// pre-cached in the library, so the call may block whilst the results are
+// read over IPC.
+// Returns false if an error occurred in reading the results. Note that
+// a true return code only indicates the result set was successfully read,
+// it does not imply a scan has successfully completed yet.
+bool CrosGetWifiAccessPoints(WifiAccessPointVector* result);
 
 // Configures the network service specified by |properties|.
 void CrosConfigureService(const base::DictionaryValue& properties);

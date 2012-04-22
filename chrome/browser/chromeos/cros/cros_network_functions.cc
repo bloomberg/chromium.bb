@@ -222,6 +222,12 @@ void OnConfigureService(void* object,
   }
 }
 
+// Safe string constructor since we can't rely on non NULL pointers
+// for string values from libcros.
+std::string SafeString(const char* s) {
+  return s ? std::string(s) : std::string();
+}
+
 // A bool to remember whether we are using Libcros network functions or not.
 bool g_libcros_network_functions_enabled = true;
 
@@ -631,12 +637,27 @@ void CrosFreeIPConfigStatus(IPConfigStatus* status) {
   chromeos::FreeIPConfigStatus(status);
 }
 
-DeviceNetworkList* CrosGetDeviceNetworkList() {
-  return chromeos::GetDeviceNetworkList();
-}
-
-void CrosFreeDeviceNetworkList(DeviceNetworkList* network_list) {
+bool CrosGetWifiAccessPoints(WifiAccessPointVector* result) {
+  DeviceNetworkList* network_list = chromeos::GetDeviceNetworkList();
+  if (network_list == NULL)
+    return false;
+  result->clear();
+  result->reserve(network_list->network_size);
+  const base::Time now = base::Time::Now();
+  for (size_t i = 0; i < network_list->network_size; ++i) {
+    DCHECK(network_list->networks[i].address);
+    DCHECK(network_list->networks[i].name);
+    WifiAccessPoint ap;
+    ap.mac_address = SafeString(network_list->networks[i].address);
+    ap.name = SafeString(network_list->networks[i].name);
+    ap.timestamp = now -
+        base::TimeDelta::FromSeconds(network_list->networks[i].age_seconds);
+    ap.signal_strength = network_list->networks[i].strength;
+    ap.channel = network_list->networks[i].channel;
+    result->push_back(ap);
+  }
   chromeos::FreeDeviceNetworkList(network_list);
+  return true;
 }
 
 void CrosConfigureService(const base::DictionaryValue& properties) {

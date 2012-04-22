@@ -203,6 +203,16 @@ bool CallMockRemoveIPConfig(IPConfig* config) {
   return g_mock_chromeos_network->RemoveIPConfig(config);
 }
 
+// Calls mock GetDeviceNetworkList.
+DeviceNetworkList* CallMockGetDeviceNetworkList() {
+  return g_mock_chromeos_network->GetDeviceNetworkList();
+}
+
+// Calls mock FreeDeviceNetworkList.
+void CallMockFreeDeviceNetworkList(DeviceNetworkList* network_list) {
+  g_mock_chromeos_network->FreeDeviceNetworkList(network_list);
+}
+
 // Calls mock ConfigureService.
 void CallMockConfigureService(const char* identifier,
                               const GHashTable* properties,
@@ -274,6 +284,8 @@ void MockChromeOSNetwork::Initialize() {
     chromeos::RequestNetworkDeviceEnable = &CallMockRequestNetworkDeviceEnable;
     chromeos::AddIPConfig = &CallMockAddIPConfig;
     chromeos::RemoveIPConfig = &CallMockRemoveIPConfig;
+    chromeos::GetDeviceNetworkList = &CallMockGetDeviceNetworkList;
+    chromeos::FreeDeviceNetworkList = &CallMockFreeDeviceNetworkList;
     chromeos::ConfigureService = &CallMockConfigureService;
   } else {
     LOG(ERROR) << "CrosLibrary is initialized.";
@@ -310,6 +322,8 @@ void MockChromeOSNetwork::Shutdown() {
     chromeos::RequestNetworkDeviceEnable = NULL;
     chromeos::AddIPConfig = NULL;
     chromeos::RemoveIPConfig = NULL;
+    chromeos::GetDeviceNetworkList = NULL;
+    chromeos::FreeDeviceNetworkList = NULL;
     chromeos::ConfigureService = NULL;
   } else {
     LOG(ERROR) << "CrosLibrary is initialized.";

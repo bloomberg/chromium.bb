@@ -611,6 +611,45 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRemoveIPConfig) {
   CrosRemoveIPConfig(&config);
 }
 
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosGetWifiAccessPoints) {
+  // Preapare data.
+  std::vector<DeviceNetworkInfo> networks(1);
+  networks[0].device_path = "/device/path";
+  networks[0].network_path = "/network/path";
+  networks[0].address = "address";
+  networks[0].name = "name";
+  networks[0].strength = 42;
+  networks[0].channel = 24;
+  networks[0].connected = true;
+  networks[0].age_seconds = 12345;
+
+  DeviceNetworkList network_list;
+  network_list.network_size = networks.size();
+  network_list.networks = &networks[0];
+
+  const base::Time expected_timestamp =
+      base::Time::Now() - base::TimeDelta::FromSeconds(networks[0].age_seconds);
+  const base::TimeDelta acceptable_timestamp_range =
+      base::TimeDelta::FromSeconds(1);
+
+  // Set expectations.
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              GetDeviceNetworkList()).WillOnce(Return(&network_list));
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              FreeDeviceNetworkList(&network_list)).Times(1);
+
+  // Call function.
+  WifiAccessPointVector aps;
+  ASSERT_TRUE(CrosGetWifiAccessPoints(&aps));
+  ASSERT_EQ(1U, aps.size());
+  EXPECT_EQ(networks[0].address, aps[0].mac_address);
+  EXPECT_EQ(networks[0].name, aps[0].name);
+  EXPECT_LE(expected_timestamp - acceptable_timestamp_range, aps[0].timestamp);
+  EXPECT_GE(expected_timestamp + acceptable_timestamp_range, aps[0].timestamp);
+  EXPECT_EQ(networks[0].strength, aps[0].signal_strength);
+  EXPECT_EQ(networks[0].channel, aps[0].channel);
+}
+
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosConfigureService) {
   EXPECT_CALL(*MockChromeOSNetwork::Get(),
               ConfigureService(_, _, _, _))
