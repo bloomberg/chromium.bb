@@ -424,3 +424,41 @@ TEST(connection_marshal_alot)
 
 	release_marshal_data(&data);
 }
+
+static void
+marshal_helper(const char *format, void *handler, ...)
+{
+	struct wl_closure closure;
+	static struct wl_object sender = { NULL, NULL, 1234 }, object;
+	static const int opcode = 4444;
+	struct wl_message message = { "test", format, NULL };
+	va_list ap;
+	int ret, done;
+
+	va_start(ap, handler);
+	ret = wl_closure_vmarshal(&closure, &sender, opcode, ap, &message);
+	va_end(ap);
+
+	assert(ret == 0);
+	done = 0;
+	wl_closure_invoke(&closure, &object, handler, &done);
+	wl_closure_destroy(&closure);
+	assert(done);
+}
+
+static void
+suu_handler(void *data, struct wl_object *object,
+	    const char *s, uint32_t u1, uint32_t u2)
+{
+	int *done = data;
+
+	assert(strcmp(s, "foo") == 0);
+	assert(u1 = 500);
+	assert(u2 = 404040);
+	*done = 1;
+}
+
+TEST(invoke_closure)
+{
+	marshal_helper("suu", suu_handler, "foo", 500, 404040);
+}
