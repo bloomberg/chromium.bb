@@ -531,7 +531,7 @@ internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
   vm_tests=None,
 )
 
-chrome_pfq = chromium_pfq.derive(
+chrome_pfq = internal_chromium_pfq.derive(
   important=False, # for now...
   chrome_tests=False, # TODO(build-team): Use chrome tests
   overlays=constants.BOTH_OVERLAYS,
