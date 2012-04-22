@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/status_icons/status_icon_win.h"
 
-#include "base/sys_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/icon_util.h"
@@ -12,6 +11,9 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+
+////////////////////////////////////////////////////////////////////////////////
+// StatusIconWin, public:
 
 StatusIconWin::StatusIconWin(UINT id, HWND window, UINT message)
     : icon_id_(id),
@@ -36,16 +38,28 @@ StatusIconWin::~StatusIconWin() {
   Shell_NotifyIcon(NIM_DELETE, &icon_data);
 }
 
-void StatusIconWin::SetImage(const SkBitmap& image) {
-  // Create the icon.
-  NOTIFYICONDATA icon_data;
-  InitIconData(&icon_data);
-  icon_data.uFlags = NIF_ICON;
-  icon_.Set(IconUtil::CreateHICONFromSkBitmap(image));
-  icon_data.hIcon = icon_.Get();
-  BOOL result = Shell_NotifyIcon(NIM_MODIFY, &icon_data);
-  if (!result)
-    LOG(WARNING) << "Error setting status tray icon image";
+void StatusIconWin::HandleClickEvent(const gfx::Point& cursor_pos,
+                                     bool left_mouse_click) {
+  // Pass to the observer if appropriate.
+  if (left_mouse_click && HasObservers()) {
+    DispatchClickEvent();
+    return;
+  }
+
+  if (!menu_model_)
+    return;
+
+  // Set our window as the foreground window, so the context menu closes when
+  // we click away from it.
+  if (!SetForegroundWindow(window_))
+    return;
+
+  views::MenuModelAdapter adapter(menu_model_);
+  menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
+
+  ignore_result(menu_runner_->RunMenuAt(NULL, NULL,
+      gfx::Rect(cursor_pos, gfx::Size()), views::MenuItemView::TOPLEFT,
+      views::MenuRunner::HAS_MNEMONICS));
 }
 
 void StatusIconWin::ResetIcon() {
@@ -65,6 +79,18 @@ void StatusIconWin::ResetIcon() {
   BOOL result = Shell_NotifyIcon(NIM_ADD, &icon_data);
   if (!result)
     LOG(WARNING) << "Unable to re-create status tray icon.";
+}
+
+void StatusIconWin::SetImage(const SkBitmap& image) {
+  // Create the icon.
+  NOTIFYICONDATA icon_data;
+  InitIconData(&icon_data);
+  icon_data.uFlags = NIF_ICON;
+  icon_.Set(IconUtil::CreateHICONFromSkBitmap(image));
+  icon_data.hIcon = icon_.Get();
+  BOOL result = Shell_NotifyIcon(NIM_MODIFY, &icon_data);
+  if (!result)
+    LOG(WARNING) << "Error setting status tray icon image";
 }
 
 void StatusIconWin::SetPressedImage(const SkBitmap& image) {
@@ -112,33 +138,12 @@ void StatusIconWin::DisplayBalloon(const SkBitmap& icon,
     LOG(WARNING) << "Unable to create status tray balloon.";
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// StatusIconWin, private:
+
 void StatusIconWin::UpdatePlatformContextMenu(ui::MenuModel* menu) {
   DCHECK(menu);
   menu_model_ = menu;
-}
-
-void StatusIconWin::HandleClickEvent(const gfx::Point& cursor_pos,
-                                     bool left_mouse_click) {
-  // Pass to the observer if appropriate.
-  if (left_mouse_click && HasObservers()) {
-    DispatchClickEvent();
-    return;
-  }
-
-  if (!menu_model_)
-    return;
-
-  // Set our window as the foreground window, so the context menu closes when
-  // we click away from it.
-  if (!SetForegroundWindow(window_))
-    return;
-
-  views::MenuModelAdapter adapter(menu_model_);
-  menu_runner_.reset(new views::MenuRunner(adapter.CreateMenu()));
-
-  ignore_result(menu_runner_->RunMenuAt(NULL, NULL,
-      gfx::Rect(cursor_pos, gfx::Size()), views::MenuItemView::TOPLEFT,
-      views::MenuRunner::HAS_MNEMONICS));
 }
 
 void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {

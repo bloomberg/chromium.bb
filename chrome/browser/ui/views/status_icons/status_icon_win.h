@@ -29,14 +29,6 @@ class StatusIconWin : public StatusIcon {
   StatusIconWin(UINT id, HWND window, UINT message);
   virtual ~StatusIconWin();
 
-  // Overridden from StatusIcon:
-  virtual void SetImage(const SkBitmap& image) OVERRIDE;
-  virtual void SetPressedImage(const SkBitmap& image) OVERRIDE;
-  virtual void SetToolTip(const string16& tool_tip) OVERRIDE;
-  virtual void DisplayBalloon(const SkBitmap& icon,
-                              const string16& title,
-                              const string16& contents) OVERRIDE;
-
   // Handles a click event from the user - if |left_button_click| is true and
   // there is a registered observer, passes the click event to the observer,
   // otherwise displays the context menu if there is one.
@@ -46,14 +38,20 @@ class StatusIconWin : public StatusIcon {
   void ResetIcon();
 
   UINT icon_id() const { return icon_id_; }
-
   UINT message_id() const { return message_id_; }
 
- protected:
+  // Overridden from StatusIcon:
+  virtual void SetImage(const SkBitmap& image) OVERRIDE;
+  virtual void SetPressedImage(const SkBitmap& image) OVERRIDE;
+  virtual void SetToolTip(const string16& tool_tip) OVERRIDE;
+  virtual void DisplayBalloon(const SkBitmap& icon,
+                              const string16& title,
+                              const string16& contents) OVERRIDE;
+
+ private:
   // Overridden from StatusIcon:
   virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) OVERRIDE;
 
- private:
   void InitIconData(NOTIFYICONDATA* icon_data);
 
   // The unique ID corresponding to this icon.
