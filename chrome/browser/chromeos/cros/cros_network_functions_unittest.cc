@@ -599,9 +599,8 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRemoveIPConfig) {
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosConfigureService) {
-  const char identifier[] = "identifier";
   EXPECT_CALL(*MockChromeOSNetwork::Get(),
-              ConfigureService(identifier, _, &OnNetworkAction, this))
+              ConfigureService(_, _, _, _))
               .WillOnce(Invoke(
                   this, &CrosNetworkFunctionsLibcrosTest::OnConfigureService));
   const char key1[] = "key1";
@@ -611,7 +610,7 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosConfigureService) {
   base::DictionaryValue value;
   value.SetString(key1, string1);
   value.SetString(key2, string2);
-  CrosConfigureService(identifier, value, &OnNetworkAction, this);
+  CrosConfigureService(value);
 
   // Check the argument GHashTable.
   const GValue* string1_gvalue = static_cast<const GValue*>(
@@ -967,6 +966,19 @@ TEST_F(CrosNetworkFunctionsTest, CrosRemoveIPConfig) {
   EXPECT_CALL(*mock_ipconfig_client_,
               CallRemoveAndBlock(dbus::ObjectPath(config.path))).Times(1);
   CrosRemoveIPConfig(&config);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosConfigureService) {
+  const char key1[] = "key1";
+  const std::string string1 = "string1";
+  const char key2[] = "key2";
+  const std::string string2 = "string2";
+  base::DictionaryValue value;
+  value.SetString(key1, string1);
+  value.SetString(key2, string2);
+  EXPECT_CALL(*mock_manager_client_, ConfigureService(IsEqualTo(&value), _))
+      .Times(1);
+  CrosConfigureService(value);
 }
 
 }  // namespace chromeos

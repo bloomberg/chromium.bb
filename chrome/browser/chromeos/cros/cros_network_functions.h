@@ -244,13 +244,7 @@ DeviceNetworkList* CrosGetDeviceNetworkList();
 void CrosFreeDeviceNetworkList(DeviceNetworkList* network_list);
 
 // Configures the network service specified by |properties|.
-// |identifier| can be the service path, guid, or any other identifier
-// specified by the calling code; it is ignored by libcros and flimflam,
-// except to pass it back in |callback| as |path|.
-void CrosConfigureService(const char* identifier,
-                          const base::DictionaryValue& properties,
-                          NetworkActionCallback callback,
-                          void* object);
+void CrosConfigureService(const base::DictionaryValue& properties);
 
 }  // namespace chromeos
 

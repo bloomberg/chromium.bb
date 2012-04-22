@@ -214,23 +214,9 @@ bool NetworkLibraryImplCros::UpdateCellularDeviceStatus(
 /////////////////////////////////////////////////////////////////////////////
 // NetworkLibraryImplBase connect implementation.
 
-// static callback
-void NetworkLibraryImplCros::ConfigureServiceCallback(
-    void* object,
-    const char* service_path,
-    NetworkMethodErrorType error,
-    const char* error_message) {
-  if (error != NETWORK_METHOD_ERROR_NONE) {
-    LOG(WARNING) << "Error from ConfigureService callback for: "
-                 << service_path
-                 << " Error: " << error << " Message: " << error_message;
-  }
-}
-
 void NetworkLibraryImplCros::CallConfigureService(const std::string& identifier,
                                                   const DictionaryValue* info) {
-  CrosConfigureService(identifier.c_str(), *info,
-                       ConfigureServiceCallback, this);
+  CrosConfigureService(*info);
 }
 
 // static callback

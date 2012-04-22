@@ -102,11 +102,6 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
                                        NetworkMethodErrorType error,
                                        const char* error_message);
 
-  static void ConfigureServiceCallback(void* object,
-                                       const char* service_path,
-                                       NetworkMethodErrorType error,
-                                       const char* error_message);
-
   static void NetworkConnectCallback(void* object,
                                      const char* service_path,
                                      NetworkMethodErrorType error,

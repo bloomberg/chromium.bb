@@ -211,6 +211,17 @@ void RunCallbackWithDictionaryValue(const NetworkPropertiesCallback& callback,
   callback.Run(path, call_status == DBUS_METHOD_CALL_SUCCESS ? &value : NULL);
 }
 
+// Used as a callback for chromeos::ConfigureService.
+void OnConfigureService(void* object,
+                        const char* service_path,
+                        NetworkMethodErrorType error,
+                        const char* error_message) {
+  if (error != NETWORK_METHOD_ERROR_NONE) {
+    LOG(WARNING) << "Error from ConfigureService callback: "
+                 << " Error: " << error << " Message: " << error_message;
+  }
+}
+
 // A bool to remember whether we are using Libcros network functions or not.
 bool g_libcros_network_functions_enabled = true;
 
@@ -579,13 +590,15 @@ void CrosFreeDeviceNetworkList(DeviceNetworkList* network_list) {
   chromeos::FreeDeviceNetworkList(network_list);
 }
 
-void CrosConfigureService(const char* identifier,
-                          const base::DictionaryValue& properties,
-                          NetworkActionCallback callback,
-                          void* object) {
-  ScopedGHashTable ghash(
-      ConvertDictionaryValueToStringValueGHashTable(properties));
-  chromeos::ConfigureService(identifier, ghash.get(), callback, object);
+void CrosConfigureService(const base::DictionaryValue& properties) {
+  if (g_libcros_network_functions_enabled) {
+    ScopedGHashTable ghash(
+        ConvertDictionaryValueToStringValueGHashTable(properties));
+    chromeos::ConfigureService("", ghash.get(), OnConfigureService, NULL);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamManagerClient()->ConfigureService(
+        properties, base::Bind(&DoNothing));
+  }
 }
 
 }  // namespace chromeos
