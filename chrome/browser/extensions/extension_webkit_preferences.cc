@@ -26,6 +26,13 @@ void SetPreferences(const Extension* extension,
     // Tabs aren't typically allowed to close windows. But extensions shouldn't
     // be subject to that.
     webkit_prefs->allow_scripts_to_close_windows = true;
+
+    // Disable force-compositing-mode for extension background pages, to reduce
+    // memory impact of extensions. See crbug.com/123935. This also "works
+    // around" crbug.com/123935
+    if (render_view_type == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+      webkit_prefs->force_compositing_mode = false;
+    }
   }
 
   if (extension->is_platform_app()) {
