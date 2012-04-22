@@ -1011,7 +1011,7 @@ CellularNetwork::~CellularNetwork() {
 bool CellularNetwork::StartActivation() {
   if (!EnsureCrosLoaded())
     return false;
-  if (!CrosActivateCellularModem(service_path().c_str(), NULL))
+  if (!CrosActivateCellularModem(service_path().c_str(), ""))
     return false;
   // Don't wait for flimflam to tell us that we are really activating since
   // other notifications in the message loop might cause us to think that
