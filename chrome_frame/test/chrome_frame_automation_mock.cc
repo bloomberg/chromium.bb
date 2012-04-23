@@ -6,11 +6,12 @@
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-const int kLongWaitTimeout = 25 * 1000;
+const base::TimeDelta kLongWaitTimeout = base::TimeDelta::FromSeconds(25);
 
 TEST(ChromeFrame, Launch) {
   MessageLoopForUI loop;
-  AutomationMockLaunch mock_launch(&loop, kLongWaitTimeout);
+  AutomationMockLaunch mock_launch(&loop,
+                                   kLongWaitTimeout.InMilliseconds());
 
   loop.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), kLongWaitTimeout);
 
@@ -21,7 +22,8 @@ TEST(ChromeFrame, Launch) {
 
 TEST(ChromeFrame, Navigate) {
   MessageLoopForUI loop;
-  AutomationMockNavigate mock_navigate(&loop, kLongWaitTimeout);
+  AutomationMockNavigate mock_navigate(&loop,
+                                       kLongWaitTimeout.InMilliseconds());
 
   loop.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), kLongWaitTimeout);
 
@@ -32,7 +34,8 @@ TEST(ChromeFrame, Navigate) {
 
 TEST(ChromeFrame, PostMessage) {
   MessageLoopForUI loop;
-  AutomationMockPostMessage mock_postmessage(&loop, kLongWaitTimeout);
+  AutomationMockPostMessage mock_postmessage(&loop,
+                                             kLongWaitTimeout.InMilliseconds());
 
   loop.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), kLongWaitTimeout);
 
@@ -43,8 +46,8 @@ TEST(ChromeFrame, PostMessage) {
 
 TEST(ChromeFrame, RequestStart) {
   MessageLoopForUI loop;
-  AutomationMockHostNetworkRequestStart mock_request_start(&loop,
-                                                           kLongWaitTimeout);
+  AutomationMockHostNetworkRequestStart mock_request_start(
+      &loop, kLongWaitTimeout.InMilliseconds());
 
   loop.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(), kLongWaitTimeout);
 

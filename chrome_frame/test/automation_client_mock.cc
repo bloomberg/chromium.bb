@@ -44,9 +44,9 @@ void MockProxyFactory::GetServerImpl(ChromeFrameAutomationProxy* pxy,
                                      void** automation_server_id) {
   *automation_server_id = proxy_id;
   loop_->PostDelayedTask(FROM_HERE,
-                         base::Bind(&LaunchDelegate::LaunchComplete,
-                                    base::Unretained(d), pxy, result),
-                         params->launch_timeout() / 2);
+      base::Bind(&LaunchDelegate::LaunchComplete,
+                 base::Unretained(d), pxy, result),
+      base::TimeDelta::FromMilliseconds(params->launch_timeout()) / 2);
 }
 
 void CFACMockTest::SetAutomationServerOk(int times) {

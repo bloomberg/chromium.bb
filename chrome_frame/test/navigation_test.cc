@@ -108,7 +108,7 @@ TEST_P(FullTabNavigationTest, Refresh) {
 
   ie_mock_.ExpectNavigation(IN_IE, GetSimplePageUrl());
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(GetSimplePageUrl())))
-      .WillOnce(DelayRefresh(&ie_mock_, &loop_, 0));
+      .WillOnce(DelayRefresh(&ie_mock_, &loop_, base::TimeDelta()));
 
   if (in_cf) {
     EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(GetSimplePageUrl())))
@@ -153,7 +153,7 @@ TEST_P(FullTabNavigationTest, DISABLED_MultipleBackForward) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(page3)))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&ie_mock_),
-          DelayGoBack(&ie_mock_, &loop_, 0)));
+          DelayGoBack(&ie_mock_, &loop_, base::TimeDelta())));
 
   // We have reached url 2 and have 1 back & 1 forward entries for url 1 & 3.
   // Go back to url 1 now.
@@ -161,7 +161,7 @@ TEST_P(FullTabNavigationTest, DISABLED_MultipleBackForward) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(page2)))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&ie_mock_),
-          DelayGoBack(&ie_mock_, &loop_, 0)));
+          DelayGoBack(&ie_mock_, &loop_, base::TimeDelta())));
 
   // We have reached url 1 and have 0 back & 2 forward entries for url 2 & 3.
   // Go forward to url 2 now.
@@ -169,7 +169,7 @@ TEST_P(FullTabNavigationTest, DISABLED_MultipleBackForward) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(page1)))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&ie_mock_),
-          DelayGoForward(&ie_mock_, &loop_, 0)));
+          DelayGoForward(&ie_mock_, &loop_, base::TimeDelta())));
 
   // We have reached url 2 and have 1 back & 1 forward entries for url 1 & 3.
   // Go forward to url 3 now.
@@ -177,7 +177,7 @@ TEST_P(FullTabNavigationTest, DISABLED_MultipleBackForward) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(page2)))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&ie_mock_),
-          DelayGoForward(&ie_mock_, &loop_, 0)));
+          DelayGoForward(&ie_mock_, &loop_, base::TimeDelta())));
 
   // We have reached url 2 and have 1 back & 1 forward entries for url 1 & 3.
   ie_mock_.ExpectNavigation(in_cf, page3);
@@ -237,7 +237,7 @@ TEST_P(FullTabNavigationTest, BackForwardAnchor) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(GetAnchorPageUrl(3))))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&ie_mock_),
-          DelayGoBack(&ie_mock_, &loop_, 0)));
+          DelayGoBack(&ie_mock_, &loop_, base::TimeDelta())));
 
   // We will reach anchor 2 once the navigation is complete,
   // then go back to anchor 1
@@ -247,7 +247,7 @@ TEST_P(FullTabNavigationTest, BackForwardAnchor) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(GetAnchorPageUrl(2))))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&ie_mock_),
-          DelayGoBack(&ie_mock_, &loop_, 0)));
+          DelayGoBack(&ie_mock_, &loop_, base::TimeDelta())));
 
   // We will reach anchor 1 once the navigation is complete,
   // now go forward to anchor 2
@@ -257,7 +257,7 @@ TEST_P(FullTabNavigationTest, BackForwardAnchor) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(GetAnchorPageUrl(1))))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&ie_mock_),
-          DelayGoForward(&ie_mock_, &loop_, 0)));
+          DelayGoForward(&ie_mock_, &loop_, base::TimeDelta())));
 
   // We have reached anchor 2, go forward to anchor 3 again
   // Back/Forward state at this point:
@@ -266,7 +266,7 @@ TEST_P(FullTabNavigationTest, BackForwardAnchor) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(GetAnchorPageUrl(2))))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&ie_mock_),
-          DelayGoForward(&ie_mock_, &loop_, 0)));
+          DelayGoForward(&ie_mock_, &loop_, base::TimeDelta())));
 
   // We have gone a few steps back and forward, this should be enough for now.
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(GetAnchorPageUrl(3))))
@@ -680,13 +680,13 @@ TEST_P(FullTabNavigationTest, FormPostBackForward) {
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(kFormPostActionUrl)))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&ie_mock_),
-          DelayGoBack(&ie_mock_, &loop_, 0)));
+          DelayGoBack(&ie_mock_, &loop_, base::TimeDelta())));
 
   ie_mock_.ExpectNavigation(in_cf, kFormPostUrl);
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(kFormPostUrl)))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&ie_mock_),
-          DelayGoForward(&ie_mock_, &loop_, 0)));
+          DelayGoForward(&ie_mock_, &loop_, base::TimeDelta())));
 
   ie_mock_.ExpectNavigationOptionalBefore(in_cf, kFormPostActionUrl);
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(kFormPostActionUrl)))
@@ -963,7 +963,8 @@ TEST_P(FullTabNavigationTest, RefreshContents) {
                                                     StrEq(src_url))));
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(src_url)))
       .Times(2)
-      .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50))
+      .WillOnce(DelayRefresh(
+          &ie_mock_, &loop_, base::TimeDelta::FromMilliseconds(50)))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIENavigateAndLoop(src_url, kChromeFrameVeryLongNavigationTimeout);
@@ -1102,7 +1103,8 @@ TEST_F(FullTabDownloadTest, TopLevelPostReissueFromChromeFramePage) {
 
   EXPECT_CALL(ie_mock_, OnLoad(true, StrEq(tgt_url)))
       .Times(2)
-      .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50))
+      .WillOnce(DelayRefresh(
+          &ie_mock_, &loop_, base::TimeDelta::FromMilliseconds(50)))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   EXPECT_CALL(ie_mock_, OnBeforeNavigate2(_,
@@ -1189,13 +1191,15 @@ TEST_P(FullTabNavigationTest, RefreshContentsUATest) {
     // As mentioned above, end the test once the refreshed document is loaded.
     EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(src_url)))
         .Times(2)
-        .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50))
+      .WillOnce(DelayRefresh(
+          &ie_mock_, &loop_, base::TimeDelta::FromMilliseconds(50)))
         .WillOnce(CloseBrowserMock(&ie_mock_));
   } else {
     // As mentioned above, we only receive an OnLoad for the intial load, not
     // for the refresh.
     EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(src_url)))
-        .WillOnce(DelayRefresh(&ie_mock_, &loop_, 50));
+      .WillOnce(DelayRefresh(
+          &ie_mock_, &loop_, base::TimeDelta::FromMilliseconds(50)));
   }
 
   LaunchIENavigateAndLoop(src_url, kChromeFrameVeryLongNavigationTimeout);

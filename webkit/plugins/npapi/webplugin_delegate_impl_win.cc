@@ -821,7 +821,7 @@ void WebPluginDelegateImpl::OnThrottleMessage() {
   if (!throttle_queue_was_empty) {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&WebPluginDelegateImpl::OnThrottleMessage),
-        kFlashWMUSERMessageThrottleDelayMs);
+        base::TimeDelta::FromMilliseconds(kFlashWMUSERMessageThrottleDelayMs));
   }
 }
 
@@ -844,7 +844,7 @@ void WebPluginDelegateImpl::ThrottleMessage(WNDPROC proc, HWND hwnd,
   if (throttle_queue->size() == 1) {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&WebPluginDelegateImpl::OnThrottleMessage),
-        kFlashWMUSERMessageThrottleDelayMs);
+        base::TimeDelta::FromMilliseconds(kFlashWMUSERMessageThrottleDelayMs));
   }
 }
 
@@ -1205,7 +1205,7 @@ LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
           FROM_HERE,
           base::Bind(&WebPluginDelegateImpl::OnUserGestureEnd,
                      delegate->user_gesture_msg_factory_.GetWeakPtr()),
-          kWindowedPluginPopupTimerMs);
+          base::TimeDelta::FromMilliseconds(kWindowedPluginPopupTimerMs));
     }
 
     HandleCaptureForMessage(hwnd, message);

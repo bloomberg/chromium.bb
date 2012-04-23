@@ -310,7 +310,8 @@ ACTION(DoCloseWindow) {
 ACTION_P(DelayDoCloseWindow, delay) {
   DCHECK(MessageLoop::current());
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(DoCloseWindowNow, arg0), delay);
+      FROM_HERE, base::Bind(DoCloseWindowNow, arg0),
+      base::TimeDelta::FromMilliseconds(delay));
 }
 
 ACTION(KillChromeFrameProcesses) {
@@ -429,8 +430,8 @@ ACTION_P3(TypeUrlInAddressBar, loop, url, delay) {
       FROM_HERE,
       base::Bind(simulate_input::SendCharA, 'd', simulate_input::ALT), delay);
 
-  const unsigned int kInterval = 500;
-  int next_delay = delay + kInterval;
+  const base::TimeDelta kInterval = base::TimeDelta::FromMilliseconds(500);
+  base::TimeDelta next_delay = delay + kInterval;
 
   loop->PostDelayedTask(
       FROM_HERE, base::Bind(simulate_input::SendStringW, url), next_delay);

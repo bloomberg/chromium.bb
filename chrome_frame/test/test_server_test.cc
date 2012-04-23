@@ -147,7 +147,7 @@ TEST_F(TestServerTest, TestServer) {
   // things start hanging.
   QuitMessageHit quit_msg(&loop);
   loop.PostDelayedTask(FROM_HERE, base::Bind(QuitMessageLoop, &quit_msg),
-                       10 * 1000);
+                       base::TimeDelta::FromSeconds(10));
 
   UrlTaskChain quit_task("http://localhost:1337/quit", NULL);
   UrlTaskChain fnf_task("http://localhost:1337/404", &quit_task);

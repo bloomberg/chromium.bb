@@ -669,7 +669,7 @@ void CFUrlRequestUnittestRunner::TakeDownBrowser() {
       FROM_HERE,
       base::Bind(&CFUrlRequestUnittestRunner::OnIEShutdownFailure,
                  base::Unretained(this)),
-      TestTimeouts::action_max_timeout_ms());
+      TestTimeouts::action_max_timeout());
 }
 
 void CFUrlRequestUnittestRunner::InitializeLogging() {
@@ -698,7 +698,7 @@ void CFUrlRequestUnittestRunner::StartInitializationTimeout() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       timeout_closure_.callback(),
-      TestTimeouts::action_max_timeout_ms());
+      TestTimeouts::action_max_timeout());
 }
 
 void CFUrlRequestUnittestRunner::OnInitializationTimeout() {

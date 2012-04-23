@@ -338,7 +338,7 @@ void ConfigurableConnection::SendChunk() {
   if (cur_pos_ < size) {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&ConfigurableConnection::SendChunk, this),
-        options_.timeout_);
+        base::TimeDelta::FromMilliseconds(options_.timeout_));
   } else {
     socket_ = 0;  // close the connection.
   }
@@ -394,7 +394,7 @@ void ConfigurableConnection::SendWithOptions(const std::string& headers,
 
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE, base::Bind(&ConfigurableConnection::SendChunk, this),
-      options.timeout_);
+      base::TimeDelta::FromMilliseconds(options.timeout_));
 }
 
 }  // namespace test_server

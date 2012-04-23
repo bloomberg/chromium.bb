@@ -217,8 +217,8 @@ class TimedMsgLoop {
   }
 
   void PostDelayedTask(const tracked_objects::Location& from_here,
-                       const base::Closure& task, int64 delay_ms) {
-    loop_.PostDelayedTask(from_here, task, delay_ms);
+                       const base::Closure& task, base::TimeDelta delay) {
+    loop_.PostDelayedTask(from_here, task, delay);
   }
 
   void Quit() {
