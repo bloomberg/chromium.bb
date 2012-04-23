@@ -64,8 +64,8 @@ typedef struct NCValidatorState {
   NaClCPUFeaturesX86 cpufeatures;  /* from CPUID bit masks; see nacl_cpuid.c */
   NaClPcAddress iadrbase;
   NaClMemorySize codesize;
-  uint8_t alignment;
-  uint32_t alignmask;
+  uint8_t bundle_size;
+  uint32_t bundle_mask;
   SummaryStats stats;
   uint32_t opcodehisto[256];
   uint8_t *vttable;

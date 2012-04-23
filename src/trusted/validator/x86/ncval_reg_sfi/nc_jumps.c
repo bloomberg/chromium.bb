@@ -36,7 +36,7 @@ Bool NACL_FLAGS_identity_mask = FALSE;
 static INLINE uint8_t NaClGetJumpMask(NaClValidatorState* vstate) {
   return NACL_FLAGS_identity_mask
       ? (uint8_t) 0xFF
-      : (uint8_t) (~vstate->alignment_mask);
+      : (uint8_t) (~vstate->bundle_mask);
 }
 
 /* Generates a jump validator. */
@@ -80,7 +80,7 @@ static void NaClAddJumpToJumpSets(NaClValidatorState* vstate,
                   inst->inst_addr, to_address));
     NaClAddressSetAddInline(vstate->jump_sets.actual_targets,
                             to_address, vstate);
-  } else if ((to_address & vstate->alignment_mask) == 0) {
+  } else if ((to_address & vstate->bundle_mask) == 0) {
     /* Allow bundle-aligned jump.  If the jump overflows or underflows the
      * 4GB untrusted address space it will hit the guard regions.  The largest
      * potential jump offset is +/-2GB.  We could allow direct jumps only within
@@ -466,7 +466,7 @@ static void NaClValidateCallAlignment(NaClValidatorState* vstate) {
    */
   NaClPcAddress next_addr = vstate->cur_inst_state->inst_addr
       + NaClInstStateLength(vstate->cur_inst_state);
-  if (next_addr & vstate->alignment_mask) {
+  if (next_addr & vstate->bundle_mask) {
     NaClPcAddress printable_next_addr =
         NaClInstStatePrintableAddress(vstate->cur_inst_state) +
         NaClInstStateLength(vstate->cur_inst_state);
@@ -584,13 +584,13 @@ void NaClJumpValidatorSummarize(NaClValidatorState* vstate) {
   /* Check that all block boundaries are accessable at an aligned address. */
   NaClValidatorMessage(
       LOG_INFO, vstate, "Checking that basic blocks are aligned\n");
-  if (vstate->vbase & vstate->alignment_mask) {
+  if (vstate->vbase & vstate->bundle_mask) {
     NaClValidatorMessage(LOG_ERROR, vstate,
                          "Code segment starts at 0x%"NACL_PRIxNaClPcAddress", "
                          "which isn't aligned properly.\n",
                          vstate->vbase);
   } else {
-    for (addr = 0; addr < vstate->codesize; addr += vstate->alignment) {
+    for (addr = 0; addr < vstate->codesize; addr += vstate->bundle_size) {
       DEBUG(NaClLog(LOG_INFO,
                     "Checking block address: %"NACL_PRIxNaClPcAddress"\n",
                     addr));

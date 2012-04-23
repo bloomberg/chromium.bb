@@ -508,11 +508,11 @@ NaClValidatorState *NaClValidatorStateCreate(
     const NaClCPUFeaturesX86 *features) {
   NaClValidatorState *vstate;
   NaClValidatorState *return_value = NULL;
-  const int alignment = 32;
+  const int bundle_size = 32;
   DEBUG(NaClLog(LOG_INFO,
                 "Validator Create: vbase = %"NACL_PRIxNaClPcAddress", "
-                "sz = %"NACL_PRIxNaClMemorySize", alignment = %u\n",
-                vbase, codesize, alignment));
+                "sz = %"NACL_PRIxNaClMemorySize", bundle_size = %u\n",
+                vbase, codesize, bundle_size));
   if (features == NULL)
     return NULL;
   vstate = (NaClValidatorState*) malloc(sizeof(NaClValidatorState));
@@ -520,9 +520,9 @@ NaClValidatorState *NaClValidatorStateCreate(
     return_value = vstate;
     vstate->decoder_tables = kNaClValDecoderTables;
     vstate->vbase = vbase;
-    vstate->alignment = alignment;
+    vstate->bundle_size = bundle_size;
     vstate->codesize = codesize;
-    vstate->alignment_mask = alignment - 1;
+    vstate->bundle_mask = bundle_size - 1;
     NaClCopyCPUFeatures(&vstate->cpu_features, features);
     vstate->base_register = base_register;
     vstate->validates_ok = TRUE;
@@ -672,7 +672,7 @@ void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
   do {
     /* Sanity checks */
     /* TODO(ncbray): remove redundant vbase/size args. */
-    if ((vbase & (vstate->alignment - 1)) != 0) {
+    if ((vbase & vstate->bundle_mask) != 0) {
       NaClValidatorMessage(LOG_ERROR, vstate,
                            "Code segment starts at 0x%"NACL_PRIxNaClPcAddress
                            ", which isn't aligned properly.\n",
@@ -693,7 +693,7 @@ void NaClValidateSegment(uint8_t *mbase, NaClPcAddress vbase,
       break;
     }
 
-    size = NCHaltTrimSize(mbase, size, vstate->alignment);
+    size = NCHaltTrimSize(mbase, size, vstate->bundle_size);
     vstate->codesize = size;
 
     if (size == 0) {

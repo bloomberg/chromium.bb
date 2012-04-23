@@ -329,15 +329,15 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
                                         const int readonly_text,
                                         const NaClCPUFeaturesX86 *features) {
   struct NCValidatorState *vstate = NULL;
-  const int alignment = 32;
+  const int bundle_size = 32;
 
   dprint(("NCValidateInit(%"NACL_PRIxNaClPcAddressAll
           ", %"NACL_PRIxNaClMemorySizeAll", %08x)\n", vbase, codesize,
-          alignment));
+          bundle_size));
   do {
     if (features == NULL)
       break;
-    if ((vbase & (alignment - 1)) != 0)
+    if ((vbase & (bundle_size - 1)) != 0)
       break;
     dprint(("ncv_init(%"NACL_PRIxNaClPcAddress", %"NACL_PRIxNaClMemorySize
             ")\n", vbase, codesize));
@@ -352,8 +352,8 @@ struct NCValidatorState *NCValidateInit(const NaClPcAddress vbase,
     vstate->num_diagnostics = kMaxDiagnostics;
     vstate->iadrbase = vbase;
     vstate->codesize = codesize;
-    vstate->alignment = alignment;
-    vstate->alignmask = alignment - 1;
+    vstate->bundle_size = bundle_size;
+    vstate->bundle_mask = bundle_size - 1;
     vstate->vttable = (uint8_t *)calloc(NCIATOffset(codesize) + 1, 1);
     vstate->kttable = (uint8_t *)calloc(NCIATOffset(codesize) + 1, 1);
     vstate->pattern_nonfirst_insts_table = NULL;
@@ -422,7 +422,7 @@ static void RememberJumpTarget(const NCDecoderInst *dinst, int32_t jump_offset,
 
   if (target < vstate->codesize) {
     NCSetAdrTable(target, vstate->kttable);
-  } else if ((target & vstate->alignmask) == 0) {
+  } else if ((target & vstate->bundle_mask) == 0) {
     /* Allow bundle-aligned jumps. */
   } else if (dinst->unchanged) {
     /* If we are replacing this instruction during dynamic code modification
@@ -464,7 +464,7 @@ int NCValidateFinish(struct NCValidatorState *vstate) {
   if (vstate->do_stub_out) return vstate->stats.sawfailure;
 
   /* Double check that the base address matches the alignment constraint. */
-  if (vstate->iadrbase & vstate->alignmask) {
+  if (vstate->iadrbase & vstate->bundle_mask) {
     /* This should never happen because the alignment of iadrbase is */
     /* checked in NCValidateInit(). */
     ValidatePrintOffsetError(0, "Bad base address alignment", vstate);
@@ -512,7 +512,7 @@ static int ValidateSFenceClFlush(const NCDecoderInst *dinst) {
 static void ValidateCallAlignment(const NCDecoderInst *dinst) {
   NaClPcAddress fallthru = dinst->inst_addr + dinst->inst.bytes.length;
   struct NCValidatorState* vstate = NCVALIDATOR_STATE_DOWNCAST(dinst->dstate);
-  if (fallthru & vstate->alignmask) {
+  if (fallthru & vstate->bundle_mask) {
     ValidatePrintInstructionError(dinst, "Bad call alignment", vstate);
     /* This makes bad call alignment a fatal error. */
     NCStatsBadAlignment(vstate);
@@ -610,7 +610,7 @@ static void ValidateIndirect5(const NCDecoderInst *dinst) {
     if (NCInstBytesByteInline(&andopcode, 1) != (0xe0 | targetreg)) break;
     /* check mask */
     if (NCInstBytesByteInline(&andopcode, 2) !=
-        (0x0ff & ~vstate->alignmask)) break;
+        (0x0ff & ~vstate->bundle_mask)) break;
     /* All checks look good. Make the sequence 'atomic.' */
     ForgetInstructionBoundary(dinst, vstate);
     /* as a courtesy, check call alignment correctness */
@@ -954,7 +954,7 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
                        struct NCValidatorState *vstate) {
   /* Sanity checks */
   /* TODO(ncbray): remove redundant vbase/size args. */
-  if ((vbase & (vstate->alignment - 1)) != 0) {
+  if ((vbase & vstate->bundle_mask) != 0) {
     ValidatePrintOffsetError(0, "Bad vbase alignment", vstate);
     NCStatsSegFault(vstate);
     return;
@@ -970,7 +970,7 @@ void NCValidateSegment(uint8_t *mbase, NaClPcAddress vbase, NaClMemorySize sz,
     return;
   }
 
-  sz = NCHaltTrimSize(mbase, sz, vstate->alignment);
+  sz = NCHaltTrimSize(mbase, sz, vstate->bundle_size);
   vstate->codesize = sz;
 
   if (sz == 0) {
@@ -1052,7 +1052,7 @@ static void NCJumpSummarize(struct NCValidatorState* vstate) {
   }
 
   /* check basic block boundaries */
-  for (offset = 0; offset < vstate->codesize; offset += vstate->alignment) {
+  for (offset = 0; offset < vstate->codesize; offset += vstate->bundle_size) {
     if (!NCGetAdrTable(offset, vstate->vttable)) {
       ValidatePrintOffsetError(offset, "Bad basic block alignment", vstate);
       NCStatsBadAlignment(vstate);

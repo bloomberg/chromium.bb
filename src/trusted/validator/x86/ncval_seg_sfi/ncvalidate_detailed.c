@@ -102,7 +102,7 @@ static Bool NCInstLayoutCheck(const NCDecoderInst* dinst) {
    * of a pattern.
    */
   start = dinst->inst_addr;
-  if ((0 == (start % vstate->alignment)) &&
+  if ((0 == (start % vstate->bundle_size)) &&
       NCGetAdrTable(start, vstate->pattern_nonfirst_insts_table)) {
     NCBadInstructionError(
         dinst,
@@ -112,7 +112,7 @@ static Bool NCInstLayoutCheck(const NCDecoderInst* dinst) {
   /* Check that instruction doesn't cross block boundaries. */
   end = start + NCInstBytesLength(&dinst->inst_bytes);
   for (i = start + 1; i < end; ++i) {
-    if (0 == (i % vstate->alignment)) {
+    if (0 == (i % vstate->bundle_size)) {
       NCBadInstructionError(dinst, "Instruction crosses basic block alignment");
       NCStatsBadAlignment(vstate);
     }

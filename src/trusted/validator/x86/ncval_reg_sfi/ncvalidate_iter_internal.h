@@ -33,14 +33,14 @@ struct NaClValidatorState {
   const struct NaClDecodeTables* decoder_tables;
   /* Holds the vbase value passed to NaClValidatorStateCreate. */
   NaClPcAddress vbase;
-  /* Holds the alignment value passed to NaClValidatorStateCreate. */
-  uint8_t alignment;
   /* Holds the size value passed to NaClValidatorStateCreate. */
   NaClMemorySize codesize;
-  /* Holds the alignment mask, which when applied, catches any lower
-   * bits in an address that violate alignment.
+  /* Holds the bundle size value passed to NaClValidatorStateCreate. */
+  uint8_t bundle_size;
+  /* Holds the bundle mask, which when applied to an address catches any lower
+   * bits that violate alignment.
    */
-  NaClPcAddress alignment_mask;
+  NaClPcAddress bundle_mask;
   /* Holds the value for the base register, or RegUnknown if undefined. */
   NaClOpKind base_register;
   /* Holds if the validation is still valid. */

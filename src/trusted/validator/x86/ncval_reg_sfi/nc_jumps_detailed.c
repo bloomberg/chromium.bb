@@ -49,7 +49,7 @@ static void NaClInstLayoutCheck(NaClValidatorState* vstate) {
   /* Check that if first instruction in a basic block, it isn't in the
    * middle of a pattern.
    */
-  if ((0 == (start & vstate->alignment_mask)) &&
+  if ((0 == (start & vstate->bundle_mask)) &&
       NaClAddressSetContains(vstate->jump_sets.removed_targets,
                              start, vstate)) {
     NaClValidatorInstMessage(
@@ -60,7 +60,7 @@ static void NaClInstLayoutCheck(NaClValidatorState* vstate) {
   /* Check that instruction doesn't cross block boundaries. */
   end = (NaClPcAddress) (start + vstate->cur_inst_state->bytes.length);
   for (i = start + 1; i < end; ++i) {
-    if (0 == (i & vstate->alignment_mask)) {
+    if (0 == (i & vstate->bundle_mask)) {
       NaClValidatorInstMessage(
           LOG_ERROR, vstate, vstate->cur_inst_state,
           "Instruction crosses basic block alignment\n");
@@ -111,7 +111,7 @@ void NaClJumpValidatorSummarizeDetailed(NaClValidatorState* vstate) {
       vstate->vbase, vstate->vbase + vstate->codesize);
 
   /* Check that code segment starts at an aligned address. */
-  if (vstate->vbase & vstate->alignment_mask) {
+  if (vstate->vbase & vstate->bundle_mask) {
     NaClValidatorMessage(
         LOG_ERROR, vstate,
         "Code segment starts at 0x%"NACL_PRIxNaClPcAddress", "
