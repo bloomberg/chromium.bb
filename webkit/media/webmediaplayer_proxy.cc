@@ -187,15 +187,24 @@ void WebMediaPlayerProxy::DemuxerFlush() {
     chunk_demuxer_->FlushData();
 }
 
-bool WebMediaPlayerProxy::DemuxerAppend(const uint8* data, size_t length) {
-  if (chunk_demuxer_.get())
-    return chunk_demuxer_->AppendData(data, length);
-  return false;
+media::ChunkDemuxer::Status WebMediaPlayerProxy::DemuxerAddId(
+    const std::string& id,
+    const std::string& type) {
+  return chunk_demuxer_->AddId(id, type);
+}
+
+void WebMediaPlayerProxy::DemuxerRemoveId(const std::string& id) {
+  chunk_demuxer_->RemoveId(id);
+}
+
+bool WebMediaPlayerProxy::DemuxerAppend(const std::string& id,
+                                        const uint8* data,
+                                        size_t length) {
+  return chunk_demuxer_->AppendData(id, data, length);
 }
 
 void WebMediaPlayerProxy::DemuxerEndOfStream(media::PipelineStatus status) {
-  if (chunk_demuxer_.get())
-    chunk_demuxer_->EndOfStream(status);
+  chunk_demuxer_->EndOfStream(status);
 }
 
 void WebMediaPlayerProxy::DemuxerShutdown() {
