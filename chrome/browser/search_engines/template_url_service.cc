@@ -612,7 +612,8 @@ void TemplateURLService::OnWebDataServiceRequestDone(
     }
     // Note that this saves the default search provider to prefs.
     if (!default_search_provider ||
-        !default_search_provider->IsExtensionKeyword())
+        (!default_search_provider->IsExtensionKeyword() &&
+         default_search_provider->SupportsReplacement()))
       SetDefaultSearchProviderNoNotify(default_search_provider);
   } else {
     // If we had a managed default, replace it with the synced default if
