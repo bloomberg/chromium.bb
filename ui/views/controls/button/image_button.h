@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_H_
 #pragma once
 
+#include "base/gtest_prod_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/controls/button/custom_button.h"
 
@@ -29,6 +30,10 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   void SetBackground(SkColor color,
                      const SkBitmap* image,
                      const SkBitmap* mask);
+
+  // Set an |image| to draw on top of the normal / hot / pushed image.
+  // Pass NULL for no image.
+  void SetOverlayImage(const SkBitmap* image);
 
   enum HorizontalAlignment { ALIGN_LEFT = 0,
                              ALIGN_CENTER,
@@ -63,7 +68,12 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   // The background image.
   SkBitmap background_image_;
 
+  // Image to draw on top of normal / hot / pushed image.  Usually empty.
+  SkBitmap overlay_image_;
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(ImageButtonTest, Basics);
+
   // Image alignment.
   HorizontalAlignment h_alignment_;
   VerticalAlignment v_alignment_;

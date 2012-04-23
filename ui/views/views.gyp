@@ -467,6 +467,7 @@
         'animation/bounds_animator_unittest.cc',
         'bubble/bubble_delegate_unittest.cc',
         'bubble/bubble_frame_view_unittest.cc',
+        'controls/button/image_button_unittest.cc',
         'controls/combobox/native_combobox_views_unittest.cc',
         'controls/label_unittest.cc',
         'controls/menu/menu_model_adapter_unittest.cc',

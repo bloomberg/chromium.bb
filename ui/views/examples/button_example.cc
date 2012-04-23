@@ -8,15 +8,22 @@
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "ui/views/controls/button/checkbox.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/text_button.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
+
+namespace {
+const int kLayoutSpacing = 10;  // pixels
+}  // namespace
 
 namespace views {
 namespace examples {
 
 ButtonExample::ButtonExample()
-    : ExampleBase("Text Button"),
+    : ExampleBase("Button"),
+      text_button_(NULL),
+      image_button_(NULL),
       alignment_(TextButton::ALIGN_LEFT),
       use_native_theme_border_(false),
       icon_(NULL),
@@ -29,10 +36,22 @@ ButtonExample::~ButtonExample() {
 }
 
 void ButtonExample::CreateExampleView(View* container) {
-  TextButton* tb = new TextButton(this, ASCIIToUTF16("Button"));
-  button_ = tb;
-  container->SetLayoutManager(new FillLayout);
-  container->AddChildView(button_);
+  container->SetLayoutManager(
+      new BoxLayout(BoxLayout::kVertical, 0, 0, kLayoutSpacing));
+
+  text_button_ = new TextButton(this, ASCIIToUTF16("Text Button"));
+  container->AddChildView(text_button_);
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  image_button_ = new ImageButton(this);
+  image_button_->SetImage(ImageButton::BS_NORMAL,
+                          rb.GetImageNamed(IDR_CLOSE).ToSkBitmap());
+  image_button_->SetImage(ImageButton::BS_HOT,
+                          rb.GetImageNamed(IDR_CLOSE_H).ToSkBitmap());
+  image_button_->SetImage(ImageButton::BS_PUSHED,
+                          rb.GetImageNamed(IDR_CLOSE_P).ToSkBitmap());
+  image_button_->SetOverlayImage(rb.GetImageNamed(IDR_MENU_CHECK).ToSkBitmap());
+  container->AddChildView(image_button_);
 }
 
 void ButtonExample::ButtonPressed(Button* sender, const Event& event) {
@@ -41,29 +60,29 @@ void ButtonExample::ButtonPressed(Button* sender, const Event& event) {
   if (event.IsControlDown()) {
     if (event.IsShiftDown()) {
       if (event.IsAltDown()) {
-        button_->SetMultiLine(!button_->multi_line());
-        if (button_->multi_line()) {
-          button_->SetText(ASCIIToUTF16("Multi-line text\n") +
+        text_button_->SetMultiLine(!text_button_->multi_line());
+        if (text_button_->multi_line()) {
+          text_button_->SetText(ASCIIToUTF16("Multi-line text\n") +
                            ASCIIToUTF16("is here to stay all the way!\n") +
                            ASCIIToUTF16("123"));
         } else {
-          button_->SetText(ASCIIToUTF16("Button"));
+          text_button_->SetText(ASCIIToUTF16("Button"));
         }
       } else {
-        switch(button_->icon_placement()) {
+        switch(text_button_->icon_placement()) {
           case TextButton::ICON_ON_LEFT:
-            button_->set_icon_placement(TextButton::ICON_ON_RIGHT);
+            text_button_->set_icon_placement(TextButton::ICON_ON_RIGHT);
             break;
           case TextButton::ICON_ON_RIGHT:
-            button_->set_icon_placement(TextButton::ICON_ON_LEFT);
+            text_button_->set_icon_placement(TextButton::ICON_ON_LEFT);
             break;
         }
       }
     } else if (event.IsAltDown()) {
-      if (button_->HasIcon())
-        button_->SetIcon(SkBitmap());
+      if (text_button_->HasIcon())
+        text_button_->SetIcon(SkBitmap());
       else
-        button_->SetIcon(*icon_);
+        text_button_->SetIcon(*icon_);
     } else {
       switch(alignment_) {
         case TextButton::ALIGN_LEFT:
@@ -76,30 +95,31 @@ void ButtonExample::ButtonPressed(Button* sender, const Event& event) {
           alignment_ = TextButton::ALIGN_LEFT;
           break;
       }
-      button_->set_alignment(alignment_);
+      text_button_->set_alignment(alignment_);
     }
   } else if (event.IsShiftDown()) {
     if (event.IsAltDown()) {
-      if (button_->text().length() < 10) {
-        button_->SetText(
+      if (text_button_->text().length() < 10) {
+        text_button_->SetText(
             ASCIIToUTF16("Startof") +
             ASCIIToUTF16("ReallyReallyReallyReallyReallyReallyReally") +
             ASCIIToUTF16("ReallyReallyReallyReallyReallyReallyReally") +
             ASCIIToUTF16("ReallyReallyReallyReallyReallyReallyReally") +
             ASCIIToUTF16("LongButtonText"));
       } else {
-        button_->SetText(ASCIIToUTF16("Button"));
+        text_button_->SetText(ASCIIToUTF16("Button"));
       }
     } else {
       use_native_theme_border_ = !use_native_theme_border_;
       if (use_native_theme_border_)
-        button_->set_border(new TextButtonNativeThemeBorder(button_));
+        text_button_->set_border(new TextButtonNativeThemeBorder(text_button_));
       else
-        button_->set_border(new TextButtonBorder());
+        text_button_->set_border(new TextButtonBorder());
     }
   } else if (event.IsAltDown()) {
-    button_->SetIsDefault(!button_->is_default());
+    text_button_->SetIsDefault(!text_button_->is_default());
   }
+  example_view()->GetLayoutManager()->Layout(example_view());
 }
 
 }  // namespace examples

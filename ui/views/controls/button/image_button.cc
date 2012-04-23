@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,14 @@ void ImageButton::SetBackground(SkColor color,
       SkBitmapOperations::CreateButtonBackground(color, *image, *mask);
 }
 
+void ImageButton::SetOverlayImage(const SkBitmap* image) {
+  if (!image) {
+    overlay_image_.reset();
+    return;
+  }
+  overlay_image_ = *image;
+}
+
 void ImageButton::SetImageAlignment(HorizontalAlignment h_align,
                                     VerticalAlignment v_align) {
   h_alignment_ = h_align;
@@ -85,7 +93,11 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
 
     if (!background_image_.empty())
       canvas->DrawBitmapInt(background_image_, x, y);
+
     canvas->DrawBitmapInt(img, x, y);
+
+    if (!overlay_image_.empty())
+      canvas->DrawBitmapInt(overlay_image_, x, y);
   }
   OnPaintFocusBorder(canvas);
 }
