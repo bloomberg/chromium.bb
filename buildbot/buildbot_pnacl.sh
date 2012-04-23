@@ -38,19 +38,6 @@ relevant() {
   done
 }
 
-# Cap the length of string for buildbot annotations
-# TODO(jvoung): remove this when we no longer try to list a bunch
-# of browser tests below.
-cap-length() {
-  local orig=$1
-  local maxlen=30
-  if [[ ${#orig} -gt ${maxlen} ]]; then
-    echo "${orig:0:30}..."
-  else
-    echo "${orig}"
-  fi
-}
-
 # called when a scons invocation fails
 handle-error() {
   RETCODE=1
@@ -201,7 +188,7 @@ scons-stage() {
   local platform=$1
   local extra=$2
   local test=$3
-  echo "@@@BUILD_STEP scons [${platform}] [$(cap-length ${test})] \
+  echo "@@@BUILD_STEP scons [${platform}] [${test}] \
 [$(relevant ${extra})]@@@"
   ${SCONS_COMMON} ${extra} platform=${platform} ${test} || handle-error
 }
@@ -212,7 +199,7 @@ scons-build-test() {
   local platform=$1
   local extra=$2
   local test=$3
-  echo "@@@BUILD_STEP scons [${platform}] [$(cap-length ${test})] \
+  echo "@@@BUILD_STEP scons [${platform}] [${test}] \
 [$(relevant ${extra})]@@@"
   ${SCONS_COMMON} ${extra} do_not_run_tests=1 platform=${platform} \
     ${test} || handle-error
@@ -224,51 +211,29 @@ single-browser-test() {
   local platform=$1
   local extra=$2
   local test=$3
-  scons-stage ${platform} "${extra} browser_headless=1 SILENT=1" ${test}
+  # Build in parallel (assume -jN specified in extra), but run sequentially.
+  # If we do not run tests sequentially, some may fail. E.g.,
+  # http://code.google.com/p/nativeclient/issues/detail?id=2019
+  scons-build-test ${platform} "${extra} browser_headless=1 SILENT=1" \
+      ${test}
 }
 
 browser-tests() {
   local platform=$1
   local extra=$2
-  local test="chrome_browser_tests"
-  single-browser-test ${platform} "${extra} pnacl_generate_pexe=0" "${test}"
-  if [[ "${platform}" == arm ]] || \
-    [[ "${extra}" =~ --nacl_glibc ]]; then
-    # Skip ARM until we have chrome binaries for ARM available.
-    # This would normally do the right thing with a test suite like
-    # 'chrome_browser_tests' (it will be empty). However, requesting
-    # specific tests will force scons to try and download/run.
-    # Also skip for --nacl_glibc for now, since a few tests fail
-    # and need to be investigated separately, especially when they need
-    # additional libraries.
+  # First try non-pexe mode.
+  single-browser-test ${platform} "${extra} pnacl_generate_pexe=0" \
+      "chrome_browser_tests"
+  # Then try pexe mode.
+  if [[ "${extra}" =~ --nacl_glibc ]]; then
+    # Skip for --nacl_glibc for now, since a few tests fail and need to
+    # be investigated separately, especially when they need additional
+    # libraries.  We need to ensure psos are translated before running.
     # E.g., run_pm_manifest_file_chrome_browser_test relies on
     # libimc, libweak_ref, etc.
     echo "@@@BUILD_STEP -- SKIP pnacl_generate_pexe: ${platform} ${extra}@@@"
   else
-    # TODO(jvoung): remove this special list once all browser tests are
-    # compatible with pexes. We may still want a nexe invocation
-    # (see above) if we are testing something non-portable with the browser.
-     local pexe_tests="run_browser_startup_time_test \
-run_pm_nameservice_chrome_browser_test \
-run_pnacl_example_browser_test \
-run_pnacl_bad_browser_test \
-run_pm_redir_stdout_fg_0_chrome_browser_test \
-run_pm_redir_stderr_fg_0_chrome_browser_test \
-run_pm_redir_stdout_bg_0_chrome_browser_test \
-run_pm_redir_stderr_bg_0_chrome_browser_test \
-run_pm_exit0_status_chrome_browser_test \
-run_pm_exit7_status_chrome_browser_test \
-run_pm_exit254_status_chrome_browser_test \
-run_pm_exitneg2_status_chrome_browser_test \
-run_inbrowser_crash_in_syscall_test \
-run_inbrowser_untrusted_crash_test \
-run_inbrowser_test_runner \
-run_inbrowser_exception_test \
-run_pm_manifest_file_chrome_browser_test \
-run_irt_manifest_file_chrome_browser_test"
-    single-browser-test ${platform} \
-      "${extra} do_not_run_tests=1" "${pexe_tests}"
-    single-browser-test ${platform} "${extra}" "${pexe_tests}"
+    single-browser-test ${platform} "${extra}" "chrome_browser_tests"
   fi
 }
 
@@ -295,7 +260,7 @@ mode-buildbot-x86() {
   scons-build-test "x86-${bits}" "--mode=opt-host,nacl -j8 -k \
     use_sandboxed_translator=1" "smoke_tests"
 
-  browser-tests "x86-${bits}" "--mode=opt-host,nacl -k"
+  browser-tests "x86-${bits}" "--mode=opt-host,nacl -j8 -k"
 }
 
 # QEMU upload bot runs this function, and the hardware download bot runs
@@ -414,10 +379,10 @@ test-all-newlib() {
   scons-stage "arm" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
   scons-stage "x86-32" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
   scons-stage "x86-64" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
-  # browser tests are run with -j1 on the bots
-  browser-tests "arm" "--verbose --mode=opt-host,nacl -j1"
-  browser-tests "x86-32" "--verbose --mode=opt-host,nacl -j1"
-  browser-tests "x86-64" "--verbose --mode=opt-host,nacl -j1"
+  # browser tests.
+  browser-tests "arm" "--verbose --mode=opt-host,nacl -j${concur}"
+  browser-tests "x86-32" "--verbose --mode=opt-host,nacl -j${concur}"
+  browser-tests "x86-64" "--verbose --mode=opt-host,nacl -j${concur}"
 }
 
 test-all-glibc() {

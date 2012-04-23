@@ -209,10 +209,8 @@ browser-tests() {
   # This calls out to the other buildbot test script. We should have
   # buildbot_toolchain_arm_untrusted.sh use the same tests directly.
   # TODO(jvoung): remove these when unified.
-  # scons browser-tests are currently broken with concurrency, so use -j1
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2019
   Run ${OTHER_TEST_SCRIPT} browser-tests \
-    "${arch}" "--mode=opt-host,nacl -j1 ${extra}"
+    "${arch}" "--mode=opt-host,nacl ${extra} -j${PNACL_CONCURRENCY}"
 }
 
 test-arm()        { scons-tests arm newlib "$@" ; }
