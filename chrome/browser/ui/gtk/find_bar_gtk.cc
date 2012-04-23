@@ -418,7 +418,8 @@ void FindBarGtk::AudibleAlert() {
   //   gtk_widget_error_bell(widget());
 }
 
-gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
+gfx::Rect FindBarGtk::GetDialogPosition(
+    const gfx::Rect& avoid_overlapping_rect) {
   bool ltr = !base::i18n::IsRTL();
   // 15 is the size of the scrollbar, copied from ScrollbarThemeChromium.
   // The height is not used.
