@@ -34,6 +34,13 @@ class MediaStreamImplTest : public ::testing::Test {
                                        dependency_factory));
   }
 
+  void TearDown() {
+    // Make sure the message created by
+    // P2PSocketDispatcher::AsyncMessageSender::Send is handled before
+    // tear down to avoid a memory leak.
+    loop_.RunAllPending();
+  }
+
  protected:
   MessageLoop loop_;
   scoped_ptr<MockMediaStreamDispatcher> ms_dispatcher_;
