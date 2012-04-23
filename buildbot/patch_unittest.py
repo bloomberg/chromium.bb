@@ -11,7 +11,6 @@ import mox
 import os
 import sys
 import copy
-import random
 import tempfile
 import unittest
 
@@ -40,24 +39,6 @@ FAKE_PATCH_JSON = {
 
 
 class GerritPatchTest(mox.MoxTestBase):
-
-  COMMIT_TEMPLATE = (
-"""commit abcdefgh
-
-Author: Fake person
-Date:  Tue Oct 99
-
-I am the first commit.
-
-%(extra)s
-
-Change-Id: %(change-id)s
-"""
-  )
-
-  def MakeChangeID(self):
-    s = "%x" % (random.randint(0, 2**160),)
-    return 'I%s' % s.rjust(40, '0')
 
   @property
   def test_json(self):
@@ -92,9 +73,8 @@ Change-Id: %(change-id)s
     git_log = self.MockCommandResult(output=cmd_output)
 
     cros_lib.RunCommand(
-        ['git', 'log', '--format=%B%x00', 'm/master..%s^' % rev],
-        cwd=project_dir, redirect_stdout=True,
-        print_cmd=False).AndReturn(git_log)
+        ['git', 'log', '-z', 'm/master..%s^' % rev], cwd=project_dir,
+        redirect_stdout=True, print_cmd=False).AndReturn(git_log)
 
     self.mox.ReplayAll()
     deps = my_patch.GerritDependencies(build_root)
@@ -102,7 +82,7 @@ Change-Id: %(change-id)s
 
     self.assertEqual(deps, expected_return_tuple)
 
-  def PaladinDependenciesHelper(self, commit_msg, expected_return_tuple):
+  def PaladinDepenedenciesHelper(self, commit_msg, expected_return_tuple):
     build_root = 'fake_build_root'
     self.mox.StubOutWithMock(cros_patch.GerritPatch, 'CommitMessage')
 
@@ -113,36 +93,30 @@ Change-Id: %(change-id)s
     deps = my_patch.PaladinDependencies(build_root)
     self.mox.VerifyAll()
 
-    self.assertEqual(tuple(deps), tuple(expected_return_tuple))
+    self.assertEqual(deps, expected_return_tuple)
 
-  def TestGerritDependencies(self):
+  def testGerritDependencies(self):
     """Tests that we can get dependencies from a commit with 2 dependencies."""
-    template = self.COMMIT_TEMPLATE
-    cid1 = self.MakeChangeID()
-    cid2 = self.MakeChangeID()
-    commit1 = template % {'change-id': cid1}
-    commit2 = template % {'change-id': cid2}
+    commit1 = """
+    commit abcdefgh
+
+    Author: Fake person
+    Date:  Tue Oct 99
+
+    I am the first commit.
+
+    Change-Id: 1234abcd
+    """
+    commit2 = """commit abcdefgi
+    Author: Fake person
+    Date:  Tue Oct 99
+
+    I am the first commit.
+
+    Change-Id: 1234abce
+    """
     self.GerritDependenciesHelper('\0'.join([commit1, commit2]),
-                                  [cid1, cid2])
-    cid3 = self.MakeChangeID()[:-2]
-    commit3 = template % {'change-id': cid3}
-    self.AssertRaises(
-        cros_patch.BrokenChangeID,
-        self.GerritDependenciesHelper,
-        '\0'.join([commit1, commit3]),
-        [cid1, cid3])
-
-    # Ensure we're parsing only the last paragraph, and
-    # grabbing the last visible Change-ID only.
-    self.AssertRaises(
-        cros_patch.MissingChangeID,
-        self.GerritDependenciesHelper,
-        template % {'change-id': cid1, extra:'monkeys'})
-
-    self.GerritDependenciesHelper(
-        template % {'change-id':'%s\nChange-ID:%s' % (cid1, cid2)},
-        [cid2])
-
+                                  ['1234abcd', '1234abce'])
 
   def testGerritNoDependencies(self):
     """Tests that we return an empty tuple if the commit has no deps."""
@@ -150,28 +124,21 @@ Change-Id: %(change-id)s
 
   def testPaladinDependencies(self):
     """Tests that we can get dependencies specified through commit message."""
-    cq_deps = tuple(self.MakeChangeID() for x in range(4))
-    extra = 'CQ-DEPEND=%s %s  ,%s\nCQ-DEPEND=%s' % cq_deps
-    commit_msg = self.COMMIT_TEMPLATE % {'change-id':self.MakeChangeID(),
-                                         'extra':extra}
-    self.PaladinDependenciesHelper(commit_msg, cq_deps)
+    commit_msg = """
+    commit abcdefgh
 
-  def testPaladinNumericDependencies(self):
-    cq_deps = (self.MakeChangeID(), '1000', '1001')
-    extra = 'CQ-DEPEND=%s %s\nCQ-DEPEND=%s' % cq_deps
-    commit_msg = self.COMMIT_TEMPLATE % {'change-id':self.MakeChangeID(),
-                                         'extra':extra}
-    self.PaladinDependenciesHelper(commit_msg, cq_deps)
+    Author: Fake person
+    Date:  Tue Oct 99
 
-  def testBrokenPaladinDependencies(self):
-    cq_deps = tuple(self.MakeChangeID() for x in range(4))
-    extra = 'CQ-DEPEND=%s %s  ,%s\nCQ-DEPEND=%s' % cq_deps
-    self.assertRaises(
-        cros_patch.BrokenCQDepends,
-        self.PaladinDependenciesHelper,
-        self.COMMIT_TEMPLATE % {'change-id':self.MakeChangeID(),
-                                'extra':extra[:-2]},
-        [])
+    I am the first commit.
+
+    CQ-DEPEND=12345 12356   , 12357
+    CQ-DEPEND=123457a
+
+    Change-Id: Iee5c89d929f1850d7d4e1a4ff5f21adda800025f
+    """
+    self.PaladinDepenedenciesHelper(commit_msg, ['12345', '12356', '12357',
+                                                 '123457a'])
 
   def NotestMockRemoveCommitReady(self):
     """Tests against sosa's test patch to remove Commit Ready bit on failure."""

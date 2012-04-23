@@ -29,19 +29,9 @@ class ApplyPatchException(Exception):
         self.patch, 'current patch series' if self.inflight else 'ToT')
 
 
-class MalformedChange(Exception):
-  pass
-
-class MissingChangeIDException(MalformedChange):
+class MissingChangeIDException(Exception):
   """Raised if a patch is missing a Change-ID."""
-
-
-class BrokenCQDepends(MalformedChange):
-  """Raised if a patch has a CQ-DEPEND line that is ill formated."""
-
-
-class BrokenChangeID(MalformedChange):
-  """Raised if a patch has an invalid Change-ID."""
+  pass
 
 
 class GitRepoPatch(object):
@@ -291,11 +281,8 @@ class LocalGitRepoPatch(GitRepoPatch):
 class GerritPatch(GitRepoPatch):
   """Object that represents a Gerrit CL."""
   _PUBLIC_URL = os.path.join(constants.GERRIT_HTTP_URL, 'gerrit/p')
-  # Note the selective case insensitivity; gerrit allows only this.
-  _VALID_CHANGE_ID_RE = re.compile(r'^I[0-9a-fA-F]{40}$')
-  _GIT_CHANGE_ID_RE = re.compile(r'^Change-Id:[\t ]*(\w+)\s*$',
-                                 re.I|re.MULTILINE)
-  _PALADIN_DEPENDENCY_RE = re.compile(r'^CQ-DEPEND=(.*)$', re.MULTILINE)
+  _GIT_CHANGE_ID_RE = re.compile(r'^\s*Change-Id:\s*(\w+)\s*$', re.MULTILINE)
+  _PALADIN_DEPENDENCY_RE = re.compile(r'^\s*CQ-DEPEND=(.*)$', re.MULTILINE)
   _PALADIN_BUG_RE = re.compile('(\w+)')
 
   def __init__(self, patch_dict, internal):
@@ -358,7 +345,7 @@ class GerritPatch(GitRepoPatch):
 
     rev = self.Fetch(project_dir)
 
-    return_obj = cros_lib.RunCommand(['git', 'log', '--format=%B', '-n1', rev],
+    return_obj = cros_lib.RunCommand(['git', 'show', '-s', rev],
                                      cwd=project_dir, redirect_stdout=True,
                                      print_cmd=False)
     return return_obj.output
@@ -383,32 +370,16 @@ class GerritPatch(GitRepoPatch):
 
     manifest_branch = _GetProjectManifestBranch(buildroot, self.project)
     return_obj = cros_lib.RunCommand(
-        ['git', 'log', '--format=%B%x00', '%s..%s^' % (manifest_branch, rev)],
+        ['git', 'log', '-z', '%s..%s^' % (manifest_branch, rev)],
         cwd=project_dir, redirect_stdout=True, print_cmd=False)
 
-    patches = []
-    if return_obj.output:
-      # Only do this if we have output; else it leads
-      # to an invalid [''] result which we can't identify
-      # as differing from actual output for a single patch that
-      # lacks a commit message.
-      # Because the explicit null addition, strip off the last record.
-      patches = return_obj.output.split('\0')[:-1]
-
-    for patch_output in patches:
-      # Grab just the last pararaph.
-      git_metadata = filter(None, re.split('\n{2,}', patch_output))[-1]
-      change_id_match = self._GIT_CHANGE_ID_RE.findall(git_metadata)
-      if not change_id_match:
+    for patch_output in return_obj.output.split('\0'):
+      if not patch_output: continue
+      change_id_match = self._GIT_CHANGE_ID_RE.search(patch_output)
+      if change_id_match:
+        dependencies.append(change_id_match.group(1))
+      else:
         raise MissingChangeIDException('Missing Change-Id in %s' % patch_output)
-
-      # Now, validate it.  This has no real effect on actual gerrit patches,
-      # but for local patches the validation is useful for general sanity
-      # enforcement.
-      change_id_match = change_id_match[-1]
-      if not self._VALID_CHANGE_ID_RE.match(change_id_match):
-        raise BrokenChangeID(self, change_id_match)
-      dependencies.append(change_id_match)
 
     if dependencies:
       logging.info('Found %s Gerrit dependencies for change %s', dependencies,
@@ -435,13 +406,7 @@ class GerritPatch(GitRepoPatch):
     commit_message = self.CommitMessage(buildroot)
     matches = self._PALADIN_DEPENDENCY_RE.findall(commit_message)
     for match in matches:
-      chunks = ' '.join(match.split(','))
-      chunks = chunks.split()
-      for chunk in chunks:
-        if not (self._VALID_CHANGE_ID_RE.match(chunk) or chunk.isdigit()):
-          raise BrokenCQDepends(self, match, chunk)
-
-      dependencies.extend(chunks)
+      dependencies.extend(self._PALADIN_BUG_RE.findall(match))
 
     if dependencies:
       logging.info('Found %s Paladin dependencies for change %s', dependencies,
