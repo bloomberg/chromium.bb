@@ -483,13 +483,11 @@ IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_ForwardMessageToExternalHost,
 // A renderer sends this to the browser process when it wants to start
 // a new instance of the Native Client process. The browser will launch
 // the process and return a handle to an IMC channel.
-IPC_SYNC_MESSAGE_CONTROL2_3(ChromeViewHostMsg_LaunchNaCl,
+IPC_SYNC_MESSAGE_CONTROL2_1(ChromeViewHostMsg_LaunchNaCl,
                             GURL /* manifest_url */,
                             int /* socket count */,
                             std::vector<nacl::FileDescriptor>
-                                /* imc channel handles */,
-                            base::ProcessHandle /* NaCl process handle */,
-                            base::ProcessId /* NaCl process id */)
+                                /* imc channel handles */)
 
 // Notification that the page has an OpenSearch description document
 // associated with it.

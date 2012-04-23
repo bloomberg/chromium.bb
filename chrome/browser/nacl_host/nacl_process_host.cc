@@ -910,44 +910,22 @@ bool NaClProcessHost::ReplyToRenderer() {
 #endif
   }
 
-  const ChildProcessData& data = process_->GetData();
-  base::ProcessHandle nacl_process_handle;
 #if defined(OS_WIN)
-  // Copy the process handle into the renderer process.
-  // TODO(mseaborn): Remove this.  The renderer process uses this
-  // handle with NaCl's handle_pass module, but we are replacing
-  // handle_pass with Chrome's BrokerDuplicateHandle() function.
-  if (!DuplicateHandle(base::GetCurrentProcessHandle(),
-                       data.handle,
-                       chrome_render_message_filter_->peer_handle(),
-                       &nacl_process_handle,
-                       PROCESS_DUP_HANDLE,
-                       FALSE,
-                       0)) {
-    DLOG(ERROR) << "DuplicateHandle() failed";
-    return false;
-  }
   // If we are on 64-bit Windows, the NaCl process's sandbox is
   // managed by a different process from the renderer's sandbox.  We
   // need to inform the renderer's sandbox about the NaCl process so
   // that the renderer can send handles to the NaCl process using
   // BrokerDuplicateHandle().
   if (RunningOnWOW64()) {
-    if (!content::BrokerAddTargetPeer(data.handle)) {
+    if (!content::BrokerAddTargetPeer(process_->GetData().handle)) {
       DLOG(ERROR) << "Failed to add NaCl process PID";
       return false;
     }
   }
-#else
-  // We use pid as process handle on Posix
-  nacl_process_handle = data.handle;
 #endif
 
-  // Get the pid of the NaCl process
-  base::ProcessId nacl_process_id = base::GetProcId(data.handle);
-
   ChromeViewHostMsg_LaunchNaCl::WriteReplyParams(
-      reply_msg_, handles_for_renderer, nacl_process_handle, nacl_process_id);
+      reply_msg_, handles_for_renderer);
   chrome_render_message_filter_->Send(reply_msg_);
   chrome_render_message_filter_ = NULL;
   reply_msg_ = NULL;

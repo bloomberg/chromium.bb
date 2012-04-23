@@ -42,18 +42,13 @@ bool LaunchSelLdr(const char* alleged_url, int socket_count,
                   void* imc_handles, void* nacl_process_handle,
                   int* nacl_process_id) {
   std::vector<nacl::FileDescriptor> sockets;
-  base::ProcessHandle nacl_process;
   IPC::Message::Sender* sender = RenderThread::Get();
   if (sender == NULL) {
     sender = g_background_thread_sender.Pointer()->get();
   }
   if (!sender->Send(
       new ChromeViewHostMsg_LaunchNaCl(
-          GURL(alleged_url),
-          socket_count,
-          &sockets,
-          &nacl_process,
-          reinterpret_cast<base::ProcessId*>(nacl_process_id)))) {
+          GURL(alleged_url), socket_count, &sockets))) {
     return false;
   }
   CHECK(static_cast<int>(sockets.size()) == socket_count);
@@ -61,7 +56,11 @@ bool LaunchSelLdr(const char* alleged_url, int socket_count,
     static_cast<nacl::Handle*>(imc_handles)[i] =
         nacl::ToNativeHandle(sockets[i]);
   }
-  *static_cast<nacl::Handle*>(nacl_process_handle) = nacl_process;
+  // TODO(mseaborn): Remove the arguments nacl_process_handle and
+  // nacl_process_id from the interface.
+  *reinterpret_cast<base::ProcessHandle*>(nacl_process_handle) =
+      (base::ProcessHandle) -1;
+  *nacl_process_id = 0;
   return true;
 }
 
