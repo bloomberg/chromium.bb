@@ -2162,6 +2162,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::GetIndicesFromTab;
   handler_map["NavigateToURL"] =
       &TestingAutomationProvider::NavigateToURL;
+  handler_map["WaitUntilNavigationCompletes"] =
+      &TestingAutomationProvider::WaitUntilNavigationCompletes;
   handler_map["GetLocalStatePrefsInfo"] =
       &TestingAutomationProvider::GetLocalStatePrefsInfo;
   handler_map["SetLocalStatePrefs"] =
@@ -6372,6 +6374,29 @@ void TestingAutomationProvider::NavigateToURL(
   browser->OpenURLFromTab(web_contents, OpenURLParams(
       GURL(url), content::Referrer(), CURRENT_TAB,
       content::PAGE_TRANSITION_TYPED, false));
+}
+
+void TestingAutomationProvider::WaitUntilNavigationCompletes(
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  if (SendErrorIfModalDialogActive(this, reply_message))
+    return;
+
+  std::string error;
+  Browser* browser;
+  WebContents* web_contents;
+  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &web_contents, &error)) {
+    AutomationJSONReply(this, reply_message).SendError(error);
+    return;
+  }
+  NavigationNotificationObserver* observer =
+      new NavigationNotificationObserver(&web_contents->GetController(), this,
+                                         reply_message, 1, true, true);
+  if (!web_contents->IsLoading()) {
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+    delete observer;
+    return;
+  }
 }
 
 void TestingAutomationProvider::ExecuteJavascriptJSON(

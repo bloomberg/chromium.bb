@@ -950,6 +950,18 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS }
   void NavigateToURL(base::DictionaryValue* args, IPC::Message* reply_message);
 
+  // Waits until any pending navigation completes in the specified tab.
+  // The pair |windex| and |tab_index| or the single |auto_id| must be given
+  // to specify the tab.
+  // Example:
+  //   input: { "windex": 1,
+  //            "tab_index": 1,
+  //            "auto_id": { "type": 0, "id": "awoein" },
+  //           }
+  //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS }
+  void WaitUntilNavigationCompletes(
+      base::DictionaryValue* args, IPC::Message* reply_message);
+
   // Executes javascript in the specified frame. Uses the JSON interface.
   // Waits for a result from the |DOMAutomationController|. The javascript
   // must send a string.

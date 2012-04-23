@@ -42,6 +42,15 @@ class PyAutoEventsTest(pyauto.PyUITest):
     self.GetNextEvent(self.AddDomMutationObserver('remove', 'id("fail")/a'))
     self.GetNextEvent(success_id)
 
+  def testWaitUntilNavigationCompletes(self):
+    """Basic test for WaitUntilNavigationCompletes."""
+    url = self.GetHttpURLForDataPath('apptest', 'dom_mutations.html')
+    js = """window.location.href = "%s";
+            window.domAutomationController.send("done");""" % url
+    self.ExecuteJavascript(js)
+    self.WaitUntilNavigationCompletes()
+    self.WaitForDomNode('id("login")')
+
   def _ExpectEvent(self, event_id, expected_event_name):
     """Checks that the next event is expected."""
     e = self.GetNextEvent(event_id)

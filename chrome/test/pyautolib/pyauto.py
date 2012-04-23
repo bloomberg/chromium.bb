@@ -3113,6 +3113,26 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)
 
+  def WaitUntilNavigationCompletes(self, tab_index=0, windex=0):
+    """Wait until the specified tab is done navigating.
+
+    It is safe to call ExecuteJavascript() as soon as the call returns. If
+    there is no outstanding navigation the call will return immediately.
+
+    Args:
+      tab_index: index of the tab.
+      windex: index of the window.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'WaitUntilNavigationCompletes',
+      'tab_index': tab_index,
+      'windex': windex,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
+
   def ExecuteJavascript(self, js, tab_index=0, windex=0, frame_xpath=''):
     """Executes a script in the specified frame of a tab.
 
