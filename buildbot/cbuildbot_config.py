@@ -503,6 +503,7 @@ chromium_pfq = _config(
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
   manifest_version=True,
+  chrome_rev=constants.CHROME_REV_LATEST,
 )
 
 # TODO(davidjames): Convert this to an external config once the unified master
@@ -513,20 +514,17 @@ internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
   boards=['x86-generic'],
   master=True,
   push_overlays=constants.PUBLIC_OVERLAYS,
-  chrome_rev=constants.CHROME_REV_LATEST,
   chrome_tests=False, # TODO(build-team): Use chrome tests
 )
 
 internal_chromium_pfq.add_config('tegra2-chromium-pfq',
   arm,
   boards=['tegra2'],
-  chrome_rev=constants.CHROME_REV_LATEST,
 )
 
 internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
   amd64,
   boards=['amd64-generic'],
-  chrome_rev=constants.CHROME_REV_LATEST,
   # This builder runs on a VM, so it can't run VM tests.
   vm_tests=None,
 )
