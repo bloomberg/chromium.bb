@@ -1,2 +1,6 @@
 # For sandbox_init_linux.cc
 cevans@chromium.org
+
+# For sandbox_policy.cc
+jschuh@chromium.org
+cpu@chromium.org
