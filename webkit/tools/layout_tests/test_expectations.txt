@@ -32,5 +32,3 @@ BUGCR119667 : media/W3C/video/canPlayType/canPlayType_codecs_order_1.html = PASS
 BUGCR119667 : media/W3C/video/canPlayType/canPlayType_supported_but_no_codecs_parameter_1.html = PASS
 BUGCR119667 : media/W3C/video/canPlayType/canPlayType_two_implies_one_1.html = PASS
 BUGCR119667 : media/W3C/video/canPlayType/canPlayType_two_implies_one_2.html = PASS
-
-BUGWK82983 : media/encrypted-media/ = PASS
