@@ -39,7 +39,6 @@ KeyboardOverlayDialogView::KeyboardOverlayDialogView(
     BrowserView* parent_view)
     : HtmlDialogView(profile, parent_view->browser(), delegate),
       parent_view_(parent_view) {
-  RegisterDialogAccelerators();
 }
 
 KeyboardOverlayDialogView::~KeyboardOverlayDialogView() {

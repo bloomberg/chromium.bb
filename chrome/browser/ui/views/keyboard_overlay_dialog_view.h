@@ -34,7 +34,7 @@ class KeyboardOverlayDialogView : public HtmlDialogView {
   static void ShowDialog(gfx::NativeWindow owning_window, BrowserView* parent);
 
  private:
-  void RegisterDialogAccelerators();
+  virtual void RegisterDialogAccelerators() OVERRIDE;
 
   // Returns true if |accelerator| is an accelerator for closing the dialog.
   bool IsCloseAccelerator(const ui::Accelerator& accelerator);
