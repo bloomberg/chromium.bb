@@ -391,7 +391,12 @@ def MODEtrace(_outdir, indir, data):
   product_dir = None
   if data['resultdir'] and indir:
     # Defaults to none if both are the same directory.
-    product_dir = os.path.relpath(data['resultdir'], indir) or None
+    try:
+      product_dir = os.path.relpath(data['resultdir'], indir) or None
+    except ValueError:
+      # This happens on Windows if data['resultdir'] is one drive, let's say
+      # 'C:\' and indir on another one like 'D:\'.
+      product_dir = None
   if not data['command']:
     print 'No command to run'
     return 1
@@ -439,7 +444,9 @@ def process_options(variables, resultfile, input_file, error):
   # The trick used to determine the root directory is to look at "how far" back
   # up it is looking up.
   # TODO(maruel): Stop the msbuild generator from generating a mix of / and \\.
-  root_dir = isolate_dir.replace(os.path.sep, '/')
+  isolate_dir_replaced = isolate_dir.replace(os.path.sep, '/')
+  root_dir = isolate_dir_replaced
+  logging.debug('root_dir before searching: %s' % root_dir)
   for i in infiles:
     i = i.replace(os.path.sep, '/')
     x = isolate_dir.replace(os.path.sep, '/')
@@ -450,9 +457,12 @@ def process_options(variables, resultfile, input_file, error):
     if root_dir.startswith(x):
       root_dir = x
   root_dir = root_dir.replace('/', os.path.sep)
+  logging.debug('root_dir after searching: %s' % root_dir)
+
   # The relative directory is automatically determined by the relative path
   # between root_dir and the directory containing the .isolate file.
-  relative_dir = os.path.relpath(isolate_dir, root_dir)
+  relative_dir = os.path.relpath(isolate_dir, root_dir).replace(
+      os.path.sep, '/')
   logging.debug('relative_dir: %s' % relative_dir)
 
   logging.debug(

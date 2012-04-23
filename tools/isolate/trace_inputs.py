@@ -21,6 +21,15 @@ import re
 import subprocess
 import sys
 
+## OS-specific imports
+
+if sys.platform == 'win32':
+  from ctypes.wintypes import create_unicode_buffer
+  from ctypes.wintypes import windll, FormatError  # pylint: disable=E0611
+  from ctypes.wintypes import GetLastError  # pylint: disable=E0611
+elif sys.platform == 'darwin':
+  import Carbon.File  #  pylint: disable=F0401
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
@@ -29,12 +38,9 @@ KEY_TRACKED = 'isolate_dependency_tracked'
 KEY_UNTRACKED = 'isolate_dependency_untracked'
 
 
+## OS-specific functions
+
 if sys.platform == 'win32':
-  from ctypes.wintypes import create_unicode_buffer
-  from ctypes.wintypes import windll, FormatError  # pylint: disable=E0611
-  from ctypes.wintypes import GetLastError  # pylint: disable=E0611
-
-
   def QueryDosDevice(drive_letter):
     """Returns the Windows 'native' path for a DOS drive letter."""
     assert re.match(r'^[a-zA-Z]:$', drive_letter), drive_letter
@@ -56,6 +62,10 @@ if sys.platform == 'win32':
   def GetShortPathName(long_path):
     """Returns the Windows short path equivalent for a 'long' path."""
     long_path = unicode(long_path)
+    # Adds '\\\\?\\' when given an absolute path so the MAX_PATH (260) limit is
+    # not enforced.
+    if os.path.isabs(long_path) and not long_path.startswith('\\\\?\\'):
+      long_path = '\\\\?\\' + long_path
     chars = windll.kernel32.GetShortPathNameW(long_path, None, 0)
     if chars:
       p = create_unicode_buffer(chars)
@@ -71,6 +81,28 @@ if sys.platform == 'win32':
             str(long_path), FormatError(err), err))
 
 
+  def GetLongPathName(short_path):
+    """Returns the Windows long path equivalent for a 'short' path."""
+    short_path = unicode(short_path)
+    # Adds '\\\\?\\' when given an absolute path so the MAX_PATH (260) limit is
+    # not enforced.
+    if os.path.isabs(short_path) and not short_path.startswith('\\\\?\\'):
+      short_path = '\\\\?\\' + short_path
+    chars = windll.kernel32.GetLongPathNameW(short_path, None, 0)
+    if chars:
+      p = create_unicode_buffer(chars)
+      if windll.kernel32.GetLongPathNameW(short_path, p, chars):
+        return p.value
+
+    err = GetLastError()
+    if err:
+      # pylint: disable=E0602
+      raise WindowsError(
+          err,
+          'GetLongPathName(%s): %s (%d)' % (
+            str(short_path), FormatError(err), err))
+
+
   def get_current_encoding():
     """Returns the 'ANSI' code page associated to the process."""
     return 'cp%d' % int(windll.kernel32.GetACP())
@@ -83,6 +115,9 @@ if sys.platform == 'win32':
 
     def __init__(self):
       if not self._MAPPING:
+        # This is related to UNC resolver on windows. Ignore that.
+        self._MAPPING['\\Device\\Mup'] = None
+
         for letter in (chr(l) for l in xrange(ord('C'), ord('Z')+1)):
           try:
             letter = '%s:' % letter
@@ -98,12 +133,34 @@ if sys.platform == 'win32':
     def to_dos(self, path):
       """Converts a native NT path to DOS path."""
       m = re.match(r'(^\\Device\\[a-zA-Z0-9]+)(\\.*)?$', path)
-      if not m or m.group(1) not in self._MAPPING:
-        assert False, path
+      assert m, path
+      assert m.group(1) in self._MAPPING, (path, self._MAPPING)
       drive = self._MAPPING[m.group(1)]
-      if not m.group(2):
+      if not drive or not m.group(2):
         return drive
       return drive + m.group(2)
+
+
+def get_native_path_case(root, relative_path):
+  """Returns the native path case."""
+  if sys.platform == 'win32':
+    # Windows used to have an option to turn on case sensitivity on non Win32
+    # subsystem but that's out of scope here and isn't supported anymore.
+    # First process root.
+    if root:
+      root = GetLongPathName(GetShortPathName(root)) + os.path.sep
+    path = os.path.join(root, relative_path) if root else relative_path
+    # Go figure why GetShortPathName() is needed.
+    return GetLongPathName(GetShortPathName(path))[len(root):]
+  elif sys.platform == 'darwin':
+    # Technically, it's only HFS+ on OSX that is case insensitive. It's
+    # the default setting on HFS+ but can be changed.
+    root_ref, _ = Carbon.File.FSPathMakeRef(root)
+    rel_ref, _ = Carbon.File.FSPathMakeRef(os.path.join(root, relative_path))
+    return rel_ref.FSRefMakePath()[len(root_ref.FSRefMakePath())+1:]
+  else:
+    # Give up on cygwin, as GetLongPathName() can't be called.
+    return relative_path
 
 
 def get_flavor():
@@ -837,7 +894,7 @@ class LogmanTrace(object):
 
     def handle_FileIo_Create(self, line):
       m = re.match(r'^\"(.+)\"$', line[self.FILE_PATH])
-      self._handle_file(self._drive_map.to_dos(m.group(1)).lower())
+      self._handle_file(self._drive_map.to_dos(m.group(1)))
 
     def handle_FileIo_Rename(self, line):
       # TODO(maruel): Handle?
@@ -913,7 +970,7 @@ class LogmanTrace(object):
 
   def __init__(self):
     # Most ignores need to be determined at runtime.
-    self.IGNORED = set([os.path.dirname(sys.executable).lower()])
+    self.IGNORED = set([os.path.dirname(sys.executable)])
     # Add many directories from environment variables.
     vars_to_ignore = (
       'APPDATA',
@@ -928,11 +985,11 @@ class LogmanTrace(object):
     )
     for i in vars_to_ignore:
       if os.environ.get(i):
-        self.IGNORED.add(os.environ[i].lower())
+        self.IGNORED.add(os.environ[i])
 
     # Also add their short path name equivalents.
     for i in list(self.IGNORED):
-      self.IGNORED.add(GetShortPathName(i).lower())
+      self.IGNORED.add(GetShortPathName(i))
 
     # Add this one last since it has no short path name equivalent.
     self.IGNORED.add('\\systemroot')
@@ -1225,16 +1282,6 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
   # Resolve any symlink
   root_dir = os.path.realpath(root_dir)
 
-  if sys.platform == 'win32':
-    # Help ourself and lowercase all the paths.
-    # TODO(maruel): handle short path names by converting them to long path name
-    # as needed.
-    root_dir = root_dir.lower()
-    if cwd_dir:
-      cwd_dir = cwd_dir.lower()
-    if product_dir:
-      product_dir = product_dir.lower()
-
   def print_if(txt):
     if cwd_dir is None:
       print(txt)
@@ -1287,6 +1334,9 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
     for f in unexpected:
       print_if('  %s' % f)
 
+  # In case the file system is case insensitive.
+  expected = sorted(set(get_native_path_case(root_dir, f) for f in expected))
+
   simplified = extract_directories(expected, root_dir)
   print_if('Interesting: %d reduced to %d' % (len(expected), len(simplified)))
   for f in simplified:
@@ -1312,8 +1362,7 @@ def trace_inputs(logfile, cmd, root_dir, cwd_dir, product_dir, force_trace):
       """Bases the file on the most restrictive variable."""
       logging.debug('fix(%s)' % f)
       # Important, GYP stores the files with / and not \.
-      if sys.platform == 'win32':
-        f = f.replace('\\', '/')
+      f = f.replace(os.path.sep, '/')
 
       if product_dir and f.startswith(product_dir):
         return '<(PRODUCT_DIR)/%s' % f[len(product_dir):]

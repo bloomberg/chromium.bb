@@ -4,7 +4,9 @@
 # found in the LICENSE file.
 
 import json
+import logging
 import os
+import sys
 import tempfile
 import unittest
 
@@ -89,4 +91,7 @@ class Isolate(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  logging.basicConfig(
+      level=logging.DEBUG if '-v' in sys.argv else logging.ERROR,
+      format='%(levelname)5s %(filename)15s(%(lineno)3d): %(message)s')
   unittest.main()

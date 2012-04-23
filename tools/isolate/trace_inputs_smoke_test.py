@@ -32,12 +32,15 @@ class CalledProcessError(subprocess.CalledProcessError):
 
 class TraceInputs(unittest.TestCase):
   def setUp(self):
-    self.tempdir = tempfile.mkdtemp()
+    self.tempdir = tempfile.mkdtemp(prefix='trace_smoke_test')
     self.log = os.path.join(self.tempdir, 'log')
     os.chdir(ROOT_DIR)
 
   def tearDown(self):
-    shutil.rmtree(self.tempdir)
+    if VERBOSE:
+      print 'Leaking: %s' % self.tempdir
+    else:
+      shutil.rmtree(self.tempdir)
 
   def _execute(self, is_gyp):
     cmd = [

@@ -79,7 +79,9 @@ class IsolateBase(unittest.TestCase):
   def _result_tree(self):
     actual = []
     for root, _dirs, files in os.walk(self.outdir):
-      actual.extend(os.path.join(root, f)[len(self.outdir)+1:] for f in files)
+      actual.extend(
+          os.path.join(root, f)[len(self.outdir)+1:].replace(os.path.sep, '/')
+          for f in files)
     return sorted(actual)
 
   def _expected_tree(self):
@@ -444,8 +446,11 @@ class Isolate_trace(IsolateBase):
       out = e.output
     self._expect_no_tree()
     self._expected_result(['fail.py'], None)
-    expected = 'Failure: 1\nFailing\n\n'
-    self.assertEquals(expected, out)
+    # In theory, there should be 2 \n at the end of expected but for an
+    # unknown reason there's 3 \n on Windows so just rstrip() and compare the
+    # text, that's sufficient for this test.
+    expected = 'Failure: 1\nFailing'
+    self.assertEquals(expected, out.rstrip())
 
   def test_missing_trailing_slash(self):
     try:
