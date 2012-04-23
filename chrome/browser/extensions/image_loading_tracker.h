@@ -9,7 +9,6 @@
 #include <map>
 
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/notification_observer.h"
@@ -123,13 +122,6 @@ class ImageLoadingTracker : public content::NotificationObserver {
   void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
                      const gfx::Size& original_size, int id, bool should_cache);
 
-  // Checks whether image is a component extension resource. Returns false
-  // if a given |resource| does not have a corresponding image in bundled
-  // resources. Otherwise fills |resource_id|.
-  bool IsComponentExtensionResource(const Extension* extension,
-                                    const ExtensionResource& resource,
-                                    int& resource_id) const;
-
   // content::NotificationObserver method. If an extension is uninstalled while
   // we're waiting for the image we remove the entry from load_map_.
   virtual void Observe(int type,
@@ -150,9 +142,6 @@ class ImageLoadingTracker : public content::NotificationObserver {
   LoadMap load_map_;
 
   content::NotificationRegistrar registrar_;
-
-  FRIEND_TEST_ALL_PREFIXES(ImageLoadingTrackerTest,
-                           IsComponentExtensionResource);
 
   DISALLOW_COPY_AND_ASSIGN(ImageLoadingTracker);
 };

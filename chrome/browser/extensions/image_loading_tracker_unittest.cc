@@ -13,7 +13,6 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "content/public/browser/notification_service.h"
 #include "content/test/test_browser_thread.h"
-#include "grit/component_extension_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
@@ -53,8 +52,7 @@ class ImageLoadingTrackerTest : public testing::Test,
     return result;
   }
 
-  scoped_refptr<Extension> CreateExtension(const char* name,
-                                           Extension::Location location) {
+  scoped_refptr<Extension> CreateExtension() {
     // Create and load an extension.
     FilePath test_file;
     if (!PathService::Get(chrome::DIR_TEST_DATA, &test_file)) {
@@ -62,7 +60,7 @@ class ImageLoadingTrackerTest : public testing::Test,
       return NULL;
     }
     test_file = test_file.AppendASCII("extensions")
-                         .AppendASCII(name);
+                         .AppendASCII("image_loading_tracker");
     int error_code = 0;
     std::string error;
     JSONFileValueSerializer serializer(test_file.AppendASCII("app.json"));
@@ -77,7 +75,7 @@ class ImageLoadingTrackerTest : public testing::Test,
     if (!valid_value.get())
       return NULL;
 
-    return Extension::Create(test_file, location, *valid_value,
+    return Extension::Create(test_file, Extension::INVALID, *valid_value,
         Extension::STRICT_ERROR_CHECKS, &error);
   }
 
@@ -99,8 +97,7 @@ class ImageLoadingTrackerTest : public testing::Test,
 
 // Tests asking ImageLoadingTracker to cache pushes the result to the Extension.
 TEST_F(ImageLoadingTrackerTest, Cache) {
-  scoped_refptr<Extension> extension(CreateExtension(
-      "image_loading_tracker", Extension::INVALID));
+  scoped_refptr<Extension> extension(CreateExtension());
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
@@ -149,8 +146,7 @@ TEST_F(ImageLoadingTrackerTest, Cache) {
 // Tests deleting an extension while waiting for the image to load doesn't cause
 // problems.
 TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
-  scoped_refptr<Extension> extension(CreateExtension(
-      "image_loading_tracker", Extension::INVALID));
+  scoped_refptr<Extension> extension(CreateExtension());
   ASSERT_TRUE(extension.get() != NULL);
 
   ExtensionResource image_resource =
@@ -191,8 +187,7 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
 
 // Tests loading multiple dimensions of the same image.
 TEST_F(ImageLoadingTrackerTest, MultipleImages) {
-  scoped_refptr<Extension> extension(CreateExtension(
-      "image_loading_tracker", Extension::INVALID));
+  scoped_refptr<Extension> extension(CreateExtension());
   ASSERT_TRUE(extension.get() != NULL);
 
   std::vector<ImageLoadingTracker::ImageInfo> info_list;
@@ -225,25 +220,4 @@ TEST_F(ImageLoadingTrackerTest, MultipleImages) {
   }
   EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_BITTY, bmp1->width());
   EXPECT_EQ(ExtensionIconSet::EXTENSION_ICON_SMALLISH, bmp2->width());
-}
-
-// Tests IsComponentExtensionResource function.
-TEST_F(ImageLoadingTrackerTest, IsComponentExtensionResource) {
-  scoped_refptr<Extension> extension(CreateExtension(
-      "file_manager", Extension::COMPONENT));
-  ASSERT_TRUE(extension.get() != NULL);
-
-  ExtensionResource resource =
-      extension->GetIconResource(ExtensionIconSet::EXTENSION_ICON_BITTY,
-                                 ExtensionIconSet::MATCH_EXACTLY);
-
-#if defined(FILE_MANAGER_EXTENSION)
-  ImageLoadingTracker loader(this);
-  int resource_id;
-  ASSERT_EQ(true,
-            loader.IsComponentExtensionResource(extension.get(),
-                                                resource,
-                                                resource_id));
-  ASSERT_EQ(IDR_FILE_MANAGER_ICON_16, resource_id);
-#endif
 }
