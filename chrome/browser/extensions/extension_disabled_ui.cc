@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_source.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -130,9 +131,11 @@ class ExtensionDisabledGlobalError : public GlobalError,
 
   // GlobalError implementation.
   virtual bool HasBadge() OVERRIDE;
+  virtual int GetBadgeResourceID() OVERRIDE;
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
   virtual string16 MenuItemLabel() OVERRIDE;
+  virtual int MenuItemIconResourceID() OVERRIDE;
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
@@ -197,12 +200,20 @@ bool ExtensionDisabledGlobalError::HasBadge() {
   return true;
 }
 
+int ExtensionDisabledGlobalError::GetBadgeResourceID() {
+  return IDR_UPDATE_BADGE;
+}
+
 bool ExtensionDisabledGlobalError::HasMenuItem() {
   return true;
 }
 
 int ExtensionDisabledGlobalError::MenuItemCommandID() {
   return menu_command_id_;
+}
+
+int ExtensionDisabledGlobalError::MenuItemIconResourceID() {
+  return IDR_UPDATE_MENU;
 }
 
 string16 ExtensionDisabledGlobalError::MenuItemLabel() {
