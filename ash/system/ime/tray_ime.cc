@@ -11,6 +11,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
+#include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -186,13 +187,14 @@ TrayIME::~TrayIME() {
 }
 
 void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
-  tray_label_->SetText(current.short_name);
+  tray_label_->label()->SetText(current.short_name);
   tray_label_->SetVisible(count > 1);
 }
 
 views::View* TrayIME::CreateTrayView(user::LoginStatus status) {
-  tray_label_.reset(new views::Label);
-  SetupLabelForTray(tray_label_.get());
+  tray_label_.reset(new TrayItemView);
+  tray_label_->CreateLabel();
+  SetupLabelForTray(tray_label_->label());
   tray_label_->set_border(
       views::Border::CreateEmptyBorder(0, 2, 0, 2));
   return tray_label_.get();

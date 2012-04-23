@@ -15,12 +15,14 @@ class ImageView;
 namespace ash {
 namespace internal {
 
+class TrayItemView;
+
 class TrayImageItem : public SystemTrayItem {
  public:
   explicit TrayImageItem(int resource_id);
   virtual ~TrayImageItem();
 
-  views::ImageView* image_view() { return image_view_.get(); }
+  views::View* tray_view();
 
  protected:
   virtual bool GetInitialVisibility() = 0;
@@ -35,7 +37,7 @@ class TrayImageItem : public SystemTrayItem {
 
  private:
   int resource_id_;
-  scoped_ptr<views::ImageView> image_view_;
+  scoped_ptr<TrayItemView> tray_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayImageItem);
 };

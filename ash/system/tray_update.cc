@@ -78,7 +78,7 @@ void TrayUpdate::DestroyDefaultView() {
 }
 
 void TrayUpdate::OnUpdateRecommended() {
-  image_view()->SetVisible(true);
+  tray_view()->SetVisible(true);
 }
 
 }  // namespace internal

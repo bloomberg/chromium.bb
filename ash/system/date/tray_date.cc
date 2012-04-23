@@ -8,6 +8,7 @@
 #include "ash/system/date/date_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/i18n/time_formatting.h"
 #include "base/stringprintf.h"
@@ -24,7 +25,6 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -49,7 +49,10 @@ views::View* TrayDate::CreateTrayView(user::LoginStatus status) {
   gfx::Font font = date_tray_->label()->font();
   date_tray_->label()->SetFont(
       font.DeriveFont(0, font.GetStyle() & ~gfx::Font::BOLD));
-  return date_tray_.get();
+
+  views::View* view = new TrayItemView;
+  view->AddChildView(date_tray_.get());
+  return view;
 }
 
 views::View* TrayDate::CreateDefaultView(user::LoginStatus status) {

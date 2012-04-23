@@ -55,8 +55,8 @@ void TrayAccessibility::DestroyDetailedView() {
 
 void TrayAccessibility::OnAccessibilityModeChanged(bool enabled,
                                                    int string_id) {
-  if (image_view())
-    image_view()->SetVisible(enabled);
+  if (tray_view())
+    tray_view()->SetVisible(enabled);
 
   if (enabled) {
     string_id_ = string_id;

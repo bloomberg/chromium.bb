@@ -160,6 +160,8 @@
         'system/tray/tray_image_item.h',
         'system/tray/tray_item_more.cc',
         'system/tray/tray_item_more.h',
+        'system/tray/tray_item_view.cc',
+        'system/tray/tray_item_view.h',
         'system/tray/tray_views.cc',
         'system/tray/tray_views.h',
         'system/tray_accessibility.cc',

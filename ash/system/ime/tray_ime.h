@@ -25,6 +25,8 @@ class IMEDefaultView;
 class IMEDetailedView;
 };
 
+class TrayItemView;
+
 class TrayIME : public SystemTrayItem,
                 public IMEObserver {
  public:
@@ -45,7 +47,7 @@ class TrayIME : public SystemTrayItem,
   // Overridden from IMEObserver.
   virtual void OnIMERefresh() OVERRIDE;
 
-  scoped_ptr<views::Label> tray_label_;
+  scoped_ptr<TrayItemView> tray_label_;
   scoped_ptr<tray::IMEDefaultView> default_;
   scoped_ptr<tray::IMEDetailedView> detailed_;
 

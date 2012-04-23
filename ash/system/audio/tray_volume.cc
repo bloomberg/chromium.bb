@@ -192,8 +192,8 @@ void TrayVolume::DestroyDetailedView() {
 }
 
 void TrayVolume::OnVolumeChanged(float percent) {
-  if (image_view())
-    image_view()->SetVisible(GetInitialVisibility());
+  if (tray_view())
+    tray_view()->SetVisible(GetInitialVisibility());
 
   if (volume_view_.get()) {
     volume_view_->SetVolumeLevel(percent);

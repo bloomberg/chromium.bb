@@ -10,6 +10,7 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_more.h"
+#include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
@@ -98,7 +99,7 @@ enum ColorTheme {
   DARK,
 };
 
-class NetworkTrayView : public views::View {
+class NetworkTrayView : public TrayItemView {
  public:
   NetworkTrayView(ColorTheme size, bool tray_icon)
       : color_theme_(size), tray_icon_(tray_icon) {
@@ -136,8 +137,6 @@ class NetworkDefaultView : public TrayItemMore {
  public:
   explicit NetworkDefaultView(SystemTrayItem* owner)
       : TrayItemMore(owner) {
-    icon_ = new NetworkTrayView(DARK, false /* tray_icon */);
-    ReplaceIcon(icon_);
     Update();
   }
 
@@ -147,14 +146,12 @@ class NetworkDefaultView : public TrayItemMore {
     NetworkIconInfo info;
     Shell::GetInstance()->tray_delegate()->
         GetMostRelevantNetworkIcon(&info, true);
-    icon_->Update(info);
+    SetImage(&info.image);
     SetLabel(info.description);
     SetAccessibleName(info.description);
   }
 
  private:
-  NetworkTrayView* icon_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkDefaultView);
 };
 

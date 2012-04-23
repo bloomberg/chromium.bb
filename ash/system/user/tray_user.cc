@@ -7,6 +7,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ash_strings.h"
@@ -183,7 +184,7 @@ class UserView : public views::View,
 };
 
 // A custom image view with rounded edges.
-class RoundedImageView : public views::View {
+class RoundedImageView : public TrayItemView {
  public:
   // Constructs a new rounded image view with rounded corners of radius
   // |corner_radius|.
@@ -202,19 +203,26 @@ class RoundedImageView : public views::View {
     // Try to get the best image quality for the avatar.
     resized_ = skia::ImageOperations::Resize(image_,
         skia::ImageOperations::RESIZE_BEST, size.width(), size.height());
-    PreferredSizeChanged();
-    SchedulePaint();
+    if (GetWidget() && visible()) {
+      PreferredSizeChanged();
+      SchedulePaint();
+    }
   }
 
-  // Overridden from views::View.
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
+  // Overridden from TrayItemView.
+  virtual gfx::Size DesiredSize() OVERRIDE {
     return gfx::Size(image_size_.width() + GetInsets().width(),
                      image_size_.height() + GetInsets().height());
   }
 
+  virtual int GetAnimationDurationMS() OVERRIDE {
+    return 750;
+  }
+
+  // Overridden from views::View.
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     View::OnPaint(canvas);
-    gfx::Rect image_bounds(GetPreferredSize());
+    gfx::Rect image_bounds(DesiredSize());
     image_bounds.Inset(GetInsets());
     const SkScalar kRadius = SkIntToScalar(corner_radius_);
     SkPath path;
