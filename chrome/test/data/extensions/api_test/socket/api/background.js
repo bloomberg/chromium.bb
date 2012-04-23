@@ -76,6 +76,10 @@ var testSocketCreation = function() {
 };
 
 function onDataRead(readInfo) {
+  if (readInfo.resultCode > 0 || readInfo.data.length > 0) {
+    chrome.test.assertEq(readInfo.resultCode, readInfo.data.length);
+  }
+
   // TODO(miket): this isn't correct for multiple calls of onDataRead.
   arrayBuffer2String(arrayOfLongsToArrayBuffer(readInfo.data), function(s) {
       dataAsString = s;  // save this for error reporting
@@ -115,7 +119,7 @@ function onEvent(socketEvent) {
   if (socketEvent.type == "connectComplete") {
     onConnectComplete(socketEvent.resultCode);
   } else if (socketEvent.type == "dataRead") {
-    onDataRead({data: socketEvent.data});
+    onDataRead({resultCode: socketEvent.resultCode, data: socketEvent.data});
   } else if (socketEvent.type == "writeComplete") {
     onWriteComplete(socketEvent.resultCode);
   } else {

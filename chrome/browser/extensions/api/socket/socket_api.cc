@@ -16,6 +16,7 @@ namespace extensions {
 
 const char kBytesWrittenKey[] = "bytesWritten";
 const char kDataKey[] = "data";
+const char kResultCodeKey[] = "resultCode";
 const char kSocketIdKey[] = "socketId";
 const char kTCPOption[] = "tcp";
 const char kUDPOption[] = "udp";
@@ -147,6 +148,7 @@ void SocketReadFunction::Work() {
       data_value->Set(i, Value::CreateIntegerValue(io_buffer_start[i]));
     }
   }
+  result->SetInteger(kResultCodeKey, bytes_read);
   result->Set(kDataKey, data_value);
   result_.reset(result);
 }

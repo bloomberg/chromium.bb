@@ -14,8 +14,9 @@
     // that blocked.
     DOMString type;
 
-    // The result code, if the event type is writeComplete. The result code
-    // description matches that of <code>writeInfo.bytesWritten</code>.
+    // The result code, if the event type is dataRead or writeComplete. The
+    // result code description matches the resultCode field in the immediate
+    // callback for the call that led to this event.
     long? resultCode;
 
     // The data read, if the event type is dataRead.
@@ -52,6 +53,9 @@
   callback ConnectCallback = void (long result);
 
   dictionary ReadInfo {
+    // The resultCode returned from the underlying read() call.
+    long resultCode;
+
     // The data received. Warning: will probably become a blob or other
     // appropriate binary-friendly type.
     // TODO(miket): [instanceOf=ArrayBuffer]object data;
