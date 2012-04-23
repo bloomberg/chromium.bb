@@ -15,7 +15,8 @@ PPB_X509Certificate_Fields::PPB_X509Certificate_Fields() {}
 
 PPB_X509Certificate_Fields::PPB_X509Certificate_Fields(
     const PPB_X509Certificate_Fields& fields) {
-  values_.Swap(fields.values_.DeepCopy());
+  scoped_ptr<ListValue> new_values(fields.values_.DeepCopy());
+  values_.Swap(new_values.get());
 }
 
 void PPB_X509Certificate_Fields::SetField(
