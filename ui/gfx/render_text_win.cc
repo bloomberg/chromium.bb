@@ -601,10 +601,9 @@ void RenderTextWin::LayoutVisualText() {
     // Select the font desired for glyph generation.
     SelectObject(cached_hdc_, run->font.GetNativeFont());
 
-    SCRIPT_FONTPROPERTIES font_properties;
-    memset(&font_properties, 0, sizeof(font_properties));
-    font_properties.cBytes = sizeof(SCRIPT_FONTPROPERTIES);
-    ScriptGetFontProperties(cached_hdc_, &run->script_cache, &font_properties);
+    SCRIPT_FONTPROPERTIES properties;
+    memset(&properties, 0, sizeof(properties));
+    properties.cBytes = sizeof(properties);
 
     run->logical_clusters.reset(new WORD[run_length]);
     run->glyph_count = 0;
@@ -632,8 +631,9 @@ void RenderTextWin::LayoutVisualText() {
       } else if (hr == S_OK) {
         // If |hr| is S_OK, there could still be missing glyphs in the output,
         // see: http://msdn.microsoft.com/en-us/library/windows/desktop/dd368564.aspx
+        ScriptGetFontProperties(cached_hdc_, &run->script_cache, &properties);
         for (int i = 0; i < run->glyph_count; ++i) {
-          if (run->glyphs[i] == font_properties.wgDefault) {
+          if (run->glyphs[i] == properties.wgDefault) {
             glyphs_missing = true;
             break;
           }
