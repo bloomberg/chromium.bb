@@ -45,14 +45,14 @@ void PepperGtalkMessageFilter::OnTalkGetPermission(uint32 plugin_dispatcher_id,
 
   bool user_response = false;
 #if defined(USE_ASH)
-  string16 title = l10n_util::GetStringUTF16(
+  const string16 title = l10n_util::GetStringUTF16(
       IDS_GTALK_SCREEN_SHARE_DIALOG_TITLE);
-  string16 message = l10n_util::GetStringUTF16(
+  const string16 message = l10n_util::GetStringUTF16(
       IDS_GTALK_SCREEN_SHARE_DIALOG_MESSAGE);
 
   aura::Window* parent = ash::Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_SystemModalContainer);
-  user_response = browser::ShowYesNoBox(parent, title, message);
+  user_response = browser::ShowQuestionMessageBox(parent, title, message);
 #else
   NOTIMPLEMENTED();
 #endif

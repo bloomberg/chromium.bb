@@ -99,9 +99,10 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
       NOTREACHED() << "Terminated a hung plugin process.";
       *action = HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS;
     } else {
-      string16 msg = l10n_util::GetStringFUTF16(IDS_BROWSER_HANGMONITOR,
-                                                plugin_name);
-      string16 title = l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_TITLE);
+      const string16 title = l10n_util::GetStringUTF16(
+          IDS_BROWSER_HANGMONITOR_TITLE);
+      const string16 message = l10n_util::GetStringFUTF16(
+          IDS_BROWSER_HANGMONITOR, plugin_name);
       // Before displaying the message box, invoke SendMessageCallback on the
       // hung window. If the callback ever hits, the window is not hung anymore
       // and we can dismiss the message box.
@@ -112,7 +113,7 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
                           HungWindowResponseCallback,
                           reinterpret_cast<ULONG_PTR>(this));
       current_hung_plugin_window_ = hung_window;
-      if (browser::ShowYesNoBox(NULL, title, msg)) {
+      if (browser::ShowQuestionMessageBox(NULL, title, message)) {
         *action = HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS;
       } else {
         // If the user choses to ignore the hung window warning, the

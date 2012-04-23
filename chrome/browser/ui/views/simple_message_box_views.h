@@ -21,12 +21,12 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
                               public MessageLoop::Dispatcher,
                               public base::RefCounted<SimpleMessageBoxViews> {
  public:
-  static void ShowErrorBox(gfx::NativeWindow parent_window,
-                           const string16& title,
-                           const string16& message);
-  static bool ShowYesNoBox(gfx::NativeWindow parent_window,
-                           const string16& title,
-                           const string16& message);
+  static void ShowWarningMessageBox(gfx::NativeWindow parent_window,
+                                    const string16& title,
+                                    const string16& message);
+  static bool ShowQuestionMessageBox(gfx::NativeWindow parent_window,
+                                     const string16& title,
+                                     const string16& message);
 
   // Returns true if the Accept button was clicked.
   bool accepted() const { return disposition_ == DISPOSITION_OK; }
@@ -42,8 +42,8 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   };
 
   enum DialogType {
-    DIALOG_ERROR,
-    DIALOG_YES_NO,
+    DIALOG_TYPE_WARNING,
+    DIALOG_TYPE_QUESTION,
   };
 
   // Overridden from views::DialogDelegate:

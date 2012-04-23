@@ -22,16 +22,16 @@
 
 namespace browser {
 
-void ShowErrorBox(gfx::NativeWindow parent,
-                  const string16& title,
-                  const string16& message) {
-  SimpleMessageBoxViews::ShowErrorBox(parent, title, message);
+void ShowWarningMessageBox(gfx::NativeWindow parent,
+                           const string16& title,
+                           const string16& message) {
+  SimpleMessageBoxViews::ShowWarningMessageBox(parent, title, message);
 }
 
-bool ShowYesNoBox(gfx::NativeWindow parent,
-                  const string16& title,
-                  const string16& message) {
-  return SimpleMessageBoxViews::ShowYesNoBox(parent, title, message);
+bool ShowQuestionMessageBox(gfx::NativeWindow parent,
+                            const string16& title,
+                            const string16& message) {
+  return SimpleMessageBoxViews::ShowQuestionMessageBox(parent, title, message);
 }
 
 }  // namespace browser
@@ -40,22 +40,24 @@ bool ShowYesNoBox(gfx::NativeWindow parent,
 // SimpleMessageBoxViews, public:
 
 // static
-void SimpleMessageBoxViews::ShowErrorBox(gfx::NativeWindow parent_window,
-                                         const string16& title,
-                                         const string16& message) {
+void SimpleMessageBoxViews::ShowWarningMessageBox(
+    gfx::NativeWindow parent_window,
+    const string16& title,
+    const string16& message) {
   // This is a reference counted object so it is given an initial increment
   // in the constructor with a corresponding decrement in DeleteDelegate().
-  new SimpleMessageBoxViews(parent_window, DIALOG_ERROR, title, message);
+  new SimpleMessageBoxViews(parent_window, DIALOG_TYPE_WARNING, title, message);
 }
 
-bool SimpleMessageBoxViews::ShowYesNoBox(gfx::NativeWindow parent_window,
-                                         const string16& title,
-                                         const string16& message) {
+bool SimpleMessageBoxViews::ShowQuestionMessageBox(
+    gfx::NativeWindow parent_window,
+    const string16& title,
+    const string16& message) {
   // This is a reference counted object so it is given an initial increment
   // in the constructor plus an extra one below to ensure the dialog persists
   // until we retrieve the user response..
-  scoped_refptr<SimpleMessageBoxViews> dialog =
-      new SimpleMessageBoxViews(parent_window, DIALOG_YES_NO, title, message);
+  scoped_refptr<SimpleMessageBoxViews> dialog = new SimpleMessageBoxViews(
+      parent_window, DIALOG_TYPE_QUESTION, title, message);
 
   // Make sure Chrome doesn't attempt to shut down with the dialog up.
   g_browser_process->AddRefModule();
@@ -79,7 +81,7 @@ bool SimpleMessageBoxViews::ShowYesNoBox(gfx::NativeWindow parent_window,
 // SimpleMessageBoxViews, private:
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
-  if (dialog_type_ == DIALOG_ERROR)
+  if (dialog_type_ == DIALOG_TYPE_WARNING)
     return ui::DIALOG_BUTTON_OK;
   return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }

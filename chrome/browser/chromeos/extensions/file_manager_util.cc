@@ -29,8 +29,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -534,13 +534,12 @@ void ViewFile(const FilePath& path) {
   if (!TryOpeningFileBrowser(profile, path) &&
       !TryViewingFile(profile, path)) {
     Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
-    browser::ShowErrorBox(
+    browser::ShowWarningMessageBox(
         browser->window()->GetNativeHandle(),
         l10n_util::GetStringFUTF16(
             IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
             UTF8ToUTF16(path.BaseName().value())),
-        l10n_util::GetStringUTF16(
-            IDS_FILE_BROWSER_ERROR_VIEWING_FILE));
+        l10n_util::GetStringUTF16(IDS_FILE_BROWSER_ERROR_VIEWING_FILE));
   }
 }
 

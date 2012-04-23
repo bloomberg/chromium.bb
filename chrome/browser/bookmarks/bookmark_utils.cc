@@ -181,11 +181,11 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
   if (child_count < bookmark_utils::num_urls_before_prompting)
     return true;
 
-  string16 message = l10n_util::GetStringFUTF16(
+  const string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  const string16 message = l10n_util::GetStringFUTF16(
       IDS_BOOKMARK_BAR_SHOULD_OPEN_ALL,
       base::IntToString16(child_count));
-  string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  return browser::ShowYesNoBox(parent, title, message);
+  return browser::ShowQuestionMessageBox(parent, title, message);
 }
 
 // Comparison function that compares based on date modified of the two nodes.
@@ -725,7 +725,7 @@ bool NodeHasURLs(const BookmarkNode* node) {
 bool ConfirmDeleteBookmarkNode(const BookmarkNode* node,
                                gfx::NativeWindow window) {
   DCHECK(node && node->is_folder() && !node->empty());
-  return browser::ShowYesNoBox(window,
+  return browser::ShowQuestionMessageBox(window,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
       l10n_util::GetStringFUTF16Int(IDS_BOOKMARK_EDITOR_CONFIRM_DELETE,
                                     ChildURLCountTotal(node)));

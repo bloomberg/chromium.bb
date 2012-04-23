@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,9 +12,9 @@
 
 namespace browser {
 
-void ShowErrorBox(gfx::NativeWindow parent,
-                  const string16& title,
-                  const string16& message) {
+void ShowWarningMessageBox(gfx::NativeWindow parent,
+                           const string16& title,
+                           const string16& message) {
   // Ignore the title; it's the window title on other platforms and ignorable.
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
   [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
@@ -23,9 +23,9 @@ void ShowErrorBox(gfx::NativeWindow parent,
   [alert runModal];
 }
 
-bool ShowYesNoBox(gfx::NativeWindow parent,
-                  const string16& title,
-                  const string16& message) {
+bool ShowQuestionMessageBox(gfx::NativeWindow parent,
+                            const string16& title,
+                            const string16& message) {
   // Ignore the title; it's the window title on other platforms and ignorable.
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
   [alert setMessageText:base::SysUTF16ToNSString(message)];

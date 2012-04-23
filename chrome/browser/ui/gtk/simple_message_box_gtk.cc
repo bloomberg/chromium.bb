@@ -43,9 +43,9 @@ void HandleOnResponseDialog(GtkWidget* widget, int response, void* user_data) {
 
 namespace browser {
 
-void ShowErrorBox(gfx::NativeWindow parent,
-                  const string16& title,
-                  const string16& message) {
+void ShowWarningMessageBox(gfx::NativeWindow parent,
+                           const string16& title,
+                           const string16& message) {
   GtkWidget* dialog = gtk_message_dialog_new(parent,
                                              GTK_DIALOG_MODAL,
                                              GTK_MESSAGE_WARNING,
@@ -60,9 +60,9 @@ void ShowErrorBox(gfx::NativeWindow parent,
   gtk_util::ShowDialog(dialog);
 }
 
-bool ShowYesNoBox(gfx::NativeWindow parent,
-                  const string16& title,
-                  const string16& message) {
+bool ShowQuestionMessageBox(gfx::NativeWindow parent,
+                            const string16& title,
+                            const string16& message) {
   GtkWidget* dialog = gtk_message_dialog_new(parent,
                                              GTK_DIALOG_MODAL,
                                              GTK_MESSAGE_QUESTION,

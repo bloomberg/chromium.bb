@@ -8,19 +8,18 @@
 
 namespace browser {
 
-void ShowErrorBox(gfx::NativeWindow parent,
-                  const string16& title,
-                  const string16& message) {
-  UINT flags = MB_OK | MB_ICONWARNING | MB_SETFOREGROUND | MB_TOPMOST;
+void ShowWarningMessageBox(gfx::NativeWindow parent,
+                           const string16& title,
+                           const string16& message) {
+  const UINT flags = MB_OK | MB_ICONWARNING | MB_SETFOREGROUND | MB_TOPMOST;
   ui::MessageBox(parent, message, title, flags);
 }
 
-bool ShowYesNoBox(gfx::NativeWindow parent,
-                  const string16& title,
-                  const string16& message) {
-  UINT flags = MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND;
-  int result = ui::MessageBox(parent, message, title, flags);
-  return result == IDYES;
+bool ShowQuestionMessageBox(gfx::NativeWindow parent,
+                            const string16& title,
+                            const string16& message) {
+  const UINT flags = MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND;
+  return ui::MessageBox(parent, message, title, flags) == IDYES;
 }
 
 }  // namespace browser
