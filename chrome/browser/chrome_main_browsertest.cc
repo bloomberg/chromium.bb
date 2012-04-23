@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/test/test_suite.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -50,6 +51,7 @@ class ChromeMainTest : public InProcessBrowserTest {
 
     new_command_line_.AppendSwitchASCII(
         test_launcher::kGTestFilterFlag, test_launcher::kEmptyTestName);
+    new_command_line_.AppendSwitch(TestSuite::kSilent);
   }
 
   void Relaunch() {
