@@ -58,8 +58,10 @@ static const char kHistoryJsFile[] = "history.js";
 namespace {
 
 #if defined(OS_MACOSX)
-// U+0028 U+21E7 U+2318 U+004E U+0029 in UTF8
-const char kIncognitoModeShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x4E\x29";
+const char kIncognitoModeShortcut[] = "("
+    "\xE2\x87\xA7"  // Shift symbol (U+21E7 'UPWARDS WHITE ARROW').
+    "\xE2\x8C\x98"  // Command symbol (U+2318 'PLACE OF INTEREST SIGN').
+    "N)";
 #elif defined(OS_WIN)
 const char kIncognitoModeShortcut[] = "(Ctrl+Shift+N)";
 #else
