@@ -307,7 +307,7 @@ class JavascriptPolicyHandler : public ConfigurationPolicyHandler {
 };
 
 // Handles RestoreOnStartup policy.
-class RestoreOnStartupPolicyHandler : public SimplePolicyHandler {
+class RestoreOnStartupPolicyHandler : public TypeCheckingPolicyHandler {
  public:
   RestoreOnStartupPolicyHandler();
   virtual ~RestoreOnStartupPolicyHandler();
@@ -315,8 +315,13 @@ class RestoreOnStartupPolicyHandler : public SimplePolicyHandler {
   // ConfigurationPolicyHandler methods:
   virtual bool CheckPolicySettings(const PolicyMap& policies,
                                    PolicyErrorMap* errors) OVERRIDE;
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
 
  private:
+  void ApplyPolicySettingsFromHomePage(const PolicyMap& policies,
+                                       PrefValueMap* prefs);
+
   DISALLOW_COPY_AND_ASSIGN(RestoreOnStartupPolicyHandler);
 };
 

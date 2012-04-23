@@ -133,12 +133,12 @@ TEST_F(ConfigurationPolicyReaderTest, SetBooleanValue) {
 // Test for integer-valued policy settings.
 TEST_F(ConfigurationPolicyReaderTest, SetIntegerValue) {
   provider_.AddMandatoryPolicy(key::kRestoreOnStartup,
-                               Value::CreateIntegerValue(3));
+                               Value::CreateIntegerValue(4));
   provider_.AddRecommendedPolicy(key::kIncognitoModeAvailability,
                                  Value::CreateIntegerValue(2));
   reader_->OnUpdatePolicy(&provider_);
   scoped_ptr<DictionaryValue> dict(
-      CreateDictionary(key::kRestoreOnStartup, Value::CreateIntegerValue(3)));
+      CreateDictionary(key::kRestoreOnStartup, Value::CreateIntegerValue(4)));
   scoped_ptr<DictionaryValue> result(
       reader_->GetPolicyStatus(key::kRestoreOnStartup));
   EXPECT_TRUE(dict->Equals(result.get()));

@@ -266,8 +266,10 @@ class PolicyTest(policy_base.PolicyTestBase):
     self._RestartRenderer()
     self.assertFalse(self._IsWebGLEnabled())
 
-  def testStartupOptions(self):
-    """Verify that user cannot modify the startup page options."""
+  def testStartupOptionsURLs(self):
+    """Verify that user cannot modify the startup page options if "Open the
+    following URLs" is set by a policy.
+    """
     policy = {
       'RestoreOnStartup': 4,
       'RestoreOnStartupURLs': ['http://chromium.org']
@@ -278,9 +280,18 @@ class PolicyTest(policy_base.PolicyTestBase):
     self.assertRaises(
         pyauto.JSONInterfaceError,
         lambda: self.SetPrefs(pyauto.kRestoreOnStartup, 1))
-    policy['RestoreOnStartup'] = 0
+
+  def testStartupOptionsHomepage(self):
+    """Verify that user cannot modify the startup page options if the
+    deprecated "Open the homepage" option is set by a policy.
+    """
+    policy = {
+      'RestoreOnStartup': 0,
+      'HomepageLocation': 'http://chromium.org',
+      'HomepageIsNewTabPage': False,
+    }
     self.SetUserPolicy(policy)
-    self.assertEquals(0, self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
+    self.assertEquals(4, self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
     self.assertRaises(
         pyauto.JSONInterfaceError,
         lambda: self.SetPrefs(pyauto.kRestoreOnStartup, 1))

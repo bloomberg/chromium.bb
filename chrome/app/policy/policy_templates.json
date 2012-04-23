@@ -1154,9 +1154,9 @@
           'type': 'int-enum',
           'items': [
             {
-              'name': 'RestoreOnStartupIsNone',
-              'value': 0,
-              'caption': '''Open home page'''
+              'name': 'RestoreOnStartupIsNewTabPage',
+              'value': 5,
+              'caption': '''Open New Tab Page'''
             },
             {
               'name': 'RestoreOnStartupIsLastSession',
@@ -1179,7 +1179,7 @@
           'caption': '''Action on startup''',
           'desc': '''Allows you to specify the behavior on startup.
 
-          If you choose 'Open home page' the home page will always be opened when you start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+          If you choose 'Open New Tab Page' the New Tab Page will always be opened when you start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
           If you choose 'Restore the last session', the URLs that were open last time <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was closed will be reopened and the browsing session will be restored as it was left.
           Choosing this option disables some settings that rely on sessions or that perform actions on exit (such as Clear browsing data on exit or session-only cookies).

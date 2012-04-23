@@ -25,19 +25,12 @@ using protector::ProtectorServiceFactory;
 
 namespace {
 
-// For historical reasons the enum and value registered in the prefs don't line
-// up. These are the values registered in prefs.
-const int kPrefValueHomePage = 0;  // Deprecated
-const int kPrefValueLast = 1;
-const int kPrefValueURLs = 4;
-const int kPrefValueNewTab = 5;
-
 // Converts a SessionStartupPref::Type to an integer written to prefs.
 int TypeToPrefValue(SessionStartupPref::Type type) {
   switch (type) {
-    case SessionStartupPref::LAST:     return kPrefValueLast;
-    case SessionStartupPref::URLS:     return kPrefValueURLs;
-    default:                           return kPrefValueNewTab;
+    case SessionStartupPref::LAST: return SessionStartupPref::kPrefValueLast;
+    case SessionStartupPref::URLS: return SessionStartupPref::kPrefValueURLs;
+    default:                       return SessionStartupPref::kPrefValueNewTab;
   }
 }
 

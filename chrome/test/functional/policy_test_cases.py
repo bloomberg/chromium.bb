@@ -139,7 +139,7 @@ class PolicyPrefsTestCases(object):
        'https://clients2.google.com/service/update2/crx'], [], OS_ALL),
     'ShowHomeButton': ('kShowHomeButton', True, [BROWSER], OS_ALL),
     'DeveloperToolsDisabled': ('kDevToolsDisabled', True, [], OS_ALL),
-    'RestoreOnStartup': (None, 0, [BROWSER], OS_ALL),
+    'RestoreOnStartup': (None, 5, [BROWSER], OS_ALL),
     # TODO(joaodasilva): Should be BROWSER. http://crbug.com/97749
     'RestoreOnStartupURLs':
         ('kURLsToRestoreOnStartup', ['chromium.org'], [], OS_ALL),
@@ -271,6 +271,8 @@ class PolicyPrefsTestCases(object):
     'DeviceStartUpUrls': (None, ['http://google.com'], [], ['chromeos']),
     'DeviceAppPack': (None, [], [], ['chromeos']),
     'DeviceAutoUpdateDisabled': (None, True, [], ['chromeos']),
+    'DeviceTargetVersionPrefix': (None, '1412.', [], ['chromeos']),
+    'ReportDeviceLocation': (None, False, [], ['chromeos']),
 
     # Chrome Frame policies:
     'ChromeFrameRendererSettings': (None, 0, [], []),

@@ -34,6 +34,13 @@ struct SessionStartupPref {
     TYPE_COUNT
   };
 
+  // For historical reasons the enum and value registered in the prefs don't
+  // line up. These are the values registered in prefs.
+  static const int kPrefValueHomePage = 0;  // Deprecated
+  static const int kPrefValueLast = 1;
+  static const int kPrefValueURLs = 4;
+  static const int kPrefValueNewTab = 5;
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Returns the default value for |type|.
