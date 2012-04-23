@@ -48,8 +48,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     // Loads the extension with location COMPONENT.
     kFlagLoadAsComponent = 1 << 3,
 
-    // Launch the extension in a platform app shell.
-    kFlagLaunchAppShell = 1 << 4
+    // Launch the extension as a platform app.
+    kFlagLaunchPlatformApp = 1 << 4
   };
 
   ExtensionApiTest();

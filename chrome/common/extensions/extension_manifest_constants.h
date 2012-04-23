@@ -144,7 +144,6 @@ namespace extension_manifest_values {
   extern const char kKeybindingPlatformMac[];
   extern const char kKeybindingPlatformWin[];
   extern const char kLaunchContainerPanel[];
-  extern const char kLaunchContainerShell[];
   extern const char kLaunchContainerTab[];
   extern const char kLaunchContainerWindow[];
   extern const char kPageActionKeybindingEvent[];
@@ -159,6 +158,7 @@ namespace extension_manifest_values {
 namespace extension_manifest_errors {
   extern const char kAppsNotEnabled[];
   extern const char kBackgroundPermissionNeeded[];
+  extern const char kBackgroundRequiredForPlatformApps[];
   extern const char kCannotAccessPage[];
   extern const char kCannotChangeExtensionID[];
   extern const char kCannotClaimAllHostsInExtent[];
@@ -235,8 +235,6 @@ namespace extension_manifest_errors {
   extern const char kInvalidKeyBindingMissingPlatform[];
   extern const char kInvalidKeyBindingUnknownPlatform[];
   extern const char kInvalidLaunchContainer[];
-  extern const char kInvalidLaunchContainerForNonPlatform[];
-  extern const char kInvalidLaunchContainerForPlatform[];
   extern const char kInvalidLaunchValue[];
   extern const char kInvalidLaunchValueContainer[];
   extern const char kInvalidManifest[];
@@ -299,6 +297,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidZipHash[];
   extern const char kLaunchPathAndExtentAreExclusive[];
   extern const char kLaunchPathAndURLAreExclusive[];
+  extern const char kLaunchNotAllowedForPlatformApps[];
   extern const char kLaunchURLRequired[];
   extern const char kLocalesMessagesFileMissing[];
   extern const char kLocalesNoDefaultLocaleSpecified[];

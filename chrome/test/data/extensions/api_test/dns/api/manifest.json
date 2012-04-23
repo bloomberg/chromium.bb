@@ -7,14 +7,6 @@
   "background": {
     "scripts": ["background.js"]
   },
-  "app": {
-    "launch": {
-      "container": "shell",
-      "local_path": "main.html",
-      "width": 250,
-      "height": 250
-    }
-  },
   "permissions": [
     "experimental",
     "dns"

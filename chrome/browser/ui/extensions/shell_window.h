@@ -26,6 +26,11 @@ class WebContents;
 class ShellWindow : public content::NotificationObserver,
                     public BaseWindow {
  public:
+  // TODO(mihaip): Switch from hardcoded defaults to passing in the window
+  // creation parameters to ShellWindow::Create.
+  static const int kDefaultWidth = 512;
+  static const int kDefaultHeight = 384;
+
   content::WebContents* web_contents() const { return host_->host_contents(); }
   const SessionID& session_id() const { return session_id_; }
   const ExtensionWindowController* extension_window_controller() const {

@@ -39,20 +39,12 @@ class ShellWindowFrameView : public views::NonClientFrameView {
                              gfx::Path* window_mask) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
-  virtual gfx::Size GetMaximumSize() OVERRIDE;
-
-  void set_min_size(gfx::Size size) { min_size_ = size; }
-  void set_max_size(gfx::Size size) { max_size_ = size; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellWindowFrameView);
-
-  gfx::Size min_size_;
-  gfx::Size max_size_;
 };
 
-ShellWindowFrameView::ShellWindowFrameView(): min_size_() {
+ShellWindowFrameView::ShellWindowFrameView() {
 }
 
 ShellWindowFrameView::~ShellWindowFrameView() {
@@ -99,14 +91,6 @@ void ShellWindowFrameView::GetWindowMask(const gfx::Size& size,
   // Don't touch it.
 }
 
-gfx::Size ShellWindowFrameView::GetMinimumSize() {
-  return min_size_;
-}
-
-gfx::Size ShellWindowFrameView::GetMaximumSize() {
-  return max_size_;
-}
-
 ShellWindowViews::ShellWindowViews(ExtensionHost* host)
     : ShellWindow(host) {
   host_->view()->SetContainer(this);
@@ -114,10 +98,7 @@ ShellWindowViews::ShellWindowViews(ExtensionHost* host)
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
   params.remove_standard_frame = true;
-  int width = host_->extension()->launch_width();
-  int height = host_->extension()->launch_height();
-  // TODO(jeremya): we should figure out a better way to position the window.
-  gfx::Rect bounds(10, 10, width, height);
+  gfx::Rect bounds(10, 10, kDefaultWidth, kDefaultHeight);
   params.bounds = bounds;
   window_->Init(params);
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -232,14 +213,7 @@ views::View* ShellWindowViews::GetContentsView() {
 
 views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
     views::Widget* widget) {
-  ShellWindowFrameView* frame_view = new ShellWindowFrameView();
-  gfx::Size min_size(host_->extension()->launch_min_width(),
-                     host_->extension()->launch_min_height());
-  gfx::Size max_size(host_->extension()->launch_max_width(),
-                     host_->extension()->launch_max_height());
-  frame_view->set_min_size(min_size);
-  frame_view->set_max_size(max_size);
-  return frame_view;
+  return new ShellWindowFrameView();
 }
 
 string16 ShellWindowViews::GetWindowTitle() const {

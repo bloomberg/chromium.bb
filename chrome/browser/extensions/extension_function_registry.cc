@@ -437,8 +437,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<SetCloudPrintCredentialsFunction>();
 
   // Experimental App API.
-  RegisterFunction<AppNotifyFunction>();
-  RegisterFunction<AppClearAllNotificationsFunction>();
+  RegisterFunction<extensions::AppNotifyFunction>();
+  RegisterFunction<extensions::AppClearAllNotificationsFunction>();
 
   // Permissions
   RegisterFunction<ContainsPermissionsFunction>();

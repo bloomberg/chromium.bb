@@ -54,41 +54,10 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
     Testcase("launch_height_negative.json",
              ExtensionErrorUtils::FormatErrorMessage(
                  errors::kInvalidLaunchValue,
-                 keys::kLaunchHeight)),
-    Testcase("launch_min_width_invalid.json",
-             ExtensionErrorUtils::FormatErrorMessage(
-                 errors::kInvalidLaunchValueContainer,
-                 keys::kLaunchMinWidth)),
-    Testcase("launch_min_width_negative.json",
-             ExtensionErrorUtils::FormatErrorMessage(
-                 errors::kInvalidLaunchValue,
-                 keys::kLaunchMinWidth)),
-    Testcase("launch_min_height_invalid.json",
-             ExtensionErrorUtils::FormatErrorMessage(
-                 errors::kInvalidLaunchValueContainer,
-                 keys::kLaunchMinHeight)),
-    Testcase("launch_min_height_negative.json",
-             ExtensionErrorUtils::FormatErrorMessage(
-                 errors::kInvalidLaunchValue,
-                 keys::kLaunchMinHeight)),
-    Testcase("launch_container_missing_size_for_platform.json",
-             ExtensionErrorUtils::FormatErrorMessage(
-                 errors::kInvalidLaunchValue,
-                 keys::kLaunchWidth)),
-    Testcase("launch_container_invalid_size_constraints.json",
-             ExtensionErrorUtils::FormatErrorMessage(
-                 errors::kInvalidLaunchValue,
-                 keys::kLaunchMaxWidth))
+                 keys::kLaunchHeight))
   };
   RunTestcases(testcases, arraysize(testcases),
       EXPECT_TYPE_ERROR);
-}
-
-TEST_F(ExtensionManifestTest, PlatformAppLaunchContainer) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
-
-  LoadAndExpectError("launch_container_invalid_type_for_platform.json",
-                     errors::kInvalidLaunchContainerForPlatform);
 }
 
 TEST_F(ExtensionManifestTest, AppLaunchURL) {

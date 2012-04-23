@@ -77,6 +77,14 @@
           }
         ]
       }
+    ],
+    "events": [
+      {
+        "nodoc": true,
+        "name": "onLaunched",
+        "type": "function",
+        "description": "Fired when the app is launched."
+      }
     ]
   }
 ]

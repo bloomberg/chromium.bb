@@ -1038,12 +1038,10 @@ extension_misc::LaunchContainer ExtensionPrefs::GetLaunchContainer(
 
   extension_misc::LaunchContainer result = kInvalidLaunchContainer;
 
-  if (manifest_launch_container == extension_misc::LAUNCH_PANEL ||
-      manifest_launch_container == extension_misc::LAUNCH_SHELL) {
-    // Apps with app.launch.container = 'panel' or 'shell' should always respect
-    // the manifest setting.
+  if (manifest_launch_container == extension_misc::LAUNCH_PANEL) {
+    // Apps with app.launch.container = 'panel' should always respect the
+    // manifest setting.
     result = manifest_launch_container;
-
   } else if (manifest_launch_container == extension_misc::LAUNCH_TAB) {
     // Look for prefs that indicate the user's choice of launch
     // container.  The app's menu on the NTP provides a UI to set

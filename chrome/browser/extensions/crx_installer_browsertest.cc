@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
   command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   command_line->AppendSwitch(switches::kEnablePlatformApps);
   EXPECT_TRUE(InstallExtension(
-      test_data_dir_.AppendASCII("generic_platform_app.crx"), 1));
+      test_data_dir_.AppendASCII("minimal_platform_app.crx"), 1));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {

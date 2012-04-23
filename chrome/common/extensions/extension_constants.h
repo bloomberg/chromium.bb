@@ -125,7 +125,9 @@ namespace extension_misc {
     LAUNCH_WINDOW,
     LAUNCH_PANEL,
     LAUNCH_TAB,
-    LAUNCH_SHELL
+    // For platform apps, which don't actually have a container (they just get a
+    // "onLaunched" event).
+    LAUNCH_NONE
   };
 
   // The name of the apps promo histogram.

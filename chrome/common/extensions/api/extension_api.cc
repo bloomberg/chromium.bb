@@ -72,8 +72,8 @@ scoped_ptr<ListValue> LoadSchemaList(const base::StringPiece& schema) {
           base::JSON_PARSE_RFC,  // options
           NULL,  // error code
           &error_message));
-  CHECK(result.get()) << error_message;
-  CHECK(result->IsType(Value::TYPE_LIST));
+  CHECK(result.get()) << error_message << " for schema " << schema;
+  CHECK(result->IsType(Value::TYPE_LIST)) << " for schema " << schema;
   return scoped_ptr<ListValue>(static_cast<ListValue*>(result.release()));
 }
 

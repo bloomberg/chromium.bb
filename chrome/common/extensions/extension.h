@@ -665,22 +665,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   extension_misc::LaunchContainer launch_container() const {
     return launch_container_;
   }
-  int launch_width() const {
-    return std::max(launch_min_width_,
-                    launch_max_width_ ?
-                        std::min(launch_max_width_, launch_width_) :
-                        launch_width_);
-  }
-  int launch_height() const {
-    return std::max(launch_min_height_,
-                    launch_max_height_ ?
-                        std::min(launch_max_height_, launch_height_) :
-                        launch_height_);
-  }
-  int launch_min_width() const { return launch_min_width_; }
-  int launch_min_height() const { return launch_min_height_; }
-  int launch_max_width() const { return launch_max_width_; }
-  int launch_max_height() const { return launch_max_height_; }
+  int launch_width() const { return launch_width_; }
+  int launch_height() const { return launch_height_; }
 
   // Theme-related.
   bool is_theme() const;
@@ -1046,13 +1032,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // containers like panels and windows.
   int launch_width_;
   int launch_height_;
-
-  // The minimum and maximum size of the container. Only respected for the
-  // shell container.
-  int launch_min_width_;
-  int launch_min_height_;
-  int launch_max_width_;
-  int launch_max_height_;
 
   // The Omnibox keyword for this extension, or empty if there is none.
   std::string omnibox_keyword_;

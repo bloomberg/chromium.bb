@@ -51,7 +51,7 @@
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
-#include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/api/app/app_api.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -692,14 +692,14 @@ WebContents* Browser::OpenApplication(
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
 
+  if (extension->is_platform_app()) {
+    extensions::AppEventRouter::DispatchOnLaunchedEvent(profile, extension);
+    return NULL;
+  }
+
   switch (container) {
-    case extension_misc::LAUNCH_SHELL: {
-      ShellWindow* shell_window = ShellWindow::Create(
-          profile,
-          extension,
-          UrlForExtension(extension, override_url));
-      if (shell_window)
-        tab = shell_window->web_contents();
+    case extension_misc::LAUNCH_NONE: {
+      NOTREACHED();
       break;
     }
     case extension_misc::LAUNCH_PANEL:

@@ -23,6 +23,12 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
   LoadAndExpectSuccess("init_valid_platform_app.json");
 
   LoadAndExpectError(
+      "init_invalid_platform_app_1.json",
+      extension_manifest_errors::kLaunchNotAllowedForPlatformApps);
+  LoadAndExpectError(
+      "init_invalid_platform_app_2.json",
+      extension_manifest_errors::kBackgroundRequiredForPlatformApps);
+  LoadAndExpectError(
       "init_invalid_platform_app_3.json",
       "Feature 'platform_app' is not accessible. "
           "'platform_app' requires manifest version of at least 2.");

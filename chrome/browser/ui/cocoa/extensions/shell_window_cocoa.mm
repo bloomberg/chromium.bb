@@ -24,10 +24,7 @@
 ShellWindowCocoa::ShellWindowCocoa(ExtensionHost* host)
     : ShellWindow(host),
       attention_request_id_(0) {
-  // TOOD(mihaip): Restore prior window dimensions and positions on relaunch.
-  NSRect rect = NSZeroRect;
-  rect.size.width = host_->extension()->launch_width();
-  rect.size.height = host_->extension()->launch_height();
+  NSRect rect = NSMakeRect(0, 0, kDefaultWidth, kDefaultHeight);
   NSUInteger styleMask = NSTitledWindowMask | NSClosableWindowMask |
                          NSMiniaturizableWindowMask | NSResizableWindowMask;
   scoped_nsobject<NSWindow> window(
@@ -36,9 +33,6 @@ ShellWindowCocoa::ShellWindowCocoa(ExtensionHost* host)
                                     backing:NSBackingStoreBuffered
                                       defer:NO]);
   [window setTitle:base::SysUTF8ToNSString(host->extension()->name())];
-  [window setContentMinSize:
-      NSMakeSize(host_->extension()->launch_min_width(),
-                 host_->extension()->launch_min_height())];
 
   NSView* view = host->view()->native_view();
   [view setFrame:rect];

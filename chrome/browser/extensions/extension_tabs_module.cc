@@ -59,6 +59,7 @@
 #include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/url_constants.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -461,7 +462,7 @@ bool CreateWindowFunction::RunImpl() {
   }
 
   // Try to position the new browser relative its originating browser window.
-  gfx::Rect  window_bounds;
+  gfx::Rect window_bounds;
   // The call offsets the bounds by kWindowTilePixels (defined in WindowSizer to
   // be 10)
   //
@@ -566,10 +567,12 @@ bool CreateWindowFunction::RunImpl() {
           window_type = Browser::TYPE_POPUP;
       } else if (type_str == keys::kWindowTypeValueShell &&
           GetExtension()->is_platform_app()) {
-        GURL window_url =
-            urls.empty() ? GetExtension()->GetFullLaunchURL() : urls[0];
+        GURL window_url = urls.empty() ? GURL(chrome::kAboutBlankURL) : urls[0];
         ShellWindow* shell_window =
             ShellWindow::Create(window_profile, GetExtension(), window_url);
+        // TODO(mihaip): It might be less janky to pass in the desired bounds
+        // into ShellWindow::Create directly.
+        shell_window->SetBounds(window_bounds);
         result_.reset(shell_window->extension_window_controller()->
             CreateWindowValueWithTabs());
         return true;

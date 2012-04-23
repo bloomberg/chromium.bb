@@ -478,11 +478,17 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
     return NULL;
   }
 
-  if (extension->is_platform_app() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePlatformApps)) {
-    *utf8_error = errors::kPlatformAppFlagRequired;
-    return NULL;
+  if (extension->is_platform_app()) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnablePlatformApps)) {
+      *utf8_error = errors::kPlatformAppFlagRequired;
+      return NULL;
+    }
+
+    if (!extension->has_background_page()) {
+      *utf8_error = errors::kBackgroundRequiredForPlatformApps;
+      return NULL;
+    }
   }
 
   return extension;
@@ -1265,6 +1271,13 @@ bool Extension::LoadExtent(const char* key,
 bool Extension::LoadLaunchURL(string16* error) {
   Value* temp = NULL;
 
+  // TODO(mihaip): Implement this check via _manifest_features.json (requires
+  // subkey support, see http://crbug.com/122459).
+  if (is_platform_app() && manifest_->Get(keys::kLaunch, &temp)) {
+      *error = ASCIIToUTF16(errors::kLaunchNotAllowedForPlatformApps);
+      return false;
+  }
+
   // launch URL can be either local (to chrome-extension:// root) or an absolute
   // web URL.
   if (manifest_->Get(keys::kLaunchLocalPath, &temp)) {
@@ -1316,7 +1329,7 @@ bool Extension::LoadLaunchURL(string16* error) {
     }
 
     launch_web_url_ = launch_url;
-  } else if (is_app()) {
+  } else if (is_packaged_app() || is_hosted_app()) {
     *error = ASCIIToUTF16(errors::kLaunchURLRequired);
     return false;
   }
@@ -1381,9 +1394,7 @@ bool Extension::LoadLaunchContainer(string16* error) {
     return false;
   }
 
-  if (launch_container_string == values::kLaunchContainerShell) {
-    launch_container_ = extension_misc::LAUNCH_SHELL;
-  } else if (launch_container_string == values::kLaunchContainerPanel) {
+  if (launch_container_string == values::kLaunchContainerPanel) {
     launch_container_ = extension_misc::LAUNCH_PANEL;
   } else if (launch_container_string == values::kLaunchContainerTab) {
     launch_container_ = extension_misc::LAUNCH_TAB;
@@ -1394,8 +1405,7 @@ bool Extension::LoadLaunchContainer(string16* error) {
 
   bool can_specify_initial_size =
       launch_container_ == extension_misc::LAUNCH_PANEL ||
-      launch_container_ == extension_misc::LAUNCH_WINDOW ||
-      launch_container_ == extension_misc::LAUNCH_SHELL;
+      launch_container_ == extension_misc::LAUNCH_WINDOW;
 
   // Validate the container width if present.
   if (!ReadLaunchDimension(manifest_,
@@ -1412,72 +1422,6 @@ bool Extension::LoadLaunchContainer(string16* error) {
                            can_specify_initial_size,
                            error))
       return false;
-
-  bool can_specify_size_range =
-      launch_container_ == extension_misc::LAUNCH_SHELL;
-
-  // Validate min size if present.
-  if (!ReadLaunchDimension(manifest_,
-                           keys::kLaunchMinWidth,
-                           &launch_min_width_,
-                           can_specify_size_range,
-                           error))
-      return false;
-  if (!ReadLaunchDimension(manifest_,
-                           keys::kLaunchMinHeight,
-                           &launch_min_height_,
-                           can_specify_size_range,
-                           error))
-      return false;
-  if (!ReadLaunchDimension(manifest_,
-                           keys::kLaunchMaxWidth,
-                           &launch_max_width_,
-                           can_specify_size_range,
-                           error))
-      return false;
-  if (!ReadLaunchDimension(manifest_,
-                           keys::kLaunchMaxHeight,
-                           &launch_max_height_,
-                           can_specify_size_range,
-                           error))
-      return false;
-
-  if (launch_container_ == extension_misc::LAUNCH_SHELL) {
-    if (!manifest_->Get(keys::kLaunchWidth, &temp)) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidLaunchValue,
-          keys::kLaunchWidth);
-      return false;
-    }
-    if (!manifest_->Get(keys::kLaunchHeight, &temp)) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidLaunchValue,
-          keys::kLaunchHeight);
-      return false;
-    }
-    if (launch_max_width_ > 0 && launch_max_width_ < launch_min_width_) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidLaunchValue,
-          keys::kLaunchMaxWidth);
-      return false;
-    }
-    if (launch_max_height_ > 0 && launch_max_height_ < launch_min_height_) {
-      *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidLaunchValue,
-          keys::kLaunchMaxHeight);
-      return false;
-    }
-  }
-
-  if (is_platform_app()) {
-    if (launch_container_ != extension_misc::LAUNCH_SHELL) {
-      *error = ASCIIToUTF16(errors::kInvalidLaunchContainerForPlatform);
-      return false;
-    }
-  } else if (launch_container_ == extension_misc::LAUNCH_SHELL) {
-    *error = ASCIIToUTF16(errors::kInvalidLaunchContainerForNonPlatform);
-    return false;
-  }
 
   return true;
 }
@@ -2868,10 +2812,6 @@ Extension::Extension(const FilePath& path,
       launch_container_(extension_misc::LAUNCH_TAB),
       launch_width_(0),
       launch_height_(0),
-      launch_min_width_(0),
-      launch_min_height_(0),
-      launch_max_width_(0),
-      launch_max_height_(0),
       wants_file_access_(false),
       creation_flags_(0) {
   DCHECK(path.empty() || path.IsAbsolute());

@@ -1,9 +1,12 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-var inAppUrl = 'nav-target.html';
 
-function runTests(remoteUrl) {
+chrome.test.getConfig(function(config) {
+  var IN_APP_URL = 'nav-target.html';
+  var REMOTE_URL = 'http://localhost:' + config.testServer.port
+      '/files/extensions/platform_apps/navigation/nav-target.html';
+
   var testForm = document.getElementById('test-form');
   var testLink = document.getElementById('test-link');
 
@@ -18,43 +21,43 @@ function runTests(remoteUrl) {
 
   var tests = [
     // Location functions to in-app URLs.
-    function() { window.location = inAppUrl },
-    function() { window.location.href = inAppUrl; },
-    function() { window.location.replace(inAppUrl); },
-    function() { window.location.assign(inAppUrl); },
+    function() { window.location = IN_APP_URL },
+    function() { window.location.href = IN_APP_URL; },
+    function() { window.location.replace(IN_APP_URL); },
+    function() { window.location.assign(IN_APP_URL); },
 
     // Location function to remote URLs (not testing all ways of navigating to
     // it, since that was covered by the previous set)
-    function() { window.location = remoteUrl; },
+    function() { window.location = REMOTE_URL; },
 
     // Form submission (GET, POST, in-app, and remote)
     function() {
       testForm.method = 'GET';
-      testForm.action = inAppUrl;
+      testForm.action = IN_APP_URL;
       testForm.submit();
     },
     function() {
       testForm.method = 'POST';
-      testForm.action = inAppUrl;
+      testForm.action = IN_APP_URL;
       testForm.submit();
     },
     function() {
       testForm.method = 'GET';
-      testForm.action = remoteUrl;
+      testForm.action = REMOTE_URL;
       testForm.submit();
     },
     function() {
       testForm.method = 'POST';
-      testForm.action = remoteUrl;
+      testForm.action = REMOTE_URL;
       testForm.submit();
     },
 
     // Clicks on links (in-app and remote).
-    function() { testLink.href = inAppUrl; clickTestLink(); },
-    function() { testLink.href = remoteUrl; clickTestLink(); },
+    function() { testLink.href = IN_APP_URL; clickTestLink(); },
+    function() { testLink.href = REMOTE_URL; clickTestLink(); },
 
     // If we manage to execute this test case, then we haven't navigated away.
-    function() { window.domAutomationController.send(true); }
+    function() { chrome.test.notifyPass(); }
   ];
 
   var testIndex = 0;
@@ -74,4 +77,4 @@ function runTests(remoteUrl) {
   }
 
   runTest();
-}
+});

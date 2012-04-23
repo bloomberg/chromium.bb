@@ -7,12 +7,16 @@
 #include "base/values.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
+#include "googleurl/src/gurl.h"
+
+namespace {
 
 const char kBodyTextKey[] = "bodyText";
 const char kExtensionIdKey[] = "extensionId";
@@ -24,6 +28,11 @@ const char kInvalidExtensionIdError[] =
     "Invalid extension id";
 const char kMissingLinkTextError[] =
     "You must specify linkText if you use linkUrl";
+const char kOnLaunchedEvent[] = "experimental.app.onLaunched";
+
+}  // anonymous namespace
+
+namespace extensions {
 
 bool AppNotifyFunction::RunImpl() {
   if (!include_incognito() && profile_->IsOffTheRecord()) {
@@ -103,3 +112,12 @@ bool AppClearAllNotificationsFunction::RunImpl() {
   manager->ClearAll(id);
   return true;
 }
+
+// static.
+void AppEventRouter::DispatchOnLaunchedEvent(
+    Profile* profile, const Extension* extension) {
+  profile->GetExtensionEventRouter()->DispatchEventToExtension(
+      extension->id(), kOnLaunchedEvent, "[]", NULL, GURL());
+}
+
+}  // namespace extensions

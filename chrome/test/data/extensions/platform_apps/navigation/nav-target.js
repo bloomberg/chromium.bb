@@ -4,4 +4,4 @@
 
 // We should never reach this page; if we have then it's a signal that we've
 // navigated away from the app page, and we should have the test fail.
-window.domAutomationController.send(false);
+chrome.test.notifyFail('Navigated to ' + window.location.href);

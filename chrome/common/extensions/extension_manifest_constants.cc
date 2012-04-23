@@ -141,7 +141,6 @@ const char kPageActionKeybindingEvent[] = "_execute_page_action";
 const char kPageActionTypeTab[] = "tab";
 const char kPageActionTypePermanent[] = "permanent";
 const char kLaunchContainerPanel[] = "panel";
-const char kLaunchContainerShell[] = "shell";
 const char kLaunchContainerTab[] = "tab";
 const char kLaunchContainerWindow[] = "window";
 }  // namespace extension_manifest_values
@@ -156,6 +155,8 @@ const char kAppsNotEnabled[] =
 const char kBackgroundPermissionNeeded[] =
     "Hosted apps that use 'background_page' must have the 'background' "
     "permission.";
+const char kBackgroundRequiredForPlatformApps[] =
+    "Platform apps must have a background page or background scripts.";
 const char kCannotAccessPage[] =
     "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";
@@ -311,10 +312,6 @@ const char kInvalidKeyBindingUnknownPlatform[] =
     " 'chromeos', 'linux' and 'default'.";
 const char kInvalidLaunchContainer[] =
     "Invalid value for 'app.launch.container'.";
-const char kInvalidLaunchContainerForNonPlatform[] =
-    "'app.launch.container' = 'shell' can only be used with platform_app.";
-const char kInvalidLaunchContainerForPlatform[] =
-    "platform_app requires 'app.launch.container' == 'shell'.";
 const char kInvalidLaunchValue[] =
     "Invalid value for '*'.";
 const char kInvalidLaunchValueContainer[] =
@@ -442,6 +439,8 @@ const char kLaunchPathAndExtentAreExclusive[] =
 const char kLaunchPathAndURLAreExclusive[] =
     "The 'app.launch.local_path' and 'app.launch.web_url' keys cannot "
     "both be set.";
+const char kLaunchNotAllowedForPlatformApps[] =
+    "Platform apps may not have 'app.launch' keys.";
 const char kLaunchURLRequired[] =
     "Either 'app.launch.local_path' or 'app.launch.web_url' is required.";
 const char kLocalesMessagesFileMissing[] =

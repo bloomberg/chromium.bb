@@ -156,7 +156,7 @@ bool ExtensionApiTest::RunPageTest(const std::string& page_url,
 }
 
 bool ExtensionApiTest::RunPlatformAppTest(const char* extension_name) {
-  return RunExtensionTestImpl(extension_name, "", kFlagLaunchAppShell);
+  return RunExtensionTestImpl(extension_name, "", kFlagLaunchPlatformApp);
 }
 
 // Load |extension_name| extension and/or |page_url| and wait for
@@ -167,7 +167,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
   bool enable_incognito = (flags & kFlagEnableIncognito) != 0;
   bool enable_fileaccess = (flags & kFlagEnableFileAccess) != 0;
   bool load_as_component = (flags & kFlagLoadAsComponent) != 0;
-  bool launch_shell = (flags & kFlagLaunchAppShell) != 0;
+  bool launch_platform_app = (flags & kFlagLaunchPlatformApp) != 0;
   bool use_incognito = (flags & kFlagUseIncognito) != 0;
 
   ResultCatcher catcher;
@@ -208,11 +208,11 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
     else
       ui_test_utils::NavigateToURL(browser(), url);
 
-  } else if (launch_shell) {
+  } else if (launch_platform_app) {
     Browser::OpenApplication(
         browser()->profile(),
         extension,
-        extension_misc::LAUNCH_SHELL,
+        extension_misc::LAUNCH_NONE,
         GURL(),
         NEW_WINDOW);
   }

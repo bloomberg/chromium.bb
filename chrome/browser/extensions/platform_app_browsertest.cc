@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_view_type.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -49,10 +50,12 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePlatformApps);
+    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 
  protected:
   void LoadAndLaunchPlatformApp(const char* name) {
+    size_t platform_app_count = GetPlatformAppCount();
     ui_test_utils::WindowedNotificationObserver app_loaded_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
@@ -65,12 +68,10 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
         last_loaded_extension_id_, false);
     EXPECT_TRUE(extension);
 
-    size_t platform_app_count = GetPlatformAppCount();
-
     Browser::OpenApplication(
         browser()->profile(),
         extension,
-        extension_misc::LAUNCH_SHELL,
+        extension_misc::LAUNCH_NONE,
         GURL(),
         NEW_WINDOW);
 
@@ -80,7 +81,7 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
     EXPECT_EQ(platform_app_count + 1, GetPlatformAppCount());
   }
 
-  // Gets the number of platform apps that are running.
+  // Gets the number of platform apps extension hosts that are running.
   size_t GetPlatformAppCount() {
     int count = 0;
     ExtensionProcessManager* process_manager =
@@ -97,16 +98,17 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   }
 
   // Gets the WebContents associated with the ExtensionHost of the first
-  // platform app that is found (most tests only deal with one platform
-  // app, so this is good enough).
-  WebContents* GetFirstPlatformAppWebContents() {
+  // platform app shell window that is found (most tests only deal with one
+  // platform app window, so this is good enough).
+  WebContents* GetFirstPlatformAppShellWindowWebContents() {
     ExtensionProcessManager* process_manager =
         browser()->profile()->GetExtensionProcessManager();
     ExtensionProcessManager::const_iterator iter;
     for (iter = process_manager->begin(); iter != process_manager->end();
          ++iter) {
       ExtensionHost* host = *iter;
-      if (host->extension() && host->extension()->is_platform_app())
+      if (host->extension() && host->extension()->is_platform_app() &&
+          host->extension_host_type() == chrome::VIEW_TYPE_APP_SHELL)
         return host->host_contents();
     }
 
@@ -114,21 +116,20 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenAppInShellContainer) {
-  ASSERT_EQ(0u, GetPlatformAppCount());
-  LoadAndLaunchPlatformApp("empty");
-  ASSERT_EQ(1u, GetPlatformAppCount());
-
-  UnloadExtension(last_loaded_extension_id_);
-  ASSERT_EQ(0u, GetPlatformAppCount());
+// Tests that platform apps received the "launch" event when launched.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OnLaunchedEvent) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/launch")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
-  LoadAndLaunchPlatformApp("empty");
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  LoadAndLaunchPlatformApp("empty_context_menu");
+
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   // The empty app doesn't add any context menu items, so its menu should
   // only include the developer tools.
-  WebContents* web_contents = GetFirstPlatformAppWebContents();
+  WebContents* web_contents = GetFirstPlatformAppShellWindowWebContents();
   ASSERT_TRUE(web_contents);
   WebKit::WebContextMenuData data;
   content::ContextMenuParams params(data);
@@ -140,15 +141,16 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
-  ExtensionTestMessageListener listener1("created item", false);
+  ExtensionTestMessageListener launched_listener("Launched", false);
   LoadAndLaunchPlatformApp("context_menu");
 
-  // Wait for the extension to tell us it's created an item.
-  ASSERT_TRUE(listener1.WaitUntilSatisfied());
+  // Wait for the extension to tell us it's initialized its context menus and
+  // launched a window.
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 
   // The context_menu app has one context menu item. This, along with a
   // separator and the developer tools, is all that should be in the menu.
-  WebContents* web_contents = GetFirstPlatformAppWebContents();
+  WebContents* web_contents = GetFirstPlatformAppShellWindowWebContents();
   ASSERT_TRUE(web_contents);
   WebKit::WebContextMenuData data;
   content::ContextMenuParams params(data);
@@ -159,21 +161,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
-  ASSERT_TRUE(test_server()->Start());
-
-  LoadAndLaunchPlatformApp("navigation");
-  WebContents* web_contents = GetFirstPlatformAppWebContents();
-
-  GURL remote_url = test_server()->GetURL(
-      "files/extensions/platform_apps/navigation/nav-target.html");
-
-  std::string script = StringPrintf(
-      "runTests(\"%s\")", remote_url.spec().c_str());
-  bool result = false;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      web_contents->GetRenderViewHost(), L"",
-      UTF8ToWide(script), &result));
-  EXPECT_TRUE(result);
+  ASSERT_TRUE(StartTestServer());
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/navigation")) << message_;
 }
 
 // Tests that localStorage and WebSQL are disabled for platform apps.
@@ -186,13 +175,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Restrictions) {
 }
 
 // Tests that platform apps can use the chrome.windows.* API.
-#if defined(USE_AURA)
-// On Aura, this currently fails because the window width is returned as 256
-// instead of 250. See http://crbug.com/119410.
-#define MAYBE_WindowsApi FAILS_WindowsApi
-#else
-#define MAYBE_WindowsApi WindowsApi
-#endif
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_WindowsApi) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApi) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/windows_api")) << message_;
 }

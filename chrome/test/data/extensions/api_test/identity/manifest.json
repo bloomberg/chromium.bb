@@ -2,14 +2,6 @@
   "name": "identity api test",
   "manifest_version": 2,
   "version": "1",
-  "app": {
-    "launch": {
-      "local_path": "launch.html",
-      "container": "shell",
-      "width": 500,
-      "height": 500
-    }
-  },
   "platform_app": true,
   "permissions": ["experimental"],
   "background": {"scripts": ["test.js"]},
