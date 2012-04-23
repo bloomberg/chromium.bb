@@ -9,47 +9,17 @@
 #include "ash/ash_export.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/compositor/layer.h"
-#include "ui/gfx/compositor/layer_animation_observer.h"
-#include "ui/gfx/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace internal {
-namespace {
-
-class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver {
- public:
-  explicit ShowWallpaperAnimationObserver(views::Widget* desktop_widget)
-      : desktop_widget_(desktop_widget) {
-  }
-
-  virtual ~ShowWallpaperAnimationObserver() {
-  }
-
- private:
-  // Overridden from ui::ImplicitAnimationObserver:
-  virtual void OnImplicitAnimationsCompleted() OVERRIDE {
-    internal::RootWindowLayoutManager* root_window_layout =
-      Shell::GetInstance()->root_window_layout();
-    root_window_layout->SetBackgroundWidget(desktop_widget_);
-    delete this;
-  }
-
-  views::Widget* desktop_widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShowWallpaperAnimationObserver);
-};
-
-}  // namespace
 
 // For our scaling ratios we need to round positive numbers.
 static int RoundPositive(double x) {
@@ -126,7 +96,8 @@ void DesktopBackgroundView::OnMouseReleased(const views::MouseEvent& event) {
     Shell::GetInstance()->ShowBackgroundMenu(GetWidget(), event.location());
 }
 
-void CreateDesktopBackground(const SkBitmap& wallpaper, ImageLayout layout) {
+views::Widget* CreateDesktopBackground(const SkBitmap& wallpaper,
+                                       ImageLayout layout) {
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -140,16 +111,10 @@ void CreateDesktopBackground(const SkBitmap& wallpaper, ImageLayout layout) {
   ash::SetWindowVisibilityAnimationType(
       desktop_widget->GetNativeView(),
       ash::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-  ash::SetWindowVisibilityAnimationTransition(
-      desktop_widget->GetNativeView(),
-      ash::ANIMATE_SHOW);
   desktop_widget->SetBounds(params.parent->bounds());
-  ui::ScopedLayerAnimationSettings settings(desktop_widget->GetNativeView()->
-                                            layer()->GetAnimator());
-  settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
-  settings.AddObserver(new ShowWallpaperAnimationObserver(desktop_widget));
   desktop_widget->Show();
   desktop_widget->GetNativeView()->SetName("DesktopBackgroundView");
+  return desktop_widget;
 }
 
 }  // namespace internal
