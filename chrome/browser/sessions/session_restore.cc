@@ -54,6 +54,9 @@ using content::WebContents;
 namespace {
 
 class SessionRestoreImpl;
+class TabLoader;
+
+TabLoader* shared_tab_loader = NULL;
 
 // Pointers to SessionRestoreImpls which are currently restoring the session.
 std::set<SessionRestoreImpl*>* active_session_restorers = NULL;
@@ -67,15 +70,23 @@ static const int kInitialDelayTimerMS = 100;
 // tabs. New tabs are loaded after the current tab finishes loading, or a delay
 // is reached (initially kInitialDelayTimerMS). If the delay is reached before
 // a tab finishes loading a new tab is loaded and the time of the delay
-// doubled. When all tabs are loading TabLoader deletes itself.
+// doubled.
+//
+// TabLoader keeps a reference to itself when it's loading. When it has finished
+// loading, it drops the reference. If another profile is restored while the
+// TabLoader is loading, it will schedule its tabs to get loaded by the same
+// TabLoader. When doing the scheduling, it holds a reference to the TabLoader.
 //
 // This is not part of SessionRestoreImpl so that synchronous destruction
 // of SessionRestoreImpl doesn't have timing problems.
 class TabLoader : public content::NotificationObserver,
-                  public net::NetworkChangeNotifier::OnlineStateObserver {
+                  public net::NetworkChangeNotifier::OnlineStateObserver,
+                  public base::RefCounted<TabLoader> {
  public:
-  explicit TabLoader(base::TimeTicks restore_started);
-  virtual ~TabLoader();
+  // Retrieves a pointer to the TabLoader instance shared between profiles, or
+  // creates a new TabLoader if it doesn't exist. If a TabLoader is created, its
+  // starting timestamp is set to |restore_started|.
+  static TabLoader* GetTabLoader(base::TimeTicks restore_started);
 
   // Schedules a tab for loading.
   void ScheduleLoad(NavigationController* controller);
@@ -90,9 +101,14 @@ class TabLoader : public content::NotificationObserver,
   void StartLoading();
 
  private:
+  friend class base::RefCounted<TabLoader>;
+
   typedef std::set<NavigationController*> TabsLoading;
   typedef std::list<NavigationController*> TabsToLoad;
   typedef std::set<RenderWidgetHost*> RenderWidgetHostSet;
+
+  explicit TabLoader(base::TimeTicks restore_started);
+  virtual ~TabLoader();
 
   // Loads the next tab. If there are no more tabs to load this deletes itself,
   // otherwise |force_load_timer_| is restarted.
@@ -162,22 +178,18 @@ class TabLoader : public content::NotificationObserver,
   // Max number of tabs that were loaded in parallel (for metrics).
   size_t max_parallel_tab_loads_;
 
+  // For keeping TabLoader alive while it's loading even if no
+  // SessionRestoreImpls reference it.
+  scoped_refptr<TabLoader> this_retainer_;
+
   DISALLOW_COPY_AND_ASSIGN(TabLoader);
 };
 
-TabLoader::TabLoader(base::TimeTicks restore_started)
-    : force_load_delay_(kInitialDelayTimerMS),
-      loading_(false),
-      got_first_paint_(false),
-      tab_count_(0),
-      restore_started_(restore_started),
-      max_parallel_tab_loads_(0) {
-}
-
-TabLoader::~TabLoader() {
-  DCHECK((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
-          tabs_loading_.empty() && tabs_to_load_.empty());
-  net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+// static
+TabLoader* TabLoader::GetTabLoader(base::TimeTicks restore_started) {
+  if (!shared_tab_loader)
+    shared_tab_loader = new TabLoader(restore_started);
+  return shared_tab_loader;
 }
 
 void TabLoader::ScheduleLoad(NavigationController* controller) {
@@ -200,8 +212,15 @@ void TabLoader::TabIsLoading(NavigationController* controller) {
 }
 
 void TabLoader::StartLoading() {
+  // When multiple profiles are using the same TabLoader, another profile might
+  // already have started loading. In that case, the tabs scheduled for loading
+  // by this profile are already in the loading queue, and they will get loaded
+  // eventually.
+  if (loading_)
+    return;
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
                  content::NotificationService::AllSources());
+  this_retainer_ = this;
 #if defined(OS_CHROMEOS)
   if (!net::NetworkChangeNotifier::IsOffline()) {
     loading_ = true;
@@ -213,6 +232,22 @@ void TabLoader::StartLoading() {
   loading_ = true;
   LoadNextTab();
 #endif
+}
+
+TabLoader::TabLoader(base::TimeTicks restore_started)
+    : force_load_delay_(kInitialDelayTimerMS),
+      loading_(false),
+      got_first_paint_(false),
+      tab_count_(0),
+      restore_started_(restore_started),
+      max_parallel_tab_loads_(0) {
+}
+
+TabLoader::~TabLoader() {
+  DCHECK((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
+          tabs_loading_.empty() && tabs_to_load_.empty());
+  net::NetworkChangeNotifier::RemoveOnlineStateObserver(this);
+  shared_tab_loader = NULL;
 }
 
 void TabLoader::LoadNextTab() {
@@ -325,10 +360,13 @@ void TabLoader::Observe(int type,
     default:
       NOTREACHED() << "Unknown notification received:" << type;
   }
-  // Delete ourselves when we're not waiting for any more notifications.
+  // Delete ourselves when we're not waiting for any more notifications. If this
+  // was not the last reference, a SessionRestoreImpl holding a reference will
+  // eventually call StartLoading (which assigns this_retainer_), or drop the
+  // reference without initiating a load.
   if ((got_first_paint_ || render_widget_hosts_to_paint_.empty()) &&
       tabs_loading_.empty() && tabs_to_load_.empty())
-    delete this;
+    this_retainer_ = NULL;
 }
 
 void TabLoader::OnOnlineStateChanged(bool online) {
@@ -596,7 +634,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
  private:
   // Invoked when beginning to create new tabs. Resets the tab_loader_.
   void StartTabCreation() {
-    tab_loader_.reset(new TabLoader(restore_started_));
+    tab_loader_ = TabLoader::GetTabLoader(restore_started_);
   }
 
   // Invoked when done with creating all the tabs/browsers.
@@ -625,7 +663,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
     if (succeeded) {
       DCHECK(tab_loader_.get());
       // TabLoader deletes itself when done loading.
-      tab_loader_.release()->StartLoading();
+      tab_loader_->StartLoading();
+      tab_loader_ = NULL;
     }
 
     if (!synchronous_) {
@@ -943,7 +982,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   CancelableRequestConsumer request_consumer_;
 
   // Responsible for loading the tabs.
-  scoped_ptr<TabLoader> tab_loader_;
+  scoped_refptr<TabLoader> tab_loader_;
 
   // When synchronous we run a nested message loop. To avoid creating windows
   // from the nested message loop (which can make exiting the nested message
