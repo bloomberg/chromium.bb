@@ -43,12 +43,9 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
                               public views::ButtonListener {
  public:
   BundleInstalledBubble(const BundleInstaller* bundle,
-                        Browser* browser) {
-    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-
-    set_anchor_view(browser_view->GetToolbarView()->app_menu());
-    set_arrow_location(views::BubbleBorder::TOP_RIGHT);
-
+                        View* anchor_view,
+                        views::BubbleBorder::ArrowLocation arrow_location)
+      : views::BubbleDelegateView(anchor_view, arrow_location) {
     GridLayout* layout = GridLayout::CreatePanel(this);
     SetLayoutManager(layout);
     views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
@@ -166,5 +163,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
 
 void BundleInstaller::ShowInstalledBubble(
     const BundleInstaller* bundle, Browser* browser) {
-  new BundleInstalledBubble(bundle, browser);
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  views::View* anchor = browser_view->GetToolbarView()->app_menu();
+  new BundleInstalledBubble(bundle, anchor, views::BubbleBorder::TOP_RIGHT);
 }

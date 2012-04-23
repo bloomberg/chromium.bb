@@ -71,6 +71,8 @@ ExtensionPopup::ExtensionPopup(
   host->view()->SetContainer(this);
   // Use OnNativeFocusChange to check for child window activation on deactivate.
   set_close_on_deactivate(false);
+  // Make the bubble move with its anchor (during inspection, etc.).
+  set_move_with_anchor(true);
 
   // Wait to show the popup until the contained host finishes loading.
   registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
@@ -125,7 +127,6 @@ void ExtensionPopup::Observe(int type,
         // Set inspect_with_devtools_ so the popup will be kept open while
         // the devtools are open.
         inspect_with_devtools_ = true;
-        set_close_on_deactivate(false);
       }
       break;
     default:

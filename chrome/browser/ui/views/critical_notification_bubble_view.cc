@@ -57,6 +57,7 @@ CriticalNotificationBubbleView::CriticalNotificationBubbleView(
       restart_button_(NULL),
       dismiss_button_(NULL) {
   set_close_on_deactivate(false);
+  set_move_with_anchor(true);
 }
 
 CriticalNotificationBubbleView::~CriticalNotificationBubbleView() {

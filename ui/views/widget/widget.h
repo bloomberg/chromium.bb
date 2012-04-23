@@ -98,6 +98,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     virtual void OnWidgetClosing(Widget* widget) {}
     virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) {}
     virtual void OnWidgetActivationChanged(Widget* widget, bool active) {}
+    virtual void OnWidgetMoved(Widget* widget) {}
   };
 
   typedef std::set<Widget*> Widgets;
@@ -620,6 +621,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual void OnNativeWidgetDestroyed() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual void OnNativeWidgetMove() OVERRIDE;
   virtual void OnNativeWidgetSizeChanged(const gfx::Size& new_size) OVERRIDE;
   virtual void OnNativeWidgetBeginUserBoundsChange() OVERRIDE;
   virtual void OnNativeWidgetEndUserBoundsChange() OVERRIDE;

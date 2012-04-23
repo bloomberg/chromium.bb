@@ -112,10 +112,6 @@ class KioskModeTest : public UITest {
 };
 
 TEST_F(KioskModeTest, EnableKioskModeTest) {
-  // Load a local file.
-  FilePath test_file(test_data_directory_);
-  test_file = test_file.AppendASCII("title1.html");
-
   // Verify that the window is present.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());

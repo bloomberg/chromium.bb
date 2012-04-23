@@ -47,23 +47,25 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
       views::Widget* widget) OVERRIDE;
 
   // Widget::Observer overrides:
+  virtual void OnWidgetClosing(Widget* widget) OVERRIDE;
   virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
   virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
+  virtual void OnWidgetMoved(Widget* widget) OVERRIDE;
 
   bool close_on_esc() const { return close_on_esc_; }
   void set_close_on_esc(bool close_on_esc) { close_on_esc_ = close_on_esc; }
 
   bool close_on_deactivate() const { return close_on_deactivate_; }
   void set_close_on_deactivate(bool close_on_deactivate) {
-      close_on_deactivate_ = close_on_deactivate;
+    close_on_deactivate_ = close_on_deactivate;
   }
 
   View* anchor_view() const { return anchor_view_; }
-  void set_anchor_view(View* anchor_view) { anchor_view_ = anchor_view; }
+  Widget* anchor_widget() const { return anchor_widget_; }
 
   BubbleBorder::ArrowLocation arrow_location() const { return arrow_location_; }
   void set_arrow_location(BubbleBorder::ArrowLocation arrow_location) {
-      arrow_location_ = arrow_location;
+    arrow_location_ = arrow_location;
   }
 
   SkColor color() const { return color_; }
@@ -108,6 +110,14 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Perform view initialization on the contents for bubble sizing.
   virtual void Init();
 
+  // Set the anchor view, this must be done before calling CreateBubble or Show.
+  void set_anchor_view(View* anchor_view) { anchor_view_ = anchor_view; }
+
+  bool move_with_anchor() const { return move_with_anchor_; }
+  void set_move_with_anchor(bool move_with_anchor) {
+    move_with_anchor_ = move_with_anchor;
+  }
+
   // Resizes and potentially moves the Bubble to best accommodate the
   // contents preferred size.
   void SizeToContents();
@@ -133,8 +143,12 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   bool close_on_esc_;
   bool close_on_deactivate_;
 
-  // The view hosting this bubble; the arrow is anchored to this view.
+  // The view and widget to which this bubble is anchored.
   View* anchor_view_;
+  Widget* anchor_widget_;
+
+  // If true, the bubble will re-anchor (and may resize) with |anchor_widget_|.
+  bool move_with_anchor_;
 
   // The arrow's location on the bubble.
   BubbleBorder::ArrowLocation arrow_location_;

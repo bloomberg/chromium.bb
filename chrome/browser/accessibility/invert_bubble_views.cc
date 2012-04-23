@@ -82,6 +82,7 @@ void InvertBubbleView::Init() {
   // user to close it explicitly, which should be okay because it affects
   // a small minority of users, and only once.
   set_close_on_deactivate(false);
+  set_move_with_anchor(true);
 }
 
 gfx::Rect InvertBubbleView::GetAnchorRect() {
