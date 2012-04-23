@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pepper_flash.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/pepper_plugin_info.h"
@@ -29,7 +30,7 @@
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/plugin_constants.h"
 
-#include "flapper_version.h"  // In <(SHARED_INTERMEDIATE_DIR).
+#include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
@@ -215,15 +216,15 @@ void AddPepperFlash(std::vector<content::PepperPluginInfo>* plugins) {
     flash_version = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
         switches::kPpapiFlashVersion);
   } else {
-    // Use the bundled Pepper Flash if it's enabled and available.
-    // It's currently only enabled by default on Linux ia32 and x64.
-#if defined(FLAPPER_AVAILABLE) && defined(OS_LINUX) && \
-    (defined(ARCH_CPU_X86) || defined(ARCH_CPU_X86_64))
-    bool bundled_flapper_enabled = true;
-#else
+    // Try to use a bundled Pepper Flash if:
+    //  1) it's forcibly enabled via the command-line;
     bool bundled_flapper_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableBundledPpapiFlash);
+    //  2) it's known to be available at build time and enabled by default; and
+#if defined(FLAPPER_AVAILABLE)
+    bundled_flapper_enabled |= IsPepperFlashEnabledByDefault();
 #endif
+    //  3) it's not forcibly disabled via the command-line.
     bundled_flapper_enabled &= !CommandLine::ForCurrentProcess()->HasSwitch(
                                    switches::kDisableBundledPpapiFlash);
     if (!bundled_flapper_enabled)

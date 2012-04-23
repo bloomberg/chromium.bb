@@ -22,11 +22,10 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
-#include "chrome/browser/component_updater/pepper_flash_field_trial.h"
+#include "chrome/common/pepper_flash.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
@@ -34,9 +33,7 @@
 #include "webkit/plugins/plugin_constants.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#endif
+#include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 using content::BrowserThread;
 using content::PluginService;
@@ -78,29 +75,6 @@ const FilePath::CharType kPepperFlashBaseDirectory[] =
 
 // If we don't have a Pepper Flash component, this is the version we claim.
 const char kNullVersion[] = "0.0.0.0";
-
-// True if Pepper Flash should be enabled by default. Aura builds for any OS
-// Windows 8 metro mode and part of Windows canary have it enabled by default.
-bool IsPepperFlashEnabledByDefault() {
-#if defined(USE_AURA)
-  return true;
-#elif !defined(OS_WIN)
-  return false;
-#else
-  if (base::win::GetMetroModule())
-    return true;
-  if (!PepperFlashFieldTrial::InEnableByDefaultGroup())
-    return false;
-
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!dist)
-    return false;
-  string16 channel;
-  if (!dist->GetChromeChannel(&channel))
-    return false;
-  return (channel == L"canary");
-#endif
-}
 
 // The base directory on Windows looks like:
 // <profile>\AppData\Local\Google\Chrome\User Data\PepperFlash\.
@@ -386,7 +360,7 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
 }  // namespace
 
 void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(FLAPPER_AVAILABLE)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&StartPepperFlashUpdateRegistration, cus));
 #endif
