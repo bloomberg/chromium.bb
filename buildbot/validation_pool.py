@@ -369,29 +369,27 @@ class ValidationPool(object):
       # TODO(sosa): Modify helper logic to allows deps to be specified across
       # different gerrit instances.
 
-      dependency_exc = None
       try:
         deps.extend(change.GerritDependencies(buildroot))
         deps.extend(change.PaladinDependencies(buildroot))
-      except cros_patch.MissingChangeIDException as dependency_exc:
+      except cros_patch.MissingChangeIDException as me:
         change.apply_error_message = (
             'Could not apply change %s because change has a Gerrit Dependency '
             'that does not contain a ChangeId.  Please remove this dependency '
             'or update the dependency with a ChangeId.' % change.id)
-      except cros_patch.BrokenCQDepends as dependency_exc:
+      except cros_patch.BrokenCQDepends as e:
         change.apply_error_message = (
             'Could not apply change %s because change has a malformed '
             'CQ-DEPEND. CQ-DEPEND must either be the long form Change-ID, '
             'or the change number.' % change.id)
-      except cros_patch.BrokenChangeID as dependency_exc:
+      except cros_patch.BrokenChangeID as e:
         change.apply_error_message = (
             'Could not apply change %s because a parent change has a malformed '
             'Change-ID.  Please fix and retry.' % change.id)
 
       if change.apply_error_message:
         logging.error(change.apply_error_message)
-        if dependency_exc:
-          logging.error(str(dependency_exc))
+        logging.error(str(me))
         changes_that_failed_to_apply_to_tot.add(change)
         apply_chain = False
         continue
