@@ -316,14 +316,14 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_ModifyHierarchy DISABLED_ModifyHierarchy
 #define MAYBE_Opacity DISABLED_Opacity
 #else
-#define MAYBE_Delegate Delegate
+#define MAYBE_Delegate DISABLED_Delegate
 #define MAYBE_Draw Draw
-#define MAYBE_DrawTree DrawTree
+#define MAYBE_DrawTree DISABLED_DrawTree
 #define MAYBE_Hierarchy Hierarchy
-#define MAYBE_HierarchyNoTexture HierarchyNoTexture
+#define MAYBE_HierarchyNoTexture DISABLED_HierarchyNoTexture
 #define MAYBE_DrawPixels DrawPixels
 #define MAYBE_SetRootLayer SetRootLayer
-#define MAYBE_CompositorObservers CompositorObservers
+#define MAYBE_CompositorObservers DISABLED_CompositorObservers
 #define MAYBE_ModifyHierarchy ModifyHierarchy
 #define MAYBE_Opacity Opacity
 #endif
