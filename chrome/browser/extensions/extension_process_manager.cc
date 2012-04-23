@@ -454,7 +454,7 @@ void ExtensionProcessManager::OnNetworkRequestStarted(
     RenderViewHost* render_view_host) {
   ExtensionHost* host = GetBackgroundHostForExtension(
       GetExtensionID(render_view_host));
-  if (host)
+  if (host && host->render_view_host() == render_view_host)
     IncrementLazyKeepaliveCount(host->extension());
 }
 
@@ -462,7 +462,7 @@ void ExtensionProcessManager::OnNetworkRequestDone(
     RenderViewHost* render_view_host) {
   ExtensionHost* host = GetBackgroundHostForExtension(
       GetExtensionID(render_view_host));
-  if (host)
+  if (host && host->render_view_host() == render_view_host)
     DecrementLazyKeepaliveCount(host->extension());
 }
 
