@@ -270,7 +270,7 @@ class Isolate_check(IsolateBase):
     self._expected_result(['touch_root.py'], None)
 
   def test_with_flag(self):
-    self._execute('check', 'with_flag.isolate', ['-V', 'FLAG=gyp'], False)
+    self._execute('check', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expect_no_tree()
     self._expected_result(['with_flag.py', 'gyp'], None)
 
@@ -317,7 +317,8 @@ class Isolate_hashtable(IsolateBase):
     self._expected_result(['touch_root.py'], None)
 
   def test_with_flag(self):
-    self._execute('hashtable', 'with_flag.isolate', ['-V', 'FLAG=gyp'], False)
+    self._execute(
+        'hashtable', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expected_hash_tree()
     self._expected_result(['with_flag.py', 'gyp'], None)
 
@@ -359,7 +360,7 @@ class Isolate_remap(IsolateBase):
     self._expected_result(['touch_root.py'], None)
 
   def test_with_flag(self):
-    self._execute('remap', 'with_flag.isolate', ['-V', 'FLAG=gyp'], False)
+    self._execute('remap', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expected_tree()
     self._expected_result(['with_flag.py', 'gyp'], None)
 
@@ -412,7 +413,7 @@ class Isolate_run(IsolateBase):
     self._expected_result(['touch_root.py'], None)
 
   def test_with_flag(self):
-    self._execute('run', 'with_flag.isolate', ['-V', 'FLAG=run'], False)
+    self._execute('run', 'with_flag.isolate', ['-V', 'FLAG', 'run'], False)
     # Not sure about the empty tree, should be deleted.
     self._expect_empty_tree()
     self._expected_result(['with_flag.py', 'run'], None)
@@ -493,7 +494,7 @@ class Isolate_trace(IsolateBase):
 
   def test_with_flag(self):
     out = self._execute(
-        'trace', 'with_flag.isolate', ['-V', 'FLAG=trace'], True)
+        'trace', 'with_flag.isolate', ['-V', 'FLAG', 'trace'], True)
     self._expect_no_tree()
     self._expected_result(['with_flag.py', 'trace'], None)
     expected = {

@@ -418,11 +418,11 @@ def get_valid_modes():
 
 
 def main():
-  default_variables = ['OS=%s' % trace_inputs.get_flavor()]
+  default_variables = [('OS', trace_inputs.get_flavor())]
   if sys.platform in ('win32', 'cygwin'):
-    default_variables.append('EXECUTABLE_SUFFIX=.exe')
+    default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
   else:
-    default_variables.append('EXECUTABLE_SUFFIX=')
+    default_variables.append(('EXECUTABLE_SUFFIX', ''))
   valid_modes = get_valid_modes()
   parser = optparse.OptionParser(
       usage='%prog [options] [.isolate file]',
@@ -443,10 +443,11 @@ def main():
       help='Result file to store the json manifest')
   parser.add_option(
       '-V', '--variable',
+      nargs=2,
       action='append',
       default=default_variables,
       dest='variables',
-      metavar='FOO=BAR',
+      metavar='FOO BAR',
       help='Variables to process in the .isolate file, default: %default')
   parser.add_option(
       '-o', '--outdir', metavar='DIR',
@@ -470,7 +471,7 @@ def main():
   isolate_dir = os.path.dirname(input_file)
 
   # Extract the variables.
-  variables = dict(i.split('=', 1) for i in options.variables)
+  variables = dict(options.variables)
   # Process path variables as a special case. First normalize it, verifies it
   # exists, convert it to an absolute path, then set it as relative to
   # isolate_dir.
