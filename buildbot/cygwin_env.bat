@@ -7,13 +7,9 @@ setlocal
 set HERMETIC_CYGWIN=hermetic_cygwin_1_7_9-0_2
 if exist "%~dp0..\cygwin\%HERMETIC_CYGWIN%.installed" goto :skip_cygwin_install
 if not exist "%~dp0..\cygwin" goto :dont_remove_cygwin
-attrib -H "%~dp0..\cygwin\.svn"
-move "%~dp0..\cygwin\.svn" "%~dp0..\cygwin-.svn"
 rmdir /s /q "%~dp0..\cygwin"
 if errorlevel 1 goto :rmdir_fail
 mkdir "%~dp0..\cygwin"
-move "%~dp0..\cygwin-.svn" "%~dp0..\cygwin\.svn"
-attrib +H "%~dp0..\cygwin\.svn"
 :dont_remove_cygwin
 cscript //nologo //e:jscript "%~dp0get_file.js" http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/cygwin_mirror/%HERMETIC_CYGWIN%.exe "%~dp0%HERMETIC_CYGWIN%.exe"
 if errorlevel 1 goto :download_fail
