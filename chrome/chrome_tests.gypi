@@ -715,7 +715,6 @@
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
         'browser/process_singleton_linux_uitest.cc',
-        'browser/process_singleton_uitest.cc',
         'browser/session_history_uitest.cc',
         'browser/sessions/session_restore_uitest.cc',
         'browser/ui/tests/browser_uitest.cc',
@@ -755,12 +754,6 @@
           ],
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
-          ],
-        }],
-        ['OS=="mac"', {
-          'sources!': [
-            # ProcessSingletonMac doesn't do anything.
-            'browser/process_singleton_uitest.cc',
           ],
         }],
         ['OS=="win"', {
@@ -2885,6 +2878,7 @@
         'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
         'browser/printing/printing_layout_browsertest.cc',
         'browser/printing/print_preview_tab_controller_browsertest.cc',
+        'browser/process_singleton_browsertest.cc',
         'browser/profiles/profile_browsertest.cc',
         'browser/profiles/profile_manager_browsertest.cc',
         'browser/protector/default_search_provider_change_browsertest.cc',
@@ -3323,6 +3317,8 @@
             # TODO(hbono): This test depends on hunspell and we cannot run it on
             # Mac, which does not use hunspell by default.
             'browser/spellchecker/spellcheck_host_browsertest.cc',
+            # ProcessSingletonMac doesn't do anything.
+            'browser/process_singleton_browsertest.cc',            
           ],
         }, { # else: OS != "mac"
           'sources!': [

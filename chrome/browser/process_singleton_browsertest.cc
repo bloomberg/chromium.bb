@@ -10,9 +10,8 @@
 // makes sense to test that the system services are giving the behavior we
 // want?)
 
-#include <list>
-
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -26,8 +25,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/test_launcher_utils.h"
-#include "chrome/test/ui/ui_test.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "chrome/test/base/in_process_browser_test.h"
 
 namespace {
 
@@ -60,11 +58,9 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   void StartChrome(base::WaitableEvent* start_event, bool first_run) {
     // TODO(mattm): maybe stuff should be refactored to use
     // UITest::LaunchBrowserHelper somehow?
-    FilePath browser_directory;
-    PathService::Get(chrome::DIR_APP, &browser_directory);
-    CommandLine command_line(browser_directory.Append(
-        chrome::kBrowserProcessExecutablePath));
-
+    FilePath program;
+    ASSERT_TRUE(PathService::Get(base::FILE_EXE, &program));
+    CommandLine command_line(program);
     command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir_);
 
     if (first_run)
@@ -130,8 +126,10 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   DISALLOW_COPY_AND_ASSIGN(ChromeStarter);
 };
 
+}  // namespace
+
 // Our test fixture that initializes and holds onto a few global vars.
-class ProcessSingletonTest : public UITest {
+class ProcessSingletonTest : public InProcessBrowserTest {
  public:
   ProcessSingletonTest()
       // We use a manual reset so that all threads wake up at once when signaled
@@ -190,10 +188,12 @@ class ProcessSingletonTest : public UITest {
     // But don't try more than kNbTries times...
     static const int kNbTries = 10;
     int num_tries = 0;
-    while (base::GetProcessCount(chrome::kBrowserProcessExecutablePath,
-        &process_tree_filter) > 0 && num_tries++ < kNbTries) {
-      base::KillProcesses(chrome::kBrowserProcessExecutablePath,
-                          kExitCode, &process_tree_filter);
+    FilePath program;
+    ASSERT_TRUE(PathService::Get(base::FILE_EXE, &program));
+    FilePath::StringType exe_name = program.BaseName().value();
+    while (base::GetProcessCount(exe_name, &process_tree_filter) > 0 &&
+           num_tries++ < kNbTries) {
+      base::KillProcesses(exe_name, kExitCode, &process_tree_filter);
     }
     DLOG_IF(ERROR, num_tries >= kNbTries) << "Failed to kill all processes!";
   }
@@ -223,7 +223,7 @@ class ProcessSingletonTest : public UITest {
 #else
 #define MAYBE_StartupRaceCondition StartupRaceCondition
 #endif
-TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
+IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
   // We use this to stop the attempts loop on the first failure.
   bool failed = false;
   for (size_t attempt = 0; attempt < kNbAttempts && !failed; ++attempt) {
@@ -323,5 +323,3 @@ TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
     }
   }
 }
-
-}  // namespace
