@@ -49,6 +49,10 @@ class ActionableView : public views::View {
 
   virtual ~ActionableView();
 
+  // Set the accessible name.
+  void SetAccessibleName(const string16& name);
+  const string16& accessible_name() const { return accessible_name_; }
+
  protected:
   // Performs an action when user clicks on the view (on mouse-press event), or
   // presses a key when this view is in focus. Returns true if the event has
@@ -58,9 +62,12 @@ class ActionableView : public views::View {
   // Overridden from views::View.
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
+  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
  private:
+  string16 accessible_name_;
+
   DISALLOW_COPY_AND_ASSIGN(ActionableView);
 };
 
@@ -78,17 +85,15 @@ class HoverHighlightView : public ActionableView {
   explicit HoverHighlightView(ViewClickListener* listener);
   virtual ~HoverHighlightView();
 
-  // Convenience function for adding an icon and a label.
+  // Convenience function for adding an icon and a label.  This also sets the
+  // accessible name.
   void AddIconAndLabel(const SkBitmap& image,
                        const string16& text,
                        gfx::Font::FontStyle style);
 
   // Convenience function for adding a label with padding on the left for a
-  // blank icon.
+  // blank icon.  This also sets the accessible name.
   void AddLabel(const string16& text, gfx::Font::FontStyle style);
-
-  // Set the accessible name.  Should be used if this doesn't match the label.
-  void SetAccessibleName(const string16& name);
 
   void set_highlight_color(SkColor color) { highlight_color_ = color; }
   void set_default_color(SkColor color) { default_color_ = color; }
@@ -102,12 +107,10 @@ class HoverHighlightView : public ActionableView {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
   ViewClickListener* listener_;
-  string16 accessible_name_;
   SkColor highlight_color_;
   SkColor default_color_;
   int fixed_height_;

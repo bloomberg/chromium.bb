@@ -37,9 +37,12 @@ class SettingsView : public ash::internal::ActionableView {
     icon->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToSkBitmap());
     AddChildView(icon);
 
-    label_ = new views::Label(rb.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_SETTINGS_AND_HELP));
+    string16 text = rb.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_SETTINGS_AND_HELP);
+    label_ = new views::Label(text);
     AddChildView(label_);
+
+    SetAccessibleName(text);
   }
 
   virtual ~SettingsView() {}
@@ -48,14 +51,6 @@ class SettingsView : public ash::internal::ActionableView {
   virtual bool PerformAction(const views::Event& event) OVERRIDE {
     ash::Shell::GetInstance()->tray_delegate()->ShowSettings();
     return true;
-  }
-
-  // Overridden from views::View.
-  void GetAccessibleState(ui::AccessibleViewState* state) {
-    state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    state->name = rb.GetLocalizedString(
-        IDS_ASH_STATUS_TRAY_SETTINGS_AND_HELP);
   }
 
  private:

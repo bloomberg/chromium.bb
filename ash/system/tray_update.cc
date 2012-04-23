@@ -36,6 +36,7 @@ class UpdateView : public ash::internal::ActionableView {
     AddChildView(image);
     AddChildView(new views::Label(
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE)));
+    SetAccessibleName(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_UPDATE));
   }
 
   virtual ~UpdateView() {}

@@ -66,11 +66,20 @@ bool ActionableView::OnMousePressed(const views::MouseEvent& event) {
   return PerformAction(event);
 }
 
+void ActionableView::SetAccessibleName(const string16& name) {
+  accessible_name_ = name;
+}
+
 void ActionableView::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
     canvas->DrawRect(gfx::Rect(1, 1, width() - 3, height() - 3),
                      kFocusBorderColor);
   }
+}
+
+void ActionableView::GetAccessibleState(ui::AccessibleViewState* state) {
+  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+  state->name = accessible_name_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -102,7 +111,7 @@ void HoverHighlightView::AddIconAndLabel(const SkBitmap& image,
   label->SetFont(label->font().DeriveFont(0, style));
   AddChildView(label);
 
-  accessible_name_ = text;
+  SetAccessibleName(text);
 }
 
 void HoverHighlightView::AddLabel(const string16& text,
@@ -116,11 +125,7 @@ void HoverHighlightView::AddLabel(const string16& text,
   label->SetDisabledColor(SkColorSetARGB(127, 0, 0, 0));
   AddChildView(label);
 
-  accessible_name_ = text;
-}
-
-void HoverHighlightView::SetAccessibleName(const string16& name) {
-  accessible_name_ = name;
+  SetAccessibleName(text);
 }
 
 bool HoverHighlightView::PerformAction(const views::Event& event) {
@@ -145,11 +150,6 @@ void HoverHighlightView::OnMouseEntered(const views::MouseEvent& event) {
 void HoverHighlightView::OnMouseExited(const views::MouseEvent& event) {
   hover_ = false;
   SchedulePaint();
-}
-
-void HoverHighlightView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = accessible_name_;
 }
 
 void HoverHighlightView::OnEnabledChanged() {
