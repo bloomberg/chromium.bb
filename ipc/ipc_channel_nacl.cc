@@ -12,62 +12,80 @@
 
 namespace IPC {
 
-ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
+Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
                          Mode mode,
                          Listener* listener)
     : ChannelReader(listener) {
 }
 
-ChannelImpl::~ChannelImpl() {
+Channel::ChannelImpl::~ChannelImpl() {
   Close();
 }
 
-bool ChannelImpl::Connect() {
+bool Channel::ChannelImpl::Connect() {
   NOTIMPLEMENTED();
   return false;
 }
 
-void ChannelImpl::Close() {
+void Channel::ChannelImpl::Close() {
   NOTIMPLEMENTED();
 }
 
-bool ChannelImpl::Send(Message* message) {
+bool Channel::ChannelImpl::Send(Message* message) {
   NOTIMPLEMENTED();
 }
 
-int ChannelImpl::GetClientFileDescriptor() const {
+int Channel::ChannelImpl::GetClientFileDescriptor() const {
   NOTIMPLEMENTED();
   return -1;
 }
 
-int ChannelImpl::TakeClientFileDescriptor() {
+int Channel::ChannelImpl::TakeClientFileDescriptor() {
   NOTIMPLEMENTED();
   return -1;
 }
 
-bool ChannelImpl::AcceptsConnections() const {
+bool Channel::ChannelImpl::AcceptsConnections() const {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool ChannelImpl::HasAcceptedConnection() const {
+bool Channel::ChannelImpl::HasAcceptedConnection() const {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool ChannelImpl::GetClientEuid(uid_t* client_euid) const {
+bool Channel::ChannelImpl::GetClientEuid(uid_t* client_euid) const {
   NOTIMPLEMENTED();
   return false;
 }
 
-void ChannelImpl::ResetToAcceptingConnectionState() {
+void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
   NOTIMPLEMENTED();
+}
+
+Channel::ChannelImpl::ReadState
+    Channel::ChannelImpl::ReadData(char* buffer,
+                                   int buffer_len,
+                                   int* bytes_read) {
+  return Channel::ChannelImpl::ReadState();
+}
+
+bool Channel::ChannelImpl::WillDispatchInputMessage(Message* msg) {
+  return false;
+}
+
+bool Channel::ChannelImpl::DidEmptyInputBuffers() {
+  return false;
+}
+
+void Channel::ChannelImpl::HandleHelloMessage(const Message& msg) {
 }
 
 // static
 bool Channel::ChannelImpl::IsNamedServerInitialized(
     const std::string& channel_id) {
-  return file_util::PathExists(FilePath(channel_id));
+  return false;  //file_util::PathExists(FilePath(channel_id));
 }
 
 //------------------------------------------------------------------------------
@@ -122,6 +140,8 @@ bool Channel::GetClientEuid(uid_t* client_euid) const {
 void Channel::ResetToAcceptingConnectionState() {
   channel_impl_->ResetToAcceptingConnectionState();
 }
+
+base::ProcessId Channel::peer_pid() const { return 0; }
 
 // static
 bool Channel::IsNamedServerInitialized(const std::string& channel_id) {

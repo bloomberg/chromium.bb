@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_channel_reader.h"
 
 namespace IPC {
 
@@ -32,6 +33,13 @@ class Channel::ChannelImpl : public internal::ChannelReader {
   bool GetClientEuid(uid_t* client_euid) const;
   void ResetToAcceptingConnectionState();
   static bool IsNamedServerInitialized(const std::string& channel_id);
+
+  virtual ReadState ReadData(char* buffer,
+                             int buffer_len,
+                             int* bytes_read) OVERRIDE;
+  virtual bool WillDispatchInputMessage(Message* msg) OVERRIDE;
+  virtual bool DidEmptyInputBuffers() OVERRIDE;
+  virtual void HandleHelloMessage(const Message& msg) OVERRIDE;
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChannelImpl);

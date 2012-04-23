@@ -160,7 +160,7 @@ class IPC_EXPORT Channel : public Message::Sender {
   // deleted once the contents of the Message have been sent.
   virtual bool Send(Message* message) OVERRIDE;
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
+#if defined(OS_POSIX)
   // On POSIX an IPC::Channel wraps a socketpair(), this method returns the
   // FD # for the client end of the socket.
   // This method may only be called on the server side of a channel.

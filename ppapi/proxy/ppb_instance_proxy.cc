@@ -413,6 +413,7 @@ PP_Bool PPB_Instance_Proxy::SetCursor(PP_Instance instance,
                                       PP_MouseCursor_Type type,
                                       PP_Resource image,
                                       const PP_Point* hot_spot) {
+#if !defined(OS_NACL)
   // Some of these parameters are important for security. This check is in the
   // plugin process just for the convenience of the caller (since we don't
   // bother returning errors from the other process with a sync message). The
@@ -433,6 +434,9 @@ PP_Bool PPB_Instance_Proxy::SetCursor(PP_Instance instance,
       API_ID_PPB_INSTANCE, instance, static_cast<int32_t>(type),
       image_host_resource, hot_spot ? *hot_spot : PP_MakePoint(0, 0)));
   return PP_TRUE;
+#else  // defined(OS_NACL)
+  return PP_FALSE;
+#endif
 }
 
 int32_t PPB_Instance_Proxy::LockMouse(PP_Instance instance,
