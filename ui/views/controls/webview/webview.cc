@@ -180,6 +180,12 @@ void WebView::AttachWebContents() {
   if (web_contents_) {
     wcv_holder_->Attach(web_contents_->GetNativeView());
 
+    // The WebContentsView will not be focused automatically when it is
+    // attached, so we need to pass on focus to it if the FocusManager thinks
+    // the WebView is focused.
+    if (GetFocusManager()->GetFocusedView() == this)
+      web_contents_->Focus();
+
     registrar_.Add(
         this,
         content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
