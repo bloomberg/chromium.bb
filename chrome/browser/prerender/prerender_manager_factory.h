@@ -39,6 +39,6 @@ class PrerenderManagerFactory : public ProfileKeyedServiceFactory {
   virtual bool ServiceHasOwnInstanceInIncognito() OVERRIDE;
 };
 
-}  // end namespace prerender
+}  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_MANAGER_FACTORY_H_
