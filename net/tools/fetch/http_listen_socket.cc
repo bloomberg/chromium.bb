@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@
 // must run in the IO thread
 HttpListenSocket::HttpListenSocket(SOCKET s,
                                    HttpListenSocket::Delegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(net::ListenSocket(s, this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(net::TCPListenSocket(s, this)),
       delegate_(delegate) {
 }
 
@@ -25,13 +25,13 @@ HttpListenSocket::~HttpListenSocket() {
 }
 
 void HttpListenSocket::Listen() {
-  net::ListenSocket::Listen();
+  net::TCPListenSocket::Listen();
 }
 
 void HttpListenSocket::Accept() {
-  SOCKET conn = net::ListenSocket::Accept(socket_);
-  DCHECK_NE(conn, net::ListenSocket::kInvalidSocket);
-  if (conn == net::ListenSocket::kInvalidSocket) {
+  SOCKET conn = net::TCPListenSocket::Accept(socket_);
+  DCHECK_NE(conn, net::TCPListenSocket::kInvalidSocket);
+  if (conn == net::TCPListenSocket::kInvalidSocket) {
     // TODO
   } else {
     scoped_refptr<HttpListenSocket> sock(
@@ -45,8 +45,8 @@ HttpListenSocket* HttpListenSocket::Listen(
     const std::string& ip,
     int port,
     HttpListenSocket::Delegate* delegate) {
-  SOCKET s = net::ListenSocket::Listen(ip, port);
-  if (s == net::ListenSocket::kInvalidSocket) {
+  SOCKET s = net::TCPListenSocket::CreateAndBind(ip, port);
+  if (s == net::TCPListenSocket::kInvalidSocket) {
     // TODO (ibrar): error handling
   } else {
     HttpListenSocket *serv = new HttpListenSocket(s, delegate);

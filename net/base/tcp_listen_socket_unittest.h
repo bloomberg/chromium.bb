@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,8 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "net/base/listen_socket.h"
 #include "net/base/net_util.h"
+#include "net/base/tcp_listen_socket.h"
 #include "net/base/winsock_init.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,11 +47,11 @@ enum ActionType {
   ACTION_SHUTDOWN = 6
 };
 
-class ListenSocketTestAction {
+class TCPListenSocketTestAction {
  public:
-  ListenSocketTestAction() : action_(ACTION_NONE) {}
-  explicit ListenSocketTestAction(ActionType action) : action_(action) {}
-  ListenSocketTestAction(ActionType action, std::string data)
+  TCPListenSocketTestAction() : action_(ACTION_NONE) {}
+  explicit TCPListenSocketTestAction(ActionType action) : action_(action) {}
+  TCPListenSocketTestAction(ActionType action, std::string data)
       : action_(action),
         data_(data) {}
 
@@ -66,17 +66,17 @@ class ListenSocketTestAction {
 
 // This had to be split out into a separate class because I couldn't
 // make the testing::Test class refcounted.
-class ListenSocketTester :
+class TCPListenSocketTester :
     public ListenSocket::ListenSocketDelegate,
-    public base::RefCountedThreadSafe<ListenSocketTester> {
+    public base::RefCountedThreadSafe<TCPListenSocketTester> {
 
  public:
-  ListenSocketTester();
+  TCPListenSocketTester();
 
   void SetUp();
   void TearDown();
 
-  void ReportAction(const ListenSocketTestAction& action);
+  void ReportAction(const TCPListenSocketTestAction& action);
   void NextAction();
 
   // read all pending data from the test socket
@@ -97,30 +97,29 @@ class ListenSocketTester :
   // ListenSocket::ListenSocketDelegate:
   virtual void DidAccept(ListenSocket *server,
                          ListenSocket *connection) OVERRIDE;
-  virtual void DidRead(ListenSocket *connection,
-                       const char* data,
+  virtual void DidRead(ListenSocket *connection, const char* data,
                        int len) OVERRIDE;
   virtual void DidClose(ListenSocket *sock) OVERRIDE;
 
   scoped_ptr<base::Thread> thread_;
   MessageLoopForIO* loop_;
-  ListenSocket* server_;
+  TCPListenSocket* server_;
   ListenSocket* connection_;
-  ListenSocketTestAction last_action_;
+  TCPListenSocketTestAction last_action_;
 
   SOCKET test_socket_;
   static const int kTestPort;
 
   base::Lock lock_;  // protects |queue_| and wraps |cv_|
   base::ConditionVariable cv_;
-  std::deque<ListenSocketTestAction> queue_;
+  std::deque<TCPListenSocketTestAction> queue_;
 
  protected:
-  friend class base::RefCountedThreadSafe<ListenSocketTester>;
+  friend class base::RefCountedThreadSafe<TCPListenSocketTester>;
 
-  virtual ~ListenSocketTester();
+  virtual ~TCPListenSocketTester();
 
-  virtual ListenSocket* DoListen();
+  virtual TCPListenSocket* DoListen();
 };
 
 }  // namespace net

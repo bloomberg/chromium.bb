@@ -14,6 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/test/test_server.h"
+#include "net/base/tcp_listen_socket.h"
 #include "net/base/winsock_init.h"
 #include "net/http/http_util.h"
 
@@ -132,7 +133,7 @@ SimpleWebServer::SimpleWebServer(int port) {
   CHECK(MessageLoop::current()) << "SimpleWebServer requires a message loop";
   net::EnsureWinsockInit();
   AddResponse(&quit_);
-  server_ = net::ListenSocket::Listen("127.0.0.1", port, this);
+  server_ = net::TCPListenSocket::CreateAndListen("127.0.0.1", port, this);
   DCHECK(server_.get() != NULL);
 }
 
@@ -236,7 +237,8 @@ HTTPTestServer::HTTPTestServer(int port, const std::wstring& address,
                                FilePath root_dir)
     : port_(port), address_(address), root_dir_(root_dir) {
   net::EnsureWinsockInit();
-  server_ = net::ListenSocket::Listen(WideToUTF8(address), port, this);
+  server_ =
+      net::TCPListenSocket::CreateAndListen(WideToUTF8(address), port, this);
 }
 
 HTTPTestServer::~HTTPTestServer() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,13 @@
 #pragma once
 
 #include "base/message_loop.h"
-#include "net/base/listen_socket.h"
+#include "net/base/tcp_listen_socket.h"
 
 class HttpServerRequestInfo;
 class HttpServerResponseInfo;
 
 // Implements a simple HTTP listen socket on top of the raw socket interface.
-class HttpListenSocket : public net::ListenSocket,
+class HttpListenSocket : public net::TCPListenSocket,
                          public net::ListenSocket::ListenSocketDelegate {
  public:
   class Delegate {

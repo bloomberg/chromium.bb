@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/listen_socket_unittest.h"
+#include "net/base/tcp_listen_socket_unittest.h"
 
 #include <fcntl.h>
 #include <sys/types.h>
@@ -15,7 +15,7 @@
 
 namespace net {
 
-const int ListenSocketTester::kTestPort = 9999;
+const int TCPListenSocketTester::kTestPort = 9999;
 
 static const int kReadBufSize = 1024;
 static const char kHelloWorld[] = "HELLO, WORLD";
@@ -23,7 +23,7 @@ static const int kMaxQueueSize = 20;
 static const char kLoopback[] = "127.0.0.1";
 static const int kDefaultTimeoutMs = 5000;
 
-ListenSocketTester::ListenSocketTester()
+TCPListenSocketTester::TCPListenSocketTester()
     : thread_(NULL),
       loop_(NULL),
       server_(NULL),
@@ -31,14 +31,15 @@ ListenSocketTester::ListenSocketTester()
       cv_(&lock_) {
 }
 
-void ListenSocketTester::SetUp() {
+void TCPListenSocketTester::SetUp() {
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   thread_.reset(new base::Thread("socketio_test"));
   thread_->StartWithOptions(options);
   loop_ = reinterpret_cast<MessageLoopForIO*>(thread_->message_loop());
 
-  loop_->PostTask(FROM_HERE, base::Bind(&ListenSocketTester::Listen, this));
+  loop_->PostTask(FROM_HERE, base::Bind(
+      &TCPListenSocketTester::Listen, this));
 
   // verify Listen succeeded
   NextAction();
@@ -61,7 +62,7 @@ void ListenSocketTester::SetUp() {
   ASSERT_EQ(ACTION_ACCEPT, last_action_.type());
 }
 
-void ListenSocketTester::TearDown() {
+void TCPListenSocketTester::TearDown() {
 #if defined(OS_WIN)
   ASSERT_EQ(0, closesocket(test_socket_));
 #elif defined(OS_POSIX)
@@ -70,7 +71,8 @@ void ListenSocketTester::TearDown() {
   NextAction();
   ASSERT_EQ(ACTION_CLOSE, last_action_.type());
 
-  loop_->PostTask(FROM_HERE, base::Bind(&ListenSocketTester::Shutdown, this));
+  loop_->PostTask(FROM_HERE, base::Bind(
+      &TCPListenSocketTester::Shutdown, this));
   NextAction();
   ASSERT_EQ(ACTION_SHUTDOWN, last_action_.type());
 
@@ -78,13 +80,14 @@ void ListenSocketTester::TearDown() {
   loop_ = NULL;
 }
 
-void ListenSocketTester::ReportAction(const ListenSocketTestAction& action) {
+void TCPListenSocketTester::ReportAction(
+    const TCPListenSocketTestAction& action) {
   base::AutoLock locked(lock_);
   queue_.push_back(action);
   cv_.Broadcast();
 }
 
-void ListenSocketTester::NextAction() {
+void TCPListenSocketTester::NextAction() {
   base::AutoLock locked(lock_);
   while (queue_.empty())
     cv_.Wait();
@@ -92,7 +95,7 @@ void ListenSocketTester::NextAction() {
   queue_.pop_front();
 }
 
-int ListenSocketTester::ClearTestSocket() {
+int TCPListenSocketTester::ClearTestSocket() {
   char buf[kReadBufSize];
   int len_ret = 0;
   do {
@@ -106,35 +109,35 @@ int ListenSocketTester::ClearTestSocket() {
   return len_ret;
 }
 
-void ListenSocketTester::Shutdown() {
+void TCPListenSocketTester::Shutdown() {
   connection_->Release();
   connection_ = NULL;
   server_->Release();
   server_ = NULL;
-  ReportAction(ListenSocketTestAction(ACTION_SHUTDOWN));
+  ReportAction(TCPListenSocketTestAction(ACTION_SHUTDOWN));
 }
 
-void ListenSocketTester::Listen() {
+void TCPListenSocketTester::Listen() {
   server_ = DoListen();
   if (server_) {
     server_->AddRef();
-    ReportAction(ListenSocketTestAction(ACTION_LISTEN));
+    ReportAction(TCPListenSocketTestAction(ACTION_LISTEN));
   }
 }
 
-void ListenSocketTester::SendFromTester() {
+void TCPListenSocketTester::SendFromTester() {
   connection_->Send(kHelloWorld);
-  ReportAction(ListenSocketTestAction(ACTION_SEND));
+  ReportAction(TCPListenSocketTestAction(ACTION_SEND));
 }
 
-void ListenSocketTester::TestClientSend() {
+void TCPListenSocketTester::TestClientSend() {
   ASSERT_TRUE(Send(test_socket_, kHelloWorld));
   NextAction();
   ASSERT_EQ(ACTION_READ, last_action_.type());
   ASSERT_EQ(last_action_.data(), kHelloWorld);
 }
 
-void ListenSocketTester::TestClientSendLong() {
+void TCPListenSocketTester::TestClientSendLong() {
   size_t hello_len = strlen(kHelloWorld);
   std::string long_string;
   size_t long_len = 0;
@@ -157,9 +160,9 @@ void ListenSocketTester::TestClientSendLong() {
   ASSERT_EQ(read_len, long_len);
 }
 
-void ListenSocketTester::TestServerSend() {
+void TCPListenSocketTester::TestServerSend() {
   loop_->PostTask(FROM_HERE, base::Bind(
-      &ListenSocketTester::SendFromTester, this));
+      &TCPListenSocketTester::SendFromTester, this));
   NextAction();
   ASSERT_EQ(ACTION_SEND, last_action_.type());
   const int buf_len = 200;
@@ -176,7 +179,7 @@ void ListenSocketTester::TestServerSend() {
   ASSERT_STREQ(buf, kHelloWorld);
 }
 
-bool ListenSocketTester::Send(SOCKET sock, const std::string& str) {
+bool TCPListenSocketTester::Send(SOCKET sock, const std::string& str) {
   int len = static_cast<int>(str.length());
   int send_len = HANDLE_EINTR(send(sock, str.data(), len, 0));
   if (send_len == SOCKET_ERROR) {
@@ -188,39 +191,39 @@ bool ListenSocketTester::Send(SOCKET sock, const std::string& str) {
   return true;
 }
 
-void ListenSocketTester::DidAccept(ListenSocket *server,
-                                   ListenSocket *connection) {
+void TCPListenSocketTester::DidAccept(ListenSocket *server,
+                                      ListenSocket *connection) {
   connection_ = connection;
   connection_->AddRef();
-  ReportAction(ListenSocketTestAction(ACTION_ACCEPT));
+  ReportAction(TCPListenSocketTestAction(ACTION_ACCEPT));
 }
 
-void ListenSocketTester::DidRead(ListenSocket *connection,
-                                 const char* data,
-                                 int len) {
+void TCPListenSocketTester::DidRead(ListenSocket *connection,
+                                    const char* data,
+                                    int len) {
   std::string str(data, len);
-  ReportAction(ListenSocketTestAction(ACTION_READ, str));
+  ReportAction(TCPListenSocketTestAction(ACTION_READ, str));
 }
 
-void ListenSocketTester::DidClose(ListenSocket *sock) {
-  ReportAction(ListenSocketTestAction(ACTION_CLOSE));
+void TCPListenSocketTester::DidClose(ListenSocket *sock) {
+  ReportAction(TCPListenSocketTestAction(ACTION_CLOSE));
 }
 
-ListenSocketTester::~ListenSocketTester() {}
+TCPListenSocketTester::~TCPListenSocketTester() {}
 
-ListenSocket* ListenSocketTester::DoListen() {
-  return ListenSocket::Listen(kLoopback, kTestPort, this);
+TCPListenSocket* TCPListenSocketTester::DoListen() {
+  return TCPListenSocket::CreateAndListen(kLoopback, kTestPort, this);
 }
 
-class ListenSocketTest: public PlatformTest {
+class TCPListenSocketTest: public PlatformTest {
  public:
-  ListenSocketTest() {
+  TCPListenSocketTest() {
     tester_ = NULL;
   }
 
   virtual void SetUp() {
     PlatformTest::SetUp();
-    tester_ = new ListenSocketTester();
+    tester_ = new TCPListenSocketTester();
     tester_->SetUp();
   }
 
@@ -230,18 +233,18 @@ class ListenSocketTest: public PlatformTest {
     tester_ = NULL;
   }
 
-  scoped_refptr<ListenSocketTester> tester_;
+  scoped_refptr<TCPListenSocketTester> tester_;
 };
 
-TEST_F(ListenSocketTest, ClientSend) {
+TEST_F(TCPListenSocketTest, ClientSend) {
   tester_->TestClientSend();
 }
 
-TEST_F(ListenSocketTest, ClientSendLong) {
+TEST_F(TCPListenSocketTest, ClientSendLong) {
   tester_->TestClientSendLong();
 }
 
-TEST_F(ListenSocketTest, ServerSend) {
+TEST_F(TCPListenSocketTest, ServerSend) {
   tester_->TestServerSend();
 }
 
