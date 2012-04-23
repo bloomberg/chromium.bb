@@ -1656,6 +1656,8 @@
         'browser/prerender/prerender_histograms.h',
         'browser/prerender/prerender_history.cc',
         'browser/prerender/prerender_history.h',
+        'browser/prerender/prerender_local_predictor.cc',
+        'browser/prerender/prerender_local_predictor.h',
         'browser/prerender/prerender_manager.cc',
         'browser/prerender/prerender_manager.h',
         'browser/prerender/prerender_manager_factory.cc',

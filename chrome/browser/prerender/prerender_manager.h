@@ -52,6 +52,7 @@ namespace prerender {
 class PrerenderCondition;
 class PrerenderHistograms;
 class PrerenderHistory;
+class PrerenderLocalPredictor;
 class PrerenderTracker;
 
 // PrerenderManager is responsible for initiating and keeping prerendered
@@ -233,6 +234,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Records that some visible tab navigated (or was redirected) to the
   // provided URL.
   void RecordNavigation(const GURL& url);
+
+  Profile* profile() const { return profile_; }
 
  protected:
   void SetPrerenderContentsFactory(
@@ -452,6 +455,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   std::list<const PrerenderCondition*> prerender_conditions_;
 
   scoped_ptr<PrerenderHistograms> histograms_;
+
+  scoped_ptr<PrerenderLocalPredictor> local_predictor_;
 
   scoped_ptr<MostVisitedSites> most_visited_;
 

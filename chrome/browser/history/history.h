@@ -14,6 +14,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/string16.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -54,6 +55,7 @@ struct HistoryDetails;
 class HistoryQueryTest;
 class VisitFilter;
 class URLDatabase;
+class VisitDatabaseObserver;
 }  // namespace history
 
 
@@ -546,6 +548,14 @@ class HistoryService : public CancelableRequestProvider,
   // db.
   bool needs_top_sites_migration() const { return needs_top_sites_migration_; }
 
+  // Adds or removes observers for the VisitDatabase.  Should be run in the
+  // thread in which the observer would like to be notified.
+  void AddVisitDatabaseObserver(history::VisitDatabaseObserver* observer);
+  void RemoveVisitDatabaseObserver(history::VisitDatabaseObserver* observer);
+
+  // This notification method may be called on any thread.
+  void NotifyVisitDBObserversOnAddVisit(const history::BriefVisitInfo& info);
+
   // Testing -------------------------------------------------------------------
 
   // Designed for unit tests, this passes the given task on to the history
@@ -897,6 +907,9 @@ class HistoryService : public CancelableRequestProvider,
 
   // The index used for quick history lookups.
   scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
+
+  scoped_refptr<ObserverListThreadSafe<history::VisitDatabaseObserver> >
+      visit_database_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };

@@ -764,6 +764,20 @@ struct FaviconData {
   history::IconType icon_type;
 };
 
+// Abbreviated information about a visit.
+struct BriefVisitInfo {
+  URLID url_id;
+  base::Time time;
+  content::PageTransition transition;
+};
+
+// An observer of VisitDatabase.
+class VisitDatabaseObserver {
+ public:
+  virtual ~VisitDatabaseObserver() {}
+  virtual void OnAddVisit(const BriefVisitInfo& info) = 0;
+};
+
 }  // namespace history
 
 #endif  // CHROME_BROWSER_HISTORY_HISTORY_TYPES_H_

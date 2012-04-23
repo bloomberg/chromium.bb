@@ -558,4 +558,27 @@ bool VisitDatabase::MigrateVisitsWithoutDuration() {
   return true;
 }
 
+void VisitDatabase::GetBriefVisitInfoOfMostRecentVisits(
+    int max_visits,
+    std::vector<BriefVisitInfo>* result_vector) {
+  result_vector->clear();
+
+  sql::Statement statement(GetDB().GetUniqueStatement(
+      "SELECT url,visit_time,transition FROM visits "
+      "ORDER BY id DESC LIMIT ?"));
+
+  statement.BindInt64(0, max_visits);
+
+  if (!statement.is_valid())
+    return;
+
+  while (statement.Step()) {
+    BriefVisitInfo info;
+    info.url_id = statement.ColumnInt64(0);
+    info.time = base::Time::FromInternalValue(statement.ColumnInt64(1));
+    info.transition = content::PageTransitionFromInt(statement.ColumnInt(2));
+    result_vector->push_back(info);
+  }
+}
+
 }  // namespace history

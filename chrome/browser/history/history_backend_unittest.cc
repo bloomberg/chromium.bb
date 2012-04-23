@@ -64,6 +64,8 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
                                       HistoryDetails* details) OVERRIDE;
   virtual void DBLoaded(int backend_id) OVERRIDE;
   virtual void StartTopSitesMigration(int backend_id) OVERRIDE;
+  virtual void NotifyVisitDBObserversOnAddVisit(
+      const BriefVisitInfo& info) OVERRIDE {}
 
  private:
   // Not owned by us.

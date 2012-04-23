@@ -770,6 +770,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
   // Add the visit with the time to the database.
   VisitRow visit_info(url_id, time, referring_visit, transition, 0);
   VisitID visit_id = db_->AddVisit(&visit_info, visit_source);
+  NotifyVisitObservers(visit_info);
 
   if (visit_info.visit_time < first_recorded_time_)
     first_recorded_time_ = visit_info.visit_time;
@@ -863,6 +864,7 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
         NOTREACHED() << "Adding visit failed.";
         return;
       }
+      NotifyVisitObservers(visit_info);
 
       if (visit_info.visit_time < first_recorded_time_)
         first_recorded_time_ = visit_info.visit_time;
@@ -2475,6 +2477,17 @@ bool HistoryBackend::GetFaviconFromDB(FaviconID favicon_id,
   favicon->known_icon = true;
   favicon->image_data = data;
   return true;
+}
+
+void HistoryBackend::NotifyVisitObservers(const VisitRow& visit) {
+  BriefVisitInfo info;
+  info.url_id = visit.url_id;
+  info.time = visit.visit_time;
+  info.transition = visit.transition;
+  // If we don't have a delegate yet during setup or shutdown, we will drop
+  // these notifications.
+  if (delegate_.get())
+    delegate_->NotifyVisitDBObserversOnAddVisit(info);
 }
 
 }  // namespace history

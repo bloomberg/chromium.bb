@@ -91,6 +91,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
     // Tell TopSites to start reading thumbnails from the ThumbnailsDB.
     virtual void StartTopSitesMigration(int backend_id) = 0;
+
+    virtual void NotifyVisitDBObserversOnAddVisit(
+        const history::BriefVisitInfo& info) = 0;
   };
 
   // Init must be called to complete object creation. This object can be
@@ -587,6 +590,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Get favicon by the given |favicon_id|, the |favicon| is set appropriately
   // and true if returned on success, otherwise false is returned.
   bool GetFaviconFromDB(FaviconID favicon_id, FaviconData* favicon);
+
+  // Notify any observers of an addition to the visit database.
+  void NotifyVisitObservers(const VisitRow& visit);
 
   // Data ----------------------------------------------------------------------
 

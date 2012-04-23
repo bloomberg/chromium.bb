@@ -172,6 +172,12 @@ class VisitDatabase {
   void GetVisitsSource(const VisitVector& visits,
                        VisitSourceMap* sources);
 
+  // Obtains BriefVisitInfo for the specified number of most recent visits
+  // from the visit database.
+  void GetBriefVisitInfoOfMostRecentVisits(
+      int max_visits,
+      std::vector<BriefVisitInfo>* result_vector);
+
  protected:
   // Returns the database for the functions in this interface.
   virtual sql::Connection& GetDB() = 0;
