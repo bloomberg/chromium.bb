@@ -715,7 +715,6 @@
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
         'browser/process_singleton_linux_uitest.cc',
-        'browser/session_history_uitest.cc',
         'browser/sessions/session_restore_uitest.cc',
         'browser/ui/tests/browser_uitest.cc',
         'browser/ui/views/find_bar_host_uitest.cc',
@@ -3050,6 +3049,7 @@
         '../content/browser/renderer_host/render_view_host_browsertest.cc',
         '../content/browser/renderer_host/render_view_host_manager_browsertest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_browsertest.cc',
+        '../content/browser/session_history_browsertest.cc',
         '../content/browser/speech/speech_recognition_browsertest.cc',
         '../content/browser/webkit_browsertest.cc',
         '../content/browser/worker_host/test/worker_browsertest.cc',

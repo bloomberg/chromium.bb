@@ -13,9 +13,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/web_contents.h"
 #include "content/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 
@@ -283,4 +285,20 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
   // the redirect is likely to be user-initiated.
   // Therefore, Page 21 should be in the history in addition to Page 22.
   LoadAndWaitForFile("history_length_test_page_21.html");
+}
+
+// If this test flakes, use bug 22111.
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, HistorySearchXSS) {
+  GURL url(std::string(chrome::kChromeUIHistoryURL) +
+      "#q=%3Cimg%20src%3Dx%3Ax%20onerror%3D%22document.title%3D'XSS'%22%3E");
+  ui_test_utils::NavigateToURL(browser(), url);
+  // Mainly, this is to ensure we send a synchronous message to the renderer
+  // so that we're not susceptible (less susceptible?) to a race condition.
+  // Should a race condition ever trigger, it won't result in flakiness.
+  int num = ui_test_utils::FindInPage(
+      browser()->GetSelectedTabContentsWrapper(), ASCIIToUTF16("<img"), true,
+      true, NULL);
+  EXPECT_GT(num, 0);
+  EXPECT_EQ(ASCIIToUTF16("History"),
+            browser()->GetSelectedWebContents()->GetTitle());
 }
