@@ -90,9 +90,9 @@ class SearchProvider : public AutocompleteProvider,
   // . The keyword provider. This is used if the user has typed in a keyword.
   class Providers {
    public:
-    Providers()
-        : cached_default_provider_(TemplateURLData()),
-          cached_keyword_provider_(TemplateURLData()),
+    explicit Providers(Profile* profile)
+        : cached_default_provider_(profile, TemplateURLData()),
+          cached_keyword_provider_(profile, TemplateURLData()),
           default_provider_(NULL),
           keyword_provider_(NULL) {
     }

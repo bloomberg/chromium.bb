@@ -184,7 +184,7 @@ void AutocompleteProviderTest::
   // Reset the default TemplateURL.
   TemplateURLData data;
   data.SetURL("http://defaultturl/{searchTerms}");
-  TemplateURL* default_t_url = new TemplateURL(data);
+  TemplateURL* default_t_url = new TemplateURL(&profile_, data);
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);
   turl_model->Add(default_t_url);
@@ -196,7 +196,7 @@ void AutocompleteProviderTest::
   data.short_name = ASCIIToUTF16("k");
   data.SetKeyword(ASCIIToUTF16("k"));
   data.SetURL("http://keyword/{searchTerms}");
-  TemplateURL* keyword_t_url = new TemplateURL(data);
+  TemplateURL* keyword_t_url = new TemplateURL(&profile_, data);
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 
@@ -228,7 +228,7 @@ void AutocompleteProviderTest::
   data.short_name = ASCIIToUTF16("foo.com");
   data.SetKeyword(ASCIIToUTF16("foo.com"));
   data.SetURL("http://foo.com/{searchTerms}");
-  TemplateURL* keyword_t_url = new TemplateURL(data);
+  TemplateURL* keyword_t_url = new TemplateURL(&profile_, data);
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 
@@ -236,7 +236,7 @@ void AutocompleteProviderTest::
   data.short_name = ASCIIToUTF16("bar.com");
   data.SetKeyword(ASCIIToUTF16("bar.com"));
   data.SetURL("http://bar.com/{searchTerms}");
-  keyword_t_url = new TemplateURL(data);
+  keyword_t_url = new TemplateURL(&profile_, data);
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 

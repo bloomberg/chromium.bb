@@ -590,7 +590,7 @@ void IEImporter::ImportSearchEngines() {
         data.SetURL(url);
         data.show_in_default_list = true;
         t_iter = search_engines_map.insert(std::make_pair(url,
-            new TemplateURL(data))).first;
+            new TemplateURL(NULL, data))).first;
       }
     }
   }

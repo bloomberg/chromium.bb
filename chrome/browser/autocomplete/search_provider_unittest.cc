@@ -125,7 +125,7 @@ void SearchProviderTest::SetUp() {
   data.short_name = ASCIIToUTF16("t");
   data.SetURL("http://defaultturl/{searchTerms}");
   data.suggestions_url = "http://defaultturl2/{searchTerms}";
-  default_t_url_ = new TemplateURL(data);
+  default_t_url_ = new TemplateURL(&profile_, data);
   turl_model->Add(default_t_url_);
   turl_model->SetDefaultSearchProvider(default_t_url_);
   TemplateURLID default_provider_id = default_t_url_->id();
@@ -139,7 +139,7 @@ void SearchProviderTest::SetUp() {
   data.SetKeyword(ASCIIToUTF16("k"));
   data.SetURL("http://keyword/{searchTerms}");
   data.suggestions_url = "http://suggest_keyword/{searchTerms}";
-  keyword_t_url_ = new TemplateURL(data);
+  keyword_t_url_ = new TemplateURL(&profile_, data);
   turl_model->Add(keyword_t_url_);
   ASSERT_NE(0, keyword_t_url_->id());
 

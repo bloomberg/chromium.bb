@@ -144,6 +144,7 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Like Add(), but overwrites the |template_url|'s values with the provided
   // ones.
+  void AddAndSetProfile(TemplateURL* template_url, Profile* profile);
   void AddWithOverrides(const TemplateURL* template_url,
                         const string16& short_name,
                         const string16& keyword,
@@ -308,6 +309,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // data is bad for some reason, an ACTION_DELETE change is added and the
   // function returns NULL.
   static TemplateURL* CreateTemplateURLFromTemplateURLAndSyncData(
+      Profile* profile,
       const TemplateURL* existing_turl,
       const SyncData& sync_data,
       SyncChangeList* change_list);

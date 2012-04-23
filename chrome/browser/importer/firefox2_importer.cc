@@ -140,7 +140,7 @@ TemplateURL* Firefox2Importer::CreateTemplateURL(const string16& title,
   data.short_name = title.empty() ? keyword : title;
   data.SetKeyword(keyword);
   data.SetURL(TemplateURLRef::DisplayURLToURLRef(UTF8ToUTF16(url.spec())));
-  return new TemplateURL(data);
+  return new TemplateURL(NULL, data);
 }
 
 // static

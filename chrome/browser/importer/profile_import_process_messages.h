@@ -261,7 +261,10 @@ struct ParamTraits<TemplateURL*> {
     TemplateURLData data;
     if (!ReadParam(m, iter, &data))
       return false;
-    *p = new TemplateURL(data);
+    // Since we don't have access to a Profile*, just supply NULL.  The caller
+    // can create a new TemplateURL or modify this one (e.g. via
+    // TemplateURLService::AddAndSetProfile()) to correct this later.
+    *p = new TemplateURL(NULL, data);
     return true;
   }
   static void Log(const param_type& p, std::string* l) {

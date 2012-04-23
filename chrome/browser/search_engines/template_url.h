@@ -27,7 +27,8 @@ class TemplateURL;
 // callers can substitute values to get a "real" URL using ReplaceSearchTerms().
 //
 // TemplateURLRefs always have a non-NULL |owner_| TemplateURL, which they
-// access in order to get at important data like the underlying URL string.
+// access in order to get at important data like the underlying URL string or
+// the associated Profile.
 class TemplateURLRef {
  public:
   // Magic numbers to pass to ReplaceSearchTerms() for the |accepted_suggestion|
@@ -66,15 +67,6 @@ class TemplateURLRef {
   // If this TemplateURLRef does not support replacement (SupportsReplacement
   // returns false), an empty string is returned.
   std::string ReplaceSearchTerms(
-      const string16& terms,
-      int accepted_suggestion,
-      const string16& original_query_for_suggestion) const;
-
-  // Just like ReplaceSearchTerms except that it takes a Profile that's used to
-  // retrieve Instant field trial params. Most callers don't care about those
-  // params, and so can use ReplaceSearchTerms instead.
-  std::string ReplaceSearchTermsUsingProfile(
-      Profile* profile,
       const string16& terms,
       int accepted_suggestion,
       const string16& original_query_for_suggestion) const;
@@ -364,7 +356,9 @@ struct TemplateURLData {
 // is made a friend so that it can be the exception to this pattern.
 class TemplateURL {
  public:
-  explicit TemplateURL(const TemplateURLData& data);
+  // |profile| may be NULL.  This will affect the results of e.g. calling
+  // ReplaceSearchTerms() on the member TemplateURLRefs.
+  TemplateURL(Profile* profile, const TemplateURLData& data);
 
   TemplateURL(const TemplateURL& other);
   TemplateURL& operator=(const TemplateURL& other);
@@ -374,6 +368,7 @@ class TemplateURL {
   // Generates a favicon URL from the specified url.
   static GURL GenerateFaviconURL(const GURL& url);
 
+  Profile* profile() { return profile_; }
   const TemplateURLData& data() const { return data_; }
 
   const string16& short_name() const { return data_.short_name; }
@@ -443,6 +438,7 @@ class TemplateURL {
   // Invalidates cached values on this object and its child TemplateURLRefs.
   void InvalidateCachedValues();
 
+  Profile* profile_;
   TemplateURLData data_;
   TemplateURLRef url_ref_;
   TemplateURLRef suggestions_url_ref_;

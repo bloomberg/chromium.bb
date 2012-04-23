@@ -57,8 +57,9 @@ class InstantTest : public InProcessBrowserTest {
   }
 
   void SetupInstantProvider(const std::string& page) {
+    Profile* profile = browser()->profile();
     TemplateURLService* model =
-        TemplateURLServiceFactory::GetForProfile(browser()->profile());
+        TemplateURLServiceFactory::GetForProfile(profile);
 
     ui_test_utils::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
@@ -76,7 +77,7 @@ class InstantTest : public InProcessBrowserTest {
         test_server()->host_port_pair().port(), page.c_str()));
     data.instant_url = data.url();
     // TemplateURLService takes ownership of this.
-    TemplateURL* template_url = new TemplateURL(data);
+    TemplateURL* template_url = new TemplateURL(profile, data);
     model->Add(template_url);
     model->SetDefaultSearchProvider(template_url);
   }

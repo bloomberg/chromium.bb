@@ -727,8 +727,7 @@ bool InstantLoader::Update(TabContentsWrapper* tab_contents,
             complete_suggested_text_.substr(user_text_.size());
       }
     } else {
-      LoadInstantURL(tab_contents, template_url, transition_type, user_text_,
-                     verbatim);
+      LoadInstantURL(template_url, transition_type, user_text_, verbatim);
     }
   } else {
     DCHECK(template_url_id_ == 0);
@@ -856,8 +855,8 @@ void InstantLoader::MaybeLoadInstantURL(TabContentsWrapper* tab_contents,
     return;
 
   CreatePreviewContents(tab_contents);
-  LoadInstantURL(tab_contents, template_url, content::PAGE_TRANSITION_GENERATED,
-                 string16(), true);
+  LoadInstantURL(template_url, content::PAGE_TRANSITION_GENERATED, string16(),
+                 true);
 }
 
 bool InstantLoader::IsNavigationPending() const {
@@ -1112,8 +1111,7 @@ void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
   preview_contents_->web_contents()->ShowContents();
 }
 
-void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
-                                   const TemplateURL* template_url,
+void InstantLoader::LoadInstantURL(const TemplateURL* template_url,
                                    content::PageTransition transition_type,
                                    const string16& user_text,
                                    bool verbatim) {
@@ -1127,10 +1125,8 @@ void InstantLoader::LoadInstantURL(TabContentsWrapper* tab_contents,
   // functionality so that embeded tags (like {google:baseURL}) are escaped
   // correctly.
   // TODO(sky): having to use a replaceable url is a bit of a hack here.
-  GURL instant_url(
-      template_url->instant_url_ref().ReplaceSearchTermsUsingProfile(
-          tab_contents->profile(), string16(),
-          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+  GURL instant_url(template_url->instant_url_ref().ReplaceSearchTerms(
+      string16(), TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kInstantURL))
     instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));

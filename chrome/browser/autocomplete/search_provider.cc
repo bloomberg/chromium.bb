@@ -89,6 +89,7 @@ bool SearchProvider::query_suggest_immediately_ = false;
 
 SearchProvider::SearchProvider(ACProviderListener* listener, Profile* profile)
     : AutocompleteProvider(listener, profile, "Search"),
+      providers_(profile),
       suggest_results_pending_(0),
       have_suggest_results_(false),
       instant_finalized_(false) {
@@ -461,9 +462,8 @@ content::URLFetcher* SearchProvider::CreateSuggestFetcher(
     const string16& text) {
   DCHECK(suggestions_url.SupportsReplacement());
   content::URLFetcher* fetcher = content::URLFetcher::Create(id,
-      GURL(suggestions_url.ReplaceSearchTermsUsingProfile(
-          profile_, text, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
-          string16())),
+      GURL(suggestions_url.ReplaceSearchTerms(text,
+          TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),
       content::URLFetcher::GET, this);
   fetcher->SetRequestContext(profile_->GetRequestContext());
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
@@ -906,8 +906,8 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
 
   const TemplateURLRef& search_url = provider.url_ref();
   DCHECK(search_url.SupportsReplacement());
-  match.destination_url = GURL(search_url.ReplaceSearchTermsUsingProfile(
-      profile_, query_string, accepted_suggestion, input_text));
+  match.destination_url = GURL(search_url.ReplaceSearchTerms(query_string,
+      accepted_suggestion, input_text));
 
   // Search results don't look like URLs.
   match.transition = is_keyword ?

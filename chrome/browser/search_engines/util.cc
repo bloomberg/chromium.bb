@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -83,7 +82,7 @@ TemplateURL* GetTemplateURLByID(
 // Loads engines from prepopulate data and merges them in with the existing
 // engines.  This is invoked when the version of the prepopulate data changes.
 void MergeEnginesFromPrepopulateData(
-    PrefService* prefs,
+    Profile* profile,
     WebDataService* service,
     std::vector<TemplateURL*>* template_urls,
     const TemplateURL** default_search_provider) {
@@ -105,7 +104,7 @@ void MergeEnginesFromPrepopulateData(
   // Get the current set of prepopulatd URLs.
   std::vector<TemplateURL*> prepopulated_urls;
   size_t default_search_index;
-  TemplateURLPrepopulateData::GetPrepopulatedEngines(prefs,
+  TemplateURLPrepopulateData::GetPrepopulatedEngines(profile,
       &prepopulated_urls, &default_search_index);
 
   // For each current prepopulated URL, check whether |template_urls| contained
@@ -135,7 +134,7 @@ void MergeEnginesFromPrepopulateData(
         data.short_name = existing_url->short_name();
       }
       data.id = existing_url->id();
-      url_in_vector = new TemplateURL(data);
+      url_in_vector = new TemplateURL(profile, data);
       if (service)
         service->UpdateKeyword(*url_in_vector);
 
@@ -175,7 +174,7 @@ void MergeEnginesFromPrepopulateData(
 void GetSearchProvidersUsingKeywordResult(
     const WDTypedResult& result,
     WebDataService* service,
-    PrefService* prefs,
+    Profile* profile,
     std::vector<TemplateURL*>* template_urls,
     const TemplateURL** default_search_provider,
     int* new_resource_keyword_version) {
@@ -194,10 +193,11 @@ void GetSearchProvidersUsingKeywordResult(
   for (KeywordTable::Keywords::const_iterator i(
        keyword_result.keywords.begin()); i != keyword_result.keywords.end();
        ++i)
-    template_urls->push_back(new TemplateURL(*i));
+    template_urls->push_back(new TemplateURL(profile, *i));
 
   const int resource_keyword_version =
-      TemplateURLPrepopulateData::GetDataVersion(prefs);
+      TemplateURLPrepopulateData::GetDataVersion(
+          profile ? profile->GetPrefs() : NULL);
   if (keyword_result.builtin_keyword_version != resource_keyword_version) {
     // There should never be duplicate TemplateURLs. We had a bug such that
     // duplicate TemplateURLs existed for one locale. As such we invoke
@@ -212,7 +212,7 @@ void GetSearchProvidersUsingKeywordResult(
   }
 
   if (keyword_result.builtin_keyword_version != resource_keyword_version) {
-    MergeEnginesFromPrepopulateData(prefs, service, template_urls,
+    MergeEnginesFromPrepopulateData(profile, service, template_urls,
                                     default_search_provider);
     *new_resource_keyword_version = resource_keyword_version;
   }
@@ -220,6 +220,7 @@ void GetSearchProvidersUsingKeywordResult(
 
 bool DidDefaultSearchProviderChange(
     const WDTypedResult& result,
+    Profile* profile,
     scoped_ptr<TemplateURL>* backup_default_search_provider) {
   DCHECK(backup_default_search_provider);
   DCHECK(!backup_default_search_provider->get());
@@ -232,7 +233,7 @@ bool DidDefaultSearchProviderChange(
     return false;
 
   if (keyword_result.backup_valid) {
-    backup_default_search_provider->reset(new TemplateURL(
+    backup_default_search_provider->reset(new TemplateURL(profile,
         keyword_result.default_search_provider_backup));
   }
   return true;

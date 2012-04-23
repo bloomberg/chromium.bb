@@ -277,7 +277,7 @@ TemplateURL* TemplateURLServiceSyncTest::CreateTestTemplateURL(
   data.prepopulate_id = 999999;
   if (!guid.empty())
     data.sync_guid = guid;
-  return new TemplateURL(data);
+  return new TemplateURL(NULL, data);
 }
 
 void TemplateURLServiceSyncTest::AssertEquals(const TemplateURL& expected,
@@ -341,7 +341,7 @@ TemplateURL* TemplateURLServiceSyncTest::Deserialize(
     const SyncData& sync_data) {
   SyncChangeList dummy;
   return TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(NULL,
-      sync_data, &dummy);
+      NULL, sync_data, &dummy);
 }
 
 
@@ -1135,7 +1135,8 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
   // Keep a copy of it so we can compare it after we re-merge.
   const TemplateURL* key1_url = model()->GetTemplateURLForGUID("key1");
   ASSERT_TRUE(key1_url);
-  scoped_ptr<TemplateURL> updated_turl(new TemplateURL(key1_url->data()));
+  scoped_ptr<TemplateURL> updated_turl(new TemplateURL(
+      const_cast<TemplateURL*>(key1_url)->profile(), key1_url->data()));
   EXPECT_EQ(Time::FromTimeT(90), updated_turl->last_modified());
 
   // Modify a single field of the initial data. This should not be updated in
@@ -1143,7 +1144,7 @@ TEST_F(TemplateURLServiceSyncTest, MergeTwiceWithSameSyncData) {
   scoped_ptr<TemplateURL> temp_turl(Deserialize(initial_data[0]));
   TemplateURLData data(temp_turl->data());
   data.short_name = ASCIIToUTF16("SomethingDifferent");
-  temp_turl.reset(new TemplateURL(data));
+  temp_turl.reset(new TemplateURL(temp_turl->profile(), data));
   initial_data.clear();
   initial_data.push_back(
       TemplateURLService::CreateSyncDataFromTemplateURL(*temp_turl));

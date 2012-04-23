@@ -264,8 +264,9 @@ class OmniboxViewTest : public InProcessBrowserTest,
   }
 
   void SetupSearchEngine() {
+    Profile* profile = browser()->profile();
     TemplateURLService* model =
-        TemplateURLServiceFactory::GetForProfile(browser()->profile());
+        TemplateURLServiceFactory::GetForProfile(profile);
     ASSERT_TRUE(model);
 
     if (!model->loaded()) {
@@ -289,12 +290,12 @@ class OmniboxViewTest : public InProcessBrowserTest,
     data.short_name = ASCIIToUTF16(kSearchShortName);
     data.SetKeyword(ASCIIToUTF16(kSearchKeyword));
     data.SetURL(kSearchURL);
-    TemplateURL* template_url = new TemplateURL(data);
+    TemplateURL* template_url = new TemplateURL(profile, data);
     model->Add(template_url);
     model->SetDefaultSearchProvider(template_url);
 
     data.SetKeyword(ASCIIToUTF16(kSearchKeyword2));
-    model->Add(new TemplateURL(data));
+    model->Add(new TemplateURL(profile, data));
   }
 
   void AddHistoryEntry(const TestHistoryEntry& entry, const Time& time) {
@@ -939,15 +940,16 @@ class OmniboxViewTest : public InProcessBrowserTest,
     AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();
     ASSERT_TRUE(popup_model);
 
+    Profile* profile = browser()->profile();
     TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(browser()->profile());
+        TemplateURLServiceFactory::GetForProfile(profile);
 
     // Add a non-default substituting keyword.
     TemplateURLData data;
     data.short_name = ASCIIToUTF16("Search abc");
     data.SetKeyword(ASCIIToUTF16(kSearchText));
     data.SetURL("http://abc.com/{searchTerms}");
-    TemplateURL* template_url = new TemplateURL(data);
+    TemplateURL* template_url = new TemplateURL(profile, data);
     template_url_service->Add(template_url);
 
     omnibox_view->SetUserText(string16());
@@ -971,7 +973,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     template_url_service->Remove(template_url);
     data.short_name = ASCIIToUTF16("abc");
     data.SetURL("http://abc.com/");
-    template_url_service->Add(new TemplateURL(data));
+    template_url_service->Add(new TemplateURL(profile, data));
 
     // We always allow exact matches for non-substituting keywords.
     ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));

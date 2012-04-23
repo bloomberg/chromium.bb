@@ -394,9 +394,8 @@ void KeywordProvider::FillInURLAndContents(
     // input, but we rely on later canonicalization functions to do more
     // fixup to make the URL valid if necessary.
     DCHECK(element_ref.SupportsReplacement());
-    match->destination_url = GURL(element_ref.ReplaceSearchTermsUsingProfile(
-        profile, remaining_input, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE,
-        string16()));
+    match->destination_url = GURL(element_ref.ReplaceSearchTerms(
+        remaining_input, TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
     std::vector<size_t> content_param_offsets;
     match->contents.assign(l10n_util::GetStringFUTF16(message_id,
                                                       element->short_name(),
@@ -437,7 +436,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   DCHECK(model);
   // Get keyword data from data store.
   const TemplateURL* element = model->GetTemplateURLForKeyword(keyword);
-  DCHECK(element && !element->url().empty());
+  DCHECK(element);
   const bool supports_replacement = element->url_ref().SupportsReplacement();
 
   // Create an edit entry of "[keyword] [remaining input]".  This is helpful

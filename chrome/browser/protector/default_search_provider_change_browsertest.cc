@@ -50,31 +50,16 @@ const std::string example_domain = "example.net";
 const BaseSettingChange::DisplayName kNoDisplayName(
     BaseSettingChange::kDefaultNamePriority, string16());
 
-// Convenience function.
-TemplateURL* MakeTemplateURL(const string16& short_name,
-                             const string16& keyword,
-                             const std::string& url) {
-  TemplateURLData data;
-  data.short_name = short_name;
-  if (keyword.empty())
-    data.SetAutogenerateKeyword(true);
-  else
-    data.SetKeyword(keyword);
-  data.SetURL(url);
-  return new TemplateURL(data);
-}
-
 }  // namespace
 
 class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
  public:
   virtual void SetUpOnMainThread() OVERRIDE {
-    mock_protector_service_ =
-        MockProtectorService::BuildForProfile(browser()->profile());
+    Profile* profile = browser()->profile();
+    mock_protector_service_ = MockProtectorService::BuildForProfile(profile);
 
     // Ensure that TemplateURLService is loaded.
-    turl_service_ =
-        TemplateURLServiceFactory::GetForProfile(browser()->profile());
+    turl_service_ = TemplateURLServiceFactory::GetForProfile(profile);
     ui_test_utils::WaitForTemplateURLServiceToLoad(turl_service_);
 
     prepopulated_url_.reset(
@@ -83,6 +68,19 @@ class DefaultSearchProviderChangeTest : public InProcessBrowserTest {
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     EXPECT_CALL(*mock_protector_service_, Shutdown());
+  }
+
+  TemplateURL* MakeTemplateURL(const string16& short_name,
+                               const string16& keyword,
+                               const std::string& url) {
+    TemplateURLData data;
+    data.short_name = short_name;
+    if (keyword.empty())
+      data.SetAutogenerateKeyword(true);
+    else
+      data.SetKeyword(keyword);
+    data.SetURL(url);
+    return new TemplateURL(browser()->profile(), data);
   }
 
   const TemplateURL* FindTemplateURL(const std::string& search_url) {
@@ -163,13 +161,14 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValid) {
   int current_histogram_id =
       protector::GetSearchProviderHistogramID(current_url);
 
-  turl_service_->Add(new TemplateURL(backup_url->data()));
+  Profile* profile = browser()->profile();
+  turl_service_->Add(new TemplateURL(profile, backup_url->data()));
   AddAndSetDefault(current_url);
 
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, backup_url));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(browser()->profile()));
+  ASSERT_TRUE(change->Init(profile));
 
   // Verify that backup is active.
   EXPECT_EQ(FindTemplateURL(http_example_info),
@@ -216,15 +215,16 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValidLongNames) {
   TemplateURL* current_url_long =
       MakeTemplateURL(example_com_long, ASCIIToUTF16("b"), http_example_com);
 
+  Profile* profile = browser()->profile();
   {
     // Backup name too long.
-    turl_service_->Add(new TemplateURL(backup_url_long->data()));
+    turl_service_->Add(new TemplateURL(profile, backup_url_long->data()));
     AddAndSetDefault(current_url);
 
     scoped_ptr<BaseSettingChange> change(
         CreateDefaultSearchProviderChange(current_url, backup_url_long));
     ASSERT_TRUE(change.get());
-    ASSERT_TRUE(change->Init(browser()->profile()));
+    ASSERT_TRUE(change->Init(profile));
 
     // Verify text messages.
     EXPECT_EQ(GetBubbleMessage(), change->GetBubbleMessage());
@@ -237,13 +237,13 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest, BackupValidLongNames) {
 
   {
     // Current name too long.
-    turl_service_->Add(new TemplateURL(backup_url->data()));
+    turl_service_->Add(new TemplateURL(profile, backup_url->data()));
     AddAndSetDefault(current_url_long);
 
     scoped_ptr<BaseSettingChange> change(
         CreateDefaultSearchProviderChange(current_url_long, backup_url));
     ASSERT_TRUE(change.get());
-    ASSERT_TRUE(change->Init(browser()->profile()));
+    ASSERT_TRUE(change->Init(profile));
 
     // Verify text messages.
     EXPECT_EQ(GetBubbleMessage(), change->GetBubbleMessage());
@@ -430,13 +430,14 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
       MakeTemplateURL(example_info, ASCIIToUTF16("a"), http_example_info);
   int backup_histogram_id = protector::GetSearchProviderHistogramID(backup_url);
 
-  turl_service_->Add(new TemplateURL(backup_url->data()));
+  Profile* profile = browser()->profile();
+  turl_service_->Add(new TemplateURL(profile, backup_url->data()));
   turl_service_->SetDefaultSearchProvider(NULL);
 
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(NULL, backup_url));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(browser()->profile()));
+  ASSERT_TRUE(change->Init(profile));
 
   // Verify that backup is active.
   EXPECT_EQ(FindTemplateURL(http_example_info),
@@ -480,14 +481,15 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   int current_histogram_id =
       protector::GetSearchProviderHistogramID(current_url);
 
-  turl_service_->Add(new TemplateURL(backup_url->data()));
+  Profile* profile = browser()->profile();
+  turl_service_->Add(new TemplateURL(profile, backup_url->data()));
   // TODO(ivankr): this may become unsupported soon.
   AddAndSetDefault(current_url);
 
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, backup_url));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(browser()->profile()));
+  ASSERT_TRUE(change->Init(profile));
 
   // Verify that backup is active.
   EXPECT_EQ(FindTemplateURL(http_example_info),
@@ -613,13 +615,14 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   TemplateURL* new_url =
       MakeTemplateURL(example_net, ASCIIToUTF16("c"), http_example_net);
 
-  turl_service_->Add(new TemplateURL(backup_url->data()));
+  Profile* profile = browser()->profile();
+  turl_service_->Add(new TemplateURL(profile, backup_url->data()));
   AddAndSetDefault(current_url);
 
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, backup_url));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(browser()->profile()));
+  ASSERT_TRUE(change->Init(profile));
 
   // Verify that backup is active.
   EXPECT_EQ(FindTemplateURL(http_example_info),
@@ -639,13 +642,14 @@ IN_PROC_BROWSER_TEST_F(DefaultSearchProviderChangeTest,
   TemplateURL* current_url =
       MakeTemplateURL(example_com, ASCIIToUTF16("b"), http_example_com);
 
-  turl_service_->Add(new TemplateURL(backup_url->data()));
+  Profile* profile = browser()->profile();
+  turl_service_->Add(new TemplateURL(profile, backup_url->data()));
   AddAndSetDefault(current_url);
 
   scoped_ptr<BaseSettingChange> change(
       CreateDefaultSearchProviderChange(current_url, backup_url));
   ASSERT_TRUE(change.get());
-  ASSERT_TRUE(change->Init(browser()->profile()));
+  ASSERT_TRUE(change->Init(profile));
 
   // Verify that backup is active.
   EXPECT_EQ(FindTemplateURL(http_example_info),

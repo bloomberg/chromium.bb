@@ -259,7 +259,7 @@ void TemplateURLTableModel::Add(int index,
   data.short_name = short_name;
   data.SetKeyword(keyword);
   data.SetURL(url);
-  TemplateURL* turl = new TemplateURL(data);
+  TemplateURL* turl = new TemplateURL(template_url_service_->profile(), data);
   template_url_service_->Add(turl);
   ModelEntry* entry = new ModelEntry(this, turl);
   template_url_service_->AddObserver(this);

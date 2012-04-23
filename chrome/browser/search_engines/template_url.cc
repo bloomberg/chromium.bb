@@ -121,17 +121,8 @@ std::string TemplateURLRef::ReplaceSearchTerms(
     const string16& terms,
     int accepted_suggestion,
     const string16& original_query_for_suggestion) const {
-  return ReplaceSearchTermsUsingProfile(NULL, terms, accepted_suggestion,
-                                        original_query_for_suggestion);
-}
-
-std::string TemplateURLRef::ReplaceSearchTermsUsingProfile(
-    Profile* profile,
-    const string16& terms,
-    int accepted_suggestion,
-    const string16& original_query_for_suggestion) const {
   UIThreadSearchTermsData search_terms_data;
-  search_terms_data.set_profile(profile);
+  search_terms_data.set_profile(owner_->profile());
   return ReplaceSearchTermsUsingTermsData(terms, accepted_suggestion,
       original_query_for_suggestion, search_terms_data);
 }
@@ -623,8 +614,9 @@ void TemplateURLData::SetURL(const std::string& url) {
 
 // TemplateURL ----------------------------------------------------------------
 
-TemplateURL::TemplateURL(const TemplateURLData& data)
-    : data_(data),
+TemplateURL::TemplateURL(Profile* profile, const TemplateURLData& data)
+    : profile_(profile),
+      data_(data),
       url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this), TemplateURLRef::SEARCH),
       suggestions_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                            TemplateURLRef::SUGGEST),
@@ -634,7 +626,8 @@ TemplateURL::TemplateURL(const TemplateURLData& data)
 }
 
 TemplateURL::TemplateURL(const TemplateURL& other)
-    : data_(other.data_),
+    : profile_(other.profile_),
+      data_(other.data_),
       url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this), TemplateURLRef::SEARCH),
       suggestions_url_ref_(ALLOW_THIS_IN_INITIALIZER_LIST(this),
                            TemplateURLRef::SUGGEST),
@@ -647,6 +640,7 @@ TemplateURL& TemplateURL::operator=(const TemplateURL& other) {
   if (this == &other)
     return *this;
 
+  profile_ = other.profile_;
   data_ = other.data_;
   url_ref_.InvalidateCachedValues();
   suggestions_url_ref_.InvalidateCachedValues();

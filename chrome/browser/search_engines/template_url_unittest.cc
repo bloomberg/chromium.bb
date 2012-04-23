@@ -67,7 +67,7 @@ TEST_F(TemplateURLTest, Defaults) {
 TEST_F(TemplateURLTest, TestValidWithComplete) {
   TemplateURLData data;
   data.SetURL("{searchTerms}");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
 }
 
@@ -91,7 +91,7 @@ TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
     const SearchTermsCase& value = search_term_cases[i];
     TemplateURLData data;
     data.SetURL(value.url);
-    TemplateURL url(data);
+    TemplateURL url(NULL, data);
     EXPECT_TRUE(url.url_ref().IsValid());
     ASSERT_TRUE(url.url_ref().SupportsReplacement());
     std::string result = url.url_ref().ReplaceSearchTerms(value.terms,
@@ -105,7 +105,7 @@ TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
 TEST_F(TemplateURLTest, URLRefTestCount) {
   TemplateURLData data;
   data.SetURL("http://foo{searchTerms}{count?}");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
@@ -117,7 +117,7 @@ TEST_F(TemplateURLTest, URLRefTestCount) {
 TEST_F(TemplateURLTest, URLRefTestCount2) {
   TemplateURLData data;
   data.SetURL("http://foo{searchTerms}{count}");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
@@ -129,7 +129,7 @@ TEST_F(TemplateURLTest, URLRefTestCount2) {
 TEST_F(TemplateURLTest, URLRefTestIndices) {
   TemplateURLData data;
   data.SetURL("http://foo{searchTerms}x{startIndex?}y{startPage?}");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
@@ -141,7 +141,7 @@ TEST_F(TemplateURLTest, URLRefTestIndices) {
 TEST_F(TemplateURLTest, URLRefTestIndices2) {
   TemplateURLData data;
   data.SetURL("http://foo{searchTerms}x{startIndex}y{startPage}");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
@@ -153,7 +153,7 @@ TEST_F(TemplateURLTest, URLRefTestIndices2) {
 TEST_F(TemplateURLTest, URLRefTestEncoding) {
   TemplateURLData data;
   data.SetURL("http://foo{searchTerms}x{inputEncoding?}y{outputEncoding?}a");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
@@ -167,7 +167,7 @@ TEST_F(TemplateURLTest, URLRefTestEncoding) {
 TEST_F(TemplateURLTest, SetPrepopulatedAndParse) {
   TemplateURLData data;
   data.SetURL("http://foo{fhqwhgads}");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
   EXPECT_EQ("http://foo{fhqwhgads}",
@@ -176,7 +176,7 @@ TEST_F(TemplateURLTest, SetPrepopulatedAndParse) {
   EXPECT_TRUE(valid);
 
   data.prepopulate_id = 123;
-  TemplateURL url2(data);
+  TemplateURL url2(NULL, data);
   EXPECT_EQ("http://foo", url2.url_ref().ParseURL("http://foo{fhqwhgads}",
                                                   &replacements, &valid));
   EXPECT_TRUE(replacements.empty());
@@ -186,7 +186,7 @@ TEST_F(TemplateURLTest, SetPrepopulatedAndParse) {
 TEST_F(TemplateURLTest, InputEncodingBeforeSearchTerm) {
   TemplateURLData data;
   data.SetURL("http://foox{inputEncoding?}a{searchTerms}y{outputEncoding?}b");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
@@ -198,7 +198,7 @@ TEST_F(TemplateURLTest, InputEncodingBeforeSearchTerm) {
 TEST_F(TemplateURLTest, URLRefTestEncoding2) {
   TemplateURLData data;
   data.SetURL("http://foo{searchTerms}x{inputEncoding}y{outputEncoding}a");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("X"),
@@ -224,7 +224,7 @@ TEST_F(TemplateURLTest, URLRefTestSearchTermsUsingTermsData) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(search_term_cases); ++i) {
     const SearchTermsCase& value = search_term_cases[i];
     data.SetURL(value.url);
-    TemplateURL url(data);
+    TemplateURL url(NULL, data);
     EXPECT_TRUE(url.url_ref().IsValid());
     ASSERT_TRUE(url.url_ref().SupportsReplacement());
     GURL result(url.url_ref().ReplaceSearchTermsUsingTermsData(value.terms,
@@ -259,7 +259,7 @@ TEST_F(TemplateURLTest, URLRefTermToWide) {
   TemplateURLData data;
   data.SetURL("http://foo?q={searchTerms}");
   data.input_encodings.push_back("big-5");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(to_wide_cases); i++) {
@@ -286,7 +286,7 @@ TEST_F(TemplateURLTest, DisplayURLToURLRef) {
   TemplateURLData data;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     data.SetURL(test_data[i].url);
-    TemplateURL url(data);
+    TemplateURL url(NULL, data);
     EXPECT_EQ(test_data[i].expected_result, url.url_ref().DisplayURL());
     EXPECT_EQ(test_data[i].url,
               TemplateURLRef::DisplayURLToURLRef(url.url_ref().DisplayURL()));
@@ -327,7 +327,7 @@ TEST_F(TemplateURLTest, ReplaceSearchTerms) {
   data.input_encodings.push_back("UTF-8");
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     data.SetURL(test_data[i].url);
-    TemplateURL url(data);
+    TemplateURL url(NULL, data);
     EXPECT_TRUE(url.url_ref().IsValid());
     ASSERT_TRUE(url.url_ref().SupportsReplacement());
     std::string expected_result = test_data[i].expected_result;
@@ -368,7 +368,7 @@ TEST_F(TemplateURLTest, ReplaceArbitrarySearchTerms) {
     data.SetURL(test_data[i].url);
     data.input_encodings.clear();
     data.input_encodings.push_back(test_data[i].encoding);
-    TemplateURL url(data);
+    TemplateURL url(NULL, data);
     EXPECT_TRUE(url.url_ref().IsValid());
     ASSERT_TRUE(url.url_ref().SupportsReplacement());
     GURL result(url.url_ref().ReplaceSearchTerms(test_data[i].search_term,
@@ -399,7 +399,7 @@ TEST_F(TemplateURLTest, Suggestions) {
   data.SetURL("http://bar/foo?{google:acceptedSuggestion}"
               "{google:originalQueryForSuggestion}q={searchTerms}");
   data.input_encodings.push_back("UTF-8");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
@@ -424,7 +424,7 @@ TEST_F(TemplateURLTest, RLZ) {
 
   TemplateURLData data;
   data.SetURL("http://bar/?{google:RLZ}{searchTerms}");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   EXPECT_TRUE(url.url_ref().IsValid());
   ASSERT_TRUE(url.url_ref().SupportsReplacement());
   GURL result(url.url_ref().ReplaceSearchTerms(ASCIIToUTF16("x"),
@@ -468,7 +468,7 @@ TEST_F(TemplateURLTest, HostAndSearchTermKey) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     TemplateURLData data;
     data.SetURL(test_data[i].url);
-    TemplateURL url(data);
+    TemplateURL url(NULL, data);
     EXPECT_EQ(test_data[i].host, url.url_ref().GetHost());
     EXPECT_EQ(test_data[i].path, url.url_ref().GetPath());
     EXPECT_EQ(test_data[i].search_term_key, url.url_ref().GetSearchTermKey());
@@ -496,20 +496,20 @@ TEST_F(TemplateURLTest, Keyword) {
   data.SetURL("http://www.google.com/search");
   EXPECT_FALSE(data.autogenerate_keyword());
   data.SetKeyword(ASCIIToUTF16("foo"));
-  EXPECT_EQ(ASCIIToUTF16("foo"), TemplateURL(data).keyword());
+  EXPECT_EQ(ASCIIToUTF16("foo"), TemplateURL(NULL, data).keyword());
   data.SetAutogenerateKeyword(true);
   EXPECT_TRUE(data.autogenerate_keyword());
-  EXPECT_EQ(ASCIIToUTF16("google.com"), TemplateURL(data).keyword());
+  EXPECT_EQ(ASCIIToUTF16("google.com"), TemplateURL(NULL, data).keyword());
   data.SetKeyword(ASCIIToUTF16("foo"));
   EXPECT_FALSE(data.autogenerate_keyword());
-  EXPECT_EQ(ASCIIToUTF16("foo"), TemplateURL(data).keyword());
+  EXPECT_EQ(ASCIIToUTF16("foo"), TemplateURL(NULL, data).keyword());
 }
 
 TEST_F(TemplateURLTest, ParseParameterKnown) {
   std::string parsed_url("{searchTerms}");
   TemplateURLData data;
   data.SetURL(parsed_url);
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   TemplateURLRef::Replacements replacements;
   EXPECT_TRUE(url.url_ref().ParseParameter(0, 12, &parsed_url, &replacements));
   EXPECT_EQ(std::string(), parsed_url);
@@ -522,7 +522,7 @@ TEST_F(TemplateURLTest, ParseParameterUnknown) {
   std::string parsed_url("{fhqwhgads}");
   TemplateURLData data;
   data.SetURL(parsed_url);
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   TemplateURLRef::Replacements replacements;
 
   // By default, TemplateURLRef should not consider itself prepopulated.
@@ -534,7 +534,7 @@ TEST_F(TemplateURLTest, ParseParameterUnknown) {
   // If the TemplateURLRef is prepopulated, we should remove unknown parameters.
   parsed_url = "{fhqwhgads}";
   data.prepopulate_id = 1;
-  TemplateURL url2(data);
+  TemplateURL url2(NULL, data);
   EXPECT_FALSE(url2.url_ref().ParseParameter(0, 10, &parsed_url,
                                              &replacements));
   EXPECT_EQ(std::string(), parsed_url);
@@ -542,8 +542,7 @@ TEST_F(TemplateURLTest, ParseParameterUnknown) {
 }
 
 TEST_F(TemplateURLTest, ParseURLEmpty) {
-  TemplateURLData data;
-  TemplateURL url(data);
+  TemplateURL url(NULL, TemplateURLData());
   TemplateURLRef::Replacements replacements;
   bool valid = false;
   EXPECT_EQ(std::string(),
@@ -555,7 +554,7 @@ TEST_F(TemplateURLTest, ParseURLEmpty) {
 TEST_F(TemplateURLTest, ParseURLNoTemplateEnd) {
   TemplateURLData data;
   data.SetURL("{");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
   EXPECT_EQ(std::string(), url.url_ref().ParseURL("{", &replacements, &valid));
@@ -566,7 +565,7 @@ TEST_F(TemplateURLTest, ParseURLNoTemplateEnd) {
 TEST_F(TemplateURLTest, ParseURLNoKnownParameters) {
   TemplateURLData data;
   data.SetURL("{}");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
   EXPECT_EQ("{}", url.url_ref().ParseURL("{}", &replacements, &valid));
@@ -577,7 +576,7 @@ TEST_F(TemplateURLTest, ParseURLNoKnownParameters) {
 TEST_F(TemplateURLTest, ParseURLTwoParameters) {
   TemplateURLData data;
   data.SetURL("{}{{%s}}");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
   EXPECT_EQ("{}{}",
@@ -591,7 +590,7 @@ TEST_F(TemplateURLTest, ParseURLTwoParameters) {
 TEST_F(TemplateURLTest, ParseURLNestedParameter) {
   TemplateURLData data;
   data.SetURL("{%s");
-  TemplateURL url(data);
+  TemplateURL url(NULL, data);
   TemplateURLRef::Replacements replacements;
   bool valid = false;
   EXPECT_EQ("{",

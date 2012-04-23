@@ -69,7 +69,7 @@ TEST_F(KeywordTableTest, Keywords) {
   keyword.created_by_policy = true;
   keyword.usage_count = 32;
   keyword.prepopulate_id = 10;
-  TemplateURL url(keyword);
+  TemplateURL url(NULL, keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url));
 
   KeywordTable::Keywords keywords;
@@ -78,7 +78,7 @@ TEST_F(KeywordTableTest, Keywords) {
   const TemplateURLData& restored_keyword = keywords.front();
 
   EXPECT_EQ(keyword.short_name, restored_keyword.short_name);
-  EXPECT_EQ(url.keyword(), TemplateURL(restored_keyword).keyword());
+  EXPECT_EQ(url.keyword(), TemplateURL(NULL, restored_keyword).keyword());
   EXPECT_EQ(keyword.autogenerate_keyword(),
             restored_keyword.autogenerate_keyword());
   EXPECT_EQ(keyword.url(), restored_keyword.url());
@@ -133,7 +133,7 @@ TEST_F(KeywordTableTest, KeywordMisc) {
   keyword.created_by_policy = true;
   keyword.usage_count = 32;
   keyword.prepopulate_id = 10;
-  TemplateURL url(keyword);
+  TemplateURL url(NULL, keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url));
 
   EXPECT_TRUE(keyword_table->SetDefaultSearchProviderID(10));
@@ -160,7 +160,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   keyword.show_in_default_list = true;
   keyword.safe_for_autoreplace = true;
   keyword.id = 1;
-  TemplateURL url(keyword);
+  TemplateURL url(NULL, keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url));
 
   EXPECT_TRUE(keyword_table->SetDefaultSearchProviderID(1));
@@ -172,7 +172,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   // Backup URL should have an invalid ID.
   EXPECT_EQ(kInvalidTemplateURLID, backup.id);
   EXPECT_EQ(keyword.short_name, backup.short_name);
-  EXPECT_EQ(url.keyword(), TemplateURL(backup).keyword());
+  EXPECT_EQ(url.keyword(), TemplateURL(NULL, backup).keyword());
   EXPECT_EQ(keyword.url(), backup.url());
   EXPECT_EQ(keyword.favicon_url, backup.favicon_url);
   EXPECT_EQ(keyword.suggestions_url, backup.suggestions_url);
@@ -189,7 +189,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_TRUE(keyword_table->GetDefaultSearchProviderBackup(&backup));
   EXPECT_EQ(kInvalidTemplateURLID, backup.id);
   EXPECT_EQ(keyword.short_name, backup.short_name);
-  EXPECT_EQ(url.keyword(), TemplateURL(backup).keyword());
+  EXPECT_EQ(url.keyword(), TemplateURL(NULL, backup).keyword());
   EXPECT_EQ(keyword.url(), backup.url());
   EXPECT_EQ(keyword.favicon_url, backup.favicon_url);
   EXPECT_EQ(keyword.suggestions_url, backup.suggestions_url);
@@ -228,7 +228,7 @@ TEST_F(KeywordTableTest, DefaultSearchProviderBackup) {
   EXPECT_TRUE(keyword_table->GetDefaultSearchProviderBackup(&backup));
   EXPECT_EQ(kInvalidTemplateURLID, backup.id);
   EXPECT_EQ(keyword.short_name, backup.short_name);
-  EXPECT_EQ(url.keyword(), TemplateURL(backup).keyword());
+  EXPECT_EQ(url.keyword(), TemplateURL(NULL, backup).keyword());
   EXPECT_EQ(keyword.url(), backup.url());
   EXPECT_EQ(keyword.suggestions_url, backup.suggestions_url);
   EXPECT_EQ(keyword.favicon_url, backup.favicon_url);
@@ -263,7 +263,7 @@ TEST_F(KeywordTableTest, GetTableContents) {
   keyword.date_created = base::Time::UnixEpoch();
   keyword.last_modified = base::Time::UnixEpoch();
   keyword.sync_guid = "1234-5678-90AB-CDEF";
-  TemplateURL url(keyword);
+  TemplateURL url(NULL, keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url));
 
   keyword.SetAutogenerateKeyword(true);
@@ -273,7 +273,7 @@ TEST_F(KeywordTableTest, GetTableContents) {
   keyword.id = 2;
   keyword.prepopulate_id = 5;
   keyword.sync_guid = "FEDC-BA09-8765-4321";
-  TemplateURL url2(keyword);
+  TemplateURL url2(NULL, keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url2));
 
   const char kTestContents[] = "1short_namekeywordhttp://favicon.url/"
@@ -306,7 +306,7 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
   keyword.date_created = base::Time::UnixEpoch();
   keyword.last_modified = base::Time::UnixEpoch();
   keyword.sync_guid = "1234-5678-90AB-CDEF";
-  TemplateURL url(keyword);
+  TemplateURL url(NULL, keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url));
 
   keyword.SetAutogenerateKeyword(true);
@@ -316,7 +316,7 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
   keyword.id = 1;
   keyword.prepopulate_id = 5;
   keyword.sync_guid = "FEDC-BA09-8765-4321";
-  TemplateURL url2(keyword);
+  TemplateURL url2(NULL, keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url2));
 
   const char kTestContents[] = "1short_nameurlhttp://favicon.url/http://url/1"
@@ -346,7 +346,7 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   keyword.show_in_default_list = true;
   keyword.safe_for_autoreplace = true;
   keyword.id = 1;
-  TemplateURL url(keyword);
+  TemplateURL url(NULL, keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url));
 
   keyword.originating_url = GURL("http://originating.url/");
@@ -354,7 +354,7 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   keyword.instant_url = "http://instant2/";
   keyword.input_encodings.push_back("Shift_JIS");
   keyword.prepopulate_id = 5;
-  TemplateURL url2(keyword);
+  TemplateURL url2(NULL, keyword);
   EXPECT_TRUE(keyword_table->UpdateKeyword(url2));
 
   KeywordTable::Keywords keywords;
@@ -363,7 +363,7 @@ TEST_F(KeywordTableTest, UpdateKeyword) {
   const TemplateURLData& restored_keyword = keywords.front();
 
   EXPECT_EQ(keyword.short_name, restored_keyword.short_name);
-  EXPECT_EQ(url2.keyword(), TemplateURL(restored_keyword).keyword());
+  EXPECT_EQ(url2.keyword(), TemplateURL(NULL, restored_keyword).keyword());
   EXPECT_EQ(keyword.autogenerate_keyword(),
             restored_keyword.autogenerate_keyword());
   EXPECT_EQ(keyword.suggestions_url, restored_keyword.suggestions_url);
@@ -390,7 +390,7 @@ TEST_F(KeywordTableTest, KeywordWithNoFavicon) {
   keyword.SetURL("http://url/");
   keyword.safe_for_autoreplace = true;
   keyword.id = -100;
-  TemplateURL url(keyword);
+  TemplateURL url(NULL, keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url));
 
   KeywordTable::Keywords keywords;
@@ -399,7 +399,7 @@ TEST_F(KeywordTableTest, KeywordWithNoFavicon) {
   const TemplateURLData& restored_keyword = keywords.front();
 
   EXPECT_EQ(keyword.short_name, restored_keyword.short_name);
-  EXPECT_EQ(url.keyword(), TemplateURL(restored_keyword).keyword());
+  EXPECT_EQ(url.keyword(), TemplateURL(NULL, restored_keyword).keyword());
   EXPECT_EQ(keyword.favicon_url, restored_keyword.favicon_url);
   EXPECT_EQ(keyword.safe_for_autoreplace,
             restored_keyword.safe_for_autoreplace);
@@ -416,13 +416,13 @@ TEST_F(KeywordTableTest, SanitizeURLs) {
   keyword.SetKeyword(ASCIIToUTF16("legit"));
   keyword.SetURL("http://url/");
   keyword.id = 1000;
-  TemplateURL url(keyword);
+  TemplateURL url(NULL, keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url));
 
   keyword.short_name = ASCIIToUTF16("bogus");
   keyword.SetKeyword(ASCIIToUTF16("bogus"));
   keyword.id = 2000;
-  TemplateURL url2(keyword);
+  TemplateURL url2(NULL, keyword);
   EXPECT_TRUE(keyword_table->AddKeyword(url2));
 
   KeywordTable::Keywords keywords;

@@ -606,7 +606,8 @@ bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
   TemplateURLData data;
   data.SetURL(*url_string);
   SearchTermsData search_terms_data;
-  return TemplateURL(data).SupportsReplacementUsingTermsData(search_terms_data);
+  return TemplateURL(NULL, data).SupportsReplacementUsingTermsData(
+      search_terms_data);
 }
 
 void DefaultSearchPolicyHandler::EnsureStringPrefExists(

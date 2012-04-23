@@ -313,7 +313,7 @@ TemplateURL* TemplateURLParsingContext::GetTemplateURL(
   DCHECK(!keyword.empty());
   data_.SetKeyword(keyword);
   data_.show_in_default_list = show_in_default_list;
-  return new TemplateURL(data_);
+  return new TemplateURL(profile, data_);
 }
 
 // static

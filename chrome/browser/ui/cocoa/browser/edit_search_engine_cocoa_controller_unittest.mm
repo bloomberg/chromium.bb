@@ -212,7 +212,7 @@ TEST_F(EditSearchEngineControllerTest, EditTemplateURL) {
   std::string urlString = TemplateURLRef::DisplayURLToURLRef(
       ASCIIToUTF16("http://foo-bar.com"));
   data.SetURL(urlString);
-  TemplateURL url(data);
+  TemplateURL url(profile(), data);
   FakeEditSearchEngineController *controller =
       [[FakeEditSearchEngineController alloc] initWithProfile:profile()
                                                      delegate:nil

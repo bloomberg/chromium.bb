@@ -15,6 +15,7 @@
 
 class GURL;
 class PrefService;
+class Profile;
 class TemplateURL;
 
 namespace TemplateURLPrepopulateData {
@@ -32,15 +33,15 @@ int GetDataVersion(PrefService* prefs);
 // TemplateURLs is passed to the caller.  On return,
 // |default_search_provider_index| is set to the index of the default search
 // provider.
-void GetPrepopulatedEngines(PrefService* prefs,
+void GetPrepopulatedEngines(Profile* profile,
                             std::vector<TemplateURL*>* t_urls,
                             size_t* default_search_provider_index);
 
 // Returns the default search provider specified by the prepopulate data.
 // The caller owns the returned value, which may be NULL.
-// If |prefs| is NULL, any search provider overrides from the preferences are
+// If |profile| is NULL, any search provider overrides from the preferences are
 // not used.
-TemplateURL* GetPrepopulatedDefaultSearch(PrefService* prefs);
+TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile);
 
 // Both the next two functions use same-origin checks unless the |url| is a
 // Google seach URL, in which case we'll identify any valid Google hostname, or

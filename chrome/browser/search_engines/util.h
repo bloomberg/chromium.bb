@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 
-class PrefService;
 class Profile;
 class TemplateURL;
 class WDTypedResult;
@@ -36,7 +35,7 @@ string16 GetDefaultSearchEngineName(Profile* profile);
 void GetSearchProvidersUsingKeywordResult(
     const WDTypedResult& result,
     WebDataService* service,
-    PrefService* prefs,
+    Profile* profile,
     std::vector<TemplateURL*>* template_urls,
     const TemplateURL** default_search_provider,
     int* new_resource_keyword_version);
@@ -47,6 +46,7 @@ void GetSearchProvidersUsingKeywordResult(
 // lost.
 bool DidDefaultSearchProviderChange(
     const WDTypedResult& result,
+    Profile* profile,
     scoped_ptr<TemplateURL>* backup_default_search_provider);
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_UTIL_H_

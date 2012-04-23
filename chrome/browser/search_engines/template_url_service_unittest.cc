@@ -33,25 +33,6 @@ using ::testing::StrictMock;
 
 namespace {
 
-// Create an URL that appears to have been prepopulated, but won't be in the
-// current data. The caller owns the returned TemplateURL*.
-TemplateURL* CreatePreloadedTemplateURL(bool safe_for_autoreplace,
-                                        int prepopulate_id) {
-  TemplateURLData data;
-  data.short_name = ASCIIToUTF16("unittest");
-  data.SetKeyword(ASCIIToUTF16("unittest"));
-  data.SetURL("http://www.unittest.com/{searchTerms}");
-  data.favicon_url = GURL("http://favicon.url");
-  data.show_in_default_list = true;
-  data.safe_for_autoreplace = safe_for_autoreplace;
-  data.input_encodings.push_back("UTF-8");
-  data.date_created = Time::FromTimeT(100);
-  data.last_modified = Time::FromTimeT(100);
-  data.prepopulate_id = prepopulate_id;
-  return new TemplateURL(data);
-}
-
-
 // TestGenerateSearchURL ------------------------------------------------------
 
 // Test the GenerateSearchURL on a thread or the main thread.
@@ -100,7 +81,7 @@ void TestGenerateSearchURL::RunTest() {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(generate_url_cases); ++i) {
     TemplateURLData data;
     data.SetURL(generate_url_cases[i].url);
-    TemplateURL t_url(data);
+    TemplateURL t_url(NULL, data);
     std::string result = (search_terms_data_ ?
         TemplateURLService::GenerateSearchURLUsingTermsData(&t_url,
             *search_terms_data_) :
@@ -172,6 +153,11 @@ class TemplateURLServiceTest : public testing::Test {
   // date_created or the last_modified time.  Neither pointer should be NULL.
   void ExpectSimilar(const TemplateURL* expected, const TemplateURL* actual);
 
+  // Create an URL that appears to have been prepopulated, but won't be in the
+  // current data. The caller owns the returned TemplateURL*.
+  TemplateURL* CreatePreloadedTemplateURL(bool safe_for_autoreplace,
+                                          int prepopulate_id);
+
   // Creates a TemplateURL with the same prepopulated id as a real prepopulated
   // item. The input number determines which prepopulated item. The caller is
   // responsible for owning the returned TemplateURL*.
@@ -231,7 +217,7 @@ TemplateURL* TemplateURLServiceTest::AddKeywordWithDate(
   base::SplitString(encodings, ';', &data.input_encodings);
   data.date_created = date_created;
   data.last_modified = last_modified;
-  TemplateURL* t_url = new TemplateURL(data);
+  TemplateURL* t_url = new TemplateURL(test_util_.profile(), data);
   model()->Add(t_url);
   EXPECT_NE(0, t_url->id());
   return t_url;
@@ -267,15 +253,31 @@ void TemplateURLServiceTest::ExpectSimilar(const TemplateURL* expected,
   EXPECT_EQ(expected->input_encodings(), actual->input_encodings());
 }
 
+TemplateURL* TemplateURLServiceTest::CreatePreloadedTemplateURL(
+    bool safe_for_autoreplace,
+    int prepopulate_id) {
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("unittest");
+  data.SetKeyword(ASCIIToUTF16("unittest"));
+  data.SetURL("http://www.unittest.com/{searchTerms}");
+  data.favicon_url = GURL("http://favicon.url");
+  data.show_in_default_list = true;
+  data.safe_for_autoreplace = safe_for_autoreplace;
+  data.input_encodings.push_back("UTF-8");
+  data.date_created = Time::FromTimeT(100);
+  data.last_modified = Time::FromTimeT(100);
+  data.prepopulate_id = prepopulate_id;
+  return new TemplateURL(test_util_.profile(), data);
+}
+
 TemplateURL* TemplateURLServiceTest::CreateReplaceablePreloadedTemplateURL(
     bool safe_for_autoreplace,
     size_t index_offset_from_default,
     string16* prepopulated_display_url) {
   ScopedVector<TemplateURL> prepopulated_urls;
   size_t default_search_provider_index = 0;
-  TemplateURLPrepopulateData::GetPrepopulatedEngines(
-      test_util_.profile()->GetPrefs(), &prepopulated_urls.get(),
-      &default_search_provider_index);
+  TemplateURLPrepopulateData::GetPrepopulatedEngines(test_util_.profile(),
+      &prepopulated_urls.get(), &default_search_provider_index);
   EXPECT_LT(index_offset_from_default, prepopulated_urls.size());
   size_t prepopulated_index = (default_search_provider_index +
       index_offset_from_default) % prepopulated_urls.size();
@@ -351,7 +353,7 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
   data.sync_guid = "00000000-0000-0000-0000-000000000001";
-  TemplateURL* t_url = new TemplateURL(data);
+  TemplateURL* t_url = new TemplateURL(test_util_.profile(), data);
   model()->Add(t_url);
   ASSERT_TRUE(model()->CanReplaceKeyword(ASCIIToUTF16("keyword"), GURL(),
                                          NULL));
@@ -362,7 +364,8 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   // We need to make a second copy as the model takes ownership of |t_url| and
   // will delete it.  We have to do this after calling Add() since that gives
   // |t_url| its ID.
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->profile(),
+                                                     t_url->data()));
 
   // Reload the model to verify it was actually saved to the database.
   test_util_.ResetModel(true);
@@ -391,7 +394,8 @@ TEST_F(TemplateURLServiceTest, AddUpdateRemove) {
   ASSERT_TRUE(model()->CanReplaceKeyword(ASCIIToUTF16("keyword"), GURL(),
                                          NULL));
   ASSERT_FALSE(model()->CanReplaceKeyword(ASCIIToUTF16("b"), GURL(), NULL));
-  cloned_url.reset(new TemplateURL(loaded_url->data()));
+  cloned_url.reset(new TemplateURL(
+      const_cast<TemplateURL*>(loaded_url)->profile(), loaded_url->data()));
   test_util_.BlockTillServiceProcessesRequests();
   test_util_.ResetModel(true);
   ASSERT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
@@ -575,7 +579,7 @@ TEST_F(TemplateURLServiceTest, Reset) {
   data.favicon_url = GURL("http://favicon.url");
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
-  TemplateURL* t_url = new TemplateURL(data);
+  TemplateURL* t_url = new TemplateURL(test_util_.profile(), data);
   model()->Add(t_url);
 
   VerifyObserverCount(1);
@@ -599,7 +603,8 @@ TEST_F(TemplateURLServiceTest, Reset) {
   ASSERT_TRUE(
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")) == NULL);
 
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->profile(),
+                                                     t_url->data()));
 
   // Reload the model from the database and make sure the change took.
   test_util_.ResetModel(true);
@@ -628,7 +633,8 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProvider) {
   VerifyObserverCount(1);
   test_util_.BlockTillServiceProcessesRequests();
 
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->profile(),
+                                                     t_url->data()));
 
   // Make sure when we reload we get a default search provider.
   test_util_.ResetModel(true);
@@ -724,13 +730,14 @@ TEST_F(TemplateURLServiceTest, DefaultSearchProviderLoadedFromPrefs) {
   data.instant_url = "http://instant";
   data.date_created = Time::FromTimeT(100);
   data.last_modified = Time::FromTimeT(100);
-  TemplateURL* t_url = new TemplateURL(data);
+  TemplateURL* t_url = new TemplateURL(test_util_.profile(), data);
   model()->Add(t_url);
   const TemplateURLID id = t_url->id();
 
   model()->SetDefaultSearchProvider(t_url);
   test_util_.BlockTillServiceProcessesRequests();
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->profile(),
+                                                     t_url->data()));
 
   // Reset the model and don't load it. The template url we set as the default
   // should be pulled from prefs now.
@@ -971,7 +978,8 @@ TEST_F(TemplateURLServiceTest, LoadRetainsModifiedProvider) {
   model()->Add(t_url);
 
   // Do the copy after t_url is added so that the id is set.
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->profile(),
+                                                     t_url->data()));
   ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest")));
 
   // Wait for any saves to finish.
@@ -1001,7 +1009,9 @@ TEST_F(TemplateURLServiceTest, LoadSavesPrepopulatedDefaultSearchProvider) {
   // Verify that the default search provider is set to something.
   const TemplateURL* default_search = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search != NULL);
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(default_search->data()));
+  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(
+      const_cast<TemplateURL*>(default_search)->profile(),
+      default_search->data()));
 
   // Wait for any saves to finish.
   test_util_.BlockTillServiceProcessesRequests();
@@ -1027,7 +1037,8 @@ TEST_F(TemplateURLServiceTest, LoadRetainsDefaultProvider) {
   model()->SetDefaultSearchProvider(t_url);
   // Do the copy after t_url is added and set as default so that its
   // internal state is correct.
-  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->data()));
+  scoped_ptr<TemplateURL> cloned_url(new TemplateURL(t_url->profile(),
+                                                     t_url->data()));
 
   ASSERT_EQ(t_url, model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest")));
   ASSERT_EQ(t_url, model()->GetDefaultSearchProvider());
@@ -1118,7 +1129,7 @@ TEST_F(TemplateURLServiceTest, LoadDoesAutoKeywordUpdate) {
 
   // Then add it to the model and save it all.
   test_util_.ChangeModelToLoadState();
-  model()->Add(new TemplateURL(data));
+  model()->Add(new TemplateURL(test_util_.profile(), data));
   test_util_.BlockTillServiceProcessesRequests();
 
   // Now reload the model and verify that the merge updates the url.
@@ -1186,7 +1197,9 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   data.favicon_url = GURL(kIconURL);
   data.show_in_default_list = true;
   base::SplitString(kEncodings, ';', &data.input_encodings);
-  scoped_ptr<TemplateURL> expected_managed_default1(new TemplateURL(data));
+  Profile* profile = test_util_.profile();
+  scoped_ptr<TemplateURL> expected_managed_default1(new TemplateURL(profile,
+                                                                    data));
   const TemplateURL* actual_managed_default =
       model()->GetDefaultSearchProvider();
   ExpectSimilar(expected_managed_default1.get(), actual_managed_default);
@@ -1210,7 +1223,8 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   data2.SetURL(kNewSearchURL);
   data2.suggestions_url = kNewSuggestURL;
   data2.show_in_default_list = true;
-  scoped_ptr<TemplateURL> expected_managed_default2(new TemplateURL(data2));
+  scoped_ptr<TemplateURL> expected_managed_default2(new TemplateURL(profile,
+                                                                    data2));
   actual_managed_default = model()->GetDefaultSearchProvider();
   ExpectSimilar(expected_managed_default2.get(), actual_managed_default);
   EXPECT_EQ(actual_managed_default->show_in_default_list(), true);
@@ -1283,7 +1297,7 @@ TEST_F(TemplateURLServiceTest, PatchEmptySyncGUID) {
   data.SetKeyword(ASCIIToUTF16("keyword"));
   data.SetURL("http://www.google.com/foo/bar");
   data.sync_guid.clear();
-  TemplateURL* t_url = new TemplateURL(data);
+  TemplateURL* t_url = new TemplateURL(test_util_.profile(), data);
   model()->Add(t_url);
 
   VerifyObserverCount(1);

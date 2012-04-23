@@ -193,8 +193,7 @@ class InstantLoader : public content::NotificationObserver {
   void CreatePreviewContents(TabContentsWrapper* tab_contents);
 
   // Creates and loads the |template_url|'s instant URL.
-  void LoadInstantURL(TabContentsWrapper* tab_contents,
-                      const TemplateURL* template_url,
+  void LoadInstantURL(const TemplateURL* template_url,
                       content::PageTransition transition_type,
                       const string16& user_text,
                       bool verbatim);

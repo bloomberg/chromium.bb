@@ -205,7 +205,7 @@ TEST_F(KeywordProviderTest, AddKeyword) {
   string16 keyword(ASCIIToUTF16("foo"));
   data.SetKeyword(keyword);
   data.SetURL("http://www.google.com/foo?q={searchTerms}");
-  TemplateURL* template_url = new TemplateURL(data);
+  TemplateURL* template_url = new TemplateURL(NULL, data);
   model_->Add(template_url);
   ASSERT_TRUE(template_url == model_->GetTemplateURLForKeyword(keyword));
 }

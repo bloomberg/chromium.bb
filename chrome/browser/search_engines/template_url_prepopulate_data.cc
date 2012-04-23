@@ -3150,7 +3150,8 @@ int GetDataVersion(PrefService* prefs) {
   return (version >= 0) ? version : kCurrentDataVersion;
 }
 
-TemplateURL* MakePrepopulatedTemplateURL(const string16& name,
+TemplateURL* MakePrepopulatedTemplateURL(Profile* profile,
+                                         const string16& name,
                                          const string16& keyword,
                                          const base::StringPiece& search_url,
                                          const base::StringPiece& suggest_url,
@@ -3174,16 +3175,16 @@ TemplateURL* MakePrepopulatedTemplateURL(const string16& name,
   data.date_created = base::Time();
   data.last_modified = base::Time();
   data.prepopulate_id = id;
-  return new TemplateURL(data);
+  return new TemplateURL(profile, data);
 }
 
-void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
+void GetPrepopulatedTemplateFromPrefs(Profile* profile,
                                       std::vector<TemplateURL*>* t_urls) {
-  if (!prefs)
+  if (!profile)
     return;
 
   const ListValue* list =
-      prefs->GetList(prefs::kSearchProviderOverrides);
+      profile->GetPrefs()->GetList(prefs::kSearchProviderOverrides);
   if (!list)
     return;
 
@@ -3217,45 +3218,47 @@ void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
       // Got a parsing error. No big deal.
       continue;
     }
-    t_urls->push_back(MakePrepopulatedTemplateURL(name, keyword, search_url,
-        suggest_url, instant_url, favicon_url, encoding, id));
+    t_urls->push_back(MakePrepopulatedTemplateURL(profile, name, keyword,
+        search_url, suggest_url, instant_url, favicon_url, encoding, id));
   }
 }
 
 // The caller owns the returned TemplateURL.
 TemplateURL* MakePrepopulatedTemplateURLFromPrepopulateEngine(
+    Profile* profile,
     const PrepopulatedEngine& engine) {
-  return MakePrepopulatedTemplateURL(WideToUTF16(engine.name),
+  return MakePrepopulatedTemplateURL(profile, WideToUTF16(engine.name),
       WideToUTF16(engine.keyword), engine.search_url, engine.suggest_url,
       engine.instant_url, engine.favicon_url, engine.encoding, engine.id);
 }
 
-void GetPrepopulatedEngines(PrefService* prefs,
+void GetPrepopulatedEngines(Profile* profile,
                             std::vector<TemplateURL*>* t_urls,
                             size_t* default_search_provider_index) {
   // If there is a set of search engines in the preferences file, it overrides
   // the built-in set.
   *default_search_provider_index = 0;
-  GetPrepopulatedTemplateFromPrefs(prefs, t_urls);
+  GetPrepopulatedTemplateFromPrefs(profile, t_urls);
   if (!t_urls->empty())
     return;
 
   const PrepopulatedEngine** engines;
   size_t num_engines;
-  GetPrepopulationSetFromCountryID(prefs, &engines, &num_engines);
+  GetPrepopulationSetFromCountryID(profile ? profile->GetPrefs() : NULL,
+                                   &engines, &num_engines);
   for (size_t i = 0; i != num_engines; ++i) {
     t_urls->push_back(
-        MakePrepopulatedTemplateURLFromPrepopulateEngine(*engines[i]));
+        MakePrepopulatedTemplateURLFromPrepopulateEngine(profile, *engines[i]));
   }
 }
 
-TemplateURL* GetPrepopulatedDefaultSearch(PrefService* prefs) {
+TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile) {
   TemplateURL* default_search_provider = NULL;
   ScopedVector<TemplateURL> loaded_urls;
   size_t default_search_index;
   // This could be more efficient.  We are loading all the URLs to only keep
   // the first one.
-  GetPrepopulatedEngines(prefs, &loaded_urls.get(), &default_search_index);
+  GetPrepopulatedEngines(profile, &loaded_urls.get(), &default_search_index);
   if (default_search_index < loaded_urls.size()) {
     default_search_provider = loaded_urls[default_search_index];
     loaded_urls.weak_erase(loaded_urls.begin() + default_search_index);
