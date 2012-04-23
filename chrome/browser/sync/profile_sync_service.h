@@ -562,6 +562,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Called from Initialize() and UnsuppressAndStart().
   void TryStart();
 
+  // Puts the backend's sync scheduler into NORMAL mode.
+  // Called when configuration is complete.
+  void StartSyncingWithServer();
+
   // Called when we've determined that we don't need a passphrase (either
   // because OnPassphraseAccepted() was called, or because we've gotten a
   // OnPassphraseRequired() but no data types are enabled).

@@ -230,6 +230,11 @@ void ProfileSyncService::TryStart() {
   }
 }
 
+void ProfileSyncService::StartSyncingWithServer() {
+  if (backend_.get())
+    backend_->StartSyncingWithServer();
+}
+
 void ProfileSyncService::RegisterAuthNotifications() {
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
   registrar_.Add(this,
@@ -1192,7 +1197,9 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     migrator_.reset(
         new browser_sync::BackendMigrator(
             profile_->GetDebugName(), GetUserShare(),
-            this, data_type_manager_.get()));
+            this, data_type_manager_.get(),
+            base::Bind(&ProfileSyncService::StartSyncingWithServer,
+                       base::Unretained(this))));
   }
 
   const syncable::ModelTypeSet types = GetPreferredDataTypes();
@@ -1456,10 +1463,15 @@ void ProfileSyncService::Observe(int type,
         backend_->EnableEncryptEverything();
       NotifyObservers();
 
-      // In the old world, this would be a no-op.  With new syncer thread,
-      // this is the point where it is safe to switch from config-mode to
-      // normal operation.
-      backend_->StartSyncingWithServer();
+      if (migrator_.get() &&
+          migrator_->state() != browser_sync::BackendMigrator::IDLE) {
+        // Migration in progress.  Let the migrator know we just finished
+        // configuring something.  It will be up to the migrator to call
+        // StartSyncingWithServer() if migration is now finished.
+        migrator_->OnConfigureDone(*result);
+      } else {
+        StartSyncingWithServer();
+      }
 
       break;
     }

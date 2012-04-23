@@ -47,7 +47,8 @@ class SyncBackendMigratorTest : public testing::Test {
 
     migrator_.reset(
         new BackendMigrator(
-            "Profile0", test_user_share_.user_share(), service(), manager()));
+            "Profile0", test_user_share_.user_share(), service(), manager(),
+            base::Closure()));
     SetUnsyncedTypes(syncable::ModelTypeSet());
   }
 
@@ -76,20 +77,14 @@ class SyncBackendMigratorTest : public testing::Test {
                          syncable::ModelTypeSet requested_types) {
     if (status == DataTypeManager::OK) {
       DataTypeManager::ConfigureResult result(status, requested_types);
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-          content::Source<DataTypeManager>(&manager_),
-          content::Details<const DataTypeManager::ConfigureResult>(&result));
+      migrator_->OnConfigureDone(result);
     } else {
       std::list<SyncError> errors;
       DataTypeManager::ConfigureResult result(
           status,
           requested_types,
           errors);
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-          content::Source<DataTypeManager>(&manager_),
-          content::Details<const DataTypeManager::ConfigureResult>(&result));
+      migrator_->OnConfigureDone(result);
     }
     message_loop_.RunAllPending();
   }

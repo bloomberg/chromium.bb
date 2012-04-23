@@ -251,13 +251,15 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, BookmarksPrefsBoth) {
 
 // Two data types with one being nigori.
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsNigoriIndividiaully) {
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       DISABLED_PrefsNigoriIndividiaully) {
   RunSingleClientMigrationTest(
       MakeList(syncable::PREFERENCES, syncable::NIGORI),
       TRIGGER_NOTIFICATION);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, PrefsNigoriBoth) {
+// TODO(rlarocque): Re-enable this test when crbug.com/122033 is fixed.
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, DISABLED_PrefsNigoriBoth) {
   RunSingleClientMigrationTest(
       MakeList(MakeSet(syncable::PREFERENCES, syncable::NIGORI)),
       MODIFY_PREF);
@@ -293,14 +295,16 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
 // All data types plus nigori.
 
 IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
-                       AllTypesWithNigoriIndividually) {
+                       DISABLED_AllTypesWithNigoriIndividually) {
   ASSERT_TRUE(SetupClients());
   MigrationList migration_list = GetPreferredDataTypesList();
   migration_list.push_front(MakeSet(syncable::NIGORI));
   RunSingleClientMigrationTest(migration_list, MODIFY_BOOKMARK);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesWithNigoriAtOnce) {
+// TODO(rlarocque): Re-enable this test when crbug.com/122033 is fixed.
+IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest,
+                       DISABLED_AllTypesWithNigoriAtOnce) {
   ASSERT_TRUE(SetupClients());
   syncable::ModelTypeSet all_types = GetPreferredDataTypes();
   all_types.Put(syncable::NIGORI);
@@ -374,7 +378,9 @@ IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest, MigrationHellWithoutNigori) {
   RunTwoClientMigrationTest(migration_list, MODIFY_BOOKMARK);
 }
 
-IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest, MigrationHellWithNigori) {
+// TODO(rlarocque) Re-enable this test when crbug.com/122033 is fixed.
+IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
+                       DISABLED_MigrationHellWithNigori) {
   ASSERT_TRUE(SetupClients());
   MigrationList migration_list = GetPreferredDataTypesList();
   // Let the first nudge be a datatype that's neither prefs nor
