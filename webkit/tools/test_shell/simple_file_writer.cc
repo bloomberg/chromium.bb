@@ -5,6 +5,7 @@
 #include "webkit/tools/test_shell/simple_file_writer.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "net/url_request/url_request_context.h"

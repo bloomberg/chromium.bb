@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
@@ -82,7 +83,7 @@ int LocalFileReader::PlatformFileErrorToNetError(
 // A helper class to open, verify and seek a file stream for a given path.
 class LocalFileReader::OpenFileStreamHelper {
  public:
-  OpenFileStreamHelper(base::MessageLoopProxy* file_thread_proxy)
+  explicit OpenFileStreamHelper(base::MessageLoopProxy* file_thread_proxy)
       : file_thread_proxy_(file_thread_proxy),
         file_handle_(base::kInvalidPlatformFileValue),
         result_(net::OK) {}

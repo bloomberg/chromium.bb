@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/file_stream.h"
@@ -75,7 +76,7 @@ bool RedirectToFileResourceHandler::OnWillRead(int request_id,
                                                net::IOBuffer** buf,
                                                int* buf_size,
                                                int min_size) {
-  DCHECK(min_size == -1);
+  DCHECK_EQ(-1, min_size);
 
   if (!buf_->capacity())
     buf_->SetCapacity(kReadBufSize);
