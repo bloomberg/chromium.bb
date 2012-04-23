@@ -51,9 +51,6 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD2(GetFileByResourceId,
                void(const std::string& resource_id,
                     const GetFileCallback& callback));
-  MOCK_METHOD2(GetFileFromCacheByPath,
-               void(const FilePath& gdata_file_path,
-                    const GetFileFromCacheCallback& callback));
   MOCK_METHOD0(GetProgressStatusList,
                std::vector<GDataOperationRegistry::ProgressStatus>());
   MOCK_METHOD1(CancelOperation, bool(const FilePath& file_path));

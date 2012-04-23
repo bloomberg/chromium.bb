@@ -364,18 +364,6 @@ class GDataFileSystemTest : public testing::Test {
     RunAllPendingForIO();
   }
 
-  void TestGetFileFromCacheByPath(const FilePath& gdata_file_path,
-                                  base::PlatformFileError expected_error) {
-    expected_error_ = expected_error;
-    expected_file_extension_.clear();
-
-    file_system_->GetFileFromCacheByPath(gdata_file_path,
-        base::Bind(&GDataFileSystemTest::VerifyGetFromCache,
-                   base::Unretained(this)));
-
-    RunAllPendingForIO();
-  }
-
   void VerifyGetFromCache(base::PlatformFileError error,
                           const std::string& resource_id,
                           const std::string& md5,
@@ -2623,51 +2611,6 @@ TEST_F(GDataFileSystemTest, GetGDataEntryByPath) {
   GDataEntry* non_existent = file_system_->GetGDataEntryByPath(
       FilePath(FILE_PATH_LITERAL("gdata/Nonexistent.txt")));
   ASSERT_TRUE(non_existent == NULL);
-}
-
-TEST_F(GDataFileSystemTest, GetFileFromCacheByPath) {
-  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
-
-  LoadRootFeedDocument("root_feed.json");
-
-  // First make sure the file exists in GData.
-  FilePath gdata_file_path = FilePath(FILE_PATH_LITERAL("gdata/File 1.txt"));
-  GDataFile* file = NULL;
-  {  // Lock to call GetGDataEntryByPath.
-    base::AutoLock lock(file_system_->lock_);
-    GDataEntry* entry =
-        file_system_->GetGDataEntryByPath(gdata_file_path);
-    ASSERT_TRUE(entry != NULL);
-    file = entry->AsGDataFile();
-    ASSERT_TRUE(file != NULL);
-  }
-
-  // A file that exists in GData but not in cache.
-  num_callback_invocations_ = 0;
-  TestGetFileFromCacheByPath(
-      gdata_file_path, base::PLATFORM_FILE_ERROR_NOT_FOUND);
-  EXPECT_EQ(1, num_callback_invocations_);
-
-  // Store a file corresponding to resource and md5 of "gdata/File 1.txt" to
-  // cache.
-  num_callback_invocations_ = 0;
-  TestStoreToCache(file->resource_id(), file->file_md5(),
-                   GetTestFilePath("root_feed.json"), base::PLATFORM_FILE_OK,
-                   GDataFile::CACHE_STATE_PRESENT,
-                   GDataRootDirectory::CACHE_TYPE_TMP);
-  EXPECT_EQ(1, num_callback_invocations_);
-
-  // Now the file should exist in cache.
-  num_callback_invocations_ = 0;
-  TestGetFileFromCacheByPath(gdata_file_path, base::PLATFORM_FILE_OK);
-  EXPECT_EQ(1, num_callback_invocations_);
-
-  // A file that doesn't exist in gdata.
-  num_callback_invocations_ = 0;
-  TestGetFileFromCacheByPath(
-      FilePath(FILE_PATH_LITERAL("gdata/Nonexistent.txt")),
-      base::PLATFORM_FILE_ERROR_NOT_FOUND);
-  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 // Create a directory through the document service

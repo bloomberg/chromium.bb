@@ -2056,41 +2056,6 @@ GDataEntry* GDataFileSystem::GetGDataEntryByPath(
   return find_delegate.entry();
 }
 
-void GDataFileSystem::GetFileFromCacheByPath(
-    const FilePath& gdata_file_path,
-    const GetFileFromCacheCallback& callback) {
-  std::string resource_id;
-  std::string md5;
-
-  {  // Lock to use GetGDataEntryByPath and returned pointer, but need to
-     // release before GetFileFromCacheByResourceIdAndMd5.
-    base::AutoLock lock(lock_);
-    GDataEntry* entry = GetGDataEntryByPath(gdata_file_path);
-
-    if (entry && entry->AsGDataFile()) {
-      GDataFile* file = entry->AsGDataFile();
-      resource_id = file->resource_id();
-      md5 = file->file_md5();
-    } else {
-      // Invoke |callback| with error.
-      if (!callback.is_null()) {
-          base::MessageLoopProxy::current()->PostTask(
-              FROM_HERE,
-              base::Bind(callback,
-                         base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                         std::string(),
-                         std::string(),
-                         gdata_file_path,
-                         FilePath()));
-      }
-      return;
-    }
-  }
-
-  GetFileFromCacheByResourceIdAndMd5Internal(
-      resource_id, md5, gdata_file_path, callback);
-}
-
 void GDataFileSystem::GetCacheState(const std::string& resource_id,
                                     const std::string& md5,
                                     const GetCacheStateCallback& callback) {

@@ -327,14 +327,6 @@ class GDataFileSystemInterface {
       const std::string& resource_id,
       const GetFileCallback& callback) = 0;
 
-  // Gets a file pointed by |gdata_file_path| from the cache.
-  // Upon completion, |callback| is invoked on the same thread where this method
-  // was called, with path if it exists and is accessible or empty FilePath
-  // otherwise.
-  virtual void GetFileFromCacheByPath(
-      const FilePath& gdata_file_path,
-      const GetFileFromCacheCallback& callback) = 0;
-
   // Obtains the list of currently active operations.
   virtual std::vector<GDataOperationRegistry::ProgressStatus>
   GetProgressStatusList() = 0;
@@ -452,9 +444,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void GetFileByResourceId(
       const std::string& resource_id,
       const GetFileCallback& callback) OVERRIDE;
-  virtual void GetFileFromCacheByPath(
-      const FilePath& gdata_file_path,
-      const GetFileFromCacheCallback& callback) OVERRIDE;
   virtual std::vector<GDataOperationRegistry::ProgressStatus>
   GetProgressStatusList() OVERRIDE;
   virtual bool CancelOperation(const FilePath& file_path) OVERRIDE;
