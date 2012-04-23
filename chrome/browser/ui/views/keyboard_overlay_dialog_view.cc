@@ -92,13 +92,12 @@ void KeyboardOverlayDialogView::ShowDialog(
                                     delegate,
                                     parent_view);
   delegate->set_view(html_view);
-  html_view->InitDialog();
   browser::CreateFramelessViewsWindow(owning_window, html_view);
   // Show the widget at the bottom of the work area.
   gfx::Size size;
   delegate->GetDialogSize(&size);
   gfx::Rect rect = gfx::Screen::GetMonitorWorkAreaNearestWindow(
-      html_view->native_view());
+      html_view->GetWidget()->GetNativeView());
   gfx::Rect bounds((rect.width() - size.width()) / 2,
                    rect.height() - size.height(),
                    size.width(),

@@ -12,15 +12,19 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_render_watcher.h"
-#include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "ui/gfx/size.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
 
 class Browser;
 class HtmlDialogController;
 class Profile;
+
+namespace views {
+class WebView;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -35,8 +39,10 @@ class Profile;
 // TODO(akalin): Make HtmlDialogView contain an HtmlDialogTabContentsDelegate
 // instead of inheriting from it to avoid violating the "no multiple
 // inheritance" rule.
+// TODO(beng): This class should not depend on Browser or Profile, only
+//             content::BrowserContext.
 class HtmlDialogView
-    : public DOMView,
+    : public views::View,
       public HtmlDialogTabContentsDelegate,
       public HtmlDialogUIDelegate,
       public views::WidgetDelegate,
@@ -47,15 +53,16 @@ class HtmlDialogView
                  HtmlDialogUIDelegate* delegate);
   virtual ~HtmlDialogView();
 
-  // Initializes the contents of the dialog (the DOMView and the callbacks).
-  void InitDialog();
+  // For testing.
+  content::WebContents* web_contents();
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator)
       OVERRIDE;
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child)
-      OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child) OVERRIDE;
 
   // Overridden from views::WidgetDelegate:
   virtual bool CanResize() const OVERRIDE;
@@ -102,10 +109,7 @@ class HtmlDialogView
   virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
 
  protected:
-  // Register accelerators for this dialog.
-  virtual void RegisterDialogAccelerators();
-
-  // TabRenderWatcher::Delegate implementation.
+  // Overridden from TabRenderWatcher::Delegate:
   virtual void OnRenderHostCreated(content::RenderViewHost* host) OVERRIDE;
   virtual void OnTabMainFrameLoaded() OVERRIDE;
   virtual void OnTabMainFrameRender() OVERRIDE;
@@ -113,7 +117,10 @@ class HtmlDialogView
  private:
   FRIEND_TEST_ALL_PREFIXES(HtmlDialogBrowserTest, WebContentRendered);
 
-  // Whether the view is initialized. That is, dialog acceleartors is registered
+  // Initializes the contents of the dialog.
+  void InitDialog();
+
+  // Whether the view is initialized. That is, dialog accelerators is registered
   // and FreezeUpdates property is set to prevent WM from showing the window
   // until the property is removed.
   bool initialized_;
@@ -129,6 +136,8 @@ class HtmlDialogView
 
   // Controls lifetime of dialog.
   scoped_ptr<HtmlDialogController> dialog_controller_;
+
+  views::WebView* web_view_;
 
   DISALLOW_COPY_AND_ASSIGN(HtmlDialogView);
 };
