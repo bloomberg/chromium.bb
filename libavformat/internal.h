@@ -37,6 +37,11 @@ typedef struct AVCodecTag {
     unsigned int tag;
 } AVCodecTag;
 
+typedef struct CodecMime{
+    char str[32];
+    enum CodecID id;
+} CodecMime;
+
 #ifdef __GNUC__
 #define dynarray_add(tab, nb_ptr, elem)\
 do {\
@@ -52,7 +57,7 @@ do {\
 } while(0)
 #endif
 
-struct tm *brktimegm(time_t secs, struct tm *tm);
+struct tm *ff_brktimegm(time_t secs, struct tm *tm);
 
 char *ff_data_to_hex(char *buf, const uint8_t *src, int size, int lowercase);
 
@@ -311,5 +316,32 @@ int ff_add_param_change(AVPacket *pkt, int32_t channels,
  * print it.
  */
 int ff_framehash_write_header(AVFormatContext *s);
+
+/**
+ * Read a transport packet from a media file.
+ *
+ * @param s media file handle
+ * @param pkt is filled
+ * @return 0 if OK, AVERROR_xxx on error
+ */
+int ff_read_packet(AVFormatContext *s, AVPacket *pkt);
+
+/**
+ * Interleave a packet per dts in an output media file.
+ *
+ * Packets with pkt->destruct == av_destruct_packet will be freed inside this
+ * function, so they cannot be used after it. Note that calling av_free_packet()
+ * on them is still safe.
+ *
+ * @param s media file handle
+ * @param out the interleaved packet will be output here
+ * @param pkt the input packet
+ * @param flush 1 if no further packets are available as input and all
+ *              remaining packets should be output
+ * @return 1 if a packet was output, 0 if no packet could be output,
+ *         < 0 if an error occurred
+ */
+int ff_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
+                                 AVPacket *pkt, int flush);
 
 #endif /* AVFORMAT_INTERNAL_H */

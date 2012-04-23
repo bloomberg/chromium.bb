@@ -277,7 +277,7 @@ static int nuv_resync(AVFormatContext *s, int64_t pos_limit) {
 
 /**
  * \brief attempts to read a timestamp from stream at the given stream position
- * \return timestamp if successfull and AV_NOPTS_VALUE if failure
+ * \return timestamp if successful and AV_NOPTS_VALUE if failure
  */
 static int64_t nuv_read_dts(AVFormatContext *s, int stream_index,
                             int64_t *ppos, int64_t pos_limit)
@@ -341,5 +341,5 @@ AVInputFormat ff_nuv_demuxer = {
     .read_header    = nuv_header,
     .read_packet    = nuv_packet,
     .read_timestamp = nuv_read_dts,
-    .flags = AVFMT_GENERIC_INDEX,
+    .flags          = AVFMT_GENERIC_INDEX,
 };

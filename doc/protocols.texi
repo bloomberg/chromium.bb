@@ -19,20 +19,34 @@ supported protocols.
 
 A description of the currently available protocols follows.
 
-@section applehttp
+@section bluray
 
-Read Apple HTTP Live Streaming compliant segmented stream as
-a uniform one. The M3U8 playlists describing the segments can be
-remote HTTP resources or local files, accessed using the standard
-file protocol.
-HTTP is default, specific protocol can be declared by specifying
-"+@var{proto}" after the applehttp URI scheme name, where @var{proto}
-is either "file" or "http".
+Read BluRay playlist.
 
+The accepted options are:
+@table @option
+
+@item angle
+BluRay angle
+
+@item chapter
+Start chapter (1...N)
+
+@item playlist
+Playlist to read (BDMV/PLAYLIST/?????.mpls)
+
+@end table
+
+Examples:
+
+Read longest playlist from BluRay mounted to /mnt/bluray:
 @example
-applehttp://host/path/to/remote/resource.m3u8
-applehttp+http://host/path/to/remote/resource.m3u8
-applehttp+file://path/to/local/resource.m3u8
+bluray:/mnt/bluray
+@end example
+
+Read angle 2 of playlist 4 from BluRay mounted to /mnt/bluray, start from chapter 2:
+@example
+-playlist 4 -angle 2 -chapter 2 bluray:/mnt/bluray
 @end example
 
 @section concat
@@ -80,6 +94,26 @@ specified with the name "FILE.mpeg" is interpreted as the URL
 @section gopher
 
 Gopher protocol.
+
+@section hls
+
+Read Apple HTTP Live Streaming compliant segmented stream as
+a uniform one. The M3U8 playlists describing the segments can be
+remote HTTP resources or local files, accessed using the standard
+file protocol.
+The nested protocol is declared by specifying
+"+@var{proto}" after the hls URI scheme name, where @var{proto}
+is either "file" or "http".
+
+@example
+hls+http://host/path/to/remote/resource.m3u8
+hls+file://path/to/local/resource.m3u8
+@end example
+
+Using this protocol is discouraged - the hls demuxer should work
+just as well (if not, please report the issues) and is more complete.
+To use the hls demuxer instead, simply use the direct URLs to the
+m3u8 files.
 
 @section http
 
@@ -284,9 +318,9 @@ Accept packets only from negotiated peer address and port.
 @end table
 
 When receiving data over UDP, the demuxer tries to reorder received packets
-(since they may arrive out of order, or packets may get lost totally). In
-order for this to be enabled, a maximum delay must be specified in the
-@code{max_delay} field of AVFormatContext.
+(since they may arrive out of order, or packets may get lost totally). This
+can be disabled by setting the maximum demuxing delay to zero (via
+the @code{max_delay} field of AVFormatContext).
 
 When watching multi-bitrate Real-RTSP streams with @command{ffplay}, the
 streams to display can be chosen with @code{-vst} @var{n} and

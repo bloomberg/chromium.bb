@@ -25,6 +25,7 @@
 #include "bytestream.h"
 #include "bmp.h"
 #include <assert.h>
+#include "internal.h"
 
 static const uint32_t monoblack_pal[] = { 0x000000, 0xFFFFFF };
 static const uint32_t rgb565_masks[]  = { 0xF800, 0x07E0, 0x001F };
@@ -33,8 +34,8 @@ static const uint32_t rgb444_masks[]  = { 0x0F00, 0x00F0, 0x000F };
 static av_cold int bmp_encode_init(AVCodecContext *avctx){
     BMPContext *s = avctx->priv_data;
 
-    avcodec_get_frame_defaults((AVFrame*)&s->picture);
-    avctx->coded_frame = (AVFrame*)&s->picture;
+    avcodec_get_frame_defaults(&s->picture);
+    avctx->coded_frame = &s->picture;
 
     switch (avctx->pix_fmt) {
     case PIX_FMT_BGRA:
@@ -67,17 +68,17 @@ static av_cold int bmp_encode_init(AVCodecContext *avctx){
     return 0;
 }
 
-static int bmp_encode_frame(AVCodecContext *avctx, unsigned char *buf, int buf_size, void *data){
+static int bmp_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
+                            const AVFrame *pict, int *got_packet)
+{
     BMPContext *s = avctx->priv_data;
-    AVFrame *pict = data;
-    AVFrame * const p= (AVFrame*)&s->picture;
-    int n_bytes_image, n_bytes_per_row, n_bytes, i, n, hsize;
+    AVFrame * const p = &s->picture;
+    int n_bytes_image, n_bytes_per_row, n_bytes, i, n, hsize, ret;
     const uint32_t *pal = NULL;
     uint32_t palette256[256];
     int pad_bytes_per_row, pal_entries = 0, compression = BMP_RGB;
     int bit_count = avctx->bits_per_coded_sample;
-    uint8_t *ptr;
-    unsigned char* buf0 = buf;
+    uint8_t *ptr, *buf;
     *p = *pict;
     p->pict_type= AV_PICTURE_TYPE_I;
     p->key_frame= 1;
@@ -119,10 +120,9 @@ static int bmp_encode_frame(AVCodecContext *avctx, unsigned char *buf, int buf_s
 #define SIZE_BITMAPINFOHEADER 40
     hsize = SIZE_BITMAPFILEHEADER + SIZE_BITMAPINFOHEADER + (pal_entries << 2);
     n_bytes = n_bytes_image + hsize;
-    if(n_bytes>buf_size) {
-        av_log(avctx, AV_LOG_ERROR, "buf size too small (need %d, got %d)\n", n_bytes, buf_size);
-        return -1;
-    }
+    if ((ret = ff_alloc_packet2(avctx, pkt, n_bytes)) < 0)
+        return ret;
+    buf = pkt->data;
     bytestream_put_byte(&buf, 'B');                   // BITMAPFILEHEADER.bfType
     bytestream_put_byte(&buf, 'M');                   // do.
     bytestream_put_le32(&buf, n_bytes);               // BITMAPFILEHEADER.bfSize
@@ -144,7 +144,7 @@ static int bmp_encode_frame(AVCodecContext *avctx, unsigned char *buf, int buf_s
         bytestream_put_le32(&buf, pal[i] & 0xFFFFFF);
     // BMP files are bottom-to-top so we start from the end...
     ptr = p->data[0] + (avctx->height - 1) * p->linesize[0];
-    buf = buf0 + hsize;
+    buf = pkt->data + hsize;
     for(i = 0; i < avctx->height; i++) {
         if (bit_count == 16) {
             const uint16_t *src = (const uint16_t *) ptr;
@@ -159,7 +159,10 @@ static int bmp_encode_frame(AVCodecContext *avctx, unsigned char *buf, int buf_s
         buf += pad_bytes_per_row;
         ptr -= p->linesize[0]; // ... and go back
     }
-    return n_bytes;
+
+    pkt->flags |= AV_PKT_FLAG_KEY;
+    *got_packet = 1;
+    return 0;
 }
 
 AVCodec ff_bmp_encoder = {
@@ -168,12 +171,13 @@ AVCodec ff_bmp_encoder = {
     .id             = CODEC_ID_BMP,
     .priv_data_size = sizeof(BMPContext),
     .init           = bmp_encode_init,
-    .encode         = bmp_encode_frame,
-    .pix_fmts = (const enum PixelFormat[]){
+    .encode2        = bmp_encode_frame,
+    .pix_fmts       = (const enum PixelFormat[]){
         PIX_FMT_BGRA, PIX_FMT_BGR24,
         PIX_FMT_RGB565, PIX_FMT_RGB555, PIX_FMT_RGB444,
         PIX_FMT_RGB8, PIX_FMT_BGR8, PIX_FMT_RGB4_BYTE, PIX_FMT_BGR4_BYTE, PIX_FMT_GRAY8, PIX_FMT_PAL8,
         PIX_FMT_MONOBLACK,
-        PIX_FMT_NONE},
-    .long_name = NULL_IF_CONFIG_SMALL("BMP image"),
+        PIX_FMT_NONE
+    },
+    .long_name      = NULL_IF_CONFIG_SMALL("BMP image"),
 };

@@ -49,7 +49,7 @@ static int decode_frame(AVCodecContext *avctx,
     int buf_size = avpkt->size;
     VCR1Context * const a = avctx->priv_data;
     AVFrame *picture = data;
-    AVFrame * const p= (AVFrame*)&a->picture;
+    AVFrame * const p = &a->picture;
     const uint8_t *bytestream= buf;
     int i, x, y;
 
@@ -116,7 +116,7 @@ static int decode_frame(AVCodecContext *avctx,
         }
     }
 
-    *picture= *(AVFrame*)&a->picture;
+    *picture   = a->picture;
     *data_size = sizeof(AVPicture);
 
     return buf_size;
@@ -126,7 +126,7 @@ static int decode_frame(AVCodecContext *avctx,
 static int encode_frame(AVCodecContext *avctx, unsigned char *buf, int buf_size, void *data){
     VCR1Context * const a = avctx->priv_data;
     AVFrame *pict = data;
-    AVFrame * const p= (AVFrame*)&a->picture;
+    AVFrame * const p = &a->picture;
     int size;
 
     *p = *pict;
@@ -146,7 +146,7 @@ static int encode_frame(AVCodecContext *avctx, unsigned char *buf, int buf_size,
 static av_cold void common_init(AVCodecContext *avctx){
     VCR1Context * const a = avctx->priv_data;
 
-    avctx->coded_frame= (AVFrame*)&a->picture;
+    avctx->coded_frame = &a->picture;
     avcodec_get_frame_defaults(&a->picture);
     a->avctx= avctx;
 }
@@ -187,7 +187,7 @@ AVCodec ff_vcr1_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("ATI VCR1"),
+    .long_name      = NULL_IF_CONFIG_SMALL("ATI VCR1"),
 };
 
 #if CONFIG_VCR1_ENCODER
@@ -198,6 +198,6 @@ AVCodec ff_vcr1_encoder = {
     .priv_data_size = sizeof(VCR1Context),
     .init           = encode_init,
     .encode         = encode_frame,
-    .long_name = NULL_IF_CONFIG_SMALL("ATI VCR1"),
+    .long_name      = NULL_IF_CONFIG_SMALL("ATI VCR1"),
 };
 #endif

@@ -35,13 +35,12 @@ pb_bswap32: db 3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12
 SECTION_TEXT
 
 %macro SCALARPRODUCT 1
-; int scalarproduct_int16(int16_t *v1, int16_t *v2, int order, int shift)
-cglobal scalarproduct_int16_%1, 3,3,4, v1, v2, order, shift
+; int scalarproduct_int16(int16_t *v1, int16_t *v2, int order)
+cglobal scalarproduct_int16_%1, 3,3,3, v1, v2, order
     shl orderq, 1
     add v1q, orderq
     add v2q, orderq
     neg orderq
-    movd    m3, shiftm
     pxor    m2, m2
 .loop:
     movu    m0, [v1q + orderq]
@@ -55,10 +54,8 @@ cglobal scalarproduct_int16_%1, 3,3,4, v1, v2, order, shift
 %if mmsize == 16
     movhlps m0, m2
     paddd   m2, m0
-    psrad   m2, m3
     pshuflw m0, m2, 0x4e
 %else
-    psrad   m2, m3
     pshufw  m0, m2, 0x4e
 %endif
     paddd   m2, m0
@@ -476,7 +473,7 @@ cglobal scalarproduct_float_sse, 3,3,2, v1, v2, offset
     shufps  xmm0, xmm0, 1
     addss   xmm0, xmm1
 %if ARCH_X86_64 == 0
-    movd    r0m,  xmm0
+    movss   r0m,  xmm0
     fld     dword r0m
 %endif
     RET
@@ -500,9 +497,9 @@ cglobal scalarproduct_float_sse, 3,3,2, v1, v2, offset
 
 %macro EMU_EDGE_FUNC 0
 %if ARCH_X86_64
-%define w_reg r10
-cglobal emu_edge_core, 6, 7, 1
-    mov        r11, r5          ; save block_h
+%define w_reg r7
+cglobal emu_edge_core, 6, 9, 1
+    mov         r8, r5          ; save block_h
 %else
 %define w_reg r6
 cglobal emu_edge_core, 2, 7, 0
@@ -539,7 +536,7 @@ cglobal emu_edge_core, 2, 7, 0
     sub         r0, w_reg
 %if ARCH_X86_64
     mov         r3, r0          ; backup of buf+block_h*linesize
-    mov         r5, r11
+    mov         r5, r8
 %else
     mov        r0m, r0          ; backup of buf+block_h*linesize
     mov         r5, r5m
@@ -553,7 +550,7 @@ cglobal emu_edge_core, 2, 7, 0
     ; FIXME we can do a if size == 1 here if that makes any speed difference, test me
     sar      w_reg, 1
     sal      w_reg, 6
-    ; r0=buf+block_h*linesize,r10(64)/r6(32)=start_x offset for funcs
+    ; r0=buf+block_h*linesize,r7(64)/r6(32)=start_x offset for funcs
     ; r6(rax)/r3(ebx)=val,r2=linesize,r1=start_x,r5=block_h
 %ifdef PIC
     lea        rax, [.emuedge_extend_left_2]
@@ -563,7 +560,7 @@ cglobal emu_edge_core, 2, 7, 0
 %endif
     call     w_reg
 
-    ; now r3(64)/r0(32)=buf,r2=linesize,r11/r5=block_h,r6/r3=val, r10/r6=end_x, r1=block_w
+    ; now r3(64)/r0(32)=buf,r2=linesize,r8/r5=block_h,r6/r3=val, r7/r6=end_x, r1=block_w
 .right_extend:
 %if ARCH_X86_32
     mov         r0, r0m
@@ -594,10 +591,10 @@ cglobal emu_edge_core, 2, 7, 0
 %define vall  al
 %define valh  ah
 %define valw  ax
-%define valw2 r10w
+%define valw2 r7w
 %define valw3 r3w
 %if WIN64
-%define valw4 r4w
+%define valw4 r7w
 %else ; unix64
 %define valw4 r3w
 %endif
@@ -621,7 +618,7 @@ cglobal emu_edge_core, 2, 7, 0
 ;            - else if (%2 & 8)  fills 8 bytes into mm0
 ;            - if (%2 & 7 == 4)  fills the last 4 bytes into rax
 ;            - else if (%2 & 4)  fills 4 bytes into mm0-1
-;            - if (%2 & 3 == 3)  fills 2 bytes into r10/r3, and 1 into eax
+;            - if (%2 & 3 == 3)  fills 2 bytes into r7/r3, and 1 into eax
 ;              (note that we're using r3 for body/bottom because it's a shorter
 ;               opcode, and then the loop fits in 128 bytes)
 ;            - else              fills remaining bytes into rax
@@ -851,7 +848,7 @@ ALIGN 64
 %endrep
 %endmacro ; LEFT_EXTEND
 
-; r3/r0=buf+block_h*linesize, r2=linesize, r11/r5=block_h, r0/r6=end_x, r6/r3=val
+; r3/r0=buf+block_h*linesize, r2=linesize, r8/r5=block_h, r0/r6=end_x, r6/r3=val
 %macro RIGHT_EXTEND 0
 %assign %%n 2
 %rep 11
@@ -861,7 +858,7 @@ ALIGN 64
     sub        r3, r2                   ;   dst -= linesize
     READ_V_PIXEL  %%n, [r3+w_reg-1]     ;   read pixels
     WRITE_V_PIXEL %%n, r3+r4-%%n        ;   write pixels
-    dec       r11
+    dec       r8
 %else ; ARCH_X86_32
     sub        r0, r2                   ;   dst -= linesize
     READ_V_PIXEL  %%n, [r0+w_reg-1]     ;   read pixels
@@ -940,11 +937,11 @@ ALIGN 64
 %macro SLOW_V_EXTEND 0
 .slow_v_extend_loop:
 ; r0=buf,r1=src,r2(64)/r2m(32)=linesize,r3(64)/r3m(32)=start_x,r4=end_y,r5=block_h
-; r11(64)/r3(later-64)/r2(32)=cnt_reg,r6(64)/r3(32)=val_reg,r10(64)/r6(32)=w=end_x-start_x
+; r8(64)/r3(later-64)/r2(32)=cnt_reg,r6(64)/r3(32)=val_reg,r7(64)/r6(32)=w=end_x-start_x
 %if ARCH_X86_64
-    push       r11              ; save old value of block_h
+    push        r8              ; save old value of block_h
     test        r3, r3
-%define cnt_reg r11
+%define cnt_reg r8
     jz .do_body_copy            ; if (!start_y) goto do_body_copy
     V_COPY_ROW top, r3
 %else
@@ -958,7 +955,7 @@ ALIGN 64
     V_COPY_ROW body, r4
 
 %if ARCH_X86_64
-    pop        r11              ; restore old value of block_h
+    pop         r8              ; restore old value of block_h
 %define cnt_reg r3
 %endif
     test        r5, r5
@@ -977,7 +974,7 @@ ALIGN 64
 
 %macro SLOW_LEFT_EXTEND 0
 .slow_left_extend_loop:
-; r0=buf+block_h*linesize,r2=linesize,r6(64)/r3(32)=val,r5=block_h,r4=cntr,r10/r6=start_x
+; r0=buf+block_h*linesize,r2=linesize,r6(64)/r3(32)=val,r5=block_h,r4=cntr,r7/r6=start_x
     mov         r4, 8
     sub         r0, linesize
     READ_V_PIXEL 8, [r0+w_reg]
@@ -1005,11 +1002,11 @@ ALIGN 64
 
 %macro SLOW_RIGHT_EXTEND 0
 .slow_right_extend_loop:
-; r3(64)/r0(32)=buf+block_h*linesize,r2=linesize,r4=block_w,r11(64)/r5(32)=block_h,
-; r10(64)/r6(32)=end_x,r6/r3=val,r1=cntr
+; r3(64)/r0(32)=buf+block_h*linesize,r2=linesize,r4=block_w,r8(64)/r5(32)=block_h,
+; r7(64)/r6(32)=end_x,r6/r3=val,r1=cntr
 %if ARCH_X86_64
 %define buf_reg r3
-%define bh_reg r11
+%define bh_reg r8
 %else
 %define buf_reg r0
 %define bh_reg r5
@@ -1177,7 +1174,7 @@ cglobal butterflies_float_interleave, 4,4,3, dst, src0, src1, len
 
 INIT_XMM sse
 BUTTERFLIES_FLOAT_INTERLEAVE
-%ifdef HAVE_AVX
+%if HAVE_AVX
 INIT_YMM avx
 BUTTERFLIES_FLOAT_INTERLEAVE
 %endif

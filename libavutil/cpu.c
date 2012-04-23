@@ -23,7 +23,7 @@ static int flags, checked;
 
 void av_force_cpu_flags(int arg){
     flags   = arg;
-    checked = 1;
+    checked = arg != -1;
 }
 
 int av_get_cpu_flags(void)
@@ -39,6 +39,13 @@ int av_get_cpu_flags(void)
     return flags;
 }
 
+void av_set_cpu_flags_mask(int mask)
+{
+    checked       = 0;
+    flags         = av_get_cpu_flags() & mask;
+    checked       = 1;
+}
+
 #ifdef TEST
 
 #undef printf
@@ -49,7 +56,12 @@ static const struct {
     const char *name;
 } cpu_flag_tab[] = {
 #if   ARCH_ARM
-    { AV_CPU_FLAG_IWMMXT,    "iwmmxt"     },
+    { AV_CPU_FLAG_ARMV5TE,   "armv5te"    },
+    { AV_CPU_FLAG_ARMV6,     "armv6"      },
+    { AV_CPU_FLAG_ARMV6T2,   "armv6t2"    },
+    { AV_CPU_FLAG_VFP,       "vfp"        },
+    { AV_CPU_FLAG_VFPV3,     "vfpv3"      },
+    { AV_CPU_FLAG_NEON,      "neon"       },
 #elif ARCH_PPC
     { AV_CPU_FLAG_ALTIVEC,   "altivec"    },
 #elif ARCH_X86

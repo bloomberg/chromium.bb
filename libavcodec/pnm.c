@@ -112,7 +112,7 @@ int ff_pnm_decode_header(AVCodecContext *avctx, PNMContext * const s)
         s->maxval     = maxval;
         if (depth == 1) {
             if (maxval == 1) {
-                avctx->pix_fmt = PIX_FMT_MONOWHITE;
+                avctx->pix_fmt = PIX_FMT_MONOBLACK;
             } else if (maxval == 255) {
                 avctx->pix_fmt = PIX_FMT_GRAY8;
             } else {
@@ -148,7 +148,7 @@ int ff_pnm_decode_header(AVCodecContext *avctx, PNMContext * const s)
     avctx->height = atoi(buf1);
     if(avctx->height <= 0 || av_image_check_size(avctx->width, avctx->height, 0, avctx))
         return -1;
-    if (avctx->pix_fmt != PIX_FMT_MONOWHITE) {
+    if (avctx->pix_fmt != PIX_FMT_MONOWHITE && avctx->pix_fmt != PIX_FMT_MONOBLACK) {
         pnm_get(s, buf1, sizeof(buf1));
         s->maxval = atoi(buf1);
         if (s->maxval <= 0) {
@@ -198,8 +198,8 @@ av_cold int ff_pnm_init(AVCodecContext *avctx)
 {
     PNMContext *s = avctx->priv_data;
 
-    avcodec_get_frame_defaults((AVFrame*)&s->picture);
-    avctx->coded_frame = (AVFrame*)&s->picture;
+    avcodec_get_frame_defaults(&s->picture);
+    avctx->coded_frame = &s->picture;
 
     return 0;
 }

@@ -1,3 +1,6 @@
+FATE_DEMUX += fate-avio-direct
+fate-avio-direct: CMD = framecrc -avioflags direct -i $(SAMPLES)/fraps/fraps-v5-bouncing-balls-partial.avi -avioflags direct
+
 FATE_DEMUX += fate-adts-demux
 fate-adts-demux: CMD = crc -i $(SAMPLES)/aac/ct_faac-adts.aac -acodec copy
 
@@ -12,6 +15,9 @@ fate-bmv: CMD = framecrc -i $(SAMPLES)/bmv/SURFING-partial.BMV -pix_fmt rgb24
 
 FATE_DEMUX += fate-caf
 fate-caf: CMD = crc -i $(SAMPLES)/caf/caf-pcm16.caf
+
+FATE_DEMUX += fate-cdxl-demux
+fate-cdxl-demux: CMD = framecrc -i $(SAMPLES)/cdxl/mirage.cdxl -vcodec copy -acodec copy
 
 FATE_DEMUX += fate-cryo-apc
 fate-cryo-apc: CMD = md5 -i $(SAMPLES)/cryo-apc/cine007.APC -f s16le
@@ -35,7 +41,7 @@ FATE_DEMUX += fate-lmlm4-demux
 fate-lmlm4-demux: CMD = framecrc -i $(SAMPLES)/lmlm4/LMLM4_CIFat30fps.divx -t 3 -acodec copy -vcodec copy
 
 FATE_DEMUX += fate-maxis-xa
-fate-maxis-xa: CMD = md5 -i $(SAMPLES)/maxis-xa/SC2KBUG.XA -f s16le
+fate-maxis-xa: CMD = framecrc -i $(SAMPLES)/maxis-xa/SC2KBUG.XA -frames:a 30 -c:a copy
 
 FATE_DEMUX += fate-mtv
 fate-mtv: CMD = framecrc -i $(SAMPLES)/mtv/comedian_auto-partial.mtv -acodec copy -pix_fmt rgb24

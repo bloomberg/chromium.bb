@@ -197,46 +197,38 @@ static void vorbis_free(vorbis_context *vc)
     av_freep(&vc->channel_floors);
     av_freep(&vc->saved);
 
-    if (vc->residues) {
-        for (i = 0; i < vc->residue_count; i++)
-            av_free(vc->residues[i].classifs);
-        av_freep(&vc->residues);
-    }
+    for (i = 0; i < vc->residue_count; i++)
+        av_free(vc->residues[i].classifs);
+    av_freep(&vc->residues);
     av_freep(&vc->modes);
 
     ff_mdct_end(&vc->mdct[0]);
     ff_mdct_end(&vc->mdct[1]);
 
-    if (vc->codebooks) {
-        for (i = 0; i < vc->codebook_count; ++i) {
-            av_free(vc->codebooks[i].codevectors);
-            free_vlc(&vc->codebooks[i].vlc);
-        }
-        av_freep(&vc->codebooks);
+    for (i = 0; i < vc->codebook_count; ++i) {
+        av_free(vc->codebooks[i].codevectors);
+        ff_free_vlc(&vc->codebooks[i].vlc);
     }
+    av_freep(&vc->codebooks);
 
-    if (vc->floors) {
-        for (i = 0; i < vc->floor_count; ++i) {
-            if (vc->floors[i].floor_type == 0) {
-                av_free(vc->floors[i].data.t0.map[0]);
-                av_free(vc->floors[i].data.t0.map[1]);
-                av_free(vc->floors[i].data.t0.book_list);
-                av_free(vc->floors[i].data.t0.lsp);
-            } else {
-                av_free(vc->floors[i].data.t1.list);
-            }
+    for (i = 0; i < vc->floor_count; ++i) {
+        if (vc->floors[i].floor_type == 0) {
+            av_free(vc->floors[i].data.t0.map[0]);
+            av_free(vc->floors[i].data.t0.map[1]);
+            av_free(vc->floors[i].data.t0.book_list);
+            av_free(vc->floors[i].data.t0.lsp);
+        } else {
+            av_free(vc->floors[i].data.t1.list);
         }
-        av_freep(&vc->floors);
     }
+    av_freep(&vc->floors);
 
-    if (vc->mappings) {
-        for (i = 0; i < vc->mapping_count; ++i) {
-            av_free(vc->mappings[i].magnitude);
-            av_free(vc->mappings[i].angle);
-            av_free(vc->mappings[i].mux);
-        }
-        av_freep(&vc->mappings);
+    for (i = 0; i < vc->mapping_count; ++i) {
+        av_free(vc->mappings[i].magnitude);
+        av_free(vc->mappings[i].angle);
+        av_free(vc->mappings[i].mux);
     }
+    av_freep(&vc->mappings);
 }
 
 // Parse setup header -------------------------------------------------
@@ -695,7 +687,7 @@ static int vorbis_parse_setup_hdr_residues(vorbis_context *vc)
         res_setup->partition_size = get_bits(gb, 24) + 1;
         /* Validations to prevent a buffer overflow later. */
         if (res_setup->begin>res_setup->end ||
-            res_setup->end > (res_setup->type == 2 ? vc->avccontext->channels : 1) * vc->blocksize[1] / 2 ||
+            res_setup->end > (res_setup->type == 2 ? vc->audio_channels : 1) * vc->blocksize[1] / 2 ||
             (res_setup->end-res_setup->begin) / res_setup->partition_size > V_MAX_PARTITIONS) {
             av_log(vc->avccontext, AV_LOG_ERROR,
                    "partition out of bounds: type, begin, end, size, blocksize: %"PRIu16", %"PRIu32", %"PRIu32", %u, %"PRIu32"\n",
@@ -998,7 +990,7 @@ static av_cold int vorbis_decode_init(AVCodecContext *avccontext)
     int hdr_type, ret;
 
     vc->avccontext = avccontext;
-    dsputil_init(&vc->dsp, avccontext);
+    ff_dsputil_init(&vc->dsp, avccontext);
     ff_fmt_convert_init(&vc->fmt_conv, avccontext);
 
     if (avccontext->request_sample_fmt == AV_SAMPLE_FMT_FLT) {
@@ -1051,7 +1043,6 @@ static av_cold int vorbis_decode_init(AVCodecContext *avccontext)
 
     avccontext->channels    = vc->audio_channels;
     avccontext->sample_rate = vc->audio_samplerate;
-    avccontext->frame_size  = FFMIN(vc->blocksize[0], vc->blocksize[1]) >> 2;
 
     avcodec_get_frame_defaults(&vc->frame);
     avccontext->coded_frame = &vc->frame;
@@ -1467,7 +1458,7 @@ static inline int vorbis_residue_decode(vorbis_context *vc, vorbis_residue *vr,
     }
 }
 
-void vorbis_inverse_coupling(float *mag, float *ang, int blocksize)
+void ff_vorbis_inverse_coupling(float *mag, float *ang, int blocksize)
 {
     int i;
     for (i = 0;  i < blocksize;  i++) {
@@ -1530,8 +1521,10 @@ static int vorbis_parse_audio_packet(vorbis_context *vc)
     blockflag = vc->modes[mode_number].blockflag;
     blocksize = vc->blocksize[blockflag];
     vlen = blocksize / 2;
-    if (blockflag)
-        skip_bits(gb, 2); // previous_window, next_window
+    if (blockflag) {
+        previous_window = get_bits(gb, 1);
+        skip_bits1(gb); // next_window
+    }
 
     memset(ch_res_ptr,   0, sizeof(float) * vc->audio_channels * vlen); //FIXME can this be removed ?
     memset(ch_floor_ptr, 0, sizeof(float) * vc->audio_channels * vlen); //FIXME can this be removed ?
@@ -1721,18 +1714,30 @@ static av_cold int vorbis_decode_close(AVCodecContext *avccontext)
     return 0;
 }
 
+static av_cold void vorbis_decode_flush(AVCodecContext *avccontext)
+{
+    vorbis_context *vc = avccontext->priv_data;
+
+    if (vc->saved) {
+        memset(vc->saved, 0, (vc->blocksize[1] / 4) * vc->audio_channels *
+                             sizeof(*vc->saved));
+    }
+    vc->previous_window = 0;
+}
+
 AVCodec ff_vorbis_decoder = {
-    .name           = "vorbis",
-    .type           = AVMEDIA_TYPE_AUDIO,
-    .id             = CODEC_ID_VORBIS,
-    .priv_data_size = sizeof(vorbis_context),
-    .init           = vorbis_decode_init,
-    .close          = vorbis_decode_close,
-    .decode         = vorbis_decode_frame,
-    .capabilities   = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("Vorbis"),
+    .name            = "vorbis",
+    .type            = AVMEDIA_TYPE_AUDIO,
+    .id              = CODEC_ID_VORBIS,
+    .priv_data_size  = sizeof(vorbis_context),
+    .init            = vorbis_decode_init,
+    .close           = vorbis_decode_close,
+    .decode          = vorbis_decode_frame,
+    .flush           = vorbis_decode_flush,
+    .capabilities    = CODEC_CAP_DR1,
+    .long_name       = NULL_IF_CONFIG_SMALL("Vorbis"),
     .channel_layouts = ff_vorbis_channel_layouts,
-    .sample_fmts = (const enum AVSampleFormat[]) {
+    .sample_fmts     = (const enum AVSampleFormat[]) {
         AV_SAMPLE_FMT_FLT, AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_NONE
     },
 };

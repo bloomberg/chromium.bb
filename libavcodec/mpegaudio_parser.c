@@ -66,8 +66,8 @@ static int mpegaudio_parse(AVCodecParserContext *s1,
 
                 ret = avpriv_mpa_decode_header(avctx, state, &sr, &channels, &frame_size, &bit_rate);
                 if (ret < 4) {
-                    if(i > 4)
-                        s->header_count= -2;
+                    if (i > 4)
+                        s->header_count = -2;
                 } else {
                     if((state&SAME_HEADER_MASK) != (s->header&SAME_HEADER_MASK) && s->header)
                         s->header_count= -3;
@@ -75,10 +75,10 @@ static int mpegaudio_parse(AVCodecParserContext *s1,
                     s->header_count++;
                     s->frame_size = ret-4;
 
-                    if(s->header_count > 1){
+                    if (s->header_count > 1) {
                         avctx->sample_rate= sr;
                         avctx->channels   = channels;
-                        avctx->frame_size = frame_size;
+                        s1->duration      = frame_size;
                         avctx->bit_rate   = bit_rate;
                     }
                     break;

@@ -159,7 +159,7 @@ static int tcp_write_packet(AVFormatContext *s, RTSPStream *rtsp_st)
         size -= 4;
         if (packet_len > size || packet_len < 2)
             break;
-        if (ptr[1] >= RTCP_SR && ptr[1] <= RTCP_APP)
+        if (RTP_PT_IS_RTCP(ptr[1]))
             id = rtsp_st->interleaved_max; /* RTCP */
         else
             id = rtsp_st->interleaved_min; /* RTP */
@@ -242,6 +242,6 @@ AVOutputFormat ff_rtsp_muxer = {
     .write_header      = rtsp_write_header,
     .write_packet      = rtsp_write_packet,
     .write_trailer     = rtsp_write_close,
-    .flags = AVFMT_NOFILE | AVFMT_GLOBALHEADER,
-    .priv_class = &rtsp_muxer_class,
+    .flags             = AVFMT_NOFILE | AVFMT_GLOBALHEADER,
+    .priv_class        = &rtsp_muxer_class,
 };

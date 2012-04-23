@@ -183,6 +183,11 @@ static int xmv_read_header(AVFormatContext *s)
         packet->bits_per_sample = avio_rl16(pb);
         packet->flags           = avio_rl16(pb);
 
+        if (!packet->channels) {
+            av_log(s, AV_LOG_ERROR, "0 channels\n");
+            return AVERROR(EINVAL);
+        }
+
         packet->bit_rate      = packet->bits_per_sample *
                                 packet->sample_rate *
                                 packet->channels;
@@ -299,7 +304,7 @@ static int xmv_process_packet_header(AVFormatContext *s)
     xmv->current_stream = 0;
     if (!xmv->video.frame_count) {
         xmv->video.frame_count = 1;
-        xmv->current_stream    = 1;
+        xmv->current_stream    = xmv->stream_count > 1;
     }
 
     /* Packet audio header */
@@ -541,7 +546,7 @@ static int xmv_read_close(AVFormatContext *s)
 {
     XMVDemuxContext *xmv = s->priv_data;
 
-    av_free(xmv->audio);
+    av_freep(&xmv->audio);
 
     return 0;
 }

@@ -35,13 +35,18 @@ static void sbr_sum64x5_c(float *z)
 
 static float sbr_sum_square_c(float (*x)[2], int n)
 {
-    float sum = 0.0f;
+    float sum0 = 0.0f, sum1 = 0.0f;
     int i;
 
-    for (i = 0; i < n; i++)
-        sum += x[i][0] * x[i][0] + x[i][1] * x[i][1];
+    for (i = 0; i < n; i += 2)
+    {
+        sum0 += x[i + 0][0] * x[i + 0][0];
+        sum1 += x[i + 0][1] * x[i + 0][1];
+        sum0 += x[i + 1][0] * x[i + 1][0];
+        sum1 += x[i + 1][1] * x[i + 1][1];
+    }
 
-    return sum;
+    return sum0 + sum1;
 }
 
 static void sbr_neg_odd_64_c(float *x)
@@ -151,7 +156,7 @@ static void sbr_hf_gen_c(float (*X_high)[2], const float (*X_low)[2],
 }
 
 static void sbr_hf_g_filt_c(float (*Y)[2], const float (*X_high)[40][2],
-                            const float *g_filt, int m_max, int ixh)
+                            const float *g_filt, int m_max, intptr_t ixh)
 {
     int m;
 
@@ -238,4 +243,6 @@ av_cold void ff_sbrdsp_init(SBRDSPContext *s)
 
     if (ARCH_ARM)
         ff_sbrdsp_init_arm(s);
+    if (HAVE_MMX)
+        ff_sbrdsp_init_x86(s);
 }

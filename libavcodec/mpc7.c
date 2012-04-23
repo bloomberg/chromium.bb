@@ -74,7 +74,7 @@ static av_cold int mpc7_decode_init(AVCodecContext * avctx)
     }
     memset(c->oldDSCF, 0, sizeof(c->oldDSCF));
     av_lfg_init(&c->rnd, 0xDEADBEEF);
-    dsputil_init(&c->dsp, avctx);
+    ff_dsputil_init(&c->dsp, avctx);
     ff_mpadsp_init(&c->mpadsp);
     c->dsp.bswap_buf((uint32_t*)buf, (const uint32_t*)avctx->extradata, 4);
     ff_mpc_init();
@@ -248,6 +248,10 @@ static int mpc7_decode_frame(AVCodecContext * avctx, void *data,
             if(i) t = get_vlc2(&gb, hdr_vlc.table, MPC7_HDR_BITS, 1) - 5;
             if(t == 4) bands[i].res[ch] = get_bits(&gb, 4);
             else bands[i].res[ch] = bands[i-1].res[ch] + t;
+            if (bands[i].res[ch] < -1 || bands[i].res[ch] > 17) {
+                av_log(avctx, AV_LOG_ERROR, "subband index invalid\n");
+                return AVERROR_INVALIDDATA;
+            }
         }
 
         if(bands[i].res[0] || bands[i].res[1]){
@@ -298,7 +302,7 @@ static int mpc7_decode_frame(AVCodecContext * avctx, void *data,
     bits_used = get_bits_count(&gb);
     bits_avail = buf_size * 8;
     if (!last_frame && ((bits_avail < bits_used) || (bits_used + 32 <= bits_avail))) {
-        av_log(NULL,0, "Error decoding frame: used %i of %i bits\n", bits_used, bits_avail);
+        av_log(avctx, AV_LOG_ERROR, "Error decoding frame: used %i of %i bits\n", bits_used, bits_avail);
         return -1;
     }
     if(c->frames_to_skip){
@@ -337,7 +341,7 @@ AVCodec ff_mpc7_decoder = {
     .init           = mpc7_decode_init,
     .close          = mpc7_decode_close,
     .decode         = mpc7_decode_frame,
-    .flush = mpc7_decode_flush,
+    .flush          = mpc7_decode_flush,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("Musepack SV7"),
+    .long_name      = NULL_IF_CONFIG_SMALL("Musepack SV7"),
 };

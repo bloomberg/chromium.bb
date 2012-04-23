@@ -157,6 +157,8 @@ static int build_table(VLC *vlc, int table_nb_bits, int nb_codes,
     VLC_TYPE (*table)[2];
 
     table_size = 1 << table_nb_bits;
+    if (table_nb_bits > 30)
+       return -1;
     table_index = alloc_table(vlc, table_size, flags & INIT_VLC_USE_NEW_STATIC);
     av_dlog(NULL, "new table index=%d size=%d\n", table_index, table_size);
     if (table_index < 0)
@@ -253,9 +255,9 @@ static int build_table(VLC *vlc, int table_nb_bits, int nb_codes,
    (byte/word/long) to store the 'bits', 'codes', and 'symbols' tables.
 
    'use_static' should be set to 1 for tables, which should be freed
-   with av_free_static(), 0 if free_vlc() will be used.
+   with av_free_static(), 0 if ff_free_vlc() will be used.
 */
-int init_vlc_sparse(VLC *vlc, int nb_bits, int nb_codes,
+int ff_init_vlc_sparse(VLC *vlc, int nb_bits, int nb_codes,
              const void *bits, int bits_wrap, int bits_size,
              const void *codes, int codes_wrap, int codes_size,
              const void *symbols, int symbols_wrap, int symbols_size,
@@ -318,7 +320,7 @@ int init_vlc_sparse(VLC *vlc, int nb_bits, int nb_codes,
 }
 
 
-void free_vlc(VLC *vlc)
+void ff_free_vlc(VLC *vlc)
 {
     av_freep(&vlc->table);
 }

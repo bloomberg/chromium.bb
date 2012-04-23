@@ -27,11 +27,13 @@
 #include "libavutil/avstring.h"
 #include "libavutil/eval.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
+#include "libavutil/imgutils.h"
 #include "libavutil/avassert.h"
 #include "libswscale/swscale.h"
 
-static const char * const var_names[] = {
+static const char *const var_names[] = {
     "in_w",   "iw",
     "in_h",   "ih",
     "out_w",  "ow",
@@ -72,6 +74,7 @@ typedef struct {
     int hsub, vsub;             ///< chroma subsampling
     int slice_y;                ///< top of current output slice
     int input_is_pal;           ///< set to 1 if the input format is paletted
+    int output_is_pal;          ///< set to 1 if the output format is paletted
     int interlaced;
 
     char w_expr[256];           ///< width  expression string
@@ -90,7 +93,15 @@ static av_cold int init(AVFilterContext *ctx, const char *args, void *opaque)
     if (args) {
         sscanf(args, "%255[^:]:%255[^:]", scale->w_expr, scale->h_expr);
         p = strstr(args,"flags=");
-        if (p) scale->flags = strtoul(p+6, NULL, 0);
+        if (p) {
+            const AVClass *class = sws_get_class();
+            const AVOption    *o = av_opt_find(&class, "sws_flags", NULL, 0,
+                                               AV_OPT_SEARCH_FAKE_OBJ);
+            int ret = av_opt_eval_flags(&class, o, p + 6, &scale->flags);
+
+            if (ret < 0)
+                return ret;
+        }
         if(strstr(args,"interl=1")){
             scale->interlaced=1;
         }else if(strstr(args,"interl=-1"))
@@ -207,38 +218,47 @@ static int config_props(AVFilterLink *outlink)
     outlink->h = h;
 
     /* TODO: make algorithm configurable */
-    av_log(ctx, AV_LOG_INFO, "w:%d h:%d fmt:%s -> w:%d h:%d fmt:%s flags:0x%0x\n",
-           inlink ->w, inlink ->h, av_pix_fmt_descriptors[ inlink->format].name,
-           outlink->w, outlink->h, av_pix_fmt_descriptors[outlink->format].name,
-           scale->flags);
 
     scale->input_is_pal = av_pix_fmt_descriptors[inlink->format].flags & PIX_FMT_PAL ||
                           av_pix_fmt_descriptors[inlink->format].flags & PIX_FMT_PSEUDOPAL;
     if (outfmt == PIX_FMT_PAL8) outfmt = PIX_FMT_BGR8;
+    scale->output_is_pal = av_pix_fmt_descriptors[outfmt].flags & PIX_FMT_PAL ||
+                           av_pix_fmt_descriptors[outfmt].flags & PIX_FMT_PSEUDOPAL;
 
     if (scale->sws)
         sws_freeContext(scale->sws);
-    scale->sws = sws_getContext(inlink ->w, inlink ->h, inlink ->format,
-                                outlink->w, outlink->h, outfmt,
-                                scale->flags, NULL, NULL, NULL);
-    if (scale->isws[0])
-        sws_freeContext(scale->isws[0]);
-    scale->isws[0] = sws_getContext(inlink ->w, inlink ->h/2, inlink ->format,
-                                    outlink->w, outlink->h/2, outfmt,
+    if (inlink->w == outlink->w && inlink->h == outlink->h &&
+        inlink->format == outlink->format)
+        scale->sws = NULL;
+    else {
+        scale->sws = sws_getContext(inlink ->w, inlink ->h, inlink ->format,
+                                    outlink->w, outlink->h, outfmt,
                                     scale->flags, NULL, NULL, NULL);
-    if (scale->isws[1])
-        sws_freeContext(scale->isws[1]);
-    scale->isws[1] = sws_getContext(inlink ->w, inlink ->h/2, inlink ->format,
-                                    outlink->w, outlink->h/2, outfmt,
-                                    scale->flags, NULL, NULL, NULL);
-    if (!scale->sws || !scale->isws[0] || !scale->isws[1])
-        return AVERROR(EINVAL);
+        if (scale->isws[0])
+            sws_freeContext(scale->isws[0]);
+        scale->isws[0] = sws_getContext(inlink ->w, inlink ->h/2, inlink ->format,
+                                        outlink->w, outlink->h/2, outfmt,
+                                        scale->flags, NULL, NULL, NULL);
+        if (scale->isws[1])
+            sws_freeContext(scale->isws[1]);
+        scale->isws[1] = sws_getContext(inlink ->w, inlink ->h/2, inlink ->format,
+                                        outlink->w, outlink->h/2, outfmt,
+                                        scale->flags, NULL, NULL, NULL);
+        if (!scale->sws || !scale->isws[0] || !scale->isws[1])
+            return AVERROR(EINVAL);
+    }
 
     if (inlink->sample_aspect_ratio.num){
         outlink->sample_aspect_ratio = av_mul_q((AVRational){outlink->h * inlink->w, outlink->w * inlink->h}, inlink->sample_aspect_ratio);
     } else
         outlink->sample_aspect_ratio = inlink->sample_aspect_ratio;
 
+    av_log(ctx, AV_LOG_INFO, "w:%d h:%d fmt:%s sar:%d/%d -> w:%d h:%d fmt:%s sar:%d/%d flags:0x%0x\n",
+           inlink ->w, inlink ->h, av_pix_fmt_descriptors[ inlink->format].name,
+           inlink->sample_aspect_ratio.num, inlink->sample_aspect_ratio.den,
+           outlink->w, outlink->h, av_pix_fmt_descriptors[outlink->format].name,
+           outlink->sample_aspect_ratio.num, outlink->sample_aspect_ratio.den,
+           scale->flags);
     return 0;
 
 fail:
@@ -255,6 +275,11 @@ static void start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
     AVFilterLink *outlink = link->dst->outputs[0];
     AVFilterBufferRef *outpicref;
 
+    if (!scale->sws) {
+        avfilter_start_frame(outlink, avfilter_ref_buffer(picref, ~0));
+        return;
+    }
+
     scale->hsub = av_pix_fmt_descriptors[link->format].log2_chroma_w;
     scale->vsub = av_pix_fmt_descriptors[link->format].log2_chroma_h;
 
@@ -264,6 +289,8 @@ static void start_frame(AVFilterLink *link, AVFilterBufferRef *picref)
     outpicref->video->h = outlink->h;
 
     outlink->out_buf = outpicref;
+    if(scale->output_is_pal)
+        ff_set_systematic_pal2(outpicref->data[1], outlink->format == PIX_FMT_PAL8 ? PIX_FMT_BGR8 : outlink->format);
 
     av_reduce(&outpicref->video->sample_aspect_ratio.num, &outpicref->video->sample_aspect_ratio.den,
               (int64_t)picref->video->sample_aspect_ratio.num * outlink->h * link->w,
@@ -291,10 +318,10 @@ static int scale_slice(AVFilterLink *link, struct SwsContext *sws, int y, int h,
          in[i] = cur_pic->data[i] + ((y>>vsub)+field) * cur_pic->linesize[i];
         out[i] = out_buf->data[i] +            field  * out_buf->linesize[i];
     }
-    if(scale->input_is_pal){
+    if(scale->input_is_pal)
          in[1] = cur_pic->data[1];
+    if(scale->output_is_pal)
         out[1] = out_buf->data[1];
-    }
 
     return sws_scale(sws, in, in_stride, y/mul, h,
                          out,out_stride);
@@ -304,6 +331,11 @@ static void draw_slice(AVFilterLink *link, int y, int h, int slice_dir)
 {
     ScaleContext *scale = link->dst->priv;
     int out_h;
+
+    if (!scale->sws) {
+        avfilter_draw_slice(link->dst->outputs[0], y, h, slice_dir);
+        return;
+    }
 
     if (scale->slice_y == 0 && slice_dir == -1)
         scale->slice_y = link->dst->outputs[0]->h;

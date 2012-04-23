@@ -18,8 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBAVCODEC_SBRDSP_H
-#define LIBAVCODEC_SBRDSP_H
+#ifndef AVCODEC_SBRDSP_H
+#define AVCODEC_SBRDSP_H
+
+#include <stdint.h>
 
 typedef struct SBRDSPContext {
     void (*sum64x5)(float *z);
@@ -34,7 +36,7 @@ typedef struct SBRDSPContext {
                    const float alpha0[2], const float alpha1[2],
                    float bw, int start, int end);
     void (*hf_g_filt)(float (*Y)[2], const float (*X_high)[40][2],
-                      const float *g_filt, int m_max, int ixh);
+                      const float *g_filt, int m_max, intptr_t ixh);
     void (*hf_apply_noise[4])(float (*Y)[2], const float *s_m,
                               const float *q_filt, int noise,
                               int kx, int m_max);
@@ -44,5 +46,6 @@ extern const float ff_sbr_noise_table[][2];
 
 void ff_sbrdsp_init(SBRDSPContext *s);
 void ff_sbrdsp_init_arm(SBRDSPContext *s);
+void ff_sbrdsp_init_x86(SBRDSPContext *s);
 
-#endif
+#endif /* AVCODEC_SBRDSP_H */

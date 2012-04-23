@@ -113,7 +113,7 @@ static int sdp_parse_fmtp_config_h264(AVStream * stream,
             h264_data->level_idc = level_idc;
         }
     } else  if (!strcmp(attr, "sprop-parameter-sets")) {
-        uint8_t start_sequence[]= { 0, 0, 1 };
+        uint8_t start_sequence[] = { 0, 0, 0, 1 };
         codec->extradata_size= 0;
         codec->extradata= NULL;
 
@@ -176,7 +176,7 @@ static int h264_handle_packet(AVFormatContext *ctx,
     uint8_t nal = buf[0];
     uint8_t type = (nal & 0x1f);
     int result= 0;
-    uint8_t start_sequence[]= {0, 0, 1};
+    uint8_t start_sequence[] = { 0, 0, 0, 1 };
 
 #ifdef DEBUG
     assert(data);
@@ -357,10 +357,15 @@ static void h264_free_context(PayloadContext *data)
 static int parse_h264_sdp_line(AVFormatContext *s, int st_index,
                                PayloadContext *h264_data, const char *line)
 {
-    AVStream *stream = s->streams[st_index];
-    AVCodecContext *codec = stream->codec;
+    AVStream *stream;
+    AVCodecContext *codec;
     const char *p = line;
 
+    if (st_index < 0)
+        return 0;
+
+    stream = s->streams[st_index];
+    codec = stream->codec;
     assert(h264_data->cookie == MAGIC_COOKIE);
 
     if (av_strstart(p, "framesize:", &p)) {

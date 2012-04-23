@@ -39,6 +39,7 @@ typedef struct {
     char *list;            /**< Set by a private option. */
     float time;            /**< Set by a private option. */
     int  size;             /**< Set by a private option. */
+    int  wrap;             /**< Set by a private option. */
     int64_t offset_time;
     int64_t recording_time;
     int has_video;
@@ -50,6 +51,9 @@ static int segment_start(AVFormatContext *s)
     SegmentContext *c = s->priv_data;
     AVFormatContext *oc = c->avf;
     int err = 0;
+
+    if (c->wrap)
+        c->number %= c->wrap;
 
     if (av_get_frame_filename(oc->filename, sizeof(oc->filename),
                               s->filename, c->number++) < 0)
@@ -170,11 +174,13 @@ static int seg_write_header(AVFormatContext *s)
 
 fail:
     if (ret) {
-        oc->streams = NULL;
-        oc->nb_streams = 0;
+        if (oc) {
+            oc->streams = NULL;
+            oc->nb_streams = 0;
+            avformat_free_context(oc);
+        }
         if (seg->list)
             avio_close(seg->pb);
-        avformat_free_context(oc);
     }
     return ret;
 }
@@ -211,7 +217,6 @@ static int seg_write_packet(AVFormatContext *s, AVPacket *pkt)
                 if ((ret = avio_open2(&seg->pb, seg->list, AVIO_FLAG_WRITE,
                                       &s->interrupt_callback, NULL)) < 0)
                     goto fail;
-
             }
         }
     }
@@ -250,6 +255,7 @@ static const AVOption options[] = {
     { "segment_time",      "segment length in seconds",               OFFSET(time),    AV_OPT_TYPE_FLOAT,  {.dbl = 2},     0, FLT_MAX, E },
     { "segment_list",      "output the segment list",                 OFFSET(list),    AV_OPT_TYPE_STRING, {.str = NULL},  0, 0,       E },
     { "segment_list_size", "maximum number of playlist entries",      OFFSET(size),    AV_OPT_TYPE_INT,    {.dbl = 5},     0, INT_MAX, E },
+    { "segment_wrap",      "number after which the index wraps",      OFFSET(wrap),    AV_OPT_TYPE_INT,    {.dbl = 0},     0, INT_MAX, E },
     { NULL },
 };
 

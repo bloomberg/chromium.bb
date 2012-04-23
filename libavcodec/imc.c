@@ -166,7 +166,7 @@ static av_cold int imc_decode_init(AVCodecContext * avctx)
         av_log(avctx, AV_LOG_INFO, "FFT init failed\n");
         return ret;
     }
-    dsputil_init(&q->dsp, avctx);
+    ff_dsputil_init(&q->dsp, avctx);
     avctx->sample_fmt = AV_SAMPLE_FMT_FLT;
     avctx->channel_layout = AV_CH_LAYOUT_MONO;
 
@@ -846,13 +846,13 @@ static av_cold int imc_decode_close(AVCodecContext * avctx)
 
 
 AVCodec ff_imc_decoder = {
-    .name = "imc",
-    .type = AVMEDIA_TYPE_AUDIO,
-    .id = CODEC_ID_IMC,
+    .name           = "imc",
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = CODEC_ID_IMC,
     .priv_data_size = sizeof(IMCContext),
-    .init = imc_decode_init,
-    .close = imc_decode_close,
-    .decode = imc_decode_frame,
-    .capabilities = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("IMC (Intel Music Coder)"),
+    .init           = imc_decode_init,
+    .close          = imc_decode_close,
+    .decode         = imc_decode_frame,
+    .capabilities   = CODEC_CAP_DR1,
+    .long_name      = NULL_IF_CONFIG_SMALL("IMC (Intel Music Coder)"),
 };

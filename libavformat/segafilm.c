@@ -197,8 +197,13 @@ static int film_read_header(AVFormatContext *s)
     if (!film->sample_table)
         return AVERROR(ENOMEM);
 
-    for(i=0; i<s->nb_streams; i++)
-        avpriv_set_pts_info(s->streams[i], 33, 1, film->base_clock);
+    for (i = 0; i < s->nb_streams; i++) {
+        st = s->streams[i];
+        if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO)
+            avpriv_set_pts_info(st, 33, 1, film->base_clock);
+        else
+            avpriv_set_pts_info(st, 64, 1, film->audio_samplerate);
+    }
 
     audio_frame_counter = 0;
     for (i = 0; i < film->sample_count; i++) {
@@ -213,8 +218,6 @@ static int film_read_header(AVFormatContext *s)
         if (AV_RB32(&scratch[8]) == 0xFFFFFFFF) {
             film->sample_table[i].stream = film->audio_stream_index;
             film->sample_table[i].pts = audio_frame_counter;
-            film->sample_table[i].pts *= film->base_clock;
-            film->sample_table[i].pts /= film->audio_samplerate;
 
             if (film->audio_type == CODEC_ID_ADPCM_ADX)
                 audio_frame_counter += (film->sample_table[i].sample_size * 32 /
@@ -287,7 +290,7 @@ static int film_read_packet(AVFormatContext *s,
 
         left = 0;
         right = sample->sample_size / 2;
-        for (i = 0; i < sample->sample_size; ) {
+        for (i = 0; i + 1 + 2*(film->audio_bits != 8) < sample->sample_size; ) {
             if (film->audio_bits == 8) {
                 pkt->data[i++] = film->stereo_buffer[left++];
                 pkt->data[i++] = film->stereo_buffer[right++];

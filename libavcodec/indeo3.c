@@ -148,13 +148,10 @@ static av_cold void build_requant_tab(void)
 
 
 static av_cold int allocate_frame_buffers(Indeo3DecodeContext *ctx,
-                                          AVCodecContext *avctx)
+                                          AVCodecContext *avctx, int luma_width, int luma_height)
 {
-    int p, luma_width, luma_height, chroma_width, chroma_height;
+    int p, chroma_width, chroma_height;
     int luma_pitch, chroma_pitch, luma_size, chroma_size;
-
-    luma_width  = ctx->width;
-    luma_height = ctx->height;
 
     if (luma_width  < 16 || luma_width  > 640 ||
         luma_height < 16 || luma_height > 480 ||
@@ -163,6 +160,9 @@ static av_cold int allocate_frame_buffers(Indeo3DecodeContext *ctx,
                luma_width, luma_height);
         return AVERROR_INVALIDDATA;
     }
+
+    ctx->width  = luma_width ;
+    ctx->height = luma_height;
 
     chroma_width  = FFALIGN(luma_width  >> 2, 4);
     chroma_height = FFALIGN(luma_height >> 2, 4);
@@ -203,6 +203,9 @@ static av_cold int allocate_frame_buffers(Indeo3DecodeContext *ctx,
 static av_cold void free_frame_buffers(Indeo3DecodeContext *ctx)
 {
     int p;
+
+    ctx->width=
+    ctx->height= 0;
 
     for (p = 0; p < 3; p++) {
         av_freep(&ctx->planes[p].buffers[0]);
@@ -419,8 +422,8 @@ static int decode_cell_data(Cell *cell, uint8_t *block, uint8_t *ref_block,
     blk_row_offset = (row_offset << (2 + v_zoom)) - (cell->width << 2);
     line_offset    = v_zoom ? row_offset : 0;
 
-    for (y = 0; y < cell->height; is_first_row = 0, y += 1 + v_zoom) {
-        for (x = 0; x < cell->width; x += 1 + h_zoom) {
+    for (y = 0; y + v_zoom < cell->height; is_first_row = 0, y += 1 + v_zoom) {
+        for (x = 0; x + h_zoom < cell->width; x += 1 + h_zoom) {
             ref = ref_block;
             dst = block;
 
@@ -573,6 +576,19 @@ static int decode_cell(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
     /* setup output and reference pointers */
     offset = (cell->ypos << 2) * plane->pitch + (cell->xpos << 2);
     block  =  plane->pixels[ctx->buf_sel] + offset;
+
+    if (cell->mv_ptr) {
+        mv_y      = cell->mv_ptr[0];
+        mv_x      = cell->mv_ptr[1];
+        if (   mv_x + 4*cell->xpos < 0
+            || mv_y + 4*cell->ypos < 0
+            || mv_x + 4*cell->xpos + 4*cell->width  > plane->width
+            || mv_y + 4*cell->ypos + 4*cell->height > plane->height) {
+            av_log(avctx, AV_LOG_ERROR, "motion vector %d %d outside reference\n", mv_x + 4*cell->xpos, mv_y + 4*cell->ypos);
+            return AVERROR_INVALIDDATA;
+        }
+    }
+
     if (!cell->mv_ptr) {
         /* use previous line as reference for INTRA cells */
         ref_block = block - plane->pitch;
@@ -615,7 +631,7 @@ static int decode_cell(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
     /* of the predicted cell in order to avoid overflows. */
     if (vq_index >= 8 && ref_block) {
         for (x = 0; x < cell->width << 2; x++)
-            ref_block[x] = requant_tab[vq_index & 7][ref_block[x]];
+            ref_block[x] = requant_tab[vq_index & 7][ref_block[x] & 127];
     }
 
     error = IV3_NOERR;
@@ -716,6 +732,7 @@ static int parse_bintree(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
 {
     Cell    curr_cell;
     int     bytes_used;
+    int mv_x, mv_y;
 
     if (depth <= 0) {
         av_log(avctx, AV_LOG_ERROR, "Stack overflow (corrupted binary tree)!\n");
@@ -727,6 +744,8 @@ static int parse_bintree(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
         SPLIT_CELL(ref_cell->height, curr_cell.height);
         ref_cell->ypos   += curr_cell.height;
         ref_cell->height -= curr_cell.height;
+        if (ref_cell->height <= 0 || curr_cell.height <= 0)
+            return AVERROR_INVALIDDATA;
     } else if (code == V_SPLIT) {
         if (curr_cell.width > strip_width) {
             /* split strip */
@@ -735,6 +754,8 @@ static int parse_bintree(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
             SPLIT_CELL(ref_cell->width, curr_cell.width);
         ref_cell->xpos  += curr_cell.width;
         ref_cell->width -= curr_cell.width;
+        if (ref_cell->width <= 0 || curr_cell.width <= 0)
+            return AVERROR_INVALIDDATA;
     }
 
     while (get_bits_left(&ctx->gb) >= 2) { /* loop until return */
@@ -762,6 +783,17 @@ static int parse_bintree(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
                 CHECK_CELL
                 if (!curr_cell.mv_ptr)
                     return AVERROR_INVALIDDATA;
+
+                mv_y = curr_cell.mv_ptr[0];
+                mv_x = curr_cell.mv_ptr[1];
+                if (   mv_x + 4*curr_cell.xpos < 0
+                    || mv_y + 4*curr_cell.ypos < 0
+                    || mv_x + 4*curr_cell.xpos + 4*curr_cell.width  > plane->width
+                    || mv_y + 4*curr_cell.ypos + 4*curr_cell.height > plane->height) {
+                    av_log(avctx, AV_LOG_ERROR, "motion vector %d %d outside reference\n", mv_x + 4*curr_cell.xpos, mv_y + 4*curr_cell.ypos);
+                    return AVERROR_INVALIDDATA;
+                }
+
                 copy_cell(ctx, plane, &curr_cell);
                 return 0;
             }
@@ -772,6 +804,10 @@ static int parse_bintree(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
                 /* get motion vector index and setup the pointer to the mv set */
                 if (!ctx->need_resync)
                     ctx->next_cell_data = &ctx->gb.buffer[(get_bits_count(&ctx->gb) + 7) >> 3];
+                if (ctx->next_cell_data >= ctx->last_byte) {
+                    av_log(avctx, AV_LOG_ERROR, "motion vector out of array\n");
+                    return AVERROR_INVALIDDATA;
+                }
                 mv_idx = *(ctx->next_cell_data++);
                 if (mv_idx >= ctx->num_vectors) {
                     av_log(avctx, AV_LOG_ERROR, "motion vector index out of range\n");
@@ -811,13 +847,13 @@ static int decode_plane(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
 
     /* each plane data starts with mc_vector_count field, */
     /* an optional array of motion vectors followed by the vq data */
-    num_vectors = bytestream_get_le32(&data);
+    num_vectors = bytestream_get_le32(&data); data_size -= 4;
     if (num_vectors > 256) {
         av_log(ctx->avctx, AV_LOG_ERROR,
                "Read invalid number of motion vectors %d\n", num_vectors);
         return AVERROR_INVALIDDATA;
     }
-    if (num_vectors * 2 >= data_size)
+    if (num_vectors * 2 > data_size)
         return AVERROR_INVALIDDATA;
 
     ctx->num_vectors = num_vectors;
@@ -828,7 +864,7 @@ static int decode_plane(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
     ctx->skip_bits   = 0;
     ctx->need_resync = 0;
 
-    ctx->last_byte = data + data_size - 1;
+    ctx->last_byte = data + data_size;
 
     /* initialize the 1st cell and set its dimensions to whole plane */
     curr_cell.xpos   = curr_cell.ypos = 0;
@@ -865,6 +901,7 @@ static int decode_frame_headers(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
 
     /* parse the bitstream header */
     bs_hdr = buf_ptr;
+    buf_size -= 16;
 
     if (bytestream_get_le16(&buf_ptr) != 32) {
         av_log(avctx, AV_LOG_ERROR, "Unsupported codec version!\n");
@@ -890,14 +927,13 @@ static int decode_frame_headers(Indeo3DecodeContext *ctx, AVCodecContext *avctx,
         return AVERROR_INVALIDDATA;
 
     if (width != ctx->width || height != ctx->height) {
+        int res;
+
         av_dlog(avctx, "Frame dimensions changed!\n");
 
-        ctx->width  = width;
-        ctx->height = height;
-
         free_frame_buffers(ctx);
-        if(allocate_frame_buffers(ctx, avctx) < 0)
-            return AVERROR_INVALIDDATA;
+        if ((res = allocate_frame_buffers(ctx, avctx, width, height)) < 0)
+             return res;
         avcodec_set_dimensions(avctx, width, height);
     }
 
@@ -988,16 +1024,14 @@ static av_cold int decode_init(AVCodecContext *avctx)
     Indeo3DecodeContext *ctx = avctx->priv_data;
 
     ctx->avctx     = avctx;
-    ctx->width     = avctx->width;
-    ctx->height    = avctx->height;
     avctx->pix_fmt = PIX_FMT_YUV410P;
     avcodec_get_frame_defaults(&ctx->frame);
 
     build_requant_tab();
 
-    dsputil_init(&ctx->dsp, avctx);
+    ff_dsputil_init(&ctx->dsp, avctx);
 
-    return allocate_frame_buffers(ctx, avctx);
+    return allocate_frame_buffers(ctx, avctx, avctx->width, avctx->height);
 }
 
 

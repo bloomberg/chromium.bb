@@ -51,7 +51,7 @@
  */
 int ff_jpegls_decode_lse(MJpegDecodeContext *s)
 {
-    int len, id;
+    int av_unused(len), id;
 
     /* XXX: verify len field validity */
     len = get_bits(&s->gb, 16);
@@ -198,6 +198,9 @@ static inline void ls_decode_line(JLSState *state, MJpegDecodeContext *s, void *
             r = ff_log2_run[state->run_index[comp]];
             if(r)
                 r = get_bits_long(&s->gb, r);
+            if(x + r * stride > w) {
+                r = (w - x) / stride;
+            }
             for(i = 0; i < r; i++) {
                 W(dst, x, Ra);
                 x += stride;
@@ -373,5 +376,5 @@ AVCodec ff_jpegls_decoder = {
     .close          = ff_mjpeg_decode_end,
     .decode         = ff_mjpeg_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("JPEG-LS"),
+    .long_name      = NULL_IF_CONFIG_SMALL("JPEG-LS"),
 };

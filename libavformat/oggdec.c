@@ -40,24 +40,14 @@
 
 static const struct ogg_codec * const ogg_codecs[] = {
     &ff_skeleton_codec,
-#if CONFIG_DIRAC_DEMUXER
     &ff_dirac_codec,
-#endif
-#if CONFIG_LIBSPEEX
     &ff_speex_codec,
-#endif
     &ff_vorbis_codec,
     &ff_theora_codec,
-#if CONFIG_FLAC_DECODER
     &ff_flac_codec,
-#endif
     &ff_celt_codec,
-#if CONFIG_DIRAC_DEMUXER
     &ff_old_dirac_codec,
-#endif
-#if CONFIG_FLAC_DECODER
     &ff_old_flac_codec,
-#endif
     &ff_ogm_video_codec,
     &ff_ogm_audio_codec,
     &ff_ogm_text_codec,
@@ -578,8 +568,9 @@ static void ogg_validate_keyframe(AVFormatContext *s, int idx, int pstart, int p
     struct ogg_stream *os = ogg->streams + idx;
     if (psize && s->streams[idx]->codec->codec_id == CODEC_ID_THEORA) {
         if (!!(os->pflags & AV_PKT_FLAG_KEY) != !(os->buf[pstart] & 0x40)) {
-            av_log(s, AV_LOG_WARNING, "Broken file, keyframes not correctly marked.\n");
             os->pflags ^= AV_PKT_FLAG_KEY;
+            av_log(s, AV_LOG_WARNING, "Broken file, %skeyframe not correctly marked.\n",
+                   (os->pflags & AV_PKT_FLAG_KEY) ? "" : "non-");
         }
     }
 }
@@ -633,15 +624,8 @@ static int ogg_read_close(AVFormatContext *s)
     int i;
 
     for (i = 0; i < ogg->nstreams; i++){
-        struct ogg_stream os = ogg->streams[i];
-        struct oggvorbis_private *priv = os.private;
-        if (priv && priv->packet && os.buf) {
-            int pkt_type = os.buf[os.pstart];
-            if ((pkt_type == 1 || pkt_type == 3) && priv->len[pkt_type >> 1] > 0)
-               av_freep (&priv->packet[pkt_type >> 1]);
-        }
-        av_free (os.buf);
-        av_free (os.private);
+        av_free (ogg->streams[i].buf);
+        av_free (ogg->streams[i].private);
     }
     av_free (ogg->streams);
     return 0;

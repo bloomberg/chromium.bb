@@ -150,6 +150,11 @@ static int au_read_header(AVFormatContext *s)
         return AVERROR_INVALIDDATA;
     }
 
+    if (channels <= 0) {
+        av_log(s, AV_LOG_ERROR, "Invalid number of channels %d\n", channels);
+        return AVERROR_INVALIDDATA;
+    }
+
     if (size >= 24) {
         /* skip unused data */
         avio_skip(pb, size - 24);
@@ -165,7 +170,7 @@ static int au_read_header(AVFormatContext *s)
     st->codec->channels = channels;
     st->codec->sample_rate = rate;
     if (data_size != AU_UNKNOWN_SIZE)
-    st->duration = (((int64_t)data_size)<<3) / (st->codec->channels * bps);
+    st->duration = (((int64_t)data_size)<<3) / (st->codec->channels * (int64_t)bps);
     avpriv_set_pts_info(st, 64, 1, rate);
     return 0;
 }
@@ -197,8 +202,8 @@ AVInputFormat ff_au_demuxer = {
     .read_probe     = au_probe,
     .read_header    = au_read_header,
     .read_packet    = au_read_packet,
-    .read_seek      = pcm_read_seek,
-    .codec_tag= (const AVCodecTag* const []){codec_au_tags, 0},
+    .read_seek      = ff_pcm_read_seek,
+    .codec_tag      = (const AVCodecTag* const []){ codec_au_tags, 0 },
 };
 #endif
 
@@ -213,6 +218,6 @@ AVOutputFormat ff_au_muxer = {
     .write_header      = au_write_header,
     .write_packet      = au_write_packet,
     .write_trailer     = au_write_trailer,
-    .codec_tag= (const AVCodecTag* const []){codec_au_tags, 0},
+    .codec_tag         = (const AVCodecTag* const []){ codec_au_tags, 0 },
 };
 #endif //CONFIG_AU_MUXER

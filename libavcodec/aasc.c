@@ -34,16 +34,9 @@
 
 typedef struct AascContext {
     AVCodecContext *avctx;
+    GetByteContext gb;
     AVFrame frame;
 } AascContext;
-
-#define FETCH_NEXT_STREAM_BYTE() \
-    if (stream_ptr >= buf_size) \
-    { \
-      av_log(s->avctx, AV_LOG_ERROR, " AASC: stream ptr just went out of bounds (fetch)\n"); \
-      break; \
-    } \
-    stream_byte = buf[stream_ptr++];
 
 static av_cold int aasc_decode_init(AVCodecContext *avctx)
 {
@@ -89,7 +82,8 @@ static int aasc_decode_frame(AVCodecContext *avctx,
         }
         break;
     case 1:
-        ff_msrle_decode(avctx, (AVPicture*)&s->frame, 8, buf - 4, buf_size + 4);
+        bytestream2_init(&s->gb, buf - 4, buf_size + 4);
+        ff_msrle_decode(avctx, (AVPicture*)&s->frame, 8, &s->gb);
         break;
     default:
         av_log(avctx, AV_LOG_ERROR, "Unknown compression type %d\n", compr);
@@ -123,5 +117,5 @@ AVCodec ff_aasc_decoder = {
     .close          = aasc_decode_end,
     .decode         = aasc_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("Autodesk RLE"),
+    .long_name      = NULL_IF_CONFIG_SMALL("Autodesk RLE"),
 };

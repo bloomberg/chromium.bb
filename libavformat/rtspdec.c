@@ -159,8 +159,9 @@ static int rtsp_read_header(AVFormatContext *s)
     if (ret)
         return ret;
 
-    rt->real_setup_cache = av_mallocz(2 * s->nb_streams * sizeof(*rt->real_setup_cache));
-    if (!rt->real_setup_cache)
+    rt->real_setup_cache = !s->nb_streams ? NULL :
+                           av_mallocz(2 * s->nb_streams * sizeof(*rt->real_setup_cache));
+    if (!rt->real_setup_cache && s->nb_streams)
         return AVERROR(ENOMEM);
     rt->real_setup = rt->real_setup_cache + s->nb_streams;
 
@@ -335,7 +336,8 @@ retry:
     rt->packets++;
 
     /* send dummy request to keep TCP connection alive */
-    if ((av_gettime() - rt->last_cmd_time) / 1000000 >= rt->timeout / 2) {
+    if ((av_gettime() - rt->last_cmd_time) / 1000000 >= rt->timeout / 2 ||
+         rt->auth_state.stale) {
         if (rt->server_type == RTSP_SERVER_WMS ||
            (rt->server_type != RTSP_SERVER_REAL &&
             rt->get_parameter_supported)) {
@@ -343,6 +345,10 @@ retry:
         } else {
             ff_rtsp_send_cmd_async(s, "OPTIONS", "*", NULL);
         }
+        /* The stale flag should be reset when creating the auth response in
+         * ff_rtsp_send_cmd_async, but reset it here just in case we never
+         * called the auth code (if we didn't have any credentials set). */
+        rt->auth_state.stale = 0;
     }
 
     return 0;
@@ -388,7 +394,7 @@ static int rtsp_read_close(AVFormatContext *s)
     return 0;
 }
 
-const AVClass rtsp_demuxer_class = {
+static const AVClass rtsp_demuxer_class = {
     .class_name     = "RTSP demuxer",
     .item_name      = av_default_item_name,
     .option         = ff_rtsp_options,
@@ -404,8 +410,8 @@ AVInputFormat ff_rtsp_demuxer = {
     .read_packet    = rtsp_read_packet,
     .read_close     = rtsp_read_close,
     .read_seek      = rtsp_read_seek,
-    .flags = AVFMT_NOFILE,
-    .read_play = rtsp_read_play,
-    .read_pause = rtsp_read_pause,
-    .priv_class = &rtsp_demuxer_class,
+    .flags          = AVFMT_NOFILE,
+    .read_play      = rtsp_read_play,
+    .read_pause     = rtsp_read_pause,
+    .priv_class     = &rtsp_demuxer_class,
 };

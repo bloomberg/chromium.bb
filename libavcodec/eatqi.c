@@ -48,7 +48,7 @@ static av_cold int tqi_decode_init(AVCodecContext *avctx)
     s->avctx = avctx;
     if(avctx->idct_algo==FF_IDCT_AUTO)
         avctx->idct_algo=FF_IDCT_EA;
-    dsputil_init(&s->dsp, avctx);
+    ff_dsputil_init(&s->dsp, avctx);
     ff_init_scantable(s->dsp.idct_permutation, &s->intra_scantable, ff_zigzag_direct);
     s->qscale = 1;
     avctx->time_base = (AVRational){1, 15};
@@ -139,9 +139,10 @@ static int tqi_decode_frame(AVCodecContext *avctx,
     for (s->mb_x=0; s->mb_x<(avctx->width+15)/16; s->mb_x++)
     {
         if(tqi_decode_mb(s, t->block) < 0)
-            break;
+            goto end;
         tqi_idct_put(t, t->block);
     }
+    end:
 
     *data_size = sizeof(AVFrame);
     *(AVFrame*)data = t->frame;
@@ -166,5 +167,5 @@ AVCodec ff_eatqi_decoder = {
     .close          = tqi_decode_end,
     .decode         = tqi_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("Electronic Arts TQI Video"),
+    .long_name      = NULL_IF_CONFIG_SMALL("Electronic Arts TQI Video"),
 };

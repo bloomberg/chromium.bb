@@ -219,6 +219,10 @@ static int decrypt_init(AVFormatContext *s, ID3v2ExtraMeta *em, uint8_t *header)
         av_log(s, AV_LOG_ERROR, "Invalid encryption header\n");
         return -1;
     }
+    if (oc->k_size + oc->e_size + oc->i_size > geob->datasize) {
+        av_log(s, AV_LOG_ERROR, "Too little GEOB data\n");
+        return AVERROR_INVALIDDATA;
+    }
     oc->rid = AV_RB32(&gdata[OMA_ENC_HEADER_SIZE + 28]);
     av_log(s, AV_LOG_DEBUG, "RID: %.8x\n", oc->rid);
 
@@ -234,7 +238,7 @@ static int decrypt_init(AVFormatContext *s, ID3v2ExtraMeta *em, uint8_t *header)
         rprobe(s, gdata, oc->r_val) < 0 &&
         nprobe(s, gdata, geob->datasize, oc->n_val) < 0) {
         int i;
-        for (i = 0; i < sizeof(leaf_table); i += 2) {
+        for (i = 0; i < FF_ARRAY_ELEMS(leaf_table); i += 2) {
             uint8_t buf[16];
             AV_WL64(buf, leaf_table[i]);
             AV_WL64(&buf[8], leaf_table[i+1]);
@@ -242,7 +246,7 @@ static int decrypt_init(AVFormatContext *s, ID3v2ExtraMeta *em, uint8_t *header)
             if (!rprobe(s, gdata, oc->r_val) || !nprobe(s, gdata, geob->datasize, oc->n_val))
                 break;
         }
-        if (i >= sizeof(leaf_table)) {
+        if (i >= FF_ARRAY_ELEMS(leaf_table)) {
             av_log(s, AV_LOG_ERROR, "Invalid key\n");
             return -1;
         }
@@ -270,7 +274,7 @@ static int oma_read_header(AVFormatContext *s)
     ID3v2ExtraMeta *extra_meta = NULL;
     OMAContext *oc = s->priv_data;
 
-    ff_id3v2_read_all(s, ID3v2_EA3_MAGIC, &extra_meta);
+    ff_id3v2_read(s, ID3v2_EA3_MAGIC, &extra_meta);
     ret = avio_read(s->pb, buf, EA3_HEADER_SIZE);
     if (ret < EA3_HEADER_SIZE)
         return -1;
@@ -377,7 +381,7 @@ static int oma_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (oc->encrypted) {
         /* previous unencrypted block saved in IV for the next packet (CBC mode) */
-        av_des_crypt(&oc->av_des, pkt->data, pkt->data, (packet_size >> 3), oc->iv, 1);
+        av_des_crypt(&oc->av_des, pkt->data, pkt->data, (ret >> 3), oc->iv, 1);
     }
 
     return ret;
@@ -415,7 +419,7 @@ static int oma_read_seek(struct AVFormatContext *s, int stream_index, int64_t ti
 {
     OMAContext *oc = s->priv_data;
 
-    pcm_read_seek(s, stream_index, timestamp, flags);
+    ff_pcm_read_seek(s, stream_index, timestamp, flags);
 
     if (oc->encrypted) {
         /* readjust IV for CBC */

@@ -262,14 +262,14 @@ static void at1_subband_synthesis(AT1Ctx *q, AT1SUCtx* su, float *pOut)
     float iqmf_temp[512 + 46];
 
     /* combine low and middle bands */
-    atrac_iqmf(q->bands[0], q->bands[1], 128, temp, su->fst_qmf_delay, iqmf_temp);
+    ff_atrac_iqmf(q->bands[0], q->bands[1], 128, temp, su->fst_qmf_delay, iqmf_temp);
 
     /* delay the signal of the high band by 23 samples */
     memcpy( su->last_qmf_delay,    &su->last_qmf_delay[256], sizeof(float) *  23);
     memcpy(&su->last_qmf_delay[23], q->bands[2],             sizeof(float) * 256);
 
     /* combine (low + middle) and high bands */
-    atrac_iqmf(temp, su->last_qmf_delay, 256, pOut, su->snd_qmf_delay, iqmf_temp);
+    ff_atrac_iqmf(temp, su->last_qmf_delay, 256, pOut, su->snd_qmf_delay, iqmf_temp);
 }
 
 
@@ -378,9 +378,9 @@ static av_cold int atrac1_decode_init(AVCodecContext *avctx)
 
     ff_init_ff_sine_windows(5);
 
-    atrac_generate_tables();
+    ff_atrac_generate_tables();
 
-    dsputil_init(&q->dsp, avctx);
+    ff_dsputil_init(&q->dsp, avctx);
     ff_fmt_convert_init(&q->fmt_conv, avctx);
 
     q->bands[0] = q->low;
@@ -401,13 +401,13 @@ static av_cold int atrac1_decode_init(AVCodecContext *avctx)
 
 
 AVCodec ff_atrac1_decoder = {
-    .name = "atrac1",
-    .type = AVMEDIA_TYPE_AUDIO,
-    .id = CODEC_ID_ATRAC1,
+    .name           = "atrac1",
+    .type           = AVMEDIA_TYPE_AUDIO,
+    .id             = CODEC_ID_ATRAC1,
     .priv_data_size = sizeof(AT1Ctx),
-    .init = atrac1_decode_init,
-    .close = atrac1_decode_end,
-    .decode = atrac1_decode_frame,
-    .capabilities = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("Atrac 1 (Adaptive TRansform Acoustic Coding)"),
+    .init           = atrac1_decode_init,
+    .close          = atrac1_decode_end,
+    .decode         = atrac1_decode_frame,
+    .capabilities   = CODEC_CAP_DR1,
+    .long_name      = NULL_IF_CONFIG_SMALL("Atrac 1 (Adaptive TRansform Acoustic Coding)"),
 };

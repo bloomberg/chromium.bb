@@ -43,7 +43,6 @@ typedef struct X264Context {
     char *profile;
     char *level;
     int fastfirstpass;
-    char *stats;
     char *wpredp;
     char *x264opts;
     float crf;
@@ -70,6 +69,7 @@ typedef struct X264Context {
     char *partitions;
     int direct_pred;
     int slice_max_size;
+    char *stats;
 } X264Context;
 
 static void X264_log(void *p, int level, const char *fmt, va_list args)
@@ -101,7 +101,7 @@ static int encode_nals(AVCodecContext *ctx, AVPacket *pkt,
     for (i = 0; i < nnal; i++)
         size += nals[i].i_payload;
 
-    if ((ret = ff_alloc_packet(pkt, size)) < 0)
+    if ((ret = ff_alloc_packet2(ctx, pkt, size)) < 0)
         return ret;
 
     p = pkt->data;
@@ -323,8 +323,6 @@ static av_cold int X264_init(AVCodecContext *avctx)
             x4->params.rc.f_rf_constant_max = x4->crf_max;
     }
 
-    OPT_STR("stats", x4->stats);
-
     if (avctx->rc_buffer_size && avctx->rc_initial_buffer_occupancy &&
         (avctx->rc_initial_buffer_occupancy <= avctx->rc_buffer_size)) {
         x4->params.rc.f_vbv_buffer_init =
@@ -399,6 +397,7 @@ static av_cold int X264_init(AVCodecContext *avctx)
     PARSE_X264_OPT("psy-rd", psy_rd);
     PARSE_X264_OPT("deblock", deblock);
     PARSE_X264_OPT("partitions", partitions);
+    PARSE_X264_OPT("stats", stats);
     if (x4->psy >= 0)
         x4->params.analyse.b_psy  = x4->psy;
     if (x4->rc_lookahead >= 0)
@@ -454,6 +453,8 @@ static av_cold int X264_init(AVCodecContext *avctx)
     x4->params.analyse.b_psnr = avctx->flags & CODEC_FLAG_PSNR;
 
     x4->params.i_threads      = avctx->thread_count;
+    if (avctx->thread_type)
+        x4->params.b_sliced_threads = avctx->thread_type == FF_THREAD_SLICE;
 
     x4->params.b_interlaced   = avctx->flags & CODEC_FLAG_INTERLACED_DCT;
 
@@ -590,7 +591,8 @@ static const AVOption options[] = {
     { "spatial",       NULL,      0,    AV_OPT_TYPE_CONST, { X264_DIRECT_PRED_SPATIAL },  0, 0, VE, "direct-pred" },
     { "temporal",      NULL,      0,    AV_OPT_TYPE_CONST, { X264_DIRECT_PRED_TEMPORAL }, 0, 0, VE, "direct-pred" },
     { "auto",          NULL,      0,    AV_OPT_TYPE_CONST, { X264_DIRECT_PRED_AUTO },     0, 0, VE, "direct-pred" },
-    { "slice-max-size","Constant quantization parameter rate control method",OFFSET(slice_max_size),        AV_OPT_TYPE_INT,    {-1 }, -1, INT_MAX, VE },
+    { "slice-max-size","Limit the size of each slice in bytes",           OFFSET(slice_max_size),AV_OPT_TYPE_INT,    {-1 }, -1, INT_MAX, VE },
+    { "stats",         "Filename for 2 pass stats",                       OFFSET(stats),         AV_OPT_TYPE_STRING, { 0 },  0,       0, VE },
     { NULL },
 };
 
@@ -631,21 +633,22 @@ static const AVCodecDefault x264_defaults[] = {
     { "coder",            "-1" },
     { "cmp",              "-1" },
     { "threads",          AV_STRINGIFY(X264_THREADS_AUTO) },
+    { "thread_type",      "0" },
     { NULL },
 };
 
 AVCodec ff_libx264_encoder = {
-    .name           = "libx264",
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_H264,
-    .priv_data_size = sizeof(X264Context),
-    .init           = X264_init,
-    .encode2        = X264_frame,
-    .close          = X264_close,
-    .capabilities   = CODEC_CAP_DELAY | CODEC_CAP_AUTO_THREADS,
-    .long_name      = NULL_IF_CONFIG_SMALL("libx264 H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10"),
-    .priv_class     = &class,
-    .defaults       = x264_defaults,
+    .name             = "libx264",
+    .type             = AVMEDIA_TYPE_VIDEO,
+    .id               = CODEC_ID_H264,
+    .priv_data_size   = sizeof(X264Context),
+    .init             = X264_init,
+    .encode2          = X264_frame,
+    .close            = X264_close,
+    .capabilities     = CODEC_CAP_DELAY | CODEC_CAP_AUTO_THREADS,
+    .long_name        = NULL_IF_CONFIG_SMALL("libx264 H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10"),
+    .priv_class       = &class,
+    .defaults         = x264_defaults,
     .init_static_data = X264_init_static,
 };
 
@@ -655,7 +658,7 @@ AVCodec ff_libx264rgb_encoder = {
     .id             = CODEC_ID_H264,
     .priv_data_size = sizeof(X264Context),
     .init           = X264_init,
-    .encode         = X264_frame,
+    .encode2        = X264_frame,
     .close          = X264_close,
     .capabilities   = CODEC_CAP_DELAY,
     .long_name      = NULL_IF_CONFIG_SMALL("libx264 H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10 RGB"),

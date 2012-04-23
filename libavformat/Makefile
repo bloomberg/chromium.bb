@@ -6,6 +6,8 @@ FFLIBS = avcodec avutil
 HEADERS = avformat.h avio.h version.h
 
 OBJS = allformats.o         \
+       avio.o               \
+       aviobuf.o            \
        cutils.o             \
        id3v1.o              \
        id3v2.o              \
@@ -37,7 +39,6 @@ OBJS-$(CONFIG_AMR_MUXER)                 += amr.o
 OBJS-$(CONFIG_ANM_DEMUXER)               += anm.o
 OBJS-$(CONFIG_APC_DEMUXER)               += apc.o
 OBJS-$(CONFIG_APE_DEMUXER)               += ape.o apetag.o
-OBJS-$(CONFIG_APPLEHTTP_DEMUXER)         += applehttp.o
 OBJS-$(CONFIG_ASF_DEMUXER)               += asfdec.o asf.o asfcrypt.o \
                                             avlanguage.o
 OBJS-$(CONFIG_ASF_MUXER)                 += asfenc.o asf.o
@@ -64,6 +65,7 @@ OBJS-$(CONFIG_CAF_MUXER)                 += cafenc.o caf.o riff.o isom.o
 OBJS-$(CONFIG_CAVSVIDEO_DEMUXER)         += cavsvideodec.o rawdec.o
 OBJS-$(CONFIG_CAVSVIDEO_MUXER)           += rawenc.o
 OBJS-$(CONFIG_CDG_DEMUXER)               += cdg.o
+OBJS-$(CONFIG_CDXL_DEMUXER)              += cdxl.o
 OBJS-$(CONFIG_CRC_MUXER)                 += crcenc.o
 OBJS-$(CONFIG_DAUD_DEMUXER)              += daud.o
 OBJS-$(CONFIG_DAUD_MUXER)                += daud.o
@@ -114,14 +116,15 @@ OBJS-$(CONFIG_H263_DEMUXER)              += h263dec.o rawdec.o
 OBJS-$(CONFIG_H263_MUXER)                += rawenc.o
 OBJS-$(CONFIG_H264_DEMUXER)              += h264dec.o rawdec.o
 OBJS-$(CONFIG_H264_MUXER)                += rawenc.o
+OBJS-$(CONFIG_HLS_DEMUXER)               += hls.o
 OBJS-$(CONFIG_ICO_DEMUXER)               += icodec.o
 OBJS-$(CONFIG_IDCIN_DEMUXER)             += idcin.o
 OBJS-$(CONFIG_IDF_DEMUXER)               += bintext.o
 OBJS-$(CONFIG_IFF_DEMUXER)               += iff.o
-OBJS-$(CONFIG_IMAGE2_DEMUXER)            += img2.o
-OBJS-$(CONFIG_IMAGE2_MUXER)              += img2.o
-OBJS-$(CONFIG_IMAGE2PIPE_DEMUXER)        += img2.o
-OBJS-$(CONFIG_IMAGE2PIPE_MUXER)          += img2.o
+OBJS-$(CONFIG_IMAGE2_DEMUXER)            += img2dec.o img2.o
+OBJS-$(CONFIG_IMAGE2_MUXER)              += img2enc.o img2.o
+OBJS-$(CONFIG_IMAGE2PIPE_DEMUXER)        += img2dec.o img2.o
+OBJS-$(CONFIG_IMAGE2PIPE_MUXER)          += img2enc.o img2.o
 OBJS-$(CONFIG_INGENIENT_DEMUXER)         += ingenientdec.o rawdec.o
 OBJS-$(CONFIG_IPMOVIE_DEMUXER)           += ipmovie.o
 OBJS-$(CONFIG_ISS_DEMUXER)               += iss.o
@@ -142,6 +145,7 @@ OBJS-$(CONFIG_MATROSKA_MUXER)            += matroskaenc.o matroska.o \
                                             isom.o avc.o \
                                             flacenc_header.o avlanguage.o
 OBJS-$(CONFIG_MD5_MUXER)                 += md5enc.o
+OBJS-$(CONFIG_MGSTS_DEMUXER)             += mgsts.o
 OBJS-$(CONFIG_MICRODVD_DEMUXER)          += microdvddec.o
 OBJS-$(CONFIG_MICRODVD_MUXER)            += microdvdenc.o rawenc.o
 OBJS-$(CONFIG_MJPEG_DEMUXER)             += rawdec.o
@@ -184,13 +188,13 @@ OBJS-$(CONFIG_NULL_MUXER)                += nullenc.o
 OBJS-$(CONFIG_NUT_DEMUXER)               += nutdec.o nut.o
 OBJS-$(CONFIG_NUT_MUXER)                 += nutenc.o nut.o
 OBJS-$(CONFIG_NUV_DEMUXER)               += nuv.o
-OBJS-$(CONFIG_FLAC_DECODER)              += oggparseflac.o
-OBJS-$(CONFIG_DIRAC_DEMUXER)             += oggparsedirac.o
-OBJS-$(CONFIG_LIBSPEEX)                  += oggparsespeex.o
 OBJS-$(CONFIG_OGG_DEMUXER)               += oggdec.o         \
                                             oggparsecelt.o   \
+                                            oggparsedirac.o  \
+                                            oggparseflac.o   \
                                             oggparseogm.o    \
                                             oggparseskeleton.o \
+                                            oggparsespeex.o  \
                                             oggparsetheora.o \
                                             oggparsevorbis.o \
                                             vorbiscomment.o
@@ -257,6 +261,7 @@ OBJS-$(CONFIG_RTP_MUXER)                 += rtp.o         \
                                             rtpenc_latm.o    \
                                             rtpenc_amr.o     \
                                             rtpenc_h263.o    \
+                                            rtpenc_h263_rfc2190.o \
                                             rtpenc_mpv.o     \
                                             rtpenc.o      \
                                             rtpenc_h264.o \
@@ -270,6 +275,7 @@ OBJS-$(CONFIG_RTPDEC)                    += rdt.o         \
                                             rtpdec_asf.o  \
                                             rtpdec_g726.o \
                                             rtpdec_h263.o \
+                                            rtpdec_h263_rfc2190.o \
                                             rtpdec_h264.o \
                                             rtpdec_latm.o \
                                             rtpdec_mpeg4.o \
@@ -344,16 +350,17 @@ OBJS-$(CONFIG_YUV4MPEGPIPE_DEMUXER)      += yuv4mpeg.o
 OBJS-$(CONFIG_LIBMODPLUG_DEMUXER)        += libmodplug.o
 OBJS-$(CONFIG_LIBNUT_DEMUXER)            += libnut.o
 OBJS-$(CONFIG_LIBNUT_MUXER)              += libnut.o
+OBJS-$(CONFIG_LIBRTMP)                   += librtmp.o
 
 # protocols I/O
-OBJS+= avio.o aviobuf.o
-
-OBJS-$(CONFIG_APPLEHTTP_PROTOCOL)        += applehttpproto.o
+OBJS-$(CONFIG_APPLEHTTP_PROTOCOL)        += hlsproto.o
+OBJS-$(CONFIG_BLURAY_PROTOCOL)           += bluray.o
 OBJS-$(CONFIG_CACHE_PROTOCOL)            += cache.o
 OBJS-$(CONFIG_CONCAT_PROTOCOL)           += concat.o
 OBJS-$(CONFIG_CRYPTO_PROTOCOL)           += crypto.o
 OBJS-$(CONFIG_FILE_PROTOCOL)             += file.o
 OBJS-$(CONFIG_GOPHER_PROTOCOL)           += gopher.o
+OBJS-$(CONFIG_HLS_PROTOCOL)              += hlsproto.o
 OBJS-$(CONFIG_HTTP_PROTOCOL)             += http.o httpauth.o
 OBJS-$(CONFIG_HTTPPROXY_PROTOCOL)        += http.o httpauth.o
 OBJS-$(CONFIG_HTTPS_PROTOCOL)            += http.o httpauth.o
@@ -361,12 +368,7 @@ OBJS-$(CONFIG_MMSH_PROTOCOL)             += mmsh.o mms.o asf.o
 OBJS-$(CONFIG_MMST_PROTOCOL)             += mmst.o mms.o asf.o
 OBJS-$(CONFIG_MD5_PROTOCOL)              += md5proto.o
 OBJS-$(CONFIG_PIPE_PROTOCOL)             += file.o
-
-# external or internal rtmp
-RTMP-OBJS-$(CONFIG_LIBRTMP)               = librtmp.o
-RTMP-OBJS-$(!CONFIG_LIBRTMP)              = rtmpproto.o rtmppkt.o
-OBJS-$(CONFIG_RTMP_PROTOCOL)             += $(RTMP-OBJS-yes)
-
+OBJS-$(CONFIG_RTMP_PROTOCOL)             += rtmpproto.o rtmppkt.o
 OBJS-$(CONFIG_RTP_PROTOCOL)              += rtpproto.o
 OBJS-$(CONFIG_TCP_PROTOCOL)              += tcp.o
 OBJS-$(CONFIG_TLS_PROTOCOL)              += tls.o

@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 
+#include "libavutil/mathematics.h"
 #include "libavutil/pixfmt.h"
 #include "avcodec.h"
 
@@ -69,6 +70,12 @@ typedef struct AVCodecInternal {
      */
     int sample_count;
 #endif
+
+    /**
+     * temporary buffer used for encoders to store their bitstream
+     */
+    uint8_t *byte_buffer;
+    unsigned int byte_buffer_size;
 } AVCodecInternal;
 
 struct AVCodecDefault {
@@ -126,6 +133,7 @@ int avpriv_unlock_avformat(void);
  * ensure the output packet data is large enough, whether provided by the user
  * or allocated in this function.
  *
+ * @param avctx   the AVCodecContext of the encoder
  * @param avpkt   the AVPacket
  *                If avpkt->data is already set, avpkt->size is checked
  *                to ensure it is large enough.
@@ -135,6 +143,22 @@ int avpriv_unlock_avformat(void);
  * @param size    the minimum required packet size
  * @return        0 on success, negative error code on failure
  */
+int ff_alloc_packet2(AVCodecContext *avctx, AVPacket *avpkt, int size);
+
 int ff_alloc_packet(AVPacket *avpkt, int size);
+
+/**
+ * Rescale from sample rate to AVCodecContext.time_base.
+ */
+static av_always_inline int64_t ff_samples_to_time_base(AVCodecContext *avctx,
+                                                        int64_t samples)
+{
+    if(samples == AV_NOPTS_VALUE)
+        return AV_NOPTS_VALUE;
+    return av_rescale_q(samples, (AVRational){ 1, avctx->sample_rate },
+                        avctx->time_base);
+}
+
+int ff_thread_can_start_frame(AVCodecContext *avctx);
 
 #endif /* AVCODEC_INTERNAL_H */

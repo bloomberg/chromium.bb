@@ -66,11 +66,11 @@ typedef struct EaDemuxContext {
     enum CodecID video_codec;
     AVRational time_base;
     int width, height;
+    int nb_frames;
     int video_stream_index;
 
     enum CodecID audio_codec;
     int audio_stream_index;
-    int audio_frame_counter;
 
     int bytes;
     int sample_rate;
@@ -275,12 +275,28 @@ static int process_video_header_vp6(AVFormatContext *s)
     EaDemuxContext *ea = s->priv_data;
     AVIOContext *pb = s->pb;
 
-    avio_skip(pb, 16);
+    avio_skip(pb, 8);
+    ea->nb_frames = avio_rl32(pb);
+    avio_skip(pb, 4);
     ea->time_base.den = avio_rl32(pb);
     ea->time_base.num = avio_rl32(pb);
     ea->video_codec = CODEC_ID_VP6;
 
     return 1;
+}
+
+static int process_video_header_cmv(AVFormatContext *s)
+{
+    EaDemuxContext *ea = s->priv_data;
+    int fps;
+
+    avio_skip(s->pb, 10);
+    fps = avio_rl16(s->pb);
+    if (fps)
+        ea->time_base = (AVRational){1, fps};
+    ea->video_codec = CODEC_ID_CMV;
+
+    return 0;
 }
 
 /*
@@ -330,7 +346,7 @@ static int process_ea_header(AVFormatContext *s) {
                 break;
 
             case MVIh_TAG :
-                ea->video_codec = CODEC_ID_CMV;
+                err = process_video_header_cmv(s);
                 break;
 
             case kVGT_TAG:
@@ -418,10 +434,13 @@ static int ea_read_header(AVFormatContext *s)
         if (st->codec->codec_id == CODEC_ID_MPEG2VIDEO)
             st->need_parsing = AVSTREAM_PARSE_HEADERS;
         st->codec->codec_tag = 0;  /* no fourcc */
-        if (ea->time_base.num)
-            avpriv_set_pts_info(st, 64, ea->time_base.num, ea->time_base.den);
         st->codec->width = ea->width;
         st->codec->height = ea->height;
+        st->duration = st->nb_frames = ea->nb_frames;
+        if (ea->time_base.num)
+            avpriv_set_pts_info(st, 64, ea->time_base.num, ea->time_base.den);
+        st->r_frame_rate = st->avg_frame_rate = (AVRational){ea->time_base.den,
+                                                             ea->time_base.num};
     }
 
     if (ea->audio_codec) {
@@ -456,7 +475,7 @@ static int ea_read_header(AVFormatContext *s)
             st->codec->bits_per_coded_sample / 4;
         st->codec->block_align = st->codec->channels*st->codec->bits_per_coded_sample;
         ea->audio_stream_index = st->index;
-        ea->audio_frame_counter = 0;
+        st->start_time = 0;
     }
 
     return 1;
@@ -506,24 +525,26 @@ static int ea_read_packet(AVFormatContext *s,
             if (ret < 0)
                 return ret;
             pkt->stream_index = ea->audio_stream_index;
-            pkt->pts = 90000;
-            pkt->pts *= ea->audio_frame_counter;
-            pkt->pts /= ea->sample_rate;
 
             switch (ea->audio_codec) {
             case CODEC_ID_ADPCM_EA:
-                /* 2 samples/byte, 1 or 2 samples per frame depending
-                 * on stereo; chunk also has 12-byte header */
-                ea->audio_frame_counter += ((chunk_size - 12) * 2) /
-                    ea->num_channels;
+            case CODEC_ID_ADPCM_EA_R1:
+            case CODEC_ID_ADPCM_EA_R2:
+            case CODEC_ID_ADPCM_IMA_EA_EACS:
+                pkt->duration = AV_RL32(pkt->data);
+                break;
+            case CODEC_ID_ADPCM_EA_R3:
+                pkt->duration = AV_RB32(pkt->data);
+                break;
+            case CODEC_ID_ADPCM_IMA_EA_SEAD:
+                pkt->duration = ret * 2 / ea->num_channels;
                 break;
             case CODEC_ID_PCM_S16LE_PLANAR:
             case CODEC_ID_MP3:
-                ea->audio_frame_counter += num_samples;
+                pkt->duration = num_samples;
                 break;
             default:
-                ea->audio_frame_counter += chunk_size /
-                    (ea->bytes * ea->num_channels);
+                pkt->duration = chunk_size / (ea->bytes * ea->num_channels);
             }
 
             packet_read = 1;

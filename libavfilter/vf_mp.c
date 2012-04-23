@@ -121,7 +121,6 @@ static const struct {
 
 //copied from vf.c
 extern const vf_info_t vf_info_1bpp;
-extern const vf_info_t vf_info_2xsai;
 extern const vf_info_t vf_info_ass;
 extern const vf_info_t vf_info_bmovl;
 extern const vf_info_t vf_info_crop;
@@ -156,7 +155,6 @@ extern const vf_info_t vf_info_kerndeint;
 extern const vf_info_t vf_info_lavc;
 extern const vf_info_t vf_info_lavcdeint;
 extern const vf_info_t vf_info_mcdeint;
-extern const vf_info_t vf_info_mirror;
 extern const vf_info_t vf_info_noformat;
 extern const vf_info_t vf_info_noise;
 extern const vf_info_t vf_info_ow;
@@ -168,7 +166,6 @@ extern const vf_info_t vf_info_pp;
 extern const vf_info_t vf_info_pullup;
 extern const vf_info_t vf_info_qp;
 extern const vf_info_t vf_info_rectangle;
-extern const vf_info_t vf_info_remove_logo;
 extern const vf_info_t vf_info_rotate;
 extern const vf_info_t vf_info_sab;
 extern const vf_info_t vf_info_scale;
@@ -178,7 +175,6 @@ extern const vf_info_t vf_info_softpulldown;
 extern const vf_info_t vf_info_softskip;
 extern const vf_info_t vf_info_spp;
 extern const vf_info_t vf_info_stereo3d;
-extern const vf_info_t vf_info_swapuv;
 extern const vf_info_t vf_info_telecine;
 extern const vf_info_t vf_info_test;
 extern const vf_info_t vf_info_tfields;
@@ -194,7 +190,6 @@ extern const vf_info_t vf_info_zrmjpeg;
 
 
 static const vf_info_t* const filters[]={
-    &vf_info_2xsai,
     &vf_info_decimate,
     &vf_info_denoise3d,
     &vf_info_detc,
@@ -219,17 +214,16 @@ static const vf_info_t* const filters[]={
     &vf_info_ivtc,
     &vf_info_kerndeint,
     &vf_info_mcdeint,
-    &vf_info_mirror,
     &vf_info_noise,
     &vf_info_ow,
     &vf_info_palette,
     &vf_info_perspective,
     &vf_info_phase,
+    &vf_info_pp,
     &vf_info_pp7,
     &vf_info_pullup,
     &vf_info_qp,
     &vf_info_rectangle,
-    &vf_info_remove_logo,
     &vf_info_rotate,
     &vf_info_sab,
     &vf_info_screenshot,
@@ -238,7 +232,6 @@ static const vf_info_t* const filters[]={
     &vf_info_softskip,
     &vf_info_spp,
     &vf_info_stereo3d,
-    &vf_info_swapuv,
     &vf_info_telecine,
     &vf_info_tile,
     &vf_info_tinterlace,
@@ -768,6 +761,23 @@ static av_cold int init(AVFilterContext *ctx, const char *args, void *opaque)
     return 0;
 }
 
+static av_cold void uninit(AVFilterContext *ctx)
+{
+    MPContext *m = ctx->priv;
+    vf_instance_t *vf = &m->vf;
+
+    while(vf){
+        vf_instance_t *next = vf->next;
+        if(vf->uninit)
+            vf->uninit(vf);
+        free_mp_image(vf->imgctx.static_images[0]);
+        free_mp_image(vf->imgctx.static_images[1]);
+        free_mp_image(vf->imgctx.temp_images[0]);
+        free_mp_image(vf->imgctx.export_images[0]);
+        vf = next;
+    }
+}
+
 static int query_formats(AVFilterContext *ctx)
 {
     AVFilterFormats *avfmts=NULL;
@@ -880,6 +890,7 @@ AVFilter avfilter_vf_mp = {
     .name      = "mp",
     .description = NULL_IF_CONFIG_SMALL("Apply a libmpcodecs filter to the input video."),
     .init = init,
+    .uninit = uninit,
     .priv_size = sizeof(MPContext),
     .query_formats = query_formats,
 

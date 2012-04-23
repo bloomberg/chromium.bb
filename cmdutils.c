@@ -54,6 +54,7 @@
 #endif
 
 struct SwsContext *sws_opts;
+SwrContext *swr_opts;
 AVDictionary *format_opts, *codec_opts;
 
 const int this_year = 2012;
@@ -66,6 +67,7 @@ void init_opts(void)
     sws_opts = sws_getContext(16, 16, 0, 16, 16, 0, SWS_BICUBIC,
                               NULL, NULL, NULL);
 #endif
+    swr_opts = swr_alloc();
 }
 
 void uninit_opts(void)
@@ -74,6 +76,7 @@ void uninit_opts(void)
     sws_freeContext(sws_opts);
     sws_opts = NULL;
 #endif
+    swr_free(&swr_opts);
     av_dict_free(&format_opts);
     av_dict_free(&codec_opts);
 }
@@ -340,11 +343,8 @@ void parse_options(void *optctx, int argc, char **argv, const OptionDef *options
     }
 }
 
-/*
- * Return index of option opt in argv or 0 if not found.
- */
-static int locate_option(int argc, char **argv, const OptionDef *options,
-                         const char *optname)
+int locate_option(int argc, char **argv, const OptionDef *options,
+                  const char *optname)
 {
     const OptionDef *po;
     int i;
@@ -418,10 +418,10 @@ void parse_loglevel(int argc, char **argv, const OptionDef *options)
 #define FLAGS(o) ((o)->type == AV_OPT_TYPE_FLAGS) ? AV_DICT_APPEND : 0
 int opt_default(const char *opt, const char *arg)
 {
-    const AVOption *oc, *of, *os;
+    const AVOption *oc, *of, *os, *oswr = NULL;
     char opt_stripped[128];
     const char *p;
-    const AVClass *cc = avcodec_get_class(), *fc = avformat_get_class(), *sc;
+    const AVClass *cc = avcodec_get_class(), *fc = avformat_get_class(), *sc, *swr_class;
 
     if (!(p = strchr(opt, ':')))
         p = opt + strlen(opt);
@@ -447,8 +447,17 @@ int opt_default(const char *opt, const char *arg)
         }
     }
 #endif
+    swr_class = swr_get_class();
+    if (!oc && !of && !os && (oswr = av_opt_find(&swr_class, opt, NULL, 0,
+                          AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ))) {
+        int ret = av_opt_set(swr_opts, opt, arg, 0);
+        if (ret < 0) {
+            av_log(NULL, AV_LOG_ERROR, "Error setting option %s.\n", opt);
+            return ret;
+        }
+    }
 
-    if (oc || of || os)
+    if (oc || of || os || oswr)
         return 0;
     av_log(NULL, AV_LOG_ERROR, "Unrecognized option '%s'\n", opt);
     return AVERROR_OPTION_NOT_FOUND;
@@ -532,6 +541,54 @@ int opt_max_alloc(const char *opt, const char *arg)
         exit_program(1);
     }
     av_max_alloc(max);
+    return 0;
+}
+
+int opt_cpuflags(const char *opt, const char *arg)
+{
+    static const AVOption cpuflags_opts[] = {
+        { "flags"   , NULL, 0, AV_OPT_TYPE_FLAGS, { 0 }, INT64_MIN, INT64_MAX, .unit = "flags" },
+        { "altivec" , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_ALTIVEC  },    .unit = "flags" },
+        { "mmx"     , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_MMX      },    .unit = "flags" },
+        { "mmx2"    , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_MMX2     },    .unit = "flags" },
+        { "sse"     , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_SSE      },    .unit = "flags" },
+        { "sse2"    , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_SSE2     },    .unit = "flags" },
+        { "sse2slow", NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_SSE2SLOW },    .unit = "flags" },
+        { "sse3"    , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_SSE3     },    .unit = "flags" },
+        { "sse3slow", NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_SSE3SLOW },    .unit = "flags" },
+        { "ssse3"   , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_SSSE3    },    .unit = "flags" },
+        { "atom"    , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_ATOM     },    .unit = "flags" },
+        { "sse4.1"  , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_SSE4     },    .unit = "flags" },
+        { "sse4.2"  , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_SSE42    },    .unit = "flags" },
+        { "avx"     , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_AVX      },    .unit = "flags" },
+        { "xop"     , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_XOP      },    .unit = "flags" },
+        { "fma4"    , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_FMA4     },    .unit = "flags" },
+        { "3dnow"   , NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_3DNOW    },    .unit = "flags" },
+        { "3dnowext", NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_3DNOWEXT },    .unit = "flags" },
+
+        { "armv5te",  NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_ARMV5TE  },    .unit = "flags" },
+        { "armv6",    NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_ARMV6    },    .unit = "flags" },
+        { "armv6t2",  NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_ARMV6T2  },    .unit = "flags" },
+        { "vfp",      NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_VFP      },    .unit = "flags" },
+        { "vfpv3",    NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_VFPV3    },    .unit = "flags" },
+        { "neon",     NULL, 0, AV_OPT_TYPE_CONST, { AV_CPU_FLAG_NEON     },    .unit = "flags" },
+
+        { NULL },
+    };
+    static const AVClass class = {
+        .class_name = "cpuflags",
+        .item_name  = av_default_item_name,
+        .option     = cpuflags_opts,
+        .version    = LIBAVUTIL_VERSION_INT,
+    };
+    int flags = av_get_cpu_flags();
+    int ret;
+    const AVClass *pclass = &class;
+
+    if ((ret = av_opt_eval_flags(&pclass, &cpuflags_opts[0], arg, &flags)) < 0)
+        return ret;
+
+    av_force_cpu_flags(flags);
     return 0;
 }
 
@@ -802,9 +859,9 @@ int opt_codecs(const char *opt, const char *arg)
                 decode = encode = cap = 0;
             }
             if (p2 && strcmp(p->name, p2->name) == 0) {
-                if (p->decode)
+                if (av_codec_is_decoder(p))
                     decode = 1;
-                if (p->encode)
+                if (av_codec_is_encoder(p))
                     encode = 1;
                 cap |= p->capabilities;
             }
@@ -1027,7 +1084,7 @@ FILE *get_preset_file(char *filename, size_t filename_size,
             if (!f && codec_name) {
                 snprintf(filename, filename_size,
                          "%s%s/%s-%s.ffpreset",
-                         base[i],  i != 1 ? "" : "/.ffmpeg", codec_name,
+                         base[i], i != 1 ? "" : "/.ffmpeg", codec_name,
                          preset_name);
                 f = fopen(filename, "r");
             }

@@ -52,6 +52,39 @@ static int swf_probe(AVProbeData *p)
         return 0;
 }
 
+#if CONFIG_ZLIB
+static int zlib_refill(void *opaque, uint8_t *buf, int buf_size)
+{
+    AVFormatContext *s = opaque;
+    SWFContext *swf = s->priv_data;
+    z_stream *z = &swf->zstream;
+    int ret;
+
+retry:
+    if (!z->avail_in) {
+        int n = avio_read(s->pb, swf->zbuf_in, ZBUF_SIZE);
+        if (n <= 0)
+            return n;
+        z->next_in  = swf->zbuf_in;
+        z->avail_in = n;
+    }
+
+    z->next_out  = buf;
+    z->avail_out = buf_size;
+
+    ret = inflate(z, Z_NO_FLUSH);
+    if (ret < 0)
+        return AVERROR(EINVAL);
+    if (ret == Z_STREAM_END)
+        return AVERROR_EOF;
+
+    if (buf_size - z->avail_out == 0)
+        goto retry;
+
+    return buf_size - z->avail_out;
+}
+#endif
+
 static int swf_read_header(AVFormatContext *s)
 {
     SWFContext *swf = s->priv_data;
@@ -59,14 +92,29 @@ static int swf_read_header(AVFormatContext *s)
     int nbits, len, tag;
 
     tag = avio_rb32(pb) & 0xffffff00;
+    avio_rl32(pb);
 
     if (tag == MKBETAG('C', 'W', 'S', 0)) {
-        av_log(s, AV_LOG_ERROR, "Compressed SWF format not supported\n");
+        av_log(s, AV_LOG_INFO, "SWF compressed file detected\n");
+#if CONFIG_ZLIB
+        swf->zbuf_in  = av_malloc(ZBUF_SIZE);
+        swf->zbuf_out = av_malloc(ZBUF_SIZE);
+        swf->zpb = avio_alloc_context(swf->zbuf_out, ZBUF_SIZE, 0, s,
+                                      zlib_refill, NULL, NULL);
+        if (!swf->zbuf_in || !swf->zbuf_out || !swf->zpb)
+            return AVERROR(ENOMEM);
+        swf->zpb->seekable = 0;
+        if (inflateInit(&swf->zstream) != Z_OK) {
+            av_log(s, AV_LOG_ERROR, "Unable to init zlib context\n");
+            return AVERROR(EINVAL);
+        }
+        pb = swf->zpb;
+#else
+        av_log(s, AV_LOG_ERROR, "zlib support is required to read SWF compressed files\n");
         return AVERROR(EIO);
-    }
-    if (tag != MKBETAG('F', 'W', 'S', 0))
+#endif
+    } else if (tag != MKBETAG('F', 'W', 'S', 0))
         return AVERROR(EIO);
-    avio_rl32(pb);
     /* skip rectangle size */
     nbits = avio_r8(pb) >> 3;
     len = (4 * nbits - 3 + 7) / 8;
@@ -84,7 +132,12 @@ static int swf_read_packet(AVFormatContext *s, AVPacket *pkt)
     SWFContext *swf = s->priv_data;
     AVIOContext *pb = s->pb;
     AVStream *vst = NULL, *ast = NULL, *st = 0;
-    int tag, len, i, frame, v;
+    int tag, len, i, frame, v, res;
+
+#if CONFIG_ZLIB
+    if (swf->zpb)
+        pb = swf->zpb;
+#endif
 
     for(;;) {
         uint64_t pos = avio_tell(pb);
@@ -113,7 +166,6 @@ static int swf_read_packet(AVFormatContext *s, AVPacket *pkt)
             vst->codec->codec_type = AVMEDIA_TYPE_VIDEO;
             vst->codec->codec_id = ff_codec_get_id(swf_codec_tags, avio_r8(pb));
             avpriv_set_pts_info(vst, 16, 256, swf->frame_rate);
-            vst->codec->time_base = (AVRational){ 256, swf->frame_rate };
             len -= 8;
         } else if (tag == TAG_STREAMHEAD || tag == TAG_STREAMHEAD2) {
             /* streaming found */
@@ -147,7 +199,8 @@ static int swf_read_packet(AVFormatContext *s, AVPacket *pkt)
                 st = s->streams[i];
                 if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO && st->id == ch_id) {
                     frame = avio_rl16(pb);
-                    av_get_packet(pb, pkt, len-2);
+                    if ((res = av_get_packet(pb, pkt, len-2)) < 0)
+                        return res;
                     pkt->pos = pos;
                     pkt->pts = frame;
                     pkt->stream_index = st->index;
@@ -160,9 +213,11 @@ static int swf_read_packet(AVFormatContext *s, AVPacket *pkt)
                 if (st->codec->codec_type == AVMEDIA_TYPE_AUDIO && st->id == -1) {
             if (st->codec->codec_id == CODEC_ID_MP3) {
                 avio_skip(pb, 4);
-                av_get_packet(pb, pkt, len-4);
+                if ((res = av_get_packet(pb, pkt, len-4)) < 0)
+                    return res;
             } else { // ADPCM, PCM
-                av_get_packet(pb, pkt, len);
+                if ((res = av_get_packet(pb, pkt, len)) < 0)
+                    return res;
             }
             pkt->pos = pos;
             pkt->stream_index = st->index;
@@ -183,11 +238,11 @@ static int swf_read_packet(AVFormatContext *s, AVPacket *pkt)
                 vst->codec->codec_type = AVMEDIA_TYPE_VIDEO;
                 vst->codec->codec_id = CODEC_ID_MJPEG;
                 avpriv_set_pts_info(vst, 64, 256, swf->frame_rate);
-                vst->codec->time_base = (AVRational){ 256, swf->frame_rate };
                 st = vst;
             }
             avio_rl16(pb); /* BITMAP_ID */
-            av_new_packet(pkt, len-2);
+            if ((res = av_new_packet(pkt, len-2)) < 0)
+                return res;
             avio_read(pb, pkt->data, 4);
             if (AV_RB32(pkt->data) == 0xffd8ffd9 ||
                 AV_RB32(pkt->data) == 0xffd9ffd8) {
@@ -207,6 +262,18 @@ static int swf_read_packet(AVFormatContext *s, AVPacket *pkt)
     }
 }
 
+#if CONFIG_ZLIB
+static av_cold int swf_read_close(AVFormatContext *avctx)
+{
+    SWFContext *s = avctx->priv_data;
+    inflateEnd(&s->zstream);
+    av_freep(&s->zbuf_in);
+    av_freep(&s->zbuf_out);
+    av_freep(&s->zpb);
+    return 0;
+}
+#endif
+
 AVInputFormat ff_swf_demuxer = {
     .name           = "swf",
     .long_name      = NULL_IF_CONFIG_SMALL("Flash format"),
@@ -214,4 +281,7 @@ AVInputFormat ff_swf_demuxer = {
     .read_probe     = swf_probe,
     .read_header    = swf_read_header,
     .read_packet    = swf_read_packet,
+#if CONFIG_ZLIB
+    .read_close     = swf_read_close,
+#endif
 };

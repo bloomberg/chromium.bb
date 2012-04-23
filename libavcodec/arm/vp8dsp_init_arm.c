@@ -17,93 +17,95 @@
  */
 
 #include <stdint.h>
+
+#include "libavutil/arm/cpu.h"
 #include "libavcodec/vp8dsp.h"
 
 void ff_vp8_luma_dc_wht_dc_armv6(DCTELEM block[4][4][16], DCTELEM dc[16]);
 
 #define idct_funcs(opt) \
 void ff_vp8_luma_dc_wht_ ## opt(DCTELEM block[4][4][16], DCTELEM dc[16]); \
-void ff_vp8_idct_add_ ## opt(uint8_t *dst, DCTELEM block[16], int stride); \
-void ff_vp8_idct_dc_add_ ## opt(uint8_t *dst, DCTELEM block[16], int stride); \
-void ff_vp8_idct_dc_add4y_ ## opt(uint8_t *dst, DCTELEM block[4][16], int stride); \
-void ff_vp8_idct_dc_add4uv_ ## opt(uint8_t *dst, DCTELEM block[4][16], int stride)
+void ff_vp8_idct_add_ ## opt(uint8_t *dst, DCTELEM block[16], ptrdiff_t stride); \
+void ff_vp8_idct_dc_add_ ## opt(uint8_t *dst, DCTELEM block[16], ptrdiff_t stride); \
+void ff_vp8_idct_dc_add4y_ ## opt(uint8_t *dst, DCTELEM block[4][16], ptrdiff_t stride); \
+void ff_vp8_idct_dc_add4uv_ ## opt(uint8_t *dst, DCTELEM block[4][16], ptrdiff_t stride)
 
 idct_funcs(neon);
 idct_funcs(armv6);
 
-void ff_vp8_v_loop_filter16_neon(uint8_t *dst, int stride,
+void ff_vp8_v_loop_filter16_neon(uint8_t *dst, ptrdiff_t stride,
                                  int flim_E, int flim_I, int hev_thresh);
-void ff_vp8_h_loop_filter16_neon(uint8_t *dst, int stride,
+void ff_vp8_h_loop_filter16_neon(uint8_t *dst, ptrdiff_t stride,
                                  int flim_E, int flim_I, int hev_thresh);
-void ff_vp8_v_loop_filter8uv_neon(uint8_t *dstU, uint8_t *dstV, int stride,
+void ff_vp8_v_loop_filter8uv_neon(uint8_t *dstU, uint8_t *dstV, ptrdiff_t stride,
                                   int flim_E, int flim_I, int hev_thresh);
-void ff_vp8_h_loop_filter8uv_neon(uint8_t *dstU, uint8_t *dstV, int stride,
+void ff_vp8_h_loop_filter8uv_neon(uint8_t *dstU, uint8_t *dstV, ptrdiff_t stride,
                                   int flim_E, int flim_I, int hev_thresh);
 
-void ff_vp8_v_loop_filter16_inner_neon(uint8_t *dst, int stride,
+void ff_vp8_v_loop_filter16_inner_neon(uint8_t *dst, ptrdiff_t stride,
                                        int flim_E, int flim_I, int hev_thresh);
-void ff_vp8_h_loop_filter16_inner_neon(uint8_t *dst, int stride,
+void ff_vp8_h_loop_filter16_inner_neon(uint8_t *dst, ptrdiff_t stride,
                                        int flim_E, int flim_I, int hev_thresh);
 void ff_vp8_v_loop_filter8uv_inner_neon(uint8_t *dstU, uint8_t *dstV,
-                                        int stride, int flim_E, int flim_I,
+                                        ptrdiff_t stride, int flim_E, int flim_I,
                                         int hev_thresh);
 void ff_vp8_h_loop_filter8uv_inner_neon(uint8_t *dstU, uint8_t *dstV,
-                                        int stride, int flim_E, int flim_I,
+                                        ptrdiff_t stride, int flim_E, int flim_I,
                                         int hev_thresh);
 
-void ff_vp8_v_loop_filter_inner_armv6(uint8_t *dst, int stride,
+void ff_vp8_v_loop_filter_inner_armv6(uint8_t *dst, ptrdiff_t stride,
                                       int flim_E, int flim_I,
                                       int hev_thresh, int count);
-void ff_vp8_h_loop_filter_inner_armv6(uint8_t *dst, int stride,
+void ff_vp8_h_loop_filter_inner_armv6(uint8_t *dst, ptrdiff_t stride,
                                       int flim_E, int flim_I,
                                       int hev_thresh, int count);
-void ff_vp8_v_loop_filter_armv6(uint8_t *dst, int stride,
+void ff_vp8_v_loop_filter_armv6(uint8_t *dst, ptrdiff_t stride,
                                 int flim_E, int flim_I,
                                 int hev_thresh, int count);
-void ff_vp8_h_loop_filter_armv6(uint8_t *dst, int stride,
+void ff_vp8_h_loop_filter_armv6(uint8_t *dst, ptrdiff_t stride,
                                 int flim_E, int flim_I,
                                 int hev_thresh, int count);
 
-static void ff_vp8_v_loop_filter16_armv6(uint8_t *dst, int stride,
+static void ff_vp8_v_loop_filter16_armv6(uint8_t *dst, ptrdiff_t stride,
                                          int flim_E, int flim_I, int hev_thresh)
 {
     ff_vp8_v_loop_filter_armv6(dst, stride, flim_E, flim_I, hev_thresh, 4);
 }
 
-static void ff_vp8_h_loop_filter16_armv6(uint8_t *dst, int stride,
+static void ff_vp8_h_loop_filter16_armv6(uint8_t *dst, ptrdiff_t stride,
                                          int flim_E, int flim_I, int hev_thresh)
 {
     ff_vp8_h_loop_filter_armv6(dst, stride, flim_E, flim_I, hev_thresh, 4);
 }
 
-static void ff_vp8_v_loop_filter8uv_armv6(uint8_t *dstU, uint8_t *dstV, int stride,
+static void ff_vp8_v_loop_filter8uv_armv6(uint8_t *dstU, uint8_t *dstV, ptrdiff_t stride,
                                           int flim_E, int flim_I, int hev_thresh)
 {
     ff_vp8_v_loop_filter_armv6(dstU, stride, flim_E, flim_I, hev_thresh, 2);
     ff_vp8_v_loop_filter_armv6(dstV, stride, flim_E, flim_I, hev_thresh, 2);
 }
 
-static void ff_vp8_h_loop_filter8uv_armv6(uint8_t *dstU, uint8_t *dstV, int stride,
+static void ff_vp8_h_loop_filter8uv_armv6(uint8_t *dstU, uint8_t *dstV, ptrdiff_t stride,
                                           int flim_E, int flim_I, int hev_thresh)
 {
     ff_vp8_h_loop_filter_armv6(dstU, stride, flim_E, flim_I, hev_thresh, 2);
     ff_vp8_h_loop_filter_armv6(dstV, stride, flim_E, flim_I, hev_thresh, 2);
 }
 
-static void ff_vp8_v_loop_filter16_inner_armv6(uint8_t *dst, int stride,
+static void ff_vp8_v_loop_filter16_inner_armv6(uint8_t *dst, ptrdiff_t stride,
                                                int flim_E, int flim_I, int hev_thresh)
 {
     ff_vp8_v_loop_filter_inner_armv6(dst, stride, flim_E, flim_I, hev_thresh, 4);
 }
 
-static void ff_vp8_h_loop_filter16_inner_armv6(uint8_t *dst, int stride,
+static void ff_vp8_h_loop_filter16_inner_armv6(uint8_t *dst, ptrdiff_t stride,
                                                int flim_E, int flim_I, int hev_thresh)
 {
     ff_vp8_h_loop_filter_inner_armv6(dst, stride, flim_E, flim_I, hev_thresh, 4);
 }
 
 static void ff_vp8_v_loop_filter8uv_inner_armv6(uint8_t *dstU, uint8_t *dstV,
-                                                int stride, int flim_E, int flim_I,
+                                                ptrdiff_t stride, int flim_E, int flim_I,
                                                 int hev_thresh)
 {
     ff_vp8_v_loop_filter_inner_armv6(dstU, stride, flim_E, flim_I, hev_thresh, 2);
@@ -111,7 +113,7 @@ static void ff_vp8_v_loop_filter8uv_inner_armv6(uint8_t *dstU, uint8_t *dstV,
 }
 
 static void ff_vp8_h_loop_filter8uv_inner_armv6(uint8_t *dstU, uint8_t *dstV,
-                                                int stride, int flim_E, int flim_I,
+                                                ptrdiff_t stride, int flim_E, int flim_I,
                                                 int hev_thresh)
 {
     ff_vp8_h_loop_filter_inner_armv6(dstU, stride, flim_E, flim_I, hev_thresh, 2);
@@ -119,15 +121,15 @@ static void ff_vp8_h_loop_filter8uv_inner_armv6(uint8_t *dstU, uint8_t *dstV,
 }
 
 #define simple_lf_funcs(opt) \
-void ff_vp8_v_loop_filter16_simple_ ## opt(uint8_t *dst, int stride, int flim); \
-void ff_vp8_h_loop_filter16_simple_ ## opt(uint8_t *dst, int stride, int flim)
+void ff_vp8_v_loop_filter16_simple_ ## opt(uint8_t *dst, ptrdiff_t stride, int flim); \
+void ff_vp8_h_loop_filter16_simple_ ## opt(uint8_t *dst, ptrdiff_t stride, int flim)
 
 simple_lf_funcs(neon);
 simple_lf_funcs(armv6);
 
-#define VP8_MC_OPT(n, opt)                                              \
-    void ff_put_vp8_##n##_##opt(uint8_t *dst, int dststride,            \
-                                uint8_t *src, int srcstride,            \
+#define VP8_MC_OPT(n, opt)                                               \
+    void ff_put_vp8_##n##_##opt(uint8_t *dst, ptrdiff_t dststride,       \
+                                uint8_t *src, ptrdiff_t srcstride,       \
                                 int h, int x, int y)
 
 #define VP8_MC(n) \
@@ -301,7 +303,9 @@ av_cold void ff_vp8dsp_init_arm(VP8DSPContext *dsp)
         dsp->put_vp8_bilinear_pixels_tab[2][2][0] = ff_put_vp8_bilin4_v_##opt; \
         dsp->put_vp8_bilinear_pixels_tab[2][2][1] = ff_put_vp8_bilin4_hv_##opt; \
         dsp->put_vp8_bilinear_pixels_tab[2][2][2] = ff_put_vp8_bilin4_hv_##opt
-    if (HAVE_NEON) {
+    int cpu_flags = av_get_cpu_flags();
+
+    if (have_neon(cpu_flags)) {
         set_func_ptrs(neon);
     } else if (HAVE_ARMV6) {
         set_func_ptrs(armv6);

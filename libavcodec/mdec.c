@@ -214,7 +214,7 @@ static int decode_frame(AVCodecContext *avctx,
 static av_cold void mdec_common_init(AVCodecContext *avctx){
     MDECContext * const a = avctx->priv_data;
 
-    dsputil_init(&a->dsp, avctx);
+    ff_dsputil_init(&a->dsp, avctx);
 
     a->mb_width   = (avctx->coded_width  + 15) / 16;
     a->mb_height  = (avctx->coded_height + 15) / 16;
@@ -243,7 +243,7 @@ static av_cold int decode_init(AVCodecContext *avctx){
 
 static av_cold int decode_init_thread_copy(AVCodecContext *avctx){
     MDECContext * const a = avctx->priv_data;
-    AVFrame *p = (AVFrame*)&a->picture;
+    AVFrame *p = &a->picture;
 
     avctx->coded_frame= p;
     a->avctx= avctx;
@@ -267,14 +267,14 @@ static av_cold int decode_end(AVCodecContext *avctx){
 }
 
 AVCodec ff_mdec_decoder = {
-    .name           = "mdec",
-    .type           = AVMEDIA_TYPE_VIDEO,
-    .id             = CODEC_ID_MDEC,
-    .priv_data_size = sizeof(MDECContext),
-    .init           = decode_init,
-    .close          = decode_end,
-    .decode         = decode_frame,
-    .capabilities   = CODEC_CAP_DR1 | CODEC_CAP_FRAME_THREADS,
-    .long_name= NULL_IF_CONFIG_SMALL("Sony PlayStation MDEC (Motion DECoder)"),
-    .init_thread_copy= ONLY_IF_THREADS_ENABLED(decode_init_thread_copy)
+    .name             = "mdec",
+    .type             = AVMEDIA_TYPE_VIDEO,
+    .id               = CODEC_ID_MDEC,
+    .priv_data_size   = sizeof(MDECContext),
+    .init             = decode_init,
+    .close            = decode_end,
+    .decode           = decode_frame,
+    .capabilities     = CODEC_CAP_DR1 | CODEC_CAP_FRAME_THREADS,
+    .long_name        = NULL_IF_CONFIG_SMALL("Sony PlayStation MDEC (Motion DECoder)"),
+    .init_thread_copy = ONLY_IF_THREADS_ENABLED(decode_init_thread_copy)
 };

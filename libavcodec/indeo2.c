@@ -143,7 +143,7 @@ static int ir2_decode_frame(AVCodecContext *avctx,
     int buf_size = avpkt->size;
     Ir2Context * const s = avctx->priv_data;
     AVFrame *picture = data;
-    AVFrame * const p= (AVFrame*)&s->picture;
+    AVFrame * const p = &s->picture;
     int start;
 
     p->reference = 3;
@@ -188,7 +188,7 @@ static int ir2_decode_frame(AVCodecContext *avctx,
                          s->picture.data[1], s->picture.linesize[1], ir2_luma_table);
     }
 
-    *picture= *(AVFrame*)&s->picture;
+    *picture   = s->picture;
     *data_size = sizeof(AVPicture);
 
     return buf_size;
@@ -237,5 +237,5 @@ AVCodec ff_indeo2_decoder = {
     .close          = ir2_decode_end,
     .decode         = ir2_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("Intel Indeo 2"),
+    .long_name      = NULL_IF_CONFIG_SMALL("Intel Indeo 2"),
 };

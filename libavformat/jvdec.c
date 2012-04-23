@@ -52,8 +52,8 @@ typedef struct {
 
 static int read_probe(AVProbeData *pd)
 {
-    if (pd->buf[0] == 'J' && pd->buf[1] == 'V' &&
-        !memcmp(pd->buf + 4, MAGIC, FFMIN(strlen(MAGIC), pd->buf_size - 4)))
+    if (pd->buf[0] == 'J' && pd->buf[1] == 'V' && strlen(MAGIC) <= pd->buf_size - 4 &&
+        !memcmp(pd->buf + 4, MAGIC, strlen(MAGIC)))
         return AVPROBE_SCORE_MAX;
     return 0;
 }
@@ -79,6 +79,7 @@ static int read_header(AVFormatContext *s)
     vst->codec->codec_tag   = 0; /* no fourcc */
     vst->codec->width       = avio_rl16(pb);
     vst->codec->height      = avio_rl16(pb);
+    vst->duration           =
     vst->nb_frames          =
     ast->nb_index_entries   = avio_rl16(pb);
     avpriv_set_pts_info(vst, 64, avio_rl16(pb), 1000);

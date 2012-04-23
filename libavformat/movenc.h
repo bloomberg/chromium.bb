@@ -122,6 +122,15 @@ typedef struct MOVIndex {
 
     int         nb_frag_info;
     MOVFragmentInfo *frag_info;
+
+    struct {
+        int64_t struct_offset;
+        int     first_packet_seq;
+        int     first_packet_entry;
+        int     packet_seq;
+        int     packet_entry;
+        int     slices;
+    } vc1_info;
 } MOVTrack;
 
 typedef struct MOVMuxContext {
@@ -145,8 +154,10 @@ typedef struct MOVMuxContext {
 
     int fragments;
     int max_fragment_duration;
+    int min_fragment_duration;
     int max_fragment_size;
     int ism_lookahead;
+    AVIOContext *mdat_buf;
 } MOVMuxContext;
 
 #define FF_MOV_FLAG_RTP_HINT 1

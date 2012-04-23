@@ -146,7 +146,6 @@ x11grab_region_win_init(struct x11_grab *s)
  * Initialize the x11 grab device demuxer (public device demuxer API).
  *
  * @param s1 Context from avformat core
- * @param ap Parameters from avformat core
  * @return <ul>
  *          <li>AVERROR(ENOMEM) no memory left</li>
  *          <li>AVERROR(EIO) other failure case</li>
@@ -170,6 +169,9 @@ x11grab_read_header(AVFormatContext *s1)
     AVRational framerate;
 
     dpyname = av_strdup(s1->filename);
+    if (!dpyname)
+        goto out;
+
     offset = strchr(dpyname, '+');
     if (offset) {
         sscanf(offset, "%d,%d", &x_off, &y_off);
@@ -321,6 +323,7 @@ x11grab_read_header(AVFormatContext *s1)
     st->codec->bit_rate = x11grab->frame_size * 1/av_q2d(x11grab->time_base) * 8;
 
 out:
+    av_free(dpyname);
     return ret;
 }
 

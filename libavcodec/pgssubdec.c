@@ -483,7 +483,7 @@ static int decode(AVCodecContext *avctx, void *data, int *data_size,
         case WINDOW_SEGMENT:
             /*
              * Window Segment Structure (No new information provided):
-             *     2 bytes: Unkown,
+             *     2 bytes: Unknown,
              *     2 bytes: X position of subtitle,
              *     2 bytes: Y position of subtitle,
              *     2 bytes: Width of subtitle,
@@ -527,6 +527,6 @@ AVCodec ff_pgssub_decoder = {
     .init           = init_decoder,
     .close          = close_decoder,
     .decode         = decode,
-    .long_name = NULL_IF_CONFIG_SMALL("HDMV Presentation Graphic Stream subtitles"),
+    .long_name      = NULL_IF_CONFIG_SMALL("HDMV Presentation Graphic Stream subtitles"),
     .priv_class     = &pgsdec_class,
 };

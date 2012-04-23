@@ -30,6 +30,7 @@
 #include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/log.h"
+#include "libavutil/avassert.h"
 #include "mathops.h"
 
 /*
@@ -118,9 +119,22 @@ for examples see get_bits, show_bits, skip_bits, get_vlc
 #   define MIN_CACHE_BITS 25
 #endif
 
+#if UNCHECKED_BITSTREAM_READER
 #define OPEN_READER(name, gb)                   \
     unsigned int name##_index = (gb)->index;    \
     av_unused unsigned int name##_cache
+
+#define HAVE_BITS_REMAINING(name, gb) 1
+#else
+#define OPEN_READER(name, gb)                   \
+    unsigned int name##_index = (gb)->index;    \
+    unsigned int av_unused name##_cache = 0;    \
+    unsigned int av_unused name##_size_plus8 =  \
+                (gb)->size_in_bits_plus8
+
+#define HAVE_BITS_REMAINING(name, gb)           \
+    name##_index < name##_size_plus8
+#endif
 
 #define CLOSE_READER(name, gb) (gb)->index = name##_index
 
@@ -154,7 +168,7 @@ for examples see get_bits, show_bits, skip_bits, get_vlc
 #   define SKIP_COUNTER(name, gb, num) name##_index += (num)
 #else
 #   define SKIP_COUNTER(name, gb, num) \
-    name##_index = FFMIN((gb)->size_in_bits_plus8, name##_index + (num))
+    name##_index = FFMIN(name##_size_plus8, name##_index + (num))
 #endif
 
 #define SKIP_BITS(name, gb, num) do {           \
@@ -209,6 +223,7 @@ static inline int get_sbits(GetBitContext *s, int n)
 {
     register int tmp;
     OPEN_READER(re, s);
+    av_assert2(n>0 && n<=25);
     UPDATE_CACHE(re, s);
     tmp = SHOW_SBITS(re, s, n);
     LAST_SKIP_BITS(re, s, n);
@@ -223,6 +238,7 @@ static inline unsigned int get_bits(GetBitContext *s, int n)
 {
     register int tmp;
     OPEN_READER(re, s);
+    av_assert2(n>0 && n<=25);
     UPDATE_CACHE(re, s);
     tmp = SHOW_UBITS(re, s, n);
     LAST_SKIP_BITS(re, s, n);
@@ -237,6 +253,7 @@ static inline unsigned int show_bits(GetBitContext *s, int n)
 {
     register int tmp;
     OPEN_READER(re, s);
+    av_assert2(n>0 && n<=25);
     UPDATE_CACHE(re, s);
     tmp = SHOW_UBITS(re, s, n);
     return tmp;
@@ -360,19 +377,19 @@ static inline void align_get_bits(GetBitContext *s)
                  bits, bits_wrap, bits_size,            \
                  codes, codes_wrap, codes_size,         \
                  flags)                                 \
-        init_vlc_sparse(vlc, nb_bits, nb_codes,         \
-                        bits, bits_wrap, bits_size,     \
-                        codes, codes_wrap, codes_size,  \
-                        NULL, 0, 0, flags)
+        ff_init_vlc_sparse(vlc, nb_bits, nb_codes,         \
+                           bits, bits_wrap, bits_size,     \
+                           codes, codes_wrap, codes_size,  \
+                           NULL, 0, 0, flags)
 
-int init_vlc_sparse(VLC *vlc, int nb_bits, int nb_codes,
+int ff_init_vlc_sparse(VLC *vlc, int nb_bits, int nb_codes,
              const void *bits, int bits_wrap, int bits_size,
              const void *codes, int codes_wrap, int codes_size,
              const void *symbols, int symbols_wrap, int symbols_size,
              int flags);
 #define INIT_VLC_LE         2
 #define INIT_VLC_USE_NEW_STATIC 4
-void free_vlc(VLC *vlc);
+void ff_free_vlc(VLC *vlc);
 
 #define INIT_VLC_STATIC(vlc, bits, a,b,c,d,e,f,g, static_size) do {     \
         static VLC_TYPE table[static_size][2];                          \

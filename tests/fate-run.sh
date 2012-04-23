@@ -14,10 +14,13 @@ target_path=$4
 command=$5
 cmp=${6:-diff}
 ref=${7:-"${base}/ref/fate/${test}"}
-fuzz=$8
+fuzz=${8:-1}
 threads=${9:-1}
 thread_type=${10:-frame+slice}
-tool=${11}
+cpuflags=${11:-all}
+cmp_shift=${12:-0}
+cmp_target=${13:-0}
+size_tolerance=${14:-0}
 
 outdir="tests/data/fate"
 outfile="${outdir}/${test}"
@@ -25,24 +28,36 @@ errfile="${outdir}/${test}.err"
 cmpfile="${outdir}/${test}.diff"
 repfile="${outdir}/${test}.rep"
 
+target_path(){
+    test ${1} = ${1#/} && p=${target_path}/
+    echo ${p}${1}
+}
+
+# $1=value1, $2=value2, $3=threshold
+# prints 0 if absolute difference between value1 and value2 is <= threshold
+compare(){
+    echo "scale=2; v = $1 - $2; if (v < 0) v = -v; if (v > $3) r = 1; r" | bc
+}
+
 do_tiny_psnr(){
-    psnr=$(tests/tiny_psnr "$1" "$2" 2 0 0)
+    psnr=$(tests/tiny_psnr "$1" "$2" 2 $cmp_shift 0)
     val=$(expr "$psnr" : ".*$3: *\([0-9.]*\)")
     size1=$(expr "$psnr" : '.*bytes: *\([0-9]*\)')
     size2=$(expr "$psnr" : '.*bytes:[ 0-9]*/ *\([0-9]*\)')
-    res=$(echo "if ($val $4 $5) 1" | bc)
-    if [ "$res" != 1 ] || [ $size1 != $size2 ]; then
+    val_cmp=$(compare $val $cmp_target $fuzz)
+    size_cmp=$(compare $size1 $size2 $size_tolerance)
+    if [ "$val_cmp" != 0 ] || [ "$size_cmp" != 0 ]; then
         echo "$psnr"
         return 1
     fi
 }
 
 oneoff(){
-    do_tiny_psnr "$1" "$2" MAXDIFF '<=' ${fuzz:-1}
+    do_tiny_psnr "$1" "$2" MAXDIFF
 }
 
 stddev(){
-    do_tiny_psnr "$1" "$2" stddev  '<=' ${fuzz:-1}
+    do_tiny_psnr "$1" "$2" stddev
 }
 
 run(){
@@ -51,7 +66,7 @@ run(){
 }
 
 avconv(){
-    run $tool -nostats -threads $threads -thread_type $thread_type "$@"
+    run ffmpeg -nostats -threads $threads -thread_type $thread_type -cpuflags $cpuflags "$@"
 }
 
 framecrc(){
@@ -74,14 +89,31 @@ pcm(){
     avconv "$@" -vn -f s16le -
 }
 
+enc_dec_pcm(){
+    out_fmt=$1
+    dec_fmt=$2
+    pcm_fmt=$3
+    src_file=$(target_path $4)
+    shift 4
+    encfile="${outdir}/${test}.${out_fmt}"
+    cleanfiles=$encfile
+    encfile=$(target_path ${encfile})
+    avconv -i $src_file "$@" -f $out_fmt -y ${encfile} || return
+    avconv -i ${encfile} -c:a pcm_${pcm_fmt} -f ${dec_fmt} -
+}
+
 regtest(){
     t="${test#$2-}"
     ref=${base}/ref/$2/$t
-    ${base}/${1}-regression.sh $t $2 $3 "$target_exec" "$target_path" "$threads" "$thread_type" "$tool"
+    ${base}/${1}-regression.sh $t $2 $3 "$target_exec" "$target_path" "$threads" "$thread_type" "$cpuflags" "$samples"
 }
 
 codectest(){
     regtest codec $1 tests/$1
+}
+
+lavffatetest(){
+    regtest lavf lavf-fate tests/vsynth1
 }
 
 lavftest(){
@@ -122,8 +154,8 @@ fi
 if test -e "$ref"; then
     case $cmp in
         diff)   diff -u -w "$ref" "$outfile"            >$cmpfile ;;
-        oneoff) oneoff     "$ref" "$outfile" "$fuzz"    >$cmpfile ;;
-        stddev) stddev     "$ref" "$outfile" "$fuzz"    >$cmpfile ;;
+        oneoff) oneoff     "$ref" "$outfile"            >$cmpfile ;;
+        stddev) stddev     "$ref" "$outfile"            >$cmpfile ;;
         null)   cat               "$outfile"            >$cmpfile ;;
     esac
     cmperr=$?

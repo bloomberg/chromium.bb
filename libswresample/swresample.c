@@ -52,7 +52,13 @@ static const AVOption options[]={
 {"slev", "sourround mix level"  , OFFSET(slev)         , AV_OPT_TYPE_FLOAT, {.dbl=C_30DB}, 0, 4, 0},
 {"rmvol", "rematrix volume"     , OFFSET(rematrix_volume), AV_OPT_TYPE_FLOAT, {.dbl=1.0}, -1000, 1000, 0},
 {"flags", NULL                  , OFFSET(flags)        , AV_OPT_TYPE_FLAGS, {.dbl=0}, 0,  UINT_MAX, 0, "flags"},
+{"swr_flags", NULL              , OFFSET(flags)        , AV_OPT_TYPE_FLAGS, {.dbl=0}, 0,  UINT_MAX, 0, "flags"},
 {"res", "force resampling", 0, AV_OPT_TYPE_CONST, {.dbl=SWR_FLAG_RESAMPLE}, INT_MIN, INT_MAX, 0, "flags"},
+{"dither_scale" , "dither scale"       , OFFSET(dither_scale ), AV_OPT_TYPE_FLOAT, {.dbl=1}, 0, INT_MAX, 0},
+{"dither_method", "dither method"      , OFFSET(dither_method), AV_OPT_TYPE_INT  , {.dbl=0}, 0, SWR_DITHER_NB-1, 0, "dither_method"},
+{"rectangular", "rectangular dither", 0, AV_OPT_TYPE_CONST, {.dbl=SWR_DITHER_RECTANGULAR}, INT_MIN, INT_MAX, 0, "dither_method"},
+{"triangular" , "triangular dither" , 0, AV_OPT_TYPE_CONST, {.dbl=SWR_DITHER_TRIANGULAR }, INT_MIN, INT_MAX, 0, "dither_method"},
+{"triangular_hp" , "triangular dither with high pass" , 0, AV_OPT_TYPE_CONST, {.dbl=SWR_DITHER_TRIANGULAR_HIGHPASS }, INT_MIN, INT_MAX, 0, "dither_method"},
 
 {0}
 };
@@ -94,6 +100,11 @@ int swr_set_channel_mapping(struct SwrContext *s, const int *channel_map){
     return 0;
 }
 
+const AVClass *swr_get_class(void)
+{
+    return &av_class;
+}
+
 struct SwrContext *swr_alloc(void){
     SwrContext *s= av_mallocz(sizeof(SwrContext));
     if(s){
@@ -119,7 +130,7 @@ struct SwrContext *swr_alloc_set_opts(struct SwrContext *s,
     av_opt_set_int(s, "icl", in_ch_layout,    0);
     av_opt_set_int(s, "isf", in_sample_fmt,   0);
     av_opt_set_int(s, "isr", in_sample_rate,  0);
-    av_opt_set_int(s, "tsf", AV_SAMPLE_FMT_S16, 0);
+    av_opt_set_int(s, "tsf", AV_SAMPLE_FMT_NONE,   0);
     av_opt_set_int(s, "ich", av_get_channel_layout_nb_channels(s-> in_ch_layout), 0);
     av_opt_set_int(s, "och", av_get_channel_layout_nb_channels(s->out_ch_layout), 0);
     av_opt_set_int(s, "uch", 0, 0);
@@ -139,6 +150,7 @@ void swr_free(SwrContext **ss){
         free_temp(&s->midbuf);
         free_temp(&s->preout);
         free_temp(&s->in_buffer);
+        free_temp(&s->dither);
         swri_audio_convert_free(&s-> in_convert);
         swri_audio_convert_free(&s->out_convert);
         swri_audio_convert_free(&s->full_convert);
@@ -156,9 +168,12 @@ int swr_init(struct SwrContext *s){
     free_temp(&s->midbuf);
     free_temp(&s->preout);
     free_temp(&s->in_buffer);
+    free_temp(&s->dither);
     swri_audio_convert_free(&s-> in_convert);
     swri_audio_convert_free(&s->out_convert);
     swri_audio_convert_free(&s->full_convert);
+
+    s->flushed = 0;
 
     s-> in.planar= av_sample_fmt_is_planar(s-> in_sample_fmt);
     s->out.planar= av_sample_fmt_is_planar(s->out_sample_fmt);
@@ -174,25 +189,28 @@ int swr_init(struct SwrContext *s){
         return AVERROR(EINVAL);
     }
 
-    if(   s->int_sample_fmt != AV_SAMPLE_FMT_S16
-        &&s->int_sample_fmt != AV_SAMPLE_FMT_FLT){
-        av_log(s, AV_LOG_ERROR, "Requested sample format %s is not supported internally, only float & S16 is supported\n", av_get_sample_fmt_name(s->int_sample_fmt));
-        return AVERROR(EINVAL);
-    }
-
     //FIXME should we allow/support using FLT on material that doesnt need it ?
     if(s->in_sample_fmt <= AV_SAMPLE_FMT_S16 || s->int_sample_fmt==AV_SAMPLE_FMT_S16){
         s->int_sample_fmt= AV_SAMPLE_FMT_S16;
     }else
         s->int_sample_fmt= AV_SAMPLE_FMT_FLT;
 
+    if(   s->int_sample_fmt != AV_SAMPLE_FMT_S16
+        &&s->int_sample_fmt != AV_SAMPLE_FMT_S32
+        &&s->int_sample_fmt != AV_SAMPLE_FMT_FLT){
+        av_log(s, AV_LOG_ERROR, "Requested sample format %s is not supported internally, S16/S32/FLT is supported\n", av_get_sample_fmt_name(s->int_sample_fmt));
+        return AVERROR(EINVAL);
+    }
 
     if (s->out_sample_rate!=s->in_sample_rate || (s->flags & SWR_FLAG_RESAMPLE)){
-        s->resample = swri_resample_init(s->resample, s->out_sample_rate, s->in_sample_rate, 16, 10, 0, 0.8);
+        s->resample = swri_resample_init(s->resample, s->out_sample_rate, s->in_sample_rate, 16, 10, 0, 0.8, s->int_sample_fmt);
     }else
         swri_resample_free(&s->resample);
-    if(s->int_sample_fmt != AV_SAMPLE_FMT_S16 && s->resample){
-        av_log(s, AV_LOG_ERROR, "Resampling only supported with internal s16 currently\n"); //FIXME
+    if(    s->int_sample_fmt != AV_SAMPLE_FMT_S16
+        && s->int_sample_fmt != AV_SAMPLE_FMT_S32
+        && s->int_sample_fmt != AV_SAMPLE_FMT_FLT
+        && s->resample){
+        av_log(s, AV_LOG_ERROR, "Resampling only supported with internal s16/s32/flt\n");
         return -1;
     }
 
@@ -209,7 +227,8 @@ int swr_init(struct SwrContext *s){
     if(!s->out_ch_layout)
         s->out_ch_layout= av_get_default_channel_layout(s->out.ch_count);
 
-    s->rematrix= s->out_ch_layout  !=s->in_ch_layout || s->rematrix_volume!=1.0;
+    s->rematrix= s->out_ch_layout  !=s->in_ch_layout || s->rematrix_volume!=1.0 ||
+                 s->rematrix_custom;
 
 #define RSC 1 //FIXME finetune
     if(!s-> in.ch_count)
@@ -225,6 +244,11 @@ int swr_init(struct SwrContext *s){
         return -1;
     }
 
+    if ((!s->out_ch_layout || !s->in_ch_layout) && s->used_ch_count != s->out.ch_count && !s->rematrix_custom) {
+        av_log(s, AV_LOG_ERROR, "Rematrix is needed but there is not enough information to do it\n");
+        return -1;
+    }
+
 av_assert0(s->used_ch_count);
 av_assert0(s->out.ch_count);
     s->resample_first= RSC*s->out.ch_count/s->in.ch_count - RSC < s->out_sample_rate/(float)s-> in_sample_rate - 1.0;
@@ -232,6 +256,7 @@ av_assert0(s->out.ch_count);
     s-> in.bps= av_get_bytes_per_sample(s-> in_sample_fmt);
     s->int_bps= av_get_bytes_per_sample(s->int_sample_fmt);
     s->out.bps= av_get_bytes_per_sample(s->out_sample_fmt);
+    s->in_buffer= s->in;
 
     if(!s->resample && !s->rematrix && !s->channel_map){
         s->full_convert = swri_audio_convert_alloc(s->out_sample_fmt,
@@ -248,20 +273,28 @@ av_assert0(s->out.ch_count);
     s->postin= s->in;
     s->preout= s->out;
     s->midbuf= s->in;
-    s->in_buffer= s->in;
+
     if(s->channel_map){
         s->postin.ch_count=
-        s->midbuf.ch_count=
-        s->in_buffer.ch_count= s->used_ch_count;
+        s->midbuf.ch_count= s->used_ch_count;
+        if(s->resample)
+            s->in_buffer.ch_count= s->used_ch_count;
     }
     if(!s->resample_first){
         s->midbuf.ch_count= s->out.ch_count;
-        s->in_buffer.ch_count = s->out.ch_count;
+        if(s->resample)
+            s->in_buffer.ch_count = s->out.ch_count;
     }
 
-    s->in_buffer.bps = s->postin.bps = s->midbuf.bps = s->preout.bps =  s->int_bps;
-    s->in_buffer.planar = s->postin.planar = s->midbuf.planar = s->preout.planar =  1;
+    s->postin.bps    = s->midbuf.bps    = s->preout.bps    =  s->int_bps;
+    s->postin.planar = s->midbuf.planar = s->preout.planar =  1;
 
+    if(s->resample){
+        s->in_buffer.bps    = s->int_bps;
+        s->in_buffer.planar = 1;
+    }
+
+    s->dither = s->preout;
 
     if(s->rematrix)
         return swri_rematrix_init(s);
@@ -281,7 +314,6 @@ static int realloc_audio(AudioData *a, int count){
     countb= FFALIGN(count*a->bps, 32);
     old= *a;
 
-    av_assert0(a->planar);
     av_assert0(a->bps);
     av_assert0(a->ch_count);
 
@@ -292,6 +324,7 @@ static int realloc_audio(AudioData *a, int count){
         a->ch[i]= a->data + i*(a->planar ? countb : a->bps);
         if(a->planar) memcpy(a->ch[i], old.ch[i], a->count*a->bps);
     }
+    if(!a->planar) memcpy(a->ch[0], old.ch[0], a->count*a->ch_count*a->bps);
     av_free(old.data);
     a->count= count;
 
@@ -327,12 +360,14 @@ static void fill_audiodata(AudioData *out, uint8_t *in_arg [SWR_CH_MAX]){
  * out may be equal in.
  */
 static void buf_set(AudioData *out, AudioData *in, int count){
+    int ch;
     if(in->planar){
-        int ch;
         for(ch=0; ch<out->ch_count; ch++)
             out->ch[ch]= in->ch[ch] + count*out->bps;
-    }else
-        out->ch[0]= in->ch[0] + count*out->ch_count*out->bps;
+    }else{
+        for(ch=0; ch<out->ch_count; ch++)
+            out->ch[ch]= in->ch[0] + (ch + count*out->ch_count) * out->bps;
+    }
 }
 
 /**
@@ -413,41 +448,11 @@ static int resample(SwrContext *s, AudioData *out_param, int out_count,
     return ret_sum;
 }
 
-int swr_convert(struct SwrContext *s, uint8_t *out_arg[SWR_CH_MAX], int out_count,
-                         const uint8_t *in_arg [SWR_CH_MAX], int  in_count){
+static int swr_convert_internal(struct SwrContext *s, AudioData *out, int out_count,
+                                                      AudioData *in , int  in_count){
     AudioData *postin, *midbuf, *preout;
     int ret/*, in_max*/;
-    AudioData * in= &s->in;
-    AudioData *out= &s->out;
     AudioData preout_tmp, midbuf_tmp;
-
-    if(!s->resample){
-        if(in_count > out_count)
-            return -1;
-        out_count = in_count;
-    }
-
-    if(!in_arg){
-        if(s->in_buffer_count){
-            AudioData *a= &s->in_buffer;
-            int i, j, ret;
-            if((ret=realloc_audio(a, s->in_buffer_index + 2*s->in_buffer_count)) < 0)
-                return ret;
-            av_assert0(a->planar);
-            for(i=0; i<a->ch_count; i++){
-                for(j=0; j<s->in_buffer_count; j++){
-                    memcpy(a->ch[i] + (s->in_buffer_index+s->in_buffer_count+j  )*a->bps,
-                           a->ch[i] + (s->in_buffer_index+s->in_buffer_count-j-1)*a->bps, a->bps);
-                }
-            }
-            s->in_buffer_count += (s->in_buffer_count+1)/2;
-            s->resample_in_constraint = 0;
-        }else{
-            return 0;
-        }
-    }else
-        fill_audiodata(in ,  (void*)in_arg);
-    fill_audiodata(out, out_arg);
 
     if(s->full_convert){
         av_assert0(!s->resample);
@@ -490,7 +495,7 @@ int swr_convert(struct SwrContext *s, uint8_t *out_arg[SWR_CH_MAX], int out_coun
 
     if(s->int_sample_fmt == s->out_sample_fmt && s->out.planar){
         if(preout==in){
-            out_count= FFMIN(out_count, in_count); //TODO check at teh end if this is needed or redundant
+            out_count= FFMIN(out_count, in_count); //TODO check at the end if this is needed or redundant
             av_assert0(s->in.planar); //we only support planar internally so it has to be, we support copying non planar though
             copy(out, in, out_count);
             return out_count;
@@ -516,12 +521,114 @@ int swr_convert(struct SwrContext *s, uint8_t *out_arg[SWR_CH_MAX], int out_coun
             out_count= resample(s, preout, out_count, midbuf, in_count);
     }
 
-    if(preout != out){
+    if(preout != out && out_count){
+        if(s->dither_method){
+            int ch;
+            int dither_count= FFMAX(out_count, 1<<16);
+            av_assert0(preout != in);
+
+            if((ret=realloc_audio(&s->dither, dither_count))<0)
+                return ret;
+            if(ret)
+                for(ch=0; ch<s->dither.ch_count; ch++)
+                    swri_get_dither(s, s->dither.ch[ch], s->dither.count, 12345678913579<<ch, s->out_sample_fmt, s->int_sample_fmt);
+            av_assert0(s->dither.ch_count == preout->ch_count);
+
+            if(s->dither_pos + out_count > s->dither.count)
+                s->dither_pos = 0;
+            for(ch=0; ch<preout->ch_count; ch++)
+                swri_sum2(s->int_sample_fmt, preout->ch[ch], preout->ch[ch], s->dither.ch[ch] + s->dither.bps * s->dither_pos, 1, 1, out_count);
+
+            s->dither_pos += out_count;
+        }
 //FIXME packed doesnt need more than 1 chan here!
         swri_audio_convert(s->out_convert, out, preout, out_count);
     }
-    if(!in_arg)
-        s->in_buffer_count = 0;
     return out_count;
+}
+
+int swr_convert(struct SwrContext *s, uint8_t *out_arg[SWR_CH_MAX], int out_count,
+                                const uint8_t *in_arg [SWR_CH_MAX], int  in_count){
+    AudioData * in= &s->in;
+    AudioData *out= &s->out;
+
+    if(!in_arg){
+        if(s->in_buffer_count){
+            if (s->resample && !s->flushed) {
+                AudioData *a= &s->in_buffer;
+                int i, j, ret;
+                if((ret=realloc_audio(a, s->in_buffer_index + 2*s->in_buffer_count)) < 0)
+                    return ret;
+                av_assert0(a->planar);
+                for(i=0; i<a->ch_count; i++){
+                    for(j=0; j<s->in_buffer_count; j++){
+                        memcpy(a->ch[i] + (s->in_buffer_index+s->in_buffer_count+j  )*a->bps,
+                            a->ch[i] + (s->in_buffer_index+s->in_buffer_count-j-1)*a->bps, a->bps);
+                    }
+                }
+                s->in_buffer_count += (s->in_buffer_count+1)/2;
+                s->resample_in_constraint = 0;
+                s->flushed = 1;
+            }
+        }else{
+            return 0;
+        }
+    }else
+        fill_audiodata(in ,  (void*)in_arg);
+
+    fill_audiodata(out, out_arg);
+
+    if(s->resample){
+        return swr_convert_internal(s, out, out_count, in, in_count);
+    }else{
+        AudioData tmp= *in;
+        int ret2=0;
+        int ret, size;
+        size = FFMIN(out_count, s->in_buffer_count);
+        if(size){
+            buf_set(&tmp, &s->in_buffer, s->in_buffer_index);
+            ret= swr_convert_internal(s, out, size, &tmp, size);
+            if(ret<0)
+                return ret;
+            ret2= ret;
+            s->in_buffer_count -= ret;
+            s->in_buffer_index += ret;
+            buf_set(out, out, ret);
+            out_count -= ret;
+            if(!s->in_buffer_count)
+                s->in_buffer_index = 0;
+        }
+
+        if(in_count){
+            size= s->in_buffer_index + s->in_buffer_count + in_count - out_count;
+
+            if(in_count > out_count) { //FIXME move after swr_convert_internal
+                if(   size > s->in_buffer.count
+                && s->in_buffer_count + in_count - out_count <= s->in_buffer_index){
+                    buf_set(&tmp, &s->in_buffer, s->in_buffer_index);
+                    copy(&s->in_buffer, &tmp, s->in_buffer_count);
+                    s->in_buffer_index=0;
+                }else
+                    if((ret=realloc_audio(&s->in_buffer, size)) < 0)
+                        return ret;
+            }
+
+            if(out_count){
+                size = FFMIN(in_count, out_count);
+                ret= swr_convert_internal(s, out, size, in, size);
+                if(ret<0)
+                    return ret;
+                buf_set(in, in, ret);
+                in_count -= ret;
+                ret2 += ret;
+            }
+            if(in_count){
+                buf_set(&tmp, &s->in_buffer, s->in_buffer_index);
+                copy(&tmp, in, in_count);
+                s->in_buffer_count += in_count;
+            }
+        }
+        return ret2;
+    }
 }
 

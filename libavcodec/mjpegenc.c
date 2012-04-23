@@ -452,12 +452,12 @@ void ff_mjpeg_encode_mb(MpegEncContext *s, DCTELEM block[6][64])
 
 // maximum over s->mjpeg_vsample[i]
 #define V_MAX 2
-static int amv_encode_picture(AVCodecContext *avctx,
-                       unsigned char *buf, int buf_size, void *data)
-{
+static int amv_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
+                              const AVFrame *pic_arg, int *got_packet)
 
-    AVFrame* pic=data;
+{
     MpegEncContext *s = avctx->priv_data;
+    AVFrame pic = *pic_arg;
     int i;
 
     //CODEC_FLAG_EMU_EDGE have to be cleared
@@ -466,10 +466,10 @@ static int amv_encode_picture(AVCodecContext *avctx,
 
     //picture should be flipped upside-down
     for(i=0; i < 3; i++) {
-        pic->data[i] += (pic->linesize[i] * (s->mjpeg_vsample[i] * (8 * s->mb_height -((s->height/V_MAX)&7)) - 1 ));
-        pic->linesize[i] *= -1;
+        pic.data[i] += (pic.linesize[i] * (s->mjpeg_vsample[i] * (8 * s->mb_height -((s->height/V_MAX)&7)) - 1 ));
+        pic.linesize[i] *= -1;
     }
-    return MPV_encode_picture(avctx,buf, buf_size, pic);
+    return ff_MPV_encode_picture(avctx, pkt, &pic, got_packet);
 }
 
 AVCodec ff_mjpeg_encoder = {
@@ -477,11 +477,13 @@ AVCodec ff_mjpeg_encoder = {
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_MJPEG,
     .priv_data_size = sizeof(MpegEncContext),
-    .init           = MPV_encode_init,
-    .encode         = MPV_encode_picture,
-    .close          = MPV_encode_end,
-    .pix_fmts= (const enum PixelFormat[]){PIX_FMT_YUVJ420P, PIX_FMT_YUVJ422P, PIX_FMT_NONE},
-    .long_name= NULL_IF_CONFIG_SMALL("MJPEG (Motion JPEG)"),
+    .init           = ff_MPV_encode_init,
+    .encode2        = ff_MPV_encode_picture,
+    .close          = ff_MPV_encode_end,
+    .pix_fmts       = (const enum PixelFormat[]){
+        PIX_FMT_YUVJ420P, PIX_FMT_YUVJ422P, PIX_FMT_NONE
+    },
+    .long_name      = NULL_IF_CONFIG_SMALL("MJPEG (Motion JPEG)"),
 };
 
 AVCodec ff_amv_encoder = {
@@ -489,9 +491,9 @@ AVCodec ff_amv_encoder = {
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = CODEC_ID_AMV,
     .priv_data_size = sizeof(MpegEncContext),
-    .init           = MPV_encode_init,
-    .encode         = amv_encode_picture,
-    .close          = MPV_encode_end,
+    .init           = ff_MPV_encode_init,
+    .encode2        = amv_encode_picture,
+    .close          = ff_MPV_encode_end,
     .pix_fmts= (const enum PixelFormat[]){PIX_FMT_YUVJ420P, PIX_FMT_YUVJ422P, PIX_FMT_NONE},
     .long_name      = NULL_IF_CONFIG_SMALL("AMV Video"),
 };

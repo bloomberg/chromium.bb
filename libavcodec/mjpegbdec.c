@@ -52,6 +52,7 @@ static int mjpegb_decode_frame(AVCodecContext *avctx,
 
     buf_ptr = buf;
     buf_end = buf + buf_size;
+    s->got_picture = 0;
 
 read_header:
     /* reset on every SOI */
@@ -69,7 +70,7 @@ read_header:
     if (get_bits_long(&hgb, 32) != MKBETAG('m','j','p','g'))
     {
         av_log(avctx, AV_LOG_WARNING, "not mjpeg-b (bad fourcc)\n");
-        return 0;
+        return AVERROR_INVALIDDATA;
     }
 
     field_size = get_bits_long(&hgb, 32); /* field size */
@@ -129,7 +130,6 @@ read_header:
         if (s->bottom_field != s->interlace_polarity && second_field_offs)
         {
             buf_ptr = buf + second_field_offs;
-            second_field_offs = 0;
             goto read_header;
             }
     }
@@ -149,7 +149,7 @@ read_header:
         picture->quality*= FF_QP2LAMBDA;
     }
 
-    return buf_ptr - buf;
+    return buf_size;
 }
 
 AVCodec ff_mjpegb_decoder = {
@@ -161,6 +161,6 @@ AVCodec ff_mjpegb_decoder = {
     .close          = ff_mjpeg_decode_end,
     .decode         = mjpegb_decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .max_lowres = 3,
-    .long_name = NULL_IF_CONFIG_SMALL("Apple MJPEG-B"),
+    .max_lowres     = 3,
+    .long_name      = NULL_IF_CONFIG_SMALL("Apple MJPEG-B"),
 };

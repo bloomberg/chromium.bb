@@ -64,7 +64,7 @@ static int decode_frame(AVCodecContext *avctx,
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
     WNV1Context * const l = avctx->priv_data;
-    AVFrame * const p= (AVFrame*)&l->pic;
+    AVFrame * const p = &l->pic;
     unsigned char *Y,*U,*V;
     int i, j;
     int prev_y = 0, prev_u = 0, prev_v = 0;
@@ -166,5 +166,5 @@ AVCodec ff_wnv1_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("Winnov WNV1"),
+    .long_name      = NULL_IF_CONFIG_SMALL("Winnov WNV1"),
 };

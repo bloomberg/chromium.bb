@@ -205,6 +205,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
             st->codec->block_align = coded_framesize;
             break;
         case CODEC_ID_COOK:
+            st->need_parsing = AVSTREAM_PARSE_HEADERS;
         case CODEC_ID_ATRAC3:
         case CODEC_ID_SIPR:
             avio_rb16(pb); avio_r8(pb);
@@ -266,6 +267,7 @@ static int rm_read_audio_stream_info(AVFormatContext *s, AVIOContext *pb,
         switch (ast->deint_id) {
         case DEINT_ID_INT4:
             if (ast->coded_framesize > ast->audio_framesize ||
+                sub_packet_h <= 1 ||
                 ast->coded_framesize * sub_packet_h > (2 + (sub_packet_h & 1)) * ast->audio_framesize)
                 return AVERROR_INVALIDDATA;
             break;
@@ -310,6 +312,15 @@ ff_rm_read_mdpr_codecdata (AVFormatContext *s, AVIOContext *pb,
         /* ra type header */
         if (rm_read_audio_stream_info(s, pb, st, rst, 0))
             return -1;
+    } else if (v == MKBETAG('L', 'S', 'D', ':')) {
+        avio_seek(pb, -4, SEEK_CUR);
+        if ((ret = rm_read_extradata(pb, st->codec, codec_data_size)) < 0)
+            return ret;
+
+        st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
+        st->codec->codec_tag  = AV_RL32(st->codec->extradata);
+        st->codec->codec_id   = ff_codec_get_id(ff_rm_codec_tags,
+                                                st->codec->codec_tag);
     } else {
         int fps;
         if (avio_rl32(pb) != MKTAG('V', 'I', 'D', 'O')) {
@@ -370,8 +381,19 @@ static int rm_read_index(AVFormatContext *s)
                 st = s->streams[n];
                 break;
             }
-        if (n == s->nb_streams)
+        if (n == s->nb_streams) {
+            av_log(s, AV_LOG_ERROR,
+                   "Invalid stream index %d for index at pos %"PRId64"\n",
+                   str_id, avio_tell(pb));
             goto skip;
+        } else if ((avio_size(pb) - avio_tell(pb)) / 14 < n_pkts) {
+            av_log(s, AV_LOG_ERROR,
+                   "Nr. of packets in packet index for stream index %d "
+                   "exceeds filesize (%"PRId64" at %"PRId64" = %"PRId64")\n",
+                   str_id, avio_size(pb), avio_tell(pb),
+                   (avio_size(pb) - avio_tell(pb)) / 14);
+            goto skip;
+        }
 
         for (n = 0; n < n_pkts; n++) {
             avio_skip(pb, 2);
@@ -383,9 +405,12 @@ static int rm_read_index(AVFormatContext *s)
         }
 
 skip:
-        if (next_off && avio_tell(pb) != next_off &&
-            avio_seek(pb, next_off, SEEK_SET) < 0)
+        if (next_off && avio_tell(pb) < next_off &&
+            avio_seek(pb, next_off, SEEK_SET) < 0) {
+            av_log(s, AV_LOG_ERROR,
+                   "Non-linear index detected, not supported\n");
             return -1;
+        }
     } while (next_off);
 
     return 0;
@@ -424,10 +449,8 @@ static int rm_read_header(AVFormatContext *s)
         return AVERROR(EIO);
     }
 
-    avio_rb32(pb); /* header size */
-    avio_rb16(pb);
-    avio_rb32(pb);
-    avio_rb32(pb); /* number of headers */
+    tag_size = avio_rb32(pb);
+    avio_skip(pb, tag_size - 8);
 
     for(;;) {
         if (url_feof(pb))

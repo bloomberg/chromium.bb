@@ -95,7 +95,7 @@ static void svq1_write_header(SVQ1Context *s, int frame_type)
         /* output 5 unknown bits (2 + 2 + 1) */
         put_bits(&s->pb, 5, 2); /* 2 needed by quicktime decoder */
 
-        i= ff_match_2uint16(ff_svq1_frame_size_table, FF_ARRAY_ELEMS(ff_svq1_frame_size_table), s->frame_width, s->frame_height);
+        i= ff_match_2uint16((void*)ff_svq1_frame_size_table, FF_ARRAY_ELEMS(ff_svq1_frame_size_table), s->frame_width, s->frame_height);
         put_bits(&s->pb, 3, i);
 
         if (i == 7)
@@ -402,7 +402,7 @@ static int svq1_encode_plane(SVQ1Context *s, int plane, unsigned char *src_plane
                 int mx, my, pred_x, pred_y, dxy;
                 int16_t *motion_ptr;
 
-                motion_ptr= h263_pred_motion(&s->m, 0, 0, &pred_x, &pred_y);
+                motion_ptr= ff_h263_pred_motion(&s->m, 0, 0, &pred_x, &pred_y);
                 if(s->m.mb_type[x + y*s->m.mb_stride]&CANDIDATE_MB_TYPE_INTER){
                     for(i=0; i<6; i++)
                         init_put_bits(&s->reorder_pb[i], reorder_buffer[1][i], 7*32);
@@ -472,8 +472,8 @@ static av_cold int svq1_encode_init(AVCodecContext *avctx)
 {
     SVQ1Context * const s = avctx->priv_data;
 
-    dsputil_init(&s->dsp, avctx);
-    avctx->coded_frame= (AVFrame*)&s->picture;
+    ff_dsputil_init(&s->dsp, avctx);
+    avctx->coded_frame = &s->picture;
 
     s->frame_width = avctx->width;
     s->frame_height = avctx->height;
@@ -492,19 +492,21 @@ static av_cold int svq1_encode_init(AVCodecContext *avctx)
     s->m.me.score_map = av_mallocz(ME_MAP_SIZE*sizeof(uint32_t));
     s->mb_type        = av_mallocz((s->y_block_width+1)*s->y_block_height*sizeof(int16_t));
     s->dummy          = av_mallocz((s->y_block_width+1)*s->y_block_height*sizeof(int32_t));
-    h263_encode_init(&s->m); //mv_penalty
+    ff_h263_encode_init(&s->m); //mv_penalty
 
     return 0;
 }
 
-static int svq1_encode_frame(AVCodecContext *avctx, unsigned char *buf,
-    int buf_size, void *data)
+static int svq1_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
+                             const AVFrame *pict, int *got_packet)
 {
     SVQ1Context * const s = avctx->priv_data;
-    AVFrame *pict = data;
-    AVFrame * const p= (AVFrame*)&s->picture;
+    AVFrame * const p = &s->picture;
     AVFrame temp;
-    int i;
+    int i, ret;
+
+    if ((ret = ff_alloc_packet2(avctx, pkt, s->y_block_width*s->y_block_height*MAX_MB_BYTES*3 + FF_MIN_BUFFER_SIZE) < 0))
+        return ret;
 
     if(avctx->pix_fmt != PIX_FMT_YUV410P){
         av_log(avctx, AV_LOG_ERROR, "unsupported pixel format\n");
@@ -521,7 +523,7 @@ static int svq1_encode_frame(AVCodecContext *avctx, unsigned char *buf,
     s->current_picture= s->last_picture;
     s->last_picture= temp;
 
-    init_put_bits(&s->pb, buf, buf_size);
+    init_put_bits(&s->pb, pkt->data, pkt->size);
 
     *p = *pict;
     p->pict_type = avctx->gop_size && avctx->frame_number % avctx->gop_size ? AV_PICTURE_TYPE_P : AV_PICTURE_TYPE_I;
@@ -542,7 +544,12 @@ static int svq1_encode_frame(AVCodecContext *avctx, unsigned char *buf,
 
     flush_put_bits(&s->pb);
 
-    return put_bits_count(&s->pb) / 8;
+    pkt->size = put_bits_count(&s->pb) / 8;
+    if (p->pict_type == AV_PICTURE_TYPE_I)
+        pkt->flags |= AV_PKT_FLAG_KEY;
+    *got_packet = 1;
+
+    return 0;
 }
 
 static av_cold int svq1_encode_end(AVCodecContext *avctx)
@@ -578,8 +585,8 @@ AVCodec ff_svq1_encoder = {
     .id             = CODEC_ID_SVQ1,
     .priv_data_size = sizeof(SVQ1Context),
     .init           = svq1_encode_init,
-    .encode         = svq1_encode_frame,
+    .encode2        = svq1_encode_frame,
     .close          = svq1_encode_end,
-    .pix_fmts= (const enum PixelFormat[]){PIX_FMT_YUV410P, PIX_FMT_NONE},
-    .long_name= NULL_IF_CONFIG_SMALL("Sorenson Vector Quantizer 1 / Sorenson Video 1 / SVQ1"),
+    .pix_fmts       = (const enum PixelFormat[]){ PIX_FMT_YUV410P, PIX_FMT_NONE },
+    .long_name      = NULL_IF_CONFIG_SMALL("Sorenson Vector Quantizer 1 / Sorenson Video 1 / SVQ1"),
 };

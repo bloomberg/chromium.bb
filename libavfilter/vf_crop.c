@@ -32,7 +32,7 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/mathematics.h"
 
-static const char * const var_names[] = {
+static const char *const var_names[] = {
     "in_w", "iw",   ///< width  of the input video
     "in_h", "ih",   ///< height of the input video
     "out_w", "ow",  ///< width  of the cropped video
@@ -73,6 +73,9 @@ typedef struct {
     int  y;             ///< y offset of the non-cropped area with respect to the input area
     int  w;             ///< width of the cropped area
     int  h;             ///< height of the cropped area
+
+    AVRational out_sar; ///< output sample aspect ratio
+    int keep_aspect;    ///< keep display aspect ratio when cropping
 
     int max_step[4];    ///< max pixel step for each plane, expressed as a number of bytes
     int hsub, vsub;     ///< chroma subsampling
@@ -124,7 +127,7 @@ static av_cold int init(AVFilterContext *ctx, const char *args, void *opaque)
     av_strlcpy(crop->y_expr, "(in_h-out_h)/2", sizeof(crop->y_expr));
 
     if (args)
-        sscanf(args, "%255[^:]:%255[^:]:%255[^:]:%255[^:]", crop->ow_expr, crop->oh_expr, crop->x_expr, crop->y_expr);
+        sscanf(args, "%255[^:]:%255[^:]:%255[^:]:%255[^:]:%d", crop->ow_expr, crop->oh_expr, crop->x_expr, crop->y_expr, &crop->keep_aspect);
 
     return 0;
 }
@@ -210,8 +213,17 @@ static int config_input(AVFilterLink *link)
                              NULL, NULL, NULL, NULL, 0, ctx)) < 0)
         return AVERROR(EINVAL);
 
-    av_log(ctx, AV_LOG_INFO, "w:%d h:%d -> w:%d h:%d\n",
-           link->w, link->h, crop->w, crop->h);
+    if (crop->keep_aspect) {
+        AVRational dar = av_mul_q(link->sample_aspect_ratio,
+                                  (AVRational){ link->w, link->h });
+        av_reduce(&crop->out_sar.num, &crop->out_sar.den,
+                  dar.num * crop->h, dar.den * crop->w, INT_MAX);
+    } else
+        crop->out_sar = link->sample_aspect_ratio;
+
+    av_log(ctx, AV_LOG_INFO, "w:%d h:%d sar:%d/%d -> w:%d h:%d sar:%d/%d\n",
+           link->w, link->h, link->sample_aspect_ratio.num, link->sample_aspect_ratio.den,
+           crop->w, crop->h, crop->out_sar.num, crop->out_sar.den);
 
     if (crop->w <= 0 || crop->h <= 0 ||
         crop->w > link->w || crop->h > link->h) {
@@ -239,6 +251,7 @@ static int config_output(AVFilterLink *link)
 
     link->w = crop->w;
     link->h = crop->h;
+    link->sample_aspect_ratio = crop->out_sar;
 
     return 0;
 }

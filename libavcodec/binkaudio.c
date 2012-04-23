@@ -79,7 +79,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
     int i;
     int frame_len_bits;
 
-    dsputil_init(&s->dsp, avctx);
+    ff_dsputil_init(&s->dsp, avctx);
     ff_fmt_convert_init(&s->fmt_conv, avctx);
 
     /* determine frame length */
@@ -367,7 +367,7 @@ AVCodec ff_binkaudio_rdft_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DELAY | CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("Bink Audio (RDFT)")
+    .long_name      = NULL_IF_CONFIG_SMALL("Bink Audio (RDFT)")
 };
 
 AVCodec ff_binkaudio_dct_decoder = {
@@ -379,5 +379,5 @@ AVCodec ff_binkaudio_dct_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = CODEC_CAP_DELAY | CODEC_CAP_DR1,
-    .long_name = NULL_IF_CONFIG_SMALL("Bink Audio (DCT)")
+    .long_name      = NULL_IF_CONFIG_SMALL("Bink Audio (DCT)")
 };

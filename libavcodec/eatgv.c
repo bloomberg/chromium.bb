@@ -66,7 +66,7 @@ static av_cold int tgv_decode_init(AVCodecContext *avctx){
  */
 static int unpack(const uint8_t *src, const uint8_t *src_end, unsigned char *dst, int width, int height) {
     unsigned char *dst_end = dst + width*height;
-    int size, size1, size2, av_uninit(offset), run;
+    int size, size1, size2, offset, run;
     unsigned char *dst_start = dst;
 
     if (src[0] & 0x01)
@@ -156,6 +156,11 @@ static int tgv_decode_inter(TgvContext * s, const uint8_t *buf, const uint8_t *b
     num_blocks_packed = AV_RL16(&buf[4]);
     vector_bits       = AV_RL16(&buf[6]);
     buf += 12;
+
+    if (vector_bits > MIN_CACHE_BITS || !vector_bits) {
+        av_log(s->avctx, AV_LOG_ERROR, "vector_bits %d invalid\n", vector_bits);
+        return AVERROR_INVALIDDATA;
+    }
 
     /* allocate codebook buffers as necessary */
     if (num_mvs > s->num_mvs) {
@@ -349,5 +354,5 @@ AVCodec ff_eatgv_decoder = {
     .init           = tgv_decode_init,
     .close          = tgv_decode_end,
     .decode         = tgv_decode_frame,
-    .long_name = NULL_IF_CONFIG_SMALL("Electronic Arts TGV video"),
+    .long_name      = NULL_IF_CONFIG_SMALL("Electronic Arts TGV video"),
 };

@@ -696,9 +696,9 @@ av_cold void ff_intrax8_common_init(IntraX8Context * w, MpegEncContext * const s
     assert(s->mb_width>0);
     w->prediction_table=av_mallocz(s->mb_width*2*2);//two rows, 2 blocks per cannon mb
 
-    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[0], wmv1_scantable[0]);
-    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[1], wmv1_scantable[2]);
-    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[2], wmv1_scantable[3]);
+    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[0], ff_wmv1_scantable[0]);
+    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[1], ff_wmv1_scantable[2]);
+    ff_init_scantable(s->dsp.idct_permutation, &w->scantable[2], ff_wmv1_scantable[3]);
 }
 
 /**
@@ -716,12 +716,11 @@ av_cold void ff_intrax8_common_end(IntraX8Context * w)
  * The parent codec must call MPV_frame_start(), ff_er_frame_start() before calling this function.
  * The parent codec must call ff_er_frame_end(), MPV_frame_end() after calling this function.
  * This function does not use MPV_decode_mb().
- * lowres decoding is theoretically impossible.
  * @param w pointer to IntraX8Context
  * @param dquant doubled quantizer, it would be odd in case of VC-1 halfpq==1.
  * @param quant_offset offset away from zero
  */
-//FIXME extern uint8_t wmv3_dc_scale_table[32];
+//FIXME extern uint8_t ff_wmv3_dc_scale_table[32];
 int ff_intrax8_decode_picture(IntraX8Context * const w, int dquant, int quant_offset){
     MpegEncContext * const s= w->s;
     int mb_xy;

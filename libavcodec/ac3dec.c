@@ -167,7 +167,7 @@ static av_cold int ac3_decode_init(AVCodecContext *avctx)
     ff_mdct_init(&s->imdct_256, 8, 1, 1.0);
     ff_mdct_init(&s->imdct_512, 9, 1, 1.0);
     ff_kbd_window_init(s->window, 5.0, 256);
-    dsputil_init(&s->dsp, avctx);
+    ff_dsputil_init(&s->dsp, avctx);
     ff_ac3dsp_init(&s->ac3dsp, avctx->flags & CODEC_FLAG_BITEXACT);
     ff_fmt_convert_init(&s->fmt_conv, avctx);
     av_lfg_init(&s->dith_state, 0);
@@ -753,9 +753,7 @@ static int decode_audio_block(AC3DecodeContext *s, int blk)
     int downmix_output;
     int cpl_in_use;
     GetBitContext *gbc = &s->gbc;
-    uint8_t bit_alloc_stages[AC3_MAX_CHANNELS];
-
-    memset(bit_alloc_stages, 0, AC3_MAX_CHANNELS);
+    uint8_t bit_alloc_stages[AC3_MAX_CHANNELS] = { 0 };
 
     /* block switch flags */
     different_transforms = 0;
@@ -1378,7 +1376,7 @@ static int ac3_decode_frame(AVCodecContext * avctx, void *data,
                 avctx->request_channels < s->channels) {
             s->out_channels = avctx->request_channels;
             s->output_mode  = avctx->request_channels == 1 ? AC3_CHMODE_MONO : AC3_CHMODE_STEREO;
-            s->channel_layout = ff_ac3_channel_layout_tab[s->output_mode];
+            s->channel_layout = avpriv_ac3_channel_layout_tab[s->output_mode];
         }
         avctx->channels       = s->out_channels;
         avctx->channel_layout = s->channel_layout;
@@ -1396,6 +1394,10 @@ static int ac3_decode_frame(AVCodecContext * avctx, void *data,
         s->out_channels = avctx->channels;
         if (s->out_channels < s->channels)
             s->output_mode  = s->out_channels == 1 ? AC3_CHMODE_MONO : AC3_CHMODE_STEREO;
+    }
+    if (avctx->channels != s->out_channels) {
+        av_log(avctx, AV_LOG_ERROR, "channel number mismatching on damaged frame\n");
+        return AVERROR_INVALIDDATA;
     }
     /* set audio service type based on bitstream mode for AC-3 */
     avctx->audio_service_type = s->bitstream_mode;

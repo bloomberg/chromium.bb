@@ -24,13 +24,29 @@
 #include <string.h>
 
 #include "libavutil/audioconvert.h"
+#include "libavutil/avassert.h"
+#include "libavutil/pixdesc.h"
 #include "avfilter.h"
 #include "avfiltergraph.h"
 #include "internal.h"
 
+#include "libavutil/log.h"
+
+static const AVClass filtergraph_class = {
+    .class_name = "AVFilterGraph",
+    .item_name  = av_default_item_name,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
 AVFilterGraph *avfilter_graph_alloc(void)
 {
-    return av_mallocz(sizeof(AVFilterGraph));
+    AVFilterGraph *ret = av_mallocz(sizeof(AVFilterGraph));
+    if (!ret)
+        return NULL;
+#if FF_API_GRAPH_AVCLASS
+    ret->av_class = &filtergraph_class;
+#endif
+    return ret;
 }
 
 void avfilter_graph_free(AVFilterGraph **graph)
@@ -187,6 +203,7 @@ static int query_formats(AVFilterGraph *graph, AVClass *log_ctx)
 {
     int i, j, ret;
     char filt_args[128];
+    AVFilterFormats *formats, *chlayouts, *packing;
 
     /* ask all the sub-filters for their supported media formats */
     for (i = 0; i < graph->filter_count; i++) {
@@ -221,9 +238,13 @@ static int query_formats(AVFilterGraph *graph, AVClass *log_ctx)
                     !link->in_packing   || !link->out_packing)
                     return AVERROR(EINVAL);
 
-                if (!avfilter_merge_formats(link->in_formats,   link->out_formats)   ||
-                    !avfilter_merge_formats(link->in_chlayouts, link->out_chlayouts) ||
-                    !avfilter_merge_formats(link->in_packing,   link->out_packing))
+                /* Merge all three list before checking: that way, in all
+                 * three categories, aconvert will use a common format
+                 * whenever possible. */
+                formats   = avfilter_merge_formats(link->in_formats,   link->out_formats);
+                chlayouts = avfilter_merge_formats(link->in_chlayouts, link->out_chlayouts);
+                packing   = avfilter_merge_formats(link->in_packing,   link->out_packing);
+                if (!formats || !chlayouts || !packing)
                     if (ret = insert_conv_filter(graph, link, "aconvert", NULL))
                        return ret;
             }
@@ -233,13 +254,26 @@ static int query_formats(AVFilterGraph *graph, AVClass *log_ctx)
     return 0;
 }
 
-static void pick_format(AVFilterLink *link)
+static void pick_format(AVFilterLink *link, AVFilterLink *ref)
 {
     if (!link || !link->in_formats)
         return;
 
+    if (link->type == AVMEDIA_TYPE_VIDEO) {
+        if(ref && ref->type == AVMEDIA_TYPE_VIDEO){
+            int has_alpha= av_pix_fmt_descriptors[ref->format].nb_components % 2 == 0;
+            enum PixelFormat best= PIX_FMT_NONE;
+            int i;
+            for (i=0; i<link->in_formats->format_count; i++) {
+                enum PixelFormat p = link->in_formats->formats[i];
+                best= avcodec_find_best_pix_fmt2(best, p, ref->format, has_alpha, NULL);
+            }
+            link->format = best;
+        }else
+            link->format = link->in_formats->formats[0];
+    }
+
     link->in_formats->format_count = 1;
-    link->format = link->in_formats->formats[0];
     avfilter_formats_unref(&link->in_formats);
     avfilter_formats_unref(&link->out_formats);
 
@@ -256,17 +290,70 @@ static void pick_format(AVFilterLink *link)
     }
 }
 
+static int reduce_formats_on_filter(AVFilterContext *filter)
+{
+    int i, j, k, ret = 0;
+
+    for (i = 0; i < filter->input_count; i++) {
+        AVFilterLink *link = filter->inputs[i];
+        int         format = link->out_formats->formats[0];
+
+        if (link->out_formats->format_count != 1)
+            continue;
+
+        for (j = 0; j < filter->output_count; j++) {
+            AVFilterLink *out_link = filter->outputs[j];
+            AVFilterFormats  *fmts = out_link->in_formats;
+
+            if (link->type != out_link->type ||
+                out_link->in_formats->format_count == 1)
+                continue;
+
+            for (k = 0; k < out_link->in_formats->format_count; k++)
+                if (fmts->formats[k] == format) {
+                    fmts->formats[0]   = format;
+                    fmts->format_count = 1;
+                    ret = 1;
+                    break;
+                }
+        }
+    }
+    return ret;
+}
+
+static void reduce_formats(AVFilterGraph *graph)
+{
+    int i, reduced;
+
+    do {
+        reduced = 0;
+
+        for (i = 0; i < graph->filter_count; i++)
+            reduced |= reduce_formats_on_filter(graph->filters[i]);
+    } while (reduced);
+}
+
 static void pick_formats(AVFilterGraph *graph)
 {
     int i, j;
 
     for (i = 0; i < graph->filter_count; i++) {
         AVFilterContext *filter = graph->filters[i];
-
-        for (j = 0; j < filter->input_count; j++)
-            pick_format(filter->inputs[j]);
-        for (j = 0; j < filter->output_count; j++)
-            pick_format(filter->outputs[j]);
+        if (filter->input_count && filter->output_count) {
+            for (j = 0; j < filter->input_count; j++)
+                pick_format(filter->inputs[j], NULL);
+            for (j = 0; j < filter->output_count; j++)
+                pick_format(filter->outputs[j], filter->inputs[0]);
+        }
+    }
+    for (i = 0; i < graph->filter_count; i++) {
+        AVFilterContext *filter = graph->filters[i];
+        if (!(filter->input_count && filter->output_count)) {
+            for (j = 0; j < filter->input_count; j++)
+                pick_format(filter->inputs[j], NULL);
+            for (j = 0; j < filter->output_count; j++)
+                pick_format(filter->outputs[j], NULL);
+        }
     }
 }
 
@@ -279,9 +366,54 @@ int ff_avfilter_graph_config_formats(AVFilterGraph *graph, AVClass *log_ctx)
         return ret;
 
     /* Once everything is merged, it's possible that we'll still have
-     * multiple valid media format choices. We pick the first one. */
+     * multiple valid media format choices. We try to minimize the amount
+     * of format conversion inside filters */
+    reduce_formats(graph);
+
     pick_formats(graph);
 
+    return 0;
+}
+
+static int ff_avfilter_graph_config_pointers(AVFilterGraph *graph,
+                                             AVClass *log_ctx)
+{
+    unsigned i, j;
+    int sink_links_count = 0, n = 0;
+    AVFilterContext *f;
+    AVFilterLink **sinks;
+
+    for (i = 0; i < graph->filter_count; i++) {
+        f = graph->filters[i];
+        for (j = 0; j < f->input_count; j++) {
+            f->inputs[j]->graph     = graph;
+            f->inputs[j]->age_index = -1;
+        }
+        for (j = 0; j < f->output_count; j++) {
+            f->outputs[j]->graph    = graph;
+            f->outputs[j]->age_index= -1;
+        }
+        if (!f->output_count) {
+            if (f->input_count > INT_MAX - sink_links_count)
+                return AVERROR(EINVAL);
+            sink_links_count += f->input_count;
+        }
+    }
+    sinks = av_calloc(sink_links_count, sizeof(*sinks));
+    if (!sinks)
+        return AVERROR(ENOMEM);
+    for (i = 0; i < graph->filter_count; i++) {
+        f = graph->filters[i];
+        if (!f->output_count) {
+            for (j = 0; j < f->input_count; j++) {
+                sinks[n] = f->inputs[j];
+                f->inputs[j]->age_index = n++;
+            }
+        }
+    }
+    av_assert0(n == sink_links_count);
+    graph->sink_links       = sinks;
+    graph->sink_links_count = sink_links_count;
     return 0;
 }
 
@@ -294,6 +426,8 @@ int avfilter_graph_config(AVFilterGraph *graphctx, void *log_ctx)
     if ((ret = ff_avfilter_graph_config_formats(graphctx, log_ctx)))
         return ret;
     if ((ret = ff_avfilter_graph_config_links(graphctx, log_ctx)))
+        return ret;
+    if ((ret = ff_avfilter_graph_config_pointers(graphctx, log_ctx)))
         return ret;
 
     return 0;
@@ -355,4 +489,66 @@ int avfilter_graph_queue_command(AVFilterGraph *graph, const char *target, const
     }
 
     return 0;
+}
+
+static void heap_bubble_up(AVFilterGraph *graph,
+                           AVFilterLink *link, int index)
+{
+    AVFilterLink **links = graph->sink_links;
+
+    while (index) {
+        int parent = (index - 1) >> 1;
+        if (links[parent]->current_pts >= link->current_pts)
+            break;
+        links[index] = links[parent];
+        links[index]->age_index = index;
+        index = parent;
+    }
+    links[index] = link;
+    link->age_index = index;
+}
+
+static void heap_bubble_down(AVFilterGraph *graph,
+                             AVFilterLink *link, int index)
+{
+    AVFilterLink **links = graph->sink_links;
+
+    while (1) {
+        int child = 2 * index + 1;
+        if (child >= graph->sink_links_count)
+            break;
+        if (child + 1 < graph->sink_links_count &&
+            links[child + 1]->current_pts < links[child]->current_pts)
+            child++;
+        if (link->current_pts < links[child]->current_pts)
+            break;
+        links[index] = links[child];
+        links[index]->age_index = index;
+        index = child;
+    }
+    links[index] = link;
+    link->age_index = index;
+}
+
+void ff_avfilter_graph_update_heap(AVFilterGraph *graph, AVFilterLink *link)
+{
+    heap_bubble_up  (graph, link, link->age_index);
+    heap_bubble_down(graph, link, link->age_index);
+}
+
+
+int avfilter_graph_request_oldest(AVFilterGraph *graph)
+{
+    while (graph->sink_links_count) {
+        AVFilterLink *oldest = graph->sink_links[0];
+        int r = avfilter_request_frame(oldest);
+        if (r != AVERROR_EOF)
+            return r;
+        /* EOF: remove the link from the heap */
+        if (oldest->age_index < --graph->sink_links_count)
+            heap_bubble_down(graph, graph->sink_links[graph->sink_links_count],
+                             oldest->age_index);
+        oldest->age_index = -1;
+    }
+    return AVERROR_EOF;
 }

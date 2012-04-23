@@ -4,6 +4,28 @@ releases are sorted from youngest to oldest.
 version next:
 - v408 Quicktime and Microsoft AYUV Uncompressed 4:4:4:4 encoder and decoder
 - setfield filter
+- CDXL demuxer and decoder
+- Apple ProRes encoder
+- ffprobe -count_packets and -count_frames options
+- Sun Rasterfile Encoder
+- ID3v2 attached pictures reading and writing
+- WMA Lossless decoder
+- bluray protocol
+- blackdetect filter
+- libutvideo encoder wrapper (--enable-libutvideo)
+- swapuv filter
+- bbox filter
+- XBM encoder and decoder
+- RealAudio Lossless decoder
+- ZeroCodec decoder
+- tile video filter
+- Metal Gear Solid: The Twin Snakes demuxer
+- OpenEXR image decoder
+- removelogo filter
+- drop support for ffmpeg without libavfilter
+- drawtext video filter: fontconfig support
+- ffmpeg -benchmark_all option
+- super2xsai filter ported from libmpcodecs
 
 
 version 0.10:
