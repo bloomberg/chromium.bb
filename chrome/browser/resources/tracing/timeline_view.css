@@ -14,6 +14,10 @@
   display: -webkit-box;
 }
 
+.timeline-view > .control > .controls {
+  display: -webkit-box;
+}
+
 .timeline-view > .control > span {
   padding-left: 5px;
   padding-right: 10px;
@@ -38,13 +42,9 @@
 .timeline-view > .timeline-container > * {
   -webkit-box-flex: 1;
 }
-.timeline-view > .summary-container * {
-  -webkit-user-select: text;
-}
 
-.timeline-view > .summary-container {
+.timeline-view > .analysis-container {
   border-top: 1px solid black;
-  font-family: monospace;
   max-height: 250px;
   min-height: 250px;
   overflow: auto;
@@ -60,6 +60,7 @@
 
 .timeline-find-control {
   -webkit-user-select: none;
+  display: -webkit-box;
   position: relative;
 }
 
@@ -76,24 +77,42 @@
 
 .timeline-find-control input {
   -webkit-user-select: auto;
-  margin-right: 1px;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+  height: 19px;
+  margin-bottom: 1px;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 1px;
+  padding: 0;
   width: 170px;
 }
 
-.timeline-find-control .find-button {
+.timeline-button.find-previous {
+  border-left: none;
+  margin-left: 0;
+  margin-right: 0;
+}
+.timeline-button.find-next {
+    border-bottom-right-radius: 5px;
+  border-left: none;
+  margin-left: 0;
+}
+
+.timeline-button {
   background-color: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(0, 0, 0, 0.2);
   color: rgba(0,0,0,0.2);
   font-size: 14px;
-  height: 23px;
+  height: 17px;
+  margin: 1px;
   text-align: center;
   width: 23px;
 }
 
-.timeline-find-control .find-button:hover {
+.timeline-button:hover {
   background-color: rgba(255, 255, 255, 1.0);
   border: 1px solid rgba(0, 0, 0, 0.8);
-  border-radius: 25%;
   box-shadow: 0 0 .05em rgba(0, 0, 0, 0.4);
   color: rgba(0, 0, 0, 1);
 }

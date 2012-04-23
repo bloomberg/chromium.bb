@@ -9,32 +9,6 @@
  * tracing.Timeline component and adds in selection summary and control buttons.
  */
 cr.define('tracing', function() {
-  function tsRound(ts) {
-    return Math.round(ts * 1000.0) / 1000.0;
-  }
-  function getPadding(text, width) {
-    width = width || 0;
-
-    if (typeof text != 'string')
-      text = String(text);
-
-    if (text.length >= width)
-      return '';
-
-    var pad = '';
-    for (var i = 0; i < width - text.length; i++)
-      pad += ' ';
-    return pad;
-  }
-
-  function leftAlign(text, width) {
-    return text + getPadding(text, width);
-  }
-
-  function rightAlign(text, width) {
-    return getPadding(text, width) + text;
-  }
-
   /**
    * TimelineFindControl
    * @constructor
@@ -50,20 +24,20 @@ cr.define('tracing', function() {
 
       this.className = 'timeline-find-control';
 
-      this.hitCountEl_ = document.createElement('span');
+      this.hitCountEl_ = document.createElement('div');
       this.hitCountEl_.className = 'hit-count-label';
       this.hitCountEl_.textContent = '1 of 7';
 
-      var findPreviousBn = document.createElement('span');
-      findPreviousBn.className = 'find-button find-previous';
+      var findPreviousBn = document.createElement('div');
+      findPreviousBn.className = 'timeline-button find-previous';
       findPreviousBn.textContent = '\u2190';
       findPreviousBn.addEventListener('click', function() {
         this.controller.findPrevious();
         this.updateHitCountEl_();
       }.bind(this));
 
-      var findNextBn = document.createElement('span');
-      findNextBn.className = 'find-button find-next';
+      var findNextBn = document.createElement('div');
+      findNextBn.className = 'timeline-button find-next';
       findNextBn.textContent = '\u2192';
       findNextBn.addEventListener('click', function() {
         this.controller.findNext();
@@ -139,6 +113,7 @@ cr.define('tracing', function() {
     this.timeline_ = undefined;
     this.model_ = undefined;
     this.filterText_ = '';
+    this.filterHits_ = new tracing.TimelineSelection();
     this.filterHitsDirty_ = true;
     this.currentHitIndex_ = 0;
   };
@@ -172,10 +147,12 @@ cr.define('tracing', function() {
         this.filterHitsDirty_ = false;
         if (this.timeline_) {
           var filter = new tracing.TimelineFilter(this.filterText);
-          this.filterHits_ = this.timeline.findAllObjectsMatchingFilter(filter);
+          this.filterHits_.clear();
+          this.timeline.addAllObjectsMatchingFilterToSelection(
+            filter, this.filterHits_);
           this.currentHitIndex_ = this.filterHits_.length - 1;
         } else {
-          this.filterHits_ = [];
+          this.filterHits_.clear();
           this.currentHitIndex_ = 0;
         }
       }
@@ -197,16 +174,15 @@ cr.define('tracing', function() {
       if (this.currentHitIndex_ >= N) this.currentHitIndex_ = 0;
 
       if (this.currentHitIndex_ < 0 || this.currentHitIndex_ >= N) {
-        this.timeline.selection = [];
+        this.timeline.selection = new tracing.TimelineSelection();
         return;
       }
-
-      var hit = this.filterHits[this.currentHitIndex_];
 
       // We allow the zoom level to change on the first hit level. But, when
       // then cycling through subsequent changes, restrict it to panning.
       var zoomAllowed = this.currentHitIndex_ == 0;
-      this.timeline.setSelectionAndMakeVisible([hit], zoomAllowed);
+      var subSelection = this.filterHits.subSelection(this.currentHitIndex_);
+      this.timeline.setSelectionAndMakeVisible(subSelection, zoomAllowed);
     },
 
     findNext: function() {
@@ -232,14 +208,16 @@ cr.define('tracing', function() {
       this.classList.add('timeline-view');
 
       // Create individual elements.
-      this.titleEl_ = document.createElement('span');
+      this.titleEl_ = document.createElement('div');
       this.titleEl_.textContent = 'Tracing: ';
 
       this.controlDiv_ = document.createElement('div');
       this.controlDiv_.className = 'control';
 
       this.leftControlsEl_ = document.createElement('div');
+      this.leftControlsEl_.className = 'controls';
       this.rightControlsEl_ = document.createElement('div');
+      this.rightControlsEl_.className = 'controls';
 
       var spacingEl = document.createElement('div');
       spacingEl.className = 'spacer';
@@ -247,11 +225,10 @@ cr.define('tracing', function() {
       this.timelineContainer_ = document.createElement('div');
       this.timelineContainer_.className = 'timeline-container';
 
-      var summaryContainer_ = document.createElement('div');
-      summaryContainer_.className = 'summary-container';
+      var analysisContainer_ = document.createElement('div');
+      analysisContainer_.className = 'analysis-container';
 
-      this.summaryEl_ = document.createElement('pre');
-      this.summaryEl_.className = 'summary';
+      this.analysisEl_ = new tracing.TimelineAnalysisView();
 
       this.findCtl_ = new TimelineFindControl();
       this.findCtl_.controller = new TimelineFindController();
@@ -266,12 +243,49 @@ cr.define('tracing', function() {
 
       this.appendChild(this.timelineContainer_);
 
-      summaryContainer_.appendChild(this.summaryEl_);
-      this.appendChild(summaryContainer_);
+      analysisContainer_.appendChild(this.analysisEl_);
+      this.appendChild(analysisContainer_);
+
+      this.rightControls.appendChild(this.createHelpButton_());
 
       // Bookkeeping.
       this.onSelectionChangedBoundToThis_ = this.onSelectionChanged_.bind(this);
       document.addEventListener('keypress', this.onKeypress_.bind(this), true);
+    },
+
+    createHelpButton_: function() {
+      var dlg = new tracing.Overlay();
+      dlg.classList.add('timeline-view-help-overlay');
+
+      var showHelpEl = document.createElement('div');
+      showHelpEl.className = 'timeline-button timeline-view-help-button';
+      showHelpEl.textContent = '?';
+
+      var helpTextEl = document.createElement('div');
+      helpTextEl.style.whiteSpace = 'pre';
+      helpTextEl.style.fontFamily = 'monospace';
+
+      function onClick() {
+        dlg.visible = true;
+        helpTextEl.textContent = this.timeline_.keyHelp;
+        document.addEventListener('keydown', onKey, true);
+      }
+
+      function onKey(e) {
+        if (!dlg.visible)
+          return;
+
+        if (e.keyCode == 27 || e.keyCode == '?'.charCodeAt(0)) {
+          e.preventDefault();
+          document.removeEventListener('keydown', onKey);
+          dlg.visible = false;
+        }
+      }
+      showHelpEl.addEventListener('click', onClick.bind(this));
+
+      dlg.appendChild(helpTextEl);
+
+      return showHelpEl;
     },
 
     get leftControls() {
@@ -375,10 +389,13 @@ cr.define('tracing', function() {
       if (!this.listenToKeys_)
         return;
 
-      if (event.keyCode == 47) {
+      if (event.keyCode == '/'.charCodeAt(0)) { // / key
         this.findCtl_.focus();
         event.preventDefault();
         return;
+      } else if (e.keyCode == '?'.charCodeAt(0)) {
+        this.querySelector('.timeline-view-help-button').click();
+        e.preventDefault();
       }
     },
 
@@ -400,95 +417,8 @@ cr.define('tracing', function() {
     },
 
     onSelectionChanged_: function(e) {
-      var timeline = this.timeline_;
-      var selection = timeline.selection;
-      if (!selection.length) {
-        var oldScrollTop = this.timelineContainer_.scrollTop;
-        this.summaryEl_.textContent = timeline.keyHelp;
-        this.timelineContainer_.scrollTop = oldScrollTop;
-        return;
-      }
-
-      var text = '';
-      if (selection.length == 1) {
-        var c0Width = 14;
-        var slice = selection[0].slice;
-        text = 'Selected item:\n';
-        text += leftAlign('Title', c0Width) + ': ' + slice.title + '\n';
-        text += leftAlign('Start', c0Width) + ': ' +
-            tsRound(slice.start) + ' ms\n';
-        text += leftAlign('Duration', c0Width) + ': ' +
-            tsRound(slice.duration) + ' ms\n';
-        if (slice.durationInUserTime)
-          text += leftAlign('Duration (U)', c0Width) + ': ' +
-              tsRound(slice.durationInUserTime) + ' ms\n';
-
-        var n = 0;
-        for (var argName in slice.args) {
-          n += 1;
-        }
-        if (n > 0) {
-          text += leftAlign('Args', c0Width) + ':\n';
-          for (var argName in slice.args) {
-            var argVal = slice.args[argName];
-            text += leftAlign(' ' + argName, c0Width) + ': ' + argVal + '\n';
-          }
-        }
-      } else {
-        var c0Width = 55;
-        var c1Width = 12;
-        var c2Width = 5;
-        text = 'Selection summary:\n';
-        var tsLo = Math.min.apply(Math, selection.map(
-            function(s) {return s.slice.start;}));
-        var tsHi = Math.max.apply(Math, selection.map(
-            function(s) {return s.slice.end;}));
-
-        // compute total selection duration
-        var titles = selection.map(function(i) { return i.slice.title; });
-
-        var slicesByTitle = {};
-        for (var i = 0; i < selection.length; i++) {
-          var slice = selection[i].slice;
-          if (!slicesByTitle[slice.title])
-            slicesByTitle[slice.title] = {
-              slices: []
-            };
-          slicesByTitle[slice.title].slices.push(slice);
-        }
-        var totalDuration = 0;
-        for (var sliceGroupTitle in slicesByTitle) {
-          var sliceGroup = slicesByTitle[sliceGroupTitle];
-          var duration = 0;
-          for (i = 0; i < sliceGroup.slices.length; i++)
-            duration += sliceGroup.slices[i].duration;
-          totalDuration += duration;
-
-          text += ' ' +
-              leftAlign(sliceGroupTitle, c0Width) + ': ' +
-              rightAlign(tsRound(duration) + 'ms', c1Width) + '   ' +
-              rightAlign(String(sliceGroup.slices.length), c2Width) +
-              ' occurrences' + '\n';
-        }
-
-        text += leftAlign('*Totals', c0Width) + ' : ' +
-            rightAlign(tsRound(totalDuration) + 'ms', c1Width) + '   ' +
-            rightAlign(String(selection.length), c2Width) + ' occurrences' +
-            '\n';
-
-        text += '\n';
-
-        text += leftAlign('Selection start', c0Width) + ' : ' +
-            rightAlign(tsRound(tsLo) + 'ms', c1Width) +
-            '\n';
-        text += leftAlign('Selection extent', c0Width) + ' : ' +
-            rightAlign(tsRound(tsHi - tsLo) + 'ms', c1Width) +
-            '\n';
-      }
-
-      // done
       var oldScrollTop = this.timelineContainer_.scrollTop;
-      this.summaryEl_.textContent = text;
+      this.analysisEl_.selection = this.timeline_.selection;
       this.timelineContainer_.scrollTop = oldScrollTop;
     }
   };

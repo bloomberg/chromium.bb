@@ -9,6 +9,7 @@ found in the LICENSE file.
 <title>TimelineView tests</title>
 <link rel="stylesheet" href="overlay.css">
 <link rel="stylesheet" href="timeline.css">
+<link rel="stylesheet" href="timeline_analysis.css">
 <link rel="stylesheet" href="timeline_view.css">
 <link rel="stylesheet" href="../shared/css/tabs.css">
 <script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
@@ -19,6 +20,7 @@ found in the LICENSE file.
 <script src="overlay.js"></script>
 <script src="measuring_stick.js"></script>
 <script src="profiling_view.js"></script>
+<script src="timeline_analysis.js"></script>
 <script src="timeline_view.js"></script>
 <script src="timeline_model.js"></script>
 <script src="linux_perf_importer.js"></script>
@@ -46,6 +48,8 @@ found in the LICENSE file.
   <script>
     'use strict';
 
+    var assertArrayishEquals = test_utils.assertArrayishEquals;
+
     /*
      * Just enough of the Timeline to support the tests below.
      */
@@ -55,9 +59,9 @@ found in the LICENSE file.
       __proto__: HTMLDivElement.prototype,
 
       decorate: function() {
-        this.findAllObjectsMatchingFilterReturnValue = [];
+        this.addAllObjectsMatchingFilterToSelectionReturnValue = [];
 
-        this.selection = [];
+        this.selection = new tracing.TimelineSelection();
         this.keyHelp = "<keyHelp>";
 
         // Put some simple UI in for testing purposes.
@@ -83,8 +87,11 @@ found in the LICENSE file.
         this.selection = selection;
       },
 
-      findAllObjectsMatchingFilter: function(filter) {
-        return this.findAllObjectsMatchingFilterReturnValue;
+      addAllObjectsMatchingFilterToSelection: function(filter, selection) {
+        var n = this.addAllObjectsMatchingFilterToSelectionReturnValue.length;
+        for (var i = 0; i < n; i++)
+          selection.push_(
+              this.addAllObjectsMatchingFilterToSelectionReturnValue[i]);
       }
     };
 
@@ -155,11 +162,11 @@ found in the LICENSE file.
       var controller = new tracing.TimelineFindController();
       controller.timeline = timeline;
 
-      timeline.selection = [];
+      timeline.selection = new tracing.TimelineSelection();
       controller.findNext();
-      assertArrayEquals([], timeline.selection);
+      assertArrayishEquals([], timeline.selection);
       controller.findPrevious();
-      assertArrayEquals([], timeline.selection);
+      assertArrayishEquals([], timeline.selection);
     }
 
     function testFindControllerOneHit() {
@@ -167,13 +174,13 @@ found in the LICENSE file.
       var controller = new tracing.TimelineFindController();
       controller.timeline = timeline;
 
-      timeline.findAllObjectsMatchingFilterReturnValue = [1];
+      timeline.addAllObjectsMatchingFilterToSelectionReturnValue = [1];
       controller.findNext();
-      assertArrayEquals([1], timeline.selection);
+      assertArrayishEquals([1], timeline.selection);
       controller.findNext();
-      assertArrayEquals([1], timeline.selection);
+      assertArrayishEquals([1], timeline.selection);
       controller.findPrevious();
-      assertArrayEquals([1], timeline.selection);
+      assertArrayishEquals([1], timeline.selection);
     }
 
     function testFindControllerMultipleHits() {
@@ -181,21 +188,21 @@ found in the LICENSE file.
       var controller = new tracing.TimelineFindController();
       controller.timeline = timeline;
 
-      timeline.findAllObjectsMatchingFilterReturnValue = [1,2,3];
+      timeline.addAllObjectsMatchingFilterToSelectionReturnValue = [1,2,3];
 
       // Loop through hits then when we wrap, try moving backward.
       controller.findNext();
-      assertArrayEquals([1], timeline.selection);
+      assertArrayishEquals([1], timeline.selection);
       controller.findNext();
-      assertArrayEquals([2], timeline.selection);
+      assertArrayishEquals([2], timeline.selection);
       controller.findNext();
-      assertArrayEquals([3], timeline.selection);
+      assertArrayishEquals([3], timeline.selection);
       controller.findNext();
-      assertArrayEquals([1], timeline.selection);
+      assertArrayishEquals([1], timeline.selection);
       controller.findPrevious();
-      assertArrayEquals([3], timeline.selection);
+      assertArrayishEquals([3], timeline.selection);
       controller.findPrevious();
-      assertArrayEquals([2], timeline.selection);
+      assertArrayishEquals([2], timeline.selection);
     }
 
     function testFindControllerChangeFilterAfterNext() {
@@ -203,25 +210,25 @@ found in the LICENSE file.
       var controller = new tracing.TimelineFindController();
       controller.timeline = timeline;
 
-      timeline.findAllObjectsMatchingFilterReturnValue = [1,2,3];
+      timeline.addAllObjectsMatchingFilterToSelectionReturnValue = [1,2,3];
 
       // Loop through hits then when we wrap, try moving backward.
       controller.findNext();
-      timeline.findAllObjectsMatchingFilterReturnValue = [4];
+      timeline.addAllObjectsMatchingFilterToSelectionReturnValue = [4];
       controller.filterText = "asdfsf";
       controller.findNext();
-      assertArrayEquals([4], timeline.selection);
+      assertArrayishEquals([4], timeline.selection);
     }
 
     function testFindControllerSelectsFirstItemImmediately() {
       var timeline = new FakeTimeline();
       var controller = new tracing.TimelineFindController();
       controller.timeline = timeline;
-      timeline.findAllObjectsMatchingFilterReturnValue = [1,2,3];
+      timeline.addAllObjectsMatchingFilterToSelectionReturnValue = [1,2,3];
       controller.filterText = "asdfsf";
-      assertArrayEquals([1], timeline.selection);
+      assertArrayishEquals([1], timeline.selection);
       controller.findNext();
-      assertArrayEquals([2], timeline.selection);
+      assertArrayishEquals([2], timeline.selection);
     }
 
     function testFindControllerWithRealTimeline() {

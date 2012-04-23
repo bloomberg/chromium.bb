@@ -11,6 +11,7 @@
 <include src="tracing/sorted_array_utils.js">
 <include src="tracing/measuring_stick.js">
 <include src="tracing/timeline.js">
+<include src="tracing/timeline_analysis.js">
 <include src="tracing/timeline_track.js">
 <include src="tracing/fast_rect_renderer.js">
 <include src="tracing/profiling_view.js">

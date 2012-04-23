@@ -56,9 +56,17 @@ cr.define('test_utils', function() {
     return s;
   }
 
+  function assertArrayishEquals(ref, val) {
+    assertEquals(ref.length, val.length);
+    for (var i = 0; i < ref.length; i++)
+      assertEquals(ref[i], val[i]);
+  }
+
+
   return {
     getAsync: getAsync,
     newAsyncSlice: newAsyncSlice,
-    newAsyncSliceNamed: newAsyncSliceNamed
+    newAsyncSliceNamed: newAsyncSliceNamed,
+    assertArrayishEquals: assertArrayishEquals
   };
 });

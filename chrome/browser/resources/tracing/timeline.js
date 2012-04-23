@@ -232,6 +232,156 @@ cr.define('tracing', function() {
     }
   };
 
+  function TimelineSelectionSliceHit(track, slice) {
+    this.track = track;
+    this.slice = slice;
+  }
+  TimelineSelectionSliceHit.prototype = {
+    get selected() {
+      return this.slice.selected;
+    },
+    set selected(v) {
+      this.slice.selected = v;
+    }
+  };
+
+  function TimelineSelectionCounterSampleHit(track, counter, sampleIndex) {
+    this.track = track;
+    this.counter = counter;
+    this.sampleIndex = sampleIndex;
+  }
+  TimelineSelectionCounterSampleHit.prototype = {
+    get selected() {
+      return this.track.selectedSamples[this.sampleIndex] == true;
+    },
+    set selected(v) {
+      if (v)
+        this.track.selectedSamples[this.sampleIndex] = true;
+      else
+        this.track.selectedSamples[this.sampleIndex] = false;
+      this.track.invalidate();
+    }
+  };
+
+
+  /**
+   * Represents a selection within a Timeline and its associated set of tracks.
+   * @constructor
+   */
+  function TimelineSelection() {
+    this.range_dirty_ = true;
+    this.range_ = {};
+    this.length_ = 0;
+  }
+  TimelineSelection.prototype = {
+    __proto__: Object.prototype,
+
+    get range() {
+      if (this.range_dirty_) {
+        var wmin = Infinity;
+        var wmax = -wmin;
+        for (var i = 0; i < this.length_; i++) {
+          var hit = this[i];
+          if (hit.slice) {
+            wmin = Math.min(wmin, hit.slice.start);
+            wmax = Math.max(wmax, hit.slice.end);
+          }
+        }
+        this.range_ = {
+          min: wmin,
+          max: wmax
+        };
+        this.range_dirty_ = false;
+      }
+      return this.range_;
+    },
+
+    get duration() {
+      return this.range.max - this.range.min;
+    },
+
+    get length() {
+      return this.length_;
+    },
+
+    clear: function() {
+      for (var i = 0; i < this.length_; ++i)
+        delete this[i];
+      this.length_ = 0;
+      this.range_dirty_ = true;
+    },
+
+    push_: function(hit) {
+      this[this.length_++] = hit;
+      this.range_dirty_ = true;
+      return hit;
+    },
+
+    addSlice: function(track, slice) {
+      return this.push_(new TimelineSelectionSliceHit(track, slice));
+    },
+
+    addCounterSample: function(track, counter, sampleIndex) {
+      return this.push_(
+        new TimelineSelectionCounterSampleHit(
+          track, counter, sampleIndex));
+    },
+
+    subSelection: function(index, count) {
+      count = count || 1;
+
+      var selection = new TimelineSelection();
+      selection.range_dirty_ = true;
+      if (index < 0 || index + count > this.length_)
+        throw 'Index out of bounds';
+
+      for (var i = index; i < index + count; i++)
+        selection.push_(this[i]);
+
+      return selection;
+    },
+
+    getCounterSampleHits: function() {
+      var selection = new TimelineSelection();
+      for (var i = 0; i < this.length_; i++)
+        if (this[i] instanceof TimelineSelectionCounterSampleHit)
+          selection.push_(this[i]);
+      return selection;
+    },
+
+    getSliceHits: function() {
+      var selection = new TimelineSelection();
+      for (var i = 0; i < this.length_; i++)
+        if (this[i] instanceof TimelineSelectionSliceHit)
+          selection.push_(this[i]);
+      return selection;
+    },
+
+    map: function(fn) {
+      for (var i = 0; i < this.length_; i++)
+        fn(this[i]);
+    },
+
+    /**
+     * Helper for selection previous or next.
+     * @param {boolean} forwardp If true, select one forward (next).
+     *   Else, select previous.
+     * @return {boolean} true if current selection changed.
+     */
+    getShiftedSelection: function(offset) {
+      var newSelection = new TimelineSelection();
+      for (var i = 0; i < this.length_; i++) {
+        var hit = this[i];
+        hit.track.addItemNearToProvidedHitToSelection(
+            hit, offset, newSelection);
+      }
+
+      if (newSelection.length == 0)
+        return undefined;
+      return newSelection;
+    },
+  };
+
   /**
    * Renders a TimelineModel into a div element, making one
    * TimelineTrack for each subrow in each thread of the model, managing
@@ -270,7 +420,7 @@ cr.define('tracing', function() {
 
       this.lastMouseViewPos_ = {x: 0, y: 0};
 
-      this.selection_ = [];
+      this.selection_ = new TimelineSelection();
     },
 
     /**
@@ -430,17 +580,15 @@ cr.define('tracing', function() {
     },
 
     /**
+     * @param {TimelineFilter} filter The filter to use for finding matches.
+     * @param {TimelineSelection} selection The selection to add matches to.
      * @return {Array} An array of objects that match the provided
      * TimelineFilter.
      */
-    findAllObjectsMatchingFilter: function(filter) {
-      var hits = [];
-      for (var i = 0; i < this.tracks_.children.length; ++i) {
-        var trackHits =
-          this.tracks_.children[i].findAllObjectsMatchingFilter(filter);
-        Array.prototype.push.apply(hits, trackHits);
-      }
-      return hits;
+    addAllObjectsMatchingFilterToSelection: function(filter, selection) {
+      for (var i = 0; i < this.tracks_.children.length; ++i)
+        this.tracks_.children[i].addAllObjectsMatchingFilterToSelection(
+          filter, selection);
     },
 
     /**
@@ -526,12 +674,21 @@ cr.define('tracing', function() {
     onKeydown_: function(e) {
       if (!this.listenToKeys_)
         return;
+      var sel;
       switch (e.keyCode) {
         case 37:   // left arrow
-          this.selectPrevious_(e);
+          sel = this.selection.getShiftedSelection(-1);
+          if (sel) {
+            this.setSelectionAndMakeVisible(sel);
+            e.preventDefault();
+          }
           break;
         case 39:   // right arrow
-          this.selectNext_(e);
+          sel = this.selection.getShiftedSelection(1);
+          if (sel) {
+            this.setSelectionAndMakeVisible(sel);
+            e.preventDefault();
+          }
           break;
         case 9:    // TAB
           if (this.focusElement.tabIndex == -1) {
@@ -560,60 +717,6 @@ cr.define('tracing', function() {
       vp.xPanWorldPosToViewPos(curCenterW, curMouseV, viewWidth);
     },
 
-    /** Select the next slice on the timeline.  Applies to each track. */
-    selectNext_: function(e) {
-      if (this.selectAdjoining_(true))
-        e.preventDefault();
-    },
-
-    /** Select the previous slice on the timeline.  Applies to each track. */
-    selectPrevious_: function(e) {
-      if (this.selectAdjoining_(false))
-        e.preventDefault();
-    },
-
-    /**
-     * Helper for selection previous or next.
-     * @param {boolean} forwardp If true, select one forward (next).
-     *   Else, select previous.
-     * @return {boolean} true if current selection changed.
-     */
-    selectAdjoining_: function(forwardp) {
-      var i, track, slice, adjoining;
-      var selection = [];
-      var minTime = Number.MAX_VALUE;
-      var maxTime = -Number.MAX_VALUE;
-      // Try and select next.
-      for (i = 0; i < this.selection_.length; i++) {
-        adjoining = undefined;
-        track = this.selection_[i].track;
-        slice = this.selection_[i].slice;
-        if (slice) {
-          if (forwardp)
-            adjoining = track.pickNext(slice);
-          else
-            adjoining = track.pickPrevious(slice);
-        }
-        if (adjoining != undefined) {
-          selection.push({track: track, slice: adjoining});
-          if (slice.start < minTime)
-            minTime = slice.start;
-          if (slice.start + slice.duration > maxTime)
-            maxTime = slice.start + slice.duration;
-        }
-      }
-      if (selection.length == 0) {
-        // Nothing adjoining was found; leave the current selection.
-        return false;
-      }
-      this.selection = selection;
-
-      // Potentially move the viewport to keep the new selection in view.
-      this.viewport_.xPanWorldRangeIntoView(minTime, maxTime,
-          this.firstCanvas.width);
-      return true;
-    },
-
     get keyHelp() {
       var help = 'Keyboard shortcuts:\n' +
           ' w/s     : Zoom in/out    (with shift: go faster)\n' +
@@ -639,38 +742,27 @@ cr.define('tracing', function() {
     },
 
     set selection(selection) {
+      if (!(selection instanceof TimelineSelection))
+          throw 'Expected TimelineSelection';
+
       // Clear old selection.
       var i;
       for (i = 0; i < this.selection_.length; i++)
-        this.selection_[i].slice.selected = false;
+        this.selection_[i].selected = false;
 
       this.selection_ = selection;
 
       cr.dispatchSimpleEvent(this, 'selectionChange');
       for (i = 0; i < this.selection_.length; i++)
-        this.selection_[i].slice.selected = true;
+        this.selection_[i].selected = true;
       this.viewport_.dispatchChangeEvent(); // Triggers a redraw.
     },
 
-    getSelectionRange: function() {
-      var wmin = Infinity;
-      var wmax = -wmin;
-      for (var i = 0; i < this.selection_.length; i++) {
-        var hit = this.selection_[i];
-        if (hit.slice) {
-          wmin = Math.min(wmin, hit.slice.start);
-          wmax = Math.max(wmax, hit.slice.end);
-        }
-      }
-      return {
-        min: wmin,
-        max: wmax
-      };
-    },
-
     setSelectionAndMakeVisible: function(selection, zoomAllowed) {
+      if (!(selection instanceof TimelineSelection))
+          throw 'Expected TimelineSelection';
       this.selection = selection;
-      var range = this.getSelectionRange();
+      var range = this.selection.range;
       var size = this.viewport_.xWorldVectorToView(range.max - range.min);
       if (zoomAllowed && size < 50) {
         var worldCenter = range.min + (range.max - range.min) * 0.5;
@@ -724,11 +816,9 @@ cr.define('tracing', function() {
     onGridToggle_: function(left) {
       var tb;
       if (left)
-        tb = Math.min.apply(Math, this.selection_.map(
-            function(x) { return x.slice.start; }));
+        tb = this.selection_.range.min;
       else
-        tb = Math.max.apply(Math, this.selection_.map(
-            function(x) { return x.slice.end; }));
+        tb = this.selection_.range.max;
 
       // Shift the timebase left until its just left of minTimestamp.
       var numInterfvalsSinceStart = Math.ceil((tb - this.model_.minTimestamp) /
@@ -801,25 +891,21 @@ cr.define('tracing', function() {
         var hiWX = this.viewport_.xViewToWorld(hiX - canv.offsetLeft);
 
         // Figure out what has been hit.
-        (function() {
-          var selection = [];
-          function addHit(type, track, slice) {
-            selection.push({track: track, slice: slice});
-          }
-          for (i = 0; i < this.tracks_.children.length; i++) {
-            var track = this.tracks_.children[i];
+        var selection = new TimelineSelection();
+        for (i = 0; i < this.tracks_.children.length; i++) {
+          var track = this.tracks_.children[i];
 
-            // Only check tracks that insersect the rect.
-            var trackClientRect = track.getBoundingClientRect();
-            var a = Math.max(loY, trackClientRect.top);
-            var b = Math.min(hiY, trackClientRect.bottom);
-            if (a <= b) {
-              track.pickRange(loWX, hiWX, loY, hiY, addHit);
-            }
+          // Only check tracks that insersect the rect.
+          var trackClientRect = track.getBoundingClientRect();
+          var a = Math.max(loY, trackClientRect.top);
+          var b = Math.min(hiY, trackClientRect.bottom);
+          if (a <= b) {
+            track.addIntersectingItemsInRangeToSelection(
+              loWX, hiWX, loY, hiY, selection);
           }
-          // Activate the new selection.
-          this.selection = selection;
-        }).call(this);
+        }
+        // Activate the new selection.
+        this.selection = selection;
       }
     },
 
@@ -844,6 +930,9 @@ cr.define('tracing', function() {
 
   return {
     Timeline: Timeline,
+    TimelineSelectionSliceHit: TimelineSelectionSliceHit,
+    TimelineSelectionCounterSampleHit: TimelineSelectionCounterSampleHit,
+    TimelineSelection: TimelineSelection,
     TimelineViewport: TimelineViewport
   };
 });

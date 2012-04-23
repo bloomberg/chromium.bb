@@ -70,25 +70,24 @@ cr.define('tracing', function() {
     },
 
     /**
-     * Picks a slice, if any, at a given location.
+     * Adds items intersecting a point to a selection.
      * @param {number} wX X location to search at, in worldspace.
      * @param {number} wY Y location to search at, in offset space.
      *     offset space.
-     * @param {function():*} onHitCallback Callback to call with the slice,
-     *     if one is found.
+     * @param {TimelineSelection} selection Selection to which to add hits.
      * @return {boolean} true if a slice was found, otherwise false.
      */
-    pick: function(wX, wY, onHitCallback) {
+    addIntersectingItemsToSelection: function(wX, wY, selection) {
       for (var i = 0; i < this.tracks_.length; i++) {
         var trackClientRect = this.tracks_[i].getBoundingClientRect();
         if (wY >= trackClientRect.top && wY < trackClientRect.bottom)
-          return this.tracks_[i].pick(wX, onHitCallback);
+          this.tracks_[i].addIntersectingItemsToSelection(wX, wY, selection);
       }
       return false;
     },
 
     /**
-     * Finds slices intersecting the given interval.
+     * Adds items intersecting the given range to a selection.
      * @param {number} loWX Lower X bound of the interval to search, in
      *     worldspace.
      * @param {number} hiWX Upper X bound of the interval to search, in
@@ -97,29 +96,24 @@ cr.define('tracing', function() {
      *     offset space.
      * @param {number} hiY Upper Y bound of the interval to search, in
      *     offset space.
-     * @param {function():*} onHitCallback Function to call for each slice
-     *     intersecting the interval.
+     * @param {TimelineSelection} selection Selection to which to add hits.
      */
-    pickRange: function(loWX, hiWX, loY, hiY, onHitCallback) {
+    addIntersectingItemsInRangeToSelection: function(
+        loWX, hiWX, loY, hiY, selection) {
       for (var i = 0; i < this.tracks_.length; i++) {
         var trackClientRect = this.tracks_[i].getBoundingClientRect();
         var a = Math.max(loY, trackClientRect.top);
         var b = Math.min(hiY, trackClientRect.bottom);
         if (a <= b)
-          this.tracks_[i].pickRange(loWX, hiWX, loY, hiY, onHitCallback);
+          this.tracks_[i].addIntersectingItemsInRangeToSelection(
+              loWX, hiWX, loY, hiY, selection);
       }
     },
 
-    /**
-     * @return {Array} Objects matching the given filter.
-     */
-    findAllObjectsMatchingFilter: function(filter) {
-      var hits = [];
-      for (var i = 0; i < this.tracks_.length; i++) {
-        var trackHits = this.tracks_[i].findAllObjectsMatchingFilter(filter);
-        Array.prototype.push.apply(hits, trackHits);
-      }
-      return hits;
+    addAllObjectsMatchingFilterToSelection: function(filter, selection) {
+      for (var i = 0; i < this.tracks_.length; i++)
+        this.tracks_[i].addAllObjectsMatchingFilterToSelection(
+          filter, selection);
     }
   };
 
@@ -218,18 +212,28 @@ cr.define('tracing', function() {
         if (this.thread_.cpuSlices) {
           var track = this.addTrack_(this.thread_.cpuSlices);
           track.height = '4px';
+          track.decorateHit = function(hit) {
+            hit.thread = this.thread_;
+          }
         }
 
         if (this.thread_.asyncSlices.length) {
           var subRows = this.thread_.asyncSlices.subRows;
           for (var srI = 0; srI < subRows.length; srI++) {
             var track = this.addTrack_(subRows[srI]);
+            track.decorateHit = function(hit) {
+              // TODO(simonjam): figure out how to associate subSlice hits back
+              // to their parent slice.
+            }
             track.asyncStyle = true;
           }
         }
 
         for (var srI = 0; srI < this.thread_.subRows.length; srI++) {
-          this.addTrack_(this.thread_.subRows[srI]);
+          var track = this.addTrack_(this.thread_.subRows[srI]);
+          track.decorateHit = function(hit) {
+            hit.thread = this.thread_;
+          }
         }
 
         if (this.tracks_.length > 0) {
@@ -520,6 +524,14 @@ cr.define('tracing', function() {
       this.asyncStyle_ = false;
     },
 
+    /**
+     * Called by all the addToSelection functions on the created selection
+     * hit objects. Override this function on parent classes to add
+     * context-specific information to the hit.
+     */
+    decorateHit: function(hit) {
+    },
+
     get asyncStyle() {
       return this.asyncStyle_;
     },
@@ -668,15 +680,14 @@ cr.define('tracing', function() {
     },
 
     /**
-     * Picks a slice, if any, at a given location.
+     * Finds slices intersecting the given interval.
      * @param {number} wX X location to search at, in worldspace.
      * @param {number} wY Y location to search at, in offset space.
      *     offset space.
-     * @param {function():*} onHitCallback Callback to call with the slice,
-     *     if one is found.
+     * @param {TimelineSelection} selection Selection to which to add hits.
      * @return {boolean} true if a slice was found, otherwise false.
      */
-    pick: function(wX, wY, onHitCallback) {
+    addIntersectingItemsToSelection: function(wX, wY, selection) {
       var clientRect = this.getBoundingClientRect();
       if (wY < clientRect.top || wY >= clientRect.bottom)
         return false;
@@ -685,14 +696,15 @@ cr.define('tracing', function() {
           function(x) { return x.duration; },
           wX);
       if (x >= 0 && x < this.slices_.length) {
-        onHitCallback('slice', this, this.slices_[x]);
+        var hit = selection.addSlice(this, this.slices_[x]);
+        this.decorateHit(hit);
         return true;
       }
       return false;
     },
 
     /**
-     * Finds slices intersecting the given interval.
+     * Adds items intersecting the given range to a selection.
      * @param {number} loWX Lower X bound of the interval to search, in
      *     worldspace.
      * @param {number} hiWX Upper X bound of the interval to search, in
@@ -701,10 +713,10 @@ cr.define('tracing', function() {
      *     offset space.
      * @param {number} hiY Upper Y bound of the interval to search, in
      *     offset space.
-     * @param {function():*} onHitCallback Function to call for each slice
-     *     intersecting the interval.
+     * @param {TimelineSelection} selection Selection to which to add hits.
      */
-    pickRange: function(loWX, hiWX, loY, hiY, onHitCallback) {
+    addIntersectingItemsInRangeToSelection: function(
+        loWX, hiWX, loY, hiY, selection) {
       var clientRect = this.getBoundingClientRect();
       var a = Math.max(loY, clientRect.top);
       var b = Math.min(hiY, clientRect.bottom);
@@ -713,7 +725,8 @@ cr.define('tracing', function() {
 
       var that = this;
       function onPickHit(slice) {
-        onHitCallback('slice', that, slice);
+        var hit = selection.addSlice(that, slice);
+        that.decorateHit(hit);
       }
       tracing.iterateOverIntersectingIntervals(this.slices_,
           function(x) { return x.start; },
@@ -740,43 +753,39 @@ cr.define('tracing', function() {
     },
 
     /**
-     * Return the next slice, if any, after the given slice.
-     * @param {slice} The previous slice.
-     * @return {slice} The next slice, or undefined.
+     * Add the item to the left or right of the provided hit, if any, to the
+     * selection.
+     * @param {slice} The current slice.
+     * @param {Number} offset Number of slices away from the hit to look.
+     * @param {TimelineSelection} selection The selection to add a hit to,
+     * if found.
+     * @return {boolean} Whether a hit was found.
      * @private
      */
-    pickNext: function(slice) {
-      var index = this.indexOfSlice_(slice);
-      if (index != undefined) {
-        if (index < this.slices_.length - 1)
-          index++;
-        else
-          index = undefined;
+    addItemNearToProvidedHitToSelection: function(hit, offset, selection) {
+      if (!hit.slice)
+        return false;
+
+      var index = this.indexOfSlice_(hit.slice);
+      if (index === undefined)
+        return false;
+
+      var newIndex = index + offset;
+      if (newIndex < 0 || newIndex >= this.slices_.length)
+        return false;
+
+      var hit = selection.addSlice(this, this.slices_[newIndex]);
+      this.decorateHit(hit);
+      return true;
+    },
+
+    addAllObjectsMatchingFilterToSelection: function(filter, selection) {
+      for (var i = 0; i < this.slices_.length; ++i) {
+        if (filter.matchSlice(this.slices_[i])) {
+          var hit = selection.addSlice(this, this.slices_[i]);
+          this.decorateHit(hit);
+        }
       }
-      return index != undefined ? this.slices_[index] : undefined;
-    },
-
-    /**
-     * Return the previous slice, if any, before the given slice.
-     * @param {slice} A slice.
-     * @return {slice} The previous slice, or undefined.
-     */
-    pickPrevious: function(slice) {
-      var index = this.indexOfSlice_(slice);
-      if (index == 0)
-        return undefined;
-      else if ((index != undefined) && (index > 0))
-        index--;
-      return index != undefined ? this.slices_[index] : undefined;
-    },
-
-    findAllObjectsMatchingFilter: function(filter) {
-      var hits = [];
-      for (var i = 0; i < this.slices_.length; ++i)
-        if (filter.matchSlice(this.slices_[i]))
-          hits.push({track: this,
-                     slice: this.slices_[i]});
-      return hits;
     }
   };
 
@@ -896,21 +905,20 @@ cr.define('tracing', function() {
     },
 
     /**
-     * Picks a slice, if any, at a given location.
+     * Adds items intersecting a point to a selection.
      * @param {number} wX X location to search at, in worldspace.
      * @param {number} wY Y location to search at, in offset space.
      *     offset space.
-     * @param {function():*} onHitCallback Callback to call with the slice,
-     *     if one is found.
+     * @param {TimelineSelection} selection Selection to which to add hits.
      * @return {boolean} true if a slice was found, otherwise false.
      */
-    pick: function(wX, wY, onHitCallback) {
+    addIntersectingItemsToSelection: function(wX, wY, selection) {
       // Does nothing. There's nothing interesting to pick on the viewport
       // track.
     },
 
     /**
-     * Finds slices intersecting the given interval.
+     * Adds items intersecting the given range to a selection.
      * @param {number} loWX Lower X bound of the interval to search, in
      *     worldspace.
      * @param {number} hiWX Upper X bound of the interval to search, in
@@ -919,16 +927,15 @@ cr.define('tracing', function() {
      *     offset space.
      * @param {number} hiY Upper Y bound of the interval to search, in
      *     offset space.
-     * @param {function():*} onHitCallback Function to call for each slice
-     *     intersecting the interval.
+     * @param {TimelineSelection} selection Selection to which to add hits.
      */
-    pickRange: function(loWX, hiWX, loY, hiY, onHitCallback) {
+    addIntersectingItemsInRangeToSelection: function(
+        loWX, hiWX, loY, hiY, selection) {
       // Does nothing. There's nothing interesting to pick on the viewport
       // track.
     },
 
-    findAllObjectsMatchingFilter: function(filter) {
-      return [];
+    addAllObjectsMatchingFilterToSelection: function(filter, selection) {
     }
 
   };
@@ -948,6 +955,15 @@ cr.define('tracing', function() {
     decorate: function() {
       this.classList.add('timeline-counter-track');
       addControlButtonElements(this, false);
+      this.selectedSamples_ = {};
+    },
+
+    /**
+     * Called by all the addToSelection functions on the created selection
+     * hit objects. Override this function on parent classes to add
+     * context-specific information to the hit.
+     */
+    decorateHit: function(hit) {
     },
 
     get counter() {
@@ -957,6 +973,15 @@ cr.define('tracing', function() {
     set counter(counter) {
       this.counter_ = counter;
       this.invalidate();
+    },
+
+    /**
+     * @return {Object} A sparce, mutable map from sample index to bool. Samples
+     * indices the map that are true are drawn as selected. Callers that mutate
+     * the map must manually call invalidate on the track to trigger a redraw.
+     */
+    get selectedSamples() {
+      return this.selectedSamples_;
     },
 
     redraw: function() {
@@ -1046,23 +1071,73 @@ cr.define('tracing', function() {
         ctx.closePath();
         ctx.fill();
       }
+      ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+      for (var i in this.selectedSamples_) {
+        if (!this.selectedSamples_[i])
+          continue;
+
+        var x = ctr.timestamps[i];
+        for (var seriesIndex = ctr.numSeries - 1;
+             seriesIndex >= 0; seriesIndex--) {
+          var y = ctr.totals[i * numSeries + seriesIndex];
+          var yView = canvasH - (yScale * y);
+          ctx.fillRect(x - pixWidth, yView - 1, 3 * pixWidth, 3);
+        }
+      }
       ctx.restore();
     },
 
     /**
-     * Picks a slice, if any, at a given location.
+     * Adds items intersecting a point to a selection.
      * @param {number} wX X location to search at, in worldspace.
      * @param {number} wY Y location to search at, in offset space.
      *     offset space.
-     * @param {function():*} onHitCallback Callback to call with the slice,
-     *     if one is found.
+     * @param {TimelineSelection} selection Selection to which to add hits.
      * @return {boolean} true if a slice was found, otherwise false.
      */
-    pick: function(wX, wY, onHitCallback) {
+    addIntersectingItemsToSelection: function(wX, wY, selection) {
+      var clientRect = this.getBoundingClientRect();
+      if (wY < clientRect.top || wY >= clientRect.bottom)
+        return false;
+      var ctr = this.counter_;
+      if (wX < this.counter_.timestamps[0])
+        return false;
+      var i = tracing.findLowIndexInSortedArray(ctr.timestamps,
+                                                function(x) { return x; },
+                                                wX);
+      if (i < 0 || i >= ctr.timestamps.length)
+        return false;
+
+      // Sample i is going to either be exactly at wX or slightly above it,
+      // E.g. asking for 7.5 in [7,8] gives i=1. So bump i back by 1 if needed.
+      if (i > 0 && wX > this.counter_.timestamps[i - 1])
+        i--;
+
+      // Some preliminaries.
+      var canvasH = this.getBoundingClientRect().height;
+      var yScale = canvasH / ctr.maxTotal;
+
+      /*
+      // Figure out which sample we hit
+      var seriesIndexHit;
+      for (var seriesIndex = 0; seriesIndex < ctr.numSeries; seriesIndex++) {
+        var y = ctr.totals[i * ctr.numSeries + seriesIndex];
+        var yView = canvasH - (yScale * y) + clientRect.top;
+        if (wY >= yView) {
+          seriesIndexHit = seriesIndex;
+          break;
+        }
+      }
+      if (seriesIndexHit === undefined)
+        return false;
+      */
+      var hit = selection.addCounterSample(this, this.counter, i);
+      this.decorateHit(hit);
+      return true;
     },
 
     /**
-     * Finds slices intersecting the given interval.
+     * Adds items intersecting the given range to a selection.
      * @param {number} loWX Lower X bound of the interval to search, in
      *     worldspace.
      * @param {number} hiWX Upper X bound of the interval to search, in
@@ -1071,14 +1146,45 @@ cr.define('tracing', function() {
      *     offset space.
      * @param {number} hiY Upper Y bound of the interval to search, in
      *     offset space.
-     * @param {function():*} onHitCallback Function to call for each slice
-     *     intersecting the interval.
+     * @param {TimelineSelection} selection Selection to which to add hits.
      */
-    pickRange: function(loWX, hiWX, loY, hiY, onHitCallback) {
+    addIntersectingItemsInRangeToSelection: function(
+      loWX, hiWX, loY, hiY, selection) {
+
+      var clientRect = this.getBoundingClientRect();
+      var a = Math.max(loY, clientRect.top);
+      var b = Math.min(hiY, clientRect.bottom);
+      if (a > b)
+        return;
+
+      var ctr = this.counter_;
+
+      var iLo = tracing.findLowIndexInSortedArray(ctr.timestamps,
+                                                  function(x) { return x; },
+                                                  loWX);
+      var iHi = tracing.findLowIndexInSortedArray(ctr.timestamps,
+                                                  function(x) { return x; },
+                                                  hiWX);
+
+      // Sample i is going to either be exactly at wX or slightly above it,
+      // E.g. asking for 7.5 in [7,8] gives i=1. So bump i back by 1 if needed.
+      if (iLo > 0 && loWX > ctr.timestamps[iLo - 1])
+        iLo--;
+      if (iHi > 0 && hiWX > ctr.timestamps[iHi - 1])
+        iHi--;
+
+      // Iterate over every sample intersecting..
+      for (var i = iLo; i <= iHi; i++) {
+        if (i >= ctr.timestamps.length)
+          continue;
+
+        // TODO(nduca): Pick the seriesIndexHit based on the loY - hiY values.
+        var hit = selection.addCounterSample(this, this.counter, i);
+        this.decorateHit(hit);
+      }
     },
 
-    findAllObjectsMatchingFilter: function(filter) {
-      return [];
+    addAllObjectsMatchingFilterToSelection: function(filter, selection) {
     }
 
   };
