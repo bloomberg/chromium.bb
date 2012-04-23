@@ -169,27 +169,15 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void OnGetObject(int idb_index_id,
                      int32 thread_id,
                      int32 response_id,
-                     const IndexedDBKey& key,
+                     const IndexedDBKeyRange& key_range,
                      int32 transaction_id,
                      WebKit::WebExceptionCode* ec);
-    void OnGetObjectByRange(int idb_index_id,
-                            int32 thread_id,
-                            int32 response_id,
-                            const IndexedDBKeyRange& key_range,
-                            int32 transaction_id,
-                            WebKit::WebExceptionCode* ec);
     void OnGetKey(int idb_index_id,
                   int32 thread_id,
                   int32 response_id,
-                  const IndexedDBKey& key,
+                  const IndexedDBKeyRange& key_range,
                   int32 transaction_id,
                   WebKit::WebExceptionCode* ec);
-    void OnGetKeyByRange(int idb_index_id,
-                         int32 thread_id,
-                         int32 response_id,
-                         const IndexedDBKeyRange& key_range,
-                         int32 transaction_id,
-                         WebKit::WebExceptionCode* ec);
     void OnDestroyed(int32 idb_index_id);
 
     IndexedDBDispatcherHost* parent_;
@@ -211,15 +199,9 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
     void OnGet(int idb_object_store_id,
                int32 thread_id,
                int32 response_id,
-               const IndexedDBKey& key,
+               const IndexedDBKeyRange& key_range,
                int32 transaction_id,
                WebKit::WebExceptionCode* ec);
-    void OnGetByRange(int idb_object_store_id,
-                      int32 thread_id,
-                      int32 response_id,
-                      const IndexedDBKeyRange& key_range,
-                      int32 transaction_id,
-                      WebKit::WebExceptionCode* ec);
     void OnPut(const IndexedDBHostMsg_ObjectStorePut_Params& params,
                WebKit::WebExceptionCode* ec);
     void OnDelete(int idb_object_store_id,

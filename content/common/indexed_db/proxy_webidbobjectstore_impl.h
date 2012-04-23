@@ -28,10 +28,6 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
   virtual WebKit::WebString keyPathString() const;
   virtual WebKit::WebDOMStringList indexNames() const;
 
-  virtual void get(const WebKit::WebIDBKey& key,
-                   WebKit::WebIDBCallbacks* callbacks,
-                   const WebKit::WebIDBTransaction& transaction,
-                   WebKit::WebExceptionCode& ec);
   virtual void get(const WebKit::WebIDBKeyRange& key_range,
                    WebKit::WebIDBCallbacks* callbacks,
                    const WebKit::WebIDBTransaction& transaction,

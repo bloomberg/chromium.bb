@@ -100,45 +100,23 @@ void RendererWebIDBIndexImpl::count(
 }
 
 void RendererWebIDBIndexImpl::getObject(
-    const WebKit::WebIDBKey& key,
+    const WebKit::WebIDBKeyRange& key_range,
     WebKit::WebIDBCallbacks* callbacks,
     const WebKit::WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBIndexGetObject(
-      IndexedDBKey(key), callbacks, idb_index_id_, transaction, &ec);
-}
-
-void RendererWebIDBIndexImpl::getObject(
-    const WebKit::WebIDBKeyRange& key_range,
-    WebKit::WebIDBCallbacks* callbacks,
-    const WebKit::WebIDBTransaction& transaction,
-    WebExceptionCode& ec) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBIndexGetObjectByRange(
       IndexedDBKeyRange(key_range), callbacks, idb_index_id_, transaction, &ec);
 }
 
 void RendererWebIDBIndexImpl::getKey(
-    const WebKit::WebIDBKey& key,
+    const WebKit::WebIDBKeyRange& key_range,
     WebKit::WebIDBCallbacks* callbacks,
     const WebKit::WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBIndexGetKey(
-      IndexedDBKey(key), callbacks, idb_index_id_, transaction, &ec);
-}
-
-void RendererWebIDBIndexImpl::getKey(
-    const WebKit::WebIDBKeyRange& key_range,
-    WebKit::WebIDBCallbacks* callbacks,
-    const WebKit::WebIDBTransaction& transaction,
-    WebExceptionCode& ec) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBIndexGetKeyByRange(
       IndexedDBKeyRange(key_range), callbacks, idb_index_id_, transaction, &ec);
 }

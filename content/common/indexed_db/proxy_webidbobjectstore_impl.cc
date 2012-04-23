@@ -70,24 +70,13 @@ WebDOMStringList RendererWebIDBObjectStoreImpl::indexNames() const {
 }
 
 void RendererWebIDBObjectStoreImpl::get(
-    const WebIDBKey& key,
-    WebIDBCallbacks* callbacks,
-    const WebIDBTransaction& transaction,
-    WebExceptionCode& ec) {
-  IndexedDBDispatcher* dispatcher =
-      IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBObjectStoreGet(
-      IndexedDBKey(key), callbacks, idb_object_store_id_, transaction, &ec);
-}
-
-void RendererWebIDBObjectStoreImpl::get(
     const WebIDBKeyRange& key_range,
     WebIDBCallbacks* callbacks,
     const WebIDBTransaction& transaction,
     WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBObjectStoreGetByRange(
+  dispatcher->RequestIDBObjectStoreGet(
       IndexedDBKeyRange(key_range), callbacks,
       idb_object_store_id_, transaction, &ec);
 }

@@ -142,39 +142,21 @@ class CONTENT_EXPORT IndexedDBDispatcher
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
-  void RequestIDBIndexGetObject(const IndexedDBKey& key,
-                                WebKit::WebIDBCallbacks* callbacks,
-                                int32 idb_index_id,
-                                const WebKit::WebIDBTransaction& transaction,
-                                 WebKit::WebExceptionCode* ec);
-
-  void RequestIDBIndexGetObjectByRange(
+  void RequestIDBIndexGetObject(
       const IndexedDBKeyRange& key_range,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_index_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
-  void RequestIDBIndexGetKey(const IndexedDBKey& key,
-                             WebKit::WebIDBCallbacks* callbacks,
-                             int32 idb_index_id,
-                             const WebKit::WebIDBTransaction& transaction,
-                             WebKit::WebExceptionCode* ec);
-
-  void RequestIDBIndexGetKeyByRange(
+  void RequestIDBIndexGetKey(
       const IndexedDBKeyRange& key_range,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_index_id,
       const WebKit::WebIDBTransaction& transaction,
       WebKit::WebExceptionCode* ec);
 
-  void RequestIDBObjectStoreGet(const IndexedDBKey& key,
-                                WebKit::WebIDBCallbacks* callbacks,
-                                int32 idb_object_store_id,
-                                const WebKit::WebIDBTransaction& transaction,
-                                WebKit::WebExceptionCode* ec);
-
-  void RequestIDBObjectStoreGetByRange(
+  void RequestIDBObjectStoreGet(
       const IndexedDBKeyRange& key_range,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id,

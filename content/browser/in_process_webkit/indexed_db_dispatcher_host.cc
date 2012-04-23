@@ -506,10 +506,7 @@ bool IndexedDBDispatcherHost::IndexDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexOpenKeyCursor, OnOpenKeyCursor)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexCount, OnCount)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexGetObject, OnGetObject)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexGetObjectByRange,
-                        OnGetObjectByRange)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexGetKey, OnGetKey)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexGetKeyByRange, OnGetKeyByRange)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_IndexDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -617,28 +614,6 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnGetObject(
     int idb_index_id,
     int32 thread_id,
     int32 response_id,
-    const IndexedDBKey& key,
-    int32 transaction_id,
-    WebKit::WebExceptionCode* ec) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(
-      &map_, idb_index_id);
-  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
-      &parent_->transaction_dispatcher_host_->map_, transaction_id);
-  if (!idb_transaction || !idb_index)
-    return;
-
-  *ec = 0;
-  scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, thread_id,
-                                                       response_id));
-  idb_index->getObject(key, callbacks.release(), *idb_transaction, *ec);
-}
-
-void IndexedDBDispatcherHost::IndexDispatcherHost::OnGetObjectByRange(
-    int idb_index_id,
-    int32 thread_id,
-    int32 response_id,
     const IndexedDBKeyRange& key_range,
     int32 transaction_id,
     WebKit::WebExceptionCode* ec) {
@@ -658,27 +633,6 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnGetObjectByRange(
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnGetKey(
-    int idb_index_id,
-    int32 thread_id,
-    int32 response_id,
-    const IndexedDBKey& key,
-    int32 transaction_id,
-    WebKit::WebExceptionCode* ec) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(
-      &map_, idb_index_id);
-  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
-      &parent_->transaction_dispatcher_host_->map_, transaction_id);
-  if (!idb_transaction || !idb_index)
-    return;
-
-  *ec = 0;
-  scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebIDBKey>(parent_, thread_id, response_id));
-  idb_index->getKey(key, callbacks.release(), *idb_transaction, *ec);
-}
-
-void IndexedDBDispatcherHost::IndexDispatcherHost::OnGetKeyByRange(
     int idb_index_id,
     int32 thread_id,
     int32 response_id,
@@ -727,7 +681,6 @@ bool IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreKeyPath, OnKeyPath)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreIndexNames, OnIndexNames)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreGet, OnGet)
-    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreGetByRange, OnGetByRange)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStorePut, OnPut)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreDelete, OnDelete)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_ObjectStoreDeleteRange, OnDeleteRange)
@@ -774,28 +727,6 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndexNames(
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnGet(
-    int idb_object_store_id,
-    int32 thread_id,
-    int32 response_id,
-    const IndexedDBKey& key,
-    int32 transaction_id,
-    WebKit::WebExceptionCode* ec) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
-  WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
-      &map_, idb_object_store_id);
-  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
-      &parent_->transaction_dispatcher_host_->map_, transaction_id);
-  if (!idb_transaction || !idb_object_store)
-    return;
-
-  *ec = 0;
-  scoped_ptr<WebIDBCallbacks> callbacks(
-      new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, thread_id,
-                                                       response_id));
-  idb_object_store->get(key, callbacks.release(), *idb_transaction, *ec);
-}
-
-void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnGetByRange(
     int idb_object_store_id,
     int32 thread_id,
     int32 response_id,
