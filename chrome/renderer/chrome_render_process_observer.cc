@@ -198,7 +198,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   base::LoadNativeLibrary(FilePath(L"crypt32.dll"), &error);
 #endif
   // Setup initial set of crash dump data for Field Trials in this renderer.
-  ExperimentsHelper::SetChildProcessLoggingExperimentList();
+  experiments_helper::SetChildProcessLoggingExperimentList();
 }
 
 ChromeRenderProcessObserver::~ChromeRenderProcessObserver() {
@@ -309,7 +309,7 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
     const std::string& field_trial_name,
     const std::string& group_name) {
   base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
-  ExperimentsHelper::SetChildProcessLoggingExperimentList();
+  experiments_helper::SetChildProcessLoggingExperimentList();
 }
 
 void ChromeRenderProcessObserver::OnGetV8HeapStats() {
