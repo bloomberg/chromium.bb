@@ -266,6 +266,7 @@ ExistingUserController::~ExistingUserController() {
 //
 
 void ExistingUserController::CreateAccount() {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Login.CreateAccount", 1, 1, 2, 3);
   guest_mode_url_ =
       google_util::AppendGoogleLocaleParam(GURL(kCreateAccountURL));
   LoginAsGuest();
