@@ -56,7 +56,6 @@ wl_os_socket_cloexec(int domain, int type, int protocol)
 	int fd;
 
 #ifdef SOCK_CLOEXEC
-	errno = 0;
 	fd = socket(domain, type | SOCK_CLOEXEC, protocol);
 	if (fd >= 0)
 		return fd;
