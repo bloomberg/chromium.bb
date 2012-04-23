@@ -28,8 +28,10 @@ rm -rf scons-out tools/SRC/* tools/BUILD/* tools/out tools/toolchain \
   tools/glibc tools/glibc.tar tools/toolchain.t* "$this_toolchain" .tmp ||
   echo already_clean
 
+if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
 echo @@@BUILD_STEP setup source@@@
 (cd tools; ./buildbot_patch-toolchain-tries.sh)
+fi
 
 echo @@@BUILD_STEP compile_toolchain@@@
 (
