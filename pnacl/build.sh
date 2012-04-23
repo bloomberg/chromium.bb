@@ -57,7 +57,7 @@ readonly SB_JIT=${SB_JIT:-false}
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
 readonly BINUTILS_TARGET=arm-pc-nacl
-readonly REAL_CROSS_TARGET=pnacl
+readonly REAL_CROSS_TARGET=le32-unknown-nacl
 readonly NACL64_TARGET=x86_64-nacl
 
 readonly DRIVER_DIR="${PNACL_ROOT}/driver"
@@ -88,7 +88,6 @@ readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
 readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_GOLD="${TC_SRC}/gold"
-readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
 readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
 
 # LLVM sources (svn)
@@ -99,6 +98,7 @@ readonly TC_SRC_CLANG="${TC_SRC}/clang"
 readonly PNACL_GIT_ROOT="${PNACL_ROOT}/git"
 readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/gcc"
 readonly TC_SRC_GLIBC="${PNACL_GIT_ROOT}/glibc"
+readonly TC_SRC_NEWLIB="${PNACL_GIT_ROOT}/nacl-newlib"
 readonly TC_SRC_LIBSTDCPP="${TC_SRC_GCC}/libstdc++-v3"
 
 # Unfortunately, binutils/configure generates this untracked file
@@ -109,7 +109,7 @@ readonly SERVICE_RUNTIME_SRC="${NACL_ROOT}/src/trusted/service_runtime"
 readonly EXPORT_HEADER_SCRIPT="${SERVICE_RUNTIME_SRC}/export_header.py"
 readonly NACL_SYS_HEADERS="${SERVICE_RUNTIME_SRC}/include"
 readonly NACL_HEADERS_TS="${TC_SRC}/nacl.sys.timestamp"
-readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib-trunk/newlib/libc/include"
+readonly NEWLIB_INCLUDE_DIR="${TC_SRC_NEWLIB}/newlib/libc/include"
 
 # The location of each project. These should be absolute paths.
 readonly TC_BUILD="${PNACL_ROOT}/build"
@@ -182,7 +182,7 @@ readonly PNACL_RANLIB="${INSTALL_NEWLIB_BIN}/pnacl-ranlib"
 readonly PNACL_AS="${INSTALL_NEWLIB_BIN}/pnacl-as"
 readonly PNACL_NM="${INSTALL_NEWLIB_BIN}/pnacl-nm"
 readonly PNACL_TRANSLATE="${INSTALL_NEWLIB_BIN}/pnacl-translate"
-readonly PNACL_READELF="${INSTALL_NEWLIB_BIN}/readelf"
+readonly PNACL_READELF="${INSTALL_NEWLIB_BIN}/pnacl-readelf"
 readonly PNACL_SIZE="${INSTALL_NEWLIB_BIN}/size"
 readonly PNACL_STRIP="${INSTALL_NEWLIB_BIN}/pnacl-strip"
 readonly ILLEGAL_TOOL="${INSTALL_NEWLIB_BIN}"/pnacl-illegal
@@ -263,7 +263,6 @@ readonly CLANG_REV=${LLVM_PROJECT_REV}
 
 # Repositories
 readonly REPO_UPSTREAM="nacl-llvm-branches.upstream"
-readonly REPO_NEWLIB="nacl-llvm-branches.newlib"
 readonly REPO_BINUTILS="nacl-llvm-branches.binutils"
 # NOTE: this is essentially another binutils repo but a much more
 #       recent revision to pull in all the latest gold changes
@@ -334,6 +333,7 @@ setup-newlib-env() {
     AR_FOR_TARGET="${PNACL_AR}"
     NM_FOR_TARGET="${PNACL_NM}"
     RANLIB_FOR_TARGET="${PNACL_RANLIB}"
+    READELF_FOR_TARGET="${PNACL_READELF}"
     OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}"
     AS_FOR_TARGET="${ILLEGAL_TOOL}"
     LD_FOR_TARGET="${ILLEGAL_TOOL}"
@@ -364,7 +364,6 @@ hg-info-all() {
   hg-pull-all
 
   hg-info "${TC_SRC_UPSTREAM}"   ${UPSTREAM_REV}
-  hg-info "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
   hg-info "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
   hg-info "${TC_SRC_GOLD}"       ${GOLD_REV}
   hg-info "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
@@ -373,7 +372,6 @@ hg-info-all() {
 update-all() {
   hg-update-upstream
   svn-update-clang
-  hg-update-newlib
   hg-update-binutils
   hg-update-gold
   hg-update-compiler-rt
@@ -578,16 +576,6 @@ svn-update-clang() {
   sed -i -e "s/MaxDepth = 256/MaxDepth = 512/" ${parser}
 }
 
-#@ hg-update-newlib      - Update NEWLIB To the stable revision
-hg-update-newlib() {
-  # Clean the headers first, so that sanity checks inside
-  # hg-update-common do not see any local modifications.
-  newlib-nacl-headers-check
-  newlib-nacl-headers-clean
-  hg-update-common "newlib" ${NEWLIB_REV} "${TC_SRC_NEWLIB}"
-  newlib-nacl-headers
-}
-
 #@ hg-update-binutils    - Update BINUTILS to the stable revision
 hg-update-binutils() {
   # Clean the binutils generated file first, so that sanity checks
@@ -609,11 +597,10 @@ hg-update-compiler-rt() {
 
 #@ hg-pull-all           - Pull all repos. (but do not update working copy)
 #@ hg-pull-REPO          - Pull repository REPO.
-#@                         (REPO can be llvm, newlib, binutils)
+#@                         (REPO can be llvm, binutils)
 hg-pull-all() {
   StepBanner "HG-PULL" "Running 'hg pull' in all repos..."
   hg-pull-upstream
-  hg-pull-newlib
   hg-pull-binutils
   hg-pull-gold
   hg-pull-compiler-rt
@@ -621,10 +608,6 @@ hg-pull-all() {
 
 hg-pull-upstream() {
   hg-pull "${TC_SRC_UPSTREAM}"
-}
-
-hg-pull-newlib() {
-  hg-pull "${TC_SRC_NEWLIB}"
 }
 
 hg-pull-binutils() {
@@ -647,7 +630,6 @@ checkout-all() {
   svn-checkout-clang
   hg-checkout-binutils
   hg-checkout-gold
-  hg-checkout-newlib
   hg-checkout-compiler-rt
   if ${PNACL_IN_CROS_CHROOT}; then
     git-sync-no-gclient
@@ -679,11 +661,6 @@ hg-checkout-gold() {
   hg-checkout ${REPO_GOLD} "${TC_SRC_GOLD}" ${GOLD_REV}
 }
 
-hg-checkout-newlib() {
-  hg-checkout ${REPO_NEWLIB} "${TC_SRC_NEWLIB}" ${NEWLIB_REV}
-  newlib-nacl-headers
-}
-
 hg-checkout-compiler-rt() {
   hg-checkout ${REPO_COMPILER_RT} "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
 }
@@ -710,6 +687,7 @@ git-grab() {
 git-sync-no-gclient() {
   git-grab "${TC_SRC_GCC}" pnacl-gcc.git pnacl_gcc_rev
   git-grab "${TC_SRC_GLIBC}" nacl-glibc.git glibc_rev
+  git-grab "${TC_SRC_NEWLIB}" nacl-newlib.git newlib_rev
 }
 
 git-sync() {
@@ -724,10 +702,14 @@ git-sync() {
     spopd
   fi
 
+  newlib-nacl-headers-clean
   cp "${PNACL_ROOT}"/DEPS "${gitbase}"/dummydir
   spushd "${gitbase}"
   gclient update
   spopd
+
+  # Copy nacl headers into newlib tree.
+  newlib-nacl-headers
 }
 
 
@@ -2948,7 +2930,7 @@ newlib-configure() {
     env -i \
     PATH="/usr/bin:/bin" \
     "${STD_ENV_FOR_NEWLIB[@]}" \
-    ${srcdir}/newlib-trunk/configure \
+    ${srcdir}/configure \
         --disable-multilib \
         --prefix="${NEWLIB_INSTALL_DIR}" \
         --disable-newlib-supplied-syscalls \
@@ -2958,7 +2940,7 @@ newlib-configure() {
         --enable-newlib-io-long-long \
         --enable-newlib-io-long-double \
         --enable-newlib-io-c99-formats \
-        --enable-newlib-io-mb \
+        --enable-newlib-mb \
         --target="${REAL_CROSS_TARGET}"
   spopd
 }
@@ -3009,16 +2991,16 @@ newlib-install() {
       install ${MAKE_OPTS}
   spopd
 
-  # Newlib installs files into usr/pnacl/*
-  # Get rid of the pnacl/ prefix.
+  # Newlib installs files into usr/${REAL_CROSS_TARGET}/*
+  # Get rid of the ${REAL_CROSS_TARGET}/ prefix.
   pushd "${NEWLIB_INSTALL_DIR}"
   mkdir -p lib include
-  mv -f pnacl/lib/* lib
+  mv -f ${REAL_CROSS_TARGET}/lib/* lib
   rm -rf  include/sys include/machine
-  mv -f pnacl/include/* include
-  rmdir pnacl/lib
-  rmdir pnacl/include
-  rmdir pnacl
+  mv -f ${REAL_CROSS_TARGET}/include/* include
+  rmdir ${REAL_CROSS_TARGET}/lib
+  rmdir ${REAL_CROSS_TARGET}/include
+  rmdir ${REAL_CROSS_TARGET}
 
   StepBanner "NEWLIB" "Extra-install"
   local sys_include=${SYSROOT_DIR}/include
@@ -3269,11 +3251,9 @@ newlib-nacl-headers-clean() {
     # will be in a bad state. This will be fixed during the next
     # invocation by newlib-nacl-headers.
 
-    # We jump into the parent directory and use a relative path so that
-    # hg does not get confused by pathnames which contain a symlink.
     spushd "$(dirname "${NEWLIB_INCLUDE_DIR}")"
-    RunWithLog "newlib-freshen" \
-      hg-revert "$(basename "${NEWLIB_INCLUDE_DIR}")"
+    RunWithLog "newlib-nacl-headers-clean" \
+      git checkout ${NEWLIB_INCLUDE_DIR}
     spopd
   fi
 }
@@ -3310,8 +3290,7 @@ newlib-nacl-headers-check() {
   fi
 
   # Already clean?
-  if ! hg-has-changes "${NEWLIB_INCLUDE_DIR}" &&
-     ! hg-has-untracked "${NEWLIB_INCLUDE_DIR}" ; then
+  if ! git-has-changes "${NEWLIB_INCLUDE_DIR}" ; then
     return 0
   fi
 

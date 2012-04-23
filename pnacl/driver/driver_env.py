@@ -185,6 +185,7 @@ INITIAL_ENV = {
   'NM'             : '${BINUTILS_BASE}nm${EXEC_EXT}',
   'AR'             : '${BINUTILS_BASE}ar${EXEC_EXT}',
   'RANLIB'         : '${BINUTILS_BASE}ranlib${EXEC_EXT}',
+  'READELF'        : '${BINUTILS_BASE}readelf${EXEC_EXT}',
   'STRIP'          : '${BINUTILS_BASE}strip${EXEC_EXT}',
   # bitcode linker
   'LD_GOLD'        : '${BINUTILS_BASE}ld.gold${EXEC_EXT}',
