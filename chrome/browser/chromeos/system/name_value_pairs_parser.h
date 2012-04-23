@@ -17,12 +17,12 @@ namespace chromeos {
 namespace system {
 
 // The parser is used to get machine info as name-value pairs. Defined
-// here to be accessable by tests.
+// here to be accessible by tests.
 class NameValuePairsParser {
  public:
   typedef std::map<std::string, std::string> NameValueMap;
 
-  // The obtained info will be written into machine_info.
+  // The obtained info will be written into the given map.
   explicit NameValuePairsParser(NameValueMap* map);
 
   void AddNameValuePair(const std::string& key, const std::string& value);
@@ -30,30 +30,38 @@ class NameValuePairsParser {
   // Executes tool and inserts (key, <output>) into map_.
   // The program name (argv[0]) should be an absolute path. The function
   // checks if the program exists before executing it as some programs
-  // don't exist on Linux desktop.
+  // don't exist on Linux desktop; returns false in that case.
   bool GetSingleValueFromTool(int argc, const char* argv[],
                               const std::string& key);
 
   // Parses name-value pairs from the file.
-  void GetNameValuePairsFromFile(const FilePath& file_path,
+  // Returns false if there was any error in the file. Valid pairs will still be
+  // added to the map.
+  bool GetNameValuePairsFromFile(const FilePath& file_path,
                                  const std::string& eq,
                                  const std::string& delim);
 
   // These will parse strings with output in the format:
   // <key><EQ><value><DELIM>[<key><EQ><value>][...]
   // e.g. ParseNameValuePairs("key1=value1 key2=value2", "=", " ")
+  // Returns false if there was any error in in_string. Valid pairs will still
+  // be added to the map.
   bool ParseNameValuePairs(const std::string& in_string,
                            const std::string& eq,
                            const std::string& delim);
 
   // This version allows for values which end with a comment
   // beginning with comment_delim.
-  // e.g."key2=value2 # Explanation of value\n"
+  // e.g. "key2=value2 # Explanation of value\n"
+  // Returns false if there was any error in in_string. Valid pairs will still
+  // be added to the map.
   bool ParseNameValuePairsWithComments(const std::string& in_string,
                                        const std::string& eq,
                                        const std::string& delim,
                                        const std::string& comment_delim);
 
+  // Same as ParseNameValuePairsWithComments(), but uses the output of the given
+  // tool as the input to parse.
   bool ParseNameValuePairsFromTool(
       int argc,
       const char* argv[],

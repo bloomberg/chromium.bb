@@ -107,6 +107,12 @@ bool StatisticsProviderImpl::GetMachineStatistic(
     LOG(WARNING) << "Waiting to load statistics. Requested statistic: "
                  << name;
     on_statistics_loaded_.TimedWait(base::TimeDelta::FromSeconds(kTimeoutSecs));
+
+    if (!on_statistics_loaded_.IsSignaled()) {
+      LOG(ERROR) << "Statistics weren't loaded after waiting! "
+                 << "Requested statistic: " << name;
+      return false;
+    }
   }
 
   NameValuePairsParser::NameValueMap::iterator iter = machine_info_.find(name);
@@ -126,10 +132,7 @@ StatisticsProviderImpl::StatisticsProviderImpl()
 
 void StatisticsProviderImpl::StartLoadingMachineStatistics() {
   VLOG(1) << "Started loading statistics";
-  CHECK(BrowserThread::IsMessageLoopValid(BrowserThread::FILE))
-      << "StatisticsProvider must not be used before FILE thread is created";
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
+  BrowserThread::PostBlockingPoolTask(
       FROM_HERE,
       base::Bind(&StatisticsProviderImpl::LoadMachineStatistics,
                  base::Unretained(this)));
@@ -139,9 +142,12 @@ void StatisticsProviderImpl::LoadMachineStatistics() {
   NameValuePairsParser parser(&machine_info_);
 
   // Parse all of the key/value pairs from the crossystem tool.
-  parser.ParseNameValuePairsFromTool(
-      arraysize(kCrosSystemTool), kCrosSystemTool, kCrosSystemEq,
-      kCrosSystemDelim, kCrosSystemCommentDelim);
+  if (!parser.ParseNameValuePairsFromTool(
+          arraysize(kCrosSystemTool), kCrosSystemTool, kCrosSystemEq,
+          kCrosSystemDelim, kCrosSystemCommentDelim)) {
+    LOG(WARNING) << "There were errors parsing the output of "
+                 << kCrosSystemTool << ".";
+  }
 
   // Ensure that the hardware class key is present with the expected
   // key name, and if it couldn't be retrieved, that the value is "unknown".

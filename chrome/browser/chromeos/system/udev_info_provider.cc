@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,11 +21,10 @@ namespace {
 
 // Absolute path of the udevadm tool.
 const char kUdevadmToolPath[] = "/sbin/udevadm";
-// Args to pass to udevadm (followed by the device path).
-const char* kUdevadmToolArgs[] = { "info", "--query=property", "--path" };
 // Key-value separator and string delimiter in output of "udevadm info".
 const char kUdevadmEq[] = "=";
 const char kUdevadmDelim[] = "\n";
+const char kUdevadmCommentDelim[] = "";
 
 }  // namespace
 
@@ -52,28 +51,23 @@ bool UdevInfoProviderImpl::QueryDeviceProperty(const std::string& sys_path,
                                                std::string* result) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  FilePath udevadm_path(kUdevadmToolPath);
-  CommandLine cmd_line(udevadm_path);
-
-  // TODO(ivankr): manually appending switches with AppendArg is a workaround
-  // to pass "info" argument before switches like "--path" (CommandLine forces
-  // arguments after switches).
-  for (size_t i = 0; i < arraysize(kUdevadmToolArgs); ++i)
-    cmd_line.AppendArg(kUdevadmToolArgs[i]);
-  cmd_line.AppendArg(sys_path);
-
-  std::string output_string;
-  if (!base::GetAppOutput(cmd_line, &output_string)) {
-    LOG(ERROR) << "Error executing: " << cmd_line.GetCommandLineString();
-    return false;
-  }
-  TrimWhitespaceASCII(output_string, TRIM_ALL, &output_string);
+  const char* kUdevadmTool[] = {
+    kUdevadmToolPath,
+    "info",
+    "--query=property",
+    "--path",
+    sys_path.c_str(),
+  };
 
   NameValuePairsParser::NameValueMap device_info;
   NameValuePairsParser parser(&device_info);
 
-  if (!parser.ParseNameValuePairs(output_string, kUdevadmEq, kUdevadmDelim))
-    return false;
+  if (!parser.ParseNameValuePairsFromTool(
+          arraysize(kUdevadmTool), kUdevadmTool, kUdevadmEq,
+          kUdevadmDelim, kUdevadmCommentDelim)) {
+    LOG(WARNING) << "There were errors parsing the output of "
+                 << kUdevadmToolPath << ".";
+  }
 
   NameValuePairsParser::NameValueMap::const_iterator it =
       device_info.find(property_name);

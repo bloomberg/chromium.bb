@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "base/stl_util.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 
@@ -45,8 +46,13 @@ NameValuePairsParser::NameValuePairsParser(NameValueMap* map)
 
 void NameValuePairsParser::AddNameValuePair(const std::string& key,
                                             const std::string& value) {
-  (*map_)[key] = value;
-  VLOG(1) << "name: " << key << ", value: " << value;
+  if (!ContainsKey(*map_, key)) {
+    (*map_)[key] = value;
+    VLOG(1) << "name: " << key << ", value: " << value;
+  } else {
+    LOG(WARNING) << "Key " << key << " already has value " << (*map_)[key]
+                 << ", ignoring new value: " << value;
+  }
 }
 
 bool NameValuePairsParser::ParseNameValuePairs(const std::string& in_string,
@@ -60,45 +66,42 @@ bool NameValuePairsParser::ParseNameValuePairsWithComments(
     const std::string& eq,
     const std::string& delim,
     const std::string& comment_delim) {
+  bool all_valid = true;
   // Set up the pair tokenizer.
   StringTokenizer pair_toks(in_string, delim);
   pair_toks.set_quote_chars(kQuoteChars);
   // Process token pairs.
   while (pair_toks.GetNext()) {
     std::string pair(pair_toks.token());
-    if (pair.find(eq) == 0) {
-      LOG(WARNING) << "Empty key: '" << pair << "'. Aborting.";
-      return false;
-    }
-    StringTokenizer keyvalue(pair, eq);
-    std::string key;
-    std::string value;
-    if (keyvalue.GetNext()) {
-      TrimString(keyvalue.token(), kTrimChars, &key);
-      if (keyvalue.GetNext()) {
-        value = keyvalue.token();
-        if (keyvalue.GetNext()) {
-          LOG(WARNING) << "Multiple key tokens: '" << pair << "'. Aborting.";
-          return false;
-        }
-        // If value ends with a comment, throw away everything after
-        // comment_delim is encountered.
-        if (!comment_delim.empty()) {
-          StringTokenizer value_with_comment(value, comment_delim);
-          value_with_comment.GetNext();
-          value = value_with_comment.token();
-        }
+    // Anything before the first |eq| is the key, anything after is the value.
+    // |eq| must exist.
+    size_t eq_pos = pair.find(eq);
+    if (eq_pos != std::string::npos) {
+      // First |comment_delim| after |eq_pos| starts the comment.
+      // A value of |std::string::npos| means that the value spans to the end
+      // of |pair|.
+      size_t value_size = std::string::npos;
+      if (!comment_delim.empty()) {
+        size_t comment_pos = pair.find(comment_delim, eq_pos + 1);
+        if (comment_pos != std::string::npos)
+          value_size = comment_pos - eq_pos - 1;
+      }
 
-        TrimString(value, kTrimChars, &value);
+      std::string key;
+      std::string value;
+      TrimString(pair.substr(0, eq_pos), kTrimChars, &key);
+      TrimString(pair.substr(eq_pos + 1, value_size), kTrimChars, &value);
+
+      if (!key.empty()) {
+        AddNameValuePair(key, value);
+        continue;
       }
     }
-    if (key.empty()) {
-      LOG(WARNING) << "Invalid token pair: '" << pair << "'. Aborting.";
-      return false;
-    }
-    AddNameValuePair(key, value);
+
+    LOG(WARNING) << "Invalid token pair: " << pair << ". Ignoring.";
+    all_valid = false;
   }
-  return true;
+  return all_valid;
 }
 
 bool NameValuePairsParser::GetSingleValueFromTool(int argc,
@@ -113,14 +116,15 @@ bool NameValuePairsParser::GetSingleValueFromTool(int argc,
   return true;
 }
 
-void NameValuePairsParser::GetNameValuePairsFromFile(const FilePath& file_path,
+bool NameValuePairsParser::GetNameValuePairsFromFile(const FilePath& file_path,
                                                      const std::string& eq,
                                                      const std::string& delim) {
   std::string contents;
   if (file_util::ReadFileToString(file_path, &contents)) {
-    ParseNameValuePairs(contents, eq, delim);
+    return ParseNameValuePairs(contents, eq, delim);
   } else {
     LOG(WARNING) << "Unable to read statistics file: " << file_path.value();
+    return false;
   }
 }
 
