@@ -243,9 +243,6 @@
     'imageburner': {
       'filepath': 'imageburner'
     },
-    'active_downloads': {
-      'filepath': 'active_downloads'
-    },
     'gdata' : {
       'filepath': 'gdata'
     },
@@ -425,7 +422,6 @@
     'chromedriver': ['kkania@chromium.org'],
     'task_manager': ['yoshiki+watch@chromium.org'],
     'imageburner': ['achuith+watch@chromium.org', 'tbarzic+watch@chromium.org'],
-    'active_downloads': ['achuith+watch@chromium.org'],
     'filebrowse': ['rginda+watch@chromium.org'],
     'gdata': ['achuith+watch@chromium.org'],
     'clang_update': ['fischman+watch@chromium.org', 'ukai+watch@chromium.org',

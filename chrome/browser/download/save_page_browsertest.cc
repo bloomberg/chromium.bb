@@ -97,10 +97,6 @@ class SavePageBrowserTest : public InProcessBrowserTest {
         GetOriginalUrl();
   }
 
-  void CheckDownloadUI(const FilePath& download_path) const {
-    EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
-  }
-
   DownloadManager* GetDownloadManager() const {
     DownloadManager* download_manager =
         DownloadServiceFactory::GetForProfile(
@@ -185,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
 
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
-  CheckDownloadUI(full_file_name);
+  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
   CheckDownloadHistory(url, full_file_name, 1);  // a.htm is 1 file.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
@@ -210,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
 
   EXPECT_EQ(actual_page_url, WaitForSavePackageToFinish());
 
-  CheckDownloadUI(full_file_name);
+  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
   CheckDownloadHistory(actual_page_url, full_file_name, 1);  // a.htm is 1 file.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
@@ -230,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
 
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
-  CheckDownloadUI(full_file_name);
+  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
   CheckDownloadHistory(url, full_file_name, 3);  // b.htm is 3 files.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
@@ -264,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
 
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
-  CheckDownloadUI(full_file_name);
+  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
   CheckDownloadHistory(url, full_file_name, 3);  // b.htm is 3 files.
 
   EXPECT_TRUE(file_util::PathExists(full_file_name));
@@ -290,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
 
   EXPECT_EQ(url, WaitForSavePackageToFinish());
 
-  CheckDownloadUI(full_file_name);
+  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
   CheckDownloadHistory(url, full_file_name, 1);  // a.htm is 1 file.
 
   EXPECT_EQ(GetDownloadManager()->RemoveAllDownloads(), 1);

@@ -71,7 +71,6 @@ const char* const kChromePaths[] = {
   chrome::kChromeUISandboxHost,
 #endif
 #if defined(OS_CHROMEOS)
-  chrome::kChromeUIActiveDownloadsHost,
   chrome::kChromeUIChooseMobileNetworkHost,
   chrome::kChromeUICryptohomeHost,
   chrome::kChromeUIDiscardsHost,

@@ -145,8 +145,6 @@
       </if>
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_ABOUT_SYS_HTML" file="resources\chromeos\about_sys.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_ACTIVE_DOWNLOADS_HTML" file="resources\chromeos\active_downloads.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_ACTIVE_DOWNLOADS_JS" file="resources\chromeos\active_downloads.js" type="BINDATA" />
         <include name="IDR_CHOOSE_MOBILE_NETWORK_HTML" file="resources\chromeos\choose_mobile_network.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_CHOOSE_MOBILE_NETWORK_JS" file="resources\chromeos\choose_mobile_network.js" type="BINDATA" />
         <include name="IDR_CROSH_BUILTIN_MANIFEST" file="resources\chromeos\crosh_builtin\manifest.json" type="BINDATA" />
