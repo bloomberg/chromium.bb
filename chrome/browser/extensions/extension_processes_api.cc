@@ -46,12 +46,16 @@ ExtensionProcessesEventRouter* ExtensionProcessesEventRouter::GetInstance() {
 }
 
 ExtensionProcessesEventRouter::ExtensionProcessesEventRouter() {
+#if defined(ENABLE_TASK_MANAGER)
   model_ = TaskManager::GetInstance()->model();
   model_->AddObserver(this);
+#endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 ExtensionProcessesEventRouter::~ExtensionProcessesEventRouter() {
+#if defined(ENABLE_TASK_MANAGER)
   model_->RemoveObserver(this);
+#endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 void ExtensionProcessesEventRouter::ObserveProfile(Profile* profile) {
@@ -59,14 +63,19 @@ void ExtensionProcessesEventRouter::ObserveProfile(Profile* profile) {
 }
 
 void ExtensionProcessesEventRouter::ListenerAdded() {
+#if defined(ENABLE_TASK_MANAGER)
   model_->StartUpdating();
+#endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 void ExtensionProcessesEventRouter::ListenerRemoved() {
+#if defined(ENABLE_TASK_MANAGER)
   model_->StopUpdating();
+#endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 void ExtensionProcessesEventRouter::OnItemsChanged(int start, int length) {
+#if defined(ENABLE_TASK_MANAGER)
   if (model_) {
     ListValue args;
     DictionaryValue* processes = new DictionaryValue();
@@ -144,6 +153,7 @@ void ExtensionProcessesEventRouter::OnItemsChanged(int start, int length) {
       DispatchEvent(profile, keys::kOnUpdated, json_args);
     }
   }
+#endif  // defined(ENABLE_TASK_MANAGER)
 }
 
 void ExtensionProcessesEventRouter::DispatchEvent(Profile* profile,
