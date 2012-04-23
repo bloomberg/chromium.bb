@@ -218,8 +218,6 @@
         'common/nacl_types.h',
         'common/libxml_utils.cc',
         'common/libxml_utils.h',
-        'common/pepper_flash.cc',
-        'common/pepper_flash.h',
         'common/persistent_pref_store.h',
         'common/pref_store.cc',
         'common/pref_store.h',

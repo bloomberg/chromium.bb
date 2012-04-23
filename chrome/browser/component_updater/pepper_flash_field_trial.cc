@@ -2,19 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/pepper_flash.h"
+#include "chrome/browser/component_updater/pepper_flash_field_trial.h"
 
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
-#include "base/string16.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/installer/util/browser_distribution.h"
-
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#endif
 
 namespace {
 
@@ -52,7 +45,10 @@ void ActivateFieldTrial() {
   trial->AppendGroup(kEnableGroupName, 500);
 }
 
-bool IsInFieldTrialGroup() {
+}  // namespace
+
+// static
+bool PepperFlashFieldTrial::InEnableByDefaultGroup() {
   static bool activated = false;
   if (!activated) {
     ActivateFieldTrial();
@@ -62,33 +58,4 @@ bool IsInFieldTrialGroup() {
   int group = base::FieldTrialList::FindValue(kFieldTrialName);
   return group != base::FieldTrial::kNotFinalized &&
          group != g_disabled_group_number;
-}
-
-}  // namespace
-
-bool IsPepperFlashEnabledByDefault() {
-#if defined(USE_AURA)
-  // Pepper Flash is required for Aura (on any OS).
-  return true;
-#elif defined(OS_WIN)
-  // Pepper Flash is required for Windows 8 Metro mode.
-  if (base::win::GetMetroModule())
-    return true;
-
-  // For other Windows users, enable only for Canary users in a field trial.
-  if (!IsInFieldTrialGroup())
-    return false;
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!dist)
-    return false;
-  string16 channel;
-  if (!dist->GetChromeChannel(&channel))
-    return false;
-  return (channel == L"canary");
-#elif defined(OS_LINUX)
-  // For Linux, always try to use it (availability is checked elsewhere).
-  return true;
-#else
-  return false;
-#endif
 }
