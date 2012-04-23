@@ -140,6 +140,13 @@ class ChromeLauncherDelegate : public ash::LauncherDelegate,
   // Unpins any app items whose id is |app_id|.
   void UnpinAppsWithID(const std::string& app_id);
 
+  // Returns true if the user is currently logged in as a guest.
+  bool IsLoggedInAsGuest();
+
+  // Invoked when the user clicks on button in the launcher to create a new
+  // incognito window.
+  void CreateNewIncognitoWindow();
+
   ash::LauncherModel* model() { return model_; }
 
   Profile* profile() { return profile_; }

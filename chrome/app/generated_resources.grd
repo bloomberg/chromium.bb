@@ -15820,6 +15820,12 @@ Battery full
       <message name="IDS_LAUNCHER_CONTEXT_MENU_UNPIN" desc="Title text for the 'unpin' context menu item of the launcher">
         Unpin
       </message>
+      <message name="IDS_LAUNCHER_NEW_WINDOW" desc="The text label of the New Window menu item">
+        New window
+      </message>
+      <message name="IDS_LAUNCHER_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
+        New incognito window
+      </message>
       <message name="IDS_GTALK_SCREEN_SHARE_DIALOG_MESSAGE" desc="Message to display in the dialog box asking user's permission to share their screen">
         Do you want to start presenting your entire screen in this meeting?
       </message>

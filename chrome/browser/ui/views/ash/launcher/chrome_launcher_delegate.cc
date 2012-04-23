@@ -396,6 +396,14 @@ void ChromeLauncherDelegate::UnpinAppsWithID(const std::string& app_id) {
   }
 }
 
+bool ChromeLauncherDelegate::IsLoggedInAsGuest() {
+  return ProfileManager::GetDefaultProfileOrOffTheRecord()->IsOffTheRecord();
+}
+
+void ChromeLauncherDelegate::CreateNewIncognitoWindow() {
+  Browser::NewEmptyWindow(GetProfileForNewWindows()->GetOffTheRecordProfile());
+}
+
 void ChromeLauncherDelegate::SetAutoHideBehavior(
     ash::ShelfAutoHideBehavior behavior) {
   ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);

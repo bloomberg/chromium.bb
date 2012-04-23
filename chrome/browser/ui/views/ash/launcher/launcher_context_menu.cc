@@ -37,6 +37,13 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherDelegate* delegate,
       AddCheckItemWithStringId(
           LAUNCH_TYPE_FULLSCREEN,
           IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN);
+    } else if (item_.type == ash::TYPE_BROWSER_SHORTCUT) {
+      AddItem(MENU_NEW_WINDOW,
+              l10n_util::GetStringUTF16(IDS_LAUNCHER_NEW_WINDOW));
+      if (!delegate_->IsLoggedInAsGuest()) {
+        AddItem(MENU_NEW_INCOGNITO_WINDOW,
+                l10n_util::GetStringUTF16(IDS_LAUNCHER_NEW_INCOGNITO_WINDOW));
+      }
     } else {
       AddItem(MENU_OPEN, delegate->GetTitle(item_));
       if (delegate->IsOpen(item_.id)) {
@@ -108,6 +115,13 @@ void LauncherContextMenu::ExecuteCommand(int command_id) {
       delegate_->SetLaunchType(item_.id, ExtensionPrefs::LAUNCH_FULLSCREEN);
       break;
     case MENU_AUTO_HIDE:
-      return ash::LauncherContextMenu::ToggleAutoHideMenu();
+      ash::LauncherContextMenu::ToggleAutoHideMenu();
+      break;
+    case MENU_NEW_WINDOW:
+      delegate_->CreateNewWindow();
+      break;
+    case MENU_NEW_INCOGNITO_WINDOW:
+      delegate_->CreateNewIncognitoWindow();
+      break;
   }
 }
