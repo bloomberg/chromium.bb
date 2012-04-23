@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
@@ -689,17 +688,27 @@ void CreateDialogImpl(const FilePath& path_to_file,
           path_to_file, width, height, std::string(), job_title, print_ticket,
           file_type, modal, delete_on_close, close_after_signin,
           callback);
+  if (modal) {
+    DCHECK(browser);
 
+#if defined(USE_AURA)
+    HtmlDialogView* html_view =
+        new HtmlDialogView(profile, browser, dialog_delegate);
+    views::Widget::CreateWindowWithParent(html_view,
+        browser->window()->GetNativeHandle());
+    html_view->InitDialog();
+    views::Widget* widget = html_view->GetWidget();
+    DCHECK(widget);
+    widget->Show();
 #if defined(OS_WIN)
-  gfx::NativeWindow window =
+    gfx::NativeWindow window = widget->GetNativeWindow();
 #endif
-      browser::ShowHtmlDialog(
-          modal ? browser->window()->GetNativeHandle() : NULL,
-          profile,
-          browser,
-          dialog_delegate,
-          STYLE_GENERIC);
-
+#else
+#if defined(OS_WIN)
+    gfx::NativeWindow window =
+#endif
+        browser->BrowserShowHtmlDialog(dialog_delegate, NULL, STYLE_GENERIC);
+#endif
 #if defined(OS_WIN)
     HWND dialog_handle;
 #if defined(USE_AURA)
@@ -707,9 +716,17 @@ void CreateDialogImpl(const FilePath& path_to_file,
 #else
     dialog_handle = window;
 #endif
-    if (::GetForegroundWindow() != dialog_handle)
+    if (::GetForegroundWindow() != dialog_handle) {
       ui::ForegroundHelper::SetForeground(dialog_handle);
+    }
 #endif
+  } else {
+    browser::ShowHtmlDialog(NULL,
+                            profile,
+                            browser,
+                            dialog_delegate,
+                            STYLE_GENERIC);
+  }
 }
 
 void CreateDialogSigninImpl(const base::Closure& callback) {

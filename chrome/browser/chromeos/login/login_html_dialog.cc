@@ -56,9 +56,11 @@ LoginHtmlDialog::~LoginHtmlDialog() {
 }
 
 void LoginHtmlDialog::Show() {
-  views::Widget::CreateWindowWithParent(
-      new HtmlDialogView(ProfileManager::GetDefaultProfile(), NULL, this),
-      parent_window_)->Show();
+  HtmlDialogView* html_view =
+      new HtmlDialogView(ProfileManager::GetDefaultProfile(), NULL, this);
+  views::Widget::CreateWindowWithParent(html_view, parent_window_);
+  html_view->InitDialog();
+  html_view->GetWidget()->Show();
   is_open_ = true;
 }
 

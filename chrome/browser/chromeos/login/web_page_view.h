@@ -10,13 +10,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/timer.h"
-#include "ui/views/controls/webview/webview.h"
+#include "chrome/browser/ui/views/dom_view.h"
 #include "ui/views/view.h"
 
 class Profile;
 
 namespace content {
-class BrowserContext;
 class SiteInstance;
 class WebContentsDelegate;
 }
@@ -29,9 +28,9 @@ class Throbber;
 namespace chromeos {
 
 // WebPageDomView is the view that is rendering the page.
-class WebPageDomView : public views::WebView {
+class WebPageDomView : public DOMView {
  public:
-  explicit WebPageDomView(content::BrowserContext* browser_context);
+  WebPageDomView() {}
 
   // Set delegate that will be notified about tab contents changes.
   void SetWebContentsDelegate(content::WebContentsDelegate* delegate);
@@ -50,9 +49,9 @@ class WebPageView : public views::View {
   // Initialize view layout.
   void Init();
 
-  // Initialize the WebView, creating the contents. This should be
+  // Initialize the DOM view, creating the contents. This should be
   // called once the view has been added to a container.
-  void InitWebView(content::SiteInstance* site_instance);
+  void InitDOM(Profile* profile, content::SiteInstance* site_instance);
 
   // Loads the given URL into the page.
   // You must have previously called Init() and SetWebContentsDelegate.

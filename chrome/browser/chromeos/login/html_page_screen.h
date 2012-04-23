@@ -22,7 +22,7 @@ class ViewScreenDelegate;
 
 class HTMLPageView : public WebPageView {
  public:
-  explicit HTMLPageView(content::BrowserContext* browser_context);
+  HTMLPageView();
 
  protected:
   virtual WebPageDomView* dom_view() OVERRIDE;

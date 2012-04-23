@@ -47,11 +47,14 @@ namespace chromeos {
 // static
 void SimDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
                                    SimDialogMode mode) {
-  views::Widget::CreateWindowWithParent(
-      new HtmlDialogView(ProfileManager::GetDefaultProfileOrOffTheRecord(),
+  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  HtmlDialogView* html_view =
+      new HtmlDialogView(profile,
                          BrowserList::GetLastActive(),
-                         new SimDialogDelegate(mode)),
-      owning_window)->Show();
+                         new SimDialogDelegate(mode));
+  html_view->InitDialog();
+  views::Widget::CreateWindowWithParent(html_view, owning_window);
+  html_view->GetWidget()->Show();
 }
 
 SimDialogDelegate::SimDialogDelegate(SimDialogMode dialog_mode)

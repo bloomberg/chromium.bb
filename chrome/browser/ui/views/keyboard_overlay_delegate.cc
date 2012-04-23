@@ -15,7 +15,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/widget/widget.h"
 
 using content::WebContents;
 using content::WebUIMessageHandler;
@@ -58,7 +57,7 @@ void KeyboardOverlayDelegate::GetDialogSize(
   using std::min;
   DCHECK(view_);
   gfx::Rect rect = gfx::Screen::GetMonitorAreaNearestWindow(
-      view_->GetWidget()->GetNativeView());
+      view_->native_view());
   const int width = min(kBaseWidth, rect.width() - kHorizontalMargin);
   const int height = width * kBaseHeight / kBaseWidth;
   size->SetSize(width, height);

@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/property_bag.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -17,9 +16,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/views/controls/webview/webview.h"
 #include "ui/views/events/event.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -39,11 +36,11 @@ gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
                                  Browser* browser,
                                  HtmlDialogUIDelegate* delegate,
                                  DialogStyle style) {
-  views::Widget* widget = views::Widget::CreateWindowWithParent(
-      new HtmlDialogView(profile, browser, delegate),
-      parent);
-  widget->Show();
-  return widget->GetNativeWindow();
+  HtmlDialogView* html_view = new HtmlDialogView(profile, browser, delegate);
+  views::Widget::CreateWindowWithParent(html_view, parent);
+  html_view->InitDialog();
+  html_view->GetWidget()->Show();
+  return html_view->GetWidget()->GetNativeWindow();
 }
 
 void CloseHtmlDialog(gfx::NativeWindow window) {
@@ -58,22 +55,14 @@ void CloseHtmlDialog(gfx::NativeWindow window) {
 HtmlDialogView::HtmlDialogView(Profile* profile,
                                Browser* browser,
                                HtmlDialogUIDelegate* delegate)
-    : HtmlDialogTabContentsDelegate(profile),
+    : DOMView(),
+      HtmlDialogTabContentsDelegate(profile),
       initialized_(false),
       delegate_(delegate),
-      dialog_controller_(new HtmlDialogController(this, profile, browser)),
-      web_view_(new views::WebView(profile)) {
-  AddChildView(web_view_);
-  SetLayoutManager(new views::FillLayout);
-  // Pressing the ESC key will close the dialog.
-  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, false, false, false));
+      dialog_controller_(new HtmlDialogController(this, profile, browser)) {
 }
 
 HtmlDialogView::~HtmlDialogView() {
-}
-
-content::WebContents* HtmlDialogView::web_contents() {
-  return web_view_->web_contents();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,11 +82,13 @@ bool HtmlDialogView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   return true;
 }
 
-void HtmlDialogView::ViewHierarchyChanged(bool is_add,
-                                          views::View* parent,
-                                          views::View* child) {
-  if (is_add && GetWidget())
-    InitDialog();
+void HtmlDialogView::ViewHierarchyChanged(
+    bool is_add, View* parent, View* child) {
+  DOMView::ViewHierarchyChanged(is_add, parent, child);
+  if (is_add && GetWidget() && !initialized_) {
+    initialized_ = true;
+    RegisterDialogAccelerators();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -136,7 +127,7 @@ views::View* HtmlDialogView::GetContentsView() {
 }
 
 views::View* HtmlDialogView::GetInitiallyFocusedView() {
-  return web_view_;
+  return this;
 }
 
 bool HtmlDialogView::ShouldShowWindowTitle() const {
@@ -290,26 +281,13 @@ void HtmlDialogView::LoadingStateChanged(content::WebContents* source) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// HtmlDialogView, TabRenderWatcher::Delegate implementation:
-
-void HtmlDialogView::OnRenderHostCreated(content::RenderViewHost* host) {
-}
-
-void HtmlDialogView::OnTabMainFrameLoaded() {
-}
-
-void HtmlDialogView::OnTabMainFrameRender() {
-  tab_watcher_.reset();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// HtmlDialogView, private:
+// HtmlDialogView:
 
 void HtmlDialogView::InitDialog() {
-  content::WebContents* web_contents = web_view_->GetWebContents();
-  if (web_contents->GetDelegate() == this)
-    return;
+  // Now Init the DOMView. This view runs in its own process to render the html.
+  DOMView::Init(profile(), NULL);
 
+  WebContents* web_contents = dom_contents_->web_contents();
   web_contents->SetDelegate(this);
 
   // Set the delegate. This must be done before loading the page. See
@@ -325,5 +303,20 @@ void HtmlDialogView::InitDialog() {
       GetWidget()->CenterWindow(out);
   }
 
-  web_view_->LoadInitialURL(GetDialogContentURL());
+  DOMView::LoadURL(GetDialogContentURL());
+}
+
+void HtmlDialogView::RegisterDialogAccelerators() {
+  // Pressing the ESC key will close the dialog.
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, false, false, false));
+}
+
+void HtmlDialogView::OnRenderHostCreated(content::RenderViewHost* host) {
+}
+
+void HtmlDialogView::OnTabMainFrameLoaded() {
+}
+
+void HtmlDialogView::OnTabMainFrameRender() {
+  tab_watcher_.reset();
 }
