@@ -354,6 +354,9 @@
       '-extensions.ExtensionsTest.testDisableEnableExtension',
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
+      # crbug.com/123045
+      '-indexeddb.IndexedDBTest.testIndexedDBNullKeyPathPersistence',
+      '-indexeddb.IndexedDBTest.testVersionChangeCrashResilience',
       # crosbug.com/24496
       '-infobars.InfobarTest.testPluginCrashForMultiTabs',
       # crbug.com/109035
