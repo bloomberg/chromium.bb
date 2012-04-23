@@ -25,6 +25,15 @@ class ChromeosBrowserTest(pyauto.PyUITest):
     self.assertTrue(info[0]['incognito'],
                     msg='Incognito window is not displayed.')
 
+  def testCrashBrowser(self):
+    """Verify that after broswer crash is recovered, user can still navigate
+    to other URL."""
+    crash_url = 'about:inducebrowsercrashforrealz'
+    self.NavigateToURL(crash_url)
+    url = self.GetHttpURLForDataPath('english_page.html')
+    self.NavigateToURL(url)
+    self.assertEqual('This page is in English', self.GetActiveTabTitle())
+
   def testFullScreen(self):
     """Verify that a browser window can enter and exit full screen mode."""
     self.ApplyAccelerator(pyauto.IDC_FULLSCREEN)
