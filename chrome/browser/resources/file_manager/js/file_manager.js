@@ -768,10 +768,11 @@ FileManager.prototype = {
       return self.renderRoot_(entry);
     };
 
-    this.rootsList_.selectionModel = this.directoryModel_.rootsListSelection;
+    this.rootsList_.selectionModel =
+        this.directoryModel_.getRootsListSelectionModel();
 
     // TODO(dgozman): add "Add a drive" item.
-    this.rootsList_.dataModel = this.directoryModel_.rootsList;
+    this.rootsList_.dataModel = this.directoryModel_.getRootsList();
     this.directoryModel_.updateRoots(function() {
         self.rootsList_.endBatchUpdates();
     }, false);
@@ -1117,8 +1118,7 @@ FileManager.prototype = {
         return true;
 
       case 'format':
-        var entry =
-            this.getRootEntry_(this.rootsList_.selectionModel.selectedIndex);
+        var entry = this.directoryModel_.getCurrentRootDirEntry();
 
         return entry && DirectoryModel.getRootType(entry.fullPath) ==
                         DirectoryModel.RootType.REMOVABLE;
@@ -1407,16 +1407,11 @@ FileManager.prototype = {
         return;
 
       case 'unmount':
-        var entry =
-            this.getRootEntry_(this.rootsList_.selectionModel.selectedIndex);
-
-        this.unmountVolume_(entry);
+        this.unmountVolume_(this.directoryModel_.getCurrentRootDirEntry());
         return;
 
       case 'format':
-        var entry =
-            this.getRootEntry_(this.rootsList_.selectionModel.selectedIndex);
-
+        var entry = this.directoryModel_.getCurrentRootDirEntry();
         this.confirm.show(str('FORMATTING_WARNING'), function() {
           chrome.fileBrowserPrivate.formatDevice(entry.toURL());
         });
@@ -1823,6 +1818,21 @@ FileManager.prototype = {
     return path;
   };
 
+  /**
+   * Handler for root item being clicked.
+   * @private
+   * @param {Entry} entry Entry to navigate to.
+   * @param {Event} event The event.
+   */
+  FileManager.prototype.onRootClick_ = function(entry, event) {
+    var new_path = entry.fullPath;
+    if (entry.fullPath == this.directoryModel_.getCurrentRootPath()) {
+      this.directoryModel_.changeDirectory(entry.fullPath);
+    } else {
+      this.directoryModel_.changeRoot(entry.fullPath);
+    }
+  };
+
   FileManager.prototype.renderRoot_ = function(entry) {
     var li = this.document_.createElement('li');
     li.className = 'root-item';
@@ -1871,18 +1881,6 @@ FileManager.prototype = {
     cr.defineProperty(li, 'lead', cr.PropertyKind.BOOL_ATTR);
     cr.defineProperty(li, 'selected', cr.PropertyKind.BOOL_ATTR);
     return li;
-  };
-
-  /**
-   * Handler for root item being clicked.
-   * @param {Entry} entry to navigate to.
-   * @param {Event} event The event.
-   */
-  FileManager.prototype.onRootClick_ = function(entry, event) {
-    var path = this.directoryModel_.currentEntry.fullPath;
-    if (path.indexOf(entry.fullPath) == 0 && path != entry.fullPath) {
-      this.directoryModel_.changeDirectory(entry.fullPath);
-    }
   };
 
   /**
@@ -2387,7 +2385,8 @@ FileManager.prototype = {
 
   FileManager.prototype.isOnGData = function() {
     return this.directoryModel_ &&
-        this.directoryModel_.rootPath == '/' + DirectoryModel.GDATA_DIRECTORY;
+        this.directoryModel_.getCurrentRootPath() ==
+            '/' + DirectoryModel.GDATA_DIRECTORY;
   };
 
   FileManager.prototype.getMetadataProvider = function() {
@@ -2649,7 +2648,7 @@ FileManager.prototype = {
         } else if (this.isOnGData() &&
                    this.directoryModel_.currentEntry.unmounted) {
           // We are currently on an unmounted GData directory, force a rescan.
-          changeDirectoryTo = this.directoryModel_.rootPath;
+          changeDirectoryTo = this.directoryModel_.getCurrentRootPath();
         }
       } else {
         this.gdataMounted_ = false;
@@ -2695,7 +2694,7 @@ FileManager.prototype = {
         }
 
         if (event.status == 'success' &&
-            event.mountPath == self.directoryModel_.rootPath) {
+            event.mountPath == self.directoryModel_.getCurrentRootPath()) {
           if (self.params_.mountTriggered && index == -1) {
             // This device mount was the reason this File Manager instance was
             // created. Now the device is unmounted from another instance
@@ -2847,7 +2846,7 @@ FileManager.prototype = {
       // until we learn to save files directly to GData.
       var readonly = self.isOnReadonlyDirectory() || self.isOnGData();
       var currentDir = self.directoryModel_.currentEntry;
-      var downloadsDir = self.directoryModel_.rootsList.item(0);
+      var downloadsDir = self.directoryModel_.getRootsList().item(0);
 
       var context = {
         // We show the root label in readonly warning (e.g. archive name).
@@ -2883,7 +2882,7 @@ FileManager.prototype = {
     var bc = this.dialogDom_.querySelector('.breadcrumbs');
     removeChildren(bc);
 
-    var rootPath = this.directoryModel_.rootPath;
+    var rootPath = this.directoryModel_.getCurrentRootPath();
     var relativePath = this.directoryModel_.currentEntry.fullPath.
                        substring(rootPath.length).replace(/\/$/, '');
 

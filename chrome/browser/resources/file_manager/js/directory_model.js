@@ -41,8 +41,13 @@ function DirectoryModel(root, singleSelection, showGData, metadataCache) {
 
   this.rootsList_ = new cr.ui.ArrayDataModel([]);
   this.rootsListSelection_ = new cr.ui.ListSingleSelectionModel();
-  this.rootsListSelection_.addEventListener(
-      'change', this.onRootsSelectionChanged_.bind(this));
+
+  /**
+   * A map root.fullPath -> currentDirectory.fullPath.
+   * @private
+   * @type {Object.<string, string>}
+   */
+  this.currentDirByRoot_ = {};
 
   // The map 'name' -> callback. Callbacks are function(entry) -> boolean.
   this.filters_ = {};
@@ -106,41 +111,12 @@ DirectoryModel.prototype = {
     return this.fileListSelection_;
   },
 
-  /**
-   * Top level Directories from user perspective.
-   * @type {cr.ui.ArrayDataModel}
-   */
-  get rootsList() {
-    return this.rootsList_;
-  },
-
-  /**
-   * Selection in the rootsList.
-   * @type {cr.ui.ListSingleSelectionModel}
-   */
-  get rootsListSelection() {
-    return this.rootsListSelection_;
-  },
-
-  /**
-   * Root path for the current directory (parent directory is not navigatable
-   * for the user).
-   * @type {string}
-   */
-  get rootPath() {
-    return DirectoryModel.getRootPath(this.currentEntry.fullPath);
-  },
-
   get rootType() {
     return DirectoryModel.getRootType(this.currentEntry.fullPath);
   },
 
   get rootName() {
     return DirectoryModel.getRootName(this.currentEntry.fullPath);
-  },
-
-  get rootEntry() {
-    return this.rootsList.item(this.rootsListSelection.selectedIndex);
   },
 
   /**
@@ -251,6 +227,35 @@ DirectoryModel.prototype = {
 };
 
 /**
+ * @return {cr.ui.ArrayDataModel} The list of roots.
+ */
+DirectoryModel.prototype.getRootsList = function() {
+  return this.rootsList_;
+};
+
+/**
+ * @return {Entry} Directory entry of the current root.
+ */
+DirectoryModel.prototype.getCurrentRootDirEntry = function() {
+  return this.rootsList_.item(this.rootsListSelection_.selectedIndex);
+};
+
+/**
+ * @return {string} Root path for the current directory (parent directory is
+ *     not navigatable for the user).
+ */
+DirectoryModel.prototype.getCurrentRootPath = function() {
+  return DirectoryModel.getRootPath(this.currentDirEntry_.fullPath);
+};
+
+/**
+ * @return {cr.ui.ListSingleSelectionModel} Root list selection model.
+ */
+DirectoryModel.prototype.getRootsListSelectionModel = function() {
+  return this.rootsListSelection_;
+};
+
+/**
  * Add a filter for directory contents.
  * @param {string} name An identifier of the filter (used when removing it).
  * @param {function(Entry):boolean} filter Hide file if false.
@@ -331,8 +336,8 @@ DirectoryModel.prototype.rescan = function() {
 /**
  * @private
  * @param {Array.<Entry>|cr.ui.ArrayDataModel} list
- * @param {function} successCallback
- * @return {DirectoryModel.Scanner}
+ * @param {function} successCallback Callback on success.
+ * @return {DirectoryModel.Scanner} New Scanner instance.
  */
 DirectoryModel.prototype.createScanner_ = function(list, successCallback) {
   var self = this;
@@ -606,8 +611,9 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
  * Changes directory. Causes 'directory-change' event.
  *
  * @param {string} path New current directory path.
+ * @param {function} opt_OnError Called if failed.
  */
-DirectoryModel.prototype.changeDirectory = function(path) {
+DirectoryModel.prototype.changeDirectory = function(path, opt_OnError) {
   var onDirectoryResolved = function(dirEntry) {
     var autoSelect = this.selectIndex.bind(this, this.autoSelectIndex_);
     this.changeDirectoryEntry_(dirEntry, autoSelect, false);
@@ -630,13 +636,12 @@ DirectoryModel.prototype.changeDirectory = function(path) {
     return;
   }
 
-  this.root_.getDirectory(
-      path, {create: false},
-      onDirectoryResolved,
-      function(error) {
-        // TODO(serya): We should show an alert.
-        console.error('Error changing directory to: ' + path + ', ' + error);
-      });
+  var onError = opt_OnError || function(error) {
+    // TODO(serya): We should show an alert.
+    console.error('Error changing directory to: ' + path + ', ' + error);
+  };
+
+  this.root_.getDirectory(path, {create: false}, onDirectoryResolved, onError);
 };
 
 /**
@@ -668,6 +673,7 @@ DirectoryModel.prototype.changeDirectoryEntry_ = function(dirEntry, action,
   this.updateVolumeMetadata_();
   this.updateRootsListSelection_();
   this.scan_(onRescanComplete);
+  this.currentDirByRoot_[this.getCurrentRootPath()] = dirEntry.fullPath;
 
   var e = new cr.Event('directory-changed');
   e.previousDirEntry = previous;
@@ -971,10 +977,8 @@ DirectoryModel.prototype.resolveRoots_ = function(callback, resolveGData) {
 */
 DirectoryModel.prototype.updateRoots = function(opt_callback,
                                                 opt_resolveGData) {
-  console.log('resolving roots');
   var self = this;
   this.resolveRoots_(function(rootEntries) {
-    console.log('resolved roots:', rootEntries);
     var dm = self.rootsList_;
     var args = [0, dm.length].concat(rootEntries);
     dm.splice.apply(dm, args);
@@ -987,13 +991,19 @@ DirectoryModel.prototype.updateRoots = function(opt_callback,
 };
 
 /**
- * @private
- * @param {Event} event
+ * Change root. In case user already opened the root, the last selected
+ * directory will be selected.
+ * @param {string} rootPath The path of the root.
  */
-DirectoryModel.prototype.onRootsSelectionChanged_ = function(event) {
-  var root = this.rootsList.item(this.rootsListSelection.selectedIndex);
-  if (root && this.rootPath != root.fullPath)
-    this.changeDirectory(root.fullPath);
+DirectoryModel.prototype.changeRoot = function(rootPath) {
+  if (this.currentDirByRoot_[rootPath]) {
+    var onFail = function() {
+      this.changeDirectory(rootPath);
+    };
+    this.changeDirectory(this.currentDirByRoot_[rootPath], onFail);
+  } else {
+    this.changeDirectory(rootPath);
+  }
 };
 
 /**
@@ -1016,7 +1026,7 @@ DirectoryModel.prototype.findRootsListItem_ = function(path) {
  * @private
  */
 DirectoryModel.prototype.updateRootsListSelection_ = function() {
-  this.rootsListSelection.selectedIndex =
+  this.rootsListSelection_.selectedIndex =
       this.findRootsListItem_(this.rootPath);
 };
 
@@ -1047,7 +1057,7 @@ DirectoryModel.prototype.updateReadonlyStatus_ = function() {
  * @private
  */
 DirectoryModel.prototype.updateVolumeMetadata_ = function() {
-  var rootPath = this.rootPath;
+  var rootPath = this.getCurrentRootPath();
   if (this.currentVolumeMetadata_.rootPath != rootPath) {
     var metadata = this.currentVolumeMetadata_ = {rootPath: rootPath};
     if (DirectoryModel.getRootType(rootPath) ==
@@ -1128,8 +1138,8 @@ DirectoryModel.getRootName = function(path) {
 };
 
 /**
- * @param {string} path
- * @return {string}
+ * @param {string} path Path.
+ * @return {string} A root type.
  */
 DirectoryModel.getRootType = function(path) {
   function isTop(dir) {
@@ -1138,11 +1148,11 @@ DirectoryModel.getRootType = function(path) {
 
   if (isTop(DirectoryModel.DOWNLOADS_DIRECTORY))
     return DirectoryModel.RootType.DOWNLOADS;
-  else if (isTop(DirectoryModel.GDATA_DIRECTORY))
+  if (isTop(DirectoryModel.GDATA_DIRECTORY))
     return DirectoryModel.RootType.GDATA;
-  else if (isTop(DirectoryModel.ARCHIVE_DIRECTORY))
+  if (isTop(DirectoryModel.ARCHIVE_DIRECTORY))
     return DirectoryModel.RootType.ARCHIVE;
-  else if (isTop(DirectoryModel.REMOVABLE_DIRECTORY))
+  if (isTop(DirectoryModel.REMOVABLE_DIRECTORY))
     return DirectoryModel.RootType.REMOVABLE;
   return '';
 };
