@@ -445,10 +445,17 @@ incremental = _config(
   prebuilts=False,
 )
 
+# This builds with more source available.
 internal = _config(
   internal=True,
   overlays=constants.BOTH_OVERLAYS,
   git_url=constants.MANIFEST_INT_URL,
+)
+
+# This adds Chrome branding.
+official = _config(
+  useflags=['chrome_internal', 'chrome_pdf'],
+  chromeos_official=True,
 )
 
 SDK_TEST_BOARDS = ['amd64-generic', 'tegra2', 'x86-generic']
@@ -537,10 +544,13 @@ internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
 )
 
 chrome_pfq = internal_chromium_pfq.derive(
+  official,
   important=False, # for now...
   chrome_tests=False, # TODO(build-team): Use chrome tests
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=False,
+  # Currently pgo is generated for all Chrome pfqs. Happenstance.
+  useflags=official['useflags'] + ['pgo_generate'],
 )
 
 chrome_pfq.add_config('alex-chrome-pfq',
@@ -757,11 +767,6 @@ internal_paladin.add_config('unified-x86-generic',
 
 internal_incremental.add_config('mario-incremental',
   boards=['x86-mario'],
-)
-
-official = _config(
-  useflags=['chrome_internal', 'chrome_pdf'],
-  chromeos_official=True,
 )
 
 _internal_toolchain = _toolchain.derive(internal, official,
