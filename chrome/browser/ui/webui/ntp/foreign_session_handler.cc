@@ -62,9 +62,12 @@ void ForeignSessionHandler::RegisterMessages() {
 }
 
 void ForeignSessionHandler::Init() {
-  Profile* profile = Profile::FromWebUI(web_ui());
+  // TODO(dubroy): Change this to only observe this notification on the current
+  // profile, rather than all sources (crbug.com/124717).
   registrar_.Add(this, chrome::NOTIFICATION_SYNC_CONFIGURE_DONE,
-                 content::Source<Profile>(profile));
+                 content::NotificationService::AllSources());
+
+  Profile* profile = Profile::FromWebUI(web_ui());
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED,
@@ -106,7 +109,7 @@ bool ForeignSessionHandler::IsTabSyncEnabled() {
   Profile* profile = Profile::FromWebUI(web_ui());
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  return service && service->GetSessionModelAssociator();
+  return service && service->GetPreferredDataTypes().Has(syncable::SESSIONS);
 }
 
 string16 ForeignSessionHandler::FormatSessionTime(const base::Time& time) {
