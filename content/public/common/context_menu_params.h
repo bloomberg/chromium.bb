@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,7 @@ struct CONTENT_EXPORT CustomContextMenuContext {
 //              could be used for more contextual actions.
 struct CONTENT_EXPORT ContextMenuParams {
   ContextMenuParams();
-  ContextMenuParams(const WebKit::WebContextMenuData& data);
+  explicit ContextMenuParams(const WebKit::WebContextMenuData& data);
   ~ContextMenuParams();
 
   // This is the type of Context Node that the context menu was invoked on.
