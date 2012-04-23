@@ -1,4 +1,10 @@
 #!/usr/bin/perl -w
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# Technically, it's a third party.
+#
 # Copyright 2008, Google Inc.
 # All rights reserved.
 #
