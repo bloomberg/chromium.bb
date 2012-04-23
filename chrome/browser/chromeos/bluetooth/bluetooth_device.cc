@@ -4,17 +4,20 @@
 
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_service_record.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
 #include "chrome/browser/chromeos/dbus/introspect_util.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
@@ -198,7 +201,7 @@ void BluetoothDevice::SearchServicesForNameCallback(
 
   for (BluetoothDeviceClient::ServiceMap::const_iterator i =
       service_map.begin(); i != service_map.end(); ++i) {
-    BluetoothServiceRecord service_record(i->second);
+    BluetoothServiceRecord service_record(address(), i->second);
     if (service_record.name() == name) {
       callback.Run(true);
       return;
@@ -449,6 +452,47 @@ void BluetoothDevice::Forget(ErrorCallback error_callback) {
                    base::Bind(&BluetoothDevice::ForgetCallback,
                               weak_ptr_factory_.GetWeakPtr(),
                               error_callback));
+}
+
+
+void BluetoothDevice::ConnectToMatchingService(
+    const std::string& service_uuid,
+    SocketCallback callback,
+    const dbus::ObjectPath& object_path,
+    const BluetoothDeviceClient::ServiceMap& service_map,
+    bool success) {
+  if (success) {
+    // If multiple service records are found, use the first one that works.
+    for (BluetoothDeviceClient::ServiceMap::const_iterator i =
+        service_map.begin(); i != service_map.end(); ++i) {
+      BluetoothServiceRecord service_record(address(), i->second);
+      scoped_refptr<BluetoothSocket> socket(
+          BluetoothSocket::CreateBluetoothSocket(service_record));
+      if (socket.get() != NULL) {
+        callback.Run(socket);
+        break;
+      }
+    }
+  }
+  callback.Run(NULL);
+}
+
+void BluetoothDevice::ConnectToService(const std::string& service_uuid,
+                                       SocketCallback callback) {
+  // quick sanity check
+  if (!ProvidesServiceWithUUID(service_uuid)) {
+    callback.Run(NULL);
+    return;
+  }
+
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+      DiscoverServices(
+          object_path_,
+          service_uuid,
+          base::Bind(&BluetoothDevice::ConnectToMatchingService,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     service_uuid,
+                     callback));
 }
 
 void BluetoothDevice::ForgetCallback(ErrorCallback error_callback,

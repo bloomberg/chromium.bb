@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
@@ -20,6 +21,7 @@
 namespace chromeos {
 
 class BluetoothAdapter;
+class BluetoothSocket;
 
 // The BluetoothDevice class represents a remote Bluetooth device, both
 // its properties and capabilities as discovered by a local adapter and
@@ -249,6 +251,20 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // have been deleted. If the request fails, |error_callback| will be called.
   void Forget(ErrorCallback error_callback);
 
+  // SocketCallback is used by ConnectToService to return a BluetoothSocket
+  // to the caller, or NULL if there was an error.  The socket will remain open
+  // until the last reference to the returned BluetoothSocket is released.
+  typedef base::Callback<void(scoped_refptr<BluetoothSocket>)> SocketCallback;
+
+  // Attempts to open a socket to a service matching |uuid| on this device.  If
+  // the connection is successful, |callback| is called with a BluetoothSocket.
+  // Otherwise |callback| is called with NULL.  The socket is closed as soon as
+  // all references to the BluetoothSocket are released.  Note that the
+  // BluetoothSocket object can outlive both this BluetoothDevice and the
+  // BluetoothAdapter for this device.
+  void ConnectToService(const std::string& service_uuid,
+                        SocketCallback callback);
+
  private:
   friend class BluetoothAdapter;
 
@@ -323,6 +339,17 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   void SearchServicesForNameCallback(
       const std::string& name,
       ProvidesServiceCallback callback,
+      const dbus::ObjectPath& object_path,
+      const BluetoothDeviceClient::ServiceMap& service_map,
+      bool success);
+
+  // Called by BluetoothDeviceClient when a call to DiscoverServices() that was
+  // initated from ConnectToService completes.  The |callback| is called with
+  // true iff a connection was successfully established.  The rest of the
+  // parameters are as documented for a BluetoothDeviceClient::ServicesCallback.
+  void ConnectToMatchingService(
+      const std::string& service_uuid,
+      SocketCallback callback,
       const dbus::ObjectPath& object_path,
       const BluetoothDeviceClient::ServiceMap& service_map,
       bool success);

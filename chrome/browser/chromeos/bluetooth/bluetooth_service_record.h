@@ -10,6 +10,8 @@
 
 #include "base/basictypes.h"
 
+class XmlReader;
+
 namespace chromeos {
 
 // The BluetoothServiceRecord represents an SDP service record.
@@ -18,12 +20,31 @@ namespace chromeos {
 // that have been necessary so far.
 class BluetoothServiceRecord {
  public:
-   explicit BluetoothServiceRecord(const std::string& xml_data);
+   BluetoothServiceRecord(
+       const std::string& address,
+       const std::string& xml_data);
 
+   // The human-readable name of this service.
    const std::string& name() const { return name_; }
 
+   // The address of the BluetoothDevice providing this service.
+   const std::string& address() const { return address_; }
+
+   // Indicates if this service supports RFCOMM communication.
+   bool SupportsRfcomm() const { return supports_rfcomm_; }
+
+   // The RFCOMM channel to use, if this service supports RFCOMM communication.
+   // The return value is undefined if SupportsRfcomm() returns false.
+   uint8_t rfcomm_channel() const { return rfcomm_channel_; }
+
  private:
+  void ExtractChannels(XmlReader* reader);
+
+  std::string address_;
   std::string name_;
+
+  bool supports_rfcomm_;
+  uint8_t rfcomm_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothServiceRecord);
 };

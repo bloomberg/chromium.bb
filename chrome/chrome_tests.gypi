@@ -1186,6 +1186,8 @@
         'browser/chrome_browser_application_mac_unittest.mm',
         'browser/chrome_browser_main_unittest.cc',
         'browser/chrome_page_zoom_unittest.cc',
+        'browser/chromeos/bluetooth/bluetooth_service_record_unittest.cc',
+        'browser/chromeos/bluetooth/bluetooth_utils_unittest.cc',
         'browser/chromeos/cros/cros_network_functions_unittest.cc',
         'browser/chromeos/cros/mock_chromeos_network.cc',
         'browser/chromeos/cros/mock_chromeos_network.h',
