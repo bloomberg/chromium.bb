@@ -223,7 +223,6 @@ bool SpellCheck::SpellCheckParagraph(
     std::vector<SpellCheckResult>* results) {
 #if !defined(OS_MACOSX)
   // Mac has its own spell checker, so this method will not be used.
-
   DCHECK(results);
 
   size_t length = text.length();
@@ -237,21 +236,24 @@ bool SpellCheck::SpellCheckParagraph(
   int misspelling_start = 0;
   int misspelling_length = 0;
   while (offset <= length) {
+    std::vector<string16> suggestions;
     if (SpellCheckWord(&text[offset],
                        length - offset,
                        0,
                        &misspelling_start,
                        &misspelling_length,
-                       NULL)) {
+                       &suggestions)) {
       return true;
     }
 
-    if (results) {
-      results->push_back(SpellCheckResult(
-          SpellCheckResult::SPELLING,
-          misspelling_start + offset,
-          misspelling_length));
-    }
+    string16 replacement;
+    if (!suggestions.empty())
+      replacement = JoinString(suggestions, '\n');
+    results->push_back(SpellCheckResult(
+        SpellCheckResult::SPELLING,
+        misspelling_start + offset,
+        misspelling_length,
+        replacement));
     offset += misspelling_start + misspelling_length;
   }
 
@@ -318,13 +320,11 @@ void SpellCheck::RequestTextChecking(
   // Commented out on Mac, because SpellCheckRequest::PerformSpellCheck is not
   // implemented on Mac. Mac uses its own spellchecker, so this method
   // will not be used.
-
   DCHECK(!is_using_platform_spelling_engine_);
 
   // Clean up the previous request before starting a new request.
   if (pending_request_param_.get()) {
-    pending_request_param_->completion()->didFinishCheckingText(
-        WebKit::WebVector<WebKit::WebTextCheckingResult>());
+    pending_request_param_->completion()->didCancelCheckingText();
     pending_request_param_ = NULL;
   }
 
@@ -428,8 +428,7 @@ void SpellCheck::PostDelayedSpellCheckTask() {
     return;
 
   if (file_ == base::kInvalidPlatformFileValue) {
-    pending_request_param_->completion()->didFinishCheckingText(
-        WebKit::WebVector<WebKit::WebTextCheckingResult>());
+    pending_request_param_->completion()->didCancelCheckingText();
   } else {
     requested_params_.push(pending_request_param_);
     base::MessageLoopProxy::current()->PostTask(FROM_HERE,

@@ -88,7 +88,7 @@ void SpellCheckProvider::RequestTextChecking(
   string16 line;
   int offset = -1;
   if (!GetRequestLine(text, &line, &offset)) {
-    completion->didFinishCheckingText(std::vector<WebTextCheckingResult>());
+    completion->didCancelCheckingText();
     return;
   }
 

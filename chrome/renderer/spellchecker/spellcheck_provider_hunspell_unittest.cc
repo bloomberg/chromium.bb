@@ -76,7 +76,8 @@ namespace {
 class FakeTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {
  public:
   FakeTextCheckingCompletion()
-      : completion_count_(0) {
+      : completion_count_(0),
+        cancellation_count_(0) {
   }
 
   virtual void didFinishCheckingText(
@@ -86,7 +87,13 @@ class FakeTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {
     last_results_ = results;
   }
 
+  virtual void didCancelCheckingText() OVERRIDE {
+    ++completion_count_;
+    ++cancellation_count_;
+  }
+
   size_t completion_count_;
+  size_t cancellation_count_;
   WebKit::WebVector<WebKit::WebTextCheckingResult> last_results_;
 };
 
@@ -167,6 +174,34 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
       WebKit::WebString("First Second\nThird   Fourth."), 0, &completion);
   EXPECT_EQ(13, provider_.offset_);
   EXPECT_EQ(ASCIIToUTF16("Third   Fourth."), provider_.text_);
+}
+
+// Tests that the SpellCheckProvider class cancels incoming spellcheck requests
+// when it does not need to handle them.
+TEST_F(SpellCheckProviderTest,CancelUnnecessaryRequests) {
+  int document_tag = 123;
+  FakeTextCheckingCompletion completion;
+  provider_.RequestTextChecking(WebKit::WebString("hello."),
+                                document_tag,
+                                &completion);
+  EXPECT_EQ(completion.completion_count_, 1U);
+  EXPECT_EQ(completion.cancellation_count_, 0U);
+
+  // Test that the SpellCheckProvider class cancels an incoming request with the
+  // text same as above.
+  provider_.RequestTextChecking(WebKit::WebString("hello."),
+                                document_tag,
+                                &completion);
+  EXPECT_EQ(completion.completion_count_, 2U);
+  EXPECT_EQ(completion.cancellation_count_, 1U);
+
+  // Test that the SpellCheckProvider class cancels an incoming request that
+  // does not include any words.
+  provider_.RequestTextChecking(WebKit::WebString(":-)"),
+                                document_tag,
+                                &completion);
+  EXPECT_EQ(completion.completion_count_, 3U);
+  EXPECT_EQ(completion.cancellation_count_, 2U);
 }
 
 }  // namespace

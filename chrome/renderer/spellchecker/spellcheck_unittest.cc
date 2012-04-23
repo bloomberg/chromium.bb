@@ -95,9 +95,14 @@ class MockTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {
   }
 
   virtual void didFinishCheckingText(
-      const WebKit::WebVector<WebKit::WebTextCheckingResult>& results) {
+      const WebKit::WebVector<WebKit::WebTextCheckingResult>& results)
+          OVERRIDE {
     completion_count_++;
     last_results_ = results;
+  }
+
+  virtual void didCancelCheckingText() OVERRIDE {
+    completion_count_++;
   }
 
   size_t completion_count_;
