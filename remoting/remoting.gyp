@@ -22,6 +22,9 @@
     'version_full':
       '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@").'
       '<!(python <(version_py_path) -f <(chrome_version_path) -t "@BUILD@.@PATCH@")',
+    'version_short':
+      '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@").'
+      '<!(python <(version_py_path) -f <(chrome_version_path) -t "@BUILD@")',
 
     'conditions': [
       ['OS=="mac"', {
@@ -234,6 +237,21 @@
           'target_name': 'remoting_host_uninstaller',
           'type': 'executable',
           'mac_bundle': 1,
+          'conditions': [
+            ['branding == "Chrome"', {
+              'variables': {
+                'copyright_by': 'Google Inc.',
+                'bundle_id': 'com.google.chromeremotedesktop.host_uninstaller',
+                'bundle_name': 'Chrome Remote Desktop Host Uninstaller',
+              },
+            }, { # else branding!="Chrome"
+              'variables': {
+                'copyright_by': 'The Chromium Authors.',
+                'bundle_id': 'org.chromium.remoting.host_uninstaller',
+                'bundle_name': 'Chromoting Host Uninstaller',
+              },
+            }],
+          ],
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base',
           ],
@@ -241,8 +259,9 @@
             'host/installer/mac/uninstaller/remoting_uninstaller_delegate.mm',
           ],
           'xcode_settings': {
-            'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
             'INFOPLIST_FILE': 'host/installer/mac/uninstaller/remoting_uninstaller-Info.plist',
+            'INFOPLIST_PREPROCESS': 'YES',
+            'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_BY="<(copyright_by)"',
           },
           'mac_bundle_resources': [
             'host/installer/mac/uninstaller/remoting_uninstaller.xib',
