@@ -119,13 +119,21 @@ class IsolateBase(unittest.TestCase):
         files[filename][u'sha-1'] = unicode(h.hexdigest())
     return files
 
-  def _expected_result(self, args, read_only):
+  def _expected_result(self, args, read_only, extra_vars=None):
     """Verifies self.result contains the expected data."""
+    flavor = isolate.trace_inputs.get_flavor()
     expected = {
       u'files': self._gen_files(read_only),
-      u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'read_only': read_only,
+      u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
+      u'resultdir': os.path.dirname(self.result),
+      u'resultfile': self.result,
+      u'variables': {
+        u'EXECUTABLE_SUFFIX': '.exe' if flavor == 'win' else '',
+        u'OS': unicode(flavor),
+      },
     }
+    expected['variables'].update(extra_vars or {})
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
     else:
@@ -272,7 +280,7 @@ class Isolate_check(IsolateBase):
   def test_with_flag(self):
     self._execute('check', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expect_no_tree()
-    self._expected_result(['with_flag.py', 'gyp'], None)
+    self._expected_result(['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
 
 
 class Isolate_hashtable(IsolateBase):
@@ -320,7 +328,7 @@ class Isolate_hashtable(IsolateBase):
     self._execute(
         'hashtable', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expected_hash_tree()
-    self._expected_result(['with_flag.py', 'gyp'], None)
+    self._expected_result(['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
 
 
 class Isolate_remap(IsolateBase):
@@ -362,7 +370,7 @@ class Isolate_remap(IsolateBase):
   def test_with_flag(self):
     self._execute('remap', 'with_flag.isolate', ['-V', 'FLAG', 'gyp'], False)
     self._expected_tree()
-    self._expected_result(['with_flag.py', 'gyp'], None)
+    self._expected_result(['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
 
 
 class Isolate_run(IsolateBase):
@@ -416,7 +424,7 @@ class Isolate_run(IsolateBase):
     self._execute('run', 'with_flag.isolate', ['-V', 'FLAG', 'run'], False)
     # Not sure about the empty tree, should be deleted.
     self._expect_empty_tree()
-    self._expected_result(['with_flag.py', 'run'], None)
+    self._expected_result(['with_flag.py', 'run'], None, {u'FLAG': u'run'})
 
 
 class Isolate_trace(IsolateBase):
@@ -496,7 +504,7 @@ class Isolate_trace(IsolateBase):
     out = self._execute(
         'trace', 'with_flag.isolate', ['-V', 'FLAG', 'trace'], True)
     self._expect_no_tree()
-    self._expected_result(['with_flag.py', 'trace'], None)
+    self._expected_result(['with_flag.py', 'trace'], None, {u'FLAG': u'trace'})
     expected = {
       'conditions': [
         ['OS=="%s"' % isolate.trace_inputs.get_flavor(), {

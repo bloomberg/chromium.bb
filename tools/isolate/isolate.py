@@ -229,8 +229,50 @@ def recreate_tree(outdir, indir, infiles, action):
     run_test_from_archive.link_file(outfile, infile, action)
 
 
-def isolate(
-    outdir, indir, infiles, mode, read_only, cmd, relative_cwd, resultfile):
+def load_results(resultfile):
+  """Loads the previous results as an optimization."""
+  data = {}
+  if resultfile and os.path.isfile(resultfile):
+    resultfile = os.path.abspath(resultfile)
+    with open(resultfile, 'r') as f:
+      data = json.load(f)
+  else:
+    resultfile = os.path.abspath(resultfile)
+
+  # Works with native os.path.sep but stores as '/'.
+  if 'files' in data and os.path.sep != '/':
+    data['files'] = dict(
+        (k.replace('/', os.path.sep), v)
+        for k, v in data['files'].iteritems())
+  return data
+
+
+def save_results(resultfile, data):
+  data = data.copy()
+
+  # Works with native os.path.sep but stores as '/'.
+  if os.path.sep != '/':
+    data['files'] = dict(
+        (k.replace(os.path.sep, '/'), v) for k, v in data['files'].iteritems())
+
+  f = None
+  try:
+    if resultfile:
+      f = open(resultfile, 'wb')
+    else:
+      f = sys.stdout
+    json.dump(data, f, indent=2, sort_keys=True)
+    f.write('\n')
+  finally:
+    if resultfile and f:
+      f.close()
+
+  total_bytes = sum(i.get('size', 0) for i in data['files'].itervalues())
+  if total_bytes:
+    logging.debug('Total size: %d bytes' % total_bytes)
+
+
+def isolate(outdir, mode, indir, infiles, data):
   """Main function to isolate a target with its dependencies.
 
   Arguments:
@@ -238,41 +280,22 @@ def isolate(
   - indir: Root directory to be used as the base directory for infiles.
   - infiles: List of files, with relative path, to process.
   - mode: Action to do. See file level docstring.
-  - read_only: Makes the temporary directory read only.
-  - cmd: Command to execute.
-  - relative_cwd: Directory relative to the base directory where to start the
-                  command from. In general, this path will be the path
-                  containing the gyp file where the target was defined. This
-                  relative directory may be created implicitely if a file from
-                  this directory is needed to run the test. Otherwise it won't
-                  be created and the process creation will fail. It's up to the
-                  caller to create this directory manually before starting the
-                  test.
-  - resultfile: Path where to read and write the metadata.
+  - data: Contains all the command specific meta-data.
 
   Some arguments are optional, dependending on |mode|. See the corresponding
   MODE<mode> function for the exact behavior.
   """
-  mode_fn = getattr(sys.modules[__name__], 'MODE' + mode)
-  assert mode_fn
-
-  # Load the previous results as an optimization.
-  prevdict = {}
-  if resultfile and os.path.isfile(resultfile):
-    resultfile = os.path.abspath(resultfile)
-    with open(resultfile, 'rb') as f:
-      prevdict = json.load(f)
-  else:
-    resultfile = os.path.abspath(resultfile)
-  # Works with native os.path.sep but stores as '/'.
-  if 'files' in prevdict and os.path.sep != '/':
-    prevdict['files'] = dict(
-        (k.replace('/', os.path.sep), v)
-        for k, v in prevdict['files'].iteritems())
-
+  modes = {
+    'check': MODEcheck,
+    'hashtable': MODEhashtable,
+    'remap': MODEremap,
+    'run': MODErun,
+    'trace': MODEtrace,
+  }
+  mode_fn = modes[mode]
 
   infiles = expand_directories(
-      indir, infiles, lambda x: re.match(r'.*\.(svn|pyc)$', x))
+      indir, infiles, lambda x: re.match(r'.*\.(git|svn|pyc)$', x))
 
   # Only hashtable mode really needs the sha-1.
   level = {
@@ -282,61 +305,34 @@ def isolate(
     'run': STATS_ONLY,
     'trace': STATS_ONLY,
   }
-  dictfiles = process_inputs(
-      prevdict.get('files', {}), indir, infiles, level[mode], read_only)
+  # Regenerate data['files'] from infiles.
+  data['files'] = process_inputs(
+      data.get('files', {}), indir, infiles, level[mode], data.get('read_only'))
 
-  result = mode_fn(
-      outdir, indir, dictfiles, read_only, cmd, relative_cwd, resultfile)
-  out = {
-    'command': cmd,
-    'relative_cwd': relative_cwd,
-    'files': dictfiles,
-    # Makes the directories read-only in addition to the files.
-    'read_only': read_only,
-  }
-
-  # Works with native os.path.sep but stores as '/'.
-  if os.path.sep != '/':
-    out['files'] = dict(
-        (k.replace(os.path.sep, '/'), v) for k, v in out['files'].iteritems())
-
-  f = None
-  try:
-    if resultfile:
-      f = open(resultfile, 'wb')
-    else:
-      f = sys.stdout
-    json.dump(out, f, indent=2, sort_keys=True)
-    f.write('\n')
-  finally:
-    if resultfile and f:
-      f.close()
-
-  total_bytes = sum(i.get('size', 0) for i in out['files'].itervalues())
-  if total_bytes:
-    logging.debug('Total size: %d bytes' % total_bytes)
-  return result
+  result = mode_fn(outdir, indir, data)
+  return result, data
 
 
-def MODEcheck(
-    _outdir, _indir, _dictfiles, _read_only, _cmd, _relative_cwd, _resultfile):
+def MODEcheck(_outdir, _indir, _data):
   """No-op."""
   return 0
 
 
-def MODEhashtable(
-    outdir, indir, dictfiles, _read_only, _cmd, _relative_cwd, resultfile):
-  outdir = outdir or os.path.join(os.path.dirname(resultfile), 'hashtable')
+def MODEhashtable(outdir, indir, data):
+  outdir = (
+      outdir or os.path.join(os.path.dirname(data['resultdir']), 'hashtable'))
   if not os.path.isdir(outdir):
     os.makedirs(outdir)
-  for relfile, properties in dictfiles.iteritems():
+  for relfile, properties in data['files'].iteritems():
     infile = os.path.join(indir, relfile)
     outfile = os.path.join(outdir, properties['sha-1'])
     if os.path.isfile(outfile):
       # Just do a quick check that the file size matches. No need to stat()
       # again the input file, grab the value from the dict.
       out_size = os.stat(outfile).st_size
-      in_size = dictfiles.get(infile, {}).get('size') or os.stat(infile).st_size
+      in_size = (
+          data.get('files', {}).get(infile, {}).get('size') or
+          os.stat(infile).st_size)
       if in_size == out_size:
         continue
       # Otherwise, an exception will be raised.
@@ -345,8 +341,7 @@ def MODEhashtable(
   return 0
 
 
-def MODEremap(
-    outdir, indir, dictfiles, read_only, _cmd, _relative_cwd, _resultfile):
+def MODEremap(outdir, indir, data):
   if not outdir:
     outdir = tempfile.mkdtemp(prefix='isolate')
   else:
@@ -356,57 +351,55 @@ def MODEremap(
   if len(os.listdir(outdir)):
     print 'Can\'t remap in a non-empty directory'
     return 1
-  recreate_tree(outdir, indir, dictfiles.keys(), run_test_from_archive.HARDLINK)
-  if read_only:
+  recreate_tree(
+      outdir, indir, data['files'].keys(), run_test_from_archive.HARDLINK)
+  if data['read_only']:
     run_test_from_archive.make_writable(outdir, True)
   return 0
 
 
-def MODErun(
-    _outdir, indir, dictfiles, read_only, cmd, relative_cwd, _resultfile):
+def MODErun(_outdir, indir, data):
   """Always uses a temporary directory."""
   try:
     outdir = tempfile.mkdtemp(prefix='isolate')
     recreate_tree(
-        outdir, indir, dictfiles.keys(), run_test_from_archive.HARDLINK)
-    cwd = os.path.join(outdir, relative_cwd)
+        outdir, indir, data['files'].keys(), run_test_from_archive.HARDLINK)
+    cwd = os.path.join(outdir, data['relative_cwd'])
     if not os.path.isdir(cwd):
       os.makedirs(cwd)
-    if read_only:
+    if data['read_only']:
       run_test_from_archive.make_writable(outdir, True)
-    if not cmd:
+    if not data['command']:
       print 'No command to run'
       return 1
-    cmd = trace_inputs.fix_python_path(cmd)
+    cmd = trace_inputs.fix_python_path(data['command'])
     logging.info('Running %s, cwd=%s' % (cmd, cwd))
     return subprocess.call(cmd, cwd=cwd)
   finally:
     run_test_from_archive.rmtree(outdir)
 
 
-def MODEtrace(
-    _outdir, indir, _dictfiles, _read_only, cmd, relative_cwd, resultfile):
+def MODEtrace(_outdir, indir, data):
   """Shortcut to use trace_inputs.py properly.
 
   It constructs the equivalent of dictfiles. It is hardcoded to base the
   checkout at src/.
   """
-  logging.info('Running %s, cwd=%s' % (cmd, os.path.join(indir, relative_cwd)))
-  if resultfile:
-    # Guesswork here.
-    product_dir = os.path.dirname(resultfile)
-    if product_dir and indir:
-      product_dir = os.path.relpath(product_dir, indir)
-  else:
-    product_dir = None
-  if not cmd:
+  logging.info(
+      'Running %s, cwd=%s' % (
+          data['command'], os.path.join(indir, data['relative_cwd'])))
+  product_dir = None
+  if data['resultdir'] and indir:
+    # Defaults to none if both are the same directory.
+    product_dir = os.path.relpath(data['resultdir'], indir) or None
+  if not data['command']:
     print 'No command to run'
     return 1
   return trace_inputs.trace_inputs(
-      '%s.log' % resultfile,
-      cmd,
+      data['resultfile'],
+      data['command'],
       indir,
-      relative_cwd,
+      data['relative_cwd'],
       product_dir,
       False)
 
@@ -415,6 +408,78 @@ def get_valid_modes():
   """Returns the modes that can be used."""
   return sorted(
       i[4:] for i in dir(sys.modules[__name__]) if i.startswith('MODE'))
+
+
+def process_options(variables, resultfile, input_file, error):
+  """Processes the options and loads the input file. Returns the processed
+  values.
+  """
+  input_file = os.path.abspath(input_file)
+  isolate_dir = os.path.dirname(input_file)
+  resultfile = os.path.abspath(resultfile)
+  logging.info(
+      'process_options(%s, %s, %s, ...)' % (variables, resultfile, input_file))
+
+  # Process path variables as a special case. First normalize it, verifies it
+  # exists, convert it to an absolute path, then set it as relative to
+  # isolate_dir.
+  for i in ('DEPTH', 'PRODUCT_DIR'):
+    if i not in variables:
+      continue
+    variable = os.path.normpath(variables[i])
+    if not os.path.isdir(variable):
+      error('%s=%s is not a directory' % (i, variable))
+    variable = os.path.abspath(variable)
+    # All variables are relative to the input file.
+    variables[i] = os.path.relpath(variable, isolate_dir)
+
+  command, infiles, read_only = load_isolate(
+      open(input_file, 'r').read(), variables, error)
+
+  # The trick used to determine the root directory is to look at "how far" back
+  # up it is looking up.
+  # TODO(maruel): Stop the msbuild generator from generating a mix of / and \\.
+  root_dir = isolate_dir.replace(os.path.sep, '/')
+  for i in infiles:
+    i = i.replace(os.path.sep, '/')
+    x = isolate_dir.replace(os.path.sep, '/')
+    while i.startswith('../'):
+      i = i[3:]
+      assert not i.startswith('/')
+      x = posixpath.dirname(x)
+    if root_dir.startswith(x):
+      root_dir = x
+  root_dir = root_dir.replace('/', os.path.sep)
+  # The relative directory is automatically determined by the relative path
+  # between root_dir and the directory containing the .isolate file.
+  relative_dir = os.path.relpath(isolate_dir, root_dir)
+  logging.debug('relative_dir: %s' % relative_dir)
+
+  logging.debug(
+      'variables: %s' % ', '.join(
+        '%s=%s' % (k, v) for k, v in variables.iteritems()))
+
+  data = load_results(resultfile)
+
+  command, infiles, read_only = load_isolate(
+      open(input_file, 'r').read(), variables, error)
+
+  # Update data with the up to date information:
+  data['command'] = command
+  data['read_only'] = read_only
+  data['relative_cwd'] = relative_dir
+  data['resultfile'] = resultfile
+  data['resultdir'] = os.path.dirname(resultfile)
+
+  # Keep the old variables.
+  data.setdefault('variables', {}).update(variables)
+
+  logging.debug('command: %s' % command)
+  logging.debug('infiles: %s' % infiles)
+  logging.debug('read_only: %s' % read_only)
+  infiles = [normpath(os.path.join(relative_dir, f)) for f in infiles]
+  logging.debug('processed infiles: %s' % infiles)
+  return root_dir, infiles, data
 
 
 def main():
@@ -465,69 +530,24 @@ def main():
   if not options.mode:
     parser.error('--mode is required')
   if len(args) != 1:
+    logging.debug('%s' % sys.argv)
     parser.error('Use only one argument which should be a .isolate file')
 
-  input_file = os.path.abspath(args[0])
-  isolate_dir = os.path.dirname(input_file)
-
-  # Extract the variables.
-  variables = dict(options.variables)
-  # Process path variables as a special case. First normalize it, verifies it
-  # exists, convert it to an absolute path, then set it as relative to
-  # isolate_dir.
-  for i in ('PRODUCT_DIR',):
-    if i not in variables:
-      continue
-    variable = os.path.normpath(variables[i])
-    if not os.path.isdir(variable):
-      parser.error('%s=%s is not a directory' % (i, variable))
-    variable = os.path.abspath(variable)
-    # All variables are relative to the input file.
-    variables[i] = os.path.relpath(variable, isolate_dir)
-
-  command, infiles, read_only = load_isolate(
-      open(input_file, 'r').read(), variables, parser.error)
-
-  # The trick used to determine the root directory is to look at "how far" back
-  # up it is looking up.
-  root_dir = isolate_dir.replace(os.path.sep, '/')
-  for i in infiles:
-    i = i.replace(os.path.sep, '/')
-    x = isolate_dir.replace(os.path.sep, '/')
-    while i.startswith('../'):
-      i = i[3:]
-      assert not i.startswith('/')
-      x = posixpath.dirname(x)
-    if root_dir.startswith(x):
-      root_dir = x
-  root_dir = root_dir.replace('/', os.path.sep)
-  # The relative directory is automatically determined by the relative path
-  # between root_dir and the directory containing the .isolate file.
-  relative_dir = os.path.relpath(isolate_dir, root_dir)
-  logging.debug('relative_dir: %s' % relative_dir)
-
-  logging.debug(
-      'variables: %s' % ', '.join(
-        '%s=%s' % (k, v) for k, v in variables.iteritems()))
-  logging.debug('command: %s' % command)
-  logging.debug('infiles: %s' % infiles)
-  logging.debug('read_only: %s' % read_only)
-  infiles = [normpath(os.path.join(relative_dir, f)) for f in infiles]
-  logging.debug('processed infiles: %s' % infiles)
+  root_dir, infiles, data = process_options(
+      dict(options.variables), options.result, args[0], parser.error)
 
   try:
-    return isolate(
+    resultcode, data = isolate(
         options.outdir,
+        options.mode,
         root_dir,
         infiles,
-        options.mode,
-        read_only,
-        command,
-        relative_dir,
-        options.result)
+        data)
   except run_test_from_archive.MappingError, e:
     print >> sys.stderr, str(e)
     return 1
+  save_results(options.result, data)
+  return resultcode
 
 
 if __name__ == '__main__':
