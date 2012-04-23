@@ -122,10 +122,14 @@ scons-clean () {
   local arch=$1
   local mode=$2
   local frontend=clang
+  # Clear both the pexe and the nonpexe scons-out directory, since we run
+  # a mix of both tests.
   if [ "${mode}" == "newlib" ] ; then
     Run rm -rf scons-out/nacl-${arch}-pnacl-${frontend}
+    Run rm -rf scons-out/nacl-${arch}-pnacl-pexe-${frontend}
   else
     Run rm -rf scons-out/nacl-${arch}-pnacl-${mode}-${frontend}
+    Run rm -rf scons-out/nacl-${arch}-pnacl-${mode}-pexe-${frontend}
   fi
 }
 
@@ -172,10 +176,7 @@ get-mode-flags() {
 }
 
 #+ Run scons test under a certain configuration
-#+ scons-tests <arch> <mode={newlib,etc.}>
-#+             <pexe=true/false> [optional list of test names]
-#+ If <pexe> is true, we will first build pexes without running the tests,
-#+ then run the tests.
+#+ scons-tests <arch> <mode={newlib,etc.}> [optional list of test names]
 #+ If no optional tests are listed, we will build all the tests then
 #+ run the "smoke_tests" test suite.
 scons-tests () {
