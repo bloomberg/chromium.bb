@@ -489,9 +489,9 @@ void NativeThemeBase::PaintButton(SkCanvas* canvas,
                                    const gfx::Rect& rect,
                                    const ButtonExtraParams& button) const {
   SkPaint paint;
-  SkRect skrect;
   const int kRight = rect.right();
   const int kBottom = rect.bottom();
+  SkRect skrect = SkRect::MakeLTRB(rect.x(), rect.y(), kRight, kBottom);
   SkColor base_color = button.background_color;
 
   color_utils::HSL base_hsl;
@@ -504,18 +504,8 @@ void NativeThemeBase::PaintButton(SkCanvas* canvas,
   // If the button is too small, fallback to drawing a single, solid color
   if (rect.width() < 5 || rect.height() < 5) {
     paint.setColor(base_color);
-    skrect.set(rect.x(), rect.y(), kRight, kBottom);
     canvas->drawRect(skrect, paint);
     return;
-  }
-
-  if (button.has_border) {
-    const int kBorderAlpha = state == kHovered ? 0x80 : 0x55;
-    paint.setARGB(kBorderAlpha, 0, 0, 0);
-    canvas->drawLine(rect.x() + 1, rect.y(), kRight - 1, rect.y(), paint);
-    canvas->drawLine(kRight - 1, rect.y() + 1, kRight - 1, kBottom - 1, paint);
-    canvas->drawLine(rect.x() + 1, kBottom - 1, kRight - 1, kBottom - 1, paint);
-    canvas->drawLine(rect.x(), rect.y() + 1, rect.x(), kBottom - 1, paint);
   }
 
   paint.setColor(SK_ColorBLACK);
@@ -531,23 +521,20 @@ void NativeThemeBase::PaintButton(SkCanvas* canvas,
   SkShader* shader = SkGradientShader::CreateLinear(
       gradient_bounds, colors, NULL, 2, SkShader::kClamp_TileMode, NULL);
   paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
   paint.setShader(shader);
   shader->unref();
 
-  if (button.has_border) {
-    skrect.set(rect.x() + 1, rect.y() + 1, kRight - 1, kBottom - 1);
-  } else {
-    skrect.set(rect.x(), rect.y(), kRight, kBottom);
-  }
-  canvas->drawRect(skrect, paint);
+  canvas->drawRoundRect(skrect, SkIntToScalar(1), SkIntToScalar(1), paint);
   paint.setShader(NULL);
 
   if (button.has_border) {
-    paint.setColor(BrightenColor(base_hsl, SkColorGetA(base_color), -0.0588));
-    canvas->drawPoint(rect.x() + 1, rect.y() + 1, paint);
-    canvas->drawPoint(kRight - 2, rect.y() + 1, paint);
-    canvas->drawPoint(rect.x() + 1, kBottom - 2, paint);
-    canvas->drawPoint(kRight - 2, kBottom - 2, paint);
+    const int kBorderAlpha = state == kHovered ? 0x80 : 0x55;
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(SkIntToScalar(1));
+    paint.setARGB(kBorderAlpha, 0, 0, 0);
+    skrect.inset(SkFloatToScalar(.5f), SkFloatToScalar(.5f));
+    canvas->drawRoundRect(skrect, SkIntToScalar(1), SkIntToScalar(1), paint);
   }
 }
 
