@@ -76,7 +76,7 @@ class DeviceIdEquals {
 
 namespace media_stream {
 
-typedef std::map< MediaStreamType, StreamDeviceInfoArray > DeviceMap;
+typedef std::map<MediaStreamType, StreamDeviceInfoArray> DeviceMap;
 
 // Device request contains all data needed to keep track of requests between the
 // different calls.
@@ -101,8 +101,6 @@ class MediaStreamDeviceSettingsRequest : public MediaStreamRequest {
   // RequestMediaAccessPermission, to make sure that we never post twice to it.
   bool posted_task;
 };
-
-typedef std::map<MediaStreamType, StreamDeviceInfoArray> DeviceMap;
 
 MediaStreamDeviceSettings::MediaStreamDeviceSettings(
     SettingsRequester* requester)
