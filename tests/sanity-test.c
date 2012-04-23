@@ -91,7 +91,8 @@ FAIL_TEST(sanity_fd_leak)
 	int fd[2];
 
 	/* leak 2 file descriptors */
-	pipe(fd);
+	if (pipe(fd) < 0)
+		exit(EXIT_SUCCESS); /* failed to fail */
 }
 
 FAIL_TEST(sanity_fd_leak_exec)
@@ -100,7 +101,8 @@ FAIL_TEST(sanity_fd_leak_exec)
 	int nr_fds = count_open_fds();
 
 	/* leak 2 file descriptors */
-	pipe(fd);
+	if (pipe(fd) < 0)
+		exit(EXIT_SUCCESS); /* failed to fail */
 
 	exec_fd_leak_check(nr_fds);
 }
@@ -111,7 +113,7 @@ TEST(sanity_fd_exec)
 	int nr_fds = count_open_fds();
 
 	/* create 2 file descriptors, that should pass over exec */
-	pipe(fd);
+	assert(pipe(fd) >= 0);
 
 	exec_fd_leak_check(nr_fds + 2);
 }
