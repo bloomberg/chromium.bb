@@ -420,7 +420,6 @@ void WebIntentPickerGtk::InitContents() {
   gtk_box_pack_start(GTK_BOX(header_hbox), header_label_, TRUE, TRUE, 0);
   gtk_misc_set_alignment(GTK_MISC(header_label_), 0, 0);
 
-
   // Add separation between the installed services list and the app suggestions.
   GtkWidget* button_alignment = gtk_alignment_new(0.5, 0, 0, 0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(button_alignment), 0,
@@ -454,17 +453,11 @@ void WebIntentPickerGtk::InitContents() {
   gtk_widget_set_no_show_all(indent_extensions, TRUE);
   gtk_box_pack_start(GTK_BOX(sub_contents), indent_extensions, TRUE, TRUE, 0);
 
-  // Chrome Web Store icon.
-  GtkWidget* hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
-  SkBitmap* bmp = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_WEBSTORE_ICON_16);
-  GtkWidget* icon = gtk_image_new_from_pixbuf(gfx::GdkPixbufFromSkBitmap(bmp));
-  gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
-
   // CWS 'More Suggestions' link.
+  GtkWidget* link_alignment = gtk_alignment_new(0, 0.5f, 0, 0);
   GtkWidget* more_suggestions_link = theme_service->BuildChromeLinkButton(
       l10n_util::GetStringUTF8(IDS_INTENT_PICKER_MORE_SUGGESTIONS).c_str());
-  gtk_box_pack_start(GTK_BOX(hbox), more_suggestions_link, FALSE, FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(link_alignment), more_suggestions_link);
   gtk_chrome_link_button_set_use_gtk_theme(
       GTK_CHROME_LINK_BUTTON(more_suggestions_link),
       theme_service->UsingNativeTheme());
@@ -474,8 +467,8 @@ void WebIntentPickerGtk::InitContents() {
   g_signal_connect(more_suggestions_link, "clicked",
                    G_CALLBACK(OnMoreSuggestionsLinkClickThunk), this);
 
-  GtkWidget* indent_hbox = gtk_util::IndentWidget(hbox);
-  gtk_box_pack_start(GTK_BOX(sub_contents), indent_hbox, TRUE, TRUE, 0);
+  GtkWidget* indent_link = gtk_util::IndentWidget(link_alignment);
+  gtk_box_pack_start(GTK_BOX(sub_contents), indent_link, TRUE, TRUE, 0);
 
   // Throbber, which will be added to the hierarchy when necessary.
   throbber_.reset(new ThrobberGtk(theme_service));
@@ -496,7 +489,6 @@ void WebIntentPickerGtk::UpdateInstalledServices() {
         model_->GetInstalledServiceAt(i);
 
     GtkWidget* button = gtk_button_new();
-
     gtk_widget_set_tooltip_text(button, installed_service.url.spec().c_str());
     gtk_button_set_label(GTK_BUTTON(button),
                          UTF16ToUTF8(installed_service.title).c_str());
