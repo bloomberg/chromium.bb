@@ -886,6 +886,13 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
       // Decode error.
       SetNetworkState(WebMediaPlayer::NetworkStateDecodeError);
       break;
+
+    case media::PIPELINE_ERROR_DECRYPT:
+      // Decrypt error.
+      // TODO(xhwang): Change to use NetworkStateDecryptError once it's added in
+      // Webkit (see http://crbug.com/124486).
+      SetNetworkState(WebMediaPlayer::NetworkStateDecodeError);
+      break;
   }
 
   // Repaint to trigger UI update.
