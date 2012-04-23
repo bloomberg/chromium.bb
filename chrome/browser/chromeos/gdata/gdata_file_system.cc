@@ -499,13 +499,12 @@ void RunGetFileFromCacheCallbackHelper(
     base::PlatformFileError* error,
     const std::string& resource_id,
     const std::string& md5,
-    const FilePath& gdata_file_path,
     FilePath* cache_file_path) {
   DCHECK(error);
   DCHECK(cache_file_path);
 
   if (!callback.is_null())
-    callback.Run(*error, resource_id, md5, gdata_file_path, *cache_file_path);
+    callback.Run(*error, resource_id, md5, *cache_file_path);
 }
 
 void RunGetCacheStateCallbackHelper(
@@ -1761,7 +1760,6 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
                                          base::PlatformFileError error,
                                          const std::string& resource_id,
                                          const std::string& md5,
-                                         const FilePath& gdata_file_path,
                                          const FilePath& cache_file_path) {
   // Have we found the file in cache? If so, return it back to the caller.
   if (error == base::PLATFORM_FILE_OK) {
@@ -3227,14 +3225,6 @@ FilePath GDataFileSystem::GetCacheFilePath(
   return cache_paths_[sub_dir_type].Append(base_name);
 }
 
-void GDataFileSystem::GetFileFromCacheByResourceIdAndMd5(
-    const std::string& resource_id,
-    const std::string& md5,
-    const GetFileFromCacheCallback& callback) {
-  GetFileFromCacheByResourceIdAndMd5Internal(
-      resource_id, md5, FilePath(), callback);
-}
-
 void GDataFileSystem::StoreToCache(const std::string& resource_id,
                                    const std::string& md5,
                                    const FilePath& source_path,
@@ -3333,7 +3323,6 @@ void GDataFileSystem::MarkDirtyInCache(
                  base::Owned(error),
                  resource_id,
                  md5,
-                 FilePath() /* gdata_file_path */,
                  base::Owned(cache_file_path)));
 }
 
@@ -3453,7 +3442,6 @@ void GDataFileSystem::InitializeCacheOnIOThreadPool() {
 void GDataFileSystem::GetFileFromCacheOnIOThreadPool(
     const std::string& resource_id,
     const std::string& md5,
-    const FilePath& gdata_file_path,
     base::PlatformFileError* error,
     FilePath* cache_file_path) {
   DCHECK(error);
@@ -4231,10 +4219,9 @@ void GDataFileSystem::ScanCacheDirectory(
   }
 }
 
-void GDataFileSystem::GetFileFromCacheByResourceIdAndMd5Internal(
+void GDataFileSystem::GetFileFromCacheByResourceIdAndMd5(
     const std::string& resource_id,
     const std::string& md5,
-    const FilePath& gdata_file_path,
     const GetFileFromCacheCallback& callback) {
   InitializeCacheIfNecessary();
 
@@ -4248,7 +4235,6 @@ void GDataFileSystem::GetFileFromCacheByResourceIdAndMd5Internal(
                  base::Unretained(this),
                  resource_id,
                  md5,
-                 gdata_file_path,
                  error,
                  cache_file_path),
       base::Bind(&RunGetFileFromCacheCallbackHelper,
@@ -4256,7 +4242,6 @@ void GDataFileSystem::GetFileFromCacheByResourceIdAndMd5Internal(
                  base::Owned(error),
                  resource_id,
                  md5,
-                 gdata_file_path,
                  base::Owned(cache_file_path)));
 }
 

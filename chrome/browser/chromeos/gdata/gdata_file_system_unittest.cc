@@ -367,7 +367,6 @@ class GDataFileSystemTest : public testing::Test {
   void VerifyGetFromCache(base::PlatformFileError error,
                           const std::string& resource_id,
                           const std::string& md5,
-                          const FilePath& gdata_file_path,
                           const FilePath& cache_file_path) {
     ++num_callback_invocations_;
 
@@ -575,7 +574,6 @@ class GDataFileSystemTest : public testing::Test {
   void VerifyMarkDirty(base::PlatformFileError error,
                        const std::string& resource_id,
                        const std::string& md5,
-                       const FilePath& gdata_file_path,
                        const FilePath& cache_file_path) {
     VerifyCacheFileState(error, resource_id, md5);
 

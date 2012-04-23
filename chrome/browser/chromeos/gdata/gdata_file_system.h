@@ -56,7 +56,6 @@ typedef base::Callback<void(base::PlatformFileError error,
 typedef base::Callback<void(base::PlatformFileError error,
                             const std::string& resource_id,
                             const std::string& md5,
-                            const FilePath& gdata_file_path,
                             const FilePath& cache_file_path)>
     GetFileFromCacheCallback;
 
@@ -1109,7 +1108,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetFileFromCacheOnIOThreadPool(
       const std::string& resource_id,
       const std::string& md5,
-      const FilePath& gdata_file_path,
       base::PlatformFileError* error,
       FilePath* cache_file_path);
 
@@ -1215,12 +1213,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Helper function for internally handling responses from
   // GetFileFromCacheByResourceIdAndMd5() calls during processing of
-  // GetFile() request.
+  // GetFileByPath() request.
   void OnGetFileFromCache(const GetFileFromCacheParams& params,
                           base::PlatformFileError error,
                           const std::string& resource_id,
                           const std::string& md5,
-                          const FilePath& gdata_file_path,
                           const FilePath& cache_file_path);
 
   // Frees up disk space to store the given number of bytes, while keeping
@@ -1249,14 +1246,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void ScanCacheDirectory(
       GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
       GDataRootDirectory::CacheMap* cache_map);
-
-  // Called from GetFileFromCacheByResourceIdAndMd5() and
-  // GetFileFromCacheByPath().
-  void GetFileFromCacheByResourceIdAndMd5Internal(
-      const std::string& resource_id,
-      const std::string& md5,
-      const FilePath& gdata_file_path,
-      const GetFileFromCacheCallback& callback);
 
   // Wrapper task around any sequenced task that runs on IO thread pool that
   // makes sure |in_shutdown_| and |on_io_completed_| are handled properly in
