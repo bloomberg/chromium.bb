@@ -426,8 +426,10 @@ void WebContentsViewAura::StartDragging(
 
   ui::OSExchangeDataProviderAura* provider = new ui::OSExchangeDataProviderAura;
   PrepareDragData(drop_data, provider);
-  if (!image.isNull())
+  if (!image.isNull()) {
     provider->set_drag_image(image);
+    provider->set_drag_image_offset(image_offset);
+  }
   ui::OSExchangeData data(provider);  // takes ownership of |provider|.
 
   scoped_ptr<WebDragSourceAura> drag_source(
@@ -442,7 +444,6 @@ void WebContentsViewAura::StartDragging(
     // initiate the drag). The location information should be carried over from
     // webkit. http://crbug.com/114754
     gfx::Point location(root_window->last_mouse_location());
-    location.Offset(-image_offset.x(), -image_offset.y());
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
     result_op = aura::client::GetDragDropClient(root_window)->StartDragAndDrop(
         data, location, ConvertFromWeb(operations));
