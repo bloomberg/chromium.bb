@@ -235,7 +235,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg)
       scroll_buffer_(3),
       tap_enable_(prop_reg, "Tap Enable", false),
       tap_timeout_(prop_reg, "Tap Timeout", 0.2),
-      inter_tap_timeout_(prop_reg, "Inter-Tap Timeout", 0.1),
+      inter_tap_timeout_(prop_reg, "Inter-Tap Timeout", 0.15),
+      tap_drag_delay_(prop_reg, "Tap Drag Delay", 0.1),
       tap_drag_timeout_(prop_reg, "Tap Drag Timeout", 0.7),
       drag_lock_enable_(prop_reg, "Tap Drag Lock Enable", 0),
       tap_move_dist_(prop_reg, "Tap Move Distance", 2.0),
@@ -913,14 +914,16 @@ void ImmediateInterpreter::UpdateTapState(
   //       ↓
   //    [Idle**] <----------------------------------------------------------,
   //       ↓ added finger(s)                                                |
-  //    [FirstTapBegan] -<right click: send right click, timeout/movement>->|
-  //       ↓ released all fingers                                           |
+  //  ,>[FirstTapBegan] -<right click: send right click, timeout/movement>->|
+  //  |    ↓ released all fingers                                           |
   // ,->[TapComplete*] --<timeout: send click>----------------------------->|
-  // |     ↓ add finger(s): send button down                                |
-  // |  [SubsequentTapBegan] --<timeout/move(non-drag): send btn up>------->|
-  // |     | | released all fingers: send button up                         |
+  // ||    | | two finger touching: send left click.                        |
+  // |'----+-'                                                              |
+  // |     ↓ add finger(s)                                                  |
+  // |  [SubsequentTapBegan] --<timeout/move w/o delay: send click>------->|
+  // |     | | released all fingers send button click                       |
   // |<----+-'                                                              |
-  // |     ↓ timeout/movement (that looks like drag)                        |
+  // |     ↓ timeout/movement with delay: send button down                  |
   // | ,->[Drag] --<detect 2 finger gesture: send button up>--------------->|
   // | |   ↓ release all fingers                                            |
   // | |  [DragRelease*]  --<timeout: send button up>---------------------->|
@@ -988,15 +991,20 @@ void ImmediateInterpreter::UpdateTapState(
       break;
     case kTtcTapComplete:
       if (!added_fingers.empty()) {
-        // Generate a button event for the tap type that got us into
-        // kTtcTapComplete state, after which we'll repurpose
-        // tap_record_ to record the next tap.
-        *buttons_down = tap_record_.TapType();
+
         tap_record_.Clear();
         tap_record_.Update(
             *hwstate, prev_state_, added_fingers, removed_fingers,
             dead_fingers);
-        SetTapToClickState(kTtcSubsequentTapBegan, now);
+
+        // If more than one finger is touching: Send click
+        // and return to FirstTapBegan state.
+        if (tap_record_.TapType() != GESTURES_BUTTON_LEFT) {
+          *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;
+          SetTapToClickState(kTtcFirstTapBegan, now);
+        } else {
+          SetTapToClickState(kTtcSubsequentTapBegan, now);
+        }
       } else if (is_timeout) {
         *buttons_down = *buttons_up =
             tap_record_.MinTapPressureMet() ? tap_record_.TapType() : 0;
@@ -1014,15 +1022,31 @@ void ImmediateInterpreter::UpdateTapState(
             dead_fingers);
       if (is_timeout || tap_record_.Moving(*hwstate, tap_move_dist_.val_)) {
         if (tap_record_.TapType() == GESTURES_BUTTON_LEFT) {
-          SetTapToClickState(kTtcDrag, now);
-        } else {
-          *buttons_up = GESTURES_BUTTON_LEFT;
+          if (is_timeout) {
+            // moving with just one finger. Start dragging.
+            *buttons_down = GESTURES_BUTTON_LEFT;
+            SetTapToClickState(kTtcDrag, now);
+          } else {
+            bool drag_delay_met = (now - tap_to_click_state_entered_
+                > tap_drag_delay_.val_);
+            if (drag_delay_met) {
+              *buttons_down = GESTURES_BUTTON_LEFT;
+              SetTapToClickState(kTtcDrag, now);
+            } else {
+              *buttons_down = GESTURES_BUTTON_LEFT;
+              *buttons_up = GESTURES_BUTTON_LEFT;
+              SetTapToClickState(kTtcIdle, now);
+            }
+          }
+        } else if(!tap_record_.TapComplete()) {
+          // not just one finger. Send button click and go to idle.
+          *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;
           SetTapToClickState(kTtcIdle, now);
         }
         break;
       }
       if (tap_record_.TapComplete()) {
-        *buttons_up = GESTURES_BUTTON_LEFT;
+        *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;
         SetTapToClickState(kTtcTapComplete, now);
         Log("Subsequent left tap complete");
       }
