@@ -51,6 +51,7 @@ function loadShowDetailsFromPrefs(show_details) {
  *         update_url: 'http://update/',
  *         critical: true,
  *         enabled: true,
+ *         identifier: 'plugin-name',
  *         plugin_files: [
  *           {
  *             path: '/blahblah/blahblah/MyCrappyPlugin.plugin',

@@ -152,26 +152,17 @@ body.show-tmi-mode .show-in-tmi-mode {
   width: 100%;
 }
 
-.plugin-disabled > td {
+.plugin-disabled {
   background-color: #f0f0f0;
   color: #a0a0a0;
+}
+
+.plugin > tr > td {
   padding-bottom: 4px;
   padding-top: 5px;
 }
 
-.plugin-enabled > td {
-  padding-bottom: 4px;
-  padding-top: 5px;
-}
-
-.plugin-file-disabled {
-  background-color: #f0f0f0;
-  color: #a0a0a0;
-  padding-bottom: 5px;
-  padding-top: 5px;
-}
-
-.plugin-file-enabled {
+.plugin-file {
   padding-bottom: 5px;
   padding-top: 5px;
 }

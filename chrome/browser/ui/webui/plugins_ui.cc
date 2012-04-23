@@ -342,7 +342,6 @@ void PluginsDOMHandler::PluginsLoaded(PluginFinder* plugin_finder,
   Profile* profile = Profile::FromWebUI(web_ui());
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile);
 
-  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
   ContentSettingsPattern wildcard = ContentSettingsPattern::Wildcard();
 
   // Construct DictionaryValues to return to the UI
@@ -448,19 +447,11 @@ void PluginsDOMHandler::PluginsLoaded(PluginFinder* plugin_finder,
     }
     group_data->SetString("enabledMode", enabled_mode);
 
-    // TODO(bauerb): We should have a method on HostContentSettingsMap for this.
     bool always_allowed = false;
-    ContentSettingsForOneType settings;
-    map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
-                               group.identifier(), &settings);
-    for (ContentSettingsForOneType::const_iterator it = settings.begin();
-         it != settings.end(); ++it) {
-      if (it->primary_pattern == wildcard &&
-          it->secondary_pattern == wildcard &&
-          it->setting == CONTENT_SETTING_ALLOW) {
-        always_allowed = true;
-        break;
-      }
+    if (group_enabled) {
+      const DictionaryValue* whitelist = profile->GetPrefs()->GetDictionary(
+          prefs::kContentSettingsPluginWhitelist);
+      whitelist->GetBoolean(group.identifier(), &always_allowed);
     }
     group_data->SetBoolean("alwaysAllowed", always_allowed);
 

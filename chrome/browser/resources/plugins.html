@@ -81,9 +81,9 @@
               </div>
             </div>
             <div jsselect="plugin_files" class="plugin-details">
-              <div class="show-in-tmi-mode">
+              <div class="show-in-tmi-mode plugin-file">
                 <div jsvalues=
-                  ".className:isPluginEnabled($this) ? 'plugin-file-enabled' : 'plugin-file-disabled'">
+                  ".className:isPluginEnabled($this) ? 'plugin-enabled' : 'plugin-disabled'">
                   <div><table><tr>
                     <td class="plugin-details-label"
                         i18n-content="pluginName">NAME:</td>
@@ -188,7 +188,7 @@
             <input
                 class="always-allow" type="checkbox"
                 jsvalues=
-                    ".identifier:id; id:id + '-always-allowed'; .checked:alwaysAllowed">
+                    ".identifier:id; id:id + '-always-allowed'; .checked:alwaysAllowed; disabled:!isPluginEnabled($this)">
             <label jsvalues="for:id + '-always-allowed'"
                 i18n-content="alwaysAllowed"></label>
           </div>
