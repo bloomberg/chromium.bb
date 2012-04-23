@@ -132,16 +132,20 @@ class TestPackage(object):
     timed_out = False
     overall_fail = False
     re_run = re.compile('\[ RUN      \] ?(.*)\r\n')
+    # APK tests rely on the END tag.
+    re_end = re.compile('\[ END      \] ?(.*)\r\n')
     re_fail = re.compile('\[  FAILED  \] ?(.*)\r\n')
     re_runner_fail = re.compile('\[ RUNNER_FAILED \] ?(.*)\r\n')
     re_ok = re.compile('\[       OK \] ?(.*)\r\n')
     (io_stats_before, ready_to_continue) = self._BeginGetIOStats()
     while ready_to_continue:
-      found = p.expect([re_run, pexpect.EOF, re_runner_fail],
+      found = p.expect([re_run, pexpect.EOF, re_end, re_runner_fail],
                        timeout=self.timeout)
       if found == 1:  # matched pexpect.EOF
         break
-      if found == 2:  # RUNNER_FAILED
+      if found == 2:  # matched END.
+        break
+      if found == 3:  # RUNNER_FAILED
         logging.error('RUNNER_FAILED')
         overall_fail = True
         break
