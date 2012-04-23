@@ -21,8 +21,7 @@ class Widget;
 namespace ash {
 
 namespace internal {
-views::Widget* CreateDesktopBackground(const SkBitmap& wallpaper,
-                                       ImageLayout layout);
+void CreateDesktopBackground(const SkBitmap& wallpaper, ImageLayout layout);
 ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents);
 }  // namespace internal
 

@@ -29,14 +29,11 @@ DesktopBackgroundController::~DesktopBackgroundController() {
 void DesktopBackgroundController::SetDesktopBackgroundImageMode() {
   internal::RootWindowLayoutManager* root_window_layout =
       Shell::GetInstance()->root_window_layout();
-  if (root_window_layout->background_widget())
-    root_window_layout->background_widget()->Hide();
   int index = Shell::GetInstance()->user_wallpaper_delegate()->
       GetUserWallpaperIndex();
   root_window_layout->SetBackgroundLayer(NULL);
-  root_window_layout->SetBackgroundWidget(
-      internal::CreateDesktopBackground(GetWallpaper(index),
-                                        GetWallpaperInfo(index).layout));
+  internal::CreateDesktopBackground(GetWallpaper(index),
+                                    GetWallpaperInfo(index).layout);
   desktop_background_mode_ = BACKGROUND_IMAGE;
 }
 
