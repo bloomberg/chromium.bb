@@ -24,6 +24,10 @@ class ExtensionSorting;
 class PrefService;
 class URLPatternSet;
 
+namespace extensions {
+struct AlarmPref;
+}
+
 // Class for managing global and per-extension preferences.
 //
 // This class distinguishes the following kinds of preferences:
@@ -259,6 +263,13 @@ class ExtensionPrefs : public ExtensionContentSettingsStore::Observer,
   std::set<std::string> GetRegisteredEvents(const std::string& extension_id);
   void SetRegisteredEvents(const std::string& extension_id,
                            const std::set<std::string>& events);
+
+  // Controls a list of alarms for this extension, including the next time they
+  // should run.
+  std::vector<extensions::AlarmPref> GetRegisteredAlarms(
+      const std::string& extension_id);
+  void SetRegisteredAlarms(const std::string& extension_id,
+                           const std::vector<extensions::AlarmPref>& alarms);
 
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.

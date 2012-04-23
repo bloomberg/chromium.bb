@@ -7,6 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/prefs/pref_notifier.h"
@@ -155,6 +156,10 @@ const char kPrefIncognitoContentSettings[] = "incognito_content_settings";
 // A list of event names that this extension has registered from its lazy
 // background page.
 const char kRegisteredEvents[] = "events";
+
+// A list of alarms that this extension has set.
+const char kRegisteredAlarms[] = "alarms";
+const char kAlarmScheduledRunTime[] = "scheduled_run_time";
 
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
@@ -933,6 +938,43 @@ void ExtensionPrefs::SetRegisteredEvents(
   UpdateExtensionPref(extension_id, kRegisteredEvents, value);
 }
 
+std::vector<extensions::AlarmPref> ExtensionPrefs::GetRegisteredAlarms(
+    const std::string& extension_id) {
+  std::vector<extensions::AlarmPref> alarms;
+  const base::DictionaryValue* extension = GetExtensionPref(extension_id);
+  if (!extension)
+    return alarms;
+
+  base::ListValue* list = NULL;
+  if (!extension->GetList(kRegisteredAlarms, &list))
+    return alarms;
+
+  typedef extensions::AlarmManager::Alarm Alarm;
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    base::DictionaryValue* alarm_dict = NULL;
+    extensions::AlarmPref alarm;
+    alarm.alarm.reset(new Alarm());
+    if (list->GetDictionary(i, &alarm_dict) &&
+        Alarm::Populate(*alarm_dict, alarm.alarm.get())) {
+      alarm.scheduled_run_time = ReadTime(alarm_dict, kAlarmScheduledRunTime);
+      alarms.push_back(alarm);
+    }
+  }
+  return alarms;
+}
+
+void ExtensionPrefs::SetRegisteredAlarms(
+    const std::string& extension_id,
+    const std::vector<extensions::AlarmPref>& alarms) {
+  base::ListValue* list = new ListValue();
+  for (size_t i = 0; i < alarms.size(); ++i) {
+    scoped_ptr<base::DictionaryValue> alarm = alarms[i].alarm->ToValue().Pass();
+    SaveTime(alarm.get(), kAlarmScheduledRunTime, alarms[i].scheduled_run_time);
+    list->Append(alarm.release());
+  }
+  UpdateExtensionPref(extension_id, kRegisteredAlarms, list);
+}
+
 bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) {
   return ReadExtensionPrefBoolean(extension_id, kPrefIncognitoEnabled);
 }
@@ -1130,8 +1172,9 @@ void ExtensionPrefs::OnExtensionInstalled(
                         extension->manifest()->value()->DeepCopy());
   }
 
-  // Clear any events that may be registered from a previous install.
+  // Clear any events and alarms that may be registered from a previous install.
   extension_dict->Remove(kRegisteredEvents, NULL);
+  extension_dict->Remove(kRegisteredAlarms, NULL);
 
   if (extension->is_app()) {
     StringOrdinal new_page_ordinal = page_ordinal.IsValid() ?

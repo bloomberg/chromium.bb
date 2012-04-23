@@ -13,6 +13,8 @@
 #include "base/timer.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/experimental.alarms.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -20,7 +22,7 @@ namespace extensions {
 
 // Manages the currently pending alarms for every extension in a profile.
 // There is one manager per virtual Profile.
-class AlarmManager {
+class AlarmManager : public content::NotificationObserver {
  public:
   typedef extensions::api::experimental_alarms::Alarm Alarm;
   typedef std::vector<linked_ptr<Alarm> > AlarmList;
@@ -79,7 +81,22 @@ class AlarmManager {
   // Callback for when an alarm fires.
   void OnAlarm(const std::string& extension_id, const std::string& name);
 
+  // Internal helper to add an alarm and start the timer with the given delay.
+  void AddAlarmImpl(const std::string& extension_id,
+                    const linked_ptr<Alarm>& alarm,
+                    base::TimeDelta timer_delay);
+
+  // Syncs our alarm data for the given extension to/from the prefs file.
+  void WriteToPrefs(const std::string& extension_id);
+  void ReadFromPrefs(const std::string& extension_id);
+
+  // NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   Profile* profile_;
+  content::NotificationRegistrar registrar_;
   scoped_ptr<Delegate> delegate_;
 
   // A map of our pending alarms, per extension.
@@ -87,6 +104,15 @@ class AlarmManager {
 
   // A map of the timer associated with each alarm.
   std::map<const Alarm*, linked_ptr<base::Timer> > timers_;
+};
+
+// Contains the data we store in the extension prefs for each alarm.
+struct AlarmPref {
+  linked_ptr<AlarmManager::Alarm> alarm;
+  base::Time scheduled_run_time;
+
+  AlarmPref();
+  ~AlarmPref();
 };
 
 } //  namespace extensions
