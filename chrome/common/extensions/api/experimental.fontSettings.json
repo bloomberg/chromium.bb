@@ -283,6 +283,57 @@
             "parameters": []
           }
         ]
+      },
+      {
+        "name": "getDefaultCharacterSet",
+        "description": "Gets the default character set.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "optional": true,
+            "description": "This parameter is currently unused."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "details",
+                "type": "object",
+                "properties": {
+                  "charset": {
+                    "type": "string",
+                    "description": "The default character set, such as \"ISO-8859-1\"."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setDefaultCharacterSet",
+        "description": "Sets the default character set.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "charset": {
+                "type": "string",
+                "description": "The character set."
+              }
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [
@@ -363,6 +414,26 @@
               "pixelSize": {
                 "type": "integer",
                 "description": "The font size in pixels."
+              },
+              "levelOfControl": {
+                "$ref": "LevelOfControl",
+                "description": "The level of control this extension has over the setting."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "onDefaultCharacterSetChanged",
+        "description": "Fired when the default character set setting changes.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "charset": {
+                "type": "string",
+                "description": "The character set."
               },
               "levelOfControl": {
                 "$ref": "LevelOfControl",

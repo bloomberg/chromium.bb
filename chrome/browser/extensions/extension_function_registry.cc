@@ -430,6 +430,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<SetDefaultFixedFontSizeFunction>();
   RegisterFunction<GetMinimumFontSizeFunction>();
   RegisterFunction<SetMinimumFontSizeFunction>();
+  RegisterFunction<GetDefaultCharacterSetFunction>();
+  RegisterFunction<SetDefaultCharacterSetFunction>();
 
   // ChromeAuth settings.
   RegisterFunction<SetCloudPrintCredentialsFunction>();

@@ -130,6 +130,20 @@ chrome.test.runTests([
     }, chrome.test.callbackPass());
   },
 
+  function setDefaultCharacterSet() {
+    var charset = 'GBK';
+    chrome.test.listenOnce(fs.onDefaultCharacterSetChanged, function(details) {
+      chrome.test.assertEq(details, {
+        charset: charset,
+        levelOfControl: 'controlled_by_this_extension'
+      });
+    });
+
+    fs.setDefaultCharacterSet({
+      charset: charset
+    }, chrome.test.callbackPass());
+  },
+
   function getDefaultFontSize() {
     var expected = 22;
     var message = 'Setting for default font size should be ' + expected;
@@ -152,5 +166,11 @@ chrome.test.runTests([
     var expected = 7;
     var message = 'Setting for minimum font size should be ' + expected;
     fs.getMinimumFontSize({}, expect({pixelSize: expected}, message));
-  }
+  },
+
+  function getDefaultCharacterSet() {
+    var expected = 'GBK';
+    var message = 'Setting for default character set should be ' + expected;
+    fs.getDefaultCharacterSet(expect({charset: expected}, message));
+  },
 ]);
