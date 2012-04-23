@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,8 @@ TEST_F(BookmarkBarFolderHoverStateTest, HoverState) {
   message_loop.PostDelayedTask(
       FROM_HERE,
       MessageLoop::QuitClosure(),
-      bookmarks::kDragHoverOpenDelay * 1000.0 * 1.5);
+      base::TimeDelta::FromMilliseconds(
+          bookmarks::kDragHoverOpenDelay * 1000.0 * 1.5));
   message_loop.Run();
   ASSERT_EQ(kHoverStateOpen, [bbfhs hoverState]);
   ASSERT_EQ(button, [bbfhs hoverButton]);
@@ -68,7 +69,8 @@ TEST_F(BookmarkBarFolderHoverStateTest, HoverState) {
   message_loop.PostDelayedTask(
       FROM_HERE,
       MessageLoop::QuitClosure(),
-      bookmarks::kDragHoverCloseDelay * 1000.0 * 1.5);
+      base::TimeDelta::FromMilliseconds(
+          bookmarks::kDragHoverCloseDelay * 1000.0 * 1.5));
   message_loop.Run();
   ASSERT_EQ(kHoverStateClosed, [bbfhs hoverState]);
   ASSERT_EQ(nil, [bbfhs hoverButton]);
