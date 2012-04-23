@@ -49,7 +49,7 @@ WebString RendererWebIDBObjectStoreImpl::name() const {
   return result;
 }
 
-WebString RendererWebIDBObjectStoreImpl::keyPath() const {
+WebString RendererWebIDBObjectStoreImpl::keyPathString() const {
   NullableString16 result;
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_ObjectStoreKeyPath(idb_object_store_id_, &result));

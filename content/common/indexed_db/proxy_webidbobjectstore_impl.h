@@ -25,7 +25,7 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
 
   // WebKit::WebIDBObjectStore
   virtual WebKit::WebString name() const;
-  virtual WebKit::WebString keyPath() const;
+  virtual WebKit::WebString keyPathString() const;
   virtual WebKit::WebDOMStringList indexNames() const;
 
   virtual void get(const WebKit::WebIDBKey& key,

@@ -18,12 +18,16 @@ namespace webkit_glue {
 using WebKit::WebIDBKey;
 using WebKit::WebIDBKeyPath;
 using WebKit::WebSerializedScriptValue;
+using WebKit::WebString;
 
 bool IDBKeysFromValuesAndKeyPath(
     const std::vector<WebSerializedScriptValue>& serialized_script_values,
     const string16& idb_key_path,
     std::vector<WebIDBKey>* values) {
-  WebIDBKeyPath web_idb_key_path = WebIDBKeyPath::create(idb_key_path);
+  // TODO(jsbell): Remove the explicit coercion to WebString.
+  // http://crbug.com/112308
+  WebIDBKeyPath web_idb_key_path =
+      WebIDBKeyPath::create(WebString(idb_key_path));
   bool error = web_idb_key_path.parseError() != 0;
   // When a parse error is encountered, no value is returned (null)
   for (std::vector<WebSerializedScriptValue>::const_iterator i =
@@ -43,8 +47,10 @@ WebSerializedScriptValue InjectIDBKey(
     const WebIDBKey& key,
     const WebSerializedScriptValue& value,
     const string16& idb_key_path) {
+  // TODO(jsbell): Remove the explicit coercion to WebString.
+  // http://crbug.com/112308
   return WebIDBKey::injectIDBKeyIntoSerializedValue(
-      key, value, WebIDBKeyPath::create(idb_key_path));
+      key, value, WebIDBKeyPath::create(WebString(idb_key_path)));
 }
 
 }  // namespace webkit_glue

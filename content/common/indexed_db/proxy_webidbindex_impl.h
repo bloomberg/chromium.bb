@@ -18,7 +18,7 @@ class RendererWebIDBIndexImpl : public WebKit::WebIDBIndex {
   // WebKit::WebIDBIndex
   virtual WebKit::WebString name() const;
   virtual WebKit::WebString storeName() const;
-  virtual WebKit::WebString keyPath() const;
+  virtual WebKit::WebString keyPathString() const;
   virtual bool unique() const;
   virtual bool multiEntry() const;
 

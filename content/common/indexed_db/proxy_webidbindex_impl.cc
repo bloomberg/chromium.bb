@@ -43,7 +43,7 @@ WebString RendererWebIDBIndexImpl::storeName() const {
   return result;
 }
 
-WebString RendererWebIDBIndexImpl::keyPath() const {
+WebString RendererWebIDBIndexImpl::keyPathString() const {
   NullableString16 result;
   IndexedDBDispatcher::Send(
       new IndexedDBHostMsg_IndexKeyPath(idb_index_id_, &result));

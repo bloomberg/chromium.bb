@@ -535,7 +535,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnStoreName(
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnKeyPath(
     int32 object_id, NullableString16* key_path) {
   parent_->SyncGetter<NullableString16>(
-      &map_, object_id, key_path, &WebIDBIndex::keyPath);
+      &map_, object_id, key_path, &WebIDBIndex::keyPathString);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnUnique(
@@ -757,7 +757,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnName(
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnKeyPath(
     int32 object_id, NullableString16* keyPath) {
   parent_->SyncGetter<NullableString16>(
-      &map_, object_id, keyPath, &WebIDBObjectStore::keyPath);
+      &map_, object_id, keyPath, &WebIDBObjectStore::keyPathString);
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndexNames(
