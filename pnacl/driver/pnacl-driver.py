@@ -127,7 +127,7 @@ EXTRA_ENV = {
     '-l:crti.bc -l:crtdummy.bc -l:crtbegin.bc ${ld_inputs} ${STDLIBS}',
 
   'STDLIBS'   : '${DEFAULTLIBS ? '
-                '${LIBSTDCPP} ${LIBPTHREAD} ${LIBC} ${LIBNACL} ${PNACL_ABI}}',
+                '${LIBSTDCPP} ${LIBPTHREAD} ${LIBNACL} ${LIBC} ${PNACL_ABI}}',
   'LIBSTDCPP' : '${IS_CXX ? -lstdc++ -lm }',
   'LIBC'      : '-lc',
   'LIBNACL'   : '${LIBMODE_NEWLIB ? -lnacl}',
