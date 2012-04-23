@@ -35,7 +35,7 @@ base::NativeLibrary LoadLibrary(const FilePath& filename) {
   base::NativeLibrary library = base::LoadNativeLibrary(filename,
                                                         &error);
   if (!library) {
-    VLOG(1) << "Failed to load " << filename.MaybeAsASCII() << ": " << error;
+    DVLOG(1) << "Failed to load " << filename.MaybeAsASCII() << ": " << error;
     return NULL;
   }
   return library;

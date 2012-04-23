@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ void PrintViewHierarchyImp(const View* view, int indent) {
   buf << L' ';
   buf << view;
 
-  VLOG(1) << buf.str();
+  DVLOG(1) << buf.str();
   std::cout << buf.str() << std::endl;
 
   for (int i = 0, count = view->child_count(); i < count; ++i)
@@ -51,7 +51,7 @@ void PrintFocusHierarchyImp(const View* view, int indent) {
   buf << L' ';
   buf << view;
 
-  VLOG(1) << buf.str();
+  DVLOG(1) << buf.str();
   std::cout << buf.str() << std::endl;
 
   if (view->child_count() > 0)

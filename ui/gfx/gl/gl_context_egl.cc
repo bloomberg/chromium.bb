@@ -4,10 +4,10 @@
 
 #include "ui/gfx/gl/gl_context_egl.h"
 
-#include "build/build_config.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "build/build_config.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "ui/gfx/gl/egl_util.h"
 #include "ui/gfx/gl/gl_surface.h"
@@ -93,8 +93,8 @@ bool GLContextEGL::MakeCurrent(GLSurface* surface) {
                       surface->GetHandle(),
                       surface->GetHandle(),
                       context_)) {
-    VLOG(1) << "eglMakeCurrent failed with error "
-            << GetLastEGLErrorString();
+    DVLOG(1) << "eglMakeCurrent failed with error "
+             << GetLastEGLErrorString();
     return false;
   }
 

@@ -164,10 +164,10 @@ void ExampleMenuModel::ExecuteCommand(int command_id) {
       // Update the check status.
       std::set<int>::iterator iter = checked_fruits_.find(command_id);
       if (iter == checked_fruits_.end()) {
-        VLOG(1) << "Checked " << checked_fruit;
+        DVLOG(1) << "Checked " << checked_fruit;
         checked_fruits_.insert(command_id);
       } else {
-        VLOG(1) << "Unchecked " << checked_fruit;
+        DVLOG(1) << "Unchecked " << checked_fruit;
         checked_fruits_.erase(iter);
       }
       break;

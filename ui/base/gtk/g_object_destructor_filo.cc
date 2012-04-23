@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,10 +51,10 @@ void GObjectDestructorFILO::Disconnect(
   if (!dtors.front().equal(object, callback, context)) {
     // Reenable this warning once this bug is fixed:
     // http://code.google.com/p/chromium/issues/detail?id=85603
-    VLOG(1) << "Destructors should be unregistered the reverse order they "
-            << "were registered. But for object " << object << " "
-            << "deleted hook is "<< context << ", the last queued hook is "
-            << dtors.front().context;
+    DVLOG(1) << "Destructors should be unregistered the reverse order they "
+             << "were registered. But for object " << object << " "
+             << "deleted hook is "<< context << ", the last queued hook is "
+             << dtors.front().context;
   }
   for (HandlerList::iterator i = dtors.begin(); i != dtors.end(); ++i) {
     if (i->equal(object, callback, context)) {

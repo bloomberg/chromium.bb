@@ -6,19 +6,19 @@
 
 #include "base/command_line.h"
 #include "base/threading/thread_restrictions.h"
-#include "third_party/skia/include/images/SkImageEncoder.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/images/SkImageEncoder.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/compositor/compositor_switches.h"
-#include "ui/gfx/compositor/test_web_graphics_context_3d.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/test_web_graphics_context_3d.h"
 #include "ui/gfx/gl/gl_context.h"
-#include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#include "ui/gfx/gl/gl_surface.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
@@ -42,7 +42,7 @@ ContextFactory* ContextFactory::GetInstance() {
   // We leak the shared resources so that we don't race with
   // the tear down of the gl_bindings.
   if (!g_context_factory) {
-    VLOG(1) << "Using DefaultSharedResource";
+    DVLOG(1) << "Using DefaultSharedResource";
     scoped_ptr<DefaultContextFactory> instance(
         new DefaultContextFactory());
     if (instance->Initialize())

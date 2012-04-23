@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
 
@@ -56,7 +56,7 @@ bool LoadD3DXLibrary(const FilePath& module_path,
   if (!library) {
     library = base::LoadNativeLibrary(module_path.Append(name), NULL);
     if (!library) {
-      VLOG(1) << name << " not found.";
+      DVLOG(1) << name << " not found.";
       return false;
     }
   }
@@ -101,7 +101,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary library = base::LoadNativeLibrary(
           module_path.Append(L"osmesa.dll"), NULL);
       if (!library) {
-        VLOG(1) << "osmesa.dll not found";
+        DVLOG(1) << "osmesa.dll not found";
         return false;
       }
 
@@ -158,7 +158,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary gles_library = base::LoadNativeLibrary(
           gles_path.Append(L"libglesv2.dll"), NULL);
       if (!gles_library) {
-        VLOG(1) << "libglesv2.dll not found";
+        DVLOG(1) << "libglesv2.dll not found";
         return false;
       }
 
@@ -167,7 +167,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary egl_library = base::LoadNativeLibrary(
           gles_path.Append(L"libegl.dll"), NULL);
       if (!egl_library) {
-        VLOG(1) << "libegl.dll not found.";
+        DVLOG(1) << "libegl.dll not found.";
         base::UnloadNativeLibrary(gles_library);
         return false;
       }
@@ -209,7 +209,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary library = base::LoadNativeLibrary(
           FilePath(L"opengl32.dll"), NULL);
       if (!library) {
-        VLOG(1) << "opengl32.dll not found";
+        DVLOG(1) << "opengl32.dll not found";
         return false;
       }
 

@@ -4,10 +4,10 @@
 
 #include "ui/gfx/gl/gl_surface_egl.h"
 
-#include "build/build_config.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "build/build_config.h"
 #if !defined(OS_ANDROID)
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -239,8 +239,8 @@ bool NativeViewGLSurfaceEGL::IsOffscreen() {
 
 bool NativeViewGLSurfaceEGL::SwapBuffers() {
   if (!eglSwapBuffers(GetDisplay(), surface_)) {
-    VLOG(1) << "eglSwapBuffers failed with error "
-            << GetLastEGLErrorString();
+    DVLOG(1) << "eglSwapBuffers failed with error "
+             << GetLastEGLErrorString();
     return false;
   }
 
@@ -277,8 +277,8 @@ bool NativeViewGLSurfaceEGL::PostSubBuffer(
     int x, int y, int width, int height) {
   DCHECK(supports_post_sub_buffer_);
   if (!eglPostSubBufferNV(GetDisplay(), surface_, x, y, width, height)) {
-    VLOG(1) << "eglPostSubBufferNV failed with error "
-            << GetLastEGLErrorString();
+    DVLOG(1) << "eglPostSubBufferNV failed with error "
+             << GetLastEGLErrorString();
     return false;
   }
   return true;

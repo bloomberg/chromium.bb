@@ -41,7 +41,7 @@ TouchState TouchEventTypeToTouchState(ui::EventType type) {
     case ui::ET_TOUCH_CANCELLED:
       return TS_CANCELLED;
     default:
-      VLOG(1) << "Unknown Touch Event type";
+      DVLOG(1) << "Unknown Touch Event type";
   }
   return TS_UNKNOWN;
 }
@@ -284,9 +284,9 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   }
 
   if (state_ != last_state)
-    VLOG(4) << "Gesture Sequence"
-            << " State: " << state_
-            << " touch id: " << event.GetTouchId();
+    DVLOG(4) << "Gesture Sequence"
+             << " State: " << state_
+             << " touch id: " << event.GetTouchId();
 
   if (last_state == GS_PENDING_SYNTHETIC_CLICK && state_ != last_state)
     long_press_timer_->Stop();
