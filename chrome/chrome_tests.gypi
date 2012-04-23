@@ -4440,6 +4440,11 @@
             }],
             ['asan==1', {
               'cflags!': [ '-faddress-sanitizer' ],
+              'xcode_settings': {
+                'OTHER_CFLAGS!': [
+                  '-faddress-sanitizer',
+                ],
+              },
             }],
           ],
           'actions': [
