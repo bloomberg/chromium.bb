@@ -10,12 +10,14 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebContentLayer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebExternalTextureLayer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatPoint.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFloatRect.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSolidColorLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperation.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFilterOperations.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
 #include "ui/base/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/compositor_switches.h"
@@ -181,6 +183,16 @@ bool Layer::GetMasksToBounds() const {
 
 void Layer::SetOpacity(float opacity) {
   GetAnimator()->SetOpacity(opacity);
+}
+
+void Layer::SetBackgroundBlur(int blur_radius)
+{
+  WebKit::WebFilterOperations filters;
+  if (blur_radius)
+    filters.append(WebKit::WebBlurFilterOperation(blur_radius));
+  web_layer_.setBackgroundFilters(filters);
+
+  background_blur_radius_ = blur_radius;
 }
 
 float Layer::GetTargetOpacity() const {

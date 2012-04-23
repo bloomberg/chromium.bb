@@ -15,8 +15,8 @@
 #include "base/message_loop.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebContentLayerClient.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayerClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -126,6 +126,11 @@ class COMPOSITOR_EXPORT Layer :
   // texture (resulting alpha = opacity * alpha).
   float opacity() const { return opacity_; }
   void SetOpacity(float opacity);
+
+  // Blur pixels by this amount in anything below the layer and visible through
+  // the layer.
+  int background_blur() const { return background_blur_radius_; }
+  void SetBackgroundBlur(int blur_radius);
 
   // Return the target opacity if animator is running, or the current opacity
   // otherwise.
@@ -276,6 +281,7 @@ class COMPOSITOR_EXPORT Layer :
   SkRegion damaged_region_;
 
   float opacity_;
+  int background_blur_radius_;
 
   std::string name_;
 
