@@ -779,7 +779,7 @@ void ChromeBrowserMainParts::SpdyFieldTrial() {
   if (use_field_trial) {
     const base::FieldTrial::Probability kSpdyDivisor = 100;
     base::FieldTrial::Probability npnhttp_probability = 5;
-    base::FieldTrial::Probability spdy3_probability = 10;
+    base::FieldTrial::Probability spdy3_probability = 50;
 
     chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
     if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
