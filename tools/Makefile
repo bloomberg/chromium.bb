@@ -144,8 +144,8 @@ GCC_VERSION = 4.4.3
 NACL_GCC_GIT_BASE = 4e0ae761f59baae95282ab07efa9b831ac524642
 NEWLIB_VERSION = 1.18.0
 NACL_NEWLIB_GIT_BASE = 65e6baefeb2874011001c2f843cf3083e771b62f
-GDB_VERSION = 7.4
-NACL_GDB_GIT_BASE = f46e6a121e6969e144e1ded5344f592a19b7c10d
+GDB_VERSION = 6.8
+NACL_GDB_GIT_BASE = 5540d856ee177a454c2b8871c6498d0524b0c6f9
 GLIBC_VERSION = 2.9
 NACL_GLIBC_GIT_BASE = 5c46008d0874c9b9d5f5f201a10e975d1fe84787
 
@@ -226,7 +226,7 @@ rm -rf $@
 mkdir -p $@
 BUILD=$$PWD/BUILD && cd $@ && \
   ../../SRC/.gcc-extra-$(@:BUILD/.gcc-extra-build-%=%)/configure \
-  CFLAGS="-m$(HOST_TOOLCHAIN_BITS) $9(CFLAGS)" \
+  CFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CFLAGS)" \
   CXXFLAGS="-m$(HOST_TOOLCHAIN_BITS) $(CXXFLAGS)" \
   CPPFLAGS="-fexceptions $(CPPFLAGS)" \
   --prefix=$$BUILD/.gcc-extra-install-$(@:BUILD/.gcc-extra-build-%=%) \
@@ -819,14 +819,6 @@ gcc: BUILD/stamp-$(CROSSARCH)-gcc
 ##################################################################
 # TODO: Add 64-bit support.
 # Only linux is supported.
-GDB_DEBUG ?= no
-ifeq (GDB_DEBUG, yes)
-  GDB_CFLAGS = -O0 -g
-  GDB_LDFLAGS =
-else
-  GDB_CFLAGS =
-  GDB_LDFLAGS = -s
-endif
 BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
 	case $$(SRC/gdb/config.guess) in \
 	*-linux*) ;; \
@@ -834,15 +826,18 @@ BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
 	esac
 	rm -rf BUILD/build-gdb-$(CROSSARCH)
 	mkdir BUILD/build-gdb-$(CROSSARCH)
+	CC=gcc ; \
+	BUILD= ; \
+	case $$(SRC/gdb/config.guess) in \
+	x86_64-*) CC="gcc -m32" ; BUILD=--build=i686-linux ;; \
+	esac ; \
 	cd BUILD/build-gdb-$(CROSSARCH) && \
-	  CC="gcc -m32" \
-	  LDFLAGS="$(GDB_LDFLAGS)" \
-	  CFLAGS="$(GDB_CFLAGS)" \
+	  CC="$${CC}" \
+	  LDFLAGS="-s" \
 	  ../../SRC/gdb/configure \
 	    --prefix=$(PREFIX) \
-	    --enable-64-bit-bfd \
-	    --with-python \
-	    --target=i686-linux
+	    $${BUILD} \
+	    --target=nacl
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
@@ -927,11 +922,6 @@ endif
 	    ln -sfn libstdc++.so.6 libstdc++.so ; \
 	  done ; \
 	) ; done
-ifeq ($(CANNED_REVISION), no)
-	case $$(SRC/binutils/config.guess) in \
-	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb ;; \
-	esac
-endif
 	rm -rf "$(DESTDIR)$(PREFIX)"/{include,lib/*.a*,$(CROSSARCH)/lib{,32}/*.la}
 	rm -rf "$(DESTDIR)$(PREFIX)"/{lib/{*/*/*/*{,/*}.la,*.so*},lib{32,64}}
 

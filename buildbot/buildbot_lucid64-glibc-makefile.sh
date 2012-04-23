@@ -34,7 +34,7 @@ echo @@@BUILD_STEP setup source@@@
 echo @@@BUILD_STEP compile_toolchain@@@
 (
   cd tools
-  make -j8 buildbot-build-with-glibc gdb
+  make -j8 buildbot-build-with-glibc
   if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
     make install-glibc INST_GLIBC_PREFIX="$PWD"
   fi
