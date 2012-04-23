@@ -450,13 +450,16 @@ def GetVsvarsPath(generator_flags):
   # the setup script from the SDK if so.
   # TODO(alexeypa): specify the target platform (x86 or x64).
   sdk_dir = os.environ.get('WindowsSDKDir')
-  if not sdk_dir:
-    vs = GetVSVersion(generator_flags)
-    return os.path.normpath(os.path.join(
-        vs.Path(), r'Common7\Tools\vsvars32.bat'))
-  else:
+  vs = GetVSVersion(generator_flags)
+  # Only Express or SDK with compiler installed has this script. Rely on
+  # registry detection and GYP_MSVS_VERSION as primary determination for
+  # version.
+  if sdk_dir and vs.ShortName().endswith('e'):
     return os.path.normpath(os.path.join(
         sdk_dir, r'Bin\SetEnv.Cmd'))
+  else:
+    return os.path.normpath(os.path.join(
+        vs.Path(), r'Common7\Tools\vsvars32.bat'))
 
 def ExpandMacros(string, expansions):
   """Expand $(Variable) per expansions dict. See MsvsSettings.GetVSMacroEnv
