@@ -1,136 +1,35 @@
-Current Status as of Feb 15, 2012
+Current Status as of Apr 23, 2012
 
-Changelog (please update here if you make a change):
 
-https://chromiumcodereview.appspot.com/9462002/
-  dalecurtis: Fixes premature clipped of the decode buffer for mp3s when the
-  checked bitsream reader is used. Patch is now upstreamed:
-  http://lists.libav.org/pipermail/libav-devel/2012-February/022428.html
+Upstream cherry-picks:
 
-Patches added with the new GIT workflow:
+None.
+
+
+Current patches:
 
 ugly/
-31_remove_attribute_deprecated.patch
-  dalecurtis: Disables deprecated attribute for Chromium. Tracking bug here:
-  http://crbug.com/112673
-
-56_enable_checked_bitstream.patch
+01_enable_checked_bitstream.patch
   dalecurtis: Removes "#define UNCHECKED_BITSTREAM_READER 1" from all codecs
   defining it. In Chromium, all codecs should use the safe bitstream reader.
 
-57_valgrind_asan_fixes.patch
-  dalecurtis: Lots of fixes for crashes and memory leaks found during regression
-  testing after roll to ea4037162fb0afa871e5312a7b23c828d2b85066.  See code
-  review at https://chromiumcodereview.appspot.com/9373002/ for more details.
+05_remove_attribute_deprecated.patch
+  dalecurtis: Disables deprecated attribute for Chromium. Tracking bug here:
+  http://crbug.com/112673
 
-59_support_no_omit_frame_pointer_mac.patch
-  dalecurtis: We need to compile with -fno-omit-frame-pointer on ia32 Mac for
-  breakpad support.  See http://crbug.com/115170
-
-from_upstream/
-http://git.libav.org/?p=libav.git;a=commit;h=464f26889c99f194d112fcf1197795d341fad38b
-http://git.libav.org/?p=libav.git;a=commit;h=b7165426917f91ebcad84bdff366824f03b32bfe
-  dalecurtis: Fixes for mp3 and checked bistream reading.  Not in FFmpeg.
-
-1fa4692479f9c8a908b944e353d05984a44fcefd
-  dalecurtis: Fixes Clang compile errors by removing duplicate initializers.
-
-ef0d779706c77ca9007527bd8d41e9400682f4e4
-  dalecurtis: Fixes uninitialized reads on corrupted OGG files.
-
-cd40c31ee9ad2cca6f3635950b002fd46be07e98
-  dalecurtis: Replaces previous mkv buffer overflow patch.
-
-12623a8026c1657aedce2ef10d58bffba85dee2d
-  acolwell: This fixes some invalid memory access caused later in the function
-  by res_chan[] not being set for all channels.
-
-TBDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  dalecurtis: Allow frame size changes for multithreaded decode.  Doesn't work
-  for all codecs (H264, MPEG, RV40), but works for the ones we want.
-
-599888a48040f4086c9086aae958b7231b37afcc
-  thakis: Fixes yasm alignment issue for text sections.
-
-revert c98c1f434eed06390f4990dd23f7ec15dbe53703
-  dalecurtis: Fixes a webm parsing regression.
-
-8fb26950ed3c4cd1e175c4439726884926cba022
-  rbultje: h264: don't use redzone in loopfilter on win64.
-
-291c9b62855d555ac5385e23219461b6080da7db
-  rbultje: h264: change underread for 10bit QPEL to overread.
-
-b0c4f04338234ee011d7b704621347ef232294fe
-  rbultje: h264: fix mmxext chroma deblock to use correct TC values.
-
-d1604b3de96575195b219028e2c4f08b2259aa7d
-  rbultje: h264: prevent overreads in intra PCM decoding.
-
-0ce4fe482c27abfa7eac503a52fdc50b70ccd871
-  rbultje: h264: error out on invalid bitdepth.
-
-758ec111538ccd487686e8677aa754ee4d82beaa
-  Fix invalid interlaced/progressive MB combinations for direct mode prediction.
-
-2b07f572af65aa411a24e87348671fad7cd10fe9
-  Fix detection of mp3 files with large ID3 tags.
-
-05b9a89ed71846be266f283b9d188e0fcb2f0323
-  Fix old frames returned after avcodec_flush_buffers().
-
-30011bf20109eef1a0f9ee949b19f9998ad88663
-  acolwell: vp8: avoid race condition in segment map.
-
-aa9c2e41b6467136836e1b4d19ee39c7fe0b838e
-  acolwell: Fix potential race in frame_worker_thread.
-
-a4e359a3f98650dab3d2e93f067658e20fa9c0d7
-  Fix regression in mpeg4 decoding.
-
-3360b8517a1f478c4102072e5eadd8ba78be0538
-  Fix regression in h264 seeking.
-
-9bb3b7d028395a8fe70148dec89430e8aae7a7e2
-c7c976c6d7051804f96e3106688c1963d1238ae0
-  Fix OOB write during ogg seeking.
-
-Patches still existing from the pre-GIT workflow:
+06_enable_register_protocol.patch
+  dalecurtis: FFmpeg/LibAV have deprecated support for external clients which
+  want to register protocols.  Chrome requires this to work.  See patch for
+  more details.
 
 to_upstream/
-05_respect_flac_dirac_configure.patch
-  rbultje: Nothing done yet. I'll try to get this upstream later, but it's
-  no functional change so lower on my priority list.
+02_compile_with_disabled_features.patch
+  dalecurtis: Add CONFIG_* checks to compile out code which we don't use which
+  might be a security risk.  Discuss with cevans before removing.
 
-11a_compile_with_disabled_features.patch
-  Add CONFIG_* checks to make sure we don't use sipr/compression if
-   enwantee(enwantedtche.g. webm doesn't support them).
+03_ogg_seek_to_zero.patch
+  dalecurtis: Seeking to zero works now, but frame timestamps don't line up.  A
+  reproducible test case has been sent upstream.  Hopefully remove with M21.
 
-12_ogg_seek_to_zero.patch
-  rbultje: I've looked into this, but didn't get anywhere yet. I can
-  reproduce the bug but the patch didn't really fix it. I'll try again.
-  IHF: The remainder of 25_ogg_index.patch has been merged into this.
-
-35_oggdec_duration.patch
-  scherkus: Reverts FFmpeg commit 5901cd6236d97b34fe59a47ba0fd6da8f647d1f1
-  which regressed duration calculation.
-  dalecurtis: still broken after ffmpeg roll to
-  ea4037162fb0afa871e5312a7b23c828d2b85066.
-
-53_matroska_codec_config.patch
-  cevans: avoid compiling in codec-specific code in Matroska if the codecs are
-  not compiled in.
-
-54_mov_stss.patch
-  cevans: simple OOB read fix.
-
-55_h264_nal.patch
-  cevans: avoid OOB reads.
-  dalecurtis: partially upstreamed already. updated patch file with non-upstream
-  bits.
-
-ugly/
-
-41_matroska_cluster_incremental.patch
-  Parse matroska clusters incrementally as opposed to all at once.
-  Not for upstreamining as it needs work to handle SSA.
+04_oggdec_duration.patch
+  dalecurtis: Upstream tracking bug: https://ffmpeg.org/trac/ffmpeg/ticket/1186

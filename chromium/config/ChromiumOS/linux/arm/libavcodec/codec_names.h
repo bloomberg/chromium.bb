@@ -323,10 +323,18 @@ case CODEC_ID_V410:
     return "v410";
 case CODEC_ID_XWD:
     return "xwd";
+case CODEC_ID_CDXL:
+    return "cdxl";
+case CODEC_ID_XBM:
+    return "xbm";
+case CODEC_ID_ZEROCODEC:
+    return "zerocodec";
 case CODEC_ID_Y41P:
     return "y41p";
 case CODEC_ID_ESCAPE130:
     return "escape130";
+case CODEC_ID_EXR:
+    return "exr";
 case CODEC_ID_AVRP:
     return "avrp";
 case CODEC_ID_G2M:
@@ -592,6 +600,8 @@ case CODEC_ID_8SVX_FIB:
     return "8svx_fib";
 case CODEC_ID_BMV_AUDIO:
     return "bmv_audio";
+case CODEC_ID_RALF:
+    return "ralf";
 case CODEC_ID_FFWAVESYNTH:
     return "ffwavesynth";
 case CODEC_ID_8SVX_RAW:
@@ -620,6 +630,8 @@ case CODEC_ID_SRT:
     return "srt";
 case CODEC_ID_MICRODVD:
     return "microdvd";
+case CODEC_ID_EIA_608:
+    return "eia_608";
 case CODEC_ID_TTF:
     return "ttf";
 case CODEC_ID_BINTEXT:

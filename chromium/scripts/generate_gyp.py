@@ -108,7 +108,6 @@ def CleanObjectFiles(object_files):
       # TODO(ihf): Warning, it is *easy* right now to remove more files
       # than is healthy and end up with a library that the linker does
       # not complain about but that can't be loaded. Add some verification!
-      'libavcodec/dirac.o',
       'libavcodec/resample.o',
       'libavcodec/resample2.o',
       'libavcodec/x86/dnxhd_mmx.o',

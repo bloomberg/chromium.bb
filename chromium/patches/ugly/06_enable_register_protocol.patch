@@ -1,0 +1,16 @@
+diff --git a/libavformat/avio.c b/libavformat/avio.c
+index afaa7e6..07cbcce 100644
+--- a/libavformat/avio.c
++++ b/libavformat/avio.c
+@@ -383,3 +383,11 @@ int ff_check_interrupt(AVIOInterruptCB *cb)
+         return ret;
+     return 0;
+ }
++
++// TODO(dalecurtis): FFmpeg deprecated this, but it's required by Chromium to
++// register the URL protocol handler necessary to make everything work.  We can
++// not use ffurl_register_protocol as all ff* methods are internal.
++int av_register_protocol2(URLProtocol *protocol, int size)
++{
++    return ffurl_register_protocol(protocol, size);
++}
