@@ -447,8 +447,18 @@ void StatusBubbleMac::SetState(StatusBubbleState state) {
   if (state == state_)
     return;
 
-  if (state == kBubbleHidden)
-    [window_ setFrame:NSMakeRect(0, 0, 1, 1) display:YES];
+  if (state == kBubbleHidden) {
+    // When hidden (with alpha of 0), make the window have the minimum size,
+    // while still keeping the same origin. It's important to not set the
+    // origin to 0,0 as that will cause the window to use more space in
+    // Expose/Mission Control. See http://crbug.com/81969.
+    //
+    // Also, doing it this way instead of detaching the window avoids bugs with
+    // Spaces and Cmd-`. See http://crbug.com/31821 and http://crbug.com/61629.
+    NSRect frame = [window_ frame];
+    frame.size = NSMakeSize(1, 1);
+    [window_ setFrame:frame display:YES];
+  }
 
   if ([delegate_ respondsToSelector:@selector(statusBubbleWillEnterState:)])
     [delegate_ statusBubbleWillEnterState:state];
