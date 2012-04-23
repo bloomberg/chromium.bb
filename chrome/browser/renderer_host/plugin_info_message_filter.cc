@@ -250,6 +250,7 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
 
   scoped_ptr<base::Value> value;
   content_settings::SettingInfo info;
+  bool uses_plugin_specific_setting = false;
   if (is_nacl_plugin) {
     value.reset(
         host_content_settings_map_->GetWebsiteSetting(
@@ -260,7 +261,9 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
         host_content_settings_map_->GetWebsiteSetting(
             policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource,
             &info));
-    if (!value.get()) {
+    if (value.get()) {
+      uses_plugin_specific_setting = true;
+    } else {
       value.reset(host_content_settings_map_->GetWebsiteSetting(
           policy_url, plugin_url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
           &info));
@@ -268,6 +271,7 @@ void PluginInfoMessageFilter::Context::GetPluginContentSetting(
   }
   *setting = content_settings::ValueToContentSetting(value.get());
   *uses_default_content_setting =
-      (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
-       info.secondary_pattern == ContentSettingsPattern::Wildcard());
+      !uses_plugin_specific_setting &&
+      info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+      info.secondary_pattern == ContentSettingsPattern::Wildcard();
 }
