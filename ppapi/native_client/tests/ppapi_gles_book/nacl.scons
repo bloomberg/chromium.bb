@@ -56,10 +56,16 @@ gles_book_examples = {
         'Chapter_9/TextureWrap/TextureWrap.c'],
 }
 
+# TODO(jvoung): PPAPIGraphics3DIsBroken is currently marked True.
+# When we turn on these tests again, be sure to convert these
+# NMF files to work with PNaCl (have a portable-only version).
+# For now, we just avoid adding them to a test suite.
+if env.Bit('bitcode'):
+  Return()
+
 for demo, sources in gles_book_examples.iteritems():
     nexe_name = env.ProgramNameForNmf('ppapi_gles_book_%s' % demo)
-    nmf_name_base = 'ppapi_gles_book_' + demo
-    nmf_name = nmf_name_base + '.nmf'
+    nmf_name = 'ppapi_gles_book_' + demo + '.nmf'
     nexe = env.ComponentProgram(
         nexe_name,
         ['demos/gles2_book/demo_' + demo + '.cc'] + sources,
@@ -74,7 +80,7 @@ for demo, sources in gles_book_examples.iteritems():
     test = env.PPAPIBrowserTester(
         'ppapi_gles_book_' + demo + '.out',
         url='ppapi_gles_book.html?manifest=' + nmf_name,
-        nmf_names=[nmf_name_base],
+        nmfs=['${TEST_DIR}/' + nmf_name],
         files=[nexe,
                env.File('ppapi_gles_book.html')],
         browser_flags=['--enable-accelerated-plugins'])
