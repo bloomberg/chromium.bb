@@ -26,4 +26,17 @@
 int
 wl_os_socket_cloexec(int domain, int type, int protocol);
 
+/*
+ * The following are for wayland-os.c and the unit tests.
+ * Do not use them elsewhere.
+ */
+
+#ifdef __linux__
+
+#ifndef SOCK_CLOEXEC
+#define SOCK_CLOEXEC 02000000
+#endif
+
+#endif /* __linux__ */
+
 #endif

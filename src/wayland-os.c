@@ -55,13 +55,11 @@ wl_os_socket_cloexec(int domain, int type, int protocol)
 {
 	int fd;
 
-#ifdef SOCK_CLOEXEC
 	fd = socket(domain, type | SOCK_CLOEXEC, protocol);
 	if (fd >= 0)
 		return fd;
 	if (errno != EINVAL)
 		return -1;
-#endif
 
 	fd = socket(domain, type, protocol);
 	return set_cloexec_or_close(fd);

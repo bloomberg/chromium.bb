@@ -50,12 +50,10 @@ socket(int domain, int type, int protocol)
 {
 	wrapped_calls++;
 
-#ifdef SOCK_CLOEXEC
 	if (fall_back && (type & SOCK_CLOEXEC)) {
 		errno = EINVAL;
 		return -1;
 	}
-#endif
 
 	return real_socket(domain, type, protocol);
 }
@@ -70,17 +68,13 @@ do_os_wrappers_socket_cloexec(int n)
 
 	/* simply create a socket that closes on exec */
 	fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
+	assert(fd >= 0);
 
-#ifdef SOCK_CLOEXEC
 	/*
 	 * Must have 2 calls if falling back, but must also allow
 	 * falling back without a forced fallback.
 	 */
 	assert(wrapped_calls > n);
-#else
-	assert(wrapped_calls == 1);
-#endif
-	assert(fd >= 0);
 
 	exec_fd_leak_check(nr_fds);
 }
