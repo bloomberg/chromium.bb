@@ -9,7 +9,7 @@
 #include "content/renderer/media/rtc_video_decoder.h"
 
 MockMediaStreamImpl::MockMediaStreamImpl()
-    : MediaStreamImpl(NULL, NULL, NULL, NULL) {
+    : MediaStreamImpl(NULL, NULL, NULL, NULL, NULL) {
 }
 
 MockMediaStreamImpl::~MockMediaStreamImpl() {}

@@ -74,11 +74,13 @@ static std::string ExtractManagerStreamLabel(
 int MediaStreamImpl::next_request_id_ = 0;
 
 MediaStreamImpl::MediaStreamImpl(
+    content::RenderView* render_view,
     MediaStreamDispatcher* media_stream_dispatcher,
     content::P2PSocketDispatcher* p2p_socket_dispatcher,
     VideoCaptureImplManager* vc_manager,
     MediaStreamDependencyFactory* dependency_factory)
-    : dependency_factory_(dependency_factory),
+    : content::RenderViewObserver(render_view),
+      dependency_factory_(dependency_factory),
       media_stream_dispatcher_(media_stream_dispatcher),
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
       network_manager_(NULL),
@@ -410,7 +412,7 @@ bool MediaStreamImpl::EnsurePeerConnectionFactory() {
     base::WaitableEvent event(true, false);
     chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
         &MediaStreamImpl::InitializeWorkerThread,
-        this,
+        base::Unretained(this),
         &worker_thread_,
         &event));
     event.Wait();
@@ -421,7 +423,7 @@ bool MediaStreamImpl::EnsurePeerConnectionFactory() {
     base::WaitableEvent event(true, false);
     chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
           &MediaStreamImpl::CreateIpcNetworkManagerOnWorkerThread,
-          this,
+          base::Unretained(this),
           &event));
     event.Wait();
   }

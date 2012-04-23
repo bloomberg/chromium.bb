@@ -465,6 +465,7 @@ RenderViewImpl::RenderViewImpl(
       input_tag_speech_dispatcher_(NULL),
       device_orientation_dispatcher_(NULL),
       media_stream_dispatcher_(NULL),
+      media_stream_impl_(NULL),
       p2p_socket_dispatcher_(NULL),
       devtools_agent_(NULL),
       renderer_accessibility_(NULL),
@@ -593,10 +594,6 @@ RenderViewImpl::~RenderViewImpl() {
     DCHECK_NE(this, it->second) << "Failed to call Close?";
 #endif
 
-  // MediaStreamImpl holds weak references to RenderViewObserver objects,
-  // ensure it's deleted before the observers.
-  media_stream_impl_ = NULL;
-
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, RenderViewGone());
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, OnDestruct());
 }
@@ -658,7 +655,7 @@ RenderViewImpl* RenderViewImpl::Create(
 WebPeerConnectionHandler* RenderViewImpl::CreatePeerConnectionHandler(
     WebPeerConnectionHandlerClient* client) {
   EnsureMediaStreamImpl();
-  if (!media_stream_impl_.get())
+  if (!media_stream_impl_)
     return NULL;
   return media_stream_impl_->CreatePeerConnectionHandler(client);
 }
@@ -666,7 +663,7 @@ WebPeerConnectionHandler* RenderViewImpl::CreatePeerConnectionHandler(
 WebPeerConnection00Handler* RenderViewImpl::CreatePeerConnectionHandlerJsep(
     WebPeerConnection00HandlerClient* client) {
   EnsureMediaStreamImpl();
-  if (!media_stream_impl_.get())
+  if (!media_stream_impl_)
     return NULL;
   return media_stream_impl_->CreatePeerConnectionHandlerJsep(client);
 }
@@ -2218,7 +2215,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   webkit_media::WebMediaPlayerImpl* media_player =
       content::GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(
           this, frame, client, AsWeakPtr(), collection, audio_source_provider,
-          message_loop_factory, media_stream_impl_.get(), render_media_log);
+          message_loop_factory, media_stream_impl_, render_media_log);
 #if defined(OS_ANDROID)
   // TODO(qinmin): Implement for android.
   // http://crbug.com/113218
@@ -2226,7 +2223,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   if (!media_player) {
     media_player = new webkit_media::WebMediaPlayerImpl(
         frame, client, AsWeakPtr(), collection, audio_source_provider,
-        message_loop_factory, media_stream_impl_.get(), render_media_log);
+        message_loop_factory, media_stream_impl_, render_media_log);
   }
 #endif
   return media_player;
@@ -3300,9 +3297,10 @@ void RenderViewImpl::EnsureMediaStreamImpl() {
   if (!media_stream_dispatcher_)
     media_stream_dispatcher_ = new MediaStreamDispatcher(this);
 
-  if (!media_stream_impl_.get()) {
+  if (!media_stream_impl_) {
     MediaStreamDependencyFactory* factory = new MediaStreamDependencyFactory();
     media_stream_impl_ = new MediaStreamImpl(
+        this,
         media_stream_dispatcher_,
         p2p_socket_dispatcher_,
         RenderThreadImpl::current()->video_capture_impl_manager(),

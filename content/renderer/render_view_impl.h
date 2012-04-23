@@ -1223,7 +1223,7 @@ class RenderViewImpl : public RenderWidget,
   MediaStreamDispatcher* media_stream_dispatcher_;
 
   // MediaStreamImpl attached to this view; lazily initialized.
-  scoped_refptr<MediaStreamImpl> media_stream_impl_;
+  MediaStreamImpl* media_stream_impl_;
 
   // Dispatches all P2P socket used by the renderer.
   content::P2PSocketDispatcher* p2p_socket_dispatcher_;

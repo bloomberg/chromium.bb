@@ -20,6 +20,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/media/rtc_video_decoder.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastream.h"
@@ -60,15 +61,19 @@ class RTCVideoDecoder;
 // MediaStreamManager (via MediaStreamDispatcher and MediaStreamDispatcherHost)
 // in the browser process. It must be created, called and destroyed on the
 // render thread.
+// MediaStreamImpl have weak pointers to a P2PSocketDispatcher and a
+// MediaStreamDispatcher. These objects are also RenderViewObservers.
+// MediaStreamImpl must be deleted before the P2PSocketDispatcher.
 class CONTENT_EXPORT MediaStreamImpl
-    : NON_EXPORTED_BASE(public WebKit::WebUserMediaClient),
+    : public content::RenderViewObserver,
+      NON_EXPORTED_BASE(public WebKit::WebUserMediaClient),
       NON_EXPORTED_BASE(public webkit_media::MediaStreamClient),
       public MediaStreamDispatcherEventHandler,
-      NON_EXPORTED_BASE(public base::NonThreadSafe),
-      public base::RefCountedThreadSafe<MediaStreamImpl>,
-      public base::SupportsWeakPtr<MediaStreamImpl> {
+      public base::SupportsWeakPtr<MediaStreamImpl>,
+      NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   MediaStreamImpl(
+      content::RenderView* render_view,
       MediaStreamDispatcher* media_stream_dispatcher,
       content::P2PSocketDispatcher* p2p_socket_dispatcher,
       VideoCaptureImplManager* vc_manager,
@@ -171,6 +176,7 @@ class CONTENT_EXPORT MediaStreamImpl
   content::P2PSocketDispatcher* p2p_socket_dispatcher_;
 
   // We own network_manager_, must be deleted on the worker thread.
+  // The network manager uses |p2p_socket_dispatcher_|.
   content::IpcNetworkManager* network_manager_;
 
   scoped_ptr<content::IpcPacketSocketFactory> socket_factory_;

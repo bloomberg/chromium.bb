@@ -58,7 +58,7 @@ TEST(PeerConnectionHandlerTest, Basic) {
 
   scoped_ptr<WebKit::MockWebPeerConnectionHandlerClient> mock_client(
       new WebKit::MockWebPeerConnectionHandlerClient());
-  scoped_refptr<MockMediaStreamImpl> mock_ms_impl(new MockMediaStreamImpl());
+  scoped_ptr<MockMediaStreamImpl> mock_ms_impl(new MockMediaStreamImpl());
   scoped_ptr<MockMediaStreamDependencyFactory> mock_dependency_factory(
       new MockMediaStreamDependencyFactory());
   mock_dependency_factory->CreatePeerConnectionFactory(NULL,

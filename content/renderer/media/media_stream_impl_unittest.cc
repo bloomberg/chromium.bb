@@ -17,92 +17,80 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnection00Handler.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandler.h"
 
-// Disabled due to http://crbug.com/112408 .
-TEST(MediaStreamImplTest, DISABLED_Basic) {
-  MessageLoop loop;
+class MediaStreamImplTest : public ::testing::Test {
+ public:
+  void SetUp() {
+    // Create our test object.
+    ms_dispatcher_.reset(new MockMediaStreamDispatcher());
+    p2p_socket_dispatcher_.reset(new content::P2PSocketDispatcher(NULL));
+    scoped_refptr<VideoCaptureImplManager> vc_manager(
+        new VideoCaptureImplManager());
+    MockMediaStreamDependencyFactory* dependency_factory =
+        new MockMediaStreamDependencyFactory();
+    ms_impl_.reset(new MediaStreamImpl(NULL,
+                                       ms_dispatcher_.get(),
+                                       p2p_socket_dispatcher_.get(),
+                                       vc_manager.get(),
+                                       dependency_factory));
+  }
 
-  // Create our test object.
-  scoped_ptr<MockMediaStreamDispatcher> ms_dispatcher(
-      new MockMediaStreamDispatcher());
-  scoped_ptr<content::P2PSocketDispatcher> p2p_socket_dispatcher(
-      new content::P2PSocketDispatcher(NULL));
-  scoped_refptr<VideoCaptureImplManager> vc_manager(
-      new VideoCaptureImplManager());
-  MockMediaStreamDependencyFactory* dependency_factory =
-      new MockMediaStreamDependencyFactory();
-  scoped_refptr<MediaStreamImpl> ms_impl(new MediaStreamImpl(
-      ms_dispatcher.get(),
-      p2p_socket_dispatcher.get(),
-      vc_manager.get(),
-      dependency_factory));
+ protected:
+  MessageLoop loop_;
+  scoped_ptr<MockMediaStreamDispatcher> ms_dispatcher_;
+  scoped_ptr<content::P2PSocketDispatcher> p2p_socket_dispatcher_;
+  scoped_ptr<MediaStreamImpl> ms_impl_;
+};
 
+TEST_F(MediaStreamImplTest, Basic) {
   // TODO(grunell): Add tests for WebKit::WebUserMediaClient and
   // MediaStreamDispatcherEventHandler implementations.
 
   WebKit::MockWebPeerConnectionHandlerClient client;
   WebKit::WebPeerConnectionHandler* pc_handler =
-      ms_impl->CreatePeerConnectionHandler(&client);
-  EXPECT_EQ(1u, ms_impl->peer_connection_handlers_.size());
+      ms_impl_->CreatePeerConnectionHandler(&client);
+  EXPECT_EQ(1u, ms_impl_->peer_connection_handlers_.size());
 
   // Delete PC handler explicitly after closing to mimic WebKit behavior.
-  ms_impl->ClosePeerConnection(
+  ms_impl_->ClosePeerConnection(
       static_cast<PeerConnectionHandler*>(pc_handler));
-  EXPECT_TRUE(ms_impl->peer_connection_handlers_.empty());
+  EXPECT_TRUE(ms_impl_->peer_connection_handlers_.empty());
   delete pc_handler;
 
   WebKit::MockWebPeerConnection00HandlerClient client_jsep;
   WebKit::WebPeerConnection00Handler* pc_handler_jsep =
-      ms_impl->CreatePeerConnectionHandlerJsep(&client_jsep);
-  EXPECT_EQ(1u, ms_impl->peer_connection_handlers_.size());
+      ms_impl_->CreatePeerConnectionHandlerJsep(&client_jsep);
+  EXPECT_EQ(1u, ms_impl_->peer_connection_handlers_.size());
 
   // Delete PC handler explicitly after closing to mimic WebKit behavior.
-  ms_impl->ClosePeerConnection(
+  ms_impl_->ClosePeerConnection(
       static_cast<PeerConnectionHandlerJsep*>(pc_handler_jsep));
-  EXPECT_TRUE(ms_impl->peer_connection_handlers_.empty());
+  EXPECT_TRUE(ms_impl_->peer_connection_handlers_.empty());
   delete pc_handler_jsep;
 }
 
-// Disabled due to http://crbug.com/112408 .
-TEST(MediaStreamImplTest, DISABLED_MultiplePeerConnections) {
-  MessageLoop loop;
-
-  // Create our test object.
-  scoped_ptr<MockMediaStreamDispatcher> ms_dispatcher(
-      new MockMediaStreamDispatcher());
-  scoped_ptr<content::P2PSocketDispatcher> p2p_socket_dispatcher(
-      new content::P2PSocketDispatcher(NULL));
-  scoped_refptr<VideoCaptureImplManager> vc_manager(
-      new VideoCaptureImplManager());
-  MockMediaStreamDependencyFactory* dependency_factory =
-      new MockMediaStreamDependencyFactory();
-  scoped_refptr<MediaStreamImpl> ms_impl(new MediaStreamImpl(
-      ms_dispatcher.get(),
-      p2p_socket_dispatcher.get(),
-      vc_manager.get(),
-      dependency_factory));
-
+TEST_F(MediaStreamImplTest, MultiplePeerConnections) {
   // TODO(grunell): Add tests for WebKit::WebUserMediaClient and
   // MediaStreamDispatcherEventHandler implementations.
 
   WebKit::MockWebPeerConnectionHandlerClient client;
   WebKit::WebPeerConnectionHandler* pc_handler =
-      ms_impl->CreatePeerConnectionHandler(&client);
-  EXPECT_EQ(1u, ms_impl->peer_connection_handlers_.size());
+      ms_impl_->CreatePeerConnectionHandler(&client);
+  EXPECT_EQ(1u, ms_impl_->peer_connection_handlers_.size());
 
   WebKit::MockWebPeerConnection00HandlerClient client_jsep;
   WebKit::WebPeerConnection00Handler* pc_handler_jsep =
-      ms_impl->CreatePeerConnectionHandlerJsep(&client_jsep);
-  EXPECT_EQ(2u, ms_impl->peer_connection_handlers_.size());
+      ms_impl_->CreatePeerConnectionHandlerJsep(&client_jsep);
+  EXPECT_EQ(2u, ms_impl_->peer_connection_handlers_.size());
 
   // Delete PC handler explicitly after closing to mimic WebKit behavior.
-  ms_impl->ClosePeerConnection(
+  ms_impl_->ClosePeerConnection(
       static_cast<PeerConnectionHandler*>(pc_handler));
-  EXPECT_EQ(1u, ms_impl->peer_connection_handlers_.size());
+  EXPECT_EQ(1u, ms_impl_->peer_connection_handlers_.size());
   delete pc_handler;
 
   // Delete PC handler explicitly after closing to mimic WebKit behavior.
-  ms_impl->ClosePeerConnection(
+  ms_impl_->ClosePeerConnection(
       static_cast<PeerConnectionHandlerJsep*>(pc_handler_jsep));
-  EXPECT_TRUE(ms_impl->peer_connection_handlers_.empty());
+  EXPECT_TRUE(ms_impl_->peer_connection_handlers_.empty());
   delete pc_handler_jsep;
 }
