@@ -208,25 +208,31 @@ cr.define('options', function() {
           });
 
       // Users section.
-      var profilesList = $('profiles-list');
-      options.browser_options.ProfileList.decorate(profilesList);
-      profilesList.autoExpands = true;
+      if (typeof templateData.profilesInfo != 'undefined') {
+        $('profiles-section').hidden = false;
 
-      profilesList.addEventListener('change',
-          this.setProfileViewButtonsStatus_);
-      $('profiles-create').onclick = function(event) {
-        chrome.send('createProfile');
-      };
-      $('profiles-manage').onclick = function(event) {
-        var selectedProfile = self.getSelectedProfileItem_();
-        if (selectedProfile)
-          ManageProfileOverlay.showManageDialog(selectedProfile);
-      };
-      $('profiles-delete').onclick = function(event) {
-        var selectedProfile = self.getSelectedProfileItem_();
-        if (selectedProfile)
-          ManageProfileOverlay.showDeleteDialog(selectedProfile);
-      };
+        var profilesList = $('profiles-list');
+        options.browser_options.ProfileList.decorate(profilesList);
+        profilesList.autoExpands = true;
+
+        this.setProfilesInfo_(templateData.profilesInfo);
+
+        profilesList.addEventListener('change',
+            this.setProfileViewButtonsStatus_);
+        $('profiles-create').onclick = function(event) {
+          chrome.send('createProfile');
+        };
+        $('profiles-manage').onclick = function(event) {
+          var selectedProfile = self.getSelectedProfileItem_();
+          if (selectedProfile)
+            ManageProfileOverlay.showManageDialog(selectedProfile);
+        };
+        $('profiles-delete').onclick = function(event) {
+          var selectedProfile = self.getSelectedProfileItem_();
+          if (selectedProfile)
+            ManageProfileOverlay.showDeleteDialog(selectedProfile);
+        };
+      }
 
       if (cr.isChromeOS) {
         if (!UIAccountTweaks.loggedInAsGuest()) {
@@ -661,16 +667,6 @@ cr.define('options', function() {
                                        $('enable-auto-login-checkbox'));
       }
       $('enable-auto-login-checkbox').hidden = !syncData.autoLoginVisible;
-    },
-
-    /**
-     * Display or hide the profiles section of the page. This is used for
-     * multi-profile settings.
-     * @param {boolean} visible True to show the section.
-     * @private
-     */
-    setProfilesSectionVisible_: function(visible) {
-      $('profiles-section').hidden = !visible;
     },
 
     /**
@@ -1375,7 +1371,6 @@ cr.define('options', function() {
     'setMetricsReportingCheckboxState',
     'setMetricsReportingSettingVisibility',
     'setProfilesInfo',
-    'setProfilesSectionVisible',
     'setScreenMagnifierCheckboxState',
     'setSpokenFeedbackCheckboxState',
     'setThemesResetButtonEnabled',

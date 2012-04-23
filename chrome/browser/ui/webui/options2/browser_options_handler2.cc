@@ -364,7 +364,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #endif
 
   // Pass along sync status early so it will be available during page init.
-  values->Set("syncData", GetSyncStateDictionary());
+  values->Set("syncData", GetSyncStateDictionary().release());
 
   values->SetString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
 
@@ -390,6 +390,9 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   values->SetBoolean("multiple_profiles",
       g_browser_process->profile_manager()->GetNumberOfProfiles() > 1);
 #endif
+
+  if (multiprofile_)
+    values->Set("profilesInfo", GetProfilesInfoList().release());
 }
 
 void BrowserOptionsHandler::RegisterCloudPrintValues(DictionaryValue* values) {
@@ -530,8 +533,8 @@ void BrowserOptionsHandler::RegisterMessages() {
 }
 
 void BrowserOptionsHandler::OnStateChanged() {
-  scoped_ptr<DictionaryValue> value(GetSyncStateDictionary());
-  web_ui()->CallJavascriptFunction("BrowserOptions.updateSyncState", *value);
+  web_ui()->CallJavascriptFunction("BrowserOptions.updateSyncState",
+                                   *GetSyncStateDictionary());
 
   SendProfilesInfo();
 }
@@ -608,9 +611,6 @@ void BrowserOptionsHandler::InitializeHandler() {
 void BrowserOptionsHandler::InitializePage() {
   OnTemplateURLServiceChanged();
   ObserveThemeChanged();
-
-  if (multiprofile_)
-    SendProfilesInfo();
 
   SetupMetricsReportingCheckbox();
   SetupMetricsReportingSettingVisibility();
@@ -903,20 +903,13 @@ void BrowserOptionsHandler::GetInstantFieldTrialStatus(const ListValue* args) {
                                    enabled);
 }
 
-void BrowserOptionsHandler::SendProfilesInfo() {
-  // Set profile creation text and button if multi-profiles switch is on.
-  scoped_ptr<Value> visible(Value::CreateBooleanValue(multiprofile_));
-  web_ui()->CallJavascriptFunction("BrowserOptions.setProfilesSectionVisible",
-                                   *visible);
-
-  if (!multiprofile_)
-    return;
-
+scoped_ptr<ListValue> BrowserOptionsHandler::GetProfilesInfoList() {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  ListValue profile_info_list;
+  scoped_ptr<ListValue> profile_info_list(new ListValue);
   FilePath current_profile_path =
       web_ui()->GetWebContents()->GetBrowserContext()->GetPath();
+
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
     DictionaryValue* profile_value = new DictionaryValue();
     FilePath profile_path = cache.GetPathOfProfileAtIndex(i);
@@ -939,11 +932,15 @@ void BrowserOptionsHandler::SendProfilesInfo() {
                                cache.GetDefaultAvatarIconUrl(icon_index));
     }
 
-    profile_info_list.Append(profile_value);
+    profile_info_list->Append(profile_value);
   }
 
+  return profile_info_list.Pass();
+}
+
+void BrowserOptionsHandler::SendProfilesInfo() {
   web_ui()->CallJavascriptFunction("BrowserOptions.setProfilesInfo",
-                                   profile_info_list);
+                                   *GetProfilesInfoList());
 }
 
 void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
@@ -999,13 +996,13 @@ void BrowserOptionsHandler::UpdateAccountPicture() {
 }
 #endif
 
-DictionaryValue* BrowserOptionsHandler::GetSyncStateDictionary() {
-  DictionaryValue* sync_status = new DictionaryValue;
+scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
+  scoped_ptr<DictionaryValue> sync_status(new DictionaryValue);
   ProfileSyncService* service(ProfileSyncServiceFactory::
       GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
   sync_status->SetBoolean("syncSystemEnabled", !!service);
   if (!service)
-    return sync_status;
+    return sync_status.Pass();
 
   sync_status->SetBoolean("setupCompleted",
                           service->HasSyncSetupCompleted());
@@ -1030,7 +1027,7 @@ DictionaryValue* BrowserOptionsHandler::GetSyncStateDictionary() {
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAutologin) &&
       service->AreCredentialsAvailable());
 
-  return sync_status;
+  return sync_status.Pass();
 }
 
 void BrowserOptionsHandler::HandleSelectDownloadLocation(

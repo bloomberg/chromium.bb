@@ -125,14 +125,16 @@ class BrowserOptionsHandler
   // Loads the possible default search engine list and reports it to the WebUI.
   void AddTemplateUrlServiceObserver();
 
-  // Sends an array of Profile objects to javascript.
-  // Each object is of the form:
+  // Creates a list of dictionaries where each dictionary is of the form:
   //   profileInfo = {
   //     name: "Profile Name",
   //     iconURL: "chrome://path/to/icon/image",
   //     filePath: "/path/to/profile/data/on/disk",
   //     isCurrentProfile: false
   //   };
+  scoped_ptr<ListValue> GetProfilesInfoList();
+
+  // Sends an array of Profile objects to javascript.
   void SendProfilesInfo();
 
   // Asynchronously opens a new browser window to create a new profile.
@@ -271,7 +273,7 @@ class BrowserOptionsHandler
 
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.
-  DictionaryValue* GetSyncStateDictionary();
+  scoped_ptr<DictionaryValue> GetSyncStateDictionary();
 
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
 
