@@ -79,7 +79,6 @@ class ASH_EXPORT AppListItemView : public views::CustomButton,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state);
 
   // views::ContextMenuController overrides:
   virtual void ShowContextMenuForView(views::View* source,

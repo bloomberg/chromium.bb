@@ -13,7 +13,6 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
 #include "base/utf_string_conversions.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -204,7 +203,6 @@ AppListItemView::AppListItemView(AppListModelView* list_model_view,
 
   set_context_menu_controller(this);
   set_request_focus_on_press(false);
-  set_focusable(true);
 }
 
 AppListItemView::~AppListItemView() {
@@ -253,7 +251,6 @@ void AppListItemView::SetSelected(bool selected) {
   if (selected == selected_)
     return;
 
-  RequestFocus();
   selected_ = selected;
   SchedulePaint();
 }
@@ -361,11 +358,6 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
   } else if (selected_) {
     canvas->FillRect(rect, kSelectedColor);
   }
-}
-
-void AppListItemView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = UTF8ToUTF16(model_->title());
 }
 
 void AppListItemView::ShowContextMenuForView(views::View* source,
