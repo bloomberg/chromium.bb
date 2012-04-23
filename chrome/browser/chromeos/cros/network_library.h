@@ -966,6 +966,12 @@ class WifiNetwork : public WirelessNetwork {
     void SetEncryption(ConnectionSecurity encryption) {
       network_->set_encryption(encryption);
     }
+    void SetSsid(const std::string& ssid) {
+      network_->SetSsid(ssid);
+    }
+    void SetHexSsid(const std::string& ssid_hex) {
+      network_->SetHexSsid(ssid_hex);
+    }
    private:
     WifiNetwork* network_;
   };
@@ -980,6 +986,8 @@ class WifiNetwork : public WirelessNetwork {
   const std::string& identity() const { return identity_; }
   bool passphrase_required() const { return passphrase_required_; }
   bool hidden_ssid() const { return hidden_ssid_; }
+  const std::string& bssid() const { return bssid_; }
+  int frequency() const { return frequency_; }
 
   EAPMethod eap_method() const { return eap_method_; }
   EAPPhase2Auth eap_phase_2_auth() const { return eap_phase_2_auth_; }
@@ -997,8 +1005,8 @@ class WifiNetwork : public WirelessNetwork {
 
   const std::string& GetPassphrase() const;
 
-  bool SetSsid(const std::string& ssid);
-  bool SetHexSsid(const std::string& ssid_hex);
+  // Set property and call SetNetworkServiceProperty:
+
   void SetPassphrase(const std::string& passphrase);
   void SetIdentity(const std::string& identity);
   void SetHiddenSSID(bool hidden_ssid);
@@ -1042,6 +1050,10 @@ class WifiNetwork : public WirelessNetwork {
   // parsers to set state, and really shouldn't be used by anything else
   // because they don't do the error checking and sending to the
   // network layer that the other setters do.
+
+  bool SetSsid(const std::string& ssid);
+  bool SetHexSsid(const std::string& ssid_hex);
+
   void set_encryption(ConnectionSecurity encryption) {
     encryption_ = encryption;
   }
@@ -1058,6 +1070,8 @@ class WifiNetwork : public WirelessNetwork {
   void set_hidden_ssid(bool hidden_ssid) {
     hidden_ssid_ = hidden_ssid;
   }
+  void set_bssid(const std::string& bssid) { bssid_ = bssid; }
+  void set_frequency(int frequency) { frequency_ = frequency; }
   void set_eap_method(EAPMethod eap_method) { eap_method_ = eap_method; }
   void set_eap_phase_2_auth(EAPPhase2Auth eap_phase_2_auth) {
     eap_phase_2_auth_ = eap_phase_2_auth;
@@ -1104,6 +1118,8 @@ class WifiNetwork : public WirelessNetwork {
   bool passphrase_required_;
   std::string identity_;
   bool hidden_ssid_;
+  std::string bssid_;
+  int frequency_;
 
   EAPMethod eap_method_;
   EAPPhase2Auth eap_phase_2_auth_;

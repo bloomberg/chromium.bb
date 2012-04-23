@@ -1040,17 +1040,30 @@ bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
       std::string ssid_hex;
       if (!value.GetAsString(&ssid_hex))
         return false;
-
       wifi_network->SetHexSsid(ssid_hex);
       return true;
     }
-    case PROPERTY_INDEX_WIFI_BSSID:
-    case PROPERTY_INDEX_WIFI_AUTH_MODE:
-    case PROPERTY_INDEX_WIFI_PHY_MODE:
-    case PROPERTY_INDEX_WIFI_HIDDEN_SSID:
-    case PROPERTY_INDEX_WIFI_FREQUENCY:
-      // These properties are currently not used in the UI.
+    case PROPERTY_INDEX_WIFI_BSSID: {
+      std::string bssid;
+      if (!value.GetAsString(&bssid))
+        return false;
+      wifi_network->set_bssid(bssid);
       return true;
+    }
+    case PROPERTY_INDEX_WIFI_HIDDEN_SSID: {
+      bool hidden_ssid;
+      if (!value.GetAsBoolean(&hidden_ssid))
+        return false;
+      wifi_network->set_hidden_ssid(hidden_ssid);
+      return true;
+    }
+    case PROPERTY_INDEX_WIFI_FREQUENCY: {
+      int frequency;
+      if (!value.GetAsInteger(&frequency))
+        return false;
+      wifi_network->set_frequency(frequency);
+      return true;
+    }
     case PROPERTY_INDEX_NAME: {
       // Does not change network name when it was already set by WiFi.HexSSID.
       if (!wifi_network->name().empty())
@@ -1084,7 +1097,6 @@ bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
     }
     case PROPERTY_INDEX_PASSPHRASE_REQUIRED: {
       bool passphrase_required;
-      value.GetAsBoolean(&passphrase_required);
       if (!value.GetAsBoolean(&passphrase_required))
         break;
       wifi_network->set_passphrase_required(passphrase_required);
@@ -1161,6 +1173,8 @@ bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
       wifi_network->set_eap_server_ca_cert_nss_nickname(eap_cert_nickname);
       return true;
     }
+    case PROPERTY_INDEX_WIFI_AUTH_MODE:
+    case PROPERTY_INDEX_WIFI_PHY_MODE:
     case PROPERTY_INDEX_EAP_CLIENT_CERT:
     case PROPERTY_INDEX_EAP_CLIENT_CERT_NSS:
     case PROPERTY_INDEX_EAP_PRIVATE_KEY:

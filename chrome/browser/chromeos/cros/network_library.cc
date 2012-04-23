@@ -1166,6 +1166,7 @@ WifiNetwork::WifiNetwork(const std::string& service_path)
       encryption_(SECURITY_NONE),
       passphrase_required_(false),
       hidden_ssid_(false),
+      frequency_(0),
       eap_method_(EAP_METHOD_UNKNOWN),
       eap_phase_2_auth_(EAP_PHASE_2_AUTH_AUTO),
       eap_use_system_cas_(true),
