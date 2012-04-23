@@ -24,13 +24,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Processes) {
   ASSERT_TRUE(RunExtensionTest("processes/api")) << message_;
 }
 
-// http://crbug.com/111787
-#ifdef OS_WIN
-#define MAYBE_ProcessesVsTaskManager DISABLED_ProcessesVsTaskManager
-#else
-#define MAYBE_ProcessesVsTaskManager ProcessesVsTaskManager
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ProcessesVsTaskManager) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
