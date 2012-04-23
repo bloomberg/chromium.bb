@@ -125,18 +125,21 @@ void PolicyServiceImpl::MaybeCleanup(const PolicyNamespace& ns) {
 void PolicyServiceImpl::MergeAndTriggerUpdates() {
   // TODO(joaodasilva): do this for each namespace once the providers also
   // provide policy for more namespaces.
-  PolicyMap new_policies;
+  PolicyMap policies;
   for (ProviderList::iterator it = providers_.begin();
        it != providers_.end(); ++it) {
-    new_policies.MergeFrom((*it)->policies);
+    policies.MergeFrom((*it)->policies);
   }
 
   Entry* entry = GetOrCreate(std::make_pair(POLICY_DOMAIN_CHROME, ""));
-  if (!new_policies.Equals(entry->policies)) {
-    entry->policies.Swap(&new_policies);
-    FOR_EACH_OBSERVER(PolicyService::Observer,
-                      entry->observers,
-                      OnPolicyUpdated(POLICY_DOMAIN_CHROME, ""));
+  if (!policies.Equals(entry->policies)) {
+    // Swap first, so that observers that call GetPolicies() see the current
+    // values.
+    entry->policies.Swap(&policies);
+    FOR_EACH_OBSERVER(
+        PolicyService::Observer,
+        entry->observers,
+        OnPolicyUpdated(POLICY_DOMAIN_CHROME, "", policies, entry->policies));
   }
 
   // Check if all providers became initialized just now, if they weren't before.

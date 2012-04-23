@@ -34,9 +34,12 @@ class PolicyService {
 
     // Invoked whenever policies for the |domain|, |component_id| namespace are
     // modified. This is only invoked for changes that happen after AddObserver
-    // is called.
+    // is called. |previous| contains the values of the policies before the
+    // update, and |current| contains the current values.
     virtual void OnPolicyUpdated(PolicyDomain domain,
-                                 const std::string& component_id) = 0;
+                                 const std::string& component_id,
+                                 const PolicyMap& previous,
+                                 const PolicyMap& current) = 0;
 
     // Invoked at most once, when the PolicyService becomes ready. If
     // IsInitializationComplete() is false, then this will be invoked once all

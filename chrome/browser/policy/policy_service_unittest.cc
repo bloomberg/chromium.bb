@@ -21,8 +21,19 @@ namespace {
 class MockPolicyServiceObserver : public PolicyService::Observer {
  public:
   virtual ~MockPolicyServiceObserver() {}
-  MOCK_METHOD2(OnPolicyUpdated, void(PolicyDomain, const std::string&));
+  MOCK_METHOD4(OnPolicyUpdated, void(PolicyDomain,
+                                     const std::string&,
+                                     const PolicyMap& previous,
+                                     const PolicyMap& current));
 };
+
+// Helper to compare the arguments to an EXPECT_CALL of OnPolicyUpdated() with
+// their expected values.
+MATCHER_P(PolicyEquals, expected, "") {
+  return arg.Equals(*expected);
+}
+
+}  // namespace
 
 class PolicyServiceTest : public testing::Test {
  public:
@@ -73,57 +84,71 @@ TEST_F(PolicyServiceTest, LoadsPoliciesBeforeProvidersRefresh) {
 }
 
 TEST_F(PolicyServiceTest, NotifyObservers) {
-  PolicyMap expected;
-  expected.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(13));
+  PolicyMap expectedPrevious;
+  expectedPrevious.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                       base::Value::CreateIntegerValue(13));
 
-  expected.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(123));
+  PolicyMap expectedCurrent;
+  expectedCurrent.CopyFrom(expectedPrevious);
+  expectedCurrent.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      base::Value::CreateIntegerValue(123));
   provider0_.AddMandatoryPolicy("aaa", base::Value::CreateIntegerValue(123));
-  EXPECT_CALL(observer_, OnPolicyUpdated(POLICY_DOMAIN_CHROME, "")).Times(1);
+  EXPECT_CALL(observer_, OnPolicyUpdated(POLICY_DOMAIN_CHROME, "",
+                                         PolicyEquals(&expectedPrevious),
+                                         PolicyEquals(&expectedCurrent)));
   provider0_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_TRUE(VerifyPolicies(POLICY_DOMAIN_CHROME, "", expected));
+
   // No changes.
-  EXPECT_CALL(observer_, OnPolicyUpdated(_, _)).Times(0);
+  EXPECT_CALL(observer_, OnPolicyUpdated(_, _, _, _)).Times(0);
   provider0_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_TRUE(VerifyPolicies(POLICY_DOMAIN_CHROME, "", expected));
+  EXPECT_TRUE(VerifyPolicies(POLICY_DOMAIN_CHROME, "", expectedCurrent));
+
   // New policy.
-  expected.Set("bbb", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(456));
+  expectedPrevious.CopyFrom(expectedCurrent);
+  expectedCurrent.Set("bbb", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      base::Value::CreateIntegerValue(456));
   provider0_.AddMandatoryPolicy("bbb", base::Value::CreateIntegerValue(456));
-  EXPECT_CALL(observer_, OnPolicyUpdated(POLICY_DOMAIN_CHROME, "")).Times(1);
+  EXPECT_CALL(observer_, OnPolicyUpdated(POLICY_DOMAIN_CHROME, "",
+                                         PolicyEquals(&expectedPrevious),
+                                         PolicyEquals(&expectedCurrent)));
   provider0_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_TRUE(VerifyPolicies(POLICY_DOMAIN_CHROME, "", expected));
+
   // Removed policy.
-  expected.Erase("bbb");
+  expectedPrevious.CopyFrom(expectedCurrent);
+  expectedCurrent.Erase("bbb");
   provider0_.RemovePolicy("bbb");
-  EXPECT_CALL(observer_, OnPolicyUpdated(POLICY_DOMAIN_CHROME, "")).Times(1);
+  EXPECT_CALL(observer_, OnPolicyUpdated(POLICY_DOMAIN_CHROME, "",
+                                         PolicyEquals(&expectedPrevious),
+                                         PolicyEquals(&expectedCurrent)));
   provider0_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_TRUE(VerifyPolicies(POLICY_DOMAIN_CHROME, "", expected));
+
   // Changed policy.
-  expected.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(789));
+  expectedPrevious.CopyFrom(expectedCurrent);
+  expectedCurrent.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      base::Value::CreateIntegerValue(789));
   provider0_.AddMandatoryPolicy("aaa", base::Value::CreateIntegerValue(789));
-  EXPECT_CALL(observer_, OnPolicyUpdated(POLICY_DOMAIN_CHROME, "")).Times(1);
+  EXPECT_CALL(observer_, OnPolicyUpdated(POLICY_DOMAIN_CHROME, "",
+                                         PolicyEquals(&expectedPrevious),
+                                         PolicyEquals(&expectedCurrent)));
   provider0_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_TRUE(VerifyPolicies(POLICY_DOMAIN_CHROME, "", expected));
+
   // No changes again.
-  EXPECT_CALL(observer_, OnPolicyUpdated(_, _)).Times(0);
+  EXPECT_CALL(observer_, OnPolicyUpdated(_, _, _, _)).Times(0);
   provider0_.RefreshPolicies();
   Mock::VerifyAndClearExpectations(&observer_);
-  EXPECT_TRUE(VerifyPolicies(POLICY_DOMAIN_CHROME, "", expected));
+  EXPECT_TRUE(VerifyPolicies(POLICY_DOMAIN_CHROME, "", expectedCurrent));
 }
 
 TEST_F(PolicyServiceTest, Priorities) {
   PolicyMap expected;
   expected.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                base::Value::CreateIntegerValue(13));
-  EXPECT_CALL(observer_, OnPolicyUpdated(_, _)).Times(AnyNumber());
+  EXPECT_CALL(observer_, OnPolicyUpdated(_, _, _, _)).Times(AnyNumber());
 
   expected.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                base::Value::CreateIntegerValue(0));
@@ -147,7 +172,5 @@ TEST_F(PolicyServiceTest, Priorities) {
   provider1_.RefreshPolicies();
   EXPECT_TRUE(VerifyPolicies(POLICY_DOMAIN_CHROME, "", expected));
 }
-
-}  // namespace
 
 }  // namespace policy

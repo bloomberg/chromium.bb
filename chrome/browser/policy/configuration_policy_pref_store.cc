@@ -83,7 +83,9 @@ ConfigurationPolicyPrefStore::GetValue(const std::string& key,
 
 void ConfigurationPolicyPrefStore::OnPolicyUpdated(
     PolicyDomain domain,
-    const std::string& component_id) {
+    const std::string& component_id,
+    const PolicyMap& previous,
+    const PolicyMap& current) {
   DCHECK_EQ(POLICY_DOMAIN_CHROME, domain);
   DCHECK_EQ("", component_id);
   Refresh();
