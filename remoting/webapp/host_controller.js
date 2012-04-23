@@ -120,9 +120,6 @@ remoting.HostController.prototype.start = function(hostPin, callback) {
   };
 
   var newHostId = generateUuid();
-  // TODO(jamiewalch): Create an unprivileged API to get the host id from the
-  // plugin instead of storing it locally (crbug.com/121518).
-  window.localStorage.setItem('me2me-host-id', newHostId);
 
   /** @param {function(remoting.HostController.AsyncResult):void} callback
    *  @param {remoting.HostController.AsyncResult} result
@@ -224,7 +221,6 @@ remoting.HostController.prototype.stop = function(callback) {
   function onStopped(result) {
     if (that.localHost && that.localHost.hostId)
       remoting.HostList.unregisterHostById(that.localHost.hostId);
-    window.localStorage.removeItem('me2me-host-id');
     callback(result);
   };
   this.plugin_.stopDaemon(onStopped);
@@ -304,20 +300,24 @@ remoting.HostController.prototype.setHost = function(host) {
  *
  * @param {remoting.HostList} hostList The new host list, returned by the
  *     Chromoting service.
- * @param {function():void} onDone Completion callback. TODO(jamiewalch): For
- *     now, this is synchronous and reads the host id from local storage. In
- *     the future, it will asynchronously read the host id from the plugin
- *     (crbug.com/121518).
+ * @param {function():void} onDone Completion callback.
  */
 remoting.HostController.prototype.onHostListRefresh =
     function(hostList, onDone) {
-  var hostId = window.localStorage.getItem('me2me-host-id');
-  if (hostId && typeof(hostId) == 'string') {
-    this.setHost(hostList.getHostForId(/** @type{string} */(hostId)));
-  } else {
-    this.setHost(null);
-  }
-  onDone();
+  /** @type {remoting.HostController} */
+  var that = this;
+  /** @param {string} configStr */
+  function onConfig(configStr) {
+    var config = /** @type {Object.<string,string>} */ JSON.parse(configStr);
+    if (typeof config['host_id'] == 'string') {
+      var hostId = config['host_id'];
+      that.setHost(hostList.getHostForId(hostId));
+    } else {
+      that.setHost(null);
+    }
+    onDone();
+  };
+  this.plugin_.getDaemonConfig(onConfig);
 };
 
 /** @type {remoting.HostController} */
