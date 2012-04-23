@@ -123,7 +123,7 @@ bool RendererAccessibility::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RendererAccessibility::FocusedNodeChanged(const WebNode& node) {
-  if (!WebAccessibilityObject::accessibilityEnabled())
+  if (mode_ == AccessibilityModeOff)
     return;
 
   const WebDocument& document = GetMainDocument();
@@ -140,7 +140,7 @@ void RendererAccessibility::FocusedNodeChanged(const WebNode& node) {
 }
 
 void RendererAccessibility::DidFinishLoad(WebKit::WebFrame* frame) {
-  if (!WebAccessibilityObject::accessibilityEnabled())
+  if (mode_ == AccessibilityModeOff)
     return;
 
   const WebDocument& document = GetMainDocument();
@@ -174,7 +174,7 @@ void RendererAccessibility::PostAccessibilityNotification(
 void RendererAccessibility::PostAccessibilityNotification(
     const WebKit::WebAccessibilityObject& obj,
     AccessibilityNotification notification) {
-  if (!WebAccessibilityObject::accessibilityEnabled())
+  if (mode_ == AccessibilityModeOff)
     return;
 
   const WebDocument& document = GetMainDocument();
@@ -224,6 +224,9 @@ void RendererAccessibility::PostAccessibilityNotification(
 }
 
 void RendererAccessibility::SendPendingAccessibilityNotifications() {
+  if (mode_ == AccessibilityModeOff)
+    return;
+
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -381,7 +384,7 @@ void RendererAccessibility::ClearBrowserTreeNode(
 }
 
 void RendererAccessibility::OnDoDefaultAction(int acc_obj_id) {
-  if (!WebAccessibilityObject::accessibilityEnabled())
+  if (mode_ == AccessibilityModeOff)
     return;
 
   const WebDocument& document = GetMainDocument();
@@ -402,7 +405,7 @@ void RendererAccessibility::OnDoDefaultAction(int acc_obj_id) {
 
 void RendererAccessibility::OnScrollToMakeVisible(
     int acc_obj_id, gfx::Rect subfocus) {
-  if (!WebAccessibilityObject::accessibilityEnabled())
+  if (mode_ == AccessibilityModeOff)
     return;
 
   const WebDocument& document = GetMainDocument();
@@ -433,7 +436,7 @@ void RendererAccessibility::OnScrollToMakeVisible(
 
 void RendererAccessibility::OnScrollToPoint(
     int acc_obj_id, gfx::Point point) {
-  if (!WebAccessibilityObject::accessibilityEnabled())
+  if (mode_ == AccessibilityModeOff)
     return;
 
   const WebDocument& document = GetMainDocument();
@@ -462,7 +465,7 @@ void RendererAccessibility::OnScrollToPoint(
 
 void RendererAccessibility::OnSetTextSelection(
     int acc_obj_id, int start_offset, int end_offset) {
-  if (!WebAccessibilityObject::accessibilityEnabled())
+  if (mode_ == AccessibilityModeOff)
     return;
 
   const WebDocument& document = GetMainDocument();
@@ -521,7 +524,7 @@ void RendererAccessibility::OnSetMode(AccessibilityMode mode) {
 }
 
 void RendererAccessibility::OnSetFocus(int acc_obj_id) {
-  if (!WebAccessibilityObject::accessibilityEnabled())
+  if (mode_ == AccessibilityModeOff)
     return;
 
   const WebDocument& document = GetMainDocument();
