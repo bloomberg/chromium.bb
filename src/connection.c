@@ -37,6 +37,7 @@
 
 #include "wayland-util.h"
 #include "wayland-private.h"
+#include "wayland-os.h"
 
 #define DIV_ROUNDUP(n, a) ( ((n) + ((a) - 1)) / (a) )
 
@@ -518,7 +519,7 @@ wl_closure_vmarshal(struct wl_closure *closure,
 			extra += sizeof *fd_ptr;
 
 			fd = va_arg(ap, int);
-			dup_fd = fcntl(fd, F_DUPFD_CLOEXEC, 0);
+			dup_fd = wl_os_dupfd_cloexec(fd, 0);
 			if (dup_fd < 0) {
 				fprintf(stderr, "dup failed: %m");
 				abort();

@@ -64,3 +64,18 @@ wl_os_socket_cloexec(int domain, int type, int protocol)
 	fd = socket(domain, type, protocol);
 	return set_cloexec_or_close(fd);
 }
+
+int
+wl_os_dupfd_cloexec(int fd, long minfd)
+{
+	int newfd;
+
+	newfd = fcntl(fd, F_DUPFD_CLOEXEC, minfd);
+	if (newfd >= 0)
+		return newfd;
+	if (errno != EINVAL)
+		return -1;
+
+	newfd = fcntl(fd, F_DUPFD, minfd);
+	return set_cloexec_or_close(newfd);
+}
