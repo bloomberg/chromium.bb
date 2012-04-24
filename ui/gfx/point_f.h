@@ -24,7 +24,7 @@ class UI_EXPORT PointF : public PointBase<PointF, float> {
   PointF();
   PointF(float x, float y);
   explicit PointF(Point& point);
-  virtual ~PointF() {}
+  ~PointF() {}
 
   Point ToPoint() const;
 

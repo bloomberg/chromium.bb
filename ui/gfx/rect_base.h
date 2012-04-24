@@ -140,7 +140,9 @@ class UI_EXPORT RectBase {
   RectBase(const PointClass& origin, const SizeClass& size);
   explicit RectBase(const SizeClass& size);
   explicit RectBase(const PointClass& origin);
-  virtual ~RectBase();
+  // Destructor is intentionally made non virtual and protected.
+  // Do not make this public.
+  ~RectBase();
 
  private:
   PointClass origin_;

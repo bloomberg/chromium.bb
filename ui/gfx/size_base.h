@@ -59,7 +59,9 @@ class UI_EXPORT SizeBase {
 
  protected:
   SizeBase(Type width, Type height);
-  virtual ~SizeBase();
+  // Destructor is intentionally made non virtual and protected.
+  // Do not make this public.
+  ~SizeBase();
 
  private:
   Type width_;

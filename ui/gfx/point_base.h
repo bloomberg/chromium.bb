@@ -80,7 +80,9 @@ class UI_EXPORT PointBase {
 
  protected:
   PointBase(Type x, Type y) : x_(x), y_(y) {}
-  virtual ~PointBase() {}
+  // Destructor is intentionally made non virtual and protected.
+  // Do not make this public.
+  ~PointBase() {}
 
  private:
   Type x_;

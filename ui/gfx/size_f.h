@@ -23,7 +23,7 @@ class UI_EXPORT SizeF : public SizeBase<SizeF, float> {
  public:
   SizeF();
   SizeF(float width, float height);
-  virtual ~SizeF();
+  ~SizeF();
 
   Size ToSize() const;
 

@@ -34,7 +34,7 @@ class UI_EXPORT Point : public PointBase<Point, int> {
   explicit Point(const CGPoint& point);
 #endif
 
-  virtual ~Point() {}
+  ~Point() {}
 
 #if defined(OS_WIN)
   POINT ToPOINT() const;
