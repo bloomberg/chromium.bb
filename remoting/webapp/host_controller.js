@@ -319,7 +319,12 @@ remoting.HostController.prototype.onHostListRefresh =
     }
     onDone();
   };
-  this.plugin_.getDaemonConfig(onConfig);
+  try {
+    this.plugin_.getDaemonConfig(onConfig);
+  } catch (err) {
+    this.setHost(null);
+    onDone();
+  }
 };
 
 /** @type {remoting.HostController} */
