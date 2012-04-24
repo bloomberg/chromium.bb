@@ -610,24 +610,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                  base::Value* data,
                                  base::PlatformFileError *error);
 
-  // Checks if a local file at |local_file_path| is a JSON file referencing a
-  // hosted document on IO thread poll, and if so, gets the resource ID of the
-  // document.
-  static void GetDocumentResourceIdOnIOThreadPool(
-      const FilePath& local_file_path,
-      std::string* resource_id);
-
-  // Creates a temporary JSON file representing a document with |edit_url|
-  // and |resource_id| under |document_dir| on IO thread pool.
-  static void CreateDocumentJsonFileOnIOThreadPool(
-      const FilePath& document_dir,
-      const GURL& edit_url,
-      const std::string& resource_id,
-      base::PlatformFileError* error,
-      FilePath* temp_file_path,
-      std::string* mime_type,
-      GDataFileType* file_type);
-
   // Initiates transfer of |local_file_path| with |resource_id| to
   // |remote_dest_file_path|. |local_file_path| must be a file from the local
   // file system, |remote_dest_file_path| is the virtual destination path within

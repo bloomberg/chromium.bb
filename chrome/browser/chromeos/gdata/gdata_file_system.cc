@@ -686,6 +686,58 @@ void CreateUploadFileInfoOnIOThreadPool(
   *error = base::PLATFORM_FILE_OK;
 }
 
+// Checks if a local file at |local_file_path| is a JSON file referencing a
+// hosted document on IO thread poll, and if so, gets the resource ID of the
+// document.
+void GetDocumentResourceIdOnIOThreadPool(
+    const FilePath& local_file_path,
+    std::string* resource_id) {
+  DCHECK(resource_id);
+
+  if (DocumentEntry::HasHostedDocumentExtension(local_file_path)) {
+    std::string error;
+    DictionaryValue* dict_value = NULL;
+    JSONFileValueSerializer serializer(local_file_path);
+    scoped_ptr<Value> value(serializer.Deserialize(NULL, &error));
+    if (value.get() && value->GetAsDictionary(&dict_value))
+      dict_value->GetString("resource_id", resource_id);
+  }
+}
+
+// Creates a temporary JSON file representing a document with |edit_url|
+// and |resource_id| under |document_dir| on IO thread pool.
+void CreateDocumentJsonFileOnIOThreadPool(
+    const FilePath& document_dir,
+    const GURL& edit_url,
+    const std::string& resource_id,
+    base::PlatformFileError* error,
+    FilePath* temp_file_path,
+    std::string* mime_type,
+    GDataFileType* file_type) {
+  DCHECK(error);
+  DCHECK(temp_file_path);
+  DCHECK(mime_type);
+  DCHECK(file_type);
+
+  *error = base::PLATFORM_FILE_ERROR_FAILED;
+
+  if (file_util::CreateTemporaryFileInDir(document_dir, temp_file_path)) {
+    std::string document_content = base::StringPrintf(
+        "{\"url\": \"%s\", \"resource_id\": \"%s\"}",
+        edit_url.spec().c_str(), resource_id.c_str());
+    int document_size = static_cast<int>(document_content.size());
+    if (file_util::WriteFile(*temp_file_path, document_content.data(),
+                             document_size) == document_size) {
+      *error = base::PLATFORM_FILE_OK;
+    }
+  }
+
+  *mime_type = kMimeTypeJson;
+  *file_type = HOSTED_DOCUMENT;
+  if (*error != base::PLATFORM_FILE_OK)
+      temp_file_path->clear();
+}
+
 }  // namespace
 
 // FindEntryDelegate class implementation.
@@ -1133,7 +1185,7 @@ void GDataFileSystem::TransferFile(const FilePath& local_file_path,
   PostBlockingPoolSequencedTaskAndReply(
       kGDataFileSystemToken,
       FROM_HERE,
-      base::Bind(&GDataFileSystem::GetDocumentResourceIdOnIOThreadPool,
+      base::Bind(&GetDocumentResourceIdOnIOThreadPool,
                  local_file_path,
                  resource_id),
       base::Bind(&GDataFileSystem::TransferFileForResourceId,
@@ -1191,22 +1243,6 @@ void GDataFileSystem::TransferRegularFile(
                  callback,
                  error,
                  upload_file_info));
-}
-
-// static
-void GDataFileSystem::GetDocumentResourceIdOnIOThreadPool(
-    const FilePath& local_file_path,
-    std::string* resource_id) {
-  DCHECK(resource_id);
-
-  if (DocumentEntry::HasHostedDocumentExtension(local_file_path)) {
-    std::string error;
-    DictionaryValue* dict_value = NULL;
-    JSONFileValueSerializer serializer(local_file_path);
-    scoped_ptr<Value> value(serializer.Deserialize(NULL, &error));
-    if (value.get() && value->GetAsDictionary(&dict_value))
-      dict_value->GetString("resource_id", resource_id);
-  }
 }
 
 void GDataFileSystem::StartFileUploadOnUIThread(
@@ -1635,39 +1671,6 @@ void GDataFileSystem::CreateDirectory(
                      callback)));
 }
 
-// static
-void GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool(
-    const FilePath& document_dir,
-    const GURL& edit_url,
-    const std::string& resource_id,
-    base::PlatformFileError* error,
-    FilePath* temp_file_path,
-    std::string* mime_type,
-    GDataFileType* file_type) {
-  DCHECK(error);
-  DCHECK(temp_file_path);
-  DCHECK(mime_type);
-  DCHECK(file_type);
-
-  *error = base::PLATFORM_FILE_ERROR_FAILED;
-
-  if (file_util::CreateTemporaryFileInDir(document_dir, temp_file_path)) {
-    std::string document_content = base::StringPrintf(
-        "{\"url\": \"%s\", \"resource_id\": \"%s\"}",
-        edit_url.spec().c_str(), resource_id.c_str());
-    int document_size = static_cast<int>(document_content.size());
-    if (file_util::WriteFile(*temp_file_path, document_content.data(),
-                             document_size) == document_size) {
-      *error = base::PLATFORM_FILE_OK;
-    }
-  }
-
-  *mime_type = kMimeTypeJson;
-  *file_type = HOSTED_DOCUMENT;
-  if (*error != base::PLATFORM_FILE_OK)
-      temp_file_path->clear();
-}
-
 void GDataFileSystem::GetFileByPath(const FilePath& file_path,
                                     const GetFileCallback& callback) {
   GDataFileProperties file_properties;
@@ -1699,7 +1702,7 @@ void GDataFileSystem::GetFileByPath(const FilePath& file_path,
     PostBlockingPoolSequencedTaskAndReply(
         kGDataFileSystemToken,
         FROM_HERE,
-        base::Bind(&GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool,
+        base::Bind(&CreateDocumentJsonFileOnIOThreadPool,
                    GetCacheDirectoryPath(
                        GDataRootDirectory::CACHE_TYPE_TMP_DOCUMENTS),
                    file_properties.alternate_url,
