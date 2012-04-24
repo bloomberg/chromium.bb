@@ -59,6 +59,12 @@ ModuleSystem::NativesEnabledScope::~NativesEnabledScope() {
   CHECK_GE(module_system_->natives_enabled_, 0);
 }
 
+// static
+bool ModuleSystem::IsPresentInCurrentContext() {
+  v8::Handle<v8::Object> global(v8::Context::GetCurrent()->Global());
+  return !global->GetHiddenValue(v8::String::New(kModuleSystem))->IsUndefined();
+}
+
 void ModuleSystem::Require(const std::string& module_name) {
   v8::HandleScope handle_scope;
   RequireForJsInner(v8::String::New(module_name.c_str()));

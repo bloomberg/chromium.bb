@@ -54,6 +54,9 @@ class ModuleSystem : public NativeHandler {
   explicit ModuleSystem(v8::Handle<v8::Context> context, SourceMap* source_map);
   virtual ~ModuleSystem();
 
+  // Returns true if the current context has a ModuleSystem installed in it.
+  static bool IsPresentInCurrentContext();
+
   // Require the specified module. This is the equivalent of calling
   // require('module_name') from the loaded JS files.
   void Require(const std::string& module_name);
