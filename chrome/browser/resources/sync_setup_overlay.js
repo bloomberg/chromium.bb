@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="../shared/js/util.js"></include>
-
 cr.define('options', function() {
   /** @const */ var OptionsPage = options.OptionsPage;
 
