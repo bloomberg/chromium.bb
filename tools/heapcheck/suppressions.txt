@@ -95,7 +95,7 @@
    bug_51988_c
    Heapcheck:Leak
    ...
-   fun:crypto::OpenTestNSSDB
+   fun:crypto::Open*NSSDB
 }
 {
    bug_51988_d
@@ -116,6 +116,13 @@
    Heapcheck:Leak
    ...
    fun:net::CertDatabaseNSSTest::TearDown
+}
+{
+   bug_51988_g
+   Heapcheck:Leak
+   fun:sqlite3MemMalloc
+   ...
+   fun:net::CertDatabaseNSSTest::SetUp
 }
 {
    bug_66941_a
@@ -143,7 +150,7 @@
 {
    bug_119677
    Heapcheck:Leak
-   fun:XRRRootToScreen
+   ...
    fun:MonitorChangeObserverX11
    fun:aura::Env::Init
    fun:aura::Env::GetInstance
@@ -253,7 +260,6 @@
    fun:InitSessionCacheLocks
    fun:initSessionCacheLocksLazily
    ...
-   fun:ssl_InitSessionCacheLocks
    fun:lock_cache
    fun:ssl_LookupSID
    fun:ssl2_BeginClientHandshake
@@ -1089,7 +1095,6 @@
    Heapcheck:Leak
    fun:sqlite3MemMalloc
    fun:net::CertDatabase::ListCerts
-   fun:net::CertDatabaseNSSTest_ListCerts_Test::TestBody
 }
 {
    bug_82974e
@@ -1816,4 +1821,11 @@
    fun:FileSystem*URLRequestJobTest
    fun:FileSystem*URLRequestJobTest_InvalidURL_Test
    fun:testing::internal::TestFactoryImpl::CreateTest
+}
+{
+   bug_124758
+   Heapcheck:Leak
+   fun:sqlite3MemMalloc
+   fun:crypto::RSAPrivateKey::FindFromPublicKeyInfo
+   fun:crypto::RSAPrivateKeyNSSTest_*_Test::TestBody
 }
