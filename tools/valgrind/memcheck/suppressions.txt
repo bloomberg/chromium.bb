@@ -189,7 +189,7 @@
    fun:PR_LoadLibraryWithFlags
 }
 {
-   dlopen leak on error. TODO(timurrrr): file a bug
+   dlopen leak on error. See http://sourceware.org/bugzilla/show_bug.cgi?id=12878.
    Memcheck:Leak
    fun:calloc
    fun:_dlerror_run
@@ -436,6 +436,13 @@
    ...
    fun:SEC_ASN1DecoderUpdate_Util
    fun:SEC_PKCS12DecoderUpdate
+}
+{
+   bug_51770 (Third Party)
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlsym
 }
 {
    bug_58730_strlen_addr8 (Third Party)
@@ -1977,14 +1984,6 @@
    fun:_ZN7WebCore13TextRunWalker14widthOfFullRunEv
 }
 {
-   bug_51770
-   Memcheck:Leak
-   fun:calloc
-   fun:_dlerror_run
-   fun:dlsym
-   fun:localtime_r
-}
-{
    bug_51679
    Memcheck:Leak
    fun:_Znw*
@@ -2375,19 +2374,6 @@
    fun:_ZN6WebKit31WebGraphicsContext3DDefaultImpl10texImage2DEjjjjjjjjPKv
    fun:_ZN7WebCore25GraphicsContext3DInternal10texImage2DEjjjjjjjjPv
    fun:_ZN7WebCore17GraphicsContext3D10texImage2DEjjjjjjjjPv
-}
-{
-   bug_60958
-   Memcheck:Leak
-   fun:calloc
-   fun:_dlerror_run
-   fun:dlsym
-   fun:_Z*26InitLibcLocaltimeFunctionsv
-   fun:pthread_once
-   fun:_ZNK4base4Time7ExplodeEbPNS0_8ExplodedE
-   fun:_ZNK4base4Time12LocalExplodeEPNS0_8ExplodedE
-   fun:_ZNK4base4Time13LocalMidnightEv
-   fun:_ZN7history20VisitSegmentDatabase17QuerySegmentUsageEN4base4TimeEiPSt6vectorIP13PageUsageDataSaIS5_EE
 }
 {
    bug_69073
@@ -5800,19 +5786,6 @@
    fun:_ZN6webkit3gpu18GLInProcessContext10InitializeERKN3gfx4SizeEPS1_PKcPKiNS2_13GpuPreferenceE
    fun:_ZN6webkit3gpu18GLInProcessContext22CreateOffscreenContextEPS1_RKN3gfx4SizeES2_PKcPKiNS3_13GpuPreferenceE
    fun:_ZN6webkit3gpu46WebGraphicsContext3DInProcessCommandBufferImpl10InitializeEN6WebKit20WebGraphicsContext3D10AttributesEPS3_
-}
-{
-   bug_124494
-   Memcheck:Leak
-   fun:calloc
-   fun:_dlerror_run
-   fun:dlsym
-   fun:_ZN29RuntimeLibNSSFunctionPointersC1Ev
-   fun:_ZN22DefaultSingletonTraitsI29RuntimeLibNSSFunctionPointersE3NewEv
-   fun:_ZN9SingletonI29RuntimeLibNSSFunctionPointers22DefaultSingletonTraitsIS0_ES0_E3getEv
-   fun:_ZN29RuntimeLibNSSFunctionPointers11GetInstanceEv
-   fun:_ZL43GetCacheOCSPResponseFromSideChannelFunctionv
-   fun:_ZL23IsOCSPStaplingSupportedv
 }
 {
    bug_124496
