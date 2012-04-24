@@ -372,7 +372,8 @@ void TooltipController::TooltipTimerFired() {
 }
 
 void TooltipController::UpdateIfRequired() {
-  if (!tooltips_enabled_ || mouse_pressed_ || IsDragDropInProgress()) {
+  if (!tooltips_enabled_ || mouse_pressed_ || IsDragDropInProgress() ||
+      !Shell::GetRootWindow()->cursor_shown()) {
     tooltip_->Hide();
     return;
   }
