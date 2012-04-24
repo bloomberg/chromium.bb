@@ -105,7 +105,7 @@ void RenderAudioSourceProvider::setClient(
 
   if (client && client != client_) {
     // Detach the audio renderer from normal playback.
-    default_sink_->Pause(true);
+    default_sink_->Stop();
 
     // The client will now take control by calling provideInput() periodically.
     client_ = client;
