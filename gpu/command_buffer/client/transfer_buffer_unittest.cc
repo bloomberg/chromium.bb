@@ -428,6 +428,30 @@ TEST_F(TransferBufferExpandContractTest, OutOfMemory) {
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
 }
 
+TEST_F(TransferBufferExpandContractTest, ReallocsToDefault) {
+  // Free buffer.
+  EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  transfer_buffer_->Free();
+  // See it's freed.
+  EXPECT_FALSE(transfer_buffer_->HaveBuffer());
+
+  // See that it gets reallocated.
+  EXPECT_CALL(*command_buffer(),
+              CreateTransferBuffer(kStartTransferBufferSize, _))
+      .WillOnce(Invoke(
+          command_buffer(),
+          &MockClientCommandBufferCanFail::RealCreateTransferBuffer))
+      .RetiresOnSaturation();
+  EXPECT_EQ(transfer_buffer_id_, transfer_buffer_->GetShmId());
+  EXPECT_TRUE(transfer_buffer_->HaveBuffer());
+
+  // Check it's the default size.
+  EXPECT_EQ(
+      kStartTransferBufferSize - kStartingOffset,
+      transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
+}
 
 }  // namespace gpu
 

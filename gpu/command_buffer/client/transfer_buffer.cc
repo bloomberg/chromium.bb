@@ -16,6 +16,7 @@ TransferBuffer::TransferBuffer(
     CommandBufferHelper* helper)
     : helper_(helper),
       result_size_(0),
+      default_buffer_size_(0),
       min_buffer_size_(0),
       max_buffer_size_(0),
       alignment_(0),
@@ -32,18 +33,19 @@ TransferBuffer::~TransferBuffer() {
 }
 
 bool TransferBuffer::Initialize(
-    unsigned int starting_buffer_size,
+    unsigned int default_buffer_size,
     unsigned int result_size,
     unsigned int min_buffer_size,
     unsigned int max_buffer_size,
     unsigned int alignment,
     unsigned int size_to_flush) {
   result_size_ = result_size;
+  default_buffer_size_ = default_buffer_size;
   min_buffer_size_ = min_buffer_size;
   max_buffer_size_ = max_buffer_size;
   alignment_ = alignment;
   size_to_flush_ = size_to_flush;
-  ReallocateRingBuffer(starting_buffer_size - result_size);
+  ReallocateRingBuffer(default_buffer_size_ - result_size);
   return HaveBuffer();
 }
 
@@ -136,6 +138,7 @@ void TransferBuffer::ReallocateRingBuffer(unsigned int size) {
   // What size buffer would we ask for if we needed a new one?
   unsigned int needed_buffer_size = ComputePOTSize(size + result_size_);
   needed_buffer_size = std::max(needed_buffer_size, min_buffer_size_);
+  needed_buffer_size = std::max(needed_buffer_size, default_buffer_size_);
   needed_buffer_size = std::min(needed_buffer_size, max_buffer_size_);
 
   if (usable_ && (!HaveBuffer() || needed_buffer_size > buffer_.size)) {

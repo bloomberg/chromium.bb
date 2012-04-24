@@ -92,7 +92,7 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
 
   // Overridden from TransferBufferInterface.
   virtual bool Initialize(
-      unsigned int buffer_size,
+      unsigned int default_buffer_size,
       unsigned int result_size,
       unsigned int min_buffer_size,
       unsigned int max_buffer_size,
@@ -124,6 +124,9 @@ class GPU_EXPORT TransferBuffer : public TransferBufferInterface {
 
   // size reserved for results
   unsigned int result_size_;
+
+  // default size. Size we want when starting or re-allocating
+  unsigned int default_buffer_size_;
 
   // min size we'll consider successful
   unsigned int min_buffer_size_;
