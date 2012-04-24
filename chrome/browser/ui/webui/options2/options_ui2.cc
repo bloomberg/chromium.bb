@@ -75,6 +75,7 @@
 #include "chrome/browser/ui/webui/options2/chromeos/proxy_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/stats_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/chromeos/user_image_source2.h"
+#include "chrome/browser/ui/webui/options2/chromeos/wallpaper_thumbnail_source2.h"
 #if defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/ui/webui/options2/chromeos/virtual_keyboard_manager_handler2.h"
 #endif
@@ -309,6 +310,11 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   chromeos::options2::UserImageSource* user_image_source =
       new chromeos::options2::UserImageSource();
   profile->GetChromeURLDataManager()->AddDataSource(user_image_source);
+  // Set up the chrome://wallpaper/ source.
+  chromeos::options2::WallpaperThumbnailSource* wallpaper_thumbnail_source =
+      new chromeos::options2::WallpaperThumbnailSource();
+  profile->GetChromeURLDataManager()->
+      AddDataSource(wallpaper_thumbnail_source);
 
   pointer_device_observer_.reset(
       new chromeos::system::PointerDeviceObserver());

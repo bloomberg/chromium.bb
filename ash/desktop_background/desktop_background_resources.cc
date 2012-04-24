@@ -223,6 +223,7 @@ const ash::WallpaperInfo kDefaultWallpapers[] = {
 };
 
 const int kDefaultWallpaperCount = arraysize(kDefaultWallpapers);
+const int kInvalidWallpaperIndex = -1;
 
 // TODO(saintlou): These hardcoded indexes, although checked against the size
 // of the array are really hacky.
@@ -237,6 +238,10 @@ const int kGuestWallpaperIndex = kDefaultWallpaperIndex;
 }  // namespace
 
 namespace ash {
+
+int GetInvalidWallpaperIndex() {
+  return kInvalidWallpaperIndex;
+}
 
 int GetDefaultWallpaperIndex() {
   DCHECK(kDefaultWallpaperIndex < kDefaultWallpaperCount);
@@ -256,12 +261,6 @@ const SkBitmap& GetWallpaper(int index) {
   DCHECK(index >= 0 && index < kDefaultWallpaperCount);
   return *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       kDefaultWallpapers[index].id).ToSkBitmap();
-}
-
-const SkBitmap& GetWallpaperThumbnail(int index) {
-  DCHECK(index >= 0 && index < kDefaultWallpaperCount);
-  return *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      kDefaultWallpapers[index].thumb_id).ToSkBitmap();
 }
 
 const WallpaperInfo& GetWallpaperInfo(int index) {

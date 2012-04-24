@@ -77,20 +77,33 @@ cr.define('options', function() {
     },
 
     /**
+     * Set attributions of wallpaper with given URL.
+     * @param {string} url URL of the selected wallpaper.
+     * @private
+     */
+    setWallpaperAttribution_: function(url) {
+      for (var i = 0; i < this.wallpapers_.length; i++) {
+        if (this.wallpapers_[i].url == url) {
+          $('author-name').textContent = this.wallpapers_[i].author;
+          $('author-website').textContent = this.wallpapers_[i].website;
+          return;
+        }
+      }
+      $('author-name').textContent = '';
+      $('author-website').textContent = '';
+    },
+
+    /**
      * Handles image selection change.
      * @private
      */
     handleImageSelected_: function() {
       var wallpaperGrid = $('wallpaper-grid');
-      var index = wallpaperGrid.selectionModel.selectedIndex;
-      $('author-name').innerText = this.wallpapers_[index].author;
-      $('author-website').innerText = this.wallpapers_[index].website;
-
-      // Ignore deselection, selection change caused by program itself and
-      // selection of one of the action buttons.
-      if (index != -1 &&
+      var url = wallpaperGrid.selectedItemUrl;
+      if (url &&
           !wallpaperGrid.inProgramSelection) {
-        chrome.send('selectWallpaper', [index.toString()]);
+        this.setWallpaperAttribution_(url);
+        chrome.send('selectWallpaper', [url]);
       }
     },
 
@@ -105,15 +118,13 @@ cr.define('options', function() {
     },
 
     /**
-     * Selects user image with the given index.
-     * @param {int} index index of the image to select.
+     * Selects corresponding wallpaper thumbnail with the given URL.
+     * @param {string} url URL of the wallpaper thumbnail to select.
      * @private
      */
-    setSelectedImage_: function(index) {
-      var wallpaperGrid = $('wallpaper-grid');
-      wallpaperGrid.selectedItemIndex = index;
-      $('author-name').innerText = this.wallpapers_[index].author;
-      $('author-website').innerText = this.wallpapers_[index].website;
+    setSelectedImage_: function(url) {
+      $('wallpaper-grid').selectedItemUrl = url;
+      this.setWallpaperAttribution_(url);
     },
 
     /**

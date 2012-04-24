@@ -87,6 +87,7 @@ extern const char kChromeUISlideshowURL[];
 extern const char kChromeUISystemInfoURL[];
 extern const char kChromeUITermsOemURL[];
 extern const char kChromeUIUserImageURL[];
+extern const char kChromeUIWallpaperThumbnailURL[];
 #endif
 
 #if defined(USE_ASH)
@@ -211,6 +212,7 @@ extern const char kChromeUISimUnlockHost[];
 extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISystemInfoHost[];
 extern const char kChromeUIUserImageHost[];
+extern const char kChromeUIWallpaperThumbnailHost[];
 
 extern const char kChromeUIMenu[];
 extern const char kChromeUINetworkMenu[];

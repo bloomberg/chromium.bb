@@ -28,11 +28,11 @@ struct ASH_EXPORT WallpaperInfo {
   const char* website;
 };
 
+ASH_EXPORT int GetInvalidWallpaperIndex();
 ASH_EXPORT int GetDefaultWallpaperIndex();
 ASH_EXPORT int GetGuestWallpaperIndex();
 ASH_EXPORT int GetWallpaperCount();
 ASH_EXPORT const SkBitmap& GetWallpaper(int index);
-ASH_EXPORT const SkBitmap& GetWallpaperThumbnail(int index);
 ASH_EXPORT const WallpaperInfo& GetWallpaperInfo(int index);
 
 }  // namespace ash

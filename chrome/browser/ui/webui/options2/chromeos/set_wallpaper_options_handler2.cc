@@ -18,7 +18,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
+#include "chrome/browser/ui/views/window.h"
+#include "chrome/browser/ui/webui/options2/chromeos/wallpaper_thumbnail_source2.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
@@ -68,8 +69,7 @@ void SetWallpaperOptionsHandler::SendDefaultImages() {
   for (int i = 0; i < ash::GetWallpaperCount(); ++i) {
     images.Append(image_detail = new DictionaryValue());
     image_info = ash::GetWallpaperInfo(i);
-    image_detail->SetString("url", web_ui_util::GetImageDataUrl(
-        ash::GetWallpaperThumbnail(i)));
+    image_detail->SetString("url", GetDefaultWallpaperThumbnailURL(i));
     image_detail->SetString("author", image_info.author);
     image_detail->SetString("website", image_info.website);
   }
@@ -88,24 +88,27 @@ void SetWallpaperOptionsHandler::HandlePageInitialized(
 void SetWallpaperOptionsHandler::HandlePageShown(const base::ListValue* args) {
   DCHECK(args && args->empty());
   int index = chromeos::UserManager::Get()->GetUserWallpaperIndex();
-  base::FundamentalValue index_value(index);
+  base::StringValue image_url(GetDefaultWallpaperThumbnailURL(index));
   web_ui()->CallJavascriptFunction("SetWallpaperOptions.setSelectedImage",
-                                   index_value);
+                                   image_url);
 }
 
 void SetWallpaperOptionsHandler::HandleSelectImage(const ListValue* args) {
-  std::string image_index_string;
-  int image_index;
+  std::string image_url;
   if (!args ||
       args->GetSize() != 1 ||
-      !args->GetString(0, &image_index_string) ||
-      !base::StringToInt(image_index_string, &image_index) ||
-      image_index < 0 || image_index >= ash::GetWallpaperCount())
+      !args->GetString(0, &image_url))
     NOTREACHED();
 
-  UserManager::Get()->SaveUserWallpaperIndex(image_index);
-  ash::Shell::GetInstance()->desktop_background_controller()->
-      SetDesktopBackgroundImageMode();
+  if (image_url.empty())
+    return;
+
+  int user_image_index;
+  if (IsDefaultWallpaperURL(image_url, &user_image_index)) {
+    UserManager::Get()->SaveUserWallpaperIndex(user_image_index);
+    ash::Shell::GetInstance()->desktop_background_controller()->
+        SetDesktopBackgroundImageMode();
+  }
 }
 
 gfx::NativeWindow SetWallpaperOptionsHandler::GetBrowserWindow() const {
