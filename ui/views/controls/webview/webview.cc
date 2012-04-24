@@ -30,7 +30,8 @@ const char WebView::kViewClassName[] =
 WebView::WebView(content::BrowserContext* browser_context)
     : wcv_holder_(new NativeViewHost),
       web_contents_(NULL),
-      browser_context_(browser_context) {
+      browser_context_(browser_context),
+      allow_accelerators_(false) {
   AddChildView(wcv_holder_);
 }
 
@@ -98,6 +99,9 @@ void WebView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
 }
 
 bool WebView::SkipDefaultKeyEventProcessing(const views::KeyEvent& event) {
+  if (allow_accelerators_)
+    return FocusManager::IsTabTraversalKeyEvent(event);
+
   // Don't look-up accelerators or tab-traversal if we are showing a non-crashed
   // TabContents.
   // We'll first give the page a chance to process the key events.  If it does

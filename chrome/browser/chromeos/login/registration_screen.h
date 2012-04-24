@@ -31,7 +31,7 @@ class ViewScreenDelegate;
 // Class that displays screen contents: page and throbber while waiting.
 class RegistrationView : public WebPageView {
  public:
-  RegistrationView() : dom_view_(new WebPageDomView()) {}
+  explicit RegistrationView(content::BrowserContext* browser_context);
 
  protected:
   virtual WebPageDomView* dom_view() OVERRIDE;

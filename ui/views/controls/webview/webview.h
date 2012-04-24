@@ -64,6 +64,12 @@ class VIEWS_EXPORT WebView : public View,
   //             forward this notification.
   void OnWebContentsFocused(content::WebContents* web_contents);
 
+  // When used to host UI, we need to explicitly allow accelerators to be
+  // processed. Default is false.
+  void set_allow_accelerators(bool allow_accelerators) {
+    allow_accelerators_ = allow_accelerators;
+  }
+
   // Overridden from View:
   virtual std::string GetClassName() const OVERRIDE;
 
@@ -101,6 +107,7 @@ class VIEWS_EXPORT WebView : public View,
   content::WebContents* web_contents_;
   content::BrowserContext* browser_context_;
   content::NotificationRegistrar registrar_;
+  bool allow_accelerators_;
 
   DISALLOW_COPY_AND_ASSIGN(WebView);
 };

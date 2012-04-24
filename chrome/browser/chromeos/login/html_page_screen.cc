@@ -20,8 +20,8 @@ namespace chromeos {
 
 ///////////////////////////////////////////////////////////////////////////////
 // HTMLPageView
-HTMLPageView::HTMLPageView()
-    : dom_view_(new WebPageDomView()) {
+HTMLPageView::HTMLPageView(content::BrowserContext* browser_context)
+    : dom_view_(new WebPageDomView(browser_context)) {
 }
 
 WebPageDomView* HTMLPageView::dom_view() {
@@ -48,13 +48,13 @@ void HTMLPageScreen::Refresh() {
   StartTimeoutTimer();
   GURL url(url_);
   Profile* profile = ProfileManager::GetDefaultProfile();
-  view()->InitDOM(profile, SiteInstance::CreateForURL(profile, url));
+  view()->InitWebView(SiteInstance::CreateForURL(profile, url));
   view()->SetWebContentsDelegate(this);
   view()->LoadURL(url);
 }
 
 HTMLPageView* HTMLPageScreen::AllocateView() {
-  return new HTMLPageView();
+  return new HTMLPageView(ProfileManager::GetDefaultProfile());
 }
 
 void HTMLPageScreen::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {

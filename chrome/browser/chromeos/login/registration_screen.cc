@@ -42,6 +42,11 @@ const char kRegistrationSkippedUrl[] = "cros://register/skipped";
 ///////////////////////////////////////////////////////////////////////////////
 // RegistrationView, protected:
 
+RegistrationView::RegistrationView(content::BrowserContext* browser_context)
+    : dom_view_(new WebPageDomView(browser_context)) {
+}
+
+
 WebPageDomView* RegistrationView::dom_view() {
   return dom_view_;
 }
@@ -71,13 +76,13 @@ void RegistrationScreen::Refresh() {
   StartTimeoutTimer();
   GURL url(kRegistrationHostPageUrl);
   Profile* profile = ProfileManager::GetDefaultProfile();
-  view()->InitDOM(profile, SiteInstance::CreateForURL(profile, url));
+  view()->InitWebView(SiteInstance::CreateForURL(profile, url));
   view()->SetWebContentsDelegate(this);
   view()->LoadURL(url);
 }
 
 RegistrationView* RegistrationScreen::AllocateView() {
-  return new RegistrationView();
+  return new RegistrationView(ProfileManager::GetDefaultProfile());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

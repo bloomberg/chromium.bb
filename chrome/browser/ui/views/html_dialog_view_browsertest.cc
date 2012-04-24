@@ -114,7 +114,6 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   ASSERT_TRUE(web_contents != NULL);
   views::Widget::CreateWindowWithParent(
       html_view, web_contents->GetView()->GetTopLevelNativeWindow());
-  html_view->InitDialog();
   html_view->GetWidget()->Show();
 
   // TestHtmlDialogView should quit current message loop on size change.
@@ -134,8 +133,8 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
-  rwhv_bounds = html_view->dom_contents()->web_contents()->
-      GetRenderWidgetHostView()->GetViewBounds();
+  rwhv_bounds =
+      html_view->web_contents()->GetRenderWidgetHostView()->GetViewBounds();
   EXPECT_LT(0, rwhv_bounds.width());
   EXPECT_LT(0, rwhv_bounds.height());
   EXPECT_GE(set_bounds.width(), rwhv_bounds.width());
@@ -150,8 +149,8 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
-  rwhv_bounds = html_view->dom_contents()->web_contents()->
-      GetRenderWidgetHostView()->GetViewBounds();
+  rwhv_bounds =
+      html_view->web_contents()->GetRenderWidgetHostView()->GetViewBounds();
   EXPECT_LT(0, rwhv_bounds.width());
   EXPECT_LT(0, rwhv_bounds.height());
   EXPECT_GE(set_bounds.width(), rwhv_bounds.width());
@@ -166,8 +165,8 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   actual_bounds = html_view->GetWidget()->GetClientAreaScreenBounds();
   EXPECT_EQ(set_bounds, actual_bounds);
 
-  rwhv_bounds = html_view->dom_contents()->web_contents()->
-      GetRenderWidgetHostView()->GetViewBounds();
+  rwhv_bounds =
+      html_view->web_contents()->GetRenderWidgetHostView()->GetViewBounds();
   EXPECT_LT(0, rwhv_bounds.width());
   EXPECT_LT(0, rwhv_bounds.height());
   EXPECT_GE(set_bounds.width(), rwhv_bounds.width());
