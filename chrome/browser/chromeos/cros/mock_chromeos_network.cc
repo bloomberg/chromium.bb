@@ -114,6 +114,14 @@ void CallMockDisconnectSMSMonitor(SMSMonitor monitor) {
   g_mock_chromeos_network->DisconnectSMSMonitor(monitor);
 }
 
+// Calls mock RequestNetworkServiceConnect.
+void CallMockRequestNetworkServiceConnect(const char* service_path,
+                                          NetworkActionCallback callback,
+                                          void* object) {
+  g_mock_chromeos_network->RequestNetworkServiceConnect(
+      service_path, callback, object);
+}
+
 // Calls mock RequestNetworkManagerProperties.
 void CallMockRequestNetworkManagerProperties(
     NetworkPropertiesGValueCallback callback,
@@ -199,9 +207,56 @@ void CallMockRequestNetworkDeviceEnable(const char* network_type, bool enable) {
   g_mock_chromeos_network->RequestNetworkDeviceEnable(network_type, enable);
 }
 
+// Calls mock RequestRequirePin.
+void CallMockRequestRequirePin(const char* device_path,
+                               const char* pin,
+                               bool enable,
+                               NetworkActionCallback callback,
+                               void* object) {
+  g_mock_chromeos_network->RequestRequirePin(device_path, pin, enable, callback,
+                                             object);
+}
+
+// Calls mock RequestEnterPin.
+void CallMockRequestEnterPin(const char* device_path,
+                             const char* pin,
+                             NetworkActionCallback callback,
+                             void* object) {
+  g_mock_chromeos_network->RequestEnterPin(device_path, pin, callback, object);
+}
+
+// Calls mock RequestUnblockPin.
+void CallMockRequestUnblockPin(const char* device_path,
+                               const char* unblock_code,
+                               const char* pin,
+                               NetworkActionCallback callback,
+                               void* object) {
+  g_mock_chromeos_network->RequestUnblockPin(device_path, unblock_code, pin,
+                                             callback, object);
+}
+
+// Calls mock RequestChangePin.
+void CallMockRequestChangePin(const char* device_path,
+                              const char* old_pin,
+                              const char* new_pin,
+                              NetworkActionCallback callback,
+                              void* object) {
+  g_mock_chromeos_network->RequestChangePin(device_path, old_pin, new_pin,
+                                            callback, object);
+}
+
 // Calls mock ProposeScan.
 void CallMockProposeScan(const char* device_path) {
   g_mock_chromeos_network->ProposeScan(device_path);
+}
+
+// Calls mock RequestCellularRegister.
+void CallMockRequestCellularRegister(const char* device_path,
+                                     const char* network_id,
+                                     NetworkActionCallback callback,
+                                     void* object) {
+  g_mock_chromeos_network->RequestCellularRegister(device_path, network_id,
+                                                   callback, object);
 }
 
 // Calls mock AddIPConfig.
@@ -274,6 +329,8 @@ void MockChromeOSNetwork::Initialize() {
         &CallMockDisconnectDataPlanUpdateMonitor;
     chromeos::MonitorSMS = &CallMockMonitorSMS;
     chromeos::DisconnectSMSMonitor = &CallMockDisconnectSMSMonitor;
+    chromeos::RequestNetworkServiceConnect =
+        &CallMockRequestNetworkServiceConnect;
     chromeos::RequestNetworkManagerProperties =
         &CallMockRequestNetworkManagerProperties;
     chromeos::RequestNetworkServiceProperties =
@@ -294,7 +351,12 @@ void MockChromeOSNetwork::Initialize() {
         &CallMockRequestRemoveNetworkService;
     chromeos::RequestNetworkScan = &CallMockRequestNetworkScan;
     chromeos::RequestNetworkDeviceEnable = &CallMockRequestNetworkDeviceEnable;
+    chromeos::RequestRequirePin = &CallMockRequestRequirePin;
+    chromeos::RequestEnterPin = &CallMockRequestEnterPin;
+    chromeos::RequestUnblockPin = &CallMockRequestUnblockPin;
+    chromeos::RequestChangePin = &CallMockRequestChangePin;
     chromeos::ProposeScan = &CallMockProposeScan;
+    chromeos::RequestCellularRegister = &CallMockRequestCellularRegister;
     chromeos::AddIPConfig = &CallMockAddIPConfig;
     chromeos::RemoveIPConfig = &CallMockRemoveIPConfig;
     chromeos::GetDeviceNetworkList = &CallMockGetDeviceNetworkList;
@@ -322,6 +384,7 @@ void MockChromeOSNetwork::Shutdown() {
     chromeos::DisconnectDataPlanUpdateMonitor = NULL;
     chromeos::MonitorSMS = NULL;
     chromeos::DisconnectSMSMonitor = NULL;
+    chromeos::RequestNetworkServiceConnect = NULL;
     chromeos::RequestCellularDataPlanUpdate = NULL;
     chromeos::RequestNetworkManagerProperties = NULL;
     chromeos::RequestNetworkServiceProperties = NULL;
@@ -334,7 +397,12 @@ void MockChromeOSNetwork::Shutdown() {
     chromeos::RequestRemoveNetworkService = NULL;
     chromeos::RequestNetworkScan = NULL;
     chromeos::RequestNetworkDeviceEnable = NULL;
+    chromeos::RequestRequirePin = NULL;
+    chromeos::RequestEnterPin = NULL;
+    chromeos::RequestUnblockPin = NULL;
+    chromeos::RequestChangePin = NULL;
     chromeos::ProposeScan = NULL;
+    chromeos::RequestCellularRegister = NULL;
     chromeos::AddIPConfig = NULL;
     chromeos::RemoveIPConfig = NULL;
     chromeos::GetDeviceNetworkList = NULL;

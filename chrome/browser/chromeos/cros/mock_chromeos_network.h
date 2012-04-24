@@ -65,6 +65,10 @@ class MockChromeOSNetwork {
                                       MonitorSMSCallback callback,
                                       void* object));
   MOCK_METHOD1(DisconnectSMSMonitor, void(SMSMonitor monitor));
+  MOCK_METHOD3(RequestNetworkServiceConnect,
+               void(const char* service_path,
+                    NetworkActionCallback callback,
+                    void* object));
   MOCK_METHOD2(RequestNetworkManagerProperties,
                void(NetworkPropertiesGValueCallback callback, void* object));
   MOCK_METHOD3(RequestNetworkServiceProperties,
@@ -100,7 +104,30 @@ class MockChromeOSNetwork {
   MOCK_METHOD1(RequestNetworkScan, void(const char* network_type));
   MOCK_METHOD2(RequestNetworkDeviceEnable, void(const char* network_type,
                                                 bool enable));
+  MOCK_METHOD5(RequestRequirePin, void(const char* device_path,
+                                       const char* pin,
+                                       bool enable,
+                                       NetworkActionCallback callback,
+                                       void* object));
+  MOCK_METHOD4(RequestEnterPin, void(const char* device_path,
+                                     const char* pin,
+                                     NetworkActionCallback callback,
+                                     void* object));
+  MOCK_METHOD5(RequestUnblockPin, void(const char* device_path,
+                                       const char* unblock_code,
+                                       const char* pin,
+                                       NetworkActionCallback callback,
+                                       void* object));
+  MOCK_METHOD5(RequestChangePin, void(const char* device_path,
+                                      const char* old_pin,
+                                      const char* new_pin,
+                                      NetworkActionCallback callback,
+                                      void* object));
   MOCK_METHOD1(ProposeScan, void(const char* device_path));
+  MOCK_METHOD4(RequestCellularRegister, void(const char* device_path,
+                                             const char* network_id,
+                                             NetworkActionCallback callback,
+                                             void* object));
   MOCK_METHOD2(AddIPConfig, bool(const char* device_path, IPConfigType type));
   MOCK_METHOD1(RemoveIPConfig, bool(IPConfig* config));
   MOCK_METHOD0(GetDeviceNetworkList, DeviceNetworkList*());

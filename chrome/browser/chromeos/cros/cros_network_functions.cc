@@ -234,6 +234,27 @@ void OnConfigureService(void* object,
   }
 }
 
+// A callback used to call a NetworkActionCallback on success.
+void OnNetworkActionSuccess(const std::string& path,
+                            NetworkActionCallback callback,
+                            void* object) {
+  callback(object, path.c_str(), NETWORK_METHOD_ERROR_NONE, "");
+}
+
+// A callback used to call a NetworkActionCallback on error.
+void OnNetworkActionError(const std::string& path,
+                          NetworkActionCallback callback,
+                          void* object,
+                          const std::string& error_name,
+                          const std::string& error_message) {
+  if (error_name.empty()) {
+    callback(object, path.c_str(), NETWORK_METHOD_ERROR_LOCAL, "");
+  } else {
+    callback(object, path.c_str(), NETWORK_METHOD_ERROR_REMOTE,
+             error_message.c_str());
+  }
+}
+
 // Safe string constructor since we can't rely on non NULL pointers
 // for string values from libcros.
 std::string SafeString(const char* s) {
@@ -387,8 +408,15 @@ CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,
 void CrosRequestNetworkServiceConnect(const std::string& service_path,
                                       NetworkActionCallback callback,
                                       void* object) {
-  chromeos::RequestNetworkServiceConnect(service_path.c_str(), callback,
-                                         object);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::RequestNetworkServiceConnect(service_path.c_str(), callback,
+                                           object);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamServiceClient()->Connect(
+        dbus::ObjectPath(service_path),
+        base::Bind(&OnNetworkActionSuccess, service_path, callback, object),
+        base::Bind(&OnNetworkActionError, service_path, callback, object));
+  }
 }
 
 void CrosRequestNetworkManagerProperties(
@@ -602,15 +630,30 @@ void CrosRequestRequirePin(const std::string& device_path,
                            bool enable,
                            NetworkActionCallback callback,
                            void* object) {
-  chromeos::RequestRequirePin(device_path.c_str(), pin.c_str(), enable,
-                              callback, object);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::RequestRequirePin(device_path.c_str(), pin.c_str(), enable,
+                                callback, object);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamDeviceClient()->RequirePin(
+        dbus::ObjectPath(device_path), pin, enable,
+        base::Bind(&OnNetworkActionSuccess, device_path, callback, object),
+        base::Bind(&OnNetworkActionError, device_path, callback, object));
+  }
 }
 
 void CrosRequestEnterPin(const std::string& device_path,
                          const std::string& pin,
                          NetworkActionCallback callback,
                          void* object) {
-  chromeos::RequestEnterPin(device_path.c_str(), pin.c_str(), callback, object);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::RequestEnterPin(device_path.c_str(), pin.c_str(), callback,
+                              object);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamDeviceClient()->EnterPin(
+        dbus::ObjectPath(device_path), pin,
+        base::Bind(&OnNetworkActionSuccess, device_path, callback, object),
+        base::Bind(&OnNetworkActionError, device_path, callback, object));
+  }
 }
 
 void CrosRequestUnblockPin(const std::string& device_path,
@@ -618,8 +661,15 @@ void CrosRequestUnblockPin(const std::string& device_path,
                            const std::string& pin,
                            NetworkActionCallback callback,
                            void* object) {
-  chromeos::RequestUnblockPin(device_path.c_str(), unblock_code.c_str(),
-                              pin.c_str(), callback, object);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::RequestUnblockPin(device_path.c_str(), unblock_code.c_str(),
+                                pin.c_str(), callback, object);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamDeviceClient()->UnblockPin(
+        dbus::ObjectPath(device_path), unblock_code, pin,
+        base::Bind(&OnNetworkActionSuccess, device_path, callback, object),
+        base::Bind(&OnNetworkActionError, device_path, callback, object));
+  }
 }
 
 void CrosRequestChangePin(const std::string& device_path,
@@ -627,8 +677,15 @@ void CrosRequestChangePin(const std::string& device_path,
                           const std::string& new_pin,
                           NetworkActionCallback callback,
                           void* object) {
-  chromeos::RequestChangePin(device_path.c_str(), old_pin.c_str(),
-                             new_pin.c_str(), callback, object);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::RequestChangePin(device_path.c_str(), old_pin.c_str(),
+                               new_pin.c_str(), callback, object);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamDeviceClient()->ChangePin(
+        dbus::ObjectPath(device_path), old_pin, new_pin,
+        base::Bind(&OnNetworkActionSuccess, device_path, callback, object),
+        base::Bind(&OnNetworkActionError, device_path, callback, object));
+  }
 }
 
 void CrosProposeScan(const std::string& device_path) {
@@ -644,8 +701,15 @@ void CrosRequestCellularRegister(const std::string& device_path,
                                  const std::string& network_id,
                                  chromeos::NetworkActionCallback callback,
                                  void* object) {
-  chromeos::RequestCellularRegister(device_path.c_str(), network_id.c_str(),
-                                    callback, object);
+  if (g_libcros_network_functions_enabled) {
+    chromeos::RequestCellularRegister(device_path.c_str(), network_id.c_str(),
+                                      callback, object);
+  } else {
+    DBusThreadManager::Get()->GetFlimflamDeviceClient()->Register(
+        dbus::ObjectPath(device_path), network_id,
+        base::Bind(&OnNetworkActionSuccess, device_path, callback, object),
+        base::Bind(&OnNetworkActionError, device_path, callback, object));
+  }
 }
 
 bool CrosSetOfflineMode(bool offline) {
