@@ -183,5 +183,180 @@ class InfobarTest(pyauto.PyUITest):
         self.assertEqual(len(infobar), 1)
 
 
+class OneClickInfobarTest(pyauto.PyUITest):
+  """Tests for one-click sign in infobar."""
+
+  BLOCK_COOKIE_PATTERN = {'https://accounts.google.com/': {'cookies': 2}}
+  OC_INFOBAR_TYPE = 'oneclicklogin_infobar'
+  PW_INFOBAR_TYPE = 'password_infobar'
+  URL = 'https://www.google.com/accounts/ServiceLogin'
+  URL_LOGIN = 'https://www.google.com/accounts/Login'
+  URL_LOGOUT = 'https://www.google.com/accounts/Logout'
+
+  def setUp(self):
+    pyauto.PyUITest.setUp(self)
+    self._driver = self.NewWebDriver()
+
+  def _LogIntoGoogleAccount(self, tab_index=0, windex=0):
+    """Log into Google account.
+
+    Args:
+      tab_index: The tab index, default is 0.
+      windex: The window index, default is 0.
+    """
+    creds = self.GetPrivateInfo()['test_google_account']
+    username = creds['username']
+    password = creds['password']
+    test_utils.GoogleAccountsLogin(self, username, password, tab_index, windex)
+    self.WaitUntilNavigationCompletes(tab_index=tab_index, windex=windex)
+
+  def _PerformActionOnInfobar(self, action):
+    """Perform an action on the infobar: accept, cancel, or dismiss.
+
+    The one-click sign in infobar must show in the first tab of the first
+    window. If action is 'accept' then the account is synced. If the action is
+    'cancel' then the infobar should be dismissed and never shown again. The
+    account will not be synced. If the action is 'dismiss' then the infobar will
+    shown again after the next login.
+
+    Args:
+      action: The action to perform on the infobar.
+    """
+    infobar_index = test_utils.WaitForInfobarTypeAndGetIndex(
+        self, self.OC_INFOBAR_TYPE)
+    self.PerformActionOnInfobar(action, infobar_index)
+
+  def _DisplayOneClickInfobar(self, tab_index=0, windex=0):
+    """One-click sign in infobar appears after logging into google account.
+
+    Args:
+      tab_index: The tab index, default is 0.
+      windex: The window index, default is 0.
+    """
+    self._LogIntoGoogleAccount(tab_index=tab_index, windex=windex)
+    self.assertTrue(self.WaitUntil(
+        lambda: test_utils.GetInfobarIndexByType(
+            self, self.OC_INFOBAR_TYPE,
+            tab_index=tab_index, windex=windex) is not None),
+                    msg='The one-click login infobar did not appear.')
+
+  def testDisplayOneClickInfobar(self):
+    """Verify one-click infobar appears after login into google account.
+
+    One-click infobar should appear after signing into a google account
+    for the first time using a clean profile.
+    """
+    self._DisplayOneClickInfobar()
+
+  def testNoOneClickInfobarAfterCancel(self):
+    """Verify one-click infobar does not appear again after clicking cancel.
+
+    The one-click infobar should not display again after logging into an
+    account and selecting to reject sync the first time. The test covers
+    restarting the browser with the same profile and verifying the one-click
+    infobar does not show after login.
+
+    This test also verifies that the password infobar displays.
+    """
+    self._DisplayOneClickInfobar()
+    self._PerformActionOnInfobar(action='cancel')  # Click 'No thanks' button.
+    self.NavigateToURL(self.URL_LOGOUT)
+    self._LogIntoGoogleAccount()
+    test_utils.WaitForInfobarTypeAndGetIndex(self, self.PW_INFOBAR_TYPE)
+    test_utils.AssertInfobarTypeDoesNotAppear(self, self.OC_INFOBAR_TYPE)
+    # Restart browser with the same profile.
+    self.RestartBrowser(clear_profile=False)
+    self.NavigateToURL(self.URL_LOGOUT)
+    self._LogIntoGoogleAccount()
+    test_utils.AssertInfobarTypeDoesNotAppear(self, self.OC_INFOBAR_TYPE)
+
+  def testDisplayOneClickInfobarAfterDismiss(self):
+    """Verify one-click infobar appears again after clicking dismiss button.
+
+    The one-click infobar should display again after logging into an
+    account and clicking to dismiss the infobar the first time.
+
+    This test also verifies that the password infobar does not display.
+    The one-click infobar should supersede the password infobar.
+    """
+    self._DisplayOneClickInfobar()
+    self._PerformActionOnInfobar(action='dismiss')  # Click 'x' button.
+    self.NavigateToURL(self.URL_LOGOUT)
+    self._LogIntoGoogleAccount()
+    test_utils.WaitForInfobarTypeAndGetIndex(self, self.OC_INFOBAR_TYPE)
+    test_utils.AssertInfobarTypeDoesNotAppear(self, self.PW_INFOBAR_TYPE)
+
+  def _IsNumProfiles(self, expected_number):
+    """Returns True if |expected_number| is equal to the number of profiles."""
+    # TODO(dyu): Remove when crbug.com/108761 is fixed.
+    multi_profile = self.GetMultiProfileInfo()
+    return expected_number == len(multi_profile['profiles'])
+
+  def _OpenSecondProfile(self):
+    """Create a second profile."""
+    self.OpenNewBrowserWindowWithNewProfile()
+    # Wait until the profile has been created.
+    # TODO(dyu): Remove when crbug.com/108761 is fixed.
+    # Verify 2 profiles exist.
+    self.assertTrue(
+        self.WaitUntil(self._IsNumProfiles, args=[2]),
+        msg='The second profile was not created.')
+
+  def testDisplayOneClickInfobarPerProfile(self):
+    """Verify one-click infobar appears for each profile after sign-in."""
+    # Default profile.
+    self._DisplayOneClickInfobar()
+    self._OpenSecondProfile()
+    self._DisplayOneClickInfobar(windex=1)
+
+  def testNoSameIDSigninForTwoProfiles(self):
+    """Verify two profiles cannot be signed in with same ID.
+
+    Make sure that the one-click sign in infobar does not appear for two
+    profiles trying to sign in with the same ID. This test creates a profile
+    and connects it to a Google account. Another new profile is created and
+    tries to login with the connected account from the first profile.
+
+    This test verifies the following bug: crbug.com/122975
+    """
+    test_utils.SignInToSyncAndVerifyState(self, 'test_google_account')
+    self._OpenSecondProfile()
+    self._LogIntoGoogleAccount(tab_index=0, windex=1)
+    self.assertTrue(lambda: test_utils.GetInfobarIndexByType(
+        self, self.OC_INFOBAR_TYPE, tab_index=0, windex=1) is None)
+
+  def testNoOneClickInfobarWhenCookiesBlocked(self):
+    """Verify one-click infobar does not show when cookies are blocked.
+
+    One-click sign in should not be enabled if cookies are blocked for Google
+    accounts domain.
+
+    This test verifies the following bug: crbug.com/117841
+    """
+    # Block cookies for Google accounts domain.
+    self.SetPrefs(pyauto.kContentSettingsPatternPairs,
+                  self.BLOCK_COOKIE_PATTERN)
+    self._LogIntoGoogleAccount()
+    test_utils.AssertInfobarTypeDoesNotAppear(self, self.OC_INFOBAR_TYPE)
+
+  def testOneClickInfobarShownWhenWinLoseFocus(self):
+    """Verify one-click infobar still shows when window loses focus.
+
+    This test verifies the following bug: crbug.com/121739
+    """
+    self._LogIntoGoogleAccount()
+    test_utils.WaitForInfobarTypeAndGetIndex(self, self.OC_INFOBAR_TYPE)
+    # Open new window to shift focus away.
+    self.OpenNewBrowserWindow(True)
+    test_utils.GetInfobarIndexByType(self, self.OC_INFOBAR_TYPE)
+
+  def testNoOneClickInfobarInIncognito(self):
+    """Verify that one-click infobar does not show up in incognito mode."""
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self._LogIntoGoogleAccount(windex=1)
+    test_utils.AssertInfobarTypeDoesNotAppear(
+        self, self.OC_INFOBAR_TYPE, windex=1)
+
+
 if __name__ == '__main__':
   pyauto_functional.Main()
