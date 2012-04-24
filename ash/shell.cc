@@ -22,23 +22,10 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
-#include "ash/system/audio/tray_volume.h"
-#include "ash/system/bluetooth/tray_bluetooth.h"
-#include "ash/system/brightness/tray_brightness.h"
-#include "ash/system/date/tray_date.h"
-#include "ash/system/ime/tray_ime.h"
-#include "ash/system/network/tray_network.h"
-#include "ash/system/power/power_status_observer.h"
-#include "ash/system/power/power_supply_status.h"
-#include "ash/system/power/tray_power.h"
-#include "ash/system/settings/tray_settings.h"
+#include "ash/system/bluetooth/bluetooth_observer.h"
+#include "ash/system/network/network_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/system/tray/tray_empty.h"
-#include "ash/system/tray_accessibility.h"
-#include "ash/system/tray_caps_lock.h"
-#include "ash/system/tray_update.h"
-#include "ash/system/user/tray_user.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/base_layout_manager.h"
@@ -530,8 +517,7 @@ Shell::Shell(ShellDelegate* delegate)
       delegate_(delegate),
       shelf_(NULL),
       panel_layout_manager_(NULL),
-      root_window_layout_(NULL),
-      status_widget_(NULL) {
+      root_window_layout_(NULL) {
   gfx::Screen::SetInstance(screen_);
   ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
 }
@@ -681,55 +667,13 @@ void Shell::Init() {
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  // TODO(sad): All of these initialization should happen in SystemTray.
   tray_.reset(new SystemTray());
   if (delegate_.get())
     tray_delegate_.reset(delegate_->CreateSystemTrayDelegate(tray_.get()));
   if (!tray_delegate_.get())
     tray_delegate_.reset(new DummySystemTrayDelegate());
-
-  internal::TrayVolume* tray_volume = new internal::TrayVolume();
-  internal::TrayBluetooth* tray_bluetooth = new internal::TrayBluetooth();
-  internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
-  internal::TrayDate* tray_date = new internal::TrayDate();
-  internal::TrayPower* tray_power = new internal::TrayPower();
-  internal::TrayNetwork* tray_network = new internal::TrayNetwork;
-  internal::TrayUser* tray_user = new internal::TrayUser;
-  internal::TrayAccessibility* tray_accessibility =
-      new internal::TrayAccessibility;
-  internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
-  internal::TrayIME* tray_ime = new internal::TrayIME;
-  internal::TrayUpdate* tray_update = new internal::TrayUpdate;
-
-  tray_->accessibility_observer_ = tray_accessibility;
-  tray_->audio_observer_ = tray_volume;
-  tray_->bluetooth_observer_ = tray_bluetooth;
-  tray_->brightness_observer_ = tray_brightness;
-  tray_->caps_lock_observer_ = tray_caps_lock;
-  tray_->clock_observer_ = tray_date;
-  tray_->ime_observer_ = tray_ime;
-  tray_->network_observer_ = tray_network;
-  tray_->power_status_observer_ = tray_power;
-  tray_->update_observer_ = tray_update;
-  tray_->user_observer_ = tray_user;
-
-  tray_->AddTrayItem(tray_user);
-  tray_->AddTrayItem(new internal::TrayEmpty());
-  tray_->AddTrayItem(tray_power);
-  tray_->AddTrayItem(tray_network);
-  tray_->AddTrayItem(tray_bluetooth);
-  tray_->AddTrayItem(tray_ime);
-  tray_->AddTrayItem(tray_volume);
-  tray_->AddTrayItem(tray_brightness);
-  tray_->AddTrayItem(tray_update);
-  tray_->AddTrayItem(new internal::TraySettings());
-  tray_->AddTrayItem(tray_accessibility);
-  tray_->AddTrayItem(tray_caps_lock);
-  tray_->AddTrayItem(tray_date);
-  tray_->SetVisible(tray_delegate_->GetTrayVisibilityOnStartup());
-
-  // TODO(sad): Replace uses of status_widget_ with tray_->GetWidget().
-  status_widget_ = internal::CreateStatusArea(tray_.get());
+  tray_->CreateItems();
+  tray_->CreateWidget();
 
   // This controller needs to be set before SetupManagedWindowMode.
   desktop_background_controller_.reset(new DesktopBackgroundController);
@@ -746,7 +690,7 @@ void Shell::Init() {
   }
 
   focus_cycler_.reset(new internal::FocusCycler());
-  focus_cycler_->AddWidget(status_widget_);
+  focus_cycler_->AddWidget(tray_->widget());
 
   if (!delegate_.get() || delegate_->IsUserLoggedIn())
     CreateLauncher();
@@ -914,10 +858,10 @@ bool Shell::IsInMaximizedMode() const {
 
 void Shell::InitLayoutManagers() {
   DCHECK(root_window_layout_);
-  DCHECK(status_widget_);
+  DCHECK(tray_->widget());
 
   internal::ShelfLayoutManager* shelf_layout_manager =
-      new internal::ShelfLayoutManager(status_widget_);
+      new internal::ShelfLayoutManager(tray_->widget());
   GetContainer(internal::kShellWindowId_LauncherContainer)->
       SetLayoutManager(shelf_layout_manager);
   shelf_ = shelf_layout_manager;
