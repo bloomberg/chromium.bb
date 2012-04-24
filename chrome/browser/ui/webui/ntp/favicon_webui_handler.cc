@@ -155,8 +155,8 @@ void FaviconWebUIHandler::NotifyAppIconReady(const std::string& extension_id) {
   std::vector<unsigned char> bits;
   if (!gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &bits))
     return;
-  scoped_refptr<RefCountedStaticMemory> bits_mem(
-      new RefCountedStaticMemory(&bits.front(), bits.size()));
+  scoped_refptr<base::RefCountedStaticMemory> bits_mem(
+      new base::RefCountedStaticMemory(&bits.front(), bits.size()));
   scoped_ptr<StringValue> color_value(GetDominantColorCssString(bits_mem));
   StringValue id(extension_id);
   web_ui()->CallJavascriptFunction(

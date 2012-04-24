@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options2/chromeos/wallpaper_thumbnail_source2.h"
 
 #include "ash/desktop_background/desktop_background_resources.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"

@@ -169,12 +169,13 @@ bool DataPack::GetStringPiece(uint16 resource_id,
   return true;
 }
 
-RefCountedStaticMemory* DataPack::GetStaticMemory(uint16 resource_id) const {
+base::RefCountedStaticMemory* DataPack::GetStaticMemory(
+    uint16 resource_id) const {
   base::StringPiece piece;
   if (!GetStringPiece(resource_id, &piece))
     return NULL;
 
-  return new RefCountedStaticMemory(
+  return new base::RefCountedStaticMemory(
       reinterpret_cast<const unsigned char*>(piece.data()), piece.length());
 }
 

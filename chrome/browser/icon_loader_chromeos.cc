@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "chrome/browser/icon_loader.h"
 #include "grit/component_extension_resources.h"
@@ -195,7 +196,8 @@ void IconLoader::ReadIcon() {
       LAZY_INSTANCE_INITIALIZER;
   int idr = icon_mapper.Get().Lookup(group_, icon_size_);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  scoped_refptr<RefCountedStaticMemory> bytes(rb.LoadDataResourceBytes(idr));
+  scoped_refptr<base::RefCountedStaticMemory> bytes(
+      rb.LoadDataResourceBytes(idr));
   DCHECK(bytes.get());
   SkBitmap bitmap;
   if (!gfx::PNGCodec::Decode(bytes->front(), bytes->size(), &bitmap))

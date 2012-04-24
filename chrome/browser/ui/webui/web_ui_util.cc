@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
 #include "chrome/browser/disposition_utils.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -28,7 +29,7 @@ std::string GetImageDataUrl(const SkBitmap& bitmap) {
 
 std::string GetImageDataUrlFromResource(int res) {
   // Load resource icon and covert to base64 encoded data url
-  RefCountedStaticMemory* icon_data =
+  base::RefCountedStaticMemory* icon_data =
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(res);
   if (!icon_data)
     return std::string();

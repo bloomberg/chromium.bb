@@ -5,6 +5,7 @@
 #include "chrome/browser/themes/theme_service.h"
 
 #include "base/bind.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"

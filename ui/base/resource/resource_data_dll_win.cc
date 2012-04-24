@@ -32,13 +32,13 @@ bool ResourceDataDLL::GetStringPiece(uint16 resource_id,
   return false;
 }
 
-RefCountedStaticMemory* ResourceDataDLL::GetStaticMemory(
+base::RefCountedStaticMemory* ResourceDataDLL::GetStaticMemory(
     uint16 resource_id) const {
   void* data_ptr;
   size_t data_size;
   if (base::win::GetDataResourceFromModule(module_, resource_id, &data_ptr,
                                            &data_size)) {
-    return new RefCountedStaticMemory(
+    return new base::RefCountedStaticMemory(
         reinterpret_cast<const unsigned char*>(data_ptr), data_size);
   }
   return NULL;

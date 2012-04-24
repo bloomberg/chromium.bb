@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_source.h"
 
+#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

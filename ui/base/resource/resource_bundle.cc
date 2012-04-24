@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -270,10 +271,10 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
   return GetNativeImageNamed(resource_id, RTL_DISABLED);
 }
 
-RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
+base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
     int resource_id) const {
   for (size_t i = 0; i < data_packs_.size(); ++i) {
-    RefCountedStaticMemory* bytes =
+    base::RefCountedStaticMemory* bytes =
         data_packs_[i]->GetStaticMemory(resource_id);
     if (bytes)
       return bytes;

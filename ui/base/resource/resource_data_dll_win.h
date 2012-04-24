@@ -21,7 +21,7 @@ class ResourceDataDLL : public ResourceHandle {
   // ResourceHandle implementation:
   virtual bool GetStringPiece(uint16 resource_id,
                               base::StringPiece* data) const OVERRIDE;
-  virtual RefCountedStaticMemory* GetStaticMemory(
+  virtual base::RefCountedStaticMemory* GetStaticMemory(
       uint16 resource_id) const OVERRIDE;
   virtual TextEncodingType GetTextEncodingType() const OVERRIDE;
 

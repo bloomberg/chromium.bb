@@ -6,6 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/gtk/scoped_gobject.h"
@@ -20,7 +21,7 @@ namespace {
 // Convert the raw image data into a GdkPixbuf.  The GdkPixbuf that is returned
 // has a ref count of 1 so the caller must call g_object_unref to free the
 // memory.
-GdkPixbuf* LoadPixbuf(RefCountedStaticMemory* data, bool rtl_enabled) {
+GdkPixbuf* LoadPixbuf(base::RefCountedStaticMemory* data, bool rtl_enabled) {
   ScopedGObject<GdkPixbufLoader>::Type loader(gdk_pixbuf_loader_new());
   bool ok = data && gdk_pixbuf_loader_write(loader.get(),
       reinterpret_cast<const guint8*>(data->front()), data->size(), NULL);
@@ -62,7 +63,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
       return *found->second;
   }
 
-  scoped_refptr<RefCountedStaticMemory> data(
+  scoped_refptr<base::RefCountedStaticMemory> data(
       LoadDataResourceBytes(resource_id));
   GdkPixbuf* pixbuf = LoadPixbuf(data.get(), rtl == RTL_ENABLED);
 

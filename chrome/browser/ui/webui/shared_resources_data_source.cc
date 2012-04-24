@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/io_thread.h"
@@ -73,7 +74,8 @@ void SharedResourcesDataSource::StartDataRequest(const std::string& path,
   int idr = PathToIDR(path);
   DCHECK_NE(-1, idr) << " path: " << path;
   const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  scoped_refptr<RefCountedStaticMemory> bytes(rb.LoadDataResourceBytes(idr));
+  scoped_refptr<base::RefCountedStaticMemory> bytes(
+      rb.LoadDataResourceBytes(idr));
 
   SendResponse(request_id, bytes);
 }

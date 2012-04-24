@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_string_conversions.h"
@@ -94,7 +95,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
 
   scoped_nsobject<NSImage> ns_image;
   for (size_t i = 0; i < data_packs_.size(); ++i) {
-    scoped_refptr<RefCountedStaticMemory> data(
+    scoped_refptr<base::RefCountedStaticMemory> data(
         data_packs_[i]->GetStaticMemory(resource_id));
     if (!data.get())
       continue;

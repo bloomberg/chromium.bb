@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -172,8 +173,8 @@ ConflictsUI::ConflictsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
 // static
 RefCountedMemory* ConflictsUI::GetFaviconResourceBytes() {
-  return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_CONFLICT_FAVICON);
+  return static_cast<RefCountedMemory*>(ResourceBundle::GetSharedInstance().
+      LoadDataResourceBytes(IDR_CONFLICT_FAVICON));
 }
 
 #endif

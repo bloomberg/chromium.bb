@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
@@ -21,7 +22,6 @@
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 

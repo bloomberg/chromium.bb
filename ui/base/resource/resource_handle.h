@@ -10,7 +10,9 @@
 #include "base/string_piece.h"
 #include "ui/base/ui_export.h"
 
+namespace base {
 class RefCountedStaticMemory;
+}
 
 namespace ui {
 
@@ -33,7 +35,8 @@ class UI_EXPORT ResourceHandle {
 
   // Like GetStringPiece(), but returns a reference to memory.
   // Caller owns the returned object.
-  virtual RefCountedStaticMemory* GetStaticMemory(uint16 resource_id) const = 0;
+  virtual base::RefCountedStaticMemory* GetStaticMemory(
+      uint16 resource_id) const = 0;
 
   // Get the encoding type of text resources.
   virtual TextEncodingType GetTextEncodingType() const = 0;

@@ -14,7 +14,6 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/string16.h"
@@ -26,6 +25,7 @@ class SkBitmap;
 
 namespace base {
 class Lock;
+class RefCountedStaticMemory;
 }
 
 namespace gfx {
@@ -127,7 +127,7 @@ class UI_EXPORT ResourceBundle {
   // Loads the raw bytes of a data resource into |bytes|,
   // without doing any processing or interpretation of
   // the resource. Returns whether we successfully read the resource.
-  RefCountedStaticMemory* LoadDataResourceBytes(int resource_id) const;
+  base::RefCountedStaticMemory* LoadDataResourceBytes(int resource_id) const;
 
   // Return the contents of a resource in a StringPiece given the resource id.
   base::StringPiece GetRawDataResource(int resource_id) const;

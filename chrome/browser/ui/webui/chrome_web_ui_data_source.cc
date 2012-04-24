@@ -83,7 +83,7 @@ void ChromeWebUIDataSource::SendLocalizedStringsAsJSON(int request_id) {
 }
 
 void ChromeWebUIDataSource::SendFromResourceBundle(int request_id, int idr) {
-  scoped_refptr<RefCountedStaticMemory> response(
+  scoped_refptr<base::RefCountedStaticMemory> response(
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(idr));
   SendResponse(request_id, response);
 }

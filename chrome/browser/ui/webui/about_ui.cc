@@ -15,6 +15,7 @@
 #include "base/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_table.h"
