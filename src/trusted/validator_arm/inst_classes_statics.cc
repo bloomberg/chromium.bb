@@ -46,6 +46,7 @@ Unary2RegisterImmedShiftedOp::cond_;
 
 // Unary3RegisterShiftedOp
 const RegMBits0To3Interface Unary3RegisterShiftedOp::m_;
+const ShiftTypeBits5To6Interface Unary3RegisterShiftedOp::shift_type_;
 const RegSBits8To11Interface Unary3RegisterShiftedOp::s_;
 const RegDBits12To15Interface Unary3RegisterShiftedOp::d_;
 const UpdatesFlagsRegisterBit20Interface
@@ -85,6 +86,7 @@ Binary2RegisterImmedShiftedTest::cond_;
 
 // Binary3RegisterShiftedTest
 const RegMBits0To3Interface Binary3RegisterShiftedTest::m_;
+const ShiftTypeBits5To6Interface Binary3RegisterShiftedTest::shift_type_;
 const RegSBits8To11Interface Binary3RegisterShiftedTest::s_;
 const RegNBits16To19Interface Binary3RegisterShiftedTest::n_;
 const UpdatesFlagsRegisterBit20Interface
