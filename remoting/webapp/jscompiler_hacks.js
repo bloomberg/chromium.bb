@@ -27,3 +27,6 @@ Element.prototype.webkitRequestFullScreen = function(flags) {};
 
 /** @type {{getRandomValues: function(Uint16Array):void}} */
 Window.prototype.crypto;
+
+// This string is replaced with the actual value in build-webapp.py.
+var OAUTH2_USE_OFFICIAL_CLIENT_ID = false;
