@@ -118,20 +118,25 @@ void EventExecutorWin::HandleKey(const KeyEvent& event) {
   // window's current keyboard layout.
   HKL layout = GetForegroundKeyboardLayout();
 
-  int key = event.keycode();
-  bool down = event.pressed();
+  // Populate the a Windows INPUT structure for the event.
+  INPUT input;
+  memset(&input, 0, sizeof(input));
+  input.type = INPUT_KEYBOARD;
+  input.ki.time = 0;
+  input.ki.dwFlags = event.pressed() ? 0 : KEYEVENTF_KEYUP;
+
   int scancode = kInvalidKeycode;
   if (event.has_usb_keycode()) {
     // If the event contains a USB-style code, map to a Windows scancode, and
-    // look up the corresponding VKEY under the foreground layout.
+    // set a flag to have Windows look up the corresponding VK code.
+    input.ki.dwFlags |= KEYEVENTF_SCANCODE;
     scancode = UsbKeycodeToNativeKeycode(event.usb_keycode());
-    key = MapVirtualKeyEx(scancode, MAPVK_VSC_TO_VK_EX, layout);
     VLOG(3) << "Converting USB keycode: " << std::hex << event.usb_keycode()
-            << " to scancode: " << scancode
-            << " and VKEY: " << key << std::dec;
+            << " to scancode: " << scancode << std::dec;
   } else {
-    // If the event provides only a VKEY, determine the corresponding scancode.
-    scancode = MapVirtualKeyEx(key, MAPVK_VK_TO_VSC_EX, layout);
+    // If the event provides only a VKEY then use it, and map to the scancode.
+    input.ki.wVk = event.keycode();
+    scancode = MapVirtualKeyEx(event.keycode(), MAPVK_VK_TO_VSC_EX, layout);
     VLOG(3) << "Converting VKEY: " << std::hex << event.keycode()
             << " to scancode: " << scancode << std::dec;
   }
@@ -140,23 +145,13 @@ void EventExecutorWin::HandleKey(const KeyEvent& event) {
   if (scancode == kInvalidKeycode)
     return;
 
-  INPUT input;
-  memset(&input, 0, sizeof(input));
-
-  input.type = INPUT_KEYBOARD;
-  input.ki.time = 0;
-  input.ki.wVk = key;
-  input.ki.wScan = scancode;
-
-  // Flag to mark extended 'e0' key scancodes. Without this, the left and
-  // right windows keys will not be handled properly (on US keyboard).
-  if ((scancode & 0xFF00) == 0xE000) {
+  // Windows scancodes are only 8-bit, so store the low-order byte into the
+  // event and set the extended flag if any high-order bits are set. The only
+  // high-order values we should see are 0xE0 or 0xE1. The extended bit usually
+  // distinguishes keys with the same meaning, e.g. left & right shift.
+  input.ki.wScan = scancode & 0xFF;
+  if ((scancode & 0xFF00) != 0x0000) {
     input.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
-  }
-
-  // Flag to mark keyup events. Default is keydown.
-  if (!down) {
-    input.ki.dwFlags |= KEYEVENTF_KEYUP;
   }
 
   if (SendInput(1, &input, sizeof(INPUT)) == 0) {
