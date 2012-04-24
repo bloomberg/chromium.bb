@@ -826,7 +826,7 @@ def _FinishParsing(options, args):
                    constants.CHROME_REV_SPEC)
 
   if options.local and options.remote:
-   cros_lib.Die('Cannot specify both --remote and --local')
+    cros_lib.Die('Cannot specify both --remote and --local')
 
   if options.remote and not (options.gerrit_patches or options.local_patches):
     cros_lib.Die('Must provide patches when running with --remote.')
@@ -838,7 +838,7 @@ def _FinishParsing(options, args):
     cros_lib.Die('--buildbot and --remote-trybot cannot be used together.')
 
   if options.buildbot and (options.remote or options.local):
-   cros_lib.Die('--remote and --local do not apply when using --buildbot.')
+    cros_lib.Die('--remote and --local do not apply when using --buildbot.')
 
   # Record whether --debug was set explicitly vs. it was inferred.
   options.debug_forced = False
@@ -867,22 +867,41 @@ def _SplitAndFlatten(appended_items):
   return new_list
 
 
+# pylint: disable=W0613
 def _PostParseCheck(options, args):
   """Perform some usage validation after we've parsed the arguments
 
   Args:
     options/args: The options/args object returned by optparse
   """
-  if not options.resume:
-    options.gerrit_patches = _SplitAndFlatten(options.gerrit_patches)
-    options.remote_patches = _SplitAndFlatten(options.remote_patches)
-    try:
-      # TODO(rcui): Split this into two stages, one that parses, another that
-      # validates.  Parsing step will be called by _FinishParsing().
-      options.local_patches = _CheckLocalPatches(
-          _SplitAndFlatten(options.local_patches))
-    except optparse.OptionValueError as e:
-      cros_lib.Die(str(e))
+  if options.resume:
+    return
+
+  options.gerrit_patches = _SplitAndFlatten(options.gerrit_patches)
+  options.remote_patches = _SplitAndFlatten(options.remote_patches)
+  try:
+    # TODO(rcui): Split this into two stages, one that parses, another that
+    # validates.  Parsing step will be called by _FinishParsing().
+    options.local_patches = _CheckLocalPatches(
+        _SplitAndFlatten(options.local_patches))
+  except optparse.OptionValueError as e:
+    cros_lib.Die(str(e))
+
+  default = os.environ.get('CBUILDBOT_DEFAULT_MODE')
+  if (default and not any([options.local, options.buildbot,
+                           options.remote, options.remote_trybot])):
+    cros_lib.Info("CBUILDBOT_DEFAULT_MODE=%s env var detected, using it."
+                  % default)
+    default = default.lower()
+    if default == 'local':
+      options.local = True
+    elif default == 'remote':
+      options.remote = True
+    elif default == 'buildbot':
+      options.buildbot = True
+    else:
+      cros_lib.Die("CBUILDBOT_DEFAULT_MODE value %s isn't supported. "
+                   % default)
 
 
 def _ParseCommandLine(parser, argv):
