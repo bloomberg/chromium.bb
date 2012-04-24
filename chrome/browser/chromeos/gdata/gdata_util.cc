@@ -145,7 +145,8 @@ void ModifyGDataFileResourceUrl(Profile* profile,
 
   // Handle hosted documents. The edit url is in the temporary file, so we
   // read it on a blocking thread.
-  if (file_system->GetGDataTempDocumentFolderPath().IsParent(
+  if (file_system->GetCacheDirectoryPath(
+          GDataRootDirectory::CACHE_TYPE_TMP_DOCUMENTS).IsParent(
       gdata_cache_path)) {
     GURL* edit_url = new GURL();
     content::BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
@@ -157,7 +158,8 @@ void ModifyGDataFileResourceUrl(Profile* profile,
   }
 
   // Handle all other gdata files.
-  if (file_system->GetGDataCacheTmpDirectory().IsParent(gdata_cache_path)) {
+  if (file_system->GetCacheDirectoryPath(
+          GDataRootDirectory::CACHE_TYPE_TMP).IsParent(gdata_cache_path)) {
     const std::string resource_id =
         gdata_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
     GetFileNameDelegate delegate;

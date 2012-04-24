@@ -1700,7 +1700,8 @@ void GDataFileSystem::GetFileByPath(const FilePath& file_path,
         kGDataFileSystemToken,
         FROM_HERE,
         base::Bind(&GDataFileSystem::CreateDocumentJsonFileOnIOThreadPool,
-                   GetGDataTempDocumentFolderPath(),
+                   GetCacheDirectoryPath(
+                       GDataRootDirectory::CACHE_TYPE_TMP_DOCUMENTS),
                    file_properties.alternate_url,
                    file_properties.resource_id,
                    error,
@@ -1830,7 +1831,7 @@ void GDataFileSystem::FreeDiskSpaceIfNeededFor(int64 num_bytes,
   // First remove temporary files from the cache map.
   root_->RemoveTemporaryFilesFromCacheMap();
   // Then remove all files under "tmp" directory.
-  RemoveAllFiles(GetGDataCacheTmpDirectory());
+  RemoveAllFiles(GetCacheDirectoryPath(GDataRootDirectory::CACHE_TYPE_TMP));
 
   // Check the disk space again.
   *has_enough_space = HasEnoughSpaceFor(num_bytes);
@@ -2020,30 +2021,6 @@ bool GDataFileSystem::GetFileInfoByPath(
     properties->is_hosted_document = regular_file->is_hosted_document();
   }
   return true;
-}
-
-bool GDataFileSystem::IsUnderGDataCacheDirectory(const FilePath& path) const {
-  return gdata_cache_path_ == path || gdata_cache_path_.IsParent(path);
-}
-
-FilePath GDataFileSystem::GetGDataCacheTmpDirectory() const {
-  return cache_paths_[GDataRootDirectory::CACHE_TYPE_TMP];
-}
-
-FilePath GDataFileSystem::GetGDataTempDownloadFolderPath() const {
-  return cache_paths_[GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS];
-}
-
-FilePath GDataFileSystem::GetGDataTempDocumentFolderPath() const {
-  return cache_paths_[GDataRootDirectory::CACHE_TYPE_TMP_DOCUMENTS];
-}
-
-FilePath GDataFileSystem::GetGDataCachePinnedDirectory() const {
-  return cache_paths_[GDataRootDirectory::CACHE_TYPE_PINNED];
-}
-
-FilePath GDataFileSystem::GetGDataCachePersistentDirectory() const {
-  return cache_paths_[GDataRootDirectory::CACHE_TYPE_PERSISTENT];
 }
 
 base::WeakPtr<GDataFileSystem> GDataFileSystem::GetWeakPtrForCurrentThread() {
@@ -2411,7 +2388,7 @@ void GDataFileSystem::LoadRootFeedFromCache(
     const FilePath& search_file_path,
     const FindEntryCallback& callback) {
   const FilePath path =
-      cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
+      GetCacheDirectoryPath(GDataRootDirectory::CACHE_TYPE_META).Append(
           kFilesystemProtoFile);
   LoadRootFeedParams* params = new LoadRootFeedParams(search_file_path,
                                                       should_load_from_server,
@@ -2485,7 +2462,7 @@ void GDataFileSystem::SaveFileSystemAsProto() {
   }
 
   const FilePath path =
-      cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
+      GetCacheDirectoryPath(GDataRootDirectory::CACHE_TYPE_META).Append(
           kFilesystemProtoFile);
   scoped_ptr<std::string> serialized_proto(new std::string());
   root_->SerializeToString(serialized_proto.get());
@@ -2610,8 +2587,8 @@ void GDataFileSystem::SaveFeed(scoped_ptr<base::Value> feed,
       kGDataFileSystemToken,
       FROM_HERE,
       base::Bind(&SaveFeedOnIOThreadPool,
-                 cache_paths_[GDataRootDirectory::CACHE_TYPE_META].Append(
-                     name),
+                 GetCacheDirectoryPath(
+                     GDataRootDirectory::CACHE_TYPE_META).Append(name),
                  base::Passed(&feed)));
 }
 
@@ -3312,6 +3289,17 @@ void GDataFileSystem::SetHideHostedDocuments(bool hide) {
 
 //===================== GDataFileSystem: Cache entry points ====================
 
+bool GDataFileSystem::IsUnderGDataCacheDirectory(const FilePath& path) const {
+  return gdata_cache_path_ == path || gdata_cache_path_.IsParent(path);
+}
+
+FilePath GDataFileSystem::GetCacheDirectoryPath(
+    GDataRootDirectory::CacheSubDirectoryType sub_dir_type) const {
+  DCHECK_LE(0, sub_dir_type);
+  DCHECK_GT(GDataRootDirectory::NUM_CACHE_TYPES, sub_dir_type);
+  return cache_paths_[sub_dir_type];
+}
+
 FilePath GDataFileSystem::GetCacheFilePath(
     const std::string& resource_id,
     const std::string& md5,
@@ -3338,7 +3326,7 @@ FilePath GDataFileSystem::GetCacheFilePath(
      base_name += FilePath::kExtensionSeparator;
      base_name += kMountedArchiveFileExtension;
   }
-  return cache_paths_[sub_dir_type].Append(base_name);
+  return GetCacheDirectoryPath(sub_dir_type).Append(base_name);
 }
 
 void GDataFileSystem::StoreToCache(const std::string& resource_id,
@@ -3527,7 +3515,7 @@ void GDataFileSystem::InitializeCacheOnIOThreadPool() {
   // Change permissions of cache persistent directory to u+rwx,og+x in order to
   // allow archive files in that directory to be mounted by cros-disks.
   error = ChangeFilePermissions(
-      cache_paths_[GDataRootDirectory::CACHE_TYPE_PERSISTENT],
+      GetCacheDirectoryPath(GDataRootDirectory::CACHE_TYPE_PERSISTENT),
       S_IRWXU | S_IXGRP | S_IXOTH);
   if (error != base::PLATFORM_FILE_OK)
     return;
@@ -4276,7 +4264,7 @@ void GDataFileSystem::ScanCacheDirectory(
     GDataRootDirectory::CacheSubDirectoryType sub_dir_type,
     GDataRootDirectory::CacheMap* cache_map) {
   file_util::FileEnumerator enumerator(
-      cache_paths_[sub_dir_type],
+      GetCacheDirectoryPath(sub_dir_type),
       false,  // not recursive
       static_cast<file_util::FileEnumerator::FileType>(
           file_util::FileEnumerator::FILES |

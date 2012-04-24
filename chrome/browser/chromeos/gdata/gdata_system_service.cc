@@ -44,8 +44,11 @@ void GDataSystemService::Initialize() {
     g_browser_process->download_status_updater() ?
         DownloadServiceFactory::GetForProfile(profile_)->GetDownloadManager() :
         NULL;
-  download_observer_->Initialize(uploader_.get(), download_manager,
-      file_system_->GetGDataTempDownloadFolderPath());
+  download_observer_->Initialize(
+      uploader_.get(),
+      download_manager,
+      file_system_->GetCacheDirectoryPath(
+          GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS));
 
   sync_client_->Initialize();
 }

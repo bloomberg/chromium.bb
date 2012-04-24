@@ -53,7 +53,8 @@ void SavePackageFilePickerChromeOS::FileSelected(const FilePath& selected_path,
   gdata::GDataFileSystem* gdata_filesystem = GetGDataFileSystem();
   if (gdata_filesystem && gdata::util::IsUnderGDataMountPoint(path)) {
     FilePath gdata_tmp_download_dir =
-        gdata_filesystem->GetGDataTempDownloadFolderPath();
+        gdata_filesystem->GetCacheDirectoryPath(
+            gdata::GDataRootDirectory::CACHE_TYPE_TMP_DOWNLOADS);
 
     selected_path_ = path;
     FilePath* gdata_tmp_download_path = new FilePath();

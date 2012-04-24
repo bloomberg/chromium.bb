@@ -397,11 +397,13 @@ void RequestLocalFileSystemFunction::AddGDataMountPoint() {
   // should be sufficient for all cache paths. For the rest of supported
   // operations the file access check is done for gdata/ paths.
   GrantFilePermissionsToHost(render_view_host(),
-                             gdata_file_system->GetGDataCacheTmpDirectory(),
+                             gdata_file_system->GetCacheDirectoryPath(
+                                 gdata::GDataRootDirectory::CACHE_TYPE_TMP),
                              file_handler_util::GetReadOnlyPermissions());
   GrantFilePermissionsToHost(
       render_view_host(),
-      gdata_file_system->GetGDataCachePersistentDirectory(),
+      gdata_file_system->GetCacheDirectoryPath(
+          gdata::GDataRootDirectory::CACHE_TYPE_PERSISTENT),
       file_handler_util::GetReadOnlyPermissions());
 
   provider->AddRemoteMountPoint(

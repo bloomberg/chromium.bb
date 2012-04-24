@@ -106,7 +106,8 @@ void GDataSyncClient::StartInitialScan(const base::Closure& closure) {
       BrowserThread::GetBlockingPool()->PostTaskAndReply(
           FROM_HERE,
           base::Bind(&ScanPinnedDirectory,
-                     file_system_->GetGDataCachePinnedDirectory(),
+                     file_system_->GetCacheDirectoryPath(
+                         GDataRootDirectory::CACHE_TYPE_PINNED),
                      resource_ids),
           base::Bind(&GDataSyncClient::OnInitialScanComplete,
                      weak_ptr_factory_.GetWeakPtr(),

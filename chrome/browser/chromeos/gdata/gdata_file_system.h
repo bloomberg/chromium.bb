@@ -367,25 +367,10 @@ class GDataFileSystemInterface {
   // <user_profile_dir>/GCache/v1
   virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const = 0;
 
-  // Returns the tmp sub-directory under gdata cache directory, i.e.
-  // <user_profile_dir>/GCache/v1/tmp
-  virtual FilePath GetGDataCacheTmpDirectory() const = 0;
-
-  // Returns the tmp downloads sub-directory under gdata cache directory, i.e.
-  // <user_profile_dir>/GCache/v1/tmp/downloads/
-  virtual FilePath GetGDataTempDownloadFolderPath() const = 0;
-
-  // Returns the tmp documents sub-directory under gdata cache directory, i.e.
-  // <user_profile_dir>/GCache/v1/tmp/documents/
-  virtual FilePath GetGDataTempDocumentFolderPath() const = 0;
-
-  // Returns the pinned sub-directory under gdata cache directory, i.e.
-  // <user_profile_dir>/GCache/v1/pinned
-  virtual FilePath GetGDataCachePinnedDirectory() const = 0;
-
-  // Returns the pinned sub-directory under gdata cache directory, i.e.
-  // <user_profile_dir>/GCache/v1/pinned
-  virtual FilePath GetGDataCachePersistentDirectory() const = 0;
+  // Returns the sub-directory under gdata cache directory for the given sub
+  // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
+  virtual FilePath GetCacheDirectoryPath(
+      GDataRootDirectory::CacheSubDirectoryType sub_dir_type) const = 0;
 
   // Returns absolute path of the file if it were cached or to be cached.
   virtual FilePath GetCacheFilePath(
@@ -472,11 +457,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual bool GetFileInfoByPath(const FilePath& gdata_file_path,
                                  GDataFileProperties* properties) OVERRIDE;
   virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const OVERRIDE;
-  virtual FilePath GetGDataCacheTmpDirectory() const OVERRIDE;
-  virtual FilePath GetGDataTempDownloadFolderPath() const OVERRIDE;
-  virtual FilePath GetGDataTempDocumentFolderPath() const OVERRIDE;
-  virtual FilePath GetGDataCachePinnedDirectory() const OVERRIDE;
-  virtual FilePath GetGDataCachePersistentDirectory() const OVERRIDE;
+  virtual FilePath GetCacheDirectoryPath(
+      GDataRootDirectory::CacheSubDirectoryType sub_dir_type) const OVERRIDE;
   virtual FilePath GetCacheFilePath(
       const std::string& resource_id,
       const std::string& md5,
