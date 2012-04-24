@@ -1042,6 +1042,11 @@ TEST_F(WindowTest, TransientChildren) {
   ASSERT_EQ(2u, parent->children().size());
   EXPECT_EQ(w3.get(), parent->children()[0]);
   EXPECT_EQ(w1.get(), parent->children()[1]);
+
+  // Hiding parent should hide transient children.
+  EXPECT_TRUE(w2->IsVisible());
+  w1->Hide();
+  EXPECT_FALSE(w2->IsVisible());
 }
 
 // Tests that when a focused window is closed, its parent inherits the focus.

@@ -183,6 +183,10 @@ void Window::Show() {
 }
 
 void Window::Hide() {
+  for (Windows::iterator it = transient_children_.begin();
+       it != transient_children_.end(); ++it) {
+    (*it)->Hide();
+  }
   SetVisible(false);
   ReleaseCapture();
 }
