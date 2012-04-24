@@ -598,6 +598,9 @@ const char kEnableSpdy3[]                   = "enable-spdy3";
 // Enables experimental suggestions pane in New Tab page.
 const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
 
+// Enables the new Sync Signin flow, i.e., chrome:signin for all signins.
+const char kEnableSyncSignin[]              = "enable-sync-signin";
+
 // Enables syncing browser sessions.
 const char kEnableSyncTabs[]                = "enable-sync-tabs";
 
@@ -631,12 +634,12 @@ const char kEnableWebStoreLink[]            = "enable-webstore-link";
 
 // Enables experimental features for Spellchecker. Right now, the first
 // experimental feature is auto spell correct, which corrects words which are
-// misppelled by typing the word with two consecutive letters swapped. The
+// misspelled by typing the word with two consecutive letters swapped. The
 // features that will be added next are:
 //
 // 1 - Allow multiple spellcheckers to work simultaneously.
 // 2 - Allow automatic detection of spell check language.
-// TODO(sidchat): Implement the above fetaures to work under this flag.
+// TODO(sidchat): Implement the above features to work under this flag.
 const char kExperimentalSpellcheckerFeatures[] =
     "experimental-spellchecker-features";
 

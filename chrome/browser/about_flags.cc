@@ -643,6 +643,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kNoDiscardTabs)
   },
 #endif
+  {
+    "enable-sync-signing",
+    IDS_ENABLE_SYNC_SIGNIN_NAME,
+    IDS_ENABLE_SYNC_SIGNIN_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableSyncSignin)
+  },
 };
 
 const Experiment* experiments = kExperiments;

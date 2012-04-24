@@ -169,6 +169,7 @@ extern const char kEnableSdch[];
 extern const char kEnableSpdy3[];
 extern const char kEnableSpdyFlowControl[];
 extern const char kEnableSuggestionsTabPage[];
+extern const char kEnableSyncSignin[];
 extern const char kEnableSyncTabs[];
 extern const char kDisableSyncTabs[];
 extern const char kEnableSyncTabsForOtherClients[];
