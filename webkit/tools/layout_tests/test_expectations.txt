@@ -28,14 +28,3 @@
 // Right?)
 //
 // EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
-BUGCR119667 : media/W3C/video/canPlayType/canPlayType_codecs_order_1.html = PASS
-BUGCR119667 : media/W3C/video/canPlayType/canPlayType_supported_but_no_codecs_parameter_1.html = PASS
-BUGCR119667 : media/W3C/video/canPlayType/canPlayType_two_implies_one_1.html = PASS
-BUGCR119667 : media/W3C/video/canPlayType/canPlayType_two_implies_one_2.html = PASS
-
-BUGCR124777 : media/video-colorspace-yuv422.html = IMAGE+TEXT TIMEOUT
-
-BUGCR124779 : media/media-controller-playback.html = CRASH
-BUGCR124779 : media/track/track-cues-missed.html = CRASH
-BUGCR124779 : media/track/track-cues-pause-on-exit.html = CRASH
-BUGCR124779 : media/track/track-cues-sorted-before-dispatch.html = CRASH
