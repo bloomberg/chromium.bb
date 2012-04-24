@@ -2243,25 +2243,9 @@ void GDataFileSystem::OnGetAvailableSpace(
                feed->quota_bytes_used());
 }
 
-std::vector<GDataOperationRegistry::ProgressStatus>
-    GDataFileSystem::GetProgressStatusList() {
-  return documents_service_->operation_registry()->GetProgressStatusList();
+GDataOperationRegistry* GDataFileSystem::GetOperationRegistry() {
+  return documents_service_->operation_registry();
 }
-
-bool GDataFileSystem::CancelOperation(const FilePath& file_path) {
-  return documents_service_->operation_registry()->CancelForFilePath(file_path);
-}
-
-void GDataFileSystem::AddOperationObserver(
-    GDataOperationRegistry::Observer* observer) {
-  return documents_service_->operation_registry()->AddObserver(observer);
-}
-
-void GDataFileSystem::RemoveOperationObserver(
-    GDataOperationRegistry::Observer* observer) {
-  return documents_service_->operation_registry()->RemoveObserver(observer);
-}
-
 
 void GDataFileSystem::OnCreateDirectoryCompleted(
     const CreateDirectoryParams& params,

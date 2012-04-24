@@ -104,7 +104,8 @@ void FileBrowserEventRouter::ShutdownOnUIThread() {
       GDataSystemServiceFactory::FindForProfile(profile_);
   if (system_service) {
     system_service->file_system()->RemoveObserver(this);
-    system_service->file_system()->RemoveOperationObserver(this);
+    system_service->file_system()->GetOperationRegistry()->
+        RemoveObserver(this);
   }
 
   profile_ = NULL;
@@ -129,7 +130,7 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
     NOTREACHED();
     return;
   }
-  system_service->file_system()->AddOperationObserver(this);
+  system_service->file_system()->GetOperationRegistry()->AddObserver(this);
   system_service->file_system()->AddObserver(this);
 }
 

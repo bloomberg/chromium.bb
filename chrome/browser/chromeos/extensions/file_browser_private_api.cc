@@ -1825,7 +1825,8 @@ ListValue* GetFileTransfersFunction::GetFileTransfersList() {
     return NULL;
 
   std::vector<gdata::GDataOperationRegistry::ProgressStatus>
-      list = system_service->file_system()->GetProgressStatusList();
+      list = system_service->file_system()->GetOperationRegistry()->
+      GetProgressStatusList();
   return file_manager_util::ProgressStatusVectorToListValue(
       profile_, source_url_.GetOrigin(), list);
 }
@@ -1880,6 +1881,9 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
     return;
   }
 
+  gdata::GDataOperationRegistry* operation_registry =
+      system_service->file_system()->GetOperationRegistry();
+
   scoped_ptr<ListValue> responses(new ListValue());
   for (size_t i = 0; i < files.size(); ++i) {
     DCHECK(gdata::util::IsUnderGDataMountPoint(files[i].path));
@@ -1887,7 +1891,7 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
     scoped_ptr<DictionaryValue> result(new DictionaryValue());
     result->SetBoolean(
         "canceled",
-        system_service->file_system()->CancelOperation(file_path));
+        operation_registry->CancelForFilePath(file_path));
     GURL file_url;
     if (file_manager_util::ConvertFileToFileSystemUrl(profile_,
             gdata::util::GetSpecialRemoteRootPath().Append(file_path),

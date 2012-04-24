@@ -97,7 +97,7 @@ void CancelGDataDownloadOnUIThread(const FilePath& gdata_file_path) {
   GDataFileSystem* file_system = NULL;
   GetFileSystemOnUIThread(&file_system);
   if (file_system)
-    file_system->CancelOperation(gdata_file_path);
+    file_system->GetOperationRegistry()->CancelForFilePath(gdata_file_path);
 }
 
 // Class delegate to find file by resource id and extract relevant file info.

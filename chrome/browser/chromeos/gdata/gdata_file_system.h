@@ -332,21 +332,9 @@ class GDataFileSystemInterface {
       const std::string& resource_id,
       const GetFileCallback& callback) = 0;
 
-  // Obtains the list of currently active operations.
-  virtual std::vector<GDataOperationRegistry::ProgressStatus>
-  GetProgressStatusList() = 0;
-
-  // Cancels ongoing operation for a given |file_path|. Returns true if
-  // the operation was found and canceled.
-  virtual bool CancelOperation(const FilePath& file_path) = 0;
-
-  // Add operation observer.
-  virtual void AddOperationObserver(
-      GDataOperationRegistry::Observer* observer) = 0;
-
-  // Remove operation observer.
-  virtual void RemoveOperationObserver(
-      GDataOperationRegistry::Observer* observer) = 0;
+  // Gets the operation registry that manages all operations performed through
+  // the GDataFileSystem object.
+  virtual GDataOperationRegistry* GetOperationRegistry() = 0;
 
   // Gets the cache state of file corresponding to |resource_id| and |md5| if it
   // exists on disk.
@@ -444,13 +432,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void GetFileByResourceId(
       const std::string& resource_id,
       const GetFileCallback& callback) OVERRIDE;
-  virtual std::vector<GDataOperationRegistry::ProgressStatus>
-  GetProgressStatusList() OVERRIDE;
-  virtual bool CancelOperation(const FilePath& file_path) OVERRIDE;
-  virtual void AddOperationObserver(
-      GDataOperationRegistry::Observer* observer) OVERRIDE;
-  virtual void RemoveOperationObserver(
-      GDataOperationRegistry::Observer* observer) OVERRIDE;
+  virtual GDataOperationRegistry* GetOperationRegistry() OVERRIDE;
   virtual void GetCacheState(const std::string& resource_id,
                              const std::string& md5,
                              const GetCacheStateCallback& callback) OVERRIDE;

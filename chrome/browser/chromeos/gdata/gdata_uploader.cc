@@ -368,7 +368,8 @@ void GDataUploader::UploadFailed(UploadFileInfo* upload_file_info) {
     upload_file_info->completion_callback.Run(base::PLATFORM_FILE_ERROR_ABORT,
                                               upload_file_info);
   }
-  file_system_->CancelOperation(upload_file_info->gdata_path);
+  file_system_->GetOperationRegistry()->CancelForFilePath(
+      upload_file_info->gdata_path);
   DeleteUpload(upload_file_info);
 }
 
