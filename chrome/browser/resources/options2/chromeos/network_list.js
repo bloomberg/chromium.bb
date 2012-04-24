@@ -292,10 +292,6 @@ cr.define('options.network', function() {
           buttonLabel.textContent = entry.label;
           button.appendChild(buttonLabel);
           button.addEventListener('click', entry.command);
-          button.addEventListener('mousedown', function(e) {
-            // Prevent blurring of list, which would close the menu.
-            e.preventDefault();
-          });
           MenuItem.decorate(button);
           menu.appendChild(button);
         }
@@ -315,6 +311,10 @@ cr.define('options.network', function() {
         if (existing)
           closeMenu_();
         this.menu_ = this.createMenu();
+        this.menu_.addEventListener('mousedown', function(e) {
+          // Prevent blurring of list, which would close the menu.
+          e.preventDefault();
+        }, true);
         var parent = $('network-menus');
         if (existing)
           parent.replaceChild(this.menu_, existing);
@@ -570,15 +570,10 @@ cr.define('options.network', function() {
           closeMenu_();
         };
       }
-      if (callback != null) {
+      if (callback != null)
         button.addEventListener('click', callback);
-        button.addEventListener('mousedown', function(e) {
-          // Prevent blurring of list, which would close the menu.
-          e.preventDefault();
-        });
-      } else {
+      else
         buttonLabel.classList.add('network-disabled-control');
-      }
       MenuItem.decorate(button);
       menu.appendChild(button);
       return button;
