@@ -2599,6 +2599,7 @@ binutils-gold-configure() {
   local srcdir="${TC_SRC_GOLD}"
   local objdir="${TC_BUILD_GOLD}"
 
+  local flags="-fno-exceptions"
   StepBanner "GOLD-NATIVE" "Configure (libiberty)"
   # Gold depends on liberty only for a few functions:
   # xrealloc, lbasename, etc.
@@ -2608,8 +2609,8 @@ binutils-gold-configure() {
   RunWithLog gold.configure \
     env -i \
     PATH="/usr/bin:/bin" \
-    CC="${CC}" \
-    CXX="${CXX}" \
+    CC="${CC} ${flags}" \
+    CXX="${CXX} ${flags}" \
     ${srcdir}/libiberty/configure --prefix="${BINUTILS_INSTALL_DIR}"
 
   spopd
@@ -2670,7 +2671,7 @@ binutils-gold-make() {
   spushd "${objdir}/gold"
   RunWithLog gold.make \
       env -i PATH="/usr/bin:/bin" \
-      make ${MAKE_OPTS}
+      make ${MAKE_OPTS} ld-new
   spopd
 
   ts-touch-commit "${objdir}"
@@ -2713,7 +2714,7 @@ binutils-gold-sb() {
 # This defines a few global variables like the objdir.
 BINUTILS_GOLD_SB_SETUP=false
 binutils-gold-sb-setup() {
-  sb-setup "$@"
+  sb-setup "$@" srpc newlib
 
   if ${BINUTILS_GOLD_SB_SETUP}; then
     return 0
@@ -2722,13 +2723,7 @@ binutils-gold-sb-setup() {
   BINUTILS_GOLD_SB_LOG_PREFIX="binutils-gold.sb.${SB_LOG_PREFIX}"
   BINUTILS_GOLD_SB_OBJDIR="${SB_OBJDIR}/binutils-gold-sb"
 
-  local flags=""
-  if [ ${SB_LIBMODE} == newlib ]; then
-    flags+=" -static"
-  fi
-
-  # we do not support the non-srpc mode anymore
-  flags+=" -DNACL_SRPC"
+  local flags=" -static -DNACL_SRPC -fno-exceptions"
 
   BINUTILS_GOLD_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
@@ -2848,7 +2843,7 @@ binutils-gold-sb-make() {
   spushd "${objdir}/gold"
   RunWithLog "${BINUTILS_GOLD_SB_LOG_PREFIX}".make \
       env -i PATH="/usr/bin:/bin" \
-      make ${MAKE_OPTS}
+      make ${MAKE_OPTS} ld-new
   spopd
 
   ts-touch-commit "${objdir}"
