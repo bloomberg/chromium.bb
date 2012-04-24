@@ -56,6 +56,14 @@ class PrerenderLocalPredictor : history::VisitDatabaseObserver {
   scoped_ptr<std::vector<history::BriefVisitInfo> > visit_history_;
   bool visit_history_initialized_;
 
+  // We keep a reference to the HistoryService which we registered to
+  // observe.  On destruction, we have to remove ourselves from that history
+  // service.  We can't just grab the HistoryService from the profile, because
+  // the profile may have already given up its reference to it.  Doing nothing
+  // in this case may cause crashes, because the HistoryService may outlive the
+  // the PrerenderLocalPredictor.
+  scoped_refptr<HistoryService> observing_history_service_;
+
   DISALLOW_COPY_AND_ASSIGN(PrerenderLocalPredictor);
 };
 

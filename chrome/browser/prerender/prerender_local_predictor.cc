@@ -88,9 +88,8 @@ PrerenderLocalPredictor::PrerenderLocalPredictor(
 }
 
 PrerenderLocalPredictor::~PrerenderLocalPredictor() {
-  HistoryService* history = GetHistoryIfExists();
-  if (history)
-    history->RemoveVisitDatabaseObserver(this);
+  if (observing_history_service_.get())
+    observing_history_service_->RemoveVisitDatabaseObserver(this);
 }
 
 void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
@@ -133,7 +132,8 @@ void PrerenderLocalPredictor::Init() {
   history->ScheduleDBTask(
       new GetVisitHistoryTask(this, kMaxVisitHistory),
       &history_db_consumer_);
-  history->AddVisitDatabaseObserver(this);
+  observing_history_service_ = history;
+  observing_history_service_->AddVisitDatabaseObserver(this);
 }
 
 }  // namespace prerender
