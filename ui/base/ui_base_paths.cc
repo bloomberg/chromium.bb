@@ -32,16 +32,6 @@ bool PathProvider(int key, FilePath* result) {
 #endif
       create_dir = true;
       break;
-    case ui::FILE_RESOURCES_PAK:
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-      if (!PathService::Get(base::DIR_EXE, &cur))
-        return false;
-      // TODO(tony): We shouldn't be referencing chrome here.
-      cur = cur.AppendASCII("chrome.pak");
-#else
-      NOTREACHED();
-#endif
-      break;
     // The following are only valid in the development environment, and
     // will fail if executed from an installed executable (because the
     // generated path won't exist).

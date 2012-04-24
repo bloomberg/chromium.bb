@@ -18,9 +18,6 @@ enum {
 
   DIR_LOCALES,              // Directory where locale resources are stored.
 
-  FILE_RESOURCES_PAK,       // Path to the data .pak file which holds binary
-                            // resources.
-
   // Valid only in development environment; TODO(darin): move these
   DIR_TEST_DATA,            // Directory where unit test data resides.
 

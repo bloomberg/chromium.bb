@@ -89,7 +89,8 @@ def CompressUsingLZMA(build_dir, compressed_file, input_file):
   RunSystemCommand(cmd)
 
 
-def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir):
+def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir,
+                             enable_hidpi):
   """Copies the files required for installer archive.
   Copies all common files required for various distributions of Chromium and
   also files for the specific Chromium build specified by distribution.
@@ -100,6 +101,8 @@ def CopyAllFilesToStagingDir(config, distribution, staging_dir, build_dir):
       distribution = distribution[1:]
     CopySectionFilesToStagingDir(config, distribution.upper(),
                                  staging_dir, build_dir)
+  if enable_hidpi == '1':
+    CopySectionFilesToStagingDir(config, 'HIDPI', staging_dir, build_dir)
 
 
 def CopySectionFilesToStagingDir(config, section, staging_dir, build_dir):
@@ -324,11 +327,13 @@ def main(options):
   # building the optimized mini_installer.
   if options.build_dir != options.output_dir:
     CopyAllFilesToStagingDir(config, options.distribution,
-                             staging_dir, options.output_dir)
+                             staging_dir, options.output_dir,
+                             options.enable_hidpi)
 
   # Now copy the remainder of the files from the build dir.
   CopyAllFilesToStagingDir(config, options.distribution,
-                           staging_dir, options.build_dir)
+                           staging_dir, options.build_dir,
+                           options.enable_hidpi)
 
   version_numbers = current_version.split('.')
   current_build_number = version_numbers[2] + '.' + version_numbers[3]
@@ -380,6 +385,8 @@ def _ParseOptions():
            '{BSDIFF|COURGETTE}.')
   parser.add_option('-n', '--output_name', default='chrome',
       help='Name used to prefix names of generated archives.')
+  parser.add_option('--enable_hidpi', default='0',
+      help='Whether to include HiDPI resource files.')
 
   options, args = parser.parse_args()
   if not options.build_dir:

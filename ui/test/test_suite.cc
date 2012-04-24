@@ -46,13 +46,16 @@ void UITestSuite::Initialize() {
   PathService::Get(base::DIR_MODULE, &pak_dir);
   pak_dir = pak_dir.AppendASCII("ui_unittests_strings");
   PathService::Override(ui::DIR_LOCALES, pak_dir);
-  PathService::Override(ui::FILE_RESOURCES_PAK,
-                        pak_dir.AppendASCII("ui_resources.pak"));
 #endif  // defined(OS_MACOSX)
 
   // Force unittests to run using en-US so if we test against string
   // output, it'll pass regardless of the system language.
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US");
+
+#if !defined(OS_MACOSX) && defined(OS_POSIX)
+  ui::ResourceBundle::GetSharedInstance().AddDataPack(
+      pak_dir.AppendASCII("ui_resources.pak"));
+#endif
 }
 
 void UITestSuite::Shutdown() {
