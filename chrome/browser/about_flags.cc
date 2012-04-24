@@ -650,6 +650,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableSyncSignin)
   },
+  {
+    "enable-platform-apps",
+    IDS_FLAGS_ENABLE_PLATFORM_APPS_NAME,
+    IDS_FLAGS_ENABLE_PLATFORM_APPS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnablePlatformApps)
+  }
 };
 
 const Experiment* experiments = kExperiments;
