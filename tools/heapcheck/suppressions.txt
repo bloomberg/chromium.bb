@@ -125,6 +125,28 @@
    fun:net::CertDatabaseNSSTest::SetUp
 }
 {
+   bug_51988_h
+   Heapcheck:Leak
+   fun:sqlite3MemMalloc
+   ...
+   fun:chromeos::OncNetworkParser::ParseServerOrCaCertificate
+   fun:chromeos::OncNetworkParser::ParseCertificate
+}
+{
+   bug_51988_i
+   Heapcheck:Leak
+   fun:sqlite3MemMalloc
+   fun:net::X509Certificate::GetDefaultNickname
+}
+{
+   bug_51988_j
+   Heapcheck:Leak
+   fun:sqlite3MemMalloc
+   fun:chromeos::*::ListCertsInSlot
+   ...
+   fun:chromeos::*::TearDown
+}
+{
    bug_66941_a
    Heapcheck:Leak
    fun:PR_NewLock
