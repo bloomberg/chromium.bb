@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
+#include "chrome/browser/ui/panels/panel_browser_titlebar_gtk.h"
 #include "chrome/browser/ui/panels/panel_drag_gtk.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
@@ -88,6 +89,10 @@ void PanelBrowserWindowGtk::Init() {
       this,
       chrome::NOTIFICATION_WINDOW_CLOSED,
       content::Source<GtkWindow>(window()));
+}
+
+BrowserTitlebar* PanelBrowserWindowGtk::CreateBrowserTitlebar() {
+  return new PanelBrowserTitlebarGtk(this, window());
 }
 
 bool PanelBrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {

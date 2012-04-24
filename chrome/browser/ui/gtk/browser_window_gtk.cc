@@ -1819,7 +1819,8 @@ void BrowserWindowGtk::InitWidgets() {
   tabstrip_->Init();
 
   // Build the titlebar (tabstrip + header space + min/max/close buttons).
-  titlebar_.reset(new BrowserTitlebar(this, window_));
+  titlebar_.reset(CreateBrowserTitlebar());
+  titlebar_->Init();
 
   // Insert the tabstrip into the window.
   gtk_box_pack_start(GTK_BOX(window_vbox_), titlebar_->widget(), FALSE, FALSE,
@@ -2452,6 +2453,10 @@ bool BrowserWindowGtk::UsingCustomPopupFrame() const {
       browser()->profile());
   return !theme_provider->UsingNativeTheme() &&
          (browser()->is_type_popup() || browser()->is_type_panel());
+}
+
+BrowserTitlebar* BrowserWindowGtk::CreateBrowserTitlebar() {
+  return new BrowserTitlebar(this, window_);
 }
 
 bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {

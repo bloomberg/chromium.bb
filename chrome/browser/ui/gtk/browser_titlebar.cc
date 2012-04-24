@@ -241,7 +241,6 @@ BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
       window_has_focus_(false),
       display_avatar_on_left_(false),
       theme_service_(NULL) {
-  Init();
 }
 
 void BrowserTitlebar::Init() {
@@ -434,45 +433,8 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
         left_side = false;
     } else {
       base::StringPiece token = tokenizer.token_piece();
-      if (token == "minimize" && !IsTypePanel()) {
+      if (BuildButton(token.as_string(), left_side))
         (left_side ? left_count : right_count)++;
-        GtkWidget* parent_box = GetButtonHBox(left_side);
-        minimize_button_.reset(
-            BuildTitlebarButton(IDR_MINIMIZE, IDR_MINIMIZE_P,
-                                IDR_MINIMIZE_H, parent_box, true,
-                                IDS_XPFRAME_MINIMIZE_TOOLTIP));
-
-        gtk_widget_size_request(minimize_button_->widget(),
-                                &minimize_button_req_);
-      } else if (token == "maximize" && !IsTypePanel()) {
-        (left_side ? left_count : right_count)++;
-        GtkWidget* parent_box = GetButtonHBox(left_side);
-        restore_button_.reset(
-            BuildTitlebarButton(IDR_RESTORE, IDR_RESTORE_P,
-                                IDR_RESTORE_H, parent_box, true,
-                                IDS_XPFRAME_RESTORE_TOOLTIP));
-        maximize_button_.reset(
-            BuildTitlebarButton(IDR_MAXIMIZE, IDR_MAXIMIZE_P,
-                                IDR_MAXIMIZE_H, parent_box, true,
-                                IDS_XPFRAME_MAXIMIZE_TOOLTIP));
-
-        gtk_util::SetButtonClickableByMouseButtons(maximize_button_->widget(),
-                                                   true, true, true);
-        gtk_widget_size_request(restore_button_->widget(),
-                                &restore_button_req_);
-      } else if (token == "close") {
-        (left_side ? left_count : right_count)++;
-        GtkWidget* parent_box = GetButtonHBox(left_side);
-        close_button_.reset(
-            BuildTitlebarButton(IDR_CLOSE, IDR_CLOSE_P,
-                                IDR_CLOSE_H, parent_box, true,
-                                IDS_XPFRAME_CLOSE_TOOLTIP));
-        close_button_->set_flipped(left_side);
-
-        gtk_widget_size_request(close_button_->widget(), &close_button_req_);
-      }
-      // Ignore any other values like "pin" since we don't have images for
-      // those.
     }
   }
 
@@ -486,6 +448,50 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
     gtk_widget_show_all(titlebar_right_buttons_vbox_);
   }
   UpdateMaximizeRestoreVisibility();
+}
+
+bool BrowserTitlebar::BuildButton(const std::string& button_token,
+                                  bool left_side) {
+  if (button_token == "minimize") {
+    GtkWidget* parent_box = GetButtonHBox(left_side);
+    minimize_button_.reset(
+        CreateTitlebarButton(IDR_MINIMIZE, IDR_MINIMIZE_P,
+                             IDR_MINIMIZE_H, parent_box,
+                             IDS_XPFRAME_MINIMIZE_TOOLTIP));
+
+    gtk_widget_size_request(minimize_button_->widget(),
+                            &minimize_button_req_);
+    return true;
+  } else if (button_token == "maximize") {
+    GtkWidget* parent_box = GetButtonHBox(left_side);
+    restore_button_.reset(
+        CreateTitlebarButton(IDR_RESTORE, IDR_RESTORE_P,
+                             IDR_RESTORE_H, parent_box,
+                             IDS_XPFRAME_RESTORE_TOOLTIP));
+    maximize_button_.reset(
+        CreateTitlebarButton(IDR_MAXIMIZE, IDR_MAXIMIZE_P,
+                             IDR_MAXIMIZE_H, parent_box,
+                             IDS_XPFRAME_MAXIMIZE_TOOLTIP));
+
+    gtk_util::SetButtonClickableByMouseButtons(maximize_button_->widget(),
+                                               true, true, true);
+    gtk_widget_size_request(restore_button_->widget(),
+                            &restore_button_req_);
+    return true;
+  } else if (button_token == "close") {
+    GtkWidget* parent_box = GetButtonHBox(left_side);
+    close_button_.reset(
+        CreateTitlebarButton(IDR_CLOSE, IDR_CLOSE_P,
+                             IDR_CLOSE_H, parent_box,
+                             IDS_XPFRAME_CLOSE_TOOLTIP));
+    close_button_->set_flipped(left_side);
+
+    gtk_widget_size_request(close_button_->widget(), &close_button_req_);
+    return true;
+  }
+  // Ignore any other values like "pin" since we don't have images for
+  // those.
+  return false;
 }
 
 GtkWidget* BrowserTitlebar::GetButtonHBox(bool left_side) {
@@ -517,9 +523,8 @@ GtkWidget* BrowserTitlebar::GetButtonHBox(bool left_side) {
   return buttons_hbox;
 }
 
-CustomDrawButton* BrowserTitlebar::BuildTitlebarButton(int image,
-    int image_pressed, int image_hot, GtkWidget* box, bool start,
-    int tooltip) {
+CustomDrawButton* BrowserTitlebar::CreateTitlebarButton(int image,
+    int image_pressed, int image_hot, GtkWidget* box, int tooltip) {
   CustomDrawButton* button = new CustomDrawButton(image, image_pressed,
                                                   image_hot, 0);
   gtk_widget_add_events(GTK_WIDGET(button->widget()), GDK_POINTER_MOTION_MASK);
@@ -530,10 +535,7 @@ CustomDrawButton* BrowserTitlebar::BuildTitlebarButton(int image,
   std::string localized_tooltip = l10n_util::GetStringUTF8(tooltip);
   gtk_widget_set_tooltip_text(button->widget(),
                               localized_tooltip.c_str());
-  if (start)
-    gtk_box_pack_start(GTK_BOX(box), button->widget(), FALSE, FALSE, 0);
-  else
-    gtk_box_pack_end(GTK_BOX(box), button->widget(), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), button->widget(), FALSE, FALSE, 0);
   return button;
 }
 
@@ -629,10 +631,9 @@ void BrowserTitlebar::UpdateThrobber(WebContents* web_contents) {
   } else {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-    // Note: we want to exclude the application popup window.
+    // Note: we want to exclude the application popup/panel window.
     if ((browser_window_->browser()->is_app() &&
-        browser_window_->browser()->is_type_popup()) ||
-        IsTypePanel()) {
+        !browser_window_->browser()->is_type_tabbed())) {
       SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
       if (icon.empty()) {
         // Fallback to the Chromium icon if the page has no icon.
@@ -904,7 +905,7 @@ void BrowserTitlebar::OnButtonClicked(GtkWidget* button) {
 
 gboolean BrowserTitlebar::OnFaviconMenuButtonPressed(GtkWidget* widget,
                                                      GdkEventButton* event) {
-  if (event->button != 1 || IsTypePanel())
+  if (event->button != 1)
     return FALSE;
 
   ShowFaviconMenu(event);
@@ -1053,10 +1054,6 @@ void BrowserTitlebar::ActiveWindowChanged(GdkWindow* active_window) {
   window_has_focus_ =
       gtk_widget_get_window(GTK_WIDGET(window_)) == active_window;
   UpdateTextColor();
-}
-
-bool BrowserTitlebar::IsTypePanel() {
-  return browser_window_->browser()->is_type_panel();
 }
 
 bool BrowserTitlebar::ShouldDisplayAvatar() {

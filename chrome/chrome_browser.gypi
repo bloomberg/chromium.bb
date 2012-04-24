@@ -3078,6 +3078,8 @@
         'browser/ui/panels/panel_browser_frame_view.h',
         'browser/ui/panels/panel_browser_view.cc',
         'browser/ui/panels/panel_browser_view.h',
+        'browser/ui/panels/panel_browser_titlebar_gtk.cc',
+        'browser/ui/panels/panel_browser_titlebar_gtk.h',
         'browser/ui/panels/panel_browser_window_cocoa.h',
         'browser/ui/panels/panel_browser_window_cocoa.mm',
         'browser/ui/panels/panel_browser_window_gtk.cc',

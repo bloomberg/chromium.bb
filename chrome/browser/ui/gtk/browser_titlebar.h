@@ -50,6 +50,11 @@ class BrowserTitlebar : public content::NotificationObserver,
 
   void set_window(GtkWindow* window) { window_ = window; }
 
+  // Build the titlebar, the space above the tab strip, and (maybe) the min,
+  // max, close buttons. |container_| is the gtk container that we put the
+  // widget into.
+  void Init();
+
   // Builds the buttons based on the metacity |button_string|.
   void BuildButtons(const std::string& button_string);
 
@@ -91,6 +96,14 @@ class BrowserTitlebar : public content::NotificationObserver,
 
   AvatarMenuButtonGtk* avatar_button() { return avatar_button_.get(); }
 
+ protected:
+  // Builds the button as denoted by |button_token|. Returns true if the button
+  // is created successfully.
+  virtual bool BuildButton(const std::string& button_token, bool left_side);
+
+  // Show the menu that the user gets from left-clicking the favicon.
+  virtual void ShowFaviconMenu(GdkEventButton* event);
+
  private:
   // A helper class to keep track of which frame of the throbber animation
   // we're showing.
@@ -118,11 +131,6 @@ class BrowserTitlebar : public content::NotificationObserver,
     explicit ContextMenuModel(ui::SimpleMenuModel::Delegate* delegate);
   };
 
-  // Build the titlebar, the space above the tab strip, and (maybe) the min,
-  // max, close buttons. |container_| is the gtk container that we put the
-  // widget into.
-  void Init();
-
   // Lazily builds and returns |titlebar_{left,right}_buttons_vbox_| and their
   // subtrees. We do this lazily because in most situations, only one of them
   // is allocated (though the user can (and do) manually mess with their gconf
@@ -131,9 +139,9 @@ class BrowserTitlebar : public content::NotificationObserver,
 
   // Constructs a CustomDraw button given 3 image ids (IDR_), the box to place
   // the button into, and a tooltip id (IDS_).
-  CustomDrawButton* BuildTitlebarButton(int image, int image_pressed,
-                                        int image_hot, GtkWidget* box,
-                                        bool start, int tooltip);
+  CustomDrawButton* CreateTitlebarButton(int image, int image_pressed,
+                                         int image_hot, GtkWidget* box,
+                                         int tooltip);
 
   // Update the titlebar spacing based on the custom frame and maximized state.
   void UpdateTitlebarAlignment();
@@ -145,9 +153,6 @@ class BrowserTitlebar : public content::NotificationObserver,
   // Updates the avatar image displayed, either a multi-profile avatar or the
   // incognito spy guy.
   void UpdateAvatar();
-
-  // Show the menu that the user gets from left-clicking the favicon.
-  void ShowFaviconMenu(GdkEventButton* event);
 
   // The maximize button was clicked, take an action depending on which mouse
   // button the user pressed.
@@ -190,8 +195,6 @@ class BrowserTitlebar : public content::NotificationObserver,
 
   // Overriden from ActiveWindowWatcherXObserver.
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
-
-  bool IsTypePanel();
 
   // Whether to display the avatar image.
   bool ShouldDisplayAvatar();

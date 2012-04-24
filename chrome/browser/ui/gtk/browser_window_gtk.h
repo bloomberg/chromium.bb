@@ -263,6 +263,9 @@ class BrowserWindowGtk : public BrowserWindow,
  protected:
   virtual void DestroyBrowser() OVERRIDE;
 
+  // Returns an instance of |BrowserTitlebar| to be used for this window.
+  virtual BrowserTitlebar* CreateBrowserTitlebar();
+
   // Checks to see if the mouse pointer at |x|, |y| is over the border of the
   // custom frame (a spot that should trigger a window resize). Returns true if
   // it should and sets |edge|.

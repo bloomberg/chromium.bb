@@ -38,6 +38,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
  protected:
   // BrowserWindowGtk overrides
+  virtual BrowserTitlebar* CreateBrowserTitlebar() OVERRIDE;
   virtual bool GetWindowEdge(int x, int y, GdkWindowEdge* edge) OVERRIDE;
   virtual bool HandleTitleBarLeftMousePress(
       GdkEventButton* event,
