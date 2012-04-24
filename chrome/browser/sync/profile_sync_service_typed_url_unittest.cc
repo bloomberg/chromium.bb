@@ -489,6 +489,41 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncMerge) {
   EXPECT_TRUE(URLsEqual(merged_entry, new_sync_entries[0]));
 }
 
+TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeWithErrorHasSyncMerge) {
+  history::VisitVector native_visits;
+  history::URLRow native_entry(MakeTypedUrlEntry("http://native.com", "native",
+                                                 2, 15, false, &native_visits));
+  history::VisitVector sync_visits;
+  history::URLRow sync_entry(MakeTypedUrlEntry("http://native.com", "sync",
+                                               1, 17, false, &sync_visits));
+
+  history::URLRows native_entries;
+  native_entries.push_back(native_entry);
+  EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
+      WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
+  // Return an error getting the visits for the native URL.
+  EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
+      WillRepeatedly(Return(false));
+  EXPECT_CALL((*history_backend_.get()), GetURL(_, _)).
+      WillRepeatedly(DoAll(SetArgumentPointee<1>(native_entry), Return(true)));
+  EXPECT_CALL((*history_backend_.get()),
+      AddVisits(_, _, history::SOURCE_SYNCED)). WillRepeatedly(Return(true));
+
+  history::URLRows sync_entries;
+  sync_entries.push_back(sync_entry);
+
+  EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
+      WillRepeatedly(Return(true));
+  EXPECT_CALL((*history_backend_.get()), SetPageTitle(_, _)).
+      WillRepeatedly(Return());
+  StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
+
+  history::URLRows new_sync_entries;
+  GetTypedUrlsFromSyncDB(&new_sync_entries);
+  ASSERT_EQ(1U, new_sync_entries.size());
+  EXPECT_TRUE(URLsEqual(sync_entry, new_sync_entries[0]));
+}
+
 TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAdd) {
   history::VisitVector added_visits;
   history::URLRow added_entry(MakeTypedUrlEntry("http://added.com", "entry",

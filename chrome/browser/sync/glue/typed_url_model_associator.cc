@@ -376,10 +376,10 @@ SyncError TypedUrlModelAssociator::UpdateFromSyncDB(
     // merge them below.
     if (!FixupURLAndGetVisits(
             history_backend_, &new_url, &existing_visits)) {
-      return error_handler_->CreateAndUploadError(
-          FROM_HERE,
-          "UpdateFromSyncDB failed",
-          model_type());
+      // Couldn't load the visits for this URL due to some kind of DB error.
+      // Just treat this URL as if it were not an existing URL.
+      LOG(ERROR) << "Could not load visits for url: " << new_url.url();
+      existing_url = false;
     }
   }
 
