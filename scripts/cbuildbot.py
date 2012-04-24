@@ -907,12 +907,16 @@ def _PostParseCheck(options, args):
 def _ParseCommandLine(parser, argv):
   """Completely parse the commandline arguments"""
   (options, args) = parser.parse_args(argv)
-  # Strip out null arguments.
-  # TODO(rcui): Remove when buildbot is fixed
-  args = [arg for arg in args if arg]
   if options.list:
     _PrintValidConfigs(options.print_all)
     sys.exit(0)
+
+  # Strip out null arguments.
+  # TODO(rcui): Remove when buildbot is fixed
+  args = [arg for arg in args if arg]
+  if not args:
+    parser.error('Invalid usage.  Use -h to see usage.  Use -l to list '
+                 'supported configs.')
 
   _FinishParsing(options, args)
   return options, args
@@ -956,12 +960,9 @@ def main(argv):
                      'local trybot.')
     time.sleep(5)
 
-  if args:
-    # Only expecting one config
-    bot_id = args[-1]
-    build_config = _GetConfig(bot_id)
-  else:
-    parser.error('Invalid usage.  Use -h to see usage.')
+  # Only expecting one config
+  bot_id = args[-1]
+  build_config = _GetConfig(bot_id)
 
   if options.reference_repo is None:
     repo_path = os.path.join(constants.SOURCE_ROOT, '.repo')
