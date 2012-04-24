@@ -311,7 +311,8 @@ static void ConsumeModRM(NCDecoderInst* dinst) {
     const uint8_t mrm = NCInstBytesReadInline(&dinst->inst.bytes);
     DEBUG( printf("Mod/RM byte: %02x\n", mrm) );
     dinst->inst.mrm = mrm;
-    if (dinst->opinfo->insttype == NACLi_X87) {
+    if (dinst->opinfo->insttype == NACLi_X87 ||
+        dinst->opinfo->insttype == NACLi_X87_FSINCOS) {
       GetX87OpInfo(dinst);
     }
     if (dinst->opinfo->opinmrm) {

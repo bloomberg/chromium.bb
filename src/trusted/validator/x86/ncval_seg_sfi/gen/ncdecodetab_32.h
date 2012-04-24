@@ -3676,7 +3676,7 @@ static const struct OpInfo kDecode87D9[NCDTABLESIZE] = {
   /* f8 */  { NACLi_X87, 1, 1, 0 },	/* fprem */
   /* f9 */  { NACLi_X87, 1, 1, 0 },	/* fyl2xp1 */
   /* fa */  { NACLi_X87, 1, 1, 0 },	/* fsqrt */
-  /* fb */  { NACLi_X87, 1, 1, 0 },	/* fsincos */
+  /* fb */  { NACLi_X87_FSINCOS, 1, 1, 0 },	/* fsincos */
   /* fc */  { NACLi_X87, 1, 1, 0 },	/* frndint */
   /* fd */  { NACLi_X87, 1, 1, 0 },	/* fscale */
   /* fe */  { NACLi_X87, 1, 1, 0 },	/* fsin */

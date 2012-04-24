@@ -746,6 +746,7 @@ static Bool ValidateInst(const NCDecoderInst *dinst) {
       ValidateIndirect5(dinst);
       break;
     case NACLi_X87:
+    case NACLi_X87_FSINCOS:
       squashme = !NaClGetCPUFeature(cpufeatures, NaClCPUFeature_x87);
       break;
     case NACLi_SFENCE_CLFLUSH:

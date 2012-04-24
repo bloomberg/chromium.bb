@@ -783,6 +783,9 @@ static void EncodeModed87Op(OpMetaInfo* g87tab[NCDTABLESIZE],
     for (j = 0xc0; j < 0x100; j++) {
       if (set2[j - 0xc0] == NULL) {
         g87tab[j] = NewMetaDefn(1, IMM_NONE, NACLi_INVALID, "invalid");
+      } else if (strcmp("fsincos", set2[j - 0xc0]) == 0) {
+        g87tab[j] = NewMetaDefn(1, IMM_NONE, NACLi_X87_FSINCOS,
+                                set2[j - 0xc0]);
       } else {
         g87tab[j] = NewMetaDefn(1, IMM_NONE, NACLi_X87, set2[j - 0xc0]);
       }

@@ -151,7 +151,8 @@ static const char* DisFmt(const NCDecoderInst *dinst) {
   NCInstBytesPtrInitInc(&opbyte, &dinst->inst_bytes, NCOpcodeOffset(dinst));
   opbyte0 = NCInstBytesByte(&opbyte, 0);
 
-  if (dinst->opinfo->insttype == NACLi_X87) {
+  if (dinst->opinfo->insttype == NACLi_X87 ||
+      dinst->opinfo->insttype == NACLi_X87_FSINCOS) {
     if (opbyte0 != kWAITOp) {
       return kDisasmX87Op[opbyte0 - kFirstX87Opcode][dinst->inst.mrm];
     }

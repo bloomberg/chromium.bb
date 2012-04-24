@@ -49,6 +49,7 @@ void NaClCpuCheck(struct NaClValidatorState* state,
   Bool squash_me = FALSE;
   switch (state->cur_inst->insttype) {
     case NACLi_X87:
+    case NACLi_X87_FSINCOS:
       NaClCheckFeature(NaClCPUFeature_x87, state, &squash_me);
       break;
     case NACLi_SFENCE_CLFLUSH:
