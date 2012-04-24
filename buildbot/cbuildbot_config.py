@@ -41,22 +41,22 @@ def OverrideConfigForTrybot(build_config, remote_trybot):
   """
   copy_config = copy.deepcopy(build_config)
   board_specific_configs = copy_config['board_specific_configs'].values()
-  for config in [copy_config] + board_specific_configs:
-    config['uprev'] = True
-    if config['internal']:
-      config['overlays'] = constants.BOTH_OVERLAYS
+  for my_config in [copy_config] + board_specific_configs:
+    my_config['uprev'] = True
+    if my_config['internal']:
+      my_config['overlays'] = constants.BOTH_OVERLAYS
 
     # Most users don't have access to the pdf repository so disable pdf.
-    useflags = config['useflags']
+    useflags = my_config['useflags']
     if useflags and 'chrome_pdf' in useflags:
       useflags.remove('chrome_pdf')
 
-    config['upload_symbols'] = False
-    config['push_image'] = False
+    my_config['upload_symbols'] = False
+    my_config['push_image'] = False
 
     # Default to starting with a fresh chroot on remote trybot runs.
     if remote_trybot:
-      config['chroot_replace'] = True
+      my_config['chroot_replace'] = True
 
   return copy_config
 
@@ -751,13 +751,11 @@ internal_paladin.add_config('unified-mario-paladin',
   boards=['x86-mario'],
   unified_manifest_version=True,
   paladin_builder_name='unified mario paladin',
-  # TODO(sosa): Temporary workarounds.
   vm_tests=None,
   prebuilts=None,
 )
 
-internal_paladin.add_config('unified-x86-generic',
-  overlays=constants.PUBLIC_OVERLAYS,
+paladin.add_config('unified-x86-generic-paladin',
   boards=['x86-generic'],
   unified_manifest_version=True,
   paladin_builder_name='unified x86-generic paladin',
@@ -944,11 +942,11 @@ _firmware_release = _release.derive(
 def _InjectDisplayPosition(config_source):
   """Add field to help buildbot masters order builders on the waterfall."""
   def _GetSortKey(items):
-    config = items[1]
+    my_config = items[1]
     # Allow configs to override the display_position.
-    return (config.get('display_position', 1000000),
-            BUILD_TYPE_DUMP_ORDER.index(config['build_type']),
-            config['internal'], config['vm_tests'])
+    return (my_config.get('display_position', 1000000),
+            BUILD_TYPE_DUMP_ORDER.index(my_config['build_type']),
+            my_config['internal'], my_config['vm_tests'])
 
   source = sorted(config_source.iteritems(), key=_GetSortKey)
   return dict((name, dict(value.items() + [('display_position', idx)]))
@@ -971,7 +969,7 @@ def main(argv=None):
   parser.add_option('--for-buildbot', action='store_true', default=False,
                     help="Include the display position in json data.")
 
-  (options, args) = parser.parse_args(argv)
+  options = parser.parse_args(argv)[0]
 
   if options.compare and options.dump:
     parser.error('Cannot run with --load and --dump at the same time!')

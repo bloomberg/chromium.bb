@@ -234,10 +234,21 @@ class CBuildBotTest(mox.MoxTestBase):
   def testValidUnifiedMasterConfig(self):
     """Make sure any unified master configurations are valid."""
     for build_name, config in cbuildbot_config.config.iteritems():
-      if config['unified_manifest_version']:
+      # Unified masters must be internal and must rev both overlays.
+      if config['unified_manifest_version'] and config['master']:
         self.assertTrue(
             config['internal'] and config['manifest_version'],
             'Unified manifest version config detected with invalid values')
+        self.assertEqual(config['overlays'], constants.BOTH_OVERLAYS)
+      elif config['unified_manifest_version'] and not config['master']:
+        # Unified slaves can rev either public or both depending on whether
+        # they are internal or not.
+        self.assertTrue(config['manifest_version'],
+            'Unified manifest version config detected with invalid values')
+        if config['internal']:
+          self.assertEqual(config['overlays'], constants.BOTH_OVERLAYS)
+        else:
+          self.assertEqual(config['overlays'], constants.PUBLIC_OVERLAYS)
 
   def testFactoryFirmwareValidity(self):
     """Ensures that firmware/factory branches have at least 1 valid name."""
