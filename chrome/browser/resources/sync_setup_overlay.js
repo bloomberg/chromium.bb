@@ -221,15 +221,15 @@ cr.define('options', function() {
       // SyncSetupFlow::GetDataTypeChoiceData().
       var result = JSON.stringify({
         'syncAllDataTypes': syncAll,
-        'sync_bookmarks': syncAll || $('bookmarks-checkbox').checked,
-        'sync_preferences': syncAll || $('preferences-checkbox').checked,
-        'sync_themes': syncAll || $('themes-checkbox').checked,
-        'sync_passwords': syncAll || $('passwords-checkbox').checked,
-        'sync_autofill': syncAll || $('autofill-checkbox').checked,
-        'sync_extensions': syncAll || $('extensions-checkbox').checked,
-        'sync_typed_urls': syncAll || $('typed-urls-checkbox').checked,
-        'sync_apps': syncAll || $('apps-checkbox').checked,
-        'sync_sessions': syncAll || $('sessions-checkbox').checked,
+        'bookmarksSynced': syncAll || $('bookmarks-checkbox').checked,
+        'preferencesSynced': syncAll || $('preferences-checkbox').checked,
+        'themesSynced': syncAll || $('themes-checkbox').checked,
+        'passwordsSynced': syncAll || $('passwords-checkbox').checked,
+        'autofillSynced': syncAll || $('autofill-checkbox').checked,
+        'extensionsSynced': syncAll || $('extensions-checkbox').checked,
+        'typedUrlsSynced': syncAll || $('typed-urls-checkbox').checked,
+        'appsSynced': syncAll || $('apps-checkbox').checked,
+        'sessionsSynced': syncAll || $('sessions-checkbox').checked,
         'encryptAllData': encryptAllData,
         'usePassphrase': usePassphrase,
         'isGooglePassphrase': googlePassphrase,
@@ -286,46 +286,52 @@ cr.define('options', function() {
       }
     },
 
+    /**
+     * Shows or hides the Sync data type checkboxes in the advanced
+     * configuration screen.
+     * @param {Object} args The configuration data used to show/hide UI.
+     * @private
+     */
     setChooseDataTypesCheckboxes_: function(args) {
       var datatypeSelect = $('sync-select-datatypes');
       datatypeSelect.selectedIndex = args.syncAllDataTypes ? 0 : 1;
 
-      $('bookmarks-checkbox').checked = args.sync_bookmarks;
-      $('preferences-checkbox').checked = args.sync_preferences;
-      $('themes-checkbox').checked = args.sync_themes;
+      $('bookmarks-checkbox').checked = args.bookmarksSynced;
+      $('preferences-checkbox').checked = args.preferencesSynced;
+      $('themes-checkbox').checked = args.themesSynced;
 
-      if (args.passwords_registered) {
-        $('passwords-checkbox').checked = args.sync_passwords;
+      if (args.passwordsRegistered) {
+        $('passwords-checkbox').checked = args.passwordsSynced;
         $('passwords-item').hidden = false;
       } else {
         $('passwords-item').hidden = true;
       }
-      if (args.autofill_registered) {
-        $('autofill-checkbox').checked = args.sync_autofill;
+      if (args.autofillRegistered) {
+        $('autofill-checkbox').checked = args.autofillSynced;
         $('autofill-item').hidden = false;
       } else {
         $('autofill-item').hidden = true;
       }
-      if (args.extensions_registered) {
-        $('extensions-checkbox').checked = args.sync_extensions;
+      if (args.extensionsRegistered) {
+        $('extensions-checkbox').checked = args.extensionsSynced;
         $('extensions-item').hidden = false;
       } else {
         $('extensions-item').hidden = true;
       }
-      if (args.typed_urls_registered) {
-        $('typed-urls-checkbox').checked = args.sync_typed_urls;
+      if (args.typedUrlsRegistered) {
+        $('typed-urls-checkbox').checked = args.typedUrlsSynced;
         $('omnibox-item').hidden = false;
       } else {
         $('omnibox-item').hidden = true;
       }
-      if (args.apps_registered) {
-        $('apps-checkbox').checked = args.sync_apps;
+      if (args.appsRegistered) {
+        $('apps-checkbox').checked = args.appsSynced;
         $('apps-item').hidden = false;
       } else {
         $('apps-item').hidden = true;
       }
-      if (args.sessions_registered) {
-        $('sessions-checkbox').checked = args.sync_sessions;
+      if (args.sessionsRegistered) {
+        $('sessions-checkbox').checked = args.sessionsSynced;
         $('sessions-item').hidden = false;
       } else {
         $('sessions-item').hidden = true;
@@ -335,7 +341,7 @@ cr.define('options', function() {
     },
 
     setEncryptionRadios_: function(args) {
-      if (args['encryptAllData']) {
+      if (args.encryptAllData) {
         $('encrypt-all-option').checked = true;
         this.disableEncryptionRadioGroup_();
       } else {
@@ -344,7 +350,7 @@ cr.define('options', function() {
     },
 
     setPassphraseRadios_: function(args) {
-      if (args['usePassphrase']) {
+      if (args.usePassphrase) {
         $('explicit-option').checked = true;
 
         // The passphrase, once set, cannot be unset, but we show a reset link.
@@ -383,14 +389,14 @@ cr.define('options', function() {
       if (args) {
         this.setCheckboxesAndErrors_(args);
 
-        this.useEncryptEverything_ = args['encryptAllData'];
+        this.useEncryptEverything_ = args.encryptAllData;
 
         // Whether to display the 'Sync everything' confirmation page or the
         // customize data types page.
-        var syncAllDataTypes = args['syncAllDataTypes'];
-        this.usePassphrase_ = args['usePassphrase'];
-        if (args['showSyncEverythingPage'] == false || this.usePassphrase_ ||
-            syncAllDataTypes == false || args['show_passphrase']) {
+        var syncAllDataTypes = args.syncAllDataTypes;
+        this.usePassphrase_ = args.usePassphrase;
+        if (args.showSyncEverythingPage == false || this.usePassphrase_ ||
+            syncAllDataTypes == false || args.showPassphrase) {
           this.showCustomizePage_(args, syncAllDataTypes);
         } else {
           this.showSyncEverythingPage_();
@@ -448,7 +454,7 @@ cr.define('options', function() {
       $('google-passphrase-needed-body').hidden = true;
       // Display the correct prompt to the user depending on what type of
       // passphrase is needed.
-      if (args['usePassphrase'])
+      if (args.usePassphrase)
         $('normal-body').hidden = false;
       else
         $('google-passphrase-needed-body').hidden = false;
@@ -458,7 +464,7 @@ cr.define('options', function() {
       // and the passphrase field is non-empty (meaning they tried to set it
       // previously but failed).
       $('incorrect-passphrase').hidden =
-          !(args['usePassphrase'] && args['passphrase_failed']);
+          !(args.usePassphrase && args.passphraseFailed);
 
       $('sync-passphrase-warning').hidden = false;
       $('passphrase').focus();
@@ -483,7 +489,7 @@ cr.define('options', function() {
       // set focus before that logic.
       $('choose-datatypes-ok').focus();
 
-      if (args && args['show_passphrase']) {
+      if (args && args.showPassphrase) {
         this.showPassphraseContainer_(args);
       } else {
         // We only show the 'Use Default' link if we're not prompting for an
@@ -655,7 +661,7 @@ cr.define('options', function() {
           email.value = args.user;
         }
 
-        if (!args.editable_user) {
+        if (!args.editableUser) {
           $('email-row').hidden = true;
           var span = $('email-readonly');
           span.textContent = email.value;
@@ -667,25 +673,25 @@ cr.define('options', function() {
       }
 
       if (1 == args.error) {
-        var access_code = $('access-code');
-        if (access_code.value) {
+        var accessCode = $('access-code');
+        if (accessCode.value) {
           $('errormsg-0-access-code').hidden = false;
           this.showAccessCodeRequired_();
         } else {
           $('errormsg-1-password').hidden = false;
         }
-        this.setBlurbError_(args.error_message);
+        this.setBlurbError_(args.errorMessage);
       } else if (3 == args.error) {
         $('errormsg-0-connection').hidden = false;
-        this.setBlurbError_(args.error_message);
+        this.setBlurbError_(args.errorMessage);
       } else if (4 == args.error) {
         this.showCaptcha_(args);
       } else if (7 == args.error) {
         this.setBlurbError_(localStrings.getString('serviceUnavailableError'));
       } else if (8 == args.error) {
         this.showAccessCodeRequired_();
-      } else if (args.error_message) {
-        this.setBlurbError_(args.error_message);
+      } else if (args.errorMessage) {
+        this.setBlurbError_(args.errorMessage);
       }
 
       if (args.fatalError) {
@@ -707,14 +713,14 @@ cr.define('options', function() {
       $('errormsg-0-access-code').hidden = true;
     },
 
-    setBlurbError_: function(error_message) {
+    setBlurbError_: function(errorMessage) {
       if (this.captchaChallengeActive_)
         return;  // No blurb in captcha challenge mode.
 
-      if (error_message) {
+      if (errorMessage) {
         $('error-signing-in').hidden = true;
         $('error-custom').hidden = false;
-        $('error-custom').textContent = error_message;
+        $('error-custom').textContent = errorMessage;
       } else {
         $('error-signing-in').hidden = false;
         $('error-custom').hidden = true;
@@ -783,7 +789,7 @@ cr.define('options', function() {
       var result = JSON.stringify({'user' : email.value,
                                    'pass' : passwd.value,
                                    'captcha' : f.captchaValue.value,
-                                   'access_code' : f.accessCode.value});
+                                   'accessCode' : f.accessCode.value});
       $('sign-in').disabled = true;
       chrome.send('SyncSetupSubmitAuth', [result]);
     },

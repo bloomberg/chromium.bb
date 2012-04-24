@@ -71,7 +71,7 @@ const char* kDataTypeNames[] = {
   "preferences",
   "sessions",
   "themes",
-  "typed_urls"
+  "typedUrls"
 };
 
 const syncable::ModelType kDataTypes[] = {
@@ -103,7 +103,7 @@ bool GetAuthData(const std::string& json,
   if (!result->GetString("user", username) ||
       !result->GetString("pass", password) ||
       !result->GetString("captcha", captcha) ||
-      !result->GetString("access_code", access_code)) {
+      !result->GetString("accessCode", access_code)) {
       return false;
   }
   return true;
@@ -123,7 +123,7 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
   }
 
   for (size_t i = 0; i < arraysize(kDataTypeNames); ++i) {
-    std::string key_name = std::string("sync_") + kDataTypeNames[i];
+    std::string key_name = kDataTypeNames[i] + std::string("Synced");
     bool sync_value;
     if (!result->GetBoolean(key_name, &sync_value)) {
       DLOG(ERROR) << "GetConfiguration() not passed a value for " << key_name;
@@ -349,14 +349,13 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
   // Setup args for the sync configure screen:
   //   showSyncEverythingPage: false to skip directly to the configure screen
   //   syncAllDataTypes: true if the user wants to sync everything
-  //   <data_type>_registered: true if the associated data type is supported
-  //   sync_<data_type>: true if the user wants to sync that specific data type
+  //   <data_type>Registered: true if the associated data type is supported
+  //   <data_type>Synced: true if the user wants to sync that specific data type
   //   encryptionEnabled: true if sync supports encryption
   //   encryptAllData: true if user wants to encrypt all data (not just
   //       passwords)
   //   usePassphrase: true if the data is encrypted with a secondary passphrase
   //   show_passphrase: true if a passphrase is needed to decrypt the sync data
-  // TODO(atwilson): Convert all to unix_hacker style (http://crbug.com/119646).
   DictionaryValue args;
 
   // Tell the UI layer which data types are registered/enabled by the user.
@@ -366,12 +365,12 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
       service->GetPreferredDataTypes();
   for (size_t i = 0; i < kNumDataTypes; ++i) {
     const std::string key_name = kDataTypeNames[i];
-    args.SetBoolean(key_name + "_registered",
+    args.SetBoolean(key_name + "Registered",
                     registered_types.Has(kDataTypes[i]));
-    args.SetBoolean("sync_" + key_name, preferred_types.Has(kDataTypes[i]));
+    args.SetBoolean(key_name + "Synced", preferred_types.Has(kDataTypes[i]));
   }
   browser_sync::SyncPrefs sync_prefs(GetProfile()->GetPrefs());
-  args.SetBoolean("passphrase_failed", passphrase_failed);
+  args.SetBoolean("passphraseFailed", passphrase_failed);
   args.SetBoolean("showSyncEverythingPage", !show_advanced);
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
   args.SetBoolean("encryptAllData", service->EncryptEverythingEnabled());
@@ -379,7 +378,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
   // We call IsPassphraseRequired() here, instead of calling
   // IsPassphraseRequiredForDecryption(), because we want to show the passphrase
   // UI even if no encrypted data types are enabled.
-  args.SetBoolean("show_passphrase", service->IsPassphraseRequired());
+  args.SetBoolean("showPassphrase", service->IsPassphraseRequired());
 
   StringValue page("configure");
   web_ui()->CallJavascriptFunction(
@@ -483,9 +482,9 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
   DictionaryValue args;
   args.SetString("user", user);
   args.SetInteger("error", error);
-  args.SetBoolean("editable_user", editable_user);
+  args.SetBoolean("editableUser", editable_user);
   if (!error_message.empty())
-    args.SetString("error_message", error_message);
+    args.SetString("errorMessage", error_message);
   if (fatal_error)
     args.SetBoolean("fatalError", true);
   args.SetString("captchaUrl", captcha);

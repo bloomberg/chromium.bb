@@ -87,15 +87,15 @@ std::string GetConfiguration(const DictionaryValue* extra_values,
   if (!passphrase.empty())
     result.SetString("passphrase", passphrase);
   // Add all of our data types.
-  result.SetBoolean("sync_apps", types.Has(syncable::APPS));
-  result.SetBoolean("sync_autofill", types.Has(syncable::AUTOFILL));
-  result.SetBoolean("sync_bookmarks", types.Has(syncable::BOOKMARKS));
-  result.SetBoolean("sync_extensions", types.Has(syncable::EXTENSIONS));
-  result.SetBoolean("sync_passwords", types.Has(syncable::PASSWORDS));
-  result.SetBoolean("sync_preferences", types.Has(syncable::PREFERENCES));
-  result.SetBoolean("sync_sessions", types.Has(syncable::SESSIONS));
-  result.SetBoolean("sync_themes", types.Has(syncable::THEMES));
-  result.SetBoolean("sync_typed_urls", types.Has(syncable::TYPED_URLS));
+  result.SetBoolean("appsSynced", types.Has(syncable::APPS));
+  result.SetBoolean("autofillSynced", types.Has(syncable::AUTOFILL));
+  result.SetBoolean("bookmarksSynced", types.Has(syncable::BOOKMARKS));
+  result.SetBoolean("extensionsSynced", types.Has(syncable::EXTENSIONS));
+  result.SetBoolean("passwordsSynced", types.Has(syncable::PASSWORDS));
+  result.SetBoolean("preferencesSynced", types.Has(syncable::PREFERENCES));
+  result.SetBoolean("sessionsSynced", types.Has(syncable::SESSIONS));
+  result.SetBoolean("themesSynced", types.Has(syncable::THEMES));
+  result.SetBoolean("typedUrlsSynced", types.Has(syncable::TYPED_URLS));
   std::string args;
   base::JSONWriter::Write(&result, &args);
   return args;
@@ -171,12 +171,12 @@ void CheckShowSyncSetupArgs(const DictionaryValue* dictionary,
   //
   // The code below validates these arguments.
 
-  CheckString(dictionary, "error_message", error_message, true);
+  CheckString(dictionary, "errorMessage", error_message, true);
   CheckString(dictionary, "user", user, false);
   CheckString(dictionary, "captchaUrl", captcha_url, false);
   CheckInt(dictionary, "error", error);
   CheckBool(dictionary, "fatalError", fatal_error, true);
-  CheckBool(dictionary, "editable_user", user_is_editable);
+  CheckBool(dictionary, "editableUser", user_is_editable);
 }
 
 // Checks to make sure that the values stored in |dictionary| match the values
@@ -186,15 +186,15 @@ void CheckConfigDataTypeArguments(DictionaryValue* dictionary,
                                   SyncAllDataConfig config,
                                   syncable::ModelTypeSet types) {
   CheckBool(dictionary, "syncAllDataTypes", config == SYNC_ALL_DATA);
-  CheckBool(dictionary, "sync_apps", types.Has(syncable::APPS));
-  CheckBool(dictionary, "sync_autofill", types.Has(syncable::AUTOFILL));
-  CheckBool(dictionary, "sync_bookmarks", types.Has(syncable::BOOKMARKS));
-  CheckBool(dictionary, "sync_extensions", types.Has(syncable::EXTENSIONS));
-  CheckBool(dictionary, "sync_passwords", types.Has(syncable::PASSWORDS));
-  CheckBool(dictionary, "sync_preferences", types.Has(syncable::PREFERENCES));
-  CheckBool(dictionary, "sync_sessions", types.Has(syncable::SESSIONS));
-  CheckBool(dictionary, "sync_themes", types.Has(syncable::THEMES));
-  CheckBool(dictionary, "sync_typed_urls", types.Has(syncable::TYPED_URLS));
+  CheckBool(dictionary, "appsSynced", types.Has(syncable::APPS));
+  CheckBool(dictionary, "autofillSynced", types.Has(syncable::AUTOFILL));
+  CheckBool(dictionary, "bookmarksSynced", types.Has(syncable::BOOKMARKS));
+  CheckBool(dictionary, "extensionsSynced", types.Has(syncable::EXTENSIONS));
+  CheckBool(dictionary, "passwordsSynced", types.Has(syncable::PASSWORDS));
+  CheckBool(dictionary, "preferencesSynced", types.Has(syncable::PREFERENCES));
+  CheckBool(dictionary, "sessionsSynced", types.Has(syncable::SESSIONS));
+  CheckBool(dictionary, "themesSynced", types.Has(syncable::THEMES));
+  CheckBool(dictionary, "typedUrlsSynced", types.Has(syncable::TYPED_URLS));
 }
 
 
@@ -649,7 +649,7 @@ TEST_F(SyncSetupHandlerTest, SuccessfullySetPassphrase) {
   std::string args = GetConfiguration(&dict,
                                       SYNC_ALL_DATA,
                                       GetAllTypes(),
-                                      "gaia_passphrase",
+                                      "gaiaPassphrase",
                                       ENCRYPT_PASSWORDS);
   ListValue list_args;
   list_args.Append(new StringValue(args));
@@ -662,7 +662,7 @@ TEST_F(SyncSetupHandlerTest, SuccessfullySetPassphrase) {
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
   EXPECT_CALL(*mock_pss_, OnUserChoseDatatypes(_, _));
-  EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("gaia_passphrase")).
+  EXPECT_CALL(*mock_pss_, SetDecryptionPassphrase("gaiaPassphrase")).
       WillOnce(Return(true));
 
   handler_->HandleConfigure(&list_args);
@@ -729,7 +729,7 @@ TEST_F(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
   DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-  CheckBool(dictionary, "passphrase_failed", true);
+  CheckBool(dictionary, "passphraseFailed", true);
 }
 
 // Walks through each user selectable type, and tries to sync just that single
@@ -841,18 +841,18 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncEverything) {
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
   CheckBool(dictionary, "showSyncEverythingPage", false);
   CheckBool(dictionary, "syncAllDataTypes", true);
-  CheckBool(dictionary, "apps_registered", true);
-  CheckBool(dictionary, "autofill_registered", true);
-  CheckBool(dictionary, "bookmarks_registered", true);
-  CheckBool(dictionary, "extensions_registered", true);
-  CheckBool(dictionary, "passwords_registered", true);
-  CheckBool(dictionary, "preferences_registered", true);
-  CheckBool(dictionary, "sessions_registered", true);
-  CheckBool(dictionary, "themes_registered", true);
-  CheckBool(dictionary, "typed_urls_registered", true);
-  CheckBool(dictionary, "show_passphrase", false);
+  CheckBool(dictionary, "appsRegistered", true);
+  CheckBool(dictionary, "autofillRegistered", true);
+  CheckBool(dictionary, "bookmarksRegistered", true);
+  CheckBool(dictionary, "extensionsRegistered", true);
+  CheckBool(dictionary, "passwordsRegistered", true);
+  CheckBool(dictionary, "preferencesRegistered", true);
+  CheckBool(dictionary, "sessionsRegistered", true);
+  CheckBool(dictionary, "themesRegistered", true);
+  CheckBool(dictionary, "typedUrlsRegistered", true);
+  CheckBool(dictionary, "showPassphrase", false);
   CheckBool(dictionary, "usePassphrase", false);
-  CheckBool(dictionary, "passphrase_failed", false);
+  CheckBool(dictionary, "passphraseFailed", false);
   CheckBool(dictionary, "encryptAllData", false);
   CheckConfigDataTypeArguments(dictionary, SYNC_ALL_DATA, GetAllTypes());
 }
@@ -923,9 +923,9 @@ TEST_F(SyncSetupHandlerTest, ShowSetupGaiaPassphraseRequired) {
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
   DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-  CheckBool(dictionary, "show_passphrase", true);
+  CheckBool(dictionary, "showPassphrase", true);
   CheckBool(dictionary, "usePassphrase", false);
-  CheckBool(dictionary, "passphrase_failed", false);
+  CheckBool(dictionary, "passphraseFailed", false);
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSetupCustomPassphraseRequired) {
@@ -943,9 +943,9 @@ TEST_F(SyncSetupHandlerTest, ShowSetupCustomPassphraseRequired) {
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
   DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-  CheckBool(dictionary, "show_passphrase", true);
+  CheckBool(dictionary, "showPassphrase", true);
   CheckBool(dictionary, "usePassphrase", true);
-  CheckBool(dictionary, "passphrase_failed", false);
+  CheckBool(dictionary, "passphraseFailed", false);
 }
 
 TEST_F(SyncSetupHandlerTest, ShowSetupEncryptAll) {
