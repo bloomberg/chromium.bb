@@ -44,6 +44,7 @@ class CCGenerator(object):
       .Append('using base::Value;')
       .Append('using base::DictionaryValue;')
       .Append('using base::ListValue;')
+      .Append('using base::BinaryValue;')
       .Append('using %s;' % any_helper.ANY_CLASS)
       .Append()
       .Concat(self._cpp_type_generator.GetRootNamespaceStart())
@@ -144,6 +145,8 @@ class CCGenerator(object):
         items.append('%s(0.0)' % prop.unix_name)
       elif t == PropertyType.BOOLEAN:
         items.append('%s(false)' % prop.unix_name)
+      elif t == PropertyType.BINARY:
+        items.append('%s(NULL)' % prop.unix_name)
       elif (t == PropertyType.ADDITIONAL_PROPERTIES or
             t == PropertyType.ANY or
             t == PropertyType.ARRAY or
@@ -536,6 +539,13 @@ class CCGenerator(object):
         )
       (c.Append('else')
         .Append('  return %(failure_value)s;')
+      )
+    elif prop.type_ == PropertyType.BINARY:
+      # This is the same if the property is optional or not. We need a pointer
+      # to the BinaryValue to be able to populate it, so a scoped_ptr is used
+      # whether it is optional or required.
+      (c.Append('%(dst)s->%(name)s.reset(')
+        .Append('    static_cast<BinaryValue*>(%(value_var)s)->DeepCopy());')
       )
     else:
       raise NotImplementedError(prop.type_)

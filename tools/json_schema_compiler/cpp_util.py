@@ -56,6 +56,7 @@ def GetValueType(type_):
       PropertyType.ENUM: 'Value::TYPE_STRING',
       PropertyType.OBJECT: 'Value::TYPE_DICTIONARY',
       PropertyType.ARRAY: 'Value::TYPE_LIST',
+      PropertyType.BINARY: 'Value::TYPE_BINARY',
   }[type_]
 
 def GetParameterDeclaration(param, type_):

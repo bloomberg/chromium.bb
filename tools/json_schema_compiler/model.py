@@ -218,6 +218,8 @@ class Property(object):
         # self.properties will already have some value from |_AddProperties|.
         self.properties.update(type_.properties)
         self.functions = type_.functions
+      elif json_type == 'binary':
+        self.type_ = PropertyType.BINARY
       else:
         raise ParseException(self, 'type ' + json_type + ' not recognized')
     elif 'choices' in json:
@@ -299,6 +301,7 @@ class PropertyType(object):
   REF = _Info(False, "REF")
   CHOICES = _Info(False, "CHOICES")
   OBJECT = _Info(False, "OBJECT")
+  BINARY = _Info(False, "BINARY")
   ANY = _Info(False, "ANY")
   ADDITIONAL_PROPERTIES = _Info(False, "ADDITIONAL_PROPERTIES")
 

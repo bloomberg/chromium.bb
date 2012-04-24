@@ -139,7 +139,7 @@ class CppTypeGenerator(object):
     elif prop.type_ == PropertyType.ENUM:
       cpp_type = cpp_util.Classname(prop.name)
     elif prop.type_ == PropertyType.ADDITIONAL_PROPERTIES:
-      cpp_type = 'DictionaryValue'
+      cpp_type = 'base::DictionaryValue'
     elif prop.type_ == PropertyType.ANY:
       cpp_type = any_helper.ANY_CLASS
     elif prop.type_ == PropertyType.OBJECT:
@@ -152,6 +152,8 @@ class CppTypeGenerator(object):
         cpp_type = 'std::vector<%s> '
       cpp_type = cpp_type % self.GetType(
           prop.item_type, pad_for_generics=True)
+    elif prop.type_ == PropertyType.BINARY:
+      cpp_type = 'base::BinaryValue'
     else:
       raise NotImplementedError(prop.type_)
 
