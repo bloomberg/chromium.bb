@@ -415,22 +415,28 @@ bool SyncSetupHandler::IsActiveLogin() const {
 }
 
 void SyncSetupHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("SyncSetupDidClosePage",
+  web_ui()->RegisterMessageCallback(
+      "SyncSetupDidClosePage",
       base::Bind(&SyncSetupHandler::OnDidClosePage,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("SyncSetupSubmitAuth",
+  web_ui()->RegisterMessageCallback(
+      "SyncSetupSubmitAuth",
       base::Bind(&SyncSetupHandler::HandleSubmitAuth,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("SyncSetupConfigure",
+  web_ui()->RegisterMessageCallback(
+      "SyncSetupConfigure",
       base::Bind(&SyncSetupHandler::HandleConfigure,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("SyncSetupAttachHandler",
+  web_ui()->RegisterMessageCallback(
+      "SyncSetupAttachHandler",
       base::Bind(&SyncSetupHandler::HandleAttachHandler,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("SyncSetupShowErrorUI",
+  web_ui()->RegisterMessageCallback(
+      "SyncSetupShowErrorUI",
       base::Bind(&SyncSetupHandler::HandleShowErrorUI,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("SyncSetupShowSetupUI",
+  web_ui()->RegisterMessageCallback(
+      "SyncSetupShowSetupUI",
       base::Bind(&SyncSetupHandler::HandleShowSetupUI,
                  base::Unretained(this)));
 }

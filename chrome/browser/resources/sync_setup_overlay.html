@@ -25,17 +25,18 @@
             </div>
             <form id="gaia-login-form">
               <div id="email-row" class="reset-shown">
-                <label>
-                  <strong class="email-label" i18n-content="emailLabel">
-                  </strong>
-                  <input id="gaia-email" type="text" name="email" value=""
-                      class="reset-enabled reset-shown reset-value"
-                      autocomplete="off">
-                  <div id="email-readonly" class="reset-hidden" hidden></div>
-                  <div id="errormsg-0-email" class="errormsg reset-hidden"
-                      i18n-content="cannotBeBlank" hidden>
-                  </div>
+                <label for="gaia-email" i18n-content="emailLabel">
                 </label>
+                <input id="gaia-email" type="text" name="email" value=""
+                    class="reset-enabled reset-shown reset-value"
+                    autocomplete="off">
+              </div>
+              <div id="email-readonly-row" class="reset-hidden">
+                <strong class="email-label" i18n-content="emailLabel"></strong>
+                <div id="email-readonly"></div>
+              </div>
+              <div id="errormsg-0-email" class="errormsg reset-hidden"
+                  i18n-content="cannotBeBlank" hidden>
               </div>
               <div id="password-row" class="reset-shown">
                 <label>
@@ -43,10 +44,10 @@
                   </strong>
                   <input id="gaia-passwd" type="password" name="passwd"
                       class="reset-enabled reset-value" autocomplete="off">
-                  <div id="errormsg-0-password" class="errormsg reset-hidden"
-                      i18n-content="cannotBeBlank" hidden>
-                  </div>
-                <label>
+                </label>
+                <div id="errormsg-0-password" class="errormsg reset-hidden"
+                    i18n-content="cannotBeBlank" hidden>
+                </div>
               </div>
               <div id="access-code-input-row"
                   class="access-code-row reset-hidden" hidden>

@@ -243,7 +243,7 @@ cr.define('options', function() {
      * Sync Preferences' screen. This is used to prohibit the user from changing
      * the inputs after confirming the customized sync preferences, or resetting
      * the state when re-showing the dialog.
-     * @param disabled True if controls should be set to disabled.
+     * @param {boolean} disabled True if controls should be set to disabled.
      * @private
      */
     setInputElementsDisabledState_: function(disabled) {
@@ -263,9 +263,10 @@ cr.define('options', function() {
      * Animate a link being enabled/disabled. The link is hidden by animating
      * its opacity, but to ensure the user doesn't click it during that time,
      * its onclick handler is changed to null as well.
-     * @param elt The anchor element to enable/disable.
-     * @param disabled True if the link should be disabled.
-     * @param enabledFunction The onclick handler when the link is enabled.
+     * @param {HTMLElement} elt The anchor element to enable/disable.
+     * @param {boolean} disabled True if the link should be disabled.
+     * @param {function} enabledFunction The onclick handler when the link is
+     *     enabled.
      * @private
      */
     animateDisableLink_: function(elt, disabled, enabledFunction) {
@@ -286,7 +287,7 @@ cr.define('options', function() {
     },
 
     setChooseDataTypesCheckboxes_: function(args) {
-      var datatypeSelect = document.getElementById('sync-select-datatypes');
+      var datatypeSelect = $('sync-select-datatypes');
       datatypeSelect.selectedIndex = args.syncAllDataTypes ? 0 : 1;
 
       $('bookmarks-checkbox').checked = args.sync_bookmarks;
@@ -362,7 +363,7 @@ cr.define('options', function() {
     },
 
     showConfigure_: function(args) {
-      var datatypeSelect = document.getElementById('sync-select-datatypes');
+      var datatypeSelect = $('sync-select-datatypes');
       var self = this;
       datatypeSelect.onchange = function() {
         var syncAll = this.selectedIndex == 0;
@@ -475,7 +476,7 @@ cr.define('options', function() {
       // likely he intends to change the data types. Select the
       // 'Choose data types' option in this case.
       var index = syncEverything ? 0 : 1;
-      document.getElementById('sync-select-datatypes').selectedIndex = index;
+      $('sync-select-datatypes').selectedIndex = index;
       this.setDataTypeCheckboxesEnabled_(!syncEverything);
 
       // The passphrase input may need to take over focus from the OK button, so
@@ -614,7 +615,7 @@ cr.define('options', function() {
      * initial state.
      * The initial state is specified by adding a class to the descendant
      * element in sync_setup_overlay.html.
-     * @param pageElementId The root page element id.
+     * @param {HTMLElement} pageElementId The root page element id.
      * @private
      */
     resetPage_: function(pageElementId) {
@@ -655,10 +656,10 @@ cr.define('options', function() {
         }
 
         if (!args.editable_user) {
-          email.hidden = true;
+          $('email-row').hidden = true;
           var span = $('email-readonly');
           span.textContent = email.value;
-          span.hidden = false;
+          $('email-readonly-row').hidden = false;
           $('create-account-div').hidden = true;
         }
 
@@ -666,7 +667,7 @@ cr.define('options', function() {
       }
 
       if (1 == args.error) {
-        var access_code = document.getElementById('access-code');
+        var access_code = $('access-code');
         if (access_code.value) {
           $('errormsg-0-access-code').hidden = false;
           this.showAccessCodeRequired_();

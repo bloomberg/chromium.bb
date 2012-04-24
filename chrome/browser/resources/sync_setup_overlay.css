@@ -298,6 +298,12 @@ html[dir='rtl'] #signin-header-logo {
   right: auto;
 }
 
+#email-row,
+#email-readonly-row,
+#password-row {
+  margin: 0 0 1.5em;
+}
+
 /* Sign in buttons. */
 
 .signin-box input[type=submit] {
@@ -315,8 +321,8 @@ html[dir='rtl'] #signin-header-logo {
   font-weight: bold;
   height: 32px;
   line-height: 27px;
-  margin-top: 0;
   margin-bottom: 1.2em;
+  margin-top: 0;
   min-width: 54px !important;
   padding: 0 8px;
 }
@@ -439,7 +445,7 @@ html[dir='rtl'] .signin-box input[type=password] {
 
 .signin-box label {
   display: block;
-  margin: 0 0 1.5em;
+  font-weight: bold;
 }
 
 /* Sign in miscellaneous. */
