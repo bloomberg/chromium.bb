@@ -116,6 +116,27 @@ class MobileConfig : public CustomizationDocument  {
     DISALLOW_COPY_AND_ASSIGN(Carrier);
   };
 
+  // Carrier config for a specific initial locale.
+  class LocaleConfig {
+   public:
+    explicit LocaleConfig(base::DictionaryValue* locale_dict);
+    ~LocaleConfig();
+
+    const std::string& setup_url() const { return setup_url_; }
+
+    // Initializes local config carrier from supplied dictionary.
+    // Multiple calls supported (i.e. second call for local config).
+    void InitFromDictionary(base::DictionaryValue* locale_dict);
+
+   private:
+    // Carrier setup URL. Used in network menu ("Set-up Mobile Data" link).
+    // Displayed when SIM card is not installed on the device with a
+    // particular initial locale.
+    std::string setup_url_;
+
+    DISALLOW_COPY_AND_ASSIGN(LocaleConfig);
+  };
+
   // External carrier ID (ex. "Verizon (us)") mapping to internal carrier ID.
   typedef std::map<std::string, std::string> CarrierIdMap;
 
@@ -124,8 +145,12 @@ class MobileConfig : public CustomizationDocument  {
 
   static MobileConfig* GetInstance();
 
-  // Returns carrier by external ID.
+  // Returns carrier by external ID or NULL if there's no such carrier.
   const MobileConfig::Carrier* GetCarrier(const std::string& carrier_id) const;
+
+  // Returns locale specific config by initial locale or NULL
+  // if there's no such config defined.
+  const MobileConfig::LocaleConfig* GetLocaleConfig() const;
 
  protected:
   virtual bool LoadManifestFromString(const std::string& manifest) OVERRIDE;
@@ -164,6 +189,9 @@ class MobileConfig : public CustomizationDocument  {
 
   // Carrier configuration (including carrier deals).
   Carriers carriers_;
+
+  // Initial locale specific config if defined.
+  scoped_ptr<LocaleConfig> locale_config_;
 
   // Initial locale value.
   std::string initial_locale_;

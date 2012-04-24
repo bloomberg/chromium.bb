@@ -46,6 +46,11 @@ const char kGoodMobileConfig[] =
     "      ],\n"
     "    },"
     "  },"
+    " \"initial_locales\" : {\n"
+    "  \"en-US\" : {\n"
+    "    \"setup_url\" : \"accounts.carrier.com\",\n"
+    "  },"
+    " },"
     "}";
 
 const char kOldDealMobileConfig[] =
@@ -106,7 +111,12 @@ const char kLocalMobileConfig[] =
     "        },\n"
     "      ],\n"
     "    },"
-     "  },"
+    "  },"
+    " \"initial_locales\" : {\n"
+    "  \"en-US\" : {\n"
+    "    \"setup_url\" : \"accounts.carrier.com/localized/\",\n"
+    "  },"
+    " },"
     "}";
 
 }  // anonymous namespace
@@ -139,6 +149,17 @@ TEST(MobileConfigTest, Basic) {
   base::Time reference_time;
   base::Time::FromString("31/12/12 0:00", &reference_time);
   EXPECT_EQ(reference_time, deal->expire_date());
+
+  const MobileConfig::LocaleConfig* locale_config;
+  locale_config = config.GetLocaleConfig();
+  EXPECT_TRUE(locale_config != NULL);
+  EXPECT_EQ("accounts.carrier.com", locale_config->setup_url());
+
+  // Check same manifest but with another initial locale.
+  MobileConfig config_uk(kGoodMobileConfig, "en-GB");
+  EXPECT_TRUE(config_uk.IsReady());
+  locale_config = config_uk.GetLocaleConfig();
+  EXPECT_TRUE(locale_config == NULL);
 }
 
 TEST(MobileConfigTest, OldDeal) {
@@ -213,6 +234,16 @@ TEST(MobileConfigTest, LocalConfig) {
   base::Time reference_time;
   base::Time::FromString("31/12/13 0:00", &reference_time);
   EXPECT_EQ(reference_time, deal->expire_date());
+
+  // Now reload same global/local config files but with proper initial locale.
+  MobileConfig config_us(kGoodMobileConfig, "en-US");
+  EXPECT_TRUE(config_us.IsReady());
+  config_us.LoadManifestFromString(kLocalMobileConfig);
+  EXPECT_TRUE(config_us.IsReady());
+  const MobileConfig::LocaleConfig* locale_config;
+  locale_config = config_us.GetLocaleConfig();
+  EXPECT_TRUE(locale_config != NULL);
+  EXPECT_EQ("accounts.carrier.com/localized/", locale_config->setup_url());
 }
 
 }  // namespace chromeos

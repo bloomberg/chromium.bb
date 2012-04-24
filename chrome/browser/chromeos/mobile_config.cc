@@ -44,6 +44,10 @@ const char kDealExpireDateAttr[] = "expire_date";
 const char kLocalizedContentAttr[] = "localized_content";
 const char kNotificationTextAttr[] = "notification_text";
 
+// Initial locale carrier config attributes.
+const char kInitialLocalesAttr[] = "initial_locales";
+const char kSetupURLAttr[] = "setup_url";
+
 // Local config properties.
 const char kExcludeDealsAttr[] = "exclude_deals";
 
@@ -192,6 +196,20 @@ void MobileConfig::Carrier::RemoveDeals() {
   STLDeleteValues(&deals_);
 }
 
+// MobileConfig::LocaleConfig implementation. ----------------------------------
+
+MobileConfig::LocaleConfig::LocaleConfig(DictionaryValue* locale_dict) {
+  InitFromDictionary(locale_dict);
+}
+
+MobileConfig::LocaleConfig::~LocaleConfig() {
+}
+
+void MobileConfig::LocaleConfig::InitFromDictionary(
+    base::DictionaryValue* locale_dict) {
+  locale_dict->GetString(kSetupURLAttr, &setup_url_);
+}
+
 // MobileConfig implementation, public -----------------------------------------
 
 // static
@@ -213,6 +231,10 @@ const MobileConfig::Carrier* MobileConfig::GetCarrier(
     return iter->second;
   else
     return NULL;
+}
+
+const MobileConfig::LocaleConfig* MobileConfig::GetLocaleConfig() const {
+  return locale_config_.get();
 }
 
 // MobileConfig implementation, protected --------------------------------------
@@ -261,6 +283,17 @@ bool MobileConfig::LoadManifestFromString(const std::string& manifest) {
           carriers_[internal_id] = carrier;
         }
       }
+    }
+  }
+
+  DictionaryValue* initial_locales = NULL;
+  if (root_.get() && root_->GetDictionary(kInitialLocalesAttr,
+                                          &initial_locales)) {
+    DictionaryValue* locale_config_dict = NULL;
+    // Search for a config based on current initial locale.
+    if (initial_locales->GetDictionary(initial_locale_,
+                                       &locale_config_dict)) {
+      locale_config_.reset(new LocaleConfig(locale_config_dict));
     }
   }
 
