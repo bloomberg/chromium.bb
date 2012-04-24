@@ -2671,7 +2671,7 @@ binutils-gold-make() {
   spushd "${objdir}/gold"
   RunWithLog gold.make \
       env -i PATH="/usr/bin:/bin" \
-      make ${MAKE_OPTS} ld-new
+      make ${MAKE_OPTS} ld-new${EXEC_EXT}
   spopd
 
   ts-touch-commit "${objdir}"
