@@ -1226,62 +1226,27 @@
    bug_90013_a
    Heapcheck:Leak
    fun:??
-   ...
-   fun:pango_fc_font*
-   ...
-   fun:gfx::RenderTextLinux::*
+   fun:gfx::RenderTextLinux::EnsureLayout
 }
 {
    bug_90013_b
    Heapcheck:Leak
-   ...
    fun:??
-   fun:??
-   fun:??
-   ...
-   fun:pango_fc_font_*
+   fun:gfx::RenderTextLinux::GetStringSize
 }
 {
    bug_90013_c
    Heapcheck:Leak
    fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   fun:??
+   fun:::FindBestMatchFontFamilyName
+   fun:PlatformFontPango
 }
 {
    bug_90013_d
    Heapcheck:Leak
    fun:??
-   fun:??
-   fun:??
-   fun:??
-   ...
-   fun:XML_ParseBuffer
-   fun:??
-   fun:??
-   fun:??
-   fun:??
-   ...
-   fun:PlatformFontPango
+   fun:gfx::GetPangoFontMetrics
+   fun:gfx::PlatformFontPango::InitPangoMetrics
 }
 {
    bug_91491
