@@ -682,6 +682,37 @@ const char* SyncScheduler::GetDecisionString(
   return "";
 }
 
+// static
+void SyncScheduler::SetSyncerStepsForPurpose(
+    SyncSessionJob::SyncSessionJobPurpose purpose,
+    SyncerStep* start,
+    SyncerStep* end) {
+  switch (purpose) {
+    case SyncSessionJob::CONFIGURATION:
+      *start = DOWNLOAD_UPDATES;
+      *end = APPLY_UPDATES;
+      return;
+    case SyncSessionJob::CLEAR_USER_DATA:
+      *start = CLEAR_PRIVATE_DATA;
+      *end = CLEAR_PRIVATE_DATA;
+       return;
+    case SyncSessionJob::NUDGE:
+    case SyncSessionJob::POLL:
+      *start = SYNCER_BEGIN;
+      *end = SYNCER_END;
+      return;
+    case SyncSessionJob::CLEANUP_DISABLED_TYPES:
+      *start = CLEANUP_DISABLED_TYPES;
+      *end = CLEANUP_DISABLED_TYPES;
+      return;
+    default:
+      NOTREACHED();
+      *start = SYNCER_END;
+      *end = SYNCER_END;
+      return;
+  }
+}
+
 void SyncScheduler::PostTask(
     const tracked_objects::Location& from_here,
     const char* name, const base::Closure& task) {
@@ -728,36 +759,6 @@ void SyncScheduler::ScheduleSyncSessionJob(const SyncSessionJob& job) {
                              weak_ptr_factory_.GetWeakPtr(),
                              job),
                   delay);
-}
-
-void SyncScheduler::SetSyncerStepsForPurpose(
-    SyncSessionJob::SyncSessionJobPurpose purpose,
-    SyncerStep* start, SyncerStep* end) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  switch (purpose) {
-    case SyncSessionJob::CONFIGURATION:
-      *start = DOWNLOAD_UPDATES;
-      *end = APPLY_UPDATES;
-      return;
-    case SyncSessionJob::CLEAR_USER_DATA:
-      *start = CLEAR_PRIVATE_DATA;
-      *end = CLEAR_PRIVATE_DATA;
-       return;
-    case SyncSessionJob::NUDGE:
-    case SyncSessionJob::POLL:
-      *start = SYNCER_BEGIN;
-      *end = SYNCER_END;
-      return;
-    case SyncSessionJob::CLEANUP_DISABLED_TYPES:
-      *start = CLEANUP_DISABLED_TYPES;
-      *end = CLEANUP_DISABLED_TYPES;
-      return;
-    default:
-      NOTREACHED();
-      *start = SYNCER_END;
-      *end = SYNCER_END;
-      return;
-  }
 }
 
 void SyncScheduler::DoSyncSessionJob(const SyncSessionJob& job) {

@@ -48,7 +48,7 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory)
       store_birthday_sent_(false),
       client_stuck_(false),
       commit_time_rename_prepended_string_(""),
-      fail_next_postbuffer_(false),
+      countdown_to_postbuffer_fail_(0),
       directory_(directory),
       mid_commit_observer_(NULL),
       throttling_(false),
@@ -111,8 +111,9 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     InvalidateAndClearAuthToken();
   }
 
-  if (fail_next_postbuffer_) {
-    fail_next_postbuffer_ = false;
+  if (--countdown_to_postbuffer_fail_ == 0) {
+    // Fail as countdown hits zero.
+    params->response.server_status = HttpResponse::SYNC_SERVER_ERROR;
     return false;
   }
 
@@ -562,30 +563,6 @@ const CommitMessage& MockConnectionManager::last_sent_commit() const {
 const CommitResponse& MockConnectionManager::last_commit_response() const {
   EXPECT_TRUE(!commit_responses_.empty());
   return *commit_responses_->back();
-}
-
-void MockConnectionManager::ThrottleNextRequest(
-    ResponseCodeOverrideRequestor* visitor) {
-  base::AutoLock lock(response_code_override_lock_);
-  throttling_ = true;
-  if (visitor)
-    visitor->OnOverrideComplete();
-}
-
-void MockConnectionManager::FailWithAuthInvalid(
-    ResponseCodeOverrideRequestor* visitor) {
-  base::AutoLock lock(response_code_override_lock_);
-  fail_with_auth_invalid_ = true;
-  if (visitor)
-    visitor->OnOverrideComplete();
-}
-
-void MockConnectionManager::StopFailingWithAuthInvalid(
-    ResponseCodeOverrideRequestor* visitor) {
-  base::AutoLock lock(response_code_override_lock_);
-  fail_with_auth_invalid_ = false;
-  if (visitor)
-    visitor->OnOverrideComplete();
 }
 
 bool MockConnectionManager::IsModelTypePresentInSpecifics(

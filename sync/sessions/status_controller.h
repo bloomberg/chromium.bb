@@ -175,7 +175,8 @@ class StatusController {
   // Returns true if the last download_updates_command received a valid
   // server response.
   bool download_updates_succeeded() const {
-    return updates_response().has_get_updates();
+    return shared_.error.value().last_download_updates_result
+        == SYNCER_OK;
   }
 
   // Returns true if the last updates response indicated that we were fully
