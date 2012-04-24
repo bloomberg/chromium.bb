@@ -24,6 +24,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skbitmap_operations.h"
 
 using content::BrowserThread;
@@ -309,13 +310,15 @@ RefCountedMemory* ReadFileData(const FilePath& path) {
 // the returned image.
 gfx::Image* CreateHSLShiftedImage(const gfx::Image& image,
                                   const color_utils::HSL& hsl_shift) {
-  std::vector<const SkBitmap*> bitmaps;
-  for (size_t i = 0; i < image.GetNumberOfSkBitmaps(); ++i) {
-    const SkBitmap* bitmap = image.GetSkBitmapAtIndex(i);
-    bitmaps.push_back(new SkBitmap(SkBitmapOperations::CreateHSLShiftedBitmap(
-        *bitmap, hsl_shift)));
+  const std::vector<const SkBitmap*>& src_bitmaps =
+      image.ToImageSkia()->bitmaps();
+  std::vector<const SkBitmap*> dst_bitmaps;
+  for (size_t i = 0; i < src_bitmaps.size(); ++i) {
+    const SkBitmap* bitmap = src_bitmaps[i];
+    dst_bitmaps.push_back(new SkBitmap(
+        SkBitmapOperations::CreateHSLShiftedBitmap(*bitmap, hsl_shift)));
   }
-  return new gfx::Image(bitmaps);
+  return new gfx::Image(dst_bitmaps);
 }
 
 }  // namespace
@@ -988,10 +991,12 @@ void BrowserThemePack::GenerateTabBackgroundImages(ImageCache* bitmaps) const {
     ImageCache::const_iterator it = bitmaps->find(prs_base_id);
     if (it != bitmaps->end()) {
       const gfx::Image& image_to_tint = *(it->second);
+      const std::vector<const SkBitmap*>& bitmaps_to_tint =
+          image_to_tint.ToImageSkia()->bitmaps();
       std::vector<const SkBitmap*> tinted_bitmaps;
-      for (size_t j = 0; j < image_to_tint.GetNumberOfSkBitmaps(); ++j) {
+      for (size_t j = 0; j < bitmaps_to_tint.size(); ++j) {
         SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
-            *image_to_tint.GetSkBitmapAtIndex(j), GetTintInternal(
+            *bitmaps_to_tint[j], GetTintInternal(
                 ThemeService::TINT_BACKGROUND_TAB));
         int vertical_offset = bitmaps->count(prs_id)
                               ? kRestoredTabVerticalOffset : 0;

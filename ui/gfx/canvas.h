@@ -273,6 +273,14 @@ class UI_EXPORT Canvas {
                      bool filter,
                      const SkPaint& paint);
 
+  // TODO(pkotwicz): make this function private once gfx::ImageSkia stops
+  // calling this method.
+  void DrawBitmapFloat(const SkBitmap& bitmap,
+                       float src_x, float src_y, float src_w, float src_h,
+                       float dest_x, float dest_y, float dest_w, float dest_h,
+                       bool filter,
+                       const SkPaint& paint);
+
   // Draws text with the specified color, font and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the
   // text is too big, it is truncated and '...' is added to the end.

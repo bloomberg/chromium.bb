@@ -37,6 +37,7 @@ class ImageMacTest;
 }
 
 namespace gfx {
+class ImageSkia;
 
 #if defined(TOOLKIT_GTK)
 class CairoCachedSurface;
@@ -97,6 +98,7 @@ class UI_EXPORT Image {
   // The returned result is a weak pointer owned by and scoped to the life of
   // the Image.
   const SkBitmap* ToSkBitmap() const;
+  const ImageSkia* ToImageSkia() const;
 #if defined(TOOLKIT_GTK)
   GdkPixbuf* ToGdkPixbuf() const;
   CairoCachedSurface* const ToCairo() const;
@@ -123,16 +125,6 @@ class UI_EXPORT Image {
   operator NSImage*() const;
 #endif
   // ---------------------------------------------------------------------------
-
-  // Gets the number of bitmaps in this image. This may cause a conversion
-  // to a bitmap representation. Note, this function and GetSkBitmapAtIndex()
-  // are primarily meant to be used by the theme provider.
-  size_t GetNumberOfSkBitmaps() const;
-
-  // Gets the bitmap at the given index. This may cause a conversion
-  // to a bitmap representation. Note, the internal ordering of bitmaps is not
-  // guaranteed.
-  const SkBitmap* GetSkBitmapAtIndex(size_t index) const;
 
   // Inspects the representations map to see if the given type exists.
   bool HasRepresentation(RepresentationType type) const;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
 namespace {
@@ -48,11 +49,12 @@ TEST_F(ImageMacTest, MultiResolutionNSImageToSkBitmap) {
   gfx::Image image(ns_image.release());
 
   EXPECT_EQ(1u, image.RepresentationCount());
-  EXPECT_EQ(2u, image.GetNumberOfSkBitmaps());
+  const std::vector<const SkBitmap*>& bitmaps = image.ToImageSkia()->bitmaps();
+  EXPECT_EQ(2u, bitmaps.size());
 
-  const SkBitmap* bitmap1 = image.GetSkBitmapAtIndex(0);
+  const SkBitmap* bitmap1 = bitmaps[0];
   EXPECT_TRUE(bitmap1);
-  const SkBitmap* bitmap2 = image.GetSkBitmapAtIndex(1);
+  const SkBitmap* bitmap2 = bitmaps[1];
   EXPECT_TRUE(bitmap2);
 
   if (bitmap1->width() == width1) {
@@ -66,8 +68,7 @@ TEST_F(ImageMacTest, MultiResolutionNSImageToSkBitmap) {
     EXPECT_EQ(bitmap2->height(), height1);
   }
 
-  // GetNumberOfSkBitmaps and GetSkBitmapAtIndex should create a second
-  // representation.
+  // ToImageSkia should create a second representation.
   EXPECT_EQ(2u, image.RepresentationCount());
 }
 
@@ -83,7 +84,7 @@ TEST_F(ImageMacTest, MultiResolutionSkBitmapToNSImage) {
   gfx::Image image(bitmaps);
 
   EXPECT_EQ(1u, image.RepresentationCount());
-  EXPECT_EQ(2u, image.GetNumberOfSkBitmaps());
+  EXPECT_EQ(2u, image.ToImageSkia()->bitmaps().size());
 
   NSImage* ns_image = image;
   EXPECT_TRUE(ns_image);

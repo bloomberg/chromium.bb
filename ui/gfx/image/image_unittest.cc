@@ -6,6 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
 #if defined(TOOLKIT_GTK)
@@ -262,11 +263,13 @@ TEST_F(ImageTest, MultiResolutionSkBitmap) {
   gfx::Image image(bitmaps);
 
   EXPECT_EQ(1u, image.RepresentationCount());
-  EXPECT_EQ(2u, image.GetNumberOfSkBitmaps());
+  const std::vector<const SkBitmap*>& image_bitmaps =
+      image.ToImageSkia()->bitmaps();
+  EXPECT_EQ(2u, image_bitmaps.size());
 
-  const SkBitmap* bitmap1 = image.GetSkBitmapAtIndex(0);
+  const SkBitmap* bitmap1 = image_bitmaps[0];
   EXPECT_TRUE(bitmap1);
-  const SkBitmap* bitmap2 = image.GetSkBitmapAtIndex(1);
+  const SkBitmap* bitmap2 = image_bitmaps[1];
   EXPECT_TRUE(bitmap2);
 
   if (bitmap1->width() == width1) {
@@ -282,7 +285,7 @@ TEST_F(ImageTest, MultiResolutionSkBitmap) {
 
   // Sanity check.
   EXPECT_EQ(1u, image.RepresentationCount());
-  EXPECT_EQ(2u, image.GetNumberOfSkBitmaps());
+  EXPECT_EQ(2u, image.ToImageSkia()->bitmaps().size());
 }
 
 // Integration tests with UI toolkit frameworks require linking against the

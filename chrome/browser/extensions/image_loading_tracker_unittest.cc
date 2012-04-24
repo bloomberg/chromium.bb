@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
 
 using content::BrowserThread;
@@ -212,9 +213,11 @@ TEST_F(ImageLoadingTrackerTest, MultipleImages) {
   EXPECT_EQ(1, image_loaded_count());
 
   // Check that all images were loaded.
-  ASSERT_EQ(2u, image_.GetNumberOfSkBitmaps());
-  const SkBitmap* bmp1 = image_.GetSkBitmapAtIndex(0);
-  const SkBitmap* bmp2 = image_.GetSkBitmapAtIndex(1);
+  const std::vector<const SkBitmap*>& bitmaps =
+      image_.ToImageSkia()->bitmaps();
+  ASSERT_EQ(2u, bitmaps.size());
+  const SkBitmap* bmp1 = bitmaps[0];
+  const SkBitmap* bmp2 = bitmaps[1];
   if (bmp1->width() > bmp2->width()) {
     std::swap(bmp1, bmp2);
   }
