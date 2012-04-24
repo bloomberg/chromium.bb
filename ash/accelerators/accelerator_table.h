@@ -6,6 +6,7 @@
 #define ASH_ACCELERATORS_ACCELERATOR_TABLE_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "ui/aura/event.h"
 
 namespace ash {
@@ -71,10 +72,10 @@ struct AcceleratorData {
 };
 
 // Accelerators handled by AcceleratorController.
-extern const AcceleratorData kAcceleratorData[];
+ASH_EXPORT extern const AcceleratorData kAcceleratorData[];
 
 // The number of elements in kAcceleratorData.
-extern const size_t kAcceleratorDataLength;
+ASH_EXPORT extern const size_t kAcceleratorDataLength;
 
 // Actions allowed while user is not signed in or screen is locked.
 extern const AcceleratorAction kActionsAllowedAtLoginScreen[];

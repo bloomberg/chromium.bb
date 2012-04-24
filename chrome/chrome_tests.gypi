@@ -1888,6 +1888,7 @@
         'browser/ui/toolbar/encoding_menu_controller_unittest.cc',
         'browser/ui/toolbar/toolbar_model_unittest.cc',
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
+        'browser/ui/views/accelerator_table_unittest.cc',
         'browser/ui/views/accessibility_event_router_views_unittest.cc',
         'browser/ui/views/ash/app_list/app_list_model_builder_unittest.cc',
         'browser/ui/views/ash/key_rewriter_unittest.cc',
