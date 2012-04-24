@@ -96,14 +96,18 @@ case ${BUILD_OS}-${BUILD_ARCH} in
     exit 3
 esac
 
+clobber-chrome-profiles() {
+  # Try to clobber /tmp/ contents to clear temporary chrome files.
+  rm -rf /tmp/.org.chromium.Chromium.*
+}
+
 set -x
 
 RETCODE=0
 
 echo @@@BUILD_STEP clobber@@@
 rm -rf scons-out ../xcodebuild ../sconsbuild ../out
-# Try to clobber /tmp/ contents to clear temporary chrome files.
-rm -rf /tmp/.org.chromium.Chromium.*
+clobber-chrome-profiles
 rm -rf toolchain/${TOOLCHAIN_LABEL}
 rm -rf toolchain/test-log
 rm -rf pnacl*.tgz pnacl/pnacl*.tgz
@@ -156,6 +160,8 @@ fi
 for arch in ${RUN_TESTS} ; do
   echo @@@BUILD_STEP test-${arch}@@@
   ${PNACL_TEST} test-${arch} -k || { RETCODE=$? && echo @@@STEP_FAILURE@@@; }
+  # Be sure to free up some /tmp between test stages.
+  clobber-chrome-profiles
 done
 
 # TODO: Remove this when we have a proper sdk for pnacl
