@@ -40,47 +40,47 @@ echo @@@BUILD_STEP compile_toolchain@@@
   if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
     make install-glibc INST_GLIBC_PREFIX="$PWD"
   fi
-    mkdir -p SRC/newlib/newlib/libc/sys/nacl/include
-    cp -aiv ../src/untrusted/pthread/{pthread.h,semaphore.h} \
-      SRC/newlib/newlib/libc/sys/nacl/include
-    find SRC/newlib/newlib/libc/sys/nacl -name .svn -print0 | xargs -0 rm -rf --
-    ( cd SRC/newlib/newlib/libc/sys ; git add nacl )
-    for file in SRC/gcc/gcc/configure.ac SRC/gcc/gcc/configure ; do
-      cp -aiv $file $file.orig
-      sed -e s"|\(CROSS_SYSTEM_HEADER_DIR='\)\(\\\$(gcc_tooldir)/sys-include'\)|\1\$(DESTDIR)\2|" \
-        < $file.orig > $file
-      touch -r $file.orig $file
-      rm $file.orig
-      ( cd SRC/gcc/gcc ; git add $(basename $file) )
-    done
-    make patches
-    for patchname in SRC/*.patch ; do
-      xz -k -9 "$patchname"
-      bzip2 -k -9 "$patchname"
-      gzip -9 "$patchname"
-      zcat "$patchname".gz > "$patchname"
-    done
-    mkdir linux
-    cp -aiv {SRC/linux-headers-for-nacl/include/,}linux/getcpu.h
-    cp -aiv {../src/untrusted/include/machine/,}_default_types.h
-    cp -aiv ../LICENSE LICENSE
-    mv Makefile Makefile.orig
-    . REVISIONS
-    sed -e s"|^\\(CANNED_REVISION = \\)no$|\\1$BUILDBOT_GOT_REVISION|" \
-        -e s'|^\(SRCDIR =\).*$|\1|' \
-        -e s'|\(GCC_CC = \)gcc -m$(HOST_TOOLCHAIN_BITS)|\1gcc|' \
-        -e s'|\(GLIBC_CC =.*\)|\1 -I$(abspath $(dir $(THISMAKEFILE)))|' \
-        -e s'|\(LINUX_HEADERS = \).*|\1/usr/include|' \
-        -e s"|\\(export NACL_FAKE_SONAME\\).*|\\1 = ${NACL_GLIBC_COMMIT:0:8}|" \
-           < Makefile.orig > Makefile
-    tar czSvpf nacltoolchain-buildscripts-r${BUILDBOT_GOT_REVISION}.tar.gz \
-      LICENSE Makefile download_SRC.sh \
-      _default_types.h linux newlib-libc-script \
-      create_redirector{,s,s_cygwin}.sh redirector{.c,.exe} redirect_table.txt
-    rm Makefile
-    mv Makefile.orig Makefile
-    rm linux/getcpu.h _default_types.h LICENSE
-    rmdir linux
+  mkdir -p SRC/newlib/newlib/libc/sys/nacl/include
+  cp -aiv ../src/untrusted/pthread/{pthread.h,semaphore.h} \
+    SRC/newlib/newlib/libc/sys/nacl/include
+  find SRC/newlib/newlib/libc/sys/nacl -name .svn -print0 | xargs -0 rm -rf --
+  ( cd SRC/newlib/newlib/libc/sys ; git add nacl )
+  for file in SRC/gcc/gcc/configure.ac SRC/gcc/gcc/configure ; do
+    cp -aiv $file $file.orig
+    sed -e s"|\(CROSS_SYSTEM_HEADER_DIR='\)\(\\\$(gcc_tooldir)/sys-include'\)|\1\$(DESTDIR)\2|" \
+      < $file.orig > $file
+    touch -r $file.orig $file
+    rm $file.orig
+    ( cd SRC/gcc/gcc ; git add $(basename $file) )
+  done
+  make patches
+  for patchname in SRC/*.patch ; do
+    xz -k -9 "$patchname"
+    bzip2 -k -9 "$patchname"
+    gzip -9 "$patchname"
+    zcat "$patchname".gz > "$patchname"
+  done
+  mkdir linux
+  cp -aiv {SRC/linux-headers-for-nacl/include/,}linux/getcpu.h
+  cp -aiv {../src/untrusted/include/machine/,}_default_types.h
+  cp -aiv ../LICENSE LICENSE
+  mv Makefile Makefile.orig
+  . REVISIONS
+  sed -e s"|^\\(CANNED_REVISION = \\)no$|\\1$BUILDBOT_GOT_REVISION|" \
+      -e s'|^\(SRCDIR =\).*$|\1|' \
+      -e s'|\(GCC_CC = \)gcc -m$(HOST_TOOLCHAIN_BITS)|\1gcc|' \
+      -e s'|\(GLIBC_CC =.*\)|\1 -I$(abspath $(dir $(THISMAKEFILE)))|' \
+      -e s'|\(LINUX_HEADERS = \).*|\1/usr/include|' \
+      -e s"|\\(export NACL_FAKE_SONAME\\).*|\\1 = ${NACL_GLIBC_COMMIT:0:8}|" \
+         < Makefile.orig > Makefile
+  tar czSvpf nacltoolchain-buildscripts-r${BUILDBOT_GOT_REVISION}.tar.gz \
+    LICENSE Makefile download_SRC.sh \
+    _default_types.h linux newlib-libc-script \
+    create_redirector{,s,s_cygwin}.sh redirector{.c,.exe} redirect_table.txt
+  rm Makefile
+  mv Makefile.orig Makefile
+  rm linux/getcpu.h _default_types.h LICENSE
+  rmdir linux
 )
 
 if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" == "Trybot" ]]; then
