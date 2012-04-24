@@ -119,18 +119,13 @@ bool AcceleratorManager::HasPriorityHandler(
 }
 
 bool AcceleratorManager::ShouldHandle(const Accelerator& accelerator) const {
-  if (accelerator.type() != ET_KEY_RELEASED &&
-      accelerator.type() != ET_TRANSLATED_KEY_RELEASE) {
+  if (accelerator.type() != ET_KEY_RELEASED)
     return true;
-  }
+
   // This check is necessary e.g. not to process the Shift+Alt+ET_KEY_RELEASED
   // Accelerator for Chrome OS (see ash/accelerators/accelerator_controller.cc)
   // when Shift+Alt+Tab is pressed and then Tab is released.
-  if (last_event_type_ == ET_KEY_PRESSED ||
-      last_event_type_ == ET_TRANSLATED_KEY_PRESS) {
-    return true;
-  }
-  return false;
+  return last_event_type_ == ET_KEY_PRESSED;
 }
 
 }  // namespace ui

@@ -35,10 +35,8 @@ AcceleratorFilter::~AcceleratorFilter() {
 bool AcceleratorFilter::PreHandleKeyEvent(aura::Window* target,
                                           aura::KeyEvent* event) {
   const ui::EventType type = event->type();
-  if (type != ui::ET_KEY_PRESSED && type != ui::ET_TRANSLATED_KEY_PRESS &&
-      type != ui::ET_KEY_RELEASED && type != ui::ET_TRANSLATED_KEY_RELEASE) {
+  if (type != ui::ET_KEY_PRESSED && type != ui::ET_KEY_RELEASED)
     return false;
-  }
   if (event->is_char())
     return false;
 

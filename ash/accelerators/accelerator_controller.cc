@@ -251,7 +251,8 @@ void AcceleratorController::Init() {
                                 kAcceleratorData[i].shift,
                                 kAcceleratorData[i].ctrl,
                                 kAcceleratorData[i].alt);
-    accelerator.set_type(kAcceleratorData[i].type);
+    accelerator.set_type(kAcceleratorData[i].trigger_on_press ?
+                         ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED);
     Register(accelerator, this);
     CHECK(accelerators_.insert(
         std::make_pair(accelerator, kAcceleratorData[i].action)).second);

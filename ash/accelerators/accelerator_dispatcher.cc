@@ -81,9 +81,6 @@ bool AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
         accelerator.set_type(ui::ET_KEY_RELEASED);
       if (accelerator_controller->Process(accelerator))
         return true;
-      accelerator.set_type(aura::TranslatedKeyEvent(event, false).type());
-      if (accelerator_controller->Process(accelerator))
-        return true;
     }
   }
 

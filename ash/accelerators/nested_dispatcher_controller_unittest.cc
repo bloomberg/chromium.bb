@@ -152,7 +152,6 @@ TEST_F(NestedDispatcherTest, AcceleratorsHandled) {
 
   ui::Accelerator accelerator(ui::VKEY_A, false, false, false);
   accelerator.set_type(ui::ET_KEY_RELEASED);
-  // TODO(yusukes): Add a test for a ui::ET_TRANSLATED_KEY_RELEASE accelerator.
   TestTarget target;
   Shell::GetInstance()->accelerator_controller()->Register(accelerator,
                                                            &target);

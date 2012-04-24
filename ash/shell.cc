@@ -651,16 +651,15 @@ void Shell::Init() {
   AddRootWindowEventFilter(partial_screenshot_filter_.get());
   AddShellObserver(partial_screenshot_filter_.get());
 
-  // Then AcceleratorFilter and InputMethodEventFilter must be added (in this
-  // order) since they have the second highest priority.
+  // InputMethodEventFilter must be the third one. It has to be added before
+  // AcceleratorFilter.
   DCHECK_EQ(2U, GetRootWindowEventFilterCount());
+  input_method_filter_.reset(new internal::InputMethodEventFilter);
+  AddRootWindowEventFilter(input_method_filter_.get());
 #if !defined(OS_MACOSX)
   accelerator_filter_.reset(new internal::AcceleratorFilter);
   AddRootWindowEventFilter(accelerator_filter_.get());
-  DCHECK_EQ(3U, GetRootWindowEventFilterCount());
 #endif
-  input_method_filter_.reset(new internal::InputMethodEventFilter);
-  AddRootWindowEventFilter(input_method_filter_.get());
 
   system_gesture_filter_.reset(new internal::SystemGestureEventFilter);
   AddRootWindowEventFilter(system_gesture_filter_.get());

@@ -62,7 +62,7 @@ enum AcceleratorAction {
 };
 
 struct AcceleratorData {
-  ui::EventType type;
+  bool trigger_on_press;
   ui::KeyboardCode keycode;
   bool shift;
   bool ctrl;
