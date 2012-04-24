@@ -58,12 +58,6 @@ unix-smail
 # no fenv.h, C99 floating point exception functions not present
 uint64_to_float
 tramp3d-v4
-# test's declaration of log2 function conflicts with newlib's log2 macro
-fftbench
-# complex type undeclared (_Complex is implemented, maybe just need header?)
-mandel-2
-# newlib does not have complex.h
-mandel
 ############################################################################
 # Stderr/stdout related issues
 ############################################################################
@@ -79,10 +73,7 @@ mpeg2decode
 anagram
 mason
 # dependeng on output buffering
-fsm
-gnugo
 inlined_cleanup x86-64
-2003-05-23-TransparentUnion
 fourinarow
 pcompress2
 neural

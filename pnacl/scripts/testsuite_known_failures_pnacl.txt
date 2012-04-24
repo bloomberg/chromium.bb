@@ -9,9 +9,6 @@ SPASS
 # a double called infinity
 sphereflake
 ray
-# no tsearch (even though it is in newlib)
-# http://code.google.com/p/nativeclient/issues/detail?id=2449
-SIBsim4
 
 # runtime errors
 
@@ -27,14 +24,10 @@ spirit arm
 AMGmk arm
 flops arm
 CrystalMk arm
-# wrong output on ARM (a time? really?)
-stepanov_v1p2 arm
 # has stderr ordering problem, but also extraneous "<<" in output
 lambda
 # FP nan/inf handling
 voronoi
-# exception not caught
-BuiltinTypeInfo
 # burg's nexe output matches the reference output, but not the native gcc
 # binary's output... so maybe this is a bug in gcc, or ???
 # Workaround may be to set USE_REFERENCE_OUTPUT = 1 in burg's Makefile.
@@ -42,8 +35,6 @@ burg
 # Would pick up the "#ifdef LITTLE_ENDIAN" for pnacl if we modified the
 # test to #include <endian.h>.
 security-sha
-# !flushed on exit: http://code.google.com/p/nativeclient/issues/detail?id=2514
-imp
 # rand() inconsistency http://llvm.org/bugs/show_bug.cgi?id=11629
 puzzle
 automotive-bitcount
