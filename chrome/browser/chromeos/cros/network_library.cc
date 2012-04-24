@@ -310,14 +310,14 @@ void Network::SetValueProperty(const char* prop, Value* value) {
   DCHECK(value);
   if (!EnsureCrosLoaded())
     return;
-  CrosSetNetworkServiceProperty(service_path_.c_str(), prop, *value);
+  CrosSetNetworkServiceProperty(service_path_, prop, *value);
 }
 
 void Network::ClearProperty(const char* prop) {
   DCHECK(prop);
   if (!EnsureCrosLoaded())
     return;
-  CrosClearNetworkServiceProperty(service_path_.c_str(), prop);
+  CrosClearNetworkServiceProperty(service_path_, prop);
 }
 
 void Network::SetStringProperty(
@@ -485,7 +485,7 @@ void Network::InitIPAddress() {
     return;
   // If connected, get ip config.
   if (connected() && !device_path_.empty()) {
-    IPConfigStatus* ipconfig_status = CrosListIPConfigs(device_path_.c_str());
+    IPConfigStatus* ipconfig_status = CrosListIPConfigs(device_path_);
     if (ipconfig_status) {
       for (int i = 0; i < ipconfig_status->size; ++i) {
         IPConfig ipconfig = ipconfig_status->ips[i];
@@ -1011,7 +1011,7 @@ CellularNetwork::~CellularNetwork() {
 bool CellularNetwork::StartActivation() {
   if (!EnsureCrosLoaded())
     return false;
-  if (!CrosActivateCellularModem(service_path().c_str(), ""))
+  if (!CrosActivateCellularModem(service_path(), ""))
     return false;
   // Don't wait for flimflam to tell us that we are really activating since
   // other notifications in the message loop might cause us to think that
@@ -1024,7 +1024,7 @@ void CellularNetwork::RefreshDataPlansIfNeeded() const {
   if (!EnsureCrosLoaded())
     return;
   if (connected() && activated())
-    CrosRequestCellularDataPlanUpdate(service_path().c_str());
+    CrosRequestCellularDataPlanUpdate(service_path());
 }
 
 void CellularNetwork::SetApn(const CellularApn& apn) {
