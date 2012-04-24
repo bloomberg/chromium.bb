@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/views_delegate.h"
@@ -736,6 +737,22 @@ TEST_F(WidgetObserverTest, DISABLED_VisibilityChange) {
   EXPECT_EQ(child2, widget_shown());
 
   toplevel->CloseNow();
+}
+
+TEST_F(WidgetObserverTest, DestroyBubble) {
+  Widget* anchor = CreateTopLevelPlatformWidget();
+  View* view = new View;
+  anchor->SetContentsView(view);
+  anchor->Show();
+
+  BubbleDelegateView* bubble_delegate =
+      new BubbleDelegateView(view, BubbleBorder::NONE);
+  Widget* bubble_widget(BubbleDelegateView::CreateBubble(bubble_delegate));
+  bubble_widget->Show();
+  bubble_widget->CloseNow();
+
+  anchor->Hide();
+  anchor->CloseNow();
 }
 
 #if !defined(USE_AURA) && defined(OS_WIN)

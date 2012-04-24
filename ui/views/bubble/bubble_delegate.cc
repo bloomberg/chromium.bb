@@ -167,6 +167,14 @@ BubbleDelegateView* BubbleDelegateView::AsBubbleDelegate() {
   return this;
 }
 
+void BubbleDelegateView::WindowClosing() {
+  if (anchor_widget_) {
+    anchor_widget_->RemoveObserver(this);
+    anchor_widget_ = NULL;
+    anchor_view_ = NULL;
+  }
+}
+
 View* BubbleDelegateView::GetContentsView() {
   return this;
 }

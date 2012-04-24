@@ -42,6 +42,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // WidgetDelegate overrides:
   virtual View* GetInitiallyFocusedView() OVERRIDE;
   virtual BubbleDelegateView* AsBubbleDelegate() OVERRIDE;
+  virtual void WindowClosing() OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) OVERRIDE;
