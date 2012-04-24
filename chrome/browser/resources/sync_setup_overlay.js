@@ -514,10 +514,12 @@ cr.define('options', function() {
     showSyncSetupPage_: function(page, args) {
       this.setThrobbersVisible_(false);
 
-      // Hide an existing visible overlay.
-      var overlay = $('sync-setup-overlay');
-      for (var i = 0; i < overlay.children.length; i++)
-        overlay.children[i].hidden = true;
+      // Hide an existing visible overlay (ensuring the close button is not
+      // hidden).
+      var children = document.querySelectorAll(
+          '#sync-setup-overlay > *:not(.close-button)');
+      for (var i = 0; i < children.length; i++)
+        children[i].hidden = true;
 
       this.setInputElementsDisabledState_(false);
 
