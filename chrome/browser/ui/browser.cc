@@ -777,6 +777,22 @@ WebContents* Browser::OpenApplicationWindow(
   CreateParams params(type, profile);
   params.app_name = app_name;
   params.initial_bounds = window_bounds;
+
+#if defined(USE_ASH)
+  if (extension &&
+      container == extension_misc::LAUNCH_WINDOW) {
+    // In ash, LAUNCH_FULLSCREEN launches in a maximized app window and
+    // LAUNCH_WINDOW launches in a normal app window.
+    ExtensionPrefs::LaunchType launch_type =
+        profile->GetExtensionService()->extension_prefs()->GetLaunchType(
+            extension->id(), ExtensionPrefs::LAUNCH_DEFAULT);
+    if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN)
+      params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
+    else if (launch_type == ExtensionPrefs::LAUNCH_WINDOW)
+      params.initial_show_state = ui::SHOW_STATE_NORMAL;
+  }
+#endif
+
   Browser* browser = Browser::CreateWithParams(params);
 
   if (app_browser)
@@ -791,18 +807,6 @@ WebContents* Browser::OpenApplicationWindow(
   // is only done for app tabs in normal browsers through SetExtensionAppById.
   if (extension && type == TYPE_PANEL)
     wrapper->extension_tab_helper()->SetExtensionAppIconById(extension->id());
-
-#if defined(USE_ASH)
-  if (extension &&
-      container == extension_misc::LAUNCH_WINDOW) {
-    // In ash, LAUNCH_FULLSCREEN launches in a maximized app window.
-    ExtensionPrefs::LaunchType launch_type =
-        profile->GetExtensionService()->extension_prefs()->GetLaunchType(
-            extension->id(), ExtensionPrefs::LAUNCH_DEFAULT);
-    if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN)
-      browser->window()->Maximize();
-  }
-#endif
 
   browser->window()->Show();
 
