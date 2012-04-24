@@ -109,6 +109,7 @@ class PluginDataRemoverImpl::Context
     PepperPluginInfo* pepper_info =
         plugin_service->GetRegisteredPpapiPluginInfo(plugin_path);
     if (pepper_info) {
+      plugin_name_ = pepper_info->name;
       // Use the broker since we run this function outside the sandbox.
       plugin_service->OpenChannelToPpapiBroker(plugin_path, this);
     } else {
@@ -222,15 +223,19 @@ class PluginDataRemoverImpl::Context
 
     IPC::Message* msg;
     if (is_ppapi) {
-      // Pass the path as 8-bit on all platforms.
       FilePath profile_path =
           PepperFileMessageFilter::GetDataDirName(browser_context_path_);
+      // TODO(vtl): This "duplicates" logic in webkit/plugins/ppapi/file_path.cc
+      // (which prepends the plugin name to the relative part of the path
+      // instead, with the absolute, profile-dependent part being enforced by
+      // the browser).
 #if defined(OS_WIN)
-      std::string path_utf8 = UTF16ToUTF8(profile_path.value());
+      FilePath plugin_data_path =
+          profile_path.Append(FilePath(UTF8ToUTF16(plugin_name_)));
 #else
-      const std::string& path_utf8 = profile_path.value();
+      FilePath plugin_data_path = profile_path.Append(FilePath(plugin_name_));
 #endif
-      msg = new PpapiMsg_ClearSiteData(profile_path, path_utf8,
+      msg = new PpapiMsg_ClearSiteData(plugin_data_path, std::string(),
                                        kClearAllData, max_age);
     } else {
       msg = new PluginMsg_ClearSiteData(std::string(), kClearAllData, max_age);
@@ -273,6 +278,9 @@ class PluginDataRemoverImpl::Context
 
   // The resource context for the profile. Use only on the I/O thread.
   ResourceContext* resource_context_;
+
+  // The name of the plugin. Use only on the I/O thread.
+  std::string plugin_name_;
 
   // The channel is NULL until we have opened a connection to the plug-in
   // process.
