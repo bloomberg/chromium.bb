@@ -191,6 +191,7 @@ class TrayPopupHeaderButton : public views::ToggleImageButton {
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from views::CustomButton.
   virtual void StateChanged() OVERRIDE;

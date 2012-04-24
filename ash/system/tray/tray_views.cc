@@ -292,6 +292,7 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
                     views::ImageButton::ALIGN_MIDDLE);
   set_background(views::Background::CreateSolidBackground(
       ash::kHeaderBackgroundColor));
+  set_focusable(true);
 }
 
 TrayPopupHeaderButton::~TrayPopupHeaderButton() {}
@@ -303,6 +304,13 @@ gfx::Size TrayPopupHeaderButton::GetPreferredSize() {
 void TrayPopupHeaderButton::OnPaintBorder(gfx::Canvas* canvas) {
   // Left border.
   canvas->FillRect(gfx::Rect(0, 0, 1, height()), ash::kBorderDarkColor);
+}
+
+void TrayPopupHeaderButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
+  if (HasFocus() && (focusable() || IsAccessibilityFocusable())) {
+    canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
+                     kFocusBorderColor);
+  }
 }
 
 void TrayPopupHeaderButton::StateChanged() {
