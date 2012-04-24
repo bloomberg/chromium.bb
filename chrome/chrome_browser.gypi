@@ -39,6 +39,7 @@
         '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:syncapi_core',
+        '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/cld/cld.gyp:cld',
         '../third_party/expat/expat.gyp:expat',
@@ -69,6 +70,8 @@
       'include_dirs': [
         '..',
         '<(INTERMEDIATE_DIR)',
+        # Needed by pepper_flash_component_installer.cc.
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'defines': [
         '<@(nacl_defines)',
@@ -869,8 +872,6 @@
         'browser/component_updater/flash_component_installer.h',
         'browser/component_updater/npapi_flash_component_installer.cc',
         'browser/component_updater/pepper_flash_component_installer.cc',
-        'browser/component_updater/pepper_flash_field_trial.cc',
-        'browser/component_updater/pepper_flash_field_trial.h',
         'browser/component_updater/pnacl/pnacl_component_installer.cc',
         'browser/component_updater/pnacl/pnacl_component_installer.h',
         'browser/component_updater/recovery_component_installer.cc',
