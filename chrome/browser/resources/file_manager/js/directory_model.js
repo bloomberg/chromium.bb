@@ -786,7 +786,7 @@ DirectoryModel.prototype.setupPath = function(path, opt_loadedCallback,
   var onBaseError = function(err) {
     console.log('Unexpected error resolving default base "' +
                 baseName + '": ' + err);
-    if (path != '/' + DirectoryModel.DOWNLOADS_DIRECTORY) {
+    if (path != this.getDefaultDirectory()) {
       // Can't find the provided path, let's go to default one instead.
       resolveCallback(!EXISTS);
       if (!overridden)
@@ -811,51 +811,23 @@ DirectoryModel.prototype.setupPath = function(path, opt_loadedCallback,
   }.bind(this);
 
   var root = this.root_;
-  if (baseName) {
-    root.getDirectory(
-        baseName, {create: false}, onBaseFound, onBaseError);
-  } else {
-    this.getDefaultDirectory_(function(defaultDir) {
-      baseName = defaultDir;
-      root.getDirectory(
-          baseName, {create: false}, onBaseFound, onBaseError);
-    });
-  }
+  if (!baseName)
+    baseName = this.getDefaultDirectory();
+  root.getDirectory(baseName, {create: false}, onBaseFound, onBaseError);
 };
 
 /**
  * @param {function} opt_callback Callback on done.
  */
 DirectoryModel.prototype.setupDefaultPath = function(opt_callback) {
-  var overridden = false;
-  function onExternalDirChange() {
-    overridden = true;
-  }
-  this.addEventListener('directory-changed', onExternalDirChange);
-
-  this.getDefaultDirectory_(function(path) {
-    this.removeEventListener('directory-changed', onExternalDirChange);
-    if (!overridden)
-      this.setupPath(path, opt_callback);
-  }.bind(this));
+  this.setupPath(this.getDefaultDirectory(), opt_callback);
 };
 
 /**
- * @private
- * @param {function(string)} callback Called with the path to directory.
+ * @return {string} The default directory.
  */
-DirectoryModel.prototype.getDefaultDirectory_ = function(callback) {
-  function onGetDirectoryComplete(entries, error) {
-    if (entries.length > 0)
-      callback(entries[0].fullPath);
-    else
-      callback('/' + DirectoryModel.DOWNLOADS_DIRECTORY);
-  }
-
-  // No preset given, find a good place to start.
-  // Check for removable devices, if there are none, go to Downloads.
-  util.readDirectory(this.root_, DirectoryModel.REMOVABLE_DIRECTORY,
-                     onGetDirectoryComplete);
+DirectoryModel.prototype.getDefaultDirectory = function() {
+  return '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
 };
 
 /**
@@ -1046,8 +1018,8 @@ DirectoryModel.prototype.findRootsListItem_ = function(path) {
  * @private
  */
 DirectoryModel.prototype.updateRootsListSelection_ = function() {
-  this.rootsListSelection_.selectedIndex =
-      this.findRootsListItem_(this.rootPath);
+  var rootPath = DirectoryModel.getRootPath(this.currentDirEntry_.fullPath);
+  this.rootsListSelection_.selectedIndex = this.findRootsListItem_(rootPath);
 };
 
 /**
@@ -1119,7 +1091,7 @@ DirectoryModel.prototype.prepareUnmount = function(rootPath) {
 
   if (rootPath == this.rootPath) {
     // TODO(kaznacheev): Consider changing to the most recently used root.
-    this.changeDirectory('/' + DirectoryModel.DOWNLOADS_DIRECTORY);
+    this.changeDirectory(this.getDefaultDirectory());
   }
 };
 

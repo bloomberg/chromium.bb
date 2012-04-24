@@ -2709,7 +2709,7 @@ FileManager.prototype = {
             return;
           }
           // Current directory just unmounted. Move to the 'Downloads'.
-          changeDirectoryTo = '/' + DirectoryModel.DOWNLOADS_DIRECTORY;
+          changeDirectoryTo = this.directoryModel_.getDefaultDirectory();
         }
       }
 
