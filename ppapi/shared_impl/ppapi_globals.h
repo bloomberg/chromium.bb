@@ -95,6 +95,14 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // failure.
   virtual PP_Module GetModuleForInstance(PP_Instance instance) = 0;
 
+  // Returns the command line for the process.
+  virtual std::string GetCmdLine() = 0;
+
+  // Preloads the font on Windows, does nothing on other platforms.
+  // TODO(brettw) remove this by passing the instance into the API so we don't
+  // have to have it on the globals.
+  virtual void PreCacheFontForFlash(const void* logfontw) = 0;
+
   virtual bool IsHostGlobals() const;
   virtual bool IsPluginGlobals() const;
 

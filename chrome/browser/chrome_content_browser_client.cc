@@ -95,6 +95,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/webpreferences.h"
+#include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/chrome_browser_main_win.h"

@@ -1139,7 +1139,7 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
     webkit::ppapi::PPB_Flash_Menu_Impl* menu,
     const gfx::Point& position) {
   int32 render_widget_id = render_view_->routing_id();
-  if (instance->FlashIsFullscreen(instance->pp_instance())) {
+  if (instance->flash_fullscreen()) {
     webkit::ppapi::FullscreenContainer* container =
         instance->fullscreen_container();
     DCHECK(container);
@@ -1159,8 +1159,7 @@ int32_t PepperPluginDelegateImpl::ShowContextMenu(
   params.custom_items = menu->menu_data();
 
   // Transform the position to be in render view's coordinates.
-  if (instance->view_data().is_fullscreen ||
-      instance->FlashIsFullscreen(instance->pp_instance())) {
+  if (instance->view_data().is_fullscreen || instance->flash_fullscreen()) {
     WebKit::WebRect rect = render_view_->windowRect();
     params.x -= rect.x;
     params.y -= rect.y;
@@ -1273,11 +1272,6 @@ double PepperPluginDelegateImpl::GetLocalTimeZoneOffset(base::Time t) {
   render_view_->Send(new PepperMsg_GetLocalTimeZoneOffset(
       t, &result));
   return result;
-}
-
-std::string PepperPluginDelegateImpl::GetFlashCommandLineArgs() {
-  return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kPpapiFlashArgs);
 }
 
 base::SharedMemory* PepperPluginDelegateImpl::CreateAnonymousSharedMemory(

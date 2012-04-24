@@ -35,35 +35,37 @@
 
 using ppapi::PPTimeToTime;
 using ppapi::StringVar;
-using ppapi::thunk::EnterResource;
+using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_ImageData_API;
 using ppapi::thunk::PPB_URLRequestInfo_API;
 
 namespace webkit {
 namespace ppapi {
 
-namespace {
-
-void SetInstanceAlwaysOnTop(PP_Instance pp_instance, PP_Bool on_top) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return;
-  instance->set_always_on_top(PPBoolToBool(on_top));
+PPB_Flash_Impl::PPB_Flash_Impl(PluginInstance* instance)
+    : instance_(instance) {
 }
 
+PPB_Flash_Impl::~PPB_Flash_Impl() {
+}
 
-PP_Bool DrawGlyphs(PP_Instance,
-                   PP_Resource pp_image_data,
-                   const PP_FontDescription_Dev* font_desc,
-                   uint32_t color,
-                   const PP_Point* position,
-                   const PP_Rect* clip,
-                   const float transformation[3][3],
-                   PP_Bool allow_subpixel_aa,
-                   uint32_t glyph_count,
-                   const uint16_t glyph_indices[],
-                   const PP_Point glyph_advances[]) {
-  EnterResource<PPB_ImageData_API> enter(pp_image_data, true);
+void PPB_Flash_Impl::SetInstanceAlwaysOnTop(PP_Instance instance,
+                                            PP_Bool on_top) {
+  instance_->set_always_on_top(PP_ToBool(on_top));
+}
+
+PP_Bool PPB_Flash_Impl::DrawGlyphs(PP_Instance instance,
+                                   PP_Resource pp_image_data,
+                                   const PP_FontDescription_Dev* font_desc,
+                                   uint32_t color,
+                                   const PP_Point* position,
+                                   const PP_Rect* clip,
+                                   const float transformation[3][3],
+                                   PP_Bool allow_subpixel_aa,
+                                   uint32_t glyph_count,
+                                   const uint16_t glyph_indices[],
+                                   const PP_Point glyph_advances[]) {
+  EnterResourceNoLock<PPB_ImageData_API> enter(pp_image_data, true);
   if (enter.failed())
     return PP_FALSE;
   PPB_ImageData_Impl* image_resource =
@@ -144,40 +146,23 @@ PP_Bool DrawGlyphs(PP_Instance,
   return PP_TRUE;
 }
 
-PP_Bool DrawGlyphs11(PP_Instance instance,
-                     PP_Resource pp_image_data,
-                     const PP_FontDescription_Dev* font_desc,
-                     uint32_t color,
-                     PP_Point position,
-                     PP_Rect clip,
-                     const float transformation[3][3],
-                     uint32_t glyph_count,
-                     const uint16_t glyph_indices[],
-                     const PP_Point glyph_advances[]) {
-  return DrawGlyphs(instance, pp_image_data, font_desc, color, &position,
-                    &clip, transformation, PP_TRUE, glyph_count,
-                    glyph_indices, glyph_advances);
-}
-
-PP_Var GetProxyForURL(PP_Instance pp_instance, const char* url) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_MakeUndefined();
-
+PP_Var PPB_Flash_Impl::GetProxyForURL(PP_Instance instance,
+                                      const char* url) {
   GURL gurl(url);
   if (!gurl.is_valid())
     return PP_MakeUndefined();
 
-  std::string proxy_host = instance->delegate()->ResolveProxy(gurl);
+  std::string proxy_host = instance_->delegate()->ResolveProxy(gurl);
   if (proxy_host.empty())
     return PP_MakeUndefined();  // No proxy.
   return StringVar::StringToPPVar(proxy_host);
 }
 
-int32_t Navigate(PP_Resource request_id,
-                 const char* target,
-                 PP_Bool from_user_action) {
-  EnterResource<PPB_URLRequestInfo_API> enter(request_id, true);
+int32_t PPB_Flash_Impl::Navigate(PP_Instance instance,
+                                 PP_Resource request_info,
+                                 const char* target,
+                                 PP_Bool from_user_action) {
+  EnterResourceNoLock<PPB_URLRequestInfo_API> enter(request_info, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
   PPB_URLRequestInfo_Impl* request =
@@ -185,34 +170,20 @@ int32_t Navigate(PP_Resource request_id,
 
   if (!target)
     return PP_ERROR_BADARGUMENT;
-
-  PluginInstance* plugin_instance = ResourceHelper::GetPluginInstance(request);
-  if (!plugin_instance)
-    return PP_ERROR_FAILED;
-  return plugin_instance->Navigate(request, target,
-                                   PP_ToBool(from_user_action));
+  return instance_->Navigate(request, target, PP_ToBool(from_user_action));
 }
 
-int32_t Navigate11(PP_Resource request_id,
-                   const char* target,
-                   bool from_user_action) {
-  return Navigate(request_id, target, PP_FromBool(from_user_action));
-}
-
-void RunMessageLoop(PP_Instance instance) {
+void PPB_Flash_Impl::RunMessageLoop(PP_Instance instance) {
   MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
   MessageLoop::current()->Run();
 }
 
-void QuitMessageLoop(PP_Instance instance) {
+void PPB_Flash_Impl::QuitMessageLoop(PP_Instance instance) {
   MessageLoop::current()->QuitNow();
 }
 
-double GetLocalTimeZoneOffset(PP_Instance pp_instance, PP_Time t) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return 0.0;
-
+double PPB_Flash_Impl::GetLocalTimeZoneOffset(PP_Instance instance,
+                                              PP_Time t) {
   // Evil hack. The time code handles exact "0" values as special, and produces
   // a "null" Time object. This will represent some date hundreds of years ago
   // and will give us funny results at 1970 (there are some tests where this
@@ -223,128 +194,43 @@ double GetLocalTimeZoneOffset(PP_Instance pp_instance, PP_Time t) {
 
   // We can't do the conversion here because on Linux, the localtime calls
   // require filesystem access prohibited by the sandbox.
-  return instance->delegate()->GetLocalTimeZoneOffset(PPTimeToTime(t));
+  return instance_->delegate()->GetLocalTimeZoneOffset(PPTimeToTime(t));
 }
 
-PP_Var GetCommandLineArgs(PP_Module pp_module) {
-  PluginModule* module = HostGlobals::Get()->GetModule(pp_module);
-  if (!module)
-    return PP_MakeUndefined();
-
-  PluginInstance* instance = module->GetSomeInstance();
-  if (!instance)
-    return PP_MakeUndefined();
-
-  std::string args = instance->delegate()->GetFlashCommandLineArgs();
-  return StringVar::StringToPPVar(args);
-}
-
-void PreLoadFontWin(const void* logfontw) {
-  // Not implemented in-process.
-}
-
-PP_Bool IsRectTopmost(PP_Instance pp_instance, const PP_Rect* rect) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_FALSE;
-  return PP_FromBool(instance->IsRectTopmost(
+PP_Bool PPB_Flash_Impl::IsRectTopmost(PP_Instance instance,
+                                      const PP_Rect* rect) {
+  return PP_FromBool(instance_->IsRectTopmost(
       gfx::Rect(rect->point.x, rect->point.y,
                 rect->size.width, rect->size.height)));
 }
 
-int32_t InvokePrinting(PP_Instance pp_instance) {
-  PluginInstance* instance = HostGlobals::Get()->GetInstance(pp_instance);
-  if (!instance)
-    return PP_ERROR_BADARGUMENT;
-
+int32_t PPB_Flash_Impl::InvokePrinting(PP_Instance instance) {
   // TODO(viettrungluu): Implement me.
-
   return PP_ERROR_NOTSUPPORTED;
 }
 
-void UpdateActivity(PP_Instance pp_instance) {
+void PPB_Flash_Impl::UpdateActivity(PP_Instance pp_instance) {
   // Not supported in-process.
 }
 
-PP_Var GetDeviceID(PP_Instance pp_instance) {
+PP_Var PPB_Flash_Impl::GetDeviceID(PP_Instance pp_instance) {
   // Not supported in-process.
   return PP_MakeUndefined();
 }
 
-const PPB_Flash_11 ppb_flash_11 = {
-  &SetInstanceAlwaysOnTop,
-  &DrawGlyphs11,
-  &GetProxyForURL,
-  &Navigate11,
-  &RunMessageLoop,
-  &QuitMessageLoop,
-  &GetLocalTimeZoneOffset,
-  &GetCommandLineArgs
-};
-
-const PPB_Flash_12_0 ppb_flash_12_0 = {
-  &SetInstanceAlwaysOnTop,
-  &DrawGlyphs,
-  &GetProxyForURL,
-  &Navigate,
-  &RunMessageLoop,
-  &QuitMessageLoop,
-  &GetLocalTimeZoneOffset,
-  &GetCommandLineArgs,
-  &PreLoadFontWin
-};
-
-const PPB_Flash_12_1 ppb_flash_12_1 = {
-  &SetInstanceAlwaysOnTop,
-  &DrawGlyphs,
-  &GetProxyForURL,
-  &Navigate,
-  &RunMessageLoop,
-  &QuitMessageLoop,
-  &GetLocalTimeZoneOffset,
-  &GetCommandLineArgs,
-  &PreLoadFontWin,
-  &IsRectTopmost,
-  &InvokePrinting,
-  &UpdateActivity
-};
-
-const PPB_Flash_12_2 ppb_flash_12_2 = {
-  &SetInstanceAlwaysOnTop,
-  &DrawGlyphs,
-  &GetProxyForURL,
-  &Navigate,
-  &RunMessageLoop,
-  &QuitMessageLoop,
-  &GetLocalTimeZoneOffset,
-  &GetCommandLineArgs,
-  &PreLoadFontWin,
-  &IsRectTopmost,
-  &InvokePrinting,
-  &UpdateActivity,
-  &GetDeviceID
-};
-
-}  // namespace
-
-// static
-const PPB_Flash_11* PPB_Flash_Impl::GetInterface11() {
-  return &ppb_flash_11;
+PP_Bool PPB_Flash_Impl::FlashIsFullscreen(PP_Instance instance) {
+  return PP_FromBool(instance_->flash_fullscreen());
 }
 
-// static
-const PPB_Flash_12_0* PPB_Flash_Impl::GetInterface12_0() {
-  return &ppb_flash_12_0;
+PP_Bool PPB_Flash_Impl::FlashSetFullscreen(PP_Instance instance,
+                                           PP_Bool fullscreen) {
+  instance_->FlashSetFullscreen(PP_ToBool(fullscreen), true);
+  return PP_TRUE;
 }
 
-// static
-const PPB_Flash_12_1* PPB_Flash_Impl::GetInterface12_1() {
-  return &ppb_flash_12_1;
-}
-
-// static
-const PPB_Flash_12_2* PPB_Flash_Impl::GetInterface12_2() {
-  return &ppb_flash_12_2;
+PP_Bool PPB_Flash_Impl::FlashGetScreenSize(PP_Instance instance,
+                                           PP_Size* size) {
+  return instance_->GetScreenSize(instance, size);
 }
 
 }  // namespace ppapi

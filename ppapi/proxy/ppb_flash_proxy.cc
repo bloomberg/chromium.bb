@@ -26,35 +26,74 @@
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/ppb_url_request_info_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
 namespace ppapi {
 namespace proxy {
 
-namespace {
-
-void SetInstanceAlwaysOnTop(PP_Instance pp_instance, PP_Bool on_top) {
-  ProxyAutoLock lock;
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(pp_instance);
-  if (dispatcher) {
-    dispatcher->Send(new PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop(
-        API_ID_PPB_FLASH, pp_instance, on_top));
-  }
+PPB_Flash_Proxy::PPB_Flash_Proxy(Dispatcher* dispatcher)
+    : InterfaceProxy(dispatcher),
+      ppb_flash_impl_(NULL) {
+  if (!dispatcher->IsPlugin())
+    ppb_flash_impl_ = static_cast<const PPB_Flash*>(
+        dispatcher->local_get_interface()(PPB_FLASH_INTERFACE));
 }
 
-PP_Bool DrawGlyphs(PP_Instance instance,
-                   PP_Resource pp_image_data,
-                   const PP_FontDescription_Dev* font_desc,
-                   uint32_t color,
-                   const PP_Point* position,
-                   const PP_Rect* clip,
-                   const float transformation[3][3],
-                   PP_Bool allow_subpixel_aa,
-                   uint32_t glyph_count,
-                   const uint16_t glyph_indices[],
-                   const PP_Point glyph_advances[]) {
-  ProxyAutoLock lock;
+PPB_Flash_Proxy::~PPB_Flash_Proxy() {
+}
+
+bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  // Prevent the dispatcher from going away during a call to Navigate.
+  // This must happen OUTSIDE of OnMsgNavigate since the handling code use
+  // the dispatcher upon return of the function (sending the reply message).
+  ScopedModuleReference death_grip(dispatcher());
+
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PPB_Flash_Proxy, msg)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
+                        OnHostMsgSetInstanceAlwaysOnTop)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_DrawGlyphs,
+                        OnHostMsgDrawGlyphs)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetProxyForURL,
+                        OnHostMsgGetProxyForURL)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_Navigate, OnHostMsgNavigate)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_RunMessageLoop,
+                        OnHostMsgRunMessageLoop)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QuitMessageLoop,
+                        OnHostMsgQuitMessageLoop)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset,
+                        OnHostMsgGetLocalTimeZoneOffset)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_IsRectTopmost,
+                        OnHostMsgIsRectTopmost)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_FlashSetFullscreen,
+                        OnHostMsgFlashSetFullscreen)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_FlashGetScreenSize,
+                        OnHostMsgFlashGetScreenSize)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  // TODO(brettw) handle bad messages!
+  return handled;
+}
+
+void PPB_Flash_Proxy::SetInstanceAlwaysOnTop(PP_Instance instance,
+                                             PP_Bool on_top) {
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop(
+      API_ID_PPB_FLASH, instance, on_top));
+}
+
+PP_Bool PPB_Flash_Proxy::DrawGlyphs(PP_Instance instance,
+                                    PP_Resource pp_image_data,
+                                    const PP_FontDescription_Dev* font_desc,
+                                    uint32_t color,
+                                    const PP_Point* position,
+                                    const PP_Rect* clip,
+                                    const float transformation[3][3],
+                                    PP_Bool allow_subpixel_aa,
+                                    uint32_t glyph_count,
+                                    const uint16_t glyph_indices[],
+                                    const PP_Point glyph_advances[]) {
   Resource* image_data =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(pp_image_data);
   if (!image_data)
@@ -64,14 +103,9 @@ PP_Bool DrawGlyphs(PP_Instance instance,
   if (image_data->pp_instance() != instance)
     return PP_FALSE;
 
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      image_data->pp_instance());
-  if (!dispatcher)
-    return PP_FALSE;
-
   PPBFlash_DrawGlyphs_Params params;
   params.image_data = image_data->host_resource();
-  params.font_desc.SetFromPPFontDescription(dispatcher, *font_desc, true);
+  params.font_desc.SetFromPPFontDescription(dispatcher(), *font_desc, true);
   params.color = color;
   params.position = *position;
   params.clip = *clip;
@@ -89,92 +123,49 @@ PP_Bool DrawGlyphs(PP_Instance instance,
                                &glyph_advances[glyph_count]);
 
   PP_Bool result = PP_FALSE;
-  dispatcher->Send(new PpapiHostMsg_PPBFlash_DrawGlyphs(
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_DrawGlyphs(
       API_ID_PPB_FLASH, params, &result));
   return result;
 }
 
-PP_Bool DrawGlyphs11(PP_Instance instance,
-                     PP_Resource pp_image_data,
-                     const PP_FontDescription_Dev* font_desc,
-                     uint32_t color,
-                     PP_Point position,
-                     PP_Rect clip,
-                     const float transformation[3][3],
-                     uint32_t glyph_count,
-                     const uint16_t glyph_indices[],
-                     const PP_Point glyph_advances[]) {
-  // Backwards-compatible version. DrawGlyphs locks; no need to lock here.
-  return DrawGlyphs(instance, pp_image_data, font_desc, color, &position,
-                    &clip, transformation, PP_TRUE, glyph_count, glyph_indices,
-                    glyph_advances);
-}
-
-PP_Var GetProxyForURL(PP_Instance instance, const char* url) {
-  ProxyAutoLock lock;
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return PP_MakeUndefined();
-
+PP_Var PPB_Flash_Proxy::GetProxyForURL(PP_Instance instance, const char* url) {
   ReceiveSerializedVarReturnValue result;
-  dispatcher->Send(new PpapiHostMsg_PPBFlash_GetProxyForURL(
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_GetProxyForURL(
       API_ID_PPB_FLASH, instance, url, &result));
-  return result.Return(dispatcher);
+  return result.Return(dispatcher());
 }
 
-int32_t Navigate(PP_Resource request_id,
-                 const char* target,
-                 PP_Bool from_user_action) {
-  thunk::EnterResource<thunk::PPB_URLRequestInfo_API> enter(request_id, true);
+int32_t PPB_Flash_Proxy::Navigate(PP_Instance instance,
+                                  PP_Resource request_info,
+                                  const char* target,
+                                  PP_Bool from_user_action) {
+  thunk::EnterResourceNoLock<thunk::PPB_URLRequestInfo_API> enter(
+      request_info, true);
   if (enter.failed())
     return PP_ERROR_BADRESOURCE;
-  PP_Instance instance = enter.resource()->pp_instance();
-
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return PP_ERROR_FAILED;
 
   int32_t result = PP_ERROR_FAILED;
-  dispatcher->Send(new PpapiHostMsg_PPBFlash_Navigate(
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_Navigate(
       API_ID_PPB_FLASH,
       instance, enter.object()->GetData(), target, from_user_action,
       &result));
   return result;
 }
 
-int32_t Navigate11(PP_Resource request_id,
-                   const char* target,
-                   bool from_user_action) {
-  // Backwards-compatible version. Navigate locks; no need to lock here.
-  return Navigate(request_id, target, PP_FromBool(from_user_action));
-}
-
-void RunMessageLoop(PP_Instance instance) {
-  ProxyAutoLock lock;
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return;
+void PPB_Flash_Proxy::RunMessageLoop(PP_Instance instance) {
   IPC::SyncMessage* msg = new PpapiHostMsg_PPBFlash_RunMessageLoop(
       API_ID_PPB_FLASH, instance);
   msg->EnableMessagePumping();
-  dispatcher->Send(msg);
+  dispatcher()->Send(msg);
 }
 
-void QuitMessageLoop(PP_Instance instance) {
-  ProxyAutoLock lock;
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return;
-  dispatcher->Send(new PpapiHostMsg_PPBFlash_QuitMessageLoop(
+void PPB_Flash_Proxy::QuitMessageLoop(PP_Instance instance) {
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_QuitMessageLoop(
       API_ID_PPB_FLASH, instance));
 }
 
-double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) {
-  ProxyAutoLock lock;
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return 0.0;
-
+double PPB_Flash_Proxy::GetLocalTimeZoneOffset(PP_Instance instance,
+                                               PP_Time t) {
   // TODO(brettw) on Windows it should be possible to do the time calculation
   // in-process since it doesn't need to read files on disk. This will improve
   // performance.
@@ -182,178 +173,67 @@ double GetLocalTimeZoneOffset(PP_Instance instance, PP_Time t) {
   // On Linux, it would be better to go directly to the browser process for
   // this message rather than proxy it through some instance in a renderer.
   double result = 0;
-  dispatcher->Send(new PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset(
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset(
       API_ID_PPB_FLASH, instance, t, &result));
   return result;
 }
 
-PP_Var GetCommandLineArgs(PP_Module /*pp_module*/) {
-  ProxyAutoLock lock;
-  std::string args = ProxyModule::GetInstance()->GetFlashCommandLineArgs();
-  return StringVar::StringToPPVar(args);
-}
-
-void PreLoadFontWin(const void* logfontw) {
-  ProxyAutoLock lock;
-  PluginGlobals::Get()->plugin_proxy_delegate()->PreCacheFont(logfontw);
-}
-
-PP_Bool IsRectTopmost(PP_Instance instance, const PP_Rect* rect) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return PP_FALSE;
+PP_Bool PPB_Flash_Proxy::IsRectTopmost(PP_Instance instance,
+                                       const PP_Rect* rect) {
   PP_Bool result = PP_FALSE;
-  dispatcher->Send(new PpapiHostMsg_PPBFlash_IsRectTopmost(
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_IsRectTopmost(
       API_ID_PPB_FLASH, instance, *rect, &result));
   return result;
 }
 
-int32_t InvokePrinting(PP_Instance instance) {
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
-  if (!dispatcher)
-    return PP_ERROR_BADARGUMENT;
-
-  // TODO(viettrungluu): Implement me.
-
+int32_t PPB_Flash_Proxy::InvokePrinting(PP_Instance instance) {
   return PP_ERROR_NOTSUPPORTED;
 }
 
-void UpdateActivity(PP_Instance instance) {
+void PPB_Flash_Proxy::UpdateActivity(PP_Instance instance) {
   PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
       new PpapiHostMsg_PPBFlash_UpdateActivity(API_ID_PPB_FLASH));
 }
 
-PP_Var GetDeviceID(PP_Instance instance) {
+PP_Var PPB_Flash_Proxy::GetDeviceID(PP_Instance instance) {
   std::string id;
   PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
       new PpapiHostMsg_PPBFlash_GetDeviceID(API_ID_PPB_FLASH, &id));
   return StringVar::StringToPPVar(id);
 }
 
-const PPB_Flash_11 flash_interface_11 = {
-  &SetInstanceAlwaysOnTop,
-  &DrawGlyphs11,
-  &GetProxyForURL,
-  &Navigate11,
-  &RunMessageLoop,
-  &QuitMessageLoop,
-  &GetLocalTimeZoneOffset,
-  &GetCommandLineArgs
-};
-
-const PPB_Flash_12_0 flash_interface_12_0 = {
-  &SetInstanceAlwaysOnTop,
-  &DrawGlyphs,
-  &GetProxyForURL,
-  &Navigate,
-  &RunMessageLoop,
-  &QuitMessageLoop,
-  &GetLocalTimeZoneOffset,
-  &GetCommandLineArgs,
-  &PreLoadFontWin
-};
-
-const PPB_Flash_12_1 flash_interface_12_1 = {
-  &SetInstanceAlwaysOnTop,
-  &DrawGlyphs,
-  &GetProxyForURL,
-  &Navigate,
-  &RunMessageLoop,
-  &QuitMessageLoop,
-  &GetLocalTimeZoneOffset,
-  &GetCommandLineArgs,
-  &PreLoadFontWin,
-  &IsRectTopmost,
-  &InvokePrinting,
-  &UpdateActivity
-};
-
-const PPB_Flash_12_2 flash_interface_12_2 = {
-  &SetInstanceAlwaysOnTop,
-  &DrawGlyphs,
-  &GetProxyForURL,
-  &Navigate,
-  &RunMessageLoop,
-  &QuitMessageLoop,
-  &GetLocalTimeZoneOffset,
-  &GetCommandLineArgs,
-  &PreLoadFontWin,
-  &IsRectTopmost,
-  &InvokePrinting,
-  &UpdateActivity,
-  &GetDeviceID
-};
-
-}  // namespace
-
-PPB_Flash_Proxy::PPB_Flash_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
-      ppb_flash_impl_(NULL) {
-  if (!dispatcher->IsPlugin())
-    ppb_flash_impl_ = static_cast<const PPB_Flash*>(
-        dispatcher->local_get_interface()(PPB_FLASH_INTERFACE));
+PP_Bool PPB_Flash_Proxy::FlashIsFullscreen(PP_Instance instance) {
+  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
+      GetInstanceData(instance);
+  if (!data)
+    return PP_FALSE;
+  return data->flash_fullscreen;
 }
 
-PPB_Flash_Proxy::~PPB_Flash_Proxy() {
+PP_Bool PPB_Flash_Proxy::FlashSetFullscreen(PP_Instance instance,
+                                            PP_Bool fullscreen) {
+  PP_Bool result = PP_FALSE;
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_FlashSetFullscreen(
+      API_ID_PPB_FLASH, instance, fullscreen, &result));
+  return result;
 }
 
-// static
-const PPB_Flash_11* PPB_Flash_Proxy::GetInterface11() {
-  return &flash_interface_11;
+PP_Bool PPB_Flash_Proxy::FlashGetScreenSize(PP_Instance instance,
+                                            PP_Size* size) {
+  PP_Bool result = PP_FALSE;
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_FlashGetScreenSize(
+      API_ID_PPB_FLASH, instance, &result, size));
+  return result;
 }
 
-// static
-const PPB_Flash_12_0* PPB_Flash_Proxy::GetInterface12_0() {
-  return &flash_interface_12_0;
-}
-
-// static
-const PPB_Flash_12_1* PPB_Flash_Proxy::GetInterface12_1() {
-  return &flash_interface_12_1;
-}
-
-// static
-const PPB_Flash_12_2* PPB_Flash_Proxy::GetInterface12_2() {
-  return &flash_interface_12_2;
-}
-
-bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
-  // Prevent the dispatcher from going away during a call to Navigate.
-  // This must happen OUTSIDE of OnMsgNavigate since the handling code use
-  // the dispatcher upon return of the function (sending the reply message).
-  ScopedModuleReference death_grip(dispatcher());
-
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PPB_Flash_Proxy, msg)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
-                        OnMsgSetInstanceAlwaysOnTop)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_DrawGlyphs,
-                        OnMsgDrawGlyphs)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetProxyForURL,
-                        OnMsgGetProxyForURL)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_Navigate, OnMsgNavigate)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_RunMessageLoop,
-                        OnMsgRunMessageLoop)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_QuitMessageLoop,
-                        OnMsgQuitMessageLoop)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetLocalTimeZoneOffset,
-                        OnMsgGetLocalTimeZoneOffset)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_IsRectTopmost,
-                        OnMsgIsRectTopmost)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  // TODO(brettw) handle bad messages!
-  return handled;
-}
-
-void PPB_Flash_Proxy::OnMsgSetInstanceAlwaysOnTop(
-    PP_Instance instance,
-    PP_Bool on_top) {
+void PPB_Flash_Proxy::OnHostMsgSetInstanceAlwaysOnTop(PP_Instance instance,
+                                                      PP_Bool on_top) {
   ppb_flash_impl_->SetInstanceAlwaysOnTop(instance, on_top);
 }
 
-void PPB_Flash_Proxy::OnMsgDrawGlyphs(const PPBFlash_DrawGlyphs_Params& params,
-                                      PP_Bool* result) {
+void PPB_Flash_Proxy::OnHostMsgDrawGlyphs(
+    const PPBFlash_DrawGlyphs_Params& params,
+    PP_Bool* result) {
   *result = PP_FALSE;
 
   PP_FontDescription_Dev font_desc;
@@ -374,18 +254,18 @@ void PPB_Flash_Proxy::OnMsgDrawGlyphs(const PPBFlash_DrawGlyphs_Params& params,
       const_cast<PP_Point*>(&params.glyph_advances[0]));
 }
 
-void PPB_Flash_Proxy::OnMsgGetProxyForURL(PP_Instance instance,
-                                          const std::string& url,
-                                          SerializedVarReturnValue result) {
+void PPB_Flash_Proxy::OnHostMsgGetProxyForURL(PP_Instance instance,
+                                              const std::string& url,
+                                              SerializedVarReturnValue result) {
   result.Return(dispatcher(), ppb_flash_impl_->GetProxyForURL(
       instance, url.c_str()));
 }
 
-void PPB_Flash_Proxy::OnMsgNavigate(PP_Instance instance,
-                                    const PPB_URLRequestInfo_Data& data,
-                                    const std::string& target,
-                                    PP_Bool from_user_action,
-                                    int32_t* result) {
+void PPB_Flash_Proxy::OnHostMsgNavigate(PP_Instance instance,
+                                        const PPB_URLRequestInfo_Data& data,
+                                        const std::string& target,
+                                        PP_Bool from_user_action,
+                                        int32_t* result) {
   DCHECK(!dispatcher()->IsPlugin());
 
   // Validate the PP_Instance since we'll be constructing resources on its
@@ -419,24 +299,46 @@ void PPB_Flash_Proxy::OnMsgNavigate(PP_Instance instance,
                                       from_user_action);
 }
 
-void PPB_Flash_Proxy::OnMsgRunMessageLoop(PP_Instance instance) {
+void PPB_Flash_Proxy::OnHostMsgRunMessageLoop(PP_Instance instance) {
   ppb_flash_impl_->RunMessageLoop(instance);
 }
 
-void PPB_Flash_Proxy::OnMsgQuitMessageLoop(PP_Instance instance) {
+void PPB_Flash_Proxy::OnHostMsgQuitMessageLoop(PP_Instance instance) {
   ppb_flash_impl_->QuitMessageLoop(instance);
 }
 
-void PPB_Flash_Proxy::OnMsgGetLocalTimeZoneOffset(PP_Instance instance,
+void PPB_Flash_Proxy::OnHostMsgGetLocalTimeZoneOffset(PP_Instance instance,
                                                   PP_Time t,
                                                   double* result) {
   *result = ppb_flash_impl_->GetLocalTimeZoneOffset(instance, t);
 }
 
-void PPB_Flash_Proxy::OnMsgIsRectTopmost(PP_Instance instance,
-                                         PP_Rect rect,
-                                         PP_Bool* result) {
+void PPB_Flash_Proxy::OnHostMsgIsRectTopmost(PP_Instance instance,
+                                             PP_Rect rect,
+                                             PP_Bool* result) {
   *result = ppb_flash_impl_->IsRectTopmost(instance, &rect);
+}
+
+void PPB_Flash_Proxy::OnHostMsgFlashSetFullscreen(PP_Instance instance,
+                                                  PP_Bool fullscreen,
+                                                  PP_Bool* result) {
+  thunk::EnterFunctionNoLock<thunk::PPB_Instance_FunctionAPI> enter(
+      instance, false);
+  if (enter.failed())
+    return;
+  *result = enter.functions()->GetFlashAPI()->FlashSetFullscreen(
+      instance, fullscreen);
+}
+
+void PPB_Flash_Proxy::OnHostMsgFlashGetScreenSize(PP_Instance instance,
+                                                  PP_Bool* result,
+                                                  PP_Size* size) {
+  thunk::EnterFunctionNoLock<thunk::PPB_Instance_FunctionAPI> enter(
+      instance, false);
+  if (enter.failed())
+    return;
+  *result = enter.functions()->GetFlashAPI()->FlashGetScreenSize(
+      instance, size);
 }
 
 }  // namespace proxy

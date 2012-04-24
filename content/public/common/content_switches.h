@@ -139,7 +139,6 @@ CONTENT_EXPORT extern const char kPluginPath[];
 CONTENT_EXPORT extern const char kPluginProcess[];
 extern const char kPluginStartupDialog[];
 CONTENT_EXPORT extern const char kPpapiBrokerProcess[];
-CONTENT_EXPORT extern const char kPpapiFlashArgs[];
 CONTENT_EXPORT extern const char kPpapiFlashPath[];
 CONTENT_EXPORT extern const char kPpapiFlashVersion[];
 CONTENT_EXPORT extern const char kPpapiOutOfProcess[];

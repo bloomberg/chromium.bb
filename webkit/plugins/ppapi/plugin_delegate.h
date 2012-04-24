@@ -564,10 +564,6 @@ class PluginDelegate {
 
   virtual double GetLocalTimeZoneOffset(base::Time t) = 0;
 
-  // TODO(viettrungluu): Generalize this for use with other plugins if it proves
-  // necessary.
-  virtual std::string GetFlashCommandLineArgs() = 0;
-
   // Create an anonymous shared memory segment of size |size| bytes, and return
   // a pointer to it, or NULL on error.  Caller owns the returned pointer.
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size) = 0;

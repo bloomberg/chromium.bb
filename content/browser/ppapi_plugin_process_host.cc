@@ -22,6 +22,7 @@
 #include "ipc/ipc_switches.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "webkit/plugins/plugin_switches.h"
 
 using content::ChildProcessHost;
 using content::ChildProcessHostImpl;

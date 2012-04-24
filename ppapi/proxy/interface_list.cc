@@ -176,6 +176,10 @@ InterfaceList::InterfaceList() {
   #include "ppapi/thunk/interfaces_ppb_private.h"
 #endif
 
+  #if !defined(OS_NACL)
+  #include "ppapi/thunk/interfaces_ppb_private_flash.h"
+  #endif
+
   #undef PROXIED_API
   #undef PROXIED_IFACE
 
@@ -301,16 +305,6 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
 
 #if !defined(OS_NACL)
 void InterfaceList::AddFlashInterfaces() {
-  AddProxy(API_ID_PPB_FLASH, &ProxyFactory<PPB_Flash_Proxy>);
-  AddPPB(PPB_FLASH_INTERFACE_11_0, API_ID_PPB_FLASH,
-         PPB_Flash_Proxy::GetInterface11());
-  AddPPB(PPB_FLASH_INTERFACE_12_0, API_ID_PPB_FLASH,
-         PPB_Flash_Proxy::GetInterface12_0());
-  AddPPB(PPB_FLASH_INTERFACE_12_1, API_ID_PPB_FLASH,
-         PPB_Flash_Proxy::GetInterface12_1());
-  AddPPB(PPB_FLASH_INTERFACE_12_2, API_ID_PPB_FLASH,
-         PPB_Flash_Proxy::GetInterface12_2());
-
   AddProxy(API_ID_PPB_FLASH_CLIPBOARD,
            &ProxyFactory<PPB_Flash_Clipboard_Proxy>);
   AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE_4_0, API_ID_PPB_FLASH_CLIPBOARD,

@@ -16,7 +16,6 @@
 #include "content/ppapi_plugin/broker_process_dispatcher.h"
 #include "content/ppapi_plugin/plugin_process_dispatcher.h"
 #include "content/ppapi_plugin/ppapi_webkitplatformsupport_impl.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
@@ -27,6 +26,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/interface_list.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
@@ -43,14 +43,18 @@ extern void* g_target_services;
 typedef int32_t (*InitializeBrokerFunc)
     (PP_ConnectInstance_Func* connect_instance_func);
 
-PpapiThread::PpapiThread(bool is_broker)
+PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
     : is_broker_(is_broker),
       get_plugin_interface_(NULL),
       connect_instance_func_(NULL),
       local_pp_module_(
           base::RandInt(0, std::numeric_limits<PP_Module>::max())),
       next_plugin_dispatcher_id_(1) {
-  ppapi::proxy::PluginGlobals::Get()->set_plugin_proxy_delegate(this);
+  ppapi::proxy::PluginGlobals* globals = ppapi::proxy::PluginGlobals::Get();
+  globals->set_plugin_proxy_delegate(this);
+  globals->set_command_line(
+      command_line.GetSwitchValueASCII(switches::kPpapiFlashArgs));
+
   webkit_platform_support_.reset(new PpapiWebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
 }

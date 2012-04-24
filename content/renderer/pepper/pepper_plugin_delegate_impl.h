@@ -348,7 +348,6 @@ class PepperPluginDelegateImpl
   virtual void SaveURLAs(const GURL& url) OVERRIDE;
   virtual webkit_glue::P2PTransport* CreateP2PTransport() OVERRIDE;
   virtual double GetLocalTimeZoneOffset(base::Time t) OVERRIDE;
-  virtual std::string GetFlashCommandLineArgs() OVERRIDE;
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size)
       OVERRIDE;
   virtual ::ppapi::Preferences GetPreferences() OVERRIDE;

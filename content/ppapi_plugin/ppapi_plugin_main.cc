@@ -53,10 +53,8 @@ int PpapiPluginMain(const content::MainFunctionParams& parameters) {
 #endif
 
   ChildProcess ppapi_process;
-  ppapi_process.set_main_thread(new PpapiThread(false));  // Not a broker.
-
-  ppapi::proxy::ProxyModule::GetInstance()->SetFlashCommandLineArgs(
-      command_line.GetSwitchValueASCII(switches::kPpapiFlashArgs));
+  ppapi_process.set_main_thread(
+      new PpapiThread(parameters.command_line, false));  // Not a broker.
 
   main_message_loop.Run();
   return 0;

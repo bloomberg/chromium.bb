@@ -174,7 +174,6 @@ class MockPluginDelegate : public PluginDelegate {
   virtual void SaveURLAs(const GURL& url);
   virtual webkit_glue::P2PTransport* CreateP2PTransport();
   virtual double GetLocalTimeZoneOffset(base::Time t);
-  virtual std::string GetFlashCommandLineArgs();
   virtual base::SharedMemory* CreateAnonymousSharedMemory(uint32_t size);
   virtual ::ppapi::Preferences GetPreferences();
   virtual bool LockMouse(PluginInstance* instance);

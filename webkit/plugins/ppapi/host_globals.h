@@ -42,6 +42,8 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
       PP_Instance inst,
       ::ppapi::ApiID id) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
+  virtual std::string GetCmdLine() OVERRIDE;
+  virtual void PreCacheFontForFlash(const void* logfontw) OVERRIDE;
   virtual base::Lock* GetProxyLock() OVERRIDE;
   virtual void LogWithSource(PP_Instance instance,
                              PP_LogLevel_Dev level,

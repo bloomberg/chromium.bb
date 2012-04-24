@@ -67,12 +67,8 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool GetScreenSize(PP_Instance instance,
-                                     PP_Size* size) OVERRIDE;
-  virtual PP_Bool FlashIsFullscreen(PP_Instance instance) OVERRIDE;
-  virtual PP_Bool FlashSetFullscreen(PP_Instance instance,
-                                    PP_Bool fullscreen) OVERRIDE;
-  virtual PP_Bool FlashGetScreenSize(PP_Instance instance, PP_Size* size)
-      OVERRIDE;
+                                PP_Size* size) OVERRIDE;
+  virtual thunk::PPB_Flash_API* GetFlashAPI() OVERRIDE;
   virtual void SampleGamepads(PP_Instance instance,
                               PP_GamepadsSampleData* data) OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
@@ -139,12 +135,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   void OnHostMsgGetScreenSize(PP_Instance instance,
                               PP_Bool* result,
                               PP_Size* size);
-  void OnHostMsgFlashSetFullscreen(PP_Instance instance,
-                                   PP_Bool fullscreen,
-                                   PP_Bool* result);
-  void OnHostMsgFlashGetScreenSize(PP_Instance instance,
-                                   PP_Bool* result,
-                                   PP_Size* size);
   void OnHostMsgRequestInputEvents(PP_Instance instance,
                                    bool is_filtering,
                                    uint32_t event_classes);

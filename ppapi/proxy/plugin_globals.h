@@ -42,6 +42,8 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   virtual FunctionGroupBase* GetFunctionAPI(PP_Instance inst,
                                             ApiID id) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
+  virtual std::string GetCmdLine() OVERRIDE;
+  virtual void PreCacheFontForFlash(const void* logfontw) OVERRIDE;
   virtual base::Lock* GetProxyLock() OVERRIDE;
   virtual void LogWithSource(PP_Instance instance,
                              PP_LogLevel_Dev level,
@@ -86,6 +88,9 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   // is known. This will be used for error logging.
   void set_plugin_name(const std::string& name) { plugin_name_ = name; }
 
+  // The embedder should call this function when the command line is known.
+  void set_command_line(const std::string& c) { command_line_ = c; }
+
  private:
   // PpapiGlobals overrides.
   virtual bool IsPluginGlobals() const OVERRIDE;
@@ -101,8 +106,12 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   scoped_ptr<base::ThreadLocalStorage::Slot> msg_loop_slot_;
 
   // Name of the plugin used for error logging. This will be empty until
-  // SetPluginName is called.
+  // set_plugin_name is called.
   std::string plugin_name_;
+
+  // Command line for the plugin. This will be empty until set_command_line is
+  // called.
+  std::string command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginGlobals);
 };

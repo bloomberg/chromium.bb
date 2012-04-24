@@ -45,6 +45,7 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/rect.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
+#include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
 #include "webkit/plugins/webkit_plugins_export.h"
 
@@ -289,6 +290,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   //                       view_data_.is_fullscreen = true
   bool IsFullscreenOrPending();
 
+  bool flash_fullscreen() const { return flash_fullscreen_; }
+
   // Switches between fullscreen and normal mode. The transition is
   // asynchronous. WebKit will trigger corresponding VewChanged calls.
   // Returns true on success, false on failure (e.g. trying to enter fullscreen
@@ -354,15 +357,11 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                                           PP_Bool final_result) OVERRIDE;
   virtual void SelectedFindResultChanged(PP_Instance instance,
                                          int32_t index) OVERRIDE;
-  virtual PP_Bool FlashIsFullscreen(PP_Instance instance) OVERRIDE;
-  virtual PP_Bool FlashSetFullscreen(PP_Instance instance,
-                                     PP_Bool fullscreen) OVERRIDE;
-  virtual PP_Bool FlashGetScreenSize(PP_Instance instance,
-                                     PP_Size* size) OVERRIDE;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                      PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size)
       OVERRIDE;
+  virtual ::ppapi::thunk::PPB_Flash_API* GetFlashAPI() OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
                                      uint32_t event_classes) OVERRIDE;
   virtual int32_t RequestFilteringInputEvents(PP_Instance instance,
@@ -636,6 +635,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // Track pending user gestures so out-of-process plugins can respond to
   // a user gesture after it has been processed.
   PP_TimeTicks pending_user_gesture_;
+
+  // The Flash proxy is associated with the instance.
+  PPB_Flash_Impl flash_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

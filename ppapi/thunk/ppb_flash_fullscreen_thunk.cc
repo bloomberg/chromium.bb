@@ -7,6 +7,7 @@
 #include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
+#include "ppapi/thunk/ppb_flash_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
 namespace ppapi {
@@ -18,21 +19,22 @@ PP_Bool IsFullscreen(PP_Instance instance) {
   EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->FlashIsFullscreen(instance);
+  return enter.functions()->GetFlashAPI()->FlashIsFullscreen(instance);
 }
 
 PP_Bool SetFullscreen(PP_Instance instance, PP_Bool fullscreen) {
   EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->FlashSetFullscreen(instance, fullscreen);
+  return enter.functions()->GetFlashAPI()->FlashSetFullscreen(instance,
+                                                              fullscreen);
 }
 
 PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size) {
   EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->FlashGetScreenSize(instance, size);
+  return enter.functions()->GetFlashAPI()->FlashGetScreenSize(instance, size);
 }
 
 const PPB_FlashFullscreen g_ppb_flash_fullscreen_thunk = {

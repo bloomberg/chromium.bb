@@ -40,6 +40,13 @@ PP_Module TestGlobals::GetModuleForInstance(PP_Instance instance) {
   return 0;
 }
 
+std::string TestGlobals::GetCmdLine() {
+  return std::string();
+}
+
+void TestGlobals::PreCacheFontForFlash(const void* /* logfontw */) {
+}
+
 base::Lock* TestGlobals::GetProxyLock() {
   return NULL;
 }

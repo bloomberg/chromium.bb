@@ -862,14 +862,6 @@ IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBInstance_GetScreenSize,
                            PP_Instance /* instance */,
                            PP_Bool /* result */,
                            PP_Size /* size */)
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_FlashSetFullscreen,
-                           PP_Instance /* instance */,
-                           PP_Bool /* fullscreen */,
-                           PP_Bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBInstance_FlashGetScreenSize,
-                           PP_Instance /* instance */,
-                           PP_Bool /* result */,
-                           PP_Size /* size */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_RequestInputEvents,
                     PP_Instance /* instance */,
                     bool /* is_filtering */,
@@ -1175,6 +1167,14 @@ IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_IsRectTopmost,
                            PP_Instance /* instance */,
                            PP_Rect /* rect */,
                            PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_FlashSetFullscreen,
+                           PP_Instance /* instance */,
+                           PP_Bool /* fullscreen */,
+                           PP_Bool /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBFlash_FlashGetScreenSize,
+                           PP_Instance /* instance */,
+                           PP_Bool /* result */,
+                           PP_Size /* size */)
 IPC_MESSAGE_ROUTED0(PpapiHostMsg_PPBFlash_UpdateActivity)
 IPC_SYNC_MESSAGE_ROUTED0_1(PpapiHostMsg_PPBFlash_GetDeviceID,
                            std::string /* id */)

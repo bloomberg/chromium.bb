@@ -16,6 +16,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_flash_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppb_url_util_shared.h"
@@ -96,10 +97,6 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgGetDefaultCharSet)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_PostMessage,
                         OnHostMsgPostMessage)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_FlashSetFullscreen,
-                        OnHostMsgFlashSetFullscreen)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_FlashGetScreenSize,
-                        OnHostMsgFlashGetScreenSize)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetFullscreen,
                         OnHostMsgSetFullscreen)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetScreenSize,
@@ -239,14 +236,6 @@ void PPB_Instance_Proxy::SelectedFindResultChanged(PP_Instance instance,
   NOTIMPLEMENTED();  // Not proxied yet.
 }
 
-PP_Bool PPB_Instance_Proxy::FlashIsFullscreen(PP_Instance instance) {
-  InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
-      GetInstanceData(instance);
-  if (!data)
-    return PP_FALSE;
-  return data->flash_fullscreen;
-}
-
 PP_Var PPB_Instance_Proxy::GetFontFamilies(PP_Instance instance) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(instance);
   if (!dispatcher)
@@ -270,14 +259,6 @@ PP_Bool PPB_Instance_Proxy::SetFullscreen(PP_Instance instance,
   return result;
 }
 
-PP_Bool PPB_Instance_Proxy::FlashSetFullscreen(PP_Instance instance,
-                                               PP_Bool fullscreen) {
-  PP_Bool result = PP_FALSE;
-  dispatcher()->Send(new PpapiHostMsg_PPBInstance_FlashSetFullscreen(
-      API_ID_PPB_INSTANCE, instance, fullscreen, &result));
-  return result;
-}
-
 PP_Bool PPB_Instance_Proxy::GetScreenSize(PP_Instance instance,
                                           PP_Size* size) {
   PP_Bool result = PP_FALSE;
@@ -286,12 +267,9 @@ PP_Bool PPB_Instance_Proxy::GetScreenSize(PP_Instance instance,
   return result;
 }
 
-PP_Bool PPB_Instance_Proxy::FlashGetScreenSize(PP_Instance instance,
-                                               PP_Size* size) {
-  PP_Bool result = PP_FALSE;
-  dispatcher()->Send(new PpapiHostMsg_PPBInstance_FlashGetScreenSize(
-      API_ID_PPB_INSTANCE, instance, &result, size));
-  return result;
+thunk::PPB_Flash_API* PPB_Instance_Proxy::GetFlashAPI() {
+  InterfaceProxy* ip = dispatcher()->GetInterfaceProxy(API_ID_PPB_FLASH);
+  return static_cast<PPB_Flash_Proxy*>(ip);
 }
 
 void PPB_Instance_Proxy::SampleGamepads(PP_Instance instance,
@@ -549,28 +527,12 @@ void PPB_Instance_Proxy::OnHostMsgSetFullscreen(PP_Instance instance,
 }
 
 
-void PPB_Instance_Proxy::OnHostMsgFlashSetFullscreen(PP_Instance instance,
-                                                     PP_Bool fullscreen,
-                                                     PP_Bool* result) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
-  if (enter.succeeded())
-    *result = enter.functions()->FlashSetFullscreen(instance, fullscreen);
-}
-
 void PPB_Instance_Proxy::OnHostMsgGetScreenSize(PP_Instance instance,
                                                 PP_Bool* result,
                                                 PP_Size* size) {
   EnterInstanceNoLock enter(instance, false);
   if (enter.succeeded())
     *result = enter.functions()->GetScreenSize(instance, size);
-}
-
-void PPB_Instance_Proxy::OnHostMsgFlashGetScreenSize(PP_Instance instance,
-                                                     PP_Bool* result,
-                                                     PP_Size* size) {
-  EnterFunctionNoLock<PPB_Instance_FunctionAPI> enter(instance, false);
-  if (enter.succeeded())
-    *result = enter.functions()->FlashGetScreenSize(instance, size);
 }
 
 void PPB_Instance_Proxy::OnHostMsgRequestInputEvents(PP_Instance instance,

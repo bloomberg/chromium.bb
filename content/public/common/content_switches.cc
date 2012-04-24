@@ -445,9 +445,6 @@ const char kPluginStartupDialog[]           = "plugin-startup-dialog";
 // Argument to the process type that indicates a PPAPI broker process type.
 const char kPpapiBrokerProcess[]            = "ppapi-broker";
 
-// "Command-line" arguments for the PPAPI Flash; used for debugging options.
-const char kPpapiFlashArgs[]                = "ppapi-flash-args";
-
 // Use the PPAPI (Pepper) Flash found at the given path.
 const char kPpapiFlashPath[]                = "ppapi-flash-path";
 

@@ -316,7 +316,8 @@ PluginInstance::PluginInstance(
       selection_caret_(0),
       selection_anchor_(0),
       lock_mouse_callback_(PP_BlockUntilComplete()),
-      pending_user_gesture_(0.0) {
+      pending_user_gesture_(0.0),
+      flash_impl_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
@@ -1782,19 +1783,9 @@ void PluginInstance::SelectedFindResultChanged(PP_Instance instance,
   delegate_->SelectedFindResultChanged(find_identifier_, index);
 }
 
-PP_Bool PluginInstance::FlashIsFullscreen(PP_Instance instance) {
-  return PP_FromBool(flash_fullscreen_);
-}
-
 PP_Bool PluginInstance::SetFullscreen(PP_Instance instance,
                                       PP_Bool fullscreen) {
   return PP_FromBool(SetFullscreen(PP_ToBool(fullscreen)));
-}
-
-PP_Bool PluginInstance::FlashSetFullscreen(PP_Instance instance,
-                                           PP_Bool fullscreen) {
-  FlashSetFullscreen(PP_ToBool(fullscreen), true);
-  return PP_TRUE;
 }
 
 PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
@@ -1803,9 +1794,8 @@ PP_Bool PluginInstance::GetScreenSize(PP_Instance instance, PP_Size* size) {
   return PP_TRUE;
 }
 
-PP_Bool PluginInstance::FlashGetScreenSize(PP_Instance instance,
-                                           PP_Size* size) {
-  return GetScreenSize(instance, size);
+::ppapi::thunk::PPB_Flash_API* PluginInstance::GetFlashAPI() {
+  return &flash_impl_;
 }
 
 int32_t PluginInstance::RequestInputEvents(PP_Instance instance,

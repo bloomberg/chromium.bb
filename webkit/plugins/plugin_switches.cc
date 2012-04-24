@@ -16,6 +16,9 @@ const char kDebugPluginLoading[] = "debug-plugin-loading";
 const char kDisablePepper3dForUntrustedUse[] =
     "disable-pepper-3d-for-untrusted-use";
 
+// "Command-line" arguments for the PPAPI Flash; used for debugging options.
+const char kPpapiFlashArgs[] = "ppapi-flash-args";
+
 #if defined(OS_WIN)
 // Used by the plugins_test when testing the older WMP plugin to force the new
 // plugin to not get loaded.

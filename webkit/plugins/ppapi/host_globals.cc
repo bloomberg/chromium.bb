@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/utf_string_conversions.h"
@@ -18,6 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
+#include "webkit/plugins/plugin_switches.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_flash_clipboard_impl.h"
@@ -161,6 +163,15 @@ PP_Module HostGlobals::GetModuleForInstance(PP_Instance instance) {
   if (!inst)
     return 0;
   return inst->module()->pp_module();
+}
+
+std::string HostGlobals::GetCmdLine() {
+  return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kPpapiFlashArgs);
+}
+
+void HostGlobals::PreCacheFontForFlash(const void* logfontw) {
+  // Not implemented in-process.
 }
 
 base::Lock* HostGlobals::GetProxyLock() {

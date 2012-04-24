@@ -22,6 +22,7 @@
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_proxy_delegate.h"
 
+class CommandLine;
 class FilePath;
 class PpapiWebKitPlatformSupportImpl;
 
@@ -33,7 +34,7 @@ class PpapiThread : public ChildThread,
                     public ppapi::proxy::PluginDispatcher::PluginDelegate,
                     public ppapi::proxy::PluginProxyDelegate {
  public:
-  explicit PpapiThread(bool is_broker);
+  PpapiThread(const CommandLine& command_line, bool is_broker);
   virtual ~PpapiThread();
 
  private:
