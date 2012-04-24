@@ -306,6 +306,10 @@ list:not([disabled]) > .network-group[selected] {
   vertical-align: middle;
 }
 
+html[touch-optimized] .network-menu-item {
+  height: 40px;
+}
+
 .network-menu-item-label {
   -webkit-box-flex: 1;
   color: #555;
@@ -315,6 +319,10 @@ list:not([disabled]) > .network-group[selected] {
   text-overflow: ellipsis;
   vertical-align: middle;
   white-space: nowrap;
+}
+
+html[touch-optimized] .network-menu-item-label {
+  padding-top: 14px;
 }
 
 .network-disabled-control {
@@ -335,6 +343,10 @@ list:not([disabled]) > .network-group[selected] {
     overflow-x: hidden;
     overflow-y: auto;
     text-overflow: ellipsis;
+}
+
+html[touch-optimized] .network-menu-group {
+  max-height: 200px;
 }
 
 .network-menu-item[dir=rtl] {
