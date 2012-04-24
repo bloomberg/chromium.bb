@@ -348,9 +348,11 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
     context_menu_model_->AddCheckItemWithStringId(
         LAUNCH_TYPE_WINDOW,
         IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+    // Even though the launch type is Full Screen it is more accurately
+    // described as Maximized in Ash.
     context_menu_model_->AddCheckItemWithStringId(
         LAUNCH_TYPE_FULLSCREEN,
-        IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN);
+        IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
     context_menu_model_->AddSeparator();
     context_menu_model_->AddItemWithStringId(OPTIONS, IDS_NEW_TAB_APP_OPTIONS);
     context_menu_model_->AddItemWithStringId(UNINSTALL,

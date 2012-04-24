@@ -9581,6 +9581,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
                  desc="Text for the button that opens the app full screen. (In sentence case.)">
           Open full screen
         </message>
+        <message name="IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED"
+                 desc="Text for the button that opens the app maximized. (In sentence case.)">
+          Open maximized
+        </message>
       </if>
 
       <if expr="pp_ifdef('use_titlecase')">
@@ -9619,6 +9623,10 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         <message name="IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN"
                  desc="Text for the button that opens the app full screen. (In title case.)">
           Open Full Screen
+        </message>
+        <message name="IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED"
+                 desc="Text for the button that opens the app maximized. (In title case.)">
+          Open Maximized
         </message>
       </if>
 
