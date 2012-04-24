@@ -54,6 +54,9 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
   // Time to keep an entry from being discarded even when it
   // has no significant state, -1 to never discard.
   -1,
+
+  // Don't use initial delay unless the last request was an error.
+  false,
 };
 
 }  // namespace
