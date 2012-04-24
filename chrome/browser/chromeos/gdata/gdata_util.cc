@@ -247,13 +247,6 @@ void SetPermissionsForGDataCacheFiles(Profile* profile,
 }
 
 bool IsGDataAvailable(Profile* profile) {
-  // We allow GData only in canary and dev channels.  http://crosbug.com/28806
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_DEV ||
-      channel == chrome::VersionInfo::CHANNEL_BETA ||
-      channel == chrome::VersionInfo::CHANNEL_STABLE)
-    return false;
-
   // Do not allow GData for incognito windows / guest mode.
   if (profile->IsOffTheRecord())
     return false;
