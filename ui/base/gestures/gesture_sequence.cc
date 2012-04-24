@@ -269,6 +269,9 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     case GST_THREE_FINGER_SWIPE_FIRST_CANCELLED:
     case GST_THREE_FINGER_SWIPE_SECOND_CANCELLED:
     case GST_THREE_FINGER_SWIPE_THIRD_CANCELLED:
+      GetPointByPointId(0)->ResetVelocity();
+      GetPointByPointId(1)->ResetVelocity();
+      GetPointByPointId(2)->ResetVelocity();
       set_state(GS_PINCH);
       break;
     case GST_THREE_FINGER_SWIPE_FIRST_MOVED:
@@ -651,12 +654,15 @@ bool GestureSequence::PinchEnd(const TouchEvent& event,
     const GesturePoint& point, Gestures* gestures) {
   DCHECK(state_ == GS_PINCH);
 
-  const GesturePoint* point1 = GetPointByPointId(0);
-  const GesturePoint* point2 = GetPointByPointId(1);
+  GesturePoint* point1 = GetPointByPointId(0);
+  GesturePoint* point2 = GetPointByPointId(1);
 
   float distance = point1->Distance(*point2);
   AppendPinchGestureEnd(*point1, *point2,
       distance / pinch_distance_start_, gestures);
+
+  point1->ResetVelocity();
+  point2->ResetVelocity();
 
   pinch_distance_start_ = 0;
   pinch_distance_current_ = 0;

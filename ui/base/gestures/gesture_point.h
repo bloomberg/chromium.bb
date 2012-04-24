@@ -23,6 +23,8 @@ class GesturePoint {
   // Resets various states.
   void Reset();
 
+  void ResetVelocity();
+
   // Updates some states when a Tap gesture has been recognized for this point.
   void UpdateForTap();
 

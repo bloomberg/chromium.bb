@@ -30,6 +30,10 @@ void GesturePoint::Reset() {
   point_id_ = -1;
 }
 
+void GesturePoint::ResetVelocity() {
+  velocity_calculator_.ClearHistory();
+}
+
 void GesturePoint::UpdateValues(const TouchEvent& event) {
   const int64 event_timestamp_microseconds =
       event.GetTimestamp().InMicroseconds();
