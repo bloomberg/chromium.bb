@@ -27,3 +27,30 @@ var QueryString = function () {
 
   return params;
 } ();
+
+function Timer() {
+  this.start_ = 0;
+  this.times_ = [];
+}
+
+Timer.prototype = {
+  start: function() {
+    this.start_ = new Date().getTime();
+  },
+
+  stop: function() {
+    var delta = new Date().getTime() - this.start_;
+    this.times_.push(delta);
+    return delta;
+  },
+
+  reset: function() {
+    this.start_ = 0;
+    this.times_ = [];
+  }
+}
+
+function GenerateUniqueURL(src) {
+  var ch = src.indexOf('?') >= 0 ? '&' : '?';
+  return src + ch + 't=' + (new Date()).getTime();
+}

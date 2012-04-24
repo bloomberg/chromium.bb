@@ -185,7 +185,7 @@ class ConstrainedNetworkServer(object):
 
   @cherrypy.expose
   def ServeConstrained(self, f=None, bandwidth=None, latency=None, loss=None,
-                       new_port=False):
+                       new_port=False, no_cache=False, **kwargs):
     """Serves the requested file with the requested constraints.
 
     Subsequent requests for the same constraints from the same IP will share the
@@ -199,9 +199,16 @@ class ConstrainedNetworkServer(object):
       latency: time to add to each packet (integer in ms).
       loss: percentage of packets to drop (integer, 0-100).
       new_port: whether to use a new port for this request or not.
+      no_cache: Set reponse's cache-control to no-cache.
     """
     cherrypy.log('Got request for %s, bandwidth=%s, latency=%s, loss=%s, '
-                 'new_port=%s' % (f, bandwidth, latency, loss, new_port))
+                 'new_port=%s, no_cache=%s, kwargs=%s' %
+                 (f, bandwidth, latency, loss, new_port, no_cache, kwargs))
+    if no_cache:
+      response = cherrypy.response
+      response.headers['Pragma'] = 'no-cache'
+      response.headers['Cache-Control'] = 'no-cache'
+
     # CherryPy is a bit wonky at detecting parameters, so just make them all
     # optional and validate them ourselves.
     if not f:
@@ -246,11 +253,14 @@ class ConstrainedNetworkServer(object):
     cherrypy.log('Time to set up port %d = %ssec.' %
                  (constrained_port, end_time - start_time))
 
-    # Build constrained URL. Only pass on the file parameter.
-    constrained_url = '%s?f=%s' % (
+    # Build constrained URL using the constrained port and original URL
+    # parameters except the network constraints (bandwidth, latency, and loss).
+    constrained_url = '%s?f=%s&no_cache=%s&%s' % (
         cherrypy.url().replace(
             ':%d' % self._options.port, ':%d' % constrained_port),
-        f)
+        f,
+        no_cache,
+        '&'.join(['%s=%s' % (key, kwargs[key]) for key in kwargs]))
 
     # Redirect request to the constrained port.
     cherrypy.lib.cptools.redirect(constrained_url, internal=False)
