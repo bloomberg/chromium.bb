@@ -15,15 +15,14 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/weak_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
+#include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "chrome/common/metrics/metrics_service_base.h"
-#include "content/public/common/process_type.h"
-#include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/url_fetcher_delegate.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/external_metrics.h"
@@ -31,6 +30,7 @@
 
 class BookmarkModel;
 class BookmarkNode;
+class MetricsLog;
 class MetricsReportingScheduler;
 class PrefService;
 class Profile;
@@ -53,14 +53,19 @@ namespace prerender {
 bool IsOmniboxEnabled(Profile* profile);
 }
 
+namespace tracked_objects {
+struct ProcessDataSnapshot;
+}
+
 namespace webkit {
 struct WebPluginInfo;
 }
 
-
-class MetricsService : public content::NotificationObserver,
-                       public content::URLFetcherDelegate,
-                       public MetricsServiceBase {
+class MetricsService
+    : public chrome_browser_metrics::TrackingSynchronizerObserver,
+      public content::NotificationObserver,
+      public content::URLFetcherDelegate,
+      public MetricsServiceBase {
  public:
   MetricsService();
   virtual ~MetricsService();
@@ -161,10 +166,17 @@ class MetricsService : public content::NotificationObserver,
   // loading plugin information.
   void OnInitTaskGotHardwareClass(const std::string& hardware_class);
 
-  // Callback from PluginService::GetPlugins() that moves the state to
-  // INIT_TASK_DONE.
+  // Callback from PluginService::GetPlugins() that continues the init task by
+  // loading profiler data.
   void OnInitTaskGotPluginInfo(
       const std::vector<webkit::WebPluginInfo>& plugins);
+
+  // TrackingSynchronizerObserver:
+  virtual void ReceivedProfilerData(
+      const tracked_objects::ProcessDataSnapshot& process_data,
+      content::ProcessType process_type) OVERRIDE;
+  // Callback that moves the state to INIT_TASK_DONE.
+  virtual void FinishedReceivingProfilerData() OVERRIDE;
 
   // When we start a new version of Chromium (different from our last run), we
   // need to discard the old crash stats so that we don't attribute crashes etc.
@@ -346,6 +358,9 @@ class MetricsService : public content::NotificationObserver,
 
   // The list of plugins which was retrieved on the file thread.
   std::vector<webkit::WebPluginInfo> plugins_;
+
+  // The initial log, used to record startup metrics.
+  scoped_ptr<MetricsLog> initial_log_;
 
   // The outstanding transmission appears as a URL Fetch operation.
   scoped_ptr<content::URLFetcher> current_fetch_xml_;

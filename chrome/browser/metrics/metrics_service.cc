@@ -152,6 +152,7 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
+#include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -164,6 +165,7 @@
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_log_serializer.h"
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
+#include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/net/http_pipelining_compatibility_client.h"
 #include "chrome/browser/net/network_stats.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -773,7 +775,7 @@ void MetricsService::InitTaskGetHardwareClass(
 
 void MetricsService::OnInitTaskGotHardwareClass(
     const std::string& hardware_class) {
-  DCHECK_EQ(state_, INIT_TASK_SCHEDULED);
+  DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
   hardware_class_ = hardware_class;
 
   // Start the next part of the init task: loading plugin information.
@@ -784,11 +786,31 @@ void MetricsService::OnInitTaskGotHardwareClass(
 
 void MetricsService::OnInitTaskGotPluginInfo(
     const std::vector<webkit::WebPluginInfo>& plugins) {
-  DCHECK_EQ(state_, INIT_TASK_SCHEDULED);
+  DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
   plugins_ = plugins;
 
-  if (state_ == INIT_TASK_SCHEDULED)
-    state_ = INIT_TASK_DONE;
+  // Start the next part of the init task: fetching performance data.  This will
+  // call into |FinishedReceivingProfilerData()| when the task completes.
+  chrome_browser_metrics::TrackingSynchronizer::FetchProfilerDataAsynchronously(
+      self_ptr_factory_.GetWeakPtr());
+}
+
+void MetricsService::ReceivedProfilerData(
+    const tracked_objects::ProcessDataSnapshot& process_data,
+    content::ProcessType process_type) {
+  DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
+
+  // Upon the first callback, create the initial log so that we can immediately
+  // save the profiler data.
+  if (!initial_log_.get())
+    initial_log_.reset(new MetricsLog(client_id_, session_id_));
+
+  initial_log_->RecordProfilerData(process_data, process_type);
+}
+
+void MetricsService::FinishedReceivingProfilerData() {
+  DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
+  state_ = INIT_TASK_DONE;
 }
 
 std::string MetricsService::GenerateClientID() {
@@ -1014,7 +1036,7 @@ void MetricsService::MakeStagedLog() {
       // anything, because the server will tell us whether it wants to hear
       // from us.
       PrepareInitialLog();
-      DCHECK(state_ == INIT_TASK_DONE);
+      DCHECK_EQ(INIT_TASK_DONE, state_);
       log_manager_.LoadPersistedUnsentLogs();
       state_ = INITIAL_LOG_READY;
       break;
@@ -1042,16 +1064,17 @@ void MetricsService::MakeStagedLog() {
 }
 
 void MetricsService::PrepareInitialLog() {
-  DCHECK(state_ == INIT_TASK_DONE);
+  DCHECK_EQ(INIT_TASK_DONE, state_);
 
-  MetricsLog* log = new MetricsLog(client_id_, session_id_);
-  log->set_hardware_class(hardware_class_);  // Adds to initial log.
-  log->RecordEnvironment(plugins_, profile_dictionary_.get());
+  DCHECK(initial_log_.get());
+  initial_log_->set_hardware_class(hardware_class_);
+  initial_log_->RecordEnvironment(plugins_, profile_dictionary_.get());
 
   // Histograms only get written to the current log, so make the new log current
   // before writing them.
   log_manager_.PauseCurrentLog();
-  log_manager_.BeginLoggingWithLog(log, MetricsLogManager::INITIAL_LOG);
+  log_manager_.BeginLoggingWithLog(initial_log_.release(),
+                                   MetricsLogManager::INITIAL_LOG);
   RecordCurrentHistograms();
   log_manager_.FinishCurrentLog();
   log_manager_.ResumePausedLog();
@@ -1256,7 +1279,7 @@ void MetricsService::OnURLFetchComplete(const content::URLFetcher* source) {
     log_manager_.DiscardStagedLog();
 
     if (log_manager_.has_unsent_logs())
-      DCHECK(state_ < SENDING_CURRENT_LOGS);
+      DCHECK_LT(state_, SENDING_CURRENT_LOGS);
   }
 
   // Error 400 indicates a problem with the log, not with the server, so

@@ -8,9 +8,11 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/tracked_objects.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/metrics/proto/profiler_event.pb.h"
 #include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -20,6 +22,9 @@
 #include "webkit/plugins/webplugininfo.h"
 
 using base::TimeDelta;
+using metrics::ProfilerEventProto;
+using tracked_objects::ProcessDataSnapshot;
+using tracked_objects::TaskSnapshot;
 
 namespace {
 
@@ -53,8 +58,12 @@ class TestMetricsLog : public MetricsLog {
     return &prefs_;
   }
 
+  const metrics::ChromeUserMetricsExtension& uma_proto() const {
+    return *MetricsLog::uma_proto();
+  }
+
   const metrics::SystemProfileProto& system_profile() const {
-    return uma_proto()->system_profile();
+    return uma_proto().system_profile();
   }
 
  private:
@@ -118,6 +127,128 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   // RecordEnvironment() and RecordEnvironmentProto().
   TestRecordEnvironment(false);
   TestRecordEnvironment(true);
+}
+
+// Test that we properly write profiler data to the log.
+TEST_F(MetricsLogTest, RecordProfilerData) {
+  TestMetricsLog log(kClientId, kSessionId);
+  EXPECT_EQ(0, log.uma_proto().profiler_event_size());
+
+  {
+    ProcessDataSnapshot process_data;
+    process_data.process_id = 177;
+    process_data.tasks.push_back(TaskSnapshot());
+    process_data.tasks.back().birth.location.file_name = "file";
+    process_data.tasks.back().birth.location.function_name = "function";
+    process_data.tasks.back().birth.location.line_number = 1337;
+    process_data.tasks.back().birth.thread_name = "birth_thread";
+    process_data.tasks.back().death_data.count = 37;
+    process_data.tasks.back().death_data.run_duration_sum = 31;
+    process_data.tasks.back().death_data.run_duration_max = 17;
+    process_data.tasks.back().death_data.run_duration_sample = 13;
+    process_data.tasks.back().death_data.queue_duration_sum = 8;
+    process_data.tasks.back().death_data.queue_duration_max = 5;
+    process_data.tasks.back().death_data.queue_duration_sample = 3;
+    process_data.tasks.back().death_thread_name = "Still_Alive";
+    process_data.tasks.push_back(TaskSnapshot());
+    process_data.tasks.back().birth.location.file_name = "file2";
+    process_data.tasks.back().birth.location.function_name = "function2";
+    process_data.tasks.back().birth.location.line_number = 1773;
+    process_data.tasks.back().birth.thread_name = "birth_thread2";
+    process_data.tasks.back().death_data.count = 19;
+    process_data.tasks.back().death_data.run_duration_sum = 23;
+    process_data.tasks.back().death_data.run_duration_max = 11;
+    process_data.tasks.back().death_data.run_duration_sample = 7;
+    process_data.tasks.back().death_data.queue_duration_sum = 0;
+    process_data.tasks.back().death_data.queue_duration_max = 0;
+    process_data.tasks.back().death_data.queue_duration_sample = 0;
+    process_data.tasks.back().death_thread_name = "death_thread";
+
+    log.RecordProfilerData(process_data, content::PROCESS_TYPE_BROWSER);
+    ASSERT_EQ(1, log.uma_proto().profiler_event_size());
+    EXPECT_EQ(ProfilerEventProto::STARTUP_PROFILE,
+              log.uma_proto().profiler_event(0).profile_type());
+    EXPECT_EQ(ProfilerEventProto::WALL_CLOCK_TIME,
+              log.uma_proto().profiler_event(0).time_source());
+
+    ASSERT_EQ(2, log.uma_proto().profiler_event(0).tracked_object_size());
+
+    const ProfilerEventProto::TrackedObject* tracked_object =
+        &log.uma_proto().profiler_event(0).tracked_object(0);
+    EXPECT_EQ(13962325592283560029U, tracked_object->source_file_name_hash());
+    EXPECT_EQ(10123486280357988687U,
+              tracked_object->source_function_name_hash());
+    EXPECT_EQ(1337, tracked_object->source_line_number());
+    EXPECT_EQ(3400908935414830400U, tracked_object->birth_thread_name_hash());
+    EXPECT_EQ(37, tracked_object->exec_count());
+    EXPECT_EQ(31, tracked_object->exec_time_total());
+    EXPECT_EQ(13, tracked_object->exec_time_sampled());
+    EXPECT_EQ(8, tracked_object->queue_time_total());
+    EXPECT_EQ(3, tracked_object->queue_time_sampled());
+    EXPECT_EQ(10151977472163283085U, tracked_object->exec_thread_name_hash());
+    EXPECT_EQ(177U, tracked_object->process_id());
+    EXPECT_EQ(ProfilerEventProto::TrackedObject::BROWSER,
+              tracked_object->process_type());
+
+    tracked_object = &log.uma_proto().profiler_event(0).tracked_object(1);
+    EXPECT_EQ(55232426147951219U, tracked_object->source_file_name_hash());
+    EXPECT_EQ(2025659946535236365U,
+              tracked_object->source_function_name_hash());
+    EXPECT_EQ(1773, tracked_object->source_line_number());
+    EXPECT_EQ(15727396632046120663U, tracked_object->birth_thread_name_hash());
+    EXPECT_EQ(19, tracked_object->exec_count());
+    EXPECT_EQ(23, tracked_object->exec_time_total());
+    EXPECT_EQ(7, tracked_object->exec_time_sampled());
+    EXPECT_EQ(0, tracked_object->queue_time_total());
+    EXPECT_EQ(0, tracked_object->queue_time_sampled());
+    EXPECT_EQ(14275151213201158253U, tracked_object->exec_thread_name_hash());
+    EXPECT_EQ(177U, tracked_object->process_id());
+    EXPECT_EQ(ProfilerEventProto::TrackedObject::BROWSER,
+              tracked_object->process_type());
+  }
+
+  {
+    ProcessDataSnapshot process_data;
+    process_data.process_id = 1177;
+    process_data.tasks.push_back(TaskSnapshot());
+    process_data.tasks.back().birth.location.file_name = "file3";
+    process_data.tasks.back().birth.location.function_name = "function3";
+    process_data.tasks.back().birth.location.line_number = 7331;
+    process_data.tasks.back().birth.thread_name = "birth_thread3";
+    process_data.tasks.back().death_data.count = 137;
+    process_data.tasks.back().death_data.run_duration_sum = 131;
+    process_data.tasks.back().death_data.run_duration_max = 117;
+    process_data.tasks.back().death_data.run_duration_sample = 113;
+    process_data.tasks.back().death_data.queue_duration_sum = 108;
+    process_data.tasks.back().death_data.queue_duration_max = 105;
+    process_data.tasks.back().death_data.queue_duration_sample = 103;
+    process_data.tasks.back().death_thread_name = "death_thread3";
+
+    log.RecordProfilerData(process_data, content::PROCESS_TYPE_RENDERER);
+    ASSERT_EQ(1, log.uma_proto().profiler_event_size());
+    EXPECT_EQ(ProfilerEventProto::STARTUP_PROFILE,
+              log.uma_proto().profiler_event(0).profile_type());
+    EXPECT_EQ(ProfilerEventProto::WALL_CLOCK_TIME,
+              log.uma_proto().profiler_event(0).time_source());
+    ASSERT_EQ(3, log.uma_proto().profiler_event(0).tracked_object_size());
+
+    const ProfilerEventProto::TrackedObject* tracked_object =
+        &log.uma_proto().profiler_event(0).tracked_object(2);
+    EXPECT_EQ(5081672290546182009U, tracked_object->source_file_name_hash());
+    EXPECT_EQ(2686523203278102732U,
+              tracked_object->source_function_name_hash());
+    EXPECT_EQ(7331, tracked_object->source_line_number());
+    EXPECT_EQ(8768512930949373716U, tracked_object->birth_thread_name_hash());
+    EXPECT_EQ(137, tracked_object->exec_count());
+    EXPECT_EQ(131, tracked_object->exec_time_total());
+    EXPECT_EQ(113, tracked_object->exec_time_sampled());
+    EXPECT_EQ(108, tracked_object->queue_time_total());
+    EXPECT_EQ(103, tracked_object->queue_time_sampled());
+    EXPECT_EQ(7246674144371406371U, tracked_object->exec_thread_name_hash());
+    EXPECT_EQ(1177U, tracked_object->process_id());
+    EXPECT_EQ(ProfilerEventProto::TrackedObject::RENDERER,
+              tracked_object->process_type());
+  }
 }
 
 #if defined(OS_CHROMEOS)

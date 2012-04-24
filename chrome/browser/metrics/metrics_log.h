@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/metrics/field_trial.h"
 #include "chrome/common/metrics/metrics_log_base.h"
+#include "content/public/common/process_type.h"
 #include "ui/gfx/size.h"
 
 struct AutocompleteLog;
@@ -22,6 +23,10 @@ class PrefService;
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace tracked_objects {
+struct ProcessDataSnapshot;
 }
 
 namespace webkit {
@@ -71,6 +76,12 @@ class MetricsLog : public MetricsLogBase {
   // Records the input text, available choices, and selected entry when the
   // user uses the Omnibox to open a URL.
   void RecordOmniboxOpenedURL(const AutocompleteLog& log);
+
+  // Records the passed profiled data, which should be a snapshot of the
+  // browser's profiled performance during startup for a single process.
+  void RecordProfilerData(
+      const tracked_objects::ProcessDataSnapshot& process_data,
+      content::ProcessType process_type);
 
   // Record recent delta for critical stability metrics.  We can't wait for a
   // restart to gather these, as that delay biases our observation away from
