@@ -37,8 +37,7 @@ SmallLogo.png: %(ChromeDir)s\
 VisualElementsManifest.xml: %(ChromeDir)s\
 delegate_execute.exe: %(VersionDir)s\
 gcswf32.dll: %(VersionDir)s\
-#metro_driver.dll will go in the VersionDir once we fix http://crbug.com/123316
-metro_driver.dll: %(ChromeDir)s\
+metro_driver.dll: %(VersionDir)s\
 plugin.vch: %(VersionDir)s\
 FlashPlayerApp.exe: %(VersionDir)s\
 FlashPlayerCPLApp.cpl: %(VersionDir)s\

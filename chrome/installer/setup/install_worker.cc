@@ -774,6 +774,37 @@ void AddInstallWorkItems(const InstallationState& original_state,
         WorkItem::ALWAYS_MOVE);
   }
 
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    // Desktop only (i.e. not supporting Metro) versions of Chromium do not have
+    // to include visual elements.
+    scoped_ptr<WorkItemList> win8_work_items(
+        WorkItem::CreateConditionalWorkItemList(new ConditionRunIfFileExists(
+            src_path.Append(L"visualelementsmanifest.xml"))));
+    // TODO (gab): All of these hard-coded strings are temporary and will be
+    // deleted in the patch following this one.
+    win8_work_items->AddMoveTreeWorkItem(
+        src_path.Append(L"visualelementsmanifest.xml").value(),
+        target_path.Append(L"visualelementsmanifest.xml").value(),
+        temp_path.value(),
+        WorkItem::ALWAYS_MOVE);
+    win8_work_items->AddMoveTreeWorkItem(
+        src_path.Append(L"logo.png").value(),
+        target_path.Append(L"logo.png").value(),
+        temp_path.value(),
+        WorkItem::ALWAYS_MOVE);
+    win8_work_items->AddMoveTreeWorkItem(
+        src_path.Append(L"smalllogo.png").value(),
+        target_path.Append(L"smalllogo.png").value(),
+        temp_path.value(),
+        WorkItem::ALWAYS_MOVE);
+    win8_work_items->AddMoveTreeWorkItem(
+        src_path.Append(L"splash-620x300.png").value(),
+        target_path.Append(L"splash-620x300.png").value(),
+        temp_path.value(),
+        WorkItem::ALWAYS_MOVE);
+    install_list->AddWorkItem(win8_work_items.release());
+  }
+
   // In the past, we copied rather than moved for system level installs so that
   // the permissions of %ProgramFiles% would be picked up.  Now that |temp_path|
   // is in %ProgramFiles% for system level installs (and in %LOCALAPPDATA%
