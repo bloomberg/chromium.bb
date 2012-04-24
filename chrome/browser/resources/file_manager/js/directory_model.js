@@ -37,7 +37,6 @@ function DirectoryModel(root, singleSelection, showGData, metadataCache) {
   this.currentDirEntry_ = root;
 
   this.fileList_.prepareSort = this.prepareSort_.bind(this);
-  this.autoSelectIndex_ = 0;
 
   this.rootsList_ = new cr.ui.ArrayDataModel([]);
   this.rootsListSelection_ = new cr.ui.ListSingleSelectionModel();
@@ -193,13 +192,6 @@ DirectoryModel.prototype.setFilterHidden = function(value) {
  */
 DirectoryModel.prototype.getCurrentDirEntry = function() {
   return this.currentDirEntry_;
-};
-
-/**
- * @param {number} value New auto select index.
- */
-DirectoryModel.prototype.setAutoSelectIndex = function(value) {
-  this.autoSelectIndex_ = value;
 };
 
 /**
@@ -653,10 +645,7 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
  * @param {function} opt_OnError Called if failed.
  */
 DirectoryModel.prototype.changeDirectory = function(path, opt_OnError) {
-  var onDirectoryResolved = function(dirEntry) {
-    var autoSelect = this.selectIndex.bind(this, this.autoSelectIndex_);
-    this.changeDirectoryEntry_(dirEntry, autoSelect, false);
-  }.bind(this);
+  var onDirectoryResolved = this.changeDirectoryEntry_.bind(this, false);
 
   if (this.unmountedGDataEntry_ &&
       DirectoryModel.getRootType(path) == DirectoryModel.RootType.GDATA) {
@@ -691,19 +680,14 @@ DirectoryModel.prototype.changeDirectory = function(path, opt_OnError) {
  * changed.
  *
  * @private
- * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
- * @param {function} action Action executed if the directory loads
- *    successfully.  By default selects the first item (unless it's a save
- *    dialog).
  * @param {boolean} initial True if it comes from setupPath and
  *                          false if caused by an user action.
+ * @param {DirectoryEntry} dirEntry A new directory entry.
  */
-DirectoryModel.prototype.changeDirectoryEntry_ = function(dirEntry, action,
-                                                          initial) {
+DirectoryModel.prototype.changeDirectoryEntry_ = function(initial, dirEntry) {
   var previous = this.currentDirEntry_;
   this.currentDirEntry_ = dirEntry;
   function onRescanComplete() {
-    action();
     // For tests that open the dialog to empty directories, everything
     // is loaded at this point.
     chrome.test.sendMessage('directory-change-complete');
@@ -749,10 +733,10 @@ DirectoryModel.prototype.setupPath = function(path, opt_loadedCallback,
       opt_pathResolveCallback(baseName, leafName, exists && !overridden);
   }.bind(this);
 
-  var changeDirectoryEntry = function(entry, callback, initial, exists) {
+  var changeDirectoryEntry = function(entry, initial, exists) {
     resolveCallback(exists);
     if (!overridden)
-      this.changeDirectoryEntry_(entry, callback, initial);
+      this.changeDirectoryEntry_(initial, entry);
   }.bind(this);
 
   var INITIAL = true;
@@ -760,15 +744,10 @@ DirectoryModel.prototype.setupPath = function(path, opt_loadedCallback,
 
   // Split the dirname from the basename.
   var ary = path.match(/^(?:(.*)\/)?([^\/]*)$/);
-  var autoSelect = function() {
-    this.selectIndex(this.autoSelectIndex_);
-    if (opt_loadedCallback)
-      opt_loadedCallback();
-  }.bind(this);
 
   if (!ary) {
     console.warn('Unable to split default path: ' + path);
-    changeDirectoryEntry(this.root_, autoSelect, INITIAL, !EXISTS);
+    changeDirectoryEntry(this.root_, INITIAL, !EXISTS);
     return;
   }
 
@@ -779,7 +758,7 @@ DirectoryModel.prototype.setupPath = function(path, opt_loadedCallback,
     if (leafEntry.isDirectory) {
       baseName = path;
       leafName = '';
-      changeDirectoryEntry(leafEntry, autoSelect, INITIAL, EXISTS);
+      changeDirectoryEntry(leafEntry, INITIAL, EXISTS);
       return;
     }
 
@@ -801,7 +780,7 @@ DirectoryModel.prototype.setupPath = function(path, opt_loadedCallback,
     // Usually, leaf does not exist, because it's just a suggested file name.
     if (err.code != FileError.NOT_FOUND_ERR)
       console.log('Unexpected error resolving default leaf: ' + err);
-    changeDirectoryEntry(baseDirEntry, autoSelect, INITIAL, !EXISTS);
+    changeDirectoryEntry(baseDirEntry, INITIAL, !EXISTS);
   }
 
   var onBaseError = function(err) {
@@ -822,7 +801,7 @@ DirectoryModel.prototype.setupPath = function(path, opt_loadedCallback,
   var onBaseFound = function(baseDirEntry) {
     if (!leafName) {
       // Default path is just a directory, cd to it and we're done.
-      changeDirectoryEntry(baseDirEntry, autoSelect, INITIAL, !EXISTS);
+      changeDirectoryEntry(baseDirEntry, INITIAL, !EXISTS);
       return;
     }
 
