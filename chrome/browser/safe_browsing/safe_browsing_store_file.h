@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -153,6 +153,10 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   virtual void DeleteAddChunk(int32 chunk_id) OVERRIDE;
   virtual void DeleteSubChunk(int32 chunk_id) OVERRIDE;
 
+  // Verify |file_|'s checksum, calling the corruption callback if it
+  // does not check out.  Empty input is considered valid.
+  virtual bool CheckValidity() OVERRIDE;
+
   // Returns the name of the temporary file used to buffer data for
   // |filename|.  Exported for unit tests.
   static const FilePath TemporaryFileForFilename(const FilePath& filename) {
@@ -189,6 +193,12 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
     // Browsing" file.
     FORMAT_EVENT_DELETED_ORIGINAL,
     FORMAT_EVENT_DELETED_ORIGINAL_FAILED,
+
+    // The checksum did not check out in CheckValidity() or in
+    // FinishUpdate().  This most likely indicates that the machine
+    // crashed before the file was fully sync'ed to disk.
+    FORMAT_EVENT_VALIDITY_CHECKSUM_FAILURE,
+    FORMAT_EVENT_UPDATE_CHECKSUM_FAILURE,
 
     // Memory space for histograms is determined by the max.  ALWAYS
     // ADD NEW VALUES BEFORE THIS ONE.

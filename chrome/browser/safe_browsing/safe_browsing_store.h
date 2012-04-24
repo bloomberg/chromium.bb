@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -219,6 +219,15 @@ class SafeBrowsingStore {
   // visible until the end of the transaction.
   virtual void DeleteAddChunk(int32 chunk_id) = 0;
   virtual void DeleteSubChunk(int32 chunk_id) = 0;
+
+  // May be called during update to verify that the storage is valid.
+  // Return true if the store seems valid.  If corruption is detected,
+  // calls the corruption callback and return false.
+  // NOTE(shess): When storage was SQLite, there was no guarantee that
+  // a structurally sound database actually contained valid data,
+  // whereas SafeBrowsingStoreFile checksums the data.  For now, this
+  // distinction doesn't matter.
+  virtual bool CheckValidity() = 0;
 
   // Pass the collected chunks through SBPRocessSubs() and commit to
   // permanent storage.  The resulting add prefixes and hashes will be

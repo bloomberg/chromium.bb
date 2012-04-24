@@ -1101,6 +1101,29 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
 
 void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
+
+  // The update may have failed due to corrupt storage (for instance,
+  // an excessive number of invalid add_chunks and sub_chunks).
+  // Double-check that the databases are valid.
+  // TODO(shess): Providing a checksum for the add_chunk and sub_chunk
+  // sections would allow throwing a corruption error in
+  // UpdateStarted().
+  if (!update_succeeded) {
+    if (!browse_store_->CheckValidity())
+      DLOG(ERROR) << "Safe-browsing browse database corrupt.";
+
+    if (download_store_.get() && !download_store_->CheckValidity())
+      DLOG(ERROR) << "Safe-browsing download database corrupt.";
+
+    if (csd_whitelist_store_.get() && !csd_whitelist_store_->CheckValidity())
+      DLOG(ERROR) << "Safe-browsing csd whitelist database corrupt.";
+
+    if (download_whitelist_store_.get() &&
+        !download_whitelist_store_->CheckValidity()) {
+      DLOG(ERROR) << "Safe-browsing download whitelist database corrupt.";
+    }
+  }
+
   if (corruption_detected_)
     return;
 
@@ -1325,7 +1348,7 @@ void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
   RecordFailure(FAILURE_DATABASE_CORRUPT_HANDLER);
   corruption_detected_ = true;  // Stop updating the database.
   ResetDatabase();
-  DCHECK(false) << "SafeBrowsing database was corrupt and reset";
+  DLOG(FATAL) << "SafeBrowsing database was corrupt and reset";
 }
 
 // TODO(shess): I'm not clear why this code doesn't have any
