@@ -8,8 +8,6 @@
  *
  * Refer to chrome/test/functional/chromeos_file_browser.py for examples
  * of how this API is used.
- *
- * TODO(olege): Fix style warnings.
  */
 var pyautoAPI = {
   /**
@@ -20,7 +18,7 @@ var pyautoAPI = {
    */
   addItemToSelection: function(name) {
     var entryExists = false;
-    var dm = fileManager.directoryModel_.getFileList();
+    var dm = fileManager.directoryModel_.fileList;
     for (var i = 0; i < dm.length; i++) {
       if (dm.item(i).name == name) {
         fileManager.currentList_.selectionModel.setIndexSelected(i, true);
@@ -41,7 +39,7 @@ var pyautoAPI = {
    */
   listDirectory: function() {
     var list = [];
-    var dm = fileManager.directoryModel_.getFileList();
+    var dm = fileManager.directoryModel_.fileList;
     for (var i = 0; i < dm.length; i++) {
       list.push(dm.item(i).name);
     }
