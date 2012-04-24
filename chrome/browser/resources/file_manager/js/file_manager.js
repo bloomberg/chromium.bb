@@ -3747,7 +3747,7 @@ FileManager.prototype = {
     switch (util.getKeyModifiers(event) + event.keyCode) {
       case 'Ctrl-190':  // Ctrl-. => Toggle filter files.
         var dm = this.directoryModel_;
-        dm.setFilterHidden(!dm.getFilterHidden());
+        dm.setFilterHidden(!dm.isFilterHiddenOn());
         event.preventDefault();
         return;
 
@@ -4208,7 +4208,7 @@ FileManager.prototype = {
       msg = str('ERROR_WHITESPACE_NAME');
     } else if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name)) {
       msg = str('ERROR_RESERVED_NAME');
-    } else if (this.directoryModel_.getFilterHidden() && name[0] == '.') {
+    } else if (this.directoryModel_.isFilterHiddenOn() && name[0] == '.') {
       msg = str('ERROR_HIDDEN_NAME');
     }
 
