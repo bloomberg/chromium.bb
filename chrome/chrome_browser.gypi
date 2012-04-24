@@ -3224,8 +3224,6 @@
         'browser/ui/views/ash/launcher/launcher_updater.h',
         'browser/ui/views/ash/panel_view_aura.cc',
         'browser/ui/views/ash/panel_view_aura.h',
-        'browser/ui/views/ash/screen_orientation_listener.cc',
-        'browser/ui/views/ash/screen_orientation_listener.h',
         'browser/ui/views/ash/screenshot_taker.cc',
         'browser/ui/views/ash/screenshot_taker.h',
         'browser/ui/views/ash/user_gesture_handler.cc',

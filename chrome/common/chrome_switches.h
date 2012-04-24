@@ -342,7 +342,6 @@ extern const char kEnableGView[];
 extern const char kEnableKioskMode[];
 extern const char kEnableMobileSetupDialog[];
 extern const char kEnableONCPolicy[];
-extern const char kEnableSensors[];
 extern const char kEnableStaticIPConfig[];
 extern const char kKioskModeScreensaverPath[];
 extern const char kLoginManager[];

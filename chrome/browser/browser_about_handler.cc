@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/sensors_provider.h"
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
@@ -159,26 +158,6 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
 #endif
 
 #endif  // OFFICIAL_BUILD
-
-#if defined(OS_CHROMEOS)
-  if (host == chrome::kChromeUIRotateHost) {
-    content::ScreenOrientation change = content::SCREEN_ORIENTATION_TOP;
-    std::string query(url.query());
-    if (query == "left") {
-      change = content::SCREEN_ORIENTATION_LEFT;
-    } else if (query == "right") {
-      change = content::SCREEN_ORIENTATION_RIGHT;
-    } else if (query == "top") {
-      change = content::SCREEN_ORIENTATION_TOP;
-    } else if (query == "bottom") {
-      change = content::SCREEN_ORIENTATION_BOTTOM;
-    } else {
-      NOTREACHED() << "Unknown orientation";
-    }
-    content::SensorsProvider::GetInstance()->ScreenOrientationChanged(change);
-    return true;
-  }
-#endif
 
   return false;
 }

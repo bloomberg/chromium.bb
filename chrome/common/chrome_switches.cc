@@ -1247,10 +1247,6 @@ const char kEnableMobileSetupDialog[]       = "enable-mobile-dialog";
 // Enables support for policy-configured networks.
 const char kEnableONCPolicy[]               = "enable-onc-policy";
 
-// Rotates the screen in response to orientation changed events from dbus. Will
-// be reused for more generic sensors.
-const char kEnableSensors[]                 = "enable-sensors";
-
 // Enables static ip configuration. This flag should be removed when it's on by
 // default.
 const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
