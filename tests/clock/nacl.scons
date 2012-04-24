@@ -26,6 +26,14 @@ if env.Bit('tests_use_irt'):
 
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_clock_irt_test')
 
+# The clock_gettime function is provided in librt in the glibc-based
+# toolchain, whereas in the newlib-based toolchain it is in libc.
+# This is because the clock_gettime etc functions were part of the
+# "Advanced Real Time" portion of POSIX, and on normal glibc-based
+# systems the Advanced Real Time functions are all in the rt library.
+# In newlib, there is no librt, and everything got put into libc
+# instead.
+
 if env.Bit('nacl_glibc'):
   env.Append(LINKFLAGS=['-lrt'])
 

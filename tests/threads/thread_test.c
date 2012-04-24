@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12,15 +12,28 @@
 #include <limits.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
 
 #define ARRAY_SIZE(x) (sizeof (x) / sizeof (x)[0])
+#define TIMEOUT_TIME_NS       (500 * 1000 * 1000)  /* 500 ms in ns */
+#define TIMEOUT_EARLY_MS      (18)
+#define TIMEOUT_CHECK_NS      (TIMEOUT_TIME_NS - TIMEOUT_EARLY_MS * 1000 * 1000)
+/*
+ * It appears that on Windows, sometimes the wait just returns early,
+ * and greater "slop" is required -- so we permit TIMEOUT_EARLY_MS
+ * number of milliseconds.
+ *
+ * The observed early wake up on Windows is ~15ms, which is the
+ * Windows scheduling quantum.
+ */
 
 /*
  * On x86, we cannot have more than just shy of 8192 threads running
@@ -777,6 +790,63 @@ static void TestCondvar() {
   TEST_FUNCTION_END;
 }
 
+static void TestCondvarTimeout() {
+  int i = 0;
+  pthread_cond_t cv;
+  pthread_mutex_t mu;
+  struct timespec t_start;
+  struct timespec t_timeout;
+  struct timespec t_end;
+  uint64_t elapsed_ns;
+  int res = 0;
+  TEST_FUNCTION_START;
+  CHECK_OK(pthread_mutex_init(&mu, NULL));
+  CHECK_OK(pthread_cond_init(&cv, NULL));
+
+  /*
+   * The timeout value for pthread_cond_timedwait is in absolute
+   * CLOCK_REALTIME time, so we use the current time and add the
+   * desired elapsed time to it.
+   */
+  res = clock_gettime(CLOCK_REALTIME, &t_start);
+  EXPECT_EQ(res, 0);
+  t_timeout = t_start;
+  t_timeout.tv_nsec += TIMEOUT_TIME_NS;
+  if (t_timeout.tv_nsec > 1000000000) {
+    t_timeout.tv_nsec -= 1000000000;
+    t_timeout.tv_sec += 1;
+  }
+
+  CHECK_OK(pthread_mutex_lock(&mu));
+
+  /* We try several times since the wait may return for a different reason. */
+  while (i < 10) {
+    res = pthread_cond_timedwait(&cv, &mu, &t_timeout);
+    if (res == ETIMEDOUT)
+      break;
+    printf("res = %d\n", res);
+    i++;
+  }
+  printf("res = %d, ETIMEDOUT = %d\n", res, ETIMEDOUT);
+  EXPECT_EQ(ETIMEDOUT, res);
+
+  CHECK_OK(pthread_mutex_unlock(&mu));
+
+  res = clock_gettime(CLOCK_REALTIME, &t_end);
+  EXPECT_EQ(res, 0);
+
+  elapsed_ns = 1000 * 1000 * 1000 * (t_end.tv_sec - t_start.tv_sec) +
+      (t_end.tv_nsec - t_start.tv_nsec);
+  printf("Elapsed time %llu ns\n", elapsed_ns);
+
+  EXPECT_GE(elapsed_ns, TIMEOUT_CHECK_NS);
+
+  CHECK_OK(pthread_cond_destroy(&cv));
+  CHECK_OK(pthread_mutex_destroy(&mu));
+
+  TEST_FUNCTION_END;
+}
+
 void TestStackSize() {
   pthread_attr_t attr;
   size_t stack_size, stack_size2;
@@ -823,6 +893,7 @@ int main(int argc, char *argv[]) {
   if (g_run_intrinsic) TestIntrinsics();
 
   TestCondvar();
+  TestCondvarTimeout();
 
   return g_errors;
 }
