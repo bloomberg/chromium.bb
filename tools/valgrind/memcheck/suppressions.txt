@@ -2609,8 +2609,7 @@
    Memcheck:Leak
    fun:malloc
    fun:XextCreateExtension
-   obj:*
-   obj:*
+   ...
    fun:_ZN3gfx12GLSurfaceGLX16InitializeOneOffEv
    fun:_ZN3gfx9GLSurface24InitializeOneOffInternalEv
    fun:_ZN3gfx9GLSurface16InitializeOneOffEv
