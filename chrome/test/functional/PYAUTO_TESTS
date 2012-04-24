@@ -215,6 +215,8 @@
       '-https.SSLTest.testSSLCertAuthorityOK',
       # crbug.com/114244
       '-imports.ImportsTest.testImportSafariDataTwice',
+      # Test fails due to keychain popup: crbug.com/124913
+      '-infobars.OneClickInfobarTest.testNoSameIDSigninForTwoProfiles',
       # crbug.com/121484
       '-multiprofile.MultiprofileTest.test20NewProfiles',
       '-ntp.NTPTest.testLaunchAppNewWindow',  # crbug.com/79812
