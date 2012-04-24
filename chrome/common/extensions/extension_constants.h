@@ -239,6 +239,15 @@ namespace extension_misc {
     UNLOAD_REASON_TERMINATE,  // Extension has terminated.
   };
 
+  // The states that an app can be in, as reported by chrome.app.installState
+  // and chrome.app.runningState.
+  extern const char kAppStateNotInstalled[];
+  extern const char kAppStateInstalled[];
+  extern const char kAppStateDisabled[];
+  extern const char kAppStateRunning[];
+  extern const char kAppStateCannotRun[];
+  extern const char kAppStateReadyToRun[];
+
   // Error indicating that the app notifications API is not accessible by split
   // mode extensions in incognito windows.
   extern const char kAppNotificationsIncognitoError[];

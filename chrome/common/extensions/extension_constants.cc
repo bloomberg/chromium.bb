@@ -112,6 +112,14 @@ const char kAccessExtensionPath[] =
     "/usr/share/chromeos-assets/accessibility/extensions";
 const char kChromeVoxDirectoryName[] = "access_chromevox";
 #endif
+
+const char kAppStateNotInstalled[] = "not_installed";
+const char kAppStateInstalled[] = "installed";
+const char kAppStateDisabled[] = "disabled";
+const char kAppStateRunning[] = "running";
+const char kAppStateCannotRun[] = "cannot_run";
+const char kAppStateReadyToRun[] = "ready_to_run";
+
 const char kAppNotificationsIncognitoError[] =
     "This API is not accessible by 'split' mode "
     "extensions in incognito windows.";

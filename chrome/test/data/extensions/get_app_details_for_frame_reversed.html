@@ -1,0 +1,27 @@
+<script>
+function testUnsuccessfulAccess() {
+  try {
+    chrome.app.getDetailsForFrame(frames[0]);
+  } catch (e) {
+    if (e.indexOf("Access denied") == 0)
+      return true;
+    else
+      throw e;
+  }
+  return false;
+}
+
+function getFrameURL(host) {
+  var result = "http://" + host;
+  if (location.port) {
+    result += ":";
+    result += location.port;
+  }
+  result += location.pathname;
+  return result;
+}
+
+var iframe = document.createElement("iframe");
+iframe.src = getFrameURL("nonapp.com");
+document.documentElement.appendChild(iframe);
+</script>

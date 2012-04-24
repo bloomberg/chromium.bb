@@ -116,6 +116,9 @@ class ExtensionTabHelper
                              const std::string& client_id,
                              int return_route_id,
                              int callback_id);
+  void OnGetAppInstallState(const GURL& requestor_url,
+                            int return_route_id,
+                            int callback_id);
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
   // App extensions related methods:

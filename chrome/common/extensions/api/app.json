@@ -36,6 +36,33 @@
         }
       },
       {
+        "name": "installState",
+        "description": "TODO",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "type": "string",
+                "enum": [ "not_installed", "installed", "disabled" ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "runningState",
+        "description": "TODO",
+        "type": "function",
+        "parameters": [],
+        "returns": {
+          "type": "string",
+          "enum": [ "running", "cannot_run", "ready_to_run" ]
+        }
+      },
+      {
         "name": "install",
         "description": "TODO",
         "type": "function",

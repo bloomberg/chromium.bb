@@ -11,7 +11,8 @@ var app = {
   getIsInstalled: appNatives.GetIsInstalled,
   install: appNatives.Install,
   getDetails: appNatives.GetDetails,
-  getDetailsForFrame: appNatives.GetDetailsForFrame
+  getDetailsForFrame: appNatives.GetDetailsForFrame,
+  runningState: appNatives.GetRunningState
 };
 
 // Tricky; "getIsInstalled" is actually exposed as the getter "isInstalled",
@@ -28,6 +29,13 @@ var chromeHiddenApp = {
   onGetAppNotifyChannelResponse: function(channelId, error, callbackId) {
     if (callbackId) {
       callbacks[callbackId](channelId, error);
+      delete callbacks[callbackId];
+    }
+  },
+
+  onInstallStateResponse: function(state, callbackId) {
+    if (callbackId) {
+      callbacks[callbackId](state);
       delete callbacks[callbackId];
     }
   }
@@ -51,6 +59,12 @@ var appNotifications = {
     }
     appNatives.GetAppNotifyChannel(clientId, callbackId);
   }
+};
+
+app.installState = function getInstallState(callback) {
+  var callbackId = nextCallbackId++;
+  callbacks[callbackId] = callback;
+  appNatives.GetInstallState(callbackId);
 };
 
 // These must match the names in InstallAppBindings() in
