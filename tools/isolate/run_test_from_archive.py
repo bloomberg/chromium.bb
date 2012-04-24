@@ -117,7 +117,10 @@ def open_remote(file_or_url):
 def download_or_copy(file_or_url, dest):
   """Copies a file or download an url."""
   if re.match(r'^https?://.+$', file_or_url):
-    urllib.urlretrieve(file_or_url, dest)
+    try:
+      urllib.URLopener().retrieve(file_or_url, dest)
+    except IOError:
+      logging.error('Failed to download ' + file_or_url)
   else:
     shutil.copy(file_or_url, dest)
 
