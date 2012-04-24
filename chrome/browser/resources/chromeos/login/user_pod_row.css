@@ -182,7 +182,7 @@ html[dir=rtl] .pod .capslock-hint {
   background: url('../../../../../ui/resources/close_bar.png') center center no-repeat;
   background-color: rgba(255, 255, 255, 0.3);
   border: 0;
-  border-radius: 4px;
+  border-radius: 2px;
   box-shadow: none;
   height: 16px;
   margin: 0;
@@ -196,7 +196,14 @@ html[dir=rtl] .pod .capslock-hint {
 }
 
 .pod .remove-user-button:focus,
-.pod:hover .remove-user-button {
+.user-image:hover ~ .remove-user-button {
+  opacity: 1;
+}
+
+.pod.focused .remove-user-button {
+  /* Track shifting of .user-image on pod focus. */
+  -webkit-transform: translateY(-1px);
+  -webkit-transition: -webkit-transform 140ms ease;
   opacity: 1;
 }
 
@@ -231,4 +238,5 @@ html[dir=rtl] .pod .capslock-hint {
 .pod.focused .signed-in-indicator {
   /* Track shifting of .user-image on pod focus. */
   -webkit-transform: translateY(-1px);
+  -webkit-transition: -webkit-transform 140ms ease;
 }
