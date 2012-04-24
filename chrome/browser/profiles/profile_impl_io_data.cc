@@ -245,6 +245,8 @@ ProfileImplIOData::ProfileImplIOData()
     : ProfileIOData(false),
       clear_local_state_on_exit_(false) {}
 ProfileImplIOData::~ProfileImplIOData() {
+  DestroyResourceContext();
+
   if (media_request_context_)
     media_request_context_->AssertNoURLRequests();
 }

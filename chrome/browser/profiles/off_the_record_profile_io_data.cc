@@ -146,7 +146,9 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
 
 OffTheRecordProfileIOData::OffTheRecordProfileIOData()
     : ProfileIOData(true) {}
-OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {}
+OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
+  DestroyResourceContext();
+}
 
 void OffTheRecordProfileIOData::LazyInitializeInternal(
     ProfileParams* profile_params) const {

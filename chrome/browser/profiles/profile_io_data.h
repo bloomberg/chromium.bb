@@ -85,7 +85,6 @@ class ProfileIOData {
   // with a content::ResourceContext, and they want access to Chrome data for
   // that profile.
   ExtensionInfoMap* GetExtensionInfoMap() const;
-  HostContentSettingsMap* GetHostContentSettingsMap() const;
   CookieSettings* GetCookieSettings() const;
 
 #if defined(ENABLE_NOTIFICATIONS)
@@ -142,7 +141,6 @@ class ProfileIOData {
     std::string accept_charset;
     std::string referrer_charset;
     IOThread* io_thread;
-    scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<CookieSettings> cookie_settings;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
@@ -217,18 +215,24 @@ class ProfileIOData {
     return main_request_context_;
   }
 
+  // Destroys the ResourceContext first, to cancel any URLRequests that are
+  // using it still, before we destroy the member variables that those
+  // URLRequests may be accessing.
+  void DestroyResourceContext();
+
  private:
   class ResourceContext : public content::ResourceContext {
    public:
     explicit ResourceContext(ProfileIOData* io_data);
     virtual ~ResourceContext();
 
-   private:
-    friend class ProfileIOData;
-
     // ResourceContext implementation:
     virtual net::HostResolver* GetHostResolver() OVERRIDE;
     virtual net::URLRequestContext* GetRequestContext() OVERRIDE;
+
+   private:
+    friend class ProfileIOData;
+
     void EnsureInitialized();
 
     ProfileIOData* const io_data_;
@@ -263,6 +267,19 @@ class ProfileIOData {
           scoped_refptr<ChromeURLRequestContext> main_context,
           const std::string& app_id) const = 0;
 
+  // The order *DOES* matter for the majority of these member variables, so
+  // don't move them around unless you know what you're doing!
+  // General rules:
+  //   * ResourceContext references the URLRequestContexts, so
+  //   URLRequestContexts must outlive ResourceContext, hence ResourceContext
+  //   should be destroyed first.
+  //   * URLRequestContexts reference a whole bunch of members, so
+  //   URLRequestContext needs to be destroyed before them.
+  //   * Therefore, ResourceContext should be listed last, and then the
+  //   URLRequestContexts, and then the URLRequestContext members.
+  //   * Note that URLRequestContext members have a directed dependency graph
+  //   too, so they must themselves be ordered correctly.
+
   // Tracks whether or not we've been lazily initialized.
   mutable bool initialized_;
 
@@ -293,18 +310,9 @@ class ProfileIOData {
   mutable scoped_ptr<chrome_browser_net::HttpServerPropertiesManager>
       http_server_properties_manager_;
 
-  // Pointed to by ResourceContext.
-
-  // TODO(willchan): Remove from ResourceContext.
-  mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
-  mutable scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-  mutable scoped_refptr<CookieSettings> cookie_settings_;
-
 #if defined(ENABLE_NOTIFICATIONS)
   mutable DesktopNotificationService* notification_service_;
 #endif
-
-  mutable ResourceContext resource_context_;
 
   mutable scoped_ptr<TransportSecurityPersister>
       transport_security_persister_;
@@ -315,6 +323,11 @@ class ProfileIOData {
   mutable scoped_refptr<ChromeURLRequestContext> extensions_request_context_;
   // One AppRequestContext per isolated app.
   mutable AppRequestContextMap app_request_context_map_;
+
+  mutable scoped_ptr<ResourceContext> resource_context_;
+
+  mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  mutable scoped_refptr<CookieSettings> cookie_settings_;
 
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
   bool initialized_on_UI_thread_;

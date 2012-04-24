@@ -188,7 +188,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   params->io_thread = g_browser_process->io_thread();
 
-  params->host_content_settings_map = profile->GetHostContentSettingsMap();
   params->cookie_settings = CookieSettings::Factory::GetForProfile(profile);
   params->ssl_config_service = profile->GetSSLConfigService();
   base::Callback<Profile*(void)> profile_getter =
@@ -258,7 +257,8 @@ ProfileIOData::ProfileParams::~ProfileParams() {}
 
 ProfileIOData::ProfileIOData(bool is_incognito)
     : initialized_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(resource_context_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          resource_context_(new ResourceContext(this))),
       initialized_on_UI_thread_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -317,7 +317,7 @@ bool ProfileIOData::IsHandledURL(const GURL& url) {
 }
 
 content::ResourceContext* ProfileIOData::GetResourceContext() const {
-  return &resource_context_;
+  return resource_context_.get();
 }
 
 ChromeURLDataManagerBackend*
@@ -365,10 +365,6 @@ ProfileIOData::GetIsolatedAppRequestContext(
 
 ExtensionInfoMap* ProfileIOData::GetExtensionInfoMap() const {
   return extension_info_map_;
-}
-
-HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
-  return host_content_settings_map_;
 }
 
 CookieSettings* ProfileIOData::GetCookieSettings() const {
@@ -503,15 +499,14 @@ void ProfileIOData::LazyInitialize() const {
 #endif  // defined(OS_CHROMEOS) && !defined(GOOGLE_CHROME_BUILD)
 
   // Take ownership over these parameters.
-  host_content_settings_map_ = profile_params_->host_content_settings_map;
   cookie_settings_ = profile_params_->cookie_settings;
 #if defined(ENABLE_NOTIFICATIONS)
   notification_service_ = profile_params_->notification_service;
 #endif
   extension_info_map_ = profile_params_->extension_info_map;
 
-  resource_context_.host_resolver_ = io_thread_globals->host_resolver.get();
-  resource_context_.request_context_ = main_request_context_;
+  resource_context_->host_resolver_ = io_thread_globals->host_resolver.get();
+  resource_context_->request_context_ = main_request_context_;
 
   LazyInitializeInternal(profile_params_.get());
 
@@ -546,4 +541,8 @@ void ProfileIOData::ShutdownOnUIThread() {
 void ProfileIOData::set_server_bound_cert_service(
     net::ServerBoundCertService* server_bound_cert_service) const {
   server_bound_cert_service_.reset(server_bound_cert_service);
+}
+
+void ProfileIOData::DestroyResourceContext() {
+  resource_context_.reset();
 }

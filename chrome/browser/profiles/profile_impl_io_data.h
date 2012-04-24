@@ -141,13 +141,13 @@ class ProfileImplIOData : public ProfileIOData {
   // Lazy initialization params.
   mutable scoped_ptr<LazyParams> lazy_params_;
 
-  mutable scoped_refptr<ChromeURLRequestContext> media_request_context_;
-
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::HttpTransactionFactory> media_http_factory_;
   mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
 
   mutable scoped_ptr<chrome_browser_net::Predictor> predictor_;
+
+  mutable scoped_refptr<ChromeURLRequestContext> media_request_context_;
 
   // Parameters needed for isolated apps.
   FilePath app_path_;
