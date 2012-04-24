@@ -20,11 +20,15 @@ def main(args):
                     help='Target architecture',
                     dest='arch',
                     default='x86-32')
-  parser.add_option('--sdk_version',
-                    help='SDK Version (pepper_[X], r[X])'
+  parser.add_option('--sdk-revision',
+                    help='SDK Revision'
                          ' (default=buildbot revision)',
-                    dest='sdk_version',
-                    default='')
+                    dest='sdk_revision',
+                    default=None)
+  parser.add_option('--sdk-url',
+                    help='SDK Download URL',
+                    dest='sdk_url',
+                    default=None)
   parser.add_option('--install-dir',
                     help='Install Directory',
                     dest='install_dir',
@@ -43,34 +47,39 @@ def main(args):
 
   buildbot_common.BuildStep(build_prefix + 'Setup New SDK')
   sdk_dir = None
-  sdk_revision = None
-  if options.sdk_version == '':
-    assert buildbot_revision
-    sdk_revision = buildbot_revision.split(':')[0]
-    url = 'gs://nativeclient-mirror/nacl/nacl_sdk/'\
-          'trunk.%s/naclsdk_linux.bz2' % sdk_revision
-    buildbot_common.Run([buildbot_common.GetGsutil(), 'cp', url, '.'],
-                        cwd=MONO_BUILD_DIR)
-    tar_file = None
-    try:
-      tar_file = tarfile.open(os.path.join(MONO_BUILD_DIR, 'naclsdk_linux.bz2'))
-      pepper_dir = os.path.commonprefix(tar_file.getnames())
-      tar_file.extractall(path=MONO_BUILD_DIR)
-      sdk_dir = os.path.join(MONO_BUILD_DIR, pepper_dir)
-    finally:
-      if tar_file:
-        tar_file.close()
-  else:
-    buildbot_common.ErrorExit('sdk_version not yet supported')
+  sdk_revision = options.sdk_revision
+  sdk_url = options.sdk_url
+  if not sdk_url:
+    if not sdk_revision:
+      assert buildbot_revision
+      sdk_revision = buildbot_revision.split(':')[0]
+    sdk_url = 'gs://nativeclient-mirror/nacl/nacl_sdk/'\
+              'trunk.%s/naclsdk_linux.bz2' % sdk_revision
+
+  sdk_url = sdk_url.replace('https://commondatastorage.googleapis.com/',
+                            'gs://')
+
+  sdk_file = sdk_url.split('/')[-1]
+
+  buildbot_common.Run([buildbot_common.GetGsutil(), 'cp', sdk_url, sdk_file],
+                      cwd=MONO_BUILD_DIR)
+  tar_file = None
+  try:
+    tar_file = tarfile.open(os.path.join(MONO_BUILD_DIR, sdk_file))
+    pepper_dir = os.path.commonprefix(tar_file.getnames())
+    tar_file.extractall(path=MONO_BUILD_DIR)
+    sdk_dir = os.path.join(MONO_BUILD_DIR, pepper_dir)
+  finally:
+    if tar_file:
+      tar_file.close()
 
   assert sdk_dir
-  assert sdk_revision
 
   buildbot_common.BuildStep(build_prefix + 'Checkout Mono')
   # TODO(elijahtaylor): Get git URL from master/trigger to make this
   # more flexible for building from upstream and release branches.
   git_url = 'git://github.com/elijahtaylor/mono.git'
-  git_rev = None
+  git_rev = 'HEAD'
   if buildbot_revision:
     git_rev = buildbot_revision.split(':')[1]
   if not os.path.exists(MONO_DIR):

@@ -21,9 +21,9 @@ def main(args):
                     help='Tarfile path',
                     dest='tar_path',
                     default='naclmono_%pepperrev%.bz2')
-  parser.add_option('--sdk-revision',
-                    help='SDK Revision',
-                    dest='sdk_revision',
+  parser.add_option('--upload-path',
+                    help='Upload path (nativeclient-mirror/nacl/nacl_sdk/XXX)',
+                    dest='upload_path',
                     default=None)
   parser.add_option('--pepper-revision',
                     help='Pepper revision',
@@ -35,8 +35,8 @@ def main(args):
                     dest='skip_upload')
   (options, args) = parser.parse_args(args[1:])
 
-  if not options.sdk_revision:
-    buildbot_common.ErrorExit('--sdk-revision is required')
+  if not options.upload_path:
+    buildbot_common.ErrorExit('--upload-path is required')
   if not options.pepper_revision:
     buildbot_common.ErrorExit('--pepper-revision is required')
 
@@ -45,8 +45,6 @@ def main(args):
 
   install_folders = ['bin', 'etc', 'include', 'lib', 'lib32', 'share']
 
-  root_dir = 'mono_pepper_' + options.pepper_revision
-
   buildbot_common.BuildStep('Archive Build')
   tar_file = None
   buildbot_common.RemoveFile(options.tar_path)
@@ -54,14 +52,14 @@ def main(args):
     tar_file = tarfile.open(options.tar_path, mode='w:bz2')
     for subfolder in install_folders:
       tar_file.add(os.path.join(options.install_dir, subfolder),
-                   arcname=os.path.join(root_dir, subfolder))
+                   arcname=subfolder)
   finally:
     if tar_file:
       tar_file.close()
 
   if not options.skip_upload:
     buildbot_common.Archive(os.path.basename(options.tar_path),
-        'nativeclient-mirror/nacl/nacl_sdk/%s' % options.sdk_revision,
+        'nativeclient-mirror/nacl/nacl_sdk/%s' % options.upload_path,
         cwd=os.path.dirname(os.path.abspath(options.tar_path)))
 
 if __name__ == '__main__':
