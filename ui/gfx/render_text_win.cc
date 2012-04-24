@@ -597,6 +597,7 @@ void RenderTextWin::LayoutVisualText() {
     bool tried_fallback = false;
     size_t linked_font_index = 0;
     const std::vector<Font>* linked_fonts = NULL;
+    Font original_font = run->font;
 
     // Select the font desired for glyph generation.
     SelectObject(cached_hdc_, run->font.GetNativeFont());
@@ -661,8 +662,20 @@ void RenderTextWin::LayoutVisualText() {
 
       // The meta file approach did not yield a replacement font, try to find
       // one using font linking. First time through, get the linked fonts list.
-      if (linked_fonts == NULL)
-        linked_fonts = GetLinkedFonts(run->font);
+      if (linked_fonts == NULL) {
+        // First, try to get the list for the original font.
+        linked_fonts = GetLinkedFonts(original_font);
+
+        // If there are no linked fonts for the original font, try querying the
+        // ones for the Uniscribe fallback font. This may happen if the first
+        // font is a custom font that has no linked fonts in the Registry.
+        //
+        // Note: One possibility would be to always merge both lists of fonts,
+        //       but it is not clear whether there are any real world scenarios
+        //       where this would actually help.
+        if (linked_fonts->empty())
+          linked_fonts = GetLinkedFonts(run->font);
+      }
 
       // None of the linked fonts worked, break out of the loop.
       if (linked_font_index == linked_fonts->size()) {
