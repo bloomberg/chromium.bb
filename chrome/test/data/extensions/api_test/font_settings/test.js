@@ -6,6 +6,7 @@
 // Run with browser_tests --gtest_filter=ExtensionApiTest.FontSettings
 
 var fs = chrome.experimental.fontSettings;
+var CONTROLLABLE_BY_THIS_EXTENSION = 'controllable_by_this_extension';
 
 function expect(expected, message) {
   return chrome.test.callbackPass(function(value) {
@@ -172,5 +173,94 @@ chrome.test.runTests([
     var expected = 'GBK';
     var message = 'Setting for default character set should be ' + expected;
     fs.getDefaultCharacterSet(expect({charset: expected}, message));
+  },
+
+  // This test may fail on Windows if the font is not installed on the
+  // system. See crbug.com/122303
+  function clearPerScriptFont() {
+    var script = 'Hang';
+    var genericFamily = 'standard';
+    var fontName = 'Tahoma';
+
+    chrome.test.listenOnce(fs.onFontChanged, function(details) {
+      chrome.test.assertEq(details, {
+        script: script,
+        genericFamily: genericFamily,
+        fontName: fontName,
+        levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
+      });
+    });
+
+    fs.clearFont({
+      script: script,
+      genericFamily: genericFamily,
+    }, chrome.test.callbackPass());
+  },
+
+  // This test may fail on Windows if the font is not installed on the
+  // system. See crbug.com/122303
+  function clearGlobalFont() {
+    var genericFamily = 'sansserif';
+    var fontName = 'Arial';
+
+    chrome.test.listenOnce(fs.onFontChanged, function(details) {
+      chrome.test.assertEq(details, {
+        genericFamily: genericFamily,
+        fontName: fontName,
+        levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
+      });
+    });
+
+    fs.clearFont({
+      genericFamily: genericFamily,
+    }, chrome.test.callbackPass());
+  },
+
+  function clearDefaultFontSize() {
+    var pixelSize = 16;
+    chrome.test.listenOnce(fs.onDefaultFontSizeChanged, function(details) {
+      chrome.test.assertEq(details, {
+        pixelSize: pixelSize,
+        levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
+      });
+    });
+
+    fs.clearDefaultFontSize({}, chrome.test.callbackPass());
+  },
+
+  function clearDefaultFixedFontSize() {
+    var pixelSize = 14;
+    chrome.test.listenOnce(fs.onDefaultFixedFontSizeChanged, function(details) {
+      chrome.test.assertEq(details, {
+        pixelSize: pixelSize,
+        levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
+      });
+    });
+
+    fs.clearDefaultFixedFontSize({}, chrome.test.callbackPass());
+  },
+
+  function clearMinimumFontSize() {
+    var pixelSize = 8;
+    chrome.test.listenOnce(fs.onMinimumFontSizeChanged, function(details) {
+      chrome.test.assertEq(details, {
+        pixelSize: pixelSize,
+        levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
+      });
+    });
+
+    fs.clearMinimumFontSize({}, chrome.test.callbackPass());
+  },
+
+  function clearDefaultCharacterSet() {
+    var charset = 'Shift_JIS';
+    chrome.test.listenOnce(fs.onDefaultCharacterSetChanged, function(details) {
+      chrome.test.assertEq(details, {
+        charset: charset,
+        levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
+      });
+    });
+
+    fs.clearDefaultCharacterSet({}, chrome.test.callbackPass());
   },
 ]);

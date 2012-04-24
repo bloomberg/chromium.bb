@@ -56,6 +56,12 @@ class ExtensionFontSettingsEventRouter : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ExtensionFontSettingsEventRouter);
 };
 
+class ClearFontFunction : public SyncExtensionFunction {
+ public:
+  virtual bool RunImpl() OVERRIDE;
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.fontSettings.clearFont")
+};
+
 class GetFontFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
@@ -76,6 +82,16 @@ class GetFontListFunction : public AsyncExtensionFunction {
  private:
   void FontListHasLoaded(scoped_ptr<base::ListValue> list);
   bool CopyFontsToResult(base::ListValue* fonts);
+};
+
+// Base class for functions that clear a font pref.
+class ClearFontPrefExtensionFunction : public SyncExtensionFunction {
+ protected:
+  virtual bool RunImpl() OVERRIDE;
+
+  // Implementations should return the name of the preference to clear, like
+  // "webkit.webprefs.default_font_size".
+  virtual const char* GetPrefName() = 0;
 };
 
 // Base class for functions that get a font pref.
@@ -106,6 +122,15 @@ class SetFontPrefExtensionFunction : public SyncExtensionFunction {
   virtual const char* GetKey() = 0;
 };
 
+class ClearDefaultFontSizeFunction : public ClearFontPrefExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.fontSettings.clearDefaultFontSize")
+
+ protected:
+  virtual const char* GetPrefName() OVERRIDE;
+};
+
 class GetDefaultFontSizeFunction : public GetFontPrefExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME(
@@ -124,6 +149,16 @@ class SetDefaultFontSizeFunction : public SetFontPrefExtensionFunction {
  protected:
   virtual const char* GetPrefName() OVERRIDE;
   virtual const char* GetKey() OVERRIDE;
+};
+
+class ClearDefaultFixedFontSizeFunction
+    : public ClearFontPrefExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.fontSettings.clearDefaultFixedFontSize")
+
+ protected:
+  virtual const char* GetPrefName() OVERRIDE;
 };
 
 class GetDefaultFixedFontSizeFunction : public GetFontPrefExtensionFunction {
@@ -146,6 +181,15 @@ class SetDefaultFixedFontSizeFunction : public SetFontPrefExtensionFunction {
   virtual const char* GetKey() OVERRIDE;
 };
 
+class ClearMinimumFontSizeFunction : public ClearFontPrefExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.fontSettings.clearMinimumFontSize")
+
+ protected:
+  virtual const char* GetPrefName() OVERRIDE;
+};
+
 class GetMinimumFontSizeFunction : public GetFontPrefExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME(
@@ -164,6 +208,15 @@ class SetMinimumFontSizeFunction : public SetFontPrefExtensionFunction {
  protected:
   virtual const char* GetPrefName() OVERRIDE;
   virtual const char* GetKey() OVERRIDE;
+};
+
+class ClearDefaultCharacterSetFunction : public ClearFontPrefExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.fontSettings.clearDefaultCharacterSet")
+
+ protected:
+  virtual const char* GetPrefName() OVERRIDE;
 };
 
 class GetDefaultCharacterSetFunction : public GetFontPrefExtensionFunction {

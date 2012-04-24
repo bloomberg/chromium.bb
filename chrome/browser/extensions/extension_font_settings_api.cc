@@ -276,6 +276,24 @@ void ExtensionFontSettingsEventRouter::OnFontPrefChanged(
       pref_name);
 }
 
+bool ClearFontFunction::RunImpl() {
+  DictionaryValue* details = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
+
+  std::string pref_path;
+  EXTENSION_FUNCTION_VALIDATE(GetFontNamePrefPath(details, &pref_path));
+
+  // Ensure |pref_path| really is for a registered per-script font pref.
+  EXTENSION_FUNCTION_VALIDATE(
+      profile_->GetPrefs()->FindPreference(pref_path.c_str()));
+
+  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  prefs->RemoveExtensionControlledPref(extension_id(),
+                                       pref_path.c_str(),
+                                       kExtensionPrefsScopeRegular);
+  return true;
+}
+
 bool GetFontFunction::RunImpl() {
   DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
@@ -361,6 +379,14 @@ bool GetFontListFunction::CopyFontsToResult(ListValue* fonts) {
   return true;
 }
 
+bool ClearFontPrefExtensionFunction::RunImpl() {
+  ExtensionPrefs* prefs = profile_->GetExtensionService()->extension_prefs();
+  prefs->RemoveExtensionControlledPref(extension_id(),
+                                       GetPrefName(),
+                                       kExtensionPrefsScopeRegular);
+  return true;
+}
+
 bool GetFontPrefExtensionFunction::RunImpl() {
   PrefService* prefs = profile_->GetPrefs();
   const PrefService::Preference* pref = prefs->FindPreference(GetPrefName());
@@ -387,6 +413,10 @@ bool SetFontPrefExtensionFunction::RunImpl() {
   return true;
 }
 
+const char* ClearDefaultFontSizeFunction::GetPrefName() {
+  return prefs::kWebKitGlobalDefaultFontSize;
+}
+
 const char* GetDefaultFontSizeFunction::GetPrefName() {
   return prefs::kWebKitGlobalDefaultFontSize;
 }
@@ -401,6 +431,10 @@ const char* SetDefaultFontSizeFunction::GetPrefName() {
 
 const char* SetDefaultFontSizeFunction::GetKey() {
   return kPixelSizeKey;
+}
+
+const char* ClearDefaultFixedFontSizeFunction::GetPrefName() {
+  return prefs::kWebKitGlobalDefaultFixedFontSize;
 }
 
 const char* GetDefaultFixedFontSizeFunction::GetPrefName() {
@@ -419,6 +453,10 @@ const char* SetDefaultFixedFontSizeFunction::GetKey() {
   return kPixelSizeKey;
 }
 
+const char* ClearMinimumFontSizeFunction::GetPrefName() {
+  return prefs::kWebKitGlobalMinimumFontSize;
+}
+
 const char* GetMinimumFontSizeFunction::GetPrefName() {
   return prefs::kWebKitGlobalMinimumFontSize;
 }
@@ -433,6 +471,10 @@ const char* SetMinimumFontSizeFunction::GetPrefName() {
 
 const char* SetMinimumFontSizeFunction::GetKey() {
   return kPixelSizeKey;
+}
+
+const char* ClearDefaultCharacterSetFunction::GetPrefName() {
+  return prefs::kGlobalDefaultCharset;
 }
 
 const char* GetDefaultCharacterSetFunction::GetPrefName() {

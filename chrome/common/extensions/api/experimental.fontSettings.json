@@ -46,8 +46,8 @@
     ],
     "functions": [
       {
-        "name": "getFont",
-        "description": "Gets the current font setting for a given script and generic font family.",
+        "name": "clearFont",
+        "description": "Clears the font set by this extension, if any.",
         "parameters": [
           {
             "name": "details",
@@ -55,12 +55,39 @@
             "properties": {
               "script": {
                 "$ref": "ScriptCode",
-                "description": "The script for which the font setting should be retrieved. If omitted, the global script font setting is retrieved.",
+                "description": "The script for which the font should be cleared. If omitted, the global script font setting is cleared.",
                 "optional": true
               },
               "genericFamily": {
                 "$ref": "GenericFamily",
-                "description": "The generic font family for which the font setting should be retrieved."
+                "description": "The generic font family for which the font should be cleared."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getFont",
+        "description": "Gets the font for a given script and generic font family.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "script": {
+                "$ref": "ScriptCode",
+                "description": "The script for which the font should be retrieved. If omitted, the font for the global script is retrieved.",
+                "optional": true
+              },
+              "genericFamily": {
+                "$ref": "GenericFamily",
+                "description": "The generic font family for which the font should be retrieved."
               }
             }
           },
@@ -85,7 +112,7 @@
       },
       {
         "name": "setFont",
-        "description": "Sets the font setting for a given script and generic font family.",
+        "description": "Sets the font for a given script and generic font family.",
         "parameters": [
           {
             "name": "details",
@@ -93,12 +120,12 @@
             "properties": {
               "script": {
                 "$ref": "ScriptCode",
-                "description": "The script code which the font setting should be set. If omitted, the global script font setting is set.",
+                "description": "The script code which the font should be set. If omitted, the font for the global script is set.",
                 "optional": true
               },
               "genericFamily": {
                 "$ref": "GenericFamily",
-                "description": "The generic font family for which the font setting should be set."
+                "description": "The generic font family for which the font should be set."
               },
               "fontName": {
                 "type": "string",
@@ -128,6 +155,24 @@
                 "items": { "$ref": "FontName" }
               }
             ]
+          }
+        ]
+      },
+      {
+        "name": "clearDefaultFontSize",
+        "description": "Clears the default font size set by this extension, if any.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "optional": true,
+            "description": "This parameter is currently unused."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
           }
         ]
       },
@@ -173,6 +218,24 @@
                 "description": "The font size in pixels."
               }
             }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "clearDefaultFixedFontSize",
+        "description": "Clears the default fixed font size set by this extension, if any.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "optional": true,
+            "description": "This parameter is currently unused."
           },
           {
             "type": "function",
@@ -234,6 +297,24 @@
         ]
       },
       {
+        "name": "clearMinimumFontSize",
+        "description": "Clears the minimum font size set by this extension, if any.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "optional": true,
+            "description": "This parameter is currently unused."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "getMinimumFontSize",
         "description": "Gets the minimum font size.",
         "parameters": [
@@ -275,6 +356,24 @@
                 "description": "The font size in pixels."
               }
             }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "clearDefaultCharacterSet",
+        "description": "Clears the default character set set by this extension, if any.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "optional": true,
+            "description": "This parameter is currently unused."
           },
           {
             "type": "function",

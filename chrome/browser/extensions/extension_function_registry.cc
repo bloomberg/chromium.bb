@@ -422,14 +422,19 @@ void ExtensionFunctionRegistry::ResetFunctions() {
 
   // Font settings.
   RegisterFunction<GetFontListFunction>();
+  RegisterFunction<ClearFontFunction>();
   RegisterFunction<GetFontFunction>();
   RegisterFunction<SetFontFunction>();
+  RegisterFunction<ClearDefaultFontSizeFunction>();
   RegisterFunction<GetDefaultFontSizeFunction>();
   RegisterFunction<SetDefaultFontSizeFunction>();
+  RegisterFunction<ClearDefaultFixedFontSizeFunction>();
   RegisterFunction<GetDefaultFixedFontSizeFunction>();
   RegisterFunction<SetDefaultFixedFontSizeFunction>();
+  RegisterFunction<ClearMinimumFontSizeFunction>();
   RegisterFunction<GetMinimumFontSizeFunction>();
   RegisterFunction<SetMinimumFontSizeFunction>();
+  RegisterFunction<ClearDefaultCharacterSetFunction>();
   RegisterFunction<GetDefaultCharacterSetFunction>();
   RegisterFunction<SetDefaultCharacterSetFunction>();
 
