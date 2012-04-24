@@ -75,6 +75,11 @@ typedef base::Callback<void(base::PlatformFileError error,
                             GDataFileType file_type)>
     GetFileCallback;
 
+// Callback for SetMountedState.
+typedef base::Callback<void(base::PlatformFileError error,
+                            const FilePath& file_path)>
+    SetMountedStateCallback;
+
 // Used for file operations like removing files.
 typedef base::Callback<void(base::PlatformFileError error,
                             base::ListValue* feed_list)>
@@ -191,6 +196,7 @@ class GDataFileSystemInterface {
   enum CachedFileOrigin {
     CACHED_FILE_FROM_SERVER = 0,
     CACHED_FILE_LOCALLY_MODIFIED,
+    CACHED_FILE_MOUNTED,
   };
 
   // Enum defining type of file operation e.g. copy or move, etc.
@@ -357,6 +363,10 @@ class GDataFileSystemInterface {
   virtual bool GetFileInfoByPath(const FilePath& gdata_file_path,
                                  GDataFileProperties* properties) = 0;
 
+  // Returns true if the given path is under gdata cache directory, i.e.
+  // <user_profile_dir>/GCache/v1
+  virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const = 0;
+
   // Returns the tmp sub-directory under gdata cache directory, i.e.
   // <user_profile_dir>/GCache/v1/tmp
   virtual FilePath GetGDataCacheTmpDirectory() const = 0;
@@ -391,6 +401,12 @@ class GDataFileSystemInterface {
   // Pin or unpin file.
   virtual void SetPinState(const FilePath& file_path, bool to_pin,
                            const FileOperationCallback& callback) = 0;
+
+  // Marks or unmarks a file as locally mounted.
+  // When marked as mounted, the file is prevented from being modified
+  // or evicted from cache.
+  virtual void SetMountedState(const FilePath& file_path, bool to_mount,
+                               const SetMountedStateCallback& callback) = 0;
 
   // Creates a new file from |entry| under |virtual_dir_path|. Stored its
   // content from |file_content_path| into the cache.
@@ -455,6 +471,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                              const GetCacheStateCallback& callback) OVERRIDE;
   virtual bool GetFileInfoByPath(const FilePath& gdata_file_path,
                                  GDataFileProperties* properties) OVERRIDE;
+  virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const OVERRIDE;
   virtual FilePath GetGDataCacheTmpDirectory() const OVERRIDE;
   virtual FilePath GetGDataTempDownloadFolderPath() const OVERRIDE;
   virtual FilePath GetGDataTempDocumentFolderPath() const OVERRIDE;
@@ -470,6 +487,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Calls private Pin or Unpin methods with |callback|.
   virtual void SetPinState(const FilePath& file_path, bool pin,
                            const FileOperationCallback& callback) OVERRIDE;
+  virtual void SetMountedState(
+      const FilePath& file_path,
+      bool to_mount,
+      const SetMountedStateCallback& callback) OVERRIDE;
   virtual void AddUploadedFile(const FilePath& virtual_dir_path,
                                DocumentEntry* entry,
                                const FilePath& file_content_path,
@@ -1156,6 +1177,19 @@ class GDataFileSystem : public GDataFileSystemInterface,
                            const std::string& md5,
                            FileOperationType file_operation_type,
                            base::PlatformFileError* error);
+
+  // Task posted from SetMountedState to modify cache state on the IO thread
+  // pool, which involves the following:
+  // - moves |source_path| to |dest_path|, where
+  //   if we're mounting: |source_path| is the unmounted path and has .<md5>
+  //       extension, and |dest_path| is the mounted path in persistent dir
+  //       and has .<md5>.mounted extension;
+  //   if we're unmounting: the opposite is true for the two paths, i.e.
+  //       |dest_path| is the mounted path and |source_path| the unmounted path.
+  void SetMountedStateOnIOThreadPool(const FilePath& file_path,
+                                     bool to_mount,
+                                     base::PlatformFileError* error,
+                                     FilePath* cache_file_path);
 
   // Task posted from MarkDirtyInCache to modify cache state on the IO thread
   // pool, which involves the following:

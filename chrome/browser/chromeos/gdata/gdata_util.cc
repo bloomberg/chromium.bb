@@ -16,6 +16,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/libxml_utils.h"
@@ -221,6 +222,11 @@ void InsertGDataCachePathsPermissions(
      kReadOnlyFilePermissions));
   cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
+          GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+          GDataFileSystem::CACHED_FILE_MOUNTED),
+     kReadOnlyFilePermissions));
+  cache_paths->push_back(std::make_pair(
+      file_system->GetCacheFilePath(resource_id, file_md5,
           GDataRootDirectory::CACHE_TYPE_TMP,
           GDataFileSystem::CACHED_FILE_FROM_SERVER),
       kReadOnlyFilePermissions));
@@ -257,6 +263,69 @@ bool IsGDataAvailable(Profile* profile) {
     return false;
 
   return true;
+}
+
+std::string EscapeCacheFileName(const std::string& filename) {
+  // This is based on net/base/escape.cc: net::(anonymous namespace)::Escape
+  std::string escaped;
+  for (size_t i = 0; i < filename.size(); ++i) {
+    char c = filename[i];
+    if (c == '%' || c == '.' || c == '/') {
+      base::StringAppendF(&escaped, "%%%02X", c);
+    } else {
+      escaped.push_back(c);
+    }
+  }
+  return escaped;
+}
+
+std::string UnescapeCacheFileName(const std::string& filename) {
+  std::string unescaped;
+  for (size_t i = 0; i < filename.size(); ++i) {
+    char c = filename[i];
+    if (c == '%' && i + 2 < filename.length()) {
+      c = (HexDigitToInt(filename[i + 1]) << 4) +
+           HexDigitToInt(filename[i + 2]);
+      i += 2;
+    }
+    unescaped.push_back(c);
+  }
+  return unescaped;
+}
+
+void ParseCacheFilePath(const FilePath& path,
+                        std::string* resource_id,
+                        std::string* md5,
+                        std::string* extra_extension) {
+  DCHECK(resource_id);
+  DCHECK(md5);
+  DCHECK(extra_extension);
+
+  // Extract up to two extensions from the right.
+  FilePath base_name = path.BaseName();
+  const int kNumExtensionsToExtract = 2;
+  std::vector<FilePath::StringType> extensions;
+  for (int i = 0; i < kNumExtensionsToExtract; ++i) {
+    FilePath::StringType extension = base_name.Extension();
+    if (!extension.empty()) {
+      // FilePath::Extension returns ".", so strip it.
+      extension = UnescapeCacheFileName(extension.substr(1));
+      base_name = base_name.RemoveExtension();
+      extensions.push_back(extension);
+    } else {
+      break;
+    }
+  }
+
+  // The base_name here is already stripped of extensions in the loop above.
+  *resource_id = UnescapeCacheFileName(base_name.value());
+
+  // Assign the extracted extensions to md5 and extra_extension.
+  int extension_count = extensions.size();
+  *md5 = (extension_count > 0) ? extensions[extension_count - 1] :
+                                 std::string();
+  *extra_extension = (extension_count > 1) ? extensions[extension_count - 2] :
+                                             std::string();
 }
 
 }  // namespace util

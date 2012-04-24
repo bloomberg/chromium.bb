@@ -63,6 +63,7 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                                    const GetCacheStateCallback& callback));
   MOCK_METHOD2(GetFileInfoByPath, bool(const FilePath& gdata_file_path,
                                        GDataFileProperties* properties));
+  MOCK_CONST_METHOD1(IsUnderGDataCacheDirectory, bool(const FilePath& path));
   MOCK_CONST_METHOD0(GetGDataCacheTmpDirectory, FilePath());
   MOCK_CONST_METHOD0(GetGDataTempDownloadFolderPath, FilePath());
   MOCK_CONST_METHOD0(GetGDataTempDocumentFolderPath, FilePath());
@@ -78,6 +79,9 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD3(SetPinState, void(const FilePath&,
                                  bool,
                                  const FileOperationCallback& callback));
+  MOCK_METHOD3(SetMountedState, void(const FilePath&,
+                                     bool,
+                                     const SetMountedStateCallback& callback));
   MOCK_METHOD4(AddUploadedFile, void(const FilePath& file,
                                      DocumentEntry* entry,
                                      const FilePath& file_content_path,

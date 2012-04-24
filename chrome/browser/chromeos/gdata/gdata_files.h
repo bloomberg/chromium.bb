@@ -162,6 +162,7 @@ class GDataFile : public GDataEntry {
     CACHE_STATE_PINNED  = 0x1 << 0,
     CACHE_STATE_PRESENT = 0x1 << 1,
     CACHE_STATE_DIRTY   = 0x1 << 2,
+    CACHE_STATE_MOUNTED = 0x1 << 3,
   };
 
   explicit GDataFile(GDataDirectory* parent, GDataRootDirectory* root);
@@ -185,6 +186,9 @@ class GDataFile : public GDataEntry {
   static bool IsCacheDirty(int cache_state) {
     return cache_state & CACHE_STATE_DIRTY;
   }
+  static bool IsCacheMounted(int cache_state) {
+    return cache_state & CACHE_STATE_MOUNTED;
+  }
   static int SetCachePresent(int cache_state) {
     return cache_state |= CACHE_STATE_PRESENT;
   }
@@ -194,6 +198,9 @@ class GDataFile : public GDataEntry {
   static int SetCacheDirty(int cache_state) {
     return cache_state |= CACHE_STATE_DIRTY;
   }
+  static int SetCacheMounted(int cache_state) {
+    return cache_state |= CACHE_STATE_MOUNTED;
+  }
   static int ClearCachePresent(int cache_state) {
     return cache_state &= ~CACHE_STATE_PRESENT;
   }
@@ -202,6 +209,9 @@ class GDataFile : public GDataEntry {
   }
   static int ClearCacheDirty(int cache_state) {
     return cache_state &= ~CACHE_STATE_DIRTY;
+  }
+  static int ClearCacheMounted(int cache_state) {
+    return cache_state &= ~CACHE_STATE_MOUNTED;
   }
 
   DocumentEntry::EntryKind kind() const { return kind_; }
@@ -353,6 +363,9 @@ class GDataRootDirectory : public GDataDirectory {
     }
     bool IsDirty() const {
       return GDataFile::IsCacheDirty(cache_state);
+    }
+    bool IsMounted() const {
+      return GDataFile::IsCacheMounted(cache_state);
     }
 
     // For debugging purposes.

@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/gdata/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/mock_gdata_sync_client.h"
@@ -51,8 +52,6 @@ using content::BrowserThread;
 
 namespace {
 
-const char kSlash[] = "/";
-const char kEscapedSlash[] = "\xE2\x88\x95";
 const char kSymLinkToDevNull[] = "/dev/null";
 
 struct InitialCacheResource {
@@ -322,10 +321,10 @@ class GDataFileSystemTest : public testing::Test {
     FilePath base_name = actual_path.BaseName();
 
     // FilePath::Extension returns ".", so strip it.
-    std::string unescaped_md5 = GDataEntry::UnescapeUtf8FileName(
+    std::string unescaped_md5 = util::UnescapeCacheFileName(
         base_name.Extension().substr(1));
     EXPECT_EQ(md5, unescaped_md5);
-    std::string unescaped_resource_id = GDataEntry::UnescapeUtf8FileName(
+    std::string unescaped_resource_id = util::UnescapeCacheFileName(
         base_name.RemoveExtension().value());
     EXPECT_EQ(resource_id, unescaped_resource_id);
   }
@@ -375,9 +374,9 @@ class GDataFileSystemTest : public testing::Test {
     if (error == base::PLATFORM_FILE_OK) {
       // Verify filename of |cache_file_path|.
       FilePath base_name = cache_file_path.BaseName();
-      EXPECT_EQ(GDataEntry::EscapeUtf8FileName(resource_id) +
+      EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
                 FilePath::kExtensionSeparator +
-                GDataEntry::EscapeUtf8FileName(
+                util::EscapeCacheFileName(
                     expected_file_extension_.empty() ?
                     md5 : expected_file_extension_),
                 base_name.value());
@@ -580,7 +579,7 @@ class GDataFileSystemTest : public testing::Test {
     // Verify filename of |cache_file_path|.
     if (error == base::PLATFORM_FILE_OK) {
       FilePath base_name = cache_file_path.BaseName();
-      EXPECT_EQ(GDataEntry::EscapeUtf8FileName(resource_id) +
+      EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
                 FilePath::kExtensionSeparator +
                 "local",
                 base_name.value());
@@ -621,6 +620,42 @@ class GDataFileSystemTest : public testing::Test {
     file_system_->ClearDirtyInCache(resource_id, md5,
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
+
+    RunAllPendingForIO();
+  }
+
+  void VerifySetMountedState(const std::string& resource_id,
+                             const std::string& md5,
+                             bool to_mount,
+                             base::PlatformFileError error,
+                             const FilePath& file_path) {
+    ++num_callback_invocations_;
+    EXPECT_TRUE(file_util::PathExists(file_path));
+    EXPECT_TRUE(file_path == file_system_->GetCacheFilePath(
+        resource_id,
+        md5,
+        expected_sub_dir_type_,
+        to_mount ?
+            GDataFileSystemInterface::CACHED_FILE_MOUNTED :
+            GDataFileSystemInterface::CACHED_FILE_FROM_SERVER));
+  }
+
+  void TestSetMountedState(
+      const std::string& resource_id,
+      const std::string& md5,
+      const FilePath& file_path,
+      bool to_mount,
+      base::PlatformFileError expected_error,
+      int expected_cache_state,
+      GDataRootDirectory::CacheSubDirectoryType expected_sub_dir_type) {
+    expected_error_ = expected_error;
+    expected_cache_state_ = expected_cache_state;
+    expected_sub_dir_type_ = expected_sub_dir_type;
+    expect_outgoing_symlink_ = false;
+
+    file_system_->SetMountedState(file_path, to_mount,
+        base::Bind(&GDataFileSystemTest::VerifySetMountedState,
+                   base::Unretained(this), resource_id, md5, to_mount));
 
     RunAllPendingForIO();
   }
@@ -1952,11 +1987,8 @@ TEST_F(GDataFileSystemTest, GetCacheFilePath) {
   // extension separator, to test that the characters are escaped and unescaped
   // correctly, and '.' doesn't mess up the filename format and operations.
   resource_id = "pdf:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?";
-  std::string escaped_resource_id;
-  ReplaceChars(resource_id, kSlash, std::string(kEscapedSlash),
-               &escaped_resource_id);
-  std::string escaped_md5;
-  ReplaceChars(md5, kSlash, std::string(kEscapedSlash), &escaped_md5);
+  std::string escaped_resource_id = util::EscapeCacheFileName(resource_id);
+  std::string escaped_md5 = util::EscapeCacheFileName(md5);
   num_callback_invocations_ = 0;
   TestGetCacheFilePath(resource_id, md5,
                        escaped_resource_id + FilePath::kExtensionSeparator +
@@ -2007,9 +2039,9 @@ TEST_F(GDataFileSystemTest, StoreToCacheSimple) {
   for (FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
     ++num_files_found;
-    EXPECT_EQ(GDataEntry::EscapeUtf8FileName(resource_id) +
+    EXPECT_EQ(util::EscapeCacheFileName(resource_id) +
               FilePath::kExtensionSeparator +
-              GDataEntry::EscapeUtf8FileName(md5),
+              util::EscapeCacheFileName(md5),
               current.BaseName().value());
   }
   EXPECT_EQ(1U, num_files_found);
@@ -2970,6 +3002,52 @@ TEST_F(GDataFileSystemTest, GetAvailableSpace) {
       GDataRootDirectory::CACHE_TYPE_META].Append(
           FILE_PATH_LITERAL("account_metadata.json"));
   EXPECT_TRUE(file_util::PathExists(path));
+}
+
+TEST_F(GDataFileSystemTest, MountUnmount) {
+  EXPECT_CALL(*mock_sync_client_, OnCacheInitialized()).Times(1);
+
+  FilePath file_path;
+  std::string resource_id("pdf:1a2b");
+  std::string md5("abcdef0123456789");
+
+  // First store a file to cache in the tmp subdir.
+  TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
+                   base::PLATFORM_FILE_OK, GDataFile::CACHE_STATE_PRESENT,
+                   GDataRootDirectory::CACHE_TYPE_TMP);
+
+  // Mark the file mounted.
+  num_callback_invocations_ = 0;
+  file_path = file_system_->GetCacheFilePath(
+      resource_id, md5,
+      GDataRootDirectory::CACHE_TYPE_TMP,
+      GDataFileSystemInterface::CACHED_FILE_FROM_SERVER);
+  TestSetMountedState(resource_id, md5, file_path, true,
+                      base::PLATFORM_FILE_OK,
+                      GDataFile::CACHE_STATE_PRESENT |
+                      GDataFile::CACHE_STATE_MOUNTED,
+                      GDataRootDirectory::CACHE_TYPE_PERSISTENT);
+  EXPECT_EQ(1, num_callback_invocations_);
+  EXPECT_TRUE(CacheEntryExists(resource_id, md5));
+
+  // Clear mounted state of the file.
+  num_callback_invocations_ = 0;
+  file_path = file_system_->GetCacheFilePath(
+      resource_id,
+      md5,
+      GDataRootDirectory::CACHE_TYPE_PERSISTENT,
+      GDataFileSystemInterface::CACHED_FILE_MOUNTED);
+  TestSetMountedState(resource_id, md5, file_path, false,
+                      base::PLATFORM_FILE_OK,
+                      GDataFile::CACHE_STATE_PRESENT,
+                      GDataRootDirectory::CACHE_TYPE_TMP);
+  EXPECT_EQ(1, num_callback_invocations_);
+  EXPECT_TRUE(CacheEntryExists(resource_id, md5));
+
+  // Try to remove the file.
+  num_callback_invocations_ = 0;
+  TestRemoveFromCache(resource_id, base::PLATFORM_FILE_OK);
+  EXPECT_EQ(1, num_callback_invocations_);
 }
 
 }   // namespace gdata

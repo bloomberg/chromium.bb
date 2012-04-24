@@ -57,6 +57,7 @@ const char kMimeTypeOctetStream[] = "application/octet-stream";
 const FilePath::CharType kGDataRootDirectory[] = FILE_PATH_LITERAL("gdata");
 const char kWildCard[] = "*";
 const char kLocallyModifiedFileExtension[] = "local";
+const char kMountedArchiveFileExtension[] = "mounted";
 
 const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
 const FilePath::CharType kGDataCacheMetaDir[] = FILE_PATH_LITERAL("meta");
@@ -505,6 +506,18 @@ void RunGetFileFromCacheCallbackHelper(
 
   if (!callback.is_null())
     callback.Run(*error, resource_id, md5, *cache_file_path);
+}
+
+// Ditto for SetMountedStateCallback
+void RunSetMountedStateCallbackHelper(
+    const SetMountedStateCallback& callback,
+    base::PlatformFileError* error,
+    FilePath* cache_file_path) {
+  DCHECK(error);
+  DCHECK(cache_file_path);
+
+  if (!callback.is_null())
+    callback.Run(*error, *cache_file_path);
 }
 
 void RunGetCacheStateCallbackHelper(
@@ -2009,6 +2022,10 @@ bool GDataFileSystem::GetFileInfoByPath(
   return true;
 }
 
+bool GDataFileSystem::IsUnderGDataCacheDirectory(const FilePath& path) const {
+  return gdata_cache_path_ == path || gdata_cache_path_.IsParent(path);
+}
+
 FilePath GDataFileSystem::GetGDataCacheTmpDirectory() const {
   return cache_paths_[GDataRootDirectory::CACHE_TYPE_TMP];
 }
@@ -2121,6 +2138,98 @@ void GDataFileSystem::SetPinState(const FilePath& file_path, bool to_pin,
     Pin(resource_id, md5, cache_callback);
   else
     Unpin(resource_id, md5, cache_callback);
+}
+
+void GDataFileSystem::SetMountedState(const FilePath& file_path, bool to_mount,
+                                      const SetMountedStateCallback& callback) {
+  InitializeCacheIfNecessary();
+
+  base::PlatformFileError* error =
+      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  FilePath* cache_file_path = new FilePath;
+  PostBlockingPoolSequencedTaskAndReply(
+      kGDataFileSystemToken,
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::SetMountedStateOnIOThreadPool,
+                 base::Unretained(this),
+                 file_path,
+                 to_mount,
+                 error,
+                 cache_file_path),
+      base::Bind(&RunSetMountedStateCallbackHelper,
+                 callback,
+                 base::Owned(error),
+                 base::Owned(cache_file_path)));
+}
+
+void GDataFileSystem::SetMountedStateOnIOThreadPool(
+    const FilePath& file_path,
+    bool to_mount,
+    base::PlatformFileError *error,
+    FilePath* cache_file_path) {
+  DCHECK(error);
+  DCHECK(cache_file_path);
+
+  // Lock to access cache map.
+  base::AutoLock lock(lock_);
+
+  // Parse file path to obtain resource_id, md5 and extra_extension.
+  std::string resource_id;
+  std::string md5;
+  std::string extra_extension;
+  util::ParseCacheFilePath(file_path, &resource_id, &md5, &extra_extension);
+  // The extra_extension shall be ".mounted" iff we're unmounting.
+  DCHECK(!to_mount == (extra_extension == kMountedArchiveFileExtension));
+
+  // Get cache entry associated with the resource_id and md5
+  GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(resource_id,
+                                                               md5);
+  if (!entry) {
+    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+    return;
+  }
+  if (to_mount == entry->IsMounted()) {
+    *error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    return;
+  }
+
+  // Get the subdir type and path for the unmounted state.
+  GDataRootDirectory::CacheSubDirectoryType unmounted_subdir =
+      entry->IsPinned() ? GDataRootDirectory::CACHE_TYPE_PERSISTENT :
+                          GDataRootDirectory::CACHE_TYPE_TMP;
+  FilePath unmounted_path = GetCacheFilePath(resource_id, md5, unmounted_subdir,
+                                             CACHED_FILE_FROM_SERVER);
+
+  // Get the subdir type and path for the mounted state.
+  GDataRootDirectory::CacheSubDirectoryType mounted_subdir =
+      GDataRootDirectory::CACHE_TYPE_PERSISTENT;
+  FilePath mounted_path = GetCacheFilePath(resource_id, md5, mounted_subdir,
+                                           CACHED_FILE_MOUNTED);
+
+  // Determine the source and destination paths for moving the cache blob.
+  FilePath source_path;
+  GDataRootDirectory::CacheSubDirectoryType dest_subdir;
+  int cache_state = entry->cache_state;
+  if (to_mount) {
+    source_path = unmounted_path;
+    *cache_file_path = mounted_path;
+    dest_subdir = mounted_subdir;
+    cache_state = GDataFile::SetCacheMounted(cache_state);
+  } else {
+    source_path = mounted_path;
+    *cache_file_path = unmounted_path;
+    dest_subdir = unmounted_subdir;
+    cache_state = GDataFile::ClearCacheMounted(cache_state);
+  }
+
+  // Move cache blob from source path to destination path.
+  *error = ModifyCacheState(source_path, *cache_file_path,
+                            GDataFileSystem::FILE_OPERATION_MOVE,
+                            FilePath(), false);
+  if (*error == base::PLATFORM_FILE_OK) {
+    // Now that cache operation is complete, update cache map
+    root_->UpdateCacheMap(resource_id, md5, dest_subdir, cache_state);
+  }
 }
 
 void GDataFileSystem::OnSetPinStateCompleted(
@@ -3213,14 +3322,21 @@ FilePath GDataFileSystem::GetCacheFilePath(
   // Runs on any thread.
   // Filename is formatted as resource_id.md5, i.e. resource_id is the base
   // name and md5 is the extension.
-  std::string base_name = GDataEntry::EscapeUtf8FileName(resource_id);
+  std::string base_name = util::EscapeCacheFileName(resource_id);
   if (file_origin == CACHED_FILE_LOCALLY_MODIFIED) {
     DCHECK(sub_dir_type == GDataRootDirectory::CACHE_TYPE_PERSISTENT);
     base_name += FilePath::kExtensionSeparator;
     base_name += kLocallyModifiedFileExtension;
   } else if (!md5.empty()) {
     base_name += FilePath::kExtensionSeparator;
-    base_name += GDataEntry::EscapeUtf8FileName(md5);
+    base_name += util::EscapeCacheFileName(md5);
+  }
+  // For mounted archives the filename is formatted as resource_id.md5.mounted,
+  // i.e. resource_id.md5 is the base name and ".mounted" is the extension
+  if (file_origin == CACHED_FILE_MOUNTED) {
+     DCHECK(sub_dir_type == GDataRootDirectory::CACHE_TYPE_PERSISTENT);
+     base_name += FilePath::kExtensionSeparator;
+     base_name += kMountedArchiveFileExtension;
   }
   return cache_paths_[sub_dir_type].Append(base_name);
 }
@@ -3453,12 +3569,19 @@ void GDataFileSystem::GetFileFromCacheOnIOThreadPool(
   GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(resource_id,
                                                                md5);
   if (entry && entry->IsPresent()) {
+    CachedFileOrigin file_origin;
+    if (entry->IsMounted()) {
+      file_origin = CACHED_FILE_MOUNTED;
+    } else if (entry->IsDirty()) {
+      file_origin = CACHED_FILE_LOCALLY_MODIFIED;
+    } else {
+      file_origin = CACHED_FILE_FROM_SERVER;
+    }
     *cache_file_path = GetCacheFilePath(
         resource_id,
         md5,
         entry->sub_dir_type,
-        entry->IsDirty() ? CACHED_FILE_LOCALLY_MODIFIED :
-                           CACHED_FILE_FROM_SERVER);
+        file_origin);
     *error = base::PLATFORM_FILE_OK;
   } else {
     *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -3515,10 +3638,11 @@ void GDataFileSystem::StoreToCacheOnIOThreadPool(
   // If file was previously pinned, store it in persistent dir and create
   // symlink in pinned dir.
   if (entry) {  // File exists in cache.
-    // If file is dirty, return error.
-    if (entry->IsDirty()) {
-      LOG(WARNING) << "Can't store a file to replace a dirty file: res_id="
-                   << resource_id
+    // If file is dirty or mounted, return error.
+    if (entry->IsDirty() || entry->IsMounted()) {
+      LOG(WARNING) << "Can't store a file to replace a "
+                   << (entry->IsDirty() ? "dirty" : "mounted")
+                   << " file: res_id=" << resource_id
                    << ", md5=" << md5;
       *error = base::PLATFORM_FILE_ERROR_IN_USE;
       return;
@@ -3617,10 +3741,10 @@ void GDataFileSystem::PinOnIOThreadPool(const std::string& resource_id,
 
     // Determine source and destination paths.
 
-    // If file is dirty, don't move it, so determine |dest_path| and set
-    // |source_path| the same, because ModifyCacheState only moves files if
+    // If file is dirty or mounted, don't move it, so determine |dest_path| and
+    // set |source_path| the same, because ModifyCacheState only moves files if
     // source and destination are different.
-    if (entry->IsDirty()) {
+    if (entry->IsDirty() || entry->IsMounted()) {
       DCHECK_EQ(GDataRootDirectory::CACHE_TYPE_PERSISTENT, entry->sub_dir_type);
       dest_path = GetCacheFilePath(resource_id,
                                    md5,
@@ -3700,10 +3824,10 @@ void GDataFileSystem::UnpinOnIOThreadPool(const std::string& resource_id,
   GDataRootDirectory::CacheSubDirectoryType sub_dir_type =
       GDataRootDirectory::CACHE_TYPE_TMP;
 
-  // If file is dirty, don't move it, so determine |dest_path| and set
-  // |source_path| the same, because ModifyCacheState moves files if source
+  // If file is dirty or mounted, don't move it, so determine |dest_path| and
+  // set |source_path| the same, because ModifyCacheState moves files if source
   // and destination are different.
-  if (entry->IsDirty()) {
+  if (entry->IsDirty() || entry->IsMounted()) {
     sub_dir_type = GDataRootDirectory::CACHE_TYPE_PERSISTENT;
     DCHECK_EQ(sub_dir_type, entry->sub_dir_type);
     dest_path = GetCacheFilePath(resource_id,
@@ -4035,9 +4159,11 @@ void GDataFileSystem::RemoveFromCacheOnIOThreadPool(
   GDataRootDirectory::CacheEntry* entry = root_->GetCacheEntry(
       resource_id, std::string());
 
-  // If entry doesn't exist or is dirty in cache, nothing to do.
-  if (!entry || entry->IsDirty()) {
-    DVLOG(1) << "Entry " << (entry ? "is dirty" : "doesn't exist")
+  // If entry doesn't exist or is dirty or mounted in cache, nothing to do.
+  if (!entry || entry->IsDirty() || entry->IsMounted()) {
+    DVLOG(1) << "Entry is "
+             << (entry ? (entry->IsDirty() ? "dirty" : "mounted") :
+                         "non-existent")
              << " in cache, not removing";
     *error = base::PLATFORM_FILE_OK;
     return;
@@ -4159,23 +4285,10 @@ void GDataFileSystem::ScanCacheDirectory(
   for (FilePath current = enumerator.Next(); !current.empty();
        current = enumerator.Next()) {
     // Extract resource_id and md5 from filename.
-    FilePath base_name = current.BaseName();
     std::string resource_id;
     std::string md5;
-
-    // Pinned and outgoing symlinks have no extension.
-    if (sub_dir_type == GDataRootDirectory::CACHE_TYPE_PINNED ||
-        sub_dir_type == GDataRootDirectory::CACHE_TYPE_OUTGOING) {
-      resource_id = GDataEntry::UnescapeUtf8FileName(base_name.value());
-    } else {
-      FilePath::StringType extension = base_name.Extension();
-      if (!extension.empty()) {
-        // FilePath::Extension returns ".", so strip it.
-        md5 = GDataEntry::UnescapeUtf8FileName(extension.substr(1));
-      }
-      resource_id = GDataEntry::UnescapeUtf8FileName(
-          base_name.RemoveExtension().value());
-    }
+    std::string extra_extension;
+    util::ParseCacheFilePath(current, &resource_id, &md5, &extra_extension);
 
     // Determine cache state.
     int cache_state = GDataFile::CACHE_STATE_NONE;
@@ -4207,6 +4320,12 @@ void GDataFileSystem::ScanCacheDirectory(
         NOTREACHED() << "Dirty cache file MUST have actual file blob";
       }
       continue;
+    } else if (extra_extension == kMountedArchiveFileExtension) {
+      // Mounted archives in cache should be unmounted upon logout/shutdown.
+      // But if we encounter a mounted file at start, delete it and create an
+      // entry with not PRESENT state.
+      DCHECK(sub_dir_type == GDataRootDirectory::CACHE_TYPE_PERSISTENT);
+      file_util::Delete(current, false);
     } else {
       // Scanning other directories means that cache file is actually present.
       cache_state = GDataFile::SetCachePresent(cache_state);
