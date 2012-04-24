@@ -113,7 +113,8 @@ TEST_P(FullTabUITest, DISABLED_KeyboardBackForward) {
 }
 
 // Tests new window behavior with ctrl+N.
-TEST_P(FullTabUITest, CtrlN) {
+// Flaky due to DelaySendChar; see http://crbug.com/124244.
+TEST_P(FullTabUITest, FLAKY_CtrlN) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
@@ -154,7 +155,8 @@ TEST_P(FullTabUITest, CtrlN) {
 }
 
 // Test that Ctrl+F opens the Find dialog.
-TEST_P(FullTabUITest, CtrlF) {
+// Flaky due to DelaySendChar; see http://crbug.com/124244.
+TEST_P(FullTabUITest, FLAKY_CtrlF) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
@@ -187,7 +189,8 @@ TEST_P(FullTabUITest, CtrlF) {
 }
 
 // Test that ctrl+r does cause a refresh.
-TEST_P(FullTabUITest, CtrlR) {
+// Flaky due to DelaySendChar; see http://crbug.com/124244.
+TEST_P(FullTabUITest, FLAKY_CtrlR) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
@@ -215,7 +218,8 @@ TEST_P(FullTabUITest, CtrlR) {
 }
 
 // Test window close with ctrl+w.
-TEST_P(FullTabUITest, CtrlW) {
+// Flaky due to DelaySendChar; see http://crbug.com/124244.
+TEST_P(FullTabUITest, FLAKY_CtrlW) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
@@ -235,7 +239,8 @@ TEST_P(FullTabUITest, CtrlW) {
 }
 
 // Test address bar navigation with Alt+d and URL.
-TEST_P(FullTabUITest, AltD) {
+// Flaky due to TypeUrlInAddressBar; see http://crbug.com/124244.
+TEST_P(FullTabUITest, FLAKY_AltD) {
   if (IsWorkstationLocked()) {
     LOG(ERROR) << "This test cannot be run in a locked workstation.";
     return;
