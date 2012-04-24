@@ -429,6 +429,10 @@ class SyncerTest : public testing::Test,
     }
   }
 
+  const StatusController& status() {
+    return session_->status_controller();
+  }
+
   Directory* directory() {
     return dir_maker_.directory();
   }
@@ -1193,9 +1197,8 @@ TEST_F(SyncerTest, TestGetUnsyncedAndSimpleCommit) {
     WriteTestDataToEntry(&wtrans, &child);
   }
 
-  const StatusController& status = session_->status_controller();
   SyncShareNudge();
-  EXPECT_EQ(2u, status.unsynced_handles().size());
+  EXPECT_EQ(2u, status().unsynced_handles().size());
   ASSERT_EQ(2u, mock_server_->committed_ids().size());
   // If this test starts failing, be aware other sort orders could be valid.
   EXPECT_TRUE(parent_id_ == mock_server_->committed_ids()[0]);
@@ -1238,9 +1241,8 @@ TEST_F(SyncerTest, TestPurgeWhileUnsynced) {
   directory()->PurgeEntriesWithTypeIn(
       syncable::ModelTypeSet(syncable::PREFERENCES));
 
-  const StatusController& status = session_->status_controller();
   SyncShareNudge();
-  EXPECT_EQ(2U, status.unsynced_handles().size());
+  EXPECT_EQ(2U, status().unsynced_handles().size());
   ASSERT_EQ(2U, mock_server_->committed_ids().size());
   // If this test starts failing, be aware other sort orders could be valid.
   EXPECT_TRUE(parent_id_ == mock_server_->committed_ids()[0]);
@@ -1786,14 +1788,14 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   mock_server_->AddUpdateDirectory(3, -80, "bad_parent", 10, 10);
 
   SyncShareNudge();
-  StatusController* status = session_->mutable_status_controller();
 
   // Id 3 should be in conflict now.
-  EXPECT_EQ(1, status->TotalNumConflictingItems());
+  EXPECT_EQ(1, status().TotalNumConflictingItems());
   {
-    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-    ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(1, status->conflict_progress()->HierarchyConflictingItemsSize());
+    sessions::ScopedModelSafeGroupRestriction r(
+        session_->mutable_status_controller(), GROUP_PASSIVE);
+    ASSERT_TRUE(status().conflict_progress());
+    EXPECT_EQ(1, status().conflict_progress()->HierarchyConflictingItemsSize());
   }
 
   // These entries will be used in the second set of updates.
@@ -1807,11 +1809,12 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   SyncShareNudge();
   // The three items with an unresolved parent should be unapplied (3, 9, 100).
   // The name clash should also still be in conflict.
-  EXPECT_EQ(3, status->TotalNumConflictingItems());
+  EXPECT_EQ(3, status().TotalNumConflictingItems());
   {
-    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-    ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(3, status->conflict_progress()->HierarchyConflictingItemsSize());
+    sessions::ScopedModelSafeGroupRestriction r(
+        session_->mutable_status_controller(), GROUP_PASSIVE);
+    ASSERT_TRUE(status().conflict_progress());
+    EXPECT_EQ(3, status().conflict_progress()->HierarchyConflictingItemsSize());
   }
 
   {
@@ -1901,11 +1904,12 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   }
 
   EXPECT_FALSE(saw_syncer_event_);
-  EXPECT_EQ(4, status->TotalNumConflictingItems());
+  EXPECT_EQ(4, status().TotalNumConflictingItems());
   {
-    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-    ASSERT_TRUE(status->conflict_progress());
-    EXPECT_EQ(4, status->conflict_progress()->HierarchyConflictingItemsSize());
+    sessions::ScopedModelSafeGroupRestriction r(
+        session_->mutable_status_controller(), GROUP_PASSIVE);
+    ASSERT_TRUE(status().conflict_progress());
+    EXPECT_EQ(4, status().conflict_progress()->HierarchyConflictingItemsSize());
   }
 }
 
@@ -2597,8 +2601,7 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
     existing.Put(IS_DEL, true);
   }
   syncer_->SyncShare(session_.get(), SYNCER_BEGIN, SYNCER_END);
-  const StatusController& status(session_->status_controller());
-  EXPECT_EQ(0, status.TotalNumServerConflictingItems());
+  EXPECT_EQ(0, status().TotalNumServerConflictingItems());
 }
 
 TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {
