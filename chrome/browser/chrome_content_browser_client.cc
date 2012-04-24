@@ -158,7 +158,11 @@ namespace {
 const char* kPredefinedAllowedSocketOrigins[] = {
   "okddffdblfhhnmhodogpojmfkjmhinfp",  // Test SSH Client
   "pnhechapfaindjhompbnflcldabbghjo",  // HTerm App (SSH Client)
-  "bglhmjfplikpjnfoegeomebmfnkjomhe"   // see crbug.com/122126
+  "bglhmjfplikpjnfoegeomebmfnkjomhe",  // see crbug.com/122126
+  "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
+  "kgngmbheleoaphbjbaiobfdepmghbfah",  // Pre-release Chrome Remote Desktop
+  "odkaodonbgfohohmklejpjiejmcipmib",  // Dogfood Chrome Remote Desktop
+  "ojoimpklfciegopdfgeenehpalipignm"   // Chromoting canary
 };
 
 // Handles rewriting Web UI URLs.
