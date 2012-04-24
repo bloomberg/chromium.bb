@@ -14,6 +14,7 @@ class SessionStartupPrefTest : public testing::Test {
   virtual void SetUp() {
     pref_service_.reset(new TestingPrefService);
     SessionStartupPref::RegisterUserPrefs(pref_service_.get());
+    pref_service_->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true);
   }
 
   scoped_ptr<TestingPrefService> pref_service_;
@@ -57,6 +58,43 @@ TEST_F(SessionStartupPrefTest, URLListManagedOverridesUser) {
   EXPECT_EQ(3u, result.urls.size());
 }
 
+// Checks to make sure that if the user had previously not selected anything
+// (so that, in effect, the default value "Open the homepage" was selected),
+// their preferences are migrated on upgrade to m19.
+TEST_F(SessionStartupPrefTest, DefaultMigration) {
+  pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com/");
+  pref_service_->SetString(prefs::kHomePage, "http://chromium.org/");
+  pref_service_->SetBoolean(prefs::kHomePageIsNewTabPage, false);
+
+  EXPECT_FALSE(pref_service_->HasPrefPath(prefs::kRestoreOnStartup));
+
+  SessionStartupPref pref = SessionStartupPref::GetStartupPref(
+      pref_service_.get());
+
+  EXPECT_EQ(SessionStartupPref::URLS, pref.type);
+  EXPECT_EQ(1U, pref.urls.size());
+  EXPECT_EQ(GURL("http://chromium.org/"), pref.urls[0]);
+}
+
+// Checks to make sure that if the user had previously not selected anything
+// (so that, in effect, the default value "Open the homepage" was selected),
+// and the NTP is being used for the homepage, their preferences are migrated
+// to "Open the New Tab Page" on upgrade to M19.
+TEST_F(SessionStartupPrefTest, DefaultMigrationHomepageIsNTP) {
+  pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com/");
+  pref_service_->SetString(prefs::kHomePage, "http://chromium.org/");
+  pref_service_->SetBoolean(prefs::kHomePageIsNewTabPage, true);
+
+  EXPECT_FALSE(pref_service_->HasPrefPath(prefs::kRestoreOnStartup));
+
+  SessionStartupPref pref = SessionStartupPref::GetStartupPref(
+      pref_service_.get());
+
+  EXPECT_EQ(SessionStartupPref::DEFAULT, pref.type);
+}
+
+// Checks to make sure that if the user had previously selected "Open the
+// "homepage", their preferences are migrated on upgrade to M19.
 TEST_F(SessionStartupPrefTest, HomePageMigration) {
   pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com/");
 
@@ -65,10 +103,31 @@ TEST_F(SessionStartupPrefTest, HomePageMigration) {
   // using the pref service directly.
   pref_service_->SetInteger(prefs::kRestoreOnStartup, /*kPrefValueHomePage*/ 0);
   pref_service_->SetString(prefs::kHomePage, "http://chromium.org/");
+  pref_service_->SetBoolean(prefs::kHomePageIsNewTabPage, false);
 
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(
       pref_service_.get());
+
   EXPECT_EQ(SessionStartupPref::URLS, pref.type);
   EXPECT_EQ(1U, pref.urls.size());
   EXPECT_EQ(GURL("http://chromium.org/"), pref.urls[0]);
+}
+
+// Checks to make sure that if the user had previously selected "Open the
+// "homepage", and the NTP is being used for the homepage, their preferences
+// are migrated on upgrade to M19.
+TEST_F(SessionStartupPrefTest, HomePageMigrationHomepageIsNTP) {
+  pref_service_->RegisterStringPref(prefs::kHomePage, "http://google.com/");
+
+  // By design, it's impossible to set the 'restore on startup' pref to 0
+  // ("open the homepage") using SessionStartupPref::SetStartupPref(), so set it
+  // using the pref service directly.
+  pref_service_->SetInteger(prefs::kRestoreOnStartup, /*kPrefValueHomePage*/ 0);
+  pref_service_->SetString(prefs::kHomePage, "http://chromium.org/");
+  pref_service_->SetBoolean(prefs::kHomePageIsNewTabPage, true);
+
+  SessionStartupPref pref = SessionStartupPref::GetStartupPref(
+      pref_service_.get());
+
+  EXPECT_EQ(SessionStartupPref::DEFAULT, pref.type);
 }
