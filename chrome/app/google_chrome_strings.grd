@@ -309,7 +309,7 @@ Chrome supports. -->
       </if>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_OPTIONS_RELAUNCH_REQUIRED" desc="The message displayed for an option that requires a relaunch to take effect. This appears in a message box if an option is changed that requires a relaunch.">
-          Please sign out of Chrome OS and sign in again for this change to take effect.
+          Please sign out and sign in again for this change to take effect.
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
@@ -460,7 +460,7 @@ Google Chrome is unable to recover your settings.
       </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_SYNC_OVERVIEW" desc="Chrome OS: The message that appears in the options dialog when sync has not been set up by the user.">
-	  Set up Sync to save your personalized browser features to the web and access them from Google Chrome on any computer.
+          Set up Sync to save your personalized browser features to the web and access them from Google Chrome on any computer.
         </message>
       </if>
       <!-- Try Chrome Toast Dialog -->
@@ -551,7 +551,7 @@ Google Chrome is unable to recover your settings.
       </if>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to restart Chrome OS. Shown next to a button that says 'Restart Now'.">
-          Your changes will take effect the next time you restart Google Chrome OS.
+          Your changes will take effect the next time you restart your device.
         </message>
       </if>
 
@@ -560,45 +560,55 @@ Google Chrome is unable to recover your settings.
          Google Chrome is no longer updating because your operating system is obsolete.
       </message>
 
-      <!-- About Chrome View -->
-      <message name="IDS_UPGRADE_AVAILABLE" desc="Status label: A new version of Chrome is available">
-        A new version of Google Chrome is available
-      </message>
-      <message name="IDS_UPGRADE_SUCCESSFUL" desc="Status label: Successfully upgraded">
-        Google Chrome has been updated to <ph name="VERSION">$1<ex>0.1.131</ex></ph>
-      </message>
-      <message name="IDS_UPGRADE_SUCCESSFUL_NOVERSION" desc="Status label: Successfully upgraded">
-        Google Chrome has been updated
-      </message>
-      <message name="IDS_OLD_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
-        Relaunch Google Chrome to finish updating
-      </message>
-      <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
-        Nearly up-to-date! Relaunch Google Chrome to finish updating.
-      </message>
+      <!-- About Chrome page -->
       <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date">
+        <message name="IDS_UPGRADE_SUCCESSFUL" desc="Status label: Successfully upgraded Google Chrome">
+          Google Chrome has been updated to <ph name="VERSION">$1<ex>0.1.131</ex></ph>
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_SUCCESSFUL" desc="Status label: Successfully upgraded Chrome OS">
+          Your device has been updated to <ph name="VERSION">$1<ex>0.1.131</ex></ph>
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Google Chrome">
+          Nearly up-to-date! Relaunch Google Chrome to finish updating.
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chrome OS">
+          Nearly up-to-date! Restart your device to finish updating.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Google Chrome)">
           Google Chrome is up to date.
         </message>
       </if>
       <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date">
-          Chrome OS is up to date.
-        </message>
-      </if>
-      <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating">
-        Updating Google Chrome...
-      </message>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
-          Google Chrome is up to date
+        <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Chrome OS)">
+          Your device is up to date.
         </message>
       </if>
       <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
-          Google Chrome is up to date (<ph name="VERSION">$1<ex>0.1.131</ex></ph>)
+        <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Google Chrome">
+          Updating Google Chrome...
         </message>
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Chrome OS">
+          Updating your device...
+        </message>
+      </if>
+
+      <!-- About Chrome View (only used on Windows: http://crbug.com/115123) -->
+      <message name="IDS_OLD_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
+        Relaunch Google Chrome to finish updating
+      </message>
+      <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date (Google Chrome)">
+        Google Chrome is up to date (<ph name="VERSION">$1<ex>0.1.131</ex></ph>)
+      </message>
 
       <!-- Extension/App install prompt -->
       <message name="IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app inline installation prompt window">

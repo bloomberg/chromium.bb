@@ -385,7 +385,7 @@ be available for now. -->
       </if>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_OPTIONS_RELAUNCH_REQUIRED" desc="The message displayed for an option that requires a relaunch to take effect. This appears in a message box if an option is changed that requires a relaunch.">
-          Please sign out of Chromium OS and sign in again for this change to take effect.
+          Please sign out and sign in again for this change to take effect.
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
@@ -626,7 +626,7 @@ Chromium is unable to recover your settings.
       </if>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to restart Chromium OS. Shown next to a button that says 'Restart Now'.">
-          Your changes will take effect the next time you restart Chromium OS.
+          Your changes will take effect the next time you restart your device.
         </message>
       </if>
 
@@ -635,45 +635,55 @@ Chromium is unable to recover your settings.
          Chromium is no longer updating because your operating system is obsolete.
       </message>
 
-      <!-- About Chrome View -->
-      <message name="IDS_UPGRADE_AVAILABLE" desc="Status label: A new version of Chromium is available">
-        A new version of Chromium is available
-      </message>
-      <message name="IDS_UPGRADE_SUCCESSFUL" desc="Status label: Successfully upgraded">
-        Chromium has been updated to <ph name="VERSION">$1<ex>0.1.131</ex></ph>
-      </message>
-      <message name="IDS_UPGRADE_SUCCESSFUL_NOVERSION" desc="Status label: Successfully upgraded">
-        Chromium has been updated
-      </message>
-      <message name="IDS_OLD_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
-        Relaunch Chromium to finish updating
-      </message>
-      <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
-        Nearly up-to-date! Relaunch Chromium to finish updating.
-      </message>
+      <!-- About Chrome page -->
       <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date">
+        <message name="IDS_UPGRADE_SUCCESSFUL" desc="Status label: Successfully upgraded Chromium">
+          Chromium has been updated to <ph name="VERSION">$1<ex>0.1.131</ex></ph>
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_SUCCESSFUL" desc="Status label: Successfully upgraded Chromium OS">
+          Your device has been updated to <ph name="VERSION">$1<ex>0.1.131</ex></ph>
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chromium">
+          Nearly up-to-date! Relaunch Chromium to finish updating.
+        </message>
+      </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chromium OS">
+          Nearly up-to-date! Restart your device to finish updating.
+        </message>
+      </if>
+      <if expr="not pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Chromium)">
           Chromium is up to date.
         </message>
       </if>
       <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date">
-          Chromium OS is up to date.
-        </message>
-      </if>
-      <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating">
-        Updating Chromium...
-      </message>
-      <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
-          Chromium is up to date
+        <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Chromium OS)">
+          Your device is up to date.
         </message>
       </if>
       <if expr="not pp_ifdef('chromeos')">
-        <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
-          Chromium is up to date (<ph name="VERSION">$1<ex>0.1.131</ex></ph>)
+        <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Chromium">
+          Updating Chromium...
         </message>
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Chromium OS">
+          Updating your device...
+        </message>
+      </if>
+
+      <!-- About Chrome View (only used on Windows: http://crbug.com/115123) -->
+      <message name="IDS_OLD_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated">
+        Relaunch Chromium to finish updating
+      </message>
+      <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
+        Chromium is up to date (<ph name="VERSION">$1<ex>0.1.131</ex></ph>)
+      </message>
 
       <!-- Extension/App install prompt -->
       <message name="IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app inline installation prompt window">
