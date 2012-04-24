@@ -80,6 +80,8 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(IndexedDBDispatcher, msg)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessIDBCursor,
                         OnSuccessOpenCursor)
+    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessCursorAdvance,
+                        OnSuccessCursorContinue)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessCursorContinue,
                         OnSuccessCursorContinue)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
@@ -132,6 +134,23 @@ void IndexedDBDispatcher::RequestIDBCursorUpdate(
   Send(
       new IndexedDBHostMsg_CursorUpdate(idb_cursor_id, CurrentWorkerId(),
                                         response_id, value, ec));
+  if (*ec)
+    pending_callbacks_.Remove(response_id);
+}
+
+void IndexedDBDispatcher::RequestIDBCursorAdvance(
+    unsigned long count,
+    WebIDBCallbacks* callbacks_ptr,
+    int32 idb_cursor_id,
+    WebExceptionCode* ec) {
+  // Reset all cursor prefetch caches except for this cursor.
+  ResetCursorPrefetchCaches(idb_cursor_id);
+
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+
+  int32 response_id = pending_callbacks_.Add(callbacks.release());
+  Send(new IndexedDBHostMsg_CursorAdvance(idb_cursor_id, CurrentWorkerId(),
+                                          response_id, count, ec));
   if (*ec)
     pending_callbacks_.Remove(response_id);
 }

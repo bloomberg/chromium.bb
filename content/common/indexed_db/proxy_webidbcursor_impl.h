@@ -27,6 +27,9 @@ class RendererWebIDBCursorImpl : public WebKit::WebIDBCursor {
   virtual void update(const WebKit::WebSerializedScriptValue& value,
                       WebKit::WebIDBCallbacks* callback,
                       WebKit::WebExceptionCode& ec);
+  virtual void advance(unsigned long count,
+                       WebKit::WebIDBCallbacks* callback,
+                       WebKit::WebExceptionCode& ec);
   virtual void continueFunction(const WebKit::WebIDBKey& key,
                                 WebKit::WebIDBCallbacks* callback,
                                 WebKit::WebExceptionCode& ec);

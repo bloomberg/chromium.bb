@@ -220,6 +220,9 @@ IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessIDBCursor,
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorContinue,
                      IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
 
+IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorAdvance,
+                     IndexedDBMsg_CallbacksSuccessCursorContinue_Params)
+
 IPC_MESSAGE_CONTROL1(IndexedDBMsg_CallbacksSuccessCursorPrefetch,
                      IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params)
 
@@ -278,6 +281,14 @@ IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_CursorUpdate,
                      int32, /* thread_id */
                      int32, /* response_id */
                      content::SerializedScriptValue, /* value */
+                     WebKit::WebExceptionCode /* ec */)
+
+// WebIDBCursor::advance() message.
+IPC_SYNC_MESSAGE_CONTROL4_1(IndexedDBHostMsg_CursorAdvance,
+                     int32, /* idb_cursor_id */
+                     int32, /* thread_id */
+                     int32, /* response_id */
+                     unsigned long, /* count */
                      WebKit::WebExceptionCode /* ec */)
 
 // WebIDBCursor::continue() message.

@@ -966,6 +966,7 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
                            message, *msg_is_ok)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorDirection, OnDirection)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorUpdate, OnUpdate)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorAdvance, OnAdvance)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorContinue, OnContinue)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetch, OnPrefetch)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_CursorPrefetchReset, OnPrefetchReset)
@@ -1034,6 +1035,26 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnUpdate(
   idb_cursor->update(
       value, new IndexedDBCallbacks<WebIDBKey>(parent_, thread_id, response_id),
       *ec);
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnAdvance(
+    int32 cursor_id,
+    int32 thread_id,
+    int32 response_id,
+    unsigned long count,
+    WebKit::WebExceptionCode* ec) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
+  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(&map_, cursor_id);
+  if (!idb_cursor)
+    return;
+
+  *ec = 0;
+  idb_cursor->advance(count,
+                      new IndexedDBCallbacks<WebIDBCursor>(parent_,
+                                                           thread_id,
+                                                           response_id,
+                                                           cursor_id),
+                      *ec);
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(

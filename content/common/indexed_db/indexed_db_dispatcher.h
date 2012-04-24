@@ -86,6 +86,12 @@ class CONTENT_EXPORT IndexedDBDispatcher
       int32 idb_cursor_id,
       WebKit::WebExceptionCode* ec);
 
+  void RequestIDBCursorAdvance(
+      unsigned long count,
+      WebKit::WebIDBCallbacks* callbacks_ptr,
+      int32 idb_cursor_id,
+      WebKit::WebExceptionCode* ec);
+
   void RequestIDBCursorContinue(
       const IndexedDBKey& key,
       WebKit::WebIDBCallbacks* callbacks_ptr,

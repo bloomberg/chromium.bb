@@ -262,6 +262,11 @@ class IndexedDBDispatcherHost : public content::BrowserMessageFilter {
                   int32 response_id,
                   const content::SerializedScriptValue& value,
                   WebKit::WebExceptionCode* ec);
+    void OnAdvance(int32 idb_object_store_id,
+                   int32 thread_id,
+                   int32 response_id,
+                   unsigned long count,
+                   WebKit::WebExceptionCode* ec);
     void OnContinue(int32 idb_object_store_id,
                     int32 thread_id,
                     int32 response_id,

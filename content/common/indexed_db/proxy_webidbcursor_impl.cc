@@ -61,6 +61,17 @@ void RendererWebIDBCursorImpl::update(const WebSerializedScriptValue& value,
       content::SerializedScriptValue(value), callbacks, idb_cursor_id_, &ec);
 }
 
+void RendererWebIDBCursorImpl::advance(unsigned long count,
+                                       WebIDBCallbacks* callbacks_ptr,
+                                       WebExceptionCode& ec) {
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance();
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  ResetPrefetchCache();
+  dispatcher->RequestIDBCursorAdvance(count, callbacks.release(),
+                                      idb_cursor_id_, &ec);
+}
+
 void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
                                                 WebIDBCallbacks* callbacks_ptr,
                                                 WebExceptionCode& ec) {
