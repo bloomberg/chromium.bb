@@ -605,6 +605,13 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestNetworkDeviceEnable) {
   CrosRequestNetworkDeviceEnable(flimflam::kTypeWifi, kEnable);
 }
 
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosProposeScan) {
+  const std::string device_path = "/device/path";
+  EXPECT_CALL(*MockChromeOSNetwork::Get(), ProposeScan(StrEq(device_path)))
+      .Times(1);
+  CrosProposeScan(device_path);
+}
+
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosAddIPConfig) {
   const std::string device_path = "/device/path";
   EXPECT_CALL(*MockChromeOSNetwork::Get(),
@@ -1117,6 +1124,13 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkDeviceEnable) {
   EXPECT_CALL(*mock_manager_client_,
               DisableTechnology(flimflam::kTypeWifi, _)).Times(1);
   CrosRequestNetworkDeviceEnable(flimflam::kTypeWifi, kDisable);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosProposeScan) {
+  const std::string device_path = "/device/path";
+  EXPECT_CALL(*mock_device_client_,
+              ProposeScan(dbus::ObjectPath(device_path), _)).Times(1);
+  CrosProposeScan(device_path);
 }
 
 TEST_F(CrosNetworkFunctionsTest, CrosAddIPConfig) {

@@ -632,7 +632,12 @@ void CrosRequestChangePin(const std::string& device_path,
 }
 
 void CrosProposeScan(const std::string& device_path) {
-  chromeos::ProposeScan(device_path.c_str());
+  if (g_libcros_network_functions_enabled) {
+    chromeos::ProposeScan(device_path.c_str());
+  } else {
+    DBusThreadManager::Get()->GetFlimflamDeviceClient()->ProposeScan(
+        dbus::ObjectPath(device_path), base::Bind(&DoNothing));
+  }
 }
 
 void CrosRequestCellularRegister(const std::string& device_path,

@@ -100,6 +100,7 @@ class MockChromeOSNetwork {
   MOCK_METHOD1(RequestNetworkScan, void(const char* network_type));
   MOCK_METHOD2(RequestNetworkDeviceEnable, void(const char* network_type,
                                                 bool enable));
+  MOCK_METHOD1(ProposeScan, void(const char* device_path));
   MOCK_METHOD2(AddIPConfig, bool(const char* device_path, IPConfigType type));
   MOCK_METHOD1(RemoveIPConfig, bool(IPConfig* config));
   MOCK_METHOD0(GetDeviceNetworkList, DeviceNetworkList*());
