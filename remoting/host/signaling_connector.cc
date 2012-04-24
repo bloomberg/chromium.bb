@@ -24,9 +24,11 @@ const int kTokenUpdateTimeBeforeExpirySeconds = 60;
 
 SignalingConnector::OAuthCredentials::OAuthCredentials(
     const std::string& login_value,
-    const std::string& refresh_token_value)
+    const std::string& refresh_token_value,
+    const OAuthClientInfo& client_info_value)
     : login(login_value),
-      refresh_token(refresh_token_value) {
+      refresh_token(refresh_token_value),
+      client_info(client_info_value) {
 }
 
 SignalingConnector::SignalingConnector(XmppSignalStrategy* signal_strategy)
@@ -153,20 +155,11 @@ void SignalingConnector::RefreshOAuthToken() {
   DCHECK(CalledOnValidThread());
   LOG(INFO) << "Refreshing OAuth token.";
   DCHECK(!refreshing_oauth_token_);
-#ifdef OFFICIAL_BUILD
-  OAuthClientInfo client_info = {
-    "440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.apps.googleusercontent.com",
-    "Bgur6DFiOMM1h8x-AQpuTQlK"
-  };
-#else  // OFFICIAL_BUILD
-  OAuthClientInfo client_info = {
-    "440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.apps.googleusercontent.com",
-    "W2ieEsG-R1gIA4MMurGrgMc_"
-  };
-#endif  // !OFFICIAL_BUILD
+
   refreshing_oauth_token_ = true;
   gaia_oauth_client_->RefreshToken(
-      client_info, oauth_credentials_->refresh_token, this);
+      oauth_credentials_->client_info,
+      oauth_credentials_->refresh_token, this);
 }
 
 }  // namespace remoting

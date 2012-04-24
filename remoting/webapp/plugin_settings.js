@@ -15,6 +15,13 @@ var remoting = remoting || {};
 remoting.PLUGIN_MIMETYPE = 'HOST_PLUGIN_MIMETYPE';
 
 /**
+ * @type {boolean} Flag that indicates whether official client ID should
+ *                 be used.
+ */
+remoting.OAuth2.prototype.USE_OFFICIAL_CLIENT_ID =
+    OAUTH2_USE_OFFICIAL_CLIENT_ID;
+
+/**
  * @type {string} The OAuth2 redirect URL.
  * @private
  */

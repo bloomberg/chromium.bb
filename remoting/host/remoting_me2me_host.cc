@@ -68,6 +68,14 @@ const FilePath::CharType kDefaultHostConfigFile[] =
 const int kMinPortNumber = 12400;
 const int kMaxPortNumber = 12409;
 
+const char kUnofficialOAuth2ClientId[] =
+    "440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.apps.googleusercontent.com";
+const char kUnofficialOAuth2ClientSecret[] = "W2ieEsG-R1gIA4MMurGrgMc_";
+
+const char kOfficialOAuth2ClientId[] =
+    "440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.apps.googleusercontent.com";
+const char kOfficialOAuth2ClientSecret[] = "Bgur6DFiOMM1h8x-AQpuTQlK";
+
 }  // namespace
 
 namespace remoting {
@@ -77,6 +85,11 @@ class HostProcess
  public:
   HostProcess()
       : message_loop_(MessageLoop::TYPE_UI),
+#ifdef OFFICIAL_BUILD
+        oauth_use_official_client_id_(true),
+#else
+        oauth_use_official_client_id_(false),
+#endif
         allow_nat_traversal_(true),
         restarting_(false),
         shutting_down_(false),
@@ -247,6 +260,13 @@ class HostProcess
       return false;
     }
 
+    // It is okay to not have this value and we will use the default value
+    // depending on whether this is an official build or not.
+    // If the client-Id type to use is not specified we default based on
+    // the build type.
+    auth_config.GetBoolean(kOAuthUseOfficialClientIdConfigPath,
+                           &oauth_use_official_client_id_);
+
     if (!oauth_refresh_token_.empty()) {
       xmpp_auth_token_ = "";  // This will be set to the access token later.
       xmpp_auth_service_ = "oauth2";
@@ -295,9 +315,25 @@ class HostProcess
           new SignalingConnector(signal_strategy_.get()));
 
       if (!oauth_refresh_token_.empty()) {
+        OAuthClientInfo client_info = {
+          kUnofficialOAuth2ClientId,
+          kUnofficialOAuth2ClientSecret
+        };
+
+#ifdef OFFICIAL_BUILD
+        if (oauth_use_official_client_id_) {
+          OAuthClientInfo official_client_info = {
+            kOfficialOAuth2ClientId,
+            kOfficialOAuth2ClientSecret
+          };
+
+          client_info = official_client_info;
+        }
+#endif  // OFFICIAL_BUILD
+
         scoped_ptr<SignalingConnector::OAuthCredentials> oauth_credentials(
             new SignalingConnector::OAuthCredentials(
-                xmpp_login_, oauth_refresh_token_));
+                xmpp_login_, oauth_refresh_token_, client_info));
         signaling_connector_->EnableOAuth(
             oauth_credentials.Pass(),
             base::Bind(&HostProcess::OnOAuthFailed, base::Unretained(this)),
@@ -403,6 +439,7 @@ class HostProcess
   std::string xmpp_auth_service_;
 
   std::string oauth_refresh_token_;
+  bool oauth_use_official_client_id_;
 
   scoped_ptr<policy_hack::NatPolicy> nat_policy_;
   bool allow_nat_traversal_;

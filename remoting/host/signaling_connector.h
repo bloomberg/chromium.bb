@@ -31,11 +31,21 @@ class SignalingConnector
       public net::NetworkChangeNotifier::IPAddressObserver,
       public GaiaOAuthClient::Delegate {
  public:
+  // This structure contains information required to perform
+  // authentication to OAuth2.
   struct OAuthCredentials {
     OAuthCredentials(const std::string& login_value,
-                     const std::string& refresh_token_value);
+                     const std::string& refresh_token_value,
+                     const OAuthClientInfo& client_info);
+
+    // The user's account name (i.e. their email address).
     std::string login;
+
+    // Token delegating authority to us to act as the user.
     std::string refresh_token;
+
+    // Credentials identifying the application to OAuth.
+    OAuthClientInfo client_info;
   };
 
   // OAuth token is updated refreshed when |oauth_credentials| is

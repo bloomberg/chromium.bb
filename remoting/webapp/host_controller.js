@@ -153,6 +153,8 @@ remoting.HostController.prototype.start = function(hostPin, callback) {
       var hostConfig = JSON.stringify({
           xmpp_login: remoting.oauth2.getCachedEmail(),
           oauth_refresh_token: remoting.oauth2.exportRefreshToken(),
+          oauth_use_official_client_id:
+              remoting.oauth2.USE_OFFICIAL_CLIENT_ID,
           host_id: newHostId,
           host_name: hostName,
           host_secret_hash: hostSecretHash,

@@ -21,6 +21,8 @@ extern const char kXmppLoginConfigPath[];
 extern const char kXmppAuthTokenConfigPath[];
 // OAuth refresh token used to fetch an access token for the XMPP network.
 extern const char kOAuthRefreshTokenConfigPath[];
+// Flag to indicate whether the official client ID should be used.
+extern const char kOAuthUseOfficialClientIdConfigPath[];
 // Auth service used to authenticate to XMPP network.
 extern const char kXmppAuthServiceConfigPath[];
 // Unique identifier of the host used to register the host in directory.

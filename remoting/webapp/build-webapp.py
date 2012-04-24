@@ -187,16 +187,21 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
     apiClientId = ('440925447803-avn2sj1kc099s0r7v62je5s339mu0am1.' +
         'apps.googleusercontent.com')
     apiClientSecret = 'Bgur6DFiOMM1h8x-AQpuTQlK'
+    oauth2UseOfficialClientId = 'true';
   else:
     apiClientId = ('440925447803-2pi3v45bff6tp1rde2f7q6lgbor3o5uj.' +
         'apps.googleusercontent.com')
     apiClientSecret = 'W2ieEsG-R1gIA4MMurGrgMc_'
+    oauth2UseOfficialClientId = 'false';
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'API_CLIENT_ID'",
                  "'" + apiClientId + "'")
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'API_CLIENT_SECRET'",
                  "'" + apiClientSecret + "'")
+  findAndReplace(os.path.join(destination, 'plugin_settings.js'),
+                 "OAUTH2_USE_OFFICIAL_CLIENT_ID",
+                 oauth2UseOfficialClientId)
 
   # Make the zipfile.
   createZip(zip_path, destination)
