@@ -136,6 +136,12 @@ class Arm32DecoderState : DecoderState {
   // the class decoders need to only be built once (and reused
   // for each call to "decode").
 
+  const Binary2RegisterImmedShiftedTest Binary2RegisterImmedShiftedTest_instance_;
+
+  const Binary3RegisterImmedShiftedOp Binary3RegisterImmedShiftedOp_instance_;
+
+  const Binary3RegisterOp Binary3RegisterOp_instance_;
+
   const Binary3RegisterShiftedTest Binary3RegisterShiftedTest_instance_;
 
   const Binary4RegisterShiftedOp Binary4RegisterShiftedOp_instance_;
@@ -201,6 +207,12 @@ class Arm32DecoderState : DecoderState {
   const Test Test_instance_;
 
   const TestImmediate TestImmediate_instance_;
+
+  const Unary1RegisterImmediateOp Unary1RegisterImmediateOp_instance_;
+
+  const Unary2RegisterImmedShiftedOp Unary2RegisterImmedShiftedOp_instance_;
+
+  const Unary2RegisterOp Unary2RegisterOp_instance_;
 
   const Unary3RegisterShiftedOp Unary3RegisterShiftedOp_instance_;
 

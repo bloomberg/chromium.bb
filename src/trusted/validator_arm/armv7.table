@@ -47,19 +47,21 @@
 # Patterns are sequences of 32 characters as follows:
 #   '1' - Bit must be value 1.
 #   '0' - Bit must be value 0.
-#   'aaa...aa' (for some sequence of m lower case letters) -
-#       Try all possible combinations of bits for the m bytes.
-#   'AAA...A'  (for some sequence of m upper case letters) -
-#       Try the following combinations:
-#         (1) All m bits set to 1.
-#         (2) All m bits set to 0.
-#         (3) For each 4-bit subsequence, try all combinations,
-#             setting remaining bits to 1.
-#         (4) For each 4-bit subsequence, try all combinations,
-#             setting remaining bits to 0.
+#   'cccc' - Bits defining condition.
+#   'dddd' - Bits defining register Rd.
+#   'ii...i' - Bits defining an immediate value.
+#   'II...I' - Bits defining an immediate value (test sampling only).
+#   'mmmm' - Bits defining register Rm.
+#   'nnnn' - Bits defining register Rn.
+#   'ssss' - Bits defining register Rs.
+#   'tt'   - Bits defining the shift type (for register operations).
+#   'u'    - Bit defining whether register flags is updated.
 #
 # Constraints identifiers used are:
 #    RegsNotPc - All register defined by instruction are not Pc (R15).
+#    Imm5NotZero - The immediate (5-bit) value must not be zero.
+#    NotRdIsPcAndS - Rd not Pc (R15) and S=1 (updates register bit).
+#    NotRdIsPcAndSOrRnIsSp = not (Rd=15 & S=1) or not Rn=13.
 
 +-- ARMv7 (See Section A5.1)
 | cond(31:28) op1(27:25) op(4)
@@ -85,59 +87,136 @@
 | "      0xx1x      1011     =Forbidden  # Load/Store Unprivileged, plus undef
 | "      "          11x1     "
 | 1      ~10xx0     -        ->dp_immed
-| "      10000      -        =DataProc(v6T2)  # MOV (immediate) 16-bit version
-| "      10100      -        =DataProc(v6T2)  # MOVT
+| "      10000      -        = Unary1RegisterImmediateOp
+                                  Mov_Rule_96_A2_P_194
+                                  cccc00110000iiiiddddIIIIIIIIIIII
+                                  RegsNotPc
+                                  (v6T2)
+| "      10100      -        =DataProc(v6T2)  # MOVT A8-200
 | "      10x10      -        ->msr_and_hints
 +--
 
 +-- dp_reg (See Section A5.2.1)
 | op1(24:20) op2(11:7) op3(6:5)
-| 0000x      -         -        =DataProc  # AND(register) A8-36
-| 0001x      -         -        =DataProc  # EOR(register) A8-96
-| 0010x      -         -        =DataProc  # SUB(register) A8-422
-| 0011x      -         -        =DataProc  # RSB(register) A8-286
-| 0100x      -         -        =DataProc  # ADD(register) A8-24
-| 0101x      -         -        =DataProc  # ADC(register) A8-16
-| 0110x      -         -        =DataProc  # SBC(register) A8-304
-| 0111x      -         -        =DataProc  # RSC(register) A8-292
-| 10001      -         -        =Test      # TST(register) A8-456
-| 10011      -         -        =Test      # TEQ(register) A8-450
-| 10101      -         -        =Test      # CMP(register) A8-82
-| 10111      -         -        =Test      # CMN(register) A8-76
-| 1100x      -         -        =DataProc  # ORR(register) A8-230
-| 1101x      00000     00       =DataProc  # MOV(register) A8-196
-| "          ~00000    00       =DataProc  # LSL(immediate) A8-178
-| "          -         01       =DataProc  # LSR(immediate) A8-182
-| "          -         10       =DataProc  # ASR(immediate) A8-40
-| "          00000     11       =DataProc  # RRX A8-282
-| "          ~00000    11       =DataProc  # ROR(immediate) A8-278
-| 1110x      -         -        =DataProc  # BIC(register) A8-52
-| 1111x      -         -        =DataProc  # MVN(register) A8-216
+| 0000x      -         -        = Binary3RegisterImmedShiftedOp
+                                     And_Rule_7_A1_P36
+                                     cccc0000000unnnnddddiiiiitt0mmmm
+                                     NotRdIsPcAndS
+| 0001x      -         -        = Binary3RegisterImmedShiftedOp
+                                     Eor_Rule_45_A1_P96
+                                     cccc0000001unnnnddddiiiiitt0mmmm
+                                     NotRdIsPcAndS
+| 0010x      -         -        = Binary3RegisterImmedShiftedOp
+                                     SubRule_213_A1_P422
+                                     cccc0000010unnnnddddiiiiitt0mmmm
+                                     NotRdIsPcAndSOrRnIsSp
+| 0011x      -         -        = Binary3RegisterImmedShiftedOp
+                                     Rsb_Rule_143_P286
+                                     cccc0000011unnnnddddiiiiitt0mmmm
+                                     NotRdIsPcAndS
+| 0100x      -         -        = Binary3RegisterImmedShiftedOp
+                                     Add_Rule_6_A1_P24
+                                     cccc0000100unnnnddddiiiiitt0mmmm
+                                     NotRdIsPcAndSOrRnIsSp
+| 0101x      -         -        = Binary3RegisterImmedShiftedOp
+                                     Adc_Rule_2_A1_P16
+                                     cccc0000101unnnnddddiiiiitt0mmmm
+                                     NotRdIsPcAndS
+| 0110x      -         -        = Binary3RegisterImmedShiftedOp
+                                     Sbc_Rule_152_A1_P304
+                                     cccc0000110unnnnddddiiiiitt0mmmm
+                                     NotRdIsPcAndS
+| 0111x      -         -        = Binary3RegisterImmedShiftedOp
+                                     Rsc_Rule_146_A1_P292
+                                     cccc0000111unnnnddddiiiiitt0mmmm
+                                     NotRdIsPcAndS
+| 10001      -         -        = Binary2RegisterImmedShiftedTest
+                                     Tst_Rule_231_A1_P456
+                                     cccc00010001nnnn0000iiiiitt0mmmm 
+| 10011      -         -        = Binary2RegisterImmedShiftedTest
+                                     Teq_Rule_228_A1_P450
+                                     cccc00010011nnnn0000iiiiitt0mmmm
+| 10101      -         -        = Binary2RegisterImmedShiftedTest
+                                     Cmp_Rule_36_A1_P82
+                                     cccc00010101nnnn0000iiiiitt0mmmm
+| 10111      -         -        = Binary2RegisterImmedShiftedTest
+                                     Cmn_Rule_33_A1_P76
+                                     cccc00010111nnnn0000iiiiitt0mmmm
+| 1100x      -         -        = Binary3RegisterImmedShiftedOp
+                                     Orr_Rule_114_A1_P230
+                                     cccc0001100unnnnddddiiiiitt0mmmm
+                                     NotRdIsPcAndS
+| 1101x      00000     00       = Unary2RegisterOp
+                                     Mov_Rule_97_A1_P196
+                                     cccc0001101udddd000000000000mmmm
+                                     NotRdIsPcAndS
+| "          ~00000    00       = Unary2RegisterImmedShiftedOp
+                                    Lsl_Rule_88_A1_P178
+                                    cccc0001101u0000ddddiiiii000mmmm
+                                    Imm5NotZero
+| "          -         01       = Unary2RegisterImmedShiftedOp
+                                    Lsr_Rule_90_A1_P182
+                                    cccc0001101u0000ddddiiiii010mmmm
+| "          -         10       = Unary2RegisterImmedShiftedOp
+                                    Asr_Rule_14_A1_P40
+                                    cccc0001101u0000ddddiiiii100mmmm
+| "          00000     11       = Unary2RegisterOp
+                                    Rrx_Rule_141_A1_P282
+                                    cccc0001101udddd000000000110mmmm
+| "          ~00000    11       = Unary2RegisterImmedShiftedOp
+                                     Ror_Rule_139_A1_P278
+                                     cccc0001101u0000ddddiiiii110mmmm
+                                     Imm5NotZero
+| 1110x      -         -        = Binary3RegisterImmedShiftedOp
+                                     Bic_Rule_20_A1_P52
+                                     cccc0001110unnnnddddiiiiitt0mmmm
+                                     NotRdIsPcAndS
+| 1111x      -         -        = Unary2RegisterImmedShiftedOp
+                                     Mvn_Rule_107_A1_P216
+                                     cccc0001111u0000ddddiiiiitt0mmmm
+                                     NotRdIsPcAndS
 +--
 
 +-- dp_reg_shifted (See Section A5.2.2)
 | op1(24:20) op2(6:5)
-| 0000x      -        =Binary4RegisterShiftedOp    # AND(register-shifted) A1 A8-38
-| 0001x      -        =Binary4RegisterShiftedOp    # EOR(register-shifted) A1 A8-98
-| 0010x      -        =Binary4RegisterShiftedOp    # SUB(register-shifted) A1 A8-424
+| 0000x      -        = Binary4RegisterShiftedOp And_Rule_13_A1_P38
+                           cccc0000000unnnnddddssss0tt1mmmm RegsNotPc
+| 0001x      -        = Binary4RegisterShiftedOp Eor_Rule_46_A1_P98
+                           cccc0000001unnnnddddssss0tt1mmmm RegsNotPc
+| 0010x      -        = Binary4RegisterShiftedOp Sub_Rule_214_A1_P424
+                           cccc0000010unnnnddddssss0tt1mmmm RegsNotPc
 | 0011x      -        = Binary4RegisterShiftedOp Rsb_Rule_144_A1_P288
-                                     cccc0000011snnnnddddssss0tt1mmmm RegsNotPc
+                           cccc0000011snnnnddddssss0tt1mmmm RegsNotPc
 | 0100x      -        = Binary4RegisterShiftedOp Add_Rule_7_A1_P26 
-                                     cccc0000100snnnnddddssss0tt1mmmm RegsNotPc
-| 0101x      -        =Binary4RegisterShiftedOp    # ADC(register-shifted) A1 A8-18
-| 0110x      -        =Binary4RegisterShiftedOp    # SBC(register-shifted) A1 A8-306
-| 0111x      -        =Binary4RegisterShiftedOp    # RSC(register-shifted) A1 A8-294
-| 10001      -        =Binary3RegisterShiftedTest  # TST(register-shifted) A1 A8-458
-| 10011      -        =Binary3RegisterShiftedTest  # TEQ(register-shifted) A1 A8-452
-| 10101      -        =Binary3RegisterShiftedTest  # CMP(register-shifted) A1 A8-84
-| 10111      -        =Binary3RegisterShiftedTest  # CMN(register-shifted) A1 A8-78
-| 1100x      -        =Binary4RegisterShiftedOp    # ORR(register-shifted) A1 A8-232
-| 1101x      00       =DataProc  # LSL(register) A8-180
-| "          01       =DataProc  # LSR(register) A8-184
-| "          10       =DataProc  # ASR(register) A8-42
-| "          11       =DataProc  # ROR(register) A8-280
-| 1110x      -        =Binary4RegisterShiftedOp    # BIC(register-shifted) A1 A8-54
-| 1111x      -        =Unary3RegisterShiftedOp     # MVN(register-shifted) A1 A8-218
+                           cccc0000100snnnnddddssss0tt1mmmm RegsNotPc
+| 0101x      -        = Binary4RegisterShiftedOp Adc_Rule_3_A1_P18
+                           cccc0000101unnnnddddssss0tt1mmmm RegsNotPc      
+| 0110x      -        = Binary4RegisterShiftedOp Sbc_Rule_153_A1_P306
+                           cccc0000110unnnnddddssss0tt1mmmm RegsNotPc
+| 0111x      -        = Binary4RegisterShiftedOp Rsc_Rule_147_A1_P294
+                           cccc0000111unnnnddddssss0tt1mmmm
+| 10001      -        = Binary3RegisterShiftedTest Tst_Rule_232_A1_P458
+                           cccc00010001nnnn0000ssss0tt1mmmm RegsNotPc
+| 10011      -        = Binary3RegisterShiftedTest Teq_Rule_229_A1_P452
+                           cccc00010011nnnn0000ssss0tt1mmmm RegsNotPc
+| 10101      -        = Binary3RegisterShiftedTest Cmp_Rule_37_A1_P84
+                           cccc00010101nnnn0000ssss0tt1mmmm RegsNotPc
+| 10111      -        = Binary3RegisterShiftedTest Cmn_Rule_34_A1_P78
+                           cccc00010111nnnn0000ssss0tt1mmmm RegsNotPc
+| 1100x      -        = Binary4RegisterShiftedOp Orr_Rule_115_A1_P212
+                           cccc0001100unnnnddddssss0tt1mmmm RegsNotPc
+| 1101x      00       = Binary3RegisterOp Lsl_Rule_89_A1_P180
+                           cccc0001101u0000ddddmmmm0001nnnn RegsNotPc
+| "          01       = Binary3RegisterOp Lsr_Rule_91_A1_P184
+                           cccc0001101u0000ddddmmmm0011nnnn RegsNotPc
+| "          10       = Binary3RegisterOp Asr_Rule_15_A1_P42
+                           cccc0001101u0000ddddmmmm0101nnnn RegsNotPc
+| "          11       = Binary3RegisterOp Ror_Rule_140_A1_P280
+                           cccc0001101u0000ddddmmmm0111nnnn RegsNotPc
+| 1110x      -        = Binary4RegisterShiftedOp Bic_Rule_21_A1_P54
+                           cccc0001110unnnnddddssss0tt1mmmm RegsNotPc
+| 1111x      -        = Unary3RegisterShiftedOp Mvn_Rule_108_A1_P218
+                           cccc0001111u0000ddddssss0tt1mmmm RegsNotPc
 +--
 
 +-- dp_immed (See Section A5.2.3)

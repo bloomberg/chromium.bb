@@ -103,6 +103,10 @@ class DecoderTester {
   // Note: Current implementation limits stride to less than 32.
   void TestAtIndexExpandFillAll(int index,
                                 int stride, int length, bool Value);
+
+  // Fills the next length bits with the corresponding value being repeated
+  // length times.
+  void FillBitRange(int index, int length, bool value);
 };
 
 // Defines a decoder tester that enumerates an Arm32 instruction pattern,

@@ -70,10 +70,13 @@ void DecoderTester::TestAtIndex(int index) {
       // Find length of selector, then expand.
       int length = 1;
       while (Pattern(index - length) == selector) ++length;
-      TestAtIndexExpandFill(index, length, true);
-      TestAtIndexExpandFill(index, length, false);
-      TestAtIndexExpandFill4(index, length, true);
-      TestAtIndexExpandFill4(index, length, false);
+      if (length <= 4) {
+        TestAtIndexExpandAll(index, length);
+      } else {
+        TestAtIndexExpandFill4(index, length, true);
+        TestAtIndexExpandFill4(index, length, false);
+      }
+      return;
     }
   }
 }
@@ -100,12 +103,16 @@ void DecoderTester::TestAtIndexExpandAll(int index, int length) {
   }
 }
 
-void DecoderTester::TestAtIndexExpandFill(int index, int length, bool value) {
-  // Build a sequence of bits corresponding to value being repeated
-  // length times.
+void DecoderTester::FillBitRange(int index, int length, bool value) {
+  if (length == 0)
+    return;
   uint32_t val = (value ? 1 : 0);
   uint32_t bits = (val << length) - val;
   SetBitRange(index - (length - 1), length, bits);
+}
+
+void DecoderTester::TestAtIndexExpandFill(int index, int length, bool value) {
+  FillBitRange(index, length, value);
   TestAtIndex(index - length);
 }
 
@@ -117,18 +124,21 @@ void DecoderTester::TestAtIndexExpandFillAll(
     return;
   } else {
     uint32_t i;
-    for (i = 0; i <= (((uint32_t) 1) << length) - 1; ++i) {
+    for (i = 0; i <= (((uint32_t) 1) << stride) - 1; ++i) {
       SetBitRange(index - (stride - 1), stride, i);
-      TestAtIndexExpandFill(index - stride, length, value);
+      TestAtIndexExpandFill(index - stride, length - stride, value);
     }
   }
 }
 
 void DecoderTester::TestAtIndexExpandFill4(int index, int length, bool value) {
-  if (length == 0) TestAtIndex(index);
-
-  int stride = (length <= 4) ? 4 : length;
-  TestAtIndexExpandFillAll(index, stride, length, value);
+  int stride = 4;
+  ASSERT_GT(length, stride);
+  int window = length - stride;
+  for (int i = 0; i <= window; ++i) {
+    FillBitRange(index, i, value);
+    TestAtIndexExpandFillAll(index - i, stride, length - i, value);
+  }
 }
 
 Arm32DecoderTester::Arm32DecoderTester(

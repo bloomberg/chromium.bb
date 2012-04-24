@@ -22,7 +22,8 @@ class NamedClassDecoder : public nacl_arm_dec::ClassDecoder {
  public:
   explicit NamedClassDecoder(const nacl_arm_dec::ClassDecoder& wrapped_decoder,
                              const char* name)
-      : wrapped_decoder_(wrapped_decoder),
+      : ClassDecoder(),
+        wrapped_decoder_(wrapped_decoder),
         name_(name)
   {}
   virtual ~NamedClassDecoder() {}

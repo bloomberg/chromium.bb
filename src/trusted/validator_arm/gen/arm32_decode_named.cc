@@ -26,6 +26,12 @@ namespace nacl_arm_test {
 NamedArm32DecoderState::NamedArm32DecoderState()
   : nacl_arm_dec::DecoderState()
 
+  , Binary2RegisterImmedShiftedTest_instance_()
+
+  , Binary3RegisterImmedShiftedOp_instance_()
+
+  , Binary3RegisterOp_instance_()
+
   , Binary3RegisterShiftedTest_instance_()
 
   , Binary4RegisterShiftedOp_instance_()
@@ -92,6 +98,12 @@ NamedArm32DecoderState::NamedArm32DecoderState()
 
   , TestImmediate_instance_()
 
+  , Unary1RegisterImmediateOp_instance_()
+
+  , Unary2RegisterImmedShiftedOp_instance_()
+
+  , Unary2RegisterOp_instance_()
+
   , Unary3RegisterShiftedOp_instance_()
 
   , Undefined_instance_()
@@ -102,9 +114,87 @@ NamedArm32DecoderState::NamedArm32DecoderState()
 
   , VectorStore_instance_()
 
+  , Cmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest_instance_()
+
+  , Cmp_Rule_36_A1_P82Binary2RegisterImmedShiftedTest_instance_()
+
+  , Teq_Rule_228_A1_P450Binary2RegisterImmedShiftedTest_instance_()
+
+  , Tst_Rule_231_A1_P456Binary2RegisterImmedShiftedTest_instance_()
+
+  , Adc_Rule_2_A1_P16Binary3RegisterImmedShiftedOp_instance_()
+
+  , Add_Rule_6_A1_P24Binary3RegisterImmedShiftedOp_instance_()
+
+  , And_Rule_7_A1_P36Binary3RegisterImmedShiftedOp_instance_()
+
+  , Bic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp_instance_()
+
+  , Eor_Rule_45_A1_P96Binary3RegisterImmedShiftedOp_instance_()
+
+  , Orr_Rule_114_A1_P230Binary3RegisterImmedShiftedOp_instance_()
+
+  , Rsb_Rule_143_P286Binary3RegisterImmedShiftedOp_instance_()
+
+  , Rsc_Rule_146_A1_P292Binary3RegisterImmedShiftedOp_instance_()
+
+  , Sbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp_instance_()
+
+  , SubRule_213_A1_P422Binary3RegisterImmedShiftedOp_instance_()
+
+  , Asr_Rule_15_A1_P42Binary3RegisterOp_instance_()
+
+  , Lsl_Rule_89_A1_P180Binary3RegisterOp_instance_()
+
+  , Lsr_Rule_91_A1_P184Binary3RegisterOp_instance_()
+
+  , Ror_Rule_140_A1_P280Binary3RegisterOp_instance_()
+
+  , Cmn_Rule_34_A1_P78Binary3RegisterShiftedTest_instance_()
+
+  , Cmp_Rule_37_A1_P84Binary3RegisterShiftedTest_instance_()
+
+  , Teq_Rule_229_A1_P452Binary3RegisterShiftedTest_instance_()
+
+  , Tst_Rule_232_A1_P458Binary3RegisterShiftedTest_instance_()
+
+  , Adc_Rule_3_A1_P18Binary4RegisterShiftedOp_instance_()
+
   , Add_Rule_7_A1_P26Binary4RegisterShiftedOp_instance_()
 
+  , And_Rule_13_A1_P38Binary4RegisterShiftedOp_instance_()
+
+  , Bic_Rule_21_A1_P54Binary4RegisterShiftedOp_instance_()
+
+  , Eor_Rule_46_A1_P98Binary4RegisterShiftedOp_instance_()
+
+  , Orr_Rule_115_A1_P212Binary4RegisterShiftedOp_instance_()
+
   , Rsb_Rule_144_A1_P288Binary4RegisterShiftedOp_instance_()
+
+  , Rsc_Rule_147_A1_P294Binary4RegisterShiftedOp_instance_()
+
+  , Sbc_Rule_153_A1_P306Binary4RegisterShiftedOp_instance_()
+
+  , Sub_Rule_214_A1_P424Binary4RegisterShiftedOp_instance_()
+
+  , Mov_Rule_96_A2_P_194Unary1RegisterImmediateOp_instance_()
+
+  , Asr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp_instance_()
+
+  , Lsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp_instance_()
+
+  , Lsr_Rule_90_A1_P182Unary2RegisterImmedShiftedOp_instance_()
+
+  , Mvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp_instance_()
+
+  , Ror_Rule_139_A1_P278Unary2RegisterImmedShiftedOp_instance_()
+
+  , Mov_Rule_97_A1_P196Unary2RegisterOp_instance_()
+
+  , Rrx_Rule_141_A1_P282Unary2RegisterOp_instance_()
+
+  , Mvn_Rule_108_A1_P218Unary3RegisterShiftedOp_instance_()
 
 {}
 
@@ -251,8 +341,12 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_misc(
    return decode_half_mult(insn);
   }
 
-  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01B00000) == 0x01000000) && (true)) {
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01F00000) == 0x01400000) && (true)) {
    return DataProc_instance_;
+  }
+
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01F00000) == 0x01000000) && (true)) {
+   return Mov_Rule_96_A2_P_194Unary1RegisterImmediateOp_instance_;
   }
 
   if (((insn & 0x02000000) == 0x00000000) && ((insn & 0x01200000) == 0x00200000) && ((insn & 0x000000F0) == 0x000000B0)) {
@@ -301,16 +395,88 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_misc(
 const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if (((insn & 0x01800000) == 0x01800000)) {
-   return DataProc_instance_;
+  if (((insn & 0x01F00000) == 0x01100000) && (true) && (true)) {
+   return Tst_Rule_231_A1_P456Binary2RegisterImmedShiftedTest_instance_;
   }
 
-  if (((insn & 0x01000000) == 0x00000000)) {
-   return DataProc_instance_;
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000F80) == 0x00000000) && ((insn & 0x00000060) == 0x00000000)) {
+   return Mov_Rule_97_A1_P196Unary2RegisterOp_instance_;
   }
 
-  if (((insn & 0x01900000) == 0x01100000)) {
-   return Test_instance_;
+  if (((insn & 0x01E00000) == 0x01800000) && (true) && (true)) {
+   return Orr_Rule_114_A1_P230Binary3RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01F00000) == 0x01300000) && (true) && (true)) {
+   return Teq_Rule_228_A1_P450Binary2RegisterImmedShiftedTest_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00200000) && (true) && (true)) {
+   return Eor_Rule_45_A1_P96Binary3RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00600000) && (true) && (true)) {
+   return Rsb_Rule_143_P286Binary3RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x01E00000) && (true) && (true)) {
+   return Mvn_Rule_107_A1_P216Unary2RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00C00000) && (true) && (true)) {
+   return Sbc_Rule_152_A1_P304Binary3RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000F80) != 0x00000000) && ((insn & 0x00000060) == 0x00000000)) {
+   return Lsl_Rule_88_A1_P178Unary2RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x01C00000) && (true) && (true)) {
+   return Bic_Rule_20_A1_P52Binary3RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00400000) && (true) && (true)) {
+   return SubRule_213_A1_P422Binary3RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00A00000) && (true) && (true)) {
+   return Adc_Rule_2_A1_P16Binary3RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x01A00000) && (true) && ((insn & 0x00000060) == 0x00000040)) {
+   return Asr_Rule_14_A1_P40Unary2RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00800000) && (true) && (true)) {
+   return Add_Rule_6_A1_P24Binary3RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01F00000) == 0x01500000) && (true) && (true)) {
+   return Cmp_Rule_36_A1_P82Binary2RegisterImmedShiftedTest_instance_;
+  }
+
+  if (((insn & 0x01F00000) == 0x01700000) && (true) && (true)) {
+   return Cmn_Rule_33_A1_P76Binary2RegisterImmedShiftedTest_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000F80) == 0x00000000) && ((insn & 0x00000060) == 0x00000060)) {
+   return Rrx_Rule_141_A1_P282Unary2RegisterOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x01A00000) && (true) && ((insn & 0x00000060) == 0x00000020)) {
+   return Lsr_Rule_90_A1_P182Unary2RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00000000) && (true) && (true)) {
+   return And_Rule_7_A1_P36Binary3RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000F80) != 0x00000000) && ((insn & 0x00000060) == 0x00000060)) {
+   return Ror_Rule_139_A1_P278Unary2RegisterImmedShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00E00000) && (true) && (true)) {
+   return Rsc_Rule_146_A1_P292Binary3RegisterImmedShiftedOp_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -327,40 +493,80 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg(
 const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg_shifted(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
-  if (((insn & 0x01900000) == 0x01100000)) {
-   return Binary3RegisterShiftedTest_instance_;
+  if (((insn & 0x01E00000) == 0x00A00000) && (true)) {
+   return Adc_Rule_3_A1_P18Binary4RegisterShiftedOp_instance_;
   }
 
-  if (((insn & 0x01E00000) == 0x01E00000)) {
-   return Unary3RegisterShiftedOp_instance_;
+  if (((insn & 0x01F00000) == 0x01100000) && (true)) {
+   return Tst_Rule_232_A1_P458Binary3RegisterShiftedTest_instance_;
   }
 
-  if (((insn & 0x01E00000) == 0x00800000)) {
+  if (((insn & 0x01E00000) == 0x00800000) && (true)) {
    return Add_Rule_7_A1_P26Binary4RegisterShiftedOp_instance_;
   }
 
-  if (((insn & 0x01E00000) == 0x01A00000)) {
-   return DataProc_instance_;
+  if (((insn & 0x01F00000) == 0x01300000) && (true)) {
+   return Teq_Rule_229_A1_P452Binary3RegisterShiftedTest_instance_;
   }
 
-  if (((insn & 0x01C00000) == 0x00000000)) {
-   return Binary4RegisterShiftedOp_instance_;
+  if (((insn & 0x01E00000) == 0x00000000) && (true)) {
+   return And_Rule_13_A1_P38Binary4RegisterShiftedOp_instance_;
   }
 
-  if (((insn & 0x01600000) == 0x00400000)) {
-   return Binary4RegisterShiftedOp_instance_;
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000060) == 0x00000060)) {
+   return Ror_Rule_140_A1_P280Binary3RegisterOp_instance_;
   }
 
-  if (((insn & 0x01A00000) == 0x00A00000)) {
-   return Binary4RegisterShiftedOp_instance_;
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000060) == 0x00000020)) {
+   return Lsr_Rule_91_A1_P184Binary3RegisterOp_instance_;
   }
 
-  if (((insn & 0x01A00000) == 0x01800000)) {
-   return Binary4RegisterShiftedOp_instance_;
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000060) == 0x00000000)) {
+   return Lsl_Rule_89_A1_P180Binary3RegisterOp_instance_;
   }
 
-  if (((insn & 0x01E00000) == 0x00600000)) {
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000060) == 0x00000040)) {
+   return Asr_Rule_15_A1_P42Binary3RegisterOp_instance_;
+  }
+
+  if (((insn & 0x01F00000) == 0x01700000) && (true)) {
+   return Cmn_Rule_34_A1_P78Binary3RegisterShiftedTest_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x01C00000) && (true)) {
+   return Bic_Rule_21_A1_P54Binary4RegisterShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00C00000) && (true)) {
+   return Sbc_Rule_153_A1_P306Binary4RegisterShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x01800000) && (true)) {
+   return Orr_Rule_115_A1_P212Binary4RegisterShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x01E00000) && (true)) {
+   return Mvn_Rule_108_A1_P218Unary3RegisterShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01F00000) == 0x01500000) && (true)) {
+   return Cmp_Rule_37_A1_P84Binary3RegisterShiftedTest_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00200000) && (true)) {
+   return Eor_Rule_46_A1_P98Binary4RegisterShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00400000) && (true)) {
+   return Sub_Rule_214_A1_P424Binary4RegisterShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00600000) && (true)) {
    return Rsb_Rule_144_A1_P288Binary4RegisterShiftedOp_instance_;
+  }
+
+  if (((insn & 0x01E00000) == 0x00E00000) && (true)) {
+   return Rsc_Rule_147_A1_P294Binary4RegisterShiftedOp_instance_;
   }
 
   // Catch any attempt to fall through...

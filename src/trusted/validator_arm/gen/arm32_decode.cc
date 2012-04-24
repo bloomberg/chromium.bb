@@ -18,6 +18,12 @@ namespace nacl_arm_dec {
 
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
 
+  , Binary2RegisterImmedShiftedTest_instance_()
+
+  , Binary3RegisterImmedShiftedOp_instance_()
+
+  , Binary3RegisterOp_instance_()
+
   , Binary3RegisterShiftedTest_instance_()
 
   , Binary4RegisterShiftedOp_instance_()
@@ -83,6 +89,12 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Test_instance_()
 
   , TestImmediate_instance_()
+
+  , Unary1RegisterImmediateOp_instance_()
+
+  , Unary2RegisterImmedShiftedOp_instance_()
+
+  , Unary2RegisterOp_instance_()
 
   , Unary3RegisterShiftedOp_instance_()
 
@@ -256,7 +268,11 @@ const ClassDecoder& Arm32DecoderState::decode_dp_misc(
 
     return decode_sync(insn);
 
-  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01B00000) == 0x01000000) && (true))
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01F00000) == 0x01000000) && (true))
+
+    return Unary1RegisterImmediateOp_instance_;
+
+  if (((insn & 0x02000000) == 0x02000000) && ((insn & 0x01F00000) == 0x01400000) && (true))
 
     return DataProc_instance_;
 
@@ -280,17 +296,45 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
-  if (((insn & 0x01900000) == 0x01100000))
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000F80) != 0x00000000) && ((insn & 0x00000060) == 0x00000000))
 
-    return Test_instance_;
+    return Unary2RegisterImmedShiftedOp_instance_;
 
-  if (((insn & 0x01800000) == 0x01800000))
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000F80) != 0x00000000) && ((insn & 0x00000060) == 0x00000060))
 
-    return DataProc_instance_;
+    return Unary2RegisterImmedShiftedOp_instance_;
 
-  if (((insn & 0x01000000) == 0x00000000))
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000F80) == 0x00000000) && ((insn & 0x00000060) == 0x00000000))
 
-    return DataProc_instance_;
+    return Unary2RegisterOp_instance_;
+
+  if (((insn & 0x01E00000) == 0x01A00000) && ((insn & 0x00000F80) == 0x00000000) && ((insn & 0x00000060) == 0x00000060))
+
+    return Unary2RegisterOp_instance_;
+
+  if (((insn & 0x01E00000) == 0x01A00000) && (true) && ((insn & 0x00000060) == 0x00000020))
+
+    return Unary2RegisterImmedShiftedOp_instance_;
+
+  if (((insn & 0x01E00000) == 0x01A00000) && (true) && ((insn & 0x00000060) == 0x00000040))
+
+    return Unary2RegisterImmedShiftedOp_instance_;
+
+  if (((insn & 0x01E00000) == 0x01E00000) && (true) && (true))
+
+    return Unary2RegisterImmedShiftedOp_instance_;
+
+  if (((insn & 0x01900000) == 0x01100000) && (true) && (true))
+
+    return Binary2RegisterImmedShiftedTest_instance_;
+
+  if (((insn & 0x01A00000) == 0x01800000) && (true) && (true))
+
+    return Binary3RegisterImmedShiftedOp_instance_;
+
+  if (((insn & 0x01000000) == 0x00000000) && (true) && (true))
+
+    return Binary3RegisterImmedShiftedOp_instance_;
 
   // Catch any attempt to fall though ...
   fprintf(stderr, "TABLE IS INCOMPLETE: dp_reg could not parse %08X",
@@ -306,7 +350,7 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg_shifted(
   UNREFERENCED_PARAMETER(insn);
   if (((insn & 0x01E00000) == 0x01A00000))
 
-    return DataProc_instance_;
+    return Binary3RegisterOp_instance_;
 
   if (((insn & 0x01E00000) == 0x01E00000))
 

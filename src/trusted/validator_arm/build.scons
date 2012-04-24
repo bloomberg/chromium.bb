@@ -162,7 +162,7 @@ decoder_tests_exe = gtest_env.ComponentProgram(
 decoder_test_node = gtest_env.CommandTest(
     'arm32_decode_tests.out',
     command=[decoder_tests_exe],
-    scale_timeout=100)
+    scale_timeout=1000)
 
 gtest_env.AddNodeToTestSuite(decoder_test_node,
                              ['huge_tests', 'arm_decoder_tests'],
