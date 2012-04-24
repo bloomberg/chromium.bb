@@ -12,9 +12,9 @@ vars = {
 
 deps = {
     'base':
-        Var('git_url') + '/chromium/src/base.git@c7fb7470762ab9b82583b30b1feafff54692cc1a',
+        Var('git_url') + '/chromium/src/base.git@eff74d2f3db5d6f04eda6393111afc96c265e148',
     'build':
-        Var('git_url') + '/chromium/src/build.git@766d8e4fe6d63da8be4c703b4b94346331110375',
+        Var('git_url') + '/chromium/src/build.git@37841d223a1b61a1d983047730f9e971cb2a00e4',
     'chrome/test/pyautolib':
         Var('git_url') + '/chromium/src/chrome/test/pyautolib.git@d2402444244aebeeb919e0ba419a5a77d4404544',
     'gpu':
