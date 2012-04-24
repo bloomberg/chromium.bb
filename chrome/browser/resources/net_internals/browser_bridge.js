@@ -23,7 +23,6 @@ var BrowserBridge = (function() {
     // List of observers for various bits of browser state.
     this.connectionTestsObservers_ = [];
     this.hstsObservers_ = [];
-    this.httpThrottlingObservers_ = [];
     this.constantsObservers_ = [];
     this.crosONCFileParseObservers_ = [];
     this.storeDebugLogsObservers_ = [];
@@ -219,10 +218,6 @@ var BrowserBridge = (function() {
       this.send('setLogLevel', ['' + logLevel]);
     },
 
-    enableHttpThrottling: function(enable) {
-      this.send('enableHttpThrottling', [enable]);
-    },
-
     refreshSystemLogs: function() {
       this.send('refreshSystemLogs');
     },
@@ -347,13 +342,6 @@ var BrowserBridge = (function() {
 
     receivedHttpCacheInfo: function(info) {
       this.pollableDataHelpers_.httpCacheInfo.update(info);
-    },
-
-    receivedHttpThrottlingEnabledPrefChanged: function(enabled) {
-      for (var i = 0; i < this.httpThrottlingObservers_.length; i++) {
-        this.httpThrottlingObservers_[i].onHttpThrottlingEnabledPrefChanged(
-            enabled);
-      }
     },
 
     receivedPrerenderInfo: function(prerenderInfo) {
@@ -558,16 +546,6 @@ var BrowserBridge = (function() {
      */
     addSetNetworkDebugModeObserver: function(observer) {
       this.setNetworkDebugModeObservers_.push(observer);
-    },
-
-    /**
-     * Adds a listener for HTTP throttling-related events. |observer| will be
-     * called back when HTTP throttling is enabled/disabled, through:
-     *
-     *   observer.onHttpThrottlingEnabledPrefChanged(enabled);
-     */
-    addHttpThrottlingObserver: function(observer) {
-      this.httpThrottlingObservers_.push(observer);
     },
 
     /**

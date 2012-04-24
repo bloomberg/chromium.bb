@@ -14,20 +14,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "net/http/http_stream_factory.h"
-#include "net/url_request/url_request_throttler_manager.h"
 
 using content::BrowserThread;
-
-namespace {
-
-// Callback function to call the set_enforce_throttling member on the
-// URLRequestThrottlerManager singleton.
-void SetEnforceThrottlingOnThrottlerManager(bool enforce) {
-  net::URLRequestThrottlerManager::GetInstance()->set_enforce_throttling(
-      enforce);
-}
-
-}
 
 NetPrefObserver::NetPrefObserver(PrefService* prefs,
                                  prerender::PrerenderManager* prerender_manager,
@@ -41,7 +29,6 @@ NetPrefObserver::NetPrefObserver(PrefService* prefs,
   network_prediction_enabled_.Init(prefs::kNetworkPredictionEnabled, prefs,
                                    this);
   spdy_disabled_.Init(prefs::kDisableSpdy, prefs, this);
-  http_throttling_enabled_.Init(prefs::kHttpThrottlingEnabled, prefs, this);
 
   ApplySettings(NULL);
 }
@@ -66,13 +53,6 @@ void NetPrefObserver::ApplySettings(const std::string* pref_name) {
   if (prerender_manager_)
     prerender_manager_->set_enabled(*network_prediction_enabled_);
   net::HttpStreamFactory::set_spdy_enabled(!*spdy_disabled_);
-
-  if (!pref_name || *pref_name == prefs::kHttpThrottlingEnabled) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&SetEnforceThrottlingOnThrottlerManager,
-                   *http_throttling_enabled_));
-  }
 }
 
 // static
@@ -82,8 +62,5 @@ void NetPrefObserver::RegisterPrefs(PrefService* prefs) {
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kDisableSpdy,
                              false,
-                             PrefService::UNSYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kHttpThrottlingEnabled,
-                             true,
                              PrefService::UNSYNCABLE_PREF);
 }

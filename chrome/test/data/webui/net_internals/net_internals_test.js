@@ -241,7 +241,6 @@ var NetInternalsTest = (function() {
       spdy: SpdyView.TAB_HANDLE_ID,
       httpPipeline: HttpPipelineView.TAB_HANDLE_ID,
       httpCache: HttpCacheView.TAB_HANDLE_ID,
-      httpThrottling: HttpThrottlingView.TAB_HANDLE_ID,
       serviceProviders: ServiceProvidersView.TAB_HANDLE_ID,
       tests: TestView.TAB_HANDLE_ID,
       hsts: HSTSView.TAB_HANDLE_ID,
@@ -392,7 +391,7 @@ var NetInternalsTest = (function() {
           testDone();
       }
     }
-  }
+  };
 
   /**
    * A Task that can be added to a TaskQueue.  A Task is started with a call to
@@ -620,7 +619,7 @@ var NetInternalsTest = (function() {
     this.source = source;
     this.phase = phase;
     this.type = type;
-    this.time = "" + time;
+    this.time = '' + time;
     this.phase = phase;
     if (params)
       this.params = params;

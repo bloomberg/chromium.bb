@@ -293,6 +293,11 @@ const char kDisableExtensions[]             = "disable-extensions";
 const char kDisableExtensionsFileAccessCheck[] =
     "disable-extensions-file-access-check";
 
+// Disable the net::URLRequestThrottlerManager functionality for
+// requests originating from extensions.
+const char kDisableExtensionsHttpThrottling[] =
+    "disable-extensions-http-throttling";
+
 // Disable mandatory enforcement of web_accessible_resources in extensions.
 const char kDisableExtensionsResourceWhitelist[] =
     "disable-extensions-resource-whitelist";

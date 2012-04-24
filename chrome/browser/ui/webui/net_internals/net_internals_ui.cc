@@ -246,8 +246,7 @@ void StoreDebugLogs(const StoreDebugLogsCallback& callback) {
 // TODO(eroman): Can we start on the IO thread to begin with?
 class NetInternalsMessageHandler
     : public WebUIMessageHandler,
-      public base::SupportsWeakPtr<NetInternalsMessageHandler>,
-      public content::NotificationObserver {
+      public base::SupportsWeakPtr<NetInternalsMessageHandler> {
  public:
   NetInternalsMessageHandler();
   virtual ~NetInternalsMessageHandler();
@@ -260,14 +259,8 @@ class NetInternalsMessageHandler
   // message will be ignored.
   void SendJavascriptCommand(const std::string& command, Value* arg);
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // Javascript message handlers.
   void OnRendererReady(const ListValue* list);
-  void OnEnableHttpThrottling(const ListValue* list);
   void OnClearBrowserCache(const ListValue* list);
   void OnGetPrerenderInfo(const ListValue* list);
 #ifdef OS_CHROMEOS
@@ -338,10 +331,6 @@ class NetInternalsMessageHandler
     CancelableRequestProvider::Handle syslogs_request_id_;
   };
 #endif
-
-  // The pref member about whether HTTP throttling is enabled, which needs to
-  // be accessed on the UI thread.
-  BooleanPrefMember http_throttling_enabled_;
 
   // This is the "real" message handler, which lives on the IO thread.
   scoped_refptr<IOThreadImpl> proxy_;
@@ -513,9 +502,6 @@ void NetInternalsMessageHandler::RegisterMessages() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  PrefService* pref_service = profile->GetPrefs();
-  http_throttling_enabled_.Init(
-      prefs::kHttpThrottlingEnabled, pref_service, this);
 
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
                             profile->GetRequestContext());
@@ -624,10 +610,6 @@ void NetInternalsMessageHandler::RegisterMessages() {
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnSetLogLevel, proxy_));
   web_ui()->RegisterMessageCallback(
-      "enableHttpThrottling",
-      base::Bind(&NetInternalsMessageHandler::OnEnableHttpThrottling,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "clearBrowserCache",
       base::Bind(&NetInternalsMessageHandler::OnClearBrowserCache,
                  base::Unretained(this)));
@@ -675,39 +657,8 @@ void NetInternalsMessageHandler::SendJavascriptCommand(
   }
 }
 
-void NetInternalsMessageHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(type, chrome::NOTIFICATION_PREF_CHANGED);
-
-  std::string* pref_name = content::Details<std::string>(details).ptr();
-  if (*pref_name == prefs::kHttpThrottlingEnabled) {
-    SendJavascriptCommand(
-        "receivedHttpThrottlingEnabledPrefChanged",
-        Value::CreateBooleanValue(*http_throttling_enabled_));
-  }
-}
-
 void NetInternalsMessageHandler::OnRendererReady(const ListValue* list) {
   IOThreadImpl::CallbackHelper(&IOThreadImpl::OnRendererReady, proxy_, list);
-
-  SendJavascriptCommand(
-      "receivedHttpThrottlingEnabledPrefChanged",
-      Value::CreateBooleanValue(*http_throttling_enabled_));
-}
-
-void NetInternalsMessageHandler::OnEnableHttpThrottling(const ListValue* list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  bool enable = false;
-  if (!list->GetBoolean(0, &enable)) {
-    NOTREACHED();
-    return;
-  }
-
-  http_throttling_enabled_.SetValue(enable);
 }
 
 void NetInternalsMessageHandler::OnClearBrowserCache(const ListValue* list) {

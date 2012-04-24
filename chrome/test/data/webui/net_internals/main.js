@@ -32,7 +32,6 @@ TEST_F('NetInternalsTest', 'netInternalsTourTabs', function() {
     spdy: true,
     httpPipeline: true,
     httpCache: true,
-    httpThrottling: true,
     serviceProviders: cr.isWindows,
     tests: true,
     hsts: true,

@@ -872,9 +872,6 @@ const char kEnableTranslate[] = "translate.enabled";
 const char kPinnedTabs[] = "pinned_tabs";
 #endif
 
-// Boolean that is true when HTTP throttling is enabled.
-const char kHttpThrottlingEnabled[] = "http_throttling.enabled";
-
 // Integer containing the default Geolocation content setting.
 const char kGeolocationDefaultContentSetting[] =
     "geolocation.default_content_setting";

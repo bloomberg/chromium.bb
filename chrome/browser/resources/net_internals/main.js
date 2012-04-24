@@ -90,8 +90,6 @@ var MainView = (function() {
                 false, true);
     tabs.addTab(HttpCacheView.TAB_HANDLE_ID, HttpCacheView.getInstance(),
                 false, true);
-    tabs.addTab(HttpThrottlingView.TAB_HANDLE_ID,
-                HttpThrottlingView.getInstance(), false, true);
     tabs.addTab(ServiceProvidersView.TAB_HANDLE_ID,
                 ServiceProvidersView.getInstance(), false, cr.isWindows);
     tabs.addTab(TestView.TAB_HANDLE_ID, TestView.getInstance(), false, true);

@@ -8019,17 +8019,17 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <message name="IDS_ERRORPAGES_SUMMARY_TEMPORARILY_THROTTLED" desc="Summary in the error page when we temporarily stop sending requests to a server in order to avoid DDoS.">
-        It is likely that the server hosting the webpage has been overloaded or encountered an error. In order to avoid causing
-        too much traffic and making the situation worse,
-        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph> has temporarily
-        stopped allowing requests to the server.
+        It is likely that the server hosting the webpage has been overloaded or encountered an error.
+	In order to avoid letting extensions cause too much traffic and making the situation worse,
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+	has temporarily stopped allowing requests by extensions to this URL.
         <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
         If you think this behavior is undesirable, for example, you are debugging your own website, please
-        visit the <ph name="NET_INTERNALS_PAGE">&lt;strong&gt;chrome://net-internals/#httpThrottling&lt;/strong&gt;</ph> page,
-        where you can find more information or disable the feature.
+        visit <ph name="URL_FOR_MORE_INFO">&lt;strong&gt;http://dev.chromium.org/throttling&lt;/strong&gt;</ph>,
+        where you can find more information including how to disable the feature.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_TEMPORARILY_THROTTLED" desc="The error message displayed when we temporarily stop sending requests to a server in order to avoid DDoS.">
-        Requests to the server have been temporarily throttled.
+        Extension requests to this URL have been temporarily throttled.
       </message>
 
       <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED" desc="Summary in the error page when an extension blocks a request.">
@@ -15487,7 +15487,7 @@ Battery full
         This device cannot be enrolled in the domain this user account belongs to.
       </message>
       <message name="IDS_ENTERPRISE_ENROLLMENT_MODE_ERROR" desc="Error message to show when the DM Server didn't send or send unsupported enrollment mode to the client.">
-        The supplied enrollment mode is not supported by this version of the operating system. Please make sure you are running the newest version and try again. 
+        The supplied enrollment mode is not supported by this version of the operating system. Please make sure you are running the newest version and try again.
       </message>
       <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
         Enterprise enrollment

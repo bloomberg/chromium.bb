@@ -86,6 +86,7 @@ extern const char kDisableCustomJumpList[];
 extern const char kDisableDefaultApps[];
 extern const char kDisableDhcpWpad[];
 extern const char kDisableExtensionsFileAccessCheck[];
+extern const char kDisableExtensionsHttpThrottling[];
 extern const char kDisableExtensionsResourceWhitelist[];
 extern const char kDisableExtensions[];
 extern const char kDisableFlashSandbox[];

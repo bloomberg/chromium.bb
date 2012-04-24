@@ -110,7 +110,6 @@ function checkViewsAfterLogLoaded() {
     spdy: true,
     httpPipeline: false,
     httpCache: true,
-    httpThrottling: false,
     serviceProviders: cr.isWindows,
     tests: false,
     hsts: false,
