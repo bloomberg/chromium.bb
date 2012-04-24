@@ -506,7 +506,7 @@ FileManager.prototype = {
         window.localStorage['sort-field-' + this.dialogType_] || 'cachedMtime_';
     var sortDirection =
         window.localStorage['sort-direction-' + this.dialogType_] || 'desc';
-    this.directoryModel_.fileList.sort(sortField, sortDirection);
+    this.directoryModel_.sortFileList(sortField, sortDirection);
 
     this.refocus();
 
@@ -518,7 +518,7 @@ FileManager.prototype = {
        return self.getMetadataProvider().isInitialized();
     });
 
-    this.directoryModel_.offline = this.isOffline();
+    this.directoryModel_.setOffline(this.isOffline());
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE)
       this.initDataTransferOperations_();
@@ -538,8 +538,8 @@ FileManager.prototype = {
         this.onCopyManagerOperationComplete_.bind(this));
 
     var controller = this.fileTransferController_ = new FileTransferController(
-        this.directoryModel_.fileList,
-        this.directoryModel_.fileListSelection,
+        this.directoryModel_.getFileList(),
+        this.directoryModel_.getFileListSelection(),
         GridItem.bind(null, this),
         this.copyManager_,
         this.directoryModel_);
@@ -720,7 +720,7 @@ FileManager.prototype = {
         str('ENABLE_GDATA') == '1',
         this.metadataCache_);
 
-    var dataModel = this.directoryModel_.fileList;
+    var dataModel = this.directoryModel_.getFileList();
     var collator = this.collator_;
     // TODO(dgozman): refactor comparison functions together with
     // render/update/display.
@@ -739,11 +739,11 @@ FileManager.prototype = {
     dataModel.addEventListener('permuted',
                                this.onDataModelPermuted_.bind(this));
 
-    this.directoryModel_.fileListSelection.addEventListener(
+    this.directoryModel_.getFileListSelection().addEventListener(
         'change', this.onSelectionChanged_.bind(this));
 
-    this.directoryModel_.autoSelectIndex =
-        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ? -1 : 0;
+    this.directoryModel_.setAutoSelectIndex(
+        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE ? -1 : 0);
 
     this.initTable_();
     this.initGrid_();
@@ -884,7 +884,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onDataModelPermuted_ = function(event) {
-    var sortStatus = this.directoryModel_.fileList.sortStatus;
+    var sortStatus = this.directoryModel_.getFileList().sortStatus;
     window.localStorage['sort-field-' + this.dialogType_] = sortStatus.field;
     window.localStorage['sort-direction-' + this.dialogType_] =
         sortStatus.direction;
@@ -1156,8 +1156,8 @@ FileManager.prototype = {
     // style and only then set dataModel.
 
     if (type == FileManager.ListType.DETAIL) {
-      this.table_.dataModel = this.directoryModel_.fileList;
-      this.table_.selectionModel = this.directoryModel_.fileListSelection;
+      this.table_.dataModel = this.directoryModel_.getFileList();
+      this.table_.selectionModel = this.directoryModel_.getFileListSelection();
       this.table_.style.display = '';
       this.grid_.style.display = 'none';
       this.grid_.selectionModel = this.emptySelectionModel_;
@@ -1170,8 +1170,8 @@ FileManager.prototype = {
       this.dialogDom_.querySelector('div.thumbnail-view')
           .removeAttribute('disabled');
     } else if (type == FileManager.ListType.THUMBNAIL) {
-      this.grid_.dataModel = this.directoryModel_.fileList;
-      this.grid_.selectionModel = this.directoryModel_.fileListSelection;
+      this.grid_.dataModel = this.directoryModel_.getFileList();
+      this.grid_.selectionModel = this.directoryModel_.getFileListSelection();
       this.grid_.style.display = '';
       this.table_.style.display = 'none';
       this.table_.selectionModel = this.emptySelectionModel_;
@@ -1354,7 +1354,7 @@ FileManager.prototype = {
    * update event).
    */
   FileManager.prototype.onCopyManagerOperationComplete_ = function(event) {
-    var currentPath = this.directoryModel_.currentEntry.fullPath;
+    var currentPath = this.directoryModel_.getCurrentDirEntry().fullPath;
     function inCurrentDirectory(entry) {
       var fullPath = entry.fullPath;
       var dirPath = fullPath.substr(0, fullPath.length -
@@ -1428,7 +1428,7 @@ FileManager.prototype = {
     // Nothing left to do if the current directory is not changing. This happens
     // if we are exiting the Gallery.
     if (this.getPathFromUrlOrParams_() ==
-        this.directoryModel_.currentEntry.fullPath)
+        this.directoryModel_.getCurrentDirEntry().fullPath)
       return;
     this.setupCurrentDirectory_(true /* invokeHandler */);
   };
@@ -1678,7 +1678,7 @@ FileManager.prototype = {
    * Update check and disable states of the 'Select all' checkbox.
    */
   FileManager.prototype.updateSelectAllCheckboxState_ = function(checkbox) {
-    var dm = this.directoryModel_.fileList;
+    var dm = this.directoryModel_.getFileList();
     checkbox.checked = this.selection && dm.length > 0 &&
                        dm.length == this.selection.totalCount;
     checkbox.disabled = dm.length == 0;
@@ -1945,8 +1945,9 @@ FileManager.prototype = {
     var fileName = this.document_.createElement('div');
     fileName.className = 'filename-label';
 
-    fileName.textContent = this.directoryModel_.currentEntry.name == '' ?
-        this.getRootLabel_(entry.name) : entry.name;
+    fileName.textContent =
+        this.directoryModel_.getCurrentDirEntry().name == '' ?
+            this.getRootLabel_(entry.name) : entry.name;
     return fileName;
   };
 
@@ -2040,7 +2041,7 @@ FileManager.prototype = {
 
   FileManager.prototype.displayDateInDiv_ = function(div, filesystemProps) {
     if (!filesystemProps) return;
-    if (this.directoryModel_.isSystemDirectoy &&
+    if (this.directoryModel_.isSystemDirectory() &&
         filesystemProps.modificationTime.getTime() == 0) {
       // Mount points for FAT volumes have this time associated with them.
       // We'd rather display nothing than this bogus date.
@@ -2076,7 +2077,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.refreshCurrentDirectoryMetadata_ = function() {
-    var entries = this.directoryModel_.fileList.slice();
+    var entries = this.directoryModel_.getFileList().slice();
     this.metadataCache_.clear(entries, 'filesystem');
     // We don't pass callback here. When new metadata arrives, we have an
     // observer registered to update the UI.
@@ -2088,7 +2089,7 @@ FileManager.prototype = {
     if (this.listType_ != FileManager.ListType.DETAIL) return;
 
     var items = {};
-    var dm = this.directoryModel_.fileList;
+    var dm = this.directoryModel_.getFileList();
     for (var index = 0; index < dm.length; index++) {
       var listItem = this.currentList_.getListItemByIndex(index);
       if (!listItem) continue;
@@ -2120,11 +2121,11 @@ FileManager.prototype = {
       return;
 
     var dm = this.directoryModel_;
-    var leadIndex = dm.fileListSelection.leadIndex;
+    var leadIndex = dm.getFileListSelection().leadIndex;
     if (leadIndex < 0)
       return;
 
-    var leadEntry = dm.fileList.item(leadIndex);
+    var leadEntry = dm.getFileList().item(leadIndex);
     if (this.renameInput_.currentEntry.fullPath != leadEntry.fullPath)
       return;
 
@@ -2193,7 +2194,7 @@ FileManager.prototype = {
     }
 
     for (var i = 0; i < selection.indexes.length; i++) {
-      var entry = this.directoryModel_.fileList.item(selection.indexes[i]);
+      var entry = this.directoryModel_.getFileList().item(selection.indexes[i]);
       if (!entry)
         continue;
 
@@ -2613,7 +2614,7 @@ FileManager.prototype = {
       console.log('ONLINE');
       this.dialogContainer_.removeAttribute('offline');
     }
-    this.directoryModel_.offline = this.isOffline();
+    this.directoryModel_.setOffline(this.isOffline());
   };
 
   FileManager.prototype.isOnGDataOffline = function() {
@@ -2621,7 +2622,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.isOnReadonlyDirectory = function() {
-    return this.directoryModel_.readonly;
+    return this.directoryModel_.isReadOnly();
   };
 
   /**
@@ -2650,7 +2651,7 @@ FileManager.prototype = {
         if (this.setupCurrentDirectoryPostponed_) {
           this.setupCurrentDirectoryPostponed_(false /* execute */);
         } else if (this.isOnGData() &&
-                   this.directoryModel_.currentEntry.unmounted) {
+                   this.directoryModel_.getCurrentDirEntry().unmounted) {
           // We are currently on an unmounted GData directory, force a rescan.
           changeDirectoryTo = this.directoryModel_.getCurrentRootPath();
         }
@@ -2790,9 +2791,9 @@ FileManager.prototype = {
 
   FileManager.prototype.getAllUrlsInCurrentDirectory_ = function() {
     var urls = [];
-    var dm = this.directoryModel_.fileList;
-    for (var i = 0; i != dm.length; i++) {
-      urls.push(dm.item(i).toURL());
+    var fileList = this.directoryModel_.getFileList();
+    for (var i = 0; i != fileList.length; i++) {
+      urls.push(fileList.item(i).toURL());
     }
     return urls;
   };
@@ -2836,7 +2837,7 @@ FileManager.prototype = {
       selectedUrl = urls[0];
     }
 
-    var dirPath = this.directoryModel_.currentEntry.fullPath;
+    var dirPath = this.directoryModel_.getCurrentDirEntry().fullPath;
 
     // Push a temporary state which will be replaced every time an individual
     // item is selected in the Gallery.
@@ -2850,7 +2851,7 @@ FileManager.prototype = {
       // Gallery shoud treat GData folder as readonly even when online
       // until we learn to save files directly to GData.
       var readonly = self.isOnReadonlyDirectory() || self.isOnGData();
-      var currentDir = self.directoryModel_.currentEntry;
+      var currentDir = self.directoryModel_.getCurrentDirEntry();
       var downloadsDir = self.directoryModel_.getRootsList().item(0);
 
       var gallerySelection;
@@ -2860,7 +2861,7 @@ FileManager.prototype = {
             readonly ?
                 (self.isOnGData() ?
                     self.getRootLabel_(currentDir.fullPath) :
-                    self.directoryModel_.rootName) :
+                    self.directoryModel_.getRootName()) :
                 null,
         saveDirEntry: readonly ? downloadsDir : currentDir,
         metadataProvider: self.getMetadataProvider(),
@@ -2891,7 +2892,7 @@ FileManager.prototype = {
     removeChildren(bc);
 
     var rootPath = this.directoryModel_.getCurrentRootPath();
-    var relativePath = this.directoryModel_.currentEntry.fullPath.
+    var relativePath = this.directoryModel_.getCurrentDirEntry().fullPath.
                        substring(rootPath.length).replace(/\/$/, '');
 
     var pathNames = relativePath.replace(/\/$/, '').split('/');
@@ -3065,7 +3066,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.getCurrentDirectory = function() {
     return this.directoryModel_ &&
-        this.directoryModel_.currentEntry.fullPath;
+        this.directoryModel_.getCurrentDirEntry().fullPath;
   };
 
   /**
@@ -3073,7 +3074,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.getCurrentDirectoryURL = function() {
     return this.directoryModel_ &&
-        this.directoryModel_.currentEntry.toURL();
+        this.directoryModel_.getCurrentDirEntry().toURL();
   };
 
   FileManager.prototype.deleteEntries = function(entries, force, opt_callback) {
@@ -3169,7 +3170,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onCheckboxClick_ = function(event) {
-    var sm = this.directoryModel_.fileListSelection;
+    var sm = this.directoryModel_.getFileListSelection();
     var listItem = this.findListItemForEvent_(event);
     sm.setIndexSelected(listItem.listIndex, event.target.checked);
   };
@@ -3439,7 +3440,7 @@ FileManager.prototype = {
       this.metadataCache_.removeObserver(this.metadataObserverId_);
 
     this.metadataObserverId_ = this.metadataCache_.addObserver(
-        this.directoryModel_.currentEntry,
+        this.directoryModel_.getCurrentDirEntry(),
         MetadataCache.CHILDREN,
         'filesystem',
         this.updateFilesystemPropertiesInUI_.bind(this));
@@ -3675,7 +3676,7 @@ FileManager.prototype = {
     var defaultName = str('DEFAULT_NEW_FOLDER_NAME');
 
     // Find a name that doesn't exist in the data model.
-    var files = this.directoryModel_.fileList;
+    var files = this.directoryModel_.getFileList();
     var hash = {};
     for (var i = 0; i < files.length; i++) {
       var name = files.item(i).name;
@@ -3748,7 +3749,7 @@ FileManager.prototype = {
     switch (util.getKeyModifiers(event) + event.keyCode) {
       case 'Ctrl-190':  // Ctrl-. => Toggle filter files.
         var dm = this.directoryModel_;
-        dm.filterHidden = !dm.filterHidden;
+        dm.setFilterHidden(!dm.getFilterHidden());
         event.preventDefault();
         return;
 
@@ -3902,7 +3903,7 @@ FileManager.prototype = {
     if (!text)
       return;
 
-    var dm = this.directoryModel_.fileList;
+    var dm = this.directoryModel_.getFileList();
     for (var index = 0; index < dm.length; ++index) {
       var name = dm.item(index).name;
       if (name.substring(0, text.length).toLowerCase() == text) {
@@ -4143,7 +4144,7 @@ FileManager.prototype = {
     if (!selectedIndexes.length)
       throw new Error('Nothing selected!');
 
-    var dm = this.directoryModel_.fileList;
+    var dm = this.directoryModel_.getFileList();
     for (var i = 0; i < selectedIndexes.length; i++) {
       var entry = dm.item(selectedIndexes[i]);
       if (!entry) {
@@ -4209,7 +4210,7 @@ FileManager.prototype = {
       msg = str('ERROR_WHITESPACE_NAME');
     } else if (/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(name)) {
       msg = str('ERROR_RESERVED_NAME');
-    } else if (this.directoryModel_.filterHidden && name[0] == '.') {
+    } else if (this.directoryModel_.getFilterHidden() && name[0] == '.') {
       msg = str('ERROR_HIDDEN_NAME');
     }
 

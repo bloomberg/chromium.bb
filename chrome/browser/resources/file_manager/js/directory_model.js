@@ -51,7 +51,7 @@ function DirectoryModel(root, singleSelection, showGData, metadataCache) {
 
   // The map 'name' -> callback. Callbacks are function(entry) -> boolean.
   this.filters_ = {};
-  this.filterHidden = true;
+  this.setFilterHidden(true);
 
   // Readonly status.
   this.readonly_ = false;
@@ -92,136 +92,176 @@ DirectoryModel.DOWNLOADS_DIRECTORY = 'Downloads';
 */
 DirectoryModel.GDATA_DIRECTORY = 'gdata';
 
-DirectoryModel.prototype = {
-  __proto__: cr.EventTarget.prototype,
+/**
+ * DirectoryModel extends cr.EventTarget.
+ */
+DirectoryModel.prototype.__proto__ = cr.EventTarget.prototype;
 
-  /**
-   * Files in the current directory.
-   * @type {cr.ui.ArrayDataModel}
-   */
-  get fileList() {
-    return this.fileList_;
-  },
+/**
+ * @return {cr.ui.ArrayDataModel} Files in the current directory.
+ */
+DirectoryModel.prototype.getFileList = function() {
+  return this.fileList_;
+};
 
-  /**
-   * Selection in the fileList.
-   * @type {cr.ui.ListSelectionModel|cr.ui.ListSingleSelectionModel}
-   */
-  get fileListSelection() {
-    return this.fileListSelection_;
-  },
+/**
+ * Sort the file list.
+ * @param {string} sortField Sort field.
+ * @param {string} sortDirection "asc" or "desc".
+ */
+DirectoryModel.prototype.sortFileList = function(sortField, sortDirection) {
+  this.fileList_.sort(sortField, sortDirection);
+};
 
-  get rootType() {
-    return DirectoryModel.getRootType(this.currentEntry.fullPath);
-  },
+/**
+ * @return {cr.ui.ListSelectionModel|cr.ui.ListSingleSelectionModel} Selection
+ * in the fileList.
+ */
+DirectoryModel.prototype.getFileListSelection = function() {
+  return this.fileListSelection_;
+};
 
-  get rootName() {
-    return DirectoryModel.getRootName(this.currentEntry.fullPath);
-  },
+/**
+ * @return {DirectoryModel.RootType} Root type of current root.
+ */
+DirectoryModel.prototype.getRootType = function() {
+  return DirectoryModel.getRootType(this.currentDirEntry_.fullPath);
+};
 
-  /**
-   * True if current directory is read only.
-   * @type {boolean}
-   */
-  get readonly() {
-    return this.readonly_;
-  },
+/**
+ * @return {string} Root name.
+ */
+DirectoryModel.prototype.getRootName = function() {
+  return DirectoryModel.getRootName(this.currentDirEntry_.fullPath);
+};
 
-  get offline() {
-    return this.offline_;
-  },
-  set offline(value) {
-    if (this.offline_ != value) {
-      this.offline_ = !!value;
-      this.updateReadonlyStatus_();
-    }
-  },
+/**
+ * @return {boolean} True if current directory is read only.
+ */
+DirectoryModel.prototype.isReadOnly = function() {
+  return this.readonly_;
+};
 
-  get isSystemDirectoy() {
-    var path = this.currentEntry.fullPath;
-    return path == '/' ||
-           path == '/' + DirectoryModel.REMOVABLE_DIRECTORY ||
-           path == '/' + DirectoryModel.ARCHIVE_DIRECTORY;
-  },
+/**
+ * @return {boolean} If offline.
+ */
+DirectoryModel.prototype.isOffline = function() {
+  return this.offline_;
+};
 
-  get filterHidden() {
-    return !!this.filters_['hidden'];
-  },
+/**
+ * @param {boolean} value New online status.
+ */
+DirectoryModel.prototype.setOffline = function(value) {
+  if (this.offline_ != value) {
+    this.offline_ = !!value;
+    this.updateReadonlyStatus_();
+  }
+};
 
-  set filterHidden(value) {
-    if (value) {
-      this.addFilter('hidden',
-                     function(e) {return e.name.substr(0, 1) != '.';});
-    } else {
-      this.removeFilter('hidden');
-    }
-  },
+/**
+ * @return {boolean} If current directory is system.
+ */
+DirectoryModel.prototype.isSystemDirectory = function() {
+  var path = this.currentDirEntry_.fullPath;
+  return path == '/' ||
+         path == '/' + DirectoryModel.REMOVABLE_DIRECTORY ||
+         path == '/' + DirectoryModel.ARCHIVE_DIRECTORY;
+};
 
-  /**
-   * Current directory.
-   * @type {DirectoryEntry}
-   */
-  get currentEntry() {
-    return this.currentDirEntry_;
-  },
+/**
+ * @return {boolean} If the files with names starting with "." are not shown.
+ */
+DirectoryModel.prototype.isFilterHiddenOn = function() {
+  return !!this.filters_['hidden'];
+};
 
-  set autoSelectIndex(value) {
-    this.autoSelectIndex_ = value;
-  },
+/**
+ * @param {boolean} value Whether files with leading "." are hidden.
+ */
+DirectoryModel.prototype.setFilterHidden = function(value) {
+  if (value) {
+    this.addFilter('hidden',
+                   function(e) {return e.name.substr(0, 1) != '.';});
+  } else {
+    this.removeFilter('hidden');
+  }
+};
 
-  /**
-   * Names of selected files.
-   * @type {Array.<string>}
-   */
-  get selectedNames() {
-    var indexes = this.fileListSelection_.selectedIndexes;
-    var dataModel = this.fileList_;
-    if (dataModel) {
-      return indexes.map(function(i) {
-        return dataModel.item(i).name;
-      });
-    }
-    return [];
-  },
+/**
+ * @return {DirectoryEntry} Current directory.
+ */
+DirectoryModel.prototype.getCurrentDirEntry = function() {
+  return this.currentDirEntry_;
+};
 
-  set selectedNames(value) {
-    var indexes = [];
-    var dataModel = this.fileList_;
+/**
+ * @param {number} value New auto select index.
+ */
+DirectoryModel.prototype.setAutoSelectIndex = function(value) {
+  this.autoSelectIndex_ = value;
+};
 
-    function safeKey(key) {
-      // The transformation must:
-      // 1. Never generate a reserved name ('__proto__')
-      // 2. Keep different keys different.
-      return '#' + key;
-    }
+/**
+ * @private
+ * @return {Array.<string>} Names of selected files.
+ */
+DirectoryModel.prototype.getSelectedNames_ = function() {
+  var indexes = this.fileListSelection_.selectedIndexes;
+  var dataModel = this.fileList_;
+  if (dataModel) {
+    return indexes.map(function(i) {
+      return dataModel.item(i).name;
+    });
+  }
+  return [];
+};
 
-    var hash = {};
+/**
+ * @private
+ * @param {Array.<string>} value List of names of selected files.
+ */
+DirectoryModel.prototype.setSelectedNames_ = function(value) {
+  var indexes = [];
+  var dataModel = this.fileList_;
 
-    for (var i = 0; i < value.length; i++)
-      hash[safeKey(value[i])] = 1;
+  function safeKey(key) {
+    // The transformation must:
+    // 1. Never generate a reserved name ('__proto__')
+    // 2. Keep different keys different.
+    return '#' + key;
+  }
 
-    for (var i = 0; i < dataModel.length; i++) {
-      if (hash.hasOwnProperty(safeKey(dataModel.item(i).name)))
-        indexes.push(i);
-    }
-    this.fileListSelection_.selectedIndexes = indexes;
-  },
+  var hash = {};
 
-  /**
-   * Lead item file name.
-   * @type {string?}
-   */
-  get leadName() {
-    var index = this.fileListSelection_.leadIndex;
-    return index >= 0 && this.fileList_.item(index).name;
-  },
+  for (var i = 0; i < value.length; i++)
+    hash[safeKey(value[i])] = 1;
 
-  set leadName(value) {
-    for (var i = 0; i < this.fileList_.length; i++) {
-      if (this.fileList_.item(i).name == value) {
-        this.fileListSelection_.leadIndex = i;
-        return;
-      }
+  for (var i = 0; i < dataModel.length; i++) {
+    if (hash.hasOwnProperty(safeKey(dataModel.item(i).name)))
+      indexes.push(i);
+  }
+  this.fileListSelection_.selectedIndexes = indexes;
+};
+
+/**
+ * @private
+ * @return {string} Lead item file name.
+ */
+DirectoryModel.prototype.getLeadName_ = function() {
+  var index = this.fileListSelection_.leadIndex;
+  return index >= 0 && this.fileList_.item(index).name;
+};
+
+/**
+ * @private
+ * @param {string} value The name of new lead index.
+ */
+DirectoryModel.prototype.setLeadName_ = function(value) {
+  for (var i = 0; i < this.fileList_.length; i++) {
+    if (this.fileList_.item(i).name == value) {
+      this.fileListSelection_.leadIndex = i;
+      return;
     }
   }
 };
@@ -335,7 +375,7 @@ DirectoryModel.prototype.rescan = function() {
 
 /**
  * @private
- * @param {Array.<Entry>|cr.ui.ArrayDataModel} list
+ * @param {Array.<Entry>|cr.ui.ArrayDataModel} list File list.
  * @param {function} successCallback Callback on success.
  * @return {DirectoryModel.Scanner} New Scanner instance.
  */
@@ -370,24 +410,24 @@ DirectoryModel.prototype.createScanner_ = function(list, successCallback) {
 
 /**
  * @private
- * @param {Array.<Entry>} entries
+ * @param {Array.<Entry>} entries List of files.
  */
 DirectoryModel.prototype.replaceFileList_ = function(entries) {
   cr.dispatchSimpleEvent(this, 'begin-update-files');
   this.fileListSelection_.beginChange();
 
-  var selectedNames = this.selectedNames;
+  var selectedNames = this.getSelectedNames_();
   // Restore leadIndex in case leadName no longer exists.
   var leadIndex = this.fileListSelection_.leadIndex;
-  var leadName = this.leadName;
+  var leadName = this.getLeadName_();
 
   var spliceArgs = [].slice.call(entries);
   spliceArgs.unshift(0, this.fileList_.length);
   this.fileList_.splice.apply(this.fileList_, spliceArgs);
 
-  this.selectedNames = selectedNames;
+  this.setSelectedNames_(selectedNames);
   this.fileListSelection_.leadIndex = leadIndex;
-  this.leadName = leadName;
+  this.setLeadName_(leadName);
   this.fileListSelection_.endChange();
   cr.dispatchSimpleEvent(this, 'end-update-files');
 };
@@ -434,8 +474,8 @@ DirectoryModel.prototype.scan_ = function(callback) {
 
 /**
  * @private
- * @param {Array.<Entry>} entries
- * @param {function} callback
+ * @param {Array.<Entry>} entries Files.
+ * @param {function} callback Callback on done.
  */
 DirectoryModel.prototype.prefetchCacheForSorting_ = function(entries,
                                                              callback) {
@@ -481,17 +521,17 @@ DirectoryModel.prototype.deleteEntries = function(entries, opt_callback) {
 };
 
 /**
- * @param {string} name
+ * @param {string} name Filename.
  */
 DirectoryModel.prototype.onEntryChanged = function(name) {
-  var currentEntry = this.currentEntry;
+  var currentEntry = this.currentDirEntry_;
   var dm = this.fileList_;
   var self = this;
 
   function onEntryFound(entry) {
     self.prefetchCacheForSorting_([entry], function() {
       // Do nothing if current directory changed during async operations.
-      if (self.currentEntry != currentEntry)
+      if (self.currentDirEntry_ != currentEntry)
         return;
 
       var index = self.findIndexByName_(name);
@@ -504,7 +544,7 @@ DirectoryModel.prototype.onEntryChanged = function(name) {
 
   function onError(err) {
     // Do nothing if current directory changed during async operations.
-    if (self.currentEntry != currentEntry)
+    if (self.currentDirEntry_ != currentEntry)
       return;
     if (err.code != FileError.NOT_FOUND_ERR) {
       self.rescanLater();
@@ -516,12 +556,12 @@ DirectoryModel.prototype.onEntryChanged = function(name) {
       dm.splice(index, 1);
   };
 
-  util.resolvePath(currentEntry, name, onEntryFound, onError);
+  util.resolvePath(this.currentDirEntry_, name, onEntryFound, onError);
 };
 
 /**
  * @private
- * @param {string} name
+ * @param {string} name Filename.
  * @return {number} The index in the fileList.
  */
 DirectoryModel.prototype.findIndexByName_ = function(name) {
@@ -535,7 +575,7 @@ DirectoryModel.prototype.findIndexByName_ = function(name) {
 /**
  * Rename the entry in the filesystem and update the file list.
  * @param {Entry} entry Entry to rename.
- * @param {string} newName
+ * @param {string} newName New name.
  * @param {function} errorCallback Called on error.
  * @param {function} opt_successCallback Called on success.
  */
@@ -555,8 +595,7 @@ DirectoryModel.prototype.renameEntry = function(entry, newName, errorCallback,
         opt_successCallback();
     });
   }
-  entry.moveTo(this.currentEntry, newName,
-               onSuccess, errorCallback);
+  entry.moveTo(this.currentDirEntry_, newName, onSuccess, errorCallback);
 };
 
 /**
@@ -567,7 +606,7 @@ DirectoryModel.prototype.renameEntry = function(entry, newName, errorCallback,
  *     is true if it's a file.
  */
 DirectoryModel.prototype.doesExist = function(newName, callback) {
-  util.resolvePath(this.currentEntry, newName,
+  util.resolvePath(this.currentDirEntry_, newName,
       function(entry) {
         callback(true, entry.isFile);
       },
@@ -577,9 +616,9 @@ DirectoryModel.prototype.doesExist = function(newName, callback) {
 /**
  * Creates directory and updates the file list.
  *
- * @param {string} name
- * @param {function} successCallback
- * @param {function} errorCallback
+ * @param {string} name Directory name.
+ * @param {function} successCallback Callback on success.
+ * @param {function} errorCallback Callback on failure.
  */
 DirectoryModel.prototype.createDirectory = function(name, successCallback,
                                                     errorCallback) {
@@ -594,17 +633,17 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
         self.selectEntry(name);
         successCallback(existing[0]);
       } else {
-        self.fileListSelection.beginChange();
+        self.fileListSelection_.beginChange();
         fileList.splice(0, 0, newEntry);
         self.selectEntry(name);
-        self.fileListSelection.endChange();
+        self.fileListSelection_.endChange();
         successCallback(newEntry);
       }
     });
   }
 
-  this.currentEntry.getDirectory(name, {create: true, exclusive: true},
-                                 onSuccess, errorCallback);
+  this.currentDirEntry_.getDirectory(name, {create: true, exclusive: true},
+                                     onSuccess, errorCallback);
 };
 
 /**
@@ -661,7 +700,7 @@ DirectoryModel.prototype.changeDirectory = function(path, opt_OnError) {
  */
 DirectoryModel.prototype.changeDirectoryEntry_ = function(dirEntry, action,
                                                           initial) {
-  var previous = this.currentEntry;
+  var previous = this.currentDirEntry_;
   this.currentDirEntry_ = dirEntry;
   function onRescanComplete() {
     action();
@@ -806,11 +845,13 @@ DirectoryModel.prototype.setupPath = function(path, opt_loadedCallback,
 };
 
 /**
- * @param {function} opt_callback
+ * @param {function} opt_callback Callback on done.
  */
 DirectoryModel.prototype.setupDefaultPath = function(opt_callback) {
   var overridden = false;
-  function onExternalDirChange() { overridden = true }
+  function onExternalDirChange() {
+    overridden = true;
+  }
   this.addEventListener('directory-changed', onExternalDirChange);
 
   this.getDefaultDirectory_(function(path) {
@@ -822,7 +863,7 @@ DirectoryModel.prototype.setupDefaultPath = function(opt_callback) {
 
 /**
  * @private
- * @param {function} callback
+ * @param {function(string)} callback Called with the path to directory.
  */
 DirectoryModel.prototype.getDefaultDirectory_ = function(callback) {
   function onGetDirectoryComplete(entries, error) {
@@ -839,7 +880,7 @@ DirectoryModel.prototype.getDefaultDirectory_ = function(callback) {
 };
 
 /**
- * @param {string} name
+ * @param {string} name Filename.
  */
 DirectoryModel.prototype.selectEntry = function(name) {
   var dm = this.fileList_;
@@ -852,7 +893,7 @@ DirectoryModel.prototype.selectEntry = function(name) {
 };
 
 /**
- * @param {number} index
+ * @param {number} index Index of file.
  */
 DirectoryModel.prototype.selectIndex = function(index) {
   // this.focusCurrentList_();
@@ -869,8 +910,8 @@ DirectoryModel.prototype.selectIndex = function(index) {
  * This is called by the table code before a sort happens, so that we can
  * go fetch data for the sort field that we may not have yet.
  * @private
- * @param {string} field
- * @param {function} callback
+ * @param {string} field Sort field.
+ * @param {function} callback Called when done.
  */
 DirectoryModel.prototype.prepareSort_ = function(field, callback) {
   this.prepareSortEntries_(this.fileList_.slice(), field, callback);
@@ -878,9 +919,9 @@ DirectoryModel.prototype.prepareSort_ = function(field, callback) {
 
 /**
  * @private
- * @param {Array.<Entry>} entries
- * @param {string} field
- * @param {function} callback
+ * @param {Array.<Entry>} entries Files.
+ * @param {string} field Sort field.
+ * @param {function} callback Called when done.
  */
 DirectoryModel.prototype.prepareSortEntries_ = function(entries, field,
                                                         callback) {
@@ -1034,7 +1075,7 @@ DirectoryModel.prototype.updateRootsListSelection_ = function() {
  * @private
  */
 DirectoryModel.prototype.updateReadonlyStatus_ = function() {
-  switch (this.rootType) {
+  switch (this.getRootType()) {
     case DirectoryModel.RootType.REMOVABLE:
       this.readonly_ = !!this.currentVolumeMetadata_.isReadOnly;
       break;
@@ -1045,7 +1086,7 @@ DirectoryModel.prototype.updateReadonlyStatus_ = function() {
       this.readonly_ = false;
       break;
     case DirectoryModel.RootType.GDATA:
-      this.readonly_ = this.offline;
+      this.readonly_ = this.offline_;
       break;
     default:
       this.readonly_ = true;
@@ -1079,7 +1120,7 @@ DirectoryModel.prototype.updateVolumeMetadata_ = function() {
 /**
  * Prepare the root for the unmount.
  *
- * @param {string} rootPath
+ * @param {string} rootPath The path to the root.
  */
 DirectoryModel.prototype.prepareUnmount = function(rootPath) {
   var index = this.findRootsListItem_(rootPath);
@@ -1104,7 +1145,7 @@ DirectoryModel.prototype.prepareUnmount = function(rootPath) {
 };
 
 /**
- * @param {string} path
+ * @param {string} path Any path.
  * @return {string} The root path.
  */
 DirectoryModel.getRootPath = function(path) {
@@ -1128,8 +1169,8 @@ DirectoryModel.getRootPath = function(path) {
 };
 
 /**
- * @param {string} path
- * @return {string}
+ * @param {string} path Any path.
+ * @return {string} The name of the root.
  */
 DirectoryModel.getRootName = function(path) {
   var root = DirectoryModel.getRootPath(path);
@@ -1138,7 +1179,7 @@ DirectoryModel.getRootName = function(path) {
 };
 
 /**
- * @param {string} path Path.
+ * @param {string} path A path.
  * @return {string} A root type.
  */
 DirectoryModel.getRootType = function(path) {
@@ -1158,8 +1199,8 @@ DirectoryModel.getRootType = function(path) {
 };
 
 /**
- * @param {string} path
- * @return {boolean}
+ * @param {string} path A path.
+ * @return {boolean} True if it is a path to the root.
  */
 DirectoryModel.isRootPath = function(path) {
   if (path[path.length - 1] == '/')
@@ -1224,7 +1265,7 @@ DirectoryModel.Scanner.prototype.readNextChunk_ = function() {
 
 /**
  * @private
- * @param {Array.<Entry>} entries
+ * @param {Array.<Entry>} entries File list.
  */
 DirectoryModel.Scanner.prototype.onChunkComplete_ = function(entries) {
   if (this.cancelled_)

@@ -4,6 +4,9 @@
 
 var MAX_DRAG_THUMBAIL_COUNT = 4;
 
+/**
+ * TODO(olege): Fix style warnings.
+ */
 function FileTransferController(fileList,
                                 fileListSelection,
                                 dragNodeConstructor,
@@ -374,15 +377,15 @@ FileTransferController.prototype = {
   },
 
   get currentDirectory() {
-    return this.directoryModel_.currentEntry;
+    return this.directoryModel_.getCurrentDirEntry();
   },
 
   get readonly() {
-    return this.directoryModel_.readonly;
+    return this.directoryModel_.isReadOnly();
   },
 
   get isOnGData() {
-    return this.directoryModel_.rootType == DirectoryModel.RootType.GDATA;
+    return this.directoryModel_.getRootType() == DirectoryModel.RootType.GDATA;
   },
 
   notify_: function(eventName) {
