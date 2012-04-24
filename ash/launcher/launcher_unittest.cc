@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/launcher_view_test_api.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -36,7 +37,7 @@ TEST_F(LauncherTest, OpenBrowser) {
   Launcher* launcher = Shell::GetInstance()->launcher();
   ASSERT_TRUE(launcher);
   LauncherView* launcher_view = launcher->GetLauncherViewForTest();
-  LauncherView::TestAPI test(launcher_view);
+  test::LauncherViewTestAPI test(launcher_view);
   LauncherModel* model = launcher->model();
 
   // Initially we have the app list and chrome icon.

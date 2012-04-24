@@ -26,6 +26,10 @@ class ViewModel;
 
 namespace ash {
 
+namespace test {
+class LauncherViewTestAPI;
+}
+
 class LauncherDelegate;
 struct LauncherItem;
 class LauncherIconObserver;
@@ -42,23 +46,6 @@ class ASH_EXPORT LauncherView : public views::View,
                                 public views::ContextMenuController,
                                 public views::FocusTraversable {
  public:
-  // Use the api in this class for testing only.
-  class ASH_EXPORT TestAPI {
-   public:
-    explicit TestAPI(LauncherView* launcher_view)
-        : launcher_view_(launcher_view) {
-    }
-    // Number of icons displayed.
-    int GetButtonCount();
-    // Retrieve the button at |index|.
-    LauncherButton* GetButton(int index);
-
-   private:
-    LauncherView* launcher_view_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestAPI);
-  };
-
   LauncherView(LauncherModel* model, LauncherDelegate* delegate);
   virtual ~LauncherView();
 
@@ -80,6 +67,8 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual View* GetFocusTraversableParentView() OVERRIDE;
 
  private:
+  friend class ash::test::LauncherViewTestAPI;
+
   class FadeOutAnimationDelegate;
   class StartFadeAnimationDelegate;
 

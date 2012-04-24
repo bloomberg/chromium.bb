@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "ui/base/animation/animation_container_observer.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/rect.h"
@@ -24,7 +25,7 @@ namespace views {
 class BoundsAnimator;
 class View;
 
-class BoundsAnimatorObserver {
+class VIEWS_EXPORT BoundsAnimatorObserver {
  public:
   // Invoked when all animations are complete.
   virtual void OnBoundsAnimatorDone(BoundsAnimator* animator) = 0;
@@ -92,9 +93,12 @@ class VIEWS_EXPORT BoundsAnimator : public ui::AnimationDelegate,
   // size. Any views marked for deletion are deleted.
   void Cancel();
 
-  void set_observer(BoundsAnimatorObserver* observer) {
-    observer_ = observer;
-  }
+  // Overrides default animation duration. |duration_ms| is the new duration in
+  // milliseconds.
+  void SetAnimationDuration(int duration_ms);
+
+  void AddObserver(BoundsAnimatorObserver* observer);
+  void RemoveObserver(BoundsAnimatorObserver* observer);
 
  protected:
   // Creates the animation to use for animating views.
@@ -165,7 +169,7 @@ class VIEWS_EXPORT BoundsAnimator : public ui::AnimationDelegate,
   // Parent of all views being animated.
   View* parent_;
 
-  BoundsAnimatorObserver* observer_;
+  ObserverList<BoundsAnimatorObserver> observers_;
 
   // All animations we create up with the same container.
   scoped_refptr<ui::AnimationContainer> container_;
@@ -181,6 +185,8 @@ class VIEWS_EXPORT BoundsAnimator : public ui::AnimationDelegate,
   // the timer (AnimationContainerProgressed is invoked) the parent_ is asked
   // to repaint these bounds.
   gfx::Rect repaint_bounds_;
+
+  int animation_duration_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundsAnimator);
 };

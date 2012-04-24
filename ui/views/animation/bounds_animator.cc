@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "ui/views/view.h"
 
 // Duration in milliseconds for animations.
-static const int kAnimationDuration = 200;
+static const int kDefaultAnimationDuration = 200;
 
 using ui::Animation;
 using ui::AnimationContainer;
@@ -21,8 +21,8 @@ namespace views {
 
 BoundsAnimator::BoundsAnimator(View* parent)
     : parent_(parent),
-      observer_(NULL),
-      container_(new AnimationContainer()) {
+      container_(new AnimationContainer()),
+      animation_duration_ms_(kDefaultAnimationDuration) {
   container_->set_observer(this);
 }
 
@@ -137,10 +137,22 @@ void BoundsAnimator::Cancel() {
   AnimationContainerProgressed(container_.get());
 }
 
+void BoundsAnimator::SetAnimationDuration(int duration_ms) {
+  animation_duration_ms_ = duration_ms;
+}
+
+void BoundsAnimator::AddObserver(BoundsAnimatorObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void BoundsAnimator::RemoveObserver(BoundsAnimatorObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 SlideAnimation* BoundsAnimator::CreateAnimation() {
   SlideAnimation* animation = new SlideAnimation(this);
   animation->SetContainer(container_.get());
-  animation->SetSlideDuration(kAnimationDuration);
+  animation->SetSlideDuration(animation_duration_ms_);
   animation->SetTweenType(Tween::EASE_OUT);
   return animation;
 }
@@ -249,10 +261,12 @@ void BoundsAnimator::AnimationContainerProgressed(
     repaint_bounds_.SetRect(0, 0, 0, 0);
   }
 
-  if (observer_ && !IsAnimating()) {
+  if (!IsAnimating()) {
     // Notify here rather than from AnimationXXX to avoid deleting the animation
     // while the animation is calling us.
-    observer_->OnBoundsAnimatorDone(this);
+    FOR_EACH_OBSERVER(BoundsAnimatorObserver,
+                      observers_,
+                      OnBoundsAnimatorDone(this));
   }
 }
 

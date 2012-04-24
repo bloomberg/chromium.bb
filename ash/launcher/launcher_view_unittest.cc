@@ -4,23 +4,28 @@
 
 #include "ash/launcher/launcher_view.h"
 
-#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
+#include "ash/launcher/launcher_button.h"
+#include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_icon_observer.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/launcher_view_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
+#include "ui/aura/test/aura_test_base.h"
+#include "ui/gfx/compositor/layer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
+namespace test {
 
-namespace {
+////////////////////////////////////////////////////////////////////////////////
+// LauncherIconObserver tests.
 
 class TestLauncherIconObserver : public LauncherIconObserver {
  public:
@@ -34,7 +39,7 @@ class TestLauncherIconObserver : public LauncherIconObserver {
 
   // LauncherIconObserver implementation.
   void OnLauncherIconPositionsChanged() OVERRIDE {
-    count_++;
+    ++count_;
   }
 
   int count() const { return count_; }
@@ -46,10 +51,10 @@ class TestLauncherIconObserver : public LauncherIconObserver {
   DISALLOW_COPY_AND_ASSIGN(TestLauncherIconObserver);
 };
 
-class LauncherViewTest : public ash::test::AshTestBase {
+class LauncherViewIconObserverTest : public ash::test::AshTestBase {
  public:
-  LauncherViewTest() {}
-  virtual ~LauncherViewTest() {}
+  LauncherViewIconObserverTest() {}
+  virtual ~LauncherViewIconObserverTest() {}
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
@@ -66,10 +71,10 @@ class LauncherViewTest : public ash::test::AshTestBase {
  private:
   scoped_ptr<TestLauncherIconObserver> observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherViewTest);
+  DISALLOW_COPY_AND_ASSIGN(LauncherViewIconObserverTest);
 };
 
-TEST_F(LauncherViewTest, AddRemove) {
+TEST_F(LauncherViewIconObserverTest, AddRemove) {
   ash::test::TestLauncherDelegate* launcher_delegate =
       ash::test::TestLauncherDelegate::instance();
   ASSERT_TRUE(launcher_delegate);
@@ -90,7 +95,7 @@ TEST_F(LauncherViewTest, AddRemove) {
   observer()->Reset();
 }
 
-TEST_F(LauncherViewTest, BoundsChanged) {
+TEST_F(LauncherViewIconObserverTest, BoundsChanged) {
   Launcher* launcher = Shell::GetInstance()->launcher();
   int total_width = launcher->widget()->GetWindowScreenBounds().width();
   ASSERT_GT(total_width, 0);
@@ -99,6 +104,156 @@ TEST_F(LauncherViewTest, BoundsChanged) {
   observer()->Reset();
 }
 
-}  // namespace
+////////////////////////////////////////////////////////////////////////////////
+// LauncherView tests.
 
+class LauncherViewTest : public aura::test::AuraTestBase {
+ public:
+  LauncherViewTest() {}
+  virtual ~LauncherViewTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    aura::test::AuraTestBase::SetUp();
+
+    model_.reset(new LauncherModel);
+
+    launcher_view_.reset(new internal::LauncherView(model_.get(), NULL));
+    launcher_view_->Init();
+    // The bounds should be big enough for 4 buttons + overflow chevron.
+    launcher_view_->SetBounds(0, 0, 500, 50);
+
+    test_api_.reset(new LauncherViewTestAPI(launcher_view_.get()));
+    test_api_->SetAnimationDuration(1);  // Speeds up animation for test.
+  }
+
+ protected:
+  LauncherID AddAppShortcut() {
+    LauncherItem item;
+    item.type = TYPE_APP_SHORTCUT;
+    item.status = STATUS_CLOSED;
+
+    int id = model_->next_id();
+    model_->Add(item);
+    test_api_->RunMessageLoopUntilAnimationsDone();
+    return id;
+  }
+
+  LauncherID AddTabbedBrowser() {
+    LauncherItem item;
+    item.type = TYPE_TABBED;
+    item.status = STATUS_RUNNING;
+
+    int id = model_->next_id();
+    model_->Add(item);
+    test_api_->RunMessageLoopUntilAnimationsDone();
+    return id;
+  }
+
+  void RemoveByID(LauncherID id) {
+    model_->RemoveItemAt(model_->ItemIndexByID(id));
+    test_api_->RunMessageLoopUntilAnimationsDone();
+  }
+
+  internal::LauncherButton* GetButtonByID(LauncherID id) {
+    int index = model_->ItemIndexByID(id);
+    return test_api_->GetButton(index);
+  }
+
+  scoped_ptr<LauncherModel> model_;
+  scoped_ptr<internal::LauncherView> launcher_view_;
+  scoped_ptr<LauncherViewTestAPI> test_api_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LauncherViewTest);
+};
+
+// Adds browser button until overflow and verifies that the last added browser
+// button is hidden.
+TEST_F(LauncherViewTest, AddBrowserUntilOverflow) {
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  // Add tabbed browser until overflow.
+  LauncherID last_added = AddTabbedBrowser();
+  while (!test_api_->IsOverflowButtonVisible()) {
+    // Added button is visible after animation while in this loop.
+    EXPECT_TRUE(GetButtonByID(last_added)->visible());
+
+    last_added = AddTabbedBrowser();
+  }
+
+  // The last added button should be invisible.
+  EXPECT_FALSE(GetButtonByID(last_added)->visible());
+}
+
+// Adds one browser button then adds app shortcut until overflow. Verifies that
+// the browser button gets hidden on overflow and last added app shortcut is
+// still visible.
+TEST_F(LauncherViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  LauncherID browser_button_id = AddTabbedBrowser();
+
+  // Add app shortcut until overflow.
+  LauncherID last_added = AddAppShortcut();
+  while (!test_api_->IsOverflowButtonVisible()) {
+    // Added button is visible after animation while in this loop.
+    EXPECT_TRUE(GetButtonByID(last_added)->visible());
+
+    last_added = AddAppShortcut();
+  }
+
+  // The last added app short button should be visible.
+  EXPECT_TRUE(GetButtonByID(last_added)->visible());
+  // And the browser button is invisible.
+  EXPECT_FALSE(GetButtonByID(browser_button_id)->visible());
+}
+
+// Adds button until overflow then removes first added one. Verifies that
+// the last added one changes from invisible to visible and overflow
+// chevron is gone.
+TEST_F(LauncherViewTest, RemoveButtonRevealsOverflowed) {
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  // Add tabbed browser until overflow.
+  LauncherID first_added= AddTabbedBrowser();
+  LauncherID last_added = first_added;
+  while (!test_api_->IsOverflowButtonVisible())
+    last_added = AddTabbedBrowser();
+
+  // Expect add more than 1 button. First added is visible and last is not.
+  EXPECT_NE(first_added, last_added);
+  EXPECT_TRUE(GetButtonByID(first_added)->visible());
+  EXPECT_FALSE(GetButtonByID(last_added)->visible());
+
+  // Remove first added.
+  RemoveByID(first_added);
+
+  // Last added button becomes visible and overflow chevron is gone.
+  EXPECT_TRUE(GetButtonByID(last_added)->visible());
+  EXPECT_EQ(1.0f, GetButtonByID(last_added)->layer()->opacity());
+  EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
+}
+
+// Verifies that remove last overflowed button should hide overflow chevron.
+TEST_F(LauncherViewTest, RemoveLastOverflowed) {
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  // Add tabbed browser until overflow.
+  LauncherID last_added= AddTabbedBrowser();
+  while (!test_api_->IsOverflowButtonVisible())
+    last_added = AddTabbedBrowser();
+
+  RemoveByID(last_added);
+  EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
+}
+
+}  // namespace test
 }  // namespace ash

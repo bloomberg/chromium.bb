@@ -182,6 +182,7 @@ void ReflectItemStatus(const ash::LauncherItem& item,
       break;
   }
 }
+
 }  // namespace
 
 // AnimationDelegate used when inserting a new item. This steadily decreased the
@@ -226,7 +227,6 @@ class LauncherView::StartFadeAnimationDelegate :
 
   // AnimationDelegate overrides:
   virtual void AnimationEnded(const Animation* animation) OVERRIDE {
-    view_->SetVisible(true);
     launcher_view_->FadeIn(view_);
   }
   virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
@@ -239,18 +239,6 @@ class LauncherView::StartFadeAnimationDelegate :
 
   DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
 };
-
-int LauncherView::TestAPI::GetButtonCount() {
-  return launcher_view_->view_model_->view_size();
-}
-
-LauncherButton* LauncherView::TestAPI::GetButton(int index) {
-  if (index == 0)
-    return NULL;
-
-  return static_cast<LauncherButton*>(
-      launcher_view_->view_model_->view_at(index));
-}
 
 LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
     : model_(model),
@@ -369,20 +357,14 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   last_visible_index_ = DetermineLastVisibleIndex(
       available_width - kLeadingInset - bounds->overflow_bounds.width() -
       kButtonSpacing - kButtonWidth);
-  bool show_overflow =
-      (last_visible_index_ + 1 != view_model_->view_size());
   int app_list_index = view_model_->view_size() - 1;
-  if (overflow_button_->visible() != show_overflow) {
-    // Only change visibility of the views if the visibility of the overflow
-    // button changes. Otherwise we'll effect the insertion animation, which
-    // changes the visibility.
-    for (int i = 0; i <= last_visible_index_; ++i)
-      view_model_->view_at(i)->SetVisible(true);
-    for (int i = last_visible_index_ + 1; i < view_model_->view_size(); ++i) {
-      if (i != app_list_index)
-        view_model_->view_at(i)->SetVisible(false);
-    }
+  bool show_overflow = (last_visible_index_ + 1 < app_list_index);
+
+  for (int i = 0; i < view_model_->view_size(); ++i) {
+    view_model_->view_at(i)->SetVisible(
+        i == app_list_index || i <= last_visible_index_);
   }
+
   overflow_button_->SetVisible(show_overflow);
   if (show_overflow) {
     DCHECK_NE(0, view_model_->view_size());
@@ -688,11 +670,13 @@ void LauncherView::LauncherItemAdded(int model_index) {
 
   views::View* view = CreateViewForItem(model_->items()[model_index]);
   AddChildView(view);
-  // Hide the view, it'll be made visible when the animation is done.
-  view->SetVisible(false);
+  // Hide the view, it'll be made visible when the animation is done. Using
+  // opacity 0 here to avoid messing with CalculateIdealBounds which touches
+  // the view's visibility.
+  view->layer()->SetOpacity(0);
   view_model_->Add(view, model_index);
 
-  // Give the button it's ideal bounds. That way if we end up animating the
+  // Give the button its ideal bounds. That way if we end up animating the
   // button before this animation completes it doesn't appear at some random
   // spot (because it was in the middle of animating from 0,0 0x0 to its
   // target).
@@ -700,13 +684,16 @@ void LauncherView::LauncherItemAdded(int model_index) {
   CalculateIdealBounds(&ideal_bounds);
   view->SetBoundsRect(view_model_->ideal_bounds(model_index));
 
-  // The first animation moves all the views to their target position. |view| is
-  // hidden, so it visually appears as though we are providing space for
+  // The first animation moves all the views to their target position. |view|
+  // is hidden, so it visually appears as though we are providing space for
   // it. When done we'll fade the view in.
   AnimateToIdealBounds();
-  if (!overflow_button_->visible()) {
+  if (model_index <= last_visible_index_) {
     bounds_animator_->SetAnimationDelegate(
         view, new StartFadeAnimationDelegate(this, view), true);
+  } else {
+    // Undo the hiding if animation does not run.
+    view->layer()->SetOpacity(1.0f);
   }
 
   FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
