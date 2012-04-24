@@ -211,6 +211,18 @@ void RunCallbackWithDictionaryValue(const NetworkPropertiesCallback& callback,
   callback.Run(path, call_status == DBUS_METHOD_CALL_SUCCESS ? &value : NULL);
 }
 
+// Used as a callback for FlimflamManagerClient::GetService
+void OnGetService(const NetworkPropertiesCallback& callback,
+                  DBusMethodCallStatus call_status,
+                  const dbus::ObjectPath& service_path) {
+  if (call_status == DBUS_METHOD_CALL_SUCCESS) {
+    DBusThreadManager::Get()->GetFlimflamServiceClient()->GetProperties(
+        service_path, base::Bind(&RunCallbackWithDictionaryValue,
+                                 callback,
+                                 service_path.value()));
+  }
+}
+
 // Used as a callback for chromeos::ConfigureService.
 void OnConfigureService(void* object,
                         const char* service_path,
@@ -465,12 +477,34 @@ void CrosRequestHiddenWifiNetworkProperties(
     const std::string& ssid,
     const std::string& security,
     const NetworkPropertiesCallback& callback) {
-  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
-  chromeos::RequestHiddenWifiNetworkProperties(
-      ssid.c_str(),
-      security.c_str(),
-      &OnRequestNetworkProperties,
-      new OnRequestNetworkPropertiesCallback(callback));
+  if (g_libcros_network_functions_enabled) {
+    // The newly allocated callback will be deleted in
+    // OnRequestNetworkProperties.
+    chromeos::RequestHiddenWifiNetworkProperties(
+        ssid.c_str(),
+        security.c_str(),
+        &OnRequestNetworkProperties,
+        new OnRequestNetworkPropertiesCallback(callback));
+  } else {
+    base::DictionaryValue properties;
+    properties.SetWithoutPathExpansion(
+        flimflam::kModeProperty,
+        base::Value::CreateStringValue(flimflam::kModeManaged));
+    properties.SetWithoutPathExpansion(
+        flimflam::kTypeProperty,
+        base::Value::CreateStringValue(flimflam::kTypeWifi));
+    properties.SetWithoutPathExpansion(
+        flimflam::kSSIDProperty,
+        base::Value::CreateStringValue(ssid));
+    properties.SetWithoutPathExpansion(
+        flimflam::kSecurityProperty,
+        base::Value::CreateStringValue(security));
+    // flimflam.Manger.GetService() will apply the property changes in
+    // |properties| and return a new or existing service to OnGetService().
+    // OnGetService will then call GetProperties which will then call callback.
+    DBusThreadManager::Get()->GetFlimflamManagerClient()->GetService(
+        properties, base::Bind(&OnGetService, callback));
+  }
 }
 
 void CrosRequestVirtualNetworkProperties(
@@ -478,13 +512,40 @@ void CrosRequestVirtualNetworkProperties(
     const std::string& server_hostname,
     const std::string& provider_type,
     const NetworkPropertiesCallback& callback) {
-  // The newly allocated callback will be deleted in OnRequestNetworkProperties.
-  chromeos::RequestVirtualNetworkProperties(
-      service_name.c_str(),
-      server_hostname.c_str(),
-      provider_type.c_str(),
-      &OnRequestNetworkProperties,
-      new OnRequestNetworkPropertiesCallback(callback));
+  if (g_libcros_network_functions_enabled) {
+    // The newly allocated callback will be deleted in
+    // OnRequestNetworkProperties.
+    chromeos::RequestVirtualNetworkProperties(
+        service_name.c_str(),
+        server_hostname.c_str(),
+        provider_type.c_str(),
+        &OnRequestNetworkProperties,
+        new OnRequestNetworkPropertiesCallback(callback));
+  } else {
+    base::DictionaryValue properties;
+    properties.SetWithoutPathExpansion(
+        flimflam::kTypeProperty,
+        base::Value::CreateStringValue(flimflam::kTypeVPN));
+    properties.SetWithoutPathExpansion(
+        flimflam::kProviderNameProperty,
+        base::Value::CreateStringValue(service_name));
+    properties.SetWithoutPathExpansion(
+        flimflam::kProviderHostProperty,
+        base::Value::CreateStringValue(server_hostname));
+    properties.SetWithoutPathExpansion(
+        flimflam::kProviderTypeProperty,
+        base::Value::CreateStringValue(provider_type));
+    // The actual value of Domain does not matter, so just use service_name.
+    properties.SetWithoutPathExpansion(
+        flimflam::kVPNDomainProperty,
+        base::Value::CreateStringValue(service_name));
+
+    // flimflam.Manger.GetService() will apply the property changes in
+    // |properties| and pass a new or existing service to OnGetService().
+    // OnGetService will then call GetProperties which will then call callback.
+    DBusThreadManager::Get()->GetFlimflamManagerClient()->GetService(
+        properties, base::Bind(&OnGetService, callback));
+  }
 }
 
 void CrosRequestNetworkServiceDisconnect(const std::string& service_path) {

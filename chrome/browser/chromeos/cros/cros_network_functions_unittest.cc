@@ -976,6 +976,98 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkProfileEntryProperties) {
                                                     result));
 }
 
+TEST_F(CrosNetworkFunctionsTest, CrosRequestHiddenWifiNetworkProperties) {
+  const std::string ssid = "ssid";
+  const std::string security = "security";
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  dictionary_value_result_ = &result;
+  // Create expected argument to FlimflamManagerClient::GetService.
+  base::DictionaryValue properties;
+  properties.SetWithoutPathExpansion(
+      flimflam::kModeProperty,
+      base::Value::CreateStringValue(flimflam::kModeManaged));
+  properties.SetWithoutPathExpansion(
+      flimflam::kTypeProperty,
+      base::Value::CreateStringValue(flimflam::kTypeWifi));
+  properties.SetWithoutPathExpansion(
+      flimflam::kSSIDProperty,
+      base::Value::CreateStringValue(ssid));
+  properties.SetWithoutPathExpansion(
+      flimflam::kSecurityProperty,
+      base::Value::CreateStringValue(security));
+  // Set expectations.
+  const dbus::ObjectPath service_path("/service/path");
+  FlimflamClientHelper::ObjectPathCallback callback;
+  EXPECT_CALL(*mock_manager_client_, GetService(IsEqualTo(&properties), _))
+      .WillOnce(SaveArg<1>(&callback));
+  EXPECT_CALL(*mock_service_client_,
+              GetProperties(service_path, _)).WillOnce(
+                  Invoke(this, &CrosNetworkFunctionsTest::OnGetProperties));
+
+  // Call function.
+  CrosRequestHiddenWifiNetworkProperties(
+      ssid, security,
+      MockNetworkPropertiesCallback::CreateCallback(service_path.value(),
+                                                    result));
+  // Run callback to invoke GetProperties.
+  callback.Run(DBUS_METHOD_CALL_SUCCESS, service_path);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosRequestVirtualNetworkProperties) {
+  const std::string service_name = "service name";
+  const std::string server_hostname = "server hostname";
+  const std::string provider_type = "provider type";
+  const std::string key1 = "key1";
+  const std::string value1 = "value1";
+  const std::string key2 = "key.2.";
+  const std::string value2 = "value2";
+  // Create result value.
+  base::DictionaryValue result;
+  result.SetWithoutPathExpansion(key1, base::Value::CreateStringValue(value1));
+  result.SetWithoutPathExpansion(key2, base::Value::CreateStringValue(value2));
+  dictionary_value_result_ = &result;
+  // Create expected argument to FlimflamManagerClient::GetService.
+  base::DictionaryValue properties;
+  properties.SetWithoutPathExpansion(
+      flimflam::kTypeProperty, base::Value::CreateStringValue("vpn"));
+  properties.SetWithoutPathExpansion(
+      flimflam::kProviderNameProperty,
+      base::Value::CreateStringValue(service_name));
+  properties.SetWithoutPathExpansion(
+      flimflam::kProviderHostProperty,
+      base::Value::CreateStringValue(server_hostname));
+  properties.SetWithoutPathExpansion(
+      flimflam::kProviderTypeProperty,
+      base::Value::CreateStringValue(provider_type));
+  properties.SetWithoutPathExpansion(
+      flimflam::kVPNDomainProperty,
+      base::Value::CreateStringValue(service_name));
+
+  // Set expectations.
+  const dbus::ObjectPath service_path("/service/path");
+  FlimflamClientHelper::ObjectPathCallback callback;
+  EXPECT_CALL(*mock_manager_client_, GetService(IsEqualTo(&properties), _))
+      .WillOnce(SaveArg<1>(&callback));
+  EXPECT_CALL(*mock_service_client_,
+              GetProperties(service_path, _)).WillOnce(
+                  Invoke(this, &CrosNetworkFunctionsTest::OnGetProperties));
+
+  // Call function.
+  CrosRequestVirtualNetworkProperties(
+      service_name, server_hostname, provider_type,
+      MockNetworkPropertiesCallback::CreateCallback(service_path.value(),
+                                                    result));
+  // Run callback to invoke GetProperties.
+  callback.Run(DBUS_METHOD_CALL_SUCCESS, service_path);
+}
+
 TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkServiceDisconnect) {
   const std::string service_path = "/service/path";
   EXPECT_CALL(*mock_service_client_,
