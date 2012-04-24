@@ -17,9 +17,10 @@ namespace views {
 
 class NativeViewHost;
 
-class VIEWS_EXPORT WebView : public View,
-                             public content::NotificationObserver,
-                             public content::WebContentsDelegate {
+class VIEWS_EXPORT WebView
+    : public View,
+      public NON_EXPORTED_BASE(content::NotificationObserver),
+      public NON_EXPORTED_BASE(content::WebContentsDelegate) {
  public:
   static const char kViewClassName[];
 
