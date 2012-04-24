@@ -10306,7 +10306,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         External Storage
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_DIRECTORY_LABEL" translateable="false" desc="/gdata directory label.">
-        Google Docs
+        Google Drive
       </message>
       <message name="IDS_FILE_BROWSER_MEDIA_DIRECTORY_LABEL" desc="/media directory label.">
         External Storage
