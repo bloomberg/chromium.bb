@@ -38,3 +38,7 @@ select {
   margin-bottom: 6px;
   margin-top: 6px;
 }
+
+html[touch-optimized] .tree-item > .tree-row {
+  padding: 4px 3px;
+}
