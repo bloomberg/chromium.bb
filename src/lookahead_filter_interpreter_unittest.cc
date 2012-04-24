@@ -246,12 +246,14 @@ class LookaheadFilterInterpreterNoTapSetTestInterpreter
     : public Interpreter {
  public:
   LookaheadFilterInterpreterNoTapSetTestInterpreter()
-      : interpret_call_count_ (0) {}
+      : interpret_call_count_(0) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
+    EXPECT_EQ(expected_finger_cnts_[interpret_call_count_],
+              hwstate->finger_cnt);
     interpret_call_count_++;
-    EXPECT_EQ(1, hwstate->finger_cnt);
-    EXPECT_TRUE(hwstate->fingers[0].flags & GESTURES_FINGER_NO_TAP);
+    if (hwstate->finger_cnt > 0)
+      EXPECT_TRUE(hwstate->fingers[0].flags & GESTURES_FINGER_NO_TAP);
     return NULL;
   }
 
@@ -264,6 +266,7 @@ class LookaheadFilterInterpreterNoTapSetTestInterpreter
 
   std::set<short> finger_ids_;
   size_t interpret_call_count_;
+  vector<short> expected_finger_cnts_;
 };
 
 // Tests that with a zero delay, we can still avoid unnecessary splitting
@@ -272,6 +275,7 @@ TEST(LookaheadFilterInterpreterTest, NoTapSetTest) {
   LookaheadFilterInterpreterNoTapSetTestInterpreter* base_interpreter =
       new LookaheadFilterInterpreterNoTapSetTestInterpreter;
   LookaheadFilterInterpreter interpreter(NULL, base_interpreter);
+  interpreter.min_delay_.val_ = 0.0;
 
   HardwareProperties initial_hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -282,19 +286,25 @@ TEST(LookaheadFilterInterpreterTest, NoTapSetTest) {
   };
 
   FingerState fs[] = {
-    // TM, Tm, WM, Wm, pr, orient, x, y, id
-    { 0, 0, 0, 0, 1, 0, 10, 10, 10, 1 },
-    { 0, 0, 0, 0, 1, 0, 10, 30, 10, 1 },
+    // TM, Tm, WM, Wm, pr, orient, x, y, id, flags
+    { 0, 0, 0, 0, 1, 0, 30, 10, 0, 0 },
+    { 0, 0, 0, 0, 1, 0, 30, 30, 0, 0 },
+    { 0, 0, 0, 0, 1, 0, 10, 10, 1, 0 },
+    { 0, 0, 0, 0, 1, 0, 10, 30, 1, 0 },
   };
   HardwareState hs[] = {
     // Expect movement to take
-    { 1.01, 0, 1, 1, &fs[0] },
-    { 1.02, 0, 1, 1, &fs[1] },
+    { 0.01, 0, 1, 1, &fs[0] },
+    { 0.01, 0, 1, 1, &fs[1] },
+    { 0.03, 0, 0, 0, NULL },
+    { 1.01, 0, 1, 1, &fs[2] },
+    { 1.02, 0, 1, 1, &fs[3] },
   };
 
   interpreter.SetHardwareProperties(initial_hwprops);
 
   for (size_t i = 0; i < arraysize(hs); i++) {
+    base_interpreter->expected_finger_cnts_.push_back(hs[i].finger_cnt);
     stime_t timeout = -1.0;
     interpreter.SyncInterpret(&hs[i], &timeout);
     stime_t next_input = i < (arraysize(hs) - 1) ? hs[i + 1].timestamp :
@@ -306,7 +316,7 @@ TEST(LookaheadFilterInterpreterTest, NoTapSetTest) {
       interpreter.HandleTimer(now, &timeout);
     }
   }
-  EXPECT_EQ(2, base_interpreter->interpret_call_count_);
+  EXPECT_EQ(arraysize(hs), base_interpreter->interpret_call_count_);
 }
 
 // This test makes sure that if an interpreter requests a timeout, and then

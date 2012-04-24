@@ -25,6 +25,7 @@ class LookaheadFilterInterpreter : public Interpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateHwStateTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolateTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest);
+  FRIEND_TEST(LookaheadFilterInterpreterTest, NoTapSetTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, QuickMoveTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SimpleTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest);

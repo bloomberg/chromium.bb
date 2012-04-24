@@ -116,6 +116,8 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
         tail->output_ids_[fs->tracking_id] = NextTrackingId();
         fs->tracking_id = tail->output_ids_[fs->tracking_id];
       }
+      if (hs->finger_cnt > 0)
+        tail->due_ += ExtraVariableDelay();
     }
     return;
   }
