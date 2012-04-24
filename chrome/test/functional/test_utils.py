@@ -23,7 +23,7 @@ import pyauto_utils
 
 def CrashBrowser(test):
   """Crashes the browser by navigating to special URL."""
-  test.NavigateToURL('about:inducebrowsercrashforrealz')
+  test.NavigateToURL('chrome://inducebrowsercrashforrealz')
 
 
 def CopyFileFromDataDirToDownloadDir(test, file_path):
