@@ -13,6 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "ui/gfx/point3.h"
+#include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/transform.h"
 
 #if defined(OS_MACOSX)
@@ -278,6 +279,14 @@ TouchEvent::TouchEvent(ui::EventType type,
 }
 
 TouchEvent::~TouchEvent() {
+}
+
+void TouchEvent::UpdateForRootTransform(const ui::Transform& root_transform) {
+  LocatedEvent::UpdateForRootTransform(root_transform);
+  gfx::Point3f scale;
+  ui::InterpolatedTransform::FactorTRS(root_transform, NULL, NULL, &scale);
+  radius_x_ *= scale.x();
+  radius_y_ *= scale.y();
 }
 
 ui::EventType TouchEvent::GetEventType() const {

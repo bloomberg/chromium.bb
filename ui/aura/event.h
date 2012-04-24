@@ -112,8 +112,9 @@ class AURA_EXPORT LocatedEvent : public Event {
   gfx::Point location() const { return location_; }
   gfx::Point root_location() const { return root_location_; }
 
-  // Applies the |root_transform| to both |location_| and |root_location_|.
-  void UpdateForRootTransform(const ui::Transform& root_transform);
+  // Applies |root_transform| to the event.
+  // This is applied to both |location_| and |root_location_|.
+  virtual void UpdateForRootTransform(const ui::Transform& root_transform);
 
  protected:
   explicit LocatedEvent(const base::NativeEvent& native_event);
@@ -204,6 +205,10 @@ class AURA_EXPORT TouchEvent : public LocatedEvent,
   float rotation_angle() const { return rotation_angle_; }
   float force() const { return force_; }
 
+  // Overridden from LocatedEvent.
+  virtual void UpdateForRootTransform(
+      const ui::Transform& root_transform) OVERRIDE;
+
   // Overridden from ui::TouchEvent.
   virtual ui::EventType GetEventType() const OVERRIDE;
   virtual gfx::Point GetLocation() const OVERRIDE;
@@ -218,10 +223,10 @@ class AURA_EXPORT TouchEvent : public LocatedEvent,
   const int touch_id_;
 
   // Radius of the X (major) axis of the touch ellipse. 1.0 if unknown.
-  const float radius_x_;
+  float radius_x_;
 
   // Radius of the Y (minor) axis of the touch ellipse. 1.0 if unknown.
-  const float radius_y_;
+  float radius_y_;
 
   // Angle of the major axis away from the X axis. Default 0.0.
   const float rotation_angle_;
