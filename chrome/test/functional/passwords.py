@@ -156,7 +156,7 @@ class PasswordTest(pyauto.PyUITest):
     # Selecting 'Never for this site' option on password infobar.
     self.PerformActionOnInfobar(
         'cancel', infobar_index=test_utils.WaitForInfobarTypeAndGetIndex(
-            self, self.INFOBAR_TYPE, tab_index=1))
+            self, self.INFOBAR_TYPE, tab_index=1), tab_index=1)
 
     # TODO: GetSavedPasswords() doesn't return anything when empty.
     # http://crbug.com/64603

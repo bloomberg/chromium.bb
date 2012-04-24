@@ -188,8 +188,6 @@
       '-pyauto_webdriver.PyAutoWebDriverTest.testTypeIntoTextBox',
       # crbug.com/95031
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
-      # crbug.com/119602
-      '-passwords.PasswordTest.testNeverSavePasswords',
     ],
 
     'mac': [
