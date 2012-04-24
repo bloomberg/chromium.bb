@@ -4,6 +4,8 @@
 
 #include "media/audio/android/audio_track_output_android.h"
 
+#include <algorithm>  // std::min
+
 #include "base/android/jni_android.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -288,7 +290,6 @@ void AudioTrackOutputStream::FillAudioBufferTask() {
   // Fill the internal buffer first.
   if (!data_buffer_->data_len()) {
     uint32 src_data_size = source_callback_->OnMoreData(
-        this,
         data_buffer_->GetWritableBuffer(),
         data_buffer_->buffer_size(),
         AudioBuffersState());
