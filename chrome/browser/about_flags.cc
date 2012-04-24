@@ -644,7 +644,7 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-sync-signing",
+    "enable-sync-signin",
     IDS_ENABLE_SYNC_SIGNIN_NAME,
     IDS_ENABLE_SYNC_SIGNIN_DESCRIPTION,
     kOsAll,
