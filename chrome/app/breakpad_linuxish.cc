@@ -46,11 +46,20 @@
 #if defined(OS_ANDROID)
 #include <android/log.h>
 #include <sys/stat.h>
-#include "base/android/path_utils.h"
+
 #include "base/android/build_info.h"
+#include "base/android/path_utils.h"
 #include "third_party/lss/linux_syscall_support.h"
 #else
 #include "seccompsandbox/linux_syscall_support.h"
+#endif
+
+#if defined(OS_ANDROID)
+#define STAT_STRUCT struct stat
+#define FSTAT_FUNC fstat
+#else
+#define STAT_STRUCT struct kernel_stat
+#define FSTAT_FUNC sys_fstat
 #endif
 
 #ifndef PR_SET_PTRACER
@@ -144,8 +153,8 @@ static char* my_strncpy(char* dst, const char* src, size_t len) {
   return dst;
 }
 
-static char* my_strncat(char *dest, const char *src, size_t len) {
-  char *ret = dest;
+static char* my_strncat(char *dest, const char* src, size_t len) {
+  char* ret = dest;
   while (*dest)
       dest++;
   while (len--)
@@ -159,13 +168,12 @@ static char* my_strncat(char *dest, const char *src, size_t len) {
 namespace {
 
 // MIME substrings.
-static const char g_rn[] = "\r\n";
-static const char g_form_data_msg[] = "Content-Disposition: form-data; name=\"";
-static const char g_quote_msg[] = "\"";
-static const char g_dashdash_msg[] = "--";
-static const char g_dump_msg[] = "upload_file_minidump\"; filename=\"dump\"";
-static const char g_content_type_msg[] =
-    "Content-Type: application/octet-stream";
+const char g_rn[] = "\r\n";
+const char g_form_data_msg[] = "Content-Disposition: form-data; name=\"";
+const char g_quote_msg[] = "\"";
+const char g_dashdash_msg[] = "--";
+const char g_dump_msg[] = "upload_file_minidump\"; filename=\"dump\"";
+const char g_content_type_msg[] = "Content-Type: application/octet-stream";
 
 // MimeWriter manages an iovec for writing MIMEs to a file.
 class MimeWriter {
@@ -343,9 +351,11 @@ void DumpProcess() {
     g_breakpad->WriteMinidump();
 }
 
+const char kGoogleBreakpad[] = "google-breakpad";
+
 size_t WriteLog(const char* buf, size_t nbytes) {
 #if defined(OS_ANDROID)
-  return __android_log_write(ANDROID_LOG_WARN, "google-breakpad", buf);
+  return __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad, buf);
 #else
   return sys_write(2, buf, nbytes);
 #endif
@@ -363,13 +373,8 @@ void HandleCrashDump(const BreakpadInfo& info) {
     WriteLog(msg, sizeof(msg));
     return;
   }
-#if defined(OS_ANDROID)
-  struct stat st;
-  if (fstat(dumpfd, &st) != 0) {
-#else
-  struct kernel_stat st;
-  if (sys_fstat(dumpfd, &st) != 0) {
-#endif
+  STAT_STRUCT st;
+  if (FSTAT_FUNC(dumpfd, &st) != 0) {
     static const char msg[] = "Cannot upload crash dump: stat failed\n";
     WriteLog(msg, sizeof(msg));
     IGNORE_RET(sys_close(dumpfd));
@@ -540,11 +545,6 @@ void HandleCrashDump(const BreakpadInfo& info) {
         base::android::BuildInfo::GetInstance();
     static const char* version_msg =
         android_build_info->package_version_code();
-    static const char android_build_id[] = "android_build_id";
-    static const char android_build_fp[] = "android_build_fp";
-    static const char device[] = "device";
-    static const char model[] = "model";
-    static const char brand[] = "brand";
 #else
     static const char version_msg[] = PRODUCT_VERSION;
 #endif
@@ -557,14 +557,20 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.AddPairString("guid", info.guid);
     writer.AddBoundary();
     if (info.pid > 0) {
+      char pid_buf[kUint64StringSize];
       uint64_t pid_str_len = my_uint64_len(info.pid);
-      char* pid_buf = reinterpret_cast<char*>(allocator.Alloc(pid_str_len));
       my_uint64tos(pid_buf, info.pid, pid_str_len);
       writer.AddPairString("pid", pid_buf);
       writer.AddBoundary();
     }
 #if defined(OS_ANDROID)
     // Addtional MIME blocks are added for logging on Android devices.
+    static const char android_build_id[] = "android_build_id";
+    static const char android_build_fp[] = "android_build_fp";
+    static const char device[] = "device";
+    static const char model[] = "model";
+    static const char brand[] = "brand";
+
     writer.AddPairString(
         android_build_id, android_build_info->android_build_id());
     writer.AddBoundary();
@@ -725,17 +731,19 @@ void HandleCrashDump(const BreakpadInfo& info) {
   writer.Flush();
 
   IGNORE_RET(sys_close(temp_file_fd));
+
 #if defined(OS_ANDROID)
+  __android_log_write(ANDROID_LOG_WARN,
+                      kGoogleBreakpad,
+                      "Output crash dump file:");
+  __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad, info.filename);
+
+  char pid_buf[kUint64StringSize];
   uint64_t pid_str_len = my_uint64_len(info.pid);
-  char* pid_buf = reinterpret_cast<char*>(allocator.Alloc(pid_str_len));
   my_uint64tos(pid_buf, info.pid, pid_str_len);
 
-  static const char* output_msg = "Output crash dump file:";
-  WriteLog(output_msg, my_strlen(output_msg));
-  unsigned filename_len = my_strlen(info.filename);
-  WriteLog(info.filename, filename_len);
   // -1 because we won't need the null terminator on the original filename.
-  size_t done_filename_len = filename_len - 1 + pid_str_len;
+  size_t done_filename_len = my_strlen(info.filename) + pid_str_len - 1;
   char* done_filename = reinterpret_cast<char*>(
       allocator.Alloc(done_filename_len));
   // Rename the file such that the pid is the suffix in order to signal other
@@ -749,10 +757,10 @@ void HandleCrashDump(const BreakpadInfo& info) {
   my_strncat(done_filename, pid_buf, pid_str_len);
   // Rename the minidump file to signal that it is complete.
   if (rename(info.filename, done_filename)) {
-    __android_log_write(ANDROID_LOG_WARN, "chromium", "Failed to rename:");
-    __android_log_write(ANDROID_LOG_WARN, "chromium", info.filename);
-    __android_log_write(ANDROID_LOG_WARN, "chromium", "to");
-    __android_log_write(ANDROID_LOG_WARN, "chromium", done_filename);
+    __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad, "Failed to rename:");
+    __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad, info.filename);
+    __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad, "to");
+    __android_log_write(ANDROID_LOG_WARN, kGoogleBreakpad, done_filename);
   }
 #endif
 
@@ -820,7 +828,7 @@ void HandleCrashDump(const BreakpadInfo& info) {
         // Wget process.
         IGNORE_RET(sys_close(fds[0]));
         IGNORE_RET(sys_dup2(fds[1], 3));
-        static const char* const kWgetBinary = "/usr/bin/wget";
+        static const char kWgetBinary[] = "/usr/bin/wget";
         const char* args[] = {
           kWgetBinary,
           header,
@@ -950,23 +958,23 @@ static bool CrashDone(const char* dump_path,
 
 // Wrapper function, do not add more code here.
 static bool CrashDoneNoUpload(const char* dump_path,
-                      const char* minidump_id,
-                      void* context,
-                      bool succeeded) {
+                              const char* minidump_id,
+                              void* context,
+                              bool succeeded) {
   return CrashDone(dump_path, minidump_id, false, succeeded);
 }
 
 #if !defined(OS_ANDROID)
 // Wrapper function, do not add more code here.
 static bool CrashDoneUpload(const char* dump_path,
-                      const char* minidump_id,
-                      void* context,
-                      bool succeeded) {
+                            const char* minidump_id,
+                            void* context,
+                            bool succeeded) {
   return CrashDone(dump_path, minidump_id, true, succeeded);
 }
 #endif
 
-void EnableCrashDumping(bool unattended) {
+static void EnableCrashDumping(bool unattended) {
   g_is_crash_reporter_enabled = true;
 
   FilePath tmp_path("/tmp");
@@ -983,7 +991,7 @@ void EnableCrashDumping(bool unattended) {
   }
   DCHECK(!g_breakpad);
 #if defined(OS_ANDROID)
-  unattended = true;
+  unattended = true;  // Android never uploads directly.
 #endif
   if (unattended) {
     g_breakpad = new google_breakpad::ExceptionHandler(
@@ -992,14 +1000,18 @@ void EnableCrashDumping(bool unattended) {
         CrashDoneNoUpload,
         NULL,
         true /* install handlers */);
-  } else {
-    g_breakpad = new google_breakpad::ExceptionHandler(
-        tmp_path.value().c_str(),
-        NULL,
-        CrashDoneUpload,
-        NULL,
-        true /* install handlers */);
+    return;
   }
+
+#if !defined(OS_ANDROID)
+  // Attended mode
+  g_breakpad = new google_breakpad::ExceptionHandler(
+      tmp_path.value().c_str(),
+      NULL,
+      CrashDoneUpload,
+      NULL,
+      true /* install handlers */);
+#endif
 }
 
 // Non-Browser = Extension, Gpu, Plugins, Ppapi and Renderer
@@ -1101,7 +1113,7 @@ static bool NonBrowserCrashHandler(const void* crash_context,
   return true;
 }
 
-void EnableNonBrowserCrashDumping() {
+static void EnableNonBrowserCrashDumping() {
   const int fd = base::GlobalDescriptors::GetInstance()->Get(kCrashDumpSignal);
   g_is_crash_reporter_enabled = true;
   // We deliberately leak this object.
