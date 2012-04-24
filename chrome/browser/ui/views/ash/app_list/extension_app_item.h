@@ -36,9 +36,6 @@ class ExtensionAppItem : public ChromeAppListItem,
   // Loads extension icon.
   void LoadImage(const Extension* extension);
 
-  // Loads default extension icon.
-  void LoadDefaultImage();
-
   void ShowExtensionOptions();
   void StartExtensionUninstall();
 

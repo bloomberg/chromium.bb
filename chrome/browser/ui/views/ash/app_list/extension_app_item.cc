@@ -17,15 +17,9 @@
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_delegate.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_resource.h"
 #include "grit/chromium_strings.h"
-#include "grit/component_extension_resources_map.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 
 namespace {
@@ -149,56 +143,14 @@ const Extension* ExtensionAppItem::GetExtension() const {
 }
 
 void ExtensionAppItem::LoadImage(const Extension* extension) {
-  ExtensionResource icon = extension->GetIconResource(
-      ExtensionIconSet::EXTENSION_ICON_LARGE,
-      ExtensionIconSet::MATCH_BIGGER);
-  if (icon.relative_path().empty()) {
-    LoadDefaultImage();
-    return;
-  }
-
-  if (extension->location() == Extension::COMPONENT) {
-    FilePath directory_path = extension->path();
-    FilePath relative_path = directory_path.BaseName().Append(
-        icon.relative_path());
-    for (size_t i = 0; i < kComponentExtensionResourcesSize; ++i) {
-      FilePath bm_resource_path =
-          FilePath().AppendASCII(kComponentExtensionResources[i].name);
-      bm_resource_path = bm_resource_path.NormalizePathSeparators();
-      if (relative_path == bm_resource_path) {
-        ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-        int resource = kComponentExtensionResources[i].value;
-
-        base::StringPiece contents = rb.GetRawDataResource(resource);
-        SkBitmap icon;
-        if (gfx::PNGCodec::Decode(
-            reinterpret_cast<const unsigned char*>(contents.data()),
-            contents.size(), &icon)) {
-          SetIcon(icon);
-          return;
-        } else {
-          NOTREACHED() << "Unable to decode image resource " << resource;
-        }
-      }
-    }
-  }
-
   tracker_.reset(new ImageLoadingTracker(this));
   tracker_->LoadImage(extension,
-                      icon,
+                      extension->GetIconResource(
+                          ExtensionIconSet::EXTENSION_ICON_LARGE,
+                          ExtensionIconSet::MATCH_BIGGER),
                       gfx::Size(ExtensionIconSet::EXTENSION_ICON_LARGE,
                                 ExtensionIconSet::EXTENSION_ICON_LARGE),
                       ImageLoadingTracker::DONT_CACHE);
-}
-
-void ExtensionAppItem::LoadDefaultImage() {
-  const Extension* extension = GetExtension();
-  int resource = IDR_APP_DEFAULT_ICON;
-  if (extension && extension->id() == extension_misc::kWebStoreAppId)
-      resource = IDR_WEBSTORE_ICON;
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SetIcon(*rb.GetImageNamed(resource).ToSkBitmap());
 }
 
 void ExtensionAppItem::ShowExtensionOptions() {
@@ -230,7 +182,7 @@ void ExtensionAppItem::OnImageLoaded(const gfx::Image& image,
   if (!image.IsEmpty())
     SetIcon(*image.ToSkBitmap());
   else
-    LoadDefaultImage();
+    SetIcon(Extension::GetDefaultIcon(true /* is_app */));
 }
 
 bool ExtensionAppItem::IsItemForCommandIdDynamic(int command_id) const {
