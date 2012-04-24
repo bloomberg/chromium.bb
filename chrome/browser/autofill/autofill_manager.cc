@@ -34,6 +34,7 @@
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/autofill/select_control_handler.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -188,7 +189,7 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
       user_did_type_(false),
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
-      password_sync_enabled_(false),
+      password_generation_enabled_(false),
       external_delegate_(NULL) {
   // |personal_data_| is NULL when using test-enabled WebContents.
   personal_data_ = PersonalDataManagerFactory::GetForProfile(
@@ -233,36 +234,43 @@ void AutofillManager::RegisterWithSyncService() {
   }
 }
 
-void AutofillManager::SendPasswordSyncStateToRenderer(
+void AutofillManager::SendPasswordGenerationStateToRenderer(
     content::RenderViewHost* host, bool enabled) {
-  host->Send(new AutofillMsg_PasswordSyncEnabled(host->GetRoutingID(),
-                                                 enabled));
+  host->Send(new AutofillMsg_PasswordGenerationEnabled(host->GetRoutingID(),
+                                                       enabled));
 }
 
-void AutofillManager::UpdatePasswordSyncState(content::RenderViewHost* host,
-                                              bool new_renderer) {
+void AutofillManager::UpdatePasswordGenerationState(
+    content::RenderViewHost* host,
+    bool new_renderer) {
   if (!sync_service_)
     return;
 
+  // Password generation requires sync for passwords and the password manager
+  // to both be enabled.
   syncable::ModelTypeSet sync_set = sync_service_->GetPreferredDataTypes();
-  bool new_password_sync_enabled = (sync_service_->HasSyncSetupCompleted() &&
-                                    sync_set.Has(syncable::PASSWORDS));
-  if (new_password_sync_enabled != password_sync_enabled_ ||
+  bool password_sync_enabled = (sync_service_->HasSyncSetupCompleted() &&
+                                sync_set.Has(syncable::PASSWORDS));
+  bool new_password_generation_enabled =
+      password_sync_enabled &&
+      tab_contents_wrapper_->password_manager()->IsEnabled();
+  if (new_password_generation_enabled != password_generation_enabled_ ||
       new_renderer) {
-    password_sync_enabled_ = new_password_sync_enabled;
-    SendPasswordSyncStateToRenderer(host, password_sync_enabled_);
+    password_generation_enabled_ = new_password_generation_enabled;
+    SendPasswordGenerationStateToRenderer(host, password_generation_enabled_);
   }
 }
 
 void AutofillManager::RenderViewCreated(content::RenderViewHost* host) {
-  UpdatePasswordSyncState(host, true);
+      UpdatePasswordGenerationState(host, true);
 }
 
 void AutofillManager::OnStateChanged() {
   // It is possible for sync state to change during tab contents destruction.
   // In this case, we don't need to update the renderer since it's going away.
   if (web_contents() && web_contents()->GetRenderViewHost()) {
-    UpdatePasswordSyncState(web_contents()->GetRenderViewHost(), false);
+    UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(),
+                                  false);
   }
 }
 
@@ -831,7 +839,7 @@ AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
       user_did_type_(false),
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
-      password_sync_enabled_(false),
+      password_generation_enabled_(false),
       external_delegate_(NULL) {
   DCHECK(tab_contents);
   RegisterWithSyncService();

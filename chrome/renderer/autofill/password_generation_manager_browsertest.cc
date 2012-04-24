@@ -113,7 +113,7 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
   EXPECT_EQ(0u, generation_manager_->messages().size());
 
   // Pretend like sync was enabled.
-  AutofillMsg_PasswordSyncEnabled msg(0, true);
+  AutofillMsg_PasswordGenerationEnabled msg(0, true);
   generation_manager_->OnMessageReceived(msg);
 
   // Now we will send a message once the first password feld is focused.
@@ -135,7 +135,7 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
 
 TEST_F(PasswordGenerationManagerTest, FillTest) {
   // Make sure that we are enabled before loading HTML.
-  AutofillMsg_PasswordSyncEnabled enabled_msg(0, true);
+  AutofillMsg_PasswordGenerationEnabled enabled_msg(0, true);
   generation_manager_->OnMessageReceived(enabled_msg);
   LoadHTML(kAccountCreationFormHTML);
 

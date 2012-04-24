@@ -488,7 +488,7 @@ class TestAutofillManager : public AutofillManager {
     submitted_form_signature_ = submitted_form.FormSignature();
   }
 
-  virtual void SendPasswordSyncStateToRenderer(
+  virtual void SendPasswordGenerationStateToRenderer(
       content::RenderViewHost* host, bool enabled) OVERRIDE {
     sent_states_.push_back(enabled);
   }
@@ -583,8 +583,8 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
     TabContentsWrapperTestHarness::TearDown();
   }
 
-  void UpdatePasswordSyncState(bool new_renderer) {
-    autofill_manager_->UpdatePasswordSyncState(NULL, new_renderer);
+  void UpdatePasswordGenerationState(bool new_renderer) {
+    autofill_manager_->UpdatePasswordGenerationState(NULL, new_renderer);
   }
 
   void GetAutofillSuggestions(int query_id,
@@ -683,6 +683,10 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
 
   scoped_refptr<TestAutofillManager> autofill_manager_;
   TestPersonalDataManager personal_data_;
+
+  // Used when we want an off the record profile. This will store the original
+  // profile from which the off the record profile is derived.
+  scoped_ptr<Profile> other_browser_context_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTest);
@@ -2887,7 +2891,7 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   FormSubmitted(form);
 }
 
-TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
+TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
   // Allow this test to control what should get synced.
   profile()->GetPrefs()->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
 
@@ -2900,13 +2904,13 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
   preferred_set.Put(syncable::PREFERENCES);
   sync_service->ChangePreferredDataTypes(preferred_set);
   syncable::ModelTypeSet new_set = sync_service->GetPreferredDataTypes();
-  UpdatePasswordSyncState(false);
+  UpdatePasswordGenerationState(false);
   EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
 
   // Now sync passwords.
   preferred_set.Put(syncable::PASSWORDS);
   sync_service->ChangePreferredDataTypes(preferred_set);
-  UpdatePasswordSyncState(false);
+  UpdatePasswordGenerationState(false);
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
   EXPECT_TRUE(autofill_manager_->GetSentStates()[0]);
   autofill_manager_->ClearSentStates();
@@ -2914,19 +2918,26 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
   // Add some additional synced state. Nothing should be sent.
   preferred_set.Put(syncable::THEMES);
   sync_service->ChangePreferredDataTypes(preferred_set);
-  UpdatePasswordSyncState(false);
+  UpdatePasswordGenerationState(false);
   EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
 
-  // Disable syncing. This should be sent.
+  // Disable syncing. This should disable the feature.
   sync_service->DisableForUser();
-  UpdatePasswordSyncState(false);
+  UpdatePasswordGenerationState(false);
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
   EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
   autofill_manager_->ClearSentStates();
 
+  // Disable password manager by going incognito, and re-enable syncing. The
+  // feature should still be disabled, and nothing will be sent.
+  sync_service->SetSyncSetupCompleted();
+  profile()->set_incognito(true);
+  UpdatePasswordGenerationState(false);
+  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
+
   // When a new render_view is created, we send the state even if it's the
   // same.
-  UpdatePasswordSyncState(true);
+  UpdatePasswordGenerationState(true);
   EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
   EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
   autofill_manager_->ClearSentStates();

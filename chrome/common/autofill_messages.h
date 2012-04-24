@@ -118,9 +118,8 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_SetNodeText,
 IPC_MESSAGE_ROUTED1(AutofillMsg_GeneratedPasswordAccepted,
                     string16 /* generated_password */)
 
-// Sends the state of password sync to the renderer. Used to determine if
-// password generation should be enabled.
-IPC_MESSAGE_ROUTED1(AutofillMsg_PasswordSyncEnabled,
+// Tells the renderer if password generation should be enabled.
+IPC_MESSAGE_ROUTED1(AutofillMsg_PasswordGenerationEnabled,
                     bool /* is_enabled */)
 
 // Tells the renderer that the password field has accept the suggestion.

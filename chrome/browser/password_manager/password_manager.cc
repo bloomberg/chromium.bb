@@ -74,6 +74,11 @@ PasswordManager::PasswordManager(WebContents* web_contents,
 PasswordManager::~PasswordManager() {
 }
 
+bool PasswordManager::IsEnabled() const {
+  const Profile* profile = delegate_->GetProfileForPasswordManager();
+  return profile && !profile->IsOffTheRecord() && *password_manager_enabled_;
+}
+
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   if (!IsEnabled())
     return;
@@ -239,9 +244,4 @@ void PasswordManager::Autofill(
                                            preferred_match.password_value);
       }
   }
-}
-
-bool PasswordManager::IsEnabled() const {
-  const Profile* profile = delegate_->GetProfileForPasswordManager();
-  return profile && !profile->IsOffTheRecord() && *password_manager_enabled_;
 }

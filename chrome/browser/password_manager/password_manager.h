@@ -37,6 +37,9 @@ class PasswordManager : public LoginModel,
                   PasswordManagerDelegate* delegate);
   virtual ~PasswordManager();
 
+  // Is password autofill enabled for the current profile?
+  bool IsEnabled() const;
+
   // Called by a PasswordFormManager when it decides a form can be autofilled
   // on the page.
   void Autofill(const webkit::forms::PasswordForm& form_for_autofill,
@@ -81,9 +84,6 @@ class PasswordManager : public LoginModel,
   //
   // When a form is "seen" on a page, a PasswordFormManager is created
   // and stored in this collection until user navigates away from page.
-
-  // Is password autofill enabled for the current profile?
-  bool IsEnabled() const;
 
   ScopedVector<PasswordFormManager> pending_login_managers_;
 

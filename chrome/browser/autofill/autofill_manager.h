@@ -115,10 +115,11 @@ class AutofillManager : public content::WebContentsObserver,
   // Reset cache.
   void Reset();
 
-  // Informs the renderers of the current password sync state for use in
-  // password generation. This is a separate function to aid with testing.
-  virtual void SendPasswordSyncStateToRenderer(content::RenderViewHost* host,
-                                               bool enabled);
+  // Informs the renderer of the current password generation state. This is a
+  // separate function to aid with testing.
+  virtual void SendPasswordGenerationStateToRenderer(
+      content::RenderViewHost* host,
+      bool enabled);
 
   // Logs quality metrics for the |submitted_form| and uploads the form data
   // to the crowdsourcing server, if appropriate.
@@ -172,12 +173,12 @@ class AutofillManager : public content::WebContentsObserver,
   // Register as an observer with the sync service.
   void RegisterWithSyncService();
 
-  // Determines what the current state of password sync is, and if it has
-  // changed from password_sync_enabled_. If it has changed or if
+  // Determines what the current state of password generation is, and if it has
+  // changed from |password_generation_enabled_|. If it has changed or if
   // |new_renderer| is true, it notifies the renderer of this change via
-  // SendPasswordSyncStateToRenderer.
-  void UpdatePasswordSyncState(content::RenderViewHost* host,
-                               bool new_renderer);
+  // SendPasswordGenerationStateToRenderer.
+  void UpdatePasswordGenerationState(content::RenderViewHost* host,
+                                     bool new_renderer);
 
   void OnFormsSeen(const std::vector<webkit::forms::FormData>& forms,
                    const base::TimeTicks& timestamp);
@@ -336,10 +337,10 @@ class AutofillManager : public content::WebContentsObserver,
   // When the user first interacted with a potentially fillable form on this
   // page.
   base::TimeTicks initial_interaction_timestamp_;
-  // If password sync is enabled. We cache this value so that we don't
+  // If password generation is enabled. We cache this value so that we don't
   // spam the renderer with messages during startup when the sync state
   // is changing rapidly.
-  bool password_sync_enabled_;
+  bool password_generation_enabled_;
   // The ProfileSyncService associated with this tab. This may be NULL in
   // testing.
   base::WeakPtr<ProfileSyncService> sync_service_;

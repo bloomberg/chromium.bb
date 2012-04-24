@@ -20,12 +20,13 @@ namespace autofill {
 PasswordGenerationManager::PasswordGenerationManager(
     content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
-      sync_enabled_(false) {}
+      enabled_(false) {}
 PasswordGenerationManager::~PasswordGenerationManager() {}
 
 void PasswordGenerationManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
-  // We don't want to generate passwords if password sync isn't enabled.
-  if (!sync_enabled_)
+  // We don't want to generate passwords if the browser won't store or sync
+  // them.
+  if (!enabled_)
     return;
 
   if (!ShouldAnalyzeFrame(*frame))
@@ -89,7 +90,7 @@ bool PasswordGenerationManager::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PasswordGenerationManager, message)
     IPC_MESSAGE_HANDLER(AutofillMsg_GeneratedPasswordAccepted,
                         OnPasswordAccepted)
-    IPC_MESSAGE_HANDLER(AutofillMsg_PasswordSyncEnabled,
+    IPC_MESSAGE_HANDLER(AutofillMsg_PasswordGenerationEnabled,
                         OnPasswordSyncEnabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -106,7 +107,7 @@ void PasswordGenerationManager::OnPasswordAccepted(const string16& password) {
 }
 
 void PasswordGenerationManager::OnPasswordSyncEnabled(bool enabled) {
-  sync_enabled_ = enabled;
+  enabled_ = enabled;
 }
 
 }  // namespace autofill
