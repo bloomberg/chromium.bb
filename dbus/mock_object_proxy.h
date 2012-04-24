@@ -27,6 +27,10 @@ class MockObjectProxy : public ObjectProxy {
   MOCK_METHOD3(CallMethod, void(MethodCall* method_call,
                                 int timeout_ms,
                                 ResponseCallback callback));
+  MOCK_METHOD4(CallMethodWithErrorCallback, void(MethodCall* method_call,
+                                                 int timeout_ms,
+                                                 ResponseCallback callback,
+                                                 ErrorCallback error_callback));
   MOCK_METHOD4(ConnectToSignal,
                void(const std::string& interface_name,
                     const std::string& signal_name,
