@@ -693,6 +693,11 @@ TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest) {
   EXPECT_GE(timeout, 0.0);
 }
 
+struct HardwareStateLastId {
+  HardwareState hs;
+  short expected_last_id;
+};
+
 TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
   scoped_ptr<LookaheadFilterInterpreter> interpreter;
@@ -711,18 +716,33 @@ TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
     { 0, 0, 0, 0, 1, 0, 40, 80, 1, 0 },
     { 0, 0, 0, 0, 1, 0, 40, 40, 2, 0 },
     { 0, 0, 0, 0, 1, 0, 41, 80, 2, 0 },
+    // Warp cases:
+    { 0, 0, 0, 0, 1, 0, 40, 40, 3, 0 },
+    { 0, 0, 0, 0, 1, 0, 41, 80, 3, GESTURES_FINGER_WARP_X },
+    { 0, 0, 0, 0, 1, 0, 40, 40, 4, 0 },
+    { 0, 0, 0, 0, 1, 0, 41, 80, 4, GESTURES_FINGER_WARP_Y },
+    { 0, 0, 0, 0, 1, 0, 40, 40, 5, 0 },
+    { 0, 0, 0, 0, 1, 0, 41, 80, 5, GESTURES_FINGER_WARP_X |
+                                   GESTURES_FINGER_WARP_Y },
   };
   // These timestamps cause an interpolated event to be 1.492 at time 1.495,
   // and so this tests that an overdue interpolated event is handled correctly.
-  HardwareState hs[] = {
+  HardwareStateLastId hsid[] = {
     // Expect movement to take
-    { 1.000, 0, 1, 1, &fs[0] },
-    { 1.001, 0, 1, 1, &fs[0] },
-    { 1.002, 0, 1, 1, &fs[1] },
-    { 1.003, 0, 1, 1, &fs[1] },
-    { 1.004, 0, 1, 1, &fs[2] },
-    { 1.005, 0, 1, 1, &fs[3] },
-    { 1.006, 0, 1, 1, &fs[2] },
+    { { 1.000, 0, 1, 1, &fs[0] }, 1 },
+    { { 1.001, 0, 1, 1, &fs[0] }, 1 },
+    { { 1.002, 0, 1, 1, &fs[1] }, 2 },
+    { { 1.003, 0, 1, 1, &fs[1] }, 2 },
+    { { 1.004, 0, 1, 1, &fs[2] }, 3 },
+    { { 1.005, 0, 1, 1, &fs[3] }, 4 },
+    { { 1.006, 0, 1, 1, &fs[2] }, 5 },
+    // Warp cases:
+    { { 1.007, 0, 1, 1, &fs[4] }, 6 },
+    { { 1.008, 0, 1, 1, &fs[5] }, 6 },
+    { { 1.009, 0, 1, 1, &fs[6] }, 7 },
+    { { 1.010, 0, 1, 1, &fs[7] }, 7 },
+    { { 1.011, 0, 1, 1, &fs[8] }, 8 },
+    { { 1.012, 0, 1, 1, &fs[9] }, 8 },
   };
 
   base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
@@ -735,16 +755,16 @@ TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
   interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
   interpreter->SetHardwareProperties(initial_hwprops);
 
-  for (size_t i = 0; i < arraysize(hs); i++) {
+  for (size_t i = 0; i < arraysize(hsid); i++) {
     stime_t timeout = -1.0;
-    Gesture* out = interpreter->SyncInterpret(&hs[i], &timeout);
+    Gesture* out = interpreter->SyncInterpret(&hsid[i].hs, &timeout);
     if (out) {
       EXPECT_EQ(kGestureTypeFling, out->type);
       EXPECT_EQ(GESTURES_FLING_TAP_DOWN, out->details.fling.fling_state);
     }
     EXPECT_GT(timeout, 0);
+    EXPECT_EQ(interpreter->last_id_, hsid[i].expected_last_id);
   }
-  EXPECT_EQ(interpreter->last_id_, 5);
 }
 
 TEST(LookaheadFilterInterpreterTest, QuickMoveTest) {

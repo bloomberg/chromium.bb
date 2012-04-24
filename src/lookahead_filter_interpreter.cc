@@ -220,6 +220,10 @@ void LookaheadFilterInterpreter::AssignTrackingIds() {
             continue;
         }
       }
+      if (fs->flags & (GESTURES_FINGER_WARP_X | GESTURES_FINGER_WARP_Y)) {
+        // Finger is warping. Don't reassign tracking ID
+        continue;
+      }
       did_separate = true;
       SeparateFinger(tail, fs, old_id);
       // Separating fingers shouldn't tap.
