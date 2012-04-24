@@ -138,6 +138,9 @@ remoting.HostController.prototype.start = function(hostPin, callback) {
       localHost.status = 'ONLINE';
       that.setHost(localHost);
       remoting.hostList.addHost(localHost);
+    } else {
+      // Unregister the host if we failed to start it.
+      remoting.HostList.unregisterHostById(newHostId);
     }
     callback(result);
   };
