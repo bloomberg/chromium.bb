@@ -743,8 +743,8 @@
   'AV_PERF': {
      'linux': [
        'media.media_constrained_network_perf',
-       'media.media_jerky',
        'media.media_stat_perf',
+       'media.media_seek_perf',
      ],
   },
 }
