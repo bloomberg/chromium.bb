@@ -30,7 +30,7 @@ class DebugInfoEventListener : public sync_api::SyncManager::Observer,
 
   // SyncManager::Observer implementation.
   virtual void OnSyncCycleCompleted(
-    const browser_sync::sessions::SyncSessionSnapshot* snapshot) OVERRIDE;
+    const browser_sync::sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
   virtual void OnInitializationComplete(
     const browser_sync::WeakHandle<browser_sync::JsBackend>& js_backend,
       bool success) OVERRIDE;

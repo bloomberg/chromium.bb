@@ -20,9 +20,9 @@
 class Profile;
 
 namespace browser_sync {
-  namespace sessions {
-    struct SyncSessionSnapshot;
-  }
+namespace sessions {
+class SyncSessionSnapshot;
+}
 }
 
 // An instance of this class is basically our notion of a "sync client" for
@@ -161,8 +161,7 @@ class ProfileSyncServiceHarness
   bool DisableSyncForAllDatatypes();
 
   // Returns a snapshot of the current sync session.
-  const browser_sync::sessions::SyncSessionSnapshot*
-      GetLastSessionSnapshot() const;
+  browser_sync::sessions::SyncSessionSnapshot GetLastSessionSnapshot() const;
 
   // Encrypt the datatype |type|. This method will block while the sync backend
   // host performs the encryption or a timeout is reached.
@@ -290,7 +289,8 @@ class ProfileSyncServiceHarness
                                     const std::string& reason);
 
   // A helper for implementing IsDataSynced() and IsFullySynced().
-  bool IsDataSyncedImpl(const browser_sync::sessions::SyncSessionSnapshot*);
+  bool IsDataSyncedImpl(
+      const browser_sync::sessions::SyncSessionSnapshot& snapshot);
 
   // Returns true if the sync client has no unsynced items.
   bool IsDataSynced();

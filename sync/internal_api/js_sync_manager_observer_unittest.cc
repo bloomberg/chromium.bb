@@ -72,7 +72,7 @@ TEST_F(JsSyncManagerObserverTest, NoArgNotifiations) {
 }
 
 TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
-  std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
+  syncable::ModelTypePayloadMap download_progress_markers;
   sessions::SyncSessionSnapshot snapshot(sessions::SyncerStatus(),
                                          sessions::ErrorCounters(),
                                          100,
@@ -99,7 +99,7 @@ TEST_F(JsSyncManagerObserverTest, OnSyncCycleCompleted) {
               HandleJsEvent("onSyncCycleCompleted",
                            HasDetailsAsDictionary(expected_details)));
 
-  js_sync_manager_observer_.OnSyncCycleCompleted(&snapshot);
+  js_sync_manager_observer_.OnSyncCycleCompleted(snapshot);
   PumpLoop();
 }
 

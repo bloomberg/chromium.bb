@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -29,12 +30,14 @@ TEST_F(ModelTypePayloadMapTest, TypePayloadMapToSet) {
 
 TEST_F(ModelTypePayloadMapTest, TypePayloadMapToValue) {
   ModelTypePayloadMap payloads;
+  std::string encoded;
   payloads[BOOKMARKS] = "bookmarkpayload";
+  base::Base64Encode(payloads[BOOKMARKS], &encoded);
   payloads[APPS] = "";
 
   scoped_ptr<DictionaryValue> value(ModelTypePayloadMapToValue(payloads));
   EXPECT_EQ(2u, value->size());
-  ExpectDictStringValue("bookmarkpayload", *value, "Bookmarks");
+  ExpectDictStringValue(encoded, *value, "Bookmarks");
   ExpectDictStringValue("", *value, "Apps");
   EXPECT_FALSE(value->HasKey("Preferences"));
 }

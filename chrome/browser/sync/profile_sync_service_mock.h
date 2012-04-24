@@ -74,7 +74,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(GetPreferredDataTypes, syncable::ModelTypeSet());
   MOCK_CONST_METHOD0(GetRegisteredDataTypes, syncable::ModelTypeSet());
   MOCK_CONST_METHOD0(GetLastSessionSnapshot,
-                     const browser_sync::sessions::SyncSessionSnapshot*());
+                     browser_sync::sessions::SyncSessionSnapshot());
 
   MOCK_METHOD0(QueryDetailedSyncStatus,
                browser_sync::SyncBackendHost::Status());

@@ -1815,8 +1815,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(IsEncrypted(0, syncable::BOOKMARKS));
   ASSERT_TRUE(IsEncrypted(1, syncable::BOOKMARKS));
   ASSERT_TRUE(GetClient(1)->service()->IsPassphraseRequired());
-  ASSERT_GT(GetClient(1)->GetLastSessionSnapshot()->
-      num_encryption_conflicts, 3);  // The encrypted nodes.
+  ASSERT_GT(GetClient(1)->GetLastSessionSnapshot().num_encryption_conflicts(),
+            3);  // The encrypted nodes.
 
   // Client 1 adds bookmarks between the first two and between the second two.
   ASSERT_TRUE(AddURL(0, 1, IndexedURLTitle(3), GURL(IndexedURL(3))) != NULL);
@@ -1830,15 +1830,15 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(GetClient(1)->AwaitPassphraseAccepted());
   ASSERT_TRUE(AwaitQuiescence());
   EXPECT_TRUE(AllModelsMatch());
-  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_encryption_conflicts);
+  ASSERT_EQ(0,
+            GetClient(1)->GetLastSessionSnapshot().num_encryption_conflicts());
 
   // Ensure everything is syncing normally by appending a final bookmark.
   ASSERT_TRUE(AddURL(1, 5, IndexedURLTitle(5), GURL(IndexedURL(5))) != NULL);
   ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
   EXPECT_TRUE(AllModelsMatch());
-  ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
-      num_encryption_conflicts);
+  ASSERT_EQ(0,
+            GetClient(1)->GetLastSessionSnapshot().num_encryption_conflicts());
 }
 
 // Deliberately racy rearranging of bookmarks to test that our conflict resolver

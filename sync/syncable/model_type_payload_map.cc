@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/base64.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -59,7 +60,11 @@ DictionaryValue* ModelTypePayloadMapToValue(
   DictionaryValue* value = new DictionaryValue();
   for (ModelTypePayloadMap::const_iterator it = type_payloads.begin();
        it != type_payloads.end(); ++it) {
-    value->SetString(syncable::ModelTypeToString(it->first), it->second);
+    // TODO(akalin): Unpack the value into a protobuf.
+    std::string base64_marker;
+    bool encoded = base::Base64Encode(it->second, &base64_marker);
+    DCHECK(encoded);
+    value->SetString(syncable::ModelTypeToString(it->first), base64_marker);
   }
   return value;
 }

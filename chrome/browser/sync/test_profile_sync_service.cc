@@ -49,8 +49,8 @@ void SyncBackendHostForProfileSyncTest::
   syncable::ModelTypeSet sync_ended;
   if (!fail_initial_download_)
     sync_ended = syncable::ModelTypeSet::All();
-  std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
-  HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
+  syncable::ModelTypePayloadMap download_progress_markers;
+  HandleSyncCycleCompletedOnFrontendLoop(SyncSessionSnapshot(
       SyncerStatus(), ErrorCounters(), 0, false,
       sync_ended, download_progress_markers, false, false, 0, 0, 0, 0, 0,
       false, SyncSourceInfo(), false, 0, base::Time::Now(), false));
@@ -92,8 +92,8 @@ void SyncBackendHostForProfileSyncTest::StartConfiguration(
 
     if (!fail_initial_download_)
       sync_ended.Put(syncable::NIGORI);
-    std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
-    HandleSyncCycleCompletedOnFrontendLoop(new SyncSessionSnapshot(
+    syncable::ModelTypePayloadMap download_progress_markers;
+    HandleSyncCycleCompletedOnFrontendLoop(SyncSessionSnapshot(
         SyncerStatus(), ErrorCounters(), 0, false,
         sync_ended, download_progress_markers, false, false, 0, 0, 0, 0, 0,
         false, SyncSourceInfo(), false, 0, base::Time::Now(), false));

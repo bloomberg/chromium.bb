@@ -48,7 +48,7 @@ class ChangeProcessor;
 class DataTypeManager;
 class JsController;
 class SessionModelAssociator;
-namespace sessions { struct SyncSessionSnapshot; }
+namespace sessions { class SyncSessionSnapshot; }
 }
 
 namespace sync_api {
@@ -360,7 +360,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // ProfileSyncServiceHarness.  Figure out a different way to expose
   // this info to that class, and remove these functions.
 
-  virtual const browser_sync::sessions::SyncSessionSnapshot*
+  virtual browser_sync::sessions::SyncSessionSnapshot
       GetLastSessionSnapshot() const;
 
   // Returns whether or not the underlying sync engine has made any

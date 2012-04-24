@@ -20,7 +20,6 @@ using syncable::ModelTypeSet;
 
 namespace browser_sync {
 
-using sessions::SyncSessionSnapshot;
 using syncable::ModelTypeToString;
 
 MigrationObserver::~MigrationObserver() {}

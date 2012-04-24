@@ -97,22 +97,21 @@ struct ErrorCounters {
   SyncerError last_process_commit_response_result;
 };
 
-// Caller takes ownership of the returned dictionary.
-base::DictionaryValue* DownloadProgressMarkersToValue(
-    const std::string
-        (&download_progress_markers)[syncable::MODEL_TYPE_COUNT]);
-
 // An immutable snapshot of state from a SyncSession.  Convenient to use as
 // part of notifications as it is inherently thread-safe.
-struct SyncSessionSnapshot {
+// TODO(zea): if copying this all over the place starts getting expensive,
+// consider passing around immutable references instead of values.
+// Default copy and assign welcome.
+class SyncSessionSnapshot {
+ public:
+  SyncSessionSnapshot();
   SyncSessionSnapshot(
       const SyncerStatus& syncer_status,
       const ErrorCounters& errors,
       int64 num_server_changes_remaining,
       bool is_share_usable,
       syncable::ModelTypeSet initial_sync_ended,
-      const std::string
-          (&download_progress_markers)[syncable::MODEL_TYPE_COUNT],
+      const syncable::ModelTypePayloadMap& download_progress_markers,
       bool more_to_sync,
       bool is_silenced,
       int64 unsynced_count,
@@ -133,25 +132,46 @@ struct SyncSessionSnapshot {
 
   std::string ToString() const;
 
-  const SyncerStatus syncer_status;
-  const ErrorCounters errors;
-  const int64 num_server_changes_remaining;
-  const bool is_share_usable;
-  const syncable::ModelTypeSet initial_sync_ended;
-  const std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
-  const bool has_more_to_sync;
-  const bool is_silenced;
-  const int64 unsynced_count;
-  const int num_encryption_conflicts;
-  const int num_hierarchy_conflicts;
-  const int num_simple_conflicts;
-  const int num_server_conflicts;
-  const bool did_commit_items;
-  const SyncSourceInfo source;
-  const bool notifications_enabled;
-  const size_t num_entries;
-  base::Time sync_start_time;
-  const bool retry_scheduled;
+  SyncerStatus syncer_status() const;
+  ErrorCounters errors() const;
+  int64 num_server_changes_remaining() const;
+  bool is_share_usable() const;
+  syncable::ModelTypeSet initial_sync_ended() const;
+  syncable::ModelTypePayloadMap download_progress_markers() const;
+  bool has_more_to_sync() const;
+  bool is_silenced() const;
+  int64 unsynced_count() const;
+  int num_encryption_conflicts() const;
+  int num_hierarchy_conflicts() const;
+  int num_simple_conflicts() const;
+  int num_server_conflicts() const;
+  bool did_commit_items() const;
+  SyncSourceInfo source() const;
+  bool notifications_enabled() const;
+  size_t num_entries() const;
+  base::Time sync_start_time() const;
+  bool retry_scheduled() const;
+
+ private:
+  SyncerStatus syncer_status_;
+  ErrorCounters errors_;
+  int64 num_server_changes_remaining_;
+  bool is_share_usable_;
+  syncable::ModelTypeSet initial_sync_ended_;
+  syncable::ModelTypePayloadMap download_progress_markers_;
+  bool has_more_to_sync_;
+  bool is_silenced_;
+  int64 unsynced_count_;
+  int num_encryption_conflicts_;
+  int num_hierarchy_conflicts_;
+  int num_simple_conflicts_;
+  int num_server_conflicts_;
+  bool did_commit_items_;
+  SyncSourceInfo source_;
+  bool notifications_enabled_;
+  size_t num_entries_;
+  base::Time sync_start_time_;
+  bool retry_scheduled_;
 };
 
 // Tracks progress of conflicts and their resolutions.

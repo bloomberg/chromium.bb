@@ -17,31 +17,28 @@ DebugInfoEventListener::~DebugInfoEventListener() {
 }
 
 void DebugInfoEventListener::OnSyncCycleCompleted(
-    const SyncSessionSnapshot* snapshot) {
-  if (!snapshot)
-    return;
-
+    const SyncSessionSnapshot& snapshot) {
   sync_pb::DebugEventInfo event_info;
   sync_pb::SyncCycleCompletedEventInfo* sync_completed_event_info =
       event_info.mutable_sync_cycle_completed_event_info();
 
   sync_completed_event_info->set_num_encryption_conflicts(
-      snapshot->num_encryption_conflicts);
+      snapshot.num_encryption_conflicts());
   sync_completed_event_info->set_num_hierarchy_conflicts(
-      snapshot->num_hierarchy_conflicts);
+      snapshot.num_hierarchy_conflicts());
   sync_completed_event_info->set_num_simple_conflicts(
-      snapshot->num_simple_conflicts);
+      snapshot.num_simple_conflicts());
   sync_completed_event_info->set_num_server_conflicts(
-      snapshot->num_server_conflicts);
+      snapshot.num_server_conflicts());
 
   sync_completed_event_info->set_num_updates_downloaded(
-      snapshot->syncer_status.num_updates_downloaded_total);
+      snapshot.syncer_status().num_updates_downloaded_total);
   sync_completed_event_info->set_num_reflected_updates_downloaded(
-      snapshot->syncer_status.num_reflected_updates_downloaded_total);
+      snapshot.syncer_status().num_reflected_updates_downloaded_total);
   sync_completed_event_info->mutable_caller_info()->set_source(
-      snapshot->source.updates_source);
+      snapshot.source().updates_source);
   sync_completed_event_info->mutable_caller_info()->set_notifications_enabled(
-      snapshot->notifications_enabled);
+      snapshot.notifications_enabled());
 
   AddEventToQueue(event_info);
 }

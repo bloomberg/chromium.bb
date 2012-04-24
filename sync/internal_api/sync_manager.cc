@@ -2070,7 +2070,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
                           OnPassphraseRequired(sync_api::REASON_DECRYPTION,
                                                pending_keys));
       } else if (!cryptographer->is_ready() &&
-                 event.snapshot->initial_sync_ended.Has(syncable::NIGORI)) {
+                 event.snapshot.initial_sync_ended().Has(syncable::NIGORI)) {
         DVLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
                  << "ready";
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
@@ -2088,7 +2088,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       return;
     }
 
-    if (!event.snapshot->has_more_to_sync) {
+    if (!event.snapshot.has_more_to_sync()) {
       // To account for a nigori node arriving with stale/bad data, we ensure
       // that the nigori node is up to date at the end of each cycle.
       WriteTransaction trans(FROM_HERE, GetUserShare());
@@ -2109,12 +2109,12 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     // TODO(chron): Consider changing this back to track has_more_to_sync
     // only notify peers if a successful commit has occurred.
     bool is_notifiable_commit =
-        (event.snapshot->syncer_status.num_successful_commits > 0);
+        (event.snapshot.syncer_status().num_successful_commits > 0);
     if (is_notifiable_commit) {
       if (sync_notifier_.get()) {
         const ModelTypeSet changed_types =
             syncable::ModelTypePayloadMapToEnumSet(
-                event.snapshot->source.types);
+                event.snapshot.source().types);
         sync_notifier_->SendNotification(changed_types);
       } else {
         DVLOG(1) << "Not sending notification: sync_notifier_ is NULL";
@@ -2149,7 +2149,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
   if (event.what_happened == SyncEngineEvent::ACTIONABLE_ERROR) {
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                       OnActionableError(
-                          event.snapshot->errors.sync_protocol_error));
+                          event.snapshot.errors().sync_protocol_error));
     return;
   }
 

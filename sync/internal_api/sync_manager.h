@@ -31,7 +31,7 @@ class JsEventHandler;
 class ModelSafeWorkerRegistrar;
 
 namespace sessions {
-struct SyncSessionSnapshot;
+class SyncSessionSnapshot;
 }  // namespace sessions
 }  // namespace browser_sync
 
@@ -252,7 +252,7 @@ class SyncManager {
     // A round-trip sync-cycle took place and the syncer has resolved any
     // conflicts that may have arisen.
     virtual void OnSyncCycleCompleted(
-        const browser_sync::sessions::SyncSessionSnapshot* snapshot) = 0;
+        const browser_sync::sessions::SyncSessionSnapshot& snapshot) = 0;
 
     // Called when the status of the connection to the sync server has
     // changed.

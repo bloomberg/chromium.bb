@@ -22,8 +22,7 @@ SyncerError SyncerCommand::Execute(SyncSession* session) {
 void SyncerCommand::SendNotifications(SyncSession* session) {
   if (session->mutable_status_controller()->TestAndClearIsDirty()) {
     SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
-    const sessions::SyncSessionSnapshot& snapshot(session->TakeSnapshot());
-    event.snapshot = &snapshot;
+    event.snapshot = session->TakeSnapshot();
     session->context()->NotifyListeners(event);
   }
 }

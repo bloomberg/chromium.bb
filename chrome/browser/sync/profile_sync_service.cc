@@ -1233,13 +1233,13 @@ sync_api::UserShare* ProfileSyncService::GetUserShare() const {
   return NULL;
 }
 
-const browser_sync::sessions::SyncSessionSnapshot*
+browser_sync::sessions::SyncSessionSnapshot
     ProfileSyncService::GetLastSessionSnapshot() const {
   if (backend_.get() && backend_initialized_) {
     return backend_->GetLastSessionSnapshot();
   }
   NOTREACHED();
-  return NULL;
+  return browser_sync::sessions::SyncSessionSnapshot();
 }
 
 bool ProfileSyncService::HasUnsyncedItems() const {

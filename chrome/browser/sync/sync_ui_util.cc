@@ -520,7 +520,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
         service->QueryDetailedSyncStatus());
 
     // This is a cache of the last snapshot of type SYNC_CYCLE_ENDED where
-    // !snapshot->has_more_to_sync.  In other words, it's the last in this
+    // !snapshot.has_more_to_sync().  In other words, it's the last in this
     // series of sync cycles.  The series ends only when we've done all we can
     // to resolve conflicts and there is nothing left to commit, or an error
     // occurs.
@@ -530,9 +530,10 @@ void ConstructAboutInformation(ProfileSyncService* service,
     // the values from a single sync cycle.
     //
     // |snapshot| could be NULL if sync is not yet initialized.
-    const browser_sync::sessions::SyncSessionSnapshot* snapshot =
+    const browser_sync::sessions::SyncSessionSnapshot& snapshot =
         service->sync_initialized() ?
-        service->GetLastSessionSnapshot() : NULL;
+        service->GetLastSessionSnapshot() :
+        browser_sync::sessions::SyncSessionSnapshot();
 
     sync_ui_util::AddStringSyncDetails(sync_summary, "Summary",
                                        service->QuerySyncStatusSummary());
@@ -574,10 +575,8 @@ void ConstructAboutInformation(ProfileSyncService* service,
 
     // Network status indicators.
     ListValue* network = AddSyncDetailsSection(details, "Network");
-    if (snapshot) {
-      sync_ui_util::AddBoolSyncDetail(network, "Throttled",
-                                      snapshot->is_silenced);
-    }
+    sync_ui_util::AddBoolSyncDetail(network, "Throttled",
+                                    snapshot.is_silenced());
     sync_ui_util::AddBoolSyncDetail(network, "Notifications Enabled",
                                     full_status.notifications_enabled);
 
@@ -608,22 +607,20 @@ void ConstructAboutInformation(ProfileSyncService* service,
 
     ListValue* cycles = AddSyncDetailsSection(
         details, "Status from Last Completed Session");
-    if (snapshot) {
-      sync_ui_util::AddStringSyncDetails(
-          cycles, "Sync Source",
-          browser_sync::GetUpdatesSourceString(
-          snapshot->source.updates_source));
-      sync_ui_util::AddStringSyncDetails(
-          cycles, "Download Updates",
-          GetSyncerErrorString(snapshot->errors.last_download_updates_result));
-      sync_ui_util::AddStringSyncDetails(
-          cycles, "Post Commit",
-          GetSyncerErrorString(snapshot->errors.last_post_commit_result));
-      sync_ui_util::AddStringSyncDetails(
-          cycles, "Process Commit Response",
-          GetSyncerErrorString(
-              snapshot->errors.last_process_commit_response_result));
-    }
+    sync_ui_util::AddStringSyncDetails(
+        cycles, "Sync Source",
+        browser_sync::GetUpdatesSourceString(
+        snapshot.source().updates_source));
+    sync_ui_util::AddStringSyncDetails(
+        cycles, "Download Updates",
+        GetSyncerErrorString(snapshot.errors().last_download_updates_result));
+    sync_ui_util::AddStringSyncDetails(
+        cycles, "Post Commit",
+        GetSyncerErrorString(snapshot.errors().last_post_commit_result));
+    sync_ui_util::AddStringSyncDetails(
+        cycles, "Process Commit Response",
+        GetSyncerErrorString(
+            snapshot.errors().last_process_commit_response_result));
 
     // Strictly increasing counters.
     ListValue* counters = AddSyncDetailsSection(details, "Running Totals");
@@ -697,24 +694,20 @@ void ConstructAboutInformation(ProfileSyncService* service,
 
     ListValue* transient_session = AddSyncDetailsSection(
         details, "Transient Counters (last cycle of last completed session)");
-    if (snapshot) {
-      sync_ui_util::AddIntSyncDetail(
-          transient_session, "Updates Downloaded",
-          snapshot->syncer_status.num_updates_downloaded_total);
-      sync_ui_util::AddIntSyncDetail(
-          transient_session, "Committed Count",
-          snapshot->syncer_status.num_successful_commits);
-    }
+    sync_ui_util::AddIntSyncDetail(
+        transient_session, "Updates Downloaded",
+        snapshot.syncer_status().num_updates_downloaded_total);
+    sync_ui_util::AddIntSyncDetail(
+        transient_session, "Committed Count",
+        snapshot.syncer_status().num_successful_commits);
 
-    if (snapshot) {
-      // This counter is stale.  The warnings related to the snapshot still
-      // apply, see the comments near call to GetLastSessionSnapshot() above.
-      // Also, because this is updated only following a complete sync cycle,
-      // local changes affecting this count will not be displayed until the
-      // syncer has attempted to commit those changes.
-      sync_ui_util::AddIntSyncDetail(transient_session, "Entries",
-                                     snapshot->num_entries);
-    }
+    // This counter is stale.  The warnings related to the snapshot still
+    // apply, see the comments near call to GetLastSessionSnapshot() above.
+    // Also, because this is updated only following a complete sync cycle,
+    // local changes affecting this count will not be displayed until the
+    // syncer has attempted to commit those changes.
+    sync_ui_util::AddIntSyncDetail(transient_session, "Entries",
+                                   snapshot.num_entries());
 
     // Now set the actionable errors.
     if ((full_status.sync_protocol_error.error_type !=

@@ -137,7 +137,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
 
   bool is_share_useable = true;
   syncable::ModelTypeSet initial_sync_ended;
-  std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
+  syncable::ModelTypePayloadMap download_progress_markers;
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     syncable::ModelType type(syncable::ModelTypeFromInt(i));
@@ -147,7 +147,7 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
       else
         is_share_useable = false;
     }
-    dir->GetDownloadProgressAsString(type, &download_progress_markers[i]);
+    dir->GetDownloadProgressAsString(type, &download_progress_markers[type]);
   }
 
   return SyncSessionSnapshot(
@@ -174,10 +174,9 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
 
 void SyncSession::SendEventNotification(SyncEngineEvent::EventCause cause) {
   SyncEngineEvent event(cause);
-  const SyncSessionSnapshot& snapshot = TakeSnapshot();
-  event.snapshot = &snapshot;
+  event.snapshot = TakeSnapshot();
 
-  DVLOG(1) << "Sending event with snapshot: " << snapshot.ToString();
+  DVLOG(1) << "Sending event with snapshot: " << event.snapshot.ToString();
   context()->NotifyListeners(event);
 }
 

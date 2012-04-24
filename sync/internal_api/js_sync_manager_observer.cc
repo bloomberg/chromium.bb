@@ -31,12 +31,12 @@ void JsSyncManagerObserver::SetJsEventHandler(
 }
 
 void JsSyncManagerObserver::OnSyncCycleCompleted(
-    const sessions::SyncSessionSnapshot* snapshot) {
+    const sessions::SyncSessionSnapshot& snapshot) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   DictionaryValue details;
-  details.Set("snapshot", snapshot->ToValue());
+  details.Set("snapshot", snapshot.ToValue());
   HandleJsEvent(FROM_HERE, "onSyncCycleCompleted", JsEventDetails(&details));
 }
 

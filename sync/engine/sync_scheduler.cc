@@ -270,8 +270,7 @@ void SyncScheduler::SendInitialSnapshot() {
       SyncSourceInfo(), ModelSafeRoutingInfo(),
       std::vector<ModelSafeWorker*>()));
   SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
-  sessions::SyncSessionSnapshot snapshot(dummy->TakeSnapshot());
-  event.snapshot = &snapshot;
+  event.snapshot = dummy->TakeSnapshot();
   session_context_->NotifyListeners(event);
 }
 
@@ -1168,19 +1167,18 @@ void SyncScheduler::OnActionableError(
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   SDVLOG(2) << "OnActionableError";
   SyncEngineEvent event(SyncEngineEvent::ACTIONABLE_ERROR);
-  sessions::SyncSessionSnapshot snapshot(snap);
-  event.snapshot = &snapshot;
+  event.snapshot = snap;
   session_context_->NotifyListeners(event);
 }
 
 void SyncScheduler::OnSyncProtocolError(
     const sessions::SyncSessionSnapshot& snapshot) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  if (ShouldRequestEarlyExit(snapshot.errors.sync_protocol_error)) {
+  if (ShouldRequestEarlyExit(snapshot.errors().sync_protocol_error)) {
     SDVLOG(2) << "Sync Scheduler requesting early exit.";
     syncer_->RequestEarlyExit();  // Thread-safe.
   }
-  if (IsActionableError(snapshot.errors.sync_protocol_error))
+  if (IsActionableError(snapshot.errors().sync_protocol_error))
     OnActionableError(snapshot);
 }
 

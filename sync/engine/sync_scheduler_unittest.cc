@@ -45,7 +45,7 @@ class MockSyncer : public Syncer {
 // Used when tests want to record syncing activity to examine later.
 struct SyncShareRecords {
   std::vector<TimeTicks> times;
-  std::vector<linked_ptr<SyncSessionSnapshot> > snapshots;
+  std::vector<SyncSessionSnapshot> snapshots;
 };
 
 void QuitLoopNow() {
@@ -130,7 +130,7 @@ class SyncSchedulerTest : public testing::Test {
       TimeTicks optimal_next_sync = optimal_start + poll_interval * i;
       EXPECT_GE(data[i], optimal_next_sync);
       EXPECT_EQ(GetUpdatesCallerInfo::PERIODIC,
-                records.snapshots[i]->source.updates_source);
+                records.snapshots[i].source().updates_source);
     }
   }
 
@@ -220,8 +220,7 @@ class BackoffTriggersSyncSchedulerTest : public SyncSchedulerTest {
 
 void RecordSyncShareImpl(SyncSession* s, SyncShareRecords* record) {
   record->times.push_back(TimeTicks::Now());
-  record->snapshots.push_back(make_linked_ptr(new SyncSessionSnapshot(
-      s->TakeSnapshot())));
+  record->snapshots.push_back(s->TakeSnapshot());
 }
 
 ACTION_P(RecordSyncShare, record) {
@@ -265,9 +264,9 @@ TEST_F(SyncSchedulerTest, Nudge) {
 
   ASSERT_EQ(1U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(model_types,
-      records.snapshots[0]->source.types));
+      records.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
-            records.snapshots[0]->source.updates_source);
+            records.snapshots[0].source().updates_source);
 
   Mock::VerifyAndClearExpectations(syncer());
 
@@ -284,9 +283,9 @@ TEST_F(SyncSchedulerTest, Nudge) {
 
   ASSERT_EQ(1U, records2.snapshots.size());
   EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(model_types,
-      records2.snapshots[0]->source.types));
+      records2.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
-            records2.snapshots[0]->source.updates_source);
+            records2.snapshots[0].source().updates_source);
 }
 
 // Make sure a regular config command is scheduled fine in the absence of any
@@ -308,9 +307,9 @@ TEST_F(SyncSchedulerTest, Config) {
 
   ASSERT_EQ(1U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(model_types,
-      records.snapshots[0]->source.types));
+      records.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
-            records.snapshots[0]->source.updates_source);
+            records.snapshots[0].source().updates_source);
 }
 
 // Simulate a failure and make sure the config request is retried.
@@ -340,9 +339,9 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
 
   ASSERT_EQ(2U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(model_types,
-      records.snapshots[1]->source.types));
+      records.snapshots[1].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
-            records.snapshots[1]->source.updates_source);
+            records.snapshots[1].source().updates_source);
 }
 
 // Issue 2 config commands. Second one right after the first has failed
@@ -382,9 +381,9 @@ TEST_F(SyncSchedulerTest, MultipleConfigWithBackingOff) {
 
   ASSERT_EQ(3U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(model_types2,
-      records.snapshots[2]->source.types));
+      records.snapshots[2].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
-            records.snapshots[2]->source.updates_source);
+            records.snapshots[2].source().updates_source);
 }
 
 // Issue a nudge when the config has failed. Make sure both the config and
@@ -430,14 +429,14 @@ TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
   ASSERT_EQ(4U, records.snapshots.size());
 
   EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(model_types,
-      records.snapshots[2]->source.types));
+      records.snapshots[2].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::RECONFIGURATION,
-            records.snapshots[2]->source.updates_source);
+            records.snapshots[2].source().updates_source);
 
   EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(model_types,
-      records.snapshots[3]->source.types));
+      records.snapshots[3].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
-            records.snapshots[3]->source.updates_source);
+            records.snapshots[3].source().updates_source);
 
 }
 
@@ -465,9 +464,9 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
   ASSERT_EQ(1U, r.snapshots.size());
   EXPECT_GE(r.times[0], optimal_time);
   EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(
-      Union(types1, types2), r.snapshots[0]->source.types));
+      Union(types1, types2), r.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
-            r.snapshots[0]->source.updates_source);
+            r.snapshots[0].source().updates_source);
 
   Mock::VerifyAndClearExpectations(syncer());
 
@@ -481,9 +480,9 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
 
   ASSERT_EQ(1U, r2.snapshots.size());
   EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(types3,
-      r2.snapshots[0]->source.types));
+      r2.snapshots[0].source().types));
   EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
-            r2.snapshots[0]->source.updates_source);
+            r2.snapshots[0].source().updates_source);
 }
 
 // Test that nudges are coalesced.
@@ -515,7 +514,7 @@ TEST_F(SyncSchedulerTest, NudgeCoalescingWithDifferentTimings) {
   // Make sure the sync has happened.
   ASSERT_EQ(1U, r.snapshots.size());
   EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(
-      Union(types1, types2), r.snapshots[0]->source.types));
+      Union(types1, types2), r.snapshots[0].source().types));
 
   // Make sure the sync happened at the right time.
   EXPECT_GE(r.times[0], min_time);
@@ -540,9 +539,9 @@ TEST_F(SyncSchedulerTest, NudgeWithPayloads) {
   RunLoop();
 
   ASSERT_EQ(1U, records.snapshots.size());
-  EXPECT_EQ(model_types_with_payloads, records.snapshots[0]->source.types);
+  EXPECT_EQ(model_types_with_payloads, records.snapshots[0].source().types);
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
-            records.snapshots[0]->source.updates_source);
+            records.snapshots[0].source().updates_source);
 
   Mock::VerifyAndClearExpectations(syncer());
 
@@ -558,9 +557,9 @@ TEST_F(SyncSchedulerTest, NudgeWithPayloads) {
   RunLoop();
 
   ASSERT_EQ(1U, records2.snapshots.size());
-  EXPECT_EQ(model_types_with_payloads, records2.snapshots[0]->source.types);
+  EXPECT_EQ(model_types_with_payloads, records2.snapshots[0].source().types);
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
-            records2.snapshots[0]->source.updates_source);
+            records2.snapshots[0].source().updates_source);
 }
 
 // Test that nudges are coalesced.
@@ -589,9 +588,9 @@ TEST_F(SyncSchedulerTest, NudgeWithPayloadsCoalescing) {
   syncable::ModelTypePayloadMap coalesced_types;
   syncable::CoalescePayloads(&coalesced_types, types1);
   syncable::CoalescePayloads(&coalesced_types, types2);
-  EXPECT_EQ(coalesced_types, r.snapshots[0]->source.types);
+  EXPECT_EQ(coalesced_types, r.snapshots[0].source().types);
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
-            r.snapshots[0]->source.updates_source);
+            r.snapshots[0].source().updates_source);
 
   Mock::VerifyAndClearExpectations(syncer());
 
@@ -604,9 +603,9 @@ TEST_F(SyncSchedulerTest, NudgeWithPayloadsCoalescing) {
   RunLoop();
 
   ASSERT_EQ(1U, r2.snapshots.size());
-  EXPECT_EQ(types3, r2.snapshots[0]->source.types);
+  EXPECT_EQ(types3, r2.snapshots[0].source().types);
   EXPECT_EQ(GetUpdatesCallerInfo::NOTIFICATION,
-            r2.snapshots[0]->source.updates_source);
+            r2.snapshots[0].source().updates_source);
 }
 
 // Test that polling works as expected.
@@ -799,7 +798,7 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
 
   ASSERT_EQ(1U, records.snapshots.size());
   EXPECT_TRUE(CompareModelTypeSetToModelTypePayloadMap(config_types,
-      records.snapshots[0]->source.types));
+      records.snapshots[0].source().types));
 }
 
 // Have the sycner fail during commit.  Expect that the scheduler enters
@@ -866,7 +865,8 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
 
   Mock::VerifyAndClearExpectations(syncer());
   ASSERT_EQ(1U, r.snapshots.size());
-  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL, r.snapshots[0]->source.updates_source);
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
+            r.snapshots[0].source().updates_source);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(1)
       .WillOnce(DoAll(Invoke(sessions::test_util::SimulateCommitFailed),
@@ -880,7 +880,8 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
   Mock::VerifyAndClearExpectations(syncer());
   Mock::VerifyAndClearExpectations(delay());
   ASSERT_EQ(2U, r.snapshots.size());
-  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL, r.snapshots[1]->source.updates_source);
+  EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
+            r.snapshots[1].source().updates_source);
 
   EXPECT_CALL(*syncer(), SyncShare(_,_,_)).Times(0);
   EXPECT_CALL(*delay(), GetDelay(_)).Times(0);
@@ -977,20 +978,20 @@ TEST_F(SyncSchedulerTest, BackoffRelief) {
   TimeTicks optimal_job_time = optimal_start;
   EXPECT_GE(r.times[0], optimal_job_time);
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
-            r.snapshots[0]->source.updates_source);
+            r.snapshots[0].source().updates_source);
 
   // It was followed by a successful retry nudge shortly afterward.
   optimal_job_time = optimal_job_time + backoff;
   EXPECT_GE(r.times[1], optimal_job_time);
   EXPECT_EQ(GetUpdatesCallerInfo::LOCAL,
-            r.snapshots[1]->source.updates_source);
+            r.snapshots[1].source().updates_source);
   // After that, we went back to polling.
   for (size_t i = 2; i < r.snapshots.size(); i++) {
     optimal_job_time = optimal_job_time + poll;
     SCOPED_TRACE(testing::Message() << "SyncShare # (" << i << ")");
     EXPECT_GE(r.times[i], optimal_job_time);
     EXPECT_EQ(GetUpdatesCallerInfo::PERIODIC,
-              r.snapshots[i]->source.updates_source);
+              r.snapshots[i].source().updates_source);
   }
 }
 

@@ -676,7 +676,7 @@ class TestHttpPostProviderFactory : public HttpPostProviderFactory {
 class SyncManagerObserverMock : public SyncManager::Observer {
  public:
   MOCK_METHOD1(OnSyncCycleCompleted,
-               void(const SyncSessionSnapshot*));  // NOLINT
+               void(const SyncSessionSnapshot&));  // NOLINT
   MOCK_METHOD2(OnInitializationComplete,
                void(const WeakHandle<JsBackend>&, bool));  // NOLINT
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));  // NOLINT

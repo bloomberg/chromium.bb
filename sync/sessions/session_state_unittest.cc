@@ -72,29 +72,6 @@ TEST_F(SessionStateTest, SyncerStatusToValue) {
                          *value, "numServerOverwrites");
 }
 
-TEST_F(SessionStateTest, DownloadProgressMarkersToValue) {
-  std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    std::string marker(i, i);
-    download_progress_markers[i] = marker;
-  }
-
-  scoped_ptr<DictionaryValue> value(
-      DownloadProgressMarkersToValue(download_progress_markers));
-  EXPECT_EQ(syncable::MODEL_TYPE_COUNT - syncable::FIRST_REAL_MODEL_TYPE,
-            static_cast<int>(value->size()));
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-       i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-    std::string marker(i, i);
-    std::string expected_value;
-    EXPECT_TRUE(base::Base64Encode(marker, &expected_value));
-    ExpectDictStringValue(expected_value,
-                          *value, syncable::ModelTypeToString(model_type));
-  }
-}
-
 TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   SyncerStatus syncer_status;
   syncer_status.num_successful_commits = 500;
@@ -111,11 +88,11 @@ TEST_F(SessionStateTest, SyncSessionSnapshotToValue) {
   scoped_ptr<ListValue> expected_initial_sync_ended_value(
       syncable::ModelTypeSetToValue(initial_sync_ended));
 
-  std::string download_progress_markers[syncable::MODEL_TYPE_COUNT];
+  syncable::ModelTypePayloadMap download_progress_markers;
   download_progress_markers[syncable::BOOKMARKS] = "test";
   download_progress_markers[syncable::APPS] = "apps";
   scoped_ptr<DictionaryValue> expected_download_progress_markers_value(
-      DownloadProgressMarkersToValue(download_progress_markers));
+      syncable::ModelTypePayloadMapToValue(download_progress_markers));
 
   const bool kHasMoreToSync = false;
   const bool kIsSilenced = true;

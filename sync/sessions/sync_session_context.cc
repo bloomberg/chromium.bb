@@ -5,7 +5,6 @@
 #include "sync/sessions/sync_session_context.h"
 
 #include "sync/sessions/debug_info_getter.h"
-#include "sync/sessions/session_state.h"
 #include "sync/util/extensions_activity_monitor.h"
 
 namespace browser_sync {

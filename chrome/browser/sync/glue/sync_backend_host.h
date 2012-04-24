@@ -26,6 +26,7 @@
 #include "sync/notifier/sync_notifier_factory.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
+#include "sync/sessions/session_state.h"
 #include "sync/syncable/model_type.h"
 #include "sync/util/report_unrecoverable_error_function.h"
 #include "sync/util/unrecoverable_error_handler.h"
@@ -35,10 +36,6 @@ class MessageLoop;
 class Profile;
 
 namespace browser_sync {
-
-namespace sessions {
-struct SyncSessionSnapshot;
-}
 
 class ChangeProcessor;
 class JsBackend;
@@ -256,7 +253,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called from any thread to obtain current status information in detailed or
   // summarized form.
   Status GetDetailedStatus();
-  const sessions::SyncSessionSnapshot* GetLastSessionSnapshot() const;
+  sessions::SyncSessionSnapshot GetLastSessionSnapshot() const;
 
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.
@@ -328,7 +325,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Called from Core::OnSyncCycleCompleted to handle updating frontend
   // thread components.
   void HandleSyncCycleCompletedOnFrontendLoop(
-      sessions::SyncSessionSnapshot* snapshot);
+      const sessions::SyncSessionSnapshot& snapshot);
 
   // Called to finish the job of ConfigureDataTypes once the syncer is in
   // configuration mode.
@@ -515,7 +512,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   sync_pb::EncryptedData cached_pending_keys_;
 
   // UI-thread cache of the last SyncSessionSnapshot received from syncapi.
-  scoped_ptr<sessions::SyncSessionSnapshot> last_snapshot_;
+  sessions::SyncSessionSnapshot last_snapshot_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

@@ -45,7 +45,6 @@
 #include "sync/notifier/sync_notifier.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/sessions/session_state.h"
 #include "sync/util/nigori.h"
 
 static const int kSaveChangesIntervalSeconds = 10;
@@ -81,7 +80,7 @@ class SyncBackendHost::Core
   // traffic controller here, forwarding incoming messages to appropriate
   // landing threads.
   virtual void OnSyncCycleCompleted(
-      const sessions::SyncSessionSnapshot* snapshot) OVERRIDE;
+      const sessions::SyncSessionSnapshot& snapshot) OVERRIDE;
   virtual void OnInitializationComplete(
       const WeakHandle<JsBackend>& js_backend,
       bool success) OVERRIDE;
@@ -614,8 +613,8 @@ SyncBackendHost::Status SyncBackendHost::GetDetailedStatus() {
   return core_->sync_manager()->GetDetailedStatus();
 }
 
-const SyncSessionSnapshot* SyncBackendHost::GetLastSessionSnapshot() const {
-  return last_snapshot_.get();
+SyncSessionSnapshot SyncBackendHost::GetLastSessionSnapshot() const {
+  return last_snapshot_;
 }
 
 bool SyncBackendHost::HasUnsyncedItems() const {
@@ -657,17 +656,17 @@ void SyncBackendHost::InitCore(const DoInitializeOptions& options) {
 }
 
 void SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop(
-    SyncSessionSnapshot* snapshot) {
+    const SyncSessionSnapshot& snapshot) {
   if (!frontend_)
     return;
   DCHECK_EQ(MessageLoop::current(), frontend_loop_);
 
-  last_snapshot_.reset(snapshot);
+  last_snapshot_ = snapshot;
 
-  SDVLOG(1) << "Got snapshot " << snapshot->ToString();
+  SDVLOG(1) << "Got snapshot " << snapshot.ToString();
 
   const syncable::ModelTypeSet to_migrate =
-      snapshot->syncer_status.types_needing_local_migration;
+      snapshot.syncer_status().types_needing_local_migration;
   if (!to_migrate.Empty())
     frontend_->OnMigrationNeededForTypes(to_migrate);
 
@@ -686,7 +685,7 @@ void SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop(
         pending_download_state_->added_types;
     DCHECK(types_to_add.HasAll(added_types));
     const syncable::ModelTypeSet initial_sync_ended =
-        snapshot->initial_sync_ended;
+        snapshot.initial_sync_ended();
     const syncable::ModelTypeSet failed_configuration_types =
         Difference(added_types, initial_sync_ended);
     SDVLOG(1)
@@ -698,7 +697,7 @@ void SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop(
         << syncable::ModelTypeSetToString(failed_configuration_types);
 
     if (!failed_configuration_types.Empty() &&
-        snapshot->retry_scheduled) {
+        snapshot.retry_scheduled()) {
       // Inform the caller that download failed but we are retrying.
       if (!pending_download_state_->retry_in_progress) {
         pending_download_state_->retry_callback.Run();
@@ -864,14 +863,14 @@ SyncBackendHost::PendingConfigureDataTypesState::
 ~PendingConfigureDataTypesState() {}
 
 void SyncBackendHost::Core::OnSyncCycleCompleted(
-    const SyncSessionSnapshot* snapshot) {
+    const SyncSessionSnapshot& snapshot) {
   if (!sync_loop_)
     return;
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   host_.Call(
       FROM_HERE,
       &SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop,
-      new SyncSessionSnapshot(*snapshot));
+      snapshot);
 }
 
 

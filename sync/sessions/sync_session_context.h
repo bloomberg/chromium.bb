@@ -27,6 +27,7 @@
 #include "base/time.h"
 #include "sync/engine/model_safe_worker.h"
 #include "sync/engine/syncer_types.h"
+#include "sync/engine/sync_engine_event.h"
 #include "sync/engine/traffic_recorder.h"
 #include "sync/sessions/debug_info_getter.h"
 
@@ -46,7 +47,6 @@ static const int kDefaultMaxCommitBatchSize = 25;
 
 namespace sessions {
 class ScopedSessionContextConflictResolver;
-struct SyncSessionSnapshot;
 class TestScopedSessionEventListener;
 
 class SyncSessionContext {
@@ -171,9 +171,6 @@ class SyncSessionContext {
   // Some routing info history to help us clean up types that get disabled
   // by the user.
   ModelSafeRoutingInfo previous_session_routing_info_;
-
-  // Cache of last session snapshot information.
-  scoped_ptr<sessions::SyncSessionSnapshot> previous_session_snapshot_;
 
   // We use this to get debug info to send to the server for debugging
   // client behavior on server side.

@@ -337,7 +337,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       // TODO(rlarocque): Figure out a less brittle way of detecting this.
       if (IsTypeEncrypted(waiting_for_encryption_type_) &&
           IsFullySynced() &&
-          GetLastSessionSnapshot()->num_encryption_conflicts == 0) {
+          GetLastSessionSnapshot().num_encryption_conflicts() == 0) {
         // Encryption is now complete for the the type in which we were waiting.
         SignalStateCompleteWithNextState(FULLY_SYNCED);
         break;
@@ -363,10 +363,8 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     case WAITING_FOR_EXPONENTIAL_BACKOFF_VERIFICATION: {
       DVLOG(1) << GetClientInfoString(
           "WAITING_FOR_EXPONENTIAL_BACKOFF_VERIFICATION");
-      const browser_sync::sessions::SyncSessionSnapshot *snap =
-          GetLastSessionSnapshot();
-      CHECK(snap);
-      retry_verifier_.VerifyRetryInterval(*snap);
+      const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
+      retry_verifier_.VerifyRetryInterval(snap);
       if (retry_verifier_.done()) {
         // Retry verifier is done verifying exponential backoff.
         SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
@@ -580,10 +578,8 @@ bool ProfileSyncServiceHarness::AwaitSyncDisabled(const std::string& reason) {
 }
 
 bool ProfileSyncServiceHarness::AwaitExponentialBackoffVerification() {
-  const browser_sync::sessions::SyncSessionSnapshot *snap =
-      GetLastSessionSnapshot();
-  CHECK(snap);
-  retry_verifier_.Initialize(*snap);
+  const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
+  retry_verifier_.Initialize(snap);
   wait_state_ = WAITING_FOR_EXPONENTIAL_BACKOFF_VERIFICATION;
   AwaitStatusChangeWithTimeout(kExponentialBackoffVerificationTimeoutMs,
       "Verify Exponential backoff");
@@ -754,14 +750,13 @@ ProfileSyncService::Status ProfileSyncServiceHarness::GetStatus() {
 // We use this function to share code between IsFullySynced and IsDataSynced
 // while ensuring that all conditions are evaluated using on the same snapshot.
 bool ProfileSyncServiceHarness::IsDataSyncedImpl(
-    const browser_sync::sessions::SyncSessionSnapshot *snap) {
-  return snap &&
-      snap->num_simple_conflicts == 0 &&
-      ServiceIsPushingChanges() &&
-      GetStatus().notifications_enabled &&
-      !service()->HasUnsyncedItems() &&
-      !snap->has_more_to_sync &&
-      !HasPendingBackendMigration();
+    const SyncSessionSnapshot& snap) {
+  return snap.num_simple_conflicts() == 0 &&
+         ServiceIsPushingChanges() &&
+         GetStatus().notifications_enabled &&
+         !service()->HasUnsyncedItems() &&
+         !snap.has_more_to_sync() &&
+         !HasPendingBackendMigration();
 }
 
 bool ProfileSyncServiceHarness::IsDataSynced() {
@@ -770,7 +765,7 @@ bool ProfileSyncServiceHarness::IsDataSynced() {
     return false;
   }
 
-  const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
+  const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
   bool is_data_synced = IsDataSyncedImpl(snap);
 
   DVLOG(1) << GetClientInfoString(
@@ -783,11 +778,11 @@ bool ProfileSyncServiceHarness::IsFullySynced() {
     DVLOG(1) << GetClientInfoString("IsFullySynced: false");
     return false;
   }
-  const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
-  // snap->unsynced_count == 0 is a fairly reliable indicator of whether or not
+  const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
+  // snap.unsynced_count() == 0 is a fairly reliable indicator of whether or not
   // our timestamp is in sync with the server.
   bool is_fully_synced = IsDataSyncedImpl(snap) &&
-      snap->unsynced_count == 0;
+      snap.unsynced_count() == 0;
 
   DVLOG(1) << GetClientInfoString(
       is_fully_synced ? "IsFullySynced: true" : "IsFullySynced: false");
@@ -856,13 +851,12 @@ bool ProfileSyncServiceHarness::MatchesOtherClient(
   return true;
 }
 
-const SyncSessionSnapshot*
-    ProfileSyncServiceHarness::GetLastSessionSnapshot() const {
+SyncSessionSnapshot ProfileSyncServiceHarness::GetLastSessionSnapshot() const {
   DCHECK(service_ != NULL) << "Sync service has not yet been set up.";
   if (service_->sync_initialized()) {
     return service_->GetLastSessionSnapshot();
   }
-  return NULL;
+  return SyncSessionSnapshot();
 }
 
 bool ProfileSyncServiceHarness::EnableSyncForDatatype(
@@ -975,9 +969,8 @@ bool ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
 
 std::string ProfileSyncServiceHarness::GetUpdatedTimestamp(
     syncable::ModelType model_type) {
-  const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
-  DCHECK(snap != NULL) << "GetUpdatedTimestamp(): Sync snapshot is NULL.";
-  return snap->download_progress_markers[model_type];
+  const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
+  return snap.download_progress_markers()[model_type];
 }
 
 std::string ProfileSyncServiceHarness::GetClientInfoString(
@@ -985,38 +978,34 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
   std::stringstream os;
   os << profile_debug_name_ << ": " << message << ": ";
   if (service()) {
-    const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
+    const SyncSessionSnapshot& snap = GetLastSessionSnapshot();
     const ProfileSyncService::Status& status = GetStatus();
-    if (snap) {
-      // Capture select info from the sync session snapshot and syncer status.
-      os << "has_more_to_sync: "
-         << snap->has_more_to_sync
-         << ", has_unsynced_items: "
-         << service()->HasUnsyncedItems()
-         << ", unsynced_count: "
-         << snap->unsynced_count
-         << ", encryption conflicts: "
-         << snap->num_encryption_conflicts
-         << ", hierarchy conflicts: "
-         << snap->num_hierarchy_conflicts
-         << ", simple conflicts: "
-         << snap->num_simple_conflicts
-         << ", server conflicts: "
-         << snap->num_server_conflicts
-         << ", num_updates_downloaded : "
-         << snap->syncer_status.num_updates_downloaded_total
-         << ", passphrase_required_reason: "
-         << sync_api::PassphraseRequiredReasonToString(
-             service()->passphrase_required_reason())
-         << ", notifications_enabled: "
-         << status.notifications_enabled
-         << ", service_is_pushing_changes: "
-         << ServiceIsPushingChanges()
-         << ", has_pending_backend_migration: "
-         << HasPendingBackendMigration();
-    } else {
-      os << "Sync session snapshot not available";
-    }
+    // Capture select info from the sync session snapshot and syncer status.
+    os << "has_more_to_sync: "
+       << snap.has_more_to_sync()
+       << ", has_unsynced_items: "
+       << service()->HasUnsyncedItems()
+       << ", unsynced_count: "
+       << snap.unsynced_count()
+       << ", encryption conflicts: "
+       << snap.num_encryption_conflicts()
+       << ", hierarchy conflicts: "
+       << snap.num_hierarchy_conflicts()
+       << ", simple conflicts: "
+       << snap.num_simple_conflicts()
+       << ", server conflicts: "
+       << snap.num_server_conflicts()
+       << ", num_updates_downloaded : "
+       << snap.syncer_status().num_updates_downloaded_total
+       << ", passphrase_required_reason: "
+       << sync_api::PassphraseRequiredReasonToString(
+           service()->passphrase_required_reason())
+       << ", notifications_enabled: "
+       << status.notifications_enabled
+       << ", service_is_pushing_changes: "
+       << ServiceIsPushingChanges()
+       << ", has_pending_backend_migration: "
+       << HasPendingBackendMigration();
   } else {
     os << "Sync service not available";
   }
@@ -1052,7 +1041,7 @@ bool ProfileSyncServiceHarness::WaitForTypeEncryption(
   // TODO(rlarocque): Figure out a less brittle way of detecting this.
   if (IsTypeEncrypted(type) &&
       IsFullySynced() &&
-      GetLastSessionSnapshot()->num_encryption_conflicts == 0) {
+      GetLastSessionSnapshot().num_encryption_conflicts() == 0) {
     // Encryption is already complete for |type|; do not wait.
     return true;
   }
@@ -1092,7 +1081,7 @@ bool ProfileSyncServiceHarness::IsTypePreferred(syncable::ModelType type) {
 }
 
 size_t ProfileSyncServiceHarness::GetNumEntries() const {
-  return GetLastSessionSnapshot()->num_entries;
+  return GetLastSessionSnapshot().num_entries();
 }
 
 size_t ProfileSyncServiceHarness::GetNumDatatypes() const {
