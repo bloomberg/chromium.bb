@@ -12,6 +12,12 @@ namespace {
 
 MockChromeOSNetwork* g_mock_chromeos_network = NULL;
 
+// Calls mock ActivateCellularModem.
+bool CallMockActivateCellularModem(const char* service_path,
+                                   const char* carrier) {
+  return g_mock_chromeos_network->ActivateCellularModem(service_path, carrier);
+}
+
 // Calls mock SetNetworkServicePropertyGValue.
 void CallMockSetNetworkServicePropertyGValue(const char* service_path,
                                              const char* property,
@@ -237,6 +243,7 @@ void MockChromeOSNetwork::Initialize() {
   g_mock_chromeos_network = new MockChromeOSNetwork;
 
   if (!CrosLibrary::Get()) {
+    chromeos::ActivateCellularModem = &CallMockActivateCellularModem;
     chromeos::SetNetworkServicePropertyGValue =
         &CallMockSetNetworkServicePropertyGValue;
     chromeos::ClearNetworkServiceProperty =
@@ -295,6 +302,7 @@ void MockChromeOSNetwork::Initialize() {
 // static
 void MockChromeOSNetwork::Shutdown() {
   if (!CrosLibrary::Get()) {
+    chromeos::ActivateCellularModem = NULL;
     chromeos::SetNetworkServicePropertyGValue = NULL;
     chromeos::ClearNetworkServiceProperty = NULL;
     chromeos::SetNetworkDevicePropertyGValue = NULL;

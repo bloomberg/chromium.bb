@@ -61,6 +61,9 @@ class CHROMEOS_EXPORT FlimflamNetworkClient {
   // DEPRECATED DO NOT USE: Calls GetProperties method and blocks until the
   // method call finishes.  The caller is responsible to delete the result.
   // Thie method returns NULL when method call fails.
+  //
+  // TODO(hashimoto): Refactor CrosGetWifiAccessPoints and remove this method.
+  // crosbug.com/29902
   virtual base::DictionaryValue* CallGetPropertiesAndBlock(
       const dbus::ObjectPath& network_path) = 0;
 

@@ -66,6 +66,7 @@ class CHROMEOS_EXPORT FlimflamDeviceClient {
   // Thie method returns NULL when method call fails.
   //
   // TODO(hashimoto): Refactor CrosGetDeviceNetworkList and remove this method.
+  // crosbug.com/29902
   virtual base::DictionaryValue* CallGetPropertiesAndBlock(
       const dbus::ObjectPath& device_path) = 0;
 
@@ -98,6 +99,7 @@ class CHROMEOS_EXPORT FlimflamDeviceClient {
   // This method returns an empty path when method call fails.
   //
   // TODO(hashimoto): Refactor CrosAddIPConfig and remove this method.
+  // crosbug.com/29902
   virtual dbus::ObjectPath CallAddIPConfigAndBlock(
       const dbus::ObjectPath& device_path,
       const std::string& method) = 0;

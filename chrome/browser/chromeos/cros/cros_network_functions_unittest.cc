@@ -185,6 +185,15 @@ class CrosNetworkFunctionsLibcrosTest : public testing::Test {
                       const GValue* gvalue)> property_changed_callback_;
 };
 
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosActivateCellularModem) {
+  const std::string service_path = "/";
+  const std::string carrier = "carrier";
+  EXPECT_CALL(*MockChromeOSNetwork::Get(),
+              ActivateCellularModem(StrEq(service_path), StrEq(carrier)))
+      .Times(1);
+  CrosActivateCellularModem(service_path, carrier);
+}
+
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetNetworkServiceProperty) {
   const std::string service_path = "/";
   const std::string property = "property";
@@ -731,6 +740,16 @@ class CrosNetworkFunctionsTest : public testing::Test {
   MockFlimflamServiceClient* mock_service_client_;
   const base::DictionaryValue* dictionary_value_result_;
 };
+
+TEST_F(CrosNetworkFunctionsTest, CrosActivateCellularModem) {
+  const std::string service_path = "/";
+  const std::string carrier = "carrier";
+  EXPECT_CALL(*mock_service_client_,
+              CallActivateCellularModemAndBlock(dbus::ObjectPath(service_path),
+                                                carrier))
+      .WillOnce(Return(true));
+  EXPECT_TRUE(CrosActivateCellularModem(service_path, carrier));
+}
 
 TEST_F(CrosNetworkFunctionsTest, CrosSetNetworkServiceProperty) {
   const std::string service_path = "/";

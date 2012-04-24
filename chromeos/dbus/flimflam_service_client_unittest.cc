@@ -200,4 +200,19 @@ TEST_F(FlimflamServiceClientTest, ActivateCellularModem) {
   message_loop_.RunAllPending();
 }
 
+TEST_F(FlimflamServiceClientTest, CallActivateCellularModemAndBlock) {
+  const char kCarrier[] = "carrier";
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  // Set expectations.
+  PrepareForMethodCall(flimflam::kActivateCellularModemFunction,
+                       base::Bind(&ExpectStringArgument, kCarrier),
+                       response.get());
+  // Call method.
+  const bool result = client_->CallActivateCellularModemAndBlock(
+      dbus::ObjectPath(kExampleServicePath), kCarrier);
+  EXPECT_TRUE(result);
+}
+
 }  // namespace chromeos

@@ -22,6 +22,8 @@ class MockChromeOSNetwork {
   // Gets the global instance.
   static MockChromeOSNetwork* Get();
 
+  MOCK_METHOD2(ActivateCellularModem, bool(const char* service_path,
+                                           const char* carrier));
   MOCK_METHOD3(SetNetworkServicePropertyGValue,
                void(const char* service_path,
                     const char* property,

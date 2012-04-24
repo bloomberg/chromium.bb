@@ -41,6 +41,9 @@ class MockFlimflamServiceClient : public FlimflamServiceClient {
   MOCK_METHOD3(ActivateCellularModem, void(const dbus::ObjectPath& service_path,
                                            const std::string& carrier,
                                            const VoidCallback& callback));
+  MOCK_METHOD2(CallActivateCellularModemAndBlock,
+               bool(const dbus::ObjectPath& service_path,
+                    const std::string& carrier));
 };
 
 }  // namespace chromeos

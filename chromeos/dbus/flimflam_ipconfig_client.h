@@ -63,6 +63,7 @@ class CHROMEOS_EXPORT FlimflamIPConfigClient {
   // Thie method returns NULL when method call fails.
   //
   // TODO(hashimoto): Refactor CrosListIPConfigs to remove this method.
+  // crosbug.com/29902
   virtual base::DictionaryValue* CallGetPropertiesAndBlock(
       const dbus::ObjectPath& ipconfig_path) = 0;
 
@@ -88,6 +89,7 @@ class CHROMEOS_EXPORT FlimflamIPConfigClient {
   // finishes.
   //
   // TODO(hashimoto): Refactor CrosRemoveIPConfig to remove this method.
+  // crosbug.com/29902
   virtual bool CallRemoveAndBlock(const dbus::ObjectPath& ipconfig_path) = 0;
 
  protected:

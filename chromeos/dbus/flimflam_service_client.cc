@@ -108,6 +108,17 @@ class FlimflamServiceClientImpl : public FlimflamServiceClient {
     GetHelper(service_path)->CallVoidMethod(&method_call, callback);
   }
 
+  // FlimflamServiceClient override.
+  virtual bool CallActivateCellularModemAndBlock(
+      const dbus::ObjectPath& service_path,
+      const std::string& carrier) OVERRIDE {
+    dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
+                                 flimflam::kActivateCellularModemFunction);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(carrier);
+    return GetHelper(service_path)->CallVoidMethodAndBlock(&method_call);
+  }
+
  private:
   typedef std::map<std::string, FlimflamClientHelper*> HelperMap;
 
@@ -198,6 +209,13 @@ class FlimflamServiceClientStubImpl : public FlimflamServiceClient {
                                      const std::string& carrier,
                                      const VoidCallback& callback) OVERRIDE {
     PostSuccessVoidCallback(callback);
+  }
+
+  // FlimflamServiceClient override.
+  virtual bool CallActivateCellularModemAndBlock(
+      const dbus::ObjectPath& service_path,
+      const std::string& carrier) OVERRIDE {
+    return true;
   }
 
  private:

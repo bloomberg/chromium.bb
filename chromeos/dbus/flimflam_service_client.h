@@ -96,6 +96,15 @@ class CHROMEOS_EXPORT FlimflamServiceClient {
                                      const std::string& carrier,
                                      const VoidCallback& callback) = 0;
 
+  // DEPRECATED DO NOT USE: Calls ActivateCellularModem method and blocks until
+  // the method call finishes.
+  //
+  // TODO(hashimoto): Refactor CrosActivateCellularModem and remove this method.
+  // crosbug.com/29902
+  virtual bool CallActivateCellularModemAndBlock(
+      const dbus::ObjectPath& service_path,
+      const std::string& carrier) = 0;
+
  protected:
   // Create() should be used instead.
   FlimflamServiceClient();

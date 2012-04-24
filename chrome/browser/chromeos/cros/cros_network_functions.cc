@@ -251,7 +251,14 @@ void SetLibcrosNetworkFunctionsEnabled(bool enabled) {
 
 bool CrosActivateCellularModem(const std::string& service_path,
                                const std::string& carrier) {
-  return chromeos::ActivateCellularModem(service_path.c_str(), carrier.c_str());
+  if (g_libcros_network_functions_enabled) {
+    return chromeos::ActivateCellularModem(service_path.c_str(),
+                                           carrier.c_str());
+  } else {
+    return DBusThreadManager::Get()->GetFlimflamServiceClient()->
+        CallActivateCellularModemAndBlock(dbus::ObjectPath(service_path),
+                                          carrier);
+  }
 }
 
 void CrosSetNetworkServiceProperty(const std::string& service_path,
