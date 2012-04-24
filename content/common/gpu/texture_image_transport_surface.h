@@ -75,6 +75,7 @@ class TextureImageTransportSurface :
   void CreateBackTexture(const gfx::Size& size);
   void ReleaseBackTexture();
   void AttachBackTextureToFBO();
+  void ReleaseParentStub();
   int back() const { return 1 - front_; }
 
   // The framebuffer that represents this surface (service id). Allocated lazily

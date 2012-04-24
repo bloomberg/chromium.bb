@@ -111,17 +111,8 @@ bool TextureImageTransportSurface::Initialize() {
 
 void TextureImageTransportSurface::Destroy() {
   if (parent_stub_) {
-    parent_stub_->RemoveDestructionObserver(this);
-    parent_stub_ = NULL;
-  }
-  for (int i = 0; i < 2; ++i) {
-    Texture& texture = textures_[i];
-    if (!texture.sent_to_client)
-      continue;
-    GpuHostMsg_AcceleratedSurfaceRelease_Params params;
-    params.identifier = texture.client_id;
-    helper_->SendAcceleratedSurfaceRelease(params);
-    texture.info = NULL;
+    parent_stub_->decoder()->MakeCurrent();
+    ReleaseParentStub();
   }
 
   helper_->Destroy();
@@ -197,14 +188,10 @@ void TextureImageTransportSurface::OnResize(gfx::Size size) {
 
 void TextureImageTransportSurface::OnWillDestroyStub(
     GpuCommandBufferStub* stub) {
-  stub->RemoveDestructionObserver(this);
   if (stub == parent_stub_) {
-    // We are losing the parent stub, we need to clear the reference on the
-    // infos (they are not allowed to outlive the stub).
-    textures_[0].info = NULL;
-    textures_[1].info = NULL;
-    parent_stub_ = NULL;
+    ReleaseParentStub();
   } else {
+    stub->RemoveDestructionObserver(this);
     // We are losing the stub owning us, this is our last chance to clean up the
     // resources we allocated in the stub's context.
     glDeleteFramebuffersEXT(1, &fbo_id_);
@@ -435,4 +422,19 @@ void TextureImageTransportSurface::AttachBackTextureToFBO() {
     DLOG(ERROR) << "Framebuffer incomplete.";
   }
 #endif
+}
+
+void TextureImageTransportSurface::ReleaseParentStub() {
+  DCHECK(parent_stub_);
+  parent_stub_->RemoveDestructionObserver(this);
+  for (int i = 0; i < 2; ++i) {
+    Texture& texture = textures_[i];
+    texture.info = NULL;
+    if (!texture.sent_to_client)
+      continue;
+    GpuHostMsg_AcceleratedSurfaceRelease_Params params;
+    params.identifier = texture.client_id;
+    helper_->SendAcceleratedSurfaceRelease(params);
+  }
+  parent_stub_ = NULL;
 }
