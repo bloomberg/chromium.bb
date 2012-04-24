@@ -36,6 +36,7 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
+#include <linux/input.h>
 #include <wayland-client.h>
 
 #include "window.h"
@@ -50,6 +51,14 @@ struct gears {
 	EGLDisplay config;
 	EGLContext context;
 	GLfloat angle;
+
+	struct {
+		GLfloat rotx;
+		GLfloat roty;
+	} view;
+
+	int button_down;
+	int last_x, last_y;
 
 	GLint gear_list[3];
 };
@@ -212,10 +221,54 @@ static const struct wl_callback_listener listener = {
 	frame_callback
 };
 
+static int
+motion_handler(struct widget *widget, struct input *input,
+		uint32_t time, int32_t x, int32_t y, void *data)
+{
+	struct gears *gears = data;
+	int offset_x, offset_y;
+	float step = 0.5;
+
+	if (gears->button_down) {
+		offset_x = x - gears->last_x;
+		offset_y = y - gears->last_y;
+		gears->last_x = x;
+		gears->last_y = y;
+		gears->view.roty += offset_x * step;
+		gears->view.rotx += offset_y * step;
+		if (gears->view.roty >= 360)
+			gears->view.roty = gears->view.roty - 360;
+		if (gears->view.roty <= 0)
+			gears->view.roty = gears->view.roty + 360;
+		if (gears->view.rotx >= 360)
+			gears->view.rotx = gears->view.rotx - 360;
+		if (gears->view.rotx <= 0)
+			gears->view.rotx = gears->view.rotx + 360;
+	}
+
+	return POINTER_LEFT_PTR;
+}
+
+static void
+button_handler(struct widget *widget, struct input *input,
+		uint32_t time, int button, int state, void *data)
+{
+	struct gears *gears = data;
+
+	if (button == BTN_LEFT) {
+		if (state) {
+			gears->button_down = 1;
+			input_get_position(input,
+					&gears->last_x, &gears->last_y);
+		} else {
+			gears->button_down = 0;
+		}
+	}
+}
+
 static void
 redraw_handler(struct widget *widget, void *data)
 {
-	GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 	struct rectangle window_allocation;
 	struct rectangle allocation;
 	struct wl_callback *callback;
@@ -245,9 +298,8 @@ redraw_handler(struct widget *widget, void *data)
 
 	glTranslatef(0.0, 0.0, -50);
 
-	glRotatef(view_rotx, 1.0, 0.0, 0.0);
-	glRotatef(view_roty, 0.0, 1.0, 0.0);
-	glRotatef(view_rotz, 0.0, 0.0, 1.0);
+	glRotatef(gears->view.rotx, 1.0, 0.0, 0.0);
+	glRotatef(gears->view.roty, 0.0, 1.0, 0.0);
 
 	glPushMatrix();
 	glTranslatef(-3.0, -2.0, 0.0);
@@ -340,6 +392,13 @@ gears_create(struct display *display)
 		glEndList();
 	}
 
+	gears->button_down = 0;
+	gears->last_x = 0;
+	gears->last_y = 0;
+
+	gears->view.rotx = 20.0;
+	gears->view.roty = 30.0;
+
 	glEnable(GL_NORMALIZE);
 
 	glMatrixMode(GL_PROJECTION);
@@ -357,6 +416,8 @@ gears_create(struct display *display)
 	window_set_user_data(gears->window, gears);
 	widget_set_resize_handler(gears->widget, resize_handler);
 	widget_set_redraw_handler(gears->widget, redraw_handler);
+	widget_set_button_handler(gears->widget, button_handler);
+	widget_set_motion_handler(gears->widget, motion_handler);
 	window_set_keyboard_focus_handler(gears->window,
 					  keyboard_focus_handler);
 
