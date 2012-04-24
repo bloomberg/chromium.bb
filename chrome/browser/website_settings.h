@@ -147,18 +147,25 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // Status of the connection to the website.
   SiteConnectionStatus site_connection_status_;
 
+  // TODO(markusheintz): Move the creation of all the string16 typed UI
+  // strings below to the corresponding UI code, in order to prevent
+  // unnecessary UTF-8 string conversions.
+
   // Details about the website's identity. If the website's identity has been
   // verified then |site_identity_details_| contains who verified the identity.
+  // This string will be displayed in the UI.
   string16 site_identity_details_;
 
   // Details about the connection to the website. In case of an encrypted
   // connection |site_connection_details_| contains encryption details, like
-  // encryption strength and ssl protocol version.
+  // encryption strength and ssl protocol version. This string will be
+  // displayed in the UI.
   string16 site_connection_details_;
 
-  // For websites that provided an EV certificate |orgainization_name_| contains
-  // the organization name of the certificate. In all other cases
-  // |organization_name| is an empty string.
+  // For websites that provided an EV certificate |orgainization_name_|
+  // contains the organization name of the certificate. In all other cases
+  // |organization_name| is an empty string. This string will be displayed in
+  // the UI.
   string16 organization_name_;
 
   // The |CertStore| provides all X509Certificates.
