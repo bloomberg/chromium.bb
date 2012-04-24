@@ -54,6 +54,12 @@ class GitRepoPatch(object):
     self.ref = ref
     self.tracking_branch = os.path.basename(tracking_branch)
     self.sha1 = sha1
+    # TODO(ferringb): remove this attribute.
+    # apply_error_message is currently used by ValidationPool as a way to
+    # track what changes have failed.  Patch objects shouldn't use this
+    # attribute, instead leaving it purely for validation_pool and friends
+    # to mutate.
+    self.apply_error_message = None
 
   def ProjectDir(self, buildroot):
     """Returns the local directory where this patch will be applied."""
@@ -316,10 +322,6 @@ class GerritPatch(GitRepoPatch):
     # status - Current state of this change.  Can be one of
     # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
     self.status = patch_dict['status']
-    # Allows a caller to specify why we can't apply this change when we
-    # HandleApplicaiton failures.
-    self.apply_error_message = ('Please re-sync, rebase, and re-upload your '
-                                'change.')
 
   def __getnewargs__(self):
     """Used for pickling to re-create patch object."""

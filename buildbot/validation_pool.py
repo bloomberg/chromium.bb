@@ -53,6 +53,24 @@ class NoMatchingChangeFoundException(Exception):
   pass
 
 
+def MarkChangeFailedInflight(change):
+  """Set an appropriate error message for an inflight apply failure."""
+  change.apply_error_message = (
+      'Your change conflicted with another change being tested '
+      'in the last validation pool.  Please re-sync, rebase and '
+      're-upload.')
+  return change
+
+
+def MarkChangeFailedToT(change):
+  """Set an appropriate error message for a ToT apply failure."""
+  change.apply_error_message = (
+      'Your change no longer cleanly applies against ToT.  '
+      'Please re-sync, rebase, and re-upload your change.')
+  return change
+
+
+
 class ValidationPool(object):
   """Class that handles interactions with a validation pool.
 
@@ -62,9 +80,6 @@ class ValidationPool(object):
   Usage:  Use ValidationPoo.AcquirePool -- a static
   method that grabs the commits that are ready for validation.
   """
-
-  DEFAULT_ERROR_APPLY_MESSAGE = ('Please re-sync, rebase, and re-upload '
-                                 'your change.')
 
   GLOBAL_DRYRUN = False
 
@@ -430,14 +445,12 @@ class ValidationPool(object):
           change.Apply(buildroot, trivial=trivial)
 
         except cros_patch.ApplyPatchException as e:
-          if not e.inflight:
-            changes_that_failed_to_apply_to_tot.add(change)
+          if e.inflight:
+            changes_that_failed_to_apply_against_other_changes.add(
+                MarkChangeFailedInflight(change))
           else:
-            change.apply_error_message = (
-                'Your change conflicted with another change being tested '
-                'in the last validation pool.  Please re-sync, rebase and '
-                're-upload.')
-            changes_that_failed_to_apply_against_other_changes.add(change)
+            changes_that_failed_to_apply_to_tot.add(
+                MarkChangeFailedToT(change))
 
           break
         else:
@@ -603,11 +616,17 @@ class ValidationPool(object):
       change: GerritPatch instance to operate upon.
     """
     msg = 'The Commit Queue failed to apply your change in %(build_log)s . '
-    # This is written this way so that mox doesn't complain if/when we try
-    # accessing an attr that doesn't exist.
+    # This is written this way to protect against bugs in CQ itself.  We log
+    # it both to the build output, and mark the change w/ it.
     extra_msg = getattr(change, 'apply_error_message', None)
     if extra_msg is None:
-      extra_msg = self.DEFAULT_ERROR_APPLY_MESSAGE
+      logging.error(
+          'Change %s was passed to HandleCouldNotApply without an appropriate '
+          'apply_error_message set.  Internal bug.', change)
+      extra_msg = (
+          'Internal CQ issue: extra error info was not given,  Please contact '
+          'the build team and ensure they are aware of this specific change '
+          'failing.')
 
     msg += extra_msg
     self._SendNotification(change, msg)

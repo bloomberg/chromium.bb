@@ -231,9 +231,16 @@ class TestValidationPool(mox.MoxTestBase):
     patch4.Apply(build_root, trivial=True).AndRaise(
         cros_patch.ApplyPatchException(patch1, inflight=True))
 
+    validation_pool.MarkChangeFailedToT(patch1)
     pool.HandleCouldNotApply(patch1)
 
     self.mox.ReplayAll()
+    # TODO(ferringb): remove the need for this.
+    # Reset before re-running so the error messages don't persist; they're
+    # currently stored on the instances themselves, although that'll be
+    # rectified soon enough
+    for patch in pool.changes:
+      patch.apply_error_message = None
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
     self.assertTrue(patch4 in pool.changes_that_failed_to_apply_earlier)
     self.mox.VerifyAll()
