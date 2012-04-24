@@ -1024,6 +1024,11 @@ class SVN(object):
         logging.info('Ignoring external %s' % file_status[1])
         continue
 
+      # This is the case where '! L    .' is returned by 'svn status'. Just
+      # strip off the '/.'.
+      if file_path.endswith(os.path.sep + '.'):
+        file_path = file_path[:-2]
+
       if callback:
         callback(file_status)
 

@@ -290,7 +290,8 @@ class SVNWrapperTestCase(BaseTestCase):
       ('~      ', '.'),
     ]
     gclient_scm.scm.SVN.CaptureStatus(None, self.base_path).AndReturn(items)
-    file_path = join(self.base_path, '.')
+    # RemoveDirectory() doesn't work on path ending with '.', like 'foo/.'.
+    file_path = self.base_path
     gclient_scm.os.path.exists(file_path).AndReturn(True)
     gclient_scm.os.path.isfile(file_path).AndReturn(False)
     gclient_scm.os.path.islink(file_path).AndReturn(False)
@@ -305,7 +306,7 @@ class SVNWrapperTestCase(BaseTestCase):
                             relpath=self.relpath)
     file_list2 = []
     scm.revert(options, self.args, file_list2)
-    self.checkstdout(('%s\n' % file_path))
+    self.checkstdout(('%s\n' % os.path.join(file_path, '.')))
 
   def testStatus(self):
     options = self.Options(verbose=True)
