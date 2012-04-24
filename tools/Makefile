@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -52,6 +52,11 @@ TOOLCHAINNAME ?= nacl-sdk
 SDKNAME ?= $(TOOLCHAINNAME)
 SDKROOT ?= $(SDKLOC)/$(SDKNAME)
 DESTDIR ?=
+
+# We can't use CFLAGS and LDFLAGS since they are passed to sub-makes and
+# those override configure parameters.
+USER_CFLAGS = -O2 -g
+USER_LDFLAGS = -s
 
 # By default all toolchain executables are x86-32 executables, use
 # HOST_TOOLCHAIN_BITS=64 to make them x86-64 executables.
@@ -338,8 +343,8 @@ BUILD/stamp-$(CROSSARCH)-binutils: | SRC/binutils BUILD
 	# us from building with -Werror today.
 	cd BUILD/build-binutils-$(CROSSARCH) && \
 	  CC="$(GCC_CC)" \
-	  CFLAGS="$(CFLAGS)" \
-	  LDFLAGS="-s $(LDFLAGS)" \
+	  CFLAGS="$(USER_CFLAGS)" \
+	  LDFLAGS="$(USER_LDFLAGS)" \
 	  ../../SRC/binutils/configure \
 	    --prefix=$(PREFIX) \
 	    --target=$(CROSSARCH) \
@@ -408,16 +413,9 @@ endif
 
 GCC_CC = gcc -m$(HOST_TOOLCHAIN_BITS)
 
-GCC_CFLAGS = -O2 $(CFLAGS)
-
 GCC_DEFINES = \
     -Dinhibit_libc \
     -D__gthr_posix_h
-
-GCC_LDFLAGS = -s $(LDFLAGS)
-
-
-GCC_CFLAGS_FOR_TARGET = -O2 -g
 
 
 GCC_CFLAGS_FOR_TARGET-nolibc =
@@ -458,8 +456,8 @@ endif
 	PATH=$(BUILDPATH) \
 	$(GCC_SRC_DIR)/configure \
 	    CC="$(GCC_CC)" \
-	    CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
-	    LDFLAGS="$(GCC_LDFLAGS)" \
+	    CFLAGS="$(USER_CFLAGS) $(GCC_DEFINES)" \
+	    LDFLAGS="$(USER_LDFLAGS)" \
 	    CFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-nolibc)" \
 	    CXXFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-nolibc)" \
 	    --prefix=$(PREFIX) \
@@ -523,8 +521,8 @@ endif
 	PATH=$(BUILDPATH) \
 	$(GCC_SRC_DIR)/configure \
 	    CC="$(GCC_CC)" \
-	    CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
-	    LDFLAGS="$(GCC_LDFLAGS)" \
+	    CFLAGS="$(USER_CFLAGS) $(GCC_DEFINES)" \
+	    LDFLAGS="$(USER_LDFLAGS)" \
 	    CFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-nolibc)" \
 	    CXXFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-nolibc)" \
 	    --prefix=$(PREGCC_PREFIX) \
@@ -566,7 +564,7 @@ BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD newlib-libc-script
 		      --enable-newlib-io-c99-formats \
 		      --enable-newlib-mb \
 	    --prefix=$(PREFIX) \
-	    CFLAGS="-O2 $(CFLAGS)" \
+	    CFLAGS="$(USER_CFLAGS)" \
 	    CFLAGS_FOR_TARGET='$(NEWLIB_CFLAGS)' \
 	    CXXFLAGS_FOR_TARGET='$(NEWLIB_CFLAGS)' \
 	    --target=$(CROSSARCH) && \
@@ -598,7 +596,7 @@ GLIBC_BUILD_DIR = BUILD/build-glibc-$(CROSSARCH)
 GLIBC_CC = $(PREGCC_PREFIX)/bin/$(CROSSARCH)-gcc
 
 # CFLAGS for building glibc.
-GLIBC_CFLAGS = -O2 -g $(CFLAGS)
+GLIBC_CFLAGS = -O2 -g
 
 ARCH_DEST = $(DESTDIR)$(PREFIX)/$(CROSSARCH)
 ARCH_DEST_INC_NATIVE = $(PREFIX_NATIVE)/$(CROSSARCH)/include
@@ -738,8 +736,8 @@ endif
 	PATH=$(BUILDPATH) \
 	$(GCC_SRC_DIR)/configure \
 	    CC="$(GCC_CC)" \
-	    CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
-	    LDFLAGS="$(GCC_LDFLAGS)" \
+	    CFLAGS="$(USER_CFLAGS) $(GCC_DEFINES)" \
+	    LDFLAGS="$(USER_LDFLAGS)" \
 	    CFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-glibc)" \
 	    CXXFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-glibc)" \
 	    --prefix=$(PREFIX) \
@@ -792,8 +790,8 @@ endif
 	PATH=$(BUILDPATH) \
 	$(GCC_SRC_DIR)/configure \
 	    CC="$(GCC_CC)" \
-	    CFLAGS="$(GCC_CFLAGS) $(GCC_DEFINES)" \
-	    LDFLAGS="$(GCC_LDFLAGS)" \
+	    CFLAGS="$(USER_CFLAGS) $(GCC_DEFINES)" \
+	    LDFLAGS="$(USER_LDFLAGS)" \
 	    CFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-newlib)" \
 	    CXXFLAGS_FOR_TARGET="-O2 -g $(GCC_CFLAGS_FOR_TARGET-newlib)" \
 	    --prefix=$(PREFIX) \
@@ -826,18 +824,14 @@ BUILD/stamp-$(CROSSARCH)-gdb: | SRC/gdb BUILD
 	esac
 	rm -rf BUILD/build-gdb-$(CROSSARCH)
 	mkdir BUILD/build-gdb-$(CROSSARCH)
-	CC=gcc ; \
-	BUILD= ; \
-	case $$(SRC/gdb/config.guess) in \
-	x86_64-*) CC="gcc -m32" ; BUILD=--build=i686-linux ;; \
-	esac ; \
 	cd BUILD/build-gdb-$(CROSSARCH) && \
-	  CC="$${CC}" \
-	  LDFLAGS="-s" \
+	  CC="gcc -m32" \
+	  LDFLAGS="$(USER_LDFLAGS)" \
+	  CFLAGS="$(USER_CFLAGS)" \
 	  ../../SRC/gdb/configure \
 	    --prefix=$(PREFIX) \
-	    $${BUILD} \
-	    --target=nacl
+	    --enable-64-bit-bfd \
+	    --target=i686-linux
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
@@ -895,6 +889,11 @@ endif
 	$(MAKE) -f $(THISMAKEFILE) export-headers
 	$(MAKE) -f $(THISMAKEFILE) glibc-adhoc-files
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-full-gcc
+ifeq ($(CANNED_REVISION), no)
+	case $$(SRC/binutils/config.guess) in \
+	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-$(CROSSARCH)-gdb ;; \
+	esac
+endif
 	$(CREATE_REDIRECTORS) "$(DESTDIR)$(PREFIX)"
 	for dir in lib32 lib64 ; do ( \
 	  cd $(DESTDIR)$(PREFIX)/$(CROSSARCH)/$$dir ; \
