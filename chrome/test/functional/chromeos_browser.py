@@ -5,6 +5,7 @@
 
 import pyauto_functional # pyauto_functional must come before pyauto.
 import pyauto
+import test_utils
 
 
 class ChromeosBrowserTest(pyauto.PyUITest):
@@ -28,8 +29,8 @@ class ChromeosBrowserTest(pyauto.PyUITest):
   def testCrashBrowser(self):
     """Verify that after broswer crash is recovered, user can still navigate
     to other URL."""
-    crash_url = 'about:inducebrowsercrashforrealz'
-    self.NavigateToURL(crash_url)
+    test_utils.CrashBrowser(self)
+    self.RestartBrowser(clear_profile=False)
     url = self.GetHttpURLForDataPath('english_page.html')
     self.NavigateToURL(url)
     self.assertEqual('This page is in English', self.GetActiveTabTitle())
