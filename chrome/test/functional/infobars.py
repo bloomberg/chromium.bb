@@ -208,7 +208,11 @@ class OneClickInfobarTest(pyauto.PyUITest):
     username = creds['username']
     password = creds['password']
     test_utils.GoogleAccountsLogin(self, username, password, tab_index, windex)
-    self.WaitUntilNavigationCompletes(tab_index=tab_index, windex=windex)
+    # TODO(dyu): Use WaitUntilNavigationCompletes after investigating
+    # crbug.com/124877
+    self.WaitUntil(
+        lambda: self.GetDOMValue('document.readyState'),
+        expect_retval='complete')
 
   def _PerformActionOnInfobar(self, action):
     """Perform an action on the infobar: accept, cancel, or dismiss.
