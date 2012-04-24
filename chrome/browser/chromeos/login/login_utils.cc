@@ -84,6 +84,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/compositor/compositor_switches.h"
 #include "ui/gfx/gl/gl_switches.h"
+#include "webkit/plugins/plugin_switches.h"
 
 using content::BrowserThread;
 
