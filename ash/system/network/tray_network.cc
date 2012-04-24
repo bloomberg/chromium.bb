@@ -379,22 +379,15 @@ class NetworkDetailedView : public views::View,
   }
 
   void ToggleInfoBubble() {
-    if (ResetInfoBubble())
+    if (info_bubble_) {
+      info_bubble_->GetWidget()->CloseNow();
+      info_bubble_ = NULL;
       return;
-
+    }
     info_bubble_ = new NonActivatableSettingsBubble(
         info_icon_, CreateNetworkInfoView());
     views::BubbleDelegateView::CreateBubble(info_bubble_);
     info_bubble_->Show();
-  }
-
-  // Returns whether an existing info-bubble was closed.
-  bool ResetInfoBubble() {
-    if (!info_bubble_)
-      return false;
-    info_bubble_->GetWidget()->Close();
-    info_bubble_ = NULL;
-    return true;
   }
 
   // Overridden from views::View.
@@ -417,15 +410,9 @@ class NetworkDetailedView : public views::View,
                              const views::Event& event) OVERRIDE {
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->tray_delegate();
-    if (sender == info_icon_) {
+    if (sender == info_icon_)
       ToggleInfoBubble();
-      return;
-    }
-
-    // If the info bubble was visible, close it when some other item is clicked
-    // on.
-    ResetInfoBubble();
-    if (sender == button_wifi_)
+    else if (sender == button_wifi_)
       delegate->ToggleWifi();
     else if (sender == button_cellular_)
       delegate->ToggleCellular();
@@ -447,7 +434,10 @@ class NetworkDetailedView : public views::View,
         ash::Shell::GetInstance()->tray_delegate();
     // If the info bubble was visible, close it when some other item is clicked
     // on.
-    ResetInfoBubble();
+    if (info_bubble_) {
+      info_bubble_->GetWidget()->Close();
+      info_bubble_ = NULL;
+    }
 
     if (sender == header_text_)
       Shell::GetInstance()->tray()->ShowDefaultView();

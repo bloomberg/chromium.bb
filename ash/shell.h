@@ -365,7 +365,11 @@ class ASH_EXPORT Shell {
   // Owned by aura::RootWindow, cached here for type safety.
   internal::RootWindowLayoutManager* root_window_layout_;
 
-  // System tray with clock, Wi-Fi signal, etc.
+  // Status area with clock, Wi-Fi signal, etc.
+  views::Widget* status_widget_;
+
+  // System tray with clock, Wi-Fi signal, etc. (a replacement in progress for
+  // |status_widget_|).
   scoped_ptr<SystemTray> tray_;
 
   // Used by ash/shell.

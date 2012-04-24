@@ -7,25 +7,9 @@
 #include "ash/shell.h"
 #include "ash/shell/panel_window.h"
 #include "ash/shell_window_ids.h"
-#include "ash/system/audio/tray_volume.h"
-#include "ash/system/bluetooth/tray_bluetooth.h"
-#include "ash/system/brightness/tray_brightness.h"
-#include "ash/system/date/tray_date.h"
-#include "ash/system/ime/tray_ime.h"
-#include "ash/system/network/tray_network.h"
-#include "ash/system/power/power_status_observer.h"
-#include "ash/system/power/power_supply_status.h"
-#include "ash/system/power/tray_power.h"
-#include "ash/system/settings/tray_settings.h"
-#include "ash/system/tray/tray_empty.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
-#include "ash/system/tray/system_tray_widget_delegate.h"
-#include "ash/system/tray_accessibility.h"
-#include "ash/system/tray_caps_lock.h"
-#include "ash/system/tray_update.h"
-#include "ash/system/user/tray_user.h"
 #include "ash/system/user/login_status.h"
 #include "ash/wm/shadow_types.h"
 #include "ash/wm/shelf_layout_manager.h"
@@ -422,7 +406,6 @@ SystemTray::SystemTray()
       power_status_observer_(NULL),
       update_observer_(NULL),
       user_observer_(NULL),
-      widget_(NULL),
       bubble_(NULL),
       popup_(NULL),
       background_(new internal::SystemTrayBackground),
@@ -457,70 +440,6 @@ SystemTray::~SystemTray() {
   }
   if (popup_)
     popup_->CloseNow();
-}
-
-void SystemTray::CreateItems() {
-  internal::TrayVolume* tray_volume = new internal::TrayVolume();
-  internal::TrayBluetooth* tray_bluetooth = new internal::TrayBluetooth();
-  internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
-  internal::TrayDate* tray_date = new internal::TrayDate();
-  internal::TrayPower* tray_power = new internal::TrayPower();
-  internal::TrayNetwork* tray_network = new internal::TrayNetwork;
-  internal::TrayUser* tray_user = new internal::TrayUser;
-  internal::TrayAccessibility* tray_accessibility =
-      new internal::TrayAccessibility;
-  internal::TrayCapsLock* tray_caps_lock = new internal::TrayCapsLock;
-  internal::TrayIME* tray_ime = new internal::TrayIME;
-  internal::TrayUpdate* tray_update = new internal::TrayUpdate;
-
-  accessibility_observer_ = tray_accessibility;
-  audio_observer_ = tray_volume;
-  bluetooth_observer_ = tray_bluetooth;
-  brightness_observer_ = tray_brightness;
-  caps_lock_observer_ = tray_caps_lock;
-  clock_observer_ = tray_date;
-  ime_observer_ = tray_ime;
-  network_observer_ = tray_network;
-  power_status_observer_ = tray_power;
-  update_observer_ = tray_update;
-  user_observer_ = tray_user;
-
-  AddTrayItem(tray_user);
-  AddTrayItem(new internal::TrayEmpty());
-  AddTrayItem(tray_power);
-  AddTrayItem(tray_network);
-  AddTrayItem(tray_bluetooth);
-  AddTrayItem(tray_ime);
-  AddTrayItem(tray_volume);
-  AddTrayItem(tray_brightness);
-  AddTrayItem(tray_update);
-  AddTrayItem(new internal::TraySettings());
-  AddTrayItem(tray_accessibility);
-  AddTrayItem(tray_caps_lock);
-  AddTrayItem(tray_date);
-  SetVisible(ash::Shell::GetInstance()->tray_delegate()->
-      GetTrayVisibilityOnStartup());
-}
-
-void SystemTray::CreateWidget() {
-  if (widget_)
-    widget_->Close();
-  widget_ = new views::Widget;
-  internal::StatusAreaView* status_area_view = new internal::StatusAreaView;
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  gfx::Size ps = GetPreferredSize();
-  params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
-  params.delegate = status_area_view;
-  params.parent = Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_StatusContainer);
-  params.transparent = true;
-  widget_->Init(params);
-  widget_->set_focus_on_creation(false);
-  status_area_view->AddChildView(this);
-  widget_->SetContentsView(status_area_view);
-  widget_->Show();
-  widget_->GetNativeView()->SetName("StatusTrayWidget");
 }
 
 void SystemTray::AddTrayItem(SystemTrayItem* item) {

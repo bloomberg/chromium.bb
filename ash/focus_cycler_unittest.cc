@@ -7,8 +7,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_widget_delegate.h"
+#include "ash/status_area/status_area_view.h"
 #include "ash/wm/window_util.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/shell_factory.h"
@@ -29,12 +28,6 @@ namespace {
 internal::StatusAreaView* GetStatusAreaView(views::Widget* widget) {
   return static_cast<internal::StatusAreaView*>(
       widget->GetContentsView());
-}
-
-SystemTray* CreateSystemTray() {
-  SystemTray* tray = new SystemTray;
-  tray->CreateWidget();
-  return tray;
 }
 
 }  // namespace
@@ -61,10 +54,10 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
-  scoped_ptr<SystemTray> tray(CreateSystemTray());
-  ASSERT_TRUE(tray->widget());
-  focus_cycler->AddWidget(tray->widget());
-  GetStatusAreaView(tray->widget())->SetFocusCyclerForTesting(
+  views::Widget* status_widget = internal::CreateStatusArea(NULL);
+  ASSERT_TRUE(status_widget);
+  focus_cycler->AddWidget(status_widget);
+  GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
       focus_cycler.get());
 
   // Add the launcher
@@ -84,7 +77,7 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
 
   // Cycle focus to the status area
   focus_cycler->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(tray->widget()->IsActive());
+  EXPECT_TRUE(status_widget->IsActive());
 
   // Cycle focus to the launcher
   focus_cycler->RotateFocus(FocusCycler::FORWARD);
@@ -99,10 +92,10 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
-  scoped_ptr<SystemTray> tray(CreateSystemTray());
-  ASSERT_TRUE(tray->widget());
-  focus_cycler->AddWidget(tray->widget());
-  GetStatusAreaView(tray->widget())->SetFocusCyclerForTesting(
+  views::Widget* status_widget = internal::CreateStatusArea(NULL);
+  ASSERT_TRUE(status_widget);
+  focus_cycler->AddWidget(status_widget);
+  GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
       focus_cycler.get());
 
   // Add the launcher
@@ -126,7 +119,7 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
 
   // Cycle focus to the status area
   focus_cycler->RotateFocus(FocusCycler::BACKWARD);
-  EXPECT_TRUE(tray->widget()->IsActive());
+  EXPECT_TRUE(status_widget->IsActive());
 
   // Cycle focus to the browser
   focus_cycler->RotateFocus(FocusCycler::BACKWARD);
@@ -168,10 +161,10 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusForwardInvisible) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
-  scoped_ptr<SystemTray> tray(CreateSystemTray());
-  ASSERT_TRUE(tray->widget());
-  focus_cycler->AddWidget(tray->widget());
-  GetStatusAreaView(tray->widget())->SetFocusCyclerForTesting(
+  views::Widget* status_widget = internal::CreateStatusArea(NULL);
+  ASSERT_TRUE(status_widget);
+  focus_cycler->AddWidget(status_widget);
+  GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
       focus_cycler.get());
 
   // Add the launcher
@@ -191,7 +184,7 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusForwardInvisible) {
 
   // Cycle focus to the status area
   focus_cycler->RotateFocus(FocusCycler::FORWARD);
-  EXPECT_TRUE(tray->widget()->IsActive());
+  EXPECT_TRUE(status_widget->IsActive());
 
   // Cycle focus to the browser
   focus_cycler->RotateFocus(FocusCycler::FORWARD);
@@ -202,10 +195,10 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusBackwardInvisible) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
-  scoped_ptr<SystemTray> tray(CreateSystemTray());
-  ASSERT_TRUE(tray->widget());
-  focus_cycler->AddWidget(tray->widget());
-  GetStatusAreaView(tray->widget())->SetFocusCyclerForTesting(
+  views::Widget* status_widget = internal::CreateStatusArea(NULL);
+  ASSERT_TRUE(status_widget);
+  focus_cycler->AddWidget(status_widget);
+  GetStatusAreaView(status_widget)->SetFocusCyclerForTesting(
       focus_cycler.get());
 
   // Add the launcher
@@ -225,7 +218,7 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusBackwardInvisible) {
 
   // Cycle focus to the status area
   focus_cycler->RotateFocus(FocusCycler::BACKWARD);
-  EXPECT_TRUE(tray->widget()->IsActive());
+  EXPECT_TRUE(status_widget->IsActive());
 
   // Cycle focus to the browser
   focus_cycler->RotateFocus(FocusCycler::BACKWARD);
