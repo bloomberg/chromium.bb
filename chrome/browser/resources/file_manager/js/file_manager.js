@@ -1424,8 +1424,12 @@ FileManager.prototype = {
    * Respond to the back and forward buttons.
    */
   FileManager.prototype.onPopState_ = function(event) {
-    // TODO(serya): We should restore selected items here.
     this.closeFilePopup_();
+    // Nothing left to do if the current directory is not changing. This happens
+    // if we are exiting the Gallery.
+    if (this.getPathFromUrlOrParams_() ==
+        this.directoryModel_.currentEntry.fullPath)
+      return;
     this.setupCurrentDirectory_(true /* invokeHandler */);
   };
 
@@ -2816,8 +2820,9 @@ FileManager.prototype = {
     galleryFrame.scrolling = 'no';
     galleryFrame.setAttribute('webkitallowfullscreen', true);
 
+    var singleSelection = urls.length == 1;
     var selectedUrl;
-    if (urls.length == 1 && FileType.isImage(urls[0])) {
+    if (singleSelection && FileType.isImage(urls[0])) {
       // Single image item selected. Pass to the Gallery as a selected.
       selectedUrl = urls[0];
       // Pass along every image and video in the directory so that it shows up
@@ -2848,6 +2853,7 @@ FileManager.prototype = {
       var currentDir = self.directoryModel_.currentEntry;
       var downloadsDir = self.directoryModel_.getRootsList().item(0);
 
+      var gallerySelection;
       var context = {
         // We show the root label in readonly warning (e.g. archive name).
         readonlyDirName:
@@ -2860,10 +2866,12 @@ FileManager.prototype = {
         metadataProvider: self.getMetadataProvider(),
         getShareActions: self.getShareActions_.bind(self),
         onNameChange: function(name) {
-          self.document_.title = name;
+          self.document_.title = gallerySelection = name;
           self.updateLocation_(true /*replace*/, dirPath + '/' + name);
         },
         onClose: function() {
+          if (singleSelection)
+            self.directoryModel_.selectEntry(gallerySelection);
           history.back(1);
         },
         displayStringFunction: strf
