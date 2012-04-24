@@ -35,6 +35,9 @@ class DomStorageMap
   // this method does not do quota checking.
   void SwapValues(ValuesMap* map);
 
+  // Writes a copy of the current set of values_ to the |map|.
+  void ExtractValues(ValuesMap* map) const { *map = values_; }
+
   // Creates a new instance of DomStorageMap containing
   // a deep copy of values_.
   DomStorageMap* DeepCopy() const;

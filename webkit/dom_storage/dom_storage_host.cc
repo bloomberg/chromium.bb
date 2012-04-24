@@ -47,6 +47,16 @@ void DomStorageHost::CloseStorageArea(int connection_id) {
   connections_.erase(found);
 }
 
+bool DomStorageHost::ExtractAreaValues(
+    int connection_id, ValuesMap* map) {
+  map->clear();
+  AreaMap::iterator found = connections_.find(connection_id);
+  if (found == connections_.end())
+    return false;  // Indicates the renderer gave us very bad data.
+  found->second.area_->ExtractValues(map);
+  return true;
+}
+
 unsigned DomStorageHost::GetAreaLength(int connection_id) {
   DomStorageArea* area = GetOpenArea(connection_id);
   if (!area)

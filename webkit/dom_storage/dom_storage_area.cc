@@ -71,6 +71,13 @@ DomStorageArea::DomStorageArea(
 DomStorageArea::~DomStorageArea() {
 }
 
+void DomStorageArea::ExtractValues(ValuesMap* map) {
+  if (is_shutdown_)
+    return;
+  InitialImportIfNeeded();
+  map_->ExtractValues(map);
+}
+
 unsigned DomStorageArea::Length() {
   if (is_shutdown_)
     return 0;

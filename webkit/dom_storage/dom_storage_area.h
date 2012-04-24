@@ -39,6 +39,9 @@ class DomStorageArea
   const GURL& origin() const { return origin_; }
   int64 namespace_id() const { return namespace_id_; }
 
+  // Writes a copy of the current set of values in the area to the |map|.
+  void ExtractValues(ValuesMap* map);
+
   unsigned Length();
   NullableString16 Key(unsigned index);
   NullableString16 GetItem(const string16& key);

@@ -38,23 +38,35 @@ IPC_ENUM_TRAITS(WebKit::WebStorageArea::Result)
 
 // DOM Storage messages sent from the browser to the renderer.
 
-// Storage events are broadcast to renderer processes.
+// Storage events are broadcast to all renderer processes.
 IPC_MESSAGE_CONTROL1(DOMStorageMsg_Event,
                      DOMStorageMsg_Event_Params)
 
+// Completion notification sent in response to each async
+// set, remove, and clear operation. Used to maintain the integrity
+// of the renderer-side cache.
+IPC_MESSAGE_CONTROL2(DOMStorageMsg_AsyncOperationComplete,
+                     int /* operation_id */,
+                     bool /* success */)
 
 // DOM Storage messages sent from the renderer to the browser.
 // Note: The 'connection_id' must be the first parameter in these message.
 
 // Open the storage area for a particular origin within a namespace.
 IPC_MESSAGE_CONTROL3(DOMStorageHostMsg_OpenStorageArea,
-                            int /* connection_id */,
-                            int64 /* namespace_id */,
-                            GURL /* origin */)
+                     int /* connection_id */,
+                     int64 /* namespace_id */,
+                     GURL /* origin */)
 
 // Close a previously opened storage area.
 IPC_MESSAGE_CONTROL1(DOMStorageHostMsg_CloseStorageArea,
                      int /* connection_id */)
+
+// Retrieves the set of key/value pairs for the area. Used to prime
+// the renderer-side cache.
+IPC_SYNC_MESSAGE_CONTROL1_1(DOMStorageHostMsg_LoadStorageArea,
+                            int /* connection_id */,
+                            dom_storage::ValuesMap)
 
 // Get the length of a storage area.
 IPC_SYNC_MESSAGE_CONTROL1_1(DOMStorageHostMsg_Length,
@@ -73,6 +85,9 @@ IPC_SYNC_MESSAGE_CONTROL2_1(DOMStorageHostMsg_GetItem,
                             string16 /* key */,
                             NullableString16 /* value */)
 
+// TODO(michaeln): after the old sync IPC message have been deleted,
+// rename the Async ones to no longer have the Async suffix.
+
 // Set a value that's associated with a key in a storage area.
 IPC_SYNC_MESSAGE_CONTROL4_2(DOMStorageHostMsg_SetItem,
                             int /* connection_id */,
@@ -82,6 +97,15 @@ IPC_SYNC_MESSAGE_CONTROL4_2(DOMStorageHostMsg_SetItem,
                             WebKit::WebStorageArea::Result /* result */,
                             NullableString16 /* old_value */)
 
+// Set a value that's associated with a key in a storage area.
+// A completion notification is sent in response.
+IPC_MESSAGE_CONTROL5(DOMStorageHostMsg_SetItemAsync,
+                     int /* connection_id */,
+                     int /* operation_id */,
+                     string16 /* key */,
+                     string16 /* value */,
+                     GURL /* page_url */)
+
 // Remove the value associated with a key in a storage area.
 IPC_SYNC_MESSAGE_CONTROL3_1(DOMStorageHostMsg_RemoveItem,
                             int /* connection_id */,
@@ -89,9 +113,22 @@ IPC_SYNC_MESSAGE_CONTROL3_1(DOMStorageHostMsg_RemoveItem,
                             GURL /* page_url */,
                             NullableString16 /* old_value */)
 
+// Remove the value associated with a key in a storage area.
+// A completion notification is sent in response.
+IPC_MESSAGE_CONTROL4(DOMStorageHostMsg_RemoveItemAsync,
+                     int /* connection_id */,
+                     int /* operation_id */,
+                     string16 /* key */,
+                     GURL /* page_url */)
+
 // Clear the storage area.
 IPC_SYNC_MESSAGE_CONTROL2_1(DOMStorageHostMsg_Clear,
                             int /* connection_id */,
                             GURL /* page_url */,
                             bool /* something_cleared */)
 
+// Clear the storage area. A completion notification is sent in response.
+IPC_MESSAGE_CONTROL3(DOMStorageHostMsg_ClearAsync,
+                     int /* connection_id */,
+                     int /* operation_id */,
+                     GURL /* page_url */)
