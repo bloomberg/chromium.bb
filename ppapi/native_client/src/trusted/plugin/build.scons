@@ -68,7 +68,6 @@ common_inputs = [
     'service_runtime.cc',
     'srpc_client.cc',
     'srpc_params.cc',
-    'string_encoding.cc',
     'utility.cc',
 ]
 

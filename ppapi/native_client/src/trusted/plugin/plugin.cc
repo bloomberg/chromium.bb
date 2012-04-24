@@ -39,7 +39,6 @@
 #include "native_client/src/trusted/plugin/plugin_error.h"
 #include "native_client/src/trusted/plugin/scriptable_plugin.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
-#include "native_client/src/trusted/plugin/string_encoding.h"
 #include "native_client/src/trusted/plugin/utility.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
