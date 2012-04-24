@@ -259,7 +259,16 @@ class ThreadCache {
   // a good tradeoff for us.
 #ifdef HAVE_TLS
   static __thread ThreadCache* threadlocal_heap_
-# ifdef HAVE___ATTRIBUTE__
+  // This code links against pyautolib.so, which causes dlopen() on that shared
+  // object to fail when -fprofile-generate is used with it. Ideally
+  // pyautolib.so should not link against this code. There is a bug filed for
+  // that:
+  // http://code.google.com/p/chromium/issues/detail?id=124489
+  // For now the workaround is to pass in -DPGO_GENERATE when building Chrome
+  // for instrumentation (-fprofile-generate).
+  // For all non-instrumentation builds, this define will not be set and the
+  // performance benefit of "intial-exec" will be achieved.
+#if defined(HAVE___ATTRIBUTE__) && !defined(PGO_GENERATE)
    __attribute__ ((tls_model ("initial-exec")))
 # endif
    ;

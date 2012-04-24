@@ -64,7 +64,9 @@ int ThreadCache::thread_heap_count_ = 0;
 ThreadCache* ThreadCache::next_memory_steal_ = NULL;
 #ifdef HAVE_TLS
 __thread ThreadCache* ThreadCache::threadlocal_heap_
-# ifdef HAVE___ATTRIBUTE__
+// See comments in thread_cache.h about this. Bug here:
+// http://code.google.com/p/chromium/issues/detail?id=124489
+#if defined(HAVE___ATTRIBUTE__) && !defined(PGO_GENERATE)
    __attribute__ ((tls_model ("initial-exec")))
 # endif
    ;
