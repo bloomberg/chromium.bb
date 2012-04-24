@@ -151,30 +151,21 @@ class BaseProtectorTest(pyauto.PyUITest):
     prefs['backup']['_signature'] = 'INVALID'
     self._WritePreferences(prefs)
 
-  def _ChangeSessionStartupPrefs(self, startup_type=None, startup_urls=None,
-                                 homepage=None, delete_migrated_pref=False):
+  def _ChangeSessionStartupPrefs(self, startup_type, startup_urls=None,
+                                 homepage=None):
     """Changes the session startup type and the list of URLs to load on startup.
 
     Args:
-      startup_type: int with one of _SESSION_STARTUP_* values. If startup_type
-          is None, then it deletes the preference.
+      startup_type: int with one of _SESSION_STARTUP_* values.
       startup_urls: list(str) with a list of URLs; if None, is left unchanged.
       homepage: unless None, the new value for homepage.
-      delete_migrated_pref: Whether we should delete the preference which says
-          we've already migrated the startup_type preference.
     """
     prefs = self._LoadPreferences()
-    if startup_type is None:
-      del prefs['session']['restore_on_startup']
-    else:
-      prefs['session']['restore_on_startup'] = startup_type
-
+    prefs['session']['restore_on_startup'] = startup_type
     if startup_urls is not None:
       prefs['session']['urls_to_restore_on_startup'] = startup_urls
     if homepage is not None:
       prefs['homepage'] = homepage
-    if delete_migrated_pref:
-      del prefs['session']['restore_on_startup_migrated']
     self._WritePreferences(prefs)
 
   def _ChangePinnedTabsPrefs(self, pinned_tabs):
@@ -461,7 +452,7 @@ class ProtectorSessionStartupTest(BaseProtectorTest):
     # No longer showing the change.
     self.assertFalse(self.GetProtectorState()['showing_change'])
 
-  def testSessionStartupPrefMigrationFromHomepage(self):
+  def testSessionStartupPrefMigration(self):
     """Test migration from old session.restore_on_startup values (homepage)."""
     # Set startup prefs to restoring last open tabs.
     self.SetPrefs(pyauto.kRestoreOnStartup, self._SESSION_STARTUP_LAST)
@@ -472,8 +463,7 @@ class ProtectorSessionStartupTest(BaseProtectorTest):
         clear_profile=False,
         pre_launch_hook=lambda: self._ChangeSessionStartupPrefs(
             self._SESSION_STARTUP_HOMEPAGE,
-            homepage=new_homepage,
-            delete_migrated_pref=True))
+            homepage=new_homepage))
     # The change must be detected by Protector.
     self.assertTrue(self.GetProtectorState()['showing_change'])
     # Protector must restore old preference values.
@@ -487,63 +477,6 @@ class ProtectorSessionStartupTest(BaseProtectorTest):
                      self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
     # Homepage migrated to the list of startup URLs.
     self.assertEqual([new_homepage],
-                     self.GetPrefsInfo().Prefs(pyauto.kURLsToRestoreOnStartup))
-    # No longer showing the change.
-    self.assertFalse(self.GetProtectorState()['showing_change'])
-
-  def testSessionStartupPrefMigrationFromBlank(self):
-    """Test migration from session.restore_on_startup being blank, as it would
-    be for a user who had m18 or lower, and never changed that preference.
-    """
-    # Set startup prefs to restoring last open tabs.
-    self.SetPrefs(pyauto.kRestoreOnStartup, self._SESSION_STARTUP_LAST)
-    self.SetPrefs(pyauto.kURLsToRestoreOnStartup, [])
-    # Set the homepage.
-    new_homepage = 'http://www.google.com/'
-    self.SetPrefs(pyauto.kHomePageIsNewTabPage, False)
-    self.SetPrefs(pyauto.kHomePage, new_homepage)
-    # Restart browser, clearing the 'restore on startup' pref, to simulate a
-    # user coming from m18 and having left it on the default value.
-    self.RestartBrowser(
-        clear_profile=False,
-        pre_launch_hook=lambda: self._ChangeSessionStartupPrefs(
-            startup_type=None,
-            delete_migrated_pref=True))
-    # The change must be detected by Protector.
-    self.assertTrue(self.GetProtectorState()['showing_change'])
-    # Protector must restore old preference values.
-    self.assertEqual(self._SESSION_STARTUP_LAST,
-                     self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
-    self.assertEqual([],
-                     self.GetPrefsInfo().Prefs(pyauto.kURLsToRestoreOnStartup))
-    self.ApplyProtectorChange()
-    # Now the new preference values are active.
-    self.assertEqual(self._SESSION_STARTUP_URLS,
-                     self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
-    # Homepage migrated to the list of startup URLs.
-    self.assertEqual([new_homepage],
-                     self.GetPrefsInfo().Prefs(pyauto.kURLsToRestoreOnStartup))
-    # No longer showing the change.
-    self.assertFalse(self.GetProtectorState()['showing_change'])
-
-  def testSessionStartupPrefNoMigrationOnHomepageChange(self):
-    """Test that when the user modifies their homepage in m19+, we don't do the
-    preference migration.
-    """
-    # Initially, the default value is selected for kRestoreOnStartup.
-    self.assertEqual(self._SESSION_STARTUP_NTP,
-                     self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
-    # Set the homepage, but leave kRestoreOnStartup unchanged.
-    new_homepage = 'http://www.google.com/'
-    self.SetPrefs(pyauto.kHomePageIsNewTabPage, False)
-    self.SetPrefs(pyauto.kHomePage, new_homepage)
-    # Restart browser.
-    self.RestartBrowser(clear_profile=False)
-    # Now the new preference values are active.
-    self.assertEqual(self._SESSION_STARTUP_NTP,
-                     self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup))
-    # kURLsToRestoreOnStartup pref is unchanged.
-    self.assertEqual([],
                      self.GetPrefsInfo().Prefs(pyauto.kURLsToRestoreOnStartup))
     # No longer showing the change.
     self.assertFalse(self.GetProtectorState()['showing_change'])

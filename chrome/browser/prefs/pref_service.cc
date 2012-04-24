@@ -684,31 +684,6 @@ const DictionaryValue* PrefService::GetDictionary(const char* path) const {
   return static_cast<const DictionaryValue*>(value);
 }
 
-const base::Value* PrefService::GetUserPrefValue(const char* path) const {
-  DCHECK(CalledOnValidThread());
-
-  const Preference* pref = FindPreference(path);
-  if (!pref) {
-    NOTREACHED() << "Trying to get an unregistered pref: " << path;
-    return NULL;
-  }
-
-  // Look for an existing preference in the user store. If it doesn't
-  // exist, return NULL.
-  base::Value* value = NULL;
-  if (user_pref_store_->GetMutableValue(path, &value) !=
-          PersistentPrefStore::READ_OK) {
-    return NULL;
-  }
-
-  if (!value->IsType(pref->GetType())) {
-    NOTREACHED() << "Pref value type doesn't match registered type.";
-    return NULL;
-  }
-
-  return value;
-}
-
 const ListValue* PrefService::GetList(const char* path) const {
   DCHECK(CalledOnValidThread());
 

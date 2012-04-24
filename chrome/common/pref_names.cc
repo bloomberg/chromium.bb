@@ -43,24 +43,17 @@ const char kIsGooglePlusUser[] = "is_google_plus_user";
 const char kSessionExitedCleanly[] = "profile.exited_cleanly";
 
 // An integer pref. Holds one of several values:
-// 0: (deprecated) open the homepage on startup
+// 0: (or empty) don't do anything special on startup.
 // 1: restore the last session.
 // 2: this was used to indicate a specific session should be restored. It is
 //    no longer used, but saved to avoid conflict with old preferences.
 // 3: unused, previously indicated the user wants to restore a saved session.
 // 4: restore the URLs defined in kURLsToRestoreOnStartup.
-// 5: open the New Tab Page on startup (this is the default value).
 const char kRestoreOnStartup[] = "session.restore_on_startup";
 
 // The URLs to restore on startup or when the home button is pressed. The URLs
 // are only restored on startup if kRestoreOnStartup is 4.
 const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
-
-// A preference to keep track of whether we have already checked whether we
-// need to migrate the user from kRestoreOnStartup=0 to kRestoreOnStartup=4.
-// We only need to do this check once, on upgrade from m18 or lower to m19 or
-// higher.
-const char kRestoreOnStartupMigrated[] = "session.restore_on_startup_migrated";
 
 // The application locale.
 // For OS_CHROMEOS we maintain kApplicationLocale property in both local state

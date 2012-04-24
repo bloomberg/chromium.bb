@@ -267,10 +267,6 @@ class PrefService : public base::NonThreadSafe {
   const base::DictionaryValue* GetDictionary(const char* path) const;
   const base::ListValue* GetList(const char* path) const;
 
-  // Returns the value of the given preference, from the user pref store. If
-  // the preference is not set in the user pref store, returns NULL.
-  const base::Value* GetUserPrefValue(const char* path) const;
-
   // Removes a user pref and restores the pref to its default value.
   void ClearPref(const char* path);
 

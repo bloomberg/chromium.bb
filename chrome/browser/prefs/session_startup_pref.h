@@ -53,11 +53,6 @@ struct SessionStartupPref {
   static SessionStartupPref GetStartupPref(Profile* profile);
   static SessionStartupPref GetStartupPref(PrefService* prefs);
 
-  // If the user had the "restore on startup" property set to the deprecated
-  // "Open the home page" value, this migrates them to a value that will have
-  // the same effect.
-  static void MigrateIfNecessary(PrefService* prefs);
-
   // Whether the startup type and URLs are managed via policy.
   static bool TypeIsManaged(PrefService* prefs);
   static bool URLsAreManaged(PrefService* prefs);

@@ -1194,9 +1194,10 @@ Browser* BrowserInit::LaunchWithProfile::ProcessSpecifiedURLs(
     UrlsToTabs(urls, &tabs);
 
   } else if (pref.type == SessionStartupPref::HOMEPAGE) {
-    // If 'homepage' selected, either by the user or by a policy, we should
-    // have migrated them to another value.
-    NOTREACHED() << "SessionStartupPref has deprecated type HOMEPAGE";
+    // If the user had 'homepage' selected, we should have migrated them to
+    // 'URLs' instead.
+    DLOG(ERROR) << "pref.type == HOMEPAGE";
+    NOTREACHED();
   }
 
   if (tabs.empty())

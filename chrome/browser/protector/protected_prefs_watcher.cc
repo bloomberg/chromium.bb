@@ -151,7 +151,8 @@ void ProtectedPrefsWatcher::Observe(
 }
 
 void ProtectedPrefsWatcher::EnsurePrefsMigration() {
-  SessionStartupPref::MigrateIfNecessary(profile_->GetPrefs());
+  // Force SessionStartupPref migration, if necessary.
+  SessionStartupPref::GetStartupPref(profile_);
 }
 
 bool ProtectedPrefsWatcher::UpdateCachedPrefs() {
