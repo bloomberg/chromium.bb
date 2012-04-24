@@ -751,6 +751,19 @@ if env.Bit('target_x86_64') and not env.CrossToolsBuild():
       )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_x32_test')
 
+# Test canned hello_world binary with validator_ragel.
+if env.Bit('target_x86'):
+  node = env.CommandSelLdrTestNacl(
+      'dfa_hwd.out',
+      env.File(arch_testdata_dir + '/hello_world.nexe'),
+      stdout_golden = env.File('testdata/hello_world.stdout'),
+      stderr_golden = env.File('testdata/dfa_validator_hello.stderr'),
+      filter_regex = '"^(Hello, World!)$|DANGER"',
+      osenv='NACL_DANGEROUS_USE_DFA_VALIDATOR=1',
+      )
+  env.AddNodeToTestSuite(node, ['medium_tests', 'validator_tests'],
+                         'run_dfa_validator_hello_world_test')
+
 # ----------------------------------------------------------
 # Integration Tests
 # ----------------------------------------------------------

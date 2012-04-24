@@ -544,6 +544,12 @@ int main(int  argc,
     }
   }
 
+  nap->enable_dfa_validator = 0;
+  if (getenv("NACL_DANGEROUS_USE_DFA_VALIDATOR") != NULL) {
+    fprintf(stderr, "DANGER! USING THE UNSTABLE DFA VALIDATOR!\n");
+    nap->enable_dfa_validator = 1;
+  }
+
   /* Sanity check. */
   NaClSignalAssertNoHandlers();
 

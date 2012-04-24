@@ -124,18 +124,35 @@ if generate:
   env.AlwaysBuild(env.Alias('valgen', automatas))
   env.AlwaysBuild(env.Alias('valclean', action=[Delete(x) for x in automatas]))
 
-# Generate 32 and 64 bit versions of decoders and validators.
+# Generate 32 and 64 bit versions of decoders and validators.  Both libraries
+# are used for command-line decoder and validator those detect specific
+# architecture of the ELF file provided.
 for bits in ['32', '64']:
-  for automata in ['decoder', 'validator']:
-    env.ComponentLibrary('%s_x86_%s' % (automata, bits),
-                         ['gen/%s-x86_%s.c' % (automata, bits)])
+  env.ComponentLibrary('dfa_validate_x86_%s' % bits,
+                       ['gen/validator-x86_%s.c' % bits])
+  env.ComponentLibrary('dfa_decode_x86_%s' % bits,
+                       ['gen/decoder-x86_%s.c' % bits])
 
+# Glue library called from service runtime. The source file depends on the
+# target architecture.
+caller_lib_bits = None
+if env.Bit('target_x86_32'):
+  caller_lib_bits = '32'
+if env.Bit('target_x86_64'):
+  caller_lib_bits = '64'
+if caller_lib_bits:
+  caller_lib = 'dfa_validate_caller_x86_%s' % caller_lib_bits
+  env.ComponentLibrary(caller_lib,
+                       ['unreviewed/dfa_validate_%s.c' % caller_lib_bits])
+
+# Command-line decoder.
 env.ComponentProgram(
     'decoder-test',
     ['unreviewed/decoder-test.c'],
-    EXTRA_LIBS=['decoder_x86_32', 'decoder_x86_64'])
+    EXTRA_LIBS=['dfa_decode_x86_32', 'dfa_decode_x86_64'])
 
+# Command-line validator.
 env.ComponentProgram(
     'validator-test',
     ['unreviewed/validator-test.c'],
-    EXTRA_LIBS=['validator_x86_32', 'validator_x86_64'])
+    EXTRA_LIBS=['dfa_validate_x86_32', 'dfa_validate_x86_64'])

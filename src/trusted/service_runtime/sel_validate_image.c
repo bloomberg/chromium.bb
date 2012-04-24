@@ -27,11 +27,29 @@ static int NaClValidateStatus(NaClValidationStatus status) {
   }
 }
 
+typedef NaClValidationStatus (*ValidateFunc) (
+    uintptr_t, uint8_t*, size_t, int, int,
+    const NaClCPUFeatures*, struct NaClValidationCache*);
+
+static ValidateFunc NaClSelectValidator(struct NaClApp *nap) {
+  ValidateFunc ret = NACL_SUBARCH_NAME(ApplyValidator,
+                                       NACL_TARGET_ARCH, NACL_TARGET_SUBARCH);
+#ifdef __arm__
+  UNREFERENCED_PARAMETER(nap);
+#else
+  if (nap->enable_dfa_validator) {
+    ret = NACL_SUBARCH_NAME(ApplyDfaValidator,
+                            NACL_TARGET_ARCH, NACL_TARGET_SUBARCH);
+  }
+#endif
+  return ret;
+}
+
 int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {
   NaClValidationStatus status = NaClValidationSucceeded;
-
   struct NaClValidationCache *cache = nap->validation_cache;
+  ValidateFunc validate_func = NaClSelectValidator(nap);
 
   if (size < kMinimumCachedCodeSize) {
     /*
@@ -66,26 +84,20 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     /* In stub out mode, we do two passes.  The second pass acts as a
        sanity check that bad instructions were indeed overwritten with
        allowable HLTs. */
-    status = NACL_SUBARCH_NAME(ApplyValidator,
-                               NACL_TARGET_ARCH,
-                               NACL_TARGET_SUBARCH)(
-                                   guest_addr, data, size,
-                                   TRUE, /* stub out */
-                                   FALSE, /* text is not read-only */
-                                   &nap->cpu_features,
-                                   cache);
+    status = validate_func(guest_addr, data, size,
+                           TRUE, /* stub out */
+                           FALSE, /* text is not read-only */
+                           &nap->cpu_features,
+                           cache);
   }
   if (status == NaClValidationSucceeded) {
-    /* Fixed feature CPU mode implies read-only */
+    /* Fixed feature CPU mode implies read-only. */
     int readonly_text = nap->fixed_feature_cpu_mode;
-    status = NACL_SUBARCH_NAME(ApplyValidator,
-                               NACL_TARGET_ARCH,
-                               NACL_TARGET_SUBARCH)(
-                                   guest_addr, data, size,
-                                   FALSE, /* do not stub out */
-                                   readonly_text,
-                                   &nap->cpu_features,
-                                   cache);
+    status = validate_func(guest_addr, data, size,
+                           FALSE, /* do not stub out */
+                           readonly_text,
+                           &nap->cpu_features,
+                           cache);
   }
   return NaClValidateStatus(status);
 }

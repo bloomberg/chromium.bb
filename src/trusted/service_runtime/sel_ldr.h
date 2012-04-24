@@ -355,6 +355,7 @@ struct NaClApp {
   enum NaClDebugExceptionHandlerState debug_exception_handler_state;
   NaClAttachDebugExceptionHandlerFunc attach_debug_exception_handler_func;
 #endif
+  int                       enable_dfa_validator;
 };
 
 

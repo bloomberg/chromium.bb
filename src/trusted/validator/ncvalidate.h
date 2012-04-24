@@ -86,6 +86,22 @@ extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyValidator,
     const NaClCPUFeatures   *cpu_features,
     struct NaClValidationCache *cache);
 
+/* Applies the DFA-based validator as in the ApplyValidator case described
+ * above.  The interface of this new validator must remain the same as of the
+ * ApplyValidator.  Less arguments will be ignored as the new validator
+ * implements features, such as stubout mode.
+ */
+extern NaClValidationStatus NACL_SUBARCH_NAME(ApplyDfaValidator,
+                                              NACL_TARGET_ARCH,
+                                              NACL_TARGET_SUBARCH)(
+    uintptr_t               guest_addr,
+    uint8_t                 *data,
+    size_t                  size,
+    int                     stubout_mode,
+    int                     readonly_text,
+    const NaClCPUFeatures   *cpu_features,
+    struct NaClValidationCache *cache);
+
 /* Applies the validator, as used in a command-line tool to report issues.
  * Note: This is intentionally separated from ApplyValidator, since it need
  * not be performance critical.

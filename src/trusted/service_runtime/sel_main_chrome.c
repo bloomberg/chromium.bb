@@ -130,6 +130,11 @@ void NaClChromeMainStart(struct NaClChromeMainArgs *args) {
     NaClSetBrokerDuplicateHandleFunc(args->broker_duplicate_handle_func);
 #endif
 
+  if (getenv("NACL_DANGEROUS_USE_DFA_VALIDATOR") != NULL) {
+    fprintf(stderr, "DANGER! USING THE UNSTABLE DFA VALIDATOR!\n");
+    nap->enable_dfa_validator = 1;
+  }
+
   NaClAppInitialDescriptorHookup(nap);
 
   /*

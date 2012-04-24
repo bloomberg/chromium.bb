@@ -75,6 +75,8 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   /* The validation cache will be injected later, if it exists. */
   nap->validation_cache = NULL;
 
+  nap->enable_dfa_validator = 0;
+
   nap->addr_bits = NACL_MAX_ADDR_BITS;
 
   nap->stack_size = NACL_DEFAULT_STACK_MAX;

@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -36,11 +36,13 @@
         ['target_arch=="ia32"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator/x86/32/validator_x86_32.gyp:ncvalidate_x86_32',
+            '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_32.gyp:dfa_validate_x86_32',
           ],
         }],
         ['OS!="win" and target_arch=="x64"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_64.gyp:dfa_validate_x86_64',
           ],
         }],
       ],
@@ -58,6 +60,7 @@
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/validator/x86/64/validator_x86_64.gyp:ncvalidate_x86_64',
+            '<(DEPTH)/native_client/src/trusted/validator_ragel/dfa_validator_x86_64.gyp:dfa_validate_x86_64',
           ],
         },
       ],
