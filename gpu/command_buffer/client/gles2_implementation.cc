@@ -2334,7 +2334,7 @@ void GLES2Implementation::DeleteTexturesHelper(
   }
   for (GLsizei ii = 0; ii < n; ++ii) {
     for (GLint tt = 0; tt < gl_state_.max_combined_texture_image_units; ++tt) {
-      TextureUnit& unit = texture_units_[active_texture_unit_];
+      TextureUnit& unit = texture_units_[tt];
       if (textures[ii] == unit.bound_texture_2d) {
         unit.bound_texture_2d = 0;
       }
