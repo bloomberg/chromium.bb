@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GOOGLE_GOOGLE_URL_TRACKER_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/gtest_prod_util.h"
@@ -51,8 +52,8 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
     UNIT_TEST_MODE,
   };
 
-  // Only the main browser process loop should call this, when setting up
-  // g_browser_process->google_url_tracker_.  No code other than the
+  // Only the main browser process loop and tests should call this, when setting
+  // up g_browser_process->google_url_tracker_.  No code other than the
   // GoogleURLTracker itself should actually use
   // g_browser_process->google_url_tracker().
   explicit GoogleURLTracker(Mode mode);
@@ -89,14 +90,17 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   friend class GoogleURLTrackerInfoBarDelegate;
   friend class GoogleURLTrackerTest;
 
-  typedef InfoBarDelegate* (*InfoBarCreator)(InfoBarTabHelper*,
-                                             GoogleURLTracker*,
-                                             const GURL&);
+  typedef std::map<const InfoBarTabHelper*,
+                   GoogleURLTrackerInfoBarDelegate*> InfoBarMap;
+  typedef GoogleURLTrackerInfoBarDelegate* (*InfoBarCreator)(
+      InfoBarTabHelper* infobar_helper,
+      const GURL& search_url,
+      GoogleURLTracker* google_url_tracker,
+      const GURL& new_google_url);
 
   void AcceptGoogleURL(const GURL& google_url);
   void CancelGoogleURL(const GURL& google_url);
-  void InfoBarClosed();
-  void RedoSearch();
+  void InfoBarClosed(const InfoBarTabHelper* infobar_helper);
 
   // Registers consumer interest in getting an updated URL from the server.
   // It will be notified as chrome::GOOGLE_URL_UPDATED, so the
@@ -124,10 +128,15 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
 
   void SearchCommitted();
   void OnNavigationPending(const content::NotificationSource& source,
-                           const GURL& pending_url);
-  void OnNavigationCommittedOrTabClosed(content::WebContents* web_contents,
-                                        int type);
-  void ShowGoogleURLInfoBarIfNecessary(content::WebContents* web_contents);
+                           const content::NotificationSource& contents_source,
+                           InfoBarTabHelper* infobar_helper,
+                           const GURL& search_url);
+  void OnNavigationCommittedOrTabClosed(
+      const content::NotificationSource& source,
+      const content::NotificationSource& contents_source,
+      const InfoBarTabHelper* infobar_helper,
+      int type);
+  void CloseAllInfoBars(bool redo_searches);
 
   content::NotificationRegistrar registrar_;
   InfoBarCreator infobar_creator_;
@@ -151,9 +160,7 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   bool need_to_prompt_;    // True if the last fetched Google URL is not
                            // matched with current user's default Google URL
                            // nor the last prompted Google URL.
-  content::NavigationController* controller_;
-  InfoBarDelegate* infobar_;
-  GURL search_url_;
+  InfoBarMap infobar_map_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTracker);
 };
@@ -164,6 +171,7 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
 class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   GoogleURLTrackerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+                                  const GURL& search_url,
                                   GoogleURLTracker* google_url_tracker,
                                   const GURL& new_google_url);
 
@@ -173,11 +181,18 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
+  // These are virtual so test code can override them in a subclass.
+  virtual void Show();
+  virtual void Close(bool redo_search);
+
  protected:
   virtual ~GoogleURLTrackerInfoBarDelegate();
 
+  InfoBarTabHelper* map_key_;  // What |google_url_tracker_| uses to track us.
+  const GURL search_url_;
   GoogleURLTracker* google_url_tracker_;
   const GURL new_google_url_;
+  bool showing_;  // True if this delegate has been added to a TabContents.
 
  private:
   // ConfirmInfoBarDelegate:

@@ -32,20 +32,15 @@
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::NavigationController;
-using content::OpenURLParams;
-using content::Referrer;
-using content::WebContents;
-
 namespace {
 
-InfoBarDelegate* CreateInfoBar(InfoBarTabHelper* infobar_helper,
-                               GoogleURLTracker* google_url_tracker,
-                               const GURL& new_google_url) {
-  InfoBarDelegate* infobar = new GoogleURLTrackerInfoBarDelegate(infobar_helper,
+GoogleURLTrackerInfoBarDelegate* CreateInfoBar(
+    InfoBarTabHelper* infobar_helper,
+    const GURL& search_url,
+    GoogleURLTracker* google_url_tracker,
+    const GURL& new_google_url) {
+  return new GoogleURLTrackerInfoBarDelegate(infobar_helper, search_url,
       google_url_tracker, new_google_url);
-  infobar_helper->AddInfoBar(infobar);
-  return infobar;
 }
 
 }  // namespace
@@ -54,22 +49,25 @@ InfoBarDelegate* CreateInfoBar(InfoBarTabHelper* infobar_helper,
 
 GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
     InfoBarTabHelper* infobar_helper,
+    const GURL& search_url,
     GoogleURLTracker* google_url_tracker,
     const GURL& new_google_url)
     : ConfirmInfoBarDelegate(infobar_helper),
+      map_key_(infobar_helper),
+      search_url_(search_url),
       google_url_tracker_(google_url_tracker),
-      new_google_url_(new_google_url) {
+      new_google_url_(new_google_url),
+      showing_(false) {
 }
 
 bool GoogleURLTrackerInfoBarDelegate::Accept() {
   google_url_tracker_->AcceptGoogleURL(new_google_url_);
-  google_url_tracker_->RedoSearch();
-  return true;
+  return false;
 }
 
 bool GoogleURLTrackerInfoBarDelegate::Cancel() {
   google_url_tracker_->CancelGoogleURL(new_google_url_);
-  return true;
+  return false;
 }
 
 string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
@@ -78,18 +76,62 @@ string16 GoogleURLTrackerInfoBarDelegate::GetLinkText() const {
 
 bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  OpenURLParams params(
-      google_util::AppendGoogleLocaleParam(GURL(
-          "https://www.google.com/support/chrome/bin/answer.py?answer=1618699")),
-      Referrer(),
+  content::OpenURLParams params(google_util::AppendGoogleLocaleParam(GURL(
+      "https://www.google.com/support/chrome/bin/answer.py?answer=1618699")),
+      content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
   owner()->web_contents()->OpenURL(params);
   return false;
 }
 
+void GoogleURLTrackerInfoBarDelegate::Show() {
+  owner()->AddInfoBar(this);
+  showing_ = true;
+}
+
+void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
+  if (!showing_) {
+    // We haven't been added to a tab, so just delete ourselves.
+    delete this;
+    return;
+  }
+
+  // Synchronously remove ourselves from the URL tracker's list, because the
+  // RemoveInfoBar() call below may result in either a synchronous or an
+  // asynchronous call back to InfoBarClosed(), and it's easier to handle when
+  // we just guarantee the removal is synchronous.
+  google_url_tracker_->InfoBarClosed(map_key_);
+  google_url_tracker_ = NULL;
+
+  // If we were showing in a background tab that was then closed, we could have
+  // been leaked, and subsequently reached here due to
+  // GoogleURLTracker::CloseAllInfoBars().  In this case our owner is now NULL
+  // so we should just do nothing.
+  // TODO(pkasting): This can go away once the InfoBar ownership model is fixed
+  // so that infobars in background tabs don't leak on tab closure.
+  if (!owner())
+    return;
+
+  if (redo_search) {
+    // Re-do the user's search on the new domain.
+    url_canon::Replacements<char> replacements;
+    const std::string& host(new_google_url_.host());
+    replacements.SetHost(host.data(), url_parse::Component(0, host.length()));
+    GURL new_search_url(search_url_.ReplaceComponents(replacements));
+    if (new_search_url.is_valid()) {
+      content::OpenURLParams params(new_search_url, content::Referrer(),
+          CURRENT_TAB, content::PAGE_TRANSITION_GENERATED, false);
+      owner()->web_contents()->OpenURL(params);
+    }
+  }
+
+  owner()->RemoveInfoBar(this);
+}
+
 GoogleURLTrackerInfoBarDelegate::~GoogleURLTrackerInfoBarDelegate() {
-  google_url_tracker_->InfoBarClosed();
+  if (google_url_tracker_)
+    google_url_tracker_->InfoBarClosed(map_key_);
 }
 
 string16 GoogleURLTrackerInfoBarDelegate::GetMessageText() const {
@@ -128,9 +170,7 @@ GoogleURLTracker::GoogleURLTracker(Mode mode)
       in_startup_sleep_(true),
       already_fetched_(false),
       need_to_fetch_(false),
-      need_to_prompt_(false),
-      controller_(NULL),
-      infobar_(NULL) {
+      need_to_prompt_(false) {
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
 
   // Because this function can be called during startup, when kicking off a URL
@@ -153,18 +193,20 @@ GoogleURLTracker::GoogleURLTracker(Mode mode)
 
 GoogleURLTracker::~GoogleURLTracker() {
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  // We should only reach here after any tabs and their infobars have been torn
+  // down.
+  DCHECK(infobar_map_.empty());
 }
 
 // static
 GURL GoogleURLTracker::GoogleURL() {
-  const GoogleURLTracker* const tracker =
-      g_browser_process->google_url_tracker();
+  const GoogleURLTracker* tracker = g_browser_process->google_url_tracker();
   return tracker ? tracker->google_url_ : GURL(kDefaultGoogleHomepage);
 }
 
 // static
 void GoogleURLTracker::RequestServerCheck() {
-  GoogleURLTracker* const tracker = g_browser_process->google_url_tracker();
+  GoogleURLTracker* tracker = g_browser_process->google_url_tracker();
   if (tracker)
     tracker->SetNeedToFetch();
 }
@@ -193,33 +235,20 @@ void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url) {
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
   need_to_prompt_ = false;
+  CloseAllInfoBars(true);
 }
 
 void GoogleURLTracker::CancelGoogleURL(const GURL& new_google_url) {
   g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
                                               new_google_url.spec());
   need_to_prompt_ = false;
+  CloseAllInfoBars(false);
 }
 
-void GoogleURLTracker::InfoBarClosed() {
-  registrar_.RemoveAll();
-  controller_ = NULL;
-  infobar_ = NULL;
-  search_url_ = GURL();
-}
-
-void GoogleURLTracker::RedoSearch() {
-  //  Re-do the user's search on the new domain.
-  DCHECK(controller_);
-  url_canon::Replacements<char> replacements;
-  replacements.SetHost(google_url_.host().data(),
-                       url_parse::Component(0, google_url_.host().length()));
-  GURL new_search_url(search_url_.ReplaceComponents(replacements));
-  if (new_search_url.is_valid()) {
-    OpenURLParams params(new_search_url, Referrer(), CURRENT_TAB,
-                         content::PAGE_TRANSITION_GENERATED, false);
-    controller_->GetWebContents()->OpenURL(params);
-  }
+void GoogleURLTracker::InfoBarClosed(const InfoBarTabHelper* infobar_helper) {
+  InfoBarMap::iterator i(infobar_map_.find(infobar_helper));
+  DCHECK(i != infobar_map_.end());
+  infobar_map_.erase(i);
 }
 
 void GoogleURLTracker::SetNeedToFetch() {
@@ -291,7 +320,6 @@ void GoogleURLTracker::OnURLFetchComplete(const content::URLFetcher* source) {
   GURL last_prompted_url(
       g_browser_process->local_state()->GetString(
           prefs::kLastPromptedGoogleURL));
-  need_to_prompt_ = false;
 
   if (last_prompted_url.is_empty()) {
     // On the very first run of Chrome, when we've never looked up the URL at
@@ -313,6 +341,10 @@ void GoogleURLTracker::OnURLFetchComplete(const content::URLFetcher* source) {
   }
 
   need_to_prompt_ = true;
+
+  // Any open infobars are pointing at the wrong Google URL.  (This can happen
+  // if an infobar has been sitting open and then our IP address changes.)
+  CloseAllInfoBars(false);
 }
 
 void GoogleURLTracker::Observe(int type,
@@ -320,22 +352,37 @@ void GoogleURLTracker::Observe(int type,
                                const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
-      NavigationController* controller =
-          content::Source<NavigationController>(source).ptr();
-      OnNavigationPending(source, controller->GetPendingEntry()->GetURL());
+      content::NavigationController* controller =
+          content::Source<content::NavigationController>(source).ptr();
+      content::WebContents* contents = controller->GetWebContents();
+      OnNavigationPending(source,
+          content::Source<content::WebContents>(contents),
+          TabContentsWrapper::GetCurrentWrapperForContents(contents)->
+              infobar_tab_helper(), controller->GetPendingEntry()->GetURL());
       break;
     }
 
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
-      OnNavigationCommittedOrTabClosed(
-          content::Source<NavigationController>(source).ptr()->
-              GetWebContents(), type);
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
+      content::WebContents* contents =
+          content::Source<content::NavigationController>(source)->
+              GetWebContents();
+      OnNavigationCommittedOrTabClosed(source,
+          content::Source<content::WebContents>(contents),
+          TabContentsWrapper::GetCurrentWrapperForContents(contents)->
+              infobar_tab_helper(), type);
       break;
+    }
 
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED: {
+      content::WebContents* contents =
+          content::Source<content::WebContents>(source).ptr();
       OnNavigationCommittedOrTabClosed(
-          content::Source<content::WebContents>(source).ptr(), type);
+          content::Source<content::NavigationController>(&contents->
+              GetController()), source,
+          TabContentsWrapper::GetCurrentWrapperForContents(contents)->
+              infobar_tab_helper(), type);
       break;
+    }
 
     default:
       NOTREACHED() << "Unknown notification received:" << type;
@@ -348,7 +395,7 @@ void GoogleURLTracker::OnIPAddressChanged() {
 }
 
 void GoogleURLTracker::SearchCommitted() {
-  if (registrar_.IsEmpty() && (need_to_prompt_ || fetcher_.get())) {
+  if (need_to_prompt_) {
     // This notification will fire a bit later in the same call chain we're
     // currently in.
     registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
@@ -358,46 +405,58 @@ void GoogleURLTracker::SearchCommitted() {
 
 void GoogleURLTracker::OnNavigationPending(
     const content::NotificationSource& source,
-    const GURL& pending_url) {
-  controller_ = content::Source<NavigationController>(source).ptr();
-  search_url_ = pending_url;
+    const content::NotificationSource& contents_source,
+    InfoBarTabHelper* infobar_helper,
+    const GURL& search_url) {
   registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_PENDING,
       content::NotificationService::AllBrowserContextsAndSources());
-  // Start listening for the commit notification. We also need to listen for the
-  // tab close command since that means the load will never commit.
-  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 content::Source<NavigationController>(controller_));
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-      content::Source<content::WebContents>(controller_->GetWebContents()));
+
+  if (registrar_.IsRegistered(this,
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED, contents_source)) {
+    // If the previous load hasn't committed and the user triggers a new load,
+    // we don't need to re-register our listeners; just kill the old,
+    // never-shown infobar (to be replaced by a new one below).
+    InfoBarMap::iterator i(infobar_map_.find(infobar_helper));
+    DCHECK(i != infobar_map_.end());
+    i->second->Close(false);
+  } else {
+    // Start listening for the commit notification. We also need to listen for
+    // the tab close command since that means the load will never commit.  Note
+    // that in this case we don't need to close any previous infobar for this
+    // tab since this navigation will close it.
+    registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
+    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                   contents_source);
+  }
+
+  infobar_map_[infobar_helper] = (*infobar_creator_)(infobar_helper, search_url,
+                                                     this, fetched_google_url_);
 }
 
 void GoogleURLTracker::OnNavigationCommittedOrTabClosed(
-    WebContents* web_contents,
+    const content::NotificationSource& source,
+    const content::NotificationSource& contents_source,
+    const InfoBarTabHelper* infobar_helper,
     int type) {
-  registrar_.RemoveAll();
+  registrar_.Remove(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    contents_source);
 
-  if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED) {
-    ShowGoogleURLInfoBarIfNecessary(web_contents);
-  } else {
-    controller_ = NULL;
-    infobar_ = NULL;
-  }
+  InfoBarMap::iterator i(infobar_map_.find(infobar_helper));
+  DCHECK(i != infobar_map_.end());
+  DCHECK(need_to_prompt_);
+  if (type == content::NOTIFICATION_NAV_ENTRY_COMMITTED)
+    i->second->Show();
+  else
+    i->second->Close(false);  // Close manually since it's not added to a tab.
 }
 
-void GoogleURLTracker::ShowGoogleURLInfoBarIfNecessary(
-    WebContents* web_contents) {
-  if (!need_to_prompt_)
-    return;
-  DCHECK(!fetched_google_url_.is_empty());
+void GoogleURLTracker::CloseAllInfoBars(bool redo_searches) {
+  // Close all infobars, whether they've been added to tabs or not.
+  while (!infobar_map_.empty())
+    infobar_map_.begin()->second->Close(redo_searches);
 
-  // |tab_contents| can be NULL during tests.
-  InfoBarTabHelper* infobar_helper = NULL;
-  if (web_contents) {
-    TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
-    infobar_helper = wrapper->infobar_tab_helper();
-  }
-  infobar_ = (*infobar_creator_)(infobar_helper, this, fetched_google_url_);
+  // Any registered listeners for NAV_ENTRY_COMMITTED and TAB_CLOSED are now
+  // irrelevant as the associated infobars are gone.
+  registrar_.RemoveAll();
 }
