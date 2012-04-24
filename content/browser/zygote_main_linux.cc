@@ -16,6 +16,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/debug/trace_event.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -327,6 +328,10 @@ class Zygote {
       // Sandboxed processes need to send the global, non-namespaced PID when
       // setting up an IPC channel to their parent.
       IPC::Channel::SetGlobalPid(real_pid);
+      // Force the real PID so chrome event data have a PID that corresponds
+      // to system trace event data.
+      base::debug::TraceLog::GetInstance()->SetProcessID(
+          static_cast<int>(real_pid));
 #endif
       close(pipe_fds[0]);
       close(dummy_fd);
