@@ -28,7 +28,6 @@ class FrameConsumerProxy
   // to |frame_consumer_message_loop|.
   FrameConsumerProxy(
       scoped_refptr<base::MessageLoopProxy> frame_consumer_message_loop);
-  virtual ~FrameConsumerProxy();
 
   // FrameConsumer implementation.
   virtual void ApplyBuffer(const SkISize& view_size,
@@ -43,6 +42,9 @@ class FrameConsumerProxy
   void Attach(const base::WeakPtr<FrameConsumer>& frame_consumer);
 
  private:
+  friend class base::RefCountedThreadSafe<FrameConsumerProxy>;
+  virtual ~FrameConsumerProxy();
+
   base::WeakPtr<FrameConsumer> frame_consumer_;
   scoped_refptr<base::MessageLoopProxy> frame_consumer_message_loop_;
 

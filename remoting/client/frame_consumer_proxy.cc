@@ -15,10 +15,6 @@ FrameConsumerProxy::FrameConsumerProxy(
     : frame_consumer_message_loop_(frame_consumer_message_loop) {
 }
 
-FrameConsumerProxy::~FrameConsumerProxy() {
-  DCHECK(frame_consumer_message_loop_->BelongsToCurrentThread());
-}
-
 void FrameConsumerProxy::ApplyBuffer(const SkISize& view_size,
                                      const SkIRect& clip_area,
                                      pp::ImageData* buffer,
@@ -61,6 +57,10 @@ void FrameConsumerProxy::Attach(
   DCHECK(frame_consumer_message_loop_->BelongsToCurrentThread());
   DCHECK(frame_consumer_ == NULL);
   frame_consumer_ = frame_consumer;
+}
+
+FrameConsumerProxy::~FrameConsumerProxy() {
+  DCHECK(frame_consumer_message_loop_->BelongsToCurrentThread());
 }
 
 }  // namespace remoting

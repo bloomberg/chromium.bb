@@ -31,15 +31,17 @@ class GaiaOAuthClient::Core
        net::URLRequestContextGetter* request_context_getter)
       : gaia_url_(gaia_url),
         request_context_getter_(request_context_getter),
-        delegate_(NULL) { }
-
-  virtual ~Core() { }
+        delegate_(NULL) {
+  }
 
   void RefreshToken(const OAuthClientInfo& oauth_client_info,
                     const std::string& refresh_token,
                     GaiaOAuthClient::Delegate* delegate);
 
  private:
+  friend class base::RefCountedThreadSafe<Core>;
+  virtual ~Core() {}
+
   void OnUrlFetchComplete(const net::URLRequestStatus& status,
                           int response_code,
                           const std::string& response);

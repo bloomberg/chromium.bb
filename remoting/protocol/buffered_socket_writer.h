@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,7 +39,6 @@ class BufferedSocketWriterBase
   typedef base::Callback<void(int)> WriteFailedCallback;
 
   explicit BufferedSocketWriterBase(base::MessageLoopProxy* message_loop);
-  virtual ~BufferedSocketWriterBase();
 
   // Initializes the writer. Must be called on the thread that will be used
   // to access the socket in the future. |callback| will be called after each
@@ -64,8 +63,12 @@ class BufferedSocketWriterBase
   void Close();
 
  protected:
+  friend class base::RefCountedThreadSafe<BufferedSocketWriterBase>;
+
   class PendingPacket;
   typedef std::list<PendingPacket*> DataQueue;
+
+  virtual ~BufferedSocketWriterBase();
 
   DataQueue queue_;
   int buffer_size_;
@@ -105,7 +108,6 @@ class BufferedSocketWriterBase
 class BufferedSocketWriter : public BufferedSocketWriterBase {
  public:
   explicit BufferedSocketWriter(base::MessageLoopProxy* message_loop);
-  virtual ~BufferedSocketWriter();
 
  protected:
   virtual void GetNextPacket_Locked(net::IOBuffer** buffer, int* size) OVERRIDE;
@@ -113,18 +115,22 @@ class BufferedSocketWriter : public BufferedSocketWriterBase {
   virtual void OnError_Locked(int result) OVERRIDE;
 
  private:
+  virtual ~BufferedSocketWriter();
+
   scoped_refptr<net::DrainableIOBuffer> current_buf_;
 };
 
 class BufferedDatagramWriter : public BufferedSocketWriterBase {
  public:
   explicit BufferedDatagramWriter(base::MessageLoopProxy* message_loop);
-  virtual ~BufferedDatagramWriter();
 
  protected:
   virtual void GetNextPacket_Locked(net::IOBuffer** buffer, int* size) OVERRIDE;
   virtual void AdvanceBufferPosition_Locked(int written) OVERRIDE;
   virtual void OnError_Locked(int result) OVERRIDE;
+
+ private:
+  virtual ~BufferedDatagramWriter();
 };
 
 }  // namespace protocol

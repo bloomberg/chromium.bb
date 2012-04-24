@@ -60,7 +60,6 @@ class RectangleUpdateDecoder :
 
  private:
   friend class base::RefCountedThreadSafe<RectangleUpdateDecoder>;
-
   virtual ~RectangleUpdateDecoder();
 
   // Paints the invalidated region to the next available buffer and returns it

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,8 +44,6 @@ BufferedSocketWriterBase::BufferedSocketWriterBase(
       write_pending_(false),
       closed_(false) {
 }
-
-BufferedSocketWriterBase::~BufferedSocketWriterBase() { }
 
 void BufferedSocketWriterBase::Init(net::Socket* socket,
                                     const WriteFailedCallback& callback) {
@@ -159,6 +157,8 @@ void BufferedSocketWriterBase::Close() {
   closed_ = true;
 }
 
+BufferedSocketWriterBase::~BufferedSocketWriterBase() {}
+
 void BufferedSocketWriterBase::PopQueue() {
   // This also calls |done_task|.
   delete queue_.front();
@@ -168,10 +168,6 @@ void BufferedSocketWriterBase::PopQueue() {
 BufferedSocketWriter::BufferedSocketWriter(
     base::MessageLoopProxy* message_loop)
   : BufferedSocketWriterBase(message_loop) {
-}
-
-BufferedSocketWriter::~BufferedSocketWriter() {
-  STLDeleteElements(&queue_);
 }
 
 void BufferedSocketWriter::GetNextPacket_Locked(
@@ -203,11 +199,14 @@ void BufferedSocketWriter::OnError_Locked(int result) {
   current_buf_ = NULL;
 }
 
+BufferedSocketWriter::~BufferedSocketWriter() {
+  STLDeleteElements(&queue_);
+}
+
 BufferedDatagramWriter::BufferedDatagramWriter(
     base::MessageLoopProxy* message_loop)
     : BufferedSocketWriterBase(message_loop) {
 }
-BufferedDatagramWriter::~BufferedDatagramWriter() { }
 
 void BufferedDatagramWriter::GetNextPacket_Locked(
     net::IOBuffer** buffer, int* size) {
@@ -228,6 +227,8 @@ void BufferedDatagramWriter::AdvanceBufferPosition_Locked(int written) {
 void BufferedDatagramWriter::OnError_Locked(int result) {
   // Nothing to do here.
 }
+
+BufferedDatagramWriter::~BufferedDatagramWriter() {}
 
 }  // namespace protocol
 }  // namespace remoting

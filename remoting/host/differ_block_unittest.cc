@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,12 +17,6 @@ static void GenerateData(uint8* data, int size) {
     data[i] = i;
   }
 }
-
-class EncodeDoneHandler
-    : public base::RefCountedThreadSafe<EncodeDoneHandler> {
- public:
-  MOCK_METHOD0(EncodeDone, void());
-};
 
 // Memory buffer large enough for 2 blocks aligned to 16 bytes.
 static const int kSizeOfBlock = kBlockSize * kBlockSize * kBytesPerPixel;

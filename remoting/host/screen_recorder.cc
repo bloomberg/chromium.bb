@@ -52,9 +52,6 @@ ScreenRecorder::ScreenRecorder(
   DCHECK(network_loop_);
 }
 
-ScreenRecorder::~ScreenRecorder() {
-}
-
 // Public methods --------------------------------------------------------------
 
 void ScreenRecorder::Start() {
@@ -112,7 +109,10 @@ void ScreenRecorder::UpdateSequenceNumber(int64 sequence_number) {
   sequence_number_ = sequence_number;
 }
 
-// Private accessors -----------------------------------------------------------
+// Private methods -----------------------------------------------------------
+
+ScreenRecorder::~ScreenRecorder() {
+}
 
 Capturer* ScreenRecorder::capturer() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());

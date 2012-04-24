@@ -25,16 +25,16 @@ MessageReader::MessageReader()
       closed_(false) {
 }
 
-MessageReader::~MessageReader() {
-  CHECK_EQ(pending_messages_, 0);
-}
-
 void MessageReader::Init(net::Socket* socket,
                          const MessageReceivedCallback& callback) {
   message_received_callback_ = callback;
   DCHECK(socket);
   socket_ = socket;
   DoRead();
+}
+
+MessageReader::~MessageReader() {
+  CHECK_EQ(pending_messages_, 0);
 }
 
 void MessageReader::DoRead() {

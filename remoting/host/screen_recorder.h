@@ -84,8 +84,6 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
                  Capturer* capturer,
                  Encoder* encoder);
 
-  virtual ~ScreenRecorder();
-
   // Start recording.
   void Start();
 
@@ -106,6 +104,9 @@ class ScreenRecorder : public base::RefCountedThreadSafe<ScreenRecorder> {
   void UpdateSequenceNumber(int64 sequence_number);
 
  private:
+  friend class base::RefCountedThreadSafe<ScreenRecorder>;
+  virtual ~ScreenRecorder();
+
   // Getters for capturer and encoder.
   Capturer* capturer();
   Encoder* encoder();

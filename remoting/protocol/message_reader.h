@@ -41,13 +41,15 @@ class MessageReader : public base::RefCountedThreadSafe<MessageReader> {
       MessageReceivedCallback;
 
   MessageReader();
-  virtual ~MessageReader();
 
   // Initialize the MessageReader with a socket. If a message is received
   // |callback| is called.
   void Init(net::Socket* socket, const MessageReceivedCallback& callback);
 
  private:
+  friend class base::RefCountedThreadSafe<MessageReader>;
+  virtual ~MessageReader();
+
   void DoRead();
   void OnRead(int result);
   void HandleReadResult(int result);
