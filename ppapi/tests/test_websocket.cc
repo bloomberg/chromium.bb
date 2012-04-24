@@ -450,11 +450,12 @@ std::string TestWebSocket::TestValidConnect() {
 std::string TestWebSocket::TestInvalidClose() {
   PP_Var reason = CreateVarString("close for test");
   TestCompletionCallback callback(instance_->pp_instance());
+  TestCompletionCallback another_callback(instance_->pp_instance());
 
   // Close before connect.
   PP_Resource ws = websocket_interface_->Create(instance_->pp_instance());
-  int32_t result = websocket_interface_->Close(
-      ws, PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
+  int32_t result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
       callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_ERROR_FAILED, result);
   core_interface_->ReleaseResource(ws);
@@ -466,6 +467,39 @@ std::string TestWebSocket::TestInvalidClose() {
   result = websocket_interface_->Close(ws, 1U, reason,
       callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_ERROR_NOACCESS, result);
+  core_interface_->ReleaseResource(ws);
+
+  // Close with PP_VARTYPE_NULL.
+  ws = Connect(GetFullURL(kEchoServerURL), &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, PP_MakeNull(),
+      callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
+  core_interface_->ReleaseResource(ws);
+
+  // Close with PP_VARTYPE_NULL and ongoing receive message.
+  ws = Connect(GetFullURL(kEchoServerURL), &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  PP_Var receive_message_var;
+  result = websocket_interface_->ReceiveMessage(ws, &receive_message_var,
+      callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, PP_MakeNull(),
+      another_callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_ERROR_BADARGUMENT, result);
+  const char* send_message = "hi";
+  PP_Var send_message_var = CreateVarString(send_message);
+  result = websocket_interface_->SendMessage(ws, send_message_var);
+  ReleaseVar(send_message_var);
+  ASSERT_EQ(PP_OK, result);
+  result = callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+  ASSERT_TRUE(AreEqualWithString(receive_message_var, send_message));
+  ReleaseVar(receive_message_var);
   core_interface_->ReleaseResource(ws);
 
   ReleaseVar(reason);
@@ -487,6 +521,18 @@ std::string TestWebSocket::TestValidClose() {
   ASSERT_EQ(PP_OK, result);
   result = websocket_interface_->Close(ws,
       PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
+      callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+  core_interface_->ReleaseResource(ws);
+
+  // Close with PP_VARTYPE_UNDEFINED.
+  ws = Connect(GetFullURL(kEchoServerURL), &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, PP_MakeUndefined(),
       callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = callback.WaitForResult();
@@ -538,6 +584,23 @@ std::string TestWebSocket::TestValidClose() {
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = websocket_interface_->Close(ws,
       PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
+      another_callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = callback.WaitForResult();
+  ASSERT_EQ(PP_ERROR_ABORTED, result);
+  result = another_callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+  core_interface_->ReleaseResource(ws);
+
+  // Close with PP_VARTYPE_UNDEFINED and ongoing receive message.
+  ws = Connect(GetFullURL(kEchoServerURL), &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  result = websocket_interface_->ReceiveMessage(ws, &receive_message_var,
+      callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, PP_MakeUndefined(),
       another_callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   result = callback.WaitForResult();
@@ -1311,4 +1374,3 @@ std::string TestWebSocket::TestUtilityBufferedAmount() {
 
   PASS();
 }
-

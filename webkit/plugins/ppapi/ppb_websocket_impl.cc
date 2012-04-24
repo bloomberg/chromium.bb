@@ -223,12 +223,17 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
     return PP_ERROR_NOACCESS;
   }
 
-  // Validate |reason|.
-  // TODO(toyoshim): Returns PP_ERROR_BADARGUMENT if |reason| contains any
-  // surrogates.
-  scoped_refptr<StringVar> reason_string = StringVar::FromPPVar(reason);
-  if (!reason_string || reason_string->value().size() > kMaxReasonSizeInBytes)
-    return PP_ERROR_BADARGUMENT;
+  scoped_refptr<StringVar> reason_string;
+  WebString web_reason;
+  // |reason| must be ignored if it is PP_VARTYPE_UNDEFINED.
+  if (reason.type != PP_VARTYPE_UNDEFINED) {
+    // Validate |reason|.
+    reason_string = StringVar::FromPPVar(reason);
+    if (!reason_string ||
+        reason_string->value().size() > kMaxReasonSizeInBytes)
+      return PP_ERROR_BADARGUMENT;
+    web_reason = WebString::fromUTF8(reason_string->value());
+  }
 
   // Check state.
   if (state_ == PP_WEBSOCKETREADYSTATE_CLOSING ||
@@ -265,7 +270,6 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
 
   // Close connection.
   state_ = PP_WEBSOCKETREADYSTATE_CLOSING;
-  WebString web_reason = WebString::fromUTF8(reason_string->value());
   websocket_->close(code, web_reason);
 
   return PP_OK_COMPLETIONPENDING;
