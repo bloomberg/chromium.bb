@@ -73,6 +73,9 @@ void TrayDate::DestroyDefaultView() {
 void TrayDate::DestroyDetailedView() {
 }
 
+void TrayDate::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
 void TrayDate::OnDateFormatChanged() {
   date_tray_->UpdateTimeFormat();
 }

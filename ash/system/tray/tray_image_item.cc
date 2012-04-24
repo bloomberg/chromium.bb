@@ -40,6 +40,9 @@ views::View* TrayImageItem::CreateDetailedView(user::LoginStatus status) {
   return NULL;
 }
 
+void TrayImageItem::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
 void TrayImageItem::DestroyTrayView() {
   tray_view_.reset();
 }

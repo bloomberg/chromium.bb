@@ -527,6 +527,9 @@ void TrayNetwork::DestroyDetailedView() {
   detailed_.reset();
 }
 
+void TrayNetwork::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
 void TrayNetwork::OnNetworkRefresh(const NetworkIconInfo& info) {
   if (tray_.get())
     tray_->Update(info);

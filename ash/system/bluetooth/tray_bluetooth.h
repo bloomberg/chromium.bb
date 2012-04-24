@@ -32,6 +32,7 @@ class TrayBluetooth : public SystemTrayItem,
   virtual void DestroyTrayView() OVERRIDE;
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
+  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
 
   // Overridden from BluetoothObserver.
   virtual void OnBluetoothRefresh() OVERRIDE;

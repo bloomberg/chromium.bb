@@ -184,6 +184,9 @@ void TrayBrightness::DestroyDetailedView() {
     brightness_view_.reset();
 }
 
+void TrayBrightness::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
 void TrayBrightness::OnBrightnessChanged(double percent, bool user_initiated) {
   current_percent_ = percent;
   got_current_percent_ = true;

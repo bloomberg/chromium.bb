@@ -262,15 +262,8 @@ TrayUser::~TrayUser() {
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
   avatar_.reset(new tray::RoundedImageView(kTrayRoundedBorderRadius));
-  if (status != user::LOGGED_IN_NONE && status != user::LOGGED_IN_KIOSK &&
-      status != user::LOGGED_IN_GUEST) {
-    avatar_->SetImage(
-        ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
-        gfx::Size(kUserIconSize, kUserIconSize));
-  } else {
-    avatar_->SetVisible(false);
-  }
   avatar_->set_border(views::Border::CreateEmptyBorder(0, 6, 0, 0));
+  UpdateAfterLoginStatusChange(status);
   return avatar_.get();
 }
 
@@ -295,6 +288,18 @@ void TrayUser::DestroyDefaultView() {
 }
 
 void TrayUser::DestroyDetailedView() {
+}
+
+void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+  if (status != user::LOGGED_IN_NONE && status != user::LOGGED_IN_KIOSK &&
+      status != user::LOGGED_IN_GUEST) {
+    avatar_->SetImage(
+        ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
+        gfx::Size(kUserIconSize, kUserIconSize));
+    avatar_->SetVisible(true);
+  } else {
+    avatar_->SetVisible(false);
+  }
 }
 
 void TrayUser::OnUserUpdate() {

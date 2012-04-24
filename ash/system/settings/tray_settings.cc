@@ -93,5 +93,8 @@ void TraySettings::DestroyDefaultView() {
 void TraySettings::DestroyDetailedView() {
 }
 
+void TraySettings::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
 }  // namespace internal
 }  // namespace ash

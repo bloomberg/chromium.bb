@@ -44,6 +44,11 @@ class ASH_EXPORT SystemTrayItem {
   virtual void DestroyDefaultView() = 0;
   virtual void DestroyDetailedView() = 0;
 
+  // Updates the tray view (if applicable) when the user's login status changes.
+  // It is not necessary the update the default or detailed view, since the
+  // default/detailed popup is closed when login status changes.
+  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) = 0;
+
   // Pops up the detailed view for this item. An item can request to show its
   // detailed view using this function (e.g. from an observer callback when
   // something, e.g. volume, network availability etc. changes). If

@@ -250,6 +250,9 @@ void TrayBluetooth::DestroyDetailedView() {
   detailed_.reset();
 }
 
+void TrayBluetooth::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
 void TrayBluetooth::OnBluetoothRefresh() {
   BluetoothDeviceList list;
   Shell::GetInstance()->tray_delegate()->GetAvailableBluetoothDevices(&list);

@@ -579,17 +579,9 @@ void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
   for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
       it != items_.end();
       ++it) {
-    (*it)->DestroyTrayView();
+    (*it)->UpdateAfterLoginStatusChange(login_status);
   }
-  container_->RemoveAllChildViews(true);
 
-  for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
-      it != items_.end();
-      ++it) {
-    views::View* view = (*it)->CreateTrayView(login_status);
-    if (view)
-      container_->AddChildViewAt(view, 0);
-  }
   SetVisible(true);
   PreferredSizeChanged();
 }

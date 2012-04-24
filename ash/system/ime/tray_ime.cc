@@ -229,6 +229,9 @@ void TrayIME::DestroyDetailedView() {
   detailed_.reset();
 }
 
+void TrayIME::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
 void TrayIME::OnIMERefresh() {
   SystemTrayDelegate* delegate = Shell::GetInstance()->tray_delegate();
   IMEInfoList list;
