@@ -52,17 +52,8 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
   string16 username = UTF8ToUTF16(service.profile()->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername));
   string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-  // TODO(altimofeev): get rid of "if def" construction: use the same IDS
-  // names. The reason the suffix was used is that strings were submitted
-  // before the actual change.
-#if defined(OS_CHROMEOS)
-  if (link_label)
-    link_label->assign(
-        l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL_CHROMEOS));
-#else
   if (link_label)
     link_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
-#endif
 
   switch (auth_error.state()) {
     case AuthError::INVALID_GAIA_CREDENTIALS:
@@ -81,32 +72,16 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
               l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_INFO_OUT_OF_DATE));
         }
         if (global_error_menu_label) {
-          // TODO(altimofeev): get rid of "if def" construction: use the same
-          // IDS names. The reason the suffix was used is that strings were
-          // submitted before the actual change.
-#if defined(OS_CHROMEOS)
-          global_error_menu_label->assign(l10n_util::GetStringUTF16(
-              IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM_CHROMEOS));
-#else
           global_error_menu_label->assign(l10n_util::GetStringUTF16(
               IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM));
-#endif
         }
         if (global_error_bubble_message) {
           global_error_bubble_message->assign(l10n_util::GetStringFUTF16(
               IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE, product_name));
         }
         if (global_error_bubble_accept_label) {
-          // TODO(altimofeev): get rid of "if def" construction: use the same
-          // IDS names. The reason the suffix was used is that strings were
-          // submitted before the actual change.
-#if defined(OS_CHROMEOS)
-          global_error_bubble_accept_label->assign(l10n_util::GetStringUTF16(
-              IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT_CHROMEOS));
-#else
           global_error_bubble_accept_label->assign(l10n_util::GetStringUTF16(
               IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT));
-#endif
         }
       }
       break;

@@ -11090,11 +11090,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to display in the New Tab Page sync section when the server is unreachable.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> could not sync your data because it could not connect to the sync server. Retrying...
       </message>
-      <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign in again to use sync.">
-        Sign in again
-      </message>
+      <if expr="not pp_ifdef('chromeos')">
+	<message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign in again to use sync.">
+          Sign in again
+	</message>
+      </if>
       <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_SYNC_RELOGIN_LINK_LABEL_CHROMEOS" desc="The text to display on in the hyperlink when the user needs to sign in again to use sync.">
+        <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to sign out and sign in again to use sync on Chrome OS.">
           Sign out then sign in again
         </message>
       </if>
@@ -11502,52 +11504,57 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> could not sync your data due to an error signing in.
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
-          Sign in again...
-        </message>
         <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to update the passphrase.">
           Update...
         </message>
         <message name="IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when sync is not available for their domain.">
           OK...
-        </message>
-        <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to sign in again.">
-          Sync Error: Sign in again...
         </message>
         <message name="IDS_SYNC_PASSPHRASE_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to update the passphrase.">
           Sync Error: Update Sync passphrase...
         </message>
       </if>
+      <if expr="not pp_ifdef('use_titlecase') and not pp_ifdef('chromeos')">
+        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
+          Sign in again...
+        </message>
+        <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to sign in again.">
+            Sync Error: Sign in again...
+        </message>
+      </if>
       <if expr="not pp_ifdef('use_titlecase') and pp_ifdef('chromeos')">
-        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT_CHROMEOS" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
+        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign out and sign in again to Chrome OS.">
           Sign out then sign in again...
         </message>
-        <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM_CHROMEOS" desc="The sync error wrench menu item when the user needs to sign in again to CrOS.">
+        <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to sign out and sign in again to Chrome OS.">
           Sync Error: Sign out then sign in again...
         </message>
       </if>
+
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
-          Sign in Again...
-        </message>
         <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to update the passphrase.">
           Update...
         </message>
         <message name="IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when sync is not available for their domain.">
           OK...
         </message>
-        <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to sign in again.">
-          Sync Error: Sign in Again...
-        </message>
         <message name="IDS_SYNC_PASSPHRASE_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to update the passphrase.">
           Sync Error: Update Sync Passphrase...
         </message>
       </if>
+      <if expr="pp_ifdef('use_titlecase') and not pp_ifdef('chromeos')">
+        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
+          Sign in Again...
+        </message>
+        <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to sign in again.">
+          Sync Error: Sign in Again...
+        </message>
+      </if>
       <if expr="pp_ifdef('use_titlecase') and pp_ifdef('chromeos')">
-        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT_CHROMEOS" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
+        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign out and sign in again on Chrome OS.">
           Sign out then Sign in Again...
         </message>
-        <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM_CHROMEOS" desc="The sync error wrench menu item when the user needs to sign in again to CrOS.">
+        <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to sign out and sign in again to Chrome OS.">
           Sync Error: Sign out then Sign in Again...
         </message>
       </if>
