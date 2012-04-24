@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_STATUS_AREA_STATUS_AREA_VIEW_H_
-#define ASH_STATUS_AREA_STATUS_AREA_VIEW_H_
+#ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_WIDGET_DELEGATE_H_
+#define ASH_SYSTEM_TRAY_SYSTEM_TRAY_WIDGET_DELEGATE_H_
 #pragma once
 
 #include "ash/ash_export.h"
@@ -46,4 +46,4 @@ class ASH_EXPORT StatusAreaView : public views::WidgetDelegate,
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_STATUS_AREA_STATUS_AREA_VIEW_H_
+#endif  // ASH_SYSTEM_TRAY_SYSTEM_TRAY_WIDGET_DELEGATE_H_

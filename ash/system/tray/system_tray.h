@@ -49,6 +49,12 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
   SystemTray();
   virtual ~SystemTray();
 
+  // Creates the default set of items for the sytem tray.
+  void CreateItems();
+
+  // Creates the widget for the tray.
+  void CreateWidget();
+
   // Adds a new item in the tray.
   void AddTrayItem(SystemTrayItem* item);
 
@@ -81,6 +87,8 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
 
   // Returns true if the launcher should show.
   bool should_show_launcher() const { return popup_ && should_show_launcher_; }
+
+  views::Widget* widget() const { return widget_; }
 
   AccessibilityObserver* accessibility_observer() const {
     return accessibility_observer_;
@@ -117,8 +125,6 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
   }
 
  private:
-  friend class Shell;
-
   void ShowItems(std::vector<SystemTrayItem*>& items,
                  bool details,
                  bool activate);
@@ -163,6 +169,9 @@ class ASH_EXPORT SystemTray : NON_EXPORTED_BASE(
   PowerStatusObserver* power_status_observer_;
   UpdateObserver* update_observer_;
   UserObserver* user_observer_;
+
+  // The widget hosting the tray.
+  views::Widget* widget_;
 
   // The popup widget and the delegate.
   internal::SystemTrayBubble* bubble_;

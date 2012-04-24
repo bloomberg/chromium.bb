@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/status_area/status_area_view.h"
+#include "ash/system/tray/system_tray_widget_delegate.h"
 
 #include "ash/ash_export.h"
 #include "ash/focus_cycler.h"
@@ -63,30 +63,6 @@ bool StatusAreaView::CanActivate() const {
 }
 
 void StatusAreaView::DeleteDelegate() {
-}
-
-ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents) {
-  if (!contents) {
-    contents = new views::View;
-    contents->set_focusable(true);
-  }
-  StatusAreaView* status_area_view = new StatusAreaView;
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  gfx::Size ps = contents->GetPreferredSize();
-  params.bounds = gfx::Rect(0, 0, ps.width(), ps.height());
-  params.delegate = status_area_view;
-  params.parent = Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_StatusContainer);
-  params.transparent = true;
-  widget->Init(params);
-  widget->set_focus_on_creation(false);
-  status_area_view->AddChildView(contents);
-  widget->SetContentsView(status_area_view);
-  widget->Show();
-  widget->GetNativeView()->SetName("StatusAreaView");
-  return widget;
 }
 
 }  // namespace internal
