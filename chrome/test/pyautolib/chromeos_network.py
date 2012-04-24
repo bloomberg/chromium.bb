@@ -134,7 +134,7 @@ class PyNetworkUITest(pyauto.PyUITest):
     # Move ethernet to the end of the flimflam priority list,
     # effectively hiding any ssh connections that the
     # test harness might be using and putting wifi ahead.
-    self._PushServiceOrder('vpn,bluetooth,wifi,wimax,cellular,ethernet')
+    self._PushServiceOrder('wifi,ethernet')
     self._ParseDefaultRoutingTable()
     pyauto.PyUITest.setUp(self)
     self.CleanupFlimflamDirsOnChromeOS()
