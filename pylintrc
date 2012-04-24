@@ -116,7 +116,7 @@ ignore-mixin-members=yes
 
 # List of classes names for which member attributes should not be checked
 # (useful for classes with attributes dynamically set).
-ignored-classes=SQLObject,twisted.internet.reactor,hashlib
+ignored-classes=SQLObject,twisted.internet.reactor,hashlib,google.appengine.api.memcache
 
 # When zope mode is activated, add a predefined set of Zope acquired attributes
 # to generated-members.
