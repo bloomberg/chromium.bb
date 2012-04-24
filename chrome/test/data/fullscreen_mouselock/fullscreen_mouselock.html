@@ -15,11 +15,24 @@ function exitFullscreen() {
   document.webkitCancelFullScreen();
 }
 
-function lockMouse1() {
+// Wait for notification from JS, then notify test of success or failure
+// callback that the click has registered and the mouse lock state has changed.
+function lockMouse1(callback) {
   console.log("lockMouse1()");
   navigator.webkitPointer.lock(document.getElementById("lockTarget1"),
-                               function(){console.log("lock success")},
-                               function(){console.log("lock failed")});
+    function() {
+      console.log("lock success");
+      if (callback) {
+        callback("success");
+      }
+    },
+    function() {
+      console.log("lock failed");
+      if (callback) {
+        callback("failure");
+      }
+    }
+  );
 }
 
 function lockMouse2() {
@@ -58,6 +71,7 @@ function lockMouse1AndEnterFullscreen() {
   lockMouse1();
   enterFullscreen();
 }
+
 </script>
 </head>
 <body title="This tooltip should not be shown if the mouse is locked.">
