@@ -269,6 +269,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableExperimentalExtensionApis)
   },
   {
+    "browser-actions-for-all",
+    IDS_FLAGS_BROWSER_ACTIONS_FOR_ALL_NAME,
+    IDS_FLAGS_BROWSER_ACTIONS_FOR_ALL_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableBrowserActionsForAll),
+  },
+  {
     "apps-new-install-bubble",
     IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_NAME,
     IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_DESCRIPTION,
