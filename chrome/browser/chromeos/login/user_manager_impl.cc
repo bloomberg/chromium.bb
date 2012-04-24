@@ -907,9 +907,14 @@ void UserManagerImpl::LoadKeyStore() {
 
   // Only load the Opencryptoki library into NSS if we have this switch.
   // TODO(gspencer): Remove this switch once cryptohomed work is finished:
-  // http://crosbug.com/12295 and http://crosbug.com/12304
+  // http://crosbug.com/12295 and 12304
+  // Note: ChromeOS login with or without loginmanager will crash when
+  // the CertLibrary is not there (http://crosbug.com/121456). Before removing
+  // make sure that that case still works.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kLoadOpencryptoki)) {
+          switches::kLoadOpencryptoki) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kStubCros)) {
     crypto::EnableTPMTokenForNSS(new RealTPMTokenInfoDelegate());
     CertLibrary* cert_library;
     cert_library = chromeos::CrosLibrary::Get()->GetCertLibrary();
