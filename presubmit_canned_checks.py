@@ -4,6 +4,9 @@
 
 """Generic presubmit checks that can be reused by other presubmit checks."""
 
+import os as _os
+_HERE = _os.path.dirname(_os.path.abspath(__file__))
+
 
 ### Description checks
 
@@ -615,7 +618,8 @@ def _FetchAllFiles(input_api, white_list, black_list):
   return files
 
 
-def RunPylint(input_api, output_api, white_list=None, black_list=None):
+def RunPylint(input_api, output_api, white_list=None, black_list=None,
+              disabled_warnings=None):
   """Run pylint on python files.
 
   The default white_list enforces looking only a *.py files.
@@ -631,6 +635,10 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
   src_filter = lambda x: input_api.FilterSourceFile(x, white_list, black_list)
   if not input_api.AffectedSourceFiles(src_filter):
     return []
+
+  extra_args = ['--rcfile=%s' % input_api.os_path.join(_HERE, 'pylintrc')]
+  if disabled_warnings:
+    extra_args.extend(['-d', ','.join(disabled_warnings)])
 
   # On certain pylint/python version combination, running pylint throws a lot of
   # warning messages.
@@ -661,7 +669,7 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
 
     def run_lint(files):
       try:
-        lint.Run(files)
+        lint.Run(files + extra_args)
         assert False
       except SystemExit, e:
         # pylint has the bad habit of calling sys.exit(), trap it here.
