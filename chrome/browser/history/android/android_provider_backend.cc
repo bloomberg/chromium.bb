@@ -34,10 +34,17 @@ const char* kVirtualHistoryAndBookmarkTable =
         "android_cache_db.bookmark_cache.last_visit_time AS date, "
         "android_cache_db.bookmark_cache.bookmark AS bookmark, "
         "android_cache_db.bookmark_cache.favicon_id AS favicon, "
-        "urls.id AS url_id, urls.url AS urls_url "
+        "urls.id AS url_id, urls.url AS urls_url, "
+    // TODO (michaelbai) : Remove folder column once we remove it from Android
+    // framework.
+    // Android framework assumes 'folder' column exist in the table, the row is
+    // the bookmark once folder is 0, though it is not part of public API, it
+    // has to be added and set as 0 when the row is bookmark.
+        "(CASE WHEN android_cache_db.bookmark_cache.bookmark IS 0 "
+        "THEN 1 ELSE 0 END) as folder "
     "FROM (android_urls JOIN urls on (android_urls.url_id = urls.id) "
-        "LEFT JOIN android_cache_db.bookmark_cache AS bookmark_cache "
-        "on (android_urls.url_id = bookmark_cache.url_id))";
+        "LEFT JOIN android_cache_db.bookmark_cache "
+        "on (android_urls.url_id = android_cache_db.bookmark_cache.url_id))";
 
 const char * kURLUpdateClause =
     "SELECT urls.id, urls.last_visit_time, created_time, urls.url "

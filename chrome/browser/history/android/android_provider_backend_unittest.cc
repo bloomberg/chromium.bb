@@ -1673,4 +1673,60 @@ TEST_F(AndroidProviderBackendTest, TestAndroidCTSComplianceForZeroVisitCount) {
   EXPECT_EQ(url_row.visit_count(), statement->statement()->ColumnInt(5));
 }
 
+TEST_F(AndroidProviderBackendTest, AndroidCTSComplianceFolderColumnExists) {
+  // This is test is used to verify the 'folder' column exists, all bookmarks
+  // returned when folder is 0 and the non bookmark rows returned when folder
+  // is 1.
+  ASSERT_EQ(sql::INIT_OK, history_db_.Init(history_db_name_, bookmark_temp_));
+  ASSERT_EQ(sql::INIT_OK, thumbnail_db_.Init(thumbnail_db_name_, NULL,
+                                             &history_db_));
+  scoped_ptr<AndroidProviderBackend> backend(
+      new AndroidProviderBackend(android_cache_db_name_, &history_db_,
+                                 &thumbnail_db_, bookmark_model_, &delegate_));
+  HistoryAndBookmarkRow row1;
+  row1.set_raw_url("cnn.com");
+  row1.set_url(GURL("http://cnn.com"));
+  row1.set_last_visit_time(Time::Now() - TimeDelta::FromDays(1));
+  row1.set_created(Time::Now() - TimeDelta::FromDays(20));
+  row1.set_visit_count(10);
+  row1.set_is_bookmark(true);
+  row1.set_title(UTF8ToUTF16("cnn"));
+
+  HistoryAndBookmarkRow row2;
+  row2.set_raw_url("http://www.example.com");
+  row2.set_url(GURL("http://www.example.com"));
+  row2.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
+  row2.set_is_bookmark(false);
+  row2.set_title(UTF8ToUTF16("example"));
+  std::vector<unsigned char> data;
+  data.push_back('1');
+  row2.set_favicon(data);
+
+  AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
+  ASSERT_TRUE(id1);
+  AndroidURLID id2 = backend->InsertHistoryAndBookmark(row2);
+  ASSERT_TRUE(id2);
+  ui_test_utils::RunAllPendingInMessageLoop();
+
+  // Query by folder=0, the row1 should returned.
+  std::vector<HistoryAndBookmarkRow::ColumnID> projections;
+
+  projections.push_back(HistoryAndBookmarkRow::URL);
+
+  scoped_ptr<AndroidStatement> statement(backend->QueryHistoryAndBookmarks(
+      projections, std::string("folder=0"), std::vector<string16>(),
+      std::string("url ASC")));
+  ASSERT_TRUE(statement->statement()->Step());
+  EXPECT_EQ(row1.raw_url(), statement->statement()->ColumnString(0));
+  EXPECT_FALSE(statement->statement()->Step());
+
+  // Query by folder=1, the row2 should returned.
+  statement.reset(backend->QueryHistoryAndBookmarks(
+      projections, std::string("folder=1"), std::vector<string16>(),
+      std::string("url ASC")));
+  ASSERT_TRUE(statement->statement()->Step());
+  EXPECT_EQ(row2.url(), GURL(statement->statement()->ColumnString(0)));
+  EXPECT_FALSE(statement->statement()->Step());
+}
+
 }  // namespace history
