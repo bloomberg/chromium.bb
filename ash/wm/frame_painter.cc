@@ -115,8 +115,10 @@ void TileRoundRect(gfx::Canvas* canvas,
 
 // Returns true if |window| is a visible, normal window.
 bool IsVisibleNormalWindow(aura::Window* window) {
+  // We must use TargetVisibility() because windows animate in and out and
+  // IsVisible() also tracks the layer visibility state.
   return window &&
-    window->IsVisible() &&
+    window->TargetVisibility() &&
     window->type() == aura::client::WINDOW_TYPE_NORMAL;
 }
 
@@ -514,6 +516,14 @@ void FramePainter::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
+void FramePainter::OnWindowVisibilityChanged(aura::Window* window,
+                                             bool visible) {
+  // Hiding a window may trigger the solo window appearance in a different
+  // window.
+  if (!visible && UseSoloWindowHeader())
+    SchedulePaintForSoloWindow();
+}
+
 void FramePainter::OnWindowDestroying(aura::Window* destroying) {
   DCHECK_EQ(window_, destroying);
   // Must be removed here and not in the destructor, as the aura::Window is
@@ -525,17 +535,9 @@ void FramePainter::OnWindowDestroying(aura::Window* destroying) {
   instances_->erase(this);
 
   // If we have two or more windows open and we close this one, we might trigger
-  // the solo window appearance.  If so, find the window that is becoming solo
-  // and schedule it to paint.
-  if (UseSoloWindowHeader()) {
-    for (std::set<FramePainter*>::const_iterator it = instances_->begin();
-         it != instances_->end();
-         ++it) {
-      FramePainter* painter = *it;
-      if (IsVisibleNormalWindow(painter->window_) && painter->frame_)
-        painter->frame_->non_client_view()->SchedulePaint();
-    }
-  }
+  // the solo window appearance for another window.
+  if (UseSoloWindowHeader())
+    SchedulePaintForSoloWindow();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -580,6 +582,17 @@ bool FramePainter::UseSoloWindowHeader() {
     }
   }
   return window_count == 1;
+}
+
+// static
+void FramePainter::SchedulePaintForSoloWindow() {
+  for (std::set<FramePainter*>::const_iterator it = instances_->begin();
+       it != instances_->end();
+       ++it) {
+    FramePainter* painter = *it;
+    if (IsVisibleNormalWindow(painter->window_))
+      painter->frame_->non_client_view()->SchedulePaint();
+  }
 }
 
 }  // namespace ash
