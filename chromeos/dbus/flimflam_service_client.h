@@ -38,6 +38,7 @@ class CHROMEOS_EXPORT FlimflamServiceClient {
   typedef FlimflamClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef FlimflamClientHelper::VoidCallback VoidCallback;
   typedef FlimflamClientHelper::DictionaryValueCallback DictionaryValueCallback;
+  typedef FlimflamClientHelper::ErrorCallback ErrorCallback;
 
   virtual ~FlimflamServiceClient();
 
@@ -76,7 +77,8 @@ class CHROMEOS_EXPORT FlimflamServiceClient {
   // Calls Connect method.
   // |callback| is called after the method call succeeds.
   virtual void Connect(const dbus::ObjectPath& service_path,
-                       const VoidCallback& callback) = 0;
+                       const base::Closure& callback,
+                       const ErrorCallback& error_callback) = 0;
 
   // Calls Disconnect method.
   // |callback| is called after the method call succeeds.

@@ -138,12 +138,17 @@ TEST_F(FlimflamServiceClientTest, Connect) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
   PrepareForMethodCall(flimflam::kConnectFunction,
                        base::Bind(&ExpectNoArgument),
                        response.get());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
   // Call method.
   client_->Connect(dbus::ObjectPath(kExampleServicePath),
-                   base::Bind(&ExpectNoResultValue));
+                   mock_closure.GetCallback(),
+                   mock_error_callback.GetCallback());
+
   // Run the message loop.
   message_loop_.RunAllPending();
 }

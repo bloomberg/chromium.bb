@@ -38,6 +38,7 @@ class CHROMEOS_EXPORT FlimflamDeviceClient {
   typedef FlimflamClientHelper::VoidCallback VoidCallback;
   typedef FlimflamClientHelper::ObjectPathCallback ObjectPathCallback;
   typedef FlimflamClientHelper::DictionaryValueCallback DictionaryValueCallback;
+  typedef FlimflamClientHelper::ErrorCallback ErrorCallback;
 
   virtual ~FlimflamDeviceClient();
 
@@ -106,33 +107,38 @@ class CHROMEOS_EXPORT FlimflamDeviceClient {
   virtual void RequirePin(const dbus::ObjectPath& device_path,
                           const std::string& pin,
                           bool require,
-                          const VoidCallback& callback) = 0;
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) = 0;
 
   // Calls EnterPin method.
   // |callback| is called after the method call finishes.
   virtual void EnterPin(const dbus::ObjectPath& device_path,
                         const std::string& pin,
-                        const VoidCallback& callback) = 0;
+                        const base::Closure& callback,
+                        const ErrorCallback& error_callback) = 0;
 
   // Calls UnblockPin method.
   // |callback| is called after the method call finishes.
   virtual void UnblockPin(const dbus::ObjectPath& device_path,
                           const std::string& puk,
                           const std::string& pin,
-                          const VoidCallback& callback) = 0;
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) = 0;
 
   // Calls ChangePin method.
   // |callback| is called after the method call finishes.
   virtual void ChangePin(const dbus::ObjectPath& device_path,
                          const std::string& old_pin,
                          const std::string& new_pin,
-                         const VoidCallback& callback) = 0;
+                         const base::Closure& callback,
+                         const ErrorCallback& error_callback) = 0;
 
   // Calls Register method.
   // |callback| is called after the method call finishes.
   virtual void Register(const dbus::ObjectPath& device_path,
                         const std::string& network_id,
-                        const VoidCallback& callback) = 0;
+                        const base::Closure& callback,
+                        const ErrorCallback& error_callback) = 0;
 
  protected:
   // Create() should be used instead.

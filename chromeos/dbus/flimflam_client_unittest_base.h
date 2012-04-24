@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/flimflam_client_helper.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
 #include "dbus/object_proxy.h"
@@ -34,6 +35,25 @@ namespace chromeos {
 // A class to provide functionalities needed for testing Flimflam D-Bus clients.
 class FlimflamClientUnittestBase : public testing::Test {
  public:
+  // A mock Closure.
+  class MockClosure {
+   public:
+    MockClosure();
+    ~MockClosure();
+    MOCK_METHOD0(Run, void());
+    base::Closure GetCallback();
+  };
+
+  // A mock ErrorCallback.
+  class MockErrorCallback {
+   public:
+    MockErrorCallback();
+    ~MockErrorCallback();
+    MOCK_METHOD2(Run, void(const std::string& error_name,
+                           const std::string& error_mesage));
+    FlimflamClientHelper::ErrorCallback GetCallback();
+  };
+
   explicit FlimflamClientUnittestBase(const std::string& interface_name,
                                       const dbus::ObjectPath& object_path);
   virtual ~FlimflamClientUnittestBase();
@@ -110,6 +130,14 @@ class FlimflamClientUnittestBase : public testing::Test {
       dbus::MethodCall* method_call,
       int timeout_ms,
       const dbus::ObjectProxy::ResponseCallback& response_callback);
+
+  // Checks the content of the method call and returns the response.
+  // Used to implement the mock proxy.
+  void OnCallMethodWithErrorCallback(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      const dbus::ObjectProxy::ResponseCallback& response_callback,
+      const dbus::ObjectProxy::ErrorCallback& error_callback);
 
   // Checks the content of the method call and returns the response.
   // Used to implement the mock proxy.

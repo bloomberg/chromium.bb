@@ -115,61 +115,71 @@ class FlimflamDeviceClientImpl : public FlimflamDeviceClient {
   virtual void RequirePin(const dbus::ObjectPath& device_path,
                           const std::string& pin,
                           bool require,
-                          const VoidCallback& callback) OVERRIDE  {
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
                                  flimflam::kRequirePinFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(pin);
     writer.AppendBool(require);
-    GetHelper(device_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(device_path)->CallVoidMethodWithErrorCallback(
+        &method_call, callback, error_callback);
   }
 
   // FlimflamProfileClient override.
   virtual void EnterPin(const dbus::ObjectPath& device_path,
                         const std::string& pin,
-                        const VoidCallback& callback) OVERRIDE {
+                        const base::Closure& callback,
+                        const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
                                  flimflam::kEnterPinFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(pin);
-    GetHelper(device_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(device_path)->CallVoidMethodWithErrorCallback(
+        &method_call, callback, error_callback);
   }
 
   // FlimflamProfileClient override.
   virtual void UnblockPin(const dbus::ObjectPath& device_path,
                           const std::string& puk,
                           const std::string& pin,
-                          const VoidCallback& callback) OVERRIDE {
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
                                  flimflam::kUnblockPinFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(puk);
     writer.AppendString(pin);
-    GetHelper(device_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(device_path)->CallVoidMethodWithErrorCallback(
+        &method_call, callback, error_callback);
   }
 
   // FlimflamProfileClient override.
   virtual void ChangePin(const dbus::ObjectPath& device_path,
                          const std::string& old_pin,
                          const std::string& new_pin,
-                         const VoidCallback& callback) OVERRIDE {
+                         const base::Closure& callback,
+                         const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
                                  flimflam::kChangePinFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(old_pin);
     writer.AppendString(new_pin);
-    GetHelper(device_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(device_path)->CallVoidMethodWithErrorCallback(
+        &method_call, callback, error_callback);
   }
 
   // FlimflamProfileClient override.
   virtual void Register(const dbus::ObjectPath& device_path,
                         const std::string& network_id,
-                        const VoidCallback& callback) OVERRIDE {
+                        const base::Closure& callback,
+                        const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamDeviceInterface,
                                  flimflam::kRegisterFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(network_id);
-    GetHelper(device_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(device_path)->CallVoidMethodWithErrorCallback(
+        &method_call, callback, error_callback);
   }
 
  private:
@@ -271,38 +281,43 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
   virtual void RequirePin(const dbus::ObjectPath& device_path,
                           const std::string& pin,
                           bool require,
-                          const VoidCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   // FlimflamDeviceClient override.
   virtual void EnterPin(const dbus::ObjectPath& device_path,
                         const std::string& pin,
-                        const VoidCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+                        const base::Closure& callback,
+                        const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   // FlimflamDeviceClient override.
   virtual void UnblockPin(const dbus::ObjectPath& device_path,
                           const std::string& puk,
                           const std::string& pin,
-                          const VoidCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+                          const base::Closure& callback,
+                          const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   // FlimflamDeviceClient override.
   virtual void ChangePin(const dbus::ObjectPath& device_path,
                          const std::string& old_pin,
                          const std::string& new_pin,
-                         const VoidCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+                         const base::Closure& callback,
+                         const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   // FlimflamDeviceClient override.
   virtual void Register(const dbus::ObjectPath& device_path,
                         const std::string& network_id,
-                        const VoidCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+                        const base::Closure& callback,
+                        const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
  private:

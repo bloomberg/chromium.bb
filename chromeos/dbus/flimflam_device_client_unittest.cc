@@ -245,16 +245,20 @@ TEST_F(FlimflamDeviceClientTest, RequirePin) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
   PrepareForMethodCall(flimflam::kRequirePinFunction,
                        base::Bind(&ExpectStringAndBoolArguments,
                                   kPin,
                                   kRequired),
                        response.get());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
   // Call method.
   client_->RequirePin(dbus::ObjectPath(kExampleDevicePath),
                       kPin,
                       kRequired,
-                      base::Bind(&ExpectNoResultValue));
+                      mock_closure.GetCallback(),
+                      mock_error_callback.GetCallback());
   // Run the message loop.
   message_loop_.RunAllPending();
 }
@@ -265,14 +269,18 @@ TEST_F(FlimflamDeviceClientTest, EnterPin) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
   PrepareForMethodCall(flimflam::kEnterPinFunction,
                        base::Bind(&ExpectStringArgument,
                                   kPin),
                        response.get());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
   // Call method.
   client_->EnterPin(dbus::ObjectPath(kExampleDevicePath),
                     kPin,
-                    base::Bind(&ExpectNoResultValue));
+                    mock_closure.GetCallback(),
+                    mock_error_callback.GetCallback());
   // Run the message loop.
   message_loop_.RunAllPending();
 }
@@ -284,14 +292,18 @@ TEST_F(FlimflamDeviceClientTest, UnblockPin) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
   PrepareForMethodCall(flimflam::kUnblockPinFunction,
                        base::Bind(&ExpectTwoStringArguments, kPuk, kPin),
                        response.get());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
   // Call method.
   client_->UnblockPin(dbus::ObjectPath(kExampleDevicePath),
                       kPuk,
                       kPin,
-                      base::Bind(&ExpectNoResultValue));
+                      mock_closure.GetCallback(),
+                      mock_error_callback.GetCallback());
   // Run the message loop.
   message_loop_.RunAllPending();
 }
@@ -303,16 +315,20 @@ TEST_F(FlimflamDeviceClientTest, ChangePin) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
   PrepareForMethodCall(flimflam::kChangePinFunction,
                        base::Bind(&ExpectTwoStringArguments,
                                   kOldPin,
                                   kNewPin),
                        response.get());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
   // Call method.
   client_->ChangePin(dbus::ObjectPath(kExampleDevicePath),
                      kOldPin,
                      kNewPin,
-                     base::Bind(&ExpectNoResultValue));
+                     mock_closure.GetCallback(),
+                     mock_error_callback.GetCallback());
   // Run the message loop.
   message_loop_.RunAllPending();
 }
@@ -323,13 +339,17 @@ TEST_F(FlimflamDeviceClientTest, Register) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
 
   // Set expectations.
+  MockClosure mock_closure;
+  MockErrorCallback mock_error_callback;
   PrepareForMethodCall(flimflam::kRegisterFunction,
                        base::Bind(&ExpectStringArgument, kNetworkId),
                        response.get());
+  EXPECT_CALL(mock_closure, Run()).Times(1);
   // Call method.
   client_->Register(dbus::ObjectPath(kExampleDevicePath),
                     kNetworkId,
-                    base::Bind(&ExpectNoResultValue));
+                    mock_closure.GetCallback(),
+                    mock_error_callback.GetCallback());
   // Run the message loop.
   message_loop_.RunAllPending();
 }

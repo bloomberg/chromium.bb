@@ -73,10 +73,12 @@ class FlimflamServiceClientImpl : public FlimflamServiceClient {
 
   // FlimflamServiceClient override.
   virtual void Connect(const dbus::ObjectPath& service_path,
-                       const VoidCallback& callback) OVERRIDE {
+                       const base::Closure& callback,
+                       const ErrorCallback& error_callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kConnectFunction);
-    GetHelper(service_path)->CallVoidMethod(&method_call, callback);
+    GetHelper(service_path)->CallVoidMethodWithErrorCallback(
+        &method_call, callback, error_callback);
   }
 
   // FlimflamServiceClient override.
@@ -174,8 +176,9 @@ class FlimflamServiceClientStubImpl : public FlimflamServiceClient {
 
   // FlimflamServiceClient override.
   virtual void Connect(const dbus::ObjectPath& service_path,
-                       const VoidCallback& callback) OVERRIDE {
-    PostSuccessVoidCallback(callback);
+                       const base::Closure& callback,
+                       const ErrorCallback& error_callback) OVERRIDE {
+    MessageLoop::current()->PostTask(FROM_HERE, callback);
   }
 
   // FlimflamServiceClient override.

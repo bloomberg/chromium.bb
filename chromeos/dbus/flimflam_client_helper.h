@@ -23,6 +23,7 @@ class DictionaryValue;
 namespace dbus {
 
 class Bus;
+class ErrorResponse;
 class MessageWriter;
 class MethodCall;
 class ObjectPath;
@@ -54,6 +55,10 @@ class FlimflamClientHelper {
       DBusMethodCallStatus call_status,
       const base::DictionaryValue& result)> DictionaryValueCallback;
 
+  // A callback to handle erros for method call.
+  typedef base::Callback<void(const std::string& error_name,
+                              const std::string& error_message)> ErrorCallback;
+
   FlimflamClientHelper(dbus::Bus* bus, dbus::ObjectProxy* proxy);
 
   virtual ~FlimflamClientHelper();
@@ -78,6 +83,11 @@ class FlimflamClientHelper {
   // Calls a method with a dictionary value result.
   void CallDictionaryValueMethod(dbus::MethodCall* method_call,
                                  const DictionaryValueCallback& callback);
+
+  // Calls a method without results with error callback.
+  void CallVoidMethodWithErrorCallback(dbus::MethodCall* method_call,
+                                       const base::Closure& callback,
+                                       const ErrorCallback& error_callback);
 
   // DEPRECATED DO NOT USE: Calls a method without results.
   bool CallVoidMethodAndBlock(dbus::MethodCall* method_call);
@@ -115,6 +125,15 @@ class FlimflamClientHelper {
   // Handles responses for methods with DictionaryValue results.
   void OnDictionaryValueMethod(const DictionaryValueCallback& callback,
                                dbus::Response* response);
+
+  // Handles responses for methods without results.
+  // Used by CallVoidMethodWithErrorCallback().
+  void OnVoidMethodWithErrorCallback(const base::Closure& callback,
+                                     dbus::Response* response);
+
+  // Handles errors for method calls.
+  void OnError(const ErrorCallback& error_callback,
+               dbus::ErrorResponse* response);
 
   base::WeakPtrFactory<FlimflamClientHelper> weak_ptr_factory_;
   // TODO(hashimoto): Remove this when we no longer need to make blocking calls.

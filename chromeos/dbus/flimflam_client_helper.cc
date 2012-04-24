@@ -70,6 +70,20 @@ void FlimflamClientHelper::CallDictionaryValueMethod(
                                 callback));
 }
 
+void FlimflamClientHelper::CallVoidMethodWithErrorCallback(
+    dbus::MethodCall* method_call,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  proxy_->CallMethodWithErrorCallback(
+      method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::Bind(&FlimflamClientHelper::OnVoidMethodWithErrorCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback),
+      base::Bind(&FlimflamClientHelper::OnError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 error_callback));
+}
+
 bool FlimflamClientHelper::CallVoidMethodAndBlock(
     dbus::MethodCall* method_call) {
   scoped_ptr<dbus::Response> response(
@@ -216,6 +230,25 @@ void FlimflamClientHelper::OnDictionaryValueMethod(
     return;
   }
   callback.Run(DBUS_METHOD_CALL_SUCCESS, *result);
+}
+
+void FlimflamClientHelper::OnVoidMethodWithErrorCallback(
+    const base::Closure& callback,
+    dbus::Response* response) {
+  callback.Run();
+}
+
+void FlimflamClientHelper::OnError(const ErrorCallback& error_callback,
+                                   dbus::ErrorResponse* response) {
+  std::string error_name;
+  std::string error_message;
+  if (response) {
+    // Error message may contain the error message as string.
+    dbus::MessageReader reader(response);
+    error_name = response->GetErrorName();
+    reader.PopString(&error_message);
+  }
+  error_callback.Run(error_name, error_message);
 }
 
 }  // namespace chromeos

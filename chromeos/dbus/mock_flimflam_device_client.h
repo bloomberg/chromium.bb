@@ -41,24 +41,29 @@ class MockFlimflamDeviceClient : public FlimflamDeviceClient {
   MOCK_METHOD2(CallAddIPConfigAndBlock,
                dbus::ObjectPath(const dbus::ObjectPath& device_path,
                                 const std::string& method));
-  MOCK_METHOD4(RequirePin, void(const dbus::ObjectPath& device_path,
+  MOCK_METHOD5(RequirePin, void(const dbus::ObjectPath& device_path,
                                 const std::string& pin,
                                 bool require,
-                                const VoidCallback& callback));
-  MOCK_METHOD3(EnterPin, void(const dbus::ObjectPath& device_path,
+                                const base::Closure& callback,
+                                const ErrorCallback& error_callback));
+  MOCK_METHOD4(EnterPin, void(const dbus::ObjectPath& device_path,
                               const std::string& pin,
-                              const VoidCallback& callback));
-  MOCK_METHOD4(UnblockPin, void(const dbus::ObjectPath& device_path,
+                              const base::Closure& callback,
+                              const ErrorCallback& error_callback));
+  MOCK_METHOD5(UnblockPin, void(const dbus::ObjectPath& device_path,
                                 const std::string& puk,
                                 const std::string& pin,
-                                const VoidCallback& callback));
-  MOCK_METHOD4(ChangePin, void(const dbus::ObjectPath& device_path,
+                                const base::Closure& callback,
+                                const ErrorCallback& error_callback));
+  MOCK_METHOD5(ChangePin, void(const dbus::ObjectPath& device_path,
                                const std::string& old_pin,
                                const std::string& new_pin,
-                               const VoidCallback& callback));
-  MOCK_METHOD3(Register, void(const dbus::ObjectPath& device_path,
+                               const base::Closure& callback,
+                               const ErrorCallback& error_callback));
+  MOCK_METHOD4(Register, void(const dbus::ObjectPath& device_path,
                               const std::string& network_id,
-                              const VoidCallback& callback));
+                              const base::Closure& callback,
+                              const ErrorCallback& error_callback));
 };
 
 }  // namespace chromeos

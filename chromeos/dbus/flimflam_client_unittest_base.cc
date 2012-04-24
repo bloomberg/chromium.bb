@@ -30,11 +30,31 @@ void RunTask(const tracked_objects::Location& from_here,
 
 }  // namespace
 
+FlimflamClientUnittestBase::MockClosure::MockClosure() {}
+
+FlimflamClientUnittestBase::MockClosure::~MockClosure() {}
+
+base::Closure FlimflamClientUnittestBase::MockClosure::GetCallback() {
+  return base::Bind(&MockClosure::Run, base::Unretained(this));
+}
+
+
+FlimflamClientUnittestBase::MockErrorCallback::MockErrorCallback() {}
+
+FlimflamClientUnittestBase::MockErrorCallback::~MockErrorCallback() {}
+
+FlimflamClientHelper::ErrorCallback
+FlimflamClientUnittestBase::MockErrorCallback::GetCallback() {
+  return base::Bind(&MockErrorCallback::Run, base::Unretained(this));
+}
+
+
 FlimflamClientUnittestBase::FlimflamClientUnittestBase(
     const std::string& interface_name,
     const dbus::ObjectPath& object_path)
     : interface_name_(interface_name),
-      object_path_(object_path) {
+      object_path_(object_path),
+      response_(NULL) {
 }
 
 FlimflamClientUnittestBase::~FlimflamClientUnittestBase() {
@@ -62,6 +82,12 @@ void FlimflamClientUnittestBase::SetUp() {
   // to return responses.
   EXPECT_CALL(*mock_proxy_, CallMethod(_, _, _))
       .WillRepeatedly(Invoke(this, &FlimflamClientUnittestBase::OnCallMethod));
+
+  // Set an expectation so mock_proxy's CallMethodWithErrorCallback() will use
+  // OnCallMethodWithErrorCallback() to return responses.
+  EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
+      .WillRepeatedly(Invoke(
+          this, &FlimflamClientUnittestBase::OnCallMethodWithErrorCallback));
 
   // Set an expectation so mock_proxy's ConnectToSignal() will use
   // OnConnectToSignal() to run the callback.
@@ -206,6 +232,14 @@ void FlimflamClientUnittestBase::OnCallMethod(
   argument_checker_.Run(&reader);
   message_loop_.PostTask(FROM_HERE,
                          base::Bind(response_callback, response_));
+}
+
+void FlimflamClientUnittestBase::OnCallMethodWithErrorCallback(
+    dbus::MethodCall* method_call,
+    int timeout_ms,
+    const dbus::ObjectProxy::ResponseCallback& response_callback,
+    const dbus::ObjectProxy::ErrorCallback& error_callback) {
+  OnCallMethod(method_call, timeout_ms, response_callback);
 }
 
 dbus::Response* FlimflamClientUnittestBase::OnCallMethodAndBlock(

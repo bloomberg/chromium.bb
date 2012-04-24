@@ -31,8 +31,9 @@ class MockFlimflamServiceClient : public FlimflamServiceClient {
   MOCK_METHOD3(ClearProperty, void(const dbus::ObjectPath& service_path,
                                    const std::string& name,
                                    const VoidCallback& callback));
-  MOCK_METHOD2(Connect, void(const dbus::ObjectPath& service_path,
-                             const VoidCallback& callback));
+  MOCK_METHOD3(Connect, void(const dbus::ObjectPath& service_path,
+                             const base::Closure& callback,
+                             const ErrorCallback& error_callback));
   MOCK_METHOD2(Disconnect, void(const dbus::ObjectPath& service_path,
                                 const VoidCallback& callback));
   MOCK_METHOD2(Remove, void(const dbus::ObjectPath& service_path,
