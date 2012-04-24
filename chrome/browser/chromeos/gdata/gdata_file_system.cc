@@ -1189,7 +1189,7 @@ void GDataFileSystem::TransferFile(const FilePath& local_file_path,
                  local_file_path,
                  resource_id),
       base::Bind(&GDataFileSystem::TransferFileForResourceId,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  local_file_path,
                  remote_dest_file_path,
                  callback,
@@ -1239,7 +1239,7 @@ void GDataFileSystem::TransferRegularFile(
                  error,
                  upload_file_info),
       base::Bind(&GDataFileSystem::StartFileUploadOnUIThread,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  callback,
                  error,
                  upload_file_info));
@@ -1272,7 +1272,7 @@ void GDataFileSystem::StartFileUploadOnUIThread(
 
   upload_file_info->completion_callback =
       base::Bind(&GDataFileSystem::OnTransferCompleted,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  callback);
 
   service->uploader()->UploadFile(scoped_ptr<UploadFileInfo>(upload_file_info));
