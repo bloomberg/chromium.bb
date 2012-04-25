@@ -684,7 +684,8 @@ def main(args):
     buildbot_common.BuildStep('Archive build')
     bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/%s' % \
         build_utils.ChromeVersion()
-    buildbot_common.Archive(tarname, bucket_path, OUT_DIR)
+    buildbot_common.Archive(os.path.relpath(tarfile, OUT_DIR),
+                            bucket_path, OUT_DIR)
 
     # generate "manifest snippet" for this archive.
     if not skip_test_updater:
