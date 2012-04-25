@@ -674,6 +674,12 @@ cr.define('options.internet', function() {
       detailsPage.shared = data.shared;
       $('wifi-connection-state').textContent = data.connectionState;
       $('wifi-ssid').textContent = data.ssid;
+      if (data.bssid && data.bssid.length > 0) {
+        $('wifi-bssid').textContent = data.bssid;
+        $('wifi-bssid-entry').hidden = false;
+      } else {
+        $('wifi-bssid-entry').hidden = true;
+      }
       $('wifi-ip-address').textContent = inetAddress;
       $('wifi-subnet-address').textContent = inetSubnetAddress;
       $('wifi-gateway').textContent = inetGateway;
@@ -684,6 +690,14 @@ cr.define('options.internet', function() {
       } else {
         $('wifi-security-entry').hidden = true;
       }
+      // Frequency is in MHz.
+      var frequency = localStrings.getString('inetFrequencyFormat');
+      frequency = frequency.replace('$1', data.frequency);
+      $('wifi-frequency').textContent = frequency;
+      // Signal strength as percentage.
+      var signalStrength = localStrings.getString('inetSignalStrengthFormat');
+      signalStrength = signalStrength.replace('$1', data.strength);
+      $('wifi-signal-strength').textContent = signalStrength;
       if (data.hardwareAddress) {
         $('wifi-hardware-address').textContent = data.hardwareAddress;
         $('wifi-hardware-address-entry').hidden = false;

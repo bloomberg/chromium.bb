@@ -13139,6 +13139,21 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings Internet options, the label for the network id.">
         SSID:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_BSSID" desc="In settings Internet options, the label for the network BSSID.">
+        BSSID:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_FREQUENCY" desc="In settings Internet options, the label for the WiFi frequency.">
+        Frequency:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_FREQUENCY_MHZ" desc="In Internet settings, the formatting for the WiFi frequency.">
+        <ph name="MHZ">$1<ex>2400</ex></ph> MHz
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_STRENGTH" desc="In Internet settings, the label for the WiFi signal strength.">
+        Signal Strength:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_STRENGTH_PERCENTAGE" desc="In Internet settings, the formatting for the WiFi signal strength.">
+        <ph name="PRECENTAGE">$1<ex>100</ex></ph>%
+      </message>
       <message name="IDS_OPTIONS_SETTIGNS_INTERNET_OPTIONS_NETWORK_ENCRYPTION" desc="Label in the network details dialog for showing the encryption method.">
         Security:
       </message>

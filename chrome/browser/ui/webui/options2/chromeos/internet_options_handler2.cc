@@ -338,10 +338,19 @@ void InternetOptionsHandler::GetLocalizedValues(
 
     { "accessLockedMsg", IDS_STATUSBAR_NETWORK_LOCKED },
     { "inetSsid", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID },
+    { "inetBssid", IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_BSSID },
     { "inetEncryption",
-       IDS_OPTIONS_SETTIGNS_INTERNET_OPTIONS_NETWORK_ENCRYPTION },
+      IDS_OPTIONS_SETTIGNS_INTERNET_OPTIONS_NETWORK_ENCRYPTION },
+    { "inetFrequency",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_FREQUENCY },
+    { "inetFrequencyFormat",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_FREQUENCY_MHZ },
+    { "inetSignalStrength",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_STRENGTH },
+    { "inetSignalStrengthFormat",
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_STRENGTH_PERCENTAGE },
     { "inetPassProtected",
-       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED },
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED },
     { "inetNetworkShared",
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_SHARED },
     { "inetPreferredNetwork",
@@ -889,6 +898,9 @@ void InternetOptionsHandler::PopulateWifiDetails(
   bool shared = wifi->profile_type() == chromeos::PROFILE_SHARED;
   dictionary->SetBoolean("shared", shared);
   dictionary->SetString("encryption", wifi->GetEncryptionString());
+  dictionary->SetString("bssid", wifi->bssid());
+  dictionary->SetInteger("frequency", wifi->frequency());
+  dictionary->SetInteger("strength", wifi->strength());
 }
 
 DictionaryValue* InternetOptionsHandler::CreateDictionaryFromCellularApn(
