@@ -16,8 +16,6 @@ env.Append(CPPPATH=['${TARGET_ROOT}'])
 
 if env.Bit('windows'):
   env.Append(CPPDEFINES=['WIN32'])
-  if env.Bit('target_x86_64'):
-    env.Append(CPPDEFINES=['WIN64'])
 
 # normally comment out -- uncomment out to test the pedantic removal
 # check below.
