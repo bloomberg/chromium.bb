@@ -73,6 +73,12 @@ class FlimflamManagerClientImpl : public FlimflamManagerClient {
     helper_.CallDictionaryValueMethod(&method_call, callback);
   }
 
+  virtual base::DictionaryValue* CallGetPropertiesAndBlock() OVERRIDE {
+    dbus::MethodCall method_call(flimflam::kFlimflamManagerInterface,
+                                 flimflam::kGetPropertiesFunction);
+    return helper_.CallDictionaryValueMethodAndBlock(&method_call);
+  }
+
   virtual void SetProperty(const std::string& name,
                            const base::Value& value,
                            const VoidCallback& callback) OVERRIDE {
@@ -159,6 +165,11 @@ class FlimflamManagerClientStubImpl : public FlimflamManagerClient {
             &FlimflamManagerClientStubImpl::PassEmptyDictionaryValue,
             weak_ptr_factory_.GetWeakPtr(),
             callback));
+  }
+
+  // FlimflamManagerClient override.
+  virtual base::DictionaryValue* CallGetPropertiesAndBlock() OVERRIDE {
+    return new base::DictionaryValue;
   }
 
   // FlimflamManagerClient override.

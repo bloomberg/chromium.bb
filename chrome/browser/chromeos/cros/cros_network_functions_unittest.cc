@@ -13,6 +13,7 @@
 #include "chromeos/dbus/mock_flimflam_device_client.h"
 #include "chromeos/dbus/mock_flimflam_ipconfig_client.h"
 #include "chromeos/dbus/mock_flimflam_manager_client.h"
+#include "chromeos/dbus/mock_flimflam_network_client.h"
 #include "chromeos/dbus/mock_flimflam_profile_client.h"
 #include "chromeos/dbus/mock_flimflam_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -778,6 +779,8 @@ class CrosNetworkFunctionsTest : public testing::Test {
         mock_dbus_thread_manager->mock_flimflam_ipconfig_client();
     mock_manager_client_ =
         mock_dbus_thread_manager->mock_flimflam_manager_client();
+    mock_network_client_ =
+        mock_dbus_thread_manager->mock_flimflam_network_client();
     mock_profile_client_ =
         mock_dbus_thread_manager->mock_flimflam_profile_client();
     mock_service_client_ =
@@ -829,6 +832,7 @@ class CrosNetworkFunctionsTest : public testing::Test {
   MockFlimflamDeviceClient* mock_device_client_;
   MockFlimflamIPConfigClient* mock_ipconfig_client_;
   MockFlimflamManagerClient* mock_manager_client_;
+  MockFlimflamNetworkClient* mock_network_client_;
   MockFlimflamProfileClient* mock_profile_client_;
   MockFlimflamServiceClient* mock_service_client_;
   const base::DictionaryValue* dictionary_value_result_;
@@ -1328,6 +1332,70 @@ TEST_F(CrosNetworkFunctionsTest, CrosRemoveIPConfig) {
   EXPECT_CALL(*mock_ipconfig_client_,
               CallRemoveAndBlock(dbus::ObjectPath(config.path))).Times(1);
   CrosRemoveIPConfig(&config);
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosGetWifiAccessPoints) {
+  const std::string device_path = "/device/path";
+  base::ListValue* devices = new base::ListValue;
+  devices->Append(base::Value::CreateStringValue(device_path));
+  base::DictionaryValue* manager_properties = new base::DictionaryValue;
+  manager_properties->SetWithoutPathExpansion(
+      flimflam::kDevicesProperty, devices);
+
+  const int kScanInterval = 42;
+  const std::string network_path = "/network/path";
+  base::ListValue* networks = new base::ListValue;
+  networks->Append(base::Value::CreateStringValue(network_path));
+  base::DictionaryValue* device_properties = new base::DictionaryValue;
+  device_properties->SetWithoutPathExpansion(
+      flimflam::kNetworksProperty, networks);
+  device_properties->SetWithoutPathExpansion(
+      flimflam::kPoweredProperty, base::Value::CreateBooleanValue(true));
+  device_properties->SetWithoutPathExpansion(
+      flimflam::kScanIntervalProperty,
+      base::Value::CreateIntegerValue(kScanInterval));
+
+  const int kSignalStrength = 10;
+  const int kWifiChannel = 3;
+  const std::string address = "address";
+  const std::string name = "name";
+  const base::Time expected_timestamp =
+      base::Time::Now() - base::TimeDelta::FromSeconds(kScanInterval);
+  const base::TimeDelta acceptable_timestamp_range =
+      base::TimeDelta::FromSeconds(1);
+
+  base::DictionaryValue* network_properties = new base::DictionaryValue;
+  network_properties->SetWithoutPathExpansion(
+      flimflam::kAddressProperty, base::Value::CreateStringValue(address));
+  network_properties->SetWithoutPathExpansion(
+      flimflam::kNameProperty, base::Value::CreateStringValue(name));
+  network_properties->SetWithoutPathExpansion(
+      flimflam::kSignalStrengthProperty,
+      base::Value::CreateIntegerValue(kSignalStrength));
+  network_properties->SetWithoutPathExpansion(
+      flimflam::kWifiChannelProperty,
+      base::Value::CreateIntegerValue(kWifiChannel));
+
+  // Set expectations.
+  EXPECT_CALL(*mock_manager_client_, CallGetPropertiesAndBlock())
+      .WillOnce(Return(manager_properties));
+  EXPECT_CALL(*mock_device_client_,
+              CallGetPropertiesAndBlock(dbus::ObjectPath(device_path)))
+      .WillOnce(Return(device_properties));
+  EXPECT_CALL(*mock_network_client_,
+              CallGetPropertiesAndBlock(dbus::ObjectPath(network_path)))
+      .WillOnce(Return(network_properties));
+
+  // Call function.
+  WifiAccessPointVector aps;
+  ASSERT_TRUE(CrosGetWifiAccessPoints(&aps));
+  ASSERT_EQ(1U, aps.size());
+  EXPECT_EQ(address, aps[0].mac_address);
+  EXPECT_EQ(name, aps[0].name);
+  EXPECT_LE(expected_timestamp - acceptable_timestamp_range, aps[0].timestamp);
+  EXPECT_GE(expected_timestamp + acceptable_timestamp_range, aps[0].timestamp);
+  EXPECT_EQ(kSignalStrength, aps[0].signal_strength);
+  EXPECT_EQ(kWifiChannel, aps[0].channel);
 }
 
 TEST_F(CrosNetworkFunctionsTest, CrosConfigureService) {

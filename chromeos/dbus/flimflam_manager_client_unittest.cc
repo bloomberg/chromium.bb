@@ -169,6 +169,33 @@ TEST_F(FlimflamManagerClientTest, GetProperties) {
   message_loop_.RunAllPending();
 }
 
+TEST_F(FlimflamManagerClientTest, CallGetPropertiesAndBlock) {
+  // Create response.
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  dbus::MessageWriter array_writer(NULL);
+  writer.OpenArray("{sv}", &array_writer);
+  dbus::MessageWriter entry_writer(NULL);
+  array_writer.OpenDictEntry(&entry_writer);
+  entry_writer.AppendString(flimflam::kOfflineModeProperty);
+  entry_writer.AppendVariantOfBool(true);
+  array_writer.CloseContainer(&entry_writer);
+  writer.CloseContainer(&array_writer);
+
+  // Create the expected value.
+  base::DictionaryValue value;
+  value.SetWithoutPathExpansion(flimflam::kOfflineModeProperty,
+                                base::Value::CreateBooleanValue(true));
+  // Set expectations.
+  PrepareForMethodCall(flimflam::kGetPropertiesFunction,
+                       base::Bind(&ExpectNoArgument),
+                       response.get());
+  // Call method.
+  scoped_ptr<base::DictionaryValue> result(
+      client_->CallGetPropertiesAndBlock());
+  EXPECT_TRUE(value.Equals(result.get()));
+}
+
 TEST_F(FlimflamManagerClientTest, SetProperty) {
   // Create response.
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());

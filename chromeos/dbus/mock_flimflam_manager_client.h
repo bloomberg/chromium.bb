@@ -20,6 +20,7 @@ class MockFlimflamManagerClient : public FlimflamManagerClient {
       const PropertyChangedHandler& handler));
   MOCK_METHOD0(ResetPropertyChangedHandler, void());
   MOCK_METHOD1(GetProperties, void(const DictionaryValueCallback& callback));
+  MOCK_METHOD0(CallGetPropertiesAndBlock, base::DictionaryValue*());
   MOCK_METHOD3(SetProperty, void(const std::string& name,
                                  const base::Value& value,
                                  const VoidCallback& callback));
