@@ -17,6 +17,7 @@
 #include "content/gpu/gpu_info_collector.h"
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "ui/gfx/gl/gl_implementation.h"
 
 const int kGpuTimeout = 10000;
@@ -29,8 +30,18 @@ bool GpuProcessLogMessageHandler(int severity,
                                  const std::string& str) {
   std::string header = str.substr(0, message_start);
   std::string message = str.substr(message_start);
-  ChildThread::current()->Send(
-      new GpuHostMsg_OnLogMessage(severity, header, message));
+
+  // If we are not on main thread in child process, send through
+  // the sync_message_filter; otherwise send directly.
+  if (MessageLoop::current() !=
+      ChildProcess::current()->main_thread()->message_loop()) {
+    ChildProcess::current()->main_thread()->sync_message_filter()->Send(
+        new GpuHostMsg_OnLogMessage(severity, header, message));
+  } else {
+    ChildThread::current()->Send(new GpuHostMsg_OnLogMessage(severity, header,
+        message));
+  }
+
   return false;
 }
 
