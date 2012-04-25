@@ -95,7 +95,8 @@ class InternetOptionsHandler
   void SetSimCardLockCallback(const base::ListValue* args);
   void ChangePinCallback(const base::ListValue* args);
   void ShareNetworkCallback(const base::ListValue* args);
-  void ShowMorePlanInfoCallback(const ListValue* args);
+  void ShowMorePlanInfoCallback(const base::ListValue* args);
+  void RefreshNetworksCallback(const base::ListValue* args);
 
   /**
    * Toggle airplane mode.  Disables all wireless networks when activated.

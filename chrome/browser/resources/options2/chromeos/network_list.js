@@ -305,6 +305,11 @@ cr.define('options.network', function() {
      */
     showMenu: function() {
       var rebuild = false;
+      // Force a rescan if opening the menu for WiFi networks to ensure the
+      // list is up to date. Networks are periodically rescanned, but depending
+      // on timing, there could be an excessive delay before the first rescan
+      // unless forced.
+      var rescan = !activeMenu_ && this.data_.key == 'wifi';
       if (!this.menu_) {
         rebuild = true;
         var existing = $(this.getMenuName_());
@@ -329,6 +334,8 @@ cr.define('options.network', function() {
         this.menu_.style.setProperty('top', top + 'px');
         this.menu_.hidden = false;
       }
+      if (rescan)
+        chrome.send('refreshNetworks');
     },
   };
 

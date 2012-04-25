@@ -442,6 +442,9 @@ void InternetOptionsHandler::InitializePage() {
 
 void InternetOptionsHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
+  web_ui()->RegisterMessageCallback("refreshNetworks",
+      base::Bind(&InternetOptionsHandler::RefreshNetworksCallback,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("buttonClickCallback",
       base::Bind(&InternetOptionsHandler::ButtonClickCallback,
                  base::Unretained(this)));
@@ -583,6 +586,10 @@ void InternetOptionsHandler::SetSimCardLockCallback(const ListValue* args) {
 void InternetOptionsHandler::ChangePinCallback(const ListValue* args) {
   chromeos::SimDialogDelegate::ShowDialog(GetNativeWindow(),
       chromeos::SimDialogDelegate::SIM_DIALOG_CHANGE_PIN);
+}
+
+void InternetOptionsHandler::RefreshNetworksCallback(const ListValue* args) {
+  cros_->RequestNetworkScan();
 }
 
 void InternetOptionsHandler::RefreshNetworkData() {
