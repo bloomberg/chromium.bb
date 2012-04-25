@@ -11,16 +11,9 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 
-typedef LRESULT (*VolumeNameFunc)(LPCWSTR drive,
-                                  LPWSTR volume_name,
-                                  unsigned int volume_name_len);
-
 class CONTENT_EXPORT SystemMessageWindowWin {
  public:
   SystemMessageWindowWin();
-  // Only for use in unit tests.
-  explicit SystemMessageWindowWin::SystemMessageWindowWin(
-      VolumeNameFunc volumeNameFunc);
 
   virtual ~SystemMessageWindowWin();
 
@@ -44,7 +37,6 @@ class CONTENT_EXPORT SystemMessageWindowWin {
   }
 
   HWND window_;
-  VolumeNameFunc volume_name_func_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemMessageWindowWin);
 };

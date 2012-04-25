@@ -22,6 +22,7 @@
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/media_gallery/media_device_notifications_window_win.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager_win.h"
@@ -168,6 +169,9 @@ ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
   }
 }
 
+ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() {
+}
+
 void ChromeBrowserMainPartsWin::ToolkitInitialized() {
   ChromeBrowserMainParts::ToolkitInitialized();
   gfx::PlatformFontWin::adjust_font_callback = &AdjustUIFont;
@@ -180,6 +184,8 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();
   }
+  media_device_notifications_window_.reset(
+      new chrome::MediaDeviceNotificationsWindowWin());
 }
 
 // static
