@@ -206,10 +206,21 @@
         <include name="IDR_TAB_ALPHA_LEFT" file="tab_alpha_left.png" type="BINDATA" />
         <include name="IDR_TAB_ALPHA_RIGHT" file="tab_alpha_right.png" type="BINDATA" />
       </if>
-      <include name="IDR_TAB_CLOSE" file="tab_close.png" type="BINDATA" />
-      <include name="IDR_TAB_CLOSE_H" file="tab_close_h.png" type="BINDATA" />
-      <include name="IDR_TAB_CLOSE_MASK" file="tab_close_mask.png" type="BINDATA" />
-      <include name="IDR_TAB_CLOSE_P" file="tab_close_p.png" type="BINDATA" />
+      <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
+           fill a background with a color from the theme, tile IDR_TAB_CLOSE over it,
+           then apply IDR_TAB_CLOSE_MASK.  See chrome/browser/ui/views/tabs/tab.cc -->
+      <if expr="pp_ifdef('use_ash')">
+        <include name="IDR_TAB_CLOSE" file="ash/tab_close_normal.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_H" file="ash/tab_close_hot.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_MASK" file="ash/tab_close_mask.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_P" file="ash/tab_close_pressed.png" type="BINDATA" />
+      </if>
+      <if expr="not pp_ifdef('use_ash')">
+        <include name="IDR_TAB_CLOSE" file="tab_close.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_H" file="tab_close_h.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_MASK" file="tab_close_mask.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_P" file="tab_close_p.png" type="BINDATA" />
+      </if>
       <include name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" type="BINDATA" />
       <include name="IDR_TAB_DROP_UP" file="tab_drop_up.png" type="BINDATA" />
       <if expr="pp_ifdef('use_ash')">
@@ -223,10 +234,10 @@
         <include name="IDR_TAB_INACTIVE_RIGHT" file="tab_inactive_right.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_FRAME" file="ash/theme_frame.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INACTIVE" file="ash/theme_frame_inactive.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO" file="ash/theme_frame_incognito.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="ash/theme_frame_incognito_inactive.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME" file="ash/theme_default_active.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INACTIVE" file="ash/theme_default_inactive.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO" file="ash/theme_incognito_active.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="ash/theme_incognito_inactive.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
         <include name="IDR_THEME_FRAME" file="theme_frame.png" type="BINDATA" />

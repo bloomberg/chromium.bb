@@ -203,10 +203,18 @@
         <include name="IDR_TAB_ALPHA_LEFT" file="metro/tab_alpha_left_metro_1_0x.png" type="BINDATA" />
         <include name="IDR_TAB_ALPHA_RIGHT" file="metro/tab_alpha_right_metro_1_0x.png" type="BINDATA" />
       </if>
-      <include name="IDR_TAB_CLOSE" file="metro/tab_close_metro_1_0x.png" type="BINDATA" />
-      <include name="IDR_TAB_CLOSE_H" file="metro/tab_close_h_metro_1_0x.png" type="BINDATA" />
-      <include name="IDR_TAB_CLOSE_MASK" file="metro/tab_close_mask_metro_1_0x.png" type="BINDATA" />
-      <include name="IDR_TAB_CLOSE_P" file="metro/tab_close_p_metro_1_0x.png" type="BINDATA" />
+      <if expr="pp_ifdef('use_ash')">
+        <include name="IDR_TAB_CLOSE" file="ash/tab_close_normal.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_H" file="ash/tab_close_hot.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_MASK" file="ash/tab_close_mask.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_P" file="ash/tab_close_pressed.png" type="BINDATA" />
+      </if>
+      <if expr="not pp_ifdef('use_ash')">
+        <include name="IDR_TAB_CLOSE" file="metro/tab_close_metro_1_0x.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_H" file="metro/tab_close_h_metro_1_0x.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_MASK" file="metro/tab_close_mask_metro_1_0x.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_P" file="metro/tab_close_p_metro_1_0x.png" type="BINDATA" />
+      </if>
       <include name="IDR_TAB_DROP_DOWN" file="metro/tab_drop_down_metro_1_0x.png" type="BINDATA" />
       <include name="IDR_TAB_DROP_UP" file="metro/tab_drop_up_metro_1_0x.png" type="BINDATA" />
       <if expr="pp_ifdef('use_ash')">
@@ -220,10 +228,10 @@
         <include name="IDR_TAB_INACTIVE_RIGHT" file="metro/tab_inactive_right_metro_1_0x.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_FRAME" file="ash/theme_frame.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INACTIVE" file="ash/theme_frame_inactive.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO" file="ash/theme_frame_incognito.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="ash/theme_frame_incognito_inactive.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME" file="ash/theme_default_active.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INACTIVE" file="ash/theme_default_inactive.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO" file="ash/theme_incognito_active.png" type="BINDATA" />
+        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="ash/theme_incognito_inactive.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
         <include name="IDR_THEME_FRAME" file="theme_frame.png" type="BINDATA" />
