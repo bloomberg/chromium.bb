@@ -74,6 +74,9 @@
   callback WriteCallback = void (WriteInfo writeInfo);
 
   dictionary RecvFromInfo {
+    // The resultCode returned from the underlying read() call.
+    long resultCode;
+
     // The data received. Warning: will probably become a blob or other
     // appropriate binary-friendly type.
     // TODO(miket): [instanceOf=ArrayBuffer]object data;
@@ -84,7 +87,7 @@
 
   callback RecvFromCallback = void (RecvFromInfo recvFromInfo);
 
-  callback SendToCallback = void (long bytesWritten);
+  callback SendToCallback = void (WriteInfo writeInfo);
 
   interface Functions {
     // Creates a socket of the specified type that will connect to the specified
