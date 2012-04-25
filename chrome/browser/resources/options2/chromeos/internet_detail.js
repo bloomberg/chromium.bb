@@ -7,6 +7,21 @@ cr.define('options.internet', function() {
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
 
   /**
+   * Network settings constants. These enums must match their C++
+   * counterparts.
+   */
+  function Constants() {}
+
+  // Network types:
+  Constants.TYPE_UNKNOWN = 0;
+  Constants.TYPE_ETHERNET = 1;
+  Constants.TYPE_WIFI = 2;
+  Constants.TYPE_WIMAX = 3;
+  Constants.TYPE_BLUETOOTH = 4;
+  Constants.TYPE_CELLULAR = 5;
+  Constants.TYPE_VPN = 6;
+
+  /*
    * Minimum delay in milliseconds before updating controls.  Used to
    * consolidate update requests resulting from preference update
    * notifications.
@@ -126,8 +141,7 @@ cr.define('options.internet', function() {
       if (!servicePath || !servicePath.length ||
           !networkType || !networkType.length)
         return;
-      // TODO(kevers): Use more descriptive name for callback.
-      chrome.send('buttonClickCallback',
+      chrome.send('networkCommand',
           [networkType, servicePath, 'options']);
     },
 
@@ -520,8 +534,7 @@ cr.define('options.internet', function() {
   DetailsInternetPage.loginFromDetails = function() {
     var data = $('connection-state').data;
     var servicePath = data.servicePath;
-    // TODO(kevers): Use more descriptive name for callback.
-    chrome.send('buttonClickCallback', [String(data.type),
+    chrome.send('networkCommand', [String(data.type),
                                           servicePath,
                                           'connect']);
     OptionsPage.closeOverlay();
@@ -530,8 +543,7 @@ cr.define('options.internet', function() {
   DetailsInternetPage.disconnectNetwork = function() {
     var data = $('connection-state').data;
     var servicePath = data.servicePath;
-    // TODO(kevers): Use more descriptive name for callback.
-    chrome.send('buttonClickCallback', [String(data.type),
+    chrome.send('networkCommand', [String(data.type),
                                         servicePath,
                                         'disconnect']);
     OptionsPage.closeOverlay();
@@ -540,9 +552,8 @@ cr.define('options.internet', function() {
   DetailsInternetPage.activateFromDetails = function() {
     var data = $('connection-state').data;
     var servicePath = data.servicePath;
-    if (data.type == options.internet.Constants.TYPE_CELLULAR) {
-      // TODO(kevers): Use more descriptive name for callback.
-      chrome.send('buttonClickCallback', [String(data.type),
+    if (data.type == Constants.TYPE_CELLULAR) {
+      chrome.send('networkCommand', [String(data.type),
                                           String(servicePath),
                                           'activate']);
     }
@@ -552,14 +563,14 @@ cr.define('options.internet', function() {
   DetailsInternetPage.setDetails = function() {
     var data = $('connection-state').data;
     var servicePath = data.servicePath;
-    if (data.type == options.internet.Constants.TYPE_WIFI) {
+    if (data.type == Constants.TYPE_WIFI) {
       chrome.send('setPreferNetwork',
                    [String(servicePath),
                     $('prefer-network-wifi').checked ? 'true' : 'false']);
       chrome.send('setAutoConnect',
                   [String(servicePath),
                    $('auto-connect-network-wifi').checked ? 'true' : 'false']);
-    } else if (data.type == options.internet.Constants.TYPE_CELLULAR) {
+    } else if (data.type == Constants.TYPE_CELLULAR) {
       chrome.send('setAutoConnect',
                   [String(servicePath),
                    $('auto-connect-network-cellular').checked ? 'true' :
@@ -585,7 +596,6 @@ cr.define('options.internet', function() {
     $('network-details-subtitle-status').textContent =
         localStrings.getString(statusKey);
     var typeKey = null;
-    var Constants = options.internet.Constants;
     switch (data.type) {
     case Constants.TYPE_ETHERNET:
       typeKey = 'ethernetTitle';
@@ -619,7 +629,7 @@ cr.define('options.internet', function() {
     $('activate-details').hidden = true;
     $('view-account-details').hidden = true;
     $('details-internet-login').hidden = data.connected;
-    if (data.type == options.internet.Constants.TYPE_ETHERNET)
+    if (data.type == Constants.TYPE_ETHERNET)
       $('details-internet-disconnect').hidden = true;
     else
       $('details-internet-disconnect').hidden = !data.connected;
@@ -713,7 +723,7 @@ cr.define('options.internet', function() {
       // This is most likely a device without a hardware address.
       $('hardware-address-row').style.display = 'none';
     }
-    if (data.type == options.internet.Constants.TYPE_WIFI) {
+    if (data.type == Constants.TYPE_WIFI) {
       OptionsPage.showTab($('wifi-network-nav-tab'));
       detailsPage.wireless = true;
       detailsPage.vpn = false;
@@ -759,7 +769,7 @@ cr.define('options.internet', function() {
       $('auto-connect-network-wifi').checked = data.autoConnect.value;
       $('auto-connect-network-wifi').disabled = !data.remembered;
       detailsPage.password = data.encrypted;
-    } else if (data.type == options.internet.Constants.TYPE_CELLULAR) {
+    } else if (data.type == Constants.TYPE_CELLULAR) {
       if (!data.gsm)
         OptionsPage.showTab($('cellular-plan-nav-tab'));
       else
@@ -853,7 +863,7 @@ cr.define('options.internet', function() {
         detailsPage.nocellplan = true;
         detailsPage.cellplanloading = false;
       }
-    } else if (data.type == options.internet.Constants.TYPE_VPN) {
+    } else if (data.type == Constants.TYPE_VPN) {
       OptionsPage.showTab($('vpn-nav-tab'));
       detailsPage.wireless = false;
       detailsPage.vpn = true;

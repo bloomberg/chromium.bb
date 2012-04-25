@@ -65,13 +65,14 @@ class InternetOptionsHandler
   // browser window with an empty tab and returns it.
   Browser* GetAppropriateBrowser();
 
-  // Passes data needed to show details overlay for network.
+  // Passes data needed to show the details overlay for a network.
   // |args| will be [ network_type, service_path, command ]
   // And command is one of 'options', 'connect', disconnect', 'activate' or
   // 'forget'
-  // Handle{Wifi,Cellular}ButtonClick handles button click on a wireless
-  // network item and a cellular network item respectively.
-  void ButtonClickCallback(const base::ListValue* args);
+  void NetworkCommandCallback(const base::ListValue* args);
+
+  // Handle{Wifi,Cellular,VPN}ButtonClick handles button click on a wireless,
+  // cellular or VPN network item, respectively.
   void HandleWifiButtonClick(const std::string& service_path,
                              const std::string& command);
   void HandleCellularButtonClick(const std::string& service_path,

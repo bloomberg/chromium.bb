@@ -443,11 +443,11 @@ void InternetOptionsHandler::InitializePage() {
 
 void InternetOptionsHandler::RegisterMessages() {
   // Setup handlers specific to this panel.
+  web_ui()->RegisterMessageCallback("networkCommand",
+      base::Bind(&InternetOptionsHandler::NetworkCommandCallback,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("refreshNetworks",
       base::Bind(&InternetOptionsHandler::RefreshNetworksCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("buttonClickCallback",
-      base::Bind(&InternetOptionsHandler::ButtonClickCallback,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("refreshCellularPlan",
       base::Bind(&InternetOptionsHandler::RefreshCellularPlanCallback,
@@ -1070,7 +1070,7 @@ Browser* InternetOptionsHandler::GetAppropriateBrowser() {
       ProfileManager::GetDefaultProfileOrOffTheRecord());
 }
 
-void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
+void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {
   std::string str_type;
   std::string service_path;
   std::string command;

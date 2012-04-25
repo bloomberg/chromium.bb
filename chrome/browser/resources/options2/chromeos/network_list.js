@@ -551,7 +551,7 @@ cr.define('options.network', function() {
      * @param {Object} data Description of the network.
      * @param {string} label Display name for the menu item.
      * @param {string|function} command Callback function or name
-     *     of the command for |buttonClickCallback|.
+     *     of the command for |networkCommand|.
      * @return {!Element} The created menu item.
      * @private
      */
@@ -567,7 +567,7 @@ cr.define('options.network', function() {
         var type = String(data.networkType);
         var path = data.servicePath;
         callback = function() {
-          chrome.send('buttonClickCallback',
+          chrome.send('networkCommand',
                       [type, path, command]);
           closeMenu_();
         };
@@ -615,7 +615,7 @@ cr.define('options.network', function() {
       var path = data.servicePath;
       optionsButton.addEventListener('click', function(event) {
         event.stopPropagation();
-        chrome.send('buttonClickCallback',
+        chrome.send('networkCommand',
                     [type, path, 'options']);
         closeMenu_();
       });
@@ -684,7 +684,7 @@ cr.define('options.network', function() {
       // Add connection control.
       var addConnection = function(type) {
         var callback = function() {
-          chrome.send('buttonClickCallback',
+          chrome.send('networkCommand',
                       [String(type), '?', 'connect']);
         }
         return callback;
@@ -834,7 +834,7 @@ cr.define('options.network', function() {
       var type = String(Constants.TYPE_ETHERNET);
       var path = ethernetConnection.servicePath;
       var ethernetOptions = function() {
-        chrome.send('buttonClickCallback',
+        chrome.send('networkCommand',
                     [type, path, 'options']);
       };
       networkList.update({key: 'ethernet',

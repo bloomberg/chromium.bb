@@ -18,7 +18,6 @@
   <include src="chromeos/cellular_plan_element.js"></include>
   <include src="chromeos/change_picture_options.js"></include>
   <include src="chromeos/internet_detail_ip_config_list.js"></include>
-  <include src="chromeos/internet_network_element.js"></include>
   <include src="chromeos/internet_detail.js"></include>
   <include src="chromeos/network_list.js"></include>
   <include src="chromeos/preferred_networks.js"></include>
