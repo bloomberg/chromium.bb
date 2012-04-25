@@ -6,12 +6,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // Globals:
-var RESULTS_PER_PAGE = 150;
-var MAX_SEARCH_DEPTH_MONTHS = 18;
+/** @const */ var RESULTS_PER_PAGE = 150;
+/** @const */ var MAX_SEARCH_DEPTH_MONTHS = 18;
 
 // Amount of time between pageviews that we consider a 'break' in browsing,
 // measured in milliseconds.
-var BROWSING_GAP_TIME = 15 * 60 * 1000;
+/** @const */ var BROWSING_GAP_TIME = 15 * 60 * 1000;
 
 function $(o) {return document.getElementById(o);}
 
@@ -24,7 +24,7 @@ function createElementWithClassName(type, className) {
 // Escapes a URI as appropriate for CSS.
 function encodeURIForCSS(uri) {
   // CSS URIs need to have '(' and ')' escaped.
-  return uri.replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+  return uri.replace(/\(/g, '\\(').replace(/\)/g, '\\)');
 }
 
 function findAncestorWithClass(node, className) {
@@ -44,9 +44,9 @@ var deleteQueue = [];
 var selectionAnchor = -1;
 var activePage = null;
 
-const MenuButton = cr.ui.MenuButton;
-const Command = cr.ui.Command;
-const Menu = cr.ui.Menu;
+/** @const */ var MenuButton = cr.ui.MenuButton;
+/** @const */ var Command = cr.ui.Command;
+/** @const */ var Menu = cr.ui.Menu;
 
 function createDropDownBgImage(canvasName, colorSpec) {
   var ctx = document.getCSSCanvasContext('2d', canvasName, 6, 4);
@@ -69,11 +69,15 @@ var activeArrow = createDropDownBgImage('drop-down-arrow-active', 'white');
 
 ///////////////////////////////////////////////////////////////////////////////
 // Page:
+
 /**
  * Class to hold all the information about an entry in our model.
  * @param {Object} result An object containing the page's data.
  * @param {boolean} continued Whether this page is on the same day as the
  *     page before it
+ * @param {HistoryModel} model The model object this entry belongs to.
+ * @param {Number} id The identifier for the entry.
+ * @constructor
  */
 function Page(result, continued, model, id) {
   this.model_ = model;
@@ -81,7 +85,7 @@ function Page(result, continued, model, id) {
   this.url_ = result.url;
   this.domain_ = this.getDomainFromURL_(this.url_);
   this.starred_ = result.starred;
-  this.snippet_ = result.snippet || "";
+  this.snippet_ = result.snippet || '';
   this.id_ = id;
 
   this.changed = false;
@@ -96,19 +100,21 @@ function Page(result, continued, model, id) {
 
   // See comment in BrowsingHistoryHandler::QueryComplete - we won't always
   // get all of these.
-  this.dateRelativeDay = result.dateRelativeDay || "";
-  this.dateTimeOfDay = result.dateTimeOfDay || "";
-  this.dateShort = result.dateShort || "";
+  this.dateRelativeDay = result.dateRelativeDay || '';
+  this.dateTimeOfDay = result.dateTimeOfDay || '';
+  this.dateShort = result.dateShort || '';
 
   // Whether this is the continuation of a previous day.
   this.continued = continued;
 }
 
 // Page, Public: --------------------------------------------------------------
+
 /**
  * Returns a dom structure for a browse page result or a search page result.
- * @param {boolean} Flag to indicate if result is a search result.
- * @return {Element} The dom structure.
+ * @param {boolean} searchResultFlag Indicates whether the result is a search
+ *     result or not.
+ * @return {Node} A DOM node to represent the history entry or search result.
  */
 Page.prototype.getResultDOM = function(searchResultFlag) {
   var node = createElementWithClassName('li', 'entry');
@@ -144,7 +150,7 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
 
   // Clicking anywhere in the entryBox will check/uncheck the checkbox.
   entryBox.setAttribute('for', checkbox.id);
-  entryBox.addEventListener('mousedown', entryBoxMousedown, false);
+  entryBox.addEventListener('mousedown', entryBoxMousedown);
 
   // Prevent clicks on the drop down from affecting the checkbox.
   dropDown.addEventListener('click', function(e) { e.preventDefault(); });
@@ -185,11 +191,13 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
 };
 
 // Page, private: -------------------------------------------------------------
+
 /**
  * Extracts and returns the domain (and subdomains) from a URL.
- * @param {string} The url
- * @return (string) The domain. An empty string is returned if no domain can
+ * @param {string} url The url.
+ * @return {string} The domain. An empty string is returned if no domain can
  *     be found.
+ * @private
  */
 Page.prototype.getDomainFromURL_ = function(url) {
   var domain = url.replace(/^.+:\/\//, '').match(/[^/]+/);
@@ -205,6 +213,7 @@ Page.prototype.getDomainFromURL_ = function(url) {
  *     text nodes.
  * @param {string} highlightText Occurences of this text inside |content| will
  *     be highlighted.
+ * @private
  */
 Page.prototype.addHighlightedText_ = function(node, content, highlightText) {
   var i = 0;
@@ -228,6 +237,7 @@ Page.prototype.addHighlightedText_ = function(node, content, highlightText) {
 
 /**
  * @return {DOMObject} DOM representation for the title block.
+ * @private
  */
 Page.prototype.getTitleDOM_ = function() {
   var node = createElementWithClassName('div', 'title');
@@ -236,8 +246,8 @@ Page.prototype.getTitleDOM_ = function() {
 
   var link = document.createElement('a');
   link.href = this.url_;
-  link.id = "id-" + this.id_;
-  link.target = "_top";
+  link.id = 'id-' + this.id_;
+  link.target = '_top';
 
   // Add a tooltip, since it might be ellipsized.
   // TODO(dubroy): Find a way to show the tooltip only when necessary.
@@ -257,6 +267,7 @@ Page.prototype.getTitleDOM_ = function() {
 
 /**
  * Launch a search for more history entries from the same domain.
+ * @private
  */
 Page.prototype.showMoreFromSite_ = function() {
   setSearch(this.domain_);
@@ -264,6 +275,7 @@ Page.prototype.showMoreFromSite_ = function() {
 
 /**
  * Remove a single entry from the history.
+ * @private
  */
 Page.prototype.removeFromHistory_ = function() {
   var self = this;
@@ -277,13 +289,14 @@ Page.prototype.removeFromHistory_ = function() {
 /**
  * Click event handler for the star icon that appears beside bookmarked URLs.
  * When clicked, the bookmark is removed for that URL.
+ * @param {Event} event The click event.
  * @private
  */
 Page.prototype.starClicked_ = function(event) {
   chrome.send('removeBookmark', [this.url_]);
   event.currentTarget.hidden = true;
   event.preventDefault();
-}
+};
 
 // Page, private, static: -----------------------------------------------------
 
@@ -291,13 +304,15 @@ Page.prototype.starClicked_ = function(event) {
  * Quote a string so it can be used in a regular expression.
  * @param {string} str The source string
  * @return {string} The escaped string
+ * @private
  */
 Page.pregQuote_ = function(str) {
-  return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, "\\$1");
+  return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 // HistoryModel:
+
 /**
  * Global container for history data. Future optimizations might include
  * allowing the creation of a HistoryModel for each search string, allowing
@@ -307,12 +322,15 @@ Page.pregQuote_ = function(str) {
  * fill the currently requested page. This is somewhat dependent on the view,
  * and so future work may wish to change history model to operate on
  * timeframe (day or week) based containers.
+ *
+ * @constructor
  */
 function HistoryModel() {
   this.clearModel_();
 }
 
 // HistoryModel, Public: ------------------------------------------------------
+
 /**
  * Sets our current view that is called when the history model changes.
  * @param {HistoryView} view The view to set our current view to.
@@ -356,7 +374,7 @@ HistoryModel.prototype.getSearchText = function() {
 /**
  * Tell the model that the view will want to see the current page. When
  * the data becomes available, the model will call the view back.
- * @page {Number} page The page we want to view.
+ * @param {Number} page The page we want to view.
  */
 HistoryModel.prototype.requestPage = function(page) {
   this.requestedPage_ = page;
@@ -366,8 +384,8 @@ HistoryModel.prototype.requestPage = function(page) {
 
 /**
  * Receiver for history query.
- * @param {String} term The search term that the results are for.
- * @param {Array} results A list of results
+ * @param {Object} info An object containing information about the query.
+ * @param {Array} results A list of results.
  */
 HistoryModel.prototype.addResults = function(info, results) {
   this.inFlight_ = false;
@@ -438,6 +456,11 @@ HistoryModel.prototype.getNumberedRange = function(start, end) {
 };
 
 // HistoryModel, Private: -----------------------------------------------------
+
+/**
+ * Clear the history model.
+ * @private
+ */
 HistoryModel.prototype.clearModel_ = function() {
   this.inFlight_ = false; // Whether a query is inflight.
   this.searchText_ = '';
@@ -462,6 +485,8 @@ HistoryModel.prototype.clearModel_ = function() {
  * Figure out if we need to do more searches to fill the currently requested
  * page. If we think we can fill the page, call the view and let it know
  * we're ready to show something.
+ * @param {boolean} finished Indicates if there is any more data to come.
+ * @private
  */
 HistoryModel.prototype.updateSearch_ = function(finished) {
   if ((this.searchText_ && this.searchDepth_ >= MAX_SEARCH_DEPTH_MONTHS) ||
@@ -493,12 +518,14 @@ HistoryModel.prototype.updateSearch_ = function(finished) {
  * used.
  *
  * TODO: Fix this for when the user's clock goes across month boundaries.
- * @param {number} opt_day How many days back to do the search.
+ * @param {number=} depth How many days (or months, if the search text is
+ *     non-empty) back to do the search.
+ * @private
  */
 HistoryModel.prototype.getSearchResults_ = function(depth) {
   this.searchDepth_ = depth || 0;
 
-  if (this.searchText_ == "") {
+  if (this.searchText_ == '') {
     chrome.send('getHistory',
         [String(this.searchDepth_)]);
   } else {
@@ -513,6 +540,7 @@ HistoryModel.prototype.getSearchResults_ = function(depth) {
  * Check to see if we have data for a given page.
  * @param {number} page The page number
  * @return {boolean} Whether we have any data for the given page.
+ * @private
  */
 HistoryModel.prototype.haveDataForPage_ = function(page) {
   return (page * RESULTS_PER_PAGE < this.getSize());
@@ -522,6 +550,7 @@ HistoryModel.prototype.haveDataForPage_ = function(page) {
  * Check to see if we have data to fill a page.
  * @param {number} page The page number.
  * @return {boolean} Whether we have data to fill the page.
+ * @private
  */
 HistoryModel.prototype.canFillPage_ = function(page) {
   return ((page + 1) * RESULTS_PER_PAGE <= this.getSize());
@@ -529,18 +558,20 @@ HistoryModel.prototype.canFillPage_ = function(page) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // HistoryView:
+
 /**
  * Functions and state for populating the page with HTML. This should one-day
  * contain the view and use event handlers, rather than pushing HTML out and
  * getting called externally.
  * @param {HistoryModel} model The model backing this view.
+ * @constructor
  */
 function HistoryView(model) {
   this.editButtonTd_ = $('edit-button');
   this.editingControlsDiv_ = $('editing-controls');
   this.resultDiv_ = $('results-display');
   this.pageDiv_ = $('results-pagination');
-  this.model_ = model
+  this.model_ = model;
   this.pageIndex_ = 0;
   this.lastDisplayed_ = [];
 
@@ -612,12 +643,14 @@ HistoryView.prototype.onModelReady = function() {
 HistoryView.prototype.updateRemoveButton = function() {
   var anyChecked = document.querySelector('.entry input:checked') != null;
   $('remove-selected').disabled = !anyChecked;
-}
+};
 
 // HistoryView, private: ------------------------------------------------------
+
 /**
  * Clear the results in the view.  Since we add results piecemeal, we need
  * to clear them out when we switch to a new page or reload.
+ * @private
  */
 HistoryView.prototype.clear_ = function() {
   this.resultDiv_.textContent = '';
@@ -629,6 +662,11 @@ HistoryView.prototype.clear_ = function() {
   this.currentPages_ = [];
 };
 
+/**
+ * Record that the given page has been rendered.
+ * @param {Page} page The page that was rendered.
+ * @private
+ */
 HistoryView.prototype.setPageRendered_ = function(page) {
   page.isRendered = true;
   this.currentPages_.push(page);
@@ -636,6 +674,7 @@ HistoryView.prototype.setPageRendered_ = function(page) {
 
 /**
  * Update the page with results.
+ * @private
  */
 HistoryView.prototype.displayResults_ = function() {
   var results = this.model_.getNumberedRange(
@@ -710,6 +749,7 @@ HistoryView.prototype.displayResults_ = function() {
 
 /**
  * Update the pagination tools.
+ * @private
  */
 HistoryView.prototype.displayNavBar_ = function() {
   this.pageDiv_.textContent = '';
@@ -736,6 +776,7 @@ HistoryView.prototype.displayNavBar_ = function() {
  * @param {number} page The page index the navigation element should link to
  * @param {string} name The text content of the link
  * @return {HTMLAnchorElement} the pagination link
+ * @private
  */
 HistoryView.prototype.createPageNav_ = function(page, name) {
   var navButton = createElementWithClassName('button', 'link-button');
@@ -782,8 +823,9 @@ HistoryView.prototype.updateEntryAnchorWidth_ = function() {
 // State object:
 /**
  * An 'AJAX-history' implementation.
- * @param {HistoryModel} model The model we're representing
- * @param {HistoryView} view The view we're representing
+ * @param {HistoryModel} model The model we're representing.
+ * @param {HistoryView} view The view we're representing.
+ * @constructor
  */
 function PageState(model, view) {
   // Enforce a singleton.
@@ -810,6 +852,9 @@ function PageState(model, view) {
   }), 50, this);
 }
 
+/**
+ * Holds the singleton instance.
+ */
 PageState.instance = null;
 
 /**
@@ -817,9 +862,9 @@ PageState.instance = null;
  */
 PageState.prototype.getHashData = function() {
   var result = {
-    e : 0,
-    q : '',
-    p : 0
+    e: 0,
+    q: '',
+    p: 0
   };
 
   if (!window.location.hash) {
@@ -951,11 +996,11 @@ function deleteNextInQueue() {
 }
 
 /**
- * Open the clear browsing data dialog.
+ * Click handler for the 'Clear browsing data' dialog.
+ * @param {Event} e The click event.
  */
-function openClearBrowsingData() {
-  chrome.send('clearBrowsingData', []);
-  return false;
+function openClearBrowsingData(e) {
+  chrome.send('clearBrowsingData');
 }
 
 /**
@@ -974,7 +1019,8 @@ function reloadHistory() {
 }
 
 /**
- * Collect IDs from checked checkboxes and send to Chrome for deletion.
+ * Click handler for the 'Remove selected items' button.
+ * Collect IDs from the checked checkboxes and send to Chrome for deletion.
  */
 function removeItems() {
   var checked = document.querySelectorAll(
@@ -1024,16 +1070,18 @@ function removeItems() {
       link.classList.remove('to-be-removed');
     }
   }
-  return false;
 }
 
 /**
- * Toggle state of checkbox and handle Shift modifier.
+ * Handler for the 'click' event on a checkbox.
+ * @param {Event} e The click event.
  */
-function checkboxClicked(event) {
-  var id = Number(this.id.slice("checkbox-".length));
+function checkboxClicked(e) {
+  var checkbox = e.currentTarget;
+  var id = Number(checkbox.id.slice('checkbox-'.length));
+  // Handle multi-select if shift was pressed.
   if (event.shiftKey && (selectionAnchor != -1)) {
-    var checked = this.checked;
+    var checked = checkbox.checked;
     // Set all checkboxes from the anchor up to the clicked checkbox to the
     // state of the clicked one.
     var begin = Math.min(id, selectionAnchor);
@@ -1068,6 +1116,7 @@ function removeNode(node) {
 /**
  * Removes a single entry from the view. Also removes gaps before and after
  * entry if necessary.
+ * @param {Node} entry The DOM node representing the entry to be removed.
  */
 function removeEntryFromView(entry) {
   var nextEntry = entry.nextSibling;
@@ -1094,8 +1143,11 @@ function removeEntryFromView(entry) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // Chrome callbacks:
+
 /**
  * Our history system calls this function with results from searches.
+ * @param {Object} info An object containing information about the query.
+ * @param {Array} results A list of results.
  */
 function historyResult(info, results) {
   historyModel.addResults(info, results);

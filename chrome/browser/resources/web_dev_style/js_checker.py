@@ -75,6 +75,7 @@ class JSChecker(object):
     dirs = (
         path.join(resources, 'extensions'),
         path.join(resources, 'help'),
+        path.join(resources, 'history'),
         path.join(resources, 'net_internals'),
         path.join(resources, 'ntp4'),
         path.join(resources, 'options2'),
