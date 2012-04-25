@@ -39,6 +39,7 @@
 #include "content/test/test_launcher.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
+#include "ui/gfx/compositor/compositor_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/audio/audio_handler.h"
@@ -287,8 +288,17 @@ CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   switches.erase(switches::kUserDataDir);
   switches.erase(test_launcher::kSingleProcessTestsFlag);
   switches.erase(test_launcher::kSingleProcessTestsAndChromeFlag);
-  switches.erase(test_launcher::kSingleProcessTestsFlag);
   new_command_line.AppendSwitch(ChromeTestSuite::kLaunchAsBrowser);
+
+#if defined(USE_AURA)
+  // Copy what UITestBase::SetLaunchSwitches() does, and also what
+  // ChromeTestSuite does if the process had went into the test path. Otherwise
+  // tests will fail on bots.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableTestCompositor)) {
+    new_command_line.AppendSwitch(switches::kTestCompositor);
+  }
+#endif
 
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);

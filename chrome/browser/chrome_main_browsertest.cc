@@ -25,10 +25,6 @@
 // for details.
 #if !defined(OS_MACOSX)
 
-// These tests hang on the build/try bot but pass locally with chromeos=1
-// builds. jam is investigatin
-#if !defined(OS_CHROMEOS)
-
 class ChromeMainTest : public InProcessBrowserTest {
  public:
   ChromeMainTest() {}
@@ -126,7 +122,5 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
   ASSERT_EQ(2u, BrowserList::size());
   ASSERT_EQ(1u, BrowserList::GetBrowserCountForType(profile, true));
 }
-
-#endif  // !OS_CHROMEOS
 
 #endif  // !OS_MACOSX
