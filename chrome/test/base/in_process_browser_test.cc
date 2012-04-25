@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -35,6 +36,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/renderer/mock_content_renderer_client.h"
 #include "content/test/test_browser_thread.h"
+#include "content/test/test_launcher.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 
@@ -276,6 +278,29 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
 
   browser->window()->Show();
 }
+
+#if !defined(OS_MACOSX)
+CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
+  CommandLine new_command_line(CommandLine::ForCurrentProcess()->GetProgram());
+  CommandLine::SwitchMap switches =
+      CommandLine::ForCurrentProcess()->GetSwitches();
+  switches.erase(switches::kUserDataDir);
+  switches.erase(test_launcher::kSingleProcessTestsFlag);
+  switches.erase(test_launcher::kSingleProcessTestsAndChromeFlag);
+  switches.erase(test_launcher::kSingleProcessTestsFlag);
+  new_command_line.AppendSwitch(ChromeTestSuite::kLaunchAsBrowser);
+
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  new_command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+
+  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
+        iter != switches.end(); ++iter) {
+    new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
+  }
+  return new_command_line;
+}
+#endif
 
 #if defined(OS_POSIX)
 // On SIGTERM (sent by the runner on timeouts), dump a stack trace (to make

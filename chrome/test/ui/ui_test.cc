@@ -250,42 +250,6 @@ void UITestBase::LaunchBrowser(const CommandLine& arguments,
   ASSERT_TRUE(launcher_->LaunchBrowser(state));
 }
 
-#if !defined(OS_MACOSX)
-bool UITestBase::LaunchAnotherBrowserBlockUntilClosed(
-    const CommandLine& cmdline) {
-  ProxyLauncher::LaunchState state = DefaultLaunchState();
-  state.command.AppendArguments(cmdline, false);
-  return launcher_->LaunchAnotherBrowserBlockUntilClosed(state);
-}
-
-bool UITestBase::LaunchAnotherBrowserNoUrlArg(const CommandLine& cmdline) {
-  // Clear the homepage temporarily, and reset the launch switches, so that the
-  // URL argument doesn't get added.
-
-  std::string homepage_original;
-  std::swap(homepage_original, homepage_);
-
-  CommandLine launch_arguments_original(launch_arguments_);
-  launch_arguments_ = CommandLine(launch_arguments_.GetProgram());
-
-  SetLaunchSwitches();
-
-  ProxyLauncher::LaunchState state = DefaultLaunchState();
-
-  // But do add the --homepage switch
-  state.command.AppendSwitchASCII(switches::kHomePage, homepage_original);
-
-  state.command.AppendArguments(cmdline, false);
-  bool result = launcher_->LaunchAnotherBrowserBlockUntilClosed(state);
-
-  // Reset launch_arguments_ and homepage_ to their original values.
-  std::swap(homepage_original, homepage_);
-  std::swap(launch_arguments_original, launch_arguments_);
-
-  return result;
-}
-#endif
-
 void UITestBase::QuitBrowser() {
   launcher_->QuitBrowser();
 }

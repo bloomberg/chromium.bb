@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,47 +22,140 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/test/test_navigation_observer.h"
 
-namespace {
-
-// Verifies that the given NavigationController has exactly two entries that
-// correspond to the given URLs.
-void VerifyNavigationEntries(
-    content::NavigationController& controller, GURL url1, GURL url2) {
-  ASSERT_EQ(2, controller.GetEntryCount());
-  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
-  EXPECT_EQ(url1, controller.GetEntryAtIndex(0)->GetURL());
-  EXPECT_EQ(url2, controller.GetEntryAtIndex(1)->GetURL());
-}
-
-void CloseBrowserSynchronously(Browser* browser) {
-  ui_test_utils::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
-  browser->window()->Close();
-  observer.Wait();
-}
-
-}  // namespace
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_nsautorelease_pool.h"
+#endif
 
 class SessionRestoreTest : public InProcessBrowserTest {
  protected:
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    SessionStartupPref pref(SessionStartupPref::LAST);
+    SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+    const testing::TestInfo* const test_info =
+        testing::UnitTest::GetInstance()->current_test_info();
+    if (strcmp(test_info->name(), "NoSessionRestoreNewWindowChromeOS")) {
+      // Undo the effect of kBrowserAliveWithNoWindows in defaults.cc so that we
+      // can get these test to work without quitting.
+      SessionServiceFactory::GetForProfile(browser()->profile())->
+          force_browser_not_alive_with_no_windows_ = true;
+    }
+#endif
+  }
+
   virtual bool SetUpUserDataDirectory() OVERRIDE {
     // Make sure the first run sentinel file exists before running these tests,
     // since some of them customize the session startup pref whose value can
     // be different than the default during the first run.
     // TODO(bauerb): set the first run flag instead of creating a sentinel file.
     first_run::CreateSentinel();
+
+    url1_ = ui_test_utils::GetTestUrl(
+        FilePath().AppendASCII("session_history"),
+        FilePath().AppendASCII("bot1.html"));
+    url2_ = ui_test_utils::GetTestUrl(
+        FilePath().AppendASCII("session_history"),
+        FilePath().AppendASCII("bot2.html"));
+    url3_ = ui_test_utils::GetTestUrl(
+        FilePath().AppendASCII("session_history"),
+        FilePath().AppendASCII("bot3.html"));
+
     return InProcessBrowserTest::SetUpUserDataDirectory();
   }
+
+  // Verifies that the given NavigationController has exactly two entries that
+  // correspond to the given URLs.
+  void VerifyNavigationEntries(
+      content::NavigationController& controller, GURL url1, GURL url2) {
+    ASSERT_EQ(2, controller.GetEntryCount());
+    EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+    EXPECT_EQ(url1, controller.GetEntryAtIndex(0)->GetURL());
+    EXPECT_EQ(url2, controller.GetEntryAtIndex(1)->GetURL());
+  }
+
+  void CloseBrowserSynchronously(Browser* browser) {
+    ui_test_utils::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_BROWSER_CLOSED,
+        content::NotificationService::AllSources());
+    browser->window()->Close();
+#if defined(OS_MACOSX)
+    // BrowserWindowController depends on the auto release pool being recycled
+    // in the message loop to delete itself, which frees the Browser object
+    // which fires this event.
+    AutoreleasePool()->Recycle();
+#endif
+    observer.Wait();
+  }
+
+  Browser* QuitBrowserAndRestore(Browser* browser, int expected_tab_count) {
+    // Create a new popup.
+    Profile* profile = browser->profile();
+
+    // Close the browser.
+    g_browser_process->AddRefModule();
+    CloseBrowserSynchronously(browser);
+
+    // Create a new window, which should trigger session restore.
+    ui_test_utils::BrowserAddedObserver window_observer;
+    TestNavigationObserver navigation_observer(
+        content::NotificationService::AllSources(), NULL, expected_tab_count);
+    Browser::NewEmptyWindow(profile);
+    Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+    navigation_observer.Wait();
+    g_browser_process->ReleaseModule();
+
+    return new_browser;
+  }
+
+  void GoBack(Browser* browser) {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    browser->GoBack(CURRENT_TAB);
+    observer.Wait();
+  }
+
+  void GoForward(Browser* browser) {
+    ui_test_utils::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    browser->GoForward(CURRENT_TAB);
+    observer.Wait();
+  }
+
+  void AssertOneWindowWithOneTab(Browser* browser) {
+    ASSERT_EQ(1u, BrowserList::size());
+    ASSERT_EQ(1, browser->tab_count());
+  }
+
+  int RenderProcessHostCount() {
+    content::RenderProcessHost::iterator hosts =
+        content::RenderProcessHost::AllHostsIterator();
+    int count = 0;
+    while (!hosts.IsAtEnd()) {
+      if (hosts.GetCurrentValue()->HasConnection())
+        count++;
+      hosts.Advance();
+    }
+    return count;
+  }
+
+  GURL url1_;
+  GURL url2_;
+  GURL url3_;
 };
 
 #if defined(OS_CHROMEOS)
@@ -74,10 +168,6 @@ class SessionRestoreTest : public InProcessBrowserTest {
 // not do session restore if an incognito window is already open.
 // (http://crbug.com/120927)
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoSessionRestoreNewWindowChromeOS) {
-  // Turn on session restore.
-  SessionStartupPref pref(SessionStartupPref::LAST);
-  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
-
   GURL url(ui_test_utils::GetTestUrl(
       FilePath(FilePath::kCurrentDirectory),
       FilePath(FILE_PATH_LITERAL("title1.html"))));
@@ -255,10 +345,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
 // Verifies we remember the last browser window when closing the last
 // non-incognito window while an incognito window is open.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
-  // Turn on session restore.
-  SessionStartupPref pref(SessionStartupPref::LAST);
-  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
-
   GURL url(ui_test_utils::GetTestUrl(
       FilePath(FilePath::kCurrentDirectory),
       FilePath(FILE_PATH_LITERAL("title1.html"))));
@@ -338,4 +424,252 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   ASSERT_EQ(1, new_browser->tab_count());
   VerifyNavigationEntries(
       new_browser->GetWebContentsAt(0)->GetController(), url1, url2);
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  ui_test_utils::NavigateToURL(browser(), url2_);
+
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(1u, BrowserList::size());
+  ASSERT_EQ(url2_, new_browser->GetSelectedWebContents()->GetURL());
+  GoBack(new_browser);
+  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoresForwardAndBackwardNavs) {
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  ui_test_utils::NavigateToURL(browser(), url2_);
+  ui_test_utils::NavigateToURL(browser(), url3_);
+
+  GoBack(browser());
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(1u, BrowserList::size());
+  ASSERT_EQ(url2_, new_browser->GetSelectedWebContents()->GetURL());
+  GoForward(new_browser);
+  ASSERT_EQ(url3_, new_browser->GetSelectedWebContents()->GetURL());
+  GoBack(new_browser);
+  ASSERT_EQ(url2_, new_browser->GetSelectedWebContents()->GetURL());
+
+  // Test renderer-initiated back/forward as well.
+  GURL go_back_url("javascript:history.back();");
+  ui_test_utils::NavigateToURL(new_browser, go_back_url);
+  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+}
+
+// Tests that the SiteInstances used for entries in a restored tab's history
+// are given appropriate max page IDs, so that going back to a restored
+// cross-site page and then forward again works.  (Bug 1204135)
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
+                       RestoresCrossSiteForwardAndBackwardNavs) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL cross_site_url(test_server()->GetURL("files/title2.html"));
+
+  // Visit URLs on different sites.
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  ui_test_utils::NavigateToURL(browser(), cross_site_url);
+  ui_test_utils::NavigateToURL(browser(), url2_);
+
+  GoBack(browser());
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(1u, BrowserList::size());
+  ASSERT_EQ(1, new_browser->tab_count());
+
+  // Check that back and forward work as expected.
+  ASSERT_EQ(cross_site_url, new_browser->GetSelectedWebContents()->GetURL());
+
+  GoBack(new_browser);
+  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+
+  GoForward(new_browser);
+  ASSERT_EQ(cross_site_url, new_browser->GetSelectedWebContents()->GetURL());
+
+  // Test renderer-initiated back/forward as well.
+  GURL go_forward_url("javascript:history.forward();");
+  ui_test_utils::NavigateToURL(new_browser, go_forward_url);
+  ASSERT_EQ(url2_, new_browser->GetSelectedWebContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TwoTabsSecondSelected) {
+  ui_test_utils::NavigateToURL(browser(), url1_);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 2);
+
+  ASSERT_EQ(1u, BrowserList::size());
+  ASSERT_EQ(2, new_browser->tab_count());
+  ASSERT_EQ(1, new_browser->active_index());
+  ASSERT_EQ(url2_, new_browser->GetSelectedWebContents()->GetURL());
+
+  ASSERT_EQ(url1_, new_browser->GetWebContentsAt(0)->GetURL());
+}
+
+// Creates two tabs, closes one, quits and makes sure only one tab is restored.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClosedTabStaysClosed) {
+  ui_test_utils::NavigateToURL(browser(), url1_);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  browser()->CloseTab();
+
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+
+  AssertOneWindowWithOneTab(new_browser);
+  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+}
+
+// Test to verify that the print preview tab is not restored.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, DontRestorePrintPreviewTabTest) {
+  ui_test_utils::NavigateToURL(browser(), url1_);
+
+  // Append the print preview tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUIPrintURL), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Restart and make sure we have only one window with one tab and the url
+  // is url1_.
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+
+  AssertOneWindowWithOneTab(new_browser);
+  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+}
+
+// Creates a tabbed browser and popup and makes sure we restore both.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
+  if (!browser_defaults::kRestorePopups)
+    return;  // Test only applicable if restoring popups.
+
+  ui_test_utils::NavigateToURL(browser(), url1_);
+
+  // Make sure we have one window.
+  AssertOneWindowWithOneTab(browser());
+
+  // Open a popup.
+  Browser* popup = Browser::CreateWithParams(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile()));
+  popup->window()->Show();
+  ASSERT_EQ(2u, BrowserList::size());
+
+  ui_test_utils::NavigateToURL(popup, url1_);
+
+  // Simulate an exit by shuting down the session service. If we don't do this
+  // the first window close is treated as though the user closed the window
+  // and won't be restored.
+  SessionServiceFactory::ShutdownForProfile(browser()->profile());
+
+  // Restart and make sure we have two windows.
+  QuitBrowserAndRestore(browser(), 1);
+
+  ASSERT_EQ(2u, BrowserList::size());
+
+  Browser* browser1 = *BrowserList::begin();
+  Browser* browser2 = *(++BrowserList::begin());
+
+  Browser::Type type1 = browser1->type();
+  Browser::Type type2 = browser2->type();
+
+  // The order of whether the normal window or popup is first depends upon
+  // activation order, which is not necessarily consistant across runs.
+  if (type1 == Browser::TYPE_TABBED) {
+    EXPECT_EQ(type2, Browser::TYPE_POPUP);
+  } else {
+    EXPECT_EQ(type1, Browser::TYPE_POPUP);
+    EXPECT_EQ(type2, Browser::TYPE_TABBED);
+  }
+}
+
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+// This test doesn't apply to the Mac version; see GetCommandLineForRelaunch
+// for details. It was disabled for a long time so might never have worked on
+// ChromeOS.
+
+// Launches an app window, closes tabbed browser, launches and makes sure
+// we restore the tabbed browser url.
+// If this test flakes, use http://crbug.com/29110
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
+                       RestoreAfterClosingTabbedBrowserWithAppAndLaunching) {
+  ui_test_utils::NavigateToURL(browser(), url1_);
+
+  // Launch an app.
+  CommandLine app_launch_arguments = GetCommandLineForRelaunch();
+  app_launch_arguments.AppendSwitchASCII(switches::kApp, url2_.spec());
+
+  ui_test_utils::BrowserAddedObserver window_observer;
+
+  base::LaunchProcess(app_launch_arguments, base::LaunchOptions(), NULL);
+
+  Browser* app_window = window_observer.WaitForSingleNewBrowser();
+  ASSERT_EQ(2u, BrowserList::size());
+
+  // Close the first window. The only window left is the App window.
+  CloseBrowserSynchronously(browser());
+
+  // Restore the session, which should bring back the first window with url1_.
+  Browser* new_browser = QuitBrowserAndRestore(app_window, 1);
+
+  AssertOneWindowWithOneTab(new_browser);
+
+  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+}
+
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+
+// Creates two windows, closes one, restores, make sure only one window open.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TwoWindowsCloseOneRestoreOnlyOne) {
+  ui_test_utils::NavigateToURL(browser(), url1_);
+
+  // Open a second window.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kAboutBlankURL), NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+
+  ASSERT_EQ(2u, BrowserList::size());
+
+  // Close it.
+  Browser* new_window = *(++BrowserList::begin());
+  CloseBrowserSynchronously(new_window);
+
+  // Restart and make sure we have only one window with one tab and the url
+  // is url1_.
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+
+  AssertOneWindowWithOneTab(new_browser);
+
+  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+}
+
+// Make sure after a restore the number of processes matches that of the number
+// of processes running before the restore. This creates a new tab so that
+// we should have two new tabs running.  (This test will pass in both
+// process-per-site and process-per-site-instance, because we treat the new tab
+// as a special case in process-per-site-instance so that it only ever uses one
+// process.)
+//
+// Flaky: http://code.google.com/p/chromium/issues/detail?id=52022
+// Unfortunately, the fix at http://codereview.chromium.org/6546078
+// breaks NTP background image refreshing, so ThemeSource had to revert to
+// replacing the existing data source.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ShareProcessesOnRestore) {
+  // Create two new tabs.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kAboutBlankURL), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kAboutBlankURL), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  int expected_process_count = RenderProcessHostCount();
+
+  // Restart.
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 3);
+
+  ASSERT_EQ(3, new_browser->tab_count());
+
+  ASSERT_EQ(expected_process_count, RenderProcessHostCount());
 }

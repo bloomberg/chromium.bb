@@ -78,24 +78,8 @@ class UITestBase {
   void CloseBrowserAndServer();
 
   // Launches the browser with the given command line.
-  // TODO(phajdan.jr): Make LaunchBrowser private. Tests should use
-  // LaunchAnotherBrowserBlockUntilClosed.
+  // TODO(phajdan.jr): Make LaunchBrowser private.
   void LaunchBrowser(const CommandLine& cmdline, bool clear_profile);
-
-#if !defined(OS_MACOSX)
-  // These functions are deliberately not defined on the Mac because re-using an
-  // existing browser process when launching from the command line isn't a
-  // concept that we support on the Mac; AppleEvents are the Mac solution for
-  // the same need. Any test based on these functions doesn't apply to the Mac.
-
-  // Launches an another browser process and waits for it to finish. Returns
-  // true on success.
-  bool LaunchAnotherBrowserBlockUntilClosed(const CommandLine& cmdline);
-
-  // Same as LaunchAnotherBrowserBlockUntilClosed except that the URL argument
-  // is not used.
-  bool LaunchAnotherBrowserNoUrlArg(const CommandLine& cmdline);
-#endif
 
   // Exits out browser instance.
   void QuitBrowser();

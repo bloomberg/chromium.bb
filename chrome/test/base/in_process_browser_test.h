@@ -160,6 +160,16 @@ class InProcessBrowserTest : public BrowserTestBase {
   // the navigation to complete, and show the browser's window.
   void AddBlankTabAndShow(Browser* browser);
 
+#if !defined OS_MACOSX
+  // Return a CommandLine object  that is used to relaunch the browser_test binary
+  // as a browser process. This function is deliberately not defined on the Mac
+  // because re-using an existing browser process when launching from the command
+  // line isn't a concept that we support on the Mac; AppleEvents are the Mac
+  // solution for the same need. Any test based on these functions doesn't apply
+  // to the Mac.
+  CommandLine GetCommandLineForRelaunch();
+#endif
+
   // Returns the host resolver being used for the tests. Subclasses might want
   // to configure it inside tests.
   net::RuleBasedHostResolverProc* host_resolver() {

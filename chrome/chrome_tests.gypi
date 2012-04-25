@@ -715,7 +715,6 @@
         # New tests should be browser_tests. browser_tests are sharded and are
         # less flakier.
         'browser/process_singleton_linux_uitest.cc',
-        'browser/sessions/session_restore_uitest.cc',
         'browser/ui/tests/browser_uitest.cc',
         'browser/ui/webui/bookmarks_ui_uitest.cc',
         'browser/ui/webui/ntp/new_tab_ui_uitest.cc',

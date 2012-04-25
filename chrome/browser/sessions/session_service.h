@@ -53,7 +53,8 @@ class NavigationEntry;
 // of the browser.
 class SessionService : public BaseSessionService,
                        public content::NotificationObserver {
-  friend class SessionServiceTestHelper;
+  friend class SessionRestoreTest;
+  friend class SessionServiceTestHelper;  
  public:
   // Used to distinguish an application window from a normal one.
   enum AppType {
@@ -387,6 +388,7 @@ class SessionService : public BaseSessionService,
     // windows or similar. In this case, we record the close as pending.
     return !has_open_trackable_browsers_ &&
         (!browser_defaults::kBrowserAliveWithNoWindows ||
+         force_browser_not_alive_with_no_windows_ ||
          BrowserList::size() > 1);
   }
 
@@ -461,6 +463,10 @@ class SessionService : public BaseSessionService,
   const base::TimeDelta save_delay_in_millis_;
   const base::TimeDelta save_delay_in_mins_;
   const base::TimeDelta save_delay_in_hrs_;
+
+  // For browser_tests, since we want to simulate the browser shutting down
+  // without quitting.
+  bool force_browser_not_alive_with_no_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionService);
 };

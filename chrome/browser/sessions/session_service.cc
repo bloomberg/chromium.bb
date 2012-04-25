@@ -198,7 +198,8 @@ SessionService::SessionService(Profile* profile)
       move_on_new_browser_(false),
       save_delay_in_millis_(base::TimeDelta::FromMilliseconds(2500)),
       save_delay_in_mins_(base::TimeDelta::FromMinutes(10)),
-      save_delay_in_hrs_(base::TimeDelta::FromHours(8)) {
+      save_delay_in_hrs_(base::TimeDelta::FromHours(8)),
+      force_browser_not_alive_with_no_windows_(false) {
   Init();
 }
 
@@ -208,7 +209,8 @@ SessionService::SessionService(const FilePath& save_path)
       move_on_new_browser_(false),
       save_delay_in_millis_(base::TimeDelta::FromMilliseconds(2500)),
       save_delay_in_mins_(base::TimeDelta::FromMinutes(10)),
-      save_delay_in_hrs_(base::TimeDelta::FromHours(8)) {
+      save_delay_in_hrs_(base::TimeDelta::FromHours(8)),
+      force_browser_not_alive_with_no_windows_(false)  {
   Init();
 }
 
@@ -525,7 +527,10 @@ bool SessionService::ShouldNewWindowStartSession() {
   // ChromeOS and OSX have different ideas of application lifetime than
   // the other platforms.
   // On ChromeOS opening a new window should never start a new session.
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  if (!force_browser_not_alive_with_no_windows_)
+    return false;
+#endif
   if (!has_open_trackable_browsers_ &&
       !BrowserInit::InSynchronousProfileLaunch() &&
       !SessionRestore::IsRestoring(profile())
@@ -537,7 +542,6 @@ bool SessionService::ShouldNewWindowStartSession() {
       ) {
     return true;
   }
-#endif  // !OS_CHROMEOS
   return false;
 }
 

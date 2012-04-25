@@ -52,6 +52,8 @@ const FilePath::CharType kDefaultOutputFile[] = FILE_PATH_LITERAL(
 // Quit test execution after this number of tests has timed out.
 const int kMaxTimeouts = 5;  // 45s timeout * (5 + 1) = 270s max run time.
 
+const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
+
 namespace {
 
 // An empty test (it starts up and shuts down the browser as part of its
@@ -555,8 +557,6 @@ void PrintUsage() {
 }
 
 }  // namespace
-
-const char kEmptyTestName[] = "InProcessBrowserTest.Empty";
 
 const char kGTestFilterFlag[] = "gtest_filter";
 const char kGTestHelpFlag[]   = "gtest_help";

@@ -38,9 +38,14 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
   }
 
   virtual bool Run(int argc, char** argv, int* return_code) OVERRIDE {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
     CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kProcessType)) {
+    bool launch_chrome =
+        command_line->HasSwitch(switches::kProcessType) ||
+        command_line->HasSwitch(ChromeTestSuite::kLaunchAsBrowser);
+#endif
+#if defined(OS_WIN)
+    if (launch_chrome) {
       sandbox::SandboxInterfaceInfo sandbox_info = {0};
       content::InitializeSandboxInfo(&sandbox_info);
       ChromeMainDelegate chrome_main_delegate;
@@ -50,8 +55,7 @@ class ChromeTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
       return true;
     }
 #elif defined(OS_LINUX)
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (command_line->HasSwitch(switches::kProcessType)) {
+    if (launch_chrome) {
       ChromeMainDelegate chrome_main_delegate;
       *return_code = content::ContentMain(argc,
                                           const_cast<const char**>(argv),
