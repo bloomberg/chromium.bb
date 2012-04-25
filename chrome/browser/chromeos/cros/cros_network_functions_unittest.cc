@@ -686,6 +686,12 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosRequestCellularRegister) {
                               object);
 }
 
+TEST_F(CrosNetworkFunctionsLibcrosTest, CrosSetOfflineMode) {
+  const bool kOffline = true;
+  EXPECT_CALL(*MockChromeOSNetwork::Get(), SetOfflineMode(kOffline)).Times(1);
+  CrosSetOfflineMode(kOffline);
+}
+
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosAddIPConfig) {
   const std::string device_path = "/device/path";
   EXPECT_CALL(*MockChromeOSNetwork::Get(),
@@ -1314,6 +1320,14 @@ TEST_F(CrosNetworkFunctionsTest, CrosRequestCellularRegister) {
                               &MockNetworkActionCallbackThunk, object);
   // Run saved callback.
   callback.Run();
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosSetOfflineMode) {
+  const bool kOffline = true;
+  const base::FundamentalValue value(kOffline);
+  EXPECT_CALL(*mock_manager_client_, SetProperty(
+      flimflam::kOfflineModeProperty, IsEqualTo(&value), _)).Times(1);
+  CrosSetOfflineMode(kOffline);
 }
 
 TEST_F(CrosNetworkFunctionsTest, CrosAddIPConfig) {

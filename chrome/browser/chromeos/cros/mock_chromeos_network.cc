@@ -259,6 +259,11 @@ void CallMockRequestCellularRegister(const char* device_path,
                                                    callback, object);
 }
 
+// Calls mock SetOfflineMode.
+bool CallMockSetOfflineMode(bool offline) {
+  return g_mock_chromeos_network->SetOfflineMode(offline);
+}
+
 // Calls mock AddIPConfig.
 bool CallMockAddIPConfig(const char* device_path, IPConfigType type) {
   return g_mock_chromeos_network->AddIPConfig(device_path, type);
@@ -357,6 +362,7 @@ void MockChromeOSNetwork::Initialize() {
     chromeos::RequestChangePin = &CallMockRequestChangePin;
     chromeos::ProposeScan = &CallMockProposeScan;
     chromeos::RequestCellularRegister = &CallMockRequestCellularRegister;
+    chromeos::SetOfflineMode = &CallMockSetOfflineMode;
     chromeos::AddIPConfig = &CallMockAddIPConfig;
     chromeos::RemoveIPConfig = &CallMockRemoveIPConfig;
     chromeos::GetDeviceNetworkList = &CallMockGetDeviceNetworkList;
@@ -403,6 +409,7 @@ void MockChromeOSNetwork::Shutdown() {
     chromeos::RequestChangePin = NULL;
     chromeos::ProposeScan = NULL;
     chromeos::RequestCellularRegister = NULL;
+    chromeos::SetOfflineMode = NULL;
     chromeos::AddIPConfig = NULL;
     chromeos::RemoveIPConfig = NULL;
     chromeos::GetDeviceNetworkList = NULL;

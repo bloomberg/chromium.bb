@@ -714,7 +714,14 @@ void CrosRequestCellularRegister(const std::string& device_path,
 }
 
 bool CrosSetOfflineMode(bool offline) {
-  return chromeos::SetOfflineMode(offline);
+  if (g_libcros_network_functions_enabled) {
+    return chromeos::SetOfflineMode(offline);
+  } else {
+    base::FundamentalValue value(offline);
+    DBusThreadManager::Get()->GetFlimflamManagerClient()->SetProperty(
+        flimflam::kOfflineModeProperty, value, base::Bind(&DoNothing));
+    return true;
+  }
 }
 
 IPConfigStatus* CrosListIPConfigs(const std::string& device_path) {
