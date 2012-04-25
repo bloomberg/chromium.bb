@@ -66,7 +66,7 @@ PrefMappingEntry kPrefMapping[] = {
   },
   { "managedModeEnabled",
     prefs::kInManagedMode,
-    ExtensionAPIPermission::kManagedMode
+    ExtensionAPIPermission::kManagedModePrivate
   },
   { "networkPredictionEnabled",
     prefs::kNetworkPredictionEnabled,

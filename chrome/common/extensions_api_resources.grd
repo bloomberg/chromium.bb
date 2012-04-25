@@ -32,7 +32,6 @@
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_UI" file="extensions\api\experimental.input.ui.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD" file="extensions\api\experimental.input.virtualKeyboard.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_KEYBINDING" file="extensions\api\experimental.keybinding.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_MANAGEDMODE" file="extensions\api\experimental.managedMode.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_OFFSCREENTABS" file="extensions\api\experimental.offscreenTabs.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES" file="extensions\api\experimental.processes.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ" file="extensions\api\experimental.rlz.json" type="BINDATA" />
@@ -47,6 +46,7 @@
       <include name="IDR_EXTENSION_API_JSON_INPUT_IME" file="extensions\api\input.ime.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_IDLE" file="extensions\api\idle.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE" file="extensions\api\inputMethodPrivate.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_MANAGEDMODEPRIVATE" file="extensions\api\managedModePrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_MANAGEMENT" file="extensions\api\management.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_MEDIAPLAYERPRIVATE" file="extensions\api\mediaPlayerPrivate.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_METRICSPRIVATE" file="extensions\api\metricsPrivate.json" type="BINDATA" />

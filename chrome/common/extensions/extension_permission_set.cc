@@ -237,9 +237,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kInput, "input", 0, ExtensionPermissionMessage::kNone,
       kFlagImpliesFullURLAccess);
   info->RegisterPermission(
-      kManagedMode, "managedMode", IDS_EXTENSION_PROMPT_WARNING_MANAGED_MODE,
-      ExtensionPermissionMessage::kManagedMode, kFlagNone);
-  info->RegisterPermission(
       kManagement, "management", IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       ExtensionPermissionMessage::kManagement, kFlagNone);
   info->RegisterPermission(
@@ -285,6 +282,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kFileBrowserPrivate, "fileBrowserPrivate", 0,
       ExtensionPermissionMessage::kNone,
       kFlagCannotBeOptional);
+  info->RegisterPermission(
+      kManagedModePrivate, "managedModePrivate", 0,
+      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
   info->RegisterPermission(
       kMediaPlayerPrivate, "mediaPlayerPrivate", 0,
       ExtensionPermissionMessage::kNone,

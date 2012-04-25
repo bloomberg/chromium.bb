@@ -144,8 +144,6 @@
     "chrome.experimental.fontSettings.setMinimumFontSize": "experimental.fontSettings.html#method-setMinimumFontSize",
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show",
     "chrome.experimental.keybinding.onCommand": "experimental.keybinding.html#event-onCommand",
-    "chrome.experimental.managedMode.enter": "experimental.managedMode.html#method-enter",
-    "chrome.experimental.managedMode.get": "experimental.managedMode.html#method-get",
     "chrome.experimental.offscreenTabs.create": "experimental.offscreenTabs.html#method-create",
     "chrome.experimental.offscreenTabs.get": "experimental.offscreenTabs.html#method-get",
     "chrome.experimental.offscreenTabs.getAll": "experimental.offscreenTabs.html#method-getAll",

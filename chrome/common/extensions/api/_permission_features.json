@@ -126,9 +126,10 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },
-  "managedMode": {
+  "managedModePrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app", "platform_app"]
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "location": "component"
   },
   "management": {
     "channel": "stable",

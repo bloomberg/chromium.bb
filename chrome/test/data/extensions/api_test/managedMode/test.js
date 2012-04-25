@@ -5,7 +5,7 @@
 // Managed Mode API test
 // Run with browser_tests --gtest_filter=ExtensionApiTest.ManagedModeApi
 
-var managedMode = chrome.experimental.managedMode;
+var managedMode = chrome.managedModePrivate;
 
 function expect(expected, message) {
   return chrome.test.callbackPass(function(value) {

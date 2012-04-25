@@ -4,8 +4,8 @@
 
 [
   {
-    "namespace": "experimental.managedMode",
-    "dependencies": ["types"],
+    "namespace": "managedModePrivate",
+    "nodoc": true,
     "functions": [
       {
         "name": "enter",

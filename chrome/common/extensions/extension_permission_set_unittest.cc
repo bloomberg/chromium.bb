@@ -600,6 +600,7 @@ TEST(ExtensionPermissionsTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kChromeosInfoPrivate);
   skip.insert(ExtensionAPIPermission::kFileBrowserPrivate);
   skip.insert(ExtensionAPIPermission::kInputMethodPrivate);
+  skip.insert(ExtensionAPIPermission::kManagedModePrivate);
   skip.insert(ExtensionAPIPermission::kMediaPlayerPrivate);
   skip.insert(ExtensionAPIPermission::kMetricsPrivate);
   skip.insert(ExtensionAPIPermission::kEchoPrivate);

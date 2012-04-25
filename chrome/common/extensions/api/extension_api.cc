@@ -161,7 +161,7 @@ void ExtensionAPI::LoadSchema(const base::StringPiece& schema) {
 
     CHECK(schema->GetString("namespace", &schema_namespace));
     schemas_[schema_namespace] = make_linked_ptr(schema);
-    unloaded_schemas_.erase(schema_namespace);
+    CHECK_EQ(1u, unloaded_schemas_.erase(schema_namespace));
 
     // Populate |{completely,partially}_unprivileged_apis_|.
     //
@@ -295,8 +295,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD));
   RegisterSchema("experimental.keybinding", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_KEYBINDING));
-  RegisterSchema("experimental.managedMode", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_MANAGEDMODE));
   RegisterSchema("experimental.offscreenTabs", ReadFromResource(
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_OFFSCREENTABS));
   RegisterSchema("experimental.processes", ReadFromResource(
@@ -325,6 +323,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_INPUT_IME));
   RegisterSchema("inputMethodPrivate", ReadFromResource(
       IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE));
+  RegisterSchema("managedModePrivate", ReadFromResource(
+      IDR_EXTENSION_API_JSON_MANAGEDMODEPRIVATE));
   RegisterSchema("management", ReadFromResource(
       IDR_EXTENSION_API_JSON_MANAGEMENT));
   RegisterSchema("mediaPlayerPrivate", ReadFromResource(

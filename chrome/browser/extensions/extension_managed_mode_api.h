@@ -15,14 +15,14 @@ class GetManagedModeFunction : public SyncExtensionFunction {
  public:
   virtual ~GetManagedModeFunction();
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.managedMode.get")
+  DECLARE_EXTENSION_FUNCTION_NAME("managedModePrivate.get")
 };
 
 class EnterManagedModeFunction : public AsyncExtensionFunction {
  public:
   virtual ~EnterManagedModeFunction();
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.managedMode.enter")
+  DECLARE_EXTENSION_FUNCTION_NAME("managedModePrivate.enter")
 
  private:
   // Called when we have either successfully entered managed mode or failed.

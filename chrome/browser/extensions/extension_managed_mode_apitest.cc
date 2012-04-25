@@ -13,9 +13,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ManagedModeGetAndEnable) {
 
   ASSERT_FALSE(ManagedMode::IsInManagedMode());
 
-  ASSERT_TRUE(RunExtensionTest("managedMode")) << message_;
-  const Extension* extension = GetSingleLoadedExtension();
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(RunComponentExtensionTest("managedMode")) << message_;
 
   EXPECT_TRUE(ManagedMode::IsInManagedMode());
 }

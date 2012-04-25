@@ -117,7 +117,7 @@ class ExtensionAPIPermission {
     kInput,
     kInputMethodPrivate,
     kKeybinding,
-    kManagedMode,
+    kManagedModePrivate,
     kManagement,
     kMediaPlayerPrivate,
     kMetricsPrivate,
