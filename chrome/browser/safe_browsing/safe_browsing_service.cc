@@ -107,6 +107,8 @@ class SafeBrowsingURLRequestContext : public net::URLRequestContext {
   }
 
  private:
+  virtual ~SafeBrowsingURLRequestContext() {}
+
   base::debug::LeakTracker<SafeBrowsingURLRequestContext> leak_tracker_;
 };
 

@@ -186,9 +186,10 @@ const std::string& GetPlatformString() {
 class DeviceManagementRequestContext : public net::URLRequestContext {
  public:
   explicit DeviceManagementRequestContext(net::URLRequestContext* base_context);
-  virtual ~DeviceManagementRequestContext();
 
  private:
+  virtual ~DeviceManagementRequestContext();
+
   // Overridden from net::URLRequestContext:
   virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
 };

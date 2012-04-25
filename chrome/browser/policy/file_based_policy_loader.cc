@@ -42,7 +42,6 @@ class FileBasedPolicyWatcherDelegate : public FilePathWatcher::Delegate {
   explicit FileBasedPolicyWatcherDelegate(
       scoped_refptr<FileBasedPolicyLoader> loader)
       : loader_(loader) {}
-  virtual ~FileBasedPolicyWatcherDelegate() {}
 
   // FilePathWatcher::Delegate implementation:
   virtual void OnFilePathChanged(const FilePath& path) OVERRIDE {
@@ -54,6 +53,8 @@ class FileBasedPolicyWatcherDelegate : public FilePathWatcher::Delegate {
   }
 
  private:
+  virtual ~FileBasedPolicyWatcherDelegate() {}
+
   scoped_refptr<FileBasedPolicyLoader> loader_;
   DISALLOW_COPY_AND_ASSIGN(FileBasedPolicyWatcherDelegate);
 };

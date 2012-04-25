@@ -49,7 +49,6 @@ class SpeechRecognitionBubbleController
   };
 
   explicit SpeechRecognitionBubbleController(Delegate* delegate);
-  virtual ~SpeechRecognitionBubbleController();
 
   // Creates a new speech recognition UI bubble. One of the SetXxxx methods
   // below need to be called to specify what to display.
@@ -90,6 +89,8 @@ class SpeechRecognitionBubbleController
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  friend class base::RefCountedThreadSafe<SpeechRecognitionBubbleController>;
+
   // The various calls received by this object and handled in the UI thread.
   enum RequestType {
     REQUEST_SET_WARM_UP_MODE,
@@ -104,6 +105,8 @@ class SpeechRecognitionBubbleController
     BUBBLE_ADDED,
     BUBBLE_REMOVED
   };
+
+  virtual ~SpeechRecognitionBubbleController();
 
   void InvokeDelegateButtonClicked(int session_id,
                                    SpeechRecognitionBubble::Button button);

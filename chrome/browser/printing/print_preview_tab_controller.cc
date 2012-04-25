@@ -198,8 +198,6 @@ PrintPreviewTabController::PrintPreviewTabController()
       is_creating_print_preview_tab_(false) {
 }
 
-PrintPreviewTabController::~PrintPreviewTabController() {}
-
 // static
 PrintPreviewTabController* PrintPreviewTabController::GetInstance() {
   if (!g_browser_process)
@@ -251,6 +249,14 @@ TabContentsWrapper* PrintPreviewTabController::GetPrintPreviewForTab(
   return NULL;
 }
 
+TabContentsWrapper* PrintPreviewTabController::GetInitiatorTab(
+    TabContentsWrapper* preview_tab) {
+  PrintPreviewTabMap::iterator it = preview_tab_map_.find(preview_tab);
+  if (it != preview_tab_map_.end())
+    return preview_tab_map_[preview_tab];
+  return NULL;
+}
+
 void PrintPreviewTabController::Observe(
     int type,
     const content::NotificationSource& source,
@@ -285,6 +291,33 @@ void PrintPreviewTabController::Observe(
     }
   }
 }
+
+// static
+bool PrintPreviewTabController::IsPrintPreviewTab(TabContentsWrapper* tab) {
+  return IsPrintPreviewURL(tab->web_contents()->GetURL());
+}
+
+// static
+bool PrintPreviewTabController::IsPrintPreviewURL(const GURL& url) {
+  return (url.SchemeIs(chrome::kChromeUIScheme) &&
+          url.host() == chrome::kChromeUIPrintHost);
+}
+
+void PrintPreviewTabController::EraseInitiatorTabInfo(
+    TabContentsWrapper* preview_tab) {
+  PrintPreviewTabMap::iterator it = preview_tab_map_.find(preview_tab);
+  if (it == preview_tab_map_.end())
+    return;
+
+  RemoveObservers(it->second);
+  preview_tab_map_[preview_tab] = NULL;
+}
+
+bool PrintPreviewTabController::is_creating_print_preview_tab() const {
+  return is_creating_print_preview_tab_;
+}
+
+PrintPreviewTabController::~PrintPreviewTabController() {}
 
 void PrintPreviewTabController::OnRendererProcessClosed(
     content::RenderProcessHost* rph) {
@@ -369,39 +402,6 @@ void PrintPreviewTabController::OnNavEntryCommitted(
 
   // Initiator tab navigated.
   RemoveInitiatorTab(tab, true);
-}
-
-// static
-bool PrintPreviewTabController::IsPrintPreviewTab(TabContentsWrapper* tab) {
-  return IsPrintPreviewURL(tab->web_contents()->GetURL());
-}
-
-// static
-bool PrintPreviewTabController::IsPrintPreviewURL(const GURL& url) {
-  return (url.SchemeIs(chrome::kChromeUIScheme) &&
-          url.host() == chrome::kChromeUIPrintHost);
-}
-
-void PrintPreviewTabController::EraseInitiatorTabInfo(
-    TabContentsWrapper* preview_tab) {
-  PrintPreviewTabMap::iterator it = preview_tab_map_.find(preview_tab);
-  if (it == preview_tab_map_.end())
-    return;
-
-  RemoveObservers(it->second);
-  preview_tab_map_[preview_tab] = NULL;
-}
-
-bool PrintPreviewTabController::is_creating_print_preview_tab() const {
-  return is_creating_print_preview_tab_;
-}
-
-TabContentsWrapper* PrintPreviewTabController::GetInitiatorTab(
-    TabContentsWrapper* preview_tab) {
-  PrintPreviewTabMap::iterator it = preview_tab_map_.find(preview_tab);
-  if (it != preview_tab_map_.end())
-    return preview_tab_map_[preview_tab];
-  return NULL;
 }
 
 TabContentsWrapper* PrintPreviewTabController::CreatePrintPreviewTab(

@@ -515,6 +515,9 @@ class SafeBrowsingServiceTestHelper
   }
 
  private:
+  friend class base::RefCountedThreadSafe<SafeBrowsingServiceTestHelper>;
+  virtual ~SafeBrowsingServiceTestHelper() {}
+
   // Stops UI loop after desired status is updated.
   void StopUILoop() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));

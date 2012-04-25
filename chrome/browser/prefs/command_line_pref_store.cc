@@ -81,6 +81,19 @@ CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)
 
 CommandLinePrefStore::~CommandLinePrefStore() {}
 
+bool CommandLinePrefStore::ValidateProxySwitches() {
+  if (command_line_->HasSwitch(switches::kNoProxyServer) &&
+      (command_line_->HasSwitch(switches::kProxyAutoDetect) ||
+       command_line_->HasSwitch(switches::kProxyServer) ||
+       command_line_->HasSwitch(switches::kProxyPacUrl) ||
+       command_line_->HasSwitch(switches::kProxyBypassList))) {
+    LOG(WARNING) << "Additional command-line proxy switches specified when --"
+                 << switches::kNoProxyServer << " was also specified.";
+    return false;
+  }
+  return true;
+}
+
 void CommandLinePrefStore::ApplySimpleSwitches() {
   // Look for each switch we know about and set its preference accordingly.
   for (size_t i = 0; i < arraysize(string_switch_map_); ++i) {
@@ -114,19 +127,6 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
       SetValue(boolean_switch_map_[i].preference_path, value);
     }
   }
-}
-
-bool CommandLinePrefStore::ValidateProxySwitches() {
-  if (command_line_->HasSwitch(switches::kNoProxyServer) &&
-      (command_line_->HasSwitch(switches::kProxyAutoDetect) ||
-       command_line_->HasSwitch(switches::kProxyServer) ||
-       command_line_->HasSwitch(switches::kProxyPacUrl) ||
-       command_line_->HasSwitch(switches::kProxyBypassList))) {
-    LOG(WARNING) << "Additional command-line proxy switches specified when --"
-                 << switches::kNoProxyServer << " was also specified.";
-    return false;
-  }
-  return true;
 }
 
 void CommandLinePrefStore::ApplyProxyMode() {

@@ -18,7 +18,6 @@ class SpellingServiceClient;
 class SpellCheckMessageFilter : public content::BrowserMessageFilter {
  public:
   explicit SpellCheckMessageFilter(int render_process_id);
-  virtual ~SpellCheckMessageFilter();
 
   // content::BrowserMessageFilter implementation.
   virtual void OverrideThreadForMessage(
@@ -28,6 +27,8 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
  private:
+  virtual ~SpellCheckMessageFilter();
+
   void OnSpellCheckerRequestDictionary();
   void OnNotifyChecked(const string16& word, bool misspelled);
 #if !defined(OS_MACOSX)

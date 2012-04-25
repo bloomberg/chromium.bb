@@ -118,12 +118,13 @@ class ProfileIOData {
   class AppRequestContext : public ChromeURLRequestContext {
    public:
     AppRequestContext();
-    virtual ~AppRequestContext();
 
     void SetCookieStore(net::CookieStore* cookie_store);
     void SetHttpTransactionFactory(net::HttpTransactionFactory* http_factory);
 
    private:
+    virtual ~AppRequestContext();
+
     scoped_refptr<net::CookieStore> cookie_store_;
     scoped_ptr<net::HttpTransactionFactory> http_factory_;
   };

@@ -506,9 +506,9 @@ class TestSBClient
     : public base::RefCountedThreadSafe<TestSBClient>,
       public SafeBrowsingService::Client {
  public:
-  TestSBClient() : result_(SafeBrowsingService::SAFE),
-                   safe_browsing_service_(g_browser_process->
-                                          safe_browsing_service()) {
+  TestSBClient()
+    : result_(SafeBrowsingService::SAFE),
+      safe_browsing_service_(g_browser_process->safe_browsing_service()) {
   }
 
   int GetResult() {
@@ -532,6 +532,9 @@ class TestSBClient
   }
 
  private:
+  friend class base::RefCountedThreadSafe<TestSBClient>;
+  virtual ~TestSBClient() {}
+
   void CheckDownloadUrlOnIOThread(const std::vector<GURL>& url_chain) {
     safe_browsing_service_->CheckDownloadUrl(url_chain, this);
   }

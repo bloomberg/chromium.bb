@@ -47,8 +47,6 @@ class TestSafeBrowsingBlockingPage :  public SafeBrowsingBlockingPage {
 
 class TestSafeBrowsingService: public SafeBrowsingService {
  public:
-  virtual ~TestSafeBrowsingService() {}
-
   virtual void SendSerializedMalwareDetails(const std::string& serialized) {
     details_.push_back(serialized);
   }
@@ -56,6 +54,9 @@ class TestSafeBrowsingService: public SafeBrowsingService {
   std::list<std::string>* GetDetails() {
     return &details_;
   }
+
+ private:
+  virtual ~TestSafeBrowsingService() {}
 
   std::list<std::string> details_;
 };

@@ -37,19 +37,26 @@ class CloudPrintProxyService::TokenExpiredNotificationDelegate
       CloudPrintProxyService* cloud_print_service)
           : cloud_print_service_(cloud_print_service) {
   }
+
   void Display() {}
+
   void Error() {
     cloud_print_service_->OnTokenExpiredNotificationError();
   }
+
   void Close(bool by_user) {
     cloud_print_service_->OnTokenExpiredNotificationClosed(by_user);
   }
+
   void Click() {
     cloud_print_service_->OnTokenExpiredNotificationClick();
   }
+
   std::string id() const { return "cloudprint.tokenexpired"; }
 
  private:
+  virtual ~TokenExpiredNotificationDelegate() {}
+
   CloudPrintProxyService* cloud_print_service_;
   DISALLOW_COPY_AND_ASSIGN(TokenExpiredNotificationDelegate);
 };

@@ -46,12 +46,14 @@ namespace {
 class MockSafeBrowsingService : public SafeBrowsingService {
  public:
   MockSafeBrowsingService() {}
-  virtual ~MockSafeBrowsingService() {}
 
   MOCK_METHOD1(MatchDownloadWhitelistUrl, bool(const GURL&));
   MOCK_METHOD1(MatchDownloadWhitelistString, bool(const std::string&));
   MOCK_METHOD2(CheckDownloadUrl, bool(const std::vector<GURL>& url_chain,
                                       Client* client));
+
+ protected:
+  virtual ~MockSafeBrowsingService() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingService);
@@ -60,9 +62,11 @@ class MockSafeBrowsingService : public SafeBrowsingService {
 class MockSignatureUtil : public SignatureUtil {
  public:
   MockSignatureUtil() {}
-  virtual ~MockSignatureUtil() {}
   MOCK_METHOD2(CheckSignature,
                void(const FilePath&, ClientDownloadRequest_SignatureInfo*));
+
+ protected:
+  virtual ~MockSignatureUtil() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSignatureUtil);

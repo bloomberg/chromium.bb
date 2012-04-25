@@ -62,6 +62,8 @@ class PasswordStore
                                   std::vector<webkit::forms::PasswordForm*> > {
    public:
     explicit GetLoginsRequest(const GetLoginsCallback& callback);
+
+   protected:
     virtual ~GetLoginsRequest();
 
    private:

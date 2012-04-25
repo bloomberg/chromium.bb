@@ -13,20 +13,22 @@
 // recognition in the framework of the extension API state machine.
 class SpeechInputAsyncFunction : public AsyncExtensionFunction,
                                  public content::NotificationObserver {
- protected:
-  SpeechInputAsyncFunction(int start_state, int transition_state,
-                           int end_state, int transition_notification);
-  virtual ~SpeechInputAsyncFunction();
-
-  virtual void Run() OVERRIDE;
-  virtual bool RunImpl() = 0;
-
- private:
+ public:
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+ protected:
+  SpeechInputAsyncFunction(int start_state, int transition_state,
+                           int end_state, int transition_notification);
+  virtual ~SpeechInputAsyncFunction();
+
+  // ExtensionFunction:
+  virtual void Run() OVERRIDE;
+  virtual bool RunImpl() = 0;
+
+ private:
   // To be defined on construction by derived classes.
   int start_state_;
   int transition_state_;
@@ -41,35 +43,48 @@ class SpeechInputAsyncFunction : public AsyncExtensionFunction,
 // Implements experimental.speechInput.start.
 class StartSpeechInputFunction : public SpeechInputAsyncFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.speechInput.start");
+
   StartSpeechInputFunction();
-  virtual ~StartSpeechInputFunction() {}
 
  protected:
+  // SpeechInputAsyncFunction:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.speechInput.start");
+
+ private:
+  virtual ~StartSpeechInputFunction() {}
 };
 
 // Implements experimental.speechInput.stop.
 class StopSpeechInputFunction : public SpeechInputAsyncFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.speechInput.stop");
+
   StopSpeechInputFunction();
-  virtual ~StopSpeechInputFunction() {}
 
  protected:
+  // SpeechInputAsyncFunction:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.speechInput.stop");
+
+ private:
+  virtual ~StopSpeechInputFunction() {}
 };
 
 // Implements experimental.speechInput.isRecording.
 class IsRecordingSpeechInputFunction : public SyncExtensionFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.speechInput.isRecording");
+
   // Called back from SpeechInputExtensionManager in the UI thread.
   void SetResult(bool result);
 
  protected:
+  // ExtensionFunction:
   virtual void Run() OVERRIDE;
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.speechInput.isRecording");
+
+ private:
+  virtual ~IsRecordingSpeechInputFunction() {}
 };
 
 #endif  // CHROME_BROWSER_SPEECH_SPEECH_INPUT_EXTENSION_API_H_

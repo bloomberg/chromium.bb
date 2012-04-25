@@ -42,8 +42,7 @@ SpeechInputAsyncFunction::SpeechInputAsyncFunction(
       content::Source<Profile>(profile()));
 }
 
-SpeechInputAsyncFunction::~SpeechInputAsyncFunction() {
-}
+SpeechInputAsyncFunction::~SpeechInputAsyncFunction() {}
 
 void SpeechInputAsyncFunction::Run() {
   if (failed_) {

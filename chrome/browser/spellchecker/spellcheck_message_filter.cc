@@ -25,9 +25,6 @@ SpellCheckMessageFilter::SpellCheckMessageFilter(int render_process_id)
       document_tag_(0) {
 }
 
-SpellCheckMessageFilter::~SpellCheckMessageFilter() {
-}
-
 void SpellCheckMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   if (message.type() == SpellCheckHostMsg_RequestDictionary::ID ||
@@ -55,6 +52,8 @@ bool SpellCheckMessageFilter::OnMessageReceived(const IPC::Message& message,
   IPC_END_MESSAGE_MAP()
   return handled;
 }
+
+SpellCheckMessageFilter::~SpellCheckMessageFilter() {}
 
 void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {
   content::RenderProcessHost* host =

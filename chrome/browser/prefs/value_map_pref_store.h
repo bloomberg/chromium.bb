@@ -22,7 +22,6 @@ class ValueMapPrefStore : public PrefStore {
   typedef std::map<std::string, base::Value*>::const_iterator const_iterator;
 
   ValueMapPrefStore();
-  virtual ~ValueMapPrefStore();
 
   // PrefStore overrides:
   virtual ReadResult GetValue(const std::string& key,
@@ -37,6 +36,8 @@ class ValueMapPrefStore : public PrefStore {
   const_iterator end() const;
 
  protected:
+  virtual ~ValueMapPrefStore();
+
   // Store a |value| for |key| in the store. Also generates an notification if
   // the value changed. Assumes ownership of |value|, which must be non-NULL.
   void SetValue(const std::string& key, base::Value* value);

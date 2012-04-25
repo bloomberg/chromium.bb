@@ -13,10 +13,6 @@ OverlayUserPrefStore::OverlayUserPrefStore(
   underlay_->AddObserver(this);
 }
 
-OverlayUserPrefStore::~OverlayUserPrefStore() {
-  underlay_->RemoveObserver(this);
-}
-
 bool OverlayUserPrefStore::IsSetInOverlay(const std::string& key) const {
   return overlay_.GetValue(key, NULL);
 }
@@ -136,6 +132,16 @@ void OverlayUserPrefStore::ReportValueChanged(const std::string& key) {
   FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
 }
 
+void OverlayUserPrefStore::OnPrefValueChanged(const std::string& key) {
+  if (!overlay_.GetValue(GetOverlayKey(key), NULL))
+    ReportValueChanged(GetOverlayKey(key));
+}
+
+void OverlayUserPrefStore::OnInitializationCompleted(bool succeeded) {
+  FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
+                    OnInitializationCompleted(succeeded));
+}
+
 void OverlayUserPrefStore::RegisterOverlayPref(const std::string& key) {
   RegisterOverlayPref(key, key);
 }
@@ -155,14 +161,8 @@ void OverlayUserPrefStore::RegisterOverlayPref(
   underlay_to_overlay_names_map_[underlay_key] = overlay_key;
 }
 
-void OverlayUserPrefStore::OnPrefValueChanged(const std::string& key) {
-  if (!overlay_.GetValue(GetOverlayKey(key), NULL))
-    ReportValueChanged(GetOverlayKey(key));
-}
-
-void OverlayUserPrefStore::OnInitializationCompleted(bool succeeded) {
-  FOR_EACH_OBSERVER(PrefStore::Observer, observers_,
-                    OnInitializationCompleted(succeeded));
+OverlayUserPrefStore::~OverlayUserPrefStore() {
+  underlay_->RemoveObserver(this);
 }
 
 const std::string& OverlayUserPrefStore::GetOverlayKey(

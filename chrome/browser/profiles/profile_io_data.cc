@@ -231,7 +231,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 }
 
 ProfileIOData::AppRequestContext::AppRequestContext() {}
-ProfileIOData::AppRequestContext::~AppRequestContext() {}
 
 void ProfileIOData::AppRequestContext::SetCookieStore(
     net::CookieStore* cookie_store) {
@@ -245,6 +244,8 @@ void ProfileIOData::AppRequestContext::SetHttpTransactionFactory(
   set_http_transaction_factory(http_factory);
 }
 
+ProfileIOData::AppRequestContext::~AppRequestContext() {}
+
 ProfileIOData::ProfileParams::ProfileParams()
     : is_incognito(false),
       clear_local_state_on_exit(false),
@@ -252,7 +253,9 @@ ProfileIOData::ProfileParams::ProfileParams()
 #if defined(ENABLE_NOTIFICATIONS)
       notification_service(NULL),
 #endif
-      profile(NULL) {}
+      profile(NULL) {
+}
+
 ProfileIOData::ProfileParams::~ProfileParams() {}
 
 ProfileIOData::ProfileIOData(bool is_incognito)

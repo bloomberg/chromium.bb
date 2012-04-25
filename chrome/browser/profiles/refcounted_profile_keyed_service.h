@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PROFILES_REFCOUNTED_PROFILE_KEYED_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_thread.h"
 
 class RefcountedProfileKeyedService;
@@ -42,10 +43,6 @@ class RefcountedProfileKeyedService
   // the UI thread; you do not need to check for that yourself.
   virtual void ShutdownOnUIThread() = 0;
 
-  // The second pass destruction can happen anywhere unless you specify which
-  // thread this service must be destroyed on by using the second constructor.
-  virtual ~RefcountedProfileKeyedService();
-
  protected:
   // If your service does not need to be deleted on a specific thread, use the
   // default constructor.
@@ -57,8 +54,13 @@ class RefcountedProfileKeyedService
   explicit RefcountedProfileKeyedService(
       const content::BrowserThread::ID thread_id);
 
+  // The second pass destruction can happen anywhere unless you specify which
+  // thread this service must be destroyed on by using the second constructor.
+  virtual ~RefcountedProfileKeyedService();
+
  private:
   friend struct impl::RefcountedProfileKeyedServiceTraits;
+  friend class base::DeleteHelper<RefcountedProfileKeyedService>;
 
   // Do we have to delete this object on a specific thread?
   bool requires_destruction_on_thread_;

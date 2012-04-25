@@ -101,7 +101,6 @@ class MockClientSideDetectionService : public ClientSideDetectionService {
 class MockSafeBrowsingService : public SafeBrowsingService {
  public:
   MockSafeBrowsingService() {}
-  virtual ~MockSafeBrowsingService() {}
 
   MOCK_METHOD1(DoDisplayBlockingPage, void(const UnsafeResource& resource));
   MOCK_METHOD1(MatchCsdWhitelistUrl, bool(const GURL&));
@@ -116,6 +115,9 @@ class MockSafeBrowsingService : public SafeBrowsingService {
     // implementation.
     callback.Run(false);
   }
+
+ protected:
+  virtual ~MockSafeBrowsingService() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingService);

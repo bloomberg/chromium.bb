@@ -35,6 +35,7 @@ class PasswordManager : public LoginModel,
   // The delegate passed in is required to outlive the PasswordManager.
   PasswordManager(content::WebContents* web_contents,
                   PasswordManagerDelegate* delegate);
+
   virtual ~PasswordManager();
 
   // Is password autofill enabled for the current profile?

@@ -39,6 +39,9 @@ class FormGetLoginsRequest : public PasswordStore::GetLoginsRequest {
   }
   bool IsLoginsRequest() const { return !!form_.get(); }
 
+ protected:
+  virtual ~FormGetLoginsRequest() {}
+
  private:
   scoped_ptr<PasswordForm> form_;
 };

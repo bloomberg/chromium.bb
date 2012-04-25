@@ -11,8 +11,6 @@
 
 ValueMapPrefStore::ValueMapPrefStore() {}
 
-ValueMapPrefStore::~ValueMapPrefStore() {}
-
 PrefStore::ReadResult ValueMapPrefStore::GetValue(const std::string& key,
                                                   const Value** value) const {
   return prefs_.GetValue(key, value) ? READ_OK : READ_NO_VALUE;
@@ -30,20 +28,6 @@ size_t ValueMapPrefStore::NumberOfObservers() const {
   return observers_.size();
 }
 
-void ValueMapPrefStore::SetValue(const std::string& key, Value* value) {
-  if (prefs_.SetValue(key, value))
-    FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
-}
-
-void ValueMapPrefStore::RemoveValue(const std::string& key) {
-  if (prefs_.RemoveValue(key))
-    FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
-}
-
-void ValueMapPrefStore::NotifyInitializationCompleted() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnInitializationCompleted(true));
-}
-
 ValueMapPrefStore::iterator ValueMapPrefStore::begin() {
   return prefs_.begin();
 }
@@ -58,4 +42,20 @@ ValueMapPrefStore::const_iterator ValueMapPrefStore::begin() const {
 
 ValueMapPrefStore::const_iterator ValueMapPrefStore::end() const {
   return prefs_.end();
+}
+
+ValueMapPrefStore::~ValueMapPrefStore() {}
+
+void ValueMapPrefStore::SetValue(const std::string& key, Value* value) {
+  if (prefs_.SetValue(key, value))
+    FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
+}
+
+void ValueMapPrefStore::RemoveValue(const std::string& key) {
+  if (prefs_.RemoveValue(key))
+    FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
+}
+
+void ValueMapPrefStore::NotifyInitializationCompleted() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnInitializationCompleted(true));
 }

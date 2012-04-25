@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,11 @@
 #include "ui/base/ui_base_switches.h"
 
 namespace {
+
+const char unknown_bool[] = "unknown_switch";
+const char unknown_string[] = "unknown_other_switch";
+
+}  // namespace
 
 class TestCommandLinePrefStore : public CommandLinePrefStore {
  public:
@@ -51,12 +56,10 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
       EXPECT_EQ(*ciphers, cipher_string);
     }
   }
+
+ private:
+  virtual ~TestCommandLinePrefStore() {}
 };
-
-const char unknown_bool[] = "unknown_switch";
-const char unknown_string[] = "unknown_other_switch";
-
-}  // namespace
 
 // Tests a simple string pref on the command line.
 TEST(CommandLinePrefStoreTest, SimpleStringPref) {

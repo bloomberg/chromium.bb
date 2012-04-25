@@ -14,7 +14,6 @@ class Profile;
 class MockPasswordStore : public PasswordStore {
  public:
   MockPasswordStore();
-  virtual ~MockPasswordStore();
 
   static scoped_refptr<RefcountedProfileKeyedService> Build(Profile* profile);
 
@@ -40,6 +39,9 @@ class MockPasswordStore : public PasswordStore {
       bool(std::vector<webkit::forms::PasswordForm*>*));
 
   virtual void ShutdownOnUIThread();
+
+ private:
+  virtual ~MockPasswordStore();
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_MOCK_PASSWORD_STORE_H_

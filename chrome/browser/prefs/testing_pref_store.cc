@@ -9,9 +9,8 @@
 TestingPrefStore::TestingPrefStore()
     : read_only_(true),
       prefs_written_(false),
-      init_complete_(false) {}
-
-TestingPrefStore::~TestingPrefStore() {}
+      init_complete_(false) {
+}
 
 PrefStore::ReadResult TestingPrefStore::GetValue(const std::string& key,
                                                  const Value** value) const {
@@ -134,3 +133,5 @@ bool TestingPrefStore::GetBoolean(const std::string& key, bool* value) const {
 void TestingPrefStore::set_read_only(bool read_only) {
   read_only_ = read_only;
 }
+
+TestingPrefStore::~TestingPrefStore() {}

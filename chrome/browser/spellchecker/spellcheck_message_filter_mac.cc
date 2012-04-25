@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,7 @@
 
 using content::BrowserThread;
 
-SpellCheckMessageFilterMac::SpellCheckMessageFilterMac() {
-}
-
-SpellCheckMessageFilterMac::~SpellCheckMessageFilterMac() {
-}
+SpellCheckMessageFilterMac::SpellCheckMessageFilterMac() {}
 
 bool SpellCheckMessageFilterMac::OnMessageReceived(const IPC::Message& message,
                                                    bool* message_was_ok) {
@@ -36,6 +32,8 @@ bool SpellCheckMessageFilterMac::OnMessageReceived(const IPC::Message& message,
   IPC_END_MESSAGE_MAP()
   return handled;
 }
+
+SpellCheckMessageFilterMac::~SpellCheckMessageFilterMac() {}
 
 void SpellCheckMessageFilterMac::OnCheckSpelling(const string16& word,
                                                  int tag,

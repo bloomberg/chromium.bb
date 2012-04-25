@@ -48,10 +48,6 @@ ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
   policy_service_->AddObserver(POLICY_DOMAIN_CHROME, "", this);
 }
 
-ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
-  policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, "", this);
-}
-
 void ConfigurationPolicyPrefStore::AddObserver(PrefStore::Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -108,6 +104,10 @@ ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
   return new ConfigurationPolicyPrefStore(g_browser_process->policy_service(),
                                           POLICY_LEVEL_RECOMMENDED);
+}
+
+ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
+  policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, "", this);
 }
 
 void ConfigurationPolicyPrefStore::Refresh() {

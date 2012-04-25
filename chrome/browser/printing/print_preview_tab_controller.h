@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,8 +35,6 @@ class PrintPreviewTabController
       public content::NotificationObserver {
  public:
   PrintPreviewTabController();
-
-  virtual ~PrintPreviewTabController();
 
   static PrintPreviewTabController* GetInstance();
 
@@ -80,6 +78,8 @@ class PrintPreviewTabController
   // Key: Preview tab.
   // Value: Initiator tab.
   typedef std::map<TabContentsWrapper*, TabContentsWrapper*> PrintPreviewTabMap;
+
+  virtual ~PrintPreviewTabController();
 
   // Handler for the RENDERER_PROCESS_CLOSED notification. This is observed when
   // the initiator renderer crashed.

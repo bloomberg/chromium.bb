@@ -13,10 +13,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-typedef InProcessBrowserTest SpellCheckMessageFilterMacBrowserTest;
-
 // Fake filter for testing, which stores sent messages and
 // allows verification by the test case.
 class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
@@ -24,10 +20,6 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
   explicit TestingSpellCheckMessageFilter(MessageLoopForUI* loop)
       : SpellCheckMessageFilterMac(),
         loop_(loop) { }
-
-  ~TestingSpellCheckMessageFilter() {
-    STLDeleteContainerPointers(sent_messages_.begin(), sent_messages_.end());
-  }
 
   virtual bool Send(IPC::Message* message) {
     sent_messages_.push_back(message);
@@ -37,7 +29,14 @@ class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterMac {
 
   std::vector<IPC::Message*> sent_messages_;
   MessageLoopForUI* loop_;
+
+ private:
+  ~TestingSpellCheckMessageFilter() {
+    STLDeleteContainerPointers(sent_messages_.begin(), sent_messages_.end());
+  }
 };
+
+typedef InProcessBrowserTest SpellCheckMessageFilterMacBrowserTest;
 
 // Uses browsertest to setup chrome threads.
 IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterMacBrowserTest,
@@ -66,5 +65,3 @@ IN_PROC_BROWSER_TEST_F(SpellCheckMessageFilterMacBrowserTest,
   EXPECT_EQ(sent_results[0].type,
             SpellCheckResult::SPELLING);
 }
-
-}  // namespace

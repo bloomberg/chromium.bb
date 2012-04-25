@@ -30,7 +30,6 @@ class ConfigurationPolicyPrefStore
   // Does not take ownership of |service|. Only policies of the given |level|
   // will be mapped.
   ConfigurationPolicyPrefStore(PolicyService* service, PolicyLevel level);
-  virtual ~ConfigurationPolicyPrefStore();
 
   // PrefStore methods:
   virtual void AddObserver(PrefStore::Observer* observer) OVERRIDE;
@@ -56,6 +55,8 @@ class ConfigurationPolicyPrefStore
   static ConfigurationPolicyPrefStore* CreateRecommendedPolicyPrefStore();
 
  private:
+  virtual ~ConfigurationPolicyPrefStore();
+
   // Refreshes policy information, rereading policy from the policy service and
   // sending out change notifications as appropriate.
   void Refresh();

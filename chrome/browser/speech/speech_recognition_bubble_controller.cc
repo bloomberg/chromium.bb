@@ -25,10 +25,6 @@ SpeechRecognitionBubbleController::SpeechRecognitionBubbleController(
       registrar_(new content::NotificationRegistrar) {
 }
 
-SpeechRecognitionBubbleController::~SpeechRecognitionBubbleController() {
-  DCHECK(bubbles_.empty());
-}
-
 void SpeechRecognitionBubbleController::CreateBubble(
     int session_id,
     int render_process_id,
@@ -65,10 +61,6 @@ void SpeechRecognitionBubbleController::CreateBubble(
   UpdateTabContentsSubscription(session_id, BUBBLE_ADDED);
 }
 
-void SpeechRecognitionBubbleController::CloseBubble(int session_id) {
-  ProcessRequestInUiThread(session_id, REQUEST_CLOSE, string16(), 0, 0);
-}
-
 void SpeechRecognitionBubbleController::SetBubbleWarmUpMode(int session_id) {
   ProcessRequestInUiThread(session_id, REQUEST_SET_WARM_UP_MODE,
                            string16(), 0, 0);
@@ -85,42 +77,45 @@ void SpeechRecognitionBubbleController::SetBubbleRecognizingMode(
                            string16(), 0, 0);
 }
 
+void SpeechRecognitionBubbleController::SetBubbleMessage(int session_id,
+                                                         const string16& text) {
+  ProcessRequestInUiThread(session_id, REQUEST_SET_MESSAGE, text, 0, 0);
+}
+
 void SpeechRecognitionBubbleController::SetBubbleInputVolume(
     int session_id, float volume, float noise_volume) {
   ProcessRequestInUiThread(session_id, REQUEST_SET_INPUT_VOLUME, string16(),
                            volume, noise_volume);
 }
 
-void SpeechRecognitionBubbleController::SetBubbleMessage(int session_id,
-                                                         const string16& text) {
-  ProcessRequestInUiThread(session_id, REQUEST_SET_MESSAGE, text, 0, 0);
+void SpeechRecognitionBubbleController::CloseBubble(int session_id) {
+  ProcessRequestInUiThread(session_id, REQUEST_CLOSE, string16(), 0, 0);
 }
 
-void SpeechRecognitionBubbleController::UpdateTabContentsSubscription(
-    int session_id, ManageSubscriptionAction action) {
+void SpeechRecognitionBubbleController::InfoBubbleButtonClicked(
+    SpeechRecognitionBubble::Button button) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(current_bubble_session_id_);
 
-  // If there are any other bubbles existing for the same WebContents, we would
-  // have subscribed to tab close notifications on their behalf and we need to
-  // stay registered. So we don't change the subscription in such cases.
-  WebContents* web_contents = bubbles_[session_id]->GetWebContents();
-  for (BubbleSessionIdMap::iterator iter = bubbles_.begin();
-       iter != bubbles_.end(); ++iter) {
-    if (iter->second->GetWebContents() == web_contents &&
-        iter->first != session_id) {
-      // At least one other bubble exists for the same WebContents. So don't
-      // make any change to the subscription.
-      return;
-    }
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &SpeechRecognitionBubbleController::InvokeDelegateButtonClicked,
+          this, current_bubble_session_id_, button));
+}
 
-  if (action == BUBBLE_ADDED) {
-    registrar_->Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    content::Source<WebContents>(web_contents));
-  } else {
-    registrar_->Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                       content::Source<WebContents>(web_contents));
-  }
+void SpeechRecognitionBubbleController::InfoBubbleFocusChanged() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(current_bubble_session_id_);
+
+  int old_bubble_session_id = current_bubble_session_id_;
+  current_bubble_session_id_ = 0;
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &SpeechRecognitionBubbleController::InvokeDelegateFocusChanged,
+          this, old_bubble_session_id));
 }
 
 void SpeechRecognitionBubbleController::Observe(
@@ -148,6 +143,20 @@ void SpeechRecognitionBubbleController::Observe(
   } else {
     NOTREACHED() << "Unknown notification";
   }
+}
+
+SpeechRecognitionBubbleController::~SpeechRecognitionBubbleController() {
+  DCHECK(bubbles_.empty());
+}
+
+void SpeechRecognitionBubbleController::InvokeDelegateButtonClicked(
+    int session_id, SpeechRecognitionBubble::Button button) {
+  delegate_->InfoBubbleButtonClicked(session_id, button);
+}
+
+void SpeechRecognitionBubbleController::InvokeDelegateFocusChanged(
+    int session_id) {
+  delegate_->InfoBubbleFocusChanged(session_id);
 }
 
 void SpeechRecognitionBubbleController::ProcessRequestInUiThread(
@@ -206,40 +215,31 @@ void SpeechRecognitionBubbleController::ProcessRequestInUiThread(
     bubble->Show();
 }
 
-void SpeechRecognitionBubbleController::InfoBubbleButtonClicked(
-    SpeechRecognitionBubble::Button button) {
+void SpeechRecognitionBubbleController::UpdateTabContentsSubscription(
+    int session_id, ManageSubscriptionAction action) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(current_bubble_session_id_);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &SpeechRecognitionBubbleController::InvokeDelegateButtonClicked,
-          this, current_bubble_session_id_, button));
-}
+  // If there are any other bubbles existing for the same WebContents, we would
+  // have subscribed to tab close notifications on their behalf and we need to
+  // stay registered. So we don't change the subscription in such cases.
+  WebContents* web_contents = bubbles_[session_id]->GetWebContents();
+  for (BubbleSessionIdMap::iterator iter = bubbles_.begin();
+       iter != bubbles_.end(); ++iter) {
+    if (iter->second->GetWebContents() == web_contents &&
+        iter->first != session_id) {
+      // At least one other bubble exists for the same WebContents. So don't
+      // make any change to the subscription.
+      return;
+    }
+  }
 
-void SpeechRecognitionBubbleController::InfoBubbleFocusChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(current_bubble_session_id_);
-
-  int old_bubble_session_id = current_bubble_session_id_;
-  current_bubble_session_id_ = 0;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(
-          &SpeechRecognitionBubbleController::InvokeDelegateFocusChanged,
-          this, old_bubble_session_id));
-}
-
-void SpeechRecognitionBubbleController::InvokeDelegateButtonClicked(
-    int session_id, SpeechRecognitionBubble::Button button) {
-  delegate_->InfoBubbleButtonClicked(session_id, button);
-}
-
-void SpeechRecognitionBubbleController::InvokeDelegateFocusChanged(
-    int session_id) {
-  delegate_->InfoBubbleFocusChanged(session_id);
+  if (action == BUBBLE_ADDED) {
+    registrar_->Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                    content::Source<WebContents>(web_contents));
+  } else {
+    registrar_->Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                       content::Source<WebContents>(web_contents));
+  }
 }
 
 }  // namespace speech

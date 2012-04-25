@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,13 +12,16 @@
 class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
  public:
   explicit SpellCheckMessageFilterMac();
-  virtual ~SpellCheckMessageFilterMac();
 
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
  private:
+  friend class TestingSpellCheckMessageFilter;
+
+  virtual ~SpellCheckMessageFilterMac();
+
   void OnCheckSpelling(const string16& word, int tag, bool* correct);
   void OnFillSuggestionList(const string16& word,
                             std::vector<string16>* suggestions);
