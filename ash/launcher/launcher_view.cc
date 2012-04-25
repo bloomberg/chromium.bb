@@ -230,7 +230,7 @@ class LauncherView::StartFadeAnimationDelegate :
     launcher_view_->FadeIn(view_);
   }
   virtual void AnimationCanceled(const Animation* animation) OVERRIDE {
-    view_->SetVisible(true);
+    view_->layer()->SetOpacity(1.0f);
   }
 
  private:

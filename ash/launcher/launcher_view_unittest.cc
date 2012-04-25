@@ -132,19 +132,24 @@ class LauncherViewTest : public aura::test::AuraTestBase {
     item.type = TYPE_APP_SHORTCUT;
     item.status = STATUS_CLOSED;
 
-    int id = model_->next_id();
+    LauncherID id = model_->next_id();
     model_->Add(item);
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
 
-  LauncherID AddTabbedBrowser() {
+  LauncherID AddTabbedBrowserNoWait() {
     LauncherItem item;
     item.type = TYPE_TABBED;
     item.status = STATUS_RUNNING;
 
-    int id = model_->next_id();
+    LauncherID id = model_->next_id();
     model_->Add(item);
+    return id;
+  }
+
+  LauncherID AddTabbedBrowser() {
+    LauncherID id = AddTabbedBrowserNoWait();
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
@@ -253,6 +258,34 @@ TEST_F(LauncherViewTest, RemoveLastOverflowed) {
 
   RemoveByID(last_added);
   EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
+}
+
+// Adds browser button without waiting for animation to finish and verifies
+// that all added buttons are visible.
+TEST_F(LauncherViewTest, AddButtonQuickly) {
+  // All buttons should be visible.
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  // Add a few tabbed browser quickly without wait for animation.
+  int added_count = 0;
+  while (!test_api_->IsOverflowButtonVisible()) {
+    AddTabbedBrowserNoWait();
+    ++added_count;
+  }
+
+  // LauncherView should be big enough to hold at least 3 new buttons.
+  ASSERT_GE(added_count, 3);
+
+  // Wait for the last animation to finish.
+  test_api_->RunMessageLoopUntilAnimationsDone();
+
+  // Verifies non-overflow buttons are visible.
+  for (int i = 0; i <= test_api_->GetLastVisibleIndex(); ++i) {
+    internal::LauncherButton* button = test_api_->GetButton(i);
+    EXPECT_TRUE(button->visible()) << "button index=" << i;
+    EXPECT_EQ(1.0f, button->layer()->opacity()) << "button index=" << i;
+  }
 }
 
 }  // namespace test
