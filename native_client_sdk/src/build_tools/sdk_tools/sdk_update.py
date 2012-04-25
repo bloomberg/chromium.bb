@@ -103,15 +103,6 @@ class Error(Exception):
   pass
 
 
-def GetHostOS():
-  '''Returns the host_os value that corresponds to the current host OS'''
-  return {
-      'linux2': 'linux',
-      'darwin': 'mac',
-      'cygwin': 'win',
-      'win32':  'win'
-      }[sys.platform]
-
 def UrlOpen(url):
   request = fancy_urllib.FancyRequest(url)
   ca_certs = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -207,23 +198,6 @@ def RenameDir(srcdir, destdir):
               % (srcdir, destdir, num_tries, destdir))
 
 
-def ShowProgress(progress):
-  ''' A download-progress function used by class Archive.
-      (See DownloadAndComputeHash).'''
-  global count  # A divider, so we don't emit dots too often.
-
-  if progress == 0:
-    count = 0
-  elif progress == 100:
-    sys.stdout.write('\n')
-  else:
-    count = count + 1
-    if count > 10:
-      sys.stdout.write('.')
-      sys.stdout.flush()
-      count = 0
-
-
 class ProgressFunction(object):
   '''Create a progress function for a file with a given size'''
 
@@ -251,43 +225,41 @@ class ProgressFunction(object):
     return ShowKnownProgress
 
 
-def DownloadAndComputeHash(from_stream, to_stream=None, progress_func=None):
-  ''' Download the archive data from from-stream and generate sha1 and
-      size info.
+def DownloadArchiveToFile(archive, dest_path):
+  '''Download the archive's data to a file at dest_path.
+
+  As a side effect, computes the sha1 hash and data size, both returned as a
+  tuple. Raises an Error if the url can't be opened, or an IOError exception if
+  dest_path can't be opened.
 
   Args:
-    from_stream:   An input stream that supports read.
-    to_stream:     [optional] the data is written to to_stream if it is
-                   provided.
-    progress_func: [optional] A function used to report download progress. If
-                   provided, progress_func is called with progress=0 at the
-                   beginning of the download, periodically with progress=1
-                   during the download, and progress=100 at the end.
-
-  Return
-    A tuple (sha1, size) where sha1 is a sha1-hash for the archive data and
-    size is the size of the archive data in bytes.'''
-  # Use a no-op progress function if none is specified.
-  def progress_no_op(progress):
-    pass
-  if not progress_func:
-    progress_func = progress_no_op
-
-  sha1_hash = hashlib.sha1()
+    dest_path: Path for the file that will receive the data.
+  Return:
+    A tuple (sha1, size) with the sha1 hash and data size respectively.'''
+  sha1 = None
   size = 0
-  progress_func(progress=0)
-  while(1):
-    data = from_stream.read(32768)
-    if not data:
-      break
-    sha1_hash.update(data)
-    size += len(data)
-    if to_stream:
-      to_stream.write(data)
-    progress_func(size)
-
-  progress_func(progress=100)
-  return sha1_hash.hexdigest(), size
+  with open(dest_path, 'wb') as to_stream:
+    from_stream = None
+    try:
+      from_stream = UrlOpen(archive.url)
+    except urllib2.URLError:
+      raise Error('Cannot open "%s" for archive %s' %
+          (archive.url, archive.host_os))
+    try:
+      content_length = int(from_stream.info()[HTTP_CONTENT_LENGTH])
+      progress_function = ProgressFunction(content_length).GetProgressFunction()
+      InfoPrint('Downloading %s' % archive.url)
+      sha1, size = manifest_util.DownloadAndComputeHash(
+          from_stream,
+          to_stream=to_stream,
+          progress_func=progress_function)
+      if size != content_length:
+        raise Error('Download size mismatch for %s.\n'
+                    'Expected %s bytes but got %s' %
+                    (archive.url, content_length, size))
+    finally:
+      if from_stream: from_stream.close()
+  return sha1, size
 
 
 def LoadManifestFromFile(path):
@@ -315,14 +287,13 @@ def LoadManifestFromURL(url):
     raise Error('Unable to open %s. [%s]' % (url, e))
 
   manifest_stream = cStringIO.StringIO()
-  sha1, size = DownloadAndComputeHash(
-      url_stream, manifest_stream)
+  sha1, size = manifest_util.DownloadAndComputeHash(url_stream, manifest_stream)
   manifest = manifest_util.SDKManifest()
   manifest.LoadManifestString(manifest_stream.getvalue())
 
   def BundleFilter(bundle):
     # Only add this bundle if it's supported on this platform.
-    return bundle.GetArchive(GetHostOS())
+    return bundle.GetHostOSArchive()
 
   manifest.FilterBundles(BundleFilter)
   return manifest
@@ -343,43 +314,6 @@ def WriteManifestToFile(manifest, path):
   if os.path.exists(path):
     os.remove(path)
   shutil.move(temp_file_name, path)
-
-
-def DownloadArchiveToFile(archive, dest_path):
-  '''Download the archive's data to a file at dest_path.
-
-  As a side effect, computes the sha1 hash and data size, both returned as a
-  tuple. Raises an Error if the url can't be opened, or an IOError exception if
-  dest_path can't be opened.
-
-  Args:
-    dest_path: Path for the file that will receive the data.
-  Return:
-    A tuple (sha1, size) with the sha1 hash and data size respectively.'''
-  sha1 = None
-  size = 0
-  with open(dest_path, 'wb') as to_stream:
-    from_stream = None
-    try:
-      from_stream = UrlOpen(archive.url)
-    except urllib2.URLError:
-      raise Error('Cannot open "%s" for archive %s' %
-          (archive.url, archive.host_os))
-    try:
-      content_length = int(from_stream.info()[HTTP_CONTENT_LENGTH])
-      progress_function = ProgressFunction(content_length).GetProgressFunction()
-      InfoPrint('Downloading %s' % archive.url)
-      sha1, size = DownloadAndComputeHash(
-          from_stream,
-          to_stream=to_stream,
-          progress_func=progress_function)
-      if size != content_length:
-        raise Error('Download size mismatch for %s.\n'
-                    'Expected %s bytes but got %s' %
-                    (archive.url, content_length, size))
-    finally:
-      if from_stream: from_stream.close()
-  return sha1, size
 
 
 #------------------------------------------------------------------------------
@@ -471,7 +405,7 @@ def Update(options, argv):
       continue
     def UpdateBundle():
       '''Helper to install a bundle'''
-      archive = bundle.GetArchive(GetHostOS())
+      archive = bundle.GetHostOSArchive()
       (scheme, host, path, _, _, _) = urlparse.urlparse(archive['url'])
       dest_filename = os.path.join(options.user_data_dir, path.split('/')[-1])
       sha1, size = DownloadArchiveToFile(archive, dest_filename)

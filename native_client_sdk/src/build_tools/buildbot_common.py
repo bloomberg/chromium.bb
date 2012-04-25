@@ -96,7 +96,7 @@ def GetGsutil():
     return LOCAL_GSUTIL
 
 
-def Archive(filename, bucket_path, cwd=None):
+def Archive(filename, bucket_path, cwd=None, step_link=True):
   """Upload the given filename to Google Store."""
   full_dst = 'gs://%s/%s' % (bucket_path, filename)
 
@@ -106,5 +106,6 @@ def Archive(filename, bucket_path, cwd=None):
       cwd=cwd)
   url = 'https://commondatastorage.googleapis.com/'\
         '%s/%s' % (bucket_path, filename)
-  print '@@@STEP_LINK@download@%s@@@' % url
-  sys.stdout.flush()
+  if step_link:
+    print '@@@STEP_LINK@download@%s@@@' % url
+    sys.stdout.flush()

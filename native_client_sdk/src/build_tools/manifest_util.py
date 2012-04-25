@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import hashlib
 import json
+import sys
 
 MANIFEST_VERSION = 2
 
@@ -31,6 +33,64 @@ VALID_BUNDLES_KEYS = frozenset([
     ])
 
 VALID_MANIFEST_KEYS = frozenset(['manifest_version', BUNDLES_KEY])
+
+
+def GetHostOS():
+  '''Returns the host_os value that corresponds to the current host OS'''
+  return {
+      'linux2': 'linux',
+      'darwin': 'mac',
+      'cygwin': 'win',
+      'win32':  'win'
+      }[sys.platform]
+
+
+def DictToJSON(dict):
+  """Convert a dict to a JSON-formatted string."""
+  pretty_string = json.dumps(dict, sort_keys=False, indent=2)
+  # json.dumps sometimes returns trailing whitespace and does not put
+  # a newline at the end.  This code fixes these problems.
+  pretty_lines = pretty_string.split('\n')
+  return '\n'.join([line.rstrip() for line in pretty_lines]) + '\n'
+
+
+def DownloadAndComputeHash(from_stream, to_stream=None, progress_func=None):
+  ''' Download the archive data from from-stream and generate sha1 and
+      size info.
+
+  Args:
+    from_stream:   An input stream that supports read.
+    to_stream:     [optional] the data is written to to_stream if it is
+                   provided.
+    progress_func: [optional] A function used to report download progress. If
+                   provided, progress_func is called with progress=0 at the
+                   beginning of the download, periodically with progress=1
+                   during the download, and progress=100 at the end.
+
+  Return
+    A tuple (sha1, size) where sha1 is a sha1-hash for the archive data and
+    size is the size of the archive data in bytes.'''
+  # Use a no-op progress function if none is specified.
+  def progress_no_op(progress):
+    pass
+  if not progress_func:
+    progress_func = progress_no_op
+
+  sha1_hash = hashlib.sha1()
+  size = 0
+  progress_func(progress=0)
+  while(1):
+    data = from_stream.read(32768)
+    if not data:
+      break
+    sha1_hash.update(data)
+    size += len(data)
+    if to_stream:
+      to_stream.write(data)
+    progress_func(size)
+
+  progress_func(progress=100)
+  return sha1_hash.hexdigest(), size
 
 
 class Error(Exception):
@@ -69,6 +129,15 @@ class Archive(dict):
       host_os = 'all (default)'
     if not self.get('url', None):
       raise Error('Archive "%s" has no URL' % host_os)
+    if not self.get('size', None):
+      raise Error('Archive "%s" has no size' % host_os)
+    checksum = self.get('checksum', None)
+    if not checksum:
+      raise Error('Archive "%s" has no checksum' % host_os)
+    elif not isinstance(checksum, dict):
+      raise Error('Archive "%s" has a checksum, but it is not a dict' % host_os)
+    elif not len(checksum):
+      raise Error('Archive "%s" has an empty checksum dict' % host_os)
     # Verify that all key names are valid.
     for key, val in self.iteritems():
       if key not in VALID_ARCHIVE_KEYS:
@@ -78,6 +147,11 @@ class Archive(dict):
   def url(self):
     """Returns the URL of this archive"""
     return self['url']
+
+  @url.setter
+  def url(self, url):
+    """Set the URL of this archive"""
+    self['url'] = url
 
   @property
   def size(self):
@@ -122,6 +196,14 @@ class Bundle(dict):
       A dict which is the result of merging the two Bundles.
     """
     return Bundle(self.items() + bundle.items())
+
+  def ToJSON(self):
+    """Convert this bundle to a JSON-formatted string."""
+    return DictToJSON(self)
+
+  def FromJSON(self, json_string):
+    """Parse and load bundle data from a JSON-formatted string."""
+    self.CopyFrom(json.loads(json_string))
 
   def CopyFrom(self, dict):
     """Update the content of the bundle by copying values from the given
@@ -185,6 +267,10 @@ class Bundle(dict):
       if archive.host_os == host_os_name:
         return archive
     return None
+
+  def GetHostOSArchive(self):
+    """Retrieve the archive for the current host os."""
+    return self.GetArchive(GetHostOS())
 
   def GetArchives(self):
     """Returns all the archives in this bundle"""
@@ -345,8 +431,4 @@ class SDKManifest(object):
 
   def GetManifestString(self):
     """Returns the current JSON manifest object, pretty-printed"""
-    pretty_string = json.dumps(self._manifest_data, sort_keys=False, indent=2)
-    # json.dumps sometimes returns trailing whitespace and does not put
-    # a newline at the end.  This code fixes these problems.
-    pretty_lines = pretty_string.split('\n')
-    return '\n'.join([line.rstrip() for line in pretty_lines]) + '\n'
+    return DictToJSON(self._manifest_data)
