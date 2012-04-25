@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
@@ -68,6 +69,13 @@ class DBThreadObserverHelper : public DBThreadObserverHelperBase {
  public:
   DBThreadObserverHelper() :
       DBThreadObserverHelperBase(content::BrowserThread::DB) {}
+
+ protected:
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::DB>;
+  friend class base::DeleteHelper<DBThreadObserverHelper>;
+
+  virtual ~DBThreadObserverHelper() {}
 };
 
 #endif  // CHROME_TEST_BASE_THREAD_OBSERVER_HELPER_H_

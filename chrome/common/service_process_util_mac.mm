@@ -75,13 +75,14 @@ bool RemoveFromLaunchd() {
 
 class ExecFilePathWatcherDelegate : public FilePathWatcher::Delegate {
  public:
-  ExecFilePathWatcherDelegate() { }
-  virtual ~ExecFilePathWatcherDelegate() { }
+  ExecFilePathWatcherDelegate() {}
 
   bool Init(const FilePath& path);
   virtual void OnFilePathChanged(const FilePath& path) OVERRIDE;
 
  private:
+  virtual ~ExecFilePathWatcherDelegate() {}
+
   FSRef executable_fsref_;
 };
 

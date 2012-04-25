@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,6 @@ class ServiceGaiaAuthenticator
                            const std::string& service_id,
                            const std::string& gaia_url,
                            base::MessageLoopProxy* io_message_loop_proxy);
-  virtual ~ServiceGaiaAuthenticator();
 
   // content::URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
@@ -43,6 +42,9 @@ class ServiceGaiaAuthenticator
   virtual int GetBackoffDelaySeconds(int current_backoff_delay) OVERRIDE;
 
  private:
+  friend class base::RefCountedThreadSafe<ServiceGaiaAuthenticator>;
+  virtual ~ServiceGaiaAuthenticator();
+
   void DoPost(const GURL& post_url, const std::string& post_body);
 
   base::WaitableEvent http_post_completed_;

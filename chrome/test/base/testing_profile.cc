@@ -99,6 +99,9 @@ class TestExtensionURLRequestContext : public net::URLRequestContext {
     cookie_monster->SetCookieableSchemes(schemes, 1);
     set_cookie_store(cookie_monster);
   }
+
+ private:
+  virtual ~TestExtensionURLRequestContext() {}
 };
 
 class TestExtensionURLRequestContextGetter

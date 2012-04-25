@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,9 +84,12 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
         virtual ~Delegate() {}
     };
 
-    virtual ~PrintServerWatcher();
     virtual bool StartWatching(PrintServerWatcher::Delegate* delegate) = 0;
     virtual bool StopWatching() = 0;
+
+   protected:
+    friend class base::RefCountedThreadSafe<PrintServerWatcher>;
+    virtual ~PrintServerWatcher();
   };
 
   class PrinterWatcher : public base::RefCountedThreadSafe<PrinterWatcher> {
@@ -102,11 +105,14 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
         virtual ~Delegate() {}
     };
 
-    virtual ~PrinterWatcher();
     virtual bool StartWatching(PrinterWatcher::Delegate* delegate) = 0;
     virtual bool StopWatching() = 0;
     virtual bool GetCurrentPrinterInfo(
         printing::PrinterBasicInfo* printer_info) = 0;
+
+   protected:
+    friend class base::RefCountedThreadSafe<PrinterWatcher>;
+    virtual ~PrinterWatcher();
   };
 
   class JobSpooler : public base::RefCountedThreadSafe<JobSpooler> {
@@ -119,7 +125,6 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
         virtual void OnJobSpoolFailed() = 0;
     };
 
-    virtual ~JobSpooler();
     // Spool job to the printer asynchronously. Caller will be notified via
     // |delegate|. Note that only one print job can be in progress at any given
     // time. Subsequent calls to Spool (before the Delegate::OnJobSpoolSucceeded
@@ -131,6 +136,9 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
                        const std::string& job_title,
                        const std::vector<std::string>& tags,
                        JobSpooler::Delegate* delegate) = 0;
+   protected:
+    friend class base::RefCountedThreadSafe<JobSpooler>;
+    virtual ~JobSpooler();
   };
 
   class PrintSystemResult {
@@ -141,18 +149,16 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
     std::string message() const { return message_; }
 
    private:
+    PrintSystemResult() {}
+
     bool succeeded_;
     std::string message_;
-
-    PrintSystemResult() { }
   };
 
   typedef base::Callback<void(bool,
                               const std::string&,
                               const printing::PrinterCapsAndDefaults&)>
       PrinterCapsAndDefaultsCallback;
-
-  virtual ~PrintSystem();
 
   // Initialize print system. This need to be called before any other function
   // of PrintSystem.
@@ -199,6 +205,10 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
   // Return NULL if no print system available.
   static scoped_refptr<PrintSystem> CreateInstance(
       const base::DictionaryValue* print_system_settings);
+
+ protected:
+  friend class base::RefCountedThreadSafe<PrintSystem>;
+  virtual ~PrintSystem();
 };
 
 

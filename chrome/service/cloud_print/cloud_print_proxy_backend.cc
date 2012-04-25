@@ -93,6 +93,10 @@ class CloudPrintProxyBackend::Core
   virtual void OnOutgoingNotification();
 
  private:
+  friend class base::RefCountedThreadSafe<Core>;
+
+  virtual ~Core() {}
+
   // NotifyXXX is how the Core communicates with the frontend across
   // threads.
   void NotifyPrinterListAvailable(

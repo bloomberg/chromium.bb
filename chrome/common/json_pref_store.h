@@ -33,7 +33,6 @@ class JsonPrefStore : public PersistentPrefStore,
   // file I/O can be done.
   JsonPrefStore(const FilePath& pref_filename,
                 base::MessageLoopProxy* file_message_loop_proxy);
-  virtual ~JsonPrefStore();
 
   // PrefStore overrides:
   virtual ReadResult GetValue(const std::string& key,
@@ -65,6 +64,8 @@ class JsonPrefStore : public PersistentPrefStore,
   void OnFileRead(base::Value* value_owned, PrefReadError error, bool no_dir);
 
  private:
+  virtual ~JsonPrefStore();
+
   // ImportantFileWriter::DataSerializer overrides:
   virtual bool SerializeData(std::string* output) OVERRIDE;
 

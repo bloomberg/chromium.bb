@@ -127,6 +127,8 @@ class PrintSystemCUPS : public PrintSystem {
   }
 
  private:
+  virtual ~PrintSystemCUPS() {}
+
   // Following functions are wrappers around corresponding CUPS functions.
   // <functions>2()  are called when print server is specified, and plain
   // version in another case. There is an issue specifing CUPS_HTTP_DEFAULT
@@ -173,9 +175,6 @@ class PrintServerWatcherCUPS
       : print_system_(print_system),
         delegate_(NULL) {
   }
-  ~PrintServerWatcherCUPS() {
-    StopWatching();
-  }
 
   // PrintSystem::PrintServerWatcher implementation.
   virtual bool StartWatching(
@@ -207,6 +206,11 @@ class PrintServerWatcherCUPS
         FROM_HERE,
         base::Bind(&PrintServerWatcherCUPS::CheckForUpdates, this),
         print_system_->GetUpdateTimeout());
+  }
+
+ protected:
+  virtual ~PrintServerWatcherCUPS() {
+    StopWatching();
   }
 
  private:
@@ -243,10 +247,6 @@ class PrinterWatcherCUPS
       : printer_name_(printer_name),
         delegate_(NULL),
         print_system_(print_system) {
-  }
-
-  ~PrinterWatcherCUPS() {
-    StopWatching();
   }
 
   // PrintSystem::PrinterWatcher implementation.
@@ -320,6 +320,11 @@ class PrinterWatcherCUPS
         print_system_->GetUpdateTimeout());
   }
 
+ protected:
+  virtual ~PrinterWatcherCUPS() {
+    StopWatching();
+  }
+
  private:
   std::string GetSettingsHash() {
     printing::PrinterBasicInfo info;
@@ -386,6 +391,9 @@ class JobSpoolerCUPS : public PrintSystem::JobSpooler {
     else
       delegate->OnJobSpoolFailed();
   }
+
+ protected:
+  virtual ~JobSpoolerCUPS() {}
 
  private:
   scoped_refptr<PrintSystemCUPS> print_system_;

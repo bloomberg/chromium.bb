@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,19 @@ ServiceGaiaAuthenticator::ServiceGaiaAuthenticator(
           http_response_code_(0) {
 }
 
-ServiceGaiaAuthenticator::~ServiceGaiaAuthenticator() {
+// content::URLFetcherDelegate implementation
+void ServiceGaiaAuthenticator::OnURLFetchComplete(
+    const content::URLFetcher* source) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  http_response_code_ = source->GetResponseCode();
+  source->GetResponseAsString(&response_data_);
+  delete source;
+  // Add an extra reference because we want http_post_completed_ to remain
+  // valid until after Signal() returns.
+  scoped_refptr<ServiceGaiaAuthenticator> keep_alive(this);
+  // Wake the blocked thread in Post.
+  http_post_completed_.Signal();
+  // WARNING: DONT DO ANYTHING AFTER THIS CALL! |this| may be deleted!
 }
 
 bool ServiceGaiaAuthenticator::Post(const GURL& url,
@@ -61,6 +73,8 @@ int ServiceGaiaAuthenticator::GetBackoffDelaySeconds(
   return ret;
 }
 
+ServiceGaiaAuthenticator::~ServiceGaiaAuthenticator() {}
+
 void ServiceGaiaAuthenticator::DoPost(const GURL& post_url,
                                       const std::string& post_body) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
@@ -70,19 +84,4 @@ void ServiceGaiaAuthenticator::DoPost(const GURL& post_url,
       g_service_process->GetServiceURLRequestContextGetter());
   request->SetUploadData("application/x-www-form-urlencoded", post_body);
   request->Start();
-}
-
-// content::URLFetcherDelegate implementation
-void ServiceGaiaAuthenticator::OnURLFetchComplete(
-    const content::URLFetcher* source) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  http_response_code_ = source->GetResponseCode();
-  source->GetResponseAsString(&response_data_);
-  delete source;
-  // Add an extra reference because we want http_post_completed_ to remain
-  // valid until after Signal() returns.
-  scoped_refptr<ServiceGaiaAuthenticator> keep_alive(this);
-  // Wake the blocked thread in Post.
-  http_post_completed_.Signal();
-  // WARNING: DONT DO ANYTHING AFTER THIS CALL! |this| may be deleted!
 }

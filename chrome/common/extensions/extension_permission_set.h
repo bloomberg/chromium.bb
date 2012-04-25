@@ -196,15 +196,15 @@ class ExtensionAPIPermission {
   // Instances should only be constructed from within ExtensionPermissionsInfo.
   friend class ExtensionPermissionsInfo;
 
-  // Register ALL the permissions!
-  static void RegisterAllPermissions(ExtensionPermissionsInfo* info);
-
   explicit ExtensionAPIPermission(
       ID id,
       const char* name,
       int l10n_message_id,
       ExtensionPermissionMessage::ID message_id,
       int flags);
+
+  // Register ALL the permissions!
+  static void RegisterAllPermissions(ExtensionPermissionsInfo* info);
 
   ID id_;
   const char* name_;
@@ -307,8 +307,6 @@ class ExtensionPermissionSet
   // Creates a new permission set containing only oauth scopes.
   explicit ExtensionPermissionSet(const ExtensionOAuth2Scopes& scopes);
 
-  ~ExtensionPermissionSet();
-
   // Creates a new permission set equal to |set1| - |set2|, passing ownership of
   // the new set to the caller.
   static ExtensionPermissionSet* CreateDifference(
@@ -400,8 +398,9 @@ class ExtensionPermissionSet
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionPermissionsTest,
                            HasLessHostPrivilegesThan);
-
   friend class base::RefCountedThreadSafe<ExtensionPermissionSet>;
+
+  ~ExtensionPermissionSet();
 
   static std::set<std::string> GetDistinctHosts(
       const URLPatternSet& host_patterns,

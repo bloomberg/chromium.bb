@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,6 @@ class CloudPrintAuth
                  const base::DictionaryValue* print_sys_settings,
                  const gaia::OAuthClientInfo& oauth_client_info,
                  const std::string& proxy_id);
-  virtual ~CloudPrintAuth();
 
   // Note:
   //
@@ -83,6 +82,9 @@ class CloudPrintAuth
   virtual std::string GetAuthHeader() OVERRIDE;
 
  private:
+  friend class base::RefCountedThreadSafe<CloudPrintAuth>;
+  virtual ~CloudPrintAuth();
+
   Client* client_;
   gaia::OAuthClientInfo oauth_client_info_;
   scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;

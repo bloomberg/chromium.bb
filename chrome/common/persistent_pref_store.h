@@ -15,8 +15,6 @@
 // the data to some backing store.
 class PersistentPrefStore : public PrefStore {
  public:
-  virtual ~PersistentPrefStore() {}
-
   // Unique integer code for each type of error so we can report them
   // distinctly in a histogram.
   // NOTE: Don't change the order here as it will change the server's meaning
@@ -89,6 +87,9 @@ class PersistentPrefStore : public PrefStore {
 
   // Lands any pending writes to disk.
   virtual void CommitPendingWrite() = 0;
+
+ protected:
+  virtual ~PersistentPrefStore() {}
 };
 
 #endif  // CHROME_COMMON_PERSISTENT_PREF_STORE_H_

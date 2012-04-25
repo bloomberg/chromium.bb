@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,6 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
                    const GURL& cloud_print_server_url,
                    cloud_print::PrintSystem* print_system,
                    Delegate* delegate);
-  virtual ~JobStatusUpdater();
 
   // Checks the status of the local print job and sends an update.
   void UpdateStatus();
@@ -54,6 +53,9 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
   virtual std::string GetAuthHeader() OVERRIDE;
 
  private:
+  friend class base::RefCountedThreadSafe<JobStatusUpdater>;
+  virtual ~JobStatusUpdater();
+
   std::string printer_name_;
   std::string job_id_;
   cloud_print::PlatformJobId local_job_id_;

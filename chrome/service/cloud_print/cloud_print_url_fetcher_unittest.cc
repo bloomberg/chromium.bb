@@ -51,7 +51,10 @@ class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
     return new TrackingTestURLRequestContextGetter(
         io_message_loop_proxy_.get());
   }
+
  private:
+  virtual ~TestCloudPrintURLFetcher() {}
+
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
 };
 

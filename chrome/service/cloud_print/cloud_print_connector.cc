@@ -34,9 +34,6 @@ CloudPrintConnector::CloudPrintConnector(
   }
 }
 
-CloudPrintConnector::~CloudPrintConnector() {
-}
-
 bool CloudPrintConnector::Start() {
   DCHECK(!print_system_.get());
   VLOG(1) << "CP_CONNECTOR: Starting connector, id: " << proxy_id_;
@@ -145,6 +142,17 @@ CloudPrintURLFetcher::ResponseAction CloudPrintConnector::HandleJSONData(
   return (this->*next_response_handler_)(source, url, json_data, succeeded);
 }
 
+CloudPrintURLFetcher::ResponseAction CloudPrintConnector::OnRequestAuthError() {
+  OnAuthError();
+  return CloudPrintURLFetcher::STOP_PROCESSING;
+}
+
+std::string CloudPrintConnector::GetAuthHeader() {
+  return CloudPrintHelpers::GetCloudPrintAuthHeader();
+}
+
+CloudPrintConnector::~CloudPrintConnector() {}
+
 CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandlePrinterListResponse(
     const content::URLFetcher* source,
@@ -245,15 +253,6 @@ CloudPrintConnector::HandleRegisterPrinterResponse(
   return CloudPrintURLFetcher::STOP_PROCESSING;
 }
 
-
-CloudPrintURLFetcher::ResponseAction CloudPrintConnector::OnRequestAuthError() {
-  OnAuthError();
-  return CloudPrintURLFetcher::STOP_PROCESSING;
-}
-
-std::string CloudPrintConnector::GetAuthHeader() {
-  return CloudPrintHelpers::GetCloudPrintAuthHeader();
-}
 
 void CloudPrintConnector::StartGetRequest(const GURL& url,
                                           int max_retries,
@@ -409,6 +408,18 @@ void CloudPrintConnector::ProcessPendingTask() {
   }
 }
 
+void CloudPrintConnector::ContinuePendingTaskProcessing() {
+  if (pending_tasks_.size() == 0)
+    return;  // No pending tasks.
+
+  // Delete current task and repost if we have more task available.
+  pending_tasks_.pop_front();
+  if (pending_tasks_.size() != 0) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
+  }
+}
+
 void CloudPrintConnector::OnPrintersAvailable() {
   GURL printer_list_url =
       CloudPrintHelpers::GetUrlForPrinterList(cloud_print_server_url_,
@@ -453,18 +464,6 @@ void CloudPrintConnector::OnPrinterDelete(const std::string& printer_id) {
   StartGetRequest(url,
                   kCloudPrintAPIMaxRetryCount,
                   &CloudPrintConnector::HandlePrinterDeleteResponse);
-}
-
-void CloudPrintConnector::ContinuePendingTaskProcessing() {
-  if (pending_tasks_.size() == 0)
-    return;  // No pending tasks.
-
-  // Delete current task and repost if we have more task available.
-  pending_tasks_.pop_front();
-  if (pending_tasks_.size() != 0) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
-  }
 }
 
 void CloudPrintConnector::OnReceivePrinterCaps(

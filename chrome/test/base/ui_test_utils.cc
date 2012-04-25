@@ -209,6 +209,9 @@ class InProcessJavaScriptExecutionController
   }
 
  private:
+  friend class base::RefCounted<InProcessJavaScriptExecutionController>;
+  virtual ~InProcessJavaScriptExecutionController() {}
+
   // Weak pointer to the associated RenderViewHost.
   RenderViewHost* render_view_host_;
 };

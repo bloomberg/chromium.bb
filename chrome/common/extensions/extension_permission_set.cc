@@ -145,12 +145,13 @@ ExtensionPermissionMessage::ExtensionPermissionMessage(
   : id_(id), message_(message) {
 }
 
-ExtensionPermissionMessage::~ExtensionPermissionMessage() {
-}
+ExtensionPermissionMessage::~ExtensionPermissionMessage() {}
 
 //
 // ExtensionPermission
 //
+
+ExtensionAPIPermission::~ExtensionAPIPermission() {}
 
 ExtensionPermissionMessage ExtensionAPIPermission::GetMessage() const {
   return ExtensionPermissionMessage(
@@ -168,8 +169,6 @@ ExtensionAPIPermission::ExtensionAPIPermission(
       flags_(flags),
       l10n_message_id_(l10n_message_id),
       message_id_(message_id) {}
-
-ExtensionAPIPermission::~ExtensionAPIPermission() {}
 
 // static
 void ExtensionAPIPermission::RegisterAllPermissions(
@@ -405,7 +404,8 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
 }
 
 void ExtensionPermissionsInfo::RegisterAlias(
-    const char* name, const char* alias) {
+    const char* name,
+    const char* alias) {
   DCHECK(name_map_.find(name) != name_map_.end());
   DCHECK(name_map_.find(alias) == name_map_.end());
   name_map_[alias] = name_map_[name];
@@ -435,8 +435,7 @@ ExtensionAPIPermission* ExtensionPermissionsInfo::RegisterPermission(
 // ExtensionPermissionSet
 //
 
-ExtensionPermissionSet::ExtensionPermissionSet() {
-}
+ExtensionPermissionSet::ExtensionPermissionSet() {}
 
 ExtensionPermissionSet::ExtensionPermissionSet(
     const Extension* extension,
@@ -478,8 +477,6 @@ ExtensionPermissionSet::ExtensionPermissionSet(
     : scopes_(scopes) {
   InitEffectiveHosts();
 }
-
-ExtensionPermissionSet::~ExtensionPermissionSet() {}
 
 // static
 ExtensionPermissionSet* ExtensionPermissionSet::CreateDifference(
@@ -801,6 +798,8 @@ bool ExtensionPermissionSet::HasLessPrivilegesThan(
   return false;
 }
 
+ExtensionPermissionSet::~ExtensionPermissionSet() {}
+
 // static
 std::set<std::string> ExtensionPermissionSet::GetDistinctHosts(
     const URLPatternSet& host_patterns,
@@ -855,13 +854,6 @@ std::set<std::string> ExtensionPermissionSet::GetDistinctHosts(
   return distinct_hosts;
 }
 
-void ExtensionPermissionSet::InitEffectiveHosts() {
-  effective_hosts_.ClearPatterns();
-
-  URLPatternSet::CreateUnion(
-      explicit_hosts(), scriptable_hosts(), &effective_hosts_);
-}
-
 void ExtensionPermissionSet::InitImplicitExtensionPermissions(
     const Extension* extension) {
   // Add the implied permissions.
@@ -880,6 +872,13 @@ void ExtensionPermissionSet::InitImplicitExtensionPermissions(
     for (; pattern != content_script->url_patterns().end(); ++pattern)
       scriptable_hosts_.AddPattern(*pattern);
   }
+}
+
+void ExtensionPermissionSet::InitEffectiveHosts() {
+  effective_hosts_.ClearPatterns();
+
+  URLPatternSet::CreateUnion(
+      explicit_hosts(), scriptable_hosts(), &effective_hosts_);
 }
 
 std::set<ExtensionPermissionMessage>

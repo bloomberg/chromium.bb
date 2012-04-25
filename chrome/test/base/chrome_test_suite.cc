@@ -57,8 +57,7 @@ void RemoveSharedMemoryFile(const std::string& filename) {
 // lookup result.
 class LocalHostResolverProc : public net::HostResolverProc {
  public:
-  LocalHostResolverProc() : HostResolverProc(NULL) {
-  }
+  LocalHostResolverProc() : HostResolverProc(NULL) {}
 
   virtual int Resolve(const std::string& host,
                       net::AddressFamily address_family,
@@ -92,6 +91,9 @@ class LocalHostResolverProc : public net::HostResolverProc {
     return ResolveUsingPrevious(host, address_family, host_resolver_flags,
                                 addrlist, os_error);
   }
+
+ private:
+  virtual ~LocalHostResolverProc() {}
 };
 
 class ChromeTestSuiteInitializer : public testing::EmptyTestEventListener {
