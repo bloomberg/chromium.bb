@@ -264,7 +264,7 @@ PrefService* MetricsLog::GetPrefService() {
 }
 
 gfx::Size MetricsLog::GetScreenSize() const {
-  return gfx::Screen::GetPrimaryMonitorSize();
+  return gfx::Screen::GetPrimaryMonitor().size();
 }
 
 int MetricsLog::GetScreenCount() const {

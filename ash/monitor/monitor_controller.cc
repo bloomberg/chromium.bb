@@ -13,9 +13,9 @@
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "ui/aura/env.h"
-#include "ui/aura/monitor.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/monitor.h"
 
 namespace ash {
 namespace internal {
@@ -46,38 +46,38 @@ MonitorController::MonitorController() {
 MonitorController::~MonitorController() {
   aura::Env::GetInstance()->monitor_manager()->RemoveObserver(this);
   // Remove the root first.
-  aura::Monitor* monitor = Shell::GetRootWindow()->GetProperty(kMonitorKey);
-  DCHECK(monitor);
-  root_windows_.erase(monitor);
+  int monitor_id = Shell::GetRootWindow()->GetProperty(kMonitorIdKey);
+  DCHECK(monitor_id >= 0);
+  root_windows_.erase(monitor_id);
   STLDeleteContainerPairSecondPointers(
       root_windows_.begin(), root_windows_.end());
 }
 
-void MonitorController::OnMonitorBoundsChanged(const aura::Monitor* monitor) {
-  root_windows_[monitor]->SetHostBounds(monitor->bounds());
+void MonitorController::OnMonitorBoundsChanged(const gfx::Monitor& monitor) {
+  root_windows_[monitor.id()]->SetHostBounds(monitor.bounds());
 }
 
-void MonitorController::OnMonitorAdded(aura::Monitor* monitor) {
+void MonitorController::OnMonitorAdded(const gfx::Monitor& monitor) {
   if (root_windows_.empty()) {
-    root_windows_[monitor] = Shell::GetRootWindow();
-    Shell::GetRootWindow()->SetHostBounds(monitor->bounds());
+    root_windows_[monitor.id()] = Shell::GetRootWindow();
+    Shell::GetRootWindow()->SetHostBounds(monitor.bounds());
     return;
   }
   aura::RootWindow* root = aura::Env::GetInstance()->monitor_manager()->
       CreateRootWindowForMonitor(monitor);
-  root_windows_[monitor] = root;
+  root_windows_[monitor.id()] = root;
   SetupAsSecondaryMonitor(root);
 }
 
-void MonitorController::OnMonitorRemoved(const aura::Monitor* monitor) {
-  aura::RootWindow* root = root_windows_[monitor];
+void MonitorController::OnMonitorRemoved(const gfx::Monitor& monitor) {
+  aura::RootWindow* root = root_windows_[monitor.id()];
   DCHECK(root);
   // Primary monitor should never be removed by MonitorManager.
   DCHECK(root != Shell::GetRootWindow());
   // Monitor for root window will be deleted when the Primary RootWindow
   // is deleted by the Shell.
   if (root != Shell::GetRootWindow()) {
-    root_windows_.erase(monitor);
+    root_windows_.erase(monitor.id());
     delete root;
   }
 }
@@ -86,16 +86,15 @@ void MonitorController::Init() {
   aura::MonitorManager* monitor_manager =
       aura::Env::GetInstance()->monitor_manager();
   for (size_t i = 0; i < monitor_manager->GetNumMonitors(); ++i) {
-    aura::Monitor* monitor = monitor_manager->GetMonitorAt(i);
-    const aura::Monitor* key = monitor;
+    const gfx::Monitor& monitor = monitor_manager->GetMonitorAt(i);
     if (i == 0) {
       // Primary monitor
-      root_windows_[key] = Shell::GetRootWindow();
-      Shell::GetRootWindow()->SetHostBounds(monitor->bounds());
+      root_windows_[monitor.id()] = Shell::GetRootWindow();
+      Shell::GetRootWindow()->SetHostBounds(monitor.bounds());
     } else {
       aura::RootWindow* root =
           monitor_manager->CreateRootWindowForMonitor(monitor);
-      root_windows_[key] = root;
+      root_windows_[monitor.id()] = root;
       SetupAsSecondaryMonitor(root);
     }
   }

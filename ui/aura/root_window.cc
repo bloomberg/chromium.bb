@@ -18,8 +18,6 @@
 #include "ui/aura/event.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/focus_manager.h"
-#include "ui/aura/monitor.h"
-#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"

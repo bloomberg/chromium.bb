@@ -23,14 +23,14 @@ class DefaultMonitorInfoProvider : public MonitorInfoProvider {
  public:
   // Overridden from MonitorInfoProvider:
   virtual gfx::Rect GetPrimaryMonitorWorkArea() const OVERRIDE {
-    return gfx::Screen::GetPrimaryMonitorWorkArea();
+    return gfx::Screen::GetPrimaryMonitor().work_area();
   }
   virtual gfx::Rect GetPrimaryMonitorBounds() const OVERRIDE {
-    return gfx::Screen::GetPrimaryMonitorBounds();
+    return gfx::Screen::GetPrimaryMonitor().bounds();
   }
   virtual gfx::Rect GetMonitorWorkAreaMatching(
       const gfx::Rect& match_rect) const OVERRIDE {
-    return gfx::Screen::GetMonitorWorkAreaMatching(match_rect);
+    return gfx::Screen::GetMonitorMatching(match_rect).work_area();
   }
 };
 

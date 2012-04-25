@@ -14,23 +14,15 @@
 #include "ui/aura/aura_export.h"
 
 namespace gfx {
+class Monitor;
 class Point;
 class Size;
 }
 
 namespace aura {
-class Monitor;
+class MonitorObserver;
 class RootWindow;
 class Window;
-
-// Observers for monitor configuration changes.
-// TODO(oshima): multiple monitor support.
-class MonitorObserver {
- public:
-  virtual void OnMonitorBoundsChanged(const Monitor* monitor) = 0;
-  virtual void OnMonitorAdded(Monitor* new_monitor) = 0;
-  virtual void OnMonitorRemoved(const Monitor* old_monitor) = 0;
-};
 
 // MonitorManager creates, deletes and updates Monitor objects when
 // monitor configuration changes, and notifies MonitorObservers about
@@ -50,7 +42,7 @@ class AURA_EXPORT MonitorManager {
   // The location can be omitted and be just "1440x800", which creates
   // monitor at the origin of the screen. An empty string creates
   // the monitor with default size.
-  static Monitor* CreateMonitorFromSpec(const std::string& spec);
+  static gfx::Monitor CreateMonitorFromSpec(const std::string& spec);
 
   // A utility function to create a root window for primary monitor.
   static RootWindow* CreateRootWindowForPrimaryMonitor();
@@ -66,31 +58,31 @@ class AURA_EXPORT MonitorManager {
   // configurations is passed as a vector of Monitor object, which
   // contains each monitor's new infomration.
   virtual void OnNativeMonitorsChanged(
-      const std::vector<const Monitor*>& monitors) = 0;
+      const std::vector<gfx::Monitor>& monitors) = 0;
 
   // Create a root window for given |monitor|.
-  virtual RootWindow* CreateRootWindowForMonitor(Monitor* monitor) = 0;
-
-  // Returns the monitor object nearest given |window|.
-  virtual const Monitor* GetMonitorNearestWindow(
-      const Window* window) const = 0;
-  virtual Monitor* GetMonitorNearestWindow(const Window* window) = 0;
-
-  // Returns the monitor object nearest given |pint|.
-  virtual  const Monitor* GetMonitorNearestPoint(
-      const gfx::Point& point) const = 0;
+  virtual RootWindow* CreateRootWindowForMonitor(
+      const gfx::Monitor& monitor) = 0;
 
   // Returns the monitor at |index|. The monitor at 0 is considered
   // "primary".
-  virtual Monitor* GetMonitorAt(size_t index) = 0;
+  virtual const gfx::Monitor& GetMonitorAt(size_t index) = 0;
 
   virtual size_t GetNumMonitors() const = 0;
 
+  // Returns the monitor object nearest given |window|.
+  virtual const gfx::Monitor& GetMonitorNearestWindow(
+      const Window* window) const = 0;
+
+  // Returns the monitor object nearest given |pint|.
+  virtual const gfx::Monitor& GetMonitorNearestPoint(
+      const gfx::Point& point) const = 0;
+
  protected:
   // Calls observers' OnMonitorBoundsChanged methods.
-  void NotifyBoundsChanged(const Monitor* monitor);
-  void NotifyMonitorAdded(Monitor* monitor);
-  void NotifyMonitorRemoved(const Monitor* monitor);
+  void NotifyBoundsChanged(const gfx::Monitor& monitor);
+  void NotifyMonitorAdded(const gfx::Monitor& monitor);
+  void NotifyMonitorRemoved(const gfx::Monitor& monitor);
 
  private:
   // If set before the RootWindow is created, the host window will cover the

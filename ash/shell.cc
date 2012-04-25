@@ -63,7 +63,6 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/monitor.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
@@ -71,6 +70,8 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/monitor.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/ui_controls/ui_controls.h"
 #include "ui/views/widget/native_widget_aura.h"
@@ -789,11 +790,11 @@ void Shell::RotateFocus(Direction direction) {
 
 void Shell::SetMonitorWorkAreaInsets(Window* contains,
                                      const gfx::Insets& insets) {
-  aura::Monitor* monitor = aura::Env::GetInstance()->monitor_manager()->
-      GetMonitorNearestWindow(contains);
-  if (monitor->work_area_insets() == insets)
+  internal::MultiMonitorManager* monitor_manager =
+      static_cast<internal::MultiMonitorManager*>(
+          aura::Env::GetInstance()->monitor_manager());
+  if (!monitor_manager->UpdateWorkAreaOfMonitorNearestWindow(contains, insets))
     return;
-  monitor->set_work_area_insets(insets);
   FOR_EACH_OBSERVER(ShellObserver, observers_,
                     OnMonitorWorkAreaInsetsChanged());
 }

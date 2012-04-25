@@ -8,9 +8,9 @@
 
 #include "base/command_line.h"
 #include "ui/aura/aura_switches.h"
-#include "ui/aura/monitor.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
+#include "ui/gfx/monitor.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
@@ -36,50 +36,46 @@ SingleMonitorManager::~SingleMonitorManager() {
 }
 
 void SingleMonitorManager::OnNativeMonitorsChanged(
-    const std::vector<const Monitor*>& monitors) {
+    const std::vector<gfx::Monitor>& monitors) {
   DCHECK(monitors.size() > 0);
   if (use_fullscreen_host_window()) {
-    monitor_->set_size(monitors[0]->bounds().size());
-    NotifyBoundsChanged(monitor_.get());
+    monitor_.SetSizeAndUpdateWorkArea(monitors[0].bounds().size());
+    NotifyBoundsChanged(monitor_);
   }
 }
 
 RootWindow* SingleMonitorManager::CreateRootWindowForMonitor(
-    Monitor* monitor) {
+    const gfx::Monitor& monitor) {
   DCHECK(!root_window_);
-  DCHECK_EQ(monitor_.get(), monitor);
-  root_window_ = new RootWindow(monitor->bounds());
+  DCHECK_EQ(monitor_.id(), monitor.id());
+  root_window_ = new RootWindow(monitor.bounds());
   root_window_->AddObserver(this);
   return root_window_;
 }
 
-const Monitor* SingleMonitorManager::GetMonitorNearestWindow(
-    const Window* window) const {
-  return monitor_.get();
-}
-
-const Monitor* SingleMonitorManager::GetMonitorNearestPoint(
-    const gfx::Point& point) const {
-  return monitor_.get();
-}
-
-Monitor* SingleMonitorManager::GetMonitorAt(size_t index) {
-  return !index ? monitor_.get() : NULL;
+const gfx::Monitor& SingleMonitorManager::GetMonitorAt(size_t index) {
+  return monitor_;
 }
 
 size_t SingleMonitorManager::GetNumMonitors() const {
   return 1;
 }
 
-Monitor* SingleMonitorManager::GetMonitorNearestWindow(const Window* window) {
-  return monitor_.get();
+const gfx::Monitor& SingleMonitorManager::GetMonitorNearestWindow(
+    const Window* window) const {
+  return monitor_;
+}
+
+const gfx::Monitor& SingleMonitorManager::GetMonitorNearestPoint(
+    const gfx::Point& point) const {
+  return monitor_;
 }
 
 void SingleMonitorManager::OnWindowBoundsChanged(
     Window* window, const gfx::Rect& bounds) {
   if (!use_fullscreen_host_window()) {
     Update(bounds.size());
-    NotifyBoundsChanged(monitor_.get());
+    NotifyBoundsChanged(monitor_);
   }
 }
 
@@ -91,11 +87,11 @@ void SingleMonitorManager::OnWindowDestroying(Window* window) {
 void SingleMonitorManager::Init() {
   const string size_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kAuraHostWindowSize);
-  monitor_.reset(CreateMonitorFromSpec(size_str));
+  monitor_ = CreateMonitorFromSpec(size_str);
 }
 
 void SingleMonitorManager::Update(const gfx::Size size) {
-  monitor_->set_size(size);
+  monitor_.SetSizeAndUpdateWorkArea(size);
 }
 
 }  // namespace aura

@@ -124,8 +124,8 @@ void AppListView::Layout() {
   // Gets work area rect, which is in screen coordinates.
   gfx::Rect workarea = Shell::GetInstance()->shelf()->IsVisible() ?
       ScreenAsh::GetUnmaximizedWorkAreaBounds(GetWidget()->GetNativeView()) :
-      gfx::Screen::GetMonitorWorkAreaNearestWindow(
-          GetWidget()->GetNativeView());
+      gfx::Screen::GetMonitorNearestWindow(
+          GetWidget()->GetNativeView()).work_area();
 
   // Converts |workarea| into view's coordinates.
   gfx::Point origin(workarea.origin());

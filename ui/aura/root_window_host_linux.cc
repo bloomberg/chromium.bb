@@ -18,8 +18,6 @@
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
-#include "ui/aura/monitor.h"
-#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/keycodes/keyboard_codes.h"

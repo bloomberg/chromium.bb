@@ -97,8 +97,8 @@ void KeyboardOverlayDialogView::ShowDialog(
   // Show the widget at the bottom of the work area.
   gfx::Size size;
   delegate->GetDialogSize(&size);
-  gfx::Rect rect = gfx::Screen::GetMonitorWorkAreaNearestWindow(
-      html_view->GetWidget()->GetNativeView());
+  gfx::Rect rect = gfx::Screen::GetMonitorNearestWindow(
+      html_view->GetWidget()->GetNativeView()).work_area();
   gfx::Rect bounds((rect.width() - size.width()) / 2,
                    rect.height() - size.height(),
                    size.width(),

@@ -346,7 +346,8 @@ gfx::Rect GetMinimizeRectForWindow(aura::Window* window) {
   if (target_bounds.IsEmpty()) {
     // Assume the launcher is overflowed, zoom off to the bottom right of the
     // work area.
-    gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestWindow(window);
+    gfx::Rect work_area =
+        gfx::Screen::GetMonitorNearestWindow(window).work_area();
     target_bounds.SetRect(work_area.right(), work_area.bottom(), 0, 0);
   }
   return target_bounds;

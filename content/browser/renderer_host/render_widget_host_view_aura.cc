@@ -27,8 +27,6 @@
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
-#include "ui/aura/monitor.h"
-#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -39,6 +37,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 
@@ -120,20 +119,17 @@ content::GLHelper* CreateGLHelper(ui::Compositor* compositor) {
 }
 
 void GetScreenInfoForWindow(WebKit::WebScreenInfo* results,
-                            const aura::Window* window) {
-  aura::MonitorManager* monitor_manager =
-      aura::Env::GetInstance()->monitor_manager();
-  const aura::Monitor* monitor = window ?
-      monitor_manager->GetMonitorNearestWindow(window) :
-      monitor_manager->GetMonitorAt(0);
-
-  const gfx::Size size = monitor->size();
+                            aura::Window* window) {
+  const gfx::Monitor monitor = window ?
+      gfx::Screen::GetMonitorNearestWindow(window) :
+      gfx::Screen::GetPrimaryMonitor();
+  const gfx::Size size = monitor.size();
   results->rect = WebKit::WebRect(0, 0, size.width(), size.height());
   results->availableRect = results->rect;
   // TODO(derat): Don't hardcode this?
   results->depth = 24;
   results->depthPerComponent = 8;
-  int default_dpi = monitor->GetDeviceScaleFactor() * 160;
+  int default_dpi = monitor.device_scale_factor() * 160;
   // TODO(fsamuel): This is a temporary hack until Monitor code is complete.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDefaultDeviceScaleFactor)) {

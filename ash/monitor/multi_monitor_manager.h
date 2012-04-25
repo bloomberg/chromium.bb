@@ -13,6 +13,11 @@
 #include "ui/aura/root_window_observer.h"
 #include "ui/aura/window.h"
 
+namespace gfx {
+class Insets;
+class Monitor;
+}
+
 namespace ash {
 namespace internal {
 
@@ -33,37 +38,40 @@ class ASH_EXPORT MultiMonitorManager : public aura::MonitorManager,
   static void AddRemoveMonitor();
   static void CycleMonitor();
 
+  bool UpdateWorkAreaOfMonitorNearestWindow(const aura::Window* window,
+                                            const gfx::Insets& insets);
+
   // MonitorManager overrides:
   virtual void OnNativeMonitorsChanged(
-      const std::vector<const aura::Monitor*>& monitors) OVERRIDE;
+      const std::vector<gfx::Monitor>& monitors) OVERRIDE;
   virtual aura::RootWindow* CreateRootWindowForMonitor(
-      aura::Monitor* monitor) OVERRIDE;
-  virtual const aura::Monitor* GetMonitorNearestWindow(
-      const aura::Window* window) const OVERRIDE;
-  virtual const aura::Monitor* GetMonitorNearestPoint(
-      const gfx::Point& point) const OVERRIDE;
-  virtual aura::Monitor* GetMonitorAt(size_t index) OVERRIDE;
+      const gfx::Monitor& monitor) OVERRIDE;
+  virtual const gfx::Monitor& GetMonitorAt(size_t index) OVERRIDE;
+
   virtual size_t GetNumMonitors() const OVERRIDE;
-  virtual aura::Monitor* GetMonitorNearestWindow(
-      const aura::Window* window) OVERRIDE;
+  virtual const gfx::Monitor& GetMonitorNearestPoint(
+      const gfx::Point& point) const OVERRIDE;
+  virtual const gfx::Monitor& GetMonitorNearestWindow(
+      const aura::Window* window) const OVERRIDE;
 
   // RootWindowObserver overrides:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
                                    const gfx::Size& new_size) OVERRIDE;
 
  private:
-  typedef std::vector<aura::Monitor*> Monitors;
+  typedef std::vector<gfx::Monitor> Monitors;
 
   void Init();
   void AddRemoveMonitorImpl();
   void CycleMonitorImpl();
+  gfx::Monitor& FindMonitorById(int id);
 
   Monitors monitors_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiMonitorManager);
 };
 
-extern const aura::WindowProperty<aura::Monitor*>* const kMonitorKey;
+extern const aura::WindowProperty<int>* const kMonitorIdKey;
 
 }  // namespace internal
 }  // namespace ash

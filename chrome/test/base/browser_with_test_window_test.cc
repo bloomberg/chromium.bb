@@ -15,17 +15,15 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/test/test_renderer_host.h"
 
-#if defined(USE_ASH)
-#include "ui/aura/test/test_screen.h"
-#endif
-
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/test/test_activation_client.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
+#include "ui/gfx/screen.h"
 #endif
 
 using content::BrowserThread;
@@ -51,9 +49,7 @@ void BrowserWithTestWindowTest::SetUp() {
 #if defined(USE_AURA)
   aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
   root_window_.reset(aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
-#if defined(USE_ASH)
   gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
-#endif  // USE_ASH
   test_activation_client_.reset(
       new aura::test::TestActivationClient(root_window_.get()));
   test_stacking_client_.reset(

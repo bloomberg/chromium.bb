@@ -8,15 +8,12 @@
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/logging.h"
 #include "ui/aura/env.h"
-#include "ui/aura/monitor.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/gfx/monitor.h"
+#include "ui/gfx/screen.h"
 
 namespace ash {
-
-// TODO(oshima): For m19, the origin of work area/monitor bounds for
-// views/aura is (0,0) because it's simple and enough. Fix this when
-// real multi monitor support is implemented.
 
 namespace {
 aura::MonitorManager* GetMonitorManager() {
@@ -41,45 +38,41 @@ gfx::Rect ScreenAsh::GetUnmaximizedWorkAreaBounds(aura::Window* window) {
   return Shell::GetInstance()->shelf()->GetUnmaximizedWorkAreaBounds(window);
 }
 
-gfx::Point ScreenAsh::GetCursorScreenPointImpl() {
+gfx::Point ScreenAsh::GetCursorScreenPoint() {
   return root_window_->last_mouse_location();
 }
 
-gfx::Rect ScreenAsh::GetMonitorWorkAreaNearestWindowImpl(
-    gfx::NativeWindow window) {
-  return GetMonitorManager()->GetMonitorNearestWindow(window)->
-      GetWorkAreaBounds();
-}
-
-gfx::Rect ScreenAsh::GetMonitorAreaNearestWindowImpl(
-    gfx::NativeWindow window) {
-  // See the comment at the top.
-  return gfx::Rect(
-      GetMonitorManager()->GetMonitorNearestWindow(window)->size());
-}
-
-gfx::Rect ScreenAsh::GetMonitorWorkAreaNearestPointImpl(
-    const gfx::Point& point) {
-  return GetMonitorManager()->GetMonitorNearestPoint(point)->
-      GetWorkAreaBounds();
-}
-
-gfx::Rect ScreenAsh::GetMonitorAreaNearestPointImpl(const gfx::Point& point) {
-  // See the comment at the top.
-  return gfx::Rect(GetMonitorManager()->GetMonitorNearestPoint(point)->size());
-}
-
-gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPointImpl() {
-  const gfx::Point point = GetCursorScreenPoint();
+gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPoint() {
+  const gfx::Point point = gfx::Screen::GetCursorScreenPoint();
   return root_window_->GetTopWindowContainingPoint(point);
 }
 
-gfx::Size ScreenAsh::GetPrimaryMonitorSizeImpl() {
-  return GetMonitorManager()->GetMonitorAt(0)->size();
+int ScreenAsh::GetNumMonitors() {
+  return GetMonitorManager()->GetNumMonitors();
 }
 
-int ScreenAsh::GetNumMonitorsImpl() {
-  return GetMonitorManager()->GetNumMonitors();
+
+gfx::Monitor ScreenAsh::GetMonitorNearestWindow(gfx::NativeView window) const {
+  gfx::Monitor monitor = GetMonitorManager()->GetMonitorNearestWindow(window);
+  // TODO(oshima): For m19, work area/monitor bounds that chrome/webapps sees
+  // has (0, 0) origin because it's simpler and enough. Fix this when
+  // real multi monitor support is implemented.
+  monitor.SetBoundsAndUpdateWorkArea(gfx::Rect(monitor.size()));
+  return monitor;
+}
+
+gfx::Monitor ScreenAsh::GetMonitorNearestPoint(const gfx::Point& point) const {
+  gfx::Monitor monitor = GetMonitorManager()->GetMonitorNearestPoint(point);
+  // See comment above.
+  monitor.SetBoundsAndUpdateWorkArea(gfx::Rect(monitor.size()));
+  return monitor;
+}
+
+gfx::Monitor ScreenAsh::GetPrimaryMonitor() const {
+  gfx::Monitor monitor = GetMonitorManager()->GetMonitorAt(0);
+  // See comment above.
+  monitor.SetBoundsAndUpdateWorkArea(gfx::Rect(monitor.size()));
+  return monitor;
 }
 
 }  // namespace ash

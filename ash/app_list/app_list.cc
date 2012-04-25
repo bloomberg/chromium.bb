@@ -36,7 +36,7 @@ const int kSecondAnimationStartDelay = kAnimationDurationMs - 20;
 gfx::Rect GetPreferredBounds() {
   gfx::Point cursor = gfx::Screen::GetCursorScreenPoint();
   // Use full monitor rect so that the app list shade goes behind the launcher.
-  return gfx::Screen::GetMonitorAreaNearestPoint(cursor);
+  return gfx::Screen::GetMonitorNearestPoint(cursor).bounds();
 }
 
 ui::Layer* GetLayer(views::Widget* widget) {

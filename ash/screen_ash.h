@@ -9,7 +9,8 @@
 #include "base/compiler_specific.h"
 #include "ash/ash_export.h"
 #include "ui/gfx/insets.h"
-#include "ui/gfx/screen.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/screen_impl.h"
 
 namespace aura {
 class RootWindow;
@@ -19,7 +20,7 @@ namespace ash {
 
 // Aura implementation of gfx::Screen. Implemented here to avoid circular
 // dependencies.
-class ASH_EXPORT ScreenAsh : public gfx::Screen {
+class ASH_EXPORT ScreenAsh : public gfx::ScreenImpl {
  public:
   explicit ScreenAsh(aura::RootWindow* root_window);
   virtual ~ScreenAsh();
@@ -32,18 +33,15 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   static gfx::Rect GetUnmaximizedWorkAreaBounds(aura::Window* window);
 
  protected:
-  virtual gfx::Point GetCursorScreenPointImpl() OVERRIDE;
-  virtual gfx::Rect GetMonitorWorkAreaNearestWindowImpl(
-      gfx::NativeView view) OVERRIDE;
-  virtual gfx::Rect GetMonitorAreaNearestWindowImpl(
-      gfx::NativeView view) OVERRIDE;
-  virtual gfx::Rect GetMonitorWorkAreaNearestPointImpl(
-      const gfx::Point& point) OVERRIDE;
-  virtual gfx::Rect GetMonitorAreaNearestPointImpl(
-      const gfx::Point& point) OVERRIDE;
-  virtual gfx::NativeWindow GetWindowAtCursorScreenPointImpl() OVERRIDE;
-  virtual gfx::Size GetPrimaryMonitorSizeImpl() OVERRIDE;
-  virtual int GetNumMonitorsImpl() OVERRIDE;
+  virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
+  virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
+
+  virtual int GetNumMonitors() OVERRIDE;
+  virtual gfx::Monitor GetMonitorNearestWindow(
+      gfx::NativeView view) const OVERRIDE;
+  virtual gfx::Monitor GetMonitorNearestPoint(
+      const gfx::Point& point) const OVERRIDE;
+  virtual gfx::Monitor GetPrimaryMonitor() const OVERRIDE;
 
  private:
   aura::RootWindow* root_window_;

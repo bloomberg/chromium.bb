@@ -11,8 +11,10 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/monitor_manager.h"
+#include "ui/aura/monitor_observer.h"
 
 namespace aura {
+class Monitor;
 class RootWindow;
 }
 
@@ -27,14 +29,15 @@ class MonitorController : public aura::MonitorObserver {
   virtual ~MonitorController();
 
   // aura::MonitorObserver overrides:
-  virtual void OnMonitorBoundsChanged(const aura::Monitor* monitor) OVERRIDE;
-  virtual void OnMonitorAdded(aura::Monitor* monitor) OVERRIDE;
-  virtual void OnMonitorRemoved(const aura::Monitor* monitor) OVERRIDE;
+  virtual void OnMonitorBoundsChanged(
+      const gfx::Monitor& monitor) OVERRIDE;
+  virtual void OnMonitorAdded(const gfx::Monitor& monitor) OVERRIDE;
+  virtual void OnMonitorRemoved(const gfx::Monitor& monitor) OVERRIDE;
 
  private:
   void Init();
 
-  std::map<const aura::Monitor*, aura::RootWindow*> root_windows_;
+  std::map<int, aura::RootWindow*> root_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(MonitorController);
 };

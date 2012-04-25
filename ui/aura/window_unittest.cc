@@ -974,7 +974,7 @@ TEST_F(WindowTest, IgnoreEventsTest) {
 TEST_F(WindowTest, Transform) {
   gfx::Size size = root_window()->GetHostSize();
   EXPECT_EQ(gfx::Rect(size),
-            gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
+            gfx::Screen::GetMonitorNearestPoint(gfx::Point()).bounds());
 
   // Rotate it clock-wise 90 degrees.
   ui::Transform transform;
@@ -986,8 +986,9 @@ TEST_F(WindowTest, Transform) {
   gfx::Size transformed_size(size.height(), size.width());
   EXPECT_EQ(transformed_size.ToString(),
             root_window()->bounds().size().ToString());
-  EXPECT_EQ(gfx::Rect(transformed_size).ToString(),
-            gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()).ToString());
+  EXPECT_EQ(
+      gfx::Rect(transformed_size).ToString(),
+      gfx::Screen::GetMonitorNearestPoint(gfx::Point()).bounds().ToString());
 
   // Host size shouldn't change.
   EXPECT_EQ(size.ToString(),

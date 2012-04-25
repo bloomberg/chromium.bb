@@ -4,7 +4,6 @@
 
 #include "ash/wm/workspace/workspace_event_filter.h"
 
-#include "ash/screen_ash.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_frame.h"
 #include "ash/wm/window_util.h"
@@ -16,6 +15,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/screen.h"
 
 namespace {
 
@@ -128,7 +128,7 @@ void WorkspaceEventFilter::HandleVerticalResizeDoubleClick(
     int component =
         target->delegate()->GetNonClientComponent(event->location());
     gfx::Rect work_area =
-        gfx::Screen::GetMonitorWorkAreaNearestWindow(target);
+        gfx::Screen::GetMonitorNearestWindow(target).work_area();
     const gfx::Rect* restore_bounds =
         target->GetProperty(aura::client::kRestoreBoundsKey);
     if (component == HTBOTTOM || component == HTTOP) {

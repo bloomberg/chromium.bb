@@ -97,7 +97,7 @@ gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
 }
 
 gfx::Rect BubbleFrameView::GetMonitorBounds(const gfx::Rect& rect) {
-  return gfx::Screen::GetMonitorWorkAreaNearestPoint(rect.CenterPoint());
+  return gfx::Screen::GetMonitorNearestPoint(rect.CenterPoint()).work_area();
 }
 
 void BubbleFrameView::MirrorArrowIfOffScreen(

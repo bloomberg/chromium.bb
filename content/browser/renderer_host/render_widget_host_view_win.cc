@@ -389,8 +389,8 @@ void RenderWidgetHostViewWin::InitAsPopup(
 
 void RenderWidgetHostViewWin::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
-  gfx::Rect pos = gfx::Screen::GetMonitorAreaNearestWindow(
-      reference_host_view->GetNativeView());
+  gfx::Rect pos = gfx::Screen::GetMonitorNearestWindow(
+      reference_host_view->GetNativeView()).bounds();
   is_fullscreen_ = true;
   DoPopupOrFullscreenInit(GetDesktopWindow(), pos, 0);
 }

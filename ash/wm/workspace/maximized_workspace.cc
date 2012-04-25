@@ -41,7 +41,7 @@ void MaximizedWorkspace::OnWindowRemoved(aura::Window* window) {
 void MaximizedWorkspace::ResetWindowBounds(aura::Window* window) {
   if (wm::IsWindowFullscreen(window)) {
     SetWindowBounds(window,
-                    gfx::Screen::GetMonitorAreaNearestWindow(window));
+                    gfx::Screen::GetMonitorNearestWindow(window).bounds());
   } else {
     SetWindowBounds(window, ScreenAsh::GetMaximizedWindowBounds(window));
   }

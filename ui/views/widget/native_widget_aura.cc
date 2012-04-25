@@ -40,8 +40,7 @@
 #endif
 
 #if defined(ENABLE_DIP)
-#include "ui/aura/monitor.h"
-#include "ui/aura/monitor_manager.h"
+#include "ui/gfx/monitor.h"
 #endif
 
 namespace views {
@@ -353,7 +352,8 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
   // When centering window, we take the intersection of the host and
   // the parent. We assume the root window represents the visible
   // rect of a single screen.
-  gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestWindow(window_);
+  gfx::Rect work_area =
+      gfx::Screen::GetMonitorNearestWindow(window_).work_area();
   parent_bounds = parent_bounds.Intersect(work_area);
 
   // If |window_|'s transient parent's bounds are big enough to fit it, then we
@@ -672,7 +672,7 @@ void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
 }
 
 gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
-  return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
+  return gfx::Screen::GetMonitorNearestWindow(GetNativeView()).work_area();
 }
 
 void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
@@ -829,9 +829,8 @@ void NativeWidgetAura::OnCaptureLost() {
 
 void NativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
 #if defined(ENABLE_DIP)
-  aura::Monitor* monitor = GetMonitor();
   canvas->Save();
-  float scale = monitor->GetDeviceScaleFactor();
+  float scale = GetMonitorScaleFactor();
   canvas->sk_canvas()->scale(SkFloatToScalar(scale), SkFloatToScalar(scale));
 #endif
   delegate_->OnNativeWidgetPaint(canvas);
@@ -919,33 +918,32 @@ void NativeWidgetAura::SetInitialFocus() {
 }
 
 #if defined(ENABLE_DIP)
-aura::Monitor* NativeWidgetAura::GetMonitor() const {
-  return aura::Env::GetInstance()->monitor_manager()->
-      GetMonitorNearestWindow(window_);
+float NativeWidgetAura::GetMonitorScaleFactor() const {
+  return gfx::Screen::GetMonitorNearestWindow(window_).device_scale_factor();
 }
 
 gfx::Point NativeWidgetAura::ConvertPointFromMonitor(
     const gfx::Point& point) const {
-  return point.Scale(1.0f / GetMonitor()->GetDeviceScaleFactor());
+  return point.Scale(1.0f / GetMonitorScaleFactor());
 }
 
 gfx::Size NativeWidgetAura::ConvertSizeFromMonitor(
     const gfx::Size& size) const {
-  return size.Scale(1.0f / GetMonitor()->GetDeviceScaleFactor());
+  return size.Scale(1.0f / GetMonitorScaleFactor());
 }
 
 gfx::Rect NativeWidgetAura::ConvertRectFromMonitor(
     const gfx::Rect& rect) const {
-  float scale = 1.0f / GetMonitor()->GetDeviceScaleFactor();
+  float scale = 1.0f / GetMonitorScaleFactor();
   return gfx::Rect(rect.origin().Scale(scale), rect.size().Scale(scale));
 }
 
 gfx::Size NativeWidgetAura::ConvertSizeToMonitor(const gfx::Size& size) const {
-  return size.Scale(GetMonitor()->GetDeviceScaleFactor());
+  return size.Scale(GetMonitorScaleFactor());
 }
 
 gfx::Rect NativeWidgetAura::ConvertRectToMonitor(const gfx::Rect& rect) const {
-  float scale = GetMonitor()->GetDeviceScaleFactor();
+  float scale = GetMonitorScaleFactor();
   return gfx::Rect(rect.origin().Scale(scale), rect.size().Scale(scale));
 }
 #endif

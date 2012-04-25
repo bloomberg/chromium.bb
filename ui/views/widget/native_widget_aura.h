@@ -168,11 +168,12 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   void SetInitialFocus();
 
 #if defined(ENABLE_DIP)
-  // Returns the monitor in which this widget is placed.
-  aura::Monitor* GetMonitor() const;
+  // Returns the scale factor of the monitor in which this widget is placed.
+  float GetMonitorScaleFactor() const;
 
   // Utility functions that convert point/size/rect between
   // the monitor's coordinate system and the widget's coordinate system.
+  // TODO(oshima): Remove these once aura supports DIP coordinate system.
   gfx::Point ConvertPointFromMonitor(const gfx::Point& point) const;
   gfx::Size ConvertSizeFromMonitor(const gfx::Size& size) const;
   gfx::Rect ConvertRectFromMonitor(const gfx::Rect& rect) const;

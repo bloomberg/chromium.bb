@@ -130,8 +130,8 @@ class TabDragController2Test : public InProcessBrowserTest {
     ResetIDs(browser2->tabstrip_model(), 100);
 
     // Resize the two windows so they're right next to each other.
-    gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestWindow(
-        browser()->window()->GetNativeHandle());
+    gfx::Rect work_area = gfx::Screen::GetMonitorNearestWindow(
+        browser()->window()->GetNativeHandle()).work_area();
     gfx::Size half_size =
         gfx::Size(work_area.width() / 3 - 10, work_area.height() / 2 - 10);
     browser()->window()->SetBounds(gfx::Rect(work_area.origin(), half_size));

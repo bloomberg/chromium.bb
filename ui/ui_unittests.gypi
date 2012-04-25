@@ -89,6 +89,7 @@
         'gfx/image/image_unittest_util.cc',
         'gfx/image/image_unittest_util.h',
         'gfx/insets_unittest.cc',
+        'gfx/monitor_unittest.cc',
         'gfx/rect_unittest.cc',
         'gfx/screen_unittest.cc',
         'gfx/shadow_value_unittest.cc',

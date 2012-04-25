@@ -502,8 +502,8 @@ gfx::Point TabDragController2::GetWindowCreatePoint() const {
   }
   // If the cursor is outside the monitor area, move it inside. For example,
   // dropping a tab onto the task bar on Windows produces this situation.
-  gfx::Rect work_area = gfx::Screen::GetMonitorWorkAreaNearestPoint(
-      cursor_point);
+  gfx::Rect work_area = gfx::Screen::GetMonitorNearestPoint(
+      cursor_point).work_area();
   if (!work_area.IsEmpty()) {
     if (cursor_point.x() < work_area.x())
       cursor_point.set_x(work_area.x());

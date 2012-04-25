@@ -16,6 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/screen.h"
 
 namespace ash {
 
@@ -92,8 +93,9 @@ TEST_F(BaseLayoutManagerTest, Fullscreen) {
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   // Fullscreen window fills the whole monitor.
-  EXPECT_EQ(gfx::Screen::GetMonitorAreaNearestWindow(window.get()).ToString(),
-            window->bounds().ToString());
+  EXPECT_EQ(
+      gfx::Screen::GetMonitorNearestWindow(window.get()).bounds().ToString(),
+      window->bounds().ToString());
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(bounds.ToString(), window->bounds().ToString());
 }
@@ -104,12 +106,14 @@ TEST_F(BaseLayoutManagerTest, FullscreenRootWindowResize) {
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   // Fullscreen window fills the whole monitor.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_EQ(gfx::Screen::GetMonitorAreaNearestWindow(window.get()).ToString(),
-            window->bounds().ToString());
+  EXPECT_EQ(
+      gfx::Screen::GetMonitorNearestWindow(window.get()).bounds().ToString(),
+      window->bounds().ToString());
   // Enlarge the root window.  We should still match the monitor size.
   Shell::GetRootWindow()->SetHostSize(gfx::Size(800, 600));
-  EXPECT_EQ(gfx::Screen::GetMonitorAreaNearestWindow(window.get()).ToString(),
-            window->bounds().ToString());
+  EXPECT_EQ(
+      gfx::Screen::GetMonitorNearestWindow(window.get()).bounds().ToString(),
+      window->bounds().ToString());
 }
 
 // Fails on Mac only.  Need to be implemented.  http://crbug.com/111279.
@@ -124,20 +128,21 @@ TEST_F(BaseLayoutManagerTest, FullscreenRootWindowResize) {
 TEST_F(BaseLayoutManagerTest, MAYBE_RootWindowResizeShrinksWindows) {
   scoped_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(10, 20, 500, 400)));
-  gfx::Rect work_area = gfx::Screen::GetMonitorAreaNearestWindow(window.get());
+  gfx::Rect work_area =
+      gfx::Screen::GetMonitorNearestWindow(window.get()).work_area();
   // Invariant: Window is smaller than work area.
   EXPECT_LE(window->bounds().width(), work_area.width());
   EXPECT_LE(window->bounds().height(), work_area.height());
 
   // Make the root window narrower than our window.
   Shell::GetRootWindow()->SetHostSize(gfx::Size(300, 400));
-  work_area = gfx::Screen::GetMonitorAreaNearestWindow(window.get());
+  work_area = gfx::Screen::GetMonitorNearestWindow(window.get()).work_area();
   EXPECT_LE(window->bounds().width(), work_area.width());
   EXPECT_LE(window->bounds().height(), work_area.height());
 
   // Make the root window shorter than our window.
   Shell::GetRootWindow()->SetHostSize(gfx::Size(300, 200));
-  work_area = gfx::Screen::GetMonitorAreaNearestWindow(window.get());
+  work_area = gfx::Screen::GetMonitorNearestWindow(window.get()).work_area();
   EXPECT_LE(window->bounds().width(), work_area.width());
   EXPECT_LE(window->bounds().height(), work_area.height());
 
@@ -152,7 +157,7 @@ TEST_F(BaseLayoutManagerTest, MAYBE_RootWindowResizeShrinksWindows) {
 // to smaller than the full work area.
 TEST_F(BaseLayoutManagerTest, BoundsWithScreenEdgeVisible) {
   // Create a window with bounds that fill the screen.
-  gfx::Rect bounds = gfx::Screen::GetPrimaryMonitorBounds();
+  gfx::Rect bounds = gfx::Screen::GetPrimaryMonitor().bounds();
   scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
   // Maximize it, which writes the old bounds to restore bounds.
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);

@@ -65,7 +65,7 @@ int GetMaxWidth(int x, int y) {
   // TODO(varunjain): implementation duplicated in tooltip_manager_aura. Figure
   // out a way to merge.
   gfx::Rect monitor_bounds =
-      gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
+      gfx::Screen::GetMonitorNearestPoint(gfx::Point(x, y)).bounds();
   return (monitor_bounds.width() + 1) / 2;
 }
 
@@ -155,7 +155,7 @@ class TooltipController::Tooltip {
 
     tooltip_rect.Offset(kCursorOffsetX, kCursorOffsetY);
     gfx::Rect monitor_bounds =
-        gfx::Screen::GetMonitorAreaNearestPoint(tooltip_rect.origin());
+        gfx::Screen::GetMonitorNearestPoint(tooltip_rect.origin()).bounds();
 
     // If tooltip is out of bounds on the x axis, we simply shift it
     // horizontally by the offset.

@@ -212,7 +212,8 @@ gfx::Rect WorkspaceWindowResizer::GetFinalBounds(
 void WorkspaceWindowResizer::LayoutAttachedWindows(
     const gfx::Rect& bounds,
     int grid_size) {
-  gfx::Rect work_area(gfx::Screen::GetMonitorWorkAreaNearestWindow(window()));
+  gfx::Rect work_area(
+      gfx::Screen::GetMonitorNearestWindow(window()).work_area());
   std::vector<int> sizes;
   CalculateAttachedSizes(
       PrimaryAxisSize(details_.initial_bounds.size()),
@@ -281,7 +282,8 @@ void WorkspaceWindowResizer::CalculateAttachedSizes(
 void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     gfx::Rect* bounds, int grid_size) const {
   // Always keep kMinOnscreenHeight on the bottom.
-  gfx::Rect work_area(gfx::Screen::GetMonitorWorkAreaNearestWindow(window()));
+  gfx::Rect work_area(
+      gfx::Screen::GetMonitorNearestWindow(window()).work_area());
   int max_y = AlignToGridRoundUp(work_area.bottom() - kMinOnscreenHeight,
                                  grid_size);
   if (bounds->y() > max_y)
@@ -335,7 +337,7 @@ void WorkspaceWindowResizer::SnapToWorkAreaEdges(
 
 bool WorkspaceWindowResizer::TouchesBottomOfScreen() const {
   gfx::Rect work_area(
-      gfx::Screen::GetMonitorWorkAreaNearestWindow(details_.window));
+      gfx::Screen::GetMonitorNearestWindow(details_.window).work_area());
   return (attached_windows_.empty() &&
           details_.window->bounds().bottom() == work_area.bottom()) ||
       (!attached_windows_.empty() &&
@@ -422,7 +424,8 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const gfx::Point& location) const {
   // TODO: this likely only wants total monitor area, not the area of a single
   // monitor.
-  gfx::Rect area(gfx::Screen::GetMonitorAreaNearestWindow(details_.window));
+  gfx::Rect area(
+      gfx::Screen::GetMonitorNearestWindow(details_.window).bounds());
   if (location.x() <= area.x())
     return SNAP_LEFT_EDGE;
   if (location.x() >= area.right() - 1)

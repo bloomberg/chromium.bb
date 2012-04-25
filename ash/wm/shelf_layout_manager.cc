@@ -21,6 +21,7 @@
 #include "ui/gfx/compositor/layer_animation_observer.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -149,7 +150,7 @@ bool ShelfLayoutManager::IsVisible() const {
 gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
     aura::Window* window) const {
   // TODO: needs to be multi-mon aware.
-  gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
+  gfx::Rect bounds(gfx::Screen::GetMonitorNearestWindow(window).bounds());
   if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT ||
       auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
     bounds.set_height(bounds.height() - kAutoHideHeight);
@@ -162,7 +163,7 @@ gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
 gfx::Rect ShelfLayoutManager::GetUnmaximizedWorkAreaBounds(
     aura::Window* window) const {
   // TODO: needs to be multi-mon aware.
-  gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(window));
+  gfx::Rect bounds(gfx::Screen::GetMonitorNearestWindow(window).bounds());
   if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
     bounds.set_height(bounds.height() - kAutoHideHeight);
   else

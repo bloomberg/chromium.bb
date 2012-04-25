@@ -440,8 +440,9 @@ TEST_F(RootWindowEventFilterTest, MAYBE_TransformActivate) {
 
   aura::RootWindow* root_window = Shell::GetRootWindow();
   gfx::Size size = root_window->bounds().size();
-  EXPECT_EQ(gfx::Rect(size),
-            gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point()));
+  EXPECT_EQ(
+      gfx::Rect(size).ToString(),
+      gfx::Screen::GetMonitorNearestPoint(gfx::Point()).bounds().ToString());
 
   // Rotate it clock-wise 90 degrees.
   ui::Transform transform;

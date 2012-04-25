@@ -56,7 +56,7 @@ const char kOnTextInputTypeChanged[] =
 // The default position of the keyboard widget should be at the bottom,
 // spanning the entire width of the root window.
 gfx::Rect GetKeyboardPosition(int height) {
-  gfx::Rect area = gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point());
+  gfx::Rect area = gfx::Screen::GetPrimaryMonitor().bounds();
   return gfx::Rect(area.x(), area.y() + area.height() - height,
                    area.width(), height);
 }

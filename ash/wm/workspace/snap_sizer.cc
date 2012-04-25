@@ -114,7 +114,7 @@ gfx::Rect SnapSizer::GetTargetBounds() const {
 
 bool SnapSizer::AlongEdge(int x) const {
   // TODO: need to support multi-monitor.
-  gfx::Rect area(gfx::Screen::GetMonitorAreaNearestWindow(window_));
+  gfx::Rect area(gfx::Screen::GetMonitorNearestWindow(window_).bounds());
   return (x <= area.x()) || (x >= area.right() - 1);
 }
 

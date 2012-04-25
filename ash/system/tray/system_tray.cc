@@ -329,7 +329,7 @@ class SystemTrayBubble : public views::BubbleDelegateView {
           kPaddingFromBottomOfScreen);
       return rect;
     }
-    gfx::Rect rect = gfx::Screen::GetPrimaryMonitorBounds();
+    gfx::Rect rect = gfx::Screen::GetPrimaryMonitor().bounds();
     return gfx::Rect(base::i18n::IsRTL() ? kPaddingFromRightEdgeOfScreen :
                         rect.width() - kPaddingFromRightEdgeOfScreen,
                      rect.height() - kPaddingFromBottomOfScreen,

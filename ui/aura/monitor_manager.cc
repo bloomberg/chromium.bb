@@ -8,9 +8,10 @@
 
 #include "base/logging.h"
 #include "ui/aura/env.h"
-#include "ui/aura/monitor.h"
+#include "ui/aura/monitor_observer.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
+#include "ui/gfx/monitor.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
@@ -26,7 +27,8 @@ static const int kDefaultHostWindowHeight = 1024;
 bool MonitorManager::use_fullscreen_host_window_ = false;
 
 // static
-Monitor* MonitorManager::CreateMonitorFromSpec(const std::string& spec) {
+gfx::Monitor MonitorManager::CreateMonitorFromSpec(const std::string& spec) {
+  static int synthesized_monitor_id = 1000;
   gfx::Rect bounds(kDefaultHostWindowX, kDefaultHostWindowY,
                    kDefaultHostWindowWidth, kDefaultHostWindowHeight);
   int x = 0, y = 0, width, height;
@@ -39,9 +41,8 @@ Monitor* MonitorManager::CreateMonitorFromSpec(const std::string& spec) {
   } else if (use_fullscreen_host_window_) {
     bounds = gfx::Rect(aura::RootWindowHost::GetNativeScreenSize());
   }
-  Monitor* monitor = new Monitor();
-  monitor->set_bounds(bounds);
-  monitor->set_device_scale_factor(scale);
+  gfx::Monitor monitor(synthesized_monitor_id++, bounds);
+  monitor.set_device_scale_factor(scale);
   DVLOG(1) << "Monitor bounds=" << bounds.ToString() << ", scale=" << scale;
   return monitor;
 }
@@ -70,17 +71,17 @@ void MonitorManager::RemoveObserver(MonitorObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void MonitorManager::NotifyBoundsChanged(const Monitor* monitor) {
+void MonitorManager::NotifyBoundsChanged(const gfx::Monitor& monitor) {
   FOR_EACH_OBSERVER(MonitorObserver, observers_,
                     OnMonitorBoundsChanged(monitor));
 }
 
-void MonitorManager::NotifyMonitorAdded(Monitor* monitor) {
+void MonitorManager::NotifyMonitorAdded(const gfx::Monitor& monitor) {
   FOR_EACH_OBSERVER(MonitorObserver, observers_,
                     OnMonitorAdded(monitor));
 }
 
-void MonitorManager::NotifyMonitorRemoved(const Monitor* monitor) {
+void MonitorManager::NotifyMonitorRemoved(const gfx::Monitor& monitor) {
   FOR_EACH_OBSERVER(MonitorObserver, observers_,
                     OnMonitorRemoved(monitor));
 }

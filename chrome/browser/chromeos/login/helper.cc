@@ -54,7 +54,7 @@ views::Throbber* CreateDefaultThrobber() {
 }
 
 gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
-  gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(NULL));
+  gfx::Rect bounds(gfx::Screen::GetPrimaryMonitor().bounds());
   if (!size.IsEmpty()) {
     int horizontal_diff = bounds.width() - size.width();
     int vertical_diff = bounds.height() - size.height();

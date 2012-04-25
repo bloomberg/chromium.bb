@@ -1122,7 +1122,7 @@ void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
 }
 
 gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
-  return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
+  return gfx::Screen::GetMonitorNearestWindow(GetNativeView()).work_area();
 }
 
 void NativeWidgetWin::SetInactiveRenderingDisabled(bool value) {

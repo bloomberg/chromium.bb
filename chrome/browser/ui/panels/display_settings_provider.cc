@@ -72,9 +72,9 @@ gfx::Rect DisplaySettingsProvider::GetWorkArea() const {
 #if defined(OS_MACOSX)
   // On OSX, panels should be dropped all the way to the bottom edge of the
   // screen (and overlap Dock).
-  gfx::Rect work_area = gfx::Screen::GetPrimaryMonitorBounds();
+  gfx::Rect work_area = gfx::Screen::GetPrimaryMonitor().bounds();
 #else
-  gfx::Rect work_area = gfx::Screen::GetPrimaryMonitorWorkArea();
+  gfx::Rect work_area = gfx::Screen::GetPrimaryMonitor().work_area();
 #endif
   return work_area;
 }

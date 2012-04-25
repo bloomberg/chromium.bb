@@ -12,11 +12,10 @@
 #include <X11/extensions/Xrandr.h>
 
 #include "base/message_pump_x.h"
-#include "base/stl_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/dispatcher_linux.h"
-#include "ui/aura/monitor.h"
 #include "ui/aura/monitor_manager.h"
+#include "ui/gfx/monitor.h"
 
 namespace aura {
 namespace internal {
@@ -31,8 +30,8 @@ XRRModeInfo* FindMode(XRRScreenResources* screen_resources, XID current_mode) {
   return NULL;
 }
 
-bool CompareMonitorY(const Monitor* lhs, const Monitor* rhs) {
-  return lhs->bounds().y() < rhs->bounds().y();
+bool CompareMonitorY(gfx::Monitor lhs, gfx::Monitor rhs) {
+  return lhs.bounds().y() < rhs.bounds().y();
 }
 
 }  // namespace
@@ -77,7 +76,7 @@ void MonitorChangeObserverX11::NotifyMonitorChange() {
     crtc_info_map[crtc_id] = crtc_info;
   }
 
-  std::vector<const Monitor*> monitors;
+  std::vector<gfx::Monitor> monitors;
   std::set<int> y_coords;
   for (int o = 0; o < screen_resources->noutput; o++) {
     XRROutputInfo *output_info =
@@ -98,10 +97,10 @@ void MonitorChangeObserverX11::NotifyMonitorChange() {
     // Mirrored monitors have the same y coordinates.
     if (y_coords.find(crtc_info->y) != y_coords.end())
       continue;
-    Monitor* monitor = new Monitor;
-    monitor->set_bounds(gfx::Rect(crtc_info->x, crtc_info->y,
-                                  mode->width, mode->height));
-    monitors.push_back(monitor);
+    // TODO(oshima): Create unique ID for the monitor.
+    monitors.push_back(gfx::Monitor(
+        0,
+        gfx::Rect(crtc_info->x, crtc_info->y, mode->width, mode->height)));
     y_coords.insert(crtc_info->y);
     XRRFreeOutputInfo(output_info);
   }
@@ -116,9 +115,14 @@ void MonitorChangeObserverX11::NotifyMonitorChange() {
   // PowerManager lays out the outputs vertically. Sort them by Y
   // coordinates.
   std::sort(monitors.begin(), monitors.end(), CompareMonitorY);
+  // TODO(oshima): Assisgn index as ID for now. Use unique ID.
+  int id = 0;
+  for (std::vector<gfx::Monitor>::iterator iter = monitors.begin();
+       iter != monitors.end(); ++iter, ++id)
+    (*iter).set_id(id);
+
   Env::GetInstance()->monitor_manager()
       ->OnNativeMonitorsChanged(monitors);
-  STLDeleteContainerPointers(monitors.begin(), monitors.end());
 }
 
 }  // namespace internal

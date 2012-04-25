@@ -20,8 +20,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/monitor.h"
-#include "ui/aura/monitor_manager.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/compositor/layer.h"
@@ -139,7 +137,8 @@ WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {
     return WINDOW_STATE_DEFAULT;
 
   // TODO: this code needs to be made multi-monitor aware.
-  gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(contents_view_));
+  gfx::Rect bounds(
+      gfx::Screen::GetMonitorNearestWindow(contents_view_).bounds());
   bounds.set_height(bounds.height() - shelf_->shelf_height());
   const aura::Window::Windows& windows(contents_view_->children());
   bool window_overlaps_launcher = false;

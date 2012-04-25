@@ -31,6 +31,7 @@
 #include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_stacking_client.h"
+#include "ui/gfx/screen.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -138,7 +139,7 @@ class AccessibilityEventRouterViewsTest
     aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
     root_window_.reset(
         aura::MonitorManager::CreateRootWindowForPrimaryMonitor());
-#if defined(USE_ASH)
+#if defined(USE_AURA)
     gfx::Screen::SetInstance(new aura::TestScreen(root_window_.get()));
 #endif  // USE_ASH
     test_stacking_client_.reset(

@@ -44,7 +44,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
 }
 
 void WebUIScreenLocker::LockScreen(bool unlock_on_input) {
-  gfx::Rect bounds(gfx::Screen::GetMonitorAreaNearestWindow(NULL));
+  gfx::Rect bounds(gfx::Screen::GetPrimaryMonitor().bounds());
 
   LockWindow* lock_window = LockWindow::Create();
   lock_window->set_observer(this);

@@ -57,8 +57,8 @@ void KeyboardOverlayDelegate::GetDialogSize(
     gfx::Size* size) const {
   using std::min;
   DCHECK(view_);
-  gfx::Rect rect = gfx::Screen::GetMonitorAreaNearestWindow(
-      view_->GetWidget()->GetNativeView());
+  gfx::Rect rect = gfx::Screen::GetMonitorNearestWindow(
+      view_->GetWidget()->GetNativeView()).bounds();
   const int width = min(kBaseWidth, rect.width() - kHorizontalMargin);
   const int height = width * kBaseHeight / kBaseWidth;
   size->SetSize(width, height);

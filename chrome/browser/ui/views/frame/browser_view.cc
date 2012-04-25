@@ -1321,7 +1321,7 @@ gfx::Rect BrowserView::GetInstantBounds() {
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
 #if defined(USE_AURA)
-  gfx::Size window_size = gfx::Screen::GetMonitorAreaNearestWindow(
+  gfx::Size window_size = gfx::Screen::GetMonitorNearestWindow(
       GetWidget()->GetNativeView()).size();
   return browser::DispositionForPopupBounds(
       bounds, window_size.width(), window_size.height());

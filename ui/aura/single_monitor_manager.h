@@ -11,6 +11,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/window_observer.h"
+#include "ui/gfx/monitor.h"
 
 namespace gfx {
 class Rect;
@@ -27,16 +28,17 @@ class AURA_EXPORT SingleMonitorManager : public MonitorManager,
 
   // MonitorManager overrides:
   virtual void OnNativeMonitorsChanged(
-      const std::vector<const Monitor*>& monitors) OVERRIDE;
+      const std::vector<gfx::Monitor>& monitors) OVERRIDE;
   virtual RootWindow* CreateRootWindowForMonitor(
-      Monitor* monitor) OVERRIDE;
-  virtual const Monitor* GetMonitorNearestWindow(
-      const Window* window) const OVERRIDE;
-  virtual const Monitor* GetMonitorNearestPoint(
-      const gfx::Point& point) const OVERRIDE;
-  virtual Monitor* GetMonitorAt(size_t index) OVERRIDE;
+      const gfx::Monitor& monitor) OVERRIDE;
+  virtual const gfx::Monitor& GetMonitorAt(size_t index) OVERRIDE;
+
   virtual size_t GetNumMonitors() const OVERRIDE;
-  virtual Monitor* GetMonitorNearestWindow(const Window* window) OVERRIDE;
+
+  virtual const gfx::Monitor& GetMonitorNearestWindow(
+      const Window* window) const OVERRIDE;
+  virtual const gfx::Monitor& GetMonitorNearestPoint(
+      const gfx::Point& point) const OVERRIDE;
 
   // WindowObserver overrides:
   virtual void OnWindowBoundsChanged(Window* window,
@@ -48,7 +50,7 @@ class AURA_EXPORT SingleMonitorManager : public MonitorManager,
   void Update(const gfx::Size size);
 
   RootWindow* root_window_;
-  scoped_ptr<Monitor> monitor_;
+  gfx::Monitor monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleMonitorManager);
 };

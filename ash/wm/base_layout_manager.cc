@@ -111,7 +111,7 @@ void BaseLayoutManager::SetChildBounds(aura::Window* child,
   if (wm::IsWindowMaximized(child))
     child_bounds = ScreenAsh::GetMaximizedWindowBounds(child);
   else if (wm::IsWindowFullscreen(child))
-    child_bounds = gfx::Screen::GetMonitorAreaNearestWindow(child);
+    child_bounds = gfx::Screen::GetMonitorNearestWindow(child).bounds();
   SetChildBoundsDirect(child, child_bounds);
 }
 
@@ -194,8 +194,8 @@ void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window) {
 
     case ui::SHOW_STATE_FULLSCREEN:
       SetRestoreBoundsIfNotSet(window);
-      SetChildBoundsDirect(window,
-                           gfx::Screen::GetMonitorAreaNearestWindow(window));
+      SetChildBoundsDirect(
+          window, gfx::Screen::GetMonitorNearestWindow(window).bounds());
       break;
 
     default:
@@ -216,12 +216,12 @@ void BaseLayoutManager::AdjustWindowSizesForScreenChange() {
     if (wm::IsWindowMaximized(window)) {
       SetChildBoundsDirect(window, ScreenAsh::GetMaximizedWindowBounds(window));
     } else if (wm::IsWindowFullscreen(window)) {
-      SetChildBoundsDirect(window,
-                           gfx::Screen::GetMonitorAreaNearestWindow(window));
+      SetChildBoundsDirect(
+          window, gfx::Screen::GetMonitorNearestWindow(window).bounds());
     } else {
       // The work area may be smaller than the full screen.
       gfx::Rect monitor_rect =
-          gfx::Screen::GetMonitorWorkAreaNearestWindow(window);
+          gfx::Screen::GetMonitorNearestWindow(window).work_area();
       // Put as much of the window as possible within the monitor area.
       window->SetBounds(window->bounds().AdjustToFit(monitor_rect));
     }

@@ -30,7 +30,7 @@ gfx::Font TooltipManager::GetDefaultFont() {
 // static
 int TooltipManager::GetMaxWidth(int x, int y) {
   gfx::Rect monitor_bounds =
-      gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
+      gfx::Screen::GetMonitorNearestPoint(gfx::Point(x, y)).bounds();
   return (monitor_bounds.width() + 1) / 2;
 }
 
