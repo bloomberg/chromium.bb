@@ -2487,7 +2487,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.isOffline = function() {
-    return !!navigator.onLine;
+    return !navigator.onLine;
   };
 
   FileManager.prototype.onOnlineOffline_ = function() {
