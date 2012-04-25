@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 # Read a memtrace logfile from stdin and group memory allocations by logical
 # code component. The code component is guessed from the callstack, and
