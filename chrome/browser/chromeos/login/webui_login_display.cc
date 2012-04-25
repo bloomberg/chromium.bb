@@ -20,6 +20,8 @@ namespace chromeos {
 // WebUILoginDisplay, public: --------------------------------------------------
 
 WebUILoginDisplay::~WebUILoginDisplay() {
+  if (webui_handler_)
+    webui_handler_->ResetSigninScreenHandlerDelegate();
 }
 
 // LoginDisplay implementation: ------------------------------------------------
@@ -59,24 +61,25 @@ void WebUILoginDisplay::OnBeforeUserRemoved(const std::string& username) {
 }
 
 void WebUILoginDisplay::OnUserImageChanged(const User& user) {
-  DCHECK(webui_handler_);
-  webui_handler_->OnUserImageChanged(user);
+  if (webui_handler_)
+    webui_handler_->OnUserImageChanged(user);
 }
 
 void WebUILoginDisplay::OnUserRemoved(const std::string& username) {
-  DCHECK(webui_handler_);
-  webui_handler_->OnUserRemoved(username);
+  if (webui_handler_)
+    webui_handler_->OnUserRemoved(username);
 }
 
 void WebUILoginDisplay::OnFadeOut() {
 }
 
 void WebUILoginDisplay::OnLoginSuccess(const std::string& username) {
-  webui_handler_->OnLoginSuccess(username);
+  if (webui_handler_)
+    webui_handler_->OnLoginSuccess(username);
 }
 
 void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
-  if (is_enabled)
+  if (webui_handler_ && is_enabled)
     webui_handler_->ClearAndEnablePassword();
 }
 
@@ -89,7 +92,8 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
   VLOG(1) << "Show error, error_id: " << error_msg_id
           << ", attempts:" << login_attempts
           <<  ", help_topic_id: " << help_topic_id;
-  DCHECK(webui_handler_);
+  if (!webui_handler_)
+    return;
 
   std::string error_text;
   switch (error_msg_id) {
@@ -138,7 +142,8 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
 }
 
 void WebUILoginDisplay::ShowGaiaPasswordChanged(const std::string& username) {
-  webui_handler_->ShowGaiaPasswordChanged(username);
+  if (webui_handler_)
+    webui_handler_->ShowGaiaPasswordChanged(username);
 }
 
 // WebUILoginDisplay, SigninScreenHandlerDelegate implementation: --------------
@@ -195,8 +200,8 @@ void WebUILoginDisplay::SetWebUIHandler(
 void WebUILoginDisplay::ShowSigninScreenForCreds(
     const std::string& username,
     const std::string& password) {
-  DCHECK(webui_handler_);
-  webui_handler_->ShowSigninScreenForCreds(username, password);
+  if (webui_handler_)
+    webui_handler_->ShowSigninScreenForCreds(username, password);
 }
 
 const UserList& WebUILoginDisplay::GetUsers() const {

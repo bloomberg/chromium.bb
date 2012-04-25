@@ -289,6 +289,8 @@ SigninScreenHandler::~SigninScreenHandler() {
     cookie_remover_->RemoveObserver(this);
   if (key_event_listener_)
     key_event_listener_->RemoveCapsLockObserver(this);
+  if (delegate_)
+    delegate_->SetWebUIHandler(NULL);
   CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowNewUser, this);
   CrosSettings::Get()->RemoveSettingsObserver(kAccountsPrefAllowGuest, this);
 }
@@ -540,6 +542,10 @@ void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.showSigninUI", email_value);
   web_ui()->CallJavascriptFunction(
       "login.AccountPickerScreen.updateUserGaiaNeeded", email_value);
+}
+
+void SigninScreenHandler::ResetSigninScreenHandlerDelegate() {
+  SetDelegate(NULL);
 }
 
 void SigninScreenHandler::OnBrowsingDataRemoverDone() {

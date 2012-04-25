@@ -47,6 +47,7 @@ class LoginDisplayWebUIHandler {
   // Show siginin screen for the given credentials.
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) = 0;
+  virtual void ResetSigninScreenHandlerDelegate() = 0;
  protected:
   virtual ~LoginDisplayWebUIHandler() {}
 };
@@ -151,6 +152,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) OVERRIDE;
   virtual void ShowGaiaPasswordChanged(const std::string& username) OVERRIDE;
+  virtual void ResetSigninScreenHandlerDelegate() OVERRIDE;
 
   // BrowsingDataRemover::Observer overrides.
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
