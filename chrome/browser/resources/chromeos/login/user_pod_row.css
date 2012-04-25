@@ -195,6 +195,7 @@ html[dir=rtl] .pod .capslock-hint {
 }
 
 .pod .remove-user-button:focus,
+.pod .remove-user-button:hover,
 .user-image:hover ~ .remove-user-button {
   opacity: 1;
 }
