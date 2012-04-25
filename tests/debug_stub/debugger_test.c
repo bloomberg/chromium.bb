@@ -71,6 +71,34 @@ int non_zero_return() {
   return 2;
 }
 
+void test_single_step() {
+  /*
+   * The actual instructions used here don't matter, we just want to use
+   * a variety of instruction sizes.
+   * Instruction bytes are specified explicitly to avoid ambiguous encodings
+   * and thus ensure required instructions sizes.
+   */
+#if defined(__i386__)
+  __asm__(
+      ".byte 0xcc\n"                                /* int3 */
+      ".byte 0x53\n"                                /* push %ebx */
+      ".byte 0x39, 0xd8\n"                          /* cmp  %ebx,%eax */
+      ".byte 0x83, 0xeb, 0x01\n"                    /* sub  $0x1,%ebx */
+      ".byte 0x81, 0xeb, 0x14, 0x9f, 0x04, 0x08\n"  /* sub  $0x8049f14,%ebx */
+      ".byte 0x5b\n");                              /* pop  %ebx */
+#elif defined(__x86_64__)
+  __asm__(
+      ".byte 0xcc\n"                                /* int3 */
+      ".byte 0x53\n"                                /* push %rbx */
+      ".byte 0x48, 0x39, 0xd8\n"                    /* cmp  %rbx,%rax */
+      ".byte 0x48, 0x83, 0xeb, 0x01\n"              /* sub  $0x1,%rbx */
+      ".byte 0x66, 0x0f, 0x1f, 0x44, 0x00, 0x00\n"  /* nopw 0x0(%rax,%rax,1) */
+      ".byte 0x5b\n");                              /* pop  %rbx */
+#else
+# error Update test_single_step for other architectures
+#endif
+}
+
 int main(int argc, char **argv) {
   /*
    * This will crash if the entry-point breakpoint has been mishandled such
@@ -94,6 +122,10 @@ int main(int argc, char **argv) {
   }
   if (strcmp(argv[1], "test_exit_code") == 0) {
     return non_zero_return();
+  }
+  if (strcmp(argv[1], "test_single_step") == 0) {
+    test_single_step();
+    return 0;
   }
   return 1;
 }

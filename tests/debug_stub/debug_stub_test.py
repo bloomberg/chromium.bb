@@ -244,6 +244,35 @@ class DebugStubTest(unittest.TestCase):
       proc.kill()
       proc.wait()
 
+  def test_single_step(self):
+    proc = PopenDebugStub('test_single_step')
+    try:
+      connection = gdb_rsp.GdbRspConnection()
+
+      # Continue, test we stopped on int3.
+      reply = connection.RspRequest('c')
+      self.assertEqual(reply, 'S05')
+
+      # Single-step several times, check IP changes accordingly.
+      if ARCH == 'x86-32':
+        instruction_sizes = [1, 2, 3, 6]
+      elif ARCH == 'x86-64':
+        instruction_sizes = [1, 3, 4, 6]
+      else:
+        raise AssertionError('Unknown architecture')
+
+      ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
+
+      for size in instruction_sizes:
+        reply = connection.RspRequest('s')
+        self.assertEqual(reply, 'S05')
+        ip += size
+        actual_ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
+        self.assertEqual(actual_ip, ip)
+    finally:
+      proc.kill()
+      proc.wait()
+
 if __name__ == '__main__':
   # TODO(mseaborn): Remove the global variable.  It is currently here
   # because unittest does not help with making parameterised tests.
