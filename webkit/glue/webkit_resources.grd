@@ -36,25 +36,30 @@
       <include name="IDR_MEDIAPLAYER_PLAY_BUTTON_HOVER" file="resources\mediaplayer_play_hover.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_PLAY_BUTTON_DOWN" file="resources\mediaplayer_play_down.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_PLAY_BUTTON_DISABLED" file="resources\mediaplayer_play_disabled.png" type="BINDATA" />
-      <include name="IDR_MEDIAPLAYER_SOUND_DISABLED" file="resources\mediaplayer_sound_disabled.png" type="BINDATA" />
-      <include name="IDR_MEDIAPLAYER_SOUND_FULL_BUTTON" file="resources\mediaplayer_sound_full.png" type="BINDATA" />
-      <include name="IDR_MEDIAPLAYER_SOUND_FULL_BUTTON_HOVER" file="resources\mediaplayer_sound_full_hover.png" type="BINDATA" />
-      <include name="IDR_MEDIAPLAYER_SOUND_FULL_BUTTON_DOWN" file="resources\mediaplayer_sound_full_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON" file="resources\mediaplayer_sound_level3.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON_HOVER" file="resources\mediaplayer_sound_level3_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL3_BUTTON_DOWN" file="resources\mediaplayer_sound_level3_down.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON" file="resources\mediaplayer_sound_level2.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_HOVER" file="resources\mediaplayer_sound_level2_hover.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_SOUND_LEVEL2_BUTTON_DOWN" file="resources\mediaplayer_sound_level2_down.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON" file="resources\mediaplayer_sound_level1.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_HOVER" file="resources\mediaplayer_sound_level1_hover.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_SOUND_LEVEL1_BUTTON_DOWN" file="resources\mediaplayer_sound_level1_down.png" type="BINDATA" />
-      <include name="IDR_MEDIAPLAYER_SOUND_NONE_BUTTON" file="resources\mediaplayer_sound_none.png" type="BINDATA" />
-      <include name="IDR_MEDIAPLAYER_SOUND_NONE_BUTTON_HOVER" file="resources\mediaplayer_sound_none_hover.png" type="BINDATA" />
-      <include name="IDR_MEDIAPLAYER_SOUND_NONE_BUTTON_DOWN" file="resources\mediaplayer_sound_none_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON" file="resources\mediaplayer_sound_level0.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON_HOVER" file="resources\mediaplayer_sound_level0_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_LEVEL0_BUTTON_DOWN" file="resources\mediaplayer_sound_level0_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_SOUND_DISABLED" file="resources\mediaplayer_sound_disabled.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_SLIDER_THUMB" file="resources\mediaplayer_slider_thumb.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_SLIDER_THUMB_HOVER" file="resources\mediaplayer_slider_thumb_hover.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_SLIDER_THUMB_DOWN" file="resources\mediaplayer_slider_thumb_down.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB" file="resources\mediaplayer_volume_slider_thumb.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_HOVER" file="resources\mediaplayer_volume_slider_thumb_hover.png" type="BINDATA" />
       <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DOWN" file="resources\mediaplayer_volume_slider_thumb_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_VOLUME_SLIDER_THUMB_DISABLED" file="resources\mediaplayer_volume_slider_thumb_disabled.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON" file="resources\mediaplayer_fullscreen.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_HOVER" file="resources\mediaplayer_fullscreen_hover.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DOWN" file="resources\mediaplayer_fullscreen_down.png" type="BINDATA" />
+      <include name="IDR_MEDIAPLAYER_FULLSCREEN_BUTTON_DISABLED" file="resources\mediaplayer_fullscreen_disabled.png" type="BINDATA" />
       <if expr="is_macosx">
         <include name="IDR_OVERHANG_PATTERN" file="resources\overhang_pattern.png" type="BINDATA" />
       </if>
