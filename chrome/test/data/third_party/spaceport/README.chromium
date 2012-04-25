@@ -1,0 +1,51 @@
+Name: HTML5 Game Benchmarks
+URL: git://github.com/sibblingz/PerfMarks
+URL: http://spaceport.io/community/perfmarks
+Version: 0
+Date: April 3, 2012
+Revision: 933190655b4ba171dab1d642cd6968676dd8f00d
+License: Various, see license file
+License File: LICENSE
+
+Additional files, not in the original suite:
+  README.chromium
+
+Modifications to the test suite to enable running as a cross browser performance test.
+  js/index.js
+
+How to update:
+
+In js/index.js, change the 'step' attribute to add the required console.log
+statements. Below is the patch.
+
+diff --git a/js/index.js b/js/index.js
+index 2c23d0d..059a57a 100644
+--- a/js/index.js
++++ b/js/index.js
+@@ -36,17 +36,25 @@ define([ 'tests/performance', 'testDom', 'testRunner', 'tables', 'util/report',
+         function runPerformanceTests(callback) {
+             callback = ensureCallback(callback);
+ 
+             testRunner.run('performance', performance, {
+                 done: function (err, results) {
+                     allTestsDone(err, results);
+                     callback(err, results);
+                 },
+-                step: testDone
++                step: function (err, name, results) {
++                    shortName = name.replace('performance.sprites.image.', '');
++                    if (results) {
++                       console.log(shortName + ": " + results.objectCount);
++                    } else {
++                       console.log(shortName + ": 0");
++                    }
++                    return testDone(err, name, results);
++                }
+             });
+         }
+ 
+         function runAndUploadPerformanceTests(callback) {
+             callback = ensureCallback(callback);
+ 
+             runPerformanceTests(function (err, results) {
+                 if (err) return callback(err);
