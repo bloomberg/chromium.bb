@@ -30,7 +30,7 @@ class RendererClipboardWriteContext :
   virtual void WriteBitmapFromPixels(ui::Clipboard::ObjectMap* objects,
                                      const void* pixels,
                                      const gfx::Size& size);
-  virtual void FlushAndDestroy(const ui::Clipboard::ObjectMap& objects);
+  virtual void Flush(const ui::Clipboard::ObjectMap& objects);
 
  private:
   scoped_ptr<base::SharedMemory> shared_buf_;
@@ -80,12 +80,9 @@ void RendererClipboardWriteContext::WriteBitmapFromPixels(
   (*objects)[ui::Clipboard::CBF_SMBITMAP] = params;
 }
 
-// Define a destructor that makes IPCs to flush the contents to the
-// system clipboard.
-void RendererClipboardWriteContext::FlushAndDestroy(
+// Flushes the objects to the clipboard with an IPC.
+void RendererClipboardWriteContext::Flush(
     const ui::Clipboard::ObjectMap& objects) {
-  scoped_ptr<RendererClipboardWriteContext> delete_on_return(this);
-
   if (shared_buf_.get()) {
     RenderThreadImpl::current()->Send(
         new ClipboardHostMsg_WriteObjectsSync(objects, shared_buf_->handle()));

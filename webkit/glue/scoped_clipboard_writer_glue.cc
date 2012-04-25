@@ -11,19 +11,19 @@ ScopedClipboardWriterGlue::ScopedClipboardWriterGlue(
                                 ui::Clipboard::BUFFER_STANDARD),
       context_(client->CreateWriteContext()) {
   // We should never have an instance where both are set.
-  DCHECK((clipboard_ && !context_) ||
-         (!clipboard_ && context_));
+  DCHECK((clipboard_ && !context_.get()) ||
+         (!clipboard_ && context_.get()));
 }
 
 ScopedClipboardWriterGlue::~ScopedClipboardWriterGlue() {
-  if (!objects_.empty() && context_) {
-    context_->FlushAndDestroy(objects_);
+  if (!objects_.empty() && context_.get()) {
+    context_->Flush(objects_);
   }
 }
 
 void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
                                                       const gfx::Size& size) {
-  if (context_) {
+  if (context_.get()) {
     context_->WriteBitmapFromPixels(&objects_, pixels, size);
   } else {
     ScopedClipboardWriter::WriteBitmapFromPixels(pixels, size);

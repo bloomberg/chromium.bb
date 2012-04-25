@@ -23,8 +23,8 @@ class ClipboardClient {
                                        const void* pixels,
                                        const gfx::Size& size) = 0;
 
-    // Flushes all gathered data, and destroys the context.
-    virtual void FlushAndDestroy(const ui::Clipboard::ObjectMap& objects) = 0;
+    // Flushes all gathered data.
+    virtual void Flush(const ui::Clipboard::ObjectMap& objects) = 0;
   };
 
   virtual ~ClipboardClient() { }
