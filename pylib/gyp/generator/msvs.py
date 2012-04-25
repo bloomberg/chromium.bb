@@ -843,17 +843,19 @@ def _GenerateProject(project, options, version, generator_flags):
     options: global generator options.
     version: the MSVSVersion object.
     generator_flags: dict of generator-specific flags.
+  Returns:
+    A list of source files that cannot be found on disk.
   """
   default_config = _GetDefaultConfiguration(project.spec)
 
   # Skip emitting anything if told to with msvs_existing_vcproj option.
   if default_config.get('msvs_existing_vcproj'):
-    return
+    return []
 
   if version.UsesVcxproj():
-    _GenerateMSBuildProject(project, options, version, generator_flags)
+    return _GenerateMSBuildProject(project, options, version, generator_flags)
   else:
-    _GenerateMSVSProject(project, options, version, generator_flags)
+    return _GenerateMSVSProject(project, options, version, generator_flags)
 
 
 def _GenerateMSVSProject(project, options, version, generator_flags):
@@ -898,7 +900,7 @@ def _GenerateMSVSProject(project, options, version, generator_flags):
           spec, options, project_dir, sources, excluded_sources, list_excluded))
 
   # Add in files.
-  _VerifySourcesExist(sources, project_dir)
+  missing_sources = _VerifySourcesExist(sources, project_dir)
   p.AddFiles(sources)
 
   _AddToolFilesToMSVS(p, spec)
@@ -917,6 +919,8 @@ def _GenerateMSVSProject(project, options, version, generator_flags):
 
   # Write it out.
   p.WriteIfChanged()
+
+  return missing_sources
 
 
 def _GetUniquePlatforms(spec):
@@ -1773,9 +1777,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
                                           msvs_version)
 
   # Generate each project.
+  missing_sources = []
   for project in project_objects.values():
     fixpath_prefix = project.fixpath_prefix
-    _GenerateProject(project, options, msvs_version, generator_flags)
+    missing_sources.extend(_GenerateProject(project, options, msvs_version,
+                                            generator_flags))
   fixpath_prefix = None
 
   for build_file in data:
@@ -1798,6 +1804,14 @@ def GenerateOutput(target_list, target_dicts, data, params):
                                websiteProperties=False,
                                version=msvs_version)
     sln.Write()
+
+  if missing_sources:
+    error_message = "Missing input files:\n" + \
+                    '\n'.join(set(missing_sources))
+    if generator_flags.get('msvs_error_on_missing_sources', False):
+      raise Exception(error_message)
+    else:
+      print >>sys.stdout, "Warning: " + error_message
 
 
 def _GenerateMSBuildFiltersFile(filters_path, source_files,
@@ -2759,16 +2773,19 @@ def _VerifySourcesExist(sources, root_dir):
   Arguments:
     sources: A recursive list of Filter/file names.
     root_dir: The root directory for the relative path names.
+  Returns:
+    A list of source files that cannot be found on disk.
   """
+  missing_sources = []
   for source in sources:
     if isinstance(source, MSVSProject.Filter):
-      _VerifySourcesExist(source.contents, root_dir)
+      missing_sources.extend(_VerifySourcesExist(source.contents, root_dir))
     else:
       if '$' not in source:
         full_path = os.path.join(root_dir, source)
         if not os.path.exists(full_path):
-          print 'Warning: Missing input file ' + full_path + ' pwd=' +\
-              os.getcwd()
+          missing_sources.append(full_path)
+  return missing_sources
 
 
 def _GetMSBuildSources(spec, sources, exclusions, extension_to_rule_name,
@@ -2909,7 +2926,7 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
 
   _GenerateMSBuildFiltersFile(project.path + '.filters', sources,
                               extension_to_rule_name)
-  _VerifySourcesExist(sources, project_dir)
+  missing_sources = _VerifySourcesExist(sources, project_dir)
 
   for (_, configuration) in configurations.iteritems():
     _FinalizeMSBuildSettings(spec, configuration)
@@ -2954,6 +2971,8 @@ def _GenerateMSBuildProject(project, options, version, generator_flags):
   # has_run_as = _WriteMSVSUserFile(project.path, version, spec)
 
   easy_xml.WriteXmlIfChanged(content, project.path)
+
+  return missing_sources
 
 
 def _GetMSBuildExtensions(props_files_of_rules):
