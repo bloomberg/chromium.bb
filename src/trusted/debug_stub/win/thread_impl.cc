@@ -330,6 +330,22 @@ class Thread : public IThread {
     thread->state_ = SIGNALED;
     int8_t sig = ExceptionToSignal(ep->ExceptionRecord->ExceptionCode);
 
+    // Handle EXCEPTION_BREAKPOINT SEH/VEH handler special case:
+    // Here instruction pointer from the CONTEXT structure points to the int3
+    // instruction, not after the int3 instruction.
+    // This is different from the hardware context, and (thus) different from
+    // the context obtained via GetThreadContext on Windows and from signal
+    // handler context on Linux.
+    // See http://code.google.com/p/nativeclient/issues/detail?id=1730.
+    // We adjust instruction pointer to match the hardware.
+    if (ep->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT) {
+#if NACL_BUILD_SUBARCH == 64
+      ep->ContextRecord->Rip += 1;
+#else
+      ep->ContextRecord->Eip += 1;
+#endif
+    }
+
     void *ctx = thread->GetContext();
 
     memcpy(ctx, ep->ContextRecord, sizeof(CONTEXT));

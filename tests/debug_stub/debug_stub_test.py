@@ -81,6 +81,12 @@ SP_REG = {
     }
 
 
+IP_REG = {
+    'x86-32': 'eip',
+    'x86-64': 'rip',
+    }
+
+
 def DecodeRegs(reply):
   defs = REG_DEFS[ARCH]
   names = [reg_name for reg_name, reg_fmt in defs]
@@ -97,6 +103,15 @@ def EncodeRegs(regs):
 
   values = [regs[r] for r in names]
   return EncodeHex(struct.pack(fmt, *values))
+
+
+def PopenDebugStub(test):
+  gdb_rsp.EnsurePortIsAvailable()
+  # Double '-c' turns off validation. This is needed because the test is using
+  # instructions that do not validate, for example, 'int3'.
+  return subprocess.Popen([os.environ['NACL_SEL_LDR'], '-c', '-c', '-g',
+                           os.environ['DEBUGGER_TEST_PROG'],
+                           test])
 
 
 class DebugStubTest(unittest.TestCase):
@@ -176,17 +191,14 @@ class DebugStubTest(unittest.TestCase):
 
   # Run tests on debugger_test.c binary.
   def test_debugger_test(self):
-    gdb_rsp.EnsurePortIsAvailable()
-    proc = subprocess.Popen([os.environ['NACL_SEL_LDR'], '-g',
-                             os.environ['DEBUGGER_TEST_PROG'],
-                             'test_getting_registers'])
+    proc = PopenDebugStub('test_getting_registers')
     try:
       connection = gdb_rsp.GdbRspConnection()
       # Tell the process to continue, because it starts at the
       # breakpoint set at its start address.
       reply = connection.RspRequest('c')
       # We expect a reply that indicates that the process stopped again.
-      assert reply.startswith('S'), reply
+      self.assertTrue(reply.startswith('S'))
 
       self.CheckReadRegisters(connection)
       self.CheckWriteRegisters(connection)
@@ -197,11 +209,33 @@ class DebugStubTest(unittest.TestCase):
       proc.kill()
       proc.wait()
 
+  def test_breakpoint(self):
+    proc = PopenDebugStub('test_breakpoint')
+    try:
+      connection = gdb_rsp.GdbRspConnection()
+
+      # Continue until breakpoint.
+      reply = connection.RspRequest('c')
+      self.assertEquals(reply, 'S05')
+
+      ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
+
+      if ARCH == 'x86-32' or ARCH == 'x86-64':
+        # Check ip points after the int3 instruction.
+        reply = connection.RspRequest('m%x,%x' % (ip - 1, 1))
+        self.assertEquals(reply, 'cc')
+
+        # Continue until exit.
+        reply = connection.RspRequest('c')
+        self.assertEquals(reply, 'W00')
+      else:
+        raise AssertionError('Unknown architecture')
+    finally:
+      proc.kill()
+      proc.wait()
+
   def test_exit_code(self):
-    gdb_rsp.EnsurePortIsAvailable()
-    proc = subprocess.Popen([os.environ['NACL_SEL_LDR'], '-g',
-                             os.environ['DEBUGGER_TEST_PROG'],
-                             'test_exit_code'])
+    proc = PopenDebugStub('test_exit_code')
     try:
       connection = gdb_rsp.GdbRspConnection()
       reply = connection.RspRequest('c')

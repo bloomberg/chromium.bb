@@ -46,7 +46,24 @@ void set_registers_and_stop() {
           "mov $0xdd000000000000ee, %r14\n"
           "hlt\n");
 #else
-# error Update this test for other architectures
+# error Update set_registers_and_stop for other architectures
+#endif
+}
+
+void test_breakpoint() {
+#if defined(__i386__) || defined(__x86_64__)
+  /*
+   * In this bundle int3 (0xcc) is surrounded by instructions that have no
+   * 0xcc in their encodings, thus int3 can be located unambiguously.
+   */
+  __asm__(".align 32\n"
+          "nop\n"
+          "nop\n"
+          "int3\n"
+          "nop\n"
+          "nop\n");
+#else
+# error Update test_breakpoint for other architectures
 #endif
 }
 
@@ -70,7 +87,12 @@ int main(int argc, char **argv) {
   if (strcmp(argv[1], "test_getting_registers") == 0) {
     set_registers_and_stop();
     return 0;
-  } else if (strcmp(argv[1], "test_exit_code") == 0) {
+  }
+  if (strcmp(argv[1], "test_breakpoint") == 0) {
+    test_breakpoint();
+    return 0;
+  }
+  if (strcmp(argv[1], "test_exit_code") == 0) {
     return non_zero_return();
   }
   return 1;
