@@ -39,19 +39,6 @@ const char kDevice3[] = "d3";
 const char kMountPointA[] = "mnt_a";
 const char kMountPointB[] = "mnt_b";
 
-// TODO(thestig) Move this into base/string_util.h, or replace this with
-// strndup_with_new() if we find more uses for it.
-// Duplicate the content of |str| into a new char array. Caller takes ownership
-// of the allocated array. Unlike std::string::c_str(), this returns a char*
-// instead of a const char*.
-char* copy_string(const std::string& str) {
-  const size_t len = str.length();
-  char* ret = new char[len + 1];
-  str.copy(ret, len, 0);
-  ret[len] = '\0';
-  return ret;
-}
-
 class MediaDeviceNotificationsLinuxTestWrapper
     : public MediaDeviceNotificationsLinux {
  public:
@@ -198,18 +185,24 @@ class MediaDeviceNotificationsLinuxTest : public testing::Test {
     FILE* file = setmntent(mtab_file_.value().c_str(), overwrite ? "w" : "a");
     ASSERT_TRUE(file);
 
+    // Due to the glibc *mntent() interface design, which is out of our
+    // control, the mtnent struct has several char* fields, even though
+    // addmntent() does not write to them in the calls below. To make the
+    // compiler happy while avoiding making additional copies of strings,
+    // we just const_cast() the strings' c_str()s.
+    // Assuming addmntent() does not write to the char* fields, this is safe.
+    // It is unlikely the platforms this test suite runs on will have an
+    // addmntent() implementation that does change the char* fields. If that
+    // was ever the case, the test suite will start crashing or failing.
     mntent entry;
-    scoped_array<char> mount_opts(copy_string("rw"));
-    entry.mnt_opts = mount_opts.get();
+    static const char kMountOpts[] = "rw";
+    entry.mnt_opts = const_cast<char*>(kMountOpts);
     entry.mnt_freq = 0;
     entry.mnt_passno = 0;
     for (size_t i = 0; i < data_size; ++i) {
-      scoped_array<char> mount_device(copy_string(data[i].mount_device));
-      scoped_array<char> mount_point(copy_string(data[i].mount_point));
-      scoped_array<char> mount_type(copy_string(data[i].mount_type));
-      entry.mnt_fsname = mount_device.get();
-      entry.mnt_dir = mount_point.get();
-      entry.mnt_type = mount_type.get();
+      entry.mnt_fsname = const_cast<char*>(data[i].mount_device.c_str());
+      entry.mnt_dir = const_cast<char*>(data[i].mount_point.c_str());
+      entry.mnt_type = const_cast<char*>(data[i].mount_type.c_str());
       ASSERT_EQ(0, addmntent(file, &entry));
     }
     ASSERT_EQ(1, endmntent(file));
