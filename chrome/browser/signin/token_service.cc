@@ -7,11 +7,13 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/string_util.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -66,7 +68,10 @@ void TokenService::Initialize(const char* const source,
   source_ = std::string(source);
 
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  // Allow the token service to be cleared from the command line.
+  // Allow the token service to be cleared from the command line. We rely on
+  // SigninManager::Initialize() being called to clear out the
+  // kGoogleServicesUsername pref before we call EraseTokensFromDB() as
+  // otherwise the system would be in an invalid state.
   if (cmd_line->HasSwitch(switches::kClearTokenService))
     EraseTokensFromDB();
 
@@ -133,6 +138,13 @@ void TokenService::SaveAuthTokenToDB(const std::string& service,
 
 void TokenService::EraseTokensFromDB() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Try to track down http://crbug.com/121755 - we should never clear the
+  // token DB while we're still logged in.
+  if (profile_) {
+    std::string user = profile_->GetPrefs()->GetString(
+        prefs::kGoogleServicesUsername);
+    CHECK(user.empty());
+  }
   if (web_data_service_.get())
     web_data_service_->RemoveAllTokens();
 }

@@ -56,6 +56,13 @@ void SigninManager::Initialize(Profile* profile) {
   DCHECK(!IsInitialized());
   profile_ = profile;
 
+  // If the user is clearing the token service from the command line, then
+  // clear their login info also (not valid to be logged in without any
+  // tokens).
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kClearTokenService))
+    profile->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
+
   std::string user = profile_->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
   if (!user.empty())
