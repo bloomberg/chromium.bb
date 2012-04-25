@@ -951,7 +951,7 @@ void SessionModelAssociator::DecrementAndCleanFaviconForURL(
   std::map<std::string, std::string>::const_iterator iter =
       synced_favicon_pages_.find(page_url);
   if (iter != synced_favicon_pages_.end()) {
-    const std::string& favicon_url = iter->second;
+    std::string favicon_url = iter->second;
     DCHECK_GT(synced_favicons_[favicon_url]->usage_count, 0);
     --(synced_favicons_[favicon_url]->usage_count);
     if (synced_favicons_[favicon_url]->usage_count <= 0) {
