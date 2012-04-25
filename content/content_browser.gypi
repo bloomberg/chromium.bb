@@ -603,6 +603,8 @@
     'browser/speech/audio_buffer.h',
     'browser/speech/audio_encoder.cc',
     'browser/speech/audio_encoder.h',
+    'browser/speech/chunked_byte_buffer.cc',
+    'browser/speech/chunked_byte_buffer.h',
     'browser/speech/endpointer/endpointer.cc',
     'browser/speech/endpointer/endpointer.h',
     'browser/speech/endpointer/energy_endpointer.cc',
