@@ -24,6 +24,7 @@
 #include "base/win/scoped_comptr.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
+#include "remoting/host/daemon_controller_common_win.h"
 #include "remoting/host/plugin/daemon_installer_win.h"
 
 // MIDL-generated declarations and definitions.
@@ -310,35 +311,53 @@ DWORD DaemonControllerWin::OpenService(ScopedScHandle* service_out) {
 void DaemonControllerWin::DoGetConfig(const GetConfigCallback& callback) {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
-  IDaemonControl* control = NULL;
-  HRESULT hr = worker_thread_.ActivateElevatedController(&control);
-  if (FAILED(hr)) {
-    callback.Run(scoped_ptr<base::DictionaryValue>());
+  scoped_ptr<base::DictionaryValue> dictionary_null(NULL);
+    // Get the name of the configuration file.
+  FilePath dir = remoting::GetConfigDir();
+  FilePath filename = dir.Append(kUnprivilegedConfigFileName);
+
+  // Read raw data from the configuration file.
+  base::win::ScopedHandle file(
+      CreateFileW(filename.value().c_str(),
+                  GENERIC_READ,
+                  FILE_SHARE_READ | FILE_SHARE_WRITE,
+                  NULL,
+                  OPEN_EXISTING,
+                  FILE_FLAG_SEQUENTIAL_SCAN,
+                  NULL));
+
+  if (!file.IsValid()) {
+    DWORD error = GetLastError();
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to open '" << filename.value() << "'";
+    callback.Run(dictionary_null.Pass());
     return;
   }
 
-  // Get the host configuration.
-  ScopedBstr host_config;
-  hr = control->GetConfig(host_config.Receive());
-  if (FAILED(hr)) {
-    callback.Run(scoped_ptr<base::DictionaryValue>());
+  scoped_array<char> buffer(new char[kMaxConfigFileSize]);
+  DWORD size = kMaxConfigFileSize;
+  if (!::ReadFile(file, &buffer[0], size, &size, NULL)) {
+    DWORD error = GetLastError();
+    LOG_GETLASTERROR(ERROR)
+        << "Failed to read '" << filename.value() << "'";
+    callback.Run(dictionary_null.Pass());
     return;
   }
 
-  string16 file_content(static_cast<BSTR>(host_config), host_config.Length());
+  // Parse the JSON configuration, expecting it to contain a dictionary.
+  std::string file_content(buffer.get(), size);
+  scoped_ptr<base::Value> value(
+      base::JSONReader::Read(file_content, base::JSON_ALLOW_TRAILING_COMMAS));
 
-  // Parse the string into a dictionary.
-  scoped_ptr<base::Value> config(
-      base::JSONReader::Read(UTF16ToUTF8(file_content),
-          base::JSON_ALLOW_TRAILING_COMMAS));
-
-  base::DictionaryValue* dictionary;
-  if (config.get() == NULL || !config->GetAsDictionary(&dictionary)) {
-    callback.Run(scoped_ptr<base::DictionaryValue>());
+  base::DictionaryValue* dictionary = NULL;
+  if (value.get() == NULL || !value->GetAsDictionary(&dictionary)) {
+    LOG(ERROR) << "Failed to read '" << filename.value() << "'";
+    callback.Run(dictionary_null.Pass());
     return;
   }
+  // Release value, because dictionary points to the same object.
+  value.release();
 
-  config.release();
   callback.Run(scoped_ptr<base::DictionaryValue>(dictionary));
 }
 
@@ -356,7 +375,7 @@ void DaemonControllerWin::DoInstallAsNeededAndStart(
     return;
   }
 
-  // Otherwise, install it if it's COM registration entry is missing.
+  // Otherwise, install it if its COM registration entry is missing.
   if (hr == CO_E_CLASSSTRING) {
     scoped_ptr<DaemonInstallerWin> installer = DaemonInstallerWin::Create(
         base::Bind(&DaemonControllerWin::OnInstallationComplete,

@@ -320,6 +320,8 @@
           'sources': [
             'host/branding.cc',
             'host/branding.h',
+            'host/daemon_controller_common_win.cc',
+            'host/daemon_controller_common_win.h',
             'host/elevated_controller.rc',
             'host/elevated_controller_module_win.cc',
             'host/elevated_controller_win.cc',
@@ -616,6 +618,8 @@
         'host/it2me_host_user_interface.cc',
         'host/it2me_host_user_interface.h',
         'host/plugin/daemon_controller.h',
+        'host/daemon_controller_common_win.cc',
+        'host/daemon_controller_common_win.h',
         'host/plugin/daemon_controller_linux.cc',
         'host/plugin/daemon_controller_mac.cc',
         'host/plugin/daemon_controller_win.cc',
