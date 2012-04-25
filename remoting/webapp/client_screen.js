@@ -314,11 +314,15 @@ function startSession_() {
           /** @type {string} */ (remoting.oauth2.getCachedEmail()),
           remoting.ClientSession.Mode.IT2ME,
           onClientStateChange_);
-  /** @param {string} token The auth token. */
+  /** @param {string?} token The auth token. */
   var createPluginAndConnect = function(token) {
-    remoting.clientSession.createPluginAndConnect(
-        document.getElementById('session-mode'),
-        token);
+    if (token) {
+      remoting.clientSession.createPluginAndConnect(
+          document.getElementById('session-mode'),
+          token);
+    } else {
+      showConnectError_(remoting.Error.AUTHENTICATION_FAILED);
+    }
   };
   remoting.oauth2.callWithToken(createPluginAndConnect);
 }

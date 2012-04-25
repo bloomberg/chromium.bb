@@ -339,25 +339,24 @@ remoting.OAuth2.prototype.revokeToken_ = function(token) {
  *
  * The access token will remain valid for at least 2 minutes.
  *
- * @param {function(string):void} myfunc
- *        Function to invoke with access token.
+ * @param {function(string?):void} myfunc Function to invoke with access token.
  * @return {void} Nothing.
  */
 remoting.OAuth2.prototype.callWithToken = function(myfunc) {
   /** @type {remoting.OAuth2} */
   var that = this;
-  if (remoting.oauth2.needsNewAccessToken()) {
-    remoting.oauth2.refreshAccessToken(function() {
-      if (remoting.oauth2.needsNewAccessToken()) {
-        // If we still need it, we're going to infinite loop.
-        throw 'Unable to get access token.';
+  if (this.needsNewAccessToken()) {
+    var onRefresh = function() {
+      if (that.needsNewAccessToken()) {
+        myfunc(null);
+      } else {
+        myfunc(that.getAccessToken());
       }
-      myfunc(that.getAccessToken());
-    });
-    return;
+    };
+    this.refreshAccessToken(onRefresh);
+  } else {
+    myfunc(this.getAccessToken());
   }
-
-  myfunc(this.getAccessToken());
 };
 
 /**
@@ -381,12 +380,16 @@ remoting.OAuth2.prototype.getEmail = function(setEmail) {
     setEmail(that.email);
   };
 
-  /** @param {string} token The access token. */
+  /** @param {string?} token The access token. */
   var getEmailFromToken = function(token) {
-    var headers = { 'Authorization': 'OAuth ' + token };
-    // TODO(ajwong): Update to new v2 API.
-    remoting.xhr.get('https://www.googleapis.com/userinfo/email',
-                     onResponse, '', headers);
+    if (token) {
+      var headers = { 'Authorization': 'OAuth ' + token };
+      // TODO(ajwong): Update to new v2 API.
+      remoting.xhr.get('https://www.googleapis.com/userinfo/email',
+                       onResponse, '', headers);
+    } else {
+      setEmail(null);
+    }
   };
 
   this.callWithToken(getEmailFromToken);

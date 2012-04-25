@@ -89,14 +89,19 @@ remoting.HostList.prototype.refresh = function(onDone) {
   var parseHostListResponse = function(xhr) {
     that.parseHostListResponse_(xhr, onDone);
   }
-  /** @param {string} token The OAuth2 token. */
+  /** @param {string?} token The OAuth2 token. */
   var getHosts = function(token) {
-    // TODO(simonmorris): Pass the access token in a header, not a URL
-    // parameter, when crbug.com/116574 has a better fix.
-    var params = { 'access_token': token };
-    remoting.xhr.get(
-        'https://www.googleapis.com/chromoting/v1/@me/hosts',
-        parseHostListResponse, params);
+    if (token) {
+      // TODO(simonmorris): Pass the access token in a header, not a URL
+      // parameter, when crbug.com/116574 has a better fix.
+      var params = { 'access_token': token };
+      remoting.xhr.get(
+          'https://www.googleapis.com/chromoting/v1/@me/hosts',
+          parseHostListResponse, params);
+    } else {
+      that.lastError_ = remoting.Error.AUTHENTICATION_FAILED;
+      onDone(false);
+    }
   };
   remoting.oauth2.callWithToken(getHosts);
 };
@@ -226,12 +231,17 @@ remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
  * @return {void} Nothing.
  */
 remoting.HostList.unregisterHostById = function(hostId) {
-  /** @param {string} token The OAuth2 token. */
+  /** @param {string?} token The OAuth2 token. */
   var deleteHost = function(token) {
-    var headers = { 'Authorization': 'OAuth ' + token };
-    remoting.xhr.remove(
-        'https://www.googleapis.com/chromoting/v1/@me/hosts/' + hostId,
-        function() {}, '', headers);
+    if (token) {
+      var headers = { 'Authorization': 'OAuth ' + token };
+      remoting.xhr.remove(
+          'https://www.googleapis.com/chromoting/v1/@me/hosts/' + hostId,
+          function() {}, '', headers);
+    } else {
+      console.error('Could not unregister host. Authentication failure.');
+      // TODO(jamiewalch): Add a callback to signify success/failure?
+    }
   }
   remoting.oauth2.callWithToken(deleteHost);
 };
@@ -251,23 +261,27 @@ remoting.HostList.prototype.renameHost = function(hostTableEntry) {
   window.localStorage.setItem(remoting.HostList.HOSTS_KEY,
                               JSON.stringify(this.hosts_));
 
-  /** @param {string} token */
+  /** @param {string?} token */
   var renameHost = function(token) {
-    var headers = {
-      'Authorization': 'OAuth ' + token,
-      'Content-type' : 'application/json; charset=UTF-8'
-    };
-    var newHostDetails = { data: {
-      hostId: hostTableEntry.host.hostId,
-      hostName: hostTableEntry.host.hostName,
-      publicKey: hostTableEntry.host.publicKey
-    } };
-    remoting.xhr.put(
-        'https://www.googleapis.com/chromoting/v1/@me/hosts/' +
-        hostTableEntry.host.hostId,
-        function(xhr) {},
-        JSON.stringify(newHostDetails),
-        headers);
+    if (token) {
+      var headers = {
+        'Authorization': 'OAuth ' + token,
+        'Content-type' : 'application/json; charset=UTF-8'
+      };
+      var newHostDetails = { data: {
+       hostId: hostTableEntry.host.hostId,
+       hostName: hostTableEntry.host.hostName,
+       publicKey: hostTableEntry.host.publicKey
+        } };
+      remoting.xhr.put(
+          'https://www.googleapis.com/chromoting/v1/@me/hosts/' +
+          hostTableEntry.host.hostId,
+          function(xhr) {},
+          JSON.stringify(newHostDetails),
+          headers);
+    } else {
+      console.error('Could not rename host. Authentication failure.');
+    }
   }
   remoting.oauth2.callWithToken(renameHost);
 };

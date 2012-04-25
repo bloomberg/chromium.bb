@@ -61,9 +61,14 @@ remoting.Wcs = function(wcsIqClient, token, onReady) {
    */
   this.pollForUpdatedToken_ = setInterval(
       function() {
-        /** @param {string} token */
+        /** @param {string?} token */
         var updateAccessToken = function(token) {
-          that.updateAccessToken_(token);
+          if (token) {
+            that.updateAccessToken_(token);
+          } else {
+            console.error('pollForUpdatedToken: Authentication failed.');
+            // No need to update the token. The hanging GET will fail anyway.
+          }
         }
         remoting.oauth2.callWithToken(updateAccessToken);
       },

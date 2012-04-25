@@ -41,9 +41,14 @@ remoting.WcsLoader.load = function(onReady) {
   if (!remoting.wcsLoader) {
     remoting.wcsLoader = new remoting.WcsLoader();
   }
-  /** @param {string} token The OAuth2 access token. */
+  /** @param {string?} token The OAuth2 access token. */
   var start = function(token) {
-    remoting.wcsLoader.start_(token, onReady);
+    if (token) {
+      remoting.wcsLoader.start_(token, onReady);
+    } else {
+      console.error('WcsLoader: Authentication failed.');
+      onReady(null);
+    }
   };
   remoting.oauth2.callWithToken(start);
 };
