@@ -16,7 +16,65 @@
 #include "net/proxy/proxy_service.h"
 #include "remoting/host/vlog_net_log.h"
 
+#if defined(OS_WIN)
+#include "net/proxy/proxy_config_service_win.h"
+#elif defined(OS_MACOSX)
+#include "net/proxy/proxy_config_service_mac.h"
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "net/proxy/proxy_config_service_linux.h"
+#endif
+
 namespace remoting {
+
+namespace {
+
+// Config getter that always returns direct settings.
+class ProxyConfigServiceDirect : public net::ProxyConfigService {
+ public:
+  // ProxyConfigService implementation:
+  virtual void AddObserver(Observer* observer) OVERRIDE {}
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
+  virtual ConfigAvailability GetLatestProxyConfig(
+      net::ProxyConfig* config) OVERRIDE {
+    *config = net::ProxyConfig::CreateDirect();
+    return CONFIG_VALID;
+  }
+};
+
+net::ProxyConfigService* CreateSystemProxyConfigService(
+    base::MessageLoopProxy* ui_message_loop_,
+    MessageLoop* io_message_loop,
+    MessageLoopForIO* file_message_loop) {
+  DCHECK(ui_message_loop_->BelongsToCurrentThread());
+
+#if defined(OS_WIN)
+  return new net::ProxyConfigServiceWin();
+#elif defined(OS_MACOSX)
+  return new net::ProxyConfigServiceMac(io_message_loop);
+#elif defined(OS_CHROMEOS)
+  NOTREACHED() << "ChromeOS is not a supported target for Chromoting host";
+  return NULL;
+#elif defined(OS_LINUX)
+  // TODO(sergeyu): Currently ProxyConfigServiceLinux depends on
+  // base::OneShotTimer that doesn't work properly on main NPAPI
+  // thread. Fix that and uncomment the code below.
+  //
+  // net::ProxyConfigServiceLinux* linux_config_service =
+  //     new net::ProxyConfigServiceLinux();
+  // linux_config_service->SetupAndFetchInitialConfig(
+  //     ui_message_loop_, io_message_loop->message_loop_proxy(),
+  //     file_message_loop);
+
+  // return linux_config_service;
+  return new ProxyConfigServiceDirect();
+#else
+  LOG(WARNING) << "Failed to choose a system proxy settings fetcher "
+                  "for this platform.";
+  return new ProxyConfigServiceDirect();
+#endif
+}
+
+}  // namespace
 
 // TODO(willchan): This is largely copied from service_url_request_context.cc,
 // which is in turn copied from some test code. Move it somewhere reusable.
@@ -55,12 +113,12 @@ URLRequestContext::~URLRequestContext() {
 }
 
 URLRequestContextGetter::URLRequestContextGetter(
+    base::MessageLoopProxy* ui_message_loop,
     MessageLoop* io_message_loop,
-    MessageLoop* file_message_loop)
+    MessageLoopForIO* file_message_loop)
     : io_message_loop_proxy_(io_message_loop->message_loop_proxy()) {
-  proxy_config_service_.reset(
-      net::ProxyService::CreateSystemProxyConfigService(
-          io_message_loop, file_message_loop));
+  proxy_config_service_.reset(CreateSystemProxyConfigService(
+      ui_message_loop, io_message_loop, file_message_loop));
 }
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {

@@ -37,13 +37,9 @@ bool ChromotingHostContext::Start() {
   if (!started)
     return false;
 
-  // net::ProxyService::CreateSystemProxyConfigService requires a UI thread.
-  // TODO(jamiewalch): Clean up this dependency.
-  MessageLoop* loop = MessageLoop::current();
-  if (loop && loop->type() == MessageLoop::TYPE_UI) {
-    url_request_context_getter_ = new URLRequestContextGetter(
-        io_thread_.message_loop(), file_thread_.message_loop());
-  }
+  url_request_context_getter_ = new URLRequestContextGetter(
+      ui_message_loop_, io_thread_.message_loop(),
+      static_cast<MessageLoopForIO*>(file_thread_.message_loop()));
   return true;
 }
 
