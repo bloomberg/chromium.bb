@@ -67,7 +67,7 @@
 									<key>GID</key>
 									<integer>80</integer>
 									<key>Path</key>
-									<string>Applications/Chrome Remote Desktop Host Uninstaller.app</string>
+									<string>Applications/@@HOST_UNINSTALLER_NAME@@.app</string>
 									<key>Path Type</key>
 									<integer>2</integer>
 									<key>Privileges</key>
@@ -471,25 +471,25 @@
 						<key>IFPkgDescriptionDescription</key>
 						<string></string>
 						<key>IFPkgDescriptionTitle</key>
-						<string>Chrome Remote Desktop Host Uninstaller</string>
+						<string>@@HOST_UNINSTALLER_NAME@@</string>
 						<key>IFPkgDescriptionVersion</key>
-						<string>1.4.6</string>
+						<string>@@VERSION_SHORT@@</string>
 					</dict>
 				</dict>
 				<key>Display Information</key>
 				<dict>
 					<key>CFBundleGetInfoString</key>
-					<string>Uninstaller 1.4.6 Copyrights © 2012 The Chromium Authors</string>
+					<string>@@HOST_UNINSTALLER_NAME@@ @@VERSION@@ Copyright © 2012 @@COPYRIGHT_BY@@ All rights reserved.</string>
 					<key>CFBundleIconFile</key>
 					<string></string>
 					<key>CFBundleIconFile Path Type</key>
 					<integer>1</integer>
 					<key>CFBundleIdentifier</key>
-					<string>org.chromium.pkg.ChromeRemoteDesktopHostUninstaller</string>
+					<string>@@BUNDLE_ID_HOST_UNINSTALLER@@</string>
 					<key>CFBundleName</key>
-					<string>Chrome Remote Desktop Host Uninstaller</string>
+					<string>@@HOST_UNINSTALLER_NAME@@</string>
 					<key>CFBundleShortVersionString</key>
-					<string>1.4.6</string>
+					<string>@@VERSION_SHORT@@</string>
 				</dict>
 				<key>Options</key>
 				<dict>
@@ -515,16 +515,16 @@
 				<key>Version</key>
 				<dict>
 					<key>IFMajorVersion</key>
-					<integer>1</integer>
+					<integer>@@VERSION_MAJOR@@</integer>
 					<key>IFMinorVersion</key>
-					<integer>0</integer>
+					<integer>@@VERSION_MINOR@@</integer>
 				</dict>
 			</dict>
 		</dict>
 		<key>IFPkgFlagPackageSelection</key>
 		<integer>0</integer>
 		<key>Name</key>
-		<string>Chrome Remote Desktop Host Uninstaller</string>
+		<string>@@HOST_UNINSTALLER_PKG@@</string>
 		<key>Status</key>
 		<integer>1</integer>
 		<key>Type</key>

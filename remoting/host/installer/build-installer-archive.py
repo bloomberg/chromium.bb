@@ -17,6 +17,7 @@ TODO(garykac) We should consider merging this with build-webapp.py.
 
 import os
 import shutil
+import subprocess
 import sys
 import zipfile
 
@@ -37,6 +38,22 @@ def cleanDir(dir):
   os.makedirs(dir, 0775)
 
 
+def buildDefDictionary(definitions):
+  """Builds the definition dictionary from the VARIABLE=value array.
+
+  Args:
+    defs: Array of variable definitions: 'VARIABLE=value'.
+
+    Returns:
+      Dictionary with the definitions.
+  """
+  defs = {}
+  for d in definitions:
+    (key, val) = d.split('=')
+    defs[key] = val
+  return defs
+
+
 def createZip(zip_path, directory):
   """Creates a zipfile at zip_path for the given directory.
 
@@ -54,7 +71,7 @@ def createZip(zip_path, directory):
   zip.close()
 
 
-def copyFileIntoArchive(src_file, out_dir, files_root, dst_file):
+def copyFileIntoArchive(src_file, out_dir, files_root, dst_file, defs):
   """Copies the src_file into the out_dir, preserving the directory structure.
 
   Args:
@@ -63,6 +80,7 @@ def copyFileIntoArchive(src_file, out_dir, files_root, dst_file):
     files_root: Path prefix which is stripped of dst_file before appending
                 it to the out_dir.
     dst_file: Relative path (and filename) where src_file should be copied.
+    defs: Dictionary of variable definitions.
   """
   root_len = len(files_root)
   local_file_path = dst_file[root_len:]
@@ -70,7 +88,35 @@ def copyFileIntoArchive(src_file, out_dir, files_root, dst_file):
   dst_dir = os.path.dirname(full_dst_file)
   if not os.path.exists(dst_dir):
     os.makedirs(dst_dir, 0775)
-  shutil.copy2(src_file, full_dst_file)
+
+  (base, ext) = os.path.splitext(src_file)
+  if ext == '.app':
+    shutil.copytree(src_file, full_dst_file)
+  elif ext in ['.sh', '.packproj', '.plist']:
+    copyFileWithDefs(src_file, full_dst_file, defs)
+  else:
+    shutil.copy2(src_file, full_dst_file)
+
+
+def copyFileWithDefs(src_file, dst_file, defs):
+  """Copies from src_file to dst_file, performing variable substitution.
+
+  Any @@variables@@ in the source are replaced with
+  file with the out_dir, preserving the directory structure.
+
+  Args:
+    src_file: Full or relative path to source file to copy.
+    dst_file: Relative path (and filename) where src_file should be copied.
+    defs: Dictionary of variable definitions.
+  """
+  data = open(src_file, 'r').read()
+  for key, val in defs.iteritems():
+    try:
+      data = data.replace('@@' + key + '@@', val)
+    except TypeError:
+      print repr(key), repr(val)
+  open(dst_file, 'w').write(data)
+  shutil.copystat(src_file, dst_file)
 
 
 def copyZipIntoArchive(out_dir, files_root, zip_file):
@@ -82,32 +128,28 @@ def copyZipIntoArchive(out_dir, files_root, zip_file):
                 it to the out_dir.
     zip_file: Relative path (and filename) to the zip file.
   """
+  base_zip_name = os.path.basename(zip_file)
+
+  # We don't use the 'zipfile' module here because it doesn't restore all the
+  # file permissions correctly. We use the 'unzip' command manually.
+  old_dir = os.getcwd();
+  os.chdir(os.path.dirname(zip_file))
+  subprocess.call(['unzip', '-qq', '-o', base_zip_name])
+  os.chdir(old_dir)
+
   # Unzip into correct dir in out_dir.
-  zip_archive = zipfile.ZipFile(zip_file, 'r')
   root_len = len(files_root)
   relative_zip_path = zip_file[root_len:]
   out_zip_path = os.path.join(out_dir, relative_zip_path)
   out_zip_dir = os.path.dirname(out_zip_path)
-  if not os.path.exists(out_zip_dir):
-    os.makedirs(out_zip_dir, 0775)
 
-  # Ideally, we'd simply do:
-  #  zip_archive.extractall(out_zip_dir)
-  # but http://bugs.python.org/issue4710 bites us because the some 'bots (like
-  # mac_rel) are still running Python 2.6.
-  # See http://stackoverflow.com/questions/639962/unzipping-directory-structure-with-python
-  # for workarounds.
-  # TODO(garykac): Remove this once all bots are > 2.6.
-  for f in zip_archive.namelist():
-    if f.endswith('/'):
-      if not os.path.exists(f):
-        os.makedirs(os.path.join(out_zip_dir, f))
-    else:
-      zip_archive.extract(f, out_zip_dir)
+  (src_dir, ignore1) = os.path.splitext(zip_file)
+  (base_dir_name, ignore2) = os.path.splitext(base_zip_name)
+  shutil.copytree(src_dir, os.path.join(out_zip_dir, base_dir_name))
 
 
 def buildHostArchive(temp_dir, zip_path, source_files_root, source_files,
-                     gen_files, gen_files_dst):
+                     gen_files, gen_files_dst, defs):
   """Builds a zip archive with the files needed to build the installer.
 
   Args:
@@ -119,6 +161,7 @@ def buildHostArchive(temp_dir, zip_path, source_files_root, source_files,
     gen_files: Full path to binaries to add to archive.
     gen_files_dst: Relative path of where to add binary files in archive.
                    This array needs to parallel |binaries_src|.
+    defs: Dictionary of variable definitions.
   """
   cleanDir(temp_dir)
 
@@ -128,13 +171,17 @@ def buildHostArchive(temp_dir, zip_path, source_files_root, source_files,
     if ext == '.zip':
       copyZipIntoArchive(temp_dir, source_files_root, file)
     else:
-      copyFileIntoArchive(file, temp_dir, source_files_root, file)
+      copyFileIntoArchive(file, temp_dir, source_files_root, file, defs)
 
   for bs, bd in zip(gen_files, gen_files_dst):
-    copyFileIntoArchive(bs, temp_dir, '', bd)
+    copyFileIntoArchive(bs, temp_dir, '', bd, {})
 
   createZip(zip_path, temp_dir)
 
+
+def error(msg):
+  sys.stderr.write('ERROR: %s' % msg)
+  sys.exit(1)
 
 def usage():
   """Display basic usage information."""
@@ -142,14 +189,15 @@ def usage():
          '  <temp-dir> <zip-path> <files-root-dir>\n'
          '  --source-files <list of source files...>\n'
          '  --generated-files <list of generated target files...>\n'
-         '  --generated-files-dst <dst for each generated file...>'
+         '  --generated-files-dst <dst for each generated file...>\n'
+         '  --defs <list of VARIABLE=value definitions...>'
          ) % sys.argv[0]
 
 
 def main():
   if len(sys.argv) < 3:
     usage()
-    return 1
+    error('Too few arguments')
 
   temp_dir = sys.argv[1]
   zip_path = sys.argv[2]
@@ -159,6 +207,7 @@ def main():
   source_files = []
   generated_files = []
   generated_files_dst = []
+  definitions = []
   for arg in sys.argv[4:]:
     if arg == '--source-files':
       arg_mode = 'files'
@@ -166,6 +215,8 @@ def main():
       arg_mode = 'gen-src'
     elif arg == '--generated-files-dst':
       arg_mode = 'gen-dst'
+    elif arg == '--defs':
+      arg_mode = 'defs'
 
     elif arg_mode == 'files':
       source_files.append(arg)
@@ -173,29 +224,29 @@ def main():
       generated_files.append(arg)
     elif arg_mode == 'gen-dst':
       generated_files_dst.append(arg)
+    elif arg_mode == 'defs':
+      definitions.append(arg)
     else:
-      print "ERROR: Expected --source-files"
       usage()
-      return 1
+      error('Expected --source-files')
 
   # Make sure at least one file was specified.
   if len(source_files) == 0 and len(generated_files) == 0:
-    print "ERROR: At least one input file must be specified."
-    return 1
+    error('At least one input file must be specified.')
 
   # Ensure that source_files_root ends with a directory separator.
   if source_files_root[-1:] != os.sep:
     source_files_root += os.sep
 
   # Verify that the 2 generated_files arrays have the same number of elements.
-  if len(generated_files) < len(generated_files_dst):
-    print "ERROR: len(--generated-files) != len(--generated-files-dst)"
-    return 1
-  while len(generated_files) > len(generated_files_dst):
-    generated_files_dst.append('')
+  if len(generated_files) != len(generated_files_dst):
+    error('len(--generated-files) != len(--generated-files-dst)')
+
+  defs = buildDefDictionary(definitions)
 
   result = buildHostArchive(temp_dir, zip_path, source_files_root,
-                            source_files, generated_files, generated_files_dst)
+                            source_files, generated_files, generated_files_dst,
+                            defs)
 
   return 0
 

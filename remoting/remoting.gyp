@@ -170,13 +170,15 @@
     ],
     'remoting_host_installer_mac_root': 'host/installer/mac/',
     'remoting_host_installer_mac_files': [
-      'host/installer/mac/ChromeRemoteDesktop.packproj',
-      'host/installer/mac/Chromoting.packproj',
+      'host/installer/mac/do_signing.sh',
+      'host/installer/mac/ChromotingHost.packproj',
+      'host/installer/mac/ChromotingHostService.packproj',
+      'host/installer/mac/ChromotingHostUninstaller.packproj',
       'host/installer/mac/LaunchAgents/org.chromium.chromoting.plist',
-      'host/installer/mac/PrivilegedHelperTools/org.chromium.chromoting.json',
       'host/installer/mac/PrivilegedHelperTools/org.chromium.chromoting.me2me.sh',
       'host/installer/mac/Scripts/keystone_install.sh',
       'host/installer/mac/Scripts/remoting_postflight.sh',
+      'host/installer/mac/Scripts/remoting_preflight.sh',
       'host/installer/mac/Keystone/GoogleSoftwareUpdate.pkg.zip',
     ],
   },
@@ -1170,9 +1172,29 @@
         'host/installer/build-installer-archive.py',
       ],
       'conditions': [
+        ['branding == "Chrome"', {
+          'variables': {
+            'copyright_by': 'Google Inc.',
+            'host_name': 'Chrome Remote Desktop Host',
+            'host_service_name': 'Chrome Remote Desktop Host Service',
+            'host_uninstaller_name': 'Chrome Remote Desktop Host Uninstaller',
+            'bundle_prefix': 'com.google.pkg',
+          },
+        }, { # else branding!="Chrome"
+          'variables': {
+            'copyright_by': 'The Chromium Authors.',
+            'host_name': 'Chromoting Host',
+            'host_service_name': 'Chromoting Host Service',
+            'host_uninstaller_name': 'Chromoting Host Uninstaller',
+            'bundle_prefix': 'org.chromium.pkg',
+          },
+        }],
         ['OS=="mac"', {
           'sources': [
             '<@(remoting_host_installer_mac_files)',
+          ],
+          'dependencies': [
+            'remoting_host_uninstaller',
           ],
         }],  # OS=="mac"
         ['OS=="win"', {
@@ -1190,27 +1212,52 @@
           'generated_files_dst': [],
           'source_files_root': '',
           'source_files': [],
+          'defs': [],
           'conditions': [
             ['OS=="mac"', {
               'generated_files': [
                 '<(PRODUCT_DIR)/remoting_me2me_host',
+                '<(PRODUCT_DIR)/remoting_host_uninstaller.app',
               ],
               'generated_files_dst': [
                 'PrivilegedHelperTools/org.chromium.chromoting.me2me_host',
+                'Applications/<(host_uninstaller_name).app',
               ],
               'source_files_root': '<(remoting_host_installer_mac_root)',
               'source_files': [
                 '<@(remoting_host_installer_mac_files)',
+              ],
+              'defs': [
+                'VERSION=<(version_full)',
+                'VERSION_SHORT=<(version_short)',
+                'VERSION_MAJOR=<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@")',
+                'VERSION_MINOR=<!(python <(version_py_path) -f <(version_path) -t "@MINOR@")',
+                'COPYRIGHT_BY=<(copyright_by)',
+                'HOST_NAME=<(host_name)',
+                'HOST_SERVICE_NAME=<(host_service_name)',
+                'HOST_UNINSTALLER_NAME=<(host_uninstaller_name)',
+                'HOST_PKG=<!(echo <(host_name) | sed "s/ //g")',
+                'HOST_SERVICE_PKG=<!(echo <(host_service_name) | sed "s/ //g")',
+                'HOST_UNINSTALLER_PKG=<!(echo <(host_uninstaller_name) | sed "s/ //g")',
+                'BUNDLE_ID_HOST=<(bundle_prefix).<(host_name)',
+                'BUNDLE_ID_HOST_SERVICE=<(bundle_prefix).<(host_service_name)',
+                'BUNDLE_ID_HOST_UNINSTALLER=<(bundle_prefix).<(host_uninstaller_name)',
               ],
             }],  # OS=="mac"
             ['OS=="win"', {
               'generated_files': [
                 '<(PRODUCT_DIR)/remoting_me2me_host.exe',
               ],
+              'generated_files_dst': [
+                'remoting_me2me_host.exe',
+              ],
             }],  # OS=="win"
             ['OS=="linux"', {
               'generated_files': [
                 '<(PRODUCT_DIR)/remoting_me2me_host',
+              ],
+              'generated_files_dst': [
+                'remoting_me2me_host',
               ],
             }],  # OS=="linux"
           ],  # conditions
@@ -1233,6 +1280,8 @@
             '<@(_generated_files)',
             '--generated-files-dst',
             '<@(_generated_files_dst)',
+            '--defs',
+            '<@(_defs)',
           ],
         },
       ],  # actions
