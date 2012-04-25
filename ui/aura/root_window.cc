@@ -166,6 +166,10 @@ void RootWindow::SetHostBounds(const gfx::Rect& bounds) {
   synthesize_mouse_move_ = false;
 }
 
+gfx::Point RootWindow::GetHostOrigin() const {
+  return host_->GetBounds().origin();
+}
+
 void RootWindow::SetCursor(gfx::NativeCursor cursor) {
   last_cursor_ = cursor;
   // A lot of code seems to depend on NULL cursors actually showing an arrow,

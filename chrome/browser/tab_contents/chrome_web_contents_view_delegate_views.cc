@@ -133,8 +133,8 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
   gfx::Point screen_point(params.x, params.y);
 
 #if defined(USE_AURA)
-  gfx::Point view_origin =
-      web_contents_->GetView()->GetNativeView()->GetScreenBounds().origin();
+  gfx::Point view_origin = web_contents_->GetView()->GetNativeView()->
+      GetBoundsInRootWindow().origin();
   screen_point.Offset(view_origin.x(), view_origin.y());
 #else
   POINT temp = screen_point.ToPOINT();

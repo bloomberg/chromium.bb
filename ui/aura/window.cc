@@ -199,7 +199,7 @@ bool Window::IsVisible() const {
   return visible_ && layer_ && layer_->IsDrawn();
 }
 
-gfx::Rect Window::GetScreenBounds() const {
+gfx::Rect Window::GetBoundsInRootWindow() const {
   // TODO(beng): There may be a better way to handle this, and the existing code
   //             is likely wrong anyway in a multi-monitor world, but this will
   //             do for now.

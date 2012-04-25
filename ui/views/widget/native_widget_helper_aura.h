@@ -30,7 +30,12 @@ class VIEWS_EXPORT NativeWidgetHelperAura {
   // If this NativeWidgetAura has its own RootWindow, sets the position at the
   // |root_window_|, and returns modified bounds to set the origin to
   // zero. Otherwise, pass through in_bounds.
-  virtual gfx::Rect ModifyAndSetBounds(gfx::Rect bounds) = 0;
+  virtual gfx::Rect ModifyAndSetBounds(const gfx::Rect& bounds) = 0;
+
+  // Takes bounds relative to the RootWindow and changes them to be relative to
+  // the screen.
+  virtual gfx::Rect ChangeRootWindowBoundsToScreenBounds(
+      const gfx::Rect& bounds) = 0;
 };
 
 }  // namespace views

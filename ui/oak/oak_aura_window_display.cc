@@ -25,7 +25,7 @@ ROW_TRANSPARENT,
 ROW_LAYER,
 ROW_VISIBLE,
 ROW_BOUNDS,
-ROW_SCREENBOUNDS,
+ROW_BOUNDSINROOTWINDOW,
 ROW_TRANSFORM,
 ROW_PARENT,
 ROW_ROOTWINDOW,
@@ -121,8 +121,9 @@ string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
       return PropertyWithBool("Visible: ", window_->IsVisible());
     case ROW_BOUNDS:
       return PropertyWithBounds("Bounds: ", window_->bounds());
-    case ROW_SCREENBOUNDS:
-      return PropertyWithBounds("Screen Bounds: ", window_->GetScreenBounds());
+    case ROW_BOUNDSINROOTWINDOW:
+      return PropertyWithBounds("Bounds in Root Window: ",
+                                window_->GetBoundsInRootWindow());
     case ROW_TRANSFORM:
       return ASCIIToUTF16("Transform:");
     case ROW_PARENT:

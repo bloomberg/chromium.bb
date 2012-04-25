@@ -32,7 +32,9 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
   virtual void PreInitialize(const Widget::InitParams& params) OVERRIDE;
   virtual void ShowRootWindow() OVERRIDE;
   virtual aura::RootWindow* GetRootWindow() OVERRIDE;
-  virtual gfx::Rect ModifyAndSetBounds(gfx::Rect bounds) OVERRIDE;
+  virtual gfx::Rect ModifyAndSetBounds(const gfx::Rect& bounds) OVERRIDE;
+  virtual gfx::Rect ChangeRootWindowBoundsToScreenBounds(
+      const gfx::Rect& bounds) OVERRIDE;
 
   // Overridden from aura::RootWindowObserver:
   virtual void OnRootWindowResized(const aura::RootWindow* root,

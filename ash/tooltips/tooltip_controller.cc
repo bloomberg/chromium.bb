@@ -405,7 +405,8 @@ void TooltipController::UpdateIfRequired() {
     } else {
       string16 tooltip_text(tooltip_text_);
       gfx::Point widget_loc = curr_mouse_loc_;
-      widget_loc = widget_loc.Add(tooltip_window_->GetScreenBounds().origin());
+      widget_loc = widget_loc.Add(
+          tooltip_window_->GetBoundsInRootWindow().origin());
       tooltip_->SetText(tooltip_text, widget_loc);
       tooltip_->Show();
     }

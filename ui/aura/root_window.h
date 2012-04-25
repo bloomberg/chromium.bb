@@ -107,6 +107,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Sets the bounds of the host window.
   void SetHostBounds(const gfx::Rect& size);
 
+  // Returns where the RootWindow is on screen.
+  gfx::Point GetHostOrigin() const;
+
   // Sets the currently-displayed cursor. If the cursor was previously hidden
   // via ShowCursor(false), it will remain hidden until ShowCursor(true) is
   // called, at which point the cursor that was last set via SetCursor() will be

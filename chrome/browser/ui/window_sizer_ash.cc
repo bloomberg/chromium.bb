@@ -84,7 +84,7 @@ bool WindowSizer::GetBoundsIgnoringPreviousState(
     if (top_window == NULL) {
       GetDefaultWindowBounds(bounds);
     } else {
-      *bounds = top_window->GetScreenBounds();
+      *bounds = top_window->GetBoundsInRootWindow();
     }
     return true;
     // If both fail we will continue the default path.

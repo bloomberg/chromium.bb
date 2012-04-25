@@ -357,7 +357,7 @@ bool RenderWidgetHostViewAura::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
-  return window_->GetScreenBounds();
+  return window_->GetBoundsInRootWindow();
 }
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {

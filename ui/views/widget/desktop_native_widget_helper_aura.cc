@@ -49,14 +49,24 @@ aura::RootWindow* DesktopNativeWidgetHelperAura::GetRootWindow() {
   return root_window_.get();
 }
 
-gfx::Rect DesktopNativeWidgetHelperAura::ModifyAndSetBounds(gfx::Rect bounds) {
-  if (root_window_.get() && !bounds.IsEmpty()) {
-    root_window_->SetHostBounds(bounds);
-    bounds.set_x(0);
-    bounds.set_y(0);
+gfx::Rect DesktopNativeWidgetHelperAura::ModifyAndSetBounds(
+    const gfx::Rect& bounds) {
+  gfx::Rect out_bounds = bounds;
+  if (root_window_.get() && !out_bounds.IsEmpty()) {
+    root_window_->SetHostBounds(out_bounds);
+    out_bounds.set_x(0);
+    out_bounds.set_y(0);
   }
 
-  return bounds;
+  return out_bounds;
+}
+
+gfx::Rect DesktopNativeWidgetHelperAura::ChangeRootWindowBoundsToScreenBounds(
+    const gfx::Rect& bounds) {
+  gfx::Rect out_bounds = bounds;
+  if (root_window_.get())
+    out_bounds.Offset(root_window_->GetHostOrigin());
+  return out_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
