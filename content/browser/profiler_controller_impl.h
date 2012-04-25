@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_PROFILER_CONTROLLER_IMPL_H_
 
 #include "base/memory/singleton.h"
+#include "base/process.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/profiler_controller.h"
 #include "content/public/common/process_type.h"
@@ -34,7 +35,7 @@ class ProfilerControllerImpl : public ProfilerController {
   void OnPendingProcesses(int sequence_number, int pending_processes, bool end);
 
   // Send the |profiler_data| back to the |subscriber_|.
-  // This is called on the UI thread.
+  // This can be called from any thread.
   void OnProfilerDataCollected(
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data,

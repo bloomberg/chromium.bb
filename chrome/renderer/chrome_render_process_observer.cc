@@ -214,8 +214,6 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeViewMsg_ClearCache, OnClearCache)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetFieldTrialGroup, OnSetFieldTrialGroup)
 #if defined(USE_TCMALLOC)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_GetRendererTcmalloc,
-                        OnGetRendererTcmalloc)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetTcmallocHeapProfiling,
                         OnSetTcmallocHeapProfiling)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_WriteTcmallocHeapProfile,
@@ -264,14 +262,6 @@ void ChromeRenderProcessObserver::OnGetCacheResourceStats() {
 }
 
 #if defined(USE_TCMALLOC)
-void ChromeRenderProcessObserver::OnGetRendererTcmalloc() {
-  std::string result;
-  char buffer[1024 * 32];
-  MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
-  result.append(buffer);
-  RenderThread::Get()->Send(new ChromeViewHostMsg_RendererTcmalloc(result));
-}
-
 void ChromeRenderProcessObserver::OnSetTcmallocHeapProfiling(
     bool profiling, const std::string& filename_prefix) {
 #if !defined(OS_WIN)

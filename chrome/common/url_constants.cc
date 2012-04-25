@@ -174,7 +174,6 @@ const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUISyncPromoHost[] = "signin";
 const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUITaskManagerHost[] = "tasks";
-const char kChromeUITCMallocHost[] = "tcmalloc";
 const char kChromeUITermsHost[] = "terms";
 const char kChromeUIThumbnailHost[] = "thumb";
 const char kChromeUITouchIconHost[] = "touch-icon";

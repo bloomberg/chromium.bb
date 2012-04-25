@@ -14,6 +14,7 @@
 #include "content/browser/net/view_http_cache_job_factory.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
+#include "content/browser/tcmalloc_internals_request_job.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
@@ -109,6 +110,15 @@ class DeveloperProtocolHandler
       return ViewBlobInternalsJobFactory::CreateJobForRequest(
           request, blob_storage_controller_);
     }
+
+#if defined(USE_TCMALLOC)
+    // Next check for chrome://tcmalloc/, which uses its own job type.
+    if (request->url().SchemeIs(chrome::kChromeUIScheme) &&
+        request->url().host() == chrome::kChromeUITcmallocHost) {
+      return new TcmallocInternalsRequestJob(request);
+    }
+#endif
+
     return NULL;
   }
 

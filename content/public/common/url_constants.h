@@ -37,12 +37,15 @@ CONTENT_EXPORT extern const char kViewSourceScheme[];
 // Used to separate a standard scheme and the hostname: "://".
 CONTENT_EXPORT extern const char kStandardSchemeSeparator[];
 
-// About URLs (including schemes).
+// Hosts for about URLs.
 CONTENT_EXPORT extern const char kAboutBlankURL[];
 CONTENT_EXPORT extern const char kChromeUIAppCacheInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBlobInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBrowserCrashHost[];
 CONTENT_EXPORT extern const char kChromeUINetworkViewCacheHost[];
+CONTENT_EXPORT extern const char kChromeUITcmallocHost[];
+
+// Full about URLs (including schemes).
 CONTENT_EXPORT extern const char kChromeUICrashURL[];
 CONTENT_EXPORT extern const char kChromeUIGpuCleanURL[];
 CONTENT_EXPORT extern const char kChromeUIGpuCrashURL[];

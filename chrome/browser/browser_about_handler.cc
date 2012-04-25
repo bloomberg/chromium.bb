@@ -15,10 +15,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 
-#if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
-#endif
-
 namespace {
 
 // Add paths here to be included in chrome://chrome-urls (about:about).
@@ -58,7 +54,6 @@ const char* const kChromePaths[] = {
   chrome::kChromeUIStatsHost,
   chrome::kChromeUISyncInternalsHost,
   chrome::kChromeUITaskManagerHost,
-  chrome::kChromeUITCMallocHost,
   chrome::kChromeUITermsHost,
   chrome::kChromeUITracingHost,
   chrome::kChromeUIVersionHost,
@@ -170,19 +165,3 @@ std::vector<std::string> ChromePaths() {
   return paths;
 }
 
-#if defined(USE_TCMALLOC)
-// static
-AboutTcmallocOutputs* AboutTcmallocOutputs::GetInstance() {
-  return Singleton<AboutTcmallocOutputs>::get();
-}
-
-AboutTcmallocOutputs::AboutTcmallocOutputs() {}
-
-AboutTcmallocOutputs::~AboutTcmallocOutputs() {}
-
-// Glue between the callback task and the method in the singleton.
-void AboutTcmallocRendererCallback(base::ProcessId pid,
-                                   const std::string& output) {
-  AboutTcmallocOutputs::GetInstance()->RendererCallback(pid, output);
-}
-#endif

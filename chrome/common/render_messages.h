@@ -247,8 +247,6 @@ IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetFieldTrialGroup,
                      std::string /* group name that was assigned. */)
 
 #if defined(USE_TCMALLOC)
-// Asks the renderer to send back tcmalloc stats.
-IPC_MESSAGE_CONTROL0(ChromeViewMsg_GetRendererTcmalloc)
 // Asks the renderer to enable/disable Tcmalloc heap profiling.
 // Note: filename_prefix arg is effectively ignored since the render process
 // will be unable to write files to disk. Instead use WriteTcmallocHeapProfile
@@ -509,9 +507,6 @@ IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_RendererHistograms,
                      std::vector<std::string>)
 
 #if defined USE_TCMALLOC
-// Send back tcmalloc stats output.
-IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_RendererTcmalloc,
-                     std::string  /* tcmalloc debug output */)
 // Send back tcmalloc profile to write to a file.
 IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK,
                      FilePath::StringType  /* filepath */,

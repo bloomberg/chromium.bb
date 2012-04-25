@@ -317,9 +317,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       url.host() == chrome::kChromeUIStatsHost ||
       url.host() == chrome::kChromeUITermsHost ||
       url.host() == chrome::kChromeUIVersionHost
-#if defined(USE_TCMALLOC)
-      || url.host() == chrome::kChromeUITCMallocHost
-#endif
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
       || url.host() == chrome::kChromeUILinuxProxyConfigHost
       || url.host() == chrome::kChromeUISandboxHost

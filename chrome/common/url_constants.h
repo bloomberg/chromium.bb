@@ -171,7 +171,6 @@ extern const char kChromeUISyncInternalsHost[];
 extern const char kChromeUISyncPromoHost[];
 extern const char kChromeUISyncResourcesHost[];
 extern const char kChromeUITaskManagerHost[];
-extern const char kChromeUITCMallocHost[];
 extern const char kChromeUITermsHost[];
 extern const char kChromeUIThumbnailHost[];
 extern const char kChromeUITouchIconHost[];

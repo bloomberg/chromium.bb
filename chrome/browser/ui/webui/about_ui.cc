@@ -92,10 +92,6 @@
 #include "base/string_split.h"
 #endif
 
-#if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
-#endif
-
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
@@ -788,51 +784,6 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
   DISALLOW_COPY_AND_ASSIGN(AboutDnsHandler);
 };
 
-#if defined(USE_TCMALLOC)
-std::string AboutTcmalloc() {
-  std::string data;
-  AboutTcmallocOutputsType* outputs =
-      AboutTcmallocOutputs::GetInstance()->outputs();
-
-  // Display any stats for which we sent off requests the last time.
-  AppendHeader(&data, 0, "About tcmalloc");
-  AppendBody(&data);
-  data.append("<p>Stats as of last page load;");
-  data.append("reload to get stats as of this page load.</p>\n");
-  data.append("<table width=\"100%\">\n");
-  for (AboutTcmallocOutputsType::const_iterator oit = outputs->begin();
-       oit != outputs->end();
-       oit++) {
-    data.append("<tr><td bgcolor=\"yellow\">");
-    data.append(oit->first);
-    data.append("</td></tr>\n");
-    data.append("<tr><td><pre>\n");
-    data.append(oit->second);
-    data.append("</pre></td></tr>\n");
-  }
-  data.append("</table>\n");
-  AppendFooter(&data);
-
-  // Reset our collector singleton.
-  outputs->clear();
-
-  // Populate the collector with stats from the local browser process
-  // and send off requests to all the renderer processes.
-  char buffer[1024 * 32];
-  MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
-  std::string browser("Browser");
-  AboutTcmallocOutputs::GetInstance()->SetOutput(browser, buffer);
-  content::RenderProcessHost::iterator
-      it(content::RenderProcessHost::AllHostsIterator());
-  while (!it.IsAtEnd()) {
-    it.GetCurrentValue()->Send(new ChromeViewMsg_GetRendererTcmalloc);
-    it.Advance();
-  }
-
-  return data;
-}
-#endif
-
 std::string AboutHistograms(const std::string& query) {
   TimeDelta wait_time = TimeDelta::FromMilliseconds(10000);
 
@@ -1462,10 +1413,6 @@ void AboutUIHTMLSource::StartDataRequest(const std::string& path,
 #endif
   } else if (host == chrome::kChromeUIStatsHost) {
     response = AboutStats(path);
-#if defined(USE_TCMALLOC)
-  } else if (host == chrome::kChromeUITCMallocHost) {
-    response = AboutTcmalloc();
-#endif
   } else if (host == chrome::kChromeUITermsHost) {
 #if defined(OS_CHROMEOS)
     ChromeOSTermsHandler::Start(this, path, request_id);

@@ -100,7 +100,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnExtensionGenerateUniqueID)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_UnloadAck, OnExtensionUnloadAck)
 #if defined(USE_TCMALLOC)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_WriteTcmallocHeapProfile_ACK,
                         OnWriteTcmallocHeapProfile)
 #endif
@@ -138,9 +137,6 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   switch (message.type()) {
     case ChromeViewHostMsg_ResourceTypeStats::ID:
-#if defined(USE_TCMALLOC)
-    case ChromeViewHostMsg_RendererTcmalloc::ID:
-#endif
     case ExtensionHostMsg_AddListener::ID:
     case ExtensionHostMsg_RemoveListener::ID:
     case ExtensionHostMsg_AddLazyListener::ID:
@@ -420,11 +416,6 @@ void ChromeRenderMessageFilter::OnExtensionGenerateUniqueID(int* unique_id) {
 }
 
 #if defined(USE_TCMALLOC)
-void ChromeRenderMessageFilter::OnRendererTcmalloc(const std::string& output) {
-  base::ProcessId pid = base::GetProcId(peer_handle());
-  AboutTcmallocRendererCallback(pid, output);
-}
-
 void ChromeRenderMessageFilter::OnWriteTcmallocHeapProfile(
     const FilePath::StringType& filepath,
     const std::string& output) {

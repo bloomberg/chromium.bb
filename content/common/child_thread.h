@@ -115,6 +115,10 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
+#if defined(USE_TCMALLOC)
+  void OnGetTcmallocStats();
+#endif
+
   std::string channel_name_;
   scoped_ptr<IPC::SyncChannel> channel_;
 

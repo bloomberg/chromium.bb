@@ -35,6 +35,10 @@ class ProfilerMessageFilter : public BrowserMessageFilter {
       int sequence_number,
       const tracked_objects::ProcessDataSnapshot& profiler_data);
 
+#if defined(USE_TCMALLOC)
+  void OnTcmallocStats(const std::string& output);
+#endif
+
   ProcessType process_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilerMessageFilter);

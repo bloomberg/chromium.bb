@@ -57,6 +57,10 @@ class GpuChildThread : public ChildThread {
   void OnCrash();
   void OnHang();
 
+#if defined(USE_TCMALLOC)
+  void OnGetGpuTcmalloc();
+#endif
+
 #if defined(OS_WIN)
   static void CollectDxDiagnostics(GpuChildThread* thread);
   static void SetDxDiagnostics(GpuChildThread* thread,

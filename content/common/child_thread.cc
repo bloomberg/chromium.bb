@@ -27,6 +27,10 @@
 #include "content/common/handle_enumerator_win.h"
 #endif
 
+#if defined(USE_TCMALLOC)
+#include "third_party/tcmalloc/chromium/src/gperftools/malloc_extension.h"
+#endif
+
 using tracked_objects::ThreadData;
 
 ChildThread::ChildThread() {
@@ -191,6 +195,9 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ChildProcessMsg_GetChildProfilerData,
                         OnGetChildProfilerData)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_DumpHandles, OnDumpHandles)
+#if defined(USE_TCMALLOC)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_GetTcmallocStats, OnGetTcmallocStats)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -245,6 +252,16 @@ void ChildThread::OnDumpHandles() {
 
   NOTIMPLEMENTED();
 }
+
+#if defined(USE_TCMALLOC)
+void ChildThread::OnGetTcmallocStats() {
+  std::string result;
+  char buffer[1024 * 32];
+  MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
+  result.append(buffer);
+  Send(new ChildProcessHostMsg_TcmallocStats(result));
+}
+#endif
 
 ChildThread* ChildThread::current() {
   return ChildProcess::current()->main_thread();

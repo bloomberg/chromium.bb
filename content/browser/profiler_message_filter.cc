@@ -5,7 +5,9 @@
 #include "content/browser/profiler_message_filter.h"
 
 #include "base/tracked_objects.h"
+#include "base/process_util.h"
 #include "content/browser/profiler_controller_impl.h"
+#include "content/browser/tcmalloc_internals_request_job.h"
 #include "content/common/child_process_messages.h"
 
 namespace content {
@@ -31,6 +33,9 @@ bool ProfilerMessageFilter::OnMessageReceived(const IPC::Message& message,
   IPC_BEGIN_MESSAGE_MAP_EX(ProfilerMessageFilter, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ChildProfilerData,
                         OnChildProfilerData)
+#if defined(USE_TCMALLOC)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_TcmallocStats, OnTcmallocStats)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -42,5 +47,12 @@ void ProfilerMessageFilter::OnChildProfilerData(
   ProfilerControllerImpl::GetInstance()->OnProfilerDataCollected(
       sequence_number, profiler_data, process_type_);
 }
+
+#if defined(USE_TCMALLOC)
+void ProfilerMessageFilter::OnTcmallocStats(const std::string& output) {
+  AboutTcmallocOutputs::GetInstance()->OnStatsForChildProcess(
+        base::GetProcId(peer_handle()), process_type_, output);
+}
+#endif
 
 }

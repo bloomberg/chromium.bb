@@ -634,6 +634,8 @@
     'browser/ssl/ssl_request_info.h',
     'browser/system_message_window_win.cc',
     'browser/system_message_window_win.h',
+    'browser/tcmalloc_internals_request_job.cc',
+    'browser/tcmalloc_internals_request_job.h',
     'browser/web_contents/debug_urls.cc',
     'browser/web_contents/debug_urls.h',
     'browser/web_contents/drag_utils_gtk.cc',

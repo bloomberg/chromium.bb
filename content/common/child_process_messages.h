@@ -92,6 +92,11 @@ IPC_MESSAGE_CONTROL1(ChildProcessMsg_GetChildProfilerData,
 // Sent to child processes to dump their handle table.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_DumpHandles)
 
+#if defined(USE_TCMALLOC)
+// Sent to child process to request tcmalloc stats.
+IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTcmallocStats)
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the child process to the browser.
 
@@ -138,3 +143,9 @@ IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ReleaseCachedFonts)
 IPC_SYNC_MESSAGE_CONTROL1_1(ChildProcessHostMsg_SyncAllocateSharedMemory,
                             uint32 /* buffer size */,
                             base::SharedMemoryHandle)
+
+#if defined(USE_TCMALLOC)
+// Reply to ChildProcessMsg_GetTcmallocStats.
+IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TcmallocStats,
+                     std::string /* output */)
+#endif
