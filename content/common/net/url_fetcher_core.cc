@@ -562,6 +562,11 @@ void URLFetcherCore::OnResponseStarted(net::URLRequest* request) {
 
 void URLFetcherCore::CompleteAddingUploadDataChunk(
     const std::string& content, bool is_last_chunk) {
+  if (was_cancelled_) {
+    // Since CompleteAddingUploadDataChunk() is posted as a *delayed* task, it
+    // may run after the URLFetcher was already stopped.
+    return;
+  }
   DCHECK(is_chunked_upload_);
   DCHECK(request_.get());
   DCHECK(!content.empty());
