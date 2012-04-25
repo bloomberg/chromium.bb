@@ -25,7 +25,7 @@ class ChromeosHTMLTerminalTest(pyauto.PyUITest):
     """Basic installation test for HTML Terminal on ChromeOS."""
     crx_file_path = os.path.abspath(
         os.path.join(self.DataDir(), 'pyauto_private', 'apps',
-                     'hterm-dev-0.7.6.3.crx'))
+                     'SecureShell-dev-0.7.9.3.crx'))
     ext_id = self.InstallExtension(crx_file_path)
     self.assertTrue(ext_id, 'Failed to install extension.')
     extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
