@@ -57,8 +57,11 @@ void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
       download_util::NotifySystemOfDownloadComplete(download->GetFullPath());
       // fall through
     case DownloadItem::IN_PROGRESS:
-    case DownloadItem::INTERRUPTED:
     case DownloadItem::CANCELLED:
+      [item_controller_ setStateFromDownload:download_model_.get()];
+      break;
+    case DownloadItem::INTERRUPTED:
+      [item_controller_ updateToolTip];
       [item_controller_ setStateFromDownload:download_model_.get()];
       break;
     default:

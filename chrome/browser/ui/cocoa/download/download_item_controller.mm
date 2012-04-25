@@ -245,9 +245,9 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (void)updateToolTip {
-  string16 elidedFilename = ui::ElideFilename(
-      [self download]->GetFileNameToReportUser(), *font_, kToolTipMaxWidth);
-  [progressView_ setToolTip:base::SysUTF16ToNSString(elidedFilename)];
+  string16 tooltip_text =
+      bridge_->download_model()->GetTooltipText(*font_, kToolTipMaxWidth);
+  [progressView_ setToolTip:base::SysUTF16ToNSString(tooltip_text)];
 }
 
 - (void)clearDangerousMode {

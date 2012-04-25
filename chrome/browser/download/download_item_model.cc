@@ -150,6 +150,20 @@ string16 DownloadItemModel::GetStatusText() {
   return status_text;
 }
 
+string16 DownloadItemModel::GetTooltipText(const gfx::Font& font,
+                                           int max_width) const {
+  string16 tooltip = ui::ElideFilename(
+      download_->GetFileNameToReportUser(), font, max_width);
+  content::DownloadInterruptReason reason = download_->GetLastReason();
+  if (download_->GetState() == DownloadItem::INTERRUPTED &&
+      reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
+    tooltip += ASCIIToUTF16("\n");
+    tooltip += ui::ElideText(InterruptReasonStatusMessage(reason),
+                             font, max_width, ui::ELIDE_AT_END);
+  }
+  return tooltip;
+}
+
 int DownloadItemModel::PercentComplete() const {
 #if defined(OS_CHROMEOS)
   // For GData uploads, progress is based on the number of bytes

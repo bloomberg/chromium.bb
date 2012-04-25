@@ -49,6 +49,7 @@ static const int kHorizontalTextPadding = 2;  // Pixels
 static const int kVerticalPadding = 3;        // Pixels
 static const int kVerticalTextSpacer = 2;     // Pixels
 static const int kVerticalTextPadding = 2;    // Pixels
+static const int kTooltipMaxWidth = 800;      // Pixels
 
 // We add some padding before the left image so that the progress animation icon
 // hides the corners of the left image.
@@ -184,9 +185,6 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
 
   LoadIcon();
 
-  // Initial tooltip value.
-  tooltip_text_ = download_->GetFileNameToReportUser().LossyDisplayName();
-
   font_ = rb.GetFont(ui::ResourceBundle::BaseFont);
   box_height_ = std::max<int>(2 * kVerticalPadding + font_.GetHeight() +
                                   kVerticalTextPadding + font_.GetHeight(),
@@ -203,6 +201,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   drop_hover_animation_.reset(new ui::SlideAnimation(this));
 
   UpdateDropDownButtonPosition();
+
+  tooltip_text_ = model_->GetTooltipText(font_, kTooltipMaxWidth);
 
   if (model_->IsDangerous())
     ShowWarningDialog();
@@ -253,20 +253,6 @@ void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
 // to reflect our current bytes downloaded, time remaining.
 void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   DCHECK(download == download_);
-
-  string16 old_tip = tooltip_text_;
-  content::DownloadInterruptReason reason = download_->GetLastReason();
-
-  if ((download_->GetState() == DownloadItem::INTERRUPTED) &&
-      (reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED)) {
-    // Use two lines: The file name, and the message.
-    tooltip_text_ = download_->GetFileNameToReportUser().LossyDisplayName();
-    tooltip_text_ += ASCIIToUTF16("\n");
-    // The message is localized.
-    tooltip_text_ += DownloadItemModel::InterruptReasonMessage(reason);
-  } else {
-    tooltip_text_ = download_->GetFileNameToReportUser().LossyDisplayName();
-  }
 
   if (IsShowingWarningDialog() && !model_->IsDangerous()) {
     // We have been approved.
@@ -319,8 +305,11 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
     status_text_ = status_text;
   }
 
-  if (old_tip != tooltip_text_)
+  string16 new_tip = model_->GetTooltipText(font_, kTooltipMaxWidth);
+  if (new_tip != tooltip_text_) {
+    tooltip_text_ = new_tip;
     TooltipTextChanged();
+  }
 
   UpdateAccessibleName();
 

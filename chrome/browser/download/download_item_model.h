@@ -32,8 +32,20 @@ class BaseDownloadItemModel {
   // Cancel the task corresponding to the item.
   virtual void CancelTask() = 0;
 
-  // Get the status text to display.
+  // Returns a short one-line status string for the download.
   virtual string16 GetStatusText() = 0;
+
+  // Returns a string suitable for use as a tooltip. For a regular download, the
+  // tooltip is the filename. For an interrupted download, the string states the
+  // filename and a short description of the reason for interruption. For
+  // example:
+  //    Report.pdf
+  //    Network disconnected
+  // |font| and |max_width| are used to elide the filename and/or interrupt
+  // reason as necessary to keep the width of the tooltip text under
+  // |max_width|. The tooltip will be at most 2 lines.
+  virtual string16 GetTooltipText(const gfx::Font& font,
+                                  int max_width) const = 0;
 
   // Rough percent complete. Returns -1 if the progress is unknown.
   virtual int PercentComplete() const = 0;
@@ -75,6 +87,8 @@ class DownloadItemModel : public BaseDownloadItemModel {
   // BaseDownloadItemModel
   virtual void CancelTask() OVERRIDE;
   virtual string16 GetStatusText() OVERRIDE;
+  virtual string16 GetTooltipText(const gfx::Font& font,
+                                  int max_width) const OVERRIDE;
   virtual int PercentComplete() const OVERRIDE;
   virtual string16 GetWarningText(const gfx::Font& font,
                                   int base_width) OVERRIDE;
