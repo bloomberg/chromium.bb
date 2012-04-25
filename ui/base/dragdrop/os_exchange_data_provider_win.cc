@@ -828,12 +828,13 @@ static STGMEDIUM* GetStorageForBytes(const char* data, size_t bytes) {
 
 template<class T>
 static HGLOBAL CopyStringToGlobalHandle(const T& payload) {
-  int bytes = static_cast<int>(payload.size() + 1) * sizeof(T::value_type);
+  int bytes =
+      static_cast<int>(payload.size() + 1) * sizeof(typename T::value_type);
   HANDLE handle = GlobalAlloc(GPTR, bytes);
   void* data = GlobalLock(handle);
   size_t allocated = static_cast<size_t>(GlobalSize(handle));
   memcpy(data, payload.c_str(), allocated);
-  static_cast<T::value_type*>(data)[payload.size()] = '\0';
+  static_cast<typename T::value_type*>(data)[payload.size()] = '\0';
   GlobalUnlock(handle);
   return handle;
 }
