@@ -78,20 +78,10 @@ GDataRootDirectory* GDataEntry::AsGDataRootDirectory() {
   return NULL;
 }
 
-const GDataFile* GDataEntry::AsGDataFileConst() const {
-  // cast away const and call the non-const version. This is safe.
-  return const_cast<GDataEntry*>(this)->AsGDataFile();
-}
-
-const GDataDirectory* GDataEntry::AsGDataDirectoryConst() const {
-  // cast away const and call the non-const version. This is safe.
-  return const_cast<GDataEntry*>(this)->AsGDataDirectory();
-}
-
-FilePath GDataEntry::GetFilePath() const {
+FilePath GDataEntry::GetFilePath() {
   FilePath path;
   std::vector<FilePath::StringType> parts;
-  for (const GDataEntry* entry = this; entry != NULL; entry = entry->parent_)
+  for (GDataEntry* entry = this; entry != NULL; entry = entry->parent())
     parts.push_back(entry->file_name());
 
   // Paste paths parts back together in reverse order from upward tree
@@ -143,7 +133,6 @@ GDataFile::GDataFile(GDataDirectory* parent, GDataRootDirectory* root)
     : GDataEntry(parent, root),
       kind_(gdata::DocumentEntry::UNKNOWN),
       is_hosted_document_(false) {
-  file_info_.is_directory = false;
 }
 
 GDataFile::~GDataFile() {
@@ -592,7 +581,6 @@ void GDataEntry::ToProto(GDataEntryProto* proto) const {
 }
 
 void GDataFile::FromProto(const GDataFileProto& proto) {
-  DCHECK(!proto.gdata_entry().file_info().is_directory());
   GDataEntry::FromProto(proto.gdata_entry());
   kind_ = DocumentEntry::EntryKind(proto.kind());
   thumbnail_url_ = GURL(proto.thumbnail_url());
@@ -607,7 +595,6 @@ void GDataFile::FromProto(const GDataFileProto& proto) {
 
 void GDataFile::ToProto(GDataFileProto* proto) const {
   GDataEntry::ToProto(proto->mutable_gdata_entry());
-  DCHECK(!proto->gdata_entry().file_info().is_directory());
   proto->set_kind(kind_);
   proto->set_thumbnail_url(thumbnail_url_.spec());
   proto->set_alternate_url(alternate_url_.spec());
@@ -620,7 +607,6 @@ void GDataFile::ToProto(GDataFileProto* proto) const {
 }
 
 void GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
-  DCHECK(proto.gdata_entry().file_info().is_directory());
   GDataEntry::FromProto(proto.gdata_entry());
   refresh_time_ = base::Time::FromInternalValue(proto.refresh_time());
   start_feed_url_ = GURL(proto.start_feed_url());
@@ -641,7 +627,6 @@ void GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
 
 void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
   GDataEntry::ToProto(proto->mutable_gdata_entry());
-  DCHECK(proto->gdata_entry().file_info().is_directory());
   proto->set_refresh_time(refresh_time_.ToInternalValue());
   proto->set_start_feed_url(start_feed_url_.spec());
   proto->set_next_feed_url(next_feed_url_.spec());
@@ -669,61 +654,18 @@ void GDataRootDirectory::ToProto(GDataRootDirectoryProto* proto) const {
   proto->set_largest_changestamp(largest_changestamp_);
 }
 
-void GDataEntry::SerializeToString(std::string* serialized_proto) const {
-  const GDataFile* file = AsGDataFileConst();
-  const GDataDirectory* dir = AsGDataDirectoryConst();
-
-  if (file) {
-    scoped_ptr<GDataFileProto> proto(new GDataFileProto());
-    file->ToProto(proto.get());
-    const bool ok = proto->SerializeToString(serialized_proto);
-    DCHECK(ok);
-  } else if (dir) {
-    scoped_ptr<GDataDirectoryProto> proto(new GDataDirectoryProto());
-    dir->ToProto(proto.get());
-    const bool ok = proto->SerializeToString(serialized_proto);
-    DCHECK(ok);
-  }
-}
-
-// static
-scoped_ptr<GDataEntry> GDataEntry::FromProtoString(
-    const std::string& serialized_proto) {
-  // First try to parse as GDataDirectoryProto. Note that this can succeed for
-  // a serialized_proto that's really a GDataFileProto - we have to check
-  // is_directory to be sure.
-  scoped_ptr<GDataDirectoryProto> dir_proto(new GDataDirectoryProto());
-  bool ok = dir_proto->ParseFromString(serialized_proto);
-  if (ok && dir_proto->gdata_entry().file_info().is_directory()) {
-    GDataDirectory* dir = new GDataDirectory(NULL, NULL);
-    dir->FromProto(*dir_proto);
-    return scoped_ptr<GDataEntry>(dir);
-  }
-
-  scoped_ptr<GDataFileProto> file_proto(new GDataFileProto());
-  ok = file_proto->ParseFromString(serialized_proto);
-  if (ok) {
-    DCHECK(!file_proto->gdata_entry().file_info().is_directory());
-    GDataFile* file = new GDataFile(NULL, NULL);
-    file->FromProto(*file_proto);
-    return scoped_ptr<GDataEntry>(file);
-  }
-  return scoped_ptr<GDataEntry>(NULL);
-}
-
-void GDataRootDirectory::SerializeToString(
-    std::string* serialized_proto) const {
+void GDataRootDirectory::SerializeToString(std::string* proto_string) const {
   scoped_ptr<GDataRootDirectoryProto> proto(
       new GDataRootDirectoryProto());
   ToProto(proto.get());
-  const bool ok = proto->SerializeToString(serialized_proto);
+  const bool ok = proto->SerializeToString(proto_string);
   DCHECK(ok);
 }
 
-bool GDataRootDirectory::ParseFromString(const std::string& serialized_proto) {
+bool GDataRootDirectory::ParseFromString(const std::string& proto_string) {
   scoped_ptr<GDataRootDirectoryProto> proto(
       new GDataRootDirectoryProto());
-  bool ok = proto->ParseFromString(serialized_proto);
+  bool ok = proto->ParseFromString(proto_string);
   if (ok) {
     FromProto(*proto.get());
     set_origin(FROM_CACHE);

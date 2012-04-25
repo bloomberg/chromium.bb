@@ -59,26 +59,14 @@ class GDataEntry {
  public:
   explicit GDataEntry(GDataDirectory* parent, GDataRootDirectory* root);
   virtual ~GDataEntry();
-
   virtual GDataFile* AsGDataFile();
   virtual GDataDirectory* AsGDataDirectory();
   virtual GDataRootDirectory* AsGDataRootDirectory();
-
-  // const versions of AsGDataFile and AsGDataDirectory.
-  const GDataFile* AsGDataFileConst() const;
-  const GDataDirectory* AsGDataDirectoryConst() const;
 
   // Converts DocumentEntry into GDataEntry.
   static GDataEntry* FromDocumentEntry(GDataDirectory* parent,
                                           DocumentEntry* doc,
                                           GDataRootDirectory* root);
-
-  // Serialize/Parse to/from string via proto classes.
-  // TODO(achuith): Correctly set up parent_ and root_ links in
-  // FromProtoString.
-  void SerializeToString(std::string* serialized_proto) const;
-  static scoped_ptr<GDataEntry> FromProtoString(
-      const std::string& serialized_proto);
 
   // Convert to/from proto.
   void FromProto(const GDataEntryProto& proto);
@@ -93,20 +81,20 @@ class GDataEntry {
 
   GDataDirectory* parent() { return parent_; }
   const base::PlatformFileInfo& file_info() const { return file_info_; }
-
   const FilePath::StringType& file_name() const { return file_name_; }
+  const FilePath::StringType& title() const {
+    return title_;
+  }
+  void set_title(const FilePath::StringType& title) {
+    title_ = title;
+  }
   void set_file_name(const FilePath::StringType& name) { file_name_ = name; }
-
-  const FilePath::StringType& title() const { return title_; }
-  void set_title(const FilePath::StringType& title) { title_ = title; }
 
   // The unique resource ID associated with this file system entry.
   const std::string& resource_id() const { return resource_id_; }
-  void set_resource_id(const std::string& res_id) { resource_id_ = res_id; }
 
   // The content URL is used for downloading regular files as is.
   const GURL& content_url() const { return content_url_; }
-  void set_content_url(const GURL& url) { content_url_ = url; }
 
   // The edit URL is used for removing files and hosted documents.
   const GURL& edit_url() const { return edit_url_; }
@@ -123,7 +111,7 @@ class GDataEntry {
   // Returns virtual file path representing this file system entry. This path
   // corresponds to file path expected by public methods of GDataFileSyste
   // class.
-  FilePath GetFilePath() const;
+  FilePath GetFilePath();
 
   // Sets |file_name_| based on the value of |title_| without name
   // de-duplication (see AddEntry() for details on de-duplication).
@@ -233,7 +221,6 @@ class GDataFile : public GDataEntry {
   const std::string& etag() const { return etag_; }
   const std::string& id() const { return id_; }
   const std::string& file_md5() const { return file_md5_; }
-  void set_file_md5(const std::string& file_md5) { file_md5_ = file_md5; }
   const std::string& document_extension() const { return document_extension_; }
   bool is_hosted_document() const { return is_hosted_document_; }
 
@@ -411,6 +398,7 @@ class GDataRootDirectory : public GDataDirectory {
   void set_serialized_size(size_t size) { serialized_size_ = size; }
 
   // GDataEntry implementation.
+
   virtual GDataRootDirectory* AsGDataRootDirectory() OVERRIDE;
 
   // Add the entry to resource map.
