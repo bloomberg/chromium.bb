@@ -221,18 +221,15 @@ single-browser-test() {
 browser-tests() {
   local platform=$1
   local extra=$2
-  # First try non-pexe mode.
-  single-browser-test ${platform} "${extra} pnacl_generate_pexe=0" \
-      "chrome_browser_tests"
-  # Then try pexe mode.
   if [[ "${extra}" =~ --nacl_glibc ]]; then
-    # Skip for --nacl_glibc for now, since a few tests fail and need to
-    # be investigated separately, especially when they need additional
-    # libraries.  We need to ensure psos are translated before running.
+    # For glibc, only non-pexe mode works for now.
+    # We need to ensure psos are translated before running.
     # E.g., run_pm_manifest_file_chrome_browser_test relies on
     # libimc, libweak_ref, etc.
-    echo "@@@BUILD_STEP -- SKIP pnacl_generate_pexe: ${platform} ${extra}@@@"
+    single-browser-test ${platform} "${extra} pnacl_generate_pexe=0" \
+        "chrome_browser_tests"
   else
+    # Otherwise, try pexe mode.
     single-browser-test ${platform} "${extra}" "chrome_browser_tests"
   fi
 }
