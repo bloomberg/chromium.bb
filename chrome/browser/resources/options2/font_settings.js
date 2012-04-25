@@ -170,9 +170,12 @@ cr.define('options', function() {
       for (var i = 0; i < items.length; i++) {
         value = items[i][0];
         text = items[i][1];
+        dir = items[i][2];
         if (text) {
           selected = value == selectedValue;
-          element.appendChild(new Option(text, value, false, selected));
+          var option = new Option(text, value, false, selected);
+          option.dir = dir;
+          element.appendChild(option);
         } else {
           element.appendChild(document.createElement('hr'));
         }

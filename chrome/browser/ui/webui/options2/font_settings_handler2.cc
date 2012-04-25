@@ -133,6 +133,18 @@ void FontSettingsHandler::HandleFetchFontsData(const ListValue* args) {
 
 void FontSettingsHandler::FontsListHasLoaded(
     scoped_ptr<base::ListValue> list) {
+  // Selects the directionality for the fonts in the given list.
+  for (size_t i = 0; i < list->GetSize(); i++) {
+    ListValue* font;
+    bool has_font = list->GetList(i, &font);
+    DCHECK(has_font);
+    string16 value;
+    bool has_value = font->GetString(1, &value);
+    DCHECK(has_value);
+    bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(value);
+    font->Append(Value::CreateStringValue(has_rtl_chars ? "rtl" : "ltr"));
+  }
+
   ListValue encoding_list;
   const std::vector<CharacterEncoding::EncodingInfo>* encodings;
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
@@ -151,9 +163,10 @@ void FontSettingsHandler::FontsListHasLoaded(
       std::string encoding =
       CharacterEncoding::GetCanonicalEncodingNameByCommandId(cmd_id);
       string16 name = it->encoding_display_name;
-      base::i18n::AdjustStringForLocaleDirection(&name);
+      bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(name);
       option->Append(Value::CreateStringValue(encoding));
       option->Append(Value::CreateStringValue(name));
+      option->Append(Value::CreateStringValue(has_rtl_chars ? "rtl" : "ltr"));
     } else {
       // Add empty name/value to indicate a separator item.
       option->Append(Value::CreateStringValue(""));
