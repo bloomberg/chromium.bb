@@ -7,7 +7,7 @@
 		<CustomBuildRule
 			Name="Create Installer Archive"
 			DisplayName="Create Installer Archive"
-			CommandLine="$(SolutionDir)..\third_party\python_24\python.exe $(SolutionDir)tools\build\win\create_installer_archive.py --output_dir=&quot;$(OutDir)&quot; --input_file=&quot;$(InputPath)&quot; --distribution=$(CHROMIUM_BUILD) --enable_hidpi=$(ENABLE_HIDPI) [LastChromeInstaller] [SkipRebuildArchive] [SetupExeFormat] [DiffAlgorithm]"
+			CommandLine="$(SolutionDir)..\third_party\python_24\python.exe $(SolutionDir)tools\build\win\create_installer_archive.py --output_dir=&quot;$(OutDir)&quot; --input_file=&quot;$(InputPath)&quot; --distribution=$(CHROMIUM_BUILD) --enable_hidpi=$(ENABLE_HIDPI) --enable_metro=$(ENABLE_METRO) [LastChromeInstaller] [SkipRebuildArchive] [SetupExeFormat] [DiffAlgorithm]"
 			Outputs="$(OutDir)/$(InputName).7z;$(OutDir)/$(InputName).packed.7z;$(OutDir)/setup.ex_;$(OutDir)/packed_files.txt;"
 			AdditionalDependencies="$(SolutionDir)\tools\build\win\create_installer_archive.py;$(OutDir)\chrome.exe;$(OutDir)\crash_reporter.exe;$(OutDir)\chrome.dll;$(OutDir)\locales\en-US.dll;$(OutDir)\icudt38.dll"
 			FileExtensions="*.release"

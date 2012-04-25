@@ -217,6 +217,13 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+        {
+          'action_name': 'theme_resources_metro_1x',
+          'variables': {
+            'grit_grd_file': 'app/theme/theme_resources_metro_1x.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
@@ -256,6 +263,16 @@
               'files': [
                 '<(grit_out_dir)/theme_resources_2x.pak',
                 '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_2x/ui_resources_2x.pak',
+              ],
+            },
+          ],
+        }],
+        ['enable_metro == 1', {
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)',
+              'files': [
+                '<(grit_out_dir)/theme_resources_metro_1x.pak',
               ],
             },
           ],

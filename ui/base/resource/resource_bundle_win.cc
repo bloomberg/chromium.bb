@@ -9,6 +9,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_data_dll_win.h"
 #include "ui/base/win/dpi.h"
+#include "ui/base/win/metro.h"
 
 namespace ui {
 
@@ -42,12 +43,23 @@ void ResourceBundle::LoadCommonResources() {
   use_hidpi_pak = ui::GetDPIScale() > 1.5;
 #endif
 
-  if (!use_hidpi_pak) {
-    AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"));
-    AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
-  } else {
+  bool use_metro_pak = false;
+#if defined(ENABLE_METRO)
+  use_metro_pak = ui::IsInMetroMode();
+#endif
+
+  if (use_metro_pak) {
+    AddDataPack(GetResourcesPakFilePath("theme_resources_metro_1x.pak"));
+  } else if (use_hidpi_pak) {
     AddDataPack(GetResourcesPakFilePath("theme_resources_2x.pak"));
+  } else {
+    AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"));
+  }
+
+  if (use_hidpi_pak) {
     AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"));
+  } else {
+    AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
   }
 }
 

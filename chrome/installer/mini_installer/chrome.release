@@ -36,6 +36,9 @@ default_apps\external_extensions.json: %(VersionDir)s\default_apps\
 theme_resources_2x.pak: %(VersionDir)s\
 ui_resources_2x.pak: %(VersionDir)s\
 
+[METRO]
+theme_resources_metro_1x.pak: %(VersionDir)s\
+
 [GOOGLE_CHROME]
 splash-620x300.png: %(ChromeDir)s\
 Logo.png: %(ChromeDir)s\
