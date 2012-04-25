@@ -126,6 +126,7 @@
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/geolocation.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
@@ -2266,11 +2267,13 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::TriggerBrowserActionById;
   handler_map["UpdateExtensionsNow"] =
       &TestingAutomationProvider::UpdateExtensionsNow;
-
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
   handler_map["HeapProfilerDump"] =
       &TestingAutomationProvider::HeapProfilerDump;
 #endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+  handler_map["OverrideGeoposition"] =
+      &TestingAutomationProvider::OverrideGeoposition;
+
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["ShowCreateAccountUI"] =
@@ -4849,6 +4852,33 @@ void TestingAutomationProvider::HeapProfilerDump(
   reply.SendSuccess(NULL);
 }
 #endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+
+namespace {
+
+void SendSuccessIfAlive(
+    base::WeakPtr<AutomationProvider> provider,
+    IPC::Message* reply_message) {
+  if (provider)
+    AutomationJSONReply(provider.get(), reply_message).SendSuccess(NULL);
+}
+
+}  // namespace
+
+void TestingAutomationProvider::OverrideGeoposition(
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  double latitude, longitude, altitude;
+  if (!args->GetDouble("latitude", &latitude) ||
+      !args->GetDouble("longitude", &longitude) ||
+      !args->GetDouble("altitude", &altitude)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Missing or invalid geolocation parameters");
+    return;
+  }
+  content::OverrideLocationForTesting(
+      latitude, longitude, altitude,
+      base::Bind(&SendSuccessIfAlive, AsWeakPtr(), reply_message));
+}
 
 // Sample json input:
 //    { "command": "GetAutofillProfile" }

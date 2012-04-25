@@ -674,6 +674,9 @@ bool SaveScreenSnapshotToDirectory(const FilePath& directory,
 bool SaveScreenSnapshotToDesktop(FilePath* screenshot_path);
 #endif
 
+// Configures the geolocation provider to always return the given position.
+void OverrideGeolocation(double latitude, double longitude);
+
 namespace internal {
 
 // A utility function to send a mouse click event in a closure. It's shared by

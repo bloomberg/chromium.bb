@@ -48,6 +48,11 @@ class CONTENT_EXPORT GeolocationProvider
   // GeolocationObserver
   virtual void OnLocationUpdate(const Geoposition& position) OVERRIDE;
 
+  // Overrides the location for automation/testing. Updates any current
+  // observers with the overriden position. Any further updates from location
+  // providers will be ignored.
+  void OverrideLocationForTesting(const Geoposition& override_position);
+
   // Gets a pointer to the singleton instance of the location relayer, which
   // is in turn bound to the browser's global context objects. Ownership is NOT
   // returned.
@@ -91,6 +96,8 @@ class CONTENT_EXPORT GeolocationProvider
   ObserverMap observers_;
   bool is_permission_granted_;
   Geoposition position_;
+  // True only in testing, where we want to use a custom position.
+  bool ignore_location_updates_;
 
   // Only to be used on the geolocation thread.
   GeolocationArbitrator* arbitrator_;

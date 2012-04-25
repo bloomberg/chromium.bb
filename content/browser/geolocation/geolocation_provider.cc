@@ -18,6 +18,7 @@ GeolocationProvider::GeolocationProvider()
     : base::Thread("Geolocation"),
       client_loop_(base::MessageLoopProxy::current()),
       is_permission_granted_(false),
+      ignore_location_updates_(false),
       arbitrator_(NULL) {
 }
 
@@ -127,10 +128,21 @@ void GeolocationProvider::CleanUp() {
 
 void GeolocationProvider::OnLocationUpdate(const Geoposition& position) {
   DCHECK(OnGeolocationThread());
+  // Will be true only in testing.
+  if (ignore_location_updates_)
+    return;
   client_loop_->PostTask(
       FROM_HERE,
       base::Bind(&GeolocationProvider::NotifyObservers,
                  base::Unretained(this), position));
+}
+
+void GeolocationProvider::OverrideLocationForTesting(
+    const Geoposition& position) {
+  DCHECK(OnClientThread());
+  position_ = position;
+  ignore_location_updates_ = true;
+  NotifyObservers(position);
 }
 
 bool GeolocationProvider::HasPermissionBeenGranted() const {

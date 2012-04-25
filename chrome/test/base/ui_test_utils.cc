@@ -47,6 +47,7 @@
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
+#include "content/public/browser/geolocation.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -1188,6 +1189,12 @@ bool TakeEntirePageSnapshot(RenderViewHost* rvh, SkBitmap* bitmap) {
   DCHECK(bitmap);
   SnapshotTaker taker;
   return taker.TakeEntirePageSnapshot(rvh, bitmap);
+}
+
+void OverrideGeolocation(double latitude, double longitude) {
+  content::OverrideLocationForTesting(
+      latitude, longitude, 0, base::Bind(MessageLoop::QuitClosure()));
+  RunMessageLoop();
 }
 
 namespace internal {

@@ -29,7 +29,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/mock_geolocation.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -205,19 +204,20 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     : infobar_(NULL),
       current_browser_(NULL),
       html_for_tests_("files/geolocation/simple.html"),
+      fake_latitude_(1.23),
+      fake_longitude_(4.56),
       started_test_server_(false) {
     EnableDOMAutomation();
   }
 
   // InProcessBrowserTest
-  virtual void SetUpInProcessBrowserTestFixture() {
-    mock_geolocation_.Setup();
+  virtual void SetUpOnMainThread() {
+    ui_test_utils::OverrideGeolocation(fake_latitude_, fake_longitude_);
   }
 
   // InProcessBrowserTest
   virtual void TearDownInProcessBrowserTestFixture() {
     LOG(WARNING) << "TearDownInProcessBrowserTestFixture. Test Finished.";
-    mock_geolocation_.TearDown();
   }
 
   enum InitializationOptions {
@@ -290,12 +290,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
                                    "geoGetLastPositionLongitude()");
   }
 
-  void CheckGeopositionEqualsMock() {
-    double latitude, longitude;
-    mock_geolocation_.GetCurrentPosition(&latitude, &longitude);
-    CheckGeoposition(latitude, longitude);
-  }
-
   void SetInfobarResponse(const GURL& requesting_url, bool allowed) {
     TabContentsWrapper* tab_contents_wrapper =
         current_browser_->GetSelectedTabContentsWrapper();
@@ -349,7 +343,9 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   }
 
   void NotifyGeoposition(double latitude, double longitude) {
-    mock_geolocation_.SetCurrentPosition(latitude, longitude);
+    fake_latitude_ = latitude;
+    fake_longitude_ = longitude;
+    ui_test_utils::OverrideGeolocation(latitude, longitude);
     LOG(WARNING) << "MockLocationProvider listeners updated";
   }
 
@@ -364,11 +360,11 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   GURL current_url_;
   // If not empty, the GURLs for the iframes loaded by LoadIFrames().
   std::vector<GURL> iframe_urls_;
+  double fake_latitude_;
+  double fake_longitude_;
 
   // TODO(phajdan.jr): Remove after we can ask TestServer whether it is started.
   bool started_test_server_;
-
-  content::MockGeolocation mock_geolocation_;
 };
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DisplaysPermissionBar) {
@@ -380,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, Geoposition) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
-  CheckGeopositionEqualsMock();
+  CheckGeoposition(fake_latitude_, fake_longitude_);
 }
 
 // Crashy, http://crbug.com/70585.
@@ -409,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
   // Checks infobar will not be created a second tab.
   ASSERT_TRUE(Initialize(INITIALIZATION_NEWTAB));
   AddGeolocationWatch(false);
-  CheckGeopositionEqualsMock();
+  CheckGeoposition(fake_latitude_, fake_longitude_);
 }
 
 // http://crbug.com/44589. Hangs on Mac, crashes on Windows
@@ -451,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForAllowedOrigin) 
                         CONTENT_SETTING_ALLOW);
   // Checks no infobar will be created and there's no error callback.
   AddGeolocationWatch(false);
-  CheckGeopositionEqualsMock();
+  CheckGeoposition(fake_latitude_, fake_longitude_);
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
@@ -460,13 +456,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
   AddGeolocationWatch(true);
   // Response will be persisted
   SetInfobarResponse(current_url_, true);
-  CheckGeopositionEqualsMock();
+  CheckGeoposition(fake_latitude_, fake_longitude_);
   // Disables further prompts from this tab.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
   // Go incognito, and checks no infobar will be created.
   ASSERT_TRUE(Initialize(INITIALIZATION_OFFTHERECORD));
   AddGeolocationWatch(false);
-  CheckGeopositionEqualsMock();
+  CheckGeoposition(fake_latitude_, fake_longitude_);
 }
 
 // Test fails: http://crbug.com/90927
@@ -480,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeopositionEqualsMock();
+  CheckGeoposition(fake_latitude_, fake_longitude_);
   // Disables further prompts from this iframe.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
@@ -524,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeopositionEqualsMock();
+  CheckGeoposition(fake_latitude_, fake_longitude_);
 
   // Refresh geoposition, but let's not yet create the watch on the second frame
   // so that it'll fetch from cache.
@@ -563,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeopositionEqualsMock();
+  CheckGeoposition(fake_latitude_, fake_longitude_);
   // Disables further prompts from this iframe.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
@@ -607,14 +603,14 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfoBarBeforeStart) {
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[0], true);
-  CheckGeopositionEqualsMock();
+  CheckGeoposition(fake_latitude_, fake_longitude_);
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
   // Permission should be requested after adding a watch.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe_urls_[1], true);
-  CheckGeopositionEqualsMock();
+  CheckGeoposition(fake_latitude_, fake_longitude_);
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
@@ -635,7 +631,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   // Send a position which both geolocation watches will receive.
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
-  CheckGeopositionEqualsMock();
+  CheckGeoposition(fake_latitude_, fake_longitude_);
 
   // The second watch will now have cancelled. Ensure an update still makes
   // its way through to the first watcher.

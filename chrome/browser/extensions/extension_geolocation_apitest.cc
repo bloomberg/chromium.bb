@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "content/test/mock_geolocation.h"
+#include "chrome/test/base/ui_test_utils.h"
 
 class GeolocationApiTest : public ExtensionApiTest {
  public:
@@ -11,18 +11,9 @@ class GeolocationApiTest : public ExtensionApiTest {
   }
 
   // InProcessBrowserTest
-  virtual void SetUpInProcessBrowserTestFixture() {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    mock_geolocation_.Setup();
+  virtual void SetUpOnMainThread() {
+    ui_test_utils::OverrideGeolocation(0, 0);
   }
-
-  // InProcessBrowserTest
-  virtual void TearDownInProcessBrowserTestFixture() {
-    mock_geolocation_.TearDown();
-  }
-
- private:
-  content::MockGeolocation mock_geolocation_;
 };
 
 // http://crbug.com/68287

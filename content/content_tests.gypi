@@ -64,8 +64,6 @@
         'test/mock_download_item.h',
         'test/mock_download_manager.cc',
         'test/mock_download_manager.h',
-        'test/mock_geolocation.cc',
-        'test/mock_geolocation.h',
         'test/mock_keyboard.cc',
         'test/mock_keyboard_driver_win.cc',
         'test/mock_keyboard_driver_win.h',

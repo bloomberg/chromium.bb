@@ -23,7 +23,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/test/mock_geolocation.h"
 #include "content/test/mock_render_process_host.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_renderer_host.h"
@@ -141,7 +140,6 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
   virtual void TearDown() OVERRIDE;
 
   content::TestBrowserThread ui_thread_;
-  content::MockGeolocation mock_geolocation_;
 
   // A map between renderer child id and a pair represending the bridge id and
   // whether the requested permission was allowed.
@@ -231,14 +229,12 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
 
 void GeolocationPermissionContextTests::SetUp() {
   TabContentsWrapperTestHarness::SetUp();
-  mock_geolocation_.Setup();
   geolocation_permission_context_ =
       new ChromeGeolocationPermissionContext(profile());
 }
 
 void GeolocationPermissionContextTests::TearDown() {
   extra_tabs_.reset();
-  mock_geolocation_.TearDown();
   TabContentsWrapperTestHarness::TearDown();
 }
 
@@ -603,5 +599,3 @@ TEST_F(GeolocationPermissionContextTests, InfoBarUsesCommittedEntry) {
   DeleteContents();
   infobar_0->InfoBarClosed();
 }
-
-

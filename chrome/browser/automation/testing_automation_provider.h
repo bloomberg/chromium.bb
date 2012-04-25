@@ -690,6 +690,11 @@ class TestingAutomationProvider : public AutomationProvider,
                         IPC::Message* reply_message);
 #endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 
+  // Overrides the current geoposition.
+  // Uses the JSON interface for input/output.
+  void OverrideGeoposition(base::DictionaryValue* args,
+                           IPC::Message* reply_message);
+
   // Responds to the Find request and returns the match count.
   void FindInPage(Browser* browser,
                   base::DictionaryValue* args,

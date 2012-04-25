@@ -71,6 +71,12 @@ class NullGeolocationObserver : public GeolocationObserver {
   virtual void OnLocationUpdate(const Geoposition& position) {}
 };
 
+class MockGeolocationObserver : public GeolocationObserver {
+ public:
+  // GeolocationObserver
+  MOCK_METHOD1(OnLocationUpdate, void(const Geoposition& position));
+};
+
 class StartStopMockLocationProvider : public MockLocationProvider {
  public:
   explicit StartStopMockLocationProvider(MessageLoop* test_loop)
@@ -175,6 +181,31 @@ TEST_F(GeolocationProviderTest, StartStop) {
   event.Wait();
   event.Reset();
   EXPECT_TRUE(provider_->IsRunning());
+
+  GeolocationArbitrator::SetDependencyFactoryForTest(NULL);
+}
+
+TEST_F(GeolocationProviderTest, OverrideLocationForTesting) {
+  scoped_refptr<FakeAccessTokenStore> fake_access_token_store =
+      new FakeAccessTokenStore;
+  scoped_refptr<GeolocationArbitratorDependencyFactory> dependency_factory =
+      new MockDependencyFactory(&message_loop_, fake_access_token_store.get());
+  MockGeolocationObserver mock_observer;
+  EXPECT_CALL(*(fake_access_token_store.get()), LoadAccessTokens(_));
+
+  GeolocationArbitrator::SetDependencyFactoryForTest(dependency_factory.get());
+
+  Geoposition override_position;
+  override_position.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  provider_->OverrideLocationForTesting(override_position);
+  // Adding an observer when the location is overriden should synchronously
+  // update the observer with our overriden position.
+  EXPECT_CALL(mock_observer, OnLocationUpdate(
+      testing::Field(
+          &Geoposition::error_code,
+          testing::Eq(Geoposition::ERROR_CODE_POSITION_UNAVAILABLE))));
+  provider_->AddObserver(&mock_observer, GeolocationObserverOptions());
+  provider_->RemoveObserver(&mock_observer);
 
   GeolocationArbitrator::SetDependencyFactoryForTest(NULL);
 }
