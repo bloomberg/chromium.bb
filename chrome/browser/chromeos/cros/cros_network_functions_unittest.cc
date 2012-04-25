@@ -83,6 +83,56 @@ class MockNetworkPropertiesWatcherCallback {
                          const base::Value& value));
 };
 
+// A mock to check arguments of CellularDataPlanWatcherCallback and ensure that
+// the callback is called exactly once.
+class MockDataPlanUpdateWatcherCallback {
+ public:
+  // Creates a NetworkPropertiesWatcherCallback with expectations.
+  static DataPlanUpdateWatcherCallback CreateCallback(
+      const std::string& expected_modem_service_path,
+      const CellularDataPlanVector& expected_data_plan_vector) {
+    MockDataPlanUpdateWatcherCallback* mock_callback =
+        new MockDataPlanUpdateWatcherCallback;
+    mock_callback->expected_data_plan_vector_ = &expected_data_plan_vector;
+
+    EXPECT_CALL(*mock_callback,
+                Run(expected_modem_service_path, _))
+        .WillOnce(Invoke(mock_callback,
+                         &MockDataPlanUpdateWatcherCallback::CheckDataPlans));
+
+    return base::Bind(&MockDataPlanUpdateWatcherCallback::Run,
+                      base::Owned(mock_callback));
+  }
+
+  MOCK_METHOD2(Run, void(const std::string& modem_service_path,
+                         CellularDataPlanVector* data_plan_vector));
+
+ private:
+  void CheckDataPlans(const std::string& modem_service_path,
+                      CellularDataPlanVector* data_plan_vector) {
+    ASSERT_EQ(expected_data_plan_vector_->size(), data_plan_vector->size());
+    for (size_t i = 0; i != data_plan_vector->size(); ++i) {
+      EXPECT_EQ((*expected_data_plan_vector_)[i]->plan_name,
+                (*data_plan_vector)[i]->plan_name);
+      EXPECT_EQ((*expected_data_plan_vector_)[i]->plan_type,
+                (*data_plan_vector)[i]->plan_type);
+      EXPECT_EQ((*expected_data_plan_vector_)[i]->update_time,
+                (*data_plan_vector)[i]->update_time);
+      EXPECT_EQ((*expected_data_plan_vector_)[i]->plan_start_time,
+                (*data_plan_vector)[i]->plan_start_time);
+      EXPECT_EQ((*expected_data_plan_vector_)[i]->plan_end_time,
+                (*data_plan_vector)[i]->plan_end_time);
+      EXPECT_EQ((*expected_data_plan_vector_)[i]->plan_data_bytes,
+                (*data_plan_vector)[i]->plan_data_bytes);
+      EXPECT_EQ((*expected_data_plan_vector_)[i]->data_bytes_used,
+                (*data_plan_vector)[i]->data_bytes_used);
+    }
+    delete data_plan_vector;
+  }
+
+  const CellularDataPlanVector* expected_data_plan_vector_;
+};
+
 }  // namespace
 
 // Test for cros_network_functions.cc with Libcros.
@@ -176,11 +226,6 @@ class CrosNetworkFunctionsLibcrosTest : public testing::Test {
                               const char* path,
                               NetworkMethodErrorType error,
                               const char* error_message) {}
-
-  // Does nothing.  Used as an argument.
-  static void OnDataPlansUpdate(void* object,
-                                const char* modem_service_path,
-                                const CellularDataPlanList* dataplan) {}
 
   // Does nothing.  Used as an argument.
   static void OnSmsReceived(void* object,
@@ -376,18 +421,42 @@ TEST_F(CrosNetworkFunctionsLibcrosTest, CrosMonitorNetworkDeviceProperties) {
 }
 
 TEST_F(CrosNetworkFunctionsLibcrosTest, CrosMonitorCellularDataPlan) {
-  MonitorDataPlanCallback callback =
-      &CrosNetworkFunctionsLibcrosTest::OnDataPlansUpdate;
-  void* object = this;
+  DataPlanUpdateMonitor monitor = NULL;  // dummy
+  const std::string modem_service_path = "/modem/path";
+  CellularDataPlanInfo data_plan = {};
+  data_plan.plan_name = "plan name";
+  data_plan.update_time = 123456;
+  data_plan.plan_start_time = 234567;
+  data_plan.plan_end_time = 345678;
+  data_plan.plan_data_bytes = 1024*1024;
+  data_plan.data_bytes_used = 12345;
+  CellularDataPlanList data_plans = {};
+  data_plans.plans = &data_plan;
+  data_plans.plans_size = 1;
+  data_plans.data_plan_size = sizeof(data_plan);
+
+  CellularDataPlanVector result;
+  result.push_back(new CellularDataPlan(data_plan));
+
+  // Set expectations.
+  DataPlanUpdateWatcherCallback callback =
+      MockDataPlanUpdateWatcherCallback::CreateCallback(modem_service_path,
+                                                        result);
+  MonitorDataPlanCallback arg_callback = NULL;
+  void* arg_object = NULL;
+  EXPECT_CALL(*MockChromeOSNetwork::Get(), MonitorCellularDataPlan(_, _))
+      .WillOnce(DoAll(SaveArg<0>(&arg_callback), SaveArg<1>(&arg_object),
+                      Return(monitor)));
 
   // Start monitoring.
-  EXPECT_CALL(*MockChromeOSNetwork::Get(),
-              MonitorCellularDataPlan(callback, object)).Times(1);
-  CrosNetworkWatcher* watcher = CrosMonitorCellularDataPlan(callback, object);
+  CrosNetworkWatcher* watcher = CrosMonitorCellularDataPlan(callback);
+
+  // Run callback.
+  arg_callback(arg_object, modem_service_path.c_str(), &data_plans);
 
   // Stop monitoring.
   EXPECT_CALL(*MockChromeOSNetwork::Get(),
-              DisconnectDataPlanUpdateMonitor(_)).Times(1);
+              DisconnectDataPlanUpdateMonitor(monitor)).Times(1);
   delete watcher;
 }
 

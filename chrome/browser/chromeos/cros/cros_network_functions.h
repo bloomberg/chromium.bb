@@ -14,6 +14,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/cros/cellular_data_plan.h"
 #include "third_party/cros/chromeos_network.h"
 
 namespace base {
@@ -35,6 +36,11 @@ typedef base::Callback<void(
     const std::string& path,
     const std::string& key,
     const base::Value& value)> NetworkPropertiesWatcherCallback;
+
+// Callback for data plan update watchers.
+typedef base::Callback<void(
+    const std::string& modem_service_path,
+    CellularDataPlanVector* data_plan_vector)> DataPlanUpdateWatcherCallback;
 
 // Base class of signal watchers.
 class CrosNetworkWatcher {
@@ -122,7 +128,7 @@ CrosNetworkWatcher* CrosMonitorNetworkDeviceProperties(
 
 // Sets up monitoring of the cellular data plan updates from Cashew.
 CrosNetworkWatcher* CrosMonitorCellularDataPlan(
-    MonitorDataPlanCallback callback, void* object);
+    const DataPlanUpdateWatcherCallback& callback);
 
 // Similar to MonitorNetworkManagerProperties for a specified network device.
 CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,

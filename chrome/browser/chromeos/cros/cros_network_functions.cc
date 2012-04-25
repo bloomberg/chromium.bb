@@ -138,13 +138,37 @@ class NetworkDevicePropertiesWatcher : public CrosNetworkWatcher {
 // Class to watch data plan update with Libcros.
 class CrosDataPlanUpdateWatcher : public CrosNetworkWatcher {
  public:
-  CrosDataPlanUpdateWatcher(MonitorDataPlanCallback callback, void* object)
-      : monitor_(chromeos::MonitorCellularDataPlan(callback, object)) {}
+  explicit CrosDataPlanUpdateWatcher(
+      const DataPlanUpdateWatcherCallback& callback)
+      : callback_(callback),
+        monitor_(chromeos::MonitorCellularDataPlan(&OnDataPlanUpdate, this)) {}
   virtual ~CrosDataPlanUpdateWatcher() {
     chromeos::DisconnectDataPlanUpdateMonitor(monitor_);
   }
 
  private:
+  static void OnDataPlanUpdate(void* object,
+                               const char* modem_service_path,
+                               const CellularDataPlanList* data_plan_list) {
+    CrosDataPlanUpdateWatcher* watcher =
+        static_cast<CrosDataPlanUpdateWatcher*>(object);
+    if (modem_service_path && data_plan_list) {
+      // Copy contents of |data_plan_list| from libcros to |data_plan_vector|.
+      CellularDataPlanVector* data_plan_vector = new CellularDataPlanVector;
+      for (size_t i = 0; i < data_plan_list->plans_size; ++i) {
+        const CellularDataPlanInfo* info =
+            data_plan_list->GetCellularDataPlan(i);
+        CellularDataPlan* plan = new CellularDataPlan(*info);
+        data_plan_vector->push_back(plan);
+        VLOG(2) << " Plan: " << plan->GetPlanDesciption()
+                << " : " << plan->GetDataRemainingDesciption();
+      }
+      // |data_plan_vector| will be owned by callback.
+      watcher->callback_.Run(modem_service_path, data_plan_vector);
+    }
+  }
+
+  DataPlanUpdateWatcherCallback callback_;
   DataPlanUpdateMonitor monitor_;
 };
 
@@ -396,8 +420,8 @@ CrosNetworkWatcher* CrosMonitorNetworkDeviceProperties(
 }
 
 CrosNetworkWatcher* CrosMonitorCellularDataPlan(
-    MonitorDataPlanCallback callback, void* object) {
-  return new CrosDataPlanUpdateWatcher(callback, object);
+    const DataPlanUpdateWatcherCallback& callback) {
+  return new CrosDataPlanUpdateWatcher(callback);
 }
 
 CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,

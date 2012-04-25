@@ -126,8 +126,8 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
   static void DataPlanUpdateHandler(
       void* object,
-      const char* modem_service_path,
-      const chromeos::CellularDataPlanList* data_plan_list);
+      const std::string& modem_service_path,
+      CellularDataPlanVector* data_plan_vector);
 
   static void NetworkServiceUpdate(void* object,
                                    const std::string& service_path,

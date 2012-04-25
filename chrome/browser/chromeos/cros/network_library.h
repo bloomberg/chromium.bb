@@ -13,11 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/cros_network_functions.h"
 #include "chrome/browser/chromeos/cros/network_constants.h"
@@ -72,18 +70,6 @@ struct CellularApn {
   void Set(const base::DictionaryValue& dict);
 };
 typedef std::vector<CellularApn> CellularApnList;
-
-// Cellular network is considered low data when less than 60 minues.
-static const int kCellularDataLowSecs = 60 * 60;
-
-// Cellular network is considered low data when less than 30 minues.
-static const int kCellularDataVeryLowSecs = 30 * 60;
-
-// Cellular network is considered low data when less than 100MB.
-static const int kCellularDataLowBytes = 100 * 1024 * 1024;
-
-// Cellular network is considered very low data when less than 50MB.
-static const int kCellularDataVeryLowBytes = 50 * 1024 * 1024;
 
 // The value of priority if it is not set.
 const int kPriorityNotSet = 0;
@@ -801,8 +787,6 @@ class WirelessNetwork : public Network {
 };
 
 // Class for networks of TYPE_CELLULAR.
-class CellularDataPlan;
-
 class CellularNetwork : public WirelessNetwork {
  public:
   enum DataLeft {
@@ -1141,41 +1125,6 @@ class WifiNetwork : public WirelessNetwork {
   DISALLOW_COPY_AND_ASSIGN(WifiNetwork);
 };
 typedef std::vector<WifiNetwork*> WifiNetworkVector;
-
-// Cellular Data Plan management.
-class CellularDataPlan {
- public:
-  CellularDataPlan();
-  explicit CellularDataPlan(const CellularDataPlanInfo &plan);
-  ~CellularDataPlan();
-
-  // Formats cellular plan description.
-  string16 GetPlanDesciption() const;
-  // Evaluates cellular plans status and returns warning string if it is near
-  // expiration.
-  string16 GetRemainingWarning() const;
-  // Formats remaining plan data description.
-  string16 GetDataRemainingDesciption() const;
-  // Formats plan expiration description.
-  string16 GetPlanExpiration() const;
-  // Formats plan usage info.
-  string16 GetUsageInfo() const;
-  // Returns a unique string for this plan that can be used for comparisons.
-  std::string GetUniqueIdentifier() const;
-  base::TimeDelta remaining_time() const;
-  int64 remaining_minutes() const;
-  // Returns plan data remaining in bytes.
-  int64 remaining_data() const;
-  // TODO(stevenjb): Make these private with accessors and properly named.
-  std::string plan_name;
-  CellularDataPlanType plan_type;
-  base::Time update_time;
-  base::Time plan_start_time;
-  base::Time plan_end_time;
-  int64 plan_data_bytes;
-  int64 data_bytes_used;
-};
-typedef ScopedVector<CellularDataPlan> CellularDataPlanVector;
 
 // Geolocation data.
 struct CellTower {

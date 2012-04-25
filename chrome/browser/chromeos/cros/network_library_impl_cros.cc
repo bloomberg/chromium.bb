@@ -58,7 +58,7 @@ void NetworkLibraryImplCros::Init() {
   network_manager_watcher_.reset(CrosMonitorNetworkManagerProperties(
       base::Bind(&NetworkManagerStatusChangedHandler, this)));
   data_plan_watcher_.reset(
-      CrosMonitorCellularDataPlan(&DataPlanUpdateHandler, this));
+      CrosMonitorCellularDataPlan(base::Bind(&DataPlanUpdateHandler, this)));
   // Always have at least one device obsever so that device updates are
   // always received.
   network_device_observer_.reset(new NetworkLibraryDeviceObserver());
@@ -774,26 +774,11 @@ void NetworkLibraryImplCros::ParseNetworkManager(const DictionaryValue& dict) {
 // static
 void NetworkLibraryImplCros::DataPlanUpdateHandler(
     void* object,
-    const char* modem_service_path,
-    const chromeos::CellularDataPlanList* data_plan_list) {
-  DCHECK(CrosLibrary::Get()->libcros_loaded());
+    const std::string& modem_service_path,
+    CellularDataPlanVector* data_plan_vector) {
   NetworkLibraryImplCros* networklib =
       static_cast<NetworkLibraryImplCros*>(object);
-  DCHECK(networklib);
-  if (modem_service_path && data_plan_list) {
-    // Copy contents of |data_plan_list| from libcros to |data_plan_vector|.
-    CellularDataPlanVector* data_plan_vector = new CellularDataPlanVector;
-    for (size_t i = 0; i < data_plan_list->plans_size; ++i) {
-      const CellularDataPlanInfo* info(data_plan_list->GetCellularDataPlan(i));
-      CellularDataPlan* plan = new CellularDataPlan(*info);
-      data_plan_vector->push_back(plan);
-      VLOG(2) << " Plan: " << plan->GetPlanDesciption()
-              << " : " << plan->GetDataRemainingDesciption();
-    }
-    // |data_plan_vector| will become owned by networklib.
-    networklib->UpdateCellularDataPlan(std::string(modem_service_path),
-                                       data_plan_vector);
-  }
+  networklib->UpdateCellularDataPlan(modem_service_path, data_plan_vector);
 }
 
 ////////////////////////////////////////////////////////////////////////////
