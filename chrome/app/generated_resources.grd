@@ -10665,10 +10665,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_OFFLINE_MESSAGE_PLURAL" desc="Message informing the user how to make multiple selected files available offline.">
         To save these files for offline use, get back online and&lt;br&gt;select the <ph name="OFFLINE_CHECKBOX_NAME">'$1'<ex>'Available offline'</ex></ph> checkbox for these files.
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_PRODUCT_NAME" desc="Google docs product name." translateable="false">
-        Google Docs
+      <message name="IDS_FILE_BROWSER_GDATA_PRODUCT_NAME" desc="Google Drive product name." translateable="false">
+        Google Drive
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_MOBILE_CONNECTION_OPTION" desc="Options that determines if we will allow Google Docs content sync over mobile conntections.">
+      <message name="IDS_FILE_BROWSER_GDATA_MOBILE_CONNECTION_OPTION" desc="Options that determines if we will allow Google Drive content sync over mobile conntections.">
         Do not use mobile data for sync
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_SHOW_HOSTED_FILES_OPTION" desc="Options that determines if we will show hosted Google Docs files in file browser.">
@@ -10678,24 +10678,44 @@ Some features may be unavailable.  Please check that the profile exists and you 
         You have run out of space
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_HEADER_SERVER" desc="Message informing the user that there is not enough space on server side to store a new file.">
-        You have run out of space in <ph name="PRODUCT_NAME">$1<ex>Google Docs</ex></ph>
+        You have run out of space in <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph>
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_LOADING" desc="Message informing the user that we are loading content of Google Docs.">
-        Loading <ph name="PRODUCT_NAME">$1<ex>Google Docs</ex></ph>
+      <message name="IDS_FILE_BROWSER_GDATA_LOADING" desc="Message informing the user that we are loading content of Google Drive.">
+        Hang with us. We’re fetching your files.
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_CANNOT_REACH" desc="Message informing the user Google Docs can not be reached at this moment.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Docs</ex></ph> cannot be reached at this time.
+      <message name="IDS_FILE_BROWSER_GDATA_CANNOT_REACH" desc="Message informing the user that Google Drive can not be reached at this moment.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph> cannot be reached at this time.
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_RETRY" desc="Button label for Google Docs content load retry.">
+      <message name="IDS_FILE_BROWSER_GDATA_LEARN_MORE" desc="In the Loading Google Drive page and in the Welcome to Google Drive banner, a text on the Learn More link.">
+        Learn more
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_RETRY" desc="Button label for Google Drive content load retry.">
         Retry
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_SPACE_MESSAGE" desc="Message informing the user how to make more space available to save the selected file offline.">
         To save this file offline you must free up an additional <ph name="TOTAL_FILE_SIZE">$2<ex>3.3 MB</ex></ph> of space:<ph name="MARKUP_1">&lt;br&gt;</ph>
         <ph name="MARKUP_2">&lt;ul&gt;&lt;li&gt;</ph>unpin files that you no longer need to access offline<ph name="MARKUP_3">&lt;/li&gt;</ph>
-        <ph name="MARKUP_4">&lt;ul&gt;&lt;li&gt;</ph>delete files from your Downloads folder<ph name="MARKUP_5">&lt;/li&gt;</ph>
+        <ph name="MARKUP_4">&lt;li&gt;</ph>delete files from your Downloads folder<ph name="MARKUP_5">&lt;/li&gt;&lt;/ul&gt;</ph>
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_ON_SERVER" desc="Message informing the user how to make more space available on Google Docs server side.">
-        You do not have enough space in <ph name="PRODUCT_NAME">$1<ex>Google Docs</ex></ph> to save this file. Please remove files or <ph name="BEGIN_LINK">&lt;a target='_blank' href='$2'&gt;</ph>buy more storage space<ph name="END_LINK">&lt;/a&gt;</ph>.
+      <message name="IDS_FILE_BROWSER_GDATA_OUT_OF_ON_SERVER" desc="Message informing the user how to make more space available on Google Drive server side.">
+        You do not have enough space in <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph> to save this file. Please remove files or <ph name="BEGIN_LINK">&lt;a target='_blank' href='$2'&gt;</ph>buy more storage space<ph name="END_LINK">&lt;/a&gt;</ph>.
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_WELCOME_TITLE" desc="In the Welcome to Google Drive banner, title of banner.">
+        Welcome to <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph>!
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_WELCOME_TEXT_SHORT" desc="In the Welcome to Google Drive banner, text of the welcome message, short version.">
+        All files saved in this folder are backed up online automatically
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_WELCOME_TEXT_LONG" desc="In the Welcome to Google Drive banner, text of the welcome message, long version.">
+        <ph name="MARKUP_1">&lt;p&gt;&lt;strong&gt;</ph>Access files from everywhere, even offline.<ph name="MARKUP_2">&lt;/strong&gt;</ph>
+        Files in <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph> are up-to-date and available from any device.<ph name="MARKUP_3">&lt;/p&gt;</ph>
+        <ph name="MARKUP_4">&lt;p&gt;&lt;strong&gt;</ph>Keep your files safe.<ph name="MARKUP_5">&lt;/strong&gt;</ph>
+        No matter what happens to your device, your files are safely stored in <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph>.<ph name="MARKUP_6">&lt;/p&gt;</ph>
+        <ph name="MARKUP_7">&lt;p&gt;&lt;strong&gt;</ph>Share, create and collaborate<ph name="MARKUP_8">&lt;/strong&gt;</ph>
+        on files with others all in one place.<ph name="MARKUP_9">&lt;/p&gt;</ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_GDATA_WELCOME_DISMISS" desc="In the Welcome to Google Drive banner, a text on the button to dismiss the banner.">
+        Dismiss
       </message>
       <message name="IDS_FILE_BROWSER_NO_ACTION_FOR_FILE" desc="Message shown when user tries to open file, which we can't handle.">
 	      To view this file, convert it to a format that's viewable on the web.  <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph>

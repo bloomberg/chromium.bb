@@ -1151,6 +1151,11 @@ div.unmounted-panel > div {
   display: none;
 }
 
+.plain-link {
+  color: rgb(17, 85, 204);
+  cursor: default;
+}
+
 body[ash] .dialog-title,
 body[type='full-page'] [invisibleif='full-page'],
 body:not([type='full-page']) [visibleif='full-page'],

@@ -138,6 +138,10 @@
         <include name="IDR_FILE_MANAGER_ICON_GDATA_SETTINGS" file="file_manager/images/settings_button.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_GDATA_SETTINGS_PRESSED" file="file_manager/images/settings_button_pressed.png" type="BINDATA" />
 
+        <include name="IDR_FILE_MANAGER_ICON_GDRIVE_WELCOME_STYLE" file="file_manager/css/gdrive_welcome.css" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_GDRIVE_WELCOME_LOGO" file="file_manager/images/gdrive_logo.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_ICON_GDRIVE_WELCOME_BACKGROUND" file="file_manager/images/clouds.png" type="BINDATA" />
+
         <include name="IDR_FILE_MANAGER_WARNING_ICON" file="file_manager/images/warning_icon_square_26x26.png" type="BINDATA"/>
 
         <include name="IDR_FILE_MANAGER_BUTTON_ICON_DELETE" file="file_manager/images/button-icon-delete.png" type="BINDATA" />

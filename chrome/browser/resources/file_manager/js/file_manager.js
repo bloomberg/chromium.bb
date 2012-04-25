@@ -71,6 +71,12 @@ FileManager.prototype = {
       'answer.py?hl=en&answer=1061547';
 
   /**
+   * Location of the FAQ about Google Docs.
+   */
+  var GOOGLE_DRIVE_FAQ_URL =
+      'https://support.google.com/chromeos/?hl=en&p=filemanager_drive';
+
+  /**
   * Location of the FAQ about the file actions.
   */
   var NO_ACTION_FOR_FILE_URL = 'http://support.google.com/chromeos/bin/' +
@@ -588,6 +594,8 @@ FileManager.prototype = {
         str('ENABLE_GDATA') == '1',
         this.metadataCache_);
 
+    this.initGDataWelcomeBanners_();
+
     var dataModel = this.directoryModel_.getFileList();
     var collator = this.collator_;
     // TODO(dgozman): refactor comparison functions together with
@@ -712,7 +720,7 @@ FileManager.prototype = {
 
     var loading = this.document_.createElement('div');
     loading.className = 'gdata loading';
-    loading.textContent = strf('GDATA_LOADING', str('GDATA_PRODUCT_NAME'));
+    loading.textContent = str('GDATA_LOADING');
     this.unmountedPanel_.appendChild(loading);
 
     var spinnerBox = this.document_.createElement('div');
@@ -735,14 +743,12 @@ FileManager.prototype = {
     this.unmountedPanel_.appendChild(retry);
 
     var learnMore = this.document_.createElement('div');
-    learnMore.className = 'gdata learn-more';
+    learnMore.className = 'gdata learn-more plain-link';
+    learnMore.textContent = str('GDATA_LEARN_MORE');
+    learnMore.addEventListener('click', function() {
+       chrome.tabs.create({url: GOOGLE_DRIVE_FAQ_URL});
+    });
     this.unmountedPanel_.appendChild(learnMore);
-
-    var learnMoreLink = this.document_.createElement('a');
-    learnMoreLink.textContent = str('GDATA_LEARN_MORE');
-    learnMoreLink.href = 'javascript://';  // TODO: Set a proper link URL.
-    learnMoreLink.className = 'gdata learn-more';
-    learnMore.appendChild(learnMoreLink);
   };
 
   FileManager.prototype.onDataModelSplice_ = function(event) {
@@ -4249,5 +4255,100 @@ FileManager.prototype = {
     };
 
     customSplitter.decorate(splitterElement);
+  };
+
+  FileManager.prototype.initGDataWelcomeBanners_ = function() {
+    var WELCOME_HEADER_COUNTER_KEY = 'gdataWelcomeHeaderCounter';
+    var WELCOME_HEADER_COUNTER_LIMIT = 5;
+
+    function getHeaderCounter() {
+      return parseInt(localStorage[WELCOME_HEADER_COUNTER_KEY] || '0');
+    }
+
+    if (getHeaderCounter() >= WELCOME_HEADER_COUNTER_LIMIT)
+      return;
+
+    function createDiv(className, parent) {
+      var div = parent.ownerDocument.createElement('div');
+      div.className = className;
+      parent.appendChild(div);
+      return div;
+    }
+
+    var self = this;
+
+    function showBanner(type, messageId) {
+      self.dialogContainer_.setAttribute('gdrive-welcome', type);
+
+      var container = self.dialogDom_.querySelector('.gdrive-welcome.' + type);
+      if (container.firstElementChild)
+        return;  // Do not re-create.
+
+      var wrapper = createDiv('gdrive-welcome-wrapper', container);
+      createDiv('gdrive-welcome-icon', wrapper);
+
+      var close = createDiv('cr-dialog-close', wrapper);
+      close.addEventListener('click', closeBanner);
+
+      var message = createDiv('gdrive-welcome-message', wrapper);
+
+      var title = createDiv('gdrive-welcome-title', message);
+      title.textContent =
+          strf('GDATA_WELCOME_TITLE', str('GDATA_PRODUCT_NAME'));
+
+      var text = createDiv('gdrive-welcome-text', message);
+      text.innerHTML = strf(messageId, str('GDATA_PRODUCT_NAME'));
+
+      var links = createDiv('gdrive-welcome-links', message);
+
+      var more = createDiv('gdrive-welcome-more plain-link', links);
+      more.textContent = str('GDATA_LEARN_MORE');
+      more.addEventListener('click', function() {
+        chrome.tabs.create({url: GOOGLE_DRIVE_FAQ_URL});
+      });
+
+      var dismiss = createDiv('gdrive-welcome-dismiss plain-link', links);
+      dismiss.textContent = str('GDATA_WELCOME_DISMISS');
+      dismiss.addEventListener('click', closeBanner);
+    }
+
+    function maybeShowBanner() {
+      if (!self.isOnGData()) {
+        self.dialogContainer_.removeAttribute('gdrive-welcome');
+        return;
+      }
+
+      var counter = getHeaderCounter();
+
+      if (self.directoryModel_.getFileList().length == 0 && counter == 0) {
+        // Only show the full page banner if the header banner was never shown.
+        // Do not increment the counter.
+        showBanner('page', 'GDATA_WELCOME_TEXT_LONG');
+      } else if (counter < WELCOME_HEADER_COUNTER_LIMIT) {
+        localStorage[WELCOME_HEADER_COUNTER_KEY] = ++counter;
+        showBanner('header', 'GDATA_WELCOME_TEXT_SHORT');
+      } else {
+        closeBanner();
+      }
+    }
+
+    function closeBanner() {
+      self.directoryModel_.removeEventListener('scan-completed',
+          maybeShowBanner);
+      self.directoryModel_.removeEventListener('rescan-completed',
+          maybeShowBanner);
+
+      self.dialogContainer_.removeAttribute('gdrive-welcome');
+      // Stop showing the welcome banner.
+      localStorage[WELCOME_HEADER_COUNTER_KEY] = WELCOME_HEADER_COUNTER_LIMIT;
+    }
+
+    this.directoryModel_.addEventListener('scan-completed', maybeShowBanner);
+    this.directoryModel_.addEventListener('rescan-completed', maybeShowBanner);
+
+    var style = this.document_.createElement('link');
+    style.rel = 'stylesheet';
+    style.href = 'css/gdrive_welcome.css';
+    this.document_.head.appendChild(style);
   };
 })();

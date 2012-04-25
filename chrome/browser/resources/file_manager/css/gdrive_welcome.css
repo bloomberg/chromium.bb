@@ -1,0 +1,124 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* Google Drive welcome banners.*/
+.gdrive-welcome-wrapper {
+  background-image: url('../images/clouds.png');
+  background-repeat: repeat-x;
+}
+
+.gdrive-welcome-icon {
+  background-image: url('../images/gdrive_logo.png');
+  background-repeat: no-repeat;
+}
+
+.gdrive-welcome-links {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+/* Header welcome banner. */
+.gdrive-welcome.header {
+  -webkit-box-flex: 0;
+  -webkit-transition: height 180ms ease;
+  height: 100px;
+  overflow: hidden;
+  position: relative;
+}
+
+.dialog-container:not([gdrive-welcome='header']) .gdrive-welcome.header {
+  height: 0;
+}
+
+.gdrive-welcome.header .gdrive-welcome-wrapper {
+  -webkit-box-orient: horizontal;
+  background-size: 308px 100px;
+  border-top: 1px solid #d4d4d4;
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.gdrive-welcome.header .gdrive-welcome-icon {
+  background-position: center 20px;
+  background-size: 51px 44px;
+  width: 120px;
+}
+
+.gdrive-welcome.header .gdrive-welcome-message {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+}
+
+.gdrive-welcome.header .gdrive-welcome-title {
+  font-size: 140%;
+  margin-bottom: 8px;
+  margin-top: 16px;
+}
+
+.gdrive-welcome.header .gdrive-welcome-text {
+  margin-bottom: 8px;
+}
+
+.gdrive-welcome.header .gdrive-welcome-dismiss {
+  display: none;
+}
+
+/* Full page welcome banner. */
+.gdrive-welcome.page {
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 28px;  /* Leave room for the file list header. */
+}
+
+.dialog-container:not([gdrive-welcome='page']) .gdrive-welcome.page {
+  display: none;
+}
+
+.gdrive-welcome.page .gdrive-welcome-wrapper {
+  background-position: 0 50px;
+  background-size: 520px 173px;
+  border: 2px solid rgb(186, 210, 231);
+  border-radius: 4px;
+  bottom: 0;
+  font-size: 120%;
+  left: 0;
+  margin: 16px;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.gdrive-welcome.page .gdrive-welcome-icon {
+  background-position: center center;
+  height: 240px;
+  left: 0;
+  right: 0;
+  top: 0;
+}
+
+.gdrive-welcome.page .gdrive-welcome-message {
+  padding-left: 30%;
+  padding-right: 25%;
+}
+
+.gdrive-welcome.page .gdrive-welcome-title {
+  font-size: 133%;
+  margin-bottom: 30px;
+}
+
+.gdrive-welcome.page .gdrive-welcome-text {
+  margin-bottom: 24px;
+}
+
+.gdrive-welcome.page .gdrive-welcome-dismiss {
+  margin-left: 20px;
+}
