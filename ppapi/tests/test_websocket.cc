@@ -502,6 +502,31 @@ std::string TestWebSocket::TestInvalidClose() {
   ReleaseVar(receive_message_var);
   core_interface_->ReleaseResource(ws);
 
+  // Close twice.
+  ws = Connect(GetFullURL(kEchoServerURL), &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
+      callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
+  // Call another Close() before previous one is in progress.
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
+      another_callback.GetCallback().pp_completion_callback());
+  ASSERT_EQ(PP_ERROR_INPROGRESS, result);
+  result = callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+  // Call another Close() after previous one is completed.
+  // This Close() must do nothing and reports no error.
+  result = websocket_interface_->Close(ws,
+      PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, reason,
+      callback.GetCallback().pp_completion_callback());
+  if (result == PP_OK_COMPLETIONPENDING)
+    result = callback.WaitForResult();
+  ASSERT_EQ(PP_OK, result);
+  core_interface_->ReleaseResource(ws);
+
   ReleaseVar(reason);
 
   PASS();

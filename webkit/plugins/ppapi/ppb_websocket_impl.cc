@@ -236,9 +236,10 @@ int32_t PPB_WebSocket_Impl::Close(uint16_t code,
   }
 
   // Check state.
-  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSING ||
-      state_ == PP_WEBSOCKETREADYSTATE_CLOSED)
+  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSING)
     return PP_ERROR_INPROGRESS;
+  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSED)
+    return PP_OK;
 
   // Validate |callback| (Doesn't support blocking callback)
   if (!callback.func)

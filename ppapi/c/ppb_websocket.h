@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_websocket.idl modified Mon Mar 26 09:51:15 2012. */
+/* From ppb_websocket.idl modified Wed Apr 25 11:48:30 2012. */
 
 #ifndef PPAPI_C_PPB_WEBSOCKET_H_
 #define PPAPI_C_PPB_WEBSOCKET_H_
@@ -271,8 +271,8 @@ struct PPB_WebSocket_1_0 {
    * Returns <code>PP_ERROR_NOACCESS</code> if the code is not an integer
    * equal to 1000 or in the range 3000 to 4999. <code>PP_ERROR_NOACCESS</code>
    * corresponds to an InvalidAccessError in the WebSocket API specification.
-   * Returns <code>PP_ERROR_INPROGRESS</code> if this is not the first call to
-   * Close().
+   * Returns <code>PP_ERROR_INPROGRESS</code> if a previous call to Close() is
+   * not finished.
    */
   int32_t (*Close)(PP_Resource web_socket,
                    uint16_t code,
