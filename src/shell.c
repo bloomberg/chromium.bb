@@ -36,6 +36,13 @@
 #include "desktop-shell-server-protocol.h"
 #include "../shared/config-parser.h"
 
+enum animation_type {
+	ANIMATION_NONE,
+
+	ANIMATION_ZOOM,
+	ANIMATION_FADE
+};
+
 struct desktop_shell {
 	struct weston_compositor *compositor;
 
@@ -76,6 +83,7 @@ struct desktop_shell {
 	} screensaver;
 
 	uint32_t binding_modifier;
+	enum animation_type win_animation_type;
 	struct weston_surface *debug_repaint_surface;
 };
 
@@ -242,6 +250,20 @@ get_modifier(char *modifier)
 		return MODIFIER_SUPER;
 }
 
+static enum animation_type
+get_animation_type(char *animation)
+{
+	if (!animation)
+		return ANIMATION_NONE;
+
+	if (!strcmp("zoom", animation))
+		return ANIMATION_ZOOM;
+	else if (!strcmp("fade", animation))
+		return ANIMATION_FADE;
+	else
+		return ANIMATION_NONE;
+}
+
 static void
 shell_configuration(struct desktop_shell *shell)
 {
@@ -249,9 +271,11 @@ shell_configuration(struct desktop_shell *shell)
 	char *path = NULL;
 	int duration = 60;
 	char *modifier = NULL;
+	char *win_animation = NULL;
 
 	struct config_key shell_keys[] = {
 		{ "binding-modifier",   CONFIG_KEY_STRING, &modifier },
+		{ "animation",          CONFIG_KEY_STRING, &win_animation},
 	};
 
 	struct config_key saver_keys[] = {
@@ -271,6 +295,7 @@ shell_configuration(struct desktop_shell *shell)
 	shell->screensaver.path = path;
 	shell->screensaver.duration = duration;
 	shell->binding_modifier = get_modifier(modifier);
+	shell->win_animation_type = get_animation_type(win_animation);
 }
 
 static void
@@ -2020,7 +2045,18 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	}
 
 	if (surface_type == SHELL_SURFACE_TOPLEVEL)
-		weston_zoom_run(surface, 0.8, 1.0, NULL, NULL);
+	{
+		switch (shell->win_animation_type) {
+		case ANIMATION_FADE:
+			weston_fade_run(surface, NULL, NULL);
+			break;
+		case ANIMATION_ZOOM:
+			weston_zoom_run(surface, 0.8, 1.0, NULL, NULL);
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 static void
