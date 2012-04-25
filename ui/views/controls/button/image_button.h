@@ -20,6 +20,18 @@ namespace views {
 
 class VIEWS_EXPORT ImageButton : public CustomButton {
  public:
+  enum HorizontalAlignment {
+    ALIGN_LEFT = 0,
+    ALIGN_CENTER,
+    ALIGN_RIGHT
+  };
+
+  enum VerticalAlignment {
+    ALIGN_TOP = 0,
+    ALIGN_MIDDLE,
+    ALIGN_BOTTOM
+  };
+
   explicit ImageButton(ButtonListener* listener);
   virtual ~ImageButton();
 
@@ -34,14 +46,6 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
   // Set an |image| to draw on top of the normal / hot / pushed image.
   // Pass NULL for no image.
   void SetOverlayImage(const SkBitmap* image);
-
-  enum HorizontalAlignment { ALIGN_LEFT = 0,
-                             ALIGN_CENTER,
-                             ALIGN_RIGHT, };
-
-  enum VerticalAlignment { ALIGN_TOP = 0,
-                           ALIGN_MIDDLE,
-                           ALIGN_BOTTOM };
 
   // Sets how the image is laid out within the button's bounds.
   void SetImageAlignment(HorizontalAlignment h_align,
@@ -106,7 +110,7 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
   void SetToggledTooltipText(const string16& tooltip);
 
   // Overridden from ImageButton:
-  virtual void SetImage(ButtonState aState, const SkBitmap* anImage) OVERRIDE;
+  virtual void SetImage(ButtonState state, const SkBitmap* image) OVERRIDE;
 
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p,
