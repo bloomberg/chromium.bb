@@ -883,12 +883,10 @@ translator() {
     echo "You can install the SDK by running: $0 sdk ${libmode}"
     exit -1
   fi
+
   llvm-sb
   binutils-sb
-  # TODO(jvoung): Turn this on when Clang is patched to handle the
-  # monstrous macro-hackery in gold, or we have patched gold/clang ourselves.
-  # http://llvm.org/bugs/show_bug.cgi?id=12480
-  # binutils-gold-sb
+  binutils-gold-sb
 
   if ${PNACL_PRUNE}; then
     if [ "${SB_ARCH}" == universal ]; then
@@ -2550,10 +2548,10 @@ binutils-sb-make() {
 # binutils-sb-install - Install binutils (sandboxed)
 binutils-sb-install() {
   binutils-sb-setup "$@"
-
-  StepBanner "BINUTILS-SB" "Install"
   local objdir="${BINUTILS_SB_OBJDIR}"
   local installbin="${SB_INSTALL_DIR}/bin"
+
+  StepBanner "BINUTILS-SB" "Install [${installbin}]"
 
   mkdir -p "${installbin}"
   spushd "${installbin}"
@@ -2679,7 +2677,7 @@ binutils-gold-make() {
 
 # binutils-gold-install - Install gold
 binutils-gold-install() {
-  StepBanner "GOLD-NATIVE" "Install"
+  StepBanner "GOLD-NATIVE" "Install [${BINUTILS_INSTALL_DIR}]"
   local src=${TC_BUILD_GOLD}/gold/ld-new
   local dst=${BINUTILS_INSTALL_DIR}/bin/arm-pc-nacl-ld.alt
   # Note, the "*" is for windows where ld-new is actually ld-new.exe
@@ -2714,7 +2712,7 @@ binutils-gold-sb() {
 # This defines a few global variables like the objdir.
 BINUTILS_GOLD_SB_SETUP=false
 binutils-gold-sb-setup() {
-  sb-setup "$@" srpc newlib
+  sb-setup "$@"
 
   if ${BINUTILS_GOLD_SB_SETUP}; then
     return 0
@@ -2723,7 +2721,7 @@ binutils-gold-sb-setup() {
   BINUTILS_GOLD_SB_LOG_PREFIX="binutils-gold.sb.${SB_LOG_PREFIX}"
   BINUTILS_GOLD_SB_OBJDIR="${SB_OBJDIR}/binutils-gold-sb"
 
-  local flags=" -static -DNACL_SRPC -fno-exceptions"
+  local flags="-static -DNACL_SRPC -fno-exceptions"
 
   BINUTILS_GOLD_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
@@ -2795,6 +2793,8 @@ binutils-gold-sb-configure() {
     env -i \
     PATH="/usr/bin:/bin" \
     "${BINUTILS_GOLD_SB_CONFIGURE_ENV[@]}" \
+    CXXFLAGS="-Werror" \
+    CFLAGS="-Werror" \
     ac_cv_search_zlibVersion=no \
     ac_cv_header_sys_mman_h=no \
     ac_cv_func_mmap=no \
@@ -2851,10 +2851,10 @@ binutils-gold-sb-make() {
 
 # binutils-gold-sb-install - Install gold
 binutils-gold-sb-install() {
-  StepBanner "GOLD-NATIVE-SB" "Install"
-
   local objdir="${BINUTILS_GOLD_SB_OBJDIR}"
   local installbin="${SB_INSTALL_DIR}/bin"
+
+  StepBanner "GOLD-NATIVE-SB" "Install [${installbin}]"
 
   mkdir -p "${installbin}"
   spushd "${installbin}"
