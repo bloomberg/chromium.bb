@@ -145,7 +145,7 @@
             'installer/util/shell_util.h',
           ],
           'conditions': [
-            ['component=="shared_library" and incremental_chrome_dll!=1', {
+            ['component=="shared_library"', {
               'sources': [ '../content/public/common/content_switches.cc' ],
               'defines': [ 'COMPILE_CONTENT_STATICALLY'],
             }, {
