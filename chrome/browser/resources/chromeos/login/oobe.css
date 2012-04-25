@@ -22,6 +22,17 @@ body {
 
 button {
   font-family: inherit;
+  outline: none;
+}
+
+/* Follow same focus coloring as in widgets.css */
+button.custom-appearance:enabled {
+  -webkit-transition: border-color 200ms;
+  border: 1px solid transparent;
+}
+
+button.custom-appearance:enabled:focus {
+  border-color: rgb(77, 144, 254);
 }
 
 #outer-container {

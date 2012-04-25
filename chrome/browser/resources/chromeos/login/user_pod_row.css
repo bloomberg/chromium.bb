@@ -181,7 +181,6 @@ html[dir=rtl] .pod .capslock-hint {
   -webkit-transition: width 100ms ease-in-out, background 200ms ease-in-out;
   background: url('../../../../../ui/resources/close_bar.png') center center no-repeat;
   background-color: rgba(255, 255, 255, 0.3);
-  border: 0;
   border-radius: 2px;
   box-shadow: none;
   height: 16px;
