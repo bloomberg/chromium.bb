@@ -476,9 +476,7 @@ def Error(message, flush=False):
 def Warning(message, flush=False):
   """Emits a yellow warning message and continues execution."""
   if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.WARNING:
-    _WriteMessage(
-        Color(_STDOUT_IS_TTY).Color(Color.YELLOW, '\nWARNING: ' + message),
-        flush)
+    _WriteMessage('\nWARNING: ' + message, flush)
 
 
 # This command is deprecated in favor of operation.Info()
@@ -488,9 +486,7 @@ def Warning(message, flush=False):
 def Info(message, flush=False):
   """Emits a blue informational message and continues execution."""
   if DebugLevel.GetCurrentDebugLevel() <= DebugLevel.INFO:
-    _WriteMessage(
-        Color(_STDOUT_IS_TTY).Color(Color.BLUE, '\nINFO: ' + message),
-        flush)
+    _WriteMessage('\nINFO: ' + message, flush)
 
 
 def Debug(message, flush=False):
