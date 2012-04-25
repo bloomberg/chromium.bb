@@ -28,7 +28,7 @@ class TestPackageApk(TestPackage):
     dump_debug_info: A debug_info object.
   """
 
-  APK_DATA_DIR = '/data/user/0/com.android.chrome.native_tests/files/'
+  APK_DATA_DIR = '/data/user/0/org.chromium.native_test/files/'
 
   def __init__(self, adb, device, test_suite, timeout, rebaseline,
                performance_test, cleanup_test_files, tool,
