@@ -12,6 +12,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(bool);
@@ -94,6 +95,12 @@ void MinimizeWindow(aura::Window* window) {
 
 void RestoreWindow(aura::Window* window) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+}
+
+void CenterWindow(aura::Window* window) {
+  const gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(window);
+  gfx::Rect center = monitor.work_area().Center(window->bounds().size());
+  window->SetBounds(center);
 }
 
 }  // namespace wm
