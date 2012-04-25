@@ -13,6 +13,7 @@
       "echoPrivate",
       "https://*/*"
    ],
+  "default_locale": "en",
   "web_accessible_resources": [
     "main.html",
     "main.js"
