@@ -44,6 +44,15 @@ class SemiMtCorrectingFilterInterpreterTestInterpreter : public Interpreter {
                 hwstate->fingers[0].tracking_id);
       unexpected_tracking_id_.pop_front();
     }
+
+    if (!expected_tracking_id_.empty()) {
+      vector<short>& expected = expected_tracking_id_.front();
+      for (size_t i = 0; i < hwstate->finger_cnt; i++) {
+        EXPECT_EQ(expected[i], hwstate->fingers[i].tracking_id)
+            << "i = " << i;
+      }
+      expected_tracking_id_.pop_front();
+    }
     return NULL;
   }
 
@@ -54,6 +63,7 @@ class SemiMtCorrectingFilterInterpreterTestInterpreter : public Interpreter {
   deque<int> expected_finger_cnt_;
   deque<int> expected_touch_cnt_;
   deque<int> unexpected_tracking_id_;
+  deque<vector<short> > expected_tracking_id_;
 };
 
 TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest) {
@@ -62,17 +72,19 @@ TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest) {
   SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
 
   FingerState fs[] = {
-    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrIDm, flags
     { 0, 0, 0, 0, 40, 0, 1, 1, 5, 0 },
     { 0, 0, 0, 0, 28, 0, 2, 2, 5, 0 },
     { 0, 0, 0, 0, 20, 0, 2, 2, 5, 0 },
     { 0, 0, 0, 0, 40, 0, 3, 3, 5, 0 },
+    { 0, 0, 0, 0, 20, 0, 1, 1, 5, 0 },
   };
   HardwareState hs[] = {
     { 0.000, 0, 1, 1, &fs[0] },
     { 0.010, 0, 1, 1, &fs[1] },
     { 0.020, 0, 1, 1, &fs[2] },
     { 0.030, 0, 1, 1, &fs[3] },
+    { 0.040, 0, 1, 1, &fs[4] },
   };
 
   HardwareProperties hwprops = {
@@ -97,6 +109,61 @@ TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest) {
   base_interpreter->expected_finger_cnt_.push_back(1);
   base_interpreter->unexpected_tracking_id_.push_back(current_tracking_id);
   interpreter.SyncInterpret(&hs[3], NULL);
+
+  base_interpreter->expected_finger_cnt_.push_back(0);
+  interpreter.SyncInterpret(&hs[4], NULL);
 }
 
+TEST(SemiMtCorrectingFilterInterpreterTest, TrackingIdMappingTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 40, 0, 3, 3, 10, 0 },
+    { 0, 0, 0, 0, 40, 0, 3, 3, 10, 0 },
+
+    { 0, 0, 0, 0, 40, 0, 3, 3, 16, 0 },
+    { 0, 0, 0, 0, 40, 0, 5, 5, 17, 0 },
+
+    { 0, 0, 0, 0, 40, 0, 3, 3, 16, 0 },
+    { 0, 0, 0, 0, 40, 0, 5, 5, 17, 0 },
+  };
+  HardwareState hs[] = {
+    { 0.000, 0, 0, 0, &fs[0] },
+    { 0.010, 0, 1, 1, &fs[0] },
+    { 0.020, 0, 1, 1, &fs[1] },
+    { 0.030, 0, 0, 0, &fs[1] },
+    { 0.040, 0, 2, 2, &fs[2] },
+    { 0.050, 0, 2, 2, &fs[4] },
+  };
+
+  HardwareProperties hwprops = {
+    0, 0, 100, 60,  // left, top, right, bottom
+    1.0, 1.0, 25.4, 25.4,  // x res, y res, x DPI, y DPI
+    2, 3, 0, 0, 0  // max_fingers, max_touch, t5r2, semi_mt,
+  };
+
+  hwprops.support_semi_mt = true;
+  interpreter.SetHardwareProperties(hwprops);
+
+  interpreter.SyncInterpret(&hs[0], NULL);
+  interpreter.SyncInterpret(&hs[1], NULL);
+
+  vector<short>  result;
+  result.push_back(hs[1].fingers[0].tracking_id);
+  base_interpreter->expected_tracking_id_.push_back(result);
+  short original_id = hs[2].fingers[0].tracking_id;
+  base_interpreter->unexpected_tracking_id_.push_back(original_id);
+  interpreter.SyncInterpret(&hs[2], NULL);
+
+  interpreter.SyncInterpret(&hs[3], NULL);
+  interpreter.SyncInterpret(&hs[4], NULL);
+  result.clear();
+  result.push_back(hs[4].fingers[0].tracking_id);
+  result.push_back(hs[4].fingers[1].tracking_id);
+  base_interpreter->expected_tracking_id_.push_back(result);
+  interpreter.SyncInterpret(&hs[5], NULL);
+}
 }  // namespace gestures
