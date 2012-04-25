@@ -17,6 +17,54 @@ namespace {
 
 static const float EPSILON = 1e-6f;
 
+bool IsMultipleOfNinetyDegrees(float degrees)
+{
+  float remainder = fabs(fmod(degrees, 90.0f));
+  return remainder < EPSILON || 90.0f - remainder < EPSILON;
+}
+
+// Returns false if |degrees| is not a multiple of ninety degrees or if
+// |rotation| is NULL. It does not affect |rotation| in this case. Otherwise
+// *rotation is set to be the appropriate sanitized rotation matrix. That is,
+// the rotation matrix corresponding to |degrees| which has entries that are all
+// either 0, 1 or -1.
+bool MassageRotationIfMultipleOfNinetyDegrees(ui::Transform* rotation,
+                                              float degrees)
+{
+  if (!IsMultipleOfNinetyDegrees(degrees) || !rotation)
+    return false;
+
+  ui::Transform transform;
+  SkMatrix44& m = transform.matrix();
+  float degrees_by_ninety = degrees / 90.0f;
+
+  int n = static_cast<int>(degrees_by_ninety > 0
+      ? floor(degrees_by_ninety + 0.5f)
+      : ceil(degrees_by_ninety - 0.5f));
+
+  n %= 4;
+  if (n < 0)
+    n += 4;
+
+  // n should now be in the range [0, 3]
+  if (n == 1) {
+    m.set3x3( 0,  1,  0,
+             -1,  0,  0,
+              0,  0,  1);
+  } else if (n == 2) {
+    m.set3x3(-1,  0,  0,
+              0, -1,  0,
+              0,  0,  1);
+  } else if (n == 3) {
+    m.set3x3( 0, -1,  0,
+              1,  0,  0,
+              0,  0,  1);
+  }
+
+  *rotation = transform;
+  return true;
+}
+
 } // namespace
 
 namespace ui {
@@ -157,7 +205,10 @@ InterpolatedRotation::~InterpolatedRotation() {}
 
 ui::Transform InterpolatedRotation::InterpolateButDoNotCompose(float t) const {
   ui::Transform result;
-  result.SetRotate(ValueBetween(t, start_degrees_, end_degrees_));
+  float interpolated_degrees = ValueBetween(t, start_degrees_, end_degrees_);
+  result.SetRotate(interpolated_degrees);
+  if (t == 0.0f || t == 1.0f)
+    MassageRotationIfMultipleOfNinetyDegrees(&result, interpolated_degrees);
   return result;
 }
 
@@ -268,7 +319,6 @@ InterpolatedTranslation::InterpolateButDoNotCompose(float t) const {
   // TODO(vollick) 3d xforms.
   result.SetTranslate(ValueBetween(t, start_pos_.x(), end_pos_.x()),
                       ValueBetween(t, start_pos_.y(), end_pos_.y()));
-
   return result;
 }
 
