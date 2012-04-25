@@ -10,7 +10,7 @@
  * {
  *   filesystem: size, modificationTime, icon, fileType
  *   internal: presence
- *   gdata: pinned, present, dirty, editUrl
+ *   gdata: pinned, present, hosted, editUrl, contentUrl, availableOffline
  *   thumbnail: url, transform
  *   media: artist, album, title
  * }
@@ -88,6 +88,7 @@ MetadataCache.DESCENDANTS = 2;
 MetadataCache.createFull = function() {
   var cache = new MetadataCache();
   cache.providers_.push(new FilesystemProvider());
+  cache.providers_.push(new GDataProvider());
   return cache;
 };
 
@@ -119,7 +120,7 @@ MetadataCache.prototype.get = function(items, type, callback) {
     remaining--;
     if (remaining == 0) {
       this.endBatchUpdates();
-      if (callback) callback(result);
+      if (callback) setTimeout(callback, 0, result);
     }
   }
 
@@ -451,8 +452,8 @@ MetadataProvider2.prototype.fetch = function(url, type, callback, opt_entry) {
 
 /**
  * Provider of filesystem metadata.
- * This provider returns the following object:
- * {
+ * This provider returns the following objects:
+ * filesystem: {
  *   size;
  *   modificationTime;
  *   icon - string describing icon type;
@@ -524,4 +525,116 @@ FilesystemProvider.prototype.fetch = function(url, type, callback, opt_entry) {
     onEntry(opt_entry);
   else
     webkitResolveLocalFileSystemURL(url, onEntry, onError);
+};
+
+/**
+ * Provider of gdata metadata.
+ * This provider returns the following objects:
+ *     gdata: { pinned, hosted, present, dirty, editUrl, contentUrl }
+ *     thumbnail: { url, transform }
+ * @constructor
+ */
+function GDataProvider() {
+  MetadataProvider2.call(this, 'gdata');
+
+  // We batch metadata fetches into single API call.
+  this.urls_ = [];
+  this.callbacks_ = [];
+  this.scheduled_ = false;
+
+  this.callApiBound_ = this.callApi_.bind(this);
+}
+
+GDataProvider.prototype = {
+  __proto__: MetadataProvider2.prototype
+};
+
+/**
+ * Pattern for urls supported by GDataProvider.
+ */
+GDataProvider.URL_PATTERN =
+    new RegExp('^filesystem:[^/]*://[^/]*/[^/]*/gdata/(.*)');
+
+/**
+ * @param {string} url The url.
+ * @return {boolean} Whether this provider supports the url.
+ */
+GDataProvider.prototype.supportsUrl = function(url) {
+  return GDataProvider.URL_PATTERN.test(url);
+};
+
+/**
+ * @param {string} type The metadata type.
+ * @return {boolean} Whether this provider provides this metadata.
+ */
+GDataProvider.prototype.providesType = function(type) {
+  return type == 'gdata' || type == 'thumbnail';
+};
+
+/**
+ * @return {string} Unique provider id.
+ */
+GDataProvider.prototype.getId = function() { return 'gdata'; };
+
+/**
+ * Fetches the metadata.
+ * @param {string} url File url.
+ * @param {string} type Requested metadata type.
+ * @param {Function(Object)} callback Callback expects a map from metadata type
+ *     to metadata value.
+ * @param {Entry=} opt_entry The file entry if present.
+ */
+GDataProvider.prototype.fetch = function(url, type, callback, opt_entry) {
+  this.urls_.push(url);
+  this.callbacks_.push(callback);
+  if (!this.scheduled_) {
+    this.scheduled_ = true;
+    setTimeout(this.callApiBound_, 0);
+  }
+};
+
+/**
+ * Schedules the API call.
+ * @private
+ */
+GDataProvider.prototype.callApi_ = function() {
+  this.scheduled_ = false;
+
+  var urls = this.urls_;
+  var callbacks = this.callbacks_;
+  this.urls_ = [];
+  this.callbacks_ = [];
+  var self = this;
+
+  chrome.fileBrowserPrivate.getGDataFileProperties(urls, function(props) {
+    for (var index = 0; index < urls.length; index++) {
+      callbacks[index](self.convert_(props[index]));
+    }
+  });
+};
+
+/**
+ * Converts API metadata to internal format.
+ * @param {Object} data Metadata from API call.
+ * @return {Object} Metadata in internal format.
+ * @private
+ */
+GDataProvider.prototype.convert_ = function(data) {
+  var result = {};
+  result.gdata = {
+    present: data.isPresent,
+    pinned: data.isPinned,
+    hosted: data.isHosted,
+    dirty: data.isDirty,
+    availableOffline: data.isPresent && !data.isHosted,
+    contentUrl: (data.contentUrl || '').replace(/\?.*$/gi, ''),
+    editUrl: data.editUrl || ''
+  };
+  if ('thumbnailUrl' in data) {
+    result.thumbnail = {
+      url: data.thumbnailUrl,
+      transform: ''
+    };
+  }
+  return result;
 };

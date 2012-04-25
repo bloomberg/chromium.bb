@@ -29,7 +29,8 @@ function FileManager(dialogDom) {
   this.butterLastShowTime_ = 0;
 
   this.watchedDirectoryUrl_ = null;
-  this.metadataObserverId_ = null;
+  this.filesystemObserverId_ = null;
+  this.gdataObserverId_ = null;
 
   this.commands_ = {};
 
@@ -184,139 +185,6 @@ FileManager.prototype = {
     else
       return x;
   }
-
-
-  /**
-   * Call an asynchronous method on dirEntry, batching multiple callers.
-   *
-   * This batches multiple callers into a single invocation, calling all
-   * interested parties back when the async call completes.
-   *
-   * The Entry method to be invoked should take two callbacks as parameters
-   * (one for success and one for failure), and it should invoke those
-   * callbacks with a single parameter representing the result of the call.
-   * Example methods are Entry.getMetadata() and FileEntry.file().
-   *
-   * Warning: Because this method caches the first result, subsequent changes
-   * to the entry will not be visible to callers.
-   *
-   * Error results are never cached.
-   *
-   * @param {DirectoryEntry} dirEntry The DirectoryEntry to apply the method
-   *     to.
-   * @param {string} methodName The name of the method to dispatch.
-   * @param {function(*)} successCallback The function to invoke if the method
-   *     succeeds.  The result of the method will be the one parameter to this
-   *     callback.
-   * @param {function(*)} opt_errorCallback The function to invoke if the
-   *     method fails.  The result of the method will be the one parameter to
-   *     this callback.  If not provided, the default errorCallback will throw
-   *     an exception.
-   */
-  function batchAsyncCall(entry, methodName, successCallback,
-                          opt_errorCallback) {
-    var resultCache = methodName + '_resultCache_';
-
-    if (entry[resultCache]) {
-      // The result cache for this method already exists.  Just invoke the
-      // successCallback with the result of the previuos call.
-      // Callback via a setTimeout so the sync/async semantics don't change
-      // based on whether or not the value is cached.
-      setTimeout(function() { successCallback(entry[resultCache]) }, 0);
-      return;
-    }
-
-    if (!opt_errorCallback) {
-      opt_errorCallback = util.ferr('Error calling ' + methodName + ' for: ' +
-                                    entry.fullPath);
-    }
-
-    var observerList = methodName + '_observers_';
-
-    if (entry[observerList]) {
-      // The observer list already exists, indicating we have a pending call
-      // out to this method.  Add this caller to the list of observers and
-      // bail out.
-      entry[observerList].push([successCallback, opt_errorCallback]);
-      return;
-    }
-
-    entry[observerList] = [[successCallback, opt_errorCallback]];
-
-    function onComplete(success, result) {
-      if (success)
-        entry[resultCache] = result;
-
-      for (var i = 0; i < entry[observerList].length; i++) {
-        entry[observerList][i][success ? 0 : 1](result);
-      }
-
-      delete entry[observerList];
-    };
-
-    entry[methodName](function(rv) { onComplete(true, rv) },
-                      function(rv) { onComplete(false, rv) });
-  }
-
-  /**
-   * Invoke callback in sync/async manner.
-   * @param {function(*)?} callback The callback. If null, nothing is called.
-   * @param {boolean} sync True iff the callback should be called synchronously.
-   * @param {*} callback_args... The rest are callback arguments.
-   */
-  function invokeCallback(callback, sync, callback_args) {
-    if (!callback)
-      return;
-    var args = Array.prototype.slice.call(arguments, 2);
-    if (sync) {
-      callback.apply(null, args);
-    } else {
-      setTimeout(function() { callback.apply(null, args); }, 0);
-    }
-  }
-
-  function cacheGDataProps(entry, successCallback,
-                           opt_errorCallback, opt_sync) {
-    if ('gdata_' in entry) {
-      invokeCallback(successCallback, !!opt_sync, entry);
-      return;
-    }
-
-    entry.getGDataFileProperties = entry.getGDataFileProperties ||
-                                   function(callback) {
-      var queue = cacheGDataProps.queue_;
-      queue.callbacks.push(callback);
-      queue.urls.push(entry.toURL());
-      if (!queue.scheduled) {
-        queue.scheduled = true;
-        setTimeout(function() {
-          queue.scheduled = false;
-          var callbacks = queue.callbacks;
-          var urls = queue.urls;
-          chrome.fileBrowserPrivate.getGDataFileProperties(urls,
-            function(props) {
-              for (var i = 0; i < callbacks.length; i++) {
-                callbacks[i](props[i]);
-              }
-            });
-          queue.callbacks = [];
-          queue.urls = [];
-        }, 0);
-      }
-    };
-
-    batchAsyncCall(entry, 'getGDataFileProperties', function(props) {
-      entry.gdata_ = props;
-      if (successCallback)
-          successCallback(entry);
-    }, opt_errorCallback);
-  }
-
-  cacheGDataProps.queue_ = {
-    callbacks: [],
-    urls: [],
-    scheduled: false
-  };
 
   function removeChildren(element) {
     element.textContent = '';
@@ -1219,7 +1087,8 @@ FileManager.prototype = {
     var renderFunction = this.table_.getRenderFunction();
     this.table_.setRenderFunction(function(entry, parent) {
       var item = renderFunction(entry, parent);
-      this.styleGDataItem_(entry, item);
+      this.displayGDataStyleInItem_(
+          item, entry, this.metadataCache_.getCached(entry, 'gdata'));
       return item;
     }.bind(this));
 
@@ -1777,7 +1646,8 @@ FileManager.prototype = {
 
     li.appendChild(this.renderThumbnailBox_(entry, false));
     li.appendChild(this.renderFileNameLabel_(entry));
-    this.styleGDataItem_(entry, li);
+    this.displayGDataStyleInItem_(
+        li, entry, this.metadataCache_.getCached(entry, 'gdata'));
   };
 
   /**
@@ -1898,21 +1768,17 @@ FileManager.prototype = {
     chrome.fileBrowserPrivate.removeMount(entry.toURL());
   };
 
-  FileManager.prototype.styleGDataItem_ = function(entry, listItem) {
-    if (!this.isOnGData())
+  FileManager.prototype.displayGDataStyleInItem_ = function(
+      listItem, entry, gdata) {
+    if (!this.isOnGData() || !gdata)
       return;
 
-    cacheGDataProps(entry, function(entry) {
-      if (!entry.gdata_)
-        return;
-
-      if (entry.gdata_.isHosted) {
-        listItem.classList.add('gdata-hosted');
-      }
-      if (entry.isDirectory || FileManager.isAvaliableOffline_(entry.gdata_)) {
-        listItem.classList.add('gdata-present');
-      }
-    }.bind(this));
+    if (gdata.hosted) {
+      listItem.classList.add('gdata-hosted');
+    }
+    if (entry.isDirectory || gdata.availableOffline) {
+      listItem.classList.add('gdata-present');
+    }
   };
 
   /**
@@ -2065,47 +1931,68 @@ FileManager.prototype = {
     checkbox.classList.add('pin');
     checkbox.addEventListener('click',
                               this.onPinClick_.bind(this, checkbox, entry));
+    checkbox.style.display = 'none';
+    div.appendChild(checkbox);
 
     if (this.isOnGData()) {
-      cacheGDataProps(entry, function(entry) {
-        if (entry.gdata_.isHosted)
-          return;
-        checkbox.checked = entry.gdata_.isPinned;
-        div.appendChild(checkbox);
-      });
+      this.displayOfflineInDiv_(
+          div, this.metadataCache_.getCached(entry, 'gdata'));
     }
     return div;
   };
 
-  FileManager.prototype.refreshCurrentDirectoryMetadata_ = function() {
-    var entries = this.directoryModel_.getFileList().slice();
-    this.metadataCache_.clear(entries, 'filesystem');
-    // We don't pass callback here. When new metadata arrives, we have an
-    // observer registered to update the UI.
-    this.metadataCache_.get(entries, 'filesystem', null);
+  FileManager.prototype.displayOfflineInDiv_ = function(div, gdata) {
+    if (!gdata) return;
+    if (gdata.hosted) return;
+    var checkbox = div.querySelector('.pin');
+    if (!checkbox) return;
+    checkbox.style.display = '';
+    checkbox.checked = gdata.pinned;
   };
 
-  FileManager.prototype.updateFilesystemPropertiesInUI_ = function(
-      urls, properties) {
+  FileManager.prototype.refreshCurrentDirectoryMetadata_ = function() {
+    var entries = this.directoryModel_.getFileList().slice();
+    // We don't pass callback here. When new metadata arrives, we have an
+    // observer registered to update the UI.
+
+    this.metadataCache_.clear(entries, 'filesystem');
+    this.metadataCache_.get(entries, 'filesystem', null);
+    if (this.isOnGData()) {
+      this.metadataCache_.clear(entries, 'gdata');
+      this.metadataCache_.get(entries, 'gdata', null);
+    }
+  };
+
+  FileManager.prototype.updateMetadataInUI_ = function(
+      type, urls, properties) {
     if (this.listType_ != FileManager.ListType.DETAIL) return;
 
     var items = {};
+    var entries = {};
     var dm = this.directoryModel_.getFileList();
     for (var index = 0; index < dm.length; index++) {
       var listItem = this.currentList_.getListItemByIndex(index);
       if (!listItem) continue;
       var entry = dm.item(index);
-      items[entry.toURL()] = listItem;
+      var url = entry.toURL();
+      items[url] = listItem;
+      entries[url] = entry;
     }
 
     for (var index = 0; index < urls.length; index++) {
       var url = urls[index];
       if (!(url in items)) continue;
       var listItem = items[url];
+      var entry = entries[url];
       var props = properties[index];
-      this.displayDateInDiv_(listItem.querySelector('.date'), props);
-      this.displaySizeInDiv_(listItem.querySelector('.size'), props);
-      this.displayTypeInDiv_(listItem.querySelector('.type'), props);
+      if (type == 'filesystem') {
+        this.displayDateInDiv_(listItem.querySelector('.date'), props);
+        this.displaySizeInDiv_(listItem.querySelector('.size'), props);
+        this.displayTypeInDiv_(listItem.querySelector('.type'), props);
+      } else if (type == 'gdata') {
+        this.displayOfflineInDiv_(listItem.querySelector('.offline'), props);
+        this.displayGDataStyleInItem_(listItem, entry, props);
+      }
     }
   };
 
@@ -2579,9 +2466,9 @@ FileManager.prototype = {
 
   FileManager.prototype.executeIfAvailable_ = function(urls, callback) {
     if (this.isOnGDataOffline()) {
-      chrome.fileBrowserPrivate.getGDataFileProperties(urls, function(props) {
+      this.metadataCache_.get(urls, 'gdata', function(props) {
         for (var i = 0; i != props.length; i++) {
-          if (!FileManager.isAvaliableOffline_(props[i])) {
+          if (!props[i].availableOffline) {
             this.alert.showHtml(
                 str('OFFLINE_HEADER'),
                 strf(
@@ -2599,12 +2486,8 @@ FileManager.prototype = {
     }
   };
 
-  FileManager.isAvaliableOffline_ = function(gdata) {
-    return gdata.isPresent && !gdata.isHosted;
-  };
-
   FileManager.prototype.isOffline = function() {
-    return !navigator.onLine;
+    return !!navigator.onLine;
   };
 
   FileManager.prototype.onOnlineOffline_ = function() {
@@ -3177,6 +3060,8 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onPinClick_ = function(checkbox, entry, event) {
+    // TODO(dgozman): revisit this method when gdata properties updated event
+    // will be available.
     var self = this;
     function callback(props) {
       if (props.errorCode) {
@@ -3187,11 +3072,13 @@ FileManager.prototype = {
                   util.bytesToSi(filesystem.size)));
         });
       }
-      checkbox.checked = entry.gdata_.isPinned = props[0].isPinned;
+      // We don't have update events yet, so clear the cached data.
+      self.metadataCache_.clear(entry, 'gdata');
+      checkbox.checked = props[0].isPinned;
     }
     var pin = checkbox.checked;
-    cacheGDataProps(entry, function(entry) {
-      if (self.isOffline() && pin && !entry.gdata_.isPresent) {
+    this.metadataCache_.get(entry, 'gdata', function(gdata) {
+      if (self.isOffline() && pin && !gdata.present) {
         // If we are offline, we cannot pin a file that is not already present.
         checkbox.checked = false;  // Revert the default action.
         self.alert.showHtml(
@@ -3437,14 +3324,24 @@ FileManager.prototype = {
     // TODO(dgozman): title may be better than this.
     this.document_.title = this.getCurrentDirectory().substr(1);
 
-    if (this.metadataObserverId_)
-      this.metadataCache_.removeObserver(this.metadataObserverId_);
+    if (this.filesystemObserverId_)
+      this.metadataCache_.removeObserver(this.filesystemObserverId_);
+    if (this.gdataObserverId_)
+      this.metadataCache_.removeObserver(this.gdataObserverId_);
 
-    this.metadataObserverId_ = this.metadataCache_.addObserver(
+    this.filesystemObserverId_ = this.metadataCache_.addObserver(
         this.directoryModel_.getCurrentDirEntry(),
         MetadataCache.CHILDREN,
         'filesystem',
-        this.updateFilesystemPropertiesInUI_.bind(this));
+        this.updateMetadataInUI_.bind(this, 'filesystem'));
+
+    if (this.isOnGData()) {
+      this.gdataObserverId_ = this.metadataCache_.addObserver(
+          this.directoryModel_.getCurrentDirEntry(),
+          MetadataCache.CHILDREN,
+          'gdata',
+          this.updateMetadataInUI_.bind(this, 'gdata'));
+    }
 
     var self = this;
 
@@ -4067,9 +3964,9 @@ FileManager.prototype = {
       setTimeout(this.callSelectFilesApiAndClose_.bind(this, selection), 0);
     }.bind(this);
 
-    var onGotProperties = function(properties) {
+    var onProperties = function(properties) {
       for (var i = 0; i < properties.length; i++) {
-        if (properties[i].isPresent) {
+        if (properties[i].present) {
           // For files already in GCache, we don't get any transfer updates.
           filesTotal--;
         }
@@ -4078,8 +3975,7 @@ FileManager.prototype = {
     }.bind(this);
 
     setup();
-    chrome.fileBrowserPrivate.getGDataFileProperties(
-        selection.urls, onGotProperties);
+    this.metadataCache_.get(selection.urls, 'gdata', onProperties);
   };
 
   /**

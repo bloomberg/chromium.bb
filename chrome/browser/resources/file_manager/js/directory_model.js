@@ -1253,7 +1253,7 @@ DirectoryModel.Scanner.prototype.onChunkComplete_ = function(entries) {
   // rather than as an array, so we need to perform some acrobatics...
   var spliceArgs = [].slice.call(entries);
 
-  for (filterName in this.filters_) {
+  for (var filterName in this.filters_) {
     spliceArgs = spliceArgs.filter(this.filters_[filterName]);
   }
 
