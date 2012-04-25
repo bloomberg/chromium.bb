@@ -36,6 +36,10 @@ class Prefservice;
 class Profile;
 class ProfileSyncService;
 
+namespace content {
+class NavigationEntry;
+}  // namespace content
+
 namespace sync_api {
 class BaseTransaction;
 class ReadNode;
@@ -292,6 +296,7 @@ class SessionModelAssociator
 
   // A pool for managing free/used tab sync nodes. Performs lazy creation
   // of sync nodes when necessary.
+  // TODO(zea): pull this into its own file.
   class TabNodePool {
    public:
     explicit TabNodePool(ProfileSyncService* sync_service);
@@ -411,6 +416,17 @@ class SessionModelAssociator
   // if no page is found to be referring to the favicon anymore.
   void DecrementAndCleanFaviconForURL(const std::string& page_url);
 
+  // Helper method to build sync's tab specifics from a newly modified
+  // tab, window, and the locally stored previous tab data. After completing,
+  // |prev_tab| will be updated to reflect the current data, |sync_tab| will
+  // be filled with the tab data (preserving old timestamps as necessary), and
+  // |new_url| will be the tab's current url.
+  void AssociateTabContents(const SyncedWindowDelegate& window,
+                            const SyncedTabDelegate& new_tab,
+                            SyncedSessionTab* prev_tab,
+                            sync_pb::SessionTab* sync_tab,
+                            GURL* new_url);
+
   // Load the favicon for the tab specified by |tab_link|. Will cancel any
   // outstanding request for this tab. OnFaviconDataAvailable(..) will be called
   // when the load completes.
@@ -440,21 +456,21 @@ class SessionModelAssociator
   // Used to populate a session tab from the session specifics tab provided.
   static void PopulateSessionTabFromSpecifics(const sync_pb::SessionTab& tab,
                                               const base::Time& mtime,
-                                              SessionTab* session_tab);
+                                              SyncedSessionTab* session_tab);
 
   // Helper method to load the favicon data from the tab specifics. If the
   // favicon is valid, stores the favicon data and increments the usage counter
   // in |synced_favicons_| and updates |synced_favicon_pages_| appropriately.
   void LoadForeignTabFavicon(const sync_pb::SessionTab& tab);
 
-  // Used to populate a session tab from the session specifics tab provided.
+  // Append a new navigation from sync specifics onto |tab| navigation vectors.
   static void AppendSessionTabNavigation(
      const sync_pb::TabNavigation& navigation,
-     std::vector<TabNavigation>* navigations);
+     SyncedSessionTab* tab);
 
   // Populates the navigation portion of the session specifics.
   static void PopulateSessionSpecificsNavigation(
-     const TabNavigation* navigation,
+     const content::NavigationEntry& navigation,
      sync_pb::TabNavigation* tab_navigation);
 
   // Returns true if this tab belongs to this profile and belongs to a window,

@@ -45,7 +45,7 @@ class TabNavigation {
                 const std::string& state,
                 content::PageTransition transition);
   TabNavigation(const TabNavigation& tab);
-  ~TabNavigation();
+  virtual ~TabNavigation();
   TabNavigation& operator=(const TabNavigation& tab);
 
   // Converts this TabNavigation into a NavigationEntry with a page id of
@@ -122,7 +122,7 @@ class TabNavigation {
 // SessionTab corresponds to a NavigationController.
 struct SessionTab {
   SessionTab();
-  ~SessionTab();
+  virtual ~SessionTab();
 
   // Unique id of the window.
   SessionID window_id;

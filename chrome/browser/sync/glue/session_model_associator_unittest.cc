@@ -15,7 +15,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/page_transition_types.h"
@@ -23,10 +22,12 @@
 #include "sync/protocol/session_specifics.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "sync/util/time.h"
 
 using content::BrowserThread;
 using testing::NiceMock;
 using testing::Return;
+using testing::_;
 
 namespace browser_sync {
 
@@ -54,6 +55,18 @@ class SyncSessionModelAssociatorTest : public testing::Test {
     model_associator_.DecrementAndCleanFaviconForURL(url);
   }
 
+  void AssociateTabContents(const SyncedWindowDelegate& window,
+                            const SyncedTabDelegate& new_tab,
+                            SyncedSessionTab* prev_tab,
+                            sync_pb::SessionTab* sync_tab,
+                            GURL* new_url) {
+    model_associator_.AssociateTabContents(window,
+                                           new_tab,
+                                           prev_tab,
+                                           sync_tab,
+                                           new_url);
+  }
+
  protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -78,7 +91,7 @@ TEST_F(SyncSessionModelAssociatorTest, SessionWindowHasNoTabsToSync) {
 }
 
 TEST_F(SyncSessionModelAssociatorTest, ShouldSyncSessionTab) {
-  SessionTab tab;
+  SyncedSessionTab tab;
   ASSERT_FALSE(ShouldSyncSessionTab(tab));
   TabNavigation nav(0, GURL(chrome::kChromeUINewTabURL),
                     content::Referrer(GURL("about:referrer"),
@@ -100,7 +113,7 @@ TEST_F(SyncSessionModelAssociatorTest, ShouldSyncSessionTab) {
 
 TEST_F(SyncSessionModelAssociatorTest,
        ShouldSyncSessionTabIgnoresFragmentForNtp) {
-  SessionTab tab;
+  SyncedSessionTab tab;
   ASSERT_FALSE(ShouldSyncSessionTab(tab));
   TabNavigation nav(0, GURL(std::string(chrome::kChromeUINewTabURL) +
                             "#bookmarks"),
@@ -154,13 +167,12 @@ TEST_F(SyncSessionModelAssociatorTest, PopulateSessionTab) {
   tab_s.set_pinned(true);
   tab_s.set_extension_app_id("app_id");
   sync_pb::TabNavigation* navigation = tab_s.add_navigation();
-  navigation->set_index(12);
   navigation->set_virtual_url("http://foo/1");
   navigation->set_referrer("referrer");
   navigation->set_title("title");
   navigation->set_page_transition(sync_pb::TabNavigation_PageTransition_TYPED);
 
-  SessionTab tab;
+  SyncedSessionTab tab;
   tab.tab_id.set_id(5);  // Expected to be set by the SyncedSessionTracker.
   SessionModelAssociator::PopulateSessionTabFromSpecifics(
       tab_s, base::Time(), &tab);
@@ -169,7 +181,6 @@ TEST_F(SyncSessionModelAssociatorTest, PopulateSessionTab) {
   ASSERT_EQ(3, tab.current_navigation_index);
   ASSERT_TRUE(tab.pinned);
   ASSERT_EQ("app_id", tab.extension_app_id);
-  ASSERT_EQ(12, tab.navigations[0].index());
   ASSERT_EQ(GURL("referrer"), tab.navigations[0].referrer().url);
   ASSERT_EQ(string16(ASCIIToUTF16("title")), tab.navigations[0].title());
   ASSERT_EQ(content::PAGE_TRANSITION_TYPED, tab.navigations[0].transition());
@@ -226,10 +237,26 @@ TEST_F(SyncSessionModelAssociatorTest, TabNodePool) {
 
 namespace {
 
+class SyncedWindowDelegateMock : public SyncedWindowDelegate {
+ public:
+  SyncedWindowDelegateMock() {}
+  virtual ~SyncedWindowDelegateMock() {}
+  MOCK_CONST_METHOD0(HasWindow, bool());
+  MOCK_CONST_METHOD0(GetSessionId, SessionID::id_type());
+  MOCK_CONST_METHOD0(GetTabCount, int());
+  MOCK_CONST_METHOD0(GetActiveIndex, int());
+  MOCK_CONST_METHOD0(IsApp, bool());
+  MOCK_CONST_METHOD0(IsTypeTabbed, bool());
+  MOCK_CONST_METHOD0(IsTypePopup, bool());
+  MOCK_CONST_METHOD1(IsTabPinned, bool(const SyncedTabDelegate* tab));
+  MOCK_CONST_METHOD1(GetTabAt, SyncedTabDelegate*(int index));
+  MOCK_CONST_METHOD1(GetTabIdAt, SessionID::id_type(int index));
+};
+
 class SyncedTabDelegateMock : public SyncedTabDelegate {
  public:
   SyncedTabDelegateMock() {}
-  ~SyncedTabDelegateMock() {}
+  virtual ~SyncedTabDelegateMock() {}
 
   MOCK_CONST_METHOD0(GetWindowId, SessionID::id_type());
   MOCK_CONST_METHOD0(GetSessionId, SessionID::id_type());
@@ -344,7 +371,6 @@ TEST_F(SyncSessionModelAssociatorTest, LoadEmptyFavicon) {
   tab.set_favicon_source(favicon_url);
   tab.set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
   sync_pb::TabNavigation* navigation = tab.add_navigation();
-  navigation->set_index(0);
   navigation->set_virtual_url(page_url);
   tab.set_current_navigation_index(0);
 
@@ -368,7 +394,6 @@ TEST_F(SyncSessionModelAssociatorTest, LoadNonWebFavicon) {
   // Set favicon type to an unsupported value (1 == WEB_FAVICON).
    tab.mutable_unknown_fields()->AddVarint(9, 2);
   sync_pb::TabNavigation* navigation = tab.add_navigation();
-  navigation->set_index(0);
   navigation->set_virtual_url(page_url);
   tab.set_current_navigation_index(0);
 
@@ -391,7 +416,6 @@ TEST_F(SyncSessionModelAssociatorTest, LoadValidFavicon) {
   tab.set_favicon_source(favicon_url);
   tab.set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
   sync_pb::TabNavigation* navigation = tab.add_navigation();
-  navigation->set_index(0);
   navigation->set_virtual_url(page_url);
   tab.set_current_navigation_index(0);
 
@@ -417,7 +441,6 @@ TEST_F(SyncSessionModelAssociatorTest, UpdateValidFavicon) {
   tab.set_favicon_source(favicon_url);
   tab.set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
   sync_pb::TabNavigation* navigation = tab.add_navigation();
-  navigation->set_index(0);
   navigation->set_virtual_url(page_url);
   tab.set_current_navigation_index(0);
 
@@ -437,7 +460,6 @@ TEST_F(SyncSessionModelAssociatorTest, UpdateValidFavicon) {
   tab2.set_favicon_source(favicon_url);
   tab2.set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
   sync_pb::TabNavigation* navigation2 = tab2.add_navigation();
-  navigation2->set_index(0);
   navigation2->set_virtual_url(page_url2);
   tab2.set_current_navigation_index(0);
 
@@ -470,7 +492,6 @@ TEST_F(SyncSessionModelAssociatorTest, FaviconCleanup) {
   tab.set_favicon_source(double_favicon_url);
   tab.set_favicon_type(sync_pb::SessionTab::TYPE_WEB_FAVICON);
   sync_pb::TabNavigation* navigation = tab.add_navigation();
-  navigation->set_index(0);
   navigation->set_virtual_url(page_url);
   tab.set_current_navigation_index(0);
   LoadTabFavicon(tab);
@@ -538,6 +559,280 @@ TEST_F(SyncSessionModelAssociatorTest, FaviconCleanup) {
   EXPECT_FALSE(GetFavicon(page_url2, &synced_favicon));
   EXPECT_TRUE(synced_favicon.empty());
   EXPECT_EQ(0U, NumFavicons());
+}
+
+// Ensure new tabs have all new timestamps set.
+TEST_F(SyncSessionModelAssociatorTest, AssociateNewTab) {
+  NiceMock<SyncedWindowDelegateMock> window_mock;
+  EXPECT_CALL(window_mock, IsTabPinned(_)).WillRepeatedly(Return(false));
+
+  // Create a tab with three valid entries.
+  NiceMock<SyncedTabDelegateMock> tab_mock;
+  EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
+  scoped_ptr<content::NavigationEntry> entry1(
+      content::NavigationEntry::Create());
+  entry1->SetVirtualURL(GURL("http://www.google.com"));
+  scoped_ptr<content::NavigationEntry> entry2(
+      content::NavigationEntry::Create());
+  entry2->SetVirtualURL(GURL("http://www.noodle.com"));
+  scoped_ptr<content::NavigationEntry> entry3(
+      content::NavigationEntry::Create());
+  entry3->SetVirtualURL(GURL("http://www.doodle.com"));
+  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(2));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
+      Return(entry1.get()));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(1)).WillRepeatedly(
+      Return(entry2.get()));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(2)).WillRepeatedly(
+      Return(entry3.get()));
+  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
+  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
+
+  // This tab is new, so prev_tab is the default SyncedSessionTab object.
+  SyncedSessionTab prev_tab;
+  prev_tab.tab_id.set_id(0);
+
+  sync_pb::SessionTab sync_tab;
+  GURL new_url;
+  int64 now = TimeToProtoTime(base::Time::Now());
+  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
+
+  EXPECT_EQ(new_url, entry3->GetVirtualURL());
+  ASSERT_EQ(3, sync_tab.navigation_size());
+  EXPECT_EQ(entry1->GetVirtualURL().spec(),
+            sync_tab.navigation(0).virtual_url());
+  EXPECT_EQ(entry2->GetVirtualURL().spec(),
+            sync_tab.navigation(1).virtual_url());
+  EXPECT_EQ(entry3->GetVirtualURL().spec(),
+            sync_tab.navigation(2).virtual_url());
+  EXPECT_EQ(2, sync_tab.current_navigation_index());
+  EXPECT_LE(now, sync_tab.navigation(0).timestamp());
+  EXPECT_LE(now, sync_tab.navigation(1).timestamp());
+  EXPECT_LE(now, sync_tab.navigation(2).timestamp());
+}
+
+// Ensure we preserve old timestamps when the entries don't change.
+TEST_F(SyncSessionModelAssociatorTest, AssociateExistingTab) {
+  NiceMock<SyncedWindowDelegateMock> window_mock;
+  EXPECT_CALL(window_mock, IsTabPinned(_)).WillRepeatedly(Return(false));
+
+  // Create a tab with three valid entries.
+  NiceMock<SyncedTabDelegateMock> tab_mock;
+  EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
+  scoped_ptr<content::NavigationEntry> entry1(
+      content::NavigationEntry::Create());
+  entry1->SetVirtualURL(GURL("http://www.google.com"));
+  scoped_ptr<content::NavigationEntry> entry2(
+      content::NavigationEntry::Create());
+  entry2->SetVirtualURL(GURL("http://www.noodle.com"));
+  scoped_ptr<content::NavigationEntry> entry3(
+      content::NavigationEntry::Create());
+  entry3->SetVirtualURL(GURL("http://www.doodle.com"));
+  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(2));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
+      Return(entry1.get()));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(1)).WillRepeatedly(
+      Return(entry2.get()));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(2)).WillRepeatedly(
+      Return(entry3.get()));
+  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
+  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
+
+  // This tab is new, so prev_tab is the default SyncedSessionTab object.
+  SyncedSessionTab prev_tab;
+  prev_tab.tab_id.set_id(0);
+
+  // The initial AssociateTabContents call builds the prev_tab.
+  sync_pb::SessionTab sync_tab;
+  GURL new_url;
+  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
+
+  // Override the timestamps to arbitrary old values we can compare against.
+  prev_tab.synced_tab_navigations[0].set_timestamp(ProtoTimeToTime(1));
+  prev_tab.synced_tab_navigations[1].set_timestamp(ProtoTimeToTime(2));
+  prev_tab.synced_tab_navigations[2].set_timestamp(ProtoTimeToTime(3));
+
+  // Now re-associate with the same data.
+  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
+
+  EXPECT_EQ(new_url, entry3->GetVirtualURL());
+  ASSERT_EQ(3, sync_tab.navigation_size());
+  EXPECT_EQ(entry1->GetVirtualURL().spec(),
+            sync_tab.navigation(0).virtual_url());
+  EXPECT_EQ(entry2->GetVirtualURL().spec(),
+            sync_tab.navigation(1).virtual_url());
+  EXPECT_EQ(entry3->GetVirtualURL().spec(),
+            sync_tab.navigation(2).virtual_url());
+  EXPECT_EQ(2, sync_tab.current_navigation_index());
+  EXPECT_EQ(1, sync_tab.navigation(0).timestamp());
+  EXPECT_EQ(2, sync_tab.navigation(1).timestamp());
+  EXPECT_EQ(3, sync_tab.navigation(2).timestamp());
+  EXPECT_EQ(3U, prev_tab.navigations.size());
+  EXPECT_EQ(3U, prev_tab.synced_tab_navigations.size());
+}
+
+// Ensure we add a fresh timestamp for new entries appended to the end.
+TEST_F(SyncSessionModelAssociatorTest, AssociateAppendedTab) {
+    NiceMock<SyncedWindowDelegateMock> window_mock;
+  EXPECT_CALL(window_mock, IsTabPinned(_)).WillRepeatedly(Return(false));
+
+  // Create a tab with three valid entries.
+  NiceMock<SyncedTabDelegateMock> tab_mock;
+  EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
+  scoped_ptr<content::NavigationEntry> entry1(
+      content::NavigationEntry::Create());
+  entry1->SetVirtualURL(GURL("http://www.google.com"));
+  scoped_ptr<content::NavigationEntry> entry2(
+      content::NavigationEntry::Create());
+  entry2->SetVirtualURL(GURL("http://www.noodle.com"));
+  scoped_ptr<content::NavigationEntry> entry3(
+      content::NavigationEntry::Create());
+  entry3->SetVirtualURL(GURL("http://www.doodle.com"));
+  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(2));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
+      Return(entry1.get()));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(1)).WillRepeatedly(
+      Return(entry2.get()));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(2)).WillRepeatedly(
+      Return(entry3.get()));
+  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
+  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
+
+  // This tab is new, so prev_tab is the default SyncedSessionTab object.
+  SyncedSessionTab prev_tab;
+  prev_tab.tab_id.set_id(0);
+
+  // The initial AssociateTabContents call builds the prev_tab.
+  sync_pb::SessionTab sync_tab;
+  GURL new_url;
+  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
+
+  // Override the timestamps to arbitrary old values we can compare against.
+  prev_tab.synced_tab_navigations[0].set_timestamp(ProtoTimeToTime(1));
+  prev_tab.synced_tab_navigations[1].set_timestamp(ProtoTimeToTime(2));
+  prev_tab.synced_tab_navigations[2].set_timestamp(ProtoTimeToTime(3));
+
+  // Add a new entry and change the current navigation index.
+  scoped_ptr<content::NavigationEntry> entry4(
+      content::NavigationEntry::Create());
+  entry4->SetVirtualURL(GURL("http://www.poodle.com"));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(3)).WillRepeatedly(
+      Return(entry4.get()));
+  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(4));
+  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(3));
+
+  // The new entry should have a timestamp later than this.
+  int64 now = TimeToProtoTime(base::Time::Now());
+
+  // Now re-associate with the new version.
+  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
+
+  EXPECT_EQ(new_url, entry4->GetVirtualURL());
+  ASSERT_EQ(4, sync_tab.navigation_size());
+  EXPECT_EQ(entry1->GetVirtualURL().spec(),
+            sync_tab.navigation(0).virtual_url());
+  EXPECT_EQ(entry2->GetVirtualURL().spec(),
+            sync_tab.navigation(1).virtual_url());
+  EXPECT_EQ(entry3->GetVirtualURL().spec(),
+            sync_tab.navigation(2).virtual_url());
+  EXPECT_EQ(entry4->GetVirtualURL().spec(),
+            sync_tab.navigation(3).virtual_url());
+  EXPECT_EQ(3, sync_tab.current_navigation_index());
+  EXPECT_EQ(1, sync_tab.navigation(0).timestamp());
+  EXPECT_EQ(2, sync_tab.navigation(1).timestamp());
+  EXPECT_EQ(3, sync_tab.navigation(2).timestamp());
+  EXPECT_LE(now, sync_tab.navigation(3).timestamp());
+  EXPECT_EQ(4U, prev_tab.navigations.size());
+  EXPECT_EQ(4U, prev_tab.synced_tab_navigations.size());
+}
+
+// We shouldn't get confused when old/new entries from the previous tab have
+// been pruned in the new tab. Timestamps for old entries we move back to in the
+// navigation stack should be refreshed.
+TEST_F(SyncSessionModelAssociatorTest, AssociatePrunedTab) {
+    NiceMock<SyncedWindowDelegateMock> window_mock;
+  EXPECT_CALL(window_mock, IsTabPinned(_)).WillRepeatedly(Return(false));
+
+  // Create a tab with four valid entries.
+  NiceMock<SyncedTabDelegateMock> tab_mock;
+  EXPECT_CALL(tab_mock, GetSessionId()).WillRepeatedly(Return(0));
+  scoped_ptr<content::NavigationEntry> entry1(
+      content::NavigationEntry::Create());
+  entry1->SetVirtualURL(GURL("http://www.google.com"));
+  scoped_ptr<content::NavigationEntry> entry2(
+      content::NavigationEntry::Create());
+  entry2->SetVirtualURL(GURL("http://www.noodle.com"));
+  scoped_ptr<content::NavigationEntry> entry3(
+      content::NavigationEntry::Create());
+  entry3->SetVirtualURL(GURL("http://www.doodle.com"));
+  scoped_ptr<content::NavigationEntry> entry4(
+      content::NavigationEntry::Create());
+  entry4->SetVirtualURL(GURL("http://www.poodle.com"));
+  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(3));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
+      Return(entry1.get()));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(1)).WillRepeatedly(
+      Return(entry2.get()));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(2)).WillRepeatedly(
+      Return(entry3.get()));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(3)).WillRepeatedly(
+      Return(entry4.get()));
+  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(4));
+  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
+
+  // This tab is new, so prev_tab is the default SyncedSessionTab object.
+  SyncedSessionTab prev_tab;
+  prev_tab.tab_id.set_id(0);
+
+  // The initial AssociateTabContents call builds the prev_tab.
+  sync_pb::SessionTab sync_tab;
+  GURL new_url;
+  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
+
+  // Override the timestamps to arbitrary old values we can compare against.
+  prev_tab.synced_tab_navigations[0].set_timestamp(ProtoTimeToTime(1));
+  prev_tab.synced_tab_navigations[1].set_timestamp(ProtoTimeToTime(2));
+  prev_tab.synced_tab_navigations[2].set_timestamp(ProtoTimeToTime(3));
+  prev_tab.synced_tab_navigations[2].set_timestamp(ProtoTimeToTime(4));
+
+  // Reset new tab to have the oldest entry pruned, the current navigation
+  // set to entry3, and a new entry added in place of entry4.
+  testing::Mock::VerifyAndClearExpectations(&tab_mock);
+  EXPECT_CALL(tab_mock, GetCurrentEntryIndex()).WillRepeatedly(Return(1));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(0)).WillRepeatedly(
+      Return(entry2.get()));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(1)).WillRepeatedly(
+      Return(entry3.get()));
+  scoped_ptr<content::NavigationEntry> entry5(
+      content::NavigationEntry::Create());
+  entry5->SetVirtualURL(GURL("http://www.noogle.com"));
+  EXPECT_CALL(tab_mock, GetEntryAtIndex(2)).WillRepeatedly(
+      Return(entry5.get()));
+  EXPECT_CALL(tab_mock, GetEntryCount()).WillRepeatedly(Return(3));
+  EXPECT_CALL(tab_mock, GetPendingEntryIndex()).WillRepeatedly(Return(-1));
+
+  // The new entry should have a timestamp later than this.
+  int64 now = TimeToProtoTime(base::Time::Now());
+
+  // Now re-associate with the new version.
+  AssociateTabContents(window_mock, tab_mock, &prev_tab, &sync_tab, &new_url);
+
+  // Only entry2's timestamp should be preserved. The new entry should have a
+  // new timestamp.
+  EXPECT_EQ(new_url, entry3->GetVirtualURL());
+  ASSERT_EQ(3, sync_tab.navigation_size());
+  EXPECT_EQ(entry2->GetVirtualURL().spec(),
+            sync_tab.navigation(0).virtual_url());
+  EXPECT_EQ(entry3->GetVirtualURL().spec(),
+            sync_tab.navigation(1).virtual_url());
+  EXPECT_EQ(entry5->GetVirtualURL().spec(),
+            sync_tab.navigation(2).virtual_url());
+  EXPECT_EQ(1, sync_tab.current_navigation_index());
+  EXPECT_EQ(2, sync_tab.navigation(0).timestamp());
+  EXPECT_LE(now, sync_tab.navigation(1).timestamp());
+  EXPECT_LE(now, sync_tab.navigation(2).timestamp());
+  EXPECT_EQ(3U, prev_tab.navigations.size());
+  EXPECT_EQ(3U, prev_tab.synced_tab_navigations.size());
 }
 
 }  // namespace browser_sync

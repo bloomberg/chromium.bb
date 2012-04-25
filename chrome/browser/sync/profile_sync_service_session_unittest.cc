@@ -97,7 +97,6 @@ void BuildTabSpecifics(const std::string& tag, int window_id, int tab_id,
   tab->set_pinned(true);
   tab->set_extension_app_id("app_id");
   sync_pb::TabNavigation* navigation = tab->add_navigation();
-  navigation->set_index(12);
   navigation->set_virtual_url("http://foo/1");
   navigation->set_referrer("referrer");
   navigation->set_title("title");
@@ -140,7 +139,6 @@ void VerifySyncedSession(
       ASSERT_TRUE(tab->pinned);
       ASSERT_EQ("app_id", tab->extension_app_id);
       ASSERT_EQ(1U, tab->navigations.size());
-      ASSERT_EQ(12, tab->navigations[0].index());
       ASSERT_EQ(tab->navigations[0].virtual_url(), GURL("http://foo/1"));
       ASSERT_EQ(tab->navigations[0].referrer().url, GURL("referrer"));
       ASSERT_EQ(tab->navigations[0].title(), string16(ASCIIToUTF16("title")));
