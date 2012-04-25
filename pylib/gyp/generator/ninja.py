@@ -124,6 +124,10 @@ class Target:
     # Path to the file representing the completion of building the bundle,
     # if any.
     self.bundle = None
+    # On Windows, incremental linking requires linking against all the .objs
+    # that compose a .lib (rather than the .lib itself). That list is stored
+    # here.
+    self.component_objs = None
 
   def Linkable(self):
     """Return true if this is a target that can be linked against."""
@@ -366,6 +370,9 @@ class NinjaWriter:
       # Some actions/rules output 'sources' that are already object files.
       link_deps += [self.GypPathToNinja(f)
           for f in sources if f.endswith(self.obj_ext)]
+
+    if self.flavor == 'win' and self.target.type == 'static_library':
+      self.target.component_objs = link_deps
 
     # Write out a link step, if needed.
     output = None
@@ -770,7 +777,12 @@ class NinjaWriter:
           continue
         linkable = target.Linkable()
         if linkable:
-          extra_link_deps.add(target.binary)
+          if (self.flavor == 'win' and
+              target.component_objs and
+              self.msvs_settings.IsUseLibraryDependencyInputs(config_name)):
+            extra_link_deps |= set(target.component_objs)
+          else:
+            extra_link_deps.add(target.binary)
 
         final_output = target.FinalOutput()
         if not linkable or final_output != target.binary:
@@ -1252,8 +1264,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
               '$cflags_pch_cc -c $in -o $out'),
       depfile='$out.d')
   else:
-    # TODO(scottmg): Requires deplist branch of ninja for now (for
-    # /showIncludes handling).
+    # TODO(scottmg): Requires fork of ninja for dependency and linking
+    # support: https://github.com/sgraham/ninja
     master_ninja.rule(
       'cc',
       description='CC $out',
@@ -1314,7 +1326,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
         command='$ar /nologo /ignore:4221 /OUT:$out @$out.rsp $libflags',
         rspfile='$out.rsp',
         rspfile_content='$in')
-    dlldesc = 'LINK(DLL) $dll and $implib'
+    dlldesc = 'LINK(DLL) $dll'
     dllcmd = ('python gyp-win-tool link-wrapper '
               '$ld /nologo /IMPLIB:$implib /DLL /OUT:$dll '
               '/PDB:$dll.pdb $libs @$dll.rsp $ldflags')

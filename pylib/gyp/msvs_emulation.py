@@ -346,6 +346,12 @@ class MsvsSettings(object):
 
     return ldflags
 
+  def IsUseLibraryDependencyInputs(self, config):
+    """Returns whether the target should be linked via Use Library Dependency
+    Inputs (using component .objs of a given .lib)."""
+    uldi = self._Setting(('VCLinkerTool', 'UseLibraryDependencyInputs'), config)
+    return uldi == 'true'
+
   def GetRcflags(self, config):
     """Returns the flags that need to be added to invocations of the resource
     compiler."""
