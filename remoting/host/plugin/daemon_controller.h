@@ -66,11 +66,11 @@ class DaemonController {
   };
 
   // The callback for GetConfig(). |config| is set to NULL in case of
-  // an error. Otherwise it is a dictionary that contains the
+  // an error. Otherwise it is a dictionary that contains only the
   // following values: host_id and xmpp_login, which may be empty if
-  // the host is not initialized yet. The config must not contain any
-  // security sensitive information, such as authentication tokens and
-  // private keys.
+  // the host is not initialized yet. All other values are filtered out of the
+  // config before this callback is invoked: they may contain security
+  // sensitive information, such as authentication tokens and private keys.
   typedef base::Callback<void (scoped_ptr<base::DictionaryValue> config)>
       GetConfigCallback;
 
@@ -89,7 +89,8 @@ class DaemonController {
   virtual State GetState() = 0;
 
   // Queries current host configuration. The |callback| is called
-  // after configuration is read.
+  // after the configuration is read, and any values that might be security
+  // sensitive have been filtered out.
   virtual void GetConfig(const GetConfigCallback& callback) = 0;
 
   // Start the daemon process. This may require that the daemon be
@@ -105,6 +106,9 @@ class DaemonController {
 
   // Updates current host configuration with the values specified in
   // |config|. Changes must take effect before the call completes.
+  // Any value in the existing configuration that isn't specified in |config|
+  // is preserved. |config| must not contain host_id or xmpp_login values,
+  // because implementations of this method cannot change them.
   virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
                             const CompletionCallback& done_callback) = 0;
 
