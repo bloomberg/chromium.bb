@@ -119,7 +119,8 @@ bool IsVisibleNormalWindow(aura::Window* window) {
   // IsVisible() also tracks the layer visibility state.
   return window &&
     window->TargetVisibility() &&
-    window->type() == aura::client::WINDOW_TYPE_NORMAL;
+    (window->type() == aura::client::WINDOW_TYPE_NORMAL ||
+     window->type() == aura::client::WINDOW_TYPE_PANEL);
 }
 
 }  // namespace
