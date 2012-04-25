@@ -2757,17 +2757,29 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </if>
 
       <!-- Remove in-progress downloads confirmation dialog -->
-      <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL" desc="Button text for OKing to close the browser when a single download is in-progress.">
-        Close and cancel download
+      <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the browser when one download is in progress.">
+        Download in progress
       </message>
-      <message name="IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL" desc="Button text for OKing to close the browser when multiple downloads are in-progress.">
-        Close and cancel downloads
+      <message name="IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the browser when multiple downloads are in progress.">
+        Downloads in progress
       </message>
-      <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL" desc="Button text for canceling the closing of the browser when a single download is in-progress.">
-        Wait for download to finish
+      <message name="IDS_SINGLE_INCOGNITO_DOWNLOAD_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the last incognito window when one incognito download is in progress.">
+        Incognito download in progress
       </message>
-      <message name="IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL" desc="Button text for canceling the closing of the browser when downloads are in-progress.">
-        Wait for downloads to finish
+      <message name="IDS_MULTIPLE_INCOGNITO_DOWNLOADS_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the last incognito window when multiple incognito downloads are in progress.">
+        Incognito downloads in progress
+      </message>
+      <message name="IDS_SINGLE_INCOGNITO_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the last incognito window when one incognito download is in progress.">
+        An incognito download is currently in progress. Do you want to exit incognito mode and cancel the download?
+      </message>
+      <message name="IDS_MULTIPLE_INCOGNITO_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the last incognito window when multiple incognito downloads are in progress.">
+        Incognito downloads are currently in progress. Do you want to exit incognito mode and cancel the downloads?
+      </message>
+      <message name="IDS_INCOGNITO_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL" desc="Button text for OKing to close the last incognito window when one or more incognito downloads are in progress.">
+        Yes, exit incognito mode
+      </message>
+      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL" desc="Button text for canceling the closing of the browser or the last incognito window when one or more downloads are in progress.">
+        No
       </message>
 
       <!-- "Create application shortcuts" menu item -->

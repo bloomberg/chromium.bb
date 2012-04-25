@@ -627,7 +627,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 // Helper function for populating and displaying the in progress downloads at
 // exit alert panel.
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount {
-  NSString* warningText = nil;
+  NSString* titleText = nil;
   NSString* explanationText = nil;
   NSString* waitTitle = nil;
   NSString* exitTitle = nil;
@@ -635,37 +635,28 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   // Set the dialog text based on whether or not there are multiple downloads.
   if (downloadCount == 1) {
     // Dialog text: warning and explanation.
-    warningText = l10n_util::GetNSString(
-        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING);
+    titleText = l10n_util::GetNSString(
+        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_TITLE);
     explanationText = l10n_util::GetNSString(
         IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION);
-
-    // Cancel download and exit button text.
-    exitTitle = l10n_util::GetNSString(
-        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL);
-
-    // Wait for download button text.
-    waitTitle = l10n_util::GetNSString(
-        IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
   } else {
     // Dialog text: warning and explanation.
-    warningText = l10n_util::GetNSStringF(
-        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
+    titleText = l10n_util::GetNSStringF(
+        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_TITLE,
         base::IntToString16(downloadCount));
     explanationText = l10n_util::GetNSString(
         IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION);
-
-    // Cancel downloads and exit button text.
-    exitTitle = l10n_util::GetNSString(
-        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL);
-
-    // Wait for downloads button text.
-    waitTitle = l10n_util::GetNSString(
-        IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
   }
+  // Cancel download and exit button text.
+  exitTitle = l10n_util::GetNSString(
+      IDS_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL);
+
+  // Wait for download button text.
+  waitTitle = l10n_util::GetNSString(
+      IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
 
   // 'waitButton' is the default choice.
-  int choice = NSRunAlertPanel(warningText, explanationText,
+  int choice = NSRunAlertPanel(titleText, explanationText,
                                waitTitle, exitTitle, nil);
   return choice == NSAlertDefaultReturn ? YES : NO;
 }

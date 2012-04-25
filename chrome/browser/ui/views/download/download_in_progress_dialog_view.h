@@ -13,10 +13,10 @@
 class Browser;
 
 namespace views {
-class Label;
+class MessageBoxView;
 }
 
-class DownloadInProgressDialogView : public views::DialogDelegateView {
+class DownloadInProgressDialogView : public views::DialogDelegate {
  public:
   static void Show(Browser* browser, gfx::NativeWindow parent_window);
 
@@ -24,22 +24,24 @@ class DownloadInProgressDialogView : public views::DialogDelegateView {
   explicit DownloadInProgressDialogView(Browser* browser);
   virtual ~DownloadInProgressDialogView();
 
-  // views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-
-  // views::DialogDelegateView:
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  // views::DialogDelegate:
   virtual int GetDefaultDialogButton() const OVERRIDE;
+  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
+
+  // views::WidgetDelegate:
   virtual ui::ModalType GetModalType() const OVERRIDE;
   virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
+  virtual views::Widget* GetWidget() OVERRIDE;
+  virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
   Browser* browser_;
-  views::Label* warning_;
-  views::Label* explanation_;
+  views::MessageBoxView* message_box_view_;
 
+  string16 title_text_;
   string16 ok_button_text_;
   string16 cancel_button_text_;
 
