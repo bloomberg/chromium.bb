@@ -8,7 +8,8 @@
 // 'base' project can be found in ipc/ipc_message_utils.h.  This file contains
 // specializations for types that are used by the content code, and which need
 // manual serialization code.  This is usually because they're not structs with
-// public members..
+// public members, or because the same type is being used in multiple
+// *_messages.h headers.
 
 #ifndef CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_
 #define CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_
@@ -23,11 +24,16 @@
 #include "ipc/ipc_message_utils.h"
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_status.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebReferrerPolicy.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
 #include "webkit/glue/resource_type.h"
 
 class SkBitmap;
+
+namespace content {
+struct Referrer;
+}
 
 namespace gfx {
 class Point;
@@ -108,6 +114,14 @@ struct ParamTraits<base::PlatformFileInfo> {
   typedef base::PlatformFileInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<content::Referrer> {
+  typedef content::Referrer param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 
@@ -229,6 +243,11 @@ struct CONTENT_EXPORT ParamTraits<SkBitmap> {
 
 template <>
 struct SimilarTypeTraits<base::PlatformFileError> {
+  typedef int Type;
+};
+
+template <>
+struct SimilarTypeTraits<WebKit::WebReferrerPolicy> {
   typedef int Type;
 };
 

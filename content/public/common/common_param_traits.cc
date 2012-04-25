@@ -5,6 +5,7 @@
 #include "content/public/common/common_param_traits.h"
 
 #include "content/public/common/content_constants.h"
+#include "content/public/common/referrer.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
@@ -442,6 +443,26 @@ void ParamTraits<base::PlatformFileInfo>::Log(
   LogParam(p.last_accessed.ToDoubleT(), l);
   l->append(",");
   LogParam(p.creation_time.ToDoubleT(), l);
+  l->append(")");
+}
+
+void ParamTraits<content::Referrer>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.url);
+  WriteParam(m, p.policy);
+}
+
+bool ParamTraits<content::Referrer>::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  return ReadParam(m, iter, &r->url) && ReadParam(m, iter, &r->policy);
+}
+
+void ParamTraits<content::Referrer>::Log(
+    const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(p.url, l);
+  l->append(",");
+  LogParam(p.policy, l);
   l->append(")");
 }
 
