@@ -512,7 +512,10 @@
     u'device_mandatory_policies': {
       u'DeviceDataRoamingEnabled': False,
       u'DeviceMetricsReportingEnabled': True,
-      u'DeviceShowUserNamesOnSignin': True}},
+      u'DeviceShowUserNamesOnSignin': True,
+      u'ReportDeviceActivityTimes': False,
+      u'ReportDeviceBootMode': False,
+      u'ReportDeviceVersionInfo': False}},
 
   u'prod_enterprise_crosprqa3_user': {
     u'device_recommended_policies': {},
@@ -525,7 +528,10 @@
         u'*@gmail.com'],
       u'DeviceDataRoamingEnabled': True,
       u'DeviceMetricsReportingEnabled': True,
-      u'DeviceShowUserNamesOnSignin': True}},
+      u'DeviceShowUserNamesOnSignin': True,
+      u'ReportDeviceActivityTimes': True,
+      u'ReportDeviceBootMode': True,
+      u'ReportDeviceVersionInfo': True}},
 
   u'prod_enterprise_crosprqa4_user': {
     u'device_recommended_policies': {},
@@ -553,10 +559,13 @@
         u'*@crosprqa0.com',
         u'*@crosprqa2.com',
         u'*@crosprqa3.com'],
-      u'ChromeOsReleaseChannel': u'domain',
+      u'ChromeOsReleaseChannelDelegated': True,
       u'DeviceDataRoamingEnabled': False,
       u'DeviceMetricsReportingEnabled': False,
-      u'DeviceShowUserNamesOnSignin': False}},
+      u'DeviceShowUserNamesOnSignin': False,
+      u'ReportDeviceActivityTimes': False,
+      u'ReportDeviceBootMode': False,
+      u'ReportDeviceVersionInfo': False}},
 
   u'test_enterprise_crosqa0_user': {
     u'device_recommended_policies': {},
@@ -567,7 +576,10 @@
     u'device_mandatory_policies': {
       u'DeviceDataRoamingEnabled': False,
       u'DeviceMetricsReportingEnabled': True,
-      u'DeviceShowUserNamesOnSignin': True}},
+      u'DeviceShowUserNamesOnSignin': True,
+      u'ReportDeviceActivityTimes': False,
+      u'ReportDeviceBootMode': False,
+      u'ReportDeviceVersionInfo': False}},
 
   u'test_enterprise_crosqa3_user': {
     u'device_recommended_policies': {},
@@ -580,7 +592,10 @@
         u'*@gmail.com'],
       u'DeviceDataRoamingEnabled': True,
       u'DeviceMetricsReportingEnabled': True,
-      u'DeviceShowUserNamesOnSignin': True}},
+      u'DeviceShowUserNamesOnSignin': True,
+      u'ReportDeviceActivityTimes': True,
+      u'ReportDeviceBootMode': True,
+      u'ReportDeviceVersionInfo': True}},
 
   u'test_enterprise_crosqa4_user': {
     u'device_recommended_policies': {},
@@ -608,8 +623,11 @@
         u'*@crosqa0.com',
         u'*@crosqa2.com',
         u'*@crosqa3.com'],
-      u'ChromeOsReleaseChannel': u'domain',
+      u'ChromeOsReleaseChannelDelegated': True,
       u'DeviceDataRoamingEnabled': False,
       u'DeviceMetricsReportingEnabled': False,
-      u'DeviceShowUserNamesOnSignin': False}},
+      u'DeviceShowUserNamesOnSignin': False,
+      u'ReportDeviceActivityTimes': False,
+      u'ReportDeviceBootMode': False,
+      u'ReportDeviceVersionInfo': False}},
 }
