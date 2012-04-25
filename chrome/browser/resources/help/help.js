@@ -213,6 +213,16 @@ cr.define('help', function() {
     setReleaseChannel_: function(channel) {
       chrome.send('setReleaseTrack', [channel]);
     },
+
+    /**
+     * Sets the value of the "Last Updated" field of the "More Info" section.
+     * @param {String} lastUpdated The date of the last update.
+     * @private
+     */
+    setLastUpdated_: function(lastUpdated) {
+      $('last-updated-container').classList.remove('empty');
+      $('last-updated').textContent = lastUpdated;
+    },
   };
 
   HelpPage.setUpdateStatus = function(status, message) {
@@ -250,6 +260,10 @@ cr.define('help', function() {
   HelpPage.setReleaseChannel = function(channel) {
     HelpPage.getInstance().setReleaseChannel_(channel);
   };
+
+  HelpPage.setLastUpdated = function(lastUpdated) {
+    HelpPage.getInstance().setLastUpdated_(lastUpdated);
+  }
 
   // Export
   return {

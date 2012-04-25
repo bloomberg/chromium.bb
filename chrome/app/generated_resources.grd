@@ -5884,6 +5884,9 @@ Because search results are requested even while you're typing your query, your d
       <message name="IDS_ABOUT_VERSION_COMMAND_LINE" desc="label for the command line on the about:version page">
         Command Line
       </message>
+      <message name="IDS_ABOUT_VERSION_LAST_UPDATED" desc="label for date last updated on the about:version page">
+        Last Updated
+      </message>
       <message name="IDS_ABOUT_VERSION_EXECUTABLE_PATH" desc="label for the executable path on the about:version page">
         Executable Path
       </message>
