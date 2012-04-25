@@ -103,6 +103,13 @@ DirectoryModel.prototype.getFileList = function() {
 };
 
 /**
+ * @return {MetadataCache} Metadata cache.
+ */
+DirectoryModel.prototype.getMetadataCache = function() {
+  return this.metadataCache_;
+};
+
+/**
  * Sort the file list.
  * @param {string} sortField Sort field.
  * @param {string} sortDirection "asc" or "desc".
@@ -153,7 +160,7 @@ DirectoryModel.prototype.isPathReadOnly = function(path) {
     case DirectoryModel.RootType.DOWNLOADS:
       return false;
     case DirectoryModel.RootType.GDATA:
-      return !navigator.onLine;
+      return util.isOffline();
     default:
       return true;
   }

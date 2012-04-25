@@ -75,6 +75,7 @@ FileTransferController.prototype = {
     doc.addEventListener('cut', this.onCut_.bind(this));
     doc.addEventListener('beforepaste', this.onBeforePaste_.bind(this));
     doc.addEventListener('paste', this.onPaste_.bind(this));
+    this.copyCommand_ = doc.querySelector('command#copy');
   },
 
   /**
@@ -85,7 +86,7 @@ FileTransferController.prototype = {
    *     |dataTransfer.effectAllowed| property ('move', 'copy', 'copyMove').
    */
   cutOrCopy: function(dataTransfer, effectAllowed) {
-    var directories  = [];
+    var directories = [];
     var files = [];
     var entries = this.selectedEntries_;
     for (var i = 0; i < entries.length; i++) {
@@ -264,6 +265,8 @@ FileTransferController.prototype = {
   },
 
   canCopyOrDrag_: function() {
+    if (this.isOnGData && util.isOffline() && !this.allGDataFilesAvailable)
+      return false;
     return this.selectedEntries_.length > 0;
   },
 
@@ -382,6 +385,22 @@ FileTransferController.prototype = {
       // image will be rendered without IMG tags.
       if (dragNodes.length < MAX_DRAG_THUMBAIL_COUNT)
         dragNodes.push(new this.dragNodeConstructor_(entries[i]));
+    }
+
+    if (this.isOnGData) {
+      this.allGDataFilesAvailable = false;
+      var urls = entries.map(function(e) { return e.toURL() });
+      this.directoryModel_.getMetadataCache().get(
+          urls, 'gdata', function(props) {
+        // We consider directories not available offline for the purposes of
+        // file transfer since we cannot afford to recursive traversal.
+        this.allGDataFilesAvailable =
+            entries.filter(function(e) {return e.isDirectory}).length == 0 &&
+            props.filter(function(p) {return !p.availableOffline}).length == 0;
+        // |Copy| is the only menu item affected by allGDataFilesAvailable.
+        // It could be open right now, update its UI.
+        this.copyCommand_.disabled = !this.canCopyOrDrag_();
+      }.bind(this));
     }
   },
 

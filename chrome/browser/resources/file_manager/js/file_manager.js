@@ -1989,7 +1989,9 @@ FileManager.prototype = {
         this.displaySizeInDiv_(listItem.querySelector('.size'), props);
         this.displayTypeInDiv_(listItem.querySelector('.type'), props);
       } else if (type == 'gdata') {
-        this.displayOfflineInDiv_(listItem.querySelector('.offline'), props);
+        var offline = listItem.querySelector('.offline');
+        if (offline)  // This column is only present in full page mode.
+          this.displayOfflineInDiv_(offline, props);
         this.displayGDataStyleInItem_(listItem, entry, props);
       }
     }
@@ -2041,6 +2043,7 @@ FileManager.prototype = {
       directoryCount: 0,
       bytes: 0,
       showBytes: false,
+      allGDataFilesPresent: false,
       iconType: null,
       indexes: this.currentList_.selectionModel.selectedIndexes
     };
@@ -2155,6 +2158,25 @@ FileManager.prototype = {
 
       this.dispatchEvent(new cr.Event('selection-summarized'));
     }.bind(this));
+
+    if (this.isOnGData()) {
+      this.metadataCache_.get(selection.urls, 'gdata', function(props) {
+        selection.allGDataFilesPresent =
+            props.filter(function(p) {return !p.availableOffline}).length == 0;
+        this.updateOkButton_();
+      }.bind(this));
+    }
+  };
+
+  /**
+    * Check if all the files in the current selection are available. The only
+    * case when files might be not available is when the selection contains
+    * uncached GData files and the browser is offline.
+    * @return {boolean} True if all files in the current selection are
+   *                    available.
+    */
+  FileManager.prototype.isSelectionAvailable = function() {
+    return !this.isOnGDataOffline() || this.selection.allGDataFilesPresent;
   };
 
   /**
@@ -2466,17 +2488,15 @@ FileManager.prototype = {
   FileManager.prototype.executeIfAvailable_ = function(urls, callback) {
     if (this.isOnGDataOffline()) {
       this.metadataCache_.get(urls, 'gdata', function(props) {
-        for (var i = 0; i != props.length; i++) {
-          if (!props[i].availableOffline) {
-            this.alert.showHtml(
-                str('OFFLINE_HEADER'),
-                strf(
-                    urls.length == 1 ?
-                        'OFFLINE_MESSAGE' :
-                        'OFFLINE_MESSAGE_PLURAL',
-                    str('OFFLINE_COLUMN_LABEL')));
-            return;
-          }
+        if (props.filter(function(p) {return !p.availableOffline}).length) {
+          this.alert.showHtml(
+              str('OFFLINE_HEADER'),
+              strf(
+                  urls.length == 1 ?
+                      'OFFLINE_MESSAGE' :
+                      'OFFLINE_MESSAGE_PLURAL',
+                  str('OFFLINE_COLUMN_LABEL')));
+          return;
         }
         callback(urls);
       }.bind(this));
@@ -2485,12 +2505,8 @@ FileManager.prototype = {
     }
   };
 
-  FileManager.prototype.isOffline = function() {
-    return !navigator.onLine;
-  };
-
   FileManager.prototype.onOnlineOffline_ = function() {
-    if (this.isOffline()) {
+    if (util.isOffline()) {
       console.log('OFFLINE');
       this.dialogContainer_.setAttribute('offline', true);
     } else {
@@ -2500,7 +2516,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.isOnGDataOffline = function() {
-    return this.isOnGData() && this.isOffline();
+    return this.isOnGData() && util.isOffline();
   };
 
   FileManager.prototype.isOnReadonlyDirectory = function() {
@@ -3076,7 +3092,7 @@ FileManager.prototype = {
     }
     var pin = checkbox.checked;
     this.metadataCache_.get(entry, 'gdata', function(gdata) {
-      if (self.isOffline() && pin && !gdata.present) {
+      if (util.isOffline() && pin && !gdata.present) {
         // If we are offline, we cannot pin a file that is not already present.
         checkbox.checked = false;  // Revert the default action.
         self.alert.showHtml(
@@ -3189,11 +3205,13 @@ FileManager.prototype = {
       selectable = this.selection.directoryCount == 1 &&
           this.selection.fileCount == 0;
     } else if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE) {
-      selectable = (this.selection.directoryCount == 0 &&
+      selectable = (this.isSelectionAvailable() &&
+                    this.selection.directoryCount == 0 &&
                     this.selection.fileCount == 1);
     } else if (this.dialogType_ ==
                FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
-      selectable = (this.selection.directoryCount == 0 &&
+      selectable = (this.isSelectionAvailable() &&
+                    this.selection.directoryCount == 0 &&
                     this.selection.fileCount >= 1);
     } else if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
       if (this.isOnReadonlyDirectory()) {
