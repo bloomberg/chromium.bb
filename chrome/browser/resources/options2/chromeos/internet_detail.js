@@ -6,6 +6,27 @@ cr.define('options.internet', function() {
   var OptionsPage = options.OptionsPage;
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
 
+  /**
+   * Minimum delay in milliseconds before updating controls.  Used to
+   * consolidate update requests resulting from preference update
+   * notifications.
+   * @type {Number}
+   * @const
+   */
+  var minimumUpdateContentsDelay_ = 50;
+
+  /**
+   * Time of the last request to update controls in milliseconds.
+   * @type {Number}
+   */
+  var lastContentsUpdateRequest_ = 0;
+
+  /**
+   * Time of the last update to the controls in milliseconds.
+   * @type {Number}
+   */
+  var lastContentsUpdate_ = 0;
+
   /*
    * Helper function to set hidden attribute for elements matching a selector.
    * @param {string} selector CSS selector for extracting a list of elements.
@@ -31,7 +52,31 @@ cr.define('options.internet', function() {
    * @param {Event} e The update event.
    */
   function handlePrefUpdate(e) {
-    DetailsInternetPage.getInstance().updateControls();
+    var now = new Date();
+    requestUpdateControls(now.getTime());
+  }
+
+  /**
+   * Throttles the frequency of updating controls to accelerate loading of the
+   * page.
+   * @param {Number} when Timestamp for the update request.
+   */
+  function requestUpdateControls(when) {
+    if (when < lastContentsUpdate_)
+      return;
+    var now = new Date();
+    var time = now.getTime();
+    if (!lastContentsUpdateRequest_)
+      lastContentsUpdateRequest_ = time;
+    var elapsed = time - lastContentsUpdateRequest_;
+    if (elapsed > minimumUpdateContentsDelay_) {
+      DetailsInternetPage.getInstance().updateControls();
+    } else {
+      setTimeout(function() {
+        requestUpdateControls(when);
+      }, minimumUpdateContentsDelay_);
+    }
+    lastContentsUpdateRequest_ = time;
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -274,6 +319,10 @@ cr.define('options.internet', function() {
      * @private
      */
     updateControls: function() {
+      // Record time of the update to throttle future updates.
+      var now = new Date();
+      lastContentsUpdate_ = now.getTime();
+
       // Only show ipconfig section if network is connected OR if nothing on
       // this device is connected. This is so that you can fix the ip configs
       // if you can't connect to any network.
