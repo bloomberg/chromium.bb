@@ -14,6 +14,7 @@ SDK_BUILD_DIR = buildbot_common.SCRIPT_DIR
 MONO_BUILD_DIR = os.path.join(SDK_BUILD_DIR, 'mono_build')
 MONO_DIR = os.path.join(MONO_BUILD_DIR, 'nacl-mono')
 
+
 def main(args):
   parser = optparse.OptionParser()
   parser.add_option('--arch',
@@ -115,6 +116,7 @@ def main(args):
       cwd=os.path.join(SDK_BUILD_DIR, arch_to_output_folder[options.arch]))
 
   return 0
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
