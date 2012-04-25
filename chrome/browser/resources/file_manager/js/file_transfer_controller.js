@@ -51,12 +51,16 @@ FileTransferController.prototype = {
   /**
    * @param {cr.ui.List} list List itself and its directory items will could
    *                          be drop target.
+   * @param {boolean=} opt_onlyIntoDirectories If true only directory list
+   *     items could be drop targets. Otherwise any other place of the list
+   *     accetps files (putting it into the current directory).
    */
-  attachDropTarget: function(list) {
+  attachDropTarget: function(list, opt_onlyIntoDirectories) {
     list.addEventListener('dragover', this.onDragOver_.bind(this, list));
     list.addEventListener('dragenter', this.onDragEnter_.bind(this, list));
     list.addEventListener('dragleave', this.onDragLeave_.bind(this, list));
-    list.addEventListener('drop', this.onDrop_.bind(this, list));
+    list.addEventListener('drop', this.onDrop_.bind(this, list,
+                          !!opt_onlyIntoDirectories));
   },
 
   /**
@@ -192,13 +196,15 @@ FileTransferController.prototype = {
       this.setDropTarget_(null);
   },
 
-  onDrop_: function(list, event) {
+  onDrop_: function(list, onlyIntoDirectories, event) {
     console.log('drop: ', event.dataTransfer.dropEffect);
     var item = list.getListItemAncestor(event.target);
     var dropTarget = item && list.isItem(item) ?
-       this.fileList_.item(item.listIndex) : null;
+        list.dataModel.item(item.listIndex) : null;
     if (dropTarget && !dropTarget.isDirectory)
       dropTarget = null;
+    if (onlyIntoDirectories && !dropTarget)
+      return;
     if (!this.canPasteOrDrop_(event.dataTransfer, dropTarget))
       return;
     event.preventDefault();
@@ -214,7 +220,8 @@ FileTransferController.prototype = {
       return;
 
     if (listItem) {
-      var entry = this.fileList_.item(listItem.listIndex);
+      var list = listItem.parentElement;
+      var entry = list.dataModel.item(listItem.listIndex);
       if (entry.isDirectory &&
           (!opt_dataTransfer ||
            this.canPasteOrDrop_(opt_dataTransfer, entry))) {
@@ -308,8 +315,10 @@ FileTransferController.prototype = {
   },
 
   canPasteOrDrop_: function(dataTransfer, opt_entry) {
-    if (this.readonly)
+    if (!opt_entry && this.readonly)
       return false;  // assure destination entry is in the current directory.
+    if (opt_entry && this.directoryModel_.isPathReadOnly(opt_entry.fullPath))
+      return false;
 
     if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') == -1)
       return false;  // Unsupported type of content.

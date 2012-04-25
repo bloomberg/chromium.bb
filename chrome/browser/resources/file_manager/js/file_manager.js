@@ -387,8 +387,6 @@ FileManager.prototype = {
        return self.getMetadataProvider().isInitialized();
     });
 
-    this.directoryModel_.setOffline(this.isOffline());
-
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE)
       this.initDataTransferOperations_();
 
@@ -416,6 +414,7 @@ FileManager.prototype = {
     controller.attachDropTarget(this.table_.list);
     controller.attachDragSource(this.grid_);
     controller.attachDropTarget(this.grid_);
+    controller.attachDropTarget(this.rootsList_, true);
     controller.attachCopyPasteHandlers(this.document_);
     controller.addEventListener('selection-copied',
         this.blinkSelection.bind(this));
@@ -2498,7 +2497,6 @@ FileManager.prototype = {
       console.log('ONLINE');
       this.dialogContainer_.removeAttribute('offline');
     }
-    this.directoryModel_.setOffline(this.isOffline());
   };
 
   FileManager.prototype.isOnGDataOffline = function() {

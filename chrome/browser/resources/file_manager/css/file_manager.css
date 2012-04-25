@@ -223,6 +223,7 @@ list.roots-list > * {
   padding: 0 5px;
 }
 
+list.roots-list > .accepts,
 list.roots-list > [lead][selected],
 list.roots-list > [lead],
 list.roots-list > [selected],
@@ -234,6 +235,7 @@ list.roots-list > [anchor] {
   height: 37px;
 }
 
+list.roots-list > .accepts:hover,
 list.roots-list > [lead]:hover,
 list.roots-list > [lead][selected]:hover,
 list.roots-list > [selected]:hover,

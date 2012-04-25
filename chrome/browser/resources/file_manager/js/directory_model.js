@@ -53,10 +53,8 @@ function DirectoryModel(root, singleSelection, showGData, metadataCache) {
   this.filters_ = {};
   this.setFilterHidden(true);
 
-  // Readonly status.
-  this.readonly_ = false;
-  this.currentVolumeMetadata_ = {rootPath: '/'};
-  this.offline_ = false;
+  /** @type {Object.<string, boolean>} */
+  this.volumeReadOnlyStatus_ = {};
 }
 
 /**
@@ -139,23 +137,25 @@ DirectoryModel.prototype.getRootName = function() {
  * @return {boolean} True if current directory is read only.
  */
 DirectoryModel.prototype.isReadOnly = function() {
-  return this.readonly_;
+  return this.isPathReadOnly(this.getCurrentRootPath());
 };
 
 /**
- * @return {boolean} If offline.
+ * @param {strin} path Path to check.
+ * @return {boolean} True if the |path| is read only.
  */
-DirectoryModel.prototype.isOffline = function() {
-  return this.offline_;
-};
-
-/**
- * @param {boolean} value New online status.
- */
-DirectoryModel.prototype.setOffline = function(value) {
-  if (this.offline_ != value) {
-    this.offline_ = !!value;
-    this.updateReadonlyStatus_();
+DirectoryModel.prototype.isPathReadOnly = function(path) {
+  switch (DirectoryModel.getRootType(path)) {
+    case DirectoryModel.RootType.REMOVABLE:
+      return !!this.volumeReadOnlyStatus_[DirectoryModel.getRootPath(path)];
+    case DirectoryModel.RootType.ARCHIVE:
+      return true;
+    case DirectoryModel.RootType.DOWNLOADS:
+      return false;
+    case DirectoryModel.RootType.GDATA:
+      return !navigator.onLine;
+    default:
+      return true;
   }
 };
 
@@ -708,8 +708,6 @@ DirectoryModel.prototype.changeDirectoryEntry_ = function(dirEntry, action,
     // is loaded at this point.
     chrome.test.sendMessage('directory-change-complete');
   }
-  this.updateReadonlyStatus_();
-  this.updateVolumeMetadata_();
   this.updateRootsListSelection_();
   this.scan_(onRescanComplete);
   this.currentDirByRoot_[this.getCurrentRootPath()] = dirEntry.fullPath;
@@ -915,6 +913,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback, resolveGData) {
     removables: null,
     gdata: null
   };
+  var self = this;
 
   metrics.startInterval('Load.Roots');
   function done() {
@@ -922,6 +921,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback, resolveGData) {
       if (!groups[i])
         return;
 
+    self.updateVolumeReadOnlyStatus_(groups.removables);
     callback(groups.downloads.
              concat(groups.gdata).
              concat(groups.archives).
@@ -943,8 +943,6 @@ DirectoryModel.prototype.resolveRoots_ = function(callback, resolveGData) {
     groups.downloads = [];
     done();
   }
-
-  var self = this;
 
   function onGData(entry) {
     console.log('GData found:', entry);
@@ -1044,48 +1042,17 @@ DirectoryModel.prototype.updateRootsListSelection_ = function() {
 };
 
 /**
+ * @param {Array.<DirectoryEntry>} roots Removable volumes entries.
  * @private
  */
-DirectoryModel.prototype.updateReadonlyStatus_ = function() {
-  switch (this.getRootType()) {
-    case DirectoryModel.RootType.REMOVABLE:
-      this.readonly_ = !!this.currentVolumeMetadata_.isReadOnly;
-      break;
-    case DirectoryModel.RootType.ARCHIVE:
-      this.readonly_ = true;
-      break;
-    case DirectoryModel.RootType.DOWNLOADS:
-      this.readonly_ = false;
-      break;
-    case DirectoryModel.RootType.GDATA:
-      this.readonly_ = this.offline_;
-      break;
-    default:
-      this.readonly_ = true;
-      break;
-  }
-};
-
-/**
- * @private
- */
-DirectoryModel.prototype.updateVolumeMetadata_ = function() {
-  var rootPath = this.getCurrentRootPath();
-  if (this.currentVolumeMetadata_.rootPath != rootPath) {
-    var metadata = this.currentVolumeMetadata_ = {rootPath: rootPath};
-    if (DirectoryModel.getRootType(rootPath) ==
-        DirectoryModel.RootType.REMOVABLE) {
-      var self = this;
-      this.root_.getDirectory(rootPath, {}, function(entry) {
-        chrome.fileBrowserPrivate.getVolumeMetadata(entry.toURL(),
-            function(systemMetadata) {
-          if (systemMetadata) {
-            metadata.isReadOnly = systemMetadata.isReadOnly;
-            self.updateReadonlyStatus_();
-          }
-        });
-      });
-    }
+DirectoryModel.prototype.updateVolumeReadOnlyStatus_ = function(roots) {
+  var status = this.volumeReadOnlyStatus_ = {};
+  for (var i = 0; i < roots.length; i++) {
+    status[roots[i].fullPath] = false;
+    chrome.fileBrowserPrivate.getVolumeMetadata(roots[i].toURL(),
+        function(systemMetadata, path) {
+          status[path] = !!(systemMetadata && systemMetadata.isReadOnly);
+        }.bind(null, roots[i].fullPath));
   }
 };
 
