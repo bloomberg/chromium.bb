@@ -586,7 +586,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // |content_type| and |content_length|. The operation will place the newly
   // created file entity into |destination_directory|.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from *UI* thread. |callback| is run on the calling thread.
+  // TODO(satorux,achuith): Remove this: crosbug.com/29943
   void InitiateUpload(const std::string& file_name,
                       const std::string& content_type,
                       int64 content_length,
@@ -596,7 +597,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Resumes upload operation for chunk of file defined in |params..
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  // Can be called from *UI* thread. |callback| is run on the calling thread.
+  // TODO(satorux,achuith): Remove this: crosbug.com/29943
   void ResumeUpload(const ResumeUploadParams& params,
                     const ResumeFileUploadCallback& callback);
 
@@ -769,20 +771,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void OnDownloadStoredToCache(base::PlatformFileError error,
                                const std::string& resource_id,
                                const std::string& md5);
-
-  // Callback for handling file upload initialization requests.
-  void OnUploadLocationReceived(
-      const InitiateUploadCallback& callback,
-      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-      GDataErrorCode code,
-      const GURL& upload_location);
-
-  // Callback for handling file upload resume requests.
-  void OnResumeUpload(
-      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-      const ResumeFileUploadCallback& callback,
-      const ResumeUploadResponse& response,
-      scoped_ptr<DocumentEntry> new_entry);
 
   // Renames a file or directory at |file_path| on in-memory snapshot
   // of the file system. Returns PLATFORM_FILE_OK if successful.

@@ -1891,6 +1891,8 @@ void GDataFileSystem::InitiateUpload(
     const FilePath& destination_directory,
     const FilePath& virtual_path,
     const InitiateUploadCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   GURL destination_directory_url =
       GetUploadUrlForDirectory(destination_directory);
 
@@ -1905,52 +1907,20 @@ void GDataFileSystem::InitiateUpload(
   }
 
   documents_service_->InitiateUpload(
-          InitiateUploadParams(file_name,
-                                 content_type,
-                                 content_length,
-                                 destination_directory_url,
-                                 virtual_path),
-          base::Bind(&GDataFileSystem::OnUploadLocationReceived,
-                     GetWeakPtrForCurrentThread(),
-                     callback,
-                     // MessageLoopProxy is used to run |callback| on the
-                     // thread where this function was called.
-                     base::MessageLoopProxy::current()));
-}
-
-void GDataFileSystem::OnUploadLocationReceived(
-    const InitiateUploadCallback& callback,
-    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-    GDataErrorCode code,
-    const GURL& upload_location) {
-
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!callback.is_null()) {
-    message_loop_proxy->PostTask(FROM_HERE, base::Bind(callback, code,
-                                                       upload_location));
-  }
+      InitiateUploadParams(file_name,
+                           content_type,
+                           content_length,
+                           destination_directory_url,
+                           virtual_path),
+      callback);
 }
 
 void GDataFileSystem::ResumeUpload(
     const ResumeUploadParams& params,
     const ResumeFileUploadCallback& callback) {
-  documents_service_->ResumeUpload(
-          params,
-          base::Bind(&GDataFileSystem::OnResumeUpload,
-                     GetWeakPtrForCurrentThread(),
-                     base::MessageLoopProxy::current(),
-                     callback));
-}
-
-void GDataFileSystem::OnResumeUpload(
-    scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-    const ResumeFileUploadCallback& callback,
-    const ResumeUploadResponse& response,
-    scoped_ptr<DocumentEntry> new_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!callback.is_null())
-    message_loop_proxy->PostTask(FROM_HERE,
-        base::Bind(callback, response, base::Passed(&new_entry)));
+
+  documents_service_->ResumeUpload(params, callback);
 }
 
 void GDataFileSystem::UnsafeFindEntryByPath(
