@@ -5816,13 +5816,6 @@
    fun:_ZN20GoogleURLTrackerTest16SetSearchPendingERK4GURLi
    fun:_ZN71GoogleURLTrackerTest_InfobarShownAgainOnSearchAfterCommittedSearch_Test8TestBodyEv
 }
-{
-   bug_124961
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN5gdata*GDataDBTest_*Test_Test8TestBodyEv
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

@@ -47,8 +47,10 @@ class GDataDBTest : public testing::Test {
   void InitDB();
 
   // Helper functions to add a directory/file, incrementing index.
-  GDataDirectory* AddDirectory(GDataDirectory* parent, int sequence_id);
-  GDataFile* AddFile(GDataDirectory* parent, int sequence_id);
+  GDataDirectory* AddDirectory(GDataDirectory* parent,
+      GDataRootDirectory* root, int sequence_id);
+  GDataFile* AddFile(GDataDirectory* parent,
+      GDataRootDirectory* root, int sequence_id);
 
   // Tests GDataDB::NewIterator and GDataDBIter::GetNext.
   // Creates an iterator with start at |parent|, and iterates comparing with
@@ -59,7 +61,7 @@ class GDataDBTest : public testing::Test {
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<GDataDB> gdata_db_;
-  GDataRootDirectory root_;
+  std::set<GDataEntry*> entry_set_;
 };
 
 void GDataDBTest::SetUp() {
@@ -99,24 +101,28 @@ void GDataDBTest::TestGetFound(const GDataEntry& source) {
 
 void GDataDBTest::InitDB() {
   int sequence_id = 1;
-  GDataDirectory* dir1 = AddDirectory(NULL, sequence_id++);
-  GDataDirectory* dir2 = AddDirectory(NULL, sequence_id++);
-  GDataDirectory* dir3 = AddDirectory(dir1, sequence_id++);
+  GDataRootDirectory root;
+  GDataDirectory* dir1 = AddDirectory(NULL, &root, sequence_id++);
+  GDataDirectory* dir2 = AddDirectory(NULL, &root, sequence_id++);
+  GDataDirectory* dir3 = AddDirectory(dir1, &root, sequence_id++);
 
-  AddFile(dir1, sequence_id++);
-  AddFile(dir1, sequence_id++);
+  AddFile(dir1, &root, sequence_id++);
+  AddFile(dir1, &root, sequence_id++);
 
-  AddFile(dir2, sequence_id++);
-  AddFile(dir2, sequence_id++);
-  AddFile(dir2, sequence_id++);
+  AddFile(dir2, &root, sequence_id++);
+  AddFile(dir2, &root, sequence_id++);
+  AddFile(dir2, &root, sequence_id++);
 
-  AddFile(dir3, sequence_id++);
-  AddFile(dir3, sequence_id++);
+  AddFile(dir3, &root, sequence_id++);
+  AddFile(dir3, &root, sequence_id++);
+
+  STLDeleteElements(&entry_set_);
 }
 
 GDataDirectory* GDataDBTest::AddDirectory(GDataDirectory* parent,
+                                          GDataRootDirectory* root,
                                           int sequence_id) {
-  GDataDirectory* dir = new GDataDirectory(parent ? parent : &root_, &root_);
+  GDataDirectory* dir = new GDataDirectory(parent ? parent : root, root);
   const std::string dir_name = "dir" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("dir_resource_id:") +
                                   dir_name;
@@ -126,12 +132,14 @@ GDataDirectory* GDataDBTest::AddDirectory(GDataDirectory* parent,
   EXPECT_EQ(GDataDB::DB_OK, status);
   DVLOG(1) << "AddDirectory " << dir->GetFilePath().value()
            << ", " << resource_id;
+  entry_set_.insert(dir);
   return dir;
 }
 
 GDataFile* GDataDBTest::AddFile(GDataDirectory* parent,
+                                GDataRootDirectory* root,
                                 int sequence_id) {
-  GDataFile* file = new GDataFile(parent, &root_);
+  GDataFile* file = new GDataFile(parent, root);
   const std::string file_name = "file" + base::IntToString(sequence_id);
   const std::string resource_id = std::string("file_resource_id:") +
                                   file_name;
@@ -141,6 +149,7 @@ GDataFile* GDataDBTest::AddFile(GDataDirectory* parent,
   EXPECT_EQ(GDataDB::DB_OK, status);
   DVLOG(1) << "AddFile " << file->GetFilePath().value()
            << ", " << resource_id;
+  entry_set_.insert(file);
   return file;
 }
 
@@ -167,50 +176,51 @@ void GDataDBTest::TestIter(const std::string& parent,
 }  // namespace
 
 TEST_F(GDataDBTest, PutTest) {
-  GDataDirectory* dir = new GDataDirectory(&root_, &root_);
-  dir->set_file_name("dir");
-  dir->set_resource_id("dir_resource_id");
-  dir->set_content_url(GURL("http://content/dir"));
-  dir->set_upload_url(GURL("http://upload/dir"));
+  GDataRootDirectory root;
+  GDataDirectory dir(&root, &root);
+  dir.set_file_name("dir");
+  dir.set_resource_id("dir_resource_id");
+  dir.set_content_url(GURL("http://content/dir"));
+  dir.set_upload_url(GURL("http://upload/dir"));
 
-  TestGetNotFound(*dir);
+  TestGetNotFound(dir);
 
-  GDataDB::Status status = gdata_db_->Put(*dir);
+  GDataDB::Status status = gdata_db_->Put(dir);
   EXPECT_EQ(GDataDB::DB_OK, status);
 
-  TestGetFound(*dir);
+  TestGetFound(dir);
 
   scoped_ptr<GDataEntry> entry;
-  gdata_db_->GetByPath(dir->GetFilePath(), &entry);
-  EXPECT_EQ(dir->upload_url(), entry->AsGDataDirectory()->upload_url());
+  gdata_db_->GetByPath(dir.GetFilePath(), &entry);
+  EXPECT_EQ(dir.upload_url(), entry->AsGDataDirectory()->upload_url());
   EXPECT_TRUE(entry->AsGDataDirectory()->file_info().is_directory);
 
-  status = gdata_db_->DeleteByPath(dir->GetFilePath());
+  status = gdata_db_->DeleteByPath(dir.GetFilePath());
   EXPECT_EQ(GDataDB::DB_OK, status);
 
-  TestGetNotFound(*dir);
+  TestGetNotFound(dir);
 
-  GDataFile* file = new GDataFile(dir, &root_);
-  file->set_file_name("file1");
-  file->set_resource_id("file1_resource_id");
-  file->set_content_url(GURL("http://content/dir1/file1"));
-  file->set_file_md5("file1_md5");
+  GDataFile file(&dir, &root);
+  file.set_file_name("file");
+  file.set_resource_id("file_resource_id");
+  file.set_content_url(GURL("http://content/dir/file"));
+  file.set_file_md5("file_md5");
 
-  TestGetNotFound(*file);
+  TestGetNotFound(file);
 
-  status = gdata_db_->Put(*file);
+  status = gdata_db_->Put(file);
   EXPECT_EQ(GDataDB::DB_OK, status);
 
-  TestGetFound(*file);
+  TestGetFound(file);
 
-  gdata_db_->GetByPath(file->GetFilePath(), &entry);
-  EXPECT_EQ(file->file_md5(), entry->AsGDataFile()->file_md5());
+  gdata_db_->GetByPath(file.GetFilePath(), &entry);
+  EXPECT_EQ(file.file_md5(), entry->AsGDataFile()->file_md5());
   EXPECT_FALSE(entry->AsGDataFile()->file_info().is_directory);
 
-  status = gdata_db_->DeleteByPath(file->GetFilePath());
+  status = gdata_db_->DeleteByPath(file.GetFilePath());
   EXPECT_EQ(GDataDB::DB_OK, status);
 
-  TestGetNotFound(*file);
+  TestGetNotFound(file);
 }
 
 TEST_F(GDataDBTest, IterTest) {
