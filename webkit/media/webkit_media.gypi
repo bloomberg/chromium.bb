@@ -15,6 +15,10 @@
       ],
       'sources': [
         'android/audio_decoder_android.cc',
+        'android/webmediaplayer_android.cc',
+        'android/webmediaplayer_android.h',
+        'android/webmediaplayer_proxy_android.cc',
+        'android/webmediaplayer_proxy_android.h',
         'active_loader.cc',
         'active_loader.h',
         'audio_decoder.cc',
@@ -36,6 +40,8 @@
         'webmediaplayer_impl.h',
         'webmediaplayer_proxy.cc',
         'webmediaplayer_proxy.h',
+        'webmediaplayer_util.cc',
+        'webmediaplayer_util.h',
         'webvideoframe_impl.cc',
         'webvideoframe_impl.h',
       ],
@@ -45,11 +51,18 @@
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
           ],
         }],
-        ['OS=="android"', {
+        ['OS == "android"', {
           'sources!': [
             'audio_decoder.cc',
             'webmediaplayer_impl.cc',
             'webmediaplayer_impl.h',
+          ],
+          'dependencies': [
+            '<(DEPTH)/media/media.gyp:player_android',
+          ],
+        }, { # OS != "android"'
+          'sources/': [
+            ['exclude', '^android/'],
           ],
         }],
       ],
