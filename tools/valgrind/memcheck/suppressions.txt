@@ -5312,7 +5312,6 @@
    bug_118890_a
    Memcheck:Leak
    ...
-   fun:_ZN27TestURLRequestContextGetter20GetURLRequestContextEv
    fun:_ZN8notifier18SingleLoginAttemptC1EPNS_13LoginSettingsEPNS0_8DelegateE
    fun:_ZN8notifier5Login15StartConnectionEv
    fun:_ZN13sync_notifier20InvalidationNotifier17UpdateCredentialsERKSsS2_
