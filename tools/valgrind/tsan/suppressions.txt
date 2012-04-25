@@ -592,7 +592,12 @@
 {
   bug_102327_c
   ThreadSanitizer:Race
-  fun:tracked_objects::ThreadData::tracking_status
+  fun:tracked_objects::ThreadData::TrackingStatus
+}
+{
+  bug_102327_d
+  ThreadSanitizer:Race
+  fun:tracked_objects::ThreadData::SnapshotMaps
 }
 {
   bug_103711a
@@ -816,30 +821,6 @@
   fun:RenderWidget::DoDeferredUpdateAndSendInputAck
   fun:RenderWidget::InvalidationCallback
   fun:base::internal::RunnableAdapter::Run
-}
-{
-  bug_113771_a
-  ThreadSanitizer:Race
-  fun:tracked_objects::ThreadData::TrackingStatus
-  fun:tracked_objects::ThreadData::TallyABirthIfActive
-  fun:base::TrackingInfo::TrackingInfo
-  fun:base::PendingTask::PendingTask
-}
-{
-  bug_113771_b
-  ThreadSanitizer:Race
-  fun:tracked_objects::ThreadData::TrackingStatus
-  fun:tracked_objects::ThreadData::Now
-  fun:tracked_objects::ThreadData::NowForEndOfRun
-  fun:MessageLoop::RunTask
-}
-{
-  bug_113771_c
-  ThreadSanitizer:Race
-  fun:tracked_objects::ThreadData::TrackingStatus
-  fun:tracked_objects::ThreadData::Now
-  fun:tracked_objects::ThreadData::NowForStartOfRun
-  fun:MessageLoop::RunTask
 }
 {
   bug_115540
