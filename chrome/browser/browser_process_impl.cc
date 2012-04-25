@@ -58,6 +58,7 @@
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -74,6 +75,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/common/pepper_plugin_info.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -757,6 +759,16 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
           switches::kDisableInternalFlash) &&
       PathService::Get(chrome::FILE_FLASH_PLUGIN, &path)) {
     plugin_service->AddExtraPluginPath(path);
+  }
+
+  // Register bundled Pepper Flash if available.
+  content::PepperPluginInfo plugin;
+  bool add_at_beginning = false;
+  chrome::ChromeContentClient* content_client =
+      static_cast<chrome::ChromeContentClient*>(content::GetContentClient());
+  if (content_client->GetBundledPepperFlash(&plugin, &add_at_beginning)) {
+    plugin_service->RegisterInternalPlugin(plugin.ToWebPluginInfo(),
+                                           add_at_beginning);
   }
 
 #if defined(OS_POSIX)

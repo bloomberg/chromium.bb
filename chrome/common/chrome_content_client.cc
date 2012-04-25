@@ -194,7 +194,8 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
 #endif
 }
 
-void AddPepperFlash(std::vector<content::PepperPluginInfo>* plugins) {
+content::PepperPluginInfo CreatePepperFlashInfo(const FilePath& path,
+                                                const std::string& version) {
   content::PepperPluginInfo plugin;
 
   // Flash being out of process is handled separately than general plugins
@@ -202,50 +203,10 @@ void AddPepperFlash(std::vector<content::PepperPluginInfo>* plugins) {
   plugin.is_out_of_process = !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPpapiFlashInProcess);
   plugin.name = kFlashPluginName;
-
-  std::string flash_version;  // Should be something like 11.2 or 11.2.123.45.
-
-  // Prefer Pepper Flash specified from the command-line.
-  const CommandLine::StringType flash_path =
-      CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-          switches::kPpapiFlashPath);
-  if (!flash_path.empty()) {
-    plugin.path = FilePath(flash_path);
-
-    // Also get the version from the command-line.
-    flash_version = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kPpapiFlashVersion);
-  } else {
-    // Try to use a bundled Pepper Flash if:
-    //  1) it's forcibly enabled via the command-line;
-    bool bundled_flapper_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBundledPpapiFlash);
-    //  2) it's known to be available at build time and enabled by default; and
-#if defined(FLAPPER_AVAILABLE)
-    bundled_flapper_enabled |= IsPepperFlashEnabledByDefault();
-#endif
-    //  3) it's not forcibly disabled via the command-line.
-    bundled_flapper_enabled &= !CommandLine::ForCurrentProcess()->HasSwitch(
-                                   switches::kDisableBundledPpapiFlash);
-    if (!bundled_flapper_enabled)
-      return;
-
-#if defined(FLAPPER_AVAILABLE)
-    if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &plugin.path))
-      return;
-    // It is an error to have FLAPPER_AVAILABLE defined but then not having the
-    // plugin file in place, but this happens in Chrome OS builds.
-    // Use --disable-bundled-ppapi-flash to skip this.
-    DCHECK(file_util::PathExists(plugin.path));
-    flash_version = FLAPPER_VERSION_STRING;
-#else
-    LOG(ERROR) << "PPAPI Flash not included at build time.";
-    return;
-#endif  // FLAPPER_AVAILABLE
-  }
+  plugin.path = path;
 
   std::vector<std::string> flash_version_numbers;
-  base::SplitString(flash_version, '.', &flash_version_numbers);
+  base::SplitString(version, '.', &flash_version_numbers);
   if (flash_version_numbers.size() < 1)
     flash_version_numbers.push_back("11");
   // |SplitString()| puts in an empty string given an empty string. :(
@@ -269,7 +230,26 @@ void AddPepperFlash(std::vector<content::PepperPluginInfo>* plugins) {
                                           kFlashPluginSplExtension,
                                           kFlashPluginSplDescription);
   plugin.mime_types.push_back(spl_mime_type);
-  plugins->push_back(plugin);
+
+  return plugin;
+}
+
+void AddPepperFlashFromCommandLine(
+    std::vector<content::PepperPluginInfo>* plugins) {
+  const CommandLine::StringType flash_path =
+      CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+          switches::kPpapiFlashPath);
+  if (flash_path.empty())
+    return;
+
+  // Also get the version from the command-line. Should be something like 11.2
+  // or 11.2.123.45.
+  std::string flash_version =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kPpapiFlashVersion);
+
+  plugins->push_back(
+      CreatePepperFlashInfo(FilePath(flash_path), flash_version));
 }
 
 #if defined(OS_WIN)
@@ -346,7 +326,7 @@ void ChromeContentClient::SetGpuInfo(const content::GPUInfo& gpu_info) {
 void ChromeContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
   ComputeBuiltInPlugins(plugins);
-  AddPepperFlash(plugins);
+  AddPepperFlashFromCommandLine(plugins);
 }
 
 void ChromeContentClient::AddNPAPIPlugins(
@@ -475,5 +455,38 @@ bool ChromeContentClient::GetSandboxProfileForSandboxType(
   return false;
 }
 #endif
+
+bool ChromeContentClient::GetBundledPepperFlash(
+    content::PepperPluginInfo* plugin,
+    bool* override_npapi_flash) {
+#if defined(FLAPPER_AVAILABLE)
+  // Ignore bundled Pepper Flash if there is Pepper Flash specified from the
+  // command-line.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kPpapiFlashPath))
+    return false;
+
+  bool force_disable = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBundledPpapiFlash);
+  if (force_disable)
+    return false;
+
+  FilePath flash_path;
+  if (!PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &flash_path))
+    return false;
+  // It is an error to have FLAPPER_AVAILABLE defined but then not having the
+  // plugin file in place, but this happens in Chrome OS builds.
+  // Use --disable-bundled-ppapi-flash to skip this.
+  DCHECK(file_util::PathExists(flash_path));
+
+  bool force_enable = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBundledPpapiFlash);
+
+  *plugin = CreatePepperFlashInfo(flash_path, FLAPPER_VERSION_STRING);
+  *override_npapi_flash = force_enable || IsPepperFlashEnabledByDefault();
+  return true;
+#else
+  return false;
+#endif  // FLAPPER_AVAILABLE
+}
 
 }  // namespace chrome
