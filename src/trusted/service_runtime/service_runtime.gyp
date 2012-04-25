@@ -67,7 +67,6 @@
           # For generated header files from the x86-64 validator,
           # e.g. nacl_disallows.h.
           '<(SHARED_INTERMEDIATE_DIR)',
-          '<(DEPTH)/gdb_utils/src',
         ],
         'sources!': [
            '<(syscall_handler)',

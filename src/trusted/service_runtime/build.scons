@@ -12,9 +12,6 @@ Import('env')
 env.Append(CPPPATH=['${TARGET_ROOT}'])
 # this is needed for including gen/... files, see GENERATED below
 
-# this is needed for including gdb_utils files
-env.Append(CPPPATH=['${SOURCE_ROOT}/gdb_utils/src'])
-
 DEBUG_LIBS = ['debug_stub_init', 'gdb_rsp', 'debug_stub']
 if env.Bit('windows'):
   env.Append(CPPDEFINES=['WIN32'])

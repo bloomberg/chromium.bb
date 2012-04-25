@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <windows.h>
@@ -10,7 +10,7 @@
 #include "native_client/src/trusted/port/mutex.h"
 
 /*
- * Define the gdb_utils IMutex interface to use the NaCl version.
+ * Define the IMutex interface to use the NaCl version.
  * Unfortunately NaClSync does not have the correct recursive
  * property so we need to use our own version.
  */

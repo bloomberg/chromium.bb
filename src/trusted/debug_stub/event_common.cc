@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7,7 +7,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
 /*
- * Define the common gdb_utils IEvent interface to use the NaCl version.
+ * Define the common IEvent interface to use the NaCl version.
  * IEvent only suports single trigger Signal API.
  */
 

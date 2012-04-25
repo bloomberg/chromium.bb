@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdexcept>
@@ -15,7 +15,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 /*
- * Define the OS specific portions of gdb_utils IThread interface.
+ * Define the OS specific portions of IThread interface.
  */
 
 namespace {

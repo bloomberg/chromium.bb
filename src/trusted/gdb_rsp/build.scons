@@ -8,9 +8,6 @@
 
 Import('env')
 
-# this is needed for including gdb_utils files
-env.Append(CPPPATH=['${SOURCE_ROOT}/gdb_utils/src'])
-
 if env.Bit('windows'):
   env.Append(CPPDEFINES=['WIN32'])
   if env.Bit('target_x86_64'):
