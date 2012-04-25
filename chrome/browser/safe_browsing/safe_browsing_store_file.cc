@@ -244,11 +244,12 @@ bool SafeBrowsingStoreFile::Delete() {
 }
 
 bool SafeBrowsingStoreFile::CheckValidity() {
-  if (empty_)
+  // The file was either empty or never opened.  The empty case is
+  // presumed not to be invalid.  The never-opened case can happen if
+  // BeginUpdate() fails for any databases, and should already have
+  // caused the corruption callback to fire.
+  if (!file_.get())
     return true;
-
-  // If the file was not empty, it should be open.
-  DCHECK(file_.get());
 
   if (!FileRewind(file_.get()))
     return OnCorruptDatabase();
