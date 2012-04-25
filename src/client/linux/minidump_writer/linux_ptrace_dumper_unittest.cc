@@ -252,7 +252,14 @@ TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
                            4);
     EXPECT_EQ(dumper.threads()[i], one_thread_id);
   }
+  EXPECT_TRUE(dumper.ThreadsResume());
   kill(child_pid, SIGKILL);
+
+  // Reap child
+  int status;
+  ASSERT_NE(-1, HANDLE_EINTR(waitpid(child_pid, &status, 0)));
+  ASSERT_TRUE(WIFSIGNALED(status));
+  ASSERT_EQ(SIGKILL, WTERMSIG(status));
 }
 
 TEST(LinuxPtraceDumperTest, BuildProcPath) {
