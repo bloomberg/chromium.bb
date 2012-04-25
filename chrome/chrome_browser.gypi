@@ -507,6 +507,8 @@
         'browser/chromeos/external_metrics.h',
         'browser/chromeos/external_protocol_dialog.cc',
         'browser/chromeos/external_protocol_dialog.h',
+        'browser/chromeos/gdata/find_entry_delegate.cc',
+        'browser/chromeos/gdata/find_entry_delegate.h',
         'browser/chromeos/gdata/gdata_auth_service.cc',
         'browser/chromeos/gdata/gdata_auth_service.h',
         'browser/chromeos/gdata/gdata_db.h',

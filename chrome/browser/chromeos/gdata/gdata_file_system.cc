@@ -740,58 +740,6 @@ void CreateDocumentJsonFileOnIOThreadPool(
 
 }  // namespace
 
-// FindEntryDelegate class implementation.
-
-FindEntryDelegate::~FindEntryDelegate() {
-}
-
-// FindEntryCallbackRelayDelegate class implementation.
-// This class is used to relay calls between sync and async versions
-// of FindFileByPath(Sync|Async) calls.
-class FindEntryCallbackRelayDelegate : public FindEntryDelegate {
- public:
-  explicit FindEntryCallbackRelayDelegate(const FindEntryCallback& callback);
-  virtual ~FindEntryCallbackRelayDelegate();
-
- private:
-  // FindEntryDelegate overrides.
-  virtual void OnDone(base::PlatformFileError error,
-                      const FilePath& directory_path,
-                      GDataEntry* entry) OVERRIDE;
-
-  const FindEntryCallback callback_;
-};
-
-FindEntryCallbackRelayDelegate::FindEntryCallbackRelayDelegate(
-    const FindEntryCallback& callback) : callback_(callback) {
-}
-
-FindEntryCallbackRelayDelegate::~FindEntryCallbackRelayDelegate() {
-}
-
-void FindEntryCallbackRelayDelegate::OnDone(base::PlatformFileError error,
-                                            const FilePath& directory_path,
-                                            GDataEntry* entry) {
-  if (!callback_.is_null()) {
-    callback_.Run(error, directory_path, entry);
-  }
-}
-
-// ReadOnlyFindEntryDelegate class implementation.
-
-ReadOnlyFindEntryDelegate::ReadOnlyFindEntryDelegate() : entry_(NULL) {
-}
-
-void ReadOnlyFindEntryDelegate::OnDone(base::PlatformFileError error,
-                                       const FilePath& directory_path,
-                                       GDataEntry* entry) {
-  DCHECK(!entry_);
-  if (error == base::PLATFORM_FILE_OK)
-    entry_ = entry;
-  else
-    entry_ = NULL;
-}
-
 // GDataFileProperties struct implementation.
 
 GDataFileProperties::GDataFileProperties() : is_hosted_document(false) {
@@ -996,7 +944,7 @@ void GDataFileSystem::FindEntryByPathSync(
     const FilePath& search_file_path,
     FindEntryDelegate* delegate) {
   base::AutoLock lock(lock_);
-  UnsafeFindEntryByPath(search_file_path, delegate);
+  root_->FindEntryByPath(search_file_path, delegate);
 }
 
 void GDataFileSystem::FindEntryByResourceIdSync(
@@ -1923,57 +1871,6 @@ void GDataFileSystem::ResumeUpload(
   documents_service_->ResumeUpload(params, callback);
 }
 
-void GDataFileSystem::UnsafeFindEntryByPath(
-    const FilePath& file_path,
-    FindEntryDelegate* delegate) {
-  DCHECK(delegate);
-  lock_.AssertAcquired();
-
-  std::vector<FilePath::StringType> components;
-  file_path.GetComponents(&components);
-
-  GDataDirectory* current_dir = root_.get();
-  FilePath directory_path;
-  for (size_t i = 0; i < components.size() && current_dir; i++) {
-    directory_path = directory_path.Append(current_dir->file_name());
-
-    // Last element must match, if not last then it must be a directory.
-    if (i == components.size() - 1) {
-      if (current_dir->file_name() == components[i])
-        delegate->OnDone(base::PLATFORM_FILE_OK, directory_path, current_dir);
-      else
-        delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
-
-      return;
-    }
-
-    // Not the last part of the path, search for the next segment.
-    GDataFileCollection::const_iterator file_iter =
-        current_dir->children().find(components[i + 1]);
-    if (file_iter == current_dir->children().end()) {
-      delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
-      return;
-    }
-
-    // Found file, must be the last segment.
-    if (file_iter->second->file_info().is_directory) {
-      // Found directory, continue traversal.
-      current_dir = file_iter->second->AsGDataDirectory();
-    } else {
-      if ((i + 1) == (components.size() - 1)) {
-        delegate->OnDone(base::PLATFORM_FILE_OK,
-                         directory_path,
-                         file_iter->second);
-      } else {
-        delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
-      }
-
-      return;
-    }
-  }
-  delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
-}
-
 bool GDataFileSystem::GetFileInfoByPath(
     const FilePath& file_path, GDataFileProperties* properties) {
   DCHECK(properties);
@@ -2017,7 +1914,7 @@ GDataEntry* GDataFileSystem::GetGDataEntryByPath(
   lock_.AssertAcquired();
   // Find directory element within the cached file system snapshot.
   ReadOnlyFindEntryDelegate find_delegate;
-  UnsafeFindEntryByPath(file_path, &find_delegate);
+  root_->FindEntryByPath(file_path, &find_delegate);
   return find_delegate.entry();
 }
 
@@ -2738,7 +2635,7 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
     ContentOrigin origin,
     int start_changestamp,
     int root_feed_changestamp) {
-   DVLOG(1) << "Updating directory with a feed";
+  DVLOG(1) << "Updating directory with a feed";
 
   bool is_delta_feed = start_changestamp != 0;
   // We need to lock here as well (despite FindEntryByPath lock) since directory
@@ -2928,7 +2825,7 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
       if (root_feed_upload_link)
         root_->set_upload_url(root_feed_upload_link->href());
       *feed_changestamp = feed->largest_changestamp();
-      DCHECK(*feed_changestamp >= 0);
+      DCHECK_GE(*feed_changestamp, 0);
     }
 
     for (ScopedVector<DocumentEntry>::const_iterator iter =

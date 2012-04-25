@@ -10,6 +10,7 @@
 #include "base/platform_file.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/gdata/find_entry_delegate.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "net/base/escape.h"
@@ -444,6 +445,57 @@ void GDataRootDirectory::RemoveEntriesFromResourceMap(
 
     resource_map_.erase(iter->second->resource_id());
   }
+}
+
+void GDataRootDirectory::FindEntryByPath(
+    const FilePath& file_path,
+    FindEntryDelegate* delegate) {
+  // GDataFileSystem has already locked.
+  DCHECK(delegate);
+
+  std::vector<FilePath::StringType> components;
+  file_path.GetComponents(&components);
+
+  GDataDirectory* current_dir = this;
+  FilePath directory_path;
+  for (size_t i = 0; i < components.size() && current_dir; i++) {
+    directory_path = directory_path.Append(current_dir->file_name());
+
+    // Last element must match, if not last then it must be a directory.
+    if (i == components.size() - 1) {
+      if (current_dir->file_name() == components[i])
+        delegate->OnDone(base::PLATFORM_FILE_OK, directory_path, current_dir);
+      else
+        delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
+
+      return;
+    }
+
+    // Not the last part of the path, search for the next segment.
+    GDataFileCollection::const_iterator file_iter =
+        current_dir->children().find(components[i + 1]);
+    if (file_iter == current_dir->children().end()) {
+      delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
+      return;
+    }
+
+    // Found file, must be the last segment.
+    if (file_iter->second->file_info().is_directory) {
+      // Found directory, continue traversal.
+      current_dir = file_iter->second->AsGDataDirectory();
+    } else {
+      if ((i + 1) == (components.size() - 1)) {
+        delegate->OnDone(base::PLATFORM_FILE_OK,
+                         directory_path,
+                         file_iter->second);
+      } else {
+        delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
+      }
+
+      return;
+    }
+  }
+  delegate->OnDone(base::PLATFORM_FILE_ERROR_NOT_FOUND, FilePath(), NULL);
 }
 
 GDataEntry* GDataRootDirectory::GetEntryByResourceId(

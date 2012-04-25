@@ -19,6 +19,7 @@
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/chromeos/gdata/find_entry_delegate.h"
 #include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
@@ -59,15 +60,6 @@ typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& cache_file_path)>
     GetFileFromCacheCallback;
 
-// Used to get result of file search. Please note that |file| is a live
-// object provided to this callback under lock. It must not be used outside
-// of the callback method. This callback can be invoked on different thread
-// than one that started FileFileByPath() request.
-typedef base::Callback<void(base::PlatformFileError error,
-                            const FilePath& directory_path,
-                            GDataEntry* entry)>
-    FindEntryCallback;
-
 // Used to get files from the file system.
 typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& file_path,
@@ -104,36 +96,6 @@ typedef base::Callback<void(const std::string& resource_id)>
 // Callback for GetCacheState operation.
 typedef base::Callback<void(base::PlatformFileError error,
                             int cache_state)> GetCacheStateCallback;
-
-// Delegate class used to deal with results synchronous read-only search
-// over virtual file system.
-class FindEntryDelegate {
- public:
-  virtual ~FindEntryDelegate();
-
-  // Called when FindEntryByPathSync() completes search.
-  virtual void OnDone(base::PlatformFileError error,
-                      const FilePath& directory_path,
-                      GDataEntry* entry) = 0;
-};
-
-// Delegate used to find a directory element for file system updates.
-class ReadOnlyFindEntryDelegate : public FindEntryDelegate {
- public:
-  ReadOnlyFindEntryDelegate();
-
-  // Returns found entry.
-  GDataEntry* entry() { return entry_; }
-
- private:
-  // FindEntryDelegate overrides.
-  virtual void OnDone(base::PlatformFileError error,
-                      const FilePath& directory_path,
-                      GDataEntry* entry) OVERRIDE;
-
-  // Entry that was found.
-  GDataEntry* entry_;
-};
 
 // Helper structure used for extracting key properties from GDataFile object.
 struct GDataFileProperties {
@@ -601,10 +563,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // TODO(satorux,achuith): Remove this: crosbug.com/29943
   void ResumeUpload(const ResumeUploadParams& params,
                     const ResumeFileUploadCallback& callback);
-
-  // Unsafe (unlocked) version of FindEntryByPathSync method.
-  void UnsafeFindEntryByPath(const FilePath& file_path,
-                             FindEntryDelegate* delegate);
 
   // Converts document feed from gdata service into DirectoryInfo. On failure,
   // returns NULL and fills in |error| with an appropriate value.

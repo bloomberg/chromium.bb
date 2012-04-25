@@ -24,6 +24,7 @@
 
 namespace gdata {
 
+class FindEntryDelegate;
 class GDataFile;
 class GDataDirectory;
 class GDataRootDirectory;
@@ -80,7 +81,7 @@ class GDataEntry {
   static scoped_ptr<GDataEntry> FromProtoString(
       const std::string& serialized_proto);
 
-  // Convert to/from proto.
+  // Converts to/from proto.
   void FromProto(const GDataEntryProto& proto);
   void ToProto(GDataEntryProto* proto) const;
 
@@ -185,7 +186,7 @@ class GDataFile : public GDataEntry {
                                           DocumentEntry* doc,
                                           GDataRootDirectory* root);
 
-  // Convert to/from proto.
+  // Converts to/from proto.
   void FromProto(const GDataFileProto& proto);
   void ToProto(GDataFileProto* proto) const;
 
@@ -269,7 +270,7 @@ class GDataDirectory : public GDataEntry {
                                           DocumentEntry* doc,
                                           GDataRootDirectory* root);
 
-  // Convert to/from proto.
+  // Converts to/from proto.
   void FromProto(const GDataDirectoryProto& proto);
   void ToProto(GDataDirectoryProto* proto) const;
 
@@ -413,19 +414,23 @@ class GDataRootDirectory : public GDataDirectory {
   // GDataEntry implementation.
   virtual GDataRootDirectory* AsGDataRootDirectory() OVERRIDE;
 
-  // Add the entry to resource map.
+  // Adds the entry to resource map.
   void AddEntryToResourceMap(GDataEntry* entry);
 
-  // Remove the entry from resource map.
+  // Removes the entry from resource map.
   void RemoveEntryFromResourceMap(GDataEntry* entry);
 
-  // Remove the entries from resource map.
+  // Removes the entries from resource map.
   void RemoveEntriesFromResourceMap(const GDataFileCollection& children);
+
+  // Searches for |file_path| triggering callback in |delegate|.
+  void FindEntryByPath(const FilePath& file_path,
+                       FindEntryDelegate* delegate);
 
   // Returns the GDataEntry* with the corresponding |resource_id|.
   GDataEntry* GetEntryByResourceId(const std::string& resource_id);
 
-  // Set |cache_map_| data member to formal parameter |new_cache_map|.
+  // Sets |cache_map_| data member to formal parameter |new_cache_map|.
   void SetCacheMap(const CacheMap& new_cache_map);
 
   // Updates cache map with entry corresponding to |resource_id|.
@@ -446,14 +451,14 @@ class GDataRootDirectory : public GDataDirectory {
   CacheEntry* GetCacheEntry(const std::string& resource_id,
                             const std::string& md5);
 
-  // Remove temporary files (files in CACHE_TYPE_TMP) from the cache map.
+  // Removes temporary files (files in CACHE_TYPE_TMP) from the cache map.
   void RemoveTemporaryFilesFromCacheMap();
 
-  // Serialize/Parse to/from string via proto classes.
+  // Serializes/Parses to/from string via proto classes.
   void SerializeToString(std::string* serialized_proto) const;
   bool ParseFromString(const std::string& serialized_proto);
 
-  // Convert to/from proto.
+  // Converts to/from proto.
   void FromProto(const GDataRootDirectoryProto& proto);
   void ToProto(GDataRootDirectoryProto* proto) const;
 
