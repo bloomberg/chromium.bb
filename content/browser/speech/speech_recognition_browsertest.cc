@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
@@ -16,11 +17,15 @@
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/speech_recognition_session_config.h"
+#include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
+using content::SpeechRecognitionEventListener;
+using content::SpeechRecognitionSessionContext;
 using content::NavigationController;
 using content::WebContents;
 
@@ -36,7 +41,7 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
  public:
   FakeSpeechRecognitionManager()
       : session_id_(0),
-        delegate_(NULL),
+        listener_(NULL),
         did_cancel_all_(false),
         should_send_fake_response_(true),
         recognition_started_event_(false, false) {
@@ -63,23 +68,24 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
   }
 
   // SpeechRecognitionManager methods.
-  virtual void StartRecognition(
-      InputTagSpeechDispatcherHost* delegate,
-      int session_id,
-      int render_process_id,
-      int render_view_id,
-      const gfx::Rect& element_rect,
-      const std::string& language,
-      const std::string& grammar,
-      const std::string& origin_url,
-      net::URLRequestContextGetter* context_getter,
-      content::SpeechRecognitionPreferences* recognition_prefs) OVERRIDE {
-    VLOG(1) << "StartRecognition invoked.";
+  virtual int CreateSession(
+      const content::SpeechRecognitionSessionConfig& config,
+      SpeechRecognitionEventListener* event_listener) OVERRIDE {
+    VLOG(1) << "FAKE CreateSession invoked.";
     EXPECT_EQ(0, session_id_);
-    EXPECT_EQ(NULL, delegate_);
-    session_id_ = session_id;
-    delegate_ = delegate;
-    grammar_ = grammar;
+    EXPECT_EQ(NULL, listener_);
+    listener_ = event_listener;
+    grammar_ = config.grammar;
+    session_ctx_ = config.initial_context;
+    session_id_ = 1;
+    return session_id_;
+  }
+
+  virtual void StartSession(int session_id) OVERRIDE {
+    VLOG(1) << "FAKE StartSession invoked.";
+    EXPECT_EQ(session_id, session_id_);
+    EXPECT_TRUE(listener_ != NULL);
+
     if (should_send_fake_response_) {
       // Give the fake result in a short while.
       MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
@@ -93,45 +99,69 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManagerImpl {
     }
     recognition_started_event_.Signal();
   }
-  virtual void CancelRecognition(int session_id) OVERRIDE {
-    VLOG(1) << "CancelRecognition invoked.";
+
+  virtual void AbortSession(int session_id) OVERRIDE {
+    VLOG(1) << "FAKE AbortSession invoked.";
     EXPECT_EQ(session_id_, session_id);
     session_id_ = 0;
-    delegate_ = NULL;
+    listener_ = NULL;
   }
-  virtual void StopRecording(int session_id) OVERRIDE {
+
+  virtual void StopAudioCaptureForSession(int session_id) OVERRIDE {
     VLOG(1) << "StopRecording invoked.";
     EXPECT_EQ(session_id_, session_id);
     // Nothing to do here since we aren't really recording.
   }
-  virtual void CancelAllRequestsWithDelegate(
-      InputTagSpeechDispatcherHost* delegate) OVERRIDE {
+
+  virtual void AbortAllSessionsForListener(
+      content::SpeechRecognitionEventListener* listener) OVERRIDE {
     VLOG(1) << "CancelAllRequestsWithDelegate invoked.";
-    // delegate_ is set to NULL if a fake result was received (see below), so
-    // check that delegate_ matches the incoming parameter only when there is
+    // listener_ is set to NULL if a fake result was received (see below), so
+    // check that listener_ matches the incoming parameter only when there is
     // no fake result sent.
-    EXPECT_TRUE(should_send_fake_response_ || delegate_ == delegate);
+    EXPECT_TRUE(should_send_fake_response_ || listener_ == listener);
     did_cancel_all_ = true;
+  }
+
+  virtual void SendSessionToBackground(int session_id) OVERRIDE {}
+  virtual bool HasAudioInputDevices() OVERRIDE { return true; }
+  virtual bool IsCapturingAudio() OVERRIDE { return true; }
+  virtual string16 GetAudioInputDeviceModel() OVERRIDE { return string16(); }
+  virtual void ShowAudioInputSettings() OVERRIDE {}
+
+  virtual int LookupSessionByContext(
+      base::Callback<bool(
+          const content::SpeechRecognitionSessionContext&)> matcher)
+            const OVERRIDE {
+    bool matched = matcher.Run(session_ctx_);
+    return matched ? session_id_ : 0;
+  }
+
+  virtual content::SpeechRecognitionSessionContext GetSessionContext(
+      int session_id) const OVERRIDE {
+    EXPECT_EQ(session_id, session_id_);
+    return session_ctx_;
   }
 
  private:
   void SetFakeRecognitionResult() {
     if (session_id_) {  // Do a check in case we were cancelled..
       VLOG(1) << "Setting fake recognition result.";
-      delegate_->DidCompleteRecording(session_id_);
+      listener_->OnAudioEnd(session_id_);
       content::SpeechRecognitionResult results;
       results.hypotheses.push_back(content::SpeechRecognitionHypothesis(
           ASCIIToUTF16(kTestResult), 1.0));
-      delegate_->SetRecognitionResult(session_id_, results);
-      delegate_->DidCompleteRecognition(session_id_);
+      listener_->OnRecognitionResult(session_id_, results);
+      listener_->OnRecognitionEnd(session_id_);
       session_id_ = 0;
-      delegate_ = NULL;
+      listener_ = NULL;
       VLOG(1) << "Finished setting fake recognition result.";
     }
   }
 
   int session_id_;
-  InputTagSpeechDispatcherHost* delegate_;
+  SpeechRecognitionEventListener* listener_;
+  SpeechRecognitionSessionContext session_ctx_;
   std::string grammar_;
   bool did_cancel_all_;
   bool should_send_fake_response_;

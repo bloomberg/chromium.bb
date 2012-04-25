@@ -16,8 +16,11 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/speech_recognition_manager.h"
+#include "content/public/browser/speech_recognition_session_context.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "grit/generated_resources.h"
@@ -29,6 +32,7 @@
 
 using content::BrowserThread;
 using content::SpeechRecognitionManager;
+using content::SpeechRecognitionSessionContext;
 
 namespace speech {
 
@@ -105,17 +109,18 @@ ChromeSpeechRecognitionManagerDelegate::
 }
 
 void ChromeSpeechRecognitionManagerDelegate::ShowRecognitionRequested(
-    int session_id,
-    int render_process_id,
-    int render_view_id,
-    const gfx::Rect& element_rect) {
-  bubble_controller_->CreateBubble(session_id, render_process_id,
-                                   render_view_id, element_rect);
+    int session_id) {
+  const SpeechRecognitionSessionContext& context =
+      SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
+  bubble_controller_->CreateBubble(session_id,
+                                   context.render_process_id,
+                                   context.render_view_id,
+                                   context.element_rect);
 }
 
-void ChromeSpeechRecognitionManagerDelegate::GetRequestInfo(
+void ChromeSpeechRecognitionManagerDelegate::GetDiagnosticInformation(
     bool* can_report_metrics,
-    std::string* request_info) {
+    std::string* hardware_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!optional_request_info_.get()) {
     optional_request_info_ = new OptionalRequestInfo();
@@ -129,7 +134,24 @@ void ChromeSpeechRecognitionManagerDelegate::GetRequestInfo(
     optional_request_info_->Refresh();
   }
   *can_report_metrics = optional_request_info_->can_report_metrics();
-  *request_info = optional_request_info_->value();
+  *hardware_info = optional_request_info_->value();
+}
+
+void ChromeSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
+    int session_id,
+    base::Callback<void(int session_id, bool is_allowed)> callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  const SpeechRecognitionSessionContext& context =
+      SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
+
+  // The check must be performed in the UI thread. We defer it posting to
+  // CheckRenderViewType, which will issue the callback on our behalf.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&CheckRenderViewType,
+                                     session_id,
+                                     callback,
+                                     context.render_process_id,
+                                     context.render_view_id));
 }
 
 void ChromeSpeechRecognitionManagerDelegate::ShowWarmUp(int session_id) {
@@ -149,51 +171,38 @@ void ChromeSpeechRecognitionManagerDelegate::ShowInputVolume(
   bubble_controller_->SetBubbleInputVolume(session_id, volume, noise_volume);
 }
 
-void ChromeSpeechRecognitionManagerDelegate::ShowMicError(int session_id,
-                                                          MicError error) {
-  switch (error) {
-    case MIC_ERROR_NO_DEVICE_AVAILABLE:
-      bubble_controller_->SetBubbleMessage(
-          session_id, l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_NO_MIC));
+void ChromeSpeechRecognitionManagerDelegate::ShowError(
+    int session_id, const content::SpeechRecognitionError& error) {
+  int error_message_id = 0;
+  switch (error.code) {
+    case content::SPEECH_RECOGNITION_ERROR_AUDIO:
+      switch (error.details) {
+        case content::SPEECH_AUDIO_ERROR_DETAILS_NO_MIC:
+          error_message_id = IDS_SPEECH_INPUT_NO_MIC;
+          break;
+        case content::SPEECH_AUDIO_ERROR_DETAILS_IN_USE:
+          error_message_id = IDS_SPEECH_INPUT_MIC_IN_USE;
+          break;
+        default:
+          error_message_id = IDS_SPEECH_INPUT_MIC_ERROR;
+          break;
+      }
       break;
-
-    case MIC_ERROR_DEVICE_IN_USE:
-      bubble_controller_->SetBubbleMessage(
-          session_id, l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_MIC_IN_USE));
+    case content::SPEECH_RECOGNITION_ERROR_NO_SPEECH:
+      error_message_id = IDS_SPEECH_INPUT_NO_SPEECH;
       break;
-
+    case content::SPEECH_RECOGNITION_ERROR_NO_MATCH:
+      error_message_id = IDS_SPEECH_INPUT_NO_RESULTS;
+      break;
+    case content::SPEECH_RECOGNITION_ERROR_NETWORK:
+      error_message_id = IDS_SPEECH_INPUT_NET_ERROR;
+      break;
     default:
-      NOTREACHED();
-  }
-}
-
-void ChromeSpeechRecognitionManagerDelegate::ShowRecognizerError(
-    int session_id, content::SpeechRecognitionErrorCode error) {
-  struct ErrorMessageMapEntry {
-    content::SpeechRecognitionErrorCode error;
-    int message_id;
-  };
-  ErrorMessageMapEntry error_message_map[] = {
-    {
-      content::SPEECH_RECOGNITION_ERROR_AUDIO, IDS_SPEECH_INPUT_MIC_ERROR
-    }, {
-      content::SPEECH_RECOGNITION_ERROR_NO_SPEECH, IDS_SPEECH_INPUT_NO_SPEECH
-    }, {
-      content::SPEECH_RECOGNITION_ERROR_NO_MATCH, IDS_SPEECH_INPUT_NO_RESULTS
-    }, {
-      content::SPEECH_RECOGNITION_ERROR_NETWORK, IDS_SPEECH_INPUT_NET_ERROR
-    }
-  };
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(error_message_map); ++i) {
-    if (error_message_map[i].error == error) {
-      bubble_controller_->SetBubbleMessage(
-          session_id,
-          l10n_util::GetStringUTF16(error_message_map[i].message_id));
+      NOTREACHED() << "unknown error " << error.code;
       return;
-    }
   }
-
-  NOTREACHED() << "unknown error " << error;
+  bubble_controller_->SetBubbleMessage(
+      session_id, l10n_util::GetStringUTF16(error_message_id));
 }
 
 void ChromeSpeechRecognitionManagerDelegate::DoClose(int session_id) {
@@ -205,18 +214,40 @@ void ChromeSpeechRecognitionManagerDelegate::InfoBubbleButtonClicked(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (button == SpeechRecognitionBubble::BUTTON_CANCEL) {
-    SpeechRecognitionManager::GetInstance()->CancelRecognitionForRequest(
-        session_id);
+    SpeechRecognitionManager::GetInstance()->AbortSession(session_id);
   } else if (button == SpeechRecognitionBubble::BUTTON_TRY_AGAIN) {
-    SpeechRecognitionManager::GetInstance()->StartRecognitionForRequest(
-        session_id);
+    SpeechRecognitionManager::GetInstance()->StartSession(session_id);
   }
 }
 
 void ChromeSpeechRecognitionManagerDelegate::InfoBubbleFocusChanged(
     int session_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  SpeechRecognitionManager::GetInstance()->FocusLostForRequest(session_id);
+  SpeechRecognitionManager::GetInstance()->SendSessionToBackground(session_id);
+}
+
+void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
+    int session_id,
+    base::Callback<void(int session_id, bool is_allowed)> callback,
+    int render_process_id,
+    int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  const content::RenderViewHost* render_view_host =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+
+  // For host delegates other than VIEW_TYPE_WEB_CONTENTS we can't reliably show
+  // a popup, including the speech input bubble. In these cases for privacy
+  // reasons we don't want to start recording if the user can't be properly
+  // notified. An example of this is trying to show the speech input bubble
+  // within an extension popup: http://crbug.com/92083. In these situations the
+  // speech input extension API should be used instead.
+
+  const bool allowed = (render_view_host != NULL &&
+                        render_view_host->GetDelegate() != NULL &&
+                        render_view_host->GetDelegate()->GetRenderViewType() ==
+                            content::VIEW_TYPE_WEB_CONTENTS);
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(callback, session_id, allowed));
 }
 
 }  // namespace speech
