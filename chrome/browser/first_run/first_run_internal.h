@@ -66,6 +66,10 @@ void SetDefaultBrowser(installer::MasterPreferences* install_prefs);
 // Returns true if the first-run-ui process should be skipped.
 bool SkipFirstRunUI(installer::MasterPreferences* install_prefs);
 
+// Sets ping_delay.
+void SetRLZPref(first_run::MasterPrefs* out_prefs,
+                installer::MasterPreferences* install_prefs);
+
 // -- Platform-specific functions --
 
 // Gives the full path to the sentinel file. The file might not exist.

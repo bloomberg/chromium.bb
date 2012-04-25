@@ -139,6 +139,8 @@ bool ProcessMasterPreferences(const FilePath& user_data_dir,
 
   out_prefs->new_tabs = install_prefs->GetFirstRunTabs();
 
+  internal::SetRLZPref(out_prefs, install_prefs.get());
+
   if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
     return true;
 

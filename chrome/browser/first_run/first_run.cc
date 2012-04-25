@@ -275,6 +275,16 @@ bool SkipFirstRunUI(installer::MasterPreferences* install_prefs) {
           &value) || !value);
 }
 
+void SetRLZPref(first_run::MasterPrefs* out_prefs,
+                installer::MasterPreferences* install_prefs) {
+  if (!install_prefs->GetInt(installer::master_preferences::kDistroPingDelay,
+                    &out_prefs->ping_delay)) {
+    // Default value in case master preferences is missing or corrupt,
+    // or ping_delay is missing.
+    out_prefs->ping_delay = 90;
+  }
+}
+
 // -- Platform-specific functions --
 
 #if !defined(OS_LINUX) && !defined(OS_BSD)
