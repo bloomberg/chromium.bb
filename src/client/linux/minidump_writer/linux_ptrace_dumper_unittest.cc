@@ -212,20 +212,28 @@ TEST(LinuxPtraceDumperTest, VerifyStackReadWithMultipleThreads) {
     exit(0);
   }
   close(fds[1]);
-  // Wait for the child process to signal that it's ready.
-  struct pollfd pfd;
-  memset(&pfd, 0, sizeof(pfd));
-  pfd.fd = fds[0];
-  pfd.events = POLLIN | POLLERR;
 
-  const int r = HANDLE_EINTR(poll(&pfd, 1, 1000));
-  ASSERT_EQ(1, r);
-  ASSERT_TRUE(pfd.revents & POLLIN);
-  uint8_t junk;
-  read(fds[0], &junk, sizeof(junk));
+  // Wait for all child threads to indicate that they have started
+  for (int threads = 0; threads < kNumberOfThreadsInHelperProgram; threads++) {
+    struct pollfd pfd;
+    memset(&pfd, 0, sizeof(pfd));
+    pfd.fd = fds[0];
+    pfd.events = POLLIN | POLLERR;
+
+    const int r = HANDLE_EINTR(poll(&pfd, 1, 1000));
+    ASSERT_EQ(1, r);
+    ASSERT_TRUE(pfd.revents & POLLIN);
+    uint8_t junk;
+    ASSERT_EQ(read(fds[0], &junk, sizeof(junk)), sizeof(junk));
+  }
   close(fds[0]);
 
-  // Child is ready now.
+  // There is a race here because we may stop a child thread before
+  // it is actually running the busy loop. Empirically this sleep
+  // is sufficient to avoid the race.
+  usleep(100000);
+
+  // Children are ready now.
   LinuxPtraceDumper dumper(child_pid);
   ASSERT_TRUE(dumper.Init());
   EXPECT_EQ((size_t)kNumberOfThreadsInHelperProgram, dumper.threads().size());
