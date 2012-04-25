@@ -35,8 +35,30 @@ using content::DownloadPersistentStoreInfo;
 
 namespace {
 
+// Comparator that orders download items by their ID. Can be used with
+// std::sort.
+struct DownloadIdComparator {
+  bool operator() (DownloadItem* first, DownloadItem* second) {
+    return first->GetId() < second->GetId();
+  }
+};
+
 class DownloadExtensionTest : public InProcessBrowserTest {
  protected:
+  // Used with CreateHistoryDownloads
+  struct HistoryDownloadInfo {
+    // Filename to use. CreateHistoryDownloads will append this filename to the
+    // temporary downloads directory specified by downloads_directory().
+    const FilePath::CharType*   filename;
+
+    // State for the download. Note that IN_PROGRESS downloads will be created
+    // as CANCELLED.
+    DownloadItem::DownloadState state;
+
+    // Danger type for the download.
+    content::DownloadDangerType danger_type;
+  };
+
   // InProcessBrowserTest
   virtual void SetUpOnMainThread() OVERRIDE {
     BrowserThread::PostTask(
@@ -53,6 +75,46 @@ class DownloadExtensionTest : public InProcessBrowserTest {
     DownloadService* download_service =
         DownloadServiceFactory::GetForProfile(browser()->profile());
     return download_service->GetDownloadManager();
+  }
+
+  // Creates a set of history downloads based on the provided |history_info|
+  // array. |count| is the number of elements in |history_info|. On success,
+  // |items| will contain |count| DownloadItems in the order that they were
+  // specified in |history_info|. Returns true on success and false otherwise.
+  bool CreateHistoryDownloads(const HistoryDownloadInfo* history_info,
+                              size_t count,
+                              DownloadManager::DownloadVector* items) {
+    DownloadIdComparator download_id_comparator;
+    base::Time current = base::Time::Now();
+    std::vector<DownloadPersistentStoreInfo> entries;
+    entries.reserve(count);
+    for (size_t i = 0; i < count; ++i) {
+      DownloadPersistentStoreInfo entry(
+          downloads_directory().Append(history_info[i].filename),
+          GURL(), GURL(),    // URL, referrer
+          current, current,  // start_time, end_time
+          1, 1,              // received_bytes, total_bytes
+          history_info[i].state,  // state
+          i + 1,                  // db_handle
+          false);                 // opened
+      entries.push_back(entry);
+    }
+    GetDownloadManager()->OnPersistentStoreQueryComplete(&entries);
+    GetDownloadManager()->GetAllDownloads(FilePath(), items);
+    EXPECT_EQ(count, items->size());
+    if (count != items->size())
+      return false;
+
+    // Order by ID so that they are in the order that we created them.
+    std::sort(items->begin(), items->end(), download_id_comparator);
+    // Set the danger type if necessary.
+    for (size_t i = 0; i < count; ++i) {
+      if (history_info[i].danger_type !=
+          content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
+        items->at(i)->SetDangerType(history_info[i].danger_type);
+      }
+    }
+    return true;
   }
 
   void CreateSlowTestDownloads(
@@ -442,46 +504,24 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_FileIcon_Active) {
 // generic icon from the OS/toolkit that may or may not be specific to the file
 // type.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_FileIcon_History) {
-  base::Time current(base::Time::Now());
-  FilePath real_path(
-      downloads_directory().Append(FILE_PATH_LITERAL("real.txt")));
-  FilePath fake_path(
-      downloads_directory().Append(FILE_PATH_LITERAL("fake.txt")));
-  DownloadPersistentStoreInfo history_entries[] = {
-    DownloadPersistentStoreInfo(
-        real_path,
-        GURL("http://does.not.exist/foo"),
-        GURL(),
-        current, current,  // start_time == end_time == current.
-        1, 1,              // received_bytes == total_bytes == 1.
-        DownloadItem::COMPLETE,
-        1, false),
-    DownloadPersistentStoreInfo(
-        fake_path,
-        GURL("http://does.not.exist/bar"),
-        GURL(),
-        current, current,  // start_time == end_time == current.
-        1, 1,              // received_bytes == total_bytes == 1.
-        DownloadItem::COMPLETE,
-        2, false)
+  const HistoryDownloadInfo kHistoryInfo[] = {
+    { FILE_PATH_LITERAL("real.txt"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS },
+    { FILE_PATH_LITERAL("fake.txt"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS }
   };
-  std::vector<DownloadPersistentStoreInfo> entries(
-      history_entries, history_entries + arraysize(history_entries));
+  DownloadManager::DownloadVector all_downloads;
+  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
+                                     &all_downloads));
 
-  DownloadManager* manager = GetDownloadManager();
-  manager->OnPersistentStoreQueryComplete(&entries);
+  FilePath real_path = all_downloads[0]->GetFullPath();
+  FilePath fake_path = all_downloads[1]->GetFullPath();
 
   EXPECT_EQ(0, file_util::WriteFile(real_path, "", 0));
   ASSERT_TRUE(file_util::PathExists(real_path));
   ASSERT_FALSE(file_util::PathExists(fake_path));
-
-  DownloadManager::DownloadVector all_downloads;
-  manager->SearchDownloads(string16(), &all_downloads);
-  ASSERT_EQ(2u, all_downloads.size());
-  if (all_downloads[0]->GetId() > all_downloads[1]->GetId())
-    std::swap(all_downloads[0], all_downloads[1]);
-  EXPECT_EQ(real_path.value(), all_downloads[0]->GetFullPath().value());
-  EXPECT_EQ(fake_path.value(), all_downloads[1]->GetFullPath().value());
 
   for (DownloadManager::DownloadVector::iterator iter = all_downloads.begin();
        iter != all_downloads.end();
@@ -525,12 +565,17 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchEmptyQuery) {
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
     DownloadsApi_SearchFilenameRegex) {
-  DownloadManager::DownloadVector items;
-  CreateSlowTestDownloads(2, &items);
-  ScopedItemVectorCanceller delete_items(&items);
-
-  items[0]->Rename(items[0]->GetFullPath().DirName().Append(
-      FILE_PATH_LITERAL("foobar")));
+  const HistoryDownloadInfo kHistoryInfo[] = {
+    { FILE_PATH_LITERAL("foobar"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS },
+    { FILE_PATH_LITERAL("baz"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS }
+  };
+  DownloadManager::DownloadVector all_downloads;
+  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
+                                     &all_downloads));
 
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsSearchFunction(), "[{\"filenameRegex\": \"foobar\"}]"));
@@ -578,12 +623,17 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchOrderBy) {
+  const HistoryDownloadInfo kHistoryInfo[] = {
+    { FILE_PATH_LITERAL("zzz"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS },
+    { FILE_PATH_LITERAL("baz"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS }
+  };
   DownloadManager::DownloadVector items;
-  CreateSlowTestDownloads(2, &items);
-  ScopedItemVectorCanceller delete_items(&items);
-
-  items[0]->Rename(items[0]->GetFullPath().DirName().Append(
-      FILE_PATH_LITERAL("zzz")));
+  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
+                                     &items));
 
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsSearchFunction(), "[{\"orderBy\": \"filename\"}]"));
@@ -603,12 +653,17 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchOrderBy) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchOrderByEmpty) {
+  const HistoryDownloadInfo kHistoryInfo[] = {
+    { FILE_PATH_LITERAL("zzz"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS },
+    { FILE_PATH_LITERAL("baz"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS }
+  };
   DownloadManager::DownloadVector items;
-  CreateSlowTestDownloads(2, &items);
-  ScopedItemVectorCanceller delete_items(&items);
-
-  items[0]->Rename(items[0]->GetFullPath().DirName().Append(
-      FILE_PATH_LITERAL("zzz")));
+  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
+                                     &items));
 
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsSearchFunction(), "[{\"orderBy\": \"\"}]"));
@@ -628,11 +683,17 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchOrderByEmpty) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchDanger) {
+  const HistoryDownloadInfo kHistoryInfo[] = {
+    { FILE_PATH_LITERAL("zzz"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT },
+    { FILE_PATH_LITERAL("baz"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS }
+  };
   DownloadManager::DownloadVector items;
-  CreateSlowTestDownloads(2, &items);
-  ScopedItemVectorCanceller delete_items(&items);
-
-  items[0]->SetDangerType(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
+  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
+                                     &items));
 
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsSearchFunction(), "[{\"danger\": \"content\"}]"));
@@ -694,19 +755,24 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchInvalid) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadsApi_SearchPlural) {
+  const HistoryDownloadInfo kHistoryInfo[] = {
+    { FILE_PATH_LITERAL("aaa"),
+      DownloadItem::CANCELLED,
+      content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS },
+    { FILE_PATH_LITERAL("zzz"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT },
+    { FILE_PATH_LITERAL("baz"),
+      DownloadItem::COMPLETE,
+      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT },
+  };
   DownloadManager::DownloadVector items;
-  CreateSlowTestDownloads(3, &items);
-  ScopedItemVectorCanceller delete_items(&items);
-
-  items[0]->Cancel(true);
-  items[1]->SetDangerType(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
-  items[2]->SetDangerType(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT);
-  items[1]->Rename(items[1]->GetFullPath().DirName().Append(
-      FILE_PATH_LITERAL("zzz")));
+  ASSERT_TRUE(CreateHistoryDownloads(kHistoryInfo, arraysize(kHistoryInfo),
+                                     &items));
 
   scoped_ptr<base::Value> result(RunFunctionAndReturnResult(
       new DownloadsSearchFunction(), "[{"
-      "\"state\": \"in_progress\", "
+      "\"state\": \"complete\", "
       "\"danger\": \"content\", "
       "\"orderBy\": \"filename\", "
       "\"limit\": 1}]"));
