@@ -2640,7 +2640,7 @@ int main(int argc, char *argv[])
 	char *backend = NULL;
 	char *shell = NULL;
 	int32_t idle_time = 300;
-	int32_t xserver;
+	int32_t xserver = 0;
 	char *socket_name = NULL;
 	char *config_file;
 
