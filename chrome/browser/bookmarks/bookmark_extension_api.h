@@ -74,9 +74,9 @@ class BookmarksFunction : public AsyncExtensionFunction,
   // AsyncExtensionFunction:
   virtual void Run() OVERRIDE;
 
-  virtual bool RunImpl() = 0;
-
  protected:
+  virtual ~BookmarksFunction() {}
+
   // Helper to get the bookmark id as int64 from the given string id.
   // Sets error_ to an error string if the given id string can't be parsed
   // as an int64. In case of error, doesn't change id and returns false.
@@ -97,111 +97,152 @@ class BookmarksFunction : public AsyncExtensionFunction,
 
 class GetBookmarksFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.get")
+
+ protected:
+  virtual ~GetBookmarksFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class GetBookmarkChildrenFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getChildren")
+
+ protected:
+  virtual ~GetBookmarkChildrenFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class GetBookmarkRecentFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getRecent")
+
+ protected:
+  virtual ~GetBookmarkRecentFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class GetBookmarkTreeFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getTree")
+
+ protected:
+  virtual ~GetBookmarkTreeFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class GetBookmarkSubTreeFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.getSubTree")
+
+ protected:
+  virtual ~GetBookmarkSubTreeFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class SearchBookmarksFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.search")
+
+ protected:
+  virtual ~SearchBookmarksFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class RemoveBookmarkFunction : public BookmarksFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.remove")
+
   // Returns true on successful parse and sets invalid_id to true if conversion
   // from id string to int64 failed.
   static bool ExtractIds(const base::ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
-  // BookmarksFunction:
-  virtual bool RunImpl() OVERRIDE;
+  // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
 
- private:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.remove")
+ protected:
+  virtual ~RemoveBookmarkFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class RemoveTreeBookmarkFunction : public RemoveBookmarkFunction {
+ public:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.removeTree")
+
+ protected:
+  virtual ~RemoveTreeBookmarkFunction() {}
 };
 
 class CreateBookmarkFunction : public BookmarksFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.create")
+
+  // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
-  // BookmarksFunction:
-  virtual bool RunImpl() OVERRIDE;
 
- private:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.create")
+ protected:
+  virtual ~CreateBookmarkFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class MoveBookmarkFunction : public BookmarksFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.move")
+
   static bool ExtractIds(const base::ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
+
+  // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
-  // BookmarksFunction:
-  virtual bool RunImpl() OVERRIDE;
 
- private:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.move")
+ protected:
+  virtual ~MoveBookmarkFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class UpdateBookmarkFunction : public BookmarksFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.update")
+
   static bool ExtractIds(const base::ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
+
+  // ExtensionFunction:
   virtual void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
+
+ protected:
+  virtual ~UpdateBookmarkFunction() {}
+
+  // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
- private:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.update")
 };
 
 class BookmarksIOFunction : public BookmarksFunction,
                             public SelectFileDialog::Listener {
  public:
   BookmarksIOFunction();
-  virtual ~BookmarksIOFunction();
 
   virtual void FileSelected(const FilePath& path, int index, void* params) = 0;
 
@@ -211,6 +252,9 @@ class BookmarksIOFunction : public BookmarksFunction,
   virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
   void SelectFile(SelectFileDialog::Type type);
+
+ protected:
+  virtual ~BookmarksIOFunction();
 
  private:
   void ShowSelectFileDialog(
@@ -223,24 +267,32 @@ class BookmarksIOFunction : public BookmarksFunction,
 
 class ImportBookmarksFunction : public BookmarksIOFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.import");
+
   // BookmarkManagerIOFunction:
-  virtual bool RunImpl() OVERRIDE;
   virtual void FileSelected(const FilePath& path, int index, void* params)
       OVERRIDE;
 
  private:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.import");
+  virtual ~ImportBookmarksFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class ExportBookmarksFunction : public BookmarksIOFunction {
  public:
+  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.export");
+
   // BookmarkManagerIOFunction:
-  virtual bool RunImpl() OVERRIDE;
   virtual void FileSelected(const FilePath& path, int index, void* params)
       OVERRIDE;
 
  private:
-  DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.export");
+  virtual ~ExportBookmarksFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_EXTENSION_API_H_

@@ -151,6 +151,8 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   }
 
  private:
+  friend class base::RefCountedThreadSafe<Writer>;
+
   // Types of text being written out. The type dictates how the text is
   // escaped.
   enum TextType {
@@ -161,6 +163,8 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
     // Actual content, eg foo in <h1>foo</h2>.
     CONTENT
   };
+
+  ~Writer() {}
 
   // Opens the file, returning true on success.
   bool OpenFile() {

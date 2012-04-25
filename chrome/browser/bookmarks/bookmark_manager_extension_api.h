@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,95 +55,130 @@ class BookmarkManagerExtensionEventRouter
 
 class ClipboardBookmarkManagerFunction : public BookmarksFunction {
  protected:
+  virtual ~ClipboardBookmarkManagerFunction() {}
+
   bool CopyOrCut(bool cut);
 };
 
 class CopyBookmarkManagerFunction : public ClipboardBookmarkManagerFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.copy");
+
+ protected:
+  virtual ~CopyBookmarkManagerFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class CutBookmarkManagerFunction : public ClipboardBookmarkManagerFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.cut");
+
+ protected:
+  virtual ~CutBookmarkManagerFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class PasteBookmarkManagerFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.paste");
+
+ protected:
+  virtual ~PasteBookmarkManagerFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class CanPasteBookmarkManagerFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.canPaste");
+
+ protected:
+  virtual ~CanPasteBookmarkManagerFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class SortChildrenBookmarkManagerFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.sortChildren");
+
+ protected:
+  virtual ~SortChildrenBookmarkManagerFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class BookmarkManagerGetStringsFunction : public AsyncExtensionFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.getStrings");
+
+ protected:
+  virtual ~BookmarkManagerGetStringsFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class StartDragBookmarkManagerFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.startDrag");
+
+ protected:
+  virtual ~StartDragBookmarkManagerFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class DropBookmarkManagerFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.drop");
+
+ protected:
+  virtual ~DropBookmarkManagerFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class GetSubtreeBookmarkManagerFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.getSubtree");
+
+ protected:
+  virtual ~GetSubtreeBookmarkManagerFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class CanEditBookmarkManagerFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.canEdit");
+
+ protected:
+  virtual ~CanEditBookmarkManagerFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class RecordLaunchBookmarkFunction : public BookmarksFunction {
  public:
-  virtual bool RunImpl() OVERRIDE;
-
- private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.recordLaunch")
+
+ protected:
+  virtual ~RecordLaunchBookmarkFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_MANAGER_EXTENSION_API_H_
