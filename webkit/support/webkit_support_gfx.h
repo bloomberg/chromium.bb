@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,6 +31,14 @@ bool EncodeBGRAPNG(const unsigned char* input,
                    std::vector<unsigned char>* output);
 
 bool EncodeBGRAPNGWithChecksum(const unsigned char* input,
+                               int width,
+                               int height,
+                               int row_byte_width,
+                               bool discard_transparency,
+                               const std::string& checksum,
+                               std::vector<unsigned char>* output);
+
+bool EncodeRGBAPNGWithChecksum(const unsigned char* input,
                                int width,
                                int height,
                                int row_byte_width,
