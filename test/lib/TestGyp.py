@@ -632,7 +632,7 @@ class TestGypMSVS(TestGypOnMSToolchain):
       stdout = self.stdout()
 
       m = self.up_to_date_re.search(stdout)
-      up_to_date = m and m.group(1) == '1'
+      up_to_date = m and int(m.group(1)) > 0
       if not up_to_date:
         self.report_not_up_to_date()
         self.fail_test()

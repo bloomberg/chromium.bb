@@ -128,6 +128,10 @@ class Target:
     # that compose a .lib (rather than the .lib itself). That list is stored
     # here.
     self.component_objs = None
+    # Windows only. The import .lib is the output of a build step, but
+    # because dependents only link against the lib (not both the lib and the
+    # dll) we keep track of the import library here.
+    self.import_lib = None
 
   def Linkable(self):
     """Return true if this is a target that can be linked against."""
@@ -781,6 +785,8 @@ class NinjaWriter:
               target.component_objs and
               self.msvs_settings.IsUseLibraryDependencyInputs(config_name)):
             extra_link_deps |= set(target.component_objs)
+          elif self.flavor == 'win' and target.import_lib:
+            extra_link_deps.add(target.import_lib)
           else:
             extra_link_deps.add(target.binary)
 
@@ -829,11 +835,10 @@ class NinjaWriter:
     if command in ('solink', 'solink_module'):
       extra_bindings.append(('soname', os.path.split(output)[1]))
       if self.flavor == 'win':
-        import_lib = output + '.lib'
+        self.target.import_lib = output + '.lib'
         extra_bindings.append(('dll', output))
-        extra_bindings.append(('implib', import_lib))
-        self.target.binary = import_lib
-        output = [output, import_lib]
+        extra_bindings.append(('implib', self.target.import_lib))
+        output = [output, self.target.import_lib]
 
     self.ninja.build(output, command, link_deps,
                      implicit=list(implicit_deps),
@@ -1331,9 +1336,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
               '$ld /nologo /IMPLIB:$implib /DLL /OUT:$dll '
               '/PDB:$dll.pdb $libs @$dll.rsp $ldflags')
     master_ninja.rule('solink', description=dlldesc, command=dllcmd,
-                      rspfile='$dll.rsp', rspfile_content='$in')
+                      rspfile='$dll.rsp', rspfile_content='$in',
+                      restat=True)
     master_ninja.rule('solink_module', description=dlldesc, command=dllcmd,
-                      rspfile='$dll.rsp', rspfile_content='$in')
+                      rspfile='$dll.rsp', rspfile_content='$in',
+                      restat=True)
     # Note that ldflags goes at the end so that it has the option of
     # overriding default settings earlier in the command line.
     master_ninja.rule(
