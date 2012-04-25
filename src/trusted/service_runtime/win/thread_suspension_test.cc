@@ -44,12 +44,12 @@ static void AppThreadInitMinimal(struct NaClAppThread *natp) {
 }
 
 
-// This test checks that after NaClUntrustedThreadsSuspend() has
+// This test checks that after NaClUntrustedThreadsSuspendAll() has
 // returned, untrusted threads are completely suspended.  We test this
 // by running a thread that writes to a memory location.  We check
 // that the memory location does not change after
-// NaClUntrustedThreadsSuspend() but does change after
-// NaClUntrustedThreadsResume().
+// NaClUntrustedThreadsSuspendAll() but does change after
+// NaClUntrustedThreadsResumeAll().
 //
 // This is a regression test for
 // http://code.google.com/p/nativeclient/issues/detail?id=2557
@@ -73,7 +73,7 @@ static void TrySuspendingMutatorThread(struct NaClApp *nap,
   while (*addr == 0) { /* do nothing */ }
 
   for (int iteration = 0; iteration < 100; iteration++) {
-    NaClUntrustedThreadsSuspend(nap);
+    NaClUntrustedThreadsSuspendAll(nap);
     uint32_t snapshot = *addr;
     for (int count = 0; count < 100000; count++) {
       uint32_t snapshot2 = *addr;
@@ -83,7 +83,7 @@ static void TrySuspendingMutatorThread(struct NaClApp *nap,
                 (int) snapshot2, (int) snapshot, count, iteration);
       }
     }
-    NaClUntrustedThreadsResume(nap);
+    NaClUntrustedThreadsResumeAll(nap);
     // Wait for guest program to resume writing.
     while (*addr == snapshot) { /* do nothing */ }
   }
@@ -110,7 +110,7 @@ TEST_F(ThreadSuspensionTest, TestThreadSuspendsSynchronously) {
 
 
 // The test below checks that we do not get a deadlock when using
-// NaClUntrustedThreadsSuspend() on threads that cross between
+// NaClUntrustedThreadsSuspendAll() on threads that cross between
 // untrusted and trusted code by invoking NaCl syscalls.
 //
 // This is a stress test.  It is not guaranteed to find a problem, but
@@ -137,8 +137,8 @@ static void TrySuspendingSyscallInvokerThread(struct NaClApp *nap,
   while (*addr == 0) { /* do nothing */ }
 
   for (int iteration = 0; iteration < 100; iteration++) {
-    NaClUntrustedThreadsSuspend(nap);
-    NaClUntrustedThreadsResume(nap);
+    NaClUntrustedThreadsSuspendAll(nap);
+    NaClUntrustedThreadsResumeAll(nap);
 
     // Wait for guest program to make some progress.
     uint32_t snapshot = *addr;

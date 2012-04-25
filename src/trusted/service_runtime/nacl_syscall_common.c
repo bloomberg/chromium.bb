@@ -1306,7 +1306,7 @@ int32_t NaClCommonSysMmapIntern(struct NaClApp        *nap,
     NaClXCondVarWait(&nap->cv, &nap->mu);
   }
   nap->vm_hole_may_exist = 1;
-  NaClUntrustedThreadsSuspend(nap);
+  NaClUntrustedThreadsSuspendAll(nap);
 
   holding_app_lock = 1;
 
@@ -1540,7 +1540,7 @@ cleanup:
     NaClXCondVarBroadcast(&nap->cv);
     NaClXMutexUnlock(&nap->mu);
 
-    NaClUntrustedThreadsResume(nap);
+    NaClUntrustedThreadsResumeAll(nap);
   }
   if (NULL != ndp) {
     NaClDescUnref(ndp);
@@ -1757,7 +1757,7 @@ int32_t NaClSysMunmap(struct NaClAppThread  *natp,
     NaClXCondVarWait(&natp->nap->cv, &natp->nap->mu);
   }
   natp->nap->vm_hole_may_exist = 1;
-  NaClUntrustedThreadsSuspend(natp->nap);
+  NaClUntrustedThreadsSuspendAll(natp->nap);
 
   holding_app_lock = 1;
 
@@ -1783,7 +1783,7 @@ cleanup:
     NaClXCondVarBroadcast(&natp->nap->cv);
     NaClXMutexUnlock(&natp->nap->mu);
 
-    NaClUntrustedThreadsResume(natp->nap);
+    NaClUntrustedThreadsResumeAll(natp->nap);
   }
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;

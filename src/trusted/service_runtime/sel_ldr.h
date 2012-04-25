@@ -756,8 +756,10 @@ void NaClGdbHook(struct NaClApp const *nap);
 
 #if NACL_WINDOWS
 
-void NaClUntrustedThreadsSuspend(struct NaClApp *nap);
-void NaClUntrustedThreadsResume(struct NaClApp *nap);
+void NaClUntrustedThreadSuspend(struct NaClAppThread *natp);
+void NaClUntrustedThreadResume(struct NaClAppThread *natp);
+void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap);
+void NaClUntrustedThreadsResumeAll(struct NaClApp *nap);
 
 #else
 
@@ -766,11 +768,11 @@ void NaClUntrustedThreadsResume(struct NaClApp *nap);
  * races on Windows, so these are no-ops on other platforms.
  */
 
-static INLINE void NaClUntrustedThreadsSuspend(struct NaClApp *nap) {
+static INLINE void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap) {
   UNREFERENCED_PARAMETER(nap);
 }
 
-static INLINE void NaClUntrustedThreadsResume(struct NaClApp *nap) {
+static INLINE void NaClUntrustedThreadsResumeAll(struct NaClApp *nap) {
   UNREFERENCED_PARAMETER(nap);
 }
 
