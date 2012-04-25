@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include "wayland-server.h"
+#include "wayland-os.h"
 
 struct wl_event_loop {
 	int epoll_fd;
@@ -392,7 +393,7 @@ wl_event_loop_create(void)
 	if (loop == NULL)
 		return NULL;
 
-	loop->epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+	loop->epoll_fd = wl_os_epoll_create_cloexec();
 	if (loop->epoll_fd < 0) {
 		free(loop);
 		return NULL;
