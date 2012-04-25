@@ -128,9 +128,10 @@ bool BluetoothGetDevicesWithServiceNameFunction::RunImpl() {
     callbacks_pending_++;
   }
 
-  if (callbacks_pending_) {
+  if (callbacks_pending_)
     AddRef();  // Released in AddDeviceIfTrue when callbacks_pending_ == 0
-  }
+  else
+    SendResponse(true);
 
   return true;
 }
