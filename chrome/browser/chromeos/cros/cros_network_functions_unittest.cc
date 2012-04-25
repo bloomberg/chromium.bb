@@ -1060,6 +1060,68 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorNetworkDeviceProperties) {
   delete watcher;
 }
 
+TEST_F(CrosNetworkFunctionsTest, CrosMonitorCellularDataPlan) {
+  const std::string modem_service_path = "/modem/path";
+  const int64 kUpdateTime = 123456;
+  const int64 kPlanStartTime = 234567;
+  const int64 kPlanEndTime = 345678;
+
+  CellularDataPlan* data_plan = new CellularDataPlan;
+  CellularDataPlanVector data_plans;
+  data_plan->plan_name = "plan name";
+  data_plan->plan_type = CELLULAR_DATA_PLAN_METERED_PAID;
+  data_plan->update_time = base::Time::FromInternalValue(kUpdateTime);
+  data_plan->plan_start_time = base::Time::FromInternalValue(kPlanStartTime);
+  data_plan->plan_end_time = base::Time::FromInternalValue(kPlanEndTime);
+  data_plan->plan_data_bytes = 1024*1024;
+  data_plan->data_bytes_used = 12345;
+  data_plans.push_back(data_plan);
+
+  base::DictionaryValue* data_plan_dictionary = new base::DictionaryValue;
+  data_plan_dictionary->SetWithoutPathExpansion(
+      cashew::kCellularPlanNameProperty,
+      base::Value::CreateStringValue(data_plan->plan_name));
+  data_plan_dictionary->SetWithoutPathExpansion(
+      cashew::kCellularPlanTypeProperty,
+      base::Value::CreateStringValue(cashew::kCellularDataPlanMeteredPaid));
+  data_plan_dictionary->SetWithoutPathExpansion(
+      cashew::kCellularPlanUpdateTimeProperty,
+      base::Value::CreateDoubleValue(kUpdateTime));
+  data_plan_dictionary->SetWithoutPathExpansion(
+      cashew::kCellularPlanStartProperty,
+      base::Value::CreateDoubleValue(kPlanStartTime));
+  data_plan_dictionary->SetWithoutPathExpansion(
+      cashew::kCellularPlanEndProperty,
+      base::Value::CreateDoubleValue(kPlanEndTime));
+  data_plan_dictionary->SetWithoutPathExpansion(
+      cashew::kCellularPlanDataBytesProperty,
+      base::Value::CreateDoubleValue(data_plan->plan_data_bytes));
+  data_plan_dictionary->SetWithoutPathExpansion(
+      cashew::kCellularDataBytesUsedProperty,
+      base::Value::CreateDoubleValue(data_plan->data_bytes_used));
+
+  base::ListValue data_plans_list;
+  data_plans_list.Append(data_plan_dictionary);
+
+  // Set expectations.
+  DataPlanUpdateWatcherCallback callback =
+      MockDataPlanUpdateWatcherCallback::CreateCallback(modem_service_path,
+                                                        data_plans);
+  CashewClient::DataPlansUpdateHandler arg_callback;
+  EXPECT_CALL(*mock_cashew_client_, SetDataPlansUpdateHandler(_))
+      .WillOnce(SaveArg<0>(&arg_callback));
+
+  // Start monitoring.
+  CrosNetworkWatcher* watcher = CrosMonitorCellularDataPlan(callback);
+
+  // Run callback.
+  arg_callback.Run(modem_service_path, data_plans_list);
+
+  // Stop monitoring.
+  EXPECT_CALL(*mock_cashew_client_, ResetDataPlansUpdateHandler()).Times(1);
+  delete watcher;
+}
+
 TEST_F(CrosNetworkFunctionsTest, CrosRequestNetworkManagerProperties) {
   const std::string key1 = "key1";
   const std::string value1 = "value1";

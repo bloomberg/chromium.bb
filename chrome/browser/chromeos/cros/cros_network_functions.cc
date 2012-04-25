@@ -172,6 +172,107 @@ class CrosDataPlanUpdateWatcher : public CrosNetworkWatcher {
   DataPlanUpdateMonitor monitor_;
 };
 
+// Converts a string to a CellularDataPlanType.
+CellularDataPlanType ParseCellularDataPlanType(const std::string& type) {
+  if (type == cashew::kCellularDataPlanUnlimited)
+    return CELLULAR_DATA_PLAN_UNLIMITED;
+  if (type == cashew::kCellularDataPlanMeteredPaid)
+    return CELLULAR_DATA_PLAN_METERED_PAID;
+  if (type == cashew::kCellularDataPlanMeteredBase)
+    return CELLULAR_DATA_PLAN_METERED_BASE;
+  return CELLULAR_DATA_PLAN_UNKNOWN;
+}
+
+// Gets a string property from dictionary.
+bool GetStringProperty(const base::DictionaryValue& dictionary,
+                       const std::string& key,
+                       std::string* out) {
+  const bool result = dictionary.GetStringWithoutPathExpansion(key, out);
+  LOG_IF(WARNING, !result) << "Cannnot get property " << key;
+  return result;
+}
+
+// Gets an int64 property from dictionary.
+bool GetInt64Property(const base::DictionaryValue& dictionary,
+                      const std::string& key,
+                      int64* out) {
+  // Int64 value is stored as a double because it cannot be fitted in int32.
+  double value_double = 0;
+  const bool result = dictionary.GetDoubleWithoutPathExpansion(key,
+                                                               &value_double);
+  if (result)
+    *out = value_double;
+  else
+    LOG(WARNING) << "Cannnot get property " << key;
+  return result;
+}
+
+// Gets a base::Time property from dictionary.
+bool GetTimeProperty(const base::DictionaryValue& dictionary,
+                     const std::string& key,
+                     base::Time* out) {
+  int64 value_int64 = 0;
+  if (!GetInt64Property(dictionary, key, &value_int64))
+    return false;
+  *out = base::Time::FromInternalValue(value_int64);
+  return true;
+}
+
+// Class to watch data plan update without Libcros.
+class DataPlanUpdateWatcher : public CrosNetworkWatcher {
+ public:
+  explicit DataPlanUpdateWatcher(const DataPlanUpdateWatcherCallback& callback)
+      : callback_(callback) {
+    DBusThreadManager::Get()->GetCashewClient()->SetDataPlansUpdateHandler(
+        base::Bind(&DataPlanUpdateWatcher::OnDataPlansUpdate,
+                   base::Unretained(this)));
+  }
+  virtual ~DataPlanUpdateWatcher() {
+    DBusThreadManager::Get()->GetCashewClient()->ResetDataPlansUpdateHandler();
+  }
+
+ private:
+  void OnDataPlansUpdate(const std::string& service,
+                         const base::ListValue& data_plans) {
+    CellularDataPlanVector* data_plan_vector = new CellularDataPlanVector;
+    for (size_t i = 0; i != data_plans.GetSize(); ++i) {
+      base::DictionaryValue* data_plan = NULL;
+      if (!data_plans.GetDictionary(i, &data_plan)) {
+        LOG(ERROR) << "data_plans["  << i << "] is not a dictionary.";
+        continue;
+      }
+      CellularDataPlan* plan = new CellularDataPlan;
+      // Plan name.
+      GetStringProperty(*data_plan, cashew::kCellularPlanNameProperty,
+                        &plan->plan_name);
+      // Plan type.
+      std::string plan_type_string;
+      GetStringProperty(*data_plan, cashew::kCellularPlanTypeProperty,
+                        &plan_type_string);
+      plan->plan_type = ParseCellularDataPlanType(plan_type_string);
+      // Update time.
+      GetTimeProperty(*data_plan, cashew::kCellularPlanUpdateTimeProperty,
+                      &plan->update_time);
+      // Start time.
+      GetTimeProperty(*data_plan, cashew::kCellularPlanStartProperty,
+                      &plan->plan_start_time);
+      // End time.
+      GetTimeProperty(*data_plan, cashew::kCellularPlanEndProperty,
+                      &plan->plan_end_time);
+      // Data bytes.
+      GetInt64Property(*data_plan, cashew::kCellularPlanDataBytesProperty,
+                       &plan->plan_data_bytes);
+      // Bytes used.
+      GetInt64Property(*data_plan, cashew::kCellularDataBytesUsedProperty,
+                       &plan->data_bytes_used);
+      data_plan_vector->push_back(plan);
+    }
+    callback_.Run(service, data_plan_vector);
+  }
+
+  DataPlanUpdateWatcherCallback callback_;
+};
+
 // Class to watch sms with Libcros.
 class CrosSMSWatcher : public CrosNetworkWatcher {
  public:
@@ -421,7 +522,10 @@ CrosNetworkWatcher* CrosMonitorNetworkDeviceProperties(
 
 CrosNetworkWatcher* CrosMonitorCellularDataPlan(
     const DataPlanUpdateWatcherCallback& callback) {
-  return new CrosDataPlanUpdateWatcher(callback);
+  if (g_libcros_network_functions_enabled)
+    return new CrosDataPlanUpdateWatcher(callback);
+  else
+    return new DataPlanUpdateWatcher(callback);
 }
 
 CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,
