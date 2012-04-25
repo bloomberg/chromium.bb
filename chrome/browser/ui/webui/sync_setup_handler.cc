@@ -229,6 +229,17 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_RECOVER,
                       ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
                           chrome::kSyncGoogleDashboardURL))));
+  localized_strings->SetString("stopSyncingExplanation",
+      l10n_util::GetStringFUTF16(
+          IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+          ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
+              chrome::kSyncGoogleDashboardURL))));
+  localized_strings->SetString("stopSyncingTitle",
+      l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_DIALOG_TITLE));
+  localized_strings->SetString("stopSyncingConfirm",
+        l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL));
+
   bool is_start_page = false;
   if (web_ui) {
     SyncPromoUI::Source source = SyncPromoUI::GetSourceForSyncPromoURL(
@@ -438,6 +449,9 @@ void SyncSetupHandler::RegisterMessages() {
       "SyncSetupShowSetupUI",
       base::Bind(&SyncSetupHandler::HandleShowSetupUI,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("SyncSetupStopSyncing",
+      base::Bind(&SyncSetupHandler::HandleStopSyncing,
+                 base::Unretained(this)));
 }
 
 SigninManager* SyncSetupHandler::GetSignin() const {
@@ -462,7 +476,6 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
   //   user: The email the user most recently entered.
   //   editable_user: Whether the username field should be editable.
   //   captchaUrl: The captcha image to display to the user (empty if none).
-  // TODO(atwilson): Convert all to unix_hacker style (http://crbug.com/119646).
   std::string user, captcha;
   int error;
   bool editable_user;
@@ -749,6 +762,16 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
 void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
   DCHECK(!configuring_sync_);
   OpenSyncSetup(false);
+}
+
+void SyncSetupHandler::HandleStopSyncing(const ListValue* args) {
+  ProfileSyncService* service = GetSyncService();
+  DCHECK(service);
+
+  if (ProfileSyncService::IsSyncEnabled()) {
+    service->DisableForUser();
+    ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
+  }
 }
 
 void SyncSetupHandler::CloseSyncSetup() {

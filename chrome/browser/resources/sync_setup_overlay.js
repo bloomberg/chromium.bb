@@ -59,7 +59,7 @@ cr.define('options', function() {
         self.sendConfiguration_();
       };
       $('stop-syncing-ok').onclick = function() {
-        chrome.send('stopSyncing');
+        chrome.send('SyncSetupStopSyncing');
         self.closeOverlay_();
       };
     },

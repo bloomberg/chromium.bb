@@ -3814,8 +3814,6 @@
         'browser/ui/webui/options2/search_engine_manager_handler2.h',
         'browser/ui/webui/options2/startup_pages_handler2.cc',
         'browser/ui/webui/options2/startup_pages_handler2.h',
-        'browser/ui/webui/options2/stop_syncing_handler.cc',
-        'browser/ui/webui/options2/stop_syncing_handler.h',
         'browser/ui/webui/options2/web_intents_settings_handler2.cc',
         'browser/ui/webui/options2/web_intents_settings_handler2.h',
         'browser/ui/webui/plugins_ui.cc',

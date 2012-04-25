@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/webui/options2/password_manager_handler2.h"
 #include "chrome/browser/ui/webui/options2/search_engine_manager_handler2.h"
 #include "chrome/browser/ui/webui/options2/startup_pages_handler2.h"
-#include "chrome/browser/ui/webui/options2/stop_syncing_handler.h"
 #include "chrome/browser/ui/webui/options2/web_intents_settings_handler2.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -248,7 +247,6 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new ImportDataHandler());
   AddOptionsPageUIHandler(localized_strings, new StartupPagesHandler());
-  AddOptionsPageUIHandler(localized_strings, new StopSyncingHandler());
   AddOptionsPageUIHandler(localized_strings, new OptionsSyncSetupHandler(
       g_browser_process->profile_manager()));
 #if defined(OS_CHROMEOS)

@@ -99,6 +99,7 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   void HandleAttachHandler(const base::ListValue* args);
   void HandleShowErrorUI(const base::ListValue* args);
   void HandleShowSetupUI(const base::ListValue* args);
+  void HandleStopSyncing(const base::ListValue* args);
 
   // Helper routine that gets the Profile associated with this object (virtual
   // so tests can override).
@@ -121,7 +122,7 @@ class SyncSetupHandler : public options2::OptionsPageUIHandler,
   void DisplayGaiaLoginWithErrorMessage(const string16& error_message,
                                         bool fatal_error);
 
-  // Instead of siging in, prepare requirements for showing the advanced
+  // Instead of signing in, prepare requirements for showing the advanced
   // configuration dialog.
   void PrepareConfigDialog();
 
