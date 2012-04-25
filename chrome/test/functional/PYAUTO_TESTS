@@ -209,6 +209,8 @@
       '-downloads.DownloadsTest.testDeclineDangerousDownload',
       # crbug.com/75724
       '-downloads.DownloadsTest.testSaveDangerousFile',
+      # crbug.com/124922
+      '-fullscreen_mouselock.FullscreenMouselockTest.testMouseLockExitWhenBrowserLoseFocus',
       # Fails on chrome-mac-10_7-qa only: crbug.com/124886
       '-fullscreen_mouselock.FullscreenMouselockTest.testPrefsForFullscreenExit',
       # crbug.com/119110
