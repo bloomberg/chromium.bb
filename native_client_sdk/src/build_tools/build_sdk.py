@@ -574,6 +574,8 @@ def main(args):
     buildbot_common.RemoveDir(pepperdir)
     buildbot_common.MakeDir(os.path.join(pepperdir, 'toolchain'))
     buildbot_common.MakeDir(os.path.join(pepperdir, 'tools'))
+  else:
+    buildbot_common.MakeDir(pepperdir)
 
   if not skip_build:
     buildbot_common.BuildStep('Add Text Files')
