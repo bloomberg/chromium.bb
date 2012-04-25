@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
@@ -19,8 +19,8 @@ namespace chromeos {
 
 class BubbleFrameView;
 
-// Launches html dialog during OOBE/Login with specified URL and title.
-class LoginHtmlDialog : public HtmlDialogUIDelegate,
+// Launches web dialog during OOBE/Login with specified URL and title.
+class LoginHtmlDialog : public WebDialogDelegate,
                         public content::NotificationObserver {
  public:
   // Delegate class to get notifications from the dialog.
@@ -58,7 +58,7 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate,
   bool is_open() const { return is_open_; }
 
  protected:
-  // HtmlDialogUIDelegate implementation.
+  // WebDialogDelegate implementation.
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;

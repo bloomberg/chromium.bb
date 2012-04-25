@@ -2,40 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/constrained_html_ui_delegate_impl.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
 
 using content::WebContents;
 
-class ConstrainedHtmlDelegateMac :
+class ConstrainedWebDialogDelegateMac :
     public ConstrainedWindowMacDelegateCustomSheet,
-    public ConstrainedHtmlUIDelegate {
+    public ConstrainedWebDialogDelegate {
 
  public:
-  ConstrainedHtmlDelegateMac(Profile* profile,
-                             HtmlDialogUIDelegate* delegate,
-                             HtmlDialogTabContentsDelegate* tab_delegate);
-  virtual ~ConstrainedHtmlDelegateMac() {}
+  ConstrainedWebDialogDelegateMac(
+      Profile* profile,
+      WebDialogDelegate* delegate,
+      WebDialogWebContentsDelegate* tab_delegate);
+  virtual ~ConstrainedWebDialogDelegateMac() {}
 
   void set_window(ConstrainedWindow* window) {
     return impl_->set_window(window);
   }
 
-  // ConstrainedHtmlUIDelegate interface
-  virtual const HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() const OVERRIDE {
-    return impl_->GetHtmlDialogUIDelegate();
+  // ConstrainedWebDialogDelegate interface
+  virtual const WebDialogDelegate*
+      GetWebDialogDelegate() const OVERRIDE {
+    return impl_->GetWebDialogDelegate();
   }
-  virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE {
-    return impl_->GetHtmlDialogUIDelegate();
+  virtual WebDialogDelegate* GetWebDialogDelegate() OVERRIDE {
+    return impl_->GetWebDialogDelegate();
   }
   virtual void OnDialogCloseFromWebUI() OVERRIDE {
     return impl_->OnDialogCloseFromWebUI();
@@ -57,34 +59,36 @@ class ConstrainedHtmlDelegateMac :
     if (is_sheet_open())
       [NSApp endSheet:sheet()];
     if (!impl_->closed_via_webui())
-      GetHtmlDialogUIDelegate()->OnDialogClosed("");
+      GetWebDialogDelegate()->OnDialogClosed("");
     delete this;
   }
 
  private:
-  scoped_ptr<ConstrainedHtmlUIDelegateImpl> impl_;
+  scoped_ptr<ConstrainedWebDialogDelegateBase> impl_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConstrainedHtmlDelegateMac);
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateMac);
 };
 
 // The delegate used to forward events from the sheet to the constrained
 // window delegate. This bridge needs to be passed into the customsheet
-// to allow the HtmlDialog to know when the sheet closes.
-@interface ConstrainedHtmlDialogSheetCocoa : NSObject {
-  ConstrainedHtmlDelegateMac* constrainedHtmlDelegate_;  // weak
+// to allow the WebDialog to know when the sheet closes.
+@interface ConstrainedWebDialogSheetCocoa : NSObject {
+  ConstrainedWebDialogDelegateMac* constrainedWebDelegate_;  // weak
 }
-- (id)initWithConstrainedHtmlDelegateMac:
-    (ConstrainedHtmlDelegateMac*)ConstrainedHtmlDelegateMac;
+- (id)initWithConstrainedWebDialogDelegateMac:
+    (ConstrainedWebDialogDelegateMac*)ConstrainedWebDialogDelegateMac;
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo;
 @end
 
-ConstrainedHtmlDelegateMac::ConstrainedHtmlDelegateMac(
-  Profile* profile,
-  HtmlDialogUIDelegate* delegate,
-  HtmlDialogTabContentsDelegate* tab_delegate)
-  : impl_(new ConstrainedHtmlUIDelegateImpl(profile, delegate, tab_delegate)) {
+ConstrainedWebDialogDelegateMac::ConstrainedWebDialogDelegateMac(
+    Profile* profile,
+    WebDialogDelegate* delegate,
+    WebDialogWebContentsDelegate* tab_delegate)
+    : impl_(new ConstrainedWebDialogDelegateBase(profile,
+                                                 delegate,
+                                                 tab_delegate)) {
   // Create NSWindow to hold web_contents in the constrained sheet:
   gfx::Size size;
   delegate->GetDialogSize(&size);
@@ -104,33 +108,35 @@ ConstrainedHtmlDelegateMac::ConstrainedHtmlDelegateMac(
   // Set the custom sheet to point to the new window.
   ConstrainedWindowMacDelegateCustomSheet::init(
       window.get(),
-      [[[ConstrainedHtmlDialogSheetCocoa alloc]
-          initWithConstrainedHtmlDelegateMac:this] autorelease],
+      [[[ConstrainedWebDialogSheetCocoa alloc]
+          initWithConstrainedWebDialogDelegateMac:this] autorelease],
       @selector(sheetDidEnd:returnCode:contextInfo:));
 }
 
 // static
-ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
-    Profile* profile,
-    HtmlDialogUIDelegate* delegate,
-    HtmlDialogTabContentsDelegate* tab_delegate,
-    TabContentsWrapper* wrapper) {
-  // Deleted when ConstrainedHtmlDelegateMac::DeleteDelegate() runs.
-  ConstrainedHtmlDelegateMac* constrained_delegate =
-      new ConstrainedHtmlDelegateMac(profile, delegate, tab_delegate);
-  // Deleted when ConstrainedHtmlDelegateMac::OnDialogCloseFromWebUI() runs.
+ConstrainedWebDialogDelegate*
+    ConstrainedWebDialogUI::CreateConstrainedWebDialog(
+        Profile* profile,
+        WebDialogDelegate* delegate,
+        WebDialogWebContentsDelegate* tab_delegate,
+        TabContentsWrapper* wrapper) {
+  // Deleted when ConstrainedWebDialogDelegateMac::DeleteDelegate() runs.
+  ConstrainedWebDialogDelegateMac* constrained_delegate =
+      new ConstrainedWebDialogDelegateMac(profile, delegate, tab_delegate);
+  // Deleted when ConstrainedWebDialogDelegateMac::OnDialogCloseFromWebUI()
+  // runs.
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowMac(wrapper, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_delegate;
 }
 
-@implementation ConstrainedHtmlDialogSheetCocoa
+@implementation ConstrainedWebDialogSheetCocoa
 
-- (id)initWithConstrainedHtmlDelegateMac:
-    (ConstrainedHtmlDelegateMac*)ConstrainedHtmlDelegateMac {
+- (id)initWithConstrainedWebDialogDelegateMac:
+    (ConstrainedWebDialogDelegateMac*)ConstrainedWebDialogDelegateMac {
   if ((self = [super init]))
-    constrainedHtmlDelegate_ = ConstrainedHtmlDelegateMac;
+    constrainedWebDelegate_ = ConstrainedWebDialogDelegateMac;
   return self;
 }
 

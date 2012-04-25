@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/constrained_html_ui.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/property_bag.h"
 #include "base/values.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -23,22 +23,23 @@ using content::RenderViewHost;
 using content::WebContents;
 using content::WebUIMessageHandler;
 
-static base::LazyInstance<base::PropertyAccessor<ConstrainedHtmlUIDelegate*> >
-    g_constrained_html_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<base::PropertyAccessor<ConstrainedWebDialogDelegate*> >
+    g_constrained_web_dialog_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
-ConstrainedHtmlUI::ConstrainedHtmlUI(content::WebUI* web_ui)
+ConstrainedWebDialogUI::ConstrainedWebDialogUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
 }
 
-ConstrainedHtmlUI::~ConstrainedHtmlUI() {
+ConstrainedWebDialogUI::~ConstrainedWebDialogUI() {
 }
 
-void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
-  ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
+void ConstrainedWebDialogUI::RenderViewCreated(
+    RenderViewHost* render_view_host) {
+  ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;
 
-  HtmlDialogUIDelegate* dialog_delegate = delegate->GetHtmlDialogUIDelegate();
+  WebDialogDelegate* dialog_delegate = delegate->GetWebDialogDelegate();
   std::vector<WebUIMessageHandler*> handlers;
   dialog_delegate->GetWebUIMessageHandlers(&handlers);
   render_view_host->SetWebUIProperty("dialogArguments",
@@ -50,7 +51,7 @@ void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
 
   // Add a "DialogClose" callback which matches HTMLDialogUI behavior.
   web_ui()->RegisterMessageCallback("DialogClose",
-      base::Bind(&ConstrainedHtmlUI::OnDialogCloseMessage,
+      base::Bind(&ConstrainedWebDialogUI::OnDialogCloseMessage,
                  base::Unretained(this)));
 
   content::NotificationService::current()->Notify(
@@ -59,26 +60,26 @@ void ConstrainedHtmlUI::RenderViewCreated(RenderViewHost* render_view_host) {
       content::Details<RenderViewHost>(render_view_host));
 }
 
-void ConstrainedHtmlUI::OnDialogCloseMessage(const ListValue* args) {
-  ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
+void ConstrainedWebDialogUI::OnDialogCloseMessage(const ListValue* args) {
+  ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;
 
   std::string json_retval;
   if (!args->empty() && !args->GetString(0, &json_retval))
     NOTREACHED() << "Could not read JSON argument";
-  delegate->GetHtmlDialogUIDelegate()->OnDialogClosed(json_retval);
+  delegate->GetWebDialogDelegate()->OnDialogClosed(json_retval);
   delegate->OnDialogCloseFromWebUI();
 }
 
-ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::GetConstrainedDelegate() {
-  ConstrainedHtmlUIDelegate** property = GetPropertyAccessor().GetProperty(
+ConstrainedWebDialogDelegate* ConstrainedWebDialogUI::GetConstrainedDelegate() {
+  ConstrainedWebDialogDelegate** property = GetPropertyAccessor().GetProperty(
       web_ui()->GetWebContents()->GetPropertyBag());
   return property ? *property : NULL;
 }
 
 // static
-base::PropertyAccessor<ConstrainedHtmlUIDelegate*>&
-    ConstrainedHtmlUI::GetPropertyAccessor() {
-  return g_constrained_html_ui_property_accessor.Get();
+base::PropertyAccessor<ConstrainedWebDialogDelegate*>&
+    ConstrainedWebDialogUI::GetPropertyAccessor() {
+  return g_constrained_web_dialog_ui_property_accessor.Get();
 }

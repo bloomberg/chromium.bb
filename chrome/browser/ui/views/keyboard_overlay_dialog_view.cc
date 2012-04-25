@@ -35,9 +35,9 @@ struct Accelerator {
 
 KeyboardOverlayDialogView::KeyboardOverlayDialogView(
     Profile* profile,
-    HtmlDialogUIDelegate* delegate,
+    WebDialogDelegate* delegate,
     BrowserView* parent_view)
-    : HtmlDialogView(profile, parent_view->browser(), delegate),
+    : WebDialogView(profile, parent_view->browser(), delegate),
       parent_view_(parent_view) {
   RegisterDialogAccelerators();
 }
@@ -88,23 +88,23 @@ void KeyboardOverlayDialogView::ShowDialog(
 
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE));
-  KeyboardOverlayDialogView* html_view =
+  KeyboardOverlayDialogView* view =
       new KeyboardOverlayDialogView(parent_view->browser()->profile(),
                                     delegate,
                                     parent_view);
-  delegate->set_view(html_view);
-  browser::CreateFramelessViewsWindow(owning_window, html_view);
+  delegate->set_view(view);
+  browser::CreateFramelessViewsWindow(owning_window, view);
   // Show the widget at the bottom of the work area.
   gfx::Size size;
   delegate->GetDialogSize(&size);
   gfx::Rect rect = gfx::Screen::GetMonitorNearestWindow(
-      html_view->GetWidget()->GetNativeView()).work_area();
+      view->GetWidget()->GetNativeView()).work_area();
   gfx::Rect bounds((rect.width() - size.width()) / 2,
                    rect.height() - size.height(),
                    size.width(),
                    size.height());
-  html_view->GetWidget()->SetBounds(bounds);
-  html_view->GetWidget()->Show();
+  view->GetWidget()->SetBounds(bounds);
+  view->GetWidget()->Show();
 }
 
 bool KeyboardOverlayDialogView::IsCloseAccelerator(

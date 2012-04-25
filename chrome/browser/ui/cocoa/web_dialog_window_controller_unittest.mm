@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/html_dialog_window_controller.h"
+#import "chrome/browser/ui/cocoa/web_dialog_window_controller.h"
 
 #include <string>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_ui.h"
@@ -29,7 +29,7 @@ using content::WebUIMessageHandler;
 
 namespace {
 
-class MockDelegate : public HtmlDialogUIDelegate {
+class MockDelegate : public WebDialogDelegate {
 public:
   MOCK_CONST_METHOD0(GetDialogModalType, ui::ModalType());
   MOCK_CONST_METHOD0(GetDialogTitle, string16());
@@ -44,7 +44,7 @@ public:
   MOCK_CONST_METHOD0(ShouldShowDialogTitle, bool());
 };
 
-class HtmlDialogWindowControllerTest : public BrowserWithTestWindowTest {
+class WebDialogWindowControllerTest : public BrowserWithTestWindowTest {
  public:
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
@@ -71,8 +71,8 @@ using ::testing::SetArgumentPointee;
 // In particular, GetWebUIMessageHandlers() and GetDialogArgs() are never
 // called. This should be fixed.
 
-TEST_F(HtmlDialogWindowControllerTest, showDialog) {
-  // We want to make sure html_dialog_window_controller below gets
+TEST_F(WebDialogWindowControllerTest, showDialog) {
+  // We want to make sure web_dialog_window_controller below gets
   // destroyed before delegate_, so we specify our own autorelease pool.
   //
   // TODO(dmaclach): Remove this once
@@ -88,14 +88,14 @@ TEST_F(HtmlDialogWindowControllerTest, showDialog) {
   EXPECT_CALL(delegate_, OnDialogClosed(_))
     .Times(1);
 
-  HtmlDialogWindowController* html_dialog_window_controller =
-    [[HtmlDialogWindowController alloc] initWithDelegate:&delegate_
-                                                 profile:profile()
-                                                 browser:browser()];
+  WebDialogWindowController* web_dialog_window_controller =
+    [[WebDialogWindowController alloc] initWithDelegate:&delegate_
+                                                profile:profile()
+                                                browser:browser()];
 
-  [html_dialog_window_controller loadDialogContents];
-  [html_dialog_window_controller showWindow:nil];
-  [html_dialog_window_controller close];
+  [web_dialog_window_controller loadDialogContents];
+  [web_dialog_window_controller showWindow:nil];
+  [web_dialog_window_controller close];
 }
 
 }  // namespace

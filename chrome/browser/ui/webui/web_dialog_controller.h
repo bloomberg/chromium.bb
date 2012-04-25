@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_HTML_DIALOG_CONTROLLER_H_
-#define CHROME_BROWSER_UI_WEBUI_HTML_DIALOG_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_CONTROLLER_H_
+#define CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_CONTROLLER_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class Browser;
 class Profile;
 
-// This provides the common functionality for HtmlDialogs of notifying the
+// This provides the common functionality for WebDialogs of notifying the
 // dialog that it should close when the browser that created it has closed to
 // avoid using an old Profile object.
-class HtmlDialogController : public content::NotificationObserver {
+class WebDialogController : public content::NotificationObserver {
  public:
-  HtmlDialogController(HtmlDialogUIDelegate* delegate,
+   WebDialogController(WebDialogDelegate* delegate,
                        Profile* profile,
                        Browser* browser);
 
@@ -30,12 +30,12 @@ class HtmlDialogController : public content::NotificationObserver {
  private:
   // The delegate controlled by this instance. This class is owned by the
   // delegate.
-  HtmlDialogUIDelegate* dialog_delegate_;
+  WebDialogDelegate* dialog_delegate_;
 
   // Used for notification of parent browser closing.
   content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(HtmlDialogController);
+  DISALLOW_COPY_AND_ASSIGN(WebDialogController);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_HTML_DIALOG_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_CONTROLLER_H_

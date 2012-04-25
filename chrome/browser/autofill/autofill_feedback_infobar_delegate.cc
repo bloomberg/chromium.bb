@@ -44,7 +44,7 @@ string16 AutofillFeedbackInfoBarDelegate::GetLinkText() const {
 
 bool AutofillFeedbackInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  browser::ShowHtmlFeedbackView(
+  browser::ShowWebFeedbackView(
       Browser::GetBrowserForController(
           &owner()->web_contents()->GetController(), NULL),
       feedback_message_,

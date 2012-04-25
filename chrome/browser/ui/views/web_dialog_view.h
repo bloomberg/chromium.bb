@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_HTML_DIALOG_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_HTML_DIALOG_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_WEB_DIALOG_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_WEB_DIALOG_VIEW_H_
 #pragma once
 
 #include <string>
@@ -12,14 +12,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_render_watcher.h"
-#include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
 
 class Browser;
-class HtmlDialogController;
+class WebDialogController;
 class Profile;
 
 namespace views {
@@ -28,30 +28,30 @@ class WebView;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// HtmlDialogView is a view used to display an HTML dialog to the user. The
+// WebDialogView is a view used to display an web dialog to the user. The
 // content of the dialogs is determined by the delegate
-// (HtmlDialogUIDelegate), but is basically a file URL along with a
+// (WebDialogDelegate), but is basically a file URL along with a
 // JSON input string. The HTML is supposed to show a UI to the user and is
 // expected to send back a JSON file as a return value.
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// TODO(akalin): Make HtmlDialogView contain an HtmlDialogTabContentsDelegate
+// TODO(akalin): Make WebDialogView contain an WebDialogWebContentsDelegate
 // instead of inheriting from it to avoid violating the "no multiple
 // inheritance" rule.
 // TODO(beng): This class should not depend on Browser or Profile, only
 //             content::BrowserContext.
-class HtmlDialogView
+class WebDialogView
     : public views::View,
-      public HtmlDialogTabContentsDelegate,
-      public HtmlDialogUIDelegate,
+      public WebDialogWebContentsDelegate,
+      public WebDialogDelegate,
       public views::WidgetDelegate,
       public TabRenderWatcher::Delegate {
  public:
-  HtmlDialogView(Profile* profile,
-                 Browser* browser,
-                 HtmlDialogUIDelegate* delegate);
-  virtual ~HtmlDialogView();
+  WebDialogView(Profile* profile,
+                Browser* browser,
+                WebDialogDelegate* delegate);
+  virtual ~WebDialogView();
 
   // For testing.
   content::WebContents* web_contents();
@@ -76,7 +76,7 @@ class HtmlDialogView
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
-  // Overridden from HtmlDialogUIDelegate:
+  // Overridden from WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -115,7 +115,7 @@ class HtmlDialogView
   virtual void OnTabMainFrameRender() OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(HtmlDialogBrowserTest, WebContentRendered);
+  FRIEND_TEST_ALL_PREFIXES(WebDialogBrowserTest, WebContentRendered);
 
   // Initializes the contents of the dialog.
   void InitDialog();
@@ -132,14 +132,14 @@ class HtmlDialogView
   // about when the dialog is closing. For all other actions (besides dialog
   // closing) we delegate to the creator of this view, which we keep track of
   // using this variable.
-  HtmlDialogUIDelegate* delegate_;
+  WebDialogDelegate* delegate_;
 
   // Controls lifetime of dialog.
-  scoped_ptr<HtmlDialogController> dialog_controller_;
+  scoped_ptr<WebDialogController> dialog_controller_;
 
   views::WebView* web_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(HtmlDialogView);
+  DISALLOW_COPY_AND_ASSIGN(WebDialogView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_HTML_DIALOG_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_WEB_DIALOG_VIEW_H_

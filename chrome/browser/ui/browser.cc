@@ -1460,18 +1460,18 @@ void Browser::CloseTabContents(WebContents* contents) {
   CloseContents(contents);
 }
 
-gfx::NativeWindow Browser::BrowserShowHtmlDialog(
-    HtmlDialogUIDelegate* delegate,
+gfx::NativeWindow Browser::BrowserShowWebDialog(
+    WebDialogDelegate* delegate,
     gfx::NativeWindow parent_window,
     DialogStyle style) {
   if (!parent_window)
     parent_window = window_->GetNativeHandle();
 
-  return browser::ShowHtmlDialog(parent_window,
-                                 profile_,
-                                 this,
-                                 delegate,
-                                 style);
+  return browser::ShowWebDialog(parent_window,
+                                profile_,
+                                this,
+                                delegate,
+                                style);
 }
 
 void Browser::BrowserRenderWidgetShowing() {
@@ -2108,7 +2108,7 @@ void Browser::OpenTaskManager(bool highlight_background_resources) {
 
 void Browser::OpenFeedbackDialog() {
   content::RecordAction(UserMetricsAction("Feedback"));
-  browser::ShowHtmlFeedbackView(this, std::string(), std::string());
+  browser::ShowWebFeedbackView(this, std::string(), std::string());
 }
 
 void Browser::ToggleBookmarkBar() {

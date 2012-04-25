@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_HTML_DIALOG_WINDOW_CONTROLLER_H_
-#define CHROME_BROWSER_UI_COCOA_HTML_DIALOG_WINDOW_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_WEB_DIALOG_WINDOW_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_WEB_DIALOG_WINDOW_CONTROLLER_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -11,41 +11,41 @@
 #include "base/basictypes.h"
 #import "base/mac/cocoa_protocols.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 
 class Browser;
-class HtmlDialogWindowDelegateBridge;
+class WebDialogWindowDelegateBridge;
 class Profile;
 class TabContentsWrapper;
 
 // This controller manages a dialog box with properties and HTML content taken
-// from a HTMLDialogUIDelegate object.
-@interface HtmlDialogWindowController : NSWindowController<NSWindowDelegate> {
+// from a WebDialogDelegate object.
+@interface WebDialogWindowController : NSWindowController<NSWindowDelegate> {
  @private
   // Order here is important, as tab_contents_ may send messages to
   // delegate_ when it gets destroyed.
-  scoped_ptr<HtmlDialogWindowDelegateBridge> delegate_;
+  scoped_ptr<WebDialogWindowDelegateBridge> delegate_;
   scoped_ptr<TabContentsWrapper> contentsWrapper_;
 }
 
-// Creates and shows an HtmlDialogWindowController with the given
+// Creates and shows an WebDialogWindowController with the given
 // delegate and profile whose lifetime is controlled by the given
 // browser.  The window is automatically destroyed when it, or its
 // controlling browser is closed.  Returns the created window.
 //
 // Make sure to use the returned window only when you know it is safe
 // to do so, i.e. before OnDialogClosed() is called on the delegate.
-+ (NSWindow*)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
-                    profile:(Profile*)profile
-                    browser:(Browser*)browser;
++ (NSWindow*)showWebDialog:(WebDialogDelegate*)delegate
+                   profile:(Profile*)profile
+                   browser:(Browser*)browser;
 
 @end
 
-@interface HtmlDialogWindowController (TestingAPI)
+@interface WebDialogWindowController (TestingAPI)
 
 // This is the designated initializer.  However, this is exposed only
-// for testing; use showHtmlDialog instead.
-- (id)initWithDelegate:(HtmlDialogUIDelegate*)delegate
+// for testing; use showWebDialog instead.
+- (id)initWithDelegate:(WebDialogDelegate*)delegate
                profile:(Profile*)profile
                browser:(Browser*)browser;
 
@@ -56,5 +56,5 @@ class TabContentsWrapper;
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_HTML_DIALOG_WINDOW_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_WEB_DIALOG_WINDOW_CONTROLLER_H_
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_HTML_DIALOG_TAB_CONTENTS_DELEGATE_H_
-#define CHROME_BROWSER_UI_WEBUI_HTML_DIALOG_TAB_CONTENTS_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
+#define CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -13,11 +13,11 @@ class Browser;
 class Profile;
 
 // This class implements (and mostly ignores) most of
-// content::WebContentsDelegate for use in an HTML dialog. Subclasses need only
+// content::WebContentsDelegate for use in a Web dialog. Subclasses need only
 // override a few methods instead of the everything from
 // content::WebContentsDelegate; this way, implementations on all platforms
 // behave consistently.
-class HtmlDialogTabContentsDelegate : public content::WebContentsDelegate {
+class WebDialogWebContentsDelegate : public content::WebContentsDelegate {
  public:
   // Opens a new URL inside |source| (if source is NULL open in the current
   // front-most tab). |profile| is the profile that the browser should be owened
@@ -43,9 +43,9 @@ class HtmlDialogTabContentsDelegate : public content::WebContentsDelegate {
                                        bool user_gesture);
 
   // Profile must be non-NULL.
-  explicit HtmlDialogTabContentsDelegate(Profile* profile);
+  explicit WebDialogWebContentsDelegate(Profile* profile);
 
-  virtual ~HtmlDialogTabContentsDelegate();
+  virtual ~WebDialogWebContentsDelegate();
 
   // The returned profile is guaranteed to be original if non-NULL.
   Profile* profile() const;
@@ -73,6 +73,8 @@ class HtmlDialogTabContentsDelegate : public content::WebContentsDelegate {
 
  private:
   Profile* profile_;  // Weak pointer.  Always an original profile.
+
+  DISALLOW_COPY_AND_ASSIGN(WebDialogWebContentsDelegate);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_HTML_DIALOG_TAB_CONTENTS_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_WEB_CONTENTS_DELEGATE_H_

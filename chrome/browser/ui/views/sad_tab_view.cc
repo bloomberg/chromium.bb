@@ -101,7 +101,7 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
         content::PAGE_TRANSITION_LINK, false);
     web_contents_->OpenURL(params);
   } else if (source == feedback_link_) {
-    browser::ShowHtmlFeedbackView(
+    browser::ShowWebFeedbackView(
         Browser::GetBrowserForController(&web_contents_->GetController(), NULL),
         l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
         std::string(kCategoryTagCrash));

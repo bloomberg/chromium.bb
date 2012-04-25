@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/webui/help/help_ui.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
-#include "chrome/browser/ui/webui/constrained_html_ui.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads_ui.h"
@@ -30,7 +30,7 @@
 #include "chrome/browser/ui/webui/generic_handler.h"
 #include "chrome/browser/ui/webui/gpu_internals_ui.h"
 #include "chrome/browser/ui/webui/history_ui.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/media/media_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
@@ -167,17 +167,17 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // dialog as backup.  It's just that on Chrome OS, it's the only
   // print dialog.
   if (url.host() == chrome::kChromeUICloudPrintResourcesHost)
-    return &NewWebUI<ExternalHtmlDialogUI>;
+    return &NewWebUI<ExternalWebDialogUI>;
   if (url.host() == chrome::kChromeUICloudPrintSetupHost)
-    return &NewWebUI<HtmlDialogUI>;
+    return &NewWebUI<WebDialogUI>;
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
-    return &NewWebUI<ConstrainedHtmlUI>;
+    return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host() == chrome::kChromeUICrashesHost)
     return &NewWebUI<CrashesUI>;
   if (url.host() == chrome::kChromeUIDevToolsHost)
     return &NewWebUI<DevToolsUI>;
   if (url.host() == chrome::kChromeUIDialogHost)
-    return &NewWebUI<ConstrainedHtmlUI>;
+    return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host() == chrome::kChromeUIExtensionsFrameHost)
     return &NewWebUI<ExtensionsUI>;
   if (url.host() == chrome::kChromeUIFlashHost)
@@ -203,7 +203,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
   if (url.host() == chrome::kChromeUISyncResourcesHost)
-    return &NewWebUI<HtmlDialogUI>;
+    return &NewWebUI<WebDialogUI>;
   if (url.host() == chrome::kChromeUITracingHost)
     return &NewWebUI<TracingUI>;
   if (url.host() == chrome::kChromeUIUberFrameHost)
@@ -291,7 +291,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUICollectedCookiesHost ||
       url.host() == chrome::kChromeUIHttpAuthHost ||
       url.host() == chrome::kChromeUITabModalConfirmDialogHost) {
-    return &NewWebUI<ConstrainedHtmlUI>;
+    return &NewWebUI<ConstrainedWebDialogUI>;
   }
 #endif
 

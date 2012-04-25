@@ -86,7 +86,7 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
   // using a browser.
   if (!parent_window && browser && browser->window())
     parent_window = browser->window()->GetNativeHandle();
-  browser::ShowHtmlDialog(parent_window, profile, browser, flow, STYLE_GENERIC);
+  browser::ShowWebDialog(parent_window, profile, browser, flow, STYLE_GENERIC);
   return flow;
 }
 
@@ -116,7 +116,7 @@ void CloudPrintSetupFlow::Focus() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// HtmlDialogUIDelegate implementation.
+// WebDialogDelegate implementation.
 GURL CloudPrintSetupFlow::GetDialogContentURL() const {
   return GURL("chrome://cloudprintsetup/setupflow");
 }

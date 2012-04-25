@@ -310,7 +310,7 @@ void KeyboardOverlayHandler::OpenLearnMorePage(const ListValue* args) {
 ////////////////////////////////////////////////////////////////////////////////
 
 KeyboardOverlayUI::KeyboardOverlayUI(content::WebUI* web_ui)
-    : HtmlDialogUI(web_ui) {
+    : WebDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   KeyboardOverlayHandler* handler = new KeyboardOverlayHandler(profile);
   web_ui->AddMessageHandler(handler);

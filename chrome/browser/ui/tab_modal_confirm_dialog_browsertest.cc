@@ -66,11 +66,11 @@ void TabModalConfirmDialogTest::CloseDialog(bool accept) {
     dialog_->OnCancel(NULL);
 #elif defined(OS_CHROMEOS) && !defined(USE_AURA)
   // |dialog_| deletes itself in |OnDialogClosed()|, so we need to save its
-  // ConstrainedHTMLUIDelegate before that.
-  ConstrainedHtmlUIDelegate* constrained_html_ui_delegate =
-      dialog_->constrained_html_ui_delegate();
+  // ConstrainedWebDialogDelegate before that.
+  ConstrainedWebDialogDelegate* constrained_delegate =
+      dialog_->constrained_delegate();
   dialog_->OnDialogClosed(accept ? "true" : "false");
-  constrained_html_ui_delegate->OnDialogCloseFromWebUI();
+  constrained_delegate->OnDialogCloseFromWebUI();
 #else
   if (accept)
     dialog_->GetDialogClientView()->AcceptWindow();

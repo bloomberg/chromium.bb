@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/views/html_dialog_view.h"
+#include "chrome/browser/ui/views/web_dialog_view.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -57,7 +57,7 @@ LoginHtmlDialog::~LoginHtmlDialog() {
 
 void LoginHtmlDialog::Show() {
   views::Widget::CreateWindowWithParent(
-      new HtmlDialogView(ProfileManager::GetDefaultProfile(), NULL, this),
+      new WebDialogView(ProfileManager::GetDefaultProfile(), NULL, this),
       parent_window_)->Show();
   is_open_ = true;
 }

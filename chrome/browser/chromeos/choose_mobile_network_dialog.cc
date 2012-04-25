@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/html_dialog_view.h"
+#include "chrome/browser/ui/views/web_dialog_view.h"
 #include "chrome/common/url_constants.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -29,9 +29,9 @@ namespace chromeos {
 // static
 void ChooseMobileNetworkDialog::ShowDialog(gfx::NativeWindow owning_window) {
   views::Widget::CreateWindowWithParent(
-      new HtmlDialogView(ProfileManager::GetDefaultProfileOrOffTheRecord(),
-                         BrowserList::GetLastActive(),
-                         new ChooseMobileNetworkDialog),
+      new WebDialogView(ProfileManager::GetDefaultProfileOrOffTheRecord(),
+                        BrowserList::GetLastActive(),
+                        new ChooseMobileNetworkDialog),
       owning_window)->Show();
 }
 

@@ -19,7 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_data_source.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/common/print_messages.h"
@@ -76,7 +76,7 @@ base::LazyInstance<PrintPreviewRequestIdMapWithLock>
 }  // namespace
 
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
-    : ConstrainedHtmlUI(web_ui),
+    : ConstrainedWebDialogUI(web_ui),
       initial_preview_start_time_(base::TimeTicks::Now()),
       handler_(NULL),
       source_is_modifiable_(true),
@@ -308,7 +308,7 @@ void PrintPreviewUI::OnHidePreviewTab() {
   if (background_printing_manager->HasPrintPreviewTab(preview_tab))
     return;
 
-  ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
+  ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;
   delegate->ReleaseTabContentsOnDialogClose();
@@ -320,10 +320,10 @@ void PrintPreviewUI::OnClosePrintPreviewTab() {
   if (tab_closed_)
     return;
   tab_closed_ = true;
-  ConstrainedHtmlUIDelegate* delegate = GetConstrainedDelegate();
+  ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;
-  delegate->GetHtmlDialogUIDelegate()->OnDialogClosed("");
+  delegate->GetWebDialogDelegate()->OnDialogClosed("");
   delegate->OnDialogCloseFromWebUI();
 }
 

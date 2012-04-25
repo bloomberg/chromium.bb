@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 
 class MobileSetupDialog {
  public:

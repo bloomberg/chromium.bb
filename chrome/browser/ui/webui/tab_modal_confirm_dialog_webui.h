@@ -12,9 +12,9 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 
-class ConstrainedHtmlUIDelegate;
+class ConstrainedWebDialogDelegate;
 class TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 
@@ -23,13 +23,13 @@ class TabModalConfirmDialogDelegate;
 // To display the dialog, allocate this object on the heap. It will open the
 // dialog from its constructor and then delete itself when the user dismisses
 // the dialog.
-class TabModalConfirmDialogWebUI : public HtmlDialogUIDelegate {
+class TabModalConfirmDialogWebUI : public WebDialogDelegate {
  public:
   TabModalConfirmDialogWebUI(
       TabModalConfirmDialogDelegate* dialog_delegate,
       TabContentsWrapper* wrapper);
 
-  // HtmlDialogUIDelegate implementation.
+  // WebDialogDelegate implementation.
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -42,8 +42,8 @@ class TabModalConfirmDialogWebUI : public HtmlDialogUIDelegate {
                                bool* out_close_dialog) OVERRIDE;
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
-  ConstrainedHtmlUIDelegate* constrained_html_ui_delegate() {
-    return constrained_html_ui_delegate_;
+  ConstrainedWebDialogDelegate* constrained_web_dialog_delegate() {
+    return constrained_web_dialog_delegate_;
   }
 
  private:
@@ -52,7 +52,7 @@ class TabModalConfirmDialogWebUI : public HtmlDialogUIDelegate {
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
 
   // Deletes itself.
-  ConstrainedHtmlUIDelegate* constrained_html_ui_delegate_;
+  ConstrainedWebDialogDelegate* constrained_web_dialog_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TabModalConfirmDialogWebUI);
 };

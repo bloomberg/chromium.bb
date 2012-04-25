@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/dialog_style.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -45,7 +45,7 @@ using content::BrowserThread;
 using content::WebContents;
 using content::WebUIMessageHandler;
 
-class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
+class TaskManagerDialogImpl : public WebDialogDelegate {
  public:
   TaskManagerDialogImpl();
 
@@ -58,7 +58,7 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
 
   void OnCloseDialog();
 
-  // Overridden from HtmlDialogUIDelegate:
+  // Overridden from WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE {
     return ui::MODAL_TYPE_NONE;
   }
@@ -136,7 +136,7 @@ class TaskManagerDialogImpl : public HtmlDialogUIDelegate {
 
  private:
   void ShowDialog(bool is_background_page_mode);
-  void OpenHtmlDialog();
+  void OpenWebDialog();
 
   int show_count_;
 
@@ -183,7 +183,7 @@ void TaskManagerDialogImpl::ShowDialog(bool is_background_page_mode) {
 #endif
   }
   is_background_page_mode_ = is_background_page_mode;
-  OpenHtmlDialog();
+  OpenWebDialog();
   ++show_count_;
 }
 
@@ -192,14 +192,14 @@ void TaskManagerDialogImpl::OnCloseDialog() {
     --show_count_;
 }
 
-void TaskManagerDialogImpl::OpenHtmlDialog() {
+void TaskManagerDialogImpl::OpenWebDialog() {
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
-  window_ = browser::ShowHtmlDialog(NULL,
-                                    browser->profile()->GetOriginalProfile(),
-                                    NULL,
-                                    this,
-                                    STYLE_GENERIC);
+  window_ = browser::ShowWebDialog(NULL,
+                                   browser->profile()->GetOriginalProfile(),
+                                   NULL,
+                                   this,
+                                   STYLE_GENERIC);
 }
 
 // ****************************************************

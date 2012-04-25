@@ -134,9 +134,9 @@ int GetIndexOfFeedbackTab(Browser* browser) {
 
 namespace browser {
 
-void ShowHtmlFeedbackView(Browser* browser,
-                           const std::string& description_template,
-                           const std::string& category_tag) {
+void ShowWebFeedbackView(Browser* browser,
+                         const std::string& description_template,
+                         const std::string& category_tag) {
 #if defined(OS_CHROMEOS)
   // Grab the timestamp before we do anything else - this is crucial to help
   // diagnose some hardware issues.
@@ -577,7 +577,8 @@ void FeedbackHandler::CloseFeedbackTab() {
 // FeedbackUI
 //
 ////////////////////////////////////////////////////////////////////////////////
-FeedbackUI::FeedbackUI(content::WebUI* web_ui) : HtmlDialogUI(web_ui) {
+FeedbackUI::FeedbackUI(content::WebUI* web_ui)
+    : WebDialogUI(web_ui) {
   FeedbackHandler* handler = new FeedbackHandler(web_ui->GetWebContents());
   web_ui->AddMessageHandler(handler);
 

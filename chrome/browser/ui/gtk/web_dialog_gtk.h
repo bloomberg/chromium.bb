@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_HTML_DIALOG_GTK_H_
-#define CHROME_BROWSER_UI_GTK_HTML_DIALOG_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_WEB_DIALOG_GTK_H_
+#define CHROME_BROWSER_UI_GTK_WEB_DIALOG_GTK_H_
 #pragma once
 
 #include <string>
@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -20,24 +20,24 @@
 typedef struct _GtkWidget GtkWidget;
 
 class Browser;
-class HtmlDialogController;
 class Profile;
 class TabContentsContainerGtk;
 class TabContentsWrapper;
+class WebDialogController;
 
-class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
-                      public HtmlDialogUIDelegate {
+class WebDialogGtk : public WebDialogWebContentsDelegate,
+                     public WebDialogDelegate {
  public:
-  HtmlDialogGtk(Profile* profile,
-                Browser* browser,
-                HtmlDialogUIDelegate* delegate,
-                gfx::NativeWindow parent_window);
-  virtual ~HtmlDialogGtk();
+  WebDialogGtk(Profile* profile,
+               Browser* browser,
+               WebDialogDelegate* delegate,
+               gfx::NativeWindow parent_window);
+  virtual ~WebDialogGtk();
 
   // Initializes the contents of the dialog (the DOMView and the callbacks).
   gfx::NativeWindow InitDialog();
 
-  // Overridden from HtmlDialogUIDelegate:
+  // Overridden from WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -66,23 +66,23 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
   virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
 
  private:
-  CHROMEGTK_CALLBACK_1(HtmlDialogGtk, void, OnResponse, int);
+  CHROMEGTK_CALLBACK_1(WebDialogGtk, void, OnResponse, int);
 
   // This view is a delegate to the HTML content since it needs to get notified
   // about when the dialog is closing. For all other actions (besides dialog
   // closing) we delegate to the creator of this view, which we keep track of
   // using this variable.
-  HtmlDialogUIDelegate* delegate_;
+  WebDialogDelegate* delegate_;
 
   gfx::NativeWindow parent_window_;
 
   GtkWidget* dialog_;
 
-  scoped_ptr<HtmlDialogController> dialog_controller_;
+  scoped_ptr<WebDialogController> dialog_controller_;
   scoped_ptr<TabContentsWrapper> tab_;
   scoped_ptr<TabContentsContainerGtk> tab_contents_container_;
 
-  DISALLOW_COPY_AND_ASSIGN(HtmlDialogGtk);
+  DISALLOW_COPY_AND_ASSIGN(WebDialogGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_HTML_DIALOG_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_WEB_DIALOG_GTK_H_

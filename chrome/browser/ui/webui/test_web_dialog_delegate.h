@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_TEST_HTML_DIALOG_UI_DELEGATE_H_
-#define CHROME_BROWSER_UI_WEBUI_TEST_HTML_DIALOG_UI_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_TEST_WEB_DIALOG_DELEGATE_H_
+#define CHROME_BROWSER_UI_WEBUI_TEST_WEB_DIALOG_DELEGATE_H_
 #pragma once
 
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "ui/gfx/size.h"
 
 namespace test {
 
-class TestHtmlDialogUIDelegate : public HtmlDialogUIDelegate {
+class TestWebDialogDelegate : public WebDialogDelegate {
  public:
-  explicit TestHtmlDialogUIDelegate(const GURL& url);
-  virtual ~TestHtmlDialogUIDelegate();
+  explicit TestWebDialogDelegate(const GURL& url);
+  virtual ~TestWebDialogDelegate();
 
   void set_size(int width, int height) {
     size_.SetSize(width, height);
   }
 
-  // HTMLDialogUIDelegate implementation:
+  // WebDialogDelegate implementation:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -40,9 +40,9 @@ class TestHtmlDialogUIDelegate : public HtmlDialogUIDelegate {
   const GURL url_;
   gfx::Size size_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestHtmlDialogUIDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestWebDialogDelegate);
 };
 
 }  // namespace test
 
-#endif  // CHROME_BROWSER_UI_WEBUI_TEST_HTML_DIALOG_UI_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_TEST_WEB_DIALOG_DELEGATE_H_

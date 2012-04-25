@@ -5,24 +5,24 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_KEYBOARD_OVERLAY_DELEGATE_H_
 
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 
-class HtmlDialogView;
+class WebDialogView;
 
-class KeyboardOverlayDelegate : public HtmlDialogUIDelegate {
+class KeyboardOverlayDelegate : public WebDialogDelegate {
  public:
   explicit KeyboardOverlayDelegate(const string16& title);
 
-  HtmlDialogView* view() { return view_; }
-  void set_view(HtmlDialogView* html_view) { view_ = html_view; }
+  WebDialogView* view() { return view_; }
+  void set_view(WebDialogView* view) { view_ = view; }
 
-  // Overridden from HtmlDialogUIDelegate:
+  // Overridden from WebDialogDelegate:
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
 
  private:
   virtual ~KeyboardOverlayDelegate();
 
-  // Overridden from HtmlDialogUIDelegate:
+  // Overridden from WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -41,7 +41,7 @@ class KeyboardOverlayDelegate : public HtmlDialogUIDelegate {
 
   // The view associated with this delegate.
   // This class does not own the pointer.
-  HtmlDialogView* view_;
+  WebDialogView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardOverlayDelegate);
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_HTML_DIALOG_UI_H_
-#define CHROME_BROWSER_UI_WEBUI_HTML_DIALOG_UI_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_UI_H_
+#define CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_UI_H_
 #pragma once
 
 #include <string>
@@ -33,7 +33,7 @@ class Size;
 }
 
 // Implement this class to receive notifications.
-class HtmlDialogUIDelegate {
+class WebDialogDelegate {
  public:
   // Returns true if the contents needs to be run in a modal dialog.
   virtual ui::ModalType GetDialogModalType() const = 0;
@@ -113,10 +113,10 @@ class HtmlDialogUIDelegate {
   virtual void StoreDialogSize(const gfx::Size& dialog_size) {}
 
  protected:
-  virtual ~HtmlDialogUIDelegate() {}
+  virtual ~WebDialogDelegate() {}
 };
 
-// Displays file URL contents inside a modal HTML dialog.
+// Displays file URL contents inside a modal web dialog.
 //
 // This application really should not use WebContents + WebUI. It should instead
 // just embed a RenderView in a dialog and be done with it.
@@ -126,9 +126,9 @@ class HtmlDialogUIDelegate {
 // there and call it back. This is a bit of a hack to allow the dialog to pass
 // its delegate to the Web UI without having nasty accessors on the WebContents.
 // The correct design using RVH directly would avoid all of this.
-class HtmlDialogUI : public content::WebUIController {
+class WebDialogUI : public content::WebUIController {
  public:
-  struct HtmlDialogParams {
+  struct WebDialogParams {
     // The URL for the content that will be loaded in the dialog.
     GURL url;
     // Width of the dialog.
@@ -140,15 +140,15 @@ class HtmlDialogUI : public content::WebUIController {
   };
 
   // When created, the property should already be set on the WebContents.
-  explicit HtmlDialogUI(content::WebUI* web_ui);
-  virtual ~HtmlDialogUI();
+  explicit WebDialogUI(content::WebUI* web_ui);
+  virtual ~WebDialogUI();
 
   // Close the dialog, passing the specified arguments to the close handler.
   void CloseDialog(const base::ListValue* args);
 
   // Returns the PropertyBag accessor object used to write the delegate pointer
   // into the WebContents (see class-level comment above).
-  static base::PropertyAccessor<HtmlDialogUIDelegate*>& GetPropertyAccessor();
+  static base::PropertyAccessor<WebDialogDelegate*>& GetPropertyAccessor();
 
  private:
   // WebUIController
@@ -158,18 +158,18 @@ class HtmlDialogUI : public content::WebUIController {
   // JS message handler.
   void OnDialogClosed(const base::ListValue* args);
 
-  DISALLOW_COPY_AND_ASSIGN(HtmlDialogUI);
+  DISALLOW_COPY_AND_ASSIGN(WebDialogUI);
 };
 
-// Displays external URL contents inside a modal HTML dialog.
+// Displays external URL contents inside a modal web dialog.
 //
 // Intended to be the place to collect the settings and lockdowns
 // necessary for running external UI components securely (e.g., the
 // cloud print dialog).
-class ExternalHtmlDialogUI : public HtmlDialogUI {
+class ExternalWebDialogUI : public WebDialogUI {
  public:
-  explicit ExternalHtmlDialogUI(content::WebUI* web_ui);
-  virtual ~ExternalHtmlDialogUI();
+  explicit ExternalWebDialogUI(content::WebUI* web_ui);
+  virtual ~ExternalWebDialogUI();
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_HTML_DIALOG_UI_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_WEB_DIALOG_UI_H_

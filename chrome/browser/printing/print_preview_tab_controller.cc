@@ -21,10 +21,10 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/browser/ui/webui/constrained_html_ui.h"
-#include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -55,13 +55,14 @@ void EnableInternalPDFPluginForTab(TabContentsWrapper* preview_tab) {
         ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
 }
 
-// HtmlDialogUIDelegate that specifies what the print preview dialog will look
-// like.
-class PrintPreviewTabDelegate : public HtmlDialogUIDelegate {
+// WebDialogDelegate that specifies what the print preview dialog
+// will look like.
+class PrintPreviewTabDelegate : public WebDialogDelegate {
  public:
   explicit PrintPreviewTabDelegate(TabContentsWrapper* initiator_tab);
   virtual ~PrintPreviewTabDelegate();
 
+  // Overridden from WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -148,7 +149,7 @@ bool PrintPreviewTabDelegate::ShouldShowDialogTitle() const {
 
 // WebContentsDelegate that forwards shortcut keys in the print preview
 // renderer to the browser.
-class PrintPreviewWebContentDelegate : public HtmlDialogTabContentsDelegate {
+class PrintPreviewWebContentDelegate : public WebDialogWebContentsDelegate {
  public:
   PrintPreviewWebContentDelegate(Profile* profile,
                                  TabContentsWrapper* initiator_tab);
@@ -167,7 +168,7 @@ class PrintPreviewWebContentDelegate : public HtmlDialogTabContentsDelegate {
 PrintPreviewWebContentDelegate::PrintPreviewWebContentDelegate(
     Profile* profile,
     TabContentsWrapper* initiator_tab)
-    : HtmlDialogTabContentsDelegate(profile),
+    : WebDialogWebContentsDelegate(profile),
       tab_(initiator_tab) {}
 
 PrintPreviewWebContentDelegate::~PrintPreviewWebContentDelegate() {}
@@ -425,20 +426,21 @@ TabContentsWrapper* PrintPreviewTabController::CreatePrintPreviewTab(
     }
   }
 
-  // |html_dialog_ui_delegate| deletes itself in
+  // |web_dialog_ui_delegate| deletes itself in
   // PrintPreviewTabDelegate::OnDialogClosed().
-  HtmlDialogUIDelegate* html_dialog_ui_delegate =
+  WebDialogDelegate* web_dialog_delegate =
       new PrintPreviewTabDelegate(initiator_tab);
-  // |html_tab_content_delegate|'s owner is |constrained_html_ui_delegate|.
-  PrintPreviewWebContentDelegate* html_tab_content_delegate =
+  // |web_tab_content_delegate|'s owner is |constrained_web_ui_delegate|.
+  PrintPreviewWebContentDelegate* pp_wcd =
       new PrintPreviewWebContentDelegate(current_browser->profile(),
                                          initiator_tab);
-  ConstrainedHtmlUIDelegate* constrained_html_ui_delegate =
-      ConstrainedHtmlUI::CreateConstrainedHtmlDialog(current_browser->profile(),
-                                                     html_dialog_ui_delegate,
-                                                     html_tab_content_delegate,
-                                                     initiator_tab);
-  TabContentsWrapper* preview_tab = constrained_html_ui_delegate->tab();
+  ConstrainedWebDialogDelegate* constrained_delegate =
+      ConstrainedWebDialogUI::CreateConstrainedWebDialog(
+          current_browser->profile(),
+          web_dialog_delegate,
+          pp_wcd,
+          initiator_tab);
+  TabContentsWrapper* preview_tab = constrained_delegate->tab();
   EnableInternalPDFPluginForTab(preview_tab);
 
   // Add an entry to the map.

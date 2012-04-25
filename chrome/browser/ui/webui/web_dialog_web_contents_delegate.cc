@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
+#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -20,18 +20,20 @@ using content::WebContents;
 // TODO(akalin): Should we make it so that we have a default incognito
 // profile that's long-lived?  Of course, we'd still have to clear it out
 // when all incognito browsers close.
-HtmlDialogTabContentsDelegate::HtmlDialogTabContentsDelegate(Profile* profile)
-    : profile_(profile) {}
+WebDialogWebContentsDelegate::WebDialogWebContentsDelegate(Profile* profile)
+    : profile_(profile) {
+}
 
-HtmlDialogTabContentsDelegate::~HtmlDialogTabContentsDelegate() {}
+WebDialogWebContentsDelegate::~WebDialogWebContentsDelegate() {
+}
 
-Profile* HtmlDialogTabContentsDelegate::profile() const { return profile_; }
+Profile* WebDialogWebContentsDelegate::profile() const { return profile_; }
 
-void HtmlDialogTabContentsDelegate::Detach() {
+void WebDialogWebContentsDelegate::Detach() {
   profile_ = NULL;
 }
 
-WebContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
+WebContents* WebDialogWebContentsDelegate::OpenURLFromTab(
     WebContents* source, const OpenURLParams& params) {
   WebContents* new_contents = NULL;
   StaticOpenURLFromTab(profile_, source, params, &new_contents);
@@ -39,7 +41,7 @@ WebContents* HtmlDialogTabContentsDelegate::OpenURLFromTab(
 }
 
 // static
-Browser* HtmlDialogTabContentsDelegate::StaticOpenURLFromTab(
+Browser* WebDialogWebContentsDelegate::StaticOpenURLFromTab(
     Profile* profile, WebContents* source, const OpenURLParams& params,
     WebContents** out_new_contents) {
   if (!profile)
@@ -66,7 +68,7 @@ Browser* HtmlDialogTabContentsDelegate::StaticOpenURLFromTab(
   return nav_params.browser;
 }
 
-void HtmlDialogTabContentsDelegate::AddNewContents(
+void WebDialogWebContentsDelegate::AddNewContents(
     WebContents* source, WebContents* new_contents,
     WindowOpenDisposition disposition, const gfx::Rect& initial_pos,
     bool user_gesture) {
@@ -75,7 +77,7 @@ void HtmlDialogTabContentsDelegate::AddNewContents(
 }
 
 // static
-Browser* HtmlDialogTabContentsDelegate::StaticAddNewContents(
+Browser* WebDialogWebContentsDelegate::StaticAddNewContents(
     Profile* profile,
     WebContents* source,
     WebContents* new_contents,
@@ -103,14 +105,14 @@ Browser* HtmlDialogTabContentsDelegate::StaticAddNewContents(
   return params.browser;
 }
 
-bool HtmlDialogTabContentsDelegate::IsPopupOrPanel(
+bool WebDialogWebContentsDelegate::IsPopupOrPanel(
     const WebContents* source) const {
   // This needs to return true so that we are allowed to be resized by our
   // contents.
   return true;
 }
 
-bool HtmlDialogTabContentsDelegate::ShouldAddNavigationToHistory(
+bool WebDialogWebContentsDelegate::ShouldAddNavigationToHistory(
     const history::HistoryAddPageArgs& add_page_args,
     content::NavigationType navigation_type) {
   return false;

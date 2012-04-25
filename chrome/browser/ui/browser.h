@@ -62,7 +62,6 @@ class Extension;
 class ExtensionWindowController;
 class FindBarController;
 class FullscreenController;
-class HtmlDialogUIDelegate;
 class InstantController;
 class InstantUnloadHandler;
 class PrefService;
@@ -72,6 +71,7 @@ class StatusBubble;
 class TabNavigation;
 class TabStripModel;
 struct WebApplicationInfo;
+class WebDialogDelegate;
 
 namespace content {
 class NavigationController;
@@ -495,9 +495,10 @@ class Browser : public TabHandlerDelegate,
   // only have STYLE_GENERIC now.
   // TODO(bshe): Implementing styles not related to window decoration in other
   // platforms for consistency if necessary.
-  gfx::NativeWindow BrowserShowHtmlDialog(HtmlDialogUIDelegate* delegate,
-                                          gfx::NativeWindow parent_window,
-                                          DialogStyle style);
+  gfx::NativeWindow BrowserShowWebDialog(
+      WebDialogDelegate* delegate,
+      gfx::NativeWindow parent_window,
+      DialogStyle style);
 
   // Called when a popup select is about to be displayed.
   void BrowserRenderWidgetShowing();

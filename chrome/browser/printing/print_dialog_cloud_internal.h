@@ -13,13 +13,13 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 class GURL;
-class CloudPrintHtmlDialogDelegateTest;
+class CloudPrintWebDialogDelegateTest;
 
 namespace base {
 class ListValue;
@@ -93,7 +93,7 @@ class CloudPrintDataSender
   DISALLOW_COPY_AND_ASSIGN(CloudPrintDataSender);
 };
 
-class CloudPrintHtmlDialogDelegate;
+class CloudPrintWebDialogDelegate;
 
 // The CloudPrintFlowHandler connects the state machine (the UI delegate)
 // to the dialog backing HTML and JS by providing WebUIMessageHandler
@@ -126,7 +126,7 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
   void HandleSendPrintData(const base::ListValue* args);
   void HandleSetPageParameters(const base::ListValue* args);
 
-  virtual void SetDialogDelegate(CloudPrintHtmlDialogDelegate *delegate);
+  virtual void SetDialogDelegate(CloudPrintWebDialogDelegate *delegate);
   void StoreDialogClientSize() const;
 
  private:
@@ -139,7 +139,7 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
 
   void CancelAnyRunningTask();
 
-  CloudPrintHtmlDialogDelegate* dialog_delegate_;
+  CloudPrintWebDialogDelegate* dialog_delegate_;
   content::NotificationRegistrar registrar_;
   FilePath path_to_file_;
   string16 print_job_title_;
@@ -154,23 +154,23 @@ class CloudPrintFlowHandler : public content::WebUIMessageHandler,
 };
 
 // State machine used to run the printing dialog.  This class is used
-// to open and run the html dialog and deletes itself when the dialog
+// to open and run the web dialog and deletes itself when the dialog
 // is closed.
-class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
+class CloudPrintWebDialogDelegate : public WebDialogDelegate {
  public:
-  CloudPrintHtmlDialogDelegate(const FilePath& path_to_file,
-                               int width, int height,
-                               const std::string& json_arguments,
-                               const string16& print_job_title,
-                               const string16& print_ticket,
-                               const std::string& file_type,
-                               bool modal,
-                               bool delete_on_close,
-                               bool close_after_signin,
-                               const base::Closure& callback);
-  virtual ~CloudPrintHtmlDialogDelegate();
+  CloudPrintWebDialogDelegate(const FilePath& path_to_file,
+                              int width, int height,
+                              const std::string& json_arguments,
+                              const string16& print_job_title,
+                              const string16& print_ticket,
+                              const std::string& file_type,
+                              bool modal,
+                              bool delete_on_close,
+                              bool close_after_signin,
+                              const base::Closure& callback);
+  virtual ~CloudPrintWebDialogDelegate();
 
-  // HTMLDialogUIDelegate implementation:
+  // WebDialogDelegate implementation:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -186,14 +186,14 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
       const content::ContextMenuParams& params) OVERRIDE;
 
  private:
-  friend class ::CloudPrintHtmlDialogDelegateTest;
+  friend class ::CloudPrintWebDialogDelegateTest;
 
   // For unit testing.
-  CloudPrintHtmlDialogDelegate(CloudPrintFlowHandler* flow_handler,
-                               int width, int height,
-                               const std::string& json_arguments,
-                               bool modal,
-                               bool delete_on_close);
+  CloudPrintWebDialogDelegate(CloudPrintFlowHandler* flow_handler,
+                              int width, int height,
+                              const std::string& json_arguments,
+                              bool modal,
+                              bool delete_on_close);
   void Init(int width, int height, const std::string& json_arguments);
 
   bool delete_on_close_;
@@ -202,10 +202,10 @@ class CloudPrintHtmlDialogDelegate : public HtmlDialogUIDelegate {
   mutable bool owns_flow_handler_;
   FilePath path_to_file_;
 
-  // The parameters needed to display a modal HTML dialog.
-  HtmlDialogUI::HtmlDialogParams params_;
+  // The parameters needed to display a modal web dialog.
+  WebDialogUI::WebDialogParams params_;
 
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintHtmlDialogDelegate);
+  DISALLOW_COPY_AND_ASSIGN(CloudPrintWebDialogDelegate);
 };
 
 void CreateDialogFullImpl(const FilePath& path_to_file,

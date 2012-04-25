@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/html_dialog_controller.h"
+#include "chrome/browser/ui/webui/web_dialog_controller.h"
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -10,9 +10,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 
-HtmlDialogController::HtmlDialogController(HtmlDialogUIDelegate* delegate,
-                                           Profile* profile,
-                                           Browser* browser)
+WebDialogController::WebDialogController(
+    WebDialogDelegate* delegate,
+    Profile* profile,
+    Browser* browser)
       : dialog_delegate_(delegate) {
   // It's only safe to show an off the record profile under one of two
   // circumstances:
@@ -32,7 +33,7 @@ HtmlDialogController::HtmlDialogController(HtmlDialogUIDelegate* delegate,
 }
 
 // content::NotificationObserver implementation:
-void HtmlDialogController::Observe(
+void WebDialogController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {

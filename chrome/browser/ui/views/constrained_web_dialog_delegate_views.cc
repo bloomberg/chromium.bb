@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/constrained_html_ui_delegate_impl.h"
+#include "chrome/browser/ui/webui/constrained_web_dialog_delegate_base.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/webview/webview.h"
@@ -19,14 +19,14 @@ using content::WebContents;
 
 namespace {
 
-class ConstrainedHtmlUIDelegateImplViews
-    : public ConstrainedHtmlUIDelegateImpl {
+class ConstrainedWebDialogDelegateViews
+    : public ConstrainedWebDialogDelegateBase {
  public:
-  ConstrainedHtmlUIDelegateImplViews(
+  ConstrainedWebDialogDelegateViews(
       Profile* profile,
-      HtmlDialogUIDelegate* delegate,
-      HtmlDialogTabContentsDelegate* tab_delegate)
-      : ConstrainedHtmlUIDelegateImpl(profile, delegate, tab_delegate) {
+      WebDialogDelegate* delegate,
+      WebDialogWebContentsDelegate* tab_delegate)
+      : ConstrainedWebDialogDelegateBase(profile, delegate, tab_delegate) {
     WebContents* web_contents = tab()->web_contents();
     if (tab_delegate) {
       set_override_tab_delegate(tab_delegate);
@@ -36,38 +36,41 @@ class ConstrainedHtmlUIDelegateImplViews
     }
   }
 
-  virtual ~ConstrainedHtmlUIDelegateImplViews() {}
+  virtual ~ConstrainedWebDialogDelegateViews() {}
 
-  // HtmlDialogTabContentsDelegate interface.
+  // WebDialogWebContentsDelegate interface.
   virtual void CloseContents(WebContents* source) OVERRIDE {
     window()->CloseConstrainedWindow();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ConstrainedHtmlUIDelegateImplViews);
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateViews);
 };
 
 }  // namespace
 
-class ConstrainedHtmlDelegateViews : public views::WebView,
-                                     public ConstrainedHtmlUIDelegate,
-                                     public views::WidgetDelegate {
+class ConstrainedWebDialogDelegateViewViews
+    : public views::WebView,
+      public ConstrainedWebDialogDelegate,
+      public views::WidgetDelegate {
  public:
-  ConstrainedHtmlDelegateViews(Profile* profile,
-                               HtmlDialogUIDelegate* delegate,
-                               HtmlDialogTabContentsDelegate* tab_delegate);
-  virtual ~ConstrainedHtmlDelegateViews();
+  ConstrainedWebDialogDelegateViewViews(
+      Profile* profile,
+      WebDialogDelegate* delegate,
+      WebDialogWebContentsDelegate* tab_delegate);
+  virtual ~ConstrainedWebDialogDelegateViewViews();
 
   void set_window(ConstrainedWindow* window) {
     return impl_->set_window(window);
   }
 
-  // ConstrainedHtmlUIDelegate interface
-  virtual const HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() const OVERRIDE {
-    return impl_->GetHtmlDialogUIDelegate();
+  // ConstrainedWebDialogDelegate interface
+  virtual const WebDialogDelegate*
+      GetWebDialogDelegate() const OVERRIDE {
+    return impl_->GetWebDialogDelegate();
   }
-  virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate() OVERRIDE {
-    return impl_->GetHtmlDialogUIDelegate();
+  virtual WebDialogDelegate* GetWebDialogDelegate() OVERRIDE {
+    return impl_->GetWebDialogDelegate();
   }
   virtual void OnDialogCloseFromWebUI() OVERRIDE {
     return impl_->OnDialogCloseFromWebUI();
@@ -89,7 +92,7 @@ class ConstrainedHtmlDelegateViews : public views::WebView,
   virtual bool CanResize() const OVERRIDE { return true; }
   virtual void WindowClosing() OVERRIDE {
     if (!impl_->closed_via_webui())
-      GetHtmlDialogUIDelegate()->OnDialogClosed(std::string());
+      GetWebDialogDelegate()->OnDialogClosed(std::string());
   }
   virtual views::Widget* GetWidget() OVERRIDE {
     return View::GetWidget();
@@ -98,7 +101,7 @@ class ConstrainedHtmlDelegateViews : public views::WebView,
     return View::GetWidget();
   }
   virtual string16 GetWindowTitle() const OVERRIDE {
-    return GetHtmlDialogUIDelegate()->GetDialogTitle();
+    return GetWebDialogDelegate()->GetDialogTitle();
   }
   virtual views::View* GetContentsView() OVERRIDE {
     return this;
@@ -107,38 +110,39 @@ class ConstrainedHtmlDelegateViews : public views::WebView,
   // views::WebView overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size size;
-    GetHtmlDialogUIDelegate()->GetDialogSize(&size);
+    GetWebDialogDelegate()->GetDialogSize(&size);
     return size;
   }
 
  private:
-  scoped_ptr<ConstrainedHtmlUIDelegateImplViews> impl_;
+  scoped_ptr<ConstrainedWebDialogDelegateViews> impl_;
 
-  DISALLOW_COPY_AND_ASSIGN(ConstrainedHtmlDelegateViews);
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateViewViews);
 };
 
-ConstrainedHtmlDelegateViews::ConstrainedHtmlDelegateViews(
+ConstrainedWebDialogDelegateViewViews::ConstrainedWebDialogDelegateViewViews(
     Profile* profile,
-    HtmlDialogUIDelegate* delegate,
-    HtmlDialogTabContentsDelegate* tab_delegate)
+    WebDialogDelegate* delegate,
+    WebDialogWebContentsDelegate* tab_delegate)
     : views::WebView(profile),
-      impl_(new ConstrainedHtmlUIDelegateImplViews(profile,
-                                                   delegate,
-                                                   tab_delegate)) {
+      impl_(new ConstrainedWebDialogDelegateViews(profile,
+                                                  delegate,
+                                                  tab_delegate)) {
   SetWebContents(tab()->web_contents());
 }
 
-ConstrainedHtmlDelegateViews::~ConstrainedHtmlDelegateViews() {
+ConstrainedWebDialogDelegateViewViews::~ConstrainedWebDialogDelegateViewViews() {
 }
 
 // static
-ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::CreateConstrainedHtmlDialog(
-    Profile* profile,
-    HtmlDialogUIDelegate* delegate,
-    HtmlDialogTabContentsDelegate* tab_delegate,
-    TabContentsWrapper* container) {
-  ConstrainedHtmlDelegateViews* constrained_delegate =
-      new ConstrainedHtmlDelegateViews(profile, delegate, tab_delegate);
+ConstrainedWebDialogDelegate*
+    ConstrainedWebDialogUI::CreateConstrainedWebDialog(
+        Profile* profile,
+        WebDialogDelegate* delegate,
+        WebDialogWebContentsDelegate* tab_delegate,
+        TabContentsWrapper* container) {
+  ConstrainedWebDialogDelegateViewViews* constrained_delegate =
+      new ConstrainedWebDialogDelegateViewViews(profile, delegate, tab_delegate);
   ConstrainedWindow* constrained_window =
       new ConstrainedWindowViews(container, constrained_delegate);
   constrained_delegate->set_window(constrained_window);

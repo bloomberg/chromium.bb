@@ -9,9 +9,9 @@
 #include <set>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
-#include "chrome/browser/ui/views/html_dialog_view.h"
+#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
+#include "chrome/browser/ui/views/web_dialog_view.h"
 
 namespace ui {
 class Accelerator;
@@ -20,10 +20,10 @@ class Accelerator;
 class BrowserView;
 
 // A customized dialog view for the keyboard overlay.
-class KeyboardOverlayDialogView : public HtmlDialogView {
+class KeyboardOverlayDialogView : public WebDialogView {
  public:
   KeyboardOverlayDialogView(Profile* profile,
-                            HtmlDialogUIDelegate* delegate,
+                            WebDialogDelegate* delegate,
                             BrowserView* parent_view);
   virtual ~KeyboardOverlayDialogView();
 

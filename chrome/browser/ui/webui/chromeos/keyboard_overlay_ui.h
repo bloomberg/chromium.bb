@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_KEYBOARD_OVERLAY_UI_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/html_dialog_ui.h"
+#include "chrome/browser/ui/webui/web_dialog_ui.h"
 
-class KeyboardOverlayUI : public HtmlDialogUI {
+class KeyboardOverlayUI : public WebDialogUI {
  public:
   explicit KeyboardOverlayUI(content::WebUI* web_ui);
 

@@ -4,7 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/webui/test_html_dialog_ui_delegate.h"
+#include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -13,47 +13,46 @@
 
 namespace {
 
-class TestDialogClosedDelegate : public test::TestHtmlDialogUIDelegate {
+class TestDialogClosedDelegate : public test::TestWebDialogDelegate {
  public:
   TestDialogClosedDelegate()
-      : test::TestHtmlDialogUIDelegate(GURL(chrome::kChromeUIChromeURLsURL)),
+      : test::TestWebDialogDelegate(
+            GURL(chrome::kChromeUIChromeURLsURL)),
         dialog_closed_(false) {
   }
 
-  // Overridden from HtmlDialogUIDelegate:
+  bool dialog_closed() const { return dialog_closed_; }
+
+  // Overridden from WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE {
     return ui::MODAL_TYPE_NONE;
   }
-
-  // Overridden from HtmlDialogUIDelegate:
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE {
     dialog_closed_ = true;
   }
 
-  bool dialog_closed() {
-    return dialog_closed_;
-  }
-
  private:
   bool dialog_closed_;
+  
+  DISALLOW_COPY_AND_ASSIGN(TestDialogClosedDelegate);
 };
 
 }  // namespace
 
-class HtmlDialogControllerBrowserTest : public InProcessBrowserTest {
+class WebDialogControllerBrowserTest : public InProcessBrowserTest {
  public:
-  HtmlDialogControllerBrowserTest() {}
+  WebDialogControllerBrowserTest() {}
 };
 
-// Tests that an HtmlDialog can be shown for an incognito browser and that when
+// Tests that a WebDialog can be shown for an incognito browser and that when
 // that browser is closed the dialog created by that browser is closed.
-IN_PROC_BROWSER_TEST_F(HtmlDialogControllerBrowserTest, IncognitoBrowser) {
+IN_PROC_BROWSER_TEST_F(WebDialogControllerBrowserTest, IncognitoBrowser) {
   Browser* browser = CreateIncognitoBrowser();
   scoped_ptr<TestDialogClosedDelegate> delegate(new TestDialogClosedDelegate());
 
   // Create the dialog and make sure the initial "closed" state is what we
   // expect.
-  browser->BrowserShowHtmlDialog(delegate.get(), NULL, STYLE_GENERIC);
+  browser->BrowserShowWebDialog(delegate.get(), NULL, STYLE_GENERIC);
   ui_test_utils::RunAllPendingInMessageLoop();
   ASSERT_FALSE(delegate->dialog_closed());
 

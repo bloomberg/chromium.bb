@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
+#include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 
 #include <vector>
 
@@ -29,55 +29,55 @@ using content::WebContentsTester;
 
 namespace {
 
-class TestTabContentsDelegate : public HtmlDialogTabContentsDelegate {
+class TestWebContentsDelegate : public WebDialogWebContentsDelegate {
  public:
-  explicit TestTabContentsDelegate(Profile* profile)
-    : HtmlDialogTabContentsDelegate(profile) {}
-
-  virtual ~TestTabContentsDelegate() {
+  explicit TestWebContentsDelegate(Profile* profile)
+      : WebDialogWebContentsDelegate(profile) {
+  }
+  virtual ~TestWebContentsDelegate() {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestTabContentsDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestWebContentsDelegate);
 };
 
-class HtmlDialogTabContentsDelegateTest : public BrowserWithTestWindowTest {
+class WebDialogWebContentsDelegateTest : public BrowserWithTestWindowTest {
  public:
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
-    test_tab_contents_delegate_.reset(new TestTabContentsDelegate(profile()));
+    test_web_contents_delegate_.reset(new TestWebContentsDelegate(profile()));
   }
 
   virtual void TearDown() {
-    test_tab_contents_delegate_.reset(NULL);
+    test_web_contents_delegate_.reset(NULL);
     BrowserWithTestWindowTest::TearDown();
   }
 
  protected:
-  scoped_ptr<TestTabContentsDelegate> test_tab_contents_delegate_;
+  scoped_ptr<TestWebContentsDelegate> test_web_contents_delegate_;
 };
 
-TEST_F(HtmlDialogTabContentsDelegateTest, DoNothingMethodsTest) {
+TEST_F(WebDialogWebContentsDelegateTest, DoNothingMethodsTest) {
   // None of the following calls should do anything.
-  EXPECT_TRUE(test_tab_contents_delegate_->IsPopupOrPanel(NULL));
+  EXPECT_TRUE(test_web_contents_delegate_->IsPopupOrPanel(NULL));
   scoped_refptr<history::HistoryAddPageArgs> should_add_args(
       new history::HistoryAddPageArgs(
           GURL(), base::Time::Now(), 0, 0, GURL(), history::RedirectList(),
           content::PAGE_TRANSITION_TYPED, history::SOURCE_SYNCED, false));
-  EXPECT_FALSE(test_tab_contents_delegate_->ShouldAddNavigationToHistory(
+  EXPECT_FALSE(test_web_contents_delegate_->ShouldAddNavigationToHistory(
                    *should_add_args, content::NAVIGATION_TYPE_NEW_PAGE));
-  test_tab_contents_delegate_->NavigationStateChanged(NULL, 0);
-  test_tab_contents_delegate_->ActivateContents(NULL);
-  test_tab_contents_delegate_->LoadingStateChanged(NULL);
-  test_tab_contents_delegate_->CloseContents(NULL);
-  test_tab_contents_delegate_->UpdateTargetURL(NULL, 0, GURL());
-  test_tab_contents_delegate_->MoveContents(NULL, gfx::Rect());
+  test_web_contents_delegate_->NavigationStateChanged(NULL, 0);
+  test_web_contents_delegate_->ActivateContents(NULL);
+  test_web_contents_delegate_->LoadingStateChanged(NULL);
+  test_web_contents_delegate_->CloseContents(NULL);
+  test_web_contents_delegate_->UpdateTargetURL(NULL, 0, GURL());
+  test_web_contents_delegate_->MoveContents(NULL, gfx::Rect());
   EXPECT_EQ(0, browser()->tab_count());
   EXPECT_EQ(1U, BrowserList::size());
 }
 
-TEST_F(HtmlDialogTabContentsDelegateTest, OpenURLFromTabTest) {
-  test_tab_contents_delegate_->OpenURLFromTab(
+TEST_F(WebDialogWebContentsDelegateTest, OpenURLFromTabTest) {
+  test_web_contents_delegate_->OpenURLFromTab(
     NULL, OpenURLParams(GURL(chrome::kAboutBlankURL), Referrer(),
     NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
   // This should create a new foreground tab in the existing browser.
@@ -85,25 +85,25 @@ TEST_F(HtmlDialogTabContentsDelegateTest, OpenURLFromTabTest) {
   EXPECT_EQ(1U, BrowserList::size());
 }
 
-TEST_F(HtmlDialogTabContentsDelegateTest, AddNewContentsForegroundTabTest) {
+TEST_F(WebDialogWebContentsDelegateTest, AddNewContentsForegroundTabTest) {
   WebContents* contents =
       WebContentsTester::CreateTestWebContents(profile(), NULL);
-  test_tab_contents_delegate_->AddNewContents(
+  test_web_contents_delegate_->AddNewContents(
       NULL, contents, NEW_FOREGROUND_TAB, gfx::Rect(), false);
   // This should create a new foreground tab in the existing browser.
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(1U, BrowserList::size());
 }
 
-TEST_F(HtmlDialogTabContentsDelegateTest, DetachTest) {
-  EXPECT_EQ(profile(), test_tab_contents_delegate_->profile());
-  test_tab_contents_delegate_->Detach();
-  EXPECT_EQ(NULL, test_tab_contents_delegate_->profile());
+TEST_F(WebDialogWebContentsDelegateTest, DetachTest) {
+  EXPECT_EQ(profile(), test_web_contents_delegate_->profile());
+  test_web_contents_delegate_->Detach();
+  EXPECT_EQ(NULL, test_web_contents_delegate_->profile());
   // Now, none of the following calls should do anything.
-  test_tab_contents_delegate_->OpenURLFromTab(
+  test_web_contents_delegate_->OpenURLFromTab(
       NULL, OpenURLParams(GURL(chrome::kAboutBlankURL), Referrer(),
       NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
-  test_tab_contents_delegate_->AddNewContents(NULL, NULL, NEW_FOREGROUND_TAB,
+  test_web_contents_delegate_->AddNewContents(NULL, NULL, NEW_FOREGROUND_TAB,
                                               gfx::Rect(), false);
   EXPECT_EQ(0, browser()->tab_count());
   EXPECT_EQ(1U, BrowserList::size());

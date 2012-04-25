@@ -105,12 +105,12 @@ class MockCloudPrintFlowHandler
                     const content::NotificationSource& source,
                     const content::NotificationDetails& details));
   MOCK_METHOD1(SetDialogDelegate,
-               void(CloudPrintHtmlDialogDelegate* delegate));
+               void(CloudPrintWebDialogDelegate* delegate));
   MOCK_METHOD0(CreateCloudPrintDataSender,
                scoped_refptr<CloudPrintDataSender>());
 };
 
-class MockCloudPrintHtmlDialogDelegate : public CloudPrintHtmlDialogDelegate {
+class MockCloudPrintWebDialogDelegate : public CloudPrintWebDialogDelegate {
  public:
   MOCK_CONST_METHOD0(GetDialogModalType,
       ui::ModalType());
@@ -135,7 +135,7 @@ class MockCloudPrintHtmlDialogDelegate : public CloudPrintHtmlDialogDelegate {
 using internal_cloud_print_helpers::CloudPrintDataSenderHelper;
 using internal_cloud_print_helpers::CloudPrintDataSender;
 
-class MockExternalHtmlDialogUI : public ExternalHtmlDialogUI {
+class MockExternalWebDialogUI : public ExternalWebDialogUI {
  public:
   MOCK_METHOD1(RenderViewCreated,
                void(content::RenderViewHost* render_view_host));
@@ -289,18 +289,18 @@ TEST_F(CloudPrintDataSenderTest, EmptyFile) {
 }
 
 // Testing for CloudPrintFlowHandler needs a mock
-// CloudPrintHtmlDialogDelegate, mock CloudPrintDataSender, and a mock
+// CloudPrintWebDialogDelegate, mock CloudPrintDataSender, and a mock
 // WebUI.
 
-// Testing for CloudPrintHtmlDialogDelegate needs a mock
+// Testing for CloudPrintWebDialogDelegate needs a mock
 // CloudPrintFlowHandler.
 
 using internal_cloud_print_helpers::MockCloudPrintFlowHandler;
-using internal_cloud_print_helpers::CloudPrintHtmlDialogDelegate;
+using internal_cloud_print_helpers::CloudPrintWebDialogDelegate;
 
-class CloudPrintHtmlDialogDelegateTest : public testing::Test {
+class CloudPrintWebDialogDelegateTest : public testing::Test {
  public:
-  CloudPrintHtmlDialogDelegateTest()
+  CloudPrintWebDialogDelegateTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
  protected:
@@ -316,7 +316,7 @@ class CloudPrintHtmlDialogDelegateTest : public testing::Test {
     mock_flow_handler_ = handler->AsWeakPtr();
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(_));
     EXPECT_CALL(*mock_flow_handler_.get(), SetDialogDelegate(NULL));
-    delegate_.reset(new CloudPrintHtmlDialogDelegate(
+    delegate_.reset(new CloudPrintWebDialogDelegate(
         mock_flow_handler_.get(), 100, 100, std::string(), true, false));
   }
 
@@ -329,10 +329,10 @@ class CloudPrintHtmlDialogDelegateTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   base::WeakPtr<MockCloudPrintFlowHandler> mock_flow_handler_;
-  scoped_ptr<CloudPrintHtmlDialogDelegate> delegate_;
+  scoped_ptr<CloudPrintWebDialogDelegate> delegate_;
 };
 
-TEST_F(CloudPrintHtmlDialogDelegateTest, BasicChecks) {
+TEST_F(CloudPrintWebDialogDelegateTest, BasicChecks) {
   EXPECT_EQ(ui::MODAL_TYPE_WINDOW, delegate_->GetDialogModalType());
   EXPECT_THAT(delegate_->GetDialogContentURL().spec(),
               StrEq(chrome::kChromeUICloudPrintResourcesURL));
@@ -343,20 +343,20 @@ TEST_F(CloudPrintHtmlDialogDelegateTest, BasicChecks) {
   EXPECT_TRUE(close_dialog);
 }
 
-TEST_F(CloudPrintHtmlDialogDelegateTest, OwnedFlowDestroyed) {
+TEST_F(CloudPrintWebDialogDelegateTest, OwnedFlowDestroyed) {
   delegate_.reset();
   EXPECT_THAT(mock_flow_handler_.get(), IsNull());
 }
 
-TEST_F(CloudPrintHtmlDialogDelegateTest, UnownedFlowLetGo) {
+TEST_F(CloudPrintWebDialogDelegateTest, UnownedFlowLetGo) {
   std::vector<WebUIMessageHandler*> handlers;
   delegate_->GetWebUIMessageHandlers(&handlers);
   delegate_.reset();
   EXPECT_THAT(mock_flow_handler_.get(), NotNull());
 }
 
-// Testing for ExternalHtmlDialogUI needs a mock WebContents, mock
-// CloudPrintHtmlDialogDelegate (provided through the mock
+// Testing for ExternalWebDialogUI needs a mock WebContents, mock
+// CloudPrintWebDialogDelegate (provided through the mock
 // tab_contents)
 
 // Testing for PrintDialogCloud needs a mock Browser.
