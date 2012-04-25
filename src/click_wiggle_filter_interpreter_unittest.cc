@@ -19,10 +19,10 @@ class ClickWiggleFilterInterpreterTest : public ::testing::Test {};
 class ClickWiggleFilterInterpreterTestInterpreter : public Interpreter {
  public:
   ClickWiggleFilterInterpreterTestInterpreter()
-      : set_hwprops_called_(false) {}
+      : set_hwprops_called_(false), expect_warp_(true) {}
 
   virtual Gesture* SyncInterpret(HardwareState* hwstate, stime_t* timeout) {
-    if (hwstate->finger_cnt > 0) {
+    if (hwstate->finger_cnt > 0 && expect_warp_) {
       EXPECT_EQ(1, hwstate->finger_cnt);
       EXPECT_TRUE(hwstate->fingers[0].flags & GESTURES_FINGER_WARP_X);
       EXPECT_TRUE(hwstate->fingers[0].flags & GESTURES_FINGER_WARP_Y);
@@ -40,6 +40,7 @@ class ClickWiggleFilterInterpreterTestInterpreter : public Interpreter {
   };
 
   bool set_hwprops_called_;
+  bool expect_warp_;
 };
 
 TEST(ClickWiggleFilterInterpreterTest, WiggleSuppressTest) {
@@ -213,6 +214,56 @@ TEST(ClickWiggleFilterInterpreter, ThumbClickTest) {
     HardwareState hs = { input.timestamp_, input.buttons_down_, 1, 1, &fs };
     interpreter.SyncInterpret(&hs, NULL);
     // Assertions tested in base interpreter
+  }
+}
+
+// This test makes sure we can do 1-finger movement if the clock goes
+// backwards.
+TEST(ClickWiggleFilterInterpreter, TimeBackwardsTest) {
+  ClickWiggleFilterInterpreterTestInterpreter* base_interpreter =
+    new ClickWiggleFilterInterpreterTestInterpreter;
+  ClickWiggleFilterInterpreter interpreter(NULL, base_interpreter);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    92,  // right edge
+    61,  // bottom edge
+    1,  // x pixels/TP width
+    1,  // y pixels/TP height
+    26,  // x screen DPI
+    26,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    0,  // t5r2
+    0,  // semi-mt
+    0  // is button pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+
+  const short kInitialId = 1;
+  FingerState fs = { 0, 0, 0, 0, 50, 0, 20, 20, kInitialId, 0 };
+
+  HardwareState hs[] = {
+    // click
+    { 9.00, 1, 1, 1, &fs },
+    { 9.01, 0, 1, 1, &fs },
+    // time goes backwards
+    { 1.00, 0, 1, 1, &fs },
+    // long time passes, shouldn't be wobbling anymore
+    { 2.01, 0, 1, 1, &fs },
+  };
+
+  for (size_t i = 0; i < arraysize(hs); i++) {
+    fs.flags = 0;
+    if (hs[i].timestamp < hs[0].timestamp) {
+      fs.tracking_id = kInitialId + 1;
+    }
+    if (i == arraysize(hs) - 1)
+      base_interpreter->expect_warp_ = false;
+    interpreter.SyncInterpret(&hs[i], NULL);
+    if (i == arraysize(hs) - 1)
+      EXPECT_EQ(0, fs.flags);
   }
 }
 

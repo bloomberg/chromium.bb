@@ -117,6 +117,7 @@ void ClickWiggleFilterInterpreter::UpdateClickWiggle(
 
 void ClickWiggleFilterInterpreter::SetWarpFlags(HardwareState* hwstate) const {
   if (button_down_occurred_ != 0.0 &&
+      button_down_occurred_ < hwstate->timestamp &&
       button_down_occurred_ + one_finger_click_wiggle_timeout_.val_ >
       hwstate->timestamp && hwstate->finger_cnt == 1) {
     hwstate->fingers[0].flags |=
