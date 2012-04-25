@@ -272,6 +272,8 @@ class ExtensionPermissionsInfo {
   DISALLOW_COPY_AND_ASSIGN(ExtensionPermissionsInfo);
 };
 
+typedef std::set<std::string> ExtensionOAuth2Scopes;
+
 // The ExtensionPermissionSet is an immutable class that encapsulates an
 // extension's permissions. The class exposes set operations for combining and
 // manipulating the permissions.
@@ -287,12 +289,23 @@ class ExtensionPermissionSet
   // manifest, |apis| and |hosts|.
   ExtensionPermissionSet(const Extension* extension,
                          const ExtensionAPIPermissionSet& apis,
-                         const URLPatternSet& explicit_hosts);
+                         const URLPatternSet& explicit_hosts,
+                         const ExtensionOAuth2Scopes& scopes);
+
 
   // Creates a new permission set based on the specified data.
   ExtensionPermissionSet(const ExtensionAPIPermissionSet& apis,
                          const URLPatternSet& explicit_hosts,
                          const URLPatternSet& scriptable_hosts);
+
+  // Creates a new permission set that has oauth scopes in it.
+  ExtensionPermissionSet(const ExtensionAPIPermissionSet& apis,
+                         const URLPatternSet& explicit_hosts,
+                         const URLPatternSet& scriptable_hosts,
+                         const ExtensionOAuth2Scopes& scopes);
+
+  // Creates a new permission set containing only oauth scopes.
+  explicit ExtensionPermissionSet(const ExtensionOAuth2Scopes& scopes);
 
   ~ExtensionPermissionSet();
 
@@ -382,6 +395,8 @@ class ExtensionPermissionSet
 
   const URLPatternSet& scriptable_hosts() const { return scriptable_hosts_; }
 
+  const ExtensionOAuth2Scopes& scopes() const { return scopes_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionPermissionsTest,
                            HasLessHostPrivilegesThan);
@@ -412,6 +427,9 @@ class ExtensionPermissionSet
   bool HasLessHostPrivilegesThan(
       const ExtensionPermissionSet* permissions) const;
 
+  // Returns true if |permissions| has more oauth2 scopes compared to this set.
+  bool HasLessScopesThan(const ExtensionPermissionSet* permissions) const;
+
   // The api list is used when deciding if an extension can access certain
   // extension APIs and features.
   ExtensionAPIPermissionSet apis_;
@@ -426,6 +444,10 @@ class ExtensionPermissionSet
 
   // The list of hosts this effectively grants access to.
   URLPatternSet effective_hosts_;
+
+  // A set of oauth2 scopes that are used by the identity API to create OAuth2
+  // tokens for accessing the Google Account of the signed-in sync account.
+  ExtensionOAuth2Scopes scopes_;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_PERMISSION_SET_H_

@@ -4,11 +4,13 @@
 
 #include "chrome/common/extensions/extension_permission_set.h"
 
+#include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -253,6 +255,10 @@ TEST(ExtensionPermissionsTest, CreateUnion) {
   URLPatternSet scriptable_hosts2;
   URLPatternSet expected_scriptable_hosts;
 
+  ExtensionOAuth2Scopes scopes1;
+  ExtensionOAuth2Scopes scopes2;
+  ExtensionOAuth2Scopes expected_scopes;
+
   URLPatternSet effective_hosts;
 
   scoped_refptr<ExtensionPermissionSet> set1;
@@ -269,8 +275,15 @@ TEST(ExtensionPermissionsTest, CreateUnion) {
   AddPattern(&expected_explicit_hosts, "http://*.google.com/*");
   AddPattern(&effective_hosts, "http://*.google.com/*");
 
-  set1 = new ExtensionPermissionSet(apis1, explicit_hosts1, scriptable_hosts1);
-  set2 = new ExtensionPermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
+  scopes1.insert("first-scope");
+  scopes1.insert("second-scope");
+  expected_scopes.insert("first-scope");
+  expected_scopes.insert("second-scope");
+
+  set1 = new ExtensionPermissionSet(
+      apis1, explicit_hosts1, scriptable_hosts1, scopes1);
+  set2 = new ExtensionPermissionSet(
+      apis2, explicit_hosts2, scriptable_hosts2, scopes2);
   union_set = ExtensionPermissionSet::CreateUnion(set1.get(), set2.get());
   EXPECT_TRUE(set1->Contains(*set2));
   EXPECT_TRUE(set1->Contains(*union_set));
@@ -284,6 +297,7 @@ TEST(ExtensionPermissionsTest, CreateUnion) {
   EXPECT_EQ(expected_explicit_hosts, union_set->explicit_hosts());
   EXPECT_EQ(expected_scriptable_hosts, union_set->scriptable_hosts());
   EXPECT_EQ(expected_explicit_hosts, union_set->effective_hosts());
+  EXPECT_EQ(expected_scopes, union_set->scopes());
 
   // Now use a real second set.
   apis2.insert(ExtensionAPIPermission::kTab);
@@ -300,10 +314,16 @@ TEST(ExtensionPermissionsTest, CreateUnion) {
   AddPattern(&expected_explicit_hosts, "http://*.example.com/*");
   AddPattern(&expected_scriptable_hosts, "http://*.google.com/*");
 
+  scopes2.insert("real-scope");
+  scopes2.insert("anotherscope");
+  expected_scopes.insert("real-scope");
+  expected_scopes.insert("anotherscope");
+
   URLPatternSet::CreateUnion(
       explicit_hosts2, scriptable_hosts2, &effective_hosts);
 
-  set2 = new ExtensionPermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
+  set2 = new ExtensionPermissionSet(
+      apis2, explicit_hosts2, scriptable_hosts2, scopes2);
   union_set = ExtensionPermissionSet::CreateUnion(set1.get(), set2.get());
 
   EXPECT_FALSE(set1->Contains(*set2));
@@ -318,6 +338,7 @@ TEST(ExtensionPermissionsTest, CreateUnion) {
   EXPECT_EQ(expected_apis, union_set->apis());
   EXPECT_EQ(expected_explicit_hosts, union_set->explicit_hosts());
   EXPECT_EQ(expected_scriptable_hosts, union_set->scriptable_hosts());
+  EXPECT_EQ(expected_scopes, union_set->scopes());
   EXPECT_EQ(effective_hosts, union_set->effective_hosts());
 }
 
@@ -410,6 +431,10 @@ TEST(ExtensionPermissionsTest, CreateDifference) {
   URLPatternSet scriptable_hosts2;
   URLPatternSet expected_scriptable_hosts;
 
+  ExtensionOAuth2Scopes scopes1;
+  ExtensionOAuth2Scopes scopes2;
+  ExtensionOAuth2Scopes expected_scopes;
+
   URLPatternSet effective_hosts;
 
   scoped_refptr<ExtensionPermissionSet> set1;
@@ -423,8 +448,13 @@ TEST(ExtensionPermissionsTest, CreateDifference) {
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&scriptable_hosts1, "http://www.reddit.com/*");
 
-  set1 = new ExtensionPermissionSet(apis1, explicit_hosts1, scriptable_hosts1);
-  set2 = new ExtensionPermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
+  scopes1.insert("my-scope");
+  scopes1.insert("other-scope");
+
+  set1 = new ExtensionPermissionSet(
+      apis1, explicit_hosts1, scriptable_hosts1, scopes1);
+  set2 = new ExtensionPermissionSet(
+      apis2, explicit_hosts2, scriptable_hosts2, scopes2);
   new_set = ExtensionPermissionSet::CreateDifference(set1.get(), set2.get());
   EXPECT_EQ(*set1, *new_set);
 
@@ -440,10 +470,14 @@ TEST(ExtensionPermissionsTest, CreateDifference) {
   AddPattern(&scriptable_hosts2, "http://*.google.com/*");
   AddPattern(&expected_scriptable_hosts, "http://www.reddit.com/*");
 
+  scopes2.insert("other-scope");
+  expected_scopes.insert("my-scope");
+
   effective_hosts.ClearPatterns();
   AddPattern(&effective_hosts, "http://www.reddit.com/*");
 
-  set2 = new ExtensionPermissionSet(apis2, explicit_hosts2, scriptable_hosts2);
+  set2 = new ExtensionPermissionSet(
+      apis2, explicit_hosts2, scriptable_hosts2, scopes2);
   new_set = ExtensionPermissionSet::CreateDifference(set1.get(), set2.get());
 
   EXPECT_TRUE(set1->Contains(*new_set));
@@ -454,6 +488,7 @@ TEST(ExtensionPermissionsTest, CreateDifference) {
   EXPECT_EQ(expected_apis, new_set->apis());
   EXPECT_EQ(expected_explicit_hosts, new_set->explicit_hosts());
   EXPECT_EQ(expected_scriptable_hosts, new_set->scriptable_hosts());
+  EXPECT_EQ(expected_scopes, new_set->scopes());
   EXPECT_EQ(effective_hosts, new_set->effective_hosts());
 
   // |set3| = |set1| - |set2| --> |set3| intersect |set2| == empty_set
@@ -464,65 +499,36 @@ TEST(ExtensionPermissionsTest, CreateDifference) {
 TEST(ExtensionPermissionsTest, HasLessPrivilegesThan) {
   const struct {
     const char* base_name;
-    // Increase these sizes if you have more than 10.
-    const char* granted_apis[10];
-    const char* granted_hosts[10];
-    bool full_access;
     bool expect_increase;
   } kTests[] = {
-    { "allhosts1", {NULL}, {"http://*/", NULL}, false,
-      false },  // all -> all
-    { "allhosts2", {NULL}, {"http://*/", NULL}, false,
-      false },  // all -> one
-    { "allhosts3", {NULL}, {NULL}, false, true },  // one -> all
-    { "hosts1", {NULL},
-      {"http://www.google.com/", "http://www.reddit.com/", NULL}, false,
-      false },  // http://a,http://b -> http://a,http://b
-    { "hosts2", {NULL},
-      {"http://www.google.com/", "http://www.reddit.com/", NULL}, false,
-      true },  // http://a,http://b -> https://a,http://*.b
-    { "hosts3", {NULL},
-      {"http://www.google.com/", "http://www.reddit.com/", NULL}, false,
-      false },  // http://a,http://b -> http://a
-    { "hosts4", {NULL},
-      {"http://www.google.com/", NULL}, false,
-      true },  // http://a -> http://a,http://b
-    { "hosts5", {"tabs", "notifications", NULL},
-      {"http://*.example.com/", "http://*.example.com/*",
-       "http://*.example.co.uk/*", "http://*.example.com.au/*",
-       NULL}, false,
-      false },  // http://a,b,c -> http://a,b,c + https://a,b,c
-    { "hosts6", {"tabs", "notifications", NULL},
-      {"http://*.example.com/", "http://*.example.com/*", NULL}, false,
-      false },  // http://a.com -> http://a.com + http://a.co.uk
-    { "permissions1", {"tabs", NULL},
-      {NULL}, false, false },  // tabs -> tabs
-    { "permissions2", {"tabs", NULL},
-      {NULL}, false, true },  // tabs -> tabs,bookmarks
-    { "permissions3", {NULL},
-      {"http://*/*", NULL},
-      false, true },  // http://a -> http://a,tabs
-    { "permissions5", {"bookmarks", NULL},
-      {NULL}, false, true },  // bookmarks -> bookmarks,history
-    { "equivalent_warnings", {NULL}, {NULL},
-      false, false },  // tabs --> tabs, webNavigation
+    { "allhosts1", false },  // all -> all
+    { "allhosts2", false },  // all -> one
+    { "allhosts3", true },  // one -> all
+    { "hosts1", false },  // http://a,http://b -> http://a,http://b
+    { "hosts2", true },  // http://a,http://b -> https://a,http://*.b
+    { "hosts3", false },  // http://a,http://b -> http://a
+    { "hosts4", true },  // http://a -> http://a,http://b
+    { "hosts5", false },  // http://a,b,c -> http://a,b,c + https://a,b,c
+    { "hosts6", false },  // http://a.com -> http://a.com + http://a.co.uk
+    { "permissions1", false },  // tabs -> tabs
+    { "permissions2", true },  // tabs -> tabs,bookmarks
+    { "permissions3", true },  // http://a -> http://a,tabs
+    { "permissions5", true },  // bookmarks -> bookmarks,history
+    { "equivalent_warnings", false },  // tabs --> tabs, webNavigation
 #if !defined(OS_CHROMEOS)  // plugins aren't allowed in ChromeOS
-    { "permissions4", {NULL},
-      {NULL}, true, false },  // plugin -> plugin,tabs
-    { "plugin1", {NULL},
-      {NULL}, true, false },  // plugin -> plugin
-    { "plugin2", {NULL},
-      {NULL}, true, false },  // plugin -> none
-    { "plugin3", {NULL},
-      {NULL}, false, true },  // none -> plugin
+    { "permissions4", false },  // plugin -> plugin,tabs
+    { "plugin1", false },  // plugin -> plugin
+    { "plugin2", false },  // plugin -> none
+    { "plugin3", true },  // none -> plugin
 #endif
-    { "storage", {NULL},
-      {NULL}, false, false },  // none -> storage
-    { "notifications", {NULL},
-      {NULL}, false, false }  // none -> notifications
+    { "storage", false },  // none -> storage
+    { "notifications", false },  // none -> notifications
+    { "scopes1", true },  // scope1 -> scope1,scope2
+    { "scopes2", false },  // scope1,scope2 -> scope1
+    { "scopes3", true },  // none -> scope1
   };
 
-  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
     scoped_refptr<Extension> old_extension(
         LoadManifest("allow_silent_upgrade",
@@ -530,15 +536,6 @@ TEST(ExtensionPermissionsTest, HasLessPrivilegesThan) {
     scoped_refptr<Extension> new_extension(
         LoadManifest("allow_silent_upgrade",
                      std::string(kTests[i].base_name) + "_new.json"));
-
-    ExtensionAPIPermissionSet granted_apis;
-    for (size_t j = 0; kTests[i].granted_apis[j] != NULL; ++j) {
-      granted_apis.insert(info->GetByName(kTests[i].granted_apis[j])->id());
-    }
-
-    URLPatternSet granted_hosts;
-    for (size_t j = 0; kTests[i].granted_hosts[j] != NULL; ++j)
-      AddPattern(&granted_hosts, kTests[i].granted_hosts[j]);
 
     EXPECT_TRUE(new_extension.get()) << kTests[i].base_name << "_new.json";
     if (!new_extension.get())

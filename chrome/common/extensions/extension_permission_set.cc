@@ -441,8 +441,10 @@ ExtensionPermissionSet::ExtensionPermissionSet() {
 ExtensionPermissionSet::ExtensionPermissionSet(
     const Extension* extension,
     const ExtensionAPIPermissionSet& apis,
-    const URLPatternSet& explicit_hosts)
-  : apis_(apis) {
+    const URLPatternSet& explicit_hosts,
+    const ExtensionOAuth2Scopes& scopes)
+    : apis_(apis),
+      scopes_(scopes) {
   DCHECK(extension);
   AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
   InitImplicitExtensionPermissions(extension);
@@ -453,9 +455,27 @@ ExtensionPermissionSet::ExtensionPermissionSet(
     const ExtensionAPIPermissionSet& apis,
     const URLPatternSet& explicit_hosts,
     const URLPatternSet& scriptable_hosts)
-  : apis_(apis),
-    scriptable_hosts_(scriptable_hosts) {
+    : apis_(apis),
+      scriptable_hosts_(scriptable_hosts) {
   AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
+  InitEffectiveHosts();
+}
+
+ExtensionPermissionSet::ExtensionPermissionSet(
+    const ExtensionAPIPermissionSet& apis,
+    const URLPatternSet& explicit_hosts,
+    const URLPatternSet& scriptable_hosts,
+    const ExtensionOAuth2Scopes& scopes)
+    : apis_(apis),
+      scriptable_hosts_(scriptable_hosts),
+      scopes_(scopes) {
+  AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
+  InitEffectiveHosts();
+}
+
+ExtensionPermissionSet::ExtensionPermissionSet(
+    const ExtensionOAuth2Scopes& scopes)
+    : scopes_(scopes) {
   InitEffectiveHosts();
 }
 
@@ -484,7 +504,15 @@ ExtensionPermissionSet* ExtensionPermissionSet::CreateDifference(
   URLPatternSet::CreateDifference(set1_safe->scriptable_hosts(),
                                   set2_safe->scriptable_hosts(),
                                   &scriptable_hosts);
-  return new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts);
+
+  ExtensionOAuth2Scopes scopes;
+  std::set_difference(set1_safe->scopes().begin(), set1_safe->scopes().end(),
+                      set2_safe->scopes().begin(), set2_safe->scopes().end(),
+                      std::insert_iterator<ExtensionOAuth2Scopes>(
+                          scopes, scopes.begin()));
+
+  return new ExtensionPermissionSet(
+      apis, explicit_hosts, scriptable_hosts, scopes);
 }
 
 // static
@@ -509,8 +537,17 @@ ExtensionPermissionSet* ExtensionPermissionSet::CreateIntersection(
   URLPatternSet::CreateIntersection(set1_safe->scriptable_hosts(),
                                     set2_safe->scriptable_hosts(),
                                     &scriptable_hosts);
-  return new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts);
+
+  ExtensionOAuth2Scopes scopes;
+  std::set_intersection(set1_safe->scopes().begin(), set1_safe->scopes().end(),
+                        set2_safe->scopes().begin(), set2_safe->scopes().end(),
+                        std::insert_iterator<ExtensionOAuth2Scopes>(
+                            scopes, scopes.begin()));
+
+  return new ExtensionPermissionSet(
+      apis, explicit_hosts, scriptable_hosts, scopes);
 }
+
 // static
 ExtensionPermissionSet* ExtensionPermissionSet::CreateUnion(
     const ExtensionPermissionSet* set1,
@@ -535,14 +572,22 @@ ExtensionPermissionSet* ExtensionPermissionSet::CreateUnion(
                              set2_safe->scriptable_hosts(),
                              &scriptable_hosts);
 
-  return new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts);
+  ExtensionOAuth2Scopes scopes;
+  std::set_union(set1_safe->scopes().begin(), set1_safe->scopes().end(),
+                 set2_safe->scopes().begin(), set2_safe->scopes().end(),
+                 std::insert_iterator<ExtensionOAuth2Scopes>(
+                     scopes, scopes.begin()));
+
+  return new ExtensionPermissionSet(
+      apis, explicit_hosts, scriptable_hosts, scopes);
 }
 
 bool ExtensionPermissionSet::operator==(
     const ExtensionPermissionSet& rhs) const {
   return apis_ == rhs.apis_ &&
       scriptable_hosts_ == rhs.scriptable_hosts_ &&
-      explicit_hosts_ == rhs.explicit_hosts_;
+      explicit_hosts_ == rhs.explicit_hosts_ &&
+      scopes_ == rhs.scopes_;
 }
 
 bool ExtensionPermissionSet::Contains(const ExtensionPermissionSet& set) const {
@@ -558,6 +603,10 @@ bool ExtensionPermissionSet::Contains(const ExtensionPermissionSet& set) const {
     return false;
 
   if (!scriptable_hosts().Contains(set.scriptable_hosts()))
+    return false;
+
+  if (!std::includes(scopes_.begin(), scopes_.end(),
+                     set.scopes().begin(), set.scopes().end()))
     return false;
 
   return true;
@@ -746,6 +795,9 @@ bool ExtensionPermissionSet::HasLessPrivilegesThan(
   if (HasLessAPIPrivilegesThan(permissions))
     return true;
 
+  if (HasLessScopesThan(permissions))
+    return true;
+
   return false;
 }
 
@@ -889,4 +941,20 @@ bool ExtensionPermissionSet::HasLessHostPrivilegesThan(
                       std::inserter(new_hosts_only, new_hosts_only.begin()));
 
   return !new_hosts_only.empty();
+}
+
+bool ExtensionPermissionSet::HasLessScopesThan(
+    const ExtensionPermissionSet* permissions) const {
+  if (permissions == NULL)
+    return false;
+
+  ExtensionOAuth2Scopes current_scopes = scopes();
+  ExtensionOAuth2Scopes new_scopes = permissions->scopes();
+  ExtensionOAuth2Scopes delta_scopes;
+  std::set_difference(new_scopes.begin(), new_scopes.end(),
+                      current_scopes.begin(), current_scopes.end(),
+                      std::inserter(delta_scopes, delta_scopes.begin()));
+
+  // We have less privileges if there are additional scopes present.
+  return !delta_scopes.empty();
 }

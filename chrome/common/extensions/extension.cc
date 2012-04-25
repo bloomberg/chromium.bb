@@ -241,6 +241,13 @@ Extension::TtsVoice::~TtsVoice() {}
 Extension::OAuth2Info::OAuth2Info() {}
 Extension::OAuth2Info::~OAuth2Info() {}
 
+ExtensionOAuth2Scopes Extension::OAuth2Info::GetScopesAsSet() {
+  ExtensionOAuth2Scopes result;
+  std::copy(scopes.begin(), scopes.end(),
+            std::inserter(result, result.begin()));
+  return result;
+}
+
 Extension::ExtensionKeybinding::ExtensionKeybinding() {}
 Extension::ExtensionKeybinding::~ExtensionKeybinding() {}
 
@@ -3065,9 +3072,9 @@ bool Extension::InitFromValue(int flags, string16* error) {
   }
 
   runtime_data_.SetActivePermissions(new ExtensionPermissionSet(
-      this, api_permissions, host_permissions));
+      this, api_permissions, host_permissions, oauth2_info_.GetScopesAsSet()));
   required_permission_set_ = new ExtensionPermissionSet(
-      this, api_permissions, host_permissions);
+      this, api_permissions, host_permissions, oauth2_info_.GetScopesAsSet());
   optional_permission_set_ = new ExtensionPermissionSet(
       optional_api_permissions, optional_host_permissions, URLPatternSet());
 

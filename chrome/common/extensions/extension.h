@@ -203,6 +203,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     OAuth2Info();
     ~OAuth2Info();
 
+    ExtensionOAuth2Scopes GetScopesAsSet();
+
     std::string client_id;
     std::vector<std::string> scopes;
   };
