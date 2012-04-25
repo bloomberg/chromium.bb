@@ -116,8 +116,8 @@ class TestRunCommand(unittest.TestCase):
     self.assertEqual(expected.output, actual.output)
     self.assertEqual(expected.returncode, actual.returncode)
 
-  def _TestCmd(self, cmd, real_cmd, sp_kv=dict(), rc_kv=dict()):
-    """Factor out common setup logic for testing --cmd.
+  def _TestCmd(self, cmd, real_cmd, sp_kv=dict(), rc_kv=dict(), sudo=False):
+    """Factor out common setup logic for testing RunCommand().
 
     Args:
       cmd: a string or an array of strings that will be passed to RunCommand.
@@ -125,6 +125,7 @@ class TestRunCommand(unittest.TestCase):
           modified to have enter_chroot).
       sp_kv: key-value pairs passed to subprocess.Popen().
       rc_kv: key-value pairs passed to RunCommand().
+      sudo: use SudoRunCommand() rather than RunCommand().
     """
     expected_result = cros_build_lib.CommandResult()
     expected_result.cmd = real_cmd
@@ -150,7 +151,10 @@ class TestRunCommand(unittest.TestCase):
       proc.communicate(None).AndReturn((self.output, self.error))
 
     self.mox.ReplayAll()
-    actual_result = cros_build_lib.RunCommand(cmd, **rc_kv)
+    if sudo:
+      actual_result = cros_build_lib.SudoRunCommand(cmd, **rc_kv)
+    else:
+      actual_result = cros_build_lib.RunCommand(cmd, **rc_kv)
     self.mox.VerifyAll()
 
     self._AssertCrEqual(expected_result, actual_result)
@@ -299,8 +303,6 @@ class TestRunCommand(unittest.TestCase):
                   sp_kv=dict(env=total_env),
                   rc_kv=dict(env=env, extra_env=extra_env))
 
-
-
   def testExceptionEquality(self):
     """Verify equality methods for RunCommandError"""
 
@@ -324,6 +326,46 @@ class TestRunCommand(unittest.TestCase):
 
     self.assertFalse(e1 == e_diff_code)
     self.assertTrue(e1 != e_diff_code)
+
+  def testSudoRunCommand(self):
+    """Test SudoRunCommand(...) works."""
+    cmd_list = ['foo', 'bar', 'roger']
+    sudo_list = ['sudo', '--'] + cmd_list
+    self.proc_mock.returncode = 0
+    self._TestCmd(cmd_list, sudo_list, sudo=True)
+
+  def testSudoRunCommandShell(self):
+    """Test SudoRunCommand(..., shell=True) works."""
+    cmd = 'foo bar roger'
+    sudo_list = ['/bin/bash', '-c', 'sudo -- ' + cmd]
+    self.proc_mock.returncode = 0
+    self._TestCmd(cmd, sudo_list, sudo=True,
+                  rc_kv=dict(shell=True))
+
+  def testSudoRunCommandEnv(self):
+    """Test SudoRunCommand(..., extra_env=z) works."""
+    cmd_list = ['foo', 'bar', 'roger']
+    sudo_list = ['sudo', 'shucky=ducky', '--'] + cmd_list
+    extra_env = {'shucky' : 'ducky'}
+    self.proc_mock.returncode = 0
+    self._TestCmd(cmd_list, sudo_list, sudo=True,
+                  rc_kv=dict(extra_env=extra_env))
+
+  def testSudoRunCommandUser(self):
+    """Test SudoRunCommand(..., user='...') works."""
+    cmd_list = ['foo', 'bar', 'roger']
+    sudo_list = ['sudo', '-u', 'MMMMMonster', '--'] + cmd_list
+    self.proc_mock.returncode = 0
+    self._TestCmd(cmd_list, sudo_list, sudo=True,
+                  rc_kv=dict(user='MMMMMonster'))
+
+  def testSudoRunCommandUserShell(self):
+    """Test SudoRunCommand(..., user='...', shell=True) works."""
+    cmd = 'foo bar roger'
+    sudo_list = ['/bin/bash', '-c', 'sudo -u MMMMMonster -- ' + cmd]
+    self.proc_mock.returncode = 0
+    self._TestCmd(cmd, sudo_list, sudo=True,
+                  rc_kv=dict(user='MMMMMonster', shell=True))
 
 
 class TestRunCommandWithRetries(unittest.TestCase):

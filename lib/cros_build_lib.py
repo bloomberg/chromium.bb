@@ -114,7 +114,7 @@ class TerminateRunCommandError(RunCommandError):
   """
 
 
-def SudoRunCommand(cmd, **kwds):
+def SudoRunCommand(cmd, user='root', **kwds):
   """Run a command via sudo.
 
   Client code must use this rather than coming up with their own RunCommand
@@ -124,6 +124,7 @@ def SudoRunCommand(cmd, **kwds):
   Args:
     cmd: The command to run.  See RunCommand for rules of this argument-
          SudoRunCommand purely prefixes it with sudo.
+    user: The user to run the command as.
     kwds: See RunCommand options, it's a direct pass thru to it.
           Note that this supports a 'strict' keyword that defaults to True.
           If set to False, it'll suppress strict sudo behavior.
@@ -135,30 +136,33 @@ def SudoRunCommand(cmd, **kwds):
     Barring that, see RunCommand's documentation- it can raise the same things
     RunCommand does.
   """
-  sudo_mode = []
+  sudo_cmd = ['sudo']
+
   if kwds.pop("strict", True) and STRICT_SUDO:
     if 'CROS_SUDO_KEEP_ALIVE' not in os.environ:
       raise RunCommandError(
           'We were invoked in a strict sudo non-interactive context, but no '
           'sudo keep alive daemon is running.  This is a bug in the code.',
           CommandResult(cmd=cmd, returncode=126))
-    sudo_mode = ['-n']
+    sudo_cmd += ['-n']
+
+  if user != 'root':
+    sudo_cmd += ['-u', user]
 
   # Pass these values down into the sudo environment, since sudo will
   # just strip them normally.
-  final_command = ['sudo'] + sudo_mode
-  final_command.extend('%s=%s' % (k, v)
-                       for k, v in kwds.pop('extra_env', {}).iteritems())
+  sudo_cmd.extend('%s=%s' % (k, v)
+                  for k, v in kwds.pop('extra_env', {}).iteritems())
 
   # Finally, block people from passing options to sudo.
-  final_command.append('--')
+  sudo_cmd.append('--')
 
   if isinstance(cmd, basestring):
-    final_command = '%s %s' % (' '.join(final_command), cmd)
+    sudo_cmd = '%s %s' % (' '.join(sudo_cmd), cmd)
   else:
-    final_command.extend(cmd)
+    sudo_cmd.extend(cmd)
 
-  return RunCommand(final_command, **kwds)
+  return RunCommand(sudo_cmd, **kwds)
 
 
 def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
