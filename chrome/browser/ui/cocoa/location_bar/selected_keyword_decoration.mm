@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,8 +51,7 @@ CGFloat SelectedKeywordDecoration::GetWidthForSpace(CGFloat width) {
 
 void SelectedKeywordDecoration::SetKeyword(const string16& short_name,
                                            bool is_extension_keyword) {
-  const string16 min_name(WideToUTF16Hack(
-      location_bar_util::CalculateMinString(UTF16ToWideHack(short_name))));
+  const string16 min_name(location_bar_util::CalculateMinString(short_name));
   const int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
 

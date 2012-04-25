@@ -990,16 +990,13 @@ void LocationBarViewGtk::SetKeywordLabel(const string16& keyword) {
     return;
 
   bool is_extension_keyword;
-  const string16 short_name = template_url_service->
-      GetKeywordShortName(keyword, &is_extension_keyword);
+  const string16 short_name = template_url_service->GetKeywordShortName(
+      keyword, &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
-  string16 full_name = l10n_util::GetStringFUTF16(message_id,
-                                                  short_name);
+  string16 full_name = l10n_util::GetStringFUTF16(message_id, short_name);
   string16 partial_name = l10n_util::GetStringFUTF16(
-      message_id,
-      WideToUTF16Hack(
-          location_bar_util::CalculateMinString(UTF16ToWideHack(short_name))));
+      message_id, location_bar_util::CalculateMinString(short_name));
   gtk_label_set_text(GTK_LABEL(tab_to_search_full_label_),
                      UTF16ToUTF8(full_name).c_str());
   gtk_label_set_text(GTK_LABEL(tab_to_search_partial_label_),
