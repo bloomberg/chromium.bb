@@ -94,10 +94,8 @@ bool VarTracker::ReleaseVar(int32 var_id) {
   DLOG_IF(ERROR, !CheckIdType(var_id, PP_ID_TYPE_VAR))
       << var_id << " is not a PP_Var ID.";
   VarMap::iterator found = live_vars_.find(var_id);
-  if (found == live_vars_.end()) {
-    NOTREACHED() << "Unref-ing an invalid var";
+  if (found == live_vars_.end())
     return false;
-  }
 
   VarInfo& info = found->second;
   if (info.ref_count == 0) {
