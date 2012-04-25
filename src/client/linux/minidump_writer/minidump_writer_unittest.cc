@@ -338,7 +338,8 @@ TEST(MinidumpWriterTest, DeletedBinary) {
   ASSERT_EQ(1, r);
   ASSERT_TRUE(pfd.revents & POLLIN);
   uint8_t junk;
-  read(fds[0], &junk, sizeof(junk));
+  const int nr = HANDLE_EINTR(read(fds[0], &junk, sizeof(junk)));
+  ASSERT_EQ(sizeof(junk), nr);
   close(fds[0]);
 
   // Child is ready now.

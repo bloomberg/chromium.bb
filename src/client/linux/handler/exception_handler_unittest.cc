@@ -669,7 +669,14 @@ CrashHandler(const void* crash_context, size_t crash_context_size,
              void* context) {
   const int fd = (intptr_t) context;
   int fds[2];
-  pipe(fds);
+  if (pipe(fds) == -1) {
+    // There doesn't seem to be any way to reliably handle
+    // this failure without the parent process hanging
+    // At least make sure that this process doesn't access
+    // unexpected file descriptors
+    fds[0] = -1;
+    fds[1] = -1;
+  }
   struct kernel_msghdr msg = {0};
   struct kernel_iovec iov;
   iov.iov_base = const_cast<void*>(crash_context);
