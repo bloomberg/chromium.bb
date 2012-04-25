@@ -438,6 +438,7 @@
    fun:SEC_PKCS12DecoderUpdate
 }
 {
+   # See http://sourceware.org/bugzilla/show_bug.cgi?id=14015.
    bug_51770 (Third Party)
    Memcheck:Leak
    fun:calloc
