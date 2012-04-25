@@ -66,18 +66,6 @@ void SnapSizer::Update(const gfx::Point& location) {
   time_last_update_ = base::TimeTicks::Now();
 }
 
-gfx::Rect SnapSizer::GetSnapBounds(const gfx::Rect& bounds) {
-  size_t current;
-  for (current = 0; current < arraysize(kPercents); ++current) {
-    gfx::Rect target = GetTargetBoundsForPercent(current);
-    if (target == bounds) {
-      ++current;
-      break;
-    }
-  }
-  return GetTargetBoundsForPercent(current % arraysize(kPercents));
-}
-
 int SnapSizer::CalculateIncrement(int x, int reference_x) const {
   if (AlongEdge(x))
     return 1;
@@ -106,16 +94,12 @@ void SnapSizer::ChangeBounds(int x, int delta) {
 }
 
 gfx::Rect SnapSizer::GetTargetBounds() const {
-  return GetTargetBoundsForPercent(percent_index_);
-}
-
-gfx::Rect SnapSizer::GetTargetBoundsForPercent(int percent_index) const {
   gfx::Rect work_area(ScreenAsh::GetUnmaximizedWorkAreaBounds(window_));
   int y = WindowResizer::AlignToGridRoundUp(work_area.y(), grid_size_);
   // We don't align to the bottom of the grid as the launcher may not
   // necessarily align to the grid (happens when auto-hidden).
   int max_y = work_area.bottom();
-  int width = static_cast<float>(work_area.width()) * kPercents[percent_index];
+  int width = static_cast<float>(work_area.width()) * kPercents[percent_index_];
   if (edge_ == LEFT_EDGE) {
     int x = WindowResizer::AlignToGridRoundUp(work_area.x(), grid_size_);
     int mid_x = WindowResizer::AlignToGridRoundUp(

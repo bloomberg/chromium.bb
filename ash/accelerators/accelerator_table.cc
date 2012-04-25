@@ -85,13 +85,6 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_8, true, false, true, SELECT_WIN_7 },
   { true, ui::VKEY_9, true, false, true, SELECT_LAST_WIN },
 
-  // Window management shortcuts.
-  { true, ui::VKEY_OEM_4, false, false, true, WINDOW_SNAP_LEFT },
-  { true, ui::VKEY_OEM_6, false, false, true, WINDOW_SNAP_RIGHT },
-  { true, ui::VKEY_OEM_MINUS, false, false, true, WINDOW_MINIMIZE },
-  { true, ui::VKEY_OEM_PLUS, false, false, true, WINDOW_MAXIMIZE_RESTORE },
-  { true, ui::VKEY_OEM_PLUS, true, false, true, WINDOW_POSITION_CENTER },
-
   { true, ui::VKEY_F3, true, true, true, ROTATE_WINDOWS },
 #if !defined(NDEBUG)
   { true, ui::VKEY_HOME, false, true, false, ROTATE_SCREEN },

@@ -38,10 +38,6 @@ class ASH_EXPORT SnapSizer {
   // Bounds to position the window at.
   const gfx::Rect& target_bounds() const { return target_bounds_; }
 
-  // Returns the appropriate snap bounds (e.g. if a window is already snapped,
-  // then it returns the next snap-bounds).
-  gfx::Rect GetSnapBounds(const gfx::Rect& bounds);
-
  private:
   // Calculates the amount to increment by. This returns one of -1, 0 or 1 and
   // is intended to by applied to |percent_index_|. |x| is the current
@@ -56,8 +52,6 @@ class ASH_EXPORT SnapSizer {
 
   // Returns the target bounds based on the edge and |percent_index_|.
   gfx::Rect GetTargetBounds() const;
-
-  gfx::Rect GetTargetBoundsForPercent(int percent_index) const;
 
   // Returns true if the specified point is along the edge of the screen.
   bool AlongEdge(int x) const;
