@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,9 @@ class TabStripController {
   // Returns true if the tab at |index| is the active tab. The active tab is the
   // one whose content is shown.
   virtual bool IsActiveTab(int index) const = 0;
+
+  // Returns the index of the active tab.
+  virtual int GetActiveIndex() const = 0;
 
   // Returns true if the selected index is selected.
   virtual bool IsTabSelected(int index) const = 0;

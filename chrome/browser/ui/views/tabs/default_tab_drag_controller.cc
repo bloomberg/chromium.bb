@@ -320,6 +320,7 @@ DefaultTabDragController::DefaultTabDragController()
       active_(true),
       source_tab_index_(std::numeric_limits<size_t>::max()),
       initial_move_(true),
+      // TODO: remove.
       stacking_(false) {
   instance_ = this;
 }
@@ -354,7 +355,6 @@ void DefaultTabDragController::Init(
   source_tab_offset_ = source_tab_offset;
   start_screen_point_ = GetCursorScreenPoint();
   mouse_offset_ = mouse_offset;
-  stacking_ = source_tabstrip->IsStacking();
 
   drag_data_.resize(tabs.size());
   for (size_t i = 0; i < tabs.size(); ++i)

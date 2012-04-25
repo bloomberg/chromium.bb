@@ -28,6 +28,7 @@ class Tab;
 class TabDragController;
 class TabStripController;
 class TabStripSelectionModel;
+class TouchTabStripLayout;
 
 namespace views {
 class ImageView;
@@ -70,10 +71,12 @@ class TabStrip : public AbstractTabStripView,
   void StopAllHighlighting();
 
   // Adds a tab at the specified index.
-  void AddTabAt(int model_index, const TabRendererData& data);
+  void AddTabAt(int model_index, const TabRendererData& data, bool is_active);
 
   // Moves a tab.
-  void MoveTab(int from_model_index, int to_model_index);
+  void MoveTab(int from_model_index,
+               int to_model_index,
+               const TabRendererData& data);
 
   // Removes a tab at the specified index.
   void RemoveTabAt(int model_index);
@@ -128,11 +131,9 @@ class TabStrip : public AbstractTabStripView,
   // Returns true if a tab is being dragged into this tab strip.
   bool IsActiveDropTarget() const;
 
-  // Returns true if this tab strip is in stacking mode.
-  bool IsStacking() const;
-
   // TabController overrides:
   virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
+  virtual bool SupportsMultipleSelection() OVERRIDE;
   virtual void SelectTab(BaseTab* tab) OVERRIDE;
   virtual void ExtendSelectionTo(BaseTab* tab) OVERRIDE;
   virtual void ToggleSelected(BaseTab* tab) OVERRIDE;
@@ -196,9 +197,6 @@ class TabStrip : public AbstractTabStripView,
                              const views::Event& event) OVERRIDE;
 
   // View overrides.
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
   virtual const views::View* GetViewByID(int id) const OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
@@ -241,9 +239,6 @@ class TabStrip : public AbstractTabStripView,
 
   void Init();
 
-  // Creates the new tab button.
-  void InitTabStripButtons();
-
   // Creates and returns a new tab. The caller owners the returned tab.
   BaseTab* CreateTab();
 
@@ -256,6 +251,10 @@ class TabStrip : public AbstractTabStripView,
 
   // Starts the remove tab animation.
   void StartRemoveTabAnimation(int model_index);
+
+  // Schedules the animations and bounds changes necessary for a remove tab
+  // animation.
+  void ScheduleRemoveTabAnimation(BaseTab* tab);
 
   // Stops any ongoing animations. If |layout| is true and an animation is
   // ongoing this does a layout.
@@ -279,11 +278,6 @@ class TabStrip : public AbstractTabStripView,
                            BaseTab* active_tab,
                            const gfx::Point& location,
                            bool initial_drag);
-
-  // Invoked during drag to layout all tabs when in stacking mode, with
-  // |active_tab| positioned at |location|.
-  void LayoutDraggedTabsAtWithStacking(BaseTab* active_tab,
-                                       const gfx::Point& location);
 
   // Calculates the bounds needed for each of the tabs, placing the result in
   // |bounds|.
@@ -332,19 +326,6 @@ class TabStrip : public AbstractTabStripView,
 
   // Releases ownership of the current TabDragController.
   TabDragController* ReleaseDragController();
-
-  // Returns the number of non-closing tabs between |index1| and |index2|.
-  int NumNonClosingTabs(int index1, int index2) const;
-
-  // Updates |num_visible_tabs_| based on |width| and the specified tab size.
-  // Additionally updates |first_visible_tab_index_|.
-  void UpdateNumVisibleTabs(int non_closing_tab_count,
-                            int width,
-                            double tab_size);
-
-  // Makes sure |model_index| is within the set of visible tabs. Only does
-  // something if stacking.
-  void EnsureModelIndexIsVisible(int model_index);
 
   // Paints all the tabs in |tabs_closing_map_[index]|.
   void PaintClosingTabs(gfx::Canvas* canvas, int index);
@@ -411,13 +392,13 @@ class TabStrip : public AbstractTabStripView,
   // button.
   void GenerateIdealBounds();
 
-  // Same as GenerateIdealBounds, except used with in stacking mode. Only
-  // intended to be called by GenerateIdealBounds. Returns location for
-  // new tab button.
-  double GenerateIdealBoundsWithStacking(int mini_tab_count,
-                                         int non_closing_tab_count,
-                                         double new_tab_x,
-                                         double selected_size);
+  // Generates the ideal bounds for the mini tabs. Returns the index to position
+  // the first non-mini tab and sets |first_non_mini_index| to the index of the
+  // first non-mini tab.
+  int GenerateIdealBoundsForMiniTabs(int* first_non_mini_index);
+
+  // Returns the width needed for the new tab button (and padding).
+  int new_tab_button_width() const;
 
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();
@@ -427,6 +408,15 @@ class TabStrip : public AbstractTabStripView,
   // Returns true if the specified point in TabStrip coords is within the
   // hit-test region of the specified Tab.
   bool IsPointInTab(Tab* tab, const gfx::Point& point_in_tabstrip_coords);
+
+  // -- Touch Layout ----------------------------------------------------------
+
+  // Returns the position normal tabs start at.
+  int GetStartXForNormalTabs() const;
+
+  // Returns the tab to use for event handling starting at index |start| and
+  // iterating by |delta|.
+  Tab* FindTabForEvent(const gfx::Point& point, int start, int delta);
 
   // -- Member Variables ------------------------------------------------------
 
@@ -505,16 +495,8 @@ class TabStrip : public AbstractTabStripView,
   // Size we last layed out at.
   gfx::Size last_layout_size_;
 
-  // If |stacking_| is true this is the index (into tab_data_) of the first
-  // tab completely shown.
-  int first_visible_tab_index_;
-
-  // If |stacking_| is true this is the number of tabs totally visible, the
-  // rest are compresses on the left/right edge.
-  int num_visible_tabs_;
-
-  // Are we in stacking/scrolling mode?
-  bool stacking_;
+  // Only used while in touch mode.
+  scoped_ptr<TouchTabStripLayout> touch_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

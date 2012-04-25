@@ -27,6 +27,7 @@ class FakeBaseTabStripController : public TabStripController {
   virtual int GetCount() const OVERRIDE;
   virtual bool IsValidIndex(int index) const OVERRIDE;
   virtual bool IsActiveTab(int index) const OVERRIDE;
+  virtual int GetActiveIndex() const OVERRIDE;
   virtual bool IsTabSelected(int index) const OVERRIDE;
   virtual bool IsTabPinned(int index) const OVERRIDE;
   virtual bool IsTabCloseable(int index) const OVERRIDE;

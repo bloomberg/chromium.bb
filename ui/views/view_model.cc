@@ -17,6 +17,8 @@ ViewModel::~ViewModel() {
 }
 
 void ViewModel::Add(View* view, int index) {
+  DCHECK_LE(index, static_cast<int>(entries_.size()));
+  DCHECK_GE(index, 0);
   Entry entry;
   entry.view = view;
   entries_.insert(entries_.begin() + index, entry);
@@ -26,6 +28,7 @@ void ViewModel::Remove(int index) {
   if (index == -1)
     return;
 
+  check_index(index);
   entries_.erase(entries_.begin() + index);
 }
 

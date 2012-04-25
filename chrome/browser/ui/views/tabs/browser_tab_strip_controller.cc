@@ -199,6 +199,10 @@ bool BrowserTabStripController::IsActiveTab(int model_index) const {
   return model_->active_index() == model_index;
 }
 
+int BrowserTabStripController::GetActiveIndex() const {
+  return model_->active_index();
+}
+
 bool BrowserTabStripController::IsTabSelected(int model_index) const {
   return model_->IsTabSelected(model_index);
 }
@@ -323,7 +327,7 @@ bool BrowserTabStripController::IsIncognito() {
 
 void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
                                               int model_index,
-                                              bool active) {
+                                              bool is_active) {
   DCHECK(contents);
   DCHECK(model_index == TabStripModel::kNoTab ||
          model_->ContainsIndex(model_index));
@@ -334,7 +338,7 @@ void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
   TabRendererData data;
   SetTabRendererDataFromModel(contents->web_contents(), model_index, &data,
                               NEW_TAB);
-  tabstrip_->AddTabAt(model_index, data);
+  tabstrip_->AddTabAt(model_index, data, is_active);
 }
 
 void BrowserTabStripController::TabDetachedAt(TabContentsWrapper* contents,
@@ -357,13 +361,11 @@ void BrowserTabStripController::TabMoved(TabContentsWrapper* contents,
   // Cancel any pending tab transition.
   hover_tab_selector_.CancelTabTransition();
 
-  // Update the data first as the pinned state may have changed.
+  // Pass in the TabRendererData as the pinned state may have changed.
   TabRendererData data;
   SetTabRendererDataFromModel(contents->web_contents(), to_model_index, &data,
                               EXISTING_TAB);
-  tabstrip_->SetTabData(from_model_index, data);
-
-  tabstrip_->MoveTab(from_model_index, to_model_index);
+  tabstrip_->MoveTab(from_model_index, to_model_index, data);
 }
 
 void BrowserTabStripController::TabChangedAt(TabContentsWrapper* contents,

@@ -19,7 +19,6 @@
 #include "ui/base/animation/multi_animation.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/touch/touch_mode_support.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font.h"
@@ -72,7 +71,6 @@ static const int kCloseButtonHorzFuzz = 7;
 #else
 static const int kCloseButtonHorzFuzz = 5;
 #endif
-static const int kTouchModeMinimumWidth = 160;
 
 // When a non-mini-tab becomes a mini-tab the width of the tab animates. If
 // the width of a mini-tab is >= kMiniTabRendererAsNormalTabWidth then the tab
@@ -172,15 +170,11 @@ gfx::Size Tab::GetBasicMinimumUnselectedSize() {
 }
 
 gfx::Size Tab::GetMinimumUnselectedSize() {
-  if (TouchModeSupport::IsTouchOptimized())
-    return GetTouchModeMinimumSize();
   return GetBasicMinimumUnselectedSize();
 }
 
 // static
 gfx::Size Tab::GetMinimumSelectedSize() {
-  if (TouchModeSupport::IsTouchOptimized())
-    return GetTouchModeMinimumSize();
   gfx::Size minimum_size = GetBasicMinimumUnselectedSize();
   minimum_size.set_width(kLeftPadding + gfx::kFaviconSize + kRightPadding);
   return minimum_size;
@@ -197,15 +191,6 @@ gfx::Size Tab::GetStandardSize() {
 // static
 int Tab::GetMiniWidth() {
   return browser_defaults::kMiniTabWidth;
-}
-
-// static
-gfx::Size Tab::GetTouchModeMinimumSize() {
-  InitTabResources();
-  gfx::Size size;
-  size.set_width(kTouchModeMinimumWidth);
-  size.set_height(tab_active_.image_l->height());
-  return size;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

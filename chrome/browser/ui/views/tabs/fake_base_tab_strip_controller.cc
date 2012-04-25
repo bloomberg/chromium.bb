@@ -15,7 +15,7 @@ FakeBaseTabStripController::~FakeBaseTabStripController() {
 
 void FakeBaseTabStripController::AddTab(int index) {
   num_tabs_++;
-  tab_strip_->AddTabAt(index, TabRendererData());
+  tab_strip_->AddTabAt(index, TabRendererData(), false);
 }
 
 void FakeBaseTabStripController::RemoveTab(int index) {
@@ -37,6 +37,10 @@ bool FakeBaseTabStripController::IsValidIndex(int index) const {
 
 bool FakeBaseTabStripController::IsActiveTab(int index) const {
   return false;
+}
+
+int FakeBaseTabStripController::GetActiveIndex() const {
+  return -1;
 }
 
 bool FakeBaseTabStripController::IsTabSelected(int index) const {

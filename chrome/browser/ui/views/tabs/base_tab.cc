@@ -290,20 +290,24 @@ bool BaseTab::OnMousePressed(const views::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton()) {
     TabStripSelectionModel original_selection;
     original_selection.Copy(controller()->GetSelectionModel());
-    if (event.IsShiftDown() && event.IsControlDown()) {
-      controller()->AddSelectionFromAnchorTo(this);
-    } else if (event.IsShiftDown()) {
-      controller()->ExtendSelectionTo(this);
-    } else if (event.IsControlDown()) {
-      controller()->ToggleSelected(this);
-      if (!IsSelected()) {
-        // Don't allow dragging non-selected tabs.
-        return false;
+    if (controller()->SupportsMultipleSelection()) {
+      if (event.IsShiftDown() && event.IsControlDown()) {
+        controller()->AddSelectionFromAnchorTo(this);
+      } else if (event.IsShiftDown()) {
+        controller()->ExtendSelectionTo(this);
+      } else if (event.IsControlDown()) {
+        controller()->ToggleSelected(this);
+        if (!IsSelected()) {
+          // Don't allow dragging non-selected tabs.
+          return false;
+        }
+      } else if (!IsSelected()) {
+        controller()->SelectTab(this);
+      } else if (IsActive()) {
+        controller()->ClickActiveTab(this);
       }
     } else if (!IsSelected()) {
       controller()->SelectTab(this);
-    } else if (IsActive()) {
-      controller()->ClickActiveTab(this);
     }
     controller()->MaybeStartDrag(this, event, original_selection);
   }

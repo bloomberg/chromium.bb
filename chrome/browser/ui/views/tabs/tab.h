@@ -54,9 +54,6 @@ class Tab : public BaseTab {
   // Returns the width for mini-tabs. Mini-tabs always have this width.
   static int GetMiniWidth();
 
-  // Returns the smallest tabs can get when in touch mode.
-  static gfx::Size GetTouchModeMinimumSize();
-
  protected:
   // BaseTab overrides:
   virtual const gfx::Rect& GetTitleBounds() const OVERRIDE;

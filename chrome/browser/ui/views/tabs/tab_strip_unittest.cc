@@ -50,7 +50,7 @@ TEST_F(TabStripTest, CreateTabForDragging) {
 }
 
 TEST_F(TabStripTest, AddTabAt) {
-  tab_strip_->AddTabAt(0, TabRendererData());
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
   ASSERT_EQ(1, tab_strip_->tab_count());
   Tab* tab = tab_strip_->tab_at(0);
   EXPECT_FALSE(tab == NULL);

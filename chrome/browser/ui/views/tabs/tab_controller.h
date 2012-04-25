@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,9 @@ class MouseEvent;
 class TabController {
  public:
   virtual const TabStripSelectionModel& GetSelectionModel() = 0;
+
+  // Returns true if multiple selection is supported.
+  virtual bool SupportsMultipleSelection() = 0;
 
   // Selects the tab.
   virtual void SelectTab(BaseTab* tab) = 0;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,7 @@ class BrowserTabStripController : public TabStripController,
   virtual int GetCount() const OVERRIDE;
   virtual bool IsValidIndex(int model_index) const OVERRIDE;
   virtual bool IsActiveTab(int model_index) const OVERRIDE;
+  virtual int GetActiveIndex() const OVERRIDE;
   virtual bool IsTabSelected(int model_index) const OVERRIDE;
   virtual bool IsTabPinned(int model_index) const OVERRIDE;
   virtual bool IsTabCloseable(int model_index) const OVERRIDE;
@@ -73,7 +74,7 @@ class BrowserTabStripController : public TabStripController,
   // TabStripModelObserver implementation:
   virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int model_index,
-                             bool active) OVERRIDE;
+                             bool is_active) OVERRIDE;
   virtual void TabDetachedAt(TabContentsWrapper* contents,
                              int model_index) OVERRIDE;
   virtual void TabSelectionChanged(

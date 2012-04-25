@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/views_export.h"
 
@@ -46,14 +47,17 @@ class VIEWS_EXPORT ViewModel {
 
   // Returns the view at the specified index.
   View* view_at(int index) const {
+    check_index(index);
     return entries_[index].view;
   }
 
   void set_ideal_bounds(int index, const gfx::Rect& bounds) {
+    check_index(index);
     entries_[index].ideal_bounds = bounds;
   }
 
   const gfx::Rect& ideal_bounds(int index) const {
+    check_index(index);
     return entries_[index].ideal_bounds;
   }
 
@@ -69,6 +73,15 @@ class VIEWS_EXPORT ViewModel {
     gfx::Rect ideal_bounds;
   };
   typedef std::vector<Entry> Entries;
+
+#if !defined(NDEBUG)
+  void check_index(int index) const {
+    DCHECK_LT(index, static_cast<int>(entries_.size()));
+    DCHECK_GE(index, 0);
+  }
+#else
+  void check_index(int index) const {}
+#endif
 
   Entries entries_;
 
