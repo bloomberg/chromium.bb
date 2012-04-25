@@ -8,6 +8,9 @@
 #include "ash/wm/activation_controller.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
+#include "ui/aura/monitor.h"
+#include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
@@ -94,6 +97,14 @@ void MinimizeWindow(aura::Window* window) {
 
 void RestoreWindow(aura::Window* window) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+}
+
+void CenterWindow(aura::Window* window) {
+  const aura::Monitor* monitor = aura::Env::GetInstance()->monitor_manager()->
+      GetMonitorNearestWindow(window);
+  gfx::Rect center = monitor->GetWorkAreaBounds().Center(
+      window->bounds().size());
+  window->SetBounds(center);
 }
 
 }  // namespace wm

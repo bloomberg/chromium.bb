@@ -21,8 +21,10 @@
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/volume_control_delegate.h"
+#include "ash/wm/property_util.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -452,6 +454,41 @@ bool AcceleratorController::AcceleratorPressed(
     case SELECT_LAST_WIN:
       SwitchToWindow(-1);
       break;
+    case WINDOW_SNAP_LEFT:
+    case WINDOW_SNAP_RIGHT: {
+      aura::Window* window = wm::GetActiveWindow();
+      if (!window)
+        break;
+      internal::SnapSizer sizer(window,
+          gfx::Point(),
+          action == WINDOW_SNAP_LEFT ? internal::SnapSizer::LEFT_EDGE :
+                                       internal::SnapSizer::RIGHT_EDGE,
+          shell->GetGridSize());
+      window->SetBounds(sizer.GetSnapBounds(window->bounds()));
+      break;
+    }
+    case WINDOW_MINIMIZE: {
+      aura::Window* window = wm::GetActiveWindow();
+      if (window)
+        wm::MinimizeWindow(window);
+      break;
+    }
+    case WINDOW_MAXIMIZE_RESTORE: {
+      aura::Window* window = wm::GetActiveWindow();
+      if (window) {
+        if (wm::IsWindowMaximized(window))
+          wm::RestoreWindow(window);
+        else
+          wm::MaximizeWindow(window);
+      }
+      break;
+    }
+    case WINDOW_POSITION_CENTER: {
+      aura::Window* window = wm::GetActiveWindow();
+      if (window)
+        wm::CenterWindow(window);
+      break;
+    }
     case ROTATE_WINDOWS:
       return HandleRotateWindows();
 #if !defined(NDEBUG)
