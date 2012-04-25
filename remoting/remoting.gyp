@@ -585,6 +585,8 @@
         'client/plugin/pepper_input_handler.h',
         'client/plugin/pepper_network_manager.cc',
         'client/plugin/pepper_network_manager.h',
+        'client/plugin/pepper_packet_socket_factory.cc',
+        'client/plugin/pepper_packet_socket_factory.h',
         'client/plugin/pepper_plugin_thread_delegate.cc',
         'client/plugin/pepper_plugin_thread_delegate.h',
         'client/plugin/pepper_view.cc',
