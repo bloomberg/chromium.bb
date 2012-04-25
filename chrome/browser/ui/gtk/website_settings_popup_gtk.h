@@ -31,10 +31,10 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
 
   // WebsiteSettingsUI implementations.
   virtual void SetPresenter(WebsiteSettings* presenter) OVERRIDE;
-  virtual void SetSiteInfo(const std::string& site_info) OVERRIDE;
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) OVERRIDE;
   virtual void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) OVERRIDE;
+  virtual void SetIdentityInfo(const IdentityInfo& identity_info) OVERRIDE;
 
   // BubbleDelegateGtk implementation.
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
@@ -46,8 +46,11 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // Removes all children of |container|.
   void ClearContainer(GtkWidget* container);
 
-  // Creates a popup section and returns a virtual box that contains the section
-  // content.
+  // Creates a label that contains the given |text| and has the given |width|.
+  GtkWidget* CreateTextLabel(const std::string& text, int width);
+
+  // Creates a popup section and returns a virtual box that contains the
+  // section content.
   GtkWidget* CreateSection(std::string section_title,
                            GtkWidget* section_content);
 
@@ -82,12 +85,17 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // settings page in a new tab.
   Browser* browser_;
 
-  // Container for the site info section content.
-  GtkWidget* site_info_contents_;
+  // Container for the popup header content.
+  GtkWidget* header_box_;
+
   // Container for the cookies and site data section content.
   GtkWidget* cookies_section_contents_;
+
   // Container for the permissions section content.
   GtkWidget* permissions_section_contents_;
+
+  // Container for the identity tab content.
+  GtkWidget* identity_tab_contents_;
 
   // The UI translates user actions to specific events and forwards them to the
   // |presenter_|. The |presenter_| handles these events and updates the UI.

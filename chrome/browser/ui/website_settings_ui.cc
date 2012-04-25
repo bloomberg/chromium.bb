@@ -14,5 +14,10 @@ WebsiteSettingsUI::PermissionInfo::PermissionInfo()
       default_setting(CONTENT_SETTING_DEFAULT) {
 }
 
+WebsiteSettingsUI::IdentityInfo::IdentityInfo()
+    : identity_status(WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN),
+      connection_status(WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN) {
+}
+
 WebsiteSettingsUI::~WebsiteSettingsUI() {
 }

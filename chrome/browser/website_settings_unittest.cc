@@ -57,10 +57,10 @@ class MockWebsiteSettingsUI : public WebsiteSettingsUI {
  public:
   virtual ~MockWebsiteSettingsUI() {}
   MOCK_METHOD1(SetPresenter, void(WebsiteSettings* presenter));
-  MOCK_METHOD1(SetSiteInfo, void(const std::string& site_info));
   MOCK_METHOD1(SetCookieInfo, void(const CookieInfoList& cookie_info_list));
   MOCK_METHOD1(SetPermissionInfo,
                void(const PermissionInfoList& permission_info_list));
+  MOCK_METHOD1(SetIdentityInfo, void(const IdentityInfo& identity_info));
 };
 
 class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
@@ -115,7 +115,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   void SetDefaultUIExpectations(MockWebsiteSettingsUI* mock_ui) {
     // During creation |WebsiteSettings| makes the following calls to the ui.
     EXPECT_CALL(*mock_ui, SetPermissionInfo(_));
-    EXPECT_CALL(*mock_ui, SetSiteInfo(_));
+    EXPECT_CALL(*mock_ui, SetIdentityInfo(_));
     EXPECT_CALL(*mock_ui, SetPresenter(_));
     EXPECT_CALL(*mock_ui, SetCookieInfo(_));
   }
@@ -202,7 +202,7 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
 
 TEST_F(WebsiteSettingsTest, OnSiteDataAccessed) {
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_));
-  EXPECT_CALL(*mock_ui(), SetSiteInfo(_));
+  EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetPresenter(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_)).Times(2);
 

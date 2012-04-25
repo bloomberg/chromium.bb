@@ -32,6 +32,10 @@ using content::OpenURLParams;
 
 namespace {
 
+// The background color of the tabs if a theme other than the native GTK theme
+// is selected.
+const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
+
 std::string PermissionTypeToString(ContentSettingsType type) {
   switch (type) {
     case CONTENT_SETTINGS_TYPE_POPUPS:
@@ -74,9 +78,10 @@ WebsiteSettingsPopupGtk::WebsiteSettingsPopupGtk(
       profile_(profile),
       tab_contents_wrapper_(tab_contents_wrapper),
       browser_(NULL),
-      site_info_contents_(NULL),
+      header_box_(NULL),
       cookies_section_contents_(NULL),
       permissions_section_contents_(NULL),
+      identity_tab_contents_(NULL),
       presenter_(NULL) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
@@ -125,31 +130,59 @@ void WebsiteSettingsPopupGtk::InitContents() {
     gtk_util::RemoveAllChildren(contents_);
   }
 
-  site_info_contents_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
-  std::string title =
-      l10n_util::GetStringUTF8(IDS_PAGE_INFO_SITE_INFO_TITLE);
-  gtk_box_pack_start(GTK_BOX(contents_),
-                     CreateSection(title, site_info_contents_),
-                     FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(contents_),
-                     gtk_hseparator_new(),
-                     FALSE, FALSE, 0);
+  // Create popup header.
+  header_box_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(contents_), header_box_, FALSE, FALSE, 0);
+
+  // Create the container for the contents of the permissions tab.
+  GtkWidget* permission_tab_contents = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  gtk_container_set_border_width(GTK_CONTAINER(permission_tab_contents), 10);
   cookies_section_contents_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
-  title = l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TITLE_SITE_DATA);
-  gtk_box_pack_start(GTK_BOX(contents_),
+  std::string title = l10n_util::GetStringUTF8(
+      IDS_WEBSITE_SETTINGS_TITLE_SITE_DATA);
+  gtk_box_pack_start(GTK_BOX(permission_tab_contents),
                      CreateSection(title,
                                    cookies_section_contents_),
                      FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(contents_),
+  gtk_box_pack_start(GTK_BOX(permission_tab_contents),
                      gtk_hseparator_new(),
                      FALSE, FALSE, 0);
   permissions_section_contents_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
   title = l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS);
-  gtk_box_pack_start(GTK_BOX(contents_),
+  gtk_box_pack_start(GTK_BOX(permission_tab_contents),
                      CreateSection(title,
                                    permissions_section_contents_),
                      FALSE, FALSE, 0);
 
+  // Create the container for the contents of the identity tab.
+  GtkWidget* info_tab = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  identity_tab_contents_ = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  gtk_container_set_border_width(GTK_CONTAINER(identity_tab_contents_), 10);
+  gtk_box_pack_start(GTK_BOX(info_tab),
+                     identity_tab_contents_,
+                     FALSE, FALSE, 0);
+
+  // Create tab container and add all tabs.
+  GtkWidget* notebook = gtk_notebook_new();
+  if (theme_service_->UsingNativeTheme())
+    gtk_widget_modify_bg(notebook, GTK_STATE_NORMAL, NULL);
+  else
+    gtk_widget_modify_bg(notebook, GTK_STATE_NORMAL, &kBackgroundColor);
+
+  GtkWidget* label = theme_service_->BuildLabel(
+      l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS),
+      ui::kGdkBlack);
+  gtk_widget_show(label);
+  gtk_notebook_append_page(
+      GTK_NOTEBOOK(notebook), permission_tab_contents, label);
+
+  label = theme_service_->BuildLabel(
+      l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TAB_LABEL_IDENTITY),
+      ui::kGdkBlack);
+  gtk_widget_show(label);
+  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), info_tab, label);
+
+  gtk_box_pack_start(GTK_BOX(contents_), notebook, FALSE, FALSE, 0);
   gtk_widget_show_all(contents_);
 }
 
@@ -159,18 +192,6 @@ void WebsiteSettingsPopupGtk::ClearContainer(GtkWidget* container) {
     gtk_container_remove(GTK_CONTAINER(container), GTK_WIDGET(child->data));
     child = child->next;
   }
-}
-
-void WebsiteSettingsPopupGtk::SetSiteInfo(const std::string& site_info) {
-  DCHECK(site_info_contents_);
-  ClearContainer(site_info_contents_);
-  GtkWidget* label = theme_service_->BuildLabel(site_info,
-                                                ui::kGdkBlack);
-  GtkWidget* site_info_entry_box = gtk_hbox_new(FALSE, ui::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(site_info_entry_box), label, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(site_info_contents_), site_info_entry_box, FALSE,
-                     FALSE, 0);
-  gtk_widget_show_all(site_info_contents_);
 }
 
 GtkWidget* WebsiteSettingsPopupGtk::CreateSection(std::string section_title,
@@ -209,14 +230,7 @@ void WebsiteSettingsPopupGtk::SetCookieInfo(
        it != cookie_info_list.end();
        ++it) {
     GtkWidget* cookies_info = gtk_hbox_new(FALSE, 0);
-
-    GtkWidget* label = theme_service_->BuildLabel(it->cookie_source,
-                                                  ui::kGdkBlack);
-    gtk_label_set_selectable(GTK_LABEL(label), TRUE);
-    gtk_util::SetLabelWidth(label, 200);
-    // Allow linebreaking in the middle of words if necessary, so that extremely
-    // long hostnames (longer than one line) will still be completely shown.
-    gtk_label_set_line_wrap_mode(GTK_LABEL(label), PANGO_WRAP_WORD_CHAR);
+    GtkWidget* label = CreateTextLabel(it->cookie_source, 200);
     gtk_box_pack_start(GTK_BOX(cookies_info), label, FALSE, FALSE, 0);
 
     std::string allowed_count = base::IntToString(it->allowed);
@@ -251,6 +265,92 @@ void WebsiteSettingsPopupGtk::SetCookieInfo(
   gtk_widget_show_all(cookies_section_contents_);
 }
 
+GtkWidget* WebsiteSettingsPopupGtk::CreateTextLabel(const std::string& text,
+                                                    int width) {
+  GtkWidget* label = theme_service_->BuildLabel(text, ui::kGdkBlack);
+  gtk_util::SetLabelWidth(label, width);
+  gtk_label_set_selectable(GTK_LABEL(label), TRUE);
+  gtk_label_set_line_wrap_mode(GTK_LABEL(label), PANGO_WRAP_WORD_CHAR);
+  return label;
+}
+
+void WebsiteSettingsPopupGtk::SetIdentityInfo(
+    const IdentityInfo& identity_info) {
+  // Create popup header.
+  DCHECK(header_box_);
+  ClearContainer(header_box_);
+
+  GtkWidget* identity_label = theme_service_->BuildLabel(
+      identity_info.site_identity, ui::kGdkBlack);
+  gtk_label_set_selectable(GTK_LABEL(identity_label), TRUE);
+  PangoAttrList* attributes = pango_attr_list_new();
+  pango_attr_list_insert(attributes,
+                         pango_attr_weight_new(PANGO_WEIGHT_BOLD));
+  gtk_label_set_attributes(GTK_LABEL(identity_label), attributes);
+  pango_attr_list_unref(attributes);
+  gtk_util::SetLabelWidth(identity_label, 400);
+  gtk_box_pack_start(GTK_BOX(header_box_), identity_label, FALSE, FALSE, 0);
+
+  std::string identity_status_text;
+  switch (identity_info.identity_status) {
+    case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
+      identity_status_text =
+          l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);
+      break;
+    default:
+      identity_status_text =
+          l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_IDENTITY_NOT_VERIFIED);
+      break;
+  }
+  GtkWidget* status_label = CreateTextLabel(identity_status_text, 400);
+  gtk_box_pack_start(
+      GTK_BOX(header_box_), status_label, FALSE, FALSE, 0);
+  gtk_widget_show_all(header_box_);
+
+  // Create identity tab contents.
+  DCHECK(identity_tab_contents_);
+  ClearContainer(identity_tab_contents_);
+
+  // Create identity section.
+  GtkWidget* identity_description =
+      CreateTextLabel(identity_info.identity_status_description, 300);
+  GtkWidget* identity_box = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(identity_box), identity_description, FALSE, FALSE,
+                     0);
+
+  // Create connection section.
+  GtkWidget* connection_description =
+      CreateTextLabel(identity_info.connection_status_description, 300);
+  GtkWidget* connection_box = gtk_vbox_new(FALSE, ui::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(connection_box), connection_description, FALSE,
+                     FALSE, 0);
+
+  // Add to contents.
+  gtk_box_pack_start(
+      GTK_BOX(identity_tab_contents_), CreateSection(
+          l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TITEL_IDENTITY),
+          identity_box),
+      TRUE,
+      FALSE,
+      0);
+  gtk_box_pack_start(GTK_BOX(identity_tab_contents_),
+                     gtk_hseparator_new(),
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(
+       GTK_BOX(identity_tab_contents_),
+       CreateSection(
+           l10n_util::GetStringUTF8(
+               IDS_WEBSITE_SETTINGS_TITEL_CONNECTION),
+           connection_box),
+       TRUE,
+       FALSE,
+       0);
+
+  gtk_widget_show_all(identity_tab_contents_);
+}
+
 void WebsiteSettingsPopupGtk::SetPermissionInfo(
       const PermissionInfoList& permission_info_list) {
   DCHECK(permissions_section_contents_);
@@ -261,9 +361,8 @@ void WebsiteSettingsPopupGtk::SetPermissionInfo(
        permission != permission_info_list.end();
        ++permission) {
     // Add a label for the permission type.
-    GtkWidget* label = theme_service_->BuildLabel(
-        PermissionTypeToString(permission->type), ui::kGdkBlack);
-    gtk_util::SetLabelWidth(label, 280);
+    GtkWidget* label =
+        CreateTextLabel(PermissionTypeToString(permission->type), 250);
     GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
 

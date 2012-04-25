@@ -84,31 +84,10 @@ WebsiteSettings::WebsiteSettings(
       content_settings_(profile->GetHostContentSettingsMap()) {
   ui_->SetPresenter(this);
   Init(profile, url, ssl);
-  // After initialization the status about the site's connection
-  // and it's identity must be available.
-  DCHECK_NE(site_identity_status_, SITE_IDENTITY_STATUS_UNKNOWN);
-  DCHECK_NE(site_connection_status_, SITE_CONNECTION_STATUS_UNKNOWN);
-
-  // TODO(markusheintz): Add the strings below to the grd file once a decision
-  // has been made about the exact wording.
-  std::string site_info;
-  switch (site_identity_status_) {
-    case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
-    case WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT:
-      site_info = "Identity verified";
-      break;
-    case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
-      site_info = UTF16ToUTF8(organization_name());
-      site_info += " - Identity verified";
-      break;
-    default:
-      site_info = "Identity not verified";
-      break;
-  }
-  ui_->SetSiteInfo(site_info);
 
   PresentSitePermissions();
   PresentSiteData();
+  PresentSiteIdentity();
 }
 
 WebsiteSettings::~WebsiteSettings() {
@@ -443,6 +422,26 @@ void WebsiteSettings::PresentSiteData() {
   cookie_info_list.push_back(cookie_info);
 
   ui_->SetCookieInfo(cookie_info_list);
+}
+
+void WebsiteSettings::PresentSiteIdentity() {
+  // After initialization the status about the site's connection
+  // and it's identity must be available.
+  DCHECK_NE(site_identity_status_, SITE_IDENTITY_STATUS_UNKNOWN);
+  DCHECK_NE(site_connection_status_, SITE_CONNECTION_STATUS_UNKNOWN);
+  WebsiteSettingsUI::IdentityInfo info;
+  if (site_identity_status_ == SITE_IDENTITY_STATUS_EV_CERT)
+    info.site_identity = UTF16ToUTF8(organization_name());
+  else
+    info.site_identity = site_url_.host();
+
+  info.connection_status = site_connection_status_;
+  info.connection_status_description =
+      UTF16ToUTF8(site_connection_details_);
+  info.identity_status = site_identity_status_;
+  info.identity_status_description =
+      UTF16ToUTF8(site_identity_details_);
+  ui_->SetIdentityInfo(info);
 }
 
 // static

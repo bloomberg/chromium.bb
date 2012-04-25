@@ -131,6 +131,10 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // Sets (presents) the information about the site's data in the |ui_|.
   void PresentSiteData();
 
+  // Sets (presents) the information about the site's identity and connection
+  // in the |ui_|.
+  void PresentSiteIdentity();
+
   // The website settings UI displays information and controls for site
   // specific data (local stored objects like cookies), site specific
   // permissions (location, popup, plugin, etc.  permissions) and site specific

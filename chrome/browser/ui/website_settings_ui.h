@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/website_settings.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -58,14 +59,30 @@ class WebsiteSettingsUI {
     ContentSetting default_setting;
   };
 
+  // |IdentityInfo| contains information about the site's identity and
+  // connection.
+  struct IdentityInfo {
+    IdentityInfo();
+
+    // The site's identity.
+    std::string site_identity;
+    // Status of the site's identity.
+    WebsiteSettings::SiteIdentityStatus identity_status;
+    // Textual description of the site's identity status that is displayed to
+    // the user.
+    std::string identity_status_description;
+    // Status of the site's connection.
+    WebsiteSettings::SiteConnectionStatus connection_status;
+    // Textual description of the site's connection status that is displayed to
+    // the user.
+    std::string connection_status_description;
+  };
+
   virtual ~WebsiteSettingsUI();
 
   // Sets the |presenter| of the WebsiteSettingsUI that is responsible for
   // setting the data to display in the UI.
   virtual void SetPresenter(WebsiteSettings* presenter) = 0;
-
-  // Sets site information.
-  virtual void SetSiteInfo(const std::string& site_info) = 0;
 
   // Sets cookie information.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) = 0;
@@ -73,6 +90,9 @@ class WebsiteSettingsUI {
   // Sets permision information.
   virtual void SetPermissionInfo(
       const PermissionInfoList& permission_info_list) = 0;
+
+  // Sets site identity information.
+  virtual void SetIdentityInfo(const IdentityInfo& identity_info) = 0;
 };
 
 class CookieInfoList : public std::vector<WebsiteSettingsUI::CookieInfo> {
