@@ -25,15 +25,11 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
 
   EXPECT_FALSE(panel->always_on_top());
 
-  // TODO(jianli): Enable the following checks when IsButtonVisible check is
-  // supported.
-#if !defined(TOOLKIT_GTK)
   EXPECT_TRUE(panel_testing->IsButtonVisible(NativePanelTesting::CLOSE_BUTTON));
   EXPECT_FALSE(panel_testing->IsButtonVisible(
       NativePanelTesting::MINIMIZE_BUTTON));
   EXPECT_FALSE(panel_testing->IsButtonVisible(
       NativePanelTesting::RESTORE_BUTTON));
-#endif
 
   EXPECT_EQ(panel::RESIZABLE_ALL_SIDES, panel->CanResizeByMouse());
 

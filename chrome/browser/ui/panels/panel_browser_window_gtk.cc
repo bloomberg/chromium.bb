@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/gtk/browser_titlebar.h"
+#include "chrome/browser/ui/gtk/custom_button.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_browser_titlebar_gtk.h"
@@ -81,10 +82,6 @@ void PanelBrowserWindowGtk::Init() {
   g_signal_connect(titlebar_widget(), "button-release-event",
                    G_CALLBACK(OnTitlebarButtonReleaseEventThunk), this);
 
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE,
-      content::Source<Panel>(panel_.get()));
   registrar_.Add(
       this,
       chrome::NOTIFICATION_WINDOW_CLOSED,
@@ -211,6 +208,9 @@ bool PanelBrowserWindowGtk::UseCustomFrame() {
 void PanelBrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
                                            GtkWidget* widget,
                                            GdkEventExpose* event) {
+  static_cast<PanelBrowserTitlebarGtk*>(titlebar())->
+      UpdateMinimizeRestoreButtonVisibility();
+
   BrowserWindowGtk::DrawPopupFrame(cr, widget, event);
 
   if (is_drawing_attention_)
@@ -220,6 +220,9 @@ void PanelBrowserWindowGtk::DrawPopupFrame(cairo_t* cr,
 void PanelBrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
                                             GtkWidget* widget,
                                             GdkEventExpose* event) {
+  static_cast<PanelBrowserTitlebarGtk*>(titlebar())->
+      UpdateMinimizeRestoreButtonVisibility();
+
   BrowserWindowGtk::DrawCustomFrame(cr, widget, event);
 
   if (is_drawing_attention_)
@@ -283,9 +286,6 @@ void PanelBrowserWindowGtk::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_PANEL_CHANGED_LAYOUT_MODE:
-      titlebar()->UpdateCustomFrame(true);
-      break;
     case chrome::NOTIFICATION_WINDOW_CLOSED:
       // Cleanup.
       if (bounds_animator_.get())
@@ -741,6 +741,22 @@ bool NativePanelTestingGtk::IsAnimatingBounds() const {
 
 bool NativePanelTestingGtk::IsButtonVisible(
     TitlebarButtonType button_type) const {
-  NOTIMPLEMENTED();
-  return true;
+  PanelBrowserTitlebarGtk* titlebar = static_cast<PanelBrowserTitlebarGtk*>(
+      panel_browser_window_gtk_->titlebar());
+  CustomDrawButton* button;
+  switch (button_type) {
+    case CLOSE_BUTTON:
+      button = titlebar->close_button();
+      break;
+    case MINIMIZE_BUTTON:
+      button = titlebar->minimize_button();
+      break;
+    case RESTORE_BUTTON:
+      button = titlebar->unminimize_button();
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
+  return gtk_widget_get_visible(button->widget());
 }

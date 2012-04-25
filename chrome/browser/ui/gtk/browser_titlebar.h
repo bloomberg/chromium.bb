@@ -101,8 +101,41 @@ class BrowserTitlebar : public content::NotificationObserver,
   // is created successfully.
   virtual bool BuildButton(const std::string& button_token, bool left_side);
 
+  // Retrieves the 3 image ids (IDR_) and a tooltip id (IDS) for the purpose of
+  // painting a CustomDraw button.
+  virtual void GetButtonResources(const std::string& button_name,
+                                  int* normal_image_id,
+                                  int* pressed_image_id,
+                                  int* hover_image_id,
+                                  int* tooltip_id) const;
+
+  // Returns the spacing around outside of titlebar buttons.
+  virtual int GetButtonOuterPadding() const;
+
+  // Returns the spacing between buttons of the titlebar.
+  virtual int GetButtonSpacing() const;
+
+  // Called when a button is clicked.
+  virtual void HandleButtonClick(GtkWidget* button);
+
   // Show the menu that the user gets from left-clicking the favicon.
   virtual void ShowFaviconMenu(GdkEventButton* event);
+
+  // Constructs a CustomDraw button given button name and left or right side of
+  // the titlebar where the button is placed.
+  CustomDrawButton* CreateTitlebarButton(const std::string& button_name,
+                                         bool left_side);
+
+  // Lazily builds and returns |titlebar_{left,right}_buttons_vbox_| and their
+  // subtrees. We do this lazily because in most situations, only one of them
+  // is allocated (though the user can (and do) manually mess with their gconf
+  // settings to get absolutely horrid combinations of buttons on both sides.
+  GtkWidget* GetButtonHBox(bool left_side);
+
+  CustomDrawButton* minimize_button() const { return minimize_button_.get(); }
+  CustomDrawButton* maximize_button() const { return maximize_button_.get(); }
+  CustomDrawButton* restore_button() const { return restore_button_.get(); }
+  CustomDrawButton* close_button() const { return close_button_.get(); }
 
  private:
   // A helper class to keep track of which frame of the throbber animation
@@ -130,18 +163,6 @@ class BrowserTitlebar : public content::NotificationObserver,
    public:
     explicit ContextMenuModel(ui::SimpleMenuModel::Delegate* delegate);
   };
-
-  // Lazily builds and returns |titlebar_{left,right}_buttons_vbox_| and their
-  // subtrees. We do this lazily because in most situations, only one of them
-  // is allocated (though the user can (and do) manually mess with their gconf
-  // settings to get absolutely horrid combinations of buttons on both sides.
-  GtkWidget* GetButtonHBox(bool left_side);
-
-  // Constructs a CustomDraw button given 3 image ids (IDR_), the box to place
-  // the button into, and a tooltip id (IDS_).
-  CustomDrawButton* CreateTitlebarButton(int image, int image_pressed,
-                                         int image_hot, GtkWidget* box,
-                                         int tooltip);
 
   // Update the titlebar spacing based on the custom frame and maximized state.
   void UpdateTitlebarAlignment();

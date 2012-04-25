@@ -36,6 +36,8 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  Panel* panel() const { return panel_.get(); }
+
  protected:
   // BrowserWindowGtk overrides
   virtual BrowserTitlebar* CreateBrowserTitlebar() OVERRIDE;

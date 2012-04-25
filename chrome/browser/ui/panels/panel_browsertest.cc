@@ -298,9 +298,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
   EXPECT_TRUE(panel2->always_on_top());
   EXPECT_TRUE(panel3->always_on_top());
 
-  // TODO(jianli): Enable the following checks when IsButtonVisible check is
-  // supported.
-#if !defined(TOOLKIT_GTK)
   EXPECT_TRUE(panel1_testing->IsButtonVisible(
       NativePanelTesting::CLOSE_BUTTON));
   EXPECT_TRUE(panel2_testing->IsButtonVisible(
@@ -321,7 +318,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
       NativePanelTesting::RESTORE_BUTTON));
   EXPECT_TRUE(panel3_testing->IsButtonVisible(
       NativePanelTesting::RESTORE_BUTTON));
-#endif
 
   EXPECT_EQ(panel::RESIZABLE_ALL_SIDES_EXCEPT_BOTTOM,
             panel1->CanResizeByMouse());

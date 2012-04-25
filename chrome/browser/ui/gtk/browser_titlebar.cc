@@ -453,25 +453,14 @@ void BrowserTitlebar::BuildButtons(const std::string& button_string) {
 bool BrowserTitlebar::BuildButton(const std::string& button_token,
                                   bool left_side) {
   if (button_token == "minimize") {
-    GtkWidget* parent_box = GetButtonHBox(left_side);
-    minimize_button_.reset(
-        CreateTitlebarButton(IDR_MINIMIZE, IDR_MINIMIZE_P,
-                             IDR_MINIMIZE_H, parent_box,
-                             IDS_XPFRAME_MINIMIZE_TOOLTIP));
+    minimize_button_.reset(CreateTitlebarButton("minimize", left_side));
 
     gtk_widget_size_request(minimize_button_->widget(),
                             &minimize_button_req_);
     return true;
   } else if (button_token == "maximize") {
-    GtkWidget* parent_box = GetButtonHBox(left_side);
-    restore_button_.reset(
-        CreateTitlebarButton(IDR_RESTORE, IDR_RESTORE_P,
-                             IDR_RESTORE_H, parent_box,
-                             IDS_XPFRAME_RESTORE_TOOLTIP));
-    maximize_button_.reset(
-        CreateTitlebarButton(IDR_MAXIMIZE, IDR_MAXIMIZE_P,
-                             IDR_MAXIMIZE_H, parent_box,
-                             IDS_XPFRAME_MAXIMIZE_TOOLTIP));
+    restore_button_.reset(CreateTitlebarButton("unmaximize", left_side));
+    maximize_button_.reset(CreateTitlebarButton("maximize", left_side));
 
     gtk_util::SetButtonClickableByMouseButtons(maximize_button_->widget(),
                                                true, true, true);
@@ -479,11 +468,7 @@ bool BrowserTitlebar::BuildButton(const std::string& button_token,
                             &restore_button_req_);
     return true;
   } else if (button_token == "close") {
-    GtkWidget* parent_box = GetButtonHBox(left_side);
-    close_button_.reset(
-        CreateTitlebarButton(IDR_CLOSE, IDR_CLOSE_P,
-                             IDR_CLOSE_H, parent_box,
-                             IDS_XPFRAME_CLOSE_TOOLTIP));
+    close_button_.reset(CreateTitlebarButton("close", left_side));
     close_button_->set_flipped(left_side);
 
     gtk_widget_size_request(close_button_->widget(), &close_button_req_);
@@ -506,10 +491,10 @@ GtkWidget* BrowserTitlebar::GetButtonHBox(bool left_side) {
                     titlebar_right_buttons_vbox_;
 
   GtkWidget* top_padding = gtk_fixed_new();
-  gtk_widget_set_size_request(top_padding, -1, kButtonOuterPadding);
+  gtk_widget_set_size_request(top_padding, -1, GetButtonOuterPadding());
   gtk_box_pack_start(GTK_BOX(vbox), top_padding, FALSE, FALSE, 0);
 
-  GtkWidget* buttons_hbox = gtk_hbox_new(FALSE, kButtonSpacing);
+  GtkWidget* buttons_hbox = gtk_hbox_new(FALSE, GetButtonSpacing());
   gtk_box_pack_start(GTK_BOX(vbox), buttons_hbox, FALSE, FALSE, 0);
 
   if (left_side) {
@@ -523,20 +508,68 @@ GtkWidget* BrowserTitlebar::GetButtonHBox(bool left_side) {
   return buttons_hbox;
 }
 
-CustomDrawButton* BrowserTitlebar::CreateTitlebarButton(int image,
-    int image_pressed, int image_hot, GtkWidget* box, int tooltip) {
-  CustomDrawButton* button = new CustomDrawButton(image, image_pressed,
-                                                  image_hot, 0);
+int BrowserTitlebar::GetButtonOuterPadding() const {
+  return kButtonOuterPadding;
+}
+
+int BrowserTitlebar::GetButtonSpacing() const {
+  return kButtonSpacing;
+}
+
+CustomDrawButton* BrowserTitlebar::CreateTitlebarButton(
+    const std::string& button_name, bool left_side) {
+  int normal_image_id;
+  int pressed_image_id;
+  int hover_image_id;
+  int tooltip_id;
+  GetButtonResources(button_name, &normal_image_id, &pressed_image_id,
+                     &hover_image_id, &tooltip_id);
+
+  CustomDrawButton* button = new CustomDrawButton(normal_image_id,
+                                                  pressed_image_id,
+                                                  hover_image_id,
+                                                  0);
   gtk_widget_add_events(GTK_WIDGET(button->widget()), GDK_POINTER_MOTION_MASK);
   g_signal_connect(button->widget(), "clicked",
                    G_CALLBACK(OnButtonClickedThunk), this);
   g_signal_connect(button->widget(), "motion-notify-event",
                    G_CALLBACK(OnMouseMoveEvent), browser_window_);
-  std::string localized_tooltip = l10n_util::GetStringUTF8(tooltip);
+
+  std::string localized_tooltip = l10n_util::GetStringUTF8(tooltip_id);
   gtk_widget_set_tooltip_text(button->widget(),
                               localized_tooltip.c_str());
+
+  GtkWidget* box = GetButtonHBox(left_side);
   gtk_box_pack_start(GTK_BOX(box), button->widget(), FALSE, FALSE, 0);
   return button;
+}
+
+void BrowserTitlebar::GetButtonResources(const std::string& button_name,
+                                         int* normal_image_id,
+                                         int* pressed_image_id,
+                                         int* hover_image_id,
+                                         int* tooltip_id) const {
+  if (button_name == "close") {
+    *normal_image_id = IDR_CLOSE;
+    *pressed_image_id = IDR_CLOSE_P;
+    *hover_image_id = IDR_CLOSE_H;
+    *tooltip_id = IDS_XPFRAME_CLOSE_TOOLTIP;
+  } else if (button_name == "minimize") {
+    *normal_image_id = IDR_MINIMIZE;
+    *pressed_image_id = IDR_MINIMIZE_P;
+    *hover_image_id = IDR_MINIMIZE_H;
+    *tooltip_id = IDS_XPFRAME_MINIMIZE_TOOLTIP;
+  } else if (button_name == "maximize") {
+    *normal_image_id = IDR_MAXIMIZE;
+    *pressed_image_id = IDR_MAXIMIZE_P;
+    *hover_image_id = IDR_MAXIMIZE_H;
+    *tooltip_id = IDS_XPFRAME_MAXIMIZE_TOOLTIP;
+  } else if (button_name == "unmaximize") {
+    *normal_image_id = IDR_RESTORE;
+    *pressed_image_id = IDR_RESTORE_P;
+    *hover_image_id = IDR_RESTORE_H;
+    *tooltip_id = IDS_XPFRAME_RESTORE_TOOLTIP;
+  }
 }
 
 void BrowserTitlebar::UpdateButtonBackground(CustomDrawButton* button) {
@@ -695,10 +728,10 @@ void BrowserTitlebar::UpdateTitlebarAlignment() {
   GtkRequisition minimize_button_req = minimize_button_req_;
   GtkRequisition restore_button_req = restore_button_req_;
   if (using_custom_frame_ && browser_window_->IsMaximized()) {
-    close_button_req.width += kButtonOuterPadding;
-    close_button_req.height += kButtonOuterPadding;
-    minimize_button_req.height += kButtonOuterPadding;
-    restore_button_req.height += kButtonOuterPadding;
+    close_button_req.width += GetButtonOuterPadding();
+    close_button_req.height += GetButtonOuterPadding();
+    minimize_button_req.height += GetButtonOuterPadding();
+    restore_button_req.height += GetButtonOuterPadding();
     if (top_padding_left_)
       gtk_widget_hide(top_padding_left_);
     if (top_padding_right_)
@@ -890,8 +923,11 @@ gboolean BrowserTitlebar::OnScroll(GtkWidget* widget, GdkEventScroll* event) {
   return TRUE;
 }
 
-// static
 void BrowserTitlebar::OnButtonClicked(GtkWidget* button) {
+  HandleButtonClick(button);
+}
+
+void BrowserTitlebar::HandleButtonClick(GtkWidget* button) {
   if (close_button_.get() && close_button_->widget() == button) {
     browser_window_->Close();
   } else if (restore_button_.get() && restore_button_->widget() == button) {
