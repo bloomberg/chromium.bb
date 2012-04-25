@@ -226,6 +226,7 @@ using WebKit::WebIntentServiceInfo;
 using WebKit::WebMediaPlayer;
 using WebKit::WebMediaPlayerAction;
 using WebKit::WebMediaPlayerClient;
+using WebKit::WebMouseEvent;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNavigationType;
 using WebKit::WebNode;
@@ -3353,6 +3354,9 @@ void RenderViewImpl::didChangeScrollOffset(WebFrame* frame) {
 
   if (webview()->mainFrame() == frame)
     UpdateScrollState(frame);
+
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, DidChangeScrollOffset(frame));
 }
 
 void RenderViewImpl::numberOfWheelEventHandlersChanged(unsigned num_handlers) {
@@ -4747,7 +4751,7 @@ bool RenderViewImpl::WillHandleMouseEvent(const WebKit::WebMouseEvent& event) {
   return mouse_lock_dispatcher_->WillHandleMouseEvent(event);
 }
 
-void RenderViewImpl::DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {
+void RenderViewImpl::DidHandleMouseEvent(const WebMouseEvent& event) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidHandleMouseEvent(event));
 }
 
@@ -5122,6 +5126,9 @@ void RenderViewImpl::zoomLimitsChanged(double minimum_level,
 void RenderViewImpl::zoomLevelChanged() {
   bool remember = !webview()->mainFrame()->document().isPluginDocument();
   float zoom_level = webview()->zoomLevel();
+
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, ZoomLevelChanged());
+
   // Tell the browser which url got zoomed so it can update the menu and the
   // saved values if necessary
   Send(new ViewHostMsg_DidZoomURL(

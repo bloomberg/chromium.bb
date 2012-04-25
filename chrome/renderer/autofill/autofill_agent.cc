@@ -155,6 +155,20 @@ void AutofillAgent::WillSubmitForm(WebFrame* frame,
   }
 }
 
+void AutofillAgent::ZoomLevelChanged() {
+  // Any time the zoom level changes, the page's content moves, so any Autofill
+  // popups should be hidden. This is only needed for the new Autofill UI
+  // because WebKit already knows to hide the old UI when this occurs.
+  Send(new AutofillHostMsg_HideAutofillPopup(routing_id()));
+}
+
+void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
+  // Any time the scroll offset changes, the page's content moves, so Autofill
+  // popups should be hidden. This is only needed for the new Autofill UI
+  // because WebKit already knows to hide the old UI when this occurs.
+  Send(new AutofillHostMsg_HideAutofillPopup(routing_id()));
+}
+
 bool AutofillAgent::InputElementClicked(const WebInputElement& element,
                                         bool was_focused,
                                         bool is_focused) {

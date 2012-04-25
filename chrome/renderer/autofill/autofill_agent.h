@@ -65,6 +65,8 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
   virtual void WillSubmitForm(WebKit::WebFrame* frame,
                               const WebKit::WebFormElement& form) OVERRIDE;
+  virtual void ZoomLevelChanged() OVERRIDE;
+  virtual void DidChangeScrollOffset(WebKit::WebFrame* frame) OVERRIDE;
 
   // PageClickListener:
   virtual bool InputElementClicked(const WebKit::WebInputElement& element,
