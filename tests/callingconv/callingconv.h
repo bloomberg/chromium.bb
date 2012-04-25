@@ -10,7 +10,7 @@
 typedef struct {
   char a;
   short b;
-} tiny_t;
+} t_tiny;
 
 typedef struct {
   char a;
@@ -26,26 +26,55 @@ typedef struct {
   short k;
   char l;
   char m;
-} big_t;
+} t_big;
 
 /* Comparison functions */
 #define TINY_CMP(_x, _y)   (tiny_cmp((_x), (_y)))
 #define BIG_CMP(_x, _y)    (big_cmp((_x), (_y)))
-int tiny_cmp(const tiny_t x, const tiny_t y);
-int big_cmp(const big_t x, const big_t y);
+int tiny_cmp(const t_tiny x, const t_tiny y);
+int big_cmp(const t_big x, const t_big y);
 
 
 /* Setters */
-#define SET_TINY_T(obj, a, b)  \
-    (set_tiny_t(&(obj), a, b))
+#define SET_TINY(obj, a, b)  \
+    (set_tiny(&(obj), a, b))
 
-#define SET_BIG_T(obj, a, b, c, d, e, f, g, h, i, j, k, l, m) \
-    (set_big_t(&(obj), a, b, c, d, e, f, g, h, i, j, k, l, m))
+#define SET_BIG(obj, a, b, c, d, e, f, g, h, i, j, k, l, m) \
+    (set_big(&(obj), a, b, c, d, e, f, g, h, i, j, k, l, m))
 
-void set_tiny_t(tiny_t *ptr, char a, short b);
+void set_tiny(t_tiny *ptr, char a, short b);
 
-void set_big_t(big_t *ptr, char a, char b, int c, char d, int e, long long f,
-               int g, char h, int i, char j, short k, char l, char m);
+void set_big(t_big *ptr, char a, char b, int c, char d, int e, long long f,
+             int g, char h, int i, char j, short k, char l, char m);
+
+/* types used by the modules  */
+typedef char*        t_charp;
+typedef int          t_int;
+typedef long         t_long;
+typedef long long    t_llong;
+typedef double       t_double;
+typedef long double  t_ldouble;
+typedef char         t_char;
+typedef short        t_short;
+typedef float        t_float;
+
+/*
+ * check variables. These are global arrays
+ * which contain copies of the arguments passed to the function.
+ * The test functions compare their arguments with the check
+ * variables to ensure a match.
+ */
+extern t_charp v_t_charp[16];
+extern t_int v_t_int[16];
+extern t_long v_t_long[16];
+extern t_llong v_t_llong[16];
+extern t_double v_t_double[16];
+extern t_ldouble v_t_ldouble[16];
+extern t_char v_t_char[16];
+extern t_short v_t_short[16];
+extern t_float v_t_float[16];
+extern t_tiny v_t_tiny[16];
+extern t_big v_t_big[16];
 
 /* Used by the modules to keep track of the current location */
 extern int current_module;

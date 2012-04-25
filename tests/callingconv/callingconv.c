@@ -13,6 +13,19 @@
 #include <string.h>
 #include <callingconv.h>
 
+/* Note, not all of these are necessarily used */
+t_charp v_t_charp[16];
+t_int v_t_int[16];
+t_long v_t_long[16];
+t_llong v_t_llong[16];
+t_double v_t_double[16];
+t_ldouble v_t_ldouble[16];
+t_char v_t_char[16];
+t_short v_t_short[16];
+t_float v_t_float[16];
+t_tiny v_t_tiny[16];
+t_big v_t_big[16];
+
 /* Keep track of current function, call, and satisfied asserts */
 int current_module = -1;
 int current_call = -1;
@@ -20,7 +33,7 @@ int current_function = -1;
 int *current_index_p = NULL;
 int assert_count = 0;
 
-const char *script_argv;
+extern const char *script_argv;
 void module0(void) __attribute__((weak));
 void module1(void) __attribute__((weak));
 void module2(void) __attribute__((weak));
@@ -43,13 +56,13 @@ int main(int argc, const char *argv[]) {
 
 
 /* Helper for setting values in tiny_t struct */
-void set_tiny_t(tiny_t *ptr, char a, short b) {
+void set_tiny(t_tiny *ptr, char a, short b) {
   ptr->a = a;
   ptr->b = b;
 }
 
 /* Helper for setting values in big_t struct */
-void set_big_t(big_t *ptr, char a, char b, int c, char d, int e, long long f,
+void set_big(t_big *ptr, char a, char b, int c, char d, int e, long long f,
           int g, char h, int i, char j, short k, char l, char m) {
   ptr->a = a;
   ptr->b = b;
@@ -83,11 +96,11 @@ void assert_func(int condition, const char *expr, const char *file, int line) {
 
 #define EQ(_v)  (x._v == y._v)
 
-int tiny_cmp(const tiny_t x, const tiny_t y) {
+int tiny_cmp(const t_tiny x, const t_tiny y) {
   return EQ(a) && EQ(b);
 }
 
-int big_cmp(const big_t x, const big_t y) {
+int big_cmp(const t_big x, const t_big y) {
   return EQ(a) && EQ(b) && EQ(c) && EQ(d) &&
          EQ(e) && EQ(f) && EQ(g) && EQ(h) &&
          EQ(i) && EQ(j) && EQ(k) && EQ(l) && EQ(m);

@@ -37,7 +37,7 @@ settings = {
   'max_args_per_func': 16,
 }
 
-# va_arg of struct types is broken in PNaCl
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2381
 if env.Bit('bitcode'):
   settings['allow_struct_va_arg'] = 0
 
@@ -46,8 +46,17 @@ if env.Bit('bitcode'):
 # with the wrong alignment.
 # On X86-64, the ABI is not implemented.
 # There's a good chance ARM has similar problems.
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2746
+# There is additional problem with gcc/pnacl incompatibilities
+# and the mixed mode compilation.
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=1902
+
 if env.Bit('bitcode'):
   settings['allow_struct'] = 0
+
+# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2378
+if env.Bit('target_arm'):
+  settings['allow_double'] = 0
 
 # Environments for building module sources
 envlist = []
@@ -117,7 +126,4 @@ node = link_env.CommandSelLdrTestNacl(
          stdout_golden=nodes[0])
 
 env.AddNodeToTestSuite(node, ['medium_tests', 'nonpexe_tests'],
-                       'run_callingconv_test',
-                       # This test takes too long to compile for ARM
-                       # and the resulting code doesn't pass this test.
-                       is_broken=env.Bit('target_arm'))
+                       'run_callingconv_test')

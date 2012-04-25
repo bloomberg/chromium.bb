@@ -33,48 +33,52 @@ import sys
 
 def GenerateTypeInfo(settings):
   type_info = [
-    #   id   cast           Maker      CompareExpr  AssignStmt
+    #   id/cast   format  Maker      CompareExpr  AssignStmt
     #########################################################################
-    ('0', 'char*'      , make_string , '%s == %s'  , '%s = %s;'           ),
-    ('1', 'int'        , make_int    , '%s == %s'  , '%s = %s;'           ),
-    ('2', 'long'       , make_long   , '%s == %s'  , '%s = %s;'           ),
-    ('3', 'long long'  , make_llong  , '%s == %s'  , '%s = %s;'           ),
-    ('4', 'double'     , make_double , '%s == %s'  , '%s = %s;'           ),
-    ('5', 'long double', make_ldouble, '%s == %s'  , '%s = %s;'           ),
-    ('6', 'char'       , make_char   , '%s == %s'  , '%s = %s;'           ),
-    ('7', 'short'      , make_short  , '%s == %s'  , '%s = %s;'           ),
-    ('8', 'float'      , make_float  , '%s == %s'  , '%s = %s;'           ),
-    ('9', 'tiny_t', make_tiny_t, 'TINY_CMP(%s,%s)', 'SET_TINY_T(%s, %s);' ),
-    ('A', 'big_t', make_big_t, 'BIG_CMP(%s,%s)', 'SET_BIG_T(%s, %s);'     ),
+    # standard types
+    ('t_charp',    'C',  make_string , '%s == %s'  , '%s = %s;'  ),
+    ('t_int',      'i',  make_int    , '%s == %s'  , '%s = %s;'  ),
+    ('t_long',     'l',  make_long   , '%s == %s'  , '%s = %s;'  ),
+    ('t_llong',    'L',  make_llong  , '%s == %s'  , '%s = %s;'  ),
+    ('t_double',   'd',  make_double , '%s == %s'  , '%s = %s;'  ),
+    ('t_ldouble',  'D',  make_ldouble, '%s == %s'  , '%s = %s;'  ),
+    ('t_char',     'c',  make_char   , '%s == %s'  , '%s = %s;'  ),
+    ('t_short',    's',  make_short  , '%s == %s'  , '%s = %s;'  ),
+    ('t_float',    'f',  make_float  , '%s == %s'  , '%s = %s;'  ),
+    # custom types
+    ('t_tiny',     'T',  make_tiny,  'TINY_CMP(%s,%s)', 'SET_TINY(%s, %s);' ),
+    ('t_big',      'B',  make_big,   'BIG_CMP(%s,%s)', 'SET_BIG(%s, %s);'     ),
   ]
 
   # These types cannot be used directly in va_arg().
-  # TODO(pdox): Add va_arg structure passing when LLVM supports it
-  va_arg_exclude = [ 'char', 'short', 'float' ]
+  va_arg_exclude = [ 't_char', 't_short', 't_float' ]
+  all_exclude = []
 
   if not settings.allow_struct:
-    # Disable testing structure arguments
-    filterfunc = lambda u: u[1] not in ('tiny_t', 'big_t')
-    type_info = filter(filterfunc, type_info)
-  elif not settings.allow_struct_va_arg:
-    # Disable testing structure arguments as variable arguments
-    va_arg_exclude += [ 'tiny_t', 'big_t' ]
+    all_exclude += [ 't_tiny', 't_big' ]
 
-  settings.all_types = [ CType(*args) for args in type_info ]
-  settings.va_arg_types = [ t for t in settings.all_types if
-                                  t.cast not in va_arg_exclude ]
+  if not settings.allow_double:
+    all_exclude += [ 't_double', 't_ldouble' ]
+
+  elif not settings.allow_struct_va_arg:
+    va_arg_exclude += [ 't_tiny', 't_big' ]
+
+  settings.all_types = [ CType(*args) for args in type_info
+                         if args[0] not in all_exclude]
+  settings.va_arg_types = [ t for t in settings.all_types
+                            if t.id not in va_arg_exclude ]
 
 
 class CType(object):
-  def __init__(self, id, cast, maker, compare_expr, assign_stmt):
+  def __init__(self, id, format, maker, compare_expr, assign_stmt):
     self.id = id
-    self.cast = cast
+    self.format = format
     self.maker = maker
     self.compare_expr = compare_expr
     self.assign_stmt = assign_stmt
 
   def __repr__(self):
-    return self.cast
+    return self.id
 
 class Settings(object):
   def __init__(self):
@@ -85,6 +89,7 @@ class Settings(object):
     self.max_args_per_func = 0
     self.num_modules = 0
     self.allow_struct = 1
+    self.allow_double = 1
     self.allow_struct_va_arg = 1
     self._script_argv = None
 
@@ -95,6 +100,7 @@ class Settings(object):
     self.max_args_per_func = int(self.max_args_per_func)
     self.num_modules = int(self.num_modules)
     self.allow_struct = bool(int(self.allow_struct))
+    self.allow_double = bool(int(self.allow_double))
     self.allow_struct_va_arg = bool(int(self.allow_struct_va_arg))
 
   def set(self, k, v):
@@ -114,6 +120,7 @@ def Usage():
   print "  --max_args_per_func=<max_args_per_function>"
   print "  --num_modules=<num_modules>"
   print "  --allow_struct=<0|1>         Test struct arguments (by value)"
+  print "  --allow_double=<0|1>         Test double arguments (by value)"
   print "  --allow_struct_va_arg=<0|1>  Test va_arg on struct arguments"
   sys.exit(1)
 
@@ -217,6 +224,7 @@ class Module(object):
               " *--------------------------------------------------*/\n")
     out.write("\n")
 
+    # only emit this for the first module we generate
     if self.id == 0:
       out.write("const char *script_argv =\n")
       out.write("  \"" + CEscape(self.settings._script_argv) + "\";\n")
@@ -242,20 +250,6 @@ class Module(object):
     out.write('#include <callingconv.h>\n')
     out.write("\n")
 
-    # Declare variable typedefs
-    for t in self.settings.all_types:
-      out.write("typedef %-12s t_%s;\n" % (t.cast, t.id))
-    out.write("\n")
-
-    # Declare check variables. These are global arrays
-    # which contain copies of the arguments passed to the function.
-    # The test functions compare their arguments with the check
-    # variables to ensure a match.
-    for t in self.settings.all_types:
-      out.write("t_%s v_%s[%d];\n" %
-                (t.id, t.id, self.settings.max_args_per_func))
-    out.write("\n")
-
     # Emit function prototypes (all of them)
     for f in self.all_functions:
       f.emit_prototype(out)
@@ -278,10 +272,10 @@ class Module(object):
     # va_list passing.
     out.write("void vcheck%d(va_list ap, int i, char type) {\n" % self.id)
     for t in self.settings.va_arg_types:
-        va_arg_val = "va_arg(ap, %s)" % t.cast
+        va_arg_val = "va_arg(ap, %s)" % t.id
         expected_val = "v_%s[i]" % t.id
         comparison = t.compare_expr % (va_arg_val, expected_val)
-        out.write("  if (type == '%s')\n" % t.id)
+        out.write("  if (type == '%s')\n" % t.format)
         out.write("    ASSERT(%s);\n" % comparison)
         out.write("")
     out.write("}\n\n")
@@ -348,7 +342,7 @@ class TestCall(object):
             t = random.choice(settings.va_arg_types)
         if i == self.f.num_fixed_args:
             fmtstr += '" "'
-        fmtstr += str(t.id)
+        fmtstr += str(t.format)
         args.append((i, t, t.maker()))
     self.args = args
     self.fmtstr = fmtstr
@@ -428,7 +422,7 @@ class TestFunction(object):
     fixed_arg_str = ''
     argnum = 0
     for t in self.fixed_arg_types:
-      fixed_arg_str += ", t_%s a_%d" % (t.id, argnum)
+      fixed_arg_str += ", %s a_%d" % (t.id, argnum)
       argnum += 1
 
     prototype = "void F%s(const char *fmt%s, ...)" % (self.id, fixed_arg_str)
@@ -472,10 +466,10 @@ class TestFunction(object):
     out.write("    switch (fmt[i]) {\n")
 
     for t in self.settings.va_arg_types:
-        arg_val   = "va_arg(ap, %s)" % t.cast
+        arg_val   = "va_arg(ap, %s)" % t.id
         check_val = "v_%s[i]" % t.id
         comp_expr = t.compare_expr % (arg_val, check_val)
-        out.write("    case '%s':\n" % t.id)
+        out.write("    case '%s':\n" % t.format)
         for module_id in xrange(self.settings.num_modules):
           out.write("      va_copy(ap2, ap);\n")
           out.write("      vcheck%d(ap2, i, fmt[i]);\n" % module_id)
@@ -526,12 +520,12 @@ def make_short():
   B = pow(2,15)
   return str(random.randint(-B, B-1))
 
-def make_tiny_t():
+def make_tiny():
   a = make_char()
   b = make_short()
   return "%s,%s" % (a,b)
 
-def make_big_t():
+def make_big():
   a = make_char()
   b = make_char()
   c = make_int()
