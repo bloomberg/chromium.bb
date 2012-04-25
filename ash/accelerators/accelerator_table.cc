@@ -34,8 +34,13 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_T, false, true, true, OPEN_CROSH },
 #endif
   { true, ui::VKEY_Q, true, true, false, EXIT },
+
+  // When you change the shortcut for NEW_INCOGNITO_WINDOW or NEW_WINDOW,
+  // you also need to modify ToolbarView::GetAcceleratorForCommandId() in
+  // chrome/browser/ui/views/toolbar_view.cc.
   { true, ui::VKEY_N, true, true, false, NEW_INCOGNITO_WINDOW },
   { true, ui::VKEY_N, false, true, false, NEW_WINDOW },
+
   { true, ui::VKEY_F5, true, false, false, CYCLE_BACKWARD_LINEAR },
   { true, ui::VKEY_F5, false, true, false, TAKE_SCREENSHOT },
   { true, ui::VKEY_F5, true, true, false, TAKE_PARTIAL_SCREENSHOT },

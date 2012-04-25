@@ -490,6 +490,17 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
     case IDC_PASTE:
       *accelerator = ui::Accelerator(ui::VKEY_V, false, true, false);
       return true;
+#if defined(USE_ASH)
+    // When USE_ASH is defined, IDC_NEW_WINDOW and IDC_NEW_INCOGNITO_WINDOW are
+    // handled outside Chrome, in ash/accelerators/accelerator_table.cc.
+    // crbug.com/120196
+    case IDC_NEW_WINDOW:
+      *accelerator = ui::Accelerator(ui::VKEY_N, false, true, false);
+      return true;
+    case IDC_NEW_INCOGNITO_WINDOW:
+      *accelerator = ui::Accelerator(ui::VKEY_N, true, true, false);
+      return true;
+#endif
   }
   // Else, we retrieve the accelerator information from the frame.
   return GetWidget()->GetAccelerator(command_id, accelerator);
