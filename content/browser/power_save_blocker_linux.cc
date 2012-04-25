@@ -4,6 +4,13 @@
 
 #include "content/browser/power_save_blocker.h"
 
+#include <X11/Xlib.h>
+#include <X11/extensions/dpms.h>
+// Xlib #defines Status, but we can't have that for some of our headers.
+#ifdef Status
+#undef Status
+#endif
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -15,6 +22,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop_proxy.h"
+#if defined(TOOLKIT_GTK)
+#include "base/message_pump_gtk.h"
+#else
+#include "base/message_pump_x.h"
+#endif
 #include "base/nix/xdg_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
@@ -26,40 +38,36 @@ using content::BrowserThread;
 
 namespace {
 
-// This class is used to inhibit Power Management on Linux systems
-// using D-Bus interfaces. Mainly, there are two interfaces that
-// make this possible.
-// org.freedesktop.PowerManagement[.Inhibit] is considered to be
-// the desktop-agnostic solution. However,  it is only used by
-// KDE4 and XFCE.
-// org.gnome.SessionManager is the Power Management interface
-// available on Gnome desktops.
-// Given that there is no generic solution to this problem,
-// this class delegates the task of calling specific D-Bus APIs,
-// to a DBusPowerSaveBlock::Delegate object.
-// This class is a Singleton and the delegate will be instantiated
-// internally, when the singleton instance is created, based on
-// the desktop environment in which the application is running.
-// When the class is instantiated, if it runs under a supported
-// desktop environment it creates the Bus object and the
-// delegate. Otherwise, no object is created and the ApplyBlock
-// method will not do anything.
+// This class is used to inhibit Power Management on Linux systems using D-Bus
+// interfaces. Mainly, there are two interfaces that make this possible.
+// org.freedesktop.PowerManagement[.Inhibit] is considered to be the
+// desktop-agnostic solution. However, it is only used by KDE4 and XFCE.
+//
+// org.gnome.SessionManager is the Power Management interface available on GNOME
+// desktops. Given that there is no generic solution to this problem, this class
+// delegates the task of calling specific D-Bus APIs, to a
+// DBusPowerSaveBlock::Delegate object.
+//
+// This class is a Singleton and the delegate will be instantiated internally,
+// when the singleton instance is created, based on the desktop environment in
+// which the application is running. When the class is instantiated, if it runs
+// under a supported desktop environment it creates the Bus object and the
+// delegate. Otherwise, no object is created and the ApplyBlock method will not
+// do anything.
 class DBusPowerSaveBlocker {
  public:
   // String passed to D-Bus APIs as the reason for which
   // the power management features are temporarily disabled.
   static const char kPowerSaveReason[];
 
-  // This delegate interface represents a concrete
-  // implementation for a specific D-Bus interface.
-  // It is responsible for obtaining specific object proxies,
+  // This delegate interface represents a concrete implementation for a specific
+  // D-Bus interface. It is responsible for obtaining specific object proxies,
   // making D-Bus method calls and handling D-Bus responses.
-  // When a new DBusPowerBlocker is created, only a specific
-  // implementation of the delegate is instantiated. See the
-  // DBusPowerSaveBlocker constructor for more details.
-  // This is ref_counted to make sure that the callbacks
-  // stay alive even after the DBusPowerSaveBlocker object
-  // is deleted.
+  //
+  // When a new DBusPowerBlocker is created, only a specific implementation of
+  // the delegate is instantiated. See the DBusPowerSaveBlocker constructor for
+  // more details. This is ref_counted to make sure that the callbacks stay
+  // alive even after the DBusPowerSaveBlocker object is deleted.
   class Delegate : public base::RefCountedThreadSafe<Delegate> {
    public:
     Delegate() {}
@@ -72,10 +80,9 @@ class DBusPowerSaveBlocker {
   // Returns a pointer to the sole instance of this class
   static DBusPowerSaveBlocker* GetInstance();
 
-  // Forwards a power save block request to the concrete implementation
-  // of the Delegate interface.
-  // If |delegate_| is NULL, the application runs under an unsupported
-  // desktop environment. In this case, the method doesn't do anything.
+  // Forwards a power save block request to the concrete implementation of the
+  // Delegate interface. If |delegate_| is NULL, the application runs under an
+  // unsupported desktop environment. In this case, the method does nothing.
   void ApplyBlock(PowerSaveBlocker::PowerSaveBlockerType type) {
     if (delegate_)
       delegate_->ApplyBlock(type);
@@ -88,6 +95,11 @@ class DBusPowerSaveBlocker {
   DBusPowerSaveBlocker();
   virtual ~DBusPowerSaveBlocker();
 
+  // If DPMS is not enabled, then we don't want to try to disable power saving,
+  // since on some desktop environments that may enable DPMS with very poor
+  // default settings (e.g. turning off the display after only 1 second).
+  static bool DPMSEnabled();
+
   // The D-Bus connection.
   scoped_refptr<dbus::Bus> bus_;
 
@@ -99,15 +111,15 @@ class DBusPowerSaveBlocker {
   DISALLOW_COPY_AND_ASSIGN(DBusPowerSaveBlocker);
 };
 
-// Delegate implementation for KDE4.
-// It uses the org.freedesktop.PowerManagement interface.
-// Works on XFCE4, too.
+// Delegate implementation for KDE4. It uses the
+// org.freedesktop.PowerManagement interface. It works on XFCE4, too.
 class KDEPowerSaveBlocker : public DBusPowerSaveBlocker::Delegate {
  public:
   KDEPowerSaveBlocker()
       : inhibit_cookie_(0),
         pending_inhibit_call_(false),
-        postponed_uninhibit_call_(false) {}
+        postponed_uninhibit_call_(false) {
+  }
   ~KDEPowerSaveBlocker() {}
 
   virtual void ApplyBlock(
@@ -253,22 +265,23 @@ class GnomePowerSaveBlocker : public DBusPowerSaveBlocker::Delegate {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(postponed_uninhibit_calls_ <= pending_inhibit_calls_);
 
-    // If we have a pending inhibit call, we add a postponed uninhibit
-    // request, such that it will be canceled as soon as the response arrives.
-    // We want to cancel the current inhibit request whether |type| is
+    // If we have a pending inhibit call, we add a postponed uninhibit request,
+    // such that it will be canceled as soon as the response arrives. We want to
+    // cancel the current inhibit request whether |type| is
     // kPowerSaveBlockPreventNone or not. If |type| represents an inhibit
-    // request, we are dealing with the same case as below, just that the
-    // reply to the previous inhibit request did not arrive yet, so we have
-    // to wait for the cookie in order to cancel it.
-    // Meanwhile, we can still make the new request.
-    // We also have to check that
-    // postponed_uninhibit_calls_ < pending_inhibit_calls_.
-    // If this is not the case, then all the pending requests were already
-    // canceled and we should not increment the number of postponed uninhibit
-    // requests; otherwise we will cancel unwanted future inhibits,
-    // that will be made after this call.
-    // NOTE: The implementation is based on the fact that we receive
-    // the D-Bus replies in the same order in which the requests are made.
+    // request, we are dealing with the same case as below, just that the reply
+    // to the previous inhibit request did not arrive yet, so we have to wait
+    // for the cookie in order to cancel it. Meanwhile, we can still make the
+    // new request.
+    //
+    // We also have to check that postponed_uninhibit_calls_ <
+    // pending_inhibit_calls_. If this is not the case, then all the pending
+    // requests were already canceled and we should not increment the number of
+    // postponed uninhibit requests; otherwise we will cancel unwanted future
+    // inhibits, that will be made after this call.
+    //
+    // NOTE: The implementation is based on the fact that we receive the D-Bus
+    // replies in the same order in which the requests are made.
     if (pending_inhibit_calls_ > 0 &&
         postponed_uninhibit_calls_ < pending_inhibit_calls_) {
       ++postponed_uninhibit_calls_;
@@ -345,7 +358,7 @@ class GnomePowerSaveBlocker : public DBusPowerSaveBlocker::Delegate {
         ++pending_inhibit_calls_;
         break;
       case PowerSaveBlocker::kPowerSaveBlockPreventStateCount:
-        // This is an invalid argument;
+        // This is an invalid argument.
         NOTREACHED();
         break;
     }
@@ -415,11 +428,13 @@ DBusPowerSaveBlocker::DBusPowerSaveBlocker() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
-      delegate_ = new GnomePowerSaveBlocker();
+      if (DPMSEnabled())
+        delegate_ = new GnomePowerSaveBlocker();
       break;
     case base::nix::DESKTOP_ENVIRONMENT_XFCE:
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
-      delegate_ = new KDEPowerSaveBlocker();
+      if (DPMSEnabled())
+        delegate_ = new KDEPowerSaveBlocker();
       break;
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_OTHER:
@@ -453,6 +468,22 @@ DBusPowerSaveBlocker::~DBusPowerSaveBlocker() {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::FILE)) {
     bus_->ShutdownOnDBusThreadAndBlock();
   }
+}
+
+// static
+bool DBusPowerSaveBlocker::DPMSEnabled() {
+#if defined(TOOLKIT_GTK)
+  Display* display = base::MessagePumpGtk::GetDefaultXDisplay();
+#else
+  Display* display = base::MessagePumpX::GetDefaultXDisplay();
+#endif
+  BOOL enabled = false;
+  int dummy;
+  if (DPMSQueryExtension(display, &dummy, &dummy) && DPMSCapable(display)) {
+    CARD16 state;
+    DPMSInfo(display, &state, &enabled);
+  }
+  return enabled;
 }
 
 // static
