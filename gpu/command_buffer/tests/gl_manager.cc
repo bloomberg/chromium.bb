@@ -79,6 +79,7 @@ void GLManager::Initialize(const gfx::Size& size) {
   ASSERT_TRUE(decoder_->Initialize(
       surface_.get(),
       context_.get(),
+      true,
       size,
       ::gpu::gles2::DisallowedFeatures(),
       allowed_extensions,
