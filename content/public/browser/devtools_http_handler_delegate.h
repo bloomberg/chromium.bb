@@ -15,7 +15,6 @@ class WebContents;
 
 class DevToolsHttpHandlerDelegate {
  public:
-  typedef std::vector<WebContents*> InspectableTabs;
   virtual ~DevToolsHttpHandlerDelegate() {}
 
   // Should return discovery page HTML that should list available tabs
