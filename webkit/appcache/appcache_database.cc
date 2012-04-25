@@ -852,7 +852,7 @@ bool AppCacheDatabase::RunCachedStatementWithIds(
     statement.BindInt64(0, *iter);
     if (!statement.Run())
       return false;
-    statement.Reset();
+    statement.Reset(true);
     ++iter;
   }
 

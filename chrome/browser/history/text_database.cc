@@ -260,7 +260,7 @@ void TextDatabase::DeletePageData(base::Time time, const std::string& url) {
     delete_page.BindInt64(0, *i);
     if (!delete_page.Run())
       return;
-    delete_page.Reset();
+    delete_page.Reset(true);
   }
 
   // Delete from the info table.
@@ -272,7 +272,7 @@ void TextDatabase::DeletePageData(base::Time time, const std::string& url) {
     delete_info.BindInt64(0, *i);
     if (!delete_info.Run())
       return;
-    delete_info.Reset();
+    delete_info.Reset(true);
   }
 }
 
@@ -359,7 +359,7 @@ void TextDatabase::GetTextMatches(const std::string& query,
     *first_time_searched = results->back().time;
   }
 
-  statement.Reset();
+  statement.Reset(true);
 }
 
 }  // namespace history

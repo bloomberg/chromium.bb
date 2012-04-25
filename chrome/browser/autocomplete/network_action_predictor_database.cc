@@ -204,7 +204,7 @@ void NetworkActionPredictorDatabase::DeleteRows(
        it != id_list.end(); ++it) {
     statement.BindString(0, *it);
     statement.Run();
-    statement.Reset();
+    statement.Reset(true);
   }
   db_.CommitTransaction();
 }

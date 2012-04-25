@@ -298,7 +298,7 @@ void VisitSegmentDatabase::QuerySegmentUsage(
       pud->SetURL(GURL(statement2.ColumnString(0)));
       pud->SetTitle(statement2.ColumnString16(1));
     }
-    statement2.Reset();
+    statement2.Reset(true);
   }
 }
 

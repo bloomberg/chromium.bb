@@ -502,7 +502,7 @@ bool AutofillTable::RemoveExpiredFormElements(
         entries[i].timestamps().back().ToTimeT());
     if (!cull_date_entry.Run())
       return false;
-    cull_date_entry.Reset();
+    cull_date_entry.Reset(true);
   }
 
   changes->clear();

@@ -620,7 +620,7 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
       cookies.push_back(cc.release());
       ++num_cookies_read_;
     }
-    smt.Reset();
+    smt.Reset(true);
   }
   {
     base::AutoLock locked(lock_);
@@ -826,7 +826,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
     scoped_ptr<PendingOperation> po(*it);
     switch (po->op()) {
       case PendingOperation::COOKIE_ADD:
-        add_smt.Reset();
+        add_smt.Reset(true);
         add_smt.BindInt64(0, po->cc().CreationDate().ToInternalValue());
         add_smt.BindString(1, po->cc().Domain());
         add_smt.BindString(2, po->cc().Name());
@@ -843,7 +843,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         break;
 
       case PendingOperation::COOKIE_UPDATEACCESS:
-        update_access_smt.Reset();
+        update_access_smt.Reset(true);
         update_access_smt.BindInt64(0,
             po->cc().LastAccessDate().ToInternalValue());
         update_access_smt.BindInt64(1,
@@ -853,7 +853,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         break;
 
       case PendingOperation::COOKIE_DELETE:
-        del_smt.Reset();
+        del_smt.Reset(true);
         del_smt.BindInt64(0, po->cc().CreationDate().ToInternalValue());
         if (!del_smt.Run())
           NOTREACHED() << "Could not delete a cookie from the DB.";

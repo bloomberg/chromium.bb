@@ -162,7 +162,7 @@ void SafariImporter::LoadFaviconData(
 
   for (FaviconMap::const_iterator i = favicon_map.begin();
        i != favicon_map.end(); ++i) {
-    s.Reset();
+    s.Reset(true);
     s.BindInt64(0, i->first);
     if (s.Step()) {
       history::ImportedFaviconUsage usage;

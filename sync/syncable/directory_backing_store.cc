@@ -163,7 +163,7 @@ bool DirectoryBackingStore::DeleteEntries(const MetahandleSet& handles) {
     statement.BindInt64(0, *i);
     if (!statement.Run())
       return false;
-    statement.Reset();
+    statement.Reset(true);
   }
   return true;
 }
@@ -227,7 +227,7 @@ bool DirectoryBackingStore::SaveChanges(
       if (!s2.Run())
         return false;
       DCHECK_EQ(db_->GetLastChangeCount(), 1);
-      s2.Reset();
+      s2.Reset(true);
     }
   }
 
@@ -499,7 +499,7 @@ bool DirectoryBackingStore::SaveEntryToDB(const EntryKernel& entry) {
     save_entry_statement_.Assign(
         db_->GetUniqueStatement(query.c_str()));
   } else {
-    save_entry_statement_.Reset();
+    save_entry_statement_.Reset(true);
   }
 
   BindFields(entry, &save_entry_statement_);
@@ -583,7 +583,7 @@ bool DirectoryBackingStore::MigrateToSpecifics(
     update.BindInt64(1, metahandle);
     if (!update.Run())
       return false;
-    update.Reset();
+    update.Reset(true);
   }
   return query.Succeeded();
 }
@@ -868,7 +868,7 @@ bool DirectoryBackingStore::MigrateVersion74To75() {
       update.BindBool(2, query.ColumnBool(2));
       if (!update.Run())
         return false;
-      update.Reset();
+      update.Reset(true);
     }
   }
   if (!query.Succeeded())

@@ -566,6 +566,6 @@ void Firefox3Importer::LoadFavicons(
       usage.urls = i->second;
       favicons->push_back(usage);
     }
-    s.Reset();
+    s.Reset(true);
   }
 }
