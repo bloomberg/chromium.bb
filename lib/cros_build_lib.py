@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -107,16 +107,15 @@ class RunCommandError(Exception):
 
 
 class TerminateRunCommandError(RunCommandError):
-  """We were signalled to shutdown while running a command.
+  """We were signaled to shutdown while running a command.
 
   Client code shouldn't generally know, nor care about this class.  It's
-  used internally to suppress retry attempts when we're signalled to die.
+  used internally to suppress retry attempts when we're signaled to die.
   """
 
 
 def SudoRunCommand(cmd, **kwds):
-  """
-  Run a command via sudo.
+  """Run a command via sudo.
 
   Client code must use this rather than coming up with their own RunCommand
   invocation that jams sudo in- this function is used to enforce certain
@@ -127,7 +126,7 @@ def SudoRunCommand(cmd, **kwds):
          SudoRunCommand purely prefixes it with sudo.
     kwds: See RunCommand options, it's a direct pass thru to it.
           Note that this supports a 'strict' keyword that defaults to True.
-          If set to False, it'll suppress strict sudo behaviour.
+          If set to False, it'll suppress strict sudo behavior.
   Returns:
     See RunCommand documentation.
   Raises:
@@ -195,7 +194,7 @@ def _KillChildProcess(proc, kill_timeout, cmd, original_handler, signum, frame):
     proc.wait()
 
   if not signals.RelaySignal(original_handler, signum, frame):
-    # Mock up our own, matching exit code for signalling.
+    # Mock up our own, matching exit code for signaling.
     cmd_result = CommandResult(cmd=cmd, returncode=signum<<8)
     raise TerminateRunCommandError('Received signal %i' % signum, cmd_result)
 
@@ -207,7 +206,7 @@ class _Popen(subprocess.Popen):
 
   Specifically, we fix terminate/send_signal/kill to work if the child process
   was a setuid binary; on vanilla kernels, the parent can wax the child
-  regardless, on goobuntu this aparently isn't allowed, thus we fall back
+  regardless, on goobuntu this apparently isn't allowed, thus we fall back
   to the sudo machinery we have.
 
   While we're overriding send_signal, we also suppress ESRCH being raised
@@ -217,7 +216,7 @@ class _Popen(subprocess.Popen):
 
   def send_signal(self, signum):
     if self.returncode is not None:
-      # The original implementation in Popen would allow signal'ing whatever
+      # The original implementation in Popen would allow signaling whatever
       # process now occupies this pid, even if the Popen object had waitpid'd.
       # Since we can escalate to sudo kill, we do not want to allow that.
       # Fixing this addresses that angle, and makes the API less sucky in the
@@ -265,7 +264,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
     print_cmd: prints the command before running it.
     error_ok: ***DEPRECATED, use error_code_ok instead***
               Does not raise an exception on any errors.
-    error_message: prints out this message when an error occurrs.
+    error_message: prints out this message when an error occurs.
     redirect_stdout: returns the stdout.
     redirect_stderr: holds stderr output until input is communicated.
     cwd: the working directory to run this cmd.
@@ -285,7 +284,7 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       child.  This is the desired behavior if we know our child will handle
       Ctrl-C.  If we don't do this, I think we and the child will both get
       Ctrl-C at the same time, which means we'll forcefully kill the child.
-    combine_stdout_stderr: Combines stdout and stdin streams into stdout.
+    combine_stdout_stderr: Combines stdout and stderr streams into stdout.
     log_stdout_to_file: If set, redirects stdout to file specified by this path.
       If combine_stdout_stderr is set to True, then stderr will also be logged
       to the specified file.
@@ -522,7 +521,7 @@ def PrintBuildbotStepText(text):
 
 
 def ListFiles(base_dir):
-  """Recurively list files in a directory.
+  """Recursively list files in a directory.
 
   Args:
     base_dir: directory to start recursively listing in.
@@ -553,7 +552,7 @@ def IsInsideChroot():
 def GetSrcRoot():
   """Get absolute path to src/scripts/ directory.
 
-  Assuming test script will always be run from descendent of src/scripts.
+  Assuming test script will always be run from descendant of src/scripts.
 
   Returns:
     A string, absolute path to src/scripts directory. None if not found.
@@ -1169,7 +1168,7 @@ def SubCommandTimeout(max_run_time):
 
   # pylint: disable=W0613
   def kill_us(sig_num, frame):
-    raise TimeoutError("Timeout occured- waited %i seconds." % max_run_time)
+    raise TimeoutError("Timeout occurred- waited %i seconds." % max_run_time)
 
   original_handler = signal.signal(signal.SIGALRM, kill_us)
   previous_time = int(time.time())
@@ -1205,7 +1204,7 @@ def Timeout(max_run_time):
   This implementation is fairly simple, thus multiple timeouts
   cannot be active at the same time.
 
-  Additionally, if the timout has elapsed, it'll trigger a SystemExit
+  Additionally, if the timeout has elapsed, it'll trigger a SystemExit
   exception w/in the invoking code, ultimately propagating that past
   itself.  If the underlying code tries to suppress the SystemExit, once
   a minute it'll retrigger SystemExit until control is returned to this
@@ -1228,7 +1227,7 @@ def Timeout(max_run_time):
     # RunCommand's kill_timeout; thus we set the alarming interval
     # fairly high.
     signal.alarm(60)
-    raise SystemExit("Timeout occured- waited %i seconds, failing."
+    raise SystemExit("Timeout occurred- waited %i seconds, failing."
                      % max_run_time)
 
   original_handler = signal.signal(signal.SIGALRM, kill_us)
