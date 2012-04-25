@@ -201,7 +201,9 @@ class DiskMountManager {
   virtual void RequestMountInfoRefresh() = 0;
 
   // Mounts a device.
-  virtual void MountPath(const std::string& source_path, MountType type) = 0;
+  virtual void MountPath(const std::string& source_path,
+                         const std::string& source_format,
+                         MountType type) = 0;
 
   // Unmounts a mounted disk.
   virtual void UnmountPath(const std::string& mount_path) = 0;

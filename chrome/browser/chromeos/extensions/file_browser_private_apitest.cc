@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFileBrowserPrivateApiTest, FileBrowserMount) {
   EXPECT_CALL(*disk_mount_manager_mock_, UnmountPath(_))
       .Times(0);
   EXPECT_CALL(*disk_mount_manager_mock_,
-              UnmountPath(StrEq("/tmp/test_file.zip"))).Times(1);
+              UnmountPath(StrEq("/media/archive/archive_mount_path"))).Times(1);
 
   EXPECT_CALL(*disk_mount_manager_mock_, disks())
       .WillRepeatedly(ReturnRef(volumes_));

@@ -1017,14 +1017,42 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
   }
 
 #if defined(OS_CHROMEOS)
-  FilePath source_file = files[0].path;
+  const FilePath& source_path = files[0].path;
+  const FilePath::StringType& display_name = files[0].display_name;
+  // Check if the source path is under GData cache directory.
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  gdata::GDataFileSystem* file_system =
+      system_service ? system_service->file_system() : NULL;
+  if (file_system && file_system->IsUnderGDataCacheDirectory(source_path)) {
+    file_system->SetMountedState(
+        source_path,
+        true,
+        base::Bind(&AddMountFunction::OnMountedStateSet, this, mount_type_str,
+                   display_name));
+  } else {
+    OnMountedStateSet(mount_type_str, display_name,
+                      base::PLATFORM_FILE_OK, source_path);
+  }
+#else
+  SendResponse(true);
+#endif  // defined(OS_CHROMEOS)
+}
+
+void AddMountFunction::OnMountedStateSet(const std::string& mount_type,
+                                         const FilePath::StringType& file_name,
+                                         base::PlatformFileError error,
+                                         const FilePath& file_path) {
+#if defined(OS_CHROMEOS)
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   // MountPath() takes a std::string.
-  disk_mount_manager->MountPath(source_file.AsUTF8Unsafe(),
-      DiskMountManager::MountTypeFromString(mount_type_str));
-#endif  // defined(OS_CHROMEOS)
-
+  disk_mount_manager->MountPath(file_path.AsUTF8Unsafe(),
+                                FilePath(file_name).Extension(),
+                                DiskMountManager::MountTypeFromString(
+                                    mount_type));
   SendResponse(true);
+#endif  // defined(OS_CHROMEOS)
 }
 
 RemoveMountFunction::RemoveMountFunction() {

@@ -2645,13 +2645,16 @@ FileManager.prototype = {
       }
       chrome.mediaPlayerPrivate.play(urls, position);
     } else if (id == 'mount-archive') {
-      for (var index = 0; index < urls.length; ++index) {
-        // Url in MountCompleted event won't be escaped, so let's make sure
-        // we don't use escaped one in mountRequests_.
-        var unescapedUrl = unescape(urls[index]);
-        this.mountRequests_.push(unescapedUrl);
-        chrome.fileBrowserPrivate.addMount(unescapedUrl, 'file', {});
-      }
+      var self = this;
+      this.resolveSelectResults_(urls, function(urls) {
+        for (var index = 0; index < urls.length; ++index) {
+          // Url in MountCompleted event won't be escaped, so let's make sure
+          // we don't use escaped one in mountRequests_.
+          var unescapedUrl = unescape(urls[index]);
+          self.mountRequests_.push(unescapedUrl);
+          chrome.fileBrowserPrivate.addMount(unescapedUrl, 'file', {});
+        }
+      });
     } else if (id == 'format-device') {
       this.confirm.show(str('FORMATTING_WARNING'), function() {
         chrome.fileBrowserPrivate.formatDevice(urls[0]);

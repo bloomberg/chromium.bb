@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,8 @@ class MockDiskMountManager : public DiskMountManager {
   MOCK_CONST_METHOD0(mount_points,
                      const DiskMountManager::MountPointMap&(void));
   MOCK_METHOD0(RequestMountInfoRefresh, void(void));
-  MOCK_METHOD2(MountPath, void(const std::string&, MountType));
+  MOCK_METHOD3(MountPath, void(const std::string&, const std::string&,
+                               MountType));
   MOCK_METHOD1(UnmountPath, void(const std::string&));
   MOCK_METHOD3(GetSizeStatsOnFileThread, void(const std::string&, size_t*,
                                               size_t*));

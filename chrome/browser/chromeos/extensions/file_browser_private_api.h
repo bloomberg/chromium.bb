@@ -246,6 +246,11 @@ class AddMountFunction
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
   void GetLocalPathsResponseOnUIThread(const std::string& mount_type_str,
                                        const SelectedFileInfoList& files);
+  // A callback method to handle the result of SetMountedState.
+  void OnMountedStateSet(const std::string& mount_type,
+                         const FilePath::StringType& file_name,
+                         base::PlatformFileError error,
+                         const FilePath& file_path);
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.addMount");
 };

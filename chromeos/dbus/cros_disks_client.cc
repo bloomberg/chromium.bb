@@ -113,6 +113,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // CrosDisksClient override.
   virtual void Mount(const std::string& source_path,
+                     const std::string& source_format,
                      MountType type,
                      const MountCallback& callback,
                      const ErrorCallback& error_callback) OVERRIDE {
@@ -120,7 +121,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
                                  cros_disks::kMount);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(source_path);
-    writer.AppendString("");  // auto detect filesystem.
+    writer.AppendString(source_format);
     std::vector<std::string> mount_options(kDefaultMountOptions,
                                            kDefaultMountOptions +
                                            arraysize(kDefaultMountOptions));
@@ -375,6 +376,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
   virtual ~CrosDisksClientStubImpl() {}
 
   virtual void Mount(const std::string& source_path,
+                     const std::string& source_format,
                      MountType type,
                      const MountCallback& callback,
                      const ErrorCallback& error_callback) OVERRIDE {}
