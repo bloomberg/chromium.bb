@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@294d4dee8ca36ddd65793b6cca0f600f902630e8'
+         '@0fce35e7c151b766a5eac91a10397d8d283dd262'
 }
 
 deps = {
@@ -181,7 +181,7 @@ deps_os = {
         'src/rlz':
             Var('git_url') + '/external/rlz.git@250c68f222a879d1beef487596f465455ddc77ce',
         'src/third_party/cygwin':
-            Var('git_url') + '/chromium/deps/cygwin.git@06a117a90c15174436bfa20ceebbfdf43b7eb820',
+            Var('git_url') + '/chromium/deps/cygwin.git@3711a17ddd629317f40676bdcc564f32fd7a4fd2',
         'src/third_party/gnu_binutils':
             Var('git_url') + '/native_client/deps/third_party/gnu_binutils.git@f4003433b61b25666565690caf3d7a7a1a4ec436',
         'src/third_party/lighttpd':
