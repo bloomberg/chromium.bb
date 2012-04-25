@@ -6,6 +6,6 @@
   "permissions": ["tabs", "experimental"],
   "background": {
     "scripts": ["background.js"],
-    "transient": true
+    "persistent": false
   }
 }

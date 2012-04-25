@@ -1451,7 +1451,7 @@ bool Extension::LoadSharedFeatures(
       // LoadBackgroundScripts() must be called before LoadBackgroundPage().
       !LoadBackgroundScripts(error) ||
       !LoadBackgroundPage(api_permissions, error) ||
-      !LoadBackgroundTransient(api_permissions, error) ||
+      !LoadBackgroundPersistent(api_permissions, error) ||
       !LoadBackgroundAllowJSAccess(api_permissions, error) ||
       !LoadWebIntentServices(error))
     return false;
@@ -1873,22 +1873,22 @@ bool Extension::LoadBackgroundPage(
   return true;
 }
 
-bool Extension::LoadBackgroundTransient(
+bool Extension::LoadBackgroundPersistent(
     const ExtensionAPIPermissionSet& api_permissions,
     string16* error) {
-  Value* background_transient = NULL;
+  Value* background_persistent = NULL;
   if (!api_permissions.count(ExtensionAPIPermission::kExperimental) ||
-      !manifest_->Get(keys::kBackgroundTransient, &background_transient))
+      !manifest_->Get(keys::kBackgroundPersistent, &background_persistent))
     return true;
 
-  if (!background_transient->IsType(Value::TYPE_BOOLEAN) ||
-      !background_transient->GetAsBoolean(&background_page_is_transient_)) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundTransient);
+  if (!background_persistent->IsType(Value::TYPE_BOOLEAN) ||
+      !background_persistent->GetAsBoolean(&background_page_is_persistent_)) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistent);
     return false;
   }
 
   if (!has_background_page()) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundTransientNoPage);
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistentNoPage);
     return false;
   }
 
@@ -2812,7 +2812,7 @@ Extension::Extension(const FilePath& path,
       incognito_split_mode_(false),
       offline_enabled_(false),
       converted_from_user_script_(false),
-      background_page_is_transient_(false),
+      background_page_is_persistent_(true),
       allow_background_js_access_(true),
       manifest_(manifest.release()),
       is_storage_isolated_(false),

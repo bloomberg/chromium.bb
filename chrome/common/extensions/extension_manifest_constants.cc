@@ -12,7 +12,7 @@ const char kApp[] = "app";
 const char kBackgroundAllowJsAccess[] = "background.allow_js_access";
 const char kBackgroundPage[] = "background.page";
 const char kBackgroundPageLegacy[] = "background_page";
-const char kBackgroundTransient[] = "background.transient";
+const char kBackgroundPersistent[] = "background.persistent";
 const char kBackgroundScripts[] = "background.scripts";
 const char kBrowserAction[] = "browser_action";
 const char kChromeURLOverrides[] = "chrome_url_overrides";
@@ -197,11 +197,11 @@ const char kInvalidBackgroundScripts[] =
 const char kInvalidBackgroundInHostedApp[] =
     "Invalid value for 'background_page'. Hosted apps must specify an "
     "absolute HTTPS URL for the background page.";
-const char kInvalidBackgroundTransient[] =
-    "Invalid value for 'background.transient'.";
-const char kInvalidBackgroundTransientNoPage[] =
+const char kInvalidBackgroundPersistent[] =
+    "Invalid value for 'background.persistent'.";
+const char kInvalidBackgroundPersistentNoPage[] =
     "Must specify one of background.page or background.scripts to use"
-    " background.transient.";
+    " background.persistent.";
 const char kInvalidBrowserAction[] =
     "Invalid value for 'browser_action'.";
 const char kInvalidChromeURLOverrides[] =
