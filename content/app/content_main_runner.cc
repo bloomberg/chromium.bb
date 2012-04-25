@@ -34,6 +34,7 @@
 #include "sandbox/src/sandbox_types.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/base/win/dpi.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
@@ -420,6 +421,9 @@ class ContentMainRunnerImpl : public content::ContentMainRunner {
       SendTaskPortToParentProcess();
     }
 #elif defined(OS_WIN)
+#if defined(ENABLE_HIDPI)
+    ui::EnableHighDPISupport();
+#endif
     content::SetupCRT(command_line);
 #endif
 
