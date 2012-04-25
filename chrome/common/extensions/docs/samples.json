@@ -960,7 +960,7 @@
         "manager.js",
         "manifest.json"
       ],
-      "source_hash": "699c4bffce6b427dec806441036bbb2fe83076c7",
+      "source_hash": "ba293aede27026c1e0cdd233c8202a87e4fedf83",
       "zip_path": "examples\/api\/cookies.zip"
     },
     {
@@ -1085,7 +1085,7 @@
         "devtools.js",
         "manifest.json"
       ],
-      "source_hash": "0ced0f45a4369316e2f4402bdf9c85451be864b1",
+      "source_hash": "70f0bc407327ae3f6242f1f3b685799010a84aa9",
       "zip_path": "examples\/api\/devtools\/network\/chrome-firephp.zip"
     },
     {
@@ -2488,10 +2488,13 @@
         "chrome.browserAction.setBadgeText",
         "chrome.experimental.alarms.create",
         "chrome.experimental.alarms.onAlarm",
+        "chrome.experimental.keybinding.onCommand",
         "chrome.experimental.runtime.onBackgroundPageUnloadingSoon",
         "chrome.experimental.runtime.onInstalled",
+        "chrome.experimental.webRequest.onRequest",
         "chrome.extension.onMessage",
         "chrome.extension.sendMessage",
+        "chrome.tabs.create",
         "chrome.tabs.executeScript",
         "chrome.tabs.query",
         "chrome.tabs.sendMessage"
@@ -2503,6 +2506,7 @@
         "bookmarks",
         "browser_action",
         "experimental",
+        "keybinding",
         "tabs"
       ],
       "icon": null,
@@ -2513,13 +2517,13 @@
       "protocols": [
         "http:\/\/"
       ],
-      "search_string": "TRANSIENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE TRANSIENT PAGE BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL TABS CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXPERIMENTAL.ALARMS.CREATE CHROME.EXPERIMENTAL.ALARMS.ONALARM CHROME.EXPERIMENTAL.RUNTIME.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.EXPERIMENTAL.RUNTIME.ONINSTALLED CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
+      "search_string": "TRANSIENT PAGE EXAMPLE DEMONSTRATES USAGE AND FEATURES OF THE TRANSIENT PAGE BACKGROUND_PAGE BOOKMARKS BROWSER_ACTION EXPERIMENTAL KEYBINDING TABS CHROME.BOOKMARKS.ONREMOVED CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXPERIMENTAL.ALARMS.CREATE CHROME.EXPERIMENTAL.ALARMS.ONALARM CHROME.EXPERIMENTAL.KEYBINDING.ONCOMMAND CHROME.EXPERIMENTAL.RUNTIME.ONBACKGROUNDPAGEUNLOADINGSOON CHROME.EXPERIMENTAL.RUNTIME.ONINSTALLED CHROME.EXPERIMENTAL.WEBREQUEST.ONREQUEST CHROME.EXTENSION.ONMESSAGE CHROME.EXTENSION.SENDMESSAGE CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.QUERY CHROME.TABS.SENDMESSAGE",
       "source_files": [
         "background.js",
         "content.js",
         "manifest.json"
       ],
-      "source_hash": "7e9616c15e22991edf11d2a53e0e2a33977154ce",
+      "source_hash": "7c0a2bea158acda5c7a006af226b61a18ed91a40",
       "zip_path": "examples\/api\/transientPage\/basic.zip"
     },
     {

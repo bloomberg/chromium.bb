@@ -19,10 +19,19 @@ chrome.browserAction.setBadgeText({text: "ON"});
 console.log("Loaded.");
 
 chrome.experimental.runtime.onInstalled.addListener(function() {
+  console.log("Installed.");
+
   // localStorage is persisted, so it's a good place to keep state that you
   // need to persist across page reloads.
   localStorage.counter = 1;
-  console.log("Installed.");
+
+  // Register a webRequest rule to redirect bing to google.
+  var wr = chrome.experimental.webRequest;
+  chrome.experimental.webRequest.onRequest.addRules([{
+    id: "0",
+    conditions: [new wr.RequestMatcher({url: {hostSuffix: "bing.com"}})],
+    actions: [new wr.RedirectRequest({redirectUrl: "http://google.com"})]
+  }]);
 });
 
 chrome.bookmarks.onRemoved.addListener(function(id, info) {
@@ -39,6 +48,10 @@ chrome.browserAction.onClicked.addListener(function() {
     // another here.
     sendMessage();
   });
+});
+
+chrome.experimental.keybinding.onCommand.addListener(function(command) {
+  chrome.tabs.create({url: "http://www.google.com/"});
 });
 
 chrome.extension.onMessage.addListener(function(msg, _, sendResponse) {

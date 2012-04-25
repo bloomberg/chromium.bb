@@ -3,7 +3,7 @@
   "description": "Demonstrates usage and features of the transient page",
   "version": "1.0",
   "manifest_version": 2,
-  "permissions": ["tabs", "bookmarks", "experimental", "http://*.google.com/*"],
+  "permissions": ["tabs", "bookmarks", "experimental", "keybinding", "http://*.google.com/*"],
   "background": {
     "scripts": ["background.js"],
     "transient": true
@@ -11,5 +11,14 @@
   "browser_action": {
     "default_icon" : "icon.png",
     "default_title": "Start Transient Page"
+  },
+  "commands": {
+    "open-google": {
+      "description": "Open a tab to google.com",
+      "suggested_key": { "default": "Ctrl+Shift+L" }
+    },
+    "_execute_browser_action": {
+      "suggested_key": { "default": "Ctrl+Shift+K" }
+    }
   }
 }
