@@ -109,6 +109,7 @@ hr.bottom {
 #header span,
 #user-image-screen-curtain p,
 .label,
+.flexible-label,
 .menu-control {
   cursor: default;
 }
@@ -235,11 +236,19 @@ html[dir=rtl]  .step.left {
   width: 250px;
 }
 
-.label {
+.label,
+.flexible-label {
   display: block;
   margin: 5px 5px 5px 0;
   padding: 5px 5px 5px 0;
+}
+
+.label {
   width: 170px;
+}
+
+.flexible-label {
+  max-width: 250px;
 }
 
 #connect {

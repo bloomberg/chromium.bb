@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -331,6 +332,8 @@ void SigninScreenHandler::GetLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE));
   localized_strings->SetString("captivePortalMessage",
       l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL));
+  localized_strings->SetString("captivePortalProxyMessage",
+      l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_PROXY));
   localized_strings->SetString("captivePortalNetworkSelect",
       l10n_util::GetStringUTF16(IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_NETWORK_SELECT));
   localized_strings->SetString("proxyMessageText",
@@ -475,6 +478,9 @@ void SigninScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("networkErrorShown",
       base::Bind(&SigninScreenHandler::HandleNetworkErrorShown,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("openProxySettings",
+      base::Bind(&SigninScreenHandler::HandleOpenProxySettings,
                  base::Unretained(this)));
 }
 
@@ -968,6 +974,10 @@ void SigninScreenHandler::HandleCreateAccount(const base::ListValue* args) {
   if (!delegate_)
     return;
   delegate_->CreateAccount();
+}
+
+void SigninScreenHandler::HandleOpenProxySettings(const base::ListValue* args) {
+  BaseLoginDisplayHost::default_host()->OpenProxySettings();
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {

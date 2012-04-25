@@ -17,6 +17,10 @@
   display: block;
 }
 
+#captive-portal-proxy-message-text {
+  margin-top: 20px;
+}
+
 #captive-portal-network-select-text {
   margin-top: 20px;
 }
@@ -31,6 +35,10 @@
 .show-captive-portal .show-with-captive-portal,
 .show-proxy-error .show-with-proxy-error {
   display: block;
+}
+
+.show-captive-portal .dont-show-with-captive-portal {
+  display: none;
 }
 
 #error-guest-signin,

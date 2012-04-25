@@ -201,6 +201,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   void HandleSignOutUser(const base::ListValue* args);
   void HandleUserImagesLoaded(const base::ListValue* args);
   void HandleNetworkErrorShown(const base::ListValue* args);
+  void HandleOpenProxySettings(const base::ListValue* args);
 
   // Sends user list to account picker.
   void SendUserList(bool animated);

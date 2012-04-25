@@ -34,6 +34,8 @@ cr.define('login', function() {
   // Link which starts guest session for captive portal fixing.
   /** @const */ var FIX_CAPTIVE_PORTAL_ID = 'captive-portal-fix-link';
 
+  /** @const */ var FIX_PROXY_SETTINGS_ID = 'proxy-settings-fix-link';
+
   // Id of the element which holds current network name.
   /** @const */ var CURRENT_NETWORK_NAME_ID = 'captive-portal-network-name';
 
@@ -81,6 +83,15 @@ cr.define('login', function() {
         '</a>');
       $(FIX_CAPTIVE_PORTAL_ID).onclick = function() {
         chrome.send('showCaptivePortal');
+      };
+
+      $('captive-portal-proxy-message-text').innerHTML =
+        localStrings.getStringF(
+          'captivePortalProxyMessage',
+          '<a id="' + FIX_PROXY_SETTINGS_ID + '" class="signin-link" href="#">',
+          '</a>');
+      $(FIX_PROXY_SETTINGS_ID).onclick = function() {
+        chrome.send('openProxySettings');
       };
 
       $('proxy-message-text').innerHTML = localStrings.getStringF(

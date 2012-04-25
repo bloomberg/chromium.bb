@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,8 @@ void NetworkDropdownHandler::GetLocalizedStrings(
     base::DictionaryValue* localized_strings) {
   localized_strings->SetString("selectNetwork",
       l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT));
+  localized_strings->SetString("selectAnotherNetwork",
+      l10n_util::GetStringUTF16(IDS_ANOTHER_NETWORK_SELECTION_SELECT));
 }
 
 void NetworkDropdownHandler::Initialize() {
