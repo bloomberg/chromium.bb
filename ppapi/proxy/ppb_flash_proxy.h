@@ -16,8 +16,9 @@
 #include "ppapi/c/pp_time.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/host_resource.h"
-#include "ppapi/thunk/ppb_flash_api.h"
+#include "ppapi/shared_impl/ppb_flash_shared.h"
 
 namespace ppapi {
 
@@ -28,8 +29,7 @@ namespace proxy {
 struct PPBFlash_DrawGlyphs_Params;
 class SerializedVarReturnValue;
 
-class PPB_Flash_Proxy : public InterfaceProxy,
-                        public thunk::PPB_Flash_API {
+class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
  public:
   explicit PPB_Flash_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_Flash_Proxy();
@@ -65,6 +65,18 @@ class PPB_Flash_Proxy : public InterfaceProxy,
   virtual int32_t InvokePrinting(PP_Instance instance) OVERRIDE;
   virtual void UpdateActivity(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetDeviceID(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool IsClipboardFormatAvailable(
+      PP_Instance instance,
+      PP_Flash_Clipboard_Type clipboard_type,
+      PP_Flash_Clipboard_Format format) OVERRIDE;
+  virtual PP_Var ReadClipboardData(PP_Instance instance,
+                                   PP_Flash_Clipboard_Type clipboard_type,
+                                   PP_Flash_Clipboard_Format format) OVERRIDE;
+  virtual int32_t WriteClipboardData(PP_Instance instance,
+                                     PP_Flash_Clipboard_Type clipboard_type,
+                                     uint32_t data_item_count,
+                                     const PP_Flash_Clipboard_Format formats[],
+                                     const PP_Var data_items[]) OVERRIDE;
   virtual PP_Bool FlashIsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Bool FlashSetFullscreen(PP_Instance instance,
                                      PP_Bool fullscreen) OVERRIDE;
@@ -77,7 +89,8 @@ class PPB_Flash_Proxy : public InterfaceProxy,
   // Message handlers.
   void OnHostMsgSetInstanceAlwaysOnTop(PP_Instance instance,
                                        PP_Bool on_top);
-  void OnHostMsgDrawGlyphs(const PPBFlash_DrawGlyphs_Params& params,
+  void OnHostMsgDrawGlyphs(PP_Instance instance,
+                           const PPBFlash_DrawGlyphs_Params& params,
                            PP_Bool* result);
   void OnHostMsgGetProxyForURL(PP_Instance instance,
                                const std::string& url,
@@ -100,11 +113,18 @@ class PPB_Flash_Proxy : public InterfaceProxy,
   void OnHostMsgFlashGetScreenSize(PP_Instance instance,
                                    PP_Bool* result,
                                    PP_Size* size);
-
-  // When this proxy is in the host side, this value caches the interface
-  // pointer so we don't have to retrieve it from the dispatcher each time.
-  // In the plugin, this value is always NULL.
-  const PPB_Flash* ppb_flash_impl_;
+  void OnHostMsgIsClipboardFormatAvailable(PP_Instance instance,
+                                           int clipboard_type,
+                                           int format,
+                                           bool* result);
+  void OnHostMsgReadClipboardData(PP_Instance instance,
+                                  int clipboard_type,
+                                  int format,
+                                  SerializedVarReturnValue result);
+  void OnHostMsgWriteClipboardData(PP_Instance instance,
+                                   int clipboard_type,
+                                   const std::vector<int>& formats,
+                                   SerializedVarVectorReceiveInput data_items);
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Proxy);
 };

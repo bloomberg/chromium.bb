@@ -6,6 +6,7 @@
 #define PPAPI_THUNK_PPB_FLASH_API_H_
 
 #include "ppapi/c/private/ppb_flash.h"
+#include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
 namespace ppapi {
@@ -41,6 +42,20 @@ class PPAPI_THUNK_EXPORT PPB_Flash_API {
   virtual int32_t InvokePrinting(PP_Instance instance) = 0;
   virtual void UpdateActivity(PP_Instance instance) = 0;
   virtual PP_Var GetDeviceID(PP_Instance instance) = 0;
+
+  // FlashClipboard.
+  virtual PP_Bool IsClipboardFormatAvailable(
+      PP_Instance instance,
+      PP_Flash_Clipboard_Type clipboard_type,
+      PP_Flash_Clipboard_Format format) = 0;
+  virtual PP_Var ReadClipboardData(PP_Instance instance,
+                                   PP_Flash_Clipboard_Type clipboard_type,
+                                   PP_Flash_Clipboard_Format format) = 0;
+  virtual int32_t WriteClipboardData(PP_Instance instance,
+                                     PP_Flash_Clipboard_Type clipboard_type,
+                                     uint32_t data_item_count,
+                                     const PP_Flash_Clipboard_Format formats[],
+                                     const PP_Var data_items[]) = 0;
 
   // FlashFullscreen.
   virtual PP_Bool FlashIsFullscreen(PP_Instance instance) = 0;

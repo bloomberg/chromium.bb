@@ -7,15 +7,22 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
-#include "ppapi/thunk/ppb_flash_api.h"
+#include "ppapi/shared_impl/ppb_flash_shared.h"
+
+class ScopedClipboardWriterGlue;
+
+namespace webkit_glue {
+class ClipboardClient;
+}
 
 namespace webkit {
 namespace ppapi {
 
 class PluginInstance;
 
-class PPB_Flash_Impl : public ::ppapi::thunk::PPB_Flash_API {
+class PPB_Flash_Impl : public ::ppapi::PPB_Flash_Shared {
  public:
   explicit PPB_Flash_Impl(PluginInstance* instance);
   virtual ~PPB_Flash_Impl();
@@ -48,6 +55,18 @@ class PPB_Flash_Impl : public ::ppapi::thunk::PPB_Flash_API {
   virtual int32_t InvokePrinting(PP_Instance instance) OVERRIDE;
   virtual void UpdateActivity(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetDeviceID(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool IsClipboardFormatAvailable(
+      PP_Instance instance,
+      PP_Flash_Clipboard_Type clipboard_type,
+      PP_Flash_Clipboard_Format format) OVERRIDE;
+  virtual PP_Var ReadClipboardData(PP_Instance instance,
+                                   PP_Flash_Clipboard_Type clipboard_type,
+                                   PP_Flash_Clipboard_Format format) OVERRIDE;
+  virtual int32_t WriteClipboardData(PP_Instance instance,
+                                     PP_Flash_Clipboard_Type clipboard_type,
+                                     uint32_t data_item_count,
+                                     const PP_Flash_Clipboard_Format formats[],
+                                     const PP_Var data_items[]) OVERRIDE;
   virtual PP_Bool FlashIsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Bool FlashSetFullscreen(PP_Instance instance,
                                      PP_Bool fullscreen) OVERRIDE;
@@ -55,7 +74,18 @@ class PPB_Flash_Impl : public ::ppapi::thunk::PPB_Flash_API {
                                      PP_Size* size) OVERRIDE;
 
  private:
+  // Call to ensure that the clipboard_client is properly initialized. Returns
+  // true on success. On failure, you should not use the client.
+  bool InitClipboard();
+
+  int32_t WriteClipboardDataItem(const PP_Flash_Clipboard_Format format,
+                                 const PP_Var& data,
+                                 ScopedClipboardWriterGlue* scw);
+
   PluginInstance* instance_;
+
+  // This object is lazily created by InitClipboard.
+  scoped_ptr<webkit_glue::ClipboardClient> clipboard_client_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Impl);
 };

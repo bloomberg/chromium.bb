@@ -79,7 +79,6 @@
 #include "ppapi/proxy/ppb_file_io_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
-#include "ppapi/proxy/ppb_flash_clipboard_proxy.h"
 #include "ppapi/proxy/ppb_flash_file_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
@@ -305,15 +304,6 @@ const void* InterfaceList::GetInterfaceForPPP(const std::string& name) const {
 
 #if !defined(OS_NACL)
 void InterfaceList::AddFlashInterfaces() {
-  AddProxy(API_ID_PPB_FLASH_CLIPBOARD,
-           &ProxyFactory<PPB_Flash_Clipboard_Proxy>);
-  AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE_4_0, API_ID_PPB_FLASH_CLIPBOARD,
-         thunk::GetPPB_Flash_Clipboard_4_0_Thunk());
-  AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE_3_0, API_ID_PPB_FLASH_CLIPBOARD,
-         thunk::GetPPB_Flash_Clipboard_3_0_Thunk());
-  AddPPB(PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY, API_ID_PPB_FLASH_CLIPBOARD,
-         thunk::GetPPB_Flash_Clipboard_3_0_Thunk());
-
   AddProxy(API_ID_PPB_FLASH_FILE_FILEREF,
            &ProxyFactory<PPB_Flash_File_FileRef_Proxy>);
   AddPPB(PPB_FLASH_FILE_FILEREF_INTERFACE, API_ID_PPB_FLASH_FILE_FILEREF,

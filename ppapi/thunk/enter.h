@@ -262,6 +262,13 @@ class PPAPI_THUNK_EXPORT EnterInstance
   ~EnterInstance();
 };
 
+class PPAPI_THUNK_EXPORT EnterInstanceNoLock
+    : public EnterFunctionNoLock<PPB_Instance_FunctionAPI> {
+ public:
+  EnterInstanceNoLock(PP_Instance instance);
+  ~EnterInstanceNoLock();
+};
+
 }  // namespace thunk
 }  // namespace ppapi
 

@@ -22,4 +22,14 @@ PROXIED_IFACE(PPB_Flash,
               PPB_FLASH_INTERFACE_12_2,
               PPB_Flash_12_2)
 
+PROXIED_IFACE(PPB_Flash,
+              PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY,
+              PPB_Flash_Clipboard_3_0)
+PROXIED_IFACE(PPB_Flash,
+              PPB_FLASH_CLIPBOARD_INTERFACE_3_0,
+              PPB_Flash_Clipboard_3_0)
+PROXIED_IFACE(PPB_Flash,
+              PPB_FLASH_CLIPBOARD_INTERFACE_4_0,
+              PPB_Flash_Clipboard_4_0)
+
 #include "ppapi/thunk/interfaces_postamble.h"

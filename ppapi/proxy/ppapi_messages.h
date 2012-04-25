@@ -1141,8 +1141,9 @@ IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
                     PP_Bool /* on_top */)
 // This has to be synchronous becuase the caller may want to composite on
 // top of the resulting text after the call is complete.
-IPC_SYNC_MESSAGE_ROUTED1_1(
+IPC_SYNC_MESSAGE_ROUTED2_1(
     PpapiHostMsg_PPBFlash_DrawGlyphs,
+    PP_Instance /* instance */,
     ppapi::proxy::PPBFlash_DrawGlyphs_Params /* params */,
     PP_Bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlash_GetProxyForURL,
@@ -1178,19 +1179,17 @@ IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBFlash_FlashGetScreenSize,
 IPC_MESSAGE_ROUTED0(PpapiHostMsg_PPBFlash_UpdateActivity)
 IPC_SYNC_MESSAGE_ROUTED0_1(PpapiHostMsg_PPBFlash_GetDeviceID,
                            std::string /* id */)
-
-// PPB_Flash_Clipboard.
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlashClipboard_IsFormatAvailable,
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_IsClipboardFormatAvailable,
                            PP_Instance /* instance */,
                            int /* clipboard_type */,
                            int /* format */,
                            bool /* result */)
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlashClipboard_ReadData,
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFlash_ReadClipboardData,
                            PP_Instance /* instance */,
                            int /* clipboard_type */,
                            int /* format */,
                            ppapi::proxy::SerializedVar /* result */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFlashClipboard_WriteData,
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFlash_WriteClipboardData,
                     PP_Instance /* instance */,
                     int /* clipboard_type */,
                     std::vector<int> /* formats */,

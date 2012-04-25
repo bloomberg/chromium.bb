@@ -1,0 +1,30 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef PPAPI_SHARED_IMPL_PPB_FLASH_SHARED_H_
+#define PPAPI_SHARED_IMPL_PPB_FLASH_SHARED_H_
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "ppapi/shared_impl/ppapi_shared_export.h"
+#include "ppapi/thunk/ppb_flash_api.h"
+
+namespace ppapi {
+
+class PPAPI_SHARED_EXPORT PPB_Flash_Shared : public thunk::PPB_Flash_API {
+ public:
+  PPB_Flash_Shared();
+  virtual ~PPB_Flash_Shared();
+
+ protected:
+  static bool IsValidClipboardType(PP_Flash_Clipboard_Type clipboard_type);
+  static bool IsValidClipboardFormat(PP_Flash_Clipboard_Format format);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PPB_Flash_Shared);
+};
+
+}  // namespace ppapi
+
+#endif  // PPAPI_SHARED_IMPL_PPB_FLASH_SHARED_H_

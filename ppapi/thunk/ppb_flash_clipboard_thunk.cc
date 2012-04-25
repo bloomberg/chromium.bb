@@ -6,31 +6,31 @@
 #include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
-#include "ppapi/thunk/ppb_flash_clipboard_api.h"
+#include "ppapi/thunk/ppb_flash_api.h"
 
 namespace ppapi {
 namespace thunk {
 
 namespace {
 
-typedef EnterFunction<PPB_Flash_Clipboard_FunctionAPI> EnterFlashClipboard;
-
 PP_Bool IsFormatAvailable(PP_Instance instance,
                           PP_Flash_Clipboard_Type clipboard_type,
                           PP_Flash_Clipboard_Format format) {
-  EnterFlashClipboard enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_FALSE;
-  return enter.functions()->IsFormatAvailable(instance, clipboard_type, format);
+  return enter.functions()->GetFlashAPI()->IsClipboardFormatAvailable(
+      instance, clipboard_type, format);
 }
 
 PP_Var ReadData(PP_Instance instance,
                 PP_Flash_Clipboard_Type clipboard_type,
                 PP_Flash_Clipboard_Format format) {
-  EnterFlashClipboard enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return PP_MakeUndefined();
-  return enter.functions()->ReadData(instance, clipboard_type, format);
+  return enter.functions()->GetFlashAPI()->ReadClipboardData(
+      instance, clipboard_type, format);
 }
 
 int32_t WriteData(PP_Instance instance,
@@ -38,14 +38,11 @@ int32_t WriteData(PP_Instance instance,
                   uint32_t data_item_count,
                   const PP_Flash_Clipboard_Format formats[],
                   const PP_Var data_items[]) {
-  EnterFlashClipboard enter(instance, true);
+  EnterInstance enter(instance);
   if (enter.failed())
     return enter.retval();
-  return enter.functions()->WriteData(instance,
-                                      clipboard_type,
-                                      data_item_count,
-                                      formats,
-                                      data_items);
+  return enter.functions()->GetFlashAPI()->WriteClipboardData(
+      instance, clipboard_type, data_item_count, formats, data_items);
 }
 
 PP_Var ReadPlainText(PP_Instance instance,

@@ -163,5 +163,12 @@ EnterInstance::EnterInstance(PP_Instance instance,
 EnterInstance::~EnterInstance() {
 }
 
+EnterInstanceNoLock::EnterInstanceNoLock(PP_Instance instance)
+    : EnterFunctionNoLock<PPB_Instance_FunctionAPI>(instance, true) {
+}
+
+EnterInstanceNoLock::~EnterInstanceNoLock() {
+}
+
 }  // namespace thunk
 }  // namespace ppapi

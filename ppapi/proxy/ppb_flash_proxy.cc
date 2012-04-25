@@ -30,15 +30,13 @@
 #include "ppapi/thunk/ppb_url_request_info_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
 
+using ppapi::thunk::EnterInstanceNoLock;
+
 namespace ppapi {
 namespace proxy {
 
 PPB_Flash_Proxy::PPB_Flash_Proxy(Dispatcher* dispatcher)
-    : InterfaceProxy(dispatcher),
-      ppb_flash_impl_(NULL) {
-  if (!dispatcher->IsPlugin())
-    ppb_flash_impl_ = static_cast<const PPB_Flash*>(
-        dispatcher->local_get_interface()(PPB_FLASH_INTERFACE));
+    : InterfaceProxy(dispatcher) {
 }
 
 PPB_Flash_Proxy::~PPB_Flash_Proxy() {
@@ -71,6 +69,12 @@ bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgFlashSetFullscreen)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_FlashGetScreenSize,
                         OnHostMsgFlashGetScreenSize)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_IsClipboardFormatAvailable,
+                        OnHostMsgIsClipboardFormatAvailable)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_ReadClipboardData,
+                        OnHostMsgReadClipboardData)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_WriteClipboardData,
+                        OnHostMsgWriteClipboardData)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
@@ -124,7 +128,7 @@ PP_Bool PPB_Flash_Proxy::DrawGlyphs(PP_Instance instance,
 
   PP_Bool result = PP_FALSE;
   dispatcher()->Send(new PpapiHostMsg_PPBFlash_DrawGlyphs(
-      API_ID_PPB_FLASH, params, &result));
+      API_ID_PPB_FLASH, instance, params, &result));
   return result;
 }
 
@@ -202,6 +206,68 @@ PP_Var PPB_Flash_Proxy::GetDeviceID(PP_Instance instance) {
   return StringVar::StringToPPVar(id);
 }
 
+PP_Bool PPB_Flash_Proxy::IsClipboardFormatAvailable(
+    PP_Instance instance,
+    PP_Flash_Clipboard_Type clipboard_type,
+    PP_Flash_Clipboard_Format format) {
+  if (!IsValidClipboardType(clipboard_type) || !IsValidClipboardFormat(format))
+    return PP_FALSE;
+
+  bool result = false;
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_IsClipboardFormatAvailable(
+      API_ID_PPB_FLASH,
+      instance,
+      static_cast<int>(clipboard_type),
+      static_cast<int>(format),
+      &result));
+  return PP_FromBool(result);
+}
+
+PP_Var PPB_Flash_Proxy::ReadClipboardData(
+    PP_Instance instance,
+    PP_Flash_Clipboard_Type clipboard_type,
+    PP_Flash_Clipboard_Format format) {
+  if (!IsValidClipboardType(clipboard_type) || !IsValidClipboardFormat(format))
+    return PP_MakeUndefined();
+
+  ReceiveSerializedVarReturnValue result;
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_ReadClipboardData(
+      API_ID_PPB_FLASH, instance,
+      static_cast<int>(clipboard_type), static_cast<int>(format), &result));
+  return result.Return(dispatcher());
+}
+
+int32_t PPB_Flash_Proxy::WriteClipboardData(
+    PP_Instance instance,
+    PP_Flash_Clipboard_Type clipboard_type,
+    uint32_t data_item_count,
+    const PP_Flash_Clipboard_Format formats[],
+    const PP_Var data_items[]) {
+  if (!IsValidClipboardType(clipboard_type))
+    return PP_ERROR_BADARGUMENT;
+
+  std::vector<SerializedVar> data_items_vector;
+  SerializedVarSendInput::ConvertVector(
+      dispatcher(),
+      data_items,
+      data_item_count,
+      &data_items_vector);
+  for (size_t i = 0; i < data_item_count; ++i) {
+    if (!IsValidClipboardFormat(formats[i]))
+      return PP_ERROR_BADARGUMENT;
+  }
+
+  std::vector<int> formats_vector(formats, formats + data_item_count);
+  dispatcher()->Send(new PpapiHostMsg_PPBFlash_WriteClipboardData(
+      API_ID_PPB_FLASH,
+      instance,
+      static_cast<int>(clipboard_type),
+      formats_vector,
+      data_items_vector));
+  // Assume success, since it allows us to avoid a sync IPC.
+  return PP_OK;
+}
+
 PP_Bool PPB_Flash_Proxy::FlashIsFullscreen(PP_Instance instance) {
   InstanceData* data = static_cast<PluginDispatcher*>(dispatcher())->
       GetInstanceData(instance);
@@ -228,13 +294,19 @@ PP_Bool PPB_Flash_Proxy::FlashGetScreenSize(PP_Instance instance,
 
 void PPB_Flash_Proxy::OnHostMsgSetInstanceAlwaysOnTop(PP_Instance instance,
                                                       PP_Bool on_top) {
-  ppb_flash_impl_->SetInstanceAlwaysOnTop(instance, on_top);
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->GetFlashAPI()->SetInstanceAlwaysOnTop(instance, on_top);
 }
 
 void PPB_Flash_Proxy::OnHostMsgDrawGlyphs(
+    PP_Instance instance,
     const PPBFlash_DrawGlyphs_Params& params,
     PP_Bool* result) {
   *result = PP_FALSE;
+  EnterInstanceNoLock enter(instance);
+  if (enter.failed())
+    return;
 
   PP_FontDescription_Dev font_desc;
   params.font_desc.SetToPPFontDescription(dispatcher(), &font_desc, false);
@@ -243,7 +315,7 @@ void PPB_Flash_Proxy::OnHostMsgDrawGlyphs(
       params.glyph_indices.empty())
     return;
 
-  *result = ppb_flash_impl_->DrawGlyphs(
+  *result = enter.functions()->GetFlashAPI()->DrawGlyphs(
       0,  // Unused instance param.
       params.image_data.host_resource(), &font_desc,
       params.color, &params.position, &params.clip,
@@ -257,8 +329,14 @@ void PPB_Flash_Proxy::OnHostMsgDrawGlyphs(
 void PPB_Flash_Proxy::OnHostMsgGetProxyForURL(PP_Instance instance,
                                               const std::string& url,
                                               SerializedVarReturnValue result) {
-  result.Return(dispatcher(), ppb_flash_impl_->GetProxyForURL(
-      instance, url.c_str()));
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    result.Return(dispatcher(),
+                  enter.functions()->GetFlashAPI()->GetProxyForURL(
+                      instance, url.c_str()));
+  } else {
+    result.Return(dispatcher(), PP_MakeUndefined());
+  }
 }
 
 void PPB_Flash_Proxy::OnHostMsgNavigate(PP_Instance instance,
@@ -266,6 +344,11 @@ void PPB_Flash_Proxy::OnHostMsgNavigate(PP_Instance instance,
                                         const std::string& target,
                                         PP_Bool from_user_action,
                                         int32_t* result) {
+  EnterInstanceNoLock enter_instance(instance);
+  if (enter_instance.failed()) {
+    *result = PP_ERROR_BADARGUMENT;
+    return;
+  }
   DCHECK(!dispatcher()->IsPlugin());
 
   // Validate the PP_Instance since we'll be constructing resources on its
@@ -294,51 +377,127 @@ void PPB_Flash_Proxy::OnHostMsgNavigate(PP_Instance instance,
       ScopedPPResource::PassRef(),
       enter.functions()->CreateURLRequestInfo(instance, data));
 
-  *result = ppb_flash_impl_->Navigate(request_resource,
-                                      target.c_str(),
-                                      from_user_action);
+  *result = enter_instance.functions()->GetFlashAPI()->Navigate(
+      instance, request_resource, target.c_str(), from_user_action);
 }
 
 void PPB_Flash_Proxy::OnHostMsgRunMessageLoop(PP_Instance instance) {
-  ppb_flash_impl_->RunMessageLoop(instance);
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->GetFlashAPI()->RunMessageLoop(instance);
 }
 
 void PPB_Flash_Proxy::OnHostMsgQuitMessageLoop(PP_Instance instance) {
-  ppb_flash_impl_->QuitMessageLoop(instance);
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    enter.functions()->GetFlashAPI()->QuitMessageLoop(instance);
 }
 
 void PPB_Flash_Proxy::OnHostMsgGetLocalTimeZoneOffset(PP_Instance instance,
                                                   PP_Time t,
                                                   double* result) {
-  *result = ppb_flash_impl_->GetLocalTimeZoneOffset(instance, t);
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    *result = enter.functions()->GetFlashAPI()->GetLocalTimeZoneOffset(
+        instance, t);
+  } else {
+    *result = 0.0;
+  }
 }
 
 void PPB_Flash_Proxy::OnHostMsgIsRectTopmost(PP_Instance instance,
                                              PP_Rect rect,
                                              PP_Bool* result) {
-  *result = ppb_flash_impl_->IsRectTopmost(instance, &rect);
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded())
+    *result = enter.functions()->GetFlashAPI()->IsRectTopmost(instance, &rect);
+  else
+    *result = PP_FALSE;
 }
 
 void PPB_Flash_Proxy::OnHostMsgFlashSetFullscreen(PP_Instance instance,
                                                   PP_Bool fullscreen,
                                                   PP_Bool* result) {
-  thunk::EnterFunctionNoLock<thunk::PPB_Instance_FunctionAPI> enter(
-      instance, false);
-  if (enter.failed())
-    return;
-  *result = enter.functions()->GetFlashAPI()->FlashSetFullscreen(
-      instance, fullscreen);
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    *result = enter.functions()->GetFlashAPI()->FlashSetFullscreen(
+        instance, fullscreen);
+  } else {
+    *result = PP_FALSE;
+  }
 }
 
 void PPB_Flash_Proxy::OnHostMsgFlashGetScreenSize(PP_Instance instance,
                                                   PP_Bool* result,
                                                   PP_Size* size) {
-  thunk::EnterFunctionNoLock<thunk::PPB_Instance_FunctionAPI> enter(
-      instance, false);
-  if (enter.failed())
-    return;
-  *result = enter.functions()->GetFlashAPI()->FlashGetScreenSize(
-      instance, size);
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    *result = enter.functions()->GetFlashAPI()->FlashGetScreenSize(
+        instance, size);
+  } else {
+    size->width = 0;
+    size->height = 0;
+  }
+}
+
+void PPB_Flash_Proxy::OnHostMsgIsClipboardFormatAvailable(
+    PP_Instance instance,
+    int clipboard_type,
+    int format,
+    bool* result) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    *result = PP_ToBool(
+        enter.functions()->GetFlashAPI()->IsClipboardFormatAvailable(
+            instance,
+            static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
+            static_cast<PP_Flash_Clipboard_Format>(format)));
+  } else {
+    *result = false;
+  }
+}
+
+void PPB_Flash_Proxy::OnHostMsgReadClipboardData(
+    PP_Instance instance,
+    int clipboard_type,
+    int format,
+    SerializedVarReturnValue result) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    result.Return(dispatcher(),
+                  enter.functions()->GetFlashAPI()->ReadClipboardData(
+                      instance,
+                      static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
+                      static_cast<PP_Flash_Clipboard_Format>(format)));
+  }
+}
+
+void PPB_Flash_Proxy::OnHostMsgWriteClipboardData(
+    PP_Instance instance,
+    int clipboard_type,
+    const std::vector<int>& formats,
+    SerializedVarVectorReceiveInput data_items) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    uint32_t data_item_count;
+    PP_Var* data_items_array = data_items.Get(dispatcher(), &data_item_count);
+    CHECK(data_item_count == formats.size());
+
+    scoped_array<PP_Flash_Clipboard_Format> formats_array(
+        new PP_Flash_Clipboard_Format[formats.size()]);
+    for (uint32_t i = 0; i < formats.size(); ++i)
+      formats_array[i] = static_cast<PP_Flash_Clipboard_Format>(formats[i]);
+
+    int32_t result = enter.functions()->GetFlashAPI()->WriteClipboardData(
+        instance,
+        static_cast<PP_Flash_Clipboard_Type>(clipboard_type),
+        data_item_count,
+        formats_array.get(),
+        data_items_array);
+    DLOG_IF(WARNING, result != PP_OK)
+        << "Write to clipboard failed unexpectedly.";
+    (void)result;  // Prevent warning in release mode.
+  }
 }
 
 }  // namespace proxy

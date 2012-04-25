@@ -109,7 +109,6 @@
 #include "webkit/plugins/ppapi/ppapi_interface_factory.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
-#include "webkit/plugins/ppapi/ppb_flash_clipboard_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_file_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_impl.h"
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
@@ -311,12 +310,6 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_BufferTrusted_0_1_Thunk();
   if (strcmp(name, PPB_CORE_INTERFACE_1_0) == 0)
     return &core_interface;
-  if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE_4_0) == 0)
-    return ::ppapi::thunk::GetPPB_Flash_Clipboard_4_0_Thunk();
-  if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE_3_0) == 0)
-    return ::ppapi::thunk::GetPPB_Flash_Clipboard_3_0_Thunk();
-  if (strcmp(name, PPB_FLASH_CLIPBOARD_INTERFACE_3_LEGACY) == 0)
-    return ::ppapi::thunk::GetPPB_Flash_Clipboard_3_0_Thunk();
   if (strcmp(name, PPB_FLASH_FILE_FILEREF_INTERFACE) == 0)
     return PPB_Flash_File_FileRef_Impl::GetInterface();
   if (strcmp(name, PPB_FLASH_FILE_MODULELOCAL_INTERFACE) == 0)

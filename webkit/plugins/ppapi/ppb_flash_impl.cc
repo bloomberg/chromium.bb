@@ -9,6 +9,7 @@
 
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/private/ppb_flash.h"
@@ -24,6 +25,8 @@
 #include "third_party/skia/include/core/SkTemplates.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/rect.h"
+#include "webkit/glue/clipboard_client.h"
+#include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/host_globals.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
@@ -41,6 +44,24 @@ using ppapi::thunk::PPB_URLRequestInfo_API;
 
 namespace webkit {
 namespace ppapi {
+
+namespace {
+
+const size_t kMaxClipboardWriteSize = 1000000;
+
+ui::Clipboard::Buffer ConvertClipboardType(
+    PP_Flash_Clipboard_Type type) {
+  switch (type) {
+    case PP_FLASH_CLIPBOARD_TYPE_STANDARD:
+      return ui::Clipboard::BUFFER_STANDARD;
+    case PP_FLASH_CLIPBOARD_TYPE_SELECTION:
+      return ui::Clipboard::BUFFER_SELECTION;
+  }
+  NOTREACHED();
+  return ui::Clipboard::BUFFER_STANDARD;
+}
+
+}  // namespace
 
 PPB_Flash_Impl::PPB_Flash_Impl(PluginInstance* instance)
     : instance_(instance) {
@@ -218,6 +239,133 @@ PP_Var PPB_Flash_Impl::GetDeviceID(PP_Instance pp_instance) {
   return PP_MakeUndefined();
 }
 
+PP_Bool PPB_Flash_Impl::IsClipboardFormatAvailable(
+    PP_Instance instance,
+    PP_Flash_Clipboard_Type clipboard_type,
+    PP_Flash_Clipboard_Format format) {
+  if (!InitClipboard())
+    return PP_FALSE;
+
+  if (clipboard_type != PP_FLASH_CLIPBOARD_TYPE_STANDARD) {
+    NOTIMPLEMENTED();
+    return PP_FALSE;
+  }
+
+  ui::Clipboard::Buffer buffer_type = ConvertClipboardType(clipboard_type);
+  switch (format) {
+    case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT: {
+      bool plain = clipboard_client_->IsFormatAvailable(
+          ui::Clipboard::GetPlainTextFormatType(), buffer_type);
+      bool plainw = clipboard_client_->IsFormatAvailable(
+          ui::Clipboard::GetPlainTextWFormatType(), buffer_type);
+      return BoolToPPBool(plain || plainw);
+    }
+    case PP_FLASH_CLIPBOARD_FORMAT_HTML:
+      return BoolToPPBool(clipboard_client_->IsFormatAvailable(
+          ui::Clipboard::GetHtmlFormatType(), buffer_type));
+    case PP_FLASH_CLIPBOARD_FORMAT_RTF:
+      return BoolToPPBool(clipboard_client_->IsFormatAvailable(
+          ui::Clipboard::GetRtfFormatType(), buffer_type));
+    case PP_FLASH_CLIPBOARD_FORMAT_INVALID:
+      break;
+  }
+
+  return PP_FALSE;
+}
+
+PP_Var PPB_Flash_Impl::ReadClipboardData(
+    PP_Instance instance,
+    PP_Flash_Clipboard_Type clipboard_type,
+    PP_Flash_Clipboard_Format format) {
+  if (!InitClipboard())
+    return PP_MakeUndefined();
+
+  if (clipboard_type != PP_FLASH_CLIPBOARD_TYPE_STANDARD) {
+    NOTIMPLEMENTED();
+    return PP_MakeUndefined();
+  }
+
+  if (!IsClipboardFormatAvailable(instance, clipboard_type, format))
+    return PP_MakeNull();
+
+  ui::Clipboard::Buffer buffer_type = ConvertClipboardType(clipboard_type);
+
+  switch (format) {
+    case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT: {
+      if (clipboard_client_->IsFormatAvailable(
+              ui::Clipboard::GetPlainTextWFormatType(), buffer_type)) {
+        string16 text;
+        clipboard_client_->ReadText(buffer_type, &text);
+        if (!text.empty())
+          return StringVar::StringToPPVar(UTF16ToUTF8(text));
+      }
+
+      if (clipboard_client_->IsFormatAvailable(
+              ui::Clipboard::GetPlainTextFormatType(), buffer_type)) {
+        std::string text;
+        clipboard_client_->ReadAsciiText(buffer_type, &text);
+        if (!text.empty())
+          return StringVar::StringToPPVar(text);
+      }
+
+      return PP_MakeNull();
+    }
+    case PP_FLASH_CLIPBOARD_FORMAT_HTML: {
+      string16 html_stdstr;
+      GURL gurl;
+      uint32 fragment_start;
+      uint32 fragment_end;
+      clipboard_client_->ReadHTML(buffer_type,
+                                  &html_stdstr,
+                                  &gurl,
+                                  &fragment_start,
+                                  &fragment_end);
+      return StringVar::StringToPPVar(UTF16ToUTF8(html_stdstr));
+    }
+    case PP_FLASH_CLIPBOARD_FORMAT_RTF: {
+      std::string result;
+      clipboard_client_->ReadRTF(buffer_type, &result);
+      return ::ppapi::PpapiGlobals::Get()->GetVarTracker()->
+          MakeArrayBufferPPVar(result.size(), result.data());
+    }
+    case PP_FLASH_CLIPBOARD_FORMAT_INVALID:
+      break;
+  }
+
+  return PP_MakeUndefined();
+}
+
+int32_t PPB_Flash_Impl::WriteClipboardData(
+    PP_Instance instance,
+    PP_Flash_Clipboard_Type clipboard_type,
+    uint32_t data_item_count,
+    const PP_Flash_Clipboard_Format formats[],
+    const PP_Var data_items[]) {
+  if (!InitClipboard())
+    return PP_ERROR_FAILED;
+
+  if (clipboard_type != PP_FLASH_CLIPBOARD_TYPE_STANDARD) {
+    NOTIMPLEMENTED();
+    return PP_ERROR_FAILED;
+  }
+
+  if (data_item_count == 0) {
+    clipboard_client_->Clear(ConvertClipboardType(clipboard_type));
+    return PP_OK;
+  }
+  ScopedClipboardWriterGlue scw(clipboard_client_.get());
+  for (uint32_t i = 0; i < data_item_count; ++i) {
+    int32_t res = WriteClipboardDataItem(formats[i], data_items[i], &scw);
+    if (res != PP_OK) {
+      // Need to clear the objects so nothing is written.
+      scw.Reset();
+      return res;
+    }
+  }
+
+  return PP_OK;
+}
+
 PP_Bool PPB_Flash_Impl::FlashIsFullscreen(PP_Instance instance) {
   return PP_FromBool(instance_->flash_fullscreen());
 }
@@ -231,6 +379,66 @@ PP_Bool PPB_Flash_Impl::FlashSetFullscreen(PP_Instance instance,
 PP_Bool PPB_Flash_Impl::FlashGetScreenSize(PP_Instance instance,
                                            PP_Size* size) {
   return instance_->GetScreenSize(instance, size);
+}
+
+bool PPB_Flash_Impl::InitClipboard() {
+  // Initialize the ClipboardClient for writing to the clipboard.
+  if (!clipboard_client_.get()) {
+    if (!instance_)
+      return false;
+    PluginDelegate* plugin_delegate = instance_->delegate();
+    if (!plugin_delegate)
+      return false;
+    clipboard_client_.reset(plugin_delegate->CreateClipboardClient());
+  }
+  return true;
+}
+
+int32_t PPB_Flash_Impl::WriteClipboardDataItem(
+    const PP_Flash_Clipboard_Format format,
+    const PP_Var& data,
+    ScopedClipboardWriterGlue* scw) {
+  switch (format) {
+    case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT: {
+      StringVar* text_string = StringVar::FromPPVar(data);
+      if (!text_string)
+        return PP_ERROR_BADARGUMENT;
+
+      if (text_string->value().length() > kMaxClipboardWriteSize)
+        return PP_ERROR_NOSPACE;
+
+      scw->WriteText(UTF8ToUTF16(text_string->value()));
+      return PP_OK;
+    }
+    case PP_FLASH_CLIPBOARD_FORMAT_HTML: {
+      StringVar* text_string = StringVar::FromPPVar(data);
+      if (!text_string)
+        return PP_ERROR_BADARGUMENT;
+
+      if (text_string->value().length() > kMaxClipboardWriteSize)
+        return PP_ERROR_NOSPACE;
+
+      scw->WriteHTML(UTF8ToUTF16(text_string->value()), "");
+      return PP_OK;
+    }
+    case PP_FLASH_CLIPBOARD_FORMAT_RTF: {
+      ::ppapi::ArrayBufferVar* rtf_data =
+          ::ppapi::ArrayBufferVar::FromPPVar(data);
+      if (!rtf_data)
+        return PP_ERROR_BADARGUMENT;
+
+      if (rtf_data->ByteLength() > kMaxClipboardWriteSize)
+        return PP_ERROR_NOSPACE;
+
+      scw->WriteRTF(std::string(static_cast<char*>(rtf_data->Map()),
+                                rtf_data->ByteLength()));
+      return PP_OK;
+    }
+    case PP_FLASH_CLIPBOARD_FORMAT_INVALID:
+      break;
+  }
+
+  return PP_ERROR_BADARGUMENT;
 }
 
 }  // namespace ppapi
