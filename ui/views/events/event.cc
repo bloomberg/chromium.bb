@@ -98,41 +98,6 @@ MouseEvent::MouseEvent(const MouseEvent& model, View* source, View* target)
     : LocatedEvent(model, source, target) {
 }
 
-MouseEvent::MouseEvent(const TouchEvent& touch)
-    : LocatedEvent(touch.native_event()) {
-  // The location of the event is correctly extracted from the native event. But
-  // it is necessary to update the event type.
-  ui::EventType mtype = ui::ET_UNKNOWN;
-  switch (touch.type()) {
-    case ui::ET_TOUCH_RELEASED:
-      mtype = ui::ET_MOUSE_RELEASED;
-      break;
-    case ui::ET_TOUCH_PRESSED:
-      mtype = ui::ET_MOUSE_PRESSED;
-      break;
-    case ui::ET_TOUCH_MOVED:
-      mtype = ui::ET_MOUSE_MOVED;
-      break;
-    default:
-      NOTREACHED() << "Invalid mouse event.";
-  }
-  set_type(mtype);
-
-  // It may not be possible to extract the button-information necessary for a
-  // MouseEvent from the native event for a TouchEvent, so the flags are
-  // explicitly updated as well. The button is approximated from the touchpoint
-  // identity.
-  int new_flags = flags() & ~(ui::EF_LEFT_MOUSE_BUTTON |
-                              ui::EF_RIGHT_MOUSE_BUTTON |
-                              ui::EF_MIDDLE_MOUSE_BUTTON);
-  int button = ui::EF_LEFT_MOUSE_BUTTON;
-  if (touch.identity() == 1)
-    button = ui::EF_RIGHT_MOUSE_BUTTON;
-  else if (touch.identity() == 2)
-    button = ui::EF_MIDDLE_MOUSE_BUTTON;
-  set_flags(new_flags | button);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent, public:
 

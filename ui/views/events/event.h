@@ -142,8 +142,6 @@ class VIEWS_EXPORT LocatedEvent : public Event {
   gfx::Point location_;
 };
 
-class TouchEvent;
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // MouseEvent class
@@ -158,13 +156,6 @@ class VIEWS_EXPORT MouseEvent : public LocatedEvent {
   // If source / target views are provided, the model location will be converted
   // from |source| coordinate system to |target| coordinate system.
   MouseEvent(const MouseEvent& model, View* source, View* target);
-
-  // Creates a new MouseEvent from a TouchEvent. The location of the TouchEvent
-  // is the same as the MouseEvent. Other attributes (e.g. type, flags) are
-  // mapped from the TouchEvent to appropriate MouseEvent attributes.
-  // GestureManager uses this to convert TouchEvents that are not handled by any
-  // view.
-  explicit MouseEvent(const TouchEvent& touch);
 
   // TODO(msw): Kill this legacy constructor when we update uses.
   // Create a new mouse event
