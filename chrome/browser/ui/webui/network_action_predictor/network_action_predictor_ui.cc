@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/network_action_predictor/network_action_predictor_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/network_action_predictor/network_action_predictor_dom_handler.h"
 #include "chrome/common/url_constants.h"
@@ -29,6 +30,6 @@ NetworkActionPredictorUI::NetworkActionPredictorUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   web_ui->AddMessageHandler(new NetworkActionPredictorDOMHandler(profile));
-  profile->GetChromeURLDataManager()->AddDataSource(
+  ChromeURLDataManager::AddDataSource(profile,
       CreateNetworkActionPredictorUIHTMLSource());
 }

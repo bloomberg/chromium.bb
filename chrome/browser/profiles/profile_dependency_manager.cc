@@ -36,6 +36,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/global_error_service_factory.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
 
@@ -171,6 +172,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   if (built_factories_)
     return;
 
+  ChromeURLDataManagerFactory::GetInstance();
   CookieSettings::Factory::GetInstance();
   DownloadServiceFactory::GetInstance();
   FindBarStateFactory::GetInstance();

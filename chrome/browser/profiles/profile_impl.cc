@@ -64,7 +64,6 @@
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_init.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
@@ -975,13 +974,6 @@ void ProfileImpl::EnsureSessionServiceCreated() {
 }
 #endif
 
-ChromeURLDataManager* ProfileImpl::GetChromeURLDataManager() {
-  if (!chrome_url_data_manager_.get())
-    chrome_url_data_manager_.reset(new ChromeURLDataManager(
-        io_data_.GetChromeURLDataManagerBackendGetter()));
-  return chrome_url_data_manager_.get();
-}
-
 #if defined(OS_CHROMEOS)
 void ProfileImpl::ChangeAppLocale(
     const std::string& new_locale, AppLocaleChangedVia via) {
@@ -1167,4 +1159,9 @@ void ProfileImpl::GetCacheParameters(bool is_media_context,
     *cache_path = path;
   *max_size = is_media_context ? prefs_->GetInteger(prefs::kMediaCacheSize) :
                                  prefs_->GetInteger(prefs::kDiskCacheSize);
+}
+
+base::Callback<ChromeURLDataManagerBackend*(void)>
+    ProfileImpl::GetChromeURLDataManagerBackendGetter() const {
+  return io_data_.GetChromeURLDataManagerBackendGetter();
 }

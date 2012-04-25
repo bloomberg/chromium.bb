@@ -152,7 +152,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   }
 
   // Make the chrome://extension-icon/ resource available.
-  profile_->GetChromeURLDataManager()->AddDataSource(
+  ChromeURLDataManager::AddDataSource(profile_,
       new ExtensionIconSource(profile_));
 
   // Initialize extension event routers. Note that on Chrome OS, this will

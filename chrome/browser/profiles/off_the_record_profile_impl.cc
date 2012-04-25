@@ -34,7 +34,7 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/transport_security_persister.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -102,7 +102,7 @@ void OffTheRecordProfileImpl::Init() {
 
   // Make the chrome//extension-icon/ resource available.
   ExtensionIconSource* icon_source = new ExtensionIconSource(profile_);
-  GetChromeURLDataManager()->AddDataSource(icon_source);
+  ChromeURLDataManager::AddDataSource(this, icon_source);
 
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
       PluginPrefs::GetForProfile(this), io_data_.GetResourceContextNoInit());
@@ -410,13 +410,6 @@ void OffTheRecordProfileImpl::InitChromeOSPreferences() {
 }
 #endif  // defined(OS_CHROMEOS)
 
-ChromeURLDataManager* OffTheRecordProfileImpl::GetChromeURLDataManager() {
-  if (!chrome_url_data_manager_.get())
-    chrome_url_data_manager_.reset(new ChromeURLDataManager(
-        io_data_.GetChromeURLDataManagerBackendGetter()));
-  return chrome_url_data_manager_.get();
-}
-
 #if defined(OS_CHROMEOS)
 void OffTheRecordProfileImpl::ChangeAppLocale(const std::string& locale,
                                               AppLocaleChangedVia) {
@@ -495,4 +488,9 @@ Profile* Profile::CreateOffTheRecordProfile() {
     profile = new OffTheRecordProfileImpl(this);
   profile->Init();
   return profile;
+}
+
+base::Callback<ChromeURLDataManagerBackend*(void)>
+    OffTheRecordProfileImpl::GetChromeURLDataManagerBackendGetter() const {
+  return io_data_.GetChromeURLDataManagerBackendGetter();
 }

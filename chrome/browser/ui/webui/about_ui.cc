@@ -1463,6 +1463,7 @@ AboutUI::AboutUI(content::WebUI* web_ui, const std::string& name)
   Profile* profile = Profile::FromWebUI(web_ui);
   ChromeURLDataManager::DataSource* source =
       new AboutUIHTMLSource(name, profile);
-  if (source)
-    profile->GetChromeURLDataManager()->AddDataSource(source);
+  if (source) {
+    ChromeURLDataManager::AddDataSource(profile, source);
+  }
 }

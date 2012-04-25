@@ -123,7 +123,7 @@ ChromeWebUIDataSource* CreateUberFrameHTMLSource(Profile* profile) {
 
 UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(CreateUberHTMLSource());
+  ChromeURLDataManager::AddDataSource(profile, CreateUberHTMLSource());
 
   // The user may use a virtual (short) URL to get to the page. To avoid
   // duplicate uber tabs, clear the virtual URL so that the omnibox will show
@@ -196,7 +196,7 @@ bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
 
 UberFrameUI::UberFrameUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(
+  ChromeURLDataManager::AddDataSource(profile,
       CreateUberFrameHTMLSource(profile));
 
   // Register as an observer for when extensions are loaded and unloaded.

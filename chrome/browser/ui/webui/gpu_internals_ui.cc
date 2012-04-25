@@ -18,6 +18,7 @@
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
 #include "chrome/common/chrome_version_info.h"
@@ -293,5 +294,5 @@ GpuInternalsUI::GpuInternalsUI(content::WebUI* web_ui)
 
   // Set up the chrome://gpu-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(CreateGpuHTMLSource());
+  ChromeURLDataManager::AddDataSource(profile, CreateGpuHTMLSource());
 }

@@ -78,10 +78,7 @@ class OffTheRecordProfileImpl : public Profile,
 #if defined(OS_CHROMEOS)
   virtual void SetupChromeOSEnterpriseExtensionObserver() OVERRIDE;
   virtual void InitChromeOSPreferences() OVERRIDE;
-#endif  // defined(OS_CHROMEOS)
-  virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
 
-#if defined(OS_CHROMEOS)
   virtual void ChangeAppLocale(const std::string& locale,
                                AppLocaleChangedVia) OVERRIDE;
   virtual void OnLogin() OVERRIDE;
@@ -118,6 +115,9 @@ class OffTheRecordProfileImpl : public Profile,
   FRIEND_TEST_ALL_PREFIXES(OffTheRecordProfileImplTest, GetHostZoomMap);
   void InitHostZoomMap();
 
+  virtual base::Callback<ChromeURLDataManagerBackend*(void)>
+      GetChromeURLDataManagerBackendGetter() const OVERRIDE;
+
   content::NotificationRegistrar registrar_;
 
   // The real underlying profile.
@@ -137,8 +137,6 @@ class OffTheRecordProfileImpl : public Profile,
   FilePath last_selected_directory_;
 
   scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
-
-  scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

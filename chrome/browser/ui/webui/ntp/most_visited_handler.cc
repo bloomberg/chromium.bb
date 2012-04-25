@@ -52,9 +52,9 @@ void MostVisitedHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up our sources for thumbnail and favicon data.
   ThumbnailSource* thumbnail_src = new ThumbnailSource(profile);
-  profile->GetChromeURLDataManager()->AddDataSource(thumbnail_src);
+  ChromeURLDataManager::AddDataSource(profile, thumbnail_src);
 
-  profile->GetChromeURLDataManager()->AddDataSource(
+  ChromeURLDataManager::AddDataSource(profile,
       new FaviconSource(profile, FaviconSource::FAVICON));
 
   history::TopSites* ts = profile->GetTopSites();

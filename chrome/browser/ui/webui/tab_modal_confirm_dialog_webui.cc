@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -52,7 +53,7 @@ TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
   ChromeWebUIDataSource* data_source =
       new ChromeWebUIDataSource(chrome::kChromeUITabModalConfirmDialogHost);
   data_source->set_default_resource(IDR_TAB_MODAL_CONFIRM_DIALOG_HTML);
-  profile->GetChromeURLDataManager()->AddDataSource(data_source);
+  ChromeURLDataManager::AddDataSource(profile, data_source);
 
   constrained_html_ui_delegate_ =
       ConstrainedHtmlUI::CreateConstrainedHtmlDialog(profile,

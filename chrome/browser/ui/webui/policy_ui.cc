@@ -14,6 +14,7 @@
 #include "chrome/browser/policy/cloud_policy_data_store.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
@@ -239,7 +240,7 @@ PolicyUI::PolicyUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the chrome://policy/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(CreatePolicyUIHTMLSource());
+  ChromeURLDataManager::AddDataSource(profile, CreatePolicyUIHTMLSource());
 }
 
 PolicyUI::~PolicyUI() {

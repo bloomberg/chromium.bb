@@ -167,8 +167,7 @@ ConflictsUI::ConflictsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   // Set up the about:conflicts source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(
-      CreateConflictsUIHTMLSource());
+  ChromeURLDataManager::AddDataSource(profile, CreateConflictsUIHTMLSource());
 }
 
 // static

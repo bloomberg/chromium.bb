@@ -1403,7 +1403,7 @@ MobileSetupUI::MobileSetupUI(content::WebUI* web_ui)
 
   // Set up the chrome://mobilesetup/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  ChromeURLDataManager::AddDataSource(profile, html_source);
 }
 
 void MobileSetupUI::RenderViewCreated(RenderViewHost* host) {

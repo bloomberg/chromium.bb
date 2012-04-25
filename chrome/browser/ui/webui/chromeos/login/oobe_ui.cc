@@ -159,21 +159,21 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   // Set up the chrome://theme/ source, for Chrome logo.
   ThemeSource* theme = new ThemeSource(profile);
-  profile->GetChromeURLDataManager()->AddDataSource(theme);
+  ChromeURLDataManager::AddDataSource(profile, theme);
 
   // Set up the chrome://terms/ data source, for EULA content.
   AboutUIHTMLSource* about_source =
       new AboutUIHTMLSource(chrome::kChromeUITermsHost, profile);
-  profile->GetChromeURLDataManager()->AddDataSource(about_source);
+  ChromeURLDataManager::AddDataSource(profile, about_source);
 
   // Set up the chrome://oobe/ source.
   OobeUIHTMLSource* html_source = new OobeUIHTMLSource(localized_strings);
-  profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  ChromeURLDataManager::AddDataSource(profile, html_source);
 
   // Set up the chrome://userimage/ source.
   options2::UserImageSource* user_image_source =
       new options2::UserImageSource();
-  profile->GetChromeURLDataManager()->AddDataSource(user_image_source);
+  ChromeURLDataManager::AddDataSource(profile, user_image_source);
 }
 
 OobeUI::~OobeUI() {

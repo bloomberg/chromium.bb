@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "chrome/browser/net/preconnect.h" // TODO: remove this.
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "content/public/browser/browser_context.h"
 
 class AutocompleteClassifier;
@@ -348,9 +349,6 @@ class Profile : public content::BrowserContext {
   virtual FilePath last_selected_directory() = 0;
   virtual void set_last_selected_directory(const FilePath& path) = 0;
 
-  // Returns the ChromeURLDataManager for this profile.
-  virtual ChromeURLDataManager* GetChromeURLDataManager() = 0;
-
 #if defined(OS_CHROMEOS)
   enum AppLocaleChangedVia {
     // Caused by chrome://settings change.
@@ -441,7 +439,17 @@ class Profile : public content::BrowserContext {
   Profile* CreateOffTheRecordProfile();
 
  protected:
+  // TODO(erg, willchan): Remove friendship once |ProfileIOData| is made into
+  //     a |ProfileKeyedService|.
+  friend class ChromeURLDataManagerFactory;
   friend class OffTheRecordProfileImpl;
+
+  // Returns a callback to a method returning a |ChromeURLDataManagerBackend|.
+  // Used to create a |ChromeURLDataManager| for this |Profile|.
+  // TODO(erg, willchan): Remove this once |ProfileIOData| is made into a
+  //     |ProfileKeyedService|.
+  virtual base::Callback<ChromeURLDataManagerBackend*(void)>
+      GetChromeURLDataManagerBackendGetter() const = 0;
 
   static net::URLRequestContextGetter* default_request_context_;
 

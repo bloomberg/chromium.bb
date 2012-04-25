@@ -36,9 +36,8 @@ ChromeWebUIDataSource* CreateExtensionsHTMLSource() {
 ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   ChromeWebUIDataSource* source = CreateExtensionsHTMLSource();
-  profile->GetChromeURLDataManager()->AddDataSource(source);
-  profile->GetChromeURLDataManager()->AddDataSource(
-      new SharedResourcesDataSource());
+  ChromeURLDataManager::AddDataSource(profile, source);
+  ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
 
   ExtensionSettingsHandler* handler = new ExtensionSettingsHandler();
   handler->GetLocalizedValues(source->localized_strings());

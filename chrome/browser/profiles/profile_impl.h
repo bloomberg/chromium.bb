@@ -108,7 +108,6 @@ class ProfileImpl : public Profile,
   virtual void InitRegisteredProtocolHandlers() OVERRIDE;
   virtual FilePath last_selected_directory() OVERRIDE;
   virtual void set_last_selected_directory(const FilePath& path) OVERRIDE;
-  virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
@@ -175,6 +174,9 @@ class ProfileImpl : public Profile,
   void GetCacheParameters(bool is_media_context,
                           FilePath* cache_path,
                           int* max_size);
+
+  virtual base::Callback<ChromeURLDataManagerBackend*(void)>
+      GetChromeURLDataManagerBackendGetter() const OVERRIDE;
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
@@ -249,8 +251,6 @@ class ProfileImpl : public Profile,
 #endif
 
   scoped_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
-
-  scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 
   // STOP!!!! DO NOT ADD ANY MORE ITEMS HERE!!!!
   //

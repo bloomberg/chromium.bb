@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/imageburner/burn_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
@@ -328,6 +329,6 @@ ImageBurnUI::ImageBurnUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(handler);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(
+  ChromeURLDataManager::AddDataSource(profile,
       chromeos::imageburner::CreateImageburnerUIHTMLSource());
 }

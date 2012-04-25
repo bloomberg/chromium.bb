@@ -95,8 +95,7 @@ DownloadsUI::DownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(handler);
 
   // Set up the chrome://downloads/ source.
-  profile->GetChromeURLDataManager()->AddDataSource(
-      CreateDownloadsUIHTMLSource());
+  ChromeURLDataManager::AddDataSource(profile, CreateDownloadsUIHTMLSource());
 }
 
 // static

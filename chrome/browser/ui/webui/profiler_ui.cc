@@ -11,7 +11,7 @@
 // this, enable the following flag to read the webapp's source files
 // directly off disk, so all you have to do is refresh the page to
 // test the modifications.
-//#define USE_SOURCE_FILES_DIRECTLY
+// #define USE_SOURCE_FILES_DIRECTLY
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
@@ -20,6 +20,7 @@
 #include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_profiler/task_profiler_data_serializer.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -153,8 +154,8 @@ ProfilerUI::ProfilerUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(new ProfilerMessageHandler());
 
   // Set up the chrome://profiler/ source.
-  Profile::FromWebUI(web_ui)->
-      GetChromeURLDataManager()->AddDataSource(CreateProfilerHTMLSource());
+  Profile* profile = Profile::FromWebUI(web_ui);
+  ChromeURLDataManager::AddDataSource(profile, CreateProfilerHTMLSource());
 }
 
 ProfilerUI::~ProfilerUI() {

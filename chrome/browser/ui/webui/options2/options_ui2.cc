@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/options2/autofill_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/browser_options_handler2.h"
 #include "chrome/browser/ui/webui/options2/clear_browser_data_handler2.h"
@@ -301,22 +302,22 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
 
   // Set up the chrome://settings-frame/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  ChromeURLDataManager::AddDataSource(profile, html_source);
 
   // Set up the chrome://theme/ source.
   ThemeSource* theme = new ThemeSource(profile);
-  profile->GetChromeURLDataManager()->AddDataSource(theme);
+  ChromeURLDataManager::AddDataSource(profile, theme);
 
 #if defined(OS_CHROMEOS)
   // Set up the chrome://userimage/ source.
   chromeos::options2::UserImageSource* user_image_source =
       new chromeos::options2::UserImageSource();
-  profile->GetChromeURLDataManager()->AddDataSource(user_image_source);
+  ChromeURLDataManager::AddDataSource(profile, user_image_source);
+
   // Set up the chrome://wallpaper/ source.
   chromeos::options2::WallpaperThumbnailSource* wallpaper_thumbnail_source =
       new chromeos::options2::WallpaperThumbnailSource();
-  profile->GetChromeURLDataManager()->
-      AddDataSource(wallpaper_thumbnail_source);
+  ChromeURLDataManager::AddDataSource(profile, wallpaper_thumbnail_source);
 
   pointer_device_observer_.reset(
       new chromeos::system::PointerDeviceObserver());

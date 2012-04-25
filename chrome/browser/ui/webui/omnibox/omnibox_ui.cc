@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui_handler.h"
 #include "chrome/common/url_constants.h"
@@ -22,7 +23,7 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui)
   html_source->set_default_resource(IDR_OMNIBOX_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  ChromeURLDataManager::AddDataSource(profile, html_source);
 
   // AddMessageHandler takes ownership of OmniboxUIHandler
   web_ui->AddMessageHandler(new OmniboxUIHandler(profile));

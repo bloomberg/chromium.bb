@@ -94,12 +94,10 @@ DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
       original_profile_download_manager_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   // Create our fileicon data source.
-  Profile::FromBrowserContext(dlm->GetBrowserContext())->
-      GetChromeURLDataManager()->AddDataSource(new FileIconSource());
+  Profile* profile = Profile::FromBrowserContext(dlm->GetBrowserContext());
+  ChromeURLDataManager::AddDataSource(profile, new FileIconSource());
 
   // Figure out our parent DownloadManager, if any.
-  Profile* profile =
-      Profile::FromBrowserContext(download_manager_->GetBrowserContext());
   Profile* original_profile = profile->GetOriginalProfile();
   if (original_profile != profile) {
     original_profile_download_manager_ = DownloadServiceFactory::GetForProfile(

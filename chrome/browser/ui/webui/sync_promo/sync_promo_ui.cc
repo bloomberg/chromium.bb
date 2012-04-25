@@ -112,14 +112,14 @@ SyncPromoUI::SyncPromoUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   // Set up the chrome://theme/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   ThemeSource* theme = new ThemeSource(profile);
-  profile->GetChromeURLDataManager()->AddDataSource(theme);
+  ChromeURLDataManager::AddDataSource(profile, theme);
 
   // Set up the sync promo source.
   SyncPromoUIHTMLSource* html_source = new SyncPromoUIHTMLSource(web_ui);
   html_source->set_json_path(kStringsJsFile);
   html_source->add_resource_path(kSyncPromoJsFile, IDR_SYNC_PROMO_JS);
   html_source->set_default_resource(IDR_SYNC_PROMO_HTML);
-  profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  ChromeURLDataManager::AddDataSource(profile, html_source);
 
   sync_promo_trial::RecordUserShownPromo(web_ui);
 }

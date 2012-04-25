@@ -48,6 +48,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/options/options_util.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_constants.h"
@@ -550,7 +551,7 @@ void BrowserOptionsHandler::InitializeHandler() {
   OnStateChanged();
 
   // Create our favicon data source.
-  profile->GetChromeURLDataManager()->AddDataSource(
+  ChromeURLDataManager::AddDataSource(profile,
       new FaviconSource(profile, FaviconSource::FAVICON));
 
   default_browser_policy_.Init(prefs::kDefaultBrowserSettingEnabled,

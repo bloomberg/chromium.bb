@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/screenshot_source.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
@@ -304,7 +305,7 @@ void FeedbackHandler::ClobberScreenshotsSource() {
   // setting the screenshot to NULL, effectively disabling the source
   // TODO(rkc): Once there is a method to 'remove' a source, change this code
   Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());
-  profile->GetChromeURLDataManager()->AddDataSource(new ScreenshotSource(NULL));
+  ChromeURLDataManager::AddDataSource(profile, new ScreenshotSource(NULL));
 
   FeedbackUtil::ClearScreenshotPng();
 }
@@ -317,7 +318,7 @@ void FeedbackHandler::SetupScreenshotsSource() {
   }
   // Add the source to the data manager.
   Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());
-  profile->GetChromeURLDataManager()->AddDataSource(screenshot_source_);
+  ChromeURLDataManager::AddDataSource(profile, screenshot_source_);
 }
 
 bool FeedbackHandler::Init() {
@@ -586,7 +587,7 @@ FeedbackUI::FeedbackUI(content::WebUI* web_ui) : HtmlDialogUI(web_ui) {
 
   // Set up the chrome://feedback/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  ChromeURLDataManager::AddDataSource(profile, html_source);
 }
 
 #if defined(OS_CHROMEOS)

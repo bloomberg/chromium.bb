@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_helpers.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 
 class ChromeURLDataManagerBackend;
 class MessageLoop;
+class Profile;
 class RefCountedMemory;
 
 namespace base {
@@ -27,7 +29,7 @@ class DictionaryValue;
 // with AddDataSource. DataSources must be added on the UI thread (they are also
 // deleted on the UI thread). Internally the DataSources are maintained by
 // ChromeURLDataManagerBackend, see it for details.
-class ChromeURLDataManager {
+class ChromeURLDataManager : public ProfileKeyedService {
  public:
   class DataSource;
 
@@ -142,7 +144,7 @@ class ChromeURLDataManager {
 
   explicit ChromeURLDataManager(
       const base::Callback<ChromeURLDataManagerBackend*(void)>& backend);
-  ~ChromeURLDataManager();
+  virtual ~ChromeURLDataManager();
 
   // Adds a DataSource to the collection of data sources. This *must* be invoked
   // on the UI thread.
@@ -159,6 +161,10 @@ class ChromeURLDataManager {
   // Deletes any data sources no longer referenced. This is normally invoked
   // for you, but can be invoked to force deletion (such as during shutdown).
   static void DeleteDataSources();
+
+  // Convenience wrapper function to add |source| to |profile|'s
+  // |ChromeURLDataManager|.
+  static void AddDataSource(Profile* profile, DataSource* source);
 
  private:
   typedef std::vector<const ChromeURLDataManager::DataSource*> DataSources;

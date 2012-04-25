@@ -282,8 +282,7 @@ class MockWebUIProvider
   WebUIController* NewWebUI(content::WebUI* web_ui, const GURL& url) OVERRIDE {
     WebUIController* controller = new content::WebUIController(web_ui);
     Profile* profile = Profile::FromWebUI(web_ui);
-    profile->GetChromeURLDataManager()->AddDataSource(
-        new MockWebUIDataSource());
+    ChromeURLDataManager::AddDataSource(profile, new MockWebUIDataSource());
     return controller;
   }
 

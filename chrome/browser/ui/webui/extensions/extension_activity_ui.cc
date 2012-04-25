@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/shared_resources_data_source.h"
@@ -43,9 +44,8 @@ ExtensionActivityUI::ExtensionActivityUI(content::WebUI* web_ui)
                  base::Unretained(this)));
 
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(source);
-  profile->GetChromeURLDataManager()->AddDataSource(
-      new SharedResourcesDataSource());
+  ChromeURLDataManager::AddDataSource(profile, source);
+  ChromeURLDataManager::AddDataSource(profile, new SharedResourcesDataSource());
 }
 
 ExtensionActivityUI::~ExtensionActivityUI() {

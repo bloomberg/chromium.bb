@@ -1678,6 +1678,5 @@ NetInternalsUI::NetInternalsUI(content::WebUI* web_ui)
 
   // Set up the chrome://net-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(
-      CreateNetInternalsHTMLSource());
+  ChromeURLDataManager::AddDataSource(profile, CreateNetInternalsHTMLSource());
 }

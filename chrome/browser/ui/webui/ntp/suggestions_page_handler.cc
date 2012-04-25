@@ -89,9 +89,8 @@ SuggestionsHandler::~SuggestionsHandler() {
 void SuggestionsHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up our sources for thumbnail and favicon data.
-  profile->GetChromeURLDataManager()->AddDataSource(
-      new ThumbnailSource(profile));
-  profile->GetChromeURLDataManager()->AddDataSource(
+  ChromeURLDataManager::AddDataSource(profile, new ThumbnailSource(profile));
+  ChromeURLDataManager::AddDataSource(profile,
       new FaviconSource(profile, FaviconSource::FAVICON));
 
   // TODO(georgey) change the source of the web-sites to provide our data.

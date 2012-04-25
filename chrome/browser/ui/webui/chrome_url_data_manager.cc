@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/platform_locale_settings.h"
@@ -102,6 +103,11 @@ void ChromeURLDataManager::DeleteDataSource(const DataSource* data_source) {
         BrowserThread::UI, FROM_HERE,
         base::Bind(&ChromeURLDataManager::DeleteDataSources));
   }
+}
+
+// static
+void ChromeURLDataManager::AddDataSource(Profile* profile, DataSource* source) {
+  ChromeURLDataManagerFactory::GetForProfile(profile)->AddDataSource(source);
 }
 
 // static

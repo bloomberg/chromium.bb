@@ -40,7 +40,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
-#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -683,14 +682,6 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   MessageLoop::current()->Run();
 }
 
-ChromeURLDataManager* TestingProfile::GetChromeURLDataManager() {
-  if (!chrome_url_data_manager_.get())
-    chrome_url_data_manager_.reset(
-        new ChromeURLDataManager(
-            base::Callback<ChromeURLDataManagerBackend*(void)>()));
-  return chrome_url_data_manager_.get();
-}
-
 chrome_browser_net::Predictor* TestingProfile::GetNetworkPredictor() {
   return NULL;
 }
@@ -720,4 +711,9 @@ void TestingProfile::DestroyWebDataService() {
 
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
   return true;
+}
+
+base::Callback<ChromeURLDataManagerBackend*(void)>
+    TestingProfile::GetChromeURLDataManagerBackendGetter() const {
+  return base::Callback<ChromeURLDataManagerBackend*(void)>();
 }

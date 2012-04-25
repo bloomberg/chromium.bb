@@ -93,7 +93,7 @@ void DevToolsUI::RegisterDevToolsDataSource(Profile* profile) {
   static bool registered = false;
   if (!registered) {
     DevToolsDataSource* data_source = new DevToolsDataSource();
-    profile->GetChromeURLDataManager()->AddDataSource(data_source);
+    ChromeURLDataManager::AddDataSource(profile, data_source);
     registered = true;
   }
 }
@@ -101,7 +101,7 @@ void DevToolsUI::RegisterDevToolsDataSource(Profile* profile) {
 DevToolsUI::DevToolsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   DevToolsDataSource* data_source = new DevToolsDataSource();
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(data_source);
+  ChromeURLDataManager::AddDataSource(profile, data_source);
 }
 
 void DevToolsUI::RenderViewCreated(

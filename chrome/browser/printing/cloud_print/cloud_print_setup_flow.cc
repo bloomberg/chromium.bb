@@ -103,7 +103,7 @@ CloudPrintSetupFlow::CloudPrintSetupFlow(
       delegate_(delegate) {
   // TODO(hclam): The data source should be added once.
   profile_ = profile;
-  profile->GetChromeURLDataManager()->AddDataSource(
+  ChromeURLDataManager::AddDataSource(profile,
       new CloudPrintSetupSource());
 }
 

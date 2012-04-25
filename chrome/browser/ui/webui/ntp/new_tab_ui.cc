@@ -27,6 +27,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
@@ -159,7 +160,8 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   // ChromeURLDataManager assumes the ownership of the html_source and in some
   // tests immediately deletes it, so html_source should not be accessed after
   // this call.
-  GetProfile()->GetChromeURLDataManager()->AddDataSource(html_source);
+  Profile* profile = GetProfile();
+  ChromeURLDataManager::AddDataSource(profile, html_source);
 
   pref_change_registrar_.Init(GetProfile()->GetPrefs());
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
@@ -260,7 +262,7 @@ void NewTabUI::InitializeCSSCaches() {
 #if defined(ENABLE_THEMES)
   Profile* profile = GetProfile();
   ThemeSource* theme = new ThemeSource(profile);
-  profile->GetChromeURLDataManager()->AddDataSource(theme);
+  ChromeURLDataManager::AddDataSource(profile, theme);
 #endif
 }
 

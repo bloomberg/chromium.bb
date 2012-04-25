@@ -18,6 +18,7 @@
 #include "chrome/browser/gpu_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/select_file_dialog.h"
+#include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
@@ -485,6 +486,6 @@ TracingUI::TracingUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(new TracingMessageHandler());
 
   // Set up the chrome://tracing/ source.
-  Profile::FromWebUI(web_ui)->
-      GetChromeURLDataManager()->AddDataSource(CreateTracingHTMLSource());
+  Profile* profile = Profile::FromWebUI(web_ui);
+  ChromeURLDataManager::AddDataSource(profile, CreateTracingHTMLSource());
 }

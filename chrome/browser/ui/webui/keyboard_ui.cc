@@ -24,7 +24,7 @@ KeyboardUI::KeyboardUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
   KeyboardHTMLSource* html_source = new KeyboardHTMLSource();
   Profile* profile = Profile::FromWebUI(web_ui);
-  profile->GetChromeURLDataManager()->AddDataSource(html_source);
+  ChromeURLDataManager::AddDataSource(profile, html_source);
 }
 
 KeyboardUI::~KeyboardUI() {

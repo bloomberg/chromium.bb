@@ -243,7 +243,6 @@ class TestingProfile : public Profile {
   // history service processes all pending requests.
   void BlockUntilHistoryProcessesPendingRequests();
 
-  virtual ChromeURLDataManager* GetChromeURLDataManager() OVERRIDE;
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(base::Time time) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
@@ -272,6 +271,9 @@ class TestingProfile : public Profile {
 
   // Creates a TestingPrefService and associates it with the TestingProfile.
   void CreateTestingPrefService();
+
+  virtual base::Callback<ChromeURLDataManagerBackend*(void)>
+      GetChromeURLDataManagerBackendGetter() const OVERRIDE;
 
   // The favicon service. Only created if CreateFaviconService is invoked.
   scoped_ptr<FaviconService> favicon_service_;
@@ -332,8 +334,6 @@ class TestingProfile : public Profile {
   // The path to this profile. This will be valid in either of the two above
   // cases.
   FilePath profile_path_;
-
-  scoped_ptr<ChromeURLDataManager> chrome_url_data_manager_;
 
   // We keep a weak pointer to the dependency manager we want to notify on our
   // death. Defaults to the Singleton implementation but overridable for
