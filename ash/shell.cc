@@ -458,11 +458,12 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
   }
 
   virtual bool GetCellularCarrierInfo(std::string* carrier_id,
-                                      std::string* toup_url) OVERRIDE {
+                                      std::string* topup_url,
+                                      std::string* setup_url) OVERRIDE {
     return false;
   }
 
-  virtual void ShowCellularTopupURL(const std::string& topup_url) OVERRIDE {
+  virtual void ShowCellularURL(const std::string& url) OVERRIDE {
   }
 
   virtual void ChangeProxySettings() OVERRIDE {

@@ -14,7 +14,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
+class Browser;
 class SkBitmap;
+
 namespace views {
 class WidgetDelegate;
 }
@@ -58,6 +60,10 @@ class InternetOptionsHandler
   // Opens a modal popup dialog.
   void CreateModalPopup(views::WidgetDelegate* view);
   gfx::NativeWindow GetNativeWindow() const;
+
+  // Returns the last active browser. If there is no such browser, creates a new
+  // browser window with an empty tab and returns it.
+  Browser* GetAppropriateBrowser();
 
   // Passes data needed to show details overlay for network.
   // |args| will be [ network_type, service_path, command ]

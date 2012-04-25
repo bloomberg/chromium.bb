@@ -595,25 +595,37 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual bool GetCellularCarrierInfo(std::string* carrier_id,
-                                      std::string* topup_url) OVERRIDE {
+                                      std::string* topup_url,
+                                      std::string* setup_url) OVERRIDE {
+    bool result = false;
     NetworkLibrary* crosnet = CrosLibrary::Get()->GetNetworkLibrary();
     const NetworkDevice* cellular = crosnet->FindCellularDevice();
-    if (cellular) {
-      MobileConfig* config = MobileConfig::GetInstance();
-      if (config->IsReady()) {
-        *carrier_id = crosnet->GetCellularHomeCarrierId();
-        const MobileConfig::Carrier* carrier = config->GetCarrier(*carrier_id);
-        if (carrier) {
-          *topup_url = carrier->top_up_url();
-          return true;
+    if (!cellular)
+      return false;
+
+    MobileConfig* config = MobileConfig::GetInstance();
+    if (config->IsReady()) {
+      *carrier_id = crosnet->GetCellularHomeCarrierId();
+      const MobileConfig::Carrier* carrier = config->GetCarrier(*carrier_id);
+      if (carrier) {
+        *topup_url = carrier->top_up_url();
+        result = true;
+      }
+      const MobileConfig::LocaleConfig* locale_config =
+          config->GetLocaleConfig();
+      if (locale_config) {
+        // Only link to setup URL if SIM card is not inserted.
+        if (cellular->is_sim_absent()) {
+          *setup_url = locale_config->setup_url();
+          result = true;
         }
       }
     }
-    return false;
+    return result;
   }
 
-  virtual void ShowCellularTopupURL(const std::string& topup_url) OVERRIDE {
-    GetAppropriateBrowser()->ShowSingletonTab(GURL(topup_url));
+  virtual void ShowCellularURL(const std::string& url) OVERRIDE {
+    GetAppropriateBrowser()->ShowSingletonTab(GURL(url));
   }
 
   virtual void ChangeProxySettings() OVERRIDE {

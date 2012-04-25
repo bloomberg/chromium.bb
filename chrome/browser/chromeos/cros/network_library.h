@@ -106,6 +106,12 @@ class NetworkDevice {
     return sim_lock_state_ == SIM_LOCKED_PIN ||
         sim_lock_state_ == SIM_LOCKED_PUK;
   }
+  // Returns true if GSM modem and SIM as absent, otherwise
+  // returns false: GSM modem and SIM card is present or CDMA modem.
+  bool is_sim_absent() const {
+    return technology_family() == TECHNOLOGY_FAMILY_GSM &&
+           !is_sim_locked() && imsi().empty();
+  }
   const int sim_retries_left() const { return sim_retries_left_; }
   SimPinRequire sim_pin_required() const { return sim_pin_required_; }
   const std::string& firmware_revision() const { return firmware_revision_; }

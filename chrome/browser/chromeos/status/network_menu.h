@@ -15,6 +15,8 @@
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 #include "ui/views/controls/button/menu_button_listener.h"
 
+class Browser;
+
 namespace ui {
 class MenuModel;
 }
@@ -117,6 +119,10 @@ class NetworkMenu {
 
  private:
   friend class NetworkMenuModel;
+
+  // Returns the last active browser. If there is no such browser, creates a new
+  // browser window with an empty tab and returns it.
+  Browser* GetAppropriateBrowser();
 
   // Weak ptr to delegate.
   Delegate* delegate_;

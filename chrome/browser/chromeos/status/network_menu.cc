@@ -1064,9 +1064,24 @@ void NetworkMenu::ToggleCellular() {
   if (!cellular) {
     LOG(ERROR) << "No cellular device found, it should be available.";
     cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
-  } else if (cellular->sim_lock_state() == SIM_UNLOCKED ||
-             cellular->sim_lock_state() == SIM_UNKNOWN) {
-    cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
+  } else if (!cellular->is_sim_locked()) {
+    if (cellular->is_sim_absent()) {
+      std::string setup_url;
+      MobileConfig* config = MobileConfig::GetInstance();
+      if (config->IsReady()) {
+        const MobileConfig::LocaleConfig* locale_config =
+            config->GetLocaleConfig();
+        if (locale_config)
+          setup_url = locale_config->setup_url();
+      }
+      if (!setup_url.empty()) {
+        GetAppropriateBrowser()->ShowSingletonTab(GURL(setup_url));
+      } else {
+        // TODO(nkostylev): Show generic error message. http://crosbug.com/15444
+      }
+    } else {
+      cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
+    }
   } else {
     SimDialogDelegate::ShowDialog(delegate()->GetNativeWindow(),
                                   SimDialogDelegate::SIM_DIALOG_UNLOCK);
@@ -1087,6 +1102,11 @@ void NetworkMenu::ShowOtherCellular() {
 
 bool NetworkMenu::ShouldHighlightNetwork(const Network* network) {
   return ::ShouldHighlightNetwork(network);
+}
+
+Browser* NetworkMenu::GetAppropriateBrowser() {
+  return Browser::GetOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
 }
 
 }  // namespace chromeos

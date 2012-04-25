@@ -226,13 +226,15 @@ class SystemTrayDelegate {
   // Returns whether cellular scanning is supported.
   virtual bool GetCellularScanSupported() = 0;
 
-  // Retrieves information about the carrier. If the information cannot be
-  // retrieved, returns false.
+  // Retrieves information about the carrier and locale specific |setup_url|.
+  // If none of the carrier info/setup URL cannot be retrieved, returns false.
+  // Note: |setup_url| is returned when carrier is not defined (no SIM card).
   virtual bool GetCellularCarrierInfo(std::string* carrier_id,
-                                      std::string* toup_url) = 0;
+                                      std::string* topup_url,
+                                      std::string* setup_url) = 0;
 
-  // Opens the top up url.
-  virtual void ShowCellularTopupURL(const std::string& topup_url) = 0;
+  // Opens the cellular network specific URL.
+  virtual void ShowCellularURL(const std::string& url) = 0;
 
   // Shows UI for changing proxy settings.
   virtual void ChangeProxySettings() = 0;

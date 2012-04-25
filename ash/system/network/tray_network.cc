@@ -168,7 +168,8 @@ class NetworkDetailedView : public views::View,
         info_icon_(NULL),
         button_wifi_(NULL),
         button_cellular_(NULL),
-        mobile_account_(NULL),
+        view_mobile_account_(NULL),
+        setup_mobile_account_(NULL),
         other_wifi_(NULL),
         other_mobile_(NULL),
         settings_(NULL),
@@ -197,7 +198,8 @@ class NetworkDetailedView : public views::View,
     info_icon_ = NULL;
     button_wifi_ = NULL;
     button_cellular_ = NULL;
-    mobile_account_ = NULL;
+    view_mobile_account_ = NULL;
+    setup_mobile_account_ = NULL;
     other_wifi_ = NULL;
     other_mobile_ = NULL;
     settings_ = NULL;
@@ -274,13 +276,17 @@ class NetworkDetailedView : public views::View,
     }
 
     if (login_ != user::LOGGED_IN_NONE) {
-      std::string carrier_id, topup_url;
-      if (delegate->GetCellularCarrierInfo(&carrier_id, &topup_url)) {
+      std::string carrier_id, topup_url, setup_url;
+      if (delegate->GetCellularCarrierInfo(&carrier_id,
+                                           &topup_url,
+                                           &setup_url)) {
         if (carrier_id != carrier_id_) {
           carrier_id_ = carrier_id;
           if (!topup_url.empty())
             topup_url_ = topup_url;
         }
+        if (!setup_url.empty())
+          setup_url_ = setup_url;
         if (!topup_url_.empty()) {
           HoverHighlightView* container = new HoverHighlightView(this);
           container->set_fixed_height(kTrayPopupItemHeight);
@@ -288,7 +294,16 @@ class NetworkDetailedView : public views::View,
               GetLocalizedString(IDS_ASH_STATUS_TRAY_MOBILE_VIEW_ACCOUNT),
               gfx::Font::NORMAL);
           AddChildView(container);
-          mobile_account_ = container;
+          view_mobile_account_ = container;
+        }
+        if (!setup_url_.empty()) {
+          HoverHighlightView* container = new HoverHighlightView(this);
+          container->set_fixed_height(kTrayPopupItemHeight);
+          container->AddLabel(ui::ResourceBundle::GetSharedInstance().
+              GetLocalizedString(IDS_ASH_STATUS_TRAY_SETUP_MOBILE),
+              gfx::Font::NORMAL);
+          AddChildView(container);
+          setup_mobile_account_ = container;
         }
       }
     }
@@ -455,8 +470,10 @@ class NetworkDetailedView : public views::View,
     if (login_ == user::LOGGED_IN_LOCKED)
       return;
 
-    if (sender == mobile_account_) {
-      delegate->ShowCellularTopupURL(topup_url_);
+    if (sender == view_mobile_account_) {
+      delegate->ShowCellularURL(topup_url_);
+    } else if (sender == setup_mobile_account_) {
+      delegate->ShowCellularURL(setup_url_);
     } else if (sender == airplane_) {
       delegate->ToggleAirplaneMode();
     } else {
@@ -471,6 +488,7 @@ class NetworkDetailedView : public views::View,
 
   std::string carrier_id_;
   std::string topup_url_;
+  std::string setup_url_;
 
   user::LoginStatus login_;
   std::map<views::View*, std::string> network_map_;
@@ -481,7 +499,8 @@ class NetworkDetailedView : public views::View,
   views::ImageButton* info_icon_;
   views::ToggleImageButton* button_wifi_;
   views::ToggleImageButton* button_cellular_;
-  views::View* mobile_account_;
+  views::View* view_mobile_account_;
+  views::View* setup_mobile_account_;
   TrayPopupTextButton* other_wifi_;
   TrayPopupTextButton* other_mobile_;
   TrayPopupTextButton* settings_;

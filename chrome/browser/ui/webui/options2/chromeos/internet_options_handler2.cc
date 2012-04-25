@@ -37,6 +37,7 @@
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -501,13 +502,29 @@ void InternetOptionsHandler::DisableWifiCallback(const ListValue* args) {
 }
 
 void InternetOptionsHandler::EnableCellularCallback(const ListValue* args) {
+  // TODO(nkostylev): Code duplication, see NetworkMenu::ToggleCellular().
   const chromeos::NetworkDevice* cellular = cros_->FindCellularDevice();
   if (!cellular) {
     LOG(ERROR) << "Didn't find cellular device, it should have been available.";
     cros_->EnableCellularNetworkDevice(true);
-  } else if (cellular->sim_lock_state() == chromeos::SIM_UNLOCKED ||
-             cellular->sim_lock_state() == chromeos::SIM_UNKNOWN) {
+  } else if (!cellular->is_sim_locked()) {
+    if (cellular->is_sim_absent()) {
+      std::string setup_url;
+      chromeos::MobileConfig* config = chromeos::MobileConfig::GetInstance();
+      if (config->IsReady()) {
+        const chromeos::MobileConfig::LocaleConfig* locale_config =
+            config->GetLocaleConfig();
+        if (locale_config)
+          setup_url = locale_config->setup_url();
+      }
+      if (!setup_url.empty()) {
+        GetAppropriateBrowser()->ShowSingletonTab(GURL(setup_url));
+      } else {
+        // TODO(nkostylev): Show generic error message. http://crosbug.com/15444
+      }
+    } else {
       cros_->EnableCellularNetworkDevice(true);
+    }
   } else {
     chromeos::SimDialogDelegate::ShowDialog(GetNativeWindow(),
         chromeos::SimDialogDelegate::SIM_DIALOG_UNLOCK);
@@ -1046,6 +1063,11 @@ gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
   Browser* browser =
       BrowserList::FindBrowserWithProfile(Profile::FromWebUI(web_ui()));
   return browser->window()->GetNativeHandle();
+}
+
+Browser* InternetOptionsHandler::GetAppropriateBrowser() {
+  return Browser::GetOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
 }
 
 void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
