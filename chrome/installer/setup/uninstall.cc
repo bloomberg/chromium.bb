@@ -701,13 +701,11 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
 // work items for |product|.  This will be a noop for products whose
 // corresponding BrowserDistribution implementations do not publish
 // DelegateExecute data via an implementation of GetDelegateExecuteHandlerData.
-bool ProcessDelegateExecuteWorkItems(const InstallationState& original_state,
-                                     const InstallerState& installer_state,
-                                     const FilePath& setup_path,
+bool ProcessDelegateExecuteWorkItems(const InstallerState& installer_state,
                                      const Product& product) {
   scoped_ptr<WorkItemList> item_list(WorkItem::CreateNoRollbackWorkItemList());
-  AddDelegateExecuteWorkItems(original_state, installer_state, setup_path,
-                              Version(), product, item_list.get());
+  AddDelegateExecuteWorkItems(installer_state, FilePath(), Version(), product,
+                              item_list.get());
   return item_list->Do();
 }
 
@@ -830,8 +828,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
                                  suffix, installer_state.target_path(), &ret);
   }
 
-  ProcessDelegateExecuteWorkItems(original_state, installer_state, setup_path,
-                                  product);
+  ProcessDelegateExecuteWorkItems(installer_state, product);
 
   if (!is_chrome) {
     ProcessChromeFrameWorkItems(original_state, installer_state, setup_path,

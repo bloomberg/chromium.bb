@@ -538,15 +538,19 @@ bool GoogleChromeDistribution::GetDelegateExecuteHandlerData(
     string16* type_lib_uuid,
     string16* type_lib_version,
     string16* interface_uuid) {
-  if (handler_class_uuid)
-    *handler_class_uuid = kCommandExecuteImplUuid;
-  if (type_lib_uuid)
-    *type_lib_uuid = kDelegateExecuteLibUuid;
-  if (type_lib_version)
-    *type_lib_version = kDelegateExecuteLibVersion;
-  if (interface_uuid)
-    *interface_uuid = kICommandExecuteImplUuid;
-  return true;
+  // Chrome's DelegateExecute verb handler is only used for Windows 8 and up.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    if (handler_class_uuid)
+      *handler_class_uuid = kCommandExecuteImplUuid;
+    if (type_lib_uuid)
+      *type_lib_uuid = kDelegateExecuteLibUuid;
+    if (type_lib_version)
+      *type_lib_version = kDelegateExecuteLibVersion;
+    if (interface_uuid)
+      *interface_uuid = kICommandExecuteImplUuid;
+    return true;
+  }
+  return false;
 }
 
 // This method checks if we need to change "ap" key in Google Update to try

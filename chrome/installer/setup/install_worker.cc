@@ -14,6 +14,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -854,8 +855,8 @@ void AddInstallWorkItems(const InstallationState& original_state,
     AddVersionKeyWorkItems(root, product->distribution(), new_version,
                            add_language_identifier, install_list);
 
-    AddDelegateExecuteWorkItems(original_state, installer_state, setup_path,
-                                new_version, *product, install_list);
+    AddDelegateExecuteWorkItems(installer_state, src_path, new_version,
+                                *product, install_list);
   }
 
   if (installer_state.is_multi_install()) {
@@ -1061,9 +1062,8 @@ void AddChromeFrameWorkItems(const InstallationState& original_state,
   }
 }
 
-void AddDelegateExecuteWorkItems(const InstallationState& original_state,
-                                 const InstallerState& installer_state,
-                                 const FilePath& setup_path,
+void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
+                                 const FilePath& src_path,
                                  const Version& new_version,
                                  const Product& product,
                                  WorkItemList* list) {
@@ -1080,8 +1080,6 @@ void AddDelegateExecuteWorkItems(const InstallationState& original_state,
     return;
   }
 
-  VLOG(1) << "DelegateExecute verb handler COM registration.";
-
   HKEY root = installer_state.root_key();
   const bool is_install =
       (installer_state.operation() != InstallerState::UNINSTALL);
@@ -1092,7 +1090,16 @@ void AddDelegateExecuteWorkItems(const InstallationState& original_state,
   string16 interface_path(L"Software\\Classes\\Interface\\");
   interface_path.append(interface_uuid);
 
-  if (is_install) {
+  // Add work items to register the handler iff it is present.  Remove its
+  // registration otherwise since builds after r132190 included it when it
+  // wasn't strictly necessary.
+  // TODO(grt): remove the extra check for the .exe when it's ever-present;
+  // see also shell_util.cc's GetProgIdEntries.
+  if (is_install &&
+      file_util::PathExists(src_path.AppendASCII(new_version.GetString())
+          .Append(kDelegateExecuteExe))) {
+    VLOG(1) << "Adding registration items for DelegateExecute verb handler.";
+
     // The path to the exe (in the version directory).
     FilePath delegate_execute(
         installer_state.target_path().AppendASCII(new_version.GetString()));
@@ -1170,6 +1177,8 @@ void AddDelegateExecuteWorkItems(const InstallationState& original_state,
                                  true);
 
   } else {
+    VLOG(1) << "Adding unregistration items for DelegateExecute verb handler.";
+
     list->AddDeleteRegKeyWorkItem(root, delegate_execute_path);
     list->AddDeleteRegKeyWorkItem(root, typelib_path);
     list->AddDeleteRegKeyWorkItem(root, interface_path);

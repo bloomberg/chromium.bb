@@ -89,9 +89,11 @@ class RegistryEntry {
     // handler will be in HKCU; thus we do not need a suffix on those entries.
     string16 app_id(dist->GetBrowserAppId());
     string16 delegate_guid;
+    // TODO(grt): remove HasDelegateExecuteHandler when the exe is ever-present;
+    // see also install_worker.cc's AddDelegateExecuteWorkItems.
     bool set_delegate_execute =
-        base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-        dist->GetDelegateExecuteHandlerData(&delegate_guid, NULL, NULL, NULL);
+        dist->GetDelegateExecuteHandlerData(&delegate_guid, NULL, NULL, NULL) &&
+        InstallUtil::HasDelegateExecuteHandler(dist, chrome_exe);
 
     // DelegateExecute ProgId. Needed for Chrome Metro in Windows 8.
     if (set_delegate_execute) {
@@ -604,6 +606,46 @@ uint32 ConvertShellUtilShortcutOptionsToFileUtil(uint32 options) {
   return converted_options;
 }
 
+// As of r133333, the DelegateExecute verb handler was being registered for
+// Google Chrome installs on Windows 8 even though the binary itself wasn't
+// present.  This affected Chrome 20.0.1115.1 on the dev channel (and anyone who
+// pulled a Canary >= 20.0.1112.0 and installed it manually as Google Chrome).
+// This egregious hack is here to remove the bad values for those installs, and
+// should be removed after a reasonable time, say 2012-08-01.  Anyone on Win8
+// dev channel who hasn't been autoupdated or manually updated by then will have
+// to uninstall and reinstall Chrome to repair.  See http://crbug.com/124666 and
+// http://crbug.com/123994 for gory details.
+void RemoveBadWindows8RegistrationIfNeeded(
+    BrowserDistribution* dist,
+    const string16& chrome_exe,
+    const string16& suffix) {
+  string16 handler_guid;
+
+  if (dist->GetDelegateExecuteHandlerData(&handler_guid, NULL, NULL, NULL) &&
+      !InstallUtil::HasDelegateExecuteHandler(dist, chrome_exe)) {
+    // There's no need to rollback, so forgo the usual work item lists and just
+    // remove the values from the registry.
+    const HKEY root_key = InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ?
+        HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
+    const string16 app_id(dist->GetBrowserAppId());
+
+    // <root hkey>\Software\Classes\<app_id>
+    string16 key(ShellUtil::kRegClasses);
+    key.push_back(FilePath::kSeparators[0]);
+    key.append(app_id);
+    InstallUtil::DeleteRegistryKey(root_key, key);
+
+    // <root hkey>\Software\Classes\ChromiumHTML[.user]\shell\open\command
+    key = ShellUtil::kRegClasses;
+    key.push_back(FilePath::kSeparators[0]);
+    key.append(ShellUtil::kChromeHTMLProgId);
+    key.append(suffix);
+    key.append(ShellUtil::kRegShellOpen);
+    InstallUtil::DeleteRegistryValue(root_key, key,
+                                     ShellUtil::kRegDelegateExecute);
+  }
+}
+
 }  // namespace
 
 const wchar_t* ShellUtil::kRegDefaultIcon = L"\\DefaultIcon";
@@ -1026,6 +1068,9 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
              !AnotherUserHasDefaultBrowser(dist, chrome_exe)) {
     suffix = L"";
   }
+
+  // TODO(grt): remove this on or after 2012-08-01; see impl for details.
+  RemoveBadWindows8RegistrationIfNeeded(dist, chrome_exe, suffix);
 
   // Check if Chromium is already registered with this suffix.
   if (IsChromeRegistered(dist, chrome_exe, suffix))

@@ -90,6 +90,11 @@ class InstallUtil {
   // by either --chrome-sxs or the executable path).
   static bool IsChromeSxSProcess();
 
+  // Returns true if the Chrome installed at |chrome_exe| has a Windows shell
+  // DelegateExecute verb handler.
+  static bool HasDelegateExecuteHandler(BrowserDistribution* dist,
+                                        const string16& chrome_exe);
+
   // Deletes the registry key at path key_path under the key given by root_key.
   static bool DeleteRegistryKey(HKEY root_key, const std::wstring& key_path);
 

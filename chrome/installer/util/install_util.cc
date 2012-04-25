@@ -14,6 +14,7 @@
 #include <algorithm>
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
@@ -336,6 +337,24 @@ bool CheckIsChromeSxSProcess() {
 bool InstallUtil::IsChromeSxSProcess() {
   static bool sxs = CheckIsChromeSxSProcess();
   return sxs;
+}
+
+bool InstallUtil::HasDelegateExecuteHandler(BrowserDistribution* dist,
+                                            const string16& chrome_exe) {
+  bool found = false;
+  bool system_install = !IsPerUserInstall(chrome_exe.c_str());
+  scoped_ptr<Version> version(GetChromeVersion(dist, system_install));
+  if (!version.get()) {
+    LOG(ERROR) << __FUNCTION__ << " failed to determine version of "
+               << dist->GetAppShortCutName() << " installed at " << chrome_exe;
+  } else {
+    FilePath handler(
+        FilePath(chrome_exe).DirName()
+            .AppendASCII(version->GetString())
+            .Append(installer::kDelegateExecuteExe));
+    found = file_util::PathExists(handler);
+  }
+  return found;
 }
 
 // This method tries to delete a registry key and logs an error message
