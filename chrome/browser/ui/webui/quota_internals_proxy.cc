@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,30 +20,6 @@ QuotaInternalsProxy::QuotaInternalsProxy(QuotaInternalsHandler* handler)
     : handler_(handler),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
-
-QuotaInternalsProxy::~QuotaInternalsProxy() {}
-
-#define RELAY_TO_HANDLER(func, arg_t) \
-  void QuotaInternalsProxy::func(arg_t arg) {                 \
-    if (!handler_)                                            \
-      return;                                                 \
-    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {     \
-      BrowserThread::PostTask(                                \
-          BrowserThread::UI, FROM_HERE,                       \
-          base::Bind(&QuotaInternalsProxy::func, this, arg)); \
-      return;                                                 \
-    }                                                         \
-                                                              \
-    handler_->func(arg);                                      \
-  }
-
-RELAY_TO_HANDLER(ReportAvailableSpace, int64)
-RELAY_TO_HANDLER(ReportGlobalInfo, const GlobalStorageInfo&)
-RELAY_TO_HANDLER(ReportPerHostInfo, const std::vector<PerHostStorageInfo>&)
-RELAY_TO_HANDLER(ReportPerOriginInfo, const std::vector<PerOriginStorageInfo>&)
-RELAY_TO_HANDLER(ReportStatistics, const Statistics&)
-
-#undef RELAY_TO_HANDLER
 
 void QuotaInternalsProxy::RequestInfo(
     scoped_refptr<quota::QuotaManager> quota_manager) {
@@ -86,6 +62,30 @@ void QuotaInternalsProxy::RequestInfo(
   quota_manager_->GetStatistics(&stats);
   ReportStatistics(stats);
 }
+
+QuotaInternalsProxy::~QuotaInternalsProxy() {}
+
+#define RELAY_TO_HANDLER(func, arg_t) \
+  void QuotaInternalsProxy::func(arg_t arg) {                 \
+    if (!handler_)                                            \
+      return;                                                 \
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {     \
+      BrowserThread::PostTask(                                \
+          BrowserThread::UI, FROM_HERE,                       \
+          base::Bind(&QuotaInternalsProxy::func, this, arg)); \
+      return;                                                 \
+    }                                                         \
+                                                              \
+    handler_->func(arg);                                      \
+  }
+
+RELAY_TO_HANDLER(ReportAvailableSpace, int64)
+RELAY_TO_HANDLER(ReportGlobalInfo, const GlobalStorageInfo&)
+RELAY_TO_HANDLER(ReportPerHostInfo, const std::vector<PerHostStorageInfo>&)
+RELAY_TO_HANDLER(ReportPerOriginInfo, const std::vector<PerOriginStorageInfo>&)
+RELAY_TO_HANDLER(ReportStatistics, const Statistics&)
+
+#undef RELAY_TO_HANDLER
 
 void QuotaInternalsProxy::DidGetAvailableSpace(quota::QuotaStatusCode status,
                                                int64 space) {
@@ -167,25 +167,6 @@ void QuotaInternalsProxy::DidGetHostUsage(const std::string& host,
                  hosts_pending_.begin()->second);
 }
 
-void QuotaInternalsProxy::VisitHost(const std::string& host,
-                                    quota::StorageType type) {
-  if (hosts_visited_.insert(std::make_pair(host, type)).second) {
-    hosts_pending_.insert(std::make_pair(host, type));
-    if (hosts_pending_.size() == 1) {
-      GetHostUsage(host, type);
-    }
-  }
-}
-
-void QuotaInternalsProxy::GetHostUsage(const std::string& host,
-                                       quota::StorageType type) {
-  DCHECK(quota_manager_);
-  quota_manager_->GetHostUsage(
-      host, type,
-      base::Bind(&QuotaInternalsProxy::DidGetHostUsage,
-                 weak_factory_.GetWeakPtr()));
-}
-
 void QuotaInternalsProxy::RequestPerOriginInfo(quota::StorageType type) {
   DCHECK(quota_manager_);
 
@@ -213,6 +194,25 @@ void QuotaInternalsProxy::RequestPerOriginInfo(quota::StorageType type) {
   }
   ReportPerOriginInfo(origin_info);
   ReportPerHostInfo(host_info);
+}
+
+void QuotaInternalsProxy::VisitHost(const std::string& host,
+                                    quota::StorageType type) {
+  if (hosts_visited_.insert(std::make_pair(host, type)).second) {
+    hosts_pending_.insert(std::make_pair(host, type));
+    if (hosts_pending_.size() == 1) {
+      GetHostUsage(host, type);
+    }
+  }
+}
+
+void QuotaInternalsProxy::GetHostUsage(const std::string& host,
+                                       quota::StorageType type) {
+  DCHECK(quota_manager_);
+  quota_manager_->GetHostUsage(
+      host, type,
+      base::Bind(&QuotaInternalsProxy::DidGetHostUsage,
+                 weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace quota_internals

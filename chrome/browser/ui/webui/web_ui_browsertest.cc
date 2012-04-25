@@ -253,6 +253,8 @@ class MockWebUIDataSource : public ChromeURLDataManager::DataSource {
       : ChromeURLDataManager::DataSource("dummyurl", MessageLoop::current()) {}
 
  private:
+  virtual ~MockWebUIDataSource() {}
+
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
                                 int request_id) OVERRIDE {

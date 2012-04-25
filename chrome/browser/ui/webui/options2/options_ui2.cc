@@ -111,7 +111,6 @@ class OptionsUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
   // The constructor takes over ownership of |localized_strings|.
   explicit OptionsUIHTMLSource(DictionaryValue* localized_strings);
-  virtual ~OptionsUIHTMLSource();
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -121,6 +120,8 @@ class OptionsUIHTMLSource : public ChromeURLDataManager::DataSource {
   virtual std::string GetMimeType(const std::string&) const;
 
  private:
+  virtual ~OptionsUIHTMLSource();
+
   // Localized strings collection.
   scoped_ptr<DictionaryValue> localized_strings_;
 
@@ -132,8 +133,6 @@ OptionsUIHTMLSource::OptionsUIHTMLSource(DictionaryValue* localized_strings)
   DCHECK(localized_strings);
   localized_strings_.reset(localized_strings);
 }
-
-OptionsUIHTMLSource::~OptionsUIHTMLSource() {}
 
 void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
                                             bool is_incognito,
@@ -165,6 +164,8 @@ std::string OptionsUIHTMLSource::GetMimeType(const std::string& path) const {
 
   return "text/html";
 }
+
+OptionsUIHTMLSource::~OptionsUIHTMLSource() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 //

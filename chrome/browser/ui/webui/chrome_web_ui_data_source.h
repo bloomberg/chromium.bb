@@ -53,9 +53,9 @@ class ChromeWebUIDataSource : public ChromeURLDataManager::DataSource {
     default_resource_ = resource_id;
   }
 
+ protected:
   virtual ~ChromeWebUIDataSource();
 
- protected:
   // Completes a request by sending our dictionary of localized strings.
   void SendLocalizedStringsAsJSON(int request_id);
 

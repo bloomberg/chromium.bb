@@ -37,7 +37,6 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   FullscreenController(BrowserWindow* window,
                        Profile* profile,
                        Browser* browser);
-  virtual ~FullscreenController();
 
   // Querying.
 
@@ -81,6 +80,8 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   FullscreenExitBubbleType GetFullscreenExitBubbleType() const;
 
  private:
+  friend class base::RefCounted<FullscreenController>;
+
   enum MouseLockState {
     MOUSELOCK_NOT_REQUESTED,
     // The page requests to lock the mouse and the user hasn't responded to the
@@ -89,6 +90,8 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
     // Mouse lock has been allowed by the user.
     MOUSELOCK_ACCEPTED
   };
+
+  virtual ~FullscreenController();
 
   // Notifies the tab that it has been forced out of fullscreen mode if
   // necessary.

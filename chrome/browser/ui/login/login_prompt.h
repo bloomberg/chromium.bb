@@ -36,7 +36,6 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
                      public content::NotificationObserver {
  public:
   LoginHandler(net::AuthChallengeInfo* auth_info, net::URLRequest* request);
-  virtual ~LoginHandler();
 
   // Builds the platform specific LoginHandler. Used from within
   // CreateLoginPrompt() which creates tasks.
@@ -84,6 +83,8 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
   bool WasAuthHandled() const;
 
  protected:
+  virtual ~LoginHandler();
+
   void SetModel(LoginModel* model);
 
   void SetDialog(ConstrainedWindow* dialog);

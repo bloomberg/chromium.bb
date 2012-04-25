@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,9 +16,6 @@ class MockChromeWebUIDataSource : public ChromeWebUIDataSource {
       : ChromeWebUIDataSource("host"),
         result_request_id_(-1),
         result_data_(NULL) {
-  }
-
-  virtual ~MockChromeWebUIDataSource() {
   }
 
   // Subvert protected methods.
@@ -39,6 +36,9 @@ class MockChromeWebUIDataSource : public ChromeWebUIDataSource {
 
   int result_request_id_;
   scoped_refptr<RefCountedMemory> result_data_;
+
+ private:
+  virtual ~MockChromeWebUIDataSource() {}
 };
 
 class ChromeWebUIDataSourceTest : public testing::Test {

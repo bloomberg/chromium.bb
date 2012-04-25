@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,8 @@ class BookmarksUIHTMLSource : public ChromeURLDataManager::DataSource {
   virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
 
  private:
+  virtual ~BookmarksUIHTMLSource();
+
   DISALLOW_COPY_AND_ASSIGN(BookmarksUIHTMLSource);
 };
 

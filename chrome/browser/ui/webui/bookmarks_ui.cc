@@ -51,6 +51,8 @@ std::string BookmarksUIHTMLSource::GetMimeType(const std::string& path) const {
   return "text/html";
 }
 
+BookmarksUIHTMLSource::~BookmarksUIHTMLSource() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // BookmarksUI

@@ -740,11 +740,15 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
   }
 
  private:
+  friend class base::RefCountedThreadSafe<AboutDnsHandler>;
+
   AboutDnsHandler(AboutUIHTMLSource* source, int request_id)
       : source_(source),
         request_id_(request_id) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
+
+  virtual ~AboutDnsHandler() {}
 
   // Calls FinishOnUIThread() on completion.
   void StartOnUIThread() {

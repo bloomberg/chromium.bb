@@ -54,7 +54,6 @@ class SelectFileDialogImpl;
 class SelectFileDialogImpl : public SelectFileDialog {
  public:
   explicit SelectFileDialogImpl(Listener* listener);
-  virtual ~SelectFileDialogImpl();
 
   // BaseShellDialog implementation.
   virtual bool IsRunning(gfx::NativeWindow parent_window) const;
@@ -85,9 +84,11 @@ class SelectFileDialogImpl : public SelectFileDialog {
                               int file_type_index,
                               const FilePath::StringType& default_extension,
                               gfx::NativeWindow owning_window,
-                              void* params);
+                              void* params) OVERRIDE;
 
  private:
+  virtual ~SelectFileDialogImpl();
+
   // Gets the accessory view for the save dialog.
   NSView* GetAccessoryView(const FileTypeInfo* file_types,
                            int file_type_index);
@@ -122,28 +123,48 @@ SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
                initWithSelectFileDialogImpl:this]) {
 }
 
-SelectFileDialogImpl::~SelectFileDialogImpl() {
-  // Walk through the open dialogs and close them all.  Use a temporary vector
-  // to hold the pointers, since we can't delete from the map as we're iterating
-  // through it.
-  std::vector<NSSavePanel*> panels;
-  for (std::map<NSSavePanel*, void*>::iterator it = params_map_.begin();
-       it != params_map_.end(); ++it) {
-    panels.push_back(it->first);
-  }
-
-  for (std::vector<NSSavePanel*>::iterator it = panels.begin();
-       it != panels.end(); ++it) {
-    [*it cancel:*it];
-  }
-}
-
 bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow parent_window) const {
   return parents_.find(parent_window) != parents_.end();
 }
 
 void SelectFileDialogImpl::ListenerDestroyed() {
   listener_ = NULL;
+}
+
+void SelectFileDialogImpl::FileWasSelected(NSSavePanel* dialog,
+                                           NSWindow* parent_window,
+                                           bool was_cancelled,
+                                           bool is_multi,
+                                           const std::vector<FilePath>& files,
+                                           int index) {
+  void* params = params_map_[dialog];
+  params_map_.erase(dialog);
+  parents_.erase(parent_window);
+  type_map_.erase(dialog);
+
+  [dialog setDelegate:nil];
+
+  if (!listener_)
+    return;
+
+  if (was_cancelled) {
+    listener_->FileSelectionCanceled(params);
+  } else {
+    if (is_multi) {
+      listener_->MultiFilesSelected(files, params);
+    } else {
+      listener_->FileSelected(files[0], index, params);
+    }
+  }
+}
+
+bool SelectFileDialogImpl::ShouldEnableFilename(NSSavePanel* dialog,
+                                                NSString* filename) {
+  // If this is a single open file dialog, disable selecting packages.
+  if (type_map_[dialog] != SELECT_OPEN_FILE)
+    return true;
+
+  return ![[NSWorkspace sharedWorkspace] isFilePackageAtPath:filename];
 }
 
 void SelectFileDialogImpl::SelectFileImpl(
@@ -270,30 +291,19 @@ void SelectFileDialogImpl::SelectFileImpl(
   }
 }
 
-void SelectFileDialogImpl::FileWasSelected(NSSavePanel* dialog,
-                                           NSWindow* parent_window,
-                                           bool was_cancelled,
-                                           bool is_multi,
-                                           const std::vector<FilePath>& files,
-                                           int index) {
-  void* params = params_map_[dialog];
-  params_map_.erase(dialog);
-  parents_.erase(parent_window);
-  type_map_.erase(dialog);
+SelectFileDialogImpl::~SelectFileDialogImpl() {
+  // Walk through the open dialogs and close them all.  Use a temporary vector
+  // to hold the pointers, since we can't delete from the map as we're iterating
+  // through it.
+  std::vector<NSSavePanel*> panels;
+  for (std::map<NSSavePanel*, void*>::iterator it = params_map_.begin();
+       it != params_map_.end(); ++it) {
+    panels.push_back(it->first);
+  }
 
-  [dialog setDelegate:nil];
-
-  if (!listener_)
-    return;
-
-  if (was_cancelled) {
-    listener_->FileSelectionCanceled(params);
-  } else {
-    if (is_multi) {
-      listener_->MultiFilesSelected(files, params);
-    } else {
-      listener_->FileSelected(files[0], index, params);
-    }
+  for (std::vector<NSSavePanel*>::iterator it = panels.begin();
+       it != panels.end(); ++it) {
+    [*it cancel:*it];
   }
 }
 
@@ -333,15 +343,6 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
 
   [popup selectItemAtIndex:file_type_index-1];  // 1-based
   return accessory_view;
-}
-
-bool SelectFileDialogImpl::ShouldEnableFilename(NSSavePanel* dialog,
-                                                NSString* filename) {
-  // If this is a single open file dialog, disable selecting packages.
-  if (type_map_[dialog] != SELECT_OPEN_FILE)
-    return true;
-
-  return ![[NSWorkspace sharedWorkspace] isFilePackageAtPath:filename];
 }
 
 bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {

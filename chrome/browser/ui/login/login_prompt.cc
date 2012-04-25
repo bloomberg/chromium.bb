@@ -105,8 +105,15 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
   }
 }
 
-LoginHandler::~LoginHandler() {
-  SetModel(NULL);
+void LoginHandler::OnRequestCancelled() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
+      "Why is OnRequestCancelled called from the UI thread?";
+
+  // Reference is no longer valid.
+  request_ = NULL;
+
+  // Give up on auth if the request was cancelled.
+  CancelAuth();
 }
 
 void LoginHandler::SetPasswordForm(const webkit::forms::PasswordForm& form) {
@@ -184,34 +191,6 @@ void LoginHandler::CancelAuth() {
       base::Bind(&LoginHandler::CancelAuthDeferred, this));
 }
 
-void LoginHandler::OnRequestCancelled() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
-      "Why is OnRequestCancelled called from the UI thread?";
-
-  // Reference is no longer valid.
-  request_ = NULL;
-
-  // Give up on auth if the request was cancelled.
-  CancelAuth();
-}
-
-void LoginHandler::AddObservers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // This is probably OK; we need to listen to everything and we break out of
-  // the Observe() if we aren't handling the same auth_info().
-  registrar_.reset(new content::NotificationRegistrar);
-  registrar_->Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
-                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_->Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
-                  content::NotificationService::AllBrowserContextsAndSources());
-}
-
-void LoginHandler::RemoveObservers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  registrar_.reset();
-}
 
 void LoginHandler::Observe(int type,
                            const content::NotificationSource& source,
@@ -255,6 +234,17 @@ void LoginHandler::Observe(int type,
   }
 }
 
+// Returns whether authentication had been handled (SetAuth or CancelAuth).
+bool LoginHandler::WasAuthHandled() const {
+  base::AutoLock lock(handled_auth_lock_);
+  bool was_handled = handled_auth_;
+  return was_handled;
+}
+
+LoginHandler::~LoginHandler() {
+  SetModel(NULL);
+}
+
 void LoginHandler::SetModel(LoginModel* model) {
   if (login_model_)
     login_model_->SetObserver(NULL);
@@ -287,23 +277,40 @@ void LoginHandler::NotifyAuthNeeded() {
                   content::Details<LoginNotificationDetails>(&details));
 }
 
-void LoginHandler::NotifyAuthCancelled() {
+void LoginHandler::ReleaseSoon() {
+  if (!TestAndSetAuthHandled()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&LoginHandler::CancelAuthDeferred, this));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&LoginHandler::NotifyAuthCancelled, this));
+  }
+
+  BrowserThread::PostTask(
+    BrowserThread::UI, FROM_HERE,
+    base::Bind(&LoginHandler::RemoveObservers, this));
+
+  // Delete this object once all InvokeLaters have been called.
+  BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, this);
+}
+
+void LoginHandler::AddObservers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(WasAuthHandled());
 
-  content::NotificationService* service =
-      content::NotificationService::current();
-  NavigationController* controller = NULL;
+  // This is probably OK; we need to listen to everything and we break out of
+  // the Observe() if we aren't handling the same auth_info().
+  registrar_.reset(new content::NotificationRegistrar);
+  registrar_->Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
+                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_->Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
+                  content::NotificationService::AllBrowserContextsAndSources());
+}
 
-  WebContents* requesting_contents = GetWebContentsForLogin();
-  if (requesting_contents)
-    controller = &requesting_contents->GetController();
+void LoginHandler::RemoveObservers() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  LoginNotificationDetails details(this);
-
-  service->Notify(chrome::NOTIFICATION_AUTH_CANCELLED,
-                  content::Source<NavigationController>(controller),
-                  content::Details<LoginNotificationDetails>(&details));
+  registrar_.reset();
 }
 
 void LoginHandler::NotifyAuthSupplied(const string16& username,
@@ -327,29 +334,23 @@ void LoginHandler::NotifyAuthSupplied(const string16& username,
       content::Details<AuthSuppliedLoginNotificationDetails>(&details));
 }
 
-void LoginHandler::ReleaseSoon() {
-  if (!TestAndSetAuthHandled()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&LoginHandler::CancelAuthDeferred, this));
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&LoginHandler::NotifyAuthCancelled, this));
-  }
+void LoginHandler::NotifyAuthCancelled() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(WasAuthHandled());
 
-  BrowserThread::PostTask(
-    BrowserThread::UI, FROM_HERE,
-    base::Bind(&LoginHandler::RemoveObservers, this));
+  content::NotificationService* service =
+      content::NotificationService::current();
+  NavigationController* controller = NULL;
 
-  // Delete this object once all InvokeLaters have been called.
-  BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, this);
-}
+  WebContents* requesting_contents = GetWebContentsForLogin();
+  if (requesting_contents)
+    controller = &requesting_contents->GetController();
 
-// Returns whether authentication had been handled (SetAuth or CancelAuth).
-bool LoginHandler::WasAuthHandled() const {
-  base::AutoLock lock(handled_auth_lock_);
-  bool was_handled = handled_auth_;
-  return was_handled;
+  LoginNotificationDetails details(this);
+
+  service->Notify(chrome::NOTIFICATION_AUTH_CANCELLED,
+                  content::Source<NavigationController>(controller),
+                  content::Details<LoginNotificationDetails>(&details));
 }
 
 // Marks authentication as handled and returns the previous handled state.

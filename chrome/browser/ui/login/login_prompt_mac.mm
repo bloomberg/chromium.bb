@@ -42,9 +42,6 @@ class LoginHandlerMac : public LoginHandler,
         sheet_controller_(nil) {
   }
 
-  virtual ~LoginHandlerMac() {
-  }
-
   // LoginModelObserver implementation.
   virtual void OnAutofillDataAvailable(const string16& username,
                                        const string16& password) {
@@ -115,6 +112,8 @@ class LoginHandlerMac : public LoginHandler,
 
  private:
   friend class LoginPrompt;
+
+  virtual ~LoginHandlerMac() {}
 
   // The Cocoa controller of the GUI.
   LoginHandlerSheet* sheet_controller_;

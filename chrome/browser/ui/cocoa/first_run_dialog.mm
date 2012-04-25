@@ -57,7 +57,12 @@ class FirstRunShowBridge : public base::RefCounted<FirstRunShowBridge> {
   FirstRunShowBridge(FirstRunDialogController* controller);
 
   void ShowDialog();
+
  private:
+  friend class base::RefCounted<FirstRunShowBridge>;
+
+  ~FirstRunShowBridge();
+
   FirstRunDialogController* controller_;
 };
 
@@ -69,6 +74,8 @@ void FirstRunShowBridge::ShowDialog() {
   [controller_ show];
   MessageLoop::current()->QuitNow();
 }
+
+FirstRunShowBridge::~FirstRunShowBridge() {}
 
 // Show the first run UI.
 void ShowFirstRun(Profile* profile) {

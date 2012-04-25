@@ -66,11 +66,6 @@ struct ExtensionIconSource::ExtensionIconRequest {
   ExtensionIconSet::MatchType match;
 };
 
-ExtensionIconSource::~ExtensionIconSource() {
-  // Clean up all the temporary data we're holding for requests.
-  STLDeleteValues(&request_map_);
-}
-
 // static
 GURL ExtensionIconSource::GetIconURL(const Extension* extension,
                                      int icon_size,
@@ -130,15 +125,9 @@ void ExtensionIconSource::StartDataRequest(const std::string& path,
   }
 }
 
-void ExtensionIconSource::LoadIconFailed(int request_id) {
-  ExtensionIconRequest* request = GetData(request_id);
-  ExtensionResource icon =
-      request->extension->GetIconResource(request->size, request->match);
-
-  if (request->size == ExtensionIconSet::EXTENSION_ICON_BITTY)
-    LoadFaviconImage(request_id);
-  else
-    LoadDefaultImage(request_id);
+ExtensionIconSource::~ExtensionIconSource() {
+  // Clean up all the temporary data we're holding for requests.
+  STLDeleteValues(&request_map_);
 }
 
 const SkBitmap* ExtensionIconSource::GetWebStoreImage() {
@@ -263,6 +252,17 @@ void ExtensionIconSource::OnImageLoaded(const gfx::Image& image,
     LoadIconFailed(request_id);
   else
     FinalizeImage(image.ToSkBitmap(), request_id);
+}
+
+void ExtensionIconSource::LoadIconFailed(int request_id) {
+  ExtensionIconRequest* request = GetData(request_id);
+  ExtensionResource icon =
+      request->extension->GetIconResource(request->size, request->match);
+
+  if (request->size == ExtensionIconSet::EXTENSION_ICON_BITTY)
+    LoadFaviconImage(request_id);
+  else
+    LoadDefaultImage(request_id);
 }
 
 bool ExtensionIconSource::ParseData(const std::string& path,

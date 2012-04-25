@@ -49,7 +49,6 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
                             public ImageLoadingTracker::Observer {
  public:
   explicit ExtensionIconSource(Profile* profile);
-  virtual ~ExtensionIconSource();
 
   // Gets the URL of the |extension| icon in the given |icon_size|, falling back
   // based on the |match| type. If |grayscale|, the URL will be for the
@@ -77,6 +76,8 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
  private:
   // Encapsulates the request parameters for |request_id|.
   struct ExtensionIconRequest;
+
+  virtual ~ExtensionIconSource();
 
   // Returns the bitmap for the webstore icon.
   const SkBitmap* GetWebStoreImage();

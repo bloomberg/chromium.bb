@@ -23,6 +23,9 @@ class TestFileIconSource : public FileIconSource {
   MOCK_METHOD3(FetchFileIcon, void(const FilePath& path,
                                    IconLoader::IconSize icon_size,
                                    int request_id));
+
+ private:
+  virtual ~TestFileIconSource() {}
 };
 
 class FileIconSourceTest : public testing::Test {

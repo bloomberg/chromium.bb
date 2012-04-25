@@ -37,8 +37,6 @@ FullscreenController::FullscreenController(BrowserWindow* window,
     mouse_lock_state_(MOUSELOCK_NOT_REQUESTED) {
 }
 
-FullscreenController::~FullscreenController() {}
-
 bool FullscreenController::IsFullscreenForBrowser() const {
   return window_->IsFullscreen() && !tab_caused_fullscreen_;
 }
@@ -270,6 +268,8 @@ bool FullscreenController::HandleUserPressedEscape() {
   ExitTabbedFullscreenModeIfNecessary();
   return true;
 }
+
+FullscreenController::~FullscreenController() {}
 
 void FullscreenController::NotifyTabOfFullscreenExitIfNecessary() {
   if (fullscreened_tab_) {

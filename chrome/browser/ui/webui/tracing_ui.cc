@@ -142,6 +142,7 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
 
  private:
   friend class base::RefCountedThreadSafe<TaskProxy>;
+  ~TaskProxy() {}
 
   // The message handler to call callbacks on.
   base::WeakPtr<TracingMessageHandler> handler_;
