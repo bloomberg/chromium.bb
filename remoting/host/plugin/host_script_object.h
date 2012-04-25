@@ -81,6 +81,8 @@ class HostNPScriptObject : public HostStatusObserver {
   // standard LOG(INFO) and it will be sent to this method.
   void PostLogDebugInfo(const std::string& message);
 
+  void SetWindow(NPWindow* np_window);
+
  private:
   // These state values are duplicated in the JS code. Remember to update both
   // copies when making changes.

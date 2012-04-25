@@ -161,6 +161,12 @@ class HostNPPlugin : public remoting::PluginMessageLoopProxy::Delegate {
     return true;
   }
 
+  void SetWindow(NPWindow* np_window) {
+    if (scriptable_object_) {
+      ScriptableFromObject(scriptable_object_)->SetWindow(np_window);
+    }
+  }
+
   static void NPDelayedTaskSpringboard(NPP npp, uint32_t timer_id) {
     HostNPPlugin* self = reinterpret_cast<HostNPPlugin*>(npp->pdata);
     DelayedTask task;
@@ -419,6 +425,10 @@ NPError HandleEvent(NPP instance, void* ev) {
 
 NPError SetWindow(NPP instance, NPWindow* pNPWindow) {
   VLOG(2) << "SetWindow";
+  HostNPPlugin* plugin = PluginFromInstance(instance);
+  if (plugin) {
+    plugin->SetWindow(pNPWindow);
+  }
   return NPERR_NO_ERROR;
 }
 

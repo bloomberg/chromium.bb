@@ -26,7 +26,8 @@ class DaemonInstallerWin {
   // Creates an instance of the Chromoting Host installer passing the completion
   // callback to be called when the installation finishes. In case of an error
   // returns NULL and passed the error code to |done|.
-  static scoped_ptr<DaemonInstallerWin> Create(CompletionCallback done);
+  static scoped_ptr<DaemonInstallerWin> Create(HWND window_handle,
+                                               CompletionCallback done);
 
  protected:
   DaemonInstallerWin(const CompletionCallback& done);
@@ -41,6 +42,11 @@ class DaemonInstallerWin {
 
   DISALLOW_COPY_AND_ASSIGN(DaemonInstallerWin);
 };
+
+// Returns the first top-level (i.e. WS_OVERLAPPED or WS_POPUP) window in
+// the chain of parents of |window|. Returns |window| if it represents
+// a top-level window. Returns NULL when |window| is NULL.
+HWND GetTopLevelWindow(HWND window);
 
 }  // namespace remoting
 

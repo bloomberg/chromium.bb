@@ -63,6 +63,7 @@ class DaemonControllerLinux : public remoting::DaemonController {
   virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
                             const CompletionCallback& done_callback) OVERRIDE;
   virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
+  virtual void SetWindow(void* window_handle) OVERRIDE;
 
  private:
   FilePath GetConfigPath();
@@ -178,6 +179,10 @@ void DaemonControllerLinux::Stop(const CompletionCallback& done_callback) {
   file_io_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
       &DaemonControllerLinux::DoStop, base::Unretained(this),
       done_callback));
+}
+
+void DaemonControllerLinux::SetWindow(void* window_handle) {
+  // noop
 }
 
 FilePath DaemonControllerLinux::GetConfigPath() {

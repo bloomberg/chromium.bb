@@ -64,6 +64,7 @@ class DaemonControllerMac : public remoting::DaemonController {
   virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
                             const CompletionCallback& done_callback) OVERRIDE;
   virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
+  virtual void SetWindow(void* window_handle) OVERRIDE;
 
  private:
   void DoGetConfig(const GetConfigCallback& callback);
@@ -144,6 +145,10 @@ void DaemonControllerMac::Stop(const CompletionCallback& done_callback) {
   auth_thread_.message_loop_proxy()->PostTask(
       FROM_HERE, base::Bind(
           &DaemonControllerMac::DoStop, base::Unretained(this), done_callback));
+}
+
+void DaemonControllerMac::SetWindow(void* window_handle) {
+  // noop
 }
 
 void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {

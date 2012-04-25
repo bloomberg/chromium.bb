@@ -956,6 +956,10 @@ void HostNPScriptObject::PostLogDebugInfo(const std::string& message) {
                             base::Unretained(this), message));
 }
 
+void HostNPScriptObject::SetWindow(NPWindow* np_window) {
+  daemon_controller_->SetWindow(np_window->window);
+}
+
 void HostNPScriptObject::LocalizeStrings(NPObject* localize_func) {
   DCHECK(plugin_message_loop_proxy_->BelongsToCurrentThread());
 

@@ -332,12 +332,13 @@ void DaemonInstallerWin::Done(HRESULT result) {
 
 // static
 scoped_ptr<DaemonInstallerWin> DaemonInstallerWin::Create(
+    HWND window_handle,
     CompletionCallback done) {
   // Check if the machine instance of Omaha is available.
   BIND_OPTS3 bind_options;
   memset(&bind_options, 0, sizeof(bind_options));
   bind_options.cbStruct = sizeof(bind_options);
-  bind_options.hwnd = NULL;
+  bind_options.hwnd = GetTopLevelWindow(window_handle);
   bind_options.dwClassContext = CLSCTX_LOCAL_SERVER;
 
   ScopedComPtr<omaha::IGoogleUpdate3Web> update3;
@@ -362,6 +363,27 @@ scoped_ptr<DaemonInstallerWin> DaemonInstallerWin::Create(
     // The user declined the UAC prompt or some other error occured.
     done.Run(result);
     return scoped_ptr<DaemonInstallerWin>();
+  }
+}
+
+HWND GetTopLevelWindow(HWND window) {
+  if (window == NULL) {
+    return NULL;
+  }
+
+  for (;;) {
+    LONG style = GetWindowLong(window, GWL_STYLE);
+    if ((style & WS_OVERLAPPEDWINDOW) == WS_OVERLAPPEDWINDOW ||
+        (style & WS_POPUP) == WS_POPUP) {
+      return window;
+    }
+
+    HWND parent = GetAncestor(window, GA_PARENT);
+    if (parent == NULL) {
+      return window;
+    }
+
+    window = parent;
   }
 }
 

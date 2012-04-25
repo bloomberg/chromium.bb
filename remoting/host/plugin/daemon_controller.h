@@ -120,6 +120,10 @@ class DaemonController {
   // GetState until the state is STATE_STOPPED.
   virtual void Stop(const CompletionCallback& done_callback) = 0;
 
+  // Caches the native handle of the plugin window so it can be used to focus
+  // elevation prompts properly.
+  virtual void SetWindow(void* window_handle) = 0;
+
   static scoped_ptr<DaemonController> Create();
 };
 

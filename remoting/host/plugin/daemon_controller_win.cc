@@ -37,7 +37,7 @@ namespace remoting {
 
 namespace {
 
-// The COM elevation moniker for the elevated controller.
+// The COM elevation moniker for the Elevated Controller.
 const char16 kDaemonControllerElevationMoniker[] =
     TO_L_STRING("Elevation:Administrator!new:")
     TO_L_STRING("ChromotingElevatedController.ElevatedController");
@@ -53,7 +53,8 @@ class ComThread : public base::Thread {
   // Activates an elevated instance of the controller and returns the pointer
   // to the control interface in |control_out|. This class keeps the ownership
   // of the pointer so the caller should not call call AddRef() or Release().
-  HRESULT ActivateElevatedController(IDaemonControl** control_out);
+  HRESULT ActivateElevatedController(HWND window_handle,
+                                     IDaemonControl** control_out);
 
   bool Start();
 
@@ -79,6 +80,7 @@ class DaemonControllerWin : public remoting::DaemonController {
   virtual void UpdateConfig(scoped_ptr<base::DictionaryValue> config,
                             const CompletionCallback& done_callback) OVERRIDE;
   virtual void Stop(const CompletionCallback& done_callback) OVERRIDE;
+  virtual void SetWindow(void* window_handle) OVERRIDE;
 
  private:
   // Converts a Windows service status code to a Daemon state.
@@ -106,6 +108,10 @@ class DaemonControllerWin : public remoting::DaemonController {
   void DoUpdateConfig(scoped_ptr<base::DictionaryValue> config,
                       const CompletionCallback& done_callback);
   void DoStop(const CompletionCallback& done_callback);
+  void DoSetWindow(void* window_handle);
+
+  // Handle of the plugin window.
+  HWND window_handle_;
 
   // The worker thread used for servicing long running operations.
   ComThread worker_thread_;
@@ -118,24 +124,16 @@ class DaemonControllerWin : public remoting::DaemonController {
 ComThread::ComThread(const char* name) : base::Thread(name), control_(NULL) {
 }
 
-void ComThread::Init() {
-  CoInitialize(NULL);
-}
-
-void ComThread::CleanUp() {
-  control_.Release();
-  CoUninitialize();
-}
-
 HRESULT ComThread::ActivateElevatedController(
+    HWND window_handle,
     IDaemonControl** control_out) {
-  // Chache the instance of Elevated Controller to prevent a UAC prompt on every
-  // operation.
+  // Cache an instance of the Elevated Controller to prevent a UAC prompt on
+  // every operation.
   if (control_.get() == NULL) {
     BIND_OPTS3 bind_options;
     memset(&bind_options, 0, sizeof(bind_options));
     bind_options.cbStruct = sizeof(bind_options);
-    bind_options.hwnd = NULL;
+    bind_options.hwnd = GetTopLevelWindow(window_handle);
     bind_options.dwClassContext  = CLSCTX_LOCAL_SERVER;
 
     HRESULT hr = ::CoGetObject(
@@ -158,8 +156,18 @@ bool ComThread::Start() {
   return StartWithOptions(thread_options);
 }
 
+void ComThread::Init() {
+  CoInitialize(NULL);
+}
+
+void ComThread::CleanUp() {
+  control_.Release();
+  CoUninitialize();
+}
+
 DaemonControllerWin::DaemonControllerWin()
-    : worker_thread_(kDaemonControllerThreadName) {
+    : window_handle_(NULL),
+      worker_thread_(kDaemonControllerThreadName) {
   if (!worker_thread_.Start()) {
     LOG(FATAL) << "Failed to start the Daemon Controller worker thread.";
   }
@@ -225,6 +233,13 @@ void DaemonControllerWin::Stop(const CompletionCallback& done_callback) {
       FROM_HERE, base::Bind(
           &DaemonControllerWin::DoStop, base::Unretained(this),
           done_callback));
+}
+
+void DaemonControllerWin::SetWindow(void* window_handle) {
+  worker_thread_.message_loop_proxy()->PostTask(
+      FROM_HERE, base::Bind(
+          &DaemonControllerWin::DoSetWindow, base::Unretained(this),
+          window_handle));
 }
 
 // static
@@ -367,7 +382,8 @@ void DaemonControllerWin::DoInstallAsNeededAndStart(
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   IDaemonControl* control = NULL;
-  HRESULT hr = worker_thread_.ActivateElevatedController(&control);
+  HRESULT hr = worker_thread_.ActivateElevatedController(window_handle_,
+                                                         &control);
 
   // Just configure and start the Daemon Controller if it is installed already.
   if (SUCCEEDED(hr)) {
@@ -378,6 +394,7 @@ void DaemonControllerWin::DoInstallAsNeededAndStart(
   // Otherwise, install it if its COM registration entry is missing.
   if (hr == CO_E_CLASSSTRING) {
     scoped_ptr<DaemonInstallerWin> installer = DaemonInstallerWin::Create(
+        window_handle_,
         base::Bind(&DaemonControllerWin::OnInstallationComplete,
                    base::Unretained(this),
                    base::Passed(&config),
@@ -400,7 +417,8 @@ void DaemonControllerWin::DoSetConfigAndStart(
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   IDaemonControl* control = NULL;
-  HRESULT hr = worker_thread_.ActivateElevatedController(&control);
+  HRESULT hr = worker_thread_.ActivateElevatedController(window_handle_,
+                                                         &control);
   if (FAILED(hr)) {
     done_callback.Run(HResultToAsyncResult(hr));
     return;
@@ -435,7 +453,8 @@ void DaemonControllerWin::DoUpdateConfig(
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   IDaemonControl* control = NULL;
-  HRESULT hr = worker_thread_.ActivateElevatedController(&control);
+  HRESULT hr = worker_thread_.ActivateElevatedController(window_handle_,
+                                                         &control);
   if (FAILED(hr)) {
     done_callback.Run(HResultToAsyncResult(hr));
     return;
@@ -459,7 +478,8 @@ void DaemonControllerWin::DoStop(const CompletionCallback& done_callback) {
   DCHECK(worker_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
   IDaemonControl* control = NULL;
-  HRESULT hr = worker_thread_.ActivateElevatedController(&control);
+  HRESULT hr = worker_thread_.ActivateElevatedController(window_handle_,
+                                                         &control);
   if (FAILED(hr)) {
     done_callback.Run(HResultToAsyncResult(hr));
     return;
@@ -467,6 +487,10 @@ void DaemonControllerWin::DoStop(const CompletionCallback& done_callback) {
 
   hr = control->StopDaemon();
   done_callback.Run(HResultToAsyncResult(hr));
+}
+
+void DaemonControllerWin::DoSetWindow(void* window_handle) {
+  window_handle_ = reinterpret_cast<HWND>(window_handle);
 }
 
 }  // namespace
