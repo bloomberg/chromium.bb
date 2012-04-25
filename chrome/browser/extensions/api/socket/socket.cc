@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/extensions/api/api_resource_event_notifier.h"
+#include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -13,11 +14,8 @@
 
 namespace extensions {
 
-Socket::Socket(const std::string& address, int port,
-               APIResourceEventNotifier* event_notifier)
+Socket::Socket(APIResourceEventNotifier* event_notifier)
     : APIResource(APIResource::SocketResource, event_notifier),
-      address_(address),
-      port_(port),
       is_connected_(false) {
 }
 
@@ -26,7 +24,9 @@ Socket::~Socket() {
   DCHECK(!is_connected_);
 }
 
-void Socket::OnDataRead(scoped_refptr<net::IOBuffer> io_buffer, int result) {
+void Socket::OnDataRead(scoped_refptr<net::IOBuffer> io_buffer,
+                        net::IPEndPoint* address,
+                        int result) {
   // OnDataRead will take ownership of data_value.
   ListValue* data_value = new ListValue();
   if (result >= 0) {
@@ -36,24 +36,59 @@ void Socket::OnDataRead(scoped_refptr<net::IOBuffer> io_buffer, int result) {
       data_value->Set(i, Value::CreateIntegerValue(io_buffer_start[i]));
     }
   }
-  event_notifier()->OnDataRead(result, data_value);
+
+  std::string ip_address_str;
+  int port = 0;
+  if (address)
+    IPEndPointToStringAndPort(*address, &ip_address_str, &port);
+  event_notifier()->OnDataRead(result, data_value, ip_address_str, port);
 }
 
 void Socket::OnWriteComplete(int result) {
   event_notifier()->OnWriteComplete(result);
 }
 
-int Socket::Read(scoped_refptr<net::IOBuffer> io_buffer, int io_buffer_len) {
-  return socket()->Read(
-      io_buffer.get(),
-      io_buffer_len,
-      base::Bind(&Socket::OnDataRead, base::Unretained(this), io_buffer));
+// static
+bool Socket::StringAndPortToIPEndPoint(const std::string& ip_address_str,
+                                       int port,
+                                       net::IPEndPoint* ip_end_point) {
+  DCHECK(ip_end_point);
+  net::IPAddressNumber ip_number;
+  if (!net::ParseIPLiteralToNumber(ip_address_str, &ip_number))
+    return false;
+
+  *ip_end_point = net::IPEndPoint(ip_number, port);
+  return true;
 }
 
-int Socket::Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count) {
-  return socket()->Write(
-      io_buffer.get(), byte_count,
-      base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
+bool Socket::StringAndPortToAddressList(const std::string& ip_address_str,
+                                        int port,
+                                        net::AddressList* address_list) {
+  DCHECK(address_list);
+  net::IPAddressNumber ip_number;
+  if (!net::ParseIPLiteralToNumber(ip_address_str, &ip_number))
+    return false;
+
+  *address_list = net::AddressList::CreateFromIPAddress(ip_number, port);
+  return true;
+}
+
+void Socket::IPEndPointToStringAndPort(const net::IPEndPoint& address,
+                                       std::string* ip_address_str,
+                                       int* port) {
+  DCHECK(ip_address_str);
+  DCHECK(port);
+  struct sockaddr_storage addr;
+  size_t addr_len = sizeof(addr);
+  if (address.ToSockAddr(reinterpret_cast<struct sockaddr*>(&addr),
+                         &addr_len)) {
+    *ip_address_str = net::NetAddressToString(
+        reinterpret_cast<struct sockaddr*>(&addr), addr_len);
+    *port = address.port();
+  } else {
+    *ip_address_str = "";
+    *port = 0;
+  }
 }
 
 }  // namespace extensions

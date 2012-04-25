@@ -16,10 +16,10 @@
 
       apiFunctions.setHandleRequest('create', function() {
           var args = arguments;
-          if (args.length > 3 && args[3] && args[3].onEvent) {
+          if (args.length > 1 && args[1] && args[1].onEvent) {
             var id = GetNextSocketEventId();
-            args[3].srcId = id;
-            chromeHidden.socket.handlers[id] = args[3].onEvent;
+            args[1].srcId = id;
+            chromeHidden.socket.handlers[id] = args[1].onEvent;
 
             // Keep the page alive until the event finishes.
             // Balanced in eventHandler.

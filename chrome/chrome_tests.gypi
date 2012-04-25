@@ -1315,7 +1315,6 @@
         'browser/extensions/api/proxy/proxy_api_helpers_unittest.cc',
         'browser/extensions/api/serial/serial_connection_unittest.cc',
         'browser/extensions/api/socket/tcp_socket_unittest.cc',
-        'browser/extensions/api/socket/udp_socket_unittest.cc',
         'browser/extensions/api/web_navigation/web_navigation_unittest.cc',
         'browser/extensions/api/web_request/web_request_api_unittest.cc',
         'browser/extensions/api/web_request/web_request_time_tracker_unittest.cc',

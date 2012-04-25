@@ -31,6 +31,8 @@ const char kIsFinalEventKey[] = "isFinalEvent";
 
 const char kResultCodeKey[] = "resultCode";
 const char kDataKey[] = "data";
+const char kAddressKey[] = "address";
+const char kPortKey[] = "port";
 
 APIResourceEventNotifier::APIResourceEventNotifier(
     ExtensionEventRouter* router,
@@ -51,7 +53,9 @@ void APIResourceEventNotifier::OnConnectComplete(int result_code) {
 }
 
 void APIResourceEventNotifier::OnDataRead(int result_code,
-                                          base::ListValue* data) {
+                                          base::ListValue* data,
+                                          const std::string& address,
+                                          int port) {
   // Do we have a destination for this event? There will be one if a source id
   // was injected by the request handler for the resource's create method in
   // schema_generated_bindings.js, which will in turn be the case if the caller
@@ -65,6 +69,8 @@ void APIResourceEventNotifier::OnDataRead(int result_code,
       API_RESOURCE_EVENT_DATA_READ);
   event->SetInteger(kResultCodeKey, result_code);
   event->Set(kDataKey, data);
+  event->SetString(kAddressKey, address);
+  event->SetInteger(kPortKey, port);
   DispatchEvent(event);
 }
 

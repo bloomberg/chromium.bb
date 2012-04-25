@@ -13,6 +13,8 @@
 #include "net/base/io_buffer.h"
 
 namespace net {
+class AddressList;
+class IPEndPoint;
 class Socket;
 }
 
@@ -24,31 +26,50 @@ class Socket : public APIResource {
  public:
   virtual ~Socket();
 
-  // Returns true iff the socket was able to properly initialize itself.
-  virtual bool IsValid() = 0;
-
   // Returns net::OK if successful, or an error code otherwise.
-  virtual int Connect() = 0;
+  virtual int Connect(const std::string& address, int port) = 0;
   virtual void Disconnect() = 0;
+
+  virtual int Bind(const std::string& address, int port) = 0;
 
   // Returns the number of bytes read into the buffer, or a negative number if
   // an error occurred.
-  virtual int Read(scoped_refptr<net::IOBuffer> io_buffer, int io_buffer_size);
+  virtual int Read(scoped_refptr<net::IOBuffer> io_buffer,
+                   int io_buffer_size) = 0;
 
   // Returns the number of bytes successfully written, or a negative error
   // code. Note that ERR_IO_PENDING means that the operation blocked, in which
   // case |event_notifier| (supplied at socket creation) will eventually be
   // called with the final result (again, either a nonnegative number of bytes
   // written, or a negative error).
-  virtual int Write(scoped_refptr<net::IOBuffer> io_buffer, int bytes);
+  virtual int Write(scoped_refptr<net::IOBuffer> io_buffer,
+                    int byte_count) = 0;
 
-  virtual void OnDataRead(scoped_refptr<net::IOBuffer> io_buffer, int result);
+  virtual int RecvFrom(scoped_refptr<net::IOBuffer> io_buffer,
+                       int io_buffer_size,
+                       net::IPEndPoint *address) = 0;
+  virtual int SendTo(scoped_refptr<net::IOBuffer> io_buffer,
+                     int byte_count,
+                     const std::string& address,
+                     int port) = 0;
+
+  virtual void OnDataRead(scoped_refptr<net::IOBuffer> io_buffer,
+                          net::IPEndPoint *address,
+                          int result);
   virtual void OnWriteComplete(int result);
 
+  static bool StringAndPortToAddressList(const std::string& ip_address_str,
+                                         int port,
+                                         net::AddressList* address_list);
+  static bool StringAndPortToIPEndPoint(const std::string& ip_address_str,
+                                        int port,
+                                        net::IPEndPoint* ip_end_point);
+  static void IPEndPointToStringAndPort(const net::IPEndPoint& address,
+                                        std::string* ip_address_str,
+                                        int* port);
+
  protected:
-  Socket(const std::string& address, int port,
-         APIResourceEventNotifier* event_notifier);
-  virtual net::Socket* socket() = 0;
+  explicit Socket(APIResourceEventNotifier* event_notifier);
 
   const std::string address_;
   int port_;

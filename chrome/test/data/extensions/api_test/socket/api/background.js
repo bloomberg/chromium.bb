@@ -72,7 +72,7 @@ var testSocketCreation = function() {
     chrome.test.succeed();
   }
 
-  socket.create(protocol, address, port, {onEvent: function(e) {}}, onCreate);
+  socket.create(protocol, {onEvent: function(e) {}}, onCreate);
 };
 
 function onDataRead(readInfo) {
@@ -91,19 +91,26 @@ function onDataRead(readInfo) {
   // Blocked. Wait for onEvent.
 }
 
-function onWriteComplete(writeInfo) {
+function onWriteOrSendToComplete(writeInfo) {
   bytesWritten += writeInfo.bytesWritten;
   if (bytesWritten == request.length) {
-    socket.read(socketId, onDataRead);
+    if (protocol == "tcp")
+      socket.read(socketId, onDataRead);
+    else
+      socket.recvFrom(socketId, onDataRead);
   }
   // Blocked. Wait for onEvent.
 }
 
-function onConnectComplete(connectResult) {
+function onConnectOrBindComplete(connectResult) {
   if (connectResult == 0) {
     string2ArrayBuffer(request, function(arrayBuffer) {
         var longs = arrayBufferToArrayOfLongs(arrayBuffer);
-        socket.write(socketId, longs, onWriteComplete);
+        if (protocol == "tcp")
+          socket.write(socketId, longs, onWriteOrSendToComplete);
+        else
+          socket.sendTo(socketId, longs, address, port,
+              onWriteOrSendToComplete);
       });
   }
   // Blocked. Wait for onEvent.
@@ -112,16 +119,19 @@ function onConnectComplete(connectResult) {
 function onCreate(socketInfo) {
   socketId = socketInfo.socketId;
   chrome.test.assertTrue(socketId > 0, "failed to create socket");
-  socket.connect(socketId, onConnectComplete);
+  if (protocol == "tcp")
+    socket.connect(socketId, address, port, onConnectOrBindComplete);
+  else
+    socket.bind(socketId, "0.0.0.0", 0, onConnectOrBindComplete);
 }
 
 function onEvent(socketEvent) {
   if (socketEvent.type == "connectComplete") {
-    onConnectComplete(socketEvent.resultCode);
+    onConnectOrBindComplete(socketEvent.resultCode);
   } else if (socketEvent.type == "dataRead") {
     onDataRead({resultCode: socketEvent.resultCode, data: socketEvent.data});
   } else if (socketEvent.type == "writeComplete") {
-    onWriteComplete(socketEvent.resultCode);
+    onWriteOnSendToComplete(socketEvent.resultCode);
   } else {
     console.log("Received unhandled socketEvent of type " + socketEvent.type);
   }
@@ -143,7 +153,7 @@ var testSending = function() {
   waitCount = 0;
 
   setTimeout(waitForBlockingOperation, 1000);
-  socket.create(protocol, address, port, { onEvent: onEvent }, onCreate);
+  socket.create(protocol, {onEvent: onEvent}, onCreate);
 };
 
 var onMessageReply = function(message) {

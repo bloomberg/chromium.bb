@@ -14,32 +14,22 @@
 
 namespace extensions {
 
-TCPSocket::TCPSocket(const std::string& address, int port,
-                     APIResourceEventNotifier* event_notifier)
-    : Socket(address, port, event_notifier) {
-  net::IPAddressNumber ip_number;
-  if (net::ParseIPLiteralToNumber(address, &ip_number)) {
-    net::AddressList address_list =
-        net::AddressList::CreateFromIPAddress(ip_number, port);
-    socket_.reset(new net::TCPClientSocket(address_list, NULL,
-                                           net::NetLog::Source()));
-  }
+TCPSocket::TCPSocket(APIResourceEventNotifier* event_notifier)
+    : Socket(event_notifier) {
 }
 
 // For testing.
 TCPSocket::TCPSocket(net::TCPClientSocket* tcp_client_socket,
-                     const std::string& address, int port,
                      APIResourceEventNotifier* event_notifier)
-    : Socket(address, port, event_notifier),
+    : Socket(event_notifier),
       socket_(tcp_client_socket) {
 }
 
 // static
 TCPSocket* TCPSocket::CreateSocketForTesting(
     net::TCPClientSocket* tcp_client_socket,
-    const std::string& address, int port,
     APIResourceEventNotifier* event_notifier) {
-  return new TCPSocket(tcp_client_socket, address, port, event_notifier);
+  return new TCPSocket(tcp_client_socket, event_notifier);
 }
 
 TCPSocket::~TCPSocket() {
@@ -48,24 +38,60 @@ TCPSocket::~TCPSocket() {
   }
 }
 
-bool TCPSocket::IsValid() {
-  return socket_ != NULL;
-}
+int TCPSocket::Connect(const std::string& address, int port) {
+  if (is_connected_)
+    return net::ERR_CONNECTION_FAILED;
 
-net::Socket* TCPSocket::socket() {
-  return socket_.get();
-}
+  net::AddressList address_list;
+  if (!StringAndPortToAddressList(address, port, &address_list))
+    return net::ERR_INVALID_ARGUMENT;
 
-int TCPSocket::Connect() {
+  socket_.reset(new net::TCPClientSocket(address_list, NULL,
+                                         net::NetLog::Source()));
+
   int result = socket_->Connect(base::Bind(
       &TCPSocket::OnConnect, base::Unretained(this)));
-  is_connected_ = result == net::OK;
+  if (result == net::OK) {
+    is_connected_ = true;
+  }
   return result;
 }
 
 void TCPSocket::Disconnect() {
   is_connected_ = false;
   socket_->Disconnect();
+}
+
+int TCPSocket::Bind(const std::string& address, int port) {
+  // TODO(penghuang): Supports bind for tcp?
+  return net::ERR_FAILED;
+}
+
+int TCPSocket::Read(scoped_refptr<net::IOBuffer> io_buffer, int io_buffer_len) {
+  return socket_->Read(
+      io_buffer.get(),
+      io_buffer_len,
+      base::Bind(&Socket::OnDataRead, base::Unretained(this), io_buffer,
+          static_cast<net::IPEndPoint*>(NULL)));
+}
+
+int TCPSocket::Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count) {
+  return socket_->Write(
+      io_buffer.get(), byte_count,
+      base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
+}
+
+int TCPSocket::RecvFrom(scoped_refptr<net::IOBuffer> io_buffer,
+                        int io_buffer_len,
+                        net::IPEndPoint* address) {
+  return net::ERR_FAILED;
+}
+
+int TCPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
+                      int byte_count,
+                      const std::string& address,
+                      int port) {
+  return net::ERR_FAILED;
 }
 
 void TCPSocket::OnConnect(int result) {

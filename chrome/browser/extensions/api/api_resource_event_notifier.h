@@ -53,7 +53,10 @@ class APIResourceEventNotifier
   virtual void OnConnectComplete(int result_code);
 
   // Takes ownership of data.
-  virtual void OnDataRead(int result_code, base::ListValue* data);
+  virtual void OnDataRead(int result_code,
+                          base::ListValue* data,
+                          const std::string& address,
+                          int port);
 
   virtual void OnWriteComplete(int result_code);
 

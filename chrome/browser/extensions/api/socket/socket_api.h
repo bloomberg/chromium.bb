@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 
 #include <string>
 
@@ -43,10 +44,8 @@ class SocketCreateFunction : public AsyncIOAPIFunction {
     kSocketTypeUDP
   };
 
-  int src_id_;
   SocketType socket_type_;
-  std::string address_;
-  int port_;
+  int src_id_;
   APIResourceEventNotifier* event_notifier_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.create")
@@ -72,6 +71,8 @@ class SocketConnectFunction : public AsyncIOAPIFunction {
 
  private:
   int socket_id_;
+  std::string address_;
+  int port_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.connect")
 };
@@ -86,6 +87,20 @@ class SocketDisconnectFunction : public AsyncIOAPIFunction {
   int socket_id_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.disconnect")
+};
+
+class SocketBindFunction : public AsyncIOAPIFunction {
+ protected:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+
+ private:
+  int socket_id_;
+  std::string address_;
+  int port_;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.bind")
 };
 
 class SocketReadFunction : public AsyncIOAPIFunction {
@@ -115,6 +130,38 @@ class SocketWriteFunction : public AsyncIOAPIFunction {
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.write")
+};
+
+class SocketRecvFromFunction : public AsyncIOAPIFunction {
+ protected:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+
+ private:
+  int socket_id_;
+  net::IPEndPoint address_;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.recvFrom")
+};
+
+class SocketSendToFunction : public AsyncIOAPIFunction {
+  public:
+   SocketSendToFunction();
+   virtual ~SocketSendToFunction();
+
+  protected:
+  virtual bool Prepare() OVERRIDE;
+  virtual void Work() OVERRIDE;
+  virtual bool Respond() OVERRIDE;
+
+ private:
+  int socket_id_;
+  scoped_refptr<net::IOBufferWithSize> io_buffer_;
+  std::string address_;
+  int port_;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.sendTo")
 };
 
 }  // namespace extensions

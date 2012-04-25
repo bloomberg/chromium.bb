@@ -52,6 +52,8 @@
 
   callback ConnectCallback = void (long result);
 
+  callback BindCallback = void (long result);
+
   dictionary ReadInfo {
     // The resultCode returned from the underlying read() call.
     long resultCode;
@@ -71,18 +73,27 @@
 
   callback WriteCallback = void (WriteInfo writeInfo);
 
+  dictionary RecvFromInfo {
+    // The data received. Warning: will probably become a blob or other
+    // appropriate binary-friendly type.
+    // TODO(miket): [instanceOf=ArrayBuffer]object data;
+    long[] data;
+    DOMString address;
+    long port;
+  };
+
+  callback RecvFromCallback = void (RecvFromInfo recvFromInfo);
+
+  callback SendToCallback = void (long bytesWritten);
+
   interface Functions {
     // Creates a socket of the specified type that will connect to the specified
     // remote machine.
     // |type| : The type of socket to create. Must be <code>tcp</code> or
     // <code>udp</code>.
-    // |address| : The address of the remote machine.
-    // |port| : The port of the remote machine.
     // |options| : The socket options.
     // |callback| : Called when the socket has been created.
     static void create(DOMString type,
-                       DOMString address,
-                       long port,
                        optional CreateOptions options,
                        CreateCallback callback);
 
@@ -90,12 +101,26 @@
     // |socketId| : The socketId.
     static void destroy(long socketId);
 
-    // Connects the socket to the remote machine. For UDP sockets,
-    // <code>connect</code> is a non-operation but is safe to call.
+    // Connects the socket to the remote machine.
     // |socketId| : The socketId.
+    // |address| : The address of the remote machine.
+    // |port| : The port of the remote machine.
     // |callback| : Called when the connection attempt is complete.
     static void connect(long socketId,
+                        DOMString address,
+                        long port,
                         ConnectCallback callback);
+
+    // Binds the local address for UDP socket. Currently, it does not support
+    // TCP socket.
+    // |socketId| : The socketId.
+    // |address| : The address of the remote machine.
+    // |port| : The port of the remote machine.
+    // |callback| : Called when the connection attempt is complete.
+    static void bind(long socketId,
+                     DOMString address,
+                     long port,
+                     BindCallback callback);
 
     // Disconnects the socket. For UDP sockets, <code>disconnect</code> is a
     // non-operation but is safe to call.
@@ -121,6 +146,29 @@
     static void write(long socketId,
                       long[] data,
                       WriteCallback callback);
+
+    // Reads data from the given socket.
+    // |socketId| : The socketId.
+    // |callback| : Delivers data that was available to be read without
+    // blocking.
+    static void recvFrom(long socketId,
+                         RecvFromCallback callback);
+
+    // Writes data on the given socket.
+    // |socketId| : The socketId.
+    // |data| : The data to write. Warning: will probably become a blob or other
+    // appropriate binary-friendly type.
+    // |address| : The address of the remote machine.
+    // |port| : The port of the remote machine.
+    // |callback| : Called when the first of any of the following happens: the
+    // write operation completes without blocking, the write operation blocked
+    // before completion (in which case onEvent() will eventually be called with
+    // a <code>writeComplete</code> event), or an error occurred.
+    static void sendTo(long socketId,
+                       long[] data,
+                       DOMString address,
+                       long port,
+                       SendToCallback callback);
   };
 
   interface Events {

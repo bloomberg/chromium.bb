@@ -52,7 +52,7 @@ TEST(SocketTest, TestTCPSocketRead) {
   APIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, "1.2.3.4", 1, notifier));
+      tcp_client_socket, notifier));
 
   EXPECT_CALL(*tcp_client_socket, Read(_, _, _))
       .Times(1);
@@ -68,7 +68,7 @@ TEST(SocketTest, TestTCPSocketWrite) {
   APIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, "1.2.3.4", 1, notifier));
+      tcp_client_socket, notifier));
 
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
       .Times(1);
@@ -84,7 +84,7 @@ TEST(SocketTest, TestTCPSocketBlockedWrite) {
   MockAPIResourceEventNotifier* notifier = new MockAPIResourceEventNotifier();
 
   scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, "1.2.3.4", 1, notifier));
+      tcp_client_socket, notifier));
 
   net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))

@@ -13,29 +13,12 @@
 
 namespace extensions {
 
-UDPSocket::UDPSocket(const std::string& address, int port,
-                     APIResourceEventNotifier* event_notifier)
-    : Socket(address, port, event_notifier),
-      socket_(new net::UDPClientSocket(net::DatagramSocket::DEFAULT_BIND,
-                                       net::RandIntCallback(),
-                                       NULL,
-                                       net::NetLog::Source())) {
-}
-
-// For testing.
-UDPSocket::UDPSocket(net::DatagramClientSocket* datagram_client_socket,
-                     const std::string& address, int port,
-                     APIResourceEventNotifier* event_notifier)
-    : Socket(address, port, event_notifier),
-      socket_(datagram_client_socket) {
-}
-
-// static
-UDPSocket* UDPSocket::CreateSocketForTesting(
-    net::DatagramClientSocket* datagram_client_socket,
-    const std::string& address, int port,
-    APIResourceEventNotifier* event_notifier) {
-  return new UDPSocket(datagram_client_socket, address, port, event_notifier);
+UDPSocket::UDPSocket(APIResourceEventNotifier* event_notifier)
+    : Socket(event_notifier),
+      socket_(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
+                                 net::RandIntCallback(),
+                                 NULL,
+                                 net::NetLog::Source())) {
 }
 
 UDPSocket::~UDPSocket() {
@@ -44,26 +27,69 @@ UDPSocket::~UDPSocket() {
   }
 }
 
-bool UDPSocket::IsValid() {
-  return socket_ != NULL;
-}
+int UDPSocket::Connect(const std::string& address, int port) {
+  if (is_connected_)
+    return net::ERR_CONNECTION_FAILED;
 
-net::Socket* UDPSocket::socket() {
-  return socket_.get();
-}
-
-int UDPSocket::Connect() {
-  net::IPAddressNumber ip_number;
-  if (!net::ParseIPLiteralToNumber(address_, &ip_number))
+  net::IPEndPoint ip_end_point;
+  if (!StringAndPortToIPEndPoint(address, port, &ip_end_point))
     return net::ERR_INVALID_ARGUMENT;
-  int result = socket_->Connect(net::IPEndPoint(ip_number, port_));
-  is_connected_ = result == net::OK;
+
+  int result = socket_->Connect(ip_end_point);
+  is_connected_ = (result == net::OK);
   return result;
+}
+
+int UDPSocket::Bind(const std::string& address, int port) {
+  net::IPEndPoint ip_end_point;
+  if (!StringAndPortToIPEndPoint(address, port, &ip_end_point))
+    return net::ERR_INVALID_ARGUMENT;
+
+  return socket_->Bind(ip_end_point);
 }
 
 void UDPSocket::Disconnect() {
   is_connected_ = false;
   socket_->Close();
+}
+
+int UDPSocket::Read(scoped_refptr<net::IOBuffer> io_buffer, int io_buffer_len) {
+  return socket_->Read(
+      io_buffer.get(),
+      io_buffer_len,
+      base::Bind(&Socket::OnDataRead, base::Unretained(this), io_buffer,
+          static_cast<net::IPEndPoint*>(NULL)));
+}
+
+int UDPSocket::Write(scoped_refptr<net::IOBuffer> io_buffer, int byte_count) {
+  return socket_->Write(
+      io_buffer.get(), byte_count,
+      base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
+}
+
+int UDPSocket::RecvFrom(scoped_refptr<net::IOBuffer> io_buffer,
+                        int io_buffer_len,
+                        net::IPEndPoint* address) {
+  return socket_->RecvFrom(
+      io_buffer.get(),
+      io_buffer_len,
+      address,
+      base::Bind(&Socket::OnDataRead, base::Unretained(this), io_buffer,
+          address));
+}
+
+int UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
+                      int byte_count,
+                      const std::string& address,
+                      int port) {
+  net::IPEndPoint ip_end_point;
+  if (!StringAndPortToIPEndPoint(address, port, &ip_end_point))
+    return net::ERR_INVALID_ARGUMENT;
+  return socket_->SendTo(
+      io_buffer.get(),
+      byte_count,
+      ip_end_point,
+      base::Bind(&Socket::OnWriteComplete, base::Unretained(this)));
 }
 
 }  // namespace extensions

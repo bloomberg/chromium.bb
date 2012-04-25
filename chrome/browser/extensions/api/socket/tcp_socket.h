@@ -24,28 +24,32 @@ class APIResourceEventNotifier;
 
 class TCPSocket : public Socket {
  public:
-  TCPSocket(const std::string& address, int port,
-            APIResourceEventNotifier* event_notifier);
+  explicit TCPSocket(APIResourceEventNotifier* event_notifier);
   virtual ~TCPSocket();
 
-  virtual bool IsValid() OVERRIDE;
-
-  virtual int Connect() OVERRIDE;
+  virtual int Connect(const std::string& address, int port) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
+  virtual int Bind(const std::string& address, int port) OVERRIDE;
+  virtual int Read(scoped_refptr<net::IOBuffer> io_buffer,
+                   int io_buffer_size) OVERRIDE;
+  virtual int Write(scoped_refptr<net::IOBuffer> io_buffer,
+                    int bytes) OVERRIDE;
+  virtual int RecvFrom(scoped_refptr<net::IOBuffer> io_buffer,
+                       int io_buffer_size,
+                       net::IPEndPoint *address) OVERRIDE;
+  virtual int SendTo(scoped_refptr<net::IOBuffer> io_buffer,
+                     int byte_count,
+                     const std::string& address,
+                     int port) OVERRIDE;
 
   virtual void OnConnect(int result);
 
   static TCPSocket* CreateSocketForTesting(
       net::TCPClientSocket* tcp_client_socket,
-      const std::string& address, int port,
       APIResourceEventNotifier* event_notifier);
-
- protected:
-  virtual net::Socket* socket() OVERRIDE;
 
  private:
   TCPSocket(net::TCPClientSocket* tcp_client_socket,
-            const std::string& address, int port,
             APIResourceEventNotifier* event_notifier);
 
   scoped_ptr<net::TCPClientSocket> socket_;
