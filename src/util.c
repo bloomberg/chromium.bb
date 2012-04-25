@@ -96,6 +96,15 @@ struct weston_zoom {
 	void *data;
 };
 
+struct weston_fade {
+	struct weston_surface *surface;
+	struct weston_animation animation;
+	struct weston_spring spring;
+	struct wl_listener listener;
+	void (*done)(struct weston_fade *fade, void *data);
+	void *data;
+};
+
 static void
 weston_zoom_destroy(struct weston_zoom *zoom)
 {
@@ -324,4 +333,80 @@ weston_environment_get_fd(const char *env)
 	unsetenv(env);
 
 	return fd;
+}
+/*fade in and fade out animation*/
+static void
+weston_fade_destroy(struct weston_fade *fade)
+{
+	wl_list_remove(&fade->animation.link);
+	wl_list_remove(&fade->listener.link);
+	fade->surface->geometry.dirty = 1;
+	if (fade->done)
+		fade->done(fade, fade->data);
+	free(fade);
+}
+
+static void
+handle_fade_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct weston_fade *fade =
+		container_of(listener, struct weston_fade, listener);
+
+	weston_fade_destroy(fade);
+}
+
+static void
+weston_fade_frame(struct weston_animation *animation,
+		struct weston_output *output, uint32_t msecs)
+{
+	struct weston_fade *fade =
+		container_of(animation, struct weston_fade, animation);
+	struct weston_surface *es = fade->surface;
+	float fade_factor;
+
+	weston_spring_update(&fade->spring, msecs);
+
+	if (weston_spring_done(&fade->spring)) {
+		weston_fade_destroy(fade);
+		return;
+	}
+	if (fade->spring.current > 1)
+		fade_factor = 1;
+	else if (fade->spring.current < 0 )
+		fade_factor = 0;
+	else
+		fade_factor = fade->spring.current;
+	es->alpha = fade_factor * 255;
+
+	fade->surface->geometry.dirty = 1;
+	weston_compositor_schedule_repaint(es->compositor);
+}
+
+WL_EXPORT struct weston_fade *
+weston_fade_run(struct weston_surface *surface,
+	      weston_fade_done_func_t done, void *data)
+{
+	struct weston_fade *fade;
+
+	fade = malloc(sizeof *fade);
+	if (!fade)
+		return NULL;
+
+	fade->surface = surface;
+	fade->done = done;
+	fade->data = data;
+	weston_spring_init(&fade->spring, 200.0, 0, 1.0);
+	fade->spring.friction = 700;
+	fade->spring.timestamp = weston_compositor_get_time();
+	fade->animation.frame = weston_fade_frame;
+	weston_fade_frame(&fade->animation, NULL, fade->spring.timestamp);
+
+	fade->listener.notify = handle_fade_surface_destroy;
+	wl_signal_add(&surface->surface.resource.destroy_signal,
+		      &fade->listener);
+
+	wl_list_insert(&surface->compositor->animation_list,
+		       &fade->animation.link);
+
+	return fade;
 }
