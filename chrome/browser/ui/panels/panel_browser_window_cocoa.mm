@@ -439,6 +439,15 @@ bool NativePanelTestingCocoa::IsAnimatingBounds() const {
 
 bool NativePanelTestingCocoa::IsButtonVisible(
     TitlebarButtonType button_type) const {
-  NOTIMPLEMENTED();
-  return true;
+  switch (button_type) {
+    case CLOSE_BUTTON:
+      return ![[titlebar() closeButton] isHidden];
+    case MINIMIZE_BUTTON:
+      return ![[titlebar() minimizeButton] isHidden];
+    case RESTORE_BUTTON:
+      return ![[titlebar() restoreButton] isHidden];
+    default:
+      NOTREACHED();
+  }
+  return false;
 }

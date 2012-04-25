@@ -594,6 +594,12 @@ enum {
   [self updateIcon];
 }
 
+- (void)updateTitleBarMinimizeRestoreButtonVisibility {
+  Panel* panel = windowShim_->panel();
+  [titlebar_view_ setMinimizeButtonVisibility:panel->CanMinimize()];
+  [titlebar_view_ setRestoreButtonVisibility:panel->CanRestore()];
+}
+
 - (void)addFindBar:(FindBarCocoaController*)findBarCocoaController {
   NSView* contentView = [[self window] contentView];
   [contentView addSubview:[findBarCocoaController view]];
@@ -685,6 +691,18 @@ enum {
   windowShim_->panel()->Close();
 }
 
+// Handler for the custom Minimize button.
+- (void)minimizePanel:(int)modifierFlags {
+  Panel* panel = windowShim_->panel();
+  panel->Minimize();
+}
+
+// Handler for the custom Restore button.
+- (void)restorePanel:(int)modifierFlags {
+  Panel* panel = windowShim_->panel();
+  panel->Restore();
+}
+
 // Called when the user wants to close the panel or from the shutdown process.
 // The Browser object is in control of whether or not we're allowed to close. It
 // may defer closing due to several states, such as onbeforeUnload handlers
@@ -755,6 +773,8 @@ enum {
 
 - (void)setPanelFrame:(NSRect)frame
               animate:(BOOL)animate {
+  [self updateTitleBarMinimizeRestoreButtonVisibility];
+
   BOOL jumpToDestination = (!animateOnBoundsChange_ || !animate);
 
   // If no animation is in progress, apply bounds change instantly.

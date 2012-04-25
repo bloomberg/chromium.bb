@@ -16,7 +16,8 @@
 
 // A class that works as a custom titlebar for Panels. It is placed on top of
 // the regular Cocoa titlebar. We paint theme image on it, and it's
-// the place for the close button, page favicon, title label.
+// the place for the close button, page favicon, title label and a button to
+// minimize/restore the panel.
 // It also facilitates dragging and minimization of the panels, and changes
 // color as 'new activity' indicator.
 // One way to have custom titlebar would be to use NSBorderlessWindow,
@@ -56,6 +57,8 @@ enum PanelDragState {
   IBOutlet PanelWindowControllerCocoa* controller_;
   IBOutlet NSView* icon_;
   IBOutlet NSTextField* title_;
+  IBOutlet HoverImageButton* minimizeButton_;
+  IBOutlet HoverImageButton* restoreButton_;
   // Transparent view on top of entire titlebar. It catches mouse events to
   // prevent window activation by the system on mouseDown.
   IBOutlet NSView* overlay_;
@@ -83,10 +86,12 @@ enum PanelDragState {
   NSRect screenBoundsForDrag_;
 }
 
-  // Callback from Close button.
+// Callbacks from Close, Minimize, and Restore buttons.
 - (void)onCloseButtonClick:(id)sender;
+- (void)onMinimizeButtonClick:(id)sender;
+- (void)onRestoreButtonClick:(id)sender;
 
-  // Attaches this view to the controller_'s window as a titlebar.
+// Attaches this view to the controller_'s window as a titlebar.
 - (void)attach;
 
 - (void)setTitle:(NSString*)newTitle;
@@ -94,7 +99,11 @@ enum PanelDragState {
 
 - (NSView*)icon;
 
-  // Should be called when size of the titlebar changes.
+// Set the visibility of the minimize and restore buttons.
+- (void)setMinimizeButtonVisibility:(BOOL)visible;
+- (void)setRestoreButtonVisibility:(BOOL)visible;
+
+// Should be called when size of the titlebar changes.
 - (void)updateCloseButtonLayout;
 - (void)updateIconAndTitleLayout;
 
@@ -128,6 +137,9 @@ enum PanelDragState {
 - (PanelWindowControllerCocoa*)controller;
 
 - (NSTextField*)title;
+- (NSButton*)closeButton;
+- (NSButton*)minimizeButton;
+- (NSButton*)restoreButton;
 
 // Simulates click on a close button. Used to test panel closing.
 - (void)simulateCloseButtonClick;

@@ -81,6 +81,7 @@ class PanelBrowserWindowCocoa;
 - (void)updateTitleBar;
 - (void)updateIcon;
 - (void)updateThrobber:(BOOL)shouldSpin;
+- (void)updateTitleBarMinimizeRestoreButtonVisibility;
 
 // Adds the FindBar controller's view to this Panel. Must only be
 // called once per PanelWindowControllerCocoa.
@@ -90,6 +91,11 @@ class PanelBrowserWindowCocoa;
 // layer. This will take care of PanelManager, other panels and close the
 // native window at the end.
 - (void)closePanel;
+
+// Minimize/Restore the panel or all panels, depending on the modifier.
+// Invoked when the minimize/restore button is clicked.
+- (void)minimizePanel:(int)modifierFlags;
+- (void)restorePanel:(int)modifierFlags;
 
 // Uses nonblocking animation for moving the Panels. It's especially
 // important in case of dragging a Panel when other Panels should 'slide out',

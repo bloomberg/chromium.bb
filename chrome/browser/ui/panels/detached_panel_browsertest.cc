@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
 
   // TODO(jianli): Enable the following checks when IsButtonVisible check is
   // supported.
-#if !defined(OS_MACOSX) && !defined(TOOLKIT_GTK)
+#if !defined(TOOLKIT_GTK)
   EXPECT_TRUE(panel_testing->IsButtonVisible(NativePanelTesting::CLOSE_BUTTON));
   EXPECT_FALSE(panel_testing->IsButtonVisible(
       NativePanelTesting::MINIMIZE_BUTTON));

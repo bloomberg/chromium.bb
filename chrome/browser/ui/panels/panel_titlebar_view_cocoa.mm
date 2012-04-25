@@ -15,11 +15,16 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/tracking_area.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
+#include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
+#include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/gfx/image/image.h"
 
 const int kButtonPadding = 8;
 const int kIconAndTextPadding = 5;
@@ -121,6 +126,14 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 - (void)onCloseButtonClick:(id)sender {
   [controller_ closePanel];
+}
+
+- (void)onMinimizeButtonClick:(id)sender {
+  [controller_ minimizePanel:[[NSApp currentEvent] modifierFlags]];
+}
+
+- (void)onRestoreButtonClick:(id)sender {
+  [controller_ restorePanel:[[NSApp currentEvent] modifierFlags]];
 }
 
 - (void)drawRect:(NSRect)rect {
@@ -275,6 +288,19 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
   [self updateCloseButtonLayout];
 
+  // Iniitalize the minimize and restore buttons.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  [self initializeMinimizeRestoreButton:minimizeButton_
+      image:rb.GetNativeImageNamed(IDR_PANEL_MINIMIZE)
+      hoverImage:rb.GetNativeImageNamed(IDR_PANEL_MINIMIZE_H)
+      toolTip:l10n_util::GetNSStringWithFixup(IDS_PANEL_MINIMIZE_TOOLTIP)];
+  [self initializeMinimizeRestoreButton:restoreButton_
+      image: rb.GetNativeImageNamed(IDR_PANEL_RESTORE)
+      hoverImage:rb.GetNativeImageNamed(IDR_PANEL_RESTORE_H)
+      toolTip:l10n_util::GetNSStringWithFixup(IDS_PANEL_RESTORE_TOOLTIP)];
+  [restoreButton_ setHidden:YES];  // Only visible when panel is minimized.
+  [self updateMinimizeRestoreButtonLayout];
+
   // Set autoresizing behavior: glued to edges on left, top and right.
   [self setAutoresizingMask:(NSViewMinYMargin | NSViewWidthSizable)];
 
@@ -300,6 +326,20 @@ static NSEvent* MakeMouseEvent(NSEventType type,
            object:[self window]];
 }
 
+- (void)initializeMinimizeRestoreButton:(HoverImageButton*)button
+                                  image:(NSImage*)image
+                             hoverImage:(NSImage*)hoverImage
+                                toolTip:(NSString*)toolTip {
+  [button setDefaultImage:image];
+  [button setDefaultOpacity:1.0];
+  [button setHoverImage:hoverImage];
+  [button setHoverOpacity:1.0];
+  [button setPressedImage:hoverImage];
+  [button setPressedOpacity:1.0];
+  [button setToolTip:toolTip];
+  [[button cell] setHighlightsBy:NSNoCellMask];
+}
+
 - (void)setTitle:(NSString*)newTitle {
   [title_ setStringValue:newTitle];
   [self updateIconAndTitleLayout];
@@ -317,6 +357,24 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 - (NSView*)icon {
   return icon_;
+}
+
+- (void)setMinimizeButtonVisibility:(BOOL)visible {
+  [minimizeButton_ setHidden:!visible];
+}
+
+- (void)setRestoreButtonVisibility:(BOOL)visible {
+  [restoreButton_ setHidden:!visible];
+}
+
+- (void)updateMinimizeRestoreButtonLayout {
+  NSRect bounds = [self bounds];
+  NSRect buttonFrame = [minimizeButton_ frame];
+  buttonFrame.origin.x =
+      NSWidth(bounds) - NSWidth(buttonFrame) - kButtonPadding;
+  buttonFrame.origin.y = (NSHeight(bounds) - NSHeight(buttonFrame)) / 2;
+  [minimizeButton_ setFrame:buttonFrame];
+  [restoreButton_ setFrame:buttonFrame];
 }
 
 - (void)updateCloseButtonLayout {
@@ -347,13 +405,16 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   // in Interface Builder so it is sized in a single-line mode.
   [title_ sizeToFit];
   NSRect titleFrame = [title_ frame];
+  // Only one of minimize/restore button is visible at a time so just allow for
+  // the width of one of them.
+  NSRect minimizeRestoreButtonFrame = [minimizeButton_ frame];
   NSRect bounds = [self bounds];
 
   // Place the icon and title at the center of the titlebar.
   int iconWidthWithPadding = NSWidth(iconFrame) + kIconAndTextPadding;
   int titleWidth = NSWidth(titleFrame);
-  int availableWidth = NSWidth(bounds) - kButtonPadding * 2 -
-      NSWidth(closeButtonFrame);
+  int availableWidth = NSWidth(bounds) - kButtonPadding * 4 -
+      NSWidth(closeButtonFrame) - NSWidth(minimizeRestoreButtonFrame);
   if (iconWidthWithPadding + titleWidth > availableWidth)
     titleWidth = availableWidth - iconWidthWithPadding;
   int startX = kButtonPadding * 2 + NSWidth(closeButtonFrame) +
@@ -389,6 +450,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 }
 
 - (void)didChangeFrame:(NSNotification*)notification {
+  // Update buttons first because title layout depends on buttons layout.
+  [self updateMinimizeRestoreButtonLayout];
   [self updateIconAndTitleLayout];
 }
 
@@ -633,6 +696,18 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 - (void)finishDragTitlebar {
   [self endDrag:NO];
+}
+
+- (NSButton*)closeButton {
+  return closeButton_;
+}
+
+- (NSButton*)minimizeButton {
+  return minimizeButton_;
+}
+
+- (NSButton*)restoreButton {
+  return restoreButton_;
 }
 
 @end
