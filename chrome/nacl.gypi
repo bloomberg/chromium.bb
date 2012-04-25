@@ -107,6 +107,7 @@
               ],
               'sources': [
                 'common/nacl_cmd_line.cc',
+                'common/nacl_debug_exception_handler_win.cc',
                 'common/nacl_messages.cc',
                 'common/nacl_types.cc',
                 'nacl/nacl_broker_listener.cc',
