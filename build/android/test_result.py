@@ -112,3 +112,17 @@ class TestResults(object):
     if not self.GetAllBroken():
       logging.critical('Passed')
     logging.critical('*' * 80)
+
+    # Summarize in the test output.
+    summary_string = 'Summary:\n'
+    summary_string += 'RAN=%d\n' % (len(self.ok) + len(self.failed) +
+                                    len(self.crashed) + len(self.unknown))
+    summary_string += 'PASSED=%d\n' % (len(self.ok))
+    summary_string += 'FAILED=%d %s\n' % (len(self.failed),
+                                          [t.name for t in self.failed])
+    summary_string += 'CRASHED=%d %s\n' % (len(self.crashed),
+                                           [t.name for t in self.crashed])
+    summary_string += 'UNKNOWN=%d %s\n' % (len(self.unknown),
+                                           [t.name for t in self.unknown])
+    logging.critical(summary_string)
+    return summary_string
