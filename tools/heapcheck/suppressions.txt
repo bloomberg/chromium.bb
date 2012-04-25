@@ -1825,3 +1825,9 @@
    ...
    fun:GoogleURLTrackerTest_InfobarShownAgainOnSearchAfterCommittedSearch_Test::TestBody
 }
+{
+   bug_124961
+   Heapcheck:Leak
+   ...
+   fun:gdata::GDataDBTest_*Test_Test::TestBody
+}
