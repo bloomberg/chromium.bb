@@ -199,7 +199,7 @@ bool SafeBrowsingProtocolParser::ParseChunk(const std::string& list_name,
 
   while (remaining > 0) {
     std::string cmd_line;
-    if (!GetLine(chunk_data, length, &cmd_line))
+    if (!GetLine(chunk_data, remaining, &cmd_line))
       return false;  // Error: bad chunk format!
 
     const int line_len = static_cast<int>(cmd_line.length()) + 1;
