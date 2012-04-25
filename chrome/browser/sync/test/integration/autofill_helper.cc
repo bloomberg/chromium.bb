@@ -35,6 +35,8 @@ ACTION_P(SignalEvent, event) {
 
 class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
  protected:
+  virtual ~AutofillDBThreadObserverHelper() {}
+
   virtual void RegisterObservers() {
     registrar_.Add(&observer_,
                    chrome::NOTIFICATION_AUTOFILL_ENTRIES_CHANGED,

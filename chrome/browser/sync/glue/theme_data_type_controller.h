@@ -19,12 +19,13 @@ class ThemeDataTypeController : public FrontendDataTypeController {
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~ThemeDataTypeController();
 
   // DataTypeController implementation.
   virtual syncable::ModelType type() const OVERRIDE;
 
  private:
+  virtual ~ThemeDataTypeController();
+
   // DataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
   virtual void CreateSyncComponents() OVERRIDE;

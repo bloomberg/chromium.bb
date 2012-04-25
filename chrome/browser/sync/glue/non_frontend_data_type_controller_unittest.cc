@@ -66,6 +66,8 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
   }
 
  private:
+  virtual ~NonFrontendDataTypeControllerFake() {}
+
   virtual void CreateSyncComponents() OVERRIDE {
     ProfileSyncComponentsFactory::SyncComponents sync_components =
         profile_sync_factory()->

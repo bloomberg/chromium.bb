@@ -33,6 +33,8 @@ class WorkerTask : public HistoryDBTask {
   virtual void DoneRunOnMainThread() {}
 
  protected:
+  virtual ~WorkerTask() {}
+
   WorkCallback work_;
   WaitableEvent* done_;
   SyncerError* error_;
@@ -42,9 +44,6 @@ class WorkerTask : public HistoryDBTask {
 HistoryModelWorker::HistoryModelWorker(HistoryService* history_service)
   : history_service_(history_service) {
   CHECK(history_service);
-}
-
-HistoryModelWorker::~HistoryModelWorker() {
 }
 
 SyncerError HistoryModelWorker::DoWorkAndWaitUntilDone(
@@ -60,5 +59,7 @@ SyncerError HistoryModelWorker::DoWorkAndWaitUntilDone(
 ModelSafeGroup HistoryModelWorker::GetModelSafeGroup() {
   return GROUP_HISTORY;
 }
+
+HistoryModelWorker::~HistoryModelWorker() {}
 
 }  // namespace browser_sync

@@ -27,7 +27,6 @@ class AutofillProfileDataTypeController
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~AutofillProfileDataTypeController();
 
   // NewNonFrontendDataTypeController implementation.
   virtual syncable::ModelType type() const OVERRIDE;
@@ -42,6 +41,8 @@ class AutofillProfileDataTypeController
   virtual void OnPersonalDataChanged() OVERRIDE;
 
  protected:
+  virtual ~AutofillProfileDataTypeController();
+
   // NewNonFrontendDataTypeController implementation.
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,

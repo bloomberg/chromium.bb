@@ -23,7 +23,6 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~BookmarkDataTypeController();
 
   // FrontendDataTypeController interface.
   virtual syncable::ModelType type() const OVERRIDE;
@@ -34,6 +33,8 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  virtual ~BookmarkDataTypeController();
+
   // FrontendDataTypeController interface.
   virtual bool StartModels() OVERRIDE;
   virtual void CleanUpState() OVERRIDE;

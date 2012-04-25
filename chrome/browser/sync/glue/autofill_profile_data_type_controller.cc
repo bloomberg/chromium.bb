@@ -33,7 +33,44 @@ AutofillProfileDataTypeController::AutofillProfileDataTypeController(
       personal_data_(NULL) {
 }
 
+syncable::ModelType AutofillProfileDataTypeController::type() const {
+  return syncable::AUTOFILL_PROFILE;
+}
+
+browser_sync::ModelSafeGroup
+    AutofillProfileDataTypeController::model_safe_group() const {
+  return browser_sync::GROUP_DB;
+}
+
+void AutofillProfileDataTypeController::Observe(
+    int notification_type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  notification_registrar_.RemoveAll();
+  DoStartAssociationAsync();
+}
+
+void AutofillProfileDataTypeController::OnPersonalDataChanged() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(state(), MODEL_STARTING);
+  personal_data_->RemoveObserver(this);
+  web_data_service_ = profile()->GetWebDataService(Profile::IMPLICIT_ACCESS);
+  if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded()) {
+    DoStartAssociationAsync();
+  } else {
+    notification_registrar_.Add(this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
+                                content::NotificationService::AllSources());
+  }
+}
+
 AutofillProfileDataTypeController::~AutofillProfileDataTypeController() {}
+
+bool AutofillProfileDataTypeController::PostTaskOnBackendThread(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
+}
 
 bool AutofillProfileDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -57,32 +94,11 @@ bool AutofillProfileDataTypeController::StartModels() {
   }
 }
 
-void AutofillProfileDataTypeController::OnPersonalDataChanged() {
+void AutofillProfileDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), MODEL_STARTING);
-  personal_data_->RemoveObserver(this);
-  web_data_service_ = profile()->GetWebDataService(Profile::IMPLICIT_ACCESS);
-  if (web_data_service_.get() && web_data_service_->IsDatabaseLoaded()) {
-    DoStartAssociationAsync();
-  } else {
-    notification_registrar_.Add(this, chrome::NOTIFICATION_WEB_DATABASE_LOADED,
-                                content::NotificationService::AllSources());
-  }
-}
-
-void AutofillProfileDataTypeController::Observe(
-    int notification_type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+  DCHECK(state() == STOPPING || state() == NOT_RUNNING);
   notification_registrar_.RemoveAll();
-  DoStartAssociationAsync();
-}
-
-bool AutofillProfileDataTypeController::PostTaskOnBackendThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return BrowserThread::PostTask(BrowserThread::DB, from_here, task);
+  personal_data_->RemoveObserver(this);
 }
 
 void AutofillProfileDataTypeController::DoStartAssociationAsync() {
@@ -95,22 +111,6 @@ void AutofillProfileDataTypeController::DoStartAssociationAsync() {
                     type());
     StartDoneImpl(ASSOCIATION_FAILED, NOT_RUNNING, error);
   }
-}
-
-void AutofillProfileDataTypeController::StopModels() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(state() == STOPPING || state() == NOT_RUNNING);
-  notification_registrar_.RemoveAll();
-  personal_data_->RemoveObserver(this);
-}
-
-syncable::ModelType AutofillProfileDataTypeController::type() const {
-  return syncable::AUTOFILL_PROFILE;
-}
-
-browser_sync::ModelSafeGroup
-    AutofillProfileDataTypeController::model_safe_group() const {
-  return browser_sync::GROUP_DB;
 }
 
 }  // namepsace browser_sync

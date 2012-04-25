@@ -24,8 +24,7 @@ ExtensionDataTypeController::ExtensionDataTypeController(
          type == syncable::APPS);
 }
 
-ExtensionDataTypeController::~ExtensionDataTypeController() {
-}
+ExtensionDataTypeController::~ExtensionDataTypeController() {}
 
 bool ExtensionDataTypeController::StartModels() {
   ExtensionSystem::Get(profile_)->Init(true);

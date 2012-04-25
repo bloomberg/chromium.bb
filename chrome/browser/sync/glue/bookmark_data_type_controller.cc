@@ -28,39 +28,8 @@ BookmarkDataTypeController::BookmarkDataTypeController(
                                  sync_service) {
 }
 
-BookmarkDataTypeController::~BookmarkDataTypeController() {
-}
-
-// Check that both the bookmark model and the history service (for favicons)
-// are loaded.
-bool BookmarkDataTypeController::DependentsLoaded() {
-  BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
-  if (!bookmark_model || !bookmark_model->IsLoaded())
-    return false;
-
-  HistoryService* history =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (!history || !history->BackendLoaded())
-    return false;
-
-  // All necessary services are loaded.
-  return true;
-}
-
-bool BookmarkDataTypeController::StartModels() {
-  if (!DependentsLoaded()) {
-    registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
-                   content::Source<Profile>(sync_service_->profile()));
-    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
-                   content::Source<Profile>(sync_service_->profile()));
-    return false;
-  }
-  return true;
-}
-
-// Cleanup for our extra registrar usage.
-void BookmarkDataTypeController::CleanUpState() {
-  registrar_.RemoveAll();
+syncable::ModelType BookmarkDataTypeController::type() const {
+  return syncable::BOOKMARKS;
 }
 
 void BookmarkDataTypeController::Observe(
@@ -80,8 +49,22 @@ void BookmarkDataTypeController::Observe(
   Associate();
 }
 
-syncable::ModelType BookmarkDataTypeController::type() const {
-  return syncable::BOOKMARKS;
+BookmarkDataTypeController::~BookmarkDataTypeController() {}
+
+bool BookmarkDataTypeController::StartModels() {
+  if (!DependentsLoaded()) {
+    registrar_.Add(this, chrome::NOTIFICATION_BOOKMARK_MODEL_LOADED,
+                   content::Source<Profile>(sync_service_->profile()));
+    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
+                   content::Source<Profile>(sync_service_->profile()));
+    return false;
+  }
+  return true;
+}
+
+// Cleanup for our extra registrar usage.
+void BookmarkDataTypeController::CleanUpState() {
+  registrar_.RemoveAll();
 }
 
 void BookmarkDataTypeController::CreateSyncComponents() {
@@ -90,6 +73,22 @@ void BookmarkDataTypeController::CreateSyncComponents() {
                                                           this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
+}
+
+// Check that both the bookmark model and the history service (for favicons)
+// are loaded.
+bool BookmarkDataTypeController::DependentsLoaded() {
+  BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
+  if (!bookmark_model || !bookmark_model->IsLoaded())
+    return false;
+
+  HistoryService* history =
+      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  if (!history || !history->BackendLoaded())
+    return false;
+
+  // All necessary services are loaded.
+  return true;
 }
 
 }  // namespace browser_sync

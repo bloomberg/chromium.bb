@@ -26,6 +26,30 @@ AutofillDataTypeController::AutofillDataTypeController(
         profile_sync_factory, profile, sync_service) {
 }
 
+syncable::ModelType AutofillDataTypeController::type() const {
+  return syncable::AUTOFILL;
+}
+
+browser_sync::ModelSafeGroup AutofillDataTypeController::model_safe_group()
+    const {
+  return browser_sync::GROUP_DB;
+}
+
+void AutofillDataTypeController::Observe(
+    int notification_type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(chrome::NOTIFICATION_WEB_DATABASE_LOADED, notification_type);
+  DCHECK_EQ(MODEL_STARTING, state());
+  notification_registrar_.RemoveAll();
+  set_state(ASSOCIATING);
+  if (!StartAssociationAsync()) {
+    SyncError error(FROM_HERE, "Failed to post association task.", type());
+    StartDoneImpl(ASSOCIATION_FAILED, DISABLED, error);
+  }
+}
+
 AutofillDataTypeController::~AutofillDataTypeController() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -52,35 +76,11 @@ bool AutofillDataTypeController::StartModels() {
   }
 }
 
-void AutofillDataTypeController::Observe(
-    int notification_type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(chrome::NOTIFICATION_WEB_DATABASE_LOADED, notification_type);
-  DCHECK_EQ(MODEL_STARTING, state());
-  notification_registrar_.RemoveAll();
-  set_state(ASSOCIATING);
-  if (!StartAssociationAsync()) {
-    SyncError error(FROM_HERE, "Failed to post association task.", type());
-    StartDoneImpl(ASSOCIATION_FAILED, DISABLED, error);
-  }
-}
-
 void AutofillDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
   DVLOG(1) << "AutofillDataTypeController::StopModels() : State = " << state();
   notification_registrar_.RemoveAll();
-}
-
-syncable::ModelType AutofillDataTypeController::type() const {
-  return syncable::AUTOFILL;
-}
-
-browser_sync::ModelSafeGroup AutofillDataTypeController::model_safe_group()
-    const {
-  return browser_sync::GROUP_DB;
 }
 
 }  // namespace browser_sync

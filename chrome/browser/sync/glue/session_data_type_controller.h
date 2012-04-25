@@ -21,7 +21,6 @@ class SessionDataTypeController : public FrontendDataTypeController {
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~SessionDataTypeController();
 
   SessionModelAssociator* GetModelAssociator();
 
@@ -29,6 +28,8 @@ class SessionDataTypeController : public FrontendDataTypeController {
   virtual syncable::ModelType type() const OVERRIDE;
 
  private:
+  virtual ~SessionDataTypeController();
+
   // FrontendDataTypeController implementations.
   // Datatype specific creation of sync components.
   virtual void CreateSyncComponents() OVERRIDE;

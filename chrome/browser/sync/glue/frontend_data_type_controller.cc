@@ -20,13 +20,6 @@ using content::BrowserThread;
 
 namespace browser_sync {
 
-FrontendDataTypeController::FrontendDataTypeController()
-    : profile_sync_factory_(NULL),
-      profile_(NULL),
-      sync_service_(NULL),
-      state_(NOT_RUNNING) {
-}
-
 FrontendDataTypeController::FrontendDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
@@ -39,10 +32,6 @@ FrontendDataTypeController::FrontendDataTypeController(
   DCHECK(profile_sync_factory);
   DCHECK(profile);
   DCHECK(sync_service);
-}
-
-FrontendDataTypeController::~FrontendDataTypeController() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void FrontendDataTypeController::Start(const StartCallback& start_callback) {
@@ -71,6 +60,82 @@ void FrontendDataTypeController::Start(const StartCallback& start_callback) {
     return;
   }
   DCHECK_EQ(state_, RUNNING);
+}
+
+void FrontendDataTypeController::Stop() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  State prev_state = state_;
+  state_ = STOPPING;
+
+  // If Stop() is called while Start() is waiting for the datatype model to
+  // load, abort the start.
+  if (prev_state == MODEL_STARTING) {
+    StartFailed(ABORTED, SyncError());
+    // We can just return here since we haven't performed association if we're
+    // still in MODEL_STARTING.
+    return;
+  }
+  DCHECK(start_callback_.is_null());
+
+  CleanUpState();
+
+  sync_service_->DeactivateDataType(type());
+
+  if (model_associator()) {
+    SyncError error;  // Not used.
+    error = model_associator()->DisassociateModels();
+  }
+
+  set_model_associator(NULL);
+  change_processor_.reset();
+
+  state_ = NOT_RUNNING;
+}
+
+browser_sync::ModelSafeGroup FrontendDataTypeController::model_safe_group()
+    const {
+  return browser_sync::GROUP_UI;
+}
+
+std::string FrontendDataTypeController::name() const {
+  // For logging only.
+  return syncable::ModelTypeToString(type());
+}
+
+DataTypeController::State FrontendDataTypeController::state() const {
+  return state_;
+}
+
+void FrontendDataTypeController::OnUnrecoverableError(
+    const tracked_objects::Location& from_here, const std::string& message) {
+  RecordUnrecoverableError(from_here, message);
+
+  // The ProfileSyncService will invoke our Stop() method in response to this.
+  // We dont know the current state of the caller. Posting a task will allow
+  // the caller to unwind the stack before we process unrecoverable error.
+  MessageLoop::current()->PostTask(from_here,
+      base::Bind(&ProfileSyncService::OnUnrecoverableError,
+                 sync_service_->AsWeakPtr(),
+                 from_here,
+                 message));
+}
+
+void FrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
+    const tracked_objects::Location& from_here, const std::string& message) {
+  RecordUnrecoverableError(from_here, message);
+  sync_service_->OnDisableDatatype(type(), from_here, message);
+}
+
+FrontendDataTypeController::FrontendDataTypeController()
+    : profile_sync_factory_(NULL),
+      profile_(NULL),
+      sync_service_(NULL),
+      state_(NOT_RUNNING) {
+}
+
+FrontendDataTypeController::~FrontendDataTypeController() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 bool FrontendDataTypeController::StartModels() {
@@ -120,6 +185,10 @@ bool FrontendDataTypeController::Associate() {
   return state_ == RUNNING;
 }
 
+void FrontendDataTypeController::CleanUpState() {
+  // Do nothing by default.
+}
+
 void FrontendDataTypeController::StartFailed(StartResult result,
                                              const SyncError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -155,75 +224,6 @@ void FrontendDataTypeController::FinishStart(StartResult result) {
   callback.Run(result, SyncError());
 }
 
-void FrontendDataTypeController::Stop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  State prev_state = state_;
-  state_ = STOPPING;
-
-  // If Stop() is called while Start() is waiting for the datatype model to
-  // load, abort the start.
-  if (prev_state == MODEL_STARTING) {
-    StartFailed(ABORTED, SyncError());
-    // We can just return here since we haven't performed association if we're
-    // still in MODEL_STARTING.
-    return;
-  }
-  DCHECK(start_callback_.is_null());
-
-  CleanUpState();
-
-  sync_service_->DeactivateDataType(type());
-
-  if (model_associator()) {
-    SyncError error;  // Not used.
-    error = model_associator()->DisassociateModels();
-  }
-
-  set_model_associator(NULL);
-  change_processor_.reset();
-
-  state_ = NOT_RUNNING;
-}
-
-void FrontendDataTypeController::CleanUpState() {
-  // Do nothing by default.
-}
-
-browser_sync::ModelSafeGroup FrontendDataTypeController::model_safe_group()
-    const {
-  return browser_sync::GROUP_UI;
-}
-
-std::string FrontendDataTypeController::name() const {
-  // For logging only.
-  return syncable::ModelTypeToString(type());
-}
-
-DataTypeController::State FrontendDataTypeController::state() const {
-  return state_;
-}
-
-void FrontendDataTypeController::OnUnrecoverableError(
-    const tracked_objects::Location& from_here, const std::string& message) {
-  RecordUnrecoverableError(from_here, message);
-
-  // The ProfileSyncService will invoke our Stop() method in response to this.
-  // We dont know the current state of the caller. Posting a task will allow
-  // the caller to unwind the stack before we process unrecoverable error.
-  MessageLoop::current()->PostTask(from_here,
-      base::Bind(&ProfileSyncService::OnUnrecoverableError,
-                 sync_service_->AsWeakPtr(),
-                 from_here,
-                 message));
-}
-
-void FrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
-    const tracked_objects::Location& from_here, const std::string& message) {
-  RecordUnrecoverableError(from_here, message);
-  sync_service_->OnDisableDatatype(type(), from_here, message);
-}
-
 void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #define PER_DATA_TYPE_MACRO(type_str) \
@@ -231,6 +231,7 @@ void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
   SYNC_DATA_TYPE_HISTOGRAM(type());
 #undef PER_DATA_TYPE_MACRO
 }
+
 void FrontendDataTypeController::RecordStartFailure(StartResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures", type(),

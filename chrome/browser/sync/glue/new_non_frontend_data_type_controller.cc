@@ -17,8 +17,6 @@ using content::BrowserThread;
 
 namespace browser_sync {
 
-NewNonFrontendDataTypeController::NewNonFrontendDataTypeController() {}
-
 NewNonFrontendDataTypeController::NewNonFrontendDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
@@ -26,8 +24,6 @@ NewNonFrontendDataTypeController::NewNonFrontendDataTypeController(
     : NonFrontendDataTypeController(profile_sync_factory,
                                     profile,
                                     sync_service) {}
-
-NewNonFrontendDataTypeController::~NewNonFrontendDataTypeController() {}
 
 void NewNonFrontendDataTypeController::Start(
     const StartCallback& start_callback) {
@@ -64,6 +60,89 @@ void NewNonFrontendDataTypeController::Start(
     DCHECK(!shared_change_processor_.get());
     return;
   }
+}
+
+void NewNonFrontendDataTypeController::Stop() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (state() == NOT_RUNNING) {
+    // Stop() should never be called for datatypes that are already stopped.
+    NOTREACHED();
+    return;
+  }
+
+  // Disconnect the change processor. At this point, the
+  // SyncableService can no longer interact with the Syncer, even if
+  // it hasn't finished MergeDataAndStartSyncing.
+  ClearSharedChangeProcessor();
+
+  // If we haven't finished starting, we need to abort the start.
+  switch (state()) {
+    case MODEL_STARTING:
+      set_state(STOPPING);
+      StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
+      return;  // The datatype was never activated, we're done.
+    case ASSOCIATING:
+      set_state(STOPPING);
+      StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
+      // We continue on to deactivate the datatype and stop the local service.
+      break;
+    case DISABLED:
+      // If we're disabled we never succeded associating and never activated the
+      // datatype. We would have already stopped the local service in
+      // StartDoneImpl(..).
+      set_state(NOT_RUNNING);
+      StopModels();
+      return;
+    default:
+      // Datatype was fully started. Need to deactivate and stop the local
+      // service.
+      DCHECK_EQ(state(), RUNNING);
+      set_state(STOPPING);
+      StopModels();
+      break;
+  }
+
+  // Deactivate the DataType on the UI thread. We dont want to listen
+  // for any more changes or process them from the server.
+  profile_sync_service()->DeactivateDataType(type());
+
+  // Stop the local service and release our references to it and the
+  // shared change processor (posts a task to the datatype's thread).
+  StopLocalServiceAsync();
+
+  set_state(NOT_RUNNING);
+}
+
+NewNonFrontendDataTypeController::NewNonFrontendDataTypeController() {}
+
+NewNonFrontendDataTypeController::~NewNonFrontendDataTypeController() {}
+
+void NewNonFrontendDataTypeController::StartDone(
+    DataTypeController::StartResult result,
+    DataTypeController::State new_state,
+    const SyncError& error) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &NewNonFrontendDataTypeController::StartDoneImpl,
+          this,
+          result,
+          new_state,
+          error));
+}
+
+void NewNonFrontendDataTypeController::StartDoneImpl(
+    DataTypeController::StartResult result,
+    DataTypeController::State new_state,
+    const SyncError& error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // If we failed to start up, and we haven't been stopped yet, we need to
+  // ensure we clean up the local service and shared change processor properly.
+  if (new_state != RUNNING && state() != NOT_RUNNING && state() != STOPPING) {
+    ClearSharedChangeProcessor();
+    StopLocalServiceAsync();
+  }
+  NonFrontendDataTypeController::StartDoneImpl(result, new_state, error);
 }
 
 bool NewNonFrontendDataTypeController::StartAssociationAsync() {
@@ -146,85 +225,6 @@ void NewNonFrontendDataTypeController::
   // the datatype.
   shared_change_processor->ActivateDataType(model_safe_group());
   StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, SyncError());
-}
-
-void NewNonFrontendDataTypeController::StartDone(
-    DataTypeController::StartResult result,
-    DataTypeController::State new_state,
-    const SyncError& error) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &NewNonFrontendDataTypeController::StartDoneImpl,
-          this,
-          result,
-          new_state,
-          error));
-}
-
-void NewNonFrontendDataTypeController::StartDoneImpl(
-    DataTypeController::StartResult result,
-    DataTypeController::State new_state,
-    const SyncError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // If we failed to start up, and we haven't been stopped yet, we need to
-  // ensure we clean up the local service and shared change processor properly.
-  if (new_state != RUNNING && state() != NOT_RUNNING && state() != STOPPING) {
-    ClearSharedChangeProcessor();
-    StopLocalServiceAsync();
-  }
-  NonFrontendDataTypeController::StartDoneImpl(result, new_state, error);
-}
-
-void NewNonFrontendDataTypeController::Stop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (state() == NOT_RUNNING) {
-    // Stop() should never be called for datatypes that are already stopped.
-    NOTREACHED();
-    return;
-  }
-
-  // Disconnect the change processor. At this point, the
-  // SyncableService can no longer interact with the Syncer, even if
-  // it hasn't finished MergeDataAndStartSyncing.
-  ClearSharedChangeProcessor();
-
-  // If we haven't finished starting, we need to abort the start.
-  switch (state()) {
-    case MODEL_STARTING:
-      set_state(STOPPING);
-      StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
-      return;  // The datatype was never activated, we're done.
-    case ASSOCIATING:
-      set_state(STOPPING);
-      StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
-      // We continue on to deactivate the datatype and stop the local service.
-      break;
-    case DISABLED:
-      // If we're disabled we never succeded associating and never activated the
-      // datatype. We would have already stopped the local service in
-      // StartDoneImpl(..).
-      set_state(NOT_RUNNING);
-      StopModels();
-      return;
-    default:
-      // Datatype was fully started. Need to deactivate and stop the local
-      // service.
-      DCHECK_EQ(state(), RUNNING);
-      set_state(STOPPING);
-      StopModels();
-      break;
-  }
-
-  // Deactivate the DataType on the UI thread. We dont want to listen
-  // for any more changes or process them from the server.
-  profile_sync_service()->DeactivateDataType(type());
-
-  // Stop the local service and release our references to it and the
-  // shared change processor (posts a task to the datatype's thread).
-  StopLocalServiceAsync();
-
-  set_state(NOT_RUNNING);
 }
 
 void NewNonFrontendDataTypeController::ClearSharedChangeProcessor() {

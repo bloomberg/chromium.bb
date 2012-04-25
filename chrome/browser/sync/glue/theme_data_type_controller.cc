@@ -20,12 +20,11 @@ ThemeDataTypeController::ThemeDataTypeController(
                                  sync_service) {
 }
 
-ThemeDataTypeController::~ThemeDataTypeController() {
-}
-
 syncable::ModelType ThemeDataTypeController::type() const {
   return syncable::THEMES;
 }
+
+ThemeDataTypeController::~ThemeDataTypeController() {}
 
 bool ThemeDataTypeController::StartModels() {
   ExtensionSystem::Get(profile_)->Init(true);
@@ -35,7 +34,7 @@ bool ThemeDataTypeController::StartModels() {
 void ThemeDataTypeController::CreateSyncComponents() {
   ProfileSyncComponentsFactory::SyncComponents sync_components =
       profile_sync_factory_->CreateThemeSyncComponents(sync_service_,
-                                                     this);
+                                                       this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
 }

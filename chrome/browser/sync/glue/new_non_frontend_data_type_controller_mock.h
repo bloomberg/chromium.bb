@@ -16,7 +16,6 @@ class NewNonFrontendDataTypeControllerMock
     : public NewNonFrontendDataTypeController {
  public:
   NewNonFrontendDataTypeControllerMock();
-  virtual ~NewNonFrontendDataTypeControllerMock();
 
   // DataTypeController mocks.
   MOCK_METHOD1(Start, void(const StartCallback& start_callback));
@@ -57,6 +56,9 @@ class NewNonFrontendDataTypeControllerMock
   // NewNonFrontendDataTypeController mocks.
   MOCK_CONST_METHOD0(GetWeakPtrToSyncableService,
                      base::WeakPtr<SyncableService>());
+
+ protected:
+  virtual ~NewNonFrontendDataTypeControllerMock();
 };
 
 }  // namespace browser_sync

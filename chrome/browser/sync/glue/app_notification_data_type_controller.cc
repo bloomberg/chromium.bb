@@ -29,9 +29,6 @@ AppNotificationDataTypeController::AppNotificationDataTypeController(
                            sync_service) {
 }
 
-AppNotificationDataTypeController::~AppNotificationDataTypeController() {
-}
-
 void AppNotificationDataTypeController::Observe(
     int type,
     const content::NotificationSource& source,
@@ -42,6 +39,14 @@ void AppNotificationDataTypeController::Observe(
   DCHECK_EQ(state_, MODEL_STARTING);
   state_ = ASSOCIATING;
   Associate();
+}
+
+AppNotificationDataTypeController::~AppNotificationDataTypeController() {
+}
+
+AppNotificationManager*
+AppNotificationDataTypeController::GetAppNotificationManager() {
+  return profile_->GetExtensionService()->app_notification_manager();
 }
 
 // We want to start the AppNotificationManager before we begin associating.
@@ -60,11 +65,6 @@ bool AppNotificationDataTypeController::StartModels() {
 // Cleanup for our extra registrar usage.
 void AppNotificationDataTypeController::StopModels() {
   registrar_.RemoveAll();
-}
-
-AppNotificationManager*
-AppNotificationDataTypeController::GetAppNotificationManager() {
-  return profile_->GetExtensionService()->app_notification_manager();
 }
 
 }  // namespace browser_sync

@@ -23,13 +23,14 @@ class PasswordDataTypeController : public NonFrontendDataTypeController {
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~PasswordDataTypeController();
 
   // NonFrontendDataTypeController implementation
   virtual syncable::ModelType type() const OVERRIDE;
   virtual browser_sync::ModelSafeGroup model_safe_group() const OVERRIDE;
 
  protected:
+  virtual ~PasswordDataTypeController();
+
   // NonFrontendDataTypeController interface.
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,

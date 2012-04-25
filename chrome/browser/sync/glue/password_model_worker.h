@@ -28,7 +28,6 @@ class PasswordModelWorker : public browser_sync::ModelSafeWorker {
  public:
   explicit PasswordModelWorker(
       const scoped_refptr<PasswordStore>& password_store);
-  virtual ~PasswordModelWorker();
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
   virtual SyncerError DoWorkAndWaitUntilDone(
@@ -36,6 +35,8 @@ class PasswordModelWorker : public browser_sync::ModelSafeWorker {
   virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
  private:
+  virtual ~PasswordModelWorker();
+
   void CallDoWorkAndSignalTask(
     const WorkCallback& work,
     base::WaitableEvent* done,

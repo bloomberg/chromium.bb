@@ -19,8 +19,6 @@ PasswordModelWorker::PasswordModelWorker(
   DCHECK(password_store);
 }
 
-PasswordModelWorker::~PasswordModelWorker() {}
-
 SyncerError PasswordModelWorker::DoWorkAndWaitUntilDone(
     const WorkCallback& work) {
   WaitableEvent done(false, false);
@@ -32,16 +30,18 @@ SyncerError PasswordModelWorker::DoWorkAndWaitUntilDone(
   return error;
 }
 
+ModelSafeGroup PasswordModelWorker::GetModelSafeGroup() {
+  return GROUP_PASSWORD;
+}
+
+PasswordModelWorker::~PasswordModelWorker() {}
+
 void PasswordModelWorker::CallDoWorkAndSignalTask(
     const WorkCallback& work,
     WaitableEvent* done,
     SyncerError *error) {
   *error = work.Run();
   done->Signal();
-}
-
-ModelSafeGroup PasswordModelWorker::GetModelSafeGroup() {
-  return GROUP_PASSWORD;
 }
 
 }  // namespace browser_sync

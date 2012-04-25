@@ -27,7 +27,6 @@ class AutofillDataTypeController : public NewNonFrontendDataTypeController,
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~AutofillDataTypeController();
 
   // NewNonFrontendDataTypeController implementation.
   virtual syncable::ModelType type() const OVERRIDE;
@@ -39,6 +38,8 @@ class AutofillDataTypeController : public NewNonFrontendDataTypeController,
                        const content::NotificationDetails& details) OVERRIDE;
 
  protected:
+  virtual ~AutofillDataTypeController();
+
   // NewNonFrontendDataTypeController implementation.
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,

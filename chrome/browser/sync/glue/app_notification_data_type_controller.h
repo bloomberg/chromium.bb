@@ -25,7 +25,6 @@ class AppNotificationDataTypeController
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~AppNotificationDataTypeController();
 
   // NotificationObserver interface.
   virtual void Observe(int type,
@@ -36,6 +35,9 @@ class AppNotificationDataTypeController
   virtual AppNotificationManager* GetAppNotificationManager();
 
  private:
+  friend class TestAppNotificationDataTypeController;
+  virtual ~AppNotificationDataTypeController();
+
   // FrontendDataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
   virtual void StopModels() OVERRIDE;

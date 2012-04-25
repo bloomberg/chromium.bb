@@ -102,6 +102,9 @@ class HistoryBackendMock : public HistoryBackend {
   MOCK_METHOD2(GetURL, bool(const GURL& url_id, history::URLRow* url_row));
   MOCK_METHOD2(SetPageTitle, void(const GURL& url, const string16& title));
   MOCK_METHOD1(DeleteURL, void(const GURL& url));
+
+ private:
+  virtual ~HistoryBackendMock() {}
 };
 
 class HistoryServiceMock : public HistoryService {
@@ -109,6 +112,9 @@ class HistoryServiceMock : public HistoryService {
   HistoryServiceMock() {}
   MOCK_METHOD2(ScheduleDBTask, void(HistoryDBTask*,
                                     CancelableRequestConsumerBase*));
+
+ private:
+  virtual ~HistoryServiceMock() {}
 };
 
 void RunOnDBThreadCallback(HistoryBackend* backend,

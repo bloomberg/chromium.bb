@@ -31,13 +31,14 @@ class ExtensionSettingDataTypeController
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* profile_sync_service);
-  virtual ~ExtensionSettingDataTypeController();
 
   // NonFrontendDataTypeController implementation
   virtual syncable::ModelType type() const OVERRIDE;
   virtual browser_sync::ModelSafeGroup model_safe_group() const OVERRIDE;
 
  private:
+  virtual ~ExtensionSettingDataTypeController();
+
   // NonFrontendDataTypeController implementation.
   virtual bool PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,

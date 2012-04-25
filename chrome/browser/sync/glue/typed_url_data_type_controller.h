@@ -35,7 +35,6 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~TypedUrlDataTypeController();
 
   // NonFrontendDataTypeController implementation
   virtual syncable::ModelType type() const OVERRIDE;
@@ -65,6 +64,8 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
   virtual void StopModels() OVERRIDE;
 
  private:
+  virtual ~TypedUrlDataTypeController();
+
   // Used by PostTaskOnBackendThread().
   void RunTaskOnBackendThread(const base::Closure& task,
                               history::HistoryBackend* backend);

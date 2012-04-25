@@ -37,7 +37,6 @@ using testing::Return;
 class FakeWebDataService : public WebDataService {
  public:
   FakeWebDataService() : is_database_loaded_(false) {}
-  virtual ~FakeWebDataService() {}
 
   // Mark the database as loaded and send out the appropriate
   // notification.
@@ -56,9 +55,11 @@ class FakeWebDataService : public WebDataService {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeWebDataService);
+  virtual ~FakeWebDataService() {}
 
   bool is_database_loaded_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeWebDataService);
 };
 
 class SyncAutofillDataTypeControllerTest : public testing::Test {

@@ -18,8 +18,6 @@ SessionDataTypeController::SessionDataTypeController(
                                  sync_service) {
 }
 
-SessionDataTypeController::~SessionDataTypeController() {}
-
 SessionModelAssociator* SessionDataTypeController::GetModelAssociator() {
   return reinterpret_cast<SessionModelAssociator*>(model_associator_.get());
 }
@@ -27,6 +25,8 @@ SessionModelAssociator* SessionDataTypeController::GetModelAssociator() {
 syncable::ModelType SessionDataTypeController::type() const {
   return syncable::SESSIONS;
 }
+
+SessionDataTypeController::~SessionDataTypeController() {}
 
 void SessionDataTypeController::CreateSyncComponents() {
   ProfileSyncComponentsFactory::SyncComponents sync_components =

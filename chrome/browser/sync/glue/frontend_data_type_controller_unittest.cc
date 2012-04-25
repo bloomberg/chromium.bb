@@ -76,6 +76,7 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
     mock_->RecordStartFailure(result);
   }
  private:
+  virtual ~FrontendDataTypeControllerFake() {}
   FrontendDataTypeControllerMock* mock_;
 };
 

@@ -22,15 +22,6 @@ using content::BrowserThread;
 
 namespace browser_sync {
 
-NonFrontendDataTypeController::NonFrontendDataTypeController()
-    : profile_sync_factory_(NULL),
-      profile_(NULL),
-      profile_sync_service_(NULL),
-      state_(NOT_RUNNING),
-      abort_association_(false),
-      abort_association_complete_(false, false),
-      datatype_stopped_(false, false) {}
-
 NonFrontendDataTypeController::NonFrontendDataTypeController(
     ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
@@ -46,10 +37,6 @@ NonFrontendDataTypeController::NonFrontendDataTypeController(
   DCHECK(profile_sync_factory_);
   DCHECK(profile_);
   DCHECK(profile_sync_service_);
-}
-
-NonFrontendDataTypeController::~NonFrontendDataTypeController() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void NonFrontendDataTypeController::Start(const StartCallback& start_callback) {
@@ -80,51 +67,114 @@ void NonFrontendDataTypeController::Start(const StartCallback& start_callback) {
   }
 }
 
+// TODO(sync): Blocking the UI thread at shutdown is bad. The new API avoids
+// this. Once all non-frontend datatypes use the new API, we can get rid of this
+// locking (see implementation in AutofillProfileDataTypeController).
+void NonFrontendDataTypeController::Stop() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_NE(state_, NOT_RUNNING);
+  // If Stop() is called while Start() is waiting for association to
+  // complete, we need to abort the association and wait for the DB
+  // thread to finish the StartImpl() task.
+  switch (state_) {
+    case ASSOCIATING:
+      state_ = STOPPING;
+      {
+        base::AutoLock lock(abort_association_lock_);
+        abort_association_ = true;
+        if (model_associator_.get())
+          model_associator_->AbortAssociation();
+      }
+      // Wait for the model association to abort.
+      abort_association_complete_.Wait();
+      StartDoneImpl(ABORTED, STOPPING, SyncError());
+      break;
+    case MODEL_STARTING:
+      state_ = STOPPING;
+      // If Stop() is called while Start() is waiting for the models to start,
+      // abort the start. We don't need to continue on since it means we haven't
+      // kicked off the association, and once we call StopModels, we never will.
+      StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
+      return;
+    case DISABLED:
+      state_ = NOT_RUNNING;
+      StopModels();
+      return;
+    default:
+      DCHECK_EQ(state_, RUNNING);
+      state_ = STOPPING;
+      StopModels();
+      break;
+  }
+  DCHECK(start_callback_.is_null());
+
+  // Deactivate the change processor on the UI thread. We dont want to listen
+  // for any more changes or process them from server.
+  profile_sync_service_->DeactivateDataType(type());
+
+  if (StopAssociationAsync()) {
+    datatype_stopped_.Wait();
+  } else {
+    // We do DFATAL here because this will eventually lead to a failed CHECK
+    // when the change processor gets destroyed on the wrong thread.
+    LOG(DFATAL) << "Failed to destroy datatype " << name();
+  }
+  state_ = NOT_RUNNING;
+}
+
+std::string NonFrontendDataTypeController::name() const {
+  // For logging only.
+  return syncable::ModelTypeToString(type());
+}
+
+DataTypeController::State NonFrontendDataTypeController::state() const {
+  return state_;
+}
+
+void NonFrontendDataTypeController::OnUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RecordUnrecoverableError(from_here, message);
+  BrowserThread::PostTask(BrowserThread::UI, from_here,
+      base::Bind(&NonFrontendDataTypeController::OnUnrecoverableErrorImpl,
+                 this,
+                 from_here,
+                 message));
+}
+
+void NonFrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  RecordUnrecoverableError(from_here, message);
+  BrowserThread::PostTask(BrowserThread::UI, from_here,
+      base::Bind(&NonFrontendDataTypeController::DisableImpl,
+                 this,
+                 from_here,
+                 message));
+}
+
+NonFrontendDataTypeController::NonFrontendDataTypeController()
+    : profile_sync_factory_(NULL),
+      profile_(NULL),
+      profile_sync_service_(NULL),
+      state_(NOT_RUNNING),
+      abort_association_(false),
+      abort_association_complete_(false, false),
+      datatype_stopped_(false, false) {
+}
+
+NonFrontendDataTypeController::~NonFrontendDataTypeController() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 bool NonFrontendDataTypeController::StartModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state_, MODEL_STARTING);
   // By default, no additional services need to be started before we can proceed
   // with model association, so do nothing.
   return true;
-}
-
-void NonFrontendDataTypeController::StartAssociation() {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state_, ASSOCIATING);
-  {
-    base::AutoLock lock(abort_association_lock_);
-    if (abort_association_) {
-      abort_association_complete_.Signal();
-      return;
-    }
-    CreateSyncComponents();
-  }
-
-  if (!model_associator_->CryptoReadyIfNecessary()) {
-    StartFailed(NEEDS_CRYPTO, SyncError());
-    return;
-  }
-
-  bool sync_has_nodes = false;
-  if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
-    SyncError error(FROM_HERE, "Failed to load sync nodes", type());
-    StartFailed(UNRECOVERABLE_ERROR, error);
-    return;
-  }
-
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  SyncError error;
-  error = model_associator_->AssociateModels();
-  // TODO(lipalani): crbug.com/122690 - handle abort.
-  RecordAssociationTime(base::TimeTicks::Now() - start_time);
-  if (error.IsSet()) {
-    StartFailed(ASSOCIATION_FAILED, error);
-    return;
-  }
-
-  profile_sync_service_->ActivateDataType(type(), model_safe_group(),
-                                          change_processor());
-  StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, SyncError());
 }
 
 void NonFrontendDataTypeController::StartFailed(StartResult result,
@@ -184,61 +234,6 @@ void NonFrontendDataTypeController::StartDoneImpl(
   callback.Run(result, error);
 }
 
-// TODO(sync): Blocking the UI thread at shutdown is bad. The new API avoids
-// this. Once all non-frontend datatypes use the new API, we can get rid of this
-// locking (see implementation in AutofillProfileDataTypeController).
-void NonFrontendDataTypeController::Stop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_NE(state_, NOT_RUNNING);
-  // If Stop() is called while Start() is waiting for association to
-  // complete, we need to abort the association and wait for the DB
-  // thread to finish the StartImpl() task.
-  switch (state_) {
-    case ASSOCIATING:
-      state_ = STOPPING;
-      {
-        base::AutoLock lock(abort_association_lock_);
-        abort_association_ = true;
-        if (model_associator_.get())
-          model_associator_->AbortAssociation();
-      }
-      // Wait for the model association to abort.
-      abort_association_complete_.Wait();
-      StartDoneImpl(ABORTED, STOPPING, SyncError());
-      break;
-    case MODEL_STARTING:
-      state_ = STOPPING;
-      // If Stop() is called while Start() is waiting for the models to start,
-      // abort the start. We don't need to continue on since it means we haven't
-      // kicked off the association, and once we call StopModels, we never will.
-      StartDoneImpl(ABORTED, NOT_RUNNING, SyncError());
-      return;
-    case DISABLED:
-      state_ = NOT_RUNNING;
-      StopModels();
-      return;
-    default:
-      DCHECK_EQ(state_, RUNNING);
-      state_ = STOPPING;
-      StopModels();
-      break;
-  }
-  DCHECK(start_callback_.is_null());
-
-  // Deactivate the change processor on the UI thread. We dont want to listen
-  // for any more changes or process them from server.
-  profile_sync_service_->DeactivateDataType(type());
-
-  if (StopAssociationAsync()) {
-    datatype_stopped_.Wait();
-  } else {
-    // We do DFATAL here because this will eventually lead to a failed CHECK
-    // when the change processor gets destroyed on the wrong thread.
-    LOG(DFATAL) << "Failed to destroy datatype " << name();
-  }
-  state_ = NOT_RUNNING;
-}
-
 void NonFrontendDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state_ == STOPPING || state_ == NOT_RUNNING || state_ == DISABLED);
@@ -246,72 +241,11 @@ void NonFrontendDataTypeController::StopModels() {
   // Do nothing by default.
 }
 
-void NonFrontendDataTypeController::StopAssociation() {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (model_associator_.get()) {
-    SyncError error;  // Not used.
-    error = model_associator_->DisassociateModels();
-  }
-  model_associator_.reset();
-  change_processor_.reset();
-  datatype_stopped_.Signal();
-}
-
-std::string NonFrontendDataTypeController::name() const {
-  // For logging only.
-  return syncable::ModelTypeToString(type());
-}
-
-DataTypeController::State NonFrontendDataTypeController::state() const {
-  return state_;
-}
-
-void NonFrontendDataTypeController::OnUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RecordUnrecoverableError(from_here, message);
-  BrowserThread::PostTask(BrowserThread::UI, from_here,
-      base::Bind(&NonFrontendDataTypeController::OnUnrecoverableErrorImpl,
-                 this,
-                 from_here,
-                 message));
-}
-
-void NonFrontendDataTypeController::OnSingleDatatypeUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RecordUnrecoverableError(from_here, message);
-  BrowserThread::PostTask(BrowserThread::UI, from_here,
-      base::Bind(&NonFrontendDataTypeController::DisableImpl,
-                 this,
-                 from_here,
-                 message));
-}
-
 void NonFrontendDataTypeController::OnUnrecoverableErrorImpl(
     const tracked_objects::Location& from_here,
     const std::string& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_sync_service_->OnUnrecoverableError(from_here, message);
-}
-
-bool NonFrontendDataTypeController::StartAssociationAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), ASSOCIATING);
-  return PostTaskOnBackendThread(
-      FROM_HERE,
-      base::Bind(&NonFrontendDataTypeController::StartAssociation, this));
-}
-
-bool NonFrontendDataTypeController::StopAssociationAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), STOPPING);
-  return PostTaskOnBackendThread(
-      FROM_HERE,
-      base::Bind(
-          &NonFrontendDataTypeController::StopAssociation, this));
 }
 
 void NonFrontendDataTypeController::DisableImpl(
@@ -341,6 +275,14 @@ void NonFrontendDataTypeController::RecordStartFailure(StartResult result) {
 #undef PER_DATA_TYPE_MACRO
 }
 
+bool NonFrontendDataTypeController::StartAssociationAsync() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(state(), ASSOCIATING);
+  return PostTaskOnBackendThread(
+      FROM_HERE,
+      base::Bind(&NonFrontendDataTypeController::StartAssociation, this));
+}
+
 ProfileSyncComponentsFactory*
     NonFrontendDataTypeController::profile_sync_factory() const {
   return profile_sync_factory_;
@@ -359,6 +301,7 @@ void NonFrontendDataTypeController::set_start_callback(
     const StartCallback& callback) {
   start_callback_ = callback;
 }
+
 void NonFrontendDataTypeController::set_state(State state) {
   state_ = state;
 }
@@ -379,6 +322,65 @@ ChangeProcessor* NonFrontendDataTypeController::change_processor() const {
 void NonFrontendDataTypeController::set_change_processor(
     ChangeProcessor* change_processor) {
   change_processor_.reset(change_processor);
+}
+
+void NonFrontendDataTypeController::StartAssociation() {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(state_, ASSOCIATING);
+  {
+    base::AutoLock lock(abort_association_lock_);
+    if (abort_association_) {
+      abort_association_complete_.Signal();
+      return;
+    }
+    CreateSyncComponents();
+  }
+
+  if (!model_associator_->CryptoReadyIfNecessary()) {
+    StartFailed(NEEDS_CRYPTO, SyncError());
+    return;
+  }
+
+  bool sync_has_nodes = false;
+  if (!model_associator_->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
+    SyncError error(FROM_HERE, "Failed to load sync nodes", type());
+    StartFailed(UNRECOVERABLE_ERROR, error);
+    return;
+  }
+
+  base::TimeTicks start_time = base::TimeTicks::Now();
+  SyncError error;
+  error = model_associator_->AssociateModels();
+  // TODO(lipalani): crbug.com/122690 - handle abort.
+  RecordAssociationTime(base::TimeTicks::Now() - start_time);
+  if (error.IsSet()) {
+    StartFailed(ASSOCIATION_FAILED, error);
+    return;
+  }
+
+  profile_sync_service_->ActivateDataType(type(), model_safe_group(),
+                                          change_processor());
+  StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK, RUNNING, SyncError());
+}
+
+bool NonFrontendDataTypeController::StopAssociationAsync() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(state(), STOPPING);
+  return PostTaskOnBackendThread(
+      FROM_HERE,
+      base::Bind(
+          &NonFrontendDataTypeController::StopAssociation, this));
+}
+
+void NonFrontendDataTypeController::StopAssociation() {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (model_associator_.get()) {
+    SyncError error;  // Not used.
+    error = model_associator_->DisassociateModels();
+  }
+  model_associator_.reset();
+  change_processor_.reset();
+  datatype_stopped_.Signal();
 }
 
 }  // namespace browser_sync

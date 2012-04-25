@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,6 @@ class StartCallbackMock {
 class DataTypeControllerMock : public DataTypeController {
  public:
   DataTypeControllerMock();
-  virtual ~DataTypeControllerMock();
 
   MOCK_METHOD1(Start, void(const StartCallback& start_callback));
   MOCK_METHOD0(Stop, void());
@@ -35,6 +34,9 @@ class DataTypeControllerMock : public DataTypeController {
   MOCK_CONST_METHOD0(state, State());
   MOCK_METHOD2(OnUnrecoverableError, void(const tracked_objects::Location&,
                                           const std::string&));
+
+ private:
+  virtual ~DataTypeControllerMock();
 };
 
 }  // namespace browser_sync

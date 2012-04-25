@@ -21,13 +21,15 @@ class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~NewNonFrontendDataTypeController();
 
   virtual void Start(const StartCallback& start_callback) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
  protected:
+  friend class NewNonFrontendDataTypeControllerMock;
+
   NewNonFrontendDataTypeController();
+  virtual ~NewNonFrontendDataTypeController();
 
   // Overrides of NonFrontendDataTypeController methods.
   virtual void StartDone(DataTypeController::StartResult result,

@@ -47,6 +47,9 @@ class HistoryMock : public HistoryService {
  public:
   HistoryMock() {}
   MOCK_METHOD0(BackendLoaded, bool(void));
+
+ protected:
+  virtual ~HistoryMock() {}
 };
 
 

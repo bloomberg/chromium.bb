@@ -28,7 +28,6 @@ namespace browser_sync {
 class UIModelWorker : public browser_sync::ModelSafeWorker {
  public:
   UIModelWorker();
-  virtual ~UIModelWorker();
 
   // Called by the UI thread on shutdown of the sync service. Blocks until
   // the UIModelWorker has safely met termination conditions, namely that
@@ -67,6 +66,8 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
     // will be scheduled from now until our destruction.
     STOPPED,
   };
+
+  virtual ~UIModelWorker();
 
   // This is set by the UI thread, but is not explicitly thread safe, so only
   // read this value from other threads when you know it is absolutely safe.

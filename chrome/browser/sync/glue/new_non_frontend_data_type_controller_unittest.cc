@@ -130,6 +130,8 @@ class NewNonFrontendDataTypeControllerFake
   }
 
  private:
+  virtual ~NewNonFrontendDataTypeControllerFake() {}
+
   DISALLOW_COPY_AND_ASSIGN(NewNonFrontendDataTypeControllerFake);
 
   struct PendingTask {

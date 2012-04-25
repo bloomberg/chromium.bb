@@ -28,9 +28,6 @@ SearchEngineDataTypeController::SearchEngineDataTypeController(
                            sync_service) {
 }
 
-SearchEngineDataTypeController::~SearchEngineDataTypeController() {
-}
-
 void SearchEngineDataTypeController::Observe(
     int type,
     const content::NotificationSource& source,
@@ -42,6 +39,8 @@ void SearchEngineDataTypeController::Observe(
   state_ = ASSOCIATING;
   Associate();
 }
+
+SearchEngineDataTypeController::~SearchEngineDataTypeController() {}
 
 // We want to start the TemplateURLService before we begin associating.
 bool SearchEngineDataTypeController::StartModels() {

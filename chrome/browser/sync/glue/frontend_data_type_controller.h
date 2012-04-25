@@ -41,7 +41,6 @@ class FrontendDataTypeController : public DataTypeController {
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~FrontendDataTypeController();
 
   // DataTypeController interface.
   virtual void Start(const StartCallback& start_callback) OVERRIDE;
@@ -59,8 +58,11 @@ class FrontendDataTypeController : public DataTypeController {
       const std::string& message) OVERRIDE;
 
  protected:
+  friend class FrontendDataTypeControllerMock;
+
   // For testing only.
   FrontendDataTypeController();
+  virtual ~FrontendDataTypeController();
 
   // Kick off any dependent services that need to be running before we can
   // associate models. The default implementation is a no-op.

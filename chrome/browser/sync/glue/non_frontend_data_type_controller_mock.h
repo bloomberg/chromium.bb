@@ -15,7 +15,6 @@ namespace browser_sync {
 class NonFrontendDataTypeControllerMock : public NonFrontendDataTypeController {
  public:
   NonFrontendDataTypeControllerMock();
-  virtual ~NonFrontendDataTypeControllerMock();
 
   // DataTypeController mocks.
   MOCK_METHOD1(Start, void(const StartCallback& start_callback));
@@ -51,6 +50,9 @@ class NonFrontendDataTypeControllerMock : public NonFrontendDataTypeController {
                                               const std::string&));
   MOCK_METHOD1(RecordAssociationTime, void(base::TimeDelta time));
   MOCK_METHOD1(RecordStartFailure, void(StartResult result));
+
+ protected:
+  virtual ~NonFrontendDataTypeControllerMock();
 };
 
 }  // namespace browser_sync

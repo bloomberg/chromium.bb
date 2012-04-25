@@ -34,8 +34,6 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
          type == syncable::APP_SETTINGS);
 }
 
-ExtensionSettingDataTypeController::~ExtensionSettingDataTypeController() {}
-
 syncable::ModelType ExtensionSettingDataTypeController::type() const {
   return type_;
 }
@@ -44,6 +42,8 @@ browser_sync::ModelSafeGroup
 ExtensionSettingDataTypeController::model_safe_group() const {
   return browser_sync::GROUP_FILE;
 }
+
+ExtensionSettingDataTypeController::~ExtensionSettingDataTypeController() {}
 
 bool ExtensionSettingDataTypeController::PostTaskOnBackendThread(
     const tracked_objects::Location& from_here,

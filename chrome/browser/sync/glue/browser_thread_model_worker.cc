@@ -15,9 +15,8 @@ namespace browser_sync {
 
 BrowserThreadModelWorker::BrowserThreadModelWorker(
     BrowserThread::ID thread, ModelSafeGroup group)
-    : thread_(thread), group_(group) {}
-
-BrowserThreadModelWorker::~BrowserThreadModelWorker() {}
+    : thread_(thread), group_(group) {
+}
 
 SyncerError BrowserThreadModelWorker::DoWorkAndWaitUntilDone(
     const WorkCallback& work) {
@@ -39,6 +38,12 @@ SyncerError BrowserThreadModelWorker::DoWorkAndWaitUntilDone(
   return error;
 }
 
+ModelSafeGroup BrowserThreadModelWorker::GetModelSafeGroup() {
+  return group_;
+}
+
+BrowserThreadModelWorker::~BrowserThreadModelWorker() {}
+
 void BrowserThreadModelWorker::CallDoWorkAndSignalTask(
     const WorkCallback& work,
     WaitableEvent* done,
@@ -48,14 +53,9 @@ void BrowserThreadModelWorker::CallDoWorkAndSignalTask(
   done->Signal();
 }
 
-ModelSafeGroup BrowserThreadModelWorker::GetModelSafeGroup() {
-  return group_;
-}
-
 DatabaseModelWorker::DatabaseModelWorker()
-    : BrowserThreadModelWorker(BrowserThread::DB, GROUP_DB) {}
-
-DatabaseModelWorker::~DatabaseModelWorker() {}
+    : BrowserThreadModelWorker(BrowserThread::DB, GROUP_DB) {
+}
 
 void DatabaseModelWorker::CallDoWorkAndSignalTask(
     const WorkCallback& work,
@@ -64,10 +64,11 @@ void DatabaseModelWorker::CallDoWorkAndSignalTask(
   BrowserThreadModelWorker::CallDoWorkAndSignalTask(work, done, error);
 }
 
-FileModelWorker::FileModelWorker()
-    : BrowserThreadModelWorker(BrowserThread::FILE, GROUP_FILE) {}
+DatabaseModelWorker::~DatabaseModelWorker() {}
 
-FileModelWorker::~FileModelWorker() {}
+FileModelWorker::FileModelWorker()
+    : BrowserThreadModelWorker(BrowserThread::FILE, GROUP_FILE) {
+}
 
 void FileModelWorker::CallDoWorkAndSignalTask(
     const WorkCallback& work,
@@ -75,5 +76,7 @@ void FileModelWorker::CallDoWorkAndSignalTask(
     SyncerError* error) {
   BrowserThreadModelWorker::CallDoWorkAndSignalTask(work, done, error);
 }
+
+FileModelWorker::~FileModelWorker() {}
 
 }  // namespace browser_sync

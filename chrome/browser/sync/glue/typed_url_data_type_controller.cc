@@ -29,7 +29,6 @@ class RunHistoryBackendTask : public HistoryDBTask {
  public:
   explicit RunHistoryBackendTask(const HistoryBackendTask& task)
       : task_(task) {}
-  virtual ~RunHistoryBackendTask() {}
 
   virtual bool RunOnDBThread(history::HistoryBackend* backend,
                              history::HistoryDatabase* db) {
@@ -40,6 +39,8 @@ class RunHistoryBackendTask : public HistoryDBTask {
   virtual void DoneRunOnMainThread() {}
 
  protected:
+  virtual ~RunHistoryBackendTask() {}
+
   HistoryBackendTask task_;
 };
 
@@ -57,49 +58,13 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
   pref_registrar_.Add(prefs::kSavingBrowserHistoryDisabled, this);
 }
 
-TypedUrlDataTypeController::~TypedUrlDataTypeController() {
+syncable::ModelType TypedUrlDataTypeController::type() const {
+  return syncable::TYPED_URLS;
 }
 
-bool TypedUrlDataTypeController::PostTaskOnBackendThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  HistoryService* history = profile()->GetHistoryService(
-      Profile::IMPLICIT_ACCESS);
-  if (history) {
-    history_service_ = history;
-    history_service_->ScheduleDBTask(
-        new RunHistoryBackendTask(
-            base::Bind(&TypedUrlDataTypeController::RunTaskOnBackendThread,
-                       this, task)),
-        &cancelable_consumer_);
-    return true;
-  } else {
-    // History must be disabled - don't start.
-    LOG(WARNING) << "Cannot access history service - disabling typed url sync";
-    return false;
-  }
-}
-
-void TypedUrlDataTypeController::RunTaskOnBackendThread(
-    const base::Closure& task,
-    history::HistoryBackend* backend) {
-  // Store |backend| so that |task| can use it.
-  backend_ = backend;
-  task.Run();
-}
-
-void TypedUrlDataTypeController::CreateSyncComponents() {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(state(), ASSOCIATING);
-  DCHECK(backend_);
-  ProfileSyncComponentsFactory::SyncComponents sync_components =
-      profile_sync_factory()->CreateTypedUrlSyncComponents(
-          profile_sync_service(),
-          backend_,
-          this);
-  set_model_associator(sync_components.model_associator);
-  set_change_processor(sync_components.change_processor);
+browser_sync::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
+    const {
+  return browser_sync::GROUP_HISTORY;
 }
 
 void TypedUrlDataTypeController::Observe(
@@ -128,6 +93,40 @@ void TypedUrlDataTypeController::Observe(
   }
 }
 
+bool TypedUrlDataTypeController::PostTaskOnBackendThread(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  HistoryService* history = profile()->GetHistoryService(
+      Profile::IMPLICIT_ACCESS);
+  if (history) {
+    history_service_ = history;
+    history_service_->ScheduleDBTask(
+        new RunHistoryBackendTask(
+            base::Bind(&TypedUrlDataTypeController::RunTaskOnBackendThread,
+                       this, task)),
+        &cancelable_consumer_);
+    return true;
+  } else {
+    // History must be disabled - don't start.
+    LOG(WARNING) << "Cannot access history service - disabling typed url sync";
+    return false;
+  }
+}
+
+void TypedUrlDataTypeController::CreateSyncComponents() {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(state(), ASSOCIATING);
+  DCHECK(backend_);
+  ProfileSyncComponentsFactory::SyncComponents sync_components =
+      profile_sync_factory()->CreateTypedUrlSyncComponents(
+          profile_sync_service(),
+          backend_,
+          this);
+  set_model_associator(sync_components.model_associator);
+  set_change_processor(sync_components.change_processor);
+}
+
 void TypedUrlDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
@@ -135,13 +134,14 @@ void TypedUrlDataTypeController::StopModels() {
   notification_registrar_.RemoveAll();
 }
 
-syncable::ModelType TypedUrlDataTypeController::type() const {
-  return syncable::TYPED_URLS;
-}
+TypedUrlDataTypeController::~TypedUrlDataTypeController() {}
 
-browser_sync::ModelSafeGroup TypedUrlDataTypeController::model_safe_group()
-    const {
-  return browser_sync::GROUP_HISTORY;
+void TypedUrlDataTypeController::RunTaskOnBackendThread(
+    const base::Closure& task,
+    history::HistoryBackend* backend) {
+  // Store |backend| so that |task| can use it.
+  backend_ = backend;
+  task.Run();
 }
 
 }  // namespace browser_sync

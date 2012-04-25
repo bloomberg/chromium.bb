@@ -31,7 +31,10 @@ class FlushHistoryDBQueueTask : public HistoryDBTask {
   }
 
   virtual void DoneRunOnMainThread() OVERRIDE {}
+
  private:
+  virtual ~FlushHistoryDBQueueTask() {}
+
   base::WaitableEvent* wait_event_;
 };
 
@@ -49,7 +52,10 @@ class GetTypedUrlsTask : public HistoryDBTask {
   }
 
   virtual void DoneRunOnMainThread() OVERRIDE {}
+
  private:
+  virtual ~GetTypedUrlsTask() {}
+
   history::URLRows* rows_;
   base::WaitableEvent* wait_event_;
 };
@@ -71,7 +77,10 @@ class GetUrlTask : public HistoryDBTask {
   }
 
   virtual void DoneRunOnMainThread() OVERRIDE {}
+
  private:
+  virtual ~GetUrlTask() {}
+
   GURL url_;
   history::URLRow* row_;
   base::WaitableEvent* wait_event_;
@@ -94,7 +103,10 @@ class GetVisitsTask : public HistoryDBTask {
   }
 
   virtual void DoneRunOnMainThread() OVERRIDE {}
+
  private:
+  virtual ~GetVisitsTask() {}
+
   history::URLID id_;
   history::VisitVector* visits_;
   base::WaitableEvent* wait_event_;
@@ -115,7 +127,10 @@ class RemoveVisitsTask : public HistoryDBTask {
   }
 
   virtual void DoneRunOnMainThread() OVERRIDE {}
+
  private:
+  virtual ~RemoveVisitsTask() {}
+
   const history::VisitVector& visits_;
   base::WaitableEvent* wait_event_;
 };

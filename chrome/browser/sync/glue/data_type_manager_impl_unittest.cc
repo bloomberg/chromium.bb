@@ -76,8 +76,6 @@ class FakeDataTypeController : public DataTypeController {
   explicit FakeDataTypeController(ModelType type)
       : state_(NOT_RUNNING), type_(type) {}
 
-  virtual ~FakeDataTypeController() {}
-
   // NOT_RUNNING -> MODEL_STARTING
   virtual void Start(const StartCallback& start_callback) {
     // A real data type would call |start_callback| with a BUSY status
@@ -176,6 +174,8 @@ class FakeDataTypeController : public DataTypeController {
  }
 
  private:
+  virtual ~FakeDataTypeController() {}
+
   State state_;
   ModelType type_;
   StartCallback last_start_callback_;

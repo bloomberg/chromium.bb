@@ -23,7 +23,6 @@ namespace browser_sync {
 class HistoryModelWorker : public browser_sync::ModelSafeWorker {
  public:
   explicit HistoryModelWorker(HistoryService* history_service);
-  virtual ~HistoryModelWorker();
 
   // ModelSafeWorker implementation. Called on syncapi SyncerThread.
   virtual SyncerError DoWorkAndWaitUntilDone(
@@ -31,6 +30,8 @@ class HistoryModelWorker : public browser_sync::ModelSafeWorker {
   virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
  private:
+  virtual ~HistoryModelWorker();
+
   scoped_refptr<HistoryService> history_service_;
   // Helper object to make sure we don't leave tasks running on the history
   // thread.

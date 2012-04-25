@@ -220,6 +220,8 @@ class WebDataServiceFake : public WebDataService {
   }
 
  private:
+  virtual ~WebDataServiceFake() {}
+
   void CreateSyncableService() {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     // These services are deleted in DestroySyncableService().

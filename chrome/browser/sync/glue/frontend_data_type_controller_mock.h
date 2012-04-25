@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@ namespace browser_sync {
 class FrontendDataTypeControllerMock : public FrontendDataTypeController {
  public:
   FrontendDataTypeControllerMock();
-  virtual ~FrontendDataTypeControllerMock();
 
   // DataTypeController mocks.
   MOCK_METHOD1(Start, void(const StartCallback& start_callback));
@@ -44,6 +43,9 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
                                               const std::string&));
   MOCK_METHOD1(RecordAssociationTime, void(base::TimeDelta time));
   MOCK_METHOD1(RecordStartFailure, void(StartResult result));
+
+ protected:
+  virtual ~FrontendDataTypeControllerMock();
 };
 
 }  // namespace browser_sync

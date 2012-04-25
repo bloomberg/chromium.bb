@@ -23,9 +23,10 @@ class ExtensionDataTypeController : public UIDataTypeController {
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~ExtensionDataTypeController();
 
  private:
+  virtual ~ExtensionDataTypeController();
+
   // DataTypeController implementations.
   virtual bool StartModels() OVERRIDE;
 

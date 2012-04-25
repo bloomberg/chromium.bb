@@ -28,8 +28,16 @@ PasswordDataTypeController::PasswordDataTypeController(
                                     sync_service) {
 }
 
-PasswordDataTypeController::~PasswordDataTypeController() {
+syncable::ModelType PasswordDataTypeController::type() const {
+  return syncable::PASSWORDS;
 }
+
+browser_sync::ModelSafeGroup PasswordDataTypeController::model_safe_group()
+    const {
+  return browser_sync::GROUP_PASSWORD;
+}
+
+PasswordDataTypeController::~PasswordDataTypeController() {}
 
 bool PasswordDataTypeController::PostTaskOnBackendThread(
       const tracked_objects::Location& from_here,
@@ -66,15 +74,6 @@ void PasswordDataTypeController::CreateSyncComponents() {
           this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
-}
-
-syncable::ModelType PasswordDataTypeController::type() const {
-  return syncable::PASSWORDS;
-}
-
-browser_sync::ModelSafeGroup PasswordDataTypeController::model_safe_group()
-    const {
-  return browser_sync::GROUP_PASSWORD;
 }
 
 }  // namespace browser_sync

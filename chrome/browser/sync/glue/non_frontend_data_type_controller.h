@@ -43,7 +43,6 @@ class NonFrontendDataTypeController : public DataTypeController {
       ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
-  virtual ~NonFrontendDataTypeController();
 
   // DataTypeController interface.
   virtual void Start(const StartCallback& start_callback) OVERRIDE;
@@ -64,6 +63,8 @@ class NonFrontendDataTypeController : public DataTypeController {
  protected:
   // For testing only.
   NonFrontendDataTypeController();
+
+  virtual ~NonFrontendDataTypeController();
 
   // Start any dependent services that need to be running before we can
   // associate models. The default implementation is a no-op.

@@ -29,15 +29,6 @@ using testing::Return;
 using testing::SetArgumentPointee;
 
 namespace browser_sync {
-namespace {
-
-ACTION(MakeSharedChangeProcessor) {
-  return new SharedChangeProcessor();
-}
-
-ACTION_P(ReturnAndRelease, change_processor) {
-  return change_processor->release();
-}
 
 class TestAppNotificationDataTypeController
     : public AppNotificationDataTypeController {
@@ -57,8 +48,20 @@ class TestAppNotificationDataTypeController
   }
 
  private:
+  virtual ~TestAppNotificationDataTypeController() {}
+
   scoped_refptr<AppNotificationManager> manager_;
 };
+
+namespace {
+
+ACTION(MakeSharedChangeProcessor) {
+  return new SharedChangeProcessor();
+}
+
+ACTION_P(ReturnAndRelease, change_processor) {
+  return change_processor->release();
+}
 
 class SyncAppNotificationDataTypeControllerTest
     : public testing::Test {

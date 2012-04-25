@@ -26,7 +26,6 @@ class BrowserThreadModelWorker : public ModelSafeWorker {
  public:
   BrowserThreadModelWorker(content::BrowserThread::ID thread,
                            ModelSafeGroup group);
-  virtual ~BrowserThreadModelWorker();
 
   // ModelSafeWorker implementation. Called on the sync thread.
   virtual SyncerError DoWorkAndWaitUntilDone(
@@ -34,6 +33,8 @@ class BrowserThreadModelWorker : public ModelSafeWorker {
   virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 
  protected:
+  virtual ~BrowserThreadModelWorker();
+
   // Marked pure virtual so subclasses have to override, but there is
   // an implementation that subclasses should use.  This is so that
   // (subclass)::CallDoWorkAndSignalTask shows up in callstacks.
@@ -55,25 +56,29 @@ class BrowserThreadModelWorker : public ModelSafeWorker {
 class DatabaseModelWorker : public BrowserThreadModelWorker {
  public:
   DatabaseModelWorker();
-  virtual ~DatabaseModelWorker();
 
  protected:
   virtual void CallDoWorkAndSignalTask(
       const WorkCallback& work,
       base::WaitableEvent* done,
       SyncerError* error) OVERRIDE;
+
+ private:
+  virtual ~DatabaseModelWorker();
 };
 
 class FileModelWorker : public BrowserThreadModelWorker {
  public:
   FileModelWorker();
-  virtual ~FileModelWorker();
 
  protected:
   virtual void CallDoWorkAndSignalTask(
       const WorkCallback& work,
       base::WaitableEvent* done,
       SyncerError* error) OVERRIDE;
+
+ private:
+  virtual ~FileModelWorker();
 };
 
 }  // namespace browser_sync
