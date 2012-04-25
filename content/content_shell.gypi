@@ -41,7 +41,6 @@
         '../webkit/support/webkit_support.gyp:fileapi',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:quota',
-        '../webkit/support/webkit_support.gyp:webkit_support',
       ],
       'include_dirs': [
         '..',
@@ -53,6 +52,7 @@
         'shell/paths_mac.mm',
         'shell/shell.cc',
         'shell/shell.h',
+        'shell/shell_android.cc',
         'shell/shell_aura.cc',
         'shell/shell_gtk.cc',
         'shell/shell_mac.mm',
@@ -138,6 +138,13 @@
             },
           },
         }],  # OS=="win"
+        ['OS!="android"', {
+          'dependencies': [
+            # This dependency is for running DRT against the content shell, and
+            # this combination is not yet supported on Android.
+            '../webkit/support/webkit_support.gyp:webkit_support',
+          ],
+        }],  # OS!="android"
         ['use_aura==1', {
           'sources/': [
             ['exclude', 'shell/shell_gtk.cc'],
@@ -222,11 +229,19 @@
             '<(repack_path)',
             '<@(pak_inputs)',
           ],
-          'outputs': [
-            '<(PRODUCT_DIR)/content_shell.pak',
-          ],
           'action': ['python', '<(repack_path)', '<@(_outputs)',
                      '<@(pak_inputs)'],
+          'conditions': [
+            ['OS!="android"', {
+              'outputs': [
+                '<(PRODUCT_DIR)/content_shell.pak',
+              ],
+            }, {
+              'outputs': [
+                '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
+              ],
+            }],
+          ],
         },
       ],
     },
@@ -462,14 +477,73 @@
     ['OS=="android"', {
       'targets': [
         {
+          # TODO(jrg): Update this action and other jni generators to only
+          # require specifying the java directory and generate the rest.
+          'target_name': 'content_shell_jni_headers',
+          'type': 'none',
+          'variables': {
+            'java_sources': [
+              'shell/android/java/org/chromium/content_shell/ShellManager.java',
+              'shell/android/java/org/chromium/content_shell/ShellView.java',
+            ],
+            'jni_headers': [
+              '<(SHARED_INTERMEDIATE_DIR)/content/shell/jni/shell_manager_jni.h',
+              '<(SHARED_INTERMEDIATE_DIR)/content/shell/jni/shell_view_jni.h',
+            ],
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'content_shell_content_view',
+          'type': 'shared_library',
+          'dependencies': [
+            'content_shell_jni_headers',
+            'content_shell_lib',
+            'content_shell_pak',
+            # Skia is necessary to ensure the dependencies needed by
+            # WebContents are included.
+            '../skia/skia.gyp:skia',
+            '<(DEPTH)/media/media.gyp:player_android',
+          ],
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)/content/shell',
+          ],
+          'sources': [
+            'shell/android/shell_library_loader.cc',
+            'shell/android/shell_library_loader.h',
+            'shell/android/shell_manager.cc',
+            'shell/android/shell_manager.h',
+            'shell/android/shell_view.cc',
+            'shell/android/shell_view.h',
+          ],
+        },
+        {
           'target_name': 'content_shell_apk',
           'type': 'none',
           'actions': [
             {
+              'action_name': 'copy_base_jar',
+              'inputs': ['<(PRODUCT_DIR)/chromium_base.jar'],
+              'outputs': ['<(PRODUCT_DIR)/content_shell/java/libs/chromium_base.jar'],
+              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
+            },
+            {
+              'action_name': 'copy_content_jar',
+              'inputs': ['<(PRODUCT_DIR)/chromium_content.jar'],
+              'outputs': ['<(PRODUCT_DIR)/content_shell/java/libs/chromium_content.jar'],
+              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
+            },
+            {
               'action_name': 'content_shell_apk',
               'inputs': [
                 '<(DEPTH)/content/shell/android/content_shell_apk.xml',
+                '<(DEPTH)/content/shell/android/AndroidManifest.xml',
                 '<!@(find shell/android/java -name "*.java")',
+                '<!@(find shell/android/res -name "*")',
+                '<(PRODUCT_DIR)/content_shell/java/libs/chromium_base.jar',
+                '<(PRODUCT_DIR)/content_shell/java/libs/chromium_content.jar',
+                # TODO(tedchoc): Move the .so file so it can be consumed by the apk.
+                '<(SHARED_LIB_DIR)/libcontent_shell_content_view.so',
               ],
               'outputs': [
                 # Awkwardly, we build a Debug APK even when gyp is in

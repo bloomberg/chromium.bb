@@ -197,5 +197,18 @@
      ],
     },
    ],
+   ['OS == "android"', {
+     'targets': [
+       {
+         'target_name': 'content_java',
+         'type': 'none',
+         'variables': {
+           'package_name': 'content',
+           'java_in_dir': '../content/public/android/java',
+         },
+         'includes': [ '../build/java.gypi' ],
+       },
+     ],
+   }],  # OS == "android"
   ],
 }

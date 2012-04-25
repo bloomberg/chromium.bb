@@ -29,6 +29,7 @@
   'sources': [
     'port/browser/render_widget_host_view_port.h',
     'public/browser/access_token_store.h',
+    'public/browser/android_library_loader_hooks.h',
     'public/browser/browser_accessibility_state.h',
     'public/browser/browser_child_process_host.h',
     'public/browser/browser_child_process_host_delegate.cc',
@@ -171,6 +172,7 @@
     'browser/accessibility/browser_accessibility_state_impl.h',
     'browser/accessibility/browser_accessibility_win.cc',
     'browser/accessibility/browser_accessibility_win.h',
+    'browser/android/library_loader_hooks.cc',
     'browser/appcache/appcache_dispatcher_host.cc',
     'browser/appcache/appcache_dispatcher_host.h',
     'browser/appcache/appcache_frontend_proxy.cc',
@@ -794,14 +796,13 @@
       ],
     }],
     ['OS=="android"', {
-      'sources!': [
-        # A main loop would be handled in Java.
-        'browser/browser_main_loop.cc',
-        'browser/browser_main_loop.h',
-      ],
       'dependencies!': [
         '../third_party/flac/flac.gyp:libflac',
-      ]}],
+      ],
+      'dependencies': [
+        '../media/media.gyp:media',
+      ],
+    }],
     ['OS=="mac"', {
       'sources': [
         # Build necessary Mozilla sources

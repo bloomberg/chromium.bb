@@ -21,6 +21,8 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 typedef struct _GtkToolItem GtkToolItem;
+#elif defined(OS_ANDROID)
+#include "content/shell/android/shell_view.h"
 #endif
 
 class GURL;
@@ -177,6 +179,8 @@ class Shell : public WebContentsDelegate,
 
   int content_width_;
   int content_height_;
+#elif defined(OS_ANDROID)
+  scoped_ptr<ShellView> shell_view_;
 #endif
 
   // A container of all the open windows. We use a vector so we can keep track

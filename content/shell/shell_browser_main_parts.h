@@ -30,7 +30,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
   virtual ~ShellBrowserMainParts();
 
   // content::BrowserMainParts overrides.
-  virtual void PreEarlyInitialization() OVERRIDE {}
+  virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PostEarlyInitialization() OVERRIDE {}
   virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE {}

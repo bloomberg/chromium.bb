@@ -3,6 +3,7 @@ include_rules = [
   "+content/port/browser",
   "+content/public/browser",
   "+media/audio",  # For audio input for speech input feature.
+  "+media/base/android",  # For Android JNI registration.
 
   # Other libraries.
   "+third_party/iaccessible2",

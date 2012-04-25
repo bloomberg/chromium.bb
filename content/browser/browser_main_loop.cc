@@ -85,7 +85,7 @@ using content::TraceControllerImpl;
 
 namespace {
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void SetupSandbox(const CommandLine& parsed_command_line) {
   // TODO(evanm): move this into SandboxWrapper; I'm just trying to move this
   // code en masse out of chrome_main for now.
@@ -266,7 +266,7 @@ void BrowserMainLoop::EarlyInitialization() {
   }
 #endif  // !defined(USE_OPENSSL)
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   SetupSandbox(parsed_command_line_);
 #endif
 
@@ -638,6 +638,9 @@ void BrowserMainLoop::MainMessageLoopRun() {
 
 #if defined(OS_MACOSX)
   MessageLoopForUI::current()->Run();
+#elif defined(OS_ANDROID)
+  // Android's main message loop is the Java message loop.
+  NOTREACHED();
 #else
   MessageLoopForUI::current()->RunWithDispatcher(NULL);
 #endif

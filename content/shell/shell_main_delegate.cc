@@ -25,6 +25,9 @@ ShellMainDelegate::ShellMainDelegate() {
 }
 
 ShellMainDelegate::~ShellMainDelegate() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#endif
 }
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
@@ -117,7 +120,14 @@ void ShellMainDelegate::InitializeResourceBundle() {
   pak_file = GetResourcesPakFilePath();
 #else
   FilePath pak_dir;
+
+#if defined(OS_ANDROID)
+  DCHECK(PathService::Get(base::DIR_ANDROID_APP_DATA, &pak_dir));
+  pak_dir = pak_dir.Append(FILE_PATH_LITERAL("paks"));
+#else
   PathService::Get(base::DIR_MODULE, &pak_dir);
+#endif
+
   pak_file = pak_dir.Append(FILE_PATH_LITERAL("content_shell.pak"));
 #endif
   ui::ResourceBundle::InitSharedInstanceWithPakFile(pak_file);

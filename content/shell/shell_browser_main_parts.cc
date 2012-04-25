@@ -19,6 +19,10 @@
 #include "net/base/net_module.h"
 #include "ui/base/clipboard/clipboard.h"
 
+#if defined(OS_ANDROID)
+#include "base/message_pump_android.h"
+#endif
+
 namespace content {
 
 static GURL GetStartupURL() {
@@ -29,6 +33,12 @@ static GURL GetStartupURL() {
 
   return GURL(args[0]);
 }
+
+#if defined(OS_ANDROID)
+static base::MessagePump* CreateMessagePumpForShell() {
+  return new base::MessagePumpForUI();
+}
+#endif
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
@@ -41,11 +51,21 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 
 #if !defined(OS_MACOSX)
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
+#if defined(OS_ANDROID)
+  MessageLoopForUI::InitMessagePumpForUIFactory(&CreateMessagePumpForShell);
+  MessageLoopForUI::current()->Start();
+#endif
 }
 #endif
 
 int ShellBrowserMainParts::PreCreateThreads() {
   return 0;
+}
+
+void ShellBrowserMainParts::PreEarlyInitialization() {
+#if defined(OS_ANDROID)
+  // TODO(tedchoc): Setup the NetworkChangeNotifier here.
+#endif
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
