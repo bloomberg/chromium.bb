@@ -29,10 +29,6 @@ const float kDrawAttentionRFraction = kDrawAttentionR / 255.0;
 const float kDrawAttentionGFraction = kDrawAttentionG / 255.0;
 const float kDrawAttentionBFraction = kDrawAttentionB / 255.0;
 
-// Delay before click on a titlebar is allowed to minimize the panel after
-// the 'draw attention' mode has been cleared.
-const int kSuspendMinimizeOnClickIntervalMs = 500;
-
 // Markup for title text in draw attention state. Set to color white.
 const char* const kDrawAttentionTitleMarkupPrefix =
     "<span fgcolor='#ffffff'>";
@@ -250,14 +246,11 @@ void PanelBrowserWindowGtk::DrawAttentionFrame(cairo_t* cr,
 void PanelBrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   bool was_active = IsActive();
   BrowserWindowGtk::ActiveWindowChanged(active_window);
-  if (!window() || was_active == IsActive())  // State didn't change.
+  bool is_active = IsActive();
+  if (!window() || was_active == is_active)  // State didn't change.
     return;
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      content::Source<Panel>(panel_.get()),
-      content::NotificationService::NoDetails());
-  panel_->OnActiveStateChanged();
+  panel_->OnActiveStateChanged(is_active);
 }
 
 BrowserWindowGtk::TitleDecoration PanelBrowserWindowGtk::GetWindowTitle(
@@ -575,42 +568,9 @@ gboolean PanelBrowserWindowGtk::OnTitlebarButtonReleaseEvent(
   if (event->button != 1)
     return TRUE;
 
-  if (event->state & GDK_CONTROL_MASK) {
-    panel_->OnTitlebarClicked(panel::APPLY_TO_ALL);
-    return TRUE;
-  }
-
-  // TODO(jennb): Move remaining titlebar click handling out of here.
-  // (http://crbug.com/118431)
-  PanelStrip* panel_strip = panel_->panel_strip();
-  if (!panel_strip)
-    return TRUE;
-
-  if (panel_strip->type() == PanelStrip::DOCKED &&
-      panel_->expansion_state() == Panel::EXPANDED) {
-    if (base::Time::Now() < disableMinimizeUntilTime_)
-      return TRUE;
-
-    panel_->SetExpansionState(Panel::MINIMIZED);
-  } else {
-    panel_->Activate();
-  }
-
+  panel_->OnTitlebarClicked((event->state & GDK_CONTROL_MASK) ?
+                            panel::APPLY_TO_ALL : panel::NO_MODIFIER);
   return TRUE;
-}
-
-void PanelBrowserWindowGtk::HandleFocusIn(GtkWidget* widget,
-                                          GdkEventFocus* event) {
-  BrowserWindowGtk::HandleFocusIn(widget, event);
-
-  // Do not clear draw attention if user cannot see contents of panel.
-  if (!is_drawing_attention_ || panel_->IsMinimized())
-    return;
-
-  panel_->FlashFrame(false);
-
-  disableMinimizeUntilTime_ = base::Time::Now() +
-      base::TimeDelta::FromMilliseconds(kSuspendMinimizeOnClickIntervalMs);
 }
 
 // NativePanelTesting implementation.

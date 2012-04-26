@@ -59,9 +59,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void DrawPopupFrame(cairo_t* cr, GtkWidget* widget,
                               GdkEventExpose* event) OVERRIDE;
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
-  // 'focus-in-event' handler.
-  virtual void HandleFocusIn(GtkWidget* widget,
-                             GdkEventFocus* event) OVERRIDE;
 
   // Overridden from NativePanel:
   virtual void ShowPanel() OVERRIDE;
@@ -139,15 +136,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
 
   // Indicates that the panel is currently drawing attention.
   bool is_drawing_attention_;
-
-  // Disable ExpansionState changes on mouse click for a short duration.
-  // This is needed in case the window gains focus as result of mouseDown while
-  // being already expanded and drawing attention - in this case, we don't
-  // want to minimize it on subsequent mouseUp.
-  // We use time interval because the window may gain focus in various ways
-  // (via keyboard for example) which are not distinguishable at this point.
-  // Apparently this disable interval is not affecting the user in other cases.
-  base::Time disableMinimizeUntilTime_;
 
   // Used to animate the bounds change.
   scoped_ptr<PanelBoundsAnimation> bounds_animator_;

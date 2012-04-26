@@ -694,9 +694,23 @@ void Panel::Observe(int type,
   ConfigureAutoResize(content::Source<WebContents>(source).ptr());
 }
 
-void Panel::OnActiveStateChanged() {
+void Panel::OnActiveStateChanged(bool active) {
+  // Clear attention state when an expanded panel becomes active.
+  // On some systems (e.g. Win), mouse-down activates a panel regardless of
+  // its expansion state. However, we don't want to clear draw attention if
+  // contents are not visible. In that scenario, if the mouse-down results
+  // in a mouse-click, draw attention will be cleared then.
+  // See Panel::OnTitlebarClicked().
+  if (active && IsDrawingAttention() && !IsMinimized())
+    FlashFrame(false);
+
   if (panel_strip_)
     panel_strip_->OnPanelActiveStateChanged(this);
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
+      content::Source<Panel>(this),
+      content::NotificationService::NoDetails());
 }
 
 void Panel::ConfigureAutoResize(WebContents* web_contents) {
@@ -720,6 +734,17 @@ void Panel::OnWindowSizeAvailable() {
 void Panel::OnTitlebarClicked(panel::ClickModifier modifier) {
   if (panel_strip_)
     panel_strip_->OnPanelTitlebarClicked(this, modifier);
+
+  // Normally the system activates a window when the titlebar is clicked.
+  // However, we prevent system activation of minimized panels, thus the
+  // activation may not have occurred. Also, some OSes (Windows) will
+  // activate a minimized panel on mouse-down regardless of our attempts to
+  // prevent system activation. Attention state is not cleared in that case.
+  // See Panel::OnActiveStateChanged().
+  // Therefore, we ensure activation and clearing of attention state here.
+  // These are no-ops if no changes are needed.
+  Activate();
+  FlashFrame(false);
 }
 
 void Panel::DestroyBrowser() {

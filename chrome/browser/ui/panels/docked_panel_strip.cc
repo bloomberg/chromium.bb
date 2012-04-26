@@ -473,11 +473,13 @@ void DockedPanelStrip::OnPanelAttentionStateChanged(Panel* panel) {
 void DockedPanelStrip::OnPanelTitlebarClicked(Panel* panel,
                                               panel::ClickModifier modifier) {
   DCHECK_EQ(this, panel->panel_strip());
+  if (!IsPanelMinimized(panel))
+    return;
+
   if (modifier == panel::APPLY_TO_ALL)
     ToggleMinimizeAll(panel);
-
-  // TODO(jennb): Move all other titlebar click handling here.
-  // (http://crbug.com/118431)
+  else
+    RestorePanel(panel);
 }
 
 void DockedPanelStrip::ActivatePanel(Panel* panel) {

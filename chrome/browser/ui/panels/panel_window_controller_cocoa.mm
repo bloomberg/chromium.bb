@@ -6,13 +6,11 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
-#include "base/time.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/profiles/profile.h"
@@ -36,8 +34,6 @@
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_utils_cocoa.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
-#include "chrome/common/chrome_notification_types.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/ui_resources.h"
@@ -84,12 +80,21 @@ enum {
 }
 
 // Prevent panel window from becoming key - for example when it is minimized.
+// Panel windows use a higher priority NSWindowLevel to ensure they are always
+// visible, causing the OS to prefer panel windows when selecting a window
+// to make the key window. To counter this preference, we override
+// -[NSWindow:canBecomeKeyWindow] to restrict when the panel can become the
+// key window to a limited set of scenarios, such as when cycling through
+// windows, when panels are the only remaining windows, when an event
+// triggers window activation, etc. The panel may also be prevented from
+// becoming the key window, regardless of the above scenarios, such as when
+// a panel is minimized.
 - (BOOL)canBecomeKeyWindow {
   // Give precedence to controller preventing activation of the window.
   PanelWindowControllerCocoa* controller =
       base::mac::ObjCCast<PanelWindowControllerCocoa>([self windowController]);
   if (![controller canBecomeKeyWindow])
-    return false;
+    return NO;
 
   BrowserCrApplication* app = base::mac::ObjCCast<BrowserCrApplication>(
       [BrowserCrApplication sharedApplication]);
@@ -97,17 +102,11 @@ enum {
   // A Panel window can become the key window only in limited scenarios.
   // This prevents the system from always preferring a Panel window due
   // to its higher priority NSWindowLevel when selecting a window to make key.
-  return canBecomeKey_ ||
+  return ([app isHandlingSendEvent]  && [[app currentEvent] window] == self) ||
       [controller activationRequestedByBrowser] ||
       [app isCyclingWindows] ||
       [app previousKeyWindow] == self ||
       [[app windows] count] == static_cast<NSUInteger>([controller numPanels]);
-}
-
-- (void)sendEvent:(NSEvent*)anEvent {
-  // Allow the panel to become key in response to a mouse click.
-  AutoReset<BOOL> pin(&canBecomeKey_, YES);
-  [super sendEvent:anEvent];
 }
 @end
 
@@ -878,29 +877,8 @@ enum {
 
 - (void)onTitlebarMouseClicked:(int)modifierFlags {
   Panel* panel = windowShim_->panel();
-  if (modifierFlags & NSShiftKeyMask) {
-    panel->OnTitlebarClicked(panel::APPLY_TO_ALL);
-    return;
-  }
-
-  // TODO(jennb): Move remaining titlebar click handling out of here.
-  // (http://crbug.com/118431)
-  PanelStrip* panelStrip = panel->panel_strip();
-  if (!panelStrip)
-    return;
-  if (panelStrip->type() == PanelStrip::DOCKED &&
-      panel->expansion_state() == Panel::EXPANDED) {
-    if ([[self titlebarView] isDrawingAttention]) {
-      // Do not minimize if the Panel is drawing attention since user
-      // most likely simply wants to reset the 'draw attention' status.
-      panel->Activate();
-      return;
-    }
-    panel->SetExpansionState(Panel::MINIMIZED);
-    // The Panel class ensures deactivation when it is minimized.
-  } else {
-    panel->Activate();
-  }
+  panel->OnTitlebarClicked((modifierFlags & NSShiftKeyMask) ?
+                           panel::APPLY_TO_ALL : panel::NO_MODIFIER);
 }
 
 - (int)titlebarHeightInScreenCoordinates {
@@ -933,18 +911,7 @@ enum {
       rwhv->SetActive(true);
   }
 
-  // If the window becomes key, lets make sure it is expanded and stop
-  // drawing attention - since it is ready to accept input, it already has
-  // user's attention.
-  if ([[self titlebarView] isDrawingAttention]) {
-    [[self titlebarView] stopDrawingAttention];
-  }
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      content::Source<Panel>(windowShim_->panel()),
-      content::NotificationService::NoDetails());
-  windowShim_->panel()->OnActiveStateChanged();
+  windowShim_->panel()->OnActiveStateChanged(true);
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
@@ -963,11 +930,7 @@ enum {
       rwhv->SetActive(false);
   }
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      content::Source<Panel>(windowShim_->panel()),
-      content::NotificationService::NoDetails());
-  windowShim_->panel()->OnActiveStateChanged();
+  windowShim_->panel()->OnActiveStateChanged(false);
 }
 
 - (void)deactivate {
@@ -1052,10 +1015,6 @@ enum {
   if (![self isWindowLoaded])
     return;
   [[self window] invalidateCursorRectsForView:overlayView_];
-}
-
-- (BOOL)isActivationByClickingTitlebarEnabled {
-  return !windowShim_->panel()->always_on_top();
 }
 
 @end

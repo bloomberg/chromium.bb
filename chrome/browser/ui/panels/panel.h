@@ -79,10 +79,6 @@ class Panel : public BrowserWindow,
 
   int TitleOnlyHeight() const;
 
-  // Returns the size of the panel when it is iconified, as shown on the
-  // overflow area.
-  gfx::Size IconOnlySize() const;
-
   // Returns true if the panel can be minimized or restored, depending on the
   // strip the panel is in.
   bool CanMinimize() const;
@@ -304,7 +300,8 @@ class Panel : public BrowserWindow,
   void ClampSize(gfx::Size* size) const;
 
   // Called when the panel's active state changes.
-  void OnActiveStateChanged();
+  // |active| is true if panel became active.
+  void OnActiveStateChanged(bool active);
 
  protected:
   virtual void DestroyBrowser() OVERRIDE;

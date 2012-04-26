@@ -151,7 +151,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
           NativePanelTesting::Create(panels[i]->native_panel());
     }
 
-    // Test minimize.
+    // Verify titlebar click does not minimize.
     for (size_t index = 0; index < panels.size(); ++index) {
       // Press left mouse button.  Verify nothing changed.
       native_panels_testing[index]->PressLeftMouseButtonTitlebar(
@@ -159,8 +159,15 @@ class PanelBrowserTest : public BasePanelBrowserTest {
       EXPECT_EQ(expected_bounds, GetAllPanelBounds());
       EXPECT_EQ(expected_expansion_states, GetAllPanelExpansionStates());
 
-      // Release mouse button.  Verify minimized.
+      // Release mouse button.  Verify nothing changed.
       native_panels_testing[index]->ReleaseMouseButtonTitlebar();
+      EXPECT_EQ(expected_bounds, GetAllPanelBounds());
+      EXPECT_EQ(expected_expansion_states, GetAllPanelExpansionStates());
+    }
+
+    // Minimize all panels for next stage in test.
+    for (size_t index = 0; index < panels.size(); ++index) {
+      panels[index]->Minimize();
       expected_bounds[index].set_height(Panel::kMinimizedPanelHeight);
       expected_bounds[index].set_y(
           test_begin_bounds[index].y() +
@@ -594,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreThreePanels) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ToggleMinimizeAll) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoreAllWithTitlebarClick) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
   PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
@@ -614,48 +621,56 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ToggleMinimizeAll) {
   scoped_ptr<NativePanelTesting> test_panel3(
       NativePanelTesting::Create(panel3->native_panel()));
 
-  // Press and release mouse button on one panel's titlebar using a modifier
-  // to minimize all panels. Nothing changes until mouse is released.
+  // Click on an expanded panel's titlebar using the apply-all modifier.
+  // Verify expansion state is unchanged.
   test_panel2->PressLeftMouseButtonTitlebar(panel2->GetBounds().origin(),
                                             panel::APPLY_TO_ALL);
+  test_panel2->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
   EXPECT_FALSE(panel1->IsMinimized());
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_FALSE(panel3->IsMinimized());
-  test_panel2->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
+
+  // Click on a minimized panel's titlebar using the apply-all modifier.
+  panel1->Minimize();
+  panel2->Minimize();
+  panel3->Minimize();
   EXPECT_TRUE(panel1->IsMinimized());
   EXPECT_TRUE(panel2->IsMinimized());
   EXPECT_TRUE(panel3->IsMinimized());
 
-  // Press and release on a panel titlebar to restore all panels.
   // Nothing changes until mouse is released.
   test_panel1->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin(),
                                             panel::APPLY_TO_ALL);
   EXPECT_TRUE(panel1->IsMinimized());
   EXPECT_TRUE(panel2->IsMinimized());
   EXPECT_TRUE(panel3->IsMinimized());
+  // Verify all panels restored when mouse is released.
   test_panel1->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
   EXPECT_FALSE(panel1->IsMinimized());
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_FALSE(panel3->IsMinimized());
 
-  // Minimize a single panel. Then minimize all panels to verify that apply-all
-  // logic works even if not all panels have the same expansion state.
+  // Minimize a single panel. Then click on expanded panel with apply-all
+  // modifier. Verify nothing changes.
   panel1->Minimize();
   EXPECT_TRUE(panel1->IsMinimized());
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_FALSE(panel3->IsMinimized());
+
   test_panel2->PressLeftMouseButtonTitlebar(panel2->GetBounds().origin(),
                                             panel::APPLY_TO_ALL);
   test_panel2->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
   EXPECT_TRUE(panel1->IsMinimized());
-  EXPECT_TRUE(panel2->IsMinimized());
-  EXPECT_TRUE(panel3->IsMinimized());
+  EXPECT_FALSE(panel2->IsMinimized());
+  EXPECT_FALSE(panel3->IsMinimized());
 
-  // Expand a single panel. Then restore all panels.
-  panel3->Restore();
+  // Minimize another panel. Then click on a minimized panel with apply-all
+  // modifier to restore all panels.
+  panel2->Minimize();
   EXPECT_TRUE(panel1->IsMinimized());
   EXPECT_TRUE(panel2->IsMinimized());
   EXPECT_FALSE(panel3->IsMinimized());
+
   test_panel2->PressLeftMouseButtonTitlebar(panel2->GetBounds().origin(),
                                             panel::APPLY_TO_ALL);
   test_panel2->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
@@ -668,6 +683,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ToggleMinimizeAll) {
   EXPECT_TRUE(panel1->IsMinimized());
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_FALSE(panel3->IsMinimized());
+
   test_panel1->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin(),
                                             panel::APPLY_TO_ALL);
   test_panel1->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
@@ -675,25 +691,32 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ToggleMinimizeAll) {
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_FALSE(panel3->IsMinimized());
 
-  // Click on the single expanded panel. Verify all are minimized.
+  // Click on the single expanded panel. Verify nothing changes.
   panel1->Minimize();
   panel3->Minimize();
   EXPECT_TRUE(panel1->IsMinimized());
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_TRUE(panel3->IsMinimized());
+
   test_panel2->PressLeftMouseButtonTitlebar(panel2->GetBounds().origin(),
                                             panel::APPLY_TO_ALL);
   test_panel2->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
   EXPECT_TRUE(panel1->IsMinimized());
-  EXPECT_TRUE(panel2->IsMinimized());
+  EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_TRUE(panel3->IsMinimized());
 
   // Hover over a minimized panel and click on the titlebar while it is in
   // title-only mode. Should restore all panels.
+  panel2->Minimize();
+  EXPECT_TRUE(panel1->IsMinimized());
+  EXPECT_TRUE(panel2->IsMinimized());
+  EXPECT_TRUE(panel3->IsMinimized());
+
   MoveMouseAndWaitForExpansionStateChange(panel2, panel2->GetBounds().origin());
   EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
   EXPECT_EQ(Panel::TITLE_ONLY, panel2->expansion_state());
   EXPECT_EQ(Panel::TITLE_ONLY, panel3->expansion_state());
+
   test_panel3->PressLeftMouseButtonTitlebar(panel3->GetBounds().origin(),
                                             panel::APPLY_TO_ALL);
   test_panel3->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
@@ -701,29 +724,43 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ToggleMinimizeAll) {
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_FALSE(panel3->IsMinimized());
 
-  // Draw attention to a panel. Verify minimize all applies without
-  // affecting draw attention state.
-  panel1->FlashFrame(true);
-  EXPECT_TRUE(panel1->IsDrawingAttention());
-  test_panel3->PressLeftMouseButtonTitlebar(panel3->GetBounds().origin(),
-                                            panel::APPLY_TO_ALL);
-  test_panel3->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
+  // Draw attention to a minimized panel. Click on a minimized panel that is
+  // not drawing attention. Verify restore all applies without affecting
+  // draw attention.
+  panel1->Minimize();
+  panel2->Minimize();
+  panel3->Minimize();
   EXPECT_TRUE(panel1->IsMinimized());
   EXPECT_TRUE(panel2->IsMinimized());
   EXPECT_TRUE(panel3->IsMinimized());
+
+  panel1->FlashFrame(true);
   EXPECT_TRUE(panel1->IsDrawingAttention());
-  EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
+
+  test_panel2->PressLeftMouseButtonTitlebar(panel3->GetBounds().origin(),
+                                            panel::APPLY_TO_ALL);
+  test_panel2->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
+  EXPECT_FALSE(panel1->IsMinimized());
+  EXPECT_FALSE(panel2->IsMinimized());
+  EXPECT_FALSE(panel3->IsMinimized());
+  EXPECT_TRUE(panel1->IsDrawingAttention());
 
   // Restore all panels by clicking on the minimized panel that is drawing
-  // attention. Verify restore all applies without affecting draw attention
-  // state.
+  // attention. Verify restore all applies and clears draw attention.
+  panel1->Minimize();
+  panel2->Minimize();
+  panel3->Minimize();
+  EXPECT_TRUE(panel1->IsMinimized());
+  EXPECT_TRUE(panel2->IsMinimized());
+  EXPECT_TRUE(panel3->IsMinimized());
+
   test_panel1->PressLeftMouseButtonTitlebar(panel1->GetBounds().origin(),
                                             panel::APPLY_TO_ALL);
   test_panel1->ReleaseMouseButtonTitlebar(panel::APPLY_TO_ALL);
   EXPECT_FALSE(panel1->IsMinimized());
   EXPECT_FALSE(panel2->IsMinimized());
   EXPECT_FALSE(panel3->IsMinimized());
-  EXPECT_TRUE(panel1->IsDrawingAttention());
+  EXPECT_FALSE(panel1->IsDrawingAttention());
 
   PanelManager::GetInstance()->CloseAll();
 }
@@ -1022,7 +1059,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
   scoped_ptr<NativePanelTesting> native_panel_testing(
       NativePanelTesting::Create(panel->native_panel()));
 
-  // Activate the panel.
+  // Deactivate the panel.
   panel->Deactivate();
   WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
 
@@ -1041,14 +1078,37 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
   panel->Close();
 }
 
-// TODO(dimich): try/enable on other platforms.
-#if defined(OS_MACOSX)
-#define MAYBE_DrawAttentionResetOnClick DrawAttentionResetOnClick
-#else
-#define MAYBE_DrawAttentionResetOnClick DISABLED_DrawAttentionResetOnClick
-#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+                       DrawAttentionMinimizedNotResetOnActivate) {
+  // Create 2 panels so we end up with an inactive panel that can
+  // be made to draw attention.
+  Panel* panel1 = CreatePanel("test panel1");
+  Panel* panel2 = CreatePanel("test panel2");
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnClick) {
+  panel1->Minimize();
+  EXPECT_TRUE(panel1->IsMinimized());
+  panel1->FlashFrame(true);
+  EXPECT_TRUE(panel1->IsDrawingAttention());
+
+  // Simulate panel being activated while minimized. Cannot call
+  // Activate() as that expands the panel.
+  panel1->OnActiveStateChanged(true);
+  EXPECT_TRUE(panel1->IsDrawingAttention());  // Unchanged.
+
+  // Unminimize panel to show that attention would have been cleared
+  // if panel had not been minimized.
+  panel1->Restore();
+  EXPECT_FALSE(panel1->IsMinimized());
+  EXPECT_TRUE(panel1->IsDrawingAttention());  // Unchanged.
+
+  panel1->OnActiveStateChanged(true);
+  EXPECT_FALSE(panel1->IsDrawingAttention());  // Attention cleared.
+
+  panel1->Close();
+  panel2->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
   CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -1072,9 +1132,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_DrawAttentionResetOnClick) {
   panel->Close();
 }
 
-// There was a bug when it was not possible to minimize the panel by clicking
-// on the titlebar right after it was restored and activated. This test verifies
-// it's possible.
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
                        MinimizeImmediatelyAfterRestore) {
   CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -1082,7 +1139,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   scoped_ptr<NativePanelTesting> native_panel_testing(
       NativePanelTesting::Create(panel->native_panel()));
 
-  panel->SetExpansionState(Panel::MINIMIZED);  // this should deactivate.
+  panel->Minimize();  // this should deactivate.
   MessageLoop::current()->RunAllPending();
   WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
   EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
@@ -1092,10 +1149,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   WaitForPanelActiveState(panel, SHOW_AS_ACTIVE);
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
 
-  // Test that click on the titlebar right after expansion minimizes the Panel.
-  native_panel_testing->PressLeftMouseButtonTitlebar(
-      panel->GetBounds().origin());
-  native_panel_testing->ReleaseMouseButtonTitlebar();
+  // Verify that minimizing a panel right after expansion works.
+  panel->Minimize();
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(Panel::MINIMIZED, panel->expansion_state());
   panel->Close();

@@ -8,7 +8,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/notification_observer.h"
@@ -166,9 +165,6 @@ class PanelBrowserView : public BrowserView,
   // This point is represented in the screen coordinate system.
   gfx::Point last_mouse_location_;
 
-  // Timestamp when the mouse was pressed. Used to detect long click.
-  base::TimeTicks mouse_pressed_time_;
-
   // Is the titlebar currently being dragged?  That is, has the cursor
   // moved more than kDragThreshold away from its starting position?
   MouseDraggingState mouse_dragging_state_;
@@ -179,10 +175,6 @@ class PanelBrowserView : public BrowserView,
 
   // Is the panel in highlighted state to draw people's attention?
   bool is_drawing_attention_;
-
-  // Timestamp to prevent minimizing the panel when the user clicks the titlebar
-  // to clear the attension state.
-  base::TimeTicks attention_cleared_time_;
 
   // The last view that had focus in the panel. This is saved so that focus can
   // be restored properly when a drag ends.

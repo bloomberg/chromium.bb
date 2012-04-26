@@ -29,15 +29,6 @@
 
 using content::WebContents;
 
-namespace {
-// The threshold to differentiate the short click and long click.
-const int kShortClickThresholdMs = 200;
-
-// Delay before click-to-minimize is allowed after the attention has been
-// cleared.
-const int kSuspendMinimizeOnClickIntervalMs = 500;
-}
-
 NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
                                       const gfx::Rect& bounds) {
   PanelBrowserView* view = new PanelBrowserView(browser, panel, bounds);
@@ -188,36 +179,7 @@ void PanelBrowserView::OnWidgetActivationChanged(views::Widget* widget,
     return;
   focused_ = focused;
 
-  if (focused_) {
-    // Expand the panel if needed. Do NOT expand a TITLE_ONLY panel
-    // otherwise it will be impossible to drag a title without
-    // expanding it.
-    if (panel_->expansion_state() == Panel::MINIMIZED)
-      panel_->SetExpansionState(Panel::EXPANDED);
-
-    if (is_drawing_attention_) {
-      panel_->FlashFrame(false);
-
-      // Restore the panel from title-only mode here. Could not do this in the
-      // code above.
-      if (panel_->expansion_state() == Panel::TITLE_ONLY)
-        panel_->SetExpansionState(Panel::EXPANDED);
-
-      // This function is called per one of the following user interactions:
-      // 1) clicking on the title-bar
-      // 2) clicking on the client area
-      // 3) switching to the panel via keyboard
-      // For case 1, we do not want the expanded panel to be minimized since the
-      // user clicks on it to mean to clear the attention.
-      attention_cleared_time_ = base::TimeTicks::Now();
-    }
-  }
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PANEL_CHANGED_ACTIVE_STATUS,
-      content::Source<Panel>(panel()),
-      content::NotificationService::NoDetails());
-  panel()->OnActiveStateChanged();
+  panel()->OnActiveStateChanged(focused);
 }
 
 bool PanelBrowserView::AcceleratorPressed(
@@ -481,7 +443,6 @@ PanelBrowserFrameView* PanelBrowserView::GetFrameView() const {
 bool PanelBrowserView::OnTitlebarMousePressed(
     const gfx::Point& mouse_location) {
   mouse_pressed_ = true;
-  mouse_pressed_time_ = base::TimeTicks::Now();
   mouse_dragging_state_ = NO_DRAGGING;
   last_mouse_location_ = mouse_location;
   return true;
@@ -515,57 +476,40 @@ bool PanelBrowserView::OnTitlebarMouseDragged(
 }
 
 bool PanelBrowserView::OnTitlebarMouseReleased() {
-  if (mouse_dragging_state_ == DRAGGING_STARTED) {
-    // When a drag ends, restore the focus.
-    if (old_focused_view_) {
-      GetFocusManager()->SetFocusedView(old_focused_view_);
-      old_focused_view_ = NULL;
+  if (mouse_dragging_state_ != NO_DRAGGING) {
+    // Ensure dragging a minimized panel does not leave it activated.
+    // Windows activates a panel on mouse-down, regardless of our attempts
+    // to prevent activation of a minimized panel. Now that we know mouse-down
+    // resulted in a mouse-drag, we need to ensure the minimized panel is
+    // deactivated.
+    if (panel_->IsMinimized() && panel_->IsActive())
+      panel_->Deactivate();
+
+    if (mouse_dragging_state_ == DRAGGING_STARTED) {
+      // When a drag ends, restore the focus.
+      if (old_focused_view_) {
+        GetFocusManager()->SetFocusedView(old_focused_view_);
+        old_focused_view_ = NULL;
+      }
+      return EndDragging(false);
     }
 
-    return EndDragging(false);
+    // Else, the panel drag was cancelled before the mouse is released. Do not
+    // treat this as a click.
+    if (mouse_dragging_state_ != NO_DRAGGING)
+      return true;
   }
 
-  // If the panel drag was cancelled before the mouse is released, do not treat
-  // this as a click.
-  if (mouse_dragging_state_ != NO_DRAGGING)
-    return true;
-
-  // Ignore long clicks. Treated as a canceled click to be consistent with Mac.
-  if (base::TimeTicks::Now() - mouse_pressed_time_ >
-      base::TimeDelta::FromMilliseconds(kShortClickThresholdMs))
-    return true;
-
+  panel::ClickModifier click_modifier = panel::NO_MODIFIER;
 #if defined(OS_WIN) && !defined(USE_AURA)
   if (base::win::IsCtrlPressed()) {
-    panel_->OnTitlebarClicked(panel::APPLY_TO_ALL);
-    return true;
+    click_modifier = panel::APPLY_TO_ALL;
   }
 #else
-  NOTIMPLEMENTED();  // Proceed without modifier.
+  // Proceed without modifier.
 #endif
 
-  // TODO(jennb): Move remaining titlebar click handling out of here.
-  // (http://crbug.com/118431)
-  PanelStrip* panel_strip = panel_->panel_strip();
-  if (!panel_strip)
-    return true;
-
-  // Do not minimize the panel when we just clear the attention state. This is
-  // a hack to prevent the panel from being minimized when the user clicks on
-  // the title-bar to clear the attention.
-  if (panel_strip->type() == PanelStrip::DOCKED &&
-      panel_->expansion_state() == Panel::EXPANDED &&
-      base::TimeTicks::Now() - attention_cleared_time_ <
-      base::TimeDelta::FromMilliseconds(kSuspendMinimizeOnClickIntervalMs)) {
-    return true;
-  }
-
-  if (panel_strip->type() == PanelStrip::DOCKED &&
-      panel_->expansion_state() == Panel::EXPANDED)
-    panel_->SetExpansionState(Panel::MINIMIZED);
-  else
-    panel_->Activate();
-
+  panel_->OnTitlebarClicked(click_modifier);
   return true;
 }
 
