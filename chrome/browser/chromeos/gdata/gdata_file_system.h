@@ -79,8 +79,8 @@ typedef base::Callback<void(base::PlatformFileError error,
 
 // Used to get available space for the account from GData.
 typedef base::Callback<void(base::PlatformFileError error,
-                            int64 bytes_total,
-                            int64 bytes_used)>
+                            int bytes_total,
+                            int bytes_used)>
     GetAvailableSpaceCallback;
 
 // Callback type for DocumentServiceInterface::ResumeUpload.

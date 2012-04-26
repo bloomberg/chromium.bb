@@ -2,10 +2,10 @@
     "encoding": "UTF-8",
     "entry": {
         "gd$quotaBytesTotal": {
-            "$t": "9876543210"
+            "$t": "12345"
         },
         "gd$quotaBytesUsed": {
-            "$t": "6789012345"
+            "$t": "1234"
         },
         "author": [
             {

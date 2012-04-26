@@ -974,8 +974,8 @@ class GDataFileSystemTest : public testing::Test {
       last_error_ = error;
     }
     virtual void GetAvailableSpaceCallback(base::PlatformFileError error,
-                                           int64 bytes_total,
-                                           int64 bytes_used) {
+                                           int bytes_total,
+                                           int bytes_used) {
       last_error_ = error;
       quota_bytes_total_ = bytes_total;
       quota_bytes_used_ = bytes_used;
@@ -985,8 +985,8 @@ class GDataFileSystemTest : public testing::Test {
     FilePath download_path_;
     std::string mime_type_;
     GDataFileType file_type_;
-    int64 quota_bytes_total_;
-    int64 quota_bytes_used_;
+    int quota_bytes_total_;
+    int quota_bytes_used_;
   };
 
   MessageLoopForUI message_loop_;
@@ -2993,8 +2993,8 @@ TEST_F(GDataFileSystemTest, GetAvailableSpace) {
 
   file_system_->GetAvailableSpace(callback);
   message_loop_.RunAllPending();
-  EXPECT_EQ(GG_LONGLONG(6789012345), callback_helper_->quota_bytes_used_);
-  EXPECT_EQ(GG_LONGLONG(9876543210), callback_helper_->quota_bytes_total_);
+  EXPECT_EQ(1234, callback_helper_->quota_bytes_used_);
+  EXPECT_EQ(12345, callback_helper_->quota_bytes_total_);
 
   // Verify account meta feed is saved to cache.
   RunAllPendingForIO();
