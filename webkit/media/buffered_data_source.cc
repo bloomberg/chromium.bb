@@ -40,7 +40,6 @@ BufferedDataSource::BufferedDataSource(
       render_loop_(render_loop),
       stop_signal_received_(false),
       stopped_on_render_loop_(false),
-      media_is_paused_(true),
       media_has_played_(false),
       preload_(AUTO),
       cache_miss_retries_left_(kNumCacheMissRetries),
@@ -58,10 +57,14 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
     int64 first_byte_position, int64 last_byte_position) {
   DCHECK(MessageLoop::current() == render_loop_);
 
+  BufferedResourceLoader::DeferStrategy strategy = preload_ == METADATA ?
+      BufferedResourceLoader::kReadThenDefer :
+      BufferedResourceLoader::kThresholdDefer;
+
   return new BufferedResourceLoader(url_,
                                     first_byte_position,
                                     last_byte_position,
-                                    ChooseDeferStrategy(),
+                                    strategy,
                                     bitrate_,
                                     playback_rate_,
                                     media_log_);
@@ -264,17 +267,29 @@ void BufferedDataSource::SetPlaybackRateTask(float playback_rate) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
 
+  if (playback_rate != 0)
+    media_has_played_ = true;
+
   playback_rate_ = playback_rate;
   loader_->SetPlaybackRate(playback_rate);
 
-  bool previously_paused = media_is_paused_;
-  media_is_paused_ = (playback_rate == 0.0);
-
-  if (!media_has_played_ && previously_paused && !media_is_paused_)
-    media_has_played_ = true;
-
-  BufferedResourceLoader::DeferStrategy strategy = ChooseDeferStrategy();
-  loader_->UpdateDeferStrategy(strategy);
+  if (!loader_->range_supported()) {
+    // 200 responses end up not being reused to satisfy future range requests,
+    // and we don't want to get too far ahead of the read-head (and thus require
+    // a restart), so keep to the thresholds.
+    loader_->UpdateDeferStrategy(BufferedResourceLoader::kThresholdDefer);
+  } else if (media_has_played_ && playback_rate == 0) {
+    // If the playback has started (at which point the preload value is ignored)
+    // and we're paused, then try to load as much as possible.
+    // TODO(fischman): except, don't do this if we can prove that the media
+    // cache is just throwing away the bits anyway.  http://crbug.com/123074
+    loader_->UpdateDeferStrategy(BufferedResourceLoader::kNeverDefer);
+  } else {
+    // If media is currently playing or the page indicated preload=auto,
+    // use threshold strategy to enable/disable deferring when the buffer
+    // is full/depleted.
+    loader_->UpdateDeferStrategy(BufferedResourceLoader::kThresholdDefer);
+  }
 }
 
 void BufferedDataSource::SetBitrateTask(int bitrate) {
@@ -283,30 +298,6 @@ void BufferedDataSource::SetBitrateTask(int bitrate) {
 
   bitrate_ = bitrate;
   loader_->SetBitrate(bitrate);
-}
-
-BufferedResourceLoader::DeferStrategy
-BufferedDataSource::ChooseDeferStrategy() {
-  DCHECK(MessageLoop::current() == render_loop_);
-  // We never cache 200 responses, and don't want to get too far ahead of the
-  // read-head (and thus require a restart), so keep to the thresholds.
-  if (loader_.get() && !loader_->range_supported())
-    return BufferedResourceLoader::kThresholdDefer;
-
-  // If the page indicated preload=metadata, then load exactly what is needed
-  // needed for starting playback.
-  if (!media_has_played_ && preload_ == METADATA)
-    return BufferedResourceLoader::kReadThenDefer;
-
-  // If the playback has started (at which point the preload value is ignored)
-  // and we're paused, then try to load as much as possible.
-  if (media_has_played_ && media_is_paused_)
-    return BufferedResourceLoader::kNeverDefer;
-
-  // If media is currently playing or the page indicated preload=auto,
-  // use threshold strategy to enable/disable deferring when the buffer
-  // is full/depleted.
-  return BufferedResourceLoader::kThresholdDefer;
 }
 
 // This method is the place where actual read happens, |loader_| must be valid

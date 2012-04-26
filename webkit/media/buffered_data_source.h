@@ -101,10 +101,6 @@ class BufferedDataSource : public media::DataSource {
   // Tells |loader_| the bitrate of the media.
   void SetBitrateTask(int bitrate);
 
-  // Decides which DeferStrategy to used based on the current state of the
-  // BufferedDataSource.
-  BufferedResourceLoader::DeferStrategy ChooseDeferStrategy();
-
   // The method that performs actual read. This method can only be executed on
   // the render thread.
   void ReadInternal();
@@ -200,10 +196,6 @@ class BufferedDataSource : public media::DataSource {
   // This variable is set by CleanupTask() that indicates this object is stopped
   // on the render thread and work should no longer progress.
   bool stopped_on_render_loop_;
-
-  // This variable is true when we are in a paused state and false when we
-  // are in a playing state.
-  bool media_is_paused_;
 
   // This variable is true when the user has requested the video to play at
   // least once.
