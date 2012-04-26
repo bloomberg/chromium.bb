@@ -25,6 +25,11 @@ readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 SPEC_BASE="tests/spec2k"
 readonly ARCHIVE_NAME=$(${SPEC_BASE}/run_all.sh GetTestArchiveName)
 
+readonly NAME_ARM_TRY_UPLOAD=$(${BUILDBOT_PNACL} NAME_ARM_TRY_UPLOAD)
+readonly NAME_ARM_TRY_DOWNLOAD=$(${BUILDBOT_PNACL} NAME_ARM_TRY_DOWNLOAD)
+readonly NAME_ARM_UPLOAD=$(${BUILDBOT_PNACL} NAME_ARM_UPLOAD)
+readonly NAME_ARM_DOWNLOAD=$(${BUILDBOT_PNACL} NAME_ARM_DOWNLOAD)
+
 RETCODE=0
 
 # Print the number of tests being run for the buildbot status output
@@ -35,19 +40,6 @@ testcount() {
   else
     echo ${tests} | wc -w
   fi
-}
-
-#TODO(dschuff) This is duplicated in buildbot_pnacl.sh. move it
-# (probably to file_up_down_load.sh)
-NAME_ARM_TRY_UPLOAD() {
-  echo -n "${BUILDBOT_BUILDERNAME}/"
-  echo -n "${BUILDBOT_SLAVENAME}/"
-  echo -n "${BUILDBOT_BUILDNUMBER}"
-}
-NAME_ARM_TRY_DOWNLOAD() {
-  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/"
-  echo -n "${BUILDBOT_TRIGGERED_BY_SLAVENAME}/"
-  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDNUMBER}"
 }
 
 ######################################################################
@@ -123,13 +115,10 @@ upload-test-binaries() {
   ./run_all.sh PackageArmBinaries ${tests}
   popd
   if [[ ${try} == "try" ]]; then
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry $(NAME_ARM_TRY_UPLOAD) \
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry ${NAME_ARM_TRY_UPLOAD} \
       ${ARCHIVE_NAME}
   else
-    # TODO(dschuff) condition the build name on ${try} once we move
-    # NAME_ARM_UPLOAD/NAME_ARM_TRY_UPLOAD/etc to the right place
-    # Likewise for download below
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots $(NAME_ARM_TRY_UPLOAD) \
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots ${NAME_ARM_UPLOAD} \
       ${ARCHIVE_NAME}
   fi
 }
@@ -137,10 +126,10 @@ upload-test-binaries() {
 download-test-binaries() {
   local try="$1"
   if [[ ${try} == "try" ]]; then
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry $(NAME_ARM_TRY_DOWNLOAD) \
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry ${NAME_ARM_TRY_DOWNLOAD} \
       ${ARCHIVE_NAME}
   else
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots $(NAME_ARM_TRY_DOWNLOAD) \
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${NAME_ARM_DOWNLOAD} \
       ${ARCHIVE_NAME}
   fi
   pushd ${SPEC_BASE}
@@ -161,14 +150,14 @@ pnacl-trybot-arm-qemu() {
 pnacl-trybot-arm-buildonly() {
   clobber
   build-prerequsites "arm" "bitcode"
-  ${BUILDBOT_PNACL} archive-for-hw-bots "$(NAME_ARM_TRY_UPLOAD)" try
+  ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_TRY_UPLOAD}" try
   build-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 0 1
   upload-test-binaries "${TRYBOT_TESTS}" try
 }
 
 pnacl-trybot-arm-hw() {
   clobber
-  ${BUILDBOT_PNACL} unarchive-for-hw-bots "$(NAME_ARM_TRY_DOWNLOAD)" try
+  ${BUILDBOT_PNACL} unarchive-for-hw-bots "${NAME_ARM_TRY_DOWNLOAD}" try
   download-test-binaries try
   run-tests SetupPnaclArmOptHW "${TRYBOT_TESTS}" 0 1
 }
@@ -191,12 +180,29 @@ pnacl-trybot-x8664() {
   run-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
 }
 
-pnacl-arm() {
+# We probably will not keep a qemu bot on the waterfall, but will keep this
+# to test locally
+pnacl-arm-qemu() {
   clobber
   build-prerequsites "arm" "bitcode"
   # arm takes a long time and we do not have sandboxed tests working
   build-tests SetupPnaclArmOpt all 1 1
   run-tests SetupPnaclArmOpt all 1 1
+}
+
+pnacl-arm-buildonly() {
+  clobber
+  build-prerequisites "arm" "bitcode"
+  ${BUILDBOT_PNACL} archive-for-hw-bots "${NAME_ARM_UPLOAD}" regular
+  build-tests SetupPnaclArmOpt all 1 1
+  upload-test-binaries all regular
+}
+
+pnacl-arm-hw() {
+  clobber
+  ${BUILDBOT_PNACL} unarchive-for-hw-bots "${NAME_ARM_DOWNLOAD}" regular
+  download-test-binaries regular
+  run-tests SetupPnaclArmOptHW all 1 1
 }
 
 pnacl-x8664() {
