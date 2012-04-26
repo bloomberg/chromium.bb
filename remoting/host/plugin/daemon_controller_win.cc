@@ -18,6 +18,8 @@
 #include "base/string16.h"
 #include "base/stringize_macros.h"
 #include "base/threading/thread.h"
+#include "base/time.h"
+#include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
@@ -45,6 +47,9 @@ const char16 kDaemonControllerElevationMoniker[] =
 // Name of the Daemon Controller's worker thread.
 const char kDaemonControllerThreadName[] = "Daemon Controller thread";
 
+// The maximum interval between showing UAC prompts.
+const int kUacTimeoutSec = 15 * 60;
+
 // A base::Thread implementation that initializes COM on the new thread.
 class ComThread : public base::Thread {
  public:
@@ -62,7 +67,12 @@ class ComThread : public base::Thread {
   virtual void Init() OVERRIDE;
   virtual void CleanUp() OVERRIDE;
 
+  void ReleaseElevatedController();
+
   ScopedComPtr<IDaemonControl> control_;
+
+  // This timer is used to release |control_| after a timeout.
+  base::OneShotTimer<ComThread> release_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ComThread);
 };
@@ -144,6 +154,11 @@ HRESULT ComThread::ActivateElevatedController(
     if (FAILED(hr)) {
       return hr;
     }
+
+    // Release |control_| upon expiration of the timeout.
+    release_timer_.Start(FROM_HERE,
+                         base::TimeDelta::FromSeconds(kUacTimeoutSec),
+                         this, &ComThread::ReleaseElevatedController);
   }
 
   *control_out = control_.get();
@@ -161,8 +176,12 @@ void ComThread::Init() {
 }
 
 void ComThread::CleanUp() {
-  control_.Release();
+  ReleaseElevatedController();
   CoUninitialize();
+}
+
+void ComThread::ReleaseElevatedController() {
+  control_.Release();
 }
 
 DaemonControllerWin::DaemonControllerWin()
