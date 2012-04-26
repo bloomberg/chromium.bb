@@ -25,6 +25,7 @@ if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
 # To test toolchain compatibility, some of the modules are built
 # using PNaCl, and some with NNaCl.
 
+import platform
 import random
 
 base_env = env.Clone()
@@ -99,10 +100,18 @@ module_filenames = [ 'module%d.c' % i for i in xrange(num_modules) ]
 settings_args = ['--%s=%s' % (k,str(v)) for k,v in settings.iteritems()]
 base_env['GENERATOR_SETTINGS'] = ' '.join(settings_args)
 
-nodes = base_env.Command(
-          ['callingconv.golden'] + module_filenames,
-          base_env.File('generate.py'),
-          Action('${PYTHON} ${SOURCE} ${GENERATOR_SETTINGS} -- ${TARGETS}'))
+
+if not env.Bit('built_elsewhere'):
+  # on the QEMU bot, generate the golden file and c files
+  nodes = base_env.Command(
+      ['callingconv.golden'] + module_filenames,
+      base_env.File('generate.py'),
+      Action('${PYTHON} ${SOURCE} ${GENERATOR_SETTINGS} -- ${TARGETS}'))
+else:
+  # on the hardware bot, do not regenerate the files
+  nodes = []
+  nodes.append(base_env.File('callingconv.golden'))
+  nodes.extend([base_env.File(module_filenames[i]) for i in xrange(num_modules)])
 
 # Create the module objects
 modules = []
