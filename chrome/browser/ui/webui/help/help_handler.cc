@@ -197,6 +197,9 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 }
 
 void HelpHandler::RegisterMessages() {
+  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
+                 content::NotificationService::AllSources());
+
   web_ui()->RegisterMessageCallback("onPageLoaded",
       base::Bind(&HelpHandler::OnPageLoaded, base::Unretained(this)));
   web_ui()->RegisterMessageCallback("relaunchNow",
@@ -273,9 +276,6 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
   version_updater_->GetReleaseChannel(
       base::Bind(&HelpHandler::OnReleaseChannel, base::Unretained(this)));
 #endif
-
-  registrar_.Add(this, chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
-                 content::NotificationService::AllSources());
 }
 
 #if defined(OS_MACOSX)

@@ -44,12 +44,6 @@ cr.define('options', function() {
   OptionsPage.registeredOverlayPages = {};
 
   /**
-   * Whether or not |initialize| has been called.
-   * @private
-   */
-  OptionsPage.initialized_ = false;
-
-  /**
    * Gets the default page (to be shown on initial load).
    */
   OptionsPage.getDefaultPage = function() {
@@ -542,7 +536,6 @@ cr.define('options', function() {
    */
   OptionsPage.initialize = function() {
     chrome.send('coreOptionsInitialize');
-    this.initialized_ = true;
     uber.onContentFrameLoaded();
 
     document.addEventListener('scroll', this.handleScroll_.bind(this));
@@ -613,18 +606,6 @@ cr.define('options', function() {
       document.documentElement.removeAttribute(
           'flashPluginSupportsClearSiteData');
     }
-  };
-
-  /**
-   * Re-initializes the C++ handlers if necessary. This is called if the
-   * handlers are torn down and recreated but the DOM may not have been (in
-   * which case |initialize| won't be called again). If |initialize| hasn't been
-   * called, this does nothing (since it will be later, once the DOM has
-   * finished loading).
-   */
-  OptionsPage.reinitializeCore = function() {
-    if (this.initialized_)
-      chrome.send('coreOptionsInitialize');
   };
 
   OptionsPage.prototype = {

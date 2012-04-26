@@ -2941,10 +2941,8 @@ void RenderViewImpl::didCreateDocumentElement(WebFrame* frame) {
   // Notify the browser about non-blank documents loading in the top frame.
   GURL url = frame->document().url();
   if (url.is_valid() && url.spec() != chrome::kAboutBlankURL) {
-    Send(new ViewHostMsg_DocumentAvailableInFrame(
-        routing_id_,
-        frame == webview()->mainFrame(),
-        frame->document().url()));
+    if (frame == webview()->mainFrame())
+      Send(new ViewHostMsg_DocumentAvailableInMainFrame(routing_id_));
   }
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,

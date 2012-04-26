@@ -79,14 +79,6 @@ bool WebUIImpl::OnMessageReceived(const IPC::Message& message) {
 void WebUIImpl::OnWebUISend(const GURL& source_url,
                             const std::string& message,
                             const ListValue& args) {
-  // If the URL comes from a url where the document is not available, that can
-  // only mean that the page navigated or reloaded while a WebUISend IPC was in
-  // flight. We should not handle these orphaned WebUISends.
-  if (document_available_origins_.find(source_url.GetOrigin()) ==
-      document_available_origins_.end()) {
-    return;
-  }
-
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->
           HasWebUIBindings(web_contents_->GetRenderProcessHost()->GetID())) {
     NOTREACHED() << "Blocked unauthorized use of WebUIBindings.";
@@ -116,10 +108,6 @@ void WebUIImpl::RenderViewCreated(content::RenderViewHost* render_view_host) {
   // (http://crbug.com/105380).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTouchOptimizedUI))
     render_view_host->SetWebUIProperty("touchOptimized", "true");
-}
-
-void WebUIImpl::DocumentAvailableInFrame(const GURL& source_url) {
-  document_available_origins_.insert(source_url.GetOrigin());
 }
 
 WebContents* WebUIImpl::GetWebContents() const {

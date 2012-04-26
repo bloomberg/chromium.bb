@@ -277,10 +277,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidStopLoading() OVERRIDE;
   virtual void DidCancelLoading() OVERRIDE;
   virtual void DidChangeLoadProgress(double progress) OVERRIDE;
-  virtual void DocumentAvailableInFrame(
-      content::RenderViewHost* render_view_host,
-      bool main_frame,
-      const GURL& source_url) OVERRIDE;
+  virtual void DocumentAvailableInMainFrame(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DocumentOnLoadCompletedInMainFrame(
       content::RenderViewHost* render_view_host,
       int32 page_id) OVERRIDE;

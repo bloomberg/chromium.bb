@@ -118,6 +118,10 @@ class TracingMessageHandler
   // True while system tracing is active.
   bool system_trace_in_progress_;
 
+  // True if observing the GpuDataManager (re-attaching as observer would
+  // DCHECK).
+  bool observing_;
+
   void OnEndSystemTracingAck(
       const scoped_refptr<base::RefCountedString>& events_str_ptr);
 
@@ -160,7 +164,8 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
 TracingMessageHandler::TracingMessageHandler()
   : select_trace_file_dialog_type_(SelectFileDialog::SELECT_NONE),
     trace_enabled_(false),
-    system_trace_in_progress_(false) {
+    system_trace_in_progress_(false),
+    observing_(false) {
 }
 
 TracingMessageHandler::~TracingMessageHandler() {
@@ -210,7 +215,9 @@ void TracingMessageHandler::OnTracingControllerInitialized(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Watch for changes in GPUInfo
-  GpuDataManager::GetInstance()->AddObserver(this);
+  if (!observing_)
+    GpuDataManager::GetInstance()->AddObserver(this);
+  observing_ = true;
 
   // Tell GpuDataManager it should have full GpuInfo. If the
   // Gpu process has not run yet, this will trigger its launch.

@@ -338,16 +338,6 @@ void OptionsUI::RenderViewReused(RenderViewHost* render_view_host) {
   SetCommandLineString(render_view_host);
 }
 
-void OptionsUI::DidBecomeActiveForReusedRenderView() {
-  // When the renderer is re-used (e.g., for back/forward navigation within
-  // options), the handlers are torn down and rebuilt, so are no longer
-  // initialized, but the web page's DOM may remain intact, in which case onload
-  // won't fire to initilize the handlers. To make sure initialization always
-  // happens, call reinitializeCore (which is a no-op unless the DOM was already
-  // initialized).
-  web_ui()->CallJavascriptFunction("OptionsPage.reinitializeCore");
-}
-
 // static
 void OptionsUI::ProcessAutocompleteSuggestions(
       const AutocompleteResult& autocompleteResult,
@@ -379,24 +369,22 @@ void OptionsUI::InitializeHandlers() {
   Profile* profile = Profile::FromWebUI(web_ui());
   DCHECK(!profile->IsOffTheRecord() || Profile::IsGuestSession());
 
-  // The reinitialize call from DidBecomeActiveForReusedRenderView end up being
-  // delivered after a new web page DOM has been brought up in an existing
-  // renderer (due to IPC delays), causing this method to be called twice. If
-  // that happens, ignore the second call.
+  // A new web page DOM has been brought up in an existing renderer, causing
+  // this method to be called twice. If that happens, ignore the second call.
   if (!initialized_handlers_) {
     for (size_t i = 0; i < handlers_.size(); ++i)
       handlers_[i]->InitializeHandler();
     initialized_handlers_ = true;
+
+#if defined(OS_CHROMEOS)
+    pointer_device_observer_->Init();
+#endif
   }
 
   // Always initialize the page as when handlers are left over we still need to
   // do various things like show/hide sections and send data to the Javascript.
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->InitializePage();
-
-#if defined(OS_CHROMEOS)
-  pointer_device_observer_->Init();
-#endif
 }
 
 void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,

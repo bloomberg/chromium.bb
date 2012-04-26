@@ -447,8 +447,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnMsgDidStartLoading();
   void OnMsgDidStopLoading();
   void OnMsgDidChangeLoadProgress(double load_progress);
-  void OnMsgDocumentAvailableInFrame(bool main_frame,
-                                     const GURL& source_url);
+  void OnMsgDocumentAvailableInMainFrame();
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
   void OnMsgContextMenu(const ContextMenuParams& params);
   void OnMsgToggleFullscreen(bool enter_fullscreen);

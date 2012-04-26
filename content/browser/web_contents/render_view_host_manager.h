@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
@@ -124,7 +125,10 @@ class CONTENT_EXPORT RenderViewHostManager
   WebUIImpl* web_ui() const { return web_ui_.get(); }
 
   // Returns the Web UI for the pending navigation, or NULL of none applies.
-  WebUIImpl* pending_web_ui() const { return pending_web_ui_.get(); }
+  WebUIImpl* pending_web_ui() const {
+    return pending_web_ui_.get() ? pending_web_ui_.get() :
+                                   pending_and_current_web_ui_.get();
+  }
 
   // Called when we want to instruct the renderer to navigate to the given
   // navigation entry. It may create a new RenderViewHost or re-use an existing
@@ -216,7 +220,11 @@ class CONTENT_EXPORT RenderViewHostManager
   // As part of this, we'll also force new SiteInstances and BrowsingInstances.
   // Either of the entries may be NULL.
   bool ShouldSwapProcessesForNavigation(
-      const content::NavigationEntry* cur_entry,
+      const content::NavigationEntry* curr_entry,
+      const content::NavigationEntryImpl* new_entry) const;
+
+  bool ShouldReuseWebUI(
+      const content::NavigationEntry* curr_entry,
       const content::NavigationEntryImpl* new_entry) const;
 
   // Returns an appropriate SiteInstance object for the given NavigationEntry,
@@ -274,12 +282,19 @@ class CONTENT_EXPORT RenderViewHostManager
   // have an associated Web UI, in which case the Web UI pointer will be non-
   // NULL.
   //
-  // The pending_web_ui may be non-NULL even when the pending_render_view_host_
-  // is. This will happen when we're transitioning between two Web UI pages:
-  // the RVH won't be swapped, so the pending pointer will be unused, but there
-  // will be a pending Web UI associated with the navigation.
+  // The |pending_web_ui_| may be non-NULL even when the
+  // |pending_render_view_host_| is NULL. This will happen when we're
+  // transitioning between two Web UI pages: the RVH won't be swapped, so the
+  // pending pointer will be unused, but there will be a pending Web UI
+  // associated with the navigation.
   content::RenderViewHostImpl* pending_render_view_host_;
+
+  // If either of these is non-NULL, the pending navigation is to a chrome:
+  // page. The scoped_ptr is used if pending_web_ui_ != web_ui_, the WeakPtr is
+  // used for when they reference the same object. If either is non-NULL, the
+  // other should be NULL.
   scoped_ptr<WebUIImpl> pending_web_ui_;
+  base::WeakPtr<WebUIImpl> pending_and_current_web_ui_;
 
   // A map of site instance ID to swapped out RenderViewHosts.
   typedef base::hash_map<int32, content::RenderViewHostImpl*> RenderViewHostMap;

@@ -205,11 +205,18 @@ void NewTabUI::PaintTimeout() {
 void NewTabUI::StartTimingPaint(RenderViewHost* render_view_host) {
   start_ = base::TimeTicks::Now();
   last_paint_ = start_;
-  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-                 content::Source<content::RenderWidgetHost>(render_view_host));
+
+  content::NotificationSource source =
+      content::Source<content::RenderWidgetHost>(render_view_host);
+  if (!registrar_.IsRegistered(this,
+          content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
+          source)) {
+    registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
+                   source);
+  }
+
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
                &NewTabUI::PaintTimeout);
-
 }
 
 bool NewTabUI::CanShowBookmarkBar() const {

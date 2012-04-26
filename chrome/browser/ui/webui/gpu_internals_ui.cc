@@ -90,6 +90,10 @@ class GpuMessageHandler
   scoped_refptr<CrashUploadList> crash_list_;
   bool crash_list_available_;
 
+  // True if observing the GpuDataManager (re-attaching as observer would
+  // DCHECK).
+  bool observing_;
+
   DISALLOW_COPY_AND_ASSIGN(GpuMessageHandler);
 };
 
@@ -100,7 +104,8 @@ class GpuMessageHandler
 ////////////////////////////////////////////////////////////////////////////////
 
 GpuMessageHandler::GpuMessageHandler()
-    : crash_list_available_(false) {
+    : crash_list_available_(false),
+      observing_(false) {
   crash_list_ = CrashUploadList::Create(this);
 }
 
@@ -176,7 +181,9 @@ void GpuMessageHandler::OnBrowserBridgeInitialized(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Watch for changes in GPUInfo
-  GpuDataManager::GetInstance()->AddObserver(this);
+  if (!observing_)
+    GpuDataManager::GetInstance()->AddObserver(this);
+  observing_ = true;
 
   // Tell GpuDataManager it should have full GpuInfo. If the
   // Gpu process has not run yet, this will trigger its launch.

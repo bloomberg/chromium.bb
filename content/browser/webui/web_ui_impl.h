@@ -7,9 +7,9 @@
 #pragma once
 
 #include <map>
-#include <set>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui.h"
 #include "ipc/ipc_channel.h"
 
@@ -18,7 +18,8 @@ class RenderViewHost;
 }
 
 class CONTENT_EXPORT WebUIImpl : public content::WebUI,
-                                 public IPC::Channel::Listener {
+                                 public IPC::Channel::Listener,
+                                 public base::SupportsWeakPtr<WebUIImpl> {
  public:
   explicit WebUIImpl(content::WebContents* contents);
   virtual ~WebUIImpl();
@@ -27,15 +28,6 @@ class CONTENT_EXPORT WebUIImpl : public content::WebUI,
   // *not* called for every page load because in some cases
   // RenderViewHostManager will reuse RenderView instances.
   void RenderViewCreated(content::RenderViewHost* render_view_host);
-
-  // Called when the document element is available for the page. |main_frame|
-  // is true if the main frame's document is the one that's ready; otherwise
-  // the frame is an iframe and |source_url| gives its URL. The WebUI ignores
-  // messages until the document is available, because otherwise when we reuse
-  // a RenderView, we can receive and attempt to handle WebUISend messages from
-  // the prior navigation, which were in-flight when the RenderView got
-  // repurposed.
-  void DocumentAvailableInFrame(const GURL& source_url);
 
   // WebUI implementation:
   virtual content::WebContents* GetWebContents() const OVERRIDE;
@@ -118,11 +110,6 @@ class CONTENT_EXPORT WebUIImpl : public content::WebUI,
   // The path for the iframe this WebUI is embedded in (empty if not in an
   // iframe).
   std::string frame_xpath_;
-
-  // List of URL origins in the renderer for which the document is ready. Each
-  // origin identifies a frame; two frames with the same origin may cause this
-  // to break.
-  std::set<GURL> document_available_origins_;
 
   scoped_ptr<content::WebUIController> controller_;
 

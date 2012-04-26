@@ -917,8 +917,8 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopLoading, OnMsgDidStopLoading)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeLoadProgress,
                         OnMsgDidChangeLoadProgress)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInFrame,
-                        OnMsgDocumentAvailableInFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
+                        OnMsgDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
                         OnMsgDocumentOnLoadCompletedInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContextMenu, OnMsgContextMenu)
@@ -1206,10 +1206,8 @@ void RenderViewHostImpl::OnMsgDidChangeLoadProgress(double load_progress) {
   delegate_->DidChangeLoadProgress(load_progress);
 }
 
-void RenderViewHostImpl::OnMsgDocumentAvailableInFrame(
-    bool main_frame,
-    const GURL& source_url) {
-  delegate_->DocumentAvailableInFrame(this, main_frame, source_url);
+void RenderViewHostImpl::OnMsgDocumentAvailableInMainFrame() {
+  delegate_->DocumentAvailableInMainFrame(this);
 }
 
 void RenderViewHostImpl::OnMsgDocumentOnLoadCompletedInMainFrame(

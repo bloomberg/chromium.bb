@@ -839,14 +839,15 @@ void NetInternalsMessageHandler::IOThreadImpl::OnWebUIDeleted() {
 void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     const ListValue* list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!net_log()) << "notifyReady called twice";
 
   SendJavascriptCommand("receivedConstants",
                         NetInternalsUI::GetConstants());
 
-  // Register with network stack to observe events.
-  io_thread_->net_log()->AddThreadSafeObserver(this,
-                                               net::NetLog::LOG_ALL_BUT_BYTES);
+  if (!net_log()) {
+    // Register with network stack to observe events.
+    io_thread_->net_log()->AddThreadSafeObserver(this,
+        net::NetLog::LOG_ALL_BUT_BYTES);
+  }
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(

@@ -92,6 +92,7 @@ DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
     : search_text_(),
       download_manager_(dlm),
       original_profile_download_manager_(NULL),
+      initialized_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   // Create our fileicon data source.
   Profile* profile = Profile::FromBrowserContext(dlm->GetBrowserContext());
@@ -115,6 +116,10 @@ DownloadsDOMHandler::~DownloadsDOMHandler() {
 // DownloadsDOMHandler, public: -----------------------------------------------
 
 void DownloadsDOMHandler::OnPageLoaded(const base::ListValue* args) {
+  if (initialized_)
+    return;
+  initialized_ = true;
+
   download_manager_->AddObserver(this);
   if (original_profile_download_manager_)
     original_profile_download_manager_->AddObserver(this);

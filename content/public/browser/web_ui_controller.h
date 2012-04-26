@@ -42,17 +42,6 @@ class CONTENT_EXPORT WebUIController {
   // Called when a RenderView is reused to display a page.
   virtual void RenderViewReused(RenderViewHost* render_view_host) {}
 
-  // Called when this becomes the active WebUI instance for a re-used
-  // RenderView; this is the point at which this WebUI instance will receive
-  // DOM messages instead of the previous WebUI instance.
-  //
-  // If a WebUI instance has code that is usually triggered from a JavaScript
-  // onload handler, this should be overridden to check to see if the web page's
-  // DOM is still intact (e.g., due to a back/forward navigation that remains
-  // within the same page), and if so trigger that code manually since onload
-  // won't be run in that case.
-  virtual void DidBecomeActiveForReusedRenderView() {}
-
   WebUI* web_ui() const { return web_ui_; }
 
  private:

@@ -118,6 +118,10 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // NULL.
   content::DownloadManager* original_profile_download_manager_;
 
+  // True once the page has loaded the first time (it may load multiple times,
+  // e.g. on reload).
+  bool initialized_;
+
   // The current set of visible DownloadItems for this view received from the
   // DownloadManager. DownloadManager owns the DownloadItems. The vector is
   // kept in order, sorted by ascending start time.

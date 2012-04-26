@@ -274,11 +274,9 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // entirely loaded).
   virtual void DidChangeLoadProgress(double progress) {}
 
-  // Some frame in the current RenderView has a ready document element. This
-  // happens when the document has finished parsing.
-  virtual void DocumentAvailableInFrame(RenderViewHost* render_view_host,
-                                        bool main_frame,
-                                        const GURL& source_url) {}
+  // The RenderView's main frame document element is ready. This happens when
+  // the document has finished parsing.
+  virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) {}
 
   // The onload handler in the RenderView's main frame has completed.
   virtual void DocumentOnLoadCompletedInMainFrame(

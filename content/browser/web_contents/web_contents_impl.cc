@@ -2273,17 +2273,10 @@ void WebContentsImpl::DidChangeLoadProgress(double progress) {
     delegate_->LoadProgressChanged(progress);
 }
 
-void WebContentsImpl::DocumentAvailableInFrame(
-    RenderViewHost* render_view_host,
-    bool main_frame,
-    const GURL& source_url) {
-  if (main_frame) {
-    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                      DocumentAvailableInMainFrame());
-  }
-
-  if (render_manager_.web_ui())
-    render_manager_.web_ui()->DocumentAvailableInFrame(source_url);
+void WebContentsImpl::DocumentAvailableInMainFrame(
+    RenderViewHost* render_view_host) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DocumentAvailableInMainFrame());
 }
 
 void WebContentsImpl::DocumentOnLoadCompletedInMainFrame(

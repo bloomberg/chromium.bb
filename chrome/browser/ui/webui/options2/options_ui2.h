@@ -117,8 +117,6 @@ class OptionsUI : public content::WebUIController,
       content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReused(
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidBecomeActiveForReusedRenderView() OVERRIDE;
-
   // Overridden from OptionsPageUIHandlerHost:
   virtual void InitializeHandlers() OVERRIDE;
 
