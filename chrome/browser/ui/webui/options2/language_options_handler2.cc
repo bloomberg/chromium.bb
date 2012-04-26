@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -77,7 +77,6 @@ ListValue* LanguageOptionsHandler::GetLanguageList() {
     string16 display_name =
         l10n_util::GetDisplayNameForLocale(language_codes[i], app_locale,
                                            false);
-    base::i18n::AdjustStringForLocaleDirection(&display_name);
     string16 native_display_name =
         l10n_util::GetDisplayNameForLocale(language_codes[i], language_codes[i],
                                            false);
@@ -95,9 +94,13 @@ ListValue* LanguageOptionsHandler::GetLanguageList() {
   ListValue* language_list = new ListValue();
   for (size_t i = 0; i < display_names.size(); ++i) {
     const LanguagePair& pair = language_map[display_names[i]];
+    bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(
+        display_names[i]);
+    std::string directionality = has_rtl_chars ? "rtl" : "ltr";
     DictionaryValue* dictionary = new DictionaryValue();
     dictionary->SetString("code",  pair.first);
     dictionary->SetString("displayName", display_names[i]);
+    dictionary->SetString("textDirection", directionality);
     dictionary->SetString("nativeDisplayName", pair.second);
     language_list->Append(dictionary);
   }

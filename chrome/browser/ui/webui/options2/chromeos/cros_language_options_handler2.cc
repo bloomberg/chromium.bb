@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/i18n/rtl.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -183,10 +184,19 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageList(
   // Build the language list from the language map.
   ListValue* language_list = new ListValue();
   for (size_t i = 0; i < display_names.size(); ++i) {
+    // Sets the directionality of the display language name.
+    string16 display_name(display_names[i]);
+    bool markup_removal =
+        base::i18n::UnadjustStringForLocaleDirection(&display_name);
+    DCHECK(markup_removal);
+    bool has_rtl_chars = base::i18n::StringContainsStrongRTLChars(display_name);
+    std::string directionality = has_rtl_chars ? "rtl" : "ltr";
+
     const LanguagePair& pair = language_map[display_names[i]];
     DictionaryValue* dictionary = new DictionaryValue();
     dictionary->SetString("code",  pair.first);
     dictionary->SetString("displayName", display_names[i]);
+    dictionary->SetString("textDirection", directionality);
     dictionary->SetString("nativeDisplayName", pair.second);
     language_list->Append(dictionary);
   }

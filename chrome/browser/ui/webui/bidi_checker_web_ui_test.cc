@@ -354,9 +354,8 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,
   RunBidiCheckerOnPage(url);
 }
 
-// http://crbug.com/117871
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       DISABLED_TestSettingsLanguageOptionsPage) {
+                       TestSettingsLanguageOptionsPage) {
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kLanguageOptionsSubPage);
   RunBidiCheckerOnPage(url);

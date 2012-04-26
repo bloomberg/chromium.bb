@@ -12,14 +12,14 @@ cr.define('options', function() {
 
   /**
    * Creates a new Language list item.
-   * @param {String} languageCode the languageCode.
+   * @param {Object} languageInfo The information of the language.
    * @constructor
    * @extends {DeletableItem.ListItem}
    */
-  function LanguageListItem(languageCode) {
+  function LanguageListItem(languageInfo) {
     var el = cr.doc.createElement('li');
     el.__proto__ = LanguageListItem.prototype;
-    el.languageCode_ = languageCode;
+    el.language_ = languageInfo;
     el.decorate();
     return el;
   };
@@ -38,17 +38,16 @@ cr.define('options', function() {
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
-      var languageCode = this.languageCode_;
+      var languageCode = this.language_.code;
       var languageOptions = options.LanguageOptions.getInstance();
       this.deletable = languageOptions.languageIsDeletable(languageCode);
       this.languageCode = languageCode;
       this.languageName = cr.doc.createElement('div');
       this.languageName.className = 'language-name';
-      this.languageName.textContent =
-          LanguageList.getDisplayNameFromLanguageCode(languageCode);
+      this.languageName.dir = this.language_.textDirection;
+      this.languageName.textContent = this.language_.displayName;
       this.contentElement.appendChild(this.languageName);
-      this.title =
-          LanguageList.getNativeDisplayNameFromLanguageCode(languageCode);
+      this.title = this.language_.nativeDisplayName;
       this.draggable = true;
     },
   };
@@ -62,40 +61,20 @@ cr.define('options', function() {
   var LanguageList = cr.ui.define('list');
 
   /**
-   * Gets display name from the given language code.
+   * Gets information of a language from the given language code.
    * @param {string} languageCode Language code (ex. "fr").
    */
-  LanguageList.getDisplayNameFromLanguageCode = function(languageCode) {
-    // Build the language code to display name dictionary at first time.
-    if (!this.languageCodeToDisplayName_) {
-      this.languageCodeToDisplayName_ = {};
+  LanguageList.getLanguageInfoFromLanguageCode = function(languageCode) {
+    // Build the language code to language info dictionary at first time.
+    if (!this.languageCodeToLanguageInfo_) {
+      this.languageCodeToLanguageInfo_ = {};
       var languageList = templateData.languageList;
       for (var i = 0; i < languageList.length; i++) {
-        var language = languageList[i];
-        this.languageCodeToDisplayName_[language.code] = language.displayName;
+        this.languageCodeToLanguageInfo_[languageCode] = languageList[i];
       }
     }
 
-    return this.languageCodeToDisplayName_[languageCode];
-  }
-
-  /**
-   * Gets native display name from the given language code.
-   * @param {string} languageCode Language code (ex. "fr").
-   */
-  LanguageList.getNativeDisplayNameFromLanguageCode = function(languageCode) {
-    // Build the language code to display name dictionary at first time.
-    if (!this.languageCodeToNativeDisplayName_) {
-      this.languageCodeToNativeDisplayName_ = {};
-      var languageList = templateData.languageList;
-      for (var i = 0; i < languageList.length; i++) {
-        var language = languageList[i];
-        this.languageCodeToNativeDisplayName_[language.code] =
-            language.nativeDisplayName;
-      }
-    }
-
-    return this.languageCodeToNativeDisplayName_[languageCode];
+    return this.languageCodeToLanguageInfo_[languageCode];
   }
 
   /**
@@ -105,7 +84,7 @@ cr.define('options', function() {
   LanguageList.isValidLanguageCode = function(languageCode) {
     // Having the display name for the language code means that the
     // language code is valid.
-    if (LanguageList.getDisplayNameFromLanguageCode(languageCode)) {
+    if (LanguageList.getLanguageInfoFromLanguageCode(languageCode)) {
       return true;
     }
     return false;
@@ -153,7 +132,8 @@ cr.define('options', function() {
     },
 
     createItem: function(languageCode) {
-      return new LanguageListItem(languageCode);
+      languageInfo = LanguageList.getLanguageInfoFromLanguageCode(languageCode);
+      return new LanguageListItem(languageInfo);
     },
 
     /*
