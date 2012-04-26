@@ -15757,8 +15757,11 @@ var keyboardOverlayData = {
     ]
   },
   'shortcut': {
+    '+<>ALT': 'keyboardOverlayMaximizeWindow',
+    '+<>ALT<>SHIFT': 'keyboardOverlayCenterWindow',
     '+<>CTRL': 'keyboardOverlayZoomIn',
     '+<>CTRL<>SHIFT': 'keyboardOverlayZoomIn',
+    '-<>ALT': 'keyboardOverlayMinimizeWindow',
     '-<>CTRL': 'keyboardOverlayZoomOut',
     '-<>CTRL<>SHIFT': 'keyboardOverlayZoomOut',
     '.<>CTRL<>SHIFT': 'keyboardOverlayToggleSpeechInput',
@@ -15786,6 +15789,8 @@ var keyboardOverlayData = {
     '9<>ALT': 'keyboardOverlayActivateLastWindow',
     '9<>CTRL': 'keyboardOverlayActivateLastTab',
     'ALT<>SHIFT': 'keyboardOverlayCycleThroughInputMethods',
+    '[<>ALT': 'keyboardOverlaySnapWindowLeft',
+    ']<>ALT': 'keyboardOverlaySnapWindowRight',
     'a<>CTRL': 'keyboardOverlaySelectAll',
     'arrowkeys<>CTRL': 'keyboardOverlayWordMove',
     'b<>ALT<>SHIFT': 'keyboardOverlayFocusBookmarks',

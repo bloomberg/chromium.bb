@@ -14881,6 +14881,9 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_BOOKMARK_MANAGER" desc="The text in the keyboard overlay to explain the shortcut (open the Bookmark Manager).">
         Bookmark Manager
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_CENTER_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (center the window).">
+        Center window
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_CLEAR_BROWSING_DATA_DIALOG" desc="The text in the keyboard overlay to explain the shortcut.">
         "Clear browsing data" dialog
       </message>
@@ -14983,6 +14986,12 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_LOCK_SCREEN_OR_POWER_OFF" desc="The text in the keyboard overlay to explain the shortcut.">
         Lock screen or power off
       </message>
+      <message name="IDS_KEYBOARD_OVERLAY_MAXIMIZE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (maximize or restore the window).">
+        Maximize window
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_MINIMIZE_WINDOW" desc="The text in the keyboard overlay to explain the shortcut (minimize the window).">
+        Minimize window
+      </message>
       <message name="IDS_KEYBOARD_OVERLAY_NEW_INCOGNITO_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
         New Incognito window
       </message>
@@ -15063,6 +15072,12 @@ Battery full
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_SIGN_OUT" desc="The text in the keyboard overlay to explain the shortcut.">
         Sign out
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_SNAP_WINDOW_LEFT" desc="The text in the keyboard overlay to explain the shortcut (snap the window to the left).">
+        Snap window left
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_SNAP_WINDOW_RIGHT" desc="The text in the keyboard overlay to explain the shortcut (snap the window to the right).">
+        Snap window right
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT" desc="The text in the keyboard overlay to explain the shortcut.">
         Take screenshot
