@@ -77,7 +77,7 @@ def DeferSignals(*signals):
       SIGINT and SIGTERM."""
 
   if not signals:
-    signals = [signal.SIGINT, signal.SIGTERM]
+    signals = [signal.SIGINT, signal.SIGTERM, signal.SIGALRM]
 
   # Rather than directly setting the handler, we first pull the handlers, then
   # set the new handler.  The ordering has to be done this way to ensure that
