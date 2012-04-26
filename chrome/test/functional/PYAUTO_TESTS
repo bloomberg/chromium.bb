@@ -139,8 +139,6 @@
       '-protector.ProtectorSessionStartupTest.testDetectSessionStartupChangeAndApply',
       # crbug.com/119326
       '-protector.ProtectorSessionStartupTest.testSessionStartupChangeDismissedOnEdit',
-      # crbug.com/119183
-      '-protector.ProtectorSessionStartupTest.testSessionStartupPrefMigration',
       # crbug.com/102517 -- external webpage throws 500
       '-special_tabs.SpecialTabsTest.testAboutAppCacheTab',
       # Flaky: crbug.com/67851
