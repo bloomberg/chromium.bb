@@ -32,6 +32,10 @@ IPC_STRUCT_BEGIN(DOMStorageMsg_Event_Params)
   // The non-zero connection_id which caused the event or 0 if the event
   // was not caused by the target renderer process.
   IPC_STRUCT_MEMBER(int, connection_id)
+
+  // The non-zero session namespace_id associated with the event or 0 if
+  // this is a local storage event.
+  IPC_STRUCT_MEMBER(int64, namespace_id)
 IPC_STRUCT_END()
 
 IPC_ENUM_TRAITS(WebKit::WebStorageArea::Result)

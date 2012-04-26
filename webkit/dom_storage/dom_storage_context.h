@@ -67,7 +67,7 @@ class DomStorageContext
     ~UsageInfo();
   };
 
-  // An interface for observing LocalStorage events on the
+  // An interface for observing Local and Session Storage events on the
   // background thread.
   class EventObserver {
    public:

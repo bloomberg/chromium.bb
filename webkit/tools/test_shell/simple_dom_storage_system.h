@@ -9,11 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "webkit/dom_storage/dom_storage_context.h"
-#include "webkit/dom_storage/dom_storage_host.h"
-#include "webkit/dom_storage/dom_storage_types.h"  // For the ENABLE flag.
 
 namespace dom_storage {
-class DomStorageContext;
 class DomStorageHost;
 }
 namespace WebKit {
@@ -22,12 +19,13 @@ class WebStorageNamespace;
 
 // Class that composes dom_storage classes together for use
 // in simple single process environments like test_shell and DRT.
-class SimpleDomStorageSystem {
+class SimpleDomStorageSystem
+    : public dom_storage::DomStorageContext::EventObserver {
  public:
   static SimpleDomStorageSystem& instance() { return *g_instance_; }
 
   SimpleDomStorageSystem();
-  ~SimpleDomStorageSystem();
+  virtual ~SimpleDomStorageSystem();
 
   // The Create<<>> calls are bound to WebKit api that the embedder
   // is responsible for implementing. These factories are called strictly
@@ -46,9 +44,34 @@ class SimpleDomStorageSystem {
   class NamespaceImpl;
   class AreaImpl;
 
+  // DomStorageContext::EventObserver implementation which
+  // calls into webkit/webcore to dispatch events.
+  virtual void OnDomStorageItemSet(
+      const dom_storage::DomStorageArea* area,
+      const string16& key,
+      const string16& new_value,
+      const NullableString16& old_value,
+      const GURL& page_url) OVERRIDE;
+  virtual void OnDomStorageItemRemoved(
+      const dom_storage::DomStorageArea* area,
+      const string16& key,
+      const string16& old_value,
+      const GURL& page_url) OVERRIDE;
+  virtual void OnDomStorageAreaCleared(
+      const dom_storage::DomStorageArea* area,
+      const GURL& page_url) OVERRIDE;
+
+  void DispatchDomStorageEvent(
+      const dom_storage::DomStorageArea* area,
+      const GURL& page_url,
+      const NullableString16& key,
+      const NullableString16& new_value,
+      const NullableString16& old_value);
+
   base::WeakPtrFactory<SimpleDomStorageSystem> weak_factory_;
   scoped_refptr<dom_storage::DomStorageContext> context_;
   scoped_ptr<dom_storage::DomStorageHost> host_;
+  AreaImpl* area_being_processed_;
   int next_connection_id_;
 
   static SimpleDomStorageSystem* g_instance_;

@@ -245,5 +245,6 @@ void DOMStorageMessageFilter::SendDomStorageEvent(
   params.key = key;
   params.new_value = new_value;
   params.old_value = old_value;
+  params.namespace_id = area->namespace_id();
   Send(new DOMStorageMsg_Event(params));
 }

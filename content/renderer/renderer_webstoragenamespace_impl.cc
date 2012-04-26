@@ -27,10 +27,6 @@ RendererWebStorageNamespaceImpl::~RendererWebStorageNamespaceImpl() {
 
 WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
     const WebString& origin) {
-  // Ideally, we'd keep a hash map of origin to these objects.  Unfortunately
-  // this doesn't seem practical because there's no good way to ref-count these
-  // objects, and it'd be unclear who owned them.  So, instead, we'll pay the
-  // price in terms of wasted memory.
   return new RendererWebStorageAreaImpl(namespace_id_, origin);
 }
 
@@ -42,6 +38,9 @@ WebStorageNamespace* RendererWebStorageNamespaceImpl::copy() {
   return NULL;
 }
 
-void RendererWebStorageNamespaceImpl::close() {
-  // TOOD(michaeln): remove this deprecated method.
+bool RendererWebStorageNamespaceImpl::isSameNamespace(
+    const WebStorageNamespace& other) const {
+  const RendererWebStorageNamespaceImpl* other_impl =
+      static_cast<const RendererWebStorageNamespaceImpl*>(&other);
+  return namespace_id_ == other_impl->namespace_id_;
 }

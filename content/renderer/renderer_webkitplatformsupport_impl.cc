@@ -45,7 +45,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
@@ -94,8 +93,6 @@ using WebKit::WebPeerConnection00HandlerClient;
 using WebKit::WebPeerConnectionHandler;
 using WebKit::WebPeerConnectionHandlerClient;
 using WebKit::WebSerializedScriptValue;
-using WebKit::WebStorageArea;
-using WebKit::WebStorageEventDispatcher;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;

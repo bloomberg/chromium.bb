@@ -42,7 +42,6 @@ class WebDatabaseObserverImpl;
 namespace WebKit {
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
-class WebStorageEventDispatcher;
 }
 
 namespace base {
@@ -222,7 +221,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
-  scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
 
   // Used on the render thread and deleted by WebKit at shutdown.
   content::MediaStreamCenter* media_stream_center_;

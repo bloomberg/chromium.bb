@@ -21,7 +21,8 @@ class RendererWebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
   virtual WebKit::WebStorageArea* createStorageArea(
       const WebKit::WebString& origin);
   virtual WebKit::WebStorageNamespace* copy();
-  virtual void close();
+  virtual bool isSameNamespace(const WebStorageNamespace&) const;
+
 
  private:
   int64 namespace_id_;

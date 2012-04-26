@@ -88,10 +88,8 @@ bool DomStorageHost::SetAreaItem(
     return false;
   if (!area->SetItem(key, value, old_value))
     return false;
-  if ((area->namespace_id() == kLocalStorageNamespaceId) &&
-      (old_value->is_null() || old_value->string() != value)) {
+  if (old_value->is_null() || old_value->string() != value)
     context_->NotifyItemSet(area, key, value, *old_value, page_url);
-  }
   return true;
 }
 
@@ -103,8 +101,7 @@ bool DomStorageHost::RemoveAreaItem(
     return false;
   if (!area->RemoveItem(key, old_value))
     return false;
-  if (area->namespace_id() == kLocalStorageNamespaceId)
-    context_->NotifyItemRemoved(area, key, *old_value, page_url);
+  context_->NotifyItemRemoved(area, key, *old_value, page_url);
   return true;
 }
 
@@ -114,8 +111,7 @@ bool DomStorageHost::ClearArea(int connection_id, const GURL& page_url) {
     return false;
   if (!area->Clear())
     return false;
-  if (area->namespace_id() == kLocalStorageNamespaceId)
-    context_->NotifyAreaCleared(area, page_url);
+  context_->NotifyAreaCleared(area, page_url);
   return true;
 }
 
