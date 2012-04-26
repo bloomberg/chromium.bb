@@ -328,6 +328,9 @@
       '-codesign',
       # Import tests are invalid on ChromeOS since Chrome is the only browser.
       '-imports',
+      # Sync is already signed in with the login account.
+      # So one-click infobar tests do tno apply to chromeos.
+      '-infobars.OneClickInfobarTest',
       # Multi-profile doesn't apply to chromeos yet.
       '-multiprofile',
       # These require a custom setup on ChromeOS and have their own suite for
@@ -401,7 +404,7 @@
       '-prefs.PrefsTest.testGeolocationPref',
       '-pyauto_webdriver',
     ],
-  },
+  },  # CONTINUOUS
 
   # The CONTINUOUS_PUBLIC is a subset of CONTINUOUS suite
   # and excludes tests that depend on internal data
