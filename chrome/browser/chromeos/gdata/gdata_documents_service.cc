@@ -87,10 +87,14 @@ GDataOperationRegistry* DocumentsService::operation_registry() const {
 }
 
 void DocumentsService::CancelAll() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   operation_registry_->CancelAll();
 }
 
 void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   gdata_auth_service_->StartAuthentication(operation_registry_.get(),
                                            callback);
 }
@@ -98,6 +102,8 @@ void DocumentsService::Authenticate(const AuthStatusCallback& callback) {
 void DocumentsService::GetDocuments(const GURL& url,
                                     int start_changestamp,
                                     const GetDataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   GetDocumentsOperation* operation =
       new GetDocumentsOperation(operation_registry_.get(),
                                 profile_,
@@ -105,15 +111,17 @@ void DocumentsService::GetDocuments(const GURL& url,
                                 callback);
   if (!url.is_empty())
     operation->SetUrl(url);
-  StartOperationOnUIThread(operation);
+  StartOperationWithRetry(operation);
 }
 
 void DocumentsService::GetAccountMetadata(const GetDataCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   GetAccountMetadataOperation* operation =
       new GetAccountMetadataOperation(operation_registry_.get(),
                                       profile_,
                                       callback);
-  StartOperationOnUIThread(operation);
+  StartOperationWithRetry(operation);
 }
 
 void DocumentsService::DownloadDocument(
@@ -122,6 +130,8 @@ void DocumentsService::DownloadDocument(
     const GURL& document_url,
     DocumentExportFormat format,
     const DownloadActionCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DownloadFile(
       virtual_path,
       local_cache_path,
@@ -135,14 +145,18 @@ void DocumentsService::DownloadFile(const FilePath& virtual_path,
                                     const FilePath& local_cache_path,
                                     const GURL& document_url,
                                     const DownloadActionCallback& callback) {
-  StartOperationOnUIThread(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  StartOperationWithRetry(
       new DownloadFileOperation(operation_registry_.get(), profile_, callback,
                                 document_url, virtual_path, local_cache_path));
 }
 
 void DocumentsService::DeleteDocument(const GURL& document_url,
                                       const EntryActionCallback& callback) {
-  StartOperationOnUIThread(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  StartOperationWithRetry(
       new DeleteDocumentOperation(operation_registry_.get(), profile_, callback,
                                   document_url));
 }
@@ -151,7 +165,9 @@ void DocumentsService::CreateDirectory(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
     const GetDataCallback& callback) {
-  StartOperationOnUIThread(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  StartOperationWithRetry(
       new CreateDirectoryOperation(operation_registry_.get(), profile_,
                                    callback, parent_content_url,
                                    directory_name));
@@ -160,7 +176,9 @@ void DocumentsService::CreateDirectory(
 void DocumentsService::CopyDocument(const std::string& resource_id,
                                     const FilePath::StringType& new_name,
                                     const GetDataCallback& callback) {
-  StartOperationOnUIThread(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  StartOperationWithRetry(
       new CopyDocumentOperation(operation_registry_.get(), profile_, callback,
                                 resource_id, new_name));
 }
@@ -168,7 +186,9 @@ void DocumentsService::CopyDocument(const std::string& resource_id,
 void DocumentsService::RenameResource(const GURL& resource_url,
                                       const FilePath::StringType& new_name,
                                       const EntryActionCallback& callback) {
-  StartOperationOnUIThread(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  StartOperationWithRetry(
       new RenameResourceOperation(operation_registry_.get(), profile_, callback,
                                   resource_url, new_name));
 }
@@ -177,7 +197,9 @@ void DocumentsService::AddResourceToDirectory(
     const GURL& parent_content_url,
     const GURL& resource_url,
     const EntryActionCallback& callback) {
-  StartOperationOnUIThread(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  StartOperationWithRetry(
       new AddResourceToDirectoryOperation(operation_registry_.get(),
                                           profile_,
                                           callback,
@@ -190,7 +212,9 @@ void DocumentsService::RemoveResourceFromDirectory(
     const GURL& resource_url,
     const std::string& resource_id,
     const EntryActionCallback& callback) {
-  StartOperationOnUIThread(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  StartOperationWithRetry(
       new RemoveResourceFromDirectoryOperation(operation_registry_.get(),
                                                profile_,
                                                callback,
@@ -201,6 +225,8 @@ void DocumentsService::RemoveResourceFromDirectory(
 
 void DocumentsService::InitiateUpload(const InitiateUploadParams& params,
                                       const InitiateUploadCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (params.resumable_create_media_link.is_empty()) {
     if (!callback.is_null()) {
       callback.Run(HTTP_BAD_REQUEST, GURL());
@@ -208,14 +234,16 @@ void DocumentsService::InitiateUpload(const InitiateUploadParams& params,
     return;
   }
 
-  StartOperationOnUIThread(
+  StartOperationWithRetry(
       new InitiateUploadOperation(operation_registry_.get(), profile_, callback,
                                   params));
 }
 
 void DocumentsService::ResumeUpload(const ResumeUploadParams& params,
                                     const ResumeUploadCallback& callback) {
-  StartOperationOnUIThread(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  StartOperationWithRetry(
       new ResumeUploadOperation(operation_registry_.get(), profile_, callback,
                                 params));
 }
@@ -224,18 +252,15 @@ void DocumentsService::OnOAuth2RefreshTokenChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void DocumentsService::StartOperationOnUIThread(
+void DocumentsService::StartOperationWithRetry(
     GDataOperationInterface* operation) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // The re-authenticatation callback will run on UI thread.
   operation->SetReAuthenticateCallback(
       base::Bind(&DocumentsService::RetryOperation,
                  weak_ptr_bound_to_ui_thread_));
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&DocumentsService::StartOperation,
-                 weak_ptr_bound_to_ui_thread_,
-                 operation));  // |operation| is self-contained
+  StartOperation(operation);
 }
 
 void DocumentsService::StartOperation(GDataOperationInterface* operation) {
