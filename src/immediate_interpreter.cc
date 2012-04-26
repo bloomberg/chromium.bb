@@ -479,20 +479,22 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     return;
   float thumb_dist_sq_thresh = DistanceTravelledSq(*min_fs) *
       thumb_movement_factor_.val_ * thumb_movement_factor_.val_;
-  // Make all large-pressure contacts thumbs
+  // Make all large-pressure contacts located below the min-pressure
+  // contact as thumbs.
   for (size_t i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     if (SetContainsValue(palm_, fs.tracking_id))
       continue;
     if (fs.pressure > min_pressure + two_finger_pressure_diff_thresh_.val_ &&
-        fs.pressure > min_pressure * two_finger_pressure_diff_factor_.val_) {
-      float dist_sq = DistanceTravelledSq(fs);
-      if (dist_sq < thumb_dist_sq_thresh &&
-          !MapContainsKey(thumb_, fs.tracking_id))
+        fs.pressure > min_pressure * two_finger_pressure_diff_factor_.val_ &&
+        fs.position_y > min_fs->position_y &&
+        DistanceTravelledSq(fs) < thumb_dist_sq_thresh) {
+      if (!MapContainsKey(thumb_, fs.tracking_id))
         thumb_[fs.tracking_id] = hwstate.timestamp;
     } else if (MapContainsKey(thumb_, fs.tracking_id) &&
                hwstate.timestamp <
-               thumb_[fs.tracking_id] + thumb_eval_timeout_.val_) {
+               max(started_moving_time_,
+                   thumb_[fs.tracking_id]) + thumb_eval_timeout_.val_) {
       thumb_.erase(fs.tracking_id);
     }
   }
@@ -1038,7 +1040,7 @@ void ImmediateInterpreter::UpdateTapState(
             SetTapToClickState(kTtcDrag, now);
           } else {
             bool drag_delay_met = (now - tap_to_click_state_entered_
-                > tap_drag_delay_.val_);
+                                   > tap_drag_delay_.val_);
             if (drag_delay_met) {
               *buttons_down = GESTURES_BUTTON_LEFT;
               SetTapToClickState(kTtcDrag, now);
@@ -1048,7 +1050,7 @@ void ImmediateInterpreter::UpdateTapState(
               SetTapToClickState(kTtcIdle, now);
             }
           }
-        } else if(!tap_record_.TapComplete()) {
+        } else if (!tap_record_.TapComplete()) {
           // not just one finger. Send button click and go to idle.
           *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;
           SetTapToClickState(kTtcIdle, now);
