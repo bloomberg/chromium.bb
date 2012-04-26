@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/cros/cros_network_functions.h"
 #include "chrome/browser/chromeos/cros/gvalue_util.h"
 #include "chrome/browser/chromeos/cros/mock_chromeos_network.h"
+#include "chrome/browser/chromeos/cros/sms_watcher.h"
 #include "chromeos/dbus/mock_cashew_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_flimflam_device_client.h"
@@ -16,6 +17,7 @@
 #include "chromeos/dbus/mock_flimflam_network_client.h"
 #include "chromeos/dbus/mock_flimflam_profile_client.h"
 #include "chromeos/dbus/mock_flimflam_service_client.h"
+#include "chromeos/dbus/mock_gsm_sms_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -28,6 +30,15 @@ using ::testing::StrEq;
 
 // Matcher to match base::Value.
 MATCHER_P(IsEqualTo, value, "") { return arg.Equals(value); }
+
+// Matcher to match SMS.
+MATCHER_P(IsSMSEqualTo, sms, "") {
+  return sms.timestamp == arg.timestamp &&
+      std::string(sms.number) == arg.number &&
+      std::string(sms.text) == arg.text &&
+      sms.validity == arg.validity &&
+      sms.msgclass == arg.msgclass;
+}
 
 namespace chromeos {
 
@@ -860,6 +871,7 @@ class CrosNetworkFunctionsTest : public testing::Test {
         mock_dbus_thread_manager->mock_flimflam_profile_client();
     mock_service_client_ =
         mock_dbus_thread_manager->mock_flimflam_service_client();
+    mock_gsm_sms_client_ = mock_dbus_thread_manager->mock_gsm_sms_client();
     SetLibcrosNetworkFunctionsEnabled(false);
   }
 
@@ -902,6 +914,17 @@ class CrosNetworkFunctionsTest : public testing::Test {
         object, path, error, error_message);
   }
 
+  // Mock MonitorSMSCallback.
+  MOCK_METHOD3(MockMonitorSMSCallback, void(void* object,
+                                            const char* modem_device_path,
+                                            const SMS* message));
+  static void MockMonitorSMSCallbackThunk(void* object,
+                                          const char* modem_device_path,
+                                          const SMS* message) {
+    static_cast<CrosNetworkFunctionsTest*>(object)->MockMonitorSMSCallback(
+        object, modem_device_path, message);
+  }
+
  protected:
   MockCashewClient* mock_cashew_client_;
   MockFlimflamDeviceClient* mock_device_client_;
@@ -910,6 +933,7 @@ class CrosNetworkFunctionsTest : public testing::Test {
   MockFlimflamNetworkClient* mock_network_client_;
   MockFlimflamProfileClient* mock_profile_client_;
   MockFlimflamServiceClient* mock_service_client_;
+  MockGsmSMSClient* mock_gsm_sms_client_;
   const base::DictionaryValue* dictionary_value_result_;
 };
 
@@ -1119,6 +1143,120 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorCellularDataPlan) {
 
   // Stop monitoring.
   EXPECT_CALL(*mock_cashew_client_, ResetDataPlansUpdateHandler()).Times(1);
+  delete watcher;
+}
+
+TEST_F(CrosNetworkFunctionsTest, CrosMonitorSMS) {
+  const std::string dbus_connection = ":1.1";
+  const dbus::ObjectPath object_path("/object/path");
+  base::DictionaryValue device_properties;
+  device_properties.SetWithoutPathExpansion(
+      flimflam::kDBusConnectionProperty,
+      base::Value::CreateStringValue(dbus_connection));
+  device_properties.SetWithoutPathExpansion(
+      flimflam::kDBusObjectProperty,
+      base::Value::CreateStringValue(object_path.value()));
+
+  const std::string number = "0123456789";
+  const std::string text = "Hello.";
+  const std::string timestamp_string =
+      "120424123456+00";  // 2012-04-24 12:34:56
+  base::Time::Exploded timestamp_exploded = {};
+  timestamp_exploded.year = 2012;
+  timestamp_exploded.month = 4;
+  timestamp_exploded.day_of_month = 24;
+  timestamp_exploded.hour = 12;
+  timestamp_exploded.minute = 34;
+  timestamp_exploded.second = 56;
+  const base::Time timestamp = base::Time::FromUTCExploded(timestamp_exploded);
+  const std::string smsc = "9876543210";
+  const uint32 kValidity = 1;
+  const uint32 kMsgclass = 2;
+  const uint32 kIndex = 0;
+  const bool kComplete = true;
+  base::DictionaryValue* sms_dictionary = new base::DictionaryValue;
+  sms_dictionary->SetWithoutPathExpansion(
+      SMSWatcher::kNumberKey, base::Value::CreateStringValue(number));
+  sms_dictionary->SetWithoutPathExpansion(
+      SMSWatcher::kTextKey, base::Value::CreateStringValue(text));
+  sms_dictionary->SetWithoutPathExpansion(
+      SMSWatcher::kTimestampKey,
+      base::Value::CreateStringValue(timestamp_string));
+  sms_dictionary->SetWithoutPathExpansion(SMSWatcher::kSmscKey,
+                                         base::Value::CreateStringValue(smsc));
+  sms_dictionary->SetWithoutPathExpansion(
+      SMSWatcher::kValidityKey, base::Value::CreateDoubleValue(kValidity));
+  sms_dictionary->SetWithoutPathExpansion(
+      SMSWatcher::kClassKey, base::Value::CreateDoubleValue(kMsgclass));
+  sms_dictionary->SetWithoutPathExpansion(
+      SMSWatcher::kIndexKey, base::Value::CreateDoubleValue(kIndex));
+
+  base::ListValue sms_list;
+  sms_list.Append(sms_dictionary);
+
+  SMS sms;
+  sms.timestamp = timestamp;
+  sms.number = number.c_str();
+  sms.text = text.c_str();
+  sms.smsc = smsc.c_str();
+  sms.validity = kValidity;
+  sms.msgclass = kMsgclass;
+
+  void* object = this;
+  const std::string modem_device_path = "/modem/device/path";
+
+  // Set expectations.
+  FlimflamDeviceClient::DictionaryValueCallback get_properties_callback;
+  EXPECT_CALL(*mock_device_client_,
+              GetProperties(dbus::ObjectPath(modem_device_path), _))
+      .WillOnce(SaveArg<1>(&get_properties_callback));
+  GsmSMSClient::SmsReceivedHandler sms_received_handler;
+  EXPECT_CALL(*mock_gsm_sms_client_,
+              SetSmsReceivedHandler(dbus_connection, object_path, _))
+      .WillOnce(SaveArg<2>(&sms_received_handler));
+
+  GsmSMSClient::ListCallback list_callback;
+  EXPECT_CALL(*mock_gsm_sms_client_, List(dbus_connection, object_path, _))
+      .WillOnce(SaveArg<2>(&list_callback));
+
+  EXPECT_CALL(*this, MockMonitorSMSCallback(
+      object, StrEq(modem_device_path), Pointee(IsSMSEqualTo(sms)))).Times(2);
+
+  GsmSMSClient::DeleteCallback delete_callback;
+  EXPECT_CALL(*mock_gsm_sms_client_,
+              Delete(dbus_connection, object_path, kIndex, _))
+      .WillRepeatedly(SaveArg<3>(&delete_callback));
+
+  GsmSMSClient::GetCallback get_callback;
+  EXPECT_CALL(*mock_gsm_sms_client_,
+              Get(dbus_connection, object_path, kIndex, _))
+      .WillOnce(SaveArg<3>(&get_callback));
+
+  // Start monitoring.
+  CrosNetworkWatcher* watcher = CrosMonitorSMS(
+      modem_device_path,
+      &CrosNetworkFunctionsTest::MockMonitorSMSCallbackThunk,
+      object);
+  // Return GetProperties() result.
+  get_properties_callback.Run(DBUS_METHOD_CALL_SUCCESS, device_properties);
+  // Return List() result.
+  ASSERT_FALSE(list_callback.is_null());
+  list_callback.Run(sms_list);
+  // Return Delete() result.
+  ASSERT_FALSE(delete_callback.is_null());
+  delete_callback.Run();
+  // Send fake signal.
+  ASSERT_FALSE(sms_received_handler.is_null());
+  sms_received_handler.Run(kIndex, kComplete);
+  // Return Get() result.
+  ASSERT_FALSE(get_callback.is_null());
+  get_callback.Run(*sms_dictionary);
+  // Return Delete() result.
+  ASSERT_FALSE(delete_callback.is_null());
+  delete_callback.Run();
+  // Stop monitoring.
+  EXPECT_CALL(*mock_gsm_sms_client_,
+              ResetSmsReceivedHandler(dbus_connection, object_path)).Times(1);
   delete watcher;
 }
 

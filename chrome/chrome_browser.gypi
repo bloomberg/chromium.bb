@@ -467,6 +467,8 @@
         'browser/chromeos/cros/onc_constants.h',
         'browser/chromeos/cros/onc_network_parser.cc',
         'browser/chromeos/cros/onc_network_parser.h',
+        'browser/chromeos/cros/sms_watcher.cc',
+        'browser/chromeos/cros/sms_watcher.h',
         'browser/chromeos/cros_settings.cc',
         'browser/chromeos/cros_settings.h',
         'browser/chromeos/cros_settings_names.cc',

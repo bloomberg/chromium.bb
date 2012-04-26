@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/gvalue_util.h"
+#include "chrome/browser/chromeos/cros/sms_watcher.h"
 #include "chromeos/dbus/cashew_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/flimflam_device_client.h"
@@ -531,7 +532,10 @@ CrosNetworkWatcher* CrosMonitorCellularDataPlan(
 CrosNetworkWatcher* CrosMonitorSMS(const std::string& modem_device_path,
                                    MonitorSMSCallback callback,
                                    void* object) {
-  return new CrosSMSWatcher(modem_device_path, callback, object);
+  if (g_libcros_network_functions_enabled)
+    return new CrosSMSWatcher(modem_device_path, callback, object);
+  else
+    return new SMSWatcher(modem_device_path, callback, object);
 }
 
 void CrosRequestNetworkServiceConnect(const std::string& service_path,
