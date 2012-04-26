@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
 #include "chrome/common/extensions/extension.h"
+#import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 
 @implementation ShellWindowController
 
@@ -27,11 +28,11 @@ ShellWindowCocoa::ShellWindowCocoa(ExtensionHost* host)
   NSRect rect = NSMakeRect(0, 0, kDefaultWidth, kDefaultHeight);
   NSUInteger styleMask = NSTitledWindowMask | NSClosableWindowMask |
                          NSMiniaturizableWindowMask | NSResizableWindowMask;
-  scoped_nsobject<NSWindow> window(
-      [[NSWindow alloc] initWithContentRect:rect
-                                  styleMask:styleMask
-                                    backing:NSBackingStoreBuffered
-                                      defer:NO]);
+  scoped_nsobject<NSWindow> window([[UnderlayOpenGLHostingWindow alloc]
+      initWithContentRect:rect
+                styleMask:styleMask
+                  backing:NSBackingStoreBuffered
+                    defer:NO]);
   [window setTitle:base::SysUTF8ToNSString(host->extension()->name())];
 
   NSView* view = host->view()->native_view();
