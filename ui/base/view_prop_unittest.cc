@@ -16,8 +16,8 @@ namespace ui {
 
 // Test a handful of viewprop assertions.
 TEST(ViewPropTest, Basic) {
-  gfx::NativeView nv1 = reinterpret_cast<gfx::NativeView>(1);
-  gfx::NativeView nv2 = reinterpret_cast<gfx::NativeView>(2);
+  gfx::AcceleratedWidget nv1 = reinterpret_cast<gfx::AcceleratedWidget>(1);
+  gfx::AcceleratedWidget nv2 = reinterpret_cast<gfx::AcceleratedWidget>(2);
 
   void* data1 = reinterpret_cast<void*>(11);
   void* data2 = reinterpret_cast<void*>(12);

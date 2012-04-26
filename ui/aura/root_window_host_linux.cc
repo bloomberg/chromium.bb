@@ -594,6 +594,10 @@ void RootWindowHostLinux::SetRootWindow(RootWindow* root_window) {
   root_window_ = root_window;
 }
 
+RootWindow* RootWindowHostLinux::GetRootWindow() {
+  return root_window_;
+}
+
 gfx::AcceleratedWidget RootWindowHostLinux::GetAcceleratedWidget() {
   return xwindow_;
 }
@@ -797,6 +801,13 @@ void RootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
 // static
 RootWindowHost* RootWindowHost::Create(const gfx::Rect& bounds) {
   return new RootWindowHostLinux(bounds);
+}
+
+// static
+RootWindowHost* RootWindowHost::GetForAcceleratedWidget(
+    gfx::AcceleratedWidget accelerated_widget) {
+  NOTIMPLEMENTED();
+  return NULL;  // TODO(erg): implement if necessary or remove this comment.
 }
 
 // static

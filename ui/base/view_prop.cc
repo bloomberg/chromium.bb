@@ -13,7 +13,7 @@ class ViewProp::Data : public base::RefCounted<ViewProp::Data> {
  public:
   // Returns the Data* for the view/key pair. If |create| is false and |Get|
   // has not been invoked for the view/key pair, NULL is returned.
-  static void Get(gfx::NativeView view,
+  static void Get(gfx::AcceleratedWidget view,
                   const char* key,
                   bool create,
                   scoped_refptr<Data>* data) {
@@ -51,7 +51,7 @@ class ViewProp::Data : public base::RefCounted<ViewProp::Data> {
 
   typedef std::set<Data*, DataComparator> DataSet;
 
-  Data(gfx::NativeView view, const char* key)
+  Data(gfx::AcceleratedWidget view, const char* key)
       : view_(view),
         key_(key),
         data_(NULL) {}
@@ -67,7 +67,7 @@ class ViewProp::Data : public base::RefCounted<ViewProp::Data> {
   // The existing set of Data is stored here. ~Data removes from the set.
   static DataSet* data_set_;
 
-  const gfx::NativeView view_;
+  const gfx::AcceleratedWidget view_;
   const char* key_;
   void* data_;
 
@@ -77,7 +77,7 @@ class ViewProp::Data : public base::RefCounted<ViewProp::Data> {
 // static
 ViewProp::Data::DataSet* ViewProp::Data::data_set_ = NULL;
 
-ViewProp::ViewProp(gfx::NativeView view, const char* key, void* data) {
+ViewProp::ViewProp(gfx::AcceleratedWidget view, const char* key, void* data) {
   Data::Get(view, key, true, &data_);
   data_->set_data(data);
 }
@@ -89,7 +89,7 @@ ViewProp::~ViewProp() {
 }
 
 // static
-void* ViewProp::GetValue(gfx::NativeView view, const char* key) {
+void* ViewProp::GetValue(gfx::AcceleratedWidget view, const char* key) {
   scoped_refptr<Data> data;
   Data::Get(view, key, false, &data);
   return data.get() ? data->data() : NULL;

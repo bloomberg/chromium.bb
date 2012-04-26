@@ -76,6 +76,7 @@
         'base/test/data/resource.h',
         'base/text/text_elider_unittest.cc',
         'base/text/utf16_indexing_unittest.cc',
+        'base/view_prop_unittest.cc',
         'gfx/blit_unittest.cc',
         'gfx/canvas_unittest.cc',
         'gfx/codec/jpeg_codec_unittest.cc',
@@ -108,7 +109,6 @@
         ['OS == "win"', {
           'sources': [
             'base/dragdrop/os_exchange_data_win_unittest.cc',
-            'base/view_prop_unittest.cc',
             # TODO(brettw) re-enable this when the dependencies on WindowImpl are fixed!
             'gfx/icon_util_unittest.cc',
             'gfx/native_theme_win_unittest.cc',
@@ -185,9 +185,13 @@
             'gfx/render_text_unittest.cc',
           ],
         }],
-        ['use_aura==1', {
+        ['OS!="win" or use_aura==0', {
           'sources!': [
             'base/view_prop_unittest.cc',
+          ],
+        }],
+        ['use_aura==1', {
+          'sources!': [
             'gfx/screen_unittest.cc',
           ],
         }],

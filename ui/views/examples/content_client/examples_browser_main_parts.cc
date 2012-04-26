@@ -23,12 +23,12 @@
 #include "ui/views/focus/accelerator_handler.h"
 
 #if defined(USE_AURA)
-#if !defined(USE_ASH)
 #include "ui/aura/single_monitor_manager.h"
-#include "ui/views/widget/desktop_native_widget_helper_aura.h"
-#endif
+#include "ui/aura/desktop/desktop_screen.h"
 #include "ui/aura/desktop/desktop_stacking_client.h"
 #include "ui/aura/env.h"
+#include "ui/gfx/screen.h"
+#include "ui/views/widget/desktop_native_widget_helper_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
 #endif
 
@@ -38,12 +38,12 @@ namespace examples {
 namespace {
 class ExamplesViewsDelegate : public views::TestViewsDelegate {
  public:
-#if defined(USE_AURA) && !defined(USE_ASH)
+#if defined(USE_AURA)
   virtual views::NativeWidgetHelperAura* CreateNativeWidgetHelper(
       views::NativeWidgetAura* native_widget) OVERRIDE {
     return new views::DesktopNativeWidgetHelperAura(native_widget);
   }
-#endif  // !USE_ASH
+#endif
 };
 }  // namespace
 
@@ -69,10 +69,9 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext);
 
 #if defined(USE_AURA)
-#if !defined(USE_ASH)
   aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
-#endif
   stacking_client_.reset(new aura::DesktopStackingClient);
+  gfx::Screen::SetInstance(aura::CreateDesktopScreen());
 #endif
   views_delegate_.reset(new ExamplesViewsDelegate);
 

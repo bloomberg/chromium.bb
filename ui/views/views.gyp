@@ -692,6 +692,13 @@
             '../gfx/compositor/compositor.gyp:compositor_test_support',
           ],
         }],
+        ['OS=="win"', {
+          'sources/': [
+            # This is needed because the aura rule strips it from the default
+            # sources list.
+            ['include', '^../../content/app/startup_helper_win.cc'],
+          ],
+        }],
       ],
     },  # target_name: views_examples_lib
   ],

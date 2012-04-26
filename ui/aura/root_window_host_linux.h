@@ -30,6 +30,7 @@ class RootWindowHostLinux : public RootWindowHost,
  private:
   // RootWindowHost Overrides.
   virtual void SetRootWindow(RootWindow* root_window) OVERRIDE;
+  virtual RootWindow* GetRootWindow() OVERRIDE;
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void ToggleFullScreen() OVERRIDE;
