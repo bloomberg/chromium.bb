@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/win/metro.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_data_dll_win.h"
 #include "ui/base/win/dpi.h"
-#include "ui/base/win/metro.h"
 
 namespace ui {
 
@@ -45,7 +45,7 @@ void ResourceBundle::LoadCommonResources() {
 
   bool use_metro_pak = false;
 #if defined(ENABLE_METRO)
-  use_metro_pak = ui::IsInMetroMode();
+  use_metro_pak = base::win::GetMetroModule() != NULL;
 #endif
 
   if (use_metro_pak) {
