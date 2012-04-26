@@ -277,14 +277,17 @@ def Build(buildroot, board, build_autotest, usepkg, skip_toolchain_update,
                             chroot_args=chroot_args)
 
 
-def BuildImage(buildroot, board, images_to_build, version='', extra_env=None):
+def BuildImage(buildroot, board, images_to_build, version='', extra_env=None,
+               root_boost=None):
   cwd = os.path.join(buildroot, 'src', 'scripts')
   # Default to base if images_to_build is passed empty.
   if not images_to_build: images_to_build = ['base']
   version_str = '--version=%s' % version
 
-  cmd = ['./build_image', '--board=%s' % board,
-         '--replace', version_str] + images_to_build
+  cmd = ['./build_image', '--board=%s' % board, '--replace', version_str]
+  if root_boost is not None:
+    cmd += ['--rootfs_boost_size=%d' % root_boost]
+  cmd += images_to_build
   cros_build_lib.RunCommand(cmd, cwd=cwd, enter_chroot=True,
                             extra_env=extra_env)
 

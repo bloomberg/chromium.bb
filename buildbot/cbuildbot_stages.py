@@ -816,11 +816,16 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     images_can_build = set(['base', 'dev', 'test'])
     images_to_build = set(self._build_config['images']).intersection(
         images_can_build)
+    root_boost = None
+    if (self._build_config['useflags'] and
+        'pgo_generate' in self._build_config['useflags']):
+        root_boost = 400
 
     commands.BuildImage(self._build_root,
                         self._current_board,
                         list(images_to_build),
                         version=self._version,
+                        root_boost=root_boost,
                         extra_env=self._env)
 
     if self._build_config['vm_tests']:
