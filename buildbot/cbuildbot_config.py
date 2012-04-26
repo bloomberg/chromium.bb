@@ -207,6 +207,9 @@ _settings = dict(
 # hw_tests -- A list of autotest suites to run on remote hardware.
   hw_tests=[],
 
+# hw_test_pool -- The name of the pool of machines to sendthese tests.
+  hw_test_pool=constants.HWTEST_MACH_POOL,
+
 # upload_hw_test_artifacts -- If true, uploads artifacts for hw testing.
   upload_hw_test_artifacts=False,
 
@@ -566,7 +569,10 @@ chrome_pfq = internal_chromium_pfq.derive(
   chrome_tests=False, # TODO(build-team): Use chrome tests
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=False,
-  useflags=official['useflags'],
+  useflags=official['useflags'] + ['pgo_generate'],
+  hw_tests=['PGO_record'],
+  upload_hw_test_artifacts=True,
+  hw_test_pool=constants.HWTEST_CHROME_PFQ_POOL,
 )
 
 chrome_pfq.add_config('alex-chrome-pfq',
