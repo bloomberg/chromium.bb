@@ -15,6 +15,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/ime/input_method_event_filter.h"
 #include "ash/launcher/launcher.h"
+#include "ash/magnifier/magnification_controller.h"
 #include "ash/monitor/monitor_controller.h"
 #include "ash/monitor/multi_monitor_manager.h"
 #include "ash/screen_ash.h"
@@ -566,6 +567,7 @@ Shell::~Shell() {
   // Alphabetical.
   activation_controller_.reset();
   drag_drop_controller_.reset();
+  magnification_controller_.reset();
   resize_shadow_controller_.reset();
   shadow_controller_.reset();
   window_cycle_controller_.reset();
@@ -709,6 +711,7 @@ void Shell::Init() {
   AddRootWindowEventFilter(tooltip_controller_.get());
 
   drag_drop_controller_.reset(new internal::DragDropController);
+  magnification_controller_.reset(new internal::MagnificationController);
   power_button_controller_.reset(new PowerButtonController);
   AddShellObserver(power_button_controller_.get());
   video_detector_.reset(new VideoDetector);

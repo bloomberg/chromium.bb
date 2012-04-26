@@ -101,6 +101,8 @@
         'launcher/launcher_view.h',
         'launcher/tabbed_launcher_button.cc',
         'launcher/tabbed_launcher_button.h',
+        'magnifier/magnification_controller.cc',
+        'magnifier/magnification_controller.h',
         'monitor/monitor_controller.cc',
         'monitor/monitor_controller.h',
         'monitor/multi_monitor_manager.cc',

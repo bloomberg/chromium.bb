@@ -70,6 +70,7 @@ class EventClientImpl;
 class FocusCycler;
 class InputMethodEventFilter;
 class KeyRewriterEventFilter;
+class MagnificationController;
 class MonitorController;
 class PanelLayoutManager;
 class PartialScreenshotEventFilter;
@@ -232,6 +233,10 @@ class ASH_EXPORT Shell {
     return user_wallpaper_delegate_.get();
   }
 
+  internal::MagnificationController* magnification_controller() {
+    return magnification_controller_.get();
+  }
+
   Launcher* launcher() { return launcher_.get(); }
 
   const ScreenAsh* screen() { return screen_; }
@@ -333,6 +338,7 @@ class ASH_EXPORT Shell {
   scoped_ptr<internal::FocusCycler> focus_cycler_;
   scoped_ptr<internal::EventClientImpl> event_client_;
   scoped_ptr<internal::MonitorController> monitor_controller_;
+  scoped_ptr<internal::MagnificationController> magnification_controller_;
 
   // An event filter that rewrites or drops a key event.
   scoped_ptr<internal::KeyRewriterEventFilter> key_rewriter_filter_;
