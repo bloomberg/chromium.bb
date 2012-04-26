@@ -181,9 +181,8 @@ void PPB_AudioInput_Shared::SetStartCaptureState() {
   DCHECK(!capturing_);
   DCHECK(!audio_input_thread_.get());
 
-  if (audio_input_callback_ && socket_.get())
-    StartThread();
   capturing_ = true;
+  StartThread();
 }
 
 void PPB_AudioInput_Shared::SetStopCaptureState() {
@@ -204,8 +203,10 @@ void PPB_AudioInput_Shared::SetStreamInfo(
   shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
   shared_memory_size_ = shared_memory_size;
 
-  if (audio_input_callback_)
-    shared_memory_->Map(shared_memory_size_);
+  if (!shared_memory_->Map(shared_memory_size_)) {
+    PpapiGlobals::Get()->LogWithSource(pp_instance(), PP_LOGLEVEL_WARNING, "",
+      "Failed to map shared memory for PPB_AudioInput_Shared.");
+  }
 
   // There is a pending capture request before SetStreamInfo().
   if (capturing_) {
@@ -218,7 +219,11 @@ void PPB_AudioInput_Shared::SetStreamInfo(
 }
 
 void PPB_AudioInput_Shared::StartThread() {
-  DCHECK(audio_input_callback_);
+  // Don't start the thread unless all our state is set up correctly.
+  if (!audio_input_callback_ || !socket_.get() || !capturing_ ||
+      !shared_memory_->memory()) {
+    return;
+  }
   DCHECK(!audio_input_thread_.get());
   audio_input_thread_.reset(new base::DelegateSimpleThread(
       this, "plugin_audio_input_thread"));

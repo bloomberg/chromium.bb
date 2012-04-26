@@ -246,7 +246,7 @@ void PPB_Audio_Proxy::OnMsgNotifyAudioStreamCreated(
     base::SharedMemory temp_mem(handle, false);
   } else {
     static_cast<Audio*>(enter.object())->SetStreamInfo(
-        handle, length,
+        enter.resource()->pp_instance(), handle, length,
         IPC::PlatformFileForTransitToPlatformFile(socket_handle));
   }
 }

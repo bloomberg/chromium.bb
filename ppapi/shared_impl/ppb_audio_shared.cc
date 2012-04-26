@@ -5,6 +5,7 @@
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 
 #include "base/logging.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 
 using base::subtle::Atomic32;
 
@@ -65,9 +66,8 @@ void PPB_Audio_Shared::SetStartPlaybackState() {
   // notify us. This is a common case. In this case, we just set the playing_
   // flag and the playback will automatically start when that data is available
   // in SetStreamInfo.
-  if (callback_ && socket_.get())
-    StartThread();
   playing_ = true;
+  StartThread();
 }
 
 void PPB_Audio_Shared::SetStopPlaybackState() {
@@ -81,6 +81,7 @@ void PPB_Audio_Shared::SetStopPlaybackState() {
 }
 
 void PPB_Audio_Shared::SetStreamInfo(
+    PP_Instance instance,
     base::SharedMemoryHandle shared_memory_handle,
     size_t shared_memory_size,
     base::SyncSocket::Handle socket_handle) {
@@ -88,18 +89,18 @@ void PPB_Audio_Shared::SetStreamInfo(
   shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
   shared_memory_size_ = shared_memory_size;
 
-  if (callback_) {
-    shared_memory_->Map(TotalSharedMemorySizeInBytes(
-        shared_memory_size_));
-
-    // In common case StartPlayback() was called before StreamCreated().
-    if (playing_)
-      StartThread();
+  if (!shared_memory_->Map(TotalSharedMemorySizeInBytes(shared_memory_size_))) {
+    PpapiGlobals::Get()->LogWithSource(instance, PP_LOGLEVEL_WARNING, "",
+      "Failed to map shared memory for PPB_Audio_Shared.");
   }
+
+  StartThread();
 }
 
 void PPB_Audio_Shared::StartThread() {
-  DCHECK(callback_);
+  // Don't start the thread unless all our state is set up correctly.
+  if (!playing_ || !callback_ || !socket_.get() || !shared_memory_->memory())
+    return;
   DCHECK(!audio_thread_.get());
   audio_thread_.reset(new base::DelegateSimpleThread(
       this, "plugin_audio_thread"));

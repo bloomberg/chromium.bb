@@ -49,7 +49,8 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
 
   // Sets the shared memory and socket handles. This will automatically start
   // playback if we're currently set to play.
-  void SetStreamInfo(base::SharedMemoryHandle shared_memory_handle,
+  void SetStreamInfo(PP_Instance instance,
+                     base::SharedMemoryHandle shared_memory_handle,
                      size_t shared_memory_size,
                      base::SyncSocket::Handle socket_handle);
 

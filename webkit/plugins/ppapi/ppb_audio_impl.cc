@@ -153,7 +153,8 @@ void PPB_Audio_Impl::OnSetStreamInfo(
     base::SharedMemoryHandle shared_memory_handle,
     size_t shared_memory_size,
     base::SyncSocket::Handle socket_handle) {
-  SetStreamInfo(shared_memory_handle, shared_memory_size, socket_handle);
+  SetStreamInfo(pp_instance(), shared_memory_handle, shared_memory_size,
+                socket_handle);
 }
 
 }  // namespace ppapi
