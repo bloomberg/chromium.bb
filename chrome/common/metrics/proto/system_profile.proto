@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 10
+// Next tag: 11
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -39,6 +39,16 @@ message SystemProfileProto {
   // associated with the request; and including the postfix, may be more
   // specific.
   optional string app_version = 2;
+
+  // The possible channels for an installation, from least to most stable.
+  enum Channel {
+    CHANNEL_UNKNOWN = 0;  // Unknown channel -- perhaps an unofficial build?
+    CHANNEL_CANARY = 1;
+    CHANNEL_DEV = 2;
+    CHANNEL_BETA = 3;
+    CHANNEL_STABLE = 4;
+  }
+  optional Channel channel = 10;
 
   // The date the user installed the browser, in seconds since the epoch.
   optional int64 install_date = 3;

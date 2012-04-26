@@ -13,8 +13,10 @@
 #include "base/sys_info.h"
 #include "base/third_party/nspr/prtime.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/metrics/proto/histogram_event.pb.h"
+#include "chrome/common/metrics/proto/system_profile.pb.h"
 #include "chrome/common/metrics/proto/user_action_event.pb.h"
 #include "libxml/xmlwriter.h"
 
@@ -24,6 +26,7 @@ using base::Histogram;
 using base::Time;
 using base::TimeDelta;
 using metrics::HistogramEventProto;
+using metrics::SystemProfileProto;
 using metrics::UserActionEventProto;
 
 namespace {
@@ -68,6 +71,25 @@ std::string CreateHash(const std::string& value) {
            << "]";
 
   return hash;
+}
+
+SystemProfileProto::Channel AsProtobufChannel(
+    chrome::VersionInfo::Channel channel) {
+  switch (channel) {
+    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+      return SystemProfileProto::CHANNEL_UNKNOWN;
+    case chrome::VersionInfo::CHANNEL_CANARY:
+      return SystemProfileProto::CHANNEL_CANARY;
+    case chrome::VersionInfo::CHANNEL_DEV:
+      return SystemProfileProto::CHANNEL_DEV;
+    case chrome::VersionInfo::CHANNEL_BETA:
+      return SystemProfileProto::CHANNEL_BETA;
+    case chrome::VersionInfo::CHANNEL_STABLE:
+      return SystemProfileProto::CHANNEL_STABLE;
+    default:
+      NOTREACHED();
+      return SystemProfileProto::CHANNEL_UNKNOWN;
+  }
 }
 
 }  // namespace
@@ -146,6 +168,8 @@ MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
   uma_proto_.set_session_id(session_id);
   uma_proto_.mutable_system_profile()->set_build_timestamp(build_time);
   uma_proto_.mutable_system_profile()->set_app_version(version_string);
+  uma_proto_.mutable_system_profile()->set_channel(
+      AsProtobufChannel(chrome::VersionInfo::GetChannel()));
 }
 
 MetricsLogBase::~MetricsLogBase() {
