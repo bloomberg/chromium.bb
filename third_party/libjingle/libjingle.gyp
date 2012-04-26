@@ -183,7 +183,6 @@
         'overrides/talk/base/thread.cc',
         'overrides/talk/base/thread.h',
 
-        'source/talk/base/Equifax_Secure_Global_eBusiness_CA-1.h',
         'source/talk/base/asyncfile.cc',
         'source/talk/base/asyncfile.h',
         'source/talk/base/asynchttprequest.cc',
