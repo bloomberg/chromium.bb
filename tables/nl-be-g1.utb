@@ -50,32 +50,7 @@ math > 5-135						greater-than sign			x003E
 punctuation ? 26				question mark					x003F
 sign @ 345							commercial at					x0040
 
-uplow Aa 1			letter A												x0041
-uplow Bb 12			letter B												x0041
-uplow Cc 14			letter C												x0043
-uplow Dd 145		letter D												x0044
-uplow Ee 15			letter E
-uplow Ff 124		letter F
-uplow Gg 1245		letter G
-uplow Hh 125		letter H
-uplow Ii 24			letter I
-uplow Jj 245		letter J
-uplow Kk 13			letter K
-uplow Ll 123		letter L
-uplow Mm 134		letter M
-uplow Nn 1345		letter N
-uplow Oo 135		letter O
-uplow Pp 1234		letter P
-uplow Qq 12345	letter Q
-uplow Rr 1235		letter R
-uplow Ss 234		letter S
-uplow Tt 2345		letter T
-uplow Uu 136		letter U
-uplow Vv 1236		letter V
-uplow Ww 2456		letter W												x0057
-uplow Xx 1346		letter X												x0058
-uplow Yy 13456	letter Y												x0059
-uplow Zz 1356		lettre Z												x005A
+include latinLetterDef6Dots.uti
 
 punctuation [ 12356		left square bracket				x005B
 sign \\ 5-16					reverse solidus						x005C

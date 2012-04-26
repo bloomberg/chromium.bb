@@ -43,32 +43,8 @@ digit 7 12456				siete
 digit 8 1256				ocho
 digit 9 246					nueve
 
-uplow Aa 17,1				letra a		x0041 / 0061
-uplow Bb 127,12				letra b		x0042 / 0062
-uplow Cc 147,14				letra c
-uplow Dd 1457,145			letra d
-uplow Ee 157,15				letra e
-uplow Ff 1247,124			letra f
-uplow Gg 12457,1245			letra g
-uplow Hh 1257,125			letra h
-uplow Ii 247,24				letra i
-uplow Jj 2457,245			letra j
-uplow Kk 137,13				letra k
-uplow Ll 1237,123			letra l
-uplow Mm 1347,134			letra m
-uplow Nn 13457,1345			letra n
-uplow Oo 1357,135			letra o
-uplow Pp 12347,1234			letra p
-uplow Qq 123457,12345		letra q
-uplow Rr 12357,1235			letra r
-uplow Ss 2347,234			letra s
-uplow Tt 23457,2345			letra t
-uplow Uu 1367,136			letra u
-uplow Vv 12367,1236			letra v
-uplow Ww 24567,2456				letra w							x0057 / 0077
-uplow Xx 13467,1346			letra x
-uplow Yy 134567,13456		letra y
-uplow Zz 13567,1356			letra z						x005A / 007A
+include latinLetterDef8Dots.uti
+
 uplow \x00c7\x00e7 1234678,123468		c cedilla
 uplow \x00c1\x00e1 123567,12356     a con acento
 uplow \x00c9\x00e9 23467,2346		e con acento

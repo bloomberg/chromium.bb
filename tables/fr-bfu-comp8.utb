@@ -41,32 +41,7 @@ digit 7 12456				sept
 digit 8 1256				huit
 digit 9 246					neuf
 
-uplow Aa 17,1				lettre a		x0041 / 0061
-uplow Bb 127,12				lettre b		x0042 / 0062
-uplow Cc 147,14				lettre c
-uplow Dd 1457,145			lettre d
-uplow Ee 157,15				lettre e
-uplow Ff 1247,124			lettre f
-uplow Gg 12457,1245			lettre g
-uplow Hh 1257,125			lettre h
-uplow Ii 247,24				lettre i
-uplow Jj 2457,245			lettre j
-uplow Kk 137,13				lettre k
-uplow Ll 1237,123			lettre l
-uplow Mm 1347,134			lettre m
-uplow Nn 13457,1345			lettre n
-uplow Oo 1357,135			lettre o
-uplow Pp 12347,1234			lettre p
-uplow Qq 123457,12345		lettre q
-uplow Rr 12357,1235			lettre r
-uplow Ss 2347,234			lettre s
-uplow Tt 23457,2345			lettre t
-uplow Uu 1367,136			lettre u
-uplow Vv 12367,1236			lettre v
-uplow Ww 24567,2456				lettre w							x0057 / 0077
-uplow Xx 13467,1346			lettre x
-uplow Yy 134567,13456		lettre y
-uplow Zz 13567,1356			lettre z						x005A / 007A
+include latinLetterDef8Dots.uti
 
 uplow Çç 123467,12346		c cédille
 uplow Éé 1234567,123456		e accent aigu

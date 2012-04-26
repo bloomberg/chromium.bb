@@ -79,32 +79,9 @@ letter > 0-246-0
 math > 0-345-0							# 62	[Peter Engström 2011-03-15]
 punctuation ? 1456						# 63
 sign @ 4								# 64
-uplow Aa 1								# 65
-uplow Bb 12
-uplow Cc 14
-uplow Dd 145
-uplow Ee 15
-uplow Ff 124
-uplow Gg 1245
-uplow Hh 125
-uplow Ii 24
-uplow Jj 245
-uplow Kk 13
-uplow Ll 123
-uplow Mm 134
-uplow Nn 1345
-uplow Oo 135
-uplow Pp 1234
-uplow Qq 12345
-uplow Rr 1235
-uplow Ss 234
-uplow Tt 2345
-uplow Uu 136
-uplow Vv 1236
-uplow Ww 2456
-uplow Xx 1346
-uplow Yy 13456
-uplow Zz 1356							# 90 / 122
+
+include latinLetterDef6Dots.uti
+
 punctuation [ 13456						# 91	[Peter Engström 2011-03-15]
 sign \\ 1256							# 92	[Peter Engström 2011-03-15]
 punctuation ] 12346						# 93	[Peter Engström 2011-03-15]
