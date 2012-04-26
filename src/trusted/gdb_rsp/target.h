@@ -110,6 +110,8 @@ class Target {
   // true a request to continue (or step) is processed.
   bool ProcessPacket(Packet *pktIn, Packet *pktOut);
 
+  void SetStopReply(Packet *pktOut) const;
+
   void Destroy();
   void Detach();
 
@@ -120,7 +122,7 @@ class Target {
   uint32_t GetRunThreadId() const;
   port::IThread *GetThread(uint32_t id);
 
- public:
+ private:
   const Abi *abi_;
 
   // This mutex protects debugging state (threads_, cur_signal, sig_thread_)

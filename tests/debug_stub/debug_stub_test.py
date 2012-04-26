@@ -197,8 +197,10 @@ class DebugStubTest(unittest.TestCase):
       # Tell the process to continue, because it starts at the
       # breakpoint set at its start address.
       reply = connection.RspRequest('c')
-      # We expect a reply that indicates that the process stopped again.
-      self.assertTrue(reply.startswith('S'))
+      # We expect a reply that indicates that the process stopped on hlt.
+      # TODO(eaeltsin): Windows and Linux signals raised for hlt differ.
+      # Investigate/fix that and make a stricter check here.
+      self.assertTrue(reply.startswith('T'))
 
       self.CheckReadRegisters(connection)
       self.CheckWriteRegisters(connection)
@@ -216,7 +218,7 @@ class DebugStubTest(unittest.TestCase):
 
       # Continue until breakpoint.
       reply = connection.RspRequest('c')
-      self.assertEquals(reply, 'S05')
+      self.assertTrue(reply.startswith('T05thread:'))
 
       ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
 
@@ -244,6 +246,24 @@ class DebugStubTest(unittest.TestCase):
       proc.kill()
       proc.wait()
 
+  # Single-step and check IP corresponds to debugger_test:test_single_step
+  def CheckSingleStep(self, connection, step_command, stop_reply):
+    if ARCH == 'x86-32':
+      instruction_sizes = [1, 2, 3, 6]
+    elif ARCH == 'x86-64':
+      instruction_sizes = [1, 3, 4, 6]
+    else:
+      raise AssertionError('Unknown architecture')
+
+    ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
+
+    for size in instruction_sizes:
+      reply = connection.RspRequest(step_command)
+      self.assertEqual(reply, stop_reply)
+      ip += size
+      actual_ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
+      self.assertEqual(actual_ip, ip)
+
   def test_single_step(self):
     proc = PopenDebugStub('test_single_step')
     try:
@@ -251,27 +271,52 @@ class DebugStubTest(unittest.TestCase):
 
       # Continue, test we stopped on int3.
       reply = connection.RspRequest('c')
-      self.assertEqual(reply, 'S05')
+      self.assertTrue(reply.startswith('T05thread:'))
+      self.assertTrue(reply.endswith(';'))
 
-      # Single-step several times, check IP changes accordingly.
-      if ARCH == 'x86-32':
-        instruction_sizes = [1, 2, 3, 6]
-      elif ARCH == 'x86-64':
-        instruction_sizes = [1, 3, 4, 6]
-      else:
-        raise AssertionError('Unknown architecture')
-
-      ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
-
-      for size in instruction_sizes:
-        reply = connection.RspRequest('s')
-        self.assertEqual(reply, 'S05')
-        ip += size
-        actual_ip = DecodeRegs(connection.RspRequest('g'))[IP_REG[ARCH]]
-        self.assertEqual(actual_ip, ip)
+      self.CheckSingleStep(connection, 's', reply)
     finally:
       proc.kill()
       proc.wait()
+
+  def test_vCont(self):
+    # Basically repeat test_single_step, but using vCont commands.
+    proc = PopenDebugStub('test_single_step')
+    try:
+      connection = gdb_rsp.GdbRspConnection()
+
+      # Test if vCont is supported.
+      reply = connection.RspRequest('vCont?')
+      self.assertEqual(reply, 'vCont;s;S;c;C')
+
+      # Continue using vCont, test we stopped on int3.
+      # Get signalled thread id.
+      reply = connection.RspRequest('vCont;c')
+      self.assertTrue(reply.startswith('T05thread:'))
+      self.assertTrue(reply.endswith(';'))
+      tid = int(reply[len('T05thread:'):-1], 16)
+
+      self.CheckSingleStep(connection, 'vCont;s:%x' % tid, reply)
+
+      # Try to single-step the thread and to continue all others.
+      reply = connection.RspRequest('vCont;s:%x;c' % tid)
+      self.assertTrue(reply.startswith('E'))
+
+      # Try to continue the thread and to single-step all others.
+      reply = connection.RspRequest('vCont;c:%x;s' % tid)
+      self.assertTrue(reply.startswith('E'))
+
+      # Try to single-step wrong thread.
+      reply = connection.RspRequest('vCont;s:%x' % (tid + 2))
+      self.assertTrue(reply.startswith('E'))
+
+      # Try to single-step all threads.
+      reply = connection.RspRequest('vCont;s')
+      self.assertTrue(reply.startswith('E'))
+    finally:
+      proc.kill()
+      proc.wait()
+
 
 if __name__ == '__main__':
   # TODO(mseaborn): Remove the global variable.  It is currently here

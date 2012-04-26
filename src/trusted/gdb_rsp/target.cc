@@ -200,9 +200,10 @@ void Target::Signal(uint32_t id, int8_t sig, bool wait) {
     // Signal the stub (Run thread) that we are ready to process
     // a trap, by updating the signal information and releasing
     // the lock.
+    cur_signal_ = sig;
+    sig_thread_ = id;
     reg_thread_ = id;
     run_thread_ = id;
-    cur_signal_ = sig;
   }
 
   // Wait for permission to continue
@@ -231,6 +232,7 @@ void Target::Run(Session *ses) {
       if (ses->DataAvailable()) {
         // set signal to 0 to signify paused
         cur_signal_ = 0;
+        sig_thread_ = 0;
 
         // put all the threads to sleep.
         uint32_t curId;
@@ -268,8 +270,7 @@ void Target::Run(Session *ses) {
     } else {
       // All other times, send the signal that triggered us
       Packet pktOut;
-      pktOut.AddRawChar('S');
-      pktOut.AddWord8(cur_signal_);
+      SetStopReply(&pktOut);
       ses->SendPacketOnly(&pktOut);
     }
 
@@ -337,6 +338,22 @@ void Target::Run(Session *ses) {
 }
 
 
+void Target::SetStopReply(Packet *pktOut) const {
+  pktOut->AddRawChar('T');
+  pktOut->AddWord8(cur_signal_);
+
+  // gdbserver handles GDB interrupt by sending SIGINT to the debuggee, thus
+  // GDB interrupt is also a case of a signalled thread.
+  // At the moment we handle GDB interrupt differently, without using a signal,
+  // so in this case sig_thread_ is 0.
+  // This might seem weird to GDB, so at least avoid reporting tid 0.
+  // TODO(eaeltsin): http://code.google.com/p/nativeclient/issues/detail?id=2743
+  if (sig_thread_ != 0) {
+    // Add 'thread:<tid>;' pair. Note terminating ';' is required.
+    pktOut->AddString("thread:");
+    pktOut->AddNumberSep(sig_thread_, ';');
+  }
+}
 
 
 bool Target::GetFirstThreadId(uint32_t *id) {
@@ -374,9 +391,11 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
     // IN : $?
     // OUT: $Sxx
     case '?':
-      pktOut->AddRawChar('S');
-      pktOut->AddWord8(cur_signal_);
+      SetStopReply(pktOut);
       break;
+
+    case 'c':
+      return true;
 
     // IN : $d
     // OUT: -NONE-
@@ -590,6 +609,12 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
       break;
     }
 
+    case 's': {
+      IThread *thread = GetThread(GetRunThreadId());
+      if (thread) thread->SetStep(true);
+      return true;
+    }
+
     case 'T': {
       uint64_t id;
       if (!pktIn->GetNumberSep(&id, 0)) {
@@ -606,21 +631,60 @@ bool Target::ProcessPacket(Packet* pktIn, Packet* pktOut) {
       break;
     }
 
-    case 's':  {
-      IThread *thread = GetThread(GetRunThreadId());
-      if (thread) thread->SetStep(true);
-      return true;
-    }
+    case 'v': {
+      const char *str = pktIn->GetPayload() + 1;
 
-    case 'c':
-      return true;
+      if (strncmp(str, "Cont", 4) == 0) {
+        // vCont
+        const char *subcommand = str + 4;
+
+        if (strcmp(subcommand, "?") == 0) {
+          // Report supported vCont actions. These 4 are required.
+          pktOut->AddString("vCont;s;S;c;C");
+          break;
+        }
+
+        if (strcmp(subcommand, ";c") == 0) {
+          // Continue all threads.
+          return true;
+        }
+
+        if (strncmp(subcommand, ";s:", 3) == 0) {
+          // Single step one thread.
+          char *end;
+          uint32_t thread_id = static_cast<uint32_t>(
+              strtol(subcommand + 3, &end, 16));
+          if (end == subcommand + 3 || *end != 0) {
+            err = BAD_ARGS;
+            break;
+          }
+
+          ThreadMap_t::iterator it = threads_.find(thread_id);
+          if (it == threads_.end()) {
+            err = BAD_ARGS;
+            break;
+          }
+
+          it->second->SetStep(true);
+          run_thread_ = thread_id;
+          return true;
+        }
+
+        // Unsupported form of vCont.
+        err = BAD_FORMAT;
+        break;
+      }
+
+      NaClLog(LOG_ERROR, "Unknown command: %s\n", pktIn->GetPayload());
+      return false;
+    }
 
     default: {
       // If the command is not recognzied, ignore it by sending an
       // empty reply.
       string str;
       pktIn->GetString(&str);
-      port::IPlatform::LogError("Unknown command: %s\n", str.data());
+      NaClLog(LOG_ERROR, "Unknown command: %s\n", pktIn->GetPayload());
       return false;
     }
   }
