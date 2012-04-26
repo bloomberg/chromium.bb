@@ -486,7 +486,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
         const std::string& resource_id,
         const std::string& md5,
         const std::string& mime_type,
-        scoped_refptr<base::MessageLoopProxy> proxy,
         const GetFileCallback& callback);
     ~GetFileFromCacheParams();
 
@@ -496,7 +495,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
     std::string resource_id;
     std::string md5;
     std::string mime_type;
-    scoped_refptr<base::MessageLoopProxy> proxy;
     const GetFileCallback callback;
   };
 

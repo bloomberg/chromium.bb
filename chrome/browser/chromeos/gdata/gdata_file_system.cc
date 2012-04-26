@@ -857,7 +857,6 @@ GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
     const std::string& resource_id,
     const std::string& md5,
     const std::string& mime_type,
-    scoped_refptr<base::MessageLoopProxy> proxy,
     const GetFileCallback& callback)
     : virtual_file_path(virtual_file_path),
       local_tmp_path(local_tmp_path),
@@ -865,7 +864,6 @@ GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
       resource_id(resource_id),
       md5(md5),
       mime_type(mime_type),
-      proxy(proxy),
       callback(callback) {
 }
 
@@ -1883,7 +1881,6 @@ void GDataFileSystem::GetFileByPathOnUIThread(
                                  file_properties.resource_id,
                                  file_properties.file_md5,
                                  file_properties.mime_type,
-                                 base::MessageLoopProxy::current(),
                                  callback)));
 }
 
@@ -1952,12 +1949,10 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
   // Have we found the file in cache? If so, return it back to the caller.
   if (error == base::PLATFORM_FILE_OK) {
     if (!params.callback.is_null()) {
-      params.proxy->PostTask(FROM_HERE,
-                             base::Bind(params.callback,
-                                        error,
-                                        cache_file_path,
-                                        params.mime_type,
-                                        REGULAR_FILE));
+      params.callback.Run(error,
+                          cache_file_path,
+                          params.mime_type,
+                          REGULAR_FILE);
     }
     return;
   }
@@ -2024,12 +2019,10 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
   if (!*has_enough_space) {
     // If no enough space, return PLATFORM_FILE_ERROR_NO_SPACE.
     if (!params.callback.is_null()) {
-      params.proxy->PostTask(FROM_HERE,
-                             base::Bind(params.callback,
-                                        base::PLATFORM_FILE_ERROR_NO_SPACE,
-                                        cache_file_path,
-                                        params.mime_type,
-                                        REGULAR_FILE));
+      params.callback.Run(base::PLATFORM_FILE_ERROR_NO_SPACE,
+                          cache_file_path,
+                          params.mime_type,
+                          REGULAR_FILE);
     }
     return;
   }
@@ -2839,12 +2832,10 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
   }
 
   if (!params.callback.is_null()) {
-    params.proxy->PostTask(FROM_HERE,
-                           base::Bind(params.callback,
-                                      error,
-                                      downloaded_file_path,
-                                      params.mime_type,
-                                      REGULAR_FILE));
+    params.callback.Run(error,
+                        downloaded_file_path,
+                        params.mime_type,
+                        REGULAR_FILE);
   }
 }
 
