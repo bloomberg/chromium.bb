@@ -22,7 +22,6 @@
 class BackgroundContents;
 class BalloonHost;
 class Extension;
-class ExtensionHost;
 class TabContentsWrapper;
 
 namespace content {
@@ -344,7 +343,8 @@ class TaskManagerChildProcessResourceProvider
 
 class TaskManagerExtensionProcessResource : public TaskManager::Resource {
  public:
-  explicit TaskManagerExtensionProcessResource(ExtensionHost* extension_host);
+  explicit TaskManagerExtensionProcessResource(
+      content::RenderViewHost* render_view_host);
   virtual ~TaskManagerExtensionProcessResource();
 
   // TaskManager::Resource methods:
@@ -370,7 +370,7 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
   // The icon painted for the extension process.
   static SkBitmap* default_icon_;
 
-  ExtensionHost* extension_host_;
+  content::RenderViewHost* render_view_host_;
 
   // Cached data about the extension.
   base::ProcessHandle process_handle_;
@@ -402,13 +402,15 @@ class TaskManagerExtensionProcessResourceProvider
  private:
   virtual ~TaskManagerExtensionProcessResourceProvider();
 
-  void AddToTaskManager(ExtensionHost* extension_host);
-  void RemoveFromTaskManager(ExtensionHost* extension_host);
+  void AddToTaskManager(content::RenderViewHost* render_view_host);
+  void RemoveFromTaskManager(content::RenderViewHost* render_view_host);
 
   TaskManager* task_manager_;
 
-  // Maps the actual resources (ExtensionHost*) to the Task Manager resources.
-  std::map<ExtensionHost*, TaskManagerExtensionProcessResource*> resources_;
+  // Maps the actual resources (content::RenderViewHost*) to the Task Manager
+  // resources.
+  std::map<content::RenderViewHost*,
+           TaskManagerExtensionProcessResource*> resources_;
 
   // Maps the pids to the resources (used for quick access to the resource on
   // byte read notifications).

@@ -87,10 +87,11 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
     ExtensionProcessManager* process_manager =
         browser()->profile()->GetExtensionProcessManager();
     ExtensionProcessManager::const_iterator iter;
-    for (iter = process_manager->begin(); iter != process_manager->end();
+    ExtensionProcessManager::ExtensionHostSet platform_app_hosts =
+        process_manager->platform_app_hosts();
+    for (iter = platform_app_hosts.begin(); iter != platform_app_hosts.end();
          ++iter) {
-      ExtensionHost* host = *iter;
-      if (host->extension() && host->extension()->is_platform_app())
+      if ((*iter)->extension())
         count++;
     }
 
@@ -104,12 +105,11 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
     ExtensionProcessManager* process_manager =
         browser()->profile()->GetExtensionProcessManager();
     ExtensionProcessManager::const_iterator iter;
-    for (iter = process_manager->begin(); iter != process_manager->end();
+    ExtensionProcessManager::ExtensionHostSet platform_app_hosts =
+        process_manager->platform_app_hosts();
+    for (iter = platform_app_hosts.begin(); iter != platform_app_hosts.end();
          ++iter) {
-      ExtensionHost* host = *iter;
-      if (host->extension() && host->extension()->is_platform_app() &&
-          host->extension_host_type() == chrome::VIEW_TYPE_APP_SHELL)
-        return host->host_contents();
+      return (*iter)->host_contents();
     }
 
     return NULL;

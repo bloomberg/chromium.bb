@@ -224,6 +224,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
   // instead you should always ask for it using the accessor.
   virtual RenderWidgetHostView* GetView() const = 0;
 
+  // Returns true if the renderer is loading, false if not.
+  virtual bool IsLoading() const = 0;
+
   // Returns true if this is a RenderViewHost, false if not.
   virtual bool IsRenderView() const = 0;
 

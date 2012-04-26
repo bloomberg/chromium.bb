@@ -32,8 +32,22 @@ class SiteInstance;
 // track of split-mode extensions only.
 class ExtensionProcessManager : public content::NotificationObserver {
  public:
+  typedef std::set<ExtensionHost*> ExtensionHostSet;
+  typedef ExtensionHostSet::const_iterator const_iterator;
+
   static ExtensionProcessManager* Create(Profile* profile);
   virtual ~ExtensionProcessManager();
+
+  const ExtensionHostSet& background_hosts() const {
+    return background_hosts_;
+  }
+
+  const ExtensionHostSet& platform_app_hosts() const {
+    return platform_app_hosts_;
+  }
+
+  typedef std::set<content::RenderViewHost*> ViewSet;
+  const ViewSet GetAllViews() const;
 
   // Creates a new ExtensionHost with its associated view, grouping it in the
   // appropriate SiteInstance (and therefore process) based on the URL and
@@ -86,8 +100,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
   std::set<content::RenderViewHost*> GetRenderViewHostsForExtension(
       const std::string& extension_id);
 
-  // Returns true if |host| is managed by this process manager.
-  bool HasExtensionHost(ExtensionHost* host) const;
+  // Returns the extension associated with the specified RenderViewHost, or
+  // NULL.
+  const Extension* GetExtensionForRenderViewHost(
+      content::RenderViewHost* render_view_host);
 
   // Returns true if the (lazy) background host for the given extension has
   // already been sent the unload event and is shutting down.
@@ -113,11 +129,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
   void OnNetworkRequestStarted(content::RenderViewHost* render_view_host);
   void OnNetworkRequestDone(content::RenderViewHost* render_view_host);
 
-  typedef std::set<ExtensionHost*> ExtensionHostSet;
-  typedef ExtensionHostSet::const_iterator const_iterator;
-  const_iterator begin() const { return all_hosts_.begin(); }
-  const_iterator end() const { return all_hosts_.end(); }
-
  protected:
   explicit ExtensionProcessManager(Profile* profile);
 
@@ -138,11 +149,11 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 
-  // The set of all ExtensionHosts managed by this process manager.
-  ExtensionHostSet all_hosts_;
-
-  // The set of running viewless background extensions.
+  // The set of ExtensionHosts running viewless background extensions.
   ExtensionHostSet background_hosts_;
+
+  // The set of ExtensionHosts running platform apps.
+  ExtensionHostSet platform_app_hosts_;
 
   // A SiteInstance related to the SiteInstance for all extensions in
   // this profile.  We create it in such a way that a new

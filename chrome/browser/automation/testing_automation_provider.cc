@@ -134,6 +134,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
@@ -2885,28 +2886,33 @@ void TestingAutomationProvider::GetBrowserInfo(
         profiles[i]->GetExtensionProcessManager();
     if (!process_manager)
       continue;
-    ExtensionProcessManager::const_iterator jt;
-    for (jt = process_manager->begin(); jt != process_manager->end(); ++jt) {
-      ExtensionHost* ex_host = *jt;
+    const ExtensionProcessManager::ViewSet view_set =
+        process_manager->GetAllViews();
+    for (ExtensionProcessManager::ViewSet::const_iterator jt =
+             view_set.begin();
+         jt != view_set.end(); ++jt) {
+      content::RenderViewHost* render_view_host = *jt;
       // Don't add dead extension processes.
-      if (!ex_host->IsRenderViewLive())
+      if (!render_view_host->IsRenderViewLive())
         continue;
+      const Extension* extension =
+          process_manager->GetExtensionForRenderViewHost(render_view_host);
       DictionaryValue* item = new DictionaryValue;
-      item->SetString("name", ex_host->extension()->name());
-      item->SetString("extension_id", ex_host->extension()->id());
+      item->SetString("name", extension->name());
+      item->SetString("extension_id", extension->id());
       item->SetInteger(
           "pid",
-          base::GetProcId(ex_host->render_process_host()->GetHandle()));
+          base::GetProcId(render_view_host->GetProcess()->GetHandle()));
       DictionaryValue* view = new DictionaryValue;
       view->SetInteger(
           "render_process_id",
-          ex_host->render_process_host()->GetID());
+          render_view_host->GetProcess()->GetID());
       view->SetInteger(
           "render_view_id",
-          ex_host->render_view_host()->GetRoutingID());
+          render_view_host->GetRoutingID());
       item->Set("view", view);
       std::string type;
-      switch (ex_host->extension_host_type()) {
+      switch (render_view_host->GetDelegate()->GetRenderViewType()) {
         case chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
           type = "EXTENSION_BACKGROUND_PAGE";
           break;
@@ -2930,8 +2936,8 @@ void TestingAutomationProvider::GetBrowserInfo(
           break;
       }
       item->SetString("view_type", type);
-      item->SetString("url", ex_host->GetURL().spec());
-      item->SetBoolean("loaded", ex_host->did_stop_loading());
+      item->SetString("url", render_view_host->GetDelegate()->GetURL().spec());
+      item->SetBoolean("loaded", !render_view_host->IsLoading());
       extension_views->Append(item);
     }
   }
@@ -6744,16 +6750,19 @@ void TestingAutomationProvider::GetViews(
 
   ExtensionProcessManager* extension_mgr =
       profile()->GetExtensionProcessManager();
-  ExtensionProcessManager::const_iterator iter;
-  for (iter = extension_mgr->begin(); iter != extension_mgr->end();
-       ++iter) {
-    ExtensionHost* host = *iter;
+  const ExtensionProcessManager::ViewSet all_views =
+      extension_mgr->GetAllViews();
+  ExtensionProcessManager::ViewSet::const_iterator iter;
+  for (iter = all_views.begin(); iter != all_views.end(); ++iter) {
+    content::RenderViewHost* host = (*iter);
     AutomationId id = automation_util::GetIdForExtensionView(host);
     if (!id.is_valid())
       continue;
+    const Extension* extension =
+        extension_mgr->GetExtensionForRenderViewHost(host);
     DictionaryValue* dict = new DictionaryValue();
     dict->Set("auto_id", id.ToValue());
-    dict->SetString("extension_id", host->extension_id());
+    dict->SetString("extension_id", extension->id());
     view_list->Append(dict);
   }
   DictionaryValue dict;

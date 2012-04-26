@@ -106,6 +106,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual RenderProcessHost* GetProcess() const OVERRIDE;
   virtual int GetRoutingID() const OVERRIDE;
   virtual RenderWidgetHostView* GetView() const OVERRIDE;
+  virtual bool IsLoading() const OVERRIDE;
   virtual bool IsRenderView() const OVERRIDE;
   virtual void PaintAtSize(TransportDIB::Handle dib_handle,
                            int tag,

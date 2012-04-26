@@ -72,8 +72,10 @@ static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
                                        int expected_hosts) {
   ExtensionHost* host = NULL;
   int num_hosts = 0;
-  for (ExtensionProcessManager::const_iterator iter = manager->begin();
-       iter != manager->end(); ++iter) {
+  ExtensionProcessManager::ExtensionHostSet background_hosts =
+      manager->background_hosts();
+  for (ExtensionProcessManager::const_iterator iter = background_hosts.begin();
+       iter != background_hosts.end(); ++iter) {
     if ((*iter)->GetURL().path() == path) {
       EXPECT_FALSE(host);
       host = *iter;

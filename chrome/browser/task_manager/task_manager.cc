@@ -1131,13 +1131,12 @@ int CountExtensionBackgroundPagesForProfile(Profile* profile) {
   ExtensionProcessManager* manager = profile->GetExtensionProcessManager();
   if (!manager)
     return count;
-  for (ExtensionProcessManager::const_iterator iter = manager->begin();
-       iter != manager->end();
-       ++iter) {
-    if ((*iter)->extension_host_type() ==
-        chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      count++;
-    }
+
+  const ExtensionProcessManager::ExtensionHostSet& background_hosts =
+      manager->background_hosts();
+  for (ExtensionProcessManager::const_iterator iter = background_hosts.begin();
+       iter != background_hosts.end(); ++iter) {
+    ++count;
   }
   return count;
 }

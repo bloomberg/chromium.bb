@@ -168,7 +168,7 @@ class ExtensionBrowserTest
                                             Profile* profile,
                                             bool from_webstore);
 
-  bool WaitForExtensionHostsToLoad();
+  bool WaitForExtensionViewsToLoad();
 
   // When waiting for page action count to change, we wait until it reaches this
   // value.

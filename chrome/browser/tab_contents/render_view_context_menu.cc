@@ -24,9 +24,8 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -624,22 +623,13 @@ void RenderViewContextMenu::InitMenu() {
 }
 
 const Extension* RenderViewContextMenu::GetExtension() const {
-  ExtensionProcessManager* process_manager =
-      profile_->GetExtensionProcessManager();
+  ExtensionSystem* system = ExtensionSystem::Get(profile_);
   // There is no process manager in some tests.
-  if (!process_manager) {
+  if (!system->process_manager())
     return NULL;
-  }
 
-  ExtensionProcessManager::const_iterator iter;
-  for (iter = process_manager->begin(); iter != process_manager->end();
-       ++iter) {
-    ExtensionHost* host = *iter;
-    if (host->host_contents() == source_web_contents_)
-      return host->extension();
-  }
-
-  return NULL;
+  return system->process_manager()->GetExtensionForRenderViewHost(
+      source_web_contents_->GetRenderViewHost());
 }
 
 void RenderViewContextMenu::AppendPlatformAppItems(

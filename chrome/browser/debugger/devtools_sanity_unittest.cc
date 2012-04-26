@@ -12,7 +12,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/debugger/devtools_window.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -213,12 +212,12 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
     if (num_after != (num_before + 1))
       return false;
 
-    return WaitForExtensionHostsToLoad();
+    return WaitForExtensionViewsToLoad();
   }
 
-  bool WaitForExtensionHostsToLoad() {
-    // Wait for all the extension hosts that exist to finish loading.
-    // NOTE: This assumes that the extension host list is not changing while
+  bool WaitForExtensionViewsToLoad() {
+    // Wait for all the extension render views that exist to finish loading.
+    // NOTE: This assumes that the extension views list is not changing while
     // this method is running.
 
     content::NotificationRegistrar registrar;
@@ -231,9 +230,11 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
 
     ExtensionProcessManager* manager =
           browser()->profile()->GetExtensionProcessManager();
-    for (ExtensionProcessManager::const_iterator iter = manager->begin();
-         iter != manager->end();) {
-      if ((*iter)->did_stop_loading())
+    ExtensionProcessManager::ViewSet all_views = manager->GetAllViews();
+    for (ExtensionProcessManager::ViewSet::const_iterator iter =
+             all_views.begin();
+         iter != all_views.end();) {
+      if (!(*iter)->IsLoading())
         ++iter;
       else
         ui_test_utils::RunMessageLoop();

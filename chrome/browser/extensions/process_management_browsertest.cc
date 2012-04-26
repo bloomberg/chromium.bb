@@ -215,13 +215,10 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, ExtensionProcessBalancing) {
   Profile* profile = browser()->GetProfile();
   ExtensionProcessManager* epm = profile->GetExtensionProcessManager();
 
-  for (ExtensionProcessManager::const_iterator iter = epm->begin();
-       iter != epm->end();
-       ++iter) {
-    ExtensionHost* host = *iter;
-    if (host->extension()->has_background_page()) {
-      process_ids.insert(host->render_process_host()->GetID());
-    }
+  for (ExtensionProcessManager::const_iterator iter =
+           epm->background_hosts().begin();
+       iter != epm->background_hosts().end(); ++iter) {
+    process_ids.insert((*iter)->render_process_host()->GetID());
   }
 
   // We've loaded 5 extensions with background pages, 1 extension without

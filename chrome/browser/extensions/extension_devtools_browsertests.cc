@@ -29,15 +29,19 @@ using content::DevToolsClientHost;
 using content::DevToolsManager;
 using content::WebContents;
 
-// Looks for an ExtensionHost whose URL has the given path component (including
-// leading slash).  Also verifies that the expected number of hosts are loaded.
-static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
-                                       const std::string& path,
-                                       int expected_hosts) {
+// Looks for an background ExtensionHost whose URL has the given path component
+// (including leading slash).  Also verifies that the expected number of hosts
+// are loaded.
+static ExtensionHost* FindBackgroundHostWithPath(
+    ExtensionProcessManager* manager,
+    const std::string& path,
+    int expected_hosts) {
   ExtensionHost* host = NULL;
   int num_hosts = 0;
-  for (ExtensionProcessManager::const_iterator iter = manager->begin();
-       iter != manager->end(); ++iter) {
+  ExtensionProcessManager::ExtensionHostSet background_hosts =
+      manager->background_hosts();
+  for (ExtensionProcessManager::const_iterator iter = background_hosts.begin();
+       iter != background_hosts.end(); ++iter) {
     if ((*iter)->GetURL().path() == path) {
       EXPECT_FALSE(host);
       host = *iter;
@@ -57,7 +61,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, TimelineApi) {
   // Get the ExtensionHost that is hosting our background page.
   ExtensionProcessManager* manager =
       browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host = FindHostWithPath(manager, "/background.html", 1);
+  ExtensionHost* host = FindBackgroundHostWithPath(manager,
+                                                   "/background.html", 1);
 
   // Grab a handle to the DevToolsManager so we can forward messages to it.
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
@@ -110,12 +115,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   // Get the ExtensionHost that is hosting our background page.
   ExtensionProcessManager* manager =
       browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host_one = FindHostWithPath(manager, "/background.html", 1);
+  ExtensionHost* host_one = FindBackgroundHostWithPath(manager,
+                                                       "/background.html", 1);
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("devtools").AppendASCII("timeline_api_two")));
-  ExtensionHost* host_two = FindHostWithPath(manager,
-                                             "/background_two.html", 2);
+  ExtensionHost* host_two = FindBackgroundHostWithPath(manager,
+                                                       "/background_two.html",
+                                                       2);
 
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
 

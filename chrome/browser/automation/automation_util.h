@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@ class AutomationId;
 class AutomationProvider;
 class Browser;
 class Extension;
-class ExtensionHost;
 class GURL;
 class Profile;
 class TabContentsWrapper;
@@ -92,8 +91,9 @@ bool SendErrorIfModalDialogActive(AutomationProvider* provider,
 // Returns a valid automation ID for the given tab.
 AutomationId GetIdForTab(const TabContentsWrapper* tab);
 
-// Returns a valid automation ID for the extension host.
-AutomationId GetIdForExtensionView(const ExtensionHost* ext_host);
+// Returns a valid automation ID for the extension view.
+AutomationId GetIdForExtensionView(
+    const content::RenderViewHost* render_view_host);
 
 // Returns a valid automation ID for the extension.
 AutomationId GetIdForExtension(const Extension* extension);

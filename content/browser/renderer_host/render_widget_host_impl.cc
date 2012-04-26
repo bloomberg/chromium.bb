@@ -243,6 +243,10 @@ void RenderWidgetHostImpl::Shutdown() {
   Destroy();
 }
 
+bool RenderWidgetHostImpl::IsLoading() const {
+  return is_loading_;
+}
+
 bool RenderWidgetHostImpl::IsRenderView() const {
   return false;
 }

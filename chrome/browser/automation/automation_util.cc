@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_json.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
@@ -32,6 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_view_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -413,9 +413,10 @@ AutomationId GetIdForTab(const TabContentsWrapper* tab) {
       base::IntToString(tab->restore_tab_helper()->session_id().id()));
 }
 
-AutomationId GetIdForExtensionView(const ExtensionHost* ext_host) {
+AutomationId GetIdForExtensionView(
+    const content::RenderViewHost* render_view_host) {
   AutomationId::Type type;
-  switch (ext_host->extension_host_type()) {
+  switch (render_view_host->GetDelegate()->GetRenderViewType()) {
     case chrome::VIEW_TYPE_EXTENSION_POPUP:
       type = AutomationId::kTypeExtensionPopup;
       break;
@@ -432,8 +433,8 @@ AutomationId GetIdForExtensionView(const ExtensionHost* ext_host) {
   // Since these extension views do not permit navigation, using the
   // renderer process and view ID should suffice.
   std::string id = base::StringPrintf("%d|%d",
-      ext_host->render_view_host()->GetRoutingID(),
-      ext_host->render_process_host()->GetID());
+      render_view_host->GetRoutingID(),
+      render_view_host->GetProcess()->GetID());
   return AutomationId(type, id);
 }
 
@@ -482,13 +483,14 @@ bool GetExtensionRenderViewForId(
     RenderViewHost** rvh) {
   ExtensionProcessManager* extension_mgr =
       profile->GetExtensionProcessManager();
-  ExtensionProcessManager::const_iterator iter;
-  for (iter = extension_mgr->begin(); iter != extension_mgr->end();
-       ++iter) {
-    ExtensionHost* host = *iter;
+  const ExtensionProcessManager::ViewSet view_set =
+      extension_mgr->GetAllViews();
+  for (ExtensionProcessManager::ViewSet::const_iterator iter = view_set.begin();
+       iter != view_set.end(); ++iter) {
+    content::RenderViewHost* host = *iter;
     AutomationId this_id = GetIdForExtensionView(host);
     if (id == this_id) {
-      *rvh = host->render_view_host();
+      *rvh = host;
       return true;
     }
   }

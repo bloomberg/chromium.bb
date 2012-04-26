@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -31,6 +30,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_view_host.h"
 
 ExtensionBrowserTest::ExtensionBrowserTest()
     : loaded_(false),
@@ -134,7 +134,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithOptions(
     }
   }
 
-  if (!WaitForExtensionHostsToLoad())
+  if (!WaitForExtensionViewsToLoad())
     return NULL;
 
   return extension;
@@ -330,7 +330,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     return NULL;
   }
 
-  if (!WaitForExtensionHostsToLoad())
+  if (!WaitForExtensionViewsToLoad())
     return NULL;
   return service->GetExtensionById(last_loaded_extension_id_, false);
 }
@@ -387,17 +387,19 @@ bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(int count) {
   return location_bar->PageActionVisibleCount() == count;
 }
 
-bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
-  // Wait for all the extension hosts that exist to finish loading.
+bool ExtensionBrowserTest::WaitForExtensionViewsToLoad() {
+  // Wait for all the extension render view hosts that exist to finish loading.
   content::NotificationRegistrar registrar;
-  registrar.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+  registrar.Add(this, content::NOTIFICATION_LOAD_STOP,
                 content::NotificationService::AllSources());
 
   ExtensionProcessManager* manager =
         browser()->profile()->GetExtensionProcessManager();
-  for (ExtensionProcessManager::const_iterator iter = manager->begin();
-       iter != manager->end();) {
-    if ((*iter)->did_stop_loading()) {
+  ExtensionProcessManager::ViewSet all_views = manager->GetAllViews();
+  for (ExtensionProcessManager::ViewSet::const_iterator iter =
+           all_views.begin();
+       iter != all_views.end();) {
+    if (!(*iter)->IsLoading()) {
       ++iter;
     } else {
       ui_test_utils::RunMessageLoop();
@@ -405,7 +407,8 @@ bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
       // Test activity may have modified the set of extension processes during
       // message processing, so re-start the iteration to catch added/removed
       // processes.
-      iter = manager->begin();
+      all_views = manager->GetAllViews();
+      iter = all_views.begin();
     }
   }
   return true;
@@ -430,7 +433,7 @@ bool ExtensionBrowserTest::WaitForExtensionInstallError() {
 void ExtensionBrowserTest::WaitForExtensionLoad() {
   ui_test_utils::RegisterAndWait(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                                  content::NotificationService::AllSources());
-  WaitForExtensionHostsToLoad();
+  WaitForExtensionViewsToLoad();
 }
 
 bool ExtensionBrowserTest::WaitForExtensionLoadError() {
@@ -477,11 +480,6 @@ void ExtensionBrowserTest::Observe(
         else
           last_loaded_extension_id_ = "";
       }
-      MessageLoopForUI::current()->Quit();
-      break;
-
-    case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
-      VLOG(1) << "Got EXTENSION_HOST_DID_STOP_LOADING notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
@@ -533,6 +531,11 @@ void ExtensionBrowserTest::Observe(
       }
       break;
     }
+
+    case content::NOTIFICATION_LOAD_STOP:
+      VLOG(1) << "Got LOAD_STOP notification.";
+      MessageLoopForUI::current()->Quit();
+      break;
 
     default:
       NOTREACHED();
