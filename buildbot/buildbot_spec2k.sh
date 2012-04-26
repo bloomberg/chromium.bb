@@ -19,9 +19,35 @@ SPEC_HARNESS=${SPEC_HARNESS:-${HOME}/cpu2000-redhat64-ia32}/
 TRYBOT_TESTS="176.gcc 179.art 181.mcf 197.parser 252.eon 254.gap"
 TRYBOT_TRANSLATOR_TESTS="176.gcc"
 
+readonly BUILDBOT_PNACL="buildbot/buildbot_pnacl.sh"
+readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
+
 SPEC_BASE="tests/spec2k"
 
 RETCODE=0
+
+# Print the number of tests being run for the buildbot status output
+testcount() {
+  local tests="$1"
+  if [[ ${tests} == "all" ]]; then
+    echo "all"
+  else
+    echo ${tests} | wc -w
+  fi
+}
+
+#TODO(dschuff) This is duplicated in buildbot_pnacl.sh. move it
+# (probably to file_up_down_load.sh)
+NAME_ARM_TRY_UPLOAD() {
+  echo -n "${BUILDBOT_BUILDERNAME}/"
+  echo -n "${BUILDBOT_SLAVENAME}/"
+  echo -n "${BUILDBOT_BUILDNUMBER}"
+}
+NAME_ARM_TRY_DOWNLOAD() {
+  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDERNAME}/"
+  echo -n "${BUILDBOT_TRIGGERED_BY_SLAVENAME}/"
+  echo -n "${BUILDBOT_TRIGGERED_BY_BUILDNUMBER}"
+}
 
 ######################################################################
 # SCRIPT ACTION
@@ -45,112 +71,171 @@ build-prerequsites() {
   popd
 }
 
-# Build and run a small sample of the tests for trybots.
-# These do not do any timing or size measurements.
-build-and-run-some() {
+build-tests() {
   local setups="$1"
   local tests="$2"
+  local timed="$3" # Do timing and size measurements
+  local compile_repetitions="$4"
+  local count=$(testcount "${tests}")
 
   pushd ${SPEC_BASE}
   for setup in ${setups}; do
-    echo "@@@BUILD_STEP spec2k build [${setup}] [train-some]@@@"
-    ./run_all.sh CleanBenchmarks
-    ./run_all.sh PopulateFromSpecHarness "${SPEC_HARNESS}"
-    MAKEOPTS=-j8 \
-      ./run_all.sh BuildBenchmarks 0 ${setup} ${tests}
-
-    echo "@@@BUILD_STEP spec2k run [${setup}] [train-some]@@@"
-    ./run_all.sh RunBenchmarks ${setup} train ${tests} || \
-      { RETCODE=$? && echo "@@@STEP_FAILURE@@@"; }
-  done
-  popd
-}
-
-# Build and run all of the tests and do timing + size measurements.
-build-and-run-all() {
-  local setups="$1"
-  local run_repetitions=$2
-  local compile_repetitions=$2
-
-  pushd ${SPEC_BASE}
-  for setup in ${setups}; do
-    echo "@@@BUILD_STEP spec2k build [${setup}] [train]@@@"
+    echo "@@@BUILD_STEP spec2k build [${setup}] [${count} tests]@@@"
     ./run_all.sh CleanBenchmarks
     ./run_all.sh PopulateFromSpecHarness "${SPEC_HARNESS}"
     MAKEOPTS=-j8 \
     SPEC_COMPILE_REPETITIONS=${compile_repetitions} \
-      ./run_all.sh BuildBenchmarks 1 ${setup} train
-
-    echo @@@BUILD_STEP spec2k run [${setup}] [train]@@@
-    SPEC_RUN_REPETITIONS=${run_repetitions} \
-      ./run_all.sh RunTimedBenchmarks ${setup} train || \
+      ./run_all.sh BuildBenchmarks ${timed} ${setup} train ${tests} || \
       { RETCODE=$? && echo "@@@STEP_FAILURE@@@"; }
   done
   popd
 }
 
+run-tests() {
+  local setups="$1"
+  local tests="$2"
+  local timed="$3"
+  local run_repetitions="$4"
+  local count=$(testcount "${tests}")
+
+  pushd ${SPEC_BASE}
+  for setup in ${setups}; do
+    echo "@@@BUILD_STEP spec2k run [${setup}] [${count} tests]@@@"
+    if [ ${timed} == "1" ]; then
+      SPEC_RUN_REPETITIONS=${run_repetitions} \
+        ./run_all.sh RunTimedBenchmarks ${setup} train ${tests} || \
+        { RETCODE=$? && echo "@@@STEP_FAILURE@@@"; }
+    else
+      ./run_all.sh RunBenchmarks ${setup} train ${tests} || \
+        { RETCODE=$? && echo "@@@STEP_FAILURE@@@"; }
+    fi
+  done
+  popd
+}
+
+upload-tests() {
+  local tests="$1"
+  local try="$2" # set to "try" if this is a try run
+
+  pushd ${SPEC_BASE}
+  echo "@@@BUILD_STEP spec2k archive/upload@@@"
+  ./run_all.sh PackageArmBinaries ${tests}
+  popd
+  if [[ ${try} == "try" ]]; then
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBotsTry $(NAME_ARM_TRY_UPLOAD) \
+      $(${SPEC_BASE}/run_all.sh GetTestArchiveName)
+  else
+    # TODO(dschuff) condition the build name on ${try} once we move
+    # NAME_ARM_UPLOAD/NAME_ARM_TRY_UPLOAD/etc to the right place
+    # Likewise for download below
+    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots $(NAME_ARM_TRY_UPLOAD) \
+      $(${SPEC_BASE}/run_all.sh GetTestArchiveName)
+  fi
+}
+
+download-tests() {
+  local try="$1"
+  if [[ ${try} == "try" ]]; then
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBotsTry $(NAME_ARM_TRY_DOWNLOAD) \
+      $(${SPEC_BASE}/run_all.sh GetTestArchiveName)
+  else
+    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots $(NAME_ARM_TRY_DOWNLOAD) \
+      $(${SPEC_BASE}/run_all.sh GetTestArchiveName)
+  fi
+  pushd ${SPEC_BASE}
+  ./run_all.sh UnpackArmBinaries
+  popd
+}
 
 ######################################################################
 # NOTE: trybots only runs a subset of the the spec2k tests
 # TODO: elminate this long running bot in favor per arch sharded bots
-pnacl-trybot-arm() {
+pnacl-trybot-arm-qemu() {
   clobber
   build-prerequsites "arm" "bitcode"
-  build-and-run-some SetupPnaclArmOpt "${TRYBOT_TESTS}"
+  build-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 0 1
+  run-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 0 1
+}
+
+pnacl-trybot-arm-buildonly() {
+  clobber
+  build-prerequsites "arm" "bitcode"
+  ${BUILDBOT_PNACL} archive-for-hw-bots "$(NAME_ARM_TRY_UPLOAD)" try
+  build-tests SetupPnaclArmOpt "${TRYBOT_TESTS}" 0 1
+  upload-tests "${TRYBOT_TESTS}" try
+}
+
+pnacl-trybot-arm-hw() {
+  clobber
+  ${BUILDBOT_PNACL} unarchive-for-hw-bots "$(NAME_ARM_TRY_DOWNLOAD)" try
+  download-tests try
+  run-tests SetupPnaclArmOptHW "${TRYBOT_TESTS}" 0 1
 }
 
 pnacl-trybot-x8632() {
   clobber
   build-prerequsites "x86-32" "bitcode"
-  build-and-run-some SetupPnaclX8632Opt "${TRYBOT_TESTS}"
-  build-and-run-some SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}"
+  build-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 0 1
+  run-tests SetupPnaclX8632Opt "${TRYBOT_TESTS}" 0 1
+  build-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
+  run-tests SetupPnaclTranslatorX8632Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
 }
 
 pnacl-trybot-x8664() {
   clobber
   build-prerequsites "x86-64" "bitcode"
-  build-and-run-some SetupPnaclX8664Opt "${TRYBOT_TESTS}"
-  build-and-run-some SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}"
+  build-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 0 1
+  run-tests SetupPnaclX8664Opt "${TRYBOT_TESTS}" 0 1
+  build-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
+  run-tests SetupPnaclTranslatorX8664Opt "${TRYBOT_TRANSLATOR_TESTS}" 0 1
 }
 
 pnacl-arm() {
   clobber
   build-prerequsites "arm" "bitcode"
   # arm takes a long time and we do not have sandboxed tests working
-  build-and-run-all "SetupPnaclArmOpt" 1 1
+  build-tests SetupPnaclArmOpt all 1 1
+  run-tests SetupPnaclArmOpt all 1 1
 }
 
 pnacl-x8664() {
   clobber
   build-prerequsites "x86-64" "bitcode"
-  build-and-run-all "SetupPnaclX8664 \
-                     SetupPnaclX8664Opt \
-                     SetupPnaclTranslatorX8664 \
-                     SetupPnaclTranslatorX8664Opt" 3 3
+  local setups="SetupPnaclX8664 \
+               SetupPnaclX8664Opt \
+               SetupPnaclTranslatorX8664 \
+               SetupPnaclTranslatorX8664Opt"
+  build-tests "${setups}" all 1 3
+  run-tests "${setups}" all 1 3
 }
 
 pnacl-x8632() {
   clobber
   build-prerequsites "x86-32" "bitcode"
-  build-and-run-all "SetupPnaclX8632 \
-                     SetupPnaclX8632Opt \
-                     SetupPnaclTranslatorX8632 \
-                     SetupPnaclTranslatorX8632Opt" 3 3
+  local setups="SetupPnaclX8632 \
+                SetupPnaclX8632Opt \
+                SetupPnaclTranslatorX8632 \
+                SetupPnaclTranslatorX8632Opt"
+  build-tests "${setups}" all 1 3
+  run-tests "${setups}" all 1 3
 }
 
 nacl-x8632() {
   clobber
   build-prerequsites "x86-32" ""
-  build-and-run-all "SetupNaclX8632 \
-                     SetupNaclX8632Opt" 3 3
+  local setups="SetupNaclX8632 \
+                SetupNaclX8632Opt"
+  build-tests "${setups}" all 1 3
+  run-tests "${setups}" all 1 3
 }
 
 nacl-x8664() {
   clobber
   build-prerequsites "x86-64" ""
-  build-and-run-all "SetupNaclX8664 \
-                     SetupNaclX8664Opt" 3 3
-
+  local setups="SetupNaclX8664 \
+                SetupNaclX8664Opt"
+  build-tests "${setups}" all 1 3
+  run-tests "${setups}" all 1 3
 }
 
 

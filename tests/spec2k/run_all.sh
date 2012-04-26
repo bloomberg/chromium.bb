@@ -20,9 +20,7 @@ source ../../pnacl/scripts/common-tools.sh
 readonly NACL_ROOT="$(GetAbsolutePath "../../")"
 SetScriptPath "$(pwd)/run_all.sh"
 SetLogDirectory "${NACL_ROOT}/toolchain/test-log"
-readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
-readonly TESTS_ARCHIVE=arm_spec.tar.gz
-
+readonly TESTS_ARCHIVE=arm-spec.tar.gz
 
 ######################################################################
 # CONFIGURATION
@@ -426,7 +424,7 @@ GetBenchmarkList() {
       fi
   fi
 
-  if [[ $# = 0 ]] ; then
+  if [[ ($# == 0) || ($1 == "all") ]] ; then
       echo "${SPEC2K_BENCHMARKS[@]}"
   else
       echo "$@"
@@ -667,7 +665,7 @@ TimedBuildAndRunBenchmarks() {
 }
 
 #@
-#@ UploadArmBinaries <build name> <setup> [usual var-args for RunBenchmarks]
+#@ PackageArmBinaries [usual var-args for RunBenchmarks]
 #@
 #@   Archives ARM binaries built from a local QEMU run of spec
 #@
@@ -675,34 +673,37 @@ TimedBuildAndRunBenchmarks() {
 #@   Note: As with the other modes in this script, this script should be
 #@   run from the directory of the script (not the native_client directory).
 #@
-UploadArmBinaries() {
-  local BUILD_NAME=$1
-  # The rest of args should be the usual var-args for RunBenchmarks.
-  shift 1
+PackageArmBinaries() {
   local BENCH_LIST=$(GetBenchmarkList "$@")
 
   local UNZIPPED_TAR=$(basename ${TESTS_ARCHIVE} .gz)
 
   # Switch to native_client directory (from tests/spec2k) so that
   # when we extract, the builder will have a more natural directory layout.
-  local TAR_FROM="../.."
+  pushd "../.."
   # Carefully tar only the parts of the spec harness that we need.
-  (cd ${TAR_FROM} ;
-    find tests/spec2k -maxdepth 1 -type f -print |
-    xargs tar --no-recursion -cvf ${UNZIPPED_TAR})
-  tar -C ${TAR_FROM} -rvf ${UNZIPPED_TAR} tests/spec2k/bin
+  # First prune
+  find tests/spec2k -name '*.bc' -delete
+  find tests/spec2k -maxdepth 1 -type f -print |
+    xargs tar --no-recursion -cvf ${UNZIPPED_TAR}
+  tar -rvf ${UNZIPPED_TAR} tests/spec2k/bin
   for i in ${BENCH_LIST} ; do
-    tar -C ${TAR_FROM} -rvf ${UNZIPPED_TAR} tests/spec2k/$i
+    tar -rvf ${UNZIPPED_TAR} tests/spec2k/$i
   done
   gzip -f ${UNZIPPED_TAR}
-  (cd ${NACL_ROOT};
-    ${UP_DOWN_LOAD} UploadArmBinariesForHWBots ${BUILD_NAME} \
-      ${TESTS_ARCHIVE})
+  popd
 }
 
-DownloadArmBinaries() {
+#@ UnpackArmBinaries
+#@ Unpack a packaged archive of ARM SPEC binaries. The archive is
+#@ located in the nacl root directory, but the script is run from the spec dir.
+UnpackArmBinaries() {
   (cd ${NACL_ROOT};
-    ${UP_DOWN_LOAD} DownloadArmBinariesForHWBots ${BUILD_NAME} ${TESTS_ARCHIVE})
+    tar xzf ${TESTS_ARCHIVE})
+}
+
+GetTestArchiveName() {
+  echo ${TESTS_ARCHIVE}
 }
 
 #@

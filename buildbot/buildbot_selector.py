@@ -190,30 +190,28 @@ BOT_ASSIGNMENT = {
         python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
     'nacl-mac10.6-newlib-dbg-clang':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
-    # Pnacl panda scons trybots
-    'nacl-arm_opt_panda':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
-    'nacl-arm_hw_opt_panda':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
-    # Pnacl perf scons trybots
-    # TODO(sehr): hook these up to something useful.
-    'nacl-arm_perf_panda':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
-    'nacl-arm_hw_perf_panda':
-        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
+    # Pnacl main trybots
     'nacl-lucid_64-newlib-arm_qemu-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-trybot-qemu',
     'nacl-lucid_64-newlib-x86_32-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 32',
     'nacl-lucid_64-newlib-x86_64-pnacl':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-x86 64',
+    'nacl-arm_opt_panda':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
+    'nacl-arm_hw_opt_panda':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
     # Pnacl spec2k trybots
     'nacl-lucid_64-newlib-arm_qemu-pnacl-spec':
-        'bash buildbot/buildbot_spec2k.sh pnacl-trybot-arm',
+        'bash buildbot/buildbot_spec2k.sh pnacl-trybot-arm-qemu',
     'nacl-lucid_64-newlib-x86_32-pnacl-spec':
         'bash buildbot/buildbot_spec2k.sh pnacl-trybot-x8632',
     'nacl-lucid_64-newlib-x86_64-pnacl-spec':
         'bash buildbot/buildbot_spec2k.sh pnacl-trybot-x8664',
+    'nacl-arm_perf_panda':
+        'bash buildbot/buildbot_spec2k.sh pnacl-trybot-arm-buildonly',
+    'nacl-arm_hw_perf_panda':
+        'bash buildbot/buildbot_spec2k.sh pnacl-trybot-arm-hw',
     # Toolchain glibc.
     'lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
     'mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
