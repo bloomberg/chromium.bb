@@ -864,6 +864,9 @@ gfx::Rect Widget::GetWorkAreaBoundsInScreen() const {
   return native_widget_->GetWorkAreaBoundsInScreen();
 }
 
+void Widget::OnOwnerClosing() {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, NativeWidgetDelegate implementation:
 

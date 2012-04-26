@@ -520,6 +520,9 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   void SetInitialFocus();
 
+  // Notifies any owned windows that we're closing.
+  void NotifyOwnedWindowsParentClosing();
+
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 

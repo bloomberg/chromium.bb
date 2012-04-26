@@ -108,4 +108,11 @@ void MenuHost::OnNativeWidgetDestroyed() {
   Widget::OnNativeWidgetDestroyed();
 }
 
+void MenuHost::OnOwnerClosing() {
+  MenuController* menu_controller =
+      submenu_->GetMenuItem()->GetMenuController();
+  if (menu_controller && !menu_controller->drag_in_progress())
+    menu_controller->CancelAll();
+}
+
 }  // namespace views

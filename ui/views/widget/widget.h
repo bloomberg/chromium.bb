@@ -606,6 +606,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns the bounds of work area in the screen that Widget belongs to.
   gfx::Rect GetWorkAreaBoundsInScreen() const;
 
+  // Notification that our owner is closing.
+  // NOTE: this is not invoked for aura as it's currently not needed there.
+  // Under aura menus close by way of activation getting reset when the owner
+  // closes.
+  virtual void OnOwnerClosing();
+
   // Overridden from NativeWidgetDelegate:
   virtual bool IsModal() const OVERRIDE;
   virtual bool IsDialogBox() const OVERRIDE;

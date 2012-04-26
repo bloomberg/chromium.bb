@@ -321,6 +321,21 @@ const int kCustomObjectID = 1;
 
 const int kDragFrameWindowAlpha = 200;
 
+struct FindOwnedWindowsData {
+  HWND window;
+  std::vector<Widget*> owned_widgets;
+};
+
+BOOL CALLBACK FindOwnedWindowsCallback(HWND hwnd, LPARAM param) {
+  FindOwnedWindowsData* data = reinterpret_cast<FindOwnedWindowsData*>(param);
+  if (GetWindow(hwnd, GW_OWNER) == data->window) {
+    Widget* widget = Widget::GetWidgetForNativeView(hwnd);
+    if (widget)
+      data->owned_widgets.push_back(widget);
+  }
+  return TRUE;
+}
+
 }  // namespace
 
 // static
@@ -891,6 +906,9 @@ void NativeWidgetWin::Hide() {
     SetWindowPos(NULL, 0, 0, 0, 0,
                  SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE |
                  SWP_NOREPOSITION | SWP_NOSIZE | SWP_NOZORDER);
+
+    if (!GetParent())
+      NotifyOwnedWindowsParentClosing();
   }
 }
 
@@ -2484,6 +2502,15 @@ void NativeWidgetWin::RestoreEnabledIfNecessary() {
       start = ::GetParent(start);
     }
   }
+}
+
+void NativeWidgetWin::NotifyOwnedWindowsParentClosing() {
+  FindOwnedWindowsData data;
+  data.window = hwnd();
+  EnumThreadWindows(GetCurrentThreadId(), FindOwnedWindowsCallback,
+                    reinterpret_cast<LPARAM>(&data));
+  for (size_t i = 0; i < data.owned_widgets.size(); ++i)
+    data.owned_widgets[i]->OnOwnerClosing();
 }
 
 void NativeWidgetWin::DispatchKeyEventPostIME(const KeyEvent& key) {

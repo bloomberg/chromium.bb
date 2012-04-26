@@ -525,6 +525,10 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
 
   internal::MenuControllerDelegate* delegate_;
 
+  // How deep we are in nested message loops. This should be at most 2 (when
+  // showing a context menu from a menu).
+  int message_loop_depth_;
+
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };
 

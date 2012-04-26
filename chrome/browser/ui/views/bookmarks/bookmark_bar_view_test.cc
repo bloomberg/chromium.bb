@@ -13,6 +13,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -196,6 +197,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     model_->ClearStore();
 
     bb_view_.reset(new BookmarkBarView(browser_.get()));
+    bb_view_->set_parent_owned(false);
     bb_view_->SetPageNavigator(&navigator_);
 
     AddTestData(CreateBigMenu());
@@ -235,6 +237,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     bb_view_.reset();
     browser_.reset();
     profile_.reset();
+
+    // Run the message loop to ensure we delete allTasks and fully shut down.
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
 
@@ -1401,11 +1405,13 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
     // Close the window.
     window_->Close();
     window_ = NULL;
+
+    MessageLoop::current()->PostTask(
+        FROM_HERE, CreateEventTask(this, &BookmarkBarViewTest16::Done));
   }
 };
 
-// Disabled, http://crbug.com/64303.
-VIEW_TEST(BookmarkBarViewTest16, DISABLED_DeleteMenu)
+VIEW_TEST(BookmarkBarViewTest16, DeleteMenu)
 
 // Makes sure right clicking on an item while a context menu is already showing
 // doesn't crash and works.

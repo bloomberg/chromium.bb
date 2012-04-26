@@ -68,7 +68,8 @@ void ViewEventTestBase::Done() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   // We need to post a message to tickle the Dispatcher getting called and
   // exiting out of the nested loop. Without this the quit never runs.
-  PostMessage(window_->GetNativeWindow(), WM_USER, 0, 0);
+  if (window_)
+    PostMessage(window_->GetNativeWindow(), WM_USER, 0, 0);
 #endif
 
   // If we're in a nested message loop, as is the case with menus, we

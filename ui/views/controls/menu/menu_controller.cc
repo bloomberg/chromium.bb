@@ -306,9 +306,10 @@ MenuItemView* MenuController::Run(Widget* parent,
     // notification when the drag has finished.
     StartCancelAllTimer();
     return NULL;
-  } else if (button) {
-    menu_button_ = button;
   }
+
+  if (button)
+    menu_button_ = button;
 
   // Make sure Chrome doesn't attempt to shut down while the menu is showing.
   if (ViewsDelegate::views_delegate)
@@ -318,6 +319,8 @@ MenuItemView* MenuController::Run(Widget* parent,
   // one) the menus are run from a task. If we don't do this and are invoked
   // from a task none of the tasks we schedule are processed and the menu
   // appears totally broken.
+  message_loop_depth_++;
+  DCHECK_LE(message_loop_depth_, 2);
 #if defined(USE_AURA)
   aura::client::GetDispatcherClient(
       parent->GetNativeWindow()->GetRootWindow())->
@@ -329,6 +332,7 @@ MenuItemView* MenuController::Run(Widget* parent,
     loop->RunWithDispatcher(this);
   }
 #endif
+  message_loop_depth_--;
 
   if (ViewsDelegate::views_delegate)
     ViewsDelegate::views_delegate->ReleaseRef();
@@ -1027,7 +1031,8 @@ MenuController::MenuController(bool blocking,
       showing_submenu_(false),
       menu_button_(NULL),
       active_mouse_view_(NULL),
-      delegate_(delegate) {
+      delegate_(delegate),
+      message_loop_depth_(0) {
   active_instance_ = this;
 }
 
@@ -1972,16 +1977,18 @@ void MenuController::SendMouseCaptureLostToActiveView() {
 
 void MenuController::SetExitType(ExitType type) {
   exit_type_ = type;
-#if defined(USE_AURA)
-  // On aura, closing menu may not trigger next native event, which
-  // is necessary to exit from nested loop (See Dispatch methods).
-  // Send non-op event so that Dispatch method will always be called.
-  // crbug.com/104684.
-  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
-    owner_->GetNativeView()->GetRootWindow()->PostNativeEvent(
-        ui::CreateNoopEvent());
-  }
-#endif
+  // Exit nested message loops as soon as possible. We do this as
+  // MessageLoop::Dispatcher is only invoked before native events, which means
+  // its entirely possible for a Widget::CloseNow() task to be processed before
+  // the next native message. By using QuitNow() we ensures the nested message
+  // loop returns as soon as possible and avoids having deleted views classes
+  // (such as widgets and rootviews) on the stack when the nested message loop
+  // stops.
+  //
+  // It's safe to invoke QuitNow multiple times, it only effects the current
+  // loop.
+  if (exit_type_ != EXIT_NONE && message_loop_depth_)
+    MessageLoop::current()->QuitNow();
 }
 
 void MenuController::HandleMouseLocation(SubmenuView* source,
