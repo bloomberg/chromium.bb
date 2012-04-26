@@ -573,7 +573,7 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
   debug_context_->SetNaClProcessHost(weak_factory_.GetWeakPtr());
   if (RunningOnWOW64()) {
     if (!NaClBrokerService::GetInstance()->LaunchDebugExceptionHandler(
-             this, peer_pid)) {
+             weak_factory_.GetWeakPtr(), peer_pid)) {
       debug_context_->AllowAndSendStartMessage();
     }
   } else {
@@ -836,7 +836,8 @@ bool NaClProcessHost::LaunchSelLdr() {
   // On Windows we might need to start the broker process to launch a new loader
 #if defined(OS_WIN)
   if (RunningOnWOW64()) {
-    return NaClBrokerService::GetInstance()->LaunchLoader(this, channel_id);
+    return NaClBrokerService::GetInstance()->LaunchLoader(
+        weak_factory_.GetWeakPtr(), channel_id);
   } else {
     process_->Launch(FilePath(), cmd_line.release());
   }
