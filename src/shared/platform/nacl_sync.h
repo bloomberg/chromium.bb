@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12,7 +12,10 @@
 #define NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_SYNC_H_
 
 #if defined(__native_client__) || NACL_LINUX || NACL_OSX
-#include <pthread.h>
+# include <pthread.h>
+# include "native_client/src/shared/platform/posix/nacl_fast_mutex.h"
+#else
+# include "native_client/src/shared/platform/win/nacl_fast_mutex.h"
 #endif
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/nacl_base.h"
@@ -97,6 +100,51 @@ NaClSyncStatus NaClCondVarTimedWaitAbsolute(
     NACL_TIMESPEC_T const           *abstime) NACL_WUR;
 
 
+/*
+ * "Fast" binary mutex lock that does not work with condition
+ * variables.  This may be implemented using spinlocks, normal POSIX
+ * mutexes (where futex is used so uncontended locks are fast), or
+ * CRITICAL_SECTION (on Windows).
+ *
+ * NOT FOR USE WHEN THE LOCK MIGHT BE HELD FOR AN EXTENDED PERIOD.
+ *
+ * Consider what might happen if this were implemented with a spinlock
+ * and the lock is held for a large fraction of a scheduling quanta.
+ * The probability of the thread holding the lock getting interrupted
+ * by the scheduler becomes non-negligible.  If there are other
+ * runnable threads, then the interrupted thread might be descheduled
+ * while holding the spinlock to let some other thread run.  What
+ * would happen -- especially if there is lock contention -- when
+ * another thread (possibly the very one that was just scheduled to
+ * run) tries to take the spinlock?  That the second (and any other
+ * subsequent) thread will spin for its entire scheduling quantum,
+ * wasting all the CPU cycles in the time quantum.  On a multicore /
+ * multiprocessor machine, if the ratio of the number of runnable
+ * threads to the number of available cores is greater than 1.0 -- so
+ * that scheduling quanta expiration often leads to thread switch -- a
+ * contended lock that is held for a long time would cause noticeable
+ * performance degradation due to cores spinning doing essentially
+ * nothing -- waiting for the spinlock to be free.  In that case, a
+ * blocking lock should be used instead.
+ *
+ * The probability of a thread being descheduled while holding a
+ * spinlock depends on many factors, such as the size of the
+ * scheduling quantum.  Performing a syscall while holding a spinlock
+ * is generally a bad idea, since syscalls often block, and even if
+ * they are guaranteed to be nonblocking, some kernel designs like to
+ * context switch to other threads since most of the context switch
+ * overhead has already been paid (e.g., if the thread is close to the
+ * end of its scheduling quantum).
+ */
+struct NaClFastMutex;
+
+int NaClFastMutexCtor(struct NaClFastMutex *flp) NACL_WUR;
+
+void NaClFastMutexDtor(struct NaClFastMutex *flp);
+
+void NaClFastMutexLock(struct NaClFastMutex *flp);
+
+void NaClFastMutexUnlock(struct NaClFastMutex *flp);
 
 EXTERN_C_END
 

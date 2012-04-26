@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -13,7 +13,7 @@ int NaClRefCountCtor(struct NaClRefCount *self) {
   NaClLog(4, "NaClRefCountCtor(0x%08"NACL_PRIxPTR").\n", (uintptr_t) self);
   self->ref_count = 1;
   self->vtbl = (struct NaClRefCountVtbl *) NULL;
-  if (NaClMutexCtor(&self->mu)) {
+  if (NaClFastMutexCtor(&self->mu)) {
     self->vtbl = &kNaClRefCountVtbl;
     return 1;
   }
@@ -55,7 +55,7 @@ static void NaClRefCountDtor(struct NaClRefCount  *self) {
               self->ref_count);
   }
 
-  NaClMutexDtor(&self->mu);
+  NaClFastMutexDtor(&self->mu);
   self->vtbl = (struct NaClRefCountVtbl const *) NULL;
 }
 
@@ -66,11 +66,11 @@ struct NaClRefCountVtbl const kNaClRefCountVtbl = {
 struct NaClRefCount *NaClRefCountRef(struct NaClRefCount *nrcp) {
   NaClLog(4, "NaClRefCountRef(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) nrcp);
-  NaClXMutexLock(&nrcp->mu);
+  NaClFastMutexLock(&nrcp->mu);
   if (0 == ++nrcp->ref_count) {
     NaClLog(LOG_FATAL, "NaClRefCountRef integer overflow\n");
   }
-  NaClXMutexUnlock(&nrcp->mu);
+  NaClFastMutexUnlock(&nrcp->mu);
   return nrcp;
 }
 
@@ -79,7 +79,7 @@ void NaClRefCountUnref(struct NaClRefCount *nrcp) {
 
   NaClLog(4, "NaClRefCountUnref(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) nrcp);
-  NaClXMutexLock(&nrcp->mu);
+  NaClFastMutexLock(&nrcp->mu);
   if (0 == nrcp->ref_count) {
     NaClLog(LOG_FATAL,
             ("NaClRefCountUnref on 0x%08"NACL_PRIxPTR
@@ -87,7 +87,7 @@ void NaClRefCountUnref(struct NaClRefCount *nrcp) {
             (uintptr_t) nrcp);
   }
   destroy = (0 == --nrcp->ref_count);
-  NaClXMutexUnlock(&nrcp->mu);
+  NaClFastMutexUnlock(&nrcp->mu);
   if (destroy) {
     (*nrcp->vtbl->Dtor)(nrcp);
     free(nrcp);

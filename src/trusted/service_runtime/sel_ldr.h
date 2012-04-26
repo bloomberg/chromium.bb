@@ -343,7 +343,7 @@ struct NaClApp {
   struct DynArray           threads;   /* NaClAppThread pointers */
   int                       num_threads;  /* number actually running */
 
-  struct NaClMutex          desc_mu;
+  struct NaClFastMutex      desc_mu;
   struct DynArray           desc_tbl;  /* NaClDesc pointers */
 
   int                       enable_debug_stub;

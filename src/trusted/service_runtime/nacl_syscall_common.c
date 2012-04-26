@@ -624,12 +624,12 @@ int32_t NaClCommonSysClose(struct NaClAppThread *natp,
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  NaClXMutexLock(&natp->nap->desc_mu);
+  NaClFastMutexLock(&natp->nap->desc_mu);
   ndp = NaClGetDescMu(natp->nap, d);
   if (NULL != ndp) {
     NaClSetDescMu(natp->nap, d, NULL);  /* Unref the desc_tbl */
   }
-  NaClXMutexUnlock(&natp->nap->desc_mu);
+  NaClFastMutexUnlock(&natp->nap->desc_mu);
   NaClLog(5, "Invoking Close virtual function of object 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) ndp);
   if (NULL != ndp) {

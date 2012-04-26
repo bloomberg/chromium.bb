@@ -214,7 +214,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
     goto cleanup_threads_mu;
   }
   nap->num_threads = 0;
-  if (!NaClMutexCtor(&nap->desc_mu)) {
+  if (!NaClFastMutexCtor(&nap->desc_mu)) {
     goto cleanup_threads_cv;
   }
 
@@ -241,7 +241,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   return 1;
 
  cleanup_desc_mu:
-  NaClMutexDtor(&nap->desc_mu);
+  NaClFastMutexDtor(&nap->desc_mu);
  cleanup_threads_cv:
   NaClCondVarDtor(&nap->threads_cv);
  cleanup_threads_mu:
@@ -573,27 +573,27 @@ struct NaClDesc *NaClGetDesc(struct NaClApp *nap,
                              int            d) {
   struct NaClDesc *res;
 
-  NaClXMutexLock(&nap->desc_mu);
+  NaClFastMutexLock(&nap->desc_mu);
   res = NaClGetDescMu(nap, d);
-  NaClXMutexUnlock(&nap->desc_mu);
+  NaClFastMutexUnlock(&nap->desc_mu);
   return res;
 }
 
 void NaClSetDesc(struct NaClApp   *nap,
                  int              d,
                  struct NaClDesc  *ndp) {
-  NaClXMutexLock(&nap->desc_mu);
+  NaClFastMutexLock(&nap->desc_mu);
   NaClSetDescMu(nap, d, ndp);
-  NaClXMutexUnlock(&nap->desc_mu);
+  NaClFastMutexUnlock(&nap->desc_mu);
 }
 
 int32_t NaClSetAvail(struct NaClApp  *nap,
                      struct NaClDesc *ndp) {
   int32_t pos;
 
-  NaClXMutexLock(&nap->desc_mu);
+  NaClFastMutexLock(&nap->desc_mu);
   pos = NaClSetAvailMu(nap, ndp);
-  NaClXMutexUnlock(&nap->desc_mu);
+  NaClFastMutexUnlock(&nap->desc_mu);
 
   return pos;
 }
