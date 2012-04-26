@@ -249,8 +249,8 @@ TEST_F(GDataParserTest, AccountMetadataFeedParser) {
 
   scoped_ptr<AccountMetadataFeed> feed(
       AccountMetadataFeed::CreateFrom(*document));
-  EXPECT_EQ(1234, feed->quota_bytes_used());
-  EXPECT_EQ(12345, feed->quota_bytes_total());
+  EXPECT_EQ(GG_LONGLONG(6789012345), feed->quota_bytes_used());
+  EXPECT_EQ(GG_LONGLONG(9876543210), feed->quota_bytes_total());
   EXPECT_EQ(654321, feed->largest_changestamp());
 }
 

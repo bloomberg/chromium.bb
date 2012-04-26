@@ -784,8 +784,8 @@ void RelayGetAvailableSpaceCallback(
     scoped_refptr<base::MessageLoopProxy> relay_proxy,
     const GetAvailableSpaceCallback& callback,
     base::PlatformFileError error,
-    int bytes_total,
-    int bytes_used) {
+    int64 bytes_total,
+    int64 bytes_used) {
   relay_proxy->PostTask(FROM_HERE,
                         base::Bind(callback, error, bytes_total, bytes_used));
 }
