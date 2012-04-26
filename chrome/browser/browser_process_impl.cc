@@ -317,6 +317,9 @@ void BrowserProcessImpl::EndSession() {
     local_state()->CommitPendingWrite();
   }
 
+  // http://crbug.com/125207
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+
   // We must write that the profile and metrics service shutdown cleanly,
   // otherwise on startup we'll think we crashed. So we block until done and
   // then proceed with normal shutdown.
