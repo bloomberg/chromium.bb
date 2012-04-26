@@ -19,7 +19,6 @@
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "chrome/browser/password_manager/password_store_x.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -51,12 +50,6 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
   MOCK_METHOD2(OnPasswordStoreRequestDone,
                void(CancelableRequestProvider::Handle,
                     const std::vector<PasswordForm*>&));
-};
-
-class MockWebDataServiceConsumer : public WebDataServiceConsumer {
- public:
-  MOCK_METHOD2(OnWebDataServiceRequestDone, void(WebDataService::Handle,
-                                                 const WDTypedResult*));
 };
 
 // This class will add and remove a mock notification observer from
@@ -278,13 +271,9 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
 
     login_db_.reset(new LoginDatabase());
     ASSERT_TRUE(login_db_->Init(temp_dir_.path().Append("login_test")));
-
-    wds_ = new WebDataService();
-    ASSERT_TRUE(wds_->Init(temp_dir_.path()));
   }
 
   virtual void TearDown() {
-    wds_->Shutdown();
     MessageLoop::current()->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     MessageLoop::current()->Run();
     db_thread_.Stop();
@@ -308,7 +297,6 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
 
   scoped_ptr<LoginDatabase> login_db_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_refptr<WebDataService> wds_;
   ScopedTempDir temp_dir_;
 };
 
@@ -321,200 +309,10 @@ ACTION(QuitUIMessageLoop) {
   MessageLoop::current()->Quit();
 }
 
-MATCHER(EmptyWDResult, "") {
-  return static_cast<const WDResult<std::vector<PasswordForm*> >*>(
-      arg)->GetValue().empty();
-}
-
-TEST_P(PasswordStoreXTest, WDSMigration) {
-  VectorOfForms expected_autofillable;
-  InitExpectedForms(true, 5, &expected_autofillable);
-
-  VectorOfForms expected_blacklisted;
-  InitExpectedForms(false, 5, &expected_blacklisted);
-
-  // Populate the WDS with logins that should be migrated.
-  for (VectorOfForms::iterator it = expected_autofillable.begin();
-       it != expected_autofillable.end(); ++it) {
-    wds_->AddLogin(**it);
-  }
-  for (VectorOfForms::iterator it = expected_blacklisted.begin();
-       it != expected_blacklisted.end(); ++it) {
-    wds_->AddLogin(**it);
-  }
-
-  // The WDS schedules tasks to run on the DB thread so we schedule yet another
-  // task to notify us that it's safe to carry on with the test.
-  WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-
-  // Initializing the PasswordStore should trigger a migration.
-  scoped_refptr<PasswordStoreX> store(
-      new PasswordStoreX(login_db_.release(),
-                         profile_.get(),
-                         wds_.get(),
-                         GetBackend()));
-  store->Init();
-
-  // Check that the migration preference has not been initialized.
-  ASSERT_TRUE(NULL == profile_->GetPrefs()->FindPreference(
-      prefs::kLoginDatabaseMigrated));
-
-  // Again, the WDS schedules tasks to run on the DB thread, so schedule a task
-  // to signal us when it is safe to continue.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-
-  // Let the WDS callbacks proceed so the logins can be migrated.
-  MessageLoop::current()->RunAllPending();
-
-  MockPasswordStoreConsumer consumer;
-
-  // Make sure we quit the MessageLoop even if the test fails.
-  ON_CALL(consumer, OnPasswordStoreRequestDone(_, _))
-      .WillByDefault(QuitUIMessageLoop());
-
-  // The autofillable forms should have been migrated from the WDS to the login
-  // database.
-  EXPECT_CALL(consumer,
-      OnPasswordStoreRequestDone(_,
-          ContainsAllPasswordForms(expected_autofillable)))
-      .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
-
-  store->GetAutofillableLogins(&consumer);
-  MessageLoop::current()->Run();
-
-  // The blacklisted forms should have been migrated from the WDS to the login
-  // database.
-  EXPECT_CALL(consumer,
-      OnPasswordStoreRequestDone(_,
-          ContainsAllPasswordForms(expected_blacklisted)))
-      .WillOnce(DoAll(WithArg<1>(STLDeleteElements0()), QuitUIMessageLoop()));
-
-  store->GetBlacklistLogins(&consumer);
-  MessageLoop::current()->Run();
-
-  // Check that the migration updated the migrated preference.
-  ASSERT_TRUE(profile_->GetPrefs()->GetBoolean(prefs::kLoginDatabaseMigrated));
-
-  MockWebDataServiceConsumer wds_consumer;
-
-  // No autofillable logins should be left in the WDS.
-  EXPECT_CALL(wds_consumer,
-      OnWebDataServiceRequestDone(_, EmptyWDResult()));
-
-  wds_->GetAutofillableLogins(&wds_consumer);
-
-  // Wait for the WDS methods to execute on the DB thread.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-
-  // Handle the callback from the WDS.
-  MessageLoop::current()->RunAllPending();
-
-  // Likewise, no blacklisted logins should be left in the WDS.
-  EXPECT_CALL(wds_consumer,
-      OnWebDataServiceRequestDone(_, EmptyWDResult()));
-
-  wds_->GetBlacklistLogins(&wds_consumer);
-
-  // Wait for the WDS methods to execute on the DB thread.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-
-  // Handle the callback from the WDS.
-  MessageLoop::current()->RunAllPending();
-
-  STLDeleteElements(&expected_autofillable);
-  STLDeleteElements(&expected_blacklisted);
-
-  // Public in PasswordStore, protected in PasswordStoreX.
-  static_cast<PasswordStore*>(store)->ShutdownOnUIThread();
-}
-
-TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
-  PasswordFormData wds_data[] = {
-    { PasswordForm::SCHEME_HTML,
-      "http://bar.example.com",
-      "http://bar.example.com/origin",
-      "http://bar.example.com/action",
-      L"submit_element",
-      L"username_element",
-      L"password_element",
-      L"username_value",
-      L"password_value",
-      true, false, 1 },
-  };
-
-  VectorOfForms unexpected_autofillable;
-  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(wds_data); ++i) {
-    unexpected_autofillable.push_back(
-        CreatePasswordFormFromData(wds_data[i]));
-  }
-
-  // Populate the WDS with logins that should be migrated.
-  for (VectorOfForms::iterator it = unexpected_autofillable.begin();
-       it != unexpected_autofillable.end(); ++it) {
-    wds_->AddLogin(**it);
-  }
-
-  // The WDS schedules tasks to run on the DB thread so we schedule yet another
-  // task to notify us that it's safe to carry on with the test.
-  WaitableEvent done(false, false);
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
-  done.Wait();
-
-  // Pretend that the migration has already taken place.
-  profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true,
-                                            PrefService::UNSYNCABLE_PREF);
-
-  // Initializing the PasswordStore shouldn't trigger a migration.
-  scoped_refptr<PasswordStoreX> store(
-      new PasswordStoreX(login_db_.release(),
-                         profile_.get(),
-                         wds_.get(),
-                         GetBackend()));
-  store->Init();
-
-  MockPasswordStoreConsumer consumer;
-  // Make sure we quit the MessageLoop even if the test fails.
-  ON_CALL(consumer, OnPasswordStoreRequestDone(_, _))
-      .WillByDefault(QuitUIMessageLoop());
-
-  // No forms should be migrated.
-  VectorOfForms empty;
-  EXPECT_CALL(consumer,
-      OnPasswordStoreRequestDone(_,
-          ContainsAllPasswordForms(empty)))
-      .WillOnce(QuitUIMessageLoop());
-
-  store->GetAutofillableLogins(&consumer);
-  MessageLoop::current()->Run();
-
-  STLDeleteElements(&unexpected_autofillable);
-
-  // Public in PasswordStore, protected in PasswordStoreX.
-  static_cast<PasswordStore*>(store)->ShutdownOnUIThread();
-}
-
 TEST_P(PasswordStoreXTest, Notifications) {
-  // Pretend that the migration has already taken place.
-  profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true,
-                                            PrefService::UNSYNCABLE_PREF);
-
-  // Initializing the PasswordStore shouldn't trigger a migration.
   scoped_refptr<PasswordStoreX> store(
       new PasswordStoreX(login_db_.release(),
                          profile_.get(),
-                         wds_.get(),
                          GetBackend()));
   store->Init();
 
@@ -643,16 +441,10 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   ASSERT_TRUE(file_util::GetFileInfo(login_db_file, &db_file_full_info));
   EXPECT_GT(db_file_full_info.size, db_file_start_info.size);
 
-  // Pretend that the WDS migration has already taken place.
-  profile_->GetPrefs()->RegisterBooleanPref(prefs::kLoginDatabaseMigrated,
-                                            true,
-                                            PrefService::UNSYNCABLE_PREF);
-
   // Initializing the PasswordStore shouldn't trigger a native migration (yet).
   scoped_refptr<PasswordStoreX> store(
       new PasswordStoreX(login_db_.release(),
                          profile_.get(),
-                         wds_.get(),
                          GetBackend()));
   store->Init();
 

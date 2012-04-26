@@ -8,13 +8,11 @@
 
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store.h"
 
 class Profile;
-class WebDataService;
 
 // Simple password store implementation that delegates everything to
 // the LoginDatabase.
@@ -22,8 +20,7 @@ class PasswordStoreDefault : public PasswordStore {
  public:
   // Takes ownership of |login_db|.
   PasswordStoreDefault(LoginDatabase* login_db,
-                       Profile* profile,
-                       WebDataService* web_data_service);
+                       Profile* profile);
 
  protected:
   virtual ~PasswordStoreDefault();
@@ -49,23 +46,14 @@ class PasswordStoreDefault : public PasswordStore {
   virtual bool FillBlacklistLogins(
       std::vector<webkit::forms::PasswordForm*>* forms) OVERRIDE;
 
-  scoped_refptr<WebDataService> web_data_service_;
-
  protected:
   inline bool DeleteAndRecreateDatabaseFile() {
     return login_db_->DeleteAndRecreateDatabaseFile();
   }
 
  private:
-  class MigrateHelper;
-
-  // Migrates logins from the WDS to the LoginDatabase.
-  void MigrateIfNecessary();
-
   scoped_ptr<LoginDatabase> login_db_;
   Profile* profile_;
-
-  scoped_ptr<MigrateHelper> migrate_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefault);
 };

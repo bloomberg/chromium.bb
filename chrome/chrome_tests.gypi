@@ -1932,7 +1932,6 @@
         'browser/webdata/autofill_profile_syncable_service_unittest.cc',
         'browser/webdata/autofill_table_unittest.cc',
         'browser/webdata/keyword_table_unittest.cc',
-        'browser/webdata/logins_table_unittest.cc',
         'browser/webdata/token_service_table_unittest.cc',
         'browser/webdata/web_apps_table_unittest.cc',
         'browser/webdata/web_data_service_test_util.h',

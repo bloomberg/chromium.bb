@@ -570,8 +570,6 @@ extern const char kGeolocationAccessToken[];
 extern const char kGeolocationDefaultContentSetting[];
 extern const char kGeolocationContentSettings[];
 
-extern const char kLoginDatabaseMigrated[];
-
 extern const char kRemoteAccessHostFirewallTraversal[];
 
 extern const char kPrintingEnabled[];

@@ -24,9 +24,8 @@ using webkit::forms::PasswordForm;
 
 PasswordStoreX::PasswordStoreX(LoginDatabase* login_db,
                                Profile* profile,
-                               WebDataService* web_data_service,
                                NativeBackend* backend)
-    : PasswordStoreDefault(login_db, profile, web_data_service),
+    : PasswordStoreDefault(login_db, profile),
       backend_(backend), migration_checked_(!backend), allow_fallback_(false) {
 }
 

@@ -48,7 +48,6 @@ class Thread;
 namespace webkit {
 namespace forms {
 struct FormField;
-struct PasswordForm;
 }
 }
 
@@ -79,7 +78,6 @@ typedef enum {
   BOOL_RESULT = 1,             // WDResult<bool>
   KEYWORDS_RESULT,             // WDResult<WDKeywordsResult>
   INT64_RESULT,                // WDResult<int64>
-  PASSWORD_RESULT,             // WDResult<std::vector<PasswordForm*>>
 #if defined(OS_WIN)
   PASSWORD_IE7_RESULT,         // WDResult<IE7PasswordInfo>
 #endif
@@ -430,52 +428,13 @@ class WebDataService
   // Null on failure. Success is WDResult<std::vector<std::string> >
   virtual Handle GetAllTokens(WebDataServiceConsumer* consumer);
 
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Password manager
-  // NOTE: These methods are all deprecated; new clients should use
-  // PasswordStore. These are only still here because Windows is (temporarily)
-  // still using them for its PasswordStore implementation.
-  //
-  //////////////////////////////////////////////////////////////////////////////
-
-  // Adds |form| to the list of remembered password forms.
-  void AddLogin(const webkit::forms::PasswordForm& form);
-
-  // Updates the remembered password form.
-  void UpdateLogin(const webkit::forms::PasswordForm& form);
-
-  // Removes |form| from the list of remembered password forms.
-  void RemoveLogin(const webkit::forms::PasswordForm& form);
-
-  // Removes all logins created in the specified daterange
-  void RemoveLoginsCreatedBetween(const base::Time& delete_begin,
-                                  const base::Time& delete_end);
-
-  // Removes all logins created on or after the date passed in.
-  void RemoveLoginsCreatedAfter(const base::Time& delete_begin);
-
-  // Gets a list of password forms that match |form|.
-  // |consumer| will be notified when the request is done. The result is of
-  // type WDResult<std::vector<PasswordForm*>>.
-  // The result will be null on failure. The |consumer| owns all PasswordForm's.
-  Handle GetLogins(const webkit::forms::PasswordForm& form,
-                   WebDataServiceConsumer* consumer);
-
-  // Gets the complete list of password forms that have not been blacklisted and
-  // are thus auto-fillable.
-  // |consumer| will be notified when the request is done. The result is of
-  // type WDResult<std::vector<PasswordForm*>>.
-  // The result will be null on failure.  The |consumer| owns all PasswordForms.
-  Handle GetAutofillableLogins(WebDataServiceConsumer* consumer);
-
-  // Gets the complete list of password forms that have been blacklisted.
-  // |consumer| will be notified when the request is done. The result is of
-  // type WDResult<std::vector<PasswordForm*>>.
-  // The result will be null on failure. The |consumer| owns all PasswordForm's.
-  Handle GetBlacklistLogins(WebDataServiceConsumer* consumer);
-
 #if defined(OS_WIN)
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // IE7/8 Password Access (used by PasswordStoreWin - do not use elsewhere)
+  //
+  //////////////////////////////////////////////////////////////////////////////
+
   // Adds |info| to the list of imported passwords from ie7/ie8.
   void AddIE7Login(const IE7PasswordInfo& info);
 
@@ -686,20 +645,12 @@ class WebDataService
     GenericRequest2<std::string, std::string>* request);
   void GetAllTokensImpl(GenericRequest<std::string>* request);
 
+#if defined(OS_WIN)
   //////////////////////////////////////////////////////////////////////////////
   //
   // Password manager.
   //
   //////////////////////////////////////////////////////////////////////////////
-  void AddLoginImpl(GenericRequest<webkit::forms::PasswordForm>* request);
-  void UpdateLoginImpl(GenericRequest<webkit::forms::PasswordForm>* request);
-  void RemoveLoginImpl(GenericRequest<webkit::forms::PasswordForm>* request);
-  void RemoveLoginsCreatedBetweenImpl(
-      GenericRequest2<base::Time, base::Time>* request);
-  void GetLoginsImpl(GenericRequest<webkit::forms::PasswordForm>* request);
-  void GetAutofillableLoginsImpl(WebDataRequest* request);
-  void GetBlacklistLoginsImpl(WebDataRequest* request);
-#if defined(OS_WIN)
   void AddIE7LoginImpl(GenericRequest<IE7PasswordInfo>* request);
   void RemoveIE7LoginImpl(GenericRequest<IE7PasswordInfo>* request);
   void GetIE7LoginImpl(GenericRequest<IE7PasswordInfo>* request);

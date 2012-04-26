@@ -35,7 +35,6 @@
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/forms/form_field.h"
-#include "webkit/forms/password_form.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -47,7 +46,6 @@ using base::Bind;
 using base::Time;
 using content::BrowserThread;
 using webkit::forms::FormField;
-using webkit::forms::PasswordForm;
 using webkit_glue::WebIntentServiceData;
 
 namespace {
@@ -392,86 +390,6 @@ WebDataService::Handle WebDataService::GetAllTokens(
   RegisterRequest(request);
   ScheduleTask(FROM_HERE,
                Bind(&WebDataService::GetAllTokensImpl, this, request));
-  return request->GetHandle();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// Password manager.
-//
-////////////////////////////////////////////////////////////////////////////////
-
-void WebDataService::AddLogin(const PasswordForm& form) {
-  GenericRequest<PasswordForm>* request =
-      new GenericRequest<PasswordForm>(this, GetNextRequestHandle(), NULL,
-                                       form);
-  RegisterRequest(request);
-  ScheduleTask(FROM_HERE, Bind(&WebDataService::AddLoginImpl, this, request));
-}
-
-void WebDataService::UpdateLogin(const PasswordForm& form) {
-  GenericRequest<PasswordForm>* request =
-      new GenericRequest<PasswordForm>(this, GetNextRequestHandle(),
-                                       NULL, form);
-  RegisterRequest(request);
-  ScheduleTask(FROM_HERE,
-               Bind(&WebDataService::UpdateLoginImpl, this, request));
-}
-
-void WebDataService::RemoveLogin(const PasswordForm& form) {
-  GenericRequest<PasswordForm>* request =
-     new GenericRequest<PasswordForm>(this, GetNextRequestHandle(), NULL,
-                                      form);
-  RegisterRequest(request);
-  ScheduleTask(FROM_HERE,
-               Bind(&WebDataService::RemoveLoginImpl, this, request));
-}
-
-void WebDataService::RemoveLoginsCreatedBetween(const Time& delete_begin,
-                                                const Time& delete_end) {
-  GenericRequest2<Time, Time>* request =
-    new GenericRequest2<Time, Time>(this,
-                                    GetNextRequestHandle(),
-                                    NULL,
-                                    delete_begin,
-                                    delete_end);
-  RegisterRequest(request);
-  ScheduleTask(FROM_HERE, Bind(&WebDataService::RemoveLoginsCreatedBetweenImpl,
-                               this, request));
-}
-
-void WebDataService::RemoveLoginsCreatedAfter(const Time& delete_begin) {
-  RemoveLoginsCreatedBetween(delete_begin, Time());
-}
-
-WebDataService::Handle WebDataService::GetLogins(
-                                       const PasswordForm& form,
-                                       WebDataServiceConsumer* consumer) {
-  GenericRequest<PasswordForm>* request =
-      new GenericRequest<PasswordForm>(this, GetNextRequestHandle(),
-                                       consumer, form);
-  RegisterRequest(request);
-  ScheduleTask(FROM_HERE, Bind(&WebDataService::GetLoginsImpl, this, request));
-  return request->GetHandle();
-}
-
-WebDataService::Handle WebDataService::GetAutofillableLogins(
-    WebDataServiceConsumer* consumer) {
-  WebDataRequest* request =
-      new WebDataRequest(this, GetNextRequestHandle(), consumer);
-  RegisterRequest(request);
-  ScheduleTask(FROM_HERE,
-               Bind(&WebDataService::GetAutofillableLoginsImpl, this, request));
-  return request->GetHandle();
-}
-
-WebDataService::Handle WebDataService::GetBlacklistLogins(
-    WebDataServiceConsumer* consumer) {
-  WebDataRequest* request =
-      new WebDataRequest(this, GetNextRequestHandle(), consumer);
-  RegisterRequest(request);
-  ScheduleTask(FROM_HERE,
-               Bind(&WebDataService::GetBlacklistLoginsImpl, this, request));
   return request->GetHandle();
 }
 
@@ -1105,94 +1023,6 @@ void WebDataService::GetAllTokensImpl(
     db_->GetTokenServiceTable()->GetAllTokens(&map);
     request->SetResult(
         new WDResult<std::map<std::string, std::string> >(TOKEN_RESULT, map));
-  }
-  request->RequestComplete();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// Password manager implementation.
-//
-////////////////////////////////////////////////////////////////////////////////
-
-void WebDataService::AddLoginImpl(GenericRequest<PasswordForm>* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled(NULL)) {
-    if (db_->GetLoginsTable()->AddLogin(request->arg()))
-      ScheduleCommit();
-  }
-  request->RequestComplete();
-}
-
-void WebDataService::UpdateLoginImpl(GenericRequest<PasswordForm>* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled(NULL)) {
-    if (db_->GetLoginsTable()->UpdateLogin(request->arg()))
-      ScheduleCommit();
-  }
-  request->RequestComplete();
-}
-
-void WebDataService::RemoveLoginImpl(GenericRequest<PasswordForm>* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled(NULL)) {
-    if (db_->GetLoginsTable()->RemoveLogin(request->arg()))
-      ScheduleCommit();
-  }
-  request->RequestComplete();
-}
-
-void WebDataService::RemoveLoginsCreatedBetweenImpl(
-    GenericRequest2<Time, Time>* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled(NULL)) {
-    if (db_->GetLoginsTable()->RemoveLoginsCreatedBetween(
-            request->arg1(), request->arg2())) {
-      ScheduleCommit();
-    }
-  }
-  request->RequestComplete();
-}
-
-void WebDataService::GetLoginsImpl(GenericRequest<PasswordForm>* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled(NULL)) {
-    std::vector<PasswordForm*> forms;
-    db_->GetLoginsTable()->GetLogins(request->arg(), &forms);
-    request->SetResult(
-        new WDResult<std::vector<PasswordForm*> >(PASSWORD_RESULT, forms));
-  }
-  request->RequestComplete();
-}
-
-void WebDataService::GetAutofillableLoginsImpl(WebDataRequest* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled(NULL)) {
-    std::vector<PasswordForm*> forms;
-    db_->GetLoginsTable()->GetAllLogins(&forms, false);
-    request->SetResult(
-        new WDResult<std::vector<PasswordForm*> >(PASSWORD_RESULT, forms));
-  }
-  request->RequestComplete();
-}
-
-void WebDataService::GetBlacklistLoginsImpl(WebDataRequest* request) {
-  InitializeDatabaseIfNecessary();
-  if (db_ && !request->IsCancelled(NULL)) {
-    std::vector<PasswordForm*> all_forms;
-    db_->GetLoginsTable()->GetAllLogins(&all_forms, true);
-    std::vector<PasswordForm*> blacklist_forms;
-    for (std::vector<PasswordForm*>::iterator i = all_forms.begin();
-         i != all_forms.end(); ++i) {
-      scoped_ptr<PasswordForm> form(*i);
-      if (form->blacklisted_by_user) {
-        blacklist_forms.push_back(form.release());
-      }
-    }
-    all_forms.clear();
-    request->SetResult(
-        new WDResult<std::vector<PasswordForm*> >(PASSWORD_RESULT,
-                                                  blacklist_forms));
   }
   request->RequestComplete();
 }

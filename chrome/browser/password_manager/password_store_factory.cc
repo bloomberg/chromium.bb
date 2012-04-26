@@ -118,8 +118,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(Profile* profile) const {
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.
-  ps = new PasswordStoreDefault(
-      login_db, profile, profile->GetWebDataService(Profile::IMPLICIT_ACCESS));
+  ps = new PasswordStoreDefault(login_db, profile);
 #elif defined(OS_POSIX)
   // On POSIX systems, we try to use the "native" password management system of
   // the desktop environment currently running, allowing GNOME Keyring in XFCE.
@@ -173,9 +172,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(Profile* profile) const {
         "more information about password storage options.";
   }
 
-  ps = new PasswordStoreX(login_db, profile,
-                          profile->GetWebDataService(Profile::IMPLICIT_ACCESS),
-                          backend.release());
+  ps = new PasswordStoreX(login_db, profile, backend.release());
 #else
   NOTIMPLEMENTED();
 #endif

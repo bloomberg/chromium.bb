@@ -1561,10 +1561,6 @@ const char kWebAppCreateInQuickLaunchBar[] =
 // corresponding access token.
 const char kGeolocationAccessToken[] = "geolocation.access_token";
 
-// Whether PasswordForms have been migrated from the WedDataService to the
-// LoginDatabase.
-const char kLoginDatabaseMigrated[] = "login_database.migrated";
-
 // Boolean that indicates whether to allow firewall traversal while trying to
 // establish the initial connection from the client or host.
 const char kRemoteAccessHostFirewallTraversal[] =

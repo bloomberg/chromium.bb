@@ -171,7 +171,7 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
 PasswordStoreWin::PasswordStoreWin(LoginDatabase* login_database,
                                    Profile* profile,
                                    WebDataService* web_data_service)
-    : PasswordStoreDefault(login_database, profile, web_data_service) {
+    : PasswordStoreDefault(login_database, profile) {
   db_handler_.reset(new DBHandler(web_data_service, this));
 }
 

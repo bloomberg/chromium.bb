@@ -25,7 +25,7 @@ class PrefService;
 
 // Per-tab password manager. Handles creation and management of UI elements,
 // receiving password form data from the renderer and managing the password
-// database through the WebDataService. The PasswordManager is a LoginModel
+// database through the PasswordStore. The PasswordManager is a LoginModel
 // for purposes of supporting HTTP authentication dialogs.
 class PasswordManager : public LoginModel,
                         public content::WebContentsObserver {

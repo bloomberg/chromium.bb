@@ -226,7 +226,8 @@ TEST_F(WebDatabaseMigrationTest, MigrateEmptyToCurrent) {
     // Check that expected tables are present.
     EXPECT_TRUE(connection.DoesTableExist("meta"));
     EXPECT_TRUE(connection.DoesTableExist("keywords"));
-    EXPECT_TRUE(connection.DoesTableExist("logins"));
+    // The logins table is obsolete. (We used to store saved passwords here.)
+    EXPECT_FALSE(connection.DoesTableExist("logins"));
     EXPECT_TRUE(connection.DoesTableExist("web_app_icons"));
     EXPECT_TRUE(connection.DoesTableExist("web_apps"));
     EXPECT_TRUE(connection.DoesTableExist("autofill"));
