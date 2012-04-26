@@ -18,6 +18,9 @@ class UDPSocketPrivate : public Resource {
  public:
   explicit UDPSocketPrivate(const InstanceHandle& instance);
 
+  // Returns true if the required interface is available.
+  static bool IsAvailable();
+
   int32_t Bind(const PP_NetAddress_Private* addr,
                const CompletionCallback& callback);
   bool GetBoundAddress(PP_NetAddress_Private* addr);
@@ -35,4 +38,3 @@ class UDPSocketPrivate : public Resource {
 }  // namespace pp
 
 #endif  // PPAPI_CPP_PRIVATE_UDP_SOCKET_PRIVATE_H_
-
