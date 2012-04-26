@@ -738,6 +738,68 @@ void CreateDocumentJsonFileOnIOThreadPool(
       temp_file_path->clear();
 }
 
+// Relays the given FindEntryCallback to another thread via |replay_proxy|.
+void RelayFindEntryCallback(scoped_refptr<base::MessageLoopProxy> relay_proxy,
+                            const FindEntryCallback& callback,
+                            base::PlatformFileError error,
+                            const FilePath& directory_path,
+                            GDataEntry* entry) {
+  relay_proxy->PostTask(FROM_HERE,
+                        base::Bind(callback, error, directory_path, entry));
+}
+
+// Ditto for FileOperationCallback.
+void RelayFileOperationCallback(
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
+    const FileOperationCallback& callback,
+    base::PlatformFileError error) {
+  relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error));
+}
+
+// Ditto for GetFileCallback.
+void RelayGetFileCallback(
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
+    const GetFileCallback& callback,
+    base::PlatformFileError error,
+    const FilePath& file_path,
+    const std::string& mime_type,
+    GDataFileType file_type) {
+  relay_proxy->PostTask(
+      FROM_HERE,
+      base::Bind(callback, error, file_path, mime_type, file_type));
+}
+
+// Ditto for GetCacheStateCallback.
+void RelayGetCacheStateCallback(
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
+    const GetCacheStateCallback& callback,
+    base::PlatformFileError error,
+    int cache_state) {
+  relay_proxy->PostTask(FROM_HERE,
+                        base::Bind(callback, error, cache_state));
+}
+
+// Ditto for GetAvailableSpaceCallback.
+void RelayGetAvailableSpaceCallback(
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
+    const GetAvailableSpaceCallback& callback,
+    base::PlatformFileError error,
+    int bytes_total,
+    int bytes_used) {
+  relay_proxy->PostTask(FROM_HERE,
+                        base::Bind(callback, error, bytes_total, bytes_used));
+}
+
+// Ditto for SetMountedStateCallback.
+void RelaySetMountedStateCallback(
+    scoped_refptr<base::MessageLoopProxy> relay_proxy,
+    const SetMountedStateCallback& callback,
+    base::PlatformFileError error,
+    const FilePath& file_path) {
+  relay_proxy->PostTask(FROM_HERE,
+                        base::Bind(callback, error, file_path));
+}
+
 }  // namespace
 
 // GDataFileProperties struct implementation.
@@ -870,25 +932,6 @@ GDataFileSystem::~GDataFileSystem() {
   // ui_weak_ptr_factory_ must be deleted on UI thread.
   ui_weak_ptr_factory_.reset();
 
-  // There may still be some tasks on IO thread that access data members, so we
-  // should wait until they are over and io_weak_ptr_factory is nuked. After
-  // weak factory is nuked we can be sure there will be no tasks bound to this
-  // on IO thread.
-  base::WaitableEvent on_io_weak_ptr_factory_reset(
-      true /* manual reset */, false /* initially not signaled */);
-
-  // io_weak_ptr_factory must be deleted on IO thread. We won't continue
-  // until the tasks is ran, so unretained is safe.
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::ResetIOWeakPtrFactoryOnIOThread,
-                 base::Unretained(this),
-                 &on_io_weak_ptr_factory_reset));
-
-  // TODO(satorux): Remove the waitable event (crosbug.com/28501).
-  on_io_weak_ptr_factory_reset.Wait();
-
   // We should wait if there is any pending tasks posted to the worker
   // thread pool. on_io_completed_ won't be signaled iff |num_pending_tasks_|
   // is greater that 0.
@@ -913,16 +956,6 @@ GDataFileSystem::~GDataFileSystem() {
   // Let's make sure that num_pending_tasks_lock_ has been released on all
   // other threads.
   base::AutoLock tasks_lock(num_pending_tasks_lock_);
-}
-
-void GDataFileSystem::ResetIOWeakPtrFactoryOnIOThread(
-    base::WaitableEvent* done_event) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  io_weak_ptr_factory_.reset();
-
-  // Signal we are done so the object destruction can continue.
-  done_event->Signal();
 }
 
 void GDataFileSystem::AddObserver(Observer* observer) {
@@ -968,6 +1001,29 @@ void GDataFileSystem::FindEntryByResourceIdSync(
 void GDataFileSystem::FindEntryByPathAsync(
     const FilePath& search_file_path,
     const FindEntryCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::FindEntryByPathAsyncOnUIThread,
+                   ui_weak_ptr_,
+                   search_file_path,
+                   base::Bind(&RelayFindEntryCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  FindEntryByPathAsyncOnUIThread(search_file_path, callback);
+}
+
+void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
+    const FilePath& search_file_path,
+    const FindEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::AutoLock lock(lock_);
   if (root_->origin() == INITIALIZING) {
     // If root feed is not initialized but the initilization process has
@@ -976,7 +1032,7 @@ void GDataFileSystem::FindEntryByPathAsync(
     AddObserver(new InitialLoadObserver(
         this,
         base::Bind(&GDataFileSystem::FindEntryByPathOnCallingThread,
-                   GetWeakPtrForCurrentThread(),
+                   ui_weak_ptr_,
                    search_file_path,
                    callback)));
     return;
@@ -1005,7 +1061,7 @@ void GDataFileSystem::FindEntryByPathAsync(
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&GDataFileSystem::FindEntryByPathOnCallingThread,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  search_file_path,
                  callback));
 }
@@ -1022,11 +1078,13 @@ void GDataFileSystem::ReloadFeedFromServerIfNeeded(
     int local_changestamp,
     const FilePath& search_file_path,
     const FindEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
   documents_service_->GetAccountMetadata(
       base::Bind(&GDataFileSystem::OnGetAccountMetadata,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  initial_origin,
                  local_changestamp,
                  search_file_path,
@@ -1094,6 +1152,8 @@ void GDataFileSystem::LoadFeedFromServer(
     int root_feed_changestamp,
     const FilePath& search_file_path,
     const FindEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // ...then also kick off document feed fetching from the server as well.
   // |feed_list| will contain the list of all collected feed updates that
   // we will receive through calls of DocumentsService::GetDocuments().
@@ -1105,7 +1165,7 @@ void GDataFileSystem::LoadFeedFromServer(
       GURL(),   // root feed start.
       start_changestamp,
       base::Bind(&GDataFileSystem::OnGetDocuments,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  base::Owned(new GetDocumentsParams(start_changestamp,
                                                     root_feed_changestamp,
                                                     feed_list.release(),
@@ -1254,6 +1314,30 @@ void GDataFileSystem::OnTransferCompleted(
 void GDataFileSystem::Copy(const FilePath& src_file_path,
                            const FilePath& dest_file_path,
                            const FileOperationCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::CopyOnUIThread,
+                   ui_weak_ptr_,
+                   src_file_path,
+                   dest_file_path,
+                   base::Bind(&RelayFileOperationCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  CopyOnUIThread(src_file_path, dest_file_path, callback);
+}
+
+void GDataFileSystem::CopyOnUIThread(const FilePath& src_file_path,
+                                     const FilePath& dest_file_path,
+                                     const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FilePath dest_parent_path = dest_file_path.DirName();
 
@@ -1299,7 +1383,7 @@ void GDataFileSystem::Copy(const FilePath& src_file_path,
   // copying of regular files directly on the server side.
   GetFileByPath(src_file_path,
           base::Bind(&GDataFileSystem::OnGetFileCompleteForCopy,
-                     GetWeakPtrForCurrentThread(),
+                     ui_weak_ptr_,
                      dest_file_path,
                      callback));
 }
@@ -1311,6 +1395,8 @@ void GDataFileSystem::OnGetFileCompleteForCopy(
     const FilePath& local_file_path,
     const std::string& unused_mime_type,
     GDataFileType file_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error);
@@ -1341,21 +1427,25 @@ void GDataFileSystem::CopyDocumentToDirectory(
     const std::string& resource_id,
     const FilePath::StringType& new_name,
     const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   FilePathUpdateCallback add_file_to_directory_callback =
       base::Bind(&GDataFileSystem::AddEntryToDirectory,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  dir_path,
                  callback);
 
   documents_service_->CopyDocument(resource_id, new_name,
       base::Bind(&GDataFileSystem::OnCopyDocumentCompleted,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  add_file_to_directory_callback));
 }
 
 void GDataFileSystem::Rename(const FilePath& file_path,
                              const FilePath::StringType& new_name,
                              const FilePathUpdateCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // It is a no-op if the file is renamed to the same name.
   if (file_path.BaseName().value() == new_name) {
     if (!callback.is_null()) {
@@ -1390,7 +1480,7 @@ void GDataFileSystem::Rename(const FilePath& file_path,
       entry->edit_url(),
       file_name,
       base::Bind(&GDataFileSystem::OnRenameResourceCompleted,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  file_path,
                  file_name,
                  callback));
@@ -1399,6 +1489,30 @@ void GDataFileSystem::Rename(const FilePath& file_path,
 void GDataFileSystem::Move(const FilePath& src_file_path,
                            const FilePath& dest_file_path,
                            const FileOperationCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::MoveOnUIThread,
+                   ui_weak_ptr_,
+                   src_file_path,
+                   dest_file_path,
+                   base::Bind(&RelayFileOperationCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  MoveOnUIThread(src_file_path, dest_file_path, callback);
+}
+
+void GDataFileSystem::MoveOnUIThread(const FilePath& src_file_path,
+                                     const FilePath& dest_file_path,
+                                     const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   FilePath dest_parent_path = dest_file_path.DirName();
 
@@ -1427,7 +1541,7 @@ void GDataFileSystem::Move(const FilePath& src_file_path,
   if (src_file_path.DirName() == dest_parent_path) {
     FilePathUpdateCallback final_file_path_update_callback =
         base::Bind(&GDataFileSystem::OnFilePathUpdated,
-                   GetWeakPtrForCurrentThread(),
+                   ui_weak_ptr_,
                    callback);
 
     Rename(src_file_path, dest_file_path.BaseName().value(),
@@ -1446,13 +1560,13 @@ void GDataFileSystem::Move(const FilePath& src_file_path,
   //    directory of |dest_file_path|.
   FilePathUpdateCallback add_file_to_directory_callback =
       base::Bind(&GDataFileSystem::AddEntryToDirectory,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  dest_file_path.DirName(),
                  callback);
 
   FilePathUpdateCallback remove_file_from_directory_callback =
       base::Bind(&GDataFileSystem::RemoveEntryFromDirectory,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  src_file_path.DirName(),
                  add_file_to_directory_callback);
 
@@ -1465,6 +1579,8 @@ void GDataFileSystem::AddEntryToDirectory(
     const FileOperationCallback& callback,
     base::PlatformFileError error,
     const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   GDataEntry* dir_entry = GetGDataEntryByPath(dir_path);
@@ -1489,7 +1605,7 @@ void GDataFileSystem::AddEntryToDirectory(
       dir_entry->content_url(),
       entry->edit_url(),
       base::Bind(&GDataFileSystem::OnAddEntryToDirectoryCompleted,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  callback,
                  file_path,
                  dir_path));
@@ -1500,6 +1616,8 @@ void GDataFileSystem::RemoveEntryFromDirectory(
     const FilePathUpdateCallback& callback,
     base::PlatformFileError error,
     const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   GDataEntry* dir = GetGDataEntryByPath(dir_path);
@@ -1526,7 +1644,7 @@ void GDataFileSystem::RemoveEntryFromDirectory(
       entry->edit_url(),
       entry->resource_id(),
       base::Bind(&GDataFileSystem::OnRemoveEntryFromDirectoryCompleted,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  callback,
                  file_path,
                  dir_path));
@@ -1535,6 +1653,31 @@ void GDataFileSystem::RemoveEntryFromDirectory(
 void GDataFileSystem::Remove(const FilePath& file_path,
     bool is_recursive,
     const FileOperationCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::RemoveOnUIThread,
+                   ui_weak_ptr_,
+                   file_path,
+                   is_recursive,
+                   base::Bind(&RelayFileOperationCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  RemoveOnUIThread(file_path, is_recursive, callback);
+}
+
+void GDataFileSystem::RemoveOnUIThread(
+    const FilePath& file_path,
+    bool is_recursive,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry) {
@@ -1549,7 +1692,7 @@ void GDataFileSystem::Remove(const FilePath& file_path,
   documents_service_->DeleteDocument(
       entry->edit_url(),
       base::Bind(&GDataFileSystem::OnRemovedDocument,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  callback,
                  file_path));
 }
@@ -1559,6 +1702,34 @@ void GDataFileSystem::CreateDirectory(
     bool is_exclusive,
     bool is_recursive,
     const FileOperationCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::CreateDirectoryOnUIThread,
+                   ui_weak_ptr_,
+                   directory_path,
+                   is_exclusive,
+                   is_recursive,
+                   base::Bind(&RelayFileOperationCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  CreateDirectoryOnUIThread(
+      directory_path, is_exclusive, is_recursive, callback);
+}
+
+void GDataFileSystem::CreateDirectoryOnUIThread(
+    const FilePath& directory_path,
+    bool is_exclusive,
+    bool is_recursive,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   FilePath last_parent_dir_path;
   FilePath first_missing_path;
   GURL last_parent_dir_url;
@@ -1610,7 +1781,7 @@ void GDataFileSystem::CreateDirectory(
       last_parent_dir_url,
       first_missing_path.BaseName().value(),
       base::Bind(&GDataFileSystem::OnCreateDirectoryCompleted,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  CreateDirectoryParams(
                      first_missing_path,
                      directory_path,
@@ -1621,6 +1792,29 @@ void GDataFileSystem::CreateDirectory(
 
 void GDataFileSystem::GetFileByPath(const FilePath& file_path,
                                     const GetFileCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::GetFileByPathOnUIThread,
+                   ui_weak_ptr_,
+                   file_path,
+                   base::Bind(&RelayGetFileCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  GetFileByPathOnUIThread(file_path, callback);
+}
+
+void GDataFileSystem::GetFileByPathOnUIThread(
+    const FilePath& file_path,
+    const GetFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   GDataFileProperties file_properties;
   if (!GetFileInfoByPath(file_path, &file_properties)) {
     if (!callback.is_null()) {
@@ -1678,7 +1872,7 @@ void GDataFileSystem::GetFileByPath(const FilePath& file_path,
       file_properties.file_md5,
       base::Bind(
           &GDataFileSystem::OnGetFileFromCache,
-          GetWeakPtrForCurrentThread(),
+          ui_weak_ptr_,
           GetFileFromCacheParams(file_path,
                                  local_tmp_path,
                                  file_properties.content_url,
@@ -1692,6 +1886,29 @@ void GDataFileSystem::GetFileByPath(const FilePath& file_path,
 void GDataFileSystem::GetFileByResourceId(
     const std::string& resource_id,
     const GetFileCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::GetFileByResourceIdOnUIThread,
+                   ui_weak_ptr_,
+                   resource_id,
+                   base::Bind(&RelayGetFileCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  GetFileByResourceIdOnUIThread(resource_id, callback);
+}
+
+void GDataFileSystem::GetFileByResourceIdOnUIThread(
+    const std::string& resource_id,
+    const GetFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   FilePath file_path;
   {
     base::AutoLock lock(lock_);  // To access the cache map.
@@ -1726,6 +1943,8 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
                                          const std::string& resource_id,
                                          const std::string& md5,
                                          const FilePath& cache_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // Have we found the file in cache? If so, return it back to the caller.
   if (error == base::PLATFORM_FILE_OK) {
     if (!params.callback.is_null()) {
@@ -1763,7 +1982,7 @@ void GDataFileSystem::OnGetFileFromCache(const GetFileFromCacheParams& params,
                  file_size,
                  has_enough_space),
       base::Bind(&GDataFileSystem::StartDownloadFileIfEnoughSpace,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  params,
                  cache_file_path,
                  base::Owned(has_enough_space)));
@@ -1796,6 +2015,8 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
     const GetFileFromCacheParams& params,
     const FilePath& cache_file_path,
     bool* has_enough_space) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!*has_enough_space) {
     // If no enough space, return PLATFORM_FILE_ERROR_NO_SPACE.
     if (!params.callback.is_null()) {
@@ -1815,7 +2036,7 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
       params.local_tmp_path,
       params.content_url,
       base::Bind(&GDataFileSystem::OnFileDownloaded,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  params));
 }
 
@@ -1893,22 +2114,6 @@ bool GDataFileSystem::GetFileInfoByPath(
   return true;
 }
 
-base::WeakPtr<GDataFileSystem> GDataFileSystem::GetWeakPtrForCurrentThread() {
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    return ui_weak_ptr_factory_->GetWeakPtr();
-  } else if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    if (!io_weak_ptr_factory_.get()) {
-      io_weak_ptr_factory_.reset(
-          new base::WeakPtrFactory<GDataFileSystem>(this));
-    }
-    return io_weak_ptr_factory_->GetWeakPtr();
-  }
-
-  NOTREACHED() << "Called on an unexpected thread: "
-               << base::PlatformThread::CurrentId();
-  return ui_weak_ptr_factory_->GetWeakPtr();
-}
-
 GDataEntry* GDataFileSystem::GetGDataEntryByPath(
     const FilePath& file_path) {
   lock_.AssertAcquired();
@@ -1921,6 +2126,31 @@ GDataEntry* GDataFileSystem::GetGDataEntryByPath(
 void GDataFileSystem::GetCacheState(const std::string& resource_id,
                                     const std::string& md5,
                                     const GetCacheStateCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::GetCacheStateOnUIThread,
+                   ui_weak_ptr_,
+                   resource_id,
+                   md5,
+                   base::Bind(&RelayGetCacheStateCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  GetCacheStateOnUIThread(resource_id, md5, callback);
+}
+
+void GDataFileSystem::GetCacheStateOnUIThread(
+    const std::string& resource_id,
+    const std::string& md5,
+    const GetCacheStateCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // This method originates from GDataFile::GetCacheState, which already locks,
   // so we shouldn't lock here.
   UnsafeInitializeCacheIfNecessary();
@@ -1948,14 +2178,61 @@ void GDataFileSystem::GetCacheState(const std::string& resource_id,
 
 void GDataFileSystem::GetAvailableSpace(
     const GetAvailableSpaceCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::GetAvailableSpaceOnUIThread,
+                   ui_weak_ptr_,
+                   base::Bind(&RelayGetAvailableSpaceCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  GetAvailableSpaceOnUIThread(callback);
+}
+
+void GDataFileSystem::GetAvailableSpaceOnUIThread(
+    const GetAvailableSpaceCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   documents_service_->GetAccountMetadata(
       base::Bind(&GDataFileSystem::OnGetAvailableSpace,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  callback));
 }
 
-void GDataFileSystem::SetPinState(const FilePath& file_path, bool to_pin,
+void GDataFileSystem::SetPinState(const FilePath& file_path,
+                                  bool to_pin,
                                   const FileOperationCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::SetPinStateOnUIThread,
+                   ui_weak_ptr_,
+                   file_path,
+                   to_pin,
+                   base::Bind(&RelayFileOperationCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  SetPinStateOnUIThread(file_path, to_pin, callback);
+}
+
+void GDataFileSystem::SetPinStateOnUIThread(
+    const FilePath& file_path,
+    bool to_pin,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   std::string resource_id, md5;
   {
     base::AutoLock lock(lock_);
@@ -1977,7 +2254,7 @@ void GDataFileSystem::SetPinState(const FilePath& file_path, bool to_pin,
 
   if (!callback.is_null()) {
     cache_callback = base::Bind(&GDataFileSystem::OnSetPinStateCompleted,
-                                GetWeakPtrForCurrentThread(),
+                                ui_weak_ptr_,
                                 callback);
   }
 
@@ -1987,8 +2264,35 @@ void GDataFileSystem::SetPinState(const FilePath& file_path, bool to_pin,
     Unpin(resource_id, md5, cache_callback);
 }
 
-void GDataFileSystem::SetMountedState(const FilePath& file_path, bool to_mount,
+void GDataFileSystem::SetMountedState(const FilePath& file_path,
+                                      bool to_mount,
                                       const SetMountedStateCallback& callback) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&GDataFileSystem::SetMountedStateOnUIThread,
+                   ui_weak_ptr_,
+                   file_path,
+                   to_mount,
+                   base::Bind(&RelaySetMountedStateCallback,
+                              base::MessageLoopProxy::current(),
+                              callback)));
+    DCHECK(posted);
+    return;
+  }
+
+  SetMountedStateOnUIThread(file_path, to_mount, callback);
+}
+
+
+void GDataFileSystem::SetMountedStateOnUIThread(
+    const FilePath& file_path,
+    bool to_mount,
+    const SetMountedStateCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   InitializeCacheIfNecessary();
 
   base::PlatformFileError* error =
@@ -2163,6 +2467,8 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
 void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
                                      GDataErrorCode status,
                                      scoped_ptr<base::Value> data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error == base::PLATFORM_FILE_OK &&
       (!data.get() || data->GetType() != Value::TYPE_DICTIONARY)) {
@@ -2203,7 +2509,7 @@ void GDataFileSystem::OnGetDocuments(GetDocumentsParams* params,
         next_feed_url,
         params->start_changestamp,
         base::Bind(&GDataFileSystem::OnGetDocuments,
-                   GetWeakPtrForCurrentThread(),
+                   ui_weak_ptr_,
                    base::Owned(
                        new GetDocumentsParams(params->start_changestamp,
                                               params->root_feed_changestamp,
@@ -2241,6 +2547,8 @@ void GDataFileSystem::LoadRootFeedFromCache(
     bool should_load_from_server,
     const FilePath& search_file_path,
     const FindEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   const FilePath path =
       GetCacheDirectoryPath(GDataRootDirectory::CACHE_TYPE_META).Append(
           kFilesystemProtoFile);
@@ -2250,7 +2558,7 @@ void GDataFileSystem::LoadRootFeedFromCache(
   BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
       base::Bind(&LoadProtoOnIOThreadPool, path, params),
       base::Bind(&GDataFileSystem::OnProtoLoaded,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  base::Owned(params)));
 }
 
@@ -2466,6 +2774,8 @@ void GDataFileSystem::OnFileDownloaded(
     GDataErrorCode status,
     const GURL& content_url,
     const FilePath& downloaded_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // At this point, the disk can be full or nearly full for several reasons:
   // - The expected file size was incorrect and the file was larger
   // - There was an in-flight download operation and it used up space
@@ -2482,7 +2792,7 @@ void GDataFileSystem::OnFileDownloaded(
                  base::Unretained(this),
                  has_enough_space),
       base::Bind(&GDataFileSystem::OnFileDownloadedAndSpaceChecked,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  params,
                  status,
                  content_url,
@@ -2496,6 +2806,8 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
     const GURL& content_url,
     const FilePath& downloaded_file_path,
     bool* has_enough_space) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError error = GDataToPlatformError(status);
 
   // Make sure that downloaded file is properly stored in cache. We don't have
@@ -2508,7 +2820,7 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
                    downloaded_file_path,
                    FILE_OPERATION_MOVE,
                    base::Bind(&GDataFileSystem::OnDownloadStoredToCache,
-                              GetWeakPtrForCurrentThread()));
+                              ui_weak_ptr_));
     } else {
       // If we don't have enough space, remove the downloaded file, and
       // report "no space" error.
@@ -3212,6 +3524,8 @@ void GDataFileSystem::StoreToCache(const std::string& resource_id,
 void GDataFileSystem::Pin(const std::string& resource_id,
                           const std::string& md5,
                           const CacheOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   InitializeCacheIfNecessary();
 
   base::PlatformFileError* error =
@@ -3226,7 +3540,7 @@ void GDataFileSystem::Pin(const std::string& resource_id,
                  FILE_OPERATION_MOVE,
                  error),
       base::Bind(&GDataFileSystem::OnFilePinned,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  base::Owned(error),
                  resource_id,
                  md5,
@@ -3236,6 +3550,8 @@ void GDataFileSystem::Pin(const std::string& resource_id,
 void GDataFileSystem::Unpin(const std::string& resource_id,
                             const std::string& md5,
                             const CacheOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   InitializeCacheIfNecessary();
 
   base::PlatformFileError* error =
@@ -3250,7 +3566,7 @@ void GDataFileSystem::Unpin(const std::string& resource_id,
                  FILE_OPERATION_MOVE,
                  error),
       base::Bind(&GDataFileSystem::OnFileUnpinned,
-                 GetWeakPtrForCurrentThread(),
+                 ui_weak_ptr_,
                  base::Owned(error),
                  resource_id,
                  md5,

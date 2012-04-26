@@ -528,14 +528,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                               const FilePath& file_path)>
       FilePathUpdateCallback;
 
-  // Nukes |io_weak_ptr_factory_| on IO thread, and signals using |done_event|
-  // when done.
-  // It is called from destructor which blocks until the singal is sent.
-  void ResetIOWeakPtrFactoryOnIOThread(base::WaitableEvent* done_event);
-
-  // Returns a WeakPtr for the current thread.
-  base::WeakPtr<GDataFileSystem> GetWeakPtrForCurrentThread();
-
   // Finds entry object by |file_path| and returns the entry object.
   // Returns NULL if it does not find the entry.
   GDataEntry* GetGDataEntryByPath(const FilePath& file_path);
@@ -1211,6 +1203,39 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Initializes preference change observer.
   void InitializePreferenceObserver();
 
+  // The following functions are used to forward calls to asynchronous public
+  // member functions to UI thread.
+  void FindEntryByPathAsyncOnUIThread(const FilePath& search_file_path,
+                                      const FindEntryCallback& callback);
+  void CopyOnUIThread(const FilePath& src_file_path,
+                      const FilePath& dest_file_path,
+                      const FileOperationCallback& callback);
+  void MoveOnUIThread(const FilePath& src_file_path,
+                      const FilePath& dest_file_path,
+                      const FileOperationCallback& callback);
+  void RemoveOnUIThread(const FilePath& file_path,
+                        bool is_recursive,
+                        const FileOperationCallback& callback);
+  void CreateDirectoryOnUIThread(const FilePath& directory_path,
+                                 bool is_exclusive,
+                                 bool is_recursive,
+                                 const FileOperationCallback& callback);
+  void GetFileByPathOnUIThread(const FilePath& file_path,
+                               const GetFileCallback& callback);
+  void GetFileByResourceIdOnUIThread(
+      const std::string& resource_id,
+      const GetFileCallback& callback);
+  void GetCacheStateOnUIThread(const std::string& resource_id,
+                               const std::string& md5,
+                               const GetCacheStateCallback& callback);
+  void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
+  void SetPinStateOnUIThread(const FilePath& file_path, bool to_pin,
+                             const FileOperationCallback& callback);
+  void SetMountedStateOnUIThread(
+      const FilePath& file_path,
+      bool to_mount,
+      const SetMountedStateCallback& callback);
+
   scoped_ptr<GDataRootDirectory> root_;
 
   // This guards regular states.
@@ -1249,9 +1274,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // WeakPtrFactory and WeakPtr bound to the UI thread.
   scoped_ptr<base::WeakPtrFactory<GDataFileSystem> > ui_weak_ptr_factory_;
   base::WeakPtr<GDataFileSystem> ui_weak_ptr_;
-
-  // WeakPtrFactory bound to the IO thread. Created when needed.
-  scoped_ptr<base::WeakPtrFactory<GDataFileSystem> > io_weak_ptr_factory_;
 
   ObserverList<Observer> observers_;
 };
