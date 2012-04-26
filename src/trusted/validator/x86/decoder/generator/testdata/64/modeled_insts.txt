@@ -6557,7 +6557,7 @@ Target: x86-64 bit mode
     Fsqrt %st0
       RegST0                  OpUse OpSet
   --- fb ---
-  d9 fb                       X87 
+  d9 fb                       X87_FSINCOS 
     Fsincos %st0, %st1
       RegST0                  OpSet
       RegST1                  OpUse

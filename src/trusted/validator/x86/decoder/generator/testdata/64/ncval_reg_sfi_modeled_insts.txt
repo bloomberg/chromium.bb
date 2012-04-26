@@ -5764,7 +5764,7 @@ Target: x86-64 bit mode
   d9 fa                       X87 PartialInstruction
     [P] DontCare
   --- fb ---
-  d9 fb                       X87 PartialInstruction
+  d9 fb                       X87_FSINCOS PartialInstruction
     [P] DontCare
   --- fc ---
   d9 fc                       X87 PartialInstruction

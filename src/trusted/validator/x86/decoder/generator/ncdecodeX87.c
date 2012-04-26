@@ -96,7 +96,8 @@ void NaClDefX87Insts(struct NaClSymbolTable* st) {
   NaClDefine("d9f8: Fprem %st0, %st1", NACLi_X87, st, Binary);
   NaClDefine("d9f9: Fyl2xp1 %st0, %st1", NACLi_X87, st, Binary);
   NaClDefine("d9fa: Fsqrt %st0", NACLi_X87, st, UnaryUpdate);
-  NaClDefine("d9fb: Fsincos %st0, %st1", NACLi_X87, st, Move);
+  /* NaClDefine("d9fb: Fsincos %st0, %st1", NACLi_X87, st, Move); */
+  NaClDefine("d9fb: Fsincos %st0, %st1", NACLi_X87_FSINCOS, st, Move);
   NaClDefine("d9fc: Frndint %st0", NACLi_X87, st, UnaryUpdate);
   NaClDefine("d9fd: Fscale %st0, %st1", NACLi_X87, st, Binary);
   NaClDefine("d9fe: Fsin %st0", NACLi_X87, st, UnaryUpdate);

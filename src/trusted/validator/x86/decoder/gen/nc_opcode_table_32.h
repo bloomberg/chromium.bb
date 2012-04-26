@@ -5218,7 +5218,7 @@ static const NaClInst g_Opcodes[1362] = {
     NACL_EMPTY_IFLAGS,
     InstFsqrt, 0x00, 1, 202, NACL_OPCODE_NULL_OFFSET  },
   /* 1122 */
-  { NACLi_X87,
+  { NACLi_X87_FSINCOS,
     NACL_EMPTY_IFLAGS,
     InstFsincos, 0x00, 2, 653, NACL_OPCODE_NULL_OFFSET  },
   /* 1123 */

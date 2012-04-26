@@ -312,7 +312,7 @@ static const NaClOp g_Operands[304] = {
   /* 303 */ { I_Operand, NACL_OPFLAG(OpUse), "$Ib" },
 };
 
-static const NaClInst g_Opcodes[573] = {
+static const NaClInst g_Opcodes[574] = {
   /* 0 */
   { NACLi_INVALID,
     NACL_EMPTY_IFLAGS,
@@ -2598,10 +2598,14 @@ static const NaClInst g_Opcodes[573] = {
     NACL_IFLAG(OpcodeUsesModRm) | NACL_IFLAG(OpcodeHasImmed_b) | NACL_IFLAG(OpcodeAllowsData16) | NACL_IFLAG(SizeIgnoresData16) | NACL_IFLAG(OperandSize_v) | NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 3, 301, NACL_OPCODE_NULL_OFFSET  },
   /* 571 */
+  { NACLi_X87_FSINCOS,
+    NACL_IFLAG(PartialInstruction),
+    InstDontCare, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
+  /* 572 */
   { NACLi_X87,
     NACL_EMPTY_IFLAGS,
     InstInvalid, 0x00, 0, 0, NACL_OPCODE_NULL_OFFSET  },
-  /* 572 */
+  /* 573 */
   { NACLi_X87,
     NACL_IFLAG(PartialInstruction),
     InstDontCare, 0x00, 1, 73, NACL_OPCODE_NULL_OFFSET  },
@@ -2823,7 +2827,7 @@ static const NaClPrefixOpcodeArrayOffset g_LookupTable[2543] = {
   /*  2120 */ 14, 14, 14, 14, 14, 14, 14, 14, 131, 131, 
   /*  2130 */ 14, 14, 131, 131, 14, 14, 131, 131, 131, 131, 
   /*  2140 */ 131, 131, 131, 14, 131, 131, 131, 131, 131, 131, 
-  /*  2150 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
+  /*  2150 */ 131, 131, 131, 131, 131, 571, 131, 131, 131, 131, 
   /*  2160 */ NACL_OPCODE_NULL_OFFSET, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
   /*  2170 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
   /*  2180 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
@@ -2855,11 +2859,11 @@ static const NaClPrefixOpcodeArrayOffset g_LookupTable[2543] = {
   /*  2440 */ 14, 14, 14, 14, 14, 14, 131, 131, 131, 131, 
   /*  2450 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
   /*  2460 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
-  /*  2470 */ 131, 131, 131, 131, 131, 131, 131, 131, NACL_OPCODE_NULL_OFFSET, 571, 
-  /*  2480 */ 571, 571, 571, 571, 571, 571, 571, 571, 571, 571, 
-  /*  2490 */ 571, 571, 571, 571, 571, 571, 571, 571, 571, 571, 
-  /*  2500 */ 571, 571, 571, 571, 571, 571, 571, 571, 571, 571, 
-  /*  2510 */ 571, 572, 14, 14, 14, 14, 14, 14, 14, 131, 
+  /*  2470 */ 131, 131, 131, 131, 131, 131, 131, 131, NACL_OPCODE_NULL_OFFSET, 572, 
+  /*  2480 */ 572, 572, 572, 572, 572, 572, 572, 572, 572, 572, 
+  /*  2490 */ 572, 572, 572, 572, 572, 572, 572, 572, 572, 572, 
+  /*  2500 */ 572, 572, 572, 572, 572, 572, 572, 572, 572, 572, 
+  /*  2510 */ 572, 573, 14, 14, 14, 14, 14, 14, 14, 131, 
   /*  2520 */ 131, 131, 131, 131, 131, 131, 131, 131, 131, 131, 
   /*  2530 */ 131, 131, 131, 131, 131, 14, 14, 14, 14, 14, 
   /*  2540 */ 14, 14, 14, };
