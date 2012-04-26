@@ -240,6 +240,19 @@ void AppList::OnRootWindowResized(const aura::RootWindow* root,
     view_->GetWidget()->SetBounds(gfx::Rect(root->bounds().size()));
 }
 
+void AppList::OnWindowFocused(aura::Window* window) {
+  if (view_ && is_visible_) {
+    aura::Window* applist_container = Shell::GetInstance()->GetContainer(
+        internal::kShellWindowId_AppListContainer);
+    aura::Window* bubble_container = Shell::GetInstance()->GetContainer(
+        internal::kShellWindowId_SettingBubbleContainer);
+    if (window->parent() != applist_container &&
+        window->parent() != bubble_container) {
+      SetVisible(false);
+    }
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppList, ui::ImplicitAnimationObserver implementation:
 
@@ -258,21 +271,6 @@ void AppList::OnWidgetClosing(views::Widget* widget) {
   if (is_visible_)
     SetVisible(false);
   ResetView();
-}
-
-void AppList::OnWidgetActivationChanged(views::Widget* widget, bool active) {
-  DCHECK(view_->GetWidget() == widget);
-  if (view_ && is_visible_ && !active) {
-    aura::Window* applist_container = Shell::GetInstance()->GetContainer(
-        internal::kShellWindowId_AppListContainer);
-    aura::Window* bubble_container = Shell::GetInstance()->GetContainer(
-        internal::kShellWindowId_SettingBubbleContainer);
-    aura::Window* active_window = ash::wm::GetActiveWindow();
-    if (active_window->parent() != applist_container &&
-        active_window->parent() != bubble_container) {
-      SetVisible(false);
-    }
-  }
 }
 
 }  // namespace internal

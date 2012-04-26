@@ -83,14 +83,13 @@ class AppList : public aura::EventFilter,
   // aura::RootWindowObserver overrides:
   virtual void OnRootWindowResized(const aura::RootWindow* root,
                                    const gfx::Size& old_size) OVERRIDE;
+  virtual void OnWindowFocused(aura::Window* window) OVERRIDE;
 
   // ui::ImplicitAnimationObserver overrides:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
   // views::Widget::Observer overrides:
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
-  virtual void OnWidgetActivationChanged(views::Widget* widget,
-      bool active) OVERRIDE;
 
   // Whether we should show or hide app list widget.
   bool is_visible_;
