@@ -130,21 +130,56 @@ destroy_window(struct window *window)
 	free(window);
 }
 
+static void
+paint_pixels(void *image, int width, int height, uint32_t time)
+{
+	const int halfh = height / 2;
+	const int halfw = width / 2;
+	int ir, or;
+	uint32_t *pixel = image;
+	int y;
+
+	/* squared radii thresholds */
+	or = (halfw < halfh ? halfw : halfh) - 8;
+	ir = or - 32;
+	or *= or;
+	ir *= ir;
+
+	for (y = 0; y < height; y++) {
+		int x;
+		int y2 = (y - halfh) * (y - halfh);
+
+		for (x = 0; x < width; x++) {
+			uint32_t v;
+
+			/* squared distance from center */
+			int r2 = (x - halfw) * (x - halfw) + y2;
+
+			if (r2 < ir)
+				v = (r2 / 32 + time / 64) * 0x0080401;
+			else if (r2 < or)
+				v = (y + time / 32) * 0x0080401;
+			else
+				v = (x + time / 16) * 0x0080401;
+			v &= 0x00ffffff;
+
+			/* cross if compositor uses X from XRGB as alpha */
+			if (abs(x - y) > 6 && abs(x + y - height) > 6)
+				v |= 0xff000000;
+
+			*pixel++ = v;
+		}
+	}
+}
+
 static const struct wl_callback_listener frame_listener;
 
 static void
 redraw(void *data, struct wl_callback *callback, uint32_t time)
 {
 	struct window *window = data;
-	uint32_t *p;
-	int i, end, offset;
 
-	p = window->shm_data;
-	end = window->width * window->height;
-	offset = time >> 4;
-	for (i = 0; i < end; i++)
-		p[i] = (i + offset) * 0x0080401;
-
+	paint_pixels(window->shm_data, window->width, window->height, time);
 	wl_surface_attach(window->surface, window->buffer, 0, 0);
 	wl_surface_damage(window->surface,
 			  0, 0, window->width, window->height);
