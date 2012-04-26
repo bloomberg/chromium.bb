@@ -29,9 +29,11 @@ bool GetToolOutput(int argc, const char* argv[], std::string& output) {
     return false;
   }
 
-  CommandLine command_line(argc, argv);
-  if (!base::GetAppOutput(command_line, &output)) {
-    LOG(WARNING) << "Error executing: " << command_line.GetCommandLineString();
+  std::vector<std::string> args;
+  for (int argn = 0; argn < argc; ++argn)
+    args.push_back(argv[argn]);
+  if (!base::GetAppOutput(args, &output)) {
+    LOG(WARNING) << "Error executing " << argv[0];
     return false;
   }
 

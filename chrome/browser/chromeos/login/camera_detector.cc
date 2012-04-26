@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,8 @@ bool CameraDetector::presence_check_in_progress_ = false;
 
 void CameraDetector::StartPresenceCheck(const base::Closure& check_done) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DVLOG(1) << "Starting camera presence check";
 
   if (!presence_check_in_progress_) {
     presence_check_in_progress_ = true;
@@ -75,6 +77,8 @@ void CameraDetector::CheckPresence() {
 
   camera_presence_ = present ? kCameraPresent : kCameraAbsent;
   presence_check_in_progress_ = false;
+
+  DVLOG(1) << "Camera presence state: " << camera_presence_;
 }
 
 }  // namespace chromeos

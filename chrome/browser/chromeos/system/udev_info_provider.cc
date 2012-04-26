@@ -54,9 +54,9 @@ bool UdevInfoProviderImpl::QueryDeviceProperty(const std::string& sys_path,
   const char* kUdevadmTool[] = {
     kUdevadmToolPath,
     "info",
-    "--query=property",
     "--path",
     sys_path.c_str(),
+    "--query=property",
   };
 
   NameValuePairsParser::NameValueMap device_info;
