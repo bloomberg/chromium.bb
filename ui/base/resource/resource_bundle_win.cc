@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/win/metro.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_data_dll_win.h"
 #include "ui/base/win/dpi.h"
@@ -36,30 +36,27 @@ void ResourceBundle::LoadCommonResources() {
   // As a convenience, add the current resource module as a data packs.
   data_packs_.push_back(new ResourceDataDLL(GetCurrentResourceDLL()));
 
-  bool use_hidpi_pak = false;
+  bool use_hidpi = false;
 #if defined(ENABLE_HIDPI)
-  // If we're running in HiDPI mode then use the 2x resource for DPI greater
-  // than 1.5. Otherwise use the 1x resource.
-  use_hidpi_pak = ui::GetDPIScale() > 1.5;
+  // If we're running in HiDPI mode at a scale larger than 150%, we switch
+  // to 2x resources for desktop layouts.
+  use_hidpi = ui::GetDPIScale() > 1.5;
 #endif
 
-  bool use_metro_pak = false;
-#if defined(ENABLE_METRO)
-  use_metro_pak = base::win::GetMetroModule() != NULL;
-#endif
-
-  if (use_metro_pak) {
-    AddDataPack(GetResourcesPakFilePath("theme_resources_metro_1x.pak"));
-  } else if (use_hidpi_pak) {
-    AddDataPack(GetResourcesPakFilePath("theme_resources_2x.pak"));
-  } else {
-    AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"));
-  }
-
-  if (use_hidpi_pak) {
-    AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"));
-  } else {
-    AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
+  switch (ui::GetDisplayLayout()) {
+    case ui::LAYOUT_TOUCH:
+      AddDataPack(GetResourcesPakFilePath("theme_resources_metro_1x.pak"));
+      AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
+      break;
+    default:
+      if (use_hidpi) {
+        AddDataPack(GetResourcesPakFilePath("theme_resources_2x.pak"));
+        AddDataPack(GetResourcesPakFilePath("ui_resources_2x.pak"));
+      } else {
+        AddDataPack(GetResourcesPakFilePath("theme_resources_standard.pak"));
+        AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"));
+      }
+      break;
   }
 }
 

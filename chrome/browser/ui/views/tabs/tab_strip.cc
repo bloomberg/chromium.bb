@@ -32,6 +32,7 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/touch/touch_mode_support.h"
 #include "ui/gfx/canvas.h"
@@ -54,21 +55,8 @@
 
 using views::DropTargetEvent;
 
-// Offset for the new tab button to bring it closer to the rightmost tab.
-#if defined(USE_ASH)
-static const int kNewTabButtonHOffset = -11;
-static const int kNewTabButtonVOffset = 7;
-#else
-static const int kNewTabButtonHOffset = -5;
-static const int kNewTabButtonVOffset = 5;
-#endif
-// Amount the left edge of a tab is offset from the rectangle of the tab's
-// favicon/title/close box.  Related to the width of IDR_TAB_ACTIVE_LEFT.
-#if defined(USE_ASH)
-static const int kTabHOffset = -27;
-#else
-static const int kTabHOffset = -16;
-#endif
+namespace {
+
 static const int kTabStripAnimationVSlop = 40;
 // Inactive tabs in a native frame are slightly transparent.
 static const int kNativeFrameInactiveTabAlpha = 200;
@@ -96,7 +84,62 @@ static const int kMaxStackedCount = 4;
 // Padding between stacked tabs.
 static const int kStackedPadding = 6;
 
-namespace {
+// Horizontal offset for the new tab button to bring it closer to the
+// rightmost tab.
+const int GetNewTabButtonHOffset() {
+  static int value = -1;
+  if (value == -1) {
+    switch (ui::GetDisplayLayout()) {
+      case ui::LAYOUT_ASH:
+        value = -11;
+        break;
+      case ui::LAYOUT_TOUCH:
+        value = -6;
+        break;
+      default:
+        value = -5;
+    }
+  }
+  return value;
+}
+
+// Vertical offset for the new tab button to bring it closer to the
+// rightmost tab.
+const int GetNewTabButtonVOffset() {
+  static int value = -1;
+  if (value == -1) {
+    switch (ui::GetDisplayLayout()) {
+      case ui::LAYOUT_ASH:
+        value = 7;
+        break;
+      case ui::LAYOUT_TOUCH:
+        value = 10;
+        break;
+      default:
+        value = 5;
+    }
+  }
+  return value;
+}
+
+// Amount the left edge of a tab is offset from the rectangle of the tab's
+// favicon/title/close box.  Related to the width of IDR_TAB_ACTIVE_LEFT.
+const int GetTabHOffset() {
+  static int value = -1;
+  if (value == -1) {
+    switch (ui::GetDisplayLayout()) {
+      case ui::LAYOUT_ASH:
+        value = -27;
+        break;
+      case ui::LAYOUT_TOUCH:
+        value = -16;
+        break;
+      default:
+        value = -16;
+    }
+  }
+  return value;
+}
 
 // Animation delegate used when a dragged tab is released. When done sets the
 // dragging state to false.
@@ -256,7 +299,7 @@ SkBitmap NewTabButton::GetBackgroundBitmap(
   int offset_y = GetThemeProvider()->HasCustomImage(background_id) ?
       0 : background_offset_.y();
   canvas.TileImageInt(*background, GetMirroredX() + background_offset_.x(),
-                      kNewTabButtonVOffset + offset_y, 0, 0, width, height);
+                      GetNewTabButtonVOffset() + offset_y, 0, 0, width, height);
 
   if (alpha != 255) {
     SkPaint paint;
@@ -532,7 +575,7 @@ void TabStrip::PrepareForCloseAt(int model_index) {
     Tab* last_tab = tab_at(model_count - 1);
     Tab* tab_being_removed = tab_at(model_index);
     available_width_for_tabs_ = last_tab->x() + last_tab->width() -
-        tab_being_removed->width() - kTabHOffset;
+        tab_being_removed->width() - GetTabHOffset();
     if (model_index == 0 && tab_being_removed->data().mini &&
         !tab_at(1)->data().mini) {
       available_width_for_tabs_ -= kMiniToNonMiniGap;
@@ -961,8 +1004,8 @@ gfx::Size TabStrip::GetPreferredSize() {
   // plus the new tab button. Don't base it on the actual number of tabs because
   // it's undesirable to have the minimum window size change when a new tab is
   // opened.
-  int needed_width = Tab::GetMinimumSelectedSize().width() - kTabHOffset +
-      new_tab_button_width();
+  int needed_width = Tab::GetMinimumSelectedSize().width() -
+      GetTabHOffset() + new_tab_button_width();
   return gfx::Size(needed_width, Tab::GetMinimumUnselectedSize().height());
 }
 
@@ -1118,7 +1161,7 @@ void TabStrip::Init() {
   if (TouchModeSupport::IsTouchOptimized()) {
     touch_layout_.reset(new TouchTabStripLayout(
                             Tab::GetStandardSize(),
-                            kTabHOffset,
+                            GetTabHOffset(),
                             kStackedPadding,
                             kMaxStackedCount,
                             &tabs_));
@@ -1146,7 +1189,7 @@ void TabStrip::StartInsertTabAnimation(int model_index) {
                    ideal_bounds(model_index).height());
   } else {
     BaseTab* last_tab = tab_at(model_index - 1);
-    tab->SetBounds(last_tab->bounds().right() + kTabHOffset,
+    tab->SetBounds(last_tab->bounds().right() + GetTabHOffset(),
                    ideal_bounds(model_index).y(), 0,
                    ideal_bounds(model_index).height());
   }
@@ -1236,7 +1279,7 @@ void TabStrip::DoLayout() {
 
   if (SizeTabButtonToTopOfTabStrip()) {
     newtab_button_bounds_.set_height(
-        kNewTabButtonHeight + kNewTabButtonVOffset);
+        kNewTabButtonHeight + GetNewTabButtonVOffset());
     newtab_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                       views::ImageButton::ALIGN_BOTTOM);
   } else {
@@ -1294,7 +1337,7 @@ void TabStrip::CalculateBoundsForDraggedTabs(const std::vector<BaseTab*>& tabs,
     gfx::Rect new_bounds = tab->bounds();
     new_bounds.set_origin(gfx::Point(x, 0));
     bounds->push_back(new_bounds);
-    x += tab->width() + kTabHOffset;
+    x += tab->width() + GetTabHOffset();
   }
 }
 
@@ -1307,7 +1350,7 @@ int TabStrip::GetSizeNeededForTabs(const std::vector<BaseTab*>& tabs) {
       width += kMiniToNonMiniGap;
   }
   if (tabs.size() > 0)
-    width += kTabHOffset * static_cast<int>(tabs.size() - 1);
+    width += GetTabHOffset() * static_cast<int>(tabs.size() - 1);
   return width;
 }
 
@@ -1467,7 +1510,7 @@ void TabStrip::GetDesiredTabWidths(int tab_count,
   }
 
   if (mini_tab_count > 0) {
-    available_width -= mini_tab_count * (Tab::GetMiniWidth() + kTabHOffset);
+    available_width -= mini_tab_count * (Tab::GetMiniWidth() + GetTabHOffset());
     tab_count -= mini_tab_count;
     if (tab_count == 0) {
       *selected_width = *unselected_width = Tab::GetStandardSize().width();
@@ -1480,7 +1523,7 @@ void TabStrip::GetDesiredTabWidths(int tab_count,
   // Calculate the desired tab widths by dividing the available space into equal
   // portions.  Don't let tabs get larger than the "standard width" or smaller
   // than the minimum width for each type, respectively.
-  const int total_offset = kTabHOffset * (tab_count - 1);
+  const int total_offset = GetTabHOffset() * (tab_count - 1);
   const double desired_tab_width = std::min((static_cast<double>(
       available_width - total_offset) / static_cast<double>(tab_count)),
       static_cast<double>(Tab::GetStandardSize().width()));
@@ -1573,12 +1616,12 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
   if (drop_index < tab_count()) {
     Tab* tab = tab_at(drop_index);
     if (drop_before)
-      center_x = tab->x() - (kTabHOffset / 2);
+      center_x = tab->x() - (GetTabHOffset() / 2);
     else
       center_x = tab->x() + (tab->width() / 2);
   } else {
     Tab* last_tab = tab_at(drop_index - 1);
-    center_x = last_tab->x() + last_tab->width() + (kTabHOffset / 2);
+    center_x = last_tab->x() + last_tab->width() + (GetTabHOffset() / 2);
   }
 
   // Mirror the center point if necessary.
@@ -1722,14 +1765,15 @@ void TabStrip::PrepareForAnimation() {
 }
 
 void TabStrip::GenerateIdealBounds() {
-  int new_tab_y = SizeTabButtonToTopOfTabStrip() ? 0 : kNewTabButtonVOffset;
+  int new_tab_y =
+      SizeTabButtonToTopOfTabStrip() ? 0 : GetNewTabButtonVOffset();
 
   if (touch_layout_.get()) {
     if (tabs_.view_size() == 0)
       return;
 
     int new_tab_x = tabs_.ideal_bounds(tabs_.view_size() - 1).right() +
-        kNewTabButtonHOffset;
+        GetNewTabButtonHOffset();
     newtab_button_bounds_.set_origin(gfx::Point(new_tab_x, new_tab_y));
     return;
   }
@@ -1754,7 +1798,7 @@ void TabStrip::GenerateIdealBounds() {
         i,
         gfx::Rect(rounded_tab_x, 0, Round(end_of_tab) - rounded_tab_x,
                   tab_height));
-    tab_x = end_of_tab + kTabHOffset;
+    tab_x = end_of_tab + GetTabHOffset();
   }
 
   // Update bounds of new tab button.
@@ -1766,7 +1810,7 @@ void TabStrip::GenerateIdealBounds() {
     // right-most Tab, otherwise it'll bounce when animating.
     new_tab_x = width() - newtab_button_bounds_.width();
   } else {
-    new_tab_x = Round(tab_x - kTabHOffset) + kNewTabButtonHOffset;
+    new_tab_x = Round(tab_x - GetTabHOffset()) + GetNewTabButtonHOffset();
   }
   newtab_button_bounds_.set_origin(gfx::Point(new_tab_x, new_tab_y));
 }
@@ -1779,7 +1823,7 @@ int TabStrip::GenerateIdealBoundsForMiniTabs(int* first_non_mini_index) {
   for (; index < tab_count() && tab_at(index)->data().mini; ++index) {
     set_ideal_bounds(index,
                      gfx::Rect(next_x, 0, mini_width, tab_height));
-    next_x += mini_width + kTabHOffset;
+    next_x += mini_width + GetTabHOffset();
   }
   if (index > 0 && index < tab_count())
     next_x += kMiniToNonMiniGap;
@@ -1789,7 +1833,7 @@ int TabStrip::GenerateIdealBoundsForMiniTabs(int* first_non_mini_index) {
 }
 
 int TabStrip::new_tab_button_width() const {
-  return kNewTabButtonWidth + kNewTabButtonHOffset;
+  return kNewTabButtonWidth + GetNewTabButtonHOffset();
 }
 
 void TabStrip::StartResizeLayoutAnimation() {
@@ -1812,7 +1856,7 @@ void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
   // The user initiated the close. We want to persist the bounds of all the
   // existing tabs, so we manually shift ideal_bounds then animate.
   BaseTab* tab_closing = tab_at(model_index);
-  int delta = tab_closing->width() + kTabHOffset;
+  int delta = tab_closing->width() + GetTabHOffset();
   // If the tab being closed is a mini-tab next to a non-mini-tab, be sure to
   // add the extra padding.
   DCHECK_NE(model_index + 1, tab_count());
@@ -1862,7 +1906,7 @@ int TabStrip::GetStartXForNormalTabs() const {
   int mini_tab_count = GetMiniTabCount();
   if (mini_tab_count == 0)
     return 0;
-  return mini_tab_count * (Tab::GetMiniWidth() + kTabHOffset) +
+  return mini_tab_count * (Tab::GetMiniWidth() + GetTabHOffset()) +
       kMiniToNonMiniGap;
 }
 
