@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,8 @@ namespace webkit_glue {
 class WEBKIT_GLUE_EXPORT WebURLRequestExtraDataImpl :
     NON_EXPORTED_BASE(public WebKit::WebURLRequest::ExtraData) {
  public:
-  WebURLRequestExtraDataImpl(WebKit::WebReferrerPolicy referrer_policy);
+  explicit WebURLRequestExtraDataImpl(
+      WebKit::WebReferrerPolicy referrer_policy);
   virtual ~WebURLRequestExtraDataImpl();
 
   WebKit::WebReferrerPolicy referrer_policy() const { return referrer_policy_; }
